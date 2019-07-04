@@ -57,6 +57,20 @@ from insights.parsers import ParseException, SkipException
 from insights.specs import Specs
 
 
+class BootEntry(dict):
+    """
+    An object representing a boot entry in the Grub Configuration.
+
+    Attributes:
+        name (str): Name of the boot entry
+        cmdline (str): Cmdline of the boot entry
+    """
+    def __init__(self, data={}):
+        self.update(data)
+        self.name = data.get('name', '')
+        self.cmdline = data.get('cmdline', '')
+
+
 class GrubConfig(Parser, dict):
     """
     Parser for configuration for both GRUB versions 1 and 2.
@@ -109,7 +123,7 @@ class GrubConfig(Parser, dict):
                 # Handle the title / menuentry {
                 if line.startswith(('title ', 'menuentry')):
                     self.entries.append(entry) if entry else None
-                    self._boot_entries.append(b_entry) if b_entry else None
+                    self._boot_entries.append(BootEntry(b_entry)) if b_entry else None
                     b_entry = {}
                     entry = {}
                     if line.startswith('title '):
@@ -146,22 +160,11 @@ class GrubConfig(Parser, dict):
             # } End of lines handling
         # Store the last entry
         self.entries.append(entry) if entry else None
-        self.boot_entries.append(b_entry) if b_entry else None
+        self.boot_entries.append(BootEntry(b_entry)) if b_entry else None
 
         self.update({'configs': self.configs}) if self.configs else None
 
         self._is_kdump_iommu_enabled_ = self._is_kdump_iommu_enabled()
-        self._kernel_initrds_ = self._kernel_initrds()
-
-    def _is_kdump_iommu_enabled(self):
-        for l in self._boot_entries:
-            if "intel_iommu=on" in l.get('cmdline', ''):
-                return True
-        return False
-
-    def _kernel_initrds(self):
-        kernels = []
-        initrds = []
         name_values = []
         for k, v in self.configs.items():
             if (k.startswith(('module', 'kernel', 'linux', 'initrd'))):
@@ -170,27 +173,13 @@ class GrubConfig(Parser, dict):
             for k, v in entry.items():
                 if (k.startswith(('module', 'kernel', 'linux', 'initrd'))):
                     name_values.append((k, v))
+        self._kernel_initrds_ = get_kernel_initrds(name_values)
 
-        for name, value in name_values:
-            v = None
-            if isinstance(value, list):
-                v = [i.split()[0].split('/')[-1] for i in value if i]
-            elif value and isinstance(value, str):
-                v = [value.split()[0].split('/')[-1]]
-            if v:
-                if name.startswith('module'):
-                    kernels.extend([i for i in v if 'vmlinuz' in i])
-                    initrds.extend([i for i in v if 'initrd' in i or 'initramfs' in i])
-                elif (name.startswith(('kernel', 'linux'))):
-                    if any('ipxe.lkrn' in i for i in v):
-                        # Machine PXE boots the kernel, assume all is ok
-                        return {}
-                    elif 'xen.gz' not in v:
-                        kernels.extend([i for i in v if 'xen.gz' not in i])
-                elif name.startswith('initrd') or name.startswith('initrd16'):
-                    initrds.extend(v)
-
-        return {'grub_kernels': kernels, 'grub_initrds': initrds}
+    def _is_kdump_iommu_enabled(self):
+        for l in self._boot_entries:
+            if "intel_iommu=on" in l.get('cmdline', ''):
+                return True
+        return False
 
     @property
     def boot_entries(self):
@@ -375,7 +364,7 @@ class Grub2EFIConfig(Grub2Config):
 
 
 @parser(Specs.boot_loader_entries)
-class BootLoaderEntries(GrubConfig, dict):
+class BootLoaderEntries(Parser, dict):
     """
     Parses the ``/boot/loader/entries/*.conf`` files.
 
@@ -393,22 +382,41 @@ class BootLoaderEntries(GrubConfig, dict):
         if not content:
             raise SkipException()
 
-        self.configs = {}
-        self.entries = self.title = self.menuentry = []
+        self.entry = {}
+        self.title = ''
         self.cmdline = ''
-        data = {}
         for line in content:
             key, value = [i.strip() for i in line.split(None, 1)]
-            data[key] = value
+            self.entry[key] = value
             if key == 'options':
                 self.cmdline = value
 
-        if not data:
+        if not self.entry:
             raise SkipException()
 
-        self.update(data)
-        self.title = data.get('title')
-        self.entries.append(data)
-        self._boot_entries = [{'name': self.title, 'cmdline': self.cmdline}]
-        self._is_kdump_iommu_enabled = self._is_kdump_iommu_enabled()
-        self._kernel_initrds = self._kernel_initrds()
+        self.update(self.entry)
+        self.title = self.entry.get('title')
+        self.is_kdump_iommu_enabled = "intel_iommu=on" in self.cmdline
+
+
+def get_kernel_initrds(name_values):
+    kernels = []
+    initrds = []
+    for name, value in name_values:
+        if isinstance(value, list):
+            v = [i.split()[0].split('/')[-1] for i in value if i]
+        elif value and isinstance(value, str):
+            v = [value.split()[0].split('/')[-1]]
+        if v:
+            if name.startswith('module'):
+                kernels.extend([i for i in v if 'vmlinuz' in i])
+                initrds.extend([i for i in v if 'initrd' in i or 'initramfs' in i])
+            elif (name.startswith(('kernel', 'linux'))):
+                if any('ipxe.lkrn' in i for i in v):
+                    # Machine PXE boots the kernel, assume all is ok
+                    return {}
+                elif 'xen.gz' not in v:
+                    kernels.extend([i for i in v if 'xen.gz' not in i])
+            elif name.startswith('initrd') or name.startswith('initrd16'):
+                initrds.extend(v)
+    return {'grub_kernels': kernels, 'grub_initrds': initrds}

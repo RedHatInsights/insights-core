@@ -167,8 +167,6 @@ def test_get_grub_kernel_initrd_1():
 
     # Process grub.conf from a Xen hypervisor
     expected_result = {'grub_kernels': ['vmlinuz-2.6.18-398.el5xen'], 'grub_initrds': ['initrd-2.6.18-398.el5xen.img']}
-    print('[[[[[[[[[[[]]]]]]]]]]]')
-    print(Grub1Config(context_wrap(GRUB_CONF_XEN)).kernel_initrds)
     assert expected_result == Grub1Config(context_wrap(GRUB_CONF_XEN)).kernel_initrds
 
     # Simulate grub.conf not containing any kernel or initrd entries

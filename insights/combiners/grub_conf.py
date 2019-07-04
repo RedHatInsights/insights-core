@@ -22,7 +22,7 @@ parsers/combiners:
 
 from insights.core.plugins import combiner
 from insights.combiners.redhat_release import RedHatRelease
-from insights.parsers.grub_conf import GrubConfig
+from insights.parsers.grub_conf import GrubConfig, BootEntry, get_kernel_initrds
 from insights.parsers.grub_conf import Grub1Config, Grub1EFIConfig
 from insights.parsers.grub_conf import Grub2Config, Grub2EFIConfig
 from insights.parsers.grub_conf import BootLoaderEntries as BLE
@@ -52,17 +52,18 @@ class BootLoaderEntries(object):
     def __init__(self, grub_bles, sys_firmware):
         self.version = self._version = 2
         self.is_efi = self._efi = '/sys/firmware/efi' in sys_firmware if sys_firmware else False
-        self.configs = {}
-        self.entries = self.title = self.menuentry = []
+        self.entries = []
         self.boot_entries = []
-        self.kernel_initrds = {'grub_kernels': [], 'grub_initrds': []}
         self.is_kdump_iommu_enabled = False
+        name_values = []
         for ble in grub_bles:
-            self.entries.extend(ble.entries)
-            self.boot_entries.extend(ble._boot_entries)
-            self.is_kdump_iommu_enabled = self.is_kdump_iommu_enabled or ble._is_kdump_iommu_enabled
-            self.kernel_initrds['grub_kernels'].extend(ble._kernel_initrds['grub_kernels'])
-            self.kernel_initrds['grub_initrds'].extend(ble._kernel_initrds['grub_initrds'])
+            self.entries.append(ble.entry)
+            self.boot_entries.append(BootEntry({'name': ble.title, 'cmdline': ble.cmdline}))
+            self.is_kdump_iommu_enabled = self.is_kdump_iommu_enabled or ble.is_kdump_iommu_enabled
+            for k, v in ble.items():
+                if (k.startswith(('module', 'kernel', 'linux', 'initrd'))):
+                    name_values.append((k, v))
+        self.kernel_initrds = get_kernel_initrds(name_values)
 
         if not self.entries:
             raise SkipComponent()

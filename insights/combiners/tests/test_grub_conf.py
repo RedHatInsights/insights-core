@@ -265,7 +265,6 @@ def test_grub1_only1():
     assert result.kernel_initrds['grub_initrds'][0] == 'initramfs-2.6.32-642.el6.x86_64.img'
     assert result.is_kdump_iommu_enabled is True
     assert result.get_grub_cmdlines() == result.get_grub_cmdlines('/vmlinuz')
-    print(result.get_grub_cmdlines())
     assert len(result.get_grub_cmdlines()) == 3
     assert result.version == 1
     assert result.is_efi is False
