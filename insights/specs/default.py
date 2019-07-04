@@ -105,6 +105,7 @@ class DefaultSpecs(Specs):
     blkid = simple_command("/sbin/blkid -c /dev/null")
     bond = glob_file("/proc/net/bonding/bond*")
     bond_dynamic_lb = glob_file("/sys/class/net/bond[0-9]*/bonding/tlb_dynamic_lb")
+    boot_loader_entries = glob_file("/boot/loader/entries/*.conf")
     branch_info = simple_file("/branch_info", kind=RawFileProvider)
     brctl_show = simple_command("/usr/sbin/brctl show")
     candlepin_log = simple_file("/var/log/candlepin/candlepin.log")

@@ -51,9 +51,9 @@ BootLoaderEntries - file ``/boot/loader/entries/*.conf``
 --------------------------------------------------------
 """
 
-from insights import Parser
-from insights import parser, get_active_lines
+from insights import Parser, parser, get_active_lines
 from insights.parsers import ParseException, SkipException
+from insights.components.rhel_version import IsRhel6, IsRhel7, IsRhel8
 from insights.specs import Specs
 
 
@@ -215,7 +215,7 @@ class GrubConfig(Parser, dict):
         return self._kernel_initrds
 
 
-@parser(Specs.grub_conf)
+@parser(Specs.grub_conf, [IsRhel6, IsRhel7])
 class Grub1Config(GrubConfig):
     """
     Parser for configuration for GRUB version 1.
@@ -280,7 +280,7 @@ class Grub1Config(GrubConfig):
         return None
 
 
-@parser(Specs.grub_efi_conf)
+@parser(Specs.grub_efi_conf, [IsRhel6, IsRhel7])
 class Grub1EFIConfig(Grub1Config):
     """
     Parses grub v1 configuration for EFI-based systems
@@ -291,7 +291,7 @@ class Grub1EFIConfig(Grub1Config):
         self._efi = True
 
 
-@parser(Specs.grub2_cfg)
+@parser(Specs.grub2_cfg, [IsRhel6, IsRhel7])
 class Grub2Config(GrubConfig):
     """
     Parser for configuration for GRUB version 2.
@@ -351,7 +351,7 @@ class Grub2Config(GrubConfig):
         self.update({'menuentry': self.entries})
 
 
-@parser(Specs.grub2_efi_cfg)
+@parser(Specs.grub2_efi_cfg, [IsRhel6, IsRhel7])
 class Grub2EFIConfig(Grub2Config):
     """Parses grub2 configuration for EFI-based systems"""
     def __init__(self, *args, **kwargs):
@@ -360,7 +360,7 @@ class Grub2EFIConfig(Grub2Config):
         self._efi = True
 
 
-@parser(Specs.boot_loader_entries)
+@parser(Specs.boot_loader_entries, IsRhel8)
 class BootLoaderEntries(Parser, dict):
     """
     Parses the ``/boot/loader/entries/*.conf`` files.
