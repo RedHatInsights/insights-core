@@ -44,7 +44,9 @@ class BootLoaderEntries(object):
     Attributes:
         version (int): The version of the GRUB configuration, 1 or 2
         is_efi (bool): If the host is boot with EFI
-        boot_entries (list): List of all boot entries in GRUB configuration.
+        entries (list): List of all boot entries in GRUB configuration.
+        boot_entries (list): List of all boot entries which only contains the
+            name and cmdline.
         kernel_initrds (dict): Dict of the `kernel` and `initrd` files
             referenced in GRUB configuration files
         is_kdump_iommu_enabled (bool): If any kernel entry contains "intel_iommu=on"
@@ -155,7 +157,9 @@ class GrubConf(object):
                 None by default.
 
         Returns:
-            A list of dict of each boot entry in which the `cmdline` contains the `search_text`.
+            A list of :class:`insights.parsers.grub_conf.BootEntry` objects fo
+            each boot entry in which the `cmdline` contains the `s`. When `s` is
+            None, returns the objects of all of the boot entries.
         """
         if s is None:
             return self.grub.boot_entries

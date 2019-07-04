@@ -185,7 +185,8 @@ class GrubConfig(Parser, dict):
         Get all boot entries in GRUB configuration.
 
         Returns:
-            (list): A list of dict for each boot entry in below format:
+            (list): A list of :class:`insights.parsers.grub_conf.BootEntry`
+                    objects for each boot entry in below format:
                     - 'name': "Red Hat Enterprise Linux Server"
                     - 'cmdline': "kernel /vmlinuz-2.6.32-431.11.2.el6.x86_64 crashkernel=128M rhgb quiet"
         """
@@ -261,8 +262,8 @@ class Grub1Config(GrubConfig):
         main configuration. (GRUB v1 only)
 
         Returns:
-            list: A list contains all settings of the default boot entry:
-                  - [(title, name), (cmd, opt), (cmd, opt) ...]
+            list: A list of dict contains all settings of the default boot entry:
+                  - {title: name1, kernel: [val], ...},
         """
         # if no 'default' in grub.conf, set default to 0
         idx = '0'
