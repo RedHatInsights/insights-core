@@ -5,6 +5,9 @@ mysqladmin command - Command
 Parsing and extracting data from output of command ``/bin/mysqladmin variables``.
 Parsers contained in this module are:
 
+MysqladminStatus - command ``/bin/mysqladmin status``
+-----------------------------------------------------
+
 MysqladminVars - command ``/bin/mysqladmin variables``
 ------------------------------------------------------
 
@@ -18,9 +21,6 @@ from insights.specs import Specs
 @parser(Specs.mysqladmin_status)
 class MysqladminStatus(LegacyItemAccess, CommandParser):
     """
-    MysqladminStatus - command ``/bin/mysqladmin status``
-    ------------------------------------------------------
-
     Module for parsing the output of the ``mysqladmin status`` command.
 
     Typical output looks like:
