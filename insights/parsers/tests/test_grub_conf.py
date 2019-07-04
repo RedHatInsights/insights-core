@@ -1,7 +1,9 @@
 from insights.tests import context_wrap
+from insights.parsers import grub_conf
 from insights.parsers.grub_conf import Grub1Config, Grub2Config, Grub1EFIConfig
 from insights.parsers.grub_conf import BootLoaderEntries
 import pytest
+import doctest
 
 # RHEL7
 GRUB2_CFG_1 = """
@@ -162,6 +164,49 @@ grub_arg --unrestricted
 grub_class kernel
 """.strip()
 
+GRUB1_CFG_1_DOC = '''
+default=0
+timeout=0
+splashimage=(hd0,0)/grub/splash.xpm.gz
+hiddenmenu
+title Red Hat Enterprise Linux Server (2.6.32-431.17.1.el6.x86_64)
+    kernel /vmlinuz-2.6.32-431.17.1.el6.x86_64 crashkernel=128M rhgb quiet
+title Red Hat Enterprise Linux Server (2.6.32-431.11.2.el6.x86_64)
+    kernel /vmlinuz-2.6.32-431.11.2.el6.x86_64 crashkernel=128M rhgb quiet
+'''.strip()
+
+GRUB2_CFG_1_DOC = '''
+### BEGIN /etc/grub.d/00_header ###
+set pager=1
+/
+if [ -s $prefix/grubenv ]; then
+  load_env
+fi
+#[...]
+if [ x"${feature_menuentry_id}" = xy ]; then
+  menuentry_id_option="--id"
+else
+  menuentry_id_option=""
+fi
+#[...]
+### BEGIN /etc/grub.d/10_linux ###
+menuentry 'Red Hat Enterprise Linux Workstation (3.10.0-327.36.3.el7.x86_64) 7.2 (Maipo)' $menuentry_id_option 'gnulinux-3.10.0-123.13.2.el7.x86_64-advanced-fbff9f50-62c3-484e-bca5-d53f672cda7c' {
+    load_video
+    set gfxpayload=keep
+    insmod gzio
+    insmod part_msdos
+    insmod ext2
+    set root='hd0,msdos1'
+    if [ x$feature_platform_search_hint = xy ]; then
+      search --no-floppy --fs-uuid --set=root --hint-bios=hd0,msdos1 --hint-efi=hd0,msdos1 --hint-baremetal=ahci0,msdos1 --hint='hd0,msdos1'  1184ab74-77b5-4cfa-81d3-fb87b0457577
+    else
+      search --no-floppy --fs-uuid --set=root 1184ab74-77b5-4cfa-81d3-fb87b0457577
+    fi
+    linux16 /vmlinuz-3.10.0-327.36.3.el7.x86_64 root=/dev/RHEL7CSB/Root ro rd.lvm.lv=RHEL7CSB/Root rd.luks.uuid=luks-96c66446-77fd-4431-9508-f6912bd84194 crashkernel=128M@16M rd.lvm.lv=RHEL7CSB/Swap vconsole.font=latarcyrheb-sun16 rhgb quiet LANG=en_GB.utf8
+    initrd16 /initramfs-3.10.0-327.36.3.el7.x86_64.img
+}
+'''.strip()
+
 
 def test_grub_conf_1():
     expected_result = {'grub_kernels': ["vmlinuz-2.6.18-194.8.1.el5", "vmlinuz-2.6.18-194.17.1.el5"],
@@ -237,3 +282,12 @@ def test_grub_conf_raise():
     with pytest.raises(Exception) as e:
         Grub2Config(context_wrap(GRUB2_CFG_4))
     assert "Cannot parse menuentry line: menuentry {" in str(e.value)
+
+
+def test_grub_conf_doc():
+    env = {
+            'grub1_config': Grub1Config(context_wrap(GRUB1_CFG_1_DOC)),
+            'grub2_config': Grub2Config(context_wrap(GRUB2_CFG_1_DOC)),
+          }
+    failed, total = doctest.testmod(grub_conf, globs=env)
+    assert failed == 0

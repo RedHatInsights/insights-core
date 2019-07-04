@@ -100,7 +100,7 @@ class GrubConfig(Parser, dict):
 
         self.configs = {}
         self._boot_entries = []
-        self.entries = self.entries= []
+        self.entries = []
         b_entry = {}
         entry = {}
         in_script = False
@@ -149,9 +149,7 @@ class GrubConfig(Parser, dict):
                 # } End of Inside entry
                 # Lines out of entries {
                 else:
-                    se = line.find('=')
-                    ss = line.find(' ')
-                    sep = '=' if (0 < se > ss) or (ss < 0 < se) else None
+                    sep = '=' if '=' in line else None
                     sp = [i.strip() for i in line.split(sep, 1)]
                     if sp[0] not in self.configs:
                         self.configs[sp[0]] = []
@@ -228,28 +226,27 @@ class Grub1Config(GrubConfig):
         ... splashimage=(hd0,0)/grub/splash.xpm.gz
         ... hiddenmenu
         ... title Red Hat Enterprise Linux Server (2.6.32-431.17.1.el6.x86_64)
-        ...         kernel /vmlinuz-2.6.32-431.17.1.el6.x86_64 crashkernel=128M rhgb quiet
+        ...     kernel /vmlinuz-2.6.32-431.17.1.el6.x86_64 crashkernel=128M rhgb quiet
         ... title Red Hat Enterprise Linux Server (2.6.32-431.11.2.el6.x86_64)
-        ...         kernel /vmlinuz-2.6.32-431.11.2.el6.x86_64 crashkernel=128M rhgb quiet
+        ...     kernel /vmlinuz-2.6.32-431.11.2.el6.x86_64 crashkernel=128M rhgb quiet
         ... '''.strip()
 
-        >>> from insights.tests import context_wrap
-        >>> shared = {Grub1Config: Grub1Config(context_wrap(grub1_content))}
-        >>> config = shared[Grub1Config]
-        >>> config['configs']
-        [('default', '0'), ('timeout', '0'), ('splashimage', '(hd0,0)/grub/splash.xpm.gz'), ('hiddenmenu', None)]
-        >>> config['title'][0]
-        [('title', 'Red Hat Enterprise Linux Server (2.6.32-431.17.1.el6.x86_64)'), ('kernel', '/vmlinuz-2.6.32-431.17.1.el6.x86_64 crashkernel=128M rhgb quiet')]
-        >>> config['title'][1][0][1]
+        >>> grub1_config.configs.get('default')
+        ['0']
+        >>> grub1_config.configs.get('hiddenmenu')
+        ['']
+        >>> grub1_config['title'][0]['kernel']
+        ['/vmlinuz-2.6.32-431.17.1.el6.x86_64 crashkernel=128M rhgb quiet']
+        >>> grub1_config.entries[1]['title']
         'Red Hat Enterprise Linux Server (2.6.32-431.11.2.el6.x86_64)'
-        >>> config.boot_entries[1].name
+        >>> grub1_config.boot_entries[1].name
         'Red Hat Enterprise Linux Server (2.6.32-431.11.2.el6.x86_64)'
-        >>> config.boot_entries[1].cmdline
-        "kernel /vmlinuz-2.6.32-431.11.2.el6.x86_64 crashkernel=128M rhgb quiet"
-        >>> config.is_kdump_iommu_enabled
+        >>> grub1_config.boot_entries[1].cmdline
+        '/vmlinuz-2.6.32-431.11.2.el6.x86_64 crashkernel=128M rhgb quiet'
+        >>> grub1_config.is_kdump_iommu_enabled
         False
-        >>> config.kernel_initrds['grub_kernels'][0]
-        'vmlinuz-2.6.32-431.17.1.el6.x86_64'
+        >>> grub1_config.kernel_initrds['grub_kernels']
+        ['vmlinuz-2.6.32-431.17.1.el6.x86_64', 'vmlinuz-2.6.32-431.11.2.el6.x86_64']
     """
 
     def __init__(self, *args, **kwargs):
@@ -314,7 +311,7 @@ class Grub2Config(GrubConfig):
         ... fi
         ... #[...]
         ... ### BEGIN /etc/grub.d/10_linux ###
-        ...     menuentry 'Red Hat Enterprise Linux Workstation (3.10.0-327.36.3.el7.x86_64) 7.2 (Maipo)' --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option 'gnulinux-3.10.0-123.13.2.el7.x86_64-advanced-fbff9f50-62c3-484e-bca5-d53f672cda7c' {
+        ... menuentry 'Red Hat Enterprise Linux Workstation (3.10.0-327.36.3.el7.x86_64) 7.2 (Maipo)' $menuentry_id_option 'gnulinux-3.10.0-123.13.2.el7.x86_64-advanced-fbff9f50-62c3-484e-bca5-d53f672cda7c' {
         ...     load_video
         ...     set gfxpayload=keep
         ...     insmod gzio
@@ -328,23 +325,22 @@ class Grub2Config(GrubConfig):
         ...     fi
         ...     linux16 /vmlinuz-3.10.0-327.36.3.el7.x86_64 root=/dev/RHEL7CSB/Root ro rd.lvm.lv=RHEL7CSB/Root rd.luks.uuid=luks-96c66446-77fd-4431-9508-f6912bd84194 crashkernel=128M@16M rd.lvm.lv=RHEL7CSB/Swap vconsole.font=latarcyrheb-sun16 rhgb quiet LANG=en_GB.utf8
         ...     initrd16 /initramfs-3.10.0-327.36.3.el7.x86_64.img
-        ...     }
+        ... }
         ... '''.strip()
 
-        >>> from insights.tests import context_wrap
-        >>> shared = {Grub2Config: Grub2Config(context_wrap(grub2_content))}
-        >>> config = shared[Grub2Config]
-        >>> config.boot_entries[0].name
-        "'Red Hat Enterprise Linux Workstation (3.10.0-327.36.3.el7.x86_64) 7.2 (Maipo)' --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option 'gnulinux-3.10.0-123.13.2.el7.x86_64-advanced-fbff9f50-62c3-484e-bca5-d53f672cda7c'"
-        >>> config.boot_entries[0].cmdline
-        "linux16 /vmlinuz-3.10.0-327.36.3.el7.x86_64 root=/dev/RHEL7CSB/Root ro rd.lvm.lv=RHEL7CSB/Root rd.luks.uuid=luks-96c66446-77fd-4431-9508-f6912bd84194 crashkernel=128M@16M rd.lvm.lv=RHEL7CSB/Swap vconsole.font=latarcyrheb-sun16 rhgb quiet LANG=en_GB.utf8"
-        >>> config['configs']
-        [('set pager', '1'), ('/', None)]
-        >>> config['menuentry']
-        [[('menuentry', "'Red Hat Enterprise Linux Workstation (3.10.0-327.36.3.el7.x86_64) 7.2 (Maipo)' --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option 'gnulinux-3.10.0-123.13.2.el7.x86_64-advanced-fbff9f50-62c3-484e-bca5-d53f672cda7c'"), ('load_video', None), ('set', 'gfxpayload=keep'), ('insmod', 'gzio'), ('insmod', 'part_msdos'), ('insmod', 'ext2'), ('set', "root='hd0,msdos1'"), ('linux16', '/vmlinuz-3.10.0-327.36.3.el7.x86_64 root=/dev/RHEL7CSB/Root ro rd.lvm.lv=RHEL7CSB/Root rd.luks.uuid=luks-96c66446-77fd-4431-9508-f6912bd84194 crashkernel=128M@16M rd.lvm.lv=RHEL7CSB/Swap vconsole.font=latarcyrheb-sun16 rhgb quiet LANG=en_GB.utf8'), ('initrd16', '/initramfs-3.10.0-327.36.3.el7.x86_64.img')]]
-        >>> config.kernel_initrds['grub_kernels'][0]
+        >>> grub2_config['configs']
+        {'set pager': ['1'], '/': ['']}
+        >>> grub2_config.entries[0]['menuentry']
+        "'Red Hat Enterprise Linux Workstation (3.10.0-327.36.3.el7.x86_64) 7.2 (Maipo)' $menuentry_id_option 'gnulinux-3.10.0-123.13.2.el7.x86_64-advanced-fbff9f50-62c3-484e-bca5-d53f672cda7c'"
+        >>> grub2_config['menuentry'][0]['insmod']
+        ['gzio', 'part_msdos', 'ext2']
+        >>> grub2_config.boot_entries[0].name
+        "'Red Hat Enterprise Linux Workstation (3.10.0-327.36.3.el7.x86_64) 7.2 (Maipo)' $menuentry_id_option 'gnulinux-3.10.0-123.13.2.el7.x86_64-advanced-fbff9f50-62c3-484e-bca5-d53f672cda7c'"
+        >>> grub2_config.boot_entries[0].cmdline
+        '/vmlinuz-3.10.0-327.36.3.el7.x86_64 root=/dev/RHEL7CSB/Root ro rd.lvm.lv=RHEL7CSB/Root rd.luks.uuid=luks-96c66446-77fd-4431-9508-f6912bd84194 crashkernel=128M@16M rd.lvm.lv=RHEL7CSB/Swap vconsole.font=latarcyrheb-sun16 rhgb quiet LANG=en_GB.utf8'
+        >>> grub2_config.kernel_initrds['grub_kernels'][0]
         'vmlinuz-3.10.0-327.36.3.el7.x86_64'
-        >>> config.is_kdump_iommu_enabled
+        >>> grub2_config.is_kdump_iommu_enabled
         False
     """
     def __init__(self, *args, **kwargs):
