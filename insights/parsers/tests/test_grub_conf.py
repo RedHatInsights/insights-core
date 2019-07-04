@@ -1,6 +1,6 @@
 from insights.tests import context_wrap
 from insights.parsers.grub_conf import Grub1Config, Grub2Config, Grub1EFIConfig
-from insights.parsers.grub_conf import Grub2Grubenv
+from insights.parsers.grub_conf import BootLoaderEntries
 import pytest
 
 # RHEL7
@@ -150,42 +150,42 @@ menuentry {
 }
 """.strip()
 
-GRUB2_EDITENV_LIST = """
-saved_entry=08c540cbca4d412c83e44a745aac36eb-4.18.0-80.1.2.el8_0.x86_64
-kernelopts=root=/dev/mapper/rhel_vm37--146-root ro crashkernel=auto resume=/dev/mapper/rhel_vm37--146-swap rd.lvm.lv=rhel_vm37-146/root rd.lvm.lv=rhel_vm37-146/swap boot_success=0
-boot_success=0
+BOOT_LOADER_ENTRIES_CONF = """
+title Red Hat Enterprise Linux (4.18.0-80.1.2.el8_0.x86_64) 8.0 (Ootpa)
+version 4.18.0-80.1.2.el8_0.x86_64
+linux /vmlinuz-4.18.0-80.1.2.el8_0.x86_64
+initrd /initramfs-4.18.0-80.1.2.el8_0.x86_64.img $tuned_initrd
+options root=/dev/mapper/rhel_vm37--146-root ro crashkernel=auto resume=/dev/mapper/rhel_vm37--146-swap rd.lvm.lv=rhel_vm37-146/root rd.lvm.lv=rhel_vm37-146/swap $tuned_params noapic
+id rhel-20190428101407-4.18.0-80.1.2.el8_0.x86_64
+grub_users $grub_users
+grub_arg --unrestricted
+grub_class kernel
 """.strip()
 
 
 def test_grub_conf_1():
     expected_result = {'grub_kernels': ["vmlinuz-2.6.18-194.8.1.el5", "vmlinuz-2.6.18-194.17.1.el5"],
                        'grub_initrds': ["initrd-2.6.18-194.8.1.el5.img", "initramfs-2.6.18-194.8.1.el5.img"]}
-    print(Grub1Config(context_wrap(GRUB1_CONF_3)).kernel_initrds)
     assert expected_result == Grub1Config(context_wrap(GRUB1_CONF_3)).kernel_initrds
 
     expected_result = {'grub_kernels': ["vmlinuz-2.6.18-194.8.1.el5"],
                        'grub_initrds': []}
 
     grub1 = Grub1Config(context_wrap(GRUB1_CONF_4))
-    print(grub1)
     assert grub1.is_kdump_iommu_enabled is False
     assert expected_result == grub1.kernel_initrds
-    print('-----')
-    print(grub1.get_current_title())
     assert grub1.get_current_title() is None
 
     grub1 = Grub1Config(context_wrap(GRUB1_CONF_5))
     assert grub1.is_kdump_iommu_enabled is False
-    print('-0')
-    print(grub1.get_current_title())
     assert grub1.get_current_title() == {
-            'title_name': '(2.6.18-194.8.1.el5)',
+            'title': '(2.6.18-194.8.1.el5)',
             'kernel': [''], 'module': ['/2.6.18-194.8.1.el5.img']}
 
     grub1 = Grub1Config(context_wrap(GRUB1_CONF_6))
     assert grub1.is_kdump_iommu_enabled is False
     assert grub1.get_current_title() == {
-        'title_name': 'Red Hat Enterprise Linux Server',
+        'title': 'Red Hat Enterprise Linux Server',
         'kernel': ['test'], 'module': ['/2.6.18-194.8.1.el5.img']}
 
     grub1 = Grub1Config(context_wrap(GRUB1_CONF_7))
@@ -200,19 +200,18 @@ def test_grub_conf_1():
 
     grub1efi = Grub1EFIConfig(context_wrap(GRUB1_CONF_5))
     assert grub1efi.get_current_title() == {
-            'title_name': '(2.6.18-194.8.1.el5)',
+            'title': '(2.6.18-194.8.1.el5)',
             'kernel': [''], 'module': ['/2.6.18-194.8.1.el5.img']}
 
     grub1efi = Grub1EFIConfig(context_wrap(GRUB1_CONF_6))
     assert grub1efi.get_current_title() == {
-        'title_name': 'Red Hat Enterprise Linux Server',
+        'title': 'Red Hat Enterprise Linux Server',
         'kernel': ['test'], 'module': ['/2.6.18-194.8.1.el5.img']}
 
     grub1efi = Grub1EFIConfig(context_wrap(GRUB1_CONF_7))
     assert grub1efi.get_current_title() is None
 
     grub_conf = Grub2Config(context_wrap(GRUB2_CFG_1))['menuentry']
-    print(grub_conf)
     assert 'load_video' in grub_conf[0]
     assert 'load_env' not in grub_conf[0]
     assert 'insmod' in grub_conf[0]
@@ -228,15 +227,13 @@ def test_grub_conf_1():
     assert grub_conf.is_kdump_iommu_enabled is False
 
 
-def test_grub2_grubenv():
-    grub_env = Grub2Grubenv(context_wrap(GRUB2_EDITENV_LIST))
-    assert grub_env.name == '08c540cbca4d412c83e44a745aac36eb-4.18.0-80.1.2.el8_0.x86_64'
-    assert 'crashkernel=auto' in grub_env.cmdline
-    assert grub_env.kernelopts['ro'] == [True]
-    assert grub_env.kernelopts['rd.lvm.lv'][0] == 'rhel_vm37-146/root'
+def test_grub2_boot_loader_entries():
+    grub_ble = BootLoaderEntries(context_wrap(BOOT_LOADER_ENTRIES_CONF))
+    assert grub_ble.title == 'Red Hat Enterprise Linux (4.18.0-80.1.2.el8_0.x86_64) 8.0 (Ootpa)'
+    assert 'crashkernel=auto' in grub_ble.cmdline
 
 
 def test_grub_conf_raise():
     with pytest.raises(Exception) as e:
         Grub2Config(context_wrap(GRUB2_CFG_4))
-    assert "Cannot parse menuentry line: menuentry {" in str(e)
+    assert "Cannot parse menuentry line: menuentry {" in str(e.value)

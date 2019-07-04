@@ -19,33 +19,19 @@ is put into roughly three categories:
 
 Each of these categories is (currently) stored as a simple list of tuples.
 
-* For the list of **configs**, the tuples are (key, value) pairs based on
-  the line, split on the first '=' character.  If nothing is found after the
-  '=' character, then the value is ``None``.
+* For the **configs** dict, the key-value pairs based on the line, split
+  on the first '=' character.  If nothing is found after the '=' character,
+  then the value is `''`.
 
-* For the **title** list, there will be exactly two items in this list:
+* For the **title** and **menuentry** list, dict of each boot entry is stored.
 
-  * The first item will be a tuple of two items: 'title_name' and the
-    title of the boot option.
-  * The second item will be a tuple of two items: 'kernel' and the entire
-    rest of the kernel boot line as if it had been given all on one line.
-
-* For the **menuentry** list:
-
-  * the first item will be a tuple of two items: 'menuentry_name' and the
-    full text between 'menuentry' and '{'.
-  * the rest of the items will be tuples of that line in the menu entry
-    configuration, split on the first space.  If no space is found after the
-    first word, the value will be ``None``.  So ``load_video`` will be stored
-    as ``('load_video', None)`` and ``set root='hd0,msdos1'`` will be stored
-    as ``('set', "root='hd0,msdos1'")``.
+  * The items will be key-value pairs, e.g. ``load_video`` will be stored
+    as ``{'load_video': ''}`` and ``set root='hd0,msdos1'`` will be stored
+    as ``{'set': "root='hd0,msdos1'"}``.
 
 .. note::
     For GRUB version 2, all lines between the ``if`` and ``fi`` will be ignored
     due to we cannot analyze the result of the bash conditions.
-
-There are several helper functions for dealing with the Intel IOMMU and for
-extracting the kernel and initrd configurations available.
 
 Parsers provided by this module are:
 
@@ -61,36 +47,14 @@ Grub2Config - file ``/boot/grub/grub2.cfg``
 Grub2EFIConfig - file ``/boot/efi/EFI/redhat/grub.cfg``
 -------------------------------------------------------
 
-Grub2Grubenv - file ``/boot/grub2/grubenv``
--------------------------------------------
-
-Grub2EFIGrubenv - file ``/boot/efi/EFI/redhat/grubenv``
--------------------------------------------------------
+BootLoaderEntries - file ``/boot/loader/entries/*.conf``
+--------------------------------------------------------
 """
 
 from insights import Parser
-from insights import parser, get_active_lines, defaults
+from insights import parser, get_active_lines
 from insights.parsers import ParseException, SkipException
 from insights.specs import Specs
-
-IOMMU = "intel_iommu=on"
-GRUB_KERNELS = 'grub_kernels'
-GRUB_INITRDS = 'grub_initrds'
-
-
-class BootEntry(dict):
-    """
-    An object representing an entry in the output of ``mount`` command.  Each
-    entry contains below fixed attributes:
-
-    Attributes:
-        name (str): Name of the boot entry
-        cmdline (str): Cmdline of the boot entry
-    """
-    def __init__(self, data={}):
-        self.update(data)
-        self.name = data.get('name', '')
-        self.cmdline = data.get('cmdline', '')
 
 
 class GrubConfig(Parser, dict):
@@ -103,26 +67,34 @@ class GrubConfig(Parser, dict):
         Parse grub configuration file to create a dict with this structure::
 
             {
-                "configs": [ (name, value), (name, value) ...],
+                "configs": {
+                    name1: [val1, val2, ...]
+                    name2: [val],
+                    ...
+                },
                 "title": [
-                    [(name, name), (cmd, opt), (cmd, opt) ...],
-                    [(title_name, another_name), ...]
+                    {title: name1, kernel: [val], ...},
+                    {title: name2, module: [val1, val2], ...},
                 ],
                 "menuentry": [
-                    [(menuentry_name, its name), (cmd, opt), (cmd, opt) ...],
-                    [(menuentry_name, another_name), ...]
+                    {menuentry: name1, insmod: [val1, val2], ...},
+                    {menuentry: name2, linux16: [val], ...},
                 ],
             }
 
         """
 
-        self.configs = []
+        self.configs = {}
+        self._boot_entries = []
         self.entries = self.title = self.menuentry = []
+        b_entry = {}
         entry = {}
         in_script = False
         if_idx = 0
-        for line in get_active_lines(content):
-            line = line.strip('{} \t')
+        for line_raw in get_active_lines(content):
+            # Remove the heading and trailing whitespace and curly brackets
+            line = line_raw.strip('{} \t')
+            # Skip the stript in Grub2 {
             if line.startswith('if'):
                 if_idx += 1
                 in_script = True
@@ -131,90 +103,73 @@ class GrubConfig(Parser, dict):
                 if_idx -= 1
                 in_script = True if if_idx else False
                 continue
-            if not in_script and line.startswith(('title ', 'menuentry')):
-                self.entries.append(entry) if entry else None
-                entry = {}
-                if line.startswith('title '):
-                    entry['title_name'] = line.split('title', 1)[1].strip()
-                else:
-                    entry_name = line.split('menuentry', 1)[1].split('{', 1)[0].strip()
-                    if not entry_name:
-                        raise ParseException("Cannot parse menuentry line: {0}".format(line))
-                    entry['menuentry_name'] = entry_name
+            # } End of Skip
+            # Handle of lines {
             elif not in_script and line:
-                if entry:
+                # Handle the title / menuentry {
+                if line.startswith(('title ', 'menuentry')):
+                    self.entries.append(entry) if entry else None
+                    self._boot_entries.append(b_entry) if b_entry else None
+                    b_entry = {}
+                    entry = {}
+                    if line.startswith('title '):
+                        name = line.split('title', 1)[1].strip()
+                        b_entry['name'] = entry['title'] = name
+                    else:
+                        name = line.split('menuentry', 1)[1].split('{', 1)[0].strip()
+                        if not name:
+                            raise ParseException("Cannot parse menuentry line: {0}".format(line_raw))
+                        b_entry['name'] = entry['menuentry'] = name
+                # } End of title / menuentry handling
+                # Inside of an entry {
+                elif entry:
                     sp = [i.strip() for i in line.split(None, 1)]
+                    val = sp[1] if len(sp) > 1 else ''
                     if sp[0] not in entry:
                         entry[sp[0]] = []
-                    entry[sp[0]].append(sp[1] if len(sp) > 1 else '')
+                    # Handle the cmdline {
+                    if sp[0].startswith(('kernel', 'linux')):
+                        b_entry['cmdline'] = val
+                    # } End of cmdline
+                    entry[sp[0]].append(val)
+                # } End of Inside entry
+                # Lines out of entries {
                 else:
-                    sep = '=' if '=' in line else None
+                    se = line.find('=')
+                    ss = line.find(' ')
+                    sep = '=' if (0 < se > ss) or (ss < 0 < se) else None
                     sp = [i.strip() for i in line.split(sep, 1)]
-                    self.configs.append((sp[0], sp[1] if len(sp) > 1 else ''))
-        # for the last entry
+                    if sp[0] not in self.configs:
+                        self.configs[sp[0]] = []
+                    self.configs[sp[0]].append(sp[1] if len(sp) > 1 else '')
+                # } End of Out of entry
+            # } End of lines handling
+        # Store the last entry
         self.entries.append(entry) if entry else None
+        self.boot_entries.append(b_entry) if b_entry else None
 
         self.update({'configs': self.configs}) if self.configs else None
 
-        self._boot_entries = []
-        for entry in self.entries:
-            s_entry = {}
-            for k, v in entry.items():
-                if k in ('menuentry_name', 'title_name'):
-                    s_entry['name'] = v
-                elif s_entry and k.startswith(('kernel', 'linux')):
-                    s_entry['cmdline'] = v[0]
-            self._boot_entries.append(BootEntry(s_entry))
+        self._is_kdump_iommu_enabled_ = self._is_kdump_iommu_enabled()
+        self._kernel_initrds_ = self._kernel_initrds()
 
-    @property
-    def boot_entries(self):
-        """
-        Get all boot entries in GRUB configuration.
-
-        Returns:
-            (list): A list of :class:`BootEntry` objects for each boot entry in below format:
-                    - 'name': "Red Hat Enterprise Linux Server"
-                    - 'cmdline': "kernel /vmlinuz-2.6.32-431.11.2.el6.x86_64 crashkernel=128M rhgb quiet"
-        """
-
-        return self._boot_entries
-
-    @property
-    def is_kdump_iommu_enabled(self):
-        """
-        Does any kernel have 'intel_iommu=on' set?
-
-        Returns:
-            (bool): ``True`` when 'intel_iommu=on' is set, otherwise returns ``False``
-        """
-
-        for line in self._boot_entries:
-            if line.cmdline and IOMMU in line.cmdline:
+    def _is_kdump_iommu_enabled(self):
+        for l in self._boot_entries:
+            if "intel_iommu=on" in l.get('cmdline', ''):
                 return True
         return False
 
-    @property
-    def kernel_initrds(self):
-        """
-        Get the `kernel` and `initrd` files referenced in GRUB configuration files
-
-        Returns:
-            (dict): Returns a dict of the `kernel` and `initrd` files referenced
-                    in GRUB configuration files
-        """
-
+    def _kernel_initrds(self):
         kernels = []
         initrds = []
         name_values = []
-        for k, v in self.configs:
+        for k, v in self.configs.items():
             if (k.startswith(('module', 'kernel', 'linux', 'initrd'))):
                 name_values.append((k, v))
         for entry in self.entries:
             for k, v in entry.items():
                 if (k.startswith(('module', 'kernel', 'linux', 'initrd'))):
                     name_values.append((k, v))
-        print('--')
-        print(name_values)
 
         for name, value in name_values:
             v = None
@@ -235,8 +190,41 @@ class GrubConfig(Parser, dict):
                 elif name.startswith('initrd') or name.startswith('initrd16'):
                     initrds.extend(v)
 
-        print({GRUB_KERNELS: kernels, GRUB_INITRDS: initrds})
-        return {GRUB_KERNELS: kernels, GRUB_INITRDS: initrds}
+        return {'grub_kernels': kernels, 'grub_initrds': initrds}
+
+    @property
+    def boot_entries(self):
+        """
+        Get all boot entries in GRUB configuration.
+
+        Returns:
+            (list): A list of dict for each boot entry in below format:
+                    - 'name': "Red Hat Enterprise Linux Server"
+                    - 'cmdline': "kernel /vmlinuz-2.6.32-431.11.2.el6.x86_64 crashkernel=128M rhgb quiet"
+        """
+
+        return self._boot_entries
+
+    @property
+    def is_kdump_iommu_enabled(self):
+        """
+        Does any kernel have 'intel_iommu=on' set?
+
+        Returns:
+            (bool): ``True`` when 'intel_iommu=on' is set, otherwise returns ``False``
+        """
+        return self._is_kdump_iommu_enabled_
+
+    @property
+    def kernel_initrds(self):
+        """
+        Get the `kernel` and `initrd` files referenced in GRUB configuration files
+
+        Returns:
+            (dict): Returns a dict of the `kernel` and `initrd` files referenced
+                    in GRUB configuration files
+        """
+        return self._kernel_initrds_
 
 
 @parser(Specs.grub_conf)
@@ -262,7 +250,7 @@ class Grub1Config(GrubConfig):
         >>> config['configs']
         [('default', '0'), ('timeout', '0'), ('splashimage', '(hd0,0)/grub/splash.xpm.gz'), ('hiddenmenu', None)]
         >>> config['title'][0]
-        [('title_name', 'Red Hat Enterprise Linux Server (2.6.32-431.17.1.el6.x86_64)'), ('kernel', '/vmlinuz-2.6.32-431.17.1.el6.x86_64 crashkernel=128M rhgb quiet')]
+        [('title', 'Red Hat Enterprise Linux Server (2.6.32-431.17.1.el6.x86_64)'), ('kernel', '/vmlinuz-2.6.32-431.17.1.el6.x86_64 crashkernel=128M rhgb quiet')]
         >>> config['title'][1][0][1]
         'Red Hat Enterprise Linux Server (2.6.32-431.11.2.el6.x86_64)'
         >>> config.boot_entries[1].name
@@ -288,20 +276,19 @@ class Grub1Config(GrubConfig):
 
         Returns:
             list: A list contains all settings of the default boot entry:
-                  - [(title_name, name), (cmd, opt), (cmd, opt) ...]
+                  - [(title, name), (cmd, opt), (cmd, opt) ...]
         """
         # if no 'default' in grub.conf, set default to 0
         idx = '0'
-        conf = self.configs
-        for v in conf:
-            if v[0] == 'default':
-                idx = v[1]
+        for k, v in self.configs.items():
+            if k == 'default':
+                idx = v[-1]
+                break
 
         if idx.isdigit():
             idx = int(idx)
-            title = self.title
-            if len(title) > idx:
-                return title[idx]
+            if len(self.title) > idx:
+                return self.title[idx]
 
         return None
 
@@ -365,7 +352,7 @@ class Grub2Config(GrubConfig):
         >>> config['configs']
         [('set pager', '1'), ('/', None)]
         >>> config['menuentry']
-        [[('menuentry_name', "'Red Hat Enterprise Linux Workstation (3.10.0-327.36.3.el7.x86_64) 7.2 (Maipo)' --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option 'gnulinux-3.10.0-123.13.2.el7.x86_64-advanced-fbff9f50-62c3-484e-bca5-d53f672cda7c'"), ('load_video', None), ('set', 'gfxpayload=keep'), ('insmod', 'gzio'), ('insmod', 'part_msdos'), ('insmod', 'ext2'), ('set', "root='hd0,msdos1'"), ('linux16', '/vmlinuz-3.10.0-327.36.3.el7.x86_64 root=/dev/RHEL7CSB/Root ro rd.lvm.lv=RHEL7CSB/Root rd.luks.uuid=luks-96c66446-77fd-4431-9508-f6912bd84194 crashkernel=128M@16M rd.lvm.lv=RHEL7CSB/Swap vconsole.font=latarcyrheb-sun16 rhgb quiet LANG=en_GB.utf8'), ('initrd16', '/initramfs-3.10.0-327.36.3.el7.x86_64.img')]]
+        [[('menuentry', "'Red Hat Enterprise Linux Workstation (3.10.0-327.36.3.el7.x86_64) 7.2 (Maipo)' --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option 'gnulinux-3.10.0-123.13.2.el7.x86_64-advanced-fbff9f50-62c3-484e-bca5-d53f672cda7c'"), ('load_video', None), ('set', 'gfxpayload=keep'), ('insmod', 'gzio'), ('insmod', 'part_msdos'), ('insmod', 'ext2'), ('set', "root='hd0,msdos1'"), ('linux16', '/vmlinuz-3.10.0-327.36.3.el7.x86_64 root=/dev/RHEL7CSB/Root ro rd.lvm.lv=RHEL7CSB/Root rd.luks.uuid=luks-96c66446-77fd-4431-9508-f6912bd84194 crashkernel=128M@16M rd.lvm.lv=RHEL7CSB/Swap vconsole.font=latarcyrheb-sun16 rhgb quiet LANG=en_GB.utf8'), ('initrd16', '/initramfs-3.10.0-327.36.3.el7.x86_64.img')]]
         >>> config.kernel_initrds['grub_kernels'][0]
         'vmlinuz-3.10.0-327.36.3.el7.x86_64'
         >>> config.is_kdump_iommu_enabled
@@ -379,7 +366,7 @@ class Grub2Config(GrubConfig):
 
 
 @parser(Specs.grub2_efi_cfg)
-class Grub2EFIConfig(GrubConfig):
+class Grub2EFIConfig(Grub2Config):
     """Parses grub2 configuration for EFI-based systems"""
     def __init__(self, *args, **kwargs):
         super(Grub2EFIConfig, self).__init__(*args, **kwargs)
@@ -387,162 +374,41 @@ class Grub2EFIConfig(GrubConfig):
         self._efi = True
 
 
-@parser(Specs.grub2_grubenv)
-class Grub2Grubenv(GrubConfig):
+@parser(Specs.boot_loader_entries)
+class BootLoaderEntries(GrubConfig, dict):
     """
-    Parses the ``/boot/grub2/grubenv`` file.
+    Parses the ``/boot/loader/entries/*.conf`` files.
 
     Attributes:
-        name(str): the name of the saved boot entry
+        title(str): the name of the boot entry
         cmdline(str): the cmdline of the saved boot entry
-        saved_entry(str): the saved boot entry, alias of the :attr:`self.name`
-        kernelopts(dict): the parsed boot options
 
     Raises:
         SkipException: when input content is empty or no useful data.
-        ParseException: when input content is not able to parse.
     """
-    def __init__(self, *args, **kwargs):
-        super(Grub2Grubenv, self).__init__(*args, **kwargs)
-        self._efi = False
-        self._version = 2
-
     def parse_content(self, content):
         """
-        Parse the ``/boot/grub2/grubenv``
+        Parses the ``/boot/loader/entries/*.conf`` files.
         """
         if not content:
-            raise SkipException("Empty content.")
+            raise SkipException()
 
-        self.data = {}
+        self.configs = {}
+        self.entries = self.title = self.menuentry = []
+        self.cmdline = ''
+        data = {}
         for line in content:
-            if '=' in line:
-                key, value = [i.strip() for i in line.split('=', 1)]
-                self.data[key] = value
-            elif not line.startswith('#'):
-                raise ParseException('Bad line: "{0}"'.format(line))
+            key, value = [i.strip() for i in line.split(None, 1)]
+            data[key] = value
+            if key == 'options':
+                self.cmdline = value
 
-        if not self.data:
-            raise SkipException("No useful data")
+        if not data:
+            raise SkipException()
 
-        self.name = self.saved_entry = self.data.get('saved_entry', '')
-        self.cmdline = self.data.get('kernelopts', '')
-        self._boot_entries = [BootEntry({'name': self.name, 'cmdline': self.cmdline})]
-        self.kernelopts = dict()
-        for el in self.cmdline.split():
-            key, value = el, True
-            if "=" in el:
-                key, value = [i.strip() for i in el.split('=', 1)]
-            if key not in self.kernelopts:
-                self.kernelopts[key] = []
-            self.kernelopts[key].append(value)
-
-
-@parser(Specs.grub2_efi_grubenv)
-class Grub2EFIGrubenv(Grub2Grubenv):
-    """
-    Parses ``/boot/efi/EFI/redhat/grubenv`` for EFI-based systems
-    """
-    def __init__(self, *args, **kwargs):
-        super(Grub2EFIGrubenv, self).__init__(*args, **kwargs)
-        self._efi = True
-
-
-def _parse_config(line):
-    """
-    Parse configuration lines in grub v1/v2 config
-    """
-    if "=" not in line:
-        return _parse_cmd(line)
-    else:
-        return _parse_line("=", line)
-
-
-def _parse_script(list, line, line_iter):
-    """
-    Eliminate any bash script contained in the grub v2 configuration
-    """
-    ifIdx = 0
-    while (True):
-        line = next(line_iter)
-        if line.startswith("fi"):
-            if ifIdx == 0:
-                return
-            ifIdx -= 1
-        elif line.startswith("if"):
-            ifIdx += 1
-
-
-def _parse_line(sep, line):
-    """
-    Parse a grub commands/config with format: cmd{sep}opts
-    Returns: (name, value): value can be None
-    """
-    strs = line.split(sep, 1)
-    return (strs[0].strip(), None) if len(strs) == 1 else (strs[0].strip(), strs[1].strip())
-
-
-def _parse_cmd(line):
-    """
-    Parse commands within grub v1/v2 config using space delimeter
-    """
-    return _parse_line(" ", line)
-
-
-def _parse_menu_entry(line_iter, cur_line, conf):
-    """
-    Parse each `menuentry` that the grub v2 configuration contains
-    * Uses "_parse_script" to eliminate bash scripts
-    """
-    menu = []
-    conf['menuentry'].append(menu)
-    n, entry = _parse_line("menuentry", cur_line)
-
-    entry_name, v = _parse_line("{", entry)
-    if not entry_name:
-        raise Exception("Cannot parse menuentry line: {0}".format(cur_line))
-
-    menu.append(('menuentry_name', entry_name))
-    if v:
-        menu.append(_parse_cmd(v))
-
-    while (True):
-        line = next(line_iter)
-        if "{" in line:
-            n, v = _parse_line("{", line)
-            if v:
-                menu.append(_parse_cmd(v))
-        elif "}" in line:
-            n, v = _parse_line("}", line)
-            if n:
-                menu.append(_parse_cmd(n))
-            return
-        elif line.startswith("if"):
-            _parse_script(menu, line, line_iter)
-
-        else:
-            menu.append(_parse_cmd(line))
-
-
-def _parse_title(line_iter, cur_line, conf):
-    """
-    Parse "title" in grub v1 config
-    """
-    title = []
-    conf['title'].append(title)
-    title.append(('title_name', cur_line.split('title', 1)[1].strip()))
-    while (True):
-        line = next(line_iter)
-        if line.startswith("title "):
-            return line
-
-        cmd, opt = _parse_cmd(line)
-        title.append((cmd, opt))
-
-
-def _parse_kernel_initrds_value(line):
-    """
-    Called by "kernel_initrds" method to parse the kernel and
-    initrds lines in the grub v1/v2 config
-    """
-    return line.split()[0].split('/')[-1]
+        self.update(data)
+        self.title = data.get('title')
+        self.entries.append(data)
+        self._boot_entries = [{'name': self.title, 'cmdline': self.cmdline}]
+        self._is_kdump_iommu_enabled = self._is_kdump_iommu_enabled()
+        self._kernel_initrds = self._kernel_initrds()

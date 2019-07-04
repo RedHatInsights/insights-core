@@ -282,17 +282,17 @@ def test_grub1_config():
     assert 'menuentry' not in config
 
     assert len(config['configs']) == 4
-    assert config['configs'][0] == ('default', '0')
-    assert config['configs'][1] == ('timeout', '0')
-    assert config['configs'][2] == ('splashimage', '(hd0,0)/grub/splash.xpm.gz')
-    assert config['configs'][3] == ('hiddenmenu', '')
+    assert config['configs']['default'] == ['0']
+    assert config['configs']['timeout'] == ['0']
+    assert config['configs']['splashimage'] == ['(hd0,0)/grub/splash.xpm.gz']
+    assert config['configs']['hiddenmenu'] == ['']
 
     assert len(config['title']) == 2
     assert len(config['title'][0]) == 2
-    assert config['title'][0]['title_name'] == 'Red Hat Enterprise Linux Server (2.6.32-431.17.1.el6.x86_64)'
+    assert config['title'][0]['title'] == 'Red Hat Enterprise Linux Server (2.6.32-431.17.1.el6.x86_64)'
     assert config['title'][0]['kernel'][0] == '/vmlinuz-2.6.32-431.17.1.el6.x86_64 crashkernel=128M rhgb quiet'
     assert len(config['title'][1]) == 2
-    assert config['title'][1]['title_name'] == 'Red Hat Enterprise Linux Server (2.6.32-431.11.2.el6.x86_64)'
+    assert config['title'][1]['title'] == 'Red Hat Enterprise Linux Server (2.6.32-431.11.2.el6.x86_64)'
     assert config['title'][1]['kernel'][-1] == '/vmlinuz-2.6.32-431.11.2.el6.x86_64 crashkernel=128M rhgb quiet'
 
     assert config.is_kdump_iommu_enabled is False
@@ -342,12 +342,11 @@ def test_grub2_config():
     # The current parsing code does a very bad job of reading menu
     # entry configuration.  Test a few things but we hope for better.
     assert len(config['menuentry'][0]) == 6
-    assert config['menuentry'][0]['menuentry_name'] == "'Red Hat Enterprise Linux Workstation (3.10.0-327.36.3.el7.x86_64) 7.2 (Maipo)' --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option 'gnulinux-3.10.0-123.13.2.el7.x86_64-advanced-fbff9f50-62c3-484e-bca5-d53f672cda7c'"
+    assert config['menuentry'][0]['menuentry'] == "'Red Hat Enterprise Linux Workstation (3.10.0-327.36.3.el7.x86_64) 7.2 (Maipo)' --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option 'gnulinux-3.10.0-123.13.2.el7.x86_64-advanced-fbff9f50-62c3-484e-bca5-d53f672cda7c'"
     assert config['menuentry'][0]['load_video'] == ['']
     assert config['menuentry'][0]['initrd16'] == ['/initramfs-3.10.0-327.36.3.el7.x86_64.img']
 
     assert type(config.kernel_initrds) == dict
-    # Why is this two separate lists and not a list of dicts?
     assert 'grub_initrds' in config.kernel_initrds
     assert config.kernel_initrds['grub_initrds'] == [
         'initramfs-3.10.0-327.36.3.el7.x86_64.img',
