@@ -100,7 +100,7 @@ class GrubConfig(Parser, dict):
 
         self.configs = {}
         self._boot_entries = []
-        self.entries = self.title = self.menuentry = []
+        self.entries = self.entries= []
         b_entry = {}
         entry = {}
         in_script = False
@@ -173,7 +173,7 @@ class GrubConfig(Parser, dict):
             for k, v in entry.items():
                 if (k.startswith(('module', 'kernel', 'linux', 'initrd'))):
                     name_values.append((k, v))
-        self._kernel_initrds_ = get_kernel_initrds(name_values)
+        self._kernel_initrds = get_kernel_initrds(name_values)
 
     def _is_kdump_iommu_enabled(self):
         for l in self._boot_entries:
@@ -213,7 +213,7 @@ class GrubConfig(Parser, dict):
             (dict): Returns a dict of the `kernel` and `initrd` files referenced
                     in GRUB configuration files
         """
-        return self._kernel_initrds_
+        return self._kernel_initrds
 
 
 @parser(Specs.grub_conf)
@@ -256,7 +256,7 @@ class Grub1Config(GrubConfig):
         super(Grub1Config, self).__init__(*args, **kwargs)
         self._version = 1
         self._efi = False
-        self.update({'title': self.title})
+        self.update({'title': self.entries})
 
     def get_current_title(self):
         """
@@ -276,8 +276,8 @@ class Grub1Config(GrubConfig):
 
         if idx.isdigit():
             idx = int(idx)
-            if len(self.title) > idx:
-                return self.title[idx]
+            if len(self.entries) > idx:
+                return self.entries[idx]
 
         return None
 
@@ -351,7 +351,7 @@ class Grub2Config(GrubConfig):
         super(Grub2Config, self).__init__(*args, **kwargs)
         self._version = 2
         self._efi = False
-        self.update({'menuentry': self.menuentry})
+        self.update({'menuentry': self.entries})
 
 
 @parser(Specs.grub2_efi_cfg)
