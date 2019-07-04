@@ -5,9 +5,15 @@ from insights.parsers.tests.test_modinfo import MODINFO_I40E, MODINFO_INTEL, MOD
 from insights.tests import context_wrap
 import doctest
 from insights.combiners import modinfo
+from insights.core.dr import SkipComponent
+import pytest
 
 
 def test_modinfo():
+
+    with pytest.raises(SkipComponent):
+        x = ModInfo([])
+
     modinfo_i40e = ModInfoEach(context_wrap(MODINFO_I40E))
     modinfo_intel = ModInfoEach(context_wrap(MODINFO_INTEL))
     modinfo_bnx2x = ModInfoEach(context_wrap(MODINFO_BNX2X))
@@ -24,9 +30,9 @@ def test_modinfo():
         modinfo_vmxnet3,
         modinfo_veth,
     ])
-    assert comb.retpoline_y == set(['aesni-intel', 'i40e', 'vmxnet3'])
-    assert comb.retpoline_n == set(['bnx2x'])
-    assert comb.data.keys() == set(['i40e', 'aesni-intel', 'bnx2x', 'vmxnet3', 'igb', 'ixgbe', 'veth'])
+    assert sorted(comb.retpoline_y) == sorted(['aesni-intel', 'i40e', 'vmxnet3'])
+    assert sorted(comb.retpoline_n) == sorted(['bnx2x'])
+    assert sorted(comb.data.keys()) == sorted(['i40e', 'aesni-intel', 'bnx2x', 'vmxnet3', 'igb', 'ixgbe', 'veth'])
 
     modinfo_obj = comb.data['i40e']
     assert modinfo_obj.module_name == 'i40e'
@@ -106,4 +112,3 @@ def test_modinfo_doc_examples():
     env = {'modinfo_obj': comb}
     failed, total = doctest.testmod(modinfo, globs=env)
     assert failed == 0
-

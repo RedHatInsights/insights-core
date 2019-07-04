@@ -519,13 +519,8 @@ class DefaultSpecs(Specs):
     @datasource(lsmod, context=HostContext)
     def lsmod_only_names(broker):
         lsmod = broker[DefaultSpecs.lsmod].content
-        results = []
         # skip the title
-        for line in lsmod[1:]:
-            if line.strip():
-                line_split = line.split()
-                results.append(line_split[0])
-        return results
+        return [line.split()[0] for line in lsmod[1:] if line.strip()]
 
     modinfo = foreach_execute(lsmod_only_names, "modinfo %s")
 

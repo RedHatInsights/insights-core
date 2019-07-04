@@ -9,10 +9,11 @@ indexed by the module name.
 
 from insights.core.plugins import combiner
 from insights.parsers.modinfo import ModInfoEach
+from insights.parsers import SkipException
 
 
 @combiner(ModInfoEach)
-class ModInfo:
+class ModInfo(dict):
     """
     Combiner for accessing all the modinfo outputs.
 
@@ -22,6 +23,8 @@ class ModInfo:
         >>> type(modinfo_obj.data['i40e'])
         <class 'insights.parsers.modinfo.ModInfoEach'>
         >>> modinfo_obj.data['i40e'].module_name
+        'i40e'
+        >>> modinfo_obj['i40e'].module_name
         'i40e'
         >>> modinfo_obj.data['i40e'].data['retpoline']
         'Y'
@@ -35,6 +38,9 @@ class ModInfo:
         False
         >>> "bnx2x" in modinfo_obj.retpoline_n
         True
+
+    Raises:
+        SkipException: When content is empty.
 
     Attributes:
         data (dict): A dictionary of parsed settings in format {name: ModInfoEach}.
@@ -54,3 +60,6 @@ class ModInfo:
                     self.retpoline_y.add(name)
                 if r == "N":
                     self.retpoline_n.add(name)
+        if not self.data:
+            raise SkipException("No parsed contents")
+        self.update(self.data)
