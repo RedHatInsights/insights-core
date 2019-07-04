@@ -22,7 +22,7 @@ parsers/combiners:
 
 from insights.core.plugins import combiner
 from insights.combiners.redhat_release import RedHatRelease
-from insights.parsers.grub_conf import GrubConfig, BootEntry, get_kernel_initrds
+from insights.parsers.grub_conf import BootEntry, get_kernel_initrds
 from insights.parsers.grub_conf import Grub1Config, Grub1EFIConfig
 from insights.parsers.grub_conf import Grub2Config, Grub2EFIConfig
 from insights.parsers.grub_conf import BootLoaderEntries as BLE
