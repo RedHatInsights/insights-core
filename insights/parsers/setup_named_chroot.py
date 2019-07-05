@@ -31,8 +31,6 @@ class SetupNamedChroot(Parser, dict):
             # Check if file is mount target. Do not use /proc/mounts because detecting
 
     Attributes:
-        data (dict): A dictionary where each element contains the variable name
-                     as the key and a list of options as the value
         raw (list): A list of all the active lines present
 
     Raises:
