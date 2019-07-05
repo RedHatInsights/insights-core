@@ -107,6 +107,7 @@ class Specs(SpecSet):
     display_java = RegistryPoint()
     display_name = RegistryPoint()
     dmesg = RegistryPoint(filterable=True)
+    dmesg_log = RegistryPoint(filterable=True)
     dmidecode = RegistryPoint()
     dmsetup_info = RegistryPoint()
     dnf_modules = RegistryPoint()
