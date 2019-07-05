@@ -23,7 +23,7 @@ subsystems:
 The collection component is called Red Hat Insights Client ("Client") and is part
 of the
 Red Hat Enterprise Linux distribution.  It is installed via RPM onto a host
-system where it collect information to send to the infrastructure engine for
+system where it collects information to send to the infrastructure engine for
 analysis.  The processing engine component is called Insights Core ("Engine")
 and runs on Red Hat
 internal systems to process the information collected by the Client and provides

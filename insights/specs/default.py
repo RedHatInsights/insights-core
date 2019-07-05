@@ -211,6 +211,7 @@ class DefaultSpecs(Specs):
     dirsrv_errors = glob_file("var/log/dirsrv/*/errors*")
     display_java = simple_command("/usr/sbin/alternatives --display java")
     dmesg = simple_command("/bin/dmesg")
+    dmesg_log = simple_file("/var/log/dmesg")
     dmidecode = simple_command("/usr/sbin/dmidecode")
     dmsetup_info = simple_command("/usr/sbin/dmsetup info -C")
     dnf_modules = glob_file("/etc/dnf/modules.d/*.module")
