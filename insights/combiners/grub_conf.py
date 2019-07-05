@@ -57,15 +57,11 @@ class BootLoaderEntries(object):
         self.entries = []
         self.boot_entries = []
         self.is_kdump_iommu_enabled = False
-        name_values = []
         for ble in grub_bles:
             self.entries.append(ble.entry)
             self.boot_entries.append(BootEntry({'name': ble.title, 'cmdline': ble.cmdline}))
             self.is_kdump_iommu_enabled = self.is_kdump_iommu_enabled or ble.is_kdump_iommu_enabled
-            for k, v in ble.items():
-                if (k.startswith(('module', 'kernel', 'linux', 'initrd'))):
-                    name_values.append((k, v))
-        self.kernel_initrds = get_kernel_initrds(name_values)
+        self.kernel_initrds = get_kernel_initrds(self.entries)
 
         if not self.entries:
             raise SkipComponent()

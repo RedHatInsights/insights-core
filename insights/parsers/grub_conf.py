@@ -97,92 +97,77 @@ class GrubConfig(Parser, dict):
             }
 
         """
+        def _skip_script(line):
+            # Skip the script in Grub2
+            if line.startswith('if'):
+                _skip_script.if_idx += 1
+            elif line.startswith('fi'):
+                _skip_script.if_idx -= 1
+            return _skip_script.if_idx
+
+        def _parser_line(line):
+            sp = [i.strip() for i in line.split(None, 1)]
+            val = sp[1] if len(sp) > 1 else ''
+            if sp[0] not in entry:
+                entry[sp[0]] = []
+            entry[sp[0]].append(val)
+            # Handle the cmdline
+            if sp[0].startswith(('kernel', 'linux')):
+                b_entry['cmdline'] = val
+
+        def _parser_entry_line(line):
+            if line.startswith('title '):
+                name = line.split('title', 1)[1].strip()
+                b_entry['name'] = entry['title'] = name
+            else:
+                sp = line.split('menuentry', 1)[1].split('{', 1)
+                name = sp[0].strip()
+                if not name:
+                    raise ParseException("Cannot parse menuentry line: {0}".format(line_raw))
+                b_entry['name'] = entry['menuentry'] = name
+                # More things after the {
+                if len(sp) > 1 and sp[1]:
+                    _parser_line(sp[1])
 
         self.configs = {}
         self._boot_entries = []
         self.entries = []
         b_entry = {}
         entry = {}
-        in_script = False
-        if_idx = 0
+        _skip_script.if_idx = 0
         for line_raw in get_active_lines(content):
+            # Handle of lines {
             # Remove the heading and trailing whitespace and curly brackets
             line = line_raw.strip('{} \t')
-            # Skip the stript in Grub2 {
-            if line.startswith('if'):
-                if_idx += 1
-                in_script = True
-                continue
-            if line.startswith('fi'):
-                if_idx -= 1
-                in_script = True if if_idx else False
-                continue
-            # } End of Skip
-            # Handle of lines {
-            elif not in_script and line:
+            if_idx = _skip_script(line)
+            if if_idx == 0 and line and not line.startswith('fi'):
                 # Handle the title / menuentry {
                 if line.startswith(('title ', 'menuentry')):
                     self.entries.append(entry) if entry else None
                     self._boot_entries.append(BootEntry(b_entry)) if b_entry else None
                     b_entry = {}
                     entry = {}
-                    if line.startswith('title '):
-                        name = line.split('title', 1)[1].strip()
-                        b_entry['name'] = entry['title'] = name
-                    else:
-                        sp = line.split('menuentry', 1)[1].split('{', 1)
-                        name = sp[0].strip()
-                        if not name:
-                            raise ParseException("Cannot parse menuentry line: {0}".format(line_raw))
-                        b_entry['name'] = entry['menuentry'] = name
-                        if len(sp) > 1:
-                            sp = [i.strip() for i in sp[1].split(None, 1)]
-                            val = sp[1] if len(sp) > 1 else ''
-                            if sp[0] not in entry:
-                                entry[sp[0]] = []
-                            entry[sp[0]].append(val)
-                            # Handle the cmdline {
-                            if sp[0].startswith(('kernel', 'linux')):
-                                b_entry['cmdline'] = val
-                            # } End of cmdline
+                    _parser_entry_line(line)
                 # } End of title / menuentry handling
-                # Inside of an entry {
+                # Lines inside of an entry
                 elif entry:
-                    sp = [i.strip() for i in line.split(None, 1)]
-                    val = sp[1] if len(sp) > 1 else ''
-                    if sp[0] not in entry:
-                        entry[sp[0]] = []
-                    entry[sp[0]].append(val)
-                    # Handle the cmdline {
-                    if sp[0].startswith(('kernel', 'linux')):
-                        b_entry['cmdline'] = val
-                    # } End of cmdline
-                # } End of Inside entry
-                # Lines out of entries {
+                    _parser_line(line)
+                # Lines outside of entries
                 else:
                     sep = '=' if '=' in line else None
                     sp = [i.strip() for i in line.split(sep, 1)]
                     if sp[0] not in self.configs:
                         self.configs[sp[0]] = []
                     self.configs[sp[0]].append(sp[1] if len(sp) > 1 else '')
-                # } End of Out of entry
+                # } End of outside of entry
             # } End of lines handling
         # Store the last entry
         self.entries.append(entry) if entry else None
         self.boot_entries.append(BootEntry(b_entry)) if b_entry else None
 
         self.update({'configs': self.configs}) if self.configs else None
-
         self._is_kdump_iommu_enabled_ = self._is_kdump_iommu_enabled()
-        name_values = []
-        for k, v in self.configs.items():
-            if (k.startswith(('module', 'kernel', 'linux', 'initrd'))):
-                name_values.append((k, v))
-        for entry in self.entries:
-            for k, v in entry.items():
-                if (k.startswith(('module', 'kernel', 'linux', 'initrd'))):
-                    name_values.append((k, v))
-        self._kernel_initrds = get_kernel_initrds(name_values)
+        self._kernel_initrds = get_kernel_initrds(self.entries)
 
     def _is_kdump_iommu_enabled(self):
         for l in self._boot_entries:
@@ -407,24 +392,27 @@ class BootLoaderEntries(Parser, dict):
         self.is_kdump_iommu_enabled = "intel_iommu=on" in self.cmdline
 
 
-def get_kernel_initrds(name_values):
+def get_kernel_initrds(entries):
     kernels = []
     initrds = []
-    for name, value in name_values:
-        if isinstance(value, list):
-            v = [i.split()[0].split('/')[-1] for i in value if i]
-        elif value and isinstance(value, str):
-            v = [value.split()[0].split('/')[-1]]
-        if v:
-            if name.startswith('module'):
-                kernels.extend([i for i in v if 'vmlinuz' in i])
-                initrds.extend([i for i in v if 'initrd' in i or 'initramfs' in i])
-            elif (name.startswith(('kernel', 'linux'))):
-                if any('ipxe.lkrn' in i for i in v):
-                    # Machine PXE boots the kernel, assume all is ok
-                    return {}
-                elif 'xen.gz' not in v:
-                    kernels.extend([i for i in v if 'xen.gz' not in i])
-            elif name.startswith('initrd') or name.startswith('initrd16'):
-                initrds.extend(v)
+    for entry in entries:
+        for name, value in entry.items():
+            v = []
+            if (name.startswith(('module', 'kernel', 'linux', 'initrd'))):
+                if isinstance(value, list):
+                    v = [i.split()[0].split('/')[-1] for i in value if i]
+                elif value and isinstance(value, str):
+                    v = [value.split()[0].split('/')[-1]]
+            if v:
+                if name.startswith('module'):
+                    kernels.extend([i for i in v if 'vmlinuz' in i])
+                    initrds.extend([i for i in v if 'initrd' in i or 'initramfs' in i])
+                elif (name.startswith(('kernel', 'linux'))):
+                    if any('ipxe.lkrn' in i for i in v):
+                        # Machine PXE boots the kernel, assume all is ok
+                        return {}
+                    elif 'xen.gz' not in v:
+                        kernels.extend([i for i in v if 'xen.gz' not in i])
+                elif name.startswith('initrd') or name.startswith('initrd16'):
+                    initrds.extend(v)
     return {'grub_kernels': kernels, 'grub_initrds': initrds}
