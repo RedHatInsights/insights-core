@@ -6,16 +6,16 @@ This module provides class ``SetupNamedChroot`` for parsing the output of file
 ``/usr/libexec/setup-named-chroot.sh``.
 """
 
-from insights import LegacyItemAccess, Parser, get_active_lines, parser
+from insights import Parser, get_active_lines, parser
 from insights.core.filters import add_filter
-from insights.parsers import SkipException
+from insights.parsers import ParseException, SkipException
 from insights.specs import Specs
 
 add_filter(Specs.setup_named_chroot, ["ROOTDIR_MOUNT", "/"])
 
 
 @parser(Specs.setup_named_chroot)
-class SetupNamedChroot(Parser, LegacyItemAccess):
+class SetupNamedChroot(Parser, dict):
     """
     Class for parsing the `/usr/libexec/setup-named-chroot.sh` file.
 
@@ -30,12 +30,25 @@ class SetupNamedChroot(Parser, LegacyItemAccess):
             for all in $ROOTDIR_MOUNT; do,
             # Check if file is mount target. Do not use /proc/mounts because detecting
 
+    Attributes:
+        data (dict): A dictionary where each element contains the variable name
+                     as key and a list of options as value
+        raw (list): A list of all the active lines present
+
+    Raises:
+        SkipException: When the file is empty
+        ParseException: When the input content is not empty but there is no useful parsed data
+
     Examples:
         >>> len(snc.data)
         2
         >>> snc['ROOTDIR_MOUNT']
-        '/etc/localtime /etc/named /etc/pki/dnssec-keys /etc/named.root.key /etc/named.conf /etc/named.dnssec.keys /etc/named.rfc1912.zones /etc/rndc.conf /etc/rndc.key /etc/named.iscdlv.key /etc/protocols /etc/services /usr/lib64/bind /usr/lib/bind /run/named /var/named'
+        ['/etc/localtime', '/etc/named', '/etc/pki/dnssec-keys', '/etc/named.root.key', '/etc/named.conf', '/etc/named.dnssec.keys', '/etc/named.rfc1912.zones', '/etc/rndc.conf', '/etc/rndc.key', '/etc/named.iscdlv.key', '/etc/protocols', '/etc/services', '/usr/lib64/bind', '/usr/lib/bind', '/run/named', '/var/named']
     """
+
+    def __init__(self, *args, **kwargs):
+        super(SetupNamedChroot, self).__init__(*args, **kwargs)
+        self.update(self.data)
 
     def parse_content(self, content):
         # No content found or file is empty
@@ -43,12 +56,18 @@ class SetupNamedChroot(Parser, LegacyItemAccess):
             raise SkipException("Empty file")
 
         self.data = {}
+        self.raw = []
         key, value = "", ""
         for line in get_active_lines(content):
+            self.raw.append(line.strip())
             if "=" in line:
                 key, value = line.split("=", 1)
             elif key:
                 if value.endswith("'") or value.endswith("\""):
-                    self.data[key] = value[1:-1]
+                    self.data[key] = value[1:-1].split()
                     key, value = "", ""
                 value = value + " " + line
+
+        # No useful parsed data
+        if not self.data:
+            raise ParseException("Input content is not empty but there is no useful parsed data.")

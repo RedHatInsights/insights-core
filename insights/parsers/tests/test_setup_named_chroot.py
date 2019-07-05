@@ -1,4 +1,4 @@
-from insights.parsers import setup_named_chroot, SkipException
+from insights.parsers import setup_named_chroot, ParseException, SkipException
 from insights.parsers.setup_named_chroot import SetupNamedChroot
 from insights.tests import context_wrap
 import doctest
@@ -107,17 +107,33 @@ exit 0
 EXCEPTION1 = """
 """.strip()
 
+EXCEPTION2 = """
+usage()
+{
+  echo
+  echo 'This script setups chroot environment for BIND'
+  echo 'Usage: setup-named-chroot.sh ROOTDIR [on|off]'
+}
 
-def test_setup_named_chroot_filtered():
-    snc = SetupNamedChroot(context_wrap(CHROOT_CONTENT_ALL))
-    assert snc["ROOTDIR_MOUNT"].endswith("/var/named") is True
-    assert len(snc.data) == 2
+if ! [ "$#" -eq 2 ]; then
+  echo 'Wrong number of arguments'
+  usage
+  exit 1
+fi
+""".strip()
 
 
 def test_setup_named_chroot_all():
+    snc = SetupNamedChroot(context_wrap(CHROOT_CONTENT_ALL))
+    assert snc["ROOTDIR_MOUNT"][-1] == "/var/named"
+    assert len(snc.data) == 2
+
+
+def test_setup_named_chroot_filtered():
     snc = SetupNamedChroot(context_wrap(CHROOT_CONTENT_FILTERED))
     assert "ROOTDIR_MOUNT" in snc.data
-    assert snc["ROOTDIR_MOUNT"].endswith("/var/named") is False
+    assert snc["ROOTDIR_MOUNT"][-1] != "/var/named"
+    assert len(snc.raw) == 5
 
 
 def test_doc_examples():
@@ -132,3 +148,9 @@ def test_setup_named_chroot_exception1():
     with pytest.raises(SkipException) as e:
         SetupNamedChroot(context_wrap(EXCEPTION1))
     assert "Empty file" in str(e)
+
+
+def test_setup_named_chroot_exception2():
+    with pytest.raises(ParseException) as e:
+        SetupNamedChroot(context_wrap(EXCEPTION2))
+    assert "Input content is not empty but there is no useful parsed data." in str(e)
