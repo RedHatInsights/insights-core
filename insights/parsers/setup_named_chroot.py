@@ -32,7 +32,7 @@ class SetupNamedChroot(Parser, dict):
 
     Attributes:
         data (dict): A dictionary where each element contains the variable name
-                     as key and a list of options as value
+                     as the key and a list of options as the value
         raw (list): A list of all the active lines present
 
     Raises:
