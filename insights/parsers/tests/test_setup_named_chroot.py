@@ -1,4 +1,4 @@
-from insights.parsers import setup_named_chroot, ParseException, SkipException
+from insights.parsers import setup_named_chroot, SkipException
 from insights.parsers.setup_named_chroot import SetupNamedChroot
 from insights.tests import context_wrap
 import doctest
@@ -126,12 +126,12 @@ fi
 def test_setup_named_chroot_all():
     snc = SetupNamedChroot(context_wrap(CHROOT_CONTENT_ALL))
     assert snc["ROOTDIR_MOUNT"][-1] == "/var/named"
-    assert len(snc.data) == 2
+    assert len(snc) == 2
 
 
 def test_setup_named_chroot_filtered():
     snc = SetupNamedChroot(context_wrap(CHROOT_CONTENT_FILTERED))
-    assert "ROOTDIR_MOUNT" in snc.data
+    assert "ROOTDIR_MOUNT" in snc
     assert snc["ROOTDIR_MOUNT"][-1] != "/var/named"
     assert len(snc.raw) == 5
 
@@ -151,6 +151,6 @@ def test_setup_named_chroot_exception1():
 
 
 def test_setup_named_chroot_exception2():
-    with pytest.raises(ParseException) as e:
+    with pytest.raises(SkipException) as e:
         SetupNamedChroot(context_wrap(EXCEPTION2))
     assert "Input content is not empty but there is no useful parsed data." in str(e)
