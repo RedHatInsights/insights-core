@@ -130,10 +130,21 @@ class GrubConfig(Parser, dict):
                         name = line.split('title', 1)[1].strip()
                         b_entry['name'] = entry['title'] = name
                     else:
-                        name = line.split('menuentry', 1)[1].split('{', 1)[0].strip()
+                        sp = line.split('menuentry', 1)[1].split('{', 1)
+                        name = sp[0].strip()
                         if not name:
                             raise ParseException("Cannot parse menuentry line: {0}".format(line_raw))
                         b_entry['name'] = entry['menuentry'] = name
+                        if len(sp) > 1:
+                            sp = [i.strip() for i in sp[1].split(None, 1)]
+                            val = sp[1] if len(sp) > 1 else ''
+                            if sp[0] not in entry:
+                                entry[sp[0]] = []
+                            entry[sp[0]].append(val)
+                            # Handle the cmdline {
+                            if sp[0].startswith(('kernel', 'linux')):
+                                b_entry['cmdline'] = val
+                            # } End of cmdline
                 # } End of title / menuentry handling
                 # Inside of an entry {
                 elif entry:
@@ -141,11 +152,11 @@ class GrubConfig(Parser, dict):
                     val = sp[1] if len(sp) > 1 else ''
                     if sp[0] not in entry:
                         entry[sp[0]] = []
+                    entry[sp[0]].append(val)
                     # Handle the cmdline {
                     if sp[0].startswith(('kernel', 'linux')):
                         b_entry['cmdline'] = val
                     # } End of cmdline
-                    entry[sp[0]].append(val)
                 # } End of Inside entry
                 # Lines out of entries {
                 else:

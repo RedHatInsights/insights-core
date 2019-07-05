@@ -268,7 +268,7 @@ def test_grub_conf_1():
     assert expected_result == Grub2Config(context_wrap(GRUB2_CFG_2)).kernel_initrds
 
     grub_conf = Grub2Config(context_wrap(GRUB2_CFG_3))
-    assert 'load_video' not in grub_conf['menuentry'][0]
+    assert 'load_video' in grub_conf['menuentry'][0]
     assert grub_conf.is_kdump_iommu_enabled is False
 
 
