@@ -192,8 +192,10 @@ def test_ifcfg_space_v1():
 
     r = IfCFG(context)
     assert keys_in(["DEVICE", "iface", "ONBOOT", "BOOTPROTO",
-                    "IPV4_FAILURE_FATAL"], r)
-    assert r["DEVICE"] == '\'"badName1"  \''
+                    "IPV4_FAILURE_FATAL", "raw_device_value"], r)
+    assert r["DEVICE"] != '\'"badName1"  \''
+    assert r["raw_device_value"] == '\'"badName1"  \''
+    assert r["DEVICE"] == 'badName1'
 
 
 def test_ifcfg_space_v2():
@@ -202,8 +204,10 @@ def test_ifcfg_space_v2():
 
     r = IfCFG(context)
     assert keys_in(["DEVICE", "iface", "ONBOOT", "BOOTPROTO",
-                    "IPV4_FAILURE_FATAL"], r)
-    assert r["DEVICE"] == '\"\"badName2\"  \"'
+                    "IPV4_FAILURE_FATAL", "raw_device_value"], r)
+    assert r["DEVICE"] != '\"\"badName2\"  \"'
+    assert r["raw_device_value"] == '\"\"badName2\"  \"'
+    assert r["DEVICE"] == 'badName2'
 
 
 def test_ifcfg_master():
@@ -212,7 +216,7 @@ def test_ifcfg_master():
 
     r = IfCFG(context)
     assert keys_in(["DEVICE", "iface", "ONBOOT", "BOOTPROTO",
-                    "MASTER"], r)
+                    "MASTER", "raw_device_value"], r)
     assert r["MASTER"] == 'bond0'
 
 
@@ -340,7 +344,6 @@ def test_ifcfg_raw_bonding_master_value():
     context.path = IFCFG_PATH_ETH2
 
     r = IfCFG(context)
-
     assert r["raw_device_value"] == '"eth2"'
     assert r["raw_master_value"] == '"bond0"'
 
