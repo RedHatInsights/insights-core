@@ -516,6 +516,15 @@ class DefaultSpecs(Specs):
     modinfo_ixgbe = simple_command("/sbin/modinfo ixgbe")
     modinfo_veth = simple_command("/sbin/modinfo veth")
     modinfo_vmxnet3 = simple_command("/sbin/modinfo vmxnet3")
+
+    @datasource(lsmod, context=HostContext)
+    def lsmod_only_names(broker):
+        lsmod = broker[DefaultSpecs.lsmod].content
+        # skip the title
+        return [line.split()[0] for line in lsmod[1:] if line.strip()]
+
+    modinfo = foreach_execute(lsmod_only_names, "modinfo %s")
+
     modprobe = glob_file(["/etc/modprobe.conf", "/etc/modprobe.d/*.conf"])
     sysconfig_mongod = glob_file([
                                  "etc/sysconfig/mongod",
