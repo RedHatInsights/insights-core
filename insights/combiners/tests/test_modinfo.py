@@ -12,7 +12,7 @@ import pytest
 def test_modinfo():
 
     with pytest.raises(SkipComponent):
-        x = ModInfo([])
+        ModInfo([])
 
     modinfo_i40e = ModInfoEach(context_wrap(MODINFO_I40E))
     modinfo_intel = ModInfoEach(context_wrap(MODINFO_INTEL))
