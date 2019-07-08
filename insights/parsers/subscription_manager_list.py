@@ -11,19 +11,12 @@ SubscriptionManagerListConsumed - command ``subscription-manager list --consumed
 
 SubscriptionManagerListInstalled - command ``subscription-manager list --installed``
 ------------------------------------------------------------------------------------
-
-SubscriptionManagerReposListEnabled - command ``subscription-manager repos --list-enabled``
--------------------------------------------------------------------------------------------
-
-SubscriptionManagerFactsList - command ``subscription-manager facts --list``
-----------------------------------------------------------------------------
 """
 import re
 from datetime import datetime
 import six
 from insights.specs import Specs
-from insights.parsers import split_kv_pairs, SkipException
-from .. import parser, CommandParser, LegacyItemAccess
+from .. import parser, CommandParser
 from . import keyword_search
 
 
@@ -228,62 +221,3 @@ class SubscriptionManagerListInstalled(SubscriptionManagerList):
             sub['Status'] == 'Subscribed'
             for sub in self.records
         )
-
-
-@parser(Specs.subscription_manager_repos_list_enabled)
-class SubscriptionManagerReposListEnabled(SubscriptionManagerList):
-    """
-    Read the output of ``subscription-manager repos --list-enabled``.
-
-    Sample input file::
-
-        +-------------------------------------------+
-           Available Repositories in /etc/yum.repos.d/redhat.repo
-        +-------------------------------------------+
-        Repo ID:   rhel-7-server-ansible-2-rpms
-        Repo Name: Red Hat Ansible Engine 2 RPMs for Red Hat Enterprise Linux 7 Server
-        Repo URL:  https://cdn.redhat.com/content/dist/rhel/server/7/7Server/$basearch/ansible/2/os
-        Enabled:   1
-
-    Examples:
-        >>> type(repolist)
-        <class 'insights.parsers.subscription_manager_list.SubscriptionManagerReposListEnabled'>
-        >>> len(repolist.records)
-        1
-        >>> repolist.records[0]['Repo ID']
-        'rhel-7-server-ansible-2-rpms'
-    """
-    pass
-
-
-@parser(Specs.subscription_manager_facts_list)
-class SubscriptionManagerFactsList(CommandParser, LegacyItemAccess):
-    """Read the output of ``subscription-manager facts --list``.
-
-    Sample output::
-
-        uname.machine: x86_64
-        uname.nodename: rhel7-box
-        uname.release: 3.10.0-327.el7.x86_64
-        uname.sysname: Linux
-        uname.version: #1 SMP Thu Oct 29 17:29:29 EDT 2015
-        virt.host_type: virtualbox, kvm
-        virt.is_guest: True
-        virt.uuid: 81897b5e-4df9-9794-8e2a-b496756b5cbc
-
-    Examples:
-        >>> facts['virt.uuid'] == "81897b5e-4df9-9794-8e2a-b496756b5cbc"
-        True
-        >>> facts['uname.sysname'] == "Linux"
-        True
-
-    Returns:
-        data(dict): All the facts that matches the filter criteria.
-
-    Raises:
-        SkipException: When the content is empty.
-    """
-    def parse_content(self, content):
-        if not content:
-            raise SkipException("Empty content.")
-        self.data = split_kv_pairs(content, split_on=":", use_partition=True)

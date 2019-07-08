@@ -10,9 +10,9 @@ import json
 import logging
 import xml.etree.ElementTree as ET
 import warnings
-import io
+# import io
 from tempfile import TemporaryFile
-from datetime import datetime, timedelta
+# from datetime import datetime, timedelta
 try:
     # python 2
     from urlparse import urlparse
@@ -68,12 +68,12 @@ class InsightsConnection(object):
         # workaround while we support both legacy and plat APIs
         self.cert_verify = self.config.cert_verify
         if self.cert_verify is None:
-            if self.config.legacy_upload:
-                self.cert_verify = os.path.join(
-                    constants.default_conf_dir,
-                    'cert-api.access.redhat.com.pem')
-            else:
-                self.cert_verify = True
+            # if self.config.legacy_upload:
+            self.cert_verify = os.path.join(
+                constants.default_conf_dir,
+                'cert-api.access.redhat.com.pem')
+            # else:
+            # self.cert_verify = True
         else:
             if isinstance(self.cert_verify, six.string_types):
                 if self.cert_verify.lower() == 'false':
@@ -124,7 +124,6 @@ class InsightsConnection(object):
         self.systemid = self.config.systemid or None
         self.get_proxies()
         self.session = self._init_session()
-        self.branch_info = constants.default_branch_info
 
     def _init_session(self):
         """
@@ -292,7 +291,7 @@ class InsightsConnection(object):
             if method is 'POST':
                 test_tar = TemporaryFile(mode='rb', suffix='.tar.gz')
                 test_files = {
-                    'file': ('test.tar.gz', test_tar, 'application/vnd.redhat.advisor.test+tgz'),
+                    'file': ('test.tar.gz', test_tar, 'application/vnd.redhat.advisor.collection+tgz'),
                     'metadata': '{\"test\": \"test\"}'
                 }
                 test_req = self.session.post(url, timeout=self.config.http_timeout, files=test_files)
@@ -435,19 +434,19 @@ class InsightsConnection(object):
         """
         Retrieve branch_info from Satellite Server
         """
-        branch_info = None
-        if os.path.exists(constants.cached_branch_info):
-            # use cached branch info file if less than 10 minutes old
-            #  (failsafe, should be deleted at end of client run normally)
-            logger.debug(u'Reading branch info from cached file.')
-            ctime = datetime.utcfromtimestamp(
-                os.path.getctime(constants.cached_branch_info))
-            if datetime.utcnow() < (ctime + timedelta(minutes=5)):
-                with io.open(constants.cached_branch_info, encoding='utf8', mode='r') as f:
-                    branch_info = json.load(f)
-                return branch_info
-            else:
-                logger.debug(u'Cached branch info is older than 5 minutes.')
+        # branch_info = None
+        # if os.path.exists(constants.cached_branch_info):
+        #     # use cached branch info file if less than 5 minutes old
+        #     #  (failsafe, should be deleted at end of client run normally)
+        #     logger.debug(u'Reading branch info from cached file.')
+        #     ctime = datetime.utcfromtimestamp(
+        #         os.path.getctime(constants.cached_branch_info))
+        #     if datetime.utcnow() < (ctime + timedelta(minutes=5)):
+        #         with io.open(constants.cached_branch_info, encoding='utf8', mode='r') as f:
+        #             branch_info = json.load(f)
+        #         return branch_info
+        #     else:
+        #         logger.debug(u'Cached branch info is older than 5 minutes.')
 
         logger.debug(u'Obtaining branch information from %s',
                      self.branch_info_url)
@@ -458,7 +457,7 @@ class InsightsConnection(object):
         if response.status_code != 200:
             logger.debug("There was an error obtaining branch information.")
             logger.debug(u'Bad status from server: %s', response.status_code)
-            logger.debug("Assuming default branch information %s" % self.branch_info)
+            logger.debug("Assuming default branch information %s" % constants.default_branch_info)
             return False
 
         branch_info = response.json()
@@ -469,12 +468,12 @@ class InsightsConnection(object):
              branch_info[u'remote_leaf'] is -1)):
             self.get_satellite5_info(branch_info)
 
-        logger.debug(u'Saving branch info to file.')
-        with io.open(constants.cached_branch_info, encoding='utf8', mode='w') as f:
-            # json.dump is broke in py2 so use dumps
-            bi_str = json.dumps(branch_info, ensure_ascii=False)
-            f.write(bi_str)
-        self.branch_info = branch_info
+        # logger.debug(u'Saving branch info to file.')
+        # with io.open(constants.cached_branch_info, encoding='utf8', mode='w') as f:
+        #     # json.dump is broke in py2 so use dumps
+        #     bi_str = json.dumps(branch_info, ensure_ascii=False)
+        #     f.write(bi_str)
+        self.config.branch_info = branch_info
         return branch_info
 
     # -LEGACY-
@@ -485,7 +484,7 @@ class InsightsConnection(object):
         client_hostname = determine_hostname()
         machine_id = generate_machine_id(new_machine_id)
 
-        branch_info = self.branch_info
+        branch_info = self.config.branch_info
         if not branch_info:
             return False
 
@@ -611,7 +610,11 @@ class InsightsConnection(object):
         '''
         machine_id = generate_machine_id()
         try:
-            url = self.api_url + '/inventory/v1/hosts?insights_id=' + machine_id
+            # [circus music]
+            if self.config.legacy_upload:
+                url = self.base_url + '/platform/inventory/v1/hosts?insights_id=' + machine_id
+            else:
+                url = self.base_url + '/inventory/v1/hosts?insights_id=' + machine_id
             net_logger.info("GET %s", url)
             res = self.session.get(url, timeout=self.config.http_timeout)
         except (requests.ConnectionError, requests.Timeout) as e:
@@ -655,7 +658,7 @@ class InsightsConnection(object):
         return True
 
     # -LEGACY-
-    def unregister(self):
+    def _legacy_unregister(self):
         """
         Unregister this system from the insights service
         """
@@ -669,6 +672,28 @@ class InsightsConnection(object):
                 "Successfully unregistered from the Red Hat Insights Service")
             return True
         except requests.ConnectionError as e:
+            logger.debug(e)
+            logger.error("Could not unregister this system")
+            return False
+
+    def unregister(self):
+        """
+        Unregister this system from the insights service
+        """
+        if self.config.legacy_upload:
+            return self._legacy_unregister()
+
+        results = self._fetch_system_by_machine_id()
+        try:
+            logger.debug("Unregistering host...")
+            url = self.api_url + "/inventory/v1/hosts/" + results[0]['id']
+            net_logger.info("DELETE %s", url)
+            response = self.session.delete(url)
+            response.raise_for_status()
+            logger.info(
+                "Successfully unregistered from the Red Hat Insights Service")
+            return True
+        except (requests.ConnectionError, requests.Timeout, requests.HTTPError) as e:
             logger.debug(e)
             logger.error("Could not unregister this system")
             return False
@@ -803,8 +828,8 @@ class InsightsConnection(object):
             # upload = registration on platform
             write_registered_file()
         else:
-            logger.error(
-                "Upload archive failed with status code  %s",
+            logger.debug(
+                "Upload archive failed with status code %s",
                 upload.status_code)
             return upload
         logger.debug("Upload duration: %s", upload.elapsed)
@@ -842,10 +867,9 @@ class InsightsConnection(object):
                 logger.error('Unable to set display name: %s %s',
                              res.status_code, res.text)
                 return False
-        except requests.ConnectionError:
+        except (requests.ConnectionError, requests.Timeout, ValueError) as e:
+            logger.error(e)
             # can't connect, run connection test
-            logger.error('Connection timed out. Running connection test...')
-            self.test_connection()
             return False
 
     def set_display_name(self, display_name):
@@ -859,6 +883,7 @@ class InsightsConnection(object):
         if not system:
             return system
         inventory_id = system[0]['id']
+
         req_url = self.base_url + '/inventory/v1/hosts/' + inventory_id
         try:
             net_logger.info("PATCH %s", req_url)

@@ -76,7 +76,8 @@ def set_auto_configuration(config, hostname, ca_cert, proxy, is_satellite):
         if config.legacy_upload:
             config.base_url = hostname + '/r/insights'
         else:
-            config.base_url = hostname + '/api'
+            # config.base_url = hostname + '/api'
+            config.base_url = hostname + '/r/insights/platform'
         logger.debug('Auto-configured base_url: %s', config.base_url)
         logger.debug('Not connected to Satellite, skipping branch_info')
         # direct connection to RHSM, skip verify_connectivity
@@ -152,7 +153,8 @@ def _try_satellite6_configuration(config):
                 rhsm_hostname = 'cert-api.access.redhat.com'
             else:
                 logger.debug("Connected to Red Hat Directly, using cloud.redhat.com")
-                rhsm_hostname = 'cloud.redhat.com'
+                # rhsm_hostname = 'cloud.redhat.com'
+                rhsm_hostname = 'cert-api.access.redhat.com'
             rhsm_ca = None
         else:
             # Set the host path

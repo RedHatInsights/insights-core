@@ -109,11 +109,53 @@ openssh-askpass-5.3p1-84.1.el6.x86_64
 openssl-1.0.0-27.el6.x86_64
 '''.strip()
 
+RPMS_GPG_PUBKEY = '''
+{"name":"gpg-pubkey","epoch":"(none)","version":"2fa658e0","release":"45700c69","arch":"(none)","installtime":"Thu Apr 25 08:21:00 2019","buildtime":"1556194860","vendor":"(none)","buildhost":"localhost","sigpgp":"(none)"}
+'''.strip()
+
+RPMS_VMAAS = '''
+compat-libstdc++-296-2.96-138
+compat-libstdc++-296-2.96-144.el6
+compat-libstdc++-33-3.2.3-47.3
+compat-libstdc++-33-3.2.3-61
+compat-libstdc++-33-3.2.3-69.el6
+compat-libstdc++-33-3.2.3-72.el7
+flash-plugin-11.2.202.635-release
+flash-plugin-31.0.0.148-1.el6_10
+flash-plugin-32.0.0.156-release
+flash-plugin-32.0.0.171-1.el6_10
+glibc-2.12-1.149.el6_6.5
+glibc-2.5-81
+infinipath-psm-3.0.1-115.1015_open.2.el6
+infinipath-psm-3.3-1.7.git05f6f14_open.el6
+infinipath-psm-3.3-19_g67c0807_open.el6
+kmod-fnic-1.5.0.45-1.el6
+kmod-fnic-1.6.0.12b-rhel6u6.el6
+krb5-libs-1.10.3-42z1.el6_7
+krb5-libs-1.10.3-65.el6
+libaio-devel-0.3.106-5
+libaio-devel-0.3.107-10.el6
+mdadm-4.0-13.el7
+mdadm-4.1-rc1_2.el7
+nagios-plugins-disk-2.2.1-16.20180725git3429dad.el7
+nagios-plugins-disk-2.2.1-9git5c7eb5b9.el7
+TaniumClient-6.0.314.1321-1
+TaniumClient-6.0.314.1579_1.rhe7-1
+TaniumClient-7.2.314.2962_1.oel6-1
+TaniumClient-7.2.314.2962-1.rhe6
+TaniumClient-7.2.314.3211-1.rhe7
+xymon-4.3.11-11.1
+xymon-4.3.25-1.el6
+xz-5.1.2-12alpha.el7
+xz-5.2.2-1.el7
+xz-libs-5.1.2-12alpha.el7
+xz-libs-5.2.2-1.el7
+'''.strip()
+
 
 def test_from_package():
     rpms = InstalledRpms(context_wrap(RPMS_PACKAGE))
     assert not rpms.is_hypervisor
-
     pkg_rpm = rpms.packages['openssh-server'][0]
     rpm = InstalledRpm.from_package(pkg_rpm.package)
     assert rpm.package == 'openssh-server-5.3p1-104.el6'
@@ -132,6 +174,8 @@ def test_from_line():
     assert rpms.get_max("yum").release == '69.el6'
     assert rpms.get_max("tftp-server").version == '5.2'
     assert rpms.get_max("yum").package == "yum-3.2.29-69.el6"
+    assert not rpms.get_max("tftp-server").redhat_signed
+    assert rpms.get_max("yum").redhat_signed
     assert rpms.corrupt is False
 
 
@@ -141,6 +185,7 @@ def test_from_json():
     assert len(rpms.packages) == len(RPMS_JSON.splitlines())
     assert rpms.get_max("log4j").source.name == "log4j"
     assert rpms.get_max("util-linux").epoch == '0'
+    assert rpms.get_max("jboss-servlet-3.0-api").redhat_signed
 
 
 def test_garbage():
@@ -201,21 +246,6 @@ def test_release_compare():
     rpm7 = InstalledRpm.from_package('kernel-3.10.0-327.1')
     rpm8 = InstalledRpm.from_package('kernel-3.10.0-327.x86_64')
     rpm9 = InstalledRpm.from_package('kernel-3.10.0-327.1.x86_64')
-    with pytest.raises(ValueError) as ve:
-        rpm4 < rpm6
-    assert "the other does not" in str(ve)
-    with pytest.raises(ValueError) as ve:
-        rpm4 != rpm6
-    assert "the other does not" in str(ve)
-    with pytest.raises(ValueError) as ve:
-        rpm4 == rpm6
-    assert "the other does not" in str(ve)
-    with pytest.raises(ValueError) as ve:
-        rpm4 >= rpm6
-    assert "the other does not" in str(ve)
-    with pytest.raises(ValueError) as ve:
-        rpm4 < rpm8
-    assert "the other does not" in str(ve)
     with pytest.raises(ValueError) as ve:
         rpm1 > rpm7
     assert "differing names" in str(ve)
@@ -399,3 +429,83 @@ def test_rpm_object_hashing():
     rpm2 = InstalledRpm.from_package('yum-3.4.3-132.el7.ppc64le')
     assert rpm2.arch == 'ppc64le'
     assert rpm1.__hash__() != rpm2.__hash__()
+
+
+def test_gpgkey():
+    rpms = InstalledRpms(context_wrap(RPMS_GPG_PUBKEY))
+    assert isinstance(rpms.get_max("gpg-pubkey"), InstalledRpm)
+    assert len(rpms.packages) == 1
+    assert rpms.get_max("gpg-pubkey").name == "gpg-pubkey"
+
+
+def test_vmaas():
+    rpms = InstalledRpms(context_wrap(RPMS_VMAAS))
+    rpm = rpms.get_max("compat-libstdc++-296")
+    assert isinstance(rpm, InstalledRpm)
+    assert rpm.version == "2.96"
+    assert rpm.release == "144.el6"
+
+    rpm = rpms.get_max("compat-libstdc++-33")
+    assert isinstance(rpm, InstalledRpm)
+    assert rpm.version == "3.2.3"
+    assert rpm.release == "72.el7"
+
+    rpm = rpms.get_max("flash-plugin")
+    assert isinstance(rpm, InstalledRpm)
+    assert rpm.version == "32.0.0.171"
+    assert rpm.release == "1.el6_10"
+
+    rpm = rpms.get_max("glibc")
+    assert isinstance(rpm, InstalledRpm)
+    assert rpm.version == "2.12"
+    assert rpm.release == "1.149.el6_6.5"
+
+    rpm = rpms.get_max("infinipath-psm")
+    assert isinstance(rpm, InstalledRpm)
+    assert rpm.version == "3.3"
+    assert rpm.release == "19_g67c0807_open.el6"
+
+    rpm = rpms.get_max("kmod-fnic")
+    assert isinstance(rpm, InstalledRpm)
+    assert rpm.version == "1.6.0.12b"
+    assert rpm.release == "rhel6u6.el6"
+
+    rpm = rpms.get_max("krb5-libs")
+    assert isinstance(rpm, InstalledRpm)
+    assert rpm.version == "1.10.3"
+    assert rpm.release == "65.el6"
+
+    rpm = rpms.get_max("libaio-devel")
+    assert isinstance(rpm, InstalledRpm)
+    assert rpm.version == "0.3.107"
+    assert rpm.release == "10.el6"
+
+    rpm = rpms.get_max("mdadm")
+    assert isinstance(rpm, InstalledRpm)
+    assert rpm.version == "4.1"
+    assert rpm.release == "rc1_2.el7"
+
+    rpm = rpms.get_max("nagios-plugins-disk")
+    assert isinstance(rpm, InstalledRpm)
+    assert rpm.version == "2.2.1"
+    assert rpm.release == "16.20180725git3429dad.el7"
+
+    rpm = rpms.get_max("TaniumClient")
+    assert isinstance(rpm, InstalledRpm)
+    assert rpm.version == "7.2.314.3211"
+    assert rpm.release == "1.rhe7"
+
+    rpm = rpms.get_max("xymon")
+    assert isinstance(rpm, InstalledRpm)
+    assert rpm.version == "4.3.25"
+    assert rpm.release == "1.el6"
+
+    rpm = rpms.get_max("xz")
+    assert isinstance(rpm, InstalledRpm)
+    assert rpm.version == "5.2.2"
+    assert rpm.release == "1.el7"
+
+    rpm = rpms.get_max("xz-libs")
+    assert isinstance(rpm, InstalledRpm)
+    assert rpm.version == "5.2.2"
+    assert rpm.release == "1.el7"

@@ -142,6 +142,8 @@ def _legacy_handle_registration(config, pconn):
         return True
 
     if config.register:
+        if config.group:
+            logger.info('Registering with a group is currently unavailable.')
         # register if specified
         message, hostname, group, display_name = register(config, pconn)
         if not hostname:
@@ -230,11 +232,11 @@ def handle_unregistration(config, pconn):
     """
     if config.legacy_upload:
         return _legacy_handle_unregistration(config, pconn)
+
     unreg = pconn.unregister()
     if unreg:
         # only set if unreg was successful
         write_unregistered_file()
-        get_scheduler(config).remove_scheduling()
     return unreg
 
 
@@ -251,7 +253,7 @@ def update_rules(config, pconn):
     return pc.get_conf_update()
 
 
-def get_branch_info(config, pconn):
+def get_branch_info(config):
     """
     Get branch info for a system
     returns (dict): {'remote_branch': -1, 'remote_leaf': -1}
@@ -262,7 +264,7 @@ def get_branch_info(config, pconn):
     if (config.offline or
             config.analyze_container):
         return constants.default_branch_info
-    return pconn.branch_info
+    return config.branch_info
 
 
 def collect(config, pconn):
@@ -305,7 +307,7 @@ def collect(config, pconn):
             logger.debug("Host selected as scanning target.")
         target = constants.default_target
 
-    branch_info = get_branch_info(config, pconn)
+    branch_info = get_branch_info(config)
     pc = InsightsUploadConf(config)
     tar_file = None
 
@@ -450,7 +452,7 @@ def upload(config, pconn, tar_file, content_type, collection_duration=None):
             msg_name = determine_hostname(config.display_name)
             logger.info("Successfully uploaded report for %s.", msg_name)
         else:
-            logger.error("Upload attempt %d of %d failed!",
+            logger.error("Upload attempt %d of %d failed! Status code: %s",
                          tries + 1, config.retries, upload.status_code)
             if tries + 1 != config.retries:
                 logger.info("Waiting %d seconds then retrying",

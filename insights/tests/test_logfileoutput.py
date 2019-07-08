@@ -33,7 +33,7 @@ class FakeMessagesClass(LogFileOutput):
 
 
 MESSAGES = """
-Mar 27 03:18:15 system rsyslogd: [origin software="rsyslogd" swVersion="5.8.10" x-pid="1870" x-info="http://www.rsyslog.com"] rsyslogd was HUPed
+Mar 27 03:18:15 system rsyslogd: [origin software="rsyslogd" swVersion="5.8.10" x-pid="1870" x-info="http://www.rsyslog.com"] first
 Mar 27 03:18:16 system rsyslogd-2177: imuxsock lost 141 messages from pid 55082 due to rate-limiting
 Mar 27 03:18:19 system rsyslogd-2177: imuxsock begins to drop messages from pid 55082 due to rate-limiting
 Mar 27 03:18:21 system pulp: pulp.server.db.connection:INFO: Attempting Database connection with seeds = localhost:27017
@@ -114,9 +114,19 @@ def test_messages_scanners_list():
     # Messages that are present can be kept
     FakeMessagesClass.keep_scan('puppet_master_manifest_logs', ['puppet-master', 'manifest'])
     FakeMessagesClass.keep_scan('puppet_master_first', ['puppet-master', 'first'])
+    # Messages that are present can be kept for any of the list
+    FakeMessagesClass.keep_scan('puppet_master_first_any', ['puppet-master', 'first'], check=any)
+    FakeMessagesClass.keep_scan('puppet_master_first_any_3', ['puppet-master', 'first'], num=3, check=any)
     # Token scan of something that's absent
     FakeMessagesClass.token_scan('error_missing', ['ERROR', 'Missing'])
+    # Token scan of something that's absent
     FakeMessagesClass.token_scan('error_info', ['ERROR', 'info'])
+    # Token scan of something that's absent for any of the list
+    FakeMessagesClass.token_scan('error_info_any', ['ERROR', 'info'], check=any)
+    # Get the last line
+    FakeMessagesClass.last_scan('puppet_master_manifest_last', ['puppet-master', 'manifest'])
+    # Get the last line for any of the list
+    FakeMessagesClass.last_scan('puppet_master_first_last_any', ['puppet-master', 'first'], check=any)
 
     ctx = context_wrap(MESSAGES, path='/var/log/messages')
     log = FakeMessagesClass(ctx)
@@ -130,6 +140,19 @@ def test_messages_scanners_list():
     assert len(log.puppet_master_first) == 0
     assert hasattr(log, 'error_info')
     assert log.error_info is False
+
+    assert hasattr(log, 'puppet_master_first_any')
+    assert len(log.puppet_master_first_any) == 7
+    assert hasattr(log, 'puppet_master_first_any_3')
+    assert len(log.puppet_master_first_any_3) == 3
+    assert hasattr(log, 'error_info_any')
+    assert log.error_info_any is True
+
+    assert hasattr(log, 'puppet_master_manifest_last')
+    assert 'puppet-master' in log.puppet_master_manifest_last['raw_message']
+    assert 'manifest' in log.puppet_master_manifest_last['raw_message']
+    assert hasattr(log, 'puppet_master_first_last_any')
+    assert 'puppet-master' in log.puppet_master_first_last_any['raw_message']
 
 
 def test_messages_get_after():
