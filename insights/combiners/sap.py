@@ -1,15 +1,15 @@
 """
-Sap - Combiner
-==============
-
-This combiner combines the result of :class:`insights.parsers.lssap.Lssap` and
-`insights.parsers.saphostctrl.SAPHostCtrlInstances` and prefer the
-``SAPHostCtrlInstances`` to ``Lssap``.
+Sap
+===
+This combiner combines the result of
+insights.parsers.saphostctrl.SAPHostCtrlInstances` and
+`:class:`insights.parsers.lssap.Lssap` to get the available SAP instances.
+Prefer the ``SAPHostCtrlInstances`` to ``Lssap``.
 
 """
 
 from collections import namedtuple
-from insights.parsers import SkipException
+from insights import SkipComponent
 from insights.core.plugins import combiner
 from insights.combiners.hostname import hostname
 from insights.parsers.lssap import Lssap
@@ -34,14 +34,14 @@ class Sap(dict):
     Examples:
         >>> type(saps)
         <class 'insights.combiners.sap.Sap'>
+        >>> 'D16' in saps
+        True
         >>> saps['D16'].number
         '16'
         >>> saps.sid('HDB16')
         'HA2'
         >>> saps.hostname('HDB16')
         'lu0417'
-        >>> 'D22' in saps.local_instances
-        False
         >>> len(saps.business_instances)
         3
         >>> saps.is_hana
@@ -98,7 +98,7 @@ class Sap(dict):
                                             None,
                                             inst['Version'])
         if not self.data:
-            raise SkipException('No SAP instance.')
+            raise SkipComponent('No SAP instance.')
 
         self.update(self.data)
 
@@ -128,15 +128,15 @@ class Sap(dict):
 
     @property
     def is_netweaver(self):
-        """bool: SAP NetWeaver"""
+        """bool: Is any SAP NetWeaver instance detected?"""
         return 'D' in self._types
 
     @property
     def is_hana(self):
-        """bool: SAP HANA"""
+        """bool: Is any SAP HANA instance detected?"""
         return 'HDB' in self._types
 
     @property
     def is_ascs(self):
-        """bool: SAP System Central Services"""
+        """bool: Is any SAP System Central Services instance detected?"""
         return 'ASCS' in self._types

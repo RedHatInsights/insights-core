@@ -1,5 +1,5 @@
 from insights.parsers.hostname import Hostname
-from insights.parsers import SkipException
+from insights import SkipComponent
 from insights.parsers.lssap import Lssap
 from insights.parsers.saphostctrl import SAPHostCtrlInstances
 from insights.combiners import sap
@@ -287,6 +287,6 @@ def test_doc_examples():
 
 def test_ab():
     hn = hostname(Hostname(context_wrap(HOSTNAME)), None, None)
-    with pytest.raises(SkipException) as se:
+    with pytest.raises(SkipComponent) as se:
         Sap(hn, None, None)
     assert 'No SAP instance.' in str(se)
