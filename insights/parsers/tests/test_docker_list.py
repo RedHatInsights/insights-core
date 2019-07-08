@@ -49,7 +49,7 @@ def test_docker_list_images_no_data():
     result = docker_list.DockerListImages(context_wrap(DOCKER_LIST_IMAGES_NO_DATA))
     # All rows get read:
     assert len(result.rows) == 0
-    assert result.no_data
+    assert result.data is None
 
 
 def test_docker_list_containers():

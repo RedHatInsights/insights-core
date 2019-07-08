@@ -85,7 +85,7 @@ class DockerList(CommandParser):
         """
         self.rows = []
         if len(content) < 2:
-            self.no_data = True
+            self.data = None
             return
 
         # Parse header, remembering column numbers for data capture.  We use
