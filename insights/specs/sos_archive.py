@@ -98,7 +98,11 @@ class SosSpecs(Specs):
         simple_file("sos_commands/foreman/foreman-debug/qpid_stat_subscriptions"),
         simple_file("sos_commands/foreman/foreman-debug/qpid-stat-u")
     ])
-    rabbitmq_report = simple_file("sos_commands/rabbitmq/rabbitmqctl_report")
+    rabbitmq_report = first_of([
+        glob_file(
+            "sos_commands/rabbitmq/docker_exec_-t_rabbitmq-bundle-docker-*_rabbitmqctl_report"),
+        simple_file("sos_commands/rabbitmq/rabbitmqctl_report")
+    ])
     rhn_charsets = first_file(["sos_commands/satellite/rhn-charsets", "sos_commands/rhn/rhn-charsets"])
     root_crontab = first_file(["sos_commands/crontab/root_crontab", "sos_commands/cron/root_crontab"])
     route = simple_file("sos_commands/networking/route_-n")
