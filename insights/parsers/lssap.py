@@ -55,7 +55,7 @@ class Lssap(CommandParser):
         self.data = []
         # remove lssap version and bar text from content
         clean_content = content[2:-1]
-        if len(clean_content) > 0 and "SID" in clean_content[0]:
+        if len(clean_content) > 0 and clean_content[0].lstrip().startswith("SID"):
             self.data = parse_delimited_table(clean_content, delim='|', header_delim=None)
         else:
             raise ParseException("Lssap: Unable to parse {0} line(s) of content: ({1})".format(len(content), content))
