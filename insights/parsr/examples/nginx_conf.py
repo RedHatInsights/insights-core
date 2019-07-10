@@ -1,6 +1,6 @@
 import string
 from insights.parsr import (EOF, Forward, LeftCurly, Lift, LineEnd, RightCurly,
-        Many, Number, OneLineComment, PosMarker, SemiColon, SingleQuotedString,
+        Many, Number, OneLineComment, PosMarker, SemiColon, QuotedString,
         skip_none, String, WS, WSChar)
 from insights.parsr.query import Entry
 
@@ -26,7 +26,7 @@ BeginBlock = WS >> LeftCurly << WS
 EndBlock = WS >> RightCurly << WS
 Bare = String(set(string.printable) - (set(string.whitespace) | set("#;{}'\"")))
 Name = WS >> PosMarker(String(string.ascii_letters + "_")) << WS
-Attr = WS >> (Num | Bare | SingleQuotedString) << WS
+Attr = WS >> (Num | Bare | QuotedString) << WS
 Attrs = Many(Attr)
 Block = BeginBlock >> Many(Stmt).map(skip_none) << EndBlock
 Stanza = (Lift(to_entry) * Name * Attrs * (Block | SemiColon)) | Comment

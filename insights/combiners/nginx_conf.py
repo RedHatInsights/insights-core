@@ -17,7 +17,7 @@ from insights.core import ConfigCombiner, ConfigParser
 from insights.parsr.query import eq
 from insights.parsr import (Char, EOF, Forward, LeftCurly, Lift, LineEnd,
         RightCurly, Many, Number, OneLineComment, Parser, PosMarker, SemiColon,
-        SingleQuotedString, skip_none, String, WS, WSChar)
+        QuotedString, skip_none, String, WS, WSChar)
 from insights.parsr.query import Directive, Entry, Section
 from insights.specs import Specs
 
@@ -25,8 +25,9 @@ from insights.specs import Specs
 class EmptyQuotedString(Parser):
     def __init__(self, chars):
         super(EmptyQuotedString, self).__init__()
-        parser = Char("'") >> String(set(chars) - set("'"), "'", 0) << Char("'")
-        self.add_child(parser)
+        single = Char("'") >> String(set(chars) - set("'"), "'", 0) << Char("'")
+        double = Char('"') >> String(set(chars) - set('"'), '"', 0) << Char('"')
+        self.add_child(single | double)
 
     def process(self, pos, data, ctx):
         return self.children[0].process(pos, data, ctx)
@@ -48,7 +49,7 @@ class _NginxConf(ConfigParser):
         EndBlock = WS >> RightCurly << WS
         Bare = String(set(string.printable) - (set(string.whitespace) | set("#;{}'\"")))
         Name = WS >> PosMarker(String(name_chars) | EmptyQuotedString(name_chars)) << WS
-        Attr = WS >> (Num | Bare | SingleQuotedString) << WS
+        Attr = WS >> (Num | Bare | QuotedString) << WS
         Attrs = Many(Attr)
         Block = BeginBlock >> Many(Stmt).map(skip_none) << EndBlock
         Stanza = (Lift(to_entry) * Name * Attrs * (Block | SemiColon)) | Comment

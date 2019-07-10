@@ -84,6 +84,7 @@ LogLevel warn
 DocumentRoot "/var/www/html_cgi"
 IncludeOptional conf.d/*.conf
 EnableSendfile on
+SSLProtocol -ALL +TLSv1.2  # SSLv3
 """.strip()
 
 HTTPD_CONF_NEST_2 = """
@@ -174,3 +175,4 @@ def test_httpd_conf_nest_one():
     assert val["LogLevel"].value == "warn"
     assert val["LogLevel"][0].lineno == 46
     assert val[ieq("loglevel")].value == "warn"
+    assert val["SSLProtocol"][0].attrs == ["-ALL", "+TLSv1.2", "#", "SSLv3"]
