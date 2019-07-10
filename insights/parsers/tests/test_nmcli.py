@@ -91,11 +91,6 @@ enp0s8         00cb8299-feb9-55b6-a378-3fdc720e0bc6  802-3-ethernet  --
 enp0s3         bfb4760c-96ce-4a29-9f2e-7427051da943  802-3-ethernet  enp0s3"
 """.strip()
 
-NMCLI_SHOW_ERROR_2 = """
-Warning: nmcli (1.0.0) and NetworkManager (1.0.6) versions don't match. Use --nocheck to suppress the warning.
-Error: Option '-l' is unknown, try 'nmcli -help'.
-""".strip()
-
 
 def test_nmcli():
     nmcli_obj = NmcliDevShow(context_wrap(NMCLI_SHOW))
@@ -161,13 +156,3 @@ def test_nmcli_doc_examples():
     }
     failed, total = doctest.testmod(nmcli, globs=env)
     assert failed == 0
-
-
-def test_nmcli_exceptions():
-    with pytest.raises(SkipException) as exc:
-        nmcli_obj = NmcliConnShow(context_wrap(NMCLI_SHOW_ERROR))
-    assert 'Invalid Contents!' in str(exc)
-    with pytest.raises(SkipException) as exc:
-        nmcli_obj = NmcliConnShow(context_wrap(NMCLI_SHOW_ERROR_2))
-        nmcli_obj is None
-    assert 'Invalid Contents!' in str(exc)

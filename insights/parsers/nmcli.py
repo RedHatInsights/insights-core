@@ -178,19 +178,7 @@ class NmcliConnShow(CommandParser):
 
     """
     def parse_content(self, content):
-        table_columns = set(["NAME", "UUID", "TYPE", "DEVICE"])
-        first_row = set(content[0].split())
-        if table_columns.intersection(first_row) == first_row:
-            self.data = parse_delimited_table(content)
-        elif len(content) > 1:
-            second_row = set(content[1].split())
-            if table_columns.intersection(second_row) == second_row:
-                self.data = parse_delimited_table(content[1:])
-            else:
-                raise SkipException("Invalid Contents!")
-        else:
-            raise SkipException("Invalid Contents!")
-
+        self.data = parse_delimited_table(content, heading_ignore=["NAME", "UUID", "TYPE", "DEVICE"])
         self._disconnected_connection = []
         for all_connection in self.data:
             if all_connection['DEVICE'] == "--":
