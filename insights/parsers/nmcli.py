@@ -178,7 +178,7 @@ class NmcliConnShow(CommandParser):
 
     """
     def parse_content(self, content):
-        table_columns = {"NAME", "UUID", "TYPE", "DEVICE"}
+        table_columns = set(["NAME", "UUID", "TYPE", "DEVICE"])
         first_row = set(content[0].split())
         if table_columns.intersection(first_row) == first_row:
             self.data = parse_delimited_table(content)
