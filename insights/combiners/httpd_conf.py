@@ -283,7 +283,7 @@ class DocParser(object):
         Comment = (WS >> OneLineComment("#")).map(lambda x: None)
         AttrStart = Many(WSChar)
         AttrEnd = (Many(WSChar) + Cont) | Many(WSChar)
-        BareAttr = String(set(string.printable) - (set(string.whitespace) | set("#;{}<>\\'\"")))
+        BareAttr = String(set(string.printable) - (set(string.whitespace) | set(";{}<>\\'\"")))
         Attr = AttrStart >> (Num | BareAttr | QuotedString) << AttrEnd
         Attrs = Many(Attr)
         StartTag = (WS + LT) >> (StartName + Attrs) << (GT + WS)

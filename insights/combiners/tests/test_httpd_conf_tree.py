@@ -114,6 +114,7 @@ Listen 80
 
 # Load config files in the "/etc/httpd/conf.d" directory, if any.
 IncludeOptional conf.d/*.conf
+SSLProtocol -ALL +TLSv1.2  # SSLv3
 '''.strip()
 
 HTTPD_CONF_MAIN_2 = '''
@@ -586,6 +587,9 @@ def test_splits():
     assert listen.line == 'Listen 8080'
     assert listen.file_name == '00-a.conf'
     assert listen.file_path == '/etc/httpd/conf.d/00-a.conf'
+
+    ssl_proto = result['SSLProtocol'][-1]
+    assert ssl_proto.attrs == ["-ALL", "+TLSv1.2", "#", "SSLv3"]
 
     httpd1 = _HttpdConf(context_wrap(HTTPD_CONF_MAIN_2, path='/etc/httpd/conf/httpd.conf'))
     httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_FILE_1, path='/etc/httpd/conf.d/00-a.conf'))
