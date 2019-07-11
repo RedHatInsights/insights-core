@@ -211,6 +211,7 @@ class DefaultSpecs(Specs):
     dirsrv_errors = glob_file("var/log/dirsrv/*/errors*")
     display_java = simple_command("/usr/sbin/alternatives --display java")
     dmesg = simple_command("/bin/dmesg")
+    dmesg_log = simple_file("/var/log/dmesg")
     dmidecode = simple_command("/usr/sbin/dmidecode")
     dmsetup_info = simple_command("/usr/sbin/dmsetup info -C")
     dnf_modules = glob_file("/etc/dnf/modules.d/*.module")
@@ -515,6 +516,15 @@ class DefaultSpecs(Specs):
     modinfo_ixgbe = simple_command("/sbin/modinfo ixgbe")
     modinfo_veth = simple_command("/sbin/modinfo veth")
     modinfo_vmxnet3 = simple_command("/sbin/modinfo vmxnet3")
+
+    @datasource(lsmod, context=HostContext)
+    def lsmod_only_names(broker):
+        lsmod = broker[DefaultSpecs.lsmod].content
+        # skip the title
+        return [line.split()[0] for line in lsmod[1:] if line.strip()]
+
+    modinfo = foreach_execute(lsmod_only_names, "modinfo %s")
+
     modprobe = glob_file(["/etc/modprobe.conf", "/etc/modprobe.d/*.conf"])
     sysconfig_mongod = glob_file([
                                  "etc/sysconfig/mongod",
@@ -796,6 +806,7 @@ class DefaultSpecs(Specs):
     secure = simple_file("/var/log/secure")
     selinux_config = simple_file("/etc/selinux/config")
     sestatus = simple_command("/usr/sbin/sestatus -b")
+    setup_named_chroot = simple_file("/usr/libexec/setup-named-chroot.sh")
 
     @datasource(HostContext)
     def block(broker):
