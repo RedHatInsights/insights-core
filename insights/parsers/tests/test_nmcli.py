@@ -69,6 +69,11 @@ NMCLI_SHOW_ERROR = """
 Error: Option '-l' is unknown, try 'nmcli -help'.
 """
 
+NMCLI_SHOW_ERROR_2 = """
+Error: Option '-l' is unknown, try 'nmcli -help'.
+Warning: nmcli (1.0.0) and NetworkManager (1.0.6) versions don't match. Use --nocheck to suppress the warning.
+"""
+
 STATIC_CONNECTION_SHOW_1 = """
 NAME      UUID                                  TYPE      DEVICE
 enp0s3    320d4923-c410-4b22-b7e9-afc5f794eecc  ethernet  enp0s3
@@ -156,3 +161,11 @@ def test_nmcli_doc_examples():
     }
     failed, total = doctest.testmod(nmcli, globs=env)
     assert failed == 0
+
+
+def test_nmcli_exceptions():
+    with pytest.raises(SkipException) as exc:
+        nmcli_obj = NmcliConnShow(context_wrap(NMCLI_SHOW_ERROR))
+        nmcli_obj = NmcliConnShow(context_wrap(NMCLI_SHOW_ERROR_2))
+        assert nmcli_obj is None
+    assert 'Inavalid Contents!' in str(exc)
