@@ -168,4 +168,4 @@ def test_nmcli_exceptions():
         nmcli_obj = NmcliConnShow(context_wrap(NMCLI_SHOW_ERROR))
         nmcli_obj = NmcliConnShow(context_wrap(NMCLI_SHOW_ERROR_2))
         assert nmcli_obj is None
-    assert 'Inavalid Contents!' in str(exc)
+    assert 'Invalid Contents!' in str(exc)
