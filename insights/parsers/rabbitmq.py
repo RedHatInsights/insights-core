@@ -7,6 +7,9 @@ Parsers included in this module are:
 RabbitMQReport - command ``/usr/sbin/rabbitmqctl report``
 ---------------------------------------------------------
 
+RabbitMQReportOfContainers - files ``docker_exec_-t_rabbitmq-bundle-docker-*_rabbitmqctl_report``
+-------------------------------------------------------------------------------------------------
+
 RabbitMQUsers - command ``/usr/sbin/rabbitmqctl list_users``
 ------------------------------------------------------------
 
@@ -130,6 +133,14 @@ class RabbitMQReport(CommandParser):
         # No handler will be applied here.
         # And such p.ParseException won't be hidden, showing for debug usage.
         self.result = create_parser().parseString("\n".join(content)).asDict()
+
+
+@parser(Specs.rabbitmq_report_of_containers)
+class RabbitMQReportOfContainers(RabbitMQReport):
+    """
+    Parse the `rabbitmqctl report` command of each container running on the host.
+    """
+    pass
 
 
 @parser(Specs.rabbitmq_users)

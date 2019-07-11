@@ -1,6 +1,6 @@
 from insights.core.context import OSP
 from insights.contrib.pyparsing import ParseException as PyparsingParseException
-from insights.parsers.rabbitmq import RabbitMQReport
+from insights.parsers.rabbitmq import RabbitMQReport, RabbitMQReportOfContainers
 from insights.tests import context_wrap
 
 osp_controller = OSP()
@@ -252,3 +252,15 @@ def test_rabbitmq_report_with_parse_exception():
         assert False
     except PyparsingParseException:
         assert True
+
+
+def test_rabbitmq_report_of_containers():
+    result = RabbitMQReportOfContainers(context_wrap(RABBITMQCTL_REPORT_1,
+            hostname="controller_1", osp=osp_controller)).result
+    assert result.get("nstat").get("rabbit@rabbitmq0").\
+            get("file_descriptors").get("total_limit") == "924"
+    permissions = {'/': {'redhat1': ['redhat.*', '.*', '.*'],
+                        'guest': ['.*', '.*', '.*'],
+                        'redhat': ['redhat.*', '.*', '.*']},
+                   'test_vhost': ''}
+    assert result.get("perm") == permissions

@@ -446,6 +446,7 @@ class Specs(SpecSet):
     rabbitmq_policies = RegistryPoint()
     rabbitmq_queues = RegistryPoint()
     rabbitmq_report = RegistryPoint()
+    rabbitmq_report_of_containers = RegistryPoint(multi_output=True)
     rabbitmq_startup_err = RegistryPoint(filterable=True)
     rabbitmq_startup_log = RegistryPoint(filterable=True)
     rabbitmq_users = RegistryPoint()
