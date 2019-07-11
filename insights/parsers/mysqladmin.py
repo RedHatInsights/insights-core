@@ -41,8 +41,7 @@ class MysqladminStatus(LegacyItemAccess, CommandParser):
         self.data = {}
 
         if len(content) == 1:
-            st = list(content)[0].strip()
-            line = st.replace(': ', '=')
+            line = content[0].replace(': ', '=')
             line_ = line.replace("Slow queries", "Slow_queries").replace("Flush tables", "Flush_tables").replace("Open tables", "Open_tables").replace("Queries per second avg", "Queries_per_second_avg")
             if line_.startswith("Uptime="):
                 for item in line_.split(None):
