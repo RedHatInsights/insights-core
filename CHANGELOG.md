@@ -1,5 +1,20 @@
 # Change Log
 
+## [insights-core-3.0.109-1047](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.109-1047) (2019-07-11)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.108-1038...insights-core-3.0.109-1047)
+
+**Implemented enhancements:**
+
+- NmcliConnShow parser fails when there is warning in cmd output [\#2051](https://github.com/RedHatInsights/insights-core/issues/2051)
+
+**Fixed bugs:**
+
+- httpd\_V combiner doesn't treat httpd\_V parser arg as a list [\#1805](https://github.com/RedHatInsights/insights-core/issues/1805)
+
+**Closed issues:**
+
+- Need a parser for 'rabbitmqctl\_report' of containers [\#2049](https://github.com/RedHatInsights/insights-core/issues/2049)
+
 ## [insights-core-3.0.108-1038](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.108-1038) (2019-07-03)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.107-1033...insights-core-3.0.108-1038)
 
