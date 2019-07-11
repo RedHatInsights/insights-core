@@ -24,7 +24,7 @@ if not os.path.exists(json_path):
 with open(json_path) as fp:
     uploader_json = json.load(fp, object_pairs_hook=OrderedDict)
 
-dr.load_components("insights.specs")
+dr.load_components("insights.specs.default")
 dr.load_components("insights.parsers")
 dr.load_components("insights.combiners")
 
