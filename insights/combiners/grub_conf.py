@@ -143,22 +143,22 @@ class GrubConf(object):
         else:
             raise Exception('No valid grub configuration is found.')
 
-    def get_grub_cmdlines(self, s=None):
+    def get_grub_cmdlines(self, search_text=None):
         """
         Get the boot entries in which `cmdline` contains the `search_text`,
         return all the boot entries by default.
 
         Arguments:
-            s(str): keyword to find in the `cmdline`, being set to
+            search_text(str): keyword to find in the `cmdline`, being set to
                 None by default.
 
         Returns:
             A list of :class:`insights.parsers.grub_conf.BootEntry` objects fo
-            each boot entry in which the `cmdline` contains the `s`. When `s` is
-            None, returns the objects of all of the boot entries.
+            each boot entry in which the `cmdline` contains the `search_text`.
+            When `search_text` is None, returns the objects of all of the boot entries.
         """
-        if s is None:
+        if search_text is None:
             return self.grub.boot_entries
-        elif s:
-            return [e for e in self.grub.boot_entries if s in e.get('cmdline', '')]
+        elif search_text:
+            return [e for e in self.grub.boot_entries if search_text in e.get('cmdline', '')]
         return []
