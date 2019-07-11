@@ -13,8 +13,7 @@ compilation option is present.
 
 from .. import parser, LegacyItemAccess, CommandParser
 from insights.specs import Specs
-from insights.parsers import SkipException, ParseException
-from insights.util import deprecated
+from insights.parsers import SkipException
 
 
 @parser(Specs.httpd_V)
@@ -62,12 +61,12 @@ class HttpdV(LegacyItemAccess, CommandParser):
             compilation option is present.
 
     Raises:
-        ParseException: When input content is empty or there is no parsed data.
+        SkipException: When input content is empty or there is no parsed data.
     """
 
     def parse_content(self, content):
         if not content:
-            raise ParseException("Input content is empty.")
+            raise SkipException("Input content is empty.")
 
         self.data = {}
         compiled_with = {}
@@ -93,7 +92,7 @@ class HttpdV(LegacyItemAccess, CommandParser):
             if compiled_with:
                 self.data['Server compiled with'] = compiled_with
         else:
-            raise ParseException("Input content is not empty but there is no useful parsed data.")
+            raise SkipException("Input content is not empty but there is no useful parsed data.")
 
     @property
     def httpd_command(self):
@@ -120,47 +119,3 @@ class HttpdV(LegacyItemAccess, CommandParser):
         is found.
         """
         return self.get('Server version', '')
-
-
-@parser(Specs.httpd_V)
-class HttpdEventV(HttpdV):
-    """
-    Class for parsing ``httpd.event -V`` command output.
-
-    .. warning::
-        Deprecated parser, please use the :class:`HttpdV` parser instead.
-
-    Raises:
-        SkipException: When no ``httpd.event -V`` command is found.
-    """
-    def __init__(self, *args, **kwargs):
-        deprecated(HttpdEventV, "Use the `HttpdV` parser in this module.")
-        super(HttpdEventV, self).__init__(*args, **kwargs)
-
-    def parse_content(self, content):
-        if 'event' in self.file_name:
-            super(HttpdEventV, self).parse_content(content)
-        else:
-            raise SkipException("No 'httpd.event' command on this host.")
-
-
-@parser(Specs.httpd_V)
-class HttpdWorkerV(HttpdV):
-    """
-    Class for parsing ``httpd.worker -V`` command output.
-
-    .. warning::
-        Deprecated parser, please use the :class:`HttpdV` parser instead.
-
-    Raises:
-        SkipException: When no ``httpd.worker -V`` command is found.
-    """
-    def __init__(self, *args, **kwargs):
-        deprecated(HttpdWorkerV, "Use the `HttpdV` parser in this module.")
-        super(HttpdWorkerV, self).__init__(*args, **kwargs)
-
-    def parse_content(self, content):
-        if 'worker' in self.file_name:
-            super(HttpdWorkerV, self).parse_content(content)
-        else:
-            raise SkipException("No 'httpd.worker' command on this host.")
