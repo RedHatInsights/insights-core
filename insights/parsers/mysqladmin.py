@@ -23,7 +23,7 @@ class MysqladminStatus(LegacyItemAccess, CommandParser):
     """
     Module for parsing the output of the ``mysqladmin status`` command.
 
-    Typical output looks like:
+    Typical output looks like::
 
         Uptime: 1103965 Threads: 1820 Questions: 44778091 Slow queries: 0 Opens: 1919 Flush tables: 1 Open tables: 592 Queries per second avg: 40.561
 
