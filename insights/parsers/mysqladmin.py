@@ -13,13 +13,15 @@ MysqladminVars - command ``/bin/mysqladmin variables``
 
 """
 
+import re
+from itertools import zip_longest
 from insights import CommandParser, parser, LegacyItemAccess
 from insights.parsers import ParseException, SkipException
 from insights.specs import Specs
 
 
 @parser(Specs.mysqladmin_status)
-class MysqladminStatus(LegacyItemAccess, CommandParser):
+class MysqladminStatus(CommandParser):
     """
     Module for parsing the output of the ``mysqladmin status`` command.
 
@@ -28,30 +30,31 @@ class MysqladminStatus(LegacyItemAccess, CommandParser):
         Uptime: 1103965 Threads: 1820 Questions: 44778091 Slow queries: 0 Opens: 1919 Flush tables: 1 Open tables: 592 Queries per second avg: 40.561
 
     Examples:
-        >>> "Uptime" in mysqlstat
+        >>> result.status['Uptime'] == '1103965'
         True
-        >>> mysqlstat['Threads']
+        >>> result.status['Threads']
         '1820'
-        >>> mysqlstat['Flush_tables'] == '1'
-        True
+        >>> result.status['Queries per second avg'] == '1919'
+        False
     """
+    pattern = re.compile("(Uptime):.(\d+).(Threads):.(\d+).(Questions):.(\d+).(Slow queries):.(\d+).(Opens):.(\d+).(Flush tables):.(\d+).(Open tables):.(\d+).(Queries per second avg):.(\d+.\d*)")
+
+    def grouper(self, iterable, n, fillvalue=None):
+        "Collect data into fixed-length chunks or blocks"
+        args = [iter(iterable)] * n
+        return zip_longest(*args, fillvalue=fillvalue)
+
     def parse_content(self, content):
         if not content:
-            raise ParseException("Input content is empty.")
-        self.data = {}
+            raise SkipException("Content is empty.")
 
-        if len(content) == 1:
-            line = content[0].replace(': ', '=')
-            line_ = line.replace("Slow queries", "Slow_queries").replace("Flush tables", "Flush_tables").replace("Open tables", "Open_tables").replace("Queries per second avg", "Queries_per_second_avg")
-            if line_.startswith("Uptime="):
-                for item in line_.split(None):
-                    try:
-                        k, v = item.split('=')
-                        self.data[k.strip()] = v.strip()
-                    except ValueError:
-                        return None
-            else:
-                raise ParseException("Wrong Content.")
+        self.status = {}
+        if self.pattern.search(content[0]):
+            groups = self.pattern.search(content[0]).groups()
+            for group in self.grouper(groups, 2):
+                self.status[group[0]] = group[1]
+        else:
+            raise ParseException("Unable to parse the output.")
 
 
 @parser(Specs.mysqladmin_vars)

@@ -18,27 +18,26 @@ Threads: 1820 Questions: 44778091 Slow queries: 0 Opens: 1919 Flush tables: 1 Op
 
 
 def test_mysqladmin_status():
-    mysqlstat = MysqladminStatus(context_wrap(OUTPUT_MYSQLADMIN_STATUS))
-    assert "Uptime" in mysqlstat
-    assert "logtime" not in mysqlstat
-    assert "Slow_queries" in mysqlstat
-    assert "Flush_tables" in mysqlstat
-    assert "Open_tables" in mysqlstat
+    parser_result = MysqladminStatus(context_wrap(OUTPUT_MYSQLADMIN_STATUS))
+    mysqlstat = parser_result.status
+    assert parser_result is not None
     assert mysqlstat['Threads'] == '1820'
-    assert mysqlstat['Queries_per_second_avg'] == '40.561'
+    assert mysqlstat['Queries per second avg'] == '40.561'
+    assert mysqlstat['Uptime'] == '1103965'
+    assert mysqlstat['Opens'] == '1919'
+    assert mysqlstat['Slow queries'] == '0'
 
 
 def test_mysqlstat_blank_input():
-    ctx = context_wrap(BLANK_SAMPLE)
-    with pytest.raises(ParseException) as sc:
-        MysqladminStatus(ctx)
-    assert "Input content is empty." in str(sc)
+    with pytest.raises(SkipException) as sc:
+        MysqladminStatus(context_wrap(BLANK_SAMPLE))
+    assert "Content is empty." in str(sc.value)
 
 
 def test_mysqlstat_bad_input():
     with pytest.raises(ParseException) as exc:
         MysqladminStatus(context_wrap(BAD_INPUT_SAMPLE))
-    assert "Wrong Content." in str(exc)
+    assert "Unable to parse the output." in str(exc)
 
 
 INPUT_NORMAL = """
@@ -167,7 +166,7 @@ def test_mysqladmin_still_parsable():
 def test_doc():
     env = {
             'MysqladminStatus': MysqladminStatus,
-            'mysqlstat': MysqladminStatus(context_wrap(OUTPUT_MYSQLADMIN_STATUS, path='/bin/mysqladmin status')),
+            'result': MysqladminStatus(context_wrap(OUTPUT_MYSQLADMIN_STATUS, path='/bin/mysqladmin status')),
             'MysqladminVars': MysqladminVars,
             'output': MysqladminVars(context_wrap(INPUT_NORMAL, '/bin/mysqladmin variables')),
     }
