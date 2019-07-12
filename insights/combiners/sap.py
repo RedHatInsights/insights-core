@@ -103,8 +103,7 @@ class Sap(dict):
         self.update(self.data)
 
         for i in self.all_instances:
-            (self.function_instances
-                if any(i.startswith(fi) for fi in self.FUNC_INSTS) else self.business_instances).append(i)
+            (self.function_instances if i.startswith(self.FUNC_INSTS) else self.business_instances).append(i)
 
     def version(self, instance):
         """str: Returns the version of the ``instance``."""
