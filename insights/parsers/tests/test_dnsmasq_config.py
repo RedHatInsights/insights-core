@@ -31,9 +31,9 @@ def test_dnsmasq_conf():
     result = DnsmasqConf(context_wrap(DNSMASQ_CONF_MAIN, path="/etc/dnsmasq.conf"))
     assert "no-resolv" in result
     assert result.find("port").value == 5353
-    assert len(result.find_all("server")) == 2
-    assert result.find_all("server")[0].value == '/in-addr.arpa/127.0.0.1'
-    assert result.find("bind-dynamic").name == 'bind-dynamic'
+    assert len(result.find("server")) == 2
+    assert result.find("server")[0].value == '/in-addr.arpa/127.0.0.1'
+    assert result.find("bind-dynamic")[0].name == 'bind-dynamic'
     assert "# End of config" not in result
 
 

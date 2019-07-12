@@ -1,4 +1,3 @@
-from __future__ import print_function
 from insights.parsers import openvswitch_logs
 from insights.tests import context_wrap
 
@@ -60,7 +59,6 @@ def test_ovs_vswitch():
     assert len(logs) == 7
     vlogs = logs.get('vlog')
     assert len(vlogs) == 2
-    print(vlogs[0])
     assert vlogs[0] == {
         'raw_message': '2017-03-12T11:56:54.989Z|00001|vlog|INFO|opened log file /var/log/openvswitch/ovsdb-server.log',
         'timestamp': '2017-03-12T11:56:54.989Z',
