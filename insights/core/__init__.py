@@ -697,8 +697,6 @@ class YAMLParser(Parser, LegacyItemAccess):
             msg = "%s couldn't parse yaml." % name
             six.reraise(ParseException, ParseException(msg), tb)
 
-        self.doc = from_dict(self.data)
-
 
 class JSONParser(Parser, LegacyItemAccess):
     """
