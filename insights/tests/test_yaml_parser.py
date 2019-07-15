@@ -18,12 +18,12 @@ class MyYamlParser(YAMLParser):
     pass
 
 
-def test_json_parser_success():
+def test_yaml_parser_success():
     ctx = context_wrap('a: 2')
     assert FakeYamlParser(ctx)
 
 
-def test_json_parser_failure():
+def test_yaml_parser_failure():
     ctx = context_wrap("boom /")
     with pytest.raises(ParseException) as ex:
         FakeYamlParser(ctx)
