@@ -1,3 +1,4 @@
+import datetime
 import pytest
 
 from insights.core import YAMLParser, ParseException
@@ -7,6 +8,17 @@ from insights.tests import context_wrap
 bi_conf_content = """
 {"remote_branch": -1, "remote_leaf": -1}
 """.strip()
+
+yaml_test_strings = {"""
+type:        Acquisition
+date:        2019-07-09
+""": {'type': 'Acquisition', 'date': datetime.date(2019, 7, 9)}, """
+- Hesperiidae
+- Papilionidae
+- Apatelodidae
+- Epiplemidae
+""": ['Hesperiidae', 'Papilionidae', 'Apatelodidae', 'Epiplemidae']
+}
 
 
 class FakeYamlParser(YAMLParser):
@@ -19,8 +31,9 @@ class MyYamlParser(YAMLParser):
 
 
 def test_yaml_parser_success():
-    ctx = context_wrap('a: 2')
-    assert FakeYamlParser(ctx)
+    for ymlstr in yaml_test_strings:
+        ctx = context_wrap(ymlstr)
+        assert FakeYamlParser(ctx).data == yaml_test_strings[ymlstr]
 
 
 def test_yaml_parser_failure():
