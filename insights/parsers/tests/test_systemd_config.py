@@ -232,6 +232,7 @@ def test_systemd_openshift_node():
 def test_systemd_system_conf():
     common_conf_info = config.SystemdSystemConf(context_wrap(SYSTEMD_SYSTEM_CONF))
     assert "Manager" in common_conf_info
+    print(common_conf_info.doc)
     assert common_conf_info["Manager"]["RuntimeWatchdogSec"] == "0"
     assert common_conf_info["Manager"]["ShutdownWatchdogSec"] == "10min"
 

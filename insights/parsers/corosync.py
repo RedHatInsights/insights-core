@@ -11,11 +11,16 @@ CoroSyncConfig - file ``/etc/sysconfig/corosync``
 CorosyncConf - file ``/etc/corosync/corosync.conf``
 ---------------------------------------------------
 """
+import string
 from insights.util import deprecated
 from insights.core import ConfigParser
-from insights.configtree.dictlike import DocParser, LineCounter
 from insights.specs import Specs
 from .. import SysconfigOptions, parser
+
+from insights.parsr import (EOF, Forward, InSet, LeftCurly, Lift, LineEnd,
+        Literal, RightCurly, Many, Number, OneLineComment, PosMarker,
+        skip_none, String, QuotedString, WS, WSChar)
+from insights.parsr.query import Directive, Entry, Section
 
 
 @parser(Specs.corosync)
@@ -60,24 +65,36 @@ class CoroSyncConfig(SysconfigOptions):
         return self.data.get('COROSYNC_OPTIONS', '')
 
 
-class CorosyncConfDocParser(DocParser):
-    def parse_bare(self, pb):
-        buf = []
-        end = "{" + self.line_end
-        while not pb.peek().isspace() and pb.peek() not in end:
-            buf.append(next(pb).strip(':'))
-        return "".join(buf)
-
-
 def parse_doc(f, ctx=None, line_end="\n"):
-    return CorosyncConfDocParser(ctx, line_end=line_end).parse_doc(LineCounter(f))
+    def to_entry(name, rest):
+        if isinstance(rest, list):
+            return Section(name=name.value, children=rest, lineno=name.lineno, src=ctx)
+        return Directive(name=name.value, attrs=[rest], lineno=name.lineno, src=ctx)
+
+    Sep = InSet(":=")
+    Stmt = Forward()
+    Num = Number & (WSChar | LineEnd)
+    NULL = Literal("none", value=None)
+    Comment = (WS >> OneLineComment("#").map(lambda x: None))
+    BeginBlock = (WS >> LeftCurly << WS)
+    EndBlock = (WS >> RightCurly << WS)
+    Bare = String(set(string.printable) - (set(string.whitespace) | set("#{}'\"")))
+    Name = WS >> PosMarker(String(string.ascii_letters + "_" + string.digits)) << WS
+    Value = WS >> (Num | NULL | QuotedString | Bare) << WS
+    Block = BeginBlock >> Many(Stmt).map(skip_none) << EndBlock
+    Stanza = (Lift(to_entry) * Name * (Block | (Sep >> Value))) | Comment
+    Stmt <= WS >> Stanza << WS
+    Doc = Many(Stmt).map(skip_none)
+    Top = Doc + EOF
+
+    return Entry(children=Top(f)[0], src=ctx)
 
 
 @parser(Specs.corosync_conf)
 class CorosyncConf(ConfigParser):
     """Parse the output of the file ``/etc/corosync/corosync.conf`` using
     the ``ConfigParser`` base class. It exposes the corosync
-    configuration through the configtree interface.
+    configuration through the parsr query interface.
 
     The parameters in the directives are referred from the manpage of
     ``corosync.conf``. See ``man 8 corosync.conf`` for more info.
@@ -122,7 +139,7 @@ class CorosyncConf(ConfigParser):
 
     Example:
 
-        >>> from insights.configtree import first, last
+        >>> from insights.parsr.query import first, last
         >>> corosync_conf['quorum']['provider'][first].value
         'corosync_votequorum'
         >>> corosync_conf['totem']['token'][first].value
