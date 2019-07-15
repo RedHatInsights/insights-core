@@ -60,14 +60,6 @@ def pre_update(client, config):
         logger.info(constants.version)
         sys.exit(constants.sig_kill_ok)
 
-    if config.ignore_cgroup:
-        logger.debug('Skipping cgroup check.')
-    else:
-        if not cgroup_available():
-            logger.error('Memory cgroup is disabled; insights-client will not run. '
-                         'To run anyway, set ignore_cgroup=True in %s', config.conf)
-            sys.exit(constants.sig_kill_bad)
-
     # validate the remove file
     if config.validate:
         if validate_remove_file(config.remove_file):
@@ -136,6 +128,14 @@ def post_update(client, config):
     # create a machine id first thing. we'll need it for all uploads
     logger.debug('Machine ID: %s', client.get_machine_id())
     logger.debug("CONFIG: %s", config)
+
+    if config.ignore_cgroup:
+        logger.debug('Skipping cgroup check.')
+    else:
+        if not cgroup_available():
+            logger.error('Memory cgroup is disabled; insights-client collection will not run. '
+                         'To run anyway, set ignore_cgroup=True in %s', config.conf)
+            sys.exit(constants.sig_kill_bad)
 
     # -------delete everything below this line-------
     if config.legacy_upload:
