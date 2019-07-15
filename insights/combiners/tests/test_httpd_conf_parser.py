@@ -1,4 +1,4 @@
-from insights.configtree import first, last  # noqa: F401
+from insights.parsr.query import first, last  # noqa: F401
 from insights.combiners.httpd_conf import _HttpdConf
 from insights.tests import context_wrap
 
@@ -169,7 +169,6 @@ MaxRequestsPerChild  0
 def test_get_httpd_conf_nest_1():
     context = context_wrap(HTTPD_CONF_NEST_1, path=HTTPD_CONF_PATH)
     result = _HttpdConf(context)
-
     assert result["VirtualHost", "192.0.2.1"]["IfModule", "mod_php4.c"]['php_admin_flag'][last].value == "safe_mode Off"
     assert result["VirtualHost", "192.0.2.1"]["IfModule", "mod_rewrite.c"]['RewriteEngine'][last].value is False
     assert result["VirtualHost", "192.0.2.1"]["IfModule", "mod_rewrite.c"]['RewriteRule'][last].value == ".* /index.php"
