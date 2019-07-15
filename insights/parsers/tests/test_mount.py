@@ -3,7 +3,7 @@ test mount
 ==========
 """
 from insights.parsers import ParseException, SkipException
-from insights.parsers.mount import Mount, ProcMount
+from insights.parsers.mount import Mount, ProcMounts
 from insights.tests import context_wrap
 
 import pytest
@@ -153,7 +153,7 @@ devtmpfs /dev devtmpfs rw,relatime,size=8155456k,nr_inodes=2038864,mode=755 0 0
 
 
 def test_proc_mount():
-    results = ProcMount(context_wrap(PROC_MOUNT))
+    results = ProcMounts(context_wrap(PROC_MOUNT))
     assert results is not None
     assert len(results) == 20
     sda1 = results.search(mounted_device='/dev/sda1')[0]
@@ -200,7 +200,7 @@ def test_proc_mount():
     ]
 
     # Test parse failure
-    errors = ProcMount(context_wrap(PROCMOUNT_ERR_DATA))
+    errors = ProcMounts(context_wrap(PROCMOUNT_ERR_DATA))
     assert errors is not None
     assert len(errors) == 2
     assert not hasattr(errors[0], 'parse_error')
@@ -211,11 +211,11 @@ def test_proc_mount():
 
 def test_proc_mount_exception1():
     with pytest.raises(SkipException) as e:
-        ProcMount(context_wrap(EXCEPTION1))
+        ProcMounts(context_wrap(EXCEPTION1))
     assert 'Empty file' in str(e)
 
 
 def test_proc_mount_exception2():
     with pytest.raises(ParseException) as e:
-        ProcMount(context_wrap(EXCEPTION2))
+        ProcMounts(context_wrap(EXCEPTION2))
     assert "Input for mount must contain '/' mount point." in str(e)

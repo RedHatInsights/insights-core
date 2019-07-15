@@ -1,9 +1,12 @@
 """
-Mount - command ``/bin/mount``
-==============================
+Mount Entries
+=============
 
-ProcMount - file ``/proc/mounts``
-=================================
+Mount - command ``/bin/mount``
+------------------------------
+
+ProcMounts - file ``/proc/mounts``
+----------------------------------
 
 This module provides parsing for the ``mount`` command and the ``/proc/mounts`` file.
 
@@ -281,7 +284,7 @@ class Mount(CommandParser):
 
 
 @parser(Specs.mounts)
-class ProcMount(Mount):
+class ProcMounts(Mount):
     """Class to parse the content of ``/proc/mounts`` file.
     This class is required to parse the ``/proc/mounts`` file in addition to the
     ``/bin/mount`` command because it lists the mount points of those process's
