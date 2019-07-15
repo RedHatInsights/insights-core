@@ -60,10 +60,13 @@ def pre_update(client, config):
         logger.info(constants.version)
         sys.exit(constants.sig_kill_ok)
 
-    if not cgroup_available() and not config.ignore_cgroup:
-        logger.error('Memory cgroup is disabled; insights-client will not run. '
-                     'To run anyway, set ignore_cgroup=True in %s', config.conf)
-        sys.exit(constants.sig_kill_bad)
+    if config.ignore_cgroup:
+        logger.debug('Skipping cgroup check.')
+    else:
+        if not cgroup_available():
+            logger.error('Memory cgroup is disabled; insights-client will not run. '
+                         'To run anyway, set ignore_cgroup=True in %s', config.conf)
+            sys.exit(constants.sig_kill_bad)
 
     # validate the remove file
     if config.validate:
