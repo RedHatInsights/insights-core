@@ -141,7 +141,7 @@ DEFAULT_OPTS = {
     'ignore_cgroup': {
         # non-CLI
         'default': False
-    }
+    },
     'insecure_connection': {
         # non-CLI
         'default': False
