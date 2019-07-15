@@ -1,11 +1,16 @@
+import doctest
+import pytest
 from insights.parsers import docker_list
+from insights.parsers import SkipException
 from insights.tests import context_wrap
+
 
 DOCKER_LIST_IMAGES = """
 REPOSITORY                           TAG                 DIGEST              IMAGE ID                                                           CREATED             VIRTUAL SIZE
 rhel6_vsftpd                         latest              <none>              412b684338a1178f0e5ad68a5fd00df01a10a18495959398b2cf92c2033d3d02   37 minutes ago      459.5 MB
+rhel7_imagemagick                    latest              <none>              882ab98aae5394aebe91fe6d8a4297fa0387c3cfd421b2d892bddf218ac373b2   4 days ago          785.4 MB
+rhel6_nss-softokn                    latest              <none>              dd87dad2c7841a19263ae2dc96d32c501ee84a92f56aed75bb67f57efe4e48b5   5 days ago          449.7 MB
 <none>                               <none>              <none>              34c167d900afb820ecab622a214ce3207af80ec755c0dcb6165b425087ddbc3a   5 days ago          205.3 MB
-<none>                               <none>              <none>              76e65756ff110ca5ea54ac02733fe04301b33a9190689eb524dd5aa18843996a   5 days ago          205.3 MB
 """.strip()
 
 DOCKER_LIST_CONTAINERS = """
@@ -22,7 +27,7 @@ REPOSITORY                           TAG                 DIGEST              IMA
 def test_docker_list_images():
     result = docker_list.DockerListImages(context_wrap(DOCKER_LIST_IMAGES))
     # All rows get read:
-    assert len(result.rows) == 3
+    assert len(result.rows) == 4
     # Rows with data are as normal
     assert result.rows[0].get("REPOSITORY") == "rhel6_vsftpd"
     assert result.rows[0].get("TAG") == "latest"
@@ -31,25 +36,18 @@ def test_docker_list_images():
     assert result.rows[0].get("CREATED") == "37 minutes ago"
     assert result.rows[0].get("VIRTUAL SIZE") == "459.5 MB"
     # Rows with <none> still get processed.
-    assert result.rows[1].get("REPOSITORY") == "<none>"
-    assert result.rows[1].get("TAG") == "<none>"
-    assert result.rows[1].get("IMAGE ID") == '34c167d900afb820ecab622a214ce3207af80ec755c0dcb6165b425087ddbc3a'
-    assert result.rows[2].get("REPOSITORY") == "<none>"
-    assert result.rows[2].get("TAG") == "<none>"
-    assert result.rows[2].get("IMAGE ID") == '76e65756ff110ca5ea54ac02733fe04301b33a9190689eb524dd5aa18843996a'
+    assert result.rows[3].get("REPOSITORY") == "<none>"
+    assert result.rows[1].get("TAG") == "latest"
+    assert result.rows[3].get("IMAGE ID") == '34c167d900afb820ecab622a214ce3207af80ec755c0dcb6165b425087ddbc3a'
+    assert result.rows[2].get("REPOSITORY") == "rhel6_nss-softokn"
+    assert result.rows[2].get("TAG") == "latest"
+    assert result.rows[2].get("IMAGE ID") == 'dd87dad2c7841a19263ae2dc96d32c501ee84a92f56aed75bb67f57efe4e48b5'
 
     assert result.data['rhel6_vsftpd']['CREATED'] == '37 minutes ago'
     # Same data in both accessors
     assert result.data['rhel6_vsftpd'] == result.rows[0]
     # Can't list repositories if they don't have a repository name
     assert '<none>' not in result.data
-
-
-def test_docker_list_images_no_data():
-    result = docker_list.DockerListImages(context_wrap(DOCKER_LIST_IMAGES_NO_DATA))
-    # All rows get read:
-    assert len(result.rows) == 0
-    assert result.no_data
 
 
 def test_docker_list_containers():
@@ -68,3 +66,22 @@ def test_docker_list_containers():
     assert sorted(result.data.keys()) == sorted(['angry_saha', 'tender_rosalind'])
     assert result.data['angry_saha'] == result.rows[0]
     assert result.data['tender_rosalind'] == result.rows[1]
+
+
+def test_docker_list_images_no_data():
+    with pytest.raises(SkipException) as ex:
+        docker_list.DockerList(context_wrap(DOCKER_LIST_IMAGES_NO_DATA))
+    assert 'No data.' in str(ex)
+
+
+def test_undefined_key_field():
+    assert docker_list.DockerList(context_wrap(DOCKER_LIST_CONTAINERS)).key_field is None
+
+
+def test_documentation():
+    failed_count, tests = doctest.testmod(
+        docker_list,
+        globs={'images': docker_list.DockerListImages(context_wrap(DOCKER_LIST_IMAGES)),
+               'containers': docker_list.DockerListContainers(context_wrap(DOCKER_LIST_CONTAINERS))}
+    )
+    assert failed_count == 0
