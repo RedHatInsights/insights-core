@@ -164,7 +164,7 @@ def test_proc_mount():
     assert 'relatime' in sda1['mount_options']
     assert sda1['mount_options']['data'] == 'ordered'
     assert sda1.mount_options.data == 'ordered'
-    assert sda1['mount_labels'] == ['0', '0']
+    assert sda1['mount_label'] == ['0', '0']
 
     # Test iteration
     for mnt in results:
@@ -234,7 +234,9 @@ dev/sr0 /run/media/root/VMware\040Tools iso9660 ro,nosuid,nodev,relatime,uid=0,g
 def test_doc_examples():
     env = {
             'mnt_info': Mount(context_wrap(MOUNT_DOC)),
-            'proc_mnt_info': ProcMounts(context_wrap(PROC_MOUNT_DOC))
+            'proc_mnt_info': ProcMounts(context_wrap(PROC_MOUNT_DOC)),
+            'mounts': Mount(context_wrap(MOUNT_DOC))
+
           }
     failed, total = doctest.testmod(mount, globs=env)
     assert failed == 0

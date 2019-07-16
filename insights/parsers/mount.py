@@ -163,7 +163,6 @@ class MountedFileSystems(CommandParser):
 
         if '/' not in self.mounts:
             raise ParseException("Input for mount must contain '/' mount point.")
-        print(self.mounts)
 
     def get_dir(self, path):
         """
@@ -190,10 +189,10 @@ class MountedFileSystems(CommandParser):
 
         Examples:
 
-            >>> mounts.search(filesystem='/dev/sda1')
-            [{'filesystem': '/dev/sda1', 'mount_point': '/boot', ...}]
-            >>> mounts.search(mount_options__contains='ro')
-            [{'filesystem': '/dev/sr0', 'mount_point', '/mnt/CDROM', ...}, ...]
+            >>> mounts.search(filesystem='proc')
+            [{'mount_type': 'proc', 'mount_point': '/proc', 'filesystem': 'proc', 'mount_options': {'noexec': True, 'relatime': True, 'rw': True, 'nosuid': True, 'nodev': True}, 'mount_clause': 'proc on /proc type proc (rw,nosuid,nodev,noexec,relatime)'}]
+            >>> mounts.search(mount_options__contains='seclabel')
+            [{'mount_type': 'ext4', 'mount_point': '/etc/shadow', 'filesystem': '/dev/mapper/HostVG-Config', 'mount_options': {'rw': True, 'data': 'ordered', 'stripe': '256', 'noatime': True, 'seclabel': True}, 'mount_clause': '/dev/mapper/HostVG-Config on /etc/shadow type ext4 (rw,noatime,seclabel,stripe=256,data=ordered)'}]
 
         Arguments:
             **kwargs (dict): Dictionary of key-value pairs to search for.
@@ -213,23 +212,22 @@ class Mount(MountedFileSystems):
         Please refer to its super-class :class:`MountedFileSystems` for more
         details.
 
-    Examples:
         >>> type(mnt_info)
         <class 'insights.parsers.mount.Mount'>
         >>> len(mnt_info)
         4
         >>> mnt_info[3].filesystem
-        '/run/media/root/VMware Tools'
+        'dev/sr0'
         >>> mnt_info[3].mount_label
         'VMware Tools'
         >>> mnt_info[3].mount_type
         'iso9660'
-        >>> mnt_info['dev/sr0'].mount_label
-        'VMware Tools'
-        >>> mnt_info['dev/sr0'].mount_options.ro
-        True
         >>> mnt_info['/run/media/root/VMware Tools'].filesystem
         'dev/sr0'
+        >>> mnt_info['/run/media/root/VMware Tools'].mount_label
+        'VMware Tools'
+        >>> mnt_info['/run/media/root/VMware Tools'].mount_options.ro
+        True
     """
     def _parse_mounts(self, content):
 
@@ -260,44 +258,6 @@ class Mount(MountedFileSystems):
             self.rows.append(entry)
             self.mounts[mount['mount_point']] = entry
 
-    def get_dir(self, path):
-        """
-        MountEntry: returns the mount point that contains the given path.
-
-        This finds the most specific mount path that contains the given path,
-        by successively removing the directory or file name on the end of
-        the path and seeing if that is a mount point.  This will always
-        terminate since / is always a mount point.  Strings that are not
-        absolute paths will return None.
-        """
-        while path != '':
-            if path in self.mounts:
-                return self.mounts[path]
-            path = os.path.split(path)[0]
-        return None
-
-    def search(self, **kwargs):
-        """
-        Returns a list of the mounts (in order) matching the given criteria.
-        Keys are searched for directly - see the
-        :py:func:`insights.parsers.keyword_search` utility function for more
-        details.  If no search parameters are given, no rows are returned.
-
-        Examples:
-
-            >>> mounts.search(filesystem='/dev/sda1')
-            [{'filesystem': '/dev/sda1', 'mount_point': '/boot', ...}]
-            >>> mounts.search(mount_options__contains='ro')
-            [{'filesystem': '/dev/sr0', 'mount_point', '/mnt/CDROM', ...}, ...]
-
-        Arguments:
-            **kwargs (dict): Dictionary of key-value pairs to search for.
-
-        Returns:
-            (list): The list of mount points matching the given criteria.
-        """
-        return keyword_search(self.rows, **kwargs)
-
 
 @parser(Specs.mounts)
 class ProcMounts(MountedFileSystems):
@@ -317,40 +277,51 @@ class ProcMounts(MountedFileSystems):
         <class 'insights.parsers.mount.ProcMounts'>
         >>> len(proc_mnt_info)
         4
-        >>> proc_mnt_info[3].filesystem
-        '/run/media/root/VMware\040Tools'
-        >>> proc_mnt_info[3].mounted_device
-        'dev/sr0'
+        >>> proc_mnt_info[3].filesystem == 'dev/sr0'
+        True
+        >>> proc_mnt_info[3].mounted_device == 'dev/sr0'
+        True
         >>> proc_mnt_info[3].mounted_device == proc_mnt_info[3].filesystem
         True
-        >>> proc_mnt_info[3].mount_type
-        'iso9660'
-        >>> proc_mnt_info[3].filesystem_type
-        'iso9660'
-        >>> proc_mnt_info['dev/sr0'].mount_label
-        'dev/sr0'
-        >>> proc_mnt_info['dev/sr0'].mount_options.ro
+        >>> proc_mnt_info[3].mount_type == 'iso9660'
         True
-        >>> proc_mnt_info['/run/media/root/VMware Tools'].mounted_device
-        'dev/sr0'
+        >>> proc_mnt_info[3].filesystem_type == 'iso9660'
+        True
+        >>> proc_mnt_info['/run/media/root/VMware Tools'].mount_label == ['0', '0']
+        True
+        >>> proc_mnt_info['/run/media/root/VMware Tools'].mount_options.ro
+        True
+        >>> proc_mnt_info['/run/media/root/VMware Tools'].mounted_device == 'dev/sr0'
+        True
     """
 
     def _parse_mounts(self, content):
+        def _split(line_sp, num=2, reverse=False, check=True):
+            if num >= 2:
+                if reverse is False:
+                    line_sp = line_sp.split(None, num - 1)
+                else:
+                    line_sp = line_sp.rsplit(None, num - 1)
+                if check and len(line_sp) < num:
+                    raise ParseException('Unable to parse: "{0}"'.format(line))
+            return line_sp
+
         self.rows = []
         self.mounts = {}
         for line in get_active_lines(content):
             mount = {}
             mount['mount_clause'] = line
-            data = line.split()
-            if len(data) == 6:
-                mount['filesystem'] = mount['mounted_device'] = data[0]
-                mount['mount_point'] = data[1]
-                mount['mount_type'] = mount['filesystem_type'] = data[2]
-                mount_options = data[3]
-                mount['mount_options'] = MountOpts(optlist_to_dict(mount_options))
-                mount['mount_labels'] = data[4:]
-            else:
-                raise ParseException('Unable to parse: "{0}"'.format(line))
+            # Handle the the '\040' in `mount_point`
+            line_sp = line.encode().decode("unicode-escape")
+            line_sp = _split(line_sp, 2)
+            mount['filesystem'] = mount['mounted_device'] = line_sp[0]
+            line_sp = _split(line_sp[1], 3, True)
+            mount['mount_label'] = line_sp[-2:]
+            line_sp = _split(line_sp[0], 2, True)
+            mount['mount_options'] = MountOpts(optlist_to_dict(line_sp[1]))
+            line_sp = _split(line_sp[0], 2, True)
+            mount['mount_type'] = mount['filesystem_type'] = line_sp[1]
+            mount['mount_point'] = line_sp[0]
 
             entry = MountEntry(mount)
             self.rows.append(entry)
