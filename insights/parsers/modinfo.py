@@ -13,6 +13,9 @@ ModInfoIxgbe - Command ``/sbin/modinfo ixgbe``
 ----------------------------------------------
 ModInfoVeth - Command ``/sbin/modinfo veth``
 --------------------------------------------
+ModInfoEach - Command ``/sbin/modinfo *``
+-----------------------------------------
+for any module listed by ``lsmod``
 """
 
 from insights import parser, CommandParser
@@ -157,6 +160,7 @@ class ModInfo(CommandParser):
         """
         return self.data.get('signer', '')
 
+    @property
     def module_details(self):
         """
         (dict): This will return the kernel module details when set.
@@ -350,6 +354,36 @@ class ModInfoVeth(ModInfo):
         >>> modinfo_veth.module_name
         'veth'
         >>> modinfo_veth.module_signer
+        'Red Hat Enterprise Linux kernel signing key'
+    """
+    pass
+
+
+@parser(Specs.modinfo)
+class ModInfoEach(ModInfo):
+    """
+    Parses the output of ``/sbin/modinfo %s`` command, where %s is any of the loaded modules.
+    Sample ``/sbin/modinfo veth`` output::
+
+        filename:       /lib/modules/3.10.0-327.el7.x86_64/kernel/drivers/net/veth.ko
+        alias:          rtnl-link-veth
+        license:        GPL v2
+        description:    Virtual Ethernet Tunnel
+        rhelversion:    7.2
+        srcversion:     25C6BF3D2F35CAF3A252F12
+        depends:
+        intree:         Y
+        vermagic:       3.10.0-327.el7.x86_64 SMP mod_unload modversions
+        signer:         Red Hat Enterprise Linux kernel signing key
+        sig_key:        BC:73:C3:CE:E8:9E:5E:AE:99:4A:E5:0A:0D:B1:F0:FE:E3:FC:09:13
+        sig_hashalgo:   sha256
+
+    Examples:
+        >>> type(modinfo_each)
+        <class 'insights.parsers.modinfo.ModInfoEach'>
+        >>> modinfo_each.module_name
+        'veth'
+        >>> modinfo_each.module_signer
         'Red Hat Enterprise Linux kernel signing key'
     """
     pass

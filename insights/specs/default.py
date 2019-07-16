@@ -211,6 +211,7 @@ class DefaultSpecs(Specs):
     dirsrv_errors = glob_file("var/log/dirsrv/*/errors*")
     display_java = simple_command("/usr/sbin/alternatives --display java")
     dmesg = simple_command("/bin/dmesg")
+    dmesg_log = simple_file("/var/log/dmesg")
     dmidecode = simple_command("/usr/sbin/dmidecode")
     dmsetup_info = simple_command("/usr/sbin/dmsetup info -C")
     dnf_modules = glob_file("/etc/dnf/modules.d/*.module")
@@ -311,7 +312,7 @@ class DefaultSpecs(Specs):
     hammer_ping = simple_command("/usr/bin/hammer ping")
     hammer_task_list = simple_command("/usr/bin/hammer --csv task list")
     haproxy_cfg = first_file(["/var/lib/config-data/puppet-generated/haproxy/etc/haproxy/haproxy.cfg", "/etc/haproxy/haproxy.cfg"])
-    heat_api_log = first_file(["/var/log/containers/heat/heat-api.log", "/var/log/heat/heat-api.log", "/var/log/heat/heat_api.log"])
+    heat_api_log = first_file(["/var/log/containers/heat/heat_api.log", "/var/log/heat/heat-api.log", "/var/log/heat/heat_api.log"])
     heat_conf = first_file(["/var/lib/config-data/puppet-generated/heat/etc/heat/heat.conf", "/etc/heat/heat.conf"])
     heat_crontab = simple_command("/usr/bin/crontab -l -u heat")
     heat_crontab_container = simple_command("docker exec heat_api_cron /usr/bin/crontab -l -u heat")
@@ -324,6 +325,7 @@ class DefaultSpecs(Specs):
         [
             "/etc/httpd/conf/httpd.conf",
             "/etc/httpd/conf.d/*.conf",
+            "/etc/httpd/conf.d/*/*.conf",
             "/etc/httpd/conf.modules.d/*.conf"
         ]
     )
@@ -500,17 +502,29 @@ class DefaultSpecs(Specs):
     manila_conf = first_file(["/var/lib/config-data/puppet-generated/manila/etc/manila/manila.conf", "/etc/manila/manila.conf"])
     mariadb_log = simple_file("/var/log/mariadb/mariadb.log")
     max_uid = simple_command("/bin/awk -F':' '{ if($3 > max) max = $3 } END { print max }' /etc/passwd")
+    md5chk_files = foreach_execute(
+        ["/etc/pki/product/69.pem", "/etc/pki/product-default/69.pem", "/usr/lib/libsoftokn3.so", "/usr/lib64/libsoftokn3.so", "/usr/lib/libfreeblpriv3.so", "/usr/lib64/libfreeblpriv3.so"],
+        "/usr/bin/md5sum %s")
     mdstat = simple_file("/proc/mdstat")
     meminfo = first_file(["/proc/meminfo", "/meminfo"])
     messages = simple_file("/var/log/messages")
     metadata_json = simple_file("metadata.json", context=ClusterArchiveContext, kind=RawFileProvider)
     mistral_executor_log = simple_file("/var/log/mistral/executor.log")
-    mlx4_port = simple_command("/usr/bin/find /sys/bus/pci/devices/*/mlx4_port[0-9] -print -exec cat {} \;")
+    mlx4_port = glob_file("/sys/bus/pci/devices/*/mlx4_port[0-9]")
     modinfo_i40e = simple_command("/sbin/modinfo i40e")
     modinfo_igb = simple_command("/sbin/modinfo igb")
     modinfo_ixgbe = simple_command("/sbin/modinfo ixgbe")
     modinfo_veth = simple_command("/sbin/modinfo veth")
     modinfo_vmxnet3 = simple_command("/sbin/modinfo vmxnet3")
+
+    @datasource(lsmod, context=HostContext)
+    def lsmod_only_names(broker):
+        lsmod = broker[DefaultSpecs.lsmod].content
+        # skip the title
+        return [line.split()[0] for line in lsmod[1:] if line.strip()]
+
+    modinfo = foreach_execute(lsmod_only_names, "modinfo %s")
+
     modprobe = glob_file(["/etc/modprobe.conf", "/etc/modprobe.d/*.conf"])
     sysconfig_mongod = glob_file([
                                  "etc/sysconfig/mongod",
@@ -522,6 +536,7 @@ class DefaultSpecs(Specs):
                             "/etc/opt/rh/rh-mongodb26/mongod.conf"
                             ])
     mount = simple_command("/bin/mount")
+    mounts = simple_file("/proc/mounts")
     mssql_conf = simple_file("/var/opt/mssql/mssql.conf")
     multicast_querier = simple_command("/usr/bin/find /sys/devices/virtual/net/ -name multicast_querier -print -exec cat {} \;")
     multipath_conf = simple_file("/etc/multipath.conf")
@@ -668,8 +683,6 @@ class DefaultSpecs(Specs):
                               glob_file("/database/postgresql-*.log")
                               ])
     puppetserver_config = simple_file("/etc/sysconfig/puppetserver")
-    md5chk_files = simple_command("/usr/bin/md5sum /dev/null /etc/pki/{product,product-default}/69.pem")
-    prelink_orig_md5 = None
     prev_uploader_log = simple_file("var/log/redhat-access-insights/redhat-access-insights.log.1")
     proc_snmp_ipv4 = simple_file("proc/net/snmp")
     proc_snmp_ipv6 = simple_file("proc/net/snmp6")
@@ -795,6 +808,7 @@ class DefaultSpecs(Specs):
     secure = simple_file("/var/log/secure")
     selinux_config = simple_file("/etc/selinux/config")
     sestatus = simple_command("/usr/sbin/sestatus -b")
+    setup_named_chroot = simple_file("/usr/libexec/setup-named-chroot.sh")
 
     @datasource(HostContext)
     def block(broker):
@@ -836,7 +850,8 @@ class DefaultSpecs(Specs):
     sysconfig_virt_who = simple_file("/etc/sysconfig/virt-who")
     sysctl = simple_command("/sbin/sysctl -a")
     sysctl_conf = simple_file("/etc/sysctl.conf")
-    sysctl_conf_initramfs = simple_command("/bin/lsinitrd /boot/initramfs-*kdump.img -f /etc/sysctl.conf /etc/sysctl.d/*.conf")
+    sysctl_conf_files = listdir("/boot/initramfs-*kdump.img")
+    sysctl_conf_initramfs = foreach_execute(sysctl_conf_files, "/bin/lsinitrd /boot/%s -f /etc/sysctl.conf /etc/sysctl.d/*.conf")
     systemctl_cat_rpcbind_socket = simple_command("/bin/systemctl cat rpcbind.socket")
     systemctl_cinder_volume = simple_command("/bin/systemctl show openstack-cinder-volume")
     systemctl_httpd = simple_command("/bin/systemctl show httpd")

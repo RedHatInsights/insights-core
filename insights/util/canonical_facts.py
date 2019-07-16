@@ -116,5 +116,7 @@ def get_canonical_facts(path=None):
 
 if __name__ == "__main__":
     import json
+    from insights import dr
+    dr.load_components("insights.specs.default", "insights.specs.insights_archive")
 
     print(json.dumps(get_canonical_facts()))

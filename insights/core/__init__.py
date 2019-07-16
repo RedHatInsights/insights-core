@@ -10,8 +10,9 @@ import yaml
 import six
 from fnmatch import fnmatch
 
-from insights.configtree import from_dict, iniconfig, Root, select, first
-from insights.configtree import Directive, SearchResult, Section
+from insights.parsr import iniparser
+from insights.parsr.query import (Directive, Entry, from_dict, Result, Section,
+                                  compile_queries)
 from insights.contrib.ConfigParser import RawConfigParser
 
 from insights.parsers import ParseException, SkipException
@@ -24,11 +25,15 @@ import sys
 # Since XPath expression is not supported by the ElementTree in Python 2.6,
 # import insights.contrib.ElementTree when running python is prior to 2.6 for compatibility.
 # Script insights.contrib.ElementTree is the same with xml.etree.ElementTree in Python 2.7.14
-# Otherwise, import xml.etree.ElementTree instead.
+# Otherwise, import defusedxml.ElementTree to avoid XML vulnerabilities,
+# if dependency not installed import xml.etree.ElementTree instead.
 if sys.version_info[0] == 2 and sys.version_info[1] <= 6:
     import insights.contrib.ElementTree as ET
 else:
-    import xml.etree.ElementTree as ET
+    try:
+        import defusedxml.ElementTree as ET
+    except:
+        import xml.etree.ElementTree as ET
 
 log = logging.getLogger(__name__)
 
@@ -127,12 +132,13 @@ def find_main(confs, name):
 
 def flatten(docs, pred):
     seen = set()
+    pred = compile_queries(pred)
 
     def inner(children):
         results = []
         for c in children:
-            if select(pred)([c]) and c.children:
-                name = c.value
+            if pred([c]) and c.children:
+                name = c.string_value
                 if name in seen:
                     msg = "Configuration contains recursive includes: %s" % name
                     raise Exception(msg)
@@ -261,32 +267,23 @@ class ConfigComponent(object):
 
     def find(self, *queries, **kwargs):
         """
-        Finds the first result found anywhere in the configuration. Pass
-        `one=last` for the last result. Returns `None` if no results are found.
+        Finds matching results anywhere in the configuration
         """
-        kwargs["deep"] = True
-        kwargs["roots"] = False
-        if "one" not in kwargs:
-            kwargs["one"] = first
-        return self.select(*queries, **kwargs)
+        roots = kwargs.get("roots", False)
+        return self.select(*queries, deep=True, roots=roots)
 
-    def find_all(self, *queries):
-        """
-        Find all results matching the query anywhere in the configuration.
-        Returns an empty `SearchResult` if no results are found.
-        """
-        return self.select(*queries, deep=True, roots=False)
+    find_all = find
 
     def _children_of_type(self, t):
         return [c for c in self.doc.children if isinstance(c, t)]
 
     @property
     def sections(self):
-        return SearchResult(children=self._children_of_type(Section))
+        return Result(children=self._children_of_type(Section))
 
     @property
     def directives(self):
-        return SearchResult(children=self._children_of_type(Directive))
+        return Result(children=self._children_of_type(Directive))
 
     def __getitem__(self, query):
         """
@@ -329,7 +326,7 @@ class ConfigComponent(object):
         return iter(self.doc)
 
     def __repr__(self):
-        return str(self.doc)
+        return repr(self.doc)
 
     def __str__(self):
         return self.__repr__()
@@ -349,7 +346,7 @@ class ConfigParser(Parser, ConfigComponent):
         self.doc = self.parse_doc(content)
 
     def parse_doc(self, content):
-        raise NotImplemented()
+        raise NotImplementedError()
 
     def lineat(self, pos):
         return self.content[pos] if pos is not None else None
@@ -369,8 +366,8 @@ class ConfigCombiner(ConfigComponent):
         # Set the children of all include directives to the contents of the
         # included configs
         for conf in confs:
-            for node in conf.doc.select(include_finder, deep=True, roots=False):
-                pattern = node.value
+            for node in conf.find(include_finder):
+                pattern = node.string_value
                 if not pattern.startswith("/"):
                     pattern = os.path.join(server_root, pattern)
                 includes = self.find_matches(confs, pattern)
@@ -378,7 +375,7 @@ class ConfigCombiner(ConfigComponent):
                     node.children.extend(inc.doc.children)
 
         # flatten all content from nested includes into a main doc
-        self.doc = Root(children=flatten(self.main.doc.children, include_finder))
+        self.doc = Entry(children=flatten(self.main.doc.children, include_finder))
 
     def find_matches(self, confs, pattern):
         results = [c for c in confs if fnmatch(c.file_path, pattern)]
@@ -1417,7 +1414,7 @@ class IniConfigFile(ConfigParser):
         self.data = config
 
     def parse_doc(self, content):
-        return iniconfig.parse_doc(content)
+        return iniparser.parse_doc("\n".join(content), self)
 
     def sections(self):
         """list: Return a list of section names."""
