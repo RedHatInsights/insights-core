@@ -5,7 +5,6 @@ test mount
 from insights.parsers import ParseException, SkipException
 from insights.parsers.mount import Mount, ProcMounts
 from insights.tests import context_wrap
-
 import pytest
 
 MOUNT_DATA = """
@@ -82,15 +81,6 @@ def test_mount():
     assert results.get_dir('/etc') == results['/']
     assert results.get_dir('relative/paths/fail') is None
 
-    # Test parse failure
-    errors = Mount(context_wrap(MOUNT_ERR_DATA))
-    assert errors is not None
-    assert len(errors) == 3
-    assert not hasattr(errors[0], 'parse_error')
-    assert errors[0].filesystem == 'tmpfs'
-    assert hasattr(errors[1], 'parse_error')
-    assert errors[1].parse_error == 'Unable to parse line'
-
     # Test search
     assert results.search(filesystem='/dev/sr0') == [sr0]
     assert results.search(mount_type='tmpfs') == [
@@ -101,6 +91,13 @@ def test_mount():
     ]
 
 
+def test_mount_exception1():
+    # Test parse failure
+    with pytest.raises(ParseException) as pe:
+        Mount(context_wrap(MOUNT_ERR_DATA))
+    assert 'Unable to parse' in str(pe.value)
+
+
 MOUNT_WITHOUT_ROOT = """
 tmpfs on /tmp type tmpfs (rw,seclabel)
 hugetlbfs on /dev/hugepages type hugetlbfs (rw,relatime,seclabel)
@@ -108,14 +105,13 @@ hugetlbfs on /dev/hugepages type hugetlbfs (rw,relatime,seclabel)
 """.strip()
 
 
-def test_mount_get_dir():
+def test_mount_exception2():
     with pytest.raises(ParseException) as exc:
         Mount(context_wrap(MOUNT_WITHOUT_ROOT))
     assert "Input for mount must contain '/' mount point." in str(exc)
 
 
 PROC_MOUNT = """
-rootfs / rootfs rw 0 0
 proc /proc proc rw,relatime 0 0
 sysfs /sys sysfs rw,relatime 0 0
 devtmpfs /dev devtmpfs rw,relatime,size=8155456k,nr_inodes=2038864,mode=755 0 0
@@ -155,7 +151,7 @@ devtmpfs /dev devtmpfs rw,relatime,size=8155456k,nr_inodes=2038864,mode=755 0 0
 def test_proc_mount():
     results = ProcMounts(context_wrap(PROC_MOUNT))
     assert results is not None
-    assert len(results) == 20
+    assert len(results) == 19
     sda1 = results.search(mounted_device='/dev/sda1')[0]
 
     # Test get method
@@ -176,7 +172,7 @@ def test_proc_mount():
         assert hasattr(mount, 'mount_options')
 
     # Test getitem
-    assert results[8] == sda1
+    assert results[7] == sda1
     assert results['/misc'] == results[-1]
     # Index only by string or number
     with pytest.raises(TypeError) as exc:
@@ -193,29 +189,26 @@ def test_proc_mount():
     # Test search
     assert results.search(mounted_device='/dev/sda1') == [sda1]
     assert results.search(filesystem_type='nfs') == [
-        results.rows[n] for n in (17, 18)
+        results.rows[n] for n in (16, 17)
     ]
     assert results.search(mount_options__contains='mode') == [
-        results.rows[n] for n in (3, 4)
+        results.rows[n] for n in (2, 3)
     ]
-
-    # Test parse failure
-    errors = ProcMounts(context_wrap(PROCMOUNT_ERR_DATA))
-    assert errors is not None
-    assert len(errors) == 2
-    assert not hasattr(errors[0], 'parse_error')
-    assert errors[0].mounted_device == 'rootfs'
-    assert hasattr(errors[1], 'parse_error')
-    assert errors[1].parse_error == 'Unable to parse line'
 
 
 def test_proc_mount_exception1():
     with pytest.raises(SkipException) as e:
         ProcMounts(context_wrap(EXCEPTION1))
-    assert 'Empty file' in str(e)
+    assert 'Empty content' in str(e)
 
 
 def test_proc_mount_exception2():
     with pytest.raises(ParseException) as e:
         ProcMounts(context_wrap(EXCEPTION2))
     assert "Input for mount must contain '/' mount point." in str(e)
+
+
+def test_proc_mount_exception3():
+    with pytest.raises(ParseException) as pe:
+        ProcMounts(context_wrap(PROCMOUNT_ERR_DATA))
+    assert 'Unable to parse' in str(pe.value)
