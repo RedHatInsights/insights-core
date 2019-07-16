@@ -235,3 +235,10 @@ def get_version_info():
     version_info['client_version'] = run_command_get_output(cmd)['output']
 
     return version_info
+
+
+def cgroup_available():
+    '''
+    Detect whether the memory cgroup is available
+    '''
+    return os.path.exists('/sys/fs/cgroup/memory')

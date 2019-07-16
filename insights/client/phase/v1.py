@@ -11,7 +11,7 @@ from insights.client import InsightsClient
 from insights.client.config import InsightsConfig
 from insights.client.constants import InsightsConstants as constants
 from insights.client.support import InsightsSupport
-from insights.client.utilities import validate_remove_file
+from insights.client.utilities import validate_remove_file, cgroup_available
 from insights.client.schedule import get_scheduler
 
 logger = logging.getLogger(__name__)
@@ -59,6 +59,14 @@ def pre_update(client, config):
     if config.version:
         logger.info(constants.version)
         sys.exit(constants.sig_kill_ok)
+
+    if config.ignore_cgroup:
+        logger.debug('Skipping cgroup check.')
+    else:
+        if not cgroup_available():
+            logger.error('Memory cgroup is disabled; insights-client will not run. '
+                         'To run anyway, set ignore_cgroup=True in %s', config.conf)
+            sys.exit(constants.sig_kill_bad)
 
     # validate the remove file
     if config.validate:
