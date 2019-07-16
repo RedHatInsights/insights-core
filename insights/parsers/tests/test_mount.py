@@ -3,9 +3,11 @@ test mount
 ==========
 """
 from insights.parsers import ParseException, SkipException
+from insights.parsers import mount
 from insights.parsers.mount import Mount, ProcMounts
 from insights.tests import context_wrap
 import pytest
+import doctest
 
 MOUNT_DATA = """
 tmpfs on /tmp type tmpfs (rw,seclabel)
@@ -58,11 +60,11 @@ def test_mount():
     assert 'mount_label' not in sda1
 
     # Test iteration
-    for mount in results:
-        assert hasattr(mount, 'filesystem')
-        assert hasattr(mount, 'mount_point')
-        assert hasattr(mount, 'mount_type')
-        assert hasattr(mount, 'mount_options')
+    for mnt in results:
+        assert hasattr(mnt, 'filesystem')
+        assert hasattr(mnt, 'mount_point')
+        assert hasattr(mnt, 'mount_type')
+        assert hasattr(mnt, 'mount_options')
 
     # Test getitem
     assert results[12] == sr0
@@ -138,10 +140,10 @@ rootfs / rootfs rw 0 0
 sysfs /sys sysfs rw,relatime
 """.strip()
 
-EXCEPTION1 = """
+PROC_EXCEPTION1 = """
 """.strip()
 
-EXCEPTION2 = """
+PROC_EXCEPTION2 = """
 proc /proc proc rw,relatime 0 0
 sysfs /sys sysfs rw,relatime 0 0
 devtmpfs /dev devtmpfs rw,relatime,size=8155456k,nr_inodes=2038864,mode=755 0 0
@@ -165,11 +167,11 @@ def test_proc_mount():
     assert sda1['mount_labels'] == ['0', '0']
 
     # Test iteration
-    for mount in results:
-        assert hasattr(mount, 'mounted_device')
-        assert hasattr(mount, 'mount_point')
-        assert hasattr(mount, 'filesystem_type')
-        assert hasattr(mount, 'mount_options')
+    for mnt in results:
+        assert hasattr(mnt, 'mounted_device')
+        assert hasattr(mnt, 'mount_point')
+        assert hasattr(mnt, 'filesystem_type')
+        assert hasattr(mnt, 'mount_options')
 
     # Test getitem
     assert results[7] == sda1
@@ -198,13 +200,13 @@ def test_proc_mount():
 
 def test_proc_mount_exception1():
     with pytest.raises(SkipException) as e:
-        ProcMounts(context_wrap(EXCEPTION1))
+        ProcMounts(context_wrap(PROC_EXCEPTION1))
     assert 'Empty content' in str(e)
 
 
 def test_proc_mount_exception2():
     with pytest.raises(ParseException) as e:
-        ProcMounts(context_wrap(EXCEPTION2))
+        ProcMounts(context_wrap(PROC_EXCEPTION2))
     assert "Input for mount must contain '/' mount point." in str(e)
 
 
@@ -212,3 +214,27 @@ def test_proc_mount_exception3():
     with pytest.raises(ParseException) as pe:
         ProcMounts(context_wrap(PROCMOUNT_ERR_DATA))
     assert 'Unable to parse' in str(pe.value)
+
+
+MOUNT_DOC = """
+/dev/mapper/rootvg-rootlv on / type ext4 (rw,relatime,barrier=1,data=ordered)
+proc on /proc type proc (rw,nosuid,nodev,noexec,relatime)
+/dev/mapper/HostVG-Config on /etc/shadow type ext4 (rw,noatime,seclabel,stripe=256,data=ordered)
+dev/sr0 on /run/media/root/VMware Tools type iso9660 (ro,nosuid,nodev,relatime,uid=0,gid=0,iocharset=utf8,mode=0400,dmode=0500,uhelper=udisks2) [VMware Tools]
+""".strip()
+
+PROC_MOUNT_DOC = """
+/dev/mapper/rootvg-rootlv / ext4 rw,relatime,barrier=1,data=ordered 0 0
+proc /proc proc rw,nosuid,nodev,noexec,relatime 0 0
+/dev/mapper/HostVG-Config /etc/shadow ext4 rw,noatime,seclabel,stripe=256,data=ordered 0 0
+dev/sr0 /run/media/root/VMware\040Tools iso9660 ro,nosuid,nodev,relatime,uid=0,gid=0,iocharset=utf8,mode=0400,dmode=0500,uhelper=udisks2 0 0
+""".strip()
+
+
+def test_doc_examples():
+    env = {
+            'mnt_info': Mount(context_wrap(MOUNT_DOC)),
+            'proc_mnt_info': ProcMounts(context_wrap(PROC_MOUNT_DOC))
+          }
+    failed, total = doctest.testmod(mount, globs=env)
+    assert failed == 0

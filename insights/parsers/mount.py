@@ -13,7 +13,7 @@ ProcMounts - file ``/proc/mounts``
 
 The ``Mount`` class implements parsing for the ``mount`` command output which looks like::
 
-    sysfs on /sys type sysfs (rw,nosuid,nodev,noexec,relatime,seclabel)
+    /dev/mapper/rootvg-rootlv on / type ext4 (rw,relatime,barrier=1,data=ordered)
     proc on /proc type proc (rw,nosuid,nodev,noexec,relatime)
     /dev/mapper/HostVG-Config on /etc/shadow type ext4 (rw,noatime,seclabel,stripe=256,data=ordered)
     dev/sr0 on /run/media/root/VMware Tools type iso9660 (ro,nosuid,nodev,relatime,uid=0,gid=0,iocharset=utf8,mode=0400,dmode=0500,uhelper=udisks2) [VMware Tools]
@@ -129,6 +129,15 @@ class MountedFileSystems(CommandParser):
     """
     Base Class for :class:`Mount` and :class:`ProcMounts`.
 
+    Attributes:
+        rows (list): List of :class:`MountEntry` objects for each row of the
+            content.
+        mounts (dict): Dict with the `mount_point` as the key and the
+            :class:`MountEntry` objects as the value.
+
+    Raises:
+        SkipException: When the file is empty.
+        ParseException: Raised when any problem parsing the command output.
     """
     def __len__(self):
         return len(self.rows)
@@ -154,6 +163,7 @@ class MountedFileSystems(CommandParser):
 
         if '/' not in self.mounts:
             raise ParseException("Input for mount must contain '/' mount point.")
+        print(self.mounts)
 
     def get_dir(self, path):
         """
@@ -199,39 +209,27 @@ class Mount(MountedFileSystems):
     """
     Class of information for all output from ``mount`` command.
 
+    .. note::
+        Please refer to its super-class :class:`MountedFileSystems` for more
+        details.
+
     Examples:
         >>> type(mnt_info)
         <class 'insights.parsers.mount.Mount'>
         >>> len(mnt_info)
         4
-        >>> mnt_info[3].__dict__
-        {'filesystem': 'dev/sr0',
-         'mount_clause': 'dev/sr0 on /run/media/root/VMware Tools type iso9660 (ro,nosuid,nodev,relatime,uid=0,gid=0,iocharset=utf8,mode=0400,dmode=0500,uhelper=udisks2) [VMware Tools]',
-         'mount_label': 'VMware Tools',
-         'mount_options': {'dmode': '0500', 'relatime': True, 'uid': '0',
-             'iocharset': 'utf8', 'gid': '0', 'mode': '0400', 'ro': True,
-             'nosuid': True, 'uhelper': 'udisks2', 'nodev': True}
-         'mount_point': '/run/media/root/VMware Tools',
-         'mount_type': 'iso9660'}
         >>> mnt_info[3].filesystem
-        'dev/sr0'
+        '/run/media/root/VMware Tools'
+        >>> mnt_info[3].mount_label
+        'VMware Tools'
         >>> mnt_info[3].mount_type
         'iso9660'
-        >>> mnt_info[3].mount_options
-        {'dmode': '0500', 'gid': '0', 'iocharset': 'utf8', 'mode': '0400', 'nodev': True,
-         'nosuid': True, 'relatime': True, 'ro': True, 'uhelper': 'udisks2', 'uid': '0'}
-        >>> mnt_info[3].mount_options.ro
+        >>> mnt_info['dev/sr0'].mount_label
+        'VMware Tools'
+        >>> mnt_info['dev/sr0'].mount_options.ro
         True
-        >>> mnt_info.mounts['/run/media/root/VMware Tools'].filesystem
+        >>> mnt_info['/run/media/root/VMware Tools'].filesystem
         'dev/sr0'
-
-    Attributes:
-        rows (list of MountEntry): List of :class:`MountEntry` objects for
-            each row of the command output.
-
-    Raises:
-        SkipException: When the file is empty.
-        ParseException: Raised when any problem parsing the command output.
     """
     def _parse_mounts(self, content):
 
@@ -303,19 +301,38 @@ class Mount(MountedFileSystems):
 
 @parser(Specs.mounts)
 class ProcMounts(MountedFileSystems):
-    """Class to parse the content of ``/proc/mounts`` file.
+    """
+    Class to parse the content of ``/proc/mounts`` file.
+
     This class is required to parse the ``/proc/mounts`` file in addition to the
     ``/bin/mount`` command because it lists the mount points of those process's
     which are not present in the output of the ``/bin/mount`` command.
 
+    .. note::
+        Please refer to its super-class :class:`MountedFileSystems` for more
+        details.
 
-    Attributes:
-        rows (list of MountEntry): List of :class:`MountEntry` objects for
-                                   each row of the command output.
-
-    Raises:
-        SkipException: When the file is empty.
-        ParseException: When '/' mount point is not present.
+    Examples:
+        >>> type(proc_mnt_info)
+        <class 'insights.parsers.mount.ProcMounts'>
+        >>> len(proc_mnt_info)
+        4
+        >>> proc_mnt_info[3].filesystem
+        '/run/media/root/VMware\040Tools'
+        >>> proc_mnt_info[3].mounted_device
+        'dev/sr0'
+        >>> proc_mnt_info[3].mounted_device == proc_mnt_info[3].filesystem
+        True
+        >>> proc_mnt_info[3].mount_type
+        'iso9660'
+        >>> proc_mnt_info[3].filesystem_type
+        'iso9660'
+        >>> proc_mnt_info['dev/sr0'].mount_label
+        'dev/sr0'
+        >>> proc_mnt_info['dev/sr0'].mount_options.ro
+        True
+        >>> proc_mnt_info['/run/media/root/VMware Tools'].mounted_device
+        'dev/sr0'
     """
 
     def _parse_mounts(self, content):
