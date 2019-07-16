@@ -24,6 +24,9 @@ SystemctlShowPulpCelerybeat - command ``systemctl show pulp_celerybeat``
 SystemctlShowHttpd - command ``systemctl show httpd``
 -----------------------------------------------------
 
+SystemctlShowNginx - command ``systemctl show nginx``
+-----------------------------------------------------
+
 SystemctlShowQpidd - command ``systemctl show qpidd``
 -----------------------------------------------------
 
@@ -259,6 +262,55 @@ class SystemctlShowHttpd(SystemctlShow):
 
     Examples:
         >>> systemctl_show_httpd["LimitNOFILE"]
+        '4096'
+
+    """
+    pass
+
+
+@parser(Specs.systemctl_nginx)
+class SystemctlShowNginx(SystemctlShow):
+    """
+    Class for ``systemctl show nginx``.
+
+    Typical output of ``/bin/systemctl show nginx`` command is::
+
+        Type=forking
+        Restart=no
+        PIDFile=/run/nginx.pid
+        NotifyAccess=none
+        RestartUSec=100ms
+        TimeoutStartUSec=1min 30s
+        TimeoutStopUSec=5s
+        RuntimeMaxUSec=infinity
+        WatchdogUSec=0
+        WatchdogTimestampMonotonic=0
+        PermissionsStartOnly=no
+        RootDirectoryStartOnly=no
+        RemainAfterExit=no
+        GuessMainPID=yes
+        MainPID=0
+        ControlPID=0
+        FileDescriptorStoreMax=0
+        NFileDescriptorStore=0
+        StatusErrno=0
+        Result=success
+        UID=[not set]
+        GID=[not set]
+        NRestarts=0
+        ExecMainStartTimestampMonotonic=0
+        ExecMainExitTimestampMonotonic=0
+        ExecMainPID=0
+        ExecMainCode=0
+        ExecMainStatus=0
+        ExecStartPre={ path=/usr/bin/rm ; argv[]=/usr/bin/rm -f /run/nginx.pid ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }
+        ExecStartPre={ path=/usr/sbin/nginx ; argv[]=/usr/sbin/nginx -t ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }
+        ExecStart={ path=/usr/sbin/nginx ; argv[]=/usr/sbin/nginx ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }
+        ExecReload={ path=/bin/kill ; argv[]=/bin/kill -s HUP $MAINPID ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }
+        ...
+
+    Examples:
+        >>> systemctl_show_nginx["LimitNOFILE"]
         '4096'
 
     """
