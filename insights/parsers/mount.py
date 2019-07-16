@@ -189,10 +189,10 @@ class MountedFileSystems(CommandParser):
 
         Examples:
 
-            >>> mounts.search(filesystem='proc')
-            [{'mount_type': 'proc', 'mount_point': '/proc', 'filesystem': 'proc', 'mount_options': {'noexec': True, 'relatime': True, 'rw': True, 'nosuid': True, 'nodev': True}, 'mount_clause': 'proc on /proc type proc (rw,nosuid,nodev,noexec,relatime)'}]
-            >>> mounts.search(mount_options__contains='seclabel')
-            [{'mount_type': 'ext4', 'mount_point': '/etc/shadow', 'filesystem': '/dev/mapper/HostVG-Config', 'mount_options': {'rw': True, 'data': 'ordered', 'stripe': '256', 'noatime': True, 'seclabel': True}, 'mount_clause': '/dev/mapper/HostVG-Config on /etc/shadow type ext4 (rw,noatime,seclabel,stripe=256,data=ordered)'}]
+            >>> mounts.search(filesystem='proc')[0].mount_clause
+            'proc on /proc type proc (rw,nosuid,nodev,noexec,relatime)'
+            >>> mounts.search(mount_options__contains='seclabel')[0].mount_clause
+            '/dev/mapper/HostVG-Config on /etc/shadow type ext4 (rw,noatime,seclabel,stripe=256,data=ordered)'
 
         Arguments:
             **kwargs (dict): Dictionary of key-value pairs to search for.
