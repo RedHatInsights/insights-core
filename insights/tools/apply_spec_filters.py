@@ -40,7 +40,7 @@ for spec in specs:
         if f:
             filters[spec] = sorted(f)
 
-for spec in chain.from_iterable(uploader_json[i] for i in ("commands", "files")):
+for spec in chain.from_iterable(uploader_json[i] for i in ("commands", "files", "globs")):
     if spec["symbolic_name"] in filters:
         spec["pattern"] = filters[spec["symbolic_name"]]
 
