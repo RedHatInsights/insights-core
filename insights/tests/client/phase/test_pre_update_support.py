@@ -15,7 +15,6 @@ def patch_insights_config(old_function):
                        "return_value.load_all.return_value.disable_schedule": False,
                        "return_value.load_all.return_value.analyze_container": False,
                        "return_value.load_all.return_value.test_connection": False,
-                       "return_value.load_all.return_value.diagnosis": False,
                        "return_value.load_all.return_value.support": True})
     return patcher(old_function)
 
@@ -57,57 +56,3 @@ def test_exit_ok(insights_config, insights_client, insights_support):
         pre_update()
 
     assert exc_info.value.code == InsightsConstants.sig_kill_ok
-
-
-@patch_insights_client
-@patch_insights_config
-def test_cgroup_enabled_ignore_false(insights_config, insights_client):
-    '''
-    Memory cgroup is enabled, config ignore is disabled
-    '''
-    insights_config.return_value.load_all.return_value.support = False
-    insights_config.return_value.ignore_cgroup = False
-    with raises(SystemExit) as exc_info:
-        pre_update()
-    assert exc_info.value.code == 0
-
-
-@patch_insights_client
-@patch_insights_config
-def test_cgroup_enabled_ignore_true(insights_config, insights_client):
-    '''
-    Memory cgroup is enabled, config ignore is disabled
-    '''
-    insights_config.return_value.load_all.return_value.support = False
-    insights_config.return_value.load_all.return_value.ignore_cgroup = True
-    with raises(SystemExit) as exc_info:
-        pre_update()
-    assert exc_info.value.code == 0
-
-
-@patch('insights.client.phase.v1.cgroup_available', return_value=False)
-@patch_insights_client
-@patch_insights_config
-def test_cgroup_disabled_ignore_false(insights_config, insights_client, cgroup_available):
-    '''
-    Memory cgroup is enabled, config ignore is disabled
-    '''
-    insights_config.return_value.load_all.return_value.support = False
-    insights_config.return_value.load_all.return_value.ignore_cgroup = False
-    with raises(SystemExit) as exc_info:
-        pre_update()
-    assert exc_info.value.code == InsightsConstants.sig_kill_bad
-
-
-@patch('insights.client.phase.v1.cgroup_available', return_value=False)
-@patch_insights_client
-@patch_insights_config
-def test_cgroup_disabled_ignore_true(insights_config, insights_client, cgroup_available):
-    '''
-    Memory cgroup is enabled, config ignore is disabled
-    '''
-    insights_config.return_value.load_all.return_value.support = False
-    insights_config.return_value.load_all.return_value.ignore_cgroup = True
-    with raises(SystemExit) as exc_info:
-        pre_update()
-    assert exc_info.value.code == 0

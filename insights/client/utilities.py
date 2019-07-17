@@ -237,13 +237,6 @@ def get_version_info():
     return version_info
 
 
-def cgroup_available():
-    '''
-    Detect whether the memory cgroup is available
-    '''
-    return os.path.exists('/sys/fs/cgroup/memory')
-
-
 def print_egg_versions():
     '''
     Log all available eggs' versions

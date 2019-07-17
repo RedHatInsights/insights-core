@@ -145,13 +145,3 @@ def test_delete_unregistered_file():
     util.delete_unregistered_file()
     for u in constants.unregistered_files:
         assert os.path.isfile(u) is False
-
-
-@patch('insights.client.utilities.os.path.exists', return_value=True)
-def test_cgroup_available_file_exists(path_exists):
-    assert util.cgroup_available()
-
-
-@patch('insights.client.utilities.os.path.exists', return_value=False)
-def test_cgroup_available_file_does_not_exist(path_exists):
-    assert not util.cgroup_available()
