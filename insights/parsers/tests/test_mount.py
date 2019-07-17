@@ -2,8 +2,8 @@
 test mount
 ==========
 """
-from insights.parsers import ParseException
-from insights.parsers.mount import Mount
+from insights.parsers import ParseException, SkipException
+from insights.parsers.mount import Mount, ProcMounts
 from insights.tests import context_wrap
 
 import pytest
@@ -112,3 +112,110 @@ def test_mount_get_dir():
     with pytest.raises(ParseException) as exc:
         Mount(context_wrap(MOUNT_WITHOUT_ROOT))
     assert "Input for mount must contain '/' mount point." in str(exc)
+
+
+PROC_MOUNT = """
+rootfs / rootfs rw 0 0
+proc /proc proc rw,relatime 0 0
+sysfs /sys sysfs rw,relatime 0 0
+devtmpfs /dev devtmpfs rw,relatime,size=8155456k,nr_inodes=2038864,mode=755 0 0
+devpts /dev/pts devpts rw,relatime,gid=5,mode=620,ptmxmode=000 0 0
+tmpfs /dev/shm tmpfs rw,nosuid,nodev,noexec,relatime 0 0
+/dev/mapper/rootvg-rootlv / ext4 rw,relatime,barrier=1,data=ordered 0 0
+/proc/bus/usb /proc/bus/usb usbfs rw,relatime 0 0
+/dev/sda1 /boot ext4 rw,relatime,barrier=1,data=ordered 0 0
+/dev/mapper/rootvg-homelv /home ext4 rw,relatime,barrier=1,data=ordered 0 0
+/dev/mapper/rootvg-optlv /opt ext4 rw,relatime,barrier=1,data=ordered 0 0
+/dev/mapper/rootvg-tmplv /tmp ext4 rw,relatime,barrier=1,data=ordered 0 0
+/dev/mapper/rootvg-usrlv /usr ext4 rw,relatime,barrier=1,data=ordered 0 0
+/dev/mapper/rootvg-varlv /var ext4 rw,relatime,barrier=1,data=ordered 0 0
+/dev/mapper/rootvg-tmplv /var/tmp ext4 rw,relatime,barrier=1,data=ordered 0 0
+none /proc/sys/fs/binfmt_misc binfmt_misc rw,relatime 0 0
+sunrpc /var/lib/nfs/rpc_pipefs rpc_pipefs rw,relatime 0 0
+/vol/vol3/wpsanet /sa/net nfs rw,relatime,vers=3,rsize=8192,wsize=8192,namlen=255,soft,proto=tcp,timeo=14,retrans=2,sec=sys,mountaddr=10.xx.xx.xx,mountvers=3,mountport=4046,mountproto=udp,local_lock=none 0 0
+/vol/vol9/home /users nfs rw,relatime,vers=3,rsize=8192,wsize=8192,namlen=255,soft,proto=tcp,timeo=14,retrans=2,sec=sys,mountaddr=10.xx.xx.xx,mountvers=3,mountport=4046,mountproto=udp,local_lock=none,addr=10.xx.xx.xx 0 0
+/etc/auto.misc /misc autofs rw,relatime,fd=7,pgrp=1936,timeout=300,minproto=5,maxproto=5,indirect 0 0
+""".strip()
+
+PROCMOUNT_ERR_DATA = """
+rootfs / rootfs rw 0 0
+sysfs /sys sysfs rw,relatime
+""".strip()
+
+EXCEPTION1 = """
+""".strip()
+
+EXCEPTION2 = """
+proc /proc proc rw,relatime 0 0
+sysfs /sys sysfs rw,relatime 0 0
+devtmpfs /dev devtmpfs rw,relatime,size=8155456k,nr_inodes=2038864,mode=755 0 0
+""".strip()
+
+
+def test_proc_mount():
+    results = ProcMounts(context_wrap(PROC_MOUNT))
+    assert results is not None
+    assert len(results) == 20
+    sda1 = results.search(mounted_device='/dev/sda1')[0]
+
+    # Test get method
+    assert sda1 is not None
+    assert sda1['mount_point'] == '/boot'
+    assert sda1['filesystem_type'] == 'ext4'
+    assert 'rw' in sda1['mount_options']
+    assert 'relatime' in sda1['mount_options']
+    assert sda1['mount_options']['data'] == 'ordered'
+    assert sda1.mount_options.data == 'ordered'
+    assert sda1['mount_labels'] == ['0', '0']
+
+    # Test iteration
+    for mount in results:
+        assert hasattr(mount, 'mounted_device')
+        assert hasattr(mount, 'mount_point')
+        assert hasattr(mount, 'filesystem_type')
+        assert hasattr(mount, 'mount_options')
+
+    # Test getitem
+    assert results[8] == sda1
+    assert results['/misc'] == results[-1]
+    # Index only by string or number
+    with pytest.raises(TypeError) as exc:
+        assert results[set([1, 2, 3])] is None
+    assert 'Mounts can only be indexed by mount string or line number' in str(exc)
+
+    # Test mounts dictionary
+    assert results.mounts['/boot'] == sda1
+
+    # Test get_dir
+    assert results.get_dir('/var/lib/nfs/rpc_pipefs') == results.search(mounted_device='sunrpc')[0]
+    assert results.get_dir('/etc') == results['/']
+
+    # Test search
+    assert results.search(mounted_device='/dev/sda1') == [sda1]
+    assert results.search(filesystem_type='nfs') == [
+        results.rows[n] for n in (17, 18)
+    ]
+    assert results.search(mount_options__contains='mode') == [
+        results.rows[n] for n in (3, 4)
+    ]
+
+    # Test parse failure
+    errors = ProcMounts(context_wrap(PROCMOUNT_ERR_DATA))
+    assert errors is not None
+    assert len(errors) == 2
+    assert not hasattr(errors[0], 'parse_error')
+    assert errors[0].mounted_device == 'rootfs'
+    assert hasattr(errors[1], 'parse_error')
+    assert errors[1].parse_error == 'Unable to parse line'
+
+
+def test_proc_mount_exception1():
+    with pytest.raises(SkipException) as e:
+        ProcMounts(context_wrap(EXCEPTION1))
+    assert 'Empty file' in str(e)
+
+
+def test_proc_mount_exception2():
+    with pytest.raises(ParseException) as e:
+        ProcMounts(context_wrap(EXCEPTION2))
+    assert "Input for mount must contain '/' mount point." in str(e)
