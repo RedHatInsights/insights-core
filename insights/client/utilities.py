@@ -241,7 +241,8 @@ def cgroup_available():
     '''
     Detect whether the memory cgroup is available
     '''
-    return os.path.exists('/sys/fs/cgroup/memory')
+    return (os.path.exists('/sys/fs/cgroup/memory') or
+            os.path.exists('/cgroup/memory'))
 
 
 def print_egg_versions():
