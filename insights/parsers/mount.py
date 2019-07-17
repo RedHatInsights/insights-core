@@ -1,9 +1,16 @@
 """
-Mount - command ``/bin/mount``
-==============================
+Mount Entries
+=============
 
-This module provides parsing for the ``mount`` command. The ``Mount`` class
-implements parsing for the ``mount`` command output which looks like::
+Mount - command ``/bin/mount``
+------------------------------
+
+ProcMounts - file ``/proc/mounts``
+----------------------------------
+
+This module provides parsing for the ``mount`` command and the ``/proc/mounts`` file.
+
+The ``Mount`` class implements parsing for the ``mount`` command output which looks like::
 
     sysfs on /sys type sysfs (rw,nosuid,nodev,noexec,relatime,seclabel)
     proc on /proc type proc (rw,nosuid,nodev,noexec,relatime)
@@ -69,7 +76,7 @@ Examples:
 
 import re
 from insights.specs import Specs
-from ..parsers import optlist_to_dict, keyword_search, ParseException
+from ..parsers import optlist_to_dict, keyword_search, ParseException, SkipException
 from .. import parser, get_active_lines, LegacyItemAccess, CommandParser
 
 
@@ -233,7 +240,6 @@ class Mount(CommandParser):
             self.rows.append(entry)
             if match:
                 self.mounts[mount['mount_point']] = entry
-
         if '/' not in self.mounts:
             raise ParseException("Input for mount must contain '/' mount point.")
 
@@ -275,3 +281,53 @@ class Mount(CommandParser):
             (list): The list of mount points matching the given criteria.
         """
         return keyword_search(self.rows, **kwargs)
+
+
+@parser(Specs.mounts)
+class ProcMounts(Mount):
+    """Class to parse the content of ``/proc/mounts`` file.
+    This class is required to parse the ``/proc/mounts`` file in addition to the
+    ``/bin/mount`` command because it lists the mount points of those process's
+    which are not present in the output of the ``/bin/mount`` command.
+
+    .. note::
+        Please refer to its super-class :class:`Mount` for more
+        details.
+
+    Attributes:
+        rows (list of MountEntry): List of :class:`MountEntry` objects for
+                                   each row of the command output.
+
+    Raises:
+        SkipException: When the file is empty.
+        ParseException: When '/' mount point is not present.
+    """
+
+    def parse_content(self, content):
+        # No content found or file is empty
+        if not content:
+            raise SkipException('Empty file')
+
+        self.rows = []
+        self.mounts = {}
+        for line in get_active_lines(content):
+            mount = {}
+            mount['mount_clause'] = line
+            data = line.split()
+            if len(data) == 6:
+                mount['mounted_device'] = data[0]
+                mount['mount_point'] = data[1]
+                mount['filesystem_type'] = data[2]
+                mount_options = data[3]
+                mount['mount_options'] = MountOpts(optlist_to_dict(mount_options))
+                mount['mount_labels'] = data[4:]
+            else:
+                mount['parse_error'] = 'Unable to parse line'
+
+            entry = MountEntry(mount)
+            self.rows.append(entry)
+            if len(data) == 6:
+                self.mounts[mount['mount_point']] = entry
+
+        if '/' not in self.mounts:
+            raise ParseException("Input for mount must contain '/' mount point.")
