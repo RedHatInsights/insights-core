@@ -56,7 +56,6 @@ def get_phases():
 
 @phase
 def pre_update(client, config):
-    print_egg_versions()
     if config.version:
         logger.info(constants.version)
         sys.exit(constants.sig_kill_ok)
@@ -129,7 +128,7 @@ def post_update(client, config):
     # create a machine id first thing. we'll need it for all uploads
     logger.debug('Machine ID: %s', client.get_machine_id())
     logger.debug("CONFIG: %s", config)
-
+    print_egg_versions()
     # -------delete everything below this line-------
     if config.legacy_upload:
         if config.status:
