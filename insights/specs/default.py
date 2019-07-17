@@ -258,8 +258,6 @@ class DefaultSpecs(Specs):
     docker_storage_setup = simple_file("/etc/sysconfig/docker-storage-setup")
     docker_sysconfig = simple_file("/etc/sysconfig/docker")
 
-    dumpdev = simple_command("/bin/awk '/ext[234]/ { print $1; }' /proc/mounts")
-
     @datasource(ProcMounts)
     def dumpdev(broker):
         mnt = broker[ProcMounts]
