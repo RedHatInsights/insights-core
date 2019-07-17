@@ -28,8 +28,8 @@ Examples:
     >>> lssap.data[3]['Instance']
     'D51'
 """
-from .. import parser, CommandParser
-from insights.parsers import ParseException, parse_delimited_table
+from insights import parser, CommandParser
+from insights.parsers import SkipException, ParseException, parse_delimited_table
 from insights.specs import Specs
 
 
@@ -38,6 +38,7 @@ class Lssap(CommandParser):
     """Class to parse ``lssap`` command output.
 
     Raises:
+        SkipException: Nothing needs to be parsed.
         ParseException: Raised if any error occurs parsing the content.
 
     Attributes:
@@ -48,10 +49,13 @@ class Lssap(CommandParser):
         instance_types (list): List of instance types running on the system.
     """
     def parse_content(self, content):
+        if not content:
+            raise SkipException()
+
         self.data = []
         # remove lssap version and bar text from content
         clean_content = content[2:-1]
-        if len(clean_content) > 0 and "SID" in clean_content[0]:
+        if len(clean_content) > 0 and clean_content[0].lstrip().startswith("SID"):
             self.data = parse_delimited_table(clean_content, delim='|', header_delim=None)
         else:
             raise ParseException("Lssap: Unable to parse {0} line(s) of content: ({1})".format(len(content), content))
@@ -69,13 +73,13 @@ class Lssap(CommandParser):
                 return row["Version"]
 
     def is_netweaver(self):
-        """bool: SAP Netweaver is running on the system."""
+        """bool: Is any SAP NetWeaver instance detected?"""
         return 'D' in self.instance_types
 
     def is_hana(self):
-        """bool: SAP HANA is running on the system."""
+        """bool: Is any SAP HANA instance detected?"""
         return 'HDB' in self.instance_types
 
     def is_ascs(self):
-        """bool: SAP System Central Services is running on the system."""
+        """bool: Is any SAP System Central Services instance detected?"""
         return 'ASCS' in self.instance_types
