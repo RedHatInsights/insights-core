@@ -1,7 +1,7 @@
 import doctest
 import pytest
 from insights.parsers import modinfo, ParseException, SkipException
-from insights.parsers.modinfo import ModInfoI40e, ModInfoVmxnet3
+from insights.parsers.modinfo import ModInfoI40e, ModInfoVmxnet3, ModInfoIgb, ModInfoIxgbe, ModInfoVeth, ModInfoEach
 from insights.tests import context_wrap
 
 MODINFO_I40E = """
@@ -57,6 +57,7 @@ version:        1.712.30-0
 license:        GPL
 description:    QLogic BCM57710/57711/57711E/57712/57712_MF/57800/57800_MF/57810/57810_MF/57840/57840_MF Driver
 author:         Eliezer Tamir
+retpoline:      N
 rhelversion:    7.3
 srcversion:     E631435423FC99CEF769288
 alias:          pci:v000014E4d0000163Fsv*sd*bc*sc*i*
@@ -115,11 +116,64 @@ sig_key:        A5:70:18:DF:B6:C9:D6:1F:CF:CE:0A:3D:02:8B:B3:69:BD:76:CA:ED
 sig_hashalgo:   sha256
 """.strip()
 
+MODINFO_IGB = """
+filename:       /lib/modules/3.10.0-327.10.1.el7.jump7.x86_64/kernel/drivers/net/ethernet/intel/igb/igb.ko
+version:        5.2.15-k
+license:        GPL
+description:    Intel(R) Gigabit Ethernet Network Driver
+author:         Intel Corporation, <e1000-devel@lists.sourceforge.net>
+rhelversion:    7.2
+srcversion:     9CF4D446FA2E882F6BA0A17
+alias:          pci:v00008086d000010D6sv*sd*bc*sc*i*
+depends:        i2c-core,ptp,dca,i2c-algo-bit
+intree:         Y
+vermagic:       3.10.0-327.10.1.el7.jump7.x86_64 SMP mod_unload modversions
+signer:         Red Hat Enterprise Linux kernel signing key
+sig_key:        C9:10:C7:BB:C3:C7:10:A1:68:A6:F3:6D:45:22:90:B7:5A:D4:B0:7A
+sig_hashalgo:   sha256
+parm:           max_vfs:Maximum number of virtual functions to allocate per physical function (uint)
+parm:           debug:Debug level (0=none,...,16=all) (int)
+""".strip()
+
+MODINFO_IXGBE = """
+filename:       /lib/modules/3.10.0-514.6.1.el7.jump3.x86_64/kernel/drivers/net/ethernet/intel/ixgbe/ixgbe.ko
+version:        4.4.0-k-rh7.3
+license:        GPL
+description:    Intel(R) 10 Gigabit PCI Express Network Driver
+author:         Intel Corporation, <linux.nics@intel.com>
+rhelversion:    7.3
+srcversion:     24F0195E8A357701DE1B32E
+alias:          pci:v00008086d000015CEsv*sd*bc*sc*i*
+depends:        i2c-core,ptp,dca,i2c-algo-bit
+intree:         Y
+vermagic:       3.10.0-514.6.1.el7.jump3.x86_64 SMP mod_unload modversions
+signer:         Red Hat Enterprise Linux kernel signing key
+sig_key:        69:10:6E:D5:83:0D:2C:66:97:41:91:7B:0F:57:D4:1D:95:A2:8A:EB
+sig_hashalgo:   sha256
+parm:           max_vfs:Maximum number of virtual functions to allocate per physical function (uint)
+parm:           debug:Debug level (0=none,...,16=all) (int)
+""".strip()
+
 MODINFO_NO = """
 """.strip()
 
 MODINFO_NO_1 = """
 modinfo ERROR Module i40e not found.
+""".strip()
+
+MODINFO_VETH = """
+filename:       /lib/modules/3.10.0-327.el7.x86_64/kernel/drivers/net/veth.ko
+alias:          rtnl-link-veth
+license:        GPL v2
+description:    Virtual Ethernet Tunnel
+rhelversion:    7.2
+srcversion:     25C6BF3D2F35CAF3A252F12
+depends:
+intree:         Y
+vermagic:       3.10.0-327.el7.x86_64 SMP mod_unload modversions
+signer:         Red Hat Enterprise Linux kernel signing key
+sig_key:        BC:73:C3:CE:E8:9E:5E:AE:99:4A:E5:0A:0D:B1:F0:FE:E3:FC:09:13
+sig_hashalgo:   sha256
 """.strip()
 
 
@@ -159,6 +213,16 @@ def test_modinfo():
     assert modinfo_obj.module_signer == 'Red Hat Enterprise Linux kernel signing key'
     assert sorted(modinfo_obj.module_deps) == sorted(['mdio', 'libcrc32c', 'ptp'])
 
+    modinfo_igb = ModInfoIgb(context_wrap(MODINFO_IGB))
+    assert modinfo_igb.data.get('alias') == 'pci:v00008086d000010D6sv*sd*bc*sc*i*'
+    assert modinfo_igb.module_name == 'igb'
+    assert modinfo_igb.module_path == '/lib/modules/3.10.0-327.10.1.el7.jump7.x86_64/kernel/drivers/net/ethernet/intel/igb/igb.ko'
+
+    modinfo_ixgbe = ModInfoIxgbe(context_wrap(MODINFO_IXGBE))
+    assert modinfo_ixgbe.data.get('alias') == 'pci:v00008086d000015CEsv*sd*bc*sc*i*'
+    assert modinfo_ixgbe.module_name == 'ixgbe'
+    assert modinfo_ixgbe.module_path == '/lib/modules/3.10.0-514.6.1.el7.jump3.x86_64/kernel/drivers/net/ethernet/intel/ixgbe/ixgbe.ko'
+
     modinfo_drv = ModInfoVmxnet3(context_wrap(MODINFO_VMXNET3))
     assert modinfo_drv.data.get('alias') == 'pci:v000015ADd000007B0sv*sd*bc*sc*i*'
     assert len(modinfo_drv.module_parm) == 0
@@ -167,6 +231,11 @@ def test_modinfo():
     assert modinfo_drv.module_path == '/lib/modules/3.10.0-957.10.1.el7.x86_64/kernel/drivers/net/vmxnet3/vmxnet3.ko.xz'
 
     assert sorted(modinfo_obj.data['firmware']) == sorted(['bnx2x/bnx2x-e2-7.13.1.0.fw', 'bnx2x/bnx2x-e1h-7.13.1.0.fw', 'bnx2x/bnx2x-e1-7.13.1.0.fw'])
+
+    modinfo_drv = ModInfoVeth(context_wrap(MODINFO_VETH))
+    assert modinfo_drv.module_name == 'veth'
+    assert modinfo_drv.module_path == '/lib/modules/3.10.0-327.el7.x86_64/kernel/drivers/net/veth.ko'
+    assert modinfo_drv.module_signer == 'Red Hat Enterprise Linux kernel signing key'
 
     with pytest.raises(SkipException) as exc:
         modinfo_obj = ModInfoI40e(context_wrap(MODINFO_NO))
@@ -184,9 +253,37 @@ def test_modinfo():
         modinfo_drv = ModInfoVmxnet3(context_wrap(MODINFO_NO_1))
     assert 'No Parsed Contents' in str(exc)
 
+    with pytest.raises(SkipException) as exc:
+        modinfo_drv = ModInfoVeth(context_wrap(MODINFO_NO))
+    assert 'No Contents' in str(exc)
+
+    with pytest.raises(ParseException) as exc:
+        modinfo_drv = ModInfoVeth(context_wrap(MODINFO_NO_1))
+    assert 'No Parsed Contents' in str(exc)
+
 
 def test_modinfo_doc_examples():
     env = {'modinfo_obj': ModInfoI40e(context_wrap(MODINFO_I40E)),
-           'modinfo_drv': ModInfoVmxnet3(context_wrap(MODINFO_VMXNET3))}
+           'modinfo_drv': ModInfoVmxnet3(context_wrap(MODINFO_VMXNET3)),
+           'modinfo_igb': ModInfoIgb(context_wrap(MODINFO_IGB)),
+           'modinfo_veth': ModInfoVeth(context_wrap(MODINFO_VETH)),
+           'modinfo_ixgbe': ModInfoIxgbe(context_wrap(MODINFO_IXGBE)),
+           'modinfo_each': ModInfoEach(context_wrap(MODINFO_VETH))}
     failed, total = doctest.testmod(modinfo, globs=env)
     assert failed == 0
+
+
+def test_modinfoeach():
+    modinfo_obj = ModInfoEach(context_wrap(MODINFO_I40E))
+    assert modinfo_obj.module_name == 'i40e'
+    assert modinfo_obj.module_version == '2.3.2-k'
+    assert modinfo_obj.module_deps == ['ptp']
+    assert modinfo_obj.module_signer == 'Red Hat Enterprise Linux kernel signing key'
+    assert len(modinfo_obj.data['alias']) == 2
+    assert modinfo_obj.module_details['sig_key'] == '81:7C:CB:07:72:4E:7F:B8:15:24:10:F9:27:2D:AA:CF:80:3E:CE:59'
+    assert modinfo_obj.data['vermagic'] == '3.10.0-993.el7.x86_64 SMP mod_unload modversions'
+    assert sorted(modinfo_obj.data['parm']) == sorted(['debug:Debug level (0=none,...,16=all), Debug mask (0x8XXXXXXX) (uint)',
+                                                       'int_mode: Force interrupt mode other than MSI-X (1 INT#x; 2 MSI) (int)'])
+    assert modinfo_obj.data['description'] == 'Intel(R) Ethernet Connection XL710 Network Driver'
+    assert ('signer' in modinfo_obj) is True
+    assert modinfo_obj.module_path == "/lib/modules/3.10.0-993.el7.x86_64/kernel/drivers/net/ethernet/intel/i40e/i40e.ko.xz"

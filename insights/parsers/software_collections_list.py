@@ -1,23 +1,27 @@
 """
-Software Collections list output - command ``scl --list``
-=========================================================================
+Software Collections list output - command ``scl --list`` RHEL-6/7
+==================================================================
 
-This module provides parser for list output of ``scl``.
+This module provides parser for list output of ``scl``. This spec
+is valid for ``RHEL-6/7`` only, ``-l|--list`` is ``deprecated`` in
+``RHEL-8``. On ``RHEL-8`` same functionality can be achieved by
+``scl list-collections`` spec.
 
 Parser provided by this module is:
 
 SoftwareCollectionsListInstalled - command ``scl --list``
-------------------------------------------------------------------------------------
+---------------------------------------------------------
 
 """
 
-from .. import Parser, parser
-from . import get_active_lines
+from insights import CommandParser, parser
+from insights.parsers import get_active_lines
 from insights.specs import Specs
+from insights.components.rhel_version import IsRhel6, IsRhel7
 
 
-@parser(Specs.software_collections_list)
-class SoftwareCollectionsListInstalled(Parser):
+@parser(Specs.software_collections_list, [IsRhel6, IsRhel7])
+class SoftwareCollectionsListInstalled(CommandParser):
     """
     An object for parsing the output of ``scl --list``.
 

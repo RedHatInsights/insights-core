@@ -73,9 +73,11 @@ import re
 from collections import defaultdict
 
 import six
+import warnings
 
 from ..util import rsplit
 from .. import parser, get_active_lines, CommandParser
+from .rpm_vercmp import rpm_version_compare
 from insights.specs import Specs
 
 # This list of architectures is taken from PDC (Product Definition Center):
@@ -141,8 +143,75 @@ here https://pdc.fedoraproject.org/rest_api/v1/arches/.
 """
 
 
+class RpmList(object):
+    """
+    Mixin class providing ``__contains__``, ``get_max``, ``get_min``,
+    ``newest``, and ``oldest`` implementations for components that handle rpms.
+    """
+
+    def __contains__(self, package_name):
+        """
+        Checks if package name is in list of installed RPMs.
+
+        Args:
+            package_name (str): RPM package name such as 'bash'
+
+        Returns:
+            bool: True if package name is in list of installed packages, otherwise False
+        """
+        return package_name in self.packages
+
+    def get_max(self, package_name):
+        """
+        Returns the highest version of the installed package with the given name.
+
+        Args:
+            package_name (str): Installed RPM package name such as 'bash'
+
+        Returns:
+            InstalledRpm: Installed RPM with highest version
+        """
+        if package_name not in self.packages:
+            return None
+        else:
+            return max(self.packages[package_name])
+
+    def get_min(self, package_name):
+        """
+        Returns the lowest version of the installed package with the given name.
+
+        Args:
+            package_name (str): Installed RPM package name such as 'bash'.
+
+        Returns:
+            InstalledRpm: Installed RPM with lowest version
+        """
+        if package_name not in self.packages:
+            return None
+        else:
+            return min(self.packages[package_name])
+
+    @property
+    def is_hypervisor(self):
+        """
+        .. warning::
+           This method is deprecated, please use
+           :py:class:`insights.parsers.virt_what.VirtWhat` which uses the command `virt-what` to check the hypervisor type.
+
+        bool: True if ".el[6|7]ev" exists in "vdsm".release, else False.
+        """
+        warnings.warn("`is_hypervisor` is deprecated: Use `virt_what.VirtWhat` which uses the command `virt-what` to check the hypervisor type.", DeprecationWarning)
+        rpm = self.get_max("vdsm")
+        return (True if rpm and rpm.release.endswith((".el6ev", ".el7ev")) else
+                False)
+
+    # re-export get_max/min with more descriptive names
+    newest = get_max
+    oldest = get_min
+
+
 @parser(Specs.installed_rpms)
-class InstalledRpms(CommandParser):
+class InstalledRpms(CommandParser, RpmList):
     """
     A parser for working with data containing a list of installed RPM files on the system and
     related information.
@@ -178,63 +247,10 @@ class InstalledRpms(CommandParser):
         # Don't want defaultdict's behavior after parsing is complete
         self.packages = dict(self.packages)
 
-    def __contains__(self, package_name):
-        """
-        Checks if package name is in list of installed RPMs.
-
-        Args:
-            package_name (str): RPM package name such as 'bash'
-
-        Returns:
-            bool: True if package name is in list of installed packages, otherwise False
-        """
-        return package_name in self.packages
-
     @property
     def corrupt(self):
         """bool: True if RPM database is corrupted, else False."""
         return any('rpmdbNextIterator' in s for s in self.errors)
-
-    def get_max(self, package_name):
-        """
-        Returns the highest version of the installed package with the given name.
-
-        Args:
-            package_name (str): Installed RPM package name such as 'bash'
-
-        Returns:
-            InstalledRpm: Installed RPM with highest version
-        """
-        if package_name not in self.packages:
-            return None
-        else:
-            return max(self.packages[package_name])
-
-    def get_min(self, package_name):
-        """
-        Returns the lowest version of the installed package with the given name.
-
-        Args:
-            package_name (str): Installed RPM package name such as 'bash'.
-
-        Returns:
-            InstalledRpm: Installed RPM with lowest version
-        """
-        if package_name not in self.packages:
-            return None
-        else:
-            return min(self.packages[package_name])
-
-    @property
-    def is_hypervisor(self):
-        """bool: True if ".el[6|7]ev" exists in "vdsm".release, else False."""
-        rpm = self.get_max("vdsm")
-        return (True if rpm and rpm.release.endswith((".el6ev", ".el7ev")) else
-                False)
-
-    # re-export get_max/min with more descriptive names
-    newest = get_max
-    oldest = get_min
 
 
 p = re.compile(r"(\d+|[a-z]+|\.|-|_)")
@@ -319,6 +335,17 @@ class InstalledRpm(object):
              '8902150305004...b3576ff37da7e12e2285358267495ac48a437d4eefb3213' '\t'
              'RSA/8, Mon Aug 16 11:14:17 2010, Key ID 199e2f91fd431d51')
     """
+    PRODUCT_SIGNING_KEYS = [
+        'F76F66C3D4082792', '199e2f91fd431d51', '5326810137017186',
+        '45689c882fa658e0', '219180cddb42a60e', '7514f77d8366b0d9',
+        'fd372689897da07a', '938a80caf21541eb',
+        '08b871e6a5787476',
+        'E191DDB2C509E861'
+    ]
+    """
+    list: List of package-signing keys. Should be updated timely according to
+          https://access.redhat.com/security/team/key/
+    """
     SOSREPORT_KEYS = [
         'installtime', 'buildtime', 'vendor', 'buildserver', 'pgpsig', 'pgpsig_short'
     ]
@@ -333,6 +360,8 @@ class InstalledRpm(object):
         """str: RPM package release."""
         self.arch = None
         """str: RPM package architecture."""
+        self.redhat_signed = None
+        """bool: RPM package is signed by Red Hat or not."""
 
         if isinstance(data, six.string_types):
             data = self._parse_package(data)
@@ -340,30 +369,8 @@ class InstalledRpm(object):
         for k, v in data.items():
             setattr(self, k, v)
         self.epoch = data['epoch'] if 'epoch' in data and data['epoch'] != '(none)' else '0'
-
-        """Below is only for version comparison"""
-        def _start_of_distribution(rest_split):
-            """
-            The start of distribution field: from the right, the last non-digit part
-            - bash-4.2.39-3.el7_2.2
-              distribution: el7_2.2
-            - kernel-rt-debug-3.10.0-327.rt56.204.el7
-              distribution: el7
-            """
-            nondigit_flag = False
-            for i, r in enumerate(reversed(rest_split)):
-                if not r.isdigit():
-                    nondigit_flag = True
-                elif nondigit_flag and r.isdigit():
-                    return len(rest_split) - i
-
-        self._release_sep = self.release
-        self._distribution = None
-        rl_split = self._release_sep.split('.') if self._release_sep else None
-        idx = _start_of_distribution(rl_split) if rl_split else None
-        if idx:
-            self._release_sep = '.'.join(rl_split[:idx])
-            self._distribution = '.'.join(rl_split[idx:])
+        _gpg_key_pos = data.get('sigpgp', data.get('rsaheader', data.get('pgpsig_short', data.get('pgpsig', ''))))
+        self.redhat_signed = any(key in _gpg_key_pos for key in self.PRODUCT_SIGNING_KEYS)
 
     @classmethod
     def from_package(cls, package_string):
@@ -550,23 +557,8 @@ class InstalledRpm(object):
         if self.name != other.name:
             raise ValueError('Cannot compare packages with differing names {0} != {1}'
                              .format(self.name, other.name))
-        if (not self._distribution) != (not other._distribution):
-            raise ValueError('Cannot compare packages that one has distribution while the other does not {0} != {1}'
-                             .format(self.package, other.package))
 
-        self_ep, other_ep = pad_version(self.epoch, other.epoch)
-        self_v, other_v = pad_version(self.version, other.version)
-        self_rl, other_rl = pad_version(self.release, other.release)
-        eq_ret = (type(self) == type(other) and
-                  self_ep == other_ep and
-                  self_v == other_v and
-                  self_rl == other_rl)
-
-        if self._distribution:
-            self_d, other_d = pad_version(self._distribution, other._distribution)
-            return eq_ret and self_d == other_d
-        else:
-            return eq_ret
+        return rpm_version_compare(self, other) == 0
 
     def __lt__(self, other):
         if not isinstance(other, InstalledRpm):
@@ -575,22 +567,7 @@ class InstalledRpm(object):
         if self == other:
             return False
 
-        self_ep, other_ep = pad_version(self.epoch, other.epoch)
-        if self_ep != other_ep:
-            return self_ep < other_ep
-
-        self_v, other_v = pad_version(self.version, other.version)
-        if self_v != other_v:
-            return self_v < other_v
-
-        self_rl, other_rl = pad_version(self._release_sep, other._release_sep)
-        if self_rl != other_rl:
-            return self_rl < other_rl
-
-        # If we reach this point, the self == other test has determined that
-        # we have a _distribution, so we rely on that.
-        self_d, other_d = pad_version(self._distribution, other._distribution)
-        return self_d < other_d
+        return rpm_version_compare(self, other) < 0
 
     def __ne__(self, other):
         return not self == other

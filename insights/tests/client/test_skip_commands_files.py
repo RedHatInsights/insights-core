@@ -1,6 +1,8 @@
 from insights.client.data_collector import DataCollector
 from insights.client.config import InsightsConfig
-from mock.mock import patch, call
+from insights.client.insights_spec import InsightsCommand
+from insights.client.archive import InsightsArchive
+from mock.mock import patch, call, MagicMock
 
 
 @patch("insights.client.data_collector.DataCollector._parse_file_spec")
@@ -75,3 +77,38 @@ def test_symbolic_name_bc(InsightsArchive, InsightsFile, InsightsCommand):
     InsightsArchive.return_value.add_to_archive.assert_has_calls(
         [call(InsightsFile.return_value), call(InsightsCommand.return_value)],
         any_order=True)
+
+
+@patch("insights.client.archive.write_data_to_file")
+def test_dont_archive_when_command_not_found(write_data_to_file):
+    """
+    If the command is not found do not archive it
+    """
+    arch = InsightsArchive()
+
+    cmd = MagicMock(spec=InsightsCommand)
+    cmd.get_output.return_value = 'timeout: failed to run command blah: No such file or directory'
+    cmd.archive_path = '/path/to/command'
+
+    arch.add_to_archive(cmd)
+    write_data_to_file.assert_not_called()
+
+    cmd.get_output.return_value = '/usr/bin/command -a'
+
+    arch.add_to_archive(cmd)
+    write_data_to_file.assert_called_once()
+
+
+@patch("insights.client.data_collector.DataCollector._run_pre_command", return_value=['eth0'])
+@patch("insights.client.data_collector.InsightsCommand")
+def test_omit_after_parse_command(InsightsCommand, run_pre_command):
+    """
+    Files are omitted based on the expanded paths of the uploader.json path
+    """
+    c = InsightsConfig()
+    data_collector = DataCollector(c)
+
+    collection_rules = {'commands': [{"command": "/sbin/ethtool -i", "pattern": [], "pre_command": "iface", "symbolic_name": "ethtool"}], 'files': [], "pre_commands": {"iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"}}
+    rm_conf = {'commands': ["/sbin/ethtool -i eth0"]}
+    data_collector.run_collection(collection_rules, rm_conf, {})
+    InsightsCommand.assert_not_called()

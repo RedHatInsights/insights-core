@@ -70,6 +70,15 @@ def test_run_command_get_output():
     assert util.run_command_get_output(cmd) == {'status': 0, 'output': u'hello\n'}
 
 
+@patch('insights.client.utilities.run_command_get_output')
+@patch('insights.client.InsightsClient')
+def test_get_version_info(insights_client, run_command_get_output):
+    insights_client.return_value.version.return_value = 1
+    run_command_get_output.return_value = {'output': 1}
+    version_info = util.get_version_info()
+    assert version_info == {'core_version': 1, 'client_version': 1}
+
+
 def test_validate_remove_file():
     tf = '/tmp/remove.cfg'
     with open(tf, 'wb') as f:
@@ -136,3 +145,13 @@ def test_delete_unregistered_file():
     util.delete_unregistered_file()
     for u in constants.unregistered_files:
         assert os.path.isfile(u) is False
+
+
+@patch('insights.client.utilities.os.path.exists', return_value=True)
+def test_cgroup_available_file_exists(path_exists):
+    assert util.cgroup_available()
+
+
+@patch('insights.client.utilities.os.path.exists', return_value=False)
+def test_cgroup_available_file_does_not_exist(path_exists):
+    assert not util.cgroup_available()

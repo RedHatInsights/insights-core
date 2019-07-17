@@ -24,7 +24,7 @@ if not os.path.exists(json_path):
 with open(json_path) as fp:
     uploader_json = json.load(fp, object_pairs_hook=OrderedDict)
 
-dr.load_components("insights.specs")
+dr.load_components("insights.specs.default")
 dr.load_components("insights.parsers")
 dr.load_components("insights.combiners")
 
@@ -40,7 +40,7 @@ for spec in specs:
         if f:
             filters[spec] = sorted(f)
 
-for spec in chain.from_iterable(uploader_json[i] for i in ("commands", "files")):
+for spec in chain.from_iterable(uploader_json[i] for i in ("commands", "files", "globs")):
     if spec["symbolic_name"] in filters:
         spec["pattern"] = filters[spec["symbolic_name"]]
 

@@ -172,7 +172,7 @@ def test_reg_check_registered():
     client.session = True
 
     # test function and integration in .register()
-    assert client.get_registation_status()['status'] is True
+    assert client.get_registration_status()['status'] is True
     assert client.register() is True
     for r in constants.registered_files:
         assert os.path.isfile(r) is True
@@ -197,7 +197,7 @@ def test_reg_check_unregistered():
     client.session = True
 
     # test function and integration in .register()
-    assert client.get_registation_status()['status'] is False
+    assert client.get_registration_status()['status'] is False
     assert client.register() is False
     for r in constants.registered_files:
         assert os.path.isfile(r) is False
@@ -225,7 +225,7 @@ def test_reg_check_registered_unreachable():
     # reset config and try to check registration
     config.register = False
     client.connection = FakeConnection(registered=False)
-    assert client.get_registation_status()['unreachable'] is True
+    assert client.get_registration_status()['unreachable'] is True
     assert client.register() is None
     for r in constants.registered_files:
         assert os.path.isfile(r) is True
@@ -253,7 +253,7 @@ def test_reg_check_unregistered_unreachable():
     # reset config and try to check registration
     config.unregister = False
     client.connection = FakeConnection(registered=False)
-    assert client.get_registation_status()['unreachable'] is True
+    assert client.get_registration_status()['unreachable'] is True
     assert client.register() is None
     for r in constants.registered_files:
         assert os.path.isfile(r) is False
@@ -339,45 +339,70 @@ def test_delete_archive_internal():
     assert not os.path.exists(arch.archive_tmp_dir)
 
 
-@patch('insights.client.client.handle_registration')
-def test_platform_register_skip(handle_registration):
+@patch('insights.client.client._legacy_handle_registration')
+def test_legacy_register(_legacy_handle_registration):
     '''
-    handle_registration not called when platform upload
-    '''
-    config = InsightsConfig(legacy_upload=False)
-    client = InsightsClient(config)
-    assert client.register()  # short circuits to True
-    handle_registration.assert_not_called()
-
-
-@patch('insights.client.client.handle_unregistration')
-def test_platform_unregister_skip(handle_unregistration):
-    '''
-    handle_registration not called when platform upload
-    '''
-    config = InsightsConfig(legacy_upload=False)
-    client = InsightsClient(config)
-    assert client.unregister()  # short circuits to True
-    handle_unregistration.assert_not_called()
-
-
-@patch('insights.client.client.handle_registration')
-def test_legacy_register(handle_registration):
-    '''
-    handle_unregistration called when legacy upload
+    _legacy_handle_registration called when legacy upload
     '''
     config = InsightsConfig(legacy_upload=True)
+    client = InsightsClient(config)
+    client.register()
+    _legacy_handle_registration.assert_called_once()
+
+
+@patch('insights.client.client._legacy_handle_unregistration')
+def test_legacy_unregister(_legacy_handle_unregistration):
+    '''
+    _legacy_handle_unregistration called when legacy upload
+    '''
+    config = InsightsConfig(legacy_upload=True)
+    client = InsightsClient(config)
+    client.unregister()
+    _legacy_handle_unregistration.assert_called_once()
+
+
+@patch('insights.client.client.handle_registration')
+def test_register_upload(handle_registration):
+    '''
+    handle_registration called when upload
+    '''
+    config = InsightsConfig(legacy_upload=False)
     client = InsightsClient(config)
     client.register()
     handle_registration.assert_called_once()
 
 
 @patch('insights.client.client.handle_unregistration')
-def test_legacy_unregister(handle_unregistration):
+def test_unregister_upload(handle_unregistration):
     '''
-    handle_unregistration called when legacy upload
+    handle_unregistration called when upload
     '''
-    config = InsightsConfig(legacy_upload=True)
+    config = InsightsConfig(legacy_upload=False)
     client = InsightsClient(config)
     client.unregister()
     handle_unregistration.assert_called_once()
+
+
+@patch('insights.client.os.path.exists', return_value=True)
+@patch('insights.client.client._legacy_upload')
+def test_legacy_upload(_legacy_upload, path_exists):
+    '''
+    _legacy_upload called when legacy upload
+    '''
+    config = InsightsConfig(legacy_upload=True)
+    client = InsightsClient(config)
+    client.upload('test.gar.gz', 'test.content.type')
+    _legacy_upload.assert_called_once()
+
+
+@patch('insights.client.os.path.exists', return_value=True)
+@patch('insights.client.connection.InsightsConnection.upload_archive')
+@patch('insights.client.client._legacy_upload')
+def test_platform_upload(_legacy_upload, _, path_exists):
+    '''
+    _legacy_upload not called when legacy upload
+    '''
+    config = InsightsConfig(legacy_upload=False)
+    client = InsightsClient(config)
+    client.upload('test.gar.gz', 'test.content.type')
+    _legacy_upload.assert_not_called()

@@ -97,7 +97,8 @@ rhel_release_map = {
     "3.10.0-514": "7.3",
     "3.10.0-693": "7.4",
     "3.10.0-862": "7.5",
-    "3.10.0-957": "7.6"
+    "3.10.0-957": "7.6",
+    "4.18.0-80": "8.0"
 }
 
 release_to_kernel_map = dict((v, k) for k, v in rhel_release_map.items())

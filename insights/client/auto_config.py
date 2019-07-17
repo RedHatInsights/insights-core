@@ -31,7 +31,7 @@ def verify_connectivity(config):
     logger.debug("Verifying Connectivity")
     ic = InsightsConnection(config)
     try:
-        branch_info = ic.branch_info()
+        branch_info = ic.get_branch_info()
     except requests.ConnectionError as e:
         logger.debug(e)
         logger.debug("Failed to connect to satellite")
@@ -50,7 +50,7 @@ def verify_connectivity(config):
         return False
 
 
-def set_auto_configuration(config, hostname, ca_cert, proxy):
+def set_auto_configuration(config, hostname, ca_cert, proxy, is_satellite):
     """
     Set config based on discovered data
     """
@@ -65,7 +65,23 @@ def set_auto_configuration(config, hostname, ca_cert, proxy):
     if proxy is not None:
         saved_proxy = config.proxy
         config.proxy = proxy
-    config.base_url = hostname + '/r/insights'
+    if is_satellite:
+        # satellite
+        config.base_url = hostname + '/r/insights'
+        if not config.legacy_upload:
+            config.base_url += '/platform'
+        logger.debug('Auto-configured base_url: %s', config.base_url)
+    else:
+        # connected directly to RHSM
+        if config.legacy_upload:
+            config.base_url = hostname + '/r/insights'
+        else:
+            # config.base_url = hostname + '/api'
+            config.base_url = hostname + '/r/insights/platform'
+        logger.debug('Auto-configured base_url: %s', config.base_url)
+        logger.debug('Not connected to Satellite, skipping branch_info')
+        # direct connection to RHSM, skip verify_connectivity
+        return
 
     if not verify_connectivity(config):
         logger.warn("Could not auto configure, falling back to static config")
@@ -80,18 +96,23 @@ def set_auto_configuration(config, hostname, ca_cert, proxy):
             config.cert_verify = saved_cert_verify
 
 
+def _importInitConfig():
+    from rhsm.config import initConfig
+    return initConfig()
+
+
 def _try_satellite6_configuration(config):
     """
     Try to autoconfigure for Satellite 6
     """
     try:
-        from rhsm.config import initConfig
-        rhsm_config = initConfig()
+        rhsm_config = _importInitConfig()
 
         logger.debug('Trying to autoconfigure...')
         cert = open(rhsmCertificate.certpath(), 'r').read()
         key = open(rhsmCertificate.keypath(), 'r').read()
         rhsm = rhsmCertificate(key, cert)
+        is_satellite = False
 
         # This will throw an exception if we are not registered
         logger.debug('Checking if system is subscription-manager registered')
@@ -104,7 +125,9 @@ def _try_satellite6_configuration(config):
         rhsm_proxy_port = rhsm_config.get('server', 'proxy_port').strip()
         rhsm_proxy_user = rhsm_config.get('server', 'proxy_user').strip()
         rhsm_proxy_pass = rhsm_config.get('server', 'proxy_password').strip()
+
         proxy = None
+
         if rhsm_proxy_hostname != "":
             logger.debug("Found rhsm_proxy_hostname %s", rhsm_proxy_hostname)
             proxy = "http://"
@@ -124,16 +147,23 @@ def _try_satellite6_configuration(config):
 
         # Directly connected to Red Hat, use cert auth directly with the api
         if _is_rhn_or_rhsm(rhsm_hostname):
-            logger.debug("Connected to Red Hat Directly, using cert-api")
-            rhsm_hostname = 'cert-api.access.redhat.com'
+            # URL changes. my favorite
+            if config.legacy_upload:
+                logger.debug("Connected to Red Hat Directly, using cert-api")
+                rhsm_hostname = 'cert-api.access.redhat.com'
+            else:
+                logger.debug("Connected to Red Hat Directly, using cloud.redhat.com")
+                # rhsm_hostname = 'cloud.redhat.com'
+                rhsm_hostname = 'cert-api.access.redhat.com'
             rhsm_ca = None
         else:
             # Set the host path
             # 'rhsm_hostname' should really be named ~ 'rhsm_host_base_url'
             rhsm_hostname = rhsm_hostname + ':' + rhsm_hostport + '/redhat_access'
+            is_satellite = True
 
         logger.debug("Trying to set auto_configuration")
-        set_auto_configuration(config, rhsm_hostname, rhsm_ca, proxy)
+        set_auto_configuration(config, rhsm_hostname, rhsm_ca, proxy, is_satellite)
         return True
     except Exception as e:
         logger.debug(e)
