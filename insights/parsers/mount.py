@@ -219,40 +219,34 @@ class Mount(MountedFileSystems):
         >>> mnt_info[3].filesystem
         'dev/sr0'
         >>> mnt_info[3].mount_label
-        'VMware Tools'
+        '[VMware Tools]'
         >>> mnt_info[3].mount_type
         'iso9660'
         >>> mnt_info['/run/media/root/VMware Tools'].filesystem
         'dev/sr0'
         >>> mnt_info['/run/media/root/VMware Tools'].mount_label
-        'VMware Tools'
+        '[VMware Tools]'
         >>> mnt_info['/run/media/root/VMware Tools'].mount_options.ro
         True
     """
     def _parse_mounts(self, content):
-
-        def _split(line_sp, sep=None, num=2, check=True):
-            if num >= 2:
-                line_sp = line_sp.split(sep, num - 1)
-                if check and len(line_sp) < num:
-                    raise ParseException('Unable to parse: "{0}"'.format(line))
-            return line_sp
-
         self.rows = []
         self.mounts = {}
         for line in get_active_lines(content):
             mount = {}
-            line_sp = mount['mount_clause'] = line
-            line_sp = _split(line_sp, ' on ', 2)
+            mount['mount_clause'] = line
+            # Get the mounted filesystem by checking the ' on '
+            line_sp = _customized_split(line, line, sep=' on ')
             mount['filesystem'] = line_sp[0]
-            line_sp = _split(line_sp[1], ' type ', 2)
+            # Get the mounted point by checking the last ' type ' before the last '('
+            mnt_pt_sp = _customized_split(raw=line, l=line_sp[1], sep=' (', reverse=True)
+            line_sp = _customized_split(raw=line, l=mnt_pt_sp[0], sep=' type ', reverse=True)
             mount['mount_point'] = line_sp[0]
-            line_sp = _split(line_sp[1], None, 3, False)
-            mount['mount_type'] = line_sp[0]
-            if len(line_sp) >= 2:
-                mount['mount_options'] = MountOpts(optlist_to_dict(line_sp[1].strip('()')))
-            if len(line_sp) == 3:
-                mount['mount_label'] = line_sp[2].strip('[]')
+            mount['mount_type'] = line_sp[1].split()[0]
+            line_sp = _customized_split(raw=line, l=mnt_pt_sp[1], sep=None, check=False)
+            mount['mount_options'] = MountOpts(optlist_to_dict(line_sp[0].strip('()')))
+            if len(line_sp) == 2:
+                mount['mount_label'] = line_sp[1]
 
             entry = MountEntry(mount)
             self.rows.append(entry)
@@ -296,15 +290,6 @@ class ProcMounts(MountedFileSystems):
     """
 
     def _parse_mounts(self, content):
-        def _split(line_sp, num=2, reverse=False, check=True):
-            if num >= 2:
-                if reverse is False:
-                    line_sp = line_sp.split(None, num - 1)
-                else:
-                    line_sp = line_sp.rsplit(None, num - 1)
-                if check and len(line_sp) < num:
-                    raise ParseException('Unable to parse: "{0}"'.format(line))
-            return line_sp
 
         self.rows = []
         self.mounts = {}
@@ -313,16 +298,27 @@ class ProcMounts(MountedFileSystems):
             mount['mount_clause'] = line
             # Handle the the '\040' in `mount_point`
             line_sp = line.encode().decode("unicode-escape")
-            line_sp = _split(line_sp, 2)
+            line_sp = _customized_split(raw=line, l=line)
             mount['filesystem'] = mount['mounted_device'] = line_sp[0]
-            line_sp = _split(line_sp[1], 3, True)
+            line_sp = _customized_split(raw=line, l=line_sp[1], num=3, reverse=True)
             mount['mount_label'] = line_sp[-2:]
-            line_sp = _split(line_sp[0], 2, True)
+            line_sp = _customized_split(raw=line, l=line_sp[0], reverse=True)
             mount['mount_options'] = MountOpts(optlist_to_dict(line_sp[1]))
-            line_sp = _split(line_sp[0], 2, True)
+            line_sp = _customized_split(raw=line, l=line_sp[0], reverse=True)
             mount['mount_type'] = mount['filesystem_type'] = line_sp[1]
             mount['mount_point'] = line_sp[0]
 
             entry = MountEntry(mount)
             self.rows.append(entry)
             self.mounts[mount['mount_point']] = entry
+
+
+def _customized_split(raw, l, sep=None, num=2, reverse=False, check=True):
+    if num >= 2:
+        if reverse is False:
+            line_sp = l.split(sep, num - 1)
+        else:
+            line_sp = l.rsplit(sep, num - 1)
+        if check and len(line_sp) < num:
+            raise ParseException('Unable to parse: "{0}"'.format(raw))
+    return line_sp
