@@ -138,10 +138,6 @@ DEFAULT_OPTS = {
         # non-CLI
         'default': 120.0
     },
-    'ignore_cgroup': {
-        # non-CLI
-        'default': False
-    },
     'insecure_connection': {
         # non-CLI
         'default': False
