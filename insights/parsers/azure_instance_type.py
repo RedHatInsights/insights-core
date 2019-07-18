@@ -6,6 +6,8 @@ This parser simply reads the output of command
 ``curl -H Metadata:true http://169.254.169.254/metadata/instance/compute/vmSize?api-version=2018-10-01&format=text``,
 which is used to check the type of the Azure instance of the host.
 
+For more details, See: https://docs.microsoft.com/en-us/azure/virtual-machines/linux/sizes
+
 """
 
 from insights.parsers import SkipException, ParseException
@@ -19,7 +21,6 @@ class AzureInstanceType(CommandParser):
     Class for parsing the Azure Instance type returned by command
     ``curl -H Metadata:true http://169.254.169.254/metadata/instance/compute/vmSize?api-version=2018-10-01&format=text``,
 
-    For more in
 
     Typical output of this command is::
 
@@ -32,7 +33,7 @@ class AzureInstanceType(CommandParser):
     Attributes:
         type: The type of VM instance in Azure, e.g: Standard
         size: The size of VM instance in Azure, e.g: L64s, NC12s
-        version: The version of VM instance in Azure, e.g: v2, v3, None for non-version
+        version: The version of VM instance in Azure, e.g: v2, v3, `None` for non-version
         raw: The fully type string returned by the ``curl`` command
 
     Examples:
