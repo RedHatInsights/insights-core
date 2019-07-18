@@ -1,5 +1,49 @@
 # Change Log
 
+## [insights-core-3.0.113-1062](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.113-1062) (2019-07-18)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.112-1...insights-core-3.0.113-1062)
+
+**Implemented enhancements:**
+
+- Refine the logic of parsers and combiners in "grub\_conf.py" [\#1983](https://github.com/RedHatInsights/insights-core/issues/1983)
+
+**Closed issues:**
+
+- Detect rules with possible duplicate response keys [\#2082](https://github.com/RedHatInsights/insights-core/issues/2082)
+- 'grubenv' does not updated as per grubby [\#2041](https://github.com/RedHatInsights/insights-core/issues/2041)
+- GRUB2 on RHEL8 - add support for blscfg [\#1650](https://github.com/RedHatInsights/insights-core/issues/1650)
+
+## [3.0.112-1](https://github.com/RedHatInsights/insights-core/tree/3.0.112-1) (2019-07-17)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.111-1...3.0.112-1)
+
+**Implemented enhancements:**
+
+- Create make\_info response type for rules [\#2073](https://github.com/RedHatInsights/insights-core/issues/2073)
+- Evolution of Rules to Share Code [\#1473](https://github.com/RedHatInsights/insights-core/issues/1473)
+
+**Fixed bugs:**
+
+- Fix command specs containing globs [\#1413](https://github.com/RedHatInsights/insights-core/issues/1413)
+
+**Closed issues:**
+
+- Incorrect insights.components.rhel\_version module doc [\#2048](https://github.com/RedHatInsights/insights-core/issues/2048)
+
+## [3.0.111-1](https://github.com/RedHatInsights/insights-core/tree/3.0.111-1) (2019-07-17)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.110-1...3.0.111-1)
+
+## [3.0.110-1](https://github.com/RedHatInsights/insights-core/tree/3.0.110-1) (2019-07-16)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.109-1047...3.0.110-1)
+
+**Closed issues:**
+
+- `modinfo` on all loaded modules [\#1793](https://github.com/RedHatInsights/insights-core/issues/1793)
+- `DmesgLineList` parser cannot handle wrapped dmesg output [\#1792](https://github.com/RedHatInsights/insights-core/issues/1792)
+
+**Merged pull requests:**
+
+- Update changelog and bump version to 3.0.110 [\#2054](https://github.com/RedHatInsights/insights-core/pull/2054) ([wcmitchell](https://github.com/wcmitchell))
+
 ## [insights-core-3.0.109-1047](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.109-1047) (2019-07-11)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.108-1038...insights-core-3.0.109-1047)
 
@@ -59,7 +103,6 @@
 - Current GrubConf parser cannot handle the "grub2/grub.cfg" of RHEL8 [\#1972](https://github.com/RedHatInsights/insights-core/issues/1972)
 - Update is\_hypervisor check in InstalledRpms [\#1928](https://github.com/RedHatInsights/insights-core/issues/1928)
 -  Specs.software\_collections\_list: Option `-l` is changed to 'list-collections' in RHEL8 [\#1870](https://github.com/RedHatInsights/insights-core/issues/1870)
-- GRUB2 on RHEL8 - add support for blscfg [\#1650](https://github.com/RedHatInsights/insights-core/issues/1650)
 
 ## [insights-core-3.0.105-1009](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.105-1009) (2019-06-14)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.104-1004...insights-core-3.0.105-1009)
