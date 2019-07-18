@@ -2,24 +2,14 @@
 IsRhel6, IsRhel7 and IsRhel8
 ===============================
 
-The ``IsRhel*`` components each use the ``RedhatRelease`` combiner to
-retrieve the RHEL version information.
-Each component checks if the release version matches the version it represents,
-if the version does not match what is expected the class raises ``SkipComponent``
-so that the dependent component will not fire.
-Can be added as a dependency of a parser so that the parser only fires if the
-``IsRhel*`` dependency is met.
+An ``IsRhel*`` component is valid if the
+:py:class:`insights.combiners.redhat_release.RedHatRelease` combiner indicates
+the major RHEL version represented by the component. Otherwise, it raises a
+:py:class:`insights.core.dr.SkipComponent` to prevent dependent components from
+executing.
 
-An example from the following ``/etc/redhat_release`` file output::
-
-    Red Hat Enterprise Linux release 8.0 (Ootpa)
-
-Example:
-
-    >>> type(IsRhel8)
-    <class 'insights.components.rhel_version.Is_Rhel8'>
-    >>> is_rhel8.rhel_version
-    '8.0'
+In particular, an ``IsRhel*`` component can be added as a dependency of a
+parser to limit it to a given version.
 """
 
 from insights.core.plugins import component

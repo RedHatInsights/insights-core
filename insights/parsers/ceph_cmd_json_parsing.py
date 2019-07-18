@@ -3,7 +3,7 @@ Ceph status commands
 ====================
 
 This module provides processing for the output of the following ceph related
-commands with `-f json-pretty` parameter.
+commands with ``-f json-pretty`` parameter.
 
 CephOsdDump - command ``ceph osd dump -f json-pretty``
 ------------------------------------------------------
@@ -14,17 +14,17 @@ CephOsdDf - command ``ceph osd df -f json-pretty``
 CephS - command ``ceph -s -f json-pretty``
 ------------------------------------------
 
-CephDfDetail - command ``ceph osd erasure-code-profile get default -f json-pretty``
------------------------------------------------------------------------------------
+CephDfDetail - command ``ceph df detail -f json-pretty``
+--------------------------------------------------------
 
-CephHealthDetail - command ``ceph daemon {ceph_socket_files} config show``
+CephHealthDetail - command ``ceph health detail -f json-pretty``
 --------------------------------------------------------------------------
 
-CephECProfileGet - command ``ceph health detail -f json-pretty``
-----------------------------------------------------------------
+CephECProfileGet - command ``ceph osd erasure-code-profile get default -f json-pretty``
+---------------------------------------------------------------------------------------
 
-CephCfgInfo - command ``ceph df detail -f json-pretty``
--------------------------------------------------------
+CephCfgInfo - command ``ceph daemon {ceph_socket_files} config show``
+---------------------------------------------------------------------
 
 CephOsdTree - command ``ceph osd tree -f json-pretty``
 ------------------------------------------------------
@@ -35,7 +35,6 @@ CephReport - command ``ceph report``
 All these parsers are based on a shared class which processes the JSON
 information into a dictionary.
 """
-
 import json
 from insights import JSONParser, parser, CommandParser, LegacyItemAccess
 from insights.parsers import ParseException, SkipException
@@ -144,7 +143,6 @@ class CephCfgInfo(CommandParser, JSONParser):
     >>> ceph_cfg_info.max_open_files == '131072'
     True
     """
-
     @property
     def max_open_files(self):
         """
@@ -179,7 +177,6 @@ class CephReport(CommandParser, LegacyItemAccess):
     >>> ceph_report_content["version"] == '12.2.8-52.el7cp'
     True
     """
-
     def parse_content(self, content):
         if not content:
             raise SkipException("Empty output.")
