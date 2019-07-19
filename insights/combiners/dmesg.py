@@ -48,7 +48,7 @@ from insights.parsers.dmesg import DmesgLineList
 from insights.parsers.dmesg_log import DmesgLog
 
 
-@combiner(optional=[DmesgLineList, DmesgLog])
+@combiner([DmesgLineList, DmesgLog])
 class Dmesg(object):
     """
     Combiner for ``dmesg`` command and ``/var/log/dmesg`` file.
