@@ -332,6 +332,7 @@ class DefaultSpecs(Specs):
         [
             "/opt/rh/httpd24/root/etc/httpd/conf/httpd.conf",
             "/opt/rh/httpd24/root/etc/httpd/conf.d/*.conf",
+            "/opt/rh/httpd24/root/etc/httpd/conf.d/*/*.conf",
             "/opt/rh/httpd24/root/etc/httpd/conf.modules.d/*.conf"
         ]
     )
@@ -339,6 +340,7 @@ class DefaultSpecs(Specs):
         [
             "/opt/rh/jbcs-httpd24/root/etc/httpd/conf/httpd.conf",
             "/opt/rh/jbcs-httpd24/root/etc/httpd/conf.d/*.conf",
+            "/opt/rh/jbcs-httpd24/root/etc/httpd/conf.d/*/*.conf",
             "/opt/rh/jbcs-httpd24/root/etc/httpd/conf.modules.d/*.conf"
         ]
     )
