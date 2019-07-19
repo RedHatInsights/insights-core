@@ -714,8 +714,6 @@ class JSONParser(Parser, LegacyItemAccess):
             msg = "%s couldn't parse json." % name
             six.reraise(ParseException, ParseException(msg), tb)
 
-        self.doc = from_dict(self.data)
-
 
 class ScanMeta(type):
     def __new__(cls, name, parents, dct):
