@@ -1,5 +1,4 @@
 from insights.parsers import SkipException
-from insights.parsers import ParseException
 from insights.parsers import x86_debug
 from insights.parsers.x86_debug import X86IBPBEnabled
 from insights.parsers.x86_debug import X86PTIEnabled
@@ -61,6 +60,9 @@ def test_x86_retp_enabled():
     assert retp.value == 2
     assert isinstance(retp.value, int)
 
+    retp = X86RETPEnabled(context_wrap('None'))
+    assert retp.value == 'None'
+
 
 def test_x86_enabled_documentation():
     """
@@ -88,10 +90,6 @@ def test_x86_ibpb_enabled_exp():
         X86IBPBEnabled(context_wrap(""))
     assert "Input content is empty" in str(sc1)
 
-    with pytest.raises(ParseException) as sc1:
-        X86IBPBEnabled(context_wrap("ERROR"))
-    assert "No useful data parsed in content" in str(sc1)
-
 
 def test_x86_pti_enabled_exp():
     """
@@ -101,10 +99,6 @@ def test_x86_pti_enabled_exp():
     with pytest.raises(SkipException) as sc2:
         X86PTIEnabled(context_wrap(""))
     assert "Input content is empty" in str(sc2)
-
-    with pytest.raises(ParseException) as sc2:
-        X86IBPBEnabled(context_wrap("ERROR"))
-    assert "No useful data parsed in content" in str(sc2)
 
 
 def test_x86_ibrs_enabled_exp():
@@ -116,10 +110,6 @@ def test_x86_ibrs_enabled_exp():
         X86IBRSEnabled(context_wrap(""))
     assert "Input content is empty" in str(sc3)
 
-    with pytest.raises(ParseException) as sc3:
-        X86IBRSEnabled(context_wrap("ERROR"))
-    assert "No useful data parsed in content" in str(sc3)
-
 
 def test_x86_retp_enabled_exp():
     """
@@ -129,7 +119,3 @@ def test_x86_retp_enabled_exp():
     with pytest.raises(SkipException) as sc4:
         X86RETPEnabled(context_wrap(""))
     assert "Input content is empty" in str(sc4)
-
-    with pytest.raises(ParseException) as sc4:
-        X86RETPEnabled(context_wrap("ERROR"))
-    assert "No useful data parsed in content" in str(sc4)

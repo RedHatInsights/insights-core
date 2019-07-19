@@ -41,7 +41,6 @@ class X86IBPBEnabled(X86DebugEnabled):
 
     Raises:
         SkipException: When input content is empty
-        ParseException: When input content is not available to parse
     """
     pass
 
@@ -64,7 +63,6 @@ class X86IBRSEnabled(X86DebugEnabled):
 
     Raises:
         SkipException: When input content is empty
-        ParseException: When input content is not available to parse
     """
     pass
 
@@ -87,7 +85,6 @@ class X86PTIEnabled(X86DebugEnabled):
 
     Raises:
         SkipException: When input content is empty
-        ParseException: When input content is not available to parse
     """
     pass
 
@@ -110,6 +107,5 @@ class X86RETPEnabled(X86DebugEnabled):
 
     Raises:
         SkipException: When input content is empty
-        ParseException: When input content is not available to parse
     """
     pass

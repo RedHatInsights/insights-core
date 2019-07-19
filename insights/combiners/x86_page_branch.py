@@ -22,11 +22,6 @@ Examples:
         ibpb (int): The result parsed of '/sys/kernel/debug/x86/ibpb_enabled'
         ibrs (int): The result parsed of '/sys/kernel/debug/x86/ibrs_enabled'
         retp (int): The result parsed of '/sys/kernel/debug/x86/retp_enabled'
-
-    Raises:
-        SkipException: When input content is empty
-        ParseException: When input content is not available to parse
-
 """
 
 from insights.core.plugins import combiner
