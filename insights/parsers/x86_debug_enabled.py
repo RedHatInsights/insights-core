@@ -9,7 +9,8 @@ X86Enabled - file ``/sys/kernel/debug/x86/*_enabled``
 """
 
 from insights import Parser
-from insights.parsers import ParseException, SkipException
+from insights.parsers import ParseException
+from insights.parsers import SkipException
 
 
 class X86DebugEnabled(Parser):
@@ -30,7 +31,7 @@ class X86DebugEnabled(Parser):
         if not content:
             raise SkipException(EMPTY)
 
-        if not str(content[0]).isdigit():
-            raise ParseException(BADWD)
-
-        self.value = int(content[0])
+        if str(content[0]).isdigit():
+            self.value = int(content[0])
+        else:
+            self.value = content[0]
