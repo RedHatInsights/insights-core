@@ -11,7 +11,7 @@ import six
 from fnmatch import fnmatch
 
 from insights.parsr import iniparser
-from insights.parsr.query import (Directive, Entry, from_dict, Result, Section,
+from insights.parsr.query import (Directive, Entry, Result, Section,
                                   compile_queries)
 from insights.contrib.ConfigParser import RawConfigParser
 
