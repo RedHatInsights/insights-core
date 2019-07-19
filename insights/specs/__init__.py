@@ -534,6 +534,7 @@ class Specs(SpecSet):
     systemctl_cat_rpcbind_socket = RegistryPoint()
     systemctl_cinder_volume = RegistryPoint()
     systemctl_httpd = RegistryPoint()
+    systemctl_nginx = RegistryPoint()
     systemctl_list_unit_files = RegistryPoint()
     systemctl_list_units = RegistryPoint()
     systemctl_mariadb = RegistryPoint()
