@@ -60,9 +60,6 @@ def test_x86_retp_enabled():
     assert retp.value == 2
     assert isinstance(retp.value, int)
 
-    retp = X86RETPEnabled(context_wrap('None'))
-    assert retp.value == 'None'
-
 
 def test_x86_enabled_documentation():
     """

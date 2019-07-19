@@ -37,9 +37,9 @@ def test_x86_enabled_documentation():
     """
     env = {
             'dv': X86PageBranch(X86PTIEnabled(context_wrap('1')),
-                X86IBPBEnabled(context_wrap('1')),
-                X86IBRSEnabled(context_wrap('1')),
-                X86RETPEnabled(context_wrap('None')))
+                X86IBPBEnabled(context_wrap('3')),
+                X86IBRSEnabled(context_wrap('2')),
+                X86RETPEnabled(context_wrap('0')))
                 }
     failed, total = doctest.testmod(x86_page_branch, globs=env)
     assert failed == 0

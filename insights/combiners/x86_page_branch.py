@@ -1,5 +1,8 @@
 """
-Combiner for x86 kernel features:
+X86PageBranch - combiner for x86 kernel features:
+=================================================
+
+x86 kernel features includes:
     * PTI (Page Table Isolation)
     * IBPB (Indirect Branch Prediction Barrier)
     * IBRS (Indirect Branch Restricted Speculation)
@@ -11,11 +14,11 @@ Examples:
     >>> dv.pti
     1
     >>> dv.ibpb
-    1
+    3
     >>> dv.ibrs
-    1
+    2
     >>> dv.retp
-    'None'
+    0
 
     Attributes:
         pti (int): The result parsed of '/sys/kernel/debug/x86/pti_enabled'
@@ -28,7 +31,7 @@ from insights.core.plugins import combiner
 from insights.parsers.x86_debug import X86PTIEnabled, X86IBPBEnabled, X86IBRSEnabled, X86RETPEnabled
 
 
-@combiner([X86PTIEnabled, X86IBPBEnabled, X86IBRSEnabled], optional=[X86RETPEnabled])
+@combiner(X86PTIEnabled, X86IBPBEnabled, X86IBRSEnabled, optional=[X86RETPEnabled])
 class X86PageBranch(object):
     """
     This combiner provides an interface to the three X86 Page Table/Branch Prediction parsers.
