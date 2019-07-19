@@ -235,6 +235,7 @@ class InsightsArchiveSpecs(Specs):
     systemctl_cat_rpcbind_socket = simple_file("insights_commands/systemctl_cat_rpcbind.socket")
     systemctl_cinder_volume = simple_file("insights_commands/systemctl_show_openstack-cinder-volume")
     systemctl_httpd = simple_file("insights_commands/systemctl_show_httpd")
+    systemctl_nginx = simple_file("insights_commands/systemctl_show_nginx")
     systemctl_list_unit_files = simple_file("insights_commands/systemctl_list-unit-files")
     systemctl_list_units = simple_file("insights_commands/systemctl_list-units")
     systemctl_mariadb = simple_file("insights_commands/systemctl_show_mariadb")
