@@ -141,6 +141,7 @@ class InsightsArchiveSpecs(Specs):
     max_uid = simple_file("insights_commands/awk_-F_if_3_max_max_3_END_print_max_.etc.passwd")
     md5chk_files = glob_file("insights_commands/md5sum_*")
     mount = simple_file("insights_commands/mount")
+    modinfo = glob_file("insights_commands/modinfo_*")
     modinfo_i40e = simple_file("insights_commands/modinfo_i40e")
     modinfo_igb = simple_file("insights_commands/modinfo_igb")
     modinfo_ixgbe = simple_file("insights_commands/modinfo_ixgbe")
