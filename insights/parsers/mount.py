@@ -80,7 +80,75 @@ from ..parsers import optlist_to_dict, keyword_search, ParseException, SkipExcep
 from .. import parser, get_active_lines, LegacyItemAccess, CommandParser
 
 
-class MountOpts(object):
+# FIXME: Let's put the LegacyItemAccessPrivate here temporarily.
+#        Should be moved to core/__init__.py later.
+class LegacyItemAccessPrivate(object):
+    """
+    Mixin class to provide legacy access to ``self._data`` attribute.
+
+    Provides expected passthru functionality for classes that still use
+    ``self._data`` as the primary data structure for all parsed information.
+    Use this as a mixin on parsers that expect these methods to be present
+    as they were previously.
+
+    Examples:
+        >>> class MyParser(LegacyItemAccess, Parser):
+        ...     def parse_content(self, content):
+        ...         self._data = {}
+        ...         for line in content:
+        ...             if 'fact' in line:
+        ...                 k, v = line.split('=')
+        ...                 self._data[k.strip()] = v.strip()
+        >>> content = '''
+        ... # Comment line
+        ... fact1=fact 1
+        ... fact2=fact 2
+        ... fact3=fact 3
+        ... '''.strip()
+        >>> my_parser = MyParser(context_wrap(content, path='/etc/path_to_content/content.conf'))
+        >>> my_parser._data
+        {'fact1': 'fact 1', 'fact2': 'fact 2', 'fact3': 'fact 3'}
+        >>> my_parser.file_path
+        '/etc/path_to_content/content.conf'
+        >>> my_parser.file_name
+        'content.conf'
+        >>> my_parser['fact1']
+        'fact 1'
+        >>> 'fact2' in my_parser
+        True
+        >>> my_parser.get('fact3', default='no fact')
+        'fact 3'
+    """
+
+    def __getitem__(self, item):
+        return self._data[item]
+
+    def __contains__(self, item):
+        return item in self._data
+
+    def get(self, item, default=None):
+        """Returns value of key ``item`` in self.data or ``default``
+        if key is not present.
+
+        Parameters:
+            item: Key to get from ``self.data``.
+            default: Default value to return if key is not present.
+
+        Returns:
+            (str): String value of the stored item, or the default if not found.
+        """
+        return self._data.get(item, default)
+
+    def items(self):
+        """
+        To keep backward compatibility and let it can be iterated as a
+        dictionary.
+        """
+        for k, v in self._data.items():
+            yield k, v
+
+
+class MountOpts(LegacyItemAccessPrivate):
     """
     An object representing the mount options found in mount or fstab entry.
     Each option in the comma-separated list is a key, and 'key=value'
@@ -112,43 +180,22 @@ class MountOpts(object):
     }
 
     def __init__(self, data={}):
-        # Use '_data' but not 'data' since the 'data' could be an mount option
         self._data = data
-        for k, v in MountOpts.attrs.items():
-            if k not in data:
-                setattr(self, k, v)
-        for k, v in data.items():
-            setattr(self, k, v)
 
-    def __getitem__(self, item):
-        return self._data[item]
+    def __getattr__(self, name):
+        try:
+            return self._data[name]
+        except KeyError:
+            raise AttributeError(name)
 
-    def __contains__(self, item):
-        return item in self._data
-
-    def get(self, item, default=None):
-        """Returns value of key ``item`` in self._data or ``default``
-        if key is not present.
-
-        Parameters:
-            item: Key to get from ``self.data``.
-            default: Default value to return if key is not present.
-
-        Returns:
-            (str): String value of the stored item, or the default if not found.
-        """
-        return self._data.get(item, default)
-
-    def items(self):
-        """
-        To keep backward compatibility and let it can be iterated as a
-        dictionary.
-        """
-        for k, v in self._data.items():
-            yield k, v
+    def __setattr__(self, name, value):
+        if name == "_data":
+            object.__setattr__(self, name, value)
+        else:
+            raise AttributeError(name, value, "No allow write")
 
 
-class MountEntry(LegacyItemAccess, CommandParser):
+class MountEntry(LegacyItemAccessPrivate, CommandParser):
     """
     An object representing an entry in the output of ``mount`` command.  Each
     entry contains below fixed attributes:
@@ -169,20 +216,19 @@ class MountEntry(LegacyItemAccess, CommandParser):
     }
 
     def __init__(self, data={}):
-        self.data = data
-        for k, v in MountEntry.attrs.items():
-            if k not in data:
-                setattr(self, k, v)
-        for k, v in data.items():
-            setattr(self, k, v)
+        self._data = data
 
-    def items(self):
-        """
-        To keep backward compatibility and let it can be iterated as a
-        dictionary.
-        """
-        for k, v in self.data.items():
-            yield k, v
+    def __getattr__(self, name):
+        try:
+            return self._data[name]
+        except KeyError:
+            raise AttributeError(name)
+
+    def __setattr__(self, name, value):
+        if name == "_data":
+            object.__setattr__(self, name, value)
+        else:
+            raise AttributeError(name, value, "No allow write")
 
 
 @parser(Specs.mount)

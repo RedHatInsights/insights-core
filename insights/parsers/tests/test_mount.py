@@ -58,6 +58,22 @@ def test_mount():
     assert sda1.mount_options.data == 'ordered'
     assert 'mount_label' not in sda1
 
+    import pprint
+    print("\n === Take this as an example: ")
+    print("sr0, type(sr0): ", sr0, type(sr0))
+    print("sr0.__dict__ : ")
+    pprint.pprint(sr0.__dict__)
+    print("sr0.data['mount_point'], sr0.mount_point: ", sr0._data['mount_point'], sr0.mount_point)
+    print(" === Do the change now: ")
+    #sr0.mount_point = "attribute mp"
+    #print("sr0.data['mount_point'], sr0.mount_point: ", sr0._data['mount_point'], sr0.mount_point)
+    sr0._data['mount_point'] = "data dict mp"
+    print("sr0.data['mount_point'], sr0.mount_point: ", sr0._data['mount_point'], sr0.mount_point)
+    print(sr0.__dict__)
+
+
+
+
     # Test iteration
     for mount in results:
         assert hasattr(mount, 'filesystem')
