@@ -258,8 +258,17 @@ def print_egg_versions():
         if not os.path.exists(egg):
             logger.debug('%s not found.', egg)
             continue
-        proc = Popen(['python', '-c', 'from insights.client import InsightsClient; print(InsightsClient().version())'],
-                     env={'PYTHONPATH': egg, 'PATH': os.getenv('PATH')}, stdout=PIPE, stderr=STDOUT)
+        try:
+            proc = Popen(['python', '-c', 'from insights.client import InsightsClient; print(InsightsClient().version())'],
+                         env={'PYTHONPATH': egg, 'PATH': os.getenv('PATH')}, stdout=PIPE, stderr=STDOUT)
+        except FileNotFoundError:
+            logger.debug('Python not found. Trying RHEL 8\'s flavor.')
+            try:
+                proc = Popen(['/usr/libexec/platform-python', '-c', 'from insights.client import InsightsClient; print(InsightsClient().version())'],
+                             env={'PYTHONPATH': egg, 'PATH': os.getenv('PATH')}, stdout=PIPE, stderr=STDOUT)
+            except FileNotFoundError:
+                logger.debug('Platform-python not found either.')
+                return
         stdout, stderr = proc.communicate()
         version = stdout.decode('utf-8', 'ignore').strip()
         logger.debug('%s: %s', egg, version)
