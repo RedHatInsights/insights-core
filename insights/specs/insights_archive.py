@@ -1,4 +1,4 @@
-from insights.core.spec_factory import first_of, glob_file, simple_file, head
+from insights.core.spec_factory import first_of, glob_file, simple_file, head, first_file
 from functools import partial
 from insights.core.context import HostArchiveContext
 from insights.specs import Specs
@@ -245,8 +245,8 @@ class InsightsArchiveSpecs(Specs):
     systemctl_qpidd = simple_file("insights_commands/systemctl_show_qpidd")
     systemctl_qdrouterd = simple_file("insights_commands/systemctl_show_qdrouterd")
     systemctl_smartpdc = simple_file("insights_commands/systemctl_show_smart_proxy_dynflow_core")
-    systemd_docker = simple_file("insights_commands/systemctl_cat_docker.service")
-    systemd_openshift_node = simple_file("insights_commands/systemctl_cat_atomic-openshift-node.service")
+    systemd_docker = first_file(["insights_commands/systemctl_cat_docker.service", "/usr/lib/systemd/system/docker.service"])
+    systemd_openshift_node = first_file(["insights_commands/systemctl_cat_atomic-openshift-node.service", "/usr/lib/systemd/system/atomic-openshift-node.service"])
     systool_b_scsi_v = simple_file("insights_commands/systool_-b_scsi_-v")
     teamdctl_config_dump = glob_file("insights_commands/teamdctl_*_config_dump")
     teamdctl_state_dump = glob_file("insights_commands/teamdctl_*_state_dump")
