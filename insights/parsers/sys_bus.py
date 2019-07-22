@@ -13,7 +13,7 @@ CdcWDM - file ``/sys/bus/usb/drivers/cdc_wdm/module/refcnt``
 """
 
 
-from insights import parser, CommandParser, Parser
+from insights import parser, Parser
 from insights.parsers import SkipException, ParseException
 from insights.specs import Specs
 
@@ -22,24 +22,24 @@ from insights.specs import Specs
 class CdcWDM(Parser):
 
     """
-    This file `/sys/bus/usb/drivers/cdc_wdm/module/refcnt` contains 
+    This file `/sys/bus/usb/drivers/cdc_wdm/module/refcnt` contains
     device usage count, i.e if a device is in use then the non-zero
     value will be present in the file.
-    
+
     Sample Content:
-    
-        0 - Not in use
+
+        0 - Not in use.
         1 - Device is opened and it is in use.
-    
+
     Examples:
-    
+
         >>> type(device_usage)
         <class 'insights.parsers.sys_bus.CdcWDM'>
         >>> device_usage.device_usage_cnt
         1
         >>> device_usage.device_in_use
         True
-        
+
     Raises:
         SkipException: When contents are empty
         ParseException: When contents are invalid
@@ -47,15 +47,13 @@ class CdcWDM(Parser):
 
     def parse_content(self, content):
         self._ref_count = ""
-
         if not content:
-            SkipException("No Valid Content")
-        
+            raise SkipException("No Content!")
+
         try:
             self._ref_count = int(content[0].strip())
         except:
-            ParseException("Invalid Content!")
-
+            raise ParseException("Invalid Content!")
 
     @property
     def device_usage_cnt(self):
@@ -63,7 +61,6 @@ class CdcWDM(Parser):
         Returns (int): device usage count.
         """
         return self._ref_count
-
 
     @property
     def device_in_use(self):
