@@ -226,6 +226,8 @@ class DefaultSpecs(Specs):
     dmidecode = simple_command("/usr/sbin/dmidecode")
     dmsetup_info = simple_command("/usr/sbin/dmsetup info -C")
     dnf_modules = glob_file("/etc/dnf/modules.d/*.module")
+    dnf_module_list = simple_command("/usr/bin/dnf -C --noplugins module list")
+    #dnf_module_info = foreach_execute(module_list, "/usr/bin/dnf -C --noplugins module info %s")
     dnsmasq_config = glob_file(["/etc/dnsmasq.conf", "/etc/dnsmasq.d/*.conf"])
     docker_info = simple_command("/usr/bin/docker info")
     docker_list_containers = simple_command("/usr/bin/docker ps --all --no-trunc")

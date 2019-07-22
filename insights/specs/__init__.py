@@ -115,6 +115,8 @@ class Specs(SpecSet):
     dmidecode = RegistryPoint()
     dmsetup_info = RegistryPoint()
     dnf_modules = RegistryPoint()
+    dnf_module_list = RegistryPoint()
+    dnf_module_info = RegistryPoint(multi_output=True)
     dnsmasq_config = RegistryPoint(multi_output=True)
     docker_container_inspect = RegistryPoint(multi_output=True)
     docker_host_machine_id = RegistryPoint()
