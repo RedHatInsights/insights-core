@@ -33,7 +33,7 @@ class Specs(SpecSet):
     brctl_show = RegistryPoint()
     candlepin_error_log = RegistryPoint(filterable=True)
     candlepin_log = RegistryPoint(filterable=True)
-    cdc_wdm = RegistryPoint(filterable=True)
+    cdc_wdm = RegistryPoint()
     checkin_conf = RegistryPoint()
     catalina_out = RegistryPoint(multi_output=True, filterable=True)
     catalina_server_log = RegistryPoint(multi_output=True, filterable=True)
