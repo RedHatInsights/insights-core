@@ -370,7 +370,7 @@ class InstalledRpm(object):
             setattr(self, k, v)
         self.epoch = data['epoch'] if 'epoch' in data and data['epoch'] != '(none)' else '0'
         _gpg_key_pos = data.get('sigpgp', data.get('rsaheader', data.get('pgpsig_short', data.get('pgpsig', ''))))
-        self.redhat_signed = "Unable_To_determine"
+        self.redhat_signed = "Unable_To_Determine"
         if _gpg_key_pos:
             self.redhat_signed = any(key in _gpg_key_pos for key in self.PRODUCT_SIGNING_KEYS)
 
