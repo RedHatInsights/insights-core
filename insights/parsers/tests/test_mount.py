@@ -58,22 +58,6 @@ def test_mount():
     assert sda1.mount_options.data == 'ordered'
     assert 'mount_label' not in sda1
 
-    import pprint
-    print("\n === Take this as an example: ")
-    print("sr0, type(sr0): ", sr0, type(sr0))
-    print("sr0.__dict__ : ")
-    pprint.pprint(sr0.__dict__)
-    print("sr0.data['mount_point'], sr0.mount_point: ", sr0._data['mount_point'], sr0.mount_point)
-    print(" === Do the change now: ")
-    #sr0.mount_point = "attribute mp"
-    #print("sr0.data['mount_point'], sr0.mount_point: ", sr0._data['mount_point'], sr0.mount_point)
-    sr0._data['mount_point'] = "data dict mp"
-    print("sr0.data['mount_point'], sr0.mount_point: ", sr0._data['mount_point'], sr0.mount_point)
-    print(sr0.__dict__)
-
-
-
-
     # Test iteration
     for mount in results:
         assert hasattr(mount, 'filesystem')
@@ -128,6 +112,14 @@ def test_mount_get_dir():
     with pytest.raises(ParseException) as exc:
         Mount(context_wrap(MOUNT_WITHOUT_ROOT))
     assert "Input for mount must contain '/' mount point." in str(exc)
+
+
+def test_mount_attribute_write_error():
+    results = Mount(context_wrap(MOUNT_DATA))
+    sr0 = results.search(filesystem='/dev/sr0')[0]
+    with pytest.raises(AttributeError) as exc:
+        sr0.mount_point = "attribute mp"
+    assert "MountEntry don't allow attribute writing" in str(exc)
 
 
 PROC_MOUNT = """

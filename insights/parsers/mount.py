@@ -75,12 +75,13 @@ Examples:
 """
 
 import re
+import copy
 from insights.specs import Specs
 from ..parsers import optlist_to_dict, keyword_search, ParseException, SkipException
-from .. import parser, get_active_lines, LegacyItemAccess, CommandParser
+from .. import parser, get_active_lines, CommandParser
 
 
-# FIXME: Let's put the LegacyItemAccessPrivate here temporarily.
+# TODO: FIXME: Let's put the LegacyItemAccessPrivate here temporarily.
 #        Should be moved to core/__init__.py later.
 class LegacyItemAccessPrivate(object):
     """
@@ -192,7 +193,7 @@ class MountOpts(LegacyItemAccessPrivate):
         if name == "_data":
             object.__setattr__(self, name, value)
         else:
-            raise AttributeError(name, value, "No allow write")
+            raise AttributeError("MountOpts don't allow attribute writing. Trying set <%s> with <%s> " % (name, value))
 
 
 class MountEntry(LegacyItemAccessPrivate, CommandParser):
@@ -228,7 +229,11 @@ class MountEntry(LegacyItemAccessPrivate, CommandParser):
         if name == "_data":
             object.__setattr__(self, name, value)
         else:
-            raise AttributeError(name, value, "No allow write")
+            raise AttributeError("MountEntry don't allow attribute writing. Trying set <%s> with <%s> " % (name, value))
+
+    @property
+    def data(self):
+        return copy.deepcopy(self._data)
 
 
 @parser(Specs.mount)
