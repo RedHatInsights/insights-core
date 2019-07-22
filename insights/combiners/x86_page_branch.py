@@ -8,6 +8,7 @@ x86 kernel features includes:
     * IBRS (Indirect Branch Restricted Speculation)
 
 This combiner reads information from debugfs:
+
 Examples:
     >>> type(dv)
     <class 'insights.combiners.x86_page_branch.X86PageBranch'>
@@ -22,8 +23,11 @@ Examples:
 
     Attributes:
         pti (int): The result parsed of '/sys/kernel/debug/x86/pti_enabled'
+
         ibpb (int): The result parsed of '/sys/kernel/debug/x86/ibpb_enabled'
+
         ibrs (int): The result parsed of '/sys/kernel/debug/x86/ibrs_enabled'
+
         retp (int): The result parsed of '/sys/kernel/debug/x86/retp_enabled'
 """
 

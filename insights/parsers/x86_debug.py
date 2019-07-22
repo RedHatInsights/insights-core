@@ -29,7 +29,7 @@ class X86DebugEnabled(Parser):
     Class for parsing file ``/sys/kernel/debug/x86/*_enabled``
 
     Attributes:
-        value (int): the result parsed of '/sys/kernel/debug/x86/*_enabled'
+        value (int): the result parsed of `/sys/kernel/debug/x86/*_enabled`
 
     Raises:
         SkipException: When input content is empty
@@ -46,6 +46,7 @@ class X86IBPBEnabled(X86DebugEnabled):
     """
     Class for parsing file ``/sys/kernel/debug/x86/ibpb_enabled``
     Typical output of file ``/sys/kernel/debug/x86/retp_enabled`` looks like::
+
         1
 
     Examples:
@@ -68,6 +69,7 @@ class X86IBRSEnabled(X86DebugEnabled):
     """
     Class for parsing file ``/sys/kernel/debug/x86/ibrs_enabled``
     Typical output of file ``/sys/kernel/debug/x86/ibrs_enabled`` looks like::
+
         0
 
     Examples:
@@ -90,6 +92,7 @@ class X86PTIEnabled(X86DebugEnabled):
     """
     Class for parsing file ``/sys/kernel/debug/x86/pti_enabled``
     Typical output of file ``/sys/kernel/debug/x86/pti_enabled`` looks like::
+
         0
 
     Examples:
@@ -112,6 +115,7 @@ class X86RETPEnabled(X86DebugEnabled):
     """
     Class for parsing file ``/sys/kernel/debug/x86/retp_enabled``
     Typical output of file ``/sys/kernel/debug/x86/retp_enabled`` looks like::
+
         1
 
     Examples:
