@@ -591,6 +591,13 @@ class InsightsConfig(object):
             if self.group:
                 raise ValueError(
                     '--group is not supported at this time.')
+        if self.offline:
+            if self.to_json:
+                raise ValueError('Cannot use --to-json in offline mode.')
+            if self.status:
+                raise ValueError('Cannot check registration status in offline mode.')
+            if self.test_connection:
+                raise ValueError('Cannot run connection test in offline mode.')
 
     def _imply_options(self):
         '''
