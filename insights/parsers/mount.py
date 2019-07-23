@@ -54,7 +54,6 @@ import os
 from insights.specs import Specs
 from insights.parsers import optlist_to_dict, keyword_search, ParseException, SkipException
 from insights import parser, get_active_lines, CommandParser
-from insights.core import LegacyItemAccess
 
 
 class MountOpts(dict):
