@@ -47,7 +47,6 @@ class InsightsArchiveSpecs(Specs):
     docker_info = simple_file("insights_commands/docker_info")
     docker_list_containers = simple_file("insights_commands/docker_ps_--all_--no-trunc")
     docker_list_images = simple_file("insights_commands/docker_images_--all_--no-trunc_--digests")
-    dumpdev = simple_file("insights_commands/awk_.ext_234_._print_1_.proc.mounts")
     engine_config_all = simple_file("insights_commands/engine-config_--all")
     ethtool = glob_file("insights_commands/ethtool_*", ignore="ethtool_-.*")
     ethtool_S = glob_file("insights_commands/ethtool_-S_*")
