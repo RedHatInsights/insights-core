@@ -54,6 +54,7 @@ import os
 from insights.specs import Specs
 from insights.parsers import optlist_to_dict, keyword_search, ParseException, SkipException
 from insights import parser, get_active_lines, CommandParser
+from insights.core import LegacyItemAccess
 
 
 class MountOpts(dict):
@@ -88,6 +89,7 @@ class MountOpts(dict):
     }
 
     def __init__(self, data={}):
+        data = {} if data is None else data
         self.update(data)
         for k, v in MountOpts.attrs.items():
             if k not in data:
@@ -117,6 +119,7 @@ class MountEntry(dict):
     }
 
     def __init__(self, data={}):
+        data = {} if data is None else data
         self.update(data)
         for k, v in MountEntry.attrs.items():
             if k not in data:
