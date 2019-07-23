@@ -18,6 +18,7 @@ Contents:
     components
     embedded_content
     tools
+    component_config
     notebook_index
     manpages_index
     cheatsheets_index

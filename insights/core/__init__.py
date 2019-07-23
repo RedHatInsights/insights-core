@@ -10,8 +10,9 @@ import yaml
 import six
 from fnmatch import fnmatch
 
-from insights.configtree import from_dict, iniconfig, Root, select, first
-from insights.configtree import Directive, SearchResult, Section
+from insights.parsr import iniparser
+from insights.parsr.query import (Directive, Entry, Result, Section,
+                                  compile_queries)
 from insights.contrib.ConfigParser import RawConfigParser
 
 from insights.parsers import ParseException, SkipException
@@ -24,11 +25,15 @@ import sys
 # Since XPath expression is not supported by the ElementTree in Python 2.6,
 # import insights.contrib.ElementTree when running python is prior to 2.6 for compatibility.
 # Script insights.contrib.ElementTree is the same with xml.etree.ElementTree in Python 2.7.14
-# Otherwise, import xml.etree.ElementTree instead.
+# Otherwise, import defusedxml.ElementTree to avoid XML vulnerabilities,
+# if dependency not installed import xml.etree.ElementTree instead.
 if sys.version_info[0] == 2 and sys.version_info[1] <= 6:
     import insights.contrib.ElementTree as ET
 else:
-    import xml.etree.ElementTree as ET
+    try:
+        import defusedxml.ElementTree as ET
+    except:
+        import xml.etree.ElementTree as ET
 
 log = logging.getLogger(__name__)
 
@@ -127,12 +132,13 @@ def find_main(confs, name):
 
 def flatten(docs, pred):
     seen = set()
+    pred = compile_queries(pred)
 
     def inner(children):
         results = []
         for c in children:
-            if select(pred)([c]) and c.children:
-                name = c.value
+            if pred([c]) and c.children:
+                name = c.string_value
                 if name in seen:
                     msg = "Configuration contains recursive includes: %s" % name
                     raise Exception(msg)
@@ -261,32 +267,23 @@ class ConfigComponent(object):
 
     def find(self, *queries, **kwargs):
         """
-        Finds the first result found anywhere in the configuration. Pass
-        `one=last` for the last result. Returns `None` if no results are found.
+        Finds matching results anywhere in the configuration
         """
-        kwargs["deep"] = True
-        kwargs["roots"] = False
-        if "one" not in kwargs:
-            kwargs["one"] = first
-        return self.select(*queries, **kwargs)
+        roots = kwargs.get("roots", False)
+        return self.select(*queries, deep=True, roots=roots)
 
-    def find_all(self, *queries):
-        """
-        Find all results matching the query anywhere in the configuration.
-        Returns an empty `SearchResult` if no results are found.
-        """
-        return self.select(*queries, deep=True, roots=False)
+    find_all = find
 
     def _children_of_type(self, t):
         return [c for c in self.doc.children if isinstance(c, t)]
 
     @property
     def sections(self):
-        return SearchResult(children=self._children_of_type(Section))
+        return Result(children=self._children_of_type(Section))
 
     @property
     def directives(self):
-        return SearchResult(children=self._children_of_type(Directive))
+        return Result(children=self._children_of_type(Directive))
 
     def __getitem__(self, query):
         """
@@ -329,7 +326,7 @@ class ConfigComponent(object):
         return iter(self.doc)
 
     def __repr__(self):
-        return str(self.doc)
+        return repr(self.doc)
 
     def __str__(self):
         return self.__repr__()
@@ -349,7 +346,7 @@ class ConfigParser(Parser, ConfigComponent):
         self.doc = self.parse_doc(content)
 
     def parse_doc(self, content):
-        raise NotImplemented()
+        raise NotImplementedError()
 
     def lineat(self, pos):
         return self.content[pos] if pos is not None else None
@@ -369,8 +366,8 @@ class ConfigCombiner(ConfigComponent):
         # Set the children of all include directives to the contents of the
         # included configs
         for conf in confs:
-            for node in conf.doc.select(include_finder, deep=True, roots=False):
-                pattern = node.value
+            for node in conf.find(include_finder):
+                pattern = node.string_value
                 if not pattern.startswith("/"):
                     pattern = os.path.join(server_root, pattern)
                 includes = self.find_matches(confs, pattern)
@@ -378,7 +375,7 @@ class ConfigCombiner(ConfigComponent):
                     node.children.extend(inc.doc.children)
 
         # flatten all content from nested includes into a main doc
-        self.doc = Root(children=flatten(self.main.doc.children, include_finder))
+        self.doc = Entry(children=flatten(self.main.doc.children, include_finder))
 
     def find_matches(self, confs, pattern):
         results = [c for c in confs if fnmatch(c.file_path, pattern)]
@@ -516,12 +513,12 @@ class CommandParser(Parser):
     __bad_lines = [
             "no such file or directory",
             "command not found",
-            "python: No module named",
+            "no module named",
     ]
     """
     This variable contains filters for bad responses from commands defined
     with command specs.
-    When adding a new lin to the list make sure text is all lower case.
+    When adding a new line to the list make sure text is all lower case.
     """
 
     @staticmethod
@@ -700,8 +697,6 @@ class YAMLParser(Parser, LegacyItemAccess):
             msg = "%s couldn't parse yaml." % name
             six.reraise(ParseException, ParseException(msg), tb)
 
-        self.doc = from_dict(self.data)
-
 
 class JSONParser(Parser, LegacyItemAccess):
     """
@@ -716,8 +711,6 @@ class JSONParser(Parser, LegacyItemAccess):
             name = ".".join([cls.__module__, cls.__name__])
             msg = "%s couldn't parse json." % name
             six.reraise(ParseException, ParseException(msg), tb)
-
-        self.doc = from_dict(self.data)
 
 
 class ScanMeta(type):
@@ -859,8 +852,13 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
         ...     pass
         >>> MyLogger.keep_scan('get_one', 'one')
         >>> MyLogger.keep_scan('get_three_and_more', ['three', 'more'])
-        >>> MyLogger.token_scan('is_more', 'more')
-        >>> MyLogger.token_scan('is_more_and_more', ['four', 'more'])
+        >>> MyLogger.keep_scan('get_one_or_two', ['one', 'two'], check=any)
+        >>> MyLogger.last_scan('last_line_contains_file', 'file')
+        >>> MyLogger.keep_scan('last_2_lines_contain_file', 'file', num=2, reverse=True)
+        >>> MyLogger.keep_scan('last_3_lines_contain_line_and_t', ['line', 't'], num=3, reverse=True)
+        >>> MyLogger.token_scan('find_more', 'more')
+        >>> MyLogger.token_scan('find_four_and_more', ['four', 'more'])
+        >>> MyLogger.token_scan('find_four_or_more', ['four', 'more'], check=any)
         >>> my_logger = MyLogger(context_wrap(contents, path='/var/log/mylog'))
         >>> my_logger.file_path
         '/var/log/mylog'
@@ -868,7 +866,7 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
         'mylog'
         >>> my_logger.get('two')
         [{'raw_message': 'Log file line two'}]
-        >>> 'three' in my_logger
+        >>> 'line three,' in my_logger
         True
         >>> my_logger.get(['three', 'more'])
         [{'raw_message': 'Log file line three, and more'}]
@@ -878,10 +876,18 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
         [{'raw_message': 'Log file line one'}]
         >>> my_logger.get_three_and_more == my_logger.get(['three', 'more'])
         True
-        >>> my_logger.is_more
+        >>> my_logger.last_line_contains_file
+        {'raw_message': 'Log file line three, and more'}
+        >>> len(my_logger.last_2_lines_contain_file)
+        2
+        >>> len(my_logger.last_3_lines_contain_line_and_t)  # Only 2 lines contain 'line' and 't'
+        2
+        >>> my_logger.find_more
         True
-        >>> my_logger.is_more_and_more
+        >>> my_logger.find_four_and_more
         False
+        >>> my_logger.find_four_or_more
+        True
 
     Attributes:
         lines (list): List of the lines from the log file content.
@@ -910,7 +916,8 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
 
     def __contains__(self, s):
         """
-        Returns true if any line contains the given text string.
+        Return ``True`` if any line contains the given text string or all the
+        strings in the given list.
         """
         search_by_expression = self._valid_search(s)
         return any(search_by_expression(l) for l in self.lines)
@@ -922,7 +929,7 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
         """
         return {'raw_message': line}
 
-    def _valid_search(self, s):
+    def _valid_search(self, s, check=all):
         """
         Check this given `s`, it must be a string or a list of strings.
         Otherwise, a TypeError will be raised.
@@ -931,29 +938,39 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
             return lambda l: s in l
         elif (isinstance(s, list) and len(s) > 0 and
               all(isinstance(w, six.string_types) for w in s)):
-            return lambda l: all(w in l for w in s)
+            return lambda l: check(w in l for w in s)
         elif s is not None:
             raise TypeError('Search items must be given as a string or a list of strings')
 
-    def get(self, s):
+    def get(self, s, check=all, num=None, reverse=False):
         """
         Returns all lines that contain `s` anywhere and wrap them in a list of
         dictionaries.  `s` can be either a single string or a string list. For
         list, all keywords in the list must be found in each line.
 
         Parameters:
-            s(str or list): one or more strings to search for.
+            s(str or list): one or more strings to search for
+            check(func): built-in function ``all`` or ``any`` applied to each line
+            num(int): the number of lines to get, ``None`` for unlimited
+            reverse(bool): scan start from the head when ``False`` by default, otherwise start from the tail
 
         Returns:
-            (list): list of dictionaries corresponding to the parsed lines
-            contain the `s`.
+            (list): list of dictionaries corresponding to the parsed lines contain the `s`.
+
+        Raises:
+            TypeError: When `s` is not a string or a list of strings, or `num`
+                is not an integer.
         """
+        if num is not None and not isinstance(num, six.integer_types):
+            raise TypeError('Required numbers must be given as a integer')
         ret = []
-        search_by_expression = self._valid_search(s)
-        for l in self.lines:
-            if search_by_expression(l):
+        search_by_expression = self._valid_search(s, check)
+        lines = self.lines[::-1] if reverse else self.lines
+        for l in lines:
+            if (num is None or len(ret) < num) and search_by_expression(l):
                 ret.append(self._parse_line(l))
-        return ret
+        # re-sort to original order
+        return ret[::-1] if reverse else ret
 
     @classmethod
     def scan(cls, result_key, func):
@@ -961,6 +978,9 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
         Define computed fields based on a string to "grep for".  This is
         preferred to utilizing raw log lines in plugins because computed fields
         will be serialized, whereas raw log lines will not.
+
+        Raises:
+            ValueError: When `result_key` is already a registered scanner key.
         """
 
         if result_key in cls.scanner_keys:
@@ -974,24 +994,65 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
         cls.scanner_keys.add(result_key)
 
     @classmethod
-    def token_scan(cls, result_key, token):
+    def token_scan(cls, result_key, token, check=all, reverse=False):
         """
         Define a property that is set to true if the given token is found in
         the log file.  Uses the __contains__ method of the log file.
+
+        Parameters:
+            result_key(str): the scanner key to register
+            token(str or list): one or more strings to search for
+            check(func): built-in function ``all`` or ``any`` applied to each line
+            reverse(bool): scan start from the head when ``False`` by default, otherwise start from the tail
+
+        Returns:
+            (list): list of dictionaries corresponding to the parsed lines contain the `token`.
         """
         def _scan(self):
-            return token in self
+            search_by_expression = self._valid_search(token, check)
+            lines = self.lines[::-1] if reverse else self.lines
+            return any(search_by_expression(l) for l in lines)
 
         cls.scan(result_key, _scan)
 
     @classmethod
-    def keep_scan(cls, result_key, token):
+    def keep_scan(cls, result_key, token, check=all, num=None, reverse=False):
         """
-        Define a property that is set to the list of lines that contain the
-        given token.  Uses the get method of the log file.
+        Define a property that is set to the list of dictionaries of the lines
+        that contain the given token.  Uses the get method of the log file.
+
+        Parameters:
+            result_key(str): the scanner key to register
+            token(str or list): one or more strings to search for
+            check(func): built-in function ``all`` or ``any`` applied to each line
+            num(int): the number of lines to get, ``None`` for unlimited
+            reverse(bool): scan start from the head when ``False`` by default, otherwise start from the tail
+
+        Returns:
+            (list): list of dictionaries corresponding to the parsed lines contain the `token`.
         """
         def _scan(self):
-            return self.get(token)
+            return self.get(token, check=check, num=num, reverse=reverse)
+
+        cls.scan(result_key, _scan)
+
+    @classmethod
+    def last_scan(cls, result_key, token, check=all):
+        """
+        Define a property that is set to the dictionary of the last line
+        that contains the given token.  Uses the get method of the log file.
+
+        Parameters:
+            result_key(str): the scanner key to register
+            token(str or list): one or more strings to search for
+            check(func): built-in function ``all`` or ``any`` applied to each line
+
+        Returns:
+            (dict): dictionary corresponding to the last parsed line contains the `token`.
+        """
+        def _scan(self):
+            ret = self.get(token, check=check, num=1, reverse=True)
+            return ret[0] if ret else dict()
 
         cls.scan(result_key, _scan)
 
@@ -1349,7 +1410,7 @@ class IniConfigFile(ConfigParser):
         self.data = config
 
     def parse_doc(self, content):
-        return iniconfig.parse_doc(content)
+        return iniparser.parse_doc("\n".join(content), self)
 
     def sections(self):
         """list: Return a list of section names."""

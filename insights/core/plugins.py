@@ -18,6 +18,7 @@ may return:
     - :class:`make_pass`
     - :class:`make_response` (alias for make_fail)
     - :class:`make_fail`
+    - :class:`make_info`
     - :class:`make_metadata`
     - :class:`make_metadata_key`
     - :class:`make_fingerprint`
@@ -547,6 +548,24 @@ class make_pass(Response):
     """
     response_type = "pass"
     key_name = "pass_key"
+
+
+class make_info(Response):
+    """
+    Returned by a rule to surface information about a system.
+
+    Example:
+
+    .. code-block:: python
+
+        @rule(InstalledRpms)
+        def report(rpms):
+           bash = rpms.newest("bash")
+           return make_info("BASH_VERSION", bash=bash.nvra)
+
+    """
+    response_type = "info"
+    key_name = "info_key"
 
 
 class make_fingerprint(Response):

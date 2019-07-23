@@ -72,7 +72,7 @@ KRB5DCONFIG = """
  default = FILE:/var/log/krb5libs.log
  kdc = FILE:/var/log/krb5kdc.log *
  admin_server = FILE:/var/log/kadmind.log
-
+ kdc = FILE:/var/log/krb5kdc.log2
 """.strip()
 
 KRB5CONFIG3 = """
@@ -142,4 +142,5 @@ def test_krb5Dconfiguration():
     assert common_conf_info["realms"]["ticket_lifetime"] == "24h"
     assert "default_ccache_name" not in common_conf_info.data.keys()
     assert common_conf_info["realms"]["EXAMPLE.COM"]["kdc"] == ['kerberos.example.com', 'test2.example.com', 'test3.example.com']
-    assert not common_conf_info.has_option("logging", "admin_server")
+    assert common_conf_info.has_option("logging", "admin_server")
+    assert common_conf_info["logging"]["kdc"] == "FILE:/var/log/krb5kdc.log"

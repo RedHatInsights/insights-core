@@ -70,6 +70,15 @@ def test_run_command_get_output():
     assert util.run_command_get_output(cmd) == {'status': 0, 'output': u'hello\n'}
 
 
+@patch('insights.client.utilities.run_command_get_output')
+@patch('insights.client.InsightsClient')
+def test_get_version_info(insights_client, run_command_get_output):
+    insights_client.return_value.version.return_value = 1
+    run_command_get_output.return_value = {'output': 1}
+    version_info = util.get_version_info()
+    assert version_info == {'core_version': 1, 'client_version': 1}
+
+
 def test_validate_remove_file():
     tf = '/tmp/remove.cfg'
     with open(tf, 'wb') as f:

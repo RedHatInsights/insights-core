@@ -166,4 +166,4 @@ def test_saphostctrl_bad():
 
     with pytest.raises(ParseException) as pe:
         SAPHostCtrlInstances(context_wrap(SAPHOSTCTRL_HOSTINSTANCES_BAD1))
-    assert "Incorrect content." in str(pe)
+    assert "Missing:" in str(pe)

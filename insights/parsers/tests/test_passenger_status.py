@@ -1,11 +1,9 @@
-import doctest
-
-from insights.parsers import ParseException
+from insights.parsers import SkipException
 from insights.parsers import passenger_status
 from insights.parsers.passenger_status import PassengerStatus
 from insights.tests import context_wrap
-
 import pytest
+import doctest
 
 
 PASS_STATUS = """
@@ -39,6 +37,39 @@ Requests in top-level queue : 0
     CPU: 0%      Memory  : 561M    Last used: 1h 0m 3s
 """
 
+PASS_STATUS_SP = """
+Version : 4.0.18
+Date    : 2019-06-10 03:17:38 +0100
+Instance: 14745
+----------- General information -----------
+Max pool size : 60
+Processes     : 7
+Requests in top-level queue : 0
+
+----------- Application groups -----------
+/usr/share/foreman#default:
+  App root: /usr/share/foreman
+  Requests in queue: 0
+  * PID: 39176  Sessions: 0     Processed: 194     Uptime: 24h 9m 0s
+    CPU: 0%     Memory  : 488M  Last used: 20m 24s a
+  * PID: 39342  Sessions: 0       Processed: 0       Uptime: 24h 8m 58s
+    CPU: 0%     Memory  : 178M    Last used: 24h 8m 5
+  * PID: 39377  Sessions: 0       Processed: 0       Uptime: 24h 8m 58s
+    CPU: 0%     Memory  : 179M    Last used: 24h 8m 5
+  * PID: 39478  Sessions: 0       Processed: 0       Uptime: 24h 8m 57s
+    CPU: 0%     Memory  : 178M    Last used: 24h 8m 5
+  * PID: 39525  Sessions: 0       Processed: 0       Uptime: 24h 8m 57s
+    CPU: 0%     Memory  : 173M    Last used: 24h 8m 5
+  * PID: 39614  Sessions: 0       Processed: 0       Uptime: 24h 8m 56s
+    CPU: 0%     Memory  : 174M    Last used: 24h 8m 5
+
+/etc/puppet/rack#default:
+  App root: /etc/puppet/rack
+  Requests in queue: 0
+  * PID: 39667   Sessions: 0       Processed: 241     Uptime: 24h 8m 56s
+    CPU: 0%      Memory  : 45M     Last used: 20m 24s
+"""
+
 PASS_STATUS_EXP1 = """
 wrong content
 """
@@ -46,15 +77,31 @@ wrong content
 
 def test_passenger_status():
     passenger_status = PassengerStatus(context_wrap(PASS_STATUS))
-    assert passenger_status.data["Version"] == '4.0.18'
-    assert len(passenger_status.data['foreman_default']['p_list']) == 3
-    assert ('rack_default' in passenger_status.data) is True
+    assert passenger_status["Version"] == '4.0.18'
+    assert len(passenger_status['foreman_default']['p_list']) == 3
+    assert 'rack_default' in passenger_status
+
+
+def test_passenger_status_2():
+    passenger_status = PassengerStatus(context_wrap(PASS_STATUS_SP))
+    assert passenger_status["Version"] == '4.0.18'
+    assert len(passenger_status['foreman_default']['p_list']) == 6
+    foreman_default_p_list = passenger_status['foreman_default']['p_list']
+    assert foreman_default_p_list[0] == {
+            'PID': '39176', 'Sessions': '0', 'Processed': '194', 'Uptime': '24h 9m 0s',
+            'CPU': '0%', 'Memory': '488M', 'Last used': '20m 24s a'}
+    assert foreman_default_p_list[1] == {
+            'PID': '39342', 'Sessions': '0', 'Processed': '0', 'Uptime': '24h 8m 58s',
+            'CPU': '0%', 'Memory': '178M', 'Last used': '24h 8m 5'}
+    assert foreman_default_p_list[-1] == {
+            'PID': '39614', 'Sessions': '0', 'Processed': '0', 'Uptime': '24h 8m 56s',
+            'CPU': '0%', 'Memory': '174M', 'Last used': '24h 8m 5'}
+    assert 'rack_default' in passenger_status
 
 
 def test_passenger_status_ex():
-    with pytest.raises(ParseException) as pe:
+    with pytest.raises(SkipException):
         PassengerStatus(context_wrap(PASS_STATUS_EXP1))
-        assert "Cannot find the header line." in str(pe)
 
 
 def test_passenger_status_doc_examples():

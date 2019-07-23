@@ -35,6 +35,9 @@ Ring - command ``/sbin/ethtool -g {interface}``
 Statistics - command ``/sbin/ethtool -S {interface}``
 -----------------------------------------------------
 
+TimeStamp - command ``/sbin/ethtool -T {interface}``
+----------------------------------------------------
+
 """
 
 import os
@@ -700,6 +703,80 @@ class Statistics(CommandParser):
             value = line[i + 2:].strip()
             value = int(value)
             self.data[key] = value
+
+
+@parser(Specs.ethtool_T)
+class TimeStamp(CommandParser):
+    """
+    Parse information for the ``ethtool -T`` command.
+
+    Each parameter in the input is stored as a key in a dictionary.
+
+    Attributes:
+        data (dict): Dictionary of keys with values.
+        ifname (str): Interface name.
+
+    Raises:
+        ParseException: Raised when any problem parsing the command output.
+
+    Sample partial input for ``/sbin/ethtool -T eno1``::
+
+        Time stamping parameters for eno1:
+
+        Capabilities:
+            hardware-transmit     (SOF_TIMESTAMPING_TX_HARDWARE)
+            software-transmit     (SOF_TIMESTAMPING_TX_SOFTWARE)
+            hardware-receive      (SOF_TIMESTAMPING_RX_HARDWARE)
+            software-receive      (SOF_TIMESTAMPING_RX_SOFTWARE)
+            software-system-clock (SOF_TIMESTAMPING_SOFTWARE)
+            hardware-raw-clock    (SOF_TIMESTAMPING_RAW_HARDWARE)
+        PTP Hardware Clock: 0
+        Hardware Transmit Timestamp Modes:
+            off                   (HWTSTAMP_TX_OFF)
+            on                    (HWTSTAMP_TX_ON)
+        Hardware Receive Filter Modes:
+            none                  (HWTSTAMP_FILTER_NONE)
+            all                   (HWTSTAMP_FILTER_ALL)
+
+    Examples:
+        >>> len(timestamp)
+        1
+        >>> type(timestamp[0])
+        <class 'insights.parsers.ethtool.TimeStamp'>
+        >>> eno1 = timestamp[0] # Would normally iterate through interfaces
+        >>> eno1.ifname
+        'eno1'
+        >>> eno1.data['Capabilities']['hardware-transmit']
+        'SOF_TIMESTAMPING_TX_HARDWARE'
+        >>> eno1.data['Capabilities']['hardware-raw-clock']
+        'SOF_TIMESTAMPING_RAW_HARDWARE'
+        >>> eno1.data['PTP Hardware Clock']
+        '0'
+        >>> eno1.data['Hardware Transmit Timestamp Modes']['off']
+        'HWTSTAMP_TX_OFF'
+        >>> eno1.data['Hardware Receive Filter Modes']['all']
+        'HWTSTAMP_FILTER_ALL'
+    """
+    @property
+    def ifname(self):
+        """(str): the interface name"""
+        return self.iface
+
+    def parse_content(self, content):
+        self.data = {}
+        self.iface = extract_iface_name_from_path(self.file_path, "ethtool_-T_")
+
+        group = None
+        for line in content[1:]:
+            if ":" in line:
+                key, val = [i.strip() for i in line.split(':', 1)]
+                group = {}
+                self.data[key] = val if val else group
+            elif line.endswith(')') and group is not None:
+                key, val = [i.strip() for i in line.split(None, 1)]
+                group[key] = val.strip('()')
+            elif line:
+                raise ParseException('bad line: {0}'.format(line))
 
 
 @parser(Specs.ethtool)

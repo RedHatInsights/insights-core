@@ -7,6 +7,9 @@ Parsers included in this module are:
 RabbitMQReport - command ``/usr/sbin/rabbitmqctl report``
 ---------------------------------------------------------
 
+RabbitMQReportOfContainers - files ``docker_exec_-t_rabbitmq-bundle-docker-*_rabbitmqctl_report``
+-------------------------------------------------------------------------------------------------
+
 RabbitMQUsers - command ``/usr/sbin/rabbitmqctl list_users``
 ------------------------------------------------------------
 
@@ -35,7 +38,7 @@ def erlblock_parser():
 
     key = p.Word(p.alphas + '_')
     value_tnum = p.Word(p.nums + '.')
-    value_tword = p.Word(p.alphanums + '/"-[]:.()')
+    value_tword = p.Word(p.alphanums + '/"-[]:.()\\')
     value_tstr = p.OneOrMore(value_tword)
     value_tdoustrs = value_tstr + COMMA + value_tstr
     value_tnumstr = value_tnum + value_tstr
@@ -126,10 +129,18 @@ class RabbitMQReport(CommandParser):
                         'redhat':['redhat.*', '.*', '.*']},
                     'test_vhost': ''}}
         """
-        try:
-            self.result = create_parser().parseString("\n".join(content)).asDict()
-        except p.ParseException:
-            self.result = None
+        # During the below parsing process, p.ParseException might be thrown.
+        # No handler will be applied here.
+        # And such p.ParseException won't be hidden, showing for debug usage.
+        self.result = create_parser().parseString("\n".join(content)).asDict()
+
+
+@parser(Specs.rabbitmq_report_of_containers)
+class RabbitMQReportOfContainers(RabbitMQReport):
+    """
+    Parse the `rabbitmqctl report` command of each container running on the host.
+    """
+    pass
 
 
 @parser(Specs.rabbitmq_users)

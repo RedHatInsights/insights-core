@@ -1,4 +1,5 @@
 import os
+import sys
 from setuptools import setup, find_packages
 
 __here__ = os.path.dirname(os.path.abspath(__file__))
@@ -13,7 +14,9 @@ entry_points = {
     'console_scripts': [
         'insights-collect = insights.collect:main',
         'insights-run = insights:main',
+        'insights = insights.command_parser:main',
         'insights-cat = insights.tools.cat:main',
+        'insights-dupkeycheck = insights.tools.dupkeycheck:main',
         'insights-inspect = insights.tools.insights_inspect:main',
         'insights-info = insights.tools.query:main',
         'gen_api = insights.tools.generate_api_config:main',
@@ -24,15 +27,20 @@ entry_points = {
 }
 
 runtime = set([
-    'pyyaml>=3.10,<=3.13',
     'six',
     'requests',
     'redis',
     'cachecontrol',
     'cachecontrol[redis]',
     'cachecontrol[filecache]',
+    'defusedxml',
     'lockfile',
 ])
+
+if (sys.version_info < (2, 7)):
+    runtime.add('pyyaml>=3.10,<=3.13')
+else:
+    runtime.add('pyyaml')
 
 
 def maybe_require(pkg):

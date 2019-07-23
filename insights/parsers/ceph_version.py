@@ -48,6 +48,7 @@ community_to_release_map = {
     "10.2.10-28": {'version': "2.5.1", 'major': '2', 'minor': '5', 'downstream_release': '1'},
     "10.2.10-40": {'version': "2.5.2", 'major': '2', 'minor': '5', 'downstream_release': '2'},
     "10.2.10-43": {'version': "2.5.3", 'major': '2', 'minor': '5', 'downstream_release': '3'},
+    "10.2.10-49": {'version': "2.5.4", 'major': '2', 'minor': '5', 'downstream_release': '4'},
     "12.2.4-6": {'version': "3.0.2", 'major': '3', 'minor': '0', 'downstream_release': '2'},
     "12.2.4-10": {'version': "3.0.3", 'major': '3', 'minor': '0', 'downstream_release': '3'},
     "12.2.4-30": {'version': "3.0.4", 'major': '3', 'minor': '0', 'downstream_release': '4'},
@@ -55,7 +56,8 @@ community_to_release_map = {
     "12.2.5-42": {'version': "3.1", 'major': '3', 'minor': '1', 'downstream_release': '0'},
     "12.2.5-59": {'version': "3.1.1", 'major': '3', 'minor': '1', 'downstream_release': '1'},
     "12.2.8-52": {'version': "3.2", 'major': '3', 'minor': '2', 'downstream_release': '0'},
-    "12.2.8-89": {'version': "3.2.1", 'major': '3', 'minor': '2', 'downstream_release': '1'}
+    "12.2.8-89": {'version': "3.2.1", 'major': '3', 'minor': '2', 'downstream_release': '1'},
+    "12.2.8-128": {'version': "3.2.2", 'major': '3', 'minor': '2', 'downstream_release': '2'},
 }
 
 
@@ -103,3 +105,8 @@ class CephVersion(CommandParser):
         self.major = release_data['major']
         self.minor = release_data['minor']
         self.downstream_release = release_data['downstream_release']
+        self.upstream_version = {
+            "release": int(community_version_mo.group(2)),
+            "major": int(community_version_mo.group(3)),
+            "minor": int(community_version_mo.group(4))
+        }

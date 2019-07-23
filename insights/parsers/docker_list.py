@@ -34,27 +34,20 @@ Sample output of command ``/usr/bin/docker ps --all --no-trunc --size``::
     03e2861336a76e29155836113ff6560cb70780c32f95062642993b2b3d0fc216   rhel7_httpd                                                        "/usr/sbin/httpd -DFOREGROUND"                     45 seconds ago      Up 37 seconds                 0.0.0.0:8080->80/tcp   angry_saha          796 B (virtual 669.2 MB)
 
 Examples:
-
-    >>> images = shared[DockerListImages]
     >>> images.rows[0]['REPOSITORY']
-    'rhel7_imagemagick'
+    'rhel6_vsftpd'
     >>> images.rows[1]['VIRTUAL SIZE']
-    '449.7 MB'
-    >>> images.data['rhel7_imagemagick']['CREATED'] # keyed on REPOSITORY
-    '4 days ago'
-    >>> images.data['rhel6_nss-softokn']['VIRTUAL SIZE']
-    '449.7 MB'
-
-    >>> containers = shared[DockerListContainers]
+    '785.4 MB'
+    >>> images.data['rhel6_vsftpd']['CREATED']
+    '37 minutes ago'
     >>> containers.rows[0]['STATUS']
-    'Exited (137) 50 minutes ago'
-    >>> containers.data['tender_rosalind']['STATUS'] # keyed on NAMES
-    'Exited (137) 50 minutes ago'
-
+    'Up 37 seconds'
+    >>> containers.data['tender_rosalind']['STATUS']
+    'Exited (137) 18 hours ago'
 """
-
-from .. import parser, CommandParser
 import re
+from insights import CommandParser, parser
+from insights.parsers import SkipException
 from insights.specs import Specs
 
 
@@ -85,8 +78,7 @@ class DockerList(CommandParser):
         """
         self.rows = []
         if len(content) < 2:
-            self.no_data = True
-            return
+            raise SkipException("No data.")
 
         # Parse header, remembering column numbers for data capture.  We use
         # a finditer to get the positions, and we find by field rather than

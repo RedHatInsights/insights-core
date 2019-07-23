@@ -61,7 +61,7 @@ There are several resources for digging into the details of how to use ``insight
   the `Insights Core
   <https://github.com/RedHatInsights/insights-core/blob/master/docs/notebooks/Insights%20Core%20Tutorial.ipynb>`_ tutorial jupyter notebook
 - A simple `stand_alone.py
-  <https://github.com/RedHatInsights/insights-core/blob/master/examples/stand_alone.py>`_
+  <https://github.com/RedHatInsights/insights-core/blob/master/examples/rules/stand_alone.py>`_
   script encapsulates creating all the basic components in a single script
   that can be easily executed locally
 - Some `quick-start examples

@@ -361,6 +361,28 @@ def test_legacy_unregister(_legacy_handle_unregistration):
     _legacy_handle_unregistration.assert_called_once()
 
 
+@patch('insights.client.client.handle_registration')
+def test_register_upload(handle_registration):
+    '''
+    handle_registration called when upload
+    '''
+    config = InsightsConfig(legacy_upload=False)
+    client = InsightsClient(config)
+    client.register()
+    handle_registration.assert_called_once()
+
+
+@patch('insights.client.client.handle_unregistration')
+def test_unregister_upload(handle_unregistration):
+    '''
+    handle_unregistration called when upload
+    '''
+    config = InsightsConfig(legacy_upload=False)
+    client = InsightsClient(config)
+    client.unregister()
+    handle_unregistration.assert_called_once()
+
+
 @patch('insights.client.os.path.exists', return_value=True)
 @patch('insights.client.client._legacy_upload')
 def test_legacy_upload(_legacy_upload, path_exists):

@@ -14,11 +14,15 @@ MultipathConfInitramfs - command ``lsinitrd -f /etc/multipath.conf``
 
 """
 
+import string
 from insights.contrib import pyparsing as p
 from insights import parser, Parser, LegacyItemAccess
 from insights.core import ConfigParser
-from insights.configtree.dictlike import parse_doc
 from insights.parsers import SkipException
+from insights.parsr import (EOF, Forward, LeftCurly, Lift, Literal, LineEnd,
+        RightCurly, Many, Number, OneLineComment, PosMarker, skip_none, String,
+        QuotedString, WS, WSChar)
+from insights.parsr.query import Entry
 from insights.specs import Specs
 
 
@@ -174,15 +178,39 @@ class MultipathConfInitramfs(MultipathConfParser):
     pass
 
 
+def parse_doc(content, ctx):
+    def to_entry(name, rest):
+        if isinstance(rest, list):
+            return Entry(name=name.value, children=rest, lineno=name.lineno, src=ctx)
+        return Entry(name=name.value, attrs=[rest], lineno=name.lineno, src=ctx)
+
+    Stmt = Forward()
+    Num = Number & (WSChar | LineEnd)
+    NULL = Literal("none", value=None)
+    Comment = (WS >> OneLineComment("#").map(lambda x: None))
+    BeginBlock = (WS >> LeftCurly << WS)
+    EndBlock = (WS >> RightCurly << WS)
+    Bare = String(set(string.printable) - (set(string.whitespace) | set("#{}'\"")))
+    Name = WS >> PosMarker(String(string.ascii_letters + "_")) << WS
+    Value = WS >> (Num | NULL | QuotedString | Bare) << WS
+    Block = BeginBlock >> Many(Stmt).map(skip_none) << EndBlock
+    Stanza = (Lift(to_entry) * Name * (Block | Value)) | Comment
+    Stmt <= WS >> Stanza << WS
+    Doc = Many(Stmt).map(skip_none)
+    Top = Doc + EOF
+
+    return Entry(children=Top(content)[0])
+
+
 @parser(Specs.multipath_conf)
 class MultipathConfTree(ConfigParser):
     """
-    Exposes multipath configuration through the configtree interface.
+    Exposes multipath configuration through the parsr query interface.
 
     See the :py:class:`insights.core.ConfigComponent` class for example usage.
     """
     def parse_doc(self, content):
-        return parse_doc("\n".join(content), ctx=self, line_end="\n")
+        return parse_doc("\n".join(content), ctx=self)
 
 
 def get_tree(root=None):
@@ -198,12 +226,12 @@ def get_tree(root=None):
 class MultipathConfTreeInitramfs(ConfigParser):
     """
     Exposes the multipath configuration from initramfs image through the
-    configtree interface.
+    parsr query interface.
 
     See the :py:class:`insights.core.ConfigComponent` class for example usage.
     """
     def parse_doc(self, content):
-        return parse_doc("\n".join(content), ctx=self, line_end="\n")
+        return parse_doc("\n".join(content), ctx=self)
 
 
 def get_tree_from_initramfs(root=None):

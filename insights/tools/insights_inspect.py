@@ -109,7 +109,7 @@ try:
     C.init()
 except:
     class Pass(object):
-        def _getattr__(self, name):
+        def __getattr__(self, name):
             return ""
 
     class C(object):

@@ -50,11 +50,12 @@ class MarkdownFormat(Formatter):
         self.fail_only = fail_only
         self.stream = stream
 
-        self.counts = {'skip': 0, 'pass': 0, 'rule': 0, 'metadata': 0, 'metadata_key': 0, 'fingerprint': 0, 'exception': 0}
+        self.counts = {'skip': 0, 'pass': 0, 'rule': 0, 'info': 0, 'metadata': 0, 'metadata_key': 0, 'fingerprint': 0, 'exception': 0}
         self.responses = {
             'skip': self.response(label="SKIP", title="Missing Deps: "),
             'pass': self.response(label="PASS", title="Passed      : "),
             'rule': self.response(label="FAIL", title="Failed      : "),
+            'info': self.response(label="INFO", title="Info        : "),
             'metadata': self.response(label="META", title="Metadata    : "),
             'metadata_key': self.response(label="META", title="Metadata Key: "),
             'fingerprint': self.response(label="FINGERPRINT", title="Fingerprint : "),
@@ -133,6 +134,9 @@ class MarkdownFormat(Formatter):
             print(file=self.stream)
 
         def printit(c, v):
+            resp = self.responses[v["type"]]
+            name = "[%s] %s" % (resp.label, dr.get_name(c))
+            self.print_header(name, 3)
             print("```", file=self.stream)
             print(render(c, v), file=self.stream)
             print("```", file=self.stream)

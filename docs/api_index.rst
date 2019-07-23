@@ -1,30 +1,6 @@
 API Documentation
 =================
 
-insights.configtree
--------------------
-
-.. automodule:: insights.configtree
-    :members:
-    :show-inheritance:
-    :undoc-members:
-
-insights.configtree.dictlike
-----------------------------
-
-.. automodule:: insights.configtree.dictlike
-    :members:
-    :show-inheritance:
-    :undoc-members:
-
-insights.configtree.iniconfig
------------------------------
-
-.. automodule:: insights.configtree.iniconfig
-    :members:
-    :show-inheritance:
-    :undoc-members:
-
 insights.core
 -------------
 
@@ -93,6 +69,30 @@ insights.parsers
     :members: ParseException, SkipException, calc_offset, get_active_lines,
               keyword_search, optlist_to_dict, parse_delimited_table,
               parse_fixed_table, split_kv_pairs, unsplit_lines
+    :show-inheritance:
+    :undoc-members:
+
+insights.parsr
+--------------
+
+.. automodule:: insights.parsr
+    :members:
+    :show-inheritance:
+    :undoc-members:
+
+insights.parsr.query
+--------------------
+
+.. automodule:: insights.parsr.query
+    :members:
+    :show-inheritance:
+    :undoc-members:
+
+insights.parsr.query.boolean
+----------------------------
+
+.. automodule:: insights.parsr.query.boolean
+    :members:
     :show-inheritance:
     :undoc-members:
 

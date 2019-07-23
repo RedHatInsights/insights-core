@@ -1,5 +1,8 @@
+import doctest
+import pytest
+from insights.parsers import ceph_cmd_json_parsing, ParseException, SkipException
 from insights.parsers.ceph_cmd_json_parsing import CephOsdDump, CephOsdDf, CephS, CephECProfileGet, CephCfgInfo, \
-    CephHealthDetail, CephDfDetail, CephOsdTree
+    CephHealthDetail, CephDfDetail, CephOsdTree, CephReport
 from insights.tests import context_wrap
 
 CEPH_OSD_DUMP_INFO = """
@@ -313,6 +316,200 @@ CEPH_OSD_TREE = """
     "stray": []
 }
 """.strip()
+
+CEPH_REPORT = """
+report 1188805303
+{
+    "cluster_fingerprint": "0d5f8f7a-0241-4a2e-8401-9dcf37a1039b",
+    "version": "12.2.8-52.el7cp",
+    "commit": "3af3ca15b68572a357593c261f95038d02f46201",
+    "timestamp": "2019-06-05 23:33:08.514032",
+    "tag": "",
+    "health": {
+        "checks": {
+            "POOL_APP_NOT_ENABLED": {
+                "severity": "HEALTH_WARN",
+                "summary": {
+                    "message": "application not enabled on 1 pool(s)"
+                },
+                "detail": [
+                    {
+                        "message": "application not enabled on pool 'pool-a'"
+                    },
+                    {
+                        "message": "use 'ceph osd pool application enable <pool-name> <app-name>', where <app-name> is 'cephfs', 'rbd', 'rgw', or freeform for custom applications."
+                    }
+                ]
+            },
+            "MON_DOWN": {
+                "severity": "HEALTH_WARN",
+                "summary": {
+                    "message": "1/3 mons down, quorum ceph2,ceph_1"
+                },
+                "detail": [
+                    {
+                        "message": "mon.ceph3 (rank 0) addr 10.72.37.76:6789/0 is down (out of quorum)"
+                    }
+                ]
+            }
+        },
+        "status": "HEALTH_WARN",
+        "summary": [
+            {
+                "severity": "HEALTH_WARN",
+                "summary": "'ceph health' JSON format has changed in luminous. If you see this your monitoring system is scraping the wrong fields. Disable this with 'mon health preluminous compat warning = false'"
+            }
+        ],
+        "overall_status": "HEALTH_WARN",
+        "detail": [
+            "'ceph health' JSON format has changed in luminous. If you see this your monitoring system is scraping the wrong fields. Disable this with 'mon health preluminous compat warning = false'"
+        ]
+    },
+    "monmap_first_committed": 1,
+    "monmap_last_committed": 1,
+    "quorum": [
+        1,
+        2
+    ],
+    "osdmap_first_committed": 1,
+    "osdmap_last_committed": 92
+}
+""".strip()
+
+CEPH_REPORT_INVALID_JSON = """
+report 1188805303
+    "cluster_fingerprint": "0d5f8f7a-0241-4a2e-8401-9dcf37a1039b",
+    "version": "12.2.8-52.el7cp",
+    "commit": "3af3ca15b68572a357593c261f95038d02f46201",
+    "timestamp": "2019-06-05 23:33:08.514032",
+    "tag": "",
+    "health": {
+        "checks": {
+            "POOL_APP_NOT_ENABLED": {
+                "severity": "HEALTH_WARN",
+                "summary": {
+                    "message": "application not enabled on 1 pool(s)"
+                },
+                "detail": [
+                    {
+                        "message": "application not enabled on pool 'pool-a'"
+                    },
+                    {
+                        "message": "use 'ceph osd pool application enable <pool-name> <app-name>', where <app-name> is 'cephfs', 'rbd', 'rgw', or freeform for custom applications."
+                    }
+                ]
+            },
+            "MON_DOWN": {
+                "severity": "HEALTH_WARN",
+                "summary": {
+                    "message": "1/3 mons down, quorum ceph2,ceph_1"
+                },
+                "detail": [
+                    {
+                        "message": "mon.ceph3 (rank 0) addr 10.72.37.76:6789/0 is down (out of quorum)"
+                    }
+                ]
+            }
+        },
+        "status": "HEALTH_WARN",
+        "summary": [
+            {
+                "severity": "HEALTH_WARN",
+                "summary": "'ceph health' JSON format has changed in luminous. If you see this your monitoring system is scraping the wrong fields. Disable this with 'mon health preluminous compat warning = false'"
+            }
+        ],
+        "overall_status": "HEALTH_WARN",
+        "detail": [
+            "'ceph health' JSON format has changed in luminous. If you see this your monitoring system is scraping the wrong fields. Disable this with 'mon health preluminous compat warning = false'"
+        ]
+    },
+    "monmap_first_committed": 1,
+    "monmap_last_committed": 1,
+    "quorum": [
+        1,
+        2
+    ],
+    "osdmap_first_committed": 1,
+    "osdmap_last_committed": 92
+}
+""".strip()
+
+CEPH_REPORT_INVALID = """
+1188805303
+{
+    "cluster_fingerprint": "0d5f8f7a-0241-4a2e-8401-9dcf37a1039b",
+    "version": "12.2.8-52.el7cp",
+    "commit": "3af3ca15b68572a357593c261f95038d02f46201",
+    "timestamp": "2019-06-05 23:33:08.514032",
+    "tag": "",
+    "health": {
+        "checks": {
+            "POOL_APP_NOT_ENABLED": {
+                "severity": "HEALTH_WARN",
+                "summary": {
+                    "message": "application not enabled on 1 pool(s)"
+                },
+                "detail": [
+                    {
+                        "message": "application not enabled on pool 'pool-a'"
+                    },
+                    {
+                        "message": "use 'ceph osd pool application enable <pool-name> <app-name>', where <app-name> is 'cephfs', 'rbd', 'rgw', or freeform for custom applications."
+                    }
+                ]
+            },
+            "MON_DOWN": {
+                "severity": "HEALTH_WARN",
+                "summary": {
+                    "message": "1/3 mons down, quorum ceph2,ceph_1"
+                },
+                "detail": [
+                    {
+                        "message": "mon.ceph3 (rank 0) addr 10.72.37.76:6789/0 is down (out of quorum)"
+                    }
+                ]
+            }
+        },
+        "status": "HEALTH_WARN",
+        "summary": [
+            {
+                "severity": "HEALTH_WARN",
+                "summary": "'ceph health' JSON format has changed in luminous. If you see this your monitoring system is scraping the wrong fields. Disable this with 'mon health preluminous compat warning = false'"
+            }
+        ],
+        "overall_status": "HEALTH_WARN",
+        "detail": [
+            "'ceph health' JSON format has changed in luminous. If you see this your monitoring system is scraping the wrong fields. Disable this with 'mon health preluminous compat warning = false'"
+        ]
+    },
+    "monmap_first_committed": 1,
+    "monmap_last_committed": 1,
+    "quorum": [
+        1,
+        2
+    ],
+    "osdmap_first_committed": 1,
+    "osdmap_last_committed": 92
+}
+""".strip()
+
+CEPH_REPORT_EMPTY = """""".strip()
+
+
+def test_ceph_doc_examples():
+    env = {
+        'ceph_osd_dump': CephOsdDump(context_wrap(CEPH_OSD_DUMP_INFO)),
+        'ceph_osd_df': CephOsdDf(context_wrap(CEPH_OSD_DF_INFO)),
+        'ceph_s': CephS(context_wrap(CEPH_S_INFO)),
+        'ceph_df_detail': CephDfDetail(context_wrap(CEPH_DF_DETAIL_INFO)),
+        'ceph_health_detail': CephHealthDetail(context_wrap(CEPH_HEALTH_DETAIL_INFO)),
+        'ceph_osd_ec_profile_get': CephECProfileGet(context_wrap(CEPH_OSD_EC_PROFILE_GET)),
+        'ceph_cfg_info': CephCfgInfo(context_wrap(CEPHINFO)),
+        'ceph_osd_tree': CephOsdTree(context_wrap(CEPH_OSD_TREE)),
+        'ceph_report_content': CephReport(context_wrap(CEPH_REPORT)),
+    }
+    failed, total = doctest.testmod(ceph_cmd_json_parsing, globs=env)
+    assert failed == 0
 
 
 class TestCephOsdDump():
@@ -638,3 +835,24 @@ class TestCephOsdTree():
         }
 
         assert len(result['nodes'][0]['children']) == 4
+
+
+class TestCephReport():
+    def test_ceph_report(self):
+        result = CephReport(context_wrap(CEPH_REPORT))
+        assert result['version'] == "12.2.8-52.el7cp"
+
+    def test_invalid(self):
+        with pytest.raises(ParseException) as e:
+            CephReport(context_wrap(CEPH_REPORT_INVALID))
+        assert "Invalid" in str(e)
+
+    def test_invalid_json(self):
+        with pytest.raises(ParseException) as e:
+            CephReport(context_wrap(CEPH_REPORT_INVALID_JSON))
+        assert "Could not parse json." in str(e)
+
+    def test_invalid_empty(self):
+        with pytest.raises(SkipException) as e:
+            CephReport(context_wrap(CEPH_REPORT_EMPTY))
+        assert "Empty output." in str(e)

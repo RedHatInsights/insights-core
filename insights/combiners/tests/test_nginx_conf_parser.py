@@ -112,7 +112,7 @@ def test_nginx_conf_parser():
     assert nginxconf['http'][-1]['log_format'][-1].value == 'main $remote_addr - $remote_user [$time_local] "$request"  $status $body_bytes_sent "$http_referer"  "$http_user_agent" "$http_x_forwarded_for"'
     assert nginxconf['http'][-1]['server'][2]['location'][0]['location'][0]['limit_except'][-1]['allow'][-1].value == '192.168.2.0/32'
     assert nginxconf['http']['server']['location']['location']['limit_except']['allow'][-1].value == '192.168.2.0/32'
-    assert nginxconf['http']['server'][0]['location'][-1].value == '~ \.php$'
+    assert nginxconf['http']['server'][0]['location'][-1].value == r'~ \.php$'
     assert nginxconf['http']['server'][1]['location'][0].value == '~ ^/(images|javascript|js|css|flash|media|static)/'
     assert nginxconf['http']['server'][1]['location'][-1].value == '/'
     assert nginxconf['http']['server'][-1] == nginxconf['http']['server'][2]

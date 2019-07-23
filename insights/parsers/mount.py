@@ -1,11 +1,19 @@
 """
+Mount Entries
+=============
+
+Parsers provided in this module includes:
+
 Mount - command ``/bin/mount``
-==============================
+------------------------------
 
-This module provides parsing for the ``mount`` command. The ``Mount`` class
-implements parsing for the ``mount`` command output which looks like::
+ProcMounts - file ``/proc/mounts``
+----------------------------------
 
-    sysfs on /sys type sysfs (rw,nosuid,nodev,noexec,relatime,seclabel)
+
+The ``Mount`` class implements parsing for the ``mount`` command output which looks like::
+
+    /dev/mapper/rootvg-rootlv on / type ext4 (rw,relatime,barrier=1,data=ordered)
     proc on /proc type proc (rw,nosuid,nodev,noexec,relatime)
     /dev/mapper/HostVG-Config on /etc/shadow type ext4 (rw,noatime,seclabel,stripe=256,data=ordered)
     dev/sr0 on /run/media/root/VMware Tools type iso9660 (ro,nosuid,nodev,relatime,uid=0,gid=0,iocharset=utf8,mode=0400,dmode=0500,uhelper=udisks2) [VMware Tools]
@@ -14,9 +22,9 @@ The information is stored as a list of :class:`MountEntry` objects.  Each
 :class:`MountEntry` object contains attributes for the following information that
 are listed in the same order as in the command output:
 
- * ``filesystem`` - Name of filesystem
+ * ``filesystem`` or ``mounted_device`` - Name of filesystem or mounted device
  * ``mount_point`` - Name of mount point for filesystem
- * ``mount_type`` - Name of filesystem type
+ * ``filesystem_type`` or ``mount_type`` - Name of filesystem type
  * ``mount_options`` - Mount options as a dictionary
  * ``mount_label`` - Only present if optional label is present
  * ``mount_clause`` - Full string from command output
@@ -40,40 +48,15 @@ For instance, the option ``rw`` in ``(rw,dmode=0500)`` may be accessed as
 MountEntry lines are also available in a ``mounts`` property, keyed on the
 mount point.
 
-Examples:
-    >>> type(mnt_info)
-    <class 'insights.parsers.mount.Mount'>
-    >>> len(mnt_info)
-    4
-    >>> mnt_info[3].__dict__
-    {'filesystem': 'dev/sr0',
-     'mount_clause': 'dev/sr0 on /run/media/root/VMware Tools type iso9660 (ro,nosuid,nodev,relatime,uid=0,gid=0,iocharset=utf8,mode=0400,dmode=0500,uhelper=udisks2) [VMware Tools]',
-     'mount_label': 'VMware Tools',
-     'mount_options': {'dmode': '0500', 'relatime': True, 'uid': '0',
-         'iocharset': 'utf8', 'gid': '0', 'mode': '0400', 'ro': True,
-         'nosuid': True, 'uhelper': 'udisks2', 'nodev': True}
-     'mount_point': '/run/media/root/VMware Tools',
-     'mount_type': 'iso9660'}
-    >>> mnt_info[3].filesystem
-    'dev/sr0'
-    >>> mnt_info[3].mount_type
-    'iso9660'
-    >>> mnt_info[3].mount_options
-    {'dmode': '0500', 'gid': '0', 'iocharset': 'utf8', 'mode': '0400', 'nodev': True,
-     'nosuid': True, 'relatime': True, 'ro': True, 'uhelper': 'udisks2', 'uid': '0'}
-    >>> mnt_info[3].mount_options.ro
-    True
-    >>> mnt_info.mounts['/run/media/root/VMware Tools'].filesystem
-    'dev/sr0'
 """
 
-import re
+import os
 from insights.specs import Specs
-from ..parsers import optlist_to_dict, keyword_search, ParseException
-from .. import parser, get_active_lines, LegacyItemAccess, CommandParser
+from insights.parsers import optlist_to_dict, keyword_search, ParseException, SkipException
+from insights import parser, get_active_lines, CommandParser
 
 
-class MountOpts(object):
+class MountOpts(dict):
     """
     An object representing the mount options found in mount or fstab entry.
     Each option in the comma-separated list is a key, and 'key=value'
@@ -105,46 +88,19 @@ class MountOpts(object):
     }
 
     def __init__(self, data={}):
-        # Use '_data' but not 'data' since the 'data' could be an mount option
-        self._data = data
+        data = {} if data is None else data
+        self.update(data)
         for k, v in MountOpts.attrs.items():
             if k not in data:
                 setattr(self, k, v)
         for k, v in data.items():
             setattr(self, k, v)
 
-    def __getitem__(self, item):
-        return self._data[item]
 
-    def __contains__(self, item):
-        return item in self._data
-
-    def get(self, item, default=None):
-        """Returns value of key ``item`` in self._data or ``default``
-        if key is not present.
-
-        Parameters:
-            item: Key to get from ``self.data``.
-            default: Default value to return if key is not present.
-
-        Returns:
-            (str): String value of the stored item, or the default if not found.
-        """
-        return self._data.get(item, default)
-
-    def items(self):
-        """
-        To keep backward compatibility and let it can be iterated as a
-        dictionary.
-        """
-        for k, v in self._data.items():
-            yield k, v
-
-
-class MountEntry(LegacyItemAccess, CommandParser):
+class MountEntry(dict):
     """
-    An object representing an entry in the output of ``mount`` command.  Each
-    entry contains below fixed attributes:
+    An object representing an mount entry of ``mount`` command or
+    ``/proc/mounts`` file.  Each entry contains below fixed attributes:
 
     Attributes:
         mount_clause (str): Full string from command output
@@ -162,34 +118,29 @@ class MountEntry(LegacyItemAccess, CommandParser):
     }
 
     def __init__(self, data={}):
-        self.data = data
+        data = {} if data is None else data
+        self.update(data)
         for k, v in MountEntry.attrs.items():
             if k not in data:
                 setattr(self, k, v)
         for k, v in data.items():
             setattr(self, k, v)
 
-    def items(self):
-        """
-        To keep backward compatibility and let it can be iterated as a
-        dictionary.
-        """
-        for k, v in self.data.items():
-            yield k, v
 
-
-@parser(Specs.mount)
-class Mount(CommandParser):
-    """Class of information for all output from ``mount`` command.
+class MountedFileSystems(CommandParser):
+    """
+    Base Class for :class:`Mount` and :class:`ProcMounts`.
 
     Attributes:
-        rows (list of MountEntry): List of :class:`MountEntry` objects for
-            each row of the command output.
+        rows (list): List of :class:`MountEntry` objects for each row of the
+            content.
+        mounts (dict): Dict with the `mount_point` as the key and the
+            :class:`MountEntry` objects as the value.
 
     Raises:
+        SkipException: When the file is empty.
         ParseException: Raised when any problem parsing the command output.
     """
-
     def __len__(self):
         return len(self.rows)
 
@@ -205,34 +156,12 @@ class Mount(CommandParser):
         else:
             raise TypeError("Mounts can only be indexed by mount string or line number")
 
-    # /dev/mapper/fedora-home on /home type ext4 (rw,relatime,seclabel,data=ordered) [HOME]
-    mount_line_re = r'^(?P<filesystem>\S+) on (?P<mount_point>.+?) type ' + \
-        r'(?P<mount_type>\S+) \((?P<mount_options>[^)]+)\)' + \
-        r'(?: \[(?P<mount_label>.*)\])?$'
-    mount_line_rex = re.compile(mount_line_re)
-
     def parse_content(self, content):
-        self.rows = []
-        self.mounts = {}
-        for line in get_active_lines(content):
-            mount = {}
-            mount['mount_clause'] = line
-            match = self.mount_line_rex.search(line)
-            if match:
-                mount['filesystem'] = match.group('filesystem')
-                mount['mount_point'] = match.group('mount_point')
-                mount['mount_type'] = match.group('mount_type')
-                mount_options = match.group('mount_options')
-                mount['mount_options'] = MountOpts(optlist_to_dict(mount_options))
-                if match.group('mount_label'):
-                    mount['mount_label'] = match.group('mount_label')
-            else:
-                mount['parse_error'] = 'Unable to parse line'
+        # No content found or file is empty
+        if not content:
+            raise SkipException('Empty content')
 
-            entry = MountEntry(mount)
-            self.rows.append(entry)
-            if match:
-                self.mounts[mount['mount_point']] = entry
+        self._parse_mounts(content)
 
         if '/' not in self.mounts:
             raise ParseException("Input for mount must contain '/' mount point.")
@@ -247,7 +176,6 @@ class Mount(CommandParser):
         terminate since / is always a mount point.  Strings that are not
         absolute paths will return None.
         """
-        import os
         while path != '':
             if path in self.mounts:
                 return self.mounts[path]
@@ -263,10 +191,10 @@ class Mount(CommandParser):
 
         Examples:
 
-            >>> mounts.search(filesystem='/dev/sda1')
-            [{'filesystem': '/dev/sda1', 'mount_point': '/boot', ...}]
-            >>> mounts.search(mount_options__contains='ro')
-            [{'filesystem': '/dev/sr0', 'mount_point', '/mnt/CDROM', ...}, ...]
+            >>> mounts.search(filesystem='proc')[0].mount_clause
+            'proc on /proc type proc (rw,nosuid,nodev,noexec,relatime)'
+            >>> mounts.search(mount_options__contains='seclabel')[0].mount_clause
+            '/dev/mapper/HostVG-Config on /etc/shadow type ext4 (rw,noatime,seclabel,stripe=256,data=ordered)'
 
         Arguments:
             **kwargs (dict): Dictionary of key-value pairs to search for.
@@ -275,3 +203,124 @@ class Mount(CommandParser):
             (list): The list of mount points matching the given criteria.
         """
         return keyword_search(self.rows, **kwargs)
+
+
+@parser(Specs.mount)
+class Mount(MountedFileSystems):
+    """
+    Class of information for all output from ``mount`` command.
+
+    .. note::
+        Please refer to its super-class :class:`MountedFileSystems` for more
+        details.
+
+        >>> type(mnt_info)
+        <class 'insights.parsers.mount.Mount'>
+        >>> len(mnt_info)
+        4
+        >>> mnt_info[3].filesystem
+        'dev/sr0'
+        >>> mnt_info[3].mount_label
+        '[VMware Tools]'
+        >>> mnt_info[3].mount_type
+        'iso9660'
+        >>> mnt_info['/run/media/root/VMware Tools'].filesystem
+        'dev/sr0'
+        >>> mnt_info['/run/media/root/VMware Tools'].mount_label
+        '[VMware Tools]'
+        >>> mnt_info['/run/media/root/VMware Tools'].mount_options.ro
+        True
+    """
+    def _parse_mounts(self, content):
+        self.rows = []
+        self.mounts = {}
+        for line in get_active_lines(content):
+            mount = {}
+            mount['mount_clause'] = line
+            # Get the mounted filesystem by checking the ' on '
+            line_sp = _customized_split(line, line, sep=' on ')
+            mount['filesystem'] = line_sp[0]
+            # Get the mounted point by checking the last ' type ' before the last '('
+            mnt_pt_sp = _customized_split(raw=line, l=line_sp[1], sep=' (', reverse=True)
+            line_sp = _customized_split(raw=line, l=mnt_pt_sp[0], sep=' type ', reverse=True)
+            mount['mount_point'] = line_sp[0]
+            mount['mount_type'] = line_sp[1].split()[0]
+            line_sp = _customized_split(raw=line, l=mnt_pt_sp[1], sep=None, check=False)
+            mount['mount_options'] = MountOpts(optlist_to_dict(line_sp[0].strip('()')))
+            if len(line_sp) == 2:
+                mount['mount_label'] = line_sp[1]
+
+            entry = MountEntry(mount)
+            self.rows.append(entry)
+            self.mounts[mount['mount_point']] = entry
+
+
+@parser(Specs.mounts)
+class ProcMounts(MountedFileSystems):
+    """
+    Class to parse the content of ``/proc/mounts`` file.
+
+    This class is required to parse the ``/proc/mounts`` file in addition to the
+    ``/bin/mount`` command because it lists the mount points of those process's
+    which are not present in the output of the ``/bin/mount`` command.
+
+    .. note::
+        Please refer to its super-class :class:`MountedFileSystems` for more
+        details.
+
+    Examples:
+        >>> type(proc_mnt_info)
+        <class 'insights.parsers.mount.ProcMounts'>
+        >>> len(proc_mnt_info)
+        4
+        >>> proc_mnt_info[3].filesystem == 'dev/sr0'
+        True
+        >>> proc_mnt_info[3].mounted_device == 'dev/sr0'
+        True
+        >>> proc_mnt_info[3].mounted_device == proc_mnt_info[3].filesystem
+        True
+        >>> proc_mnt_info[3].mount_type == 'iso9660'
+        True
+        >>> proc_mnt_info[3].filesystem_type == 'iso9660'
+        True
+        >>> proc_mnt_info['/run/media/root/VMware Tools'].mount_label == ['0', '0']
+        True
+        >>> proc_mnt_info['/run/media/root/VMware Tools'].mount_options.ro
+        True
+        >>> proc_mnt_info['/run/media/root/VMware Tools'].mounted_device == 'dev/sr0'
+        True
+    """
+
+    def _parse_mounts(self, content):
+
+        self.rows = []
+        self.mounts = {}
+        for line in get_active_lines(content):
+            mount = {}
+            mount['mount_clause'] = line
+            # Handle the the '\040' in `mount_point`
+            line_sp = line.encode().decode("unicode-escape")
+            line_sp = _customized_split(raw=line, l=line)
+            mount['filesystem'] = mount['mounted_device'] = line_sp[0]
+            line_sp = _customized_split(raw=line, l=line_sp[1], num=3, reverse=True)
+            mount['mount_label'] = line_sp[-2:]
+            line_sp = _customized_split(raw=line, l=line_sp[0], reverse=True)
+            mount['mount_options'] = MountOpts(optlist_to_dict(line_sp[1]))
+            line_sp = _customized_split(raw=line, l=line_sp[0], reverse=True)
+            mount['mount_type'] = mount['filesystem_type'] = line_sp[1]
+            mount['mount_point'] = line_sp[0]
+
+            entry = MountEntry(mount)
+            self.rows.append(entry)
+            self.mounts[mount['mount_point']] = entry
+
+
+def _customized_split(raw, l, sep=None, num=2, reverse=False, check=True):
+    if num >= 2:
+        if reverse is False:
+            line_sp = l.split(sep, num - 1)
+        else:
+            line_sp = l.rsplit(sep, num - 1)
+        if check and len(line_sp) < num:
+            raise ParseException('Unable to parse: "{0}"'.format(raw))
+    return line_sp

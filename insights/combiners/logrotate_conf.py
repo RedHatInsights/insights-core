@@ -12,13 +12,17 @@ options, and all other options (if there are) will be discarded.
 
 import operator
 import os
+import string
 from fnmatch import fnmatch
 from insights.core import ConfigCombiner, ConfigParser
-from insights.configtree import parse_string, Directive, Section, eq
-from insights.configtree.dictlike import eat_whitespace, DocParser, LineCounter
 from insights.core.plugins import combiner, parser
 from insights.parsers.logrotate_conf import LogrotateConf
+from insights.parsr.query import eq
 from insights.specs import Specs
+from insights.parsr import (AnyChar, Choice, EOF, EOL, Forward, LeftCurly,
+        LineEnd, Literal, Many, Number, OneLineComment, Opt, PosMarker,
+        QuotedString, RightCurly, skip_none, String, WS, WSChar)
+from insights.parsr.query import Directive, Entry, Section
 
 
 @combiner(LogrotateConf)
@@ -142,58 +146,56 @@ class LogrotateConfAll(object):
                 return f
 
 
-class LogRotateDocParser(DocParser):
-    script_words = set([
-        "prerotate",
-        "postrotate",
-        "firstaction",
-        "lastaction",
-        "preremove",
-    ])
+class DocParser(object):
+    def __init__(self, ctx):
+        self.ctx = ctx
 
-    def parse_attrs(self, pb):
-        attrs = super(LogRotateDocParser, self).parse_attrs(pb)
-        if attrs and attrs[0] == "=":
-            attrs = attrs[1:]
-        return attrs
+        scripts = set("postrotate prerotate firstaction lastaction preremove".split())
+        Stanza = Forward()
+        Spaces = Many(WSChar)
+        Bare = String(set(string.printable) - (set(string.whitespace) | set("#{}'\"")))
+        Num = Number & (WSChar | LineEnd)
+        Comment = OneLineComment("#").map(lambda x: None)
+        ScriptStart = WS >> PosMarker(Choice([Literal(s) for s in scripts])) << WS
+        ScriptEnd = Literal("endscript")
+        Line = (WS >> AnyChar.until(EOL) << WS).map(lambda x: "".join(x))
+        Lines = Line.until(ScriptEnd).map(lambda x: "\n".join(x))
+        Script = ScriptStart + Lines << ScriptEnd
+        Script = Script.map(lambda x: [x[0], [x[1]], None])
+        BeginBlock = WS >> LeftCurly << WS
+        EndBlock = WS >> RightCurly
+        First = PosMarker((Bare | QuotedString)) << Spaces
+        Attr = Spaces >> (Num | Bare | QuotedString) << Spaces
+        Rest = Many(Attr)
+        Block = BeginBlock >> Many(Stanza).map(skip_none).map(self.to_entries) << EndBlock
+        Stmt = WS >> (Script | (First + Rest + Opt(Block))) << WS
+        Stanza <= WS >> (Stmt | Comment) << WS
+        Doc = Many(Stanza).map(skip_none).map(self.to_entries)
 
-    def parse_script_body(self, pb):
-        results = []
-        eat_whitespace(pb)
-        word = self.parse_bare(pb)
-        try:
-            while word != "endscript":
-                pb.push_all(word)
-                line = []
-                while pb.peek() != self.line_end:
-                    line.append(next(pb))
-                results.append("".join(line))
-                eat_whitespace(pb)
-                word = self.parse_bare(pb)
-        except StopIteration:
-            pass
-        return "\n".join(results)
+        self.Top = Doc + EOF
 
-    def parse_statement(self, pb):
-        eat_whitespace(pb)
-        pos = pb.lines
-        name = parse_string(pb) if pb.peek() in ("'", '"') else self.parse_bare(pb)
-        attrs = self.parse_attrs(pb)
-        if name in LogRotateDocParser.script_words:
-            body = self.parse_script_body(pb)
-            el = Directive(name=name, attrs=[body], ctx=self.ctx)
-        elif pb.peek() == "{":
-            body = self.parse_section_body(pb)
-            el = Section(name=name, attrs=attrs, children=body, ctx=self.ctx)
-        else:
-            el = Directive(name=name, attrs=attrs, ctx=self.ctx)
-        el.pos = pos
-        eat_whitespace(pb)
-        return el
+    def to_entries(self, x):
+        ret = []
+        for i in x:
+            name, attrs, body = i
+            if body:
+                for n in [name.value] + attrs:
+                    ret.append(Section(name=n, children=body, lineno=name.lineno))
+            else:
+                ret.append(Directive(name=name.value, attrs=attrs, lineno=name.lineno))
+        return ret
+
+    def __call__(self, content):
+        return self.Top(content)
 
 
-def parse_doc(f, ctx=None):
-    return LogRotateDocParser(ctx, line_end="\n").parse_doc(LineCounter(f))
+def parse_doc(content, ctx=None):
+    """ Parse a configuration document into a tree that can be queried. """
+    if isinstance(content, list):
+        content = "\n".join(content)
+    parse = DocParser(ctx)
+    result = parse(content)[0]
+    return Entry(children=result, src=ctx)
 
 
 @parser(Specs.logrotate_conf)
@@ -205,7 +207,7 @@ class _LogRotateConf(ConfigParser):
 @combiner(_LogRotateConf)
 class LogRotateConfTree(ConfigCombiner):
     """
-    Exposes logrotate configuration through the configtree interface.
+    Exposes logrotate configuration through the parsr query interface.
 
     See the :py:class:`insights.core.ConfigComponent` class for example usage.
     """

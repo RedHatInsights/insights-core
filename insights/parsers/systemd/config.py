@@ -13,6 +13,9 @@ SystemdDocker - file ``/usr/lib/systemd/system/docker.service``
 SystemdLogindConf - file ``/etc/systemd/logind.conf``
 -----------------------------------------------------
 
+SystemdRpcbindSocketConf - unit file ``rpcbind.socket``
+-------------------------------------------------------
+
 SystemdOpenshiftNode - file ``/usr/lib/systemd/system/atomic-openshift-node.service``
 -------------------------------------------------------------------------------------
 
@@ -23,20 +26,21 @@ SystemdOriginAccounting - file ``/etc/systemd/system.conf.d/origin-accounting.co
 ------------------------------------------------------------------------------------
 """
 
-from insights.configtree.iniconfig import parse_doc
 from insights.core import ConfigParser, LegacyItemAccess
 from insights.core.plugins import parser
+from insights.parsr import iniparser
 from insights.specs import Specs
 from insights.util import deprecated
+from insights import CommandParser
 
 
-class SystemdConf(LegacyItemAccess, ConfigParser):
+class SystemdConf(CommandParser, LegacyItemAccess, ConfigParser):
     """
     Base class for parsing systemd INI like configuration files
 
     """
     def parse_doc(self, content):
-        return parse_doc(content)
+        return iniparser.parse_doc("\n".join(content), self)
 
     def parse_content(self, content):
         super(SystemdConf, self).parse_content(content)
@@ -171,6 +175,39 @@ class SystemdLogindConf(SystemdConf):
     pass
 
 
+@parser(Specs.systemctl_cat_rpcbind_socket)
+class SystemdRpcbindSocketConf(SystemdConf):
+    """
+    Class for systemd configuration for rpcbind.socket unit.
+
+    Typical content of the ``rpcbind.socket`` unit file is::
+
+        [Unit]
+        Description=RPCbind Server Activation Socket
+        DefaultDependencies=no
+        Wants=rpcbind.target
+        Before=rpcbind.target
+
+        [Socket]
+        ListenStream=/run/rpcbind.sock
+
+        # RPC netconfig can't handle ipv6/ipv4 dual sockets
+        BindIPv6Only=ipv6-only
+        ListenStream=0.0.0.0:111
+        ListenDatagram=0.0.0.0:111
+        ListenStream=[::]:111
+        ListenDatagram=[::]:111
+
+        [Install]
+        WantedBy=sockets.target
+
+    Example:
+        >>> rpcbind_socket["Socket"]["ListenStream"]
+        ['/run/rpcbind.sock', '0.0.0.0:111', '[::]:111']
+    """
+    pass
+
+
 class MultiOrderedDict(dict):
     """
     .. warning::
@@ -188,27 +225,3 @@ class MultiOrderedDict(dict):
             self[key].extend(value)
         else:
             super(MultiOrderedDict, self).__setitem__(key, value)
-
-
-def parse_systemd_ini(content):
-    """
-    .. warning::
-        This function is deprecated, please use :py:class:`SystemdConf` instead.
-
-    Function to parse config format file, the result format is dictionary.
-    """
-
-    deprecated(parse_systemd_ini, "Use the `SystemdConf` class instead.")
-
-    doc = parse_doc(content)
-
-    dict_all = {}
-    for section in doc:
-        section_dict = {}
-        option_names = set(o.name for o in section)
-        for name in option_names:
-            options = [str(o.value) for o in section[name]]
-            section_dict[name] = options[0] if len(options) == 1 else options
-        dict_all[section.name] = section_dict
-
-    return dict_all

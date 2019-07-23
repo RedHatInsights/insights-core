@@ -1,14 +1,14 @@
 import pytest
 
-from insights.configtree import startswith
+from insights.parsr.query import startswith
 from insights.combiners.nginx_conf import _NginxConf, NginxConfTree
 from insights.tests import context_wrap
 from insights.parsers import SkipException
 
-# test files from
+# test files extended from
 # https://www.nginx.com/resources/wiki/start/topics/examples/full/
 
-NGINX_CONF = """
+NGINX_CONF = r"""
 user       www www;  ## Default: nobody
 worker_processes  5;  ## Default: 1
 error_log  logs/error.log;
@@ -39,6 +39,7 @@ http {
     server_name  domain1.com www.domain1.com;
     access_log   logs/domain1.access.log  main;
     root         html;
+    ssl_certificate "/etc/pki/nginx/server.crt";
 
     location ~ \.php$ {
       fastcgi_pass   127.0.0.1:1025;
@@ -187,6 +188,7 @@ def test_nginx_includes():
 
     # test /etc/nginx/nginx.conf
     assert nginx["events"]["worker_connections"][0].value == 4096
+    assert nginx["http"]["server"]["ssl_certificate"][0].value == "/etc/pki/nginx/server.crt"
 
     # test inclusion of conf/mime.types (note relative path)
     text = nginx["http"]["types"][startswith("text/")]
@@ -197,7 +199,7 @@ def test_nginx_includes():
 
     # test inclusion of /etc/nginx/fastcgi.conf
     assert nginx.find("fastcgi_pass").value == "127.0.0.1:1025"
-    actual = nginx.find(("fastcgi_param", "GATEWAY_INTERFACE")).attrs
+    actual = nginx.find(("fastcgi_param", "GATEWAY_INTERFACE"))[0].attrs
     expected = ["GATEWAY_INTERFACE", "CGI/1.1"]
     assert actual == expected
 

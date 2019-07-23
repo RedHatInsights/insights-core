@@ -11,7 +11,7 @@ from insights.client import InsightsClient
 from insights.client.config import InsightsConfig
 from insights.client.constants import InsightsConstants as constants
 from insights.client.support import InsightsSupport
-from insights.client.utilities import validate_remove_file
+from insights.client.utilities import validate_remove_file, print_egg_versions
 from insights.client.schedule import get_scheduler
 
 logger = logging.getLogger(__name__)
@@ -123,7 +123,7 @@ def post_update(client, config):
     # create a machine id first thing. we'll need it for all uploads
     logger.debug('Machine ID: %s', client.get_machine_id())
     logger.debug("CONFIG: %s", config)
-
+    print_egg_versions()
     # -------delete everything below this line-------
     if config.legacy_upload:
         if config.status:
@@ -197,8 +197,12 @@ def post_update(client, config):
     # put this first to avoid conflicts with register
     if config.unregister:
         if reg_check:
-            logger.info('Unregistration is not currently available.')
-            sys.exit(constants.sig_kill_bad)
+            logger.info('Unregistering this host from Insights.')
+            if client.unregister():
+                get_scheduler(config).remove_scheduling()
+                sys.exit(constants.sig_kill_ok)
+            else:
+                sys.exit(constants.sig_kill_bad)
         else:
             logger.info('This host is not registered, unregistration is not applicable.')
             sys.exit(constants.sig_kill_bad)

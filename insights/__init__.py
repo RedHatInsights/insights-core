@@ -37,7 +37,7 @@ from .core.hydration import create_context
 from .core.plugins import combiner, fact, metadata, parser, rule  # noqa: F401
 from .core.plugins import datasource, condition, incident  # noqa: F401
 from .core.plugins import make_response, make_metadata, make_fingerprint  # noqa: F401
-from .core.plugins import make_pass, make_fail  # noqa: F401
+from .core.plugins import make_pass, make_fail, make_info  # noqa: F401
 from .core.filters import add_filter, apply_filters, get_filters  # noqa: F401
 from .core.serde import Hydration
 from .formats import get_formatter
@@ -157,11 +157,12 @@ def parse_plugins(p):
     return plugins
 
 
-def apply_default_enabled(default_enabled):
+def apply_default_enabled(config):
     """
     Configures dr and already loaded components with a default enabled
     value.
     """
+    default_enabled = config.get("default_component_enabled", True)
     for k in dr.ENABLED:
         dr.ENABLED[k] = default_enabled
 
@@ -172,39 +173,35 @@ def apply_default_enabled(default_enabled):
 
 def apply_configs(config):
     """
-    Configures components. They can be enabled or disabled, have timeouts set
-    if applicable, and have metadata customized. Valid keys are name, enabled,
-    metadata, and timeout.
+    Configures components.
 
     Args:
-        config (list): a list of dictionaries with the following keys:
-            default_component_enabled (bool): default value for whether compoments
-                are enable if not specifically declared in the config section
+        config (dict): a dictionary with the following keys:
+            default_component_enabled (bool, optional): default value for
+                whether compoments are enable if not specifically declared in
+                the config section. Defaults to True.
 
-            packages (list): a list of packages to be loaded. These will be in
-                addition to any packages previosly loaded for the `-p` option
-
-            configs:
-                name, enabled, metadata, and timeout. All keys are optional except
-                name.
+            configs (list): list of dictionaries with the following keys:
+                name, enabled, metadata, and timeout. All keys are optional
+                except name.
 
                 name is the prefix or exact name of any loaded component. Any
-                component starting with name will have the associated configuration
-                applied.
+                component starting with name will have the associated
+                configuration applied.
 
                 enabled is whether the matching components will execute even if
                 their dependencies are met. Defaults to True.
 
-                timeout sets the class level timeout attribute of any component so
-                long as the attribute already exists.
+                timeout sets the class level timeout attribute of any component
+                so long as the attribute already exists.
 
                 metadata is any dictionary that you want to attach to the
                 component. The dictionary can be retrieved by the component at
                 runtime.
     """
-    default_enabled = config.get('default_component_enabled', False)
+    default_enabled = config.get("default_component_enabled", True)
     delegate_keys = sorted(dr.DELEGATES, key=dr.get_name)
-    for comp_cfg in config.get('configs', []):
+    for comp_cfg in config.get("configs", []):
         name = comp_cfg.get("name")
         for c in delegate_keys:
             delegate = dr.DELEGATES[c]
@@ -245,7 +242,8 @@ def run(component=None, root=None, print_summary=False,
         import logging
         p = argparse.ArgumentParser(add_help=False)
         p.add_argument("archive", nargs="?", help="Archive or directory to analyze.")
-        p.add_argument("-p", "--plugins", default="", help="Comma-separated list without spaces of package(s) or module(s) containing plugins.")
+        p.add_argument("-p", "--plugins", default="",
+                       help="Comma-separated list without spaces of package(s) or module(s) containing plugins.")
         p.add_argument("-c", "--config", help="Configure components.")
         p.add_argument("-i", "--inventory", help="Ansible inventory file for cluster analysis.")
         p.add_argument("-v", "--verbose", help="Verbose output.", action="store_true")
@@ -300,6 +298,7 @@ def run(component=None, root=None, print_summary=False,
                 config = (yaml.safe_load(f))
                 packages_loaded = load_packages(config.get('packages', []))
                 plugins.extend(packages_loaded)
+                apply_default_enabled(config)
                 apply_configs(config)
 
         if component is None:

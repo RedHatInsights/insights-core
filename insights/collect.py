@@ -238,10 +238,11 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False):
     plugins = manifest.get("plugins", {})
     run_strategy = client.get("run_strategy", {"name": "parallel"})
 
-    apply_default_enabled(plugins.get("default_component_enabled", False))
     load_packages(plugins.get("packages", []))
-    apply_blacklist(client.get("blacklist", {}))
+    apply_default_enabled(plugins)
     apply_configs(plugins)
+
+    apply_blacklist(client.get("blacklist", {}))
 
     to_persist = get_to_persist(client.get("persist", set()))
 

@@ -4,6 +4,7 @@ from insights.parsers import aws_instance_type
 from insights.parsers.aws_instance_type import AWSInstanceType
 from insights.tests import context_wrap
 from insights.parsers import SkipException, ParseException
+from insights.core.plugins import ContentException
 
 AWS_TYPE = "r3.xlarge"
 AWS_TYPE_AB_1 = """
@@ -17,6 +18,9 @@ curl: (28) connect() timed out!
 """.strip()
 AWS_TYPE_AB_4 = """
 .micro
+""".strip()
+AWS_TYPE_AB_5 = """
+No module named insights.tools
 """.strip()
 
 
@@ -33,6 +37,9 @@ def test_aws_instance_type_ab_other():
     with pytest.raises(ParseException) as pe:
         AWSInstanceType(context_wrap(AWS_TYPE_AB_4))
         assert 'Unrecognized type' in str(pe)
+
+    with pytest.raises(ContentException) as pe:
+        AWSInstanceType(context_wrap(AWS_TYPE_AB_5))
 
 
 def test_aws_instance_type_ab_empty():

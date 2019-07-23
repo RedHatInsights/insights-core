@@ -71,15 +71,17 @@ class HumanReadableFormat(Formatter):
 
     def preprocess(self):
         response = namedtuple('response', 'color label intl title')
-        self.responses = {'skip': response(color=Fore.BLUE, label="SKIP", intl='S', title="Missing Deps: "),
-                          'pass': response(color=Fore.GREEN, label="PASS", intl='P', title="Passed      : "),
-                          'fingerprint': response(color=Fore.YELLOW, label="FINGERPRINT", intl='P',
-                                                  title="Fingerprint : "),
-                          'rule': response(color=Fore.RED, label="FAIL", intl='F', title="Failed      : "),
-                          'metadata': response(color=Fore.YELLOW, label="META", intl='M', title="Metadata    : "),
-                          'metadata_key': response(color=Fore.MAGENTA, label="META", intl='K', title="Metadata Key: "),
-                          'exception': response(color=Fore.RED, label="EXCEPT", intl='E', title="Exceptions  : ")
-                          }
+        self.responses = {
+            'pass': response(color=Fore.GREEN, label="PASS", intl='P', title="Passed      : "),
+            'rule': response(color=Fore.RED, label="FAIL", intl='F', title="Failed      : "),
+            'info': response(color=Fore.WHITE, label="INFO", intl='I', title="Info        : "),
+            'skip': response(color=Fore.BLUE, label="SKIP", intl='S', title="Missing Deps: "),
+            'fingerprint': response(color=Fore.YELLOW, label="FINGERPRINT", intl='P',
+                                  title="Fingerprint : "),
+            'metadata': response(color=Fore.YELLOW, label="META", intl='M', title="Metadata    : "),
+            'metadata_key': response(color=Fore.MAGENTA, label="META", intl='K', title="Metadata Key: "),
+            'exception': response(color=Fore.RED, label="EXCEPT", intl='E', title="Exceptions  : ")
+        }
 
         self.counts = {}
         for key in self.responses:
@@ -134,9 +136,10 @@ class HumanReadableFormat(Formatter):
         """ Prints the formatted response for the matching return type """
 
         def printit(c, v):
-            underline = "-" * len(dr.get_name(c))
             resp = self.responses[v["type"]]
-            name = "%s[%s] %s%s" % (resp.color, resp.label, dr.get_name(c), Style.RESET_ALL)
+            name = "[%s] %s" % (resp.label, dr.get_name(c))
+            underline = "-" * len(name)
+            name = "%s%s%s" % (resp.color, name, Style.RESET_ALL)
             print(name, file=self.stream)
             print(underline, file=self.stream)
             print(render(c, v), file=self.stream)

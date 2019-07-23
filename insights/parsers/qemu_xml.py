@@ -1,6 +1,6 @@
 """
-QemuXML file ``/etc/libvirt/qemu/*.xml`` and ``/var/run/libvirt/qemu/*.xml``
-============================================================================
+QemuXML - file ``/etc/libvirt/qemu/*.xml`` and ``/var/run/libvirt/qemu/*.xml``
+==============================================================================
 
 Parsers provided by this module are:
 
@@ -9,9 +9,13 @@ QemuXML - file ``/etc/libvirt/qemu/*.xml``
 
 VarQemuXML - file ``/var/run/libvirt/qemu/*.xml``
 -------------------------------------------------
+
+OpenStackInstanceXML - file ``/etc/libvirt/qemu/*.xml``
+-------------------------------------------------------
 """
-from .. import XMLParser, parser
+from insights.components.openstack import IsOpenStackCompute
 from insights.specs import Specs
+from .. import XMLParser, parser
 
 
 class BaseQemuXML(XMLParser):
@@ -26,12 +30,10 @@ class BaseQemuXML(XMLParser):
         super(BaseQemuXML, self).parse_content(content)
 
         # Setting vm_name attribute
-        self.vm_name = None
-        ret = self.get_elements('./domain/name') if self.dom else None
-        if ret:
-            self.vm_name = ret[0].text
+        if self.dom and self.get_elements('./domain/name'):
+            self.vm_name = self.get_elements('./domain/name')[0].text
         else:
-            self.vm_name = self.data.get('name')
+            self.vm_name = self.data.get('name', None)
 
     def parse_dom(self):
         """Parse xml information in :attr:`data` and return.
@@ -41,15 +43,14 @@ class BaseQemuXML(XMLParser):
         """
         if self.dom is None:
             return {}
-        else:
-            domain = {}
-            for child in self.dom:
-                if len(child) == 0:
-                    domain[child.tag] = child.text
-                else:
-                    domain[child.tag] = [c.items() for c in child]
 
-            return domain
+        domain = {}
+        for child in self.dom:
+            if len(child) == 0:
+                domain[child.tag] = child.text
+            else:
+                domain[child.tag] = [c.items() for c in child]
+        return domain
 
 
 @parser(Specs.qemu_xml)
@@ -240,3 +241,92 @@ class VarQemuXML(BaseQemuXML):
         </domstatus>
     """
     pass
+
+
+@parser(Specs.qemu_xml, IsOpenStackCompute)
+class OpenStackInstanceXML(BaseQemuXML):
+    """Parse OpenStack instances metadata based on the class ``BaseQemuXML``.
+
+    This parser depends on ``insights.components.openstack.IsOpenStackCompute``
+    and will be fired only if the dependency is met.
+
+    Sample metadata section in the XML file::
+
+        <metadata>
+        <nova:instance xmlns:nova="http://openstack.org/xmlns/libvirt/nova/1.0">
+          <nova:package version="14.0.3-8.el7ost"/>
+          <nova:name>django_vm_001</nova:name>
+          <nova:creationTime>2017-10-09 08:51:28</nova:creationTime>
+          <nova:flavor name="vpc1-cf1-foo-bar">
+            <nova:memory>8096</nova:memory>
+            <nova:disk>10</nova:disk>
+            <nova:swap>0</nova:swap>
+            <nova:ephemeral>0</nova:ephemeral>
+            <nova:vcpus>4</nova:vcpus>
+          </nova:flavor>
+          <nova:owner>
+            <nova:user uuid="96e9d2b749ea48fcb5a911e6f0e144f2">django_user_01</nova:user>
+            <nova:project uuid="5a50e9d0d19746158958be0c759793fb">vpcdi1</nova:project>
+          </nova:owner>
+          <nova:root type="image" uuid="1a05a423-dfae-428a-ae54-1614d8024e76"/>
+        </nova:instance>
+        </metadata>
+
+    Examples:
+        >>> rhosp_xml.domain_name
+        'instance-000008d6'
+        >>> rhosp_xml.nova.get('version')
+        '14.0.3-8.el7ost'
+        >>> rhosp_xml.nova.get('instance_name')
+        'django_vm_001'
+        >>> rhosp_xml.nova.get('user')
+        'django_user_01'
+        >>> rhosp_xml.nova.get('root_disk_type')
+        'image'
+        >>> rhosp_xml.nova.get('flavor_vcpus')
+        '4'
+
+    Attributes:
+        domain_name(str): XML domain name.
+        nova(dict): OpenStack Compute Metadata.
+    """
+    def parse_content(self, content):
+        super(OpenStackInstanceXML, self).parse_content(content)
+        self.domain_name = self.file_name.strip('.xml')
+
+        # Parse OpenStack Compute(Nova) metadata
+        ns = {'nova': 'http://openstack.org/xmlns/libvirt/nova/1.0'}
+        self.nova = {}
+        if self.dom and self.get_elements('./metadata'):
+            for i in self.get_elements('./metadata')[0]:
+                self.nova['version'] = i.findall('nova:package', ns)[0].get('version')
+
+                # Instance meta
+                self.nova['instance_name'] = i.findall('nova:name', ns)[0].text
+                self.nova['created'] = i.findall('nova:creationTime', ns)[0].text
+
+                # Flavor meta
+                if i.findall('nova:flavor', ns):
+                    flavor = i.findall('nova:flavor', ns)[0]
+                    self.nova['flavor_name'] = flavor.get('name')
+                    self.nova['flavor_memory'] = flavor.findall('nova:memory', ns)[0].text
+                    self.nova['flavor_disk'] = flavor.findall('nova:disk', ns)[0].text
+                    self.nova['flavor_swap'] = flavor.findall('nova:swap', ns)[0].text
+                    self.nova['flavor_ephemeral'] = flavor.findall('nova:ephemeral', ns)[0].text
+                    self.nova['flavor_vcpus'] = flavor.findall('nova:vcpus', ns)[0].text
+
+                # Owner meta
+                if i.findall('nova:owner', ns):
+                    owner = i.findall('nova:owner', ns)[0]
+                    user = owner.findall('nova:user', ns)[0]
+                    project = owner.findall('nova:project', ns)[0]
+                    self.nova['user'] = user.text
+                    self.nova['user_uuid'] = user.get('uuid')
+                    self.nova['project'] = project.text
+                    self.nova['project_uuid'] = project.get('uuid')
+
+                # root disk meta
+                if i.findall('nova:root', ns):
+                    root = i.findall('nova:root', ns)[0]
+                    self.nova['root_disk_type'] = root.get('type')
+                    self.nova['root_disk_uuid'] = root.get('uuid')

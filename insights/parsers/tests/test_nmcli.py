@@ -1,8 +1,9 @@
 from insights.tests import context_wrap
-from insights.parsers.nmcli import NmcliDevShow
+from insights.parsers.nmcli import NmcliDevShow, NmcliDevShowSos
 from insights.parsers.nmcli import NmcliConnShow
-from insights.parsers import nmcli
+from insights.parsers import nmcli, SkipException
 import doctest
+import pytest
 
 NMCLI_SHOW = """
 GENERAL.DEVICE:                         em3
@@ -35,7 +36,7 @@ WIRED-PROPERTIES.CARRIER:               off
 
 GENERAL.DEVICE:                         em2
 GENERAL.TYPE:                           ethernet
-GENERAL.HWADDR:                         B8:2A:72:DE:F8:BC
+GENERAL.HWADDR:                         B8:AA:BB:DE:F8:BC
 GENERAL.MTU:                            1500
 GENERAL.STATE:                          100 (connected)
 GENERAL.CONNECTION:                     --
@@ -43,8 +44,34 @@ GENERAL.CON-PATH:                       --
 WIRED-PROPERTIES.CARRIER:               off
 """
 
+NMCLI_SHOW_SOS = """
+GENERAL.DEVICE:                         em3
+GENERAL.TYPE:                           ethernet
+GENERAL.HWADDR:                         B8:2A:72:DE:F8:B9
+GENERAL.MTU:                            1500
+GENERAL.STATE:                          100 (connected)
+GENERAL.CONNECTION:                     em3
+GENERAL.CON-PATH:                       /org/freedesktop/NetworkManager/ActiveConnection/1
+WIRED-PROPERTIES.CARRIER:               on
+IP4.ADDRESS[1]:                         10.16.184.98/22
+IP4.GATEWAY:                             10.16.187.254
+IP4.DNS[1]:                             10.16.36.29
+IP4.DNS[2]:                             10.11.5.19
+IP4.DNS[3]:                             10.5.30.160
+IP4.DOMAIN[1]:                          khw.lab.eng.bos.example.com
+IP6.ADDRESS[1]:                         2620:52:0:10bb:ba2a:72ff:fede:f8b9/64
+IP6.ADDRESS[2]:                         fe80::ba2a:72ff:fede:f8b9/64
+IP6.GATEWAY:                            fe80:52:0:10bb::fc
+IP6.ROUTE[1]:                           dst = 2620:52:0:10bb::/64, nh = ::, mt = 100
+""".strip()
+
 NMCLI_SHOW_ERROR = """
 Error: Option '-l' is unknown, try 'nmcli -help'.
+"""
+
+NMCLI_SHOW_ERROR_2 = """
+Error: Option '-l' is unknown, try 'nmcli -help'.
+Warning: nmcli (1.0.0) and NetworkManager (1.0.6) versions don't match. Use --nocheck to suppress the warning.
 """
 
 STATIC_CONNECTION_SHOW_1 = """
@@ -62,21 +89,41 @@ test-net-1  f858b1cc-d149-4de0-93bc-b1826256847a  ethernet  --
 test-net-2 f858b1cc-d149-4de0-93bc-b1826256847a  ethernet  --
 """.strip()
 
+STATIC_CONNECTION_SHOW_3 = """
+Warning: nmcli (1.0.0) and NetworkManager (1.0.6) versions don't match. Use --nocheck to suppress the warning.
+NAME           UUID                                  TYPE            DEVICE
+enp0s8         00cb8299-feb9-55b6-a378-3fdc720e0bc6  802-3-ethernet  --
+enp0s3         bfb4760c-96ce-4a29-9f2e-7427051da943  802-3-ethernet  enp0s3"
+""".strip()
+
 
 def test_nmcli():
     nmcli_obj = NmcliDevShow(context_wrap(NMCLI_SHOW))
     con_dev = nmcli_obj.connected_devices
     assert sorted(con_dev) == sorted(['em1', 'em3', 'em2'])
-    assert nmcli_obj.data['em3']['IP4_GATEWAY'] == "10.16.187.254"
-    assert nmcli_obj.data['em3']['IP4_DNS1'] == "10.16.36.29"
-    assert nmcli_obj.data['em3']['IP6_ROUTE1'] == "dst = 2620:52:0:10bb::/64, nh = ::, mt = 100"
-    assert nmcli_obj.data['em1']['STATE'] == "connected"
-    assert nmcli_obj.data['em1']['CON-PATH'] == "--"
-    assert nmcli_obj.data['em3']['IP6_ADDRESS1'] == "2620:52:0:10bb:ba2a:72ff:fede:f8b9/64"
-    assert nmcli_obj.data['em3']['IP6_ADDRESS2'] == "fe80::ba2a:72ff:fede:f8b9/64"
-    assert nmcli_obj.data['em3']['CON-PATH'] == "/org/freedesktop/NetworkManager/ActiveConnection/1"
-    assert len(nmcli_obj.data['em3']) == 17
-    assert len(nmcli_obj.data['em1']) == 7
+    assert nmcli_obj['em3']['IP4_GATEWAY'] == "10.16.187.254"
+    assert nmcli_obj['em3']['IP4_DNS1'] == "10.16.36.29"
+    assert nmcli_obj['em3']['IP6_ROUTE1'] == "dst = 2620:52:0:10bb::/64, nh = ::, mt = 100"
+    assert nmcli_obj['em1']['STATE'] == "connected"
+    assert nmcli_obj['em1']['CON-PATH'] == "--"
+    assert nmcli_obj['em3']['IP6_ADDRESS1'] == "2620:52:0:10bb:ba2a:72ff:fede:f8b9/64"
+    assert nmcli_obj['em3']['IP6_ADDRESS2'] == "fe80::ba2a:72ff:fede:f8b9/64"
+    assert nmcli_obj['em3']['CON-PATH'] == "/org/freedesktop/NetworkManager/ActiveConnection/1"
+    assert len(nmcli_obj['em3']) == 17
+    assert len(nmcli_obj['em1']) == 7
+
+
+def test_nmcli_sos():
+    nmcli_obj = NmcliDevShowSos(context_wrap(NMCLI_SHOW_SOS))
+    con_dev = nmcli_obj.connected_devices
+    assert sorted(con_dev) == sorted(['em3'])
+    assert nmcli_obj['em3']['IP4_GATEWAY'] == "10.16.187.254"
+    assert nmcli_obj['em3']['IP4_DNS1'] == "10.16.36.29"
+    assert nmcli_obj['em3']['IP6_ROUTE1'] == "dst = 2620:52:0:10bb::/64, nh = ::, mt = 100"
+    assert nmcli_obj['em3']['IP6_ADDRESS1'] == "2620:52:0:10bb:ba2a:72ff:fede:f8b9/64"
+    assert nmcli_obj['em3']['IP6_ADDRESS2'] == "fe80::ba2a:72ff:fede:f8b9/64"
+    assert nmcli_obj['em3']['CON-PATH'] == "/org/freedesktop/NetworkManager/ActiveConnection/1"
+    assert len(nmcli_obj['em3']) == 17
 
 
 def test_static_connection_test_1():
@@ -90,10 +137,35 @@ def test_static_connection_test_2():
     assert static_conn.disconnected_connection == ["test-net-1", "test-net-2"]
 
 
+def test_static_connection_test_3():
+    static_conn = NmcliConnShow(context_wrap(STATIC_CONNECTION_SHOW_3))
+    assert static_conn.disconnected_connection == ["enp0s8"]
+
+
+def test_nmcli_dev_show_ab():
+    with pytest.raises(SkipException):
+        NmcliDevShow(context_wrap(''))
+
+    with pytest.raises(SkipException):
+        NmcliDevShow(context_wrap('GENERAL.TYPE: ethernet'))
+
+    with pytest.raises(SkipException):
+        NmcliDevShow(context_wrap('Error'))
+
+
 def test_nmcli_doc_examples():
     env = {
         'nmcli_obj': NmcliDevShow(context_wrap(NMCLI_SHOW)),
+        'nmcli_obj_sos': NmcliDevShowSos(context_wrap(NMCLI_SHOW_SOS)),
         'static_conn': NmcliConnShow(context_wrap(STATIC_CONNECTION_SHOW_1)),
     }
     failed, total = doctest.testmod(nmcli, globs=env)
     assert failed == 0
+
+
+def test_nmcli_exceptions():
+    with pytest.raises(SkipException) as exc:
+        nmcli_obj = NmcliConnShow(context_wrap(NMCLI_SHOW_ERROR))
+        nmcli_obj = NmcliConnShow(context_wrap(NMCLI_SHOW_ERROR_2))
+        assert nmcli_obj is None
+    assert 'Invalid Contents!' in str(exc)

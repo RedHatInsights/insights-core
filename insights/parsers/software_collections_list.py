@@ -14,13 +14,14 @@ SoftwareCollectionsListInstalled - command ``scl --list``
 
 """
 
-from .. import Parser, parser
-from . import get_active_lines
+from insights import CommandParser, parser
+from insights.parsers import get_active_lines
 from insights.specs import Specs
+from insights.components.rhel_version import IsRhel6, IsRhel7
 
 
-@parser(Specs.software_collections_list)
-class SoftwareCollectionsListInstalled(Parser):
+@parser(Specs.software_collections_list, [IsRhel6, IsRhel7])
+class SoftwareCollectionsListInstalled(CommandParser):
     """
     An object for parsing the output of ``scl --list``.
 

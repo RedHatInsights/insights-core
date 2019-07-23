@@ -1,6 +1,7 @@
 from insights.parsers.systemd import config
 from insights.parsers import SkipException
 from insights.tests import context_wrap
+from insights.core.plugins import ContentException
 import doctest
 import pytest
 
@@ -44,6 +45,11 @@ WantedBy=multi-user.target
 """.strip()
 
 
+SYSTEMD_DOCKER_EMPTY = """
+Unit docker.service is not loaded: No such file or directory
+""".strip()
+
+
 SYSTEMD_OPENSHIFT_NODE = """
 [Unit]
 Description=Atomic OpenShift Node
@@ -71,6 +77,7 @@ ExecStartPost=/usr/sbin/sysctl --system
 WantedBy=multi-user.target
 
 """.strip()
+
 
 SYSTEMD_LOGIND_CONF = """
 #  This file is part of systemd.
@@ -107,6 +114,27 @@ KillUserProcesses=Yes
 RuntimeDirectorySize=10%
 RemoveIPC=no
 #UserTasksMax=
+""".strip()
+
+SYSTEMD_RPCBIND_SOCKET = """
+[Unit]
+Description=RPCbind Server Activation Socket
+DefaultDependencies=no
+Wants=rpcbind.target
+Before=rpcbind.target
+
+[Socket]
+ListenStream=/run/rpcbind.sock
+
+# RPC netconfig can't handle ipv6/ipv4 dual sockets
+BindIPv6Only=ipv6-only
+ListenStream=0.0.0.0:111
+ListenDatagram=0.0.0.0:111
+ListenStream=[::]:111
+ListenDatagram=[::]:111
+
+[Install]
+WantedBy=sockets.target
 """.strip()
 
 SYSTEMD_SYSTEM_CONF = """
@@ -190,6 +218,11 @@ def test_systemd_docker():
     assert docker_service.data["Service"]["ExecStart"] == "/bin/sh -c '/usr/bin/docker-current daemon --authorization-plugin=rhel-push-plugin --exec-opt native.cgroupdriver=systemd $OPTIONS $DOCKER_STORAGE_OPTIONS $DOCKER_NETWORK_OPTIONS $ADD_REGISTRY $BLOCK_REGISTRY $INSECURE_REGISTRY 2>&1 | /usr/bin/forward-journald -tag docker'"
 
 
+def test_systemd_docker_empty():
+    with pytest.raises(ContentException):
+        config.SystemdDocker(context_wrap(SYSTEMD_DOCKER_EMPTY))
+
+
 def test_systemd_openshift_node():
     openshift_node_service = config.SystemdOpenshiftNode(context_wrap(SYSTEMD_OPENSHIFT_NODE))
     assert openshift_node_service.data["Unit"]["Wants"] == "docker.service"
@@ -199,6 +232,7 @@ def test_systemd_openshift_node():
 def test_systemd_system_conf():
     common_conf_info = config.SystemdSystemConf(context_wrap(SYSTEMD_SYSTEM_CONF))
     assert "Manager" in common_conf_info
+    print(common_conf_info.doc)
     assert common_conf_info["Manager"]["RuntimeWatchdogSec"] == "0"
     assert common_conf_info["Manager"]["ShutdownWatchdogSec"] == "10min"
 
@@ -217,6 +251,13 @@ def test_systemd_logind_conf():
     assert logind_conf["Login"]["RuntimeDirectorySize"] == "10%"
 
 
+def test_systemd_rpcbind_socket_conf():
+    rpcbind_socket = config.SystemdRpcbindSocketConf(context_wrap(SYSTEMD_RPCBIND_SOCKET))
+    assert "Socket" in rpcbind_socket
+    assert rpcbind_socket["Socket"]["ListenStream"] == ['/run/rpcbind.sock', '0.0.0.0:111', '[::]:111']
+    assert rpcbind_socket["Socket"]["ListenDatagram"] == ['0.0.0.0:111', '[::]:111']
+
+
 def test_systemd_empty():
     with pytest.raises(SkipException):
         assert config.SystemdLogindConf(context_wrap('')) is None
@@ -228,7 +269,8 @@ def test_doc_examples():
             'system_conf': config.SystemdSystemConf(context_wrap(SYSTEMD_SYSTEM_CONF)),
             'system_origin_accounting': config.SystemdOriginAccounting(context_wrap(SYSTEMD_SYSTEM_ORIGIN_ACCOUNTING)),
             'openshift_node_service': config.SystemdOpenshiftNode(context_wrap(SYSTEMD_OPENSHIFT_NODE)),
-            'logind_conf': config.SystemdLogindConf(context_wrap(SYSTEMD_LOGIND_CONF))
+            'logind_conf': config.SystemdLogindConf(context_wrap(SYSTEMD_LOGIND_CONF)),
+            'rpcbind_socket': config.SystemdRpcbindSocketConf(context_wrap(SYSTEMD_RPCBIND_SOCKET))
           }
     failed, total = doctest.testmod(config, globs=env)
     assert failed == 0

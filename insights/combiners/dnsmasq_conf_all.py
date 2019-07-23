@@ -23,7 +23,7 @@ from fnmatch import fnmatch
 from insights.core.plugins import combiner
 from insights.core import ConfigCombiner
 from insights.parsers.dnsmasq_config import DnsmasqConf
-from insights.configtree import eq
+from insights.parsr.query import eq
 
 
 @combiner(DnsmasqConf)

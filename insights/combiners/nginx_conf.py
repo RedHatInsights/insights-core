@@ -11,23 +11,61 @@ The brackets allow a more conventional lookup feel but aren't quite as powerful
 as using select directly.
 """
 import os
+import string
 from insights import combiner, parser, run
 from insights.core import ConfigCombiner, ConfigParser
-from insights.configtree import eq
-from insights.configtree.dictlike import parse_doc
+from insights.parsr.query import eq
+from insights.parsr import (Char, EOF, Forward, LeftCurly, Lift, LineEnd,
+        RightCurly, Many, Number, OneLineComment, Parser, PosMarker, SemiColon,
+        QuotedString, skip_none, String, WS, WSChar)
+from insights.parsr.query import Directive, Entry, Section
 from insights.specs import Specs
+
+
+class EmptyQuotedString(Parser):
+    def __init__(self, chars):
+        super(EmptyQuotedString, self).__init__()
+        single = Char("'") >> String(set(chars) - set("'"), "'", 0) << Char("'")
+        double = Char('"') >> String(set(chars) - set('"'), '"', 0) << Char('"')
+        self.add_child(single | double)
+
+    def process(self, pos, data, ctx):
+        return self.children[0].process(pos, data, ctx)
 
 
 @parser(Specs.nginx_conf)
 class _NginxConf(ConfigParser):
+    def __init__(self, *args, **kwargs):
+        def to_entry(name, attrs, body):
+            if body == ";":
+                return Directive(name=name.value, attrs=attrs, lineno=name.lineno, src=self)
+            return Section(name=name.value, attrs=attrs, children=body, lineno=name.lineno, src=self)
+
+        name_chars = string.ascii_letters + "_/"
+        Stmt = Forward()
+        Num = Number & (WSChar | LineEnd | SemiColon)
+        Comment = OneLineComment("#").map(lambda x: None)
+        BeginBlock = WS >> LeftCurly << WS
+        EndBlock = WS >> RightCurly << WS
+        Bare = String(set(string.printable) - (set(string.whitespace) | set("#;{}'\"")))
+        Name = WS >> PosMarker(String(name_chars) | EmptyQuotedString(name_chars)) << WS
+        Attr = WS >> (Num | Bare | QuotedString) << WS
+        Attrs = Many(Attr)
+        Block = BeginBlock >> Many(Stmt).map(skip_none) << EndBlock
+        Stanza = (Lift(to_entry) * Name * Attrs * (Block | SemiColon)) | Comment
+        Stmt <= WS >> Stanza << WS
+        Doc = Many(Stmt).map(skip_none)
+        self.Top = Doc + EOF
+        super(_NginxConf, self).__init__(*args, **kwargs)
+
     def parse_doc(self, content):
-        return parse_doc("\n".join(content), ctx=self)
+        return Entry(children=self.Top("\n".join(content))[0], src=self)
 
 
 @combiner(_NginxConf)
 class NginxConfTree(ConfigCombiner):
     """
-    Exposes nginx configuration through the configtree interface.
+    Exposes nginx configuration through the parsr query interface.
 
     See the :py:class:`insights.core.ConfigComponent` class for example usage.
     """

@@ -10,9 +10,9 @@ import json
 import logging
 import xml.etree.ElementTree as ET
 import warnings
-import io
+# import io
 from tempfile import TemporaryFile
-from datetime import datetime, timedelta
+# from datetime import datetime, timedelta
 try:
     # python 2
     from urlparse import urlparse
@@ -429,19 +429,19 @@ class InsightsConnection(object):
         """
         Retrieve branch_info from Satellite Server
         """
-        branch_info = None
-        if os.path.exists(constants.cached_branch_info):
-            # use cached branch info file if less than 5 minutes old
-            #  (failsafe, should be deleted at end of client run normally)
-            logger.debug(u'Reading branch info from cached file.')
-            ctime = datetime.utcfromtimestamp(
-                os.path.getctime(constants.cached_branch_info))
-            if datetime.utcnow() < (ctime + timedelta(minutes=5)):
-                with io.open(constants.cached_branch_info, encoding='utf8', mode='r') as f:
-                    branch_info = json.load(f)
-                return branch_info
-            else:
-                logger.debug(u'Cached branch info is older than 5 minutes.')
+        # branch_info = None
+        # if os.path.exists(constants.cached_branch_info):
+        #     # use cached branch info file if less than 5 minutes old
+        #     #  (failsafe, should be deleted at end of client run normally)
+        #     logger.debug(u'Reading branch info from cached file.')
+        #     ctime = datetime.utcfromtimestamp(
+        #         os.path.getctime(constants.cached_branch_info))
+        #     if datetime.utcnow() < (ctime + timedelta(minutes=5)):
+        #         with io.open(constants.cached_branch_info, encoding='utf8', mode='r') as f:
+        #             branch_info = json.load(f)
+        #         return branch_info
+        #     else:
+        #         logger.debug(u'Cached branch info is older than 5 minutes.')
 
         logger.debug(u'Obtaining branch information from %s',
                      self.branch_info_url)
@@ -463,11 +463,11 @@ class InsightsConnection(object):
              branch_info[u'remote_leaf'] is -1)):
             self.get_satellite5_info(branch_info)
 
-        logger.debug(u'Saving branch info to file.')
-        with io.open(constants.cached_branch_info, encoding='utf8', mode='w') as f:
-            # json.dump is broke in py2 so use dumps
-            bi_str = json.dumps(branch_info, ensure_ascii=False)
-            f.write(bi_str)
+        # logger.debug(u'Saving branch info to file.')
+        # with io.open(constants.cached_branch_info, encoding='utf8', mode='w') as f:
+        #     # json.dump is broke in py2 so use dumps
+        #     bi_str = json.dumps(branch_info, ensure_ascii=False)
+        #     f.write(bi_str)
         self.config.branch_info = branch_info
         return branch_info
 
@@ -653,7 +653,7 @@ class InsightsConnection(object):
         return True
 
     # -LEGACY-
-    def unregister(self):
+    def _legacy_unregister(self):
         """
         Unregister this system from the insights service
         """
@@ -667,6 +667,28 @@ class InsightsConnection(object):
                 "Successfully unregistered from the Red Hat Insights Service")
             return True
         except requests.ConnectionError as e:
+            logger.debug(e)
+            logger.error("Could not unregister this system")
+            return False
+
+    def unregister(self):
+        """
+        Unregister this system from the insights service
+        """
+        if self.config.legacy_upload:
+            return self._legacy_unregister()
+
+        results = self._fetch_system_by_machine_id()
+        try:
+            logger.debug("Unregistering host...")
+            url = self.api_url + "/inventory/v1/hosts/" + results[0]['id']
+            net_logger.info("DELETE %s", url)
+            response = self.session.delete(url)
+            response.raise_for_status()
+            logger.info(
+                "Successfully unregistered from the Red Hat Insights Service")
+            return True
+        except (requests.ConnectionError, requests.Timeout, requests.HTTPError) as e:
             logger.debug(e)
             logger.error("Could not unregister this system")
             return False
@@ -835,7 +857,8 @@ class InsightsConnection(object):
                 logger.error('Unable to set display name: %s %s',
                              res.status_code, res.text)
                 return False
-        except requests.ConnectionError:
+        except (requests.ConnectionError, requests.Timeout, ValueError) as e:
+            logger.error(e)
             # can't connect, run connection test
             return False
 

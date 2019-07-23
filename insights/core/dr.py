@@ -963,7 +963,7 @@ def run(components=None, broker=None):
             pass
         except Exception as ex:
             tb = traceback.format_exc()
-            log.warn(tb)
+            log.warning(tb)
             broker.add_exception(component, ex, tb)
         finally:
             broker.exec_times[component] = time.time() - start

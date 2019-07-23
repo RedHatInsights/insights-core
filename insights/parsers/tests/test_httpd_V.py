@@ -1,6 +1,6 @@
 from insights.parsers import httpd_V
-from insights.parsers import SkipException, ParseException
-from insights.parsers.httpd_V import HttpdV, HttpdEventV, HttpdWorkerV
+from insights.parsers import SkipException
+from insights.parsers.httpd_V import HttpdV
 from insights.tests import context_wrap
 import pytest
 import doctest
@@ -107,26 +107,17 @@ def test_httpd_V():
 
 
 def test_httpd_V_exp():
-    with pytest.raises(ParseException) as sc:
+    with pytest.raises(SkipException) as sc:
         HttpdV(context_wrap(""))
     assert "Input content is empty" in str(sc)
 
-    with pytest.raises(ParseException) as sc:
+    with pytest.raises(SkipException) as sc:
         HttpdV(context_wrap("TEST"))
     assert "Input content is not empty but there is no useful parsed data." in str(sc)
-
-    with pytest.raises(SkipException) as sc:
-        HttpdEventV(context_wrap(HTTPD_V_24))
-    assert "No 'httpd.event' command on this host." in str(sc)
-
-    with pytest.raises(SkipException) as sc:
-        HttpdWorkerV(context_wrap(HTTPD_V_24))
-    assert "No 'httpd.worker' command on this host." in str(sc)
 
 
 def test_httpd_V_doc():
     env = {
-            'HttpdV': HttpdV,
             'hv': HttpdV(context_wrap(HTTPDV_DOC))
           }
     failed, total = doctest.testmod(httpd_V, globs=env)

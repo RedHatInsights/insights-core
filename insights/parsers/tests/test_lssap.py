@@ -1,6 +1,6 @@
-from ...parsers import lssap, ParseException
-from ...tests import context_wrap
-from ...util import keys_in
+from insights.parsers import lssap, ParseException, SkipException
+from insights.tests import context_wrap
+from insights.util import keys_in
 import doctest
 import pytest
 
@@ -61,7 +61,7 @@ Lssap_runAll_Test = """
 ==========================================
 """.strip()
 
-Lssap_BAD = """
+Lssap_BAD_1 = """
 /usr/sap/hostctrl/lssap: command or file not found
 """
 
@@ -132,12 +132,8 @@ def test_all():
 
 def test_fail():
     with pytest.raises(ParseException) as excinfo:
-        lssap.Lssap(context_wrap(Lssap_BAD))
+        lssap.Lssap(context_wrap(Lssap_BAD_1))
     assert "Lssap: Unable to parse 1 line(s) of content: (['/usr/sap/hostctrl/lssap: command or file not found'])" in str(excinfo)
-
-    with pytest.raises(ParseException) as excinfo:
-        lssap.Lssap(context_wrap('test'))
-    assert "Lssap: Unable to parse 1 line(s) of content: (['test'])" in str(excinfo)
 
     with pytest.raises(ParseException) as excinfo:
         lssap.Lssap(context_wrap(Lssap_BAD_2))
@@ -146,3 +142,14 @@ def test_fail():
     with pytest.raises(ParseException) as excinfo:
         lssap.Lssap(context_wrap(Lssap_BAD_3))
     assert "Lssap: Unable to parse 2 line(s) of content: (['HA2 | N16 | D16', 'HB2 | foo | bar'])" in str(excinfo)
+
+    with pytest.raises(ParseException) as excinfo:
+        lssap.Lssap(context_wrap(Lssap_BAD1))
+    assert "Lssap: Unable to parse 1 line(s) of content: (['HA2|  16|       D16|         lu0417'])" in str(excinfo)
+
+    with pytest.raises(SkipException) as excinfo:
+        lssap.Lssap(context_wrap(Lssap_BAD2))
+
+    with pytest.raises(ParseException) as excinfo:
+        lssap.Lssap(context_wrap('test'))
+    assert "Lssap: Unable to parse 1 line(s) of content: (['test'])" in str(excinfo)

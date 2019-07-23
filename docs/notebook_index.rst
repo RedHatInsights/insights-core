@@ -8,7 +8,7 @@ directory.
 .. toctree::
     :titlesonly:
 
-    notebooks/Config Tree Tutorial.ipynb
+    notebooks/Parsr Query Tutorial.ipynb
     notebooks/Datasource Registry.ipynb
     notebooks/Diagnostic Walkthrough.ipynb
     notebooks/Insights Core Tutorial.ipynb

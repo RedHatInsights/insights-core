@@ -1,4 +1,4 @@
-from insights.configtree import first
+from insights.parsr.query import first
 from insights.combiners.logrotate_conf import _LogRotateConf, LogRotateConfTree
 from insights.tests import context_wrap
 

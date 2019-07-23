@@ -156,41 +156,39 @@ title iPXE
 """.strip()
 
 
-class TestGrub1ConfMissingBootFiles():
-    def test_get_grub_kernel_initrd(self):
-        expected_result = {'grub_kernels': ["vmlinuz-2.6.18-194.8.1.el5", "vmlinuz-2.6.18-194.17.1.el5"],
-                           'grub_initrds': ["initrd-2.6.18-194.8.1.el5.img", "initrd-2.6.18-194.17.1.el5.img"]}
-        assert expected_result == Grub1Config(context_wrap(GRUB_CONF_3)).kernel_initrds
+def test_get_grub_kernel_initrd_1():
+    expected_result = {'grub_kernels': ["vmlinuz-2.6.18-194.8.1.el5", "vmlinuz-2.6.18-194.17.1.el5"],
+                       'grub_initrds': ["initrd-2.6.18-194.8.1.el5.img", "initrd-2.6.18-194.17.1.el5.img"]}
+    assert expected_result == Grub1Config(context_wrap(GRUB_CONF_3)).kernel_initrds
 
-        # Process grub.conf where kernel and initrd are softlinks
-        expected_result = {'grub_kernels': ['vmlinuz'], 'grub_initrds': ['initrd']}
-        assert expected_result == Grub1Config(context_wrap(GRUB_CONF_LINKS)).kernel_initrds
+    # Process grub.conf where kernel and initrd are softlinks
+    expected_result = {'grub_kernels': ['vmlinuz'], 'grub_initrds': ['initrd']}
+    assert expected_result == Grub1Config(context_wrap(GRUB_CONF_LINKS)).kernel_initrds
 
-        # Process grub.conf from a Xen hypervisor
-        expected_result = {'grub_kernels': ['vmlinuz-2.6.18-398.el5xen'], 'grub_initrds': ['initrd-2.6.18-398.el5xen.img']}
-        assert expected_result == Grub1Config(context_wrap(GRUB_CONF_XEN)).kernel_initrds
+    # Process grub.conf from a Xen hypervisor
+    expected_result = {'grub_kernels': ['vmlinuz-2.6.18-398.el5xen'], 'grub_initrds': ['initrd-2.6.18-398.el5xen.img']}
+    assert expected_result == Grub1Config(context_wrap(GRUB_CONF_XEN)).kernel_initrds
 
-        # Simulate grub.conf not containing any kernel or initrd entries
-        expected_result = {'grub_kernels': [], 'grub_initrds': []}
-        assert expected_result == Grub1Config(context_wrap(LS_BOOT_1)).kernel_initrds
-        assert expected_result, Grub1Config(context_wrap(LS_BOOT_2)).kernel_initrds
+    # Simulate grub.conf not containing any kernel or initrd entries
+    expected_result = {'grub_kernels': [], 'grub_initrds': []}
+    assert expected_result == Grub1Config(context_wrap(LS_BOOT_1)).kernel_initrds
+    assert expected_result, Grub1Config(context_wrap(LS_BOOT_2)).kernel_initrds
 
-        # Ignore grub.conf from machines that have PXE boot entries because we can't know if they are ok or not
-        assert Grub1Config(context_wrap(GRUB_CONF_IPXE)).kernel_initrds == {}
+    # Ignore grub.conf from machines that have PXE boot entries because we can't know if they are ok or not
+    assert Grub1Config(context_wrap(GRUB_CONF_IPXE)).kernel_initrds == {}
 
 
-class TestGrub2ConfMissingBootFiles():
-    def test_get_grub_kernel_initrd(self):
-        expected_result = {'grub_kernels': ["vmlinuz-3.10.0-123.9.3.el7.x86_64", "vmlinuz-0-rescue-00c2fbfaa85544e48d6ca1d919fa2dd3"],
-                           'grub_initrds': ["initramfs-3.10.0-123.9.3.el7.x86_64.img", "initramfs-0-rescue-00c2fbfaa85544e48d6ca1d919fa2dd3.img"]}
-        assert expected_result == Grub2Config((context_wrap(GRUB2_CFG_1))).kernel_initrds == expected_result
-        expected_result = {'grub_kernels': ["vmlinuz-3.10.0-229.el7.x86_64", "vmlinuz-3.10.0-123.13.2.el7.x86_64",
-                                            "vmlinuz-3.10.0-123.el7.x86_64", "vmlinuz-0-rescue-13798ffcbc1ed4374f3f2e0fa6c923ad"],
-                           'grub_initrds': ["initramfs-3.10.0-229.el7.x86_64.img", "initramfs-3.10.0-123.13.2.el7.x86_64.img",
-                                            "initramfs-3.10.0-123.el7.x86_64.img", "initramfs-0-rescue-13798ffcbc1ed4374f3f2e0fa6c923ad.img"]}
-        assert expected_result == Grub2Config(context_wrap(GRUB2_CFG_2)).kernel_initrds
+def test_get_grub_kernel_initrd_2():
+    expected_result = {'grub_kernels': ["vmlinuz-3.10.0-123.9.3.el7.x86_64", "vmlinuz-0-rescue-00c2fbfaa85544e48d6ca1d919fa2dd3"],
+                       'grub_initrds': ["initramfs-3.10.0-123.9.3.el7.x86_64.img", "initramfs-0-rescue-00c2fbfaa85544e48d6ca1d919fa2dd3.img"]}
+    assert expected_result == Grub2Config((context_wrap(GRUB2_CFG_1))).kernel_initrds == expected_result
+    expected_result = {'grub_kernels': ["vmlinuz-3.10.0-229.el7.x86_64", "vmlinuz-3.10.0-123.13.2.el7.x86_64",
+                                        "vmlinuz-3.10.0-123.el7.x86_64", "vmlinuz-0-rescue-13798ffcbc1ed4374f3f2e0fa6c923ad"],
+                       'grub_initrds': ["initramfs-3.10.0-229.el7.x86_64.img", "initramfs-3.10.0-123.13.2.el7.x86_64.img",
+                                        "initramfs-3.10.0-123.el7.x86_64.img", "initramfs-0-rescue-13798ffcbc1ed4374f3f2e0fa6c923ad.img"]}
+    assert expected_result == Grub2Config(context_wrap(GRUB2_CFG_2)).kernel_initrds
 
-        # Simulate grub.conf not containing any kernel or initrd entries
-        expected_result = {'grub_kernels': [], 'grub_initrds': []}
-        assert expected_result == Grub2Config(context_wrap(LS_BOOT_1)).kernel_initrds
-        assert expected_result, Grub2Config(context_wrap(LS_BOOT_2)).kernel_initrds
+    # Simulate grub.conf not containing any kernel or initrd entries
+    expected_result = {'grub_kernels': [], 'grub_initrds': []}
+    assert expected_result == Grub2Config(context_wrap(LS_BOOT_1)).kernel_initrds
+    assert expected_result, Grub2Config(context_wrap(LS_BOOT_2)).kernel_initrds

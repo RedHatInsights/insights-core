@@ -1,6 +1,9 @@
 from insights.tests import context_wrap
+from insights.parsers import grub_conf
 from insights.parsers.grub_conf import Grub1Config, Grub2Config, Grub1EFIConfig
+from insights.parsers.grub_conf import BootLoaderEntries
 import pytest
+import doctest
 
 # RHEL7
 GRUB2_CFG_1 = """
@@ -149,8 +152,63 @@ menuentry {
 }
 """.strip()
 
+BOOT_LOADER_ENTRIES_CONF = """
+title Red Hat Enterprise Linux (4.18.0-80.1.2.el8_0.x86_64) 8.0 (Ootpa)
+version 4.18.0-80.1.2.el8_0.x86_64
+linux /vmlinuz-4.18.0-80.1.2.el8_0.x86_64
+initrd /initramfs-4.18.0-80.1.2.el8_0.x86_64.img $tuned_initrd
+options root=/dev/mapper/rhel_vm37--146-root ro crashkernel=auto resume=/dev/mapper/rhel_vm37--146-swap rd.lvm.lv=rhel_vm37-146/root rd.lvm.lv=rhel_vm37-146/swap $tuned_params noapic
+id rhel-20190428101407-4.18.0-80.1.2.el8_0.x86_64
+grub_users $grub_users
+grub_arg --unrestricted
+grub_class kernel
+""".strip()
 
-def test_grub_conf():
+GRUB1_CFG_1_DOC = '''
+default=0
+timeout=0
+splashimage=(hd0,0)/grub/splash.xpm.gz
+hiddenmenu
+title Red Hat Enterprise Linux Server (2.6.32-431.17.1.el6.x86_64)
+    kernel /vmlinuz-2.6.32-431.17.1.el6.x86_64 crashkernel=128M rhgb quiet
+title Red Hat Enterprise Linux Server (2.6.32-431.11.2.el6.x86_64)
+    kernel /vmlinuz-2.6.32-431.11.2.el6.x86_64 crashkernel=128M rhgb quiet
+'''.strip()
+
+GRUB2_CFG_1_DOC = '''
+### BEGIN /etc/grub.d/00_header ###
+set pager=1
+/
+if [ -s $prefix/grubenv ]; then
+  load_env
+fi
+#[...]
+if [ x"${feature_menuentry_id}" = xy ]; then
+  menuentry_id_option="--id"
+else
+  menuentry_id_option=""
+fi
+#[...]
+### BEGIN /etc/grub.d/10_linux ###
+menuentry 'Red Hat Enterprise Linux Workstation (3.10.0-327.36.3.el7.x86_64) 7.2 (Maipo)' $menuentry_id_option 'gnulinux-3.10.0-123.13.2.el7.x86_64-advanced-fbff9f50-62c3-484e-bca5-d53f672cda7c' {
+    load_video
+    set gfxpayload=keep
+    insmod gzio
+    insmod part_msdos
+    insmod ext2
+    set root='hd0,msdos1'
+    if [ x$feature_platform_search_hint = xy ]; then
+      search --no-floppy --fs-uuid --set=root --hint-bios=hd0,msdos1 --hint-efi=hd0,msdos1 --hint-baremetal=ahci0,msdos1 --hint='hd0,msdos1'  1184ab74-77b5-4cfa-81d3-fb87b0457577
+    else
+      search --no-floppy --fs-uuid --set=root 1184ab74-77b5-4cfa-81d3-fb87b0457577
+    fi
+    linux16 /vmlinuz-3.10.0-327.36.3.el7.x86_64 root=/dev/RHEL7CSB/Root ro rd.lvm.lv=RHEL7CSB/Root rd.luks.uuid=luks-96c66446-77fd-4431-9508-f6912bd84194 crashkernel=128M@16M rd.lvm.lv=RHEL7CSB/Swap vconsole.font=latarcyrheb-sun16 rhgb quiet LANG=en_GB.utf8
+    initrd16 /initramfs-3.10.0-327.36.3.el7.x86_64.img
+}
+'''.strip()
+
+
+def test_grub_conf_1():
     expected_result = {'grub_kernels': ["vmlinuz-2.6.18-194.8.1.el5", "vmlinuz-2.6.18-194.17.1.el5"],
                        'grub_initrds': ["initrd-2.6.18-194.8.1.el5.img", "initramfs-2.6.18-194.8.1.el5.img"]}
     assert expected_result == Grub1Config(context_wrap(GRUB1_CONF_3)).kernel_initrds
@@ -165,15 +223,15 @@ def test_grub_conf():
 
     grub1 = Grub1Config(context_wrap(GRUB1_CONF_5))
     assert grub1.is_kdump_iommu_enabled is False
-    assert grub1.get_current_title() == [
-        ('title_name', '(2.6.18-194.8.1.el5)'),
-        ('kernel', None), ('module', '/2.6.18-194.8.1.el5.img')]
+    assert grub1.get_current_title() == {
+            'title': '(2.6.18-194.8.1.el5)',
+            'kernel': [''], 'module': ['/2.6.18-194.8.1.el5.img']}
 
     grub1 = Grub1Config(context_wrap(GRUB1_CONF_6))
     assert grub1.is_kdump_iommu_enabled is False
-    assert grub1.get_current_title() == [
-        ('title_name', 'Red Hat Enterprise Linux Server'),
-        ('kernel', 'test'), ('module', '/2.6.18-194.8.1.el5.img')]
+    assert grub1.get_current_title() == {
+        'title': 'Red Hat Enterprise Linux Server',
+        'kernel': ['test'], 'module': ['/2.6.18-194.8.1.el5.img']}
 
     grub1 = Grub1Config(context_wrap(GRUB1_CONF_7))
     assert grub1.is_kdump_iommu_enabled is False
@@ -186,22 +244,22 @@ def test_grub_conf():
     assert grub1efi.get_current_title() is None
 
     grub1efi = Grub1EFIConfig(context_wrap(GRUB1_CONF_5))
-    assert grub1efi.get_current_title() == [
-        ('title_name', '(2.6.18-194.8.1.el5)'),
-        ('kernel', None), ('module', '/2.6.18-194.8.1.el5.img')]
+    assert grub1efi.get_current_title() == {
+            'title': '(2.6.18-194.8.1.el5)',
+            'kernel': [''], 'module': ['/2.6.18-194.8.1.el5.img']}
 
     grub1efi = Grub1EFIConfig(context_wrap(GRUB1_CONF_6))
-    assert grub1efi.get_current_title() == [
-        ('title_name', 'Red Hat Enterprise Linux Server'),
-        ('kernel', 'test'), ('module', '/2.6.18-194.8.1.el5.img')]
+    assert grub1efi.get_current_title() == {
+        'title': 'Red Hat Enterprise Linux Server',
+        'kernel': ['test'], 'module': ['/2.6.18-194.8.1.el5.img']}
 
     grub1efi = Grub1EFIConfig(context_wrap(GRUB1_CONF_7))
     assert grub1efi.get_current_title() is None
 
     grub_conf = Grub2Config(context_wrap(GRUB2_CFG_1))['menuentry']
-    assert ('load_video', None) in grub_conf[0]
-    assert ('load_env', None) not in grub_conf[0]
-    assert ('insmod', 'gzio') in grub_conf[0]
+    assert 'load_video' in grub_conf[0]
+    assert 'load_env' not in grub_conf[0]
+    assert 'insmod' in grub_conf[0]
 
     expected_result = {'grub_kernels': ["vmlinuz-3.10.0-229.el7.x86_64", "vmlinuz-3.10.0-123.13.2.el7.x86_64",
                                         "vmlinuz-3.10.0-123.el7.x86_64", "vmlinuz-0-rescue-13798ffcbc1ed4374f3f2e0fa6c923ad"],
@@ -210,11 +268,26 @@ def test_grub_conf():
     assert expected_result == Grub2Config(context_wrap(GRUB2_CFG_2)).kernel_initrds
 
     grub_conf = Grub2Config(context_wrap(GRUB2_CFG_3))
-    assert ('load_video', None) in grub_conf['menuentry'][0]
+    assert 'load_video' in grub_conf['menuentry'][0]
     assert grub_conf.is_kdump_iommu_enabled is False
+
+
+def test_grub2_boot_loader_entries():
+    grub_ble = BootLoaderEntries(context_wrap(BOOT_LOADER_ENTRIES_CONF))
+    assert grub_ble.title == 'Red Hat Enterprise Linux (4.18.0-80.1.2.el8_0.x86_64) 8.0 (Ootpa)'
+    assert 'crashkernel=auto' in grub_ble.cmdline
 
 
 def test_grub_conf_raise():
     with pytest.raises(Exception) as e:
         Grub2Config(context_wrap(GRUB2_CFG_4))
-    assert "Cannot parse menuentry line: menuentry {" in str(e)
+    assert "Cannot parse menuentry line: menuentry {" in str(e.value)
+
+
+def test_grub_conf_doc():
+    env = {
+            'grub1_config': Grub1Config(context_wrap(GRUB1_CFG_1_DOC)),
+            'grub2_config': Grub2Config(context_wrap(GRUB2_CFG_1_DOC)),
+          }
+    failed, total = doctest.testmod(grub_conf, globs=env)
+    assert failed == 0
