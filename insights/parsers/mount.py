@@ -26,28 +26,16 @@ are listed in the same order as in the command output:
  * ``mount_point`` - Name of mount point for filesystem
  * ``filesystem_type`` or ``mount_type`` - Name of filesystem type
  * ``mount_options`` - Mount options as a dictionary
- * ``mount_label`` - Only present if optional label is present
+ * ``mount_label`` - Optional label of this mount entry, empty string by default
  * ``mount_clause`` - Full string from command output
 
-The ``mount_options`` is wrapped as a :class:`MountOpts` object which contains
-below fixed attributes:
-
-* ``rw`` - Read write
-* ``ro`` - Read only
-* ``defaults`` - Use default options: rw, suid, dev, exec, auto, nouser, async, and relatime
-* ``relatime`` - Inode access times relative to modify or change time
-* ``seclabel`` - `seclabel` is enabled or not
-* ``attr2`` - `opportunistic` improvement is enabled or not
-* ``inode64`` - `inode64` is enabled or not
-* ``noquota`` - Disk quotas are enforced or not
-
-For instance, the option ``rw`` in ``(rw,dmode=0500)`` may be accessed as
-``mnt_row_info.rw`` with the value ``True``, the ``dmode`` can be accessed as
-``mnt_row_info.dmode`` with the value ``0500``.
+The ``mount_options`` is wrapped as a dictionary.  For instance, the option
+``rw`` in ``(rw,dmode=0500)`` may be accessed as ``mnt_opts['rw']`` with the
+value ``True``, the ``dmode`` can be accessed as ``mnt_opts.get('dmode')`` with
+the value ``0500``.
 
 MountEntry lines are also available in a ``mounts`` property, keyed on the
 mount point.
-
 """
 
 import os
@@ -56,48 +44,7 @@ from insights.parsers import optlist_to_dict, keyword_search, ParseException, Sk
 from insights import parser, get_active_lines, CommandParser
 
 
-class MountOpts(dict):
-    """
-    An object representing the mount options found in mount or fstab entry.
-    Each option in the comma-separated list is a key, and 'key=value'
-    pairs such as 'gid=5' are split so that e.g. the key is 'gid' and the value
-    is '5'.  Otherwise, the key is the option name and its value is 'True'.
-
-    In addition, the following attributes will always be available and are
-    False if not defined in the options list.
-
-    Attributes:
-        rw (bool): Read write
-        ro (bool): Read only
-        defaults: (bool): Use default options: rw, suid, dev, exec, auto, nouser, async, and relatime
-        relatime (bool): Inode access times relative to modify or change time
-        seclabel (bool): "seclabel" is enabled or not
-        attr2 (bool): "opportunistic" improvement is enabled or not
-        inode64 (bool): "inode64" is enabled or not
-        noquota (bool): Disk quotas are enforced or not
-    """
-    attrs = {
-        'rw': False,
-        'ro': False,
-        'defaults': False,
-        'relatime': False,
-        'seclabel': False,
-        'attr2': False,
-        'inode64': False,
-        'noquota': False
-    }
-
-    def __init__(self, data={}):
-        data = {} if data is None else data
-        self.update(data)
-        for k, v in MountOpts.attrs.items():
-            if k not in data:
-                setattr(self, k, v)
-        for k, v in data.items():
-            setattr(self, k, v)
-
-
-class MountEntry(dict):
+class MountEntry(object):
     """
     An object representing an mount entry of ``mount`` command or
     ``/proc/mounts`` file.  Each entry contains below fixed attributes:
@@ -105,26 +52,38 @@ class MountEntry(dict):
     Attributes:
         mount_clause (str): Full string from command output
         filesystem (str): Name of filesystem
+        mounted_device (str): Name of mounted device, the same to ``filesystem``
         mount_point (str): Name of mount point for filesystem
-        mount_type (str): Name of filesystem type
-        mount_options (MountOpts): Mount options as a :class:`insights.parsers.mount.MountOpts` object
+        filesystem_type (str): Name of filesystem type
+        mount_type (str): Name of filesystem type, the same to ``filesystem_type``
+        mount_options (dict): Mount options as dictionary
+        mount_label (str): Optional label of this mount entry, an empty string by default
     """
-    attrs = {
-            'mount_clause': '',
-            'filesystem': '',
-            'mount_point': '',
-            'mount_type': '',
-            'mount_options': MountOpts(),
-    }
 
-    def __init__(self, data={}):
+    def __init__(self, data=None):
         data = {} if data is None else data
-        self.update(data)
-        for k, v in MountEntry.attrs.items():
-            if k not in data:
-                setattr(self, k, v)
-        for k, v in data.items():
-            setattr(self, k, v)
+        self.mount_clause = data.get('mount_clause', '')
+        self.filesystem = self.mounted_device = data.get('filesystem', data.get('mounted_device', ''))
+        self.mount_point = data.get('mount_point', '')
+        self.filesystem_type = self.mount_type = data.get('mount_type', data.get('filesystem_type', ''))
+        self.mount_options = data.get('mount_options', {})
+        self.mount_label = data.get('mount_label', '')
+        self.__attrs = (
+                'mount_clause', 'filesystem', 'mounted_device', 'mount_point',
+                'filesystem_type', 'mount_type', 'mount_options', 'mount_label')
+
+    def __getitem__(self, item):
+        return self.__getattribute__(item)
+
+    def __contains__(self, item):
+        return item in self.__attrs
+
+    def get(self, item, default=None):
+        return self.__getattribute__(item) if item in self.__attrs else default
+
+    def items(self):
+        for k in self.__attrs:
+            yield k, self.__getattribute__(k)
 
 
 class MountedFileSystems(CommandParser):
@@ -228,7 +187,7 @@ class Mount(MountedFileSystems):
         'dev/sr0'
         >>> mnt_info['/run/media/root/VMware Tools'].mount_label
         '[VMware Tools]'
-        >>> mnt_info['/run/media/root/VMware Tools'].mount_options.ro
+        >>> mnt_info['/run/media/root/VMware Tools'].mount_options.get('ro')
         True
     """
     def _parse_mounts(self, content):
@@ -246,7 +205,7 @@ class Mount(MountedFileSystems):
             mount['mount_point'] = line_sp[0]
             mount['mount_type'] = line_sp[1].split()[0]
             line_sp = _customized_split(raw=line, l=mnt_pt_sp[1], sep=None, check=False)
-            mount['mount_options'] = MountOpts(optlist_to_dict(line_sp[0].strip('()')))
+            mount['mount_options'] = optlist_to_dict(line_sp[0].strip('()'))
             if len(line_sp) == 2:
                 mount['mount_label'] = line_sp[1]
 
@@ -285,7 +244,7 @@ class ProcMounts(MountedFileSystems):
         True
         >>> proc_mnt_info['/run/media/root/VMware Tools'].mount_label == ['0', '0']
         True
-        >>> proc_mnt_info['/run/media/root/VMware Tools'].mount_options.ro
+        >>> proc_mnt_info['/run/media/root/VMware Tools'].mount_options['ro']
         True
         >>> proc_mnt_info['/run/media/root/VMware Tools'].mounted_device == 'dev/sr0'
         True
@@ -305,7 +264,7 @@ class ProcMounts(MountedFileSystems):
             line_sp = _customized_split(raw=line, l=line_sp[1], num=3, reverse=True)
             mount['mount_label'] = line_sp[-2:]
             line_sp = _customized_split(raw=line, l=line_sp[0], reverse=True)
-            mount['mount_options'] = MountOpts(optlist_to_dict(line_sp[1]))
+            mount['mount_options'] = optlist_to_dict(line_sp[1])
             line_sp = _customized_split(raw=line, l=line_sp[0], reverse=True)
             mount['mount_type'] = mount['filesystem_type'] = line_sp[1]
             mount['mount_point'] = line_sp[0]

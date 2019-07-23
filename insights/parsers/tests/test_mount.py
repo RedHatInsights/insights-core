@@ -112,7 +112,6 @@ def test_mount():
     assert sr0.get('does not exist', 'failure') == 'failure'
     assert sr0['mount_type'] == 'iso9660'
     assert 'ro' in sr0['mount_options']
-    assert sr0.mount_options.ro
     assert 'relatime' in sr0['mount_options']
     assert sr0['mount_options']['uhelper'] == 'udisks2'
     assert sr0['mount_label'] == '[VMware Tools]'
@@ -122,8 +121,6 @@ def test_mount():
     assert 'rw' in sda1['mount_options']
     assert 'seclabel' in sda1['mount_options']
     assert sda1['mount_options']['data'] == 'ordered'
-    assert sda1.mount_options.data == 'ordered'
-    assert 'mount_label' not in sda1
 
     # Test iteration
     for mnt in results:
@@ -197,7 +194,6 @@ def test_proc_mount():
     assert 'rw' in sda1['mount_options']
     assert 'relatime' in sda1['mount_options']
     assert sda1['mount_options']['data'] == 'ordered'
-    assert sda1.mount_options.data == 'ordered'
     assert sda1['mount_label'] == ['0', '0']
 
     # Test iteration
