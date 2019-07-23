@@ -15,7 +15,6 @@ class InsightsArchiveSpecs(Specs):
     bios_uuid = simple_file("insights_commands/dmidecode_-s_system-uuid")
     blkid = simple_file("insights_commands/blkid_-c_.dev.null")
     brctl_show = simple_file("insights_commands/brctl_show")
-    cdc_wdm = simple_file("/sys/bus/usb/drivers/cdc_wdm/module/refcnt")
     ceph_df_detail = simple_file("insights_commands/ceph_df_detail_-f_json-pretty")
     ceph_health_detail = simple_file("insights_commands/ceph_health_detail_-f_json-pretty")
     ceph_insights = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_ceph_insights")

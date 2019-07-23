@@ -26,12 +26,12 @@ class CdcWDM(Parser):
     device usage count, i.e if a device is in use then the non-zero
     value will be present in the file.
 
-    Sample Content:
+    Sample Content::
 
         0 - Not in use.
         1 - Device is opened and it is in use.
 
-    Examples:
+    Examples::
 
         >>> type(device_usage)
         <class 'insights.parsers.sys_bus.CdcWDM'>
@@ -67,4 +67,4 @@ class CdcWDM(Parser):
         """
         Returns (bool): ``True`` when device in use else ``False``.
         """
-        return True if self._ref_count else None
+        return True if self._ref_count else False
