@@ -14,7 +14,7 @@ CdcWDM - file ``/sys/bus/usb/drivers/cdc_wdm/module/refcnt``
 
 
 from insights import parser, Parser
-from insights.parsers import SkipException, ParseException
+from insights.parsers import ParseException
 from insights.specs import Specs
 
 
@@ -46,13 +46,9 @@ class CdcWDM(Parser):
     """
 
     def parse_content(self, content):
-        self._ref_count = ""
-        if not content:
-            raise SkipException("No Content!")
-
         try:
             self._ref_count = int(content[0].strip())
-        except:
+        except Exception:
             raise ParseException("Invalid Content!")
 
     @property

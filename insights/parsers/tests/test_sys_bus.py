@@ -1,6 +1,6 @@
 import doctest
 import pytest
-from insights.parsers import sys_bus, ParseException, SkipException
+from insights.parsers import sys_bus, ParseException
 from insights.parsers.sys_bus import CdcWDM
 from insights.tests import context_wrap
 
@@ -33,10 +33,10 @@ def test_bond_dynamic_lb_class():
 
 
 def test_class_exceptions():
-    with pytest.raises(SkipException) as exc:
+    with pytest.raises(ParseException) as exc:
         device_usage = CdcWDM(context_wrap(SYS_DEVICE_USAGE_EMPTY))
         assert device_usage is None
-    assert 'No Content!' in str(exc)
+    assert 'Invalid Content!' in str(exc)
     with pytest.raises(ParseException) as exc:
         device_usage = CdcWDM(context_wrap(SYS_DEVICE_USAGE_INVALID))
         assert device_usage is None
