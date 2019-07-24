@@ -54,6 +54,10 @@ class AttributeAsDict(object):
     def get(self, item, default=None):
         return self.__dict__.get(item, default)
 
+    def items(self):
+        for k, v in self.__dict__.items():
+            yield k, v
+
 
 class MountOpts(AttributeAsDict):
     """
@@ -89,10 +93,6 @@ class MountEntry(AttributeAsDict):
         data = {} if data is None else data
         for k, v in data.items():
             setattr(self, k, v)
-
-    def items(self):
-        for k, v in self.__dict__.items():
-            yield k, v
 
 
 class MountedFileSystems(CommandParser):
@@ -214,7 +214,7 @@ class Mount(MountedFileSystems):
             mount['mount_point'] = line_sp[0]
             mount['mount_type'] = line_sp[1].split()[0]
             line_sp = _customized_split(raw=line, l=mnt_pt_sp[1], sep=None, check=False)
-            mount['mount_options'] = optlist_to_dict(line_sp[0].strip('()'))
+            mount['mount_options'] = MountOpts(optlist_to_dict(line_sp[0].strip('()')))
             if len(line_sp) == 2:
                 mount['mount_label'] = line_sp[1]
 
@@ -273,7 +273,7 @@ class ProcMounts(MountedFileSystems):
             line_sp = _customized_split(raw=line, l=line_sp[1], num=3, reverse=True)
             mount['mount_label'] = line_sp[-2:]
             line_sp = _customized_split(raw=line, l=line_sp[0], reverse=True)
-            mount['mount_options'] = optlist_to_dict(line_sp[1])
+            mount['mount_options'] = MountOpts(optlist_to_dict(line_sp[1]))
             line_sp = _customized_split(raw=line, l=line_sp[0], reverse=True)
             mount['mount_type'] = mount['filesystem_type'] = line_sp[1]
             mount['mount_point'] = line_sp[0]

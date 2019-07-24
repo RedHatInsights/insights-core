@@ -8,26 +8,24 @@ of fields, named according to their definitions in ``man fstab``:
 * ``fs_spec`` - the device to mount
 * ``fs_file`` - the mount point
 * ``fs_vfstype`` - the type of file system
-* ``raw_fs_mntops`` - the mount options as a string
 * ``fs_mntops`` - the mount options as a dictionary
 * ``fs_freq`` - the dump frequency
 * ``fs_passno`` - check the filesystem on reboot in this pass number
+* ``raw_fs_mntops`` - the mount options as a string
 * ``raw`` - the RAW line which is useful to front-end
 
 ``fs_freq`` and ``fs_passno`` are recorded as integers if found, and zero if
 not present.
 
-The ``fs_mntops`` mount options are converted to a dictionary, so that each
-option's value set to True so it can be conveniently searched.
+``fs_mntops`` is wrapped as a as a :class:`insights.parsers.mount.MountOpts`
+object.  For instance, the option ``rw`` in ``rw,dmode=0500`` may be accessed as
+``mnt_row_info.rw`` with the value ``True``, and the ``dmode`` can be accessed
+as ``mnt_row_info.dmode`` with the value ``0500``.
 
 This data, as above, is available in the ``data`` property:
 
 * Wrapped as an :class:`FSTabEntry`, each column can also be accessed as an
   attribute with the same name.
-* The ``fs_mntops`` is wrapped as a dictionary.  For instance, the option
-  ``rw`` in ``(rw,dmode=0500)`` may be accessed as ``mnt_opts['rw']`` with the
-  value ``True``, the ``dmode`` can be accessed as ``mnt_opts.get('dmode')``
-  with the value ``0500``.
 
 The :class:`FSTabEntry` for each mount point is also available via the
 :attr:`FSTab.mounted_on` property; the data is the same as that stored in the
@@ -53,10 +51,10 @@ class FSTabEntry(AttributeAsDict):
         fs_spec (str): the device to mount
         fs_file (str): the mount point
         fs_vfstype (str): the type of file system
-        raw_fs_mntops (str): the mount options as a string
-        fs_mntops (dict): the mount options as a dictionary
+        fs_mntops (dict): the mount options as a :class:`insights.parser.mount.MountOpts`
         fs_freq (int): the dump frequency
         fs_passno (int): check the filesystem on reboot in this pass number
+        raw_fs_mntops (str): the mount options as a string
         raw (str): the RAW line which is useful to front-end
     """
 
@@ -64,10 +62,6 @@ class FSTabEntry(AttributeAsDict):
         data = {} if data is None else data
         for k, v in data.items():
             setattr(self, k, v)
-
-    def items(self):
-        for k, v in self.__dict__.items():
-            yield k, v
 
 
 @parser(Specs.fstab)
@@ -136,20 +130,18 @@ class FSTab(Parser):
         fstab_output = parse_delimited_table([FS_HEADINGS] + get_active_lines(content))
         self.data = []
         for line in fstab_output:
-            if 'fs_file' in line:
-                # Decode fs_file to transfer the '\040' to ' '.
-                # Encode first and then decode works for both Python2 and Python3.
-                line['fs_file'] = line['fs_file'].encode().decode("unicode-escape")
-            line['fs_freq'] = int(line['fs_freq']) if 'fs_freq' in line else 0
-            line['fs_passno'] = int(line['fs_passno']) if 'fs_passno' in line else 0
-            # optlist_to_dict converts 'key=value' to key: value and
-            # 'key' to key: True
-            if 'raw_fs_mntops' in line:
-                line['fs_mntops'] = optlist_to_dict(line.get('raw_fs_mntops'))
-            else:
-                # if there is no mntops, it is defaults.
-                # (/dev/foo /foo somefs defaults   0 0) and (/dev/foo /foo somefs) are same
-                line['fs_mntops'] = optlist_to_dict('defaults')
+            line['fs_spec'] = line.get('fs_spec', '')
+            line['fs_vfstype'] = line.get('fs_vfstype', '')
+            # Decode fs_file to transfer the '\040' to ' '.
+            # Encode first and then decode works for both Python2 and Python3.
+            line['fs_file'] = line.get('fs_file', '').encode().decode("unicode-escape")
+            line['fs_freq'] = int(line.get('fs_freq', '0'))
+            line['fs_passno'] = int(line.get('fs_passno', '0'))
+            # if there is no mntops, it is defaults.
+            # (/dev/foo /foo somefs defaults   0 0) and (/dev/foo /foo somefs) are same
+            line['raw_fs_mntops'] = line.get('raw_fs_mntops', 'defaults')
+            # optlist_to_dict converts 'key=value' to key: value and 'key' to key: True
+            line['fs_mntops'] = MountOpts(optlist_to_dict(line.get('raw_fs_mntops')))
             # add `raw` here for displaying convenience on front-end
             line['raw'] = [l for l in content if l.strip().startswith(line['fs_spec'])][0]
             self.data.append(FSTabEntry(line))
