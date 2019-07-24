@@ -29,7 +29,6 @@ ETCD_INITIAL_CLUSTER_STATE=new
 def test_etcd_conf():
     conf = EtcdConf(context_wrap(ETCD_CONF))
     assert conf.has_option('member', 'ETCD_HEARTBEAT_INTERVAL') == True
-
     
 def test_etcd_conf_documentation():
     failed_count, tests = doctest.testmod(
