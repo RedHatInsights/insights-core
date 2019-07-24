@@ -45,6 +45,8 @@ class InsightsArchiveSpecs(Specs):
     dmesg = simple_file("insights_commands/dmesg")
     dmidecode = simple_file("insights_commands/dmidecode")
     dmsetup_info = simple_file("insights_commands/dmsetup_info_-C")
+    dnf_module_list = simple_file("insights_commands/dnf_-C_--noplugins_module_list")
+    dnf_module_info = simple_file("insights_commands/dnf_-C_--noplugins_module_info_*")
     docker_info = simple_file("insights_commands/docker_info")
     docker_list_containers = simple_file("insights_commands/docker_ps_--all_--no-trunc")
     docker_list_images = simple_file("insights_commands/docker_images_--all_--no-trunc_--digests")

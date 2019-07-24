@@ -25,6 +25,7 @@ from insights.core.spec_factory import simple_file, simple_command, glob_file
 from insights.core.spec_factory import first_of, foreach_collect, foreach_execute
 from insights.core.spec_factory import first_file, listdir
 from insights.parsers.mount import Mount, ProcMounts
+from insights.parsers.dnf_module import DnfModuleList
 from insights.combiners.cloud_provider import CloudProvider
 from insights.specs import Specs
 
@@ -227,7 +228,15 @@ class DefaultSpecs(Specs):
     dmsetup_info = simple_command("/usr/sbin/dmsetup info -C")
     dnf_modules = glob_file("/etc/dnf/modules.d/*.module")
     dnf_module_list = simple_command("/usr/bin/dnf -C --noplugins module list")
-    #dnf_module_info = foreach_execute(module_list, "/usr/bin/dnf -C --noplugins module info %s")
+
+    @datasource(DnfModuleList)
+    def dnf_module_names(broker):
+        dml = broker[DnfModuleList]
+        if dml:
+            return [m for m in dml]
+        raise SkipComponent()
+
+    dnf_module_info = foreach_execute(dnf_module_names, "/usr/bin/dnf -C --noplugins module info %s")
     dnsmasq_config = glob_file(["/etc/dnsmasq.conf", "/etc/dnsmasq.d/*.conf"])
     docker_info = simple_command("/usr/bin/docker info")
     docker_list_containers = simple_command("/usr/bin/docker ps --all --no-trunc")

@@ -1,6 +1,7 @@
 import doctest
 import pytest
-from insights.parsers import dnf_module, SkipException
+from insights.combiners import dnf_module_info
+from insights.combiners.dnf_module_info import DnfModuleInfoAll
 from insights.parsers.dnf_module import DnfModuleList, DnfModuleInfo
 from insights.tests import context_wrap
 
@@ -39,29 +40,6 @@ varnish             6 [d]       common [d]                                Varnis
 virt                rhel [d]    common [d]                                Virtualization module
 
 Hint: [d]efault, [e]nabled, [x]disabled, [i]nstalled
-""".strip()
-
-DNF_MODULE_LIST_DOC = """
-Updating Subscription Management repositories.
-Name                Stream      Profiles                                  Summary
-389-ds              1.4                                                   389 Directory Server (base)
-ant                 1.10 [d]    common [d]                                Java build tool
-
-Hint: [d]efault, [e]nabled, [x]disabled, [i]nstalled
-""".strip()
-
-DNF_MODULE_LIST_EXP1 = """
-Updating Subscription Management repositories.
-Cache-only enabled but no cache for 'rhel-8-for-x86_64-appstream-rpms', ignoring this repo.
-Cache-only enabled but no cache for 'rhel-8-for-x86_64-baseos-rpms', ignoring this repo.
-Cache-only enabled but no cache for 'rhel-8-for-x86_64-supplementary-rpms', ignoring this repo.
-No matching Modules to list
-""".strip()
-
-DNF_MODULE_LIST_EXP2 = """
-Updating Subscription Management repositories.
-Name                Stream      Profiles                                  Summary
-Error: xxx
 """.strip()
 
 DNF_MODULE_INFO1 = """
@@ -142,7 +120,7 @@ Artifacts        : httpd-0:2.4.37-10.module+el8+2764+7127e69e.x86_64
 Hint: [d]efault, [e]nabled, [x]disabled, [i]nstalled, [a]ctive]
 """.strip()
 
-DNF_MODULE_INFO_DOC = """
+DNF_MODULE_INFO3 = """
 Updating Subscription Management repositories.
 Last metadata expiration check: 0:31:25 ago on Thu 25 Jul 2019 12:19:22 PM CST.
 Name        : 389-ds
@@ -190,49 +168,22 @@ Error: No matching Modules to list
 """.strip()
 
 
-def test_dnf_module_list():
-    module_list = DnfModuleList(context_wrap(DNF_MODULE_LIST))
-    assert 'ant' in module_list
-    assert module_list['httpd'].name == 'httpd'
-    assert module_list['httpd'].stream == '2.4 [d][e]'
+def test_dnf_module_info_all():
+    module_info1 = DnfModuleInfo(context_wrap(DNF_MODULE_INFO1))
+    module_info2 = DnfModuleInfo(context_wrap(DNF_MODULE_INFO2))
+    module_info3 = DnfModuleInfo(context_wrap(DNF_MODULE_INFO3))
+    mod_all = DnfModuleInfoAll([module_info1, module_info2, module_info3])
+    assert 'ant' in mod_all
+    assert mod_all['httpd'][0].name == 'httpd'
+    assert mod_all['httpd'][0].stream == '2.4 [d][e][a]'
 
 
-def test_dnf_module_list_exp():
-    with pytest.raises(ValueError):
-        DnfModuleList(context_wrap(DNF_MODULE_LIST_EXP1))
-
-    with pytest.raises(SkipException):
-        DnfModuleList(context_wrap(DNF_MODULE_LIST_EXP2))
-
-
-def test_dnf_module_info_1():
-    module_info = DnfModuleInfo(context_wrap(DNF_MODULE_INFO1))
-    assert len(module_info) == 1
-    assert module_info[0].name == 'ant'
-    assert 'Ant' in module_info[0].description
-
-
-def test_dnf_module_info_2():
-    module_list = DnfModuleInfo(context_wrap(DNF_MODULE_INFO2))
-    assert len(module_list) == 2
-    assert module_list[0].name == 'httpd'
-    assert module_list[0].version == '8000020190405071959'
-    assert len(module_list[0].profiles) == 3
-    assert module_list[0].default_profiles == 'common'
-    assert module_list[1].summary== 'Apache HTTP Server'
-    assert module_list[1].context == '9edba152'
-    assert 'mod_http2-0:1.11.3-1.module+el8+2443+605475b7.x86_64' in module_list[1].artifacts
-
-
-def test_dnf_module_info_exp():
-    with pytest.raises(SkipException):
-        DnfModuleInfo(context_wrap(DNF_MODULE_INFO_EXP))
-
-
-def test_dnf_module_doc_examples():
+def test_dnf_module_info_doc_examples():
+    module_info1 = DnfModuleInfo(context_wrap(DNF_MODULE_INFO1))
+    module_info2 = DnfModuleInfo(context_wrap(DNF_MODULE_INFO2))
+    module_info3 = DnfModuleInfo(context_wrap(DNF_MODULE_INFO3))
     env = {
-        'dnf_module_list': DnfModuleList(context_wrap(DNF_MODULE_LIST_DOC)),
-        'dnf_module_info': DnfModuleInfo(context_wrap(DNF_MODULE_INFO_DOC))
+        'all_mods': DnfModuleInfoAll([module_info1, module_info2, module_info3])
     }
-    failed, total = doctest.testmod(dnf_module, globs=env)
+    failed, total = doctest.testmod(dnf_module_info, globs=env)
     assert failed == 0
