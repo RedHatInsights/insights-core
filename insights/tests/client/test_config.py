@@ -111,11 +111,11 @@ def test_offline_disables_options():
     '''
     Can't use certain options in conjunction with --offline
     '''
-    with pytest.raises(ValueError) as e:
-        c = InsightsConfig(to_json=True, offline=True)
+    with pytest.raises(ValueError):
+        InsightsConfig(to_json=True, offline=True)
 
-    with pytest.raises(ValueError) as e:
-        c = InsightsConfig(test_connection=True, offline=True)
+    with pytest.raises(ValueError):
+        InsightsConfig(test_connection=True, offline=True)
 
-    with pytest.raises(ValueError) as e:
-        c = InsightsConfig(status=True, offline=True)
+    with pytest.raises(ValueError):
+        InsightsConfig(status=True, offline=True)
