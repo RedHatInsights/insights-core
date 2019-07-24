@@ -174,7 +174,7 @@ def test_from_line():
     assert rpms.get_max("yum").release == '69.el6'
     assert rpms.get_max("tftp-server").version == '5.2'
     assert rpms.get_max("yum").package == "yum-3.2.29-69.el6"
-    assert rpms.get_max("tftp-server").redhat_signed == "Unable_To_Determine"
+    assert rpms.get_max("tftp-server").redhat_signed is None
     assert rpms.get_max("yum").redhat_signed
     assert rpms.corrupt is False
 
