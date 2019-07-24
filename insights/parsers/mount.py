@@ -196,7 +196,7 @@ class Mount(MountedFileSystems):
         'dev/sr0'
         >>> mnt_info['/run/media/root/VMware Tools'].mount_label
         '[VMware Tools]'
-        >>> mnt_info['/run/media/root/VMware Tools'].mount_options.get('ro')
+        >>> mnt_info['/run/media/root/VMware Tools'].mount_options.ro
         True
     """
     def _parse_mounts(self, content):
@@ -253,7 +253,7 @@ class ProcMounts(MountedFileSystems):
         True
         >>> proc_mnt_info['/run/media/root/VMware Tools'].mount_label == ['0', '0']
         True
-        >>> proc_mnt_info['/run/media/root/VMware Tools'].mount_options['ro']
+        >>> proc_mnt_info['/run/media/root/VMware Tools'].mount_options.ro
         True
         >>> proc_mnt_info['/run/media/root/VMware Tools'].mounted_device == 'dev/sr0'
         True
