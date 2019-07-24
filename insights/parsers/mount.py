@@ -10,7 +10,6 @@ Mount - command ``/bin/mount``
 ProcMounts - file ``/proc/mounts``
 ----------------------------------
 
-
 The ``Mount`` class implements parsing for the ``mount`` command output which looks like::
 
     /dev/mapper/rootvg-rootlv on / type ext4 (rw,relatime,barrier=1,data=ordered)
@@ -22,17 +21,18 @@ The information is stored as a list of :class:`MountEntry` objects.  Each
 :class:`MountEntry` object contains attributes for the following information that
 are listed in the same order as in the command output:
 
- * ``filesystem`` or ``mounted_device`` - Name of filesystem or mounted device
+ * ``filesystem`` - Name of filesystem or the mounted device
  * ``mount_point`` - Name of mount point for filesystem
- * ``filesystem_type`` or ``mount_type`` - Name of filesystem type
- * ``mount_options`` - Mount options as a dictionary
+ * ``mount_type`` - Name of filesystem type
+ * ``mount_options`` -  Mount options as ``MountOpts`` object
  * ``mount_label`` - Optional label of this mount entry, empty string by default
  * ``mount_clause`` - Full string from command output
 
-The ``mount_options`` is wrapped as a dictionary.  For instance, the option
-``rw`` in ``(rw,dmode=0500)`` may be accessed as ``mnt_opts['rw']`` with the
-value ``True``, the ``dmode`` can be accessed as ``mnt_opts.get('dmode')`` with
-the value ``0500``.
+The ``MountOpts`` class contains the mount options as attributes accessible
+via the attribute name as it appears in the command output.  For instance the
+options ``(rw,dmode=0500)`` may be accessed as ''mnt_row_info.rw`` with the
+value ``True`` and ``mnt_row_info.dmode`` with the value "0500".  The ``in``
+operator may be used to determine if an option is present.
 
 MountEntry lines are also available in a ``mounts`` property, keyed on the
 mount point.
@@ -44,46 +44,55 @@ from insights.parsers import optlist_to_dict, keyword_search, ParseException, Sk
 from insights import parser, get_active_lines, CommandParser
 
 
-class MountEntry(object):
+class AttributeAsDict(object):
+    def __contains__(self, item):
+        return item in self.__dict__
+
+    def __getitem__(self, item):
+        return self.__dict__[item]
+
+    def get(self, item, default=None):
+        return self.__dict__.get(item, default)
+
+
+class MountOpts(AttributeAsDict):
+    """
+    An object representing the mount options found in mount or fstab entry as
+    attributes accessible via the attribute name as it appears in the command
+    output.  For instance, the options ``(rw,dmode=0500)`` may be accessed as
+    ``mnt_row_info.rw`` with the value ``True`` and ``mnt_row_info.dmode``
+    with the value "0500".
+
+    The ``in`` operator may be used to determine if an option is present.
+    """
+    def __init__(self, data=None):
+        data = {} if data is None else data
+        for k, v in data.items():
+            setattr(self, k, v)
+
+
+class MountEntry(AttributeAsDict):
     """
     An object representing an mount entry of ``mount`` command or
     ``/proc/mounts`` file.  Each entry contains below fixed attributes:
 
     Attributes:
-        mount_clause (str): Full string from command output
-        filesystem (str): Name of filesystem
-        mounted_device (str): Name of mounted device, the same to ``filesystem``
+        filesystem (str): Name of filesystem of mounted device
         mount_point (str): Name of mount point for filesystem
-        filesystem_type (str): Name of filesystem type
-        mount_type (str): Name of filesystem type, the same to ``filesystem_type``
-        mount_options (dict): Mount options as dictionary
+        mount_type (str): Name of filesystem type
+        mount_options (MountOpts): Mount options as :class:`MountOpts`
         mount_label (str): Optional label of this mount entry, an empty string by default
+        mount_clause (str): Full string from command output
     """
 
     def __init__(self, data=None):
         data = {} if data is None else data
-        self.mount_clause = data.get('mount_clause', '')
-        self.filesystem = self.mounted_device = data.get('filesystem', data.get('mounted_device', ''))
-        self.mount_point = data.get('mount_point', '')
-        self.filesystem_type = self.mount_type = data.get('mount_type', data.get('filesystem_type', ''))
-        self.mount_options = data.get('mount_options', {})
-        self.mount_label = data.get('mount_label', '')
-        self.__attrs = (
-                'mount_clause', 'filesystem', 'mounted_device', 'mount_point',
-                'filesystem_type', 'mount_type', 'mount_options', 'mount_label')
-
-    def __getitem__(self, item):
-        return self.__getattribute__(item)
-
-    def __contains__(self, item):
-        return item in self.__attrs
-
-    def get(self, item, default=None):
-        return self.__getattribute__(item) if item in self.__attrs else default
+        for k, v in data.items():
+            setattr(self, k, v)
 
     def items(self):
-        for k in self.__attrs:
-            yield k, self.__getattribute__(k)
+        for k, v in self.__dict__.items():
+            yield k, v
 
 
 class MountedFileSystems(CommandParser):

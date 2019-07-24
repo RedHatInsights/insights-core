@@ -37,13 +37,14 @@ The :class:`FSTabEntry` for each mount point is also available via the
 
 
 from insights import Parser, parser, get_active_lines
-from insights.parsers import optlist_to_dict, parse_delimited_table, keyword_search
 from insights.specs import Specs
+from insights.parsers import optlist_to_dict, parse_delimited_table, keyword_search
+from insights.parsers.mount import MountOpts, AttributeAsDict
 
 FS_HEADINGS = "fs_spec fs_file fs_vfstype raw_fs_mntops fs_freq fs_passno"
 
 
-class FSTabEntry(object):
+class FSTabEntry(AttributeAsDict):
     """
     An object representing an entry in ``/etc/fstab``.  Each entry contains
     below fixed attributes:
@@ -59,26 +60,14 @@ class FSTabEntry(object):
         raw (str): the RAW line which is useful to front-end
     """
 
-    def __init__(self, data={}):
-        self.__attrs = {'fs_spec': '', 'fs_file': '', 'fs_vfstype': '',
-                'raw_fs_mntops': '', 'fs_mntops': {}, 'fs_freq': 0,
-                'fs_passno': 0, 'raw': ''}
+    def __init__(self, data=None):
         data = {} if data is None else data
-        for k, v in self.__attrs.items():
-            setattr(self, k, data.get(k, v))
-
-    def __getitem__(self, item):
-        return self.__getattribute__(item)
-
-    def __contains__(self, item):
-        return item in self.__attrs
-
-    def get(self, item, default=None):
-        return self.__getattribute__(item) if item in self.__attrs else default
+        for k, v in data.items():
+            setattr(self, k, v)
 
     def items(self):
-        for k in self.__attrs:
-            yield k, self.__getattribute__(k)
+        for k, v in self.__dict__.items():
+            yield k, v
 
 
 @parser(Specs.fstab)

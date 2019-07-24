@@ -61,9 +61,9 @@ def test_fstab():
     assert sdb1 is not None
     assert sdb1.fs_file == "/hdfs/data1"
     assert sdb1.fs_vfstype == "xfs"
-    assert sdb1.fs_mntops.get('rw')
-    assert sdb1.fs_mntops['relatime']
-    assert 'noquota' in sdb1.get('fs_mntops')
+    assert sdb1.fs_mntops.rw
+    assert sdb1.fs_mntops.relatime
+    assert 'noquota' in sdb1.fs_mntops
     assert sdb1.fs_freq == 0
     assert sdb1.fs_passno == 0
     assert sdb1.raw == '/dev/sdb1 /hdfs/data1 xfs rw,relatime,seclabel,attr2,inode64,noquota 0 0'
@@ -71,13 +71,13 @@ def test_fstab():
     assert nfs_host.fs_spec == "nfs_hostname.example.com:/nfs_share/data"
     assert nfs_host.fs_file == "/srv/rdu/data/000"
     assert nfs_host.fs_vfstype == "nfs"
-    assert nfs_host.fs_mntops['ro']
-    assert nfs_host.fs_mntops.get('hard')
+    assert nfs_host.fs_mntops.ro
+    assert nfs_host.fs_mntops.hard
     assert 'bg' in nfs_host.fs_mntops
-    assert nfs_host.fs_mntops['rsize'] == "32768"
+    assert nfs_host.fs_mntops.rsize == "32768"
     assert nfs_host.fs_freq == 0
     assert nfs_host.fs_passno == 0
-    assert dev_vg0.fs_mntops.get('data') == 'writeback'
+    assert dev_vg0.fs_mntops.data == 'writeback'
     assert dev_vg0.raw == '/dev/mapper/vg0-lv2 /test1             ext4 defaults,data=writeback     1 1'
     for opt, v in dev_vg0.fs_mntops.items():
         if opt.startswith('data'):
