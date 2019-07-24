@@ -19,6 +19,11 @@ ETCD_HEARTBEAT_INTERVAL=500
 [auth]
 ETCD_AUTH_TOKEN=simple
 
+#[cluster]
+ETCD_INITIAL_ADVERTISE_PEER_URLS=https://10.1.40.235:2380
+ETCD_INITIAL_CLUSTER=f05-h19-000-1029p.rdu2.scalelab.redhat.com=https://10.1.40.235:2380
+ETCD_INITIAL_CLUSTER_STATE=new
+
 """.strip()
 
 def test_etcd_conf():
