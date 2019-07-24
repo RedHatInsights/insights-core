@@ -24,7 +24,7 @@ from insights.core.spec_factory import CommandOutputProvider, ContentException, 
 from insights.core.spec_factory import simple_file, simple_command, glob_file
 from insights.core.spec_factory import first_of, foreach_collect, foreach_execute
 from insights.core.spec_factory import first_file, listdir
-from insights.parsers.mount import Mount
+from insights.parsers.mount import Mount, ProcMounts
 from insights.combiners.cloud_provider import CloudProvider
 from insights.specs import Specs
 
@@ -105,6 +105,7 @@ class DefaultSpecs(Specs):
     blkid = simple_command("/sbin/blkid -c /dev/null")
     bond = glob_file("/proc/net/bonding/bond*")
     bond_dynamic_lb = glob_file("/sys/class/net/bond[0-9]*/bonding/tlb_dynamic_lb")
+    boot_loader_entries = glob_file("/boot/loader/entries/*.conf")
     branch_info = simple_file("/branch_info", kind=RawFileProvider)
     brctl_show = simple_command("/usr/sbin/brctl show")
     candlepin_log = simple_file("/var/log/candlepin/candlepin.log")
@@ -134,6 +135,7 @@ class DefaultSpecs(Specs):
     catalina_out = foreach_collect(tomcat_base, "%s/catalina.out")
     catalina_server_log = foreach_collect(tomcat_base, "%s/catalina*.log")
     cciss = glob_file("/proc/driver/cciss/cciss*")
+    cdc_wdm = simple_file("/sys/bus/usb/drivers/cdc_wdm/module/refcnt")
     ceilometer_central_log = simple_file("/var/log/ceilometer/central.log")
     ceilometer_collector_log = first_file(["/var/log/containers/ceilometer/collector.log", "/var/log/ceilometer/collector.log"])
     ceilometer_compute_log = first_file(["/var/log/containers/ceilometer/compute.log", "/var/log/ceilometer/compute.log"])
@@ -256,7 +258,15 @@ class DefaultSpecs(Specs):
     docker_storage = simple_file("/etc/sysconfig/docker-storage")
     docker_storage_setup = simple_file("/etc/sysconfig/docker-storage-setup")
     docker_sysconfig = simple_file("/etc/sysconfig/docker")
-    dumpdev = simple_command("/bin/awk '/ext[234]/ { print $1; }' /proc/mounts")
+
+    @datasource(ProcMounts)
+    def dumpdev(broker):
+        mnt = broker[ProcMounts]
+        mounted_dev = [m.mounted_device for m in mnt if m.mount_type in ('ext2', 'ext3', 'ext4')]
+        if mounted_dev:
+            return mounted_dev
+        raise SkipComponent()
+
     dumpe2fs_h = foreach_execute(dumpdev, "/sbin/dumpe2fs -h %s")
     engine_config_all = simple_command("/usr/bin/engine-config --all")
     engine_log = simple_file("/var/log/ovirt-engine/engine.log")
@@ -305,8 +315,6 @@ class DefaultSpecs(Specs):
     grub1_config_perms = simple_command("/bin/ls -l /boot/grub/grub.conf")  # RHEL6
     grub2_cfg = simple_file("/boot/grub2/grub.cfg")
     grub2_efi_cfg = simple_file("boot/efi/EFI/redhat/grub.cfg")
-    grub2_efi_grubenv = simple_file("/boot/efi/EFI/redhat/grubenv")
-    grub2_grubenv = simple_file("/boot/grub2/grubenv")
     grubby_default_index = simple_command("/usr/sbin/grubby --default-index")  # only RHEL7 and updwards
     grubby_default_kernel = simple_command("/usr/sbin/grubby --default-kernel")  # RHEL6 and updwards
     hammer_ping = simple_command("/usr/bin/hammer ping")
@@ -333,6 +341,7 @@ class DefaultSpecs(Specs):
         [
             "/opt/rh/httpd24/root/etc/httpd/conf/httpd.conf",
             "/opt/rh/httpd24/root/etc/httpd/conf.d/*.conf",
+            "/opt/rh/httpd24/root/etc/httpd/conf.d/*/*.conf",
             "/opt/rh/httpd24/root/etc/httpd/conf.modules.d/*.conf"
         ]
     )
@@ -340,6 +349,7 @@ class DefaultSpecs(Specs):
         [
             "/opt/rh/jbcs-httpd24/root/etc/httpd/conf/httpd.conf",
             "/opt/rh/jbcs-httpd24/root/etc/httpd/conf.d/*.conf",
+            "/opt/rh/jbcs-httpd24/root/etc/httpd/conf.d/*/*.conf",
             "/opt/rh/jbcs-httpd24/root/etc/httpd/conf.modules.d/*.conf"
         ]
     )
@@ -536,6 +546,7 @@ class DefaultSpecs(Specs):
                             "/etc/opt/rh/rh-mongodb26/mongod.conf"
                             ])
     mount = simple_command("/bin/mount")
+    mounts = simple_file("/proc/mounts")
     mssql_conf = simple_file("/var/opt/mssql/mssql.conf")
     multicast_querier = simple_command("/usr/bin/find /sys/devices/virtual/net/ -name multicast_querier -print -exec cat {} \;")
     multipath_conf = simple_file("/etc/multipath.conf")
@@ -853,6 +864,7 @@ class DefaultSpecs(Specs):
     systemctl_cat_rpcbind_socket = simple_command("/bin/systemctl cat rpcbind.socket")
     systemctl_cinder_volume = simple_command("/bin/systemctl show openstack-cinder-volume")
     systemctl_httpd = simple_command("/bin/systemctl show httpd")
+    systemctl_nginx = simple_command("/bin/systemctl show nginx")
     systemctl_list_unit_files = simple_command("/bin/systemctl list-unit-files")
     systemctl_list_units = simple_command("/bin/systemctl list-units")
     systemctl_mariadb = simple_command("/bin/systemctl show mariadb")

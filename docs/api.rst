@@ -370,17 +370,25 @@ and methods to determine if the criteria is met to trigger the rule.
 Rule Output
 -----------
 
-Rules can return two types of responses:  a rule "hit" or "action", or
-system metadata.
+Rules can return multiple types of responses. If a rule is detecting some
+problem and finds it, it should return ``make_fail``. If it is detecting a
+problem and is sure the problem doesn't exist, it should return ``make_pass``.
+If it wants to return information not associated with a failure or success, it
+should return ``make_info``.
 
 To return a rule "hit", return the result of ``make_fail``:
 
 .. autoclass:: insights.core.plugins.make_fail
    :noindex:
 
-To return system metadata, return the result of ``make_metadata``:
+To return a rule success, return the result of ``make_pass``:
 
-.. autoclass:: insights.core.plugins.make_metadata
+.. autoclass:: insights.core.plugins.make_pass
+   :noindex:
+
+To return system info, return the result of ``make_info``:
+
+.. autoclass:: insights.core.plugins.make_info
    :noindex:
 
 Testing

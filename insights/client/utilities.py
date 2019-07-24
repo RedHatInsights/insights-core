@@ -235,3 +235,31 @@ def get_version_info():
     version_info['client_version'] = run_command_get_output(cmd)['output']
 
     return version_info
+
+
+def print_egg_versions():
+    '''
+    Log all available eggs' versions
+    '''
+    versions = get_version_info()
+    logger.debug('Client version: %s', versions['client_version'])
+    logger.debug('Core version: %s', versions['core_version'])
+    logger.debug('All egg versions:')
+    eggs = [
+        os.getenv('EGG'),
+        '/var/lib/insights/newest.egg',
+        '/var/lib/insights/last_stable.egg',
+        '/etc/insights-client/rpm.egg',
+    ]
+    for egg in eggs:
+        if egg is None:
+            logger.debug('ENV egg not defined.')
+            continue
+        if not os.path.exists(egg):
+            logger.debug('%s not found.', egg)
+            continue
+        proc = Popen(['python', '-c', 'from insights.client import InsightsClient; print(InsightsClient().version())'],
+                     env={'PYTHONPATH': egg, 'PATH': os.getenv('PATH')}, stdout=PIPE, stderr=STDOUT)
+        stdout, stderr = proc.communicate()
+        version = stdout.decode('utf-8', 'ignore').strip()
+        logger.debug('%s: %s', egg, version)

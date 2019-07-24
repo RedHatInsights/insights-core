@@ -1,7 +1,7 @@
 import logging
 import pytest
 import warnings
-from insights.tests import InputData, run_test
+from insights.tests import run_test
 warnings.simplefilter('always', DeprecationWarning)
 
 
@@ -19,13 +19,16 @@ def pytest_configure(config):
 @pytest.fixture
 def run_rule():
     """
-    Pytest fixture to allows execution of integration tests without using
+    Pytest fixture to allow execution of integration tests without using
     ``archive_provider``.  See arguments to use in inner function below.
 
-    This fixture still runs the same dependency tree as when testing with
-    ``archive_provider``.
+    This fixture still runs the complete dependency tree, but if you are
+    creating content for the Insights production UI then it will not produce
+    test data for the Content Preview app.  As such it should only be used for
+    internal support rules that will not be used in the customer facing Insights
+    product.
     """
-    def _run_rule(name, rule, input_data):
+    def _run_rule(rule, input_data):
         """
         Fixture for rule integration testing
 
@@ -34,32 +37,23 @@ def run_rule():
         Sample code::
 
             def test_myrule(run_rule):
-                input_data = {'spec': Specs.installed_rpms, 'data': RPMS_DATA}
+                input_data = InputData('my test name')
+                input_data.add(Specs.installed_rpms, RPMS_DATA, path='optional_spec_path')
                 expected = make_fail(ERROR_KEY, bad_data=data_expected)
-                results = run_rule('my test name', my_rule, input_data)
+                results = run_rule(my_rule, input_data)
                 assert results == expected
 
         Arguments:
-            name (str): Name to identify this test in output.
             rule (object): Your rule function object.
-            data (list or dict):  List of dict of each data spec your rule requires
-                to trigger.  If a single input data spec then a dict can be passed instead.
-                Each dict must include both ``spec`` and ``data`` keys, and may optionally
-                include ``path`` if necessary for the spec.
-
-        Return:
-            results of call to make_pass, make_fail, etc., or None
-
-        Raises:
-            KeyError: Raises if either spec or data keywords are not present.
+            data (InputData):  InputData obj containing all of the necessary data
+                for the test.
         """
-        idata = InputData(name)
-        input_data = input_data if isinstance(input_data, list) else [input_data]
-        for d in input_data:
-            if 'path' in d:
-                idata.add(d['spec'], d['data'], path=d['path'])
-            else:
-                idata.add(d['spec'], d['data'])
-        return run_test(rule, idata)
+        result = run_test(rule, input_data)
+        # Check result for skip to be compatible with archive_provider decorator
+        # Return None instead of result indicating missing component(s)
+        if result is not None and 'type' in result and result['type'] == 'skip':
+            return None
+        else:
+            return result
 
     return _run_rule

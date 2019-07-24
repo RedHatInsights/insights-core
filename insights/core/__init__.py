@@ -11,7 +11,7 @@ import six
 from fnmatch import fnmatch
 
 from insights.parsr import iniparser
-from insights.parsr.query import (Directive, Entry, from_dict, Result, Section,
+from insights.parsr.query import (Directive, Entry, Result, Section,
                                   compile_queries)
 from insights.contrib.ConfigParser import RawConfigParser
 
@@ -697,8 +697,6 @@ class YAMLParser(Parser, LegacyItemAccess):
             msg = "%s couldn't parse yaml." % name
             six.reraise(ParseException, ParseException(msg), tb)
 
-        self.doc = from_dict(self.data)
-
 
 class JSONParser(Parser, LegacyItemAccess):
     """
@@ -713,8 +711,6 @@ class JSONParser(Parser, LegacyItemAccess):
             name = ".".join([cls.__module__, cls.__name__])
             msg = "%s couldn't parse json." % name
             six.reraise(ParseException, ParseException(msg), tb)
-
-        self.doc = from_dict(self.data)
 
 
 class ScanMeta(type):
