@@ -23,7 +23,6 @@ pipeline {
                 source .testenv/bin/activate
                 pip install "idna<=2.7"
                 pip install "pycparser<=2.18"
-                pip install "pyOpenSSL<=17.5.0"
                 pip install -e .[testing]
                 pytest
             """
@@ -33,7 +32,6 @@ pipeline {
                 source .lintenv/bin/activate
                 pip install "idna<=2.7"
                 pip install "pycparser<=2.18"
-                pip install "pyOpenSSL<=17.5.0"
                 pip install -e .[linting]
                 flake8
             """
