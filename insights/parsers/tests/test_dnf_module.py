@@ -219,7 +219,7 @@ def test_dnf_module_info_2():
     assert module_list[0].version == '8000020190405071959'
     assert len(module_list[0].profiles) == 3
     assert module_list[0].default_profiles == 'common'
-    assert module_list[1].summary== 'Apache HTTP Server'
+    assert module_list[1].summary == 'Apache HTTP Server'
     assert module_list[1].context == '9edba152'
     assert 'mod_http2-0:1.11.3-1.module+el8+2443+605475b7.x86_64' in module_list[1].artifacts
 

@@ -1,8 +1,7 @@
 import doctest
-import pytest
 from insights.combiners import dnf_module_info
 from insights.combiners.dnf_module_info import DnfModuleInfoAll
-from insights.parsers.dnf_module import DnfModuleList, DnfModuleInfo
+from insights.parsers.dnf_module import DnfModuleInfo
 from insights.tests import context_wrap
 
 DNF_MODULE_LIST = """
