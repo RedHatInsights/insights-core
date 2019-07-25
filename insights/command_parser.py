@@ -85,7 +85,10 @@ def fix_arg_dashes():
 
 def main():
     fix_arg_dashes()
-    InsightsCli()
+    try:
+        InsightsCli()
+    except BaseException as ex:
+        print(ex)
 
 
 if __name__ == "__main__":
