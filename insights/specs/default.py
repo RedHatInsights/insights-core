@@ -354,6 +354,7 @@ class DefaultSpecs(Specs):
         ]
     )
     httpd_error_log = simple_file("var/log/httpd/error_log")
+    httpd22_error_log = simple_file("var/log/httpd22/error_log")
     httpd24_httpd_error_log = simple_file("/opt/rh/httpd24/root/etc/httpd/logs/error_log")
     jbcs_httpd24_httpd_error_log = simple_file("/opt/rh/jbcs-httpd24/root/etc/httpd/logs/error_log")
     httpd_pid = simple_command("/usr/bin/pgrep -o httpd")

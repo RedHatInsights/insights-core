@@ -7,8 +7,11 @@ Modules for parsing the log files of httpd service.  Parsers include:
 HttpdSSLErrorLog - file ``ssl_error_log``
 -----------------------------------------
 
-HttpdErrorLog - file ``error_log``
-----------------------------------
+HttpdErrorLog - file ``httpd/error_log``
+----------------------------------------
+
+Httpd22ErrorLog - file ``httpd22/error_log``
+--------------------------------------------
 
 Httpd24HTTPDErrorLog - file ``httpd24_httpd_error_log``
 --------------------------------------------------------
@@ -42,6 +45,12 @@ class HttpdSSLErrorLog(LogFileOutput):
 class HttpdErrorLog(LogFileOutput):
     """Class for parsing httpd ``error_log`` file."""
     time_format = '%b %d %H:%M:%S.%f %Y'
+
+
+@parser(Specs.httpd22_error_log)
+class Httpd22ErrorLog(LogFileOutput):
+    """Class for parsing httpd22 ``error_log`` file."""
+    time_format = '%b %d %H:%M:%S %Y'
 
 
 @parser(Specs.httpd24_httpd_error_log)

@@ -191,6 +191,7 @@ class Specs(SpecSet):
     httpd_conf_scl_httpd24 = RegistryPoint(multi_output=True)
     httpd_conf_scl_jbcs_httpd24 = RegistryPoint(multi_output=True)
     httpd_error_log = RegistryPoint(filterable=True)
+    httpd22_error_log = RegistryPoint(filterable=True)
     httpd24_httpd_error_log = RegistryPoint(filterable=True)
     jbcs_httpd24_httpd_error_log = RegistryPoint(filterable=True)
     httpd_limits = RegistryPoint(multi_output=True)
