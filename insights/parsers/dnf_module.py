@@ -92,7 +92,8 @@ class DnfModuleList(CommandParser, dict):
                         trailing_ignore=['Hint:', 'Error:'])
         if not data:
             raise SkipException('Nothing need to parse.')
-        self.update({m['Name']: DnfModuleBrief(m) for m in data})
+        for m in data:
+            self.update({m['Name']: DnfModuleBrief(m)})
 
 
 @parser(Specs.dnf_module_info)
