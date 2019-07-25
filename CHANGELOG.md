@@ -1,5 +1,29 @@
 # Change Log
 
+## [insights-core-3.0.114-1078](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.114-1078) (2019-07-25)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.113-1062...insights-core-3.0.114-1078)
+
+**Implemented enhancements:**
+
+- Update the Mount parser and specs depends on '/proc/mounts' [\#2059](https://github.com/RedHatInsights/insights-core/issues/2059)
+
+**Fixed bugs:**
+
+- bash\_version example doesn't work with json format [\#2100](https://github.com/RedHatInsights/insights-core/issues/2100)
+- CLI dumps tracebacks instead of simple message [\#2097](https://github.com/RedHatInsights/insights-core/issues/2097)
+- Core doesn't detect chkconfig in services directory of sos archives [\#2087](https://github.com/RedHatInsights/insights-core/issues/2087)
+- Dmesg combiner always succeeds [\#2084](https://github.com/RedHatInsights/insights-core/issues/2084)
+- Modinfo Parser is Missing Insights Archive Spec [\#2053](https://github.com/RedHatInsights/insights-core/issues/2053)
+- Systemctl cat needs to retain backward compatibility for archive specs [\#2038](https://github.com/RedHatInsights/insights-core/issues/2038)
+
+**Closed issues:**
+
+- insights.run does not run against sosreport directory if print\_summary=False [\#2107](https://github.com/RedHatInsights/insights-core/issues/2107)
+- ProcMounts doesn't handle paths contain spaces, e.g."/run/media/VMware Tools" [\#2069](https://github.com/RedHatInsights/insights-core/issues/2069)
+- Issue in installed\_rpms.redhat\_signed when run against sosreport [\#2066](https://github.com/RedHatInsights/insights-core/issues/2066)
+- YAMLParser does not handle list-like YAML texts [\#2060](https://github.com/RedHatInsights/insights-core/issues/2060)
+- JSONParser does not handle JSON texts consisting of an array [\#2056](https://github.com/RedHatInsights/insights-core/issues/2056)
+
 ## [insights-core-3.0.113-1062](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.113-1062) (2019-07-18)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.112-1...insights-core-3.0.113-1062)
 
