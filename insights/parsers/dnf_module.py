@@ -95,11 +95,17 @@ class DnfModuleList(CommandParser, dict):
         for m in data:
             self.update({m['Name']: DnfModuleBrief(m)})
 
+    @property
+    def modules(self):
+        """Returns a list of modules name"""
+        return sorted(self.keys())
+
 
 @parser(Specs.dnf_module_info)
-class DnfModuleInfo(CommandParser, list):
+class DnfModuleInfo(CommandParser, dict):
     """
-    Class to parse the output of command `dnf module info XX`
+    Class to parse the output of command `dnf module info XX, YY`
+
     Typical output of the command is::
 
         Updating Subscription Management repositories.
@@ -138,28 +144,98 @@ class DnfModuleInfo(CommandParser, list):
                     : 389-ds-base-snmp-0:1.4.0.20-7.module+el8+2750+1f4079fb.x86_64
                     : python3-lib389-0:1.4.0.20-7.module+el8+2750+1f4079fb.noarch
 
+        Name             : ant
+        Stream           : 1.10 [d][a]
+        Version          : 820181213135032
+        Context          : 5ea3b708
+        Profiles         : common [d]
+        Default profiles : common
+        Repo             : rhel-8-for-x86_64-appstream-rpms
+        Summary          : Java build tool
+        Description      : Apache Ant is a Java library and command-line tool whose mission is to drive processes described in build files as targets and extension points dependent upon each other. The main known usage of Ant is the build of Java applications. Ant supplies a number of built-in tasks allowing to compile, assemble, test and run Java applications. Ant can also be used effectively to build non Java applications, for instance C or C++ applications. More generally, Ant can be used to pilot any type of process which can be described in terms of targets and tasks.
+        Artifacts        : ant-0:1.10.5-1.module+el8+2438+c99a8a1e.noarch
+                         : ant-lib-0:1.10.5-1.module+el8+2438+c99a8a1e.noarch
+
+        Name             : httpd
+        Stream           : 2.4 [d][e][a]
+        Version          : 820190206142837
+        Context          : 9edba152
+        Profiles         : common [d] [i], devel, minimal
+        Default profiles : common
+        Repo             : rhel-8-for-x86_64-appstream-rpms
+        Summary          : Apache HTTP Server
+        Description      : Apache httpd is a powerful, efficient, and extensible HTTP server.
+        Artifacts        : httpd-0:2.4.37-10.module+el8+2764+7127e69e.x86_64
+                         : httpd-devel-0:2.4.37-10.module+el8+2764+7127e69e.x86_64
+                         : httpd-filesystem-0:2.4.37-10.module+el8+2764+7127e69e.noarch
+                         : httpd-manual-0:2.4.37-10.module+el8+2764+7127e69e.noarch
+                         : httpd-tools-0:2.4.37-10.module+el8+2764+7127e69e.x86_64
+                         : mod_http2-0:1.11.3-1.module+el8+2443+605475b7.x86_64
+                         : mod_ldap-0:2.4.37-10.module+el8+2764+7127e69e.x86_64
+                         : mod_md-0:2.4.37-10.module+el8+2764+7127e69e.x86_64
+                         : mod_proxy_html-1:2.4.37-10.module+el8+2764+7127e69e.x86_64
+                         : mod_session-0:2.4.37-10.module+el8+2764+7127e69e.x86_64
+                         : mod_ssl-1:2.4.37-10.module+el8+2764+7127e69e.x86_64
+
         Hint: [d]efault, [e]nabled, [x]disabled, [i]nstalled, [a]ctive]
 
+    The modules information is wrapped in this object like a dictionary, with
+    the module name as the key and the list of the :class:`DnfModuleDetail` as
+    the value.
+
     Examples:
+        >>> type(dnf_module_info)
+        <class 'insights.parsers.dnf_module.DnfModuleInfo'>
         >>> len(dnf_module_info)
+        3
+        >>> dnf_module_info.modules
+        ['389-ds', 'ant', 'httpd']
+        >>> "389-ds" in dnf_module_info
+        True
+        >>> len(dnf_module_info.get("389-ds"))
         2
-        >>> dnf_module_info[0].name
+        >>> type(dnf_module_info.get("389-ds")[0])
+        <class 'insights.parsers.dnf_module.DnfModuleDetail'>
+        >>> dnf_module_info['389-ds'][0].name
         '389-ds'
-        >>> dnf_module_info[0].profiles
+        >>> dnf_module_info["389-ds"][0].profiles
         []
-        >>> dnf_module_info[0].default_profiles
+        >>> dnf_module_info["389-ds"][0].default_profiles
         ''
-        >>> dnf_module_info[0].stream
-        '1.4'
-        >>> dnf_module_info[1].name
+        >>> dnf_module_info['389-ds'][1].name
         '389-ds'
-        >>> dnf_module_info[1].context
+        >>> dnf_module_info['389-ds'][1].context
         '1fc8b219'
+        >>> "ant" in dnf_module_info
+        True
+        >>> len(dnf_module_info.get("ant"))
+        1
+        >>> type(dnf_module_info.get("ant")[0])
+        <class 'insights.parsers.dnf_module.DnfModuleDetail'>
+        >>> dnf_module_info['ant'][0].name
+        'ant'
+        >>> dnf_module_info['ant'][0].context
+        '5ea3b708'
+        >>> dnf_module_info["ant"][0].version
+        '820181213135032'
+        >>> dnf_module_info['ant'][0].profiles
+        ['common [d]']
+        >>> dnf_module_info['ant'][0].default_profiles
+        'common'
+        >>> dnf_module_info["httpd"][0].profiles
+        ['common [d] [i]', 'devel', 'minimal']
+        >>> dnf_module_info["httpd"][0].default_profiles
+        'common'
     """
     def __init__(self, *args, **kwargs):
         super(DnfModuleInfo, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
+        def _update_value(k, v):
+            if k not in self:
+                self[k] = []
+            self[k].append(v)
+
         mod_dict = {}
         key_prev = ''
         for line in content:
@@ -172,10 +248,18 @@ class DnfModuleInfo(CommandParser, list):
                     mod_dict[k] = v
                 key_prev = k
             elif not line.strip() and mod_dict:
-                self.append(DnfModuleDetail(mod_dict))
+                mod_info = DnfModuleDetail(mod_dict)
+                _update_value(mod_info.name, mod_info)
                 mod_dict = {}
+
         if mod_dict:
-            self.append(DnfModuleDetail(mod_dict))
+            mod_info = DnfModuleDetail(mod_dict)
+            _update_value(mod_info.name, mod_info)
 
         if self.__len__() == 0:
             raise SkipException('Nothing need to parse.')
+
+    @property
+    def modules(self):
+        """Returns a list of modules name"""
+        return sorted(self.keys())

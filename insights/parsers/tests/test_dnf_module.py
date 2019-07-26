@@ -64,25 +64,7 @@ Name                Stream      Profiles                                  Summar
 Error: xxx
 """.strip()
 
-DNF_MODULE_INFO1 = """
-Updating Subscription Management repositories.
-Last metadata expiration check: 0:01:39 ago on Thu 25 Jul 2019 01:32:41 PM CST.
-Name             : ant
-Stream           : 1.10 [d][a]
-Version          : 820181213135032
-Context          : 5ea3b708
-Profiles         : common [d]
-Default profiles : common
-Repo             : rhel-8-for-x86_64-appstream-rpms
-Summary          : Java build tool
-Description      : Apache Ant is a Java library and command-line tool whose mission is to drive processes described in build files as targets and extension points dependent upon each other. The main known usage of Ant is the build of Java applications. Ant supplies a number of built-in tasks allowing to compile, assemble, test and run Java applications. Ant can also be used effectively to build non Java applications, for instance C or C++ applications. More generally, Ant can be used to pilot any type of process which can be described in terms of targets and tasks.
-Artifacts        : ant-0:1.10.5-1.module+el8+2438+c99a8a1e.noarch
-                 : ant-lib-0:1.10.5-1.module+el8+2438+c99a8a1e.noarch
-
-Hint: [d]efault, [e]nabled, [x]disabled, [i]nstalled, [a]ctive]
-""".strip()
-
-DNF_MODULE_INFO2 = """
+DNF_MODULE_INFO = """
 Updating Subscription Management repositories.
 Last metadata expiration check: 0:02:09 ago on Thu 25 Jul 2019 01:32:41 PM CST.
 Name             : httpd
@@ -139,12 +121,18 @@ Artifacts        : httpd-0:2.4.37-10.module+el8+2764+7127e69e.x86_64
                  : mod_session-0:2.4.37-10.module+el8+2764+7127e69e.x86_64
                  : mod_ssl-1:2.4.37-10.module+el8+2764+7127e69e.x86_64
 
-Hint: [d]efault, [e]nabled, [x]disabled, [i]nstalled, [a]ctive]
-""".strip()
+Name             : ant
+Stream           : 1.10 [d][a]
+Version          : 820181213135032
+Context          : 5ea3b708
+Profiles         : common [d]
+Default profiles : common
+Repo             : rhel-8-for-x86_64-appstream-rpms
+Summary          : Java build tool
+Description      : Apache Ant is a Java library and command-line tool whose mission is to drive processes described in build files as targets and extension points dependent upon each other. The main known usage of Ant is the build of Java applications. Ant supplies a number of built-in tasks allowing to compile, assemble, test and run Java applications. Ant can also be used effectively to build non Java applications, for instance C or C++ applications. More generally, Ant can be used to pilot any type of process which can be described in terms of targets and tasks.
+Artifacts        : ant-0:1.10.5-1.module+el8+2438+c99a8a1e.noarch
+                 : ant-lib-0:1.10.5-1.module+el8+2438+c99a8a1e.noarch
 
-DNF_MODULE_INFO_DOC = """
-Updating Subscription Management repositories.
-Last metadata expiration check: 0:31:25 ago on Thu 25 Jul 2019 12:19:22 PM CST.
 Name        : 389-ds
 Stream      : 1.4
 Version     : 8000020190424152135
@@ -205,23 +193,18 @@ def test_dnf_module_list_exp():
         DnfModuleList(context_wrap(DNF_MODULE_LIST_EXP2))
 
 
-def test_dnf_module_info_1():
-    module_info = DnfModuleInfo(context_wrap(DNF_MODULE_INFO1))
-    assert len(module_info) == 1
-    assert module_info[0].name == 'ant'
-    assert 'Ant' in module_info[0].description
-
-
-def test_dnf_module_info_2():
-    module_list = DnfModuleInfo(context_wrap(DNF_MODULE_INFO2))
-    assert len(module_list) == 2
-    assert module_list[0].name == 'httpd'
-    assert module_list[0].version == '8000020190405071959'
-    assert len(module_list[0].profiles) == 3
-    assert module_list[0].default_profiles == 'common'
-    assert module_list[1].summary == 'Apache HTTP Server'
-    assert module_list[1].context == '9edba152'
-    assert 'mod_http2-0:1.11.3-1.module+el8+2443+605475b7.x86_64' in module_list[1].artifacts
+def test_dnf_module_info():
+    module_infos = DnfModuleInfo(context_wrap(DNF_MODULE_INFO))
+    assert len(module_infos) == 3
+    assert module_infos.modules == ['389-ds', 'ant', 'httpd']
+    assert len(module_infos['httpd']) == 2
+    assert module_infos['httpd'][0].name == 'httpd'
+    assert module_infos['httpd'][0].version == '8000020190405071959'
+    assert len(module_infos['httpd'][0].profiles) == 3
+    assert module_infos['httpd'][0].default_profiles == 'common'
+    assert module_infos['httpd'][1].summary == 'Apache HTTP Server'
+    assert module_infos['httpd'][1].context == '9edba152'
+    assert 'mod_http2-0:1.11.3-1.module+el8+2443+605475b7.x86_64' in module_infos['httpd'][1].artifacts
 
 
 def test_dnf_module_info_exp():
@@ -232,7 +215,7 @@ def test_dnf_module_info_exp():
 def test_dnf_module_doc_examples():
     env = {
         'dnf_module_list': DnfModuleList(context_wrap(DNF_MODULE_LIST_DOC)),
-        'dnf_module_info': DnfModuleInfo(context_wrap(DNF_MODULE_INFO_DOC))
+        'dnf_module_info': DnfModuleInfo(context_wrap(DNF_MODULE_INFO))
     }
     failed, total = doctest.testmod(dnf_module, globs=env)
     assert failed == 0

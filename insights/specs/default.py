@@ -234,7 +234,7 @@ class DefaultSpecs(Specs):
     def dnf_module_names(broker):
         dml = broker[DnfModuleList]
         if dml:
-            return [m for m in dml]
+            return (' ').join([m for m in dml])
         raise SkipComponent()
 
     dnf_module_info = foreach_execute(dnf_module_names, "/usr/bin/dnf -C --noplugins module info %s", deps=[IsRhel8])
