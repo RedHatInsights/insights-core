@@ -61,6 +61,7 @@ def test_azure_instance_type():
     assert azure.size == "NV48s"
     assert azure.version == "v3"
     assert azure.raw == "Standard_NV48s_v3"
+    assert "NV48s" in str(azure)
 
 
 def test_doc_examples():

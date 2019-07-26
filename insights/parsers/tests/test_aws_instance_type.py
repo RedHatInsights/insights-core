@@ -51,6 +51,7 @@ def test_aws_instance_type():
     aws = AWSInstanceType(context_wrap(AWS_TYPE))
     assert aws.type == "R3"
     assert aws.raw == "r3.xlarge"
+    assert 'large' in str(aws)
 
 
 def test_doc_examples():

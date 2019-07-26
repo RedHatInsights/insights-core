@@ -31,10 +31,10 @@ class AzureInstanceType(CommandParser):
         ParseException: When type cannot be recognized.
 
     Attributes:
-        type: The type of VM instance in Azure, e.g: Standard
-        size: The size of VM instance in Azure, e.g: L64s, NC12s
-        version: The version of VM instance in Azure, e.g: v2, v3, `None` for non-version
-        raw: The fully type string returned by the ``curl`` command
+        type (str): The type of VM instance in Azure, e.g: Standard
+        size (str): The size of VM instance in Azure, e.g: L64s, NC12s
+        version (str): The version of VM instance in Azure, e.g: v2, v3, `None` for non-version
+        raw (str): The fully type string returned by the ``curl`` command
 
     Examples:
         >>> azure_inst.type
@@ -62,6 +62,6 @@ class AzureInstanceType(CommandParser):
         if not self.type:
             raise ParseException('Unrecognized type: "{0}"', content[0])
 
-    def __str__(self):
+    def __repr__(self):
         return "<azure_type: {t}, size: {s}, version: {v},  raw: {r}>".format(
                 t=self.type, s=self.size, v=self.version, r=self.raw)
