@@ -719,7 +719,8 @@ class simple_command(object):
             no arguments
     """
 
-    def __init__(self, cmd, context=HostContext, deps=[], split=True, keep_rc=False, timeout=None, inherit_env=[], **kwargs):
+    def __init__(self, cmd, provider=None, context=HostContext, deps=[], split=True, keep_rc=False, timeout=None, inherit_env=[], **kwargs):
+        self.provider = provider
         self.cmd = cmd
         self.context = context
         self.split = split
@@ -728,10 +729,18 @@ class simple_command(object):
         self.timeout = timeout
         self.inherit_env = inherit_env
         self.__name__ = self.__class__.__name__
-        datasource(self.context, *deps, raw=self.raw, **kwargs)(self)
+        if self.provider:
+            datasource(self.provider, self.context, *deps, raw=self.raw, **kwargs)(self)
+        else:
+            datasource(self.context, *deps, raw=self.raw, **kwargs)(self)
 
     def __call__(self, broker):
         ctx = broker[self.context]
+        if self.provider:
+            e = broker[self.provider]
+            if not isinstance(e, str):
+                raise ContentException("The provider datasource should return a string")
+            self.cmd = self.cmd % e
         return CommandOutputProvider(self.cmd, ctx, split=self.split,
                 keep_rc=self.keep_rc, ds=self, timeout=self.timeout, inherit_env=self.inherit_env)
 
