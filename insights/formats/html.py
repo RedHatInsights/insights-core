@@ -34,8 +34,8 @@ CONTENT = """
         <div class="card-header">System Information</div>
         <div class="card-body">
         <pre>
-        {% for info in infos %}
-{{-info}}
+        {% for rule in rules.make_info %}
+{{-rule.body}}
         {% endfor %}
         </pre
         </div>
@@ -45,11 +45,12 @@ CONTENT = """
         <div class="card-body">
           <div class="accordion" id="ruleAccordion">
           {% for group, results in rules.items() %}
+          {% if group != "make_info" %}
           {% for rule in results %}
             <div class="card">
-              <div class="card-header bg-{{rule.color}}" id="heading_{{rule.id}}">
+              <div class="card-header bg-{% if group == "make_pass" %}success{% else %}danger{% endif %}" id="heading_{{rule.id}}">
                 <h2 class="mb-0">
-                  <button class="btn btn-{{rule.color}} text-white" type="button" data-toggle="collapse" data-target="#{{rule.id}}" aria-expanded="true" aria-controls="{{rule.id}}">
+                  <button class="btn btn-{% if group == "make_pass" %}success{% else %}danger{% endif %} text-white" type="button" data-toggle="collapse" data-target="#{{rule.id}}" aria-expanded="true" aria-controls="{{rule.id}}">
                   {{rule.name}}
                   </button>
                 </h2>
@@ -70,7 +71,7 @@ CONTENT = """
                 <hr />
                 Contributing data:
                 <ol>
-                {% for d in rule.data %}
+                {% for d in rule.datasources %}
                   <li>
                   {{d}}
                   </li>
@@ -80,6 +81,7 @@ CONTENT = """
               </div>
             </div>
           {%- endfor %}
+          {% endif %}
           {% endfor %}
           </div>
         </div>
@@ -94,12 +96,6 @@ CONTENT = """
 </html>
 """
 
-COLORS = {
-    make_info: "info",
-    make_fail: "danger",
-    make_pass: "success",
-}
-
 
 class HtmlFormatter(Formatter):
     def find_root(self):
@@ -111,13 +107,6 @@ class HtmlFormatter(Formatter):
         if comp in broker:
             val = broker[comp]
             self.groups[type(val)].append((comp, val))
-
-    def preprocess(self):
-        self.start_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
-        self.groups = defaultdict(list)
-        self.datasources = defaultdict(list)
-        self.broker.add_observer(self.collect, rule)
-        self.broker.add_observer(self.get_data_locations, rule)
 
     def get_data_locations(self, comp, broker):
         graph = dr.get_dependency_graph(comp)
@@ -136,39 +125,41 @@ class HtmlFormatter(Formatter):
 
                 self.datasources[comp].extend(results)
 
+    def preprocess(self):
+        self.start_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+        self.groups = defaultdict(list)
+        self.datasources = defaultdict(list)
+        self.broker.add_observer(self.collect, rule)
+        self.broker.add_observer(self.get_data_locations, rule)
+
     def postprocess(self):
         root = self.find_root() or "Unknown"
-
-        infos = self.groups[make_info]
-        info_content = []
-        for comp, val in sorted(infos, key=lambda g: dr.get_name(g[0])):
-            info_content.append(render(comp, val))
 
         data = {
             "root": root,
             "start_time": self.start_time,
             "rules": {},
-            "infos": info_content
         }
-        for key in (make_fail, make_pass):
+        types = (make_info, make_fail, make_response, make_pass)
+        for key in types:
             group = self.groups[key]
-            data["rules"][key.__name__] = []
+            response_type = key.__name__
+            data["rules"][response_type] = []
             for comp, val in sorted(group, key=lambda g: dr.get_name(g[0])):
-                if type(val) in (make_pass, make_fail, make_response):
+                if type(val) in types:
                     rule_path = inspect.getabsfile(comp)
                     mod_doc = sys.modules[comp.__module__].__doc__ or ""
                     rule_doc = comp.__doc__ or ""
                     name = dr.get_name(comp)
                     rule_id = name.replace(".", "_")
-                    data["rules"][key.__name__].append({
-                        "color": COLORS[key],
+                    data["rules"][response_type].append({
                         "id": rule_id,
                         "name": name,
                         "body": render(comp, val),
                         "mod_doc": mod_doc,
                         "rule_doc": rule_doc,
                         "rule_path": rule_path,
-                        "data": sorted(set(self.datasources[comp]))
+                        "datasources": sorted(set(self.datasources[comp]))
                     })
         print(Template(CONTENT).render(data), file=self.stream)
 
