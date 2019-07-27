@@ -40,7 +40,7 @@ class HtmlFormatter(Formatter):
             <pre>
 {% for rule in rules.make_info %}
 {{-rule.body}}
-{% endfor %}
+{% endfor -%}
             </pre
             </div>
           </div>
