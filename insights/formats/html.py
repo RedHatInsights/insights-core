@@ -9,6 +9,7 @@ from jinja2 import Template
 
 from insights import dr, rule, make_info, make_fail, make_pass, make_response
 from insights.core.context import ExecutionContext
+from insights.core.spec_factory import ContentProvider
 from insights.core.plugins import is_datasource
 from insights.formats import render, Formatter, FormatterAdapter
 
@@ -121,18 +122,16 @@ class HtmlFormatter(Formatter):
         Get the most relevant activated datasources for each rule.
         """
         graph = dr.get_dependency_graph(comp)
-        template = "{name}: {detail}"
         for cand in graph:
-            if cand in broker and is_datasource(cand) and not any(is_datasource(d) for d in dr.get_dependencies(cand)):
+            if cand in broker and is_datasource(cand):
                 val = broker[cand]
                 if not isinstance(val, list):
                     val = [val]
 
-                name = cand.__name__
                 results = []
                 for v in val:
-                    detail = v.cmd or v.path or "python implementation"
-                    results.append(template.format(name=name, detail=detail))
+                    if isinstance(v, ContentProvider):
+                        results.append(v.cmd or v.path or "python implementation")
 
                 self.datasources[comp].extend(results)
 
