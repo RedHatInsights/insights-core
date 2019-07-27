@@ -106,8 +106,11 @@ class HtmlFormatter(Formatter):
         a non-existent temporary directory if analyzing an archive.
         """
         for comp in self.broker:
-            if issubclass(comp, ExecutionContext):
-                return self.broker[comp].root
+            try:
+                if issubclass(comp, ExecutionContext):
+                    return self.broker[comp].root
+            except:
+                pass
 
     def collect(self, comp, broker):
         """
