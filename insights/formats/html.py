@@ -166,18 +166,15 @@ class HtmlFormatter(Formatter):
             ctx["rules"][response_type] = []
             for comp, val in sorted(group, key=lambda g: dr.get_name(g[0])):
                 if isinstance(val, types):
-                    rule_path = inspect.getabsfile(comp)
-                    mod_doc = sys.modules[comp.__module__].__doc__ or ""
-                    rule_doc = comp.__doc__ or ""
                     name = dr.get_name(comp)
                     rule_id = name.replace(".", "_")
                     ctx["rules"][response_type].append({
                         "id": rule_id,
                         "name": name,
                         "body": render(comp, val),
-                        "mod_doc": mod_doc,
-                        "rule_doc": rule_doc,
-                        "rule_path": rule_path,
+                        "mod_doc": sys.modules[comp.__module__].__doc__ or "",
+                        "rule_doc": comp.__doc__ or "",
+                        "rule_path": inspect.getabsfile(comp),
                         "datasources": sorted(set(self.datasources[comp]))
                     })
         print(Template(self.CONTENT).render(ctx), file=self.stream)
