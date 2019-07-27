@@ -64,14 +64,6 @@ class HtmlFormatter(Formatter):
 {{rule.body}}
                     </pre>
                     <hr />
-              Documentation:
-                    <pre>
-{{rule.mod_doc}}
-{{rule.rule_doc}}
-                    </pre>
-                    <hr />
-                    Rule source: {{rule.rule_path}}
-                    <hr />
                     Contributing data:
                     <ol>
                     {% for d in rule.datasources %}
@@ -80,6 +72,14 @@ class HtmlFormatter(Formatter):
                       </li>
                     {% endfor %}
                     </ol>
+                    <hr />
+              Documentation:
+                    <pre>
+{{rule.mod_doc}}
+{{rule.rule_doc}}
+                    </pre>
+                    <hr />
+                    Rule source: {{rule.rule_path}}
                     </div>
                   </div>
                 </div>
