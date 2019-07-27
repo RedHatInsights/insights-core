@@ -3,14 +3,14 @@ VdoStatus - command ``/usr/bin/vdo status``
 ===========================================
 
 Module for parsing the output of command ``vdo status``. The bulk of the
-content is split on the colon and keys are kept as is. 
+content is split on the colon and keys are kept as is.
 """
 
 from insights import parser
 from insights import CommandParser
 from insights import YAMLParser
 from insights.specs import Specs
-from insights.parsers import SkipException
+
 
 @parser(Specs.vdo_status)
 class VDOStatus(CommandParser, YAMLParser):
@@ -90,12 +90,17 @@ class VDOStatus(CommandParser, YAMLParser):
         '/etc/vdoconf.yml'
         >>> vdo['VDOs']['vdo1']['Activate']
         'enabled'
+        >>> vdo['VDOs']['vdo1']['VDO statistics']['/dev/mapper/vdo1']['1K-blocks']
+        7340032
+        >>> vdo['VDO status']
+        {'Date': '2019-07-24 20:48:16-04:00', 'Node': 'dell-m620-10.rhts.gsslab.pek2.redhat.com'}
+        >>> vdo['VDOs']['vdo2']['Acknowledgement threads']
+        1
 
     Attributes:
         data (dict): the result parsed of 'vdo status'
 
     Raises:
-        SkipException: When input content is empty
+        ParseException: When input content is not available to parse
     """
     pass
-
