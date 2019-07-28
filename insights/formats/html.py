@@ -4,10 +4,10 @@ from itertools import groupby
 from operator import itemgetter
 
 from insights import make_info, make_fail, make_response, make_pass
-from insights.formats import TemplateFormatter, FormatterAdapter
+from insights.formats import TemplateFormat, FormatterAdapter
 
 
-class HtmlFormat(TemplateFormatter):
+class HtmlFormat(TemplateFormat):
     """
     This class prints a html summary of rule hits. It should be used
     as a context manager and given an instance of an
@@ -84,7 +84,7 @@ class HtmlFormat(TemplateFormatter):
 {{rule.rule_doc}}
                 </pre>
                 <hr />
-                Rule source: {{rule.rule_path}}
+                Rule source: {{rule.source_path}}
                 </div>
               </div>
             </div>

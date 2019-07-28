@@ -107,7 +107,7 @@ class EvaluatorFormatterAdapter(FormatterAdapter):
         self.formatter.postprocess()
 
 
-class TemplateFormatter(Formatter):
+class TemplateFormat(Formatter):
     """
     Subclasses should implement create_template_context to return a dictionary
     to use when rendering the jinja2 template defined by the class level
@@ -173,7 +173,7 @@ class TemplateFormatter(Formatter):
                 "body": render(comp, val),
                 "mod_doc": sys.modules[comp.__module__].__doc__ or "",
                 "rule_doc": comp.__doc__ or "",
-                "rule_path": inspect.getabsfile(comp),
+                "source_path": inspect.getabsfile(comp),
                 "datasources": sorted(set(self.get_datasources(comp, broker)))
             })
 
