@@ -14,7 +14,18 @@ from insights.core.plugins import is_datasource
 from insights.formats import render, Formatter, FormatterAdapter
 
 
-class HtmlFormatter(Formatter):
+class HtmlFormat(Formatter):
+    """
+    This class prints a html summary of rule hits. It should be used
+    as a context manager and given an instance of an
+    ``insights.core.dr.Broker``. ``dr.run`` should be called within the context
+    using the same broker.
+
+    Args:
+        broker (Broker): the broker to watch and provide a summary about.
+        stream (file-like): Output is written to stream. Defaults to sys.stdout.
+    """
+
     CONTENT = """
     <!doctype html>
     <html lang="en">
@@ -184,8 +195,10 @@ class HtmlFormatter(Formatter):
 
 # this connects the formatter to the insights run CLI bits
 class HtmlFormatterAdapter(FormatterAdapter):
+    """ Displays results in html format. """
+
     def preprocess(self, broker):
-        self.formatter = HtmlFormatter(broker)
+        self.formatter = HtmlFormat(broker)
         self.formatter.preprocess()
 
     def postprocess(self, broker):
