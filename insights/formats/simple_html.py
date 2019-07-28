@@ -128,7 +128,7 @@ Contributing Data:
 
 
 # this connects the formatter to the insights run CLI bits
-class HtmlFormatterAdapter(FormatterAdapter):
+class SimpleHtmlFormatterAdapter(FormatterAdapter):
     """ Displays results in a simple html format. """
 
     def preprocess(self, broker):
