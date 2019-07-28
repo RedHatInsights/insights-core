@@ -1,9 +1,10 @@
 from __future__ import print_function
 import inspect
 import sys
-from collections import defaultdict
 from collections import OrderedDict
 from datetime import datetime
+from itertools import groupby
+from operator import itemgetter
 
 from jinja2 import Template
 
@@ -122,20 +123,14 @@ class HtmlFormat(Formatter):
                     return self.broker[comp].root
             except:
                 pass
-
-    def collect(self, comp, broker):
-        """
-        Store rule results organized by response type.
-        """
-        if comp in broker:
-            val = broker[comp]
-            self.groups[type(val)].append((comp, val))
+        return "Unknown"
 
     def get_datasources(self, comp, broker):
         """
         Get the most relevant activated datasources for each rule.
         """
         graph = dr.get_dependency_graph(comp)
+        ds = []
         for cand in graph:
             if cand in broker and is_datasource(cand):
                 val = broker[cand]
@@ -146,8 +141,27 @@ class HtmlFormat(Formatter):
                 for v in val:
                     if isinstance(v, ContentProvider):
                         results.append(v.cmd or v.path or "python implementation")
+                ds.extend(results)
+        return ds
 
-                self.datasources[comp].extend(results)
+    def collect_rules(self, comp, broker):
+        """
+        Store rule results.
+        """
+        if comp in broker:
+            name = dr.get_name(comp)
+            rule_id = name.replace(".", "_")
+            val = broker[comp]
+            self.rules.append({
+                "name": name,
+                "id": rule_id,
+                "response_type": type(val).__name__,
+                "body": render(comp, val),
+                "mod_doc": sys.modules[comp.__module__].__doc__ or "",
+                "rule_doc": comp.__doc__ or "",
+                "rule_path": inspect.getabsfile(comp),
+                "datasources": sorted(set(self.get_datasources(comp, broker)))
+            })
 
     def preprocess(self):
         """
@@ -155,41 +169,35 @@ class HtmlFormat(Formatter):
         them for later display in postprocess.
         """
         self.start_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
-        self.groups = defaultdict(list)
-        self.datasources = defaultdict(list)
-        self.broker.add_observer(self.collect, rule)
-        self.broker.add_observer(self.get_datasources, rule)
+        self.rules = []
+        self.broker.add_observer(self.collect_rules, rule)
+
+    def create_template_context(self):
+        ctx = {
+            "root": self.find_root() or "Unknown",
+            "start_time": self.start_time,
+        }
+        sorted_rules = {}
+        response_type_getter = itemgetter("response_type")
+
+        self.rules = sorted(self.rules, key=response_type_getter)
+        for response_type, rules in groupby(self.rules, response_type_getter):
+            rules = sorted(rules, key=itemgetter("name"))
+            sorted_rules[response_type] = rules
+
+        ctx["rules"] = OrderedDict()
+        for key in (make_info, make_fail, make_response, make_pass):
+            name = key.__name__
+            if name in sorted_rules:
+                ctx["rules"][name] = sorted_rules[name]
+        return ctx
 
     def postprocess(self):
         """
         Builds a dictionary of rule data as context for a jinja2 template that
         renders the final output.
         """
-        root = self.find_root() or "Unknown"
-
-        ctx = {
-            "root": root,
-            "start_time": self.start_time,
-            "rules": OrderedDict(),
-        }
-        types = (make_info, make_fail, make_response, make_pass)
-        for key in types:
-            group = self.groups[key]
-            response_type = key.__name__
-            ctx["rules"][response_type] = []
-            for comp, val in sorted(group, key=lambda g: dr.get_name(g[0])):
-                if isinstance(val, types):
-                    name = dr.get_name(comp)
-                    rule_id = name.replace(".", "_")
-                    ctx["rules"][response_type].append({
-                        "id": rule_id,
-                        "name": name,
-                        "body": render(comp, val),
-                        "mod_doc": sys.modules[comp.__module__].__doc__ or "",
-                        "rule_doc": comp.__doc__ or "",
-                        "rule_path": inspect.getabsfile(comp),
-                        "datasources": sorted(set(self.datasources[comp]))
-                    })
+        ctx = self.create_template_context()
         print(Template(self.CONTENT).render(ctx), file=self.stream)
 
 
