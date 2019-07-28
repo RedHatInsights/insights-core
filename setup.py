@@ -35,6 +35,7 @@ runtime = set([
     'cachecontrol[filecache]',
     'defusedxml',
     'lockfile',
+    'jinja2',
 ])
 
 if (sys.version_info < (2, 7)):
@@ -82,7 +83,6 @@ testing = set([
 cluster = set([
     'ansible',
     'pandas',
-    'jinja2',
     'colorama',
 ])
 
