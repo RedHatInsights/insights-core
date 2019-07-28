@@ -1,21 +1,13 @@
 from __future__ import print_function
-import inspect
-import sys
 from collections import OrderedDict
-from datetime import datetime
 from itertools import groupby
 from operator import itemgetter
 
-from jinja2 import Template
-
-from insights import dr, rule, make_info, make_fail, make_pass, make_response
-from insights.core.context import ExecutionContext
-from insights.core.spec_factory import ContentProvider
-from insights.core.plugins import is_datasource
-from insights.formats import render, Formatter, FormatterAdapter
+from insights import make_info, make_fail, make_response, make_pass
+from insights.formats import TemplateFormatter, FormatterAdapter
 
 
-class HtmlFormat(Formatter):
+class HtmlFormat(TemplateFormatter):
     """
     This class prints a html summary of rule hits. It should be used
     as a context manager and given an instance of an
@@ -27,7 +19,7 @@ class HtmlFormat(Formatter):
         stream (file-like): Output is written to stream. Defaults to sys.stdout.
     """
 
-    CONTENT = """
+    TEMPLATE = """
 <!doctype html>
 <html lang="en">
   <head>
@@ -112,66 +104,6 @@ class HtmlFormat(Formatter):
 </html>
     """.strip()
 
-    def find_root(self):
-        """
-        Finds the root directory used during the evaluation. Note this could be
-        a non-existent temporary directory if analyzing an archive.
-        """
-        for comp in self.broker:
-            try:
-                if issubclass(comp, ExecutionContext):
-                    return self.broker[comp].root
-            except:
-                pass
-        return "Unknown"
-
-    def get_datasources(self, comp, broker):
-        """
-        Get the most relevant activated datasources for each rule.
-        """
-        graph = dr.get_dependency_graph(comp)
-        ds = []
-        for cand in graph:
-            if cand in broker and is_datasource(cand):
-                val = broker[cand]
-                if not isinstance(val, list):
-                    val = [val]
-
-                results = []
-                for v in val:
-                    if isinstance(v, ContentProvider):
-                        results.append(v.cmd or v.path or "python implementation")
-                ds.extend(results)
-        return ds
-
-    def collect_rules(self, comp, broker):
-        """
-        Store rule results.
-        """
-        if comp in broker:
-            name = dr.get_name(comp)
-            rule_id = name.replace(".", "_")
-            val = broker[comp]
-            self.rules.append({
-                "name": name,
-                "id": rule_id,
-                "response_type": type(val).__name__,
-                "body": render(comp, val),
-                "mod_doc": sys.modules[comp.__module__].__doc__ or "",
-                "rule_doc": comp.__doc__ or "",
-                "rule_path": inspect.getabsfile(comp),
-                "datasources": sorted(set(self.get_datasources(comp, broker)))
-            })
-
-    def preprocess(self):
-        """
-        Watches rules go by as they evaluate and collects information about
-        them for later display in postprocess.
-        """
-        self.start_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
-        self.rules = []
-        self.broker.add_observer(self.collect_rules, rule)
-
     def create_template_context(self):
         ctx = {
             "root": self.find_root() or "Unknown",
@@ -191,14 +123,6 @@ class HtmlFormat(Formatter):
             if name in sorted_rules:
                 ctx["rules"][name] = sorted_rules[name]
         return ctx
-
-    def postprocess(self):
-        """
-        Builds a dictionary of rule data as context for a jinja2 template that
-        renders the final output.
-        """
-        ctx = self.create_template_context()
-        print(Template(self.CONTENT).render(ctx), file=self.stream)
 
 
 # this connects the formatter to the insights run CLI bits

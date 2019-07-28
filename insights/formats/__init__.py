@@ -1,9 +1,18 @@
 from __future__ import print_function
+import inspect
 import six
 import sys
+from datetime import datetime
+
+from jinja2 import Template
+
 from insights import dr, rule
+from insights.core.context import ExecutionContext
+from insights.core.spec_factory import ContentProvider
+from insights.core.plugins import is_datasource
 
 
+RENDERERS = {}
 _FORMATTERS = {}
 
 
@@ -98,53 +107,139 @@ class EvaluatorFormatterAdapter(FormatterAdapter):
         self.formatter.postprocess()
 
 
-RENDERERS = {}
+class TemplateFormatter(Formatter):
+    """
+    Subclasses should implement create_template_context to return a dictionary
+    to use when rendering the jinja2 template defined by the class level
+    TEMPLATE attribute.
+    """
 
-try:
-    from jinja2 import Template
+    TEMPLATE = ""
+    """ jinja2 template to use for rule result rendering. """
 
-    def get_content(obj, val):
+    def find_root(self):
         """
-        Attempts to determine a jinja2 content template for a rule's response.
+        Finds the root directory used during the evaluation. Note this could be
+        a non-existent temporary directory if analyzing an archive.
         """
-        # does the rule define a content= kwarg?
-        c = dr.get_delegate(obj).content
+        for comp in self.broker:
+            try:
+                if issubclass(comp, ExecutionContext):
+                    return self.broker[comp].root
+            except:
+                pass
+        return "Unknown"
 
-        # otherwise, does the rule module have a CONTENT attribute?
-        if c is None:
-            mod = sys.modules[obj.__module__]
-            c = getattr(mod, "CONTENT", None)
+    def get_datasources(self, comp, broker):
+        """
+        Get the most relevant activated datasources for each rule.
+        """
+        graph = dr.get_dependency_graph(comp)
+        ds = []
+        for cand in graph:
+            if cand in broker and is_datasource(cand):
+                val = broker[cand]
+                if not isinstance(val, list):
+                    val = [val]
 
-        if c:
-            # is the content a dictionary?
-            if isinstance(c, dict):
+                results = []
+                for v in val:
+                    if isinstance(v, ContentProvider):
+                        results.append(v.cmd or v.path or "python implementation")
+                ds.extend(results)
+        return ds
 
-                # does it contain a make_* class as a key?
-                v = c.get(val.__class__)
-                if v is not None:
-                    return v
+    def collect_rules(self, comp, broker):
+        """
+        Rule results are stored as dictionaries in the ``self.rules`` list.
+        Each dictionary contains the folowing keys:
+            name: fully qualified name of the rule
+            id: fully qualified rule name with "." replaced with "_"
+            response_type: the class name of the response object (make_info, etc.)
+            body: rendered content for the rule as provided in the rule module.
+            mod_doc: pydoc of the module containing the rule
+            rule_doc: pydoc of the rule
+            rule_path: absolute path to the source file of the rule
+            datasources: sorted list of command or files contributing to the rule
+        """
+        if comp in broker:
+            name = dr.get_name(comp)
+            rule_id = name.replace(".", "_")
+            val = broker[comp]
+            self.rules.append({
+                "name": name,
+                "id": rule_id,
+                "response_type": type(val).__name__,
+                "body": render(comp, val),
+                "mod_doc": sys.modules[comp.__module__].__doc__ or "",
+                "rule_doc": comp.__doc__ or "",
+                "rule_path": inspect.getabsfile(comp),
+                "datasources": sorted(set(self.get_datasources(comp, broker)))
+            })
 
-                # does it contain an error key?
-                key = val.get_key()
-                if key:
-                    v = c.get(key)
+    def preprocess(self):
+        """
+        Watches rules go by as they evaluate and collects information about
+        them for later display in postprocess.
+        """
+        self.start_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+        self.rules = []
+        self.broker.add_observer(self.collect_rules, rule)
 
-                    # is the value a dict that contains make_* classes?
-                    if isinstance(v, dict):
-                        return v.get(val.__class__)
-                    return v
-            else:
-                return c
+    def create_template_context(self):
+        raise NotImplementedError()
 
-    def format_rule(comp, val):
-        content = get_content(comp, val)
-        if content and val.get("type") != "skip":
-            return Template(content).render(val)
-        return str(val)
+    def postprocess(self):
+        """
+        Builds a dictionary of rule data as context for a jinja2 template that
+        renders the final output.
+        """
+        ctx = self.create_template_context()
+        print(Template(self.TEMPLATE).render(ctx), file=self.stream)
 
-    RENDERERS[rule] = format_rule
-except:
-    pass
+
+def get_content(obj, val):
+    """
+    Attempts to determine a jinja2 content template for a rule's response.
+    """
+    # does the rule define a content= kwarg?
+    c = dr.get_delegate(obj).content
+
+    # otherwise, does the rule module have a CONTENT attribute?
+    if c is None:
+        mod = sys.modules[obj.__module__]
+        c = getattr(mod, "CONTENT", None)
+
+    if c:
+        # is the content a dictionary?
+        if isinstance(c, dict):
+
+            # does it contain a make_* class as a key?
+            v = c.get(val.__class__)
+            if v is not None:
+                return v
+
+            # does it contain an error key?
+            key = val.get_key()
+            if key:
+                v = c.get(key)
+
+                # is the value a dict that contains make_* classes?
+                if isinstance(v, dict):
+                    return v.get(val.__class__)
+                return v
+        else:
+            return c
+
+
+def format_rule(comp, val):
+    content = get_content(comp, val)
+    if content and val.get("type") != "skip":
+        return Template(content).render(val)
+    return str(val)
+
+
+RENDERERS[rule] = format_rule
 
 
 def render(comp, val):
