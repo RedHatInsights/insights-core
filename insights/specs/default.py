@@ -24,7 +24,7 @@ from insights.core.spec_factory import CommandOutputProvider, ContentException, 
 from insights.core.spec_factory import simple_file, simple_command, glob_file
 from insights.core.spec_factory import first_of, foreach_collect, foreach_execute
 from insights.core.spec_factory import first_file, listdir
-from insights.parsers.mount import Mount
+from insights.parsers.mount import Mount, ProcMounts
 from insights.combiners.cloud_provider import CloudProvider
 from insights.specs import Specs
 
@@ -135,6 +135,7 @@ class DefaultSpecs(Specs):
     catalina_out = foreach_collect(tomcat_base, "%s/catalina.out")
     catalina_server_log = foreach_collect(tomcat_base, "%s/catalina*.log")
     cciss = glob_file("/proc/driver/cciss/cciss*")
+    cdc_wdm = simple_file("/sys/bus/usb/drivers/cdc_wdm/module/refcnt")
     ceilometer_central_log = simple_file("/var/log/ceilometer/central.log")
     ceilometer_collector_log = first_file(["/var/log/containers/ceilometer/collector.log", "/var/log/ceilometer/collector.log"])
     ceilometer_compute_log = first_file(["/var/log/containers/ceilometer/compute.log", "/var/log/ceilometer/compute.log"])
@@ -257,7 +258,15 @@ class DefaultSpecs(Specs):
     docker_storage = simple_file("/etc/sysconfig/docker-storage")
     docker_storage_setup = simple_file("/etc/sysconfig/docker-storage-setup")
     docker_sysconfig = simple_file("/etc/sysconfig/docker")
-    dumpdev = simple_command("/bin/awk '/ext[234]/ { print $1; }' /proc/mounts")
+
+    @datasource(ProcMounts)
+    def dumpdev(broker):
+        mnt = broker[ProcMounts]
+        mounted_dev = [m.mounted_device for m in mnt if m.mount_type in ('ext2', 'ext3', 'ext4')]
+        if mounted_dev:
+            return mounted_dev
+        raise SkipComponent()
+
     dumpe2fs_h = foreach_execute(dumpdev, "/sbin/dumpe2fs -h %s")
     engine_config_all = simple_command("/usr/bin/engine-config --all")
     engine_log = simple_file("/var/log/ovirt-engine/engine.log")
@@ -288,7 +297,6 @@ class DefaultSpecs(Specs):
     foreman_tasks_config = first_file(["/etc/sysconfig/foreman-tasks", "/etc/sysconfig/dynflowd"])
     fstab = simple_file("/etc/fstab")
     galera_cnf = first_file(["/var/lib/config-data/puppet-generated/mysql/etc/my.cnf.d/galera.cnf", "/etc/my.cnf.d/galera.cnf"])
-    getcert_list = simple_command("/usr/bin/getcert list")
     getconf_page_size = simple_command("/usr/bin/getconf PAGE_SIZE")
     getenforce = simple_command("/usr/sbin/getenforce")
     getsebool = simple_command("/usr/sbin/getsebool -a")

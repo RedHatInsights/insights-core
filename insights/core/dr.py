@@ -376,8 +376,7 @@ def _import(path, continue_on_error):
     log.debug("Importing %s" % path)
     try:
         return importlib.import_module(path)
-    except Exception as ex:
-        log.exception(ex)
+    except BaseException:
         if not continue_on_error:
             raise
 
