@@ -10,7 +10,7 @@ from glob import glob
 from subprocess import call
 
 from insights.core import blacklist, dr
-from insights.core.filters import add_filter, get_filters
+from insights.core.filters import _add_filter, get_filters
 from insights.core.context import ExecutionContext, FSRoots, HostContext
 from insights.core.plugins import component, datasource, ContentException, is_datasource
 from insights.util import fs, streams, which
@@ -901,7 +901,7 @@ class find(object):
         self.__module__ = self.__class__.__module__
 
         if getattr(spec, "filterable", False):
-            add_filter(spec, pattern)
+            _add_filter(spec, pattern)
 
         component(spec)(self)
 
