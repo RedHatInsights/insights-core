@@ -888,6 +888,10 @@ class find(object):
         spec (datasource): some datasource, ideally filterable.
         pattern (string / list): a string or list of strings to match (no
             patterns supported)
+
+    Returns:
+        A dict where each key is a command, path, or spec name, and each
+        value is a list of matching lines.
     """
 
     def __init__(self, spec, pattern):
