@@ -4,7 +4,8 @@ from itertools import groupby
 from operator import itemgetter
 
 from insights import make_info, make_fail, make_response, make_pass
-from insights.formats import TemplateFormat, FormatterAdapter
+from insights.formats import FormatterAdapter
+from insights.formats.template import TemplateFormat
 
 
 class HtmlFormat(TemplateFormat):
