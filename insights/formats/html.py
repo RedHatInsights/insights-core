@@ -79,13 +79,13 @@ class HtmlFormat(TemplateFormat):
                 {%- endfor %}
                 </ol>
                 <hr />
+                Rule source: {{rule.source_path}}
+                <hr />
           Documentation:
                 <pre>
 {{rule.mod_doc}}
 {{rule.rule_doc}}
                 </pre>
-                <hr />
-                Rule source: {{rule.source_path}}
                 </div>
               </div>
             </div>
