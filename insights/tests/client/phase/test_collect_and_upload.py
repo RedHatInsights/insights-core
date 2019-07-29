@@ -33,6 +33,7 @@ def test_collect_and_output_payload_on(insights_config, insights_client):
     """
     insights_config.return_value.load_all.return_value.payload = 'testp'
     insights_config.return_value.load_all.return_value.content_type = 'testct'
+    insights_config.return_value.load_all.return_value.compliance = False
     try:
         collect_and_output()
     except SystemExit:
@@ -51,6 +52,7 @@ def test_collect_and_output_payload_off(insights_config, insights_client):
     Archive deleted after upload
     """
     insights_config.return_value.load_all.return_value.payload = False
+    insights_config.return_value.load_all.return_value.compliance = False
     try:
         collect_and_output()
     except SystemExit:
@@ -70,6 +72,7 @@ def test_exit_ok(insights_config, insights_client):
     """
     Support collection replaces the normal client run.
     """
+    insights_config.return_value.load_all.return_value.compliance = False
     with raises(SystemExit) as exc_info:
         collect_and_output()
     assert exc_info.value.code == 0
