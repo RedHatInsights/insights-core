@@ -35,10 +35,6 @@ This combiner includes GETTING these elements of ``vdo status``:
         0
         >>> vdo.get_overhead_used('vdo1')
         787140
-        >>> vdo.get_savings_ratio('vdo2')
-        14.04
-        >>> vdo.get_logical_free_savings_ratio_pct('vdo2')
-        37226.92
 
     Attributes:
 
