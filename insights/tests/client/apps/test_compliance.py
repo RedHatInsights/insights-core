@@ -35,10 +35,11 @@ def test_get_policies_error(config):
     compliance_client.conn.session.get.assert_called_with('https://localhost/app/compliance/profiles', params={'hostname': 'foo'})
 
 
+@patch("insights.client.apps.compliance.linux_distribution", return_value=(None, '6.5', None))
 @patch("insights.client.config.InsightsConfig")
-def test_os_release(config):
+def test_os_release(config, linux_distro_mock):
     compliance_client = ComplianceClient(config)
-    assert int(compliance_client.os_release()) in range(6, 9)
+    assert compliance_client.os_release() == '6'
 
 
 @patch("insights.client.config.InsightsConfig")
