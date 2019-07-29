@@ -1,4 +1,4 @@
-from insights.core.spec_factory import first_of, glob_file, simple_file, head
+from insights.core.spec_factory import first_of, glob_file, simple_file, head, first_file
 from functools import partial
 from insights.core.context import HostArchiveContext
 from insights.specs import Specs
@@ -46,7 +46,6 @@ class InsightsArchiveSpecs(Specs):
     docker_info = simple_file("insights_commands/docker_info")
     docker_list_containers = simple_file("insights_commands/docker_ps_--all_--no-trunc")
     docker_list_images = simple_file("insights_commands/docker_images_--all_--no-trunc_--digests")
-    dumpdev = simple_file("insights_commands/awk_.ext_234_._print_1_.proc.mounts")
     engine_config_all = simple_file("insights_commands/engine-config_--all")
     ethtool = glob_file("insights_commands/ethtool_*", ignore="ethtool_-.*")
     ethtool_S = glob_file("insights_commands/ethtool_-S_*")
@@ -141,6 +140,7 @@ class InsightsArchiveSpecs(Specs):
     max_uid = simple_file("insights_commands/awk_-F_if_3_max_max_3_END_print_max_.etc.passwd")
     md5chk_files = glob_file("insights_commands/md5sum_*")
     mount = simple_file("insights_commands/mount")
+    modinfo = glob_file("insights_commands/modinfo_*")
     modinfo_i40e = simple_file("insights_commands/modinfo_i40e")
     modinfo_igb = simple_file("insights_commands/modinfo_igb")
     modinfo_ixgbe = simple_file("insights_commands/modinfo_ixgbe")
@@ -235,6 +235,7 @@ class InsightsArchiveSpecs(Specs):
     systemctl_cat_rpcbind_socket = simple_file("insights_commands/systemctl_cat_rpcbind.socket")
     systemctl_cinder_volume = simple_file("insights_commands/systemctl_show_openstack-cinder-volume")
     systemctl_httpd = simple_file("insights_commands/systemctl_show_httpd")
+    systemctl_nginx = simple_file("insights_commands/systemctl_show_nginx")
     systemctl_list_unit_files = simple_file("insights_commands/systemctl_list-unit-files")
     systemctl_list_units = simple_file("insights_commands/systemctl_list-units")
     systemctl_mariadb = simple_file("insights_commands/systemctl_show_mariadb")
@@ -244,8 +245,8 @@ class InsightsArchiveSpecs(Specs):
     systemctl_qpidd = simple_file("insights_commands/systemctl_show_qpidd")
     systemctl_qdrouterd = simple_file("insights_commands/systemctl_show_qdrouterd")
     systemctl_smartpdc = simple_file("insights_commands/systemctl_show_smart_proxy_dynflow_core")
-    systemd_docker = simple_file("insights_commands/systemctl_cat_docker.service")
-    systemd_openshift_node = simple_file("insights_commands/systemctl_cat_atomic-openshift-node.service")
+    systemd_docker = first_file(["insights_commands/systemctl_cat_docker.service", "/usr/lib/systemd/system/docker.service"])
+    systemd_openshift_node = first_file(["insights_commands/systemctl_cat_atomic-openshift-node.service", "/usr/lib/systemd/system/atomic-openshift-node.service"])
     systool_b_scsi_v = simple_file("insights_commands/systool_-b_scsi_-v")
     teamdctl_config_dump = glob_file("insights_commands/teamdctl_*_config_dump")
     teamdctl_state_dump = glob_file("insights_commands/teamdctl_*_state_dump")

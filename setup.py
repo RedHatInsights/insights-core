@@ -16,6 +16,7 @@ entry_points = {
         'insights-run = insights:main',
         'insights = insights.command_parser:main',
         'insights-cat = insights.tools.cat:main',
+        'insights-dupkeycheck = insights.tools.dupkeycheck:main',
         'insights-inspect = insights.tools.insights_inspect:main',
         'insights-info = insights.tools.query:main',
         'gen_api = insights.tools.generate_api_config:main',
@@ -54,8 +55,7 @@ maybe_require("argparse")
 
 
 client = set([
-    'requests',
-    'pyOpenSSL',
+    'requests'
 ])
 
 develop = set([
@@ -121,6 +121,7 @@ if __name__ == "__main__":
             'develop': list(runtime | develop | client | docs | linting | testing | cluster),
             'develop26': list(runtime | develop | client | linting | testing | cluster),
             'client': list(runtime | client),
+            'client-develop': list(runtime | develop | client | linting | testing),
             'cluster': list(runtime | cluster),
             'openshift': list(runtime | openshift),
             'optional': list(optional),
