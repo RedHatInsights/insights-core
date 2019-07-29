@@ -44,7 +44,7 @@ class SimpleHtmlFormat(HtmlFormat):
   <body>
   <div class="main">
   <h2 align="center">Analysis of {{root}}</h2>
-  <h4 align="center">Performed at {{start_time}}</h4>
+  <h4 align="center">Performed at {{start_time}} UTC</h4>
     <section>
       <h2>System Information</h2>
         <pre>
