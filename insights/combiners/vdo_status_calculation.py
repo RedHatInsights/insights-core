@@ -24,7 +24,7 @@ This combiner includes GETTING these elements of ``vdo status``:
         >>> vdo.get_slab_size('vdo1')
         '2G'
         >>> vdo.volumns
-        ['vdo2', 'vdo1']
+        ['vdo1', 'vdo2']
         >>> vdo.get_physical_blocks('vdo1')
         1835008
         >>> vdo.get_physical_used('vdo1')
@@ -36,9 +36,9 @@ This combiner includes GETTING these elements of ``vdo status``:
         >>> vdo.get_overhead_used('vdo1')
         787140
         >>> vdo.get_savings_ratio('vdo2')
-        14.0
+        14.04
         >>> vdo.get_logical_free_savings_ratio_pct('vdo2')
-        37333.29
+        37226.92
 
     Attributes:
 
@@ -61,6 +61,7 @@ This combiner includes GETTING these elements of ``vdo status``:
 
 """
 
+from __future__ import division
 from insights.core.plugins import combiner
 from insights.parsers.vdo_status import VDOStatus
 from insights.parsers import ParseException
@@ -75,7 +76,9 @@ class VDOStatusCalculation(object):
     def __init__(self, vstatus, vol=None):
         try:
             self.data = vstatus.data
-            self.volumns = vstatus.data['VDOs'].keys()
+            keys = list(vstatus.data['VDOs'].keys())
+            keys.sort()
+            self.volumns = keys
         except:
             raise ParseException("couldn't parse yaml")
 
@@ -147,16 +150,16 @@ class VDOStatusCalculation(object):
             return 0
         else:
             pct = float(self.logical_used / self.physical_used)
-            return round(pct, 2)
+            return float("%.2f" % pct)
 
     def get_physical_used_pct(self, vol):
         """ float: Returns physical used ratio"""
         self.__read_key_sizes__(vol)
         pct = (self.physical_used + self.overhead_used) / self.physical_size
-        return round(pct, 2)
+        return float("%.2f" % pct)
 
     def get_logical_free_savings_ratio_pct(self, vol):
         """float: Returns logical free savings ratio"""
         self.__read_key_sizes__(vol)
         pct = (self.get_logical_free(vol) / self.get_savings_ratio(vol))
-        return round(pct, 2)
+        return float("%.2f" % pct)

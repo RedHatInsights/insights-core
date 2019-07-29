@@ -409,8 +409,8 @@ def test_values():
     assert res.get_slab_size('vdo1') == '2G'
     assert res.slab_size == '2G'
 
-    assert res.volumns == ['vdo2', 'vdo1']
-    assert res.get_all_volumns() == ['vdo2', 'vdo1']
+    assert res.volumns == ['vdo1', 'vdo2']
+    assert res.get_all_volumns() == ['vdo1', 'vdo2']
 
     assert res.get_physical_blocks('vdo1') == 1835008
     assert res.physical_size == 1835008
@@ -418,7 +418,7 @@ def test_values():
     assert res.overhead_used == 787140
     assert res.get_overhead_used('vdo1') == 787140
 
-    assert res.get_physical_used_pct('vdo1') == 0.0
+    assert res.get_physical_used_pct('vdo1') == 0.43
 
     assert res.get_physical_used('vdo1') == 0
     assert res.physical_used == 0
@@ -433,9 +433,9 @@ def test_values():
     assert res.get_physical_free('vdo1') == 1047868
 
     assert res.get_savings_ratio('vdo1') == 0
-    assert res.get_savings_ratio('vdo2') == 14.0
+    assert res.get_savings_ratio('vdo2') == 14.04
 
-    assert res.get_logical_free_savings_ratio_pct('vdo2') == 37333.29
+    assert res.get_logical_free_savings_ratio_pct('vdo2') == 37226.92
 
 
 def test_documentation():
