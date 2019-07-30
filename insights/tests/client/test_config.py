@@ -105,3 +105,17 @@ def test_to_json_quiet_implies_diagnosis():
     c.load_all()
     assert c.diagnosis is True
     assert c.legacy_upload is False
+
+
+def test_offline_disables_options():
+    '''
+    Can't use certain options in conjunction with --offline
+    '''
+    with pytest.raises(ValueError):
+        InsightsConfig(to_json=True, offline=True)
+
+    with pytest.raises(ValueError):
+        InsightsConfig(test_connection=True, offline=True)
+
+    with pytest.raises(ValueError):
+        InsightsConfig(status=True, offline=True)
