@@ -471,6 +471,32 @@ def test_vdo_status_full():
     assert vdo.data["VDOs"]["vdo1"]["Device mapper status"] == "0 8370216 vdo /dev/sda3 albserver online cpu=2,bio=4,ack=1,bioRotationInterval=64"
     assert vdo.data["VDOs"]["vdo1"]["VDO statistics"]["/dev/mapper/vdo1"]["KVDO module bios used"] == 74572
 
+    assert vdo.get_slab_size('vdo1') == '2G'
+
+    assert vdo.volumns == ['vdo1', 'vdo2']
+    assert vdo.get_all_volumns() == ['vdo1', 'vdo2']
+
+    assert vdo.get_physical_blocks('vdo1') == 1835008
+    assert vdo.get_overhead_used('vdo1') == 787140
+
+    assert vdo.get_physical_used_pct('vdo1') == 0.43
+    assert vdo.get_physical_used('vdo1') == 0
+
+    assert vdo.get_logical_blocks('vdo1') == 1046277
+    assert vdo.get_logical_used('vdo1') == 0
+
+    assert vdo.get_logical_free('vdo1') == 1046277
+    assert vdo.get_physical_free('vdo1') == 1047868
+
+    # python 3 
+    # assert vdo.get_savings_ratio('vdo1') == 0
+    # assert vdo.get_savings_ratio('vdo2') == 0
+    # assert vdo.get_logical_free_savings_ratio_pct('vdo2') == -1
+
+    # python 2
+    # assert vdo.get_savings_ratio('vdo2') == 14.04
+    # assert vdo.get_logical_free_savings_ratio_pct('vdo2') == 37226.92
+
 
 def test_vdo_status_documentation():
     """
