@@ -918,6 +918,7 @@ class DefaultSpecs(Specs):
     uploader_log = simple_file("/var/log/redhat-access-insights/redhat-access-insights.log")
     uptime = simple_command("/usr/bin/uptime")
     usr_journald_conf_d = glob_file(r"usr/lib/systemd/journald.conf.d/*.conf")  # note that etc_journald.conf.d also exists
+    vdo_status = simple_command("/usr/bin/vdo status")
     vgdisplay = simple_command("/sbin/vgdisplay")
     vdsm_conf = simple_file("etc/vdsm/vdsm.conf")
     vdsm_id = simple_file("etc/vdsm/vdsm.id")
