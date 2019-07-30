@@ -1,5 +1,5 @@
 """
-VdoStatus - command ``/usr/bin/vdo status``
+VDOStatus - command ``/usr/bin/vdo status``
 ===========================================
 
 Module for parsing the output of command ``vdo status``. The bulk of the
@@ -11,27 +11,12 @@ from __future__ import division
 from insights import parser
 from insights import YAMLParser
 from insights.specs import Specs
-from insights.parsers import ParseException
 
 
 @parser(Specs.vdo_status)
 class VDOStatus(YAMLParser):
     """
     Class for parsing ``vdo status`` command output.
-
-    This class includes GETTING following information of ``vdo status``::
-
-        vdo slab size
-        vdo volumns
-        vdo data blocks used
-        vdo logical blocks used
-        vdo overhead blocks used
-        vdo physical blocks
-        vdo savings ratio
-        vdo physical used pct
-        vdo logical free savdings ratio pct
-        vdo physical free
-
 
     Typical output of command ``vdo status`` looks like::
 
@@ -50,62 +35,22 @@ class VDOStatus(YAMLParser):
           vdo1:
             Acknowledgement threads: 1
             Activate: enabled
-            Bio rotation interval: 64
-            Bio submission threads: 4
-            Block map cache size: 128M
-            Block map period: 16380
-            Block size: 4096
-            CPU-work threads: 2
-            Compression: enabled
-            Configured write policy: auto
-            Deduplication: enabled
             Device mapper status: 0 8370216 vdo /dev/sda5 albserver online cpu=2,bio=4,ack=1,bioRotationInterval=64
             Physical size: 7G
-            Physical threads: 1
             Slab size: 2G
             Storage device: /dev/sda5
             VDO statistics:
               /dev/mapper/vdo1:
-                1K-blocks: 7340032
-                1K-blocks available: 4191472
-                1K-blocks used: 3148560
-                512 byte emulation: false
-                KVDO module bios used: 298288
-                KVDO module bytes used: 3403856064
-                KVDO module peak bio count: 298576
-                KVDO module peak bytes used: 3403857992
-                bios acknowledged discard: 0
-                bios acknowledged flush: 0
-                bios acknowledged fua: 0
-                bios acknowledged partial discard: 0
-                bios acknowledged partial flush: 0
-                bios acknowledged partial fua: 0
-                bios acknowledged partial read: 0
-                bios acknowledged partial write: 0
-                slab journal tail busy count: 0
-                slab summary blocks written: 0
-                slabs opened: 0
-                slabs reopened: 0
-                updates found: 0
-                updates not found: 0
-                logical blocks: 1046277
-                logical blocks used: 0
-                maximum VDO IO requests in progress: 9
-                maximum dedupe queries: 0
-                no space error count: 0
-                operating mode: normal
                 overhead blocks used: 787140
                 physical blocks: 1835008
                 data blocks used: 0
-                ...
           vdo2:
             Acknowledgement threads: 1
             Activate: enabled
-            ...
+            Device mapper status: 0 8370212 vdo /dev/sda6 albserver online cpu=2,bio=4,ack=1,bioRotationInterval=64
             VDO statistics:
               /dev/mapper/vdo1:
                 1K-blocks: 7340032
-                ...
 
     Examples:
         >>> type(vdo)
@@ -122,88 +67,161 @@ class VDOStatus(YAMLParser):
         {'Date': '2019-07-24 20:48:16-04:00', 'Node': 'dell-m620-10.rhts.gsslab.pek2.redhat.com'}
         >>> vdo['VDOs']['vdo2']['Acknowledgement threads']
         1
-        >>> vdo.get_slab_size('vdo1')
+        >>> vdo.get_slab_size_of_vol('vdo1')
         '2G'
         >>> vdo.volumns
         ['vdo1', 'vdo2']
-        >>> vdo.get_physical_blocks('vdo1')
+        >>> vdo.get_physical_blocks_of_vol('vdo1')
         1835008
-        >>> vdo.get_physical_used('vdo1')
+        >>> vdo.get_physical_used_of_vol('vdo1')
         0
-        >>> vdo.get_physical_free('vdo1')
+        >>> vdo.get_physical_free_of_vol('vdo1')
         1047868
-        >>> vdo.get_logical_used('vdo1')
+        >>> vdo.get_logical_used_of_vol('vdo1')
         0
-        >>> vdo.get_overhead_used('vdo1')
+        >>> vdo.get_overhead_used_of_vol('vdo1')
         787140
-
-    Attributes:
-
-        data (dict): the result parsed of 'vdo status'
-
-        volumns (list): The list the vdo volumns involved
-
-        dmapper (dict): The dict of device mapper vdo under 'VDO statistics'
 
     Raises:
         ParseException: When input content is not available to parse
 
+    Attributes:
+        data (dict): the result parsed of 'vdo status'
+        volumns (list): The list the vdo volumns involved
+
     """
 
-    def __init__(self, content):
-        YAMLParser.__init__(self, content)
-        self.volumns = []
-        try:
-            keys = list(self.data['VDOs'].keys())
-            keys.sort()
-            self.volumns = keys
-        except:
-            raise ParseException("couldn't parse yaml")
-
     def __get_dev_mapper__(self, vol):
+        """
+        Device mapper path of a specified vdo
+
+        Args:
+            vol: String of vdo volumne name
+
+        Returns:
+            dict: Device mapper information of a specified volumne
+
+        Raises:
+            KeyError: If KEYs doesn't exist
+        """
+
         try:
             dm_path = ('/dev/mapper/%s' % vol)
             return self.data['VDOs'][vol]['VDO statistics'][dm_path]
         except:
-            raise ParseException("couldn't parse yaml")
+            err_path = "['VDOs'][%s]['VDO statistics'][%s]" % (vol, dm_path)
+            raise KeyError('No key(s) named: %s' % err_path)
 
-    def get_all_volumns(self):
-        """list: vdo volumns"""
-        return self.volumns
+    @property
+    def volumns(self):
+        """
+        The volumns appeared in vdo status
 
-    def get_slab_size(self, vol):
-        """str: slab size"""
+        Returns:
+            list: vdo volumns
+        """
+        return sorted(self.data['VDOs'].keys()) if 'VDOs' in self.data else []
+
+    def get_slab_size_of_vol(self, vol):
+        """
+        The slab size of a specified volumne
+
+        Args:
+            vol (str): The vdo volumne name specified
+
+        Returns:
+            str: Slab size of specified vdo volumne
+        """
         return self.data['VDOs'][vol]['Slab size']
 
-    def get_physical_blocks(self, vol):
-        """int: physical blocks size"""
+    def get_physical_blocks_of_vol(self, vol):
+        """
+        The physical blocks of a specified volumne
+
+        Args:
+            vol (str): The vdo volumne name specified
+
+        Returns:
+            int: physical blocks size
+        """
         dm = self.__get_dev_mapper__(vol)
         return dm['physical blocks']
 
-    def get_physical_used(self, vol):
-        """int: Returns size of physical blocks used"""
+    def get_physical_used_of_vol(self, vol):
+        """
+        The physical used blocks of a specified volumn
+
+        Args:
+            vol (str): The vdo volumne name specified
+
+        Returns:
+            int: Returns size of physical blocks used
+        """
         dm = self.__get_dev_mapper__(vol)
         return dm['data blocks used']
 
-    def get_overhead_used(self, vol):
-        """int: Returns size of overhead blocks used"""
+    def get_overhead_used_of_vol(self, vol):
+        """
+        The overhead used blocks of a specified volumne
+
+        Args:
+            vol (str): The vdo volumne name specified
+
+        Returns:
+            int: Returns size of overhead blocks used
+        """
         dm = self.__get_dev_mapper__(vol)
         return dm['overhead blocks used']
 
-    def get_logical_blocks(self, vol):
-        """int: Returns size of logical blocks"""
+    def get_logical_blocks_of_vol(self, vol):
+        """
+        The logical blocks of a specified volumne
+
+        Args:
+            vol (str): The vdo volumne name specified
+
+        Returns:
+            int: Returns size of logical blocks
+        """
         dm = self.__get_dev_mapper__(vol)
         return dm['logical blocks']
 
-    def get_logical_used(self, vol):
-        """int: Returns size of logical blocks used"""
+    def get_logical_used_of_vol(self, vol):
+        """
+        The logical used blocks of a specified volumne
+
+        Args:
+            vol (str): The vdo volumne name specified
+
+        Returns:
+            int: Returns size of logical blocks used
+        """
         dm = self.__get_dev_mapper__(vol)
         return dm['logical blocks used']
 
-    def get_logical_free(self, vol):
-        """int: Returns size of logical free"""
-        return (self.get_logical_blocks(vol) - self.get_logical_used(vol))
+    def get_logical_free_of_vol(self, vol):
+        """
+        The logical free blocks of a specified volumne
 
-    def get_physical_free(self, vol):
-        """int: Returns size of physical free"""
-        return (self.get_physical_blocks(vol) - self.get_overhead_used(vol) - self.get_physical_used(vol))
+        Args:
+            vol (str): The vdo volumne name specified
+
+        Returns:
+            int: Returns size of logical free
+        """
+        return (self.get_logical_blocks_of_vol(vol) -
+                self.get_logical_used_of_vol(vol))
+
+    def get_physical_free_of_vol(self, vol):
+        """
+        The physical free blocks of a specified volumne
+
+        Args:
+            vol (str): The vdo volumne name specified
+
+        Returns:
+            int: Returns size of physical free
+        """
+        return (self.get_physical_blocks_of_vol(vol) -
+                self.get_overhead_used_of_vol(vol) -
+                self.get_physical_used_of_vol(vol))

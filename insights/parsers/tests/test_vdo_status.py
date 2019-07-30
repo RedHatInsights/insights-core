@@ -487,18 +487,17 @@ def test_vdo_status_simple():
     assert vdo.data['VDO status']['Date'] == '2019-07-27 04:40:40-04:00'
     assert vdo.data['VDO status']['Node'] == 'rdma-qe-04.lab.bos.redhat.com'
 
-    assert vdo.get_slab_size('vdo1') == '2G'
+    assert vdo.get_slab_size_of_vol('vdo1') == '2G'
     assert vdo.volumns == ['vdo1', 'vdo2']
-    assert vdo.get_all_volumns() == ['vdo1', 'vdo2']
 
-    assert vdo.get_physical_blocks('vdo1') == 1572864
-    assert vdo.get_overhead_used('vdo1') == 728175
-    assert vdo.get_physical_used('vdo1') == 161863
-    assert vdo.get_physical_free('vdo1') == 682826
+    assert vdo.get_physical_blocks_of_vol('vdo1') == 1572864
+    assert vdo.get_overhead_used_of_vol('vdo1') == 728175
+    assert vdo.get_physical_used_of_vol('vdo1') == 161863
+    assert vdo.get_physical_free_of_vol('vdo1') == 682826
 
-    assert vdo.get_logical_blocks('vdo1') == 844568
-    assert vdo.get_logical_used('vdo1') == 844502
-    assert vdo.get_logical_free('vdo1') == 66
+    assert vdo.get_logical_blocks_of_vol('vdo1') == 844568
+    assert vdo.get_logical_used_of_vol('vdo1') == 844502
+    assert vdo.get_logical_free_of_vol('vdo1') == 66
 
 
 def test_vdo_status_empty():
@@ -524,23 +523,22 @@ def test_vdo_status_full():
     assert vdo.data["VDOs"]["vdo1"]["Device mapper status"] == "0 8370216 vdo /dev/sda3 albserver online cpu=2,bio=4,ack=1,bioRotationInterval=64"
     assert vdo.data["VDOs"]["vdo1"]["VDO statistics"]["/dev/mapper/vdo1"]["KVDO module bios used"] == 74572
 
-    assert vdo.get_slab_size('vdo1') == '2G'
+    assert vdo.get_slab_size_of_vol('vdo1') == '2G'
 
     assert vdo.volumns == ['vdo1', 'vdo2']
-    assert vdo.get_all_volumns() == ['vdo1', 'vdo2']
 
-    assert vdo.get_physical_blocks('vdo1') == 1835008
-    assert vdo.get_overhead_used('vdo1') == 787140
-    assert vdo.get_physical_used('vdo1') == 0
+    assert vdo.get_physical_blocks_of_vol('vdo1') == 1835008
+    assert vdo.get_overhead_used_of_vol('vdo1') == 787140
+    assert vdo.get_physical_used_of_vol('vdo1') == 0
 
-    assert vdo.get_logical_blocks('vdo1') == 1046277
-    assert vdo.get_logical_used('vdo1') == 0
+    assert vdo.get_logical_blocks_of_vol('vdo1') == 1046277
+    assert vdo.get_logical_used_of_vol('vdo1') == 0
 
-    assert vdo.get_logical_free('vdo1') == 1046277
-    assert vdo.get_physical_free('vdo1') == 1047868
+    assert vdo.get_logical_free_of_vol('vdo1') == 1046277
+    assert vdo.get_physical_free_of_vol('vdo1') == 1047868
 
-    assert vdo.get_logical_used('vdo2') == 3
-    assert vdo.get_physical_used('vdo2') == 1
+    assert vdo.get_logical_used_of_vol('vdo2') == 3
+    assert vdo.get_physical_used_of_vol('vdo2') == 1
 
 
 def test_vdo_status_documentation():
@@ -564,20 +562,11 @@ def test_vdo_status_exp():
     assert "couldn't parse yaml" in str(sc1)
 
 
-def test_vdo_status_exp2():
-    """
-    Here test the examples cause expections
-    """
-    with pytest.raises(ParseException) as sc1:
-        VDOStatus(context_wrap(INPUT_SIMPLE_EXP))
-    assert "couldn't parse yaml" in str(sc1)
-
-
 def test_vdo_status_exp3():
     """
     Here test the examples cause expections
     """
-    with pytest.raises(ParseException) as sc1:
+    with pytest.raises(KeyError) as sc1:
         vdo = VDOStatus(context_wrap(INPUT_STATUS_SIMPLE))
-        vdo.get_physical_blocks('vdo3')
-    assert "couldn't parse yaml" in str(sc1)
+        vdo.get_physical_blocks_of_vol('vdo3')
+    assert "No key(s) named" in str(sc1)
