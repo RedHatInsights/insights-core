@@ -87,6 +87,8 @@ def main():
     fix_arg_dashes()
     try:
         InsightsCli()
+    except SystemExit:
+        raise
     except BaseException as ex:
         print(ex)
 
