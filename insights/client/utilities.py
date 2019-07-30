@@ -10,6 +10,7 @@ import datetime
 import shlex
 import re
 import stat
+import sys
 from subprocess import Popen, PIPE, STDOUT
 from six.moves.configparser import RawConfigParser
 
@@ -251,6 +252,10 @@ def print_egg_versions():
         '/var/lib/insights/last_stable.egg',
         '/etc/insights-client/rpm.egg',
     ]
+    if not sys.executable:
+        logger.debug('Python executable not found.')
+        return
+
     for egg in eggs:
         if egg is None:
             logger.debug('ENV egg not defined.')
@@ -258,8 +263,12 @@ def print_egg_versions():
         if not os.path.exists(egg):
             logger.debug('%s not found.', egg)
             continue
-        proc = Popen(['python', '-c', 'from insights.client import InsightsClient; print(InsightsClient().version())'],
-                     env={'PYTHONPATH': egg, 'PATH': os.getenv('PATH')}, stdout=PIPE, stderr=STDOUT)
+        try:
+            proc = Popen([sys.executable, '-c', 'from insights.client import InsightsClient; print(InsightsClient().version())'],
+                         env={'PYTHONPATH': egg, 'PATH': os.getenv('PATH')}, stdout=PIPE, stderr=STDOUT)
+        except OSError:
+            logger.debug('Could not start python.')
+            return
         stdout, stderr = proc.communicate()
         version = stdout.decode('utf-8', 'ignore').strip()
         logger.debug('%s: %s', egg, version)
