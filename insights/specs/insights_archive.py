@@ -255,6 +255,7 @@ class InsightsArchiveSpecs(Specs):
     uname = simple_file("insights_commands/uname_-a")
     uptime = simple_file("insights_commands/uptime")
     version_info = simple_file("version_info")
+    vdo_status = simple_file("insights_commands/vdo_status")
     vgdisplay = simple_file("insights_commands/vgdisplay")
     vgs_noheadings = simple_file("insights_commands/vgs_--nameprefixes_--noheadings_--separator_-a_-o_vg_all_--config_global_locking_type_0")
     vgs_noheadings_all = simple_file("insights_commands/vgs_--nameprefixes_--noheadings_--separator_-a_-o_vg_all_--config_global_locking_type_0_devices_filter_a")
