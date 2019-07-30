@@ -19,8 +19,7 @@ class VDOStatus(YAMLParser):
     """
     Class for parsing ``vdo status`` command output.
 
-    This class includes GETTING following information of ``vdo status``
-    and the common calculation::
+    This class includes GETTING following information of ``vdo status``::
 
         vdo slab size
         vdo volumns
@@ -208,25 +207,3 @@ class VDOStatus(YAMLParser):
     def get_physical_free(self, vol):
         """int: Returns size of physical free"""
         return (self.get_physical_blocks(vol) - self.get_overhead_used(vol) - self.get_physical_used(vol))
-
-    def get_savings_ratio(self, vol):
-        """float: Returns savings ratio"""
-        if self.get_physical_used(vol) == 0:
-            return 0
-        else:
-            pct = float(self.get_logical_used(vol) / self.get_physical_used(vol))
-            return float("%.2f" % pct)
-
-    def get_physical_used_pct(self, vol):
-        """ float: Returns physical used ratio"""
-        pct = (self.get_physical_used(vol) + self.get_overhead_used(vol)) /\
-                self.get_physical_blocks(vol)
-        return float("%.2f" % pct)
-
-    def get_logical_free_savings_ratio_pct(self, vol):
-        """float: Returns logical free savings ratio"""
-        if self.get_savings_ratio(vol) != 0:
-            pct = (self.get_logical_free(vol) / self.get_savings_ratio(vol))
-        else:
-            pct = -1
-        return float("%.2f" % pct)

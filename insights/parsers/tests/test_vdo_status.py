@@ -500,21 +500,11 @@ def test_vdo_status_simple():
     assert vdo.get_logical_used('vdo1') == 844502
     assert vdo.get_logical_free('vdo1') == 66
 
-    assert vdo.get_physical_used_pct('vdo1') == 0.57
-
-    # python 3
-    assert vdo.get_savings_ratio('vdo1') == 5.22
-    assert vdo.get_logical_free_savings_ratio_pct('vdo1') == 12.64
-    assert vdo.get_logical_free_savings_ratio_pct('vdo2') == -1
-
-    # python 2
-    # assert vdo.get_savings_ratio('vdo2') == 14.04
-    # assert vdo.get_logical_free_savings_ratio_pct('vdo2') == 37226.92
-
 
 def test_vdo_status_empty():
     vdo = VDOStatus(context_wrap(INPUT_EMPTY))
     assert vdo.data["VDOs"] == {}
+
     assert vdo.data["Configuration"]["File"] == "does not exist"
     assert vdo.data["Configuration"]["Last modified"] == "not available"
 
@@ -523,11 +513,13 @@ def test_vdo_status_full():
     vdo = VDOStatus(context_wrap(INPUT_STATUS_FULL))
     assert vdo.data["VDO status"]["Date"] == "2019-07-24 20:48:16-04:00"
     assert vdo.data["VDO status"]["Node"] == "dell-m620-10.rhts.gsslab.pek2.redhat.com"
+
     assert vdo.data["Kernel module"]["Name"] == "kvdo"
     assert vdo.data["Kernel module"]["Version information"]["kvdo version"] == "6.1.0.153"
-    assert vdo.data["Configuration"]["File"] == "/etc/vdoconf.yml"
 
+    assert vdo.data["Configuration"]["File"] == "/etc/vdoconf.yml"
     assert vdo.data["Configuration"]["Last modified"] == "2019-07-24 20:47:59"
+
     assert vdo.data["VDOs"]["vdo1"]["Acknowledgement threads"] == 1
     assert vdo.data["VDOs"]["vdo1"]["Device mapper status"] == "0 8370216 vdo /dev/sda3 albserver online cpu=2,bio=4,ack=1,bioRotationInterval=64"
     assert vdo.data["VDOs"]["vdo1"]["VDO statistics"]["/dev/mapper/vdo1"]["KVDO module bios used"] == 74572
@@ -539,8 +531,6 @@ def test_vdo_status_full():
 
     assert vdo.get_physical_blocks('vdo1') == 1835008
     assert vdo.get_overhead_used('vdo1') == 787140
-
-    assert vdo.get_physical_used_pct('vdo1') == 0.43
     assert vdo.get_physical_used('vdo1') == 0
 
     assert vdo.get_logical_blocks('vdo1') == 1046277
@@ -551,15 +541,6 @@ def test_vdo_status_full():
 
     assert vdo.get_logical_used('vdo2') == 3
     assert vdo.get_physical_used('vdo2') == 1
-
-    # python 3
-    assert vdo.get_savings_ratio('vdo1') == 0
-    # assert vdo.get_savings_ratio('vdo2') == 0
-    # assert vdo.get_logical_free_savings_ratio_pct('vdo2') == -1
-
-    # python 2
-    # assert vdo.get_savings_ratio('vdo2') == 14.04
-    # assert vdo.get_logical_free_savings_ratio_pct('vdo2') == 37226.92
 
 
 def test_vdo_status_documentation():
