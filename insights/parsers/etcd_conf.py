@@ -68,8 +68,8 @@ ETCD_AUTH_TOKEN=simple
 
 Examples:
 
-    >>> conf.get('auth', 'ETCD_AUTH_TOKEN')
-    u'simple'
+    >>> conf.get('auth', 'ETCD_AUTH_TOKEN') == 'simple'
+    True
 
     >>> conf.has_option('member', 'ETCD_NAME')
     True
