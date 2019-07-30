@@ -28,8 +28,8 @@ class AWSInstanceType(CommandParser):
         ParseException: When type cannot be recognized.
 
     Attributes:
-        type: The name of AWS instance type in all uppercase letters. E.g. R3, R4, R5, or X1.
-        raw: The fully type string returned by the ``curl`` command.
+        type (str): The name of AWS instance type in all uppercase letters. E.g. R3, R4, R5, or X1.
+        raw (str): The fully type string returned by the ``curl`` command.
 
     Examples:
         >>> aws_inst.type
@@ -50,5 +50,5 @@ class AWSInstanceType(CommandParser):
         if not self.type:
             raise ParseException('Unrecognized type: "{0}"', content[0])
 
-    def __str__(self):
+    def __repr__(self):
         return "<aws_type: {t}, raw: {r}>".format(t=self.type, r=self.raw)
