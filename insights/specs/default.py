@@ -101,6 +101,15 @@ class DefaultSpecs(Specs):
         raise SkipComponent()
 
     aws_instance_type = simple_command("/usr/bin/curl http://169.254.169.254/latest/meta-data/instance-type --connect-timeout 5", deps=[is_aws])
+
+    @datasource(CloudProvider)
+    def is_azure(broker):
+        cp = broker[CloudProvider]
+        if cp and cp.cloud_provider == CloudProvider.AZURE:
+            return True
+        raise SkipComponent()
+
+    azure_instance_type = simple_command("curl -H Metadata:true http://169.254.169.254/metadata/instance/compute/vmSize?api-version=2018-10-01&format=text --connect-timeout 5", deps=[is_azure])
     bios_uuid = simple_command("/usr/sbin/dmidecode -s system-uuid")
     blkid = simple_command("/sbin/blkid -c /dev/null")
     bond = glob_file("/proc/net/bonding/bond*")
@@ -189,8 +198,7 @@ class DefaultSpecs(Specs):
     cpu_vulns_spectre_v1 = simple_file("sys/devices/system/cpu/vulnerabilities/spectre_v1")
     cpu_vulns_spectre_v2 = simple_file("sys/devices/system/cpu/vulnerabilities/spectre_v2")
     cpu_vulns_spec_store_bypass = simple_file("sys/devices/system/cpu/vulnerabilities/spec_store_bypass")
-    # why the /cpuinfo?
-    cpuinfo = first_file(["/proc/cpuinfo", "/cpuinfo"])
+    cpuinfo = simple_file("/proc/cpuinfo")
     cpuinfo_max_freq = simple_file("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq")
     cpuset_cpus = simple_file("/sys/fs/cgroup/cpuset/cpuset.cpus")
     crypto_policies_config = simple_file("/etc/crypto-policies/config")
