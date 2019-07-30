@@ -98,16 +98,19 @@ class InsightsSupport(object):
         # check insights config
         cfg_block = []
 
-        pconn = InsightsConnection(self.config)
         logger.info('Insights version: %s', get_nvr())
 
-        reg_check = registration_check(pconn)
-        cfg_block.append('Registration check:')
-        if pconn.config.legacy_upload:
-            for key in reg_check:
-                cfg_block.append(key + ': ' + str(reg_check[key]))
+        if self.config.offline:
+            cfg_block.append('Cannot check registration status while offline.')
         else:
-            cfg_block.append("status: " + str(reg_check))
+            pconn = InsightsConnection(self.config)
+            reg_check = registration_check(pconn)
+            cfg_block.append('Registration check:')
+            if pconn.config.legacy_upload:
+                for key in reg_check:
+                    cfg_block.append(key + ': ' + str(reg_check[key]))
+            else:
+                cfg_block.append("status: " + str(reg_check))
 
         lastupload = 'never'
         if os.path.isfile(constants.lastupload_file):
@@ -127,11 +130,12 @@ class InsightsSupport(object):
         logger.info('\n'.join(cfg_block))
         logger.info('python-requests: %s', requests.__version__)
 
-        succ = pconn.test_connection()
-        if succ == 0:
-            logger.info('Connection test: PASS\n')
-        else:
-            logger.info('Connection test: FAIL\n')
+        if not self.config.offline:
+            succ = pconn.test_connection()
+            if succ == 0:
+                logger.info('Connection test: PASS\n')
+            else:
+                logger.info('Connection test: FAIL\n')
 
         # run commands
         commands = ['uname -a',
