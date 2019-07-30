@@ -8,6 +8,7 @@ parser class `IniConfigFile`.
 
 Typical contents of the file look like::
 
+[member]
 ETCD_NAME=f05-h19-000-1029p.rdu2.scalelab.redhat.com
 ETCD_LISTEN_PEER_URLS=https://10.1.40.235:2380
 ETCD_DATA_DIR=/var/lib/etcd/

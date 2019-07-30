@@ -1,3 +1,3 @@
-.. automodule:: insights.parsers.ceph_conf
+.. automodule:: insights.parsers.etcd_conf
    :members:
    :show-inheritance:
