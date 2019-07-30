@@ -163,9 +163,8 @@ class VDOStatus(YAMLParser):
 
     def __get_dev_mapper__(self, vol):
         try:
-            if vol:
-                dm_path = ('/dev/mapper/%s' % vol)
-                return self.data['VDOs'][vol]['VDO statistics'][dm_path]
+            dm_path = ('/dev/mapper/%s' % vol)
+            return self.data['VDOs'][vol]['VDO statistics'][dm_path]
         except:
             raise ParseException("couldn't parse yaml")
 

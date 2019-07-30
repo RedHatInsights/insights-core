@@ -12,6 +12,27 @@ rdma-qe-04.lab.bos.redhat.com
 """.strip()
 
 
+INPUT_SIMPLE_EXP = """
+VDO status:
+  Date: '2019-07-27 04:40:40-04:00'
+  Node: rdma-qe-04.lab.bos.redhat.com
+Kernel module:
+  Loaded: true
+  Name: kvdo
+  Version information:
+    kvdo version: 6.1.0.153
+Configuration:
+  File: /etc/vdoconf.yml
+  Last modified: '2019-07-26 05:07:48'
+V??DOs:
+  vdo1:
+     XX: XX
+  vdo2:
+     XX: XX
+
+"""
+
+
 INPUT_STATUS_SIMPLE = """
 VDO status:
   Date: '2019-07-27 04:40:40-04:00'
@@ -28,13 +49,29 @@ VDOs:
   vdo1:
     Acknowledgement threads: 1
     Activate: enabled
-    Bio rotation interval: 64
-    Bio submission threads: 4
-    Block map cache size: 128M
-    Block map period: 16380
-    Block size: 4096
-    CPU-work threads: 2
-    Compression: enabled
+    Slab size: 2G
+    VDO statistics:
+      /dev/mapper/vdo1:
+        block size: 4096
+        data blocks used: 161863
+        logical blocks: 844568
+        logical blocks used: 844502
+        overhead blocks used: 728175
+        physical blocks: 1572864
+        slab count: 26
+  vdo2:
+    Acknowledgement threads: 1
+    Activate: enabled
+    Slab size: 128M
+    VDO statistics:
+      /dev/mapper/vdo2:
+        block size: 4096
+        data blocks used: 161861
+        logical blocks: 844562
+        logical blocks used: 0
+        overhead blocks used: 728172
+        physical blocks: 1572861
+        slab count: 26
 """
 
 INPUT_EMPTY = """
@@ -384,7 +421,7 @@ VDOs:
         compressed fragments written: 0
         current VDO IO requests in progress: 0
         current dedupe queries: 0
-        data blocks used: 0
+        data blocks used: 1
         dedupe advice stale: 0
         dedupe advice timeouts: 0
         dedupe advice valid: 0
@@ -405,7 +442,7 @@ VDOs:
         journal entries writing: 0
         journal entries written: 0
         logical blocks: 522989
-        logical blocks used: 0
+        logical blocks used: 3
         maximum VDO IO requests in progress: 7
         maximum dedupe queries: 0
         no space error count: 0
@@ -450,6 +487,30 @@ def test_vdo_status_simple():
     assert vdo.data['VDO status']['Date'] == '2019-07-27 04:40:40-04:00'
     assert vdo.data['VDO status']['Node'] == 'rdma-qe-04.lab.bos.redhat.com'
 
+    assert vdo.get_slab_size('vdo1') == '2G'
+    assert vdo.volumns == ['vdo1', 'vdo2']
+    assert vdo.get_all_volumns() == ['vdo1', 'vdo2']
+
+    assert vdo.get_physical_blocks('vdo1') == 1572864
+    assert vdo.get_overhead_used('vdo1') == 728175
+    assert vdo.get_physical_used('vdo1') == 161863
+    assert vdo.get_physical_free('vdo1') == 682826
+
+    assert vdo.get_logical_blocks('vdo1') == 844568
+    assert vdo.get_logical_used('vdo1') == 844502
+    assert vdo.get_logical_free('vdo1') == 66
+
+    assert vdo.get_physical_used_pct('vdo1') == 0.57
+
+    # python 3
+    assert vdo.get_savings_ratio('vdo1') == 5.22
+    assert vdo.get_logical_free_savings_ratio_pct('vdo1') == 12.64
+    assert vdo.get_logical_free_savings_ratio_pct('vdo2') == -1
+
+    # python 2
+    # assert vdo.get_savings_ratio('vdo2') == 14.04
+    # assert vdo.get_logical_free_savings_ratio_pct('vdo2') == 37226.92
+
 
 def test_vdo_status_empty():
     vdo = VDOStatus(context_wrap(INPUT_EMPTY))
@@ -488,8 +549,11 @@ def test_vdo_status_full():
     assert vdo.get_logical_free('vdo1') == 1046277
     assert vdo.get_physical_free('vdo1') == 1047868
 
-    # python 3 
-    # assert vdo.get_savings_ratio('vdo1') == 0
+    assert vdo.get_logical_used('vdo2') == 3
+    assert vdo.get_physical_used('vdo2') == 1
+
+    # python 3
+    assert vdo.get_savings_ratio('vdo1') == 0
     # assert vdo.get_savings_ratio('vdo2') == 0
     # assert vdo.get_logical_free_savings_ratio_pct('vdo2') == -1
 
@@ -524,5 +588,15 @@ def test_vdo_status_exp2():
     Here test the examples cause expections
     """
     with pytest.raises(ParseException) as sc1:
-        VDOStatus(context_wrap(""))
+        VDOStatus(context_wrap(INPUT_SIMPLE_EXP))
+    assert "couldn't parse yaml" in str(sc1)
+
+
+def test_vdo_status_exp3():
+    """
+    Here test the examples cause expections
+    """
+    with pytest.raises(ParseException) as sc1:
+        vdo = VDOStatus(context_wrap(INPUT_STATUS_SIMPLE))
+        vdo.get_physical_blocks('vdo3')
     assert "couldn't parse yaml" in str(sc1)
