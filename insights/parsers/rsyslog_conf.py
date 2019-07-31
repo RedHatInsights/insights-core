@@ -10,70 +10,78 @@ See http://www.rsyslog.com/doc/master/configuration/basic_structure.html#stateme
 
 Due to high parsing complexity, this parser presents a simple line-based
 view of the file that meets the needs of the current rules.
-
-Example:
-    >>> content = '''
-    ... :fromhost-ip, regex, "10.0.0.[0-9]" /tmp/my_syslog.log
-    ... $ModLoad imtcp
-    ... $InputTCPServerRun 10514"
-    ... '''.strip()
-    >>> from insights.tests import context_wrap
-    >>> rsl = RsyslogConf(context_wrap(content))
-    >>> len(rsl)
-    3
-    >>> len(list(rsl))
-    3
-    >>> any('imtcp' in n for n in rsl)
-    True
 """
-from .. import Parser, parser, get_active_lines
-
-import re
+from .. import Parser, parser, get_active_lines, LegacyItemAccess
 from insights.specs import Specs
 
 
 @parser(Specs.rsyslog_conf)
-class RsyslogConf(Parser):
+class RsyslogConf(Parser, LegacyItemAccess):
     """
-    Parses `/etc/rsyslog.conf` info simple lines.
+    Parses `/etc/rsyslog.conf` content.
 
     Skips lines that begin with hash ("#") or are only whitespace.
 
     Attributes:
         data (list): List of lines in the file that don't start
             with '#' and aren't whitespace.
-        config_items(dict): Configuration items opportunistically found in the
-            configuration file, with their values as given.
+
+    Example:
+        >>> type(rsysconf)
+        <class 'insights.parsers.rsyslog_conf.RsyslogConf'>
+        >>> len(rsysconf)
+        13
+        >>> rsysconf[2]
+        'authpriv.*                                              /var/log/secure'
     """
+    def __init__(self, *args, **kwargs):
+        super(RsyslogConf, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
-        self.data = get_active_lines(content)
+        self.data = []
+        brace_flag = False
+        parenthesis_flag = False
+        parenthesis_string = ""
+        brace_string = ""
 
         self.config_items = {}
-        # Config items are e.g. "$Word value #optional comment"
-        config_re = re.compile(r'^\s*\$(?P<name>\S+)\s+(?P<value>.*?)(?:\s+#.*)?$')
-        for line in self.data:
+
+        for line in get_active_lines(content):
             lstrip = line.strip()
-            match = config_re.match(lstrip)
-            if match:
-                self.config_items[match.group('name')] = match.group('value')
-
-    def config_val(self, item, default=None):
-        """
-        Return the given configuration item, or the default if not defined.
-
-        Parameters:
-            item(str): The configuration item name
-            default: The default if the item is not found (defaults to None)
-
-        Returns:
-            The related value in the `config_items` dictionary.
-        """
-        return self.config_items.get(item, default)
+            # Combine multi lines in brace into one line
+            if brace_flag:
+                brace_string = brace_string + " " + lstrip
+                if "}" in lstrip:
+                    self.data.append(brace_string)
+                    brace_string = ""
+                    brace_flag = False
+                continue
+            else:
+                if "{" in lstrip:
+                    if "}" in lstrip:
+                        self.data.append(lstrip)
+                    else:
+                        brace_flag = True
+                        brace_string = lstrip
+                    continue
+                # Combine multi lines in parenthesis and not in brace into one line
+                if parenthesis_flag:
+                    parenthesis_string = parenthesis_string + " " + lstrip
+                    if ")" in lstrip:
+                        self.data.append(parenthesis_string)
+                        parenthesis_string = ""
+                        parenthesis_flag = False
+                    continue
+                else:
+                    if "(" in lstrip:
+                        if ")" in lstrip:
+                            self.data.append(lstrip)
+                        else:
+                            parenthesis_flag = True
+                            parenthesis_string = lstrip
+                        continue
+                    else:
+                        self.data.append(lstrip)
 
     def __len__(self):
         return len(self.data)
-
-    def __iter__(self):
-        for d in self.data:
-            yield d
