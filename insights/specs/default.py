@@ -759,7 +759,7 @@ class DefaultSpecs(Specs):
     root_crontab = simple_command("/usr/bin/crontab -l -u root")
     route = simple_command("/sbin/route -n")
     rpm_V_packages = simple_command("/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo", keep_rc=True)
-    rsyslog_conf =  glob_file(["/etc/rsyslog.conf", "/etc/rsyslog.d/test.conf"])
+    rsyslog_conf =  glob_file(["/etc/rsyslog.conf", "/etc/rsyslog.d/*.conf"])
     samba = simple_file("/etc/samba/smb.conf")
     saphostctrl_listinstances = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function ListInstances")
 
