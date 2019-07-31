@@ -471,7 +471,7 @@ class Specs(SpecSet):
     root_crontab = RegistryPoint()
     route = RegistryPoint()
     rpm_V_packages = RegistryPoint()
-    rsyslog_conf = RegistryPoint(filterable=True)
+    rsyslog_conf = RegistryPoint()
     running_java = RegistryPoint()
     samba = RegistryPoint(filterable=True)
     sap_hdb_version = RegistryPoint(multi_output=True)
