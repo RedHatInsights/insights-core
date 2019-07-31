@@ -741,12 +741,9 @@ class command_with_args(object):
     Execute a command that has dynamic arguments
 
     Args:
-        cmd (list of lists): the command(s) to execute. Breaking apart a command
-            string that might contain multiple commands separated by a pipe,
-            getting them ready for subproc operations.
-            IE. A command with filters applied
-        provider (list): a list of elements or tuples.
-        sep (str): the separator for multiple arguments, a blank space by default
+        cmd (list of lists): the command to execute. Breaking apart a command
+            string that might require arguments.
+        provider (str or list): argument string or a list of arguments.
         context (ExecutionContext): the context under which the datasource
             should run.
         split (bool): whether the output of the command should be split into a
@@ -763,13 +760,12 @@ class command_with_args(object):
 
     Returns:
         function: A datasource that returns the output of a command that takes
-            specified arguments
+            specified arguments passed by the provider.
     """
 
-    def __init__(self, cmd, provider, sep=' ', context=HostContext, deps=[], split=True, keep_rc=False, timeout=None, inherit_env=[], **kwargs):
+    def __init__(self, cmd, provider, context=HostContext, deps=[], split=True, keep_rc=False, timeout=None, inherit_env=[], **kwargs):
         self.cmd = cmd
         self.provider = provider
-        self.sep = sep
         self.context = context
         self.split = split
         self.raw = not split
@@ -787,8 +783,7 @@ class command_with_args(object):
         if not isinstance(source, (list, set, tuple)):
             source = [source]
         try:
-            args = self.sep.join(source)
-            self.cmd = self.cmd % args
+            self.cmd = self.cmd % ' '.join(source)
             return CommandOutputProvider(self.cmd, ctx, split=self.split,
                     keep_rc=self.keep_rc, ds=self, timeout=self.timeout, inherit_env=self.inherit_env)
         except:
