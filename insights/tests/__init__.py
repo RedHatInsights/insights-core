@@ -17,7 +17,7 @@ except ImportError:
 
 import insights
 from insights import apply_filters
-from insights.core import dr, filters
+from insights.core import dr, filters, spec_factory
 from insights.core.context import Context
 from insights.core.spec_factory import RegistryPoint
 from insights.specs import Specs
@@ -27,9 +27,10 @@ from insights.specs import Specs
 # that rules add filters to datasources that *should* be filterable
 ADDED_FILTERS = defaultdict(set)
 add_filter = filters.add_filter
+find = spec_factory.find
 
 
-def _intercept(func):
+def _intercept_add_filter(func):
     @wraps(func)
     def inner(ds, pattern):
         ret = add_filter(ds, pattern)
@@ -39,8 +40,20 @@ def _intercept(func):
     return inner
 
 
-filters.add_filter = _intercept(filters.add_filter)
-insights.add_filter = _intercept(insights.add_filter)
+def _intercept_find(func):
+    @wraps(func)
+    def inner(ds, pattern):
+        ret = find(ds, pattern)
+        calling_module = inspect.stack()[1][0].f_globals.get("__name__")
+        ADDED_FILTERS[calling_module].add(ds)
+        return ret
+    return inner
+
+
+filters.add_filter = _intercept_add_filter(filters.add_filter)
+insights.add_filter = _intercept_add_filter(insights.add_filter)
+
+spec_factory.find = _intercept_find(spec_factory.find)
 
 
 def _get_registry_points(component):
