@@ -693,7 +693,7 @@ class listdir(object):
 
 class simple_command(object):
     """
-    Executable a simple command that has no dynamic arguments
+    Execute a simple command that has no dynamic arguments
 
     Args:
         cmd (list of lists): the command(s) to execute. Breaking apart a command
@@ -719,8 +719,7 @@ class simple_command(object):
             no arguments
     """
 
-    def __init__(self, cmd, provider=None, context=HostContext, deps=[], split=True, keep_rc=False, timeout=None, inherit_env=[], **kwargs):
-        self.provider = provider
+    def __init__(self, cmd, context=HostContext, deps=[], split=True, keep_rc=False, timeout=None, inherit_env=[], **kwargs):
         self.cmd = cmd
         self.context = context
         self.split = split
@@ -729,20 +728,72 @@ class simple_command(object):
         self.timeout = timeout
         self.inherit_env = inherit_env
         self.__name__ = self.__class__.__name__
-        if self.provider:
-            datasource(self.provider, self.context, *deps, raw=self.raw, **kwargs)(self)
-        else:
-            datasource(self.context, *deps, raw=self.raw, **kwargs)(self)
+        datasource(self.context, *deps, raw=self.raw, **kwargs)(self)
 
     def __call__(self, broker):
         ctx = broker[self.context]
-        if self.provider:
-            e = broker[self.provider]
-            if not isinstance(e, str):
-                raise ContentException("The provider datasource should return a string")
-            self.cmd = self.cmd % e
         return CommandOutputProvider(self.cmd, ctx, split=self.split,
                 keep_rc=self.keep_rc, ds=self, timeout=self.timeout, inherit_env=self.inherit_env)
+
+
+class command_with_args(object):
+    """
+    Execute a command that has dynamic arguments
+
+    Args:
+        cmd (list of lists): the command(s) to execute. Breaking apart a command
+            string that might contain multiple commands separated by a pipe,
+            getting them ready for subproc operations.
+            IE. A command with filters applied
+        provider (list): a list of elements or tuples.
+        sep (str): the separator for multiple arguments, a blank space by default
+        context (ExecutionContext): the context under which the datasource
+            should run.
+        split (bool): whether the output of the command should be split into a
+            list of lines
+        keep_rc (bool): whether to return the error code returned by the
+            process executing the command. If False, any return code other than
+            zero with raise a CalledProcessError. If True, the return code and
+            output are always returned.
+        timeout (int): Number of seconds to wait for the command to complete.
+            If the timeout is reached before the command returns, a
+            CalledProcessError is raised. If None, timeout is infinite.
+        inherit_env (list): The list of environment variables to inherit from the
+            calling process when the command is invoked.
+
+    Returns:
+        function: A datasource that returns the output of a command that takes
+            specified arguments
+    """
+
+    def __init__(self, cmd, provider, sep=' ', context=HostContext, deps=[], split=True, keep_rc=False, timeout=None, inherit_env=[], **kwargs):
+        self.cmd = cmd
+        self.provider = provider
+        self.sep = sep
+        self.context = context
+        self.split = split
+        self.raw = not split
+        self.keep_rc = keep_rc
+        self.timeout = timeout
+        self.inherit_env = inherit_env
+        self.__name__ = self.__class__.__name__
+        datasource(self.provider, self.context, *deps, raw=self.raw, **kwargs)(self)
+
+    def __call__(self, broker):
+        source = broker[self.provider]
+        ctx = broker[self.context]
+        if isinstance(source, ContentProvider):
+            source = source.content
+        if not isinstance(source, (list, set, tuple)):
+            source = [source]
+        try:
+            args = self.sep.join(source)
+            self.cmd = self.cmd % args
+            return CommandOutputProvider(self.cmd, ctx, split=self.split,
+                    keep_rc=self.keep_rc, ds=self, timeout=self.timeout, inherit_env=self.inherit_env)
+        except:
+            log.debug(traceback.format_exc())
+        raise ContentException("No results found for [%s]" % self.cmd)
 
 
 class foreach_execute(object):
@@ -775,7 +826,7 @@ class foreach_execute(object):
 
     Returns:
         function: A datasource that returns a list of outputs for each command
-        created by substituting each element of provider into the cmd template.
+            created by substituting each element of provider into the cmd template.
     """
 
     def __init__(self, provider, cmd, context=HostContext, deps=[], split=True, keep_rc=False, timeout=None, inherit_env=[], **kwargs):
