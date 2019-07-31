@@ -131,6 +131,7 @@ class Specs(SpecSet):
     etc_journald_conf_d = RegistryPoint(multi_output=True)
     etc_journald_conf = RegistryPoint()
     etc_machine_id = RegistryPoint()
+    etcd_conf = RegistryPoint(filterable=True)
     ethernet_interfaces = RegistryPoint()
     ethtool_a = RegistryPoint(multi_output=True)
     ethtool_c = RegistryPoint(multi_output=True)
