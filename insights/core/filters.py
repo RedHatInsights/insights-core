@@ -79,6 +79,9 @@ def add_filter(ds, patterns):
         raise TypeError("patterns must be string, list, or set.")
 
 
+_add_filter = add_filter
+
+
 def get_filters(component):
     """
     Get the set of filters for the given datasource.
