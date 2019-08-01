@@ -44,8 +44,6 @@ class RsyslogConf(Parser, LegacyItemAccess):
         parenthesis_string = ""
         brace_string = ""
 
-        self.config_items = {}
-
         for line in get_active_lines(content):
             lstrip = line.strip()
             # Combine multi lines in brace into one line
