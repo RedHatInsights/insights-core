@@ -43,22 +43,16 @@ class Partitions(Parser, dict):
         SkipException: When input is empty.
 
     """
-    def __init__(self, *args, **kwargs):
-        super(Partitions, self).__init__(*args, **kwargs)
-        self.update(self.partitions)
-
     def parse_content(self, content):
         if not content:
             raise SkipException('Empty content')
 
-        self.partitions = {}
-
-        self.partitions = dict(
+        self.update(dict(
             (row['name'], row)
             for row in parse_delimited_table(
                     content,
                     heading_ignore=['major', 'minor'],
                     header_substitute=[('#blocks', 'blocks')]
             )
-            if 'name' in row
+            if 'name' in row)
         )
