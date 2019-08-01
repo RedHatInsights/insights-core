@@ -763,7 +763,8 @@ class command_with_args(object):
             specified arguments passed by the provider.
     """
 
-    def __init__(self, cmd, provider, context=HostContext, deps=[], split=True, keep_rc=False, timeout=None, inherit_env=[], **kwargs):
+    def __init__(self, cmd, provider, context=HostContext, deps=None, split=True, keep_rc=False, timeout=None, inherit_env=None, **kwargs):
+        deps = deps if deps is not None else []
         self.cmd = cmd
         self.provider = provider
         self.context = context
@@ -771,7 +772,7 @@ class command_with_args(object):
         self.raw = not split
         self.keep_rc = keep_rc
         self.timeout = timeout
-        self.inherit_env = inherit_env
+        self.inherit_env = inherit_env if inherit_env is not None else []
         self.__name__ = self.__class__.__name__
         datasource(self.provider, self.context, *deps, raw=self.raw, **kwargs)(self)
 
