@@ -10,7 +10,6 @@ files, user needs to check this situation in plugin if it is necessary.
 """
 from insights.core.plugins import combiner
 from insights.parsers.rsyslog_conf import RsyslogConf
-from .. import LegacyItemAccess
 
 
 @combiner(RsyslogConf)
@@ -27,7 +26,7 @@ class RsyslogAllConf(dict):
         '$ModLoad imuxsock'
     """
     def __init__(self, confs):
-        self.data = {}
+        data = {}
 
         for conf in confs:
             if conf.file_path == "/etc/rsyslog.conf":
@@ -36,14 +35,11 @@ class RsyslogAllConf(dict):
                     if "include(" in item or "$IncludeConfig" in item:
                         include = True
                 if not include:
-                    self.data.clear()
-                    self.data[conf.file_path] = conf.data
+                    data.clear()
+                    data[conf.file_path] = conf.data
                     break
-            self.data[conf.file_path] = conf.data
+            data[conf.file_path] = conf.data
 
-        self.update(self.data)
+        self.update(data)
 
         super(RsyslogAllConf, self).__init__()
-
-    def __len__(self):
-        return len(self.data)
