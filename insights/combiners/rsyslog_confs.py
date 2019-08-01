@@ -14,7 +14,7 @@ from .. import LegacyItemAccess
 
 
 @combiner(RsyslogConf)
-class RsyslogAllConf(LegacyItemAccess):
+class RsyslogAllConf(dict):
     """
     Combiner for accessing all the krb5 configuration files.
 
@@ -40,6 +40,8 @@ class RsyslogAllConf(LegacyItemAccess):
                     self.data[conf.file_path] = conf.data
                     break
             self.data[conf.file_path] = conf.data
+
+        self.update(self.data)
 
         super(RsyslogAllConf, self).__init__()
 
