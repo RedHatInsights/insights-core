@@ -80,7 +80,6 @@ class FcoeadmI(CommandParser, dict):
         'host7'
 
     Attributes:
-        fcoe (dict): The result parsed of '/usr/sbin/fcoeadm -i'
         driver_name (str): Driver name
         driver_version (str): Driver version
         iface_list (list) : FCoE interface names
@@ -91,9 +90,6 @@ class FcoeadmI(CommandParser, dict):
         SkipException: When input content is empty
         ParseException: When input content is not available to parse
     """
-    def __init__(self, *args, **kwargs):
-        super(FcoeadmI, self).__init__(*args, **kwargs)
-        self.update(self.fcoe)
 
     def parse_content(self, content):
         EMPTY = "Input content is empty"
@@ -113,8 +109,7 @@ class FcoeadmI(CommandParser, dict):
         self.stat_list = []
         self.driver_name = ''
         self.driver_version = ''
-        self.fcoe = {}
-        self.fcoe['Interfaces'] = iface_section_list
+        fcoe = {'Interfaces': iface_section_list}
 
         symb = False
         for line in content:
@@ -126,7 +121,7 @@ class FcoeadmI(CommandParser, dict):
             if ':' in line:
                 key, val = [s.strip() for s in line.split(': ', 1)]
                 if not symb:
-                    self.fcoe[key] = val
+                    fcoe[key] = val
                 else:
                     iface[key] = val
 
@@ -134,16 +129,17 @@ class FcoeadmI(CommandParser, dict):
                 iface_section_list.append(iface)
                 iface = {}
 
-        self.driver_name = self.fcoe['Driver'].split(' ', 1)[0]
-        self.driver_version = self.fcoe['Driver'].split(' ', 1)[-1]
+        self.update(fcoe)
+        self.driver_name = fcoe['Driver'].split(' ', 1)[0]
+        self.driver_version = fcoe['Driver'].split(' ', 1)[-1]
 
-        for iface in self.fcoe['Interfaces']:
+        for iface in fcoe['Interfaces']:
             self.iface_list.append(iface['Symbolic Name'].split(' ')[-1])
 
         for nic in self.iface_list:
             self.nic_list.append(nic.split('.', 1)[0])
 
-        for iface in self.fcoe['Interfaces']:
+        for iface in fcoe['Interfaces']:
             self.stat_list.append(iface['State'])
 
     def get_stat_from_nic(self, nic):
@@ -164,7 +160,7 @@ class FcoeadmI(CommandParser, dict):
         ret = ''
         self.__check_nic_valid(nic)
 
-        for iface in self.fcoe['Interfaces']:
+        for iface in self['Interfaces']:
             if nic in iface['Symbolic Name']:
                 ret = iface['State']
         return ret
@@ -187,7 +183,7 @@ class FcoeadmI(CommandParser, dict):
         ret = ''
         self.__check_nic_valid(nic)
 
-        for iface in self.fcoe['Interfaces']:
+        for iface in self['Interfaces']:
             if nic in iface['Symbolic Name']:
                 ret = iface['OS Device Name']
         return ret
@@ -197,3 +193,10 @@ class FcoeadmI(CommandParser, dict):
 
         if nic not in self.nic_list:
             raise ValueError(BADNIC)
+
+    @property
+    def fcoe(self):
+        """
+        (dict): The result parsed of '/usr/sbin/fcoeadm -i'
+        """
+        return self
