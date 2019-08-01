@@ -1,5 +1,19 @@
 # Change Log
 
+## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
+
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.116-1092...HEAD)
+
+**Closed issues:**
+
+- Duplicate data in Partitions [\#2124](https://github.com/RedHatInsights/insights-core/issues/2124)
+
+## [insights-core-3.0.116-1092](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.116-1092) (2019-07-31)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.115-1...insights-core-3.0.116-1092)
+
+## [3.0.115-1](https://github.com/RedHatInsights/insights-core/tree/3.0.115-1) (2019-07-31)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.114-1078...3.0.115-1)
+
 ## [insights-core-3.0.114-1078](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.114-1078) (2019-07-25)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.113-1062...insights-core-3.0.114-1078)
 
