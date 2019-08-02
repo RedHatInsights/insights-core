@@ -125,4 +125,4 @@ class NFTListRules(CommandParser, dict):
         Returns:
             (list): List of rules of the specified `chain` under the specified `table`
         """
-        return sorted(self.get(table, {}).get(chain, []))
+        return self.get(table, {}).get(chain, [])

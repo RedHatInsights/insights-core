@@ -837,9 +837,11 @@ NFT_DOC = """
 def test_nftables_rulelist():
     nftables_obj = NFTListRules(context_wrap(NFTABLES_DETAILS))
     assert len(nftables_obj) == 15
-    assert nftables_obj.get_rules('ip6 firewalld', 'nat_PREROUTING') == sorted(
-        ['jump nat_PREROUTING_ZONES', 'jump nat_PREROUTING_ZONES_SOURCE',
-         'type nat hook prerouting priority -90; policy accept;'])
+    assert nftables_obj.get_rules('ip6 firewalld', 'nat_PREROUTING') == [
+            'type nat hook prerouting priority -90; policy accept;',
+            'jump nat_PREROUTING_ZONES_SOURCE',
+            'jump nat_PREROUTING_ZONES',
+    ]
     assert nftables_obj.get_rules('ip6 firewalld', 'nat_POST_libvirt_post') == []
 
 
