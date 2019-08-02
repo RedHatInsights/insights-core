@@ -87,7 +87,7 @@ class NFTListRules(CommandParser, dict):
             elif not line.startswith('}') and line.endswith('}'):
                 ca_name = None
             elif line_strip:
-                raise ParseException("Content out of table or chain: '{}'".format(line))
+                raise ParseException("Content out of table or chain: '{0}'".format(line))
 
         if not tables:
             raise ParseException("No Parsed Contents")
