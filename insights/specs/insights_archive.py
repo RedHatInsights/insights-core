@@ -157,6 +157,7 @@ class InsightsArchiveSpecs(Specs):
     netstat_agn = simple_file("insights_commands/netstat_-agn")
     netstat_i = simple_file("insights_commands/netstat_-i")
     netstat_s = simple_file("insights_commands/netstat_-s")
+    nft_ruleset = simple_file("insights_commands/nft_list_ruleset")
     nmcli_conn_show = simple_file("insights_commands/nmcli_conn_show")
     nmcli_dev_show = simple_file("insights_commands/nmcli_dev_show")
     nova_crontab = simple_file("insights_commands/crontab_-l_-u_nova")
