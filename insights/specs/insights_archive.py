@@ -192,6 +192,8 @@ class InsightsArchiveSpecs(Specs):
     ovs_vsctl_show = simple_file("insights_commands/ovs-vsctl_show")
     parted__l = simple_file("insights_commands/parted_-l_-s")
     passenger_status = simple_file("insights_commands/passenger-status")
+    insights/specs/insights_archive.py
+    pci_rport_target_disk_paths = simple_file("insights_commands/find_pci_rport_target_disk_paths")
     pcs_config = simple_file("insights_commands/pcs_config")
     pcs_status = simple_file("insights_commands/pcs_status")
     ps_alxwww = simple_file("insights_commands/ps_alxwww")
