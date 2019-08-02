@@ -11,12 +11,12 @@ See http://www.rsyslog.com/doc/master/configuration/basic_structure.html#stateme
 Due to high parsing complexity, this parser presents a simple line-based
 view of the file that meets the needs of the current rules.
 """
-from .. import Parser, parser, get_active_lines, LegacyItemAccess
+from .. import Parser, parser, get_active_lines
 from insights.specs import Specs
 
 
 @parser(Specs.rsyslog_conf)
-class RsyslogConf(Parser, LegacyItemAccess):
+class RsyslogConf(Parser, list):
     """
     Parses `/etc/rsyslog.conf` content.
 
@@ -38,48 +38,46 @@ class RsyslogConf(Parser, LegacyItemAccess):
         super(RsyslogConf, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
-        self.data = []
+        data = []
         brace_flag = False
         parenthesis_flag = False
         parenthesis_string = ""
         brace_string = ""
 
         for line in get_active_lines(content):
-            lstrip = line.strip()
+            l_strip = line.strip()
             # Combine multi lines in brace into one line
             if brace_flag:
-                brace_string = brace_string + " " + lstrip
-                if "}" in lstrip:
-                    self.data.append(brace_string)
+                brace_string = brace_string + " " + l_strip
+                if "}" in l_strip:
+                    data.append(brace_string)
                     brace_string = ""
                     brace_flag = False
                 continue
             else:
-                if "{" in lstrip:
-                    if "}" in lstrip:
-                        self.data.append(lstrip)
+                if "{" in l_strip:
+                    if "}" in l_strip:
+                        data.append(l_strip)
                     else:
                         brace_flag = True
-                        brace_string = lstrip
+                        brace_string = l_strip
                     continue
                 # Combine multi lines in parenthesis and not in brace into one line
                 if parenthesis_flag:
-                    parenthesis_string = parenthesis_string + " " + lstrip
-                    if ")" in lstrip:
-                        self.data.append(parenthesis_string)
+                    parenthesis_string = parenthesis_string + " " + l_strip
+                    if ")" in l_strip:
+                        data.append(parenthesis_string)
                         parenthesis_string = ""
                         parenthesis_flag = False
                     continue
                 else:
-                    if "(" in lstrip:
-                        if ")" in lstrip:
-                            self.data.append(lstrip)
+                    if "(" in l_strip:
+                        if ")" in l_strip:
+                            data.append(l_strip)
                         else:
                             parenthesis_flag = True
-                            parenthesis_string = lstrip
+                            parenthesis_string = l_strip
                         continue
                     else:
-                        self.data.append(lstrip)
-
-    def __len__(self):
-        return len(self.data)
+                        data.append(l_strip)
+        self.extend(data)
