@@ -2,142 +2,52 @@
 NFTables configuration
 ======================
 
-Module for processing output of the ``/usr/sbin/nft``.
-commands.  Parsers included are:
+Module for processing output of the ``/usr/sbin/nft`` commands.
+
+Parsers included are:
 
 NFTListRules - command ``/usr/sbin/nft list ruleset``
 -----------------------------------------------------
 
 """
-
-
-from .. import parser, get_active_lines, CommandParser
+from insights import parser, CommandParser
 from insights.parsers import SkipException, ParseException
 from insights.specs import Specs
 
 
 @parser(Specs.nft_ruleset)
-class NFTListRules(CommandParser):
-
+class NFTListRules(CommandParser, dict):
     """
-    This parser will parse the output of ``/usr/sbin/nft list ruleset``
+    This parser parses the output of ``/usr/sbin/nft list ruleset``
 
     Sample input data looks like::
 
         table ip filter {
-        \t\tchain INPUT {
-        \t\t	type filter hook input priority 0; policy accept;
-        \t\t	iifname "virbr0" meta l4proto udp udp dport 53 counter packets 0 bytes 0 accept
-        \t\t	iifname "virbr0" meta l4proto tcp tcp dport 53 counter packets 0 bytes 0 accept
-        \t\t	iifname "virbr0" meta l4proto udp udp dport 67 counter packets 0 bytes 0 accept
-        \t\t	iifname "virbr0" meta l4proto tcp tcp dport 67 counter packets 0 bytes 0 accept
-        \t\t}
-        \t\t
-        \t\tchain FORWARD {
-        \t\t	type filter hook forward priority 0; policy accept;
-        \t\t	oifname "virbr0" ip daddr 192.168.122.0/24 ct state related,established counter packets 0 bytes 0 accept
-        \t\t	iifname "virbr0" ip saddr 192.168.122.0/24 counter packets 0 bytes 0 accept
-        \t\t	iifname "virbr0" oifname "virbr0" counter packets 0 bytes 0 accept
-        \t\t	oifname "virbr0" counter packets 0 bytes 0 reject
-        \t\t	iifname "virbr0" counter packets 0 bytes 0 reject
-        \t\t}
-        \t\t
-        \t\tchain OUTPUT {
-        \t\t	type filter hook output priority 0; policy accept;
-        \t\t	oifname "virbr0" meta l4proto udp udp dport 68 counter packets 0 bytes 0 accept
-        \t\t}
+                chain INPUT {
+                    type filter hook input priority 0; policy accept;
+                    iifname "virbr0" meta l4proto udp udp dport 53 counter packets 0 bytes 0 accept
+                    iifname "virbr0" meta l4proto tcp tcp dport 53 counter packets 0 bytes 0 accept
+                }
+                chain FORWARD {
+                    type filter hook forward priority 0; policy accept;
+                    oifname "virbr0" ip daddr 192.168.122.0/24 ct state related,established counter packets 0 bytes 0 accept
+                    iifname "virbr0" oifname "virbr0" counter packets 0 bytes 0 accept
+                }
+                chain OUTPUT {
+                    type filter hook output priority 0; policy accept;
+                    oifname "virbr0" meta l4proto udp udp dport 68 counter packets 0 bytes 0 accept
+                }
         }
         table ip6 filter {
-        \t\tchain INPUT {
-        \t\t	type filter hook input priority 0; policy accept;
-        \t\t}
-        \t\t
-        \t\tchain FORWARD {
-        \t\t	type filter hook forward priority 0; policy accept;
-        \t\t}
-        \t\t
-        \t\tchain OUTPUT {
-        \t\t	type filter hook output priority 0; policy accept;
-        \t\t}
-        }
-        table bridge filter {
-        \t\tchain INPUT {
-        \t\t	type filter hook input priority -200; policy accept;
-        \t\t}
-        \t\t
-        \t\tchain FORWARD {
-        \t\t	type filter hook forward priority -200; policy accept;
-        \t\t}
-        \t\t
-        \t\tchain OUTPUT {
-        \t\t	type filter hook output priority -200; policy accept;
-        \t\t}
-        }
-        table ip security {
-        \t\tchain INPUT {
-        \t\t	type filter hook input priority 150; policy accept;
-        \t\t}
-        \t\t
-        \t\tchain FORWARD {
-        \t\t	type filter hook forward priority 150; policy accept;
-        \t\t}
-        \t\t
-        \t\tchain OUTPUT {
-        \t\t	type filter hook output priority 150; policy accept;
-        \t\t}
-        }
-        table ip raw {
-        \t\tchain PREROUTING {
-        \t\t	type filter hook prerouting priority -300; policy accept;
-        \t\t}
-        \t\t
-        \t\tchain OUTPUT {
-        \t\t	type filter hook output priority -300; policy accept;
-        \t\t}
-        }
-        table ip mangle {
-        \t\tchain PREROUTING {
-        \t\t	type filter hook prerouting priority -150; policy accept;
-        \t\t}
-        \t\t
-        \t\tchain INPUT {
-        \t\t	type filter hook input priority -150; policy accept;
-        \t\t}
-        \t\t
-        \t\tchain FORWARD {
-        \t\t	type filter hook forward priority -150; policy accept;
-        \t\t}
-        \t\t
-        \t\tchain OUTPUT {
-        \t\t	type route hook output priority -150; policy accept;
-        \t\t}
-        \t\t
-        \t\tchain POSTROUTING {
-        \t\t	type filter hook postrouting priority -150; policy accept;
-        \t\t	oifname "virbr0" meta l4proto udp udp dport 68 counter packets 0 bytes 0 # CHECKSUM fill
-        \t\t}
-        }
-        table ip nat {
-        \t\tchain PREROUTING {
-        \t\t	type nat hook prerouting priority -100; policy accept;
-        \t\t}
-        \t\t
-        \t\tchain INPUT {
-        \t\t	type nat hook input priority 100; policy accept;
-        \t\t}
-        \t\t
-        \t\tchain POSTROUTING {
-        \t\t	type nat hook postrouting priority 100; policy accept;
-        \t\t	ip saddr 192.168.122.0/24 ip daddr 224.0.0.0/24 counter packets 3 bytes 232 return
-        \t\t	ip saddr 192.168.122.0/24 ip daddr 255.255.255.255 counter packets 0 bytes 0 return
-        \t\t	meta l4proto tcp ip saddr 192.168.122.0/24 ip daddr != 192.168.122.0/24 counter packets 0 bytes 0 masquerade to :1024-65535
-        \t\t	meta l4proto udp ip saddr 192.168.122.0/24 ip daddr != 192.168.122.0/24 counter packets 0 bytes 0 masquerade to :1024-65535
-        \t\t	ip saddr 192.168.122.0/24 ip daddr != 192.168.122.0/24 counter packets 0 bytes 0 masquerade
-        \t\t}
-        \t\t
-        \t\tchain OUTPUT {
-        \t\t	type nat hook output priority -100; policy accept;
-        \t\t}
+                chain INPUT {
+                    type filter hook input priority 0; policy accept;
+                }
+                chain FORWARD {
+                    type filter hook forward priority 0; policy accept;
+                }
+                chain OUTPUT {
+                    type filter hook output priority 0; policy accept;
+                }
         }
 
     Raises:
@@ -145,54 +55,74 @@ class NFTListRules(CommandParser):
         ParseException: When content can not be parsed.
 
     Examples:
-        >>> type(nftables_obj)
+        >>> type(nftables)
         <class 'insights.parsers.nftables.NFTListRules'>
+        >>> sorted(nftables.tables)
+        ['ip filter', 'ip6 filter']
+        >>> sorted(nftables.get_chains('ip filter'))
+        ['FORWARD', 'INPUT', 'OUTPUT']
+        >>> nftables.get_rules('ip6 filter', 'OUTPUT')
+        ['type filter hook output priority 0; policy accept;']
 
     """
 
     def parse_content(self, content):
-
         if not content:
             raise SkipException("No Contents")
 
-        self.data = {}
-        nst_cnt = 0
-        idx_key = ''
-        idx_key_2 = ''
-        for line in get_active_lines(content):
-            if line.endswith('{') and nst_cnt == 0:
-                idx_key = line.split('{')[0].strip()
-                self.data[idx_key] = {}
-                nst_cnt += 1
-            elif not ((line.endswith('{')) or (line.endswith('}'))) and\
-                    idx_key and idx_key_2 and nst_cnt == 2:
-                self.data[idx_key][idx_key_2].append(line)
-            elif line.endswith('{') and nst_cnt == 1 and idx_key:
-                idx_key_2 = line.split('{')[0].strip()
-                self.data[idx_key][idx_key_2] = []
-                nst_cnt += 1
-            elif line.endswith('}') and nst_cnt == 2 and idx_key_2:
-                idx_key_2 = ''
-                nst_cnt -= 1
-            elif line.endswith('}') and nst_cnt == 1 and idx_key:
-                idx_key = ''
-                nst_cnt -= 1
+        tables = {}
+        tb_name = ca_name = None
+        for line in content:
+            line_strip = line.strip()
+            if line_strip.startswith('table'):
+                tb_name = line_strip.split('table ', 1)[-1].split('{')[0].strip()
+                tables[tb_name] = {}
+            elif tb_name and line_strip.startswith('chain'):
+                ca_name = line_strip.split('chain ', 1)[-1].split('{')[0].strip()
+                tables[tb_name][ca_name] = []
+            elif tb_name and ca_name and line_strip and '}' != line_strip:
+                tables[tb_name][ca_name].append(line_strip)
+            elif line.startswith('}') and line.endswith('}'):
+                tb_name = None
+            elif not line.startswith('}') and line.endswith('}'):
+                ca_name = None
+            elif line_strip:
+                raise ParseException("Content out of table or chain: '{}'".format(line))
 
-        if not self.data:
+        if not tables:
             raise ParseException("No Parsed Contents")
 
-    @property
-    def get_nftables(self):
-        """
-        (list): This will return the list of netfilter tables if exists
-        else it will return `[]` emplty list.
-        """
-        return list(sorted(self.data.keys())) if self.data.keys() else []
+        self.update(tables)
 
-    def get_rules(self, nf_tbl, nf_tbl_chain):
+    @property
+    def tables(self):
         """
-        (list): This will return the list of rules added under netfilter table `nf_tbl`
-        and chains from the netfilter table `nf_tbl_chain` if exists else it will return
-        `[]` emplty list.
+        (list): Returns the list of tables.
         """
-        return list(sorted(self.data[nf_tbl][nf_tbl_chain])) if (nf_tbl in self.data) and (nf_tbl_chain in self.data[nf_tbl]) else []
+        return sorted(self.keys())
+
+    def get_chains(self, table):
+        """
+        Get the list of chains of specified `table`
+
+        Args:
+           nf_tbl (str): Name of the specified `table`
+
+        Returns:
+            (list): List of chains under the `table`
+        """
+        return sorted(self.get(table, {}).keys())
+
+    def get_rules(self, table, chain):
+        """
+        Get the list of rules of the specified `chain` under the specified
+        `table`.
+
+        Args:
+           nf_tbl (str): Name of the specified table
+           chain (str): Name of the specified chain
+
+        Returns:
+            (list): List of rules of the specified `chain` under the specified `table`
+        """
+        return sorted(self.get(table, {}).get(chain, []))
