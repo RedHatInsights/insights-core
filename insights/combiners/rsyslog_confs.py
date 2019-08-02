@@ -26,20 +26,19 @@ class RsyslogAllConf(dict):
         '$ModLoad imuxsock'
     """
     def __init__(self, confs):
+        super(RsyslogAllConf, self).__init__()
         data = {}
 
         for conf in confs:
             if conf.file_path == "/etc/rsyslog.conf":
                 include = False
-                for item in conf.data:
+                for item in conf:
                     if "include(" in item or "$IncludeConfig" in item:
                         include = True
                 if not include:
                     data.clear()
-                    data[conf.file_path] = conf.data
+                    data[conf.file_path] = conf
                     break
-            data[conf.file_path] = conf.data
+            data[conf.file_path] = conf
 
         self.update(data)
-
-        super(RsyslogAllConf, self).__init__()
