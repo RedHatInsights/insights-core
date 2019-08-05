@@ -81,7 +81,7 @@ def test_good():
     assert pi.host == ['host0', 'host1', 'host2']
     assert pi.target == ['target0:1:0', 'target1:0:0', 'target2:0:0']
 
-    assert pi.rport == [None, 'rport-1:0-1', 'rport-2:0-2']
+    assert pi.rport == ['rport-1:0-1', 'rport-2:0-2']
     assert pi.host_channel_id_lun == ['0:1:0:0', '1:0:0:0', '2:0:0:0']
 
 

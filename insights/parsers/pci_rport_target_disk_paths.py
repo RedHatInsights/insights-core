@@ -90,7 +90,8 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
     def __attrs__(self, item):
         plist = []
         for dc in self.pdata['PCI']:
-            plist.append(dc[item])
+            if dc[item]:
+                plist.append(dc[item])
         return sorted(plist)
 
     @property
