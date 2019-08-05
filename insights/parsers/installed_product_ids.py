@@ -97,8 +97,8 @@ class InstalledProductIDs(CommandParser):
     Examples:
         >>> type(products)
         <class 'insights.parsers.installed_product_ids.InstalledProductIDs'>
-        >>> products.ids
-        set(['69'])
+        >>> list(products.ids)
+        ['69']
 
     """
     def parse_content(self, content):
