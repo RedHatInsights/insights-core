@@ -1,8 +1,7 @@
 # Change Log
 
-## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
-
-[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.116-1092...HEAD)
+## [insights-core-3.0.117-1093](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.117-1093) (2019-08-01)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.116-1092...insights-core-3.0.117-1093)
 
 **Closed issues:**
 
