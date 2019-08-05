@@ -105,10 +105,11 @@ def test_status_exp():
         PCIPaths(context_wrap(''))
     assert "Input content is empty" in str(sc1)
 
+
 def test_status_exp2():
     """
     Here test the examples cause expections
     """
     with pytest.raises(ParseException) as sc1:
-        pci = PCIPaths(context_wrap(INPUT_BAD))
+        PCIPaths(context_wrap(INPUT_BAD))
     assert "No useful data parsed in content" in str(sc1)
