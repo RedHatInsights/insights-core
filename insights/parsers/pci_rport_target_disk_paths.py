@@ -14,9 +14,9 @@ from insights.specs import Specs
 class PCIRportTargetDiskPaths(CommandParser, dict):
     """
     Class for parsing ``find /sys/devices/pci* -mindepth 8 -maxdepth 8`` command output.
-    It supports the filter of 'block' or '/block/'.
 
-    Typical output of command ``find /sys/devices/pci* -mindepth 8 -maxdepth 8`` with filter looks like::
+    Typical output of command ``find /sys/devices/pci* -mindepth 8 -maxdepth 8`` with 
+    the filter of 'block' looks like::
 
         /sys/devices/pci0000:00/0000:00:01.0/0000:04:00.6/host1/rport-1:0-1/target1:0:0/1:0:0:0/block/sdb
         /sys/devices/pci0000:00/0000:00:01.0/0000:04:00.7/host2/rport-2:0-2/target2:0:0/2:0:0:0/block/sdc
@@ -38,18 +38,18 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
         >>> pd.devnode
         ['sda', 'sdb', 'sdc']
 
+    Attributes:
+        data (list): The output of command ``find /sys/devices/pci* -mindepth 8 -maxdepth 8``
+        host (list): The list of all host(s)
+        rport (list): The list of all rport(s)
+        target (list): The list of all target(s)
+        devnode (list): The list of all devnode(s)
+        pci_id (list): The list the all pci_id(s) 
+        host_channel_id_lun (list): The list of all host_channel_id_lun(s)
+
     Raises:
         ParseException: When input content is not available to parse
         KeyError: When input key doesn't exists in dict
-
-    Attributes:
-        data (list): The output of command ``find /sys/devices/pci* -mindepth 8 -maxdepth 8``
-        host (list): The list of host
-        rport (list): The list of rport
-        target (list): The list of target
-        devnode (list): The list of devnode
-        pci_id (list): The list the pci_id involved
-        host_channel_id_lun (list): The list of host_channel_id_lun
 
     """
 
@@ -68,11 +68,9 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
     def pci_id(self):
         """
         The all pci_id(s) from parsed content.
-        For example:
-        ../pci0000:00/0000:00:01.0/0000:04:00.6
 
         Returns:
-            list: pci IDs
+            list: pci id 
 
         """
         return self.__attrs__('pci_id')
@@ -81,8 +79,6 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
     def devnode(self):
         """
         The all devicenode(s) from parsed content.
-        For example:
-        ../0000:04:00.7/host2/rport-2:0-2/target2:0:0/2:0:0:0/block/sdc
 
         Returns:
             list: device nodes
@@ -94,8 +90,6 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
     def host(self):
         """
         The all host(s) from parsed content.
-        For example:
-        ../0000:04:00.6/host1/
 
         Returns:
             list: hosts
@@ -107,8 +101,6 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
     def rport(self):
         """
         The all rport(s) from parsed content.
-        For example:
-        ../0000:04:00.7/host2/rport-2:0-2
 
         Returns:
             list: rports
@@ -120,8 +112,6 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
     def target(self):
         """
         The all rport(s) from parsed content.
-        For example:
-        ../0000:02:00.0/host0/target0:1:0
 
         Returns:
             list: rports
@@ -133,8 +123,6 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
     def host_channel_id_lun(self):
         """
         The all host_channel_id_lun(s) from parsed content
-        For example:
-        ../0000:04:00.7/host2/rport-2:0-2/target2:0:0/2:0:0:0
 
         Returns:
             list: host_channel_id_lun
@@ -143,7 +131,8 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
 
     def parse_content(self, content):
         """
-        Parse content of command ``find /sys/devices/pci* -mindepth 8 -maxdepth 8``
+        Parse output content of command ``find /sys/devices/pci* -mindepth 8 -maxdepth 8``
+
         The Original data parsed looks like::
 
             {
@@ -177,10 +166,6 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
 
         Args:
             content (list): The output of command ``find /sys/devices/pci* -mindepth 8 -maxdepth 8``
-
-        Raises:
-            SkipException: when the parsed content is empty
-            ParseException: when the parsed content is not parseable
         """
 
         EMPTY = "Input content is empty"
