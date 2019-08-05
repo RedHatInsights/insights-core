@@ -70,7 +70,6 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
         ['sda', 'sdb', 'sdc']
 
     Attributes:
-        data (list): The output of command ``find /sys/devices/pci* -mindepth 8 -maxdepth 8``
         host (list): The list of all host(s)
         rport (list): The list of all rport(s)
         target (list): The list of all target(s)
@@ -84,13 +83,9 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
 
     """
 
-    def __init__(self, *args, **kwargs):
-        super(PCIRportTargetDiskPaths, self).__init__(*args, **kwargs)
-        self.update(self.pdata)
-
     def __attrs__(self, item):
         plist = []
-        for dc in self.pdata['PCI']:
+        for dc in self['PCI']:
             if dc[item]:
                 plist.append(dc[item])
         return sorted(plist)
@@ -102,7 +97,6 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
 
         Returns:
             list: pci id
-
         """
         return self.__attrs__('pci_id')
 
@@ -113,7 +107,6 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
 
         Returns:
             list: device nodes
-
         """
         return self.__attrs__('devnode')
 
@@ -124,7 +117,6 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
 
         Returns:
             list: hosts
-
         """
         return self.__attrs__('host')
 
@@ -135,7 +127,6 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
 
         Returns:
             list: rports
-
         """
         return self.__attrs__('rport')
 
@@ -147,8 +138,14 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
         Returns:
             list: rports
         """
-
         return self.__attrs__('target')
+
+    @property
+    def pci(self):
+        """
+        (dict): The result parsed of 'find /sys/devices/pci* -mindepth 8 -maxdepth 8'
+        """
+        return self
 
     @property
     def host_channel_id_lun(self):
@@ -168,12 +165,12 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
             raise SkipException(EMPTY)
 
         pdata_list = []
-        self.pdata = {'PCI': pdata_list}
+        pci = {'PCI': pdata_list}
 
         for line in content:
             line = line.strip()
 
-            pci = {}
+            temp_pci = {}
             cnt = 0
 
             host_pos = None
@@ -205,19 +202,18 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
                 host_channel_id_lun = line.split('/', 11)[host_channel_id_lun_pos]
                 if rport_pos:
                     rport = line.split('/', 11)[rport_pos]
-
-                if rport_pos:
-                    pci['rport'] = rport
+                    temp_pci['rport'] = rport
                 else:
-                    pci['rport'] = None
+                    temp_pci['rport'] = None
 
-                pci['pci_id'] = pci_id
-                pci['host'] = host
-                pci['target'] = target
-                pci['devnode'] = devnode
-                pci['host_channel_id_lun'] = host_channel_id_lun
+                temp_pci['pci_id'] = pci_id
+                temp_pci['host'] = host
+                temp_pci['target'] = target
+                temp_pci['devnode'] = devnode
+                temp_pci['host_channel_id_lun'] = host_channel_id_lun
 
-                if pci not in pdata_list:
-                    pdata_list.append(pci)
+                if temp_pci not in pdata_list:
+                    pdata_list.append(temp_pci)
             else:
                 raise ParseException(BADWD)
+        self.update(pci)
