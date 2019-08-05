@@ -78,8 +78,8 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
         host_channel_id_lun (list): The list of all host_channel_id_lun(s)
 
     Raises:
-        ParseException: When input content is not available to parse
-        KeyError: When input key doesn't exists in dict
+        ParseException: Input content is not available to parse
+        SkipException: Input content is empty
 
     """
 
