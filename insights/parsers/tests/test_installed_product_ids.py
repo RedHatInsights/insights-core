@@ -70,8 +70,8 @@ Product:
 """
 
 NONE_FOUND = """
-find: ‘/etc/pki/product-default/’: No such file or directory
-find: ‘/etc/pki/product/’: No such file or directory
+find: '/etc/pki/product-default/': No such file or directory
+find: '/etc/pki/product/': No such file or directory
 """
 
 BAD_FILE = """
