@@ -4,16 +4,17 @@ OVSofctlDumpFlows - command ``/usr/bin/ovs-ofctl dump-flows <bridge-name>``
 
 This module provides class ``OVSofctlDumpFlows`` to parse the
 output of command ``/usr/bin/ovs-ofctl dump-flows <bridge-name>``.
-
 """
 
-from insights import CommandParser, LegacyItemAccess, parser
+
+from insights import CommandParser, parser
 from insights.parsers import SkipException
 from insights.specs import Specs
+from ..parsers import split_kv_pairs
 
 
 @parser(Specs.ovs_ofctl_dump_flows)
-class OVSofctlDumpFlows(CommandParser, LegacyItemAccess):
+class OVSofctlDumpFlows(CommandParser):
     """
         This class provides processing for the output of the command
         ``/usr/bin/ovs-ofctl dump-flows <bridge-name>``.
@@ -45,15 +46,43 @@ class OVSofctlDumpFlows(CommandParser, LegacyItemAccess):
             >>> len(data["br0"])
             2
     """
-    
+
     def parse_content(self, content):
-        if len(content) == 0:
-            raise SkipException("Empty Content!")
+        if not content:
+            import pdb; pdb.set_trace()
+            raise SkipException("Empty Content")
 
         self.data = {}
 
         # Extract the bridge name
-        bridge_name = self.file_path.split("ovs-ofctl_dump-flows_*")[-1]
+        self._bridge_name = self.file_path.split("ovs-ofctl_dump-flows_")[1]
+        if self._bridge_name:
+            self.data[self._bridge_name] = []
+        else:
+            raise SkipException("Empty Content")
 
         for line in content:
-            import pdb; pdb.set_trace()
+            line = line.split(',')
+            flow_dict = split_kv_pairs(line, split_on='=')
+            if flow_dict:
+                self.data[self._bridge_name].append(flow_dict)
+            flow_dict = {}
+        if not self.data:
+            raise SkipException("Invalid Content!")
+
+
+    @property
+    def bridge_iface(self):
+        """
+        (str): It will return bridge interface name on success else returns
+        `None` on failure.
+        """
+        return self._bridge_name
+
+
+    def dump_flows(self, bridge):
+        """
+        (list): It will return list of flows added under bridge else returns
+        empty list `[]` on failure.
+        """
+        return self.data[bridge]

@@ -17,9 +17,57 @@ cookie=0x0, duration=4.607s, table=0, n_packets=2, n_bytes=196, idle_timeout=60,
 cookie=0x0, duration=4.602s, table=0, n_packets=2, n_bytes=196, idle_timeout=60, priority=65535,icmp,in_port="s1-eth1",vlan_tci=0x0000,dl_src=d6:fc:9c:e7:a2:f9,dl_dst=a2:72:e7:06:75:2e,nw_src=10.0.0.1,nw_dst=10.0.0.3,nw_tos=0,icmp_type=0,icmp_code=0 actions=output:"s1-eth3"
 """.strip()
 
+OVS_FLOW_DUMPS_1 = """
+#cookie=0x0, duration=4.602s, table=0, n_packets=2, n_bytes=196, idle_timeout=60, priority=65535,icmp,in_port="s1-eth1",vlan_tci=0x0000,dl_src=d6:fc:9c:e7:a2:f9,dl_dst=a2:72:e7:06:75:2e,nw_src=10.0.0.1,nw_dst=10.0.0.3,nw_tos=0,icmp_type=0,icmp_code=0 actions=output:"s1-eth3"
+#""".strip()
+
+
+OVS_FLOW_DUMPS_2 = """
+cookie=0x1, duration=14.602s, table=10, n_packets=12, n_bytes=1196, idle_timeout=60, priority=65535,icmp,in_port="s1-eth1",vlan_tci=0x1000,dl_src=d6:fc:9c:e7:a2:f9,dl_dst=a2:72:e7:06:75:2e,nw_src=10.0.0.1,nw_dst=10.0.0.3,nw_tos=0,icmp_type=0,icmp_code=0 actions=output:"s1-eth3"
+""".strip()
+
 
 PATH_BR0 = "insights_commands/ovs-ofctl_dump-flows_br0".strip()
+PATH_BR_INT = "insights_commands/ovs-ofctl_dump-flows_br-int".strip()
 
+
+OVS_FLOW_DUMPS_NO = "".strip()
+
+OVS_PATH_NO = "insights_commands/ovs-ofctl_br0"
+
+
+OVS_FLOW_DUMPS_NO_2 = """
+Error: Invalid cmd
+""".strip()
 
 def test_ovs_appctl_fdb_show_bridge():
-    data = OVSofctlDumpFlows(context_wrap(OVS_FLOW_DUMPS, path=PATH_BR0))
+#    ovs_dump = OVSofctlDumpFlows(context_wrap(OVS_FLOW_DUMPS, path=PATH_BR0))
+#    assert ovs_dump.bridge_iface == 'br0'
+#    assert len(ovs_dump.dump_flows('br0')) == 8
+#
+#    ovs_dump = OVSofctlDumpFlows(context_wrap(OVS_FLOW_DUMPS, path=PATH_BR_INT))
+#    assert ovs_dump.bridge_iface == 'br-int'
+#    assert len(ovs_dump.dump_flows('br-int')) == 8
+#    
+#    ovs_dump = OVSofctlDumpFlows(context_wrap(OVS_FLOW_DUMPS_1, path=PATH_BR_INT))
+#    assert ovs_dump.bridge_iface == 'br-int'
+#    assert ovs_dump.dump_flows('br-int') == [{'duration': '4.602s', 'table': '0', 'n_packets': '2', 'n_bytes': '196', 'idle_timeout': '60',
+#                                              'priority': '65535', 'in_port': '"s1-eth1"', 'vlan_tci': '0x0000', 'dl_src': 'd6:fc:9c:e7:a2:f9',
+#                                              'dl_dst': 'a2:72:e7:06:75:2e', 'nw_src': '10.0.0.1', 'nw_dst': '10.0.0.3', 'nw_tos': '0',
+#                                              'icmp_type': '0', 'icmp_code': '0 actions=output:"s1-eth3"'}]
+#    assert ovs_dump.data == {'br-int': [{'duration': '4.602s', 'table': '0', 'n_packets': '2', 'n_bytes': '196', 'idle_timeout': '60', 
+#                                              'priority': '65535', 'in_port': '"s1-eth1"', 'vlan_tci': '0x0000', 'dl_src': 'd6:fc:9c:e7:a2:f9',
+#                                              'dl_dst': 'a2:72:e7:06:75:2e', 'nw_src': '10.0.0.1', 'nw_dst': '10.0.0.3', 'nw_tos': '0',
+#                                              'icmp_type': '0', 'icmp_code': '0 actions=output:"s1-eth3"'}]}
+#
+    with pytest.raises(SkipException) as exc:
+        ovs_obj = OVSofctlDumpFlows(context_wrap(OVS_FLOW_DUMPS_NO, path=OVS_PATH_NO))
+    assert 'Empty Content' in str(exc)
+
+#    with pytest.raises(SkipException) as exc:
+#        ovs_obj = OVSofctlDumpFlows(context_wrap(OVS_FLOW_DUMPS, path=OVS_PATH_NO))
+#    assert 'Empty Content!' in str(exc)
+#
+#    with pytest.raises(SkipException) as exc:
+#        ovs_obj = OVSofctlDumpFlows(context_wrap(OVS_FLOW_DUMPS_NO_2, path=PATH_BR_INT))
+#    assert 'Invalid Contents!' in str(exc)
