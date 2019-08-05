@@ -43,33 +43,36 @@ class OVSofctlDumpFlows(CommandParser):
             SkipException: When the file is empty or data is not present for a bridge.
 
         Examples:
-            >>> len(data["br0"])
+            >>> len(ovs_obj.data["br0"])
+            2
+            >>> ovs_obj.bridge_iface
+            'br0'
+            >>> len(ovs_obj.dump_flows('br0'))
             2
     """
 
     def parse_content(self, content):
         if not content:
-            import pdb; pdb.set_trace()
-            raise SkipException("Empty Content")
+            raise SkipException("Empty Content!")
 
         self.data = {}
 
         # Extract the bridge name
-        self._bridge_name = self.file_path.split("ovs-ofctl_dump-flows_")[1]
-        if self._bridge_name:
-            self.data[self._bridge_name] = []
-        else:
-            raise SkipException("Empty Content")
+        try:
+            self._bridge_name = self.file_path.split("ovs-ofctl_dump-flows_")[1]
+        except:
+            raise SkipException("Invalid Path!")
 
         for line in content:
             line = line.split(',')
             flow_dict = split_kv_pairs(line, split_on='=')
-            if flow_dict:
+            if flow_dict and self._bridge_name not in self.data:
+                self.data[self._bridge_name] = []
+            if flow_dict and self._bridge_name in self.data:
                 self.data[self._bridge_name].append(flow_dict)
             flow_dict = {}
         if not self.data:
             raise SkipException("Invalid Content!")
-
 
     @property
     def bridge_iface(self):
@@ -78,7 +81,6 @@ class OVSofctlDumpFlows(CommandParser):
         `None` on failure.
         """
         return self._bridge_name
-
 
     def dump_flows(self, bridge):
         """
