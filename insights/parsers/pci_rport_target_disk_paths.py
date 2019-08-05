@@ -13,8 +13,8 @@ from insights.specs import Specs
 @parser(Specs.pci_rport_target_disk_paths)
 class PCIRportTargetDiskPaths(CommandParser, dict):
     """
-    Class for parsing ``find /sys/devices/pci* -mindepth 8 -maxdepth 8`` command output. It supports
-    filter of 'block' or '/block/'.
+    Class for parsing ``find /sys/devices/pci* -mindepth 8 -maxdepth 8`` command output.
+    It supports the filter of 'block' or '/block/'.
 
     Typical output of command ``find /sys/devices/pci* -mindepth 8 -maxdepth 8`` with filter looks like::
 
@@ -23,37 +23,6 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
         /sys/devices/pci0000:00/0000:00:02.2/0000:02:00.0/host0/target0:1:0/0:1:0:0/block/sda/dev
         /sys/devices/pci0000:00/0000:00:02.2/0000:02:00.0/host0/target0:1:0/0:1:0:0/block/sda/sda1
         /sys/devices/pci0000:00/0000:00:02.2/0000:02:00.0/host0/target0:1:0/0:1:0:0/block/sda/sda2
-
-    The Original data parsed looks like:
-        {
-            'PCI': [
-                {
-                    'target': 'target1: 0: 0',
-                    'devnode': 'sdb',
-                    'host_channel_id_lun': '1: 0: 0: 0',
-                    'pci_id': '0000: 04: 00.6',
-                    'host': 'host1',
-                    'rport': 'rport-1: 0-1'
-                },
-                {
-                    'target': 'target2: 0: 0',
-                    'devnode': 'sdc',
-                    'host_channel_id_lun': '2: 0: 0: 0',
-                    'pci_id': '0000: 04: 00.7',
-                    'host': 'host2',
-                    'rport': 'rport-2: 0-2'
-                },
-                {
-                    'target': 'target0: 1: 0',
-                    'devnode': 'sda',
-                    'host_channel_id_lun': '0: 1: 0: 0',
-                    'pci_id': '0000: 02: 00.0',
-                    'host': 'host0',
-                    'rport': 'rport-2: 0-2'
-                }
-                    ]
-        }
-
 
     Examples:
         >>> type(pd)
@@ -75,12 +44,13 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
 
     Attributes:
         data (list): The output of command ``find /sys/devices/pci* -mindepth 8 -maxdepth 8``
-        pci_id (list): The list the pci_id involved
-        devnode (list): The list of devnode
         host (list): The list of host
         rport (list): The list of rport
         target (list): The list of target
-        host_channel_id_lun: The list of host_channel_id_lun
+        devnode (list): The list of devnode
+        pci_id (list): The list the pci_id involved
+        host_channel_id_lun (list): The list of host_channel_id_lun
+
     """
 
     def __init__(self, *args, **kwargs):
@@ -99,10 +69,11 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
         """
         The all pci_id(s) from parsed content.
         For example:
-            ../pci0000:00/0000:00:01.0/0000:04:00.6
+        ../pci0000:00/0000:00:01.0/0000:04:00.6
 
         Returns:
             list: pci IDs
+
         """
         return self.__attrs__('pci_id')
 
@@ -111,10 +82,11 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
         """
         The all devicenode(s) from parsed content.
         For example:
-            ../0000:04:00.7/host2/rport-2:0-2/target2:0:0/2:0:0:0/block/sdc
+        ../0000:04:00.7/host2/rport-2:0-2/target2:0:0/2:0:0:0/block/sdc
 
         Returns:
             list: device nodes
+
         """
         return self.__attrs__('devnode')
 
@@ -123,10 +95,11 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
         """
         The all host(s) from parsed content.
         For example:
-            ../0000:04:00.6/host1/
+        ../0000:04:00.6/host1/
 
         Returns:
             list: hosts
+
         """
         return self.__attrs__('host')
 
@@ -135,10 +108,11 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
         """
         The all rport(s) from parsed content.
         For example:
-            ../0000:04:00.7/host2/rport-2:0-2
+        ../0000:04:00.7/host2/rport-2:0-2
 
         Returns:
             list: rports
+
         """
         return self.__attrs__('rport')
 
@@ -147,7 +121,7 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
         """
         The all rport(s) from parsed content.
         For example:
-            ../0000:02:00.0/host0/target0:1:0
+        ../0000:02:00.0/host0/target0:1:0
 
         Returns:
             list: rports
@@ -160,7 +134,7 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
         """
         The all host_channel_id_lun(s) from parsed content
         For example:
-            ../0000:04:00.7/host2/rport-2:0-2/target2:0:0/2:0:0:0
+        ../0000:04:00.7/host2/rport-2:0-2/target2:0:0/2:0:0:0
 
         Returns:
             list: host_channel_id_lun
@@ -170,9 +144,43 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
     def parse_content(self, content):
         """
         Parse content of command ``find /sys/devices/pci* -mindepth 8 -maxdepth 8``
+        The Original data parsed looks like::
+
+            {
+                'PCI': [
+                    {
+                        'target': 'target1: 0: 0',
+                        'devnode': 'sdb',
+                        'host_channel_id_lun': '1: 0: 0: 0',
+                        'pci_id': '0000: 04: 00.6',
+                        'host': 'host1',
+                        'rport': 'rport-1: 0-1'
+                    },
+                    {
+                        'target': 'target2: 0: 0',
+                        'devnode': 'sdc',
+                        'host_channel_id_lun': '2: 0: 0: 0',
+                        'pci_id': '0000: 04: 00.7',
+                        'host': 'host2',
+                        'rport': 'rport-2: 0-2'
+                    },
+                    {
+                        'target': 'target0: 1: 0',
+                        'devnode': 'sda',
+                        'host_channel_id_lun': '0: 1: 0: 0',
+                        'pci_id': '0000: 02: 00.0',
+                        'host': 'host0',
+                        'rport': 'rport-2: 0-2'
+                    }
+                        ]
+            }
 
         Args:
             content (list): The output of command ``find /sys/devices/pci* -mindepth 8 -maxdepth 8``
+
+        Raises:
+            SkipException: when the parsed content is empty
+            ParseException: when the parsed content is not parseable
         """
 
         EMPTY = "Input content is empty"
