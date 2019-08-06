@@ -2,7 +2,7 @@
 PCIRportTargetDiskPath
 ======================
 
-Module for parsing the output of command ``find /sys/devices/pci* -mindepth 8 -maxdepth 8``.
+Module for parsing the output of command ``find /sys/devices/pci0000:00 -mindepth 8 -maxdepth 8``.
 """
 
 from insights.parsers import ParseException, SkipException
@@ -13,9 +13,9 @@ from insights.specs import Specs
 @parser(Specs.pci_rport_target_disk_paths)
 class PCIRportTargetDiskPaths(CommandParser, dict):
     """
-    Class for parsing ``find /sys/devices/pci* -mindepth 8 -maxdepth 8`` command output.
+    Class for parsing ``find /sys/devices/pci0000:00 -mindepth 8 -maxdepth 8`` command output.
 
-    Typical output of command ``find /sys/devices/pci* -mindepth 8 -maxdepth 8`` with
+    Typical output of command ``find /sys/devices/pci0000:00 -mindepth 8 -maxdepth 8`` with
     the filter of 'block' looks like::
 
         /sys/devices/pci0000:00/0000:00:01.0/0000:04:00.6/host1/rport-1:0-1/target1:0:0/1:0:0:0/block/sdb
@@ -143,7 +143,7 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
     @property
     def pci(self):
         """
-        (dict): The result parsed of 'find /sys/devices/pci* -mindepth 8 -maxdepth 8'
+        (dict): The full information parsed
         """
         return self
 
