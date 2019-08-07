@@ -49,9 +49,9 @@ class YumRepoList(CommandParser):
         Loaded plugins: langpacks, product-id, search-disabled-repos, subscription-manager
         repo id                                             repo name                                                                                                    status
         rhel-7-server-e4s-rpms/x86_64                       Red Hat Enterprise Linux 7 Server - Update Services for SAP Solutions (RPMs)                                 12,250
-        rhel-ha-for-rhel-7-server-e4s-rpms/x86_64           Red Hat Enterprise Linux High Availability (for RHEL 7 Server) Update Services for SAP Solutions (RPMs)         272
+        !rhel-ha-for-rhel-7-server-e4s-rpms/x86_64          Red Hat Enterprise Linux High Availability (for RHEL 7 Server) Update Services for SAP Solutions (RPMs)         272
         rhel-ha-for-rhel-7-server-rpms/x86_64               Red Hat Enterprise Linux High Availability (for RHEL 7 Server) (RPMs)                                           225
-        rhel-sap-hana-for-rhel-7-server-e4s-rpms/x86_64     RHEL for SAP HANA (for RHEL 7 Server) Update Services for SAP Solutions (RPMs)                                   21
+        *rhel-sap-hana-for-rhel-7-server-e4s-rpms/x86_64    RHEL for SAP HANA (for RHEL 7 Server) Update Services for SAP Solutions (RPMs)                                   21
         repolist: 12,768
 
     Examples:
@@ -70,8 +70,22 @@ class YumRepoList(CommandParser):
 
     Attributes:
         data (list): list of repos wrapped in dictionaries
-        repos (dict): dict of all listed repos where the key is the full repo-id
+        repos (dict): dict of all listed repos where the key is the full repo-id. For example::
 
+            self.repos =
+                {
+                    'rhel-7-server-e4s-rpms/x86_64': {
+                        'id': 'rhel-7-server-e4s-rpms/x86_64',
+                        'name': 'Red Hat Enterprise Linux 7 Server - Update Services for SAP Solutions (RPMs)',
+                        'status': '12,250'},
+                    'rhel-sap-hana-for-rhel-7-server-e4s-rpms/x86_64': {
+                        'id': 'rhel-sap-hana-for-rhel-7-server-e4s-rpms/x86_64',
+                        'name': 'RHEL for SAP HANA (for RHEL 7 Server) Update Services for SAP Solutions (RPMs)',
+                        'status': '21'}
+                }
+        rhel_repos(list): list of all the rhel repos and the item is just the repo id without server and arch info. For example::
+
+            self.rhel_repos = ['rhel-7-server-e4s-rpms', 'rhel-sap-hana-for-rhel-7-server-e4s-rpms']
     """
     def parse_content(self, content):
         self.data = []
@@ -87,7 +101,7 @@ class YumRepoList(CommandParser):
                 except ValueError:
                     raise SkipException("Incorrect line: '{0}'".format(line))
                 self.data.append({
-                    "id": _id.strip(),
+                    "id": _id.lstrip('!').lstrip('*').strip(),
                     "name": name.strip(),
                     "status": status.strip()})
             if not found_start:
@@ -122,6 +136,6 @@ class YumRepoList(CommandParser):
     @property
     def rhel_repos(self):
         '''list of RHEL repos/Repo IDs'''
-        return [i.split('/')[0].lstrip('!')
+        return [i.split('/')[0]
                 for i in self.repos
-                if i.startswith(('!rhel', 'rhel'))]
+                if i.startswith('rhel')]

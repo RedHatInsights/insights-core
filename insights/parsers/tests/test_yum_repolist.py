@@ -42,6 +42,15 @@ repo id                              repo name                                  
 repolist: 21,581
 """
 
+YUM_REPOLIST_CONTENT_OUT_OF_DATE_AND_NOT_MATCH_METADATA = """
+Loaded plugins: product-id, search-disabled-repos, subscription-manager
+Repodata is over 2 weeks old. Install yum-cron? Or run: yum makecache fast
+repo id                              repo name                                          status
+!rhel-7-server-extras-rpms/x86_64    Red Hat Enterprise Linux 7 Server - Extras (RPMs)  877
+*rhel-7-server-rpms/7Server/x86_64   Red Hat Enterprise Linux 7 Server (RPMs)           20,704
+repolist: 21,581
+"""
+
 YUM_REPOLIST_DOC = """
 Loaded plugins: langpacks, product-id, search-disabled-repos, subscription-manager
 repo id                                             repo name                                                                                                    status
@@ -99,6 +108,13 @@ def test_rhel_repos_out_of_date():
     assert len(repo_list) == 2
     assert set(repo_list.rhel_repos) == set(['rhel-7-server-extras-rpms',
                                              'rhel-7-server-rpms'])
+
+
+def test_rhel_repos_out_of_date_2():
+    repo_list = YumRepoList(context_wrap(YUM_REPOLIST_CONTENT_OUT_OF_DATE_AND_NOT_MATCH_METADATA))
+    assert len(repo_list) == 2
+    assert 'rhel-7-server-extras-rpms/x86_64' in repo_list
+    assert 'rhel-7-server-rpms/7Server/x86_64' in repo_list
 
 
 def test_invalid_get_type():
