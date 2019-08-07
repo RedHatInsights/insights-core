@@ -513,6 +513,7 @@ class Specs(SpecSet):
     subscription_manager_id = RegistryPoint()
     subscription_manager_list_consumed = RegistryPoint()
     subscription_manager_list_installed = RegistryPoint()
+    subscription_manager_installed_product_ids = RegistryPoint(filterable=True)
     subscription_manager_release_show = RegistryPoint()
     swift_conf = RegistryPoint()
     swift_log = RegistryPoint(filterable=True)
