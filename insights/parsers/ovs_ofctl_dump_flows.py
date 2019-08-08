@@ -36,18 +36,18 @@ class OVSofctlDumpFlows(CommandParser):
             }
 
         Attributes:
-            data (dict): A dictionary where each element contains the bridge-name
+            bridges (dict): A dictionary where each element contains the bridge-name
                          as key and list of dictionary elements having flow dumps.
 
         Raises:
             SkipException: When the file is empty or data is not present for a bridge.
 
         Examples:
-            >>> len(ovs_obj.data["br0"])
+            >>> len(ovs_obj.bridges["br0"])
             2
-            >>> ovs_obj.bridge_iface
+            >>> ovs_obj.bridge_name
             'br0'
-            >>> len(ovs_obj.dump_flows('br0'))
+            >>> len(ovs_obj.flow_dumps('br0'))
             2
     """
 
@@ -55,7 +55,7 @@ class OVSofctlDumpFlows(CommandParser):
         if not content:
             raise SkipException("Empty Content!")
 
-        self.data = {}
+        self.bridges = {}
 
         # Extract the bridge name
         try:
@@ -66,25 +66,25 @@ class OVSofctlDumpFlows(CommandParser):
         for line in content:
             line = line.split(',')
             flow_dict = split_kv_pairs(line, split_on='=')
-            if flow_dict and self._bridge_name not in self.data:
-                self.data[self._bridge_name] = []
-            if flow_dict and self._bridge_name in self.data:
-                self.data[self._bridge_name].append(flow_dict)
+            if flow_dict and self._bridge_name not in self.bridges:
+                self.bridges[self._bridge_name] = []
+            if flow_dict and self._bridge_name in self.bridges:
+                self.bridges[self._bridge_name].append(flow_dict)
             flow_dict = {}
-        if not self.data:
+        if not self.bridges:
             raise SkipException("Invalid Content!")
 
     @property
-    def bridge_iface(self):
+    def bridge_name(self):
         """
         (str): It will return bridge interface name on success else returns
         `None` on failure.
         """
         return self._bridge_name
 
-    def dump_flows(self, bridge):
+    def flow_dumps(self, bridge):
         """
         (list): It will return list of flows added under bridge else returns
         empty list `[]` on failure.
         """
-        return self.data[bridge]
+        return self.bridges[bridge]
