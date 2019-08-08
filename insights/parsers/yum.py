@@ -50,13 +50,12 @@ class YumRepoList(CommandParser):
         repo id                                             repo name                                                                                                    status
         rhel-7-server-e4s-rpms/x86_64                       Red Hat Enterprise Linux 7 Server - Update Services for SAP Solutions (RPMs)                                 12,250
         !rhel-ha-for-rhel-7-server-e4s-rpms/x86_64          Red Hat Enterprise Linux High Availability (for RHEL 7 Server) Update Services for SAP Solutions (RPMs)         272
-        rhel-ha-for-rhel-7-server-rpms/x86_64               Red Hat Enterprise Linux High Availability (for RHEL 7 Server) (RPMs)                                           225
         *rhel-sap-hana-for-rhel-7-server-e4s-rpms/x86_64    RHEL for SAP HANA (for RHEL 7 Server) Update Services for SAP Solutions (RPMs)                                   21
         repolist: 12,768
 
     Examples:
         >>> len(repolist)
-        4
+        3
         >>> 'rhel-7-server-e4s-rpms/x86_64' in repolist.repos
         True
         >>> 'rhel-7-server-e4s-rpms' in repolist.repos
@@ -67,25 +66,35 @@ class YumRepoList(CommandParser):
         'Red Hat Enterprise Linux 7 Server - Update Services for SAP Solutions (RPMs)'
         >>> repolist[0]['name']
         'Red Hat Enterprise Linux 7 Server - Update Services for SAP Solutions (RPMs)'
+        >>> repolist['rhel-ha-for-rhel-7-server-e4s-rpms/x86_64']['id']
+        '!rhel-ha-for-rhel-7-server-e4s-rpms/x86_64'
 
     Attributes:
         data (list): list of repos wrapped in dictionaries
-        repos (dict): dict of all listed repos where the key is the full repo-id. For example::
+        repos (dict): dict of all listed repos where the key is the full repo-id without "!" or "*".
+            But you can get it from the value part if needed. For example::
 
-            self.repos =
-                {
+                self.repos = {
                     'rhel-7-server-e4s-rpms/x86_64': {
                         'id': 'rhel-7-server-e4s-rpms/x86_64',
                         'name': 'Red Hat Enterprise Linux 7 Server - Update Services for SAP Solutions (RPMs)',
-                        'status': '12,250'},
+                        'status': '12,250'
+                    },
+                    'rhel-ha-for-rhel-7-server-e4s-rpms/x86_64': {
+                        'id': '!rhel-ha-for-rhel-7-server-e4s-rpms/x86_64',
+                        'name': 'Red Hat Enterprise Linux High Availability (for RHEL 7 Server) Update Services for SAP Solutions (RPMs)',
+                        'status': '272'
+                    },
                     'rhel-sap-hana-for-rhel-7-server-e4s-rpms/x86_64': {
-                        'id': 'rhel-sap-hana-for-rhel-7-server-e4s-rpms/x86_64',
+                        'id': '*rhel-sap-hana-for-rhel-7-server-e4s-rpms/x86_64',
                         'name': 'RHEL for SAP HANA (for RHEL 7 Server) Update Services for SAP Solutions (RPMs)',
-                        'status': '21'}
+                        'status': '21'
+                    }
                 }
+
         rhel_repos(list): list of all the rhel repos and the item is just the repo id without server and arch info. For example::
 
-            self.rhel_repos = ['rhel-7-server-e4s-rpms', 'rhel-sap-hana-for-rhel-7-server-e4s-rpms']
+            self.rhel_repos = ['rhel-7-server-e4s-rpms', 'rhel-ha-for-rhel-7-server-e4s-rpms', 'rhel-sap-hana-for-rhel-7-server-e4s-rpms']
     """
     def parse_content(self, content):
         self.data = []
@@ -101,14 +110,14 @@ class YumRepoList(CommandParser):
                 except ValueError:
                     raise SkipException("Incorrect line: '{0}'".format(line))
                 self.data.append({
-                    "id": _id.lstrip('!').lstrip('*').strip(),
+                    "id": _id.strip(),
                     "name": name.strip(),
                     "status": status.strip()})
             if not found_start:
                 found_start = line.startswith("repo id")
         if not self.data:
             raise SkipException('No repolist.')
-        self.repos = dict((d['id'], d) for d in self.data)
+        self.repos = dict((d['id'].lstrip('!').lstrip('*'), d) for d in self.data)
 
     def __len__(self):
         return len(self.data)

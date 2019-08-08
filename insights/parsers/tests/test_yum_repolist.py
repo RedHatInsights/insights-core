@@ -55,11 +55,10 @@ YUM_REPOLIST_DOC = """
 Loaded plugins: langpacks, product-id, search-disabled-repos, subscription-manager
 repo id                                             repo name                                                                                                    status
 rhel-7-server-e4s-rpms/x86_64                       Red Hat Enterprise Linux 7 Server - Update Services for SAP Solutions (RPMs)                                 12,250
-rhel-ha-for-rhel-7-server-e4s-rpms/x86_64           Red Hat Enterprise Linux High Availability (for RHEL 7 Server) Update Services for SAP Solutions (RPMs)         272
-rhel-ha-for-rhel-7-server-rpms/x86_64               Red Hat Enterprise Linux High Availability (for RHEL 7 Server) (RPMs)                                           225
-rhel-sap-hana-for-rhel-7-server-e4s-rpms/x86_64     RHEL for SAP HANA (for RHEL 7 Server) Update Services for SAP Solutions (RPMs)                                   21
+!rhel-ha-for-rhel-7-server-e4s-rpms/x86_64          Red Hat Enterprise Linux High Availability (for RHEL 7 Server) Update Services for SAP Solutions (RPMs)         272
+*rhel-sap-hana-for-rhel-7-server-e4s-rpms/x86_64    RHEL for SAP HANA (for RHEL 7 Server) Update Services for SAP Solutions (RPMs)                                   21
 repolist: 12,768
-"""
+""".strip()
 
 
 def test_yum_repolist():
@@ -115,6 +114,8 @@ def test_rhel_repos_out_of_date_2():
     assert len(repo_list) == 2
     assert 'rhel-7-server-extras-rpms/x86_64' in repo_list
     assert 'rhel-7-server-rpms/7Server/x86_64' in repo_list
+    assert "!rhel-7-server-extras-rpms/x86_64" == repo_list['rhel-7-server-extras-rpms/x86_64']['id']
+    assert "*rhel-7-server-rpms/7Server/x86_64" == repo_list['rhel-7-server-rpms/7Server/x86_64']['id']
 
 
 def test_invalid_get_type():
