@@ -850,6 +850,7 @@ class DefaultSpecs(Specs):
     sshd_config_perms = simple_command("/bin/ls -l /etc/ssh/sshd_config")
     sssd_config = simple_file("/etc/sssd/sssd.conf")
     subscription_manager_id = simple_command("/usr/bin/subscription-manager identity")
+    subscription_manager_installed_product_ids = simple_command("/usr/bin/find /etc/pki/product-default/ /etc/pki/product/ -name '*pem' -exec rct cat-cert --no-content '{}' \;")
     subscription_manager_release_show = simple_command('/usr/bin/subscription-manager release --show')
     swift_conf = first_file(["/var/lib/config-data/puppet-generated/swift/etc/swift/swift.conf", "/etc/swift/swift.conf"])
     swift_log = first_file(["/var/log/containers/swift/swift.log", "/var/log/swift/swift.log"])
