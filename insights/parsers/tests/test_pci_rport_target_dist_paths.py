@@ -75,14 +75,14 @@ def test_good():
     assert pi['PCI'][0]['rport'] == 'rport-1:0-1'
     assert pi['PCI'][0]['devnode'] == 'sdb'
 
-    assert pi.pci_id == ['0000:02:00.0', '0000:04:00.6', '0000:04:00.7']
-    assert pi.devnode == ['sda', 'sdb', 'sdc']
+    assert pi.pci_id() == ['0000:02:00.0', '0000:04:00.6', '0000:04:00.7']
+    assert pi.devnode() == ['sda', 'sdb', 'sdc']
 
-    assert pi.host == ['host0', 'host1', 'host2']
-    assert pi.target == ['target0:1:0', 'target1:0:0', 'target2:0:0']
+    assert pi.host() == ['host0', 'host1', 'host2']
+    assert pi.target() == ['target0:1:0', 'target1:0:0', 'target2:0:0']
 
-    assert pi.rport == ['rport-1:0-1', 'rport-2:0-2']
-    assert pi.host_channel_id_lun == ['0:1:0:0', '1:0:0:0', '2:0:0:0']
+    assert pi.rport() == ['rport-1:0-1', 'rport-2:0-2']
+    assert pi.host_channel_id_lun() == ['0:1:0:0', '1:0:0:0', '2:0:0:0']
 
     assert pi.pci == {'PCI': [{'rport': 'rport-1:0-1', 'pci_id': '0000:04:00.6', 'host': 'host1', 'target': 'target1:0:0', 'devnode': 'sdb', 'host_channel_id_lun': '1:0:0:0'}, {'rport': 'rport-2:0-2', 'pci_id': '0000:04:00.7', 'host': 'host2', 'target': 'target2:0:0', 'devnode': 'sdc', 'host_channel_id_lun': '2:0:0:0'}, {'rport': None, 'pci_id': '0000:02:00.0', 'host': 'host0', 'target': 'target0:1:0', 'devnode': 'sda', 'host_channel_id_lun': '0:1:0:0'}]}
 

@@ -58,87 +58,27 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
     Examples:
         >>> type(pd)
         <class 'insights.parsers.pci_rport_target_disk_paths.PCIRportTargetDiskPaths'>
-        >>> pd.pci_id
+        >>> type(pd.pci)
+        <class 'insights.parsers.pci_rport_target_disk_paths.PCIRportTargetDiskPaths'>
+        >>> pd.pci_id()
         ['0000:02:00.0', '0000:04:00.6', '0000:04:00.7']
-        >>> pd.host
+        >>> pd.host()
         ['host0', 'host1', 'host2']
-        >>> pd.target
+        >>> pd.target()
         ['target0:1:0', 'target1:0:0', 'target2:0:0']
-        >>> pd.host_channel_id_lun
+        >>> pd.host_channel_id_lun()
         ['0:1:0:0', '1:0:0:0', '2:0:0:0']
-        >>> pd.devnode
+        >>> pd.devnode()
         ['sda', 'sdb', 'sdc']
 
     Attributes:
-        host (list): The list of all host(s)
-        rport (list): The list of all rport(s)
-        target (list): The list of all target(s)
-        devnode (list): The list of all devnode(s)
-        pci_id (list): The list the all pci_id(s)
-        host_channel_id_lun (list): The list of all host_channel_id_lun(s)
+        pci (dict): The original data parsed
 
     Raises:
         ParseException: Input content is not available to parse
         SkipException: Input content is empty
 
     """
-
-    def __attrs__(self, item):
-        plist = []
-        for dc in self['PCI']:
-            if dc[item]:
-                plist.append(dc[item])
-        return sorted(plist)
-
-    @property
-    def pci_id(self):
-        """
-        The all pci_id(s) from parsed content.
-
-        Returns:
-            list: pci id
-        """
-        return self.__attrs__('pci_id')
-
-    @property
-    def devnode(self):
-        """
-        The all devicenode(s) from parsed content.
-
-        Returns:
-            list: device nodes
-        """
-        return self.__attrs__('devnode')
-
-    @property
-    def host(self):
-        """
-        The all host(s) from parsed content.
-
-        Returns:
-            list: hosts
-        """
-        return self.__attrs__('host')
-
-    @property
-    def rport(self):
-        """
-        The all rport(s) from parsed content.
-
-        Returns:
-            list: rports
-        """
-        return self.__attrs__('rport')
-
-    @property
-    def target(self):
-        """
-        The all rport(s) from parsed content.
-
-        Returns:
-            list: rports
-        """
-        return self.__attrs__('target')
 
     @property
     def pci(self):
@@ -147,7 +87,51 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
         """
         return self
 
-    @property
+    def pci_id(self):
+        """
+        The all pci_id(s) from parsed content.
+
+        Returns:
+            list: pci id
+        """
+        return self.__pci_id_attributes
+
+    def devnode(self):
+        """
+        The all devicenode(s) from parsed content.
+
+        Returns:
+            list: device nodes
+        """
+        return self.__devnode_attributes
+
+    def host(self):
+        """
+        The all host(s) from parsed content.
+
+        Returns:
+            list: hosts
+        """
+        return self.__host_attributes
+
+    def rport(self):
+        """
+        The all rport(s) from parsed content.
+
+        Returns:
+            list: rports
+        """
+        return self.__rport_attributes
+
+    def target(self):
+        """
+        The all rport(s) from parsed content.
+
+        Returns:
+            list: rports
+        """
+        return self.__target_attributes
+
     def host_channel_id_lun(self):
         """
         The all host_channel_id_lun(s) from parsed content
@@ -155,7 +139,7 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
         Returns:
             list: host_channel_id_lun
         """
-        return self.__attrs__('host_channel_id_lun')
+        return self.__host_channel_id_lun_attributes
 
     def parse_content(self, content):
         EMPTY = "Input content is empty"
@@ -217,3 +201,27 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
             else:
                 raise ParseException(BADWD)
         self.update(pci)
+
+        # generate private attributes
+        pci_list = []
+        host_list = []
+        target_list = []
+        devnode_list = []
+        host_channel_id_lun_list = []
+        rport_list = []
+
+        for dc in self['PCI']:
+            pci_list.append(dc['pci_id'])
+            host_list.append(dc['host'])
+            target_list.append(dc['target'])
+            devnode_list.append(dc['devnode'])
+            host_channel_id_lun_list.append(dc['host_channel_id_lun'])
+            if dc['rport']:
+                rport_list.append(dc['rport'])
+
+        self.__host_attributes = sorted(host_list)
+        self.__rport_attributes = sorted(rport_list)
+        self.__target_attributes = sorted(target_list)
+        self.__pci_id_attributes = sorted(pci_list)
+        self.__devnode_attributes = sorted(devnode_list)
+        self.__host_channel_id_lun_attributes = sorted(host_channel_id_lun_list)
