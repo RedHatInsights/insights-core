@@ -667,7 +667,7 @@ class DefaultSpecs(Specs):
     ovs_vswitchd_pid = simple_command("/usr/bin/pgrep -o ovs-vswitchd")
     ovs_vswitchd_limits = foreach_collect(ovs_vswitchd_pid, "/proc/%s/limits")
     pacemaker_log = first_file(["/var/log/pacemaker.log", "/var/log/pacemaker/pacemaker.log"])
-    pci_rport_target_disk_paths = simple_command("/usr/bin/find /sys/devices/pci0000:00 -mindepth 8 -maxdepth 8")
+    pci_rport_target_disk_paths = simple_command("/usr/bin/find /sys/devices/ -maxdepth 10 -mindepth 9 -name stat -type f")
 
     @datasource(ps_auxww, context=HostContext)
     def package_and_java(broker):

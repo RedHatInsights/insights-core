@@ -2,7 +2,7 @@
 PCIRportTargetDiskPath
 ======================
 
-Module for parsing the output of command ``find /sys/devices/pci0000:00 -mindepth 8 -maxdepth 8``.
+Module for parsing the output of command ``find /sys/devices/ -maxdepth 10 -mindepth 9 -name stat -type f``.
 """
 
 from insights.parsers import ParseException, SkipException
@@ -13,9 +13,9 @@ from insights.specs import Specs
 @parser(Specs.pci_rport_target_disk_paths)
 class PCIRportTargetDiskPaths(CommandParser):
     """
-    Class for parsing ``find /sys/devices/pci0000:00 -mindepth 8 -maxdepth 8`` command output.
+    Class for parsing ``find /sys/devices/ -maxdepth 10 -mindepth 9 -name stat -type f`` command output.
 
-    Typical output of command ``find /sys/devices/pci0000:00 -mindepth 8 -maxdepth 8`` with
+    Typical output of command ``find /sys/devices/ -maxdepth 10 -mindepth 9 -name stat -type f`` with
     the filter of 'block' looks like::
 
         /sys/devices/pci0000:00/0000:00:01.0/0000:04:00.6/host1/rport-1:0-1/target1:0:0/1:0:0:0/block/sdb
@@ -56,15 +56,15 @@ class PCIRportTargetDiskPaths(CommandParser):
     Examples:
         >>> type(pd)
         <class 'insights.parsers.pci_rport_target_disk_paths.PCIRportTargetDiskPaths'>
-        >>> pd.pci_id()
+        >>> pd.pci_id
         ['0000:02:00.0', '0000:04:00.6', '0000:04:00.7']
-        >>> pd.host()
+        >>> pd.host
         ['host0', 'host1', 'host2']
-        >>> pd.target()
+        >>> pd.target
         ['target0:1:0', 'target1:0:0', 'target2:0:0']
-        >>> pd.host_channel_id_lun()
+        >>> pd.host_channel_id_lun
         ['0:1:0:0', '1:0:0:0', '2:0:0:0']
-        >>> pd.devnode()
+        >>> pd.devnode
         ['sda', 'sdb', 'sdc']
 
     Raises:
@@ -84,7 +84,7 @@ class PCIRportTargetDiskPaths(CommandParser):
         Returns:
             list: pci id
         """
-        return self.__pci_id_attributes
+        return sorted(self.__pci_id_attributes)
 
     @property
     def devnode(self):
@@ -94,7 +94,7 @@ class PCIRportTargetDiskPaths(CommandParser):
         Returns:
             list: device nodes
         """
-        return self.__devnode_attributes
+        return sorted(self.__devnode_attributes)
 
     @property
     def host(self):
@@ -104,7 +104,7 @@ class PCIRportTargetDiskPaths(CommandParser):
         Returns:
             list: hosts
         """
-        return self.__host_attributes
+        return sorted(self.__host_attributes)
 
     @property
     def rport(self):
@@ -114,7 +114,7 @@ class PCIRportTargetDiskPaths(CommandParser):
         Returns:
             list: rports
         """
-        return self.__rport_attributes
+        return sorted(self.__rport_attributes)
 
     @property
     def target(self):
@@ -124,7 +124,7 @@ class PCIRportTargetDiskPaths(CommandParser):
         Returns:
             list: rports
         """
-        return self.__target_attributes
+        return sorted(self.__target_attributes)
 
     @property
     def host_channel_id_lun(self):
@@ -134,7 +134,7 @@ class PCIRportTargetDiskPaths(CommandParser):
         Returns:
             list: host_channel_id_lun
         """
-        return self.__host_channel_id_lun_attributes
+        return sorted(self.__host_channel_id_lun_attributes)
 
     def parse_content(self, content):
         EMPTY = "Input content is empty"
@@ -152,10 +152,15 @@ class PCIRportTargetDiskPaths(CommandParser):
         self.__host_channel_id_lun_attributes = []
 
         for line in content:
+            if (('host' not in line) or ('pci' not in line) or
+                    ('target' not in line) or ('block' not in line)):
+                raise ParseException(BADWD.format(line))
+
             line_sp = list(filter(None, line.strip().split('/')))
             temp_pci = {}
+            rport = None
+
             for i, l in enumerate(line_sp):
-                rport = None
                 if 'host' in l:
                     temp_pci['host'] = l
                 elif 'pci' in l:
@@ -169,16 +174,13 @@ class PCIRportTargetDiskPaths(CommandParser):
                     temp_pci['host_channel_id_lun'] = line_sp[i - 1]
                 temp_pci['rport'] = rport
 
-                if len(temp_pci) == 5:
+                if len(temp_pci) == 6 and temp_pci not in pci:
                     pci.append(temp_pci)
-                else:
-                    raise ParseException(BADWD.format(line))
-
-                self.__host_attributes.append(temp_pci['host'])
-                self.__rport_attributes.append(rport) if rport else None
-                self.__target_attributes.append(temp_pci['target'])
-                self.__pci_id_attributes.append(temp_pci['pci_id'])
-                self.__devnode_attributes.append(temp_pci['devnode'])
-                self.__host_channel_id_lun_attributes.append(temp_pci['host_channel_id_lun'])
-
+                    self.__host_attributes.append(temp_pci['host'])
+                    self.__rport_attributes.append(rport) if rport else None
+                    self.__target_attributes.append(temp_pci['target'])
+                    self.__pci_id_attributes.append(temp_pci['pci_id'])
+                    self.__devnode_attributes.append(temp_pci['devnode'])
+                    self.__host_channel_id_lun_attributes.append(temp_pci['host_channel_id_lun'])
+                    temp_pci = {}
         self.path_list = pci
