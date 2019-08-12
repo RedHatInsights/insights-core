@@ -8,9 +8,8 @@ output of command ``/usr/bin/ovs-ofctl dump-flows <bridge-name>``.
 
 
 from insights import CommandParser, parser
-from insights.parsers import SkipException
+from insights.parsers import SkipException, split_kv_pairs
 from insights.specs import Specs
-from ..parsers import split_kv_pairs
 
 
 @parser(Specs.ovs_ofctl_dump_flows)
@@ -33,15 +32,7 @@ class OVSofctlDumpFlows(CommandParser):
                     { 'cookie': '0x0', 'duration': '4.617s', 'table': '0', 'n_packets': '0', 'n_bytes': '0', 'idle_timeout': '60', 'priority': '65535', 'arp,in_port': 's1-eth1', 'vlan_tci': '0x0000', 'dl_src': 'd6:fc:9c:e7:a2:f9', 'dl_dst': 'a2:72:e7:06:75:2e', 'arp_spa': '10.0.0.1', 'arp_tpa': '10.0.0.3', 'arp_op': '2' 'actions=output':'s1-eth3'}
             ]
 
-        Attributes:
-            _bridges (list): A list where each element contains the list of dictionary elements having flow dumps.
-
-        Raises:
-            SkipException: When the file is empty or data is not present for a bridge.
-
         Examples:
-            >>> len(ovs_obj._bridges)
-            2
             >>> ovs_obj.bridge_name
             'br0'
             >>> len(ovs_obj.flow_dumps)
@@ -62,9 +53,9 @@ class OVSofctlDumpFlows(CommandParser):
 
         for line in content:
             line = line.split(',')
-            flow_dict = split_kv_pairs(line, split_on='=')
-            if flow_dict:
-                self._bridges.append(flow_dict)
+            flow_list = split_kv_pairs(line, split_on='=')
+            if flow_list:
+                self._bridges.append(flow_list)
         if not self._bridges:
             raise SkipException("Invalid Content!")
 
