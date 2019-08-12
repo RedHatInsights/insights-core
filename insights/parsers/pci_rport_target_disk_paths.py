@@ -11,7 +11,7 @@ from insights.specs import Specs
 
 
 @parser(Specs.pci_rport_target_disk_paths)
-class PCIRportTargetDiskPaths(CommandParser, dict):
+class PCIRportTargetDiskPaths(CommandParser):
     """
     Class for parsing ``find /sys/devices/pci0000:00 -mindepth 8 -maxdepth 8`` command output.
 
@@ -26,39 +26,35 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
 
     The Original data parsed looks like::
 
-            {
-                'PCI': [
-                    {
-                        'target': 'target1: 0: 0',
-                        'devnode': 'sdb',
-                        'host_channel_id_lun': '1: 0: 0: 0',
-                        'pci_id': '0000: 04: 00.6',
-                        'host': 'host1',
-                        'rport': 'rport-1: 0-1'
-                    },
-                    {
-                        'target': 'target2: 0: 0',
-                        'devnode': 'sdc',
-                        'host_channel_id_lun': '2: 0: 0: 0',
-                        'pci_id': '0000: 04: 00.7',
-                        'host': 'host2',
-                        'rport': 'rport-2: 0-2'
-                    },
-                    {
-                        'target': 'target0: 1: 0',
-                        'devnode': 'sda',
-                        'host_channel_id_lun': '0: 1: 0: 0',
-                        'pci_id': '0000: 02: 00.0',
-                        'host': 'host0',
-                        'rport': 'rport-2: 0-2'
-                    }
-                        ]
-            }
+        [
+               {
+                   'target': 'target1:0:0',
+                   'devnode': 'sdb',
+                   'host_channel_id_lun': '1:0:0:0',
+                   'pci_id': '0000:04:00.6',
+                   'host': 'host1',
+                   'rport': 'rport-1:0-1'
+               },
+               {
+                   'target': 'target2:0:0',
+                   'devnode': 'sdc',
+                   'host_channel_id_lun': '2:0:0:0',
+                   'pci_id': '0000: 04:00.7',
+                   'host': 'host2',
+                   'rport': 'rport-2:0-2'
+               },
+               {
+                   'target': 'target0:1:0',
+                   'devnode': 'sda',
+                   'host_channel_id_lun': '0:1:0:0',
+                   'pci_id': '0000: 02:00.0',
+                   'host': 'host0',
+                   'rport': 'rport-2:0-2'
+               }
+        ]
 
     Examples:
         >>> type(pd)
-        <class 'insights.parsers.pci_rport_target_disk_paths.PCIRportTargetDiskPaths'>
-        >>> type(pd.pci)
         <class 'insights.parsers.pci_rport_target_disk_paths.PCIRportTargetDiskPaths'>
         >>> pd.pci_id()
         ['0000:02:00.0', '0000:04:00.6', '0000:04:00.7']
@@ -72,20 +68,13 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
         ['sda', 'sdb', 'sdc']
 
     Attributes:
-        pci (dict): The original data parsed
+        data (list): the result parsed
 
     Raises:
         ParseException: Input content is not available to parse
         SkipException: Input content is empty
 
     """
-
-    @property
-    def pci(self):
-        """
-        (dict): The full information parsed
-        """
-        return self
 
     def pci_id(self):
         """
@@ -148,9 +137,7 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
         if not content:
             raise SkipException(EMPTY)
 
-        pdata_list = []
-        pci = {'PCI': pdata_list}
-
+        pci = []
         for line in content:
             line = line.strip()
 
@@ -196,11 +183,10 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
                 temp_pci['devnode'] = devnode
                 temp_pci['host_channel_id_lun'] = host_channel_id_lun
 
-                if temp_pci not in pdata_list:
-                    pdata_list.append(temp_pci)
+                if temp_pci not in pci:
+                    pci.append(temp_pci)
             else:
                 raise ParseException(BADWD)
-        self.update(pci)
 
         # generate private attributes
         pci_list = []
@@ -210,7 +196,7 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
         host_channel_id_lun_list = []
         rport_list = []
 
-        for dc in self['PCI']:
+        for dc in pci:
             pci_list.append(dc['pci_id'])
             host_list.append(dc['host'])
             target_list.append(dc['target'])
@@ -225,3 +211,5 @@ class PCIRportTargetDiskPaths(CommandParser, dict):
         self.__pci_id_attributes = sorted(pci_list)
         self.__devnode_attributes = sorted(devnode_list)
         self.__host_channel_id_lun_attributes = sorted(host_channel_id_lun_list)
+
+        self.data = pci
