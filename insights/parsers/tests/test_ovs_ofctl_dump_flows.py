@@ -48,16 +48,16 @@ Error: Invalid cmd
 def test_ovs_appctl_fdb_show_bridge():
     ovs_dump = OVSofctlDumpFlows(context_wrap(OVS_FLOW_DUMPS, path=PATH_BR0))
     assert ovs_dump.bridge_name == 'br0'
-    assert len(ovs_dump.flow_dumps('br0')) == 8
+    assert len(ovs_dump.flow_dumps) == 8
 
     ovs_dump = OVSofctlDumpFlows(context_wrap(OVS_FLOW_DUMPS, path=PATH_BR_INT))
     assert ovs_dump.bridge_name == 'br-int'
-    assert len(ovs_dump.flow_dumps('br-int')) == 8
+    assert len(ovs_dump.flow_dumps) == 8
 
     ovs_dump = OVSofctlDumpFlows(context_wrap(OVS_FLOW_DUMPS_1, path=PATH_BR_INT))
     assert ovs_dump.bridge_name == 'br-int'
-    assert ovs_dump.flow_dumps('br-int') == sorted([{'cookie': '0x0', 'duration': '4.602s', 'table': '0', 'n_packets': '2', 'n_bytes': '196', 'idle_timeout': '60', 'priority': '65535', 'in_port': '"s1-eth1"', 'vlan_tci': '0x0000', 'dl_src': 'd6:fc:9c:e7:a2:f9', 'dl_dst': 'a2:72:e7:06:75:2e', 'nw_src': '10.0.0.1', 'nw_dst': '10.0.0.3', 'nw_tos': '0', 'icmp_type': '0', 'icmp_code': '0 actions=output:"s1-eth3"'}])
-    assert ovs_dump.bridges == {'br-int': [{'cookie': '0x0', 'duration': '4.602s', 'table': '0', 'n_packets': '2', 'n_bytes': '196', 'idle_timeout': '60', 'priority': '65535', 'in_port': '"s1-eth1"', 'vlan_tci': '0x0000', 'dl_src': 'd6:fc:9c:e7:a2:f9', 'dl_dst': 'a2:72:e7:06:75:2e', 'nw_src': '10.0.0.1', 'nw_dst': '10.0.0.3', 'nw_tos': '0', 'icmp_type': '0', 'icmp_code': '0 actions=output:"s1-eth3"'}]}
+    assert ovs_dump.flow_dumps == sorted([{'cookie': '0x0', 'duration': '4.602s', 'table': '0', 'n_packets': '2', 'n_bytes': '196', 'idle_timeout': '60', 'priority': '65535', 'in_port': '"s1-eth1"', 'vlan_tci': '0x0000', 'dl_src': 'd6:fc:9c:e7:a2:f9', 'dl_dst': 'a2:72:e7:06:75:2e', 'nw_src': '10.0.0.1', 'nw_dst': '10.0.0.3', 'nw_tos': '0', 'icmp_type': '0', 'icmp_code': '0 actions=output:"s1-eth3"'}])
+    assert ovs_dump.bridges == [{'cookie': '0x0', 'duration': '4.602s', 'table': '0', 'n_packets': '2', 'n_bytes': '196', 'idle_timeout': '60', 'priority': '65535', 'in_port': '"s1-eth1"', 'vlan_tci': '0x0000', 'dl_src': 'd6:fc:9c:e7:a2:f9', 'dl_dst': 'a2:72:e7:06:75:2e', 'nw_src': '10.0.0.1', 'nw_dst': '10.0.0.3', 'nw_tos': '0', 'icmp_type': '0', 'icmp_code': '0 actions=output:"s1-eth3"'}]
 
     with pytest.raises(SkipException) as exc:
         ovs_obj = OVSofctlDumpFlows(context_wrap(OVS_FLOW_DUMPS_NO, path=PATH_BR0))

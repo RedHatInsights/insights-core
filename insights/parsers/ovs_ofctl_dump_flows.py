@@ -28,12 +28,10 @@ class OVSofctlDumpFlows(CommandParser):
 
         Sample parsed output::
 
-            {
-                'br0': [
+            [
                     { 'cookie': '0x0', 'duration': '8.528s', 'table': '0', 'n_packets': '0', 'n_bytes': '0', 'idle_timeout': '60', 'priority': '65535', 'arp,in_port': 's1-eth2', 'vlan_tci': '0x0000', 'dl_src': '62:ee:31:2b:35:7c', 'dl_dst': 'a2:72:e7:06:75:2e', 'arp_spa': '10.0.0.2', 'arp_tpa': '10.0.0.3', 'arp_op': '2' 'actions=output':'s1-eth3'},
                     { 'cookie': '0x0', 'duration': '4.617s', 'table': '0', 'n_packets': '0', 'n_bytes': '0', 'idle_timeout': '60', 'priority': '65535', 'arp,in_port': 's1-eth1', 'vlan_tci': '0x0000', 'dl_src': 'd6:fc:9c:e7:a2:f9', 'dl_dst': 'a2:72:e7:06:75:2e', 'arp_spa': '10.0.0.1', 'arp_tpa': '10.0.0.3', 'arp_op': '2' 'actions=output':'s1-eth3'}
-                ]
-            }
+            ]
 
         Attributes:
             bridges (dict): A dictionary where each element contains the bridge-name
@@ -43,11 +41,11 @@ class OVSofctlDumpFlows(CommandParser):
             SkipException: When the file is empty or data is not present for a bridge.
 
         Examples:
-            >>> len(ovs_obj.bridges["br0"])
+            >>> len(ovs_obj.bridges)
             2
             >>> ovs_obj.bridge_name
             'br0'
-            >>> len(ovs_obj.flow_dumps('br0'))
+            >>> len(ovs_obj.flow_dumps)
             2
     """
 
@@ -55,7 +53,7 @@ class OVSofctlDumpFlows(CommandParser):
         if not content:
             raise SkipException("Empty Content!")
 
-        self.bridges = {}
+        self.bridges = []
 
         # Extract the bridge name
         try:
@@ -66,11 +64,8 @@ class OVSofctlDumpFlows(CommandParser):
         for line in content:
             line = line.split(',')
             flow_dict = split_kv_pairs(line, split_on='=')
-            if flow_dict and self._bridge_name not in self.bridges:
-                self.bridges[self._bridge_name] = []
-            if flow_dict and self._bridge_name in self.bridges:
-                self.bridges[self._bridge_name].append(flow_dict)
-            flow_dict = {}
+            if flow_dict:
+                self.bridges.append(flow_dict)
         if not self.bridges:
             raise SkipException("Invalid Content!")
 
@@ -82,9 +77,10 @@ class OVSofctlDumpFlows(CommandParser):
         """
         return self._bridge_name
 
-    def flow_dumps(self, bridge):
+    @property
+    def flow_dumps(self):
         """
         (list): It will return list of flows added under bridge else returns
         empty list `[]` on failure.
         """
-        return self.bridges[bridge]
+        return self.bridges
