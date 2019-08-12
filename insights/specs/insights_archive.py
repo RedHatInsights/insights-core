@@ -188,6 +188,7 @@ class InsightsArchiveSpecs(Specs):
     oc_get_configmap = simple_file("insights_commands/oc_get_configmap_-o_yaml_--all-namespaces")
     openvswitch_other_config = simple_file("insights_commands/ovs-vsctl_-t_5_get_Open_vSwitch_._other_config")
     ovs_appctl_fdb_show_bridge = glob_file("insights_commands/ovs-appctl_fdb.show_*")
+    ovs_ofctl_dump_flows = glob_file("insights_commands/ovs-ofctl_dump-flows_*")
     ovs_vsctl_list_bridge = simple_file("insights_commands/ovs-vsctl_list_bridge")
     ovs_vsctl_show = simple_file("insights_commands/ovs-vsctl_show")
     parted__l = simple_file("insights_commands/parted_-l_-s")
