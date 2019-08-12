@@ -67,15 +67,16 @@ class PCIRportTargetDiskPaths(CommandParser):
         >>> pd.devnode()
         ['sda', 'sdb', 'sdc']
 
-    Attributes:
-        data (list): the result parsed
-
     Raises:
         ParseException: Input content is not available to parse
         SkipException: Input content is empty
 
+    Attributes:
+        path_list (list): the result parsed
+
     """
 
+    @property
     def pci_id(self):
         """
         The all pci_id(s) from parsed content.
@@ -85,6 +86,7 @@ class PCIRportTargetDiskPaths(CommandParser):
         """
         return self.__pci_id_attributes
 
+    @property
     def devnode(self):
         """
         The all devicenode(s) from parsed content.
@@ -94,6 +96,7 @@ class PCIRportTargetDiskPaths(CommandParser):
         """
         return self.__devnode_attributes
 
+    @property
     def host(self):
         """
         The all host(s) from parsed content.
@@ -103,6 +106,7 @@ class PCIRportTargetDiskPaths(CommandParser):
         """
         return self.__host_attributes
 
+    @property
     def rport(self):
         """
         The all rport(s) from parsed content.
@@ -112,6 +116,7 @@ class PCIRportTargetDiskPaths(CommandParser):
         """
         return self.__rport_attributes
 
+    @property
     def target(self):
         """
         The all rport(s) from parsed content.
@@ -121,6 +126,7 @@ class PCIRportTargetDiskPaths(CommandParser):
         """
         return self.__target_attributes
 
+    @property
     def host_channel_id_lun(self):
         """
         The all host_channel_id_lun(s) from parsed content
@@ -132,84 +138,47 @@ class PCIRportTargetDiskPaths(CommandParser):
 
     def parse_content(self, content):
         EMPTY = "Input content is empty"
-        BADWD = "No useful data parsed in content: '{0}'".format(content)
+        BADWD = "No useful data parsed in line: '{0}'"
 
         if not content:
             raise SkipException(EMPTY)
 
         pci = []
+        self.__host_attributes = []
+        self.__rport_attributes = []
+        self.__target_attributes = []
+        self.__pci_id_attributes = []
+        self.__devnode_attributes = []
+        self.__host_channel_id_lun_attributes = []
+
         for line in content:
-            line = line.strip()
-
+            line_sp = list(filter(None, line.strip().split('/')))
             temp_pci = {}
-            cnt = 0
-
-            host_pos = None
-            pci_id_pos = None
-            rport_pos = None
-            target_pos = None
-            devnode_pos = None
-            host_channel_id_lun = None
-
-            for l in line.split('/', 11):
+            for i, l in enumerate(line_sp):
+                rport = None
                 if 'host' in l:
-                    host_pos = cnt
-                if 'pci' in l:
-                    pci_id_pos = cnt + 2
-                if 'rport-' in l:
-                    rport_pos = cnt
-                if 'target' in l:
-                    target_pos = cnt
-                if 'block' == l:
-                    devnode_pos = cnt + 1
-                    host_channel_id_lun_pos = cnt - 1
-                cnt += 1
+                    temp_pci['host'] = l
+                elif 'pci' in l:
+                    temp_pci['pci_id'] = line_sp[i + 2]
+                elif 'rport-' in l:
+                    rport = l
+                elif 'target' in l:
+                    temp_pci['target'] = l
+                elif 'block' == l:
+                    temp_pci['devnode'] = line_sp[i + 1]
+                    temp_pci['host_channel_id_lun'] = line_sp[i - 1]
+                temp_pci['rport'] = rport
 
-            if (host_pos and pci_id_pos and target_pos and devnode_pos and host_channel_id_lun_pos):
-                pci_id = line.split('/', 11)[pci_id_pos]
-                host = line.split('/', 11)[host_pos]
-                target = line.split('/', 11)[target_pos]
-                devnode = line.split('/', 11)[devnode_pos]
-                host_channel_id_lun = line.split('/', 11)[host_channel_id_lun_pos]
-                if rport_pos:
-                    rport = line.split('/', 11)[rport_pos]
-                    temp_pci['rport'] = rport
-                else:
-                    temp_pci['rport'] = None
-
-                temp_pci['pci_id'] = pci_id
-                temp_pci['host'] = host
-                temp_pci['target'] = target
-                temp_pci['devnode'] = devnode
-                temp_pci['host_channel_id_lun'] = host_channel_id_lun
-
-                if temp_pci not in pci:
+                if len(temp_pci) == 5:
                     pci.append(temp_pci)
-            else:
-                raise ParseException(BADWD)
+                else:
+                    raise ParseException(BADWD.format(line))
 
-        # generate private attributes
-        pci_list = []
-        host_list = []
-        target_list = []
-        devnode_list = []
-        host_channel_id_lun_list = []
-        rport_list = []
+                self.__host_attributes.append(temp_pci['host'])
+                self.__rport_attributes.append(rport) if rport else None
+                self.__target_attributes.append(temp_pci['target'])
+                self.__pci_id_attributes.append(temp_pci['pci_id'])
+                self.__devnode_attributes.append(temp_pci['devnode'])
+                self.__host_channel_id_lun_attributes.append(temp_pci['host_channel_id_lun'])
 
-        for dc in pci:
-            pci_list.append(dc['pci_id'])
-            host_list.append(dc['host'])
-            target_list.append(dc['target'])
-            devnode_list.append(dc['devnode'])
-            host_channel_id_lun_list.append(dc['host_channel_id_lun'])
-            if dc['rport']:
-                rport_list.append(dc['rport'])
-
-        self.__host_attributes = sorted(host_list)
-        self.__rport_attributes = sorted(rport_list)
-        self.__target_attributes = sorted(target_list)
-        self.__pci_id_attributes = sorted(pci_list)
-        self.__devnode_attributes = sorted(devnode_list)
-        self.__host_channel_id_lun_attributes = sorted(host_channel_id_lun_list)
-
-        self.data = pci
+        self.path_list = pci
