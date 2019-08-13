@@ -136,6 +136,15 @@ class PciRportTargetDiskPaths(CommandParser):
     def parse_content(self, content):
         EMPTY = "Input content is empty"
         BADWD = "No useful data parsed in line: '{0}'"
+        KEY_MAP = [
+                # key,          required chars,   relative index
+                {'key': 'host', 'chars': 'host', 'idx': 0},
+                {'key': 'pci_id', 'chars': 'pci', 'idx': 2},
+                {'key': 'rport', 'chars': 'rport-', 'idx': 0},
+                {'key': 'target', 'chars': 'target', 'idx': 0},
+                {'key': 'devnode', 'chars': 'block', 'idx': 1},
+                {'key': 'host_channel_id_lun', 'chars': 'block', 'idx': -1},
+        ]
 
         if not content:
             raise SkipException(EMPTY)
@@ -148,25 +157,16 @@ class PciRportTargetDiskPaths(CommandParser):
         self.__devnode_attributes = set()
         self.__host_channel_id_lun_attributes = set()
 
-        DONE = False
         for line in content:
             line_sp = list(filter(None, line.strip().split('/')))
             temp_pci = {}
             for i, l in enumerate(line_sp):
-                if 'host' in l:
-                    temp_pci['host'] = l
-                elif 'pci' in l:
-                    temp_pci['pci_id'] = line_sp[i + 2]
-                elif 'rport-' in l:
-                    temp_pci['rport'] = l
-                elif 'target' in l:
-                    temp_pci['target'] = l
-                elif 'block' == l:
-                    temp_pci['devnode'] = line_sp[i + 1]
-                    temp_pci['host_channel_id_lun'] = line_sp[i - 1]
-                    DONE = True
+                for km in KEY_MAP:
+                    if l.startswith(km['chars']):
+                        temp_pci[km['key']] = line_sp[i + km['idx']]
 
-            if len(temp_pci) >= 5 and DONE:
+            len_of_tp = len(temp_pci)
+            if len_of_tp == 6 or (len_of_tp == 5 and 'rport' not in temp_pci):
                 pci.append(temp_pci)
                 self.__host_attributes.add(temp_pci['host'])
                 if temp_pci.get('rport'):
@@ -175,7 +175,6 @@ class PciRportTargetDiskPaths(CommandParser):
                 self.__pci_id_attributes.add(temp_pci['pci_id'])
                 self.__devnode_attributes.add(temp_pci['devnode'])
                 self.__host_channel_id_lun_attributes.add(temp_pci['host_channel_id_lun'])
-                DONE = False
             else:
                 raise ParseException(BADWD.format(line))
         self.path_list = pci
