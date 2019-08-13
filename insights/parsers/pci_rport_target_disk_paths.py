@@ -144,43 +144,38 @@ class PCIRportTargetDiskPaths(CommandParser):
             raise SkipException(EMPTY)
 
         pci = []
-        self.__host_attributes = []
-        self.__rport_attributes = []
-        self.__target_attributes = []
-        self.__pci_id_attributes = []
-        self.__devnode_attributes = []
-        self.__host_channel_id_lun_attributes = []
+        self.__host_attributes = set()
+        self.__rport_attributes = set()
+        self.__target_attributes = set()
+        self.__pci_id_attributes = set()
+        self.__devnode_attributes = set()
+        self.__host_channel_id_lun_attributes = set()
 
         for line in content:
-            if (('host' not in line) or ('pci' not in line) or
-                    ('target' not in line) or ('block' not in line)):
-                raise ParseException(BADWD.format(line))
-
             line_sp = list(filter(None, line.strip().split('/')))
             temp_pci = {}
-            rport = None
-
+            temp_pci['rport'] = None
             for i, l in enumerate(line_sp):
                 if 'host' in l:
                     temp_pci['host'] = l
                 elif 'pci' in l:
                     temp_pci['pci_id'] = line_sp[i + 2]
                 elif 'rport-' in l:
-                    rport = l
+                    temp_pci['rport'] = l
                 elif 'target' in l:
                     temp_pci['target'] = l
                 elif 'block' == l:
                     temp_pci['devnode'] = line_sp[i + 1]
                     temp_pci['host_channel_id_lun'] = line_sp[i - 1]
-                temp_pci['rport'] = rport
 
-                if len(temp_pci) == 6 and temp_pci not in pci:
-                    pci.append(temp_pci)
-                    self.__host_attributes.append(temp_pci['host'])
-                    self.__rport_attributes.append(rport) if rport else None
-                    self.__target_attributes.append(temp_pci['target'])
-                    self.__pci_id_attributes.append(temp_pci['pci_id'])
-                    self.__devnode_attributes.append(temp_pci['devnode'])
-                    self.__host_channel_id_lun_attributes.append(temp_pci['host_channel_id_lun'])
-                    temp_pci = {}
+            if len(temp_pci) == 6:
+                pci.append(temp_pci)
+                self.__host_attributes.add(temp_pci['host'])
+                self.__rport_attributes.add(temp_pci['rport']) if temp_pci['rport'] else None
+                self.__target_attributes.add(temp_pci['target'])
+                self.__pci_id_attributes.add(temp_pci['pci_id'])
+                self.__devnode_attributes.add(temp_pci['devnode'])
+                self.__host_channel_id_lun_attributes.add(temp_pci['host_channel_id_lun'])
+            else:
+                raise ParseException(BADWD.format(line))
         self.path_list = pci
