@@ -46,4 +46,4 @@ sosreport*
 output/
 share/
 .Python
-.python-version
+.python*
