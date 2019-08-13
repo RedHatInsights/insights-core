@@ -68,7 +68,8 @@ Examples:
         "clockspeeds": "2900.000",
         "cache_sizes": "20480 KB"
         "cpu_cores": "1",
-        "stepping": "2"
+        "stepping": "2",
+        "address_sizes": "40 bits physical, 48 bits virtual"
     }
 """
 
@@ -113,6 +114,7 @@ class CpuInfo(LegacyItemAccess, Parser):
     * **cache_sizes** - the *cache size* line (e.g. ``20480 KB``)
     * **cpu_cores** - the *cpu cores* line (e.g. ``1``)
     * **stepping** - the *stepping* line (e.g. ``2``)
+    * **address_sizes** - the *address sizes* line (e.g. ``40 bits physical, 48 bits virtual``)
     """
 
     def parse_content(self, content):
@@ -138,6 +140,7 @@ class CpuInfo(LegacyItemAccess, Parser):
             "CPU revision": "cpu_revision",
             "cpu": "cpu",
             "revision": "revision",
+            "address sizes": "address_sizes"
         }
 
         for line in get_active_lines(content, comment_char="COMMAND>"):
