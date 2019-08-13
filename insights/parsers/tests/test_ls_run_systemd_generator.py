@@ -21,22 +21,27 @@ drwxr-xr-x.  2 0 0 100 Aug  5 07:35 remote-fs.target.requires
 drwxr-xr-x.  2 0 0  60 Aug  5 07:35 swap.target.requires
 """.strip()
 
+PATH_OF_LS_RUN_SYSTEMD_GENERATOR = "insights_commands/ls_-lan_.run.systemd.generator"
+
 
 def test_ls_run_systemd_generator():
-    ls = LsRunSystemdGenerator(context_wrap(LS_RUN_SYSTEMD_GENERATOR, path='fake_path'))
-    assert None in ls
-    assert len(ls.files_of(None)) == 7
-    assert ls.files_of(None) == ['boot.mount', 'boot-fake.mount', 'dev-mapper-rhel-swap.swap',
+    ls = LsRunSystemdGenerator(context_wrap(LS_RUN_SYSTEMD_GENERATOR,
+                               path=PATH_OF_LS_RUN_SYSTEMD_GENERATOR))
+    dir_path = "/run/systemd/generator"
+    assert dir_path in ls
+    assert len(ls.files_of(dir_path)) == 7
+    assert ls.files_of(dir_path) == ['boot.mount', 'boot-fake.mount', 'dev-mapper-rhel-swap.swap',
                                 '-.mount', 'root-mnt_nfs3.mount', 'root-mnt-nfs1.mount', 'root-mnt-nfs2.mount']
-    assert ls.dirs_of(None) == ['.', '..', 'local-fs.target.requires', 'nfs-server.service.d',
+    assert ls.dirs_of(dir_path) == ['.', '..', 'local-fs.target.requires', 'nfs-server.service.d',
                                'remote-fs.target.requires', 'swap.target.requires']
-    assert ls.listing_of(None)['-.mount'] == {'type': '-', 'perms': 'rw-r--r--.', 'links': 1, 'owner': '0', 'group': '0', 'size': 217, 'date': 'Aug  5 07:35', 'name': '-.mount', 'raw_entry': '-rw-r--r--.  1 0 0 217 Aug  5 07:35 -.mount', 'dir': None}
+    assert ls.listing_of(dir_path)['-.mount'] == {'type': '-', 'perms': 'rw-r--r--.', 'links': 1, 'owner': '0', 'group': '0', 'size': 217, 'date': 'Aug  5 07:35', 'name': '-.mount', 'raw_entry': '-rw-r--r--.  1 0 0 217 Aug  5 07:35 -.mount', 'dir': dir_path}
 
 
 def test_ls_osroot_doc_examples():
     env = {
-        'LsRunSystemdGenerator': LsRunSystemdGenerator,
-        'ls': LsRunSystemdGenerator(context_wrap(LS_RUN_SYSTEMD_GENERATOR, path='fake_path')),
+        'ls': LsRunSystemdGenerator(context_wrap(LS_RUN_SYSTEMD_GENERATOR,
+                                    path=PATH_OF_LS_RUN_SYSTEMD_GENERATOR)),
+        'path': "/run/systemd/generator",
     }
     failed, total = doctest.testmod(ls_run_systemd_generator, globs=env)
     assert failed == 0

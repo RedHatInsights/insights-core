@@ -27,9 +27,9 @@ Sample directory list::
 
 Examples:
 
-    >>> ls.files_of(None) == ['boot.mount', 'boot-fake.mount', 'dev-mapper-rhel-swap.swap', '-.mount', 'root-mnt_nfs3.mount', 'root-mnt-nfs1.mount', 'root-mnt-nfs2.mount']
+    >>> ls.files_of(path) == ['boot.mount', 'boot-fake.mount', 'dev-mapper-rhel-swap.swap', '-.mount', 'root-mnt_nfs3.mount', 'root-mnt-nfs1.mount', 'root-mnt-nfs2.mount']
     True
-    >>> ls.dir_entry(None, '-.mount')['perms']
+    >>> ls.dir_entry(path, '-.mount')['perms']
     'rw-r--r--.'
 """
 
