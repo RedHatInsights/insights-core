@@ -117,10 +117,10 @@ class PCIRportTargetDiskPaths(CommandParser):
     @property
     def target(self):
         """
-        The all rport(s) from parsed content.
+        The all target(s) from parsed content.
 
         Returns:
-            list: rports
+            list: targets
         """
         return sorted(self.__target_attributes)
 
