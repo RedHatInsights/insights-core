@@ -67,10 +67,9 @@ Examples:
         "flags": "fpu vme de pse tsc msr pae mce",
         "clockspeeds": "2900.000",
         "cache_sizes": "20480 KB"
-        "cpu_cores": "1"
+        "cpu_cores": "1",
+        "stepping": "2"
     }
-
-
 """
 
 from collections import defaultdict
@@ -113,6 +112,7 @@ class CpuInfo(LegacyItemAccess, Parser):
     * **clockspeeds** - the *cpu MHz* line (e.g. ``2900.000``)
     * **cache_sizes** - the *cache size* line (e.g. ``20480 KB``)
     * **cpu_cores** - the *cpu cores* line (e.g. ``1``)
+    * **stepping** - the *stepping* line (e.g. ``2``)
     """
 
     def parse_content(self, content):

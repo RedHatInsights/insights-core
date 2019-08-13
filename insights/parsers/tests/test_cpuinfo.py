@@ -293,7 +293,6 @@ Hardware        : BCM2709
 Revision        : a01041
 """
 
-
 POWER_CPUINFO = """
 processor	: 0
 cpu		: POWER7 (architected), altivec supported
@@ -480,6 +479,7 @@ def test_one_socket_cpuinfo():
 def test_empty_cpuinfo():
     cpu_info = CpuInfo(context_wrap(""))
     assert cpu_info.cpu_count == 0
+    assert cpu_info.core_total is None
 
 
 def test_arm_cpuinfo():
