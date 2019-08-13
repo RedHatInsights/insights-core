@@ -33,11 +33,8 @@ Examples:
     'rw-r--r--.'
 """
 
-
+from insights import parser, CommandParser, FileListing
 from insights.specs import Specs
-
-from .. import FileListing
-from .. import parser, CommandParser
 
 
 @parser(Specs.ls_run_systemd_generator)
