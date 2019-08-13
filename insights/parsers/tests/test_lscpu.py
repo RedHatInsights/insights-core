@@ -54,26 +54,32 @@ L1i cache:             32K
 L2 cache:              4096K
 NUMA node0 CPU(s):     0
 """.strip()
+
 BLANK = """
+""".strip()
+
+BAD_LSCPU = """
+Architecture:          x86_64
+CPU op-mode(s) =        32-bit, 64-bit
 """.strip()
 
 
 def test_lscpu_output():
     output = lscpu.LsCPU(context_wrap(LSCPU_1))
-    assert output.data['Architecture'] == 'x86_64'
-    assert len(output.data) == 22
-    assert output.data['CPUs'] == '2'
-    assert output.data['Threads per core'] == '2'
-    assert output.data['Cores per socket'] == '1'
-    assert output.data['Sockets'] == '1'
+    assert output.info['Architecture'] == 'x86_64'
+    assert len(output.info) == 22
+    assert output.info['CPUs'] == '2'
+    assert output.info['Threads per core'] == '2'
+    assert output.info['Cores per socket'] == '1'
+    assert output.info['Sockets'] == '1'
 
     output = lscpu.LsCPU(context_wrap(LSCPU_2))
-    assert output.data['Architecture'] == 'x86_64'
-    assert output.data['CPUs'] == '2'
-    assert output.data['On-line CPUs list'] == '0'
-    assert output.data['Off-line CPUs list'] == '1'
-    assert output.data['Cores per socket'] == '1'
-    assert output.data['Sockets'] == '1'
+    assert output.info['Architecture'] == 'x86_64'
+    assert output.info['CPUs'] == '2'
+    assert output.info['On-line CPUs list'] == '0'
+    assert output.info['Off-line CPUs list'] == '1'
+    assert output.info['Cores per socket'] == '1'
+    assert output.info['Sockets'] == '1'
 
 
 def test_lscpu_blank_output():

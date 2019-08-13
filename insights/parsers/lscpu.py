@@ -4,14 +4,19 @@ LsCPU - command ``lscpu``
 
 This module provides the information about the CPU architecture using the output of the command ``lscpu``.
 """
-from insights.parsers import SkipException, split_kv_pairs
+from insights.core import CommandParser
+from insights.core.plugins import parser
+from insights.parsers import SkipException
 from insights.specs import Specs
-from .. import CommandParser, parser, LegacyItemAccess
 
 
 @parser(Specs.lscpu)
-class LsCPU(CommandParser, LegacyItemAccess):
-    """Parse the output of ``lscpu``.
+class LsCPU(CommandParser):
+    """Parse the output of ``/usr/bin/lscpu``. It uses the ``CommandParser`` as the
+    base class. The ``parse_content`` method also converts plural keys for
+    better accessibility.
+
+    Ex: "CPU(s)" is converted to "CPUs"
 
     Typical output of ``lscpu`` command is::
 
@@ -40,28 +45,25 @@ class LsCPU(CommandParser, LegacyItemAccess):
 
     Examples:
 
-        >>> output.data['Architecture']
+        >>> output.info['Architecture']
         'x86_64'
-        >>> len(output.data)
+        >>> len(output.info)
         22
-        >>> output.data['CPUs']
+        >>> output.info['CPUs']
         '2'
-        >>> output.data['Threads per core']
+        >>> output.info['Threads per core']
         '2'
-        >>> output.data['Cores per socket']
+        >>> output.info['Cores per socket']
         '1'
-        >>> output.data['Sockets']
+        >>> output.info['Sockets']
         '1'
+
     """
     def parse_content(self, content):
         if not content:
             raise SkipException("No data.")
-        self.data = {}
-        _content = split_kv_pairs(content, split_on=":")
-
-        # Cleanup
-        for i in _content:
-            if "(s)" in i:
-                self.data[i.replace("(s)", "s")] = _content[i]
-            else:
-                self.data[i] = _content[i]
+        self.info = {}
+        split_on = ":"
+        for line in content:
+            k, v = line.split(split_on, 1)
+            self.info[k.replace("(s)", "s").strip()] = v.strip()
