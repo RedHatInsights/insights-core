@@ -1,5 +1,5 @@
 """
-PCIRportTargetDiskPath
+PciRportTargetDiskPath
 ======================
 
 Module for parsing the output of command ``find /sys/devices/ -maxdepth 10 -mindepth 9 -name stat -type f``.
@@ -11,7 +11,7 @@ from insights.specs import Specs
 
 
 @parser(Specs.pci_rport_target_disk_paths)
-class PCIRportTargetDiskPaths(CommandParser):
+class PciRportTargetDiskPaths(CommandParser):
     """
     Class for parsing ``find /sys/devices/ -maxdepth 10 -mindepth 9 -name stat -type f`` command output.
 
@@ -37,7 +37,7 @@ class PCIRportTargetDiskPaths(CommandParser):
                    'target': 'target2:0:0',
                    'devnode': 'sdc',
                    'host_channel_id_lun': '2:0:0:0',
-                   'pci_id': '0000: 04:00.7',
+                   'pci_id': '0000:04:00.7',
                    'host': 'host2',
                    'rport': 'rport-2:0-2'
                },
@@ -45,15 +45,14 @@ class PCIRportTargetDiskPaths(CommandParser):
                    'target': 'target0:1:0',
                    'devnode': 'sda',
                    'host_channel_id_lun': '0:1:0:0',
-                   'pci_id': '0000: 02:00.0',
+                   'pci_id': '0000:02:00.0',
                    'host': 'host0',
-                   'rport': 'rport-2:0-2'
                }
         ]
 
     Examples:
         >>> type(pd)
-        <class 'insights.parsers.pci_rport_target_disk_paths.PCIRportTargetDiskPaths'>
+        <class 'insights.parsers.pci_rport_target_disk_paths.PciRportTargetDiskPaths'>
         >>> pd.pci_id
         ['0000:02:00.0', '0000:04:00.6', '0000:04:00.7']
         >>> pd.host
@@ -149,10 +148,10 @@ class PCIRportTargetDiskPaths(CommandParser):
         self.__devnode_attributes = set()
         self.__host_channel_id_lun_attributes = set()
 
+        DONE = False
         for line in content:
             line_sp = list(filter(None, line.strip().split('/')))
             temp_pci = {}
-            temp_pci['rport'] = None
             for i, l in enumerate(line_sp):
                 if 'host' in l:
                     temp_pci['host'] = l
@@ -165,15 +164,18 @@ class PCIRportTargetDiskPaths(CommandParser):
                 elif 'block' == l:
                     temp_pci['devnode'] = line_sp[i + 1]
                     temp_pci['host_channel_id_lun'] = line_sp[i - 1]
+                    DONE = True
 
-            if len(temp_pci) == 6:
+            if len(temp_pci) >= 5 and DONE:
                 pci.append(temp_pci)
                 self.__host_attributes.add(temp_pci['host'])
-                self.__rport_attributes.add(temp_pci['rport']) if temp_pci['rport'] else None
+                if temp_pci.get('rport'):
+                    self.__rport_attributes.add(temp_pci['rport'])
                 self.__target_attributes.add(temp_pci['target'])
                 self.__pci_id_attributes.add(temp_pci['pci_id'])
                 self.__devnode_attributes.add(temp_pci['devnode'])
                 self.__host_channel_id_lun_attributes.add(temp_pci['host_channel_id_lun'])
+                DONE = False
             else:
                 raise ParseException(BADWD.format(line))
         self.path_list = pci

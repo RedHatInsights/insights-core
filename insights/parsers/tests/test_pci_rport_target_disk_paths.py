@@ -1,7 +1,7 @@
 from insights.parsers import ParseException
 from insights.parsers import SkipException
 from insights.parsers import pci_rport_target_disk_paths
-from insights.parsers.pci_rport_target_disk_paths import PCIRportTargetDiskPaths as PCIPaths
+from insights.parsers.pci_rport_target_disk_paths import PciRportTargetDiskPaths as PCIPaths
 from insights.tests import context_wrap
 import pytest
 import doctest
@@ -14,18 +14,7 @@ INPUT_GOOD = """/sys/devices/pci0000:00/0000:00:01.0/0000:04:00.6/host1/rport-1:
 
 
 INPUT_BAD = """
-/sys/devices/pci0000:00/block/sda/ro
-/sys/devices/pci0000:00/block/sda/bdi
-/sys/devices/pci0000:00/block/sda/dev
-/sys/devices/pci0000:00/block/sda/sda1
-/sys/devices/pci0000:00/block/sda/sda2
-/sys/devices/pci0000:00/block/sda/size
 /sys/devices/pci0000:00/block/sda/stat
-/sys/devices/pci0000:00/block/sda/power
-/sys/devices/pci0000:00/block/sda/range
-/sys/devices/pci0000:00/block/sda/queue
-/sys/devices/pci0000:00/block/sda/trace
-/sys/devices/pci0000:00/block/sda/discard_alignment
 /sys/devices/pci0000:00/block/sda/device
 /sys/devices/pci0000:00/block/sda/events
 /sys/devices/pci0000:00/block/sda/subsystem
