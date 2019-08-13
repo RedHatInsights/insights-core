@@ -41,7 +41,6 @@ def test_ls_osroot_doc_examples():
     env = {
         'ls': LsRunSystemdGenerator(context_wrap(LS_RUN_SYSTEMD_GENERATOR,
                                     path=PATH_OF_LS_RUN_SYSTEMD_GENERATOR)),
-        'path': "/run/systemd/generator",
     }
     failed, total = doctest.testmod(ls_run_systemd_generator, globs=env)
     assert failed == 0
