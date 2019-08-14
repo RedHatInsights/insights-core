@@ -3,8 +3,10 @@ SELinux
 =======
 
 Combiner for more complex handling of SELinux being disabled by any means
-available to the users. It uses results of ``SEStatus``, ``Grub1Config``,
-``Grub2Config``, ``Grub2EFIConfig`` and ``SelinuxConfig`` parsers.
+available to the users. It uses results of
+:class:`insights.parsers.sestatus.SEStatus`, and
+:class:`insights.parsers.selinux_config.SelinuxConfig` parsers and
+:class:`insights.combiners.grub_conf.GrubConf` combiner.
 
 It contains a dictionary ``problems`` in which it stores detected problems with
 keys as follows and values are parsed lines with detected problem:
