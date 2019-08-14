@@ -15,7 +15,7 @@ from insights.parsers.rsyslog_conf import RsyslogConf
 @combiner(RsyslogConf)
 class RsyslogAllConf(dict):
     """
-    Combiner for accessing all the krb5 configuration files.
+    Combiner for accessing all the rsyslog configuration files.
 
     Examples:
         >>> type(confs)
@@ -29,13 +29,12 @@ class RsyslogAllConf(dict):
         super(RsyslogAllConf, self).__init__()
         data = {}
 
+        # Combine rsyslog configuration files into one dict. Key is file name, value is content of configuration file.
         for conf in confs:
             if conf.file_path == "/etc/rsyslog.conf":
-                include = False
-                for item in conf:
-                    if "include(" in item or "$IncludeConfig" in item:
-                        include = True
-                if not include:
+                # Check if there is include option, if not, only parse /etc/rsyslog.conf even
+                # /etc/rsyslog.d/*.conf exist.
+                if not any(["include(" in item or "$IncludeConfig" in item for item in conf]):
                     data.clear()
                     data[conf.file_path] = conf
                     break
