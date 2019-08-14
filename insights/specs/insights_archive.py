@@ -231,7 +231,7 @@ class InsightsArchiveSpecs(Specs):
     software_collections_list = simple_file('insights_commands/scl_--list')
     ss = simple_file("insights_commands/ss_-tupna")
     sshd_config_perms = simple_file("insights_commands/ls_-l_.etc.ssh.sshd_config")
-    subscription_manager_installed_product_ids = "insights_commands/find_.etc.pki.product-default._.etc.pki.product._-name_pem_-exec_rct_cat-cert_--no-content"
+    subscription_manager_installed_product_ids = simple_file("insights_commands/find_.etc.pki.product-default._.etc.pki.product._-name_pem_-exec_rct_cat-cert_--no-content")
     subscription_manager_id = simple_file("insights_commands/subscription-manager_identity")
     subscription_manager_release_show = simple_file('insights_commands/subscription-manager_release_--show')
     sysctl = simple_file("insights_commands/sysctl_-a")
