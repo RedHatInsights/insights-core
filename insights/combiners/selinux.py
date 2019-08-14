@@ -39,7 +39,7 @@ BOOT_DISABLED = 'selinux_conf_disabled'
 BOOT_NOT_ENFORCING = 'selinux_conf_not_enforcing'
 
 
-@combiner(SEStatus, SelinuxConfig, GrubConf)
+@combiner(SEStatus, SelinuxConfig, optional=[GrubConf])
 class SELinux(object):
     """
     A combiner for detecting that SELinux is enabled and running and also enabled at boot time.
@@ -48,7 +48,7 @@ class SELinux(object):
         self.problems = {}
         self.sestatus = se_status
         self.selinux_config = selinux_config
-        self.grub_config = grub_conf.grub
+        self.grub_config = grub_conf.grub if grub_conf else None
 
         self._check_sestatus()
         self._check_boot_config()
