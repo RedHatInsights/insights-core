@@ -497,6 +497,7 @@ class DefaultSpecs(Specs):
     ls_lib_firmware = simple_command("/bin/ls -lanR /lib/firmware")
     ls_ocp_cni_openshift_sdn = simple_command("/bin/ls -l /var/lib/cni/networks/openshift-sdn")
     ls_origin_local_volumes_pods = simple_command("/bin/ls -l /var/lib/origin/openshift.local.volumes/pods")
+    ls_run_systemd_generator = simple_command("/bin/ls -lan /run/systemd/generator")
     ls_sys_firmware = simple_command("/bin/ls -lanR /sys/firmware")
     ls_var_lib_mongodb = simple_command("/bin/ls -la /var/lib/mongodb")
     ls_R_var_lib_nova_instances = simple_command("/bin/ls -laR /var/lib/nova/instances")
@@ -663,11 +664,13 @@ class DefaultSpecs(Specs):
     ovirt_engine_console_log = simple_file("/var/log/ovirt-engine/console.log")
     ovs_vsctl_list_br = simple_command("/usr/bin/ovs-vsctl list-br")
     ovs_appctl_fdb_show_bridge = foreach_execute(ovs_vsctl_list_br, "/usr/bin/ovs-appctl fdb/show %s")
+    ovs_ofctl_dump_flows = foreach_execute(ovs_vsctl_list_br, "/usr/bin/ovs-ofctl dump-flows %s")
     ovs_vsctl_list_bridge = simple_command("/usr/bin/ovs-vsctl list bridge")
     ovs_vsctl_show = simple_command("/usr/bin/ovs-vsctl show")
     ovs_vswitchd_pid = simple_command("/usr/bin/pgrep -o ovs-vswitchd")
     ovs_vswitchd_limits = foreach_collect(ovs_vswitchd_pid, "/proc/%s/limits")
     pacemaker_log = first_file(["/var/log/pacemaker.log", "/var/log/pacemaker/pacemaker.log"])
+    pci_rport_target_disk_paths = simple_command("/usr/bin/find /sys/devices/ -maxdepth 10 -mindepth 9 -name stat -type f")
 
     @datasource(ps_auxww, context=HostContext)
     def package_and_java(broker):
