@@ -3,8 +3,10 @@ SELinux
 =======
 
 Combiner for more complex handling of SELinux being disabled by any means
-available to the users. It uses results of ``SEStatus``, ``Grub1Config``,
-``Grub2Config``, ``Grub2EFIConfig`` and ``SelinuxConfig`` parsers.
+available to the users. It uses results of
+:class:`insights.parsers.sestatus.SEStatus`, and
+:class:`insights.parsers.selinux_config.SelinuxConfig` parsers and
+:class:`insights.combiners.grub_conf.GrubConf` combiner.
 
 It contains a dictionary ``problems`` in which it stores detected problems with
 keys as follows and values are parsed lines with detected problem:
@@ -28,7 +30,7 @@ Examples:
 
 from ..core.plugins import combiner
 from ..parsers.sestatus import SEStatus
-from ..parsers.grub_conf import Grub1Config, Grub1EFIConfig, Grub2Config, Grub2EFIConfig
+from ..combiners.grub_conf import GrubConf
 from ..parsers.selinux_config import SelinuxConfig
 
 GRUB_DISABLED = 'grub_disabled'
@@ -39,17 +41,16 @@ BOOT_DISABLED = 'selinux_conf_disabled'
 BOOT_NOT_ENFORCING = 'selinux_conf_not_enforcing'
 
 
-@combiner(SEStatus, SelinuxConfig,
-          optional=[Grub1Config, Grub1EFIConfig, Grub2Config, Grub2EFIConfig])
+@combiner(SEStatus, SelinuxConfig, optional=[GrubConf])
 class SELinux(object):
     """
     A combiner for detecting that SELinux is enabled and running and also enabled at boot time.
     """
-    def __init__(self, se_status, selinux_config, grub1, grub1_efi, grub2, grub2_efi):
+    def __init__(self, se_status, selinux_config, grub_conf):
         self.problems = {}
         self.sestatus = se_status
         self.selinux_config = selinux_config
-        self.grub_config = grub1 or grub1_efi or grub2 or grub2_efi
+        self.grub_config = grub_conf.grub if grub_conf else None
 
         self._check_sestatus()
         self._check_boot_config()
@@ -88,8 +89,10 @@ class SELinux(object):
 
         grub is in rhel-6 and the boot line looks usually like
             kernel /boot/vmlinuz-2.4.20-selinux-2003040709 ro root=/dev/hda1 nousb selinux=0
-        grub 2 is in rhel-7 and the boot line looks usually like
+        grub 2 is in rhel-7 and rhel-8, the boot line of grub 2 in rhel-7 looks usually like
             linux16 /vmlinuz-0-rescue-9f20b35c9faa49aebe171f62a11b236f root=/dev/mapper/rhel-root ro crashkernel=auto rd.lvm.lv=rhel/root rd.lvm.lv=rhel/swap rhgb quiet
+        the boot line of grub 2 in rhel-8 looks usually like
+            options root=/dev/mapper/rhel_vm37--146-root ro crashkernel=auto resume=/dev/mapper/rhel_vm37--146-swap rd.lvm.lv=rhel_vm37-146/root rd.lvm.lv=rhel_vm37-146/swap $tuned_params
         """
 
         conf = self.grub_config.boot_entries if self.grub_config is not None else []
