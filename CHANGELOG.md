@@ -1,11 +1,11 @@
 # Change Log
 
-## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
-
-[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.118-1098...HEAD)
+## [insights-core-3.0.119-1105](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.119-1105) (2019-08-15)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.118-1098...insights-core-3.0.119-1105)
 
 **Closed issues:**
 
+- The SELinux combiner doesn't use grub blscfg for RHEL8 [\#2138](https://github.com/RedHatInsights/insights-core/issues/2138)
 - RFE: add a parser for FreeIPA's HealthCheck logs [\#2071](https://github.com/RedHatInsights/insights-core/issues/2071)
 
 ## [insights-core-3.0.118-1098](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.118-1098) (2019-08-08)
