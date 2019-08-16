@@ -781,10 +781,10 @@ class command_with_args(object):
         ctx = broker[self.context]
         if isinstance(source, ContentProvider):
             source = source.content
-        if not isinstance(source, (list, set, tuple)):
+        if not isinstance(source, (list, tuple)):
             source = [source]
         try:
-            self.cmd = self.cmd % ' '.join(source)
+            self.cmd = self.cmd % tuple(source)
             return CommandOutputProvider(self.cmd, ctx, split=self.split,
                     keep_rc=self.keep_rc, ds=self, timeout=self.timeout, inherit_env=self.inherit_env)
         except:
