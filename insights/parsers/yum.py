@@ -9,6 +9,9 @@ This module contains the classes that parse the output of the commands
 YumRepoList - command ``yum -C repolist``
 -----------------------------------------
 """
+
+import re
+
 from insights import parser, CommandParser
 from insights.parsers import SkipException
 from insights.specs import Specs
@@ -52,6 +55,24 @@ class YumRepoList(CommandParser):
         !rhel-ha-for-rhel-7-server-e4s-rpms/x86_64          Red Hat Enterprise Linux High Availability (for RHEL 7 Server) Update Services for SAP Solutions (RPMs)         272
         *rhel-sap-hana-for-rhel-7-server-e4s-rpms/x86_64    RHEL for SAP HANA (for RHEL 7 Server) Update Services for SAP Solutions (RPMs)                                   21
         repolist: 12,768
+
+        or sometimes it just outputs repo id and status
+        Loaded plugins: package_upload, product-id, search-disabled-repos, security, subscription-manager
+        repo id                                                                               status
+        LME_EPEL_6_x86_64                                                                        26123
+        LME_FSMLabs_Timekeeper_timekeeper                                                            2
+        LME_HP_-_Software_Delivery_Repository_Firmware_Pack_for_ProLiant_-_6Server_-_Current      1163
+        LME_HP_-_Software_Delivery_Repository_Scripting_Took_Kit_-_6Server                          17
+        LME_HP_-_Software_Delivery_Repository_Service_Pack_for_ProLiant_-_6Server_-_Current       1915
+        LME_HP_-_Software_Delivery_Repository_Smart_Update_Manager_-_6Server                        30
+        LME_LME_Custom_Product_Mellanox_OFED                                                       114
+        LME_LME_Custom_Product_OMD_RPMS                                                             14
+        LME_LME_Custom_Product_RPMs                                                                  5
+        LME_LME_Custom_Product_SNOW_Repository                                                       2
+        rhel-6-server-optional-rpms                                                            10400+1
+        rhel-6-server-rpms                                                                    18256+12
+        rhel-6-server-satellite-tools-6.2-rpms                                                      55
+        repolist: 58096
 
     Examples:
         >>> len(repolist)
@@ -100,21 +121,29 @@ class YumRepoList(CommandParser):
         self.data = []
         self.repos = {}
         found_start = False
+        heads_length = 3
         for line in content:
             if line.startswith("repolist:"):
                 break
             if found_start:
                 _id, right = line.split(None, 1)
-                try:
-                    name, status = right.rsplit(None, 1)
-                except ValueError:
-                    raise SkipException("Incorrect line: '{0}'".format(line))
+                if heads_length == 2:
+                    status = right
+                    name = ''
+                else:
+                    try:
+                        name, status = right.rsplit(None, 1)
+                    except ValueError:
+                        raise SkipException("Incorrect line: '{0}'".format(line))
                 self.data.append({
                     "id": _id.strip(),
                     "name": name.strip(),
                     "status": status.strip()})
             if not found_start:
-                found_start = line.startswith("repo id")
+                if line.startswith("repo id"):
+                    found_start = True
+                    if re.search(r'repo\s*name', line) is None:
+                        heads_length = 2
         if not self.data:
             raise SkipException('No repolist.')
         self.repos = dict((d['id'].lstrip('!').lstrip('*'), d) for d in self.data)

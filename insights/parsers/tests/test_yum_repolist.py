@@ -60,6 +60,22 @@ rhel-7-server-e4s-rpms/x86_64                       Red Hat Enterprise Linux 7 S
 repolist: 12,768
 """.strip()
 
+YUM_REPO_1 = """
+Loaded plugins: enabled_repos_upload, package_upload, priorities, product-id,
+              : search-disabled-repos, security, subscription-manager
+repo id                                                                               status
+LME_EPEL_6_x86_64                                                                     26123
+LME_HP_-_Software_Delivery_Repository_Firmware_Pack_for_ProLiant_-_6Server_-_Current   1163
+LME_HP_-_Software_Delivery_Repository_Scripting_Took_Kit_-_6Server                       17
+LME_HP_-_Software_Delivery_Repository_Service_Pack_for_ProLiant_-_6Server_-_Current    1861
+LME_HP_-_Software_Delivery_Repository_Smart_Update_Manager_-_6Server                     21
+rhel-6-server-optional-rpms                                                           11358
+rhel-6-server-rpms                                                                    19753
+repolist: 60296
+Uploading Enabled Reposistories Report
+Loaded plugins: priorities, product-id
+""".strip()
+
 
 def test_yum_repolist():
     repo_list = YumRepoList(context_wrap(YUM_REPOLIST_CONTENT))
@@ -129,3 +145,8 @@ def test_doc_examples():
           }
     failed, total = doctest.testmod(yum, globs=env)
     assert failed == 0
+
+
+def test_invalid_get_type_1():
+    repo_list = YumRepoList(context_wrap(YUM_REPO_1))
+    assert 2 == len(repo_list.rhel_repos)
