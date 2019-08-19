@@ -307,6 +307,7 @@ def parse_fixed_table(table_lines,
             rows of the content.  Lines starting with these strings will be ignored,
             thereby truncating the rows of data.
         empty_exception (bool): If True, raise a ParseException when the value if empty.
+            False by default.
 
     Returns:
         list: Returns a list of dict for each row of column data.  Dict keys
@@ -314,7 +315,7 @@ def parse_fixed_table(table_lines,
 
     Raises:
         ValueError: Raised if `heading_ignore` is specified and not found in `table_lines`.
-        ParseException: Raised if `empty_exception` is True and there are empty values.
+        ParseException: Raised if there are empty values when `empty_exception` is True
 
     Sample input::
 
