@@ -357,7 +357,7 @@ def parse_fixed_table(table_lines,
         col_data = {}
         for i, (s, e) in enumerate(idx_pairs):
             val = line[s:e].strip()
-            if not val and empty_exception:
+            if empty_exception and not val:
                 raise ParseException('Incorrect line: \'{0}\'', line)
             col_data[col_headers[i]] = val
         table_data.append(col_data)
