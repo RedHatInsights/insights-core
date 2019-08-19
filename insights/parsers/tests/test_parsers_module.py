@@ -290,6 +290,12 @@ def test_parse_fixed_table():
     assert data[0] == {'NAMESPACE': 'default', 'NAME': 'foo', 'LABELS': 'app=superawesome'}
 
 
+def test_parse_fixed_table_empty_exception():
+    with pytest.raises(ParseException) as pe:
+        parse_fixed_table(FIXED_CONTENT_1B.splitlines(), empty_exception=True)
+    assert "Incorrect line:" in str(pe.value)
+
+
 def test_optlist_standard():
     d = optlist_to_dict('key1,key2=val2,key1=val1,key3')
     assert sorted(d.keys()) == sorted(['key1', 'key2', 'key3'])

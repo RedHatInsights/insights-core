@@ -10,10 +10,8 @@ YumRepoList - command ``yum -C repolist``
 -----------------------------------------
 """
 
-import re
-
 from insights import parser, CommandParser
-from insights.parsers import SkipException
+from insights.parsers import SkipException, parse_fixed_table
 from insights.specs import Specs
 
 eus = [
@@ -56,7 +54,8 @@ class YumRepoList(CommandParser):
         *rhel-sap-hana-for-rhel-7-server-e4s-rpms/x86_64    RHEL for SAP HANA (for RHEL 7 Server) Update Services for SAP Solutions (RPMs)                                   21
         repolist: 12,768
 
-        or sometimes it just outputs repo id and status
+    Or sometimes it just outputs repo id and status::
+
         Loaded plugins: package_upload, product-id, search-disabled-repos, security, subscription-manager
         repo id                                                                               status
         LME_EPEL_6_x86_64                                                                        26123
@@ -89,6 +88,18 @@ class YumRepoList(CommandParser):
         'Red Hat Enterprise Linux 7 Server - Update Services for SAP Solutions (RPMs)'
         >>> repolist['rhel-ha-for-rhel-7-server-e4s-rpms/x86_64']['id']
         '!rhel-ha-for-rhel-7-server-e4s-rpms/x86_64'
+        >>> len(repolist_no_reponame)
+        13
+        >>> len(repolist_no_reponame.rhel_repos)
+        3
+        >>> 'rhel-6-server-rpms' in repolist_no_reponame.repos
+        True
+        >>> 'rhel-6-server-optional-rpms' in repolist_no_reponame.rhel_repos
+        True
+        >>> repolist_no_reponame[0]['id']
+        'LME_EPEL_6_x86_64'
+        >>> repolist_no_reponame[0].get('name', '')
+        ''
 
     Attributes:
         data (list): list of repos wrapped in dictionaries
@@ -118,34 +129,21 @@ class YumRepoList(CommandParser):
             self.rhel_repos = ['rhel-7-server-e4s-rpms', 'rhel-ha-for-rhel-7-server-e4s-rpms', 'rhel-sap-hana-for-rhel-7-server-e4s-rpms']
     """
     def parse_content(self, content):
+        if not content:
+            raise SkipException('No repolist.')
+
         self.data = []
         self.repos = {}
-        found_start = False
-        heads_length = 3
-        for line in content:
-            if line.startswith("repolist:"):
-                break
-            if found_start:
-                _id, right = line.split(None, 1)
-                if heads_length == 2:
-                    status = right
-                    name = ''
-                else:
-                    try:
-                        name, status = right.rsplit(None, 1)
-                    except ValueError:
-                        raise SkipException("Incorrect line: '{0}'".format(line))
-                self.data.append({
-                    "id": _id.strip(),
-                    "name": name.strip(),
-                    "status": status.strip()})
-            if not found_start:
-                if line.startswith("repo id"):
-                    found_start = True
-                    if re.search(r'repo\s*name', line) is None:
-                        heads_length = 2
+        self.data = parse_fixed_table(
+                content,
+                heading_ignore=['repo id'],
+                header_substitute=[('repo id', 'id     '), ('repo name', 'name     ')],
+                trailing_ignore=['repolist:', 'Uploading Enabled', 'Loaded plugins:'],
+                empty_exception=True)
+
         if not self.data:
             raise SkipException('No repolist.')
+
         self.repos = dict((d['id'].lstrip('!').lstrip('*'), d) for d in self.data)
 
     def __len__(self):
