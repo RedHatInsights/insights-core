@@ -31,7 +31,7 @@ from .core import AttributeDict  # noqa: F401
 from .core import Syslog  # noqa: F401
 from .core.archives import COMPRESSION_TYPES, extract, InvalidArchive, InvalidContentType  # noqa: F401
 from .core import dr  # noqa: F401
-from .core.context import ClusterArchiveContext, HostContext, HostArchiveContext, SerializedArchiveContext  # noqa: F401
+from .core.context import ClusterArchiveContext, HostContext, HostArchiveContext, SerializedArchiveContext, ExecutionContext  # noqa: F401
 from .core.dr import SkipComponent  # noqa: F401
 from .core.hydration import create_context
 from .core.plugins import combiner, fact, metadata, parser, rule  # noqa: F401
@@ -44,6 +44,8 @@ from .formats import get_formatter
 from .parsers import get_active_lines  # noqa: F401
 from .util import defaults  # noqa: F401
 from .formats import Formatter as FormatterClass
+
+from .core.spec_factory import TextFileProvider
 
 log = logging.getLogger(__name__)
 
@@ -244,6 +246,7 @@ def run(component=None, root=None, print_summary=False,
         p.add_argument("archive", nargs="?", help="Archive or directory to analyze.")
         p.add_argument("-p", "--plugins", default="",
                        help="Comma-separated list without spaces of package(s) or module(s) containing plugins.")
+        p.add_argument("-b", "--bare", default="")
         p.add_argument("-c", "--config", help="Configure components.")
         p.add_argument("-i", "--inventory", help="Ansible inventory file for cluster analysis.")
         p.add_argument("-v", "--verbose", help="Verbose output.", action="store_true")
@@ -319,18 +322,39 @@ def run(component=None, root=None, print_summary=False,
 
     broker = dr.Broker()
 
+    if args.bare:
+        ctx = ExecutionContext()  # dummy context that no spec depend on. needed for filters to work
+        specs = parse_specs(args.bare)
+        specs = load_specs(specs, ctx)
+
+        broker = dr.Broker()
+        broker[ExecutionContext] = ctx
+        for spec, content in specs.items():
+            broker[spec] = content if spec.multi_output else content[-1]
     try:
         if formatters:
             for formatter in formatters:
                 formatter.preprocess(broker)
-            broker = _run(broker, graph, root, context=context, inventory=inventory)
+
+            if args.bare:
+                broker = dr.run(broker=broker)
+            else:
+                broker = _run(broker, graph, root, context=context, inventory=inventory)
+
             for formatter in formatters:
                 formatter.postprocess(broker)
         elif print_component:
-            broker = _run(broker, graph, root, context=context, inventory=inventory)
+            if args.bare:
+                broker = dr.run(broker=broker)
+            else:
+                broker = _run(broker, graph, root, context=context, inventory=inventory)
+
             broker.print_component(print_component)
         else:
-            broker = _run(broker, graph, root, context=context, inventory=inventory)
+            if args.bare:
+                broker = dr.run(broker=broker)
+            else:
+                broker = _run(broker, graph, root, context=context, inventory=inventory)
 
         return broker
     except (InvalidContentType, InvalidArchive):
@@ -340,6 +364,28 @@ def run(component=None, root=None, print_summary=False,
             log.error(msg.format(p=path))
         else:
             raise
+
+
+def parse_specs(specs):
+    """
+    -b "hostname=/etc/hostname, redhat_release=/etc/redhat-release, .."
+    """
+    return dict(s.strip().split("=", 1) for s in specs.split(","))
+
+
+def load_datasource(name):
+    name = "insights.specs.Specs." + name if "." not in name else name
+    return dr.get_component(name)
+
+
+def load_specs(specs, ctx):
+    results = defaultdict(list)
+    for spec, path in specs.items():
+        s = load_datasource(spec)
+        root = "/" if path.startswith('/') else "."
+        c = TextFileProvider(relative_path=path, root=root, ds=s, ctx=ctx)
+        results[s].append(c)
+    return results
 
 
 def main():
