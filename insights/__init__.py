@@ -45,7 +45,7 @@ from .parsers import get_active_lines  # noqa: F401
 from .util import defaults  # noqa: F401
 from .formats import Formatter as FormatterClass
 
-from .core.spec_factory import TextFileProvider
+from .core.spec_factory import RawFileProvider, TextFileProvider
 
 log = logging.getLogger(__name__)
 
@@ -246,7 +246,9 @@ def run(component=None, root=None, print_summary=False,
         p.add_argument("archive", nargs="?", help="Archive or directory to analyze.")
         p.add_argument("-p", "--plugins", default="",
                        help="Comma-separated list without spaces of package(s) or module(s) containing plugins.")
-        p.add_argument("-b", "--bare", default="")
+        p.add_argument("-b", "--bare",
+                       help='Specify "spec=filename[,spec=filename,...]" to use the bare file for the spec',
+                       default="")
         p.add_argument("-c", "--config", help="Configure components.")
         p.add_argument("-i", "--inventory", help="Ansible inventory file for cluster analysis.")
         p.add_argument("-v", "--verbose", help="Verbose output.", action="store_true")
@@ -383,7 +385,10 @@ def load_specs(specs, ctx):
     for spec, path in specs.items():
         s = load_datasource(spec)
         root = "/" if path.startswith('/') else "."
-        c = TextFileProvider(relative_path=path, root=root, ds=s, ctx=ctx)
+        if s.raw:
+            c = RawFileProvider(relative_path=path, root=root, ds=s, ctx=ctx)
+        else:
+            c = TextFileProvider(relative_path=path, root=root, ds=s, ctx=ctx)
         results[s].append(c)
     return results
 
