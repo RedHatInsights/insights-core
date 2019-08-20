@@ -890,8 +890,12 @@ class find(object):
             patterns supported)
 
     Returns:
-        A dict where each key is a command, path, or spec name, and each
-        value is a list of matching lines.
+        A dict where each key is a command, path, or spec name, and each value
+        is a non-empty list of matching lines. Only paths with matching lines
+        are included.
+
+    Raises:
+        dr.SkipComponent if no paths have matching lines.
     """
 
     def __init__(self, spec, pattern):
@@ -917,13 +921,21 @@ class find(object):
         results = {}
         ds = ds if isinstance(ds, list) else [ds]
         for d in ds:
-            origin = d.cmd or d.path or dr.get_name(self.spec)
+            if d.relative_path:
+                origin = os.path.join("/", d.relative_path.lstrip("/"))
+            elif d.cmd:
+                origin = d.cmd
+            else:
+                origin = dr.get_name(self.spec)
             stream = d.content if d.loaded else d.stream()
             lines = []
             for line in stream:
                 if any(p in line for p in self.pattern):
                     lines.append(line)
-            results[origin] = lines
+            if lines:
+                results[origin] = lines
+        if not results:
+            raise dr.SkipComponent()
         return dict(results)
 
 
