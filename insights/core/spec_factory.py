@@ -914,7 +914,7 @@ class find(object):
         # .stream(), but we still need to ensure we get only what *this* find
         # instance wants. This can be inefficient on files where many lines
         # match.
-        results = defaultdict(list)
+        results = {}
         ds = ds if isinstance(ds, list) else [ds]
         for d in ds:
             origin = d.cmd or d.path or dr.get_name(self.spec)
@@ -923,7 +923,7 @@ class find(object):
             for line in stream:
                 if any(p in line for p in self.pattern):
                     lines.append(line)
-            results[origin].append(line)
+            results[origin] = lines
         return dict(results)
 
 
