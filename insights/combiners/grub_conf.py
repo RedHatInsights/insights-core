@@ -7,7 +7,9 @@ This combiner uses the parsers:
 :class:`insights.parsers.grub_conf.Grub1Config`,
 :class:`insights.parsers.grub_conf.Grub1EFIConfig`,
 :class:`insights.parsers.grub_conf.Grub2Config`,
-:class:`insights.parsers.grub_conf.Grub2EFIConfig`, and
+:class:`insights.parsers.grub_conf.Grub2EFIConfig`,
+:class:`insights.parsers.grub_conf.Grub2Grubenv`,
+:class:`insights.parsers.grub_conf.Grub2EFIGrubenv`, and
 :class:`insights.parsers.grub_conf.BootLoaderEntries`.
 
 It determines which parser was used by checking one of the follwing
@@ -25,18 +27,20 @@ from insights.combiners.redhat_release import RedHatRelease
 from insights.parsers.grub_conf import BootEntry, get_kernel_initrds
 from insights.parsers.grub_conf import Grub1Config, Grub1EFIConfig
 from insights.parsers.grub_conf import Grub2Config, Grub2EFIConfig
-from insights.parsers.grub_conf import BootLoaderEntries as BLE
+from insights.parsers.grub_conf import Grub2Grubenv, Grub2EFIGrubenv
+from insights.parsers.grub_conf import BootLoaderEntries as BLEs
 from insights.parsers.ls_sys_firmware import LsSysFirmware
 from insights.parsers.installed_rpms import InstalledRpms
 from insights.parsers.cmdline import CmdLine
 from insights import SkipComponent
 
 
-@combiner(BLE, optional=[LsSysFirmware])
+@combiner(BLEs, [Grub2Grubenv, Grub2EFIGrubenv], [Grub2Config, Grub2EFIConfig], optional=[LsSysFirmware])
 class BootLoaderEntries(object):
     """
     Combine all :class:`insights.parsers.grub_conf.BootLoaderEntries`
-    parsers into one Combiner
+    parsers into one.  The variables referenced in each BootLoaderEntries will
+    be de-referenced.
 
     Raises:
         SkipComponent: when no any BootLoaderEntries Parsers.
@@ -51,16 +55,28 @@ class BootLoaderEntries(object):
             referenced in GRUB configuration files
         is_kdump_iommu_enabled (bool): If any kernel entry contains "intel_iommu=on"
     """
-    def __init__(self, grub_bles, sys_firmware):
+    def __init__(self, grub_bles, env, env_efi, grub2, grub2_efi, sys_firmware):
+        def _dereference_variables(line):
+            for opt in line.split():
+                if opt.startswith('$'):
+                    key = opt.lstrip('$')
+                    line = line.replace(opt, env.get(key, grub2.get(key, '')))
+            return line
         self.version = self._version = 2
         self.is_efi = self._efi = '/sys/firmware/efi' in sys_firmware if sys_firmware else False
+        if self.is_efi:
+            env = env_efi
+            grub2 = grub2_efi
         self.entries = []
         self.boot_entries = []
         self.is_kdump_iommu_enabled = False
         for ble in grub_bles:
-            self.entries.append(ble.entry)
-            self.boot_entries.append(BootEntry({'name': ble.title, 'cmdline': ble.cmdline}))
-            self.is_kdump_iommu_enabled = self.is_kdump_iommu_enabled or ble.is_kdump_iommu_enabled
+            _ble = dict((k, v) for k, v in ble.items())
+            cmdline = _dereference_variables(_ble['options'])
+            _ble['initrd'] = _dereference_variables(_ble['initrd'])
+            self.entries.append(_ble)
+            self.boot_entries.append(BootEntry({'name': _ble['title'], 'cmdline': cmdline}))
+            self.is_kdump_iommu_enabled = self.is_kdump_iommu_enabled or "intel_iommu=on" in cmdline
         self.kernel_initrds = get_kernel_initrds(self.entries)
 
         if not self.entries:

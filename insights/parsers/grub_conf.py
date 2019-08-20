@@ -47,13 +47,19 @@ Grub2Config - file ``/boot/grub/grub2.cfg``
 Grub2EFIConfig - file ``/boot/efi/EFI/redhat/grub.cfg``
 -------------------------------------------------------
 
+Grub2Grubenv - file ``/boot/grub2/grubenv``
+-------------------------------------------
+
+Grub2EFIGrubenv - file ``/boot/efi/EFI/redhat/grubenv``
+-------------------------------------------------------
+
 BootLoaderEntries - file ``/boot/loader/entries/*.conf``
 --------------------------------------------------------
 """
 
 from insights import Parser, parser, get_active_lines
 from insights.parsers import ParseException, SkipException
-from insights.components.rhel_version import IsRhel6, IsRhel7, IsRhel8
+from insights.components.rhel_version import IsRhel8
 from insights.specs import Specs
 
 
@@ -211,7 +217,7 @@ class GrubConfig(Parser, dict):
         return self._kernel_initrds
 
 
-@parser(Specs.grub_conf, [IsRhel6, IsRhel7])
+@parser(Specs.grub_conf)
 class Grub1Config(GrubConfig):
     """
     Parser for configuration for GRUB version 1.
@@ -276,7 +282,7 @@ class Grub1Config(GrubConfig):
         return None
 
 
-@parser(Specs.grub_efi_conf, [IsRhel6, IsRhel7])
+@parser(Specs.grub_efi_conf)
 class Grub1EFIConfig(Grub1Config):
     """
     Parses grub v1 configuration for EFI-based systems
@@ -287,7 +293,7 @@ class Grub1EFIConfig(Grub1Config):
         self._efi = True
 
 
-@parser(Specs.grub2_cfg, [IsRhel6, IsRhel7])
+@parser(Specs.grub2_cfg)
 class Grub2Config(GrubConfig):
     """
     Parser for configuration for GRUB version 2.
@@ -347,7 +353,7 @@ class Grub2Config(GrubConfig):
         self.update({'menuentry': self.entries})
 
 
-@parser(Specs.grub2_efi_cfg, [IsRhel6, IsRhel7])
+@parser(Specs.grub2_efi_cfg)
 class Grub2EFIConfig(Grub2Config):
     """Parses grub2 configuration for EFI-based systems"""
     def __init__(self, *args, **kwargs):
@@ -356,40 +362,96 @@ class Grub2EFIConfig(Grub2Config):
         self._efi = True
 
 
-@parser(Specs.boot_loader_entries, IsRhel8)
+@parser(Specs.grub2_grubenv, [IsRhel8])
+class Grub2Grubenv(GrubConfig):
+    """
+    Parser for the ``/boot/grub2/grubenv`` file of RHEL 8.  The parsed result
+    can be accessed as a dictionary.
+
+    The typical content of ``/boot/grub2/grubenv`` is::
+
+        # GRUB Environment Block
+        saved_entry=48384d5e99dc41c7b7f7c97c84a1248d-4.18.0-80.7.2.el8_0.x86_64
+        kernelopts=root=/dev/mapper/rhel-root ro crashkernel=auto resume=/dev/mapper/rhel-swap rd.lvm.lv=rhel/root rd.lvm.lv=rhel/swap rhgb quiet
+        boot_success=0
+        ########################################################################
+
+    Examples:
+        >>> type(grub2_grubenv)
+        <class 'insights.parsers.grub_conf.Grub2Grubenv'>
+        >>> grub2_grubenv['saved_entry']
+        '48384d5e99dc41c7b7f7c97c84a1248d-4.18.0-80.7.2.el8_0.x86_64'
+        >>> 'crashkernel=auto' in grub2_grubenv['kernelopts']
+        True
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(Grub2Grubenv, self).__init__(*args, **kwargs)
+        self._version = 2
+        self._efi = False
+
+    def parse_content(self, content):
+        if not content:
+            raise SkipException("Empty content.")
+
+        data = {}
+        for line in content:
+            if '=' in line:
+                key, value = [i.strip() for i in line.split('=', 1)]
+                data[key] = value
+            elif not line.strip().startswith('#'):
+                raise ParseException('Bad line: "{0}"'.format(line))
+
+        if not data:
+            raise SkipException("No useful data")
+
+        self.update(data)
+
+
+@parser(Specs.grub2_efi_grubenv, [IsRhel8])
+class Grub2EFIGrubenv(Grub2Grubenv):
+    """
+    Parser for the ``/boot/efi/EFI/redhat/grubenv`` file of RHEL 8.
+    """
+    def __init__(self, *args, **kwargs):
+        super(Grub2EFIGrubenv, self).__init__(*args, **kwargs)
+        self._version = 2
+        self._efi = True
+
+
+@parser(Specs.boot_loader_entries, [IsRhel8])
 class BootLoaderEntries(Parser, dict):
     """
-    Parses the ``/boot/loader/entries/*.conf`` files.
+    Parses the ``/boot/loader/entries/*.conf`` files to a dictionary.
 
-    Attributes:
-        title(str): the name of the boot entry
-        cmdline(str): the cmdline of the saved boot entry
+    The typical content is::
+
+        title Red Hat Enterprise Linux (4.18.0-80.el8.x86_64) 8.0 (Ootpa)
+        version 4.18.0-80.el8.x86_64
+        linux /vmlinuz-4.18.0-80.el8.x86_64
+        initrd /initramfs-4.18.0-80.el8.x86_64.img $tuned_initrd
+        options $kernelopts $tuned_params
+        id rhel-20190313123447-4.18.0-80.el8.x86_64
+        grub_users $grub_users
+        grub_arg --unrestricted
+        grub_class kernel
 
     Raises:
         SkipException: when input content is empty or no useful data.
     """
     def parse_content(self, content):
-        """
-        Parses the ``/boot/loader/entries/*.conf`` files.
-        """
         if not content:
             raise SkipException()
 
-        self.entry = {}
-        self.title = ''
-        self.cmdline = ''
+        entry = {}
         for line in content:
             key, value = [i.strip() for i in line.split(None, 1)]
-            self.entry[key] = value
-            if key == 'options':
-                self.cmdline = value
+            entry[key] = value
 
-        if not self.entry:
+        if not entry:
             raise SkipException()
 
-        self.update(self.entry)
-        self.title = self.entry.get('title')
-        self.is_kdump_iommu_enabled = "intel_iommu=on" in self.cmdline
+        self.update(entry)
 
 
 def get_kernel_initrds(entries):

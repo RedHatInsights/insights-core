@@ -175,6 +175,8 @@ class Specs(SpecSet):
     grub1_config_perms = RegistryPoint()
     grub2_cfg = RegistryPoint()
     grub2_efi_cfg = RegistryPoint()
+    grub2_efi_grubenv = RegistryPoint()
+    grub2_grubenv = RegistryPoint()
     grubby_default_index = RegistryPoint()
     grubby_default_kernel = RegistryPoint()
     hammer_ping = RegistryPoint()

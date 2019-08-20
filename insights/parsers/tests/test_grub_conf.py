@@ -1,7 +1,9 @@
 from insights.tests import context_wrap
-from insights.parsers import grub_conf
-from insights.parsers.grub_conf import Grub1Config, Grub2Config, Grub1EFIConfig
+from insights.parsers import grub_conf, ParseException, SkipException
+from insights.parsers.grub_conf import Grub1Config, Grub1EFIConfig
+from insights.parsers.grub_conf import Grub2Config
 from insights.parsers.grub_conf import BootLoaderEntries
+from insights.parsers.grub_conf import Grub2Grubenv, Grub2EFIGrubenv
 import pytest
 import doctest
 
@@ -164,6 +166,21 @@ grub_arg --unrestricted
 grub_class kernel
 """.strip()
 
+GRUB2_ENV = '''
+# GRUB Environment Block
+saved_entry=48384d5e99dc41c7b7f7c97c84a1248d-4.18.0-80.7.2.el8_0.x86_64
+kernelopts=root=/dev/mapper/rhel-root ro crashkernel=auto resume=/dev/mapper/rhel-swap rd.lvm.lv=rhel/root rd.lvm.lv=rhel/swap rhgb quiet
+boot_success=0
+'''.strip()
+
+GRUB2_ENV_AB = '''
+# GRUB Environment Block
+saved_entry=48384d5e99dc41c7b7f7c97c84a1248d-4.18.0-80.7.2.el8_0.x86_64
+kernelopts=root=/dev/mapper/rhel-root ro crashkernel=auto resume=/dev/mapper/rhel-swap rd.lvm.lv=rhel/root rd.lvm.lv=rhel/swap rhgb quiet
+
+boot_success=0
+'''.strip()
+
 GRUB1_CFG_1_DOC = '''
 default=0
 timeout=0
@@ -274,8 +291,8 @@ def test_grub_conf_1():
 
 def test_grub2_boot_loader_entries():
     grub_ble = BootLoaderEntries(context_wrap(BOOT_LOADER_ENTRIES_CONF))
-    assert grub_ble.title == 'Red Hat Enterprise Linux (4.18.0-80.1.2.el8_0.x86_64) 8.0 (Ootpa)'
-    assert 'crashkernel=auto' in grub_ble.cmdline
+    assert grub_ble['title'] == 'Red Hat Enterprise Linux (4.18.0-80.1.2.el8_0.x86_64) 8.0 (Ootpa)'
+    assert 'crashkernel=auto' in grub_ble.get('options')
 
 
 def test_grub_conf_raise():
@@ -284,10 +301,31 @@ def test_grub_conf_raise():
     assert "Cannot parse menuentry line: menuentry {" in str(e.value)
 
 
+def test_grub2_grubenv():
+    grub_env = Grub2Grubenv(context_wrap(GRUB2_ENV))
+    assert 'crashkernel' in grub_env['kernelopts']
+    assert 'saved_entry' in grub_env
+
+
+def test_grub2_grubenv_ab():
+    with pytest.raises(ParseException) as e:
+        Grub2Grubenv(context_wrap(GRUB2_ENV_AB))
+    assert "Bad line" in str(e.value)
+
+    with pytest.raises(SkipException) as e:
+        Grub2EFIGrubenv(context_wrap(''))
+    assert "Empty content" in str(e.value)
+
+    with pytest.raises(SkipException) as e:
+        Grub2Grubenv(context_wrap('#'))
+    assert "No useful data" in str(e.value)
+
+
 def test_grub_conf_doc():
     env = {
             'grub1_config': Grub1Config(context_wrap(GRUB1_CFG_1_DOC)),
             'grub2_config': Grub2Config(context_wrap(GRUB2_CFG_1_DOC)),
+            'grub2_grubenv': Grub2Grubenv(context_wrap(GRUB2_ENV)),
           }
     failed, total = doctest.testmod(grub_conf, globs=env)
     assert failed == 0
