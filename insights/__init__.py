@@ -324,7 +324,7 @@ def run(component=None, root=None, print_summary=False,
 
     broker = dr.Broker()
 
-    if args.bare:
+    if args and args.bare:
         ctx = ExecutionContext()  # dummy context that no spec depend on. needed for filters to work
         specs = parse_specs(args.bare)
         specs = load_specs(specs, ctx)
@@ -338,23 +338,23 @@ def run(component=None, root=None, print_summary=False,
             for formatter in formatters:
                 formatter.preprocess(broker)
 
-            if args.bare:
-                broker = dr.run(broker=broker)
+            if args and args.bare:
+                broker = dr.run(component, broker=broker)
             else:
                 broker = _run(broker, graph, root, context=context, inventory=inventory)
 
             for formatter in formatters:
                 formatter.postprocess(broker)
         elif print_component:
-            if args.bare:
-                broker = dr.run(broker=broker)
+            if args and args.bare:
+                broker = dr.run(component, broker=broker)
             else:
                 broker = _run(broker, graph, root, context=context, inventory=inventory)
 
             broker.print_component(print_component)
         else:
-            if args.bare:
-                broker = dr.run(broker=broker)
+            if args and args.bare:
+                broker = dr.run(component, broker=broker)
             else:
                 broker = _run(broker, graph, root, context=context, inventory=inventory)
 
