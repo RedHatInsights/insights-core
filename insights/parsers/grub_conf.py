@@ -161,7 +161,8 @@ class GrubConfig(Parser, dict):
                 # Lines outside of entries
                 else:
                     sep = '=' if '=' in line else None
-                    sp = [i.strip() for i in line.split(sep, 1)]
+                    _line = line.replace('set ', '') if line.startswith('set ') else line
+                    sp = [i.strip('"\' \t') for i in _line.split(sep, 1)]
                     if sp[0] not in self.configs:
                         self.configs[sp[0]] = []
                     self.configs[sp[0]].append(sp[1] if len(sp) > 1 else '')
@@ -332,7 +333,7 @@ class Grub2Config(GrubConfig):
         ... '''.strip()
 
         >>> grub2_config['configs']
-        {'set pager': ['1'], '/': ['']}
+        {'pager': ['1'], '/': ['']}
         >>> grub2_config.entries[0]['menuentry']
         "'Red Hat Enterprise Linux Workstation (3.10.0-327.36.3.el7.x86_64) 7.2 (Maipo)' $menuentry_id_option 'gnulinux-3.10.0-123.13.2.el7.x86_64-advanced-fbff9f50-62c3-484e-bca5-d53f672cda7c'"
         >>> grub2_config['menuentry'][0]['insmod']

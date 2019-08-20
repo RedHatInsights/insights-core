@@ -60,7 +60,7 @@ class BootLoaderEntries(object):
             for opt in line.split():
                 if opt.startswith('$'):
                     key = opt.lstrip('$')
-                    line = line.replace(opt, env.get(key, grub2.get(key, '')))
+                    line = line.replace(opt, env.get(key, grub2.configs.get(key, [''])[-1]))
             return line
         self.version = self._version = 2
         self.is_efi = self._efi = '/sys/firmware/efi' in sys_firmware if sys_firmware else False

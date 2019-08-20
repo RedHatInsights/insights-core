@@ -304,6 +304,7 @@ if [ x"${feature_menuentry_id}" = xy ]; then
   menuentry_id_option="--id"
 else
   menuentry_id_option=""
+fi
 
 ### BEGIN /etc/grub.d/00_tuned ###
 set tuned_params="ABC"
@@ -491,7 +492,7 @@ def test_grub2_boot_loader_entries():
     grub_env = Grub2Grubenv(context_wrap(GRUB2_ENV))
     grub_ble1 = BLE(context_wrap(BOOT_LOADER_ENTRIES_1))
     grub_ble2 = BLE(context_wrap(BOOT_LOADER_ENTRIES_2))
-    grub_bles = BootLoaderEntries([grub_ble1, grub_ble2], grub_cfg, None, grub_env, None, None)
+    grub_bles = BootLoaderEntries([grub_ble1, grub_ble2], grub_env, None, grub_cfg, None, None)
     rhel8 = RedhatRelease(context_wrap(RHEL8))
     rhel = RedHatRelease(None, rhel8)
     rpms = InstalledRpms(context_wrap(INSTALLED_RPMS_V2))
@@ -508,7 +509,7 @@ def test_grub2_boot_loader_entries_efi():
     grub_env = Grub2EFIGrubenv(context_wrap(GRUB2_ENV))
     grub_ble1 = BLE(context_wrap(BOOT_LOADER_ENTRIES_1))
     grub_ble2 = BLE(context_wrap(BOOT_LOADER_ENTRIES_2))
-    grub_bles = BootLoaderEntries([grub_ble1, grub_ble2], grub_cfg, None, None, grub_env, None)
+    grub_bles = BootLoaderEntries([grub_ble1, grub_ble2], None, grub_env, None, grub_cfg, None)
     rhel8 = RedhatRelease(context_wrap(RHEL8))
     rhel = RedHatRelease(None, rhel8)
     rpms = InstalledRpms(context_wrap(INSTALLED_RPMS_V2))
@@ -526,11 +527,11 @@ def test_grub2_boot_loader_entries_with_variables():
     grub_ble1 = BLE(context_wrap(BOOT_LOADER_ENTRIES_1))
     grub_ble2 = BLE(context_wrap(BOOT_LOADER_ENTRIES_2))
     grub_ble3 = BLE(context_wrap(BOOT_LOADER_ENTRIES_VARs))
-    grub_bles = BootLoaderEntries([grub_ble1, grub_ble2, grub_ble3], grub_cfg, None, grub_env, None, None)
+    grub_bles = BootLoaderEntries([grub_ble1, grub_ble2, grub_ble3], grub_env, None, grub_cfg, None, None)
     rhel8 = RedhatRelease(context_wrap(RHEL8))
     rhel = RedHatRelease(None, rhel8)
     rpms = InstalledRpms(context_wrap(INSTALLED_RPMS_V2))
-    sys_firmware = LsSysFirmware(context_wrap(SYS_FIRMWARE_DIR_EFI))
+    sys_firmware = LsSysFirmware(context_wrap(SYS_FIRMWARE_DIR_NOEFI))
     result = GrubConf(None, grub_cfg, None, None, grub_bles, rpms, None, sys_firmware, rhel)
     assert len(result.get_grub_cmdlines()) == 3
     assert 'noapic' in result.get_grub_cmdlines()[0]['cmdline']
@@ -538,5 +539,6 @@ def test_grub2_boot_loader_entries_with_variables():
     assert 'tuned_params' in grub_ble3['options']
     assert 'kernelopts' not in result.get_grub_cmdlines()[2]['cmdline']
     assert 'tuned_params' not in result.get_grub_cmdlines()[2]['cmdline']
+    assert 'ABC' in result.get_grub_cmdlines()[2]['cmdline']
     assert result.version == 2
-    assert result.is_efi
+    assert not result.is_efi
