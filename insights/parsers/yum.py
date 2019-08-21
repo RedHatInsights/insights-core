@@ -132,13 +132,20 @@ class YumRepoList(CommandParser):
         if not content:
             raise SkipException('No repolist.')
 
+        trailing_line_prefix = [
+                'repolist:',
+                'Uploading Enabled',
+                'Loaded plugins:',
+                'Unable to upload',
+        ]
+
         self.data = []
         self.repos = {}
         self.data = parse_fixed_table(
                 content,
                 heading_ignore=['repo id'],
                 header_substitute=[('repo id', 'id     '), ('repo name', 'name     ')],
-                trailing_ignore=['repolist:', 'Uploading Enabled', 'Loaded plugins:'],
+                trailing_ignore=trailing_line_prefix,
                 empty_exception=True)
 
         if not self.data:
