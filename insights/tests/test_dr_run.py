@@ -135,7 +135,7 @@ def test_bare_files(tmpdir):
     testargs = [
         "insights-run",
         "-t", "-m",
-        "-b", 'insights.tests.spec_tests.TSpecs.sample_multioutput_file={}'.format(os.path.join(tmpdir.strpath, 'bare', 'sample.log')),
+        "-b", 'insights.tests.spec_tests.TSpecs.sample_multioutput_file={fname}'.format(fname=os.path.join(tmpdir.strpath, 'bare', 'sample.log')),
         "-p", "insights.tests.spec_tests"]
     with patch.object(sys, 'argv', testargs):
         broker = run(print_summary=True)
@@ -146,7 +146,7 @@ def test_bare_files(tmpdir):
     testargs = [
         "insights-run",
         "-t", "-m",
-        "-b", 'insights.tests.spec_tests.TSpecs.sample_nonexistent={}'.format(os.path.join(tmpdir.strpath, 'bare', 'sample.log')),
+        "-b", 'insights.tests.spec_tests.TSpecs.sample_nonexistent={fname}'.format(fname=os.path.join(tmpdir.strpath, 'bare', 'sample.log')),
         "-p", "insights.tests.spec_tests"]
     with patch.object(sys, 'argv', testargs):
         broker = run(print_summary=True)
@@ -157,7 +157,7 @@ def test_bare_files(tmpdir):
     testargs = [
         "insights-run",
         "-t", "-m",
-        "-b", 'insights.tests.spec_tests.TSpecs.sample_raw_file={}'.format(os.path.join(tmpdir.strpath, 'bare', 'sample.log')),
+        "-b", 'insights.tests.spec_tests.TSpecs.sample_raw_file={fname}'.format(fname=os.path.join(tmpdir.strpath, 'bare', 'sample.log')),
         "-p", "insights.tests.spec_tests"]
     with patch.object(sys, 'argv', testargs):
         broker = run(print_summary=True)
