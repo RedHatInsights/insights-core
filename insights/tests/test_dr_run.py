@@ -1,9 +1,11 @@
+import os
 import sys
-from insights import run, make_pass
+from insights import run, make_fail, make_pass
 from insights.core import dr
 from insights.plugins import always_fires, never_fires
 from insights.specs import Specs
 from mock import patch
+from insights.tests.spec_tests import report_multioutput, report_nonexistent, report_raw
 
 
 class stage(dr.ComponentType):
@@ -115,3 +117,52 @@ def test_run_command(tmpdir):
         assert broker[never_fires.report] == NEVER_FIRES_RESULT
         assert Specs.uname in broker
         assert broker[Specs.uname].content == [UNAME]
+
+
+SAMPLE_LOG = """
+1 line one
+2 line two
+""".strip()
+
+
+def test_bare_files(tmpdir):
+    d = tmpdir / "bare"
+    d.mkdir()
+    p = d / 'sample.log'
+    p.write(SAMPLE_LOG)
+    data = [l.strip() for l in SAMPLE_LOG.splitlines()]
+
+    testargs = [
+        "insights-run",
+        "-t", "-m",
+        "-b", 'insights.tests.spec_tests.TSpecs.sample_multioutput_file={fname}'.format(fname=os.path.join(tmpdir.strpath, 'bare', 'sample.log')),
+        "-p", "insights.tests.spec_tests"]
+    with patch.object(sys, 'argv', testargs):
+        broker = run(print_summary=True)
+        assert broker is not None
+        assert report_multioutput in broker
+        assert broker[report_multioutput] == make_fail('MO_SPEC', data=data, number=1)
+
+    testargs = [
+        "insights-run",
+        "-t", "-m",
+        "-b", 'insights.tests.spec_tests.TSpecs.sample_nonexistent={fname}'.format(fname=os.path.join(tmpdir.strpath, 'bare', 'sample.log')),
+        "-p", "insights.tests.spec_tests"]
+    with patch.object(sys, 'argv', testargs):
+        broker = run(print_summary=True)
+        assert broker is not None
+        assert report_nonexistent in broker
+        assert broker[report_nonexistent] == make_fail('NE_SPEC', data=data)
+
+    testargs = [
+        "insights-run",
+        "-t", "-m",
+        "-b", 'insights.tests.spec_tests.TSpecs.sample_raw_file={fname}'.format(fname=os.path.join(tmpdir.strpath, 'bare', 'sample.log')),
+        "-p", "insights.tests.spec_tests"]
+    with patch.object(sys, 'argv', testargs):
+        broker = run(print_summary=True)
+        assert broker is not None
+        assert report_raw in broker
+        with open(os.path.join(tmpdir.strpath, 'bare', 'sample.log'), 'rb') as fh:
+            data_b = fh.read()
+        assert broker[report_raw] == make_fail('RA_SPEC', data=data_b)
