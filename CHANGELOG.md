@@ -1,5 +1,17 @@
 # Change Log
 
+## [insights-core-3.0.120-1112](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.120-1112) (2019-08-22)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.119-1105...insights-core-3.0.120-1112)
+
+**Fixed bugs:**
+
+- Bug in "yum repolist parser [\#2149](https://github.com/RedHatInsights/insights-core/issues/2149)
+
+**Closed issues:**
+
+- The new `find` does not work as expected [\#2153](https://github.com/RedHatInsights/insights-core/issues/2153)
+- Archive Spec is Missing Data Source [\#2147](https://github.com/RedHatInsights/insights-core/issues/2147)
+
 ## [insights-core-3.0.119-1105](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.119-1105) (2019-08-15)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.118-1098...insights-core-3.0.119-1105)
 
@@ -169,7 +181,6 @@
 
 - There is a bug in parser "PassengerStatus" [\#1978](https://github.com/RedHatInsights/insights-core/issues/1978)
 - Krb5Configuration do not list all the sections [\#1874](https://github.com/RedHatInsights/insights-core/issues/1874)
-- FileListing could not check dir with sticky bit shown as 'T' in ls command [\#1121](https://github.com/RedHatInsights/insights-core/issues/1121)
 
 **Closed issues:**
 
@@ -907,6 +918,7 @@
 
 **Fixed bugs:**
 
+- FileListing could not check dir with sticky bit shown as 'T' in ls command [\#1121](https://github.com/RedHatInsights/insights-core/issues/1121)
 - Add pcs\_status to sos\_archive.py [\#1082](https://github.com/RedHatInsights/insights-core/issues/1082)
 - foreman production log needed for sos archives [\#1060](https://github.com/RedHatInsights/insights-core/issues/1060)
 - hostname parser doesn't handle sos\_commands/general/hostname [\#1055](https://github.com/RedHatInsights/insights-core/issues/1055)
