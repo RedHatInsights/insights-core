@@ -339,7 +339,7 @@ def run(component=None, root=None, print_summary=False,
                 formatter.preprocess(broker)
 
             if args and args.bare:
-                broker = dr.run(component, broker=broker)
+                broker = dr.run(graph, broker=broker)
             else:
                 broker = _run(broker, graph, root, context=context, inventory=inventory)
 
@@ -347,14 +347,14 @@ def run(component=None, root=None, print_summary=False,
                 formatter.postprocess(broker)
         elif print_component:
             if args and args.bare:
-                broker = dr.run(component, broker=broker)
+                broker = dr.run(graph, broker=broker)
             else:
                 broker = _run(broker, graph, root, context=context, inventory=inventory)
 
             broker.print_component(print_component)
         else:
             if args and args.bare:
-                broker = dr.run(component, broker=broker)
+                broker = dr.run(graph, broker=broker)
             else:
                 broker = _run(broker, graph, root, context=context, inventory=inventory)
 
