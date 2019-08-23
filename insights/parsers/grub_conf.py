@@ -392,6 +392,7 @@ class Grub2Grubenv(GrubConfig):
         self._efi = False
 
     def parse_content(self, content):
+        """Parse the grubenv """
         if not content:
             raise SkipException("Empty content.")
 
