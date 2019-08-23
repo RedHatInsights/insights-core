@@ -62,3 +62,10 @@ class ModInfo(dict):
         if not data:
             raise SkipException("No parsed contents")
         self.update(data)
+
+    @property
+    def data(self):
+        """
+        (dict): Dict with the module name as the key and the module details as the value.
+        """
+        return self

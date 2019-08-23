@@ -162,6 +162,13 @@ class ModInfo(CommandParser, dict):
         """
         return self
 
+    @property
+    def data(self):
+        """
+        (dict): This will return the kernel module details when set.
+        """
+        return self
+
 
 @parser(Specs.modinfo_i40e)
 class ModInfoI40e(ModInfo):
