@@ -132,6 +132,11 @@ class NmcliDevShow(CommandParser, dict):
         """(list): The list of devices who's state is connected and managed by NetworkManager"""
         return self._con_dev
 
+    @property
+    def data(self):
+        """(dict): Dict with the device name as the key and device details as the value."""
+        return self
+
 
 @parser(Specs.nmcli_dev_show_sos)
 class NmcliDevShowSos(NmcliDevShow):

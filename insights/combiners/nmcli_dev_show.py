@@ -43,3 +43,8 @@ class AllNmcliDevShow(dict):
     def connected_devices(self):
         """(list): The list of devices who's state is connected and managed by NetworkManager"""
         return self._con_dev
+
+    @property
+    def data(self):
+        """(dict): Dict with the device name as the key and NmcliDevShow details as the value."""
+        return self
