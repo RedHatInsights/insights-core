@@ -35,10 +35,6 @@ class Partitions(Parser, dict):
        >>> sorted(partitions_info['hda'].items(), key=lambda x: x[0])
        [('blocks', '19531250'), ('major', '3'), ('minor', '0'), ('name', 'hda')]
 
-    Attributes:
-        partitions (:obj:`dict`): Dictionary with each partition name as index and
-            its information from the block allocation table.
-
     Raises:
         SkipException: When input is empty.
 
@@ -56,3 +52,11 @@ class Partitions(Parser, dict):
             )
             if 'name' in row)
         )
+
+    @property
+    def partitions(self):
+        """
+        (:obj:`dict`): Dictionary with each partition name as index and
+            its information from the block allocation table.
+        """
+        return self
