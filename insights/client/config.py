@@ -621,7 +621,7 @@ class InsightsConfig(object):
         self.keep_archive = self.keep_archive or self.no_upload
         if self.to_json and self.quiet:
             self.diagnosis = True
-        if self.payload or self.diagnosis:
+        if self.payload or self.diagnosis or self.compliance:
             self.legacy_upload = False
 
 
