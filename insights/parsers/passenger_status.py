@@ -99,3 +99,10 @@ class PassengerStatus(CommandParser, dict):
         if not data:
             raise SkipException("No useful data")
         self.update(data)
+
+    @property
+    def data(self):
+        """
+        (dict): A simple dictionary of keys and values from the command output contents
+        """
+        return self
