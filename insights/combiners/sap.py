@@ -139,3 +139,8 @@ class Sap(dict):
     def is_ascs(self):
         """bool: Is any SAP System Central Services instance detected?"""
         return 'ASCS' in self._types
+
+    @property
+    def data(self):
+        """dict: Dict with the instance name as the key and instance details as the value."""
+        return self
