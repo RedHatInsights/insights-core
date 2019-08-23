@@ -72,7 +72,7 @@ class BootLoaderEntries(object):
         self.is_kdump_iommu_enabled = False
         for ble in grub_bles:
             _ble = dict((k, v) for k, v in ble.items())
-            cmdline = _dereference_variables(_ble['options'])
+            _ble['options'] = cmdline = _dereference_variables(_ble['options'])
             _ble['initrd'] = _dereference_variables(_ble['initrd'])
             self.entries.append(_ble)
             self.boot_entries.append(BootEntry({'name': _ble['title'], 'cmdline': cmdline}))
