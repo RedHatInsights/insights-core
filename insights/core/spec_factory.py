@@ -10,9 +10,9 @@ from glob import glob
 from subprocess import call
 
 from insights.core import blacklist, dr
-from insights.core.filters import get_filters
+from insights.core.filters import _add_filter, get_filters
 from insights.core.context import ExecutionContext, FSRoots, HostContext
-from insights.core.plugins import datasource, ContentException, is_datasource
+from insights.core.plugins import component, datasource, ContentException, is_datasource
 from insights.util import fs, streams, which
 from insights.util.subproc import Pipeline
 from insights.core.serde import deserializer, serializer
@@ -92,7 +92,7 @@ class ContentProvider(object):
         self._exception = None
 
     def load(self):
-        raise NotImplemented()
+        raise NotImplementedError()
 
     def stream(self):
         """
@@ -869,6 +869,74 @@ class first_of(object):
         for c in self.deps:
             if c in broker:
                 return broker[c]
+
+
+class find(object):
+    """
+    Helper class for extracting specific lines from a datasource for direct
+    consumption by a rule.
+
+    .. code:: python
+
+        service_starts = find(Specs.audit_log, "SERVICE_START")
+
+        @rule(service_starts)
+        def report(starts):
+            return make_info("SERVICE_STARTS", num_starts=len(starts))
+
+    Args:
+        spec (datasource): some datasource, ideally filterable.
+        pattern (string / list): a string or list of strings to match (no
+            patterns supported)
+
+    Returns:
+        A dict where each key is a command, path, or spec name, and each value
+        is a non-empty list of matching lines. Only paths with matching lines
+        are included.
+
+    Raises:
+        dr.SkipComponent if no paths have matching lines.
+    """
+
+    def __init__(self, spec, pattern):
+        if getattr(spec, "raw", False):
+            name = dr.get_name(spec)
+            raise ValueError("{}: Cannot filter raw files.".format(name))
+
+        self.spec = spec
+        self.pattern = pattern if isinstance(pattern, list) else [pattern]
+        self.__name__ = self.__class__.__name__
+        self.__module__ = self.__class__.__module__
+
+        if getattr(spec, "filterable", False):
+            _add_filter(spec, pattern)
+
+        component(spec)(self)
+
+    def __call__(self, ds):
+        # /usr/bin/grep level filtering is applied behind .content or
+        # .stream(), but we still need to ensure we get only what *this* find
+        # instance wants. This can be inefficient on files where many lines
+        # match.
+        results = {}
+        ds = ds if isinstance(ds, list) else [ds]
+        for d in ds:
+            if d.relative_path:
+                origin = os.path.join("/", d.relative_path.lstrip("/"))
+            elif d.cmd:
+                origin = d.cmd
+            else:
+                origin = dr.get_name(self.spec)
+            stream = d.content if d.loaded else d.stream()
+            lines = []
+            for line in stream:
+                if any(p in line for p in self.pattern):
+                    lines.append(line)
+            if lines:
+                results[origin] = lines
+        if not results:
+            raise dr.SkipComponent()
+        return dict(results)
 
 
 @serializer(CommandOutputProvider)

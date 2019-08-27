@@ -28,7 +28,7 @@ def test_support_diag_dump_insights_connection(insights_connection, registration
     """
     _support_diag_dump method instantiates InsightsConnection with InsightsConfig.
     """
-    config = Mock(**{"return_value.auto_config": "", "proxy": ""})
+    config = Mock(**{"return_value.auto_config": "", "proxy": "", "offline": False})
     support = InsightsSupport(config)
     support._support_diag_dump()
 
@@ -41,9 +41,23 @@ def test_registration_check_called_for_support(registration_check, InsightsConne
     '''
         Check registration when doing --support
     '''
-    support = InsightsSupport(InsightsConfig())
+    support = InsightsSupport(InsightsConfig(offline=False))
     support.collect_support_info()
     registration_check.assert_called_once()
+
+
+@patch('insights.client.support.InsightsConnection')
+@patch('insights.client.support.registration_check')
+@patch('insights.client.support.InsightsConnection.test_connection')
+def test_support_diag_dump_offline(test_connection, registration_check, InsightsConnection):
+    '''
+        Check registration when doing --support
+    '''
+    support = InsightsSupport(InsightsConfig(offline=True))
+    support.collect_support_info()
+    InsightsConnection.assert_not_called()
+    registration_check.assert_not_called()
+    test_connection.assert_not_called()
 
 
 @patch("insights.client.connection.InsightsConnection._init_session")

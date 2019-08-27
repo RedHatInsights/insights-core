@@ -101,6 +101,15 @@ class DefaultSpecs(Specs):
         raise SkipComponent()
 
     aws_instance_type = simple_command("/usr/bin/curl http://169.254.169.254/latest/meta-data/instance-type --connect-timeout 5", deps=[is_aws])
+
+    @datasource(CloudProvider)
+    def is_azure(broker):
+        cp = broker[CloudProvider]
+        if cp and cp.cloud_provider == CloudProvider.AZURE:
+            return True
+        raise SkipComponent()
+
+    azure_instance_type = simple_command("curl -H Metadata:true http://169.254.169.254/metadata/instance/compute/vmSize?api-version=2018-10-01&format=text --connect-timeout 5", deps=[is_azure])
     bios_uuid = simple_command("/usr/sbin/dmidecode -s system-uuid")
     blkid = simple_command("/sbin/blkid -c /dev/null")
     bond = glob_file("/proc/net/bonding/bond*")
@@ -189,8 +198,7 @@ class DefaultSpecs(Specs):
     cpu_vulns_spectre_v1 = simple_file("sys/devices/system/cpu/vulnerabilities/spectre_v1")
     cpu_vulns_spectre_v2 = simple_file("sys/devices/system/cpu/vulnerabilities/spectre_v2")
     cpu_vulns_spec_store_bypass = simple_file("sys/devices/system/cpu/vulnerabilities/spec_store_bypass")
-    # why the /cpuinfo?
-    cpuinfo = first_file(["/proc/cpuinfo", "/cpuinfo"])
+    cpuinfo = simple_file("/proc/cpuinfo")
     cpuinfo_max_freq = simple_file("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq")
     cpuset_cpus = simple_file("/sys/fs/cgroup/cpuset/cpuset.cpus")
     crypto_policies_config = simple_file("/etc/crypto-policies/config")
@@ -273,6 +281,7 @@ class DefaultSpecs(Specs):
     etc_journald_conf = simple_file(r"etc/systemd/journald.conf")
     etc_journald_conf_d = glob_file(r"etc/systemd/journald.conf.d/*.conf")
     etc_machine_id = simple_file("/etc/machine-id")
+    etcd_conf = simple_file("/etc/etcd/etcd.conf")
     ethernet_interfaces = listdir("/sys/class/net", context=HostContext)
     dcbtool_gc_dcb = foreach_execute(ethernet_interfaces, "/sbin/dcbtool gc %s dcb")
     ethtool = foreach_execute(ethernet_interfaces, "/sbin/ethtool %s")
@@ -295,6 +304,7 @@ class DefaultSpecs(Specs):
     foreman_ssl_access_ssl_log = simple_file("var/log/httpd/foreman-ssl_access_ssl.log")
     foreman_rake_db_migrate_status = simple_command('/usr/sbin/foreman-rake db:migrate:status')
     foreman_tasks_config = first_file(["/etc/sysconfig/foreman-tasks", "/etc/sysconfig/dynflowd"])
+    freeipa_healthcheck_log = simple_file("/var/log/ipa/healthcheck/healthcheck.log")
     fstab = simple_file("/etc/fstab")
     galera_cnf = first_file(["/var/lib/config-data/puppet-generated/mysql/etc/my.cnf.d/galera.cnf", "/etc/my.cnf.d/galera.cnf"])
     getconf_page_size = simple_command("/usr/bin/getconf PAGE_SIZE")
@@ -487,6 +497,7 @@ class DefaultSpecs(Specs):
     ls_lib_firmware = simple_command("/bin/ls -lanR /lib/firmware")
     ls_ocp_cni_openshift_sdn = simple_command("/bin/ls -l /var/lib/cni/networks/openshift-sdn")
     ls_origin_local_volumes_pods = simple_command("/bin/ls -l /var/lib/origin/openshift.local.volumes/pods")
+    ls_run_systemd_generator = simple_command("/bin/ls -lan /run/systemd/generator")
     ls_sys_firmware = simple_command("/bin/ls -lanR /sys/firmware")
     ls_var_lib_mongodb = simple_command("/bin/ls -la /var/lib/mongodb")
     ls_R_var_lib_nova_instances = simple_command("/bin/ls -laR /var/lib/nova/instances")
@@ -654,11 +665,13 @@ class DefaultSpecs(Specs):
     ovirt_engine_console_log = simple_file("/var/log/ovirt-engine/console.log")
     ovs_vsctl_list_br = simple_command("/usr/bin/ovs-vsctl list-br")
     ovs_appctl_fdb_show_bridge = foreach_execute(ovs_vsctl_list_br, "/usr/bin/ovs-appctl fdb/show %s")
+    ovs_ofctl_dump_flows = foreach_execute(ovs_vsctl_list_br, "/usr/bin/ovs-ofctl dump-flows %s")
     ovs_vsctl_list_bridge = simple_command("/usr/bin/ovs-vsctl list bridge")
     ovs_vsctl_show = simple_command("/usr/bin/ovs-vsctl show")
     ovs_vswitchd_pid = simple_command("/usr/bin/pgrep -o ovs-vswitchd")
     ovs_vswitchd_limits = foreach_collect(ovs_vswitchd_pid, "/proc/%s/limits")
     pacemaker_log = first_file(["/var/log/pacemaker.log", "/var/log/pacemaker/pacemaker.log"])
+    pci_rport_target_disk_paths = simple_command("/usr/bin/find /sys/devices/ -maxdepth 10 -mindepth 9 -name stat -type f")
 
     @datasource(ps_auxww, context=HostContext)
     def package_and_java(broker):
@@ -841,6 +854,7 @@ class DefaultSpecs(Specs):
     sshd_config_perms = simple_command("/bin/ls -l /etc/ssh/sshd_config")
     sssd_config = simple_file("/etc/sssd/sssd.conf")
     subscription_manager_id = simple_command("/usr/bin/subscription-manager identity")
+    subscription_manager_installed_product_ids = simple_command("/usr/bin/find /etc/pki/product-default/ /etc/pki/product/ -name '*pem' -exec rct cat-cert --no-content '{}' \;")
     subscription_manager_release_show = simple_command('/usr/bin/subscription-manager release --show')
     swift_conf = first_file(["/var/lib/config-data/puppet-generated/swift/etc/swift/swift.conf", "/etc/swift/swift.conf"])
     swift_log = first_file(["/var/log/containers/swift/swift.log", "/var/log/swift/swift.log"])
@@ -919,6 +933,7 @@ class DefaultSpecs(Specs):
     uploader_log = simple_file("/var/log/redhat-access-insights/redhat-access-insights.log")
     uptime = simple_command("/usr/bin/uptime")
     usr_journald_conf_d = glob_file(r"usr/lib/systemd/journald.conf.d/*.conf")  # note that etc_journald.conf.d also exists
+    vdo_status = simple_command("/usr/bin/vdo status")
     vgdisplay = simple_command("/sbin/vgdisplay")
     vdsm_conf = simple_file("etc/vdsm/vdsm.conf")
     vdsm_id = simple_file("etc/vdsm/vdsm.id")

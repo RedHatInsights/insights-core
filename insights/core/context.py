@@ -98,12 +98,16 @@ class Context(object):
     def __init__(self, **kwargs):
         self.version = kwargs.pop("version", DEFAULT_VERSION)
         self.metadata = kwargs.pop("metadata", {})
+        self.loaded = True
+        self.cmd = None
         optional_attrs = [
             "content", "path", "hostname", "release",
             "machine_id", "target", "last_client_run", "relative_path"
         ]
         for k in optional_attrs:
             setattr(self, k, kwargs.pop(k, None))
+
+        self.relative_path = self.path
 
         for p in GLOBAL_PRODUCTS:
             if p.name in kwargs:
