@@ -7,9 +7,9 @@ ipython session where you can inspect the outcome.
 
 >>> insights-inspect insights.parsers.hostname.Hostname
 IPython Console Usage Info:
-Enter 'make_pass.' and tab to get a list of properties
+Enter 'Hostname.' and tab to get a list of properties
 Example:
-In [1]: make_pass.<property_name>
+In [1]: Hostname.<property_name>
 Out[1]: <property value>
 To exit ipython enter 'exit' and hit enter or use 'CTL D'
 Python 3.6.6 (default, Jul 19 2018, 14:25:17)
@@ -25,9 +25,9 @@ Out[1]: 'lhuett.usersys.redhat.com'"
 
 >>> insights-inspect insights.combiners.hostname.hostname
 IPython Console Usage Info:
-Enter 'make_pass.' and tab to get a list of properties
+Enter 'hostname.' and tab to get a list of properties
 Example:
-In [1]: make_pass.<property_name>
+In [1]: hostname.<property_name>
 Out[1]: <property value>
 To exit ipython enter 'exit' and hit enter or use 'CTL D'
 Python 3.6.6 (default, Jul 19 2018, 14:25:17)
@@ -37,15 +37,15 @@ IPython 5.8.0 -- An enhanced Interactive Python.
 %quickref -> Quick reference.
 help      -> Python's own help system.
 object?   -> Details about 'object', use 'object??' for extra details.
-In [1]: Hostname.fqdn
+In [1]: hostname.fqdn
 Out[1]: 'lhuett.usersys.redhat.com'
 
 
 >>> insights-inspect insights.specs.Specs.hostname
 IPython Console Usage Info:
-Enter 'make_pass.' and tab to get a list of properties
+Enter 'hostname.' and tab to get a list of properties
 Example:
-In [1]: make_pass.<property_name>
+In [1]: hostname.<property_name>
 Out[1]: <property value>
 To exit ipython enter 'exit' and hit enter or use 'CTL D'
 Python 3.6.6 (default, Jul 19 2018, 14:25:17)
@@ -55,15 +55,15 @@ IPython 5.8.0 -- An enhanced Interactive Python.
 %quickref -> Quick reference.
 help      -> Python's own help system.
 object?   -> Details about 'object', use 'object??' for extra details.
-In [1]: CommandOutputProvider.cmd
+In [1]: hostname.cmd
 Out[1]: '/usr/bin/hostname -f'
 
 
 >>> insights-inspect examples.rules.bash_version.report
 IPython Console Usage Info:
-Enter 'make_pass.' and tab to get a list of properties
+Enter 'report.' and tab to get a list of properties
 Example:
-In [1]: make_pass.<property_name>
+In [1]: report.<property_name>
 Out[1]: <property value>
 To exit ipython enter 'exit' and hit enter or use 'CTL D'
 Python 3.6.6 (default, Jul 19 2018, 14:25:17)
@@ -73,7 +73,7 @@ IPython 5.8.0 -- An enhanced Interactive Python.
 %quickref -> Quick reference.
 help      -> Python's own help system.
 object?   -> Details about 'object', use 'object??' for extra details.
-In [1]: make_pass.values()
+In [1]: report.values()
 Out[1]: dict_values([0:bash-4.2.46-31.el7, 'pass', 'BASH_VERSION'])
 In [2]: broker.keys()
 Out[2]: dict_keys([<class 'insights.core.context.HostArchiveContext'>,
@@ -82,9 +82,10 @@ Out[2]: dict_keys([<class 'insights.core.context.HostArchiveContext'>,
 insights.specs.Specs.installed_rpms,
 <class 'insights.parsers.installed_rpms.InstalledRpms'>,
 <function report at 0x7f0303c679d8>])
-In [3]: p = broker[insights.parsers.installed_rpms.InstalledRpms]
-In [4]: a = p.get_max('bash')
-In [5]: a.nevra
+In [3]: import insights
+In [4]: p = broker[insights.parsers.installed_rpms.InstalledRpms]
+In [5]: a = p.get_max('bash')
+In [6]: a.nevra
 Out[5]: 'bash-0:4.2.46-31.el7.x86_64'
 """
 
