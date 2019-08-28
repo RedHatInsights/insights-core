@@ -1,5 +1,5 @@
 """
-PcsQuorumStauts - Commands ``pcs quorum status``
+PcsQuorumStatus - Commands ``pcs quorum status``
 ================================================
 """
 from insights import parser, CommandParser
@@ -8,7 +8,7 @@ from insights.specs import Specs
 
 
 @parser(Specs.pcs_quorum_status)
-class PcsQuorumStauts(CommandParser):
+class PcsQuorumStatus(CommandParser):
     """
     Class for parsing the output of `pcs quorum status` command.
 
@@ -51,7 +51,7 @@ class PcsQuorumStauts(CommandParser):
 
     Examples:
         >>> type(pcs_quorum_status)
-        <class 'insights.parsers.pcs_quorum_status.PcsQuorumStauts'>
+        <class 'insights.parsers.pcs_quorum_status.PcsQuorumStatus'>
         >>> pcs_quorum_status.quorum_info['Node ID']
         '1'
         >>> pcs_quorum_status.votequorum_info['Expected votes']
@@ -63,8 +63,9 @@ class PcsQuorumStauts(CommandParser):
     def parse_content(self, content):
         if not content:
             raise SkipException("Empty content")
-        if len(content) < 21 or not ('Quorum information' in content[0] and 'Votequorum information' in
-            content[9] and 'Membership information' in content[17]):
+        if len(content) < 21 or not ('Quorum information' in content[0] and
+                                     'Votequorum information' in content[9] and
+                                     'Membership information' in content[17]):
             raise ParseException("Incorrect content: '{0}'".format(content))
 
         self.quorum_info = {}

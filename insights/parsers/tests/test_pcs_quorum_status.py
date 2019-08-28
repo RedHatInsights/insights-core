@@ -1,7 +1,7 @@
 import doctest
 import pytest
 from insights.parsers import pcs_quorum_status, ParseException, SkipException
-from insights.parsers.pcs_quorum_status import PcsQuorumStauts
+from insights.parsers.pcs_quorum_status import PcsQuorumStatus
 from insights.tests import context_wrap
 
 PCS_QUORUM_STATUS = """
@@ -61,27 +61,30 @@ PCS_QUORUM_STATUS_EMPTY = """
 
 
 def test_pcs_quorum_status():
-    pcs_quorum_status = PcsQuorumStauts(context_wrap(PCS_QUORUM_STATUS))
+    pcs_quorum_status = PcsQuorumStatus(context_wrap(PCS_QUORUM_STATUS))
     assert pcs_quorum_status.quorum_info['Date'] == 'Wed Jun 29 13:17:02 2016'
     assert pcs_quorum_status.votequorum_info['Highest expected'] == '3'
     assert pcs_quorum_status.membership_info[2]['Qdevice'] == ''
+    assert len(pcs_quorum_status.membership_info) == 3
+    assert pcs_quorum_status.membership_info[1] == {'Nodeid': '2', 'Votes': '1', 'Qdevice': 'A,V,NMW',
+                                                    'Name': 'node2'}
 
 
 def test_invalid():
     with pytest.raises(ParseException) as e:
-        PcsQuorumStauts(context_wrap(PCS_QUORUM_STATUS_INVALID))
+        PcsQuorumStatus(context_wrap(PCS_QUORUM_STATUS_INVALID))
     assert "invalid" in str(e)
 
 
 def test_empty():
     with pytest.raises(SkipException) as e:
-        PcsQuorumStauts(context_wrap(PCS_QUORUM_STATUS_EMPTY))
+        PcsQuorumStatus(context_wrap(PCS_QUORUM_STATUS_EMPTY))
     assert "Empty content" in str(e)
 
 
 def test_pcs_quorum_status_doc_examples():
     env = {
-        'pcs_quorum_status': PcsQuorumStauts(
+        'pcs_quorum_status': PcsQuorumStatus(
             context_wrap(PCS_QUORUM_STATUS)),
     }
     failed, total = doctest.testmod(pcs_quorum_status, globs=env)
