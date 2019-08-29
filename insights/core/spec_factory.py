@@ -743,7 +743,7 @@ class command_with_args(object):
     Args:
         cmd (list of lists): the command to execute. Breaking apart a command
             string that might require arguments.
-        provider (str or list): argument string or a list of arguments.
+        provider (str or tuple): argument string or a tuple of argument strings.
         context (ExecutionContext): the context under which the datasource
             should run.
         split (bool): whether the output of the command should be split into a
@@ -779,12 +779,10 @@ class command_with_args(object):
     def __call__(self, broker):
         source = broker[self.provider]
         ctx = broker[self.context]
-        if isinstance(source, ContentProvider):
-            source = source.content
-        if not isinstance(source, (list, tuple)):
-            source = [source]
+        if not isinstance(source, (str, tuple)):
+            raise ContentException("The provider can only be a single string or a tuple of strings, but got '%s'." % source)
         try:
-            self.cmd = self.cmd % tuple(source)
+            self.cmd = self.cmd % source
             return CommandOutputProvider(self.cmd, ctx, split=self.split,
                     keep_rc=self.keep_rc, ds=self, timeout=self.timeout, inherit_env=self.inherit_env)
         except:
