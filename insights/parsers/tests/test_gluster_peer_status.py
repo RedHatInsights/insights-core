@@ -1,6 +1,6 @@
 import doctest
 import pytest
-from insights.parsers import gluster_peer_status, SkipException, ParseException
+from insights.parsers import gluster_peer_status, SkipException
 from insights.tests import context_wrap
 
 OUTPUT = """
@@ -27,20 +27,6 @@ Uuid: 4673e3-5e95-4c02-b9bb-2823483e067bb3
 State: Peer in Cluster (Disconnected)
 """.strip()
 
-OUTPUT_2 = """
-Hostname: versegluster1.verse.loc
-Uuid: 86c0266b-c78c-4d0c-afe7-953dec143530
-State: Peer in Cluster (Connected)
-
-Hostname: 10.30.32.16
-Uuid: 3b4673e3-5e95-4c02-b9bb-2823483e067b
-State: Peer in Cluster (Connected)
-
-Hostname: 10.30.32.20
-Uuid: 4673e3-5e95-4c02-b9bb-2823483e067bb3
-State: Peer in Cluster (Disconnected)
-""".strip()
-
 
 def test_output():
     output = gluster_peer_status.GlusterPeerStatus(context_wrap(OUTPUT_1))
@@ -50,12 +36,6 @@ def test_output():
         {'Hostname': '10.30.32.16', 'State': 'Peer in Cluster (Connected)', 'Uuid': '3b4673e3-5e95-4c02-b9bb-2823483e067b'},
         {'Hostname': '10.30.32.20', 'State': 'Peer in Cluster (Disconnected)', 'Uuid': '4673e3-5e95-4c02-b9bb-2823483e067bb3'}
     ]
-
-
-def test_bad_output():
-    with pytest.raises(ParseException) as e:
-        gluster_peer_status.GlusterPeerStatus(context_wrap(OUTPUT_2))
-    assert "Unable to parse the output." in str(e)
 
 
 def test_blank_output():
