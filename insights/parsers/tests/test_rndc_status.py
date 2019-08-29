@@ -37,7 +37,7 @@ RNDC_STATUS_EMPTY = """
 def test_rndc_status():
     rndc_status = RndcStatus(context_wrap(RNDC_STATUS))
     assert rndc_status['boot time'] == 'Mon, 26 Aug 2019 02:17:03 GMT'
-    assert rndc_status.data['server'] == 'up and running'
+    assert rndc_status['server'] == 'up and running'
 
 
 def test_invalid():

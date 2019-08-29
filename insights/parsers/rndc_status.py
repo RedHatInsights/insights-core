@@ -2,13 +2,13 @@
 RndcStatus - Commands ``rndc status``
 =====================================
 """
-from insights import parser, CommandParser, LegacyItemAccess
+from insights import parser, CommandParser
 from insights.parsers import SkipException, ParseException
 from insights.specs import Specs
 
 
 @parser(Specs.rndc_status)
-class RndcStatus(CommandParser, LegacyItemAccess):
+class RndcStatus(CommandParser, dict):
     """
     Class for parsing the output of `rndc status` command.
 
@@ -32,9 +32,6 @@ class RndcStatus(CommandParser, LegacyItemAccess):
         tcp clients: 1/150
         server is up and running
 
-    Attributes:
-        data (dict): Dicts where keys are the feature name of rndc and
-            values are the corresponding value.
     Raises:
         SkipException: When input is empty.
         ParseException: When input cannot be parsed.
@@ -51,7 +48,6 @@ class RndcStatus(CommandParser, LegacyItemAccess):
     def parse_content(self, content):
         if not content:
             raise SkipException("Empty content")
-        self.data = {}
         for line in content:
             if ':' in line:
                 k, v = line.split(':', 1)
@@ -59,4 +55,4 @@ class RndcStatus(CommandParser, LegacyItemAccess):
                 k, v = line.split(' is ', 1)
             else:
                 raise ParseException("Incorrect content: '{0}'".format(content))
-            self.data[k.strip()] = v.strip()
+            self[k.strip()] = v.strip()
