@@ -81,6 +81,7 @@ class SosSpecs(Specs):
     nmcli_dev_show_sos = glob_file(["sos_commands/networking/nmcli_dev_show_*", "sos_commands/networkmanager/nmcli_dev_show_*"])
     ntptime = simple_file("sos_commands/ntp/ntptime")
     pcs_config = simple_file("sos_commands/pacemaker/pcs_config")
+    pcs_quorum_status = simple_file("sos_commands/pacemaker/pcs_quorum_status")
     pcs_status = simple_file("sos_commands/pacemaker/pcs_status")
     ps_alxwww = simple_file("sos_commands/process/ps_alxwww")
     ps_aux = first_file(["sos_commands/process/ps_aux", "sos_commands/process/ps_auxwww", "sos_commands/process/ps_auxcww"])
