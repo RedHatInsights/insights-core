@@ -691,6 +691,7 @@ class DefaultSpecs(Specs):
     passenger_status = simple_command("/usr/bin/passenger-status")
     password_auth = simple_file("/etc/pam.d/password-auth")
     pcs_config = simple_command("/usr/sbin/pcs config")
+    pcs_quorum_status = simple_command("/usr/sbin/pcs quorum status")
     pcs_status = simple_command("/usr/sbin/pcs status")
     pluginconf_d = glob_file("/etc/yum/pluginconf.d/*.conf")
     postgresql_conf = first_file([
@@ -769,6 +770,7 @@ class DefaultSpecs(Specs):
                                                "rhn-logs/rhn/rhn_taskomatic_daemon.log"])
     rhsm_conf = simple_file("/etc/rhsm/rhsm.conf")
     rhsm_log = simple_file("/var/log/rhsm/rhsm.log")
+    rndc_status = simple_command("/usr/sbin/rndc status")
     root_crontab = simple_command("/usr/bin/crontab -l -u root")
     route = simple_command("/sbin/route -n")
     rpm_V_packages = simple_command("/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo", keep_rc=True)
