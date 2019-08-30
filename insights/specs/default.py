@@ -209,6 +209,7 @@ class DefaultSpecs(Specs):
     date = simple_command("/bin/date")
     date_iso = simple_command("/bin/date --iso-8601=seconds")
     date_utc = simple_command("/bin/date --utc")
+    db2licm_l = simple_command("/usr/bin/db2licm -l")
     df__al = simple_command("/bin/df -al")
     df__alP = simple_command("/bin/df -alP")
     df__li = simple_command("/bin/df -li")
