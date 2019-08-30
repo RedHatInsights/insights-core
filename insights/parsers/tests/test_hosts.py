@@ -2,7 +2,6 @@ from insights.parsers.hosts import Hosts
 from insights.tests import context_wrap
 from insights.parsers import SkipException
 import pytest
-import doctest
 
 HOSTS_EXAMPLE = """
 127.0.0.1 localhost localhost.localdomain localhost4 localhost4.localdomain4
