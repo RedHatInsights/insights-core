@@ -41,8 +41,6 @@ class DB2Info(CommandParser, dict):
 
         >>> parser_result.keys()
         dict_keys(['DB2 Enterprise Server Edition', 'DB2 Connect Server'])
-        >>> parser_result['DB2 Enterprise Server Edition']
-        {'License type': 'CPU Option', 'Expiry date': 'Permanent', 'Product identifier': 'db2ese', 'Version information': '9.7', 'Enforcement policy': 'Soft Stop', 'DB2 Performance Optimization ESE': 'Not licensed', 'DB2 Storage Optimization': 'Not licensed', 'DB2 Advanced Access Control': 'Not licensed', 'IBM Homogeneous Replication ESE': 'Not licensed'}
         >>> parser_result['DB2 Enterprise Server Edition']["Version information"]
         '9.7'
 
