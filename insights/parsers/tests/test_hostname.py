@@ -24,7 +24,8 @@ def test_full_hostname():
     assert data.fqdn == "rhel7.example.com"
     assert data.hostname == "rhel7"
     assert data.domain == "example.com"
-    assert "{0}".format(data) == "<hostname: rhel7, domain: example.com>" 
+    assert "{0}".format(data) == "<hostname: rhel7, domain: example.com>"
+
 
 def test_full_multiline_hostname():
     data = Hostname(context_wrap(HOSTNAME_MULTILINE, strip=False))
