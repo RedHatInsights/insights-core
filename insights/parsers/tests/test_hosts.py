@@ -1,5 +1,8 @@
 from insights.parsers.hosts import Hosts
 from insights.tests import context_wrap
+from insights.parsers import SkipException
+import pytest
+import doctest
 
 HOSTS_EXAMPLE = """
 127.0.0.1 localhost localhost.localdomain localhost4 localhost4.localdomain4
@@ -45,11 +48,16 @@ EXPECTED = {
 
 
 def test_hosts():
-    d = Hosts(context_wrap(HOSTS_EXAMPLE)).data
+    d = Hosts(context_wrap(HOSTS_EXAMPLE))
     assert len(d) == 6
     for key in ["127.0.0.1", "::1"]:
         assert key in d
         assert d[key] == EXPECTED[key]
+
+
+def test_hosts_exp():
+    with pytest.raises(SkipException):
+        Hosts(context_wrap(""))
 
 
 def test_all_hosts():
