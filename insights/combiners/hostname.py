@@ -80,7 +80,7 @@ def hostname(hf, hd, hs, ft, sid):
         'example.com'
 
     Returns:
-        class:`insights.combiners.hostname.Hostname`: A class with `fqdn`,
+        insights.combiners.hostname.Hostname: A class with `fqdn`,
         `hostname` and `domain` attributes.
 
     Raises:
