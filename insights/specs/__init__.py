@@ -475,6 +475,7 @@ class Specs(SpecSet):
     rhn_taskomatic_daemon_log = RegistryPoint(filterable=False)
     rhsm_conf = RegistryPoint()
     rhsm_log = RegistryPoint(filterable=True)
+    rndc_status = RegistryPoint()
     root_crontab = RegistryPoint()
     route = RegistryPoint()
     rpm_V_packages = RegistryPoint()
