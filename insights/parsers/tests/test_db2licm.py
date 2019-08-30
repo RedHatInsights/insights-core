@@ -1,6 +1,8 @@
+import doctest
 import pytest
 from insights.parsers import ParseException
 from insights.tests import context_wrap
+from insights.parsers import db2licm
 from insights.parsers.db2licm import DB2Info
 
 INVALID_OUTPUT = "".strip()
@@ -81,3 +83,12 @@ def test_invalid_command_output():
     with pytest.raises(ParseException) as e:
         DB2Info(context_wrap(INVALID_OUTPUT))
     assert "Unable to parse db2licm info: []" == str(e.value)
+
+
+def test_db2licm_doc_examples():
+    env = {
+        'parser_result': DB2Info(
+            context_wrap(VALID_OUTPUT_MULTIPLE)),
+    }
+    failed, total = doctest.testmod(db2licm, globs=env)
+    assert failed == 0
