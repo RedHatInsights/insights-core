@@ -1,5 +1,5 @@
 """
-RndcStatus - Commands ``rndc status``
+RndcStatus - Command ``rndc status``
 =====================================
 """
 from insights import parser, CommandParser
