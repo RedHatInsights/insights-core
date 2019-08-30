@@ -1,4 +1,4 @@
-from insights.core.spec_factory import first_of, glob_file, simple_file, head, first_file
+from insights.core.spec_factory import glob_file, simple_file, head, first_file
 from functools import partial
 from insights.core.context import HostArchiveContext
 from insights.specs import Specs
