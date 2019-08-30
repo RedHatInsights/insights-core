@@ -79,7 +79,7 @@ class DB2Info(LegacyItemAccess, CommandParser):
                 if key == "Features":
                     continue
             else:
-                raise ParseException("Unable to parse db2licm info: {}".format(content))
+                raise ParseException("Unable to parse db2licm info: {0}".format(content))
             if key == "Product name":
                 if name is None:
                     name = val
@@ -97,4 +97,4 @@ class DB2Info(LegacyItemAccess, CommandParser):
             # If no data is obtained in the command execution then throw an exception instead of returning an empty
             # object.  Rules depending solely on this parser will not be invoked, so they don't have to
             # explicitly check for invalid data.
-            raise ParseException("Unable to parse db2licm info: {}".format(content))
+            raise ParseException("Unable to parse db2licm info: {0}".format(content))
