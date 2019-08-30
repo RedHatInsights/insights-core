@@ -281,7 +281,8 @@ def calc_offset(lines, target, invert_search=False):
 def parse_fixed_table(table_lines,
                       heading_ignore=[],
                       header_substitute=[],
-                      trailing_ignore=[]):
+                      trailing_ignore=[],
+                      empty_exception=False):
     """
     Function to parse table data containing column headings in the first row and
     data in fixed positions in each remaining row of table data.
@@ -305,6 +306,8 @@ def parse_fixed_table(table_lines,
         trailing_ignore (list): Optional list of strings to look for at the end
             rows of the content.  Lines starting with these strings will be ignored,
             thereby truncating the rows of data.
+        empty_exception (bool): If True, raise a ParseException when the value if empty.
+            False by default.
 
     Returns:
         list: Returns a list of dict for each row of column data.  Dict keys
@@ -312,6 +315,7 @@ def parse_fixed_table(table_lines,
 
     Raises:
         ValueError: Raised if `heading_ignore` is specified and not found in `table_lines`.
+        ParseException: Raised if there are empty values when `empty_exception` is True
 
     Sample input::
 
@@ -345,15 +349,17 @@ def parse_fixed_table(table_lines,
         for old_val, new_val in header_substitute:
             header = header.replace(old_val, new_val)
     col_headers = header.strip().split()
-    col_index = calc_column_indices(header, col_headers)
+    col_index = calc_column_indices(header, col_headers) + [None]
+    idx_pairs = [(c, col_index[i + 1]) for i, c in enumerate(col_index) if c is not None]
 
     table_data = []
     for line in table_lines[first_line + 1:last_line]:
-        col_data = dict(
-            (col_headers[c], line[col_index[c]:col_index[c + 1]].strip())
-            for c in range(len(col_index) - 1)
-        )
-        col_data[col_headers[-1]] = line[col_index[-1]:].strip()
+        col_data = {}
+        for i, (s, e) in enumerate(idx_pairs):
+            val = line[s:e].strip()
+            if empty_exception and not val:
+                raise ParseException('Incorrect line: \'{0}\'', line)
+            col_data[col_headers[i]] = val
         table_data.append(col_data)
 
     return table_data

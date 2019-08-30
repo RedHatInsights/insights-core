@@ -17,4 +17,5 @@ def test_set_auto_configuration(isfile_mock, read_systemid_file_mock, open_mock,
     set_auto_configuration_mock.assert_called_once_with(config_mock,
                                                         "some-hostname/redhat_access",
                                                         "some-certificate",
-                                                        None)
+                                                        None,
+                                                        True)
