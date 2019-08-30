@@ -421,6 +421,7 @@ class Specs(SpecSet):
     password_auth = RegistryPoint()
     pci_rport_target_disk_paths = RegistryPoint()
     pcs_config = RegistryPoint()
+    pcs_quorum_status = RegistryPoint()
     pcs_status = RegistryPoint()
     pluginconf_d = RegistryPoint(multi_output=True)
     postgresql_conf = RegistryPoint()
