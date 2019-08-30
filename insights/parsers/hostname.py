@@ -17,6 +17,9 @@ Examples:
     >>> hostname.domain
     'example.com'
 
+HostnameI - command ``hostname -I``
+-----------------------------------
+
 """
 
 from . import ParseException
@@ -46,3 +49,30 @@ class Hostname(CommandParser):
 
     def __str__(self):
         return "<hostname: {h}, domain: {d}>".format(h=self.hostname, d=self.domain)
+
+
+@parser(Specs.ip_addresses)
+class HostnameI(CommandParser):
+    """
+    Class for parsing ``hostname -I`` command output.
+
+    Attributes:
+        raw: The raw output the ``hostname -I`` command
+        ipv4: The IPv4 address of the host
+        ipv6: The IPv6 address of the host
+    """
+    def parse_content(self, content):
+        content = list(filter(None, content))
+        if len(content) != 1:
+            msg = "hostname data contains multiple non-empty lines"
+            raise ParseException(msg)
+        self.ipv4 = self.ipv6 = None
+        self.raw = content[0].strip()
+        for v in self.raw.split(None, 1):
+            if '.' in v:
+                self.ipv4 = v.strip()
+            elif ':' in v:
+                self.ipv6 = v.strip()
+
+        if not self.ipv4:
+            raise ParseException('No IPv4 address is found')
