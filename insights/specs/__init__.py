@@ -96,6 +96,7 @@ class Specs(SpecSet):
     date_iso = RegistryPoint()
     date = RegistryPoint()
     date_utc = RegistryPoint()
+    db2licm_l = RegistryPoint()
     dcbtool_gc_dcb = RegistryPoint(multi_output=True)
     df__alP = RegistryPoint()
     df__al = RegistryPoint()
