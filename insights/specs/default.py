@@ -164,7 +164,7 @@ class DefaultSpecs(Specs):
         raise SkipComponent()
 
     ceph_insights = simple_command("/usr/bin/ceph insights", deps=[is_ceph_monitor])
-    ceph_log = simple_file("/var/log/ceph/ceph.log")
+    ceph_log = glob_file(r"var/log/ceph/ceph.log*")
     ceph_osd_dump = simple_command("/usr/bin/ceph osd dump -f json-pretty")
     ceph_osd_df = simple_command("/usr/bin/ceph osd df -f json-pretty")
     ceph_osd_ec_profile_ls = simple_command("/usr/bin/ceph osd erasure-code-profile ls")
