@@ -51,6 +51,7 @@ class SosSpecs(Specs):
     getcert_list = first_file(["sos_commands/ipa/ipa-getcert_list", "sos_commands/ipa/getcert_list"])
     gluster_v_info = simple_file("sos_commands/gluster/gluster_volume_info")
     gluster_v_status = simple_file("sos_commands/gluster/gluster_volume_status")
+    gluster_peer_status = simple_file("sos_commands/gluster/gluster_peer_status")
     hostname = first_file(["sos_commands/general/hostname_-f", "sos_commands/general/hostname", "sos_commands/host/hostname_-f", "sos_commands/host/hostname", "/etc/hostname", "hostname"])
     installed_rpms = simple_file("installed-rpms")
     ip_addr = first_of([simple_file("sos_commands/networking/ip_-d_address"), simple_file("sos_commands/networking/ip_address")])
