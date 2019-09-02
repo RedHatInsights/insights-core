@@ -39,8 +39,8 @@ class DB2Info(CommandParser, dict):
 
     Example:
 
-        >>> parser_result.keys()
-        dict_keys(['DB2 Enterprise Server Edition', 'DB2 Connect Server'])
+        >>> list(parser_result.keys())
+        ['DB2 Enterprise Server Edition', 'DB2 Connect Server']
         >>> parser_result['DB2 Enterprise Server Edition']["Version information"]
         '9.7'
 
@@ -54,7 +54,7 @@ class DB2Info(CommandParser, dict):
 
     def parse_content(self, content):
 
-        name = None
+        # name = None
         body = {}
 
         # Input data is available in text file. Reading each line in file and parsing it to a dictionary.
@@ -65,18 +65,12 @@ class DB2Info(CommandParser, dict):
                     continue
             else:
                 raise ParseException("Unable to parse db2licm info: {0}".format(content))
+
             if key == "Product name":
-                if name is None:
-                    name = val
-                else:
-                    self[name] = body
-                    name = val
-                    body = {}
+                body = {}
+                self[val] = body
             else:
                 body[key] = val
-
-        if name and body:
-            self[name] = body
 
         if not self:
             # If no data is obtained in the command execution then throw an exception instead of returning an empty
