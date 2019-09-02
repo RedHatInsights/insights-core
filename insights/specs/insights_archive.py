@@ -32,6 +32,7 @@ class InsightsArchiveSpecs(Specs):
     date = simple_file("insights_commands/date")
     date_iso = simple_file("insights_commands/date_--iso-8601_seconds")
     date_utc = simple_file("insights_commands/date_--utc")
+    db2licm_l = simple_file("insights_commands/db2licm_l")
     df__al = simple_file("insights_commands/df_-al")
     df__alP = simple_file("insights_commands/df_-alP")
     df__li = simple_file("insights_commands/df_-li")
