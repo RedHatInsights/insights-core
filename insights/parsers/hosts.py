@@ -18,7 +18,6 @@ Sample hosts file::
 
 Examples:
 
-    >>> hosts = shared[Hosts]
     >>> len(hosts.all_names)
     10
     >>> hosts.all_names[0] # uses a set, so may not be in same order
@@ -32,38 +31,55 @@ Examples:
 
 """
 
-from collections import defaultdict
-from .. import Parser, parser
+from insights import Parser, parser
+from insights.parsers import SkipException
 from insights.specs import Specs
 
 
 @parser(Specs.hosts)
-class Hosts(Parser):
+class Hosts(Parser, dict):
     """
     Read the ``/etc/hosts`` file and parse it into a dictionary of host name
     lists, keyed on IP address.
+
+    Raises:
+        SkipException: When no useful data.
     """
 
     def parse_content(self, content):
-        host_data = defaultdict(list)
+        self._names = set()
+        host_data = dict()
         for line in content:
-            line = line.strip()
             if "#" in line:
                 line = line.split("#")[0]
+            line = line.strip()
             words = line.split(None)
             if len(words) > 1:
+                if words[0] not in host_data:
+                    host_data[words[0]] = []
                 host_data[words[0]].extend(words[1:])
-        self.data = dict(host_data)
+                self._names.update(words[1:])
+
+        if not host_data:
+            raise SkipException("No useful data")
+
+        self.update(host_data)
+        for host_set in host_data.values():
+            self._names.update(host_set)
+
+    @property
+    def data(self):
+        """
+        (dict): The parsed result as a dict with IP address as the key.
+        """
+        return self
 
     @property
     def all_names(self):
         """
         (set): The set of host names known, regardless of their IP address.
         """
-        names = set()
-        for host_set in self.data.values():
-            names.update(host_set)
-        return names
+        return self._names
 
     def get_nonlocal(self):
         """
