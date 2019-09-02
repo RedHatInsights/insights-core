@@ -168,6 +168,7 @@ class Specs(SpecSet):
     glance_registry_conf = RegistryPoint()
     gluster_v_info = RegistryPoint()
     gluster_v_status = RegistryPoint()
+    gluster_peer_status = RegistryPoint()
     gnocchi_conf = RegistryPoint(filterable=True)
     gnocchi_metricd_log = RegistryPoint(filterable=True)
     grub_conf = RegistryPoint()
