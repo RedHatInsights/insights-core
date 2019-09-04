@@ -1,4 +1,4 @@
-from insights.core.spec_factory import first_of, glob_file, simple_file, head, first_file
+from insights.core.spec_factory import glob_file, simple_file, head, first_file
 from functools import partial
 from insights.core.context import HostArchiveContext
 from insights.specs import Specs
@@ -78,7 +78,9 @@ class InsightsArchiveSpecs(Specs):
     heat_crontab = simple_file("insights_commands/crontab_-l_-u_heat")
     heat_crontab_container = simple_file("insights_commands/docker_exec_heat_api_cron_.usr.bin.crontab_-l_-u_heat")
     installed_rpms = head(all_installed_rpms)
-    hostname = first_of([simple_file("insights_commands/hostname_-f"), simple_file("insights_commands/hostname")])
+    hostname = simple_file("insights_commands/hostname_-f")
+    hostname_default = simple_file("insights_commands/hostname")
+    hostname_short = simple_file("insights_commands/hostname_-s")
     hponcfg_g = simple_file("insights_commands/hponcfg_-g")
     httpd_M = glob_file("insights_commands/*httpd*_-M")
     httpd_on_nfs = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_httpd_on_nfs")
