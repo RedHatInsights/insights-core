@@ -337,6 +337,8 @@ class DefaultSpecs(Specs):
     heat_crontab_container = simple_command("docker exec heat_api_cron /usr/bin/crontab -l -u heat")
     heat_engine_log = first_file(["/var/log/containers/heat/heat-engine.log", "/var/log/heat/heat-engine.log"])
     hostname = simple_command("/usr/bin/hostname -f")
+    hostname_default = simple_command("/usr/bin/hostname")
+    hostname_short = simple_command("/usr/bin/hostname -s")
     hosts = simple_file("/etc/hosts")
     hponcfg_g = simple_command("/sbin/hponcfg -g")
     httpd_access_log = simple_file("/var/log/httpd/access_log")
