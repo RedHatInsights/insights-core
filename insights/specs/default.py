@@ -427,7 +427,7 @@ class DefaultSpecs(Specs):
     init_process_cgroup = simple_file("/proc/1/cgroup")
     interrupts = simple_file("/proc/interrupts")
     ip_addr = simple_command("/sbin/ip addr")
-    ip_addresses = simple_command("/usr/bin/hostname -I")
+    ip_addresses = simple_command("/bin/hostname -I")
     ip_route_show_table_all = simple_command("/sbin/ip route show table all")
     ip_s_link = simple_command("/sbin/ip -s link")
     ipaupgrade_log = simple_file("/var/log/ipaupgrade.log")
