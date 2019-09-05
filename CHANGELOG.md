@@ -1,5 +1,18 @@
 # Change Log
 
+## [insights-core-3.0.123-1125](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.123-1125) (2019-09-05)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.122-1117...insights-core-3.0.123-1125)
+
+**Fixed bugs:**
+
+- CephLog should collect multiple files [\#2168](https://github.com/RedHatInsights/insights-core/issues/2168)
+
+**Closed issues:**
+
+- Specs for hostname should be `/bin/hostname` but not `/usr/bin/hostname` [\#2175](https://github.com/RedHatInsights/insights-core/issues/2175)
+- No parser for "hostname -I" [\#2173](https://github.com/RedHatInsights/insights-core/issues/2173)
+- Request for mpstat parser [\#2144](https://github.com/RedHatInsights/insights-core/issues/2144)
+
 ## [insights-core-3.0.122-1117](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.122-1117) (2019-08-28)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.120-1112...insights-core-3.0.122-1117)
 
