@@ -1,4 +1,4 @@
-from insights.core.spec_factory import first_of, glob_file, simple_file, head, first_file
+from insights.core.spec_factory import glob_file, simple_file, head, first_file
 from functools import partial
 from insights.core.context import HostArchiveContext
 from insights.specs import Specs
@@ -32,6 +32,7 @@ class InsightsArchiveSpecs(Specs):
     date = simple_file("insights_commands/date")
     date_iso = simple_file("insights_commands/date_--iso-8601_seconds")
     date_utc = simple_file("insights_commands/date_--utc")
+    db2licm_l = simple_file("insights_commands/db2licm_l")
     df__al = simple_file("insights_commands/df_-al")
     df__alP = simple_file("insights_commands/df_-alP")
     df__li = simple_file("insights_commands/df_-li")
@@ -71,12 +72,15 @@ class InsightsArchiveSpecs(Specs):
     grubby_default_kernel = simple_file("insights_commands/grubby_--default-kernel")
     gluster_v_info = simple_file("insights_commands/gluster_volume_info")
     gluster_v_status = simple_file("insights_commands/gluster_volume_status")
+    gluster_peer_status = simple_file("insights_commands/gluster_peer_status")
     hammer_ping = simple_file("insights_commands/hammer_ping")
     hammer_task_list = simple_file("insights_commands/hammer_--csv_task_list")
     heat_crontab = simple_file("insights_commands/crontab_-l_-u_heat")
     heat_crontab_container = simple_file("insights_commands/docker_exec_heat_api_cron_.usr.bin.crontab_-l_-u_heat")
     installed_rpms = head(all_installed_rpms)
-    hostname = first_of([simple_file("insights_commands/hostname_-f"), simple_file("insights_commands/hostname")])
+    hostname = simple_file("insights_commands/hostname_-f")
+    hostname_default = simple_file("insights_commands/hostname")
+    hostname_short = simple_file("insights_commands/hostname_-s")
     hponcfg_g = simple_file("insights_commands/hponcfg_-g")
     httpd_M = glob_file("insights_commands/*httpd*_-M")
     httpd_on_nfs = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_httpd_on_nfs")
@@ -196,6 +200,7 @@ class InsightsArchiveSpecs(Specs):
     passenger_status = simple_file("insights_commands/passenger-status")
     pci_rport_target_disk_paths = simple_file("insights_commands/find_.sys.devices._-maxdepth_10_-mindepth_9_-name_stat_-type_f")
     pcs_config = simple_file("insights_commands/pcs_config")
+    pcs_quorum_status = simple_file("insights_commands/pcs_quorum_status")
     pcs_status = simple_file("insights_commands/pcs_status")
     ps_alxwww = simple_file("insights_commands/ps_alxwww")
     ps_aux = simple_file("insights_commands/ps_aux")
@@ -219,6 +224,7 @@ class InsightsArchiveSpecs(Specs):
     rhev_data_center = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_rhev_data_center")
     rhv_log_collector_analyzer = simple_file("insights_commands/rhv-log-collector-analyzer_--json")
     root_crontab = simple_file("insights_commands/crontab_-l_-u_root")
+    rndc_status = simple_file("insights_commands/rndc_status")
     route = simple_file("insights_commands/route_-n")
     rpm_V_packages = simple_file("insights_commands/rpm_-V_coreutils_procps_procps-ng_shadow-utils_passwd_sudo")
     sapcontrol_getsystemupdatelist = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_sapcontrol_getsystemupdatelist")
