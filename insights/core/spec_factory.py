@@ -693,7 +693,7 @@ class listdir(object):
 
 class simple_command(object):
     """
-    Executable a simple command that has no dynamic arguments
+    Execute a simple command that has no dynamic arguments
 
     Args:
         cmd (list of lists): the command(s) to execute. Breaking apart a command
@@ -736,6 +736,60 @@ class simple_command(object):
                 keep_rc=self.keep_rc, ds=self, timeout=self.timeout, inherit_env=self.inherit_env)
 
 
+class command_with_args(object):
+    """
+    Execute a command that has dynamic arguments
+
+    Args:
+        cmd (list of lists): the command to execute. Breaking apart a command
+            string that might require arguments.
+        provider (str or tuple): argument string or a tuple of argument strings.
+        context (ExecutionContext): the context under which the datasource
+            should run.
+        split (bool): whether the output of the command should be split into a
+            list of lines
+        keep_rc (bool): whether to return the error code returned by the
+            process executing the command. If False, any return code other than
+            zero with raise a CalledProcessError. If True, the return code and
+            output are always returned.
+        timeout (int): Number of seconds to wait for the command to complete.
+            If the timeout is reached before the command returns, a
+            CalledProcessError is raised. If None, timeout is infinite.
+        inherit_env (list): The list of environment variables to inherit from the
+            calling process when the command is invoked.
+
+    Returns:
+        function: A datasource that returns the output of a command that takes
+            specified arguments passed by the provider.
+    """
+
+    def __init__(self, cmd, provider, context=HostContext, deps=None, split=True, keep_rc=False, timeout=None, inherit_env=None, **kwargs):
+        deps = deps if deps is not None else []
+        self.cmd = cmd
+        self.provider = provider
+        self.context = context
+        self.split = split
+        self.raw = not split
+        self.keep_rc = keep_rc
+        self.timeout = timeout
+        self.inherit_env = inherit_env if inherit_env is not None else []
+        self.__name__ = self.__class__.__name__
+        datasource(self.provider, self.context, *deps, raw=self.raw, **kwargs)(self)
+
+    def __call__(self, broker):
+        source = broker[self.provider]
+        ctx = broker[self.context]
+        if not isinstance(source, (str, tuple)):
+            raise ContentException("The provider can only be a single string or a tuple of strings, but got '%s'." % source)
+        try:
+            self.cmd = self.cmd % source
+            return CommandOutputProvider(self.cmd, ctx, split=self.split,
+                    keep_rc=self.keep_rc, ds=self, timeout=self.timeout, inherit_env=self.inherit_env)
+        except:
+            log.debug(traceback.format_exc())
+        raise ContentException("No results found for [%s]" % self.cmd)
+
+
 class foreach_execute(object):
     """
     Execute a command for each element in provider. Provider is the output of
@@ -766,7 +820,7 @@ class foreach_execute(object):
 
     Returns:
         function: A datasource that returns a list of outputs for each command
-        created by substituting each element of provider into the cmd template.
+            created by substituting each element of provider into the cmd template.
     """
 
     def __init__(self, provider, cmd, context=HostContext, deps=[], split=True, keep_rc=False, timeout=None, inherit_env=[], **kwargs):
