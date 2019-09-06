@@ -21,7 +21,7 @@ from insights.core.context import OpenShiftContext
 from insights.core.dr import SkipComponent
 from insights.core.plugins import datasource
 from insights.core.spec_factory import CommandOutputProvider, ContentException, DatasourceProvider, RawFileProvider
-from insights.core.spec_factory import simple_file, simple_command, glob_file
+from insights.core.spec_factory import simple_file, simple_command, glob_file, command_with_args
 from insights.core.spec_factory import first_of, foreach_collect, foreach_execute
 from insights.core.spec_factory import first_file, listdir
 from insights.parsers.mount import Mount, ProcMounts
@@ -234,10 +234,10 @@ class DefaultSpecs(Specs):
     def dnf_module_names(broker):
         dml = broker[DnfModuleList]
         if dml:
-            return (' ').join([m for m in dml])
+            return (' ').join(dml)
         raise SkipComponent()
 
-    dnf_module_info = foreach_execute(dnf_module_names, "/usr/bin/dnf -C --noplugins module info %s", deps=[IsRhel8])
+    dnf_module_info = command_with_args("/usr/bin/dnf -C --noplugins module info %s", dnf_module_names, deps=[IsRhel8])
     dnsmasq_config = glob_file(["/etc/dnsmasq.conf", "/etc/dnsmasq.d/*.conf"])
     docker_info = simple_command("/usr/bin/docker info")
     docker_list_containers = simple_command("/usr/bin/docker ps --all --no-trunc")
