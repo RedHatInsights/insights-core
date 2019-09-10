@@ -30,6 +30,8 @@ class SosSpecs(Specs):
     display_java = simple_file("sos_commands/java/alternatives_--display_java")
     docker_info = simple_file("sos_commands/docker/docker_info")
     docker_list_containers = first_file(["sos_commands/docker/docker_ps_-a", "sos_commands/docker/docker_ps"])
+    docker_list_images = simple_file("sos_commands/docker/docker_images")
+    docker_image_inspect = glob_file("sos_commands/docker/docker_inspect_*")
     dmesg = first_file(["sos_commands/kernel/dmesg", "var/log/dmesg"])
     dmidecode = simple_file("sos_commands/hardware/dmidecode")
     dmsetup_info = simple_file("sos_commands/devicemapper/dmsetup_info_-c")
