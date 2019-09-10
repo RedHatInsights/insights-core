@@ -71,8 +71,8 @@ class SosSpecs(Specs):
     lsmod = simple_file("sos_commands/kernel/lsmod")
     lspci = first_of([
         simple_file("sos_commands/pci/lspci_-nnvv"),
-        simple_file("sos_commands/pci/lspci"),
-        simple_file("sos_commands/pci/lspci_-nvv")
+        simple_file("sos_commands/pci/lspci_-nvv"),
+        simple_file("sos_commands/pci/lspci")
     ])
     lsscsi = simple_file("sos_commands/scsi/lsscsi")
     ls_dev = first_file(["sos_commands/block/ls_-lanR_.dev", "sos_commands/devicemapper/ls_-lanR_.dev"])
