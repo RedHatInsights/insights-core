@@ -148,7 +148,7 @@ def test_delete_unregistered_file():
         assert os.path.isfile(u) is False
 
 
-@patch('builtins.open', create=True)
+@patch('__builtins.open__', create=True)
 def test_read_pidfile(mock_open):
     '''
     Test a pidfile that exists
@@ -157,7 +157,7 @@ def test_read_pidfile(mock_open):
     assert util.read_pidfile() == '420'
 
 
-@patch('builtins.open', create=True)
+@patch('__builtins__.open', create=True)
 def test_read_pidfile_failure(mock_open):
     '''
     Test a pidfile that does not exist
