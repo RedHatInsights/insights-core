@@ -37,7 +37,9 @@ def do_log_rotation():
 def get_file_handler(config):
     log_file = config.logging_file
     log_dir = os.path.dirname(log_file)
-    if not os.path.exists(log_dir):
+    if not log_dir:
+        log_dir = os.getcwd()
+    elif not os.path.exists(log_dir):
         os.makedirs(log_dir, 0o700)
     file_handler = logging.handlers.RotatingFileHandler(
         log_file, backupCount=3)
