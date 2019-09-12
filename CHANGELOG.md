@@ -1,5 +1,17 @@
 # Change Log
 
+## [insights-core-3.0.124-1131](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.124-1131) (2019-09-12)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.123-1125...insights-core-3.0.124-1131)
+
+**Fixed bugs:**
+
+- TextFileProvider fails to read files containing byte chars in Python 3 [\#2163](https://github.com/RedHatInsights/insights-core/issues/2163)
+
+**Closed issues:**
+
+- Can't get the original order of lines in '/etc/hosts' from the current "Hosts" [\#2177](https://github.com/RedHatInsights/insights-core/issues/2177)
+- Enhance simple to get single string from datasource [\#2113](https://github.com/RedHatInsights/insights-core/issues/2113)
+
 ## [insights-core-3.0.123-1125](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.123-1125) (2019-09-05)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.122-1117...insights-core-3.0.123-1125)
 
