@@ -1,6 +1,6 @@
 from insights.client import InsightsClient
 from insights.client.constants import InsightsConstants
-from mock.mock import Mock, patch
+from mock.mock import patch
 
 
 @patch("insights.client.write_to_disk")

@@ -427,7 +427,7 @@ def test_legacy_upload_systemd(_, path_exists, read_pidfile, systemd_notify):
 @patch('insights.client.client.read_pidfile')
 @patch('insights.client.os.path.exists', return_value=True)
 @patch('insights.client.connection.InsightsConnection.upload_archive')
-def test_platform_upload(_, path_exists, read_pidfile, systemd_notify):
+def test_platform_upload_systemd(_, path_exists, read_pidfile, systemd_notify):
     '''
     Pidfile is read and systemd-notify is called for platform upload
     '''
