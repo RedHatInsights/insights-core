@@ -82,11 +82,11 @@ class Hosts(Parser):
         (list): List of the parsed lines in the original order, in the following
             format::
 
-            {
-                'ip': '127.0.0.1',
-                'names': ['localhost', 'localhost.localdomain', 'localhost4', 'localhost4.localdomain4']
-                'raw_line:' '127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4'
-            }
+                {
+                    'ip': '127.0.0.1',
+                    'names': ['localhost', 'localhost.localdomain', 'localhost4', 'localhost4.localdomain4']
+                    'raw_line:' '127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4'
+                }
         """
         return self._lines
 
