@@ -18,22 +18,24 @@ Sample hosts file::
 
 Examples:
 
-    >>> hosts = shared[Hosts]
     >>> len(hosts.all_names)
     10
-    >>> hosts.all_names[0] # uses a set, so may not be in same order
-    'localhost6'
+    >>> 'localhost6'in  hosts.all_names
+    True
     >>> hosts.data['127.0.0.1']
-    ['localhost', 'localhost.localdomain', 'localhost4', 'localhost4.localdomain4',
-     'fte.example.com']
-    >>> hosts.get_nonlocal()
-    {'10.0.0.1': ['nonlocal.example.com', 'nonlocal2.fte.example.com'],
-     '10.0.0.2': ['other.host.example.com']}
+    ['localhost', 'localhost.localdomain', 'localhost4', 'localhost4.localdomain4', 'fte.example.com']
+    >>> sorted(hosts.get_nonlocal().keys())
+    ['10.0.0.1', '10.0.0.2']
+    >>> hosts.lines[-1]['ip']
+    '10.0.0.2'
+    >>> hosts.lines[2]['names']
+    ['fte.example.com']
+
 
 """
 
-from collections import defaultdict
-from .. import Parser, parser
+from insights import Parser, parser
+from insights.parsers import SkipException
 from insights.specs import Specs
 
 
@@ -45,25 +47,62 @@ class Hosts(Parser):
     """
 
     def parse_content(self, content):
-        host_data = defaultdict(list)
+        self._ips = set()
+        self._names = set()
+        self._lines = list()
+        self._data = dict()
         for line in content:
             line = line.strip()
             if "#" in line:
                 line = line.split("#")[0]
             words = line.split(None)
             if len(words) > 1:
-                host_data[words[0]].extend(words[1:])
-        self.data = dict(host_data)
+                ip, names = words[0], words[1:]
+                line_data = {'ip': ip, 'names': names, 'raw_line': line}
+                self._ips.add(ip)
+                self._names.update(names)
+                self._lines.append(line_data)
+                if ip not in self._data:
+                    self._data[ip] = []
+                self._data[ip].extend(names)
+
+        if not self._data:
+            raise SkipException("No useful data")
+
+    @property
+    def data(self):
+        """
+        (dict): The parsed result as a dict with IP address as the key.
+        """
+        return self._data
+
+    @property
+    def lines(self):
+        """
+        (list): List of the parsed lines in the original order, in the following
+            format::
+
+                {
+                    'ip': '127.0.0.1',
+                    'names': ['localhost', 'localhost.localdomain', 'localhost4', 'localhost4.localdomain4']
+                    'raw_line:' '127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4'
+                }
+        """
+        return self._lines
+
+    @property
+    def all_ips(self):
+        """
+        (set): The set of ip addresses known.
+        """
+        return self._ips
 
     @property
     def all_names(self):
         """
         (set): The set of host names known, regardless of their IP address.
         """
-        names = set()
-        for host_set in self.data.values():
-            names.update(host_set)
-        return names
+        return self._names
 
     def get_nonlocal(self):
         """
@@ -71,7 +110,7 @@ class Hosts(Parser):
         the 'localhost' addresses '127.0.0.1' or '::1'.
         """
         return dict((ip, host_list)
-                    for ip, host_list in self.data.items()
+                    for ip, host_list in self._data.items()
                     if ip not in ("127.0.0.1", "::1"))
 
     def ip_of(self, hostname):
@@ -79,7 +118,7 @@ class Hosts(Parser):
         Return the (first) IP address given for this host name.  None is
         returned if no IP address is found.
         """
-        for ip, host_list in self.data.items():
+        for ip, host_list in self._data.items():
             if hostname in host_list:
                 return ip
         return None
