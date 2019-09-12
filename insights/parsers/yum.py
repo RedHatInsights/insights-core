@@ -9,8 +9,9 @@ This module contains the classes that parse the output of the commands
 YumRepoList - command ``yum -C repolist``
 -----------------------------------------
 """
+
 from insights import parser, CommandParser
-from insights.parsers import SkipException
+from insights.parsers import SkipException, parse_fixed_table
 from insights.specs import Specs
 
 eus = [
@@ -49,14 +50,32 @@ class YumRepoList(CommandParser):
         Loaded plugins: langpacks, product-id, search-disabled-repos, subscription-manager
         repo id                                             repo name                                                                                                    status
         rhel-7-server-e4s-rpms/x86_64                       Red Hat Enterprise Linux 7 Server - Update Services for SAP Solutions (RPMs)                                 12,250
-        rhel-ha-for-rhel-7-server-e4s-rpms/x86_64           Red Hat Enterprise Linux High Availability (for RHEL 7 Server) Update Services for SAP Solutions (RPMs)         272
-        rhel-ha-for-rhel-7-server-rpms/x86_64               Red Hat Enterprise Linux High Availability (for RHEL 7 Server) (RPMs)                                           225
-        rhel-sap-hana-for-rhel-7-server-e4s-rpms/x86_64     RHEL for SAP HANA (for RHEL 7 Server) Update Services for SAP Solutions (RPMs)                                   21
+        !rhel-ha-for-rhel-7-server-e4s-rpms/x86_64          Red Hat Enterprise Linux High Availability (for RHEL 7 Server) Update Services for SAP Solutions (RPMs)         272
+        *rhel-sap-hana-for-rhel-7-server-e4s-rpms/x86_64    RHEL for SAP HANA (for RHEL 7 Server) Update Services for SAP Solutions (RPMs)                                   21
         repolist: 12,768
+
+    Or sometimes it just outputs repo id and status::
+
+        Loaded plugins: package_upload, product-id, search-disabled-repos, security, subscription-manager
+        repo id                                                                               status
+        LME_EPEL_6_x86_64                                                                        26123
+        LME_FSMLabs_Timekeeper_timekeeper                                                            2
+        LME_HP_-_Software_Delivery_Repository_Firmware_Pack_for_ProLiant_-_6Server_-_Current      1163
+        LME_HP_-_Software_Delivery_Repository_Scripting_Took_Kit_-_6Server                          17
+        LME_HP_-_Software_Delivery_Repository_Service_Pack_for_ProLiant_-_6Server_-_Current       1915
+        LME_HP_-_Software_Delivery_Repository_Smart_Update_Manager_-_6Server                        30
+        LME_LME_Custom_Product_Mellanox_OFED                                                       114
+        LME_LME_Custom_Product_OMD_RPMS                                                             14
+        LME_LME_Custom_Product_RPMs                                                                  5
+        LME_LME_Custom_Product_SNOW_Repository                                                       2
+        rhel-6-server-optional-rpms                                                            10400+1
+        rhel-6-server-rpms                                                                    18256+12
+        rhel-6-server-satellite-tools-6.2-rpms                                                      55
+        repolist: 58096
 
     Examples:
         >>> len(repolist)
-        4
+        3
         >>> 'rhel-7-server-e4s-rpms/x86_64' in repolist.repos
         True
         >>> 'rhel-7-server-e4s-rpms' in repolist.repos
@@ -67,34 +86,72 @@ class YumRepoList(CommandParser):
         'Red Hat Enterprise Linux 7 Server - Update Services for SAP Solutions (RPMs)'
         >>> repolist[0]['name']
         'Red Hat Enterprise Linux 7 Server - Update Services for SAP Solutions (RPMs)'
+        >>> repolist['rhel-ha-for-rhel-7-server-e4s-rpms/x86_64']['id']
+        '!rhel-ha-for-rhel-7-server-e4s-rpms/x86_64'
+        >>> len(repolist_no_reponame)
+        13
+        >>> len(repolist_no_reponame.rhel_repos)
+        3
+        >>> 'rhel-6-server-rpms' in repolist_no_reponame.repos
+        True
+        >>> 'rhel-6-server-optional-rpms' in repolist_no_reponame.rhel_repos
+        True
+        >>> repolist_no_reponame[0]['id']
+        'LME_EPEL_6_x86_64'
+        >>> repolist_no_reponame[0].get('name', '')
+        ''
 
     Attributes:
         data (list): list of repos wrapped in dictionaries
-        repos (dict): dict of all listed repos where the key is the full repo-id
+        repos (dict): dict of all listed repos where the key is the full repo-id without "!" or "*".
+            But you can get it from the value part if needed. For example::
 
+                self.repos = {
+                    'rhel-7-server-e4s-rpms/x86_64': {
+                        'id': 'rhel-7-server-e4s-rpms/x86_64',
+                        'name': 'Red Hat Enterprise Linux 7 Server - Update Services for SAP Solutions (RPMs)',
+                        'status': '12,250'
+                    },
+                    'rhel-ha-for-rhel-7-server-e4s-rpms/x86_64': {
+                        'id': '!rhel-ha-for-rhel-7-server-e4s-rpms/x86_64',
+                        'name': 'Red Hat Enterprise Linux High Availability (for RHEL 7 Server) Update Services for SAP Solutions (RPMs)',
+                        'status': '272'
+                    },
+                    'rhel-sap-hana-for-rhel-7-server-e4s-rpms/x86_64': {
+                        'id': '*rhel-sap-hana-for-rhel-7-server-e4s-rpms/x86_64',
+                        'name': 'RHEL for SAP HANA (for RHEL 7 Server) Update Services for SAP Solutions (RPMs)',
+                        'status': '21'
+                    }
+                }
+
+        rhel_repos(list): list of all the rhel repos and the item is just the repo id without server and arch info. For example::
+
+            self.rhel_repos = ['rhel-7-server-e4s-rpms', 'rhel-ha-for-rhel-7-server-e4s-rpms', 'rhel-sap-hana-for-rhel-7-server-e4s-rpms']
     """
     def parse_content(self, content):
+        if not content:
+            raise SkipException('No repolist.')
+
+        trailing_line_prefix = [
+                'repolist:',
+                'Uploading Enabled',
+                'Loaded plugins:',
+                'Unable to upload',
+        ]
+
         self.data = []
         self.repos = {}
-        found_start = False
-        for line in content:
-            if line.startswith("repolist:"):
-                break
-            if found_start:
-                _id, right = line.split(None, 1)
-                try:
-                    name, status = right.rsplit(None, 1)
-                except ValueError:
-                    raise SkipException("Incorrect line: '{0}'".format(line))
-                self.data.append({
-                    "id": _id.strip(),
-                    "name": name.strip(),
-                    "status": status.strip()})
-            if not found_start:
-                found_start = line.startswith("repo id")
+        self.data = parse_fixed_table(
+                content,
+                heading_ignore=['repo id'],
+                header_substitute=[('repo id', 'id     '), ('repo name', 'name     ')],
+                trailing_ignore=trailing_line_prefix,
+                empty_exception=True)
+
         if not self.data:
             raise SkipException('No repolist.')
-        self.repos = dict((d['id'], d) for d in self.data)
+
+        self.repos = dict((d['id'].lstrip('!').lstrip('*'), d) for d in self.data)
 
     def __len__(self):
         return len(self.data)
@@ -122,6 +179,6 @@ class YumRepoList(CommandParser):
     @property
     def rhel_repos(self):
         '''list of RHEL repos/Repo IDs'''
-        return [i.split('/')[0].lstrip('!')
+        return [i.split('/')[0]
                 for i in self.repos
-                if i.startswith(('!rhel', 'rhel'))]
+                if i.startswith('rhel')]
