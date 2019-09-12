@@ -5,6 +5,7 @@ import insights.client.utilities as util
 from insights.client.constants import InsightsConstants as constants
 import re
 import mock
+import six
 from mock.mock import patch
 
 
@@ -148,22 +149,32 @@ def test_delete_unregistered_file():
         assert os.path.isfile(u) is False
 
 
-@patch('__builtin__.open', create=True)
-def test_read_pidfile(mock_open):
+def test_read_pidfile():
     '''
     Test a pidfile that exists
     '''
-    mock_open.side_effect = [mock.mock_open(read_data='420').return_value]
-    assert util.read_pidfile() == '420'
+    if six.PY3:
+        open_name = 'builtins.open'
+    else:
+        open_name = '__builtin__.open'
+
+    with patch(open_name, create=True) as mock_open:
+        mock_open.side_effect = [mock.mock_open(read_data='420').return_value]
+        assert util.read_pidfile() == '420'
 
 
-@patch('__builtin__.open', create=True)
-def test_read_pidfile_failure(mock_open):
+def test_read_pidfile_failure():
     '''
     Test a pidfile that does not exist
     '''
-    mock_open.side_effect = IOError
-    assert util.read_pidfile() is None
+    if six.PY3:
+        open_name = 'builtins.open'
+    else:
+        open_name = '__builtin__.open'
+
+    with patch(open_name, create=True) as mock_open:
+        mock_open.side_effect = IOError
+        assert util.read_pidfile() is None
 
 
 @patch('insights.client.utilities.Popen')
