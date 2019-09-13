@@ -26,7 +26,7 @@ def test_systemd_notify_called_cmd(Popen, systemd_notify):
     attrs = {'communicate.return_value': (b'output', b'error')}
     process_mock.configure_mock(**attrs)
     Popen.return_value = process_mock
-    cs = InsightsCommand(MagicMock(), {'command': '', 'pattern': [], 'symbolic_name': ''}, None, '/', pid='420')
+    cs = InsightsCommand(MagicMock(), {'command': '', 'pattern': [], 'symbolic_name': ''}, None, '/', parent_pid='420')
     cs.get_output()
     systemd_notify.assert_called_with('420')
 
@@ -42,6 +42,6 @@ def test_systemd_notify_called_file(Popen, systemd_notify):
     attrs = {'communicate.return_value': (b'output', b'error')}
     process_mock.configure_mock(**attrs)
     Popen.return_value = process_mock
-    fs = InsightsFile({'file': '', 'pattern': [], 'symbolic_name': ''}, None, '/', pid='420')
+    fs = InsightsFile({'file': '', 'pattern': [], 'symbolic_name': ''}, None, '/', parent_pid='420')
     fs.get_output()
     systemd_notify.assert_called_with('420')

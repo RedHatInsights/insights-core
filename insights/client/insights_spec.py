@@ -18,22 +18,22 @@ class InsightsSpec(object):
     '''
     A spec loaded from the uploader.json
     '''
-    def __init__(self, config, spec, exclude, pid=None):
+    def __init__(self, config, spec, exclude, parent_pid=None):
         self.config = config
         # exclusions patterns for this spec
         self.exclude = exclude
         # pattern for spec collection
         self.pattern = spec['pattern'] if spec['pattern'] else None
-        # process PID to notify systemd watchdog
-        self.pid = pid
+        # PID of parent insights-client process, to notify systemd watchdog
+        self.parent_pid = parent_pid
 
 
 class InsightsCommand(InsightsSpec):
     '''
     A command spec
     '''
-    def __init__(self, config, spec, exclude, mountpoint, pid=None):
-        InsightsSpec.__init__(self, config, spec, exclude, pid)
+    def __init__(self, config, spec, exclude, mountpoint, parent_pid=None):
+        InsightsSpec.__init__(self, config, spec, exclude, parent_pid)
         self.command = spec['command'].replace(
             '{CONTAINER_MOUNT_POINT}', mountpoint)
         self.archive_path = mangle.mangle_command(self.command)
@@ -47,7 +47,7 @@ class InsightsCommand(InsightsSpec):
         the requested command is executable. Returns (returncode, stdout, 0)
         '''
         # let systemd know we're still going
-        systemd_notify(self.pid)
+        systemd_notify(self.parent_pid)
 
         if self.is_hostname:
             # short circuit for hostame with internal method
@@ -143,8 +143,8 @@ class InsightsFile(InsightsSpec):
     '''
     A file spec
     '''
-    def __init__(self, spec, exclude, mountpoint, pid=None):
-        InsightsSpec.__init__(self, None, spec, exclude, pid)
+    def __init__(self, spec, exclude, mountpoint, parent_pid=None):
+        InsightsSpec.__init__(self, None, spec, exclude, parent_pid)
         # substitute mountpoint for collection
         self.real_path = os.path.join(mountpoint, spec['file'].lstrip('/'))
         self.archive_path = spec['file']
@@ -154,7 +154,7 @@ class InsightsFile(InsightsSpec):
         Get file content, selecting only lines we are interested in
         '''
         # let systemd know we're still going
-        systemd_notify(self.pid)
+        systemd_notify(self.parent_pid)
 
         if not os.path.isfile(self.real_path):
             logger.debug('File %s does not exist', self.real_path)
