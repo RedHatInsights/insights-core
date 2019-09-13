@@ -44,3 +44,4 @@ class InsightsConstants(object):
     sig_kill_ok = 100
     sig_kill_bad = 101
     cached_branch_info = os.path.join(default_conf_dir, '.branch_info')
+    pidfile = os.path.join(os.sep, 'var', 'run', 'insights-client.pid')
