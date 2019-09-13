@@ -401,7 +401,7 @@ def get_connection(config):
 def _legacy_upload(config, pconn, tar_file, content_type, collection_duration=None):
     logger.info('Uploading Insights data.')
     api_response = None
-    pid = read_pidfile()
+    parent_pid = read_pidfile()
     for tries in range(config.retries):
         systemd_notify(pid)
         upload = pconn.upload_archive(tar_file, '', collection_duration)
