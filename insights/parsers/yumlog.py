@@ -28,21 +28,48 @@ Note:
     ``python -m insights.parsers.yumlog``
 
 Examples:
-     >>> YumLog.filters.append('wrapper')
-     >>> YumLog.token_scan('daemon_start', 'Wrapper Started as Daemon')
-     >>> logs = shared[YumLog]
+     >>> YumLog.filters.append('Installed')
+     >>> YumLog.token_scan('Installed', 'Installed: perl-Text-ParseWords-3.29-4.el7.noarch')
      >>> len(logs.lines)
         11
-     >>> wrapper_logs = logs.get('wrapper') # Can only rely on lines filtered being present
-     >>> wrapper_logs[0].get('raw_message')
+     >>> installed_logs = logs.get('Installed') # Can only rely on lines filtered being present
+     >>> installed_logs[0].get('raw_message')
         'May 23 18:10:06 Installed: perl-Text-ParseWords-3.29-4.el7.noarch'
 """
-
-from .. import LogFileOutput, parser
+import datetime
+from insights import LogFileOutput, parser
 from insights.specs import Specs
 
 
 @parser(Specs.yum_log)
 class YumLog(LogFileOutput):
     """Class for parsing ``/var/log/yum.log`` file."""
-    pass
+
+    time_format = '%b %d %H:%M:%S'
+
+    def _parse_line(self, line):
+        """
+        Parsed result::
+            {'timestamp':'May 23 18:10:06',
+             'status': 'Installed',
+             'rpm':'perl-Text-ParseWords-3.29-4.el7.noarch',
+             'message': '...',
+             'raw_message': '...: ...'
+            }
+        """
+        msg_info = {'raw_message': line}
+        if ': ' in line:
+            info, msg = [i.strip() for i in line.split(': ', 1)]
+            msg_info['message'] = msg
+
+            info_splits = info.split()
+            if len(info_splits) == 4:
+                logstamp = ' '.join(info_splits[:3])
+                try:
+                    datetime.datetime.strptime(logstamp, self.time_format)
+                except ValueError:
+                    return msg_info
+                msg_info['timestamp'] = logstamp
+                msg_info['status'] = info_splits[3]
+                msg_info['rpm'] = msg_info['message']
+        return msg_info
