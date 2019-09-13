@@ -48,7 +48,9 @@ class InsightsClient(object):
         if setup_logging:
             self.set_up_logging()
             try_auto_configuration(self.config)
-
+        else:
+            # write PID to file in case we need to ping systemd
+            write_to_disk(constants.pidfile, content=str(os.getpid()))
         # setup insights connection placeholder
         # used for requests
         self.session = None
