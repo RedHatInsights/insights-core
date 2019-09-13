@@ -403,7 +403,7 @@ def _legacy_upload(config, pconn, tar_file, content_type, collection_duration=No
     api_response = None
     parent_pid = read_pidfile()
     for tries in range(config.retries):
-        systemd_notify(pid)
+        systemd_notify(parent_pid)
         upload = pconn.upload_archive(tar_file, '', collection_duration)
 
         if upload.status_code in (200, 201):
@@ -446,9 +446,9 @@ def upload(config, pconn, tar_file, content_type, collection_duration=None):
     if config.legacy_upload:
         return _legacy_upload(config, pconn, tar_file, content_type, collection_duration)
     logger.info('Uploading Insights data.')
-    pid = read_pidfile()
+    parent_pid = read_pidfile()
     for tries in range(config.retries):
-        systemd_notify(pid)
+        systemd_notify(parent_pid)
         upload = pconn.upload_archive(tar_file, content_type, collection_duration)
 
         if upload.status_code in (200, 202):
