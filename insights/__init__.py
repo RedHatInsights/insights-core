@@ -332,7 +332,7 @@ def run(component=None, root=None, print_summary=False,
         broker = dr.Broker()
         broker[ExecutionContext] = ctx
         for spec, content in specs.items():
-            broker[spec] = content if hasattr(spec, 'multi_output') and spec.multi_output else content[-1]
+            broker[spec] = content if dr.DELEGATES[spec].multi_output else content[-1]
     try:
         if formatters:
             for formatter in formatters:
