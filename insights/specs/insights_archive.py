@@ -11,6 +11,8 @@ class InsightsArchiveSpecs(Specs):
 
     all_installed_rpms = glob_file("insights_commands/rpm_-qa*")
     auditctl_status = simple_file("insights_commands/auditctl_-s")
+    aws_instance_id_doc = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_aws_instance_id_doc")
+    aws_instance_id_pkcs7 = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_aws_instance_id_pkcs7")
     aws_instance_type = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_aws_instance_type")
     azure_instance_type = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_azure_instance_type")
     bios_uuid = simple_file("insights_commands/dmidecode_-s_system-uuid")
