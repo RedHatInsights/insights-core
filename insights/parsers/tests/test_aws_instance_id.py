@@ -29,7 +29,7 @@ AWS_ID_DOC = """
 }"""
 
 AWS_ID_DOC_ERROR = """
-No module named insights.tools
+Invalid json
 """
 
 AWS_NO_DOC = ""

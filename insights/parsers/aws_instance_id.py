@@ -9,7 +9,6 @@ from AWS instances.
 * ``curl http://169.254.169.254/latest/meta-data/instance-identity/pkcs7``
 """
 import json
-from json import JSONDecodeError
 
 from insights.parsers import SkipException, ParseException
 from insights import parser, CommandParser
@@ -70,7 +69,7 @@ class AWSInstanceIdDoc(CommandParser, dict):
         try:
             doc_values = json.loads(self.json)
             self.update(doc_values)
-        except JSONDecodeError as e:
+        except ValueError as e:
             raise ParseException('Failed to parse json with error: %s', str(e))
 
 
