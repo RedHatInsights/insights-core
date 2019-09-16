@@ -8,6 +8,7 @@ from AWS instances.
 * ``curl http://169.254.169.254/latest/meta-data/instance-identity/document`` and
 * ``curl http://169.254.169.254/latest/meta-data/instance-identity/pkcs7``
 """
+from __future__ import print_function
 import json
 
 from insights.parsers import SkipException, ParseException
@@ -51,12 +52,12 @@ class AWSInstanceIdDoc(CommandParser, dict):
         json (str): Input in JSON string format.
 
     Examples:
-        >>> aws_id_doc['billingProducts'][0]
-        'bp-6ba54002'
+        >>> print(aws_id_doc['billingProducts'][0])
+        bp-6ba54002
         >>> 'version' in aws_id_doc
         True
-        >>> aws_id_doc['version']
-        '2017-09-30'
+        >>> print(aws_id_doc['version'])
+        2017-09-30
     """
 
     def parse_content(self, content):
