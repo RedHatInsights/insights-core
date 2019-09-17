@@ -156,9 +156,10 @@ def _import_component(name):
     for f in (_get_from_module, _get_from_class):
         try:
             return f(name)
-        except:
+        except Exception as e:
+            log.debug("Couldn't load %s" % name)
+            log.debug(e, exc_info=True)
             pass
-    log.debug("Couldn't load %s" % name)
 
 
 COMPONENT_IMPORT_CACHE = KeyPassingDefaultDict(_import_component)
