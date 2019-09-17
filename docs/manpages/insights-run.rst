@@ -22,6 +22,20 @@ archive files.
 OPTIONS
 =======
 
+    -b "spec=input_file[,spec=input_file,...]" --bare  "spec=input_file[,spec=input_file,...]"
+        Specify that a particular input file should be used for a spec.  This allows you to
+        use specific files for input to a run.  For example to use your own *messages.log* file
+        as input instead of the *messages.log* file in an archive::
+
+            insights-run -b "messages=$HOME/data/messages.log" -p myinsights.myrules
+
+        The short name can be used for insights-core specs. If custom specs are used you must
+        specify the full module path for the spec::
+
+            -b "myinsights.myspecs.specs.custom_messages=$HOME/data/messages.log"
+
+        When ``-b`` is used, [ARCHIVE] is ignored.
+
     -c CONFIG --config CONFIG
         Configure components.
 
