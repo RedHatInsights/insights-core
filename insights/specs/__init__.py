@@ -262,6 +262,7 @@ class Specs(SpecSet):
     libkeyutils_objdumps = RegistryPoint()
     libkeyutils = RegistryPoint()
     libvirtd_log = RegistryPoint(filterable=True)
+    libvirtd_qemu_log = RegistryPoint(multi_output=True, filterable=True)
     limits_conf = RegistryPoint(multi_output=True)
     locale = RegistryPoint()
     localtime = RegistryPoint()

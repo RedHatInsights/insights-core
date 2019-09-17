@@ -490,6 +490,7 @@ class DefaultSpecs(Specs):
     libkeyutils = simple_command("/usr/bin/find -L /lib /lib64 -name 'libkeyutils.so*'")
     libkeyutils_objdumps = simple_command('/usr/bin/find -L /lib /lib64 -name libkeyutils.so.1 -exec objdump -x "{}" \;')
     libvirtd_log = simple_file("/var/log/libvirt/libvirtd.log")
+    libvirtd_qemu_log = glob_file(r"/var/log/libvirt/qemu/*.log")
     limits_conf = glob_file(["/etc/security/limits.conf", "/etc/security/limits.d/*.conf"])
     locale = simple_command("/usr/bin/locale")
     localtime = simple_command("/usr/bin/file -L /etc/localtime")
