@@ -436,3 +436,17 @@ def test_platform_upload_systemd(_, path_exists, read_pidfile, systemd_notify):
     client.upload('test.gar.gz', 'test.content.type')
     read_pidfile.assert_called_once()
     systemd_notify.assert_called_once_with(read_pidfile.return_value)
+
+
+@patch('insights.client.os.path.exists', return_value=True)
+@patch('insights.client.connection.InsightsConnection.upload_archive')
+@patch('insights.client.client._legacy_upload')
+def test_platform_upload_with_no_log_path(_legacy_upload, _, path_exists):
+    '''
+    testing logger when no path is given
+    '''
+    config = InsightsConfig(legacy_upload=True, logging_file='tmp.log')
+    client = InsightsClient(config)
+    response = client.upload('test.gar.gz', 'test.content.type')
+    _legacy_upload.assert_called_once()
+    assert response is not None
