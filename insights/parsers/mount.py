@@ -10,7 +10,6 @@ Mount - command ``/bin/mount``
 ProcMounts - file ``/proc/mounts``
 ----------------------------------
 
-
 The ``Mount`` class implements parsing for the ``mount`` command output which looks like::
 
     /dev/mapper/rootvg-rootlv on / type ext4 (rw,relatime,barrier=1,data=ordered)
@@ -22,32 +21,21 @@ The information is stored as a list of :class:`MountEntry` objects.  Each
 :class:`MountEntry` object contains attributes for the following information that
 are listed in the same order as in the command output:
 
- * ``filesystem`` or ``mounted_device`` - Name of filesystem or mounted device
+ * ``filesystem`` - Name of filesystem or the mounted device
  * ``mount_point`` - Name of mount point for filesystem
- * ``filesystem_type`` or ``mount_type`` - Name of filesystem type
- * ``mount_options`` - Mount options as a dictionary
- * ``mount_label`` - Only present if optional label is present
+ * ``mount_type`` - Name of filesystem type
+ * ``mount_options`` -  Mount options as ``MountOpts`` object
+ * ``mount_label`` - Optional label of this mount entry, empty string by default
  * ``mount_clause`` - Full string from command output
 
-The ``mount_options`` is wrapped as a :class:`MountOpts` object which contains
-below fixed attributes:
-
-* ``rw`` - Read write
-* ``ro`` - Read only
-* ``defaults`` - Use default options: rw, suid, dev, exec, auto, nouser, async, and relatime
-* ``relatime`` - Inode access times relative to modify or change time
-* ``seclabel`` - `seclabel` is enabled or not
-* ``attr2`` - `opportunistic` improvement is enabled or not
-* ``inode64`` - `inode64` is enabled or not
-* ``noquota`` - Disk quotas are enforced or not
-
-For instance, the option ``rw`` in ``(rw,dmode=0500)`` may be accessed as
-``mnt_row_info.rw`` with the value ``True``, the ``dmode`` can be accessed as
-``mnt_row_info.dmode`` with the value ``0500``.
+The ``MountOpts`` class contains the mount options as attributes accessible
+via the attribute name as it appears in the command output.  For instance the
+options ``(rw,dmode=0500)`` may be accessed as ''mnt_row_info.rw`` with the
+value ``True`` and ``mnt_row_info.dmode`` with the value "0500".  The ``in``
+operator may be used to determine if an option is present.
 
 MountEntry lines are also available in a ``mounts`` property, keyed on the
 mount point.
-
 """
 
 import os
@@ -56,73 +44,53 @@ from insights.parsers import optlist_to_dict, keyword_search, ParseException, Sk
 from insights import parser, get_active_lines, CommandParser
 
 
-class MountOpts(dict):
+class AttributeAsDict(object):
+    def __contains__(self, item):
+        return item in self.__dict__
+
+    def __getitem__(self, item):
+        return self.__dict__[item]
+
+    def get(self, item, default=None):
+        return self.__dict__.get(item, default)
+
+    def items(self):
+        for k, v in self.__dict__.items():
+            yield k, v
+
+
+class MountOpts(AttributeAsDict):
     """
-    An object representing the mount options found in mount or fstab entry.
-    Each option in the comma-separated list is a key, and 'key=value'
-    pairs such as 'gid=5' are split so that e.g. the key is 'gid' and the value
-    is '5'.  Otherwise, the key is the option name and its value is 'True'.
+    An object representing the mount options found in mount or fstab entry as
+    attributes accessible via the attribute name as it appears in the command
+    output.  For instance, the options ``(rw,dmode=0500)`` may be accessed as
+    ``mnt_row_info.rw`` with the value ``True`` and ``mnt_row_info.dmode``
+    with the value "0500".
 
-    In addition, the following attributes will always be available and are
-    False if not defined in the options list.
-
-    Attributes:
-        rw (bool): Read write
-        ro (bool): Read only
-        defaults: (bool): Use default options: rw, suid, dev, exec, auto, nouser, async, and relatime
-        relatime (bool): Inode access times relative to modify or change time
-        seclabel (bool): "seclabel" is enabled or not
-        attr2 (bool): "opportunistic" improvement is enabled or not
-        inode64 (bool): "inode64" is enabled or not
-        noquota (bool): Disk quotas are enforced or not
+    The ``in`` operator may be used to determine if an option is present.
     """
-    attrs = {
-        'rw': False,
-        'ro': False,
-        'defaults': False,
-        'relatime': False,
-        'seclabel': False,
-        'attr2': False,
-        'inode64': False,
-        'noquota': False
-    }
-
-    def __init__(self, data={}):
+    def __init__(self, data=None):
         data = {} if data is None else data
-        self.update(data)
-        for k, v in MountOpts.attrs.items():
-            if k not in data:
-                setattr(self, k, v)
         for k, v in data.items():
             setattr(self, k, v)
 
 
-class MountEntry(dict):
+class MountEntry(AttributeAsDict):
     """
     An object representing an mount entry of ``mount`` command or
     ``/proc/mounts`` file.  Each entry contains below fixed attributes:
 
     Attributes:
-        mount_clause (str): Full string from command output
-        filesystem (str): Name of filesystem
+        filesystem (str): Name of filesystem of mounted device
         mount_point (str): Name of mount point for filesystem
         mount_type (str): Name of filesystem type
-        mount_options (MountOpts): Mount options as a :class:`insights.parsers.mount.MountOpts` object
+        mount_options (MountOpts): Mount options as :class:`MountOpts`
+        mount_label (str): Optional label of this mount entry, an empty string by default
+        mount_clause (str): Full string from command output
     """
-    attrs = {
-            'mount_clause': '',
-            'filesystem': '',
-            'mount_point': '',
-            'mount_type': '',
-            'mount_options': MountOpts(),
-    }
 
-    def __init__(self, data={}):
+    def __init__(self, data=None):
         data = {} if data is None else data
-        self.update(data)
-        for k, v in MountEntry.attrs.items():
-            if k not in data:
-                setattr(self, k, v)
         for k, v in data.items():
             setattr(self, k, v)
 
