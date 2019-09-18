@@ -76,7 +76,6 @@ major minor  #blocks  name
 
 def test_partitions():
     info = Partitions(context_wrap(PARTITIONS_CONTENT))
-    assert info.partitions
     assert 'dm-2' in info
     dm_2 = info['dm-2']
     assert dm_2.get('major') == '253'
