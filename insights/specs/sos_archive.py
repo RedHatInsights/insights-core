@@ -10,7 +10,7 @@ simple_file = partial(simple_file, context=SosArchiveContext)
 
 class SosSpecs(Specs):
     auditctl_status = simple_file("sos_commands/auditd/auditctl_-s")
-    blkid = simple_file("sos_commands/block/blkid_-c_.dev.null")
+    blkid = first_file(["sos_commands/block/blkid_-c_.dev.null", "sos_commands/filesys/blkid_-c_.dev.null"])
     candlepin_log = first_of([
         simple_file("/var/log/candlepin/candlepin.log"),
         simple_file("sos_commands/foreman/foreman-debug/var/log/candlepin/candlepin.log")
@@ -32,7 +32,7 @@ class SosSpecs(Specs):
     docker_list_containers = first_file(["sos_commands/docker/docker_ps_-a", "sos_commands/docker/docker_ps"])
     docker_list_images = simple_file("sos_commands/docker/docker_images")
     docker_image_inspect = glob_file("sos_commands/docker/docker_inspect_*")
-    dmesg = first_file(["sos_commands/kernel/dmesg", "var/log/dmesg"])
+    dmesg = first_file(["sos_commands/kernel/dmesg", "sos_commands/general/dmesg", "var/log/dmesg"])
     dmidecode = simple_file("sos_commands/hardware/dmidecode")
     dmsetup_info = simple_file("sos_commands/devicemapper/dmsetup_info_-c")
     dumpe2fs_h = glob_file("sos_commands/filesys/dumpe2fs_-h_*")
@@ -64,7 +64,7 @@ class SosSpecs(Specs):
     iptables = first_file(["/etc/sysconfig/iptables", "/etc/sysconfig/iptables.save"])
     journal_since_boot = first_of([simple_file("sos_commands/logs/journalctl_--no-pager_--boot"), simple_file("sos_commands/logs/journalctl_--no-pager_--catalog_--boot")])
     locale = simple_file("sos_commands/i18n/locale")
-    lsblk = simple_file("sos_commands/block/lsblk")
+    lsblk = first_file(["sos_commands/block/lsblk", "sos_commands/filesys/lsblk"])
     lscpu = simple_file("sos_commands/processor/lscpu")
     lsinitrd = simple_file("sos_commands/boot/lsinitrd")
     lsof = simple_file("sos_commands/process/lsof_-b_M_-n_-l")
@@ -93,7 +93,7 @@ class SosSpecs(Specs):
     ps_auxcww = first_file(["sos_commands/process/ps_auxcww", "sos_commands/process/ps_auxwww", "sos_commands/process/ps_aux"])
     ps_auxww = first_file(["sos_commands/process/ps_auxww", "sos_commands/process/ps_auxwww", "sos_commands/process/ps_aux", "sos_commands/process/ps_auxcww"])
     puppet_ssl_cert_ca_pem = simple_file("sos_commands/foreman/foreman-debug/var/lib/puppet/ssl/certs/ca.pem")
-    pvs = first_file(["sos_commands/lvm2/pvs_-a_-v_-o_pv_mda_free_pv_mda_size_pv_mda_count_pv_mda_used_count_pe_start_--config_global_locking_type_0", "sos_commands/lvm2/pvs_-a_-v"])
+    pvs = first_file(["sos_commands/lvm2/pvs_-a_-v_-o_pv_mda_free_pv_mda_size_pv_mda_count_pv_mda_used_count_pe_start_--config_global_locking_type_0", "sos_commands/lvm2/pvs_-a_-v", "sos_commands/devicemapper/pvs_-a_-v"])
     qpid_stat_q = first_of([
         simple_file("qpid_stat_queues"),
         simple_file("qpid-stat-q"),
@@ -132,6 +132,6 @@ class SosSpecs(Specs):
     var_qemu_xml = glob_file(r"var/run/libvirt/qemu/*.xml")
     vdsm_import_log = glob_file("var/log/vdsm/import/import-*.log")
     vgdisplay = first_file(["sos_commands/lvm2/vgdisplay_-vv_--config_global_locking_type_0", "sos_commands/lvm2/vgdisplay_-vv"])
-    vgs = first_file(["sos_commands/lvm2/vgs_-v_-o_vg_mda_count_vg_mda_free_vg_mda_size_vg_mda_used_count_vg_tags_--config_global_locking_type_0", "sos_commands/lvm2/vgs_-v"])
+    vgs = first_file(["sos_commands/lvm2/vgs_-v_-o_vg_mda_count_vg_mda_free_vg_mda_size_vg_mda_used_count_vg_tags_--config_global_locking_type_0", "sos_commands/lvm2/vgs_-v", "sos_commands/devicemapper/vgs_-v"])
     xfs_info = glob_file("sos_commands/xfs/xfs_info*")
     yum_repolist = simple_file("sos_commands/yum/yum_-C_repolist")
