@@ -64,7 +64,7 @@ class Sap(dict):
 
     def __init__(self, hostname, insts, lssap):
         hn = hostname.hostname
-        self.data = {}
+        data = {}
         self.local_instances = []
         self.business_instances = []
         self.function_instances = []
@@ -76,13 +76,13 @@ class Sap(dict):
                 self.all_instances.append(k)
                 self._types.add(inst['InstanceType'])
                 self.local_instances.append(k) if hn == inst['Hostname'] else None
-                self.data[k] = SAPInstances(k,
-                                            inst['Hostname'],
-                                            inst['SID'],
-                                            inst['InstanceType'],
-                                            inst['SystemNumber'],
-                                            inst['FullQualifiedHostname'],
-                                            inst['SapVersionInfo'])
+                data[k] = SAPInstances(k,
+                                       inst['Hostname'],
+                                       inst['SID'],
+                                       inst['InstanceType'],
+                                       inst['SystemNumber'],
+                                       inst['FullQualifiedHostname'],
+                                       inst['SapVersionInfo'])
         elif lssap:
             for inst in lssap.data:
                 k = inst['Instance']
@@ -90,40 +90,40 @@ class Sap(dict):
                 self.all_instances.append(k)
                 self._types.add(t)
                 self.local_instances.append(k) if hn == inst['SAPLOCALHOST'] else None
-                self.data[k] = SAPInstances(k,
-                                            inst['SAPLOCALHOST'],
-                                            inst['SID'],
-                                            t,
-                                            inst['Nr'],
-                                            None,
-                                            inst['Version'])
-        if not self.data:
+                data[k] = SAPInstances(k,
+                                       inst['SAPLOCALHOST'],
+                                       inst['SID'],
+                                       t,
+                                       inst['Nr'],
+                                       None,
+                                       inst['Version'])
+        if not data:
             raise SkipComponent('No SAP instance.')
 
-        self.update(self.data)
+        self.update(data)
 
         for i in self.all_instances:
             (self.function_instances if i.startswith(self.FUNC_INSTS) else self.business_instances).append(i)
 
     def version(self, instance):
         """str: Returns the version of the ``instance``."""
-        return self.data[instance].version if instance in self.data else None
+        return self[instance].version if instance in self else None
 
     def sid(self, instance):
         """str: Returns the sid of the ``instance``."""
-        return self.data[instance].sid if instance in self.data else None
+        return self[instance].sid if instance in self else None
 
     def type(self, instance):
         """str: Returns the type code of the ``instance``."""
-        return self.data[instance].type if instance in self.data else None
+        return self[instance].type if instance in self else None
 
     def hostname(self, instance):
         """str: Returns the hostname of the ``instance``."""
-        return self.data[instance].hostname if instance in self.data else None
+        return self[instance].hostname if instance in self else None
 
     def number(self, instance):
         """str: Returns the systeme number of the ``instance``."""
-        return self.data[instance].number if instance in self.data else None
+        return self[instance].number if instance in self else None
 
     @property
     def is_netweaver(self):
@@ -139,3 +139,8 @@ class Sap(dict):
     def is_ascs(self):
         """bool: Is any SAP System Central Services instance detected?"""
         return 'ASCS' in self._types
+
+    @property
+    def data(self):
+        """dict: Dict with the instance name as the key and instance details as the value."""
+        return self
