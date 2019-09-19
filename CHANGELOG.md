@@ -1,5 +1,18 @@
 # Change Log
 
+## [insights-core-3.0.125-1149](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.125-1149) (2019-09-19)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.124-1131...insights-core-3.0.125-1149)
+
+**Fixed bugs:**
+
+- Bug in httpd conf parser  [\#2151](https://github.com/RedHatInsights/insights-core/issues/2151)
+
+**Closed issues:**
+
+- PsAuxww parser doesn't work due to add\_filter\(\) in ps.py [\#2202](https://github.com/RedHatInsights/insights-core/issues/2202)
+- Add support to older sosreport of RHEL6.5 and below [\#2196](https://github.com/RedHatInsights/insights-core/issues/2196)
+- MountEntry in mount.py store 2 copy of data in both obj.attribute and self.data ways, which may lead to data inconsistency once abuse write operations are applied to it.  [\#2081](https://github.com/RedHatInsights/insights-core/issues/2081)
+
 ## [insights-core-3.0.124-1131](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.124-1131) (2019-09-12)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.123-1125...insights-core-3.0.124-1131)
 
