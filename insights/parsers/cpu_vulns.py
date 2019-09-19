@@ -1,6 +1,6 @@
 """
-Parsers for file ``/sys/devices/system/cpu/vulnerabilities/*`` outputs
-======================================================================
+Parsers for cpu vulnerabilities file outputs
+============================================
 
 This module provides the following parsers:
 
@@ -16,12 +16,6 @@ CpuVulnsSpectreV2 - file ``/sys/devices/system/cpu/vulnerabilities/spectre_v2``
 CpuVulnsSpecStoreBypass - file ``/sys/devices/system/cpu/vulnerabilities/spec_store_bypass``
 --------------------------------------------------------------------------------------------
 
-CpuVulnsSmt - file ``/sys/devices/system/cpu/vulnerabilities/l1tf``
--------------------------------------------------------------------
-
-CpuVulnsMds - file ``/sys/devices/system/cpu/vulnerabilities/mds``
-------------------------------------------------------------------
-
 """
 
 from __future__ import division
@@ -31,16 +25,15 @@ from insights.specs import Specs
 from insights.parsers import SkipException
 
 
-@parser(Specs.cpu_vulns)
 class CpuVulns(Parser):
     """
-    Class for parsing file ``/sys/devices/system/cpu/vulnerabilities/*``
+    Base class for current parser
 
     Attributes:
-        value (str): the result parsed of `/sys/devices/system/cpu/vulnerabilities/*`
+        value (str): the result parsed
 
     Raises:
-        SkipException: When the name of file parsed is not expected or content is empty
+        SkipException: When file content is empty
 
     """
     def parse_content(self, content):
@@ -49,7 +42,7 @@ class CpuVulns(Parser):
         self.value = content[0]
 
 
-@parser(Specs.cpu_vulns)
+@parser(Specs.cpu_vulns_meltdown)
 class CpuVulnsMeltdown(CpuVulns):
     """
     Class for parsing file ``/sys/devices/system/cpu/vulnerabilities/meltdown``
@@ -74,7 +67,7 @@ class CpuVulnsMeltdown(CpuVulns):
     pass
 
 
-@parser(Specs.cpu_vulns)
+@parser(Specs.cpu_vulns_spectre_v1)
 class CpuVulnsSpectreV1(CpuVulns):
     """
     Class for parsing file ``/sys/devices/system/cpu/vulnerabilities/spectre_v1``
@@ -99,7 +92,7 @@ class CpuVulnsSpectreV1(CpuVulns):
     pass
 
 
-@parser(Specs.cpu_vulns)
+@parser(Specs.cpu_vulns_spectre_v2)
 class CpuVulnsSpectreV2(CpuVulns):
     """
     Class for parsing file ``/sys/devices/system/cpu/vulnerabilities/spectre_v2``
@@ -124,7 +117,7 @@ class CpuVulnsSpectreV2(CpuVulns):
     pass
 
 
-@parser(Specs.cpu_vulns)
+@parser(Specs.cpu_vulns_spec_store_bypass)
 class CpuVulnsSpecStoreBypass(CpuVulns):
     """
     Class for parsing file ``/sys/devices/system/cpu/vulnerabilities/spec_store_bypass``
@@ -144,56 +137,6 @@ class CpuVulnsSpecStoreBypass(CpuVulns):
 
     Attributes:
         value (str): the result parsed of '/sys/devices/system/cpu/vulnerabilities/spec_store_bypass'
-
-    """
-    pass
-
-
-@parser(Specs.cpu_vulns)
-class CpuVulnsSmt(CpuVulns):
-    """
-    Class for parsing file ``/sys/devices/system/cpu/vulnerabilities/l1tf``
-
-    Typical output of file ``/sys/devices/system/cpu/vulnerabilities/l1tf`` looks like::
-
-        Mitigation: PTE Inversion; VMX: conditional cache flushes, SMT vulnerable
-
-    Examples:
-        >>> type(smt)
-        <class 'insights.parsers.cpu_vulns.CpuVulnsSmt'>
-        >>> smt.value
-        'Mitigation: PTE Inversion; VMX: conditional cache flushes, SMT vulnerable'
-
-    Raises:
-        SkipException: When file name is not 'l1tf' or file content is empty
-
-    Attributes:
-        value (str): the result parsed of '/sys/devices/system/cpu/vulnerabilities/l1tf'
-
-    """
-    pass
-
-
-@parser(Specs.cpu_vulns)
-class CpuVulnsMds(CpuVulns):
-    """
-    Class for parsing file ``/sys/devices/system/cpu/vulnerabilities/mds``
-
-    Typical output of file ``/sys/devices/system/cpu/vulnerabilities/mds`` looks like::
-
-        Vulnerable: Clear CPU buffers attempted, no microcode; SMT vulnerable
-
-    Examples:
-        >>> type(mds)
-        <class 'insights.parsers.cpu_vulns.CpuVulnsMds'>
-        >>> mds.value
-        'Vulnerable: Clear CPU buffers attempted, no microcode; SMT vulnerable'
-
-    Raises:
-        SkipException: When file name is not 'mds' or file content is empty
-
-    Attributes:
-        value (str): the result parsed of '/sys/devices/system/cpu/vulnerabilities/mds'
 
     """
     pass

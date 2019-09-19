@@ -5,8 +5,6 @@ from insights.parsers.cpu_vulns import CpuVulnsMeltdown
 from insights.parsers.cpu_vulns import CpuVulnsSpectreV1
 from insights.parsers.cpu_vulns import CpuVulnsSpectreV2
 from insights.parsers.cpu_vulns import CpuVulnsSpecStoreBypass
-from insights.parsers.cpu_vulns import CpuVulnsSmt
-from insights.parsers.cpu_vulns import CpuVulnsMds
 import pytest
 import doctest
 
@@ -116,56 +114,6 @@ def test_cpu_vulns_spec_store_bypass_exp1():
     assert "Input content is empty" in str(sc1)
 
 
-# CpuVulnsSmt
-def test_cpu_vulns_smt():
-    spectre = CpuVulnsSmt(context_wrap(INPUT_SMT,
-        path='/tmp/l1tf'))
-    assert spectre.value == INPUT_SMT
-
-
-def test_cpu_vulns_smt_exp1():
-    """
-    Here test the examples cause expections
-    """
-    with pytest.raises(SkipException) as sc1:
-        CpuVulnsSmt(context_wrap(''))
-    assert "Input content is empty" in str(sc1)
-
-
-# CpuVulnsMds
-def test_cpu_vulns_mds():
-    spectre = CpuVulnsMds(context_wrap(INPUT_MDS,
-        path='/tmp/mds'))
-    assert spectre.value == INPUT_MDS
-
-
-def test_cpu_vulns_mds_2():
-    spectre = CpuVulnsMds(context_wrap(INPUT_MDS_2,
-        path='/tmp/mds'))
-    assert spectre.value == INPUT_MDS_2
-
-
-def test_cpu_vulns_mds_3():
-    spectre = CpuVulnsMds(context_wrap(INPUT_MDS_3,
-        path='/tmp/mds'))
-    assert spectre.value == INPUT_MDS_3
-
-
-def test_cpu_vulns_mds_4():
-    spectre = CpuVulnsMds(context_wrap(INPUT_MDS_4,
-        path='/tmp/mds'))
-    assert spectre.value == INPUT_MDS_4
-
-
-def test_cpu_vulns_mds_exp1():
-    """
-    Here test the examples cause expections
-    """
-    with pytest.raises(SkipException) as sc1:
-        CpuVulnsMds(context_wrap(''))
-    assert "Input content is empty" in str(sc1)
-
-
 # CpuVulnsSpectreV1
 def test_cpu_vulns_spectre_v1():
     spectre = CpuVulnsSpectreV1(context_wrap(INPUT_SPECTRE_V1,
@@ -225,11 +173,7 @@ def test_cpu_vulns_documentation():
         'md': CpuVulnsMeltdown(context_wrap(INPUT_MELTDOWN,
             path='/tmp/meltdown')),
         'ssb': CpuVulnsSpecStoreBypass(context_wrap(INPUT_SPEC_STORE_BYPASS,
-            path='/tmp/spec_store_bypass')),
-        'smt': CpuVulnsSmt(context_wrap(INPUT_SMT,
-            path='/tmp/l1tf')),
-        'mds': CpuVulnsMds(context_wrap(INPUT_MDS,
-            path='/tmp/mds'))}
+            path='/tmp/spec_store_bypass'))}
 
     failed, total = doctest.testmod(cpu_vulns, globs=env)
     assert failed == 0
