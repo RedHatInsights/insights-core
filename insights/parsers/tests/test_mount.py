@@ -188,12 +188,12 @@ def test_proc_mount():
     results = ProcMounts(context_wrap(PROC_MOUNT))
     assert results is not None
     assert len(results) == 19
-    sda1 = results.search(mounted_device='/dev/sda1')[0]
+    sda1 = results.search(filesystem='/dev/sda1')[0]
 
     # Test get method
     assert sda1 is not None
     assert sda1['mount_point'] == '/boot'
-    assert sda1['filesystem_type'] == 'ext4'
+    assert sda1['mount_type'] == 'ext4'
     assert 'rw' in sda1['mount_options']
     assert 'relatime' in sda1['mount_options']
     assert sda1['mount_options']['data'] == 'ordered'
@@ -202,9 +202,9 @@ def test_proc_mount():
 
     # Test iteration
     for mnt in results:
-        assert hasattr(mnt, 'mounted_device')
+        assert hasattr(mnt, 'filesystem')
         assert hasattr(mnt, 'mount_point')
-        assert hasattr(mnt, 'filesystem_type')
+        assert hasattr(mnt, 'mount_type')
         assert hasattr(mnt, 'mount_options')
 
     # Test getitem
@@ -219,12 +219,12 @@ def test_proc_mount():
     assert results.mounts['/boot'] == sda1
 
     # Test get_dir
-    assert results.get_dir('/var/lib/nfs/rpc_pipefs') == results.search(mounted_device='sunrpc')[0]
+    assert results.get_dir('/var/lib/nfs/rpc_pipefs') == results.search(filesystem='sunrpc')[0]
     assert results.get_dir('/etc') == results['/']
 
     # Test search
-    assert results.search(mounted_device='/dev/sda1') == [sda1]
-    assert results.search(filesystem_type='nfs') == [
+    assert results.search(filesystem='/dev/sda1') == [sda1]
+    assert results.search(mount_type='nfs') == [
         results.rows[n] for n in (16, 17)
     ]
     assert results.search(mount_options__contains='mode') == [

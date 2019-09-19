@@ -23,7 +23,7 @@ from insights.parsers import SkipException, ParseException
 from insights.specs import Specs
 
 
-class ModInfo(CommandParser):
+class ModInfo(CommandParser, dict):
     """
     Base class to parse the information about a kernel module, the module
     info will be stored in dictionary format.
@@ -76,29 +76,24 @@ class ModInfo(CommandParser):
         if (not content) or (not self.file_path):
             raise SkipException("No Contents")
 
-        self.data = {}
+        data = {}
         self._module_deps = []
         for line in content:
             line = line.strip()
             if ':' in line:
                 key, value = [l.strip() for l in line.split(':', 1)]
-                if key not in self.data:
-                    self.data[key] = value
+                if key not in data:
+                    data[key] = value
                 else:
-                    old_val = self.data[key]
-                    self.data[key] = [old_val] if isinstance(old_val, str) else old_val
-                    self.data[key].append(value)
+                    old_val = data[key]
+                    data[key] = [old_val] if isinstance(old_val, str) else old_val
+                    data[key].append(value)
 
-        if not self.data:
+        if not data:
             raise ParseException("No Parsed Contents")
-        self._module_deps = [mod for mod in self.data.get("depends", '').split(',')]
-        self._module_name = self.data.get('filename', '').rsplit("/")[-1].split('.')[0]
-
-    def __contains__(self, option):
-        """
-        (bool): This will return True if `option` is present kernel info when set, else False
-        """
-        return option in self.data
+        self.update(data)
+        self._module_deps = [mod for mod in data.get("depends", '').split(',')]
+        self._module_name = data.get('filename', '').rsplit("/")[-1].split('.')[0]
 
     @property
     def module_name(self):
@@ -112,7 +107,7 @@ class ModInfo(CommandParser):
         """
         (str): This will return kernel module path when set, else `None`.
         """
-        return self.data.get('filename', '')
+        return self.get('filename', '')
 
     @property
     def module_deps(self):
@@ -128,7 +123,7 @@ class ModInfo(CommandParser):
         (list): This will return the list of firmwares used by this module
                 when set, else `[]`.
         """
-        return self.data.get('firmware', [])
+        return self.get('firmware', [])
 
     @property
     def module_alias(self):
@@ -136,7 +131,7 @@ class ModInfo(CommandParser):
         (list): This will return the list of alias to this kernel  module
                 when set, else `[]`.
         """
-        return self.data.get('alias', [])
+        return self.get('alias', [])
 
     @property
     def module_parm(self):
@@ -144,28 +139,35 @@ class ModInfo(CommandParser):
         (list): This will return the list of parms for this kernel module
                 when set, else `[]`.
         """
-        return self.data.get('parm', [])
+        return self.get('parm', [])
 
     @property
     def module_version(self):
         """
         (str): This will return the kernel module version when set, else empty string.
         """
-        return self.data.get('version', '')
+        return self.get('version', '')
 
     @property
     def module_signer(self):
         """
         (str): This will return the signer of kernel module when set, else empty string.
         """
-        return self.data.get('signer', '')
+        return self.get('signer', '')
 
     @property
     def module_details(self):
         """
         (dict): This will return the kernel module details when set.
         """
-        return self.data
+        return self
+
+    @property
+    def data(self):
+        """
+        (dict): This will return the kernel module details when set.
+        """
+        return self
 
 
 @parser(Specs.modinfo_i40e)
