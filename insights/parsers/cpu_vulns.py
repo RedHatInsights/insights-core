@@ -43,13 +43,6 @@ class CpuVulns(Parser):
         SkipException: When the name of file parsed is not expected or content is empty
 
     """
-
-    def __init__(self, *args, **kwargs):
-        super(CpuVulns, self).__init__(*args, **kwargs)
-        input_name = args[0].metadata['input_name']
-        if self.file_name != input_name:
-            raise SkipException("Not expected file: {0}".format(self.file_name))
-
     def parse_content(self, content):
         if not content:
             raise SkipException("Input content is empty")

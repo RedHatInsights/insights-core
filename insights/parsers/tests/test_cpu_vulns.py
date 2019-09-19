@@ -75,8 +75,7 @@ Mitigation: Clear CPU buffers; SMT Host state unknown
 # CpuVulnsMeltdown
 def test_cpu_vulns_meltdown():
     spectre = CpuVulnsMeltdown(context_wrap(INPUT_MELTDOWN,
-        path='/tmp/meltdown',
-        metadata={'input_name': 'meltdown'}))
+        path='/tmp/meltdown'))
     assert spectre.value == INPUT_MELTDOWN
 
 
@@ -89,36 +88,22 @@ def test_cpu_vulns_meltdown_exp1():
     assert "Input content is empty" in str(sc1)
 
 
-def test_cpu_vulns_meltdown_exp2():
-    """
-    Here test the examples cause expections
-    """
-    with pytest.raises(SkipException) as sc1:
-        CpuVulnsMeltdown(context_wrap(INPUT_MELTDOWN,
-            path='/tmp/meltdown',
-            metadata={'input_name': 'abcde'}))
-    assert "Not expected file" in str(sc1)
-
-
 # CpuVulnsSpecStoreBypass
 def test_cpu_vulns_spec_store_bypass():
     spectre = CpuVulnsSpecStoreBypass(context_wrap(INPUT_SPEC_STORE_BYPASS,
-        path='/tmp/spec_store_bypass',
-        metadata={'input_name': 'spec_store_bypass'}))
+        path='/tmp/spec_store_bypass'))
     assert spectre.value == INPUT_SPEC_STORE_BYPASS
 
 
 def test_cpu_vulns_spec_store_bypass_2():
     spectre = CpuVulnsSpecStoreBypass(context_wrap(INPUT_SPEC_STORE_BYPASS_2,
-        path='/tmp/spec_store_bypass',
-        metadata={'input_name': 'spec_store_bypass'}))
+        path='/tmp/spec_store_bypass'))
     assert spectre.value == INPUT_SPEC_STORE_BYPASS_2
 
 
 def test_cpu_vulns_spec_store_bypass_3():
     spectre = CpuVulnsSpecStoreBypass(context_wrap(INPUT_SPEC_STORE_BYPASS_3,
-        path='/tmp/spec_store_bypass',
-        metadata={'input_name': 'spec_store_bypass'}))
+        path='/tmp/spec_store_bypass'))
     assert spectre.value == INPUT_SPEC_STORE_BYPASS_3
 
 
@@ -131,22 +116,10 @@ def test_cpu_vulns_spec_store_bypass_exp1():
     assert "Input content is empty" in str(sc1)
 
 
-def test_cpu_vulns_spec_store_bypass_exp2():
-    """
-    Here test the examples cause expections
-    """
-    with pytest.raises(SkipException) as sc1:
-        CpuVulnsSpecStoreBypass(context_wrap(INPUT_SPEC_STORE_BYPASS,
-            path='/tmp/spec_store_bypass',
-            metadata={'input_name': 'abcde'}))
-    assert "Not expected file" in str(sc1)
-
-
 # CpuVulnsSmt
 def test_cpu_vulns_smt():
     spectre = CpuVulnsSmt(context_wrap(INPUT_SMT,
-        path='/tmp/l1tf',
-        metadata={'input_name': 'l1tf'}))
+        path='/tmp/l1tf'))
     assert spectre.value == INPUT_SMT
 
 
@@ -159,43 +132,28 @@ def test_cpu_vulns_smt_exp1():
     assert "Input content is empty" in str(sc1)
 
 
-def test_cpu_vulns_smt_exp2():
-    """
-    Here test the examples cause expections
-    """
-    with pytest.raises(SkipException) as sc1:
-        CpuVulnsSmt(context_wrap(INPUT_SMT,
-            path='/tmp/l1tf',
-            metadata={'input_name': 'abcde'}))
-    assert "Not expected file" in str(sc1)
-
-
 # CpuVulnsMds
 def test_cpu_vulns_mds():
     spectre = CpuVulnsMds(context_wrap(INPUT_MDS,
-        path='/tmp/mds',
-        metadata={'input_name': 'mds'}))
+        path='/tmp/mds'))
     assert spectre.value == INPUT_MDS
 
 
 def test_cpu_vulns_mds_2():
     spectre = CpuVulnsMds(context_wrap(INPUT_MDS_2,
-        path='/tmp/mds',
-        metadata={'input_name': 'mds'}))
+        path='/tmp/mds'))
     assert spectre.value == INPUT_MDS_2
 
 
 def test_cpu_vulns_mds_3():
     spectre = CpuVulnsMds(context_wrap(INPUT_MDS_3,
-        path='/tmp/mds',
-        metadata={'input_name': 'mds'}))
+        path='/tmp/mds'))
     assert spectre.value == INPUT_MDS_3
 
 
 def test_cpu_vulns_mds_4():
     spectre = CpuVulnsMds(context_wrap(INPUT_MDS_4,
-        path='/tmp/mds',
-        metadata={'input_name': 'mds'}))
+        path='/tmp/mds'))
     assert spectre.value == INPUT_MDS_4
 
 
@@ -208,22 +166,10 @@ def test_cpu_vulns_mds_exp1():
     assert "Input content is empty" in str(sc1)
 
 
-def test_cpu_vulns_mds_exp2():
-    """
-    Here test the examples cause expections
-    """
-    with pytest.raises(SkipException) as sc1:
-        CpuVulnsMds(context_wrap(INPUT_MDS,
-            path='/tmp/mds',
-            metadata={'input_name': 'abcde'}))
-    assert "Not expected file" in str(sc1)
-
-
 # CpuVulnsSpectreV1
 def test_cpu_vulns_spectre_v1():
     spectre = CpuVulnsSpectreV1(context_wrap(INPUT_SPECTRE_V1,
-        path='/tmp/spectre_v1',
-        metadata={'input_name': 'spectre_v1'}))
+        path='/tmp/spectre_v1'))
     assert spectre.value == INPUT_SPECTRE_V1
 
 
@@ -236,25 +182,13 @@ def test_cpu_vulns_spectre_v1_exp1():
     assert "Input content is empty" in str(sc1)
 
 
-def test_cpu_vulns_spectre_v1_exp2():
-    """
-    Here test the examples cause expections
-    """
-    with pytest.raises(SkipException) as sc1:
-        CpuVulnsSpectreV1(context_wrap(INPUT_SPECTRE_V1,
-            path='/tmp/spectre_v1',
-            metadata={'input_name': 'spectre_v5'}))
-    assert "Not expected file" in str(sc1)
-
-
 # CpuVulnsSpectreV2
 def test_cpu_vulns_spectre_v2_rhel7():
     """
     Here test the examples for spectre_v2
     """
     spectre = CpuVulnsSpectreV2(context_wrap(INPUT_SPECTRE_V2_RHEL_7,
-        path='/tmp/spectre_v2',
-        metadata={'input_name': 'spectre_v2'}))
+        path='/tmp/spectre_v2'))
     assert spectre.value == INPUT_SPECTRE_V2_RHEL_7
 
 
@@ -263,8 +197,7 @@ def test_cpu_vulns_spectre_v2_rhel6():
     Here test the examples for spectre_v2
     """
     spectre = CpuVulnsSpectreV2(context_wrap(INPUT_SPECTRE_V2_RHEL_6,
-        path='/tmp/spectre_v2',
-        metadata={'input_name': 'spectre_v2'}))
+        path='/tmp/spectre_v2'))
     assert spectre.value == INPUT_SPECTRE_V2_RHEL_6
 
 
@@ -277,17 +210,6 @@ def test_cpu_vulns_spectre_v2_exp1():
     assert "Input content is empty" in str(sc1)
 
 
-def test_cpu_vulns_spectre_v2_exp2():
-    """
-    Here test the examples cause expections
-    """
-    with pytest.raises(SkipException) as sc1:
-        CpuVulnsSpectreV2(context_wrap(INPUT_SPECTRE_V2_RHEL_6,
-            path='/tmp/spectre_v2',
-            metadata={'input_name': 'spectre_v5'}))
-    assert "Not expected file" in str(sc1)
-
-
 def test_cpu_vulns_documentation():
     """
     Here we test the examples in the documentation automatically using doctest.
@@ -297,23 +219,17 @@ def test_cpu_vulns_documentation():
     """
     env = {
         'sp_v1': CpuVulnsSpectreV1(context_wrap(INPUT_SPECTRE_V1,
-            path='/tmp/spectre_v1',
-            metadata={'input_name': 'spectre_v1'})),
+            path='/tmp/spectre_v1')),
         'sp_v2': CpuVulnsSpectreV2(context_wrap(INPUT_SPECTRE_V2_RHEL_7,
-            path='/tmp/spectre_v2',
-            metadata={'input_name': 'spectre_v2'})),
+            path='/tmp/spectre_v2')),
         'md': CpuVulnsMeltdown(context_wrap(INPUT_MELTDOWN,
-            path='/tmp/meltdown',
-            metadata={'input_name': 'meltdown'})),
+            path='/tmp/meltdown')),
         'ssb': CpuVulnsSpecStoreBypass(context_wrap(INPUT_SPEC_STORE_BYPASS,
-            path='/tmp/spec_store_bypass',
-            metadata={'input_name': 'spec_store_bypass'})),
+            path='/tmp/spec_store_bypass')),
         'smt': CpuVulnsSmt(context_wrap(INPUT_SMT,
-            path='/tmp/l1tf',
-            metadata={'input_name': 'l1tf'})),
+            path='/tmp/l1tf')),
         'mds': CpuVulnsMds(context_wrap(INPUT_MDS,
-            path='/tmp/mds',
-            metadata={'input_name': 'mds'}))}
+            path='/tmp/mds'))}
 
     failed, total = doctest.testmod(cpu_vulns, globs=env)
     assert failed == 0
