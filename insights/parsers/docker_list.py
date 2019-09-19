@@ -119,9 +119,25 @@ class DockerListImages(DockerList):
     key_field = 'REPOSITORY'
 
 
+@parser(Specs.podman_list_images)
+class PodmanListImages(DockerList):
+    """
+    Handle the list of podman images using the PodmanList parser class.
+    """
+    key_field = 'REPOSITORY'
+
+
 @parser(Specs.docker_list_containers)
 class DockerListContainers(DockerList):
     """
     Handle the list of docker images using the DockerList parser class.
+    """
+    key_field = 'NAMES'
+
+
+@parser(Specs.podman_list_containers)
+class PodmanListContainers(DockerList):
+    """
+    Handle the list of podman containers using the DockerList parser class.
     """
     key_field = 'NAMES'

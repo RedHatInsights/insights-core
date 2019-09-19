@@ -71,3 +71,19 @@ class DockerInspectContainer(DockerInspect):
     Parse docker container inspect output using the DockerInspect parser class.
     """
     pass
+
+
+@parser(Specs.podman_image_inspect)
+class PodmanInspectImage(DockerInspect):
+    """
+    Parse podman image inspect output using the DockerInspect parser class.
+    """
+    pass
+
+
+@parser(Specs.podman_container_inspect)
+class PodmanInspectContainer(DockerInspect):
+    """
+    Parse podman container inspect output using the DockerInspect parser class.
+    """
+    pass
