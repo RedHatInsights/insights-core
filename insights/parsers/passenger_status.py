@@ -15,7 +15,7 @@ class PassengerStatus(CommandParser, dict):
     Parse the passenger-status command output.
 
     Produces a simple dictionary of keys and values from the command output
-    contents, stored in the ``data`` attribute.
+    contents.
 
     Sample command output::
 
@@ -65,16 +65,16 @@ class PassengerStatus(CommandParser, dict):
             raise SkipException("Empty content")
 
         group = ''
-        self.data = {}
+        data = {}
         for line in content:
             line = line.strip()
             if not group and ":" in line and not line.endswith(':'):
                 key, val = [i.strip() for i in line.split(':', 1)]
-                self.data[key] = val
+                data[key] = val
             elif line.startswith(("/usr/share/foreman#default", "/etc/puppet/rack#default")):
                 # set the group which the following pid will belong to
                 group = line.strip(':').split('/')[-1].replace('#', '_')
-                self.data[group] = group_list = {}
+                data[group] = group_list = {}
             elif group:
                 if line.startswith(("* PID:", "CPU")):
                     if line.strip().startswith("* PID:"):
@@ -96,6 +96,13 @@ class PassengerStatus(CommandParser, dict):
                     key, val = [i.strip() for i in line.split(':', 1)]
                     group_list[key] = val
 
-        if not self.data:
+        if not data:
             raise SkipException("No useful data")
-        self.update(self.data)
+        self.update(data)
+
+    @property
+    def data(self):
+        """
+        (dict): A simple dictionary of keys and values from the command output contents
+        """
+        return self
