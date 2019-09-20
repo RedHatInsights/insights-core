@@ -1,8 +1,8 @@
 """
-DockerList - command ``/usr/bin/docker (images|ps)``
+PodmanList - command ``/usr/bin/podman (images|ps)``
 ====================================================
 
-Parse the output of command "docker_list_images" and "docker_list_containers",
+Parse the output of command "podman_list_images" and "podman_list_containers",
 which have very similar formats.
 
 The header line is parsed and used as the names for the remaining columns.
@@ -13,21 +13,21 @@ such as 'IMAGE ID' are captured as is.
 If the header line and at least one data line are not found, no data is
 stored.
 
-Each row is stored as a dictionary, keyed on the header fields.  The data is
+Each row is stored as a dictionary, keyed on the header fields. The data is
 available in two formats:
 
 * The old format is a list of row dictionaries.
 * The new format stores each dictionary in a dictionary keyed on the value of
   a given field, given by the subclass.
 
-Sample output of command ``/usr/bin/docker images --all --no-trunc --digests``::
+Sample output of command ``/usr/bin/podman images --all --no-trunc --digests``::
 
-    REPOSITORY                           TAG                 DIGEST              IMAGE ID                                                           CREATED             VIRTUAL SIZE
+    REPOSITORY                           TAG                 DIGEST              IMAGE ID                                                           CREATED             SIZE
     rhel7_imagemagick                    latest              <none>              882ab98aae5394aebe91fe6d8a4297fa0387c3cfd421b2d892bddf218ac373b2   4 days ago          785.4 MB
     rhel6_nss-softokn                    latest              <none>              dd87dad2c7841a19263ae2dc96d32c501ee84a92f56aed75bb67f57efe4e48b5   5 days ago          449.7 MB
 
 
-Sample output of command ``/usr/bin/docker ps --all --no-trunc --size``::
+Sample output of command ``/usr/bin/podman ps --all --no-trunc --size``::
 
     CONTAINER ID                                                       IMAGE                                                              COMMAND                                            CREATED             STATUS                        PORTS                  NAMES               SIZE
     95516ea08b565e37e2a4bca3333af40a240c368131b77276da8dec629b7fe102   bd8638c869ea40a9269d87e9af6741574562af9ee013e03ac2745fb5f59e2478   "/bin/sh -c 'yum install -y vsftpd-2.2.2-6.el6'"   51 minutes ago      Exited (137) 50 minutes ago                          tender_rosalind     4.751 MB (virtual 200.4 MB)
@@ -36,7 +36,7 @@ Sample output of command ``/usr/bin/docker ps --all --no-trunc --size``::
 Examples:
     >>> images.rows[0]['REPOSITORY']
     'rhel6_vsftpd'
-    >>> images.rows[1]['VIRTUAL SIZE']
+    >>> images.rows[1]['SIZE']
     '785.4 MB'
     >>> images.data['rhel6_vsftpd']['CREATED']
     '37 minutes ago'
@@ -51,9 +51,9 @@ from insights.parsers import SkipException
 from insights.specs import Specs
 
 
-class DockerList(CommandParser):
+class PodmanList(CommandParser):
     """
-    A general class for parsing tabular docker list information.  Parsing
+    A general class for parsing tabular podman list information.  Parsing
     rules are:
 
     * The first line is the header line.
@@ -111,17 +111,17 @@ class DockerList(CommandParser):
                     self.data[k] = row
 
 
-@parser(Specs.docker_list_images)
-class DockerListImages(DockerList):
+@parser(Specs.podman_list_images)
+class PodmanListImages(PodmanList):
     """
-    Handle the list of docker images using the DockerList parser class.
+    Handle the list of podman images using the PodmanList parser class.
     """
     key_field = 'REPOSITORY'
 
 
-@parser(Specs.docker_list_containers)
-class DockerListContainers(DockerList):
+@parser(Specs.podman_list_containers)
+class PodmanListContainers(PodmanList):
     """
-    Handle the list of docker images using the DockerList parser class.
+    Handle the list of podman containers using the PodmanList parser class.
     """
     key_field = 'NAMES'

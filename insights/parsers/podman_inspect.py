@@ -1,12 +1,10 @@
 """
-DockerInspect - Command ``docker inspect --type={TYPE}``
+PodmanInspect - Command ``podman inspect --type={TYPE}``
 ========================================================
 
-This module parses the output of the ``docker inspect`` command.  This uses
+This module parses the output of the ``podman inspect`` command.  This uses
 the ``core.marshalling.unmarshal`` function to parse the JSON output from the
-commands.  The data is stored as a nested dictionary in the ``data``
-attribute, and uses the ``LegacyItemAccess`` mixin class to provide ``get``
-and ``contains`` access to the dictionary via the object itself.
+commands.  The data is stored as a dictionary.
 
 Sample input::
 
@@ -26,7 +24,7 @@ Sample input::
 
 Examples:
 
-    >>> image = shared[DockerInspectContainer]
+    >>> image = shared[PodmanInspectContainer]
     >>> image.data['ID'] # new-style access
     '97d7cd1a5d8fd7730e83bb61ecbc993742438e966ac5c11910776b5d53f4ae07'
     >>> image['Name'] # old-style access
@@ -41,9 +39,9 @@ from ..core.marshalling import unmarshal
 from insights.specs import Specs
 
 
-class DockerInspect(LegacyItemAccess, CommandParser):
+class PodmanInspect(LegacyItemAccess, CommandParser):
     """
-    Parse the output of command "docker inspect --type=image" and "docker
+    Parse the output of command "podman inspect --type=image" and "podman
     inspect --type=container".  The output of these two commands is formatted
     as JSON, so "json.loads" is an option to parse the output in the future.
     """
@@ -57,17 +55,17 @@ class DockerInspect(LegacyItemAccess, CommandParser):
             self.data = {}
 
 
-@parser(Specs.docker_image_inspect)
-class DockerInspectImage(DockerInspect):
+@parser(Specs.podman_image_inspect)
+class PodmanInspectImage(PodmanInspect):
     """
-    Parse docker image inspect output using the DockerInspect parser class.
+    Parse podman image inspect output using the PodmanInspect parser class.
     """
     pass
 
 
-@parser(Specs.docker_container_inspect)
-class DockerInspectContainer(DockerInspect):
+@parser(Specs.podman_container_inspect)
+class PodmanInspectContainer(PodmanInspect):
     """
-    Parse docker container inspect output using the DockerInspect parser class.
+    Parse podman container inspect output using the PodmanInspect parser class.
     """
     pass
