@@ -451,4 +451,4 @@ def test_podman_object_image_inspect():
 
 def test_podman_container_inspect_truncated_input():
     result = podman_inspect.PodmanInspectContainer(context_wrap(PODMAN_CONTAINER_INSPECT_TRUNCATED))
-    assert result.data == {}
+    assert result == {}
