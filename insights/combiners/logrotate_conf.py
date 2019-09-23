@@ -19,7 +19,7 @@ from insights.core.plugins import combiner, parser
 from insights.parsers.logrotate_conf import LogrotateConf
 from insights.parsr.query import eq
 from insights.specs import Specs
-from insights.parsr import (AnyChar, Choice, EOF, EOL, Forward, LeftCurly,
+from insights.parsr import (AnyChar, Char, Choice, EOF, EOL, Forward, LeftCurly,
         LineEnd, Literal, Many, Number, OneLineComment, Opt, PosMarker,
         QuotedString, RightCurly, skip_none, String, WS, WSChar)
 from insights.parsr.query import Directive, Entry, Section
@@ -150,6 +150,9 @@ class DocParser(object):
     def __init__(self, ctx):
         self.ctx = ctx
 
+        # hack for files with garbage at the ends of comment lines
+        junk_space = Many(Char("\udcc2") | Char("\udca0") | Char("\xa0") | Char("\xc2"))
+
         scripts = set("postrotate prerotate firstaction lastaction preremove".split())
         Stanza = Forward()
         Spaces = Many(WSChar)
@@ -169,7 +172,7 @@ class DocParser(object):
         Rest = Many(Attr)
         Block = BeginBlock >> Many(Stanza).map(skip_none).map(self.to_entries) << EndBlock
         Stmt = WS >> (Script | (First + Rest + Opt(Block))) << WS
-        Stanza <= WS >> (Stmt | Comment) << WS
+        Stanza <= WS >> (Stmt | Comment) << ((junk_space + WS) | WS)
         Doc = Many(Stanza).map(skip_none).map(self.to_entries)
 
         self.Top = Doc + EOF

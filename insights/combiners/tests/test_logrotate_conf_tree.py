@@ -1,3 +1,4 @@
+# coding=utf-8
 from insights.parsr.query import first
 from insights.combiners.logrotate_conf import _LogRotateConf, LogRotateConfTree
 from insights.tests import context_wrap
@@ -49,6 +50,22 @@ include /etc/logrotate.d
 """.strip()
 
 
+JUNK_SPACE = """
+#SEG_15.06.01 
+/var/log/spooler
+{
+    compress
+    missingok
+    rotate 30
+    size 1M
+    sharedscripts
+    postrotate
+        /bin/kill -HUP `cat /var/run/syslogd.pid 2> /dev/null` 2> /dev/null || true
+    endscript
+}
+""".strip()
+
+
 def test_logrotate_tree():
     p = _LogRotateConf(context_wrap(CONF, path="/etc/logrotate.conf"))
     conf = LogRotateConfTree([p])
@@ -59,3 +76,9 @@ def test_logrotate_tree():
     assert len(conf["/var/log/btmp"]["rotate"]) == 1
     assert len(conf["/var/log/btmp"]["postrotate"]) == 1
     assert conf["/var/log/btmp"]["postrotate"][first].value == "do some stuff to btmp"
+
+
+def test_junk_space():
+    p = _LogRotateConf(context_wrap(JUNK_SPACE, path="/etc/logrotate.conf"))
+    conf = LogRotateConfTree([p])
+    assert "compress" in conf["/var/log/spooler"]
