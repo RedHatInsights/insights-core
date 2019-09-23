@@ -6,7 +6,8 @@ This parser parses the content from kernel config file for
 individual installed kernel. This parser will return the data
 in dictionary format.
 
-Sample Content from ``/boot/config-3.10.0-862.el7.x86_64``
+Sample Content from ``/boot/config-3.10.0-862.el7.x86_64``::
+
 
     #
     # Automatically generated file; DO NOT EDIT.
@@ -40,7 +41,7 @@ from ..parsers import split_kv_pairs
 from insights.specs import Specs
 
 
-@parser(Specs.scsi_fwver)
+@parser(Specs.kernel_config)
 class KernelConf(LegacyItemAccess, Parser):
 
     """
@@ -49,15 +50,11 @@ class KernelConf(LegacyItemAccess, Parser):
 
     """
 
-    def __init__(self, context):
-        self.data = {}
-        self.config_name = context.path.rsplit("/")[-1]
-        super(KernelConf, self).__init__(context)
-
     def parse_content(self, content):
         if (not content) or (not self.file_path):
             raise SkipException("No Contents")
 
+        self.config_name = self.file_path.rsplit("/")[-1]
         lines = [l for l in content if not l.strip().startswith('#')]
         self.data = split_kv_pairs(lines, ordered=True)
 

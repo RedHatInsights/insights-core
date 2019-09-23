@@ -36,7 +36,7 @@ KCONFIG_FILE_PATH_NO = ""
 
 
 def test_kernel_config():
-    r = kernel_config.KernelConf(context_wrap(KERNEL_CONFIG, KCONFIG_FILE_PATH))
+    r = KernelConf(context_wrap(KERNEL_CONFIG, KCONFIG_FILE_PATH))
     assert r.data["CONFIG_PREEMPT_RT_FULL"] == "y"
     assert len(r.data) == 8
     assert r.kconf_file == "config-3.10.0-327.28.3.rt56.235.el7.x86_64"
@@ -52,7 +52,7 @@ def test_kernel_config():
 
 def test_docs():
     env = {
-        'kconfig': kernel_config.KernelConf(context_wrap(KERNEL_CONFIG, KCONFIG_FILE_PATH))
+        'kconfig': KernelConf(context_wrap(KERNEL_CONFIG, KCONFIG_FILE_PATH))
     }
     failed, total = doctest.testmod(kernel_config, globs=env)
     assert failed == 0
