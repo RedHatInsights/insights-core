@@ -123,12 +123,8 @@ class VDOStatus(YAMLParser):
             raise ParseException('Not available device mapper path in string \'%s\'' % vs)
 
         # Has device mapper path when 'VDO statistics' value is a dict
-        try:
-            dm = list(vs.keys())[0]
-            return vs[dm]
-        except:
-            err_path = "['VDOs'][%s]['VDO statistics'][%s]" % (vol, dm)
-            raise KeyError('No key(s) named %s in %s' % (dm, err_path))
+        dm = list(vs.keys())[0]
+        return vs[dm]
 
     @property
     def volumns(self):
