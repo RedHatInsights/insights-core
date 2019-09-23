@@ -24,7 +24,6 @@ Sample input::
 
 Examples:
 
-    >>> image = shared[PodmanInspectContainer]
     >>> image.get('ID') # new-style access
     '97d7cd1a5d8fd7730e83bb61ecbc993742438e966ac5c11910776b5d53f4ae07'
     >>> image.get('State').get('Paused') # sub-dictionaries
@@ -32,8 +31,9 @@ Examples:
 
 """
 
-from .. import parser, CommandParser
-from ..core.marshalling import unmarshal
+from insights import parser, CommandParser
+from insights.core.marshalling import unmarshal
+from insights.parsers import SkipException
 from insights.specs import Specs
 
 
@@ -42,15 +42,21 @@ class PodmanInspect(CommandParser, dict):
     Parse the output of command "podman inspect --type=image" and "podman
     inspect --type=container".  The output of these two commands is formatted
     as JSON, so "json.loads" is an option to parse the output in the future.
+
+    Raises: SkipException if content is not provided
     """
 
     def parse_content(self, content):
         content = "\n".join(list(content))
+
+        if not content:
+            raise SkipException
+
         try:
             inspect_data = unmarshal(content)
             self.update(inspect_data[0])
         except:
-            self.update({})
+            raise SkipException
 
 
 @parser(Specs.podman_image_inspect)
