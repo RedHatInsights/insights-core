@@ -19,6 +19,21 @@ CONFIG_ARCH_MMAP_RND_COMPAT_BITS_MIN=8
 CONFIG_PREEMPT_RT_FULL=y
 """.strip()
 
+KERNEL_CONFIG_2 = """
+#
+# Automatically generated file; DO NOT EDIT.
+# Linux/x86_64 3.10.0-693.el7.x86_64 Kernel Configuration
+#
+CONFIG_64BIT=y
+CONFIG_X86_64=y
+CONFIG_X86=y
+CONFIG_INSTRUCTION_DECODER=y
+CONFIG_OUTPUT_FORMAT="elf64-x86-64"
+CONFIG_ARCH_DEFCONFIG="arch/x86/configs/x86_64_defconfig"
+CONFIG_ARCH_MMAP_RND_COMPAT_BITS_MIN=8
+# CONFIG_PREEMPT_RT_FULL is not set
+# CONFIG_IRQ_DOMAIN_DEBUG is not set
+""".strip()
 
 KCONFIG_FILE_PATH = "/boot/config-3.10.0-327.28.3.rt56.235.el7.x86_64"
 
@@ -40,6 +55,9 @@ def test_kernel_config():
     assert r.data["CONFIG_PREEMPT_RT_FULL"] == "y"
     assert len(r.data) == 8
     assert r.kconf_file == "config-3.10.0-327.28.3.rt56.235.el7.x86_64"
+
+    r = KernelConf(context_wrap(KERNEL_CONFIG_2, KCONFIG_FILE_PATH))
+    assert len(r.data) == 7
 
     with pytest.raises(ParseException) as exc:
         r = KernelConf(context_wrap(KERNEL_CONFIG_NO_2, KCONFIG_FILE_PATH))

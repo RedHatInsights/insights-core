@@ -36,7 +36,7 @@ Examples:
 
 
 from insights import Parser, parser, LegacyItemAccess
-from insights.parsers import SkipException, ParseException
+from insights.parsers import SkipException
 from ..parsers import split_kv_pairs
 from insights.specs import Specs
 
@@ -53,13 +53,9 @@ class KernelConf(LegacyItemAccess, Parser):
     def parse_content(self, content):
         if (not content) or (not self.file_path):
             raise SkipException("No Contents")
-
         self.config_name = self.file_path.rsplit("/")[-1]
         lines = [l for l in content if not l.strip().startswith('#')]
         self.data = split_kv_pairs(lines, ordered=True)
-
-        if not self.data:
-            raise ParseException("No Parsed Contents")
 
     @property
     def kconf_file(self):
