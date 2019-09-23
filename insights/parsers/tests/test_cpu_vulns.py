@@ -1,10 +1,7 @@
 from insights.parsers import SkipException
 from insights.tests import context_wrap
 from insights.parsers import cpu_vulns
-from insights.parsers.cpu_vulns import CpuVulnsMeltdown
-from insights.parsers.cpu_vulns import CpuVulnsSpectreV1
-from insights.parsers.cpu_vulns import CpuVulnsSpectreV2
-from insights.parsers.cpu_vulns import CpuVulnsSpecStoreBypass
+from insights.parsers.cpu_vulns import CpuVulns
 import pytest
 import doctest
 
@@ -72,7 +69,7 @@ Mitigation: Clear CPU buffers; SMT Host state unknown
 
 # CpuVulnsMeltdown
 def test_cpu_vulns_meltdown():
-    spectre = CpuVulnsMeltdown(context_wrap(INPUT_MELTDOWN,
+    spectre = CpuVulns(context_wrap(INPUT_MELTDOWN,
         path='/tmp/meltdown'))
     assert spectre.value == INPUT_MELTDOWN
 
@@ -82,25 +79,25 @@ def test_cpu_vulns_meltdown_exp1():
     Here test the examples cause expections
     """
     with pytest.raises(SkipException) as sc1:
-        CpuVulnsMeltdown(context_wrap(''))
+        CpuVulns(context_wrap(''))
     assert "Input content is empty" in str(sc1)
 
 
 # CpuVulnsSpecStoreBypass
 def test_cpu_vulns_spec_store_bypass():
-    spectre = CpuVulnsSpecStoreBypass(context_wrap(INPUT_SPEC_STORE_BYPASS,
+    spectre = CpuVulns(context_wrap(INPUT_SPEC_STORE_BYPASS,
         path='/tmp/spec_store_bypass'))
     assert spectre.value == INPUT_SPEC_STORE_BYPASS
 
 
 def test_cpu_vulns_spec_store_bypass_2():
-    spectre = CpuVulnsSpecStoreBypass(context_wrap(INPUT_SPEC_STORE_BYPASS_2,
+    spectre = CpuVulns(context_wrap(INPUT_SPEC_STORE_BYPASS_2,
         path='/tmp/spec_store_bypass'))
     assert spectre.value == INPUT_SPEC_STORE_BYPASS_2
 
 
 def test_cpu_vulns_spec_store_bypass_3():
-    spectre = CpuVulnsSpecStoreBypass(context_wrap(INPUT_SPEC_STORE_BYPASS_3,
+    spectre = CpuVulns(context_wrap(INPUT_SPEC_STORE_BYPASS_3,
         path='/tmp/spec_store_bypass'))
     assert spectre.value == INPUT_SPEC_STORE_BYPASS_3
 
@@ -110,13 +107,13 @@ def test_cpu_vulns_spec_store_bypass_exp1():
     Here test the examples cause expections
     """
     with pytest.raises(SkipException) as sc1:
-        CpuVulnsSpecStoreBypass(context_wrap(''))
+        CpuVulns(context_wrap(''))
     assert "Input content is empty" in str(sc1)
 
 
 # CpuVulnsSpectreV1
 def test_cpu_vulns_spectre_v1():
-    spectre = CpuVulnsSpectreV1(context_wrap(INPUT_SPECTRE_V1,
+    spectre = CpuVulns(context_wrap(INPUT_SPECTRE_V1,
         path='/tmp/spectre_v1'))
     assert spectre.value == INPUT_SPECTRE_V1
 
@@ -126,7 +123,7 @@ def test_cpu_vulns_spectre_v1_exp1():
     Here test the examples cause expections
     """
     with pytest.raises(SkipException) as sc1:
-        CpuVulnsSpectreV1(context_wrap(''))
+        CpuVulns(context_wrap(''))
     assert "Input content is empty" in str(sc1)
 
 
@@ -135,7 +132,7 @@ def test_cpu_vulns_spectre_v2_rhel7():
     """
     Here test the examples for spectre_v2
     """
-    spectre = CpuVulnsSpectreV2(context_wrap(INPUT_SPECTRE_V2_RHEL_7,
+    spectre = CpuVulns(context_wrap(INPUT_SPECTRE_V2_RHEL_7,
         path='/tmp/spectre_v2'))
     assert spectre.value == INPUT_SPECTRE_V2_RHEL_7
 
@@ -144,7 +141,7 @@ def test_cpu_vulns_spectre_v2_rhel6():
     """
     Here test the examples for spectre_v2
     """
-    spectre = CpuVulnsSpectreV2(context_wrap(INPUT_SPECTRE_V2_RHEL_6,
+    spectre = CpuVulns(context_wrap(INPUT_SPECTRE_V2_RHEL_6,
         path='/tmp/spectre_v2'))
     assert spectre.value == INPUT_SPECTRE_V2_RHEL_6
 
@@ -154,7 +151,7 @@ def test_cpu_vulns_spectre_v2_exp1():
     Here test the examples cause expections
     """
     with pytest.raises(SkipException) as sc1:
-        CpuVulnsSpectreV2(context_wrap(''))
+        CpuVulns(context_wrap(''))
     assert "Input content is empty" in str(sc1)
 
 
@@ -166,13 +163,13 @@ def test_cpu_vulns_documentation():
     passed in as a parameter to the rule declaration.
     """
     env = {
-        'sp_v1': CpuVulnsSpectreV1(context_wrap(INPUT_SPECTRE_V1,
+        'sp_v1': CpuVulns(context_wrap(INPUT_SPECTRE_V1,
             path='/tmp/spectre_v1')),
-        'sp_v2': CpuVulnsSpectreV2(context_wrap(INPUT_SPECTRE_V2_RHEL_7,
+        'sp_v2': CpuVulns(context_wrap(INPUT_SPECTRE_V2_RHEL_7,
             path='/tmp/spectre_v2')),
-        'md': CpuVulnsMeltdown(context_wrap(INPUT_MELTDOWN,
+        'md': CpuVulns(context_wrap(INPUT_MELTDOWN,
             path='/tmp/meltdown')),
-        'ssb': CpuVulnsSpecStoreBypass(context_wrap(INPUT_SPEC_STORE_BYPASS,
+        'ssb': CpuVulns(context_wrap(INPUT_SPEC_STORE_BYPASS,
             path='/tmp/spec_store_bypass'))}
 
     failed, total = doctest.testmod(cpu_vulns, globs=env)
