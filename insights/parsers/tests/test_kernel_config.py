@@ -59,10 +59,6 @@ def test_kernel_config():
     r = KernelConf(context_wrap(KERNEL_CONFIG_2, KCONFIG_FILE_PATH))
     assert len(r.data) == 7
 
-    with pytest.raises(ParseException) as exc:
-        r = KernelConf(context_wrap(KERNEL_CONFIG_NO_2, KCONFIG_FILE_PATH))
-    assert 'No Parsed Contents' in str(exc)
-
     with pytest.raises(SkipException) as exc:
         r = KernelConf(context_wrap(KERNEL_CONFIG_NO, KCONFIG_FILE_PATH))
     assert 'No Contents' in str(exc)
