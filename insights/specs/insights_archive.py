@@ -78,7 +78,7 @@ class InsightsArchiveSpecs(Specs):
     gluster_v_status = simple_file("insights_commands/gluster_volume_status")
     gluster_peer_status = simple_file("insights_commands/gluster_peer_status")
     hammer_ping = simple_file("insights_commands/hammer_ping")
-    hammer_task_list = simple_file("insights_commands/hammer_--csv_task_list")
+    hammer_task_list = simple_file("insights_commands/hammer_--config_.root..hammer.cli.modules.d.foreman.yml_--output_csv_task_list_--search_state_running_AND_label_Actions_Candlepin_ListenOnCandlepinEvents_OR_label_Actions_Katello_EventQueue_Monitor")
     heat_crontab = simple_file("insights_commands/crontab_-l_-u_heat")
     heat_crontab_container = simple_file("insights_commands/docker_exec_heat_api_cron_.usr.bin.crontab_-l_-u_heat")
     installed_rpms = head(all_installed_rpms)
