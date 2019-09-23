@@ -41,7 +41,7 @@ Examples:
     >>> tasks[0]['ID']  # Fetch rows directly
     '92b732ea-7423-4644-8890-80e054f1799a'
     >>> tasks[0]['Task errors']  # Literal contents of field - quotes not stripped
-    '""'
+    ''
     >>> error_tasks = tasks.search(Result='error')  # List of dictionaries
     >>> len(error_tasks)
     6
@@ -51,41 +51,46 @@ Examples:
     '500 Internal Server Error'
 """
 
-from .. import parser, CommandParser
-from . import parse_delimited_table, keyword_search
+from insights import parser, CommandParser
+from insights.parsers import keyword_search, SkipException
 from insights.specs import Specs
+import csv
 
 
 @parser(Specs.hammer_task_list)
-class HammerTaskList(CommandParser):
+class HammerTaskList(CommandParser, list):
     """
-    Parse the CSV output from the ``hammer --csv task list`` command.
+    Parse the CSV output from the ``hammer --output csv task list`` command.
+
+    Raises:
+        SkipException: When nothing is parsed.
 
     Attributes:
-        tasks (list): The list of tasks, in the order they appear in the
-            file, as dictionaries of fields and values.
         can_authenticate (bool): Whether we have valid data; if False it's
             probably due to not being able to authenticate.
     """
-    def __init__(self, *args, **kwargs):
-        self.tasks = []
-        self.can_authenticate = False
-        super(HammerTaskList, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
-        # We can authenticate if we got at least a heading line - we assume
-        # that we don't get one if we can't authenticate, but that we might
-        # have zero tasks because the user has cleared old tasks out.
-        self.can_authenticate = any(line.startswith('ID') for line in content)
-        # If we've got content, proceed!
+        self.can_authenticate = content[0].startswith('ID')
         if self.can_authenticate:
-            self.tasks = parse_delimited_table(content, heading_ignore=['ID'], delim=',')
+            headings = [c.strip() for c in content[0].split(',')]
+            creader = csv.reader(content[1:], skipinitialspace=True)
+            for line in creader:
+                strip_line = [item.strip() for item in line]
+                self.append(dict(zip(headings, strip_line)))
+        if len(self) <= 0:
+            raise SkipException()
+        self._running_tasks = [t for t in self if t.get('State', t.get('state')) == 'running']
 
-    def __len__(self):
-        return len(self.tasks)
+    @property
+    def tasks(self):
+        """Return a list of tasks, in the order they appear in the file, as dictionaries of fields and values."""
+        return self
 
-    def __getitem__(self, line):
-        return self.tasks[line]
+    @property
+    def running_tasks(self):
+        """Return a list of running tasks"""
+        return self._running_tasks
 
     def search(self, **kwargs):
         """
@@ -105,4 +110,4 @@ class HammerTaskList(CommandParser):
             >>> len(tasks.search(State='stopped', Result='error'))
             6
         """
-        return keyword_search(self.tasks, **kwargs)
+        return keyword_search(self, **kwargs)
