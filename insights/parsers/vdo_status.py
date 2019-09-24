@@ -119,12 +119,11 @@ class VDOStatus(YAMLParser):
         vs = self.data['VDOs'][vol]['VDO statistics']
 
         # No device mapper path when 'VDO statistics' value is a string of 'not available'
-        if isinstance(vs, str):
+        if not isinstance(vs, dict):
             raise ParseException('Not available device mapper path in string \'%s\'' % vs)
 
         # Has device mapper path when 'VDO statistics' value is a dict
-        dm = list(vs.keys())[0]
-        return vs[dm]
+        return list(vs.values())[0]
 
     @property
     def volumns(self):
