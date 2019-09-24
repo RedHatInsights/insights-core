@@ -26,23 +26,23 @@ Sample Content from ``/boot/config-3.10.0-862.el7.x86_64``::
 Examples:
     >>> type(kconfig)
     <class 'insights.parsers.kernel_config.KernelConf'>
-    >>> kconfig.data["CONFIG_PREEMPT_RT_FULL"] == "y"
+    >>> kconfig.get("CONFIG_PREEMPT_RT_FULL") == "y"
     True
-    >>> len(kconfig.data) == 8
+    >>> len(kconfig) == 8
     True
     >>> kconfig.kconf_file
     'config-3.10.0-327.28.3.rt56.235.el7.x86_64'
 """
 
 
-from insights import Parser, parser, LegacyItemAccess
+from insights import Parser, parser
 from insights.parsers import SkipException
-from ..parsers import split_kv_pairs
+from insights.parsers import split_kv_pairs
 from insights.specs import Specs
 
 
 @parser(Specs.kernel_config)
-class KernelConf(LegacyItemAccess, Parser):
+class KernelConf(Parser, dict):
 
     """
     Parase `/boot/config-*` file, returns a dict contains kernel
@@ -53,13 +53,14 @@ class KernelConf(LegacyItemAccess, Parser):
     def parse_content(self, content):
         if (not content) or (not self.file_path):
             raise SkipException("No Contents")
-        self.config_name = self.file_path.rsplit("/")[-1]
+
+        self._config_name = self.file_path.rsplit("/")[-1]
         lines = [l for l in content if not l.strip().startswith('#')]
-        self.data = split_kv_pairs(lines, ordered=True)
+        self.update(split_kv_pairs(lines, ordered=True))
 
     @property
     def kconf_file(self):
         """
         (str): It will return the kernel config file.
         """
-        return self.config_name
+        return self._config_name

@@ -52,12 +52,12 @@ KCONFIG_FILE_PATH_NO = ""
 
 def test_kernel_config():
     r = KernelConf(context_wrap(KERNEL_CONFIG, KCONFIG_FILE_PATH))
-    assert r.data["CONFIG_PREEMPT_RT_FULL"] == "y"
-    assert len(r.data) == 8
+    assert r.get("CONFIG_PREEMPT_RT_FULL") == "y"
+    assert len(r) == 8
     assert r.kconf_file == "config-3.10.0-327.28.3.rt56.235.el7.x86_64"
 
     r = KernelConf(context_wrap(KERNEL_CONFIG_2, KCONFIG_FILE_PATH))
-    assert len(r.data) == 7
+    assert len(r) == 7
 
     with pytest.raises(SkipException) as exc:
         r = KernelConf(context_wrap(KERNEL_CONFIG_NO, KCONFIG_FILE_PATH))

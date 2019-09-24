@@ -105,7 +105,6 @@ class InsightsArchiveSpecs(Specs):
     ip_netns_exec_namespace_lsof = glob_file("insights_commands/ip_netns_exec_*_lsof_-i")
     iscsiadm_m_session = simple_file("insights_commands/iscsiadm_-m_session")
     katello_service_status = simple_file("insights_commands/katello-service_status")
-    kernel_config = glob_file("/boot/config-*")
     keystone_crontab = simple_file("insights_commands/crontab_-l_-u_keystone")
     keystone_crontab_container = simple_file("insights_commands/docker_exec_keystone_cron_.usr.bin.crontab_-l_-u_keystone")
     libkeyutils = simple_file("insights_commands/find_-L_.lib_.lib64_-name_libkeyutils.so")
