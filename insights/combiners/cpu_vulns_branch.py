@@ -11,6 +11,9 @@ Examples:
     >>> list(cvb.keys())
     ['meltdown', 'spectre_v1']
 
+Raises:
+    SkipComponent: Not available data
+
 """
 
 from insights.core.plugins import combiner
