@@ -11,6 +11,7 @@ from __future__ import division
 from insights import parser
 from insights import YAMLParser
 from insights.specs import Specs
+from insights.parsers import ParseException
 
 
 @parser(Specs.vdo_status)
@@ -92,6 +93,7 @@ class VDOStatus(YAMLParser):
     """
 
     def __get_dev_mapper__(self, vol):
+
         """
         Device mapper path of a specified vdo
 
@@ -103,14 +105,25 @@ class VDOStatus(YAMLParser):
 
         Raises:
             KeyError: If KEYs doesn't exist
+            ParseException: When input content is not available to parse
         """
 
+        # Check validation for vol name, return KeyError if not exists
         try:
-            dm_path = ('/dev/mapper/%s' % vol)
-            return self.data['VDOs'][vol]['VDO statistics'][dm_path]
+            self.data['VDOs'][vol]
         except:
-            err_path = "['VDOs'][%s]['VDO statistics'][%s]" % (vol, dm_path)
-            raise KeyError('No key(s) named: %s' % err_path)
+            err_path = "['VDOs'][%s]" % (vol)
+            raise KeyError('No key(s) named: %s in %s' % (vol, err_path))
+
+        # Parse next layer of ['VDO statistics'] when vol exists.
+        vs = self.data['VDOs'][vol]['VDO statistics']
+
+        # No device mapper path when 'VDO statistics' value is a string of 'not available'
+        if not isinstance(vs, dict):
+            raise ParseException('Not available device mapper path in string \'%s\'' % vs)
+
+        # Has device mapper path when 'VDO statistics' value is a dict
+        return list(vs.values())[0]
 
     @property
     def volumns(self):

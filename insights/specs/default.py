@@ -475,6 +475,7 @@ class DefaultSpecs(Specs):
     katello_service_status = simple_command("/usr/bin/katello-service status")
     kdump_conf = simple_file("/etc/kdump.conf")
     kerberos_kdc_log = simple_file("var/log/krb5kdc.log")
+    kernel_config = glob_file("/boot/config-*")
     kexec_crash_loaded = simple_file("/sys/kernel/kexec_crash_loaded")
     kexec_crash_size = simple_file("/sys/kernel/kexec_crash_size")
     keystone_conf = first_file(["/var/lib/config-data/puppet-generated/keystone/etc/keystone/keystone.conf", "/etc/keystone/keystone.conf"])
