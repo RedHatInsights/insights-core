@@ -26,6 +26,11 @@ class CpuVulns(Parser):
         SkipException: When file content is empty
 
     """
+
+    def __init__(self, *args, **kwards):
+        super(CpuVulns, self).__init__(*args, **kwards)
+        self.path = args[0].path
+
     def parse_content(self, content):
         if not content:
             raise SkipException("Input content is empty")
