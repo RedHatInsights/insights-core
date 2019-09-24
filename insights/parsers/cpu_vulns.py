@@ -21,7 +21,6 @@ class CpuVulns(Parser):
 
     Attributes:
         value (str): the result parsed
-        path (str): the name of file parsed
 
     Raises:
         SkipException: When file content is empty
