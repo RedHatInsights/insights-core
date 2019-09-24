@@ -32,6 +32,12 @@ Vulnerable: Clear CPU buffers attempted, no microcode; SMT vulnerable
 
 BASE_PATH = '/sys/devices/system/cpu/vulnerabilities'
 
+INPUT1 = context_wrap(INPUT_MELTDOWN, path=os.path.join(BASE_PATH, 'meltdown'))
+INPUT2 = context_wrap(INPUT_SPECTRE_V1, path=os.path.join(BASE_PATH, 'spectre_v1'))
+INPUT3 = context_wrap(INPUT_SPECTRE_V2, path=os.path.join(BASE_PATH, 'spectre_v2'))
+INPUT4 = context_wrap(INPUT_SPEC_STORE_BYPASS, path=os.path.join(BASE_PATH, 'spec_store_bypass'))
+INPUT5 = context_wrap(INPUT_SMT, path=os.path.join(BASE_PATH, 'l1tf'))
+INPUT6 = context_wrap(INPUT_MDS, path=os.path.join(BASE_PATH, 'mds'))
 
 def test_values_comb_meltdown():
     obj = CpuVulnsBranch(context_wrap(INPUT_MELTDOWN, path=os.path.join(BASE_PATH, 'meltdown')))
@@ -64,13 +70,7 @@ def test_values_comb_mds():
 
 
 def test_values_integration():
-    input1 = context_wrap(INPUT_MELTDOWN, path=os.path.join(BASE_PATH, 'meltdown'))
-    input2 = context_wrap(INPUT_SPECTRE_V1, path=os.path.join(BASE_PATH, 'spectre_v1'))
-    input3 = context_wrap(INPUT_SPECTRE_V2, path=os.path.join(BASE_PATH, 'spectre_v2'))
-    input4 = context_wrap(INPUT_SPEC_STORE_BYPASS, path=os.path.join(BASE_PATH, 'spec_store_bypass'))
-    input5 = context_wrap(INPUT_SMT, path=os.path.join(BASE_PATH, 'l1tf'))
-    input6 = context_wrap(INPUT_MDS, path=os.path.join(BASE_PATH, 'mds'))
-    obj = CpuVulnsBranch(input1, input2, input3, input4, input5, input6)
+    obj = CpuVulnsBranch(INPUT1, INPUT2, INPUT3, INPUT4, INPUT5, INPUT6)
     assert obj.get_data == [{'meltdown': 'Mitigation: PTI'}, {'spectre_v1': 'Mitigation: Load fences'}, {'spectre_v2': 'Mitigation: Full generic retpoline, IBPB: conditional, IBRS_FW, STIBP: conditional, RSB filling'}, {'spec_store_bypass': 'Mitigation: Speculative Store Bypass disabled'}, {'l1tf': 'Mitigation: PTE Inversion; VMX: conditional cache flushes, SMT vulnerable'}, {'mds': 'Vulnerable: Clear CPU buffers attempted, no microcode; SMT vulnerable'}]
 
 
@@ -82,12 +82,12 @@ def test_x86_enabled_documentation():
     that has been passed in as a parameter to the rule declaration.
     """
 
-    parser1 = CpuVulns(context_wrap(INPUT_MELTDOWN))
-    parser2 = CpuVulns(context_wrap(INPUT_SPECTRE_V1))
-    parser3 = CpuVulns(context_wrap(INPUT_SPECTRE_V2))
-    parser4 = CpuVulns(context_wrap(INPUT_SPEC_STORE_BYPASS))
-    parser5 = CpuVulns(context_wrap(INPUT_SMT))
-    parser6 = CpuVulns(context_wrap(INPUT_MDS))
+    parser1 = CpuVulns(INPUT1)
+    parser2 = CpuVulns(INPUT2)
+    parser3 = CpuVulns(INPUT3)
+    parser4 = CpuVulns(INPUT4)
+    parser5 = CpuVulns(INPUT5)
+    parser6 = CpuVulns(INPUT6)
 
     env = {'cvb': CpuVulnsBranch([parser1, parser2, parser3, parser4, parser5, parser6])}
     failed, total = doctest.testmod(cpu_vulns_branch, globs=env)
