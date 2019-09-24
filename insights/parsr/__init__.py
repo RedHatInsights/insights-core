@@ -1040,7 +1040,7 @@ class OneLineComment(Parser):
     """
     def __init__(self, s):
         super(OneLineComment, self).__init__()
-        p = Literal(s) >> Opt(String(set(string.printable) - set("\r\n")), "")
+        p = Literal(s) >> Opt(String(set(string.printable + '\udcc3' + '\udca7' + '\udcb5') - set("\r\n")), "")
         self.add_child(p)
 
     def process(self, pos, data, ctx):
