@@ -122,7 +122,7 @@ Insights Core provides this functionality. It is an extensible framework
 for collecting and analyzing data on systems, from archives,
 directories, etc. in a standard way.
 
-Insights Core verses Red Hat Insights
+Insights Core versus Red Hat Insights
 -------------------------------------
 
 A common confusion about this project is how it relates to `Red Hat
