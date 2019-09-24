@@ -69,9 +69,9 @@ Mitigation: Clear CPU buffers; SMT Host state unknown
 
 # CpuVulnsMeltdown
 def test_cpu_vulns_meltdown():
-    spectre = CpuVulns(context_wrap(INPUT_MELTDOWN, path='meltdown'))
+    spectre = CpuVulns(context_wrap(INPUT_MELTDOWN, path='/sys/devices/system/cpu/vulnerabilities/meltdown'))
     assert spectre.value == INPUT_MELTDOWN
-    assert spectre.path == 'meltdown'
+    assert spectre.file_name == 'meltdown'
 
 
 def test_cpu_vulns_meltdown_exp1():
@@ -79,25 +79,27 @@ def test_cpu_vulns_meltdown_exp1():
     Here test the examples cause expections
     """
     with pytest.raises(SkipException) as sc1:
-        CpuVulns(context_wrap('', path='meltdown'))
+        CpuVulns(context_wrap('', path='/sys/devices/system/cpu/vulnerabilities/meltdown'))
     assert "Input content is empty" in str(sc1)
 
 
 # CpuVulnsSpecStoreBypass
 def test_cpu_vulns_spec_store_bypass():
-    spectre = CpuVulns(context_wrap(INPUT_SPEC_STORE_BYPASS, path='spec_store_bypass'))
+    spectre = CpuVulns(context_wrap(INPUT_SPEC_STORE_BYPASS, path='/sys/devices/system/cpu/vulnerabilities/spec_store_bypass'))
     assert spectre.value == INPUT_SPEC_STORE_BYPASS
-    assert spectre.value == INPUT_SPEC_STORE_BYPASS
+    assert spectre.file_name == 'spec_store_bypass'
 
 
 def test_cpu_vulns_spec_store_bypass_2():
-    spectre = CpuVulns(context_wrap(INPUT_SPEC_STORE_BYPASS_2, path='spec_store_bypass'))
+    spectre = CpuVulns(context_wrap(INPUT_SPEC_STORE_BYPASS_2, path='/sys/devices/system/cpu/vulnerabilities/spec_store_bypass'))
     assert spectre.value == INPUT_SPEC_STORE_BYPASS_2
+    assert spectre.file_name == 'spec_store_bypass'
 
 
 def test_cpu_vulns_spec_store_bypass_3():
-    spectre = CpuVulns(context_wrap(INPUT_SPEC_STORE_BYPASS_3, path='spec_store_bypass'))
+    spectre = CpuVulns(context_wrap(INPUT_SPEC_STORE_BYPASS_3, path='/sys/devices/system/cpu/vulnerabilities/spec_store_bypass'))
     assert spectre.value == INPUT_SPEC_STORE_BYPASS_3
+    assert spectre.file_name == 'spec_store_bypass'
 
 
 def test_cpu_vulns_spec_store_bypass_exp1():
@@ -111,8 +113,9 @@ def test_cpu_vulns_spec_store_bypass_exp1():
 
 # CpuVulnsSpectreV1
 def test_cpu_vulns_spectre_v1():
-    spectre = CpuVulns(context_wrap(INPUT_SPECTRE_V1, path='spectre_v1'))
+    spectre = CpuVulns(context_wrap(INPUT_SPECTRE_V1, path='/sys/devices/system/cpu/vulnerabilities/spectre_v1'))
     assert spectre.value == INPUT_SPECTRE_V1
+    assert spectre.file_name == 'spectre_v1'
 
 
 def test_cpu_vulns_spectre_v1_exp1():
@@ -129,16 +132,18 @@ def test_cpu_vulns_spectre_v2_rhel7():
     """
     Here test the examples for spectre_v2
     """
-    spectre = CpuVulns(context_wrap(INPUT_SPECTRE_V2_RHEL_7, path='spectre_v2'))
+    spectre = CpuVulns(context_wrap(INPUT_SPECTRE_V2_RHEL_7, path='/sys/devices/system/cpu/vulnerabilities/spectre_v2'))
     assert spectre.value == INPUT_SPECTRE_V2_RHEL_7
+    assert spectre.file_name == 'spectre_v2'
 
 
 def test_cpu_vulns_spectre_v2_rhel6():
     """
     Here test the examples for spectre_v2
     """
-    spectre = CpuVulns(context_wrap(INPUT_SPECTRE_V2_RHEL_6, path='spectre_v2'))
+    spectre = CpuVulns(context_wrap(INPUT_SPECTRE_V2_RHEL_6, path='/sys/devices/system/cpu/vulnerabilities/spectre_v2'))
     assert spectre.value == INPUT_SPECTRE_V2_RHEL_6
+    assert spectre.file_name == 'spectre_v2'
 
 
 def test_cpu_vulns_spectre_v2_exp1():
@@ -159,13 +164,13 @@ def test_cpu_vulns_documentation():
     """
     env = {
         'sp_v1': CpuVulns(context_wrap(INPUT_SPECTRE_V1,
-            path='spectre_v1')),
+            path='/sys/devices/system/cpu/vulnerabilities/spectre_v1')),
         'sp_v2': CpuVulns(context_wrap(INPUT_SPECTRE_V2_RHEL_7,
-            path='spectre_v2')),
+            path='/sys/devices/system/cpu/vulnerabilities/spectre_v2')),
         'md': CpuVulns(context_wrap(INPUT_MELTDOWN,
-            path='meltdown')),
+            path='/sys/devices/system/cpu/vulnerabilities/meltdown')),
         'ssb': CpuVulns(context_wrap(INPUT_SPEC_STORE_BYPASS,
-            path='spec_store_bypass'))}
+            path='/sys/devices/system/cpu/vulnerabilities/spec_store_bypass'))}
 
     failed, total = doctest.testmod(cpu_vulns, globs=env)
     assert failed == 0

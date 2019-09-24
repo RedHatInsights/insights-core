@@ -34,12 +34,12 @@ Vulnerable: Clear CPU buffers attempted, no microcode; SMT vulnerable
 """.strip()
 
 INPUT0 = context_wrap(INPUT_MELTDOWN, path='')
-INPUT1 = context_wrap(INPUT_MELTDOWN, path='meltdown')
-INPUT2 = context_wrap(INPUT_SPECTRE_V1, path='spectre_v1')
-INPUT3 = context_wrap(INPUT_SPECTRE_V2, path='spectre_v2')
-INPUT4 = context_wrap(INPUT_SPEC_STORE_BYPASS, path='spec_store_bypass')
-INPUT5 = context_wrap(INPUT_SMT, path='l1tf')
-INPUT6 = context_wrap(INPUT_MDS, path='mds')
+INPUT1 = context_wrap(INPUT_MELTDOWN, path='/sys/devices/system/cpu/vulnerabilities/meltdown')
+INPUT2 = context_wrap(INPUT_SPECTRE_V1, path='/sys/devices/system/cpu/vulnerabilities/spectre_v1')
+INPUT3 = context_wrap(INPUT_SPECTRE_V2, path='/sys/devices/system/cpu/vulnerabilities/spectre_v2')
+INPUT4 = context_wrap(INPUT_SPEC_STORE_BYPASS, path='/sys/devices/system/cpu/vulnerabilities/spec_store_bypass')
+INPUT5 = context_wrap(INPUT_SMT, path='/sys/devices/system/cpu/vulnerabilities/l1tf')
+INPUT6 = context_wrap(INPUT_MDS, path='/sys/devices/system/cpu/vulnerabilities/mds')
 
 parser0 = CpuVulns(INPUT0)
 parser1 = CpuVulns(INPUT1)

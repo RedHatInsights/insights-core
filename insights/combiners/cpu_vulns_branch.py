@@ -29,6 +29,6 @@ class CpuVulnsBranch(dict):
 
     def __init__(self, cpu_vulns):
         for cv in cpu_vulns:
-            self.update({cv.path: cv.value}) if cv.path else None
+            self.update({cv.file_name: cv.value}) if cv.file_name else None
         if len(self) == 0:
             raise SkipComponent('Not available data')
