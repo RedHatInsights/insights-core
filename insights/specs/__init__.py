@@ -248,6 +248,7 @@ class Specs(SpecSet):
     katello_service_status = RegistryPoint(filterable=True)
     kdump_conf = RegistryPoint()
     kerberos_kdc_log = RegistryPoint(filterable=True)
+    kernel_config = RegistryPoint(multi_output=True, filterable=True)
     kexec_crash_loaded = RegistryPoint()
     kexec_crash_size = RegistryPoint()
     keystone_conf = RegistryPoint()
