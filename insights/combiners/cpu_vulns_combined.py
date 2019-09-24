@@ -7,7 +7,7 @@ cpu vulnerabilities includes:
 
 Examples:
     >>> type(cvb)
-    <class 'insights.combiners.cpu_vulns_branch.CpuVulnsBranch'>
+    <class 'insights.combiners.cpu_vulns_combined.CpuVulnsCombined'>
     >>> list(cvb.keys())
     ['meltdown', 'spectre_v1']
 
@@ -22,7 +22,7 @@ from insights.parsers import SkipComponent
 
 
 @combiner(CpuVulns)
-class CpuVulnsBranch(dict):
+class CpuVulnsCombined(dict):
     """
     This combiner provides an interface to CPU vulnerabilities parsers.
     """
