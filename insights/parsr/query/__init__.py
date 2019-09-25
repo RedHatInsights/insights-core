@@ -65,7 +65,7 @@ class Entry(object):
     instances. Each instance has a name, attributes, a parent, and children.
     """
     def __init__(self, name=None, attrs=None, children=None, lineno=None, src=None):
-        self.name = name
+        self._name = name
         self.attrs = attrs or []
         self.children = children or []
         self.parent = None
@@ -75,6 +75,9 @@ class Entry(object):
             c.parent = self
 
     def __getattr__(self, name):
+        if name == "name" and self._name is not None:
+            return self._name
+
         res = self[name]
         if res:
             return res
@@ -193,7 +196,7 @@ class Entry(object):
         return Result(children=[c for c in self.children if query.test(c)])
 
     def __bool__(self):
-        return bool(self.name or self.attrs or self.children)
+        return bool(self._name or self.attrs or self.children)
 
     def __repr__(self):
         return "\n".join(pretty_format(self))
