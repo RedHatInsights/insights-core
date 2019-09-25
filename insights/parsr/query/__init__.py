@@ -38,19 +38,22 @@ def pretty_format(root, indent=4):
             results.append("")
 
     def inner(d, prefix=""):
-        if isinstance(d, Directive):
-            results.append(prefix + d.name + ": " + d.string_value)
-        elif isinstance(d, Section):
+        if isinstance(d, Result):
+            for c in d.children:
+                inner(c, prefix)
+            return
+        if d.children:
             sep()
-            header = d.name if not d.attrs else " ".join([d.name, d.string_value])
-            results.append(prefix + "[" + header + "]")
+            name = d.name or ""
+            header = name if not d.attrs else " ".join([name, d.string_value])
+            if header:
+                results.append(prefix + "[" + header + "]")
             prep = prefix + (" " * indent)
             for c in d.children:
                 inner(c, prep)
             sep()
         else:
-            for c in d.children:
-                inner(c, prefix)
+            results.append(prefix + (d.name or "") + ": " + d.string_value)
 
     inner(root)
     return results
@@ -72,7 +75,14 @@ class Entry(object):
             c.parent = self
 
     def __getattr__(self, name):
-        return getattr(self.src, name)
+        res = self[name]
+        if res:
+            return res
+
+        if hasattr(self.src, name):
+            return getattr(self.src, name)
+
+        return res
 
     @property
     def line(self):
@@ -135,6 +145,16 @@ class Entry(object):
         """
         roots = kwargs.get("roots", False)
         return self.select(*queries, deep=True, roots=roots)
+
+    def where(self, *queries, **kwargs):
+        """
+        Finds matching results anywhere in the configuration. The arguments are
+        the same as those accepted by :py:func:`compile_queries`, and the
+        kwargs are the same as those accepted by :py:func:`select`.
+        """
+        deep = kwargs.get("deep", False)
+        res = self.select(*queries, deep=deep)
+        return Result(children=list(set([c.parent for c in res])))
 
     @property
     def section(self):
@@ -243,8 +263,12 @@ class Result(Entry):
         queries behave more like dictionaries when you know only one result
         should exist.
         """
+        if len(self.children) == 0:
+            return None
+
         if len(self.children) == 1:
             return self.children[0].value
+
         raise Exception("More than one value to return.")
 
     def select(self, *queries, **kwargs):
@@ -427,7 +451,7 @@ def compile_queries(*queries):
     return inner
 
 
-def select(query, nodes, deep=False, roots=False):
+def select(query, nodes, deep=False, roots=None):
     """
     select runs query, a function returned by :py:func:`compile_queries`,
     against a list of :py:class:`Entry` instances. If you pass ``deep=True``,
@@ -456,20 +480,21 @@ def from_dict(orig):
     from_dict is a helper function that does its best to convert a python dict
     into a tree of :py:class:`Entry` instances that can be queried.
     """
+
     def inner(d):
         result = []
         for k, v in d.items():
             if isinstance(v, dict):
                 result.append(Entry(name=k, children=inner(v)))
             elif isinstance(v, list):
-                res = [from_dict(i) if isinstance(i, dict) else i for i in v]
+                res = [Entry(name=k, children=inner(i)) if isinstance(i, dict) else i for i in v]
                 if res:
                     if isinstance(res[0], Entry):
-                        result.append(Entry(name=k, children=res))
+                        result.extend(res)
                     else:
                         result.append(Entry(name=k, attrs=res))
                 else:
-                    result.append(Entry(name=k))
+                    result.append(Entry(name=k, attrs=[]))
             else:
                 result.append(Entry(name=k, attrs=[v]))
         return result
@@ -481,6 +506,13 @@ le = lift2(operator.le)
 eq = lift2(operator.eq)
 gt = lift2(operator.gt)
 ge = lift2(operator.ge)
+
+
+def isin(v, values):
+    return v in set(values)
+
+
+isin = lift2(isin)
 
 contains = lift2(operator.contains)
 startswith = lift2(str.startswith)
