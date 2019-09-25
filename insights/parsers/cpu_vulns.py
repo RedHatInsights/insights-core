@@ -7,7 +7,6 @@ This module provides the following parser:
 CpuVulns - ``/sys/devices/system/cpu/vulnerabilities/*``
 """
 
-from __future__ import division
 from insights import Parser
 from insights import parser
 from insights.specs import Specs
