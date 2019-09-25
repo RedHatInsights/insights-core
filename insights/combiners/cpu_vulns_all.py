@@ -1,13 +1,13 @@
 """
-CpuVulnsBranch - combiner for cpu vulnerabilities:
-==================================================
+CpuVulnsAll - combiner for cpu vulnerabilities:
+===============================================
 
 cpu vulnerabilities includes:
-    * CpuVulnsBranch - file /sys/devices/system/cpu/vulnerabilities/*
+    * CpuVulnsAll - file /sys/devices/system/cpu/vulnerabilities/*
 
 Examples:
     >>> type(cvb)
-    <class 'insights.combiners.cpu_vulns_combined.CpuVulnsCombined'>
+    <class 'insights.combiners.cpu_vulns_all.CpuVulnsAll'>
     >>> list(cvb.keys())
     ['meltdown', 'spectre_v1']
 
@@ -22,7 +22,7 @@ from insights.parsers import SkipComponent
 
 
 @combiner(CpuVulns)
-class CpuVulnsCombined(dict):
+class CpuVulnsAll(dict):
     """
     This combiner provides an interface to CPU vulnerabilities parsers.
     """
