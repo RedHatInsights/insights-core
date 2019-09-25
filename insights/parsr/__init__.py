@@ -335,6 +335,16 @@ class Parser(with_metaclass(_ParserMeta, Node)):
         return self.name or self.__class__.__name__
 
 
+class AnyChar(Parser):
+    def process(self, pos, data, ctx):
+        c = data[pos]
+        if c is not None:
+            return (pos + 1, c)
+        msg = "Expected any character."
+        ctx.set(pos, msg)
+        raise Exception(msg)
+
+
 class Char(Parser):
     """
     Char matches a single character.
@@ -1040,7 +1050,7 @@ class OneLineComment(Parser):
     """
     def __init__(self, s):
         super(OneLineComment, self).__init__()
-        p = Literal(s) >> Opt(String(set(string.printable) - set("\r\n")), "")
+        p = Literal(s) >> Opt(AnyChar.until(InSet("\r\n")), "")
         self.add_child(p)
 
     def process(self, pos, data, ctx):
@@ -1179,7 +1189,7 @@ RightParen = Char(")")
 Colon = Char(":")
 SemiColon = Char(";")
 Comma = Char(",")
-AnyChar = InSet(string.printable) % "Any Char"
+AnyChar = AnyChar()
 NonZeroDigit = InSet(set(string.digits) - set("0"))
 Digit = InSet(string.digits) % "Digit"
 Digits = String(string.digits) % "Digits"
