@@ -4,6 +4,7 @@ from insights.core.plugins import ContentException
 import pytest
 
 CMF = "blah: Command not found"
+NO_FILES_FOUND = "No files found for docker.service"
 NO_SUCH_FILE = "/usr/bin/blah: No such file or directory"
 MULTI_LINE = "blah: Command not found\n" \
              "/usr/bin/blah: No such file or directory"
@@ -18,6 +19,12 @@ def test_command_not_found():
     with pytest.raises(ContentException) as e:
         MockParser(context_wrap(CMF))
     assert "Command not found" in str(e.value)
+
+
+def test_no_files_found():
+    with pytest.raises(ContentException) as e:
+        MockParser(context_wrap(NO_FILES_FOUND))
+    assert "No files found for" in str(e.value)
 
 
 def test_no_such_file_or_directory():
