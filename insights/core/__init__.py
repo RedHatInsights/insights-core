@@ -514,6 +514,7 @@ class CommandParser(Parser):
             "no such file or directory",
             "command not found",
             "no module named",
+            "no files found for",
     ]
     """
     This variable contains filters for bad responses from commands defined
