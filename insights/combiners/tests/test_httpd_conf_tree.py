@@ -1,3 +1,4 @@
+# coding=utf-8
 from insights.combiners.httpd_conf import (_HttpdConf, HttpdConfTree, _HttpdConfSclHttpd24,
     HttpdConfSclHttpd24Tree, _HttpdConfSclJbcsHttpd24, HttpdConfSclJbcsHttpd24Tree)
 from insights.tests import context_wrap
@@ -466,6 +467,14 @@ DNSSDEnable on
 """.strip()  # noqa W293
 
 
+UNICODE_COMMENTS = """
+#Alterações realizadas por issue no Insights
+DNSSDEnable on
+#DNSSDAutoRegisterVHosts on
+#DNSSDAutoRegisterUserDir on
+"""
+
+
 def test_mixed_case_tags():
     httpd = _HttpdConf(context_wrap(HTTPD_CONF_MIXED, path='/etc/httpd/conf/httpd.conf'))
     assert httpd.find("ServerLimit").value == 256
@@ -744,3 +753,11 @@ def test_regex_and_op_attrs():
 
     if_version = result["IfVersion"]
     assert len(if_version) == 1
+
+
+def test_unicode_comments():
+    httpd = _HttpdConf(context_wrap(UNICODE_COMMENTS, path='/etc/httpd/conf/httpd.conf'))
+    result = HttpdConfTree([httpd])
+
+    rewrite_cond = result["DNSSDEnable"]
+    assert len(rewrite_cond) == 1
