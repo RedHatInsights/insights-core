@@ -100,7 +100,10 @@ def test_payload_upload(op, session, c, _legacy_upload_archive):
         c.base_url + '/ingress/v1/upload',
         files={
             'file': ('testp', ANY, 'testct'),  # ANY = return call from mocked open(), acts as filepointer here
-            'metadata': json.dumps({'test': 'facts'})},
+            'metadata': json.dumps({
+                'test': 'facts',
+                'satellite_id': -1,
+            })},
         headers={})
     _legacy_upload_archive.assert_not_called()
 
