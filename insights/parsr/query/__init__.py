@@ -150,17 +150,16 @@ class Entry(object):
         roots = kwargs.get("roots", False)
         return self.select(*queries, deep=True, roots=roots)
 
-    def where(self, name, value=None, **kwargs):
+    def where(self, name, value=None):
         """
         Selects current nodes based on name and value queries of child nodes.
         If any immediate children match the queries, the parent is included in
         the results. Accepts the ``deep`` keyword that will cause where to
         search the entire config tree.
         """
-        deep = kwargs.get("deep", False)
         q = (name, value) if value is not None else name
-        res = self.select(q, deep=deep)
-        return Result(children=list(set(c.parent for c in res)))
+        query = _desugar(q)
+        return Result(children=list(set(c.parent for c in self.children if query.test(c))))
 
     @property
     def section(self):
@@ -280,6 +279,17 @@ class Result(Entry):
     def select(self, *queries, **kwargs):
         query = compile_queries(*queries)
         return select(query, self.grandchildren, **kwargs)
+
+    def where(self, name, value=None):
+        """
+        Selects current nodes based on name and value queries of child nodes.
+        If any immediate children match the queries, the parent is included in
+        the results. Accepts the ``deep`` keyword that will cause where to
+        search the entire config tree.
+        """
+        q = (name, value) if value is not None else name
+        query = _desugar(q)
+        return Result(children=list(set(c.parent for c in self.grandchildren if query.test(c))))
 
     def __getitem__(self, query):
         if isinstance(query, (int, slice)):
