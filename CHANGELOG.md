@@ -1,5 +1,25 @@
 # Change Log
 
+## [insights-core-3.0.126-1160](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.126-1160) (2019-09-26)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.125-1149...insights-core-3.0.126-1160)
+
+**Implemented enhancements:**
+
+- 'VDO statistics: not available' is not covered by vdo\_status parser [\#2209](https://github.com/RedHatInsights/insights-core/issues/2209)
+
+**Fixed bugs:**
+
+- There is special characters in comment in httpd conf files [\#2219](https://github.com/RedHatInsights/insights-core/issues/2219)
+- Add "No files found for" to the CommandParser's blacklist [\#2217](https://github.com/RedHatInsights/insights-core/issues/2217)
+- Some parsers should succeed or fail atomically [\#2208](https://github.com/RedHatInsights/insights-core/issues/2208)
+
+**Closed issues:**
+
+- html.py has a vulnerable package [\#2228](https://github.com/RedHatInsights/insights-core/issues/2228)
+- The HammerTaskList cannot handle cells contain "commas" [\#2211](https://github.com/RedHatInsights/insights-core/issues/2211)
+- When using locally defined specs with --bare option run fails [\#2193](https://github.com/RedHatInsights/insights-core/issues/2193)
+- Duplicate data stored in Parser/Combiners mixed with dict [\#2122](https://github.com/RedHatInsights/insights-core/issues/2122)
+
 ## [insights-core-3.0.125-1149](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.125-1149) (2019-09-19)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.124-1131...insights-core-3.0.125-1149)
 
