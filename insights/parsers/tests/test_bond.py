@@ -140,6 +140,36 @@ Slave queue ID: 0
 
 BONDINFO_MODE_6 = BONDINFO_MODE_5.replace("Currently Active Slave: enp17s0f0", "")
 
+BONDINFO_MODE_7 = """
+Ethernet Channel Bonding Driver: v3.7.1 (April 27, 2011)
+
+Bonding Mode: fault-tolerance (active-backup)
+Primary Slave: em3 (primary_reselect failure)
+Currently Active Slave: em3
+MII Status: up
+MII Polling Interval (ms): 0
+Up Delay (ms): 0
+Down Delay (ms): 0
+ARP Polling Interval (ms): 1000
+ARP IP target/s (n.n.n.n form): 10.152.1.1
+
+Slave Interface: em3
+MII Status: up
+Speed: 1000 Mbps
+Duplex: full
+Link Failure Count: 92028
+Permanent HW addr: 00:1f:f3:af:d3:f1
+Slave queue ID: 0
+
+Slave Interface: p2p3
+MII Status: up
+Speed: 1000 Mbps
+Duplex: full
+Link Failure Count: 71524
+Permanent HW addr: 00:1f:f3:af:d3:f1
+Slave queue ID: 0
+""".strip()
+
 
 def test_netstat_doc_examples():
     env = {
@@ -186,6 +216,13 @@ def test_bond_class():
     assert bond_obj_3.slave_speed == ['1000 Mbps', '1000 Mbps']
     assert bond_obj_3.slave_link_failure_count == ['0', '0']
     assert bond_obj_3.mii_status == ['up', 'up', 'up']
+    assert bond_obj_3.arp_polling_interval is None
+    assert bond_obj_3.arp_ip_target is None
+
+    bond_obj_4 = Bond(context_wrap(BONDINFO_MODE_7, CONTEXT_PATH))
+    assert bond_obj_4.file_name == 'bond0'
+    assert bond_obj_4.arp_polling_interval == "1000"
+    assert bond_obj_4.arp_ip_target == "10.152.1.1"
 
     with pytest.raises(ParseException) as exc:
         bond_obj = Bond(context_wrap(BONDINFO_UNKNOWN_BOND_MODE, CONTEXT_PATH))
