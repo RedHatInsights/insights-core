@@ -111,25 +111,34 @@ class parser(PluginType):
         If a Parser component handles a datasource that returns a ``list``, a
         Parser instance will be created for each element of the list. Combiners
         or rules that depend on the Parser will be passed the list of instances
-        and **not** a single parser instance.
+        and **not** a single parser instance. By default, if any parser in the
+        list succeeds, those parsers are passed on to dependents, even if
+        others fail. If all parsers should succeed or fail together, pass
+        ``continue_on_error=False``.
     """
     def __init__(self, *args, **kwargs):
         group = kwargs.get('group', dr.GROUPS.single)
+        self.continue_on_error = kwargs.get('continue_on_error', True)
         super(parser, self).__init__(*args, group=group)
 
     def invoke(self, broker):
         dep_value = broker[self.requires[0]]
+        exception = False
+
         if not isinstance(dep_value, list):
             try:
                 return self.component(dep_value)
             except ContentException as ce:
                 log.debug(ce)
                 broker.add_exception(self.component, ce, traceback.format_exc())
-                raise dr.SkipComponent()
+                exception = True
             except CalledProcessError as cpe:
                 log.debug(cpe)
                 broker.add_exception(self.component, cpe, traceback.format_exc())
-                raise dr.SkipComponent()
+                exception = True
+
+        if exception:
+            raise dr.SkipComponent()
 
         results = []
         for d in dep_value:
@@ -142,17 +151,30 @@ class parser(PluginType):
             except ContentException as ce:
                 log.debug(ce)
                 broker.add_exception(self.component, ce, traceback.format_exc())
+                if not self.continue_on_error:
+                    exception = True
+                    break
             except CalledProcessError as cpe:
                 log.debug(cpe)
                 broker.add_exception(self.component, cpe, traceback.format_exc())
+                if not self.continue_on_error:
+                    exception = True
+                    break
             except Exception as ex:
                 tb = traceback.format_exc()
                 log.warn(tb)
                 broker.add_exception(self.component, ex, tb)
+                if not self.continue_on_error:
+                    exception = True
+                    break
+
+        if exception:
+            raise dr.SkipComponent()
 
         if not results:
             log.debug("All failed: %s" % dr.get_name(self.component))
             raise dr.SkipComponent()
+
         return results
 
 

@@ -198,7 +198,7 @@ def parse_doc(content, ctx=None):
     return Entry(children=result, src=ctx)
 
 
-@parser(Specs.logrotate_conf)
+@parser(Specs.logrotate_conf, continue_on_error=False)
 class _LogRotateConf(ConfigParser):
     def parse_doc(self, content):
         return parse_doc("\n".join(content), ctx=self)
