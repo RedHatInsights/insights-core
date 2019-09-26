@@ -8,6 +8,7 @@ import sys
 from six.moves import configparser as ConfigParser
 
 from .constants import InsightsConstants as constants
+from .apps import plugins_list
 
 logger = logging.getLogger(__name__)
 
@@ -351,6 +352,14 @@ DEFAULT_OPTS = {
         'const': True,
         'nargs': '?',
         'group': 'platform'
+    },
+    'subcommand': {
+        'default': None,
+        'opt': ['subcommand'],
+        'help': argparse.SUPPRESS,
+        # 'const': True,
+        'action': 'store',
+        'nargs': '?'
     }
 }
 
@@ -418,7 +427,8 @@ class InsightsConfig(object):
                                  'scheduling for Red Hat Insights, run '
                                  '`insights-client --disable-schedule`\n')
         for u in unknown_opts:
-            dict_.pop(u, None)
+            pass
+            # dict_.pop(u, None)
         self.__dict__.update(dict_)
 
     def _load_env(self):
@@ -468,6 +478,11 @@ class InsightsConfig(object):
             self._update_dict(self._cli_opts)
             return
         parser = argparse.ArgumentParser()
+
+        # subcommands
+        # subparsers = parser.add_subparsers(dest='_subcommand')
+        # parser.add_argument('_subcommand', nargs='?')
+
         debug_grp = parser.add_argument_group('Debug options')
         platf_grp = parser.add_argument_group('Platform options')
         cli_options = dict((k, v) for k, v in DEFAULT_OPTS.items() if (
@@ -492,6 +507,8 @@ class InsightsConfig(object):
         if conf_only and 'conf' in self._cli_opts:
             self._update_dict({'conf': self._cli_opts['conf']})
             return
+
+        # self._subcommand = ''
 
         self._update_dict(self._cli_opts)
 
@@ -594,6 +611,8 @@ class InsightsConfig(object):
                 raise ValueError('Cannot check registration status in offline mode.')
             if self.test_connection:
                 raise ValueError('Cannot run connection test in offline mode.')
+        if self.subcommand and self.subcommand not in plugins_list:
+            raise ValueError('%s is not a valid sub-command' % self.subcommand)
 
     def _imply_options(self):
         '''

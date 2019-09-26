@@ -239,11 +239,26 @@ def post_update(client, config):
 
 @phase
 def collect_and_output(client, config):
+    '''
+    Effectively the "main" of the client execution.
+    Run any subcommand if specified,otherwise collect, upload, exit.
+    '''
     # last phase, delete PID file on exit
     atexit.register(write_to_disk, constants.pidfile, delete=True)
-    # --compliance was called
+    # handle subcommands
+    if config.subcommand:
+        try:
+            # import the subcommand module, run and exit
+            subcmd = __import__('insights.client.apps.' + config.subcommand,
+                                fromlist=[''])
+            sys.exit(subcmd.main(client, config))
+        except Exception as e:
+            logger.error(e)
+            sys.exit(1)
+    # compliance
     if config.compliance:
         config.payload, config.content_type = ComplianceClient(config).oscap_scan()
+    # default (below)
     if config.payload:
         insights_archive = config.payload
     else:
