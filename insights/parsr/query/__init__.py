@@ -157,9 +157,8 @@ class Entry(object):
         the results. Accepts the ``deep`` keyword that will cause where to
         search the entire config tree.
         """
-        q = (name, value) if value is not None else name
-        query = _desugar(q)
-        return Result(children=list(set(c.parent for c in self.children if query.test(c))))
+        query = make_query(name, value) if not isinstance(name, DictQueryBase) else name
+        return Result(children=self.children if query.test(self) else [])
 
     @property
     def section(self):
@@ -287,9 +286,8 @@ class Result(Entry):
         the results. Accepts the ``deep`` keyword that will cause where to
         search the entire config tree.
         """
-        q = (name, value) if value is not None else name
-        query = _desugar(q)
-        return Result(children=list(set(c.parent for c in self.grandchildren if query.test(c))))
+        query = make_query(name, value) if not isinstance(name, DictQueryBase) else name
+        return Result(children=list(set(c for c in self.children if query.test(c))))
 
     def __getitem__(self, query):
         if isinstance(query, (int, slice)):
@@ -422,6 +420,8 @@ def _desugar_attrs(q):
 
 
 def _desugar(q):
+    if isinstance(q, DictQueryBase):
+        return q
     if isinstance(q, tuple):
         q = list(q)
         name_query = _desugar_name(q[0])
@@ -430,6 +430,53 @@ def _desugar(q):
             return All(name_query, attrs_query)
         return name_query
     return _desugar_name(q)
+
+
+class DictQueryBase(object):
+    def __init__(self, expr):
+        self.expr = expr
+
+    def __or__(self, other):
+        return DictOr(self, other)
+
+    def __and__(self, other):
+        return DictAnd(self, other)
+
+    def __invert__(self):
+        return DictNot(self)
+
+
+class DictQuery(DictQueryBase):
+    def test(self, node):
+        return any(self.expr.test(n) for n in node.children)
+
+
+class DictNot(DictQueryBase):
+    def test(self, node):
+        return not self.expr.test(node)
+
+
+class DictAnd(DictQueryBase):
+    def __init__(self, left, right):
+        self.left = left
+        self.right = right
+
+    def test(self, node):
+        return self.left.test(node) and self.right.test(node)
+
+
+class DictOr(DictQueryBase):
+    def __init__(self, left, right):
+        self.left = left
+        self.right = right
+
+    def test(self, node):
+        return self.left.test(node) or self.right.test(node)
+
+
+def make_query(name, value=None):
+    q = _desugar((name, value) if value is not None else name)
+    return DictQuery(q)
 
 
 def _flatten(nodes):
