@@ -58,6 +58,7 @@ community_to_release_map = {
     "12.2.8-52": {'version': "3.2", 'major': '3', 'minor': '2', 'downstream_release': '0'},
     "12.2.8-89": {'version': "3.2.1", 'major': '3', 'minor': '2', 'downstream_release': '1'},
     "12.2.8-128": {'version': "3.2.2", 'major': '3', 'minor': '2', 'downstream_release': '2'},
+    "12.2.12-45": {'version': "3.3", 'major': '3', 'minor': '3', 'downstream_release': '0'},
 }
 
 
@@ -91,7 +92,7 @@ class CephVersion(CommandParser):
 
         ceph_version_line = content[-1]
         # re search pattern
-        pattern_community = r'((\d{1,2})\.(\d{1,2})\.((\d{1,2})|x))((\-(\d{1,2}))?)'
+        pattern_community = r'((\d{1,2})\.(\d{1,2})\.((\d{1,2})|x))((\-(\d+)))'
         community_version_mo = re.search(pattern_community, str(ceph_version_line), 0)
         if not community_version_mo:
             raise CephVersionError("Wrong Format Ceph Version", content)
