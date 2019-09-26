@@ -143,21 +143,24 @@ class Entry(object):
     def find(self, *queries, **kwargs):
         """
         Finds matching results anywhere in the configuration. The arguments are
-        the same as those accepted by :py:func:`compile_queries`, and the
-        kwargs are the same as those accepted by :py:func:`select`.
+        the same as those accepted by :py:func:`compile_queries`, and it
+        accepts a keyword called ``roots`` that will return the ultimate root
+        nodes of any results.
         """
         roots = kwargs.get("roots", False)
         return self.select(*queries, deep=True, roots=roots)
 
-    def where(self, *queries, **kwargs):
+    def where(self, name, value=None, **kwargs):
         """
-        Finds matching results anywhere in the configuration. The arguments are
-        the same as those accepted by :py:func:`compile_queries`, and the
-        kwargs are the same as those accepted by :py:func:`select`.
+        Selects current nodes based on name and value queries of child nodes.
+        If any immediate children match the queries, the parent is included in
+        the results. Accepts the ``deep`` keyword that will cause where to
+        search the entire config tree.
         """
         deep = kwargs.get("deep", False)
-        res = self.select(*queries, deep=deep)
-        return Result(children=list(set([c.parent for c in res])))
+        q = (name, value) if value is not None else name
+        res = self.select(q, deep=deep)
+        return Result(children=list(set(c.parent for c in res)))
 
     @property
     def section(self):
