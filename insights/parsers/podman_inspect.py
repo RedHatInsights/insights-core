@@ -43,7 +43,8 @@ class PodmanInspect(CommandParser, dict):
     inspect --type=container".  The output of these two commands is formatted
     as JSON, so "json.loads" is an option to parse the output in the future.
 
-    Raises: SkipException if content is not provided
+    Raises:
+        SkipException: If content is not provided
     """
 
     def parse_content(self, content):

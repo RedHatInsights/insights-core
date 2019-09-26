@@ -43,11 +43,11 @@ def test_podman_list_images():
     assert result.rows[2].get("TAG") == "latest"
     assert result.rows[2].get("IMAGE ID") == 'dd87dad2c7841a19263ae2dc96d32c501ee84a92f56aed75bb67f57efe4e48b5'
 
-    assert result.data['rhel6_vsftpd']['CREATED'] == '37 minutes ago'
+    assert result.images['rhel6_vsftpd']['CREATED'] == '37 minutes ago'
     # Same data in both accessors
-    assert result.data['rhel6_vsftpd'] == result.rows[0]
+    assert result.images['rhel6_vsftpd'] == result.rows[0]
     # Can't list repositories if they don't have a repository name
-    assert '<none>' not in result.data
+    assert '<none>' not in result.images
 
 
 def test_podman_list_containers():
@@ -61,21 +61,22 @@ def test_podman_list_containers():
     assert result.rows[1].get("CONTAINER ID") == "95516ea08b565e37e2a4bca3333af40a240c368131b77276da8dec629b7fe102"
     assert result.rows[1].get("COMMAND") == '"/bin/sh -c \'yum install -y vsftpd-2.2.2-6.el6\'"'
     assert result.rows[1]['STATUS'] == 'Exited (137) 18 hours ago'
-    assert result.rows[1].get("PORTS") is None
+    assert result.rows[1].get("PORTS") is ''
 
-    assert sorted(result.data.keys()) == sorted(['angry_saha', 'tender_rosalind'])
-    assert result.data['angry_saha'] == result.rows[0]
-    assert result.data['tender_rosalind'] == result.rows[1]
+    assert sorted(result.containers.keys()) == sorted(['angry_saha', 'tender_rosalind'])
+    assert result.containers['angry_saha'] == result.rows[0]
+    assert result.containers['tender_rosalind'] == result.rows[1]
 
 
 def test_podman_list_images_no_data():
     with pytest.raises(SkipException) as ex:
-        podman_list.PodmanList(context_wrap(PODMAN_LIST_IMAGES_NO_DATA))
+        podman_list.PodmanListImages(context_wrap(PODMAN_LIST_IMAGES_NO_DATA))
     assert 'No data.' in str(ex)
 
 
 def test_podman_undefined_key_field():
-    assert podman_list.PodmanList(context_wrap(PODMAN_LIST_CONTAINERS)).key_field is None
+    with pytest.raises(NotImplementedError):
+        assert podman_list.PodmanList(context_wrap(PODMAN_LIST_CONTAINERS))
 
 
 def test_podman_documentation():
