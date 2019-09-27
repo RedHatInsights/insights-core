@@ -46,6 +46,9 @@ class ModInfo(dict):
         A classmethod to generated a `ModInfo` object from the given `content`
         list. Two more keys `module_name` and `module_deps` will be created as
         well as per the `content`.
+
+        Raises:
+            SkipException: When nothing need to check to a dict.
         """
         if not content:
             raise SkipException("No Contents")
