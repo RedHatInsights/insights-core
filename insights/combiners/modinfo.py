@@ -9,7 +9,7 @@ indexed by the module name.
 
 from insights.core.plugins import combiner
 from insights.parsers.modinfo import ModInfoEach, ModInfoAll
-from insights.parsers import SkipException
+from insights import SkipComponent
 
 
 @combiner([ModInfoAll, ModInfoEach])
@@ -40,7 +40,7 @@ class ModInfo(dict):
         True
 
     Raises:
-        SkipException: When content is empty.
+        SkipComponent: When content is empty.
 
     Attributes:
         retpoline_y (set): A set of names of the modules with the attribute "retpoline: Y".
@@ -61,7 +61,7 @@ class ModInfo(dict):
                 self.retpoline_n.add(name) if m.get('retpoline') == 'N' else None
 
         if len(self) == 0:
-            raise SkipException("No Parsed Contents")
+            raise SkipComponent("No Parsed Contents")
 
     @property
     def data(self):
