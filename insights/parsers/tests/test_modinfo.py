@@ -1,7 +1,8 @@
 import doctest
 import pytest
-from insights.parsers import modinfo, ParseException, SkipException
-from insights.parsers.modinfo import ModInfoI40e, ModInfoVmxnet3, ModInfoIgb, ModInfoIxgbe, ModInfoVeth, ModInfoEach
+from insights.parsers import modinfo, SkipException
+from insights.parsers.modinfo import ModInfoI40e, ModInfoVmxnet3, ModInfoIgb, ModInfoIxgbe, ModInfoVeth
+from insights.parsers.modinfo import ModInfoEach, ModInfoAll
 from insights.tests import context_wrap
 
 MODINFO_I40E = """
@@ -241,7 +242,7 @@ def test_modinfo():
         modinfo_obj = ModInfoI40e(context_wrap(MODINFO_NO))
     assert 'No Contents' in str(exc)
 
-    with pytest.raises(ParseException) as exc:
+    with pytest.raises(SkipException) as exc:
         modinfo_obj = ModInfoI40e(context_wrap(MODINFO_NO_1))
     assert 'No Parsed Contents' in str(exc)
 
@@ -249,7 +250,7 @@ def test_modinfo():
         modinfo_drv = ModInfoVmxnet3(context_wrap(MODINFO_NO))
     assert 'No Contents' in str(exc)
 
-    with pytest.raises(ParseException) as exc:
+    with pytest.raises(SkipException) as exc:
         modinfo_drv = ModInfoVmxnet3(context_wrap(MODINFO_NO_1))
     assert 'No Parsed Contents' in str(exc)
 
@@ -257,20 +258,9 @@ def test_modinfo():
         modinfo_drv = ModInfoVeth(context_wrap(MODINFO_NO))
     assert 'No Contents' in str(exc)
 
-    with pytest.raises(ParseException) as exc:
+    with pytest.raises(SkipException) as exc:
         modinfo_drv = ModInfoVeth(context_wrap(MODINFO_NO_1))
     assert 'No Parsed Contents' in str(exc)
-
-
-def test_modinfo_doc_examples():
-    env = {'modinfo_obj': ModInfoI40e(context_wrap(MODINFO_I40E)),
-           'modinfo_drv': ModInfoVmxnet3(context_wrap(MODINFO_VMXNET3)),
-           'modinfo_igb': ModInfoIgb(context_wrap(MODINFO_IGB)),
-           'modinfo_veth': ModInfoVeth(context_wrap(MODINFO_VETH)),
-           'modinfo_ixgbe': ModInfoIxgbe(context_wrap(MODINFO_IXGBE)),
-           'modinfo_each': ModInfoEach(context_wrap(MODINFO_VETH))}
-    failed, total = doctest.testmod(modinfo, globs=env)
-    assert failed == 0
 
 
 def test_modinfoeach():
@@ -287,3 +277,56 @@ def test_modinfoeach():
     assert modinfo_obj['description'] == 'Intel(R) Ethernet Connection XL710 Network Driver'
     assert ('signer' in modinfo_obj) is True
     assert modinfo_obj.module_path == "/lib/modules/3.10.0-993.el7.x86_64/kernel/drivers/net/ethernet/intel/i40e/i40e.ko.xz"
+
+
+def test_modinfoall():
+    context = context_wrap(
+            '{0}\n{1}\n{2}\n{3}\n{4}\n'.format(
+                MODINFO_I40E,
+                MODINFO_VMXNET3,
+                MODINFO_IGB,
+                MODINFO_VETH,
+                MODINFO_IXGBE)
+    )
+    modinfo_all = ModInfoAll(context)
+    assert sorted(modinfo_all.keys()) == sorted(['i40e', 'vmxnet3', 'igb', 'veth', 'ixgbe'])
+    assert modinfo_all['i40e'].module_version == '2.3.2-k'
+    assert modinfo_all['i40e'].module_deps == ['ptp']
+    assert modinfo_all['i40e'].module_signer == 'Red Hat Enterprise Linux kernel signing key'
+    assert len(modinfo_all['i40e']['alias']) == 2
+    assert modinfo_all['i40e'].module_details['sig_key'] == '81:7C:CB:07:72:4E:7F:B8:15:24:10:F9:27:2D:AA:CF:80:3E:CE:59'
+    assert modinfo_all['i40e']['vermagic'] == '3.10.0-993.el7.x86_64 SMP mod_unload modversions'
+    assert sorted(modinfo_all['i40e']['parm']) == sorted(['debug:Debug level (0=none,...,16=all), Debug mask (0x8XXXXXXX) (uint)',
+                                                       'int_mode: Force interrupt mode other than MSI-X (1 INT#x; 2 MSI) (int)'])
+    assert modinfo_all['i40e']['description'] == 'Intel(R) Ethernet Connection XL710 Network Driver'
+    assert ('signer' in modinfo_all['i40e']) is True
+    assert modinfo_all['i40e'].module_path == "/lib/modules/3.10.0-993.el7.x86_64/kernel/drivers/net/ethernet/intel/i40e/i40e.ko.xz"
+
+    assert modinfo_all['igb'].get('alias') == 'pci:v00008086d000010D6sv*sd*bc*sc*i*'
+    assert modinfo_all['igb'].module_name == 'igb'
+    assert modinfo_all['igb'].module_path == '/lib/modules/3.10.0-327.10.1.el7.jump7.x86_64/kernel/drivers/net/ethernet/intel/igb/igb.ko'
+
+    with pytest.raises(SkipException) as exc:
+        ModInfoAll(context_wrap(MODINFO_NO_1))
+    assert 'No Contents' in str(exc)
+
+    with pytest.raises(SkipException) as exc:
+        ModInfoAll(context_wrap(''))
+    assert 'No Contents' in str(exc)
+
+    with pytest.raises(SkipException):
+        ModInfoAll(context_wrap(MODINFO_IGB, path=''))
+
+
+def test_modinfo_doc_examples():
+    env = {
+            'modinfo_obj': ModInfoEach(context_wrap(MODINFO_I40E)),
+            'modinfo_i40e': ModInfoI40e(context_wrap(MODINFO_I40E)),
+            'modinfo_drv': ModInfoVmxnet3(context_wrap(MODINFO_VMXNET3)),
+            'modinfo_igb': ModInfoIgb(context_wrap(MODINFO_IGB)),
+            'modinfo_veth': ModInfoVeth(context_wrap(MODINFO_VETH)),
+            'modinfo_ixgbe': ModInfoIxgbe(context_wrap(MODINFO_IXGBE)),
+            'modinfo_all': ModInfoAll(context_wrap("{0}\n{1}".format(MODINFO_VMXNET3, MODINFO_I40E)))
+    }
+    failed, total = doctest.testmod(modinfo, globs=env)
+    assert failed == 0

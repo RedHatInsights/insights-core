@@ -8,11 +8,11 @@ indexed by the module name.
 """
 
 from insights.core.plugins import combiner
-from insights.parsers.modinfo import ModInfoEach
+from insights.parsers.modinfo import ModInfoEach, ModInfoAll
 from insights.parsers import SkipException
 
 
-@combiner(ModInfoEach)
+@combiner([ModInfoAll, ModInfoEach])
 class ModInfo(dict):
     """
     Combiner for accessing all the modinfo outputs.
@@ -46,10 +46,11 @@ class ModInfo(dict):
         retpoline_y (set): A set of names of the modules with the attribute "retpoline: Y".
         retpoline_n (set): A set of names of the modules with the attribute "retpoline: N".
     """
-    def __init__(self, modinfo):
+    def __init__(self, mi_all, mi_each):
         data = {}
         self.retpoline_y = set()
         self.retpoline_n = set()
+        modinfo = mi_all.values() if mi_all else mi_each
         for m in modinfo:
             name = m.module_name
             data[name] = m
