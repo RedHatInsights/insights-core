@@ -83,6 +83,10 @@ class PodmanListImages(PodmanList):
         rhel7_imagemagick                    latest              <none>              882ab98aae5394aebe91fe6d8a4297fa0387c3cfd421b2d892bddf218ac373b2   4 days ago          785.4 MB
         rhel6_nss-softokn                    latest              <none>              dd87dad2c7841a19263ae2dc96d32c501ee84a92f56aed75bb67f57efe4e48b5   5 days ago          449.7 MB
 
+    Attributes:
+        row (list): List of row dictionaries.
+        images (dict): Dictionary keyed on the value of the "REPOSITORY" fileld
+
     Examples:
         >>> images.rows[0]['REPOSITORY']
         'rhel6_vsftpd'
@@ -108,6 +112,10 @@ class PodmanListContainers(PodmanList):
         CONTAINER ID                                                       IMAGE                                                              COMMAND                                            CREATED             STATUS                        PORTS                  NAMES               SIZE
         03e2861336a76e29155836113ff6560cb70780c32f95062642993b2b3d0fc216   rhel7_httpd                                                        "/usr/sbin/httpd -DFOREGROUND"                     45 seconds ago      Up 37 seconds                 0.0.0.0:8080->80/tcp   angry_saha          796 B (virtual 669.2 MB)
         95516ea08b565e37e2a4bca3333af40a240c368131b77276da8dec629b7fe102   bd8638c869ea40a9269d87e9af6741574562af9ee013e03ac2745fb5f59e2478   "/bin/sh -c 'yum install -y vsftpd-2.2.2-6.el6'"   51 minutes ago      Exited (137) 50 minutes ago                          tender_rosalind     4.751 MB (virtual 200.4 MB)
+
+    Attributes:
+        row (list): List of row dictionaries.
+        containers(dict): Dictionary keyed on the value of the "NAMES" fileld
 
     Examples:
         >>> containers.rows[0]['NAMES']
