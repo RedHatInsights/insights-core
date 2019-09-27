@@ -308,14 +308,11 @@ def test_modinfoall():
 
     with pytest.raises(SkipException) as exc:
         ModInfoAll(context_wrap(MODINFO_NO_1))
-    assert 'No Contents' in str(exc)
+    assert 'No Parsed Contents' in str(exc)
 
     with pytest.raises(SkipException) as exc:
         ModInfoAll(context_wrap(''))
     assert 'No Contents' in str(exc)
-
-    with pytest.raises(SkipException):
-        ModInfoAll(context_wrap(MODINFO_IGB, path=''))
 
 
 def test_modinfo_doc_examples():

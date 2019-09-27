@@ -206,24 +206,36 @@ class ModInfoAll(CommandParser, dict):
         ['debug:Debug level (0=none,...,16=all), Debug mask (0x8XXXXXXX) (uint)', 'int_mode: Force interrupt mode other than MSI-X (1 INT#x; 2 MSI) (int)']
         >>> 'vmxnet3' in modinfo_all
         True
+
+    Attributes:
+        retpoline_y (set): A set of names of the modules with the attribute "retpoline: Y".
+        retpoline_n (set): A set of names of the modules with the attribute "retpoline: N".
     """
     def parse_content(self, content):
         if (not content) or (not self.file_path):
             raise SkipException("No Contents")
 
+        self.retpoline_y = set()
+        self.retpoline_n = set()
         idx = None
         for i, line in enumerate(content):
             if line.startswith('filename:'):
                 if idx is not None:
-                    mod = ModInfo.from_content(content[idx:i])
-                    self[mod.module_name] = mod
+                    m = ModInfo.from_content(content[idx:i])
+                    name = m.module_name
+                    self[name] = m
+                    self.retpoline_y.add(name) if m.get('retpoline') == 'Y' else None
+                    self.retpoline_n.add(name) if m.get('retpoline') == 'N' else None
                 idx = i
-        if idx and idx < len(content):
-            mod = ModInfo.from_content(content[idx:])
-            self[mod.module_name] = mod
+        if idx is not None and idx < len(content):
+            m = ModInfo.from_content(content[idx:])
+            name = m.module_name
+            self[name] = m
+            self.retpoline_y.add(name) if m.get('retpoline') == 'Y' else None
+            self.retpoline_n.add(name) if m.get('retpoline') == 'N' else None
 
         if len(self) == 0:
-            raise SkipException("No Contents")
+            raise SkipException("No Parsed Contents")
 
 
 @parser(Specs.modinfo)
