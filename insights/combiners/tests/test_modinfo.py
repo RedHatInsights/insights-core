@@ -109,7 +109,7 @@ def test_modinfo_all():
                 MODINFO_IGB,
                 MODINFO_IXGBE,
                 MODINFO_VMXNET3,
-                # MODINFO_VETH) <- Removed from ModInfAll
+                # MODINFO_VETH <- Remove from ModInfAll
             )
     )
 
@@ -129,7 +129,7 @@ def test_modinfo_all():
                 modinfo_igb,
                 modinfo_ixgbe,
                 modinfo_vmxnet3,
-                modinfo_veth,  # <- But in ModInfoEach
+                modinfo_veth,  # <- But leave in ModInfoEach
             ]
     )
 
