@@ -75,6 +75,10 @@ class Entry(object):
             c.parent = self
 
     def __getattr__(self, name):
+        """
+        Allows queries based on attribute access so long as they don't conflict
+        with members of the Entry class itself.
+        """
         if name == "name" and self._name is not None:
             return self._name
 
@@ -82,10 +86,17 @@ class Entry(object):
         if res:
             return res
 
+        # fall through for stuff like file_path, etc.
         if hasattr(self.src, name):
             return getattr(self.src, name)
 
         return res
+
+    def get_keys(self):
+        """
+        Returns the unique names of all the children as a list.
+        """
+        return sorted(set(c.name for c in self.children))
 
     @property
     def line(self):
@@ -154,10 +165,22 @@ class Entry(object):
         """
         Selects current nodes based on name and value queries of child nodes.
         If any immediate children match the queries, the parent is included in
-        the results. Accepts the ``deep`` keyword that will cause where to
-        search the entire config tree.
+        the results. The :py:func:``make_child_query`` function can be used to
+        construct queries that act on the children as a whole instead of one
+        at a time.
+
+        Example:
+        >>> from insights.parsr.query import make_child_query as q
+        >>> from insights.parsr.query import from_dict
+        >>> r = from_dict(load_config())
+        >>> r = conf.status.conditions.where(q("status", "False") | q("type", "Progressing"))
+        >>> r.message
+        >>> r = conf.status.conditions.where(q("status", "False") | q("type", "Progressing"))
+        >>> r.message
+        >>> r.lastTransitionTime.values
+        ['2019-08-04T23:17:08Z', '2019-08-04T23:32:14Z']
         """
-        query = make_query(name, value) if not isinstance(name, DictQueryBase) else name
+        query = make_child_query(name, value) if not isinstance(name, DictQueryBase) else name
         return Result(children=self.children if query.test(self) else [])
 
     @property
@@ -249,6 +272,12 @@ class Result(Entry):
         super(Result, self).__init__()
         self.children = children or []
 
+    def get_keys(self):
+        """
+        Returns the unique names of all the grandchildren as a list.
+        """
+        return sorted(set(c.name for c in self.grandchildren))
+
     @property
     def string_value(self):
         """
@@ -275,6 +304,13 @@ class Result(Entry):
 
         raise Exception("More than one value to return.")
 
+    @property
+    def values(self):
+        """
+        Returns the values of all the children as a list.
+        """
+        return [c.value for c in self.children]
+
     def select(self, *queries, **kwargs):
         query = compile_queries(*queries)
         return select(query, self.grandchildren, **kwargs)
@@ -283,10 +319,22 @@ class Result(Entry):
         """
         Selects current nodes based on name and value queries of child nodes.
         If any immediate children match the queries, the parent is included in
-        the results. Accepts the ``deep`` keyword that will cause where to
-        search the entire config tree.
+        the results. The :py:func:``make_child_query`` function can be used to
+        construct queries that act on the children as a whole instead of one
+        at a time.
+
+        Example:
+        >>> from insights.parsr.query import make_child_query as q
+        >>> from insights.parsr.query import from_dict
+        >>> r = from_dict(load_config())
+        >>> r = conf.status.conditions.where(q("status", "False") | q("type", "Progressing"))
+        >>> r.message
+        >>> r = conf.status.conditions.where(q("status", "False") | q("type", "Progressing"))
+        >>> r.message
+        >>> r.lastTransitionTime.values
+        ['2019-08-04T23:17:08Z', '2019-08-04T23:32:14Z']
         """
-        query = make_query(name, value) if not isinstance(name, DictQueryBase) else name
+        query = make_child_query(name, value) if not isinstance(name, DictQueryBase) else name
         return Result(children=list(set(c for c in self.children if query.test(c))))
 
     def __getitem__(self, query):
@@ -433,6 +481,9 @@ def _desugar(q):
 
 
 class DictQueryBase(object):
+    """
+    Base class for queries that target all children of a node as once.
+    """
     def __init__(self, expr):
         self.expr = expr
 
@@ -447,6 +498,9 @@ class DictQueryBase(object):
 
 
 class DictQuery(DictQueryBase):
+    """
+    Returns True if any child node passes the query.
+    """
     def test(self, node):
         return any(self.expr.test(n) for n in node.children)
 
@@ -474,7 +528,11 @@ class DictOr(DictQueryBase):
         return self.left.test(node) or self.right.test(node)
 
 
-def make_query(name, value=None):
+def make_child_query(name, value=None):
+    """
+    Converts a query into a DictQuery that works on all child nodes at once
+    to determine if the current node is accepted.
+    """
     q = _desugar((name, value) if value is not None else name)
     return DictQuery(q)
 
@@ -564,6 +622,7 @@ def from_dict(orig):
     return Entry(children=inner(orig))
 
 
+# These are operators that can be used inside of queries.
 lt = lift2(operator.lt)
 le = lift2(operator.le)
 eq = lift2(operator.eq)
