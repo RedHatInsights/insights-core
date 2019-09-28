@@ -305,6 +305,13 @@ class Result(Entry):
         raise Exception("More than one value to return.")
 
     @property
+    def parents(self):
+        """
+        Returns the values of all the children as a list.
+        """
+        return Result(children=[c.parent for c in self.children])
+
+    @property
     def values(self):
         """
         Returns the values of all the children as a list.
