@@ -13,11 +13,9 @@ q = make_child_query  # noqa: F405
 try:
     # go fast!
     # requires pyyaml installed with libyaml
-    Loader = yaml.CLoader
-    cloader = True
+    Loader = yaml.SafeCLoader
 except:
-    Loader = yaml.Loader
-    cloader = False
+    Loader = yaml.SafeLoader
 
 
 log = logging.getLogger(__name__)
@@ -83,7 +81,7 @@ def get_files(path):
 
 def load(path):
     with open(path) as f:
-        doc = yaml.load(f, Loader=Loader) if cloader else yaml.safe_load(f)
+        doc = yaml.load(f, Loader=Loader)
         return from_dict(doc)
 
 
