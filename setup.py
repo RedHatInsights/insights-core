@@ -19,6 +19,7 @@ entry_points = {
         'insights-dupkeycheck = insights.tools.dupkeycheck:main',
         'insights-inspect = insights.tools.insights_inspect:main',
         'insights-info = insights.tools.query:main',
+        'insights-ocp = insights.ocp:main',
         'gen_api = insights.tools.generate_api_config:main',
         'insights-perf = insights.tools.perf:main',
         'client = insights.client:run',
@@ -99,6 +100,7 @@ optional = set([
     'python-logstash',
     'python-statsd',
     'watchdog',
+    'libyaml',
 ])
 
 if __name__ == "__main__":
