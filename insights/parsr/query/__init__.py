@@ -131,9 +131,16 @@ class Entry(object):
         Returns the furthest ancestor ``Entry``.
         """
         p = self
-        while p.parent is not None and p.parent.parent is not None:
+        while p.parent is not None:
             p = p.parent
         return p
+
+    @property
+    def roots(self):
+        """
+        Returns the furthest ancestor ``Entry``.
+        """
+        return Result(children=[c.root for c in self.children])
 
     @property
     def grandchildren(self):
@@ -317,6 +324,13 @@ class Result(Entry):
         Returns the values of all the children as a list.
         """
         return [c.value for c in self.children]
+
+    @property
+    def unique_values(self):
+        """
+        Returns the values of all the children as a list.
+        """
+        return list(set(c.value for c in self.children))
 
     def select(self, *queries, **kwargs):
         query = compile_queries(*queries)
