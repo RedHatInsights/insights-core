@@ -25,6 +25,7 @@ log = logging.getLogger(__name__)
 def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument("archives", nargs="+", help="Archive or directory to analyze.")
+    p.add_argument("-D", "--debug", help="Verbose debug output.", action="store_true")
     return p.parse_args()
 
 
@@ -91,7 +92,7 @@ def process(path):
         try:
             yield load(f)
         except Exception:
-            pass
+            log.debug("Failed to load %s; skipping", f)
 
 
 def analyze(paths):
@@ -114,6 +115,9 @@ def analyze(paths):
 def main():
     args = parse_args()
     archives = args.archives
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG)
+
     conf = analyze(archives)  # noqa F841 / unused var
 
     shell = get_ipshell()
