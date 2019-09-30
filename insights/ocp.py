@@ -103,12 +103,12 @@ def analyze(paths):
     results = []
     for path in paths:
         if content_type.from_file(path) == "text/plain":
-            results.extend(list(process([path])))
+            results.extend(process([path]))
         elif os.path.isdir(path):
-            results.extend(list(process(path)))
+            results.extend(process(path))
         else:
             with extract(path) as ex:
-                results.extend(list(process(ex.tmp_dir)))
+                results.extend(process(ex.tmp_dir))
 
     return Result(children=results)
 
