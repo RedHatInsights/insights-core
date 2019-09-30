@@ -73,6 +73,7 @@ class Entry(object):
         self.src = src
         for c in self.children:
             c.parent = self
+        super(Entry, self).__init__()
 
     def __getattr__(self, name):
         """
@@ -97,6 +98,9 @@ class Entry(object):
         Returns the unique names of all the children as a list.
         """
         return sorted(set(c.name for c in self.children))
+
+    def __dir__(self):
+        return self.get_keys() + object.__dir__(self)
 
     @property
     def line(self):
@@ -148,6 +152,13 @@ class Entry(object):
         Returns a flattened list of all grandchildren.
         """
         return list(chain.from_iterable(c.children for c in self.children))
+
+    def pluck(self, *names):
+        """
+        Select just the children with requested names.
+        """
+        names = set(names)
+        return Result(children=[c for c in self.children if c.name in names])
 
     def select(self, *queries, **kwargs):
         """
@@ -331,6 +342,13 @@ class Result(Entry):
         Returns the values of all the children as a list.
         """
         return list(set(c.value for c in self.children))
+
+    def pluck(self, *names):
+        """
+        Select just the grandchildren with requested names.
+        """
+        names = set(names)
+        return Result(children=[c for c in self.grandchildren if c.name in names])
 
     def select(self, *queries, **kwargs):
         query = compile_queries(*queries)
