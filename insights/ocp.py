@@ -75,8 +75,7 @@ def get_files(path):
     for root, dirs, names in os.walk(path):
         for name in names:
             p = os.path.join(root, name)
-            if p.endswith(".yaml"):
-                paths.append(p)
+            paths.append(p)
     return paths
 
 
@@ -88,7 +87,11 @@ def load(path):
 
 def process(path):
     # cpu bound in yaml.load. threads don't help.
-    return [load(p) for p in get_files(path)]
+    for f in get_files(path):
+        try:
+            yield load(f)
+        except Exception:
+            pass
 
 
 def analyze(paths):
@@ -98,12 +101,12 @@ def analyze(paths):
     results = []
     for path in paths:
         if os.path.isfile(path) and path.endswith((".yaml", ".yml")):
-            results.append(load(path))
+            results.extend(list(process(path)))
         elif os.path.isdir(path):
-            results.extend(process(path))
+            results.extend(list(process(path)))
         else:
             with extract(path) as ex:
-                results.extend(process(ex.tmp_dir))
+                results.extend(list(process(ex.tmp_dir)))
 
     return Result(children=results)
 
