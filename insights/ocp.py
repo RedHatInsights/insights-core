@@ -6,6 +6,7 @@ import yaml
 from insights.core.archives import extract
 from insights.parsr.query import from_dict, Result
 from insights.parsr.query import *  # noqa: F403
+from insights.util import content_type
 
 q = make_child_query  # noqa: F405
 
@@ -101,7 +102,7 @@ def analyze(paths):
 
     results = []
     for path in paths:
-        if os.path.isfile(path) and path.endswith((".yaml", ".yml")):
+        if content_type.from_file(path) == "text/plain":
             results.extend(list(process(path)))
         elif os.path.isdir(path):
             results.extend(list(process(path)))
