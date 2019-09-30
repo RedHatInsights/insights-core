@@ -64,6 +64,9 @@ class Entry(object):
     Entry is the base class for the data model, which is a tree of Entry
     instances. Each instance has a name, attributes, a parent, and children.
     """
+
+    __slots__ = ("_name", "attrs", "children", "parent", "lineno", "src")
+
     def __init__(self, name=None, attrs=None, children=None, lineno=None, src=None):
         self._name = name
         self.attrs = attrs or []
