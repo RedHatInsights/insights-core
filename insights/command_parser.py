@@ -17,7 +17,7 @@ Available commands:
   collect     Collect all specs against the client and create an Insights archive.
   inspect     Execute component and shell out to ipython for evaluation.
   info        View info and docs for Insights Core components.
-  ocp         Interactive evaluation of OCP archives or config files.
+  ocp-explore Interactive evaluation of OCP archives or config files.
   run         Run insights-core against host or an archive.
 """
 
@@ -37,6 +37,7 @@ class InsightsCli(object):
             usage=USAGE)
         parser.add_argument('command', help='Insights Core command to run')
         args = parser.parse_args(sys.argv[1:2])
+        args.command = args.command.replace('-', '_')
         if not hasattr(self, args.command):
             print('Unrecognized command')
             parser.print_help()
@@ -62,9 +63,9 @@ class InsightsCli(object):
         from .tools.insights_inspect import main as inspect_main
         inspect_main()
 
-    def ocp(self):
-        from .ocp import main as ocp_main
-        ocp_main()
+    def ocp_explore(self):
+        from .ocp_explore import main as ocp_explore_main
+        ocp_explore_main()
 
     def run(self):
         from insights import run
