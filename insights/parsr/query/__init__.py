@@ -140,7 +140,7 @@ class Entry(object):
         """
         Returns the furthest ancestor ``Entry``.
         """
-        return Result(children=[c.root for c in self.children])
+        return Result(children=list(set(c.root for c in self.children)))
 
     @property
     def grandchildren(self):
