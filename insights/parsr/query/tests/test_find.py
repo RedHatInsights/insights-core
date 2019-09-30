@@ -25,7 +25,7 @@ def test_select_leaves():
 def test_select_roots():
     res = complex_tree.select("puppy", deep=True, roots=True)
     assert len(res) == 1
-    assert res[0].name == "dog"
+    assert res[0].name == "root"
 
 
 def test_select_chain():
