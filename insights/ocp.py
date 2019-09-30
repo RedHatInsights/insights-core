@@ -13,7 +13,7 @@ q = make_child_query  # noqa: F405
 try:
     # go fast!
     # requires pyyaml installed with libyaml
-    Loader = yaml.SafeCLoader
+    Loader = yaml.CSafeLoader
 except:
     Loader = yaml.SafeLoader
 
