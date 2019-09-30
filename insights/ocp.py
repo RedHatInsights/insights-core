@@ -6,17 +6,16 @@ import yaml
 from insights.core.archives import extract
 from insights.parsr.query import from_dict, Result
 from insights.parsr.query import *  # noqa: F403
+from insights.util import content_type
 
 q = make_child_query  # noqa: F405
 
 try:
     # go fast!
     # requires pyyaml installed with libyaml
-    Loader = yaml.CLoader
-    cloader = True
+    Loader = yaml.CSafeLoader
 except:
-    Loader = yaml.Loader
-    cloader = False
+    Loader = yaml.SafeLoader
 
 
 log = logging.getLogger(__name__)
@@ -25,6 +24,7 @@ log = logging.getLogger(__name__)
 def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument("archives", nargs="+", help="Archive or directory to analyze.")
+    p.add_argument("-D", "--debug", help="Verbose debug output.", action="store_true")
     return p.parse_args()
 
 
@@ -75,20 +75,23 @@ def get_files(path):
     for root, dirs, names in os.walk(path):
         for name in names:
             p = os.path.join(root, name)
-            if p.endswith(".yaml"):
-                paths.append(p)
+            paths.append(p)
     return paths
 
 
 def load(path):
     with open(path) as f:
-        doc = yaml.load(f, Loader=Loader) if cloader else yaml.safe_load(f)
+        doc = yaml.load(f, Loader=Loader)
         return from_dict(doc)
 
 
 def process(path):
     # cpu bound in yaml.load. threads don't help.
-    return [load(p) for p in get_files(path)]
+    for f in get_files(path):
+        try:
+            yield load(f)
+        except Exception:
+            log.debug("Failed to load %s; skipping", f)
 
 
 def analyze(paths):
@@ -97,8 +100,8 @@ def analyze(paths):
 
     results = []
     for path in paths:
-        if os.path.isfile(path) and path.endswith((".yaml", ".yml")):
-            results.append(load(path))
+        if content_type.from_file(path) == "text/plain":
+            results.extend(process([path]))
         elif os.path.isdir(path):
             results.extend(process(path))
         else:
@@ -111,6 +114,9 @@ def analyze(paths):
 def main():
     args = parse_args()
     archives = args.archives
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG)
+
     conf = analyze(archives)  # noqa F841 / unused var
 
     shell = get_ipshell()
