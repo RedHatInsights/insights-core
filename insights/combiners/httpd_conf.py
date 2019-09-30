@@ -338,7 +338,7 @@ def parse_doc(content, ctx=None):
     return Entry(children=result, src=ctx)
 
 
-@parser(Specs.httpd_conf)
+@parser(Specs.httpd_conf, continue_on_error=False)
 class _HttpdConf(ConfigParser):
     """ Parser for individual httpd configuration files. """
     def __init__(self, *args, **kwargs):
@@ -370,7 +370,7 @@ class HttpdConfTree(ConfigCombiner):
         return res.value if res else "/etc/httpd"
 
 
-@parser(Specs.httpd_conf_scl_httpd24)
+@parser(Specs.httpd_conf_scl_httpd24, continue_on_error=False)
 class _HttpdConfSclHttpd24(ConfigParser):
     """ Parser for individual httpd configuration files. """
     def parse_doc(self, content):
@@ -395,7 +395,7 @@ class HttpdConfSclHttpd24Tree(ConfigCombiner):
         return res.value if res else "/opt/rh/httpd24/root/etc/httpd"
 
 
-@parser(Specs.httpd_conf_scl_jbcs_httpd24)
+@parser(Specs.httpd_conf_scl_jbcs_httpd24, continue_on_error=False)
 class _HttpdConfSclJbcsHttpd24(ConfigParser):
     """ Parser for individual httpd configuration files. """
     def parse_doc(self, content):
