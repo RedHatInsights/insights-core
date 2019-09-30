@@ -3,6 +3,7 @@ import argparse
 import logging
 import os
 import yaml
+from fnmatch import fnmatch
 from insights.core.archives import extract
 from insights.parsr.query import from_dict, Result
 from insights.parsr.query import *  # noqa: F403
@@ -22,9 +23,10 @@ log = logging.getLogger(__name__)
 
 
 def parse_args():
-    p = argparse.ArgumentParser()
+    p = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     p.add_argument("archives", nargs="+", help="Archive or directory to analyze.")
     p.add_argument("-D", "--debug", help="Verbose debug output.", action="store_true")
+    p.add_argument("--exclude", default="*.log", help="Glob patterns to exclude separated by commas")
     return p.parse_args()
 
 
@@ -85,30 +87,36 @@ def load(path):
         return from_dict(doc)
 
 
-def process(path):
+def process(path, excludes):
     # cpu bound in yaml.load. threads don't help.
     for f in get_files(path):
+        if excludes and any(fnmatch(f, e) for e in excludes):
+            continue
         try:
             yield load(f)
         except Exception:
             log.debug("Failed to load %s; skipping", f)
 
 
-def analyze(paths):
+def analyze(paths, excludes):
     if not isinstance(paths, list):
         paths = [paths]
 
     results = []
     for path in paths:
         if content_type.from_file(path) == "text/plain":
-            results.extend(process([path]))
+            results.extend(process([path], excludes))
         elif os.path.isdir(path):
-            results.extend(process(path))
+            results.extend(process(path, excludes))
         else:
             with extract(path) as ex:
-                results.extend(process(ex.tmp_dir))
+                results.extend(process(ex.tmp_dir, excludes))
 
     return Result(children=results)
+
+
+def parse_exclude(exc):
+    return [e.strip() for e in exc.split(",")]
 
 
 def main():
@@ -117,7 +125,9 @@ def main():
     if args.debug:
         logging.basicConfig(level=logging.DEBUG)
 
-    conf = analyze(archives)  # noqa F841 / unused var
+    excludes = parse_exclude(args.exclude) if args.exclude else ["*.log"]
+
+    conf = analyze(archives, excludes)  # noqa F841 / unused var
 
     shell = get_ipshell()
     shell()
