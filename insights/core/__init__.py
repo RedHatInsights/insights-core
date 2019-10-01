@@ -1012,7 +1012,7 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
         """
         def _scan(self):
             search_by_expression = self._valid_search(token, check)
-            return any(search_by_expression(l) for l in lines)
+            return any(search_by_expression(l) for l in self.lines)
 
         cls.scan(result_key, _scan)
 
