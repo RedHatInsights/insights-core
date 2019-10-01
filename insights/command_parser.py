@@ -17,7 +17,7 @@ Available commands:
   collect     Collect all specs against the client and create an Insights archive.
   inspect     Execute component and shell out to ipython for evaluation.
   info        View info and docs for Insights Core components.
-  ocp         Interactive evaluation of OCP archives or config files.
+  ocpshell         Interactive evaluation of archives, directories, or individual yaml files.
   run         Run insights-core against host or an archive.
 """
 
@@ -62,9 +62,9 @@ class InsightsCli(object):
         from .tools.insights_inspect import main as inspect_main
         inspect_main()
 
-    def ocp(self):
-        from .ocp import main as ocp_main
-        ocp_main()
+    def ocpshell(self):
+        from .ocpshell import main as ocpshell_main
+        ocpshell_main()
 
     def run(self):
         from insights import run
