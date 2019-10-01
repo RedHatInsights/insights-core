@@ -1,6 +1,8 @@
 import logging
+from insights.client.connection import InsightsConnection
 from insights.client.schedule import get_scheduler
 from insights.client.constants import InsightsConstants as constants
+from insights.client.utilities import write_to_disk
 
 logger = logging.getLogger(__name__)
 net_logger = logging.getLogger('network')
@@ -9,23 +11,28 @@ IDENTITY_URI = 'http://169.254.169.254/latest/dynamic/instance-identity'
 IDENTITY_DOC_URI = IDENTITY_URI + '/document'
 IDENTITY_SIG_URI = IDENTITY_URI + '/signature'
 IDENTITY_PKCS7_URI = IDENTITY_URI + '/pkcs7'
+HYDRA_ENDPOINT = ''
 
 
-def aws_main(session):
+def aws_main(config):
     '''
     Process AWS entitlements with Hydra
     '''
-    bundle = get_aws_identity(session)
+    conn = InsightsConnection(config)
+    bundle = get_aws_identity(conn.session)
     if not bundle:
         return False
-    # post_to_hydra(bundle)
-    # enable_delayed_registration()
-    # job = get_scheduler()
-    # job.set_daily()
+    post_to_hydra(bundle)
+    enable_delayed_registration()
+    job = get_scheduler(config)
+    job.set_daily()
     return True
 
 
 def get_uri(session, uri):
+    '''
+    Fetch information from URIs
+    '''
     try:
         net_logger.info('GET %s', uri)
         res = session.get(uri)
@@ -33,7 +40,7 @@ def get_uri(session, uri):
         logger.error(e)
         logger.error('Could not reach %s', uri)
         return None
-    logger.debug('Status code: %s', res.status_code)
+    net_logger.info('Status code: %s', res.status_code)
     return res
 
 
@@ -41,23 +48,25 @@ def get_aws_identity(session):
     '''
     Get data from AWS
     '''
+    logger.info('Fetching AWS identity information.')
     doc_res = get_uri(session, IDENTITY_DOC_URI)
     sig_res = get_uri(session, IDENTITY_SIG_URI)
     pkcs7_res = get_uri(session, IDENTITY_SIG_URI)
     if not (doc_res and sig_res and pkcs7_res):
-        logger.error('Error getting identity documents.')
+        logger.error('Error getting identity information.')
         return None
+    identity_doc = {}
     try:
         identity_doc = doc_res.json()
-        identity_sig = sig_res.json()
-        identity_pkcs7 = pkcs7_res.json()
     except ValueError as e:
         logger.error(e)
-        logger.error('Could not parse JSON.')
+        logger.error('Could not parse identity document JSON.')
+        return {}
+    logger.debug('Identity information obtained successfully.')
     return {
         'document': identity_doc,
-        'signature': identity_sig
-        'pkcs7': identity_pkcs7
+        'signature': sig_res.content.decode('utf-8'),
+        'pkcs7': pkcs7_res.content.decode('utf-8')
     }
 
 
@@ -73,7 +82,14 @@ def post_to_hydra(data):
     '''
     Post data to Hydra
     '''
+    logger.info('Submitting identity information to Red Hat.')
     print(data)
+    # POST to hydra
+    # if success,
+    # something like "Entitlement information has been sent." Maybe link to a KB article
+    # if failure,
+    # error, return False
+    return True
 
 
 def enable_delayed_registration():
@@ -81,11 +97,5 @@ def enable_delayed_registration():
     Write a marker file to allow client to know that
     it should attempt to register when it runs
     '''
-    pass
-
-
-def main(config, client):
-    session = client.connection.session
-    if not aws_main(session):
-        sys.exit(constants.sig_kill_bad)
-    sys.exit(sig_kill_good)
+    logger.debug('Writing to %s', constants.register_marker_file)
+    write_to_disk(constants.register_marker_file)

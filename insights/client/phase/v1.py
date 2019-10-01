@@ -13,6 +13,7 @@ from insights.client.support import InsightsSupport
 from insights.client.utilities import validate_remove_file, print_egg_versions, write_to_disk
 from insights.client.schedule import get_scheduler
 from insights.client.apps.compliance import ComplianceClient
+from insights.client.apps.aws import aws_main
 
 logger = logging.getLogger(__name__)
 
@@ -124,6 +125,12 @@ def post_update(client, config):
     logger.debug('Machine ID: %s', client.get_machine_id())
     logger.debug("CONFIG: %s", config)
     print_egg_versions()
+
+    # --registering an AWS machine
+    if config.register_cloud:
+        logger.debug('Entitling an AWS host. Bypassing registration check.')
+        return
+
     # -------delete everything below this line-------
     if config.legacy_upload:
         if config.status:
@@ -158,8 +165,7 @@ def post_update(client, config):
         reg = client.register()
         if reg is None:
             # API unreachable
-            logger.info('Running connection test...')
-            client.test_connection()
+            logger.info('Could not connect to the Insights API. Run insights-client --test-connection for more information.')
             sys.exit(constants.sig_kill_bad)
         elif reg is False:
             # unregistered
@@ -245,16 +251,13 @@ def collect_and_output(client, config):
     '''
     # last phase, delete PID file on exit
     atexit.register(write_to_disk, constants.pidfile, delete=True)
-    # handle subcommands
-    if config.subcommand:
-        try:
-            # import the subcommand module, run and exit
-            subcmd = __import__('insights.client.apps.' + config.subcommand,
-                                fromlist=[''])
-            sys.exit(subcmd.main(client, config))
-        except Exception as e:
-            logger.error(e)
-            sys.exit(1)
+    # handle branching/subcommands
+    # register cloud (aws)
+    if config.register_cloud:
+        if aws_main(config):
+            sys.exit(constants.sig_kill_ok)
+        else:
+            sys.exit(constants.sig_kill_bad)
     # compliance
     if config.compliance:
         config.payload, config.content_type = ComplianceClient(config).oscap_scan()

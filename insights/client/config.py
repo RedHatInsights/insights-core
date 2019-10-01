@@ -357,15 +357,9 @@ DEFAULT_OPTS = {
         # maybe? in place of aws subcommand. extensible
         'default': False,
         'opt': ['--register-cloud'],
-        'group': 'platform'
-    }
-    'subcommand': {
-        'default': None,
-        'opt': ['subcommand'],
-        'help': argparse.SUPPRESS,
-        # 'const': True,
-        'action': 'store',
-        'nargs': '?'
+        # 'group': 'platform',
+        'action': 'store_true',
+        'help': 'TEST'
     }
 }
 
@@ -617,8 +611,6 @@ class InsightsConfig(object):
                 raise ValueError('Cannot check registration status in offline mode.')
             if self.test_connection:
                 raise ValueError('Cannot run connection test in offline mode.')
-        if self.subcommand and self.subcommand not in plugins_list:
-            raise ValueError('%s is not a valid sub-command' % self.subcommand)
 
     def _imply_options(self):
         '''
@@ -638,6 +630,8 @@ class InsightsConfig(object):
             self.diagnosis = True
         if self.payload or self.diagnosis:
             self.legacy_upload = False
+        if os.path.exists(constants.register_marker_file):
+            self.register = True
 
 
 if __name__ == '__main__':

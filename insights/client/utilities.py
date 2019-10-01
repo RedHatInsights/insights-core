@@ -90,6 +90,10 @@ def delete_registered_file():
 def delete_unregistered_file():
     for f in constants.unregistered_files:
         write_to_disk(f, delete=True)
+    # this function only called when machine is registered,
+    #  so while registering, delete this file too. we only
+    #  need it around until we're registered
+    write_to_disk(constants.register_marker_file, delete=True)
 
 
 def write_to_disk(filename, delete=False, content=get_time()):
