@@ -995,7 +995,7 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
         cls.scanner_keys.add(result_key)
 
     @classmethod
-    def token_scan(cls, result_key, token, check=all, reverse=False):
+    def token_scan(cls, result_key, token, check=all):
         """
         Define a property that is set to true if the given token is found in
         the log file.  Uses the __contains__ method of the log file.
@@ -1007,11 +1007,11 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
             reverse(bool): scan start from the head when ``False`` by default, otherwise start from the tail
 
         Returns:
-            (list): list of dictionaries corresponding to the parsed lines contain the `token`.
+            (bool): the property will contain True if a line contained (any
+            or all) of the tokens given.
         """
         def _scan(self):
             search_by_expression = self._valid_search(token, check)
-            lines = self.lines[::-1] if reverse else self.lines
             return any(search_by_expression(l) for l in lines)
 
         cls.scan(result_key, _scan)
