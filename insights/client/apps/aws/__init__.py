@@ -16,10 +16,13 @@ def aws_main(session):
     Process AWS entitlements with Hydra
     '''
     bundle = get_aws_identity(session)
-    post_to_hydra(bundle)
-    enable_delayed_registration()
+    if not bundle:
+        return False
+    # post_to_hydra(bundle)
+    # enable_delayed_registration()
     # job = get_scheduler()
     # job.set_daily()
+    return True
 
 
 def get_uri(session, uri):
@@ -83,4 +86,6 @@ def enable_delayed_registration():
 
 def main(config, client):
     session = client.connection.session
-    aws_main(session)
+    if not aws_main(session):
+        sys.exit(constants.sig_kill_bad)
+    sys.exit(sig_kill_good)

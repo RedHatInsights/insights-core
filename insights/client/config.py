@@ -353,6 +353,12 @@ DEFAULT_OPTS = {
         'nargs': '?',
         'group': 'platform'
     },
+    'register_cloud': {
+        # maybe? in place of aws subcommand. extensible
+        'default': False,
+        'opt': ['--register-cloud'],
+        'group': 'platform'
+    }
     'subcommand': {
         'default': None,
         'opt': ['subcommand'],
