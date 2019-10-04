@@ -156,13 +156,6 @@ class Entry(object):
         """
         return list(chain.from_iterable(c.children for c in self.children))
 
-    def pluck(self, *names):
-        """
-        Select just the children with requested names.
-        """
-        names = set(names)
-        return Result(children=[c for c in self.children if c.name in names])
-
     def select(self, *queries, **kwargs):
         """
         select uses :py:func:`compile_queries` to compile ``queries`` into a
@@ -345,13 +338,6 @@ class Result(Entry):
         Returns the values of all the children as a list.
         """
         return list(set(c.value for c in self.children))
-
-    def pluck(self, *names):
-        """
-        Select just the grandchildren with requested names.
-        """
-        names = set(names)
-        return Result(children=[c for c in self.grandchildren if c.name in names])
 
     def select(self, *queries, **kwargs):
         query = compile_queries(*queries)
