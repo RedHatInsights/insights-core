@@ -105,7 +105,7 @@ def analyze(paths, excludes):
     results = []
     for path in paths:
         if content_type.from_file(path) == "text/plain":
-            results.extend(process([path], excludes))
+            results.append(load(path))
         elif os.path.isdir(path):
             results.extend(process(path, excludes))
         else:
