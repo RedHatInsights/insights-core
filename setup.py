@@ -100,7 +100,6 @@ optional = set([
     'python-logstash',
     'python-statsd',
     'watchdog',
-    'libyaml',
 ])
 
 if __name__ == "__main__":
