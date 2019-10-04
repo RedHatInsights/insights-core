@@ -337,7 +337,7 @@ class Result(Entry):
         """
         Returns the values of all the children as a list.
         """
-        return list(set(c.value for c in self.children))
+        return sorted(set(c.value for c in self.children))
 
     def select(self, *queries, **kwargs):
         query = compile_queries(*queries)
