@@ -63,6 +63,9 @@ OPTIONS
         Ansible inventory file for cluster analysis.  See INVENTORY(5) for more information
         about the options for format of the inventory file.
 
+    -k --pkg-query
+        Expression to select rules by package.
+
     -m --missing
         Show missing requirements.
 
@@ -75,6 +78,9 @@ OPTIONS
 
     -t --tracebacks
         Show stack traces when there are errors in components.
+
+    \-\-tags EXPRESSION
+        An expression for selecting which loaded rules to run based on their tags.
 
     -v --verbose
         Verbose output.

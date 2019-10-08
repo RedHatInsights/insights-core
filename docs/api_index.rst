@@ -62,6 +62,14 @@ insights.core.spec_factory
     :show-inheritance:
     :undoc-members:
 
+insights.core.taglang
+--------------------------
+
+.. automodule:: insights.core.taglang
+    :members:
+    :show-inheritance:
+    :undoc-members:
+
 insights.parsers
 ----------------
 
