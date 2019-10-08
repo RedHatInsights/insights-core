@@ -39,7 +39,6 @@ it's fully applied.
         gt_five_and_lt_10 = gt(5) & lt(10)
 
 """
-import functools
 
 
 class Boolean(object):
@@ -118,7 +117,6 @@ def lift(func, ignore_case=False):
 
 
 def lift2(func, ignore_case=False):
-    @functools.wraps(func)
     def inner(val):
         if ignore_case:
             return CaselessLift(func, val.lower())
