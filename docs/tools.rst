@@ -93,11 +93,13 @@ Options::
    -i --info                                  Comma separated list to get dependency info about
    -p PLUGINS --preload PLUGINS               Comma separated list of packages or modules to preload
    -d --pydoc                                 Show pydoc for the given object. E.g.: insights-info -d insights.rule
+   -k --pkg-query EXPRESSION                  Expression to select rules by package.
    -s --source                                Show source for the given object. E.g.:
                                               Insights-info  -s Insights.core.plugins.rule
    -S --specs                                 Show specs for the given  name. E.g.: insights-info -S uname
    -t TYPES --types TYPES                     Filter results based on component type; e.g. 'rule,parser'.
                                               Names without  '.'  are assumed to be in Insights.core.plugins.
+   \-\-tags EXPRESSION                        An expression for selecting which loaded rules to run based on their tags.
    -v --verbose                               Print component  dependencies.
 
 Examples:
