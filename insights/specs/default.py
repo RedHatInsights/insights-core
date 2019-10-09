@@ -583,6 +583,7 @@ class DefaultSpecs(Specs):
     multipath_conf = simple_file("/etc/multipath.conf")
     multipath_conf_initramfs = simple_command("/bin/lsinitrd -f /etc/multipath.conf")
     multipath__v4__ll = simple_command("/sbin/multipath -v4 -ll")
+    mysqladmin_status = simple_command("/bin/mysqladmin status")
     mysqladmin_vars = simple_command("/bin/mysqladmin variables")
     mysql_log = glob_file([
                           "/var/log/mysql/mysqld.log",

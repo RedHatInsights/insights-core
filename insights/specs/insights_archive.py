@@ -162,6 +162,7 @@ class InsightsArchiveSpecs(Specs):
     multipath_conf_initramfs = simple_file("insights_commands/lsinitrd_-f_.etc.multipath.conf")
     multipath__v4__ll = simple_file("insights_commands/multipath_-v4_-ll")
     mysqladmin_vars = simple_file("insights_commands/mysqladmin_variables")
+    mysqladmin_status = simple_file("insights_commands/mysqladmin_status")
     named_checkconf_p = simple_file("insights_commands/named-checkconf_-p")
     namespace = simple_file("insights_commands/ls_.var.run.netns")
     netstat = simple_file("insights_commands/netstat_-neopa")

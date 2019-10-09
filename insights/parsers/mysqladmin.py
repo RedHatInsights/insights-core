@@ -5,14 +5,59 @@ mysqladmin command - Command
 Parsing and extracting data from output of command ``/bin/mysqladmin variables``.
 Parsers contained in this module are:
 
+MysqladminStatus - command ``/bin/mysqladmin status``
+-----------------------------------------------------
+
 MysqladminVars - command ``/bin/mysqladmin variables``
 ------------------------------------------------------
 
 """
 
+import re
+try:
+    from itertools import zip_longest
+except ImportError:
+    from itertools import izip_longest as zip_longest
 from insights import CommandParser, parser, LegacyItemAccess
 from insights.parsers import ParseException, SkipException
 from insights.specs import Specs
+
+
+@parser(Specs.mysqladmin_status)
+class MysqladminStatus(CommandParser):
+    """
+    Module for parsing the output of the ``mysqladmin status`` command.
+
+    Typical output looks like::
+
+        Uptime: 1103965 Threads: 1820 Questions: 44778091 Slow queries: 0 Opens: 1919 Flush tables: 1 Open tables: 592 Queries per second avg: 40.561
+
+    Examples:
+        >>> result.status['Uptime'] == '1103965'
+        True
+        >>> result.status['Threads']
+        '1820'
+        >>> result.status['Queries per second avg'] == '1919'
+        False
+    """
+    pattern = re.compile("(Uptime):.(\d+).(Threads):.(\d+).(Questions):.(\d+).(Slow queries):.(\d+).(Opens):.(\d+).(Flush tables):.(\d+).(Open tables):.(\d+).(Queries per second avg):.(\d+.\d*)")
+
+    def grouper(self, iterable, n, fillvalue=None):
+        "Collect data into fixed-length chunks or blocks"
+        args = [iter(iterable)] * n
+        return zip_longest(*args, fillvalue=fillvalue)
+
+    def parse_content(self, content):
+        if not content:
+            raise SkipException("Content is empty.")
+
+        self.status = {}
+        if self.pattern.search(content[0]):
+            groups = self.pattern.search(content[0]).groups()
+            for group in self.grouper(groups, 2):
+                self.status[group[0]] = group[1]
+        else:
+            raise ParseException("Unable to parse the output.")
 
 
 @parser(Specs.mysqladmin_vars)
@@ -23,27 +68,14 @@ class MysqladminVars(LegacyItemAccess, CommandParser):
     This parser will parse the table and set each variable as an class
     attribute. The unparsable lines are stored in the ``bad_lines`` property list.
 
-    Sample command output::
-
-        +-------------------------------------------------+------------------+
-        | Variable_name                                   | Value            |
-        +-------------------------------------------------+------------------+
-        | aria_block_size                                 | 8192             |
-        | aria_checkpoint_interval                        | 30               |
-        | aria_checkpoint_log_activity                    | 1048576          |
-        | datadir                                         | /var/lib/mysql/  |
-        | version                                         | 5.5.56-MariaDB   |
-        +-------------------------------------------------+------------------+
-
-
     Example:
-        >>> output.version
+        >>> output.get('version')
         '5.5.56-MariaDB'
         >>> 'datadir' in output
         True
         >>> output.get('what', '233')
         '233'
-        >>> output.getint('aria_block_size', '4096')
+        >>> output.getint('aria_block_size')
         8192
     """
 
@@ -80,9 +112,7 @@ class MysqladminVars(LegacyItemAccess, CommandParser):
         Example:
 
             >>> output.getint('wait_timeout')
-            3000
-            >>> output.getint('wait_what')
-            None
+            28800
             >>> output.getint('wait_what', 100)
             100
 
