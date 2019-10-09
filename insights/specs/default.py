@@ -865,6 +865,7 @@ class DefaultSpecs(Specs):
     smbstatus_S = simple_command("/usr/bin/smbstatus -S")
     smartctl = foreach_execute(block, "/sbin/smartctl -a %s", keep_rc=True)
     smartpdc_settings = simple_file("/etc/smart_proxy_dynflow_core/settings.yml")
+    sockstat = simple_file("/proc/net/sockstat")
     softnet_stat = simple_file("proc/net/softnet_stat")
     software_collections_list = simple_command('/usr/bin/scl --list')
     spfile_ora = glob_file("${ORACLE_HOME}/dbs/spfile*.ora")
