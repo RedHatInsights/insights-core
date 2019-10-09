@@ -18,6 +18,15 @@ class SockStats(Parser, LegacyItemAccess):
 
     Sample input is provided in the *Examples*.
 
+    Sample content::
+
+        sockets: used 3037
+        TCP: inuse 1365 orphan 17 tw 2030 alloc 2788 mem 4109
+        UDP: inuse 6 mem 3
+        UDPLITE: inuse 0
+        RAW: inuse 0
+        FRAG: inuse 0 memory 0
+
     Examples:
 
         >>> type(sock_obj)
@@ -29,9 +38,7 @@ class SockStats(Parser, LegacyItemAccess):
         >>> sock_obj.seg_element_details('frag', 'inuse')
         0
 
-
     Resultant Data::
-
 
         {
             'sockets':
@@ -95,14 +102,14 @@ class SockStats(Parser, LegacyItemAccess):
     def seg_details(self, seg):
         """
         Returns (dict): On success, it will return detailed memory consumption
-        done by each segment(TCP/IP layer), on failure it will return None
+        done by each segment(TCP/IP layer), on failure it will return ``None``.
         """
         return self.sock_stats.get(seg, None)
 
     def seg_element_details(self, seg, elem):
         """
         Returns (int): On success, it will return memory consumption done by each
-        element of the segment(TCP/IP layer), on failure it will return None.
+        element of the segment(TCP/IP layer), on failure it will return ``None``.
         """
         if seg and elem and self.sock_stats:
             if seg in self.sock_stats and\
