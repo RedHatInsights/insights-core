@@ -566,6 +566,15 @@ class DefaultSpecs(Specs):
 
     modinfo = foreach_execute(lsmod_only_names, "modinfo %s")
 
+    @datasource(lsmod_only_names, context=HostContext)
+    def lsmod_all_names(broker):
+        mod_list = broker[DefaultSpecs.lsmod_only_names]
+        if mod_list:
+            return ' '.join(mod_list)
+        raise SkipComponent()
+
+    modinfo_all = command_with_args("modinfo %s", lsmod_all_names)
+
     modprobe = glob_file(["/etc/modprobe.conf", "/etc/modprobe.d/*.conf"])
     sysconfig_mongod = glob_file([
                                  "etc/sysconfig/mongod",
