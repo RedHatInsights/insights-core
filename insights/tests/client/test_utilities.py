@@ -180,7 +180,7 @@ def test_read_pidfile_failure():
 
 @patch('insights.client.utilities.Popen')
 @patch('insights.client.utilities.os.path.exists')
-def test_systemd_notify(exists, Popen):
+def test_systemd_notify_no_socket(exists, Popen):
     '''
     Test this function when NOTIFY_SOCKET is
     undefined, i.e. when we run the client on demand
