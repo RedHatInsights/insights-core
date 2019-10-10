@@ -101,6 +101,20 @@ Contributing Data:
           </p>
 
           <hr />
+          Links:
+          <ul>
+          {% for cat, links in rule.links.items() %}
+            <li>{{cat}}
+            <ul>
+            {% for link in links %}
+            <li><a class="source" href="{{link}}">{{link}}</a></li>
+            {% endfor %}
+            </ul>
+            </li>
+          {%- endfor %}
+          </ul>
+
+          <hr />
           <p> Rule Source: <a class="source" href="file://{{rule.source_path}}">{{rule.source_path}}</a></p>
 
           <hr />
