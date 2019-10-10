@@ -1,18 +1,18 @@
 """
 SockStats - file ``/proc/net/sockstat``
 =======================================
-The ``TcpIpStats`` class implements the parsing of ``/proc/net/snmp``
+The ``TcpIpStats`` class implements the parsing of ``/proc/net/sockstat``
 file, which contains TCP/IP stats of individual layer.
 """
 
 
-from .. import Parser, parser, LegacyItemAccess
+from insights import Parser, parser
 from insights.parsers import SkipException
 from insights.specs import Specs
 
 
 @parser(Specs.sockstat)
-class SockStats(Parser, LegacyItemAccess):
+class SockStats(Parser, dict):
     """
     Parser for ``/proc/net/sockstat`` file.
 
@@ -37,6 +37,13 @@ class SockStats(Parser, LegacyItemAccess):
         4109
         >>> sock_obj.seg_element_details('frag', 'inuse')
         0
+        >>> sock_obj.get('sockets')
+        {'used': '3037'}
+        >>> sock_obj.get('sockets').get('used')
+        '3037'
+        >>> sock_obj.seg_element_details('tcp', 'abc') is None
+        True
+
 
     Resultant Data::
 
@@ -84,10 +91,10 @@ class SockStats(Parser, LegacyItemAccess):
             raise SkipException("No Contents")
 
         for line in content:
-            line_split = line.split(":")
+            line_split = line.split(':')
             nt_seg = line_split[0].lower()
             self.sock_stats[nt_seg] = {}
-            val_lst = line_split[1].strip().split(' ')
+            val_lst = line_split[1].strip().split()
             key = True
             # Convert string to dictionary
             for idx in val_lst:
@@ -98,20 +105,22 @@ class SockStats(Parser, LegacyItemAccess):
                 else:
                     self.sock_stats[nt_seg][key_idx] = idx
                     key = True
+        self.update(self.sock_stats)
 
     def seg_details(self, seg):
         """
         Returns (dict): On success, it will return detailed memory consumption
         done by each segment(TCP/IP layer), on failure it will return ``None``.
         """
-        return self.sock_stats.get(seg, None)
+        return self.get(seg, None)
 
     def seg_element_details(self, seg, elem):
         """
         Returns (int): On success, it will return memory consumption done by each
         element of the segment(TCP/IP layer), on failure it will return ``None``.
         """
-        if seg and elem and self.sock_stats:
-            if seg in self.sock_stats and\
-                    elem in self.sock_stats[seg]:
-                return int(self.sock_stats[seg][elem])
+        if seg and elem and self:
+            if self.seg_details(seg) and\
+                    elem in self.seg_details(seg) and self.seg_details(seg)[elem]:
+                return int(self.seg_details(seg)[elem])
+        return None

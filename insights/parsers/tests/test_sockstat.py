@@ -35,7 +35,8 @@ def test_sockstat():
     assert stats.seg_element_details('tcp', 'inuse') == 1365
     assert stats.seg_element_details('frag', 'memory') == 10
     assert stats.seg_element_details('xyz', 'abc') is None
-
+    assert stats.seg_element_details(None, None) is None
+    assert stats.seg_element_details('tcp', 'abc') is None
     with pytest.raises(SkipException) as exc:
         sock_obj = SockStats(context_wrap(SOCK_STATS_NO))
         assert sock_obj is not None
