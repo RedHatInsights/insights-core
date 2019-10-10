@@ -79,6 +79,19 @@ class HtmlFormat(TemplateFormat):
                 {%- endfor %}
                 </ol>
                 <hr />
+                Links:
+                <ul>
+                {% for cat, links in rule.links.items() %}
+                  <li>{{cat}}
+                  <ul>
+                  {% for link in links %}
+                  <li><a href="{{link}}">{{link}}</a></li>
+                  {% endfor %}
+                  </ul>
+                  </li>
+                {%- endfor %}
+                </ul>
+                <hr />
                 Rule source: {{rule.source_path}}
                 <hr />
           Documentation:
