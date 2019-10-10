@@ -103,6 +103,9 @@ class Entry(object):
         return sorted(set(c.name for c in self.children))
 
     def __dir__(self):
+        """
+        Exists for ipython autocompletion.
+        """
         return self.get_keys() + object.__dir__(self)
 
     @property
@@ -135,19 +138,13 @@ class Entry(object):
     @property
     def root(self):
         """
-        Returns the furthest ancestor ``Entry``.
+        Returns the furthest ancestor ``Entry``. If the node is already the
+        furthest ancestor, ``None`` is returned.
         """
-        p = self
-        while p.parent is not None:
+        p = self.parent
+        while p is not None and p.parent is not None:
             p = p.parent
         return p
-
-    @property
-    def roots(self):
-        """
-        Returns the furthest ancestor ``Entry``.
-        """
-        return Result(children=list(set(c.root for c in self.children)))
 
     @property
     def grandchildren(self):
@@ -321,9 +318,40 @@ class Result(Entry):
     @property
     def parents(self):
         """
-        Returns the values of all the children as a list.
+        Returns all of the deduplicated parents as a list. If a child has no
+        parent, the child itself is treated as the parent.
         """
-        return Result(children=[c.parent for c in self.children])
+        parents = []
+        seen = set()
+        for c in self.children:
+            p = c.parent
+            if p is not None:
+                if p not in seen:
+                    parents.append(p)
+                    seen.add(p)
+            elif c not in seen:
+                parents.append(c)
+                seen.add(c)
+        return Result(children=parents)
+
+    @property
+    def roots(self):
+        """
+        Returns the furthest ancestor ``Entry`` instances of all children. If a
+        child has no furthest ancestor, the child itself is treated as a root.
+        """
+        roots = []
+        seen = set()
+        for c in self.children:
+            r = c.root
+            if r is not None:
+                if r not in seen:
+                    roots.append(r)
+                    seen.add(r)
+            elif c not in seen:
+                roots.append(c)
+                seen.add(c)
+        return Result(children=roots)
 
     @property
     def values(self):
@@ -335,7 +363,7 @@ class Result(Entry):
     @property
     def unique_values(self):
         """
-        Returns the values of all the children as a list.
+        Returns the unique values of all the children as a list.
         """
         return sorted(set(c.value for c in self.children))
 
@@ -566,6 +594,9 @@ def make_child_query(name, value=None):
 
 
 def _flatten(nodes):
+    """
+    Flatten the config tree into a list of nodes.
+    """
     def inner(n):
         res = [n]
         res.extend(chain.from_iterable(inner(c) for c in n.children))
@@ -600,7 +631,7 @@ def compile_queries(*queries):
     return inner
 
 
-def select(query, nodes, deep=False, roots=None):
+def select(query, nodes, deep=False, roots=False):
     """
     select runs query, a function returned by :py:func:`compile_queries`,
     against a list of :py:class:`Entry` instances. If you pass ``deep=True``,
