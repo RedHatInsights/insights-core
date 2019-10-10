@@ -279,12 +279,17 @@ class rule(PluginType):
             ``CONTENT`` variable is declared in the module, it will be used for
             every rule in the module and also can be a string or list of
             dictionaries
+        links (dict): a dictionary with strings as keys and lists of urls as
+            values. The keys categorize the urls, e.g. "kcs" for kcs urls and
+            "bugzilla" for bugzilla urls.
     """
     content = None
+    links = None
 
     def __init__(self, *args, **kwargs):
         super(rule, self).__init__(*args, **kwargs)
         self.content = kwargs.get("content")
+        self.links = kwargs.get("links")
 
     def process(self, broker):
         """
