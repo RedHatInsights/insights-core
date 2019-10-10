@@ -90,15 +90,11 @@ class NmcliDevShow(CommandParser, dict):
         ['em1', 'em2', 'em3']
 
     """
-    def __init__(self, *args, **kwargs):
-        super(NmcliDevShow, self).__init__(*args, **kwargs)
-        self.update(self.data)
-
     def parse_content(self, content):
         if not content:
             raise SkipException()
 
-        self.data = {}
+        data = {}
         per_device = {}
         current_dev = ""
         for line in get_active_lines(content):
@@ -116,25 +112,30 @@ class NmcliDevShow(CommandParser, dict):
                     current_dev = val
                     continue
                 elif key == "DEVICE" and current_dev:
-                    self.data[current_dev] = per_device
+                    data[current_dev] = per_device
                     current_dev = val
                     per_device = {}
                     continue
                 per_device.update({key: val})
         if current_dev and per_device:
             # Last device configuration details
-            self.data[current_dev] = per_device
+            data[current_dev] = per_device
 
-        if not self.data:
+        if not data:
             raise SkipException()
-
-        self._con_dev = [k for k, v in self.data.items()
+        self.update(data)
+        self._con_dev = [k for k, v in data.items()
                          if 'STATE' in v and v['STATE'] == 'connected']
 
     @property
     def connected_devices(self):
         """(list): The list of devices who's state is connected and managed by NetworkManager"""
         return self._con_dev
+
+    @property
+    def data(self):
+        """(dict): Dict with the device name as the key and device details as the value."""
+        return self
 
 
 @parser(Specs.nmcli_dev_show_sos)

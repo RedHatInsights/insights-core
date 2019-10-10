@@ -22,24 +22,29 @@ class AllNmcliDevShow(dict):
     """
 
     def __init__(self, nmclidevshow, nmclidevshowsos):
-        self.data = {}
+        data = {}
         self._con_dev = []
 
         if nmclidevshow:
-            self.data.update(nmclidevshow.data)
+            data.update(nmclidevshow)
             self._con_dev = nmclidevshow.connected_devices
         elif nmclidevshowsos:
             for item in nmclidevshowsos:
-                self.data.update(item.data)
+                data.update(item)
                 self._con_dev.extend(item.connected_devices)
 
-        if not self.data:
+        if not data:
             raise SkipException()
 
         super(AllNmcliDevShow, self).__init__()
-        self.update(self.data)
+        self.update(data)
 
     @property
     def connected_devices(self):
         """(list): The list of devices who's state is connected and managed by NetworkManager"""
         return self._con_dev
+
+    @property
+    def data(self):
+        """(dict): Dict with the device name as the key and NmcliDevShow details as the value."""
+        return self

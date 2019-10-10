@@ -64,7 +64,8 @@ class TemplateFormat(Formatter):
             body: rendered content for the rule as provided in the rule module.
             mod_doc: pydoc of the module containing the rule
             rule_doc: pydoc of the rule
-            rule_path: absolute path to the source file of the rule
+            source_path: absolute path to the source file of the rule
+            tags: the list of tags associated with the rule
             datasources: sorted list of command or files contributing to the rule
         """
         if comp in broker:
@@ -79,6 +80,7 @@ class TemplateFormat(Formatter):
                 "mod_doc": sys.modules[comp.__module__].__doc__ or "",
                 "rule_doc": comp.__doc__ or "",
                 "source_path": inspect.getabsfile(comp),
+                "tags": list(dr.get_tags(comp)),
                 "datasources": sorted(set(self.get_datasources(comp, broker)))
             })
 

@@ -32,6 +32,78 @@ V??DOs:
 
 """
 
+INPUT_STATUS_2 = """
+VDO status:
+  Date: '2019-09-23 02:00:38+02:00'
+  Node: hello_test
+Kernel module:
+  Loaded: false
+  Name: kvdo
+  Version information:
+    kvdo version: 6.1.2.41
+Configuration:
+  File: /etc/vdoconf.yml
+  Last modified: '2018-06-13 16:46:03'
+VDOs:
+  vdoapp1:
+    Acknowledgement threads: 1
+    Activate: enabled
+    Bio rotation interval: 64
+    Bio submission threads: 4
+    Block map cache size: 128M
+    Block map period: 16380
+    Block size: 4096
+    CPU-work threads: 2
+    Compression: enabled
+    Configured write policy: auto
+    Deduplication: enabled
+    Device mapper status: not available
+    Emulate 512 byte: disabled
+    Hash zone threads: 1
+    Index checkpoint frequency: 0
+    Index memory setting: 0.25
+    Index parallel factor: 0
+    Index sparse: disabled
+    Index status: not available
+    Logical size: 466771896K
+    Logical threads: 1
+    Physical size: 450G
+    Physical threads: 1
+    Read cache: disabled
+    Read cache size: 0M
+    Slab size: 2G
+    Storage device: /dev/sdh
+    VDO statistics: not available
+  vdoapp2:
+    Acknowledgement threads: 1
+    Activate: enabled
+    Bio rotation interval: 64
+    Bio submission threads: 4
+    Block map cache size: 128M
+    Block map period: 16380
+    Block size: 4096
+    CPU-work threads: 2
+    Compression: enabled
+    Configured write policy: auto
+    Deduplication: enabled
+    Device mapper status: not available
+    Emulate 512 byte: disabled
+    Hash zone threads: 1
+    Index checkpoint frequency: 0
+    Index memory setting: 0.25
+    Index parallel factor: 0
+    Index sparse: disabled
+    Index status: not available
+    Logical size: 466771896K
+    Logical threads: 1
+    Physical size: 450G
+    Physical threads: 1
+    Read cache: disabled
+    Read cache size: 0M
+    Slab size: 2G
+    Storage device: /dev/sdc
+    VDO statistics: not available
+"""
 
 INPUT_STATUS_SIMPLE = """
 VDO status:
@@ -478,6 +550,31 @@ VDOs:
         write amplification ratio: 0.0
         write policy: sync
 """.strip()
+
+
+def test_vdo_status2():
+    vdo = VDOStatus(context_wrap(INPUT_STATUS_2))
+    assert vdo.data['VDOs']['vdoapp1']['VDO statistics'] == 'not available'
+
+
+def test_vdo_status_exp2_0():
+    """
+    Here test the examples cause expections
+    """
+    with pytest.raises(ParseException) as sc1:
+        vdo = VDOStatus(context_wrap(INPUT_STATUS_2))
+        vdo.get_physical_blocks_of_vol('vdoapp1')
+    assert "Not available device mapper path in" in str(sc1)
+
+
+def test_vdo_status_exp2_1():
+    """
+    Here test the examples cause expections
+    """
+    with pytest.raises(KeyError) as sc1:
+        vdo = VDOStatus(context_wrap(INPUT_STATUS_2))
+        vdo.get_physical_blocks_of_vol('vdoapp999')
+    assert "No key(s) named:" in str(sc1)
 
 
 def test_vdo_status_simple():

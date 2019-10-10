@@ -1,10 +1,10 @@
-from insights.parsers.hostname import Hostname
+from insights.parsers.hostname import Hostname as HnF
 from insights import SkipComponent
 from insights.parsers.lssap import Lssap
 from insights.parsers.saphostctrl import SAPHostCtrlInstances
 from insights.combiners import sap
 from insights.combiners.sap import Sap
-from insights.combiners.hostname import hostname
+from insights.combiners.hostname import Hostname
 from insights.tests import context_wrap
 import pytest
 import doctest
@@ -187,7 +187,7 @@ SAPHOSTCTRL_HOSTINSTANCES_GOOD = '''
 
 def test_lssap_netweaver():
     lssap = Lssap(context_wrap(Lssap_nw_TEST))
-    hn = hostname(Hostname(context_wrap(HOSTNAME)), None, None)
+    hn = Hostname(HnF(context_wrap(HOSTNAME)), None, None, None, None)
     sap = Sap(hn, None, lssap)
     assert sap['D50'].number == '50'
     assert 'D16' in sap.local_instances
@@ -201,7 +201,7 @@ def test_lssap_netweaver():
 def test_saphostcrtl_hana():
     lssap = Lssap(context_wrap(Lssap_nw_TEST))
     inst = SAPHostCtrlInstances(context_wrap(SAPHOSTCTRL_HOSTINSTANCES))
-    hn = hostname(Hostname(context_wrap(HOSTNAME)), None, None)
+    hn = Hostname(HnF(context_wrap(HOSTNAME)), None, None, None, None)
     sap = Sap(hn, inst, lssap)
     assert 'D50' not in sap
     assert sap.local_instances == ['HDB88']
@@ -219,7 +219,7 @@ def test_saphostcrtl_hana():
 def test_saphostcrtl_hana_2():
     lssap = Lssap(context_wrap(Lssap_all_TEST))
     inst = SAPHostCtrlInstances(context_wrap(SAPHOSTCTRL_HOSTINSTANCES_GOOD))
-    hn = hostname(Hostname(context_wrap(HOSTNAME1)), None, None)
+    hn = Hostname(HnF(context_wrap(HOSTNAME1)), None, None, None, None)
     sap = Sap(hn, inst, lssap)
     assert 'D50' not in sap
     assert 'HDB00' in sap
@@ -244,7 +244,7 @@ def test_saphostcrtl_hana_2():
 
 def test_lssap_hana():
     lssap = Lssap(context_wrap(Lssap_hana_TEST))
-    hn = hostname(Hostname(context_wrap(HOSTNAME)), None, None)
+    hn = Hostname(HnF(context_wrap(HOSTNAME)), None, None, None, None)
     sap = Sap(hn, None, lssap)
     assert 'D50' not in sap
     assert sap.is_netweaver is False
@@ -254,7 +254,7 @@ def test_lssap_hana():
 
 def test_lssap_ascs():
     lssap = Lssap(context_wrap(Lssap_ascs_TEST))
-    hn = hostname(Hostname(context_wrap(HOSTNAME)), None, None)
+    hn = Hostname(HnF(context_wrap(HOSTNAME)), None, None, None, None)
     sap = Sap(hn, None, lssap)
     assert sap['ASCS16'].sid == 'HA2'
     assert sap.is_netweaver is False
@@ -264,7 +264,7 @@ def test_lssap_ascs():
 
 def test_all():
     lssap = Lssap(context_wrap(Lssap_all_TEST))
-    hn = hostname(Hostname(context_wrap(HOSTNAME)), None, None)
+    hn = Hostname(HnF(context_wrap(HOSTNAME)), None, None, None, None)
     sap = Sap(hn, None, lssap)
     assert sap['D16'].version == '749, patch 10, changelist 1698137'
     assert sap['ASCS16'].hostname == 'lu0417'
@@ -276,7 +276,7 @@ def test_all():
 def test_doc_examples():
     env = {
             'saps': Sap(
-                hostname(Hostname(context_wrap(HOSTNAME)), None, None),
+                Hostname(HnF(context_wrap(HOSTNAME)), None, None, None, None),
                 None,
                 Lssap(context_wrap(Lssap_doc_TEST))
             )
@@ -286,7 +286,7 @@ def test_doc_examples():
 
 
 def test_ab():
-    hn = hostname(Hostname(context_wrap(HOSTNAME)), None, None)
+    hn = Hostname(HnF(context_wrap(HOSTNAME)), None, None, None, None)
     with pytest.raises(SkipComponent) as se:
         Sap(hn, None, None)
     assert 'No SAP instance.' in str(se)

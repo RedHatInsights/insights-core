@@ -35,7 +35,7 @@ Further requirements can be found in the
 file associated with the insights-core project.
 
 .. HINT::
-   You many also need to install ``gcc`` to be able to build some python modules,
+   You might also need to install ``gcc`` to be able to build some python modules,
    ``unzip`` to be able to run `pytest` on the ``insights-core`` repo,
    and ``pandoc`` to build Insights Core documentation.
 

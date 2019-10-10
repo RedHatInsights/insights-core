@@ -16,7 +16,9 @@ from .utilities import (generate_machine_id,
                         write_unregistered_file,
                         delete_registered_file,
                         delete_unregistered_file,
-                        determine_hostname)
+                        determine_hostname,
+                        read_pidfile,
+                        systemd_notify)
 from .collection_rules import InsightsUploadConf
 from .data_collector import DataCollector
 from .connection import InsightsConnection
@@ -37,7 +39,9 @@ def do_log_rotation():
 def get_file_handler(config):
     log_file = config.logging_file
     log_dir = os.path.dirname(log_file)
-    if not os.path.exists(log_dir):
+    if not log_dir:
+        log_dir = os.getcwd()
+    elif not os.path.exists(log_dir):
         os.makedirs(log_dir, 0o700)
     file_handler = logging.handlers.RotatingFileHandler(
         log_file, backupCount=3)
@@ -399,7 +403,9 @@ def get_connection(config):
 def _legacy_upload(config, pconn, tar_file, content_type, collection_duration=None):
     logger.info('Uploading Insights data.')
     api_response = None
+    parent_pid = read_pidfile()
     for tries in range(config.retries):
+        systemd_notify(parent_pid)
         upload = pconn.upload_archive(tar_file, '', collection_duration)
 
         if upload.status_code in (200, 201):
@@ -442,8 +448,9 @@ def upload(config, pconn, tar_file, content_type, collection_duration=None):
     if config.legacy_upload:
         return _legacy_upload(config, pconn, tar_file, content_type, collection_duration)
     logger.info('Uploading Insights data.')
-
+    parent_pid = read_pidfile()
     for tries in range(config.retries):
+        systemd_notify(parent_pid)
         upload = pconn.upload_archive(tar_file, content_type, collection_duration)
 
         if upload.status_code in (200, 202):

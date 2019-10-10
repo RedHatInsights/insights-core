@@ -29,6 +29,7 @@ from .core import FileListing, LegacyItemAccess, SysconfigOptions  # noqa: F401
 from .core import YAMLParser, JSONParser, XMLParser, CommandParser  # noqa: F401
 from .core import AttributeDict  # noqa: F401
 from .core import Syslog  # noqa: F401
+from .core import taglang
 from .core.archives import COMPRESSION_TYPES, extract, InvalidArchive, InvalidContentType  # noqa: F401
 from .core import dr  # noqa: F401
 from .core.context import ClusterArchiveContext, HostContext, HostArchiveContext, SerializedArchiveContext, ExecutionContext  # noqa: F401
@@ -180,7 +181,7 @@ def apply_configs(config):
     Args:
         config (dict): a dictionary with the following keys:
             default_component_enabled (bool, optional): default value for
-                whether compoments are enable if not specifically declared in
+                whether components are enable if not specifically declared in
                 the config section. Defaults to True.
 
             configs (list): list of dictionaries with the following keys:
@@ -251,9 +252,11 @@ def run(component=None, root=None, print_summary=False,
                        default="")
         p.add_argument("-c", "--config", help="Configure components.")
         p.add_argument("-i", "--inventory", help="Ansible inventory file for cluster analysis.")
+        p.add_argument("-k", "--pkg-query", help="Expression to select rules by package.")
         p.add_argument("-v", "--verbose", help="Verbose output.", action="store_true")
         p.add_argument("-f", "--format", help="Output format.", default="insights.formats.text")
         p.add_argument("-s", "--syslog", help="Log results to syslog.", action="store_true")
+        p.add_argument("--tags", help="Expression to select rules by tag.")
         p.add_argument("-D", "--debug", help="Verbose debug output.", action="store_true")
         p.add_argument("--context", help="Execution Context. Defaults to HostContext if an archive isn't passed.")
 
@@ -316,6 +319,21 @@ def run(component=None, root=None, print_summary=False,
     if component:
         if not isinstance(component, (list, set)):
             component = [component]
+
+        if args and args.pkg_query:
+            pred = taglang.parse(args.pkg_query)
+            component = [c for c in component if pred([dr.get_module_name(c)])]
+            if not component:
+                msg = "No components for pkg-query expression: %s" % args.pkg_query
+                raise Exception(msg)
+
+        if args and args.tags:
+            pred = taglang.parse(args.tags)
+            component = [c for c in component if pred(dr.get_tags(c))]
+            if not component:
+                msg = "No components for tag expression: %s" % args.tags
+                raise Exception(msg)
+
         graph = {}
         for c in component:
             graph.update(dr.get_dependency_graph(c))
@@ -332,7 +350,7 @@ def run(component=None, root=None, print_summary=False,
         broker = dr.Broker()
         broker[ExecutionContext] = ctx
         for spec, content in specs.items():
-            broker[spec] = content if spec.multi_output else content[-1]
+            broker[spec] = content if dr.DELEGATES[spec].multi_output else content[-1]
     try:
         if formatters:
             for formatter in formatters:

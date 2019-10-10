@@ -71,10 +71,6 @@ class Any(Boolean):
     def __init__(self, *exprs):
         self.exprs = list(exprs)
 
-    def __or__(self, other):
-        self.exprs.append(other)
-        return self
-
     def test(self, value):
         return any(q.test(value) for q in self.exprs)
 
@@ -82,10 +78,6 @@ class Any(Boolean):
 class All(Boolean):
     def __init__(self, *exprs):
         self.exprs = list(exprs)
-
-    def __and__(self, other):
-        self.exprs.append(other)
-        return self
 
     def test(self, value):
         return all(q.test(value) for q in self.exprs)
