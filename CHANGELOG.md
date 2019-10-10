@@ -1,5 +1,13 @@
 # Change Log
 
+## [insights-core-3.0.128-1181](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.128-1181) (2019-10-10)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.127-1168...insights-core-3.0.128-1181)
+
+**Closed issues:**
+
+- Better keep the spec `modinfo` compatible with the one in sosreport [\#2220](https://github.com/RedHatInsights/insights-core/issues/2220)
+- Need ModInfo Specs for sos\_archive [\#2213](https://github.com/RedHatInsights/insights-core/issues/2213)
+
 ## [insights-core-3.0.127-1168](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.127-1168) (2019-10-01)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.126-1160...insights-core-3.0.127-1168)
 
