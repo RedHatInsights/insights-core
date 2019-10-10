@@ -27,6 +27,10 @@ RAW: inuse 0
 FRAG: inuse 0 memory 0
 """.strip()
 
+SOCK_STATS_NO_2 = """
+In valid data is present
+""".strip()
+
 
 def test_sockstat():
     stats = SockStats(context_wrap(SOCK_STATS))
@@ -37,6 +41,7 @@ def test_sockstat():
     assert stats.seg_element_details('xyz', 'abc') is None
     assert stats.seg_element_details(None, None) is None
     assert stats.seg_element_details('tcp', 'abc') is None
+    assert len(stats.sock_stats)
     with pytest.raises(SkipException) as exc:
         sock_obj = SockStats(context_wrap(SOCK_STATS_NO))
         assert sock_obj is not None

@@ -85,7 +85,6 @@ class SockStats(Parser, dict):
     """
 
     def parse_content(self, content):
-        self.sock_stats = {}
 
         if not content:
             raise SkipException("No Contents")
@@ -93,19 +92,26 @@ class SockStats(Parser, dict):
         for line in content:
             line_split = line.split(':')
             nt_seg = line_split[0].lower()
-            self.sock_stats[nt_seg] = {}
+            self[nt_seg] = {}
             val_lst = line_split[1].strip().split()
             key = True
             # Convert string to dictionary
             for idx in val_lst:
                 if key:
                     key_idx = idx.lower()
-                    self.sock_stats[nt_seg][key_idx] = None
+                    self[nt_seg][key_idx] = None
                     key = False
                 else:
-                    self.sock_stats[nt_seg][key_idx] = idx
+                    self[nt_seg][key_idx] = idx
                     key = True
-        self.update(self.sock_stats)
+
+    @property
+    def sock_stats(self):
+        """
+        Returns (dict): On On success, it will return detailed memory consumption
+        done by all TCP/IP layer in single data, on failure it will return ``None``
+        """
+        return self
 
     def seg_details(self, seg):
         """
@@ -119,8 +125,7 @@ class SockStats(Parser, dict):
         Returns (int): On success, it will return memory consumption done by each
         element of the segment(TCP/IP layer), on failure it will return ``None``.
         """
-        if seg and elem and self:
-            if self.seg_details(seg) and\
-                    elem in self.seg_details(seg) and self.seg_details(seg)[elem]:
-                return int(self.seg_details(seg)[elem])
+
+        if seg and elem and elem in self.get(seg, {}):
+            return int(self.get(seg, {}).get(elem))
         return None
