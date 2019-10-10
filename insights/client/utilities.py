@@ -14,6 +14,7 @@ import sys
 from subprocess import Popen, PIPE, STDOUT
 from six.moves.configparser import RawConfigParser
 
+from .. import package_info
 from .constants import InsightsConstants as constants
 
 logger = logging.getLogger(__name__)
@@ -228,8 +229,6 @@ def get_version_info():
     '''
     Get the insights client and core versions for archival
     '''
-    from insights import package_info
-
     cmd = 'rpm -q --qf "%{VERSION}-%{RELEASE}" insights-client'
     version_info = {}
     version_info['core_version'] = '%s-%s' % (package_info['VERSION'], package_info['RELEASE'])

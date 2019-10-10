@@ -73,12 +73,13 @@ def test_run_command_get_output():
 
 
 @patch('insights.client.utilities.run_command_get_output')
-@patch('insights.client.InsightsClient')
-def test_get_version_info(insights_client, run_command_get_output):
-    insights_client.return_value.version.return_value = 1
+@patch.dict('insights.client.utilities.package_info', {'VERSION': '1', 'RELEASE': '1'})
+def test_get_version_info(run_command_get_output):
+    # package_info['VERSION'] = '1'
+    # package_info['RELEASE'] = '1'
     run_command_get_output.return_value = {'output': 1}
     version_info = util.get_version_info()
-    assert version_info == {'core_version': 1, 'client_version': 1}
+    assert version_info == {'core_version': '1-1', 'client_version': 1}
 
 
 def test_validate_remove_file():
@@ -181,6 +182,21 @@ def test_read_pidfile_failure():
 @patch('insights.client.utilities.os.path.exists')
 def test_systemd_notify(exists, Popen):
     '''
+    Test this function when NOTIFY_SOCKET is
+    undefined, i.e. when we run the client on demand
+    and not via systemd job
+    '''
+    exists.return_value = True
+    Popen.return_value.communicate.return_value = ('', '')
+    util.systemd_notify('420')
+    Popen.assert_not_called()
+
+
+@patch('insights.client.utilities.Popen')
+@patch('insights.client.utilities.os.path.exists')
+@patch.dict('insights.client.utilities.os.environ', {'NOTIFY_SOCKET': '/tmp/test.sock'})
+def test_systemd_notify(exists, Popen):
+    '''
     Test calling systemd-notify with a "valid" PID
     On RHEL 7, exists(/usr/bin/systemd-notify) == True
     '''
@@ -192,6 +208,7 @@ def test_systemd_notify(exists, Popen):
 
 @patch('insights.client.utilities.Popen')
 @patch('insights.client.utilities.os.path.exists')
+@patch.dict('insights.client.utilities.os.environ', {'NOTIFY_SOCKET': '/tmp/test.sock'})
 def test_systemd_notify_failure_bad_pid(exists, Popen):
     '''
     Test calling systemd-notify with an invalid PID
@@ -205,6 +222,7 @@ def test_systemd_notify_failure_bad_pid(exists, Popen):
 
 @patch('insights.client.utilities.Popen')
 @patch('insights.client.utilities.os.path.exists')
+@patch.dict('insights.client.utilities.os.environ', {'NOTIFY_SOCKET': '/tmp/test.sock'})
 def test_systemd_notify_failure_rhel_6(exists, Popen):
     '''
     Test calling systemd-notify on RHEL 6
