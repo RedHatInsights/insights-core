@@ -60,6 +60,11 @@ def report(a, b):
     return make_fail("FAIL2", a=a, b=b, c=a + b)
 
 
+@rule(links={"kcs": ["https://www.example.com"]})
+def show_links():
+    return make_fail("LINKS")
+
+
 components = [
     hostname,
     Specs.redhat_release,
@@ -220,3 +225,29 @@ def test_insights_evaluator_make_unsure():
     assert len([r["component"] for r in result["unsure"]]) == 1
     assert len([r["type"] for r in result["unsure"]]) == 1
     assert len([r["key"] for r in result["unsure"]]) == 1
+
+
+def test_insights_evaluator_show_links():
+    components = [
+        hostname,
+        Specs.redhat_release,
+        Specs.machine_id,
+        show_links,
+    ]
+
+    broker = dr.Broker()
+    broker[Specs.hostname] = context_wrap("www.example.com")
+    broker[Specs.machine_id] = context_wrap("12345")
+    broker[Specs.redhat_release] = context_wrap("Red Hat Enterprise Linux Server release 7.4 (Maipo)")
+
+    e = InsightsEvaluator(broker)
+    e.process(components)
+
+    result = e.get_response()
+
+    assert result["system"]["hostname"] == "www.example.com", result["system"]["hostname"]
+    assert result["system"]["system_id"] == "12345"
+    assert result["system"]["metadata"]["release"] == "Red Hat Enterprise Linux Server release 7.4 (Maipo)"
+
+    rule_response = result["reports"][0]
+    assert "kcs" in rule_response["links"]

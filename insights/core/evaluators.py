@@ -111,7 +111,8 @@ class SingleEvaluator(Evaluator):
                 "type": type_,
                 "key": key,
                 "details": r,
-                "tags": list(dr.get_tags(plugin))
+                "tags": list(dr.get_tags(plugin)),
+                "links": dr.get_delegate(plugin).links or {}
             }))
 
 
