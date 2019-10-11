@@ -1,10 +1,15 @@
 """
-Parsers for cpu vulnerabilities file output
-===========================================
+CpuVulns - Parsers for cpu vulnerabilities file output
+======================================================
 
-This module provides the following parser:
+Reads the ``/sys/devices/system/cpu/vulnerabilities/*`` files and
+converts file content into a dictionary in the data property.
 
-CpuVulns - ``/sys/devices/system/cpu/vulnerabilities/*``
+Examples:
+    >>> type(sp_v1)
+    <class 'insights.parsers.cpu_vulns.CpuVulns'>
+    >>> sp_v1.value
+    'Mitigation: Load fences'
 """
 
 from insights import Parser
