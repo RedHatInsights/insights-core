@@ -14,6 +14,7 @@ import sys
 from subprocess import Popen, PIPE, STDOUT
 from six.moves.configparser import RawConfigParser
 
+from .. import package_info
 from .constants import InsightsConstants as constants
 
 logger = logging.getLogger(__name__)
@@ -228,11 +229,9 @@ def get_version_info():
     '''
     Get the insights client and core versions for archival
     '''
-    from insights.client import InsightsClient
-
     cmd = 'rpm -q --qf "%{VERSION}-%{RELEASE}" insights-client'
     version_info = {}
-    version_info['core_version'] = InsightsClient().version()
+    version_info['core_version'] = '%s-%s' % (package_info['VERSION'], package_info['RELEASE'])
     version_info['client_version'] = run_command_get_output(cmd)['output']
 
     return version_info
@@ -264,7 +263,8 @@ def print_egg_versions():
             logger.debug('%s not found.', egg)
             continue
         try:
-            proc = Popen([sys.executable, '-c', 'from insights.client import InsightsClient; print(InsightsClient().version())'],
+            proc = Popen([sys.executable, '-c',
+                         'from insights import package_info; print(\'%s-%s\' % (package_info[\'VERSION\'], package_info[\'RELEASE\']))'],
                          env={'PYTHONPATH': egg, 'PATH': os.getenv('PATH')}, stdout=PIPE, stderr=STDOUT)
         except OSError:
             logger.debug('Could not start python.')
@@ -292,6 +292,9 @@ def systemd_notify(pid):
     Ping the systemd watchdog with the main PID so that
     the watchdog doesn't kill the process
     '''
+    if not os.getenv('NOTIFY_SOCKET'):
+        # running standalone, not via systemd job
+        return
     if not pid:
         logger.debug('No PID specified.')
         return
