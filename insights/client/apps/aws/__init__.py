@@ -63,8 +63,25 @@ def get_aws_identity(session):
         logger.error('Could not parse identity document JSON.')
         return {}
     logger.debug('Identity information obtained successfully.')
+
+    def identity_doc_filter(doc):
+        '''
+        Only take the fields we need
+        '''
+        try:
+            return {
+                'version': doc['version'],
+                'accountId': doc['accountId'],
+                'availabilityZone': doc['availabilityZone'],
+                'region': doc['region']
+            }
+        except KeyError as e:
+            logger.error(e)
+            logger.error('Could not parse identity document JSON.')
+            return {}
+
     return {
-        'document': identity_doc,
+        'document': identity_doc_filter(identity_doc),
         'signature': sig_res.content.decode('utf-8'),
         'pkcs7': pkcs7_res.content.decode('utf-8')
     }
