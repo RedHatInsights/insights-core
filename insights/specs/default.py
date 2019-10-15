@@ -762,6 +762,7 @@ class DefaultSpecs(Specs):
     rdma_conf = simple_file("/etc/rdma/rdma.conf")
     redhat_release = simple_file("/etc/redhat-release")
     resolv_conf = simple_file("/etc/resolv.conf")
+    rhosp_release = simple_file("/etc/rhosp-release")
 
     @datasource(HostContext)
     def rhev_data_center(broker):
