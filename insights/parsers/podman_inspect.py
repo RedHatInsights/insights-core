@@ -44,13 +44,13 @@ class PodmanInspectImage(PodmanInspect):
 
     Sample input::
         [
-        {
-            "Id": "013125b8a088f45be8f85f88b5504f05c02463b10a6eea2b66809a262bb911ca",
-            "Digest": "sha256:f9662cdd45e3db182372a4fa6bfff10e1c601cc785bac09ccae3b18f0bc429df",
-            "RepoTags": [
-                "192.168.24.1:8787/rhosp15/openstack-rabbitmq:20190819.1",
-                "192.168.24.1:8787/rhosp15/openstack-rabbitmq:pcmklatest"
-            ],
+            {
+                "Id": "013125b8a088f45be8f85f88b5504f05c02463b10a6eea2b66809a262bb911ca",
+                "Digest": "sha256:f9662cdd45e3db182372a4fa6bfff10e1c601cc785bac09ccae3b18f0bc429df",
+                "RepoTags": [
+                    "192.168.24.1:8787/rhosp15/openstack-rabbitmq:20190819.1",
+                    "192.168.24.1:8787/rhosp15/openstack-rabbitmq:pcmklatest"
+                ],
         ...
 
     Examples:
@@ -69,15 +69,15 @@ class PodmanInspectContainer(PodmanInspect):
 
     Sample input::
         [
-        {
-            "ID": "66db151828e9beede0cdd9c17fc9bd5ebb5d125dd036f7230bc6b6433e5c0dda",
-            "Created": "2019-08-21T10:38:34.753548542Z",
-            "Path": "dumb-init",
-            "State": {
-                "OciVersion": "1.0.1-dev",
-                "Status": "running",
-                "Running": true,
-                "Paused": false,
+            {
+                "ID": "66db151828e9beede0cdd9c17fc9bd5ebb5d125dd036f7230bc6b6433e5c0dda",
+                "Created": "2019-08-21T10:38:34.753548542Z",
+                "Path": "dumb-init",
+                "State": {
+                    "OciVersion": "1.0.1-dev",
+                    "Status": "running",
+                    "Running": true,
+                    "Paused": false,
         ...
 
     Examples:
