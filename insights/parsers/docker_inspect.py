@@ -36,25 +36,36 @@ Examples:
 
 """
 
-from .. import LegacyItemAccess, parser, CommandParser
-from ..core.marshalling import unmarshal
+from insights import parser, CommandParser
+from insights.core.marshalling import unmarshal
+from insights.parsers import SkipException
 from insights.specs import Specs
 
 
-class DockerInspect(LegacyItemAccess, CommandParser):
+class DockerInspect(CommandParser, dict):
     """
     Parse the output of command "docker inspect --type=image" and "docker
     inspect --type=container".  The output of these two commands is formatted
     as JSON, so "json.loads" is an option to parse the output in the future.
+
+    Raises:
+        SkipException: If content is not provided
     """
 
     def parse_content(self, content):
+        if not content:
+            raise SkipException
+
         content = "\n".join(list(content))
         try:
             inspect_data = unmarshal(content)
-            self.data = inspect_data[0]
+            self.update(inspect_data[0])
         except:
-            self.data = {}
+            raise SkipException
+
+    @property
+    def data(self):
+        return data
 
 
 @parser(Specs.docker_image_inspect)

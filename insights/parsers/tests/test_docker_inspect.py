@@ -1,4 +1,5 @@
-from insights.parsers import docker_inspect
+import pytest
+from insights.parsers import docker_inspect, SkipException
 from insights.tests import context_wrap
 
 DOCKER_CONTAINER_INSPECT = """
@@ -297,5 +298,5 @@ def test_docker_object_image_inspect():
 
 
 def test_docker_container_inspect_truncated_input():
-    result = docker_inspect.DockerInspectContainer(context_wrap(DOCKER_CONTAINER_INSPECT_TRUNCATED))
-    assert result.data == {}
+    with pytest.raises(SkipException):
+        result = docker_inspect.DockerInspectContainer(context_wrap(DOCKER_CONTAINER_INSPECT_TRUNCATED))
