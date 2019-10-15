@@ -43,6 +43,7 @@ class PodmanInspectImage(PodmanInspect):
     Parse podman image inspect output using the PodmanInspect parser class.
 
     Sample input::
+
         [
             {
                 "Id": "013125b8a088f45be8f85f88b5504f05c02463b10a6eea2b66809a262bb911ca",
@@ -51,7 +52,7 @@ class PodmanInspectImage(PodmanInspect):
                     "192.168.24.1:8787/rhosp15/openstack-rabbitmq:20190819.1",
                     "192.168.24.1:8787/rhosp15/openstack-rabbitmq:pcmklatest"
                 ],
-        ...
+            ...
 
     Examples:
         >>> image['Id'] == '013125b8a088f45be8f85f88b5504f05c02463b10a6eea2b66809a262bb911ca'
@@ -68,6 +69,7 @@ class PodmanInspectContainer(PodmanInspect):
     Parse podman container inspect output using the PodmanInspect parser class.
 
     Sample input::
+
         [
             {
                 "ID": "66db151828e9beede0cdd9c17fc9bd5ebb5d125dd036f7230bc6b6433e5c0dda",
@@ -78,7 +80,8 @@ class PodmanInspectContainer(PodmanInspect):
                     "Status": "running",
                     "Running": true,
                     "Paused": false,
-        ...
+                },
+            ...
 
     Examples:
         >>> container['ID'] == '66db151828e9beede0cdd9c17fc9bd5ebb5d125dd036f7230bc6b6433e5c0dda'
