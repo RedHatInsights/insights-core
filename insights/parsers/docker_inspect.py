@@ -58,10 +58,10 @@ class DockerInspectImage(DockerInspect):
 
     Examples:
 
-        >>> image['Id']
-        '882ab98aae5394aebe91fe6d8a4297fa0387c3cfd421b2d892bddf218ac373b2'
-        >>> image['RepoTags'][0]
-        'rhel7_imagemagick:latest'
+        >>> image['Id'] == '882ab98aae5394aebe91fe6d8a4297fa0387c3cfd421b2d892bddf218ac373b2'
+        True
+        >>> image['RepoTags'][0] == 'rhel7_imagemagick:latest'
+        True
 
     """
     pass
@@ -90,10 +90,10 @@ class DockerInspectContainer(DockerInspect):
 
     Examples:
 
-        >>> container['Id']
-        '97d7cd1a5d8fd7730e83bb61ecbc993742438e966ac5c11910776b5d53f4ae07'
-        >>> container['Name']
-        '/hehe2'
+        >>> container['Id'] == '97d7cd1a5d8fd7730e83bb61ecbc993742438e966ac5c11910776b5d53f4ae07'
+        True
+        >>> container['Name'] == '/hehe2'
+        True
         >>> container.get('State').get('Paused') # sub-dictionaries
         False
 
