@@ -1,4 +1,5 @@
 import pytest
+import doctest
 from insights.parsers import docker_inspect, SkipException
 from insights.tests import context_wrap
 
@@ -299,4 +300,15 @@ def test_docker_object_image_inspect():
 
 def test_docker_container_inspect_truncated_input():
     with pytest.raises(SkipException):
-        result = docker_inspect.DockerInspectContainer(context_wrap(DOCKER_CONTAINER_INSPECT_TRUNCATED))
+        docker_inspect.DockerInspectContainer(context_wrap(DOCKER_CONTAINER_INSPECT_TRUNCATED))
+
+
+def test_doc_test():
+    dic = docker_inspect.DockerInspectContainer(context_wrap(DOCKER_CONTAINER_INSPECT))
+    dii = docker_inspect.DockerInspectImage(context_wrap(DOCKER_IMAGE_INSPECT))
+    env = {
+            'container': dic,
+            'image': dii,
+    }
+    failed, total = doctest.testmod(docker_inspect, globs=env)
+    assert failed == 0
