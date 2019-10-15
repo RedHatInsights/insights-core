@@ -115,7 +115,7 @@ class PodmanListContainers(PodmanList):
 
     Attributes:
         row (list): List of row dictionaries.
-        containers(dict): Dictionary keyed on the value of the "NAMES" fileld
+        containers(dict): Dictionary keyed on the value of the "NAMES" field
 
     Examples:
         >>> containers.rows[0]['NAMES']
