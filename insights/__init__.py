@@ -217,8 +217,12 @@ def apply_configs(config):
                     if hasattr(c, k):
                         log.debug("Setting %s.%s to %s", cname, k, v)
                         setattr(c, k, v)
+
                 if hasattr(c, "timeout"):
                     c.timeout = comp_cfg.get("timeout", c.timeout)
+
+                if hasattr(delegate, "links"):
+                    delegate.links = comp_cfg.get("links", delegate.links)
             if cname == name:
                 break
 

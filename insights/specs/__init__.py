@@ -523,6 +523,7 @@ class Specs(SpecSet):
     smartpdc_settings = RegistryPoint(filterable=True)
     smbstatus_p = RegistryPoint()
     smbstatus_S = RegistryPoint()
+    sockstat = RegistryPoint()
     softnet_stat = RegistryPoint()
     software_collections_list = RegistryPoint()
     spfile_ora = RegistryPoint(multi_output=True)
