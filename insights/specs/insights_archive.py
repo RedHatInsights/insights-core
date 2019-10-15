@@ -151,7 +151,6 @@ class InsightsArchiveSpecs(Specs):
     lvs_noheadings_all = simple_file("insights_commands/lvs_--nameprefixes_--noheadings_--separator_-a_-o_lv_name_lv_size_lv_attr_mirror_log_vg_name_devices_region_size_data_percent_metadata_percent_segtype_--config_global_locking_type_0_devices_filter_a")
     max_uid = simple_file("insights_commands/awk_-F_if_3_max_max_3_END_print_max_.etc.passwd")
     md5chk_files = glob_file("insights_commands/md5sum_*")
-    mount = simple_file("insights_commands/mount")
     modinfo = glob_file("insights_commands/modinfo_*")
     modinfo_i40e = simple_file("insights_commands/modinfo_i40e")
     modinfo_igb = simple_file("insights_commands/modinfo_igb")

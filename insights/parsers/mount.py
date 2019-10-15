@@ -4,33 +4,31 @@ Mount Entries
 
 Parsers provided in this module includes:
 
-Mount - command ``/bin/mount``
-------------------------------
-
 ProcMounts - file ``/proc/mounts``
 ----------------------------------
 
-The ``Mount`` class implements parsing for the ``mount`` command output which looks like::
+The ``ProcMounts`` class implements parsing for the ``/proc/mounts`` file which
+looks like::
 
-    /dev/mapper/rootvg-rootlv on / type ext4 (rw,relatime,barrier=1,data=ordered)
-    proc on /proc type proc (rw,nosuid,nodev,noexec,relatime)
-    /dev/mapper/HostVG-Config on /etc/shadow type ext4 (rw,noatime,seclabel,stripe=256,data=ordered)
-    dev/sr0 on /run/media/root/VMware Tools type iso9660 (ro,nosuid,nodev,relatime,uid=0,gid=0,iocharset=utf8,mode=0400,dmode=0500,uhelper=udisks2) [VMware Tools]
+    /dev/mapper/rootvg-rootlv / ext4 rw,relatime,barrier=1,data=ordered 0 0
+    proc /proc proc rw,nosuid,nodev,noexec,relatime 0 0
+    /dev/mapper/HostVG-Config /etc/shadow ext4 rw,noatime,seclabel,stripe=256,data=ordered 0 0
+    dev/sr0 /run/media/root/VMware\040Tools iso9660 ro,nosuid,nodev,relatime,uid=0,gid=0,iocharset=utf8,mode=0400,dmode=0500,uhelper=udisks2 0 0
 
 The information is stored as a list of :class:`MountEntry` objects.  Each
-:class:`MountEntry` object contains attributes for the following information that
-are listed in the same order as in the command output:
+:class:`MountEntry` object contains attributes for the following information
+that are listed in the same order as in the ``/proc/mounts``:
 
- * ``filesystem`` - Name of filesystem or the mounted device
+ * ``filesystem`` - Name of filesystem or the mounted device, alias ``mounted_device``
  * ``mount_point`` - Name of mount point for filesystem
- * ``mount_type`` - Name of filesystem type
- * ``mount_options`` -  Mount options as ``MountOpts`` object
+ * ``mount_type`` - Name of filesystem type, alias ``filesystem_type``
+ * ``mount_options`` -  Mount options as :class:`MountOpts` object
  * ``mount_label`` - Optional label of this mount entry, empty string by default
- * ``mount_clause`` - Full string from command output
+ * ``mount_clause`` - Full raw string from the ``/proc/mounts``
 
-The ``MountOpts`` class contains the mount options as attributes accessible
-via the attribute name as it appears in the command output.  For instance the
-options ``(rw,dmode=0500)`` may be accessed as ''mnt_row_info.rw`` with the
+The :class:`MountOpts` class contains the mount options as attributes accessible
+via the attribute name as it appears in the ``/proc/mounts``.  For instance the
+options ``rw,dmode=0500`` may be accessed as ''mnt_row_info.rw`` with the
 value ``True`` and ``mnt_row_info.dmode`` with the value "0500".  The ``in``
 operator may be used to determine if an option is present.
 
@@ -39,6 +37,7 @@ mount point.
 """
 
 import os
+from insights.util import deprecated
 from insights.specs import Specs
 from insights.parsers import optlist_to_dict, keyword_search, ParseException, SkipException
 from insights import parser, get_active_lines, CommandParser
@@ -62,10 +61,9 @@ class AttributeAsDict(object):
 class MountOpts(AttributeAsDict):
     """
     An object representing the mount options found in mount or fstab entry as
-    attributes accessible via the attribute name as it appears in the command
-    output.  For instance, the options ``(rw,dmode=0500)`` may be accessed as
-    ``mnt_row_info.rw`` with the value ``True`` and ``mnt_row_info.dmode``
-    with the value "0500".
+    attributes accessible via the attribute name as it appears.  For instance,
+    the options ``rw,dmode=0500`` may be accessed as ``mnt_row_info.rw`` with
+    the value ``True`` and ``mnt_row_info.dmode`` with the value ``0500``.
 
     The ``in`` operator may be used to determine if an option is present.
     """
@@ -77,16 +75,16 @@ class MountOpts(AttributeAsDict):
 
 class MountEntry(AttributeAsDict):
     """
-    An object representing an mount entry of ``mount`` command or
-    ``/proc/mounts`` file.  Each entry contains below fixed attributes:
+    An object representing an mount entry.  Each entry contains the following
+    fixed attributes:
 
     Attributes:
-        filesystem (str): Name of filesystem of mounted device
+        filesystem (str): Name of filesystem of mounted device, can also be accessed as ``mounted_device``
         mount_point (str): Name of mount point for filesystem
-        mount_type (str): Name of filesystem type
+        mount_type (str): Name of filesystem type, can also be accessed as ``filesystem_type``
         mount_options (MountOpts): Mount options as :class:`MountOpts`
         mount_label (str): Optional label of this mount entry, an empty string by default
-        mount_clause (str): Full string from command output
+        mount_clause (str): Full raw string from the ``/proc/mounts``
     """
 
     def __init__(self, data=None):
@@ -99,15 +97,15 @@ class MountedFileSystems(CommandParser):
     """
     Base Class for :class:`Mount` and :class:`ProcMounts`.
 
+    Raises:
+        SkipException: When the file is empty.
+        ParseException: Raised when any problem when parsing the content.
+
     Attributes:
         rows (list): List of :class:`MountEntry` objects for each row of the
             content.
         mounts (dict): Dict with the `mount_point` as the key and the
             :class:`MountEntry` objects as the value.
-
-    Raises:
-        SkipException: When the file is empty.
-        ParseException: Raised when any problem parsing the command output.
     """
     def __len__(self):
         return len(self.rows)
@@ -125,8 +123,8 @@ class MountedFileSystems(CommandParser):
             raise TypeError("Mounts can only be indexed by mount string or line number")
 
     def parse_content(self, content):
-        # No content found or file is empty
         if not content:
+            # No content found or file is empty
             raise SkipException('Empty content')
 
         self._parse_mounts(content)
@@ -136,13 +134,14 @@ class MountedFileSystems(CommandParser):
 
     def get_dir(self, path):
         """
-        MountEntry: returns the mount point that contains the given path.
-
         This finds the most specific mount path that contains the given path,
         by successively removing the directory or file name on the end of
         the path and seeing if that is a mount point.  This will always
         terminate since / is always a mount point.  Strings that are not
         absolute paths will return None.
+
+        Returns:
+            (MountEntry): returns the mount point that contains the given path.
         """
         while path != '':
             if path in self.mounts:
@@ -158,11 +157,10 @@ class MountedFileSystems(CommandParser):
         details.  If no search parameters are given, no rows are returned.
 
         Examples:
-
             >>> mounts.search(filesystem='proc')[0].mount_clause
-            'proc on /proc type proc (rw,nosuid,nodev,noexec,relatime)'
+            'proc /proc proc rw,nosuid,nodev,noexec,relatime 0 0'
             >>> mounts.search(mount_options__contains='seclabel')[0].mount_clause
-            '/dev/mapper/HostVG-Config on /etc/shadow type ext4 (rw,noatime,seclabel,stripe=256,data=ordered)'
+            '/dev/mapper/HostVG-Config /etc/shadow ext4 rw,noatime,seclabel,stripe=256,data=ordered 0 0'
 
         Arguments:
             **kwargs (dict): Dictionary of key-value pairs to search for.
@@ -171,56 +169,6 @@ class MountedFileSystems(CommandParser):
             (list): The list of mount points matching the given criteria.
         """
         return keyword_search(self.rows, **kwargs)
-
-
-@parser(Specs.mount)
-class Mount(MountedFileSystems):
-    """
-    Class of information for all output from ``mount`` command.
-
-    .. note::
-        Please refer to its super-class :class:`MountedFileSystems` for more
-        details.
-
-        >>> type(mnt_info)
-        <class 'insights.parsers.mount.Mount'>
-        >>> len(mnt_info)
-        4
-        >>> mnt_info[3].filesystem
-        'dev/sr0'
-        >>> mnt_info[3].mount_label
-        '[VMware Tools]'
-        >>> mnt_info[3].mount_type
-        'iso9660'
-        >>> mnt_info['/run/media/root/VMware Tools'].filesystem
-        'dev/sr0'
-        >>> mnt_info['/run/media/root/VMware Tools'].mount_label
-        '[VMware Tools]'
-        >>> mnt_info['/run/media/root/VMware Tools'].mount_options.ro
-        True
-    """
-    def _parse_mounts(self, content):
-        self.rows = []
-        self.mounts = {}
-        for line in get_active_lines(content):
-            mount = {}
-            mount['mount_clause'] = line
-            # Get the mounted filesystem by checking the ' on '
-            line_sp = _customized_split(line, line, sep=' on ')
-            mount['filesystem'] = line_sp[0]
-            # Get the mounted point by checking the last ' type ' before the last '('
-            mnt_pt_sp = _customized_split(raw=line, l=line_sp[1], sep=' (', reverse=True)
-            line_sp = _customized_split(raw=line, l=mnt_pt_sp[0], sep=' type ', reverse=True)
-            mount['mount_point'] = line_sp[0]
-            mount['mount_type'] = line_sp[1].split()[0]
-            line_sp = _customized_split(raw=line, l=mnt_pt_sp[1], sep=None, check=False)
-            mount['mount_options'] = MountOpts(optlist_to_dict(line_sp[0].strip('()')))
-            if len(line_sp) == 2:
-                mount['mount_label'] = line_sp[1]
-
-            entry = MountEntry(mount)
-            self.rows.append(entry)
-            self.mounts[mount['mount_point']] = entry
 
 
 @parser(Specs.mounts)
@@ -235,6 +183,14 @@ class ProcMounts(MountedFileSystems):
     .. note::
         Please refer to its super-class :class:`MountedFileSystems` for more
         details.
+
+    The typical content of the ``/proc/mounts`` file looks like::
+
+        /dev/mapper/rootvg-rootlv / ext4 rw,relatime,barrier=1,data=ordered 0 0
+        proc /proc proc rw,nosuid,nodev,noexec,relatime 0 0
+        /dev/mapper/HostVG-Config /etc/shadow ext4 rw,noatime,seclabel,stripe=256,data=ordered 0 0
+        dev/sr0 /run/media/root/VMware\040Tools iso9660 ro,nosuid,nodev,relatime,uid=0,gid=0,iocharset=utf8,mode=0400,dmode=0500,uhelper=udisks2 0 0
+
 
     Examples:
         >>> type(proc_mnt_info)
@@ -260,14 +216,14 @@ class ProcMounts(MountedFileSystems):
     """
 
     def _parse_mounts(self, content):
-
         self.rows = []
         self.mounts = {}
         for line in get_active_lines(content):
             mount = {}
             mount['mount_clause'] = line
-            # Handle the the '\040' in `mount_point`
+            # Handle the '\040' code in `mount_point`, e.g: "VMware\040Tools"
             line_sp = line.encode().decode("unicode-escape")
+            # Get the mounted filesystem by splitting it
             line_sp = _customized_split(raw=line, l=line)
             mount['filesystem'] = mount['mounted_device'] = line_sp[0]
             line_sp = _customized_split(raw=line, l=line_sp[1], num=3, reverse=True)
@@ -292,3 +248,61 @@ def _customized_split(raw, l, sep=None, num=2, reverse=False, check=True):
         if check and len(line_sp) < num:
             raise ParseException('Unable to parse: "{0}"'.format(raw))
     return line_sp
+
+
+@parser(Specs.mount)
+class Mount(MountedFileSystems):
+    """
+    .. warning::
+        This parser is deprecated, please use :class:`ProcMounts` instead.
+
+    Class of information for all output from ``mount`` command.
+
+    .. note::
+        Please refer to its super-class :class:`MountedFileSystems` for more
+        details.
+
+    Examples:
+        >>> type(mnt_info)
+        <class 'insights.parsers.mount.Mount'>
+        >>> len(mnt_info)
+        4
+        >>> mnt_info[3].filesystem
+        'dev/sr0'
+        >>> mnt_info[3].mount_label
+        '[VMware Tools]'
+        >>> mnt_info[3].mount_type
+        'iso9660'
+        >>> mnt_info['/run/media/root/VMware Tools'].filesystem
+        'dev/sr0'
+        >>> mnt_info['/run/media/root/VMware Tools'].mount_label
+        '[VMware Tools]'
+        >>> mnt_info['/run/media/root/VMware Tools'].mount_options.ro
+        True
+    """
+    def __init__(self, *args, **kwargs):
+        deprecated(Mount, "Use ProcMounts (/proc/mounts) instead.")
+        super(Mount, self).__init__(*args, **kwargs)
+
+    def _parse_mounts(self, content):
+        self.rows = []
+        self.mounts = {}
+        for line in get_active_lines(content):
+            mount = {}
+            mount['mount_clause'] = line
+            # Get the mounted filesystem by checking the ' on '
+            line_sp = _customized_split(line, line, sep=' on ')
+            mount['filesystem'] = line_sp[0]
+            # Get the mounted point by checking the last ' type ' before the last '('
+            mnt_pt_sp = _customized_split(raw=line, l=line_sp[1], sep=' (', reverse=True)
+            line_sp = _customized_split(raw=line, l=mnt_pt_sp[0], sep=' type ', reverse=True)
+            mount['mount_point'] = line_sp[0]
+            mount['mount_type'] = line_sp[1].split()[0]
+            line_sp = _customized_split(raw=line, l=mnt_pt_sp[1], sep=None, check=False)
+            mount['mount_options'] = MountOpts(optlist_to_dict(line_sp[0].strip('()')))
+            if len(line_sp) == 2:
+                mount['mount_label'] = line_sp[1]
+
+            entry = MountEntry(mount)
+            self.rows.append(entry)
+            self.mounts[mount['mount_point']] = entry

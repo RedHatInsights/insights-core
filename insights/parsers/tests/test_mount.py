@@ -38,8 +38,23 @@ hugetlbfs on /dev/hugepages type hugetlbfs (rw,relatime,seclabel)
 /dev/sda1 on /boot type ext4 (rw,relatime,seclabel,data=ordered)
 """.strip()
 
+MOUNT_DOC = """
+/dev/mapper/rootvg-rootlv on / type ext4 (rw,relatime,barrier=1,data=ordered)
+proc on /proc type proc (rw,nosuid,nodev,noexec,relatime)
+/dev/mapper/HostVG-Config on /etc/shadow type ext4 (rw,noatime,seclabel,stripe=256,data=ordered)
+dev/sr0 on /run/media/root/VMware Tools type iso9660 (ro,nosuid,nodev,relatime,uid=0,gid=0,iocharset=utf8,mode=0400,dmode=0500,uhelper=udisks2) [VMware Tools]
+""".strip()
 
-PROC_MOUNT = """
+MOUNT_DATA_WITH_SPECIAL_MNT_POINT = """
+hugetlbfs on /dev/hugepages type hugetlbfs (rw,relatime,seclabel)
+/dev/sda1 on /boot type ext4 (rw,relatime,seclabel,data=ordered)
+/dev/mapper/fedora-root on / type ext4 (rw,relatime,seclabel,data=ordered)
+/dev/mapper/HostVG-Config on /etc/shadow type ext4 (rw,noatime,seclabel,stripe=256,data=ordered) [CONFIG]
+/dev/sr0 on /run/media/root/VMware Tools type iso9660 (ro,nosuid,nodev,relatime,uid=0,gid=0,iocharset=utf8,mode=0400,dmode=0500,uhelper=udisks2) [VMware Tools]
+/dev/sr1 on /run/media/Disk on C type NFS type iso9660 (ro,uid=0,gid=0,iocharset=utf8,uhelper=udisks2) [C type Disk]
+""".strip()
+
+PROC_MOUNTS = """
 proc /proc proc rw,relatime 0 0
 sysfs /sys sysfs rw,relatime 0 0
 devtmpfs /dev devtmpfs rw,relatime,size=8155456k,nr_inodes=2038864,mode=755 0 0
@@ -61,7 +76,44 @@ sunrpc /var/lib/nfs/rpc_pipefs rpc_pipefs rw,relatime 0 0
 /etc/auto.misc /misc autofs rw,relatime,fd=7,pgrp=1936,timeout=300,minproto=5,maxproto=5,indirect 0 0
 """.strip()
 
-PROCMOUNT_ERR_DATA = """
+PROC_MOUNTS_WITH_SPECIAL_MNT_POINT = """
+sysfs /sys sysfs rw,seclabel,nosuid,nodev,noexec,relatime 0 0
+proc /proc proc rw,nosuid,nodev,noexec,relatime 0 0
+devtmpfs /dev devtmpfs rw,seclabel,nosuid,size=1920484k,nr_inodes=480121,mode=755 0 0
+securityfs /sys/kernel/security securityfs rw,nosuid,nodev,noexec,relatime 0 0
+tmpfs /dev/shm tmpfs rw,seclabel,nosuid,nodev 0 0
+devpts /dev/pts devpts rw,seclabel,nosuid,noexec,relatime,gid=5,mode=620,ptmxmode=000 0 0
+tmpfs /run tmpfs rw,seclabel,nosuid,nodev,mode=755 0 0
+tmpfs /sys/fs/cgroup tmpfs ro,seclabel,nosuid,nodev,noexec,mode=755 0 0
+cgroup /sys/fs/cgroup/systemd cgroup rw,seclabel,nosuid,nodev,noexec,relatime,xattr,release_agent=/usr/lib/systemd/systemd-cgroups-agent,name=systemd 0 0
+pstore /sys/fs/pstore pstore rw,seclabel,nosuid,nodev,noexec,relatime 0 0
+bpf /sys/fs/bpf bpf rw,nosuid,nodev,noexec,relatime,mode=700 0 0
+cgroup /sys/fs/cgroup/devices cgroup rw,seclabel,nosuid,nodev,noexec,relatime,devices 0 0
+cgroup /sys/fs/cgroup/cpu,cpuacct cgroup rw,seclabel,nosuid,nodev,noexec,relatime,cpu,cpuacct 0 0
+cgroup /sys/fs/cgroup/net_cls,net_prio cgroup rw,seclabel,nosuid,nodev,noexec,relatime,net_cls,net_prio 0 0
+cgroup /sys/fs/cgroup/freezer cgroup rw,seclabel,nosuid,nodev,noexec,relatime,freezer 0 0
+cgroup /sys/fs/cgroup/rdma cgroup rw,seclabel,nosuid,nodev,noexec,relatime,rdma 0 0
+cgroup /sys/fs/cgroup/blkio cgroup rw,seclabel,nosuid,nodev,noexec,relatime,blkio 0 0
+cgroup /sys/fs/cgroup/pids cgroup rw,seclabel,nosuid,nodev,noexec,relatime,pids 0 0
+cgroup /sys/fs/cgroup/cpuset cgroup rw,seclabel,nosuid,nodev,noexec,relatime,cpuset 0 0
+cgroup /sys/fs/cgroup/perf_event cgroup rw,seclabel,nosuid,nodev,noexec,relatime,perf_event 0 0
+cgroup /sys/fs/cgroup/hugetlb cgroup rw,seclabel,nosuid,nodev,noexec,relatime,hugetlb 0 0
+cgroup /sys/fs/cgroup/memory cgroup rw,seclabel,nosuid,nodev,noexec,relatime,memory 0 0
+configfs /sys/kernel/config configfs rw,relatime 0 0
+/dev/mapper/rhel_vm37--146-root / xfs rw,seclabel,relatime,attr2,inode64,noquota 0 0
+selinuxfs /sys/fs/selinux selinuxfs rw,relatime 0 0
+systemd-1 /proc/sys/fs/binfmt_misc autofs rw,relatime,fd=39,pgrp=1,timeout=0,minproto=5,maxproto=5,direct,pipe_ino=19590 0 0
+debugfs /sys/kernel/debug debugfs rw,seclabel,relatime 0 0
+hugetlbfs /dev/hugepages hugetlbfs rw,seclabel,relatime,pagesize=2M 0 0
+mqueue /dev/mqueue mqueue rw,seclabel,relatime 0 0
+/dev/sda1 /boot xfs rw,seclabel,relatime,attr2,inode64,noquota 0 0
+binfmt_misc /proc/sys/fs/binfmt_misc binfmt_misc rw,relatime 0 0
+tmpfs /run/user/0 tmpfs rw,seclabel,nosuid,nodev,relatime,size=386888k,mode=700 0 0
+/dev/sr0 /run/media/root/VMware\040Tools iso9660 ro,nosuid,nodev,relatime,uid=0,gid=0,iocharset=utf8,mode=0400,dmode=0500,uhelper=udisks2 0 0
+/dev/sr1 /mnt/Disk\040on\040C\040type\040NFS xfs rw,seclabel,relatime,attr2,inode64,noquota 0 0
+""".strip()
+
+PROC_MOUNTS_ERR_DATA = """
 rootfs / rootfs rw 0 0
 sysfs /sys sysfs rw,relatime
 """.strip()
@@ -75,27 +127,11 @@ sysfs /sys sysfs rw,relatime 0 0
 devtmpfs /dev devtmpfs rw,relatime,size=8155456k,nr_inodes=2038864,mode=755 0 0
 """.strip()
 
-MOUNT_DOC = """
-/dev/mapper/rootvg-rootlv on / type ext4 (rw,relatime,barrier=1,data=ordered)
-proc on /proc type proc (rw,nosuid,nodev,noexec,relatime)
-/dev/mapper/HostVG-Config on /etc/shadow type ext4 (rw,noatime,seclabel,stripe=256,data=ordered)
-dev/sr0 on /run/media/root/VMware Tools type iso9660 (ro,nosuid,nodev,relatime,uid=0,gid=0,iocharset=utf8,mode=0400,dmode=0500,uhelper=udisks2) [VMware Tools]
-""".strip()
-
-PROC_MOUNT_DOC = """
+PROC_MOUNTS_DOC = """
 /dev/mapper/rootvg-rootlv / ext4 rw,relatime,barrier=1,data=ordered 0 0
 proc /proc proc rw,nosuid,nodev,noexec,relatime 0 0
 /dev/mapper/HostVG-Config /etc/shadow ext4 rw,noatime,seclabel,stripe=256,data=ordered 0 0
 dev/sr0 /run/media/root/VMware\040Tools iso9660 ro,nosuid,nodev,relatime,uid=0,gid=0,iocharset=utf8,mode=0400,dmode=0500,uhelper=udisks2 0 0
-""".strip()
-
-MOUNT_DATA_WITH_SPECIAL_MNT_POINT = """
-hugetlbfs on /dev/hugepages type hugetlbfs (rw,relatime,seclabel)
-/dev/sda1 on /boot type ext4 (rw,relatime,seclabel,data=ordered)
-/dev/mapper/fedora-root on / type ext4 (rw,relatime,seclabel,data=ordered)
-/dev/mapper/HostVG-Config on /etc/shadow type ext4 (rw,noatime,seclabel,stripe=256,data=ordered) [CONFIG]
-/dev/sr0 on /run/media/root/VMware Tools type iso9660 (ro,nosuid,nodev,relatime,uid=0,gid=0,iocharset=utf8,mode=0400,dmode=0500,uhelper=udisks2) [VMware Tools]
-/dev/sr1 on /run/media/Disk on C type NFS type iso9660 (ro,uid=0,gid=0,iocharset=utf8,uhelper=udisks2) [C type Disk]
 """.strip()
 
 
@@ -185,7 +221,7 @@ def test_mount_exception2():
 
 
 def test_proc_mount():
-    results = ProcMounts(context_wrap(PROC_MOUNT))
+    results = ProcMounts(context_wrap(PROC_MOUNTS))
     assert results is not None
     assert len(results) == 19
     sda1 = results.search(filesystem='/dev/sda1')[0]
@@ -232,30 +268,40 @@ def test_proc_mount():
     ]
 
 
-def test_proc_mount_exception1():
+def test_proc_mounts_with_special_mnt_point():
+    results = ProcMounts(context_wrap(PROC_MOUNTS_WITH_SPECIAL_MNT_POINT))
+    assert len(results) == 34
+    sr0 = results.search(filesystem='/dev/sr0')[0]
+    sr1 = results.search(filesystem='/dev/sr1')[0]
+    assert sr0['mount_point'] == '/run/media/root/VMware Tools'
+    assert sr0['filesystem_type'] == 'iso9660'
+    assert sr1['mount_point'] == '/mnt/Disk on C type NFS'
+    assert 'seclabel' in sr1['mount_options']
+
+
+def test_proc_mounts_exception1():
     with pytest.raises(SkipException) as e:
         ProcMounts(context_wrap(PROC_EXCEPTION1))
     assert 'Empty content' in str(e)
 
 
-def test_proc_mount_exception2():
+def test_proc_mounts_exception2():
     with pytest.raises(ParseException) as e:
         ProcMounts(context_wrap(PROC_EXCEPTION2))
     assert "Input for mount must contain '/' mount point." in str(e)
 
 
-def test_proc_mount_exception3():
+def test_proc_mounts_exception3():
     with pytest.raises(ParseException) as pe:
-        ProcMounts(context_wrap(PROCMOUNT_ERR_DATA))
+        ProcMounts(context_wrap(PROC_MOUNTS_ERR_DATA))
     assert 'Unable to parse' in str(pe.value)
 
 
 def test_doc_examples():
     env = {
             'mnt_info': Mount(context_wrap(MOUNT_DOC)),
-            'proc_mnt_info': ProcMounts(context_wrap(PROC_MOUNT_DOC)),
-            'mounts': Mount(context_wrap(MOUNT_DOC))
-
+            'proc_mnt_info': ProcMounts(context_wrap(PROC_MOUNTS_DOC)),
+            'mounts': ProcMounts(context_wrap(PROC_MOUNTS_DOC))
           }
     failed, total = doctest.testmod(mount, globs=env)
     assert failed == 0

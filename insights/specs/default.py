@@ -24,7 +24,7 @@ from insights.core.spec_factory import CommandOutputProvider, ContentException, 
 from insights.core.spec_factory import simple_file, simple_command, glob_file, command_with_args
 from insights.core.spec_factory import first_of, foreach_collect, foreach_execute
 from insights.core.spec_factory import first_file, listdir
-from insights.parsers.mount import Mount, ProcMounts
+from insights.parsers.mount import ProcMounts
 from insights.parsers.dnf_module import DnfModuleList
 from insights.combiners.cloud_provider import CloudProvider
 from insights.components.rhel_version import IsRhel8
@@ -405,10 +405,10 @@ class DefaultSpecs(Specs):
         # https://access.redhat.com/solutions/21680
         return list(ps_httpds)
 
-    @datasource(Mount)
+    @datasource(ProcMounts)
     def httpd_on_nfs(broker):
         import json
-        mnt = broker[Mount]
+        mnt = broker[ProcMounts]
         mps = mnt.search(mount_type='nfs4')
         # get nfs 4.0 mount points
         nfs_mounts = [m.mount_point for m in mps if m['mount_options'].get("vers") == "4.0"]
@@ -585,7 +585,6 @@ class DefaultSpecs(Specs):
                             "/etc/mongodb.conf",
                             "/etc/opt/rh/rh-mongodb26/mongod.conf"
                             ])
-    mount = simple_command("/bin/mount")
     mounts = simple_file("/proc/mounts")
     mssql_conf = simple_file("/var/opt/mssql/mssql.conf")
     multicast_querier = simple_command("/usr/bin/find /sys/devices/virtual/net/ -name multicast_querier -print -exec cat {} \;")
@@ -989,9 +988,9 @@ class DefaultSpecs(Specs):
     x86_ibrs_enabled = simple_file("sys/kernel/debug/x86/ibrs_enabled")
     x86_retp_enabled = simple_file("sys/kernel/debug/x86/retp_enabled")
 
-    @datasource(Mount)
+    @datasource(ProcMounts)
     def xfs_mounts(broker):
-        mnt = broker[Mount]
+        mnt = broker[ProcMounts]
         mps = mnt.search(mount_type='xfs')
         return [m.mount_point for m in mps]
 

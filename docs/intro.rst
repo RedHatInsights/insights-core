@@ -110,9 +110,9 @@ Parser Plugins
 Parser plugins are responsible for analyzing the raw data
 and converting it into usable *facts* that can be evaluated by the
 Combiners and Rules.  Each Parser plugin is typically responsible
-for parsing a specific set of data.  For instance, the **Mount** parser
-plugin (:py:class:`insights.parsers.mount.Mount`)
-parses the output of the `mount` command and the **FSTab**
+for parsing a specific set of data.  For instance, the **ProcMounts** parser
+plugin (:py:class:`insights.parsers.mount.ProcMounts`)
+parses the output of the `/proc/mounts` file and the **FSTab**
 parser plugin (:py:class:`insights.parsers.fstab.FSTab`)
 parses the contents of the `/etc/fstab/` file.
 
