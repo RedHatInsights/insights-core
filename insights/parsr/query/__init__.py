@@ -153,6 +153,17 @@ class Entry(object):
         """
         return list(chain.from_iterable(c.children for c in self.children))
 
+    def upto(self, query):
+        """
+        Go up from the current node to the first node that matches query.
+        """
+        pred = _desugar(query)
+        parent = self.parent
+        while parent is not None:
+            if pred.test(parent):
+                return parent
+            parent = parent.parent
+
     def select(self, *queries, **kwargs):
         """
         select uses :py:func:`compile_queries` to compile ``queries`` into a
@@ -366,6 +377,19 @@ class Result(Entry):
         Returns the unique values of all the children as a list.
         """
         return sorted(set(c.value for c in self.children))
+
+    def upto(self, query):
+        """
+        Go up from the current results to the first nodes that match query.
+        """
+        roots = []
+        seen = set()
+        for c in self.children:
+            root = c.upto(query)
+            if root is not None and root not in seen:
+                roots.append(root)
+                seen.add(root)
+        return Result(children=roots)
 
     def select(self, *queries, **kwargs):
         query = compile_queries(*queries)
