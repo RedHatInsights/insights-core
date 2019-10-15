@@ -48,12 +48,12 @@ class DockerInspectImage(DockerInspect):
     Sample input::
 
         [
-        {
-            "Id": "882ab98aae5394aebe91fe6d8a4297fa0387c3cfd421b2d892bddf218ac373b2",
-            "RepoTags": [
-                "rhel7_imagemagick:latest"
-            ],
-            "RepoDigests": [],
+            {
+                "Id": "882ab98aae5394aebe91fe6d8a4297fa0387c3cfd421b2d892bddf218ac373b2",
+                "RepoTags": [
+                    "rhel7_imagemagick:latest"
+                ],
+                "RepoDigests": [],
         ...
 
     Examples:
@@ -75,18 +75,18 @@ class DockerInspectContainer(DockerInspect):
     Sample input::
 
         [
-        {
-            "Id": "97d7cd1a5d8fd7730e83bb61ecbc993742438e966ac5c11910776b5d53f4ae07",
-            "Created": "2016-06-23T05:12:25.433469799Z",
-            "Path": "/bin/bash",
-            "Args": [],
-            "Name": "/hehe2",
-            "State": {
-                "Status": "running",
-                "Running": true,
-                "Paused": false,
-                "Restarting": false,
-        ...
+            {
+                "Id": "97d7cd1a5d8fd7730e83bb61ecbc993742438e966ac5c11910776b5d53f4ae07",
+                "Created": "2016-06-23T05:12:25.433469799Z",
+                "Path": "/bin/bash",
+                "Args": [],
+                "Name": "/hehe2",
+                "State": {
+                    "Status": "running",
+                    "Running": true,
+                    "Paused": false,
+                    "Restarting": false,
+            ...
 
     Examples:
 
