@@ -90,7 +90,7 @@ class DockerListImages(DockerList):
         rhel6_nss-softokn                    latest              <none>              dd87dad2c7841a19263ae2dc96d32c501ee84a92f56aed75bb67f57efe4e48b5   5 days ago          449.7 MB
 
     Attributes:
-        row (list): List of row dictionaries.
+        rows (list): List of row dictionaries.
         images (dict): Dictionary keyed on the value of the "REPOSITORY" fileld
 
     Examples:
@@ -123,7 +123,7 @@ class DockerListContainers(DockerList):
         03e2861336a76e29155836113ff6560cb70780c32f95062642993b2b3d0fc216   rhel7_httpd                                                        "/usr/sbin/httpd -DFOREGROUND"                     45 seconds ago      Up 37 seconds                 0.0.0.0:8080->80/tcp   angry_saha          796 B (virtual 669.2 MB)
 
     Attributes:
-        row (list): List of row dictionaries.
+        rows (list): List of row dictionaries.
         containers(dict): Dictionary keyed on the value of the "NAMES" field
 
     Examples:
