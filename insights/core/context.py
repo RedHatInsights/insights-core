@@ -157,12 +157,14 @@ class ExecutionContext(six.with_metaclass(ExecutionContextMeta)):
         if cls.marker is None or not files:
             return (None, None)
 
-        m = cls.marker
+        sep = os.path.sep
+        m = sep + cls.marker.lstrip(sep)
         for f in files:
             if m in f:
                 i = f.find(m)
-                root = os.path.dirname(f[:i])
-                return root, cls
+                if f.endswith(m) or f[i + len(m)] == sep:
+                    root = os.path.dirname(f[:i + 1])
+                    return root, cls
         return (None, None)
 
     def check_output(self, cmd, timeout=None, keep_rc=False, env=None):
