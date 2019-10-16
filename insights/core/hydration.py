@@ -1,13 +1,10 @@
 import logging
 import os
-from itertools import product
 
 from insights.core import archives
 from insights.core.context import (ClusterArchiveContext,
-                                   JDRContext,
-                                   HostArchiveContext,
-                                   SosArchiveContext,
-                                   SerializedArchiveContext)
+                                   ExecutionContextMeta,
+                                   HostArchiveContext)
 
 log = logging.getLogger(__name__)
 
@@ -21,17 +18,9 @@ def get_all_files(path):
 
 
 def identify(files):
-    markers = {"insights_archive.txt": SerializedArchiveContext,
-               "insights_commands": HostArchiveContext,
-               "sos_commands": SosArchiveContext,
-               "JBOSS_HOME": JDRContext}
-
-    for f, m in product(files, markers):
-        if m in f:
-            i = f.find(m)
-            common_path = os.path.dirname(f[:i])
-            ctx = markers[m]
-            return common_path, ctx
+    common_path, ctx = ExecutionContextMeta.identify(files)
+    if ctx:
+        return common_path, ctx
 
     common_path = os.path.dirname(os.path.commonprefix(files))
     if not common_path:
