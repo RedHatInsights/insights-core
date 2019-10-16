@@ -3,6 +3,7 @@ import tempfile
 import uuid
 import insights.client.utilities as util
 from insights.client.constants import InsightsConstants as constants
+from insights.client.config import InsightsConfig
 import re
 import mock
 import six
@@ -12,8 +13,8 @@ from mock.mock import patch
 machine_id = str(uuid.uuid4())
 remove_file_content = """
 [remove]
-foo = bar
-potato = pancake
+commands=foo
+files=bar
 """.strip().encode("utf-8")
 
 
@@ -86,11 +87,11 @@ def test_validate_remove_file():
     tf = '/tmp/remove.cfg'
     with open(tf, 'wb') as f:
         f.write(remove_file_content)
-    assert util.validate_remove_file(remove_file='/tmp/boop') is False
+    assert util.validate_remove_file(InsightsConfig(remove_file='/tmp/boop')) is False
     os.chmod(tf, 0o644)
-    assert util.validate_remove_file(remove_file=tf) is False
+    assert util.validate_remove_file(InsightsConfig(remove_file=tf)) is False
     os.chmod(tf, 0o600)
-    assert util.validate_remove_file(remove_file=tf) is not False
+    assert util.validate_remove_file(InsightsConfig(remove_file=tf)) is not False
     os.remove(tf)
 
 # TODO: DRY

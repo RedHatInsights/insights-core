@@ -63,9 +63,13 @@ def pre_update(client, config):
 
     # validate the remove file
     if config.validate:
-        if validate_remove_file(config.remove_file):
-            sys.exit(constants.sig_kill_ok)
-        else:
+        try:
+            if validate_remove_file(config):
+                sys.exit(constants.sig_kill_ok)
+            else:
+                sys.exit(constants.sig_kill_bad)
+        except RuntimeError as e:
+            logger.error(e)
             sys.exit(constants.sig_kill_bad)
 
     # handle cron stuff
