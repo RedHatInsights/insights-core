@@ -1,5 +1,17 @@
 # Change Log
 
+## [insights-core-3.0.129-1195](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.129-1195) (2019-10-17)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.128-1181...insights-core-3.0.129-1195)
+
+**Implemented enhancements:**
+
+-  exception occurs while parsing the output of `nmcli dev show` [\#2260](https://github.com/RedHatInsights/insights-core/issues/2260)
+
+**Closed issues:**
+
+- Documentation of PodmanList and PodmanInspect needs update [\#2255](https://github.com/RedHatInsights/insights-core/issues/2255)
+- Issue with ceph\_version parser while parsing the ceph version. [\#2224](https://github.com/RedHatInsights/insights-core/issues/2224)
+
 ## [insights-core-3.0.128-1181](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.128-1181) (2019-10-10)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.127-1168...insights-core-3.0.128-1181)
 
