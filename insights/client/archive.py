@@ -120,7 +120,7 @@ class InsightsArchive(object):
         ext = "" if self.compressor == "none" else ".%s" % self.compressor
         tar_file_name = tar_file_name + ".tar" + ext
         logger.debug("Tar File: " + tar_file_name)
-        subprocess.call(shlex.split("tar c%sfS %s -C %s ." % (
+        return_code = subprocess.call(shlex.split("tar c%sfS %s -C %s ." % (
             self.get_compression_flag(self.compressor),
             tar_file_name,
             # for the docker "uber archive,"use archive_dir
@@ -128,6 +128,9 @@ class InsightsArchive(object):
             #   because all the individual archives are in there
             self.tmp_dir if not full_archive else self.archive_dir)),
             stderr=subprocess.PIPE)
+        if (self.compressor in ["bz2", "xz"] and return_code != 0):
+            logger.error("ERROR: %s compressor is not installed, cannot compress file", self.compressor)
+            return None
         self.delete_archive_dir()
         logger.debug("Tar File Size: %s", str(os.path.getsize(tar_file_name)))
         return tar_file_name

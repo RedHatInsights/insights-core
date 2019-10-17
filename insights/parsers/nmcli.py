@@ -98,25 +98,26 @@ class NmcliDevShow(CommandParser, dict):
         per_device = {}
         current_dev = ""
         for line in get_active_lines(content):
-            if not ("not found" in line or "Error" in line or "No such file" in line):
-                key, val = line.split(": ")
-                if "IP" in key:
-                    proto = re.sub(r'\[|\]', r'', key.split('.')[1])
-                    key = key.split('.')[0] + "_" + proto
-                else:
-                    key = key.split('.')[1]
-                val = re.sub(r'\d+\s|\(|\)', r'', val.strip())
+            if (not ("not found" in line or "Error" in line or "No such file" in line or "Warning" in line)):
+                if len(line.split(": ")) >= 2:
+                    key, val = line.split(": ")
+                    if "IP" in key:
+                        proto = re.sub(r'\[|\]', r'', key.split('.')[1])
+                        key = key.split('.')[0] + "_" + proto
+                    else:
+                        key = key.split('.')[1]
+                    val = re.sub(r'\d+\s|\(|\)', r'', val.strip())
 
-                # Device configuration details starts here
-                if key == "DEVICE" and not current_dev:
-                    current_dev = val
-                    continue
-                elif key == "DEVICE" and current_dev:
-                    data[current_dev] = per_device
-                    current_dev = val
-                    per_device = {}
-                    continue
-                per_device.update({key: val})
+                    # Device configuration details starts here
+                    if key == "DEVICE" and not current_dev:
+                        current_dev = val
+                        continue
+                    elif key == "DEVICE" and current_dev:
+                        data[current_dev] = per_device
+                        current_dev = val
+                        per_device = {}
+                        continue
+                    per_device.update({key: val})
         if current_dev and per_device:
             # Last device configuration details
             data[current_dev] = per_device

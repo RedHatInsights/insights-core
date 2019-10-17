@@ -96,6 +96,75 @@ enp0s8         00cb8299-feb9-55b6-a378-3fdc720e0bc6  802-3-ethernet  --
 enp0s3         bfb4760c-96ce-4a29-9f2e-7427051da943  802-3-ethernet  enp0s3"
 """.strip()
 
+NMCLI_DEV_SHOW = """
+TextFileProvider("'/tmp/insights-fcct09p0/insights-rhel7-box-20191016082653/insights_commands/nmcli_dev_show'")
+GENERAL.DEVICE:                         br0
+GENERAL.TYPE:                           bridge
+GENERAL.HWADDR:                         7A:C3:4C:23:65:8A
+GENERAL.MTU:                            1450
+GENERAL.STATE:                          100 (connected)
+GENERAL.CONNECTION:                     br0
+GENERAL.CON-PATH:                       /org/freedesktop/NetworkManager/ActiveConnection/1
+IP4.GATEWAY:
+IP6.ADDRESS[1]:                         fe80::78c3:4cff:fe23:658a/64
+IP6.GATEWAY:
+
+GENERAL.DEVICE:                         enp0s3
+GENERAL.TYPE:                           ethernet
+GENERAL.HWADDR:                         08:00:27:4A:C5:EF
+GENERAL.MTU:                            1500
+GENERAL.STATE:                          100 (connected)
+GENERAL.CONNECTION:                     enp0s3
+GENERAL.CON-PATH:                       /org/freedesktop/NetworkManager/ActiveConnection/0
+WIRED-PROPERTIES.CARRIER:               on
+IP4.ADDRESS[1]:                         10.0.2.15/24
+IP4.GATEWAY:                            10.0.2.2
+IP4.DNS[1]:                             10.0.2.3
+IP4.DOMAIN[1]:                          redhat.com
+IP6.ADDRESS[1]:                         fe80::a00:27ff:fe4a:c5ef/64
+IP6.GATEWAY:
+
+GENERAL.DEVICE:                         vxlan10
+GENERAL.TYPE:                           vxlan
+GENERAL.HWADDR:                         7A:C3:4C:23:65:8A
+GENERAL.MTU:                            1450
+GENERAL.STATE:                          100 (connected)
+GENERAL.CONNECTION:                     vxlan10
+GENERAL.CON-PATH:                       /org/freedesktop/NetworkManager/ActiveConnection/2
+IP4.GATEWAY:
+IP6.GATEWAY:
+
+GENERAL.DEVICE:                         enp0s8
+GENERAL.TYPE:                           ethernet
+GENERAL.HWADDR:                         08:00:27:45:74:6B
+GENERAL.MTU:                            1500
+GENERAL.STATE:                          30 (disconnected)
+GENERAL.CONNECTION:                     --
+GENERAL.CON-PATH:                       --
+WIRED-PROPERTIES.CARRIER:               on
+
+GENERAL.DEVICE:                         enp0s9
+GENERAL.TYPE:                           ethernet
+GENERAL.HWADDR:                         08:00:27:F2:32:1E
+GENERAL.MTU:                            1500
+GENERAL.STATE:                          30 (disconnected)
+GENERAL.CONNECTION:                     --
+GENERAL.CON-PATH:                       --
+WIRED-PROPERTIES.CARRIER:               on
+
+GENERAL.DEVICE:                         lo
+GENERAL.TYPE:                           loopback
+GENERAL.HWADDR:                         00:00:00:00:00:00
+GENERAL.MTU:                            65536
+GENERAL.STATE:                          10 (unmanaged)
+GENERAL.CONNECTION:                     --
+GENERAL.CON-PATH:                       --
+IP4.ADDRESS[1]:                         127.0.0.1/8
+IP4.GATEWAY:
+IP6.ADDRESS[1]:                         ::1/128
+IP6.GATEWAY:
+""".strip()
+
 
 def test_nmcli():
     nmcli_obj = NmcliDevShow(context_wrap(NMCLI_SHOW))
@@ -111,6 +180,11 @@ def test_nmcli():
     assert nmcli_obj['em3']['CON-PATH'] == "/org/freedesktop/NetworkManager/ActiveConnection/1"
     assert len(nmcli_obj['em3']) == 17
     assert len(nmcli_obj['em1']) == 7
+    nmcli_obj = NmcliDevShow(context_wrap(NMCLI_DEV_SHOW))
+    assert 'IP6_GATEWAY' not in nmcli_obj['lo']
+    assert 'IP6_ADDRESS1' in nmcli_obj['lo']
+    assert nmcli_obj['lo']['IP6_ADDRESS1'] == '::1/128'
+    assert nmcli_obj.data is not None
 
 
 def test_nmcli_sos():
