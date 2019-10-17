@@ -84,7 +84,7 @@ class PodmanListImages(PodmanList):
         rhel6_nss-softokn                    latest              <none>              dd87dad2c7841a19263ae2dc96d32c501ee84a92f56aed75bb67f57efe4e48b5   5 days ago          449.7 MB
 
     Attributes:
-        row (list): List of row dictionaries.
+        rows (list): List of row dictionaries.
         images (dict): Dictionary keyed on the value of the "REPOSITORY" fileld
 
     Examples:
@@ -114,8 +114,8 @@ class PodmanListContainers(PodmanList):
         95516ea08b565e37e2a4bca3333af40a240c368131b77276da8dec629b7fe102   bd8638c869ea40a9269d87e9af6741574562af9ee013e03ac2745fb5f59e2478   "/bin/sh -c 'yum install -y vsftpd-2.2.2-6.el6'"   51 minutes ago      Exited (137) 50 minutes ago                          tender_rosalind     4.751 MB (virtual 200.4 MB)
 
     Attributes:
-        row (list): List of row dictionaries.
-        containers(dict): Dictionary keyed on the value of the "NAMES" fileld
+        rows (list): List of row dictionaries.
+        containers(dict): Dictionary keyed on the value of the "NAMES" field
 
     Examples:
         >>> containers.rows[0]['NAMES']

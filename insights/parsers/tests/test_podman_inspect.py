@@ -1,4 +1,5 @@
 import pytest
+import doctest
 from insights.parsers import podman_inspect, SkipException
 from insights.tests import context_wrap
 
@@ -453,3 +454,14 @@ def test_podman_object_image_inspect():
 def test_podman_container_inspect_truncated_input():
     with pytest.raises(SkipException):
         podman_inspect.PodmanInspectContainer(context_wrap(PODMAN_CONTAINER_INSPECT_TRUNCATED))
+
+
+def test_doc_test():
+    dic = podman_inspect.PodmanInspectContainer(context_wrap(PODMAN_CONTAINER_INSPECT))
+    dii = podman_inspect.PodmanInspectImage(context_wrap(PODMAN_IMAGE_INSPECT))
+    env = {
+            'container': dic,
+            'image': dii,
+    }
+    failed, total = doctest.testmod(podman_inspect, globs=env)
+    assert failed == 0
