@@ -1,5 +1,6 @@
 import logging
 import os
+import six
 from contextlib import contextmanager
 from insights.util import streams, subproc
 
@@ -127,11 +128,44 @@ class Context(object):
         return repr(dict((k, str(v)[:30]) for k, v in self.__dict__.items()))
 
 
-class ExecutionContext(object):
+class ExecutionContextMeta(type):
+    registry = []
+
+    def __init__(cls, name, bases, dct):
+        if name == "ExecutionContext":
+            return
+        ExecutionContextMeta.registry.append(cls)
+
+    @classmethod
+    def identify(cls, files):
+        for e in reversed(cls.registry):
+            root, ctx = e.handles(files)
+            if ctx is not None:
+                return (root, ctx)
+
+
+class ExecutionContext(six.with_metaclass(ExecutionContextMeta)):
+    marker = None
+
     def __init__(self, root="/", timeout=None, all_files=None):
         self.root = root
         self.timeout = timeout
         self.all_files = all_files or []
+
+    @classmethod
+    def handles(cls, files):
+        if cls.marker is None or not files:
+            return (None, None)
+
+        sep = os.path.sep
+        m = sep + cls.marker.lstrip(sep)
+        for f in files:
+            if m in f:
+                i = f.find(m)
+                if f.endswith(m) or f[i + len(m)] == sep:
+                    root = os.path.dirname(f[:i + 1])
+                    return root, cls
+        return (None, None)
 
     def check_output(self, cmd, timeout=None, keep_rc=False, env=None):
         """ Subclasses can override to provide special
@@ -179,22 +213,22 @@ class HostContext(ExecutionContext):
 
 
 @fs_root
+class SerializedArchiveContext(ExecutionContext):
+    marker = "insights_archive.txt"
+
+
+@fs_root
 class HostArchiveContext(ExecutionContext):
-    pass
+    marker = "insights_commands"
 
 
 @fs_root
 class SosArchiveContext(ExecutionContext):
-    pass
+    marker = "sos_commands"
 
 
 @fs_root
 class ClusterArchiveContext(ExecutionContext):
-    pass
-
-
-@fs_root
-class SerializedArchiveContext(ExecutionContext):
     pass
 
 
@@ -210,6 +244,8 @@ class JBossContext(HostContext):
 
 @fs_root
 class JDRContext(ExecutionContext):
+    marker = "JBOSS_HOME"
+
     def locate_path(self, path):
         p = path.replace("$JBOSS_HOME", "JBOSS_HOME")
         return super(JDRContext, self).locate_path(p)

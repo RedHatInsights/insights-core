@@ -21,6 +21,7 @@ but the key passed to ``[]`` is converted to a query of immediate child
 instances instead of a simple lookup.
 """
 import operator
+from collections import defaultdict
 from functools import partial
 from itertools import chain
 from insights.parsr.query.boolean import All, Any, Boolean, lift, lift2, TRUE
@@ -152,6 +153,17 @@ class Entry(object):
         Returns a flattened list of all grandchildren.
         """
         return list(chain.from_iterable(c.children for c in self.children))
+
+    def upto(self, query):
+        """
+        Go up from the current node to the first node that matches query.
+        """
+        pred = _desugar(query)
+        parent = self.parent
+        while parent is not None:
+            if pred.test(parent):
+                return parent
+            parent = parent.parent
 
     def select(self, *queries, **kwargs):
         """
@@ -367,6 +379,44 @@ class Result(Entry):
         """
         return sorted(set(c.value for c in self.children))
 
+    def upto(self, query):
+        """
+        Go up from the current results to the first nodes that match query.
+        """
+        roots = []
+        seen = set()
+        for c in self.children:
+            root = c.upto(query)
+            if root is not None and root not in seen:
+                roots.append(root)
+                seen.add(root)
+        return Result(children=roots)
+
+    def nth(self, n):
+        """
+        If the results are from a list beneath a node, get the nth element of
+        the results for each unique parent.
+
+        Example:
+        ``conf.status.conditions.nth(0)`` will get the 0th condition of each
+        status.
+        """
+        tmp = defaultdict(list)
+        for c in self.children:
+            tmp[c.parent].append(c)
+
+        results = []
+        for p, v in tmp.items():
+            try:
+                r = v[n]
+                if isinstance(r, list):
+                    results.extend(r)
+                else:
+                    results.append(v[n])
+            except:
+                pass
+        return Result(children=results)
+
     def select(self, *queries, **kwargs):
         query = compile_queries(*queries)
         return select(query, self.grandchildren, **kwargs)
@@ -391,7 +441,12 @@ class Result(Entry):
         ['2019-08-04T23:17:08Z', '2019-08-04T23:32:14Z']
         """
         query = make_child_query(name, value) if not isinstance(name, DictQueryBase) else name
-        return Result(children=list(set(c for c in self.children if query.test(c))))
+        results = []
+        seen = set()
+        for c in self.children:
+            if c not in seen and query.test(c):
+                results.append(c)
+        return Result(children=results)
 
     def __getitem__(self, query):
         if isinstance(query, (int, slice)):
