@@ -6,10 +6,7 @@ import yaml
 from fnmatch import fnmatch
 from insights.core.archives import extract
 from insights.parsr.query import from_dict, Result
-from insights.parsr.query import *  # noqa: F403
 from insights.util import content_type
-
-q = make_child_query  # noqa: F405
 
 try:
     # go fast!
@@ -114,6 +111,12 @@ def main():
     excludes = parse_exclude(args.exclude) if args.exclude else ["*.log"]
 
     conf = analyze(archives, excludes)  # noqa F841 / unused var
+
+    # import all the built-in predicates
+    from insights.parsr.query import (lt, le, eq, gt, ge, isin, contains,  # noqa: F403
+            startswith, endswith, ieq, icontains, istartswith, iendswith,  # noqa: F403
+            make_child_query)  # noqa: F403
+    q = make_child_query  # noqa: F405
 
     import IPython
     from traitlets.config.loader import Config
