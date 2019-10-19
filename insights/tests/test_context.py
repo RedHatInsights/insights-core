@@ -1,4 +1,5 @@
-from insights.core.context import HostArchiveContext, SosArchiveContext, SerializedArchiveContext
+from insights.core.context import (ExecutionContextMeta, HostArchiveContext,
+                                   SerializedArchiveContext, SosArchiveContext)
 
 
 def test_host_archive_context():
@@ -62,4 +63,10 @@ def test_serialized_archive_context_unsupported():
 
     files = ["/foo/junk", "/insights_archive"]
     actual = SerializedArchiveContext.handles(files)
+    assert actual == (None, None), actual
+
+
+def test_unrecognized():
+    files = ["/foo/junk", "/bar/junk"]
+    actual = ExecutionContextMeta.identify(files)
     assert actual == (None, None), actual
