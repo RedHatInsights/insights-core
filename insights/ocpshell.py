@@ -21,6 +21,33 @@ except:
 
 log = logging.getLogger(__name__)
 
+banner = """
+Openshift Configuration Explorer
+
+Tutorial: https://github.com/RedHatInsights/insights-core/blob/master/docs/notebooks/Parsr%20Query%20Tutorial.ipynb
+
+conf is the top level configuration. Use conf.get_keys() to see first level keys.
+
+Available Predicates
+    lt, le, eq, gt, ge
+
+    isin, contains
+
+    startswith, endswith
+
+    ieq, icontains, istartswith, iendswith
+
+Available Operators
+    ~ (not)
+    | (or)
+    & (and)
+
+Example
+    api = conf.where("kind", "KubeAPIServer")
+    latest = api.status.latestAvailableRevision.value
+    api.status.nodeStatuses.where("currentRevision", ~eq(latest))
+"""
+
 
 def parse_args():
     p = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -28,48 +55,6 @@ def parse_args():
     p.add_argument("-D", "--debug", help="Verbose debug output.", action="store_true")
     p.add_argument("--exclude", default="*.log", help="Glob patterns to exclude separated by commas")
     return p.parse_args()
-
-
-def get_ipshell():
-    from IPython import embed
-    from IPython.terminal.embed import InteractiveShellEmbed
-    from IPython.core.completer import Completer
-
-    Completer.use_jedi = False
-
-    banner = """
-    Openshift Configuration Explorer
-
-    Tutorial: https://github.com/RedHatInsights/insights-core/blob/master/docs/notebooks/Parsr%20Query%20Tutorial.ipynb
-
-    conf is the top level configuration. Use conf.get_keys() to see first level
-    keys.
-
-    Available Predicates
-        lt, le, eq, gt, ge
-
-        isin, contains
-
-        startswith, endswith
-
-        ieq, icontains, istartswith, iendswith
-
-    Available Operators
-        ~ (not)
-        | (or)
-        & (and)
-
-    Example
-        api = conf.where("kind", "KubeAPIServer")
-        latest = api.status.latestAvailableRevision.value
-        api.status.nodeStatuses.where("currentRevision", ~eq(latest))
-    """
-    exit_msg = '\nExiting IPython'
-
-    try:
-        return InteractiveShellEmbed(banner1=banner, exit_msg=exit_msg)
-    except:
-        return embed
 
 
 def get_files(path):
@@ -87,7 +72,8 @@ def load(path):
         return from_dict(doc)
 
 
-def process(path, excludes):
+def process(path, excludes=None):
+    excludes = excludes if excludes is not None else []
     # cpu bound in yaml.load. threads don't help.
     for f in get_files(path):
         if excludes and any(fnmatch(f, e) for e in excludes):
@@ -98,7 +84,7 @@ def process(path, excludes):
             log.debug("Failed to load %s; skipping", f)
 
 
-def analyze(paths, excludes):
+def analyze(paths, excludes=None):
     if not isinstance(paths, list):
         paths = [paths]
 
@@ -129,8 +115,13 @@ def main():
 
     conf = analyze(archives, excludes)  # noqa F841 / unused var
 
-    shell = get_ipshell()
-    shell()
+    import IPython
+    from traitlets.config.loader import Config
+
+    IPython.core.completer.Completer.use_jedi = False
+    c = Config()
+    c.TerminalInteractiveShell.banner1 = banner
+    IPython.start_ipython([], user_ns=locals(), config=c)
 
 
 if __name__ == "__main__":
