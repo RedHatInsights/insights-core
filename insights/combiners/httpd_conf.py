@@ -18,7 +18,7 @@ from collections import namedtuple
 from insights import run
 from insights.core import ConfigCombiner, ConfigParser
 from insights.core.plugins import combiner, parser
-from insights.parsr.query import (Directive, Entry, lift, lift2, Section,
+from insights.parsr.query import (Directive, Entry, pred, pred2, Section,
         startswith)
 from insights.parsr import (Char, EOF, EOL, EndTagName, Forward, FS, GT, InSet,
         Literal, LT, Letters, Lift, LineEnd, Many, Number, OneLineComment,
@@ -428,7 +428,7 @@ def get_tree(root=None):
     return run(HttpdConfTree, root=root).get(HttpdConfTree)
 
 
-is_private = lift(lambda x: ip_address(six.u(x)).is_private)
+is_private = pred(lambda x: ip_address(six.u(x)).is_private)
 """
 Predicate to check if an ip address is private.
 
@@ -436,7 +436,7 @@ Example:
     conf["VirtualHost", in_network("128.39.0.0/16")]
 """
 
-in_network = lift2(lambda x, y: (ip_address(six.u(x)) in ip_network(six.u(y))))
+in_network = pred2(lambda x, y: (ip_address(six.u(x)) in ip_network(six.u(y))))
 """
 Predicate to check if an ip address is in a given network.
 
