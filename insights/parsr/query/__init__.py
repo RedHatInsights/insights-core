@@ -21,6 +21,7 @@ but the key passed to ``[]`` is converted to a query of immediate child
 instances instead of a simple lookup.
 """
 import operator
+import re
 from collections import defaultdict
 from functools import partial
 from itertools import chain
@@ -715,7 +716,6 @@ def from_dict(orig):
     from_dict is a helper function that does its best to convert a python dict
     into a tree of :py:class:`Entry` instances that can be queried.
     """
-
     def inner(d):
         result = []
         for k, v in d.items():
@@ -743,12 +743,8 @@ eq = lift2(operator.eq)
 gt = lift2(operator.gt)
 ge = lift2(operator.ge)
 
-
-def isin(v, values):
-    return v in set(values)
-
-
-isin = lift2(isin)
+isin = lift2(lambda v, values: v in set(values))
+matches = lift2(lambda v, pat: re.search(pat, v))
 
 contains = lift2(operator.contains)
 startswith = lift2(str.startswith)

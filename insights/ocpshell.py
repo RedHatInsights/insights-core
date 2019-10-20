@@ -30,7 +30,7 @@ Available Predicates
 
     isin, contains
 
-    startswith, endswith
+    startswith, endswith, matches
 
     ieq, icontains, istartswith, iendswith
 
@@ -115,7 +115,7 @@ def main():
     # import all the built-in predicates
     from insights.parsr.query import (lt, le, eq, gt, ge, isin, contains,  # noqa: F403
             startswith, endswith, ieq, icontains, istartswith, iendswith,  # noqa: F403
-            make_child_query)  # noqa: F403
+            matches, make_child_query)  # noqa: F403
     q = make_child_query  # noqa: F405
 
     import IPython
