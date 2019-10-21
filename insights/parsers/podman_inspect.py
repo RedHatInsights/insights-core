@@ -6,29 +6,6 @@ This module parses the output of the ``podman inspect`` command.  This uses
 the ``core.marshalling.unmarshal`` function to parse the JSON output from the
 commands.  The data is stored as a dictionary.
 
-Sample input::
-
-    [
-    {
-        "Id": "97d7cd1a5d8fd7730e83bb61ecbc993742438e966ac5c11910776b5d53f4ae07",
-        "Created": "2016-06-23T05:12:25.433469799Z",
-        "Path": "/bin/bash",
-        "Args": [],
-        "Name": "/sample_webapp",
-        "State": {
-            "Status": "running",
-            "Running": true,
-            "Paused": false,
-            "Restarting": false,
-    ...
-
-Examples:
-
-    >>> image.get('ID') # new-style access
-    '97d7cd1a5d8fd7730e83bb61ecbc993742438e966ac5c11910776b5d53f4ae07'
-    >>> image.get('State').get('Paused') # sub-dictionaries
-    False
-
 """
 
 from insights import parser, CommandParser
@@ -48,10 +25,10 @@ class PodmanInspect(CommandParser, dict):
     """
 
     def parse_content(self, content):
-        content = "\n".join(list(content))
-
         if not content:
             raise SkipException
+
+        content = "\n".join(list(content))
 
         try:
             inspect_data = unmarshal(content)
@@ -64,6 +41,24 @@ class PodmanInspect(CommandParser, dict):
 class PodmanInspectImage(PodmanInspect):
     """
     Parse podman image inspect output using the PodmanInspect parser class.
+
+    Sample input::
+
+        [
+            {
+                "Id": "013125b8a088f45be8f85f88b5504f05c02463b10a6eea2b66809a262bb911ca",
+                "Digest": "sha256:f9662cdd45e3db182372a4fa6bfff10e1c601cc785bac09ccae3b18f0bc429df",
+                "RepoTags": [
+                    "192.168.24.1:8787/rhosp15/openstack-rabbitmq:20190819.1",
+                    "192.168.24.1:8787/rhosp15/openstack-rabbitmq:pcmklatest"
+                ],
+            ...
+
+    Examples:
+        >>> image['Id'] == '013125b8a088f45be8f85f88b5504f05c02463b10a6eea2b66809a262bb911ca'
+        True
+        >>> image['RepoTags'][0] == '192.168.24.1:8787/rhosp15/openstack-rabbitmq:20190819.1'
+        True
     """
     pass
 
@@ -72,5 +67,28 @@ class PodmanInspectImage(PodmanInspect):
 class PodmanInspectContainer(PodmanInspect):
     """
     Parse podman container inspect output using the PodmanInspect parser class.
+
+    Sample input::
+
+        [
+            {
+                "ID": "66db151828e9beede0cdd9c17fc9bd5ebb5d125dd036f7230bc6b6433e5c0dda",
+                "Created": "2019-08-21T10:38:34.753548542Z",
+                "Path": "dumb-init",
+                "State": {
+                    "OciVersion": "1.0.1-dev",
+                    "Status": "running",
+                    "Running": true,
+                    "Paused": false,
+                },
+            ...
+
+    Examples:
+        >>> container['ID'] == '66db151828e9beede0cdd9c17fc9bd5ebb5d125dd036f7230bc6b6433e5c0dda'
+        True
+        >>> container['Path'] == 'dumb-init'
+        True
+        >>> container.get('State').get('Paused') is False
+        True
     """
     pass

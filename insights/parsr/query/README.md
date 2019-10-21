@@ -69,14 +69,14 @@ brackets query the children of those results. A third set of brackets would
 query the children of *those* results, and so on.
 
 Brackets can accept simple values, single argument predicate functions, and
-predicate functions that have been "lifted" using the
+predicate functions that have been converted to predicates using the
 [parser.query.boolean](https://github.com/csams/parsr/blob/master/parsr/query/boolean.py)
-module. Lifted functions have the special property than they can be easily
-combined with other lifted functions to make compound queries.
+module. Predicates have the special property than they can be easily
+combined with other predicates to make compound queries.
 
 ## Combining Queries
-Lifted functions can be combined with logical connectives representing `and`,
-`or`, and `not`. `parser.query` provides several lifted functions:
+Predicates can be combined with logical connectives representing `and`, `or`,
+and `not`. `parser.query` provides several predicates:
 
 ### General functions
 * lt - less than
@@ -151,13 +151,13 @@ log_levels = conf.find("VirtualHost").find("LogLevel")
 If you want to search for structure somewhere in the tree but are interested in
 the root entries that contain the matches, pass `roots=True` to `find`.
 
-## Lifting
+## Custom Predicates
 To create your own predicates that can be combined using the connectors above,
-use the `lift` and `lift2` functions from `parsr.query`.
+use the `pred` and `pred2` functions from `parsr.query`.
 
-`lift` is for predicates that take a single value, which will be either an entry
-name or an entry attribute. `lift2` is for functions that need to be
-parameterized with a value. An example of `lift2` is `operator.eq` or
+`pred` is for predicates that take a single value, which will be either an entry
+name or an entry attribute. `pred2` is for functions that need to be
+parameterized with a value. An example of `pred2` is `operator.eq` or
 `str.startswith`.
 
 ```python
@@ -167,11 +167,11 @@ def is_even(v):
 def is_greater_than(a, b):
     return a > b
 
-even = lift(is_even)
-# lift allows is_even to be negated with ~ or connected to other predicates with
+even = pred(is_even)
+# pred allows is_even to be negated with ~ or connected to other predicates with
 # & and |.
 
-greater_than = lift2(greater_than)
+greater_than = pred2(greater_than)
 # you can call greater_than in a query and pass it a single value, which will
 # get substitued as the *second* parameter when it's actually applied during the
 # evalutation. For example, greater_than(2) binds 2 to the parameter `b` in
@@ -181,7 +181,7 @@ greater_than = lift2(greater_than)
 result = conf["server"]["port", even & greater_than(1024)]
 ```
 
-`lift` and `lift2` take an optional keyword called `ignore_case` that causes all
+`pred` and `pred2` take an optional keyword called `ignore_case` that causes all
 string values to be converted to lower case before comparison.
 
 ## all_ and any_
