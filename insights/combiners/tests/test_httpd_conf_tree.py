@@ -1,3 +1,4 @@
+# coding=utf-8
 from insights.combiners.httpd_conf import (_HttpdConf, HttpdConfTree, _HttpdConfSclHttpd24,
     HttpdConfSclHttpd24Tree, _HttpdConfSclJbcsHttpd24, HttpdConfSclJbcsHttpd24Tree)
 from insights.tests import context_wrap
@@ -385,6 +386,17 @@ HTTPD_CONF_NEST_4 = """
 """.strip()
 
 
+HTTPD_REGEX_AND_OP_ATTRS = r"""
+RewriteCond %{HTTP:Accept-Encoding} \b(x-)?gzip\b
+RedirectMatch ^\/?pulp_puppet\/forge\/[^\/]+\/[^\/]+\/(?!api\/v1\/releases\.json)(.*)$ /$1
+RewriteCond %1%2 (^|&|;)([^(&|;)].*|$)
+RewriteCond %{HTTP:Accept-Encoding} \b(x-)?gzip\b
+<IfVersion < 2.4>
+    Allow from all
+  </IfVersion>
+""".strip()
+
+
 HTTPD_EMBEDDED_QUOTES = r"""
 # DirectoryIndex: sets the file that Apache will serve if a directory
 # is requested.
@@ -453,6 +465,14 @@ DNSSDEnable on
 #DNSSDAutoRegisterVHosts on
 #DNSSDAutoRegisterUserDir on
 """.strip()  # noqa W293
+
+
+UNICODE_COMMENTS = """
+#Alterações realizadas por issue no Insights
+DNSSDEnable on
+#DNSSDAutoRegisterVHosts on
+#DNSSDAutoRegisterUserDir on
+"""
 
 
 def test_mixed_case_tags():
@@ -722,3 +742,22 @@ def test_indented_lines_and_comments():
 
     request_headers = result['RequestHeader']
     assert len(request_headers) == 2
+
+
+def test_regex_and_op_attrs():
+    httpd = _HttpdConf(context_wrap(HTTPD_REGEX_AND_OP_ATTRS, path='/etc/httpd/conf/httpd.conf'))
+    result = HttpdConfTree([httpd])
+
+    rewrite_cond = result["RewriteCond"]
+    assert len(rewrite_cond) == 3
+
+    if_version = result["IfVersion"]
+    assert len(if_version) == 1
+
+
+def test_unicode_comments():
+    httpd = _HttpdConf(context_wrap(UNICODE_COMMENTS, path='/etc/httpd/conf/httpd.conf'))
+    result = HttpdConfTree([httpd])
+
+    rewrite_cond = result["DNSSDEnable"]
+    assert len(rewrite_cond) == 1

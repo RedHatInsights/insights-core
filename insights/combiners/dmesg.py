@@ -43,9 +43,13 @@ Examples:
     False
 """
 
+from insights.core.filters import add_filter
 from insights.core.plugins import combiner
 from insights.parsers.dmesg import DmesgLineList
 from insights.parsers.dmesg_log import DmesgLog
+from insights.specs import Specs
+
+add_filter(Specs.dmesg, 'Linux version')
 
 
 @combiner([DmesgLineList, DmesgLog])

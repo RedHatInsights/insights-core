@@ -400,9 +400,53 @@ def test_legacy_upload(_legacy_upload, path_exists):
 @patch('insights.client.client._legacy_upload')
 def test_platform_upload(_legacy_upload, _, path_exists):
     '''
-    _legacy_upload not called when legacy upload
+    _legacy_upload not called when platform upload
     '''
     config = InsightsConfig(legacy_upload=False)
     client = InsightsClient(config)
     client.upload('test.gar.gz', 'test.content.type')
     _legacy_upload.assert_not_called()
+
+
+@patch('insights.client.client.systemd_notify')
+@patch('insights.client.client.read_pidfile')
+@patch('insights.client.os.path.exists', return_value=True)
+@patch('insights.client.connection.InsightsConnection.upload_archive')
+def test_legacy_upload_systemd(_, path_exists, read_pidfile, systemd_notify):
+    '''
+    Pidfile is read and systemd-notify is called for legacy upload
+    '''
+    config = InsightsConfig(legacy_upload=True)
+    client = InsightsClient(config)
+    client.upload('test.gar.gz', 'test.content.type')
+    read_pidfile.assert_called_once()
+    systemd_notify.assert_called_once_with(read_pidfile.return_value)
+
+
+@patch('insights.client.client.systemd_notify')
+@patch('insights.client.client.read_pidfile')
+@patch('insights.client.os.path.exists', return_value=True)
+@patch('insights.client.connection.InsightsConnection.upload_archive')
+def test_platform_upload_systemd(_, path_exists, read_pidfile, systemd_notify):
+    '''
+    Pidfile is read and systemd-notify is called for platform upload
+    '''
+    config = InsightsConfig(legacy_upload=False)
+    client = InsightsClient(config)
+    client.upload('test.gar.gz', 'test.content.type')
+    read_pidfile.assert_called_once()
+    systemd_notify.assert_called_once_with(read_pidfile.return_value)
+
+
+@patch('insights.client.os.path.exists', return_value=True)
+@patch('insights.client.connection.InsightsConnection.upload_archive')
+@patch('insights.client.client._legacy_upload')
+def test_platform_upload_with_no_log_path(_legacy_upload, _, path_exists):
+    '''
+    testing logger when no path is given
+    '''
+    config = InsightsConfig(legacy_upload=True, logging_file='tmp.log')
+    client = InsightsClient(config)
+    response = client.upload('test.gar.gz', 'test.content.type')
+    _legacy_upload.assert_called_once()
+    assert response is not None

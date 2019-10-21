@@ -75,6 +75,12 @@ DEFAULT_OPTS = {
         # non-CLI
         'default': None
     },
+    'compliance': {
+        'default': False,
+        'opt': ['--compliance'],
+        'help': 'Scan the system using openscap and upload the report',
+        'action': 'store_true'
+    },
     'compressor': {
         'default': 'gz',
         'opt': ['--compressor'],
@@ -591,6 +597,13 @@ class InsightsConfig(object):
             if self.group:
                 raise ValueError(
                     '--group is not supported at this time.')
+        if self.offline:
+            if self.to_json:
+                raise ValueError('Cannot use --to-json in offline mode.')
+            if self.status:
+                raise ValueError('Cannot check registration status in offline mode.')
+            if self.test_connection:
+                raise ValueError('Cannot run connection test in offline mode.')
 
     def _imply_options(self):
         '''

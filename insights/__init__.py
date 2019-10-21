@@ -29,9 +29,10 @@ from .core import FileListing, LegacyItemAccess, SysconfigOptions  # noqa: F401
 from .core import YAMLParser, JSONParser, XMLParser, CommandParser  # noqa: F401
 from .core import AttributeDict  # noqa: F401
 from .core import Syslog  # noqa: F401
+from .core import taglang
 from .core.archives import COMPRESSION_TYPES, extract, InvalidArchive, InvalidContentType  # noqa: F401
 from .core import dr  # noqa: F401
-from .core.context import ClusterArchiveContext, HostContext, HostArchiveContext, SerializedArchiveContext  # noqa: F401
+from .core.context import ClusterArchiveContext, HostContext, HostArchiveContext, SerializedArchiveContext, ExecutionContext  # noqa: F401
 from .core.dr import SkipComponent  # noqa: F401
 from .core.hydration import create_context
 from .core.plugins import combiner, fact, metadata, parser, rule  # noqa: F401
@@ -44,6 +45,8 @@ from .formats import get_formatter
 from .parsers import get_active_lines  # noqa: F401
 from .util import defaults  # noqa: F401
 from .formats import Formatter as FormatterClass
+
+from .core.spec_factory import RawFileProvider, TextFileProvider
 
 log = logging.getLogger(__name__)
 
@@ -178,7 +181,7 @@ def apply_configs(config):
     Args:
         config (dict): a dictionary with the following keys:
             default_component_enabled (bool, optional): default value for
-                whether compoments are enable if not specifically declared in
+                whether components are enable if not specifically declared in
                 the config section. Defaults to True.
 
             configs (list): list of dictionaries with the following keys:
@@ -214,8 +217,12 @@ def apply_configs(config):
                     if hasattr(c, k):
                         log.debug("Setting %s.%s to %s", cname, k, v)
                         setattr(c, k, v)
+
                 if hasattr(c, "timeout"):
                     c.timeout = comp_cfg.get("timeout", c.timeout)
+
+                if hasattr(delegate, "links"):
+                    delegate.links = comp_cfg.get("links", delegate.links)
             if cname == name:
                 break
 
@@ -244,11 +251,16 @@ def run(component=None, root=None, print_summary=False,
         p.add_argument("archive", nargs="?", help="Archive or directory to analyze.")
         p.add_argument("-p", "--plugins", default="",
                        help="Comma-separated list without spaces of package(s) or module(s) containing plugins.")
+        p.add_argument("-b", "--bare",
+                       help='Specify "spec=filename[,spec=filename,...]" to use the bare file for the spec',
+                       default="")
         p.add_argument("-c", "--config", help="Configure components.")
         p.add_argument("-i", "--inventory", help="Ansible inventory file for cluster analysis.")
+        p.add_argument("-k", "--pkg-query", help="Expression to select rules by package.")
         p.add_argument("-v", "--verbose", help="Verbose output.", action="store_true")
         p.add_argument("-f", "--format", help="Output format.", default="insights.formats.text")
         p.add_argument("-s", "--syslog", help="Log results to syslog.", action="store_true")
+        p.add_argument("--tags", help="Expression to select rules by tag.")
         p.add_argument("-D", "--debug", help="Verbose debug output.", action="store_true")
         p.add_argument("--context", help="Execution Context. Defaults to HostContext if an archive isn't passed.")
 
@@ -311,6 +323,21 @@ def run(component=None, root=None, print_summary=False,
     if component:
         if not isinstance(component, (list, set)):
             component = [component]
+
+        if args and args.pkg_query:
+            pred = taglang.parse(args.pkg_query)
+            component = [c for c in component if pred([dr.get_module_name(c)])]
+            if not component:
+                msg = "No components for pkg-query expression: %s" % args.pkg_query
+                raise Exception(msg)
+
+        if args and args.tags:
+            pred = taglang.parse(args.tags)
+            component = [c for c in component if pred(dr.get_tags(c))]
+            if not component:
+                msg = "No components for tag expression: %s" % args.tags
+                raise Exception(msg)
+
         graph = {}
         for c in component:
             graph.update(dr.get_dependency_graph(c))
@@ -319,18 +346,39 @@ def run(component=None, root=None, print_summary=False,
 
     broker = dr.Broker()
 
+    if args and args.bare:
+        ctx = ExecutionContext()  # dummy context that no spec depend on. needed for filters to work
+        specs = parse_specs(args.bare)
+        specs = load_specs(specs, ctx)
+
+        broker = dr.Broker()
+        broker[ExecutionContext] = ctx
+        for spec, content in specs.items():
+            broker[spec] = content if dr.DELEGATES[spec].multi_output else content[-1]
     try:
         if formatters:
             for formatter in formatters:
                 formatter.preprocess(broker)
-            broker = _run(broker, graph, root, context=context, inventory=inventory)
+
+            if args and args.bare:
+                broker = dr.run(graph, broker=broker)
+            else:
+                broker = _run(broker, graph, root, context=context, inventory=inventory)
+
             for formatter in formatters:
                 formatter.postprocess(broker)
         elif print_component:
-            broker = _run(broker, graph, root, context=context, inventory=inventory)
+            if args and args.bare:
+                broker = dr.run(graph, broker=broker)
+            else:
+                broker = _run(broker, graph, root, context=context, inventory=inventory)
+
             broker.print_component(print_component)
         else:
-            broker = _run(broker, graph, root, context=context, inventory=inventory)
+            if args and args.bare:
+                broker = dr.run(graph, broker=broker)
+            else:
+                broker = _run(broker, graph, root, context=context, inventory=inventory)
 
         return broker
     except (InvalidContentType, InvalidArchive):
@@ -340,6 +388,31 @@ def run(component=None, root=None, print_summary=False,
             log.error(msg.format(p=path))
         else:
             raise
+
+
+def parse_specs(specs):
+    """
+    -b "hostname=/etc/hostname, redhat_release=/etc/redhat-release, .."
+    """
+    return dict(s.strip().split("=", 1) for s in specs.split(","))
+
+
+def load_datasource(name):
+    name = "insights.specs.Specs." + name if "." not in name else name
+    return dr.get_component(name)
+
+
+def load_specs(specs, ctx):
+    results = defaultdict(list)
+    for spec, path in specs.items():
+        s = load_datasource(spec)
+        root = "/" if path.startswith('/') else "."
+        if s.raw:
+            c = RawFileProvider(relative_path=path, root=root, ds=s, ctx=ctx)
+        else:
+            c = TextFileProvider(relative_path=path, root=root, ds=s, ctx=ctx)
+        results[s].append(c)
+    return results
 
 
 def main():

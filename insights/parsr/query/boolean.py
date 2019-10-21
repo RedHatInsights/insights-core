@@ -13,22 +13,22 @@ evaluation, in particular :py:class:`insights.parsr.query.Entry` instances.
         def is_positive(n):
             return n > 0
 
-        even_and_positive = lift(is_even) & lift(is_positive)
+        even_and_positive = pred(is_even) & pred(is_positive)
 
         even_and_positive(6) == True
         even_and_positive(-2) == False
         even_and_positive(3) == False
 
-You can also lift two parameter functions to which you want to partially apply
-an argument. The arguments partially applied will be those *after* the first
-argument. The first argument is the value the function should evaluate when
-it's fully applied.
+You can also convert two parameter functions to which you want to partially
+apply an argument. The arguments partially applied will be those *after* the
+first argument. The first argument is the value the function should evaluate
+when it's fully applied.
 
     .. code-block:: python
 
         import operator
-        lt = lift2(operator.lt)  # operator.lt is lt(a, b) == (a < b)
-        gt = lift2(operator.gt)  # operator.gt is gt(a, b) == (a > b)
+        lt = pred2(operator.lt)  # operator.lt is lt(a, b) == (a < b)
+        gt = pred2(operator.gt)  # operator.gt is gt(a, b) == (a > b)
 
         gt_five = gt(5)  # creates a function of one argument that when called
                          # returns operator.gt(x, 5)
@@ -71,10 +71,6 @@ class Any(Boolean):
     def __init__(self, *exprs):
         self.exprs = list(exprs)
 
-    def __or__(self, other):
-        self.exprs.append(other)
-        return self
-
     def test(self, value):
         return any(q.test(value) for q in self.exprs)
 
@@ -82,10 +78,6 @@ class Any(Boolean):
 class All(Boolean):
     def __init__(self, *exprs):
         self.exprs = list(exprs)
-
-    def __and__(self, other):
-        self.exprs.append(other)
-        return self
 
     def test(self, value):
         return all(q.test(value) for q in self.exprs)
@@ -99,7 +91,7 @@ class Not(Boolean):
         return not self.query.test(value)
 
 
-class Lift(Boolean):
+class Predicate(Boolean):
     def __init__(self, func, *args):
         self.func = func
         self.args = args
@@ -111,24 +103,24 @@ class Lift(Boolean):
             return False
 
 
-class CaselessLift(Lift):
+class CaselessPredicate(Predicate):
     def test(self, lhs):
         if isinstance(lhs, str):
-            return super(CaselessLift, self).test(lhs.lower())
-        return super(CaselessLift, self).test(lhs)
+            return super(CaselessPredicate, self).test(lhs.lower())
+        return super(CaselessPredicate, self).test(lhs)
 
 
-def lift(func, ignore_case=False):
+def pred(func, ignore_case=False):
     if ignore_case:
-        return CaselessLift(func)
-    return Lift(func)
+        return CaselessPredicate(func)
+    return Predicate(func)
 
 
-def lift2(func, ignore_case=False):
+def pred2(func, ignore_case=False):
     def inner(val):
         if ignore_case:
-            return CaselessLift(func, val.lower())
-        return Lift(func, val)
+            return CaselessPredicate(func, val.lower())
+        return Predicate(func, val)
     return inner
 
 

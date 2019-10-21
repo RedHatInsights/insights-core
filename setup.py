@@ -19,6 +19,7 @@ entry_points = {
         'insights-dupkeycheck = insights.tools.dupkeycheck:main',
         'insights-inspect = insights.tools.insights_inspect:main',
         'insights-info = insights.tools.query:main',
+        'insights-ocpshell= insights.ocpshell:main',
         'gen_api = insights.tools.generate_api_config:main',
         'insights-perf = insights.tools.perf:main',
         'client = insights.client:run',
@@ -35,6 +36,7 @@ runtime = set([
     'cachecontrol[filecache]',
     'defusedxml',
     'lockfile',
+    'jinja2',
 ])
 
 if (sys.version_info < (2, 7)):
@@ -55,8 +57,7 @@ maybe_require("argparse")
 
 
 client = set([
-    'requests',
-    'pyOpenSSL',
+    'requests'
 ])
 
 develop = set([
@@ -83,7 +84,6 @@ testing = set([
 cluster = set([
     'ansible',
     'pandas',
-    'jinja2',
     'colorama',
 ])
 
@@ -122,6 +122,7 @@ if __name__ == "__main__":
             'develop': list(runtime | develop | client | docs | linting | testing | cluster),
             'develop26': list(runtime | develop | client | linting | testing | cluster),
             'client': list(runtime | client),
+            'client-develop': list(runtime | develop | client | linting | testing),
             'cluster': list(runtime | cluster),
             'openshift': list(runtime | openshift),
             'optional': list(optional),

@@ -10,9 +10,11 @@ import datetime
 import shlex
 import re
 import stat
+import sys
 from subprocess import Popen, PIPE, STDOUT
 from six.moves.configparser import RawConfigParser
 
+from .. import package_info
 from .constants import InsightsConstants as constants
 
 logger = logging.getLogger(__name__)
@@ -227,11 +229,9 @@ def get_version_info():
     '''
     Get the insights client and core versions for archival
     '''
-    from insights.client import InsightsClient
-
     cmd = 'rpm -q --qf "%{VERSION}-%{RELEASE}" insights-client'
     version_info = {}
-    version_info['core_version'] = InsightsClient().version()
+    version_info['core_version'] = '%s-%s' % (package_info['VERSION'], package_info['RELEASE'])
     version_info['client_version'] = run_command_get_output(cmd)['output']
 
     return version_info
@@ -251,6 +251,10 @@ def print_egg_versions():
         '/var/lib/insights/last_stable.egg',
         '/etc/insights-client/rpm.egg',
     ]
+    if not sys.executable:
+        logger.debug('Python executable not found.')
+        return
+
     for egg in eggs:
         if egg is None:
             logger.debug('ENV egg not defined.')
@@ -258,8 +262,50 @@ def print_egg_versions():
         if not os.path.exists(egg):
             logger.debug('%s not found.', egg)
             continue
-        proc = Popen(['python', '-c', 'from insights.client import InsightsClient; print(InsightsClient().version())'],
-                     env={'PYTHONPATH': egg, 'PATH': os.getenv('PATH')}, stdout=PIPE, stderr=STDOUT)
+        try:
+            proc = Popen([sys.executable, '-c',
+                         'from insights import package_info; print(\'%s-%s\' % (package_info[\'VERSION\'], package_info[\'RELEASE\']))'],
+                         env={'PYTHONPATH': egg, 'PATH': os.getenv('PATH')}, stdout=PIPE, stderr=STDOUT)
+        except OSError:
+            logger.debug('Could not start python.')
+            return
         stdout, stderr = proc.communicate()
         version = stdout.decode('utf-8', 'ignore').strip()
         logger.debug('%s: %s', egg, version)
+
+
+def read_pidfile():
+    '''
+    Read the pidfile we wrote at launch
+    '''
+    pid = None
+    try:
+        with open(constants.pidfile) as pidfile:
+            pid = pidfile.read()
+    except IOError:
+        logger.debug('Could not open pidfile for reading.')
+    return pid
+
+
+def systemd_notify(pid):
+    '''
+    Ping the systemd watchdog with the main PID so that
+    the watchdog doesn't kill the process
+    '''
+    if not os.getenv('NOTIFY_SOCKET'):
+        # running standalone, not via systemd job
+        return
+    if not pid:
+        logger.debug('No PID specified.')
+        return
+    if not os.path.exists('/usr/bin/systemd-notify'):
+        # RHEL 6, no systemd
+        return
+    try:
+        proc = Popen(['/usr/bin/systemd-notify', '--pid=' + str(pid), 'WATCHDOG=1'])
+    except OSError:
+        logger.debug('Could not launch systemd-notify.')
+        return
+    stdout, stderr = proc.communicate()
+    if proc.returncode != 0:
+        logger.debug('systemd-notify returned %s', proc.returncode)

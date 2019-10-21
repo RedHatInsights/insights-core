@@ -37,6 +37,9 @@ OPTIONS
     -i COMPONENT --info COMPONENT
         Comma separated list of components to get dependency info about.
 
+    -k --pkg-query
+        Expression to select rules by package.
+
     -p PLUGINS --preload PLUGINS
         Comma separated list of packages or modules to preload.
 
@@ -49,6 +52,9 @@ OPTIONS
     -t TYPES --types TYPES
         Filter results based on component type; e.g. 'rule,parser'. Names without '.'
         are assumed to be in insights.core.plugins.
+
+    \-\-tags EXPRESSION
+        An expression for selecting which loaded rules to run based on their tags.
 
     -v --verbose
         Print component dependencies.

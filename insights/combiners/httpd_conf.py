@@ -18,11 +18,11 @@ from collections import namedtuple
 from insights import run
 from insights.core import ConfigCombiner, ConfigParser
 from insights.core.plugins import combiner, parser
-from insights.parsr.query import (Directive, Entry, lift, lift2, Section,
+from insights.parsr.query import (Directive, Entry, pred, pred2, Section,
         startswith)
-from insights.parsr import (Char, EOF, EOL, EndTagName, Forward, FS, GT, LT,
-        Letters, Lift, LineEnd, Many, Number, OneLineComment, PosMarker,
-        QuotedString, skip_none, StartTagName, String, WS, WSChar)
+from insights.parsr import (Char, EOF, EOL, EndTagName, Forward, FS, GT, InSet,
+        Literal, LT, Letters, Lift, LineEnd, Many, Number, OneLineComment,
+        PosMarker, QuotedString, skip_none, StartTagName, String, WS, WSChar)
 from insights.parsers.httpd_conf import HttpdConf, dict_deep_merge, ParsedData
 from insights.specs import Specs
 from insights.util import deprecated
@@ -166,8 +166,7 @@ class HttpdConfAll(object):
                 section = (section, '')
             elif isinstance(section, tuple) and len(section) == 1:
                 section = (section[0], '')
-            elif (not isinstance(section, tuple) or
-                    (len(section) == 0 or len(section) > 2)):
+            elif (not isinstance(section, tuple) or (len(section) == 0 or len(section) > 2)):
                 return []
             return _deep_search(self.data, directive, section)
 
@@ -273,21 +272,27 @@ class DocParser(object):
     def __init__(self, ctx):
         self.ctx = ctx
 
-        name_chars = string.ascii_letters + "_/"
-        Name = String(name_chars)
         Complex = Forward()
+        Comment = (WS >> OneLineComment("#")).map(lambda x: None)
+
+        Name = String(string.ascii_letters + "_/")
         Num = Number & (WSChar | LineEnd)
-        Cont = Char("\\") + EOL
+
         StartName = WS >> PosMarker(StartTagName(Letters)) << WS
         EndName = WS >> EndTagName(Letters, ignore_case=True) << WS
-        Comment = (WS >> OneLineComment("#")).map(lambda x: None)
+
+        Cont = Char("\\") + EOL
         AttrStart = Many(WSChar)
         AttrEnd = (Many(WSChar) + Cont) | Many(WSChar)
-        BareAttr = String(set(string.printable) - (set(string.whitespace) | set(";{}<>\\'\"")))
-        Attr = AttrStart >> (Num | BareAttr | QuotedString) << AttrEnd
+
+        OpAttr = (Literal("!=") | Literal("<=") | Literal(">=") | InSet("<>")) & WSChar
+        BareAttr = String(set(string.printable) - (set(string.whitespace) | set("<>'\"")))
+        Attr = AttrStart >> (Num | QuotedString | OpAttr | BareAttr) << AttrEnd
         Attrs = Many(Attr)
+
         StartTag = (WS + LT) >> (StartName + Attrs) << (GT + WS)
         EndTag = (WS + LT + FS) >> EndName << (GT + WS)
+
         Simple = WS >> (Lift(self.to_directive) * PosMarker(Name) * Attrs) << WS
         Stanza = Simple | Complex | Comment | Many(WSChar | EOL, lower=1).map(lambda x: None)
         Complex <= (Lift(self.to_section) * StartTag * Many(Stanza).map(skip_none)) << EndTag
@@ -333,7 +338,7 @@ def parse_doc(content, ctx=None):
     return Entry(children=result, src=ctx)
 
 
-@parser(Specs.httpd_conf)
+@parser(Specs.httpd_conf, continue_on_error=False)
 class _HttpdConf(ConfigParser):
     """ Parser for individual httpd configuration files. """
     def __init__(self, *args, **kwargs):
@@ -365,7 +370,7 @@ class HttpdConfTree(ConfigCombiner):
         return res.value if res else "/etc/httpd"
 
 
-@parser(Specs.httpd_conf_scl_httpd24)
+@parser(Specs.httpd_conf_scl_httpd24, continue_on_error=False)
 class _HttpdConfSclHttpd24(ConfigParser):
     """ Parser for individual httpd configuration files. """
     def parse_doc(self, content):
@@ -390,7 +395,7 @@ class HttpdConfSclHttpd24Tree(ConfigCombiner):
         return res.value if res else "/opt/rh/httpd24/root/etc/httpd"
 
 
-@parser(Specs.httpd_conf_scl_jbcs_httpd24)
+@parser(Specs.httpd_conf_scl_jbcs_httpd24, continue_on_error=False)
 class _HttpdConfSclJbcsHttpd24(ConfigParser):
     """ Parser for individual httpd configuration files. """
     def parse_doc(self, content):
@@ -423,7 +428,7 @@ def get_tree(root=None):
     return run(HttpdConfTree, root=root).get(HttpdConfTree)
 
 
-is_private = lift(lambda x: ip_address(six.u(x)).is_private)
+is_private = pred(lambda x: ip_address(six.u(x)).is_private)
 """
 Predicate to check if an ip address is private.
 
@@ -431,7 +436,7 @@ Example:
     conf["VirtualHost", in_network("128.39.0.0/16")]
 """
 
-in_network = lift2(lambda x, y: (ip_address(six.u(x)) in ip_network(six.u(y))))
+in_network = pred2(lambda x, y: (ip_address(six.u(x)) in ip_network(six.u(y))))
 """
 Predicate to check if an ip address is in a given network.
 

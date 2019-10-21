@@ -1,7 +1,44 @@
 import pytest
-from insights.parsers import ParseException, SkipException
-from insights.parsers.mysqladmin import MysqladminVars
+import doctest
+from insights.parsers import ParseException, SkipException, mysqladmin
+from insights.parsers.mysqladmin import MysqladminVars, MysqladminStatus
 from insights.tests import context_wrap
+
+
+OUTPUT_MYSQLADMIN_STATUS = """
+Uptime: 1103965 Threads: 1820 Questions: 44778091 Slow queries: 0 Opens: 1919 Flush tables: 1 Open tables: 592 Queries per second avg: 40.561
+""".strip()
+
+BLANK_SAMPLE = """
+""".strip()
+
+BAD_INPUT_SAMPLE = """
+Threads: 1820 Questions: 44778091 Slow queries: 0 Opens: 1919 Flush tables: 1 Open tables: 592 Queries per second avg: 40.561
+""".strip()
+
+
+def test_mysqladmin_status():
+    parser_result = MysqladminStatus(context_wrap(OUTPUT_MYSQLADMIN_STATUS))
+    mysqlstat = parser_result.status
+    assert parser_result is not None
+    assert mysqlstat['Threads'] == '1820'
+    assert mysqlstat['Queries per second avg'] == '40.561'
+    assert mysqlstat['Uptime'] == '1103965'
+    assert mysqlstat['Opens'] == '1919'
+    assert mysqlstat['Slow queries'] == '0'
+
+
+def test_mysqlstat_blank_input():
+    with pytest.raises(SkipException) as sc:
+        MysqladminStatus(context_wrap(BLANK_SAMPLE))
+    assert "Content is empty." in str(sc.value)
+
+
+def test_mysqlstat_bad_input():
+    with pytest.raises(ParseException) as exc:
+        MysqladminStatus(context_wrap(BAD_INPUT_SAMPLE))
+    assert "Unable to parse the output." in str(exc)
+
 
 INPUT_NORMAL = """
 +---------------------------------------------------+-------------------
@@ -124,3 +161,14 @@ def test_mysqladmin_still_parsable():
     res = MysqladminVars(context_wrap(INPUT_FORAMT_WRONG))
     assert len(res.bad_lines) == 3
     assert res.bad_lines[1] == '| version_compile_machine                         | x86_64           |x'
+
+
+def test_doc():
+    env = {
+            'MysqladminStatus': MysqladminStatus,
+            'result': MysqladminStatus(context_wrap(OUTPUT_MYSQLADMIN_STATUS, path='/bin/mysqladmin status')),
+            'MysqladminVars': MysqladminVars,
+            'output': MysqladminVars(context_wrap(INPUT_NORMAL, '/bin/mysqladmin variables')),
+    }
+    failed, total = doctest.testmod(mysqladmin, globs=env)
+    assert failed == 0

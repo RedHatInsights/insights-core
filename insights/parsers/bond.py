@@ -94,6 +94,8 @@ class Bond(Parser):
         self._partner_mac_address = None
         self._active_slave = None
         self.xmit_hash_policy = None
+        self._arp_polling_interval = None
+        self._arp_ip_target = None
         self._slave_interface = []
         self._aggregator_id = []
         self._mii_status = []
@@ -129,6 +131,10 @@ class Bond(Parser):
                 self._slave_speed.append(line.strip().split(':', 1)[1].strip())
             elif line.strip().startswith("Duplex: "):
                 self._slave_duplex.append(line.strip().split(':', 1)[1].strip())
+            elif line.strip().startswith("ARP Polling Interval (ms):"):
+                self._arp_polling_interval = line.strip().split(':', 1)[1].strip()
+            elif line.strip().startswith("ARP IP target/s (n.n.n.n form):"):
+                self._arp_ip_target = line.strip().split(':', 1)[1].strip()
 
     @property
     def bond_mode(self):
@@ -201,3 +207,17 @@ class Bond(Parser):
         bond file, ``[]`` is returned.
         """
         return self._slave_duplex
+
+    @property
+    def arp_polling_interval(self):
+        """Returns the arp polling interval as a string. ``None`` is returned
+        if no "ARP Polling Interval (ms)" key is found.
+        """
+        return self._arp_polling_interval
+
+    @property
+    def arp_ip_target(self):
+        """Returns the arp ip target as a string. ``None`` is returned
+        if no "ARP IP target/s (n.n.n.n form)" key is found.
+        """
+        return self._arp_ip_target

@@ -33,7 +33,7 @@ class EmptyQuotedString(Parser):
         return self.children[0].process(pos, data, ctx)
 
 
-@parser(Specs.nginx_conf)
+@parser(Specs.nginx_conf, continue_on_error=False)
 class _NginxConf(ConfigParser):
     def __init__(self, *args, **kwargs):
         def to_entry(name, attrs, body):

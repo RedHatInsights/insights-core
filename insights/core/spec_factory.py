@@ -10,9 +10,9 @@ from glob import glob
 from subprocess import call
 
 from insights.core import blacklist, dr
-from insights.core.filters import get_filters
+from insights.core.filters import _add_filter, get_filters
 from insights.core.context import ExecutionContext, FSRoots, HostContext
-from insights.core.plugins import datasource, ContentException, is_datasource
+from insights.core.plugins import component, datasource, ContentException, is_datasource
 from insights.util import fs, streams, which
 from insights.util.subproc import Pipeline
 from insights.core.serde import deserializer, serializer
@@ -92,7 +92,7 @@ class ContentProvider(object):
         self._exception = None
 
     def load(self):
-        raise NotImplemented()
+        raise NotImplementedError()
 
     def stream(self):
         """
@@ -243,8 +243,12 @@ class TextFileProvider(FileProvider):
             rc, out = self.ctx.shell_out(args, keep_rc=True, env=SAFE_ENV)
             self.rc = rc
             return out
-        with open(self.path, "rU") as f:  # universal newlines
-            return [l.rstrip("\n") for l in f]
+        if six.PY3:
+            with open(self.path, "r", encoding="ascii", errors="surrogateescape") as f:
+                return [l.rstrip("\n") for l in f]
+        else:
+            with open(self.path, "rU") as f:  # universal newlines
+                return [l.rstrip("\n") for l in f]
 
     def _stream(self):
         """
@@ -261,8 +265,12 @@ class TextFileProvider(FileProvider):
                     with streams.connect(*args, env=SAFE_ENV) as s:
                         yield s
                 else:
-                    with open(self.path, "rU") as f:  # universal newlines
-                        yield f
+                    if six.PY3:
+                        with open(self.path, "r", encoding="ascii", errors="surrogateescape") as f:
+                            yield f
+                    else:
+                        with open(self.path, "rU") as f:  # universal newlines
+                            yield f
         except StopIteration:
             raise
         except Exception as ex:
@@ -693,7 +701,7 @@ class listdir(object):
 
 class simple_command(object):
     """
-    Executable a simple command that has no dynamic arguments
+    Execute a simple command that has no dynamic arguments
 
     Args:
         cmd (list of lists): the command(s) to execute. Breaking apart a command
@@ -736,6 +744,60 @@ class simple_command(object):
                 keep_rc=self.keep_rc, ds=self, timeout=self.timeout, inherit_env=self.inherit_env)
 
 
+class command_with_args(object):
+    """
+    Execute a command that has dynamic arguments
+
+    Args:
+        cmd (list of lists): the command to execute. Breaking apart a command
+            string that might require arguments.
+        provider (str or tuple): argument string or a tuple of argument strings.
+        context (ExecutionContext): the context under which the datasource
+            should run.
+        split (bool): whether the output of the command should be split into a
+            list of lines
+        keep_rc (bool): whether to return the error code returned by the
+            process executing the command. If False, any return code other than
+            zero with raise a CalledProcessError. If True, the return code and
+            output are always returned.
+        timeout (int): Number of seconds to wait for the command to complete.
+            If the timeout is reached before the command returns, a
+            CalledProcessError is raised. If None, timeout is infinite.
+        inherit_env (list): The list of environment variables to inherit from the
+            calling process when the command is invoked.
+
+    Returns:
+        function: A datasource that returns the output of a command that takes
+            specified arguments passed by the provider.
+    """
+
+    def __init__(self, cmd, provider, context=HostContext, deps=None, split=True, keep_rc=False, timeout=None, inherit_env=None, **kwargs):
+        deps = deps if deps is not None else []
+        self.cmd = cmd
+        self.provider = provider
+        self.context = context
+        self.split = split
+        self.raw = not split
+        self.keep_rc = keep_rc
+        self.timeout = timeout
+        self.inherit_env = inherit_env if inherit_env is not None else []
+        self.__name__ = self.__class__.__name__
+        datasource(self.provider, self.context, *deps, raw=self.raw, **kwargs)(self)
+
+    def __call__(self, broker):
+        source = broker[self.provider]
+        ctx = broker[self.context]
+        if not isinstance(source, (str, tuple)):
+            raise ContentException("The provider can only be a single string or a tuple of strings, but got '%s'." % source)
+        try:
+            self.cmd = self.cmd % source
+            return CommandOutputProvider(self.cmd, ctx, split=self.split,
+                    keep_rc=self.keep_rc, ds=self, timeout=self.timeout, inherit_env=self.inherit_env)
+        except:
+            log.debug(traceback.format_exc())
+        raise ContentException("No results found for [%s]" % self.cmd)
+
+
 class foreach_execute(object):
     """
     Execute a command for each element in provider. Provider is the output of
@@ -766,7 +828,7 @@ class foreach_execute(object):
 
     Returns:
         function: A datasource that returns a list of outputs for each command
-        created by substituting each element of provider into the cmd template.
+            created by substituting each element of provider into the cmd template.
     """
 
     def __init__(self, provider, cmd, context=HostContext, deps=[], split=True, keep_rc=False, timeout=None, inherit_env=[], **kwargs):
@@ -869,6 +931,74 @@ class first_of(object):
         for c in self.deps:
             if c in broker:
                 return broker[c]
+
+
+class find(object):
+    """
+    Helper class for extracting specific lines from a datasource for direct
+    consumption by a rule.
+
+    .. code:: python
+
+        service_starts = find(Specs.audit_log, "SERVICE_START")
+
+        @rule(service_starts)
+        def report(starts):
+            return make_info("SERVICE_STARTS", num_starts=len(starts))
+
+    Args:
+        spec (datasource): some datasource, ideally filterable.
+        pattern (string / list): a string or list of strings to match (no
+            patterns supported)
+
+    Returns:
+        A dict where each key is a command, path, or spec name, and each value
+        is a non-empty list of matching lines. Only paths with matching lines
+        are included.
+
+    Raises:
+        dr.SkipComponent if no paths have matching lines.
+    """
+
+    def __init__(self, spec, pattern):
+        if getattr(spec, "raw", False):
+            name = dr.get_name(spec)
+            raise ValueError("{}: Cannot filter raw files.".format(name))
+
+        self.spec = spec
+        self.pattern = pattern if isinstance(pattern, list) else [pattern]
+        self.__name__ = self.__class__.__name__
+        self.__module__ = self.__class__.__module__
+
+        if getattr(spec, "filterable", False):
+            _add_filter(spec, pattern)
+
+        component(spec)(self)
+
+    def __call__(self, ds):
+        # /usr/bin/grep level filtering is applied behind .content or
+        # .stream(), but we still need to ensure we get only what *this* find
+        # instance wants. This can be inefficient on files where many lines
+        # match.
+        results = {}
+        ds = ds if isinstance(ds, list) else [ds]
+        for d in ds:
+            if d.relative_path:
+                origin = os.path.join("/", d.relative_path.lstrip("/"))
+            elif d.cmd:
+                origin = d.cmd
+            else:
+                origin = dr.get_name(self.spec)
+            stream = d.content if d.loaded else d.stream()
+            lines = []
+            for line in stream:
+                if any(p in line for p in self.pattern):
+                    lines.append(line)
+            if lines:
+                results[origin] = lines
+        if not results:
+            raise dr.SkipComponent()
+        return dict(results)
 
 
 @serializer(CommandOutputProvider)
