@@ -266,9 +266,9 @@ class ProcMounts(MountedFileSystems):
         for line in get_active_lines(content):
             mount = {}
             mount['mount_clause'] = line
-            # Handle the the '\040' in `mount_point`
+            # Handle the '\040' in `mount_point`, e.g. "VMware\040Tools"
             line_sp = line.encode().decode("unicode-escape")
-            line_sp = _customized_split(raw=line, l=line)
+            line_sp = _customized_split(raw=line, l=line_sp)
             mount['filesystem'] = mount['mounted_device'] = line_sp[0]
             line_sp = _customized_split(raw=line, l=line_sp[1], num=3, reverse=True)
             mount['mount_label'] = line_sp[-2:]

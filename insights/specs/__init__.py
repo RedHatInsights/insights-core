@@ -70,6 +70,7 @@ class Specs(SpecSet):
     cinder_api_log = RegistryPoint(filterable=True)
     cinder_conf = RegistryPoint()
     cinder_volume_log = RegistryPoint(filterable=True)
+    cloud_init_log = RegistryPoint(filterable=True)
     cluster_conf = RegistryPoint(filterable=True)
     cmdline = RegistryPoint()
     cobbler_modules_conf = RegistryPoint()
