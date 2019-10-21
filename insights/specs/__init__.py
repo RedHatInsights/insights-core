@@ -89,6 +89,7 @@ class Specs(SpecSet):
     cpu_vulns_spec_store_bypass = RegistryPoint()
     cpuinfo_max_freq = RegistryPoint()
     cpuinfo = RegistryPoint()
+    cpupower_frequency_info = RegistryPoint()
     cpuset_cpus = RegistryPoint()
     crypto_policies_config = RegistryPoint()
     crypto_policies_state_current = RegistryPoint()
