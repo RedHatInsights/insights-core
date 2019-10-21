@@ -21,10 +21,11 @@ but the key passed to ``[]`` is converted to a query of immediate child
 instances instead of a simple lookup.
 """
 import operator
+import re
 from collections import defaultdict
 from functools import partial
 from itertools import chain
-from insights.parsr.query.boolean import All, Any, Boolean, lift, lift2, TRUE
+from insights.parsr.query.boolean import All, Any, Boolean, pred, pred2, TRUE
 
 
 def pretty_format(root, indent=4):
@@ -555,16 +556,16 @@ def _desugar_name(q):
     if isinstance(q, Boolean):
         return NameQuery(q)
     if callable(q):
-        return NameQuery(lift(q))
-    return NameQuery(lift(partial(operator.eq, q)))
+        return NameQuery(pred(q))
+    return NameQuery(pred(partial(operator.eq, q)))
 
 
 def _desugar_attr(q):
     if isinstance(q, Boolean):
         return q
     if callable(q):
-        return lift(q)
-    return lift(partial(operator.eq, q))
+        return pred(q)
+    return pred(partial(operator.eq, q))
 
 
 def _desugar_attrs(q):
@@ -715,7 +716,6 @@ def from_dict(orig):
     from_dict is a helper function that does its best to convert a python dict
     into a tree of :py:class:`Entry` instances that can be queried.
     """
-
     def inner(d):
         result = []
         for k, v in d.items():
@@ -737,27 +737,23 @@ def from_dict(orig):
 
 
 # These are operators that can be used inside of queries.
-lt = lift2(operator.lt)
-le = lift2(operator.le)
-eq = lift2(operator.eq)
-gt = lift2(operator.gt)
-ge = lift2(operator.ge)
+lt = pred2(operator.lt)
+le = pred2(operator.le)
+eq = pred2(operator.eq)
+gt = pred2(operator.gt)
+ge = pred2(operator.ge)
 
+isin = pred2(lambda v, values: v in set(values))
+matches = pred2(lambda v, pat: re.search(pat, v))
 
-def isin(v, values):
-    return v in set(values)
+contains = pred2(operator.contains)
+startswith = pred2(str.startswith)
+endswith = pred2(str.endswith)
 
-
-isin = lift2(isin)
-
-contains = lift2(operator.contains)
-startswith = lift2(str.startswith)
-endswith = lift2(str.endswith)
-
-ieq = lift2(operator.eq, ignore_case=True)
-icontains = lift2(operator.contains, ignore_case=True)
-istartswith = lift2(str.startswith, ignore_case=True)
-iendswith = lift2(str.endswith, ignore_case=True)
+ieq = pred2(operator.eq, ignore_case=True)
+icontains = pred2(operator.contains, ignore_case=True)
+istartswith = pred2(str.startswith, ignore_case=True)
+iendswith = pred2(str.endswith, ignore_case=True)
 
 first = 0
 last = -1

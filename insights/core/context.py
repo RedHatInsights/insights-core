@@ -142,6 +142,7 @@ class ExecutionContextMeta(type):
             root, ctx = e.handles(files)
             if ctx is not None:
                 return (root, ctx)
+        return (None, None)
 
 
 class ExecutionContext(six.with_metaclass(ExecutionContextMeta)):
