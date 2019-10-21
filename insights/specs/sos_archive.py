@@ -25,6 +25,7 @@ class SosSpecs(Specs):
     ceph_report = simple_file("sos_commands/ceph/ceph_report")
     ceph_health_detail = simple_file("sos_commands/ceph/ceph_health_detail_--format_json-pretty")
     chkconfig = first_file(["sos_commands/startup/chkconfig_--list", "sos_commands/services/chkconfig_--list"])
+    cpupower_frequency_info = simple_file("sos_commands/processor/cpupower_frequency-info")
     date = first_of([simple_file("sos_commands/general/date"), simple_file("sos_commands/date/date")])
     df__al = first_file(["sos_commands/filesys/df_-al", "sos_commands/filesys/df_-al_-x_autofs"])
     display_java = simple_file("sos_commands/java/alternatives_--display_java")
