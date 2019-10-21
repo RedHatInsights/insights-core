@@ -1004,7 +1004,6 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
             result_key(str): the scanner key to register
             token(str or list): one or more strings to search for
             check(func): built-in function ``all`` or ``any`` applied to each line
-            reverse(bool): scan start from the head when ``False`` by default, otherwise start from the tail
 
         Returns:
             (bool): the property will contain True if a line contained (any
