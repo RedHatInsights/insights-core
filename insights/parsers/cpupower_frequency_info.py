@@ -15,7 +15,7 @@ class CpupowerFrequencyInfo(CommandParser, dict):
     Typical output of the command is::
 
         analyzing CPU 0:
-          driver: pcc-cpufreq
+          driver: intel_pstate
           CPUs which run at the same hardware frequency: 0
           CPUs which need to have their frequency coordinated by software: 0
           maximum transition latency:  Cannot determine or is not supported.
@@ -29,8 +29,12 @@ class CpupowerFrequencyInfo(CommandParser, dict):
           boost state support:
             Supported: yes
             Active: yes
+            2700 MHz max turbo 4 active cores
+            2800 MHz max turbo 3 active cores
+            2900 MHz max turbo 2 active cores
+            3000 MHz max turbo 1 active cores
         analyzing CPU 1:
-          driver: pcc-cpufreq
+          driver: intel_pstate
           CPUs which run at the same hardware frequency: 1
           CPUs which need to have their frequency coordinated by software: 1
           maximum transition latency:  Cannot determine or is not supported.
@@ -54,11 +58,15 @@ class CpupowerFrequencyInfo(CommandParser, dict):
         >>> type(cpupower_frequency_info)
         <class 'insights.parsers.cpupower_frequency_info.CpupowerFrequencyInfo'>
         >>> cpupower_frequency_info['analyzing CPU 0']['driver']
-        'pcc-cpufreq'
+        'intel_pstate'
         >>> cpupower_frequency_info['analyzing CPU 0']['boost state support']['Supported']
         'yes'
         >>> cpupower_frequency_info['analyzing CPU 0']['boost state support']['Active']
         'yes'
+        >>> cpupower_frequency_info['analyzing CPU 1']['current policy']
+        'frequency should be within 800 MHz and 3.00 GHz. The governor "performance" may decide which speed to use within this range.'
+        >>> cpupower_frequency_info['analyzing CPU 0']['boost state support']['2700 MHz max turbo 4 active cores']
+        True
     """
 
     def parse_content(self, content):
@@ -86,10 +94,10 @@ class CpupowerFrequencyInfo(CommandParser, dict):
                     while prev_shift - shift >= 2:
                         current_data = parents.pop()
                         prev_shift = prev_shift - 2
-                key, value = line, 'True'
+                key, value = line.strip(), True
                 if ":" in line:
-                    key, value = line.strip().split(":", 1)
-                current_data[key.strip()] = value.strip()
+                    key, value = [l.strip() for l in line.strip().split(":", 1)]
+                current_data[key] = value
                 prev_shift = shift
                 prev_key = key
         self.update(power_frequency_info)

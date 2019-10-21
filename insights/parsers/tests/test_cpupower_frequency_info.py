@@ -47,6 +47,10 @@ analyzing CPU 0:
   boost state support:
     Supported: yes
     Active: yes
+    2700 MHz max turbo 4 active cores
+    2800 MHz max turbo 3 active cores
+    2900 MHz max turbo 2 active cores
+    3000 MHz max turbo 1 active cores
 analyzing CPU 1:
   driver: intel_pstate
   CPUs which run at the same hardware frequency: 1
@@ -124,7 +128,7 @@ def test_cpupower_frequency_info():
     assert cpupower_info['analyzing CPU 0']['boost state support']['Supported'] == 'yes'
     assert cpupower_info['analyzing CPU 0']['boost state support']['Active'] == 'yes'
     assert cpupower_info['analyzing CPU 0']['current policy'] == 'frequency should be within 1.20 GHz and 2.20 GHz. The governor "performance" may decide which speed to use within this range.'
-    assert cpupower_info['analyzing CPU 0']['boost state support']['2700 MHz max turbo 4 active cores'] == 'True'
+    assert cpupower_info['analyzing CPU 0']['boost state support']['2700 MHz max turbo 4 active cores'] is True
 
 
 def test_cpupower_frequency_info_multi():
@@ -149,7 +153,7 @@ def test_empty():
 def test_cpupower_frequency_info_doc_examples():
     env = {
         'cpupower_frequency_info': CpupowerFrequencyInfo(
-            context_wrap(CPUPOWER_INFO)),
+            context_wrap(CPUPOWER_INFO_MULTI)),
     }
     failed, total = doctest.testmod(cpupower_frequency_info, globs=env)
     assert failed == 0
