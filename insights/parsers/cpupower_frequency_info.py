@@ -1,16 +1,16 @@
 """
-CpupowerFrequencyInfo - Commands ``cpupower frequency-info``
-============================================================
+CpupowerFrequencyInfo - Commands ``cpupower -c all frequency-info``
+===================================================================
 """
-from insights import parser, CommandParser, LegacyItemAccess
+from insights import parser, CommandParser
 from insights.parsers import SkipException, ParseException
 from insights.specs import Specs
 
 
 @parser(Specs.cpupower_frequency_info)
-class CpupowerFrequencyInfo(CommandParser, LegacyItemAccess):
+class CpupowerFrequencyInfo(CommandParser, dict):
     """
-    Class for parsing the output of `cpupower frequency-info` command.
+    Class for parsing the output of `cpupower -c all frequency-info` command.
 
     Typical output of the command is::
 
@@ -19,19 +19,31 @@ class CpupowerFrequencyInfo(CommandParser, LegacyItemAccess):
           CPUs which run at the same hardware frequency: 0
           CPUs which need to have their frequency coordinated by software: 0
           maximum transition latency:  Cannot determine or is not supported.
-          hardware limits: 1.20 GHz - 2.20 GHz
-          available cpufreq governors: conservative userspace powersave ondemand performance
-          current policy: frequency should be within 1.20 GHz and 2.20 GHz.
+          hardware limits: 800 MHz - 3.00 GHz
+          available cpufreq governors: performance powersave
+          current policy: frequency should be within 800 MHz and 3.00 GHz.
                           The governor "performance" may decide which speed to use
                           within this range.
-          current CPU frequency: 2.38 GHz (asserted by call to hardware)
+          current CPU frequency: Unable to call hardware
+          current CPU frequency: 1.22 GHz (asserted by call to kernel)
           boost state support:
             Supported: yes
             Active: yes
-            2700 MHz max turbo 4 active cores
-            2800 MHz max turbo 3 active cores
-            2900 MHz max turbo 2 active cores
-            3000 MHz max turbo 1 active cores
+        analyzing CPU 1:
+          driver: pcc-cpufreq
+          CPUs which run at the same hardware frequency: 1
+          CPUs which need to have their frequency coordinated by software: 1
+          maximum transition latency:  Cannot determine or is not supported.
+          hardware limits: 800 MHz - 3.00 GHz
+          available cpufreq governors: performance powersave
+          current policy: frequency should be within 800 MHz and 3.00 GHz.
+                          The governor "performance" may decide which speed to use
+                          within this range.
+          current CPU frequency: Unable to call hardware
+          current CPU frequency: 871 MHz (asserted by call to kernel)
+          boost state support:
+            Supported: yes
+            Active: yes
 
     Raises:
         SkipException: When input is empty.
@@ -52,7 +64,7 @@ class CpupowerFrequencyInfo(CommandParser, LegacyItemAccess):
     def parse_content(self, content):
         if not content:
             raise SkipException("Empty content")
-        if len(content) < 10 or not ('analyzing CPU 0' in content[0]):
+        if len(content) < 10 or not ('analyzing CPU' in content[0]):
             raise ParseException("Incorrect content: '{0}'".format(content))
 
         power_frequency_info = {}
@@ -74,15 +86,10 @@ class CpupowerFrequencyInfo(CommandParser, LegacyItemAccess):
                     while prev_shift - shift >= 2:
                         current_data = parents.pop()
                         prev_shift = prev_shift - 2
+                key, value = line, 'True'
                 if ":" in line:
                     key, value = line.strip().split(":", 1)
-                    current_data[key.strip()] = value.strip()
-                else:
-                    key = 'dummy_key'
-                    if key in current_data:
-                        current_data[key].append(line.strip())
-                    else:
-                        current_data[key] = [line.strip()]
+                current_data[key.strip()] = value.strip()
                 prev_shift = shift
                 prev_key = key
-        self.data = power_frequency_info
+        self.update(power_frequency_info)
