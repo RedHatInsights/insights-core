@@ -258,35 +258,28 @@ def collect_and_output(client, config):
 
     if not insights_archive:
         sys.exit(constants.sig_kill_bad)
-    if config.to_stdout:
-        with open(insights_archive, 'rb') as tar_content:
-            if six.PY3:
-                sys.stdout.buffer.write(tar_content.read())
-            else:
-                shutil.copyfileobj(tar_content, sys.stdout)
+    resp = None
+    if not config.no_upload:
+        try:
+            resp = client.upload(payload=insights_archive, content_type=config.content_type)
+        except IOError as e:
+            logger.error(str(e))
+            sys.exit(constants.sig_kill_bad)
+        except ValueError as e:
+            logger.error(str(e))
+            sys.exit(constants.sig_kill_bad)
     else:
-        resp = None
-        if not config.no_upload:
-            try:
-                resp = client.upload(payload=insights_archive, content_type=config.content_type)
-            except IOError as e:
-                logger.error(str(e))
-                sys.exit(constants.sig_kill_bad)
-            except ValueError as e:
-                logger.error(str(e))
-                sys.exit(constants.sig_kill_bad)
-        else:
-            logger.info('Archive saved at %s', insights_archive)
-        if resp:
-            if config.to_json:
-                print(json.dumps(resp))
+        logger.info('Archive saved at %s', insights_archive)
+    if resp:
+        if config.to_json:
+            print(json.dumps(resp))
 
-            if not config.payload:
-                # delete the archive
-                if config.keep_archive:
-                    logger.info('Insights archive retained in ' + insights_archive)
-                else:
-                    client.delete_archive(insights_archive, delete_parent_dir=True)
+        if not config.payload:
+            # delete the archive
+            if config.keep_archive:
+                logger.info('Insights archive retained in ' + insights_archive)
+            else:
+                client.delete_archive(insights_archive, delete_parent_dir=True)
     client.delete_cached_branch_info()
 
     # rotate eggs once client completes all work successfully
