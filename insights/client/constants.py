@@ -28,7 +28,6 @@ class InsightsConstants(object):
     lastupload_file = os.path.join(default_conf_dir, '.lastupload')
     pub_gpg_path = os.path.join(default_conf_dir, 'redhattools.pub.gpg')
     machine_id_file = os.path.join(default_conf_dir, 'machine-id')
-    default_target = {'type': 'host', 'name': ''}
     default_branch_info = {'remote_branch': -1, 'remote_leaf': -1}
     default_cmd_timeout = 120  # default command execution to two minutes, prevents long running commands that will hang
     default_egg_gpg_key = os.path.join(default_conf_dir, 'insights-core.gpg')
