@@ -86,11 +86,6 @@ def pre_update(client, config):
         if not config.register:
             sys.exit(constants.sig_kill_ok)
 
-    # delete someday
-    if config.analyze_container:
-        logger.debug('Not scanning host.')
-        logger.debug('Scanning image ID, tar file, or mountpoint.')
-
     # test the insights connection
     if config.test_connection:
         logger.info("Running Connection Tests...")
@@ -151,11 +146,6 @@ def post_update(client, config):
 
         if config.offline:
             logger.debug('Running client in offline mode. Bypassing registration.')
-            return
-
-        if config.analyze_container:
-            logger.debug(
-                'Running client in container mode. Bypassing registration.')
             return
 
         if config.display_name and not config.register:
