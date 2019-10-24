@@ -263,8 +263,7 @@ def get_branch_info(config):
     # in the case we are running on offline mode
     # or we are analyzing a running container/image
     # or tar file, mountpoint, simply return the default branch info
-    if (config.offline or
-            config.analyze_container):
+    if config.offline:
         return constants.default_branch_info
     return config.branch_info
 
@@ -273,42 +272,6 @@ def collect(config, pconn):
     """
     All the heavy lifting done here
     """
-    # initialize collection target
-    # tar files
-    if config.analyze_file:
-        logger.debug("Client analyzing a compress filesystem.")
-        target = {'type': 'compressed_file',
-                  'name': os.path.splitext(
-                        os.path.basename(config.analyze_file))[0],
-                  'location': config.analyze_file}
-
-    # mountpoints
-    elif config.analyze_mountpoint:
-        logger.debug("Client analyzing a filesystem already mounted.")
-        target = {'type': 'mountpoint',
-                  'name': os.path.splitext(
-                        os.path.basename(config.analyze_mountpoint))[0],
-                  'location': config.analyze_mountpoint}
-
-    # image
-    elif config.analyze_image_id:
-        logger.debug("Client running in image mode.")
-        logger.debug("Scanning for matching image.")
-
-        from .containers import get_targets
-        targets = get_targets(config)
-        if len(targets) == 0:
-            sys.exit(constants.sig_kill_bad)
-        target = targets[0]
-
-    # host, or inside container
-    else:
-        if config.analyze_container:
-            logger.debug('Client running in container mode.')
-        else:
-            logger.debug("Host selected as scanning target.")
-        target = constants.default_target
-
     branch_info = get_branch_info(config)
     pc = InsightsUploadConf(config)
     tar_file = None
@@ -319,80 +282,15 @@ def collect(config, pconn):
         logger.warn("WARNING: Excluding data from files")
 
     # defaults
-    archive = None
-    container_connection = None
     mp = None
-    compressed_filesystem = None
+    archive = InsightsArchive(compressor=config.compressor)
+    atexit.register(_delete_archive_internal, config, archive)
 
-    try:
-        # analyze docker images
-        if target['type'] == 'docker_image':
-            from .containers import open_image
-            container_connection = open_image(target['name'])
-            logging_name = 'Docker image ' + target['name']
-
-            if container_connection:
-                mp = container_connection.get_fs()
-            else:
-                logger.error('Could not open %s for analysis', logging_name)
-                return False
-
-        # analyze compressed files
-        elif target['type'] == 'compressed_file':
-            logging_name = 'Compressed file ' + target['name'] + ' at location ' + target['location']
-
-            from .compressed_file import InsightsCompressedFile
-            compressed_filesystem = InsightsCompressedFile(target['location'])
-
-            if compressed_filesystem.is_tarfile is False:
-                logger.debug("Could not access compressed tar filesystem.")
-                return False
-
-            mp = compressed_filesystem.get_filesystem_path()
-
-        # analyze mountpoints
-        elif target['type'] == 'mountpoint':
-
-            logging_name = 'Filesystem ' + target['name'] + ' at location ' + target['location']
-            mp = config.analyze_mountpoint
-
-        # analyze the host
-        elif target['type'] == 'host':
-            logging_name = determine_hostname()
-
-        # nothing found to analyze
-        else:
-            logger.error('Unexpected analysis target: %s', target['type'])
-            return False
-
-        archive = InsightsArchive(compressor=config.compressor,
-                                  target_name=target['name'])
-        atexit.register(_delete_archive_internal, config, archive)
-
-        # determine the target type and begin collection
-        # we infer "docker_image" SPEC analysis for certain types
-        if target['type'] in ["mountpoint", "compressed_file"]:
-            target_type = "docker_image"
-        else:
-            target_type = target['type']
-        logger.debug("Inferring target_type '%s' for SPEC collection", target_type)
-        logger.debug("Inferred from '%s'", target['type'])
-        dc = DataCollector(config, archive, mountpoint=mp)
-
-        logger.info('Starting to collect Insights data for %s', logging_name)
-        dc.run_collection(collection_rules, rm_conf, branch_info)
-
-        tar_file = dc.done(collection_rules, rm_conf)
-
-    finally:
-        # called on loop iter end or unexpected exit
-        if container_connection:
-            container_connection.close()
-
-    # cleanup the temporary stuff for analyzing tar files
-    if config.analyze_file is not None and compressed_filesystem is not None:
-        compressed_filesystem.cleanup_temp_filesystem()
-
+    msg_name = determine_hostname(config.display_name)
+    dc = DataCollector(config, archive, mountpoint=mp)
+    logger.info('Starting to collect Insights data for %s', msg_name)
+    dc.run_collection(collection_rules, rm_conf, branch_info)
+    tar_file = dc.done(collection_rules, rm_conf)
     return tar_file
 
 
