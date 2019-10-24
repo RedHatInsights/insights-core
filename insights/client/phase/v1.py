@@ -3,9 +3,7 @@ import functools
 import json
 import logging
 import os
-import shutil
 import sys
-import six
 import atexit
 
 from insights.client import InsightsClient
