@@ -1,5 +1,18 @@
 # Change Log
 
+## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
+
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.129-1195...HEAD)
+
+**Fixed bugs:**
+
+- ListUnits parser incorrectly adds the heading as the first unit [\#2243](https://github.com/RedHatInsights/insights-core/issues/2243)
+
+**Closed issues:**
+
+- The DockerList and DockerInspect should be enhanced [\#2252](https://github.com/RedHatInsights/insights-core/issues/2252)
+- New parser for /etc/rhosp-release [\#1763](https://github.com/RedHatInsights/insights-core/issues/1763)
+
 ## [insights-core-3.0.129-1195](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.129-1195) (2019-10-17)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.128-1181...insights-core-3.0.129-1195)
 
