@@ -273,13 +273,6 @@ DEFAULT_OPTS = {
         'help': argparse.SUPPRESS,
         'action': 'store_true'
     },
-    'to_stdout': {
-        'default': False,
-        'opt': ['--to-stdout'],
-        'help': 'print archive to stdout; '
-                'sets --quiet and --no-upload',
-        'action': 'store_true'
-    },
     'unregister': {
         'default': False,
         'opt': ['--unregister'],
@@ -587,9 +580,6 @@ class InsightsConfig(object):
         if self.enable_schedule and self.disable_schedule:
             raise ValueError(
                 'Conflicting options: --enable-schedule and --disable-schedule')
-        if self.to_json and self.to_stdout:
-            raise ValueError(
-                'Conflicting options: --to-stdout and --to-json')
         if self.payload and not self.content_type:
             raise ValueError(
                 '--payload requires --content-type')
@@ -609,7 +599,7 @@ class InsightsConfig(object):
         '''
         Some options enable others automatically
         '''
-        self.no_upload = self.no_upload or self.to_stdout or self.offline
+        self.no_upload = self.no_upload or self.offline
         self.auto_update = self.auto_update and not self.offline
         if (self.analyze_container or
            self.analyze_file or

@@ -105,12 +105,7 @@ class InsightsConnection(object):
         self.upload_url = self.config.upload_url
         if self.upload_url is None:
             if self.config.legacy_upload:
-                # vv this is going bye-bye
-                if self.config.analyze_container:
-                    self.upload_url = self.base_url + "/uploads/image"
-                else:
-                    self.upload_url = self.base_url + "/uploads"
-                # ^^ that is going bye-bye
+                self.upload_url = self.base_url + "/uploads"
             else:
                 self.upload_url = self.base_url + '/ingress/v1/upload'
 
@@ -763,12 +758,7 @@ class InsightsConnection(object):
         files = {
             'file': (file_name, open(data_collected, 'rb'), mime_type)}
 
-        if self.config.analyze_container:
-            logger.debug('Uploading container, image, mountpoint or tarfile.')
-            upload_url = self.upload_url
-        else:
-            logger.debug('Uploading a host.')
-            upload_url = self.upload_url + '/' + generate_machine_id()
+        upload_url = self.upload_url + '/' + generate_machine_id()
 
         logger.debug("Uploading %s to %s", data_collected, upload_url)
 

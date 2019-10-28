@@ -23,7 +23,7 @@ class InsightsArchive(object):
     and files to the insights archive
     """
 
-    def __init__(self, compressor="gz", target_name=None):
+    def __init__(self, compressor="gz"):
         """
         Initialize the Insights Archive
         Create temp dir, archive dir, and command dir
@@ -31,7 +31,7 @@ class InsightsArchive(object):
 
         self.tmp_dir = tempfile.mkdtemp(prefix='/var/tmp/')
         self.archive_tmp_dir = tempfile.mkdtemp(prefix='/var/tmp/')
-        name = determine_hostname(target_name)
+        name = determine_hostname()
         self.archive_name = ("insights-%s-%s" %
                              (name,
                               time.strftime("%Y%m%d%H%M%S")))
@@ -112,7 +112,7 @@ class InsightsArchive(object):
             "none": ""
         }.get(compressor, "z")
 
-    def create_tar_file(self, full_archive=False):
+    def create_tar_file(self):
         """
         Create tar file to be compressed
         """
@@ -120,13 +120,11 @@ class InsightsArchive(object):
         ext = "" if self.compressor == "none" else ".%s" % self.compressor
         tar_file_name = tar_file_name + ".tar" + ext
         logger.debug("Tar File: " + tar_file_name)
+        if self.compressor not in ["gz", "xz", "bz2", "none"]:
+            logger.error("The compressor %s is not supported.  Using default: gz", self.compressor)
         return_code = subprocess.call(shlex.split("tar c%sfS %s -C %s ." % (
             self.get_compression_flag(self.compressor),
-            tar_file_name,
-            # for the docker "uber archive,"use archive_dir
-            #   rather than tmp_dir for all the files we tar,
-            #   because all the individual archives are in there
-            self.tmp_dir if not full_archive else self.archive_dir)),
+            tar_file_name, self.tmp_dir)),
             stderr=subprocess.PIPE)
         if (self.compressor in ["bz2", "xz"] and return_code != 0):
             logger.error("ERROR: %s compressor is not installed, cannot compress file", self.compressor)
