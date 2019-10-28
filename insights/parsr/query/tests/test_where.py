@@ -87,3 +87,9 @@ def test_where():
 
     # because only two of the resulting conditions have children named reason.
     assert res.reason.values == ["ClusterOperatorNotAvailable", "ClusterOperatorNotAvailable"]
+
+
+def test_where_lambda():
+    assert bool(d.status.conditions.where(lambda n: n.type.value == "Progressing"))
+    assert bool(d.status.where(lambda n: len(n.conditions) > 3))
+    assert not bool(d.status.where(lambda n: len(n.conditions) > 9))
