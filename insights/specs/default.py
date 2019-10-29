@@ -24,7 +24,7 @@ from insights.core.spec_factory import CommandOutputProvider, ContentException, 
 from insights.core.spec_factory import simple_file, simple_command, glob_file, command_with_args
 from insights.core.spec_factory import first_of, foreach_collect, foreach_execute
 from insights.core.spec_factory import first_file, listdir
-from insights.parsers.mount import Mount, ProcMounts
+from insights.parsers.mount import Mount
 from insights.parsers.dnf_module import DnfModuleList
 from insights.combiners.cloud_provider import CloudProvider
 from insights.components.rhel_version import IsRhel8
@@ -284,9 +284,9 @@ class DefaultSpecs(Specs):
     docker_storage_setup = simple_file("/etc/sysconfig/docker-storage-setup")
     docker_sysconfig = simple_file("/etc/sysconfig/docker")
 
-    @datasource(ProcMounts)
+    @datasource(Mount)
     def dumpdev(broker):
-        mnt = broker[ProcMounts]
+        mnt = broker[Mount]
         mounted_dev = [m.mounted_device for m in mnt if m.mount_type in ('ext2', 'ext3', 'ext4')]
         if mounted_dev:
             return mounted_dev
@@ -588,7 +588,6 @@ class DefaultSpecs(Specs):
                             "/etc/opt/rh/rh-mongodb26/mongod.conf"
                             ])
     mount = simple_command("/bin/mount")
-    mounts = simple_file("/proc/mounts")
     mssql_conf = simple_file("/var/opt/mssql/mssql.conf")
     multicast_querier = simple_command("/usr/bin/find /sys/devices/virtual/net/ -name multicast_querier -print -exec cat {} \;")
     multipath_conf = simple_file("/etc/multipath.conf")

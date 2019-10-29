@@ -7,9 +7,6 @@ Parsers provided in this module includes:
 Mount - command ``/bin/mount``
 ------------------------------
 
-ProcMounts - file ``/proc/mounts``
-----------------------------------
-
 The ``Mount`` class implements parsing for the ``mount`` command output which looks like::
 
     /dev/mapper/rootvg-rootlv on / type ext4 (rw,relatime,barrier=1,data=ordered)
@@ -21,14 +18,14 @@ The information is stored as a list of :class:`MountEntry` objects.  Each
 :class:`MountEntry` object contains attributes for the following information that
 are listed in the same order as in the command output:
 
- * ``filesystem`` - Name of filesystem or the mounted device
+ * ``filesystem`` - Name of filesystem or the mounted device, alias ``mounted_device``
  * ``mount_point`` - Name of mount point for filesystem
- * ``mount_type`` - Name of filesystem type
+ * ``mount_type`` - Name of filesystem type, alias ``filesystem_type``
  * ``mount_options`` -  Mount options as ``MountOpts`` object
  * ``mount_label`` - Optional label of this mount entry, empty string by default
- * ``mount_clause`` - Full string from command output
+ * ``mount_clause`` - Full raw string from command output
 
-The ``MountOpts`` class contains the mount options as attributes accessible
+The :class:`MountOpts` class contains the mount options as attributes accessible
 via the attribute name as it appears in the command output.  For instance the
 options ``(rw,dmode=0500)`` may be accessed as ''mnt_row_info.rw`` with the
 value ``True`` and ``mnt_row_info.dmode`` with the value "0500".  The ``in``
@@ -77,16 +74,16 @@ class MountOpts(AttributeAsDict):
 
 class MountEntry(AttributeAsDict):
     """
-    An object representing an mount entry of ``mount`` command or
-    ``/proc/mounts`` file.  Each entry contains below fixed attributes:
+    An object representing an mount entry of ``mount`` command.  Each entry
+    contains below fixed attributes:
 
     Attributes:
-        filesystem (str): Name of filesystem of mounted device
+        filesystem (str): Name of filesystem of mounted device, can also be accessed as ``mounted_device``
         mount_point (str): Name of mount point for filesystem
-        mount_type (str): Name of filesystem type
+        mount_type (str): Name of filesystem type, can also be accessed as ``filesystem_type``
         mount_options (MountOpts): Mount options as :class:`MountOpts`
         mount_label (str): Optional label of this mount entry, an empty string by default
-        mount_clause (str): Full string from command output
+        mount_clause (str): Full raw string from command output
     """
 
     def __init__(self, data=None):
@@ -97,7 +94,7 @@ class MountEntry(AttributeAsDict):
 
 class MountedFileSystems(CommandParser):
     """
-    Base Class for :class:`Mount` and :class:`ProcMounts`.
+    Base Class for :class:`Mount`
 
     Attributes:
         rows (list): List of :class:`MountEntry` objects for each row of the
@@ -136,13 +133,17 @@ class MountedFileSystems(CommandParser):
 
     def get_dir(self, path):
         """
-        MountEntry: returns the mount point that contains the given path.
-
         This finds the most specific mount path that contains the given path,
         by successively removing the directory or file name on the end of
         the path and seeing if that is a mount point.  This will always
         terminate since / is always a mount point.  Strings that are not
         absolute paths will return None.
+
+        Arguments:
+            path (str): The path to check.
+
+        Returns:
+            MountEntry: The mount point that contains the given path.
         """
         while path != '':
             if path in self.mounts:
@@ -182,6 +183,14 @@ class Mount(MountedFileSystems):
         Please refer to its super-class :class:`MountedFileSystems` for more
         details.
 
+    The typical output of ``mount`` command looks like::
+
+        /dev/mapper/rootvg-rootlv on / type ext4 (rw,relatime,barrier=1,data=ordered)
+        proc on /proc type proc (rw,nosuid,nodev,noexec,relatime)
+        /dev/mapper/HostVG-Config on /etc/shadow type ext4 (rw,noatime,seclabel,stripe=256,data=ordered)
+        dev/sr0 on /run/media/root/VMware Tools type iso9660 (ro,nosuid,nodev,relatime,uid=0,gid=0,iocharset=utf8,mode=0400,dmode=0500,uhelper=udisks2) [VMware Tools]
+
+    Examples:
         >>> type(mnt_info)
         <class 'insights.parsers.mount.Mount'>
         >>> len(mnt_info)
@@ -192,6 +201,8 @@ class Mount(MountedFileSystems):
         '[VMware Tools]'
         >>> mnt_info[3].mount_type
         'iso9660'
+        >>> 'ro' in mnt_info[3].mount_options
+        True
         >>> mnt_info['/run/media/root/VMware Tools'].filesystem
         'dev/sr0'
         >>> mnt_info['/run/media/root/VMware Tools'].mount_label
@@ -207,76 +218,16 @@ class Mount(MountedFileSystems):
             mount['mount_clause'] = line
             # Get the mounted filesystem by checking the ' on '
             line_sp = _customized_split(line, line, sep=' on ')
-            mount['filesystem'] = line_sp[0]
+            mount['filesystem'] = mount['mounted_device'] = line_sp[0]
             # Get the mounted point by checking the last ' type ' before the last '('
             mnt_pt_sp = _customized_split(raw=line, l=line_sp[1], sep=' (', reverse=True)
             line_sp = _customized_split(raw=line, l=mnt_pt_sp[0], sep=' type ', reverse=True)
             mount['mount_point'] = line_sp[0]
-            mount['mount_type'] = line_sp[1].split()[0]
+            mount['mount_type'] = mount['filesystem_type'] = line_sp[1].split()[0]
             line_sp = _customized_split(raw=line, l=mnt_pt_sp[1], sep=None, check=False)
             mount['mount_options'] = MountOpts(optlist_to_dict(line_sp[0].strip('()')))
             if len(line_sp) == 2:
                 mount['mount_label'] = line_sp[1]
-
-            entry = MountEntry(mount)
-            self.rows.append(entry)
-            self.mounts[mount['mount_point']] = entry
-
-
-@parser(Specs.mounts)
-class ProcMounts(MountedFileSystems):
-    """
-    Class to parse the content of ``/proc/mounts`` file.
-
-    This class is required to parse the ``/proc/mounts`` file in addition to the
-    ``/bin/mount`` command because it lists the mount points of those process's
-    which are not present in the output of the ``/bin/mount`` command.
-
-    .. note::
-        Please refer to its super-class :class:`MountedFileSystems` for more
-        details.
-
-    Examples:
-        >>> type(proc_mnt_info)
-        <class 'insights.parsers.mount.ProcMounts'>
-        >>> len(proc_mnt_info)
-        4
-        >>> proc_mnt_info[3].filesystem == 'dev/sr0'
-        True
-        >>> proc_mnt_info[3].mounted_device == 'dev/sr0'
-        True
-        >>> proc_mnt_info[3].mounted_device == proc_mnt_info[3].filesystem
-        True
-        >>> proc_mnt_info[3].mount_type == 'iso9660'
-        True
-        >>> proc_mnt_info[3].filesystem_type == 'iso9660'
-        True
-        >>> proc_mnt_info['/run/media/root/VMware Tools'].mount_label == ['0', '0']
-        True
-        >>> proc_mnt_info['/run/media/root/VMware Tools'].mount_options.ro
-        True
-        >>> proc_mnt_info['/run/media/root/VMware Tools'].mounted_device == 'dev/sr0'
-        True
-    """
-
-    def _parse_mounts(self, content):
-
-        self.rows = []
-        self.mounts = {}
-        for line in get_active_lines(content):
-            mount = {}
-            mount['mount_clause'] = line
-            # Handle the '\040' in `mount_point`, e.g. "VMware\040Tools"
-            line_sp = line.encode().decode("unicode-escape")
-            line_sp = _customized_split(raw=line, l=line_sp)
-            mount['filesystem'] = mount['mounted_device'] = line_sp[0]
-            line_sp = _customized_split(raw=line, l=line_sp[1], num=3, reverse=True)
-            mount['mount_label'] = line_sp[-2:]
-            line_sp = _customized_split(raw=line, l=line_sp[0], reverse=True)
-            mount['mount_options'] = MountOpts(optlist_to_dict(line_sp[1]))
-            line_sp = _customized_split(raw=line, l=line_sp[0], reverse=True)
-            mount['mount_type'] = mount['filesystem_type'] = line_sp[1]
-            mount['mount_point'] = line_sp[0]
 
             entry = MountEntry(mount)
             self.rows.append(entry)
