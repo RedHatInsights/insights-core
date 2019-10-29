@@ -252,7 +252,7 @@ class CleanOptions(object):
             try:
                 keywords = rm_conf['keywords']
                 self.keyword_file = NamedTemporaryFile(delete=False)
-                self.keyword_file.write("\n".join(keywords))
+                self.keyword_file.write("\n".join(keywords).encode('utf-8'))
                 self.keyword_file.flush()
                 self.keyword_file.close()
                 self.keywords = [self.keyword_file.name]
