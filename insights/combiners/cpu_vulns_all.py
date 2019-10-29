@@ -4,6 +4,7 @@ CpuVulnsAll - files ``/sys/devices/system/cpu/vulnerabilities/*``
 
 This combiner provides an interface to CPU vulnerabilities parsers for files
 ``/sys/devices/system/cpu/vulnerabilities/*``
+
 """
 
 from insights.core.plugins import combiner
