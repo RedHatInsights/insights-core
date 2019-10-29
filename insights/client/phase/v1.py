@@ -127,7 +127,7 @@ def post_update(client, config):
     print_egg_versions()
 
     # --registering an AWS machine
-    if config.register_cloud:
+    if config.portal_access or config.portal_access_no_insights:
         logger.debug('Entitling an AWS host. Bypassing registration check.')
         return
 
@@ -253,7 +253,7 @@ def collect_and_output(client, config):
     atexit.register(write_to_disk, constants.pidfile, delete=True)
     # handle branching/subcommands
     # register cloud (aws)
-    if config.register_cloud:
+    if config.portal_access or config.portal_access_no_insights:
         if aws_main(config):
             sys.exit(constants.sig_kill_ok)
         else:

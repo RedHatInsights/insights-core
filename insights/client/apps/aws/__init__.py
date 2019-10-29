@@ -1,4 +1,7 @@
 import logging
+import requests
+import ssl
+import urllib3
 from insights.client.connection import InsightsConnection
 from insights.client.schedule import get_scheduler
 from insights.client.constants import InsightsConstants as constants
@@ -11,7 +14,7 @@ IDENTITY_URI = 'http://169.254.169.254/latest/dynamic/instance-identity'
 IDENTITY_DOC_URI = IDENTITY_URI + '/document'
 IDENTITY_SIG_URI = IDENTITY_URI + '/signature'
 IDENTITY_PKCS7_URI = IDENTITY_URI + '/pkcs7'
-HYDRA_ENDPOINT = ''
+HYDRA_ENDPOINT = 'https://access.redhat.com/hydra/rest/accounts/entitle'
 
 
 def aws_main(config):
@@ -19,23 +22,28 @@ def aws_main(config):
     Process AWS entitlements with Hydra
     '''
     conn = InsightsConnection(config)
-    bundle = get_aws_identity(conn.session)
+    bundle = get_aws_identity(conn)
     if not bundle:
         return False
-    post_to_hydra(bundle)
-    enable_delayed_registration()
-    job = get_scheduler(config)
-    job.set_daily()
+    succ = post_to_hydra(conn, bundle)
+    if not succ:
+        return False
+    # register with insights if this option
+    #   wasn't specified
+    if not config.portal_access_no_insights:
+        enable_delayed_registration()
+        job = get_scheduler(config)
+        job.set_daily()
     return True
 
 
-def get_uri(session, uri):
+def get_uri(conn, uri):
     '''
     Fetch information from URIs
     '''
     try:
         net_logger.info('GET %s', uri)
-        res = session.get(uri)
+        res = conn.session.get(uri, timeout=conn.config.http_timeout)
     except (requests.ConnectionError, requests.Timeout) as e:
         logger.error(e)
         logger.error('Could not reach %s', uri)
@@ -44,14 +52,14 @@ def get_uri(session, uri):
     return res
 
 
-def get_aws_identity(session):
+def get_aws_identity(conn):
     '''
     Get data from AWS
     '''
     logger.info('Fetching AWS identity information.')
-    doc_res = get_uri(session, IDENTITY_DOC_URI)
-    sig_res = get_uri(session, IDENTITY_SIG_URI)
-    pkcs7_res = get_uri(session, IDENTITY_SIG_URI)
+    doc_res = get_uri(conn, IDENTITY_DOC_URI)
+    sig_res = get_uri(conn, IDENTITY_SIG_URI)
+    pkcs7_res = get_uri(conn, IDENTITY_SIG_URI)
     if not (doc_res and sig_res and pkcs7_res):
         logger.error('Error getting identity information.')
         return None
@@ -87,25 +95,29 @@ def get_aws_identity(session):
     }
 
 
-def verify_pkcs7_signature():
-    '''
-    Verify the PKSC7 signature
-    '''
-    # do we need to do this clientside?
-    pass
-
-
-def post_to_hydra(data):
+def post_to_hydra(conn, data):
     '''
     Post data to Hydra
     '''
     logger.info('Submitting identity information to Red Hat.')
     print(data)
     # POST to hydra
+    try:
+        net_logger.info('POST %s', HYDRA_ENDPOINT)
+        res = conn.session.post(HYDRA_ENDPOINT, timeout=conn.config.http_timeout, data=data)
+    except (requests.ConnectionError, requests.Timeout, ssl.SSLError, urllib3.exceptions.MaxRetryError) as e:
+        logger.error(e)
+        logger.error('Could not reach %s', HYDRA_ENDPOINT)
+        return False
+    net_logger.info('Status code: %s', res.status_code)
+    if res.status_code not in (200, 201):
+        # if failure,
+        # error, return False
+        logger.error('Entitlement information could not be sent. HTTP status: %s', res.status_code)
+        return False
     # if success,
     # something like "Entitlement information has been sent." Maybe link to a KB article
-    # if failure,
-    # error, return False
+    logger.info('Entitlement information has been sent.')
     return True
 
 
