@@ -75,6 +75,18 @@ class Entry(object):
         """
         return self.get_keys() + object.__dir__(self)
 
+    def get_crumbs(self):
+        """
+        Get the unique name from the current entry to the root.
+        """
+        results = []
+        parent = self
+        while parent and parent._name is not None:
+            results.append(parent._name)
+            parent = parent.parent
+
+        return ".".join(reversed(results))
+
     @property
     def line(self):
         """
@@ -273,6 +285,12 @@ class Result(Entry):
         Returns the unique names of all the grandchildren as a list.
         """
         return sorted(set(c.name for c in self.grandchildren))
+
+    def get_crumbs(self):
+        """
+        Get the unique names from the current locations to the roots.
+        """
+        return sorted(set(c.get_crumbs() for c in self.children))
 
     @property
     def string_value(self):
