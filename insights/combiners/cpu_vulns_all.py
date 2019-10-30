@@ -2,9 +2,8 @@
 CpuVulnsAll - files ``/sys/devices/system/cpu/vulnerabilities/*``
 =================================================================
 
-This combiner provides an interface to CPU vulnerabilities parsers for files
+This combiner provides an interface to CPU vulnerabilities parsers for files of
 ``/sys/devices/system/cpu/vulnerabilities/*``
-
 """
 
 from insights.core.plugins import combiner
@@ -23,6 +22,7 @@ class CpuVulnsAll(dict):
     Sample output for files:
         ``/sys/devices/system/cpu/vulnerabilities/spectre_v1``::
             Mitigation: Load fences
+
          ``/sys/devices/system/cpu/vulnerabilities/meltdown``::
             Mitigation: PTI
 
@@ -31,6 +31,8 @@ class CpuVulnsAll(dict):
         <class 'insights.combiners.cpu_vulns_all.CpuVulnsAll'>
         >>> list(cvb.keys())
         ['meltdown', 'spectre_v1']
+        >>> cvb['meltdown']
+        'Mitigation: PTI'
 
     Raises:
         SkipComponent: Not available data
