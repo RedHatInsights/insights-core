@@ -21,9 +21,9 @@ The information is stored as a list of :class:`MountEntry` objects.  Each
 :class:`MountEntry` object contains attributes for the following information that
 are listed in the same order as in the command output:
 
- * ``filesystem`` - Name of filesystem or the mounted device
+ * ``filesystem`` - Name of filesystem or the mounted device, alias ``mounted_device``
  * ``mount_point`` - Name of mount point for filesystem
- * ``mount_type`` - Name of filesystem type
+ * ``mount_type`` - Name of filesystem type, alias ``filesystem_type``
  * ``mount_options`` -  Mount options as ``MountOpts`` object
  * ``mount_label`` - Optional label of this mount entry, empty string by default
  * ``mount_clause`` - Full string from command output
@@ -81,9 +81,9 @@ class MountEntry(AttributeAsDict):
     ``/proc/mounts`` file.  Each entry contains below fixed attributes:
 
     Attributes:
-        filesystem (str): Name of filesystem of mounted device
+        filesystem (str): Name of filesystem of mounted device, can also be accessed as ``mounted_device``
         mount_point (str): Name of mount point for filesystem
-        mount_type (str): Name of filesystem type
+        mount_type (str): Name of filesystem type, can also be accessed as ``filesystem_type``
         mount_options (MountOpts): Mount options as :class:`MountOpts`
         mount_label (str): Optional label of this mount entry, an empty string by default
         mount_clause (str): Full string from command output
@@ -207,12 +207,12 @@ class Mount(MountedFileSystems):
             mount['mount_clause'] = line
             # Get the mounted filesystem by checking the ' on '
             line_sp = _customized_split(line, line, sep=' on ')
-            mount['filesystem'] = line_sp[0]
+            mount['filesystem'] = mount['mounted_device'] = line_sp[0]
             # Get the mounted point by checking the last ' type ' before the last '('
             mnt_pt_sp = _customized_split(raw=line, l=line_sp[1], sep=' (', reverse=True)
             line_sp = _customized_split(raw=line, l=mnt_pt_sp[0], sep=' type ', reverse=True)
             mount['mount_point'] = line_sp[0]
-            mount['mount_type'] = line_sp[1].split()[0]
+            mount['mount_type'] = mount['filesystem_type'] = line_sp[1].split()[0]
             line_sp = _customized_split(raw=line, l=mnt_pt_sp[1], sep=None, check=False)
             mount['mount_options'] = MountOpts(optlist_to_dict(line_sp[0].strip('()')))
             if len(line_sp) == 2:
