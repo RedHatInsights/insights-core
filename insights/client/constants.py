@@ -10,7 +10,7 @@ class InsightsConstants(object):
         os.path.dirname(os.path.abspath(__file__)))
     sleep_time = 180
     command_blacklist = ('rm', 'kill', 'reboot', 'shutdown')
-    default_conf_dir = '/etc/insights-client'
+    default_conf_dir = os.getenv('INSIGHTS_CONF_DIR', default='/etc/insights-client')
     default_conf_file = os.path.join(default_conf_dir, 'insights-client.conf')
     user_agent = os.path.join(app_name, package_info["VERSION"])
     log_dir = os.path.join(os.sep, 'var', 'log', app_name)
