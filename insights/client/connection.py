@@ -172,10 +172,10 @@ class InsightsConnection(object):
         Generates and returns a string suitable for use as a request user-agent
         """
         core_version = "Core %s" % package_info["VERSION"]
-        pkg = pkg_resources.working_set.find(pkg_resources.Requirement("insights-client"))
+        pkg = pkg_resources.working_set.find(pkg_resources.Requirement.parse("insights-client"))
         if pkg is not None:
             client_version = "%s/%s" % (pkg.project_name, pkg.version)
-        pkg = pkg_resources.working_set.find(pkg_resources.Requirement("requests"))
+        pkg = pkg_resources.working_set.find(pkg_resources.Requirement.parse("requests"))
         if pkg is not None:
             requests_version = "%s %s" % (pkg.project_name, pkg.version)
         python_version = "Python %s" % platform.python_version()
