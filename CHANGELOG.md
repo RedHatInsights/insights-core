@@ -1,8 +1,10 @@
 # Change Log
 
-## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
+## [insights-core-3.0.131-1215](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.131-1215) (2019-10-30)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.130-1209...insights-core-3.0.131-1215)
 
-[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.129-1195...HEAD)
+## [insights-core-3.0.130-1209](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.130-1209) (2019-10-24)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.129-1195...insights-core-3.0.130-1209)
 
 **Fixed bugs:**
 
