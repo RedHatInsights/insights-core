@@ -8,6 +8,8 @@ import os
 import six
 import json
 import logging
+import pkg_resources
+import platform
 import xml.etree.ElementTree as ET
 import warnings
 # import io
@@ -27,6 +29,9 @@ from .utilities import (determine_hostname,
                         write_registered_file)
 from .cert_auth import rhsmCertificate
 from .constants import InsightsConstants as constants
+from insights import package_info
+from insights.core.context import Context
+from insights.parsers.os_release import OsRelease
 from insights.util.canonical_facts import get_canonical_facts
 
 warnings.simplefilter('ignore')
@@ -60,7 +65,6 @@ class InsightsConnection(object):
     """
 
     def __init__(self, config):
-        self.user_agent = constants.user_agent
         self.config = config
         self.username = self.config.username
         self.password = self.config.password
@@ -161,6 +165,39 @@ class InsightsConnection(object):
                 connection = conns[conn]
                 connection.proxy_headers = auth_map
         return session
+
+    @property
+    def user_agent(self):
+        """
+        Generates and returns a string suitable for use as a request user-agent
+        """
+        core_version = "Core %s" % package_info["VERSION"]
+        pkg = pkg_resources.working_set.find(pkg_resources.Requirement("insights-client"))
+        if pkg is not None:
+            client_version = "%s/%s" % (pkg.project_name, pkg.version)
+        pkg = pkg_resources.working_set.find(pkg_resources.Requirement("requests"))
+        if pkg is not None:
+            requests_version = "%s %s" % (pkg.project_name, pkg.version)
+        python_version = "Python %s" % platform.python_version()
+        with open("/etc/os-release") as f:
+            data = f.readlines()
+        ctx = Context(content=data, path="/etc/os-release", relative_path="/etc/os-release")
+        rls = OsRelease(ctx)
+        os_family = rls.data.get("ID")
+        os_release = rls.data.get("VERSION")
+        kernel_version = "Linux %s" % platform.release()
+
+        ua = "{client_version} ({core_version}; {requests_version}) {os_family}-{os_release} ({python_version}; {kernel_version})".format(
+            client_version=client_version,
+            core_version=core_version,
+            python_version=python_version,
+            os_family=os_family,
+            os_release=os_release,
+            kernel_version=kernel_version,
+            requests_version=requests_version,
+        )
+
+        return ua
 
     def get_proxies(self):
         """
