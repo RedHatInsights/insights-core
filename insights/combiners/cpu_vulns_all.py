@@ -1,9 +1,8 @@
 """
-CpuVulnsAll - files ``/sys/devices/system/cpu/vulnerabilities/*``
-=================================================================
+CpuVulnsAll - combiner for CPU vulnerabilities
+==============================================
 
-This combiner provides an interface to CPU vulnerabilities parsers for files of
-``/sys/devices/system/cpu/vulnerabilities/*``
+This combiner provides an interface to CPU vulnerabilities parsers for cpu vulnerabilities
 """
 
 from insights.core.plugins import combiner
@@ -14,17 +13,9 @@ from insights.parsers import SkipComponent
 @combiner(CpuVulns)
 class CpuVulnsAll(dict):
     """
-    Class to capsulate the parsers of cpu_vulns, which includes all files in
-    ``/sys/devices/system/cpu/vulnerabilities/*``. Files information will be
+    Class to capsulate the parsers of cpu_vulns, files information will be
     stored in a list of dictionaries, each dictionary is for one file, the
     dictionary key is the file name, dictionary value is the file content.
-
-    Sample output for files:
-        ``/sys/devices/system/cpu/vulnerabilities/spectre_v1``::
-            Mitigation: Load fences
-
-         ``/sys/devices/system/cpu/vulnerabilities/meltdown``::
-            Mitigation: PTI
 
     Examples:
         >>> type(cvb)
