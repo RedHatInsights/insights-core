@@ -131,10 +131,14 @@ def find_main(confs, name):
 
 
 def flatten(docs, pred):
-    seen = set()
+    """
+    Replace include nodes with their config trees.  Allows the same files to be
+    included more than once so long as they don't induce a recursion.
+    """
     pred = compile_queries(pred)
 
-    def inner(children):
+    def inner(children, stack):
+        seen = set(stack)
         results = []
         for c in children:
             if pred([c]) and c.children:
@@ -142,14 +146,15 @@ def flatten(docs, pred):
                 if name in seen:
                     msg = "Configuration contains recursive includes: %s" % name
                     raise Exception(msg)
-                seen.add(name)
-                results.extend(inner(c.children))
+                stack.append(name)
+                results.extend(inner(c.children, stack))
+                stack.pop()
             else:
                 results.append(c)
                 if c.children:
-                    c.children = inner(c.children)
+                    c.children = inner(c.children, stack)
         return results
-    return inner(docs)
+    return inner(docs, [])
 
 
 class ConfigComponent(object):
