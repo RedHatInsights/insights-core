@@ -17,6 +17,13 @@ class CpuVulnsAll(dict):
     stored in a list of dictionaries, each dictionary is for one file, the
     dictionary key is the file name, dictionary value is the file content.
 
+    Sample output for files:
+        ``/sys/devices/system/cpu/vulnerabilities/spectre_v1``:
+            Mitigation: Load fences
+
+        ``/sys/devices/system/cpu/vulnerabilities/meltdown``:
+            Mitigation: PTI
+
     Examples:
         >>> type(cvb)
         <class 'insights.combiners.cpu_vulns_all.CpuVulnsAll'>
