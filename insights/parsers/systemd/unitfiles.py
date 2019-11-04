@@ -23,7 +23,7 @@ class UnitFiles(Parser):
     information about enabled services.
 
     Output of Command::
-
+        UNIT FILE                                     STATE
         mariadb.service                               enabled
         neutron-openvswitch-agent.service             enabled
         neutron-ovs-cleanup.service                   enabled
@@ -34,30 +34,28 @@ class UnitFiles(Parser):
 
     Example:
 
-        >>> conf = shared[UnitFiles]
-        >>> conf.is_on('existing-enabled-service.service')
+        >>> conf.is_on('mariadb.service')
         True
-        >>> conf.is_on('existing-disabled-service.service')
+        >>> conf.is_on('runlevel0.target')
         False
-        >>> conf.is_on('nonexistent-service.service')
-        False
-        >>> conf.exists('existing-enabled-service.service')
+        >>> conf.exists('neutron-server.service')
         True
-        >>> conf.exists('existing-disabled-service.service')
+        >>> conf.exists('runlevel1.target')
         True
-        >>> conf.exists('nonexistent-service.service')
-        False
-        >>> 'existing-enabled-service.service' in conf.services
+        >>> 'mariadb.service' in conf.services
         True
-        >>> 'existing-disabled-service.service' in conf.services
+        >>> 'runlevel0.target' in conf.services
         True
         >>> 'nonexistent-service.service' in conf.services
         False
-        >>> conf.services['existing-enabled-service.service']
+        >>> conf.services['mariadb.service']
         True
-        >>> conf.services['existing-disabled-service.service']
+        >>> conf.services['runlevel1.target']
         False
         >>> conf.services['nonexistent-service.service']
+        Traceback (most recent call last):
+          File "<doctest insights.parsers.systemd.unitfiles.UnitFiles[11]>", line 1, in <module>
+            conf.services['nonexistent-service.service']
         KeyError: 'nonexistent-service.service'
     """
 
@@ -130,23 +128,35 @@ class ListUnits(Parser):
 
     Output of Command::
 
+        UNIT                                LOAD   ACTIVE SUB       DESCRIPTION
         sockets.target                      loaded active active    Sockets
         swap.target                         loaded active active    Swap
         systemd-shutdownd.socket            loaded active listening Delayed Shutdown Socket
         neutron-dhcp-agent.service          loaded active running   OpenStack Neutron DHCP Agent
         neutron-openvswitch-agent.service   loaded active running   OpenStack Neutron Open vSwitch Agent
+        ...
+        unbound-anchor.timer                loaded active waiting   daily update of the root trust anchor for DNSSEC
+
+        LOAD   = Reflects whether the unit definition was properly loaded.
+        ACTIVE = The high-level unit activation state, i.e. generalization of SUB.
+        SUB    = The low-level unit activation state, values depend on unit type.
+
+        161 loaded units listed. Pass --all to see loaded but inactive units, too.
+        To show all installed unit files use 'systemctl list-unit-files'.
 
     Example:
 
-        >>> units.get_service_details('swap.target')
-        {'LOAD': 'loaded', 'ACTIVE': 'active', 'SUB': 'active', 'UNIT': 'swap.target'}
-        >>> units.unit_list['swap.target']
-        {'LOAD': 'loaded', 'ACTIVE': 'active', 'SUB': 'active', 'UNIT': 'swap.target'}
+        >>> units.get_service_details('swap.target') == {'LOAD': 'loaded', 'ACTIVE': 'active', 'SUB': 'active', 'UNIT': 'swap.target', 'DESCRIPTION': 'Swap'}
+        True
+        >>> units.unit_list['swap.target'] == {'LOAD': 'loaded', 'ACTIVE': 'active', 'SUB': 'active', 'UNIT': 'swap.target', 'DESCRIPTION': 'Swap'}
+        True
         >>> units.is_active('swap.target')
         True
-        >>> units.unit_list['random.service']
-        {'LOAD': None, 'ACTIVE': None, 'SUB': None, 'UNIT': None}
+        >>> units.get_service_details('random.service') == {'LOAD': None, 'ACTIVE': None, 'SUB': None, 'UNIT': None, 'DESCRIPTION': None}
+        True
     """
+    EMPTY_DETAILS = {'LOAD': None, 'ACTIVE': None, 'SUB': None, 'UNIT': None, 'DESCRIPTION': None}
+
     def __init__(self, *args, **kwargs):
         self.unit_list = {}
         """dict: Dictionary service detail like active, running, exited, dead"""
@@ -160,14 +170,16 @@ class ListUnits(Parser):
         valid_units = set(['service', 'socket', 'device', 'mount', 'automount', 'swap', 'target',
                            'path', 'timer', 'slice', 'scope'])
 
-        if any(part in valid_states for part in parts):
-            service_details = {}
+        service_details = {}
+        if (len(parts) >= 4 and any(part in valid_states for part in parts) and
+                any(unit in parts[0] for unit in valid_units)):
+            service_details['UNIT'] = parts[0]
             service_details['LOAD'] = parts[1]
             service_details['ACTIVE'] = parts[2]
             service_details['SUB'] = parts[3]
-            if any(unit in parts[0] for unit in valid_units):
-                service_details['UNIT'] = parts[0]
-                return service_details
+            service_details['DESCRIPTION'] = ' '.join(parts[4:]) if len(parts) > 4 else None
+
+        return service_details
 
     def parse_content(self, content):
         """
@@ -179,11 +191,22 @@ class ListUnits(Parser):
         BULLET_CHAR_U = u'\u25CF'
         BULLET_CHAR_B = b"\xe2\x97\x8f"
         for line in get_active_lines(content):
+            # If this is a heading line, then ignore this line
+            if line.startswith('UNIT '):
+                continue
+
             parts = line.split(None)  # AWK like split, strips whitespaces
+            first_part = 0
             if parts[0] == BULLET_CHAR_U or parts[0].encode('utf-8') == BULLET_CHAR_B or parts[0] == '*':
-                self.unit_list[parts[1]] = self.parse_service_details(parts[1:])
-            else:
-                self.unit_list[parts[0]] = self.parse_service_details(parts)
+                first_part = 1
+
+            # If past the end of the list then quit
+            if parts[first_part] in ['LOAD', 'ACTIVE', 'SUB']:
+                break
+
+            service_details = self.parse_service_details(parts[first_part:])
+            if service_details:
+                self.unit_list[parts[first_part]] = service_details
 
     def get_service_details(self, service_name):
         """
@@ -198,8 +221,7 @@ class ListUnits(Parser):
 
             {'LOAD': 'loaded', 'ACTIVE': 'active', 'SUB': 'running', 'UNIT': 'neutron-dhcp-agent.service'}
         """
-        empty_details = {'LOAD': None, 'ACTIVE': None, 'SUB': None, 'UNIT': None}
-        return self.unit_list.get(service_name, empty_details)
+        return self.unit_list.get(service_name, ListUnits.EMPTY_DETAILS)
 
     def is_loaded(self, service_name):
         """
@@ -236,3 +258,8 @@ class ListUnits(Parser):
             bool: True if service is running False in all other states.
         """
         return self.get_service_details(service_name)['SUB'] == 'running'
+
+    @property
+    def service_names(self):
+        """list: Returns a list of all UNIT names."""
+        return list(self.unit_list.keys())

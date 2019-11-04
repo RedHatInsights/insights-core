@@ -61,7 +61,7 @@ def test_docker_list_containers():
     assert result.rows[1].get("CONTAINER ID") == "95516ea08b565e37e2a4bca3333af40a240c368131b77276da8dec629b7fe102"
     assert result.rows[1].get("COMMAND") == '"/bin/sh -c \'yum install -y vsftpd-2.2.2-6.el6\'"'
     assert result.rows[1]['STATUS'] == 'Exited (137) 18 hours ago'
-    assert result.rows[1].get("PORTS") is None
+    assert result.rows[1].get("PORTS") == ''
 
     assert sorted(result.data.keys()) == sorted(['angry_saha', 'tender_rosalind'])
     assert result.data['angry_saha'] == result.rows[0]
@@ -70,12 +70,13 @@ def test_docker_list_containers():
 
 def test_docker_list_images_no_data():
     with pytest.raises(SkipException) as ex:
-        docker_list.DockerList(context_wrap(DOCKER_LIST_IMAGES_NO_DATA))
+        docker_list.DockerListImages(context_wrap(DOCKER_LIST_IMAGES_NO_DATA))
     assert 'No data.' in str(ex)
 
 
 def test_undefined_key_field():
-    assert docker_list.DockerList(context_wrap(DOCKER_LIST_CONTAINERS)).key_field is None
+    with pytest.raises(NotImplementedError):
+        assert docker_list.DockerList(context_wrap(DOCKER_LIST_CONTAINERS)).key_field is None
 
 
 def test_documentation():

@@ -23,42 +23,8 @@ instances instead of a simple lookup.
 import operator
 import re
 from collections import defaultdict
-from functools import partial
 from itertools import chain
-from insights.parsr.query.boolean import All, Any, Boolean, pred, pred2, TRUE
-
-
-def pretty_format(root, indent=4):
-    """
-    pretty_format generates a text representation of a model as a list of
-    lines.
-    """
-    results = []
-
-    def sep():
-        if results and results[-1] != "":
-            results.append("")
-
-    def inner(d, prefix=""):
-        if isinstance(d, Result):
-            for c in d.children:
-                inner(c, prefix)
-            return
-        if d.children:
-            sep()
-            name = d.name or ""
-            header = name if not d.attrs else " ".join([name, d.string_value])
-            if header:
-                results.append(prefix + "[" + header + "]")
-            prep = prefix + (" " * indent)
-            for c in d.children:
-                inner(c, prep)
-            sep()
-        else:
-            results.append(prefix + (d.name or "") + ": " + d.string_value)
-
-    inner(root)
-    return results
+from insights.parsr.query.boolean import All, Any, Boolean, Not, pred, pred2, TRUE
 
 
 class Entry(object):
@@ -66,7 +32,6 @@ class Entry(object):
     Entry is the base class for the data model, which is a tree of Entry
     instances. Each instance has a name, attributes, a parent, and children.
     """
-
     __slots__ = ("_name", "attrs", "children", "parent", "lineno", "src")
 
     def __init__(self, name=None, attrs=None, children=None, lineno=None, src=None):
@@ -109,6 +74,18 @@ class Entry(object):
         Exists for ipython autocompletion.
         """
         return self.get_keys() + object.__dir__(self)
+
+    def get_crumbs(self):
+        """
+        Get the unique name from the current entry to the root.
+        """
+        results = []
+        parent = self
+        while parent and parent._name is not None:
+            results.append(parent._name)
+            parent = parent.parent
+
+        return ".".join(reversed(results))
 
     @property
     def line(self):
@@ -189,12 +166,12 @@ class Entry(object):
         """
         Selects current nodes based on name and value queries of child nodes.
         If any immediate children match the queries, the parent is included in
-        the results. The :py:func:``make_child_query`` function can be used to
+        the results. The :py:func:``where_query`` function can be used to
         construct queries that act on the children as a whole instead of one
         at a time.
 
         Example:
-        >>> from insights.parsr.query import make_child_query as q
+        >>> from insights.parsr.query import where_query as q
         >>> from insights.parsr.query import from_dict
         >>> r = from_dict(load_config())
         >>> r = conf.status.conditions.where(q("status", "False") | q("type", "Progressing"))
@@ -204,7 +181,14 @@ class Entry(object):
         >>> r.lastTransitionTime.values
         ['2019-08-04T23:17:08Z', '2019-08-04T23:32:14Z']
         """
-        query = make_child_query(name, value) if not isinstance(name, DictQueryBase) else name
+        if isinstance(name, _EntryQuery):
+            query = name
+        elif isinstance(name, Boolean):
+            query = child_query(name, value)
+        elif callable(name):
+            query = SimpleQuery(pred(name))
+        else:
+            query = child_query(name, value)
         return Result(children=self.children if query.test(self) else [])
 
     @property
@@ -302,6 +286,12 @@ class Result(Entry):
         """
         return sorted(set(c.name for c in self.grandchildren))
 
+    def get_crumbs(self):
+        """
+        Get the unique names from the current locations to the roots.
+        """
+        return sorted(set(c.get_crumbs() for c in self.children))
+
     @property
     def string_value(self):
         """
@@ -371,14 +361,14 @@ class Result(Entry):
         """
         Returns the values of all the children as a list.
         """
-        return [c.value for c in self.children]
+        return [c.value for c in self.children if c.value is not None]
 
     @property
     def unique_values(self):
         """
         Returns the unique values of all the children as a list.
         """
-        return sorted(set(c.value for c in self.children))
+        return sorted(set(c.value for c in self.children if c.value is not None))
 
     def upto(self, query):
         """
@@ -426,12 +416,12 @@ class Result(Entry):
         """
         Selects current nodes based on name and value queries of child nodes.
         If any immediate children match the queries, the parent is included in
-        the results. The :py:func:``make_child_query`` function can be used to
+        the results. The :py:func:``where_query`` function can be used to
         construct queries that act on the children as a whole instead of one
         at a time.
 
         Example:
-        >>> from insights.parsr.query import make_child_query as q
+        >>> from insights.parsr.query import where_query as q
         >>> from insights.parsr.query import from_dict
         >>> r = from_dict(load_config())
         >>> r = conf.status.conditions.where(q("status", "False") | q("type", "Progressing"))
@@ -441,7 +431,14 @@ class Result(Entry):
         >>> r.lastTransitionTime.values
         ['2019-08-04T23:17:08Z', '2019-08-04T23:32:14Z']
         """
-        query = make_child_query(name, value) if not isinstance(name, DictQueryBase) else name
+        if isinstance(name, _EntryQuery):
+            query = name
+        elif isinstance(name, Boolean):
+            query = child_query(name, value)
+        elif callable(name):
+            query = SimpleQuery(pred(name))
+        else:
+            query = child_query(name, value)
         results = []
         seen = set()
         for c in self.children:
@@ -460,76 +457,61 @@ class _EntryQuery(object):
     """
     _EntryQuery is the base class of all other query classes.
     """
-    def __init__(self, expr):
-        super(_EntryQuery, self).__init__()
-        self.expr = expr
+    def __and__(self, other):
+        return _AllEntryQuery(self, other)
 
-    def test(self, node):
-        return self.expr.test(node)
+    def __or__(self, other):
+        return _AnyEntryQuery(self, other)
+
+    def __invert__(self):
+        return _NotEntryQuery(self)
+
+
+class _AllEntryQuery(_EntryQuery, All):
+    pass
+
+
+class _AnyEntryQuery(_EntryQuery, Any):
+    pass
+
+
+class _NotEntryQuery(_EntryQuery, Not):
+    pass
 
 
 class NameQuery(_EntryQuery):
     """
     A query against the name of an :py:class:`Entry`.
     """
-    def test(self, node):
-        return self.expr.test(node.name)
-
-
-class AttrQuery(_EntryQuery):
-    """
-    A query against an attribute of an :py:class:`Entry`.
-    """
-    def __and__(self, other):
-        return _AndAttrQuery(self, other)
-
-    def __or__(self, other):
-        return _OrAttrQuery(self, other)
-
-    def __invert__(self):
-        return _NotAttrQuery(self)
-
-
-class _AndAttrQuery(AttrQuery):
-    def __init__(self, *exprs):
-        self.exprs = list(exprs)
+    def __init__(self, expr):
+        self.expr = expr
 
     def test(self, n):
-        return all(expr.test(n) for expr in self.exprs)
-
-    def __and__(self, other):
-        self.exprs.append(other)
-        return self
+        return self.expr.test(n.name)
 
 
-class _OrAttrQuery(AttrQuery):
-    def __init__(self, *exprs):
-        self.exprs = list(exprs)
+class _AllAttrQuery(_EntryQuery):
+    def __init__(self, expr):
+        self.expr = expr
 
-    def test(self, n):
-        return any(expr.test(n) for expr in self.exprs)
-
-    def __or__(self, other):
-        self.exprs.append(other)
-        return self
-
-
-class _NotAttrQuery(AttrQuery):
-    def __init__(self, query):
-        self.query = query
-
-    def test(self, n):
-        return not self.query.test(n)
-
-
-class _AllAttrQuery(AttrQuery):
     def test(self, n):
         return all(self.expr.test(a) for a in n.attrs)
 
 
-class _AnyAttrQuery(AttrQuery):
+class _AnyAttrQuery(_EntryQuery):
+    def __init__(self, expr):
+        self.expr = expr
+
     def test(self, n):
         return any(self.expr.test(a) for a in n.attrs)
+
+
+def all_(expr):
+    """
+    Use to express that ``expr`` must succeed on all attributes for the query
+    to be successful. Only works against :py:class:`Entry` attributes.
+    """
+    return _AllAttrQuery(_desugar_attr(expr))
 
 
 def any_(expr):
@@ -540,12 +522,42 @@ def any_(expr):
     return _AnyAttrQuery(_desugar_attr(expr))
 
 
-def all_(expr):
+class SimpleQuery(_EntryQuery):
     """
-    Use to express that ``expr`` must succeed on all attributes for the query
-    to be successful. Only works against :py:class:`Entry` attributes.
+    Automatically used in ``Entry.where`` or ``Result.where``. ``SimpleQuery``
+    wraps a function or a lambda that will be passed each ``Entry`` of the
+    current result. The passed function should return ``True`` or ``False``.
     """
-    return _AllAttrQuery(_desugar_attr(expr))
+    def __init__(self, expr):
+        if not isinstance(expr, Boolean):
+            expr = pred(expr)
+        self.expr = expr
+
+    def test(self, node):
+        return self.expr.test(node)
+
+
+class ChildQuery(_EntryQuery):
+    """
+    Returns True if any child node passes the query.
+    """
+    def __init__(self, expr):
+        self.expr = expr
+
+    def test(self, node):
+        return any(self.expr.test(n) for n in node.children)
+
+
+def child_query(name, value=None):
+    """
+    Converts a query into a ChildQuery that works on all child nodes at once
+    to determine if the current node is accepted.
+    """
+    q = _desugar((name, value) if value is not None else name)
+    return ChildQuery(q)
+
+
+make_child_query = child_query
 
 
 def _desugar_name(q):
@@ -557,7 +569,7 @@ def _desugar_name(q):
         return NameQuery(q)
     if callable(q):
         return NameQuery(pred(q))
-    return NameQuery(pred(partial(operator.eq, q)))
+    return NameQuery(eq(q))
 
 
 def _desugar_attr(q):
@@ -565,7 +577,7 @@ def _desugar_attr(q):
         return q
     if callable(q):
         return pred(q)
-    return pred(partial(operator.eq, q))
+    return eq(q)
 
 
 def _desugar_attrs(q):
@@ -573,14 +585,14 @@ def _desugar_attrs(q):
         return
     if len(q) == 1:
         q = q[0]
-        return q if isinstance(q, AttrQuery) else _AnyAttrQuery(_desugar_attr(q))
+        return q if isinstance(q, _EntryQuery) else _AnyAttrQuery(_desugar_attr(q))
     else:
         attr_queries = [_desugar_attr(a) for a in q]
         return _AnyAttrQuery(Any(*attr_queries))
 
 
 def _desugar(q):
-    if isinstance(q, DictQueryBase):
+    if isinstance(q, _EntryQuery):
         return q
     if isinstance(q, tuple):
         q = list(q)
@@ -590,63 +602,6 @@ def _desugar(q):
             return All(name_query, attrs_query)
         return name_query
     return _desugar_name(q)
-
-
-class DictQueryBase(object):
-    """
-    Base class for queries that target all children of a node as once.
-    """
-    def __init__(self, expr):
-        self.expr = expr
-
-    def __or__(self, other):
-        return DictOr(self, other)
-
-    def __and__(self, other):
-        return DictAnd(self, other)
-
-    def __invert__(self):
-        return DictNot(self)
-
-
-class DictQuery(DictQueryBase):
-    """
-    Returns True if any child node passes the query.
-    """
-    def test(self, node):
-        return any(self.expr.test(n) for n in node.children)
-
-
-class DictNot(DictQueryBase):
-    def test(self, node):
-        return not self.expr.test(node)
-
-
-class DictAnd(DictQueryBase):
-    def __init__(self, left, right):
-        self.left = left
-        self.right = right
-
-    def test(self, node):
-        return self.left.test(node) and self.right.test(node)
-
-
-class DictOr(DictQueryBase):
-    def __init__(self, left, right):
-        self.left = left
-        self.right = right
-
-    def test(self, node):
-        return self.left.test(node) or self.right.test(node)
-
-
-def make_child_query(name, value=None):
-    """
-    Converts a query into a DictQuery that works on all child nodes at once
-    to determine if the current node is accepted.
-    """
-    q = _desugar((name, value) if value is not None else name)
-    return DictQuery(q)
 
 
 def _flatten(nodes):
@@ -736,7 +691,40 @@ def from_dict(orig):
     return Entry(children=inner(orig))
 
 
-# These are operators that can be used inside of queries.
+def pretty_format(root, indent=4):
+    """
+    pretty_format generates a text representation of a model as a list of
+    lines.
+    """
+    results = []
+
+    def sep():
+        if results and results[-1] != "":
+            results.append("")
+
+    def inner(d, prefix=""):
+        if isinstance(d, Result):
+            for c in d.children:
+                inner(c, prefix)
+            return
+        if d.children:
+            sep()
+            name = d._name or ""
+            header = name if not d.attrs else " ".join([name, d.string_value])
+            if header:
+                results.append(prefix + "[" + header + "]")
+            prep = prefix + (" " * indent)
+            for c in d.children:
+                inner(c, prep)
+            sep()
+        else:
+            results.append(prefix + (d._name or "") + ": " + d.string_value)
+
+    inner(root)
+    return results
+
+
+# These predicates can be used in queries.
 lt = pred2(operator.lt)
 le = pred2(operator.le)
 eq = pred2(operator.eq)
