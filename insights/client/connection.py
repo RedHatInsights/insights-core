@@ -191,6 +191,8 @@ class InsightsConnection(object):
 
         python_version = "%s %s" % (platform.python_implementation(), platform.python_version())
 
+        os_family = "Unknown"
+        os_release = ""
         for p in ["/etc/os-release", "/etc/redhat-release"]:
             try:
                 with open(p) as f:
@@ -208,6 +210,8 @@ class InsightsConnection(object):
                 break
             except IOError:
                 continue
+            except Exception as e:
+                logger.warning("Failed to detect OS version: %s", e)
         kernel_version = "%s %s" % (platform.system(), platform.release())
 
         ua = "{client_version} ({core_version}; {requests_version}) {os_family} {os_release} ({python_version}; {kernel_version})".format(
