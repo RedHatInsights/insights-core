@@ -14,7 +14,6 @@ IDENTITY_URI = 'http://169.254.169.254/latest/dynamic/instance-identity'
 IDENTITY_DOC_URI = IDENTITY_URI + '/document'
 IDENTITY_SIG_URI = IDENTITY_URI + '/signature'
 IDENTITY_PKCS7_URI = IDENTITY_URI + '/pkcs7'
-HYDRA_ENDPOINT = 'https://access.redhat.com/hydra/rest/accounts/entitle'
 
 
 def aws_main(config):
@@ -100,14 +99,15 @@ def post_to_hydra(conn, data):
     Post data to Hydra
     '''
     logger.info('Submitting identity information to Red Hat.')
+    hydra_endpoint = conn.config.portal_access_hydra_url
     print(data)
     # POST to hydra
     try:
-        net_logger.info('POST %s', HYDRA_ENDPOINT)
-        res = conn.session.post(HYDRA_ENDPOINT, timeout=conn.config.http_timeout, data=data)
+        net_logger.info('POST %s', hydra_endpoint)
+        res = conn.session.post(hydra_endpoint, timeout=conn.config.http_timeout, data=data)
     except (requests.ConnectionError, requests.Timeout, ssl.SSLError, urllib3.exceptions.MaxRetryError) as e:
         logger.error(e)
-        logger.error('Could not reach %s', HYDRA_ENDPOINT)
+        logger.error('Could not reach %s', hydra_endpoint)
         return False
     net_logger.info('Status code: %s', res.status_code)
     if res.status_code not in (200, 201):

@@ -43,3 +43,5 @@ class InsightsConstants(object):
     pidfile = os.path.join(os.sep, 'var', 'run', 'insights-client.pid')
     # this file is used to attempt registration when the client starts, implies --register
     register_marker_file = os.path.join(os.sep, 'var', 'run', 'insights-client-try-register')
+    # default Hydra endpoint for posting entitlements information for AWS
+    default_portal_access_hydra_url = 'https://access.redhat.com/hydra/rest/accounts/entitle'

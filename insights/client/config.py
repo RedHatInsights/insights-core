@@ -353,6 +353,7 @@ DEFAULT_OPTS = {
         'nargs': '?',
         'group': 'platform'
     },
+    # AWS options
     'portal_access': {
         'default': False,
         'opt': ['--portal-access'],
@@ -366,6 +367,10 @@ DEFAULT_OPTS = {
         'group': 'platform',
         'action': 'store_true',
         'help': 'Entitle an AWS instance with Red Hat, but do not register with Red Hat Insights'
+    },
+    'portal_access_hydra_url': {
+        # non-CLI
+        'default': constants.default_portal_access_hydra_url
     }
 }
 
