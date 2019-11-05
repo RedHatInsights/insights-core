@@ -1,7 +1,9 @@
 import logging
 import requests
 import ssl
+import sys
 import urllib3
+import base64
 from insights.client.connection import InsightsConnection
 from insights.client.schedule import get_scheduler
 from insights.client.constants import InsightsConstants as constants
@@ -59,36 +61,14 @@ def get_aws_identity(conn):
     doc_res = get_uri(conn, IDENTITY_DOC_URI)
     sig_res = get_uri(conn, IDENTITY_SIG_URI)
     pkcs7_res = get_uri(conn, IDENTITY_SIG_URI)
-    if not (doc_res and sig_res and pkcs7_res):
+    if not (doc_res.ok and sig_res.ok and pkcs7_res.ok):
         logger.error('Error getting identity information.')
         return None
-    identity_doc = {}
-    try:
-        identity_doc = doc_res.json()
-    except ValueError as e:
-        logger.error(e)
-        logger.error('Could not parse identity document JSON.')
-        return {}
     logger.debug('Identity information obtained successfully.')
-
-    def identity_doc_filter(doc):
-        '''
-        Only take the fields we need
-        '''
-        try:
-            return {
-                'version': doc['version'],
-                'accountId': doc['accountId'],
-                'availabilityZone': doc['availabilityZone'],
-                'region': doc['region']
-            }
-        except KeyError as e:
-            logger.error(e)
-            logger.error('Could not parse identity document JSON.')
-            return {}
+    identity_doc = base64.b64encode(doc_res.text.encode('utf-8'))
 
     return {
-        'document': identity_doc_filter(identity_doc),
+        'document': identity_doc.decode('utf-8'),
         'signature': sig_res.content.decode('utf-8'),
         'pkcs7': pkcs7_res.content.decode('utf-8')
     }
@@ -100,7 +80,6 @@ def post_to_hydra(conn, data):
     '''
     logger.info('Submitting identity information to Red Hat.')
     hydra_endpoint = conn.config.portal_access_hydra_url
-    print(data)
     # POST to hydra
     try:
         net_logger.info('POST %s', hydra_endpoint)
@@ -110,10 +89,17 @@ def post_to_hydra(conn, data):
         logger.error('Could not reach %s', hydra_endpoint)
         return False
     net_logger.info('Status code: %s', res.status_code)
-    if res.status_code not in (200, 201):
+    try:
+        res.raise_for_status()
+    except requests.exceptions.HTTPError as e:
         # if failure,
         # error, return False
-        logger.error('Entitlement information could not be sent. HTTP status: %s', res.status_code)
+        logger.error(e)
+        try:
+            err_msg = res.json().get('command-line-output', '')
+            logger.error(err_msg)
+        except ValueError as e2:
+            logger.error(e2)
         return False
     # if success,
     # something like "Entitlement information has been sent." Maybe link to a KB article
