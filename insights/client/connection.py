@@ -8,6 +8,8 @@ import os
 import six
 import json
 import logging
+import pkg_resources
+import platform
 import xml.etree.ElementTree as ET
 import warnings
 # import io
@@ -27,6 +29,10 @@ from .utilities import (determine_hostname,
                         write_registered_file)
 from .cert_auth import rhsmCertificate
 from .constants import InsightsConstants as constants
+from insights import package_info
+from insights.core.context import Context
+from insights.parsers.os_release import OsRelease
+from insights.parsers.redhat_release import RedhatRelease
 from insights.util.canonical_facts import get_canonical_facts
 
 warnings.simplefilter('ignore')
@@ -60,7 +66,6 @@ class InsightsConnection(object):
     """
 
     def __init__(self, config):
-        self.user_agent = constants.user_agent
         self.config = config
         self.username = self.config.username
         self.password = self.config.password
@@ -161,6 +166,65 @@ class InsightsConnection(object):
                 connection = conns[conn]
                 connection.proxy_headers = auth_map
         return session
+
+    @property
+    def user_agent(self):
+        """
+        Generates and returns a string suitable for use as a request user-agent
+        """
+        core_version = "insights-core"
+        pkg = pkg_resources.working_set.find(pkg_resources.Requirement.parse(core_version))
+        if pkg is not None:
+            core_version = "%s %s" % (pkg.project_name, pkg.version)
+        else:
+            core_version = "Core %s" % package_info["VERSION"]
+
+        client_version = "insights-client"
+        pkg = pkg_resources.working_set.find(pkg_resources.Requirement.parse(client_version))
+        if pkg is not None:
+            client_version = "%s/%s" % (pkg.project_name, pkg.version)
+
+        requests_version = None
+        pkg = pkg_resources.working_set.find(pkg_resources.Requirement.parse("requests"))
+        if pkg is not None:
+            requests_version = "%s %s" % (pkg.project_name, pkg.version)
+
+        python_version = "%s %s" % (platform.python_implementation(), platform.python_version())
+
+        os_family = "Unknown"
+        os_release = ""
+        for p in ["/etc/os-release", "/etc/redhat-release"]:
+            try:
+                with open(p) as f:
+                    data = f.readlines()
+
+                ctx = Context(content=data, path=p, relative_path=p)
+                if p == "/etc/os-release":
+                    rls = OsRelease(ctx)
+                    os_family = rls.data.get("NAME")
+                    os_release = rls.data.get("VERSION_ID")
+                elif p == "/etc/redhat-release":
+                    rls = RedhatRelease(ctx)
+                    os_family = rls.product
+                    os_release = rls.version
+                break
+            except IOError:
+                continue
+            except Exception as e:
+                logger.warning("Failed to detect OS version: %s", e)
+        kernel_version = "%s %s" % (platform.system(), platform.release())
+
+        ua = "{client_version} ({core_version}; {requests_version}) {os_family} {os_release} ({python_version}; {kernel_version})".format(
+            client_version=client_version,
+            core_version=core_version,
+            python_version=python_version,
+            os_family=os_family,
+            os_release=os_release,
+            kernel_version=kernel_version,
+            requests_version=requests_version,
+        )
+
+        return ua
 
     def get_proxies(self):
         """
