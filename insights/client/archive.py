@@ -27,16 +27,9 @@ class InsightsArchive(object):
         Initialize the Insights Archive
         Create temp dir, archive dir, and command dir
         """
-
-        self.archive_dir = tmp_path
-        self.archive_tmp_dir = tempfile.mkdtemp(prefix='/var/tmp/')
+        self.collected_data_dir = tmp_path
         self.compressor = compressor
-
-    def get_full_archive_path(self, path):
-        """
-        Returns the full archive path
-        """
-        return os.path.join(self.archive_dir, path.lstrip('/'))
+        self.tar_file_name = None
 
     def get_compression_flag(self, compressor):
         return {
@@ -50,9 +43,9 @@ class InsightsArchive(object):
         """
         Create tar file to be compressed
         """
-        archive_name = os.path.basename(self.archive_dir)
+        archive_name = os.path.basename(self.collected_data_dir) or 'insights-archive'
 
-        tar_file_name = os.path.join(self.archive_tmp_dir, archive_name)
+        tar_file_name = os.path.join(tempfile.gettempdir(), archive_name)
         ext = "" if self.compressor == "none" else ".%s" % self.compressor
         tar_file_name = tar_file_name + ".tar" + ext
         logger.debug("Tar File: " + tar_file_name)
@@ -60,39 +53,33 @@ class InsightsArchive(object):
             logger.error("The compressor %s is not supported.  Using default: gz", self.compressor)
         return_code = subprocess.call(shlex.split("tar c%sfS %s -C %s ." % (
             self.get_compression_flag(self.compressor),
-            tar_file_name, self.archive_dir)),
+            tar_file_name, self.collected_data_dir)),
             stderr=subprocess.PIPE)
         if (self.compressor in ["bz2", "xz"] and return_code != 0):
             logger.error("ERROR: %s compressor is not installed, cannot compress file", self.compressor)
             return None
-        self.delete_archive_dir()
+        self.delete_collected_data_dir()
         logger.debug("Tar File Size: %s", str(os.path.getsize(tar_file_name)))
+        self.tar_file = tar_file_name
         return tar_file_name
 
-    # def delete_tmp_dir(self):
-    #     """
-    #     Delete the entire tmp dir
-    #     """
-    #     logger.debug("Deleting: " + self.tmp_dir)
-    #     shutil.rmtree(self.tmp_dir, True)
+    def delete_collected_data_dir(self):
+        """
+        Delete the dir containing collected data
+        """
+        logger.debug("Deleting: " + self.collected_data_dir)
+        shutil.rmtree(self.collected_data_dir, True)
 
-    def delete_archive_dir(self):
+    def delete_tar_file(self):
         """
-        Delete the entire archive dir
+        Delete the constructed archive
         """
-        logger.debug("Deleting: " + self.archive_dir)
-        shutil.rmtree(self.archive_dir, True)
-
-    def delete_archive_file(self):
-        """
-        Delete the directory containing the constructed archive
-        """
-        logger.debug("Deleting %s", self.archive_tmp_dir)
-        shutil.rmtree(self.archive_tmp_dir, True)
+        logger.debug("Deleting %s", self.tar_file)
+        shutil.rmtree(self.tar_file, True)
 
     def add_metadata_to_archive(self, metadata, meta_path):
         '''
         Add metadata to archive
         '''
-        archive_path = self.get_full_archive_path(meta_path.lstrip('/'))
+        archive_path = os.path.join(self.collected_data_dir, meta_path.lstrip('/'))
         write_data_to_file(metadata, archive_path)

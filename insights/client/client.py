@@ -260,9 +260,8 @@ def get_branch_info(config):
     Get branch info for a system
     returns (dict): {'remote_branch': -1, 'remote_leaf': -1}
     """
-    # in the case we are running on offline mode
-    # or we are analyzing a running container/image
-    # or tar file, mountpoint, simply return the default branch info
+    # in the case we are running on offline mode,
+    #   simply return the default branch info
     if config.offline:
         return constants.default_branch_info
     return config.branch_info
@@ -368,26 +367,15 @@ def _delete_archive_internal(config, archive):
     Delete archive and tmp dirs on unexpected exit.
     '''
     if not config.keep_archive:
-        # archive.delete_tmp_dir()
-        archive.delete_archive_file()
+        archive.delete_collected_data_dir()
+        archive.delete_tar_file()
 
 
-def delete_archive(path, delete_parent_dir):
+def delete_archive(path):
     removed_archive = False
-
     try:
         logger.debug("Removing archive %s", path)
-        removed_archive = os.remove(path)
-
-        dirname = os.path.dirname
-        abspath = os.path.abspath
-        parent_tmp_dir = dirname(abspath(path))
-        if delete_parent_dir:
-            logger.debug("Detected parent temporary directory %s", parent_tmp_dir)
-            if parent_tmp_dir != "/var/tmp" and parent_tmp_dir != "/var/tmp/":
-                logger.debug("Removing %s", parent_tmp_dir)
-                shutil.rmtree(parent_tmp_dir)
-
+        # removed_archive = os.remove(path)
     except:
         logger.error("Error removing %s", path)
 
