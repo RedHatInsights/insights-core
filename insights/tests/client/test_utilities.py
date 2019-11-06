@@ -231,3 +231,26 @@ def test_systemd_notify_failure_rhel_6(exists, Popen):
     exists.return_value = False
     util.systemd_notify('420')
     Popen.assert_not_called()
+
+
+def test_get_tags():
+    content = b"foo: bar"
+    fp = tempfile.NamedTemporaryFile(delete=False)
+    fp.write(content)
+    fp.close()
+    got = util.get_tags(fp.name)
+    assert got == {"foo": "bar"}
+
+
+def test_get_tags_empty():
+    content = b""
+    fp = tempfile.NamedTemporaryFile(delete=False)
+    fp.write(content)
+    fp.close()
+    got = util.get_tags(fp.name)
+    assert got is None
+
+
+def test_get_tags_nonexist():
+    got = util.get_tags("/file/does/not/exist")
+    assert got is None

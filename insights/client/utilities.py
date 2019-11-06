@@ -14,6 +14,12 @@ import sys
 from subprocess import Popen, PIPE, STDOUT
 from six.moves.configparser import RawConfigParser
 
+import yaml
+try:
+    from yaml import CLoader as Loader
+except ImportError:
+    from yaml import Loader
+
 from .. import package_info
 from .constants import InsightsConstants as constants
 
@@ -309,3 +315,21 @@ def systemd_notify(pid):
     stdout, stderr = proc.communicate()
     if proc.returncode != 0:
         logger.debug('systemd-notify returned %s', proc.returncode)
+
+
+def get_tags(tags_file_path=os.path.join(constants.default_conf_dir, "tags.conf")):
+    '''
+    Load tag data from the tags file.
+
+    Returns: a dict containing tags defined on the host.
+    '''
+    tags = None
+
+    try:
+        with open(tags_file_path) as f:
+            data = f.read()
+            tags = yaml.load(data, Loader=Loader)
+    except FileNotFoundError as e:
+        logger.debug("tags file does not exist: %s", e)
+
+    return tags
