@@ -276,21 +276,17 @@ def collect(config, pconn):
     pc = InsightsUploadConf(config)
     tar_file = None
 
-    collection_rules = pc.get_conf_file()
+    # collection_rules = pc.get_conf_file()
     rm_conf = pc.get_rm_conf()
     if rm_conf:
         logger.warn("WARNING: Excluding data from files")
 
-    # defaults
-    mp = None
-    archive = InsightsArchive(compressor=config.compressor)
+    dc = DataCollector(config)
+    logger.info('Starting to collect Insights data for %s',
+                determine_hostname(config.display_name))
+    archive = dc.run_collection(rm_conf, branch_info)
     atexit.register(_delete_archive_internal, config, archive)
-
-    msg_name = determine_hostname(config.display_name)
-    dc = DataCollector(config, archive, mountpoint=mp)
-    logger.info('Starting to collect Insights data for %s', msg_name)
-    dc.run_collection(collection_rules, rm_conf, branch_info)
-    tar_file = dc.done(collection_rules, rm_conf)
+    tar_file = archive.create_tar_file()
     return tar_file
 
 
@@ -372,7 +368,7 @@ def _delete_archive_internal(config, archive):
     Delete archive and tmp dirs on unexpected exit.
     '''
     if not config.keep_archive:
-        archive.delete_tmp_dir()
+        # archive.delete_tmp_dir()
         archive.delete_archive_file()
 
 

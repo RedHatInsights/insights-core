@@ -15,11 +15,12 @@ from itertools import chain
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
 
+from insights import collect
 from insights.util import mangle
 from ..contrib.soscleaner import SOSCleaner
 from .utilities import _expand_paths, get_version_info, read_pidfile, get_tags
 from .constants import InsightsConstants as constants
-from .insights_spec import InsightsFile, InsightsCommand
+# from .insights_spec import InsightsFile, InsightsCommand
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
@@ -36,13 +37,12 @@ class DataCollector(object):
     Run commands and collect files
     '''
 
-    def __init__(self, config, archive_=None, mountpoint=None):
+    def __init__(self, config, mountpoint=None):
         self.config = config
-        self.archive = archive_ if archive_ else archive.InsightsArchive()
         self.mountpoint = '/'
         if mountpoint:
             self.mountpoint = mountpoint
-        self.hostname_path = None
+        self.archive = None
 
     def _write_branch_info(self, branch_info):
         logger.debug("Writing branch information to archive...")
@@ -182,61 +182,19 @@ class DataCollector(object):
         else:
             return [spec]
 
-    def run_collection(self, conf, rm_conf, branch_info):
+    def run_collection(self, rm_conf, branch_info):
         '''
         Run specs and collect all the data
         '''
         parent_pid = read_pidfile()
         if rm_conf is None:
             rm_conf = {}
-        logger.debug('Beginning to run collection spec...')
-        exclude = None
-        if rm_conf:
-            try:
-                exclude = rm_conf['patterns']
-                logger.warn("WARNING: Skipping patterns found in remove.conf")
-            except LookupError:
-                logger.debug('Patterns section of remove.conf is empty.')
-
-        for c in conf['commands']:
-            # remember hostname archive path
-            if c.get('symbolic_name') == 'hostname':
-                self.hostname_path = os.path.join(
-                    'insights_commands', mangle.mangle_command(c['command']))
-            rm_commands = rm_conf.get('commands', [])
-            if c['command'] in rm_commands or c.get('symbolic_name') in rm_commands:
-                logger.warn("WARNING: Skipping command %s", c['command'])
-            elif self.mountpoint == "/" or c.get("image"):
-                cmd_specs = self._parse_command_spec(c, conf['pre_commands'])
-                for s in cmd_specs:
-                    if s['command'] in rm_commands:
-                        logger.warn("WARNING: Skipping command %s", s['command'])
-                        continue
-                    cmd_spec = InsightsCommand(self.config, s, exclude, self.mountpoint, parent_pid)
-                    self.archive.add_to_archive(cmd_spec)
-        for f in conf['files']:
-            rm_files = rm_conf.get('files', [])
-            if f['file'] in rm_files or f.get('symbolic_name') in rm_files:
-                logger.warn("WARNING: Skipping file %s", f['file'])
-            else:
-                file_specs = self._parse_file_spec(f)
-                for s in file_specs:
-                    # filter files post-wildcard parsing
-                    if s['file'] in rm_conf.get('files', []):
-                        logger.warn("WARNING: Skipping file %s", s['file'])
-                    else:
-                        file_spec = InsightsFile(s, exclude, self.mountpoint, parent_pid)
-                        self.archive.add_to_archive(file_spec)
-        if 'globs' in conf:
-            for g in conf['globs']:
-                glob_specs = self._parse_glob_spec(g)
-                for g in glob_specs:
-                    if g['file'] in rm_conf.get('files', []):
-                        logger.warn("WARNING: Skipping file %s", g)
-                    else:
-                        glob_spec = InsightsFile(g, exclude, self.mountpoint, parent_pid)
-                        self.archive.add_to_archive(glob_spec)
-        logger.debug('Spec collection finished.')
+        logger.debug('Beginning to run collection...')
+        tmp_path = collect.collect(rm_conf=rm_conf)
+        # create an archive from the collected data
+        self.archive = archive.InsightsArchive(
+            tmp_path, compressor=self.config.compressor)
+        logger.debug('Collection finished.')
 
         # collect metadata
         logger.debug('Collecting metadata...')
@@ -246,27 +204,23 @@ class DataCollector(object):
         self._write_tags()
         logger.debug('Metadata collection finished.')
 
-    def done(self, conf, rm_conf):
-        """
-        Do finalization stuff
-        """
         if self.config.obfuscate:
             cleaner = SOSCleaner(quiet=True)
             clean_opts = CleanOptions(
-                self.config, self.archive.tmp_dir, rm_conf, self.hostname_path)
+                self.config, self.archive.archive_dir, rm_conf)
             fresh = cleaner.clean_report(clean_opts, self.archive.archive_dir)
             if clean_opts.keyword_file is not None:
                 os.remove(clean_opts.keyword_file.name)
                 logger.warn("WARNING: Skipping keywords found in remove.conf")
             return fresh[0]
-        return self.archive.create_tar_file()
+        return self.archive
 
 
 class CleanOptions(object):
     """
     Options for soscleaner
     """
-    def __init__(self, config, tmp_dir, rm_conf, hostname_path):
+    def __init__(self, config, tmp_dir, rm_conf):
         self.report_dir = tmp_dir
         self.domains = []
         self.files = []
@@ -288,6 +242,6 @@ class CleanOptions(object):
 
         if config.obfuscate_hostname:
             # default to its original location
-            self.hostname_path = hostname_path or 'insights_commands/hostname'
+            self.hostname_path = 'data/insights_commands/hostname'
         else:
             self.hostname_path = None
