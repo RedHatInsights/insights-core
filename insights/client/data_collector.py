@@ -16,7 +16,7 @@ from tempfile import NamedTemporaryFile
 
 from insights.util import mangle
 from ..contrib.soscleaner import SOSCleaner
-from .utilities import _expand_paths, get_version_info, read_pidfile
+from .utilities import _expand_paths, get_version_info, read_pidfile, get_tags
 from .constants import InsightsConstants as constants
 from .insights_spec import InsightsFile, InsightsCommand
 
@@ -59,6 +59,12 @@ class DataCollector(object):
         version_info = get_version_info()
         self.archive.add_metadata_to_archive(
             json.dumps(version_info), '/version_info')
+
+    def _write_tags(self):
+        logger.debug("Writing tags to archive...")
+        tags = get_tags()
+        if tags is not None:
+            self.archive.add_metadata_to_archive(json.dumps(tags), '/tags.json')
 
     def _run_pre_command(self, pre_cmd):
         '''
@@ -218,6 +224,7 @@ class DataCollector(object):
         self._write_branch_info(branch_info)
         self._write_display_name()
         self._write_version_info()
+        self._write_tags()
         logger.debug('Metadata collection finished.')
 
     def done(self, conf, rm_conf):
