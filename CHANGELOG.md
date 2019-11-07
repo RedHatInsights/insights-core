@@ -1,5 +1,17 @@
 # Change Log
 
+## [insights-core-3.0.132-1221](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.132-1221) (2019-11-07)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.131-1215...insights-core-3.0.132-1221)
+
+**Fixed bugs:**
+
+- Blacklist patterns are not being filtered correctly [\#2287](https://github.com/RedHatInsights/insights-core/issues/2287)
+- config tree combiner incorrectly detects recursive includes [\#2214](https://github.com/RedHatInsights/insights-core/issues/2214)
+
+**Closed issues:**
+
+- Add openvswitch\_other\_config parser for sosreport [\#2286](https://github.com/RedHatInsights/insights-core/issues/2286)
+
 ## [insights-core-3.0.131-1215](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.131-1215) (2019-10-30)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.130-1209...insights-core-3.0.131-1215)
 
