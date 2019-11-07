@@ -475,6 +475,16 @@ DNSSDEnable on
 """
 
 
+MULTIPLE_INCLUDES = """
+<IfVersion < 2.4>
+  Include /etc/httpd/conf.d/05-foreman.d/*.conf
+</IfVersion>
+<IfVersion >= 2.4>
+  IncludeOptional /etc/httpd/conf.d/05-foreman.d/*.conf
+</IfVersion>
+"""
+
+
 def test_mixed_case_tags():
     httpd = _HttpdConf(context_wrap(HTTPD_CONF_MIXED, path='/etc/httpd/conf/httpd.conf'))
     assert httpd.find("ServerLimit").value == 256
@@ -761,3 +771,17 @@ def test_unicode_comments():
 
     rewrite_cond = result["DNSSDEnable"]
     assert len(rewrite_cond) == 1
+
+
+def test_multiple_includes():
+    httpd1 = _HttpdConf(context_wrap(MULTIPLE_INCLUDES, path='/etc/httpd/conf/httpd.conf'))
+    httpd2 = _HttpdConf(context_wrap(UNICODE_COMMENTS, path='/etc/httpd/conf.d/05-foreman.d/hello.conf'))
+    result = HttpdConfTree([httpd1, httpd2])
+    assert len(result["IfVersion"]["DNSSDEnable"]) == 2
+
+
+def test_recursive_includes():
+    with pytest.raises(Exception):
+        httpd1 = _HttpdConf(context_wrap(MULTIPLE_INCLUDES, path='/etc/httpd/conf/httpd.conf'))
+        httpd2 = _HttpdConf(context_wrap(MULTIPLE_INCLUDES, path='/etc/httpd/conf.d/05-foreman.d/hello.conf'))
+        HttpdConfTree([httpd1, httpd2])
