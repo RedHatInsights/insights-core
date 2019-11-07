@@ -221,7 +221,7 @@ class TextFileProvider(FileProvider):
 
         patterns = "\n".join(blacklist.get_disallowed_patterns())
         if patterns:
-            grep = ["grep", "-v" "-F", patterns]
+            grep = ["grep", "-v", "-F", patterns]
             if not args:
                 grep.append(self.path)
             args.append(grep)
