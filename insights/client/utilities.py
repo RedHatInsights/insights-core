@@ -329,8 +329,8 @@ def get_tags(tags_file_path=os.path.join(constants.default_conf_dir, "tags.conf"
         with open(tags_file_path) as f:
             data = f.read()
             tags = yaml.load(data, Loader=Loader)
-    except FileNotFoundError as e:
-        logger.debug("tags file does not exist: %s", e)
+    except EnvironmentError as e:
+        logger.debug("tags file does not exist: %s", os.strerror(e.errno))
 
     return tags
 
