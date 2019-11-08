@@ -15,7 +15,9 @@ from .auto_config import try_auto_configuration
 from .utilities import (delete_registered_file,
                         delete_unregistered_file,
                         write_to_disk,
-                        generate_machine_id)
+                        generate_machine_id,
+                        get_tags,
+                        write_tags)
 
 logger = logging.getLogger(__name__)
 net_logger = logging.getLogger("network")
@@ -55,6 +57,11 @@ class InsightsClient(object):
         # used for requests
         self.session = None
         self.connection = None
+
+        if self.config.group:
+            tags = get_tags()
+            tags["group"] = self.config.group
+            write_tags(tags)
 
     def _net(func):
         def _init_connection(self, *args, **kwargs):
