@@ -64,7 +64,7 @@ class DataCollector(object):
         logger.debug("Writing tags to archive...")
         tags = get_tags()
         if tags is not None:
-            self.archive.add_metadata_to_archive(json.dumps(tags), '/tags.json')
+            self.archive.add_metadata_to_archive(json.dumps({constants.app_name: tags}), '/tags.json')
 
     def _run_pre_command(self, pre_cmd):
         '''
