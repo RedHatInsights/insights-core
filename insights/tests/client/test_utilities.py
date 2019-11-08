@@ -254,3 +254,11 @@ def test_get_tags_empty():
 def test_get_tags_nonexist():
     got = util.get_tags("/file/does/not/exist")
     assert got is None
+
+
+def test_write_tags():
+    tags = {'foo': 'bar'}
+    fp = tempfile.NamedTemporaryFile()
+    util.write_tags(tags, tags_file_path=fp.name)
+    got = util.get_tags(fp.name)
+    assert got == tags
