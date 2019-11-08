@@ -79,20 +79,19 @@ class Sealert(Parser):
 
         self.raw_lines = content
         self.reports = []
-        last_item = None
+        last_item = [None]  # python 2 doesn't have `nonlocal`
 
         def finish_item():
-            nonlocal last_item
-            if last_item is not None:
-                self.reports.append("\n".join(last_item).strip())
-                last_item = None
+            if last_item[0] is not None:
+                self.reports.append("\n".join(last_item[0]).strip())
+                last_item[0] = None
 
         for line in content:
             if line.startswith("SELinux is preventing "):
                 finish_item()
-                last_item = [line]
-            elif last_item is not None:
-                last_item.append(line)
+                last_item[0] = [line]
+            elif last_item[0] is not None:
+                last_item[0].append(line)
             else:
                 # skip the first report if it contains only partial data
                 pass
