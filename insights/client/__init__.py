@@ -60,6 +60,8 @@ class InsightsClient(object):
 
         if self.config.group:
             tags = get_tags()
+            if tags is None:
+                tags = {}
             tags["group"] = self.config.group
             write_tags(tags)
 
