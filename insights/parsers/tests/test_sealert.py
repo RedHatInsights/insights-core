@@ -111,11 +111,11 @@ Hash: sh,rpm_script_t,container_runtime_exec_t,file,entrypoint
 
 INPUT_2 = """
 
-{}
+{0}
 
 
 
-{}
+{1}
 
 """.format(REPORT_1, REPORT_2)
 
