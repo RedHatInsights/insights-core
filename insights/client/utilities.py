@@ -16,9 +16,9 @@ from six.moves.configparser import RawConfigParser
 
 import yaml
 try:
-    from yaml import CLoader as Loader
+    from yaml import CLoader as Loader, CDumper as Dumper
 except ImportError:
-    from yaml import Loader
+    from yaml import Loader, Dumper
 
 from .. import package_info
 from .constants import InsightsConstants as constants
@@ -333,3 +333,18 @@ def get_tags(tags_file_path=os.path.join(constants.default_conf_dir, "tags.conf"
         logger.debug("tags file does not exist: %s", e)
 
     return tags
+
+
+def write_tags(tags, tags_file_path=os.path.join(constants.default_conf_dir, "tags.conf")):
+    """
+    Writes tags to tags_file_path
+
+    Arguments:
+      - tags (dict): the tags to write
+      - tags_file_path (string): path to which tag data will be written
+
+    Returns: None
+    """
+    with open(tags_file_path, mode="w") as f:
+        data = yaml.dump(tags, Dumper=Dumper)
+        f.write(data)
