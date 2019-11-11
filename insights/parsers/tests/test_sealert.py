@@ -1,6 +1,6 @@
 from insights.parsers import SkipException
 from insights.tests import context_wrap
-from insights.parsers.sealert import Sealert
+from insights.parsers.sealert import Sealert, Report
 import pytest
 
 INPUT_1 = """
@@ -120,9 +120,28 @@ INPUT_2 = """
 """.format(REPORT_1, REPORT_2)
 
 
+def test_report():
+    r = Report()
+    r.append_line("")
+    r.append_line("a")
+    r.append_line("b")
+    r.append_line("")
+    r.append_line("")
+    assert len(r.lines) == 5
+    assert len(r.lines_stripped) == 3
+    assert r.lines_stripped == ["", "a", "b"]
+    assert str(r) == "a\nb"
+
+
 def test_sealert():
     with pytest.raises(SkipException):
         Sealert(context_wrap(INPUT_1))
+    with pytest.raises(SkipException):
+        Sealert(context_wrap(""))
     sealert = Sealert(context_wrap(INPUT_2))
     assert sealert.raw_lines == INPUT_2.strip().split("\n")
-    assert sealert.reports == [REPORT_1, REPORT_2]
+    assert len(sealert.reports) == 2
+    assert str(sealert.reports[0]) == REPORT_1
+    assert str(sealert.reports[1]) == REPORT_2
+    assert sealert.reports[0].lines[10] == REPORT_1.split("\n")[10]
+    assert sealert.reports[0].lines_stripped == REPORT_1.split("\n")

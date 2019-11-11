@@ -9,6 +9,32 @@ from insights.specs import Specs
 from insights.parsers import SkipException
 
 
+class Report(object):
+
+    def __init__(self):
+        self.lines = []
+
+    def __str__(self):
+        return "\n".join(self.lines).strip()
+
+    def append_line(self, x):
+        self.lines.append(x)
+
+    @property
+    def lines_stripped(self):
+        """
+        Returns the lines without trailing empty lines
+
+        Returns:
+            list: The lines without empty lines at the end of the list.
+        """
+        ret = []
+        for l in reversed(self.lines):
+            if l or ret:
+                ret.append(l)
+        return list(reversed(ret))
+
+
 @parser(Specs.sealert)
 class Sealert(Parser):
     """
@@ -62,12 +88,14 @@ class Sealert(Parser):
         <class 'insights.parsers.sealert.Sealert'>
         >>> sealert.raw_lines[0]
         'SELinux is preventing rngd from using the dac_override capability.'
-        >>> sealert.reports[1].split('\\n')[0]
+        >>> sealert.reports[1].lines_stripped[0]
+        'SELinux is preventing sh from entrypoint access on the file /usr/bin/podman.'
+        >>> str(sealert.reports[1]).split('\\n')[0]
         'SELinux is preventing sh from entrypoint access on the file /usr/bin/podman.'
 
     Attributes:
         raw_lines (list[str]): Unparsed output as list of lines
-        reports (list[str]): Sealert reports - each report is a single multiline string
+        reports (list[Report]): Sealert reports
 
     Raises:
         SkipException: When output is empty
@@ -79,23 +107,12 @@ class Sealert(Parser):
 
         self.raw_lines = content
         self.reports = []
-        last_item = [None]  # python 2 doesn't have `nonlocal`
-
-        def finish_item():
-            if last_item[0] is not None:
-                self.reports.append("\n".join(last_item[0]).strip())
-                last_item[0] = None
 
         for line in content:
             if line.startswith("SELinux is preventing "):
-                finish_item()
-                last_item[0] = [line]
-            elif last_item[0] is not None:
-                last_item[0].append(line)
-            else:
-                # skip the first report if it contains only partial data
-                pass
-        finish_item()
+                self.reports.append(Report())
+            if self.reports:  # skips the first report if it contains only partial data
+                self.reports[-1].append_line(line)
 
         if not self.reports:
             raise SkipException("No sealert reports")
