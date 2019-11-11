@@ -14,7 +14,6 @@ net_logger = logging.getLogger('network')
 
 IDENTITY_URI = 'http://169.254.169.254/latest/dynamic/instance-identity'
 IDENTITY_DOC_URI = IDENTITY_URI + '/document'
-IDENTITY_SIG_URI = IDENTITY_URI + '/signature'
 IDENTITY_PKCS7_URI = IDENTITY_URI + '/pkcs7'
 
 
@@ -59,9 +58,8 @@ def get_aws_identity(conn):
     '''
     logger.info('Fetching AWS identity information.')
     doc_res = get_uri(conn, IDENTITY_DOC_URI)
-    sig_res = get_uri(conn, IDENTITY_SIG_URI)
     pkcs7_res = get_uri(conn, IDENTITY_SIG_URI)
-    if not (doc_res.ok and sig_res.ok and pkcs7_res.ok):
+    if not (doc_res.ok and pkcs7_res.ok):
         logger.error('Error getting identity information.')
         return None
     logger.debug('Identity information obtained successfully.')
@@ -69,7 +67,6 @@ def get_aws_identity(conn):
 
     return {
         'document': identity_doc.decode('utf-8'),
-        'signature': sig_res.content.decode('utf-8'),
         'pkcs7': pkcs7_res.content.decode('utf-8')
     }
 
@@ -96,13 +93,13 @@ def post_to_hydra(conn, data):
         # error, return False
         logger.error(e)
         try:
-            err_msg = res.json().get('command-line-output', '')
-            logger.error(err_msg)
+            res_json = res.json()
+            err_msg = res_json.get('message', '')
+            err_details = res_json.get('detailMessage', '')
+            logger.error('%s\n%s', err_msg, err_details)
         except ValueError as e2:
             logger.error(e2)
         return False
-    # if success,
-    # something like "Entitlement information has been sent." Maybe link to a KB article
     logger.info('Entitlement information has been sent.')
     return True
 
