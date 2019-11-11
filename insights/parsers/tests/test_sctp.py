@@ -5,6 +5,7 @@ from insights.parsers import ParseException, SkipException
 from insights.parsers import sctp
 from insights.parsers.sctp import SCTPEps
 from insights.parsers.sctp import SCTPAsc
+from insights.parsers.sctp import SCTPSnmp
 from insights.tests import context_wrap
 
 SCTP_EPS_DETAILS = """
@@ -62,6 +63,43 @@ SOCK   STY SST ST HBKT ASSOC-ID TX_QUEUE RX_QUEUE UID INODE LPORT RPORT LADDRS R
 ffff88045ac7e000 ffff88062077aa00 2   1   4  1205  963        0        0     200 273361167 11567 11166  10.0.0.102 10.0.0.70 *10.0.0.109 10.0.0.77      1000     2     2   10    0    0        0
 """.strip()
 
+SCTP_SNMP = """
+SctpCurrEstab                   	5380
+SctpActiveEstabs                	12749
+SctpPassiveEstabs               	55
+SctpAborteds                    	2142
+SctpShutdowns                   	5295
+SctpOutOfBlues                  	36786
+SctpChecksumErrors              	0
+SctpOutCtrlChunks               	1051492
+SctpOutOrderChunks              	17109
+SctpOutUnorderChunks            	0
+SctpInCtrlChunks                	1018398
+SctpInOrderChunks               	17033
+SctpInUnorderChunks             	0
+SctpFragUsrMsgs                 	0
+SctpReasmUsrMsgs                	0
+SctpOutSCTPPacks                	1068678
+""".strip()
+
+SCTP_SNMP_NO_1 = """
+""".strip()
+
+SCTP_SNMP_NO_2 = """
+SctpCurrEstab 5380 SctpActiveEstabs 12749 SctpPassiveEstabs 55 SctpAborteds 2142 SctpShutdowns 5295 SctpOutOfBlues 36786 SctpChecksumErrors 0 SctpOutCtrlChunks 1051492 SctpOutOrderChunks 17109
+""".strip()
+
+SCTP_SNMP_DOC = """
+SctpCurrEstab                   	5380
+SctpActiveEstabs                	12749
+SctpPassiveEstabs               	55
+SctpAborteds                    	2142
+SctpShutdowns                   	5295
+SctpOutOfBlues                  	36786
+SctpChecksumErrors              	0
+SctpOutCtrlChunks               	1051492
+"""
+
 
 def test_sctp_eps():
     sctp_info = SCTPEps(context_wrap(SCTP_EPS_DETAILS))
@@ -113,7 +151,32 @@ def test_sctp_asc_exceptions():
 def test_sctp_doc_examples():
     env = {
         'sctp_info': SCTPEps(context_wrap(SCTP_EPS_DETAILS_DOC)),
-        'sctp_asc': SCTPAsc(context_wrap(SCTP_ASSOC_DOC))
+        'sctp_asc': SCTPAsc(context_wrap(SCTP_ASSOC_DOC)),
+        'sctp_snmp': SCTPSnmp(context_wrap(SCTP_SNMP_DOC))
     }
     failed, total = doctest.testmod(sctp, globs=env)
     assert failed == 0
+
+
+def test_sctp_snmp():
+    sctp_snmp = SCTPSnmp(context_wrap(SCTP_SNMP))
+    assert sorted(sctp_snmp) == sorted({'SctpCurrEstab': 5380, 'SctpActiveEstabs': 12749, 'SctpPassiveEstabs': 55, 'SctpAborteds': 2142, 'SctpShutdowns': 5295, 'SctpOutOfBlues': 36786, 'SctpChecksumErrors': 0, 'SctpOutCtrlChunks': 1051492, 'SctpOutOrderChunks': 17109, 'SctpOutUnorderChunks': 0, 'SctpInCtrlChunks': 1018398, 'SctpInOrderChunks': 17033, 'SctpInUnorderChunks': 0, 'SctpFragUsrMsgs': 0, 'SctpReasmUsrMsgs': 0, 'SctpOutSCTPPacks': 1068678})
+
+    assert sctp_snmp.get('SctpCurrEstab') == 5380
+    assert sctp_snmp.get('SctpReasmUsrMsgs') == 0
+
+    assert sctp_snmp.get('something_else') is None
+
+
+def test_sctp_snmp_exceptions():
+    with pytest.raises(SkipException) as exc:
+        sctp_snmp = SCTPSnmp(context_wrap(SCTP_SNMP_NO_1))
+        assert sctp_snmp is None
+
+    assert 'No Contents' in str(exc)
+
+    with pytest.raises(ParseException) as exc:
+        sctp_snmp = SCTPSnmp(context_wrap(SCTP_SNMP_NO_2))
+        assert sctp_snmp is None
+
+    assert 'Contents are not compatible to this parser' in str(exc)
