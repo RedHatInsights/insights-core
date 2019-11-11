@@ -59,6 +59,8 @@ community_to_release_map = {
     "12.2.8-89": {'version': "3.2.1", 'major': '3', 'minor': '2', 'downstream_release': '1'},
     "12.2.8-128": {'version': "3.2.2", 'major': '3', 'minor': '2', 'downstream_release': '2'},
     "12.2.12-45": {'version': "3.3", 'major': '3', 'minor': '3', 'downstream_release': '0'},
+    "12.2.12-48": {'version': "3.3", 'major': '3', 'minor': '3', 'downstream_release': 'async'},
+    "12.2.12-74": {'version': "3.3.1", 'major': '3', 'minor': '3', 'downstream_release': '1'},
 }
 
 
