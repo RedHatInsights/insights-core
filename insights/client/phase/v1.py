@@ -245,22 +245,18 @@ def post_update(client, config):
 
 @phase
 def collect_and_output(client, config):
-    '''
-    Effectively the "main" of the client execution.
-    Run any subcommand if specified,otherwise collect, upload, exit.
-    '''
     # last phase, delete PID file on exit
     atexit.register(write_to_disk, constants.pidfile, delete=True)
-    # handle branching/subcommands
     # register cloud (aws)
     if config.portal_access or config.portal_access_no_insights:
         if aws_main(config):
             sys.exit(constants.sig_kill_ok)
         else:
             sys.exit(constants.sig_kill_bad)
-    # compliance
+    # --compliance was called
     if config.compliance:
         config.payload, config.content_type = ComplianceClient(config).oscap_scan()
+
     # default (below)
     if config.payload:
         insights_archive = config.payload
