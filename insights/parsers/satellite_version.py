@@ -37,7 +37,14 @@ from insights.specs import Specs
 
 @parser(Specs.satellite_version_rb)
 class Satellite6Version(Parser):
-    """ Class for parsing the content of ``satellite_version``."""
+    """
+    .. warning::
+        This is just a parser for satllite 6.1 and previous versions.
+        Please use the combiner `insights.combiners.satellite_version.SatelliteVersion` class
+        to cover all versions.
+
+    Class for parsing the content of ``satellite_version``.
+    """
 
     def parse_content(self, content):
         # To keep compatible with combiner satellite_version
