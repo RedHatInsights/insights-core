@@ -1,8 +1,9 @@
 import logging
-import requests
-import ssl
-import urllib3
 import base64
+from requests import ConnectionError, Timeout
+from requests.exceptions import HTTPError
+from ssl import SSLError
+from urllib3.exceptions import MaxRetryError
 from insights.client.connection import InsightsConnection
 from insights.client.schedule import get_scheduler
 from insights.client.constants import InsightsConstants as constants
@@ -49,7 +50,7 @@ def get_uri(conn, uri):
     try:
         net_logger.info('GET %s', uri)
         res = conn.session.get(uri, timeout=conn.config.http_timeout)
-    except (requests.ConnectionError, requests.Timeout) as e:
+    except (ConnectionError, Timeout) as e:
         logger.error(e)
         logger.error('Could not reach %s', uri)
         return None
@@ -86,14 +87,14 @@ def post_to_hydra(conn, data):
     try:
         net_logger.info('POST %s', hydra_endpoint)
         res = conn.session.post(hydra_endpoint, timeout=conn.config.http_timeout, data=data)
-    except (requests.ConnectionError, requests.Timeout, ssl.SSLError, urllib3.exceptions.MaxRetryError) as e:
+    except (ConnectionError, Timeout, SSLError, MaxRetryError) as e:
         logger.error(e)
         logger.error('Could not reach %s', hydra_endpoint)
         return False
     net_logger.info('Status code: %s', res.status_code)
     try:
         res.raise_for_status()
-    except requests.exceptions.HTTPError as e:
+    except HTTPError as e:
         # if failure,
         # error, return False
         logger.error(e)

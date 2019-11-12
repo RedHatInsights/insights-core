@@ -1,7 +1,8 @@
-import requests
-import ssl
-import urllib3
 import json
+from requests import ConnectionError, Timeout
+from requests.exceptions import HTTPError
+from ssl import SSLError
+from urllib3.exceptions import MaxRetryError
 from mock.mock import patch, Mock
 from insights.client.config import InsightsConfig
 from insights.client.connection import InsightsConnection
@@ -93,7 +94,7 @@ def test_post_to_hydra(logger_error):
     conn.session.post.assert_called_once()
 
     # connection error
-    conn.session.post = Mock(side_effect=(requests.ConnectionError, requests.Timeout, ssl.SSLError, urllib3.exceptions.MaxRetryError))
+    conn.session.post = Mock(side_effect=(ConnectionError, Timeout, SSLError, MaxRetryError))
     assert not aws.post_to_hydra(conn, '')
     conn.session.post.assert_called_once()
 
@@ -102,7 +103,7 @@ def test_post_to_hydra(logger_error):
         return_value=Mock(status_code=500,
                           text=error_msg,
                           json=Mock(return_value=error_json),
-                          raise_for_status=Mock(return_value='', side_effect=requests.exceptions.HTTPError)))
+                          raise_for_status=Mock(return_value='', side_effect=HTTPError)))
     assert not aws.post_to_hydra(conn, '')
     conn.session.post.assert_called_once()
     logger_error.assert_called_with('%s\n%s', 'error', 'error details')
@@ -112,7 +113,7 @@ def test_post_to_hydra(logger_error):
         return_value=Mock(status_code=500,
                           text='',
                           json=Mock(side_effect=ValueError),
-                          raise_for_status=Mock(return_value='', side_effect=requests.exceptions.HTTPError)))
+                          raise_for_status=Mock(return_value='', side_effect=HTTPError)))
     assert not aws.post_to_hydra(conn, '')
     conn.session.post.assert_called_once()
     logger_error.assert_called_with('Could not parse JSON response.')
