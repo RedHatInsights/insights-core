@@ -359,14 +359,16 @@ DEFAULT_OPTS = {
         'opt': ['--portal-access'],
         'group': 'platform',
         'action': 'store_true',
-        'help': 'Entitle an AWS instance with Red Hat and register with Red Hat Insights'
+        'help': argparse.SUPPRESS
+        # 'help': 'Entitle an AWS instance with Red Hat and register with Red Hat Insights'
     },
     'portal_access_no_insights': {
         'default': False,
         'opt': ['--portal-access-no-insights'],
         'group': 'platform',
         'action': 'store_true',
-        'help': 'Entitle an AWS instance with Red Hat, but do not register with Red Hat Insights'
+        'help': argparse.SUPPRESS
+        # 'help': 'Entitle an AWS instance with Red Hat, but do not register with Red Hat Insights'
     },
     'portal_access_hydra_url': {
         # non-CLI

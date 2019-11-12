@@ -22,6 +22,14 @@ def aws_main(config):
     Process AWS entitlements with Hydra
     '''
     conn = InsightsConnection(config)
+
+    # workaround for a workaround
+    #   the hydra API doesn't accept the legacy cert
+    #   and legacy_upload=False currently just
+    #   redirects to the classic API with /platform added
+    #   so if doing AWS entitlement, use cert_verify=True
+    conn.session.verify = True
+
     bundle = get_aws_identity(conn)
     if not bundle:
         return False
@@ -32,8 +40,6 @@ def aws_main(config):
     #   wasn't specified
     if not config.portal_access_no_insights:
         enable_delayed_registration()
-        job = get_scheduler(config)
-        job.set_daily()
     return True
 
 
@@ -58,7 +64,7 @@ def get_aws_identity(conn):
     '''
     logger.info('Fetching AWS identity information.')
     doc_res = get_uri(conn, IDENTITY_DOC_URI)
-    pkcs7_res = get_uri(conn, IDENTITY_SIG_URI)
+    pkcs7_res = get_uri(conn, IDENTITY_PKCS7_URI)
     if not (doc_res.ok and pkcs7_res.ok):
         logger.error('Error getting identity information.')
         return None
@@ -98,7 +104,7 @@ def post_to_hydra(conn, data):
             err_details = res_json.get('detailMessage', '')
             logger.error('%s\n%s', err_msg, err_details)
         except ValueError as e2:
-            logger.error(e2)
+            logger.error('Could not parse JSON response.')
         return False
     logger.info('Entitlement information has been sent.')
     return True
@@ -111,3 +117,5 @@ def enable_delayed_registration():
     '''
     logger.debug('Writing to %s', constants.register_marker_file)
     write_to_disk(constants.register_marker_file)
+    job = get_scheduler(config)
+    job.set_daily()
