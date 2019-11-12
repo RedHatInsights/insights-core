@@ -8,7 +8,6 @@ import sys
 from six.moves import configparser as ConfigParser
 
 from .constants import InsightsConstants as constants
-from .apps import plugins_list
 
 logger = logging.getLogger(__name__)
 
