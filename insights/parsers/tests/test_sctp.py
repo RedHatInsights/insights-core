@@ -14,6 +14,7 @@ ffff88017e0a0200 ffff880299f7fa00 2   10  29   11165   200 299689357 10.0.0.102 
 ffff880612e81c00 ffff8803c28a1b00 2   10  30   11166   200 273361203 10.0.0.102 10.0.0.70 172.31.1.2
 ffff88061fba9800 ffff88061f8a3180 2   10  31   11167   200 273361145 10.0.0.102 10.0.0.70
 ffff88031e6f1a00 ffff88031dbdb180 2   10  32   11168   200 273365974 10.0.0.102 10.0.0.70 192.168.11.2
+ffff88031e6f1a00 ffff88031dbdb180 2   10  32   11168   200 273365974 192.168.11.12
 """.strip()
 
 SCTP_EPS_DETAILS_NO = """
@@ -104,11 +105,11 @@ SctpOutCtrlChunks               	1051492
 def test_sctp_eps():
     sctp_info = SCTPEps(context_wrap(SCTP_EPS_DETAILS))
     assert sorted(sctp_info.sctp_local_ports) == sorted(['11165', '11166', '11167', '11168'])
-    assert sorted(sctp_info.sctp_local_ips) == sorted(['10.0.0.102', '10.0.0.70', '172.31.1.2', '192.168.11.2'])
+    assert sorted(sctp_info.sctp_local_ips) == sorted(['10.0.0.102', '10.0.0.70', '172.31.1.2', '192.168.11.2', '192.168.11.12'])
     assert sctp_info.sctp_eps_ips == {'ffff88017e0a0200': ['10.0.0.102', '10.0.0.70'],
                                        'ffff880612e81c00': ['10.0.0.102', '10.0.0.70', '172.31.1.2'],
                                        'ffff88061fba9800': ['10.0.0.102', '10.0.0.70'],
-                                       'ffff88031e6f1a00': ['10.0.0.102', '10.0.0.70', '192.168.11.2']}
+                                       'ffff88031e6f1a00': ['10.0.0.102', '10.0.0.70', '192.168.11.2', '192.168.11.12']}
     assert len(sctp_info.search(local_port='11165')) == 1
 
 
