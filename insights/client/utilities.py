@@ -346,5 +346,5 @@ def write_tags(tags, tags_file_path=os.path.join(constants.default_conf_dir, "ta
     Returns: None
     """
     with open(tags_file_path, mode="w") as f:
-        data = yaml.dump(tags, Dumper=Dumper)
+        data = yaml.dump(tags, Dumper=Dumper, default_flow_style=False)
         f.write(data)
