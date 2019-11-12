@@ -1,7 +1,6 @@
 import logging
 import requests
 import ssl
-import sys
 import urllib3
 import base64
 from insights.client.connection import InsightsConnection
@@ -39,7 +38,7 @@ def aws_main(config):
     # register with insights if this option
     #   wasn't specified
     if not config.portal_access_no_insights:
-        enable_delayed_registration()
+        enable_delayed_registration(config)
     return True
 
 
@@ -103,14 +102,14 @@ def post_to_hydra(conn, data):
             err_msg = res_json.get('message', '')
             err_details = res_json.get('detailMessage', '')
             logger.error('%s\n%s', err_msg, err_details)
-        except ValueError as e2:
+        except ValueError:
             logger.error('Could not parse JSON response.')
         return False
     logger.info('Entitlement information has been sent.')
     return True
 
 
-def enable_delayed_registration():
+def enable_delayed_registration(config):
     '''
     Write a marker file to allow client to know that
     it should attempt to register when it runs
