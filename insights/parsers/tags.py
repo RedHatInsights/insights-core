@@ -5,5 +5,5 @@ from insights.specs import Specs
 
 @parser(Specs.tags)
 class Tags(JSONParser):
-    """ Class for parsing the content of ``branch_info``."""
+    """ Class for parsing the content of ``tags.json``."""
     pass
