@@ -7,7 +7,7 @@ The satellite enabled features parser reads the output of
 
 Sample output of ``curl -sk https://localhost:9090/features --connect-timeout 5``::
 
-    ["ansible","dhcp","discovery","dns","dynflow","logs","openscap","pulp","puppet","puppetca","ssh","templates","tftp"]
+    ["ansible","dhcp","discovery",dynflow","logs","openscap","pulp","puppet","puppetca","ssh","templates","tftp"]
 
 Examples:
 

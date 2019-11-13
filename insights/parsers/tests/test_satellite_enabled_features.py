@@ -6,8 +6,7 @@ from insights.tests import context_wrap
 
 
 enabled_features = '''
-["ansible","dhcp","discovery","dynflow","logs","openscap","pulp","puppet",
-"puppetca","ssh","templates","tftp"]
+["ansible","dhcp","discovery",dynflow","logs","openscap","pulp","puppet","puppetca","ssh","templates","tftp"]
 '''
 empty_enabled_features = '''
 []
