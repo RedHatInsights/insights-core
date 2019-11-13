@@ -9,6 +9,9 @@ SCTPEps - file ``/proc/net/sctp/eps``
 
 SCTPAsc - file ``/proc/net/sctp/assocs``
 ----------------------------------------
+
+SCTPSnmp - file ``/proc/net/sctp/snmp``
+---------------------------------------
 """
 
 from insights import Parser, parser
@@ -254,3 +257,68 @@ class SCTPAsc(Parser):
                 when args search do not match then it returns `[]`.
         """
         return keyword_search(self.data, **args)
+
+
+@parser(Specs.sctp_snmp)
+class SCTPSnmp(Parser, dict):
+    """
+    This parser parses the content of ``/proc/net/sctp/snmp`` file,
+    which contains statistics related to SCTP states, packets and chunks.
+
+    Sample content::
+
+        SctpCurrEstab                   	5380
+        SctpActiveEstabs                	12749
+        SctpPassiveEstabs               	55
+        SctpAborteds                    	2142
+        SctpShutdowns                   	5295
+        SctpOutOfBlues                  	36786
+        SctpChecksumErrors              	0
+        SctpOutCtrlChunks               	1051492
+
+    Data is stored in a dictionary.
+
+    Examples:
+
+        >>> type(sctp_snmp)
+        <class 'insights.parsers.sctp.SCTPSnmp'>
+        >>> sctp_snmp.get('SctpCurrEstab')
+        5380
+        >>> sctp_snmp.get('SctpChecksumErrors') == 0
+        True
+        >>> 'SctpShutdowns' in sctp_snmp
+        True
+        >>> len(sctp_snmp)
+        8
+        >>> sorted(sctp_snmp.keys())
+        ['SctpAborteds', 'SctpActiveEstabs', 'SctpChecksumErrors', 'SctpCurrEstab', 'SctpOutCtrlChunks', 'SctpOutOfBlues', 'SctpPassiveEstabs', 'SctpShutdowns']
+
+    Resultant Data::
+
+        {
+            'SctpCurrEstab': 5380,
+            'SctpActiveEstabs': 12749,
+            'SctpPassiveEstabs': 55,
+            'SctpAborteds': 2142,
+            'SctpShutdowns': 5295,
+            'SctpOutOfBlues': 36786,
+            'SctpChecksumErrors': 0,
+            ...
+            ...
+        }
+
+    Raises:
+        SkipException: When contents are empty.
+        ParseException: When file contents are not in expected format.
+    """
+
+    def parse_content(self, content):
+        if (not content) or (not self.file_path):
+            raise SkipException("No Contents")
+
+        for line in content:
+            line_strip = line.split()
+            if len(line_strip) != 2:
+                raise ParseException("Contents are not compatible to this parser")
+
+            self[line_strip[0]] = int(line_strip[1])
