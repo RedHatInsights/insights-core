@@ -514,6 +514,7 @@ class Specs(SpecSet):
     scsi = RegistryPoint()
     sctp_asc = RegistryPoint()
     sctp_eps = RegistryPoint()
+    sctp_snmp = RegistryPoint()
     scsi_eh_deadline = RegistryPoint(multi_output=True)
     scsi_fwver = RegistryPoint(multi_output=True)
     secure = RegistryPoint(filterable=True)
