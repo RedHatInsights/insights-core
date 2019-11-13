@@ -20,6 +20,7 @@ Examples:
 """
 
 from insights import parser, CommandParser
+from insights.parsers import SkipException
 from insights.specs import Specs
 
 
@@ -34,3 +35,5 @@ class SatelliteEnabledFeatures(CommandParser, list):
         for line in content:
             features = line.strip('[]')
             self.extend([feature.strip('"') for feature in features.split(',') if feature])
+        if len(self) == 0:
+            raise SkipException
