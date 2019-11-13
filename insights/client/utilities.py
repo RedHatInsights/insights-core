@@ -11,6 +11,7 @@ import shlex
 import re
 import stat
 import sys
+import tempfile
 from subprocess import Popen, PIPE, STDOUT
 from six.moves.configparser import RawConfigParser
 
@@ -105,6 +106,11 @@ def write_to_disk(filename, delete=False, content=get_time()):
         with open(filename, 'wb') as f:
             f.write(content.encode('utf-8'))
 
+def write_atomically(path, writer):
+    with tempfile.NamedTemporaryFile(mode="w", dir=os.path.dirname(path), delete=False) as fo:
+            writer(fo)
+            fo.flush()
+            os.rename(fo.name, path)
 
 def generate_machine_id(new=False,
                         destination_file=constants.machine_id_file):

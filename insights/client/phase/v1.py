@@ -246,16 +246,16 @@ def collect_and_output(client, config):
         config.payload, config.content_type = ComplianceClient(config).oscap_scan()
     if config.payload:
         insights_archive = config.payload
-    else:
+    elif not config.no_collect:
         try:
             insights_archive = client.collect()
         except RuntimeError as e:
             logger.error(e)
             sys.exit(constants.sig_kill_bad)
         config.content_type = 'application/vnd.redhat.advisor.collection+tgz'
+    else:
+        insights_archive = None
 
-    if not insights_archive:
-        sys.exit(constants.sig_kill_bad)
     resp = None
     if not config.no_upload:
         try:
@@ -266,8 +266,9 @@ def collect_and_output(client, config):
         except ValueError as e:
             logger.error(str(e))
             sys.exit(constants.sig_kill_bad)
-    else:
+    elif insights_archive:
         logger.info('Archive saved at %s', insights_archive)
+
     if resp:
         if config.to_json:
             print(json.dumps(resp))
@@ -279,6 +280,9 @@ def collect_and_output(client, config):
             else:
                 client.delete_archive(insights_archive, delete_parent_dir=True)
     client.delete_cached_branch_info()
+
+    if not config.no_results:
+        client.get_results(resp)
 
     # rotate eggs once client completes all work successfully
     try:

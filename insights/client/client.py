@@ -18,7 +18,8 @@ from .utilities import (generate_machine_id,
                         delete_unregistered_file,
                         determine_hostname,
                         read_pidfile,
-                        systemd_notify)
+                        systemd_notify,
+                        write_atomically)
 from .collection_rules import InsightsUploadConf
 from .data_collector import DataCollector
 from .connection import InsightsConnection
@@ -365,6 +366,16 @@ def upload(config, pconn, tar_file, content_type, collection_duration=None):
                 logger.error("All attempts to upload have failed!")
                 logger.error("Please see %s for additional information", config.logging_file)
 
+def get_results(config, pconn, upload_resp):
+    machine_id = get_machine_id()
+    url= pconn.base_url + "/v1/systems/" + machine_id + "/reports"
+    resp = pconn.session.get(url);
+    if resp.status_code == 200:
+        write_atomically(constants.insights_core_results_file, lambda f: f.write(resp.text))
+        return True
+    else:
+        logger.error("Failed to retrieve results, code %s", resp.status_code)
+        return False
 
 def _delete_archive_internal(config, archive):
     '''

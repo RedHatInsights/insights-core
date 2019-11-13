@@ -183,6 +183,20 @@ DEFAULT_OPTS = {
         'action': 'store_true',
         'group': 'debug'
     },
+    'no_collect': {
+        'default': False,
+        'opt': ['--no-collect'],
+        'help': 'Do not create the archive',
+        'action': 'store_true',
+        'group': 'debug'
+    },
+    'no_results': {
+        'default': False,
+        'opt': ['--no-results'],
+        'help': 'Do not retrieve current analysis results',
+        'action': 'store_true',
+        'group': 'debug'
+    },
     'obfuscate': {
         # non-CLI
         'default': False

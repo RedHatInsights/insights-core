@@ -384,11 +384,15 @@ class InsightsClient(object):
         if not os.path.exists(payload):
             raise IOError('Cannot upload %s: File does not exist.' % payload)
 
-        upload_results = client.upload(
+        upload_response = client.upload(
             self.config, self.connection, payload, content_type)
 
         # return api response
-        return upload_results
+        return upload_response
+
+    @_net
+    def get_results(self, upload_response=None):
+        client.get_results(self.config, self.connection, upload_response)
 
     def rotate_eggs(self):
         """
