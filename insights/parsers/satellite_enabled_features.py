@@ -4,7 +4,6 @@ SatelliteEnabledFeatures - command ``curl -sk https://localhost:9090/features --
 
 The satellite enabled features parser reads the output of
 ``curl -sk https://localhost:9090/features --connect-timeout 5`` and convert it into a list.
-Also it can check if some feature is enabled on this satellite server.
 
 Sample output of ``curl -sk https://localhost:9090/features --connect-timeout 5``::
 
@@ -12,17 +11,13 @@ Sample output of ``curl -sk https://localhost:9090/features --connect-timeout 5`
 
 Examples:
 
-    >>> type(satellite_feature)
+    >>> type(satellite_features)
     <class 'insights.parsers.satellite_enabled_features.SatelliteEnabledFeatures'>
-    >>> enabled_features = ['ansible', 'dhcp', 'discovery', 'dynflow', 'logs', 'openscap', 'pulp', 'puppet', 'puppetca', 'ssh', 'templates', 'tftp']
-    >>> satellite_feature == enabled_features
+    >>> 'dhcp' in satellite_features
     True
-    >>> satellite_feature.is_feature_enabled('dhcp')
-    True
-    >>> satellite_feature.is_feature_enabled('dns')
+    >>> 'dns' in satellite_features
     False
 """
-from __future__ import unicode_literals
 
 from insights import parser, CommandParser
 from insights.specs import Specs
@@ -34,10 +29,6 @@ class SatelliteEnabledFeatures(CommandParser, list):
     Read the ``curl -sk https://localhost:9090/features --connect-timeout 5`` command and
     convert it to a list.
     """
-
-    def is_feature_enabled(self, feature_name):
-        """Check some feature is enabled on this satellite server"""
-        return feature_name in self
 
     def parse_content(self, content):
         for line in content:
