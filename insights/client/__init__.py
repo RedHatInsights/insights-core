@@ -394,6 +394,10 @@ class InsightsClient(object):
     def get_results(self, upload_response=None):
         client.get_results(self.config, self.connection, upload_response)
 
+    @_net
+    def get_inventory(self):
+        client.get_inventory(self.config, self.connection)
+
     def rotate_eggs(self):
         """
             moves newest.egg to last_stable.egg

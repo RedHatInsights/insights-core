@@ -38,6 +38,7 @@ class InsightsConstants(object):
     insights_core_newest = os.path.join(insights_core_lib_dir, 'newest.egg')
     insights_core_gpg_sig_newest = os.path.join(insights_core_lib_dir, 'newest.egg.asc')
     insights_core_results_file = os.path.join(insights_core_lib_dir, "results.json")
+    insights_core_inventory_file = os.path.join(insights_core_lib_dir, "inventory.json")
     sig_kill_ok = 100
     sig_kill_bad = 101
     cached_branch_info = os.path.join(default_conf_dir, '.branch_info')

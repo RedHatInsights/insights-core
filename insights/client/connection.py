@@ -26,7 +26,8 @@ except ImportError:
 from .utilities import (determine_hostname,
                         generate_machine_id,
                         write_unregistered_file,
-                        write_registered_file)
+                        write_registered_file,
+                        write_atomically)
 from .cert_auth import rhsmCertificate
 from .constants import InsightsConstants as constants
 from insights import package_info
@@ -715,6 +716,11 @@ class InsightsConnection(object):
         logger.debug('Machine ID: %s', results[0]['insights_id'])
         logger.debug('Inventory ID: %s', results[0]['id'])
         return True
+
+    def get_inventory(self):
+        results = self._fetch_system_by_machine_id()
+        write_atomically(constants.insights_core_inventory_file,
+                         lambda f: f.write(json.dumps(results and results[0]) + "\n"))
 
     # -LEGACY-
     def _legacy_unregister(self):

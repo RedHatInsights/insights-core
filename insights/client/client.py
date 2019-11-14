@@ -377,6 +377,9 @@ def get_results(config, pconn, upload_resp):
         logger.error("Failed to retrieve results, code %s", resp.status_code)
         return False
 
+def get_inventory(config, pconn):
+    pconn.get_inventory()
+
 def _delete_archive_internal(config, archive):
     '''
     Only used during built-in collection.

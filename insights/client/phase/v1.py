@@ -241,6 +241,8 @@ def post_update(client, config):
 def collect_and_output(client, config):
     # last phase, delete PID file on exit
     atexit.register(write_to_disk, constants.pidfile, delete=True)
+    # update our local inventory record
+    client.get_inventory()
     # --compliance was called
     if config.compliance:
         config.payload, config.content_type = ComplianceClient(config).oscap_scan()
