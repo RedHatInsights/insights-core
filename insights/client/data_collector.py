@@ -11,6 +11,7 @@ import copy
 import glob
 import six
 import shlex
+from itertools import chain
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
 
@@ -64,7 +65,25 @@ class DataCollector(object):
         logger.debug("Writing tags to archive...")
         tags = get_tags()
         if tags is not None:
-            self.archive.add_metadata_to_archive(json.dumps({constants.app_name: tags}), '/tags.json')
+            def f(k, v):
+                if type(v) is list:
+                    col = []
+                    for val in v:
+                        col.append(f(k, val))
+                    return list(chain.from_iterable(col))
+                elif type(v) is dict:
+                    col = []
+                    for key, val in v.items():
+                        col.append(f(k + ":" + key, val))
+                    return list(chain.from_iterable(col))
+                else:
+                    return [{"key": k, "value": v, "namespace": constants.app_name}]
+            t = []
+            for k, v in tags.items():
+                iv = f(k, v)
+                t.append(iv)
+            t = list(chain.from_iterable(t))
+            self.archive.add_metadata_to_archive(json.dumps(t), '/tags.json')
 
     def _run_pre_command(self, pre_cmd):
         '''
