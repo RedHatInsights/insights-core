@@ -58,6 +58,7 @@ class SosSpecs(Specs):
     hostname = first_file(["sos_commands/general/hostname_-f", "sos_commands/host/hostname_-f"])
     hostname_default = first_file(["sos_commands/general/hostname", "sos_commands/host/hostname", "/etc/hostname", "hostname"])
     hostname_short = first_file(["sos_commands/general/hostname", "sos_commands/host/hostname", "/etc/hostname", "hostname"])
+    httpd_M = simple_file("sos_commands/apache/apachectl_-M")
     installed_rpms = first_file(["sos_commands/rpm/package-data", "installed-rpms"])
     ip_addr = first_of([simple_file("sos_commands/networking/ip_-d_address"), simple_file("sos_commands/networking/ip_address")])
     ip_route_show_table_all = simple_file("sos_commands/networking/ip_route_show_table_all")
