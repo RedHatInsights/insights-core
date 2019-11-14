@@ -1,5 +1,15 @@
 # Change Log
 
+## [insights-core-3.0.133-1228](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.133-1228) (2019-11-14)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.132-1221...insights-core-3.0.133-1228)
+
+**Closed issues:**
+
+- SatelliteVersion should raise SkipComponent but not return [\#2302](https://github.com/RedHatInsights/insights-core/issues/2302)
+- Specs.sssd\_logs is missed in sos\_archive.py [\#2296](https://github.com/RedHatInsights/insights-core/issues/2296)
+- Parser Satellite6Version is for Sat 6.1 or older only [\#2295](https://github.com/RedHatInsights/insights-core/issues/2295)
+- 'community\_to\_release\_map' in 'ceph\_version.py' parser needs to be updated. [\#2290](https://github.com/RedHatInsights/insights-core/issues/2290)
+
 ## [insights-core-3.0.132-1221](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.132-1221) (2019-11-07)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.131-1215...insights-core-3.0.132-1221)
 
