@@ -7,7 +7,10 @@ import six
 import sys
 from six.moves import configparser as ConfigParser
 
-from .constants import InsightsConstants as constants
+try:
+    from .constants import InsightsConstants as constants
+except ImportError:
+    from constants import InsightsConstants as constants
 
 logger = logging.getLogger(__name__)
 
