@@ -4,7 +4,7 @@ import pytest
 from insights.parsers import ParseException, SkipException
 from insights.parsers import sctp
 from insights.parsers.sctp import SCTPEps
-from insights.parsers.sctp import SCTPAsc
+from insights.parsers.sctp import SCTPAsc, SCTPAsc7
 from insights.parsers.sctp import SCTPSnmp
 from insights.tests import context_wrap
 
@@ -101,6 +101,21 @@ SctpChecksumErrors              	0
 SctpOutCtrlChunks               	1051492
 """
 
+SCTP_ASC_7 = """
+ ASSOC     SOCK   STY SST ST HBKT ASSOC-ID TX_QUEUE RX_QUEUE UID INODE LPORT RPORT LADDRS <-> RADDRS HBINT INS OUTS MAXRT T1X T2X RTXC wmema wmemq sndbuf rcvbuf
+ffff8805d36b3000 ffff880f8911f380 0   10  3  0    12754        0        0       0 496595 3868   3868  10.131.222.5 <-> *10.131.160.81 10.131.176.81        30000    17    10   10    0    0        0        11        12  1000000  2000000
+ffff8805f17e1000 ffff881004aff380 0   10  3  0    12728        0        0       0 532396 3868   3868  10.131.222.3 <-> *10.131.160.81 10.131.176.81        30000    17    10   10    0    0        0        13        14  3000000  4000000
+ffff8805f17e0000 ffff880f8a117380 0   10  3  0    12727        0        0       0 582963 3868   3868  10.131.222.8 <-> *10.131.160.81 10.131.176.81        30000    17    10   10    0    0        0        15        16  5000000  6000000
+ffff88081d0bc000 ffff880f6fa66300 0   10  3  0    12726        0        0       0 582588 3868   3868  10.131.222.2 <-> *10.131.160.81 10.131.176.81        30000    17    10   10    0    0        0        17        18  7000000  8000000
+ffff88081d0f5000 ffff880f00a99600 0   10  3  0    12725        0        0       0 578082 3868   3868  10.131.222.1 <-> *10.131.160.81 10.131.176.81        30000    17    10   10    0    0        0        19        20  9000000  10000000
+""".strip()
+
+SCTP_ASSOC_RHEL_7_DOC = """
+ ASSOC     SOCK   STY SST ST HBKT ASSOC-ID TX_QUEUE RX_QUEUE UID INODE LPORT RPORT LADDRS <-> RADDRS HBINT INS OUTS MAXRT T1X T2X RTXC wmema wmemq sndbuf rcvbuf
+ffff8805d36b3000 ffff880f8911f380 0   10  3  0    12754        0        0       0 496595 3868   3868  10.131.222.5 <-> *10.131.160.81 10.131.176.81        30000    17    10   10    0    0        0        11        12  1000000  2000000
+ffff8805f17e1000 ffff881004aff380 0   10  3  0    12728        0        0       0 532396 3868   3868  10.131.222.3 <-> *10.131.160.81 10.131.176.81        30000    17    10   10    0    0        0        13        14  3000000  4000000
+""".strip()
+
 
 def test_sctp_eps():
     sctp_info = SCTPEps(context_wrap(SCTP_EPS_DETAILS))
@@ -124,6 +139,12 @@ def test_sctp_asc():
     sctp_asc = SCTPAsc(context_wrap(SCTP_ASSOC_2))
     assert sorted(sctp_asc.sctp_local_ips) == sorted(['10.0.200.114', '10.0.201.114', '2010:0010:0000:0200:0000:0000:0000:0114', '2010:0010:0000:0201:0000:0000:0000:0114'])
     assert sorted(sctp_asc.sctp_remote_ips) == sorted(['*10.0.100.94', '10.0.101.94', '2010:0010:0000:0100:0000:0000:0000:0094', '2010:0010:0000:0101:0000:0000:0000:0094'])
+
+    sctp_asc = SCTPAsc7(context_wrap(SCTP_ASC_7))
+    assert sctp_asc.sctp_local_ips == sorted(['10.131.222.5', '10.131.222.3', '10.131.222.8', '10.131.222.2', '10.131.222.1'])
+    assert sctp_asc.data[0]['rcvbuf'] == '2000000'
+    assert sctp_asc.data[1]['wmemq'] == '14'
+    assert sctp_asc.data[1]['rcvbuf'] == '4000000'
 
 
 def test_sctp_eps_exceptions():
@@ -153,6 +174,7 @@ def test_sctp_doc_examples():
     env = {
         'sctp_info': SCTPEps(context_wrap(SCTP_EPS_DETAILS_DOC)),
         'sctp_asc': SCTPAsc(context_wrap(SCTP_ASSOC_DOC)),
+        'sctp_asc_7': SCTPAsc7(context_wrap(SCTP_ASSOC_RHEL_7_DOC)),
         'sctp_snmp': SCTPSnmp(context_wrap(SCTP_SNMP_DOC))
     }
     failed, total = doctest.testmod(sctp, globs=env)
