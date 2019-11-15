@@ -3,7 +3,7 @@ Sealert - command ``/usr/bin/sealert -l "*"``
 =============================================
 """
 
-from insights import Parser
+from insights import CommandParser
 from insights import parser
 from insights.specs import Specs
 from insights.parsers import SkipException
@@ -20,7 +20,6 @@ class Report(object):
     def append_line(self, x):
         self.lines.append(x)
 
-    @property
     def lines_stripped(self):
         """
         Returns the lines without trailing empty lines
@@ -36,7 +35,7 @@ class Report(object):
 
 
 @parser(Specs.sealert)
-class Sealert(Parser):
+class Sealert(CommandParser):
     """
     Reads the output of ``/usr/bin/sealert -l "*"``.
 
@@ -88,7 +87,7 @@ class Sealert(Parser):
         <class 'insights.parsers.sealert.Sealert'>
         >>> sealert.raw_lines[0]
         'SELinux is preventing rngd from using the dac_override capability.'
-        >>> sealert.reports[1].lines_stripped[0]
+        >>> sealert.reports[1].lines_stripped()[0]
         'SELinux is preventing sh from entrypoint access on the file /usr/bin/podman.'
         >>> str(sealert.reports[1]).split('\\n')[0]
         'SELinux is preventing sh from entrypoint access on the file /usr/bin/podman.'
@@ -116,5 +115,3 @@ class Sealert(Parser):
 
         if not self.reports:
             raise SkipException("No sealert reports")
-
-        self.raw = "\n".join(content)
