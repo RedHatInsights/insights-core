@@ -4,7 +4,7 @@ import pytest
 from insights.parsers import ParseException, SkipException
 from insights.parsers import sctp
 from insights.parsers.sctp import SCTPEps
-from insights.parsers.sctp import SCTPAsc6, SCTPAsc7
+from insights.parsers.sctp import SCTPAsc, SCTPAsc7
 from insights.parsers.sctp import SCTPSnmp
 from insights.tests import context_wrap
 
@@ -129,14 +129,14 @@ def test_sctp_eps():
 
 
 def test_sctp_asc():
-    sctp_asc = SCTPAsc6(context_wrap(SCTP_ASSOC))
+    sctp_asc = SCTPAsc(context_wrap(SCTP_ASSOC))
     assert sorted(sctp_asc.sctp_local_ports) == sorted(['11567', '11566', '11565', '12067', '12065', '12066'])
     assert sorted(sctp_asc.search(local_port='11565')) == sorted([{'init_chunks_send': '0', 'uid': '200', 'shutdown_chunks_send': '0', 'max_outstream': '2', 'tx_que': '0', 'inode': '273361369', 'hrtbt_intrvl': '1000', 'sk_type': '2', 'remote_addr': ['*10.0.0.109', '10.0.0.77'], 'data_chunks_retrans': '0', 'local_addr': ['10.0.0.102', '10.0.0.70', '192.168.11.2'], 'asc_id': '977', 'max_instream': '2', 'remote_port': '11168', 'asc_state': '4', 'max_retrans_atmpt': '10', 'sk_state': '1', 'socket': 'ffff8801c6321580', 'asc_struct': 'ffff8803217b9000', 'local_port': '11565', 'hash_bkt': '1675', 'rx_que': '0'}])
     assert len(sctp_asc.search(local_port='11567')) == 2
     assert sorted(sctp_asc.sctp_local_ips) == sorted(['10.0.0.102', '10.0.0.70', '192.168.11.2'])
     assert sorted(sctp_asc.sctp_remote_ips) == sorted(['*10.0.0.109', '10.0.0.77', '*10.0.0.110', '10.0.0.78', '*10.0.0.103', '10.0.0.71', '*10.0.0.112', '10.0.0.80', '*10.0.0.111', '10.0.0.79'])
 
-    sctp_asc = SCTPAsc6(context_wrap(SCTP_ASSOC_2))
+    sctp_asc = SCTPAsc(context_wrap(SCTP_ASSOC_2))
     assert sorted(sctp_asc.sctp_local_ips) == sorted(['10.0.200.114', '10.0.201.114', '2010:0010:0000:0200:0000:0000:0000:0114', '2010:0010:0000:0201:0000:0000:0000:0114'])
     assert sorted(sctp_asc.sctp_remote_ips) == sorted(['*10.0.100.94', '10.0.101.94', '2010:0010:0000:0100:0000:0000:0000:0094', '2010:0010:0000:0101:0000:0000:0000:0094'])
 
@@ -161,11 +161,11 @@ def test_sctp_eps_exceptions():
 
 def test_sctp_asc_exceptions():
     with pytest.raises(ParseException) as exc:
-        sctp_asc = SCTPAsc6(context_wrap(SCTP_ASSOC_NO_2))
+        sctp_asc = SCTPAsc(context_wrap(SCTP_ASSOC_NO_2))
         assert sctp_asc is None
     assert 'Contents are not compatible to this parser' in str(exc)
     with pytest.raises(SkipException) as exc:
-        sctp_asc = SCTPAsc6(context_wrap(SCTP_ASSOC_NO))
+        sctp_asc = SCTPAsc(context_wrap(SCTP_ASSOC_NO))
         assert sctp_asc is None
     assert 'No Contents' in str(exc)
 
@@ -173,7 +173,7 @@ def test_sctp_asc_exceptions():
 def test_sctp_doc_examples():
     env = {
         'sctp_info': SCTPEps(context_wrap(SCTP_EPS_DETAILS_DOC)),
-        'sctp_asc': SCTPAsc6(context_wrap(SCTP_ASSOC_DOC)),
+        'sctp_asc': SCTPAsc(context_wrap(SCTP_ASSOC_DOC)),
         'sctp_asc_7': SCTPAsc7(context_wrap(SCTP_ASSOC_RHEL_7_DOC)),
         'sctp_snmp': SCTPSnmp(context_wrap(SCTP_SNMP_DOC))
     }
