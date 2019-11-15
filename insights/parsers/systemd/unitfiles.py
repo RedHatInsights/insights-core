@@ -259,6 +259,18 @@ class ListUnits(Parser):
         """
         return self.get_service_details(service_name)['SUB'] == 'running'
 
+    def is_failed(self, service_name):
+        """
+        Return the ACTIVE state of service managed by systemd.
+
+        Args:
+            service_name (str): service name including its extension.
+
+        Returns:
+            bool: True if service is failed, False in all other states.
+        """
+        return self.get_service_details(service_name)['ACTIVE'] == 'failed'
+
     @property
     def service_names(self):
         """list: Returns a list of all UNIT names."""
