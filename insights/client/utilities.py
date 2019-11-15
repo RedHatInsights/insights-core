@@ -402,7 +402,7 @@ def write_tags(tags, tags_file_path=constants.default_tags_file):
 
     Returns: None
     """
-    with open(tags_file_path, mode="w") as f:
+    with open(tags_file_path, mode="w+") as f:
         data = yaml.dump(tags, Dumper=Dumper, default_flow_style=False)
         f.write(data)
 
