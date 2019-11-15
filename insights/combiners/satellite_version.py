@@ -106,16 +106,26 @@ class SatelliteVersion(object):
             However, this type of Exceptions will be ignored.
 
     Examples:
+        >>> sat_ver.full
+        'satellite-6.2.0.11-1.el7sat'
         >>> sat_ver.major
         6
         >>> sat_ver.minor
         2
         >>> sat_ver.version
-        '6.2.2'
-        >>> sat_ver.full
-        '6.2.2.1-1.0.el7sat'
+        '6.2.0.11'
         >>> sat_ver.release
-        '1.0.el7sat'
+        '1.el7sat'
+        >>> sat_ver.is_capsule
+        False
+        >>> cap_ver.full
+        'satellite-capsule-6.2.0.11-1.el7sat'
+        >>> cap_ver.major
+        6
+        >>> cap_ver.minor
+        2
+        >>> cap_ver.is_capsule
+        True
 
     """
     def __init__(self, rpms, sat6_ver):

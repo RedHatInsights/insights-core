@@ -1,9 +1,11 @@
 from insights.parsers.installed_rpms import InstalledRpms
 from insights.parsers.satellite_version import Satellite6Version
+from insights.combiners import satellite_version
 from insights.combiners.satellite_version import SatelliteVersion
 from insights.tests import context_wrap
 from insights import SkipComponent
 import pytest
+import doctest
 
 
 installed_rpms_5 = """
@@ -93,6 +95,7 @@ def test_get_sat5_version():
     assert result.full == expected[0]
     assert result.release == expected[2]
     assert result.version == expected[1]
+    assert not result.is_capsule
 
 
 def test_get_sat61_version():
@@ -104,6 +107,7 @@ def test_get_sat61_version():
     assert result.full == expected[0]
     assert result.release == expected[2]
     assert result.version == expected[1]
+    assert not result.is_capsule
 
     sat = Satellite6Version(context_wrap(satellite_version_rb))
     expected = ('6.1.3', '6.1.3', None, 6, 1)
@@ -113,6 +117,7 @@ def test_get_sat61_version():
     assert result.full == expected[0]
     assert result.release == expected[2]
     assert result.version == expected[1]
+    assert not result.is_capsule
 
     rpms = InstalledRpms(context_wrap(installed_rpms_6110))
     expected = ('6.1.10', '6.1.10', None, 6, 1)
@@ -122,6 +127,7 @@ def test_get_sat61_version():
     assert result.full == expected[0]
     assert result.release == expected[2]
     assert result.version == expected[1]
+    assert not result.is_capsule
 
     rpms = InstalledRpms(context_wrap(installed_rpms_6111))
     expected = ('6.1.11', '6.1.11', None, 6, 1)
@@ -131,6 +137,7 @@ def test_get_sat61_version():
     assert result.full == expected[0]
     assert result.release == expected[2]
     assert result.version == expected[1]
+    assert not result.is_capsule
 
 
 def test_get_sat60():
@@ -142,6 +149,7 @@ def test_get_sat60():
     assert result.full == expected[0]
     assert result.release == expected[2]
     assert result.version == expected[1]
+    assert not result.is_capsule
 
 
 def test_get_sat61_version_both():
@@ -154,6 +162,7 @@ def test_get_sat61_version_both():
     assert result.full == expected[0]
     assert result.release == expected[2]
     assert result.version == expected[1]
+    assert not result.is_capsule
 
 
 def test_get_sat62_version():
@@ -166,6 +175,7 @@ def test_get_sat62_version():
     assert result.full == expected[0]
     assert result.version == expected[1]
     assert result.release == expected[2]
+    assert not result.is_capsule
 
 
 def test_get_sat62_capsule_version():
@@ -178,6 +188,7 @@ def test_get_sat62_capsule_version():
     assert result.full == expected[0]
     assert result.version == expected[1]
     assert result.release == expected[2]
+    assert result.is_capsule
 
 
 def test_no_sat_installed():
@@ -190,3 +201,14 @@ def test_no_sat_installed():
     with pytest.raises(SkipComponent) as sc:
         SatelliteVersion(rpms, None)
     assert "unable to determine Satellite version" in str(sc)
+
+
+def test_doc_examples():
+    sat_rpms = InstalledRpms(context_wrap(installed_rpms_62))
+    cap_rpms = InstalledRpms(context_wrap(installed_rpms_62_cap))
+    env = {
+            'sat_ver': SatelliteVersion(sat_rpms, None),
+            'cap_ver': SatelliteVersion(cap_rpms, None),
+          }
+    failed, total = doctest.testmod(satellite_version, globs=env)
+    assert failed == 0
