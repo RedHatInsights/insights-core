@@ -290,6 +290,7 @@ swap.target                                                                 load
 systemd-shutdownd.socket                                                    loaded active listening Delayed Shutdown Socket
 neutron-dhcp-agent.service                                                  loaded active running   OpenStack Neutron DHCP     Agent
 neutron-openvswitch-agent.service                                           loaded active running   OpenStack Neutron Open     vSwitch Agent
+chronyd.service                                                             loaded failed failed    NTP client/server
 """.strip()
 
 
@@ -299,6 +300,7 @@ def test_listunits():
     service_name = "neutron-dhcp-agent.service"
     service_details = list_units.get_service_details(service_name)
     assert list_units.is_running(service_name) is True
+    assert list_units.is_failed(service_name) is False
     assert service_details['UNIT'] == "neutron-dhcp-agent.service"
     service_name = "virtlogd.socket"
     service_details = list_units.get_service_details(service_name)
@@ -311,6 +313,7 @@ def test_listunits():
     assert service_details['ACTIVE'] == "failed"
     service_name = "docker-storage-setup.service"
     assert list_units.is_running(service_name) is False
+    assert list_units.is_failed(service_name) is True
     service_name = "openstack-swift-proxy.service"
     service_details = list_units.get_service_details(service_name)
     assert service_details['SUB'] == "failed"
@@ -325,6 +328,9 @@ def test_listunits():
     service_name = "random.service"
     service_details = list_units.get_service_details(service_name)
     assert service_details['ACTIVE'] is None
+    service_name = "chronyd.service"
+    assert list_units.is_active(service_name) is False
+    assert list_units.is_failed(service_name) is True
 
 
 LISTUNITS_CONTENT_3 = u"""
