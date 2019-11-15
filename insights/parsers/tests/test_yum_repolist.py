@@ -65,6 +65,7 @@ rhel-6-server-optional-rpms                                                     
 rhel-6-server-rpms                                                                    19753
 repolist: 60296
 Uploading Enabled Reposistories Report
+Plugin "search-disabled-repos" requires API 2.7. Supported API is 2.6.
 Loaded plugins: priorities, product-id
 """.strip()
 
