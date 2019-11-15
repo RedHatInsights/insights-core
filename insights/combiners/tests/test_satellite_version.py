@@ -40,6 +40,13 @@ SDL-1.2.14-6.el7.x86_64                                     Wed May 18 14:16:25 
 satellite-6.2.0.11-1.el7sat.noarch                          Wed May 18 14:16:25 2016
 """
 
+installed_rpms_62_cap = """
+foreman-1.11.0.53-1.el7sat.noarch                           Wed May 18 14:16:25 2016
+scl-utils-20120927-27.el7_6.x86_64                          Wed May 18 14:18:16 2016
+SDL-1.2.14-6.el7.x86_64                                     Wed May 18 14:16:25 2016
+satellite-capsule-6.2.0.11-1.el7sat.noarch                  Wed May 18 14:16:25 2016
+"""
+
 satellite_version_rb = """
 COMMAND> cat /usr/share/foreman/lib/satellite/version.rb
 
@@ -80,7 +87,7 @@ def test_get_sat5_version():
     rpms = InstalledRpms(context_wrap(installed_rpms_5))
     expected = ('satellite-schema-5.6.0.10-1.el6sat',
                 '5.6.0.10', '1.el6sat', 5, 6)
-    result = SatelliteVersion(None, rpms)
+    result = SatelliteVersion(rpms, None)
     assert result.major == expected[-2]
     assert result.minor == expected[-1]
     assert result.full == expected[0]
@@ -91,7 +98,7 @@ def test_get_sat5_version():
 def test_get_sat61_version():
     rpms = InstalledRpms(context_wrap(installed_rpms_61))
     expected = ('6.1.7', '6.1.7', None, 6, 1)
-    result = SatelliteVersion(None, rpms)
+    result = SatelliteVersion(rpms, None)
     assert result.major == expected[-2]
     assert result.minor == expected[-1]
     assert result.full == expected[0]
@@ -100,7 +107,7 @@ def test_get_sat61_version():
 
     sat = Satellite6Version(context_wrap(satellite_version_rb))
     expected = ('6.1.3', '6.1.3', None, 6, 1)
-    result = SatelliteVersion(sat, None)
+    result = SatelliteVersion(rpms, sat)
     assert result.major == expected[-2]
     assert result.minor == expected[-1]
     assert result.full == expected[0]
@@ -109,7 +116,7 @@ def test_get_sat61_version():
 
     rpms = InstalledRpms(context_wrap(installed_rpms_6110))
     expected = ('6.1.10', '6.1.10', None, 6, 1)
-    result = SatelliteVersion(None, rpms)
+    result = SatelliteVersion(rpms, None)
     assert result.major == expected[-2]
     assert result.minor == expected[-1]
     assert result.full == expected[0]
@@ -118,7 +125,7 @@ def test_get_sat61_version():
 
     rpms = InstalledRpms(context_wrap(installed_rpms_6111))
     expected = ('6.1.11', '6.1.11', None, 6, 1)
-    result = SatelliteVersion(None, rpms)
+    result = SatelliteVersion(rpms, None)
     assert result.major == expected[-2]
     assert result.minor == expected[-1]
     assert result.full == expected[0]
@@ -129,7 +136,7 @@ def test_get_sat61_version():
 def test_get_sat60():
     rpms = InstalledRpms(context_wrap(installed_rpms_60))
     expected = ('6.0.8', '6.0.8', None, 6, 0)
-    result = SatelliteVersion(None, rpms)
+    result = SatelliteVersion(rpms, None)
     assert result.major == expected[-2]
     assert result.minor == expected[-1]
     assert result.full == expected[0]
@@ -141,7 +148,7 @@ def test_get_sat61_version_both():
     rpms = InstalledRpms(context_wrap(installed_rpms_61))
     sat = Satellite6Version(context_wrap(satellite_version_rb))
     expected = ('6.1.3', '6.1.3', None, 6, 1)
-    result = SatelliteVersion(sat, rpms)
+    result = SatelliteVersion(rpms, sat)
     assert result.major == expected[-2]
     assert result.minor == expected[-1]
     assert result.full == expected[0]
@@ -153,7 +160,19 @@ def test_get_sat62_version():
     rpms = InstalledRpms(context_wrap(installed_rpms_62))
     expected = ('satellite-6.2.0.11-1.el7sat',
                 '6.2.0.11', '1.el7sat', 6, 2)
-    result = SatelliteVersion(None, rpms)
+    result = SatelliteVersion(rpms, None)
+    assert result.major == expected[-2]
+    assert result.minor == expected[-1]
+    assert result.full == expected[0]
+    assert result.version == expected[1]
+    assert result.release == expected[2]
+
+
+def test_get_sat62_capsule_version():
+    rpms = InstalledRpms(context_wrap(installed_rpms_62_cap))
+    expected = ('satellite-capsule-6.2.0.11-1.el7sat',
+                '6.2.0.11', '1.el7sat', 6, 2)
+    result = SatelliteVersion(rpms, None)
     assert result.major == expected[-2]
     assert result.minor == expected[-1]
     assert result.full == expected[0]
@@ -164,16 +183,10 @@ def test_get_sat62_version():
 def test_no_sat_installed():
     rpms = InstalledRpms(context_wrap(no_sat))
     with pytest.raises(SkipComponent) as sc:
-        SatelliteVersion(None, rpms)
+        SatelliteVersion(rpms, None)
     assert "Not a Satellite machine" in str(sc)
 
     rpms = InstalledRpms(context_wrap(installed_rpms_611x_confilct))
     with pytest.raises(SkipComponent) as sc:
-        SatelliteVersion(None, rpms)
-    assert "RPMs conflict, unable to determine Satellite version" in str(sc)
-
-
-def test_none():
-    with pytest.raises(SkipComponent) as sc:
-        SatelliteVersion(None, None)
-    assert "No RPMs list, unable to determine Satellite version" in str(sc)
+        SatelliteVersion(rpms, None)
+    assert "unable to determine Satellite version" in str(sc)
