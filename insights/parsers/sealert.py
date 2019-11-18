@@ -27,11 +27,13 @@ class Report(object):
         Returns:
             list: The lines without empty lines at the end of the list.
         """
-        ret = []
-        for l in reversed(self.lines):
-            if l or ret:
-                ret.append(l)
-        return list(reversed(ret))
+        lines = self.lines[:]
+        for index in range(len(self.lines) - 1, -1, -1):
+            if lines[index] == '':
+                del(lines[index])
+            else:
+                break
+        return lines
 
 
 @parser(Specs.sealert)
