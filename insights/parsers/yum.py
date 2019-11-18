@@ -136,6 +136,7 @@ class YumRepoList(CommandParser):
                 'repolist:',
                 'Uploading Enabled',
                 'Loaded plugins:',
+                'Plugin ',
                 'Unable to upload',
         ]
 
