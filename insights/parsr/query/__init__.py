@@ -75,6 +75,18 @@ class Entry(object):
         """
         return self.get_keys() + object.__dir__(self)
 
+    def get_crumbs(self):
+        """
+        Get the unique name from the current entry to the root.
+        """
+        results = []
+        parent = self
+        while parent and parent._name is not None:
+            results.append(parent._name)
+            parent = parent.parent
+
+        return ".".join(reversed(results))
+
     @property
     def line(self):
         """
@@ -169,7 +181,14 @@ class Entry(object):
         >>> r.lastTransitionTime.values
         ['2019-08-04T23:17:08Z', '2019-08-04T23:32:14Z']
         """
-        query = where_query(name, value) if not isinstance(name, _EntryQuery) else name
+        if isinstance(name, _EntryQuery):
+            query = name
+        elif isinstance(name, Boolean):
+            query = child_query(name, value)
+        elif callable(name):
+            query = SimpleQuery(pred(name))
+        else:
+            query = child_query(name, value)
         return Result(children=self.children if query.test(self) else [])
 
     @property
@@ -266,6 +285,12 @@ class Result(Entry):
         Returns the unique names of all the grandchildren as a list.
         """
         return sorted(set(c.name for c in self.grandchildren))
+
+    def get_crumbs(self):
+        """
+        Get the unique names from the current locations to the roots.
+        """
+        return sorted(set(c.get_crumbs() for c in self.children))
 
     @property
     def string_value(self):
@@ -406,7 +431,14 @@ class Result(Entry):
         >>> r.lastTransitionTime.values
         ['2019-08-04T23:17:08Z', '2019-08-04T23:32:14Z']
         """
-        query = where_query(name, value) if not isinstance(name, _EntryQuery) else name
+        if isinstance(name, _EntryQuery):
+            query = name
+        elif isinstance(name, Boolean):
+            query = child_query(name, value)
+        elif callable(name):
+            query = SimpleQuery(pred(name))
+        else:
+            query = child_query(name, value)
         results = []
         seen = set()
         for c in self.children:
@@ -435,15 +467,15 @@ class _EntryQuery(object):
         return _NotEntryQuery(self)
 
 
-class _NotEntryQuery(_EntryQuery, Not):
-    pass
-
-
 class _AllEntryQuery(_EntryQuery, All):
     pass
 
 
 class _AnyEntryQuery(_EntryQuery, Any):
+    pass
+
+
+class _NotEntryQuery(_EntryQuery, Not):
     pass
 
 
@@ -474,14 +506,6 @@ class _AnyAttrQuery(_EntryQuery):
         return any(self.expr.test(a) for a in n.attrs)
 
 
-def any_(expr):
-    """
-    Use to express that ``expr`` can succeed on any attribute for the query to be
-    successful. Only works against :py:class:`Entry` attributes.
-    """
-    return _AnyAttrQuery(_desugar_attr(expr))
-
-
 def all_(expr):
     """
     Use to express that ``expr`` must succeed on all attributes for the query
@@ -490,7 +514,30 @@ def all_(expr):
     return _AllAttrQuery(_desugar_attr(expr))
 
 
-class WhereQuery(_EntryQuery):
+def any_(expr):
+    """
+    Use to express that ``expr`` can succeed on any attribute for the query to be
+    successful. Only works against :py:class:`Entry` attributes.
+    """
+    return _AnyAttrQuery(_desugar_attr(expr))
+
+
+class SimpleQuery(_EntryQuery):
+    """
+    Automatically used in ``Entry.where`` or ``Result.where``. ``SimpleQuery``
+    wraps a function or a lambda that will be passed each ``Entry`` of the
+    current result. The passed function should return ``True`` or ``False``.
+    """
+    def __init__(self, expr):
+        if not isinstance(expr, Boolean):
+            expr = pred(expr)
+        self.expr = expr
+
+    def test(self, node):
+        return self.expr.test(node)
+
+
+class ChildQuery(_EntryQuery):
     """
     Returns True if any child node passes the query.
     """
@@ -501,16 +548,16 @@ class WhereQuery(_EntryQuery):
         return any(self.expr.test(n) for n in node.children)
 
 
-def where_query(name, value=None):
+def child_query(name, value=None):
     """
-    Converts a query into a WhereQuery that works on all child nodes at once
+    Converts a query into a ChildQuery that works on all child nodes at once
     to determine if the current node is accepted.
     """
     q = _desugar((name, value) if value is not None else name)
-    return WhereQuery(q)
+    return ChildQuery(q)
 
 
-make_child_query = where_query
+make_child_query = child_query
 
 
 def _desugar_name(q):

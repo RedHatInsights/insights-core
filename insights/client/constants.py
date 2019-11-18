@@ -1,7 +1,5 @@
 import os
 
-from insights import package_info
-
 
 class InsightsConstants(object):
     app_name = 'insights-client'
@@ -10,9 +8,8 @@ class InsightsConstants(object):
         os.path.dirname(os.path.abspath(__file__)))
     sleep_time = 180
     command_blacklist = ('rm', 'kill', 'reboot', 'shutdown')
-    default_conf_dir = '/etc/insights-client'
+    default_conf_dir = os.getenv('INSIGHTS_CONF_DIR', default='/etc/insights-client')
     default_conf_file = os.path.join(default_conf_dir, 'insights-client.conf')
-    user_agent = os.path.join(app_name, package_info["VERSION"])
     log_dir = os.path.join(os.sep, 'var', 'log', app_name)
     simple_find_replace_dir = '/etc/redhat-access-insights'
     default_log_file = os.path.join(log_dir, app_name + '.log')

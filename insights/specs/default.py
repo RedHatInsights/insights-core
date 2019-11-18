@@ -27,6 +27,7 @@ from insights.core.spec_factory import first_file, listdir
 from insights.parsers.mount import Mount, ProcMounts
 from insights.parsers.dnf_module import DnfModuleList
 from insights.combiners.cloud_provider import CloudProvider
+from insights.combiners.satellite_version import SatelliteVersion
 from insights.components.rhel_version import IsRhel8
 from insights.specs import Specs
 
@@ -387,6 +388,15 @@ class DefaultSpecs(Specs):
     jbcs_httpd24_httpd_error_log = simple_file("/opt/rh/jbcs-httpd24/root/etc/httpd/logs/error_log")
     httpd_pid = simple_command("/usr/bin/pgrep -o httpd")
     httpd_limits = foreach_collect(httpd_pid, "/proc/%s/limits")
+
+    @datasource(SatelliteVersion)
+    def is_sat(broker):
+        sat = broker[SatelliteVersion]
+        if sat:
+            return True
+        raise SkipComponent()
+
+    satellite_enabled_features = simple_command("/usr/bin/curl -sk https://localhost:9090/features --connect-timeout 5", deps=[is_sat])
     virt_uuid_facts = simple_file("/etc/rhsm/facts/virt_uuid.facts")
 
     @datasource(ps_auxww)
@@ -862,6 +872,7 @@ class DefaultSpecs(Specs):
     scsi_fwver = glob_file('/sys/class/scsi_host/host[0-9]*/fwrev')
     sctp_asc = simple_file('/proc/net/sctp/assocs')
     sctp_eps = simple_file('/proc/net/sctp/eps')
+    sctp_snmp = simple_file('/proc/net/sctp/snmp')
     secure = simple_file("/var/log/secure")
     selinux_config = simple_file("/etc/selinux/config")
     sestatus = simple_command("/usr/sbin/sestatus -b")
@@ -934,6 +945,7 @@ class DefaultSpecs(Specs):
         simple_file("/conf/rhn/sysconfig/rhn/systemid")
     ])
     systool_b_scsi_v = simple_command("/bin/systool -b scsi -v")
+    tags = simple_file("/tags.json", kind=RawFileProvider)
     teamdctl_config_dump = foreach_execute(ethernet_interfaces, "/usr/bin/teamdctl %s config dump")
     teamdctl_state_dump = foreach_execute(ethernet_interfaces, "/usr/bin/teamdctl %s state dump")
     thp_use_zero_page = simple_file("/sys/kernel/mm/transparent_hugepage/use_zero_page")

@@ -13,7 +13,6 @@ def test_proxy_request(init, session):
     # The constructor is bypassed, because it itself runs the _init_session method.
     connection = InsightsConnection(None)
     connection.config = config
-    connection.user_agent = None
     connection.systemid = None
     connection.authmethod = "BASIC"
     connection.username = "some username"
