@@ -452,11 +452,11 @@ class InsightsClient(object):
             logger.debug('Last upload file %s not found, cannot read results', constants.last_upload_results_file)
             return False
 
-    def delete_archive(self, path, delete_parent_dir=False):
+    def delete_archive(self, path):
         """
             returns (bool): successful archive deletion
         """
-        return client.delete_archive(path, delete_parent_dir)
+        return client.delete_archive(path)
 
     @_net
     def get_registration_status(self):

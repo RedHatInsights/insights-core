@@ -207,12 +207,14 @@ class DataCollector(object):
         if self.config.obfuscate:
             cleaner = SOSCleaner(quiet=True)
             clean_opts = CleanOptions(
-                self.config, self.archive.archive_dir, rm_conf)
-            fresh = cleaner.clean_report(clean_opts, self.archive.archive_dir)
+                self.config, self.archive.collected_data_dir, rm_conf)
+            fresh = cleaner.clean_report(clean_opts, self.archive.collected_data_dir)
             if clean_opts.keyword_file is not None:
                 os.remove(clean_opts.keyword_file.name)
                 logger.warn("WARNING: Skipping keywords found in remove.conf")
-            return fresh[0]
+            self.archive.tar_file = fresh[0]
+        else:
+            self.archive.create_tar_file()
         return self.archive
 
 
