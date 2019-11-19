@@ -2,7 +2,15 @@
 Satellite Version
 =================
 
-Combiner to get Satellite Server and Capsule Version information. It uses the
+The following modules are included:
+
+SatelliteVersion - Version of Satellite Server
+----------------------------------------------
+
+CapsuleVersion - Version of Satellite Capsule (>=6.2)
+-----------------------------------------------------
+
+Combiners to get Satellite Server and Capsule Version information. It uses the
 results of the :class:`insights.parsers.satellite_version:Satellite6Version`
 parser and the :class:`insights.parsers.installed_rpms.InstalledRpms` parser to
 determine the version.
@@ -73,12 +81,11 @@ class SatelliteVersion(object):
 
         2. For Satellite 6.2 and newer:
 
-           Check the version of satellite/satellite-capsule directly:
+           Check the version of satellite package directly:
            - https://access.redhat.com/solutions/1392633
 
                                     Sat 6.0.x   Sat 6.1.x   Sat 6.2.x
                 satellite           -           -           6.2.x
-                satellite-capsule   -           -           6.2.x
 
         3. For Satellite 5.x
            - https://access.redhat.com/solutions/1224043
@@ -103,7 +110,6 @@ class SatelliteVersion(object):
     Raises:
         SkipComponent: When it's not a Satellite machine or the Satellite
             version cannot be determined according to current information.
-            However, this type of Exceptions will be ignored.
 
     Examples:
         >>> sat_ver.full
@@ -116,17 +122,6 @@ class SatelliteVersion(object):
         '6.2.0.11'
         >>> sat_ver.release
         '1.el7sat'
-        >>> sat_ver.is_capsule
-        False
-        >>> cap_ver.full
-        'satellite-capsule-6.2.0.11-1.el7sat'
-        >>> cap_ver.major
-        6
-        >>> cap_ver.minor
-        2
-        >>> cap_ver.is_capsule
-        True
-
     """
     def __init__(self, rpms, sat6_ver):
         self.full = None
@@ -134,7 +129,6 @@ class SatelliteVersion(object):
         self.release = None
         self.major = None
         self.minor = None
-        self.is_capsule = 'satellite-capsule' in rpms
 
         # For Satellite 6.1, if satellite_version/version.rb is available:
         if sat6_ver:
@@ -145,8 +139,7 @@ class SatelliteVersion(object):
             self.minor = sat6_ver.minor
         else:
             # For Satellite 6.2 and newer, check the satellite package directly
-            # - for Capsule, ONLY 6.2 and newer are supported
-            sat62_pkg = rpms.get_max('satellite') or rpms.get_max('satellite-capsule')
+            sat62_pkg = rpms.get_max('satellite')
             if sat62_pkg:
                 self.full = sat62_pkg.package
                 self.version = sat62_pkg.version
@@ -174,3 +167,63 @@ class SatelliteVersion(object):
                         self.major, self.minor = _parse_sat_version(self.version)
         if not self.full:
             raise SkipComponent("Not a Satellite machine or unable to determine Satellite version")
+
+
+@combiner(InstalledRpms)
+class CapsuleVersion(object):
+    """
+    Check the parser
+    :class:`insights.parsers.installed_rpms.InstalledRpms` for satellite capsule
+    version information.
+
+    .. note::
+        ONLY Satellite Capsule 6.2 and newer are supported.
+
+    Below is the logic to determine the satellite version::
+
+        Check the version of satellite/satellite-capsule directly:
+        - https://access.redhat.com/solutions/1392633
+
+                                Sat 6.0.x   Sat 6.1.x   Sat 6.2.x
+            satellite-capsule   -           -           6.2.x
+
+    Attributes:
+        full(str): the full version format like `version-release`.
+        version(str): the satellite version do not includes `release`.
+        release(str): the `release` string in the version.
+        major(int): the major version.
+        minor(int): the minor version.
+
+    Raises:
+        SkipComponent: When it's not a Satellite Capsule machine or the
+            Satellite Capsule version cannot be determined according to
+            current information.
+
+    Examples:
+        >>> cap_ver.full
+        'satellite-capsule-6.2.0.11-1.el7sat'
+        >>> cap_ver.major
+        6
+        >>> cap_ver.minor
+        2
+        >>> cap_ver.version
+        '6.2.0.11'
+        >>> cap_ver.release
+        '1.el7sat'
+    """
+    def __init__(self, rpms):
+        self.full = None
+        self.version = None
+        self.release = None
+        self.major = None
+        self.minor = None
+
+        # For Capsule, ONLY 6.2 and newer are supported
+        sat62_pkg = rpms.get_max('satellite-capsule')
+        if sat62_pkg:
+            self.full = sat62_pkg.package
+            self.version = sat62_pkg.version
+            self.release = sat62_pkg.release
+            self.major, self.minor = _parse_sat_version(self.version)
+        else:
+            raise SkipComponent("Not a Satellite Capsule machine or unable to determine the version")
