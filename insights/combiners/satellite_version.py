@@ -112,8 +112,8 @@ class SatelliteVersion(object):
             version cannot be determined according to current information.
 
     Examples:
-        >>> sat_ver.full
-        'satellite-6.2.0.11-1.el7sat'
+        >>> sat_ver.full == 'satellite-6.2.0.11-1.el7sat'
+        True
         >>> sat_ver.major
         6
         >>> sat_ver.minor
@@ -200,8 +200,8 @@ class CapsuleVersion(object):
             current information.
 
     Examples:
-        >>> cap_ver.full
-        'satellite-capsule-6.2.0.11-1.el7sat'
+        >>> cap_ver.full == 'satellite-capsule-6.2.0.11-1.el7sat'
+        True
         >>> cap_ver.major
         6
         >>> cap_ver.minor
