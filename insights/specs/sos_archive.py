@@ -67,6 +67,7 @@ class SosSpecs(Specs):
     journal_since_boot = first_of([simple_file("sos_commands/logs/journalctl_--no-pager_--boot"), simple_file("sos_commands/logs/journalctl_--no-pager_--catalog_--boot")])
     locale = simple_file("sos_commands/i18n/locale")
     lsblk = first_file(["sos_commands/block/lsblk", "sos_commands/filesys/lsblk"])
+    ls_boot = simple_file("sos_commands/boot/ls_-lanR_.boot")
     lscpu = simple_file("sos_commands/processor/lscpu")
     lsinitrd = simple_file("sos_commands/boot/lsinitrd")
     lsof = simple_file("sos_commands/process/lsof_-b_M_-n_-l")
