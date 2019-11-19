@@ -27,7 +27,6 @@ from insights.core.spec_factory import first_file, listdir
 from insights.parsers.mount import Mount, ProcMounts
 from insights.parsers.dnf_module import DnfModuleList
 from insights.combiners.cloud_provider import CloudProvider
-from insights.combiners.satellite_version import SatelliteVersion
 from insights.components.rhel_version import IsRhel8
 from insights.specs import Specs
 
@@ -388,15 +387,6 @@ class DefaultSpecs(Specs):
     jbcs_httpd24_httpd_error_log = simple_file("/opt/rh/jbcs-httpd24/root/etc/httpd/logs/error_log")
     httpd_pid = simple_command("/usr/bin/pgrep -o httpd")
     httpd_limits = foreach_collect(httpd_pid, "/proc/%s/limits")
-
-    @datasource(SatelliteVersion)
-    def is_sat(broker):
-        sat = broker[SatelliteVersion]
-        if sat:
-            return True
-        raise SkipComponent()
-
-    satellite_enabled_features = simple_command("/usr/bin/curl -sk https://localhost:9090/features --connect-timeout 5", deps=[is_sat])
     virt_uuid_facts = simple_file("/etc/rhsm/facts/virt_uuid.facts")
 
     @datasource(ps_auxww)
