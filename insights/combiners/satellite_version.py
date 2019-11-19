@@ -6,14 +6,13 @@ The following modules are included:
 
 SatelliteVersion - Version of Satellite Server
 ----------------------------------------------
+Combiner to get Satellite Server version information.
 
 CapsuleVersion - Version of Satellite Capsule (>=6.2)
 -----------------------------------------------------
+Combiner to get Satellite Capsule version information. ONLY Satellite Capsule
+6.2 and newer are supported.
 
-Combiners to get Satellite Server and Capsule Version information. It uses the
-results of the :class:`insights.parsers.satellite_version:Satellite6Version`
-parser and the :class:`insights.parsers.installed_rpms.InstalledRpms` parser to
-determine the version.
 
 """
 
