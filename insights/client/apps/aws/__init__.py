@@ -69,11 +69,11 @@ def get_aws_identity(conn):
         logger.error('Error getting identity information.')
         return None
     logger.debug('Identity information obtained successfully.')
-    identity_doc = base64.b64encode(doc_res.text.encode('utf-8'))
+    identity_doc = base64.b64encode(doc_res.content)
 
     return {
         'document': identity_doc.decode('utf-8'),
-        'pkcs7': pkcs7_res.content.decode('utf-8')
+        'pkcs7': pkcs7_res.text
     }
 
 
@@ -86,7 +86,7 @@ def post_to_hydra(conn, data):
     # POST to hydra
     try:
         net_logger.info('POST %s', hydra_endpoint)
-        res = conn.session.post(hydra_endpoint, timeout=conn.config.http_timeout, data=data)
+        res = conn.session.post(hydra_endpoint, timeout=conn.config.http_timeout, json=data)
     except (ConnectionError, Timeout, SSLError, MaxRetryError) as e:
         logger.error(e)
         logger.error('Could not reach %s', hydra_endpoint)
