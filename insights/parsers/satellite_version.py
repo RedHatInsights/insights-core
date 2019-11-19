@@ -13,8 +13,11 @@ Typical content of "satellite_version" is::
       VERSION = "6.1.3"
     end
 
-Note:
-    This module can only be used for Satellite 6.x
+.. warning::
+    This module only works for Satellite 6.0.x and 6.1.x
+    Please use the combiner
+    :class:`insights.combiners.satellite_version.SatelliteVersion` class to
+    cover all versions.
 
 Examples:
     >>> sat6_ver = shared[SatelliteVersion]
@@ -30,18 +33,14 @@ Examples:
     None
 
 """
-from .. import parser, Parser
-from ..parsers import ParseException
+from insights import parser, Parser
+from insights.parsers import ParseException
 from insights.specs import Specs
 
 
 @parser(Specs.satellite_version_rb)
 class Satellite6Version(Parser):
     """
-    .. warning::
-        This is just a parser for satllite 6.1 and previous versions.
-        Please use the combiner `insights.combiners.satellite_version.SatelliteVersion` class
-        to cover all versions.
 
     Class for parsing the content of ``satellite_version``.
     """
@@ -57,15 +56,6 @@ class Satellite6Version(Parser):
                 break
         if self.version is None:
             raise ParseException('Cannot parse satellite version')
-
-    @property
-    def major(self):
-        if self.version:
-            return int(self.version.split(".")[0])
-
-    @property
-    def minor(self):
-        if self.version:
-            s = self.version.split(".")
-            if len(s) > 1:
-                return int(s[1])
+        ver_sp = self.version.split(".")
+        self.major = int(ver_sp[0])
+        self.minor = int(ver_sp[1]) if len(ver_sp) > 1 else None
