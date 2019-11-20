@@ -1,7 +1,7 @@
 """
 Top level OpenShift 4 component
 ===============================
-The :py:func:`ocp` component recognizes insights-operator and must-gather
+The :py:func:`conf` component recognizes insights-operator and must-gather
 archives.
 """
 import logging
@@ -68,9 +68,9 @@ def analyze(paths, excludes=None):
 
 
 @component([InsightsOperatorContext, MustGatherContext])
-def ocp(io, mg):
+def conf(io, mg):
     """
-    The ``ocp`` component parses all configuration in an insights-operator or
+    The ``conf`` component parses all configuration in an insights-operator or
     must-gather archive and returns an object that is part of the parsr common
     data model.  It can be navigated and queried in a standard way. See the
     `tutorial`_ for details.
