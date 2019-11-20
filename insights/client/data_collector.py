@@ -212,7 +212,7 @@ class DataCollector(object):
             if clean_opts.keyword_file is not None:
                 os.remove(clean_opts.keyword_file.name)
                 logger.warn("WARNING: Skipping keywords found in remove.conf")
-            self.archive.tar_file = fresh[0]
+            self.archive.tar_file_name = fresh[0]
         else:
             self.archive.create_tar_file()
         return self.archive

@@ -285,7 +285,7 @@ def collect(config, pconn):
                 determine_hostname(config.display_name))
     archive = dc.run_collection(rm_conf, branch_info)
     atexit.register(_delete_archive_internal, config, archive)
-    return archive.tar_file
+    return archive.tar_file_name
 
 
 def get_connection(config):
