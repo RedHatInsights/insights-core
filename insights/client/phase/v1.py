@@ -123,7 +123,12 @@ def post_update(client, config):
     # create a machine id first thing. we'll need it for all uploads
     logger.debug('Machine ID: %s', client.get_machine_id())
     logger.debug("CONFIG: %s", config)
-    print_egg_versions()
+    try:
+        print_egg_versions()
+    except RuntimeError as e:
+        # rpm -q command raised an error. Fail process as per RHCLOUD-3346
+        logger.error(e)
+        sys.exit(constants.sig_kill_bad)
     # -------delete everything below this line-------
     if config.legacy_upload:
         if config.status:
