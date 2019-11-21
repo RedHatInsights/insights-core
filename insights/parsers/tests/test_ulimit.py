@@ -1,6 +1,6 @@
 import doctest
 import pytest
-from insights.parsers import ulimit
+from insights.parsers import SkipException, ulimit
 from insights.parsers.ulimit import UlimitHard, UlimitSoft
 from insights.tests import context_wrap
 
@@ -62,6 +62,11 @@ def test_ulimit_soft():
     assert uh['file_locks'].limits_value == 'unlimited'
     assert uh['core_file_size'].limits_value == 0
     assert uh['POSIX_message_queues'].limits_value == 819200
+
+
+def test_ulimit_exp():
+    with pytest.raises(SkipException):
+        UlimitSoft(context_wrap(""))
 
 
 def test_ulimit_doc_examples():

@@ -18,7 +18,8 @@ from insights.parsers import SkipException
 from insights.specs import Specs
 
 Ulimit = namedtuple("Ulimit", field_names=["name", "details", "limits_value"])
-"""namedtuple: Type for storing the specific ulimit line."""
+"""namedtuple: Type for storing a specific `ulimit` line."""
+
 
 class UlimitBase(CommandParser, dict):
     """
@@ -88,7 +89,6 @@ class UlimitHard(UlimitBase):
         True
     """
     pass
-
 
 
 @parser(Specs.ulimit_soft)
