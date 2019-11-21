@@ -1,5 +1,22 @@
 # Change Log
 
+## [insights-core-3.0.135-1237](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.135-1237) (2019-11-21)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.134-1...insights-core-3.0.135-1237)
+
+**Closed issues:**
+
+- To improve GlusterVolStatus parser. [\#2232](https://github.com/RedHatInsights/insights-core/issues/2232)
+
+## [insights-core-3.0.134-1](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.134-1) (2019-11-20)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.133-1228...insights-core-3.0.134-1)
+
+**Closed issues:**
+
+- Add is\_failed method to systemd.unitfiles.UnitFiles Parser [\#2312](https://github.com/RedHatInsights/insights-core/issues/2312)
+- YumRepoList parse issue: \("Incorrect line: '{0}'", 'repolist: 59009'\) [\#2309](https://github.com/RedHatInsights/insights-core/issues/2309)
+- SatelliteVersion should be enhanced for Satellite Capsule [\#2305](https://github.com/RedHatInsights/insights-core/issues/2305)
+- SCTPAsc raises exception on RHEL7 [\#2303](https://github.com/RedHatInsights/insights-core/issues/2303)
+
 ## [insights-core-3.0.133-1228](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.133-1228) (2019-11-14)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.132-1221...insights-core-3.0.133-1228)
 
@@ -119,11 +136,14 @@
 - Request for mpstat parser [\#2144](https://github.com/RedHatInsights/insights-core/issues/2144)
 
 ## [insights-core-3.0.122-1117](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.122-1117) (2019-08-28)
-[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.120-1112...insights-core-3.0.122-1117)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.121-1...insights-core-3.0.122-1117)
 
 **Fixed bugs:**
 
 - lscpu datasource missing for sos reports [\#2150](https://github.com/RedHatInsights/insights-core/issues/2150)
+
+## [insights-core-3.0.121-1](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.121-1) (2019-08-23)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.120-1112...insights-core-3.0.121-1)
 
 ## [insights-core-3.0.120-1112](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.120-1112) (2019-08-22)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.119-1105...insights-core-3.0.120-1112)
