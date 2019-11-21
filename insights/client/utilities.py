@@ -241,8 +241,10 @@ def get_version_info():
     rpm_proc = run_command_get_output(cmd)
     if rpm_proc['status'] != 0:
         # Unrecoverable error
-        raise RuntimeError('Error occurred while running rpm -q. Details:\n%s' % rpm_proc['output'])
-    version_info['client_version'] = rpm_proc['output']
+        logger.debug('Error occurred while running rpm -q. Details:\n%s' % rpm_proc['output'])
+        version_info['client_version'] = None
+    else:
+        version_info['client_version'] = rpm_proc['output']
     return version_info
 
 
