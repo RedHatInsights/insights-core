@@ -186,6 +186,47 @@ There are no active volume tasks
 
 """.strip()
 
+MULTIPLE_VOL_STATUS_LONG_HOSTNAME = """
+Locking failed on srvgluspvlsu72.example.com. Please check log file for details.
+Another transaction is in progress for volQXCHISTP_data. Please try again after sometime.
+
+Status of volume: volQXCHISTPI_log
+Gluster process                             TCP Port  RDMA Port  Online  Pid
+------------------------------------------------------------------------------
+Brick srvgluspvlsu71.example.com:/gluster/Q
+XCHISTPI/log/brick                          49153     0          Y       11020
+Brick srvgluspvlsu72.example.com:/gluster/Q
+XCHISTPI/log/brick                          49153     0          Y       11182
+Brick srvgluspvlsu73.example.com:/gluster/Q
+XCHISTPI/log/brick                          49153     0          Y       129143
+Self-heal Daemon on localhost               N/A       N/A        Y       130186
+Self-heal Daemon on srvgluspvlsu71          N/A       N/A        Y       20009
+Self-heal Daemon on srvgluspvlsu72.example.
+com                                         N/A       N/A        Y       12300
+
+Task Status of Volume volQXCHISTPI_log
+------------------------------------------------------------------------------
+There are no active volume tasks
+
+Status of volume: volQXSCCINTP_data
+Gluster process                             TCP Port  RDMA Port  Online  Pid
+------------------------------------------------------------------------------
+Brick srvgluspvlsu71.example.com:/gluster/Q
+XSCCINTP/data/brick                         49190     0          Y       11374
+Brick srvgluspvlsu72.example.com:/gluster/Q
+XSCCINTP/data/brick                         49190     0          Y       11524
+Brick srvgluspvlsu73.example.com:/gluster/Q
+XSCCINTP/data/bri                           49190     0          Y       129476
+Self-heal Daemon on localhost               N/A       N/A        Y       130186
+Self-heal Daemon on srvgluspvlsu71          N/A       N/A        Y       20009
+Self-heal Daemon on srvgluspvlsu72.example.
+com                                         N/A       N/A        Y       12300
+
+Task Status of Volume volQXSCCINTP_data
+------------------------------------------------------------------------------
+There are no active volume tasks
+""".strip()
+
 
 def test_invalid():
     with pytest.raises(ParseException) as e:
@@ -259,6 +300,15 @@ def test_multiple_valid():
             'Pid': '7805',
             'TCP_Port': 'N/A',
             'Online': 'Y'}
+
+
+def test_long_hostnames():
+    result = GlusterVolStatus(context_wrap(MULTIPLE_VOL_STATUS_LONG_HOSTNAME))
+    assert len(result.data) == 2
+    assert len(result.data['volQXCHISTPI_log']) == 6
+    assert len(result.data['volQXSCCINTP_data']) == 6
+    assert result.data['volQXSCCINTP_data'][0]['Gluster_process'] == 'Brick srvgluspvlsu71.example.com:/gluster/QXSCCINTP/data/brick'
+
 # --------------------------------------END------------------------------------
 
 
