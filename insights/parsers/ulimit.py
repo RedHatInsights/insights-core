@@ -70,7 +70,7 @@ class UlimitBase(CommandParser, dict):
             raise SkipException()
 
     def data(self):
-        """ To keep backward compitable. """
+        """ To keep backward compatible. """
         return self
 
 
