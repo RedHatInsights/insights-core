@@ -104,8 +104,6 @@ def test_sat_platform_base_url_configured():
     assert config.base_url == 'test.satellite.com:443/redhat_access/r/insights'
 
 
-# @patch("insights.client.auto_config._try_satellite6_configuration", Mock())
-# @patch("insights.client.auto_config._try_satellite5_configuration", Mock())
 @patch("insights.client.auto_config.verify_connectivity", Mock())
 def test_platform_path_added():
     '''
@@ -113,21 +111,21 @@ def test_platform_path_added():
     Ensure it's not added when legacy_upload is true
     '''
     # auto_config=True, legacy_upload=True
-    config = Mock(base_url='test.satellite.com:443/redhat_access/r/insights', auto_config=True, legacy_upload=True)
+    config = Mock(base_url='test.satellite.com:443/redhat_access/r/insights', auto_config=True, legacy_upload=True, offline=False)
     try_auto_configuration(config)
     assert config.base_url == 'test.satellite.com:443/redhat_access/r/insights'
 
     # auto_config=True, legacy_upload=False
-    config = Mock(base_url='test.satellite.com:443/redhat_access/r/insights', auto_config=True, legacy_upload=False)
+    config = Mock(base_url='test.satellite.com:443/redhat_access/r/insights', auto_config=True, legacy_upload=False, offline=False)
     try_auto_configuration(config)
     assert config.base_url == 'test.satellite.com:443/redhat_access/r/insights/platform'
 
     # auto_config=False, legacy_upload=True
-    config = Mock(base_url='test.satellite.com:443/redhat_access/r/insights', auto_config=False, legacy_upload=True)
+    config = Mock(base_url='test.satellite.com:443/redhat_access/r/insights', auto_config=False, legacy_upload=True, offline=False)
     try_auto_configuration(config)
     assert config.base_url == 'test.satellite.com:443/redhat_access/r/insights'
 
     # auto_config=False, legacy_upload=False
-    config = Mock(base_url='test.satellite.com:443/redhat_access/r/insights', auto_config=False, legacy_upload=False)
+    config = Mock(base_url='test.satellite.com:443/redhat_access/r/insights', auto_config=False, legacy_upload=False, offline=False)
     try_auto_configuration(config)
     assert config.base_url == 'test.satellite.com:443/redhat_access/r/insights/platform'
