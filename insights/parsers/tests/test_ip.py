@@ -167,15 +167,63 @@ IP_S_LINK_ALL = """
     12341814    136884  0       0       0       0
 """.strip()
 
+IP_S_LINK_ALL_2 = """
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00 promiscuity 0 addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535
+    RX: bytes  packets  errors  dropped overrun mcast
+    38374458039 291293530 0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    38374458039 291293530 0       0       0       0
+2: eno1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 9000 qdisc mq master ovs-system state UP mode DEFAULT group default qlen 1000
+    link/ether 38:90:a5:80:43:c9 brd ff:ff:ff:ff:ff:ff promiscuity 1
+    openvswitch_slave addrgenmode eui64 numtxqueues 8 numrxqueues 8 gso_max_size 65536 gso_max_segs 65535
+    RX: bytes  packets  errors  dropped overrun mcast
+    108341661705196 87334303936 0       5632499 0       7110182
+    TX: bytes  packets  errors  dropped carrier collsns
+    297580787699558 95024371467 0       0       0       0
+3: eno2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 9000 qdisc mq master ovs-system state UP mode DEFAULT group default qlen 1000
+    link/ether 38:90:a5:80:43:ca brd ff:ff:ff:ff:ff:ff promiscuity 1
+    openvswitch_slave addrgenmode eui64 numtxqueues 8 numrxqueues 8 gso_max_size 65536 gso_max_segs 65535
+    RX: bytes  packets  errors  dropped overrun mcast
+    169323904323594 116776818590 0       38367215 0       7111574
+    TX: bytes  packets  errors  dropped carrier collsns
+    257318435088822 64965403562 0       0       0       0
+4: ovs-system: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+    link/ether d6:fe:ce:4d:91:c1 brd ff:ff:ff:ff:ff:ff promiscuity 1
+    openvswitch addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535
+    RX: bytes  packets  errors  dropped overrun mcast
+    0          0        0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    0          0        0       0       0       0
+5: br-ex: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+    link/ether 32:0f:11:3e:4f:49 brd ff:ff:ff:ff:ff:ff promiscuity 1
+    openvswitch addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535
+    RX: bytes  packets  errors  dropped overrun mcast
+    0          0        0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    0          0        0       0       0       0
+6: vxlan_sys_4789: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 65000 qdisc noqueue master ovs-system state UNKNOWN mode DEFAULT group default qlen 1000
+    link/ether aa:be:45:24:75:f8 brd ff:ff:ff:ff:ff:ff promiscuity 1
+    vxlan id 0 srcport 0 0 dstport 4789 nolearning ageing 300 noudpcsum noudp6zerocsumtx udp6zerocsumrx external
+    openvswitch_slave addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535
+    RX: bytes  packets  errors  dropped overrun mcast
+    209941850791128 169319683635 0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    89501939148105 38904599752 0       87515   0       0
+""".strip()
+
 
 def test_ip_data_Link():
     link_info = ip.IpLinkInfo(context_wrap(IP_S_LINK))
     link_info_all = ip.IpLinkInfo(context_wrap(IP_S_LINK_ALL))
+    link_info_all_2 = ip.IpLinkInfo(context_wrap(IP_S_LINK_ALL_2))
+    if_list_all_2 = link_info_all_2.active
     if_list_all = link_info_all.active
     if_list = link_info.active
     assert len(if_list) == 4
     assert keys_in(["lo", "enp0s3", "enp0s8", "enp0s9"], if_list)
     assert keys_in(['ppp0', 'lo', 'tun0', 'enp0s25', 'vnet0', 'virbr0'], if_list_all)
+    assert keys_in(['lo', 'eno1', 'eno2', 'ovs-system', 'br-ex', 'vxlan_sys_4789'], if_list_all_2)
 
     assert sorted(link_info.active) == sorted(['lo', 'enp0s3', 'enp0s8', 'enp0s9'])
 
@@ -205,6 +253,11 @@ def test_ip_data_Link():
     assert enp0s25["rx_packets"] == 1492476
     assert enp0s25["tx_packets"] == 969514
     assert enp0s25["index"] == 2
+
+    vxlan_sys_4789 = link_info_all_2["vxlan_sys_4789"]
+    assert sorted(vxlan_sys_4789["vxlan"]) == sorted(['vxlan', 'id', '0', 'srcport', '0', '0', 'dstport', '4789', 'nolearning', 'ageing', '300', 'noudpcsum', 'noudp6zerocsumtx', 'udp6zerocsumrx', 'external'])
+    ovs = link_info_all_2["ovs-system"]
+    assert sorted(ovs["openvswitch"]) == sorted(['openvswitch', 'addrgenmode', 'eui64', 'numtxqueues', '1', 'numrxqueues', '1', 'gso_max_size', '65536', 'gso_max_segs', '65535'])
 
 
 IP_ROUTE_SHOW_TABLE_ALL_TEST = """
