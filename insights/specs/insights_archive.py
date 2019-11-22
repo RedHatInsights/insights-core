@@ -282,6 +282,7 @@ class InsightsArchiveSpecs(Specs):
     vgs_noheadings_all = simple_file("insights_commands/vgs_--nameprefixes_--noheadings_--separator_-a_-o_vg_all_--config_global_locking_type_0_devices_filter_a")
     virsh_list_all = simple_file("insights_commands/virsh_--readonly_list_--all")
     virt_what = simple_file("insights_commands/virt-what")
+    vma_ra_enabled_s390x = simple_file("/sys/kernel/mm/swap/vma_ra_enabled")
     woopsie = simple_file("insights_commands/find_.var.crash_.var.tmp_-path_.reports-_.whoopsie-report")
     yum_list_installed = simple_file("insights_commands/yum_-C_--noplugins_list_installed")
     yum_repolist = simple_file("insights_commands/yum_-C_repolist")
