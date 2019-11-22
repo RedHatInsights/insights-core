@@ -137,13 +137,20 @@ class GlusterVolStatus(LegacyItemAccess, CommandParser):
             end = idxs[i + 1] if i < len(idxs) - 1 else -1
             _, val = content[idx].split(":", 1)
             body = parse_fixed_table(
-                    content[start:end],
-                    header_substitute=[('Gluster process', 'Gluster_process'),
-                                       ('TCP Port', 'TCP_Port'),
-                                       ('RDMA Port', 'RDMA_Port')
-                                       ],
-                    heading_ignore=['Gluster process'],
-                    trailing_ignore=['Task Status'])
+                content[start:end],
+                header_substitute=[
+                    ('Gluster process', 'Gluster_process'),
+                    ('TCP Port', 'TCP_Port'),
+                    ('RDMA Port', 'RDMA_Port')
+                ],
+                heading_ignore=['Gluster process'],
+                trailing_ignore=['Task Status of Volume', 'There are no active volume tasks'])
+
+            # For process names having longer hostnames
+            for n, i in enumerate(body):
+                if i['TCP_Port'] == i['RDMA_Port'] == i['Online'] == i['Pid'] == '':
+                    body[n + 1]['Gluster_process'] = i['Gluster_process'] + body[n + 1]['Gluster_process']
+                    del body[n]
             self.data[val.strip()] = body
         if not self.data:
             # If no data is obtained in the command execution then throw an exception instead of returning an empty
