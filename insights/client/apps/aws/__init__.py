@@ -23,13 +23,6 @@ def aws_main(config):
     '''
     conn = InsightsConnection(config)
 
-    # workaround for a workaround
-    #   the hydra API doesn't accept the legacy cert
-    #   and legacy_upload=False currently just
-    #   redirects to the classic API with /platform added
-    #   so if doing AWS entitlement, use cert_verify=True
-    conn.session.verify = True
-
     bundle = get_aws_identity(conn)
     if not bundle:
         return False

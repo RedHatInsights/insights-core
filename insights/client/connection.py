@@ -74,9 +74,17 @@ class InsightsConnection(object):
         self.cert_verify = self.config.cert_verify
         if self.cert_verify is None:
             # if self.config.legacy_upload:
-            self.cert_verify = os.path.join(
-                constants.default_conf_dir,
-                'cert-api.access.redhat.com.pem')
+            if self.config.aws:
+                # workaround for a workaround
+                #   the hydra API doesn't accept the legacy cert
+                #   and legacy_upload=False currently just
+                #   redirects to the classic API with /platform added
+                #   so if doing AWS entitlement, use cert_verify=True
+                self.cert_verify = True
+            else:
+                self.cert_verify = os.path.join(
+                    constants.default_conf_dir,
+                    'cert-api.access.redhat.com.pem')
             # else:
             # self.cert_verify = True
         else:
