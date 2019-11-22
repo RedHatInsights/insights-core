@@ -1,5 +1,6 @@
 import logging
 import base64
+import json
 from requests import Request, ConnectionError, Timeout
 from requests.exceptions import HTTPError
 from ssl import SSLError
@@ -78,10 +79,10 @@ def post_to_hydra(conn, data):
     hydra_endpoint = conn.config.portal_access_hydra_url
     # POST to hydra
     try:
-        req = Request('POST', hydra_endpoint, json=data).prepare()
+        json_data = json.dumps(data)
         net_logger.info('POST %s', hydra_endpoint)
-        net_logger.info('POST body: %s', req.body.decode('utf-8'))
-        res = conn.session.send(req, timeout=conn.config.http_timeout)
+        net_logger.info('POST body: %s', json_data)
+        res = conn.session.post(hydra_endpoint, data=json_data, timeout=conn.config.http_timeout)
     except (ConnectionError, Timeout, SSLError, MaxRetryError) as e:
         logger.error(e)
         logger.error('Could not reach %s', hydra_endpoint)
