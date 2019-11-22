@@ -70,6 +70,10 @@ def parse_ip_addr(content):
             r[current["name"]] = current
         elif line.startswith("link"):
             parse_link(line, current)
+        elif 'vxlan' in line:
+            parse_vxlan_details(line, current)
+        elif 'openvswitch' in line:
+            parse_ovs_details(line, current)
         elif line.startswith("inet"):
             parse_inet(line, current)
         elif line.startswith("RX"):
@@ -142,6 +146,16 @@ def parse_tx_stats(line, d):
     d["tx_dropped"] = int(split_content[3])
     d["tx_carrier"] = int(split_content[4])
     d["tx_collsns"] = int(split_content[5])
+
+
+def parse_vxlan_details(line, d):
+    split_content = line.split()
+    d['vxlan'] = split_content
+
+
+def parse_ovs_details(line, d):
+    split_content = line.split()
+    d['openvswitch'] = split_content
 
 
 @parser(Specs.ip_addr)
