@@ -47,21 +47,23 @@ def test_ulimit_hard():
     assert len(uh) == 16
     assert 'cpu_time' in uh
     assert 'real-time_priority' in uh
-    assert uh['cpu_time'].limits_value == 'unlimited'
-    assert uh['file_locks'].limits_value == 'unlimited'
-    assert uh['core_file_size'].limits_value == 100
-    assert uh['POSIX_message_queues'].limits_value == 819200
+    assert uh['cpu_time'].value == 'unlimited'
+    assert uh['file_locks'].value == 'unlimited'
+    assert uh['core_file_size'].value == 100
+    assert uh['POSIX_message_queues'].value == 819200
+    assert sorted(uh['pipe_size'].details) == sorted(['512 bytes', '-p'])
 
 
 def test_ulimit_soft():
-    uh = UlimitSoft(context_wrap(ULIMIT_SOFT))
-    assert len(uh) == 15
-    assert 'cpu_time' in uh
-    assert 'real-time_priority' not in uh
-    assert uh['cpu_time'].limits_value == 'unlimited'
-    assert uh['file_locks'].limits_value == 'unlimited'
-    assert uh['core_file_size'].limits_value == 0
-    assert uh['POSIX_message_queues'].limits_value == 819200
+    us = UlimitSoft(context_wrap(ULIMIT_SOFT))
+    assert len(us) == 15
+    assert 'cpu_time' in us
+    assert 'real-time_priority' not in us
+    assert us['cpu_time'].value == 'unlimited'
+    assert us['file_locks'].value == 'unlimited'
+    assert us['core_file_size'].value == 0
+    assert us['POSIX_message_queues'].value == 819200
+    assert sorted(us['pipe_size'].details) == sorted(['512 bytes', '-p'])
 
 
 def test_ulimit_exp():
