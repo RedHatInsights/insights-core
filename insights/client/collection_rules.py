@@ -227,8 +227,8 @@ class InsightsUploadConf(object):
                 else:
                     rm_conf[item] = value.strip().decode('string-escape').split(',')
             return rm_conf
-        except ConfigParser.NoSectionError:
-            raise RuntimeError("[remove] heading missing in remove.conf")
+        except ConfigParser.Error as e:
+            raise RuntimeError('ERROR: Could not parse the remove.conf file. ' + str(e))
 
 
 if __name__ == '__main__':
