@@ -246,15 +246,6 @@ def get_machine_id():
     return generate_machine_id()
 
 
-def update_rules(config, pconn):
-    if not pconn:
-        raise ValueError('ERROR: Cannot update rules in --offline mode. '
-                         'Disable auto_update in config file.')
-
-    pc = InsightsUploadConf(config, conn=pconn)
-    return pc.get_conf_update()
-
-
 def get_branch_info(config):
     """
     Get branch info for a system
@@ -374,7 +365,7 @@ def delete_archive(path):
     removed_archive = False
     try:
         logger.debug("Removing archive %s", path)
-        # removed_archive = os.remove(path)
+        removed_archive = os.remove(path)
     except:
         logger.error("Error removing %s", path)
 

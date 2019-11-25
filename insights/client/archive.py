@@ -27,6 +27,7 @@ class InsightsArchive(object):
         Initialize the Insights Archive
         Create temp dir, archive dir, and command dir
         """
+        # make sure tmp_path is safe
         self.collected_data_dir = tmp_path
         self.compressor = compressor
         self.tar_file_name = None
