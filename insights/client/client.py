@@ -22,7 +22,6 @@ from .utilities import (generate_machine_id,
 from .collection_rules import InsightsUploadConf
 from .data_collector import DataCollector
 from .connection import InsightsConnection
-from .archive import InsightsArchive
 from .support import registration_check
 from .constants import InsightsConstants as constants
 from .schedule import get_scheduler
@@ -264,7 +263,6 @@ def collect(config, pconn):
     """
     branch_info = get_branch_info(config)
     pc = InsightsUploadConf(config)
-    tar_file = None
 
     # collection_rules = pc.get_conf_file()
     rm_conf = pc.get_rm_conf()

@@ -2,16 +2,13 @@
 Handle adding files and preparing the archive for upload
 """
 from __future__ import absolute_import
-import time
 import os
-import shutil
 import subprocess
 import shlex
 import logging
 import tempfile
-import re
 
-from .utilities import determine_hostname, write_data_to_file
+from .utilities import write_data_to_file
 
 logger = logging.getLogger(__name__)
 

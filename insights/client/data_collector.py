@@ -16,7 +16,6 @@ from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
 
 from insights import collect
-from insights.util import mangle
 from ..contrib.soscleaner import SOSCleaner
 from .utilities import _expand_paths, get_version_info, read_pidfile, get_tags
 from .constants import InsightsConstants as constants
@@ -186,7 +185,7 @@ class DataCollector(object):
         '''
         Run specs and collect all the data
         '''
-        parent_pid = read_pidfile()
+        # parent_pid = read_pidfile()
         if rm_conf is None:
             rm_conf = {}
         logger.debug('Beginning to run collection...')
