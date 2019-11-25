@@ -17,8 +17,8 @@ False
 def test_vma_ra_enabled_s390x():
     sp1 = VmaRaEnabledS390x(context_wrap(INPUT_VMA_1))
     sp2 = VmaRaEnabledS390x(context_wrap(INPUT_VMA_2))
-    assert sp1.value == 'True'
-    assert sp2.value == 'False'
+    assert sp1.ra_enabled is True
+    assert sp2.ra_enabled is False
 
 
 def test_vma_ra_enabled_s390x_exp():
