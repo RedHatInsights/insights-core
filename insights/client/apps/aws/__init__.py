@@ -2,7 +2,7 @@ import logging
 import base64
 import json
 from requests import Request, ConnectionError, Timeout
-from requests.exceptions import HTTPError
+from requests.exceptions import HTTPError, MissingSchema
 from ssl import SSLError
 from urllib3.exceptions import MaxRetryError
 from insights.client.connection import InsightsConnection
@@ -77,12 +77,16 @@ def post_to_hydra(conn, data):
     '''
     logger.info('Submitting identity information to Red Hat.')
     hydra_endpoint = conn.config.portal_access_hydra_url
+
     # POST to hydra
     try:
         json_data = json.dumps(data)
         net_logger.info('POST %s', hydra_endpoint)
         net_logger.info('POST body: %s', json_data)
         res = conn.session.post(hydra_endpoint, data=json_data, timeout=conn.config.http_timeout)
+    except MissingSchema as e:
+        logger.error(e)
+        return False
     except (ConnectionError, Timeout, SSLError, MaxRetryError) as e:
         logger.error(e)
         logger.error('Could not reach %s', hydra_endpoint)
