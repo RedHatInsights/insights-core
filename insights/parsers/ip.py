@@ -13,7 +13,7 @@ RouteDevices - command ``ip route show table all``
 IpNeighParser - command ``ip neigh show nud all``
 -------------------------------------------------
 
-IpLinkInfo - command ``ip -s link``
+IpLinkInfo - command ``ip -d -s link``
 -----------------------------------
 """
 
