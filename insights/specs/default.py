@@ -976,7 +976,6 @@ class DefaultSpecs(Specs):
     tuned_conf = simple_file("/etc/tuned.conf")
     udev_persistent_net_rules = simple_file("/etc/udev/rules.d/70-persistent-net.rules")
     ulimit_hard = simple_command("/usr/bin/ulimit -a -H")
-    ulimit_soft = simple_command("/usr/bin/ulimit -a -S")
     uname = simple_command("/usr/bin/uname -a")
     up2date = simple_file("/etc/sysconfig/rhn/up2date")
     up2date_log = simple_file("/var/log/up2date")
