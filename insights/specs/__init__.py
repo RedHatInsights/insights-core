@@ -599,6 +599,7 @@ class Specs(SpecSet):
     tuned_conf = RegistryPoint()
     udev_persistent_net_rules = RegistryPoint()
     ulimit_hard = RegistryPoint()
+    ulimit_soft = RegistryPoint()
     uname = RegistryPoint()
     up2date = RegistryPoint()
     up2date_log = RegistryPoint(filterable=True)
