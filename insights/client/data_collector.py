@@ -17,9 +17,8 @@ from tempfile import NamedTemporaryFile
 
 from insights import collect
 from ..contrib.soscleaner import SOSCleaner
-from .utilities import _expand_paths, get_version_info, read_pidfile, get_tags
+from .utilities import _expand_paths, get_version_info, get_tags
 from .constants import InsightsConstants as constants
-# from .insights_spec import InsightsFile, InsightsCommand
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
