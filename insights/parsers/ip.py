@@ -14,7 +14,7 @@ IpNeighParser - command ``ip neigh show nud all``
 -------------------------------------------------
 
 IpLinkInfo - command ``ip -d -s link``
------------------------------------
+--------------------------------------
 """
 
 from __future__ import print_function
