@@ -304,7 +304,6 @@ def test_ip_data_Link():
     link_info_all_2 = ip.IpLinkInfo(context_wrap(IP_S_LINK_ALL_2))
     link_info_all_3 = ip.IpLinkInfo(context_wrap(IP_S_LINK_ALL_3))
     if_list_all_3 = link_info_all_3.active
-    import pdb; pdb.set_trace()
     assert sorted(if_list_all_3) == sorted(['lo', 'eth0_1', 'eth0_2', 'vxlan_sys_4789', 'gre1'])
     eth0_1 = link_info_all_3["eth0_1"]
     assert eth0_1["mac"] == "00:90:fa:8d:36:1e"
