@@ -239,7 +239,7 @@ class InsightsArchiveSpecs(Specs):
     saphostctl_getcimobject_sapinstance = simple_file("insights_commands/usr.sap.hostctrl.exe.saphostctrl_-function_GetCIMObject_-enuminstances_SAPInstance")
     saphostexec_status = simple_file("insights_commands/usr.sap.hostctrl.exe.saphostexec_-status")
     saphostexec_version = simple_file("insights_commands/usr.sap.hostctrl.exe.saphostexec_-version")
-    satellite_enabled_features = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_satellite_enabled_features")
+    satellite_enabled_features = simple_file("insights_commands/curl_-sk_https_..localhost_9090.features_--connect-timeout_5")
     sealert = simple_file('insights_commands/sealert_-l')
     sestatus = simple_file("insights_commands/sestatus_-b")
     smbstatus_S = simple_file("insights_commands/smbstatus_-S")
