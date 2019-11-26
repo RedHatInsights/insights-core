@@ -271,8 +271,30 @@ IP_S_LINK_ALL_3 = """
     link/ether fa:cf:5f:aa:34:44 brd ff:ff:ff:ff:ff:ff promiscuity 1
     openvswitch addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535
     RX: bytes  packets  errors  dropped overrun mcast
-    0          0        0       101259804 0       0
+    0          0        0       101259804 0     0
     TX: bytes  packets  errors  dropped carrier collsns
+    0          0        0       0       0       0
+10: gre0@NONE: <NOARP> mtu 1476 qdisc noqueue state DOWN mode DEFAULT qlen 1
+    link/gre 0.0.0.0 brd 0.0.0.0 promiscuity 0
+    gre remote any local any ttl inherit nopmtudisc addrgenmode eui64
+    RX: bytes  packets  errors  dropped overrun mcast
+    0          0        0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    0          0        0       0       0       0
+11: gretap0@NONE: <BROADCAST,MULTICAST> mtu 1462 qdisc noop state DOWN mode DEFAULT qlen 1000
+    link/ether 00:00:00:00:00:00 brd ff:ff:ff:ff:ff:ff promiscuity 0
+    gretap remote any local any ttl inherit nopmtudisc addrgenmode eui64
+    RX: bytes  packets  errors  dropped overrun mcast
+    0          0        0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    0          0        0       0       0       0
+12: gre1@NONE: <POINTOPOINT,NOARP,UP,LOWER_UP> mtu 1476 qdisc noqueue state UNKNOWN mode DEFAULT qlen 1
+    link/gre 10.211.47.217 peer 172.168.10.25 promiscuity 0
+    gre remote 172.168.10.25 local 10.211.47.217 ttl 255 addrgenmode eui64
+    RX: bytes  packets  errors  dropped overrun mcast
+    0          0        0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    168        3        0       0       0       0
 """.strip()
 
 
@@ -282,7 +304,8 @@ def test_ip_data_Link():
     link_info_all_2 = ip.IpLinkInfo(context_wrap(IP_S_LINK_ALL_2))
     link_info_all_3 = ip.IpLinkInfo(context_wrap(IP_S_LINK_ALL_3))
     if_list_all_3 = link_info_all_3.active
-    assert sorted(if_list_all_3) == sorted(['lo', 'eth0_1', 'eth0_2', 'vxlan_sys_4789'])
+    import pdb; pdb.set_trace()
+    assert sorted(if_list_all_3) == sorted(['lo', 'eth0_1', 'eth0_2', 'vxlan_sys_4789', 'gre1'])
     eth0_1 = link_info_all_3["eth0_1"]
     assert eth0_1["mac"] == "00:90:fa:8d:36:1e"
     assert eth0_1["rx_packets"] == 15139642734
