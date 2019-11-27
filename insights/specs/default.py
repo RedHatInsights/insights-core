@@ -930,6 +930,7 @@ class DefaultSpecs(Specs):
     systemctl_list_unit_files = simple_command("/bin/systemctl list-unit-files")
     systemctl_list_units = simple_command("/bin/systemctl list-units")
     systemctl_mariadb = simple_command("/bin/systemctl show mariadb")
+    systemctl_postgresql = simple_command("/bin/systemctl show postgresql")
     systemctl_pulp_workers = simple_command("/bin/systemctl show pulp_workers")
     systemctl_pulp_resmg = simple_command("/bin/systemctl show pulp_resource_manager")
     systemctl_pulp_celerybeat = simple_command("/bin/systemctl show pulp_celerybeat")
