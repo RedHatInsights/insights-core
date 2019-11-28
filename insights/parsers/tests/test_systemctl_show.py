@@ -4,6 +4,7 @@ from insights.parsers import systemctl_show
 from insights.parsers.systemctl_show import SystemctlShowCinderVolume
 from insights.parsers.systemctl_show import SystemctlShowHttpd
 from insights.parsers.systemctl_show import SystemctlShowMariaDB
+from insights.parsers.systemctl_show import SystemctlShowPostgreSQL
 from insights.parsers.systemctl_show import SystemctlShowPulpCelerybeat
 from insights.parsers.systemctl_show import SystemctlShowPulpResourceManager
 from insights.parsers.systemctl_show import SystemctlShowPulpWorkers
@@ -99,6 +100,12 @@ def test_systemctl_show_nginx():
     assert len(context.data) == 21
 
 
+def test_systemctl_show_postgresql():
+    context = SystemctlShowPostgreSQL(context_wrap(SYSTEMCTL_SHOW_EXAMPLES))
+    assert context["LimitNOFILE"] == "4096"
+    assert len(context.data) == 21
+
+
 def test_systemctl_show_doc_examples():
     env = {
         'systemctl_show_cinder_volume': SystemctlShowCinderVolume(context_wrap(SYSTEMCTL_SHOW_EXAMPLES)),
@@ -110,7 +117,8 @@ def test_systemctl_show_doc_examples():
         'systemctl_show_qpidd': SystemctlShowQpidd(context_wrap(SYSTEMCTL_SHOW_EXAMPLES)),
         'systemctl_show_qdrouterd': SystemctlShowQdrouterd(context_wrap(SYSTEMCTL_SHOW_EXAMPLES)),
         'systemctl_show_smartpdc': SystemctlShowSmartpdc(context_wrap(SYSTEMCTL_SHOW_EXAMPLES)),
-        'systemctl_show_nginx': SystemctlShowNginx(context_wrap(SYSTEMCTL_SHOW_EXAMPLES))
+        'systemctl_show_nginx': SystemctlShowNginx(context_wrap(SYSTEMCTL_SHOW_EXAMPLES)),
+        'systemctl_show_postgresql': SystemctlShowPostgreSQL(context_wrap(SYSTEMCTL_SHOW_EXAMPLES))
     }
     failed, total = doctest.testmod(systemctl_show, globs=env)
     assert failed == 0
