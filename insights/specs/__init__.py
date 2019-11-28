@@ -572,6 +572,7 @@ class Specs(SpecSet):
     systemctl_list_unit_files = RegistryPoint()
     systemctl_list_units = RegistryPoint()
     systemctl_mariadb = RegistryPoint()
+    systemctl_postgresql = RegistryPoint()
     systemctl_pulp_workers = RegistryPoint()
     systemctl_pulp_resmg = RegistryPoint()
     systemctl_pulp_celerybeat = RegistryPoint()
