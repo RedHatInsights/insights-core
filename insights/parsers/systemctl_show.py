@@ -410,3 +410,35 @@ class SystemctlShowSmartpdc(SystemctlShow):
 
     """
     pass
+
+
+@parser(Specs.systemctl_postgresql)
+class SystemctlShowPostgreSQL(SystemctlShow):
+    """
+    Class for ``systemctl show postgresql``.
+
+    Typical output of ``/bin/systemctl show postgresql`` command is::
+
+        Restart=no
+        NotifyAccess=none
+        RestartUSec=100ms
+        TimeoutStartUSec=1min 30s
+        TimeoutStopUSec=1min 30s
+        WatchdogUSec=0
+        WatchdogTimestampMonotonic=0
+        StartLimitInterval=10000000
+        StartLimitBurst=5
+        StartLimitAction=none
+        FailureAction=none
+        PermissionsStartOnly=no
+        RootDirectoryStartOnly=no
+        RemainAfterExit=no
+        GuessMainPID=yes
+        ...
+
+    Examples:
+        >>> systemctl_show_postgresql["LimitNOFILE"]
+        '4096'
+
+    """
+    pass
