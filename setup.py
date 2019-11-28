@@ -72,6 +72,7 @@ docs = set([
     'ipython',
     'colorama',
     'jinja2',
+    'Pygments<2.5.1'
 ])
 
 testing = set([
