@@ -26,6 +26,7 @@ class SystemctlShowServiceAll(CommandParser, dict):
 
         Id=postfix.service
         Names=postfix.service
+        TimeoutStartUSec=1min 30s
         LimitNOFILE=65536
         LimitMEMLOCK=
         LimitLOCKS=18446744073709551615
@@ -130,6 +131,7 @@ class SystemctlShow(CommandParser, dict):
         """Remove empty key"""
         self.update(dict((k, v) for k, v in data.items() if not v == ''))
 
+    @property
     def data(self):
         return self
 
@@ -138,7 +140,7 @@ class SystemctlShow(CommandParser, dict):
 class SystemctlShowCinderVolume(SystemctlShow):
     """
     .. warning::
-        This class is deprecated, please use :py:class:`SystemctlShowServiceAll` instead.
+        This parser is deprecated, please use :py:class:`SystemctlShowServiceAll` instead.
 
     Class for ``systemctl show openstack-cinder-volume``.
 
@@ -171,7 +173,7 @@ class SystemctlShowCinderVolume(SystemctlShow):
 class SystemctlShowMariaDB(SystemctlShow):
     """
     .. warning::
-        This class is deprecated, please use :py:class:`SystemctlShowServiceAll` instead.
+        This parser is deprecated, please use :py:class:`SystemctlShowServiceAll` instead.
 
     Class for ``systemctl show mariadb``.
 
@@ -204,7 +206,7 @@ class SystemctlShowMariaDB(SystemctlShow):
 class SystemctlShowPulpWorkers(SystemctlShow):
     """
     .. warning::
-        This class is deprecated, please use :py:class:`SystemctlShowServiceAll` instead.
+        This parser is deprecated, please use :py:class:`SystemctlShowServiceAll` instead.
 
     Class for ``systemctl show pulp_workers``.
 
@@ -241,7 +243,7 @@ class SystemctlShowPulpWorkers(SystemctlShow):
 class SystemctlShowPulpResourceManager(SystemctlShow):
     """
     .. warning::
-        This class is deprecated, please use :py:class:`SystemctlShowServiceAll` instead.
+        This parser is deprecated, please use :py:class:`SystemctlShowServiceAll` instead.
 
     Class for ``systemctl show pulp_resource_manager``.
 
@@ -277,7 +279,7 @@ class SystemctlShowPulpResourceManager(SystemctlShow):
 class SystemctlShowPulpCelerybeat(SystemctlShow):
     """
     .. warning::
-        This class is deprecated, please use :py:class:`SystemctlShowServiceAll` instead.
+        This parser is deprecated, please use :py:class:`SystemctlShowServiceAll` instead.
 
     Class for ``systemctl show pulp_celerybeat``.
 
@@ -313,7 +315,7 @@ class SystemctlShowPulpCelerybeat(SystemctlShow):
 class SystemctlShowHttpd(SystemctlShow):
     """
     .. warning::
-        This class is deprecated, please use :py:class:`SystemctlShowServiceAll` instead.
+        This parser is deprecated, please use :py:class:`SystemctlShowServiceAll` instead.
 
     Class for ``systemctl show httpd``.
 
@@ -351,7 +353,7 @@ class SystemctlShowHttpd(SystemctlShow):
 class SystemctlShowNginx(SystemctlShow):
     """
     .. warning::
-        This class is deprecated, please use :py:class:`SystemctlShowServiceAll` instead.
+        This parser is deprecated, please use :py:class:`SystemctlShowServiceAll` instead.
 
     Class for ``systemctl show nginx``.
 
@@ -403,7 +405,7 @@ class SystemctlShowNginx(SystemctlShow):
 class SystemctlShowQpidd(SystemctlShow):
     """
     .. warning::
-        This class is deprecated, please use :py:class:`SystemctlShowServiceAll` instead.
+        This parser is deprecated, please use :py:class:`SystemctlShowServiceAll` instead.
 
     Class for ``systemctl show qpidd``.
 
@@ -439,7 +441,7 @@ class SystemctlShowQpidd(SystemctlShow):
 class SystemctlShowQdrouterd(SystemctlShow):
     """
     .. warning::
-        This class is deprecated, please use :py:class:`SystemctlShowServiceAll` instead.
+        This parser is deprecated, please use :py:class:`SystemctlShowServiceAll` instead.
 
     Class for ``systemctl show qdrouterd``.
 
@@ -473,7 +475,7 @@ class SystemctlShowQdrouterd(SystemctlShow):
 class SystemctlShowSmartpdc(SystemctlShow):
     """
     .. warning::
-        This class is deprecated, please use :py:class:`SystemctlShowServiceAll` instead.
+        This parser is deprecated, please use :py:class:`SystemctlShowServiceAll` instead.
 
     Class for ``systemctl show smart_proxy_dynflow_core``.
 
