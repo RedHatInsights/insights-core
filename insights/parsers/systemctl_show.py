@@ -4,8 +4,8 @@ SystemctlShow - command ``systemctl show``
 
 Parsers included in this module are:
 
-SystemctlShowAll - command ``systemctl show *.service``
--------------------------------------------------------
+SystemctlShowServiceAll - command ``systemctl show *.service``
+--------------------------------------------------------------
 Parsers the output of `systemctl show *.service` against all services running
 on the host.
 
