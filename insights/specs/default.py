@@ -935,7 +935,7 @@ class DefaultSpecs(Specs):
     systemctl_pulp_celerybeat = simple_command("/bin/systemctl show pulp_celerybeat")
     systemctl_qpidd = simple_command("/bin/systemctl show qpidd")
     systemctl_qdrouterd = simple_command("/bin/systemctl show qdrouterd")
-    systemctl_show_all_services = simple_command("/bin/systemctl show *.service --all")
+    systemctl_show_all_services = simple_command("/bin/systemctl show *.service")
     systemctl_smartpdc = simple_command("/bin/systemctl show smart_proxy_dynflow_core")
     systemd_docker = simple_command("/usr/bin/systemctl cat docker.service")
     systemd_logind_conf = simple_file("/etc/systemd/logind.conf")

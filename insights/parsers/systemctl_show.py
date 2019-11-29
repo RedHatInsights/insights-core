@@ -4,10 +4,10 @@ SystemctlShow - command ``systemctl show``
 
 Parsers included in this module are:
 
-SystemctlShowAll - command ``systemctl show *.service --all``
+SystemctlShowAll - command ``systemctl show *.service``
 -------------------------------------------------------------
-Parsers the output of `systemctl show *.service --all` against all services
-running on the host.
+Parsers the output of `systemctl show *.service` against all services running
+on the host.
 
 """
 from insights import parser, CommandParser
@@ -19,7 +19,7 @@ from insights.util import deprecated
 @parser(Specs.systemctl_show_all_services)
 class SystemctlShowServiceAll(CommandParser, dict):
     """
-    Class for parsing ``systemctl show *.service --all` command output.
+    Class for parsing ``systemctl show *.service` command output.
     Empty properties are suppressed.
 
     Sample Input::
