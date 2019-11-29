@@ -1,81 +1,147 @@
 """
-Systemd command ``show`` outputs
-================================
-This command shows all the paramters for this service, these parameters can be set
-through unit files corresponding to that service or from command line.
+SystemctlShow - command ``systemctl show``
+==========================================
 
 Parsers included in this module are:
 
-SystemctlShowCinderVolume - command ``systemctl show openstack-cinder-volume``
-------------------------------------------------------------------------------
+SystemctlShowServiceAll - command ``systemctl show *.service``
+--------------------------------------------------------------
+Parsers the output of `systemctl show *.service` against all services running
+on the host.
 
-SystemctlShowMariaDB - command ``systemctl show mariadb``
----------------------------------------------------------
-
-SystemctlShowPulpWorkers - command ``systemctl show pulp_workers``
-------------------------------------------------------------------
-
-SystemctlShowPulpResourceManager - command ``systemctl show pulp_resource_manager``
------------------------------------------------------------------------------------
-
-SystemctlShowPulpCelerybeat - command ``systemctl show pulp_celerybeat``
-------------------------------------------------------------------------
-
-SystemctlShowHttpd - command ``systemctl show httpd``
------------------------------------------------------
-
-SystemctlShowNginx - command ``systemctl show nginx``
------------------------------------------------------
-
-SystemctlShowQpidd - command ``systemctl show qpidd``
------------------------------------------------------
-
-SystemctlShowQdrouterd - command ``systemctl show qdrouterd``
--------------------------------------------------------------
-
-SystemctlShowSmartpdc - command ``systemctl show smart_proxy_dynflow_core``
----------------------------------------------------------------------------
 """
+from insights import parser, CommandParser
+from insights.parsers import split_kv_pairs, SkipException, ParseException
+from insights.specs import Specs
+from insights.util import deprecated
 
 
-from .. import LegacyItemAccess
-from .. import CommandParser
-from .. import parser
-from ..parsers import split_kv_pairs
-from ..specs import Specs
+@parser(Specs.systemctl_show_all_services)
+class SystemctlShowServiceAll(CommandParser, dict):
+    """
+    Class for parsing ``systemctl show *.service`` command output.
+    Empty properties are suppressed.
 
+    Sample Input::
 
-class SystemctlShow(LegacyItemAccess, CommandParser):
-    """Class for parsing ``systemctl show <Service_Name>`` command output"""
+        Id=postfix.service
+        Names=postfix.service
+        TimeoutStartUSec=1min 30s
+        LimitNOFILE=65536
+        LimitMEMLOCK=
+        LimitLOCKS=18446744073709551615
+
+        Id=postgresql.service
+        Names=postgresql.service
+        Requires=basic.target
+        LimitMSGQUEUE=819200
+        LimitNICE=0
+
+    Sample Output::
+
+        {
+            "postfix.service": {
+                "Id"               : "postfix.service",
+                "Names"            : "postfix.service",
+                "LimitNOFILE"      : "65536",
+                "TimeoutStartUSec" : "1min 30s",
+                "LimitLOCKS"       : "18446744073709551615",
+            },
+            "postgresql.service": {
+                "Id"               : "postgresql.service",
+                "Names"            : "postgresql.service",
+                "Requires"         : "basic.target",
+                "LimitMSGQUEUE"    : "819200",
+                "LimitNICE"        : "0",
+            }
+        }
+
+    Examples:
+        >>> 'postfix' in systemctl_show_all  # ".service" is needed
+        False
+        >>> 'postfix.service' in systemctl_show_all
+        True
+        >>> systemctl_show_all['postfix.service']['Id']
+        'postfix.service'
+        >>> 'LimitMEMLOCK' in systemctl_show_all['postfix.service']
+        False
+        >>> systemctl_show_all['postfix.service']['LimitLOCKS']
+        '18446744073709551615'
+        >>> 'postgresql.service' in systemctl_show_all
+        True
+        >>> systemctl_show_all['postgresql.service']['LimitNICE']
+        '0'
+
+    Raises:
+        SkipException: When nothing needs to parse
+        ParseException: When something cannot be parsed
+    """
 
     def parse_content(self, content):
-        """
-        Sample Input::
+        if not content:
+            raise SkipException
 
-            TimeoutStartUSec=1min 30s
-            LimitNOFILE=65536
-            LimitMEMLOCK=
-            LimitLOCKS=18446744073709551615
+        sidx = 0
+        idx_list = []
+        for i, l in enumerate(content):
+            if l.strip() == '':
+                idx_list.append((sidx, i))
+                sidx = i + 1
+        idx_list.append((sidx, len(content)))
+        for s, e in idx_list:
+            data = split_kv_pairs(content[s:e], use_partition=False)
+            name = data.get('Names', data.get('Id'))
+            if not name:
+                raise ParseException('"Names" or "Id" not found!')
+            self[name] = dict((k, v) for k, v in data.items() if v)
 
-        Sample Output::
+        if len(self) == 0:
+            raise SkipException
 
-            {"LimitNOFILE"     : "65536",
-            "TimeoutStartUSec" : "1min 30s",
-            "LimitLOCKS"       : "18446744073709551615"}
 
-        In CMD's output, empty properties are suppressed by default.
-        We will also suppressed empty properties in return data.
-        """
-        data = {}
+class SystemctlShow(CommandParser, dict):
+    """
+    .. warning::
+        This class is deprecated, please use :py:class:`SystemctlShowServiceAll` instead.
+
+    Class for parsing ``systemctl show <Service_Name>`` command output.
+    Empty properties are suppressed.
+
+    Sample Input::
+
+        TimeoutStartUSec=1min 30s
+        LimitNOFILE=65536
+        LimitMEMLOCK=
+        LimitLOCKS=18446744073709551615
+
+    Sample Output::
+
+        {"LimitNOFILE"     : "65536",
+        "TimeoutStartUSec" : "1min 30s",
+        "LimitLOCKS"       : "18446744073709551615"}
+
+    In CMD's output, empty properties are suppressed by default.
+    """
+    def __init__(self, *args, **kwargs):
+        deprecated(SystemctlShow, "Deprecated. Use 'SystemctlShowServiceAll' instead.")
+        super(SystemctlShow, self).__init__(*args, **kwargs)
+
+    def parse_content(self, content):
         data = split_kv_pairs(content, use_partition=False)
-
         """Remove empty key"""
-        self.data = dict((k, v) for k, v in data.items() if not v == '')
+        self.update(dict((k, v) for k, v in data.items() if not v == ''))
+
+    @property
+    def data(self):
+        return self
 
 
 @parser(Specs.systemctl_cinder_volume)
 class SystemctlShowCinderVolume(SystemctlShow):
     """
+    .. warning::
+        This parser is deprecated, please use :py:class:`SystemctlShowServiceAll` instead.
+
     Class for ``systemctl show openstack-cinder-volume``.
 
     Typical output of ``/bin/systemctl show openstack-cinder-volume`` command is::
@@ -106,6 +172,9 @@ class SystemctlShowCinderVolume(SystemctlShow):
 @parser(Specs.systemctl_mariadb)
 class SystemctlShowMariaDB(SystemctlShow):
     """
+    .. warning::
+        This parser is deprecated, please use :py:class:`SystemctlShowServiceAll` instead.
+
     Class for ``systemctl show mariadb``.
 
     Typical output of ``/bin/systemctl show mariadb`` command is::
@@ -136,6 +205,9 @@ class SystemctlShowMariaDB(SystemctlShow):
 @parser(Specs.systemctl_pulp_workers)
 class SystemctlShowPulpWorkers(SystemctlShow):
     """
+    .. warning::
+        This parser is deprecated, please use :py:class:`SystemctlShowServiceAll` instead.
+
     Class for ``systemctl show pulp_workers``.
 
     Typical output of ``/bin/systemctl show pulp_workers`` command is::
@@ -170,6 +242,9 @@ class SystemctlShowPulpWorkers(SystemctlShow):
 @parser(Specs.systemctl_pulp_resmg)
 class SystemctlShowPulpResourceManager(SystemctlShow):
     """
+    .. warning::
+        This parser is deprecated, please use :py:class:`SystemctlShowServiceAll` instead.
+
     Class for ``systemctl show pulp_resource_manager``.
 
     Typical output of ``/bin/systemctl show pulp_resource_manager`` command is::
@@ -203,6 +278,9 @@ class SystemctlShowPulpResourceManager(SystemctlShow):
 @parser(Specs.systemctl_pulp_celerybeat)
 class SystemctlShowPulpCelerybeat(SystemctlShow):
     """
+    .. warning::
+        This parser is deprecated, please use :py:class:`SystemctlShowServiceAll` instead.
+
     Class for ``systemctl show pulp_celerybeat``.
 
     Typical output of ``/bin/systemctl show pulp_celerybeat`` command is::
@@ -236,6 +314,9 @@ class SystemctlShowPulpCelerybeat(SystemctlShow):
 @parser(Specs.systemctl_httpd)
 class SystemctlShowHttpd(SystemctlShow):
     """
+    .. warning::
+        This parser is deprecated, please use :py:class:`SystemctlShowServiceAll` instead.
+
     Class for ``systemctl show httpd``.
 
     Typical output of ``/bin/systemctl show httpd`` command is::
@@ -271,6 +352,9 @@ class SystemctlShowHttpd(SystemctlShow):
 @parser(Specs.systemctl_nginx)
 class SystemctlShowNginx(SystemctlShow):
     """
+    .. warning::
+        This parser is deprecated, please use :py:class:`SystemctlShowServiceAll` instead.
+
     Class for ``systemctl show nginx``.
 
     Typical output of ``/bin/systemctl show nginx`` command is::
@@ -320,6 +404,9 @@ class SystemctlShowNginx(SystemctlShow):
 @parser(Specs.systemctl_qpidd)
 class SystemctlShowQpidd(SystemctlShow):
     """
+    .. warning::
+        This parser is deprecated, please use :py:class:`SystemctlShowServiceAll` instead.
+
     Class for ``systemctl show qpidd``.
 
     Typical output of ``/bin/systemctl show qpidd`` command is::
@@ -353,6 +440,9 @@ class SystemctlShowQpidd(SystemctlShow):
 @parser(Specs.systemctl_qdrouterd)
 class SystemctlShowQdrouterd(SystemctlShow):
     """
+    .. warning::
+        This parser is deprecated, please use :py:class:`SystemctlShowServiceAll` instead.
+
     Class for ``systemctl show qdrouterd``.
 
     Typical output of ``/bin/systemctl show qdrouterd`` command is::
@@ -384,6 +474,9 @@ class SystemctlShowQdrouterd(SystemctlShow):
 @parser(Specs.systemctl_smartpdc)
 class SystemctlShowSmartpdc(SystemctlShow):
     """
+    .. warning::
+        This parser is deprecated, please use :py:class:`SystemctlShowServiceAll` instead.
+
     Class for ``systemctl show smart_proxy_dynflow_core``.
 
     Typical output of ``/bin/systemctl show smart_proxy_dynflow_core`` command is::

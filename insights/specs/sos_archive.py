@@ -135,6 +135,7 @@ class SosSpecs(Specs):
     sysctl = simple_file("sos_commands/kernel/sysctl_-a")
     systemctl_list_unit_files = simple_file("sos_commands/systemd/systemctl_list-unit-files")
     systemctl_list_units = first_file(["sos_commands/systemd/systemctl_list-units", "sos_commands/systemd/systemctl_list-units_--all"])
+    systemctl_show_all_services = simple_file("sos_commands/systemd/systemctl_show_service_--all")
     teamdctl_config_dump = glob_file("sos_commands/teamd/teamdctl_*_config_dump")
     teamdctl_state_dump = glob_file("sos_commands/teamd/teamdctl_*_state_dump")
     uname = simple_file("sos_commands/kernel/uname_-a")
