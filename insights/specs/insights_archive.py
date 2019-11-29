@@ -259,7 +259,6 @@ class InsightsArchiveSpecs(Specs):
     systemctl_list_unit_files = simple_file("insights_commands/systemctl_list-unit-files")
     systemctl_list_units = simple_file("insights_commands/systemctl_list-units")
     systemctl_mariadb = simple_file("insights_commands/systemctl_show_mariadb")
-    systemctl_postgresql = simple_file("insights_commands/systemctl_show_postgresql")
     systemctl_pulp_workers = simple_file("insights_commands/systemctl_show_pulp_workers")
     systemctl_pulp_resmg = simple_file("insights_commands/systemctl_show_pulp_resource_manager")
     systemctl_pulp_celerybeat = simple_file("insights_commands/systemctl_show_pulp_celerybeat")
