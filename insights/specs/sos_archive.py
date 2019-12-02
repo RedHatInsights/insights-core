@@ -90,6 +90,7 @@ class SosSpecs(Specs):
     nmcli_dev_show = simple_file("sos_commands/networking/nmcli_device_show")
     nmcli_dev_show_sos = glob_file(["sos_commands/networking/nmcli_dev_show_*", "sos_commands/networkmanager/nmcli_dev_show_*"])
     ntptime = simple_file("sos_commands/ntp/ntptime")
+    openvswitch_other_config = simple_file("sos_commands/openvswitch/ovs-vsctl_-t_5_get_Open_vSwitch_._other_config")
     ovs_vsctl_show = simple_file("sos_commands/openvswitch/ovs-vsctl_-t_5_show")
     pcs_config = simple_file("sos_commands/pacemaker/pcs_config")
     pcs_quorum_status = simple_file("sos_commands/pacemaker/pcs_quorum_status")
