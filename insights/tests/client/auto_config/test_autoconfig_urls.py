@@ -1,4 +1,4 @@
-from insights.client.auto_config import set_auto_configuration, _try_satellite6_configuration
+from insights.client.auto_config import set_auto_configuration, _try_satellite6_configuration, try_auto_configuration
 from mock.mock import Mock, patch
 
 
@@ -79,7 +79,8 @@ def test_rhsm_platform_base_url_configured():
     # assert config.base_url == 'cloud.redhat.com/api'
     # [CIRCUS MUSIC]
     set_auto_configuration(config, 'cert-api.access.redhat.com', None, None, False)
-    assert config.base_url == 'cert-api.access.redhat.com/r/insights/platform'
+    # assert config.base_url == 'cert-api.access.redhat.com/r/insights/platform'
+    assert config.base_url == 'cert-api.access.redhat.com/r/insights'
 
 
 @patch("insights.client.auto_config.verify_connectivity", Mock())
@@ -99,4 +100,32 @@ def test_sat_platform_base_url_configured():
     '''
     config = Mock(base_url=None, upload_url=None, legacy_upload=False, insecure_connection=False, proxy=None)
     set_auto_configuration(config, 'test.satellite.com:443/redhat_access', 'test_cert', None, True)
+    # assert config.base_url == 'test.satellite.com:443/redhat_access/r/insights/platform'
+    assert config.base_url == 'test.satellite.com:443/redhat_access/r/insights'
+
+
+@patch("insights.client.auto_config.verify_connectivity", Mock())
+def test_platform_path_added():
+    '''
+    Ensure /platform is added when legacy_upload is false
+    Ensure it's not added when legacy_upload is true
+    '''
+    # auto_config=True, legacy_upload=True
+    config = Mock(base_url='test.satellite.com:443/redhat_access/r/insights', auto_config=True, legacy_upload=True, offline=False)
+    try_auto_configuration(config)
+    assert config.base_url == 'test.satellite.com:443/redhat_access/r/insights'
+
+    # auto_config=True, legacy_upload=False
+    config = Mock(base_url='test.satellite.com:443/redhat_access/r/insights', auto_config=True, legacy_upload=False, offline=False)
+    try_auto_configuration(config)
+    assert config.base_url == 'test.satellite.com:443/redhat_access/r/insights/platform'
+
+    # auto_config=False, legacy_upload=True
+    config = Mock(base_url='test.satellite.com:443/redhat_access/r/insights', auto_config=False, legacy_upload=True, offline=False)
+    try_auto_configuration(config)
+    assert config.base_url == 'test.satellite.com:443/redhat_access/r/insights'
+
+    # auto_config=False, legacy_upload=False
+    config = Mock(base_url='test.satellite.com:443/redhat_access/r/insights', auto_config=False, legacy_upload=False, offline=False)
+    try_auto_configuration(config)
     assert config.base_url == 'test.satellite.com:443/redhat_access/r/insights/platform'
