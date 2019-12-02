@@ -26,6 +26,7 @@ Sample input::
     cpu cores       : 1
     flags           : fpu vme de pse tsc msr pae mce
     address sizes   : 40 bits physical, 48 bits virtual
+    bugs            : cpu_meltdown spectre_v1 spectre_v2 spec_store_bypass l1tf mds swapgs taa itlb_multihit
 
     processor       : 1
     vendor_id       : GenuineIntel
@@ -42,6 +43,7 @@ Sample input::
     cpu cores       : 1
     flags           : fpu vme de pse tsc msr pae mce
     address sizes   : 40 bits physical, 48 bits virtual
+    bugs            : cpu_meltdown spectre_v1 spectre_v2 spec_store_bypass l1tf mds swapgs taa itlb_multihit
 
 Examples:
 
@@ -69,7 +71,8 @@ Examples:
         "cache_sizes": "20480 KB"
         "cpu_cores": "1",
         "stepping": "2",
-        "address_sizes": "40 bits physical, 48 bits virtual"
+        "address_sizes": "40 bits physical, 48 bits virtual",
+        "bugs": "cpu_meltdown spectre_v1 spectre_v2 spec_store_bypass l1tf mds swapgs taa itlb_multihit"
     }
 """
 
@@ -101,13 +104,14 @@ class CpuInfo(LegacyItemAccess, Parser):
         core id         : 0
         cpu cores       : 1
         address sizes   : 40 bits physical, 48 bits virtual
+        bugs            : cpu_meltdown spectre_v1 spectre_v2 spec_store_bypass l1tf mds swapgs taa itlb_multihit
 
     The following keys would be lists of:
 
     * **cpus** - the *processor* line (e.g. ``1``)
     * **sockets** - the *physical id* line (e.g. ``2``)
     * **vendors** - the *vendor_id* line (e.g. ``GenuineIntel``)
-    * **models** - the *models name* line (e.g. ``Intel(R) Xeon(R) CPU E5-2690 0 @ 2.90GHz``)
+    * **models** - the *model name* line (e.g. ``Intel(R) Xeon(R) CPU E5-2690 0 @ 2.90GHz``)
     * **model_ids** - the *model* line (e.g. ``45``)
     * **families** - the *cpu family* line (e.g. ``6``)
     * **clockspeeds** - the *cpu MHz* line (e.g. ``2900.000``)
@@ -115,6 +119,7 @@ class CpuInfo(LegacyItemAccess, Parser):
     * **cpu_cores** - the *cpu cores* line (e.g. ``1``)
     * **stepping** - the *stepping* line (e.g. ``2``)
     * **address_sizes** - the *address sizes* line (e.g. ``40 bits physical, 48 bits virtual``)
+    * **bugs** - the *bugs* line (e.g. ``cpu_meltdown spectre_v1 spectre_v2 spec_store_bypass l1tf mds swapgs taa itlb_multihit``)
     """
 
     def parse_content(self, content):
@@ -140,7 +145,8 @@ class CpuInfo(LegacyItemAccess, Parser):
             "CPU revision": "cpu_revision",
             "cpu": "cpu",
             "revision": "revision",
-            "address sizes": "address_sizes"
+            "address sizes": "address_sizes",
+            "bugs": "bugs"
         }
 
         for line in get_active_lines(content, comment_char="COMMAND>"):
