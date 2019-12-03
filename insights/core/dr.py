@@ -268,6 +268,14 @@ def get_tags(component):
     return get_delegate(component).tags if component in DELEGATES else set()
 
 
+def get_links(component):
+    """
+    Return the dictionary of links associated with the component. Defaults to
+    ``dict()``.
+    """
+    return get_delegate(component).links if component in DELEGATES else dict()
+
+
 def get_module_name(obj):
     try:
         return inspect.getmodule(obj).__name__
