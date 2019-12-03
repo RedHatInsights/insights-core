@@ -1,7 +1,7 @@
 import logging
 import base64
 import json
-from requests import Request, ConnectionError, Timeout
+from requests import ConnectionError, Timeout
 from requests.exceptions import HTTPError, MissingSchema
 from ssl import SSLError
 from urllib3.exceptions import MaxRetryError
