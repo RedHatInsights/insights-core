@@ -25,6 +25,12 @@ class InsightsArchive(object):
         Create temp dir, archive dir, and command dir
         """
         # make sure tmp_path is safe
+        if (tmp_path == '/'
+           or os.path.dirname(tmp_path.rstrip('/')) == '/'):
+            # since we delete this later,
+            #   if the provided path is either / or one level down,
+            #   get out of here
+            raise RuntimeError('Disallowed temp path: %s' % tmp_path)
         self.collected_data_dir = tmp_path
         self.compressor = compressor
         self.tar_file_name = None
