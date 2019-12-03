@@ -71,12 +71,12 @@ def test_get_aws_identity(get_uri):
     Test that AWS identity success and failure handled properly
     '''
     # returns OK
-    get_uri.side_effect = [Mock(ok=True, text='{"test": "test"}'), Mock(ok=True, text="test")]
+    get_uri.side_effect = [Mock(ok=True, content=b'{"test": "test"}'), Mock(ok=True, content="test")]
     conn = InsightsConnection(InsightsConfig())
     assert aws.get_aws_identity(conn)
 
     # URIs don't return OK status, return None
-    get_uri.side_effect = [Mock(ok=False, text=None), Mock(ok=False, text=None)]
+    get_uri.side_effect = [Mock(ok=False, content=None), Mock(ok=False, content=None)]
     assert aws.get_aws_identity(conn) is None
 
 
