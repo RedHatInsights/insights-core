@@ -74,7 +74,7 @@ class InsightsConnection(object):
         self.cert_verify = self.config.cert_verify
         if self.cert_verify is None:
             # if self.config.legacy_upload:
-            if self.config.aws:
+            if self.config.portal_access or self.config.portal_access_no_insights:
                 # workaround for a workaround
                 #   the hydra API doesn't accept the legacy cert
                 #   and legacy_upload=False currently just
