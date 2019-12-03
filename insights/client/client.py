@@ -357,8 +357,6 @@ def _delete_archive_internal(config, archive):
     if not config.keep_archive:
         archive.delete_collected_data_dir()
         archive.delete_tar_file()
-    else:
-        logger.info('Insights archive retained in ' + archive.tar_file)
 
 
 def delete_archive(path):
