@@ -4,11 +4,11 @@ from insights.client.archive import InsightsArchive
 
 def test_force_reregister():
     with pytest.raises(RuntimeError):
-        archive1 = InsightsArchive('/')
+        InsightsArchive('/')
     with pytest.raises(RuntimeError):
-        archive2 = InsightsArchive('/tmp')
+        InsightsArchive('/tmp')
     with pytest.raises(RuntimeError):
-        archive3 = InsightsArchive('/tmp/')
+        InsightsArchive('/tmp/')
     archive4 = InsightsArchive('/tmp/abc')
     assert archive4
     archive5 = InsightsArchive('/tmp/abc/')
