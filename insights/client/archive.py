@@ -22,7 +22,6 @@ class InsightsArchive(object):
     def __init__(self, tmp_path, compressor="gz"):
         """
         Initialize the Insights Archive
-        Create temp dir, archive dir, and command dir
         """
         # make sure tmp_path is safe
         if (tmp_path == '/'
