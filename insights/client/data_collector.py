@@ -3,21 +3,15 @@ Collect all the interesting data for analysis
 """
 from __future__ import absolute_import
 import os
-import errno
 import json
 from . import archive
 import logging
-import copy
-import glob
-import six
-import shlex
 from itertools import chain
-from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
 
 from insights import collect
 from ..contrib.soscleaner import SOSCleaner
-from .utilities import _expand_paths, get_version_info, get_tags
+from .utilities import get_version_info, get_tags
 from .constants import InsightsConstants as constants
 
 APP_NAME = constants.app_name

@@ -6,7 +6,6 @@ import logging
 import logging.handlers
 import os
 import time
-import shutil
 import six
 import atexit
 
