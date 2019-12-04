@@ -97,7 +97,7 @@ class InsightsArchiveSpecs(Specs):
     ip_addr = simple_file("insights_commands/ip_addr")
     ip_addresses = simple_file("insights_commands/hostname_-I")
     ip_route_show_table_all = simple_file("insights_commands/ip_route_show_table_all")
-    ip_s_link = simple_file("insights_commands/ip_-s_-d_link")
+    ip_s_link = first_file(["insights_commands/ip_-s_-d_link", "insights_commands/ip_-s_link"])
     ipcs_m = simple_file("insights_commands/ipcs_-m")
     ipcs_m_p = simple_file("insights_commands/ipcs_-m_-p")
     ipcs_s = simple_file("insights_commands/ipcs_-s")
