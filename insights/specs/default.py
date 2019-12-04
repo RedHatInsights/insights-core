@@ -1006,6 +1006,7 @@ class DefaultSpecs(Specs):
     x86_ibpb_enabled = simple_file("sys/kernel/debug/x86/ibpb_enabled")
     x86_ibrs_enabled = simple_file("sys/kernel/debug/x86/ibrs_enabled")
     x86_retp_enabled = simple_file("sys/kernel/debug/x86/retp_enabled")
+    timedatectl = simple_command("/usr/bin/timedatectl")
 
     @datasource(Mount)
     def xfs_mounts(broker):

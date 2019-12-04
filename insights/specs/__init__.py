@@ -639,3 +639,4 @@ class Specs(SpecSet):
     yum_repolist = RegistryPoint()
     yum_repos_d = RegistryPoint(multi_output=True)
     zipl_conf = RegistryPoint()
+    timedatectl = RegistryPoint()

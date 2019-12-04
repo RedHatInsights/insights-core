@@ -146,3 +146,4 @@ class SosSpecs(Specs):
     vgs = first_file(["sos_commands/lvm2/vgs_-v_-o_vg_mda_count_vg_mda_free_vg_mda_size_vg_mda_used_count_vg_tags_--config_global_locking_type_0", "sos_commands/lvm2/vgs_-v", "sos_commands/devicemapper/vgs_-v"])
     xfs_info = glob_file("sos_commands/xfs/xfs_info*")
     yum_repolist = simple_file("sos_commands/yum/yum_-C_repolist")
+    timedatectl = simple_file("sos_commands/systemd/timedatectl")
