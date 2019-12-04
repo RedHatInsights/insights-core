@@ -217,10 +217,10 @@ class InsightsUploadConf(object):
 
         # Convert config object into dict
         parsedconfig = ConfigParser.RawConfigParser()
-        parsedconfig.read(self.remove_file)
-        rm_conf = {}
-
         try:
+            parsedconfig.read(self.remove_file)
+            rm_conf = {}
+
             for item, value in parsedconfig.items('remove'):
                 if six.PY3:
                     rm_conf[item] = value.strip().encode('utf-8').decode('unicode-escape').split(',')
