@@ -179,3 +179,12 @@ def test_hammer_different_lines():
     assert status.services_of_status('ok') == [
         'candlepin', 'candlepin_auth', 'foreman_tasks'
     ]
+
+
+def test_status_and_response():
+    status = HammerPing(context_wrap(HAMMERPING_FAIL))
+    assert status.status_of_service['pulp'] == 'fail'
+    assert status.status_of_service['foreman_tasks'] == 'ok'
+
+    assert status.response_of_service['pulp'] == ''
+    assert status.response_of_service['foreman_tasks'] == 'Duration: 28ms'

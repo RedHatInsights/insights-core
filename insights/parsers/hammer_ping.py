@@ -2,8 +2,9 @@
 HammerPing - command ``/usr/bin/hammer ping``
 =============================================
 
-The hammer ping parser reads the output of ``hammer ping``.  The list
-of services is given in the ``service_list`` property by order.
+The hammer ping parser reads the output of ``hammer ping`` and turns it into
+a dictionary. The key is the service name, and the value is a dict of all the
+service info.
 
 Sample output of ``hammer ping``::
 
@@ -16,6 +17,10 @@ Sample output of ``hammer ping``::
     foreman_tasks:
         Status:          ok
         Server Response: Duration: 1ms
+
+.. warning::
+    Don't use status_of_service and response_of_service attributes, it is just for compatibility.
+    You can get status and server response from the parser itself. Check the examples bellow.
 
 Examples:
 
@@ -43,6 +48,8 @@ class HammerPing(CommandParser, dict):
     status and response information.
 
     Attributes:
+        status_of_service (dict): The status of each service, converted to lower case
+        response_of_service (dict): The response of each service
         service_list (list): The list of service names in order
         errors (list): Any error messages encountered during parsing
         are_all_ok (bool): Are all services read correctly and are they all in 'ok' state?
@@ -61,6 +68,8 @@ class HammerPing(CommandParser, dict):
         return sorted([svc for svc in self if self[svc]['Status'].lower() == status.lower()])
 
     def parse_content(self, content):
+        self.status_of_service = {}
+        self.response_of_service = {}
         self.service_list = []
         self.errors = []
 
@@ -75,6 +84,10 @@ class HammerPing(CommandParser, dict):
                     continue
                 elif service_name is not None:
                     self[service_name][items[0]] = items[1]
+                    if items[0] == 'Status':
+                        self.status_of_service[service_name] = items[1].lower()
+                    if items[0] == 'Server Response':
+                        self.response_of_service[service_name] = items[1]
                     continue
             self.errors.append(line)
         self.are_all_ok = (
