@@ -1,6 +1,5 @@
 from insights.parsers.samba_logs import SAMBALog
 from insights.tests import context_wrap
-from datetime import datetime
 
 SAMBA_LOG_NORMAL = """
 [2019/11/25 19:29:23.933547,  0] ../lib/util/become_daemon.c:138(daemon_ready)  daemon_ready: STATUS=daemon 'smbd' finished starting up and ready to serve connections
