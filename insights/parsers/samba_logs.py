@@ -80,4 +80,3 @@ class SAMBALog(LogFileOutput):
         except:
             pass
         return parsed_line
-        
