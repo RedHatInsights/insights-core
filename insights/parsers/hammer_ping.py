@@ -18,10 +18,6 @@ Sample output of ``hammer ping``::
         Status:          ok
         Server Response: Duration: 1ms
 
-.. warning::
-    Don't use status_of_service and response_of_service attributes, it is just for compatibility.
-    You can get status and server response from the parser itself. Check the examples bellow.
-
 Examples:
 
     >>> hammer = shared[HammerPing]
@@ -48,13 +44,9 @@ class HammerPing(CommandParser, dict):
     status and response information.
 
     Attributes:
-        status_of_service (dict): The status of each service, converted to lower case
-        response_of_service (dict): The response of each service
-        service_list (list): The list of service names in order
         errors (list): Any error messages encountered during parsing
-        are_all_ok (bool): Are all services read correctly and are they all in 'ok' state?
-
     """
+
     def services_of_status(self, status='ok'):
         """
         List of the services in the given status.
@@ -67,10 +59,20 @@ class HammerPing(CommandParser, dict):
         """
         return sorted([svc for svc in self if self[svc]['Status'].lower() == status.lower()])
 
+    @property
+    def service_list(self):
+        """Return a list of service in order """
+        return sorted(list(self.keys()))
+
+    @property
+    def are_all_ok(self):
+        """Return boolean value to indicate if all the service are running normally"""
+        return (not self.errors and
+            all([self[item]['Status'] == 'ok' for item in self]))
+
     def parse_content(self, content):
         self.status_of_service = {}
         self.response_of_service = {}
-        self.service_list = []
         self.errors = []
 
         content = get_active_lines(content, comment_char="COMMAND>")
@@ -90,8 +92,3 @@ class HammerPing(CommandParser, dict):
                         self.response_of_service[service_name] = items[1]
                     continue
             self.errors.append(line)
-        self.are_all_ok = (
-            not self.errors and
-            all(self[item]['Status'] == 'ok' for item in self)
-        )
-        self.service_list = sorted(list(self.keys()))
