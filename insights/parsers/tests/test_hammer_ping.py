@@ -45,6 +45,27 @@ foreman_tasks:
     server Response: Duration: 1ms
 """.strip()
 
+HAMMERPING_COMMAND = """
+COMMAND> hammer ping
+
+candlepin:
+    Status:          ok
+    Server Response: Duration: 20ms
+candlepin_auth:
+    Status:          ok
+    Server Response: Duration: 14ms
+pulp:
+    Status:          ok
+    Server Response: Duration: 101ms
+pulp_auth:
+    Status:          ok
+    Server Response: Duration: 75ms
+foreman_tasks:
+    Status:          ok
+    Server Response: Duration: 3ms
+
+""".strip()
+
 HAMMERPING = """
 candlepin:
     Status:          FAIL
@@ -92,6 +113,20 @@ def test_hammer_ping_ok():
     assert status.service_list == [
         'candlepin', 'candlepin_auth', 'pulp', 'pulp_auth',
         'elasticsearch', 'foreman_tasks'
+    ]
+    assert status.services_of_status('FAIL') == []
+    assert 'nonexistent' not in status.service_list
+    assert 'nonexistent' not in status.status_of_service
+    assert 'nonexistent' not in status.response_of_service
+
+
+def test_hammer_ping_command():
+    status = HammerPing(context_wrap(HAMMERPING_COMMAND))
+
+    assert status.are_all_ok
+    assert status.service_list == [
+        'candlepin', 'candlepin_auth', 'pulp', 'pulp_auth',
+        'foreman_tasks'
     ]
     assert status.services_of_status('FAIL') == []
     assert 'nonexistent' not in status.service_list
