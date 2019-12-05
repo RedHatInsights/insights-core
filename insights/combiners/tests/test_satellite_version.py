@@ -43,7 +43,6 @@ satellite-6.2.0.11-1.el7sat.noarch                          Wed May 18 14:16:25 
 """
 
 installed_rpms_62_cap = """
-foreman-1.11.0.53-1.el7sat.noarch                           Wed May 18 14:16:25 2016
 scl-utils-20120927-27.el7_6.x86_64                          Wed May 18 14:18:16 2016
 SDL-1.2.14-6.el7.x86_64                                     Wed May 18 14:16:25 2016
 satellite-capsule-6.2.0.11-1.el7sat.noarch                  Wed May 18 14:16:25 2016

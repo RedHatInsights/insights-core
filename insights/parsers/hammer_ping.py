@@ -34,7 +34,8 @@ Examples:
     >>> hammer.services_of_status('OK')
     ['elasticsearch', 'foreman_tasks']
 """
-from .. import parser, CommandParser
+from insights import parser, CommandParser
+from insights.parsers import get_active_lines
 from insights.specs import Specs
 
 
@@ -74,6 +75,7 @@ class HammerPing(CommandParser):
         self.are_all_ok = False
 
         # The first line should be a service
+        content = get_active_lines(content, comment_char="COMMAND>")
         if len(content[0].split()) > 1:
             self.errors.append(content[0])
         # Each service occupies 3 lines

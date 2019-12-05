@@ -13,8 +13,8 @@ RouteDevices - command ``ip route show table all``
 IpNeighParser - command ``ip neigh show nud all``
 -------------------------------------------------
 
-IpLinkInfo - command ``ip -s link``
------------------------------------
+IpLinkInfo - command ``ip -d -s link``
+--------------------------------------
 """
 
 from __future__ import print_function
@@ -678,7 +678,9 @@ class IpLinkInfo(IpAddr):
 
     Examples:
 
-        >>> for iface in shared[IpLinkInfo]:
+        >>> type(ip_link)
+        <class 'insights.parsers.ip.IpLinkInfo'>
+        >>> for iface in ip_link:
         ...     print 'Interface:', iface['name']
         ...     print 'State:', iface['state']
         ...     print 'RX packets:', iface['rx_packets']
