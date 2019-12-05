@@ -79,6 +79,8 @@ def parse_ip_addr(content):
         elif 'geneve' in line:
             split_content = line.split()
             current['geneve'] = split_content
+        elif line.startswith("vf"):
+            parse_vf(line, current)
         elif line.startswith("inet"):
             parse_inet(line, current)
         elif line.startswith("RX"):
@@ -88,6 +90,15 @@ def parse_ip_addr(content):
     for k, v in r.items():
         if_details[k] = NetworkInterface(v)
     return if_details
+
+
+def parse_vf(line, d):
+    vf_split = line.split()
+    if 'vf' in d:
+        d['vf'].append({'index': vf_split[1], 'mac': vf_split[3].strip(',')})
+    else:
+        d['vf'] = []
+        d['vf'].append({'index': vf_split[1], 'mac': vf_split[3].strip(',')})
 
 
 def parse_interface(line):
@@ -135,22 +146,34 @@ def parse_inet(line, d):
 
 def parse_rx_stats(line, d):
     split_content = line.split()
-    d["rx_bytes"] = int(split_content[0])
-    d["rx_packets"] = int(split_content[1])
-    d["rx_errors"] = int(split_content[2])
-    d["rx_dropped"] = int(split_content[3])
-    d["rx_overrun"] = int(split_content[4])
-    d["rx_mcast"] = int(split_content[5])
+    if len(split_content) == 4:  # for Virtual functions
+        d = d['vf'][-1]
+        d["rx_bytes"] = int(split_content[0])
+        d["rx_packets"] = int(split_content[1])
+        d["rx_mcast"] = int(split_content[2])
+        d["rx_bcast"] = int(split_content[3])
+    else:
+        d["rx_bytes"] = int(split_content[0])
+        d["rx_packets"] = int(split_content[1])
+        d["rx_errors"] = int(split_content[2])
+        d["rx_dropped"] = int(split_content[3])
+        d["rx_overrun"] = int(split_content[4])
+        d["rx_mcast"] = int(split_content[5])
 
 
 def parse_tx_stats(line, d):
     split_content = line.split()
-    d["tx_bytes"] = int(split_content[0])
-    d["tx_packets"] = int(split_content[1])
-    d["tx_errors"] = int(split_content[2])
-    d["tx_dropped"] = int(split_content[3])
-    d["tx_carrier"] = int(split_content[4])
-    d["tx_collsns"] = int(split_content[5])
+    if len(split_content) == 2:  # for Virtual functions
+        d = d['vf'][-1]
+        d["tx_bytes"] = int(split_content[0])
+        d["tx_packets"] = int(split_content[1])
+    else:
+        d["tx_bytes"] = int(split_content[0])
+        d["tx_packets"] = int(split_content[1])
+        d["tx_errors"] = int(split_content[2])
+        d["tx_dropped"] = int(split_content[3])
+        d["tx_carrier"] = int(split_content[4])
+        d["tx_collsns"] = int(split_content[5])
 
 
 @parser(Specs.ip_addr)

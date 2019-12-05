@@ -369,6 +369,125 @@ def test_ip_data_Link():
     assert sorted(geneve_obj.data['geneve']) == sorted(['geneve', 'id', '10', 'remote', '192.168.43.254', 'dstport', '6081', 'noudpcsum', 'udp6zerocsumrx', 'addrgenmode', 'eui64'])
 
 
+IP_S_LINK_VF = """
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00 promiscuity 0 addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535
+    RX: bytes  packets  errors  dropped overrun mcast
+    179237795  2872298  0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    179237795  2872298  0       0       0       0
+2: em3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP mode DEFAULT group default qlen 1000
+    link/ether 24:6e:96:96:50:74 brd ff:ff:ff:ff:ff:ff promiscuity 0 addrgenmode eui64 numtxqueues 8 numrxqueues 8 gso_max_size 65536 gso_max_segs 65535
+    RX: bytes  packets  errors  dropped overrun mcast
+    6666150021 5048946  0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    179786053  1405475  0       0       0       0
+3: p5p1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP mode DEFAULT group default qlen 1000
+    link/ether b4:96:91:17:10:2e brd ff:ff:ff:ff:ff:ff promiscuity 0 addrgenmode eui64 numtxqueues 8 numrxqueues 8 gso_max_size 65536 gso_max_segs 65535
+    RX: bytes  packets  errors  dropped overrun mcast
+    0          0        0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    0          0        0       0       0       0
+    vf 0 MAC 22:45:a9:72:b4:dd, spoof checking on, link-state auto, trust off
+    RX: bytes  packets  mcast   bcast
+    0          0        0       0
+    TX: bytes  packets
+    0          0
+    vf 1 MAC 3a:be:aa:d9:af:e0, spoof checking on, link-state auto, trust off
+    RX: bytes  packets  mcast   bcast
+    1          0        0       0
+    TX: bytes  packets
+    1          0
+    vf 2 MAC 36:9b:03:3d:91:73, spoof checking on, link-state auto, trust off
+    RX: bytes  packets  mcast   bcast
+    2          0        0       0
+    TX: bytes  packets
+    2          0
+    vf 3 MAC 5a:05:77:0e:00:7f, spoof checking on, link-state auto, trust off
+    RX: bytes  packets  mcast   bcast
+    3          0        0       0
+    TX: bytes  packets
+    3          0
+    vf 4 MAC 6a:5c:04:27:60:16, spoof checking on, link-state auto, trust off
+    RX: bytes  packets  mcast   bcast
+    4          0        0       0
+    TX: bytes  packets
+    4          0
+    vf 5 MAC 22:3f:6a:a4:dc:b1, spoof checking on, link-state auto, trust off
+    RX: bytes  packets  mcast   bcast
+    5          0        0       0
+    TX: bytes  packets
+    5          0
+    vf 6 MAC 86:a3:17:a3:46:b9, spoof checking on, link-state auto, trust off
+    RX: bytes  packets  mcast   bcast
+    6          0        0       0
+    TX: bytes  packets
+    6          0
+4: p5p2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP mode DEFAULT group default qlen 1000
+    link/ether b4:96:91:17:10:2f brd ff:ff:ff:ff:ff:ff promiscuity 0 addrgenmode eui64 numtxqueues 8 numrxqueues 8 gso_max_size 65536 gso_max_segs 65535
+    RX: bytes  packets  errors  dropped overrun mcast
+    0          0        0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    0          0        0       0       0       0
+    vf 0 MAC 2a:2a:69:f5:84:b4, spoof checking on, link-state auto, trust off
+    RX: bytes  packets  mcast   bcast
+    0          0        0       0
+    TX: bytes  packets
+    0          0
+    vf 1 MAC 86:2c:59:c1:ac:da, spoof checking on, link-state auto, trust off
+    RX: bytes  packets  mcast   bcast
+    1          0        0       0
+    TX: bytes  packets
+    1          0
+    vf 2 MAC ee:2a:1a:15:6e:5b, spoof checking on, link-state auto, trust off
+    RX: bytes  packets  mcast   bcast
+    2          0        0       0
+    TX: bytes  packets
+    2          0
+    vf 3 MAC 3a:41:95:30:6b:63, spoof checking on, link-state auto, trust off
+    RX: bytes  packets  mcast   bcast
+    3          0        0       0
+    TX: bytes  packets
+    3          0
+    vf 4 MAC c2:40:c0:ee:9d:28, spoof checking on, link-state auto, trust off
+    RX: bytes  packets  mcast   bcast
+    4          0        0       0
+    TX: bytes  packets
+    4          0
+    vf 5 MAC de:61:ec:a6:84:de, spoof checking on, link-state auto, trust off
+    RX: bytes  packets  mcast   bcast
+    5          0        0       0
+    TX: bytes  packets
+    5          0
+    vf 6 MAC 3a:83:da:6f:00:0c, spoof checking on, link-state auto, trust off
+    RX: bytes  packets  mcast   bcast
+    6          0        0       0
+    TX: bytes  packets
+    6          0
+""".strip()
+
+
+def test_ip_link_for_virtual_functions():
+    output = ip.IpLinkInfo(context_wrap(IP_S_LINK_VF)).data
+    assert 'p5p2' in output
+    assert 'vf' in output.get('p5p1').data
+    assert output.get('p5p1').data.get('vf')[2].get('tx_bytes') == 2
+    assert output.get('p5p1').data.get('vf')[0].get('tx_bytes') == 0
+    assert output.get('p5p1').data.get('vf')[1].get('tx_bytes') == 1
+    assert output.get('p5p1').data.get('vf')[6].get('tx_bytes') == 6
+    assert output.get('p5p1').data.get('vf')[3].get('rx_bytes') == 3
+    assert output.get('p5p1').data.get('vf')[3].get('rx_bcast') == 0
+    assert output.get('p5p1').data.get('vf')[4].get('rx_mcast') == 0
+    assert 'vf' in output.get('p5p2').data
+    assert output.get('p5p2').data.get('vf')[2].get('tx_bytes') == 2
+    assert output.get('p5p2').data.get('vf')[0].get('tx_bytes') == 0
+    assert output.get('p5p2').data.get('vf')[1].get('tx_bytes') == 1
+    assert output.get('p5p2').data.get('vf')[6].get('tx_bytes') == 6
+    assert output.get('p5p2').data.get('vf')[3].get('rx_bytes') == 3
+    assert output.get('p5p2').data.get('vf')[3].get('rx_bcast') == 0
+    assert output.get('p5p2').data.get('vf')[4].get('rx_mcast') == 0
+
+
 IP_ROUTE_SHOW_TABLE_ALL_TEST = """
 throw 30.142.64.0/26  table red_mgmt
 default via 30.142.64.1 dev bond0.400  table red_mgmt
