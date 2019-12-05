@@ -219,7 +219,8 @@ class CapsuleVersion(object):
 
         # For Capsule, ONLY 6.2 and newer are supported
         sat62_pkg = rpms.get_max('satellite-capsule')
-        if sat62_pkg:
+        # foreman package should not be there on Capsule Server
+        if sat62_pkg and 'foreman' not in rpms:
             self.full = sat62_pkg.package
             self.version = sat62_pkg.version
             self.release = sat62_pkg.release
