@@ -252,6 +252,18 @@ class JDRContext(ExecutionContext):
         return super(JDRContext, self).locate_path(p)
 
 
+@fs_root
+class InsightsOperatorContext(ExecutionContext):
+    """Recognizes insights-operator archives"""
+    marker = "config/featuregate"
+
+
+@fs_root
+class MustGatherContext(ExecutionContext):
+    """Recognizes must-gather archives"""
+    marker = "namespaces"
+
+
 class OpenStackContext(ExecutionContext):
     def __init__(self, hostname):
         super(OpenStackContext, self).__init__()
