@@ -1,19 +1,7 @@
 #!/usr/bin/env python
 import argparse
 import logging
-import os
-import yaml
-from fnmatch import fnmatch
-from insights.core.archives import extract
-from insights.parsr.query import from_dict, Result
-from insights.util import content_type
-
-try:
-    # go fast!
-    # requires pyyaml installed with libyaml
-    Loader = yaml.CSafeLoader
-except:
-    Loader = yaml.SafeLoader
+from insights.ocp import analyze
 
 
 log = logging.getLogger(__name__)
@@ -52,50 +40,6 @@ def parse_args():
     p.add_argument("-D", "--debug", help="Verbose debug output.", action="store_true")
     p.add_argument("--exclude", default="*.log", help="Glob patterns to exclude separated by commas")
     return p.parse_args()
-
-
-def get_files(path):
-    paths = []
-    for root, dirs, names in os.walk(path):
-        for name in names:
-            p = os.path.join(root, name)
-            paths.append(p)
-    return paths
-
-
-def load(path):
-    with open(path) as f:
-        doc = yaml.load(f, Loader=Loader)
-        return from_dict(doc)
-
-
-def process(path, excludes=None):
-    excludes = excludes if excludes is not None else []
-    # cpu bound in yaml.load. threads don't help.
-    for f in get_files(path):
-        if excludes and any(fnmatch(f, e) for e in excludes):
-            continue
-        try:
-            yield load(f)
-        except Exception:
-            log.debug("Failed to load %s; skipping", f)
-
-
-def analyze(paths, excludes=None):
-    if not isinstance(paths, list):
-        paths = [paths]
-
-    results = []
-    for path in paths:
-        if content_type.from_file(path) == "text/plain":
-            results.append(load(path))
-        elif os.path.isdir(path):
-            results.extend(process(path, excludes))
-        else:
-            with extract(path) as ex:
-                results.extend(process(ex.tmp_dir, excludes))
-
-    return Result(children=results)
 
 
 def parse_exclude(exc):
