@@ -1,5 +1,26 @@
 # Change Log
 
+## [insights-core-3.0.136-1256](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.136-1256) (2019-12-05)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.135-1237...insights-core-3.0.136-1256)
+
+**Implemented enhancements:**
+
+- Enhance IpLinkInfo for vxlan and ovs interfaces [\#2329](https://github.com/RedHatInsights/insights-core/issues/2329)
+
+**Fixed bugs:**
+
+- IP Link Parser archive spec is broken by PR [\#2356](https://github.com/RedHatInsights/insights-core/issues/2356)
+- SatelliteEnableFeatures parser specs need to be revised [\#2318](https://github.com/RedHatInsights/insights-core/issues/2318)
+
+**Closed issues:**
+
+- Need a get\_links to return the "links" passed to the "@rule" [\#2361](https://github.com/RedHatInsights/insights-core/issues/2361)
+- Double Check satellite\_version.CapsuleVersion Combiner [\#2350](https://github.com/RedHatInsights/insights-core/issues/2350)
+- Handle hammer\_ping from sos archive [\#2347](https://github.com/RedHatInsights/insights-core/issues/2347)
+- CI/CD failed after upgrading Pygments to 2.5.1 [\#2343](https://github.com/RedHatInsights/insights-core/issues/2343)
+- Enhance function parser "ksmstate" to class [\#2337](https://github.com/RedHatInsights/insights-core/issues/2337)
+- "systemctl show" on all installed services [\#2078](https://github.com/RedHatInsights/insights-core/issues/2078)
+
 ## [insights-core-3.0.135-1237](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.135-1237) (2019-11-21)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.134-1...insights-core-3.0.135-1237)
 
