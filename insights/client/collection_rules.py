@@ -217,18 +217,18 @@ class InsightsUploadConf(object):
 
         # Convert config object into dict
         parsedconfig = ConfigParser.RawConfigParser()
-        parsedconfig.read(self.remove_file)
-        rm_conf = {}
-
         try:
+            parsedconfig.read(self.remove_file)
+            rm_conf = {}
+
             for item, value in parsedconfig.items('remove'):
                 if six.PY3:
                     rm_conf[item] = value.strip().encode('utf-8').decode('unicode-escape').split(',')
                 else:
                     rm_conf[item] = value.strip().decode('string-escape').split(',')
             return rm_conf
-        except ConfigParser.NoSectionError:
-            raise RuntimeError("[remove] heading missing in remove.conf")
+        except ConfigParser.Error as e:
+            raise RuntimeError('ERROR: Could not parse the remove.conf file. ' + str(e))
 
 
 if __name__ == '__main__':
