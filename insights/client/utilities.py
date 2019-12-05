@@ -238,8 +238,13 @@ def get_version_info():
     cmd = 'rpm -q --qf "%{VERSION}-%{RELEASE}" insights-client'
     version_info = {}
     version_info['core_version'] = '%s-%s' % (package_info['VERSION'], package_info['RELEASE'])
-    version_info['client_version'] = run_command_get_output(cmd)['output']
-
+    rpm_proc = run_command_get_output(cmd)
+    if rpm_proc['status'] != 0:
+        # Unrecoverable error
+        logger.debug('Error occurred while running rpm -q. Details:\n%s' % rpm_proc['output'])
+        version_info['client_version'] = None
+    else:
+        version_info['client_version'] = rpm_proc['output']
     return version_info
 
 
