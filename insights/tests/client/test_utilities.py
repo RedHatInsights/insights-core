@@ -77,7 +77,7 @@ def test_run_command_get_output():
 def test_get_version_info(run_command_get_output):
     # package_info['VERSION'] = '1'
     # package_info['RELEASE'] = '1'
-    run_command_get_output.return_value = {'output': 1}
+    run_command_get_output.return_value = {'output': 1, 'status': 0}
     version_info = util.get_version_info()
     assert version_info == {'core_version': '1-1', 'client_version': 1}
 
