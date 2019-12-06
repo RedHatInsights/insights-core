@@ -9,6 +9,9 @@ from insights.formats.simple_html import SimpleHtmlFormat
 
 
 SL_MSG = "Running insights.tests.test_formats.report"
+SL_CMD = "Command Line - "
+SL_ARCHIVE = "Real Archive Path - "
+SL_PATH = "/insights/core"
 
 
 @rule()
@@ -38,7 +41,7 @@ def test_json_format():
     assert "bar" in data
 
 
-def test_syslog_format():
+def test_syslog_format_no_archive():
     broker = dr.Broker()
     output = StringIO()
     with SysLogFormat(broker, stream=output):
@@ -46,6 +49,21 @@ def test_syslog_format():
     output.seek(0)
     data = output.read()
     assert SL_MSG in data
+    assert SL_CMD in data
+
+
+def test_syslog_format_archive():
+    broker = dr.Broker()
+    output = StringIO()
+    with SysLogFormat(broker, archive="../../insights/core", stream=output):
+        dr.run(report, broker=broker)
+    output.seek(0)
+    data = output.read()
+
+    assert SL_MSG in data
+    assert SL_CMD in data
+    assert SL_ARCHIVE in data
+    assert SL_PATH in data
 
 
 def test_yaml_format():
