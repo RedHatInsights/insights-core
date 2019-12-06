@@ -24,6 +24,10 @@ def _is_rhn_or_rhsm(hostname):
             hostname == 'subscription.rhsm.redhat.com')
 
 
+def _is_staging_rhsm(hostname):
+    return hostname == 'subscription.rhsm.stage.redhat.com'
+
+
 def verify_connectivity(config):
     """
     Verify connectivity to satellite server
@@ -131,7 +135,8 @@ def _try_satellite6_configuration(config):
             proxy = proxy + rhsm_proxy_hostname + ':' + rhsm_proxy_port
             logger.debug("RHSM Proxy: %s", proxy)
         logger.debug("Found %sHost: %s, Port: %s",
-                     ('' if _is_rhn_or_rhsm(rhsm_hostname)
+                     ('' if _is_rhn_or_rhsm(rhsm_hostname) or
+                         _is_staging_rhsm(rhsm_hostname)
                          else 'Satellite 6 Server '),
                      rhsm_hostname, rhsm_hostport)
         rhsm_ca = rhsm_config.get('rhsm', 'repo_ca_cert')
@@ -145,6 +150,10 @@ def _try_satellite6_configuration(config):
             logger.debug("Connected to Red Hat Directly, using cert-api")
             rhsm_hostname = 'cert-api.access.redhat.com'
             rhsm_ca = None
+        elif _is_staging_rhsm(rhsm_hostname):
+            logger.debug('Connected to staging RHSM, using rhel-test')
+            rhsm_hostname = 'rhel-test.cloud.redhat.com'
+            rhsm_ca = False  # NOT None
         else:
             # Set the host path
             # 'rhsm_hostname' should really be named ~ 'rhsm_host_base_url'
