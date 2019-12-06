@@ -67,7 +67,7 @@ class HammerPing(CommandParser, dict):
     @property
     def are_all_ok(self):
         """Return boolean value to indicate if all the service are running normally"""
-        return self.is_normal
+        return self._is_normal
 
     def parse_content(self, content):
         self.status_of_service = {}
@@ -91,4 +91,4 @@ class HammerPing(CommandParser, dict):
                         self.response_of_service[service_name] = items[1]
                     continue
             self.errors.append(line)
-        self.is_normal = (not self.errors and all([self[item]['Status'] == 'ok' for item in self]))
+        self._is_normal = (not self.errors and all([self[item]['Status'] == 'ok' for item in self]))
