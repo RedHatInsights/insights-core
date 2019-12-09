@@ -18,6 +18,12 @@ enabled=0
 gpgcheck=1
     0 # This should be ignored
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta,file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+
+[bad-unicode]
+baseurl = https://example.com
+name = insights-test-💩
+enabled=1
+gpgcheck=0
 '''
 
 REPOPATH = '/etc/yum.repos.d/rhel-source.repo'
@@ -41,7 +47,13 @@ def test_yum_repos_d():
             'gpgcheck': '1',
             'gpgkey': ['file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta',
                        'file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release']}
+    assert repos_info.get('bad-unicode') == {
+            'name': 'insights-test-',
+            'baseurl': ['https://example.com'],
+            'enabled': '1',
+            'gpgcheck': '0'}
+
     assert repos_info.file_name == 'rhel-source.repo'
     assert repos_info.file_path == REPOPATH
 
-    assert sorted(list(repos_info)) == sorted(['rhel-source', 'rhel-source-beta'])
+    assert sorted(list(repos_info)) == sorted(['rhel-source', 'rhel-source-beta', 'bad-unicode'])
