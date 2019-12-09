@@ -9,11 +9,9 @@ class YumReposD(LegacyItemAccess, Parser):
     def get(self, key):
         return self.data.get(key)
 
-    
     def remove_unicode(self, value):
         value = value.encode('ascii', 'ignore').decode('utf-8')
         return value
-
 
     def parse_content(self, content):
         '''
