@@ -1,3 +1,4 @@
+# coding=utf-8
 from insights.parsers.yum_repos_d import YumReposD
 from insights.tests import context_wrap
 
