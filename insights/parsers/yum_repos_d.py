@@ -9,6 +9,12 @@ class YumReposD(LegacyItemAccess, Parser):
     def get(self, key):
         return self.data.get(key)
 
+    
+    def remove_unicode(self, value):
+        value = value.encode('ascii', 'ignore').decode('utf-8')
+        return value
+
+
     def parse_content(self, content):
         '''
         Return an object contains a dict.
@@ -43,6 +49,7 @@ class YumReposD(LegacyItemAccess, Parser):
                 repos_dict[line[1:-1]] = section_dict
             elif '=' in line:
                 key, value = [s.strip() for s in line.split("=", 1)]
+                value = self.remove_unicode(value)
                 if key in ('baseurl', 'gpgkey'):
                     section_dict[key] = [v.strip() for v in value.split(",")]
                 else:
