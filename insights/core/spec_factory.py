@@ -244,7 +244,7 @@ class TextFileProvider(FileProvider):
             self.rc = rc
             return out
         if six.PY3:
-            with open(self.path, "r", encoding="ascii", errors="surrogateescape") as f:
+            with open(self.path, "r", encoding="utf-8", errors="surrogateescape") as f:
                 return [l.rstrip("\n") for l in f]
         else:
             with open(self.path, "rU") as f:  # universal newlines
