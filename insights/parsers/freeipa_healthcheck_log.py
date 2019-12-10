@@ -11,84 +11,52 @@ Typical content of file ``/var/log/ipa/healthcheck/healthcheck.log`` is::
 
     [
       {
-        "source": "ipahealthcheck.dogtag.ca",
-        "check": "DogtagCertsConfigCheck",
-        "severity": 0,
-        "uuid": "57f7d2c9-f71f-4c2f-b831-9e30250b18b2",
-        "when": "20190726213428Z",
-        "duration": "0.150333",
+        "source": "ipahealthcheck.ipa.roles",
+        "check": "IPACRLManagerCheck",
+        "result": "SUCCESS",
+        "uuid": "1f4177a4-0ddb-4e4d-8258-a5cd5f4638fc",
+        "when": "20191203122317Z",
+        "duration": "0.002254",
         "kw": {
-          "key": "subsystemCert cert-pki-ca",
-          "configfile": "/var/lib/pki/pki-tomcat/conf/ca/CS.cfg"
+          "key": "crl_manager",
+          "crlgen_enabled": true
         }
       },
       {
-        "source": "ipahealthcheck.ipa.certs",
-        "check": "IPACertmongerExpirationCheck",
-        "severity": 0,
-        "uuid": "afd047c2-d78b-4c5c-b3a4-f68578ee1595",
-        "when": "20190726213429Z",
-        "duration": "0.007105",
+        "source": "ipahealthcheck.ipa.roles",
+        "check": "IPARenewalMasterCheck",
+        "result": "SUCCESS",
+        "uuid": "1feb7f99-2e98-4e37-bb52-686896972022",
+        "when": "20191203122317Z",
+        "duration": "0.018330",
         "kw": {
-          "key": "20190620165230"
-        }
-      },
-      {
-        "source": "ipahealthcheck.ds.replication",
-        "check": "ReplicationConflictCheck",
-        "severity": 0,
-        "uuid": "99c0a513-447c-46f1-95ea-058fc0db6075",
-        "when": "20190726213429Z",
-        "duration": "0.001409",
-        "kw": {}
-      },
-      {
-        "source": "ipahealthcheck.ipa.files",
-        "check": "IPAFileNSSDBCheck",
-        "severity": 0,
-        "uuid": "7e8a7739-c4d6-4b97-b602-9f9e981f793c",
-        "when": "20190726213432Z",
-        "duration": "0.000765",
-        "kw": {
-          "key": "_etc_pki_pki-tomcat_alias_cert9.db_owner",
-          "type": "owner",
-          "path": "/etc/pki/pki-tomcat/alias/cert9.db"
-        }
-      },
-      {
-        "source": "ipahealthcheck.ipa.topology",
-        "check": "IPATopologyDomainCheck",
-        "severity": 0,
-        "uuid": "c5ee8ee1-98d1-4696-bbf1-8243677b8918",
-        "when": "20190726213432Z",
-        "duration": "0.019070",
-        "kw": {
-          "suffix": "ca"
+          "key": "renewal_master",
+          "master": true
         }
       },
       {
         "source": "ipahealthcheck.system.filesystemspace",
         "check": "FileSystemSpaceCheck",
-        "severity": 2,
-        "uuid": "4d1c71c5-cc37-4ebf-b53c-34f4e4534437",
-        "when": "20190726213432Z",
-        "duration": null,
+        "result": "ERROR",
+        "uuid": "90ed8765-6ad7-425c-abbd-b07a652649cb",
+        "when": "20191203122221Z",
+        "duration": "0.000474",
         "kw": {
-          "msg": "/var/lib/dirsrv/: free space percentage under threshold: 1% < 20%",
-          "store": "/var/lib/dirsrv/",
-          "percent_free": 1,
-          "threshold": 20
+          "msg": "/var/log/audit/: free space under threshold: 14 MiB < 512 MiB",
+          "store": "/var/log/audit/",
+          "free_space": 14,
+          "threshold": 512
         }
       }
     ]
 
-The list of errors can be accessed via the errors property.
+The list of errors can be accessed via the issues property.
 
 Examples:
 
-    >>> len(healthcheck.errors)
+    >>> len(healthcheck.issues)
     1
-    >>> healthcheck.errors[0]['check'] == 'FileSystemSpaceCheck'
+    >>> healthcheck.issues[0]['check'] == 'FileSystemSpaceCheck'
     True
 
 """
@@ -103,6 +71,6 @@ class FreeIPAHealthCheckLog(JSONParser):
     """Parses the content of file ``/var/log/ipa/healthcheck/healthcheck.log``."""
 
     @property
-    def errors(self):
-        """ list: errors in healthcheck log."""
-        return [entry for entry in self.data if entry['severity'] > 0]
+    def issues(self):
+        """ list: non-success results in healthcheck log."""
+        return [entry for entry in self.data if entry["result"] != "SUCCESS"]
