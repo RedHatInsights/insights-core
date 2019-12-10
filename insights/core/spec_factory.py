@@ -4,6 +4,7 @@ import os
 import re
 import six
 import traceback
+import codecs
 
 from collections import defaultdict
 from glob import glob
@@ -243,12 +244,8 @@ class TextFileProvider(FileProvider):
             rc, out = self.ctx.shell_out(args, keep_rc=True, env=SAFE_ENV)
             self.rc = rc
             return out
-        if six.PY3:
-            with open(self.path, "r", encoding="utf-8", errors="surrogateescape") as f:
-                return [l.rstrip("\n") for l in f]
-        else:
-            with open(self.path, "rU") as f:  # universal newlines
-                return [l.rstrip("\n") for l in f]
+        with codecs.open(self.path, "r", encoding="utf-8", errors="surrogateescape") as f:
+            return [l.rstrip("\n") for l in f]
 
     def _stream(self):
         """
