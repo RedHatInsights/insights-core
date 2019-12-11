@@ -262,12 +262,8 @@ class TextFileProvider(FileProvider):
                     with streams.connect(*args, env=SAFE_ENV) as s:
                         yield s
                 else:
-                    if six.PY3:
-                        with open(self.path, "r", encoding="ascii", errors="surrogateescape") as f:
-                            yield f
-                    else:
-                        with open(self.path, "rU") as f:  # universal newlines
-                            yield f
+                    with codecs.open(self.path, "r", encoding="utf-8", errors="surrogateescape") as f:
+                        yield f
         except StopIteration:
             raise
         except Exception as ex:
