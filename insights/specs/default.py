@@ -26,6 +26,7 @@ from insights.core.spec_factory import first_of, foreach_collect, foreach_execut
 from insights.core.spec_factory import first_file, listdir
 from insights.parsers.mount import Mount, ProcMounts
 from insights.parsers.dnf_module import DnfModuleList
+from insights.parsers.uname import Uname
 from insights.combiners.cloud_provider import CloudProvider
 from insights.combiners.satellite_version import SatelliteVersion
 from insights.components.rhel_version import IsRhel8
@@ -494,6 +495,13 @@ class DefaultSpecs(Specs):
     keystone_crontab = simple_command("/usr/bin/crontab -l -u keystone")
     keystone_crontab_container = simple_command("docker exec keystone_cron /usr/bin/crontab -l -u keystone")
     keystone_log = first_file(["/var/log/containers/keystone/keystone.log", "/var/log/keystone/keystone.log"])
+
+    @datasource(Uname, context=HostContext)
+    def kpatch_patches_running_kernel_dir(broker):
+        un = broker[Uname]
+        return r"/var/lib/kpatch/" + un.kernel
+
+    kpatch_patch_files = command_with_args("ls %s", kpatch_patches_running_kernel_dir)
     krb5 = glob_file([r"etc/krb5.conf", r"etc/krb5.conf.d/*"])
     ksmstate = simple_file("/sys/kernel/mm/ksm/run")
     kubepods_cpu_quota = glob_file("/sys/fs/cgroup/cpu/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod[a-f0-9_]*.slice/cpu.cfs_quota_us")
