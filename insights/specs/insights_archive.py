@@ -286,3 +286,4 @@ class InsightsArchiveSpecs(Specs):
     woopsie = simple_file("insights_commands/find_.var.crash_.var.tmp_-path_.reports-_.whoopsie-report")
     yum_list_installed = simple_file("insights_commands/yum_-C_--noplugins_list_installed")
     yum_repolist = simple_file("insights_commands/yum_-C_repolist")
+    readlink_e_etc_mtab = simple_file("readlink_-e_.etc.mtab")
