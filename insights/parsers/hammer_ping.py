@@ -73,7 +73,7 @@ class HammerPing(CommandParser, dict):
         self.status_of_service = {}
         self.response_of_service = {}
         self.errors = []
-
+        self.raw_content = content
         content = get_active_lines(content, comment_char="COMMAND>")
         service_name = None
         for line in content:
