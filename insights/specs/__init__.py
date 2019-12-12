@@ -479,6 +479,7 @@ class Specs(SpecSet):
     rabbitmq_users = RegistryPoint()
     rc_local = RegistryPoint()
     rdma_conf = RegistryPoint()
+    readlink_e_etc_mtab = RegistryPoint()
     redhat_release = RegistryPoint()
     resolv_conf = RegistryPoint()
     rhev_data_center = RegistryPoint()
@@ -639,4 +640,3 @@ class Specs(SpecSet):
     yum_repolist = RegistryPoint()
     yum_repos_d = RegistryPoint(multi_output=True)
     zipl_conf = RegistryPoint()
-    readlink_e_etc_mtab = RegistryPoint()

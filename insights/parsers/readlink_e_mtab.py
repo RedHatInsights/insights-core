@@ -31,6 +31,3 @@ class ReadLinkEMtab(CommandParser):
     def path(self):
         """Returns real file path from command"""
         return self._path
-
-    def __str__(self):
-        return str("readlink -e /etc/mtab: " + self._path)
