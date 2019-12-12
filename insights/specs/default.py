@@ -780,6 +780,7 @@ class DefaultSpecs(Specs):
     rabbitmq_users = simple_command("/usr/sbin/rabbitmqctl list_users")
     rc_local = simple_file("/etc/rc.d/rc.local")
     rdma_conf = simple_file("/etc/rdma/rdma.conf")
+    readlink_e_etc_mtab = simple_command("readlink -e /etc/mtab")
     redhat_release = simple_file("/etc/redhat-release")
     resolv_conf = simple_file("/etc/resolv.conf")
     rhosp_release = simple_file("/etc/rhosp-release")
