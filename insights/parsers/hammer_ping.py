@@ -45,6 +45,7 @@ class HammerPing(CommandParser, dict):
 
     Attributes:
         errors (list): Any error messages encountered during parsing
+        raw_content(list): The original output of hammer ping
     """
 
     def services_of_status(self, status='ok'):
