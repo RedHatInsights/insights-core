@@ -1,5 +1,23 @@
 # Change Log
 
+## [insights-core-3.0.138-1271](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.138-1271) (2019-12-13)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.137-1...insights-core-3.0.138-1271)
+
+**Implemented enhancements:**
+
+- Enhance parser "HammerPing" to keep the original output [\#2375](https://github.com/RedHatInsights/insights-core/issues/2375)
+
+**Closed issues:**
+
+- Fix FreeIPAHealthCheckLog so that Healthcheck 0.3+ logs can be parsed [\#2369](https://github.com/RedHatInsights/insights-core/issues/2369)
+
+## [3.0.137-1](https://github.com/RedHatInsights/insights-core/tree/3.0.137-1) (2019-12-06)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.136-1256...3.0.137-1)
+
+**Fixed bugs:**
+
+- Bug in parser to parse the output of "hammer ping" [\#2358](https://github.com/RedHatInsights/insights-core/issues/2358)
+
 ## [insights-core-3.0.136-1256](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.136-1256) (2019-12-05)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.135-1237...insights-core-3.0.136-1256)
 
