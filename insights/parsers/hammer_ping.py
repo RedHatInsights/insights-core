@@ -45,6 +45,7 @@ class HammerPing(CommandParser, dict):
 
     Attributes:
         errors (list): Any error messages encountered during parsing
+        raw_content(list): The original output of hammer ping
     """
 
     def services_of_status(self, status='ok'):
@@ -73,7 +74,7 @@ class HammerPing(CommandParser, dict):
         self.status_of_service = {}
         self.response_of_service = {}
         self.errors = []
-
+        self.raw_content = content
         content = get_active_lines(content, comment_char="COMMAND>")
         service_name = None
         for line in content:
