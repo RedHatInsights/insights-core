@@ -109,6 +109,7 @@ class InsightsArchiveSpecs(Specs):
     katello_service_status = simple_file("insights_commands/katello-service_status")
     keystone_crontab = simple_file("insights_commands/crontab_-l_-u_keystone")
     keystone_crontab_container = simple_file("insights_commands/docker_exec_keystone_cron_.usr.bin.crontab_-l_-u_keystone")
+    kpatch_patch_files = simple_file("insights_commands/ls_.var.lib.kpatch.*")
     libkeyutils = simple_file("insights_commands/find_-L_.lib_.lib64_-name_libkeyutils.so")
     libkeyutils_objdumps = simple_file("insights_commands/find_-L_.lib_.lib64_-name_libkeyutils.so.1_-exec_objdump_-x")
     locale = simple_file("insights_commands/locale")
