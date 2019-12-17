@@ -3,8 +3,8 @@ KpatchPatches - report locally stored kpatch patches
 ====================================================
 
 This parser creates a list of the module names of locally
-stored kpatch modules. If no modules are installed, a
-ContentException will be raised.
+stored kpatch modules returned by command ``ls /var/lib/kpatch/\`uname -r\`/``.
+If no modules are installed, a ContentException will be raised.
 
 """
 
