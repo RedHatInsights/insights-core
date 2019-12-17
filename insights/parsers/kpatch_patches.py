@@ -19,14 +19,16 @@ class KpatchPatches(CommandParser):
 
     Sample output of `ls /var/lib/kpatch/\`uname -r\`/` looks like::
 
-        kpatch-3_10_0-1062-1-5.ko
+        kpatch-3_10_0-1062-1-5.ko kpatch-3_10_0-1062-1-6.ko
 
     Attributes:
-        patches (str): List of the kpatch patches
+        patches (str): List of the name of kpatch patches. The dashes are
+            converted to underscores, file suffix are removed, and duplicated
+            names are removed as well
 
     Examples:
         >>> kp.patches
-        ['kpatch_3_10_0_1062_1_5']
+        ['kpatch_3_10_0_1062_1_5', 'kpatch_3_10_0_1062_1_6']
     """
 
     def parse_content(self, content):
