@@ -1,5 +1,5 @@
-# from insights.parsers.virt_what import VirtWhat as VWP
-# from insights.combiners.virt_what import VirtWhat
+import doctest
+from insights.combiners import cloud_provider
 from insights.combiners.cloud_provider import CloudProvider
 from insights.parsers.installed_rpms import InstalledRpms as IRPMS
 from insights.parsers.dmidecode import DMIDecode
@@ -650,3 +650,28 @@ def test_dmidecode_alibaba():
     ret = CloudProvider(irpms, dmi, yrl)
     assert ret.cloud_provider == CloudProvider.ALIBABA
     assert ret.cp_manufacturer[CloudProvider.ALIBABA] == 'Alibaba Cloud'
+
+
+def test_docs():
+    cp_aws = CloudProvider(
+        IRPMS(context_wrap(RPMS_AWS)),
+        DMIDecode(context_wrap(DMIDECODE_AWS)),
+        YumRepoList(context_wrap(YUM_REPOLIST_NOT_AZURE))
+    )
+    cp_azure = CloudProvider(
+        IRPMS(context_wrap(RPMS_AZURE)),
+        DMIDecode(context_wrap(DMIDECODE_AZURE_ASSET_TAG)),
+        YumRepoList(context_wrap(YUM_REPOLIST_AZURE))
+    )
+    cp_alibaba = CloudProvider(
+        IRPMS(context_wrap(RPMS)),
+        DMIDecode(context_wrap(DMIDECODE_ALIBABA)),
+        YumRepoList(context_wrap(YUM_REPOLIST_NOT_AZURE))
+    )
+    env = {
+        'cp_aws': cp_aws,
+        'cp_azure': cp_azure,
+        'cp_alibaba': cp_alibaba
+    }
+    failed, total = doctest.testmod(cloud_provider, globs=env)
+    assert failed == 0

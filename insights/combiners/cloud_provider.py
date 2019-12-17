@@ -12,18 +12,24 @@ The combiner uses these parsers determine the Cloud Provider based on a set of
 criteria that is unique to each cloud provider.
 
 Examples:
-    >>> cp.cp_bios_vendor
-    {'aws': 'amazon', 'google': '', 'azure': ''}
-    >>> cp.cp_bios_version
-    {'aws': '4.2.amazon', 'google': '', 'azure': ''}
-    >>> cp.cp_rpms
-    {'aws': ['rh-amazon-rhui-client-2.2.124-1.el7'], 'google': [], 'azure': []}
-    >>> cp.cp_yum
-    {'aws': [], 'google': [], 'azure': ['rhui-microsoft-azure-rhel7-2.2-74']}
-    >>> cp.cp_asset_tag
-    '7783-7084-3265-9085-8269-3286-77'
-    >>> cp.cp_uuid
+    >>> cp_aws.cloud_provider
+    'aws'
+    >>> cp_aws.cp_bios_version == {'aws': '4.2.amazon', 'google': '', 'azure': '', 'alibaba': ''}
+    True
+    >>> cp_aws.cp_rpms == {'aws': ['rh-amazon-rhui-client-2.2.124-1.el7'], 'google': [], 'azure': [], 'alibaba': []}
+    True
+    >>> cp_aws.cp_uuid['aws']
     'EC2F58AF-2DAD-C57E-88C0-A81CB6084290'
+    >>> cp_azure.cloud_provider
+    'azure'
+    >>> cp_azure.cp_yum == {'aws': [], 'google': [], 'azure': ['rhui-microsoft-azure-rhel7-2.2-74'], 'alibaba': []}
+    True
+    >>> cp_azure.cp_asset_tag['azure']
+    '7783-7084-3265-9085-8269-3286-77'
+    >>> cp_alibaba.cloud_provider
+    'alibaba'
+    >>> cp_alibaba.cp_manufacturer == {'aws': '', 'google': '', 'azure': '', 'alibaba': 'Alibaba Cloud'}
+    True
 
 """
 
