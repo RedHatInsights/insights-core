@@ -16,6 +16,17 @@ from insights.specs import Specs
 class KpatchPatches(CommandParser):
     """
     A parser for getting modules names of locally stored kpatch-patch files.
+
+    Sample output of `ls /var/lib/kpatch/\`uname -r\`/` looks like::
+
+        kpatch-3_10_0-1062-1-5.ko
+
+    Attributes:
+        patches (str): List of the kpatch patches
+
+    Examples:
+        >>> kp.patches
+        ['kpatch_3_10_0_1062_1_5']
     """
 
     def parse_content(self, content):
