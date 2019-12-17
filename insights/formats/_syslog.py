@@ -1,5 +1,6 @@
 from __future__ import print_function
 import os
+import os.path
 import sys
 from getpass import getuser
 
@@ -21,13 +22,14 @@ class SysLogFormat(Formatter):
         broker (Broker): the broker to watch and provide a summary about.
     """
 
-    def __init__(self, broker, stream=None):
+    def __init__(self, broker, stream=None, archive=None):
         self.broker = broker
         self.exceptions = []
         self.rules = []
         self.user = getuser()
         self.pid = str(os.getpid())
         self.stream = stream
+        self.archive = os.path.realpath(archive) if archive else None
 
         if not self.stream:
             self.logger = logging.getLogger('sysLogLogger')
@@ -88,6 +90,9 @@ class SysLogFormat(Formatter):
         cmd = "Command Line - %s" % " ".join(sys.argv)
         self.logit(cmd, self.pid, self.user, "insights-run", logging.INFO)
 
+        archive = "Real Archive Path - %s" % self.archive
+        self.logit(archive, self.pid, self.user, "insights-run", logging.INFO)
+
         self.broker.add_observer(self.log_exceptions, rule)
         self.broker.add_observer(self.log_exceptions, condition)
         self.broker.add_observer(self.log_exceptions, incident)
@@ -104,9 +109,10 @@ class SysLogFormatterAdapter(FormatterAdapter):
 
     def __init__(self, args):
         self.formatter = None
+        self.archive = args.archive
 
     def preprocess(self, broker):
-        self.formatter = SysLogFormat(broker)
+        self.formatter = SysLogFormat(broker, archive=self.archive)
         self.formatter.preprocess()
 
     def postprocess(self, broker):

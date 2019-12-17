@@ -226,6 +226,7 @@ class InsightsArchiveSpecs(Specs):
     rabbitmq_queues = simple_file("insights_commands/rabbitmqctl_list_queues_name_messages_consumers_auto_delete")
     rabbitmq_report = simple_file("insights_commands/rabbitmqctl_report")
     rabbitmq_users = simple_file("insights_commands/rabbitmqctl_list_users")
+    readlink_e_etc_mtab = simple_file("readlink_-e_.etc.mtab")
     rhn_charsets = simple_file("insights_commands/rhn-charsets")
     rhn_schema_stats = simple_file("insights_commands/rhn-schema-stats")
     rhn_schema_version = simple_file("insights_commands/rhn-schema-version")

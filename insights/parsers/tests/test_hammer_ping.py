@@ -188,3 +188,9 @@ def test_status_and_response():
 
     assert status.response_of_service['pulp'] == ''
     assert status.response_of_service['foreman_tasks'] == 'Duration: 28ms'
+
+
+def test_raw_content():
+    status = HammerPing(context_wrap(HAMMERPING_COMMAND))
+    for line in HAMMERPING_COMMAND.splitlines():
+        assert line in status.raw_content
