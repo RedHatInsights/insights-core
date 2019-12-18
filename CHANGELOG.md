@@ -1,7 +1,17 @@
 # Change Log
 
+## [insights-core-3.0.140-1274](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.140-1274) (2019-12-18)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.139-1...insights-core-3.0.140-1274)
+
+**Fixed bugs:**
+
+- KpatchPatches Documentation and Archive Spec [\#2378](https://github.com/RedHatInsights/insights-core/issues/2378)
+
+## [insights-core-3.0.139-1](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.139-1) (2019-12-17)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.138-1271...insights-core-3.0.139-1)
+
 ## [insights-core-3.0.138-1271](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.138-1271) (2019-12-13)
-[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.137-1...insights-core-3.0.138-1271)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.137-1...insights-core-3.0.138-1271)
 
 **Implemented enhancements:**
 
@@ -11,8 +21,8 @@
 
 - Fix FreeIPAHealthCheckLog so that Healthcheck 0.3+ logs can be parsed [\#2369](https://github.com/RedHatInsights/insights-core/issues/2369)
 
-## [3.0.137-1](https://github.com/RedHatInsights/insights-core/tree/3.0.137-1) (2019-12-06)
-[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.136-1256...3.0.137-1)
+## [insights-core-3.0.137-1](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.137-1) (2019-12-06)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.136-1256...insights-core-3.0.137-1)
 
 **Fixed bugs:**
 
