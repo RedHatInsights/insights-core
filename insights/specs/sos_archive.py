@@ -102,19 +102,30 @@ class SosSpecs(Specs):
     ps_aux = first_file(["sos_commands/process/ps_aux", "sos_commands/process/ps_auxwww", "sos_commands/process/ps_auxcww"])
     ps_auxcww = first_file(["sos_commands/process/ps_auxcww", "sos_commands/process/ps_auxwww", "sos_commands/process/ps_aux"])
     ps_auxww = first_file(["sos_commands/process/ps_auxww", "sos_commands/process/ps_auxwww", "sos_commands/process/ps_aux", "sos_commands/process/ps_auxcww"])
-    puppet_ssl_cert_ca_pem = simple_file("sos_commands/foreman/foreman-debug/var/lib/puppet/ssl/certs/ca.pem")
-    pvs = first_file(["sos_commands/lvm2/pvs_-a_-v_-o_pv_mda_free_pv_mda_size_pv_mda_count_pv_mda_used_count_pe_start_--config_global_locking_type_0", "sos_commands/lvm2/pvs_-a_-v", "sos_commands/devicemapper/pvs_-a_-v"])
-    qpid_stat_q = first_of([
-        simple_file("qpid_stat_queues"),
-        simple_file("qpid-stat-q"),
-        simple_file("sos_commands/foreman/foreman-debug/qpid_stat_queues"),
-        simple_file("sos_commands/foreman/foreman-debug/qpid-stat-q")
+    puppet_ssl_cert_ca_pem = first_file([
+        "/etc/puppetlabs/puppet/ssl/certs/ca.pem",
+        "sos_commands/foreman/foreman-debug/var/lib/puppet/ssl/certs/ca.pem"
     ])
-    qpid_stat_u = first_of([
-        simple_file("qpid_stat_subscriptions"),
-        simple_file("qpid-stat-u"),
-        simple_file("sos_commands/foreman/foreman-debug/qpid_stat_subscriptions"),
-        simple_file("sos_commands/foreman/foreman-debug/qpid-stat-u")
+    pvs = first_file(["sos_commands/lvm2/pvs_-a_-v_-o_pv_mda_free_pv_mda_size_pv_mda_count_pv_mda_used_count_pe_start_--config_global_locking_type_0", "sos_commands/lvm2/pvs_-a_-v", "sos_commands/devicemapper/pvs_-a_-v"])
+    qpid_stat_q = first_file([
+        "sos_commands/pulp/qpid-stat_-q_--ssl-certificate_.etc.pki.pulp.qpid.client.crt_-b_amqps_..localhost_5671",
+        "sos_commands/pulp/qpid-stat_-q_--ssl-certificate_.etc.pki.katello.qpid_client_striped.crt_-b_amqps_..localhost_5671",
+        "sos_commands/katello/qpid-stat_-q_--ssl-certificate_.etc.pki.pulp.qpid.client.crt_-b_amqps_..localhost_5671",
+        "sos_commands/katello/qpid-stat_-q_--ssl-certificate_.etc.pki.katello.qpid_client_striped.crt_-b_amqps_..localhost_5671",
+        "sos_commands/foreman/foreman-debug/qpid-stat-q",
+        "qpid-stat-q",
+        "sos_commands/foreman/foreman-debug/qpid_stat_queues",
+        "qpid_stat_queues"
+    ])
+    qpid_stat_u = first_file([
+        "sos_commands/pulp/qpid-stat_-u_--ssl-certificate_.etc.pki.pulp.qpid.client.crt_-b_amqps_..localhost_5671",
+        "sos_commands/pulp/qpid-stat_-u_--ssl-certificate_.etc.pki.katello.qpid_client_striped.crt_-b_amqps_..localhost_5671",
+        "sos_commands/katello/qpid-stat_-u_--ssl-certificate_.etc.pki.pulp.qpid.client.crt_-b_amqps_..localhost_5671",
+        "sos_commands/katello/qpid-stat_-u_--ssl-certificate_.etc.pki.katello.qpid_client_striped.crt_-b_amqps_..localhost_5671",
+        "sos_commands/foreman/foreman-debug/qpid-stat-u",
+        "qpid-stat-u",
+        "sos_commands/foreman/foreman-debug/qpid_stat_subscriptions",
+        "qpid_stat_subscriptions"
     ])
     rabbitmq_report = simple_file("sos_commands/rabbitmq/rabbitmqctl_report")
     rabbitmq_report_of_containers = glob_file("sos_commands/rabbitmq/docker_exec_-t_rabbitmq-bundle-docker-*_rabbitmqctl_report")
