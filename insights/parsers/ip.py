@@ -76,6 +76,9 @@ def parse_ip_addr(content):
         elif 'openvswitch' in line:
             split_content = line.split()
             current['openvswitch'] = split_content
+        elif 'geneve' in line:
+            split_content = line.split()
+            current['geneve'] = split_content
         elif line.startswith("inet"):
             parse_inet(line, current)
         elif line.startswith("RX"):
