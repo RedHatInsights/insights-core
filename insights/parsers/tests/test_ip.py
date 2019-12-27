@@ -295,6 +295,20 @@ IP_S_LINK_ALL_3 = """
     0          0        0       0       0       0
     TX: bytes  packets  errors  dropped carrier collsns
     168        3        0       0       0       0
+13: geneve0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UNKNOWN mode DEFAULT qlen 1000
+    link/ether 8e:a3:1d:43:d6:d9 brd ff:ff:ff:ff:ff:ff promiscuity 0
+    geneve id 10 remote 192.168.43.254 dstport 6081 noudpcsum udp6zerocsumrx addrgenmode eui64
+    RX: bytes  packets  errors  dropped overrun mcast
+    0          0        0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    536        8        0       0       0       0
+14: geneve1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UNKNOWN mode DEFAULT qlen 1000
+    link/ether 22:14:52:d4:a2:13 brd ff:ff:ff:ff:ff:ff promiscuity 0
+    geneve id 11 remote 192.168.43.173 dstport 6081 noudpcsum udp6zerocsumrx addrgenmode eui64
+    RX: bytes  packets  errors  dropped overrun mcast
+    0          0        8       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    536        8        0       0       0       0
 """.strip()
 
 
@@ -304,7 +318,7 @@ def test_ip_data_Link():
     link_info_all_2 = ip.IpLinkInfo(context_wrap(IP_S_LINK_ALL_2))
     link_info_all_3 = ip.IpLinkInfo(context_wrap(IP_S_LINK_ALL_3))
     if_list_all_3 = link_info_all_3.active
-    assert sorted(if_list_all_3) == sorted(['lo', 'eth0_1', 'eth0_2', 'vxlan_sys_4789', 'gre1'])
+    assert sorted(if_list_all_3) == sorted(['lo', 'eth0_1', 'eth0_2', 'vxlan_sys_4789', 'gre1', 'geneve0', 'geneve1'])
     eth0_1 = link_info_all_3["eth0_1"]
     assert eth0_1["mac"] == "00:90:fa:8d:36:1e"
     assert eth0_1["rx_packets"] == 15139642734
@@ -350,6 +364,9 @@ def test_ip_data_Link():
     assert sorted(vxlan_sys_4789["vxlan"]) == sorted(['vxlan', 'id', '0', 'srcport', '0', '0', 'dstport', '4789', 'nolearning', 'ageing', '300', 'noudpcsum', 'noudp6zerocsumtx', 'udp6zerocsumrx', 'external'])
     ovs = link_info_all_2["ovs-system"]
     assert sorted(ovs["openvswitch"]) == sorted(['openvswitch', 'addrgenmode', 'eui64', 'numtxqueues', '1', 'numrxqueues', '1', 'gso_max_size', '65536', 'gso_max_segs', '65535'])
+    geneve_obj = link_info_all_3['geneve0']
+    assert len(geneve_obj.data['geneve']) == 11
+    assert sorted(geneve_obj.data['geneve']) == sorted(['geneve', 'id', '10', 'remote', '192.168.43.254', 'dstport', '6081', 'noudpcsum', 'udp6zerocsumrx', 'addrgenmode', 'eui64'])
 
 
 IP_ROUTE_SHOW_TABLE_ALL_TEST = """
