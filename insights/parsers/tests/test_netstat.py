@@ -770,8 +770,7 @@ def test_ss_tupnla_get_port():
 
 def test_proc_netstat():
     pnstat = ProcNsat(context_wrap(PROC_NETSTAT_2))
-    assert len(pnstat.data['tcp_ext']) == 113
-    assert len(pnstat.data['ip_ext']) == 18
+    assert len(pnstat.data) == 131
     assert pnstat.get_stats('TCPWqueueTooBig') == 10
 
     with pytest.raises(SkipException) as exc:

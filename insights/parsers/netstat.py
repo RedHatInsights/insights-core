@@ -764,9 +764,7 @@ class ProcNsat(Parser):
 
         >>> type(pnstat)
         <class 'insights.parsers.netstat.ProcNsat'>
-        >>> len(pnstat.data['tcp_ext']) == 114
-        True
-        >>> len(pnstat.data['ip_ext']) == 18
+        >>> len(pnstat.data) == 132
         True
         >>> pnstat.get_stats('ReasmOverlaps')
         100
@@ -789,18 +787,14 @@ class ProcNsat(Parser):
         if (tcp_hdr_len != tcp_stat_len) or (ip_hdr_len != ip_stat_len):
             raise ParseException("Invalid Contents")
         if tcp_hdr and tcp_stat:
-            self.data['tcp_ext'] = {}
-            self.data['tcp_ext'] = dict(zip(tcp_hdr, tcp_stat))
+            self.data = dict(zip(tcp_hdr, tcp_stat))
         if ip_hdr and ip_stat:
-            self.data['ip_ext'] = {}
-            self.data['ip_ext'] = dict(zip(ip_hdr, ip_stat))
+            self.data.update(dict(zip(ip_hdr, ip_stat)))
 
     def get_stats(self, key_stats):
         """
         (int): The parser method will return the integer stats of the key if key is present in
                TcpExt or IpExt else it will return `None`.
         """
-        if key_stats in self.data['tcp_ext']:
-            return int(self.data['tcp_ext'][key_stats])
-        if key_stats in self.data['ip_ext']:
-            return int(self.data['ip_ext'][key_stats])
+        if key_stats in self.data:
+            return int(self.data.get(key_stats))
