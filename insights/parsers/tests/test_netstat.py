@@ -1,11 +1,10 @@
 import doctest
 
 import pytest
-from insights.parsers import netstat
-from insights.parsers.netstat import Netstat, NetstatAGN, NetstatS, Netstat_I, SsTULPN, SsTUPNA
+from insights.parsers import netstat, SkipException, ParseException
+from insights.parsers.netstat import Netstat, NetstatAGN, NetstatS, Netstat_I, SsTULPN, SsTUPNA, ProcNsat
 from insights.tests import context_wrap
 
-from ...parsers import ParseException
 
 NETSTAT_S = '''
 Ip:
@@ -658,6 +657,30 @@ tcp   LISTEN     0      128               [::]:22             [::]:*
 tcp   LISTEN     0      5                [::1]:631            [::]:*
 """.strip()
 
+PROC_NETSTAT = """
+TcpExt: SyncookiesSent SyncookiesRecv SyncookiesFailed EmbryonicRsts PruneCalled RcvPruned OfoPruned OutOfWindowIcmps LockDroppedIcmps ArpFilter TW TWRecycled TWKilled PAWSPassive PAWSActive PAWSEstab DelayedACKs DelayedACKLocked DelayedACKLost ListenOverflows ListenDrops TCPPrequeued TCPDirectCopyFromBacklog TCPDirectCopyFromPrequeue TCPPrequeueDropped TCPHPHits TCPHPHitsToUser TCPPureAcks TCPHPAcks TCPRenoRecovery TCPSackRecovery TCPSACKReneging TCPFACKReorder TCPSACKReorder TCPRenoReorder TCPTSReorder TCPFullUndo TCPPartialUndo TCPDSACKUndo TCPLossUndo TCPLostRetransmit TCPRenoFailures TCPSackFailures TCPLossFailures TCPFastRetrans TCPForwardRetrans TCPSlowStartRetrans TCPTimeouts TCPLossProbes TCPLossProbeRecovery TCPRenoRecoveryFail TCPSackRecoveryFail TCPSchedulerFailed TCPRcvCollapsed TCPDSACKOldSent TCPDSACKOfoSent TCPDSACKRecv TCPDSACKOfoRecv TCPAbortOnData TCPAbortOnClose TCPAbortOnMemory TCPAbortOnTimeout TCPAbortOnLinger TCPAbortFailed TCPMemoryPressures TCPSACKDiscard TCPDSACKIgnoredOld TCPDSACKIgnoredNoUndo TCPSpuriousRTOs TCPMD5NotFound TCPMD5Unexpected TCPSackShifted TCPSackMerged TCPSackShiftFallback TCPBacklogDrop PFMemallocDrop TCPMinTTLDrop TCPDeferAcceptDrop IPReversePathFilter TCPTimeWaitOverflow TCPReqQFullDoCookies TCPReqQFullDrop TCPRetransFail TCPRcvCoalesce TCPOFOQueue TCPOFODrop TCPOFOMerge TCPChallengeACK TCPSYNChallenge TCPFastOpenActive TCPFastOpenActiveFail TCPFastOpenPassive TCPFastOpenPassiveFail TCPFastOpenListenOverflow TCPFastOpenCookieReqd TCPSpuriousRtxHostQueues BusyPollRxPackets TCPAutoCorking TCPFromZeroWindowAdv TCPToZeroWindowAdv TCPWantZeroWindowAdv TCPSynRetrans TCPOrigDataSent TCPHystartTrainDetect TCPHystartTrainCwnd TCPHystartDelayDetect TCPHystartDelayCwnd TCPACKSkippedSynRecv TCPACKSkippedPAWS TCPACKSkippedSeq TCPACKSkippedFinWait2 TCPACKSkippedTimeWait TCPACKSkippedChallenge TCPWqueueTooBig
+TcpExt: 10 20 30 40 0 0 0 0 0 0 8387793 2486 0 0 0 3 27599330 35876 309756 0 0 84351589 9652226708 54271044841 0 10507706759 112982361 177521295 3326559442 0 26212 0 36 33090 0 14345 959 8841 425 833 399 0 160 2 633809 11063 7056 233144 1060065 640242 0 228 54 0 310709 0 820887 112 900268 31664 0 232144 0 0 0 261 1048 808390 9 0 0 120433 244126 450077 0 0 0 5625 0 0 0 0 0 6772744900 19251701 0 0 465 463 0 0 0 0 0 0 1172 0 623074473 51282 51282 142025 465090 8484708872 836920 18212118 88 4344 0 0 18 40 30 20 10
+IpExt: InNoRoutes InTruncatedPkts InMcastPkts OutMcastPkts InBcastPkts OutBcastPkts InOctets OutOctets InMcastOctets OutMcastOctets InBcastOctets OutBcastOctets InCsumErrors InNoECTPkts InECT1Pkts InECT0Pkts InCEPkts ReasmOverlaps
+IpExt: 100 200 300 400 18223 0 10468977960762 8092447661930 432 0 3062938 0 0 12512350267 400 300 200 100
+""".strip()
+
+PROC_NETSTAT_2 = """
+TcpExt: SyncookiesSent SyncookiesRecv SyncookiesFailed EmbryonicRsts PruneCalled RcvPruned OfoPruned OutOfWindowIcmps LockDroppedIcmps ArpFilter TW TWRecycled TWKilled PAWSPassive PAWSActive PAWSEstab DelayedACKs DelayedACKLocked DelayedACKLost ListenOverflows ListenDrops TCPPrequeued TCPDirectCopyFromBacklog TCPDirectCopyFromPrequeue TCPPrequeueDropped TCPHPHits TCPHPHitsToUser TCPPureAcks TCPHPAcks TCPRenoRecovery TCPSackRecovery TCPSACKReneging TCPFACKReorder TCPSACKReorder TCPRenoReorder TCPTSReorder TCPFullUndo TCPPartialUndo TCPDSACKUndo TCPLossUndo TCPLostRetransmit TCPRenoFailures TCPSackFailures TCPLossFailures TCPFastRetrans TCPForwardRetrans TCPSlowStartRetrans TCPTimeouts TCPLossProbes TCPLossProbeRecovery TCPRenoRecoveryFail TCPSackRecoveryFail TCPSchedulerFailed TCPRcvCollapsed TCPDSACKOldSent TCPDSACKOfoSent TCPDSACKRecv TCPDSACKOfoRecv TCPAbortOnData TCPAbortOnClose TCPAbortOnMemory TCPAbortOnTimeout TCPAbortOnLinger TCPAbortFailed TCPMemoryPressures TCPSACKDiscard TCPDSACKIgnoredOld TCPDSACKIgnoredNoUndo TCPSpuriousRTOs TCPMD5NotFound TCPMD5Unexpected TCPSackShifted TCPSackMerged TCPSackShiftFallback TCPBacklogDrop TCPMinTTLDrop TCPDeferAcceptDrop IPReversePathFilter TCPTimeWaitOverflow TCPReqQFullDoCookies TCPReqQFullDrop TCPRetransFail TCPRcvCoalesce TCPOFOQueue TCPOFODrop TCPOFOMerge TCPChallengeACK TCPSYNChallenge TCPFastOpenActive TCPFastOpenActiveFail TCPFastOpenPassive TCPFastOpenPassiveFail TCPFastOpenListenOverflow TCPFastOpenCookieReqd TCPSpuriousRtxHostQueues BusyPollRxPackets TCPAutoCorking TCPFromZeroWindowAdv TCPToZeroWindowAdv TCPWantZeroWindowAdv TCPSynRetrans TCPOrigDataSent TCPHystartTrainDetect TCPHystartTrainCwnd TCPHystartDelayDetect TCPHystartDelayCwnd TCPACKSkippedSynRecv TCPACKSkippedPAWS TCPACKSkippedSeq TCPACKSkippedFinWait2 TCPACKSkippedTimeWait TCPACKSkippedChallenge TCPWqueueTooBig
+TcpExt: 10 20 30 40 0 0 0 0 0 8387793 2486 0 0 0 3 27599330 35876 309756 0 0 84351589 9652226708 54271044841 0 10507706759 112982361 177521295 3326559442 0 26212 0 36 33090 0 14345 959 8841 425 833 399 0 160 2 633809 11063 7056 233144 1060065 640242 0 228 54 0 310709 0 820887 112 900268 31664 0 232144 0 0 0 261 1048 808390 9 0 0 120433 244126 450077 0 0 0 5625 0 0 0 0 0 6772744900 19251701 0 0 465 463 0 0 0 0 0 0 1172 0 623074473 51282 51282 142025 465090 8484708872 836920 18212118 88 4344 0 0 18 40 30 20 10
+IpExt: InNoRoutes InTruncatedPkts InMcastPkts OutMcastPkts InBcastPkts OutBcastPkts InOctets OutOctets InMcastOctets OutMcastOctets InBcastOctets OutBcastOctets InCsumErrors InNoECTPkts InECT1Pkts InECT0Pkts InCEPkts ReasmOverlaps
+IpExt: 100 200 300 400 18223 0 10468977960762 8092447661930 432 0 3062938 0 0 12512350267 400 300 200 100
+""".strip()
+
+PROC_NETSTAT_3 = """
+""".strip()
+
+PROC_NETSTAT_4 = """
+TcpExt: SyncookiesRecv SyncookiesFailed EmbryonicRsts PruneCalled RcvPruned OfoPruned OutOfWindowIcmps LockDroppedIcmps ArpFilter TW TWRecycled TWKilled PAWSPassive PAWSActive PAWSEstab DelayedACKs DelayedACKLocked DelayedACKLost ListenOverflows ListenDrops TCPPrequeued TCPDirectCopyFromBacklog TCPDirectCopyFromPrequeue TCPPrequeueDropped TCPHPHits TCPHPHitsToUser TCPPureAcks TCPHPAcks TCPRenoRecovery TCPSackRecovery TCPSACKReneging TCPFACKReorder TCPSACKReorder TCPRenoReorder TCPTSReorder TCPFullUndo TCPPartialUndo TCPDSACKUndo TCPLossUndo TCPLostRetransmit TCPRenoFailures TCPSackFailures TCPLossFailures TCPFastRetrans TCPForwardRetrans TCPSlowStartRetrans TCPTimeouts TCPLossProbes TCPLossProbeRecovery TCPRenoRecoveryFail TCPSackRecoveryFail TCPSchedulerFailed TCPRcvCollapsed TCPDSACKOldSent TCPDSACKOfoSent TCPDSACKRecv TCPDSACKOfoRecv TCPAbortOnData TCPAbortOnClose TCPAbortOnMemory TCPAbortOnTimeout TCPAbortOnLinger TCPAbortFailed TCPMemoryPressures TCPSACKDiscard TCPDSACKIgnoredOld TCPDSACKIgnoredNoUndo TCPSpuriousRTOs TCPMD5NotFound TCPMD5Unexpected TCPSackShifted TCPSackMerged TCPSackShiftFallback TCPBacklogDrop TCPMinTTLDrop TCPDeferAcceptDrop IPReversePathFilter TCPTimeWaitOverflow TCPReqQFullDoCookies TCPReqQFullDrop TCPRetransFail TCPRcvCoalesce TCPOFOQueue TCPOFODrop TCPOFOMerge TCPChallengeACK TCPSYNChallenge TCPFastOpenActive TCPFastOpenActiveFail TCPFastOpenPassive TCPFastOpenPassiveFail TCPFastOpenListenOverflow TCPFastOpenCookieReqd TCPSpuriousRtxHostQueues BusyPollRxPackets TCPAutoCorking TCPFromZeroWindowAdv TCPToZeroWindowAdv TCPWantZeroWindowAdv TCPSynRetrans TCPOrigDataSent TCPHystartTrainDetect TCPHystartTrainCwnd TCPHystartDelayDetect TCPHystartDelayCwnd TCPACKSkippedSynRecv TCPACKSkippedPAWS TCPACKSkippedSeq TCPACKSkippedFinWait2 TCPACKSkippedTimeWait TCPACKSkippedChallenge TCPWqueueTooBig
+TcpExt: 10 20 30 40 0 0 0 0 0 8387793 2486 0 0 0 3 27599330 35876 309756 0 0 84351589 9652226708 54271044841 0 10507706759 112982361 177521295 3326559442 0 26212 0 36 33090 0 14345 959 8841 425 833 399 0 160 2 633809 11063 7056 233144 1060065 640242 0 228 54 0 310709 0 820887 112 900268 31664 0 232144 0 0 0 261 1048 808390 9 0 0 120433 244126 450077 0 0 0 5625 0 0 0 0 0 6772744900 19251701 0 0 465 463 0 0 0 0 0 0 1172 0 623074473 51282 51282 142025 465090 8484708872 836920 18212118 88 4344 0 0 18 40 30 20 10
+IpExt: InTruncatedPkts InMcastPkts OutMcastPkts InBcastPkts OutBcastPkts InOctets OutOctets InMcastOctets OutMcastOctets InBcastOctets OutBcastOctets InCsumErrors InNoECTPkts InECT1Pkts InECT0Pkts InCEPkts ReasmOverlaps
+IpExt: 100 200 300 400 18223 0 10468977960762 8092447661930 432 0 3062938 0 0 12512350267 400 300 200 100
+""".strip()
+
 
 def test_ss_tulpn_data():
     ss = SsTULPN(context_wrap(Ss_TULPN)).data
@@ -705,6 +728,7 @@ def test_netstat_doc_examples():
         'traf': Netstat_I(context_wrap(NETSTAT_I)),
         'ss': SsTULPN(context_wrap(SS_TUPNA_DOCS)),
         'ssa': SsTUPNA(context_wrap(SS_TUPNA_DOCS_2)),
+        'pnstat': ProcNsat(context_wrap(PROC_NETSTAT))
     }
     failed, total = doctest.testmod(netstat, globs=env)
     assert failed == 0
@@ -742,3 +766,16 @@ def test_ss_tupnla_get_port():
               'State': 'UNCONN', 'Recv-Q': '0'}]
     assert len(ssl.data) == 33
     assert ssl.get_localport("34453") == exp02
+
+
+def test_proc_netstat():
+    pnstat = ProcNsat(context_wrap(PROC_NETSTAT_2))
+    assert len(pnstat.data) == 131
+    assert pnstat.get_stats('TCPWqueueTooBig') == 10
+
+    with pytest.raises(SkipException) as exc:
+        pnstat = ProcNsat(context_wrap(PROC_NETSTAT_3))
+    assert 'No Contents' in str(exc)
+    with pytest.raises(ParseException) as exc:
+        pnstat = ProcNsat(context_wrap(PROC_NETSTAT_4))
+    assert 'Invalid Contents' in str(exc)
