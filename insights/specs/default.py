@@ -757,6 +757,7 @@ class DefaultSpecs(Specs):
                               ])
     puppetserver_config = simple_file("/etc/sysconfig/puppetserver")
     prev_uploader_log = simple_file("var/log/redhat-access-insights/redhat-access-insights.log.1")
+    proc_netstat = simple_file("proc/net/netstat")
     proc_snmp_ipv4 = simple_file("proc/net/snmp")
     proc_snmp_ipv6 = simple_file("proc/net/snmp6")
     proc_stat = simple_file("proc/stat")
