@@ -1,5 +1,17 @@
 # Change Log
 
+## [insights-core-3.0.141-1279](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.141-1279) (2020-01-02)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.140-1274...insights-core-3.0.141-1279)
+
+**Implemented enhancements:**
+
+- Enhnace IpLinkInfo parser [\#2389](https://github.com/RedHatInsights/insights-core/issues/2389)
+
+**Closed issues:**
+
+- Update file paths for foreman related specs as per sosreport changes [\#2385](https://github.com/RedHatInsights/insights-core/issues/2385)
+- Remove Spec ulimit\_hard [\#2383](https://github.com/RedHatInsights/insights-core/issues/2383)
+
 ## [insights-core-3.0.140-1274](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.140-1274) (2019-12-18)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.139-1...insights-core-3.0.140-1274)
 
