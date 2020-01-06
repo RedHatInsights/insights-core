@@ -24,6 +24,7 @@ Sample input::
     siblings        : 1
     core id         : 0
     cpu cores       : 1
+    apicid          : 0
     flags           : fpu vme de pse tsc msr pae mce
     address sizes   : 40 bits physical, 48 bits virtual
     bugs            : cpu_meltdown spectre_v1 spectre_v2 spec_store_bypass l1tf mds swapgs taa itlb_multihit
@@ -41,39 +42,29 @@ Sample input::
     siblings        : 1
     core id         : 0
     cpu cores       : 1
+    apicid          : 2
     flags           : fpu vme de pse tsc msr pae mce
     address sizes   : 40 bits physical, 48 bits virtual
     bugs            : cpu_meltdown spectre_v1 spectre_v2 spec_store_bypass l1tf mds swapgs taa itlb_multihit
 
 Examples:
 
-    >>> cpu_info = shared[CpuInfo]
     >>> cpu_info.cpu_count
     2
+    >>> sorted(cpu_info.apicid)
+    ['0', '2']
     >>> cpu_info.socket_count
     2
     >>> cpu_info.vendor
-    "GenuineIntel"
+    'GenuineIntel'
     >>> "fpu" in cpu_info.flags
     True
     >>> cpu_info.model_name
-    "Intel(R) Xeon(R) CPU E5-2690 0 @ 2.90GHz"
-    >>> cpu_info.get_processor_by_index(0)
-    {
-        "cpus": "0",
-        "sockets": "0",
-        "vendors": "GenuineIntel",
-        "models": "Intel(R) Xeon(R) CPU E5-2690 0 @ 2.90GHz",
-        "model_ids": "45",
-        "families": "6",
-        "flags": "fpu vme de pse tsc msr pae mce",
-        "clockspeeds": "2900.000",
-        "cache_sizes": "20480 KB"
-        "cpu_cores": "1",
-        "stepping": "2",
-        "address_sizes": "40 bits physical, 48 bits virtual",
-        "bugs": "cpu_meltdown spectre_v1 spectre_v2 spec_store_bypass l1tf mds swapgs taa itlb_multihit"
-    }
+    'Intel(R) Xeon(R) CPU E5-2690 0 @ 2.90GHz'
+    >>> cpu_info.get_processor_by_index(0)['cpus']
+    '0'
+    >>> cpu_info.get_processor_by_index(0)['vendors']
+    'GenuineIntel'
 """
 
 from collections import defaultdict
@@ -103,6 +94,7 @@ class CpuInfo(LegacyItemAccess, Parser):
         siblings        : 1
         core id         : 0
         cpu cores       : 1
+        apicid          : 2
         address sizes   : 40 bits physical, 48 bits virtual
         bugs            : cpu_meltdown spectre_v1 spectre_v2 spec_store_bypass l1tf mds swapgs taa itlb_multihit
 
@@ -117,6 +109,7 @@ class CpuInfo(LegacyItemAccess, Parser):
     * **clockspeeds** - the *cpu MHz* line (e.g. ``2900.000``)
     * **cache_sizes** - the *cache size* line (e.g. ``20480 KB``)
     * **cpu_cores** - the *cpu cores* line (e.g. ``1``)
+    * **apicid** - the *apicid* line (e.g. ``1``)
     * **stepping** - the *stepping* line (e.g. ``2``)
     * **address_sizes** - the *address sizes* line (e.g. ``40 bits physical, 48 bits virtual``)
     * **bugs** - the *bugs* line (e.g. ``cpu_meltdown spectre_v1 spectre_v2 spec_store_bypass l1tf mds swapgs taa itlb_multihit``)
@@ -135,6 +128,7 @@ class CpuInfo(LegacyItemAccess, Parser):
             "cpu MHz": "clockspeeds",
             "cache size": "cache_sizes",
             "cpu cores": "cpu_cores",
+            "apicid": "apicid",
             "flags": "flags",
             "stepping": "stepping",
             "Features": "features",
@@ -146,7 +140,8 @@ class CpuInfo(LegacyItemAccess, Parser):
             "cpu": "cpu",
             "revision": "revision",
             "address sizes": "address_sizes",
-            "bugs": "bugs"
+            "bugs": "bugs",
+            "apicid": "apicid"
         }
 
         for line in get_active_lines(content, comment_char="COMMAND>"):
@@ -191,6 +186,14 @@ class CpuInfo(LegacyItemAccess, Parser):
         str: Returns the number of CPUs.
         """
         return len(self.data.get("cpus", []))
+
+    @property
+    @defaults()
+    def apicid(self):
+        """
+        str: Returns the apicid of the processor.
+        """
+        return self.data["apicid"]
 
     @property
     @defaults()
