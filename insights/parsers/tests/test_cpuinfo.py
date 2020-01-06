@@ -1,5 +1,7 @@
 from insights.parsers.cpuinfo import CpuInfo
+from insights.parsers import cpuinfo
 from insights.tests import context_wrap
+import doctest
 
 CPUINFO = """
 COMMAND> cat /proc/cpuinfo
@@ -510,3 +512,11 @@ def test_power_cpuinfo():
     for i, cpu in enumerate(cpu_info):
         assert cpu["cpu"] == "POWER7 (architected), altivec supported"
         assert cpu["revision"] == "2.0 (pvr 004a 0200)"
+
+
+def test_cpuinfo_doc_examples():
+    env = {
+            'cpu_info': CpuInfo(context_wrap(CPUINFO)),
+          }
+    failed, total = doctest.testmod(cpuinfo, globs=env)
+    assert failed == 0
