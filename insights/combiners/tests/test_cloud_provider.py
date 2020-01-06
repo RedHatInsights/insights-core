@@ -1,5 +1,5 @@
-# from insights.parsers.virt_what import VirtWhat as VWP
-# from insights.combiners.virt_what import VirtWhat
+import doctest
+from insights.combiners import cloud_provider
 from insights.combiners.cloud_provider import CloudProvider
 from insights.parsers.installed_rpms import InstalledRpms as IRPMS
 from insights.parsers.dmidecode import DMIDecode
@@ -415,15 +415,169 @@ Chassis Information
 
 DMIDECODE_FAIL = "# dmidecode 2.11\n# No SMBIOS nor DMI entry point found, sorry.\n"
 
+DMIDECODE_ALIBABA = """
+# dmidecode 3.2
+Getting SMBIOS data from sysfs.
+SMBIOS 2.8 present.
+11 structures occupying 524 bytes.
+Table at 0x000F4AC0.
+
+Handle 0x0000, DMI type 0, 24 bytes
+BIOS Information
+	Vendor: SeaBIOS
+	Version: ab23bb1
+	Release Date: 04/01/2014
+	Address: 0xE8000
+	Runtime Size: 96 kB
+	ROM Size: 64 kB
+	Characteristics:
+		BIOS characteristics not supported
+		Targeted content distribution is supported
+	BIOS Revision: 0.0
+
+Handle 0x0100, DMI type 1, 27 bytes
+System Information
+	Manufacturer: Alibaba Cloud
+	Product Name: Alibaba Cloud ECS
+	Version: pc-i440fx-2.1
+	Serial Number: 1111111a-2220-333c-4449-555555555552
+	UUID: 1111111a-2220-333c-4449-555555555552
+	Wake-up Type: Power Switch
+	SKU Number: Not Specified
+	Family: Not Specified
+
+Handle 0x0300, DMI type 3, 21 bytes
+Chassis Information
+	Manufacturer: Alibaba Cloud
+	Type: Other
+	Lock: Not Present
+	Version: pc-i440fx-2.1
+	Serial Number: Not Specified
+	Asset Tag: Not Specified
+	Boot-up State: Safe
+	Power Supply State: Safe
+	Thermal State: Safe
+	Security Status: Unknown
+	OEM Information: 0x00000000
+	Height: Unspecified
+	Number Of Power Cords: Unspecified
+	Contained Elements: 0
+
+Handle 0x0400, DMI type 4, 42 bytes
+Processor Information
+	Socket Designation: CPU 0
+	Type: Central Processor
+	Family: Other
+	Manufacturer: Alibaba Cloud
+	ID: 11 22 33 44 55 66 77 FF
+	Version: pc-i440fx-2.1
+	Voltage: Unknown
+	External Clock: Unknown
+	Max Speed: Unknown
+	Current Speed: Unknown
+	Status: Populated, Enabled
+	Upgrade: Other
+	L1 Cache Handle: Not Provided
+	L2 Cache Handle: Not Provided
+	L3 Cache Handle: Not Provided
+	Serial Number: Not Specified
+	Asset Tag: Not Specified
+	Part Number: Not Specified
+	Core Count: 2
+	Core Enabled: 2
+	Thread Count: 2
+	Characteristics: None
+
+Handle 0x1000, DMI type 16, 23 bytes
+Physical Memory Array
+	Location: Other
+	Use: System Memory
+	Error Correction Type: Multi-bit ECC
+	Maximum Capacity: 32 GB
+	Error Information Handle: Not Provided
+	Number Of Devices: 2
+
+Handle 0x1100, DMI type 17, 40 bytes
+Memory Device
+	Array Handle: 0x1000
+	Error Information Handle: Not Provided
+	Total Width: Unknown
+	Data Width: Unknown
+	Size: 16384 MB
+	Form Factor: DIMM
+	Set: None
+	Locator: DIMM 0
+	Bank Locator: Not Specified
+	Type: RAM
+	Type Detail: Other
+	Speed: Unknown
+	Manufacturer: Alibaba Cloud
+	Serial Number: Not Specified
+	Asset Tag: Not Specified
+	Part Number: Not Specified
+	Rank: Unknown
+	Configured Memory Speed: Unknown
+	Minimum Voltage: Unknown
+	Maximum Voltage: Unknown
+	Configured Voltage: Unknown
+
+Handle 0x1101, DMI type 17, 40 bytes
+Memory Device
+	Array Handle: 0x1000
+	Error Information Handle: Not Provided
+	Total Width: Unknown
+	Data Width: Unknown
+	Size: 16384 MB
+	Form Factor: DIMM
+	Set: None
+	Locator: DIMM 1
+	Bank Locator: Not Specified
+	Type: RAM
+	Type Detail: Other
+	Speed: Unknown
+	Manufacturer: Alibaba Cloud
+	Serial Number: Not Specified
+	Asset Tag: Not Specified
+	Part Number: Not Specified
+	Rank: Unknown
+	Configured Memory Speed: Unknown
+	Minimum Voltage: Unknown
+	Maximum Voltage: Unknown
+	Configured Voltage: Unknown
+
+Handle 0x1300, DMI type 19, 31 bytes
+Memory Array Mapped Address
+	Starting Address: 0x00000000000
+	Ending Address: 0x000BFFFFFFF
+	Range Size: 3 GB
+	Physical Array Handle: 0x1000
+	Partition Width: 1
+
+Handle 0x1301, DMI type 19, 31 bytes
+Memory Array Mapped Address
+	Starting Address: 0x00100000000
+	Ending Address: 0x0083FFFFFFF
+	Range Size: 29 GB
+	Physical Array Handle: 0x1000
+	Partition Width: 1
+
+Handle 0x2000, DMI type 32, 11 bytes
+System Boot Information
+	Status: No errors detected
+
+Handle 0x7F00, DMI type 127, 4 bytes
+End Of Table
+"""  # noqa: E101,W191
+
 
 def test_rpm_google():
     irpms = IRPMS(context_wrap(RPMS_GOOGLE))
     dmi = DMIDecode(context_wrap(DMIDECODE))
     yrl = YumRepoList(context_wrap(YUM_REPOLIST_NOT_AZURE))
     ret = CloudProvider(irpms, dmi, yrl)
-    assert ret.cloud_provider == 'google'
-    assert 'google-rhui-client-5.1.100-1.el7' in ret.cp_rpms.get('google')
-    assert 'google-rhui-client-5.1.100-1.el6' in ret.cp_rpms.get('google')
+    assert ret.cloud_provider == CloudProvider.GOOGLE
+    assert 'google-rhui-client-5.1.100-1.el7' in ret.cp_rpms.get(CloudProvider.GOOGLE)
+    assert 'google-rhui-client-5.1.100-1.el6' in ret.cp_rpms.get(CloudProvider.GOOGLE)
 
 
 def test_rpm_aws():
@@ -431,8 +585,8 @@ def test_rpm_aws():
     dmi = DMIDecode(context_wrap(DMIDECODE))
     yrl = YumRepoList(context_wrap(YUM_REPOLIST_NOT_AZURE))
     ret = CloudProvider(irpms, dmi, yrl)
-    assert ret.cloud_provider == 'aws'
-    assert ret.cp_rpms.get('aws')[0] == 'rh-amazon-rhui-client-2.2.124-1.el7'
+    assert ret.cloud_provider == CloudProvider.AWS
+    assert ret.cp_rpms.get(CloudProvider.AWS)[0] == 'rh-amazon-rhui-client-2.2.124-1.el7'
 
 
 def test_rpm_azure():
@@ -440,8 +594,8 @@ def test_rpm_azure():
     dmi = DMIDecode(context_wrap(DMIDECODE_BARE_METAL))
     yrl = YumRepoList(context_wrap(YUM_REPOLIST_NOT_AZURE))
     ret = CloudProvider(irpms, dmi, yrl)
-    assert ret.cloud_provider == 'azure'
-    assert ret.cp_rpms.get('azure')[0] == 'WALinuxAgent-2.2.18-1.el7'
+    assert ret.cloud_provider == CloudProvider.AZURE
+    assert ret.cp_rpms.get(CloudProvider.AZURE)[0] == 'WALinuxAgent-2.2.18-1.el7'
 
 
 def test__yum_azure():
@@ -449,8 +603,8 @@ def test__yum_azure():
     dmi = DMIDecode(context_wrap(DMIDECODE))
     yrl = YumRepoList(context_wrap(YUM_REPOLIST_AZURE))
     ret = CloudProvider(irpms, dmi, yrl)
-    assert ret.cloud_provider == 'azure'
-    assert 'rhui-microsoft-azure-rhel7-2.2-74' in ret.cp_yum.get('azure')
+    assert ret.cloud_provider == CloudProvider.AZURE
+    assert 'rhui-microsoft-azure-rhel7-2.2-74' in ret.cp_yum.get(CloudProvider.AZURE)
 
 
 def test__bios_version_aws():
@@ -458,8 +612,8 @@ def test__bios_version_aws():
     dmi = DMIDecode(context_wrap(DMIDECODE_AWS))
     yrl = YumRepoList(context_wrap(YUM_REPOLIST_AZURE))
     ret = CloudProvider(irpms, dmi, yrl)
-    assert ret.cloud_provider == 'aws'
-    assert ret.cp_bios_version['aws'] == '4.2.amazon'
+    assert ret.cloud_provider == CloudProvider.AWS
+    assert ret.cp_bios_version[CloudProvider.AWS] == '4.2.amazon'
 
 
 def test__bios_vendor_google():
@@ -467,8 +621,8 @@ def test__bios_vendor_google():
     dmi = DMIDecode(context_wrap(DMIDECODE_GOOGLE))
     yrl = YumRepoList(context_wrap(YUM_REPOLIST_AZURE))
     ret = CloudProvider(irpms, dmi, yrl)
-    assert ret.cloud_provider == 'google'
-    assert ret.cp_bios_vendor['google'] == 'Google'
+    assert ret.cloud_provider == CloudProvider.GOOGLE
+    assert ret.cp_bios_vendor[CloudProvider.GOOGLE] == 'Google'
 
 
 def test__asset_tag_azure():
@@ -476,8 +630,8 @@ def test__asset_tag_azure():
     dmi = DMIDecode(context_wrap(DMIDECODE_AZURE_ASSET_TAG))
     yrl = YumRepoList(context_wrap(YUM_REPOLIST_NOT_AZURE))
     ret = CloudProvider(irpms, dmi, yrl)
-    assert ret.cloud_provider == 'azure'
-    assert ret.cp_asset_tag['azure'] == '7783-7084-3265-9085-8269-3286-77'
+    assert ret.cloud_provider == CloudProvider.AZURE
+    assert ret.cp_asset_tag[CloudProvider.AZURE] == '7783-7084-3265-9085-8269-3286-77'
 
 
 def test__uuid():
@@ -485,5 +639,39 @@ def test__uuid():
     dmi = DMIDecode(context_wrap(DMIDECODE_AWS_UUID))
     yrl = YumRepoList(context_wrap(YUM_REPOLIST_NOT_AZURE))
     ret = CloudProvider(irpms, dmi, yrl)
-    assert ret.cloud_provider == 'aws'
-    assert ret.cp_uuid['aws'] == 'EC2F58AF-2DAD-C57E-88C0-A81CB6084290'
+    assert ret.cloud_provider == CloudProvider.AWS
+    assert ret.cp_uuid[CloudProvider.AWS] == 'EC2F58AF-2DAD-C57E-88C0-A81CB6084290'
+
+
+def test_dmidecode_alibaba():
+    irpms = IRPMS(context_wrap(RPMS))
+    dmi = DMIDecode(context_wrap(DMIDECODE_ALIBABA))
+    yrl = YumRepoList(context_wrap(YUM_REPOLIST_NOT_AZURE))
+    ret = CloudProvider(irpms, dmi, yrl)
+    assert ret.cloud_provider == CloudProvider.ALIBABA
+    assert ret.cp_manufacturer[CloudProvider.ALIBABA] == 'Alibaba Cloud'
+
+
+def test_docs():
+    cp_aws = CloudProvider(
+        IRPMS(context_wrap(RPMS_AWS)),
+        DMIDecode(context_wrap(DMIDECODE_AWS)),
+        YumRepoList(context_wrap(YUM_REPOLIST_NOT_AZURE))
+    )
+    cp_azure = CloudProvider(
+        IRPMS(context_wrap(RPMS_AZURE)),
+        DMIDecode(context_wrap(DMIDECODE_AZURE_ASSET_TAG)),
+        YumRepoList(context_wrap(YUM_REPOLIST_AZURE))
+    )
+    cp_alibaba = CloudProvider(
+        IRPMS(context_wrap(RPMS)),
+        DMIDecode(context_wrap(DMIDECODE_ALIBABA)),
+        YumRepoList(context_wrap(YUM_REPOLIST_NOT_AZURE))
+    )
+    env = {
+        'cp_aws': cp_aws,
+        'cp_azure': cp_azure,
+        'cp_alibaba': cp_alibaba
+    }
+    failed, total = doctest.testmod(cloud_provider, globs=env)
+    assert failed == 0
