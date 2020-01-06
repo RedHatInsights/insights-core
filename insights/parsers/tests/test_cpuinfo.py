@@ -450,7 +450,7 @@ machine		: CHRP IBM,8231-E2D
 def test_cpuinfo():
     cpu_info = CpuInfo(context_wrap(CPUINFO))
     assert cpu_info.cpu_count == 2
-    assert cpu_info.apicid == ["0","2"]
+    assert cpu_info.apicid == ["0", "2"]
     assert cpu_info.socket_count == 2
     assert cpu_info.vendor == "GenuineIntel"
     assert cpu_info.model_name == "Intel(R) Xeon(R) CPU E5-2690 0 @ 2.90GHz"
