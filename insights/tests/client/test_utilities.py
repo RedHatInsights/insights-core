@@ -77,7 +77,7 @@ def test_run_command_get_output():
 def test_get_version_info(run_command_get_output):
     # package_info['VERSION'] = '1'
     # package_info['RELEASE'] = '1'
-    run_command_get_output.return_value = {'output': 1}
+    run_command_get_output.return_value = {'output': 1, 'status': 0}
     version_info = util.get_version_info()
     assert version_info == {'core_version': '1-1', 'client_version': 1}
 
@@ -231,3 +231,34 @@ def test_systemd_notify_failure_rhel_6(exists, Popen):
     exists.return_value = False
     util.systemd_notify('420')
     Popen.assert_not_called()
+
+
+def test_get_tags():
+    content = b"foo: bar"
+    fp = tempfile.NamedTemporaryFile(delete=False)
+    fp.write(content)
+    fp.close()
+    got = util.get_tags(fp.name)
+    assert got == {"foo": "bar"}
+
+
+def test_get_tags_empty():
+    content = b""
+    fp = tempfile.NamedTemporaryFile(delete=False)
+    fp.write(content)
+    fp.close()
+    got = util.get_tags(fp.name)
+    assert got is None
+
+
+def test_get_tags_nonexist():
+    got = util.get_tags("/file/does/not/exist")
+    assert got is None
+
+
+def test_write_tags():
+    tags = {'foo': 'bar'}
+    fp = tempfile.NamedTemporaryFile()
+    util.write_tags(tags, tags_file_path=fp.name)
+    got = util.get_tags(fp.name)
+    assert got == tags

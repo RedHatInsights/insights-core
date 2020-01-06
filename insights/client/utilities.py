@@ -14,6 +14,12 @@ import sys
 from subprocess import Popen, PIPE, STDOUT
 from six.moves.configparser import RawConfigParser
 
+import yaml
+try:
+    from yaml import CLoader as Loader, CDumper as Dumper
+except ImportError:
+    from yaml import Loader, Dumper
+
 from .. import package_info
 from .constants import InsightsConstants as constants
 
@@ -236,8 +242,13 @@ def get_version_info():
     cmd = 'rpm -q --qf "%{VERSION}-%{RELEASE}" insights-client'
     version_info = {}
     version_info['core_version'] = '%s-%s' % (package_info['VERSION'], package_info['RELEASE'])
-    version_info['client_version'] = run_command_get_output(cmd)['output']
-
+    rpm_proc = run_command_get_output(cmd)
+    if rpm_proc['status'] != 0:
+        # Unrecoverable error
+        logger.debug('Error occurred while running rpm -q. Details:\n%s' % rpm_proc['output'])
+        version_info['client_version'] = None
+    else:
+        version_info['client_version'] = rpm_proc['output']
     return version_info
 
 
@@ -313,3 +324,36 @@ def systemd_notify(pid):
     stdout, stderr = proc.communicate()
     if proc.returncode != 0:
         logger.debug('systemd-notify returned %s', proc.returncode)
+
+
+def get_tags(tags_file_path=os.path.join(constants.default_conf_dir, "tags.conf")):
+    '''
+    Load tag data from the tags file.
+
+    Returns: a dict containing tags defined on the host.
+    '''
+    tags = None
+
+    try:
+        with open(tags_file_path) as f:
+            data = f.read()
+            tags = yaml.load(data, Loader=Loader)
+    except EnvironmentError as e:
+        logger.debug("tags file does not exist: %s", os.strerror(e.errno))
+
+    return tags
+
+
+def write_tags(tags, tags_file_path=os.path.join(constants.default_conf_dir, "tags.conf")):
+    """
+    Writes tags to tags_file_path
+
+    Arguments:
+      - tags (dict): the tags to write
+      - tags_file_path (string): path to which tag data will be written
+
+    Returns: None
+    """
+    with open(tags_file_path, mode="w+") as f:
+        data = yaml.dump(tags, Dumper=Dumper, default_flow_style=False)
+        f.write(data)

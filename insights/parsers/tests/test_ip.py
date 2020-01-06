@@ -167,15 +167,169 @@ IP_S_LINK_ALL = """
     12341814    136884  0       0       0       0
 """.strip()
 
+IP_S_LINK_ALL_2 = """
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00 promiscuity 0 addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535
+    RX: bytes  packets  errors  dropped overrun mcast
+    38374458039 291293530 0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    38374458039 291293530 0       0       0       0
+2: eno1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 9000 qdisc mq master ovs-system state UP mode DEFAULT group default qlen 1000
+    link/ether 38:90:a5:80:43:c9 brd ff:ff:ff:ff:ff:ff promiscuity 1
+    openvswitch_slave addrgenmode eui64 numtxqueues 8 numrxqueues 8 gso_max_size 65536 gso_max_segs 65535
+    RX: bytes  packets  errors  dropped overrun mcast
+    108341661705196 87334303936 0       5632499 0       7110182
+    TX: bytes  packets  errors  dropped carrier collsns
+    297580787699558 95024371467 0       0       0       0
+3: eno2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 9000 qdisc mq master ovs-system state UP mode DEFAULT group default qlen 1000
+    link/ether 38:90:a5:80:43:ca brd ff:ff:ff:ff:ff:ff promiscuity 1
+    openvswitch_slave addrgenmode eui64 numtxqueues 8 numrxqueues 8 gso_max_size 65536 gso_max_segs 65535
+    RX: bytes  packets  errors  dropped overrun mcast
+    169323904323594 116776818590 0       38367215 0       7111574
+    TX: bytes  packets  errors  dropped carrier collsns
+    257318435088822 64965403562 0       0       0       0
+4: ovs-system: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+    link/ether d6:fe:ce:4d:91:c1 brd ff:ff:ff:ff:ff:ff promiscuity 1
+    openvswitch addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535
+    RX: bytes  packets  errors  dropped overrun mcast
+    0          0        0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    0          0        0       0       0       0
+5: br-ex: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+    link/ether 32:0f:11:3e:4f:49 brd ff:ff:ff:ff:ff:ff promiscuity 1
+    openvswitch addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535
+    RX: bytes  packets  errors  dropped overrun mcast
+    0          0        0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    0          0        0       0       0       0
+6: vxlan_sys_4789: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 65000 qdisc noqueue master ovs-system state UNKNOWN mode DEFAULT group default qlen 1000
+    link/ether aa:be:45:24:75:f8 brd ff:ff:ff:ff:ff:ff promiscuity 1
+    vxlan id 0 srcport 0 0 dstport 4789 nolearning ageing 300 noudpcsum noudp6zerocsumtx udp6zerocsumrx external
+    openvswitch_slave addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535
+    RX: bytes  packets  errors  dropped overrun mcast
+    209941850791128 169319683635 0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    89501939148105 38904599752 0       87515   0       0
+""".strip()
+
+IP_S_LINK_ALL_3 = """
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00 promiscuity 0 addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535
+    RX: bytes  packets  errors  dropped overrun mcast
+    18951865334 117657102 0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    18951865334 117657102 0       0       0       0
+2: eth0: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+    link/ether 0c:c4:7a:4d:84:b4 brd ff:ff:ff:ff:ff:ff promiscuity 0 addrgenmode eui64 numtxqueues 8 numrxqueues 8 gso_max_size 65536 gso_max_segs 65535
+    RX: bytes  packets  errors  dropped overrun mcast
+    0          0        0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    0          0        0       0       0       0
+3: eth1: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+    link/ether 0c:c4:7a:4d:84:b5 brd ff:ff:ff:ff:ff:ff promiscuity 0 addrgenmode eui64 numtxqueues 8 numrxqueues 8 gso_max_size 65536 gso_max_segs 65535
+    RX: bytes  packets  errors  dropped overrun mcast
+    0          0        0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    0          0        0       0       0       0
+4: eth0_1: <BROADCAST,MULTICAST,SLAVE,UP,LOWER_UP> mtu 9000 qdisc mq master bond0 state UP mode DEFAULT group default qlen 1000
+    link/ether 00:90:fa:8d:36:1e brd ff:ff:ff:ff:ff:ff promiscuity 1
+    bond_slave state ACTIVE mii_status UP link_failure_count 0 perm_hwaddr 00:90:fa:8d:36:1e queue_id 0 ad_aggregator_id 1 ad_actor_oper_port_state 63 ad_partner_oper_port_state 61 addrgenmode eui64 numtxqueues 32 numrxqueues 32 gso_max_size 65513 gso_max_segs 65535 portid 010000000041303830343437334650434e
+    RX: bytes  packets  errors  dropped overrun mcast
+    16809815066893 15139642734 0       117902  0       863246747
+    TX: bytes  packets  errors  dropped carrier collsns
+    35867456371871 19520904636 0       0       0       0
+5: eth0_2: <BROADCAST,MULTICAST,SLAVE,UP,LOWER_UP> mtu 9000 qdisc mq master bond0 state UP mode DEFAULT group default qlen 1000
+    link/ether 00:90:fa:8d:36:1e brd ff:ff:ff:ff:ff:ff promiscuity 1
+    bond_slave state ACTIVE mii_status UP link_failure_count 0 perm_hwaddr 00:90:fa:8d:36:22 queue_id 0 ad_aggregator_id 1 ad_actor_oper_port_state 63 ad_partner_oper_port_state 61 addrgenmode eui64 numtxqueues 32 numrxqueues 32 gso_max_size 65513 gso_max_segs 65535 portid 020000000041303830343437334650434e
+    RX: bytes  packets  errors  dropped overrun mcast
+    15566486160064 16375611024 0       117902  0       509010362
+    TX: bytes  packets  errors  dropped carrier collsns
+    41939419563431 12260064477 0       0       0       0
+6: ovs-system: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+    link/ether 0e:2c:25:b4:71:7f brd ff:ff:ff:ff:ff:ff promiscuity 1
+    openvswitch addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535
+    RX: bytes  packets  errors  dropped overrun mcast
+    0          0        0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    0          0        0       0       0       0
+7: vxlan_sys_4789: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 65520 qdisc noqueue master ovs-system state UNKNOWN mode DEFAULT group default qlen 1000
+    link/ether ba:02:63:fe:e4:de brd ff:ff:ff:ff:ff:ff promiscuity 1
+    vxlan id 0 srcport 0 0 dstport 4789 nolearning ageing 300 udpcsum noudp6zerocsumtx udp6zerocsumrx external
+    openvswitch_slave addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535
+    RX: bytes  packets  errors  dropped overrun mcast
+    18615536781687 18438893425 0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    14770242373297 14414656441 0       0       0       0
+8: br-tun: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+    link/ether 42:31:7a:81:8e:4c brd ff:ff:ff:ff:ff:ff promiscuity 1
+    openvswitch addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535
+    RX: bytes  packets  errors  dropped overrun mcast
+    0          0        0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    0          0        0       0       0       0
+9: br-int: <BROADCAST,MULTICAST> mtu 8950 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+    link/ether fa:cf:5f:aa:34:44 brd ff:ff:ff:ff:ff:ff promiscuity 1
+    openvswitch addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535
+    RX: bytes  packets  errors  dropped overrun mcast
+    0          0        0       101259804 0     0
+    TX: bytes  packets  errors  dropped carrier collsns
+    0          0        0       0       0       0
+10: gre0@NONE: <NOARP> mtu 1476 qdisc noqueue state DOWN mode DEFAULT qlen 1
+    link/gre 0.0.0.0 brd 0.0.0.0 promiscuity 0
+    gre remote any local any ttl inherit nopmtudisc addrgenmode eui64
+    RX: bytes  packets  errors  dropped overrun mcast
+    0          0        0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    0          0        0       0       0       0
+11: gretap0@NONE: <BROADCAST,MULTICAST> mtu 1462 qdisc noop state DOWN mode DEFAULT qlen 1000
+    link/ether 00:00:00:00:00:00 brd ff:ff:ff:ff:ff:ff promiscuity 0
+    gretap remote any local any ttl inherit nopmtudisc addrgenmode eui64
+    RX: bytes  packets  errors  dropped overrun mcast
+    0          0        0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    0          0        0       0       0       0
+12: gre1@NONE: <POINTOPOINT,NOARP,UP,LOWER_UP> mtu 1476 qdisc noqueue state UNKNOWN mode DEFAULT qlen 1
+    link/gre 10.211.47.217 peer 172.168.10.25 promiscuity 0
+    gre remote 172.168.10.25 local 10.211.47.217 ttl 255 addrgenmode eui64
+    RX: bytes  packets  errors  dropped overrun mcast
+    0          0        0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    168        3        0       0       0       0
+13: geneve0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UNKNOWN mode DEFAULT qlen 1000
+    link/ether 8e:a3:1d:43:d6:d9 brd ff:ff:ff:ff:ff:ff promiscuity 0
+    geneve id 10 remote 192.168.43.254 dstport 6081 noudpcsum udp6zerocsumrx addrgenmode eui64
+    RX: bytes  packets  errors  dropped overrun mcast
+    0          0        0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    536        8        0       0       0       0
+14: geneve1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UNKNOWN mode DEFAULT qlen 1000
+    link/ether 22:14:52:d4:a2:13 brd ff:ff:ff:ff:ff:ff promiscuity 0
+    geneve id 11 remote 192.168.43.173 dstport 6081 noudpcsum udp6zerocsumrx addrgenmode eui64
+    RX: bytes  packets  errors  dropped overrun mcast
+    0          0        8       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    536        8        0       0       0       0
+""".strip()
+
 
 def test_ip_data_Link():
     link_info = ip.IpLinkInfo(context_wrap(IP_S_LINK))
     link_info_all = ip.IpLinkInfo(context_wrap(IP_S_LINK_ALL))
+    link_info_all_2 = ip.IpLinkInfo(context_wrap(IP_S_LINK_ALL_2))
+    link_info_all_3 = ip.IpLinkInfo(context_wrap(IP_S_LINK_ALL_3))
+    if_list_all_3 = link_info_all_3.active
+    assert sorted(if_list_all_3) == sorted(['lo', 'eth0_1', 'eth0_2', 'vxlan_sys_4789', 'gre1', 'geneve0', 'geneve1'])
+    eth0_1 = link_info_all_3["eth0_1"]
+    assert eth0_1["mac"] == "00:90:fa:8d:36:1e"
+    assert eth0_1["rx_packets"] == 15139642734
+    assert eth0_1["rx_bytes"] == 16809815066893
+    if_list_all_2 = link_info_all_2.active
     if_list_all = link_info_all.active
     if_list = link_info.active
     assert len(if_list) == 4
     assert keys_in(["lo", "enp0s3", "enp0s8", "enp0s9"], if_list)
     assert keys_in(['ppp0', 'lo', 'tun0', 'enp0s25', 'vnet0', 'virbr0'], if_list_all)
+    assert keys_in(['lo', 'eno1', 'eno2', 'ovs-system', 'br-ex', 'vxlan_sys_4789'], if_list_all_2)
 
     assert sorted(link_info.active) == sorted(['lo', 'enp0s3', 'enp0s8', 'enp0s9'])
 
@@ -205,6 +359,14 @@ def test_ip_data_Link():
     assert enp0s25["rx_packets"] == 1492476
     assert enp0s25["tx_packets"] == 969514
     assert enp0s25["index"] == 2
+
+    vxlan_sys_4789 = link_info_all_2["vxlan_sys_4789"]
+    assert sorted(vxlan_sys_4789["vxlan"]) == sorted(['vxlan', 'id', '0', 'srcport', '0', '0', 'dstport', '4789', 'nolearning', 'ageing', '300', 'noudpcsum', 'noudp6zerocsumtx', 'udp6zerocsumrx', 'external'])
+    ovs = link_info_all_2["ovs-system"]
+    assert sorted(ovs["openvswitch"]) == sorted(['openvswitch', 'addrgenmode', 'eui64', 'numtxqueues', '1', 'numrxqueues', '1', 'gso_max_size', '65536', 'gso_max_segs', '65535'])
+    geneve_obj = link_info_all_3['geneve0']
+    assert len(geneve_obj.data['geneve']) == 11
+    assert sorted(geneve_obj.data['geneve']) == sorted(['geneve', 'id', '10', 'remote', '192.168.43.254', 'dstport', '6081', 'noudpcsum', 'udp6zerocsumrx', 'addrgenmode', 'eui64'])
 
 
 IP_ROUTE_SHOW_TABLE_ALL_TEST = """

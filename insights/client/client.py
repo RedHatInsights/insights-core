@@ -59,7 +59,7 @@ def get_console_handler(config):
     else:
         target_level = logging.INFO
 
-    handler = logging.StreamHandler(sys.stderr)
+    handler = logging.StreamHandler(sys.stdout)
     handler.setLevel(target_level)
 
     log_format = LOG_FORMAT if config.verbose else "%(message)s"

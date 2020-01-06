@@ -7,7 +7,10 @@ import six
 import sys
 from six.moves import configparser as ConfigParser
 
-from .constants import InsightsConstants as constants
+try:
+    from .constants import InsightsConstants as constants
+except ImportError:
+    from constants import InsightsConstants as constants
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +56,7 @@ DEFAULT_OPTS = {
     },
     'base_url': {
         # non-CLI
-        'default': None
+        'default': constants.legacy_base_url
     },
     'branch_info': {
         # non-CLI
@@ -634,7 +637,7 @@ class InsightsConfig(object):
         self.keep_archive = self.keep_archive or self.no_upload
         if self.to_json and self.quiet:
             self.diagnosis = True
-        if self.payload or self.diagnosis:
+        if self.payload or self.diagnosis or self.compliance:
             self.legacy_upload = False
         if os.path.exists(constants.register_marker_file):
             self.register = True

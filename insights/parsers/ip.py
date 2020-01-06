@@ -13,8 +13,8 @@ RouteDevices - command ``ip route show table all``
 IpNeighParser - command ``ip neigh show nud all``
 -------------------------------------------------
 
-IpLinkInfo - command ``ip -s link``
------------------------------------
+IpLinkInfo - command ``ip -d -s link``
+--------------------------------------
 """
 
 from __future__ import print_function
@@ -70,6 +70,15 @@ def parse_ip_addr(content):
             r[current["name"]] = current
         elif line.startswith("link"):
             parse_link(line, current)
+        elif 'vxlan' in line:
+            split_content = line.split()
+            current['vxlan'] = split_content
+        elif 'openvswitch' in line:
+            split_content = line.split()
+            current['openvswitch'] = split_content
+        elif 'geneve' in line:
+            split_content = line.split()
+            current['geneve'] = split_content
         elif line.startswith("inet"):
             parse_inet(line, current)
         elif line.startswith("RX"):
@@ -672,7 +681,9 @@ class IpLinkInfo(IpAddr):
 
     Examples:
 
-        >>> for iface in shared[IpLinkInfo]:
+        >>> type(ip_link)
+        <class 'insights.parsers.ip.IpLinkInfo'>
+        >>> for iface in ip_link:
         ...     print 'Interface:', iface['name']
         ...     print 'State:', iface['state']
         ...     print 'RX packets:', iface['rx_packets']

@@ -22,13 +22,17 @@ SsTULPN - command ``ss -tulpn``
 
 SsTUPNA - command ``ss -tupna``
 -------------------------------
+
+ProcNsat - File ``/proc/net/netstat``
+-------------------------------------
 """
 
 from collections import defaultdict
-from . import ParseException, parse_delimited_table
-from .. import parser, LegacyItemAccess, CommandParser
 from insights.parsers import keyword_search
 from insights.specs import Specs
+from insights import Parser
+from insights.parsers import SkipException, ParseException, parse_delimited_table
+from insights import parser, LegacyItemAccess, CommandParser
 
 
 ACTIVE_INTERNET_CONNECTIONS = 'Active Internet connections (servers and established)'
@@ -742,3 +746,55 @@ class SsTUPNA(SsTULPN):
         # Use headings without spaces and colons
         SSTUPNA_TABLE_HEADER = ["Netid  State  Recv-Q  Send-Q  Local-Address-Port Peer-Address-Port  Process"]
         self.data = parse_delimited_table(SSTUPNA_TABLE_HEADER + content[1:])
+
+
+@parser(Specs.proc_netstat)
+class ProcNsat(Parser):
+    """
+    Parse the content of the ``/proc/net/netstat`` file
+
+    Sample input data looks like::
+
+        TcpExt: SyncookiesSent SyncookiesRecv SyncookiesFailed EmbryonicRsts PruneCalled RcvPruned OfoPruned OutOfWindowIcmps LockDroppedIcmps ArpFilter TW TWRecycled TWKilled PAWSPassive PAWSActive PAWSEstab DelayedACKs DelayedACKLocked DelayedACKLost ListenOverflows ListenDrops TCPPrequeued TCPDirectCopyFromBacklog TCPDirectCopyFromPrequeue TCPPrequeueDropped TCPHPHits TCPHPHitsToUser TCPPureAcks TCPHPAcks TCPRenoRecovery TCPSackRecovery TCPSACKReneging TCPFACKReorder TCPSACKReorder TCPRenoReorder TCPTSReorder TCPFullUndo TCPPartialUndo TCPDSACKUndo TCPLossUndo TCPLostRetransmit TCPRenoFailures TCPSackFailures TCPLossFailures TCPFastRetrans TCPForwardRetrans TCPSlowStartRetrans TCPTimeouts TCPLossProbes TCPLossProbeRecovery TCPRenoRecoveryFail TCPSackRecoveryFail TCPSchedulerFailed TCPRcvCollapsed TCPDSACKOldSent TCPDSACKOfoSent TCPDSACKRecv TCPDSACKOfoRecv TCPAbortOnData TCPAbortOnClose TCPAbortOnMemory TCPAbortOnTimeout TCPAbortOnLinger TCPAbortFailed TCPMemoryPressures TCPSACKDiscard TCPDSACKIgnoredOld TCPDSACKIgnoredNoUndo TCPSpuriousRTOs TCPMD5NotFound TCPMD5Unexpected TCPSackShifted TCPSackMerged TCPSackShiftFallback TCPBacklogDrop PFMemallocDrop TCPMinTTLDrop TCPDeferAcceptDrop IPReversePathFilter TCPTimeWaitOverflow TCPReqQFullDoCookies TCPReqQFullDrop TCPRetransFail TCPRcvCoalesce TCPOFOQueue TCPOFODrop TCPOFOMerge TCPChallengeACK TCPSYNChallenge TCPFastOpenActive TCPFastOpenActiveFail TCPFastOpenPassive TCPFastOpenPassiveFail TCPFastOpenListenOverflow TCPFastOpenCookieReqd TCPSpuriousRtxHostQueues BusyPollRxPackets TCPAutoCorking TCPFromZeroWindowAdv TCPToZeroWindowAdv TCPWantZeroWindowAdv TCPSynRetrans TCPOrigDataSent TCPHystartTrainDetect TCPHystartTrainCwnd TCPHystartDelayDetect TCPHystartDelayCwnd TCPACKSkippedSynRecv TCPACKSkippedPAWS TCPACKSkippedSeq TCPACKSkippedFinWait2 TCPACKSkippedTimeWait TCPACKSkippedChallenge TCPWqueueTooBig
+        TcpExt: 10 20 30 40 0 0 0 0 0 0 8387793 2486 0 0 0 3 27599330 35876 309756 0 0 84351589 9652226708 54271044841 0 10507706759 112982361 177521295 3326559442 0 26212 0 36 33090 0 14345 959 8841 425 833 399 0 160 2 633809 11063 7056 233144 1060065 640242 0 228 54 0 310709 0 820887 112 900268 31664 0 232144 0 0 0 261 1048 808390 9 0 0 120433 244126 450077 0 0 0 5625 0 0 0 0 0 6772744900 19251701 0 0 465 463 0 0 0 0 0 0 1172 0 623074473 51282 51282 142025 465090 8484708872 836920 18212118 88 4344 0 0 5 4 3 2 1
+        IpExt: InNoRoutes InTruncatedPkts InMcastPkts OutMcastPkts InBcastPkts OutBcastPkts InOctets OutOctets InMcastOctets OutMcastOctets InBcastOctets OutBcastOctets InCsumErrors InNoECTPkts InECT1Pkts InECT0Pkts InCEPkts ReasmOverlaps
+        IpExt: 100 200 300 400 500 0 10468977960762 8092447661930 432 0 3062938 0 0 12512350267 400 300 200 100
+
+    Examples:
+
+        >>> type(pnstat)
+        <class 'insights.parsers.netstat.ProcNsat'>
+        >>> len(pnstat.data) == 132
+        True
+        >>> pnstat.get_stats('ReasmOverlaps')
+        100
+        >>> pnstat.get_stats('EmbryonicRsts')
+        40
+    """
+
+    def parse_content(self, content):
+        self.data = {}
+        if not content:
+            raise SkipException("No Contents")
+        tcp_hdr = content[0].split()[1:]
+        tcp_hdr_len = len(tcp_hdr)
+        tcp_stat = content[1].split()[1:]
+        tcp_stat_len = len(tcp_stat)
+        ip_hdr = content[2].split()[1:]
+        ip_hdr_len = len(ip_hdr)
+        ip_stat = content[3].split()[1:]
+        ip_stat_len = len(ip_stat)
+        if (tcp_hdr_len != tcp_stat_len) or (ip_hdr_len != ip_stat_len):
+            raise ParseException("Invalid Contents")
+        if tcp_hdr and tcp_stat:
+            self.data = dict(zip(tcp_hdr, tcp_stat))
+        if ip_hdr and ip_stat:
+            self.data.update(dict(zip(ip_hdr, ip_stat)))
+
+    def get_stats(self, key_stats):
+        """
+        (int): The parser method will return the integer stats of the key if key is present in
+               TcpExt or IpExt else it will return `None`.
+        """
+        if key_stats in self.data:
+            return int(self.data.get(key_stats))
