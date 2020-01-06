@@ -22,6 +22,10 @@ def aws_main(config):
     '''
     Process AWS entitlements with Hydra
     '''
+    if config.authmethod != 'BASIC':
+        logger.error('AWS entitlement is only available when BASIC auth is used.\n'
+                     'Set auto_config=False and authmethod=BASIC in %s.', config.conf)
+        return False
     conn = InsightsConnection(config)
 
     bundle = get_aws_identity(conn)
