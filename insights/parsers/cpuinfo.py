@@ -52,7 +52,7 @@ Examples:
     >>> cpu_info.cpu_count
     2
     >>> sorted(cpu_info.apicid)
-    ['2', '2']
+    ['0', '2']
     >>> cpu_info.socket_count
     2
     >>> cpu_info.vendor
@@ -61,8 +61,10 @@ Examples:
     True
     >>> cpu_info.model_name
     'Intel(R) Xeon(R) CPU E5-2690 0 @ 2.90GHz'
-    >>> sorted(cpu_info.get_processor_by_index(0)) == sorted({'model_ids': '45', 'families': '6', 'clockspeeds': '2900.000', 'models': 'Intel(R) Xeon(R) CPU E5-2690 0 @ 2.90GHz', 'cpus': '0', 'cache_sizes': '20480 KB', 'bugs': 'cpu_meltdown spectre_v1 spectre_v2 spec_store_bypass l1tf mds swapgs taa itlb_multihit', 'apicid': '2', 'flags': 'fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch epb intel_pt tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 hle avx2 smep bmi2 erms invpcid rtm mpx rdseed adx smap clflushopt xsaveopt xsavec xgetbv1 dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp', 'cpu_cores': '1', 'stepping': '2', 'address_sizes': '40 bits physical, 48 bits virtual', 'vendors': 'GenuineIntel', 'sockets': '0'})
-    True
+    >>> cpu_info.get_processor_by_index(0)['cpus']
+    '0'
+    >>> cpu_info.get_processor_by_index(0)['vendors']
+    'GenuineIntel'
 """
 
 from collections import defaultdict

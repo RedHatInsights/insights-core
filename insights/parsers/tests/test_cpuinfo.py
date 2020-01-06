@@ -5,6 +5,7 @@ import doctest
 
 CPUINFO = """
 COMMAND> cat /proc/cpuinfo
+COMMAND> cat /proc/cpuinfo
 processor       : 0
 vendor_id       : GenuineIntel
 cpu family      : 6
@@ -18,7 +19,7 @@ physical id     : 0
 siblings        : 1
 core id         : 0
 cpu cores       : 1
-apicid          : 2
+apicid          : 0
 flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch epb intel_pt tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 hle avx2 smep bmi2 erms invpcid rtm mpx rdseed adx smap clflushopt xsaveopt xsavec xgetbv1 dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp
 address sizes   : 40 bits physical, 48 bits virtual
 bugs            : cpu_meltdown spectre_v1 spectre_v2 spec_store_bypass l1tf mds swapgs taa itlb_multihit
@@ -449,23 +450,23 @@ machine		: CHRP IBM,8231-E2D
 def test_cpuinfo():
     cpu_info = CpuInfo(context_wrap(CPUINFO))
     assert cpu_info.cpu_count == 2
-    assert cpu_info.apicid == ["2", "2"]
+    assert cpu_info.apicid == ["0","2"]
     assert cpu_info.socket_count == 2
     assert cpu_info.vendor == "GenuineIntel"
     assert cpu_info.model_name == "Intel(R) Xeon(R) CPU E5-2690 0 @ 2.90GHz"
     assert cpu_info.get_processor_by_index(0) == {
         "cpus": "0",
-        "sockets": "0",
         "vendors": "GenuineIntel",
-        "models": "Intel(R) Xeon(R) CPU E5-2690 0 @ 2.90GHz",
-        "model_ids": "45",
         "families": "6",
+        "model_ids": "45",
+        "models": "Intel(R) Xeon(R) CPU E5-2690 0 @ 2.90GHz",
+        "stepping": "2",
         "clockspeeds": "2900.000",
         "cache_sizes": "20480 KB",
+        "sockets": "0",
         "cpu_cores": "1",
-        "apicid": "2",
+        "apicid": "0",
         "flags": "fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch epb intel_pt tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 hle avx2 smep bmi2 erms invpcid rtm mpx rdseed adx smap clflushopt xsaveopt xsavec xgetbv1 dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp",
-        "stepping": "2",
         "address_sizes": "40 bits physical, 48 bits virtual",
         "bugs": "cpu_meltdown spectre_v1 spectre_v2 spec_store_bypass l1tf mds swapgs taa itlb_multihit"
     }
