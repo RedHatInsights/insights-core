@@ -26,6 +26,8 @@ def test_insights_cli_version(capsys):
             assert err == ''
             assert out == VERSION_OUT
 
+
+def test_insights_cli_version_bad_arg(capsys):
     test_args = ["insights", "-v"]
     with patch.object(sys, 'argv', test_args):
         with pytest.raises(SystemExit):
