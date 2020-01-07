@@ -11,6 +11,8 @@ from __future__ import print_function
 import argparse
 import sys
 
+from insights import get_nvr
+
 USAGE = """insights <command> [<args>]
 Available commands:
   cat         Execute a spec and show the output
@@ -35,7 +37,11 @@ class InsightsCli(object):
         parser = argparse.ArgumentParser(
             description="Insights Core command line execution",
             usage=USAGE)
+        parser.add_argument('--version', action='version', version=get_nvr(), help='display Insights Core version')
         parser.add_argument('command', help='Insights Core command to run')
+        # if present parse version argument only, will print version info and exit
+        if '--version' in sys.argv[1:3]:
+            parser.parse_args(['--version'])
         args = parser.parse_args(sys.argv[1:2])
         if not hasattr(self, args.command):
             print('Unrecognized command')
