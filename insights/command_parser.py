@@ -37,7 +37,7 @@ class InsightsCli(object):
         parser = argparse.ArgumentParser(
             description="Insights Core command line execution",
             usage=USAGE)
-        parser.add_argument('--version', action='store_true', help='display Insights Core version')
+        parser.add_argument('--version', action='store_true', help='show insights-core version information and exit')
         parser.add_argument('command', help='Insights Core command to run')
         # if version argument present, print version info and exit
         if '--version' in sys.argv[1:3]:
