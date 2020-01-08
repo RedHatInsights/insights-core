@@ -7,7 +7,7 @@ The parser UdevRulesFCWWPN returns the content of the file "/usr/lib/udev/rules.
 Examples:
 
     >>> type(udev_rules)
-    <class 'insights.parsers.udev_rules.UdevRules'>
+    <class 'insights.parsers.udev_rules.UdevRulesFCWWPN'>
     >>> 'ENV{FC_TARGET_WWPN}!="$*"; GOTO="fc_wwpn_end"' in udev_rules.lines
     True
 """
