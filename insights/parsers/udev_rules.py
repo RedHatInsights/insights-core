@@ -2,7 +2,7 @@
 UdevRules - file ``/usr/lib/udev/rules.d/59-fc-wwpn-id.rules``
 ==============================================================
 
-The parser UdevRules get the content of the file "/usr/lib/udev/rules.d/59-fc-wwpn-id.rules"
+The parser UdevRules returns the content of the file "/usr/lib/udev/rules.d/59-fc-wwpn-id.rules"
 
 Examples:
 
