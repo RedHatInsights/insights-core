@@ -47,4 +47,3 @@ output/
 share/
 .Python
 .python*
-pyvenv.cfg

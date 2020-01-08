@@ -9,14 +9,14 @@ VERSION_OUT = get_nvr() + '\n'
 
 def test_insights_cli_version(capsys):
     test_args_list = [
+        ["insights", "version"],
         ["insights", "--version"],
         ["insights", "cat", "--version"],
         ["insights", "collect", "--version"],
         ["insights", "inspect", "--version"],
         ["insights", "info", "--version"],
         ["insights", "ocpshell", "--version"],
-        ["insights", "run", "--version"],
-        ["insights", "--version", "run"]
+        ["insights", "run", "--version"]
     ]
     for args in test_args_list:
         with patch.object(sys, 'argv', args):
