@@ -1,8 +1,8 @@
 """
-UdevRules - file ``/usr/lib/udev/rules.d/59-fc-wwpn-id.rules``
-==============================================================
+UdevRulesFCWWPN - file ``/usr/lib/udev/rules.d/59-fc-wwpn-id.rules``
+====================================================================
 
-The parser UdevRules returns the content of the file "/usr/lib/udev/rules.d/59-fc-wwpn-id.rules"
+The parser UdevRulesFCWWPN returns the content of the file "/usr/lib/udev/rules.d/59-fc-wwpn-id.rules"
 
 Examples:
 
@@ -17,8 +17,10 @@ from insights.specs import Specs
 
 
 @parser(Specs.udev_fc_wwpn_id_rules)
-class UdevRules(LogFileOutput):
+class UdevRulesFCWWPN(LogFileOutput):
     """
     Parse data from the ``/usr/lib/udev/rules.d/59-fc-wwpn-id.rules`` file.
+    For current rule, we just need to check if there is wrong syntax in this file, and don't need to
+    parse the content, so we use LogFileOutput here.
     """
     pass
