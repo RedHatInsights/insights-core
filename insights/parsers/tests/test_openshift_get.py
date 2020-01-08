@@ -1559,7 +1559,8 @@ metadata:
 def test_oc_get_pod_yml():
     result = openshift_get.OcGetPod(context_wrap(OC_GET_POD))
     assert result.data['items'][0]['metadata']['annotations']['openshift.io/scc'] == 'anyuid'
-    assert result.data['items'][0]['metadata']['creationTimestamp'] == datetime.datetime(2017, 2, 10, 16, 33, 46)
+    ct = result.data['items'][0]['metadata']['creationTimestamp'].replace(tzinfo=None)
+    assert ct == datetime.datetime(2017, 2, 10, 16, 33, 46, tzinfo=None)
     assert result.data['items'][0]['spec']['host'] == 'node2.ose.com'
     assert result.get("items")[0]['spec']['host'] == 'node2.ose.com'
     assert result.pods["router-1-1-w27o2"]["metadata"]["labels"]["deploymentconfig"] == "router-1"
@@ -1676,7 +1677,8 @@ def test_oc_get_event():
 def test_oc_get_egressnetworkpolicy_yml():
     result = openshift_get.OcGetEgressNetworkPolicy(context_wrap(OC_GET_EGRESS_NETWORK_POLICY))
     assert result.data['items'][0]['kind'] == 'EgressNetworkPolicy'
-    assert result.data['items'][0]['metadata']['creationTimestamp'] == datetime.datetime(2018, 1, 29, 3, 31, 59)
+    ct = result.data['items'][0]['metadata']['creationTimestamp'].replace(tzinfo=None)
+    assert ct == datetime.datetime(2018, 1, 29, 3, 31, 59, tzinfo=None)
     assert result.get('items')[0]['metadata']['name'] == 'policy-test'
     assert result.egress_network_policies['policy-test']['spec']['egress'][0]['to']['dnsName'] == 'www.baidu.com'
 
