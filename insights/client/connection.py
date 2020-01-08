@@ -870,6 +870,7 @@ class InsightsConnection(object):
             # add display_name to canonical facts
             c_facts['display_name'] = self.config.display_name
         if self.config.branch_info:
+            c_facts["branch_info"] = self.config.branch_info
             c_facts["satellite_id"] = self.config.branch_info["remote_leaf"]
         c_facts = json.dumps(c_facts)
         logger.debug('Canonical facts collected:\n%s', c_facts)
