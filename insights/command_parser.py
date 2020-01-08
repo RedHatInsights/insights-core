@@ -37,10 +37,10 @@ class InsightsCli(object):
         parser = argparse.ArgumentParser(
             description="Insights Core command line execution",
             usage=USAGE)
-        parser.add_argument('--version', action='store_true', help='show insights-core version information and exit')
+        parser.add_argument('--version', action='store_true', help='show Insights Core version information and exit')
         parser.add_argument('command', help='Insights Core command to run')
         # if version argument present, print version info and exit
-        if '--version' in sys.argv[1:3]:
+        if self.parse_version_arg():
             print(get_nvr())
             sys.exit()
         args = parser.parse_args(sys.argv[1:2])
@@ -52,6 +52,9 @@ class InsightsCli(object):
         sys.argv.pop(1)
         # Use dispatch pattern to execute command
         getattr(self, args.command)()
+
+    def parse_version_arg(self):
+        return '--version' in sys.argv[1:3]
 
     def cat(self):
         from .tools.cat import main as cat_main
