@@ -1,5 +1,18 @@
 # Change Log
 
+## [insights-core-3.0.142-1286](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.142-1286) (2020-01-09)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.141-1279...insights-core-3.0.142-1286)
+
+**Implemented enhancements:**
+
+- Enhance the cpuinfo parser to fetch 'apicid' information [\#2393](https://github.com/RedHatInsights/insights-core/issues/2393)
+
+**Closed issues:**
+
+- The symbolic of simple\_file for readlink\_e\_etc\_mtab is incorrect [\#2399](https://github.com/RedHatInsights/insights-core/issues/2399)
+- \[Package dependency Error: PyYAML\] TypeError: can't compare offset-naive and offset-aware datetimes [\#2397](https://github.com/RedHatInsights/insights-core/issues/2397)
+- Add parser for the command "findmnt -lo+PROPAGATION" [\#2368](https://github.com/RedHatInsights/insights-core/issues/2368)
+
 ## [insights-core-3.0.141-1279](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.141-1279) (2020-01-02)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.140-1274...insights-core-3.0.141-1279)
 
