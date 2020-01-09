@@ -316,6 +316,7 @@ class DefaultSpecs(Specs):
     fc_match = simple_command("/bin/fc-match -sv 'sans:regular:roman' family fontformat")
     fcoeadm_i = simple_command("/usr/sbin/fcoeadm -i")
     fdisk_l = simple_command("/sbin/fdisk -l")
+    findmnt_lo_propagation = simple_command("/bin/findmnt -lo+PROPAGATION")
     foreman_production_log = simple_file("/var/log/foreman/production.log")
     foreman_proxy_conf = simple_file("/etc/foreman-proxy/settings.yml")
     foreman_proxy_log = simple_file("/var/log/foreman-proxy/proxy.log")
