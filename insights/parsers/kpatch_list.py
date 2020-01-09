@@ -24,7 +24,7 @@ Examples:
 """
 
 from insights.specs import Specs
-from insights.parsers import SkipException
+from insights.parsers import SkipException, ParseException
 from insights import parser, CommandParser
 
 
@@ -32,13 +32,16 @@ from insights import parser, CommandParser
 class KpatchList(CommandParser):
     """Class for command: /usr/sbin/kpatch list"""
     def parse_content(self, content):
-        if content is None or len(content) == 0:
+        if not content:
             raise SkipException("No Data from command: /usr/sbin/kpatch list")
 
         self._loaded = {}
         self._installed = {}
         cur_dict = {}
         for line in content:
+            if not line.strip():
+                continue
+
             if 'Loaded patch modules' in line:
                 cur_dict = self._loaded
                 continue
@@ -47,25 +50,18 @@ class KpatchList(CommandParser):
                 cur_dict = self._installed
                 continue
 
-            if '[' in line or ']' in line:
-                line = line.replace('[', '').replace(']', '')
+            kpatch, info = [k.strip('()[]') for k in line.split()]
+            if not info:
+                raise ParseException("Parser Error: Invalid Line in content of 'kpatch list'")
 
-            if '(' in line or ')' in line:
-                line = line.replace('(', '').replace(')', '')
-
-            fields = line.split(' ')
-            if len(fields) != 2:
-                # invalid line
-                continue
-
-            cur_dict[fields[0]] = fields[1]
+            cur_dict[kpatch] = info
 
     @property
     def loaded(self):
-        """Returns the loaded kpatchs"""
+        """``dict`` the loaded kpatchs"""
         return self._loaded
 
     @property
     def installed(self):
-        """Returns the installed kpatchs"""
+        """``dict`` of the installed kpatchs"""
         return self._installed

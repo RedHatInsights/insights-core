@@ -12,12 +12,6 @@ Installed patch modules:
 kpatch_3_10_0_1062_1_1_1_4 (3.10.0-1062.1.1.el7.x86_64)
 '''.strip()
 
-EMPTY_OUTPUT = '''
-Loaded patch modules:
-
-Installed patch modules:
-'''.strip()
-
 BAD_OUTPUT = ''
 
 
@@ -36,12 +30,6 @@ def test_kpatch_list():
     assert len(kpatchs.installed) > 0
     assert kpatchs.loaded.get('kpatch_3_10_0_1062_1_1_1_4') == "enabled"
     assert kpatchs.installed.get('kpatch_3_10_0_1062_1_1_1_4') == "3.10.0-1062.1.1.el7.x86_64"
-
-    kpatchs = kpatch_list.KpatchList(context_wrap(EMPTY_OUTPUT))
-    assert len(kpatchs.loaded) == 0
-    assert len(kpatchs.installed) == 0
-    assert kpatchs.loaded.get('kpatch_3_10_0_1062_1_1_1_4') is None
-    assert kpatchs.installed.get('kpatch_3_10_0_1062_1_1_1_4') is None
 
 
 def test_fail():
