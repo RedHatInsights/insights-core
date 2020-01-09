@@ -1,6 +1,6 @@
 """
 KpatchList - command ``/usr/sbin/kpatch list``
-=================================================
+==============================================
 
 The ``/usr/sbin/kpatch list`` command provides information about
 the installed patch modules.
