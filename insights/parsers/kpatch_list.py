@@ -58,10 +58,14 @@ class KpatchList(CommandParser):
 
     @property
     def loaded(self):
-        """``dict`` the loaded kpatchs"""
+        """
+        (dict): This will return the loaded kpath modules
+        """
         return self._loaded
 
     @property
     def installed(self):
-        """``dict`` of the installed kpatchs"""
+        """
+        (dict): This will return the installed kpath modules
+        """
         return self._installed
