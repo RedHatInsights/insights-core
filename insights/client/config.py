@@ -9,7 +9,7 @@ from six.moves import configparser as ConfigParser
 
 try:
     from .constants import InsightsConstants as constants
-except ImportError:
+except:
     from constants import InsightsConstants as constants
 
 logger = logging.getLogger(__name__)
