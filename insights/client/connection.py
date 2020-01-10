@@ -982,3 +982,50 @@ class InsightsConnection(object):
                          res.status_code, res.text)
             return None
         return res.json()
+
+    def get_advisor_report(self):
+        '''
+            Retrieve advisor report through the legacy API
+        '''
+        cache_dir = "/var/cache/insights-client/"
+        cache_control_fields_path = cache_dir + "cache_control_fields.json"
+        cache_report_path = cache_dir + "report.v1.json"
+
+        os.makedirs(cache_dir, exist_ok=True)
+
+        headers = {}
+        cache_control_fields = {}
+        if os.path.isfile(cache_control_fields_path):
+            with open(cache_control_fields_path) as f:
+                cache_control_fields = json.loads(f.read())
+            try:
+                headers["If-None-Match"] = cache_control_fields["ETag"]
+                headers["If-Modified-Since"] = cache_control_fields["Last-Modified"]
+            except KeyError:
+                pass
+
+        report_url = self.base_url + "/v3/systems/" + generate_machine_id() + "/reports"
+        res = self.session.get(report_url, headers=headers)
+
+        report = {}
+        if res.status_code == 304:
+            with open(cache_report_path) as f:
+                report = json.loads(f.read())
+        elif res.status_code == 200:
+            with open(cache_report_path, "w") as f:
+                report = res.json()
+                f.write(json.dumps(report))
+        else:
+            return None
+
+        cache_control_fields = {}
+        try:
+            cache_control_fields["ETag"] = res.headers["ETag"]
+            cache_control_fields["Last-Modified"] = res.headers["Last-Modified"]
+        except KeyError:
+            pass
+
+        with open(cache_control_fields_path, "w") as f:
+            f.write(json.dumps(cache_control_fields))
+
+        return report
