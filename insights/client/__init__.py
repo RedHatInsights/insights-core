@@ -504,6 +504,17 @@ class InsightsClient(object):
         logger.debug('Re-register set, forcing registration.')
         logger.debug('New machine-id: %s', generate_machine_id(new=True))
 
+    @_net
+    def show(self):
+        '''
+        Show insights about this machine
+        '''
+        try:
+            data = self.connection.get_advisor_report()
+            print(data)
+        except Exception as e:
+            print("Unknown Error: %s" % e)
+
 
 def format_config(config):
     # Log config except the password
