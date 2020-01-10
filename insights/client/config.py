@@ -241,6 +241,12 @@ DEFAULT_OPTS = {
         'type': int,
         'dest': 'retries'
     },
+    'show': {
+        'default': False,
+        'opt': ['--show'],
+        'help': "Show insights about this host",
+        'action': "store_true"
+    },
     'silent': {
         'default': False,
         'opt': ['--silent'],
