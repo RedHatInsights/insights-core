@@ -38,13 +38,18 @@ def do_log_rotation():
 
 def get_file_handler(config):
     log_file = config.logging_file
+    payload_log = config.logging_file + '-payload'
     log_dir = os.path.dirname(log_file)
     if not log_dir:
         log_dir = os.getcwd()
     elif not os.path.exists(log_dir):
         os.makedirs(log_dir, 0o700)
-    file_handler = logging.handlers.RotatingFileHandler(
-        log_file, backupCount=3)
+    if config.payload:
+        file_handler = logging.handlers.RotatingFileHandler(
+            payload_log, backupCount=3)
+    else:
+        file_handler = logging.handlers.RotatingFileHandler(
+            log_file, backupCount=3)
     file_handler.setFormatter(logging.Formatter(LOG_FORMAT))
     return file_handler
 
