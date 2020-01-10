@@ -511,7 +511,7 @@ class InsightsClient(object):
         '''
         try:
             data = self.connection.get_advisor_report()
-            print(data)
+            print(json.dumps(data))
         except Exception as e:
             print("Unknown Error: %s" % e)
 
