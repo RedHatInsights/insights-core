@@ -24,7 +24,7 @@ Examples:
 """
 
 from insights.specs import Specs
-from insights.parsers import SkipException, ParseException
+from insights.parsers import SkipException
 from insights import parser, CommandParser
 
 
@@ -50,11 +50,12 @@ class KpatchList(CommandParser):
                 cur_dict = self._installed
                 continue
 
-            kpatch, info = [k.strip('()[]') for k in line.split()]
-            if not info:
-                raise ParseException("Parser Error: Invalid Line in content of 'kpatch list'")
-
-            cur_dict[kpatch] = info
+            try:
+                kpatch, info = [k.strip('()[]') for k in line.split()]
+                cur_dict[kpatch] = info
+            except ValueError:
+                # try the best to get the useful information
+                pass
 
     @property
     def loaded(self):
