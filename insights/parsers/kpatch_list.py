@@ -54,6 +54,14 @@ class KpatchList(CommandParser):
                 kpatch, info = [k.strip('()[]') for k in line.split()]
                 cur_dict[kpatch] = info
             except ValueError:
+                if cur_dict == self._loaded:
+                    # Compatible with the early version:
+                    #  # kpatch list
+                    #  Loaded patch modules:
+                    #  kpatch_7_0_1_el7
+                    #
+                    cur_dict[line.strip()] = 'enabled'
+
                 # try the best to get the useful information
                 pass
 
