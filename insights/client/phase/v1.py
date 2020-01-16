@@ -135,6 +135,14 @@ def post_update(client, config):
         logger.debug('Entitling an AWS host. Bypassing registration check.')
         return
 
+    if config.show:
+        try:
+            client.show()
+            sys.exit(constants.sig_kill_ok)
+        except Exception as e:
+            print(e)
+            sys.exit(constants.sig_kill_bad)
+
     # -------delete everything below this line-------
     if config.legacy_upload:
         if config.status:
@@ -178,14 +186,6 @@ def post_update(client, config):
             if (not config.disable_schedule and
                get_scheduler(config).set_daily()):
                 logger.info('Automatic scheduling for Insights has been enabled.')
-
-        if config.show:
-            try:
-                client.show()
-                sys.exit(constants.sig_kill_ok)
-            except Exception as e:
-                print(e)
-                sys.exit(constants.sig_kill_bad)
 
         return
     # -------delete everything above this line-------
