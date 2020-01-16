@@ -1,5 +1,16 @@
 # Change Log
 
+## [insights-core-3.0.143-1288](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.143-1288) (2020-01-16)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.142-1286...insights-core-3.0.143-1288)
+
+**Fixed bugs:**
+
+- Add links section to text format [\#2284](https://github.com/RedHatInsights/insights-core/issues/2284)
+
+**Closed issues:**
+
+- Add specs to sos\_archive.py [\#2407](https://github.com/RedHatInsights/insights-core/issues/2407)
+
 ## [insights-core-3.0.142-1286](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.142-1286) (2020-01-09)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.141-1279...insights-core-3.0.142-1286)
 
