@@ -10,8 +10,7 @@ from insights.client.client import _delete_archive_internal
 from insights import package_info
 from insights.client.constants import InsightsConstants as constants
 from insights.client.utilities import generate_machine_id
-from mock.mock import patch
-from mock.mock import Mock
+from mock.mock import patch, Mock, mock_open
 
 
 class FakeConnection(object):
@@ -276,7 +275,8 @@ def test_upload_500_retry(_, upload_archive):
 
         config = InsightsConfig(logging_file='/tmp/insights.log', retries=retries)
         client = InsightsClient(config)
-        client.upload('/tmp/insights.tar.gz')
+        with pytest.raises(RuntimeError):
+            client.upload('/tmp/insights.tar.gz')
 
         upload_archive.assert_called()
         assert upload_archive.call_count == retries
@@ -297,7 +297,8 @@ def test_upload_412_no_retry(_, upload_archive, handle_fail_rcs):
     try:
         config = InsightsConfig(logging_file='/tmp/insights.log', retries=3)
         client = InsightsClient(config)
-        client.upload('/tmp/insights.tar.gz')
+        with pytest.raises(RuntimeError):
+            client.upload('/tmp/insights.tar.gz')
 
         upload_archive.assert_called_once()
     finally:
@@ -318,7 +319,8 @@ def test_upload_412_write_unregistered_file(_, upload_archive, write_unregistere
     try:
         config = InsightsConfig(logging_file='/tmp/insights.log', retries=3)
         client = InsightsClient(config)
-        client.upload('/tmp/insights.tar.gz')
+        with pytest.raises(RuntimeError):
+            client.upload('/tmp/insights.tar.gz')
 
         unregistered_at = upload_archive.return_value.json()["unregistered_at"]
         write_unregistered_file.assert_called_once_with(unregistered_at)
@@ -396,7 +398,7 @@ def test_legacy_upload(_legacy_upload, path_exists):
 
 
 @patch('insights.client.os.path.exists', return_value=True)
-@patch('insights.client.connection.InsightsConnection.upload_archive')
+@patch('insights.client.connection.InsightsConnection.upload_archive', return_value=Mock(status_code=200))
 @patch('insights.client.client._legacy_upload')
 def test_platform_upload(_legacy_upload, _, path_exists):
     '''
@@ -408,15 +410,18 @@ def test_platform_upload(_legacy_upload, _, path_exists):
     _legacy_upload.assert_not_called()
 
 
+@patch('insights.client.client.write_to_disk')
+@patch('insights.client.client.open', new_callable=mock_open)
 @patch('insights.client.client.systemd_notify')
 @patch('insights.client.client.read_pidfile')
 @patch('insights.client.os.path.exists', return_value=True)
-@patch('insights.client.connection.InsightsConnection.upload_archive')
-def test_legacy_upload_systemd(_, path_exists, read_pidfile, systemd_notify):
+@patch('insights.client.connection.InsightsConnection.upload_archive', return_value=Mock(status_code=200, text='{}'))
+def test_legacy_upload_systemd(_, path_exists, read_pidfile, systemd_notify, op, wtd):
     '''
     Pidfile is read and systemd-notify is called for legacy upload
     '''
     config = InsightsConfig(legacy_upload=True)
+    config.account_number = ''  # legacy registration thing
     client = InsightsClient(config)
     client.upload('test.gar.gz', 'test.content.type')
     read_pidfile.assert_called_once()
@@ -426,7 +431,7 @@ def test_legacy_upload_systemd(_, path_exists, read_pidfile, systemd_notify):
 @patch('insights.client.client.systemd_notify')
 @patch('insights.client.client.read_pidfile')
 @patch('insights.client.os.path.exists', return_value=True)
-@patch('insights.client.connection.InsightsConnection.upload_archive')
+@patch('insights.client.connection.InsightsConnection.upload_archive', return_value=Mock(status_code=200))
 def test_platform_upload_systemd(_, path_exists, read_pidfile, systemd_notify):
     '''
     Pidfile is read and systemd-notify is called for platform upload
@@ -439,7 +444,7 @@ def test_platform_upload_systemd(_, path_exists, read_pidfile, systemd_notify):
 
 
 @patch('insights.client.os.path.exists', return_value=True)
-@patch('insights.client.connection.InsightsConnection.upload_archive')
+@patch('insights.client.connection.InsightsConnection.upload_archive', return_value=Mock(status_code=200))
 @patch('insights.client.client._legacy_upload')
 def test_platform_upload_with_no_log_path(_legacy_upload, _, path_exists):
     '''

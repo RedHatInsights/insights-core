@@ -326,9 +326,9 @@ def _legacy_upload(config, pconn, tar_file, content_type, collection_duration=No
                 logger.info("Successfully uploaded report for %s.", msg_name)
             break
 
-        elif upload.status_code == 412:
+        elif upload.status_code in (412, 413):
             pconn.handle_fail_rcs(upload)
-            break
+            raise RuntimeError('Upload failed.')
         else:
             logger.error("Upload attempt %d of %d failed! Status Code: %s",
                          tries + 1, config.retries, upload.status_code)
@@ -339,6 +339,7 @@ def _legacy_upload(config, pconn, tar_file, content_type, collection_duration=No
             else:
                 logger.error("All attempts to upload have failed!")
                 logger.error("Please see %s for additional information", config.logging_file)
+                raise RuntimeError('Upload failed.')
     return api_response
 
 
@@ -354,6 +355,10 @@ def upload(config, pconn, tar_file, content_type, collection_duration=None):
         if upload.status_code in (200, 202):
             msg_name = determine_hostname(config.display_name)
             logger.info("Successfully uploaded report for %s.", msg_name)
+            return
+        elif upload.status_code in (413, 415):
+            pconn.handle_fail_rcs(upload)
+            raise RuntimeError('Upload failed.')
         else:
             logger.error("Upload attempt %d of %d failed! Status code: %s",
                          tries + 1, config.retries, upload.status_code)
@@ -364,6 +369,7 @@ def upload(config, pconn, tar_file, content_type, collection_duration=None):
             else:
                 logger.error("All attempts to upload have failed!")
                 logger.error("Please see %s for additional information", config.logging_file)
+                raise RuntimeError('Upload failed.')
 
 
 def _delete_archive_internal(config, archive):
