@@ -29,6 +29,7 @@ from .utilities import (determine_hostname,
                         write_registered_file)
 from .cert_auth import rhsmCertificate
 from .constants import InsightsConstants as constants
+from .url_cache import URLCache
 from insights import package_info
 from insights.core.context import Context
 from insights.parsers.os_release import OsRelease
@@ -983,49 +984,60 @@ class InsightsConnection(object):
             return None
         return res.json()
 
-    def get_advisor_report(self):
+    def _get(self, url):
         '''
-            Retrieve advisor report through the legacy API
-        '''
-        cache_dir = "/var/cache/insights-client/"
-        cache_control_fields_path = cache_dir + "cache_control_fields.json"
-        cache_report_path = cache_dir + "report.v1.json"
+            Submits a GET request to @url, caching the result, and returning
+            the response body, if any. It makes the response status code opaque
+            to the caller.
 
-        os.makedirs(cache_dir, exist_ok=True)
+            Returns: bytes
+        '''
+        cache = URLCache("/var/cache/insights-client/cache.dat")
 
         headers = {}
-        cache_control_fields = {}
-        if os.path.isfile(cache_control_fields_path):
-            with open(cache_control_fields_path) as f:
-                cache_control_fields = json.loads(f.read())
-            try:
-                headers["If-None-Match"] = cache_control_fields["ETag"]
-                headers["If-Modified-Since"] = cache_control_fields["Last-Modified"]
-            except KeyError:
-                pass
+        item = cache.get(url)
+        if item is not None:
+            headers["If-None-Match"] = item.etag
 
-        report_url = self.base_url + "/v3/systems/" + generate_machine_id() + "/reports"
-        res = self.session.get(report_url, headers=headers)
+        res = self.session.get(url, headers=headers)
 
-        report = {}
-        if res.status_code == 304:
-            with open(cache_report_path) as f:
-                report = json.loads(f.read())
-        elif res.status_code == 200:
-            with open(cache_report_path, "w") as f:
-                report = res.json()
-                f.write(json.dumps(report))
+        if res.status_code in [requests.codes.OK, requests.codes.NOT_MODIFIED]:
+            if res.status_code == requests.codes.OK:
+                if "ETag" in res.headers and len(res.content) > 0:
+                    cache.set(url, res.headers["ETag"], res.content)
+                    cache.save()
+            item = cache.get(url)
+            if item is None:
+                return res.content
+            else:
+                return item.content
         else:
             return None
 
-        cache_control_fields = {}
-        try:
-            cache_control_fields["ETag"] = res.headers["ETag"]
-            cache_control_fields["Last-Modified"] = res.headers["Last-Modified"]
-        except KeyError:
-            pass
+    def get_advisor_report(self):
+        '''
+            Retrieve advisor report
+        '''
+        url = self.base_url + "/inventory/v1/hosts?insights_id=%s" % generate_machine_id()
+        content = self._get(url)
+        if content is None:
+            return None
 
-        with open(cache_control_fields_path, "w") as f:
-            f.write(json.dumps(cache_control_fields))
+        host_id = json.loads(content)["results"][0]["id"]
+        url = self.base_url + "/insights/v1/systems/%s/reports/" % host_id
+        content = self._get(url)
+        if content is None:
+            return None
 
-        return report
+        return json.loads(content)
+
+    def get_legacy_advisor_report(self):
+        '''
+            Retrieve advisor report through the legacy API
+        '''
+        url = self.base_url + "/v1/systems/" + generate_machine_id() + "/reports"
+        content = self._get(url)
+        if content is None:
+            return None
+
+        return json.loads(content)
