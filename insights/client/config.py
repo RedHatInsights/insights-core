@@ -200,6 +200,12 @@ DEFAULT_OPTS = {
         'help': 'offline mode for OSP use',
         'action': 'store_true'
     },
+    'output': {
+        'default': None,
+        'opt': ['--output', '-o'],
+        'help': 'Specify file or directory to write collected data.',
+        'action': 'store'
+    },
     'password': {
         # non-CLI
         'default': ''
@@ -641,6 +647,13 @@ class InsightsConfig(object):
             self.logging_file = constants.default_payload_log
         if os.path.exists(constants.register_marker_file):
             self.register = True
+        if self.output:
+            # do not delete archives/paths if output path is specified
+            self.keep_archive = True
+        if self.output and not self.output.endswith('.tar.gz'):
+            # no tar file
+            # TODO
+            pass
 
 
 if __name__ == '__main__':

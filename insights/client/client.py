@@ -283,13 +283,17 @@ def collect(config, pconn):
 
     # defaults
     mp = None
-    archive = InsightsArchive(compressor=config.compressor)
+    archive = InsightsArchive(config, compressor=config.compressor)
     atexit.register(_delete_archive_internal, config, archive)
 
     msg_name = determine_hostname(config.display_name)
     dc = DataCollector(config, archive, mountpoint=mp)
     logger.info('Starting to collect Insights data for %s', msg_name)
     dc.run_collection(collection_rules, rm_conf, branch_info)
+    if not config.output.endswith('.tar.gz'):
+        # TODO: better check for this
+        logger.info('See Insights data in %s', dc.archive.archive_dir)
+        return
     tar_file = dc.done(collection_rules, rm_conf)
     return tar_file
 

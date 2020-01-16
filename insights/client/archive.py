@@ -23,19 +23,36 @@ class InsightsArchive(object):
     and files to the insights archive
     """
 
-    def __init__(self, compressor="gz"):
+    def __init__(self, config, compressor="gz"):
         """
         Initialize the Insights Archive
         Create temp dir, archive dir, and command dir
         """
-
-        self.tmp_dir = tempfile.mkdtemp(prefix='/var/tmp/')
-        self.archive_tmp_dir = tempfile.mkdtemp(prefix='/var/tmp/')
-        name = determine_hostname()
-        self.archive_name = ("insights-%s-%s" %
-                             (name,
-                              time.strftime("%Y%m%d%H%M%S")))
-        self.archive_dir = self.create_archive_dir()
+        if config.output:
+            if config.output.endswith('.tar.gz'):
+                # make a compressed file
+                output_dir = os.path.dirname(config.output)
+                self.archive_tmp_dir = output_dir
+                self.archive_name = os.path.basename(config.output)
+                self.tmp_dir = tempfile.mkdtemp(prefix='/var/tmp/')
+                self.archive_dir = self.create_archive_dir()
+            else:
+                # just write to dir
+                output_dir = config.output
+                self.tmp_dir = output_dir
+                self.archive_dir = output_dir
+            try:
+                os.makedirs(output_dir)
+            except:
+                pass
+        else:
+            self.tmp_dir = tempfile.mkdtemp(prefix='/var/tmp/')
+            self.archive_tmp_dir = tempfile.mkdtemp(prefix='/var/tmp/')
+            name = determine_hostname()
+            self.archive_name = ("insights-%s-%s" %
+                                 (name,
+                                  time.strftime("%Y%m%d%H%M%S")))
+            self.archive_dir = self.create_archive_dir()
         self.cmd_dir = self.create_command_dir()
         self.compressor = compressor
 
