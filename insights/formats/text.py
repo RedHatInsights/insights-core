@@ -5,6 +5,7 @@ import inspect
 from collections import namedtuple
 
 from pprint import pprint
+from six import StringIO
 from insights import dr, datasource, rule, condition, incident, parser
 from insights.core.context import ExecutionContext
 from insights.formats import Formatter, FormatterAdapter, render
@@ -31,6 +32,24 @@ def _find_context(broker):
     for k, v in broker.instances.items():
         if inspect.isclass(k) and issubclass(k, ExecutionContext):
             return v
+
+
+def render_links(component):
+    links = dr.get_delegate(component).links or {}
+    if any(links.values()):
+        space = " " * 4
+        dbl_space = space * 2
+        output = StringIO()
+        output.write("Links:\n")
+        for key in sorted(links):
+            values = sorted(links[key])
+            if values:
+                output.write(space + key + ":\n")
+                for v in values:
+                    output.write(dbl_space + v + "\n")
+        output.seek(0)
+        return output.read()
+    return ""
 
 
 class HumanReadableFormat(Formatter):
@@ -142,6 +161,7 @@ class HumanReadableFormat(Formatter):
             name = "%s%s%s" % (resp.color, name, Style.RESET_ALL)
             print(name, file=self.stream)
             print(underline, file=self.stream)
+            print(render_links(c), file=self.stream)
             print(render(c, v), file=self.stream)
             print(file=self.stream)
 
