@@ -229,6 +229,7 @@ class Specs(SpecSet):
     ip6tables = RegistryPoint()
     ip_addr = RegistryPoint()
     ip_addresses = RegistryPoint()
+    ipaclient_install_log = RegistryPoint(filterable=True)
     ipaupgrade_log = RegistryPoint(filterable=True)
     ipcs_m = RegistryPoint()
     ipcs_m_p = RegistryPoint()
