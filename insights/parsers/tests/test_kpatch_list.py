@@ -58,7 +58,7 @@ def test_kpatch_list():
     assert len(kpatchs.installed) == 1
     assert kpatchs.loaded.get('kpatch_3_10_0_1062_1_1_1_4') == "enabled"
     assert kpatchs.installed.get('kpatch_3_10_0_1062_1_1_1_4') == "3.10.0-1062.1.1.el7.x86_64"
-    assert kpatchs.loaded.get('kpatch_3_10_0_1062_1_1_1_5') == "enabled"
+    assert kpatchs.loaded.get('kpatch_3_10_0_1062_1_1_1_5') == ''
 
 
 def test_fail():

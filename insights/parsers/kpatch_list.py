@@ -50,20 +50,18 @@ class KpatchList(CommandParser):
                 cur_dict = self._installed
                 continue
 
-            try:
-                kpatch, info = [k.strip('()[]') for k in line.split()]
-                cur_dict[kpatch] = info
-            except ValueError:
+            fields = [k.strip('()[]') for k in line.split()]
+            if len(fields) == 1:
                 if cur_dict == self._loaded:
-                    # Compatible with the early version:
+                    # In the early version:
                     #  # kpatch list
                     #  Loaded patch modules:
                     #  kpatch_7_0_1_el7
                     #
-                    cur_dict[line.strip()] = 'enabled'
+                    cur_dict[fields[0].strip()] = ''
 
-                # try the best to get the useful information
-                pass
+            elif len(fields) == 2:
+                cur_dict[fields[0]] = fields[1]
 
     @property
     def loaded(self):
