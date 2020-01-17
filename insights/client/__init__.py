@@ -514,7 +514,7 @@ class InsightsClient(object):
             if self.config.legacy_upload:
                 data = self.connection.get_legacy_advisor_report()
             else:
-                data = self.connection.get_advisor_report()
+                data = {"error": "Unable to retrieve advisor report"}
             print(json.dumps(data))
         except Exception as e:
             print("Unknown Error: %s" % e)
