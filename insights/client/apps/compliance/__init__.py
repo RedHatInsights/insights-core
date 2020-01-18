@@ -1,4 +1,5 @@
 from glob import glob
+from insights.client.archive import InsightsArchive
 from insights.client.connection import InsightsConnection
 from insights.client.constants import InsightsConstants as constants
 from insights.util.canonical_facts import get_canonical_facts
@@ -8,7 +9,6 @@ from re import findall
 from sys import exit
 from insights.util.subproc import call
 
-OSCAP_RESULTS_OUTPUT = '/tmp/oscap_results.xml'
 NONCOMPLIANT_STATUS = 2
 COMPLIANCE_CONTENT_TYPE = 'application/vnd.redhat.compliance.something+tgz'
 POLICY_FILE_LOCATION = '/usr/share/xml/scap/ssg/content/'
@@ -21,6 +21,7 @@ class ComplianceClient:
         self.config = config
         self.conn = InsightsConnection(config)
         self.hostname = get_canonical_facts().get('fqdn', '')
+        self.archive = InsightsArchive()
 
     def oscap_scan(self):
         self._assert_oscap_rpms_exist()
@@ -28,10 +29,14 @@ class ComplianceClient:
         if not policies:
             logger.error("System is not associated with any profiles. Assign profiles by either uploading a SCAP scan or using the compliance web UI.\n")
             exit(constants.sig_kill_bad)
-        profile_ref_id = [policy['attributes']['ref_id'] for policy in policies][0]
-        scap_policy_xml = self.find_scap_policy(profile_ref_id)
-        self.run_scan(profile_ref_id, scap_policy_xml)
-        return OSCAP_RESULTS_OUTPUT, COMPLIANCE_CONTENT_TYPE
+        profile_ref_ids = [policy['attributes']['ref_id'] for policy in policies]
+        scap_policies_xml = [self.find_scap_policy(profile_ref_id) for profile_ref_id in profile_ref_ids]
+        for scap_policy_xml in scap_policies_xml:
+            output_path = '/tmp/oscap_results-#{0}.xml'.format(profile_ref_id)
+            self.run_scan(profile_ref_id, scap_policy_xml, output_path)
+            self.archive.copy_file(output_path)
+
+        return self.archive.create_tar_file(), COMPLIANCE_CONTENT_TYPE
 
     # TODO: Not a typo! This endpoint gives OSCAP policies, not profiles
     # We need to update compliance-backend to fix this
@@ -60,9 +65,9 @@ class ComplianceClient:
             exit(constants.sig_kill_bad)
         return filenames[0]
 
-    def run_scan(self, profile_ref_id, policy_xml):
+    def run_scan(self, profile_ref_id, policy_xml, output_path):
         logger.info('Running scan... this may take a while')
-        rc, oscap = call('oscap xccdf eval --profile ' + profile_ref_id + ' --results ' + OSCAP_RESULTS_OUTPUT + ' ' + policy_xml, keep_rc=True)
+        rc, oscap = call('oscap xccdf eval --profile ' + profile_ref_id + ' --results ' + output_path + ' ' + policy_xml, keep_rc=True)
         if rc and rc != NONCOMPLIANT_STATUS:
             logger.error('Scan failed')
             logger.error(oscap)
