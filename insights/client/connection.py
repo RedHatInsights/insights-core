@@ -74,9 +74,17 @@ class InsightsConnection(object):
         self.cert_verify = self.config.cert_verify
         if self.cert_verify is None:
             # if self.config.legacy_upload:
-            self.cert_verify = os.path.join(
-                constants.default_conf_dir,
-                'cert-api.access.redhat.com.pem')
+            if self.config.portal_access or self.config.portal_access_no_insights:
+                # workaround for a workaround
+                #   the hydra API doesn't accept the legacy cert
+                #   and legacy_upload=False currently just
+                #   redirects to the classic API with /platform added
+                #   so if doing AWS entitlement, use cert_verify=True
+                self.cert_verify = True
+            else:
+                self.cert_verify = os.path.join(
+                    constants.default_conf_dir,
+                    'cert-api.access.redhat.com.pem')
             # else:
             # self.cert_verify = True
         else:
@@ -862,6 +870,7 @@ class InsightsConnection(object):
             # add display_name to canonical facts
             c_facts['display_name'] = self.config.display_name
         if self.config.branch_info:
+            c_facts["branch_info"] = self.config.branch_info
             c_facts["satellite_id"] = self.config.branch_info["remote_leaf"]
         c_facts = json.dumps(c_facts)
         logger.debug('Canonical facts collected:\n%s', c_facts)

@@ -154,6 +154,7 @@ class Specs(SpecSet):
     fcoeadm_i = RegistryPoint()
     fdisk_l = RegistryPoint()
     fdisk_l_sos = RegistryPoint(multi_output=True)
+    findmnt_lo_propagation = RegistryPoint()
     foreman_production_log = RegistryPoint(filterable=True)
     foreman_proxy_conf = RegistryPoint()
     foreman_proxy_log = RegistryPoint(filterable=True)
