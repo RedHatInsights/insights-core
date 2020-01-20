@@ -502,6 +502,7 @@ class DefaultSpecs(Specs):
         un = broker[Uname]
         return r"/var/lib/kpatch/" + un.kernel
 
+    kpatch_list = simple_command("/usr/sbin/kpatch list")
     kpatch_patch_files = command_with_args("ls %s", kpatch_patches_running_kernel_dir)
     krb5 = glob_file([r"etc/krb5.conf", r"etc/krb5.conf.d/*"])
     ksmstate = simple_file("/sys/kernel/mm/ksm/run")

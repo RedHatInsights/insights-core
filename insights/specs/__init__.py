@@ -259,6 +259,7 @@ class Specs(SpecSet):
     keystone_crontab = RegistryPoint()
     keystone_crontab_container = RegistryPoint()
     keystone_log = RegistryPoint(filterable=True)
+    kpatch_list = RegistryPoint()
     kpatch_patch_files = RegistryPoint()
     krb5 = RegistryPoint(multi_output=True)
     ksmstate = RegistryPoint()
