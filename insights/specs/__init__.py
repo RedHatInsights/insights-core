@@ -278,6 +278,7 @@ class Specs(SpecSet):
     ls_dev = RegistryPoint()
     ls_disk = RegistryPoint()
     ls_docker_volumes = RegistryPoint()
+    ls_edac_mc = RegistryPoint()
     ls_etc = RegistryPoint()
     ls_lib_firmware = RegistryPoint()
     ls_ocp_cni_openshift_sdn = RegistryPoint()
