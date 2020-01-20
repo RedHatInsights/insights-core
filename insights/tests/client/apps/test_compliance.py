@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 
-from insights.client.apps.compliance import ComplianceClient, OSCAP_RESULTS_OUTPUT, COMPLIANCE_CONTENT_TYPE
+from insights.client.apps.compliance import ComplianceClient, COMPLIANCE_CONTENT_TYPE
 from mock.mock import patch, Mock
 from pytest import raises
 
@@ -15,7 +15,7 @@ def test_oscap_scan(config, assert_rpms):
     compliance_client.find_scap_policy = lambda ref_id: '/usr/share/xml/scap/foo.xml'
     compliance_client.run_scan = lambda ref_id, policy_xml: None
     payload, content_type = compliance_client.oscap_scan()
-    assert payload == OSCAP_RESULTS_OUTPUT
+    assert payload == ['/tmp/oscap_results-foos.xml']
     assert content_type == COMPLIANCE_CONTENT_TYPE
 
 
@@ -94,14 +94,16 @@ def test_find_scap_policy_not_found(config, call):
 @patch("insights.client.config.InsightsConfig")
 def test_run_scan(config, call):
     compliance_client = ComplianceClient(config)
-    compliance_client.run_scan('ref_id', '/nonexistent')
-    call.assert_called_with("oscap xccdf eval --profile ref_id --results " + OSCAP_RESULTS_OUTPUT + ' /nonexistent', keep_rc=True)
+    output_path = '/tmp/oscap_results-ref_id.xml'
+    compliance_client.run_scan('ref_id', '/nonexistent', output_path)
+    call.assert_called_with("oscap xccdf eval --profile ref_id --results " + output_path + ' /nonexistent', keep_rc=True)
 
 
 @patch("insights.client.apps.compliance.call", return_value=(1, 'bad things happened'.encode('utf-8')))
 @patch("insights.client.config.InsightsConfig")
 def test_run_scan_fail(config, call):
     compliance_client = ComplianceClient(config)
+    output_path = '/tmp/oscap_results-ref_id.xml'
     with raises(SystemExit):
-        compliance_client.run_scan('ref_id', '/nonexistent')
-    call.assert_called_with("oscap xccdf eval --profile ref_id --results " + OSCAP_RESULTS_OUTPUT + ' /nonexistent', keep_rc=True)
+        compliance_client.run_scan('ref_id', '/nonexistent', output_path)
+    call.assert_called_with("oscap xccdf eval --profile ref_id --results " + output_path + ' /nonexistent', keep_rc=True)
