@@ -140,6 +140,7 @@ def generate_machine_id(new=False,
         return str(machine_id).strip()
     except ValueError:
         logger.error("Invalid machine ID: %s.", machine_id)
+        sys.exit(constants.sig_kill_bad)
 
 
 def _expand_paths(path):
