@@ -140,7 +140,7 @@ def generate_machine_id(new=False,
         return str(machine_id).strip()
     except ValueError:
         logger.error("Invalid machine ID: %s", machine_id)
-        logger.error("Remove %s and a new one will be generated", destination_file)
+        logger.error("Remove %s and a new one will be generated.\nRerun the client with --register", destination_file)
         sys.exit(constants.sig_kill_bad)
 
 
