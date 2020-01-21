@@ -135,7 +135,11 @@ def generate_machine_id(new=False,
         logger.debug("Creating %s", destination_file)
         write_to_disk(destination_file, content=machine_id)
 
-    return str(machine_id).strip()
+    try:
+        val = uuid.UUID(machine_id, version=4)
+        return str(machine_id).strip()
+    except ValueError:
+        logger.error("Invalid machine ID: %s.", machine_id)
 
 
 def _expand_paths(path):
