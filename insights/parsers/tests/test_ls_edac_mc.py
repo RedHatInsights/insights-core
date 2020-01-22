@@ -17,7 +17,7 @@ drwxr-xr-x. 2 0 0 0 Jan 10 10:33 mc2
 
 def test_ls_edac_mc():
     ls_edac_mc = LsEdacMC(context_wrap(LS_EDAC_MC))
-    assert '/sys/devices/system/edac/mc/' in ls_edac_mc
+    assert '/sys/devices/system/edac/mc' in ls_edac_mc
     assert ls_edac_mc.dirs_of('/sys/devices/system/edac/mc') == ['.', '..', 'power', 'mc0', 'mc1', 'mc2']
 
 
