@@ -55,7 +55,7 @@ class SAMBALog(LogFileOutput):
     Examples:
         >>> 'Fake' in samba_logs
         True
-        >>> 'pid=15822, effective(0, 0), real(0, 0)]' in samba_logs 
+        >>> 'pid=15822, effective(0, 0), real(0, 0)]' in samba_logs
         True
         >>> len(samba_logs.get('Fake line')) == 1
         True
@@ -66,11 +66,11 @@ class SAMBALog(LogFileOutput):
         fields = line.split()
         try:
             parsed_line = {
-               'timestamp': strip_surrounds(' '.join(fields[0:2])),
-               'pid': strip_surrounds(fields[3]),
-               'function': strip_surrounds(fields[8]),
-               'message': ' '.join(fields[8:]),
-               'raw_message': line
+                'timestamp': strip_surrounds(' '.join(fields[0:2])),
+                'pid': strip_surrounds(fields[3]),
+                'function': strip_surrounds(fields[8]),
+                'message': ' '.join(fields[8:]),
+                'raw_message': line
             }
 
             parsed_line['datetime'] = datetime.strptime(
