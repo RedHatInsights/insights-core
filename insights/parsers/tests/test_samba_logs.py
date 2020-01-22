@@ -1,7 +1,6 @@
-from insights.parsers import samba_logs, SkipException, ParseException
+from insights.parsers import samba_logs
 from insights.parsers.samba_logs import SAMBALog
 from insights.tests import context_wrap
-import pytest
 import doctest
 
 SAMBA_LOG_NORMAL = """
@@ -26,9 +25,9 @@ def test_normal_samba_logs():
     assert samba_logs.get('cups_async_callback')[0]['timestamp'] == '2019/11/27 11:11:04.911718'
     assert samba_logs.get('0x557a635cb3e0')[0]['timestamp'] == '2019/11/27 11:11:04.900450'
     assert len(samba_logs.get('Fake line')) == 1
-    
-    
+
+
 def test_samba_logs_doc():
-    env = {"samba_logs": SAMBALog(context_wrap(SAMBA_LOG_NORMAL)),}
+    env = {"samba_logs": SAMBALog(context_wrap(SAMBA_LOG_NORMAL)), }
     failed, total = doctest.testmod(samba_logs, globs=env)
     assert failed == 0
