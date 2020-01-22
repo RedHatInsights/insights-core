@@ -21,6 +21,11 @@ from insights.core.serde import deserializer, serializer
 from . import ls_parser
 from insights.util import deprecated
 
+try:
+    from yaml import CSafeLoader as SafeLoader
+except ImportError:
+    from yaml import SafeLoader
+
 import sys
 # Since XPath expression is not supported by the ElementTree in Python 2.6,
 # import insights.contrib.ElementTree when running python is prior to 2.6 for compatibility.
@@ -689,11 +694,6 @@ class YAMLParser(Parser, LegacyItemAccess):
     """
     def parse_content(self, content):
         try:
-            try:
-                from yaml import CSafeLoader as SafeLoader
-            except ImportError:
-                from yaml import SafeLoader
-
             if type(content) is list:
                 self.data = yaml.load('\n'.join(content), Loader=SafeLoader)
             else:
