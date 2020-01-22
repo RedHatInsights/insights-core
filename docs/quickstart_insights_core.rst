@@ -179,7 +179,7 @@ Now you can use Insights to evaluate your rule by running your rule script::
     (insights-core)[userone@hostone project_dir/myrules]$ python hostname_rel.py
     
 Depending upon the system you are using you will see several lines of
-output ending with a your rule results that should look something like this::
+output ending with your rule results that should look something like this::
 
    ---------
    Progress:
