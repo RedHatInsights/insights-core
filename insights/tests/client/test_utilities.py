@@ -56,6 +56,17 @@ def test_generate_machine_id():
     os.remove('/tmp/testmachineid')
 
 
+def test_bad_machine_id():
+    with mock.patch.object(util.sys, "exit") as mock_exit:
+        with open('/tmp/testmachineid', 'w') as _file:
+            _file.write("this_is_bad")
+        with open('/tmp/testmachineid', 'r') as _file:
+            machine_id = _file.read()
+        util.generate_machine_id(destination_file='/tmp/testmachineid')
+    assert mock_exit.call_args[0][0] == constants.sig_kill_bad
+    os.remove('/tmp/testmachineid')
+
+
 def test_expand_paths():
     assert util._expand_paths('/tmp') == ['/tmp']
 
