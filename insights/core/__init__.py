@@ -693,7 +693,7 @@ class YAMLParser(Parser, LegacyItemAccess):
                 from yaml import CSafeLoader as SafeLoader
             except ImportError:
                 from yaml import SafeLoader
-            
+
             if type(content) is list:
                 self.data = yaml.load('\n'.join(content), Loader=SafeLoader)
             else:
