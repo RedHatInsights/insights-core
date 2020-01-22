@@ -689,10 +689,15 @@ class YAMLParser(Parser, LegacyItemAccess):
     """
     def parse_content(self, content):
         try:
+            try:
+                from yaml import CSafeLoader as SafeLoader
+            except ImportError:
+                from yaml import SafeLoader
+            
             if type(content) is list:
-                self.data = yaml.safe_load('\n'.join(content))
+                self.data = yaml.load('\n'.join(content), Loader=SafeLoader)
             else:
-                self.data = yaml.safe_load(content)
+                self.data = yaml.load(content, Loader=SafeLoader)
 
             if not isinstance(self.data, (dict, list)):
                 raise ParseException("YAML didn't produce a dictionary or list.")
