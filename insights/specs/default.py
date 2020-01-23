@@ -502,6 +502,7 @@ class DefaultSpecs(Specs):
         un = broker[Uname]
         return r"/var/lib/kpatch/" + un.kernel
 
+    kpatch_list = simple_command("/usr/sbin/kpatch list")
     kpatch_patch_files = command_with_args("ls %s", kpatch_patches_running_kernel_dir)
     krb5 = glob_file([r"etc/krb5.conf", r"etc/krb5.conf.d/*"])
     ksmstate = simple_file("/sys/kernel/mm/ksm/run")
@@ -783,7 +784,7 @@ class DefaultSpecs(Specs):
     rabbitmq_users = simple_command("/usr/sbin/rabbitmqctl list_users")
     rc_local = simple_file("/etc/rc.d/rc.local")
     rdma_conf = simple_file("/etc/rdma/rdma.conf")
-    readlink_e_etc_mtab = simple_command("readlink -e /etc/mtab")
+    readlink_e_etc_mtab = simple_command("/usr/bin/readlink -e /etc/mtab")
     redhat_release = simple_file("/etc/redhat-release")
     resolv_conf = simple_file("/etc/resolv.conf")
     rhosp_release = simple_file("/etc/rhosp-release")
