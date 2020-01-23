@@ -48,3 +48,4 @@ share/
 .Python
 .python*
 .pytest_cache
+.vscode
