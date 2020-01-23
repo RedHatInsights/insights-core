@@ -1,5 +1,17 @@
 # Change Log
 
+## [insights-core-3.0.144-1295](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.144-1295) (2020-01-23)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.143-1288...insights-core-3.0.144-1295)
+
+**Implemented enhancements:**
+
+- Update YAMLParser to use libyaml's CSafeLoader if it's available [\#2271](https://github.com/RedHatInsights/insights-core/issues/2271)
+
+**Closed issues:**
+
+- Add version command/flag to the Insights CLI  [\#2408](https://github.com/RedHatInsights/insights-core/issues/2408)
+- Should keep the tests for the deprecated parsers SystemctlShow\* [\#2380](https://github.com/RedHatInsights/insights-core/issues/2380)
+
 ## [insights-core-3.0.143-1288](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.143-1288) (2020-01-16)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.142-1286...insights-core-3.0.143-1288)
 
