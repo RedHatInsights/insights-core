@@ -6,13 +6,9 @@ SlabInfo - File ``/proc/slabinfo``
 ----------------------------------
 """
 
-
-from collections import defaultdict
-from insights.parsers import keyword_search
 from insights.specs import Specs
-from insights import Parser
-from insights.parsers import SkipException, ParseException, parse_delimited_table
-from insights import parser, LegacyItemAccess, CommandParser
+from insights import Parser, parser
+from insights.parsers import SkipException
 
 
 @parser(Specs.proc_slabinfo)
@@ -44,14 +40,19 @@ class SlabInfo(Parser):
         tw_sock_TCPv6          0      0    256   16    1 : tunables    0    0    0 : slabdata      0      0      0
         TCPv6                 15     15   2112   15    8 : tunables    0    0    0 : slabdata      1      1      0
         cfq_queue              0      0    232   17    1 : tunables    0    0    0 : slabdata      0      0      0
-        bsg_cmd                0      0    312   13    1 : tunables    0    0    0 : slabdata      0      0      0
+        bsg_cmd                0      0    312   13    1 : tunables    10   20   30 : slabdata     40     50     60
 
     Examples:
 
         >>> type(pslabinfo)
         <class 'insights.parsers.slabinfo.SlabInfo'>
+        >>> len(pslabinfo.data.keys())
+        21
+        >>> pslabinfo.slab_object('bsg_cmd', 'active_slabs')
+        40
+        >>> pslabinfo.slab_object('bsg_cmd', 'limit')
+        10
     """
-
 
     def parse_content(self, content):
         self.data = {}
@@ -63,16 +64,23 @@ class SlabInfo(Parser):
 
         if 'slabinfo - version' in content[0]:
             self.__slab_version = content[0].split()[-1]
+        else:
+            raise SkipException("Invalid Contents")
+
         if "active_objs" in content[1]:
             line = content[1].split()
-            column = [obj for obj in line if obj not in ['#', ':', 'tunables', 'slabdata']]
+            column = [obj.replace('<', '').replace('>', '') for obj in line if obj not in ['#', ':', 'tunables', 'slabdata']]
+        else:
+            raise SkipException("Invalid Contents")
+
         for line in content[2:]:
             line = line.split()
             row = [obj for obj in line if obj not in ['#', ':', 'tunables', 'slabdata']]
             if column and row and len(column) == len(row):
                 self.data[row[0]] = dict(zip(column, row))
                 row = []
-
+            else:
+                raise SkipException("Invalid Contents")
 
     @property
     def slab_version(self):
@@ -81,18 +89,16 @@ class SlabInfo(Parser):
         """
         return self.__slab_version
 
-
     def slab_details(self, slab_name):
         """
         (dict): On success it will return the deatils of given slab, else it will return `None`.
         """
         return self.data.get(slab_name, None)
 
-
     def slab_object(self, slab_name, slab_obj):
         """
-        (int): On success it will return the allocated slab object number, else it will return `None` 
+        (int): On success it will return the allocated slab object number, else it will return `0`
         """
         slab_detail = self.data.get(slab_name, None)
-        if slab_detail:
-            return slab_detail.get(slab_obj, None)
+        if slab_detail and slab_obj != 'name':
+            return int(slab_detail.get(slab_obj, 0))

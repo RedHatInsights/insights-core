@@ -1,7 +1,7 @@
 import doctest
 
 import pytest
-from insights.parsers import netstat, SkipException, ParseException
+from insights.parsers import slabinfo, SkipException
 from insights.parsers.slabinfo import SlabInfo
 from insights.tests import context_wrap
 
@@ -10,7 +10,7 @@ PROC_SLABINFO = """
 slabinfo - version: 2.1
 # name            <active_objs> <num_objs> <objsize> <objperslab> <pagesperslab> : tunables <limit> <batchcount> <sharedfactor> : slabdata <active_slabs> <num_slabs> <sharedavail>
 sw_flow                0      0   1256   13    4 : tunables    0    0    0 : slabdata      0      0      0
-nf_conntrack_ffffffffaf313a40     12     12    320   12    1 : tunables    0    0    0 : slabdata      1      1      0
+nf_conntrack_ffffffffaf313a40     12     12    320   12    1 : tunables    10   20    30 : slabdata      40      50      60
 xfs_dqtrx              0      0    528   15    2 : tunables    0    0    0 : slabdata      0      0      0
 xfs_dquot              0      0    488    8    1 : tunables    0    0    0 : slabdata      0      0      0
 xfs_ili             2264   2736    168   24    1 : tunables    0    0    0 : slabdata    114    114      0
@@ -111,9 +111,93 @@ kmalloc-32        134702 135552     32  128    1 : tunables    0    0    0 : sla
 kmalloc-16         65792  65792     16  256    1 : tunables    0    0    0 : slabdata    257    257      0
 kmalloc-8          87552  87552      8  512    1 : tunables    0    0    0 : slabdata    171    171      0
 kmem_cache_node      128    128     64   64    1 : tunables    0    0    0 : slabdata      2      2      0
-kmem_cache           112    112    256   16    1 : tunables    0    0    0 : slabdata      7      7      0
+kmem_cache           112    111    256   16    1 : tunables    10   20   30 : slabdata    17     18     19
+""".strip()
+
+SLABINFO_DOC = """
+slabinfo - version: 2.1
+# name            <active_objs> <num_objs> <objsize> <objperslab> <pagesperslab> : tunables <limit> <batchcount> <sharedfactor> : slabdata <active_slabs> <num_slabs> <sharedavail>
+sw_flow                0      0   1256   13    4 : tunables    0    0    0 : slabdata      0      0      0
+nf_conntrack_ffffffffaf313a40     12     12    320   12    1 : tunables    0    0    0 : slabdata      1      1      0
+xfs_dqtrx              0      0    528   15    2 : tunables    0    0    0 : slabdata      0      0      0
+xfs_dquot              0      0    488    8    1 : tunables    0    0    0 : slabdata      0      0      0
+xfs_ili             2264   2736    168   24    1 : tunables    0    0    0 : slabdata    114    114      0
+xfs_inode           4845   5120    960    8    2 : tunables    0    0    0 : slabdata    640    640      0
+xfs_efd_item          76     76    416   19    2 : tunables    0    0    0 : slabdata      4      4      0
+xfs_btree_cur         18     18    216   18    1 : tunables    0    0    0 : slabdata      1      1      0
+xfs_log_ticket        22     22    184   22    1 : tunables    0    0    0 : slabdata      1      1      0
+bio-3                 60     60    320   12    1 : tunables    0    0    0 : slabdata      5      5      0
+kcopyd_job             0      0   3312    9    8 : tunables    0    0    0 : slabdata      0      0      0
+dm_uevent              0      0   2608   12    8 : tunables    0    0    0 : slabdata      0      0      0
+dm_rq_target_io        0      0    136   30    1 : tunables    0    0    0 : slabdata      0      0      0
+ip6_dst_cache         72     72    448    9    1 : tunables    0    0    0 : slabdata      8      8      0
+RAWv6                 13     13   1216   13    4 : tunables    0    0    0 : slabdata      1      1      0
+UDPLITEv6              0      0   1216   13    4 : tunables    0    0    0 : slabdata      0      0      0
+UDPv6                 13     13   1216   13    4 : tunables    0    0    0 : slabdata      1      1      0
+tw_sock_TCPv6          0      0    256   16    1 : tunables    0    0    0 : slabdata      0      0      0
+TCPv6                 15     15   2112   15    8 : tunables    0    0    0 : slabdata      1      1      0
+cfq_queue              0      0    232   17    1 : tunables    0    0    0 : slabdata      0      0      0
+bsg_cmd                0      0    312   13    1 : tunables    10   20   30 : slabdata     40     50     60
+""".strip()
+
+SLABINFO_DETAILS = """
+""".strip()
+
+SLABINFO_DETAILS_2 = """
+# name            <active_objs> <num_objs> <objsize> <objperslab> <pagesperslab> : tunables <limit> <batchcount> <sharedfactor> : slabdata <active_slabs> <num_slabs> <sharedavail>
+cfq_queue              0      0    232   17    1 : tunables    0    0    0 : slabdata      0      0      0
+bsg_cmd                0      0    312   13    1 : tunables    10   20   30 : slabdata     40     50     60
+""".strip()
+
+SLABINFO_DETAILS_3 = """
+slabinfo - version: 2.1
+cfq_queue              0      0    232   17    1 : tunables    0    0    0 : slabdata      0      0      0
+bsg_cmd                0      0    312   13    1 : tunables    10   20   30 : slabdata     40     50     60
+""".strip()
+
+SLABINFO_DETAILS_LEN_MISS_MATCH = """
+slabinfo - version: 2.1
+# name            <active_objs> <num_objs> <objsize> <objperslab> <pagesperslab> : tunables <limit> <batchcount> <sharedfactor> : slabdata <active_slabs> <num_slabs> <sharedavail>
+sw_flow                0      0   1256   13    4 : tunables    0    0    0 : slabdata      0      0      0      100     1220
+nf_conntrack_ffffffffaf313a40     12     12    320   12    1 : tunables    0    0    0 : slabdata      1      1      10     100
 """.strip()
 
 
 def test_check_slabinfo():
     result = SlabInfo(context_wrap(PROC_SLABINFO))
+    assert len(result.data.keys()) == 103
+    assert result.slab_object('kcopyd_job', 'objsize') == 3312
+    assert result.slab_object('kmalloc-16', 'objsize') == 16
+    assert result.slab_object('kmalloc-16', 'name') is None
+    assert result.slab_version == '2.1' 
+    result.slab_details('kmem_cache') == {'name': 'kmem_cache', 'active_objs': '112', 'num_objs': '111', 'objsize': '256', 'objperslab': '16', 'pagesperslab': '1', 'limit': '10', 'batchcount': '20', 'sharedfactor': '30', 'active_slabs': '17', 'num_slabs': '18', 'sharedavail': '19'}
+
+
+def test_slabinfo_doc_examples():
+    env = {
+        'pslabinfo': SlabInfo(context_wrap(SLABINFO_DOC))
+    }
+    failed, total = doctest.testmod(slabinfo, globs=env)
+    assert failed == 0
+
+
+def test_slabinfo_exception():
+    with pytest.raises(SkipException) as exc:
+        pslabinfo = SlabInfo(context_wrap(SLABINFO_DETAILS))
+        assert pslabinfo is None
+    assert 'No Contents' in str(exc)
+
+    with pytest.raises(SkipException) as exc:
+        pslabinfo_1 = SlabInfo(context_wrap(SLABINFO_DETAILS_2))
+        assert pslabinfo_1 is None
+    assert 'Invalid Contents' in str(exc)
+
+    with pytest.raises(SkipException) as exc:
+        pslabinfo_2 = SlabInfo(context_wrap(SLABINFO_DETAILS_3))
+        assert pslabinfo_2 is None
+    assert 'Invalid Contents' in str(exc)
+
+    with pytest.raises(SkipException) as exc_1:
+        pslabinfo_3 = SlabInfo(context_wrap(SLABINFO_DETAILS_LEN_MISS_MATCH))
+        assert pslabinfo_3 is None
+    assert 'Invalid Contents' in str(exc_1)
