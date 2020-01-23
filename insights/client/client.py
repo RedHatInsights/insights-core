@@ -18,7 +18,8 @@ from .utilities import (generate_machine_id,
                         delete_unregistered_file,
                         determine_hostname,
                         read_pidfile,
-                        systemd_notify)
+                        systemd_notify,
+                        validate_remove_file)
 from .collection_rules import InsightsUploadConf
 from .data_collector import DataCollector
 from .connection import InsightsConnection
@@ -278,8 +279,11 @@ def collect(config, pconn):
 
     collection_rules = pc.get_conf_file()
     rm_conf = pc.get_rm_conf()
-    if rm_conf:
+    if rm_conf and validate_remove_file(config.remove_file):
         logger.warn("WARNING: Excluding data from files")
+    else:
+        logger.error("Run chmod 600 on %s to correct", config.remove_file)
+        sys.exit(constants.sig_kill_bad)
 
     # defaults
     mp = None
