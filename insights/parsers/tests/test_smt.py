@@ -20,7 +20,7 @@ def test_cpu_core_online():
     with pytest.raises(SkipException):
         CpuCoreOnline(context_wrap(""))
 
-    path = "/sys/devices/system/cpu/cpu{}/online"
+    path = "/sys/devices/system/cpu/cpu{0}/online"
     p = CpuCoreOnline(context_wrap("0", path=path.format(0)))
     assert p.core_id == 0
     assert not p.on
@@ -35,7 +35,7 @@ def test_cpu_siblings():
     with pytest.raises(SkipException):
         CpuSiblings(context_wrap(""))
 
-    path = "/sys/devices/system/cpu/cpu{}/topology/thread_siblings_list"
+    path = "/sys/devices/system/cpu/cpu{0}/topology/thread_siblings_list"
     p = CpuSiblings(context_wrap("0,2", path=path.format(0)))
     assert p.core_id == 0
     assert p.siblings == [0, 2]
