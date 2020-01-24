@@ -31,6 +31,7 @@ from insights.combiners.cloud_provider import CloudProvider
 from insights.combiners.satellite_version import SatelliteVersion
 from insights.components.rhel_version import IsRhel8
 from insights.specs import Specs
+from insights.util.determine_hostname import determine_hostname
 
 from grp import getgrgid
 from os import stat
@@ -355,7 +356,7 @@ class DefaultSpecs(Specs):
     heat_crontab = simple_command("/usr/bin/crontab -l -u heat")
     heat_crontab_container = simple_command("docker exec heat_api_cron /usr/bin/crontab -l -u heat")
     heat_engine_log = first_file(["/var/log/containers/heat/heat-engine.log", "/var/log/heat/heat-engine.log"])
-    hostname = simple_command("/bin/hostname -f")
+    hostname = determine_hostname()
     hostname_default = simple_command("/bin/hostname")
     hostname_short = simple_command("/bin/hostname -s")
     hosts = simple_file("/etc/hosts")
