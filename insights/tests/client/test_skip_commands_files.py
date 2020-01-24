@@ -84,7 +84,7 @@ def test_dont_archive_when_command_not_found(write_data_to_file):
     """
     If the command is not found do not archive it
     """
-    arch = InsightsArchive()
+    arch = InsightsArchive(InsightsConfig())
 
     cmd = MagicMock(spec=InsightsCommand)
     cmd.get_output.return_value = 'timeout: failed to run command blah: No such file or directory'

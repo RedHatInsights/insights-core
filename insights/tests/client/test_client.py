@@ -328,7 +328,7 @@ def test_upload_412_write_unregistered_file(_, upload_archive, write_unregistere
 
 def test_delete_archive_internal():
     config = InsightsConfig(keep_archive=True)
-    arch = InsightsArchive()
+    arch = InsightsArchive(config)
     _delete_archive_internal(config, arch)
     assert os.path.exists(arch.tmp_dir)
     assert os.path.exists(arch.archive_tmp_dir)
