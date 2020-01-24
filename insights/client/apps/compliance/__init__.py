@@ -32,7 +32,7 @@ class ComplianceClient:
         profile_ref_ids = [policy['attributes']['ref_id'] for policy in policies]
         scap_policies_xml = [self.find_scap_policy(profile_ref_id) for profile_ref_id in profile_ref_ids]
         for scap_policy_xml in scap_policies_xml:
-            output_path = '/tmp/oscap_results-#{0}.xml'.format(profile_ref_id)
+            output_path = '/var/tmp/oscap_results-#{0}.xml'.format(profile_ref_id)
             self.run_scan(profile_ref_id, scap_policy_xml, output_path)
             self.archive.copy_file(output_path)
 
@@ -66,7 +66,7 @@ class ComplianceClient:
         return filenames[0]
 
     def run_scan(self, profile_ref_id, policy_xml, output_path):
-        logger.info('Running scan... this may take a while')
+        logger.info('Running scan for {0}... this may take a while'.format(profile_ref_id))
         rc, oscap = call('oscap xccdf eval --profile ' + profile_ref_id + ' --results ' + output_path + ' ' + policy_xml, keep_rc=True)
         if rc and rc != NONCOMPLIANT_STATUS:
             logger.error('Scan failed')
