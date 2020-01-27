@@ -30,6 +30,7 @@ import struct, socket
 import tempfile
 import logging
 import tarfile
+import six
 
 from insights.util import content_type
 
