@@ -290,8 +290,7 @@ def collect(config, pconn):
     dc = DataCollector(config, archive, mountpoint=mp)
     logger.info('Starting to collect Insights data for %s', msg_name)
     dc.run_collection(collection_rules, rm_conf, branch_info)
-    if config.output and not config.output.endswith('.tar.gz'):
-        # TODO: better check for this
+    if config.output_dir:
         logger.info('See Insights data in %s', dc.archive.archive_dir)
         return
     tar_file = dc.done(collection_rules, rm_conf)

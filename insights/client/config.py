@@ -200,10 +200,16 @@ DEFAULT_OPTS = {
         'help': 'offline mode for OSP use',
         'action': 'store_true'
     },
-    'output': {
+    'output_dir': {
         'default': None,
-        'opt': ['--output', '-o'],
-        'help': 'Specify file or directory to write collected data.',
+        'opt': ['--output-dir', '-od'],
+        'help': 'Specify a directory to write collected data to (no compression).',
+        'action': 'store'
+    },
+    'output_file': {
+        'default': None,
+        'opt': ['--output-file', '-of'],
+        'help': 'Specify a compressed archive file to write collected data to.',
         'action': 'store'
     },
     'password': {
@@ -624,6 +630,8 @@ class InsightsConfig(object):
                 raise ValueError('Cannot check registration status in offline mode.')
             if self.test_connection:
                 raise ValueError('Cannot run connection test in offline mode.')
+        if self.output_dir and self.output_file:
+            raise ValueError('Specify only one: --output-dir or --output-file.')
 
     def _imply_options(self):
         '''
@@ -647,13 +655,9 @@ class InsightsConfig(object):
             self.logging_file = constants.default_payload_log
         if os.path.exists(constants.register_marker_file):
             self.register = True
-        if self.output:
+        if self.output_dir or self.output_file:
             # do not delete archives/paths if output path is specified
             self.keep_archive = True
-        if self.output and not self.output.endswith('.tar.gz'):
-            # no tar file
-            # TODO
-            pass
 
 
 if __name__ == '__main__':
