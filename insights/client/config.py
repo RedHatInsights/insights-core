@@ -206,6 +206,18 @@ DEFAULT_OPTS = {
         'help': 'offline mode for OSP use',
         'action': 'store_true'
     },
+    'output_dir': {
+        'default': None,
+        'opt': ['--output-dir', '-od'],
+        'help': 'Specify a directory to write collected data to (no compression).',
+        'action': 'store'
+    },
+    'output_file': {
+        'default': None,
+        'opt': ['--output-file', '-of'],
+        'help': 'Specify a compressed archive file to write collected data to.',
+        'action': 'store'
+    },
     'password': {
         # non-CLI
         'default': ''
@@ -630,6 +642,8 @@ class InsightsConfig(object):
                 raise ValueError('Cannot check registration status in offline mode.')
             if self.test_connection:
                 raise ValueError('Cannot run connection test in offline mode.')
+        if self.output_dir and self.output_file:
+            raise ValueError('Specify only one: --output-dir or --output-file.')
 
     def _imply_options(self):
         '''
@@ -653,6 +667,23 @@ class InsightsConfig(object):
             self.logging_file = constants.default_payload_log
         if os.path.exists(constants.register_marker_file):
             self.register = True
+        if self.output_dir or self.output_file:
+            # do not upload in this case
+            self.no_upload = True
+        if self.output_file or self.output_dir:
+            # don't keep the archive or files in temp
+            #   if we're writing it to a specified location
+            self.keep_archive = False
+        if self.compressor not in ["gz", "xz", "bz2", "none"]:
+            # set default compressor if an invalid one is supplied
+            if self._print_errors:
+                sys.stdout.write('The compressor \"{0}\" is not supported. Using default: gz\n'.format(self.compressor))
+            self.compressor = 'gz'
+        if self.output_file:
+            # auto-add file extension if not given
+            ext = '' if self.compressor == 'none' else '.%s' % self.compressor
+            if not self.output_file.endswith('.tar' + ext):
+                self.output_file = self.output_file + '.tar' + ext
 
 
 if __name__ == '__main__':

@@ -695,9 +695,16 @@ class SOSCleaner:
         self.logger.con_out("Total Files Analyzed - %s", self.file_count)
         self.logger.con_out("*** SOSCleaner Artifacts ***")
         self._create_reports()
-        self._create_archive()
 
-        return_data = [self.archive_path, self.logfile, self.ip_report]
+        # if block added for insights-client --output-dir option.
+        #   originally, else block always executes
+        if options.no_tar_file:
+            return_data = [self.dir_path, self.logfile, self.ip_report]
+        else:
+            self._create_archive()
+            return_data = [self.archive_path, self.logfile, self.ip_report]
+        # end insights-client modifications
+
         if self.hostname:
             return_data.append(self.hn_report)
         if len(self.dn_db) >= 1:

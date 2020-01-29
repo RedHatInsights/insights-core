@@ -275,7 +275,7 @@ def collect(config, pconn):
     """
     branch_info = get_branch_info(config)
     pc = InsightsUploadConf(config)
-    tar_file = None
+    output = None
 
     collection_rules = pc.get_conf_file()
     rm_conf = pc.get_rm_conf()
@@ -290,8 +290,9 @@ def collect(config, pconn):
     dc = DataCollector(config, archive, mountpoint=mp)
     logger.info('Starting to collect Insights data for %s', msg_name)
     dc.run_collection(collection_rules, rm_conf, branch_info)
-    tar_file = dc.done(collection_rules, rm_conf)
-    return tar_file
+
+    output = dc.done(collection_rules, rm_conf)
+    return output
 
 
 def get_connection(config):

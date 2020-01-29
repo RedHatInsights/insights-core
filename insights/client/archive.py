@@ -123,8 +123,6 @@ class InsightsArchive(object):
         ext = "" if self.compressor == "none" else ".%s" % self.compressor
         tar_file_name = tar_file_name + ".tar" + ext
         logger.debug("Tar File: " + tar_file_name)
-        if self.compressor not in ["gz", "xz", "bz2", "none"]:
-            logger.error("The compressor %s is not supported.  Using default: gz", self.compressor)
         return_code = subprocess.call(shlex.split("tar c%sfS %s -C %s ." % (
             self.get_compression_flag(self.compressor),
             tar_file_name, self.tmp_dir)),
@@ -185,7 +183,7 @@ class InsightsArchive(object):
     def cleanup_tmp(self):
         '''
         Only used during built-in collection.
-        Delete archive and tmp dirs on exit.
+        Delete archive and tmp dirs on exit unless --keep-archive is specified.
         '''
         if self.config.keep_archive:
             if self.config.no_upload:

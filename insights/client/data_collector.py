@@ -252,18 +252,40 @@ class DataCollector(object):
     def done(self, conf, rm_conf):
         """
         Do finalization stuff
+
+        Returns:
+            default:
+                path to generated tarfile
+            obfuscate==True:
+                path to generated tarfile, scrubbed by soscleaner
+            output_dir:
+                path to a generated directory
+            obfuscate==True && output_dir:
+                path to generated directory, scubbed by soscleaner
+        Ideally, we may want to have separate functions for directories
+            and archive files.
         """
         if self.config.obfuscate:
             cleaner = SOSCleaner(quiet=True)
             clean_opts = CleanOptions(
                 self.config, self.archive.tmp_dir, rm_conf, self.hostname_path)
-            fresh = cleaner.clean_report(clean_opts, self.archive.archive_dir)
             if clean_opts.keyword_file is not None:
                 os.remove(clean_opts.keyword_file.name)
                 logger.warn("WARNING: Skipping keywords found in remove.conf")
-            self.archive.tar_file = fresh[0]
-            return fresh[0]
-        return self.archive.create_tar_file()
+            fresh = cleaner.clean_report(clean_opts, self.archive.archive_dir)
+            if self.config.output_dir:
+                # return the uncompressed data dir from the soscleaner dir
+                #   see additions to soscleaner.SOSCleaner.clean_report
+                #   for details
+                return fresh[0]
+            else:
+                self.archive.tar_file = fresh[0]
+                return fresh[0]
+
+        if self.config.output_dir:
+            return self.archive.archive_dir
+        else:
+            return self.archive.create_tar_file()
 
 
 class CleanOptions(object):
@@ -277,6 +299,7 @@ class CleanOptions(object):
         self.quiet = True
         self.keyword_file = None
         self.keywords = None
+        self.no_tar_file = config.output_dir
 
         if rm_conf:
             try:

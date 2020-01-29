@@ -5,6 +5,7 @@ import logging
 import os
 import sys
 import atexit
+import shutil
 
 from insights.client import InsightsClient
 from insights.client.config import InsightsConfig
@@ -288,18 +289,47 @@ def collect_and_output(client, config):
             sys.exit(constants.sig_kill_bad)
         config.content_type = 'application/vnd.redhat.advisor.collection+tgz'
 
-    if not insights_archive:
-        sys.exit(constants.sig_kill_bad)
-    resp = None
-    if not config.no_upload:
+    if config.no_upload:
+        # output options for which upload is not performed
+        if config.output_dir:
+            # copy collected data from temp to desired output dir
+            abs_output_dir = os.path.abspath(config.output_dir)
+            logger.debug('Copying collected data from %s to %s',
+                         insights_archive, abs_output_dir)
+            try:
+                shutil.copytree(insights_archive, abs_output_dir)
+                logger.info('Collected data copied to %s', abs_output_dir)
+            except OSError as e:
+                # dir exists already
+                logger.error('ERROR: Could not write data to %s', abs_output_dir)
+                logger.error(e)
+        elif config.output_file:
+            # copy collected archive from temp to desired output file
+            abs_output_file = os.path.abspath(config.output_file)
+            logger.debug('Copying archive from %s to %s',
+                         insights_archive, abs_output_file)
+            try:
+                shutil.copyfile(insights_archive, abs_output_file)
+                logger.info('Collected data copied to %s', abs_output_file)
+            except OSError as e:
+                # file exists already
+                logger.error('ERROR: Could not write data to %s', abs_output_file)
+                logger.error(e)
+    else:
+        # upload the archive
+        if not insights_archive:
+            # no archive to upload, something went wrong
+            sys.exit(constants.sig_kill_bad)
+        resp = None
         try:
             resp = client.upload(payload=insights_archive, content_type=config.content_type)
         except (IOError, ValueError, RuntimeError) as e:
             logger.error(str(e))
             sys.exit(constants.sig_kill_bad)
-    if resp:
-        if config.to_json:
-            print(json.dumps(resp))
+        if resp:
+            if config.to_json:
+                print(json.dumps(resp))
+
     client.delete_cached_branch_info()
 
     # rotate eggs once client completes all work successfully

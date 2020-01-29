@@ -21,7 +21,10 @@ def patch_insights_config(old_function):
                        "return_value.load_all.return_value.register": False,
                        "return_value.load_all.return_value.diagnosis": None,
                        "return_value.load_all.return_value.portal_access": False,
-                       "return_value.load_all.return_value.portal_access_no_insights": False})
+                       "return_value.load_all.return_value.portal_access_no_insights": False,
+                       "return_value.load_all.return_value.no_tar_file": False,
+                       "return_value.load_all.return_value.output_dir": None,
+                       "return_value.load_all.return_value.output_file": None})
     return patcher(old_function)
 
 
