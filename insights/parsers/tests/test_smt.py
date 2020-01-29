@@ -42,8 +42,8 @@ def test_cpu_siblings():
     assert repr(p) == "[Core 0 Siblings: [0, 2]]"
     p = CpuSiblings(context_wrap("1-3", path=path.format(3)))
     assert p.core_id == 3
-    assert p.siblings == [1, 3]
-    assert repr(p) == "[Core 3 Siblings: [1, 3]]"
+    assert p.siblings == [1, 2, 3]
+    assert repr(p) == "[Core 3 Siblings: [1, 2, 3]]"
     p = CpuSiblings(context_wrap("1", path=path.format(1)))
     assert p.core_id == 1
     assert p.siblings == [1]

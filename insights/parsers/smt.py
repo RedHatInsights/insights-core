@@ -46,7 +46,7 @@ class CpuSMTActive(Parser):
 class CpuCoreOnline(Parser):
     """
     Class for parsing ``/sys/devices/system/cpu/cpu[0-9]*/online`` matching files.
-    Reports whether a CPU core is online.
+    Reports whether a CPU core is online. Cpu0 is always online, so it does not have the "online" file.
 
     Typical output of this command is::
 
@@ -105,7 +105,8 @@ class CpuSiblings(Parser):
 
         # The separator in the sibling list may be either in the format 0-1 or 0,2 depending on the CPU model
         if "-" in content[0]:
-            self.siblings = [int(x) for x in content[0].split("-")]
+            cpu_range = [int(x) for x in content[0].split("-")]
+            self.siblings = [x for x in range(cpu_range[0], cpu_range[1] + 1)]
         elif "," in content[0]:
             self.siblings = [int(x) for x in content[0].split(",")]
         else:
