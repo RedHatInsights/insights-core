@@ -20,36 +20,38 @@ Note:
 Examples:
 
     >>> ps_combiner.pids
-    [1, 2, 3, 8, 9, 11 ... 35511, 35512]
+    [1, 2, 3, 8, 9, 10, 11, 12]
     >>> '[kthreadd]' in ps_combiner.commands
     True
     >>> '[kthreadd]' in ps_combiner
     True
-    >>> ps_combiner[2]
-    {'PID': 2,
-     'USER': 'root',
-     'UID': 0,
-     'PPID': 0,
-     '%CPU': 0.0,
-     '%MEM': 0.0,
-     'VSZ': 0.0,
-     'RSS': 0.0,
-     'TTY': '?',
-     'STAT': 'S',
-     'START': '10:42',
-     'TIME': '0:00',
-     'COMMAND': '[kthreadd]',
-     'COMMAND_NAME': '[kthreadd]',
-     'ARGS': '',
-     'F': '1',
-     'PRI': 20,
-     'NI': '0',
-     'WCHAN': '-'}
+    >>> ps_combiner[2] == {
+    ... 'PID': 2,
+    ... 'USER': 'root',
+    ... 'UID': 0,
+    ... 'PPID': 0,
+    ... '%CPU': 0.0,
+    ... '%MEM': 0.0,
+    ... 'VSZ': 0.0,
+    ... 'RSS': 0.0,
+    ... 'TTY': '?',
+    ... 'STAT': 'S',
+    ... 'START': '2019',
+    ... 'TIME': '1:04',
+    ... 'COMMAND': '[kthreadd]',
+    ... 'COMMAND_NAME': '[kthreadd]',
+    ... 'ARGS': '',
+    ... 'F': '1',
+    ... 'PRI': 20,
+    ... 'NI': '0',
+    ... 'WCHAN': 'kthrea'
+    ... }
+    True
 """
 
-from ..core.plugins import combiner
-from ..parsers import keyword_search
-from ..parsers.ps import PsAlxwww, PsAuxww, PsAux, PsAuxcww, PsEo, PsEf
+from insights.core.plugins import combiner
+from insights.parsers import keyword_search
+from insights.parsers.ps import PsAlxwww, PsAuxww, PsAux, PsAuxcww, PsEo, PsEf
 
 
 @combiner([PsAlxwww, PsAuxww, PsAux, PsEf, PsAuxcww, PsEo])
@@ -169,24 +171,20 @@ class Ps(object):
             search criteria.
 
         Examples:
-            >>> ps_combiner.search(COMMAND__contains='bash')
-            [
-                {'PID': 2854, 'USER': 'vdymna', 'UID': 119292, 'PPID': 2750, '%CPU': 0.0,
-                 '%MEM': 0.0, 'VSZ': 226716.0, 'RSS': 5816.0, 'TTY': 'pts/0', 'STAT': 'Ss+',
-                 'START': '09:53', 'TIME': '0:00', 'COMMAND': 'bash', 'COMMAND_NAME': 'bash',
-                 'ARGS': '', 'F': '0', 'PRI': 20, 'NI': '0','WCHAN': '-'},
-                {'PID': 3840, 'USER': 'vdymna', 'UID': 119292, 'PPID': 3803, '%CPU': 0.0,
-                 '%MEM': 0.0, 'VSZ': 226840.0, 'RSS': 5936.0, 'TTY': 'pts/1', 'STAT': 'Ss',
-                 'START': '09:57', 'TIME': '0:00', 'COMMAND': '/bin/bash', 'COMMAND_NAME': 'bash',
-                 'ARGS': '', 'F': '0', 'PRI': 20, 'NI': '0', 'WCHAN': '-'}
-            ]
-            >>> ps_combiner.search(USER='root', COMMAND='[kthreadd]')
-            [
-                {'PID': 2, 'USER': 'root', 'UID': 0, 'PPID': 0, '%CPU': 0.0, '%MEM': 0.0,
-                'VSZ': 0.0, 'RSS': 0.0, 'TTY': '?', 'STAT': 'S', 'START': '10:42', 'TIME': '0:00',
-                'COMMAND': '[kthreadd]', 'COMMAND_NAME': '[kthreadd]', 'ARGS': '', 'F': '1',
-                'PRI': 20, 'NI': '0', 'WCHAN': '-'}
-            ]
+            >>> ps_combiner.search(COMMAND__contains='[rcu_bh]') == [
+            ... {'PID': 9, 'USER': 'root', 'UID': 0, 'PPID': 2, '%CPU': 0.1, '%MEM': 0.0,
+            ...  'VSZ': 0.0, 'RSS': 0.0, 'TTY': '?', 'STAT': 'S', 'START': '2019', 'TIME': '0:00',
+            ...  'COMMAND': '[rcu_bh]', 'COMMAND_NAME': '[rcu_bh]', 'ARGS': '', 'F': '1', 'PRI': 20,
+            ...  'NI': '0', 'WCHAN': 'rcu_gp'}
+            ... ]
+            True
+            >>> ps_combiner.search(USER='root', COMMAND='[kthreadd]') == [
+            ... {'PID': 2, 'USER': 'root', 'UID': 0, 'PPID': 0, '%CPU': 0.0, '%MEM': 0.0,
+            ...  'VSZ': 0.0, 'RSS': 0.0, 'TTY': '?', 'STAT': 'S', 'START': '2019', 'TIME': '1:04',
+            ...  'COMMAND': '[kthreadd]', 'COMMAND_NAME': '[kthreadd]', 'ARGS': '', 'F': '1', 'PRI': 20,
+            ...  'NI': '0', 'WCHAN': 'kthrea'}
+            ... ]
+            True
         """
         return keyword_search(self._pid_data.values(), **kwargs)
 

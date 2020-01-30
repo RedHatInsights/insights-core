@@ -1,6 +1,8 @@
-from ...combiners.ps import Ps
-from ...parsers.ps import PsAlxwww, PsAuxww, PsAux, PsAuxcww, PsEo, PsEf
-from ...tests import context_wrap
+from insights.combiners import ps
+from insights.combiners.ps import Ps
+from insights.parsers.ps import PsAlxwww, PsAuxww, PsAux, PsAuxcww, PsEo, PsEf
+from insights.tests import context_wrap
+import doctest
 
 
 PS_EO_LINES = """
@@ -10,7 +12,7 @@ PS_EO_LINES = """
     3     2 ksoftirqd/0
     8     2 migration/0
     9     2 rcu_bh
-    11    2 watchdog/0
+    10    2 rcu_sched
  """
 
 PS_AUXCWW_LINES = """
@@ -20,7 +22,7 @@ root         2  0.0  0.0      0     0 ?        S     2019   1:04 kthreadd
 root         3  0.0  0.0      0     0 ?        S     2019  36:41 ksoftirqd/0
 root         8  0.0  0.0      0     0 ?        S     2019  31:50 migration/0
 root         9  0.1  0.0      0     0 ?        S     2019   0:00 rcu_bh
-root        10  0.3  0.0      0     0 ?        S     2019 1771:28 rcu_sched
+root        11  0.1  0.0      0     0 ?        S     2019  05:00 watchdog/0
 """
 
 PS_EF_LINES = """
@@ -62,7 +64,7 @@ F   UID   PID  PPID PRI  NI    VSZ   RSS WCHAN  STAT TTY        TIME COMMAND
 
 
 def test_pseo_parser():
-    ps_eo = PsEo(context_wrap(PS_EO_LINES))
+    ps_eo = PsEo(context_wrap(PS_EO_LINES, strip=False))
     ps = Ps(None, None, None, None, None, ps_eo)
     assert len(ps.processes) == 6
     proc = ps[1]
@@ -74,7 +76,7 @@ def test_pseo_parser():
 
 
 def test_pseo_and_psauxcww_parsers():
-    ps_eo = PsEo(context_wrap(PS_EO_LINES))
+    ps_eo = PsEo(context_wrap(PS_EO_LINES, strip=False))
     ps_auxcww = PsAuxcww(context_wrap(PS_AUXCWW_LINES))
     ps = Ps(None, None, None, None, ps_auxcww, ps_eo)
     assert len(ps.processes) == 7
@@ -84,12 +86,12 @@ def test_pseo_and_psauxcww_parsers():
     assert proc9['%CPU'] == 0.1
     assert proc9['%MEM'] == 0.0
     assert proc9['COMMAND'] == proc9['COMMAND_NAME']
-    proc11 = ps[11]
-    assert proc11['USER'] is None
-    assert proc11['TTY'] is None
-    assert proc11['%CPU'] is None
-    assert proc11['%MEM'] is None
-    assert proc11['COMMAND'] == proc11['COMMAND_NAME']
+    proc10 = ps[10]
+    assert proc10['USER'] is None
+    assert proc10['TTY'] is None
+    assert proc10['%CPU'] is None
+    assert proc10['%MEM'] is None
+    assert proc10['COMMAND'] == proc10['COMMAND_NAME']
 
 
 def test_psef_parser():
@@ -160,7 +162,7 @@ def test_psalxwww_and_psauxww_and_psaux_and_psef_and_psauxcww_and_ps_eo_parsers(
     ps_aux = PsAux(context_wrap(PS_AUX_LINES))
     ps_ef = PsEf(context_wrap(PS_EF_LINES))
     ps_auxcww = PsAuxcww(context_wrap(PS_AUXCWW_LINES))
-    ps_eo = PsEo(context_wrap(PS_EO_LINES))
+    ps_eo = PsEo(context_wrap(PS_EO_LINES, strip=False))
     ps = Ps(ps_alxwww, ps_auxww, ps_aux, ps_ef, ps_auxcww, ps_eo)
     len(ps.processes) == 8
     ps = ps[1]
@@ -202,7 +204,7 @@ def test_type_conversion():
 def test_combiner_api():
     ps_auxcww = PsAuxcww(context_wrap(PS_AUXCWW_LINES))
     ps = Ps(None, None, None, None, ps_auxcww, None)
-    assert ps.pids == [1, 2, 3, 8, 9, 10]
+    assert ps.pids == [1, 2, 3, 8, 9, 11]
     assert len(ps.processes) == 6
     assert ps.processes[0]
     assert 'systemd' in ps.commands
@@ -229,3 +231,18 @@ def test_combiner_api():
                      'WCHAN': None}
     assert ps[1000] is None
     assert [proc for proc in ps]
+
+
+def test_docs():
+    ps_alxwww = PsAlxwww(context_wrap(PS_ALXWWW_LINES))
+    ps_auxww = PsAuxww(context_wrap(PS_AUXWW_LINES))
+    ps_aux = PsAux(context_wrap(PS_AUX_LINES))
+    ps_ef = PsEf(context_wrap(PS_EF_LINES))
+    ps_auxcww = PsAuxcww(context_wrap(PS_AUXCWW_LINES))
+    ps_eo = PsEo(context_wrap(PS_EO_LINES, strip=False))
+    ps_combiner = Ps(ps_alxwww, ps_auxww, ps_aux, ps_ef, ps_auxcww, ps_eo)
+    env = {
+        'ps_combiner': ps_combiner
+    }
+    failed, total = doctest.testmod(ps, globs=env)
+    assert failed == 0
