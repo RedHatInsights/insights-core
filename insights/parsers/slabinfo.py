@@ -97,7 +97,7 @@ class SlabInfo(Parser):
 
     def slab_object(self, slab_name, slab_obj):
         """
-        (int): On success it will return the allocated slab object number, else it will return `0`
+        (int): On success it will return the allocated slab object number, else it will return `0`.
         """
         slab_detail = self.data.get(slab_name, None)
         if slab_detail and slab_obj != 'name':
