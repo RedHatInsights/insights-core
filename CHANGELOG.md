@@ -1,5 +1,12 @@
 # Change Log
 
+## [insights-core-3.0.145-1300](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.145-1300) (2020-01-30)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.144-1295...insights-core-3.0.145-1300)
+
+**Closed issues:**
+
+- PsEo parser is raising ValueError exception [\#2435](https://github.com/RedHatInsights/insights-core/issues/2435)
+
 ## [insights-core-3.0.144-1295](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.144-1295) (2020-01-23)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.143-1288...insights-core-3.0.144-1295)
 
