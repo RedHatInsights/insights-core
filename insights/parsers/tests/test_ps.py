@@ -66,7 +66,7 @@ def test_doc_examples():
         'ps': ps.PsAuxww(context_wrap(PsAuxww_TEST_DOC)),
         'ps_auxww': ps.PsAuxww(context_wrap(PsAuxww_TEST_DOC)),
         'ps_ef': ps.PsEf(context_wrap(PsEf_TEST_DOC)),
-        'ps_eo': ps.PsEo(context_wrap(PsEo_TEST_DOC)),
+        'ps_eo': ps.PsEo(context_wrap(PsEo_TEST_DOC, strip=False)),
         'ps_alxwww': ps.PsAlxwww(context_wrap(PsAlxwww_TEST_DOC))
     }
     failed, total = doctest.testmod(ps, globs=env)
@@ -373,7 +373,7 @@ PS_EO_NORMAL = """
 
 
 def test_ps_eo():
-    p = ps.PsEo(context_wrap(PS_EO_NORMAL))
+    p = ps.PsEo(context_wrap(PS_EO_NORMAL, strip=False))
     assert p is not None
     assert len(p.pid_info) == 23
     assert '15663' in p.pid_info
@@ -387,6 +387,12 @@ def test_ps_eo():
         {'PID': '18379', 'PPID': '18347', 'COMMAND': 'ps', 'COMMAND_NAME': 'ps', 'ARGS': ''}
     ]
     assert len(p.children('2')) == 6
+
+
+def test_ps_eo_stripped():
+    p = ps.PsEo(context_wrap(PS_EO_NORMAL, strip=True))
+    assert p is not None
+    assert len(p.pid_info) == 23
 
 
 PS_ALXWWW_DATA = """
