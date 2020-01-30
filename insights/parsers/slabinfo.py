@@ -1,6 +1,6 @@
 """
-Slab allocator's details.
-=========================
+Slab allocator's details
+========================
 
 SlabInfo - File ``/proc/slabinfo``
 ----------------------------------
