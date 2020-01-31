@@ -284,7 +284,6 @@ def collect(config, pconn):
     # defaults
     mp = None
     archive = InsightsArchive(config)
-    # atexit.register(_delete_archive_internal, config, archive)
 
     msg_name = determine_hostname(config.display_name)
     dc = DataCollector(config, archive, mountpoint=mp)
