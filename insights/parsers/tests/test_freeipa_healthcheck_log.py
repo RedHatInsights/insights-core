@@ -80,6 +80,22 @@ def test_freeipa_healthcheck_log_not_ok():
         assert issue['source'] == 'ipahealthcheck.system.filesystemspace'
 
 
+def test_freeipa_healthcheck_get_results_ok():
+    log_obj = FreeIPAHealthCheckLog(context_wrap(FREEIPA_HEALTHCHECK_LOG_OK))
+    results = log_obj.get_results('ipahealthcheck.system.filesystemspace', 'FileSystemSpaceCheck')
+    assert len(results) == 0
+
+
+def test_freeipa_healthcheck_get_results_not_ok():
+    log_obj = FreeIPAHealthCheckLog(context_wrap(FREEIPA_HEALTHCHECK_LOG_FAILURES))
+    results = log_obj.get_results('ipahealthcheck.system.filesystemspace', 'FileSystemSpaceCheck')
+    assert len(results) == 1
+    for result in results:
+        assert result['result'] in ['ERROR', 'CRITICAL']
+        assert result['check'] == 'FileSystemSpaceCheck'
+        assert result['source'] == 'ipahealthcheck.system.filesystemspace'
+
+
 def test_freeipa_healthcheck_log__documentation():
     env = {
         'healthcheck': FreeIPAHealthCheckLog(context_wrap(FREEIPA_HEALTHCHECK_LOG_DOCS_EXAMPLE)),

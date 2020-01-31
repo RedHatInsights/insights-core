@@ -74,3 +74,12 @@ class FreeIPAHealthCheckLog(JSONParser):
     def issues(self):
         """ list: non-success results in healthcheck log."""
         return [entry for entry in self.data if entry["result"] != "SUCCESS"]
+
+    def get_results(self, source, check):
+        """Given a source and check find and return the result"""
+        results = []
+        for entry in self.data:
+            if (entry.get('source') == source and entry.get('check') == check and entry.get('result') in ['ERROR', 'CRITICAL']):
+                results.append(entry)
+
+        return results

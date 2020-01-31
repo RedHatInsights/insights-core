@@ -265,7 +265,8 @@ def calc_offset(lines, target, invert_search=False):
     """
     if target and target[0] is not None:
         for offset, line in enumerate(l.strip() for l in lines):
-            found_any = any([line.startswith(t) for t in target])
+            # strip `target` string along with `line` value
+            found_any = any([line.startswith(t.strip()) for t in target])
             if not invert_search and found_any:
                 return offset
             elif invert_search and not(line == '' or found_any):
