@@ -10,6 +10,7 @@ import shlex
 import logging
 import tempfile
 import re
+import atexit
 
 from .utilities import determine_hostname, _expand_paths, write_data_to_file
 from .insights_spec import InsightsFile, InsightsCommand
@@ -22,13 +23,12 @@ class InsightsArchive(object):
     This class is an interface for adding command output
     and files to the insights archive
     """
-
-    def __init__(self, compressor="gz"):
+    def __init__(self, config):
         """
         Initialize the Insights Archive
         Create temp dir, archive dir, and command dir
         """
-
+        self.config = config
         self.tmp_dir = tempfile.mkdtemp(prefix='/var/tmp/')
         self.archive_tmp_dir = tempfile.mkdtemp(prefix='/var/tmp/')
         name = determine_hostname()
@@ -37,7 +37,8 @@ class InsightsArchive(object):
                               time.strftime("%Y%m%d%H%M%S")))
         self.archive_dir = self.create_archive_dir()
         self.cmd_dir = self.create_command_dir()
-        self.compressor = compressor
+        self.compressor = 'gz' or config.compressor
+        atexit.register(self.cleanup_tmp)
 
     def create_archive_dir(self):
         """
@@ -174,3 +175,18 @@ class InsightsArchive(object):
         '''
         archive_path = self.get_full_archive_path(meta_path.lstrip('/'))
         write_data_to_file(metadata, archive_path)
+
+    def cleanup_tmp(self):
+        '''
+        Only used during built-in collection.
+        Delete archive and tmp dirs on exit.
+        '''
+        if self.config.keep_archive:
+            if self.config.obfuscate:
+                logger.info('Insights archive and SOSCleaner metadata retained in %s', self.tmp_dir)
+                return  # return before deleting tmp_dir
+            else:
+                logger.info('Insights archive retained in %s', self.archive_tmp_dir)
+        else:
+            self.delete_archive_file()
+        self.delete_tmp_dir()
