@@ -30,11 +30,12 @@ class ComplianceClient:
             logger.error("System is not associated with any profiles. Assign profiles by either uploading a SCAP scan or using the compliance web UI.\n")
             exit(constants.sig_kill_bad)
         profile_ref_ids = [policy['attributes']['ref_id'] for policy in policies]
-        scap_policies_xml = [self.find_scap_policy(profile_ref_id) for profile_ref_id in profile_ref_ids]
-        for scap_policy_xml in scap_policies_xml:
-            output_path = '/var/tmp/oscap_results-#{0}.xml'.format(profile_ref_id)
-            self.run_scan(profile_ref_id, scap_policy_xml, output_path)
-            self.archive.copy_file(output_path)
+        for profile_ref_id in profile_ref_ids:
+            self.run_scan(
+                profile_ref_id,
+                self.find_scap_policy(profile_ref_id),
+                '/var/tmp/oscap_results-{0}.xml'.format(profile_ref_id)
+            )
 
         return self.archive.create_tar_file(), COMPLIANCE_CONTENT_TYPE
 
@@ -72,6 +73,8 @@ class ComplianceClient:
             logger.error('Scan failed')
             logger.error(oscap)
             exit(constants.sig_kill_bad)
+        else:
+            self.archive.copy_file(output_path)
 
     def _assert_oscap_rpms_exist(self):
         rc, rpm = call('rpm -qa ' + ' '.join(REQUIRED_PACKAGES), keep_rc=True)
