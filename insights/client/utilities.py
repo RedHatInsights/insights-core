@@ -96,6 +96,10 @@ def delete_registered_file():
 def delete_unregistered_file():
     for f in constants.unregistered_files:
         write_to_disk(f, delete=True)
+    # this function only called when machine is registered,
+    #  so while registering, delete this file too. we only
+    #  need it around until we're registered
+    write_to_disk(constants.register_marker_file, delete=True)
 
 
 def write_to_disk(filename, delete=False, content=get_time()):
@@ -131,7 +135,13 @@ def generate_machine_id(new=False,
         logger.debug("Creating %s", destination_file)
         write_to_disk(destination_file, content=machine_id)
 
-    return str(machine_id).strip()
+    try:
+        uuid.UUID(machine_id, version=4)
+        return str(machine_id).strip()
+    except ValueError:
+        logger.error("Invalid machine ID: %s", machine_id)
+        logger.error("Remove %s and a new one will be generated.\nRerun the client with --register", destination_file)
+        sys.exit(constants.sig_kill_bad)
 
 
 def _expand_paths(path):

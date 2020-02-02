@@ -19,6 +19,7 @@ Available commands:
   info        View info and docs for Insights Core components.
   ocpshell         Interactive evaluation of archives, directories, or individual yaml files.
   run         Run insights-core against host or an archive.
+  version     Show Insights Core version information and exit.
 """
 
 
@@ -36,6 +37,9 @@ class InsightsCli(object):
             description="Insights Core command line execution",
             usage=USAGE)
         parser.add_argument('command', help='Insights Core command to run')
+        parser.add_argument('--version', action='store_true', help='show Insights Core version information and exit')
+        if self._parse_version_arg():
+            self.version()
         args = parser.parse_args(sys.argv[1:2])
         if not hasattr(self, args.command):
             print('Unrecognized command')
@@ -45,6 +49,12 @@ class InsightsCli(object):
         sys.argv.pop(1)
         # Use dispatch pattern to execute command
         getattr(self, args.command)()
+
+    def _parse_version_arg(self):
+        """
+        Manually check for version argument/flag in cases when command is not provided.
+        """
+        return '--version' in sys.argv[1:3]
 
     def cat(self):
         from .tools.cat import main as cat_main
@@ -71,6 +81,14 @@ class InsightsCli(object):
         if "" not in sys.path:
             sys.path.insert(0, "")
         run(print_summary=True)
+
+    def version(self):
+        """
+        Print version information (NVR) and exit.
+        """
+        from insights import get_nvr
+        print(get_nvr())
+        sys.exit()
 
 
 def fix_arg_dashes():

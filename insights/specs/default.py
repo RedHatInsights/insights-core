@@ -316,6 +316,7 @@ class DefaultSpecs(Specs):
     fc_match = simple_command("/bin/fc-match -sv 'sans:regular:roman' family fontformat")
     fcoeadm_i = simple_command("/usr/sbin/fcoeadm -i")
     fdisk_l = simple_command("/sbin/fdisk -l")
+    findmnt_lo_propagation = simple_command("/bin/findmnt -lo+PROPAGATION")
     foreman_production_log = simple_file("/var/log/foreman/production.log")
     foreman_proxy_conf = simple_file("/etc/foreman-proxy/settings.yml")
     foreman_proxy_log = simple_file("/var/log/foreman-proxy/proxy.log")
@@ -501,6 +502,7 @@ class DefaultSpecs(Specs):
         un = broker[Uname]
         return r"/var/lib/kpatch/" + un.kernel
 
+    kpatch_list = simple_command("/usr/sbin/kpatch list")
     kpatch_patch_files = command_with_args("ls %s", kpatch_patches_running_kernel_dir)
     krb5 = glob_file([r"etc/krb5.conf", r"etc/krb5.conf.d/*"])
     ksmstate = simple_file("/sys/kernel/mm/ksm/run")
@@ -781,7 +783,7 @@ class DefaultSpecs(Specs):
     rabbitmq_users = simple_command("/usr/sbin/rabbitmqctl list_users")
     rc_local = simple_file("/etc/rc.d/rc.local")
     rdma_conf = simple_file("/etc/rdma/rdma.conf")
-    readlink_e_etc_mtab = simple_command("readlink -e /etc/mtab")
+    readlink_e_etc_mtab = simple_command("/usr/bin/readlink -e /etc/mtab")
     redhat_release = simple_file("/etc/redhat-release")
     resolv_conf = simple_file("/etc/resolv.conf")
     rhosp_release = simple_file("/etc/rhosp-release")
@@ -986,6 +988,7 @@ class DefaultSpecs(Specs):
     tuned_adm = simple_command("/usr/sbin/tuned-adm list")
     tuned_conf = simple_file("/etc/tuned.conf")
     udev_persistent_net_rules = simple_file("/etc/udev/rules.d/70-persistent-net.rules")
+    udev_fc_wwpn_id_rules = simple_file("/usr/lib/udev/rules.d/59-fc-wwpn-id.rules")
     uname = simple_command("/usr/bin/uname -a")
     up2date = simple_file("/etc/sysconfig/rhn/up2date")
     up2date_log = simple_file("/var/log/up2date")
