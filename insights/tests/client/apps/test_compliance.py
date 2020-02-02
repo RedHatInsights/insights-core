@@ -13,9 +13,11 @@ def test_oscap_scan(config, assert_rpms):
     compliance_client = ComplianceClient(config)
     compliance_client.get_policies = lambda: [{'attributes': {'ref_id': 'foo'}}]
     compliance_client.find_scap_policy = lambda ref_id: '/usr/share/xml/scap/foo.xml'
-    compliance_client.run_scan = lambda ref_id, policy_xml: None
-    payload, content_type = compliance_client.oscap_scan()
-    assert payload == ['/tmp/oscap_results-foos.xml']
+    compliance_client.run_scan = lambda ref_id, policy_xml, output_path: None
+    compliance_client.archive.archive_tmp_dir = '/tmp'
+    compliance_client.archive.archive_name = 'insights-compliance-test'
+    archive, content_type = compliance_client.oscap_scan()
+    assert archive == '/tmp/insights-compliance-test.tar.gz'
     assert content_type == COMPLIANCE_CONTENT_TYPE
 
 
