@@ -992,7 +992,7 @@ class InsightsConnection(object):
 
             Returns: bytes
         '''
-        cache = URLCache("/var/cache/insights-client/cache.dat")
+        cache = URLCache("/var/cache/insights/cache.dat")
 
         headers = {}
         item = cache.get(url)
