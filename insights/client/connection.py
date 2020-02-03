@@ -1023,11 +1023,19 @@ class InsightsConnection(object):
         if content is None:
             return None
 
+        os.makedirs("/var/lib/insights", mode=0o755, exist_ok=True)
+
+        with open("/var/lib/insights/%s.json" % generate_machine_id(), mode="w") as f:
+            f.write(content)
+
         host_id = json.loads(content)["results"][0]["id"]
         url = self.base_url + "/insights/v1/system/%s/reports/" % host_id
         content = self._get(url)
         if content is None:
             return None
+
+        with open("/var/lib/insights/%s.json" % host_id, mode="w+b") as f:
+            f.write(content)
 
         return json.loads(content)
 
