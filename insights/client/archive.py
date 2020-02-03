@@ -188,7 +188,7 @@ class InsightsArchive(object):
                 logger.info('Insights archive and SOSCleaner metadata retained in %s', self.tmp_dir)
                 return  # return before deleting tmp_dir
             else:
-                logger.info('Insights archive retained in %s', self.tar_file_name)
+                logger.info('Insights archive retained in %s', self.tar_file)
         else:
             self.delete_archive_file()
         self.delete_tmp_dir()
