@@ -505,13 +505,23 @@ class InsightsClient(object):
         logger.debug('New machine-id: %s', generate_machine_id(new=True))
 
     @_net
+    def check_results(self):
+        try:
+            self.connection.get_advisor_report()
+        except Exception as e:
+            print("Unknown Error: %s" % e)
+
     def show(self):
         '''
         Show insights about this machine
         '''
         try:
-            data = self.connection.get_advisor_report()
-            print(json.dumps(data))
+            with open("/var/lib/insights/%s.json" % generate_machine_id(), mode="r+b") as f:
+                inventory_data = json.load(f)
+            host_id = inventory_data["results"][0]["id"]
+            with open("/var/lib/insights/%s.json" % host_id, mode="r+b") as f:
+                insights_data = json.load(f)
+            print(insights_data)
         except Exception as e:
             print("Unknown Error: %s" % e)
 
