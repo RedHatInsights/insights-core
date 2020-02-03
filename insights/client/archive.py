@@ -38,6 +38,7 @@ class InsightsArchive(object):
         self.archive_dir = self.create_archive_dir()
         self.cmd_dir = self.create_command_dir()
         self.compressor = 'gz' or config.compressor
+        self.tar_file = None
         atexit.register(self.cleanup_tmp)
 
     def create_archive_dir(self):
@@ -132,6 +133,7 @@ class InsightsArchive(object):
             return None
         self.delete_archive_dir()
         logger.debug("Tar File Size: %s", str(os.path.getsize(tar_file_name)))
+        self.tar_file = tar_file_name
         return tar_file_name
 
     def delete_tmp_dir(self):
@@ -186,7 +188,7 @@ class InsightsArchive(object):
                 logger.info('Insights archive and SOSCleaner metadata retained in %s', self.tmp_dir)
                 return  # return before deleting tmp_dir
             else:
-                logger.info('Insights archive retained in %s', self.archive_tmp_dir)
+                logger.info('Insights archive retained in %s', self.tar_file_name)
         else:
             self.delete_archive_file()
         self.delete_tmp_dir()
