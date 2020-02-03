@@ -39,13 +39,16 @@ class AWSInstanceType(CommandParser):
     """
 
     def parse_content(self, content):
-        if (not content or len(content) > 1 or 'curl: ' in content[0]):
+        if not content or 'curl: ' in content[0]:
             raise SkipException()
 
         self.raw = self.type = None
-        if '.' in content[0]:
-            self.raw = content[0].strip()
-            self.type = self.raw.split('.')[0].upper()
+
+        # Ignore any curl stats that may be present in data
+        for l in content:
+            if ' ' not in l.strip() and len(l.strip()) > 0:
+                self.raw = l.strip()
+                self.type = self.raw.split('.')[0].upper()
 
         if not self.type:
             raise ParseException('Unrecognized type: "{0}"', content[0])
