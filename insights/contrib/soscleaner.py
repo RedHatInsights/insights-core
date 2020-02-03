@@ -30,6 +30,7 @@ import struct, socket
 import tempfile
 import logging
 import tarfile
+import six
 
 from insights.util import content_type
 
@@ -579,7 +580,10 @@ class SOSCleaner:
                 if len(data) > 0: #if the file isn't empty:
                     for l in data:
                         new_l = self._clean_line(l)
-                        tmp_file.write(new_l.encode('utf-8'))
+                        if six.PY3:
+                            tmp_file.write(new_l.encode('utf-8'))
+                        else:
+                            tmp_file.write(new_l)
 
                     tmp_file.seek(0)
 
