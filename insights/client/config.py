@@ -70,6 +70,12 @@ DEFAULT_OPTS = {
         # non-CLI
         'default': None,
     },
+    'check_results': {
+        'default': False,
+        'opt': ['--check-results'],
+        'help': "Check for insights results",
+        'action': "store_true"
+    },
     'cmd_timeout': {
         # non-CLI
         'default': constants.default_cmd_timeout
