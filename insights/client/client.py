@@ -6,9 +6,7 @@ import logging
 import logging.handlers
 import os
 import time
-import shutil
 import six
-import atexit
 
 from .utilities import (generate_machine_id,
                         write_to_disk,
