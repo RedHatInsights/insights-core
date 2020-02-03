@@ -1,6 +1,6 @@
 """
 LsEdacMC - command ``ls -lan /sys/devices/system/edac/mc``
-============================================================
+==========================================================
 
 The ``ls -lan /sys/devices/system/edac/mc`` command provides information for the listing of the
 ``/sys/devices/system/edac/mc`` directory. See the ``FileListing`` class for a more complete description of the
