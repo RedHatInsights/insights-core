@@ -21,7 +21,7 @@ class ComplianceClient:
         self.config = config
         self.conn = InsightsConnection(config)
         self.hostname = get_canonical_facts().get('fqdn', '')
-        self.archive = InsightsArchive()
+        self.archive = InsightsArchive(config)
 
     def oscap_scan(self):
         self._assert_oscap_rpms_exist()

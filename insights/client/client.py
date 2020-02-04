@@ -6,9 +6,7 @@ import logging
 import logging.handlers
 import os
 import time
-import shutil
 import six
-import atexit
 
 from .utilities import (generate_machine_id,
                         write_to_disk,
@@ -283,8 +281,7 @@ def collect(config, pconn):
 
     # defaults
     mp = None
-    archive = InsightsArchive(compressor=config.compressor)
-    atexit.register(_delete_archive_internal, config, archive)
+    archive = InsightsArchive(config)
 
     msg_name = determine_hostname(config.display_name)
     dc = DataCollector(config, archive, mountpoint=mp)
@@ -364,35 +361,3 @@ def upload(config, pconn, tar_file, content_type, collection_duration=None):
             else:
                 logger.error("All attempts to upload have failed!")
                 logger.error("Please see %s for additional information", config.logging_file)
-
-
-def _delete_archive_internal(config, archive):
-    '''
-    Only used during built-in collection.
-    Delete archive and tmp dirs on unexpected exit.
-    '''
-    if not config.keep_archive:
-        archive.delete_tmp_dir()
-        archive.delete_archive_file()
-
-
-def delete_archive(path, delete_parent_dir):
-    removed_archive = False
-
-    try:
-        logger.debug("Removing archive %s", path)
-        removed_archive = os.remove(path)
-
-        dirname = os.path.dirname
-        abspath = os.path.abspath
-        parent_tmp_dir = dirname(abspath(path))
-        if delete_parent_dir:
-            logger.debug("Detected parent temporary directory %s", parent_tmp_dir)
-            if parent_tmp_dir != "/var/tmp" and parent_tmp_dir != "/var/tmp/":
-                logger.debug("Removing %s", parent_tmp_dir)
-                shutil.rmtree(parent_tmp_dir)
-
-    except:
-        logger.error("Error removing %s", path)
-
-    return removed_archive
