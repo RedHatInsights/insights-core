@@ -8,6 +8,13 @@ from insights.core.plugins import ContentException
 
 AZURE_TYPE_1 = "Standard_L32s"
 AZURE_TYPE_2 = "Standard_NV48s_v3"
+AZURE_TYPE_3 = """
+ % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                  Dload  Upload   Total   Spent    Left  Speed
+   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+ 100  1126  100  1126    0     0  1374k      0 --:--:-- --:--:-- --:--:-- 1099k
+Standard_NV48s_v3
+"""
 AZURE_TYPE_DOC = "Standard_L64s_v2"
 AZURE_TYPE_AB_1 = """
 curl: (7) Failed to connect to 169.254.169.254 port 80: Connection timed out
@@ -62,6 +69,14 @@ def test_azure_instance_type():
     assert azure.version == "v3"
     assert azure.raw == "Standard_NV48s_v3"
     assert "NV48s" in str(azure)
+
+
+def test_azure_instance_type_stats():
+    azure = AzureInstanceType(context_wrap(AZURE_TYPE_3))
+    assert azure.type == "Standard"
+    assert azure.size == "NV48s"
+    assert azure.version == "v3"
+    assert azure.raw == "Standard_NV48s_v3"
 
 
 def test_doc_examples():
