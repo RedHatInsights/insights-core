@@ -38,7 +38,7 @@ class DataCollector(object):
 
     def __init__(self, config, archive_=None, mountpoint=None):
         self.config = config
-        self.archive = archive_ if archive_ else archive.InsightsArchive()
+        self.archive = archive_ if archive_ else archive.InsightsArchive(config)
         self.mountpoint = '/'
         if mountpoint:
             self.mountpoint = mountpoint
