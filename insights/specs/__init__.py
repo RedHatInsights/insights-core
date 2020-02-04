@@ -134,6 +134,7 @@ class Specs(SpecSet):
     docker_storage = RegistryPoint()
     docker_storage_setup = RegistryPoint()
     docker_sysconfig = RegistryPoint()
+    dse_ldif = RegistryPoint(filterable=True)
     dumpe2fs_h = RegistryPoint(multi_output=True)
     engine_config_all = RegistryPoint()
     engine_log = RegistryPoint(filterable=True)

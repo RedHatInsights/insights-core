@@ -295,6 +295,7 @@ class DefaultSpecs(Specs):
             return mounted_dev
         raise SkipComponent()
 
+    dse_ldif = glob_file(r"/etc/dirsrv/slapd-*/dse.ldif")
     dumpe2fs_h = foreach_execute(dumpdev, "/sbin/dumpe2fs -h %s")
     engine_config_all = simple_command("/usr/bin/engine-config --all")
     engine_log = simple_file("/var/log/ovirt-engine/engine.log")
