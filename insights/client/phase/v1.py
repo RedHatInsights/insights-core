@@ -285,13 +285,6 @@ def collect_and_output(client, config):
     if resp:
         if config.to_json:
             print(json.dumps(resp))
-
-        if not config.payload:
-            # delete the archive
-            if config.keep_archive:
-                logger.info('Insights archive retained in ' + insights_archive)
-            else:
-                client.delete_archive(insights_archive, delete_parent_dir=True)
     client.delete_cached_branch_info()
 
     # rotate eggs once client completes all work successfully
