@@ -86,7 +86,7 @@ class AWSInstanceIdPkcs7(CommandParser):
     """
     Class for parsing the AWS Instance Identity PKCS7 signature returned by the command::
 
-        curl http://169.254.169.254/latest/meta-data/instance-identity/pkcs7
+        curl -s http://169.254.169.254/latest/meta-data/instance-identity/pkcs7
 
     Typical output of this command is::
 

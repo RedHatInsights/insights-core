@@ -3,7 +3,7 @@ AWSInstanceType
 ===============
 
 This parser simply reads the output of command
-``curl http://169.254.169.254/latest/meta-data/instance-type``,
+``curl -s http://169.254.169.254/latest/meta-data/instance-type``,
 which is used to check the type of the AWS instance on the host.
 
 """
@@ -17,7 +17,7 @@ from insights.specs import Specs
 class AWSInstanceType(CommandParser):
     """
     Class for parsing the AWS Instance type returned by command
-    ``curl http://169.254.169.254/latest/meta-data/instance-type``
+    ``curl -s http://169.254.169.254/latest/meta-data/instance-type``
 
     Typical output of this command is::
 
