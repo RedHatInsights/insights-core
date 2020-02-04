@@ -5,8 +5,8 @@ AWSInstanceID
 These parsers read the output of commands to collect identify information
 from AWS instances.
 
-* ``curl -s http://169.254.169.254/latest/meta-data/instance-identity/document`` and
-* ``curl -s http://169.254.169.254/latest/meta-data/instance-identity/pkcs7``
+* ``curl -s http://169.254.169.254/latest/dynamic/instance-identity/document`` and
+* ``curl -s http://169.254.169.254/latest/dynamic/instance-identity/pkcs7``
 """
 from __future__ import print_function
 import json
@@ -21,7 +21,7 @@ class AWSInstanceIdDoc(CommandParser, dict):
     """
     Class for parsing the AWS Instance Identity Document returned by the command::
 
-        curl -s http://169.254.169.254/latest/meta-data/instance-identity/document
+        curl -s http://169.254.169.254/latest/dynamic/instance-identity/document
 
     Typical output of this command is::
 
@@ -86,7 +86,7 @@ class AWSInstanceIdPkcs7(CommandParser):
     """
     Class for parsing the AWS Instance Identity PKCS7 signature returned by the command::
 
-        curl -s http://169.254.169.254/latest/meta-data/instance-identity/pkcs7
+        curl -s http://169.254.169.254/latest/dynamic/instance-identity/pkcs7
 
     Typical output of this command is::
 
