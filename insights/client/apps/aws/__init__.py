@@ -63,7 +63,7 @@ def get_aws_identity(conn):
     logger.info('Fetching AWS identity information.')
     doc_res = get_uri(conn, IDENTITY_DOC_URI)
     pkcs7_res = get_uri(conn, IDENTITY_PKCS7_URI)
-    if not (doc_res.ok and pkcs7_res.ok):
+    if not (doc_res and pkcs7_res) or not (doc_res.ok and pkcs7_res.ok):
         logger.error('Error getting identity information.')
         return None
     logger.debug('Identity information obtained successfully.')
