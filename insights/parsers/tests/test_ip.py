@@ -793,5 +793,6 @@ def test_ip_neigh_show():
     assert len(result.data) == 13
     assert result['2a04:9a00:1:1:ec4:7aff:febb:d3ca']['nud'] == 'REACHABLE'
     assert result['10.101.5.71']['nud'] == 'INCOMPLETE'
-    assert len(result["2a04:9a00:1:1:ec4:7aff:febb:d1fe"]) == 4
-    assert len(result["10.101.5.252"]) == 4
+    assert len(result['2a04:9a00:1:1:ec4:7aff:febb:d1fe']) == 4
+    assert len(result['10.101.5.252']) == 4
+    assert result['10.101.5.17']['nud'] == 'INCOMPLETE'
