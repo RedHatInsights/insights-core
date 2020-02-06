@@ -1,5 +1,26 @@
 # Change Log
 
+## [insights-core-3.0.149-1309](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.149-1309) (2020-02-06)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.148-1...insights-core-3.0.149-1309)
+
+## [insights-core-3.0.148-1](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.148-1) (2020-02-06)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.147-1...insights-core-3.0.148-1)
+
+**Fixed bugs:**
+
+- Curl command is returning stats in data, command should use --silent switch [\#2441](https://github.com/RedHatInsights/insights-core/issues/2441)
+- Command spec readlink\_e\_etc\_mtab is missing path for command [\#2409](https://github.com/RedHatInsights/insights-core/issues/2409)
+
+## [insights-core-3.0.147-1](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.147-1) (2020-02-03)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.146-1...insights-core-3.0.147-1)
+
+## [insights-core-3.0.146-1](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.146-1) (2020-02-03)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.145-1300...insights-core-3.0.146-1)
+
+**Fixed bugs:**
+
+- Fatal error if run client with invalid remove\_file \(BZ1550109\) [\#975](https://github.com/RedHatInsights/insights-core/issues/975)
+
 ## [insights-core-3.0.145-1300](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.145-1300) (2020-01-30)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.144-1295...insights-core-3.0.145-1300)
 
