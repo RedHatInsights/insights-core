@@ -7,6 +7,13 @@ from insights.parsers import SkipException, ParseException
 from insights.core.plugins import ContentException
 
 AWS_TYPE = "r3.xlarge"
+AWS_TYPE_CURL_STATS = """
+ % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                  Dload  Upload   Total   Spent    Left  Speed
+
+   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+ 100  1126  100  1126    0     0  1374k      0 --:--:-- --:--:-- --:--:-- 1099k
+r3.xlarge"""
 AWS_TYPE_AB_1 = """
 curl: (7) Failed to connect to 169.254.169.254 port 80: Connection timed out
 """.strip()
@@ -49,6 +56,13 @@ def test_aws_instance_type_ab_empty():
 
 def test_aws_instance_type():
     aws = AWSInstanceType(context_wrap(AWS_TYPE))
+    assert aws.type == "R3"
+    assert aws.raw == "r3.xlarge"
+    assert 'large' in str(aws)
+
+
+def test_aws_instance_type_stats():
+    aws = AWSInstanceType(context_wrap(AWS_TYPE_CURL_STATS))
     assert aws.type == "R3"
     assert aws.raw == "r3.xlarge"
     assert 'large' in str(aws)
