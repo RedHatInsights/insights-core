@@ -35,7 +35,7 @@ def _intercept_add_filter(func):
     def inner(component, pattern):
         ret = add_filter(component, pattern)
         calling_module = inspect.stack()[1][0].f_globals.get("__name__")
-        ADDED_FILTERS[calling_module] |= _get_registry_points(component, True)
+        ADDED_FILTERS[calling_module] |= set(r for r in _get_registry_points(component) if r.filterable)
         return ret
     return inner
 
@@ -56,11 +56,10 @@ insights.add_filter = _intercept_add_filter(insights.add_filter)
 spec_factory.find = _intercept_find(spec_factory.find)
 
 
-def _get_registry_points(component, filterable_only=False):
+def _get_registry_points(component):
     """
     Get underlying registry points for a component. The return set
     will include the passed-in component if it is also a registry point.
-    Specify ``filterable_only`` to return only filterable registry points.
     """
     results = set()
     if isinstance(component, RegistryPoint):
@@ -71,8 +70,6 @@ def _get_registry_points(component, filterable_only=False):
                 results.add(c)
         except:
             pass
-    if filterable_only:
-        return set(rp for rp in results if rp.filterable)
     return results
 
 
@@ -115,7 +112,8 @@ def run_test(component, input_data, expected=None):
     if filters.ENABLED:
         mod = component.__module__
         sup_mod = '.'.join(mod.split('.')[:-1])
-        filterable = _get_registry_points(component, True)
+        rps = _get_registry_points(component)
+        filterable = set(d for d in rps if dr.get_delegate(d).filterable)
         missing_filters = filterable - ADDED_FILTERS.get(mod, set()) - ADDED_FILTERS.get(sup_mod, set())
         if missing_filters:
             names = [dr.get_name(m) for m in missing_filters]
