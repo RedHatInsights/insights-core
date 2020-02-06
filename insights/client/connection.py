@@ -1025,7 +1025,7 @@ class InsightsConnection(object):
 
         os.makedirs("/var/lib/insights", mode=0o755, exist_ok=True)
 
-        with open("/var/lib/insights/%s.json" % generate_machine_id(), mode="w+b") as f:
+        with open("/var/lib/insights/host-details.v1.json", mode="w+b") as f:
             f.write(content)
 
         host_id = json.loads(content)["results"][0]["id"]
@@ -1034,7 +1034,7 @@ class InsightsConnection(object):
         if content is None:
             return None
 
-        with open("/var/lib/insights/%s.json" % host_id, mode="w+b") as f:
+        with open("/var/lib/insights/insights-details.v1.json", mode="w+b") as f:
             f.write(content)
 
         return json.loads(content)
