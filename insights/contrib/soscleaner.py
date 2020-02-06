@@ -696,14 +696,18 @@ class SOSCleaner:
         self.logger.con_out("*** SOSCleaner Artifacts ***")
         self._create_reports()
 
-        # if block added for insights-client --output-dir option.
-        #   originally, else block always executes
+        # This if-block added for insights-client --output-dir option.
+        #   Prevent calling of _create_archive() so that dir_path is
+        #   not removed and archive is not unnecessarily created.
+        #   Furthermore, the client does not utilize soscleaner return
+        #   data, so return here. Further code beyond the block
+        #   is left as-is.
         if options.no_tar_file:
-            return_data = [self.dir_path, self.logfile, self.ip_report]
-        else:
-            self._create_archive()
-            return_data = [self.archive_path, self.logfile, self.ip_report]
+            return
         # end insights-client modifications
+
+        self._create_archive()
+        return_data = [self.archive_path, self.logfile, self.ip_report]
 
         if self.hostname:
             return_data.append(self.hn_report)
