@@ -26,6 +26,12 @@ def aws_main(config):
         logger.error('AWS entitlement is only available when BASIC auth is used.\n'
                      'Set auto_config=False and authmethod=BASIC in %s.', config.conf)
         return False
+    # workaround for a workaround
+    #   the hydra API doesn't accept the legacy cert
+    #   and legacy_upload=False currently just
+    #   redirects to the classic API with /platform added
+    #   so if doing AWS entitlement, use cert_verify=True
+    config.cert_verify = True
     conn = InsightsConnection(config)
 
     bundle = get_aws_identity(conn)
@@ -63,7 +69,7 @@ def get_aws_identity(conn):
     logger.info('Fetching AWS identity information.')
     doc_res = get_uri(conn, IDENTITY_DOC_URI)
     pkcs7_res = get_uri(conn, IDENTITY_PKCS7_URI)
-    if not (doc_res.ok and pkcs7_res.ok):
+    if not (doc_res and pkcs7_res) or not (doc_res.ok and pkcs7_res.ok):
         logger.error('Error getting identity information.')
         return None
     logger.debug('Identity information obtained successfully.')
