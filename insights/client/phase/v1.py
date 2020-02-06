@@ -280,8 +280,6 @@ def collect_and_output(client, config):
         except ValueError as e:
             logger.error(str(e))
             sys.exit(constants.sig_kill_bad)
-    else:
-        logger.info('Archive saved at %s', insights_archive)
     if resp:
         if config.to_json:
             print(json.dumps(resp))
