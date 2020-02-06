@@ -769,3 +769,29 @@ def test_ipv6_neigh():
         "dev": "tun0", "nud": "NOARP", "lladdr": "33:33:ff:ea:2c:00",
         'addr': ipaddress.ip_address(u'ff02::1:ffea:2c00')
     }
+
+IP_NEIGH_SHOW = """
+2a04:9a00:1:1:ec4:7aff:febb:d3ca dev bond0.104 lladdr 0c:c4:7a:bb:d3:ca REACHABLE
+fe80::22a:6aff:fe65:c3c2 dev bond0.104 lladdr 00:2a:6a:65:c3:c2 router STALE
+2a04:9a00:1:1:ec4:7aff:febd:50b2 dev bond0.104 lladdr 0c:c4:7a:bd:50:b2 REACHABLE
+2a04:9a00:1:1:ec4:7aff:fe1e:390e dev bond0.104 lladdr 0c:c4:7a:1e:39:0e REACHABLE
+2a04:9a00:1:1:ec4:7aff:fe1f:45a dev bond0.104 lladdr 0c:c4:7a:1f:04:5a REACHABLE
+fe80::ec4:7aff:fe1f:808 dev bond0.104 lladdr 0c:c4:7a:1f:08:08 STALE
+2a04:9a00:1:1:ec4:7aff:febb:d1fe dev bond0.104 lladdr 0c:c4:7a:bb:d1:fe REACHABLE
+10.101.3.27 dev bond0.101 lladdr 00:90:fa:7f:b0:78 STALE
+10.101.5.252 dev bond0.102 lladdr 00:2a:6a:65:c5:42 STALE
+10.101.5.27 dev bond0.102 lladdr 0c:c4:7a:8f:44:02 DELAY
+10.101.3.252 dev bond0.101 lladdr 00:2a:6a:65:c5:42 STALE
+10.101.3.21 dev bond0.101 lladdr 00:90:fa:7f:ad:d8 REACHABLE
+10.101.5.71 dev bond0.102  INCOMPLETE
+10.101.5.17 dev bond0.102  INCOMPLETE
+""".strip()
+
+
+def test_ip_neigh_show():
+    result = ip.IpNeighShow(context_wrap(IP_NEIGH_SHOW))
+    assert len(result.data) == 13
+    assert result['2a04:9a00:1:1:ec4:7aff:febb:d3ca']['nud'] == 'REACHABLE'
+    assert result['10.101.5.71']['nud'] == 'INCOMPLETE'
+    assert len(result["2a04:9a00:1:1:ec4:7aff:febb:d1fe"]) == 4
+    assert len(result["10.101.5.252"]) == 4
