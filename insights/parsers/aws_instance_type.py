@@ -3,7 +3,7 @@ AWSInstanceType
 ===============
 
 This parser simply reads the output of command
-``curl http://169.254.169.254/latest/meta-data/instance-type``,
+``curl -s http://169.254.169.254/latest/meta-data/instance-type``,
 which is used to check the type of the AWS instance on the host.
 
 """
@@ -17,7 +17,7 @@ from insights.specs import Specs
 class AWSInstanceType(CommandParser):
     """
     Class for parsing the AWS Instance type returned by command
-    ``curl http://169.254.169.254/latest/meta-data/instance-type``
+    ``curl -s http://169.254.169.254/latest/meta-data/instance-type``
 
     Typical output of this command is::
 
@@ -39,16 +39,20 @@ class AWSInstanceType(CommandParser):
     """
 
     def parse_content(self, content):
-        if (not content or len(content) > 1 or 'curl: ' in content[0]):
+        if not content or 'curl: ' in content[0]:
             raise SkipException()
 
         self.raw = self.type = None
-        if '.' in content[0]:
-            self.raw = content[0].strip()
-            self.type = self.raw.split('.')[0].upper()
+
+        # Ignore any curl stats that may be present in data
+        for l in content:
+            if ' ' not in l.strip() and len(l.strip()) > 0:
+                self.raw = l.strip()
+                if '.' in self.raw:
+                    self.type = self.raw.split('.')[0].upper()
 
         if not self.type:
-            raise ParseException('Unrecognized type: "{0}"', content[0])
+            raise ParseException('Unrecognized type: "{0}"'.format(content))
 
     def __repr__(self):
         return "<aws_type: {t}, raw: {r}>".format(t=self.type, r=self.raw)
