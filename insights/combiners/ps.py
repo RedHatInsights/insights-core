@@ -4,17 +4,19 @@ PS
 
 This combiner provides information about running processes based on the ``ps`` command.
 More specifically this consolidates data from
-:class:`insights.parsers.ps.PsEo`,
-:class:`insights.parsers.ps.PsAuxcww`,
-:class:`insights.parsers.ps.PsEf`,
-:class:`insights.parsers.ps.PsAux`,
-:class:`insights.parsers.ps.PsAuxww` and
-:class:`insights.parsers.ps.PsAlxwww` parsers (in that specific order).
+:py:class:`insights.parsers.ps.PsEo`,
+:py:class:`insights.parsers.ps.PsAuxcww`,
+:py:class:`insights.parsers.ps.PsEf`,
+:py:class:`insights.parsers.ps.PsAux`,
+:py:class:`insights.parsers.ps.PsAuxww` and
+:py:class:`insights.parsers.ps.PsAlxwww` parsers (in that specific order).
 
 Note:
-    The final dataset can vary depending on availability of the parsers
-    for a given ``ExecutionContext`` and added filters. Please see
-    :py:func:`insights.core.filters.add_filter` for the information on filtering.
+    The final dataset can vary depending on availability of the parsers for a given
+    ``ExecutionContext`` and added filters. The underlying filterable datasources
+    for this combiner can be filtered by passing :py:class:`insights.combiners.ps.Ps`
+    to :py:func:`insights.core.filters.add_filter` function along with a filter pattern.
+    Please see :py:mod:`insights.core.filters` for more information on filtering.
 
 
 Examples:
