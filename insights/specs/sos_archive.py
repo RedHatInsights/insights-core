@@ -62,6 +62,7 @@ class SosSpecs(Specs):
     httpd_M = simple_file("sos_commands/apache/apachectl_-M")
     installed_rpms = first_file(["sos_commands/rpm/package-data", "installed-rpms"])
     ip_addr = first_of([simple_file("sos_commands/networking/ip_-d_address"), simple_file("sos_commands/networking/ip_address")])
+    ip_neigh_show = first_file(["sos_commands/networking/ip_-s_-s_neigh_show", "sos_commands/networking/ip_neigh_show"])
     ip_route_show_table_all = simple_file("sos_commands/networking/ip_route_show_table_all")
     ip_s_link = first_of([simple_file("sos_commands/networking/ip_-s_-d_link"), simple_file("sos_commands/networking/ip_-s_link"), simple_file("sos_commands/networking/ip_link")])
     iptables = first_file(["/etc/sysconfig/iptables", "/etc/sysconfig/iptables.save"])
