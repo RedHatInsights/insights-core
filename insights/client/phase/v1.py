@@ -291,6 +291,7 @@ def collect_and_output(client, config):
 
     if config.no_upload:
         # output options for which upload is not performed
+        # TODO: put these functions in a more logical place
         if config.output_dir:
             # copy collected data from temp to desired output dir
             abs_output_dir = os.path.abspath(config.output_dir)

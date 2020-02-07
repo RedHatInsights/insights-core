@@ -644,6 +644,12 @@ class InsightsConfig(object):
                 raise ValueError('Cannot run connection test in offline mode.')
         if self.output_dir and self.output_file:
             raise ValueError('Specify only one: --output-dir or --output-file.')
+        if self.output_dir == '':
+            # make sure an empty string is not given
+            raise ValueError('--output-dir cannot be empty')
+        if self.output_file == '':
+            # make sure an empty string is not given
+            raise ValueError('--output-file cannot be empty')
 
     def _imply_options(self):
         '''
@@ -670,7 +676,6 @@ class InsightsConfig(object):
         if self.output_dir or self.output_file:
             # do not upload in this case
             self.no_upload = True
-        if self.output_file or self.output_dir:
             # don't keep the archive or files in temp
             #   if we're writing it to a specified location
             self.keep_archive = False

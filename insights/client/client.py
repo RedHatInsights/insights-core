@@ -290,7 +290,6 @@ def collect(config, pconn):
     dc = DataCollector(config, archive, mountpoint=mp)
     logger.info('Starting to collect Insights data for %s', msg_name)
     dc.run_collection(collection_rules, rm_conf, branch_info)
-
     output = dc.done(collection_rules, rm_conf)
     return output
 
