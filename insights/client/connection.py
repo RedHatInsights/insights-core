@@ -1018,6 +1018,10 @@ class InsightsConnection(object):
         '''
             Retrieve advisor report
         '''
+        if 'platform' not in self.base_url:
+            self.base_url = "https://cert.cloud.redhat.com/api"
+            self.cert_verify = True  # Unsure why cert_verify is an instance variable on InsightsConnection
+            self.session.verify = self.cert_verify  # When it appears to ultimately get assigned to the instance variable "verify" on the session object.
         url = self.base_url + "/inventory/v1/hosts?insights_id=%s" % generate_machine_id()
         content = self._get(url)
         if content is None:
@@ -1025,7 +1029,7 @@ class InsightsConnection(object):
 
         os.makedirs("/var/lib/insights", mode=0o755, exist_ok=True)
 
-        with open("/var/lib/insights/host-details.v1.json", mode="w+b") as f:
+        with open("/var/lib/insights/host-details.json", mode="w+b") as f:
             f.write(content)
 
         host_id = json.loads(content)["results"][0]["id"]
@@ -1034,7 +1038,7 @@ class InsightsConnection(object):
         if content is None:
             return None
 
-        with open("/var/lib/insights/insights-details.v1.json", mode="w+b") as f:
+        with open("/var/lib/insights/insights-details.json", mode="w+b") as f:
             f.write(content)
 
         return json.loads(content)

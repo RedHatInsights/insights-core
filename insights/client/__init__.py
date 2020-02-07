@@ -516,7 +516,7 @@ class InsightsClient(object):
         Show insights about this machine
         '''
         try:
-            with open("/var/lib/insights/insights-details.v1.json", mode="r+b") as f:
+            with open("/var/lib/insights/insights-details.json", mode="r+b") as f:
                 insights_data = json.load(f)
             print(insights_data)
         except Exception as e:
