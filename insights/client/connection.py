@@ -1018,10 +1018,6 @@ class InsightsConnection(object):
         '''
             Retrieve advisor report
         '''
-        if 'platform' not in self.base_url:
-            self.base_url = "https://cert.cloud.redhat.com/api"
-            self.cert_verify = True  # Unsure why cert_verify is an instance variable on InsightsConnection
-            self.session.verify = self.cert_verify  # When it appears to ultimately get assigned to the instance variable "verify" on the session object.
         url = self.base_url + "/inventory/v1/hosts?insights_id=%s" % generate_machine_id()
         content = self._get(url)
         if content is None:

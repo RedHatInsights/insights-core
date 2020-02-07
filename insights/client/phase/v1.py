@@ -145,6 +145,7 @@ def post_update(client, config):
 
     if config.check_results:
         try:
+            client.config.base_url += "/platform"
             client.check_results()
             sys.exit(constants.sig_kill_ok)
         except Exception as e:
