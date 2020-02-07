@@ -534,6 +534,7 @@ class IpNeighParser(CommandParser):
         'STALE': 3,
         'DELAY': 4,
         'FAILED': 5,
+        'INCOMPLETE': 6,
     }
 
     def parse_content(self, content):
@@ -624,6 +625,14 @@ class Ipv4Neigh(IpNeighParser):
 class Ipv6Neigh(IpNeighParser):
     """
     Class to parse ``ip -6 neigh show nud all`` command output.
+    """
+    pass
+
+
+@parser(Specs.ip_neigh_show)
+class IpNeighShow(IpNeighParser):
+    """
+    Class to parse ``ip neigh show`` or ``ip -s -s neigh show`` command output.
     """
     pass
 

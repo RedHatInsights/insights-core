@@ -241,6 +241,7 @@ class Specs(SpecSet):
     iptables = RegistryPoint()
     ipv4_neigh = RegistryPoint()
     ipv6_neigh = RegistryPoint()
+    ip_neigh_show = RegistryPoint()
     ironic_conf = RegistryPoint(filterable=True)
     ironic_inspector_log = RegistryPoint(filterable=True)
     iscsiadm_m_session = RegistryPoint()
