@@ -797,3 +797,4 @@ def test_ip_neigh_show():
     assert result['10.101.5.17']['nud'] == 'INCOMPLETE'
     assert result['10.101.5.71']['nud'] == 'INCOMPLETE'
     assert len(result['10.101.5.71']) == 3
+    assert len(result['10.101.5.17']) == 3
