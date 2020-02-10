@@ -5,8 +5,8 @@ AWSInstanceID
 These parsers read the output of commands to collect identify information
 from AWS instances.
 
-* ``curl http://169.254.169.254/latest/meta-data/instance-identity/document`` and
-* ``curl http://169.254.169.254/latest/meta-data/instance-identity/pkcs7``
+* ``curl -s http://169.254.169.254/latest/dynamic/instance-identity/document`` and
+* ``curl -s http://169.254.169.254/latest/dynamic/instance-identity/pkcs7``
 """
 from __future__ import print_function
 import json
@@ -21,7 +21,7 @@ class AWSInstanceIdDoc(CommandParser, dict):
     """
     Class for parsing the AWS Instance Identity Document returned by the command::
 
-        curl http://169.254.169.254/latest/meta-data/instance-identity/document
+        curl -s http://169.254.169.254/latest/dynamic/instance-identity/document
 
     Typical output of this command is::
 
@@ -65,7 +65,14 @@ class AWSInstanceIdDoc(CommandParser, dict):
         if not content or 'curl: ' in content[0]:
             raise SkipException()
 
-        self.json = '\n'.join([l.rstrip() for l in content])
+        # Just in case curl stats are present in data
+        startline = 0
+        for l in content:
+            if l.strip().startswith('{'):
+                break
+            startline += 1
+
+        self.json = '\n'.join([l.rstrip() for l in content[startline:]])
 
         try:
             doc_values = json.loads(self.json)
@@ -79,7 +86,7 @@ class AWSInstanceIdPkcs7(CommandParser):
     """
     Class for parsing the AWS Instance Identity PKCS7 signature returned by the command::
 
-        curl http://169.254.169.254/latest/meta-data/instance-identity/pkcs7
+        curl -s http://169.254.169.254/latest/dynamic/instance-identity/pkcs7
 
     Typical output of this command is::
 
@@ -115,4 +122,11 @@ class AWSInstanceIdPkcs7(CommandParser):
         if not content or 'curl: ' in content[0]:
             raise SkipException()
 
-        self.signature = '-----BEGIN PKCS7-----\n' + '\n'.join([l.rstrip() for l in content]) + "\n-----END PKCS7-----"
+        # Just in case curl stats are present in data
+        startline = 0
+        for l in content:
+            if ' ' not in l.strip() and len(l.strip()) > 0:
+                break
+            startline += 1
+
+        self.signature = '-----BEGIN PKCS7-----\n' + '\n'.join([l.rstrip() for l in content[startline:]]) + "\n-----END PKCS7-----"

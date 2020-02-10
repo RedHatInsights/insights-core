@@ -104,9 +104,9 @@ class DefaultSpecs(Specs):
             return True
         raise SkipComponent()
 
-    aws_instance_id_doc = simple_command("/usr/bin/curl http://169.254.169.254/latest/dynamic/instance-identity/document --connect-timeout 5", deps=[is_aws])
-    aws_instance_id_pkcs7 = simple_command("/usr/bin/curl http://169.254.169.254/latest/dynamic/instance-identity/pkcs7 --connect-timeout 5", deps=[is_aws])
-    aws_instance_type = simple_command("/usr/bin/curl http://169.254.169.254/latest/meta-data/instance-type --connect-timeout 5", deps=[is_aws])
+    aws_instance_id_doc = simple_command("/usr/bin/curl -s http://169.254.169.254/latest/dynamic/instance-identity/document --connect-timeout 5", deps=[is_aws])
+    aws_instance_id_pkcs7 = simple_command("/usr/bin/curl -s http://169.254.169.254/latest/dynamic/instance-identity/pkcs7 --connect-timeout 5", deps=[is_aws])
+    aws_instance_type = simple_command("/usr/bin/curl -s http://169.254.169.254/latest/meta-data/instance-type --connect-timeout 5", deps=[is_aws])
 
     @datasource(CloudProvider)
     def is_azure(broker):
@@ -115,7 +115,7 @@ class DefaultSpecs(Specs):
             return True
         raise SkipComponent()
 
-    azure_instance_type = simple_command("curl -H Metadata:true http://169.254.169.254/metadata/instance/compute/vmSize?api-version=2018-10-01&format=text --connect-timeout 5", deps=[is_azure])
+    azure_instance_type = simple_command("/usr/bin/curl -s -H Metadata:true http://169.254.169.254/metadata/instance/compute/vmSize?api-version=2018-10-01&format=text --connect-timeout 5", deps=[is_azure])
     bios_uuid = simple_command("/usr/sbin/dmidecode -s system-uuid")
     blkid = simple_command("/sbin/blkid -c /dev/null")
     bond = glob_file("/proc/net/bonding/bond*")
@@ -522,6 +522,7 @@ class DefaultSpecs(Specs):
     ls_dev = simple_command("/bin/ls -lanR /dev")
     ls_disk = simple_command("/bin/ls -lanR /dev/disk")
     ls_docker_volumes = simple_command("/bin/ls -lanR /var/lib/docker/volumes")
+    ls_edac_mc = simple_command("/bin/ls -lan /sys/devices/system/edac/mc")
     ls_etc = simple_command("/bin/ls -lanR /etc")
     ls_lib_firmware = simple_command("/bin/ls -lanR /lib/firmware")
     ls_ocp_cni_openshift_sdn = simple_command("/bin/ls -l /var/lib/cni/networks/openshift-sdn")
@@ -761,6 +762,7 @@ class DefaultSpecs(Specs):
     puppetserver_config = simple_file("/etc/sysconfig/puppetserver")
     prev_uploader_log = simple_file("var/log/redhat-access-insights/redhat-access-insights.log.1")
     proc_netstat = simple_file("proc/net/netstat")
+    proc_slabinfo = simple_file("proc/slabinfo")
     proc_snmp_ipv4 = simple_file("proc/net/snmp")
     proc_snmp_ipv6 = simple_file("proc/net/snmp6")
     proc_stat = simple_file("proc/stat")
