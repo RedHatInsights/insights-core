@@ -5,7 +5,6 @@ from __future__ import absolute_import
 import os
 import errno
 import json
-from . import archive
 import logging
 import copy
 import glob
@@ -20,6 +19,7 @@ from ..contrib.soscleaner import SOSCleaner
 from .utilities import _expand_paths, get_version_info, read_pidfile, get_tags
 from .constants import InsightsConstants as constants
 from .insights_spec import InsightsFile, InsightsCommand
+from .archive import InsightsArchive
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
@@ -38,7 +38,7 @@ class DataCollector(object):
 
     def __init__(self, config, archive_=None, mountpoint=None):
         self.config = config
-        self.archive = archive_ if archive_ else archive.InsightsArchive(config)
+        self.archive = archive_ if archive_ else InsightsArchive(config)
         self.mountpoint = '/'
         if mountpoint:
             self.mountpoint = mountpoint

@@ -682,7 +682,7 @@ class InsightsConfig(object):
         if self.compressor not in ["gz", "xz", "bz2", "none"]:
             # set default compressor if an invalid one is supplied
             if self._print_errors:
-                sys.stdout.write('The compressor \"{0}\" is not supported. Using default: gz\n'.format(self.compressor))
+                sys.stdout.write('The compressor {0} is not supported. Using default: gz\n'.format(self.compressor))
             self.compressor = 'gz'
         if self.output_file:
             # auto-add file extension if not given

@@ -22,7 +22,8 @@ def patch_insights_config(old_function):
                        "return_value.load_all.return_value.diagnosis": None,
                        "return_value.load_all.return_value.portal_access": False,
                        "return_value.load_all.return_value.portal_access_no_insights": False,
-                       "return_value.load_all.return_value.no_tar_file": False,
+                       "return_value.load_all.return_value.payload": None,
+                       "return_value.load_all.return_value.compliance": False,
                        "return_value.load_all.return_value.output_dir": None,
                        "return_value.load_all.return_value.output_file": None})
     return patcher(old_function)
@@ -38,7 +39,6 @@ def test_collect_and_output_payload_on(insights_config, insights_client):
     """
     insights_config.return_value.load_all.return_value.payload = 'testp'
     insights_config.return_value.load_all.return_value.content_type = 'testct'
-    insights_config.return_value.load_all.return_value.compliance = False
     try:
         collect_and_output()
     except SystemExit:
@@ -56,7 +56,6 @@ def test_collect_and_output_payload_off(insights_config, insights_client):
     Archive deleted after upload
     """
     insights_config.return_value.load_all.return_value.payload = False
-    insights_config.return_value.load_all.return_value.compliance = False
     try:
         collect_and_output()
     except SystemExit:
@@ -75,7 +74,52 @@ def test_exit_ok(insights_config, insights_client):
     """
     Support collection replaces the normal client run.
     """
-    insights_config.return_value.load_all.return_value.compliance = False
     with raises(SystemExit) as exc_info:
         collect_and_output()
     assert exc_info.value.code == 0
+
+
+@patch("insights.client.phase.v1.InsightsClient")
+@patch_insights_config
+def test_no_upload(insights_config, insights_client):
+    '''
+    Copy collected data to a specified file and do not upload.
+    '''
+    insights_config.return_value.load_all.return_value.no_upload = True
+    try:
+        collect_and_output()
+    except SystemExit:
+        pass
+    insights_client.upload.assert_not_called()
+
+
+@patch("insights.client.phase.v1.shutil")
+@patch("insights.client.phase.v1.InsightsClient")
+@patch_insights_config
+def test_output_file(insights_config, insights_client, shutil_):
+    '''
+    Copy collected data to a specified file and do not upload.
+    '''
+    insights_config.return_value.load_all.return_value.no_upload = True
+    insights_config.return_value.load_all.return_value.output_file = '/var/tmp/test.tar.gz'
+    try:
+        collect_and_output()
+    except SystemExit:
+        pass
+    shutil_.copyfile.assert_called_with(insights_client.return_value.collect.return_value, '/var/tmp/test.tar.gz')
+
+
+@patch("insights.client.phase.v1.shutil")
+@patch("insights.client.phase.v1.InsightsClient")
+@patch_insights_config
+def test_output_dir(insights_config, insights_client, shutil_):
+    '''
+    Copy collected data to a specified directory and do not upload.
+    '''
+    insights_config.return_value.load_all.return_value.no_upload = True
+    insights_config.return_value.load_all.return_value.output_dir = '/var/tmp/test'
+    try:
+        collect_and_output()
+    except SystemExit:
+        pass
+    shutil_.copytree.assert_called_with(insights_client.return_value.collect.return_value, '/var/tmp/test')
