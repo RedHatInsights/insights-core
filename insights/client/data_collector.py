@@ -38,7 +38,7 @@ class DataCollector(object):
 
     def __init__(self, config, archive_=None, mountpoint=None):
         self.config = config
-        self.archive = archive_ if archive_ else archive.InsightsArchive()
+        self.archive = archive_ if archive_ else archive.InsightsArchive(config)
         self.mountpoint = '/'
         if mountpoint:
             self.mountpoint = mountpoint
@@ -261,6 +261,7 @@ class DataCollector(object):
             if clean_opts.keyword_file is not None:
                 os.remove(clean_opts.keyword_file.name)
                 logger.warn("WARNING: Skipping keywords found in remove.conf")
+            self.archive.tar_file = fresh[0]
             return fresh[0]
         return self.archive.create_tar_file()
 
