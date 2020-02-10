@@ -71,7 +71,8 @@ def test_cleanoptions_outputfile(_):
 
 
 @patch('insights.client.data_collector.CleanOptions')
-def test_soscleaner_additions(clean_opts):
+@patch('insights.contrib.soscleaner.os.path.isdir')
+def test_soscleaner_additions(isdir_, clean_opts):
     '''
     Test the added if-block in soscleaner.py
     for returning before creating the archive
