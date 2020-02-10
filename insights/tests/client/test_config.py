@@ -120,6 +120,7 @@ def test_offline_disables_options():
     with pytest.raises(ValueError):
         InsightsConfig(status=True, offline=True)
 
+
 # empty argv so parse_args isn't polluted with pytest arguments
 @patch('insights.client.config.sys.argv', [sys.argv[0]])
 def test_output_dir_file_cant_use_both():
@@ -129,6 +130,7 @@ def test_output_dir_file_cant_use_both():
     with pytest.raises(ValueError):
         c = InsightsConfig(output_dir='test', output_file='test')
         c.load_all()
+
 
 # empty argv so parse_args isn't polluted with pytest arguments
 @patch('insights.client.config.sys.argv', [sys.argv[0]])
@@ -161,6 +163,7 @@ def test_output_dir_file_implies_no_upload_true_keep_archive_false():
     assert c.no_upload
     assert not c.keep_archive
 
+
 # empty argv so parse_args isn't polluted with pytest arguments
 @patch('insights.client.config.sys.argv', [sys.argv[0]])
 def test_compressor_option_validate():
@@ -177,6 +180,7 @@ def test_compressor_option_validate():
     c = InsightsConfig(compressor='hullabaloo')
     c.load_all()
     assert c.compressor == 'gz'
+
 
 # empty argv so parse_args isn't polluted with pytest arguments
 @patch('insights.client.config.sys.argv', [sys.argv[0]])

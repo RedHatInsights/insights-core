@@ -1,6 +1,4 @@
-import pytest
 from insights.client.config import InsightsConfig
-from insights.client.archive import InsightsArchive
 from insights.contrib.soscleaner import SOSCleaner
 from insights.client.data_collector import DataCollector, CleanOptions
 from mock.mock import patch, Mock
@@ -44,7 +42,7 @@ def test_soscleaner_archive_returned(_, soscleaner):
 
 @patch('insights.client.data_collector.SOSCleaner')
 @patch('insights.client.data_collector.InsightsArchive')
-def test_soscleaner_archive_returned(_, soscleaner):
+def test_soscleaner_dir_returned(_, soscleaner):
     '''
     Test that SOSCleaner returns a directory when
     output_dir is specified.
@@ -78,7 +76,6 @@ def test_soscleaner_additions(isdir_, clean_opts):
     for returning before creating the archive
     '''
     clean_opts.hostname_path = 'test'
-    r = {'keywords': ['test']}
 
     # test that soscleaner returns as normal by default,
     #   then that it returns None when no_tar_file is not None
