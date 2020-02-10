@@ -1038,14 +1038,3 @@ class InsightsConnection(object):
             f.write(content)
 
         return json.loads(content)
-
-    def get_legacy_advisor_report(self):
-        '''
-            Retrieve advisor report through the legacy API
-        '''
-        url = self.base_url + "/v1/systems/" + generate_machine_id() + "/reports"
-        content = self._get(url)
-        if content is None:
-            return None
-
-        return json.loads(content)

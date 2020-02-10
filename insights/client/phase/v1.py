@@ -195,7 +195,6 @@ def post_update(client, config):
             if (not config.disable_schedule and
                get_scheduler(config).set_daily()):
                 logger.info('Automatic scheduling for Insights has been enabled.')
-
         return
     # -------delete everything above this line-------
 
