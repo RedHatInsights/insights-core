@@ -1,9 +1,14 @@
 """
-The filters module allows developers to apply filters to datasources. A filter
-is a simple string, and it matches if it is contained anywhere within a line.
+The filters module allows developers to apply filters to datasources,
+by adding them directly or through dependent components like parsers
+and combiners. A filter is a simple string, and it matches if it is contained
+anywhere within a line.
 
 If a datasource has filters defined, it will return only lines matching at
 least one of them. If a datasource has no filters, it will return all lines.
+
+Filters can be added to components like parsers and combiners, to apply consistent
+filtering to multiple underlying datasources that are configured as filterable.
 
 Filters aren't applicable to "raw" datasources, which are created with
 ``kind=RawFileProvider`` and have ``RegistryPoint`` instances with ``raw=True``.
@@ -46,37 +51,49 @@ FILTERS = defaultdict(set)
 ENABLED = parse_bool(os.environ.get("INSIGHTS_FILTERS_ENABLED"), default=True)
 
 
-def add_filter(ds, patterns):
+def add_filter(component, patterns):
     """
-    Add a filter or list of filters to a datasource. A filter is a simple
-    string, and it matches if it is contained anywhere within a line.
+    Add a filter or list of filters to a component. When the component is
+    a datasource, the filter will be directly added to that datasouce.
+    In cases when the component is a parser or combiner, the filter will be
+    added to underlying filterable datasources by traversing dependency graph.
+    A filter is a simple string, and it matches if it is contained anywhere
+    within a line.
 
     Args:
-       ds (@datasource component): The datasource to filter
+       component (component): The component to filter, can be datasource,
+            parser or combiner.
        patterns (str, [str]): A string, list of strings, or set of strings to
             add to the datasource's filters.
     """
-    if not plugins.is_datasource(ds):
-        raise Exception("Filters are applicable only to datasources.")
+    def inner(component, patterns):
+        if component in _CACHE:
+            del _CACHE[component]
+        if isinstance(patterns, six.string_types):
+            FILTERS[component].add(patterns)
+        elif isinstance(patterns, list):
+            FILTERS[component] |= set(patterns)
+        elif isinstance(patterns, set):
+            FILTERS[component] |= patterns
+        else:
+            raise TypeError("patterns must be string, list, or set.")
 
-    delegate = dr.get_delegate(ds)
-
-    if delegate.raw:
-        raise Exception("Filters aren't applicable to raw datasources.")
-
-    if not delegate.filterable:
-        raise Exception("Filters aren't applicable to %s." % dr.get_name(ds))
-
-    if ds in _CACHE:
-        del _CACHE[ds]
-    if isinstance(patterns, six.string_types):
-        FILTERS[ds].add(patterns)
-    elif isinstance(patterns, list):
-        FILTERS[ds] |= set(patterns)
-    elif isinstance(patterns, set):
-        FILTERS[ds] |= patterns
+    if not plugins.is_datasource(component):
+        for dep in dr.run_order(dr.get_dependency_graph(component)):
+            if plugins.is_datasource(dep):
+                d = dr.get_delegate(dep)
+                if d.filterable:
+                    inner(dep, patterns)
     else:
-        raise TypeError("patterns must be string, list, or set.")
+        delegate = dr.get_delegate(component)
+
+        if delegate.raw:
+            raise Exception("Filters aren't applicable to raw datasources.")
+
+        if not delegate.filterable:
+            raise Exception("Filters aren't applicable to %s." % dr.get_name(component))
+
+        inner(component, patterns)
 
 
 _add_filter = add_filter
