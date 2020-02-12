@@ -15,7 +15,8 @@ def patch_insights_config(old_function):
                        "return_value.load_all.return_value.disable_schedule": False,
                        "return_value.load_all.return_value.analyze_container": False,
                        "return_value.load_all.return_value.test_connection": False,
-                       "return_value.load_all.return_value.support": True})
+                       "return_value.load_all.return_value.support": True,
+                       "return_value.load_all.return_value.remove_file": '/tmp/foo'})
     return patcher(old_function)
 
 
