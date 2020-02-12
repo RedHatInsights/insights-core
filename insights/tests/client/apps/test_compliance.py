@@ -12,7 +12,7 @@ PATH = '/usr/share/xml/scap/ref_id.xml'
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
 def test_oscap_scan(config, assert_rpms):
     compliance_client = ComplianceClient(config)
-    compliance_client.get_policies = lambda: [{'attributes': {'ref_id': 'foo'}}]
+    compliance_client.get_policies = lambda: [{'ref_id': 'foo'}]
     compliance_client.find_scap_policy = lambda ref_id: '/usr/share/xml/scap/foo.xml'
     compliance_client.run_scan = lambda ref_id, policy_xml, output_path: None
     compliance_client.archive.archive_tmp_dir = '/tmp'
@@ -26,7 +26,7 @@ def test_oscap_scan(config, assert_rpms):
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
 def test_missing_packages(config, call):
     compliance_client = ComplianceClient(config)
-    compliance_client.get_policies = lambda: [{'attributes': {'ref_id': 'foo'}}]
+    compliance_client.get_policies = lambda: [{'ref_id': 'foo'}]
     compliance_client.find_scap_policy = lambda ref_id: '/usr/share/xml/scap/foo.xml'
     compliance_client.run_scan = lambda ref_id, policy_xml: None
     with raises(SystemExit):
@@ -37,7 +37,7 @@ def test_missing_packages(config, call):
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
 def test_errored_rpm_call(config, call):
     compliance_client = ComplianceClient(config)
-    compliance_client.get_policies = lambda: [{'attributes': {'ref_id': 'foo'}}]
+    compliance_client.get_policies = lambda: [{'ref_id': 'foo'}]
     compliance_client.find_scap_policy = lambda ref_id: '/usr/share/xml/scap/foo.xml'
     compliance_client.run_scan = lambda ref_id, policy_xml: None
     with raises(SystemExit):
@@ -48,9 +48,9 @@ def test_errored_rpm_call(config, call):
 def test_get_policies(config):
     compliance_client = ComplianceClient(config)
     compliance_client.hostname = 'foo'
-    compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, json=Mock(return_value={'data': 'data'})))
+    compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, json=Mock(return_value={'data': [{'attributes': {'profiles': 'data'}}]})))
     assert compliance_client.get_policies() == 'data'
-    compliance_client.conn.session.get.assert_called_with('https://localhost/app/compliance/profiles', params={'hostname': 'foo'})
+    compliance_client.conn.session.get.assert_called_with('https://localhost/app/compliance/systems', params={'search': 'name=foo'})
 
 
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
@@ -59,7 +59,7 @@ def test_get_policies_error(config):
     compliance_client.hostname = 'foo'
     compliance_client.conn.session.get = Mock(return_value=Mock(status_code=500))
     assert compliance_client.get_policies() == []
-    compliance_client.conn.session.get.assert_called_with('https://localhost/app/compliance/profiles', params={'hostname': 'foo'})
+    compliance_client.conn.session.get.assert_called_with('https://localhost/app/compliance/systems', params={'search': 'name=foo'})
 
 
 @patch("insights.client.apps.compliance.linux_distribution", return_value=(None, '6.5', None))

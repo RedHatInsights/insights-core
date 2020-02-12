@@ -30,7 +30,7 @@ class ComplianceClient:
         if not policies:
             logger.error("System is not associated with any profiles. Assign profiles by either uploading a SCAP scan or using the compliance web UI.\n")
             exit(constants.sig_kill_bad)
-        profile_ref_ids = [policy['attributes']['ref_id'] for policy in policies]
+        profile_ref_ids = [policy['ref_id'] for policy in policies]
         for profile_ref_id in profile_ref_ids:
             self.run_scan(
                 profile_ref_id,
@@ -43,9 +43,9 @@ class ComplianceClient:
     # TODO: Not a typo! This endpoint gives OSCAP policies, not profiles
     # We need to update compliance-backend to fix this
     def get_policies(self):
-        response = self.conn.session.get("https://{0}/compliance/profiles".format(self.config.base_url), params={'hostname': self.hostname})
+        response = self.conn.session.get("https://{0}/compliance/systems".format(self.config.base_url), params={'search': 'name={0}'.format(self.hostname)})
         if response.status_code == 200:
-            return response.json()['data']
+            return response.json()['data'][0]['attributes']['profiles']
         else:
             return []
 

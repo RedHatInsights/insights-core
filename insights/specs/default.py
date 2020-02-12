@@ -104,9 +104,9 @@ class DefaultSpecs(Specs):
             return True
         raise SkipComponent()
 
-    aws_instance_id_doc = simple_command("/usr/bin/curl http://169.254.169.254/latest/dynamic/instance-identity/document --connect-timeout 5", deps=[is_aws])
-    aws_instance_id_pkcs7 = simple_command("/usr/bin/curl http://169.254.169.254/latest/dynamic/instance-identity/pkcs7 --connect-timeout 5", deps=[is_aws])
-    aws_instance_type = simple_command("/usr/bin/curl http://169.254.169.254/latest/meta-data/instance-type --connect-timeout 5", deps=[is_aws])
+    aws_instance_id_doc = simple_command("/usr/bin/curl -s http://169.254.169.254/latest/dynamic/instance-identity/document --connect-timeout 5", deps=[is_aws])
+    aws_instance_id_pkcs7 = simple_command("/usr/bin/curl -s http://169.254.169.254/latest/dynamic/instance-identity/pkcs7 --connect-timeout 5", deps=[is_aws])
+    aws_instance_type = simple_command("/usr/bin/curl -s http://169.254.169.254/latest/meta-data/instance-type --connect-timeout 5", deps=[is_aws])
 
     @datasource(CloudProvider)
     def is_azure(broker):
@@ -317,6 +317,7 @@ class DefaultSpecs(Specs):
     fcoeadm_i = simple_command("/usr/sbin/fcoeadm -i")
     fdisk_l = simple_command("/sbin/fdisk -l")
     findmnt_lo_propagation = simple_command("/bin/findmnt -lo+PROPAGATION")
+    firewalld_conf = simple_file("/etc/firewalld/firewalld.conf")
     foreman_production_log = simple_file("/var/log/foreman/production.log")
     foreman_proxy_conf = simple_file("/etc/foreman-proxy/settings.yml")
     foreman_proxy_log = simple_file("/var/log/foreman-proxy/proxy.log")
