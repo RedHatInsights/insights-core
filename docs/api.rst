@@ -34,7 +34,7 @@ archives) to better meet Red Hat customers' security and privacy concerns.
 Blacklists
     A list of files or commands to never upload.
 Filters
-    A set of grep-like strings used to filter files before adding them to
+    A set of simple strings used to filter files before adding them to
     the archive.
 Dynamic Uploader Configuration
     The client will download a configuration file from Red Hat (by

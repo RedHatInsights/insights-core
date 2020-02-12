@@ -32,10 +32,10 @@ find = spec_factory.find
 
 def _intercept_add_filter(func):
     @wraps(func)
-    def inner(ds, pattern):
-        ret = add_filter(ds, pattern)
+    def inner(component, pattern):
+        ret = add_filter(component, pattern)
         calling_module = inspect.stack()[1][0].f_globals.get("__name__")
-        ADDED_FILTERS[calling_module].add(ds)
+        ADDED_FILTERS[calling_module] |= set(r for r in _get_registry_points(component) if r.filterable)
         return ret
     return inner
 
@@ -57,7 +57,13 @@ spec_factory.find = _intercept_find(spec_factory.find)
 
 
 def _get_registry_points(component):
+    """
+    Get underlying registry points for a component. The return set
+    will include the passed-in component if it is also a registry point.
+    """
     results = set()
+    if isinstance(component, RegistryPoint):
+        results.add(component)
     for c in dr.walk_tree(component):
         try:
             if isinstance(c, RegistryPoint):
