@@ -1,7 +1,9 @@
 import doctest
+import pytest
 from insights.parsers import firewall_config
 from insights.parsers.firewall_config import FirewallDConf
 from insights.tests import context_wrap
+from insights.parsers import SkipException
 
 FIREWALLD_CONFIG = """
 # firewalld config file
@@ -26,6 +28,9 @@ CleanupOnExit=yes
 
 """.strip()
 
+FIREWALLD_CONFIG_2 = """
+""".strip()
+
 
 def test_docs():
     env = {
@@ -33,3 +38,8 @@ def test_docs():
     }
     failed, total = doctest.testmod(firewall_config, globs=env)
     assert failed == 0
+
+
+def test_empty_content():
+    with pytest.raises(SkipException):
+        FirewallDConf(context_wrap(FIREWALLD_CONFIG_2))
