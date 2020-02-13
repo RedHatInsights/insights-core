@@ -1271,11 +1271,11 @@ class Syslog(LogFileOutput):
 
     Sample log lines::
 
-        May 18 15:13:34 lxc-rhel68-sat56 jabberd/sm[11057]: session started: jid=rhn-dispatcher-sat@lxc-rhel6-sat56.redhat.com/superclient
-        May 18 15:13:36 lxc-rhel68-sat56 wrapper[11375]: --> Wrapper Started as Daemon
-        May 18 15:13:36 lxc-rhel68-sat56 wrapper[11375]: Launching a JVM...
-        May 18 15:24:28 lxc-rhel68-sat56 yum[11597]: Installed: lynx-2.8.6-27.el6.x86_64
-        May 18 15:36:19 lxc-rhel68-sat56 yum[11954]: Updated: sos-3.2-40.el6.noarch
+        May  9 15:13:34 lxc-rhel68-sat56 jabberd/sm[11057]: session started: jid=rhn-dispatcher-sat@lxc-rhel6-sat56.redhat.com/superclient
+        May  9 15:13:36 lxc-rhel68-sat56 wrapper[11375]: --> Wrapper Started as Daemon
+        May  9 15:13:36 lxc-rhel68-sat56 wrapper[11375]: Launching a JVM...
+        May 10 15:24:28 lxc-rhel68-sat56 yum[11597]: Installed: lynx-2.8.6-27.el6.x86_64
+        May 10 15:36:19 lxc-rhel68-sat56 yum[11954]: Updated: sos-3.2-40.el6.noarch
 
     Examples:
         >>> Syslog.token_scan('daemon_start', 'Wrapper Started as Daemon')
@@ -1283,9 +1283,9 @@ class Syslog(LogFileOutput):
         >>> Syslog.keep_scan('yum_lines', 'yum')
         >>> Syslog.keep_scan('yum_installed_lines', ['yum', 'Installed'])
         >>> syslog.get('wrapper')[0]
-        {'timestamp': 'May 18 15:13:36', 'hostname': 'lxc-rhel68-sat56',
+        {'timestamp': 'May  9 15:13:36', 'hostname': 'lxc-rhel68-sat56',
          'procname': wrapper[11375]', 'message': '--> Wrapper Started as Daemon',
-         'raw_message': 'May 18 15:13:36 lxc-rhel68-sat56 wrapper[11375]: --> Wrapper Started as Daemon'
+         'raw_message': 'May  9 15:13:36 lxc-rhel68-sat56 wrapper[11375]: --> Wrapper Started as Daemon'
         }
         >>> syslog.daemon_start
         True
@@ -1307,7 +1307,7 @@ class Syslog(LogFileOutput):
         """
         Parsed result::
 
-            {'timestamp':'May 18 14:24:14',
+            {'timestamp':'May  9 15:13:34',
              'procname': 'kernel',
              'hostname':'lxc-rhel68-sat56',
              'message': '...',
@@ -1319,16 +1319,16 @@ class Syslog(LogFileOutput):
             info, msg = [i.strip() for i in line.split(': ', 1)]
             msg_info['message'] = msg
 
-            info_splits = info.split()
-            if len(info_splits) == 5:
-                logstamp = ' '.join(info_splits[:3])
+            info_splits = info.rsplit(None, 2)
+            if len(info_splits) == 3:
+                logstamp = info_splits[0]
                 try:
                     datetime.datetime.strptime(logstamp, self.time_format)
                 except ValueError:
                     return msg_info
                 msg_info['timestamp'] = logstamp
-                msg_info['hostname'] = info_splits[3]
-                msg_info['procname'] = info_splits[4]
+                msg_info['hostname'] = info_splits[1]
+                msg_info['procname'] = info_splits[2]
         return msg_info
 
     def get_logs_by_procname(self, proc):
