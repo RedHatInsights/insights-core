@@ -19,7 +19,8 @@ class URLCache(object):
         if os.path.isfile(self._path):
             with open(self._path, "r+b") as f:
                 self._cache = pickle.load(f)
-        os.makedirs(os.path.dirname(self._path), exist_ok=True)
+        if not os.path.exists(os.path.dirname(self._path)):
+            os.makedirs(os.path.dirname(self._path))
 
     def get(self, url):
         try:

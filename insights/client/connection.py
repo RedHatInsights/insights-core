@@ -1023,7 +1023,8 @@ class InsightsConnection(object):
         if content is None:
             return None
 
-        os.makedirs("/var/lib/insights", mode=0o755, exist_ok=True)
+        if not os.path.exists("/var/lib/insights"):
+            os.makedirs("/var/lib/insights", mode=0o755)
 
         with open("/var/lib/insights/host-details.json", mode="w+b") as f:
             f.write(content)
