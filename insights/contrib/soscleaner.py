@@ -95,7 +95,7 @@ class SOSCleaner:
                     #if mode == '200' or mode == '444' or mode == '400':
                     #    skip_list.append(f)
                     mime_type = content_type.from_file(f_full)
-                    if 'text' not in mime_type:
+                    if 'text' not in mime_type and 'json' not in mime_type:
                         skip_list.append(f)
 
         return skip_list
