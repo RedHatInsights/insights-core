@@ -1,5 +1,16 @@
 # Change Log
 
+## [insights-core-3.0.151-1319](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.151-1319) (2020-02-13)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.150-1...insights-core-3.0.151-1319)
+
+**Closed issues:**
+
+- Extend insights.core.filters.add\_filter\(\) functionality [\#2429](https://github.com/RedHatInsights/insights-core/issues/2429)
+- Create a PS combiner to consolidate data from PS parsers  [\#2423](https://github.com/RedHatInsights/insights-core/issues/2423)
+
+## [insights-core-3.0.150-1](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.150-1) (2020-02-07)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.149-1309...insights-core-3.0.150-1)
+
 ## [insights-core-3.0.149-1309](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.149-1309) (2020-02-06)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.148-1...insights-core-3.0.149-1309)
 
