@@ -27,7 +27,7 @@ Examples:
 """
 
 from insights import parser, CommandParser
-from insights.parsers import SkipException
+from insights.parsers import SkipException, ParseException
 from insights.specs import Specs
 
 
@@ -44,7 +44,10 @@ class SatelliteMongoDBStorageEngine(CommandParser):
         self.name = ''
         for line in content:
             if line.strip().startswith('"name"'):
-                self.name = line.split(':')[1].strip(',').strip().strip('"')
-                break
+                try:
+                    self.name = line.split(':')[1].strip(',').strip().strip('"')
+                    break
+                except Exception:
+                    raise ParseException("Unable to parse the line: {}".format(line))
         if not self.name:
             raise SkipException("can not get storage engine for satellite")
