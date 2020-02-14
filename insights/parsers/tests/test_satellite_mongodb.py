@@ -2,7 +2,7 @@ import pytest
 import doctest
 from insights.tests import context_wrap
 from insights.parsers import SkipException, ParseException
-from insights.parsers import satellite_mongodb_storage_engine
+from insights.parsers import satellite_mongodb
 
 
 MONGO_PULP_STORAGE_ENGINE_OUTPUT1 = '''
@@ -37,23 +37,32 @@ exception: connect failed
 MONGO_PULP_STORAGE_ENGINE_OUTPUT4 = '''
 MongoDB shell version v3.4.9
 connecting to: mongodb://127.0.0.1:27017/pulp_database
-"name" wrong data
+{
+    "name" wrong data
+}
 '''.strip()
 
 
 def test_doc_examples():
-    output = satellite_mongodb_storage_engine.SatelliteMongoDBStorageEngine(context_wrap(MONGO_PULP_STORAGE_ENGINE_OUTPUT1))
+    output = satellite_mongodb.SatelliteMongoDBStorageEngine(context_wrap(MONGO_PULP_STORAGE_ENGINE_OUTPUT1))
     globs = {
         'satellite_storage_engine': output
     }
-    failed, tested = doctest.testmod(satellite_mongodb_storage_engine, globs=globs)
+    failed, tested = doctest.testmod(satellite_mongodb, globs=globs)
     assert failed == 0
+
+
+def test_satellite():
+    output = satellite_mongodb.SatelliteMongoDBStorageEngine(context_wrap(MONGO_PULP_STORAGE_ENGINE_OUTPUT1))
+    assert output['supportsCommittedReads']
+    assert not output['readOnly']
+    assert output['persistent']
 
 
 def test_no_storage_engine():
     with pytest.raises(SkipException):
-        satellite_mongodb_storage_engine.SatelliteMongoDBStorageEngine(context_wrap(MONGO_PULP_STORAGE_ENGINE_OUTPUT2))
+        satellite_mongodb.SatelliteMongoDBStorageEngine(context_wrap(MONGO_PULP_STORAGE_ENGINE_OUTPUT2))
     with pytest.raises(SkipException):
-        satellite_mongodb_storage_engine.SatelliteMongoDBStorageEngine(context_wrap(MONGO_PULP_STORAGE_ENGINE_OUTPUT3))
+        satellite_mongodb.SatelliteMongoDBStorageEngine(context_wrap(MONGO_PULP_STORAGE_ENGINE_OUTPUT3))
     with pytest.raises(ParseException):
-        satellite_mongodb_storage_engine.SatelliteMongoDBStorageEngine(context_wrap(MONGO_PULP_STORAGE_ENGINE_OUTPUT4))
+        satellite_mongodb.SatelliteMongoDBStorageEngine(context_wrap(MONGO_PULP_STORAGE_ENGINE_OUTPUT4))
