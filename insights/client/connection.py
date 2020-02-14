@@ -999,6 +999,7 @@ class InsightsConnection(object):
         if item is not None:
             headers["If-None-Match"] = item.etag
 
+        net_logger.info("GET %s", url)
         res = self.session.get(url, headers=headers)
 
         if res.status_code in [requests.codes.OK, requests.codes.NOT_MODIFIED]:
@@ -1028,6 +1029,7 @@ class InsightsConnection(object):
 
         with open("/var/lib/insights/host-details.json", mode="w+b") as f:
             f.write(content)
+            logger.debug("Wrote \"/var/lib/insights/host-details.json\"")
 
         host_id = json.loads(content)["results"][0]["id"]
         url = self.base_url + "/insights/v1/system/%s/reports/" % host_id
@@ -1037,5 +1039,6 @@ class InsightsConnection(object):
 
         with open("/var/lib/insights/insights-details.json", mode="w+b") as f:
             f.write(content)
+            logger.debug("Wrote \"/var/lib/insights/insights-details.json\"")
 
         return json.loads(content)
