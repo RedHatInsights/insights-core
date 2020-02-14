@@ -11,6 +11,7 @@ The satellite mongodb storage engine parser reads the output of
 save the storage engine attributes to a dict.
 
 """
+import re
 
 from insights import parser, CommandParser
 from insights.parsers import SkipException, ParseException
@@ -48,6 +49,11 @@ class SatelliteMongoDBStorageEngine(CommandParser, dict):
         ParseException: When the storage engine attributes aren't in expected format
     """
 
+    def _remove_special_chars(self, str_name, special_chars):
+        for char in special_chars:
+            str_name = str_name.replace(char, '')
+        return str_name
+
     def parse_content(self, content):
         start_parse = False
         for line in content:
@@ -60,8 +66,8 @@ class SatelliteMongoDBStorageEngine(CommandParser, dict):
             if start_parse:
                 try:
                     name, value = line.split(':', 1)
-                    name = name.strip().strip('"')
-                    value = value.strip(',').strip().strip('"').lower()
+                    name = self._remove_special_chars(name, ' "')
+                    value = self._remove_special_chars(value, ' ,"').lower()
                     if value in ("on", "yes", "true"):
                         value = True
                     if value in ("off", "no", "false"):
