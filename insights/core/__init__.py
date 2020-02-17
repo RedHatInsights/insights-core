@@ -519,10 +519,10 @@ class CommandParser(Parser):
 
     Raises:
         ContentException: When `context.content` contains a single line and
-            that line contains one of the string in the `bad_single_lines`
-            list. Or, when `context.content` contains multiple lines and there
-            is one line contains one of the string in the `bad_lines` or
-            `extra_bad_lines` list.
+            that line contains one of the string in the `bad_single_lines` or
+            `extra_bad_lines` list. Or, when `context.content` contains
+            multiple lines and there is one line contains one of the string
+            in the `bad_lines` or `extra_bad_lines` list.
     """
 
     __bad_single_lines = [
@@ -572,7 +572,7 @@ class CommandParser(Parser):
         if results:
             bad_lines = bad_lines if len(results) > 1 else bad_single_lines
             if any(bl in rl.lower() for bl in bad_lines for rl in results):
-                    return False
+                return False
         return True
 
     def __init__(self, context, extra_bad_lines=None):
@@ -587,11 +587,9 @@ class CommandParser(Parser):
                 `self.__bad_single_lines` and `self.__bad_lines`.
         """
         extra_bad_lines = [] if extra_bad_lines is None else extra_bad_lines
-        valid_lines = self.validate_lines(
-                context.content, self.__bad_single_lines, self.__bad_lines)
+        valid_lines = self.validate_lines(context.content, self.__bad_single_lines, self.__bad_lines)
         if valid_lines and extra_bad_lines:
-            valid_lines = self.validate_lines(
-                    context.content, extra_bad_lines, extra_bad_lines)
+            valid_lines = self.validate_lines(context.content, extra_bad_lines, extra_bad_lines)
         if not valid_lines:
             first = context.content[0] if context.content else "<no content>"
             name = self.__class__.__name__
