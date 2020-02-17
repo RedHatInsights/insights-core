@@ -558,7 +558,7 @@ class CommandParser(Parser):
         If no bad line is found the function returns `True`.
 
         Parameters:
-            results (str): The results string of the output from the command
+            results (list): The results string of the output from the command
                 defined by the command spec.
             bad_single_lines (list): The list of bad lines should be checked
                 only when the result contains a single line.
