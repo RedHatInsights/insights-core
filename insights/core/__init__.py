@@ -518,13 +518,11 @@ class CommandParser(Parser):
     This class checks output from the command defined in the spec.
 
     Raises:
-        ContentException: Raises when::
-
-            1. If `context.content` contains a single line and that line
-               contains one of the string in the `bad_single_lines` list.
-            2. If `context.content` contains multiple lines and there is one
-               line contains one of the string in the `bad_anywhere_lines`
-               list.
+        ContentException: When `context.content` contains a single line and
+            that line contains one of the string in the `bad_single_lines`
+            list. Or, when `context.content` contains multiple lines and there
+            is one line contains one of the string in the `bad_lines` or
+            `extra_bad_lines` list.
     """
 
     __bad_single_lines = [
