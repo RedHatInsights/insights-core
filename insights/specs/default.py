@@ -829,6 +829,7 @@ class DefaultSpecs(Specs):
                                                "rhn-logs/rhn/rhn_taskomatic_daemon.log"])
     rhsm_conf = simple_file("/etc/rhsm/rhsm.conf")
     rhsm_log = simple_file("/var/log/rhsm/rhsm.log")
+    rhsm_releasever = simple_file('/var/lib/rhsm/cache/releasever.json')
     rndc_status = simple_command("/usr/sbin/rndc status")
     root_crontab = simple_command("/usr/bin/crontab -l -u root")
     route = simple_command("/sbin/route -n")

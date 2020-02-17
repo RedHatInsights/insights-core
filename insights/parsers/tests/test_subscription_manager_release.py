@@ -12,6 +12,10 @@ INPUT_NORMAL_2 = """
 Release: 6Server
 """.strip()
 
+INPUT_NORMAL_3 = """
+Release: 8
+""".strip()
+
 INPUT_NOT_SET = """
 Release not set
 """.strip()
@@ -43,6 +47,11 @@ def test_subscription_manager_release_show_ok():
     ret = SubscriptionManagerReleaseShow(context_wrap(INPUT_NORMAL_2))
     assert ret.set == '6Server'
     assert ret.major == 6
+    assert ret.minor is None
+
+    ret = SubscriptionManagerReleaseShow(context_wrap(INPUT_NORMAL_3))
+    assert ret.set == '8'
+    assert ret.major == 8
     assert ret.minor is None
 
 
