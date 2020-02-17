@@ -525,6 +525,7 @@ class CommandParser(Parser):
             "command not found",
             "no module named",
             "no files found for",
+            "missing dependencies:",
     ]
     """
     This variable contains filters for bad responses from commands defined
@@ -535,7 +536,7 @@ class CommandParser(Parser):
     @staticmethod
     def validate_lines(results, bad_lines):
         """
-        If `results` contains a single line and that line is included
+        If the first line of the `results` contains one of the string
         in the `bad_lines` list, this function returns `False`. If no bad
         line is found the function returns `True`
 
@@ -547,7 +548,7 @@ class CommandParser(Parser):
             (Boolean): True for no bad lines or False for bad line found.
         """
 
-        if results and len(results) == 1:
+        if results:
             first = results[0]
             if any(l in first.lower() for l in bad_lines):
                 return False
