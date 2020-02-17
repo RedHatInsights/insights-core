@@ -44,7 +44,7 @@ class ComplianceClient:
     def get_policies(self):
         response = self.conn.session.get("https://{0}/compliance/systems".format(self.config.base_url), params={'search': 'name={0}'.format(self.hostname)})
         if response.status_code == 200:
-            return response.json()['data'][0]['attributes']['profiles']
+            return (response.json().get('data') or [{}])[0].get('attributes', {}).get('profiles', [])
         else:
             return []
 
