@@ -72,10 +72,6 @@ def pre_update(client, config):
         if not validate_remove_file(config.remove_file):
             sys.exit(constants.sig_kill_bad)
 
-    if os.path.isfile(config.remove_file):
-        if not validate_remove_file(config.remove_file):
-            sys.exit(constants.sig_kill_bad)
-
     # handle cron stuff
     if config.enable_schedule:
         # enable automatic scheduling
