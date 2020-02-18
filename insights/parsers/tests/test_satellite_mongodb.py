@@ -44,7 +44,7 @@ connecting to: mongodb://127.0.0.1:27017/pulp_database
 
 
 def test_doc_examples():
-    output = satellite_mongodb.SatelliteMongoDBStorageEngine(context_wrap(MONGO_PULP_STORAGE_ENGINE_OUTPUT1))
+    output = satellite_mongodb.MongoDBStorageEngine(context_wrap(MONGO_PULP_STORAGE_ENGINE_OUTPUT1))
     globs = {
         'satellite_storage_engine': output
     }
@@ -53,16 +53,16 @@ def test_doc_examples():
 
 
 def test_satellite():
-    output = satellite_mongodb.SatelliteMongoDBStorageEngine(context_wrap(MONGO_PULP_STORAGE_ENGINE_OUTPUT1))
-    assert output['supportsCommittedReads']
-    assert not output['readOnly']
-    assert output['persistent']
+    output = satellite_mongodb.MongoDBStorageEngine(context_wrap(MONGO_PULP_STORAGE_ENGINE_OUTPUT1))
+    assert output['supportsCommittedReads'] == 'true'
+    assert output['readOnly'] == 'false'
+    assert output['persistent'] == 'true'
 
 
 def test_no_storage_engine():
     with pytest.raises(SkipException):
-        satellite_mongodb.SatelliteMongoDBStorageEngine(context_wrap(MONGO_PULP_STORAGE_ENGINE_OUTPUT2))
+        satellite_mongodb.MongoDBStorageEngine(context_wrap(MONGO_PULP_STORAGE_ENGINE_OUTPUT2))
     with pytest.raises(SkipException):
-        satellite_mongodb.SatelliteMongoDBStorageEngine(context_wrap(MONGO_PULP_STORAGE_ENGINE_OUTPUT3))
+        satellite_mongodb.MongoDBStorageEngine(context_wrap(MONGO_PULP_STORAGE_ENGINE_OUTPUT3))
     with pytest.raises(ParseException):
-        satellite_mongodb.SatelliteMongoDBStorageEngine(context_wrap(MONGO_PULP_STORAGE_ENGINE_OUTPUT4))
+        satellite_mongodb.MongoDBStorageEngine(context_wrap(MONGO_PULP_STORAGE_ENGINE_OUTPUT4))
