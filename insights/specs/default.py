@@ -880,6 +880,7 @@ class DefaultSpecs(Specs):
     saphostexec_version = simple_command("/usr/sap/hostctrl/exe/saphostexec -version")
     sat5_insights_properties = simple_file("/etc/redhat-access/redhat-access-insights.properties")
     satellite_version_rb = simple_file("/usr/share/foreman/lib/satellite/version.rb")
+    satellite_custom_hiera = simple_file("/etc/foreman-installer/custom-hiera.yaml")
     block_devices = listdir("/sys/block")
     scheduler = foreach_collect(block_devices, "/sys/block/%s/queue/scheduler")
     scsi = simple_file("/proc/scsi/scsi")
