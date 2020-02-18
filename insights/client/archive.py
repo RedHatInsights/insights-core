@@ -185,6 +185,7 @@ class InsightsArchive(object):
         '''
         if self.config.keep_archive:
             if self.config.obfuscate:
+                self.delete_archive_file()
                 logger.info('Insights archive and SOSCleaner metadata retained in %s', self.tmp_dir)
                 return  # return before deleting tmp_dir
             else:
