@@ -30,7 +30,8 @@ class InsightsArchive(object):
         """
         self.config = config
         self.tmp_dir = tempfile.mkdtemp(prefix='/var/tmp/')
-        self.archive_tmp_dir = tempfile.mkdtemp(prefix='/var/tmp/')
+        if not self.config.obfuscate:
+            self.archive_tmp_dir = tempfile.mkdtemp(prefix='/var/tmp/')
         name = determine_hostname()
         self.archive_name = ("insights-%s-%s" %
                              (name,
@@ -185,7 +186,6 @@ class InsightsArchive(object):
         '''
         if self.config.keep_archive:
             if self.config.obfuscate:
-                self.delete_archive_file()
                 logger.info('Insights archive and SOSCleaner metadata retained in %s', self.tmp_dir)
                 return  # return before deleting tmp_dir
             else:
