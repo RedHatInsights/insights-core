@@ -174,7 +174,7 @@ def validate_remove_file(remove_file):
     # Make sure permissions are 600
     mode = stat.S_IMODE(os.stat(remove_file).st_mode)
     if not mode == 0o600:
-        logger.error("ERROR: Invalid remove file permissions"
+        logger.error("ERROR: Invalid remove file permissions\n"
                      "Expected 0600 got %s" % oct(mode))
         return False
     else:
