@@ -193,5 +193,4 @@ class InsightsArchive(object):
                 return  # return before deleting tmp_dir
         else:
             self.delete_archive_file()
-        self.delete_archive_dir()
         self.delete_tmp_dir()
