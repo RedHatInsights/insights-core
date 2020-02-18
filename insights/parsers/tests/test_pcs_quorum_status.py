@@ -73,7 +73,7 @@ def test_pcs_quorum_status():
 def test_invalid():
     with pytest.raises(ParseException) as e:
         PcsQuorumStatus(context_wrap(PCS_QUORUM_STATUS_INVALID))
-    assert "invalid" in str(e)
+    assert "Incorrect content" in str(e)
 
 
 def test_empty():

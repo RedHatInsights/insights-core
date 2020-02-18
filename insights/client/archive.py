@@ -185,11 +185,12 @@ class InsightsArchive(object):
         Delete archive and tmp dirs on exit.
         '''
         if self.config.keep_archive:
-            if self.config.obfuscate:
-                logger.info('Insights archive and SOSCleaner metadata retained in %s', self.tmp_dir)
-                return  # return before deleting tmp_dir
+            if self.config.no_upload:
+                logger.info('Archive saved at %s', self.tar_file)
             else:
                 logger.info('Insights archive retained in %s', self.tar_file)
+            if self.config.obfuscate:
+                return  # return before deleting tmp_dir
         else:
             self.delete_archive_file()
         self.delete_archive_dir()

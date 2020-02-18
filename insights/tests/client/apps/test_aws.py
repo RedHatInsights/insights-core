@@ -79,6 +79,10 @@ def test_get_aws_identity(get_uri):
     get_uri.side_effect = [Mock(ok=False, content=None), Mock(ok=False, content=None)]
     assert aws.get_aws_identity(conn) is None
 
+    # URIs can't connect, return None
+    get_uri.side_effect = [None, None]
+    assert aws.get_aws_identity(conn) is None
+
 
 @patch('insights.client.apps.aws.logger.error')
 def test_post_to_hydra(logger_error):
