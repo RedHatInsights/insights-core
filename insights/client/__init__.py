@@ -1,3 +1,4 @@
+import errno
 import json
 import os
 import logging
@@ -519,8 +520,11 @@ class InsightsClient(object):
             with open("/var/lib/insights/insights-details.json", mode="r+b") as f:
                 insights_data = json.load(f)
             print(json.dumps(insights_data))
-        except FileNotFoundError:
-            print("Error: no report found. Run insights-client --check-results to update the report cache.")
+        except IOError as e:
+            if e.errno == errno.ENOENT:
+                print("Error: no report found. Run insights-client --check-results to update the report cache.")
+            else:
+                print("Unknown IOError: %s" % e)
         except Exception as e:
             print("Unknown Error: %s" % e)
 
