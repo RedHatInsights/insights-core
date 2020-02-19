@@ -9,10 +9,8 @@ import uuid
 import datetime
 import shlex
 import re
-import stat
 import sys
 from subprocess import Popen, PIPE, STDOUT
-from six.moves.configparser import RawConfigParser
 
 import yaml
 try:
@@ -22,6 +20,7 @@ except ImportError:
 
 from .. import package_info
 from .constants import InsightsConstants as constants
+from .collection_rules import InsightsUploadConf
 
 logger = logging.getLogger(__name__)
 
@@ -164,33 +163,11 @@ def _expand_paths(path):
         logger.debug("Could not expand %s", path)
 
 
-def validate_remove_file(remove_file):
+def validate_remove_file(config):
     """
     Validate the remove file
     """
-    if not os.path.isfile(remove_file):
-        logger.warn("WARN: Remove file does not exist")
-        return False
-    # Make sure permissions are 600
-    mode = stat.S_IMODE(os.stat(remove_file).st_mode)
-    if not mode == 0o600:
-        logger.error("ERROR: Invalid remove file permissions"
-                     "Expected 0600 got %s" % oct(mode))
-        return False
-    else:
-        logger.debug("Correct file permissions")
-
-    if os.path.isfile(remove_file):
-        parsedconfig = RawConfigParser()
-        parsedconfig.read(remove_file)
-        rm_conf = {}
-        for item, value in parsedconfig.items('remove'):
-            rm_conf[item] = value.strip().split(',')
-        # Using print here as this could contain sensitive information
-        logger.debug("Remove file parsed contents")
-        logger.debug(rm_conf)
-    logger.info("JSON parsed correctly")
-    return True
+    return InsightsUploadConf(config).validate()
 
 
 def write_data_to_file(data, filepath):

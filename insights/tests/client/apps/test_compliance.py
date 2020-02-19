@@ -3,6 +3,7 @@
 from insights.client.apps.compliance import ComplianceClient, COMPLIANCE_CONTENT_TYPE
 from mock.mock import patch, Mock
 from pytest import raises
+import os
 
 PATH = '/usr/share/xml/scap/ref_id.xml'
 
@@ -106,8 +107,10 @@ def test_find_scap_policy_not_found(config, call):
 def test_run_scan(config, call):
     compliance_client = ComplianceClient(config)
     output_path = '/tmp/oscap_results-ref_id.xml'
+    env = os.environ
+    env.update({'TZ': 'UTC'})
     compliance_client.run_scan('ref_id', '/nonexistent', output_path)
-    call.assert_called_with("oscap xccdf eval --profile ref_id --results " + output_path + ' /nonexistent', keep_rc=True)
+    call.assert_called_with("oscap xccdf eval --profile ref_id --results " + output_path + ' /nonexistent', keep_rc=True, env=env)
 
 
 @patch("insights.client.apps.compliance.call", return_value=(1, 'bad things happened'.encode('utf-8')))
@@ -115,6 +118,8 @@ def test_run_scan(config, call):
 def test_run_scan_fail(config, call):
     compliance_client = ComplianceClient(config)
     output_path = '/tmp/oscap_results-ref_id.xml'
+    env = os.environ
+    env.update({'TZ': 'UTC'})
     with raises(SystemExit):
         compliance_client.run_scan('ref_id', '/nonexistent', output_path)
-    call.assert_called_with("oscap xccdf eval --profile ref_id --results " + output_path + ' /nonexistent', keep_rc=True)
+    call.assert_called_with("oscap xccdf eval --profile ref_id --results " + output_path + ' /nonexistent', keep_rc=True, env=env)
