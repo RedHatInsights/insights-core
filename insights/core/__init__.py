@@ -698,9 +698,13 @@ class YAMLParser(Parser, LegacyItemAccess):
                 self.data = yaml.load('\n'.join(content), Loader=SafeLoader)
             else:
                 self.data = yaml.load(content, Loader=SafeLoader)
-
+            if self.data is None:
+                raise SkipException("There is no data")
             if not isinstance(self.data, (dict, list)):
                 raise ParseException("YAML didn't produce a dictionary or list.")
+        except SkipException as se:
+            tb = sys.exc_info()[2]
+            six.reraise(SkipException, SkipException(str(se)), tb)
         except:
             tb = sys.exc_info()[2]
             cls = self.__class__
