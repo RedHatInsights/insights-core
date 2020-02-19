@@ -102,6 +102,7 @@ class Bond(Parser):
         self._slave_link_failure_count = []
         self._slave_speed = []
         self._slave_duplex = []
+        self._primary_slave = None
 
         for line in get_active_lines(content):
             if line.startswith("Bonding Mode: "):
@@ -135,6 +136,8 @@ class Bond(Parser):
                 self._arp_polling_interval = line.strip().split(':', 1)[1].strip()
             elif line.strip().startswith("ARP IP target/s (n.n.n.n form):"):
                 self._arp_ip_target = line.strip().split(':', 1)[1].strip()
+            elif line.strip().startswith("Primary Slave"):
+                self._primary_slave = line.split(":", 1)[1].split()[0]
 
     @property
     def bond_mode(self):
@@ -221,3 +224,10 @@ class Bond(Parser):
         if no "ARP IP target/s (n.n.n.n form)" key is found.
         """
         return self._arp_ip_target
+
+    @property
+    def primary_slave(self):
+        """Returns the "Primary Slave" in the bond file if key/value exists.
+        If the key is not in the bond file, ``None`` is returned.
+        """
+        return self._primary_slave
