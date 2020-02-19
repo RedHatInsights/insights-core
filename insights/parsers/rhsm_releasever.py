@@ -28,10 +28,10 @@ class RhsmReleaseVer(JSONParser):
     Examples:
         >>> type(rhsm_releasever)
         <class 'insights.parsers.rhsm_releasever.RhsmReleaseVer'>
-        >>> rhsm_releasever['releaseVer']
-        '6.10'
-        >>> rhsm_releasever.set
-        '6.10'
+        >>> rhsm_releasever['releaseVer'] == '6.10'
+        True
+        >>> rhsm_releasever.set == '6.10'
+        True
         >>> rhsm_releasever.major
         6
         >>> rhsm_releasever.minor

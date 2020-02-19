@@ -19,8 +19,8 @@ class RhsmRelease(object):
     Examples:
         >>> type(rhsm_release)
         <class 'insights.combiners.rhsm_release.RhsmRelease'>
-        >>> rhsm_release.set
-        '7.6'
+        >>> rhsm_release.set == '7.6'
+        True
         >>> rhsm_release.major
         7
         >>> rhsm_release.minor
