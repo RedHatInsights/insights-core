@@ -519,6 +519,8 @@ class InsightsClient(object):
             with open("/var/lib/insights/insights-details.json", mode="r+b") as f:
                 insights_data = json.load(f)
             print(json.dumps(insights_data))
+        except FileNotFoundError:
+            print("Error: no report found. Run insights-client --check-results to update the report cache.")
         except Exception as e:
             print("Unknown Error: %s" % e)
 
