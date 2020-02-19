@@ -702,8 +702,9 @@ class YAMLParser(Parser, LegacyItemAccess):
                 raise SkipException("There is no data")
             if not isinstance(self.data, (dict, list)):
                 raise ParseException("YAML didn't produce a dictionary or list.")
-        except SkipException:
-            raise
+        except SkipException as se:
+            tb = sys.exc_info()[2]
+            six.reraise(SkipException, SkipException(str(se)), tb)
         except:
             tb = sys.exc_info()[2]
             cls = self.__class__

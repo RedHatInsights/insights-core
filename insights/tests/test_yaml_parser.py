@@ -70,11 +70,7 @@ def test_settings_yml_list():
 
 def test_empty_content():
     ctx = context_wrap(empty_yaml_content)
-    with pytest.raises(SkipException):
-        YAMLParser(ctx)
+    with pytest.raises(SkipException) as ex:
+        FakeYamlParser(ctx)
 
-
-def test_wrong_content():
-    ctx = context_wrap(wrong_yaml_content)
-    with pytest.raises(ParseException):
-        YAMLParser(ctx)
+    assert "There is no data" in ex.value.args[0]
