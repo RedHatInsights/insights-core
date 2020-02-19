@@ -1035,7 +1035,7 @@ class DefaultSpecs(Specs):
     yum_conf = simple_file("/etc/yum.conf")
     yum_list_installed = simple_command("yum -C --noplugins list installed")
     yum_log = simple_file("/var/log/yum.log")
-    yum_repolist = simple_command("/usr/bin/yum -C repolist")
+    yum_repolist = simple_command("/usr/bin/yum -C --noplugins repolist")
     yum_repos_d = glob_file("/etc/yum.repos.d/*")
     zipl_conf = simple_file("/etc/zipl.conf")
 
