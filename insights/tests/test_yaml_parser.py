@@ -1,7 +1,7 @@
 import datetime
 import pytest
 
-from insights.core import YAMLParser, ParseException
+from insights.core import YAMLParser, ParseException, SkipException
 from insights.tests import context_wrap
 
 
@@ -19,6 +19,11 @@ date:        2019-07-09
 - Epiplemidae
 """: ['Hesperiidae', 'Papilionidae', 'Apatelodidae', 'Epiplemidae']
 }
+
+empty_yaml_content = """
+---
+# This YAML file is empty
+""".strip()
 
 
 class FakeYamlParser(YAMLParser):
@@ -57,3 +62,9 @@ def test_settings_yml_list():
     result = FakeYamlParser(ctx)
     assert result.data['remote_branch'] == -1
     assert result.data['remote_leaf'] == -1
+
+
+def test_empty_content():
+    ctx = context_wrap(empty_yaml_content)
+    with pytest.raises(SkipException):
+        YAMLParser(ctx)
