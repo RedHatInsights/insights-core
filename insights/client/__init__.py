@@ -518,7 +518,7 @@ class InsightsClient(object):
         try:
             with open("/var/lib/insights/insights-details.json", mode="r+b") as f:
                 insights_data = json.load(f)
-            print(insights_data)
+            print(json.dumps(insights_data))
         except Exception as e:
             print("Unknown Error: %s" % e)
 
