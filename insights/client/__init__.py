@@ -511,7 +511,7 @@ class InsightsClient(object):
         except Exception as e:
             print("Unknown Error: %s" % e)
 
-    def show(self):
+    def show_results(self):
         '''
         Show insights about this machine
         '''

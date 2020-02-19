@@ -19,7 +19,7 @@ def patch_insights_config(old_function):
                        "return_value.load_all.return_value.diagnosis": None,
                        "return_value.load_all.return_value.reregister": False,
                        "return_value.load_all.return_value.payload": None,
-                       "return_value.load_all.return_value.show": False,
+                       "return_value.load_all.return_value.show_results": False,
                        "return_value.load_all.return_value.check_results": False,
                        "return_value.load_all.return_value.portal_access": False,
                        "return_value.load_all.return_value.portal_access_no_insights": False})

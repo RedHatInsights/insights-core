@@ -247,9 +247,9 @@ DEFAULT_OPTS = {
         'type': int,
         'dest': 'retries'
     },
-    'show': {
+    'show_results': {
         'default': False,
-        'opt': ['--show'],
+        'opt': ['--show-results'],
         'help': "Show insights about this host",
         'action': "store_true"
     },
@@ -647,7 +647,7 @@ class InsightsConfig(object):
         self.keep_archive = self.keep_archive or self.no_upload
         if self.to_json and self.quiet:
             self.diagnosis = True
-        if self.payload or self.diagnosis or self.compliance or self.show or self.check_results:
+        if self.payload or self.diagnosis or self.compliance or self.show_results or self.check_results:
             self.legacy_upload = False
         if self.payload and (self.logging_file == constants.default_log_file):
             self.logging_file = constants.default_payload_log
