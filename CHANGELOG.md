@@ -1,5 +1,17 @@
 # Change Log
 
+## [insights-core-3.0.152-1327](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.152-1327) (2020-02-20)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.151-1319...insights-core-3.0.152-1327)
+
+**Implemented enhancements:**
+
+- Bond parser is not collecting data for currently active primary\_slave [\#2466](https://github.com/RedHatInsights/insights-core/issues/2466)
+
+**Closed issues:**
+
+- Enhance parser "satellite\_installer\_configurations" [\#2469](https://github.com/RedHatInsights/insights-core/issues/2469)
+- YAMLParser shouldn't raise ParseException when the file is empty [\#2467](https://github.com/RedHatInsights/insights-core/issues/2467)
+
 ## [insights-core-3.0.151-1319](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.151-1319) (2020-02-13)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.150-1...insights-core-3.0.151-1319)
 
