@@ -2,6 +2,8 @@
 Insights Core
 =============
 
+Security test
+
 Insights Core is a data collection and analysis framework that is built
 for extensibility and rapid development.  Included are a set of reusable
 components for gathering data in myriad ways and providing a reliable
