@@ -63,9 +63,13 @@ def pre_update(client, config):
 
     # validate the remove file
     if config.validate:
-        if validate_remove_file(config.remove_file):
-            sys.exit(constants.sig_kill_ok)
-        else:
+        try:
+            if validate_remove_file(config):
+                sys.exit(constants.sig_kill_ok)
+            else:
+                sys.exit(constants.sig_kill_bad)
+        except RuntimeError as e:
+            logger.error(e)
             sys.exit(constants.sig_kill_bad)
 
     # handle cron stuff
@@ -277,18 +281,9 @@ def collect_and_output(client, config):
         except (IOError, ValueError, RuntimeError) as e:
             logger.error(str(e))
             sys.exit(constants.sig_kill_bad)
-    else:
-        logger.info('Archive saved at %s', insights_archive)
     if resp:
         if config.to_json:
             print(json.dumps(resp))
-
-        if not config.payload:
-            # delete the archive
-            if config.keep_archive:
-                logger.info('Insights archive retained in ' + insights_archive)
-            else:
-                client.delete_archive(insights_archive, delete_parent_dir=True)
     client.delete_cached_branch_info()
 
     # rotate eggs once client completes all work successfully

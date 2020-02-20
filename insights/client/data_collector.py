@@ -38,7 +38,7 @@ class DataCollector(object):
 
     def __init__(self, config, archive_=None, mountpoint=None):
         self.config = config
-        self.archive = archive_ if archive_ else archive.InsightsArchive()
+        self.archive = archive_ if archive_ else archive.InsightsArchive(config)
         self.mountpoint = '/'
         if mountpoint:
             self.mountpoint = mountpoint
@@ -194,6 +194,9 @@ class DataCollector(object):
         if rm_conf:
             try:
                 exclude = rm_conf['patterns']
+                # handle the None or empty case of the sub-object
+                if 'regex' in exclude and not exclude['regex']:
+                    raise LookupError
                 logger.warn("WARNING: Skipping patterns found in remove.conf")
             except LookupError:
                 logger.debug('Patterns section of remove.conf is empty.')
@@ -258,6 +261,7 @@ class DataCollector(object):
             if clean_opts.keyword_file is not None:
                 os.remove(clean_opts.keyword_file.name)
                 logger.warn("WARNING: Skipping keywords found in remove.conf")
+            self.archive.tar_file = fresh[0]
             return fresh[0]
         return self.archive.create_tar_file()
 
