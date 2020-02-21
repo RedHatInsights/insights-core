@@ -114,7 +114,6 @@ def test_dont_archive_when_missing_dep(write_data_to_file):
     write_data_to_file.assert_not_called()
 
 
-
 @patch("insights.client.data_collector.DataCollector._run_pre_command", return_value=['eth0'])
 @patch("insights.client.data_collector.InsightsCommand")
 def test_omit_after_parse_command(InsightsCommand, run_pre_command):
