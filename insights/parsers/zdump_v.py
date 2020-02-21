@@ -15,11 +15,11 @@ Examples:
     >>> dst = zdump.data[0]
     >>> dst.get('utc_time')
     datetime.datetime(2019, 3, 10, 6, 59, 59)
-    >>> dst.get('utc_time_s')
+    >>> dst.get('utc_time_raw')
     'Sun Mar 10 06:59:59 2019 UTC'
     >>> dst.get('local_time')
     datetime.datetime(2019, 3, 10, 1, 59, 59)
-    >>> dst.get('local_time_s')
+    >>> dst.get('local_time_raw')
     'Sun Mar 10 01:59:59 2019 EST'
     >>> dst.get('isdst')
     False
@@ -33,26 +33,40 @@ from insights.parsers import SkipException
 from insights import parser, CommandParser
 
 
-def str2datetime(timestamp):
-    # remove redundant white spaces
+def str2datetime(timestamp, tz=False):
+    """
+    This function translates the time stamp into a datetime object.
+
+    Args:
+        timestamp (str): the time stamp from command `zdump -v`
+        tz (bool): True if it's UTC TimeZone.
+
+    Returns:
+        time (datetime): the datetime object about the time stamp
+        time_string (str): the formatted time stamp met the `TimeStamp Specification`
+    """
+
+    # The gap between fields will be changed in command `zdump`
+    # So we split it into slice and format output in the specification
     # fs stands for 'fields'
     fs = [s for s in timestamp.split(' ') if len(s) > 0]
     if len(fs) != 6:
         return
 
-    # Formatting the output
-    # Can't use `" ".join(fs)` for the Fixed width number of timestamp
+    # `Weekday` `Month` `Day of the month` `Hour:Minute:Second` `Year` `TimeZone`
     time_string = "%s %s %2s %s %s %s" % (fs[0], fs[1], fs[2], fs[3], fs[4], fs[5])
 
     # Fixed the problem that the program running this python code doesn't
     # has the corresponding TimeZone where strptime will raise ValueError.
-    if 'UTC' in fs:
-        time_s = time_string
+    # So, we skip the `TimeZone`
+    time_s = time_string.rsplit(None, 1)[0]
+    time_f = "%a %b %d %H:%M:%S %Y"
+
+    if tz:
+        # In some version, `zdump` prints 'UT' instead of 'UTC'
+        # 'UC' is an invalid TimeZone for function `strptime`
+        time_s = time_s + " UTC"
         time_f = "%a %b %d %H:%M:%S %Y %Z"
-    else:
-        # Skip the `TimeZone`
-        time_s = "%s %s %2s %s %s" % (fs[0], fs[1], fs[2], fs[3], fs[4])
-        time_f = "%a %b %d %H:%M:%S %Y"
 
     try:
         time = datetime.strptime(time_s, time_f)
@@ -64,40 +78,45 @@ def str2datetime(timestamp):
 
 @parser(Specs.zdump_v)
 class ZdumpV(CommandParser):
-    """Class for command: /usr/sbin/zdump -v /etc/localtime -c 2019,2039"""
+    """
+    Class for command: /usr/sbin/zdump -v /etc/localtime -c 2019,2039
+
+    To make an application doesn't care about the difference time stamp from
+    various versions of `zdump`, we use this `TimeStamp Specification`:
+    `Weekday` `Month` `Day of the month` `Hour:Minute:Second` `Year` `TimeZone`
+
+    Please refer to this website for further details:
+        https://docs.python.org/3/library/datetime.html
+
+    .. warning:: The value in key `local_time` doesn't include the TimeZone information
+    """
     def parse_content(self, content):
         if not content:
             raise SkipException("No Data from command: /usr/sbin/zdump -v /etc/localtime -c 2019,2039")
 
-        self._data = []
+        self.data = []
         for line in content:
             dst = {}
-            if 'UTC' not in line or 'isdst' not in line:
-                # skip the line that does not include a timestamp
+            if 'isdst' not in line:
+                # skip the line that does not include a time stamp
                 continue
 
             utc_time, remains = line.strip('/etc/localtime').split(' = ')
-            dst['utc_time'], dst['utc_time_s'] = str2datetime(utc_time)
+            dst['utc_time'], dst['utc_time_raw'] = str2datetime(utc_time, True)
             if dst['utc_time'] is None:
                 continue
 
             local_time, _ = remains.split("isdst")
-            dst['local_time'], dst['local_time_s'] = str2datetime(local_time)
+            dst['local_time'], dst['local_time_raw'] = str2datetime(local_time)
             if dst['local_time'] is None:
                 continue
 
-            # line ends with "isdst=1" if the given time is Daylight Saving Time
+            # In the `Manual page`, it says `line ends with "isdst=1" if the given time is Daylight Saving Time`
             dst['isdst'] = len([s for s in remains.split(' ') if 'isdst' in s and '1' in s]) > 0
 
+            # gmtoff is an option, so the slice may be empty.
             gmtoff = [s.split('=')[1] for s in remains.split(' ') if 'gmtoff' in s and '=' in s]
             if gmtoff:
                 dst['gmtoff'] = int(gmtoff[0])
 
-            self._data.append(dst)
-
-    @property
-    def data(self):
-        """
-        data (list): List of dicts stores the informaton about 'Daylight Saving Time'
-        """
-        return self._data
+            self.data.append(dst)
