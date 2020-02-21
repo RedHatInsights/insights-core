@@ -8,6 +8,7 @@ from platform import linux_distribution
 from re import findall
 from sys import exit
 from insights.util.subproc import call
+import os
 
 NONCOMPLIANT_STATUS = 2
 COMPLIANCE_CONTENT_TYPE = 'application/vnd.redhat.compliance.something+tgz'
@@ -44,7 +45,7 @@ class ComplianceClient:
     def get_policies(self):
         response = self.conn.session.get("https://{0}/compliance/systems".format(self.config.base_url), params={'search': 'name={0}'.format(self.hostname)})
         if response.status_code == 200:
-            return response.json()['data'][0]['attributes']['profiles']
+            return (response.json().get('data') or [{}])[0].get('attributes', {}).get('profiles', [])
         else:
             return []
 
@@ -68,7 +69,9 @@ class ComplianceClient:
 
     def run_scan(self, profile_ref_id, policy_xml, output_path):
         logger.info('Running scan for {0}... this may take a while'.format(profile_ref_id))
-        rc, oscap = call('oscap xccdf eval --profile ' + profile_ref_id + ' --results ' + output_path + ' ' + policy_xml, keep_rc=True)
+        env = os.environ.copy()
+        env.update({'TZ': 'UTC'})
+        rc, oscap = call('oscap xccdf eval --profile ' + profile_ref_id + ' --results ' + output_path + ' ' + policy_xml, keep_rc=True, env=env)
         if rc and rc != NONCOMPLIANT_STATUS:
             logger.error('Scan failed')
             logger.error(oscap)

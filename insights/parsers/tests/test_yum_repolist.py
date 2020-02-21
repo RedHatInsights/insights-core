@@ -16,6 +16,16 @@ repolist: 15911
 
 """.strip()
 
+YUM_REPOLIST_CONTENT_NOPLUGINS = """
+repo id                                         repo name                status
+rhel-7-server-rpms/7Server/x86_64               Red Hat Enterprise Linux 10415
+rhel-7-server-satellite-6.1-rpms/x86_64         Red Hat Satellite 6.1 (f   660
+rhel-7-server-satellite-capsule-6.1-rpms/x86_64 Red Hat Satellite Capsul   265
+rhel-server-rhscl-7-rpms/7Server/x86_64         Red Hat Software Collect  4571
+repolist: 15911
+
+""".strip()
+
 YUM_REPOLIST_CONTENT_EUS = """
 Loaded plugins: product-id, rhnplugin, security, subscription-manager
 Updating certificate-based repositories.
@@ -111,6 +121,17 @@ repolist: 58096
 
 def test_yum_repolist():
     repo_list = YumRepoList(context_wrap(YUM_REPOLIST_CONTENT))
+    assert len(repo_list) == 4
+    assert repo_list[0] == {"id": "rhel-7-server-rpms/7Server/x86_64",
+                            "name": "Red Hat Enterprise Linux",
+                            "status": "10415"}
+    assert 'rhel-7-server-rpms/7Server/x86_64' in repo_list
+    assert repo_list['rhel-7-server-rpms/7Server/x86_64'] == repo_list[0]
+    assert repo_list.eus == []
+
+
+def test_yum_repolist_noplugins():
+    repo_list = YumRepoList(context_wrap(YUM_REPOLIST_CONTENT_NOPLUGINS))
     assert len(repo_list) == 4
     assert repo_list[0] == {"id": "rhel-7-server-rpms/7Server/x86_64",
                             "name": "Red Hat Enterprise Linux",
