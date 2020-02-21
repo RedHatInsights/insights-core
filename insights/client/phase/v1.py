@@ -278,10 +278,7 @@ def collect_and_output(client, config):
     if not config.no_upload:
         try:
             resp = client.upload(payload=insights_archive, content_type=config.content_type)
-        except IOError as e:
-            logger.error(str(e))
-            sys.exit(constants.sig_kill_bad)
-        except ValueError as e:
+        except (IOError, ValueError, RuntimeError) as e:
             logger.error(str(e))
             sys.exit(constants.sig_kill_bad)
     if resp:
