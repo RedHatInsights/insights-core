@@ -12,7 +12,7 @@ Sample content from command ``zdump -v /etc/localtime -c 2019,2039`` is::
     /etc/localtime  Sun Nov  7 06:00:00 2038 UTC = Sun Nov  7 01:00:00 2038 EST isdst=0 gmtoff=-18000
 
 Examples:
-    >>> dst = zdump.data[0]
+    >>> dst = zdump[0]
     >>> dst.get('utc_time')
     datetime.datetime(2019, 3, 10, 6, 59, 59)
     >>> dst.get('utc_time_raw')
@@ -43,18 +43,9 @@ def str2datetime(timestamp, tz=False):
 
     Returns:
         time (datetime): the datetime object about the time stamp
-        time_string (str): the formatted time stamp met the `TimeStamp Specification`
+        time_string (str): the formatted time stamp
     """
-
-    # The gap between fields will be changed in command `zdump`
-    # So we split it into slice and format output in the specification
-    # fs stands for 'fields'
-    fs = [s for s in timestamp.split(' ') if len(s) > 0]
-    if len(fs) != 6:
-        return
-
-    # `Weekday` `Month` `Day of the month` `Hour:Minute:Second` `Year` `TimeZone`
-    time_string = "%s %s %2s %s %s %s" % (fs[0], fs[1], fs[2], fs[3], fs[4], fs[5])
+    time, time_string = None, timestamp.strip()
 
     # Fixed the problem that the program running this python code doesn't
     # has the corresponding TimeZone where strptime will raise ValueError.
@@ -77,16 +68,15 @@ def str2datetime(timestamp, tz=False):
 
 
 @parser(Specs.zdump_v)
-class ZdumpV(CommandParser):
+class ZdumpV(CommandParser, list):
     """
-    Class for command: /usr/sbin/zdump -v /etc/localtime -c 2019,2039
+    Parse the output from the ``/usr/sbin/zdump -v /etc/localtime -c 2019,2039`` command.
 
-    To make an application doesn't care about the difference time stamp from
-    various versions of `zdump`, we use this `TimeStamp Specification`:
-    `Weekday` `Month` `Day of the month` `Hour:Minute:Second` `Year` `TimeZone`
+    Raises:
+        SkipException: When nothing is parsed.
 
-    Please refer to this website for further details:
-        https://docs.python.org/3/library/datetime.html
+    Attributes:
+        data (list): A list of 'Daylight Saving Time'
 
     .. warning:: The value in key `local_time` doesn't include the TimeZone information
     """
@@ -94,7 +84,6 @@ class ZdumpV(CommandParser):
         if not content:
             raise SkipException("No Data from command: /usr/sbin/zdump -v /etc/localtime -c 2019,2039")
 
-        self.data = []
         for line in content:
             dst = {}
             if 'isdst' not in line:
@@ -119,4 +108,4 @@ class ZdumpV(CommandParser):
             if gmtoff:
                 dst['gmtoff'] = int(gmtoff[0])
 
-            self.data.append(dst)
+            self.append(dst)
