@@ -99,6 +99,22 @@ def test_dont_archive_when_command_not_found(write_data_to_file):
     write_data_to_file.assert_called_once()
 
 
+@patch("insights.client.archive.write_data_to_file")
+def test_dont_archive_when_missing_dep(write_data_to_file):
+    """
+    If missing dependencies do not archive it
+    """
+    arch = InsightsArchive(InsightsConfig())
+
+    cmd = MagicMock(spec=InsightsCommand)
+    cmd.get_output.return_value = "Missing Dependencies:"
+    cmd.archive_path = '/path/to/command'
+
+    arch.add_to_archive(cmd)
+    write_data_to_file.assert_not_called()
+
+
+
 @patch("insights.client.data_collector.DataCollector._run_pre_command", return_value=['eth0'])
 @patch("insights.client.data_collector.InsightsCommand")
 def test_omit_after_parse_command(InsightsCommand, run_pre_command):
