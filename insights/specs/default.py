@@ -828,6 +828,7 @@ class DefaultSpecs(Specs):
     rhn_taskomatic_daemon_log = first_file(["/var/log/rhn/rhn_taskomatic_daemon.log",
                                                "rhn-logs/rhn/rhn_taskomatic_daemon.log"])
     rhsm_conf = simple_file("/etc/rhsm/rhsm.conf")
+    rhsm_enabledrepolist = simple_command("/usr/bin/subscription-manager repos --list-enabled")
     rhsm_log = simple_file("/var/log/rhsm/rhsm.log")
     rndc_status = simple_command("/usr/sbin/rndc status")
     root_crontab = simple_command("/usr/bin/crontab -l -u root")
