@@ -223,7 +223,7 @@ def test_bond_class():
     assert bond_obj_4.file_name == 'bond0'
     assert bond_obj_4.arp_polling_interval == "1000"
     assert bond_obj_4.arp_ip_target == "10.152.1.1"
-    assert bond_obj_4.primary_slave == 'em3'
+    assert bond_obj_4.primary_slave == ["em3", "(primary_reselect", "failure)"]
 
     with pytest.raises(ParseException) as exc:
         bond_obj = Bond(context_wrap(BONDINFO_UNKNOWN_BOND_MODE, CONTEXT_PATH))

@@ -137,7 +137,7 @@ class Bond(Parser):
             elif line.strip().startswith("ARP IP target/s (n.n.n.n form):"):
                 self._arp_ip_target = line.strip().split(':', 1)[1].strip()
             elif line.strip().startswith("Primary Slave"):
-                self._primary_slave = line.split(":", 1)[1].split()[0]
+                self._primary_slave = line.split(":", 1)[1].split()
 
     @property
     def bond_mode(self):
