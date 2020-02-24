@@ -26,9 +26,9 @@ are listed in the same order as in the command output:
  * ``mount_type`` - Name of filesystem type
  * ``mount_options`` -  Mount options as ``MountOpts`` object
  * ``mount_label`` - Optional label of this mount entry, empty string by default
- * ``mount_clause`` - Full string from command output
+ * ``mount_clause`` - Full raw string from command output
 
-The ``MountOpts`` class contains the mount options as attributes accessible
+The :class:`MountOpts` class contains the mount options as attributes accessible
 via the attribute name as it appears in the command output.  For instance the
 options ``(rw,dmode=0500)`` may be accessed as ''mnt_row_info.rw`` with the
 value ``True`` and ``mnt_row_info.dmode`` with the value "0500".  The ``in``
@@ -86,7 +86,7 @@ class MountEntry(AttributeAsDict):
         mount_type (str): Name of filesystem type
         mount_options (MountOpts): Mount options as :class:`MountOpts`
         mount_label (str): Optional label of this mount entry, an empty string by default
-        mount_clause (str): Full string from command output
+        mount_clause (str): Full raw string from command output
     """
 
     def __init__(self, data=None):
@@ -136,13 +136,16 @@ class MountedFileSystems(CommandParser):
 
     def get_dir(self, path):
         """
-        MountEntry: returns the mount point that contains the given path.
-
         This finds the most specific mount path that contains the given path,
         by successively removing the directory or file name on the end of
         the path and seeing if that is a mount point.  This will always
         terminate since / is always a mount point.  Strings that are not
         absolute paths will return None.
+
+        Arguments:
+            path (str): The path to check.
+        Returns:
+            MountEntry: The mount point that contains the given path.
         """
         while path != '':
             if path in self.mounts:
@@ -182,6 +185,15 @@ class Mount(MountedFileSystems):
         Please refer to its super-class :class:`MountedFileSystems` for more
         details.
 
+    The typical output of ``mount`` command looks like::
+
+        /dev/mapper/rootvg-rootlv on / type ext4 (rw,relatime,barrier=1,data=ordered)
+        proc on /proc type proc (rw,nosuid,nodev,noexec,relatime)
+        /dev/mapper/HostVG-Config on /etc/shadow type ext4 (rw,noatime,seclabel,stripe=256,data=ordered)
+        dev/sr0 on /run/media/root/VMware Tools type iso9660 (ro,nosuid,nodev,relatime,uid=0,gid=0,iocharset=utf8,mode=0400,dmode=0500,uhelper=udisks2) [VMware Tools]
+
+    Examples:
+
         >>> type(mnt_info)
         <class 'insights.parsers.mount.Mount'>
         >>> len(mnt_info)
@@ -192,6 +204,8 @@ class Mount(MountedFileSystems):
         '[VMware Tools]'
         >>> mnt_info[3].mount_type
         'iso9660'
+        >>> 'ro' in mnt_info[3].mount_options
+        True
         >>> mnt_info['/run/media/root/VMware Tools'].filesystem
         'dev/sr0'
         >>> mnt_info['/run/media/root/VMware Tools'].mount_label
@@ -235,6 +249,13 @@ class ProcMounts(MountedFileSystems):
     .. note::
         Please refer to its super-class :class:`MountedFileSystems` for more
         details.
+
+    The typical content of ``/proc/mounts`` file looks like::
+
+        /dev/mapper/rootvg-rootlv / ext4 rw,relatime,barrier=1,data=ordered 0 0
+        proc /proc proc rw,nosuid,nodev,noexec,relatime 0 0
+        /dev/mapper/HostVG-Config /etc/shadow ext4 rw,noatime,seclabel,stripe=256,data=ordered 0 0
+        dev/sr0 /run/media/root/VMware\040Tools iso9660 ro,nosuid,nodev,relatime,uid=0,gid=0,iocharset=utf8,mode=0400,dmode=0500,uhelper=udisks2 0 0
 
     Examples:
         >>> type(proc_mnt_info)

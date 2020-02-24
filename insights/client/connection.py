@@ -465,6 +465,10 @@ class InsightsConnection(object):
                 except:
                     unreg_date = "412, but no unreg_date or message"
                     logger.debug("HTTP Response Text: %s", req.text)
+            if req.status_code == 413:
+                logger.error('Archive is too large to upload.')
+            if req.status_code == 415:
+                logger.error('Invalid content-type.')
             return True
         return False
 
