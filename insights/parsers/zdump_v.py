@@ -6,6 +6,7 @@ The ``/usr/sbin/zdump -v /etc/localtime -c 2019,2039`` command provides informat
 'Daylight Saving Time' in file /etc/localtime from 2019 to 2039.
 
 Sample content from command ``zdump -v /etc/localtime -c 2019,2039`` is::
+
     /etc/localtime  Sun Mar 10 06:59:59 2019 UTC = Sun Mar 10 01:59:59 2019 EST isdst=0 gmtoff=-18000
     /etc/localtime  Sun Mar 10 07:00:00 2019 UTC = Sun Mar 10 03:00:00 2019 EDT isdst=1 gmtoff=-14400
     /etc/localtime  Sun Nov  7 05:59:59 2038 UTC = Sun Nov  7 01:59:59 2038 EDT isdst=1 gmtoff=-14400
@@ -22,7 +23,7 @@ Examples:
     >>> dst.get('local_time_raw')
     'Sun Mar 10 01:59:59 2019 EST'
     >>> dst.get('isdst')
-    False
+    0
     >>> dst.get('gmtoff')
     -18000
 """
@@ -70,13 +71,11 @@ def str2datetime(timestamp, tz=False):
 @parser(Specs.zdump_v)
 class ZdumpV(CommandParser, list):
     """
-    Parse the output from the ``/usr/sbin/zdump -v /etc/localtime -c 2019,2039`` command.
+    Parse the output from the ``/usr/sbin/zdump -v /etc/localtime -c 2019,2039`` command
+    and store the 'Daylight Saving Time' information into a list.
 
     Raises:
         SkipException: When nothing is parsed.
-
-    Attributes:
-        data (list): A list of 'Daylight Saving Time'
 
     .. warning:: The value in key `local_time` doesn't include the TimeZone information
     """
@@ -100,11 +99,11 @@ class ZdumpV(CommandParser, list):
             if dst['local_time'] is None:
                 continue
 
-            # In the `Manual page`, it says `line ends with "isdst=1" if the given time is Daylight Saving Time`
-            dst['isdst'] = len([s for s in remains.split(' ') if 'isdst' in s and '1' in s]) > 0
+            isdst = [s.split('=')[1] for s in remains.split() if 'isdst' in s and '=' in s]
+            if isdst:
+                dst['isdst'] = int(isdst[0])
 
-            # gmtoff is an option, so the slice may be empty.
-            gmtoff = [s.split('=')[1] for s in remains.split(' ') if 'gmtoff' in s and '=' in s]
+            gmtoff = [s.split('=')[1] for s in remains.split() if 'gmtoff' in s and '=' in s]
             if gmtoff:
                 dst['gmtoff'] = int(gmtoff[0])
 

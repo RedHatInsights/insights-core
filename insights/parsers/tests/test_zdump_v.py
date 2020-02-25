@@ -47,37 +47,37 @@ def test_zdump_v():
     assert zdump[0].get('utc_time_raw') == 'Sun Mar 10 06:59:59 2019 UTC'
     assert zdump[0].get('local_time') == datetime(2019, 3, 10, 1, 59, 59)
     assert zdump[0].get('local_time_raw') == 'Sun Mar 10 01:59:59 2019 EST'
-    assert zdump[0].get('isdst') is False
+    assert zdump[0].get('isdst') == 0
     assert zdump[0].get('gmtoff') == -18000
     assert zdump[1].get('utc_time') == datetime(2019, 3, 10, 7, 0, 0)
     assert zdump[1].get('utc_time_raw') == 'Sun Mar 10 07:00:00 2019 UTC'
     assert zdump[1].get('local_time') == datetime(2019, 3, 10, 3, 0, 0)
     assert zdump[1].get('local_time_raw') == 'Sun Mar 10 03:00:00 2019 EDT'
-    assert zdump[1].get('isdst') is True
+    assert zdump[1].get('isdst') == 1
     assert zdump[1].get('gmtoff') == -14400
     assert zdump[2].get('utc_time') == datetime(2019, 11, 3, 5, 59, 59)
     assert zdump[2].get('utc_time_raw') == 'Sun Nov  3 05:59:59 2019 UTC'
     assert zdump[2].get('local_time') == datetime(2019, 11, 3, 1, 59, 59)
     assert zdump[2].get('local_time_raw') == 'Sun Nov  3 01:59:59 2019 EDT'
-    assert zdump[2].get('isdst') is True
+    assert zdump[2].get('isdst') == 1
     assert zdump[2].get('gmtoff') == -14400
     assert zdump[3].get('utc_time') == datetime(2019, 11, 3, 6, 0, 0)
     assert zdump[3].get('utc_time_raw') == 'Sun Nov  3 06:00:00 2019 UTC'
     assert zdump[3].get('local_time') == datetime(2019, 11, 3, 1, 0, 0)
     assert zdump[3].get('local_time_raw') == 'Sun Nov  3 01:00:00 2019 EST'
-    assert zdump[3].get('isdst') is False
+    assert zdump[3].get('isdst') == 0
     assert zdump[3].get('gmtoff') == -18000
     assert zdump[4].get('utc_time') == datetime(2038, 3, 14, 6, 59, 59)
     assert zdump[4].get('utc_time_raw') == 'Sun Mar 14 06:59:59 2038 UTC'
     assert zdump[4].get('local_time') == datetime(2038, 3, 14, 1, 59, 59)
     assert zdump[4].get('local_time_raw') == 'Sun Mar 14 01:59:59 2038 EST'
-    assert zdump[4].get('isdst') is False
+    assert zdump[4].get('isdst') == 0
     assert zdump[4].get('gmtoff') == -18000
     assert zdump[5].get('utc_time') == datetime(2038, 3, 14, 7, 0, 0)
     assert zdump[5].get('utc_time_raw') == 'Sun Mar 14 07:00:00 2038 UTC'
     assert zdump[5].get('local_time') == datetime(2038, 3, 14, 3, 0, 0)
     assert zdump[5].get('local_time_raw') == 'Sun Mar 14 03:00:00 2038 EDT'
-    assert zdump[5].get('isdst') is True
+    assert zdump[5].get('isdst') == 1
     assert zdump[5].get('gmtoff') == -14400
 
     zdump = zdump_v.ZdumpV(context_wrap(BAD_OUTPUT2))
@@ -89,7 +89,7 @@ def test_zdump_v():
     assert zdump[0].get('utc_time_raw') == 'Sun Mar 14 06:59:59 2038 UTC'
     assert zdump[0].get('local_time') == datetime(2038, 3, 14, 1, 59, 59)
     assert zdump[0].get('local_time_raw') == 'Sun Mar 14 01:59:59 2038 EST'
-    assert zdump[0].get('isdst') is False
+    assert zdump[0].get('isdst') == 0
     assert zdump[0].get('gmtoff') is None
 
 
