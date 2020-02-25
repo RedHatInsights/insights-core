@@ -37,7 +37,7 @@ def test_swift_log():
     obj_expirer_lines = log.get("object-expirer")
     assert len(obj_expirer_lines) == 1
     assert obj_expirer_lines[0].get("procname") == "object-expirer"
-    assert obj_expirer_lines[0].get("timestamp") == "Oct 2 09:10:43"
+    assert obj_expirer_lines[0].get("timestamp") == "Oct  2 09:10:43"
     assert obj_expirer_lines[0].get("message") == "STDERR: ERROR:root:Error talking to memcached: [Errno 32] Broken pipe (txn: tx015dd5a60bfa491d8eb09-005bb36e53)"
 
     log_line = 'Sep 29 23:50:55 pbnec2-l-rh-ocld-2 object-server: Begin object audit "forever" mode (ALL)'
