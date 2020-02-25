@@ -505,6 +505,7 @@ class Specs(SpecSet):
     rhosp_release = RegistryPoint()
     rhsm_conf = RegistryPoint()
     rhsm_log = RegistryPoint(filterable=True)
+    rhsm_releasever = RegistryPoint()
     rndc_status = RegistryPoint()
     root_crontab = RegistryPoint()
     route = RegistryPoint()
