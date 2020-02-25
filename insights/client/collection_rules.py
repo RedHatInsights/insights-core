@@ -24,6 +24,66 @@ NETWORK = constants.custom_network_log_level
 expected_keys = ('commands', 'files', 'patterns', 'keywords')
 
 
+def correct_format(parsed_data, expected_keys):
+    '''
+    Ensure the parsed file matches the needed format
+    Returns True, <message> on error
+    '''
+    # validate keys are what we expect
+    def is_list_of_strings(data):
+        '''
+        Helper function for correct_format()
+        '''
+        if data is None:
+            # nonetype, no data to parse. treat as empty list
+            return True
+        if not isinstance(data, list):
+            return False
+        for l in data:
+            if not isinstance(l, six.string_types):
+                return False
+        return True
+
+    keys = parsed_data.keys()
+    invalid_keys = set(keys).difference(expected_keys)
+    if invalid_keys:
+        return True, ('Unknown section(s) in remove.conf: ' + ', '.join(invalid_keys) +
+                      '\nValid sections are ' + ', '.join(expected_keys) + '.')
+
+    # validate format (lists of strings)
+    for k in expected_keys:
+        if k in parsed_data:
+            if k == 'patterns' and isinstance(parsed_data['patterns'], dict):
+                if 'regex' not in parsed_data['patterns']:
+                    return True, 'Patterns section contains an object but the "regex" key was not specified.'
+                if 'regex' in parsed_data['patterns'] and len(parsed_data['patterns']) > 1:
+                    return True, 'Unknown keys in the patterns section. Only "regex" is valid.'
+                if not is_list_of_strings(parsed_data['patterns']['regex']):
+                    return True, 'regex section under patterns must be a list of strings.'
+                continue
+            if not is_list_of_strings(parsed_data[k]):
+                return True, '%s section must be a list of strings.' % k
+    return False, None
+
+
+def load_yaml(filename):
+    try:
+        with open(filename) as f:
+            loaded_yaml = yaml.safe_load(f)
+        if loaded_yaml is None:
+            logger.warn('WARNING: %s is empty.', filename)
+            return {}
+    except (yaml.YAMLError, yaml.parser.ParserError) as e:
+        # can't parse yaml from conf
+        raise RuntimeError('ERROR: Cannot %s\n'
+                           'If using any YAML tokens such as [] in an expression, '
+                           'be sure to wrap the expression in quotation marks.\n\nError details:\n%s\n', filename, e)
+    if not isinstance(loaded_yaml, dict):
+        # loaded data should be a dict with at least one key
+        raise RuntimeError('ERROR: Invalid YAML loaded.')
+    return loaded_yaml
+
+
 class InsightsUploadConf(object):
     """
     Insights spec configuration from uploader.json
@@ -36,6 +96,8 @@ class InsightsUploadConf(object):
         self.config = config
         self.fallback_file = constants.collection_fallback_file
         self.remove_file = config.remove_file
+        self.redaction_file = config.redaction_file
+        self.content_redaction_file = config.content_redaction_file
         self.collection_rules_file = constants.collection_rules_file
         self.collection_rules_url = self.config.collection_rules_url
         self.gpg = self.config.gpg
@@ -217,7 +279,7 @@ class InsightsUploadConf(object):
         Get excluded files config from remove_file.
         """
         # Convert config object into dict
-        logger.debug('Trying to parse as INI file.')
+        logger.warning('WARNING: remove.conf is deprecated. Please use file-redaction.conf and file-content-redaction.conf. See <link> for details.')
         parsedconfig = ConfigParser.RawConfigParser()
 
         try:
@@ -239,75 +301,53 @@ class InsightsUploadConf(object):
                                'nor as an INI file. Please check the file formatting.\n'
                                'See %s for more information.' % self.config.logging_file)
 
-    def get_rm_conf(self):
+    def get_redact_conf(self):
         '''
-        Load remove conf. If it's a YAML-formatted file, try to load
-        the "new" version of remove.conf
+        Load file/command redaction config file
         '''
-        def is_list_of_strings(data):
-            '''
-            Helper function for correct_format()
-            '''
-            if data is None:
-                # nonetype, no data to parse. treat as empty list
-                return True
-            if not isinstance(data, list):
-                return False
-            for l in data:
-                if not isinstance(l, six.string_types):
-                    return False
-            return True
-
-        def correct_format(parsed_data):
-            '''
-            Ensure the parsed file matches the needed format
-            Returns True, <message> on error
-            '''
-            # validate keys are what we expect
-            keys = parsed_data.keys()
-            invalid_keys = set(keys).difference(expected_keys)
-            if invalid_keys:
-                return True, ('Unknown section(s) in remove.conf: ' + ', '.join(invalid_keys) +
-                              '\nValid sections are ' + ', '.join(expected_keys) + '.')
-
-            # validate format (lists of strings)
-            for k in expected_keys:
-                if k in parsed_data:
-                    if k == 'patterns' and isinstance(parsed_data['patterns'], dict):
-                        if 'regex' not in parsed_data['patterns']:
-                            return True, 'Patterns section contains an object but the "regex" key was not specified.'
-                        if 'regex' in parsed_data['patterns'] and len(parsed_data['patterns']) > 1:
-                            return True, 'Unknown keys in the patterns section. Only "regex" is valid.'
-                        if not is_list_of_strings(parsed_data['patterns']['regex']):
-                            return True, 'regex section under patterns must be a list of strings.'
-                        continue
-                    if not is_list_of_strings(parsed_data[k]):
-                        return True, '%s section must be a list of strings.' % k
-            return False, None
-
-        if not os.path.isfile(self.remove_file):
-            logger.debug('No remove.conf defined. No files/commands will be ignored.')
+        if not os.path.isfile(self.redaction_file):
+            logger.debug('No file-redaction.conf defined. No files or commands will be skipped.')
             return None
-        try:
-            with open(self.remove_file) as f:
-                rm_conf = yaml.safe_load(f)
-            if rm_conf is None:
-                logger.warn('WARNING: Remove file %s is empty.', self.remove_file)
-                return {}
-        except (yaml.YAMLError, yaml.parser.ParserError) as e:
-            # can't parse yaml from conf, try old style
-            logger.debug('ERROR: Cannot parse remove.conf as a YAML file.\n'
-                         'If using any YAML tokens such as [] in an expression, '
-                         'be sure to wrap the expression in quotation marks.\n\nError details:\n%s\n', e)
-            return self.get_rm_conf_old()
-        if not isinstance(rm_conf, dict):
-            # loaded data should be a dict with at least one key (commands, files, patterns, keywords)
-            logger.debug('ERROR: Invalid YAML loaded.')
-            return self.get_rm_conf_old()
-        err, msg = correct_format(rm_conf)
+        loaded = load_yaml(self.redaction_file)
+        err, msg = correct_format(loaded, ('commands', 'files'))
         if err:
             # YAML is correct but doesn't match the format we need
             raise RuntimeError('ERROR: ' + msg)
+        return loaded
+
+    def get_content_redact_conf(self):
+        '''
+        Load patterns/keywords redaction config file
+        '''
+        if not os.path.isfile(self.content_redaction_file):
+            logger.debug('No file-content-redaction.conf defined. No patterns or keywords will be skipped.')
+            return None
+        loaded = load_yaml(self.content_redaction_file)
+        err, msg = correct_format(loaded, ('patterns', 'keywords'))
+        if err:
+            # YAML is correct but doesn't match the format we need
+            raise RuntimeError('ERROR: ' + msg)
+        return loaded
+
+    def get_rm_conf(self):
+        '''
+        Load remove conf. Try to load the the "new" version of
+        remove.conf (file-redaction.conf and file-redaction.conf)
+        '''
+        rm_conf = {}
+        redact_conf = self.get_redact_conf()
+        content_redact_conf = self.get_content_redact_conf()
+
+        if redact_conf:
+            rm_conf.update(redact_conf)
+        if content_redact_conf:
+            rm_conf.update(content_redact_conf)
+
+        if not redact_conf and not content_redact_conf:
+            # no file-redaction.conf or file-content-redaction.conf defined,
+            #   try to use remove.conf
+            return self.get_rm_conf_old()
+
         # remove Nones, empty strings, and empty lists
         filtered_rm_conf = dict((k, v) for k, v in rm_conf.items() if v)
         return filtered_rm_conf
@@ -341,4 +381,4 @@ class InsightsUploadConf(object):
 
 if __name__ == '__main__':
     from .config import InsightsConfig
-    print(InsightsUploadConf(InsightsConfig().load_all()))
+    print(InsightsUploadConf(InsightsConfig().load_all()).get_rm_conf())
