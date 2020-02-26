@@ -71,7 +71,7 @@ def load_yaml(filename):
         with open(filename) as f:
             loaded_yaml = yaml.safe_load(f)
         if loaded_yaml is None:
-            logger.warn('WARNING: %s is empty.', filename)
+            logger.debug('%s is empty.', filename)
             return {}
     except (yaml.YAMLError, yaml.parser.ParserError) as e:
         # can't parse yaml from conf
@@ -289,7 +289,6 @@ class InsightsUploadConf(object):
         Get excluded files config from remove_file.
         """
         # Convert config object into dict
-        logger.warning('WARNING: remove.conf is deprecated. Please use file-redaction.conf and file-content-redaction.conf. See <link> for details.')
         self.using_new_format = False
         parsedconfig = ConfigParser.RawConfigParser()
 
@@ -317,6 +316,7 @@ class InsightsUploadConf(object):
             logger.debug(e)
             raise RuntimeError('ERROR: Cannot parse the remove.conf file.\n'
                                'See %s for more information.' % self.config.logging_file)
+        logger.warning('WARNING: remove.conf is deprecated. Please use file-redaction.conf and file-content-redaction.conf. See <link> for details.')
         return self.rm_conf
 
     def get_redact_conf(self):
@@ -421,17 +421,17 @@ class InsightsUploadConf(object):
 
         for key in self.rm_conf:
             if key == 'commands':
-                num_commands = length(rm_conf['commands'])
+                num_commands = length(self.rm_conf['commands'])
             if key == 'files':
-                num_files = length(rm_conf['files'])
+                num_files = length(self.rm_conf['files'])
             if key == 'patterns':
                 if isinstance(rm_conf['patterns'], dict):
-                    num_patterns = length(rm_conf['patterns']['regex'])
+                    num_patterns = length(self.rm_conf['patterns']['regex'])
                     using_regex = True
                 else:
-                    num_patterns = length(rm_conf['patterns'])
+                    num_patterns = length(self.rm_conf['patterns'])
             if key == 'keywords':
-                num_keywords = length(rm_conf['keywords'])
+                num_keywords = length(self.rm_conf['keywords'])
         output = 'Insights Client Blacklist Report\n================================\n'
         output += 'obfuscate: ' + str(self.config.obfuscate) + '\n'
         output += 'obfuscate_hostname: ' + str(self.config.obfuscate_hostname) + '\n'
