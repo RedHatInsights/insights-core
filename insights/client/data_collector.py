@@ -85,6 +85,10 @@ class DataCollector(object):
             t = list(chain.from_iterable(t))
             self.archive.add_metadata_to_archive(json.dumps(t), '/tags.json')
 
+    def _write_blacklist_report(self, blacklist_report):
+        logger.debug("Writing blacklist report to archive...")
+        self.archive.add_metadata_to_archive(blacklist_report, '/blacklist_report')
+
     def _run_pre_command(self, pre_cmd):
         '''
         Run a pre command to get external args for a command
@@ -182,7 +186,7 @@ class DataCollector(object):
         else:
             return [spec]
 
-    def run_collection(self, conf, rm_conf, branch_info):
+    def run_collection(self, conf, rm_conf, branch_info, blacklist_report):
         '''
         Run specs and collect all the data
         '''
@@ -247,6 +251,7 @@ class DataCollector(object):
         self._write_display_name()
         self._write_version_info()
         self._write_tags()
+        self._write_blacklist_report(blacklist_report)
         logger.debug('Metadata collection finished.')
 
     def done(self, conf, rm_conf):

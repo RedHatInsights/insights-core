@@ -102,6 +102,10 @@ class InsightsUploadConf(object):
         self.collection_rules_url = self.config.collection_rules_url
         self.gpg = self.config.gpg
 
+        # set rm_conf as a class attribute so we can observe it
+        #   in create_report
+        self.rm_conf = {}
+
         # attribute to set when using file-redaction.conf instead of
         #   remove.conf, for reporting purposes. True by default
         #   since new format is favored.
@@ -291,23 +295,29 @@ class InsightsUploadConf(object):
 
         try:
             parsedconfig.read(self.remove_file)
+
+            if parsedconfig.sections() != ['remove']:
+                raise RuntimeError('ERROR: invalid section(s) in remove.conf. Only "remove" is valid.')
+
             rm_conf = {}
             for item, value in parsedconfig.items('remove'):
                 if item not in expected_keys:
-                    raise RuntimeError('Unknown section in remove.conf: ' + item +
-                                       '\nValid sections are ' + ', '.join(expected_keys) + '.')
+                    raise RuntimeError('Unknown key in remove.conf: ' + item +
+                                       '\nValid keys are ' + ', '.join(expected_keys) + '.')
                 if six.PY3:
                     rm_conf[item] = value.strip().encode('utf-8').decode('unicode-escape').split(',')
                 else:
                     rm_conf[item] = value.strip().decode('string-escape').split(',')
             self.rm_conf = rm_conf
-            return rm_conf
+        except ConfigParser.NoSectionError:
+            # file has no sections, skip it
+            logger.debug('Remove.conf exists but no parameters have been defined.')
         except ConfigParser.Error as e:
             # can't parse config file at all
             logger.debug(e)
-            raise RuntimeError('ERROR: Cannot parse the remove.conf file as a YAML file '
-                               'nor as an INI file. Please check the file formatting.\n'
+            raise RuntimeError('ERROR: Cannot parse the remove.conf file.\n'
                                'See %s for more information.' % self.config.logging_file)
+        return self.rm_conf
 
     def get_redact_conf(self):
         '''
@@ -339,7 +349,7 @@ class InsightsUploadConf(object):
 
     def get_rm_conf(self):
         '''
-        Load remove conf. Try to load the the "new" version of
+        Try to load the the "new" version of
         remove.conf (file-redaction.conf and file-redaction.conf)
         '''
         rm_conf = {}
