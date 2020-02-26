@@ -70,6 +70,7 @@ class Specs(SpecSet):
     cinder_api_log = RegistryPoint(filterable=True)
     cinder_conf = RegistryPoint()
     cinder_volume_log = RegistryPoint(filterable=True)
+    cloud_init_custom_network = RegistryPoint()
     cloud_init_log = RegistryPoint(filterable=True)
     cluster_conf = RegistryPoint(filterable=True)
     cmdline = RegistryPoint()
@@ -652,4 +653,5 @@ class Specs(SpecSet):
     yum_log = RegistryPoint()
     yum_repolist = RegistryPoint()
     yum_repos_d = RegistryPoint(multi_output=True)
+    zdump_v = RegistryPoint()
     zipl_conf = RegistryPoint()

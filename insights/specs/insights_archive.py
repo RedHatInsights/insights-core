@@ -292,3 +292,4 @@ class InsightsArchiveSpecs(Specs):
     woopsie = simple_file("insights_commands/find_.var.crash_.var.tmp_-path_.reports-_.whoopsie-report")
     yum_list_installed = simple_file("insights_commands/yum_-C_--noplugins_list_installed")
     yum_repolist = first_file(["insights_commands/yum_-C_--noplugins_repolist", "insights_commands/yum_-C_repolist"])
+    zdump_v = simple_file("insights_commands/zdump_-v_.etc.localtime_-c_2019_2039")
