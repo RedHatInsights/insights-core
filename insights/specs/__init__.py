@@ -97,6 +97,7 @@ class Specs(SpecSet):
     crypto_policies_opensshserver = RegistryPoint()
     crypto_policies_bind = RegistryPoint()
     crt = RegistryPoint()
+    cron_log = RegistryPoint(filterable=True)
     current_clocksource = RegistryPoint()
     date_iso = RegistryPoint()
     date = RegistryPoint()
