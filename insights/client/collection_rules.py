@@ -75,9 +75,9 @@ def load_yaml(filename):
             return {}
     except (yaml.YAMLError, yaml.parser.ParserError) as e:
         # can't parse yaml from conf
-        raise RuntimeError('ERROR: Cannot %s\n'
+        raise RuntimeError('ERROR: Cannot parse %s.\n'
                            'If using any YAML tokens such as [] in an expression, '
-                           'be sure to wrap the expression in quotation marks.\n\nError details:\n%s\n', filename, e)
+                           'be sure to wrap the expression in quotation marks.\n\nError details:\n%s\n' % (filename, e))
     if not isinstance(loaded_yaml, dict):
         # loaded data should be a dict with at least one key
         raise RuntimeError('ERROR: Invalid YAML loaded.')
@@ -101,6 +101,12 @@ class InsightsUploadConf(object):
         self.collection_rules_file = constants.collection_rules_file
         self.collection_rules_url = self.config.collection_rules_url
         self.gpg = self.config.gpg
+
+        # attribute to set when using file-redaction.conf instead of
+        #   remove.conf, for reporting purposes. True by default
+        #   since new format is favored.
+        self.using_new_format = True
+
         if conn:
             if self.collection_rules_url is None:
                 if config.legacy_upload:
@@ -280,6 +286,7 @@ class InsightsUploadConf(object):
         """
         # Convert config object into dict
         logger.warning('WARNING: remove.conf is deprecated. Please use file-redaction.conf and file-content-redaction.conf. See <link> for details.')
+        self.using_new_format = False
         parsedconfig = ConfigParser.RawConfigParser()
 
         try:
@@ -293,6 +300,7 @@ class InsightsUploadConf(object):
                     rm_conf[item] = value.strip().encode('utf-8').decode('unicode-escape').split(',')
                 else:
                     rm_conf[item] = value.strip().decode('string-escape').split(',')
+            self.rm_conf = rm_conf
             return rm_conf
         except ConfigParser.Error as e:
             # can't parse config file at all
@@ -350,6 +358,7 @@ class InsightsUploadConf(object):
 
         # remove Nones, empty strings, and empty lists
         filtered_rm_conf = dict((k, v) for k, v in rm_conf.items() if v)
+        self.rm_conf = filtered_rm_conf
         return filtered_rm_conf
 
     def validate(self):
@@ -378,7 +387,59 @@ class InsightsUploadConf(object):
             logger.info('Parsed successfully.')
         return True
 
+    def create_report(self):
+        def length(lst):
+            '''
+            Because of how the INI remove.conf is parsed,
+            an empty value in the conf will produce
+            the value [''] when parsed. Do not include
+            these in the report
+            '''
+            if len(lst) == 1 and lst[0] == '':
+                return 0
+            return len(lst)
+
+        # initialize report string
+        output = ''
+
+        num_commands = 0
+        num_files = 0
+        num_patterns = 0
+        num_keywords = 0
+        using_regex = False
+        using_new_format = False
+
+        for key in self.rm_conf:
+            if key == 'commands':
+                num_commands = length(rm_conf['commands'])
+            if key == 'files':
+                num_files = length(rm_conf['files'])
+            if key == 'patterns':
+                if isinstance(rm_conf['patterns'], dict):
+                    num_patterns = length(rm_conf['patterns']['regex'])
+                    using_regex = True
+                else:
+                    num_patterns = length(rm_conf['patterns'])
+            if key == 'keywords':
+                num_keywords = length(rm_conf['keywords'])
+        output = 'Insights Client Blacklist Report\n================================\n'
+        output += 'obfuscate: ' + str(self.config.obfuscate) + '\n'
+        output += 'obfuscate_hostname: ' + str(self.config.obfuscate_hostname) + '\n'
+        output += 'file-redaction.conf:\n' if self.using_new_format else 'remove.conf:\n'
+        output += '   commands: ' + str(num_commands) + '\n'
+        output += '   files: ' + str(num_files) + '\n'
+        output += 'file-content-redaction.conf:\n' if self.using_new_format else ''
+        output += '   patterns: ' + str(num_patterns)
+        output += ' (regex)\n' if using_regex else '\n'
+        output += '   keywords: ' + str(num_keywords) + '\n'
+        return output
+
 
 if __name__ == '__main__':
     from .config import InsightsConfig
-    print(InsightsUploadConf(InsightsConfig().load_all()).get_rm_conf())
+    config = InsightsConfig().load_all()
+    uploadconf = InsightsUploadConf(config)
+    rm_conf = uploadconf.get_rm_conf()
+    report = uploadconf.create_report()
+
+    print(report)
