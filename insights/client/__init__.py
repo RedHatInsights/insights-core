@@ -522,11 +522,9 @@ class InsightsClient(object):
             print(json.dumps(insights_data))
         except IOError as e:
             if e.errno == errno.ENOENT:
-                print("Error: no report found. Run insights-client --check-results to update the report cache.")
+                raise Exception("Error: no report found. Run insights-client --check-results to update the report cache.") from e
             else:
-                print("Unknown IOError: %s" % e)
-        except Exception as e:
-            print("Unknown Error: %s" % e)
+                raise e
 
 
 def format_config(config):
