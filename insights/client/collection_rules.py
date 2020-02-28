@@ -425,7 +425,7 @@ class InsightsUploadConf(object):
             if key == 'files':
                 num_files = length(self.rm_conf['files'])
             if key == 'patterns':
-                if isinstance(rm_conf['patterns'], dict):
+                if isinstance(self.rm_conf['patterns'], dict):
                     num_patterns = length(self.rm_conf['patterns']['regex'])
                     using_regex = True
                 else:
