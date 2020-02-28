@@ -27,13 +27,13 @@ class CronLog(Syslog):
         timestamp. This will also work around December/January crossover.
 
     Examples:
-        >>> cronlog = shared[CronLog]
-        >>> cronlog.get('Normal exit')
-        [{'timestamp':'Feb  9 03:19:03',
-          'hostname':'dev7u7',
-          'procname': 'anacron[30728]',
-          'message': 'Normal exit (1 job run)',
-          'raw_message': 'Feb  9 03:19:03 dev7u7 anacron[30728]: Normal exit (1 job run)'
-        }]
+        >>> msg_info.get("run-parts(/etc/cron.daily)")
+        [{'raw_message': 'Feb  9 03:19:03 dev7u7 run-parts(/etc/cron.daily)[351]: finished rhsmd', 'message': 'finished rhsmd', 'timestamp': 'Feb  9 03:19:03', 'hostname': 'dev7u7', 'procname': 'run-parts(/etc/cron.daily)[351]'}]
+        >>> len(msg_info.get("run-parts(/etc/cron.daily)"))
+        1
+        >>> "Job `cron.daily' terminated" in msg_info
+        True
+        >>> "7u7dev" in msg_info
+        False
     """
     pass
