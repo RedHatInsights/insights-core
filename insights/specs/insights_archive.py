@@ -9,6 +9,7 @@ glob_file = partial(glob_file, context=HostArchiveContext)
 
 class InsightsArchiveSpecs(Specs):
 
+    abrt_status_bare = simple_file("insights_commands/abrt_status_--bare_True")
     all_installed_rpms = glob_file("insights_commands/rpm_-qa*")
     auditctl_status = simple_file("insights_commands/auditctl_-s")
     aws_instance_id_doc = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_aws_instance_id_doc")
