@@ -1024,6 +1024,12 @@ class InsightsConnection(object):
         if content is None:
             return None
 
+        host_details = json.loads(content)
+        if host_details["total"] < 1:
+            raise Exception("Error: no host detected (insights_id = %s): Run insights-client --status to check registration status" % generate_machine_id())
+        if host_details["total"] > 1:
+            raise Exception("Error: multiple hosts detected (insights_id = %s)" % generate_machine_id())
+
         if not os.path.exists("/var/lib/insights"):
             os.makedirs("/var/lib/insights", mode=0o755)
 
@@ -1031,7 +1037,7 @@ class InsightsConnection(object):
             f.write(content)
             logger.debug("Wrote \"/var/lib/insights/host-details.json\"")
 
-        host_id = json.loads(content)["results"][0]["id"]
+        host_id = host_details["results"][0]["id"]
         url = self.base_url + "/insights/v1/system/%s/reports/" % host_id
         content = self._get(url)
         if content is None:
