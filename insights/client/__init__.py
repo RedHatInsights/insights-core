@@ -507,10 +507,9 @@ class InsightsClient(object):
 
     @_net
     def check_results(self):
-        try:
-            self.connection.get_advisor_report()
-        except Exception as e:
-            print("Unknown Error: %s" % e)
+        content = self.connection.get_advisor_report()
+        if content is None:
+            raise Exception("Error: failed to download advisor report.")
 
     def show_results(self):
         '''
