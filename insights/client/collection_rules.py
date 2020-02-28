@@ -84,6 +84,17 @@ def load_yaml(filename):
     return loaded_yaml
 
 
+def verify_permissions(f):
+    '''
+    Verify 600 permissions on a file
+    '''
+    mode = stat.S_IMODE(os.stat(f).st_mode)
+    if not mode == 0o600:
+        raise RuntimeError("ERROR: Invalid remove file permissions on %s. "
+                           "Expected 0600 got %s" % (f, oct(mode)))
+    logger.debug("Correct file permissions on %s", f)
+
+
 class InsightsUploadConf(object):
     """
     Insights spec configuration from uploader.json
@@ -292,6 +303,12 @@ class InsightsUploadConf(object):
         self.using_new_format = False
         parsedconfig = ConfigParser.RawConfigParser()
 
+        if not os.path.isfile(self.remove_file):
+            logger.debug('%s not found. No data files, commands,'
+                         ' or patterns will be ignored, and no keyword obfuscation will occur.', self.remove_file)
+            return self.rm_conf
+
+        verify_permissions(self.remove_file)
         try:
             parsedconfig.read(self.remove_file)
 
@@ -324,8 +341,9 @@ class InsightsUploadConf(object):
         Load file/command redaction config file
         '''
         if not os.path.isfile(self.redaction_file):
-            logger.debug('No file-redaction.conf defined. No files or commands will be skipped.')
+            logger.debug('%s not found. No files or commands will be skipped.', self.redaction_file)
             return None
+        verify_permissions(self.content_redaction_file)
         loaded = load_yaml(self.redaction_file)
         err, msg = correct_format(loaded, ('commands', 'files'))
         if err:
@@ -338,8 +356,10 @@ class InsightsUploadConf(object):
         Load patterns/keywords redaction config file
         '''
         if not os.path.isfile(self.content_redaction_file):
-            logger.debug('No file-content-redaction.conf defined. No patterns or keywords will be skipped.')
+            logger.debug('%s not found. '
+                         'No patterns will be skipped and no keyword obfuscation will occur.', self.content_redaction_file)
             return None
+        verify_permissions(self.content_redaction_file)
         loaded = load_yaml(self.content_redaction_file)
         err, msg = correct_format(loaded, ('patterns', 'keywords'))
         if err:
@@ -375,26 +395,14 @@ class InsightsUploadConf(object):
         '''
         Validate remove.conf
         '''
-        if not os.path.isfile(self.remove_file):
-            logger.warn("WARNING: Remove file does not exist")
-            return False
-        # Make sure permissions are 600
-        mode = stat.S_IMODE(os.stat(self.remove_file).st_mode)
-        if not mode == 0o600:
-            logger.error("WARNING: Invalid remove file permissions. "
-                         "Expected 0600 got %s" % oct(mode))
-            return False
-        else:
-            logger.debug("Correct file permissions")
         success = self.get_rm_conf()
-        if success is None or success is False:
-            logger.error('Could not parse remove.conf')
-            return False
         # Using print here as this could contain sensitive information
-        if self.config.verbose or self.config.validate:
-            print('Remove file parsed contents:')
-            print(success)
-            logger.info('Parsed successfully.')
+        if success == {}:
+            logger.info('No contents in the blacklist configurations to validate.')
+            return True
+        print('Remove file parsed contents:')
+        print(success)
+        logger.info('Parsed successfully.')
         return True
 
     def create_report(self):
@@ -446,10 +454,11 @@ class InsightsUploadConf(object):
 
 
 if __name__ == '__main__':
-    from .config import InsightsConfig
-    config = InsightsConfig().load_all()
-    uploadconf = InsightsUploadConf(config)
-    rm_conf = uploadconf.get_rm_conf()
-    report = uploadconf.create_report()
+    pass
+    #from .config import InsightsConfig
+    #config = InsightsConfig().load_all()
+    #uploadconf = InsightsUploadConf(config)
+    #uploadconf.validate()
+    # report = uploadconf.create_report()
 
-    print(report)
+    # print(report)
