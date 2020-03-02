@@ -6,9 +6,8 @@ Parsers included in this module are:
 
 SystemctlShowServiceAll - command ``systemctl show *.service``
 --------------------------------------------------------------
-Parsers the output of `systemctl show *.service` against all services running
-on the host.
-
+SystemctlShowTarget - command ``systemctl show *.target``
+-------------------------------------------------------------------
 """
 from insights import parser, CommandParser
 from insights.parsers import split_kv_pairs, SkipException, ParseException
@@ -97,6 +96,82 @@ class SystemctlShowServiceAll(CommandParser, dict):
 
         if len(self) == 0:
             raise SkipException
+
+
+@parser(Specs.systemctl_show_target)
+class SystemctlShowTarget(SystemctlShowServiceAll):
+    """
+    Class for parsing ``systemctl show *.target`` command output.
+    Empty properties are suppressed.
+
+    This class is inherited from :py:class:`SystemctlShowServiceAll`.
+
+    Sample Input::
+
+        Id=network.target
+        Names=network.target
+        WantedBy=NetworkManager.service
+        Conflicts=shutdown.target
+        Before=tuned.service network-online.target rhsmcertd.service kdump.service httpd.service rsyslog.service rc-local.service insights-client.timer insights-client.service sshd.service postfix.service
+        After=firewalld.service network-pre.target network.service NetworkManager.service
+        Documentation=man:systemd.special(7) http://www.freedesktop.org/wiki/Software/systemd/NetworkTarget
+        Description=Network
+        LoadState=loaded
+        ActiveState=active
+        SubState=active
+        FragmentPath=/usr/lib/systemd/system/network.target
+        UnitFileState=static
+        UnitFilePreset=disabled
+        InactiveExitTimestamp=Tue 2020-02-25 10:39:46 GMT
+        InactiveExitTimestampMonotonic=15332468
+        ActiveEnterTimestamp=Tue 2020-02-25 10:39:46 GMT
+        ActiveEnterTimestampMonotonic=15332468
+        ActiveExitTimestampMonotonic=0
+        InactiveEnterTimestampMonotonic=0
+        CanStart=no
+
+    Sample Output::
+
+        {'network.target': {'ActiveEnterTimestamp': 'Tue 2020-02-25 10:39:46 GMT',
+                            'ActiveEnterTimestampMonotonic': '15332468',
+                            'ActiveExitTimestampMonotonic': '0',
+                            'ActiveState': 'active',
+                            'After': 'firewalld.service network-pre.target '
+                                     'network.service NetworkManager.service',
+                            'Before': 'tuned.service network-online.target '
+                                      'rhsmcertd.service kdump.service httpd.service '
+                                      'rsyslog.service rc-local.service '
+                                      'insights-client.timer insights-client.service '
+                                      'sshd.service postfix.service',
+                            'CanStart': 'no',
+                            'Conflicts': 'shutdown.target',
+                            'Description': 'Network',
+                            'Documentation': 'man:systemd.special(7) '
+                                             'http://www.freedesktop.org/wiki/Software/systemd/NetworkTarget',
+                            'FragmentPath': '/usr/lib/systemd/system/network.target',
+                            'Id': 'network.target',
+                            'InactiveEnterTimestampMonotonic': '0',
+                            'InactiveExitTimestamp': 'Tue 2020-02-25 10:39:46 GMT',
+                            'InactiveExitTimestampMonotonic': '15332468',
+                            'LoadState': 'loaded',
+                            'Names': 'network.target',
+                            'SubState': 'active',
+                            'UnitFilePreset': 'disabled',
+                            'UnitFileState': 'static',
+                            'WantedBy': 'NetworkManager.service'})
+
+    Examples:
+        >>> 'network.target' in systemctl_show_target
+        True
+        >>> systemctl_show_target.get('network.target').get('WantedBy', None)
+        'NetworkManager.service'
+        >>> systemctl_show_target.get('network.target').get('RequiredBy', None)
+
+    Raises:
+        SkipException: When nothing needs to parse
+        ParseException: When something cannot be parsed
+    """
+    pass
 
 
 class SystemctlShow(CommandParser, dict):
