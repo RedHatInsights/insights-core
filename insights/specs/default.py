@@ -955,6 +955,7 @@ class DefaultSpecs(Specs):
     systemctl_qpidd = simple_command("/bin/systemctl show qpidd")
     systemctl_qdrouterd = simple_command("/bin/systemctl show qdrouterd")
     systemctl_show_all_services = simple_command("/bin/systemctl show *.service")
+    systemctl_show_target = simple_command("/bin/systemctl show *.target")
     systemctl_smartpdc = simple_command("/bin/systemctl show smart_proxy_dynflow_core")
     systemd_docker = simple_command("/usr/bin/systemctl cat docker.service")
     systemd_logind_conf = simple_file("/etc/systemd/logind.conf")

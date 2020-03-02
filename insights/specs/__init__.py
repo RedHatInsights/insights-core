@@ -591,6 +591,7 @@ class Specs(SpecSet):
     systemctl_qpidd = RegistryPoint()
     systemctl_qdrouterd = RegistryPoint()
     systemctl_show_all_services = RegistryPoint()
+    systemctl_show_target = RegistryPoint()
     systemctl_smartpdc = RegistryPoint()
     systemd_docker = RegistryPoint()
     systemd_logind_conf = RegistryPoint()
