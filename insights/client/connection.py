@@ -422,7 +422,7 @@ class InsightsConnection(object):
 
         # attempt to read the HTTP response JSON message
         try:
-            logger.debug("HTTP Response Message: %s", req.json()["message"])
+            net_logger.debug("HTTP Response Message: %s", req.json()["message"])
         except:
             logger.debug("No HTTP Response message present.")
 
@@ -430,12 +430,12 @@ class InsightsConnection(object):
         if req.status_code >= 400:
             logger.info("Debug Information:\nHTTP Status Code: %s",
                         req.status_code)
-            logger.info("HTTP Status Text: %s", req.reason)
+            net_logger.info("HTTP Status Text: %s", req.reason)
             if req.status_code == 401:
                 logger.error("Authorization Required.")
                 logger.error("Please ensure correct credentials "
                              "in " + constants.default_conf_file)
-                logger.debug("HTTP Response Text: %s", req.text)
+                net_logger.debug("HTTP Response Text: %s", req.text)
             if req.status_code == 402:
                 # failed registration because of entitlement limit hit
                 logger.debug('Registration failed by 402 error.')
@@ -443,10 +443,10 @@ class InsightsConnection(object):
                     logger.error(req.json()["message"])
                 except LookupError:
                     logger.error("Got 402 but no message")
-                    logger.debug("HTTP Response Text: %s", req.text)
+                    net_logger.debug("HTTP Response Text: %s", req.text)
                 except:
                     logger.error("Got 402 but no message")
-                    logger.debug("HTTP Response Text: %s", req.text)
+                    net_logger.debug("HTTP Response Text: %s", req.text)
             if req.status_code == 403 and self.auto_config:
                 # Insights disabled in satellite
                 rhsm_hostname = urlparse(self.base_url).hostname
@@ -461,10 +461,10 @@ class InsightsConnection(object):
                     write_unregistered_file(unreg_date)
                 except LookupError:
                     unreg_date = "412, but no unreg_date or message"
-                    logger.debug("HTTP Response Text: %s", req.text)
+                    net_logger.debug("HTTP Response Text: %s", req.text)
                 except:
                     unreg_date = "412, but no unreg_date or message"
-                    logger.debug("HTTP Response Text: %s", req.text)
+                    net_logger.debug("HTTP Response Text: %s", req.text)
             if req.status_code == 413:
                 logger.error('Archive is too large to upload.')
             if req.status_code == 415:
@@ -516,7 +516,7 @@ class InsightsConnection(object):
         net_logger.info(u'GET %s', self.branch_info_url)
         response = self.session.get(self.branch_info_url,
                                     timeout=self.config.http_timeout)
-        logger.debug(u'GET branch_info status: %s', response.status_code)
+        net_logger.debug(u'GET branch_info status: %s', response.status_code)
         if response.status_code != 200:
             logger.debug("There was an error obtaining branch information.")
             logger.debug(u'Bad status from server: %s', response.status_code)
