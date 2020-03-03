@@ -521,7 +521,7 @@ class InsightsClient(object):
             print(json.dumps(insights_data, indent=1))
         except IOError as e:
             if e.errno == errno.ENOENT:
-                raise Exception("Error: no report found. Run insights-client --check-results to update the report cache.") from e
+                raise Exception("Error: no report found. Run insights-client --check-results to update the report cache: %s" % e)
             else:
                 raise e
 
