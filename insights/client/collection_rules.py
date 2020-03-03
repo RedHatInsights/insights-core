@@ -24,10 +24,11 @@ NETWORK = constants.custom_network_log_level
 expected_keys = ('commands', 'files', 'patterns', 'keywords')
 
 
-def correct_format(parsed_data, expected_keys):
+def correct_format(parsed_data, expected_keys, filename):
     '''
     Ensure the parsed file matches the needed format
     Returns True, <message> on error
+    Returns False, None on success
     '''
     # validate keys are what we expect
     def is_list_of_strings(data):
@@ -47,7 +48,7 @@ def correct_format(parsed_data, expected_keys):
     keys = parsed_data.keys()
     invalid_keys = set(keys).difference(expected_keys)
     if invalid_keys:
-        return True, ('Unknown section(s) in remove.conf: ' + ', '.join(invalid_keys) +
+        return True, ('Unknown section(s) in %s: ' % filename + ', '.join(invalid_keys) +
                       '\nValid sections are ' + ', '.join(expected_keys) + '.')
 
     # validate format (lists of strings)
@@ -302,7 +303,6 @@ class InsightsUploadConf(object):
         # Convert config object into dict
         self.using_new_format = False
         parsedconfig = ConfigParser.RawConfigParser()
-
         if not os.path.isfile(self.remove_file):
             logger.debug('%s not found. No data files, commands,'
                          ' or patterns will be ignored, and no keyword obfuscation will occur.', self.remove_file)
@@ -345,7 +345,7 @@ class InsightsUploadConf(object):
             return None
         verify_permissions(self.content_redaction_file)
         loaded = load_yaml(self.redaction_file)
-        err, msg = correct_format(loaded, ('commands', 'files'))
+        err, msg = correct_format(loaded, ('commands', 'files'), self.redaction_file)
         if err:
             # YAML is correct but doesn't match the format we need
             raise RuntimeError('ERROR: ' + msg)
@@ -361,7 +361,7 @@ class InsightsUploadConf(object):
             return None
         verify_permissions(self.content_redaction_file)
         loaded = load_yaml(self.content_redaction_file)
-        err, msg = correct_format(loaded, ('patterns', 'keywords'))
+        err, msg = correct_format(loaded, ('patterns', 'keywords'), self.content_redaction_file)
         if err:
             # YAML is correct but doesn't match the format we need
             raise RuntimeError('ERROR: ' + msg)
@@ -399,7 +399,7 @@ class InsightsUploadConf(object):
         # Using print here as this could contain sensitive information
         if success == {}:
             logger.info('No contents in the blacklist configurations to validate.')
-            return True
+            return None
         print('Remove file parsed contents:')
         print(success)
         logger.info('Parsed successfully.')

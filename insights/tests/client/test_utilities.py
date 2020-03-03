@@ -7,6 +7,7 @@ from insights.client.config import InsightsConfig
 import re
 import mock
 import six
+import pytest
 from mock.mock import patch
 
 
@@ -96,9 +97,10 @@ def test_validate_remove_file():
     tf = '/tmp/remove.cfg'
     with open(tf, 'wb') as f:
         f.write(remove_file_content)
-    assert util.validate_remove_file(InsightsConfig(remove_file='/tmp/boop')) is False
-    os.chmod(tf, 0o644)
-    assert util.validate_remove_file(InsightsConfig(remove_file=tf)) is False
+    assert util.validate_remove_file(InsightsConfig(remove_file='/tmp/boop')) is None
+    with pytest.raises(RuntimeError):
+        os.chmod(tf, 0o644)
+        assert util.validate_remove_file(InsightsConfig(remove_file=tf)) is False
     os.chmod(tf, 0o600)
     assert util.validate_remove_file(InsightsConfig(remove_file=tf)) is not False
     os.remove(tf)
