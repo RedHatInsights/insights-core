@@ -320,9 +320,9 @@ class InsightsConnection(object):
                         test_url + ext, timeout=self.config.http_timeout, data=test_flag)
                 elif method is "GET":
                     test_req = self.session.get(test_url + ext, timeout=self.config.http_timeout)
-                logger.info("HTTP Status Code: %d", test_req.status_code)
-                logger.info("HTTP Status Text: %s", test_req.reason)
-                logger.info("HTTP Response Text: %s", test_req.text)
+                net_logger.info("HTTP Status Code: %d", test_req.status_code)
+                net_logger.info("HTTP Status Text: %s", test_req.reason)
+                net_logger.info("HTTP Response Text: %s", test_req.text)
                 # Strata returns 405 on a GET sometimes, this isn't a big deal
                 if test_req.status_code in (200, 201):
                     logger.info(
@@ -356,9 +356,9 @@ class InsightsConnection(object):
                 test_req = self.session.post(url, timeout=self.config.http_timeout, files=test_files)
             elif method is "GET":
                     test_req = self.session.get(url, timeout=self.config.http_timeout)
-            logger.info("HTTP Status Code: %d", test_req.status_code)
-            logger.info("HTTP Status Text: %s", test_req.reason)
-            logger.info("HTTP Response Text: %s", test_req.text)
+            net_logger.info("HTTP Status Text: %s", test_req.reason)
+            net_logger.info("HTTP Response Text: %s", test_req.text)
+            net_logger.info("HTTP Status Code: %d", test_req.status_code)
             if test_req.status_code in (200, 201, 202):
                 logger.info(
                     "Successfully connected to: %s", url)
@@ -413,10 +413,10 @@ class InsightsConnection(object):
         """
 
         try:
-            logger.debug("HTTP Status Code: %s", req.status_code)
-            logger.debug("HTTP Response Text: %s", req.text)
-            logger.debug("HTTP Response Reason: %s", req.reason)
-            logger.debug("HTTP Response Content: %s", req.content)
+            net_logger.debug("HTTP Status Code: %s", req.status_code)
+            net_logger.debug("HTTP Response Text: %s", req.text)
+            net_logger.debug("HTTP Response Reason: %s", req.reason)
+            net_logger.debug("HTTP Response Content: %s", req.content)
         except:
             logger.error("Malformed HTTP Request.")
 
