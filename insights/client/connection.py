@@ -594,7 +594,7 @@ class InsightsConnection(object):
             # Group does not exist, POST to create
             logger.debug("POST group")
             data = json.dumps({'display_name': group_name})
-            net_logger.info("POST", group_path)
+            net_logger.info("POST %s", group_path)
             post_group = self.session.post(group_path,
                                            headers=headers,
                                            data=data)
