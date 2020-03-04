@@ -650,6 +650,9 @@ class InsightsConfig(object):
         if self.output_file == '':
             # make sure an empty string is not given
             raise ValueError('--output-file cannot be empty')
+        if self.output_file:
+            if os.path.exists(self.output_file):
+                raise ValueError('File %s already exists.' % self.output_file)
 
     def _imply_options(self):
         '''
@@ -684,7 +687,12 @@ class InsightsConfig(object):
             if self._print_errors:
                 sys.stdout.write('The compressor {0} is not supported. Using default: gz\n'.format(self.compressor))
             self.compressor = 'gz'
+        if self.output_dir:
+            # get full path
+            self.output_dir = os.path.abspath(self.output_dir)
         if self.output_file:
+            # get full path
+            self.output_file = os.path.abspath(self.output_file)
             self._determine_filename_and_extension()
 
     def _determine_filename_and_extension(self):
@@ -698,6 +706,10 @@ class InsightsConfig(object):
             '''
             ext = '' if comp == 'none' else '.%s' % comp
             return '.tar' + ext
+
+        # make sure we're not attempting to write an existing directory first
+        if os.path.isdir(self.output_file):
+            raise ValueError('%s is a directory.' % self.output_file)
 
         # attempt to determine compressor from filename
         for x in constants.valid_compressors:
