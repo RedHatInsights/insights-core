@@ -38,7 +38,7 @@ class InsightsArchive(object):
                               time.strftime("%Y%m%d%H%M%S")))
         self.archive_dir = self.create_archive_dir()
         self.cmd_dir = self.create_command_dir()
-        self.compressor = 'gz' or config.compressor
+        self.compressor = config.compressor
         self.tar_file = None
         atexit.register(self.cleanup_tmp)
 
