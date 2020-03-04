@@ -679,16 +679,41 @@ class InsightsConfig(object):
             # don't keep the archive or files in temp
             #   if we're writing it to a specified location
             self.keep_archive = False
-        if self.compressor not in ["gz", "xz", "bz2", "none"]:
+        if self.compressor not in constants.valid_compressors:
             # set default compressor if an invalid one is supplied
             if self._print_errors:
                 sys.stdout.write('The compressor {0} is not supported. Using default: gz\n'.format(self.compressor))
             self.compressor = 'gz'
         if self.output_file:
-            # auto-add file extension if not given
-            ext = '' if self.compressor == 'none' else '.%s' % self.compressor
-            if not self.output_file.endswith('.tar' + ext):
-                self.output_file = self.output_file + '.tar' + ext
+            self._determine_filename_and_extension()
+
+    def _determine_filename_and_extension(self):
+        '''
+        Attempt to automatically determine compressor
+        and filename for --output-file based on the given config.
+        '''
+        def _tar_ext(comp):
+            '''
+            Helper function to generate .tar file extension
+            '''
+            ext = '' if comp == 'none' else '.%s' % comp
+            return '.tar' + ext
+
+        # attempt to determine compressor from filename
+        for x in constants.valid_compressors:
+            if self.output_file.endswith(_tar_ext(x)):
+                if self.compressor != x:
+                    if self._print_errors:
+                        sys.stdout.write('The given output file {0} does not match the given compressor {1}. '
+                                         'Setting compressor to match the file extension.\n'.format(self.output_file, self.compressor))
+                self.compressor = x
+                return
+
+        # if we don't return from the loop, we could
+        #   not determine compressor from filename, so
+        #   set the filename from the given
+        #   compressor
+        self.output_file = self.output_file + _tar_ext(self.compressor)
 
 
 if __name__ == '__main__':

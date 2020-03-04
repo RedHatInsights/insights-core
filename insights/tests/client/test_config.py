@@ -187,26 +187,36 @@ def test_compressor_option_validate():
 def test_output_file_guess_file_ext():
     '''
     If --output-file is selected, automatically guess
-    the file extension based on the compressor option.
+    the compressor option based on the file extension.
+
+    If the compressor cannot be guessed from the filename,
+    the filename will be given an extension based on the
+    compressor option (default .tar.gz).
+
     If the proper extension is already part of the
     output file, the output file is unchanged.
     '''
     c = InsightsConfig(output_file='test-abc')
     c.load_all()
     assert c.output_file == 'test-abc.tar.gz'
+    assert c.compressor == 'gz'
 
     c = InsightsConfig(output_file='test-def.tar.gz')
     c.load_all()
     assert c.output_file == 'test-def.tar.gz'
+    assert c.compressor == 'gz'
 
     c = InsightsConfig(output_file='test-ghi.tar.bz2', compressor='bz2')
     c.load_all()
     assert c.output_file == 'test-ghi.tar.bz2'
+    assert c.compressor == 'bz2'
 
     c = InsightsConfig(output_file='test-jkl', compressor='valkyrie')
     c.load_all()
     assert c.output_file == 'test-jkl.tar.gz'
+    assert c.compressor == 'gz'
 
     c = InsightsConfig(output_file='test-mno.tar')
     c.load_all()
-    assert c.output_file == 'test-mno.tar.tar.gz'
+    assert c.output_file == 'test-mno.tar'
+    assert c.compressor == 'none'
