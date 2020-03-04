@@ -294,16 +294,32 @@ def collect_and_output(client, config):
         # TODO: put these functions in a more logical place
         if config.output_dir:
             # copy collected data from temp to desired output dir
-            abs_output_dir = os.path.abspath(config.output_dir)
             logger.debug('Copying collected data from %s to %s',
-                         insights_archive, abs_output_dir)
+                         insights_archive, config.output_dir)
             try:
-                shutil.copytree(insights_archive, abs_output_dir)
-                logger.info('Collected data copied to %s', abs_output_dir)
+                shutil.copytree(insights_archive, config.output_dir)
             except OSError as e:
-                # dir exists already
-                logger.error('ERROR: Could not write data to %s', abs_output_dir)
-                logger.error(e)
+                if e.errno == 17:
+                    # dir exists already, see if it's empty
+                    if os.listdir(config.output_dir):
+                        # we should never get here because of the check in config.py, but just in case
+                        logger.error('ERROR: Could not write data to %s.', config.output_dir)
+                        logger.error(e)
+                    else:
+                        # if it's empty, copy the contents to it
+                        for fil in os.listdir(insights_archive):
+                            src_path = os.path.join(insights_archive, fil)
+                            dst_path = os.path.join(config.output_dir, fil)
+                            try:
+                                if os.path.isfile(src_path):
+                                    # copy files
+                                    shutil.copyfile(src_path, dst_path)
+                                elif os.path.isdir(src_path):
+                                    # copy dirs
+                                    shutil.copytree(src_path, dst_path)
+                            except OSError as e:
+                                logger.error(e)
+            logger.info('Collected data copied to %s', config.output_dir)
         elif config.output_file:
             # copy collected archive from temp to desired output file
             abs_output_file = os.path.abspath(config.output_file)

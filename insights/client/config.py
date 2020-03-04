@@ -650,6 +650,9 @@ class InsightsConfig(object):
         if self.output_file == '':
             # make sure an empty string is not given
             raise ValueError('--output-file cannot be empty')
+        if self.output_dir:
+            if os.path.exists(self.output_dir) and os.listdir(self.output_dir):
+                raise ValueError('Directory %s already exists and is not empty.' % self.output_dir)
         if self.output_file:
             if os.path.exists(self.output_file):
                 raise ValueError('File %s already exists.' % self.output_file)
