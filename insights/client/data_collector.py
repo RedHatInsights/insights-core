@@ -194,6 +194,9 @@ class DataCollector(object):
         if rm_conf:
             try:
                 exclude = rm_conf['patterns']
+                # handle the None or empty case of the sub-object
+                if 'regex' in exclude and not exclude['regex']:
+                    raise LookupError
                 logger.warn("WARNING: Skipping patterns found in remove.conf")
             except LookupError:
                 logger.debug('Patterns section of remove.conf is empty.')

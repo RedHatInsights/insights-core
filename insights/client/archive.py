@@ -30,7 +30,8 @@ class InsightsArchive(object):
         """
         self.config = config
         self.tmp_dir = tempfile.mkdtemp(prefix='/var/tmp/')
-        self.archive_tmp_dir = tempfile.mkdtemp(prefix='/var/tmp/')
+        if not self.config.obfuscate:
+            self.archive_tmp_dir = tempfile.mkdtemp(prefix='/var/tmp/')
         name = determine_hostname()
         self.archive_name = ("insights-%s-%s" %
                              (name,
@@ -162,13 +163,16 @@ class InsightsArchive(object):
         Add files and commands to archive
         Use InsightsSpec.get_output() to get data
         '''
-        cmd_not_found_regex = "^timeout: failed to run command .+: No such file or directory$"
+        ab_regex = [
+            "^timeout: failed to run command .+: No such file or directory$",
+            "^Missing Dependencies:"
+        ]
         if isinstance(spec, InsightsCommand):
             archive_path = os.path.join(self.cmd_dir, spec.archive_path.lstrip('/'))
         if isinstance(spec, InsightsFile):
             archive_path = self.get_full_archive_path(spec.archive_path.lstrip('/'))
         output = spec.get_output()
-        if output and not re.search(cmd_not_found_regex, output):
+        if output and not any(re.search(rg, output) for rg in ab_regex):
             write_data_to_file(output, archive_path)
 
     def add_metadata_to_archive(self, metadata, meta_path):

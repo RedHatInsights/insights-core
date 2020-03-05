@@ -64,5 +64,12 @@ class SubscriptionManagerReleaseShow(CommandParser):
                     self.major = int(rel[0])
                     # leave self.minor as None
                     return
+                # Release: 8
+                elif rel[0].isdigit() and len(rel) == 1:
+                    self.set = rel
+                    self.major = int(rel[0])
+                    # leave self.minor as None
+                    return
+
             raise SkipException("Incorrect content: {0}".format(line))
         # Release not set
