@@ -197,6 +197,7 @@ class InsightsArchiveSpecs(Specs):
     sealert = simple_file('insights_commands/sealert_-l')
     sestatus = simple_file("insights_commands/sestatus_-b")
     smbstatus_p = simple_file("insights_commands/smbstatus_-p")
+    samba_smb_conf = simple_file("insights_commands/testparm_-s")
     software_collections_list = simple_file('insights_commands/scl_--list')
     spamassassin_channels = simple_file('insights_commands/grep_-r_s_CHANNELURL_.etc.mail.spamassassin.channel.d')
     ss = simple_file("insights_commands/ss_-tupna")

@@ -221,6 +221,7 @@ class SosSpecs(Specs):
     secure = simple_file("/var/log/secure")
     sestatus = simple_file("sos_commands/selinux/sestatus_-b")
     sssd_logs = glob_file("var/log/sssd/*.log")
+    samba_smb_conf = simple_file("sos_commands/samba/testparm_s")
     samba_logs = glob_file("var/log/samba/log.*")
     ssh_foreman_config = simple_file("/usr/share/foreman/.ssh/ssh_config")
     subscription_manager_id = simple_file("/sos_commands/subscription_manager/subscription-manager_identity")

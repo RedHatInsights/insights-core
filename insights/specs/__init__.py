@@ -562,6 +562,7 @@ class Specs(SpecSet):
     selinux_config = RegistryPoint()
     sestatus = RegistryPoint()
     setup_named_chroot = RegistryPoint(filterable=True)
+    samba_smb_conf = RegistryPoint(multi_output=True, filterable=True)
     smartctl = RegistryPoint(multi_output=True)
     smartpdc_settings = RegistryPoint(filterable=True)
     smbstatus_p = RegistryPoint()

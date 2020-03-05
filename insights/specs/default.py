@@ -577,6 +577,7 @@ class DefaultSpecs(Specs):
     rpm_V_packages = simple_command("/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo chrony", keep_rc=True)
     rsyslog_conf = simple_file("/etc/rsyslog.conf")
     samba = simple_file("/etc/samba/smb.conf")
+    samba_smb_conf = simple_command("/usr/bin/testparm -s")
 
     @datasource(Sap)
     def sap_sid_name(broker):
