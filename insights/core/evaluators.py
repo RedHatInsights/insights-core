@@ -118,7 +118,7 @@ class SingleEvaluator(Evaluator):
 
 class InsightsEvaluator(SingleEvaluator):
     def __init__(self, broker=None, system_id=None, stream=sys.stdout, incremental=False):
-        super(InsightsEvaluator, self).__init__(broker, stream=sys.stdout, incremental=incremental)
+        super(InsightsEvaluator, self).__init__(broker, stream=stream, incremental=incremental)
         self.system_id = system_id
         self.branch_info = {}
         self.product = "rhel"
