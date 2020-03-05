@@ -516,52 +516,80 @@ class SysconfigOptions(Parser, LegacyItemAccess):
 class CommandParser(Parser):
     """
     This class checks output from the command defined in the spec.
-    If `context.content` contains a single line and that line is
-    included in the `bad_lines` list a `ContentException` is raised
+
+    Raises:
+        ContentException: When `context.content` contains a single line and
+            that line contains one of the string in the `bad_single_lines` or
+            `extra_bad_lines` list. Or, when `context.content` contains
+            multiple lines and there is one line contains one of the string
+            in the `bad_lines` or `extra_bad_lines` list.
     """
 
-    __bad_lines = [
+    __bad_single_lines = [
             "no such file or directory",
             "command not found",
             "no module named",
             "no files found for",
     ]
     """
-    This variable contains filters for bad responses from commands defined
-    with command specs.
+    This variable contains filters for bad responses of the single line
+    returned from commands defined with command specs.
+    When adding a new line to the list make sure text is all lower case.
+    """
+    __bad_lines = [
+            "missing dependencies:",
+    ]
+    """
+    This variable contains filters for bad responses of the lines
+    returned from commands defined with command specs.
     When adding a new line to the list make sure text is all lower case.
     """
 
     @staticmethod
-    def validate_lines(results, bad_lines):
+    def validate_lines(results, bad_single_lines, bad_lines):
         """
-        If `results` contains a single line and that line is included
-        in the `bad_lines` list, this function returns `False`. If no bad
-        line is found the function returns `True`
+        This function returns `False` when::
+
+            1. If the `results` is a single line and that line contains
+               one of the string in the `bad_single_lines` list.
+            2. If the `results` contains multiple lines and there is one line
+               contains one of the string in the `bad_lines` list.
+
+        If no bad line is found the function returns `True`.
 
         Parameters:
-            results(str): The results string of the output from the command
+            results (list): The results string of the output from the command
                 defined by the command spec.
+            bad_single_lines (list): The list of bad lines should be checked
+                only when the result contains a single line.
+            bad_lines (list): The list of bad lines should be checked only
+                when the result contains multiple lines.
 
         Returns:
             (Boolean): True for no bad lines or False for bad line found.
         """
 
-        if results and len(results) == 1:
-            first = results[0]
-            if any(l in first.lower() for l in bad_lines):
+        if results:
+            bad_lines = bad_lines if len(results) > 1 else bad_single_lines
+            if any(bl in rl.lower() for bl in bad_lines for rl in results):
                 return False
         return True
 
-    def __init__(self, context, extra_bad_lines=[]):
+    def __init__(self, context, extra_bad_lines=None):
         """
             This __init__ calls `validate_lines` function to check for bad lines.
             If `validate_lines` returns False, indicating bad line found, a
             ContentException is thrown.
+
+        Parameters:
+            extra_bad_lines (list): The extra bad lines will be checked for
+                all lines the `context.content`, other than the lines defined in
+                `self.__bad_single_lines` and `self.__bad_lines`.
         """
-        valid_lines = self.validate_lines(context.content, self.__bad_lines)
+        extra_bad_lines = [] if extra_bad_lines is None else extra_bad_lines
+        valid_lines = self.validate_lines(context.content, self.__bad_single_lines, self.__bad_lines)
         if valid_lines and extra_bad_lines:
-            valid_lines = self.validate_lines(context.content, extra_bad_lines)
+            valid_lines = self.validate_lines(context.content, extra_bad_lines, extra_bad_lines)
         if not valid_lines:
             first = context.content[0] if context.content else "<no content>"
             name = self.__class__.__name__
