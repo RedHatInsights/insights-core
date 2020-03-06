@@ -1,5 +1,29 @@
 # Change Log
 
+## [insights-core-3.0.154-1343](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.154-1343) (2020-03-05)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.153-1338...insights-core-3.0.154-1343)
+
+**Fixed bugs:**
+
+- InsightsEvaluator ignores its stream argument during construction [\#2483](https://github.com/RedHatInsights/insights-core/issues/2483)
+
+**Closed issues:**
+
+- Issue with 'firewalld\_conf' spec collection [\#2485](https://github.com/RedHatInsights/insights-core/issues/2485)
+
+## [insights-core-3.0.153-1338](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.153-1338) (2020-02-25)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.152-1327...insights-core-3.0.153-1338)
+
+**Fixed bugs:**
+
+- Spec `yum -C repolist` should not load plugins [\#2473](https://github.com/RedHatInsights/insights-core/issues/2473)
+
+**Closed issues:**
+
+- Imprprovement for bond parser [\#2478](https://github.com/RedHatInsights/insights-core/issues/2478)
+- "timestamp" returned by Syslog doesn't comply with the raw format in log in some cases [\#2454](https://github.com/RedHatInsights/insights-core/issues/2454)
+- Documentation of mount.py should be updated [\#2276](https://github.com/RedHatInsights/insights-core/issues/2276)
+
 ## [insights-core-3.0.152-1327](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.152-1327) (2020-02-20)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.151-1319...insights-core-3.0.152-1327)
 
