@@ -834,7 +834,7 @@ class InsightsConnection(object):
         net_logger.info("POST %s", upload_url)
         upload = self.session.post(upload_url, files=files, headers=headers)
 
-        logger.debug("Upload status: %s %s %s",
+        net_logger.info("Upload status: %s %s %s",
                      upload.status_code, upload.reason, upload.text)
         if upload.status_code in (200, 201):
             the_json = json.loads(upload.text)
@@ -880,7 +880,7 @@ class InsightsConnection(object):
         net_logger.info("POST %s", upload_url)
         upload = self.session.post(upload_url, files=files, headers={})
 
-        logger.debug("Upload status: %s %s %s",
+        net_logger.info("Upload status: %s %s %s",
                      upload.status_code, upload.reason, upload.text)
         logger.debug('Request ID: %s', upload.headers.get('x-rh-insights-request-id', None))
         if upload.status_code in (200, 202):
