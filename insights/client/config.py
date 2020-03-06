@@ -653,9 +653,15 @@ class InsightsConfig(object):
         if self.output_dir:
             if os.path.exists(self.output_dir) and os.listdir(self.output_dir):
                 raise ValueError('Directory %s already exists and is not empty.' % self.output_dir)
+            parent_dir = os.path.dirname(self.output_dir.rstrip('/'))
+            if not os.path.exists(parent_dir):
+                raise ValueError('Cannot write to %s. Parent directory %s does not exist.' % (self.output_dir, parent_dir))
         if self.output_file:
             if os.path.exists(self.output_file):
                 raise ValueError('File %s already exists.' % self.output_file)
+            parent_dir = os.path.dirname(self.output_file.rstrip('/'))
+            if not os.path.exists(parent_dir):
+                raise ValueError('Cannot write to %s. Parent directory %s does not exist.' % (self.output_file, parent_dir))
 
     def _imply_options(self):
         '''
