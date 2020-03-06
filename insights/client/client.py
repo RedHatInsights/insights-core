@@ -88,6 +88,7 @@ def set_up_logging(config):
     if len(logging.root.handlers) == 0:
         logging.root.addHandler(get_console_handler(config))
         logging.root.addHandler(get_file_handler(config))
+        logging.getLogger("network").addHandler(get_file_handler(config))
         configure_level(config)
         logger.debug("Logging initialized")
 
