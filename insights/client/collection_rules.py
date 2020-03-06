@@ -322,7 +322,7 @@ class InsightsUploadConf(object):
         # Make sure permissions are 600
         mode = stat.S_IMODE(os.stat(self.remove_file).st_mode)
         if not mode == 0o600:
-            logger.error("ERROR: Invalid remove file permissions. "
+            logger.error("WARNING: Invalid remove file permissions. "
                          "Expected 0600 got %s" % oct(mode))
             return False
         else:

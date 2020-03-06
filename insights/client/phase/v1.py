@@ -72,6 +72,9 @@ def pre_update(client, config):
             logger.error(e)
             sys.exit(constants.sig_kill_bad)
 
+    if os.path.isfile(config.remove_file):
+        validate_remove_file(config)
+
     # handle cron stuff
     if config.enable_schedule:
         # enable automatic scheduling
