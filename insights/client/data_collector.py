@@ -269,10 +269,10 @@ class DataCollector(object):
             cleaner = SOSCleaner(quiet=True)
             clean_opts = CleanOptions(
                 self.config, self.archive.tmp_dir, rm_conf, self.hostname_path)
+            cleaner.clean_report(clean_opts, self.archive.archive_dir)
             if clean_opts.keyword_file is not None:
                 os.remove(clean_opts.keyword_file.name)
                 logger.warn("WARNING: Skipping keywords found in remove.conf")
-            cleaner.clean_report(clean_opts, self.archive.archive_dir)
             if self.config.output_dir:
                 # return the uncompressed data dir from the soscleaner dir
                 #   see additions to soscleaner.SOSCleaner.clean_report
