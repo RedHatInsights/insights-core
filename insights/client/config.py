@@ -662,6 +662,9 @@ class InsightsConfig(object):
             parent_dir = os.path.dirname(self.output_file.rstrip('/'))
             if not os.path.exists(parent_dir):
                 raise ValueError('Cannot write to %s. Parent directory %s does not exist.' % (self.output_file, parent_dir))
+            if self.obfuscate:
+                if self._print_errors:
+                    sys.stdout.write('WARNING: SOSCleaner reports will be created in the same directory as the ouptut archive.\n')
 
     def _imply_options(self):
         '''

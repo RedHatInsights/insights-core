@@ -332,6 +332,25 @@ def collect_and_output(client, config):
                 # file exists already
                 logger.error('ERROR: Could not write data to %s', abs_output_file)
                 logger.error(e)
+            if config.obfuscate:
+                # copy over the soscleaner reports too
+                src_dir = os.path.dirname(insights_archive)
+                dst_file_prefix = abs_output_file.rsplit('.tar', 1)[0]
+                for fil in os.listdir(src_dir):
+                    if fil.endswith('.csv'):
+                        file_suffix = fil.rsplit('-', 1)[1]
+                        src_path = os.path.join(src_dir, fil)
+                        dst_path = dst_file_prefix + '-' + file_suffix
+                        try:
+                            if os.path.isfile(dst_path):
+                                # don't overwrite anything arbitrary
+                                raise OSError('File %s already exists.' % dst_path)
+                            logger.debug('Copying SOScleaner report from %s to %s', src_path, dst_path)
+                            shutil.copyfile(src_path, dst_path)
+                            logger.info('SOScleaner report copied to %s', dst_path)
+                        except OSError as e:
+                            logger.error('ERROR: Could not write data to %s', dst_path)
+                            logger.error(e)
     else:
         # upload the archive
         if not insights_archive:
