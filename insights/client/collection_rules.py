@@ -91,8 +91,8 @@ def verify_permissions(f):
     '''
     mode = stat.S_IMODE(os.stat(f).st_mode)
     if not mode == 0o600:
-        raise RuntimeError("ERROR: Invalid remove file permissions on %s. "
-                           "Expected 0600 got %s" % (f, oct(mode)))
+        logger.warning("WARNING: Invalid remove file permissions on %s. "
+                       "Expected 0600 got %s" % (f, oct(mode)))
     logger.debug("Correct file permissions on %s", f)
 
 
@@ -116,7 +116,7 @@ class InsightsUploadConf(object):
 
         # set rm_conf as a class attribute so we can observe it
         #   in create_report
-        self.rm_conf = {}
+        self.rm_conf = None
 
         # attribute to set when using file-redaction.conf instead of
         #   remove.conf, for reporting purposes. True by default
@@ -306,7 +306,7 @@ class InsightsUploadConf(object):
         if not os.path.isfile(self.remove_file):
             logger.debug('%s not found. No data files, commands,'
                          ' or patterns will be ignored, and no keyword obfuscation will occur.', self.remove_file)
-            return self.rm_conf
+            return None
 
         verify_permissions(self.remove_file)
         try:
@@ -343,7 +343,7 @@ class InsightsUploadConf(object):
         if not os.path.isfile(self.redaction_file):
             logger.debug('%s not found. No files or commands will be skipped.', self.redaction_file)
             return None
-        verify_permissions(self.content_redaction_file)
+        verify_permissions(self.redaction_file)
         loaded = load_yaml(self.redaction_file)
         err, msg = correct_format(loaded, ('commands', 'files'), self.redaction_file)
         if err:
@@ -396,10 +396,10 @@ class InsightsUploadConf(object):
         Validate remove.conf
         '''
         success = self.get_rm_conf()
-        # Using print here as this could contain sensitive information
-        if success == {}:
+        if not success:
             logger.info('No contents in the blacklist configurations to validate.')
             return None
+        # Using print here as this could contain sensitive information
         print('Remove file parsed contents:')
         print(success)
         logger.info('Parsed successfully.')
@@ -427,19 +427,20 @@ class InsightsUploadConf(object):
         using_regex = False
         using_new_format = False
 
-        for key in self.rm_conf:
-            if key == 'commands':
-                num_commands = length(self.rm_conf['commands'])
-            if key == 'files':
-                num_files = length(self.rm_conf['files'])
-            if key == 'patterns':
-                if isinstance(self.rm_conf['patterns'], dict):
-                    num_patterns = length(self.rm_conf['patterns']['regex'])
-                    using_regex = True
-                else:
-                    num_patterns = length(self.rm_conf['patterns'])
-            if key == 'keywords':
-                num_keywords = length(self.rm_conf['keywords'])
+        if self.rm_conf:
+            for key in self.rm_conf:
+                if key == 'commands':
+                    num_commands = length(self.rm_conf['commands'])
+                if key == 'files':
+                    num_files = length(self.rm_conf['files'])
+                if key == 'patterns':
+                    if isinstance(self.rm_conf['patterns'], dict):
+                        num_patterns = length(self.rm_conf['patterns']['regex'])
+                        using_regex = True
+                    else:
+                        num_patterns = length(self.rm_conf['patterns'])
+                if key == 'keywords':
+                    num_keywords = length(self.rm_conf['keywords'])
         output = 'Insights Client Blacklist Report\n================================\n'
         output += 'obfuscate: ' + str(self.config.obfuscate) + '\n'
         output += 'obfuscate_hostname: ' + str(self.config.obfuscate_hostname) + '\n'
@@ -454,11 +455,10 @@ class InsightsUploadConf(object):
 
 
 if __name__ == '__main__':
-    pass
-    #from .config import InsightsConfig
-    #config = InsightsConfig().load_all()
-    #uploadconf = InsightsUploadConf(config)
-    #uploadconf.validate()
-    # report = uploadconf.create_report()
+    from .config import InsightsConfig
+    config = InsightsConfig().load_all()
+    uploadconf = InsightsUploadConf(config)
+    uploadconf.validate()
+    report = uploadconf.create_report()
 
-    # print(report)
+    print(report)
