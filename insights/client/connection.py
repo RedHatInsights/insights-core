@@ -1026,7 +1026,7 @@ class InsightsConnection(object):
 
         host_details = json.loads(content)
         if host_details["total"] < 1:
-            raise Exception("Error: no host detected (insights_id = %s): Run insights-client --status to check registration status" % generate_machine_id())
+            raise Exception("Error: failed to find host with matching machine-id. Run insights-client --status to check registration status")
         if host_details["total"] > 1:
             raise Exception("Error: multiple hosts detected (insights_id = %s)" % generate_machine_id())
 
