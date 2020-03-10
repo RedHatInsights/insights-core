@@ -91,8 +91,8 @@ def verify_permissions(f):
     '''
     mode = stat.S_IMODE(os.stat(f).st_mode)
     if not mode == 0o600:
-        logger.warning("WARNING: Invalid remove file permissions on %s. "
-                       "Expected 0600 got %s" % (f, oct(mode)))
+        raise RuntimeError("Invalid permissions on %s. "
+                           "Expected 0600 got %s" % (f, oct(mode)))
     logger.debug("Correct file permissions on %s", f)
 
 
@@ -307,8 +307,13 @@ class InsightsUploadConf(object):
             logger.debug('%s not found. No data files, commands,'
                          ' or patterns will be ignored, and no keyword obfuscation will occur.', self.remove_file)
             return None
-
-        verify_permissions(self.remove_file)
+        try:
+            verify_permissions(self.remove_file)
+        except RuntimeError as e:
+            if self.config.validate:
+                # exit if permissions invalid and using --validate
+                raise RuntimeError('ERROR: %s' % e)
+            logger.warning('WARNING: %s', e)
         try:
             parsedconfig.read(self.remove_file)
 
@@ -343,7 +348,13 @@ class InsightsUploadConf(object):
         if not os.path.isfile(self.redaction_file):
             logger.debug('%s not found. No files or commands will be skipped.', self.redaction_file)
             return None
-        verify_permissions(self.redaction_file)
+        try:
+            verify_permissions(self.redaction_file)
+        except RuntimeError as e:
+            if self.config.validate:
+                # exit if permissions invalid and using --validate
+                raise RuntimeError('ERROR: %s' % e)
+            logger.warning('WARNING: %s', e)
         loaded = load_yaml(self.redaction_file)
         err, msg = correct_format(loaded, ('commands', 'files'), self.redaction_file)
         if err:
@@ -359,7 +370,13 @@ class InsightsUploadConf(object):
             logger.debug('%s not found. '
                          'No patterns will be skipped and no keyword obfuscation will occur.', self.content_redaction_file)
             return None
-        verify_permissions(self.content_redaction_file)
+        try:
+            verify_permissions(self.content_redaction_file)
+        except RuntimeError as e:
+            if self.config.validate:
+                # exit if permissions invalid and using --validate
+                raise RuntimeError('ERROR: %s' % e)
+            logger.warning('WARNING: %s', e)
         loaded = load_yaml(self.content_redaction_file)
         err, msg = correct_format(loaded, ('patterns', 'keywords'), self.content_redaction_file)
         if err:
