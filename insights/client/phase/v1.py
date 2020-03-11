@@ -73,7 +73,12 @@ def pre_update(client, config):
             sys.exit(constants.sig_kill_bad)
 
     if os.path.isfile(config.remove_file):
-        validate_remove_file(config)
+        if os.stat(config.remove_file).st_size != 0:
+            try:
+                validate_remove_file(config)
+            except RuntimeError as e:
+                logger.error(e)
+                sys.exit(constants.sig_kill_bad)
 
     # handle cron stuff
     if config.enable_schedule:
