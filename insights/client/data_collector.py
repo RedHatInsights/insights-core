@@ -277,7 +277,7 @@ class DataCollector(object):
                 # return the entire soscleaner dir
                 #   see additions to soscleaner.SOSCleaner.clean_report
                 #   for details
-                return cleaner.report_dir
+                return cleaner.dir_path
             else:
                 # return the generated soscleaner archive
                 self.archive.tar_file = cleaner.archive_path

@@ -319,23 +319,41 @@ def collect_and_output(client, config):
                                     shutil.copytree(src_path, dst_path)
                             except OSError as e:
                                 logger.error(e)
+            if config.obfuscate:
+                # copy over the soscleaner reports too
+                src_dir = os.path.dirname(insights_archive)
+                dst_file_prefix = config.output_dir
+                for fil in os.listdir(src_dir):
+                    if fil.endswith('.csv'):
+                        file_suffix = fil.rsplit('-', 1)[1]
+                        src_path = os.path.join(src_dir, fil)
+                        dst_path = dst_file_prefix + '-' + file_suffix
+                        try:
+                            if os.path.isfile(dst_path):
+                                # don't overwrite anything arbitrary
+                                raise OSError('File %s already exists.' % dst_path)
+                            logger.debug('Copying SOScleaner report from %s to %s', src_path, dst_path)
+                            shutil.copyfile(src_path, dst_path)
+                            logger.info('SOScleaner report copied to %s', dst_path)
+                        except OSError as e:
+                            logger.error('ERROR: Could not write data to %s', dst_path)
+                            logger.error(e)
             logger.info('Collected data copied to %s', config.output_dir)
         elif config.output_file:
             # copy collected archive from temp to desired output file
-            abs_output_file = os.path.abspath(config.output_file)
             logger.debug('Copying archive from %s to %s',
-                         insights_archive, abs_output_file)
+                         insights_archive, config.output_file)
             try:
-                shutil.copyfile(insights_archive, abs_output_file)
-                logger.info('Collected data copied to %s', abs_output_file)
+                shutil.copyfile(insights_archive, config.output_file)
+                logger.info('Collected data copied to %s', config.output_file)
             except OSError as e:
                 # file exists already
-                logger.error('ERROR: Could not write data to %s', abs_output_file)
+                logger.error('ERROR: Could not write data to %s', config.output_file)
                 logger.error(e)
             if config.obfuscate:
                 # copy over the soscleaner reports too
                 src_dir = os.path.dirname(insights_archive)
-                dst_file_prefix = abs_output_file.rsplit('.tar', 1)[0]
+                dst_file_prefix = config.output_file.rsplit('.tar', 1)[0]
                 for fil in os.listdir(src_dir):
                     if fil.endswith('.csv'):
                         file_suffix = fil.rsplit('-', 1)[1]
