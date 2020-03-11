@@ -1,3 +1,4 @@
+import errno
 import json
 import os
 import logging
@@ -503,6 +504,26 @@ class InsightsClient(object):
         write_to_disk(constants.machine_id_file, delete=True)
         logger.debug('Re-register set, forcing registration.')
         logger.debug('New machine-id: %s', generate_machine_id(new=True))
+
+    @_net
+    def check_results(self):
+        content = self.connection.get_advisor_report()
+        if content is None:
+            raise Exception("Error: failed to download advisor report.")
+
+    def show_results(self):
+        '''
+        Show insights about this machine
+        '''
+        try:
+            with open("/var/lib/insights/insights-details.json", mode="r+b") as f:
+                insights_data = json.load(f)
+            print(json.dumps(insights_data, indent=1))
+        except IOError as e:
+            if e.errno == errno.ENOENT:
+                raise Exception("Error: no report found. Run insights-client --check-results to update the report cache: %s" % e)
+            else:
+                raise e
 
 
 def format_config(config):
