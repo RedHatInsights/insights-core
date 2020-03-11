@@ -14,6 +14,7 @@ from .utilities import (generate_machine_id,
                         write_unregistered_file,
                         delete_registered_file,
                         delete_unregistered_file,
+                        delete_cache_files,
                         determine_hostname,
                         read_pidfile,
                         systemd_notify)
@@ -220,6 +221,7 @@ def _legacy_handle_unregistration(config, pconn):
         # only set if unreg was successful
         write_unregistered_file()
         get_scheduler(config).remove_scheduling()
+        delete_cache_files()
     return unreg
 
 
@@ -237,6 +239,7 @@ def handle_unregistration(config, pconn):
     if unreg:
         # only set if unreg was successful
         write_unregistered_file()
+        delete_cache_files()
     return unreg
 
 
