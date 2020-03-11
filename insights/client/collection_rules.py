@@ -332,7 +332,7 @@ class InsightsUploadConf(object):
             logger.error('Could not parse remove.conf')
             return False
         # Using print here as this could contain sensitive information
-        if self.config.verbose:
+        if self.config.verbose or self.config.validate:
             print('Remove file parsed contents:')
             print(success)
             logger.info('Parsed successfully.')
