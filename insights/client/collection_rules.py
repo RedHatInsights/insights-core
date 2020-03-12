@@ -345,44 +345,33 @@ class InsightsUploadConf(object):
         logger.warning('WARNING: remove.conf is deprecated. Please use file-redaction.conf and file-content-redaction.conf. See <link> for details.')
         return self.rm_conf
 
-    def get_redact_conf(self):
+    def load_redaction_file(self, fname):
         '''
-        Load file/command redaction config file
+        Load the YAML-style file-redaction.conf
+            or file-content-redaction.conf files
         '''
-        if not os.path.isfile(self.redaction_file):
-            logger.debug('%s not found. No files or commands will be skipped.', self.redaction_file)
+        if fname not in (self.redaction_file, self.content_redaction_file):
+            # invalid function use, should never get here in a production situation
+            return None
+        if not os.path.isfile(fname):
+            if fname == self.redaction_file:
+                logger.debug('%s not found. No files or commands will be skipped.', self.redaction_file)
+            elif fname == self.content_redaction_file:
+                logger.debug('%s not found. '
+                             'No patterns will be skipped and no keyword obfuscation will occur.', self.content_redaction_file)
             return None
         try:
-            verify_permissions(self.redaction_file)
+            verify_permissions(fname)
         except RuntimeError as e:
             if self.config.validate:
                 # exit if permissions invalid and using --validate
                 raise RuntimeError('ERROR: %s' % e)
             logger.warning('WARNING: %s', e)
-        loaded = load_yaml(self.redaction_file)
-        err, msg = correct_format(loaded, ('commands', 'files'), self.redaction_file)
-        if err:
-            # YAML is correct but doesn't match the format we need
-            raise RuntimeError('ERROR: ' + msg)
-        return loaded
-
-    def get_content_redact_conf(self):
-        '''
-        Load patterns/keywords redaction config file
-        '''
-        if not os.path.isfile(self.content_redaction_file):
-            logger.debug('%s not found. '
-                         'No patterns will be skipped and no keyword obfuscation will occur.', self.content_redaction_file)
-            return None
-        try:
-            verify_permissions(self.content_redaction_file)
-        except RuntimeError as e:
-            if self.config.validate:
-                # exit if permissions invalid and using --validate
-                raise RuntimeError('ERROR: %s' % e)
-            logger.warning('WARNING: %s', e)
-        loaded = load_yaml(self.content_redaction_file)
-        err, msg = correct_format(loaded, ('patterns', 'keywords'), self.content_redaction_file)
+        loaded = load_yaml(fname)
+        if fname == self.redaction_file:
+            err, msg = correct_format(loaded, ('commands', 'files'), fname)
+        elif fname == self.content_redaction_file:
+            err, msg = correct_format(loaded, ('patterns', 'keywords'), fname)
         if err:
             # YAML is correct but doesn't match the format we need
             raise RuntimeError('ERROR: ' + msg)
@@ -394,8 +383,8 @@ class InsightsUploadConf(object):
         remove.conf (file-redaction.conf and file-redaction.conf)
         '''
         rm_conf = {}
-        redact_conf = self.get_redact_conf()
-        content_redact_conf = self.get_content_redact_conf()
+        redact_conf = self.load_redaction_file(self.redaction_file)
+        content_redact_conf = self.load_redaction_file(self.content_redaction_file)
 
         if redact_conf:
             rm_conf.update(redact_conf)
