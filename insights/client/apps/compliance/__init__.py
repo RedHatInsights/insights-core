@@ -30,15 +30,39 @@ class ComplianceClient:
         if not policies:
             logger.error("System is not associated with any profiles. Assign profiles by either uploading a SCAP scan or using the compliance web UI.\n")
             exit(constants.sig_kill_bad)
-        profile_ref_ids = [policy['ref_id'] for policy in policies]
-        for profile_ref_id in profile_ref_ids:
+        for policy in policies:
             self.run_scan(
-                profile_ref_id,
-                self.find_scap_policy(profile_ref_id),
-                '/var/tmp/oscap_results-{0}.xml'.format(profile_ref_id)
+                policy['ref_id'],
+                self.find_scap_policy(policy['ref_id']),
+                '/var/tmp/oscap_results-{0}.xml'.format(policy['ref_id']),
+                tailoring_file_path=self.download_tailoring_file(policy)
             )
 
         return self.archive.create_tar_file(), COMPLIANCE_CONTENT_TYPE
+
+    def download_tailoring_file(self, policy):
+        if policy['tailored'] == 'false':
+            return None
+
+        # Download tailoring file to pass as argument to run_scan
+        logger.debug(
+            "Policy {0} is a tailored policy. Starting tailoring file download...".format(policy['ref_id'])
+        )
+        tailoring_file_path = "/var/tmp/oscap_tailoring_file-{0}.xml".format(policy['ref_id'])
+        content = self.conn.session.get(
+            "https://{0}/compliance/profiles/{1}/tailoring_file".format(self.config.base_url, policy['id'])
+        )
+        if content is None:
+            logger.info("Problem downloading tailoring file for {0} to {1}".format(policy['ref_id'], tailoring_file_path))
+            return None
+
+        with open(tailoring_file_path, mode="w+b") as f:
+            f.write(content)
+            logger.info("Saved tailoring file for {0} to {1}".format(policy['ref_id'], tailoring_file_path))
+
+        logger.debug("Policy {0} tailoring file download finished".format(policy['ref_id']))
+
+        return tailoring_file_path
 
     # TODO: Not a typo! This endpoint gives OSCAP policies, not profiles
     # We need to update compliance-backend to fix this
@@ -67,11 +91,19 @@ class ComplianceClient:
             exit(constants.sig_kill_bad)
         return filenames[0]
 
-    def run_scan(self, profile_ref_id, policy_xml, output_path):
+    def build_oscap_command(self, profile_ref_id, policy_xml, output_path, tailoring_file_path):
+        command = 'oscap xccdf eval --profile ' + profile_ref_id
+        if tailoring_file_path:
+            command += ' --tailoring-file ' + tailoring_file_path
+        command += ' --results ' + output_path + ' ' + policy_xml
+        return command
+
+    def run_scan(self, profile_ref_id, policy_xml, output_path, tailoring_file_path=None):
         logger.info('Running scan for {0}... this may take a while'.format(profile_ref_id))
         env = os.environ.copy()
         env.update({'TZ': 'UTC'})
-        rc, oscap = call('oscap xccdf eval --profile ' + profile_ref_id + ' --results ' + output_path + ' ' + policy_xml, keep_rc=True, env=env)
+        oscap_command = self.build_oscap_command(profile_ref_id, policy_xml, output_path, tailoring_file_path)
+        rc, oscap = call(oscap_command, keep_rc=True, env=env)
         if rc and rc != NONCOMPLIANT_STATUS:
             logger.error('Scan failed')
             logger.error(oscap)
