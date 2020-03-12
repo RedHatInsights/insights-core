@@ -29,6 +29,7 @@ from .utilities import (determine_hostname,
                         write_registered_file)
 from .cert_auth import rhsmCertificate
 from .constants import InsightsConstants as constants
+from .url_cache import URLCache
 from insights import package_info
 from insights.core.context import Context
 from insights.parsers.os_release import OsRelease
@@ -982,3 +983,68 @@ class InsightsConnection(object):
                          res.status_code, res.text)
             return None
         return res.json()
+
+    def _get(self, url):
+        '''
+            Submits a GET request to @url, caching the result, and returning
+            the response body, if any. It makes the response status code opaque
+            to the caller.
+
+            Returns: bytes
+        '''
+        cache = URLCache("/var/cache/insights/cache.dat")
+
+        headers = {}
+        item = cache.get(url)
+        if item is not None:
+            headers["If-None-Match"] = item.etag
+
+        net_logger.info("GET %s", url)
+        res = self.session.get(url, headers=headers)
+
+        if res.status_code in [requests.codes.OK, requests.codes.NOT_MODIFIED]:
+            if res.status_code == requests.codes.OK:
+                if "ETag" in res.headers and len(res.content) > 0:
+                    cache.set(url, res.headers["ETag"], res.content)
+                    cache.save()
+            item = cache.get(url)
+            if item is None:
+                return res.content
+            else:
+                return item.content
+        else:
+            return None
+
+    def get_advisor_report(self):
+        '''
+            Retrieve advisor report
+        '''
+        url = self.base_url + "/inventory/v1/hosts?insights_id=%s" % generate_machine_id()
+        content = self._get(url)
+        if content is None:
+            return None
+
+        host_details = json.loads(content)
+        if host_details["total"] < 1:
+            raise Exception("Error: failed to find host with matching machine-id. Run insights-client --status to check registration status")
+        if host_details["total"] > 1:
+            raise Exception("Error: multiple hosts detected (insights_id = %s)" % generate_machine_id())
+
+        if not os.path.exists("/var/lib/insights"):
+            os.makedirs("/var/lib/insights", mode=0o755)
+
+        with open("/var/lib/insights/host-details.json", mode="w+b") as f:
+            f.write(content)
+            logger.debug("Wrote \"/var/lib/insights/host-details.json\"")
+
+        host_id = host_details["results"][0]["id"]
+        url = self.base_url + "/insights/v1/system/%s/reports/" % host_id
+        content = self._get(url)
+        if content is None:
+            return None
+
+        with open("/var/lib/insights/insights-details.json", mode="w+b") as f:
+            f.write(content)
+            logger.debug("Wrote \"/var/lib/insights/insights-details.json\"")
+
+        return json.loads(content)

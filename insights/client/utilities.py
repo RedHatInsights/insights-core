@@ -2,6 +2,7 @@
 Utility functions
 """
 from __future__ import absolute_import
+import glob
 import socket
 import os
 import logging
@@ -99,6 +100,11 @@ def delete_unregistered_file():
     #  so while registering, delete this file too. we only
     #  need it around until we're registered
     write_to_disk(constants.register_marker_file, delete=True)
+
+
+def delete_cache_files():
+    for f in glob.glob(os.path.join(constants.insights_core_lib_dir, "*.json")):
+        os.remove(f)
 
 
 def write_to_disk(filename, delete=False, content=get_time()):

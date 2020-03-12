@@ -143,6 +143,22 @@ def post_update(client, config):
         logger.debug('Entitling an AWS host. Bypassing registration check.')
         return
 
+    if config.show_results:
+        try:
+            client.show_results()
+            sys.exit(constants.sig_kill_ok)
+        except Exception as e:
+            print(e)
+            sys.exit(constants.sig_kill_bad)
+
+    if config.check_results:
+        try:
+            client.check_results()
+            sys.exit(constants.sig_kill_ok)
+        except Exception as e:
+            print(e)
+            sys.exit(constants.sig_kill_bad)
+
     # -------delete everything below this line-------
     if config.legacy_upload:
         if config.status:

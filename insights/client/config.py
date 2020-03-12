@@ -9,7 +9,7 @@ from six.moves import configparser as ConfigParser
 
 try:
     from .constants import InsightsConstants as constants
-except ImportError:
+except:
     from constants import InsightsConstants as constants
 
 logger = logging.getLogger(__name__)
@@ -69,6 +69,12 @@ DEFAULT_OPTS = {
     'cert_verify': {
         # non-CLI
         'default': None,
+    },
+    'check_results': {
+        'default': False,
+        'opt': ['--check-results'],
+        'help': "Check for insights results",
+        'action': "store_true"
     },
     'cmd_timeout': {
         # non-CLI
@@ -240,6 +246,12 @@ DEFAULT_OPTS = {
         'action': 'store',
         'type': int,
         'dest': 'retries'
+    },
+    'show_results': {
+        'default': False,
+        'opt': ['--show-results'],
+        'help': "Show insights about this host",
+        'action': "store_true"
     },
     'silent': {
         'default': False,
@@ -635,7 +647,7 @@ class InsightsConfig(object):
         self.keep_archive = self.keep_archive or self.no_upload
         if self.to_json and self.quiet:
             self.diagnosis = True
-        if self.payload or self.diagnosis or self.compliance:
+        if self.payload or self.diagnosis or self.compliance or self.show_results or self.check_results:
             self.legacy_upload = False
         if self.payload and (self.logging_file == constants.default_log_file):
             self.logging_file = constants.default_payload_log
