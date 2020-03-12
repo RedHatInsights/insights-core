@@ -12,7 +12,7 @@ PATH = '/usr/share/xml/scap/ref_id.xml'
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None, compressor='gz')
 def test_oscap_scan(config, assert_rpms):
     compliance_client = ComplianceClient(config)
-    compliance_client.get_policies = lambda: [{'ref_id': 'foo'}]
+    compliance_client.get_policies = lambda: [{'ref_id': 'foo', 'tailored': 'false'}]
     compliance_client.find_scap_policy = lambda ref_id: '/usr/share/xml/scap/foo.xml'
     compliance_client.run_scan = lambda ref_id, policy_xml, output_path: None
     compliance_client.archive.archive_tmp_dir = '/tmp'
