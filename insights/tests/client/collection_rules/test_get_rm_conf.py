@@ -205,7 +205,7 @@ def test_verify_permissions_ok(os_stat, s_imode):
     '''
     with pytest.raises(RuntimeError) as e:
         verify_permissions('test')
-    assert 'Invalid remove file permissions' in str(e.value)
+    assert 'Invalid permissions' in str(e.value)
 
 # @patch_isfile(True)
 # def test_config_filtering(isfile):
@@ -241,9 +241,8 @@ def patch_raw_config_parser(items):
     return decorator
 
 
-@patch_raw_config_parser([])
 @patch_isfile(False)
-def test_rm_conf_old_nofile(isfile, raw_config_parser):
+def test_rm_conf_old_nofile(isfile):
     '''
     Ensure an empty blacklist is generated when the file
     remove.conf does not exist.
@@ -260,20 +259,92 @@ def test_rm_conf_old_nofile(isfile, raw_config_parser):
     assert result is None
 
 
-# @patch_raw_config_parser([])
 @patch('insights.client.collection_rules.verify_permissions', return_value=True)
 @patch_isfile(True)
-def test_fallback_ini_data(isfile, verify):
+def test_rm_conf_old_emptyfile(isfile, verify):
     '''
-    Test that the YAML function falls back to classic INI
-    if the file cannot be parsed as YAML, and the data is
-    parsed as INI
+    Ensure an empty blacklist is generated when the old
+    remove.conf exists, but is empty.
     '''
-    filedata = '[remove]\ncommands=/bin/ls,ethtool_i'
+    filedata = ''
     with patch_open(filedata):
         upload_conf = insights_upload_conf(remove_file=conf_remove_file)
         result = upload_conf.get_rm_conf_old()
-    assert result == {'commands': ['/bin/ls', 'ethtool_i']}
+    assert result is None
+
+
+@patch('insights.client.collection_rules.verify_permissions', return_value=True)
+@patch_isfile(True)
+def test_rm_conf_old_load_bad_invalidsection(isfile, verify):
+    '''
+    Ensure an error is raised when an invalid
+    section is defined in the old remove.conf
+    '''
+    filedata = '[wrong]\ncommands=/bin/abc'
+    with patch_open(filedata):
+        upload_conf = insights_upload_conf(remove_file=conf_remove_file)
+        with pytest.raises(RuntimeError) as e:
+            upload_conf.get_rm_conf_old()
+    assert 'ERROR: invalid section(s)' in str(e.value)
+
+
+@patch('insights.client.collection_rules.verify_permissions', return_value=True)
+@patch_isfile(True)
+def test_rm_conf_old_load_bad_keysnosection(isfile, verify):
+    '''
+    Ensure an error is raised when keys are defined without
+    a section in the old remove.conf
+    '''
+    filedata = 'commands=/bin/abc\nfiles=/etc/def'
+    with patch_open(filedata):
+        upload_conf = insights_upload_conf(remove_file=conf_remove_file)
+        with pytest.raises(RuntimeError) as e:
+            upload_conf.get_rm_conf_old()
+    assert 'ERROR: Cannot parse' in str(e.value)
+
+
+@patch('insights.client.collection_rules.verify_permissions', return_value=True)
+@patch_isfile(True)
+def test_rm_conf_old_load_bad_keysnosection(isfile, verify):
+    '''
+    Ensure an error is raised when keys are defined without
+    a section in the old remove.conf
+    '''
+    filedata = '[remove]\ncommands=/bin/abc\nbooradley=/etc/def'
+    with patch_open(filedata):
+        upload_conf = insights_upload_conf(remove_file=conf_remove_file)
+        with pytest.raises(RuntimeError) as e:
+            upload_conf.get_rm_conf_old()
+    assert 'ERROR: Unknown key' in str(e.value)
+
+
+@patch('insights.client.collection_rules.verify_permissions', return_value=True)
+@patch_isfile(True)
+def test_rm_conf_old_load_ok(isfile, verify):
+    '''
+    Ensure that the old rm_conf load works
+    with valid data.
+    '''
+    filedata = '[remove]\ncommands=/bin/ls,ethtool_i\nfiles=/etc/test\npatterns=abc123,def456\nkeywords=key1,key2,key3'
+    with patch_open(filedata):
+        upload_conf = insights_upload_conf(remove_file=conf_remove_file)
+        result = upload_conf.get_rm_conf_old()
+    assert result == {'commands': ['/bin/ls', 'ethtool_i'], 'files': ['/etc/test'], 'patterns': ['abc123', 'def456'], 'keywords': ['key1', 'key2', 'key3']}
+
+
+# @patch('insights.client.collection_rules.verify_permissions', return_value=True)
+# @patch_isfile(True)
+# def test_rm_conf_old_load_bad(isfile, verify):
+#     '''
+#     Ensure that the old rm_conf load rejects
+#     invalid data.
+#     '''
+#     filedata = '[remove]\ncommands=/bin/ls,ethtool_i\nfiles=/etc/test\npatterns=abc123,def456\nkeywords=key1,key2,key3'
+#     with patch_open(filedata):
+#         upload_conf = insights_upload_conf(remove_file=conf_remove_file)
+#         result = upload_conf.get_rm_conf_old()
+#     assert result == {'commands': ['/bin/ls', 'ethtool_i'], 'files': ['/etc/test'], 'patterns': ['abc123', 'def456'], 'keywords': ['key1', 'key2', 'key3']}
+
 
 # @patch('insights.client.collection_rules.InsightsUploadConf.get_rm_conf_old')
 # @patch_isfile(True)

@@ -87,7 +87,8 @@ class DataCollector(object):
 
     def _write_blacklist_report(self, blacklist_report):
         logger.debug("Writing blacklist report to archive...")
-        self.archive.add_metadata_to_archive(blacklist_report, '/blacklist_report')
+        self.archive.add_metadata_to_archive(
+            json.dumps(blacklist_report), '/blacklist_report')
 
     def _run_pre_command(self, pre_cmd):
         '''

@@ -316,28 +316,32 @@ class InsightsUploadConf(object):
             logger.warning('WARNING: %s', e)
         try:
             parsedconfig.read(self.remove_file)
+            sections = parsedconfig.sections()
 
-            if parsedconfig.sections() != ['remove']:
+            if not sections:
+                # file has no sections, skip it
+                logger.debug('Remove.conf exists but no parameters have been defined.')
+                return None
+
+            if sections != ['remove']:
                 raise RuntimeError('ERROR: invalid section(s) in remove.conf. Only "remove" is valid.')
 
             rm_conf = {}
             for item, value in parsedconfig.items('remove'):
                 if item not in expected_keys:
-                    raise RuntimeError('Unknown key in remove.conf: ' + item +
+                    raise RuntimeError('ERROR: Unknown key in remove.conf: ' + item +
                                        '\nValid keys are ' + ', '.join(expected_keys) + '.')
                 if six.PY3:
                     rm_conf[item] = value.strip().encode('utf-8').decode('unicode-escape').split(',')
                 else:
                     rm_conf[item] = value.strip().decode('string-escape').split(',')
             self.rm_conf = rm_conf
-        except ConfigParser.NoSectionError:
-            # file has no sections, skip it
-            logger.debug('Remove.conf exists but no parameters have been defined.')
         except ConfigParser.Error as e:
             # can't parse config file at all
             logger.debug(e)
             raise RuntimeError('ERROR: Cannot parse the remove.conf file.\n'
                                'See %s for more information.' % self.config.logging_file)
+        # TODO: Add KB link in warning message
         logger.warning('WARNING: remove.conf is deprecated. Please use file-redaction.conf and file-content-redaction.conf. See <link> for details.')
         return self.rm_conf
 
@@ -434,9 +438,6 @@ class InsightsUploadConf(object):
                 return 0
             return len(lst)
 
-        # initialize report string
-        output = ''
-
         num_commands = 0
         num_files = 0
         num_patterns = 0
@@ -458,16 +459,16 @@ class InsightsUploadConf(object):
                         num_patterns = length(self.rm_conf['patterns'])
                 if key == 'keywords':
                     num_keywords = length(self.rm_conf['keywords'])
-        output = 'Insights Client Blacklist Report\n================================\n'
-        output += 'obfuscate: ' + str(self.config.obfuscate) + '\n'
-        output += 'obfuscate_hostname: ' + str(self.config.obfuscate_hostname) + '\n'
-        output += 'file-redaction.conf:\n' if self.using_new_format else 'remove.conf:\n'
-        output += '   commands: ' + str(num_commands) + '\n'
-        output += '   files: ' + str(num_files) + '\n'
-        output += 'file-content-redaction.conf:\n' if self.using_new_format else ''
-        output += '   patterns: ' + str(num_patterns)
-        output += ' (regex)\n' if using_regex else '\n'
-        output += '   keywords: ' + str(num_keywords) + '\n'
+
+        output = {}
+        output['obfuscate'] = self.config.obfuscate
+        output['obfuscate_hostname'] = self.config.obfuscate_hostname
+        output['commands'] = num_commands
+        output['files'] = num_files
+        output['patterns'] = num_patterns
+        output['keywords'] = num_keywords
+        output['using_new_format'] = self.using_new_format
+        output['using_patterns_regex'] = using_regex
         return output
 
 
