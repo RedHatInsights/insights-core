@@ -490,6 +490,8 @@ class Specs(SpecSet):
     rc_local = RegistryPoint()
     rdma_conf = RegistryPoint()
     readlink_e_etc_mtab = RegistryPoint()
+    readlink_e_shift_cert_client = RegistryPoint()
+    readlink_e_shift_cert_server = RegistryPoint()
     redhat_release = RegistryPoint()
     resolv_conf = RegistryPoint()
     rhev_data_center = RegistryPoint()
