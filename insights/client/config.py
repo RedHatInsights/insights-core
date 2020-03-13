@@ -659,6 +659,8 @@ class InsightsConfig(object):
             parent_dir = os.path.dirname(self.output_dir.rstrip('/'))
             if not os.path.exists(parent_dir):
                 raise ValueError('Cannot write to %s. Parent directory %s does not exist.' % (self.output_dir, parent_dir))
+            if not os.path.isdir(parent_dir):
+                raise ValueError('Cannot write to %s. %s is not a directory.' % (self.output_dir, parent_dir))
             if self.obfuscate:
                 if self._print_errors:
                     sys.stdout.write('WARNING: SOSCleaner reports will be created alongside the output directory.\n')
@@ -668,6 +670,8 @@ class InsightsConfig(object):
             parent_dir = os.path.dirname(self.output_file.rstrip('/'))
             if not os.path.exists(parent_dir):
                 raise ValueError('Cannot write to %s. Parent directory %s does not exist.' % (self.output_file, parent_dir))
+            if not os.path.isdir(parent_dir):
+                raise ValueError('Cannot write to %s. %s is not a directory.' % (self.output_dir, parent_dir))
             if self.obfuscate:
                 if self._print_errors:
                     sys.stdout.write('WARNING: SOSCleaner reports will be created alongside the output archive.\n')
