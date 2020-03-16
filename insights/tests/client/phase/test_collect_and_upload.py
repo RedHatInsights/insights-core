@@ -93,10 +93,9 @@ def test_no_upload(insights_config, insights_client):
     insights_client.upload.assert_not_called()
 
 
-@patch("insights.client.phase.v1.shutil")
 @patch("insights.client.phase.v1.InsightsClient")
 @patch_insights_config
-def test_output_file(insights_config, insights_client, shutil_):
+def test_output_file(insights_config, insights_client):
     '''
     Copy collected data to a specified file and do not upload.
     '''
@@ -106,13 +105,12 @@ def test_output_file(insights_config, insights_client, shutil_):
         collect_and_output()
     except SystemExit:
         pass
-    shutil_.copyfile.assert_called_with(insights_client.return_value.collect.return_value, '/var/tmp/test.tar.gz')
+    insights_client.return_value.copy_to_output_file.assert_called_with(insights_client.return_value.collect.return_value)
 
 
-@patch("insights.client.phase.v1.shutil")
 @patch("insights.client.phase.v1.InsightsClient")
 @patch_insights_config
-def test_output_dir(insights_config, insights_client, shutil_):
+def test_output_dir(insights_config, insights_client):
     '''
     Copy collected data to a specified directory and do not upload.
     '''
@@ -122,4 +120,4 @@ def test_output_dir(insights_config, insights_client, shutil_):
         collect_and_output()
     except SystemExit:
         pass
-    shutil_.copytree.assert_called_with(insights_client.return_value.collect.return_value, '/var/tmp/test')
+    insights_client.return_value.copy_to_output_dir.assert_called_with(insights_client.return_value.collect.return_value)

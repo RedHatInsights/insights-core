@@ -330,6 +330,7 @@ def test_upload_412_write_unregistered_file(_, upload_archive, write_unregistere
 def test_cleanup_tmp():
     config = InsightsConfig(keep_archive=True)
     arch = InsightsArchive(config)
+    arch.tar_file = os.path.join(arch.archive_tmp_dir, 'test.tar.gz')
     arch.cleanup_tmp()
     assert not os.path.exists(arch.tmp_dir)
     assert os.path.exists(arch.archive_tmp_dir)
