@@ -5,7 +5,6 @@ import logging
 import os
 import sys
 import atexit
-import shutil
 
 from insights.client import InsightsClient
 from insights.client.config import InsightsConfig
