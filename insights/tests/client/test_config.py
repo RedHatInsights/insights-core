@@ -1,5 +1,6 @@
 import pytest
 import sys
+import os
 from io import TextIOWrapper, BytesIO
 from insights.client.config import InsightsConfig, DEFAULT_OPTS
 from mock.mock import patch
@@ -198,25 +199,25 @@ def test_output_file_guess_file_ext():
     '''
     c = InsightsConfig(output_file='test-abc')
     c.load_all()
-    assert c.output_file == 'test-abc.tar.gz'
+    assert c.output_file == os.path.abspath('test-abc.tar.gz')
     assert c.compressor == 'gz'
 
     c = InsightsConfig(output_file='test-def.tar.gz')
     c.load_all()
-    assert c.output_file == 'test-def.tar.gz'
+    assert c.output_file == os.path.abspath('test-def.tar.gz')
     assert c.compressor == 'gz'
 
     c = InsightsConfig(output_file='test-ghi.tar.bz2', compressor='bz2')
     c.load_all()
-    assert c.output_file == 'test-ghi.tar.bz2'
+    assert c.output_file == os.path.abspath('test-ghi.tar.bz2')
     assert c.compressor == 'bz2'
 
     c = InsightsConfig(output_file='test-jkl', compressor='valkyrie')
     c.load_all()
-    assert c.output_file == 'test-jkl.tar.gz'
+    assert c.output_file == os.path.abspath('test-jkl.tar.gz')
     assert c.compressor == 'gz'
 
     c = InsightsConfig(output_file='test-mno.tar')
     c.load_all()
-    assert c.output_file == 'test-mno.tar'
+    assert c.output_file == os.path.abspath('test-mno.tar')
     assert c.compressor == 'none'
