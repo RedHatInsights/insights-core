@@ -578,16 +578,18 @@ class InsightsClient(object):
                         dst_path = os.path.join(self.config.output_dir, fil)
                         try:
                             if os.path.isfile(src_path):
-                                # copy files
                                 shutil.copyfile(src_path, dst_path)
                             elif os.path.isdir(src_path):
-                                # copy dirs
                                 shutil.copytree(src_path, dst_path)
                         except OSError as e:
                             logger.error(e)
                             # in case this happens partway through let the user know
                             logger.warning('WARNING: Directory copy may be incomplete.')
                             return
+            else:
+                # some other error
+                logger.error(e)
+                return
         logger.info('Collected data copied to %s', self.config.output_dir)
         if self.config.obfuscate:
             self._copy_soscleaner_files(insights_archive)
