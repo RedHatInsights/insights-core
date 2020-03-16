@@ -341,8 +341,7 @@ class InsightsUploadConf(object):
             logger.debug(e)
             raise RuntimeError('ERROR: Cannot parse the remove.conf file.\n'
                                'See %s for more information.' % self.config.logging_file)
-        # TODO: Add KB link in warning message
-        logger.warning('WARNING: remove.conf is deprecated. Please use file-redaction.conf and file-content-redaction.conf. See <link> for details.')
+        logger.warning('WARNING: remove.conf is deprecated. Please use file-redaction.conf and file-content-redaction.conf. See https://access.redhat.com/articles/4511681 for details.')
         return self.rm_conf
 
     def load_redaction_file(self, fname):
