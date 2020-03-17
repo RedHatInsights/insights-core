@@ -12,9 +12,9 @@ PATH = '/usr/share/xml/scap/ref_id.xml'
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None, compressor='gz')
 def test_oscap_scan(config, assert_rpms):
     compliance_client = ComplianceClient(config)
-    compliance_client.get_policies = lambda: [{'ref_id': 'foo', 'tailored': 'false'}]
+    compliance_client.get_policies = lambda: [{'attributes': {'ref_id': 'foo', 'tailored': False}}]
     compliance_client.find_scap_policy = lambda ref_id: '/usr/share/xml/scap/foo.xml'
-    compliance_client.run_scan = lambda ref_id, policy_xml, output_path: None, tailoring_file_path: None
+    compliance_client.run_scan = lambda ref_id, policy_xml, output_path, tailoring_file_path: None
     compliance_client.archive.archive_tmp_dir = '/tmp'
     compliance_client.archive.archive_name = 'insights-compliance-test'
     archive, content_type = compliance_client.oscap_scan()
@@ -26,7 +26,7 @@ def test_oscap_scan(config, assert_rpms):
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
 def test_missing_packages(config, call):
     compliance_client = ComplianceClient(config)
-    compliance_client.get_policies = lambda: [{'ref_id': 'foo'}]
+    compliance_client.get_policies = lambda: [{'attributes': {'ref_id': 'foo'}}]
     compliance_client.find_scap_policy = lambda ref_id: '/usr/share/xml/scap/foo.xml'
     compliance_client.run_scan = lambda ref_id, policy_xml: None
     with raises(SystemExit):
@@ -37,7 +37,7 @@ def test_missing_packages(config, call):
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
 def test_errored_rpm_call(config, call):
     compliance_client = ComplianceClient(config)
-    compliance_client.get_policies = lambda: [{'ref_id': 'foo'}]
+    compliance_client.get_policies = lambda: [{'attributes': {'ref_id': 'foo'}}]
     compliance_client.find_scap_policy = lambda ref_id: '/usr/share/xml/scap/foo.xml'
     compliance_client.run_scan = lambda ref_id, policy_xml: None
     with raises(SystemExit):
