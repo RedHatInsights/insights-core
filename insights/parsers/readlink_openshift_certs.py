@@ -1,8 +1,13 @@
 """
-ReadLinkEKubeletClientCurrent - command and others``
-====================================================
+Get the real path of the Openshift certificate symbolic link file
+=================================================================
 
-This module provides Openshift certificate file paths.
+This module contains the following parsers:
+
+ReadLinkEKubeletClientCurrent - command ``/usr/bin/readlink -e /etc/origin/node/certificates/kubelet-client-current.pem``
+-------------------------------------------------------------------------------------------------------------------------
+ReadLinkEKubeletServerCurrent - command ``/usr/bin/readlink -e /etc/origin/node/certificates/kubelet-server-current.pem``
+-------------------------------------------------------------------------------------------------------------------------
 """
 
 from insights.specs import Specs
@@ -16,6 +21,7 @@ class ReadLinkEKubeletClientCurrent(CommandParser):
     Class for command: /usr/bin/readlink -e /etc/origin/node/certificates/kubelet-client-current.pem
 
     Sample content from command is::
+
         /etc/origin/node/certificates/kubelet-client-2019-10-18-23-17-35.pem
 
     Examples:
@@ -41,6 +47,7 @@ class ReadLinkEKubeletServerCurrent(CommandParser):
     Class for command: /usr/bin/readlink -e /etc/origin/node/certificates/kubelet-server-current.pem
 
     Sample content from command is::
+
         /etc/origin/node/certificates/kubelet-server-2018-10-18-23-29-14.pem
 
     Examples:
