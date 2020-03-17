@@ -41,7 +41,7 @@ class ComplianceClient:
         return self.archive.create_tar_file(), COMPLIANCE_CONTENT_TYPE
 
     def download_tailoring_file(self, policy):
-        if policy['attributes']['tailored'] is False:
+        if 'tailored' not in policy['attributes'] or policy['attributes']['tailored'] is False:
             return None
 
         # Download tailoring file to pass as argument to run_scan

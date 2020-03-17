@@ -239,5 +239,5 @@ def try_auto_configuration(config):
         if not _try_satellite6_configuration(config):
             _try_satellite5_configuration(config)
     if not config.legacy_upload and 'cloud.redhat.com' not in config.base_url:
-        config.base_url = config.base_url
+        config.base_url = config.base_url + '/platform'
     logger.debug('Updated base_url: %s', config.base_url)

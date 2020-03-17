@@ -132,6 +132,12 @@ def test_tailored_file_is_not_downloaded_if_not_needed(config):
     assert compliance_client.download_tailoring_file({'attributes': {'tailored': False}}) is None
 
 
+@patch("insights.client.config.InsightsConfig")
+def test_tailored_file_is_not_downloaded_if_tailored_is_missing(config):
+    compliance_client = ComplianceClient(config)
+    assert compliance_client.download_tailoring_file({'id': 'foo', 'attributes': {'ref_id': 'aaaaa'}}) is None
+
+
 @patch("insights.client.apps.compliance.open", new_callable=mock_open)
 @patch("insights.client.config.InsightsConfig")
 def test_tailored_file_is_downloaded_if_needed(config, call):
