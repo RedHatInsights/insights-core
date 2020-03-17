@@ -48,8 +48,8 @@ def test_errored_rpm_call(config, call):
 def test_get_policies(config):
     compliance_client = ComplianceClient(config)
     compliance_client.hostname = 'foo'
-    compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, json=Mock(return_value={'data': [{'attributes': {'profiles': 'data'}}]})))
-    assert compliance_client.get_policies() == 'data'
+    compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, json=Mock(return_value={'data': [{'attributes': 'data'}]})))
+    assert compliance_client.get_policies() == [{'attributes': 'data'}]
     compliance_client.conn.session.get.assert_called_with('https://localhost/app/compliance/profiles', params={'search': 'system_names=foo'})
 
 
