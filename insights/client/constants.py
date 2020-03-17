@@ -46,3 +46,4 @@ class InsightsConstants(object):
     register_marker_file = os.path.join(os.sep, 'var', 'run', 'insights-client-try-register')
     # default Hydra endpoint for posting entitlements information for AWS
     default_portal_access_hydra_url = 'https://access.redhat.com/hydra/rest/accounts/entitle'
+    valid_compressors = ("gz", "xz", "bz2", "none")
