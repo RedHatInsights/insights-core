@@ -526,6 +526,7 @@ class Specs(SpecSet):
     satellite_version_rb = RegistryPoint()
     satellite_custom_hiera = RegistryPoint()
     scheduler = RegistryPoint(multi_output=True)
+    sched_rt_runtime_us = RegistryPoint()
     scsi = RegistryPoint()
     sctp_asc = RegistryPoint()
     sctp_eps = RegistryPoint()

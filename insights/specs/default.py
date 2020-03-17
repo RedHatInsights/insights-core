@@ -887,6 +887,7 @@ class DefaultSpecs(Specs):
     satellite_custom_hiera = simple_file("/etc/foreman-installer/custom-hiera.yaml")
     block_devices = listdir("/sys/block")
     scheduler = foreach_collect(block_devices, "/sys/block/%s/queue/scheduler")
+    sched_rt_runtime_us = simple_file("/proc/sys/kernel/sched_rt_runtime_us")
     scsi = simple_file("/proc/scsi/scsi")
     scsi_eh_deadline = glob_file('/sys/class/scsi_host/host[0-9]*/eh_deadline')
     scsi_fwver = glob_file('/sys/class/scsi_host/host[0-9]*/fwrev')
