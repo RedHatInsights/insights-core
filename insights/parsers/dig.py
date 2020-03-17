@@ -14,7 +14,7 @@ DigNoedns - command ``/usr/bin/dig +noedns . SOA``
 
 import re
 
-from insights.core import Parser
+from insights.core import CommandParser
 from insights.core.plugins import parser
 from insights.parsers import SkipException
 from insights.specs import Specs
@@ -24,7 +24,7 @@ HEADER_TEMPLATE = re.compile(r';; ->>HEADER<<-.*status: (\S+),')
 RRSIG_TEMPLATE = re.compile(r'RRSIG')
 
 
-class Dig(Parser):
+class Dig(CommandParser):
     """
     Base class for classes using ``dig`` command.
 
