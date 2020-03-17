@@ -32,44 +32,48 @@ class ComplianceClient:
             exit(constants.sig_kill_bad)
         for policy in policies:
             self.run_scan(
-                policy['ref_id'],
-                self.find_scap_policy(policy['ref_id']),
-                '/var/tmp/oscap_results-{0}.xml'.format(policy['ref_id']),
+                policy['attributes']['ref_id'],
+                self.find_scap_policy(policy['attributes']['ref_id']),
+                '/var/tmp/oscap_results-{0}.xml'.format(policy['attributes']['ref_id']),
                 tailoring_file_path=self.download_tailoring_file(policy)
             )
 
         return self.archive.create_tar_file(), COMPLIANCE_CONTENT_TYPE
 
     def download_tailoring_file(self, policy):
-        if policy['tailored'] == 'false':
+        if policy['attributes']['tailored'] is False:
             return None
 
         # Download tailoring file to pass as argument to run_scan
         logger.debug(
-            "Policy {0} is a tailored policy. Starting tailoring file download...".format(policy['ref_id'])
+            "Policy {0} is a tailored policy. Starting tailoring file download...".format(policy['attributes']['ref_id'])
         )
-        tailoring_file_path = "/var/tmp/oscap_tailoring_file-{0}.xml".format(policy['ref_id'])
-        content = self.conn.session.get(
+        tailoring_file_path = "/var/tmp/oscap_tailoring_file-{0}.xml".format(policy['attributes']['ref_id'])
+        response = self.conn.session.get(
             "https://{0}/compliance/profiles/{1}/tailoring_file".format(self.config.base_url, policy['id'])
         )
-        if content is None:
-            logger.info("Problem downloading tailoring file for {0} to {1}".format(policy['ref_id'], tailoring_file_path))
+        logger.debug("Response code: {0}".format(response.status_code))
+        if response.content is None:
+            logger.info("Problem downloading tailoring file for {0} to {1}".format(policy['attributes']['ref_id'], tailoring_file_path))
             return None
 
         with open(tailoring_file_path, mode="w+b") as f:
-            f.write(content)
-            logger.info("Saved tailoring file for {0} to {1}".format(policy['ref_id'], tailoring_file_path))
+            f.write(response.content)
+            logger.info("Saved tailoring file for {0} to {1}".format(policy['attributes']['ref_id'], tailoring_file_path))
 
-        logger.debug("Policy {0} tailoring file download finished".format(policy['ref_id']))
+        logger.debug("Policy {0} tailoring file download finished".format(policy['attributes']['ref_id']))
 
         return tailoring_file_path
 
     # TODO: Not a typo! This endpoint gives OSCAP policies, not profiles
     # We need to update compliance-backend to fix this
     def get_policies(self):
-        response = self.conn.session.get("https://{0}/compliance/systems".format(self.config.base_url), params={'search': 'name={0}'.format(self.hostname)})
+        response = self.conn.session.get("https://{0}/compliance/profiles".format(self.config.base_url),
+                                         params={'search': 'system_names={0}'.format(self.hostname)})
+        logger.debug("Content of the response: {0} - {1}".format(response,
+                                                                 response.json()))
         if response.status_code == 200:
-            return (response.json().get('data') or [{}])[0].get('attributes', {}).get('profiles', [])
+            return (response.json().get('data') or [])
         else:
             return []
 
