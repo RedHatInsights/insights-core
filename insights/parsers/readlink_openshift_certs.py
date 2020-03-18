@@ -25,8 +25,11 @@ class ReadLinkEKubeletClientCurrent(CommandParser):
         /etc/origin/node/certificates/kubelet-client-2019-10-18-23-17-35.pem
 
     Examples:
-    >>> client.path
-    '/etc/origin/node/certificates/kubelet-client-2019-10-18-23-17-35.pem'
+        >>> client.path
+        '/etc/origin/node/certificates/kubelet-client-2019-10-18-23-17-35.pem'
+
+    Raises:
+        SkipException: When input content is empty
     """
     def parse_content(self, content):
         if content is None or len(content) == 0:
@@ -51,8 +54,11 @@ class ReadLinkEKubeletServerCurrent(CommandParser):
         /etc/origin/node/certificates/kubelet-server-2018-10-18-23-29-14.pem
 
     Examples:
-    >>> server.path
-    '/etc/origin/node/certificates/kubelet-server-2018-10-18-23-29-14.pem'
+        >>> server.path
+        '/etc/origin/node/certificates/kubelet-server-2018-10-18-23-29-14.pem'
+
+    Raises:
+        SkipException: When input content is empty
     """
     def parse_content(self, content):
         if content is None or len(content) == 0:
