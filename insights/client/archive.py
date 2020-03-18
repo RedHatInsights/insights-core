@@ -30,6 +30,7 @@ class InsightsArchive(object):
         """
         self.config = config
         self.tmp_dir = tempfile.mkdtemp(prefix='/var/tmp/')
+        self.archive_tmp_dir = None
         if not self.config.obfuscate:
             self.archive_tmp_dir = tempfile.mkdtemp(prefix='/var/tmp/')
         name = determine_hostname()
@@ -38,7 +39,7 @@ class InsightsArchive(object):
                               time.strftime("%Y%m%d%H%M%S")))
         self.archive_dir = self.create_archive_dir()
         self.cmd_dir = self.create_command_dir()
-        self.compressor = 'gz' or config.compressor
+        self.compressor = config.compressor
         self.tar_file = None
         atexit.register(self.cleanup_tmp)
 
@@ -119,12 +120,13 @@ class InsightsArchive(object):
         """
         Create tar file to be compressed
         """
+        if not self.archive_tmp_dir:
+            # we should never get here but bail out if we do
+            raise RuntimeError('Archive temporary directory not defined.')
         tar_file_name = os.path.join(self.archive_tmp_dir, self.archive_name)
         ext = "" if self.compressor == "none" else ".%s" % self.compressor
         tar_file_name = tar_file_name + ".tar" + ext
         logger.debug("Tar File: " + tar_file_name)
-        if self.compressor not in ["gz", "xz", "bz2", "none"]:
-            logger.error("The compressor %s is not supported.  Using default: gz", self.compressor)
         return_code = subprocess.call(shlex.split("tar c%sfS %s -C %s ." % (
             self.get_compression_flag(self.compressor),
             tar_file_name, self.tmp_dir)),
@@ -155,8 +157,9 @@ class InsightsArchive(object):
         """
         Delete the directory containing the constructed archive
         """
-        logger.debug("Deleting %s", self.archive_tmp_dir)
-        shutil.rmtree(self.archive_tmp_dir, True)
+        if self.archive_tmp_dir:
+            logger.debug("Deleting %s", self.archive_tmp_dir)
+            shutil.rmtree(self.archive_tmp_dir, True)
 
     def add_to_archive(self, spec):
         '''
@@ -185,9 +188,10 @@ class InsightsArchive(object):
     def cleanup_tmp(self):
         '''
         Only used during built-in collection.
-        Delete archive and tmp dirs on exit.
+        Delete archive and tmp dirs on exit unless --keep-archive is specified
+            and tar_file exists.
         '''
-        if self.config.keep_archive:
+        if self.config.keep_archive and self.tar_file:
             if self.config.no_upload:
                 logger.info('Archive saved at %s', self.tar_file)
             else:
