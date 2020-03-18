@@ -339,6 +339,7 @@ class InsightsUploadConf(object):
         except ConfigParser.Error as e:
             # can't parse config file at all
             logger.debug(e)
+            logger.debug('To configure using YAML, please use file-redaction.conf and file-content-redaction.conf.')
             raise RuntimeError('ERROR: Cannot parse the remove.conf file.\n'
                                'See %s for more information.' % self.config.logging_file)
         logger.warning('WARNING: remove.conf is deprecated. Please use file-redaction.conf and file-content-redaction.conf. See https://access.redhat.com/articles/4511681 for details.')
