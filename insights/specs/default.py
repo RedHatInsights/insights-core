@@ -695,6 +695,7 @@ class DefaultSpecs(Specs):
     oc_get_route = simple_command("/usr/bin/oc get route -o yaml --all-namespaces", context=OpenShiftContext)
     oc_get_service = simple_command("/usr/bin/oc get service -o yaml --all-namespaces", context=OpenShiftContext)
     oc_get_configmap = simple_command("/usr/bin/oc get configmap -o yaml --all-namespaces", context=OpenShiftContext)
+    octavia_conf = simple_file("/var/lib/config-data/puppet-generated/octavia/etc/octavia/octavia.conf")
     odbc_ini = simple_file("/etc/odbc.ini")
     odbcinst_ini = simple_file("/etc/odbcinst.ini")
     crt = simple_command("/usr/bin/find /etc/origin/node /etc/origin/master -type f -path '*.crt'")
