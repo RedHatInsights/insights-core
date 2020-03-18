@@ -1,24 +1,25 @@
 """
-SysKernel - file ``/proc/sys/kernel`` or ``/sys/kernel/``
-=========================================================
+System kernel files under ``/proc/sys/kernel`` or ``/sys/kernel/``
+==================================================================
 
-The parsers included in this module are:
+This module contains the following parsers:
 
-SchedRTRuntime - File ``/proc/sys/kernel/sched_rt_runtime_us``
---------------------------------------------------------------
+SchedRTRuntime - (File ``/proc/sys/kernel/sched_rt_runtime_us``)
+----------------------------------------------------------------
 """
 
-from insights import Parser, parser, LegacyItemAccess, get_active_lines
+from insights import Parser, parser, get_active_lines
 from insights.parsers import ParseException
 from insights.specs import Specs
 
 
 @parser(Specs.sched_rt_runtime_us)
-class SchedRTRuntime(Parser, LegacyItemAccess):
+class SchedRTRuntime(Parser):
     """
     Class for parsing the `/proc/sys/kernel/sched_rt_runtime_us` file.
 
     Typical content of the file is::
+
         950000
 
     Examples:
@@ -26,6 +27,9 @@ class SchedRTRuntime(Parser, LegacyItemAccess):
         <class 'insights.parsers.sys_kernel.SchedRTRuntime'>
         >>> srt.runtime_us
         950000
+
+    Attributes:
+        runtime_us (int): the value of sched_rt_runtime_us
     """
 
     def parse_content(self, content):
