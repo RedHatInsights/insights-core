@@ -27,7 +27,6 @@ from .utilities import (determine_hostname,
                         generate_machine_id,
                         write_unregistered_file,
                         write_registered_file)
-from .client import NETWORK
 from .cert_auth import rhsmCertificate
 from .constants import InsightsConstants as constants
 from .url_cache import URLCache
@@ -39,6 +38,7 @@ from insights.util.canonical_facts import get_canonical_facts
 
 warnings.simplefilter('ignore')
 APP_NAME = constants.app_name
+NETWORK = 11
 logger = logging.getLogger(__name__)
 
 """

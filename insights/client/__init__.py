@@ -20,6 +20,7 @@ from .utilities import (delete_registered_file,
                         get_tags,
                         write_tags)
 
+NETWORK = 11
 logger = logging.getLogger(__name__)
 
 
@@ -173,7 +174,7 @@ class InsightsClient(object):
 
         # If the etag was found and we are not force fetching
         # Then add it to the request
-        logger.log(client.NETWORK, "GET %s", url)
+        logger.log(NETWORK, "GET %s", url)
         if current_etag and not force:
             logger.debug('Requesting new file with etag %s', current_etag)
             etag_headers = {'If-None-Match': current_etag}
