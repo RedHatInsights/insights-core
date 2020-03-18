@@ -27,6 +27,7 @@ from .utilities import (determine_hostname,
                         generate_machine_id,
                         write_unregistered_file,
                         write_registered_file)
+from .client import NETWORK
 from .cert_auth import rhsmCertificate
 from .constants import InsightsConstants as constants
 from .url_cache import URLCache
@@ -39,7 +40,6 @@ from insights.util.canonical_facts import get_canonical_facts
 warnings.simplefilter('ignore')
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
-net_logger = logging.getLogger("network")
 
 """
 urllib3's logging is chatty
@@ -151,7 +151,7 @@ class InsightsConnection(object):
             # HACKY
             try:
                 # Need to make a request that will fail to get proxies set up
-                net_logger.info("GET %s", self.base_url)
+                logger.log(NETWORK, "GET %s", self.base_url)
                 session.request(
                     "GET", self.base_url, timeout=self.config.http_timeout)
             except requests.ConnectionError:
@@ -514,7 +514,7 @@ class InsightsConnection(object):
 
         logger.debug(u'Obtaining branch information from %s',
                      self.branch_info_url)
-        net_logger.info(u'GET %s', self.branch_info_url)
+        logger.log(NETWORK, u'GET %s', self.branch_info_url)
         response = self.session.get(self.branch_info_url,
                                     timeout=self.config.http_timeout)
         logger.debug(u'GET branch_info status: %s', response.status_code)
@@ -565,7 +565,7 @@ class InsightsConnection(object):
         post_system_url = self.api_url + '/v1/systems'
         logger.debug("POST System: %s", post_system_url)
         logger.debug(data)
-        net_logger.info("POST %s", post_system_url)
+        logger.log(NETWORK, "POST %s", post_system_url)
         return self.session.post(post_system_url,
                                  headers={'Content-Type': 'application/json'},
                                  data=data)
@@ -585,7 +585,7 @@ class InsightsConnection(object):
         group_get_path = group_path + ('?display_name=%s' % quote(group_name))
 
         logger.debug("GET group: %s", group_get_path)
-        net_logger.info("GET %s", group_get_path)
+        logger.log(NETWORK, "GET %s", group_get_path)
         get_group = self.session.get(group_get_path)
         logger.debug("GET group status: %s", get_group.status_code)
         if get_group.status_code == 200:
@@ -595,7 +595,7 @@ class InsightsConnection(object):
             # Group does not exist, POST to create
             logger.debug("POST group")
             data = json.dumps({'display_name': group_name})
-            net_logger.info("POST", group_path)
+            logger.log(NETWORK, "POST", group_path)
             post_group = self.session.post(group_path,
                                            headers=headers,
                                            data=data)
@@ -606,7 +606,7 @@ class InsightsConnection(object):
 
         logger.debug("PUT group")
         data = json.dumps(systems)
-        net_logger.info("PUT %s", group_path + ('/%s/systems' % api_group_id))
+        logger.log(NETWORK, "PUT %s", group_path + ('/%s/systems' % api_group_id))
         put_group = self.session.put(group_path +
                                      ('/%s/systems' % api_group_id),
                                      headers=headers,
@@ -633,7 +633,7 @@ class InsightsConnection(object):
         machine_id = generate_machine_id()
         try:
             url = self.api_url + '/v1/systems/' + machine_id
-            net_logger.info("GET %s", url)
+            logger.log(NETWORK, "GET %s", url)
             res = self.session.get(url, timeout=self.config.http_timeout)
         except requests.ConnectionError:
             # can't connect, run connection test
@@ -679,7 +679,7 @@ class InsightsConnection(object):
                 url = self.base_url + '/platform/inventory/v1/hosts?insights_id=' + machine_id
             else:
                 url = self.base_url + '/inventory/v1/hosts?insights_id=' + machine_id
-            net_logger.info("GET %s", url)
+            logger.log(NETWORK, "GET %s", url)
             res = self.session.get(url, timeout=self.config.http_timeout)
         except (requests.ConnectionError, requests.Timeout) as e:
             logger.error(e)
@@ -730,7 +730,7 @@ class InsightsConnection(object):
         try:
             logger.debug("Unregistering %s", machine_id)
             url = self.api_url + "/v1/systems/" + machine_id
-            net_logger.info("DELETE %s", url)
+            logger.log(NETWORK, "DELETE %s", url)
             self.session.delete(url)
             logger.info(
                 "Successfully unregistered from the Red Hat Insights Service")
@@ -751,7 +751,7 @@ class InsightsConnection(object):
         try:
             logger.debug("Unregistering host...")
             url = self.api_url + "/inventory/v1/hosts/" + results[0]['id']
-            net_logger.info("DELETE %s", url)
+            logger.log(NETWORK, "DELETE %s", url)
             response = self.session.delete(url)
             response.raise_for_status()
             logger.info(
@@ -832,7 +832,7 @@ class InsightsConnection(object):
         logger.debug("Uploading %s to %s", data_collected, upload_url)
 
         headers = {'x-rh-collection-time': str(duration)}
-        net_logger.info("POST %s", upload_url)
+        logger.log(NETWORK, "POST %s", upload_url)
         upload = self.session.post(upload_url, files=files, headers=headers)
 
         logger.debug("Upload status: %s %s %s",
@@ -878,7 +878,7 @@ class InsightsConnection(object):
         }
         logger.debug("Uploading %s to %s", data_collected, upload_url)
 
-        net_logger.info("POST %s", upload_url)
+        logger.log(NETWORK, "POST %s", upload_url)
         upload = self.session.post(upload_url, files=files, headers={})
 
         logger.debug("Upload status: %s %s %s",
@@ -903,14 +903,14 @@ class InsightsConnection(object):
         try:
             url = self.api_url + '/v1/systems/' + machine_id
 
-            net_logger.info("GET %s", url)
+            logger.log(NETWORK, "GET %s", url)
             res = self.session.get(url, timeout=self.config.http_timeout)
             old_display_name = json.loads(res.content).get('display_name', None)
             if display_name == old_display_name:
                 logger.debug('Display name unchanged: %s', old_display_name)
                 return True
 
-            net_logger.info("PUT %s", url)
+            logger.log(NETWORK, "PUT %s", url)
             res = self.session.put(url,
                                    timeout=self.config.http_timeout,
                                    headers={'Content-Type': 'application/json'},
@@ -948,7 +948,7 @@ class InsightsConnection(object):
 
         req_url = self.base_url + '/inventory/v1/hosts/' + inventory_id
         try:
-            net_logger.info("PATCH %s", req_url)
+            logger.log(NETWORK, "PATCH %s", req_url)
             res = self.session.patch(req_url, json={'display_name': display_name})
         except (requests.ConnectionError, requests.Timeout) as e:
             logger.error(e)
@@ -972,7 +972,7 @@ class InsightsConnection(object):
             # validate this?
             params['remediation'] = remediation_id
         try:
-            net_logger.info("GET %s", diag_url)
+            logger.log(NETWORK, "GET %s", diag_url)
             res = self.session.get(diag_url, params=params, timeout=self.config.http_timeout)
         except (requests.ConnectionError, requests.Timeout) as e:
             logger.error(e)
@@ -999,7 +999,7 @@ class InsightsConnection(object):
         if item is not None:
             headers["If-None-Match"] = item.etag
 
-        net_logger.info("GET %s", url)
+        logger.log(NETWORK, "GET %s", url)
         res = self.session.get(url, headers=headers)
 
         if res.status_code in [requests.codes.OK, requests.codes.NOT_MODIFIED]:

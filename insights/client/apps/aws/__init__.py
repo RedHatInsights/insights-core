@@ -9,9 +9,9 @@ from insights.client.connection import InsightsConnection
 from insights.client.schedule import get_scheduler
 from insights.client.constants import InsightsConstants as constants
 from insights.client.utilities import write_to_disk
+from insights.client.client import NETWORK
 
 logger = logging.getLogger(__name__)
-net_logger = logging.getLogger('network')
 
 IDENTITY_URI = 'http://169.254.169.254/latest/dynamic/instance-identity'
 IDENTITY_DOC_URI = IDENTITY_URI + '/document'
@@ -52,13 +52,13 @@ def get_uri(conn, uri):
     Fetch information from URIs
     '''
     try:
-        net_logger.info('GET %s', uri)
+        logger.log(NETWORK, ('GET %s', uri)
         res = conn.session.get(uri, timeout=conn.config.http_timeout)
     except (ConnectionError, Timeout) as e:
         logger.error(e)
         logger.error('Could not reach %s', uri)
         return None
-    net_logger.info('Status code: %s', res.status_code)
+    logger.log(NETWORK, ('Status code: %s', res.status_code)
     return res
 
 
@@ -91,8 +91,8 @@ def post_to_hydra(conn, data):
     # POST to hydra
     try:
         json_data = json.dumps(data)
-        net_logger.info('POST %s', hydra_endpoint)
-        net_logger.info('POST body: %s', json_data)
+        logger.log(NETWORK, ('POST %s', hydra_endpoint)
+        logger.log(NETWORK, ('POST body: %s', json_data)
         res = conn.session.post(hydra_endpoint, data=json_data, timeout=conn.config.http_timeout)
     except MissingSchema as e:
         logger.error(e)
@@ -101,7 +101,7 @@ def post_to_hydra(conn, data):
         logger.error(e)
         logger.error('Could not reach %s', hydra_endpoint)
         return False
-    net_logger.info('Status code: %s', res.status_code)
+    logger.log(NETWORK, ('Status code: %s', res.status_code)
     try:
         res.raise_for_status()
     except HTTPError as e:
