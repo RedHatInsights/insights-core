@@ -411,6 +411,7 @@ class Specs(SpecSet):
     oc_get_route = RegistryPoint()
     oc_get_service = RegistryPoint()
     oc_get_configmap = RegistryPoint()
+    octavia_conf = RegistryPoint(filterable=True)
     odbc_ini = RegistryPoint(filterable=True)
     odbcinst_ini = RegistryPoint()
     openvswitch_other_config = RegistryPoint()
