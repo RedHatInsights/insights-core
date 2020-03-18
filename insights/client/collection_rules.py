@@ -19,7 +19,7 @@ from .constants import InsightsConstants as constants
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
-NETWORK = 11
+NETWORK = constants.custom_network_log_level
 
 expected_keys = ('commands', 'files', 'patterns', 'keywords')
 

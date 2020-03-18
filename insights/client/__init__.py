@@ -20,7 +20,7 @@ from .utilities import (delete_registered_file,
                         get_tags,
                         write_tags)
 
-NETWORK = 11
+NETWORK = constants.custom_network_log_level
 logger = logging.getLogger(__name__)
 
 

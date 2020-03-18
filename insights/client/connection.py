@@ -38,7 +38,7 @@ from insights.util.canonical_facts import get_canonical_facts
 
 warnings.simplefilter('ignore')
 APP_NAME = constants.app_name
-NETWORK = 11
+NETWORK = constants.custom_network_log_level
 logger = logging.getLogger(__name__)
 
 """
@@ -321,9 +321,9 @@ class InsightsConnection(object):
                         test_url + ext, timeout=self.config.http_timeout, data=test_flag)
                 elif method is "GET":
                     test_req = self.session.get(test_url + ext, timeout=self.config.http_timeout)
-                logger.info("HTTP Status Code: %d", test_req.status_code)
-                logger.info("HTTP Status Text: %s", test_req.reason)
-                logger.info("HTTP Response Text: %s", test_req.text)
+                logger.log(NETWORK, "HTTP Status Code: %d", test_req.status_code)
+                logger.log(NETWORK, "HTTP Status Text: %s", test_req.reason)
+                logger.log(NETWORK, "HTTP Response Text: %s", test_req.text)
                 # Strata returns 405 on a GET sometimes, this isn't a big deal
                 if test_req.status_code in (200, 201):
                     logger.info(
@@ -357,9 +357,9 @@ class InsightsConnection(object):
                 test_req = self.session.post(url, timeout=self.config.http_timeout, files=test_files)
             elif method is "GET":
                     test_req = self.session.get(url, timeout=self.config.http_timeout)
-            logger.info("HTTP Status Code: %d", test_req.status_code)
-            logger.info("HTTP Status Text: %s", test_req.reason)
-            logger.info("HTTP Response Text: %s", test_req.text)
+            logger.log(NETWORK, "HTTP Status Code: %d", test_req.status_code)
+            logger.log(NETWORK, "HTTP Status Text: %s", test_req.reason)
+            logger.log(NETWORK, "HTTP Response Text: %s", test_req.text)
             if test_req.status_code in (200, 201, 202):
                 logger.info(
                     "Successfully connected to: %s", url)
@@ -517,7 +517,7 @@ class InsightsConnection(object):
         logger.log(NETWORK, u'GET %s', self.branch_info_url)
         response = self.session.get(self.branch_info_url,
                                     timeout=self.config.http_timeout)
-        logger.debug(u'GET branch_info status: %s', response.status_code)
+        logger.log(NETWORK, u'GET branch_info status: %s', response.status_code)
         if response.status_code != 200:
             logger.debug("There was an error obtaining branch information.")
             logger.debug(u'Bad status from server: %s', response.status_code)
@@ -835,7 +835,7 @@ class InsightsConnection(object):
         logger.log(NETWORK, "POST %s", upload_url)
         upload = self.session.post(upload_url, files=files, headers=headers)
 
-        logger.debug("Upload status: %s %s %s",
+        logger.log(NETWORK, "Upload status: %s %s %s",
                      upload.status_code, upload.reason, upload.text)
         if upload.status_code in (200, 201):
             the_json = json.loads(upload.text)
@@ -881,7 +881,7 @@ class InsightsConnection(object):
         logger.log(NETWORK, "POST %s", upload_url)
         upload = self.session.post(upload_url, files=files, headers={})
 
-        logger.debug("Upload status: %s %s %s",
+        logger.log(NETWORK, "Upload status: %s %s %s",
                      upload.status_code, upload.reason, upload.text)
         logger.debug('Request ID: %s', upload.headers.get('x-rh-insights-request-id', None))
         if upload.status_code in (200, 202):

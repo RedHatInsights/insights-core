@@ -11,7 +11,7 @@ from insights.client.constants import InsightsConstants as constants
 from insights.client.utilities import write_to_disk
 
 logger = logging.getLogger(__name__)
-NETWORK = 11
+NETWORK = constants.custom_network_log_level
 
 IDENTITY_URI = 'http://169.254.169.254/latest/dynamic/instance-identity'
 IDENTITY_DOC_URI = IDENTITY_URI + '/document'
