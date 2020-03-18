@@ -565,6 +565,7 @@ class Specs(SpecSet):
     swift_log = RegistryPoint(filterable=True)
     swift_object_expirer_conf = RegistryPoint()
     swift_proxy_server_conf = RegistryPoint()
+    sys_kernel_sched_features = RegistryPoint()
     sysconfig_chronyd = RegistryPoint()
     sysconfig_httpd = RegistryPoint()
     sysconfig_irqbalance = RegistryPoint()

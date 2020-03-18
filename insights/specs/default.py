@@ -929,6 +929,7 @@ class DefaultSpecs(Specs):
     swift_log = first_file(["/var/log/containers/swift/swift.log", "/var/log/swift/swift.log"])
     swift_object_expirer_conf = first_file(["/var/lib/config-data/puppet-generated/swift/etc/swift/object-expirer.conf", "/etc/swift/object-expirer.conf"])
     swift_proxy_server_conf = first_file(["/var/lib/config-data/puppet-generated/swift/etc/swift/proxy-server.conf", "/etc/swift/proxy-server.conf"])
+    sys_kernel_sched_features = simple_file("/sys/kernel/debug/sched_features")
     sysconfig_chronyd = simple_file("/etc/sysconfig/chronyd")
     sysconfig_httpd = simple_file("/etc/sysconfig/httpd")
     sysconfig_irqbalance = simple_file("etc/sysconfig/irqbalance")
