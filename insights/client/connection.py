@@ -414,16 +414,16 @@ class InsightsConnection(object):
         """
 
         try:
-            logger.debug("HTTP Status Code: %s", req.status_code)
-            logger.debug("HTTP Response Text: %s", req.text)
-            logger.debug("HTTP Response Reason: %s", req.reason)
-            logger.debug("HTTP Response Content: %s", req.content)
+            logger.log(NETWORK, "HTTP Status Code: %s", req.status_code)
+            logger.log(NETWORK, "HTTP Response Text: %s", req.text)
+            logger.log(NETWORK, "HTTP Response Reason: %s", req.reason)
+            logger.log(NETWORK, "HTTP Response Content: %s", req.content)
         except:
             logger.error("Malformed HTTP Request.")
 
         # attempt to read the HTTP response JSON message
         try:
-            logger.debug("HTTP Response Message: %s", req.json()["message"])
+            logger.log(NETWORK, "HTTP Response Message: %s", req.json()["message"])
         except:
             logger.debug("No HTTP Response message present.")
 
@@ -436,7 +436,7 @@ class InsightsConnection(object):
                 logger.error("Authorization Required.")
                 logger.error("Please ensure correct credentials "
                              "in " + constants.default_conf_file)
-                logger.debug("HTTP Response Text: %s", req.text)
+                logger.log(NETWORK, "HTTP Response Text: %s", req.text)
             if req.status_code == 402:
                 # failed registration because of entitlement limit hit
                 logger.debug('Registration failed by 402 error.')
@@ -444,10 +444,10 @@ class InsightsConnection(object):
                     logger.error(req.json()["message"])
                 except LookupError:
                     logger.error("Got 402 but no message")
-                    logger.debug("HTTP Response Text: %s", req.text)
+                    logger.log(NETWORK, "HTTP Response Text: %s", req.text)
                 except:
                     logger.error("Got 402 but no message")
-                    logger.debug("HTTP Response Text: %s", req.text)
+                    logger.log(NETWORK, "HTTP Response Text: %s", req.text)
             if req.status_code == 403 and self.auto_config:
                 # Insights disabled in satellite
                 rhsm_hostname = urlparse(self.base_url).hostname
@@ -462,10 +462,10 @@ class InsightsConnection(object):
                     write_unregistered_file(unreg_date)
                 except LookupError:
                     unreg_date = "412, but no unreg_date or message"
-                    logger.debug("HTTP Response Text: %s", req.text)
+                    logger.log(NETWORK, "HTTP Response Text: %s", req.text)
                 except:
                     unreg_date = "412, but no unreg_date or message"
-                    logger.debug("HTTP Response Text: %s", req.text)
+                    logger.log(NETWORK, "HTTP Response Text: %s", req.text)
             if req.status_code == 413:
                 logger.error('Archive is too large to upload.')
             if req.status_code == 415:
