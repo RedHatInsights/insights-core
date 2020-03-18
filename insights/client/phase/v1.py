@@ -296,18 +296,27 @@ def collect_and_output(client, config):
             sys.exit(constants.sig_kill_bad)
         config.content_type = 'application/vnd.redhat.advisor.collection+tgz'
 
-    if not insights_archive:
-        sys.exit(constants.sig_kill_bad)
-    resp = None
-    if not config.no_upload:
+    if config.no_upload:
+        # output options for which upload is not performed
+        if config.output_dir:
+            client.copy_to_output_dir(insights_archive)
+        elif config.output_file:
+            client.copy_to_output_file(insights_archive)
+    else:
+        # upload the archive
+        if not insights_archive:
+            # no archive to upload, something went wrong
+            sys.exit(constants.sig_kill_bad)
+        resp = None
         try:
             resp = client.upload(payload=insights_archive, content_type=config.content_type)
         except (IOError, ValueError, RuntimeError) as e:
             logger.error(str(e))
             sys.exit(constants.sig_kill_bad)
-    if resp:
-        if config.to_json:
-            print(json.dumps(resp))
+        if resp:
+            if config.to_json:
+                print(json.dumps(resp))
+
     client.delete_cached_branch_info()
 
     # rotate eggs once client completes all work successfully
