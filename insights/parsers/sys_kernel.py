@@ -1,11 +1,11 @@
 """
-System kernel files under ``/proc/sys/kernel`` or ``/sys/kernel/``
-==================================================================
+System kernel files under ``/proc/sys/kernel`` or ``/sys/kernel``
+=================================================================
 
 This module contains the following parsers:
 
-SchedRTRuntime - (File ``/proc/sys/kernel/sched_rt_runtime_us``)
-----------------------------------------------------------------
+SchedRTRuntime - file ``/proc/sys/kernel/sched_rt_runtime_us``
+--------------------------------------------------------------
 """
 
 from insights import Parser, parser, get_active_lines
@@ -29,7 +29,10 @@ class SchedRTRuntime(Parser):
         950000
 
     Attributes:
-        runtime_us (int): the value of sched_rt_runtime_us
+        runtime_us (int): The value of sched_rt_runtime_us
+
+    Raises:
+        ParseException: Raised when there is more than one line or the value isn't interger.
     """
 
     def parse_content(self, content):
