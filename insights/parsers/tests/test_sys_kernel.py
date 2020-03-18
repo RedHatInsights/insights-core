@@ -40,7 +40,7 @@ def test_sys_kernel_1():
 
 
 def test_exception():
-    with pytest.raises(ParseException) as ex:
+    with pytest.raises(ParseException):
         SchedRTRuntime(context_wrap(sys_kernel_content_3))
-    with pytest.raises(ParseException) as ex:
+    with pytest.raises(ParseException):
         SchedRTRuntime(context_wrap(sys_kernel_content_4))
