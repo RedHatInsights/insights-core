@@ -26,6 +26,7 @@ from .support import registration_check
 from .constants import InsightsConstants as constants
 from .schedule import get_scheduler
 
+NETWORK = constants.custom_network_log_level
 LOG_FORMAT = ("%(asctime)s %(levelname)8s %(name)s %(message)s")
 logger = logging.getLogger(__name__)
 
@@ -53,6 +54,8 @@ def get_console_handler(config):
         target_level = logging.FATAL
     elif config.verbose:
         target_level = logging.DEBUG
+    elif config.net_debug:
+        target_level = NETWORK
     elif config.quiet:
         target_level = logging.ERROR
     else:
@@ -68,6 +71,7 @@ def get_console_handler(config):
 
 
 def configure_level(config):
+    config_level = 'NETWORK' if config.net_debug else config.loglevel
     config_level = 'DEBUG' if config.verbose else config.loglevel
 
     init_log_level = logging.getLevelName(config_level)
@@ -78,13 +82,12 @@ def configure_level(config):
     logger.setLevel(init_log_level)
     logging.root.setLevel(init_log_level)
 
-    net_debug_level = logging.INFO if config.net_debug else logging.ERROR
-    logging.getLogger('network').setLevel(net_debug_level)
     if not config.verbose:
         logging.getLogger('insights.core.dr').setLevel(logging.WARNING)
 
 
 def set_up_logging(config):
+    logging.addLevelName(NETWORK, "NETWORK")
     if len(logging.root.handlers) == 0:
         logging.root.addHandler(get_console_handler(config))
         logging.root.addHandler(get_file_handler(config))
