@@ -64,7 +64,7 @@ def get_console_handler(config):
     handler = logging.StreamHandler(sys.stdout)
     handler.setLevel(target_level)
 
-    log_format = LOG_FORMAT if (config.verbose or config.net_debug) else "%(message)s"
+    log_format = LOG_FORMAT if config.verbose else "%(message)s"
     handler.setFormatter(logging.Formatter(log_format))
 
     return handler
