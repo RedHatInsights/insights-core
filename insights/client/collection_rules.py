@@ -322,7 +322,7 @@ class InsightsUploadConf(object):
         # Make sure permissions are 600
         mode = stat.S_IMODE(os.stat(self.remove_file).st_mode)
         if not mode == 0o600:
-            logger.error("ERROR: Invalid remove file permissions. "
+            logger.error("WARNING: Invalid remove file permissions. "
                          "Expected 0600 got %s" % oct(mode))
             return False
         else:
@@ -332,9 +332,10 @@ class InsightsUploadConf(object):
             logger.error('Could not parse remove.conf')
             return False
         # Using print here as this could contain sensitive information
-        print('Remove file parsed contents:')
-        print(success)
-        logger.info('Parsed successfully.')
+        if self.config.verbose or self.config.validate:
+            print('Remove file parsed contents:')
+            print(success)
+            logger.info('Parsed successfully.')
         return True
 
 
