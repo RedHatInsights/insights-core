@@ -4,10 +4,10 @@ Yum - Commands
 Parsers for ``yum`` commands.
 
 This module contains the classes that parse the output of the commands
-`yum -C repolist`.
+`yum -C --noplugins repolist`.
 
-YumRepoList - command ``yum -C repolist``
------------------------------------------
+YumRepoList - command ``yum -C --noplugins repolist``
+-----------------------------------------------------
 """
 
 from insights import parser, CommandParser
@@ -43,11 +43,10 @@ eus = [
 @parser(Specs.yum_repolist)
 class YumRepoList(CommandParser):
     """
-    Class for parsing the output of `yum -C repolist` command.
+    Class for parsing the output of `yum -C --noplugins repolist` command.
 
     Typical output of the command is::
 
-        Loaded plugins: langpacks, product-id, search-disabled-repos, subscription-manager
         repo id                                             repo name                                                                                                    status
         rhel-7-server-e4s-rpms/x86_64                       Red Hat Enterprise Linux 7 Server - Update Services for SAP Solutions (RPMs)                                 12,250
         !rhel-ha-for-rhel-7-server-e4s-rpms/x86_64          Red Hat Enterprise Linux High Availability (for RHEL 7 Server) Update Services for SAP Solutions (RPMs)         272
@@ -56,7 +55,6 @@ class YumRepoList(CommandParser):
 
     Or sometimes it just outputs repo id and status::
 
-        Loaded plugins: package_upload, product-id, search-disabled-repos, security, subscription-manager
         repo id                                                                               status
         LME_EPEL_6_x86_64                                                                        26123
         LME_FSMLabs_Timekeeper_timekeeper                                                            2

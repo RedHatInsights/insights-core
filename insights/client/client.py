@@ -6,9 +6,7 @@ import logging
 import logging.handlers
 import os
 import time
-import shutil
 import six
-import atexit
 
 from .utilities import (generate_machine_id,
                         write_to_disk,
@@ -16,6 +14,7 @@ from .utilities import (generate_machine_id,
                         write_unregistered_file,
                         delete_registered_file,
                         delete_unregistered_file,
+                        delete_cache_files,
                         determine_hostname,
                         read_pidfile,
                         systemd_notify)
@@ -27,6 +26,7 @@ from .support import registration_check
 from .constants import InsightsConstants as constants
 from .schedule import get_scheduler
 
+NETWORK = constants.custom_network_log_level
 LOG_FORMAT = ("%(asctime)s %(levelname)8s %(name)s %(message)s")
 logger = logging.getLogger(__name__)
 
@@ -54,6 +54,8 @@ def get_console_handler(config):
         target_level = logging.FATAL
     elif config.verbose:
         target_level = logging.DEBUG
+    elif config.net_debug:
+        target_level = NETWORK
     elif config.quiet:
         target_level = logging.ERROR
     else:
@@ -69,6 +71,7 @@ def get_console_handler(config):
 
 
 def configure_level(config):
+    config_level = 'NETWORK' if config.net_debug else config.loglevel
     config_level = 'DEBUG' if config.verbose else config.loglevel
 
     init_log_level = logging.getLevelName(config_level)
@@ -79,13 +82,12 @@ def configure_level(config):
     logger.setLevel(init_log_level)
     logging.root.setLevel(init_log_level)
 
-    net_debug_level = logging.INFO if config.net_debug else logging.ERROR
-    logging.getLogger('network').setLevel(net_debug_level)
     if not config.verbose:
         logging.getLogger('insights.core.dr').setLevel(logging.WARNING)
 
 
 def set_up_logging(config):
+    logging.addLevelName(NETWORK, "NETWORK")
     if len(logging.root.handlers) == 0:
         logging.root.addHandler(get_console_handler(config))
         logging.root.addHandler(get_file_handler(config))
@@ -222,6 +224,7 @@ def _legacy_handle_unregistration(config, pconn):
         # only set if unreg was successful
         write_unregistered_file()
         get_scheduler(config).remove_scheduling()
+        delete_cache_files()
     return unreg
 
 
@@ -239,6 +242,7 @@ def handle_unregistration(config, pconn):
     if unreg:
         # only set if unreg was successful
         write_unregistered_file()
+        delete_cache_files()
     return unreg
 
 
@@ -274,7 +278,7 @@ def collect(config, pconn):
     """
     branch_info = get_branch_info(config)
     pc = InsightsUploadConf(config)
-    tar_file = None
+    output = None
 
     collection_rules = pc.get_conf_file()
     rm_conf = pc.get_rm_conf()
@@ -283,15 +287,14 @@ def collect(config, pconn):
 
     # defaults
     mp = None
-    archive = InsightsArchive(compressor=config.compressor)
-    atexit.register(_delete_archive_internal, config, archive)
+    archive = InsightsArchive(config)
 
     msg_name = determine_hostname(config.display_name)
     dc = DataCollector(config, archive, mountpoint=mp)
     logger.info('Starting to collect Insights data for %s', msg_name)
     dc.run_collection(collection_rules, rm_conf, branch_info)
-    tar_file = dc.done(collection_rules, rm_conf)
-    return tar_file
+    output = dc.done(collection_rules, rm_conf)
+    return output
 
 
 def get_connection(config):
@@ -326,9 +329,9 @@ def _legacy_upload(config, pconn, tar_file, content_type, collection_duration=No
                 logger.info("Successfully uploaded report for %s.", msg_name)
             break
 
-        elif upload.status_code == 412:
+        elif upload.status_code in (412, 413):
             pconn.handle_fail_rcs(upload)
-            break
+            raise RuntimeError('Upload failed.')
         else:
             logger.error("Upload attempt %d of %d failed! Status Code: %s",
                          tries + 1, config.retries, upload.status_code)
@@ -339,6 +342,7 @@ def _legacy_upload(config, pconn, tar_file, content_type, collection_duration=No
             else:
                 logger.error("All attempts to upload have failed!")
                 logger.error("Please see %s for additional information", config.logging_file)
+                raise RuntimeError('Upload failed.')
     return api_response
 
 
@@ -354,6 +358,10 @@ def upload(config, pconn, tar_file, content_type, collection_duration=None):
         if upload.status_code in (200, 202):
             msg_name = determine_hostname(config.display_name)
             logger.info("Successfully uploaded report for %s.", msg_name)
+            return
+        elif upload.status_code in (413, 415):
+            pconn.handle_fail_rcs(upload)
+            raise RuntimeError('Upload failed.')
         else:
             logger.error("Upload attempt %d of %d failed! Status code: %s",
                          tries + 1, config.retries, upload.status_code)
@@ -364,35 +372,4 @@ def upload(config, pconn, tar_file, content_type, collection_duration=None):
             else:
                 logger.error("All attempts to upload have failed!")
                 logger.error("Please see %s for additional information", config.logging_file)
-
-
-def _delete_archive_internal(config, archive):
-    '''
-    Only used during built-in collection.
-    Delete archive and tmp dirs on unexpected exit.
-    '''
-    if not config.keep_archive:
-        archive.delete_tmp_dir()
-        archive.delete_archive_file()
-
-
-def delete_archive(path, delete_parent_dir):
-    removed_archive = False
-
-    try:
-        logger.debug("Removing archive %s", path)
-        removed_archive = os.remove(path)
-
-        dirname = os.path.dirname
-        abspath = os.path.abspath
-        parent_tmp_dir = dirname(abspath(path))
-        if delete_parent_dir:
-            logger.debug("Detected parent temporary directory %s", parent_tmp_dir)
-            if parent_tmp_dir != "/var/tmp" and parent_tmp_dir != "/var/tmp/":
-                logger.debug("Removing %s", parent_tmp_dir)
-                shutil.rmtree(parent_tmp_dir)
-
-    except:
-        logger.error("Error removing %s", path)
-
-    return removed_archive
+                raise RuntimeError('Upload failed.')

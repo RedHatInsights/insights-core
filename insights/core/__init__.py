@@ -21,6 +21,11 @@ from insights.core.serde import deserializer, serializer
 from . import ls_parser
 from insights.util import deprecated
 
+try:
+    from yaml import CSafeLoader as SafeLoader
+except ImportError:
+    from yaml import SafeLoader
+
 import sys
 # Since XPath expression is not supported by the ElementTree in Python 2.6,
 # import insights.contrib.ElementTree when running python is prior to 2.6 for compatibility.
@@ -511,52 +516,80 @@ class SysconfigOptions(Parser, LegacyItemAccess):
 class CommandParser(Parser):
     """
     This class checks output from the command defined in the spec.
-    If `context.content` contains a single line and that line is
-    included in the `bad_lines` list a `ContentException` is raised
+
+    Raises:
+        ContentException: When `context.content` contains a single line and
+            that line contains one of the string in the `bad_single_lines` or
+            `extra_bad_lines` list. Or, when `context.content` contains
+            multiple lines and there is one line contains one of the string
+            in the `bad_lines` or `extra_bad_lines` list.
     """
 
-    __bad_lines = [
+    __bad_single_lines = [
             "no such file or directory",
             "command not found",
             "no module named",
             "no files found for",
     ]
     """
-    This variable contains filters for bad responses from commands defined
-    with command specs.
+    This variable contains filters for bad responses of the single line
+    returned from commands defined with command specs.
+    When adding a new line to the list make sure text is all lower case.
+    """
+    __bad_lines = [
+            "missing dependencies:",
+    ]
+    """
+    This variable contains filters for bad responses of the lines
+    returned from commands defined with command specs.
     When adding a new line to the list make sure text is all lower case.
     """
 
     @staticmethod
-    def validate_lines(results, bad_lines):
+    def validate_lines(results, bad_single_lines, bad_lines):
         """
-        If `results` contains a single line and that line is included
-        in the `bad_lines` list, this function returns `False`. If no bad
-        line is found the function returns `True`
+        This function returns `False` when::
+
+            1. If the `results` is a single line and that line contains
+               one of the string in the `bad_single_lines` list.
+            2. If the `results` contains multiple lines and there is one line
+               contains one of the string in the `bad_lines` list.
+
+        If no bad line is found the function returns `True`.
 
         Parameters:
-            results(str): The results string of the output from the command
+            results (list): The results string of the output from the command
                 defined by the command spec.
+            bad_single_lines (list): The list of bad lines should be checked
+                only when the result contains a single line.
+            bad_lines (list): The list of bad lines should be checked only
+                when the result contains multiple lines.
 
         Returns:
             (Boolean): True for no bad lines or False for bad line found.
         """
 
-        if results and len(results) == 1:
-            first = results[0]
-            if any(l in first.lower() for l in bad_lines):
+        if results:
+            bad_lines = bad_lines if len(results) > 1 else bad_single_lines
+            if any(bl in rl.lower() for bl in bad_lines for rl in results):
                 return False
         return True
 
-    def __init__(self, context, extra_bad_lines=[]):
+    def __init__(self, context, extra_bad_lines=None):
         """
             This __init__ calls `validate_lines` function to check for bad lines.
             If `validate_lines` returns False, indicating bad line found, a
             ContentException is thrown.
+
+        Parameters:
+            extra_bad_lines (list): The extra bad lines will be checked for
+                all lines the `context.content`, other than the lines defined in
+                `self.__bad_single_lines` and `self.__bad_lines`.
         """
-        valid_lines = self.validate_lines(context.content, self.__bad_lines)
+        extra_bad_lines = [] if extra_bad_lines is None else extra_bad_lines
+        valid_lines = self.validate_lines(context.content, self.__bad_single_lines, self.__bad_lines)
         if valid_lines and extra_bad_lines:
-            valid_lines = self.validate_lines(context.content, extra_bad_lines)
+            valid_lines = self.validate_lines(context.content, extra_bad_lines, extra_bad_lines)
         if not valid_lines:
             first = context.content[0] if context.content else "<no content>"
             name = self.__class__.__name__
@@ -690,12 +723,16 @@ class YAMLParser(Parser, LegacyItemAccess):
     def parse_content(self, content):
         try:
             if type(content) is list:
-                self.data = yaml.safe_load('\n'.join(content))
+                self.data = yaml.load('\n'.join(content), Loader=SafeLoader)
             else:
-                self.data = yaml.safe_load(content)
-
+                self.data = yaml.load(content, Loader=SafeLoader)
+            if self.data is None:
+                raise SkipException("There is no data")
             if not isinstance(self.data, (dict, list)):
                 raise ParseException("YAML didn't produce a dictionary or list.")
+        except SkipException as se:
+            tb = sys.exc_info()[2]
+            six.reraise(SkipException, SkipException(str(se)), tb)
         except:
             tb = sys.exc_info()[2]
             cls = self.__class__
@@ -1266,11 +1303,11 @@ class Syslog(LogFileOutput):
 
     Sample log lines::
 
-        May 18 15:13:34 lxc-rhel68-sat56 jabberd/sm[11057]: session started: jid=rhn-dispatcher-sat@lxc-rhel6-sat56.redhat.com/superclient
-        May 18 15:13:36 lxc-rhel68-sat56 wrapper[11375]: --> Wrapper Started as Daemon
-        May 18 15:13:36 lxc-rhel68-sat56 wrapper[11375]: Launching a JVM...
-        May 18 15:24:28 lxc-rhel68-sat56 yum[11597]: Installed: lynx-2.8.6-27.el6.x86_64
-        May 18 15:36:19 lxc-rhel68-sat56 yum[11954]: Updated: sos-3.2-40.el6.noarch
+        May  9 15:13:34 lxc-rhel68-sat56 jabberd/sm[11057]: session started: jid=rhn-dispatcher-sat@lxc-rhel6-sat56.redhat.com/superclient
+        May  9 15:13:36 lxc-rhel68-sat56 wrapper[11375]: --> Wrapper Started as Daemon
+        May  9 15:13:36 lxc-rhel68-sat56 wrapper[11375]: Launching a JVM...
+        May 10 15:24:28 lxc-rhel68-sat56 yum[11597]: Installed: lynx-2.8.6-27.el6.x86_64
+        May 10 15:36:19 lxc-rhel68-sat56 yum[11954]: Updated: sos-3.2-40.el6.noarch
 
     Examples:
         >>> Syslog.token_scan('daemon_start', 'Wrapper Started as Daemon')
@@ -1278,9 +1315,9 @@ class Syslog(LogFileOutput):
         >>> Syslog.keep_scan('yum_lines', 'yum')
         >>> Syslog.keep_scan('yum_installed_lines', ['yum', 'Installed'])
         >>> syslog.get('wrapper')[0]
-        {'timestamp': 'May 18 15:13:36', 'hostname': 'lxc-rhel68-sat56',
+        {'timestamp': 'May  9 15:13:36', 'hostname': 'lxc-rhel68-sat56',
          'procname': wrapper[11375]', 'message': '--> Wrapper Started as Daemon',
-         'raw_message': 'May 18 15:13:36 lxc-rhel68-sat56 wrapper[11375]: --> Wrapper Started as Daemon'
+         'raw_message': 'May  9 15:13:36 lxc-rhel68-sat56 wrapper[11375]: --> Wrapper Started as Daemon'
         }
         >>> syslog.daemon_start
         True
@@ -1302,7 +1339,7 @@ class Syslog(LogFileOutput):
         """
         Parsed result::
 
-            {'timestamp':'May 18 14:24:14',
+            {'timestamp':'May  9 15:13:34',
              'procname': 'kernel',
              'hostname':'lxc-rhel68-sat56',
              'message': '...',
@@ -1314,16 +1351,16 @@ class Syslog(LogFileOutput):
             info, msg = [i.strip() for i in line.split(': ', 1)]
             msg_info['message'] = msg
 
-            info_splits = info.split()
-            if len(info_splits) == 5:
-                logstamp = ' '.join(info_splits[:3])
+            info_splits = info.rsplit(None, 2)
+            if len(info_splits) == 3:
+                logstamp = info_splits[0]
                 try:
                     datetime.datetime.strptime(logstamp, self.time_format)
                 except ValueError:
                     return msg_info
                 msg_info['timestamp'] = logstamp
-                msg_info['hostname'] = info_splits[3]
-                msg_info['procname'] = info_splits[4]
+                msg_info['hostname'] = info_splits[1]
+                msg_info['procname'] = info_splits[2]
         return msg_info
 
     def get_logs_by_procname(self, proc):

@@ -89,6 +89,7 @@ format_rpm = _make_rpm_formatter()
 
 
 class DefaultSpecs(Specs):
+    abrt_status_bare = simple_command("/usr/bin/abrt status --bare=True")
     amq_broker = glob_file("/var/opt/amq-broker/*/etc/broker.xml")
     auditctl_status = simple_command("/sbin/auditctl -s")
     auditd_conf = simple_file("/etc/audit/auditd.conf")
@@ -104,9 +105,9 @@ class DefaultSpecs(Specs):
             return True
         raise SkipComponent()
 
-    aws_instance_id_doc = simple_command("/usr/bin/curl http://169.254.169.254/latest/dynamic/instance-identity/document --connect-timeout 5", deps=[is_aws])
-    aws_instance_id_pkcs7 = simple_command("/usr/bin/curl http://169.254.169.254/latest/dynamic/instance-identity/pkcs7 --connect-timeout 5", deps=[is_aws])
-    aws_instance_type = simple_command("/usr/bin/curl http://169.254.169.254/latest/meta-data/instance-type --connect-timeout 5", deps=[is_aws])
+    aws_instance_id_doc = simple_command("/usr/bin/curl -s http://169.254.169.254/latest/dynamic/instance-identity/document --connect-timeout 5", deps=[is_aws])
+    aws_instance_id_pkcs7 = simple_command("/usr/bin/curl -s http://169.254.169.254/latest/dynamic/instance-identity/pkcs7 --connect-timeout 5", deps=[is_aws])
+    aws_instance_type = simple_command("/usr/bin/curl -s http://169.254.169.254/latest/meta-data/instance-type --connect-timeout 5", deps=[is_aws])
 
     @datasource(CloudProvider)
     def is_azure(broker):
@@ -115,7 +116,7 @@ class DefaultSpecs(Specs):
             return True
         raise SkipComponent()
 
-    azure_instance_type = simple_command("curl -H Metadata:true http://169.254.169.254/metadata/instance/compute/vmSize?api-version=2018-10-01&format=text --connect-timeout 5", deps=[is_azure])
+    azure_instance_type = simple_command("/usr/bin/curl -s -H Metadata:true http://169.254.169.254/metadata/instance/compute/vmSize?api-version=2018-10-01&format=text --connect-timeout 5", deps=[is_azure])
     bios_uuid = simple_command("/usr/sbin/dmidecode -s system-uuid")
     blkid = simple_command("/sbin/blkid -c /dev/null")
     bond = glob_file("/proc/net/bonding/bond*")
@@ -187,6 +188,7 @@ class DefaultSpecs(Specs):
     cinder_api_log = first_file(["/var/log/containers/cinder/cinder-api.log", "/var/log/cinder/cinder-api.log"])
     cinder_conf = first_file(["/var/lib/config-data/puppet-generated/cinder/etc/cinder/cinder.conf", "/etc/cinder/cinder.conf"])
     cinder_volume_log = simple_file("/var/log/cinder/volume.log")
+    cloud_init_custom_network = simple_file("/etc/cloud/cloud.cfg.d/99-custom-networking.cfg")
     cloud_init_log = simple_file("/var/log/cloud-init.log")
     cluster_conf = simple_file("/etc/cluster/cluster.conf")
     cmdline = simple_file("/proc/cmdline")
@@ -317,6 +319,7 @@ class DefaultSpecs(Specs):
     fcoeadm_i = simple_command("/usr/sbin/fcoeadm -i")
     fdisk_l = simple_command("/sbin/fdisk -l")
     findmnt_lo_propagation = simple_command("/bin/findmnt -lo+PROPAGATION")
+    firewalld_conf = simple_file("/etc/firewalld/firewalld.conf")
     foreman_production_log = simple_file("/var/log/foreman/production.log")
     foreman_proxy_conf = simple_file("/etc/foreman-proxy/settings.yml")
     foreman_proxy_log = simple_file("/var/log/foreman-proxy/proxy.log")
@@ -502,6 +505,7 @@ class DefaultSpecs(Specs):
         un = broker[Uname]
         return r"/var/lib/kpatch/" + un.kernel
 
+    kpatch_list = simple_command("/usr/sbin/kpatch list")
     kpatch_patch_files = command_with_args("ls %s", kpatch_patches_running_kernel_dir)
     krb5 = glob_file([r"etc/krb5.conf", r"etc/krb5.conf.d/*"])
     ksmstate = simple_file("/sys/kernel/mm/ksm/run")
@@ -521,6 +525,7 @@ class DefaultSpecs(Specs):
     ls_dev = simple_command("/bin/ls -lanR /dev")
     ls_disk = simple_command("/bin/ls -lanR /dev/disk")
     ls_docker_volumes = simple_command("/bin/ls -lanR /var/lib/docker/volumes")
+    ls_edac_mc = simple_command("/bin/ls -lan /sys/devices/system/edac/mc")
     ls_etc = simple_command("/bin/ls -lanR /etc")
     ls_lib_firmware = simple_command("/bin/ls -lanR /lib/firmware")
     ls_ocp_cni_openshift_sdn = simple_command("/bin/ls -l /var/lib/cni/networks/openshift-sdn")
@@ -691,6 +696,7 @@ class DefaultSpecs(Specs):
     oc_get_route = simple_command("/usr/bin/oc get route -o yaml --all-namespaces", context=OpenShiftContext)
     oc_get_service = simple_command("/usr/bin/oc get service -o yaml --all-namespaces", context=OpenShiftContext)
     oc_get_configmap = simple_command("/usr/bin/oc get configmap -o yaml --all-namespaces", context=OpenShiftContext)
+    octavia_conf = simple_file("/var/lib/config-data/puppet-generated/octavia/etc/octavia/octavia.conf")
     odbc_ini = simple_file("/etc/odbc.ini")
     odbcinst_ini = simple_file("/etc/odbcinst.ini")
     crt = simple_command("/usr/bin/find /etc/origin/node /etc/origin/master -type f -path '*.crt'")
@@ -760,6 +766,7 @@ class DefaultSpecs(Specs):
     puppetserver_config = simple_file("/etc/sysconfig/puppetserver")
     prev_uploader_log = simple_file("var/log/redhat-access-insights/redhat-access-insights.log.1")
     proc_netstat = simple_file("proc/net/netstat")
+    proc_slabinfo = simple_file("proc/slabinfo")
     proc_snmp_ipv4 = simple_file("proc/net/snmp")
     proc_snmp_ipv6 = simple_file("proc/net/snmp6")
     proc_stat = simple_file("proc/stat")
@@ -783,7 +790,7 @@ class DefaultSpecs(Specs):
     rabbitmq_users = simple_command("/usr/sbin/rabbitmqctl list_users")
     rc_local = simple_file("/etc/rc.d/rc.local")
     rdma_conf = simple_file("/etc/rdma/rdma.conf")
-    readlink_e_etc_mtab = simple_command("readlink -e /etc/mtab")
+    readlink_e_etc_mtab = simple_command("/usr/bin/readlink -e /etc/mtab")
     redhat_release = simple_file("/etc/redhat-release")
     resolv_conf = simple_file("/etc/resolv.conf")
     rhosp_release = simple_file("/etc/rhosp-release")
@@ -826,6 +833,7 @@ class DefaultSpecs(Specs):
                                                "rhn-logs/rhn/rhn_taskomatic_daemon.log"])
     rhsm_conf = simple_file("/etc/rhsm/rhsm.conf")
     rhsm_log = simple_file("/var/log/rhsm/rhsm.log")
+    rhsm_releasever = simple_file('/var/lib/rhsm/cache/releasever.json')
     rndc_status = simple_command("/usr/sbin/rndc status")
     root_crontab = simple_command("/usr/bin/crontab -l -u root")
     route = simple_command("/sbin/route -n")
@@ -876,7 +884,9 @@ class DefaultSpecs(Specs):
     saphostexec_status = simple_command("/usr/sap/hostctrl/exe/saphostexec -status")
     saphostexec_version = simple_command("/usr/sap/hostctrl/exe/saphostexec -version")
     sat5_insights_properties = simple_file("/etc/redhat-access/redhat-access-insights.properties")
+    satellite_mongodb_storage_engine = simple_command("/usr/bin/mongo pulp_database --eval 'db.serverStatus().storageEngine'")
     satellite_version_rb = simple_file("/usr/share/foreman/lib/satellite/version.rb")
+    satellite_custom_hiera = simple_file("/etc/foreman-installer/custom-hiera.yaml")
     block_devices = listdir("/sys/block")
     scheduler = foreach_collect(block_devices, "/sys/block/%s/queue/scheduler")
     scsi = simple_file("/proc/scsi/scsi")
@@ -948,6 +958,7 @@ class DefaultSpecs(Specs):
     systemctl_qpidd = simple_command("/bin/systemctl show qpidd")
     systemctl_qdrouterd = simple_command("/bin/systemctl show qdrouterd")
     systemctl_show_all_services = simple_command("/bin/systemctl show *.service")
+    systemctl_show_target = simple_command("/bin/systemctl show *.target")
     systemctl_smartpdc = simple_command("/bin/systemctl show smart_proxy_dynflow_core")
     systemd_docker = simple_command("/usr/bin/systemctl cat docker.service")
     systemd_logind_conf = simple_file("/etc/systemd/logind.conf")
@@ -1030,8 +1041,9 @@ class DefaultSpecs(Specs):
     yum_conf = simple_file("/etc/yum.conf")
     yum_list_installed = simple_command("yum -C --noplugins list installed")
     yum_log = simple_file("/var/log/yum.log")
-    yum_repolist = simple_command("/usr/bin/yum -C repolist")
+    yum_repolist = simple_command("/usr/bin/yum -C --noplugins repolist")
     yum_repos_d = glob_file("/etc/yum.repos.d/*")
+    zdump_v = simple_command("/usr/sbin/zdump -v /etc/localtime -c 2019,2039")
     zipl_conf = simple_file("/etc/zipl.conf")
 
     rpm_format = format_rpm()
