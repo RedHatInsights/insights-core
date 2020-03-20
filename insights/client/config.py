@@ -9,7 +9,7 @@ from six.moves import configparser as ConfigParser
 
 try:
     from .constants import InsightsConstants as constants
-except ImportError:
+except:
     from constants import InsightsConstants as constants
 
 logger = logging.getLogger(__name__)
@@ -69,6 +69,12 @@ DEFAULT_OPTS = {
     'cert_verify': {
         # non-CLI
         'default': None,
+    },
+    'check_results': {
+        'default': False,
+        'opt': ['--check-results'],
+        'help': "Check for insights results",
+        'action': "store_true"
     },
     'cmd_timeout': {
         # non-CLI
@@ -200,6 +206,18 @@ DEFAULT_OPTS = {
         'help': 'offline mode for OSP use',
         'action': 'store_true'
     },
+    'output_dir': {
+        'default': None,
+        'opt': ['--output-dir', '-od'],
+        'help': 'Specify a directory to write collected data to (no compression).',
+        'action': 'store'
+    },
+    'output_file': {
+        'default': None,
+        'opt': ['--output-file', '-of'],
+        'help': 'Specify a compressed archive file to write collected data to.',
+        'action': 'store'
+    },
     'password': {
         # non-CLI
         'default': ''
@@ -240,6 +258,12 @@ DEFAULT_OPTS = {
         'action': 'store',
         'type': int,
         'dest': 'retries'
+    },
+    'show_results': {
+        'default': False,
+        'opt': ['--show-results'],
+        'help': "Show insights about this host",
+        'action': "store_true"
     },
     'silent': {
         'default': False,
@@ -618,6 +642,39 @@ class InsightsConfig(object):
                 raise ValueError('Cannot check registration status in offline mode.')
             if self.test_connection:
                 raise ValueError('Cannot run connection test in offline mode.')
+        if self.output_dir and self.output_file:
+            raise ValueError('Specify only one: --output-dir or --output-file.')
+        if self.output_dir == '':
+            # make sure an empty string is not given
+            raise ValueError('--output-dir cannot be empty')
+        if self.output_file == '':
+            # make sure an empty string is not given
+            raise ValueError('--output-file cannot be empty')
+        if self.output_dir:
+            if os.path.exists(self.output_dir):
+                if os.path.isfile(self.output_dir):
+                    raise ValueError('%s is a file.' % self.output_dir)
+                if os.listdir(self.output_dir):
+                    raise ValueError('Directory %s already exists and is not empty.' % self.output_dir)
+            parent_dir = os.path.dirname(self.output_dir.rstrip('/'))
+            if not os.path.exists(parent_dir):
+                raise ValueError('Cannot write to %s. Parent directory %s does not exist.' % (self.output_dir, parent_dir))
+            if not os.path.isdir(parent_dir):
+                raise ValueError('Cannot write to %s. %s is not a directory.' % (self.output_dir, parent_dir))
+            if self.obfuscate:
+                if self._print_errors:
+                    sys.stdout.write('WARNING: SOSCleaner reports will be created alongside the output directory.\n')
+        if self.output_file:
+            if os.path.exists(self.output_file):
+                raise ValueError('File %s already exists.' % self.output_file)
+            parent_dir = os.path.dirname(self.output_file.rstrip('/'))
+            if not os.path.exists(parent_dir):
+                raise ValueError('Cannot write to %s. Parent directory %s does not exist.' % (self.output_file, parent_dir))
+            if not os.path.isdir(parent_dir):
+                raise ValueError('Cannot write to %s. %s is not a directory.' % (self.output_file, parent_dir))
+            if self.obfuscate:
+                if self._print_errors:
+                    sys.stdout.write('WARNING: SOSCleaner reports will be created alongside the output archive.\n')
 
     def _imply_options(self):
         '''
@@ -635,12 +692,62 @@ class InsightsConfig(object):
         self.keep_archive = self.keep_archive or self.no_upload
         if self.to_json and self.quiet:
             self.diagnosis = True
-        if self.payload or self.diagnosis or self.compliance:
+        if self.payload or self.diagnosis or self.compliance or self.show_results or self.check_results:
             self.legacy_upload = False
         if self.payload and (self.logging_file == constants.default_log_file):
             self.logging_file = constants.default_payload_log
         if os.path.exists(constants.register_marker_file):
             self.register = True
+        if self.output_dir or self.output_file:
+            # do not upload in this case
+            self.no_upload = True
+            # don't keep the archive or files in temp
+            #   if we're writing it to a specified location
+            self.keep_archive = False
+        if self.compressor not in constants.valid_compressors:
+            # set default compressor if an invalid one is supplied
+            if self._print_errors:
+                sys.stdout.write('The compressor {0} is not supported. Using default: gz\n'.format(self.compressor))
+            self.compressor = 'gz'
+        if self.output_dir:
+            # get full path
+            self.output_dir = os.path.abspath(self.output_dir)
+        if self.output_file:
+            # get full path
+            self.output_file = os.path.abspath(self.output_file)
+            self._determine_filename_and_extension()
+
+    def _determine_filename_and_extension(self):
+        '''
+        Attempt to automatically determine compressor
+        and filename for --output-file based on the given config.
+        '''
+        def _tar_ext(comp):
+            '''
+            Helper function to generate .tar file extension
+            '''
+            ext = '' if comp == 'none' else '.%s' % comp
+            return '.tar' + ext
+
+        # make sure we're not attempting to write an existing directory first
+        if os.path.isdir(self.output_file):
+            raise ValueError('%s is a directory.' % self.output_file)
+
+        # attempt to determine compressor from filename
+        for x in constants.valid_compressors:
+            if self.output_file.endswith(_tar_ext(x)):
+                if self.compressor != x:
+                    if self._print_errors:
+                        sys.stdout.write('The given output file {0} does not match the given compressor {1}. '
+                                         'Setting compressor to match the file extension.\n'.format(self.output_file, self.compressor))
+                self.compressor = x
+                return
+
+        # if we don't return from the loop, we could
+        #   not determine compressor from filename, so
+        #   set the filename from the given
+        #   compressor
+        self.output_file = self.output_file + _tar_ext(self.compressor)
 
 
 if __name__ == '__main__':

@@ -63,10 +63,22 @@ def pre_update(client, config):
 
     # validate the remove file
     if config.validate:
-        if validate_remove_file(config.remove_file):
-            sys.exit(constants.sig_kill_ok)
-        else:
+        try:
+            if validate_remove_file(config):
+                sys.exit(constants.sig_kill_ok)
+            else:
+                sys.exit(constants.sig_kill_bad)
+        except RuntimeError as e:
+            logger.error(e)
             sys.exit(constants.sig_kill_bad)
+
+    if os.path.isfile(config.remove_file):
+        if os.stat(config.remove_file).st_size != 0:
+            try:
+                validate_remove_file(config)
+            except RuntimeError as e:
+                logger.error(e)
+                sys.exit(constants.sig_kill_bad)
 
     # handle cron stuff
     if config.enable_schedule:
@@ -130,6 +142,22 @@ def post_update(client, config):
     if config.portal_access or config.portal_access_no_insights:
         logger.debug('Entitling an AWS host. Bypassing registration check.')
         return
+
+    if config.show_results:
+        try:
+            client.show_results()
+            sys.exit(constants.sig_kill_ok)
+        except Exception as e:
+            print(e)
+            sys.exit(constants.sig_kill_bad)
+
+    if config.check_results:
+        try:
+            client.check_results()
+            sys.exit(constants.sig_kill_ok)
+        except Exception as e:
+            print(e)
+            sys.exit(constants.sig_kill_bad)
 
     # -------delete everything below this line-------
     if config.legacy_upload:
@@ -268,21 +296,27 @@ def collect_and_output(client, config):
             sys.exit(constants.sig_kill_bad)
         config.content_type = 'application/vnd.redhat.advisor.collection+tgz'
 
-    if not insights_archive:
-        sys.exit(constants.sig_kill_bad)
-    resp = None
-    if not config.no_upload:
+    if config.no_upload:
+        # output options for which upload is not performed
+        if config.output_dir:
+            client.copy_to_output_dir(insights_archive)
+        elif config.output_file:
+            client.copy_to_output_file(insights_archive)
+    else:
+        # upload the archive
+        if not insights_archive:
+            # no archive to upload, something went wrong
+            sys.exit(constants.sig_kill_bad)
+        resp = None
         try:
             resp = client.upload(payload=insights_archive, content_type=config.content_type)
-        except IOError as e:
+        except (IOError, ValueError, RuntimeError) as e:
             logger.error(str(e))
             sys.exit(constants.sig_kill_bad)
-        except ValueError as e:
-            logger.error(str(e))
-            sys.exit(constants.sig_kill_bad)
-    if resp:
-        if config.to_json:
-            print(json.dumps(resp))
+        if resp:
+            if config.to_json:
+                print(json.dumps(resp))
+
     client.delete_cached_branch_info()
 
     # rotate eggs once client completes all work successfully

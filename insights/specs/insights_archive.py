@@ -9,6 +9,7 @@ glob_file = partial(glob_file, context=HostArchiveContext)
 
 class InsightsArchiveSpecs(Specs):
 
+    abrt_status_bare = simple_file("insights_commands/abrt_status_--bare_True")
     all_installed_rpms = glob_file("insights_commands/rpm_-qa*")
     auditctl_status = simple_file("insights_commands/auditctl_-s")
     aws_instance_id_doc = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_aws_instance_id_doc")
@@ -246,6 +247,7 @@ class InsightsArchiveSpecs(Specs):
     saphostexec_status = simple_file("insights_commands/usr.sap.hostctrl.exe.saphostexec_-status")
     saphostexec_version = simple_file("insights_commands/usr.sap.hostctrl.exe.saphostexec_-version")
     satellite_enabled_features = simple_file("insights_commands/curl_-sk_https_..localhost_9090.features_--connect-timeout_5")
+    satellite_mongodb_storage_engine = simple_file("insights_commands/mongo_pulp_database_--eval_db.serverStatus_.storageEngine")
     sealert = simple_file('insights_commands/sealert_-l')
     sestatus = simple_file("insights_commands/sestatus_-b")
     smbstatus_S = simple_file("insights_commands/smbstatus_-S")
@@ -271,6 +273,7 @@ class InsightsArchiveSpecs(Specs):
     systemctl_qpidd = simple_file("insights_commands/systemctl_show_qpidd")
     systemctl_qdrouterd = simple_file("insights_commands/systemctl_show_qdrouterd")
     systemctl_show_all_services = simple_file("insights_commands/systemctl_show_.service")
+    systemctl_show_target = simple_file("insights_commands/systemctl_show_.target")
     systemctl_smartpdc = simple_file("insights_commands/systemctl_show_smart_proxy_dynflow_core")
     systemd_docker = first_file(["insights_commands/systemctl_cat_docker.service", "/usr/lib/systemd/system/docker.service"])
     systemd_openshift_node = first_file(["insights_commands/systemctl_cat_atomic-openshift-node.service", "/usr/lib/systemd/system/atomic-openshift-node.service"])
@@ -290,4 +293,5 @@ class InsightsArchiveSpecs(Specs):
     virt_what = simple_file("insights_commands/virt-what")
     woopsie = simple_file("insights_commands/find_.var.crash_.var.tmp_-path_.reports-_.whoopsie-report")
     yum_list_installed = simple_file("insights_commands/yum_-C_--noplugins_list_installed")
-    yum_repolist = simple_file("insights_commands/yum_-C_repolist")
+    yum_repolist = first_file(["insights_commands/yum_-C_--noplugins_repolist", "insights_commands/yum_-C_repolist"])
+    zdump_v = simple_file("insights_commands/zdump_-v_.etc.localtime_-c_2019_2039")

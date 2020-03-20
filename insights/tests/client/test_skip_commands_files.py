@@ -59,7 +59,7 @@ def test_omit_symbolic_name(InsightsCommand, InsightsFile, parse_file_spec):
 
 @patch("insights.client.data_collector.InsightsCommand")
 @patch("insights.client.data_collector.InsightsFile")
-@patch("insights.client.data_collector.archive.InsightsArchive")
+@patch("insights.client.data_collector.InsightsArchive")
 def test_symbolic_name_bc(InsightsArchive, InsightsFile, InsightsCommand):
     """
     WICKED EDGE CASE: in case uploader.json is old and doesn't have symbolic names, don't crash
@@ -97,6 +97,21 @@ def test_dont_archive_when_command_not_found(write_data_to_file):
 
     arch.add_to_archive(cmd)
     write_data_to_file.assert_called_once()
+
+
+@patch("insights.client.archive.write_data_to_file")
+def test_dont_archive_when_missing_dep(write_data_to_file):
+    """
+    If missing dependencies do not archive it
+    """
+    arch = InsightsArchive(InsightsConfig())
+
+    cmd = MagicMock(spec=InsightsCommand)
+    cmd.get_output.return_value = "Missing Dependencies:"
+    cmd.archive_path = '/path/to/command'
+
+    arch.add_to_archive(cmd)
+    write_data_to_file.assert_not_called()
 
 
 @patch("insights.client.data_collector.DataCollector._run_pre_command", return_value=['eth0'])

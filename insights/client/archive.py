@@ -30,14 +30,16 @@ class InsightsArchive(object):
         """
         self.config = config
         self.tmp_dir = tempfile.mkdtemp(prefix='/var/tmp/')
-        self.archive_tmp_dir = tempfile.mkdtemp(prefix='/var/tmp/')
+        self.archive_tmp_dir = None
+        if not self.config.obfuscate:
+            self.archive_tmp_dir = tempfile.mkdtemp(prefix='/var/tmp/')
         name = determine_hostname()
         self.archive_name = ("insights-%s-%s" %
                              (name,
                               time.strftime("%Y%m%d%H%M%S")))
         self.archive_dir = self.create_archive_dir()
         self.cmd_dir = self.create_command_dir()
-        self.compressor = 'gz' or config.compressor
+        self.compressor = config.compressor
         self.tar_file = None
         atexit.register(self.cleanup_tmp)
 
@@ -118,12 +120,13 @@ class InsightsArchive(object):
         """
         Create tar file to be compressed
         """
+        if not self.archive_tmp_dir:
+            # we should never get here but bail out if we do
+            raise RuntimeError('Archive temporary directory not defined.')
         tar_file_name = os.path.join(self.archive_tmp_dir, self.archive_name)
         ext = "" if self.compressor == "none" else ".%s" % self.compressor
         tar_file_name = tar_file_name + ".tar" + ext
         logger.debug("Tar File: " + tar_file_name)
-        if self.compressor not in ["gz", "xz", "bz2", "none"]:
-            logger.error("The compressor %s is not supported.  Using default: gz", self.compressor)
         return_code = subprocess.call(shlex.split("tar c%sfS %s -C %s ." % (
             self.get_compression_flag(self.compressor),
             tar_file_name, self.tmp_dir)),
@@ -154,21 +157,25 @@ class InsightsArchive(object):
         """
         Delete the directory containing the constructed archive
         """
-        logger.debug("Deleting %s", self.archive_tmp_dir)
-        shutil.rmtree(self.archive_tmp_dir, True)
+        if self.archive_tmp_dir:
+            logger.debug("Deleting %s", self.archive_tmp_dir)
+            shutil.rmtree(self.archive_tmp_dir, True)
 
     def add_to_archive(self, spec):
         '''
         Add files and commands to archive
         Use InsightsSpec.get_output() to get data
         '''
-        cmd_not_found_regex = "^timeout: failed to run command .+: No such file or directory$"
+        ab_regex = [
+            "^timeout: failed to run command .+: No such file or directory$",
+            "^Missing Dependencies:"
+        ]
         if isinstance(spec, InsightsCommand):
             archive_path = os.path.join(self.cmd_dir, spec.archive_path.lstrip('/'))
         if isinstance(spec, InsightsFile):
             archive_path = self.get_full_archive_path(spec.archive_path.lstrip('/'))
         output = spec.get_output()
-        if output and not re.search(cmd_not_found_regex, output):
+        if output and not any(re.search(rg, output) for rg in ab_regex):
             write_data_to_file(output, archive_path)
 
     def add_metadata_to_archive(self, metadata, meta_path):
@@ -181,9 +188,10 @@ class InsightsArchive(object):
     def cleanup_tmp(self):
         '''
         Only used during built-in collection.
-        Delete archive and tmp dirs on exit.
+        Delete archive and tmp dirs on exit unless --keep-archive is specified
+            and tar_file exists.
         '''
-        if self.config.keep_archive:
+        if self.config.keep_archive and self.tar_file:
             if self.config.no_upload:
                 logger.info('Archive saved at %s', self.tar_file)
             else:

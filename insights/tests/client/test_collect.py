@@ -8,7 +8,8 @@ from json import dump as json_dump, dumps as json_dumps
 from mock.mock import Mock, patch
 from pytest import mark, raises
 from tempfile import NamedTemporaryFile
-
+import six
+import mock
 
 stdin_uploader_json = {"some key": "some value"}
 stdin_sig = "some signature"
@@ -249,18 +250,26 @@ def test_file_result(get_branch_info, try_disk, raw_config_parser, data_collecto
     """
     Configuration from file is loaded from the "uploader.json" key.
     """
-    config, pconn = collect_args()
-    collect(config, pconn)
+    if six.PY3:
+        open_name = 'builtins.open'
+    else:
+        open_name = '__builtin__.open'
 
-    name, args, kwargs = try_disk.mock_calls[0]
-    collection_rules = try_disk.return_value.copy()
-    collection_rules.update({"file": args[0]})
+    with patch(open_name, create=True) as mock_open:
+        mock_open.side_effect = [mock.mock_open(read_data='[remove]\nfiles=/etc/some_file,/tmp/another_file').return_value]
 
-    rm_conf = {"files": removed_files}
-    branch_info = get_branch_info.return_value
+        config, pconn = collect_args()
+        collect(config, pconn)
 
-    data_collector.return_value.run_collection.assert_called_once_with(collection_rules, rm_conf, branch_info)
-    data_collector.return_value.done.assert_called_once_with(collection_rules, rm_conf)
+        name, args, kwargs = try_disk.mock_calls[0]
+        collection_rules = try_disk.return_value.copy()
+        collection_rules.update({"file": args[0]})
+
+        rm_conf = {"files": removed_files}
+        branch_info = get_branch_info.return_value
+
+        data_collector.return_value.run_collection.assert_called_once_with(collection_rules, rm_conf, branch_info)
+        data_collector.return_value.done.assert_called_once_with(collection_rules, rm_conf)
 
 
 @mark.regression

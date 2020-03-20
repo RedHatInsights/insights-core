@@ -5,7 +5,6 @@ from __future__ import absolute_import
 import os
 import errno
 import json
-from . import archive
 import logging
 import copy
 import glob
@@ -20,6 +19,7 @@ from ..contrib.soscleaner import SOSCleaner
 from .utilities import _expand_paths, get_version_info, read_pidfile, get_tags
 from .constants import InsightsConstants as constants
 from .insights_spec import InsightsFile, InsightsCommand
+from .archive import InsightsArchive
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
@@ -38,7 +38,7 @@ class DataCollector(object):
 
     def __init__(self, config, archive_=None, mountpoint=None):
         self.config = config
-        self.archive = archive_ if archive_ else archive.InsightsArchive(config)
+        self.archive = archive_ if archive_ else InsightsArchive(config)
         self.mountpoint = '/'
         if mountpoint:
             self.mountpoint = mountpoint
@@ -194,6 +194,9 @@ class DataCollector(object):
         if rm_conf:
             try:
                 exclude = rm_conf['patterns']
+                # handle the None or empty case of the sub-object
+                if 'regex' in exclude and not exclude['regex']:
+                    raise LookupError
                 logger.warn("WARNING: Skipping patterns found in remove.conf")
             except LookupError:
                 logger.debug('Patterns section of remove.conf is empty.')
@@ -249,18 +252,41 @@ class DataCollector(object):
     def done(self, conf, rm_conf):
         """
         Do finalization stuff
+
+        Returns:
+            default:
+                path to generated tarfile
+            conf.obfuscate==True:
+                path to generated tarfile, scrubbed by soscleaner
+            conf.output_dir:
+                path to a generated directory
+            conf.obfuscate==True && conf.output_dir:
+                path to generated directory, scubbed by soscleaner
+        Ideally, we may want to have separate functions for directories
+            and archive files.
         """
         if self.config.obfuscate:
             cleaner = SOSCleaner(quiet=True)
             clean_opts = CleanOptions(
                 self.config, self.archive.tmp_dir, rm_conf, self.hostname_path)
-            fresh = cleaner.clean_report(clean_opts, self.archive.archive_dir)
+            cleaner.clean_report(clean_opts, self.archive.archive_dir)
             if clean_opts.keyword_file is not None:
                 os.remove(clean_opts.keyword_file.name)
                 logger.warn("WARNING: Skipping keywords found in remove.conf")
-            self.archive.tar_file = fresh[0]
-            return fresh[0]
-        return self.archive.create_tar_file()
+            if self.config.output_dir:
+                # return the entire soscleaner dir
+                #   see additions to soscleaner.SOSCleaner.clean_report
+                #   for details
+                return cleaner.dir_path
+            else:
+                # return the generated soscleaner archive
+                self.archive.tar_file = cleaner.archive_path
+                return cleaner.archive_path
+
+        if self.config.output_dir:
+            return self.archive.archive_dir
+        else:
+            return self.archive.create_tar_file()
 
 
 class CleanOptions(object):
@@ -274,6 +300,7 @@ class CleanOptions(object):
         self.quiet = True
         self.keyword_file = None
         self.keywords = None
+        self.no_tar_file = config.output_dir
 
         if rm_conf:
             try:

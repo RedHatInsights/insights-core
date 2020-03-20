@@ -9,8 +9,7 @@ from insights.client.config import InsightsConfig
 from insights import package_info
 from insights.client.constants import InsightsConstants as constants
 from insights.client.utilities import generate_machine_id
-from mock.mock import patch
-from mock.mock import Mock
+from mock.mock import patch, Mock, mock_open, call
 
 
 class FakeConnection(object):
@@ -275,7 +274,8 @@ def test_upload_500_retry(_, upload_archive):
 
         config = InsightsConfig(logging_file='/tmp/insights.log', retries=retries)
         client = InsightsClient(config)
-        client.upload('/tmp/insights.tar.gz')
+        with pytest.raises(RuntimeError):
+            client.upload('/tmp/insights.tar.gz')
 
         upload_archive.assert_called()
         assert upload_archive.call_count == retries
@@ -296,7 +296,8 @@ def test_upload_412_no_retry(_, upload_archive, handle_fail_rcs):
     try:
         config = InsightsConfig(logging_file='/tmp/insights.log', retries=3)
         client = InsightsClient(config)
-        client.upload('/tmp/insights.tar.gz')
+        with pytest.raises(RuntimeError):
+            client.upload('/tmp/insights.tar.gz')
 
         upload_archive.assert_called_once()
     finally:
@@ -317,7 +318,8 @@ def test_upload_412_write_unregistered_file(_, upload_archive, write_unregistere
     try:
         config = InsightsConfig(logging_file='/tmp/insights.log', retries=3)
         client = InsightsClient(config)
-        client.upload('/tmp/insights.tar.gz')
+        with pytest.raises(RuntimeError):
+            client.upload('/tmp/insights.tar.gz')
 
         unregistered_at = upload_archive.return_value.json()["unregistered_at"]
         write_unregistered_file.assert_called_once_with(unregistered_at)
@@ -328,6 +330,7 @@ def test_upload_412_write_unregistered_file(_, upload_archive, write_unregistere
 def test_cleanup_tmp():
     config = InsightsConfig(keep_archive=True)
     arch = InsightsArchive(config)
+    arch.tar_file = os.path.join(arch.archive_tmp_dir, 'test.tar.gz')
     arch.cleanup_tmp()
     assert not os.path.exists(arch.tmp_dir)
     assert os.path.exists(arch.archive_tmp_dir)
@@ -395,7 +398,7 @@ def test_legacy_upload(_legacy_upload, path_exists):
 
 
 @patch('insights.client.os.path.exists', return_value=True)
-@patch('insights.client.connection.InsightsConnection.upload_archive')
+@patch('insights.client.connection.InsightsConnection.upload_archive', return_value=Mock(status_code=200))
 @patch('insights.client.client._legacy_upload')
 def test_platform_upload(_legacy_upload, _, path_exists):
     '''
@@ -407,15 +410,18 @@ def test_platform_upload(_legacy_upload, _, path_exists):
     _legacy_upload.assert_not_called()
 
 
+@patch('insights.client.client.write_to_disk')
+@patch('insights.client.client.open', new_callable=mock_open)
 @patch('insights.client.client.systemd_notify')
 @patch('insights.client.client.read_pidfile')
 @patch('insights.client.os.path.exists', return_value=True)
-@patch('insights.client.connection.InsightsConnection.upload_archive')
-def test_legacy_upload_systemd(_, path_exists, read_pidfile, systemd_notify):
+@patch('insights.client.connection.InsightsConnection.upload_archive', return_value=Mock(status_code=200, text='{}'))
+def test_legacy_upload_systemd(_, path_exists, read_pidfile, systemd_notify, op, wtd):
     '''
     Pidfile is read and systemd-notify is called for legacy upload
     '''
     config = InsightsConfig(legacy_upload=True)
+    config.account_number = ''  # legacy registration thing
     client = InsightsClient(config)
     client.upload('test.gar.gz', 'test.content.type')
     read_pidfile.assert_called_once()
@@ -425,7 +431,7 @@ def test_legacy_upload_systemd(_, path_exists, read_pidfile, systemd_notify):
 @patch('insights.client.client.systemd_notify')
 @patch('insights.client.client.read_pidfile')
 @patch('insights.client.os.path.exists', return_value=True)
-@patch('insights.client.connection.InsightsConnection.upload_archive')
+@patch('insights.client.connection.InsightsConnection.upload_archive', return_value=Mock(status_code=200))
 def test_platform_upload_systemd(_, path_exists, read_pidfile, systemd_notify):
     '''
     Pidfile is read and systemd-notify is called for platform upload
@@ -438,7 +444,7 @@ def test_platform_upload_systemd(_, path_exists, read_pidfile, systemd_notify):
 
 
 @patch('insights.client.os.path.exists', return_value=True)
-@patch('insights.client.connection.InsightsConnection.upload_archive')
+@patch('insights.client.connection.InsightsConnection.upload_archive', return_value=Mock(status_code=200))
 @patch('insights.client.client._legacy_upload')
 def test_platform_upload_with_no_log_path(_legacy_upload, _, path_exists):
     '''
@@ -449,3 +455,196 @@ def test_platform_upload_with_no_log_path(_legacy_upload, _, path_exists):
     response = client.upload('test.gar.gz', 'test.content.type')
     _legacy_upload.assert_called_once()
     assert response is not None
+
+
+@patch('insights.client.InsightsClient._copy_soscleaner_files')
+@patch('insights.client.shutil')
+def test_copy_to_output_dir(shutil_, _copy_soscleaner_files):
+    '''
+    Test that shutil is called to copy the collection to
+    the specified output dir
+    '''
+    config = InsightsConfig()
+    client = InsightsClient(config)
+    client.copy_to_output_dir('test')
+    shutil_.copytree.assert_called_once()
+    _copy_soscleaner_files.assert_not_called()
+
+
+@patch('insights.client.InsightsClient._copy_soscleaner_files')
+@patch('insights.client.shutil')
+def test_copy_to_output_dir_obfuscate_on(shutil_, _copy_soscleaner_files):
+    '''
+    Test that shutil is called to copy the collection to
+    the specified output dir, and soscleaner copy function
+    is called
+    '''
+    # obfuscate off, no soscleaner files
+    config = InsightsConfig(obfuscate=True)
+    client = InsightsClient(config)
+    client.copy_to_output_dir('test')
+    shutil_.copytree.assert_called_once()
+    _copy_soscleaner_files.assert_called_once()
+
+
+@patch('insights.client.InsightsClient._copy_soscleaner_files')
+@patch('insights.client.shutil')
+@patch('insights.client.os')
+def test_copy_to_output_dir_exists_and_empty(os_, shutil_, _copy_soscleaner_files):
+    '''
+    Test that writing to an existing but empty directory is
+    performed
+    '''
+    config = InsightsConfig(output_dir='dest')
+    client = InsightsClient(config)
+    # raise file exists error first, then raise for "b" and "c" below
+    shutil_.copytree.side_effect = [OSError(17, 'File exists'), None, None]
+
+    # returns empty list for destination, file list for source
+    os_.listdir.side_effect = [[], ['a', 'b', 'c']]
+
+    # os.path.join called 6 times, once for each file per src and dest
+    os_.path.join.side_effect = [
+        os.path.join('src', 'a'),
+        os.path.join(config.output_dir, 'a'),
+        os.path.join('src', 'b'),
+        os.path.join(config.output_dir, 'b'),
+        os.path.join('src', 'c'),
+        os.path.join(config.output_dir, 'c')]
+
+    # 'a' is file, 'b', 'c' are dirs
+    os_.path.isfile.side_effect = [True, False, False]
+    # a is file so the check for 'a' does not fall through to the elif
+    os_.path.isdir.side_effect = [True, True]
+
+    client.copy_to_output_dir('src')
+
+    os_.listdir.assert_has_calls([call(config.output_dir), call('src')])
+    os_.path.isfile.assert_has_calls([call('src/a'), call('src/b'), call('src/c')])
+    # a is file so the check for 'a' does not fall through to the elif
+    os_.path.isdir.assert_has_calls([call('src/b'), call('src/c')])
+    # initial (failed) copy is part of the calls
+    shutil_.copytree.assert_has_calls([
+        call('src', config.output_dir),
+        call(os.path.join('src', 'b'), os.path.join(config.output_dir, 'b')),
+        call(os.path.join('src', 'c'), os.path.join(config.output_dir, 'c'))])
+    shutil_.copyfile.assert_has_calls([
+        call(os.path.join('src', 'a'), os.path.join(config.output_dir, 'a'))])
+    _copy_soscleaner_files.assert_not_called()
+
+
+@patch('insights.client.InsightsClient._copy_soscleaner_files')
+@patch('insights.client.shutil')
+@patch('insights.client.os')
+def test_copy_to_output_dir_exists_and_empty_err_during_copy(os_, shutil_, _copy_soscleaner_files):
+    '''
+    Test that when writing to an existing but empty directory,
+    if an error occurs, we bail out before finishing.
+    '''
+    config = InsightsConfig(output_dir='dest')
+    client = InsightsClient(config)
+    # raise file exists error first, then raise nothing for "b" and "c" below
+    shutil_.copytree.side_effect = [OSError(17, 'File exists'), None, None]
+
+    # raise an unknown error for "a"
+    shutil_.copyfile.side_effect = [OSError(19, '???'), None, None]
+
+    # returns empty list for destination, file list for source
+    os_.listdir.side_effect = [[], ['a', 'b', 'c']]
+
+    # os.path.join called 6 times, once for each file per src and dest
+    os_.path.join.side_effect = [
+        os.path.join('src', 'a'),
+        os.path.join(config.output_dir, 'a'),
+        os.path.join('src', 'b'),
+        os.path.join(config.output_dir, 'b'),
+        os.path.join('src', 'c'),
+        os.path.join(config.output_dir, 'c')]
+
+    # 'a' is file, 'b', 'c' are dirs
+    os_.path.isfile.side_effect = [True, False, False]
+    # a is file so the check for 'a' does not fall through to the elif
+    os_.path.isdir.side_effect = [True, True]
+
+    client.copy_to_output_dir('src')
+
+    os_.listdir.assert_has_calls([call(config.output_dir), call('src')])
+    os_.path.isfile.assert_has_calls([call('src/a')])
+    # a is file so the check for 'a' does not fall through to the elif
+    os_.path.isdir.assert_not_called()
+    # initial (failed) copy is part of the calls
+    shutil_.copytree.assert_has_calls([call('src', config.output_dir)])
+    shutil_.copyfile.assert_has_calls([
+        call(os.path.join('src', 'a'), os.path.join(config.output_dir, 'a'))])
+    _copy_soscleaner_files.assert_not_called()
+
+
+@patch('insights.client.InsightsClient._copy_soscleaner_files')
+@patch('insights.client.shutil')
+@patch('insights.client.os')
+def test_copy_to_output_dir_exists_and_not_empty(os_, shutil_, _copy_soscleaner_files):
+    '''
+    Test that writing to an existing and non-empty directory is
+    NOT performed. Due to the check in config.py this should never happen,
+    but just to be safe.
+    '''
+    config = InsightsConfig(output_dir='dest')
+    client = InsightsClient(config)
+    shutil_.copytree.side_effect = [OSError(17, 'File exists')]
+
+    os_.listdir.return_value = ['test']
+
+    client.copy_to_output_dir('src')
+
+    os_.listdir.assert_called_once_with(config.output_dir)
+    shutil_.copytree.assert_called_once_with('src', config.output_dir)
+    shutil_.copyfile.assert_not_called()
+
+
+@patch('insights.client.InsightsClient._copy_soscleaner_files')
+@patch('insights.client.shutil')
+@patch('insights.client.os')
+def test_copy_to_output_dir_other_oserror(os_, shutil_, _copy_soscleaner_files):
+    '''
+    Test that any OSError != 17 is logged and we bail out
+    before attempting to copy anything else
+    '''
+    config = InsightsConfig(output_dir='dest')
+    client = InsightsClient(config)
+    shutil_.copytree.side_effect = [OSError(19, '???'), None, None]
+
+    client.copy_to_output_dir('src')
+
+    os_.listdir.assert_not_called
+    shutil_.copytree.assert_called_once_with('src', config.output_dir)
+    shutil_.copyfile.assert_not_called()
+
+
+@patch('insights.client.InsightsClient._copy_soscleaner_files')
+@patch('insights.client.shutil')
+def test_copy_to_output_file(shutil_, _copy_soscleaner_files):
+    '''
+    Test that shutil is called to copy the collection to
+    the specified output file
+    '''
+    config = InsightsConfig()
+    client = InsightsClient(config)
+    client.copy_to_output_file('test')
+    shutil_.copyfile.assert_called_once()
+    _copy_soscleaner_files.assert_not_called()
+
+
+@patch('insights.client.InsightsClient._copy_soscleaner_files')
+@patch('insights.client.shutil')
+def test_copy_to_output_file_obfuscate_on(shutil_, _copy_soscleaner_files):
+    '''
+    Test that shutil is called to copy the collection to
+    the specified output file, and soscleaner copy function
+    is called
+    '''
+    # obfuscate off, no soscleaner files
+    config = InsightsConfig(obfuscate=True)
+    client = InsightsClient(config)
+    client.copy_to_output_file('test')
+    shutil_.copyfile.assert_called_once()
+    _copy_soscleaner_files.assert_called_once()
