@@ -202,7 +202,7 @@ class DataCollector(object):
                 # handle the None or empty case of the sub-object
                 if 'regex' in exclude and not exclude['regex']:
                     raise LookupError
-                logger.warn("WARNING: Skipping patterns found in remove.conf")
+                logger.warn("WARNING: Skipping patterns defined in blacklist configuration")
             except LookupError:
                 logger.debug('Patterns section of remove.conf is empty.')
 

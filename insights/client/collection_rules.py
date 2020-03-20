@@ -407,10 +407,10 @@ class InsightsUploadConf(object):
         '''
         success = self.get_rm_conf()
         if not success:
-            logger.info('No contents in the blacklist configurations to validate.')
+            logger.info('No contents in the blacklist configuration to validate.')
             return None
         # Using print here as this could contain sensitive information
-        print('Remove file parsed contents:')
+        print('Blacklist configuration parsed contents:')
         print(success)
         logger.info('Parsed successfully.')
         return True
