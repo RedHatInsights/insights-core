@@ -308,10 +308,9 @@ def test_rm_conf_old_load_bad_keysnosection(isfile, verify):
 
 @patch('insights.client.collection_rules.verify_permissions', return_value=True)
 @patch_isfile(True)
-def test_rm_conf_old_load_bad_keysnosection(isfile, verify):
+def test_rm_conf_old_load_bad_invalidkey(isfile, verify):
     '''
-    Ensure an error is raised when keys are defined without
-    a section in the old remove.conf
+    Ensure an error is raised when an invalid key is defined
     '''
     filedata = '[remove]\ncommands=/bin/abc\nbooradley=/etc/def'
     with patch_open(filedata):

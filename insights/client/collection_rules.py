@@ -303,6 +303,10 @@ class InsightsUploadConf(object):
         # Convert config object into dict
         self.using_new_format = False
         parsedconfig = ConfigParser.RawConfigParser()
+        if not self.remove_file:
+            # no filename defined, return nothing
+            logger.debug('remove_file is undefined')
+            return None
         if not os.path.isfile(self.remove_file):
             logger.debug('%s not found. No data files, commands,'
                          ' or patterns will be ignored, and no keyword obfuscation will occur.', self.remove_file)
@@ -353,7 +357,11 @@ class InsightsUploadConf(object):
         if fname not in (self.redaction_file, self.content_redaction_file):
             # invalid function use, should never get here in a production situation
             return None
-        if not os.path.isfile(fname):
+        if not fname:
+            # no filename defined, return nothing
+            logger.debug('redaction_file or content_redaction_file is undefined')
+            return None
+        if not fname or not os.path.isfile(fname):
             if fname == self.redaction_file:
                 logger.debug('%s not found. No files or commands will be skipped.', self.redaction_file)
             elif fname == self.content_redaction_file:
