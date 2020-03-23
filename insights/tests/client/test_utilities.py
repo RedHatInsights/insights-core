@@ -100,7 +100,7 @@ def test_validate_remove_file():
     assert util.validate_remove_file(InsightsConfig(remove_file='/tmp/boop')) is None
     with pytest.raises(RuntimeError):
         os.chmod(tf, 0o644)
-        assert util.validate_remove_file(InsightsConfig(remove_file=tf)) is False
+        util.validate_remove_file(InsightsConfig(remove_file=tf))
     os.chmod(tf, 0o600)
     assert util.validate_remove_file(InsightsConfig(remove_file=tf)) is not False
     os.remove(tf)

@@ -259,6 +259,7 @@ def test_rm_conf_old_nofile(isfile):
     assert result is None
 
 
+@pytest.mark.skipif(mock.version_info < (3, 0, 5), reason="Old mock_open has no iteration control")
 @patch('insights.client.collection_rules.verify_permissions', return_value=True)
 @patch_isfile(True)
 def test_rm_conf_old_emptyfile(isfile, verify):
@@ -273,6 +274,7 @@ def test_rm_conf_old_emptyfile(isfile, verify):
     assert result is None
 
 
+@pytest.mark.skipif(mock.version_info < (3, 0, 5), reason="Old mock_open has no iteration control")
 @patch('insights.client.collection_rules.verify_permissions', return_value=True)
 @patch_isfile(True)
 def test_rm_conf_old_load_bad_invalidsection(isfile, verify):
@@ -288,6 +290,7 @@ def test_rm_conf_old_load_bad_invalidsection(isfile, verify):
     assert 'ERROR: invalid section(s)' in str(e.value)
 
 
+@pytest.mark.skipif(mock.version_info < (3, 0, 5), reason="Old mock_open has no iteration control")
 @patch('insights.client.collection_rules.verify_permissions', return_value=True)
 @patch_isfile(True)
 def test_rm_conf_old_load_bad_keysnosection(isfile, verify):
@@ -318,6 +321,7 @@ def test_rm_conf_old_load_bad_keysnosection(isfile, verify):
     assert 'ERROR: Unknown key' in str(e.value)
 
 
+@pytest.mark.skipif(mock.version_info < (3, 0, 5), reason="Old mock_open has no iteration control")
 @patch('insights.client.collection_rules.verify_permissions', return_value=True)
 @patch_isfile(True)
 def test_rm_conf_old_load_ok(isfile, verify):
