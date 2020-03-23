@@ -1,14 +1,11 @@
 # -*- coding: UTF-8 -*-
 
-import os
-import json
 import six
 import mock
 import pytest
 from .helpers import insights_upload_conf
 from mock.mock import patch, Mock
-from insights.client.collection_rules import InsightsUploadConf, correct_format, load_yaml, verify_permissions
-from insights.client.config import InsightsConfig
+from insights.client.collection_rules import correct_format, load_yaml, verify_permissions
 
 
 conf_remove_file = '/tmp/remove.conf'
@@ -199,7 +196,7 @@ def test_verify_permissions_ok(os_stat, s_imode):
 
 @patch('insights.client.collection_rules.stat.S_IMODE', return_value=0o644)
 @patch('insights.client.collection_rules.os.stat', return_value=Mock(st_mode=1))
-def test_verify_permissions_ok(os_stat, s_imode):
+def test_verify_permissions_bad(os_stat, s_imode):
     '''
     Verify that file permissions 600 does not raise an error
     '''
@@ -306,6 +303,7 @@ def test_rm_conf_old_load_bad_keysnosection(isfile, verify):
     assert 'ERROR: Cannot parse' in str(e.value)
 
 
+@pytest.mark.skipif(mock.version_info < (3, 0, 5), reason="Old mock_open has no iteration control")
 @patch('insights.client.collection_rules.verify_permissions', return_value=True)
 @patch_isfile(True)
 def test_rm_conf_old_load_bad_invalidkey(isfile, verify):
