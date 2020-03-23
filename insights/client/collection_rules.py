@@ -440,7 +440,6 @@ class InsightsUploadConf(object):
         num_patterns = 0
         num_keywords = 0
         using_regex = False
-        using_new_format = False
 
         if self.rm_conf:
             for key in self.rm_conf:
