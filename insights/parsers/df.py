@@ -4,25 +4,10 @@ Disk free space commands
 
 Module for the processing of output from the ``df`` command.  The base class
 ``DiskFree`` provides all of the functionality for all classes.
-Data is avaliable as rows of the output contained
-in one ``Record`` object for each line of output.
+Data is avaliable as rows of the output contained in one ``Record`` object
+for each line of output.
 
-Sample input data for the ``df -li`` command looks like::
-
-    Filesystem        Inodes  IUsed     IFree IUse% Mounted on
-    /dev/mapper/vg_lxcrhel6sat56-lv_root
-                     6275072 124955   6150117    2% /
-    devtmpfs         1497120    532   1496588    1% /dev
-    tmpfs            1499684    331   1499353    1% /dev/shm
-    tmpfs            1499684    728   1498956    1% /run
-    tmpfs            1499684     16   1499668    1% /sys/fs/cgroup
-    tmpfs            1499684     54   1499630    1% /tmp
-    /dev/sda2      106954752 298662 106656090    1% /home
-    /dev/sda1         128016    429    127587    1% /boot
-    tmpfs            1499684      6   1499678    1% /V M T o o l s
-    tmpfs            1499684     15   1499669    1% /VM Tools
-
-This module provides two parsers:
+Parsers contained in this module are:
 
 DiskFree_LI - command ``df -li``
 --------------------------------
@@ -33,31 +18,9 @@ DiskFree_ALP - command ``df -alP``
 DiskFree_AL - command ``df -al``
 --------------------------------
 
-This example demonstrates the ``DiskFree_LI`` class but all classes will provide
-the same functionality.
-
-Examples:
-    >>> df_info = shared[DiskFree_LI]
-    >>> df_info.filesystem_names
-    ['tmpfs', '/dev/mapper/vg_lxcrhel6sat56-lv_root', 'devtmpfs', '/dev/sda2', '/dev/sda1']
-    >>> df_info.get_filesystem('/dev/sda2')
-    [Record(filesystem='/dev/sda2', total='106954752', used='298662', available='106656090', capacity='1%', mounted_on='/home')]
-    >>> df_info.mount_names
-    ['/tmp', '/home', '/dev', '/boot', '/VM Tools', '/sys/fs/cgroup', '/', '/run', '/V M T o o l s', '/dev/shm']
-    >>> df_info.get_mount('/boot')
-    Record(filesystem='/dev/sda1', total='128016', used='429', available='127587', capacity='1%', mounted_on='/boot')
-    >>> len(df_info)
-    10
-    >>> [d.mounted_on for d in df_info if 'sda' in d.filesystem]
-    ['/home', '/boot']
-    >>> df_info.data[0].filesystem
-    '/dev/mapper/vg_lxcrhel6sat56-lv_root'
-    >>> df_info.data[0]
-    Record(filesystem='/dev/mapper/vg_lxcrhel6sat56-lv_root', total='6275072', used='124955', available='6150117', capacity='2%', mounted_on='/')
 """
-from .. import parser, CommandParser
-from collections import namedtuple, defaultdict
-
+from collections import namedtuple
+from insights import parser, CommandParser
 from insights.parsers import ParseException
 from insights.specs import Specs
 
@@ -139,12 +102,13 @@ class DiskFree(CommandParser):
     """
     def __init__(self, context):
         super(DiskFree, self).__init__(context)
-        filesystems = defaultdict(list)
+        self.filesystems = {}
         self.mounts = {}
         for datum in self.data:
-            filesystems[datum.filesystem].append(datum)
+            if datum.filesystem not in self.filesystems:
+                self.filesystems[datum.filesystem] = []
+            self.filesystems[datum.filesystem].append(datum)
             self.mounts[datum.mounted_on] = datum
-        self.filesystems = dict(filesystems)
 
     def __len__(self):
         return len(self.data)
@@ -156,12 +120,16 @@ class DiskFree(CommandParser):
     def parse_content(self, content):
         bad_lines = ["no such file or directory"]
         content = [l for l in content if bad_lines[0] not in l.lower()]
+        # Get the block_size when there is such column
+        header = content[0]
+        if 'blocks' in header:
+            self.block_size = [i.split('-')[0] for i in header.split() if 'blocks' in i][0]
         self.data = parse_df_lines(content)
 
     @property
     def filesystem_names(self):
         """list: Returns list of unique filesystem names."""
-        return self.filesystems.keys()
+        return sorted(self.filesystems.keys())
 
     def get_filesystem(self, name):
         """str: Returns list of Record objects for filesystem ``name``."""
@@ -170,7 +138,7 @@ class DiskFree(CommandParser):
     @property
     def mount_names(self):
         """list: Returns list of unique mount point names."""
-        return self.mounts.keys()
+        return sorted(self.mounts.keys())
 
     def get_mount(self, name):
         """Record: Returns Record obj for mount point ``name``."""
@@ -195,16 +163,15 @@ class DiskFree_LI(DiskFree):
 
     Typical content of the ``df -li`` command output looks like::
 
-        Filesystem        Inodes  IUsed     IFree IUse% Mounted on
-        /dev/mapper/vg_lxcrhel6sat56-lv_root
-                         6275072 124955 6150117    2% /
-        devtmpfs         1497120    532   1496588    1% /dev
-        tmpfs            1499684    331   1499353    1% /dev/shm
-        tmpfs            1499684    728   1498956    1% /tmp
-        /dev/sda2      106954752 298662 106656090    1% /home
-        /dev/sda1         128016    429    127587    1% /boot
-        tmpfs            1499684      6   1499678    1% /run/user/988
-        tmpfs            1499684     15   1499669    1% /run/user/100
+        Filesystem       Inodes IUsed    IFree IUse% Mounted on
+        devtmpfs         242224   359   241865    1% /dev
+        tmpfs            246028     1   246027    1% /dev/shm
+        tmpfs            246028   491   245537    1% /run
+        tmpfs            246028    17   246011    1% /sys/fs/cgroup
+        /dev/sda2       8911872 58130  8853742    1% /
+        /dev/sdb1      26213888 19662 26194226    1% /opt/data
+        /dev/sda1        524288   306   523982    1% /boot
+        tmpfs            246028     5   246023    1% /run/user/0
 
     Attributes:
         data (list): A list of the ``df`` information with one ``Record`` object for
@@ -219,6 +186,24 @@ class DiskFree_LI(DiskFree):
                 IFree          available
                 IUse%          capacity
                 Mounted on     mounted_on
+
+    Examples:
+        >>> len(df_li)
+        8
+        >>> len(df_li.filesystem_names)
+        5
+        >>> df_li.get_filesystem('/dev/sda1')[0].mounted_on == '/boot'
+        True
+        >>> '/opt/data' in df_li.mount_names
+        True
+        >>> df_li.get_mount('/sys/fs/cgroup').available == '246011'
+        True
+        >>> [d.mounted_on for d in df_li if 'sda' in d.filesystem] == ['/', '/boot']
+        True
+        >>> df_li.data[0].filesystem == 'devtmpfs'
+        True
+        >>> df_li.data[0].capacity == '1%'
+        True
     """
     pass
 
@@ -229,17 +214,27 @@ class DiskFree_ALP(DiskFree):
 
     Typical content of the ``df -alP`` command looks like::
 
-        Filesystem                           1024-blocks      Used Available Capacity Mounted on
-        /dev/mapper/vg_lxcrhel6sat56-lv_root    98571884   4244032  89313940       5% /
-        sysfs                                          0         0         0        - /sys
-        proc                                           0         0         0        - /proc
-        devtmpfs                                 5988480         0   5988480       0% /dev
-        securityfs                                     0         0         0        - /sys/kernel/security
-        tmpfs                                    5998736    491660   5507076       9% /dev/shm
-        devpts                                         0         0         0        - /dev/pts
-        tmpfs                                    5998736      1380   5997356       1% /run
-        tmpfs                                    5998736         0   5998736       0% /sys/fs/cgroup
-        cgroup                                         0         0         0        - /sys/fs/cgroup/systemd
+        Filesystem     1024-blocks    Used Available Capacity Mounted on
+        sysfs                    0       0         0        - /sys
+        proc                     0       0         0        - /proc
+        devtmpfs            968896       0    968896       0% /dev
+        securityfs               0       0         0        - /sys/kernel/security
+        tmpfs               984112       0    984112       0% /dev/shm
+        devpts                   0       0         0        - /dev/pts
+        tmpfs               984112    8660    975452       1% /run
+        tmpfs               984112       0    984112       0% /sys/fs/cgroup
+        cgroup                   0       0         0        - /sys/fs/cgroup/systemd
+        cgroup                   0       0         0        - /sys/fs/cgroup/pids
+        cgroup                   0       0         0        - /sys/fs/cgroup/rdma
+        configfs                 0       0         0        - /sys/kernel/config
+        /dev/sda2         17813504 2127172  15686332      12% /
+        selinuxfs                0       0         0        - /sys/fs/selinux
+        systemd-1                -       -         -        - /proc/sys/fs/binfmt_misc
+        debugfs                  0       0         0        - /sys/kernel/debug
+        mqueue                   0       0         0        - /dev/mqueue
+        hugetlbfs                0       0         0        - /dev/hugepages
+        /dev/sdb1         52402180 1088148  51314032       3% /V M T o o l s
+        /dev/sda1          1038336  185676    852660      18% /boot
 
     Attributes:
         data (list): A list of the ``df`` information with one ``Record`` object for
@@ -254,6 +249,25 @@ class DiskFree_ALP(DiskFree):
                 Available      available
                 Capacity       capacity
                 Mounted on     mounted_on
+        block_size (str): The unit of display values, '1024' by default.
+
+    Examples:
+        >>> len(df_alP)
+        20
+        >>> len(df_alP.filesystem_names)
+        16
+        >>> df_alP.block_size == '1024'
+        True
+        >>> df_alP.get_filesystem('/dev/sda2')[0].mounted_on == '/'
+        True
+        >>> '/V M T o o l s' in df_alP.mount_names
+        True
+        >>> df_alP.get_mount('/boot').available == '852660'
+        True
+        >>> [d.mounted_on for d in df_alP if 'sda' in d.filesystem] == ['/', '/boot']
+        True
+        >>> df_alP.data[0].filesystem == 'sysfs'
+        True
     """
     pass
 
@@ -264,17 +278,27 @@ class DiskFree_AL(DiskFree):
 
     Typical content of the ``df -al`` command looks like::
 
-        Filesystem                             1K-blocks      Used Available     Use% Mounted on
-        /dev/mapper/vg_lxcrhel6sat56-lv_root    98571884   4244032  89313940       5% /
-        sysfs                                          0         0         0        - /sys
-        proc                                           0         0         0        - /proc
-        devtmpfs                                 5988480         0   5988480       0% /dev
-        securityfs                                     0         0         0        - /sys/kernel/security
-        tmpfs                                    5998736    491660   5507076       9% /dev/shm
-        devpts                                         0         0         0        - /dev/pts
-        tmpfs                                    5998736      1380   5997356       1% /run
-        tmpfs                                    5998736         0   5998736       0% /sys/fs/cgroup
-        cgroup                                         0         0         0        - /sys/fs/cgroup/systemd
+        Filesystem     1K-blocks    Used Available Use% Mounted on
+        sysfs                  0       0         0    - /sys
+        proc                   0       0         0    - /proc
+        devtmpfs          968896       0    968896   0% /dev
+        securityfs             0       0         0    - /sys/kernel/security
+        tmpfs             984112       0    984112   0% /dev/shm
+        devpts                 0       0         0    - /dev/pts
+        tmpfs             984112    8660    975452   1% /run
+        tmpfs             984112       0    984112   0% /sys/fs/cgroup
+        cgroup                 0       0         0    - /sys/fs/cgroup/systemd
+        cgroup                 0       0         0    - /sys/fs/cgroup/pids
+        cgroup                 0       0         0    - /sys/fs/cgroup/rdma
+        configfs               0       0         0    - /sys/kernel/config
+        /dev/sda2       17813504 2127172  15686332  12% /
+        selinuxfs              0       0         0    - /sys/fs/selinux
+        systemd-1              -       -         -    - /proc/sys/fs/binfmt_misc
+        debugfs                0       0         0    - /sys/kernel/debug
+        mqueue                 0       0         0    - /dev/mqueue
+        hugetlbfs              0       0         0    - /dev/hugepages
+        /dev/sdb1       52402180 1088148  51314032   3% /V M T o o l s
+        /dev/sda1        1038336  185676    852660  18% /boot
 
     Attributes:
         data (list): A list of the ``df`` information with one ``Record`` object for
@@ -289,5 +313,24 @@ class DiskFree_AL(DiskFree):
                 Available      available
                 Use%           capacity
                 Mounted on     mounted_on
+        block_size (str): The unit of display values, '1K' by default.
+
+    Examples:
+        >>> len(df_al)
+        20
+        >>> len(df_al.filesystem_names)
+        16
+        >>> df_al.block_size == '1K'
+        True
+        >>> df_al.get_filesystem('/dev/sda2')[0].mounted_on == '/'
+        True
+        >>> '/V M T o o l s' in df_al.mount_names
+        True
+        >>> df_al.get_mount('/boot').available == '852660'
+        True
+        >>> [d.mounted_on for d in df_al if 'sda' in d.filesystem] == ['/', '/boot']
+        True
+        >>> df_al.data[0].filesystem == 'sysfs'
+        True
     """
     pass

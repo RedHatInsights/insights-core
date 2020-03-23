@@ -1,7 +1,8 @@
+import pytest
+import doctest
+
 from insights.parsers import df, ParseException
 from insights.tests import context_wrap
-
-import pytest
 
 DF_LI = """
 Filesystem        Inodes  IUsed     IFree IUse% Mounted on
@@ -16,8 +17,8 @@ tmpfs            1499684     16   1499668    1% /sys/fs/cgroup
 tmpfs            1499684     54   1499630    1% /tmp
 /dev/sda2      106954752 298662 106656090    1% /home
 /dev/sda1         128016    429    127587    1% /boot
-tmpfs            1499684      6   1499678    1% /V M T o o l s
-tmpfs            1499684     15   1499669    1% /VM Tools
+/dev/sdb1        1499684      6   1499678    1% /V M T o o l s
+/dev/sdb2        1499684     15   1499669    1% /VM Tools
 """.strip()
 
 
@@ -25,7 +26,7 @@ def test_df_li():
     df_list = df.DiskFree_LI(context_wrap(DF_LI))
     assert len(df_list) == 10
     assert len(df_list.mounts) == 10
-    assert len(df_list.filesystems) == 5
+    assert len(df_list.filesystems) == 7
     assert '/home' in df_list.mounts
     r = df.Record(
         filesystem='/dev/sda2',
@@ -40,7 +41,7 @@ def test_df_li():
     assert '/dev/sda2' in df_list.filesystems
     assert len(df_list.get_filesystem('/dev/sda2')) == 1
     assert df_list.get_filesystem('/dev/sda2')[0] == r
-    assert len(df_list.get_filesystem('tmpfs')) == 6
+    assert len(df_list.get_filesystem('tmpfs')) == 4
     assert df_list.get_mount('/dev').filesystem == 'devtmpfs'
     assert df_list.get_mount('/run').total == '1499684'
     assert df_list.get_mount('/tmp').used == '54'
@@ -58,7 +59,7 @@ def test_df_li():
     assert sorted(df_list.mount_names) == sorted_mount_names
     assert sorted(df_list.filesystem_names) == sorted([
         '/dev/mapper/vg_lxcrhel6sat56-lv_root', 'devtmpfs', 'tmpfs',
-        '/dev/sda2', '/dev/sda1'
+        '/dev/sda2', '/dev/sda1', '/dev/sdb2', '/dev/sdb1'
     ])
 
     # Test get_path
@@ -210,3 +211,73 @@ def test_df_al_bad():
         df_list = df.DiskFree_AL(context_wrap(DF_AL_BAD))
         assert len(df_list) == 2
     assert 'Could not parse line' in str(exc)
+
+DF_LI_DOC = """
+Filesystem       Inodes IUsed    IFree IUse% Mounted on
+devtmpfs         242224   359   241865    1% /dev
+tmpfs            246028     1   246027    1% /dev/shm
+tmpfs            246028   491   245537    1% /run
+tmpfs            246028    17   246011    1% /sys/fs/cgroup
+/dev/sda2       8911872 58130  8853742    1% /
+/dev/sdb1      26213888 19662 26194226    1% /opt/data
+/dev/sda1        524288   306   523982    1% /boot
+tmpfs            246028     5   246023    1% /run/user/0
+""".strip()
+
+DF_ALP_DOC = """
+Filesystem     1024-blocks    Used Available Capacity Mounted on
+sysfs                    0       0         0        - /sys
+proc                     0       0         0        - /proc
+devtmpfs            968896       0    968896       0% /dev
+securityfs               0       0         0        - /sys/kernel/security
+tmpfs               984112       0    984112       0% /dev/shm
+devpts                   0       0         0        - /dev/pts
+tmpfs               984112    8660    975452       1% /run
+tmpfs               984112       0    984112       0% /sys/fs/cgroup
+cgroup                   0       0         0        - /sys/fs/cgroup/systemd
+cgroup                   0       0         0        - /sys/fs/cgroup/pids
+cgroup                   0       0         0        - /sys/fs/cgroup/rdma
+configfs                 0       0         0        - /sys/kernel/config
+/dev/sda2         17813504 2127172  15686332      12% /
+selinuxfs                0       0         0        - /sys/fs/selinux
+systemd-1                -       -         -        - /proc/sys/fs/binfmt_misc
+debugfs                  0       0         0        - /sys/kernel/debug
+mqueue                   0       0         0        - /dev/mqueue
+hugetlbfs                0       0         0        - /dev/hugepages
+/dev/sdb1         52402180 1088148  51314032       3% /V M T o o l s
+/dev/sda1          1038336  185676    852660      18% /boot
+""".strip()
+
+DF_AL_DOC = """
+Filesystem     1K-blocks    Used Available Use% Mounted on
+sysfs                  0       0         0    - /sys
+proc                   0       0         0    - /proc
+devtmpfs          968896       0    968896   0% /dev
+securityfs             0       0         0    - /sys/kernel/security
+tmpfs             984112       0    984112   0% /dev/shm
+devpts                 0       0         0    - /dev/pts
+tmpfs             984112    8660    975452   1% /run
+tmpfs             984112       0    984112   0% /sys/fs/cgroup
+cgroup                 0       0         0    - /sys/fs/cgroup/systemd
+cgroup                 0       0         0    - /sys/fs/cgroup/pids
+cgroup                 0       0         0    - /sys/fs/cgroup/rdma
+configfs               0       0         0    - /sys/kernel/config
+/dev/sda2       17813504 2127172  15686332  12% /
+selinuxfs              0       0         0    - /sys/fs/selinux
+systemd-1              -       -         -    - /proc/sys/fs/binfmt_misc
+debugfs                0       0         0    - /sys/kernel/debug
+mqueue                 0       0         0    - /dev/mqueue
+hugetlbfs              0       0         0    - /dev/hugepages
+/dev/sdb1       52402180 1088148  51314032   3% /V M T o o l s
+/dev/sda1        1038336  185676    852660  18% /boot
+""".strip()
+
+
+def test_doc_examples():
+    env = {
+            'df_li': df.DiskFree_LI(context_wrap(DF_LI_DOC)),
+            'df_al': df.DiskFree_AL(context_wrap(DF_AL_DOC)),
+            'df_alP': df.DiskFree_ALP(context_wrap(DF_ALP_DOC)),
+          }
+    failed, total = doctest.testmod(df, globs=env)
+    assert failed == 0
