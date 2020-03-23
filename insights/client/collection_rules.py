@@ -19,7 +19,7 @@ from .constants import InsightsConstants as constants
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
-net_logger = logging.getLogger('network')
+NETWORK = constants.custom_network_log_level
 
 expected_keys = ('commands', 'files', 'patterns', 'keywords')
 
@@ -103,7 +103,7 @@ class InsightsUploadConf(object):
         logger.debug("Attemping to download collection rules from %s",
                      self.collection_rules_url)
 
-        net_logger.info("GET %s", self.collection_rules_url)
+        logger.log(NETWORK, "GET %s", self.collection_rules_url)
         try:
             req = self.conn.session.get(
                 self.collection_rules_url, headers=({'accept': 'text/plain'}))
@@ -140,7 +140,7 @@ class InsightsUploadConf(object):
                      self.collection_rules_url + ".asc")
 
         headers = ({'accept': 'text/plain'})
-        net_logger.info("GET %s", self.collection_rules_url + '.asc')
+        logger.log(NETWORK, "GET %s", self.collection_rules_url + '.asc')
         config_sig = self.conn.session.get(self.collection_rules_url + '.asc',
                                            headers=headers)
         if config_sig.status_code == 200:
@@ -322,7 +322,7 @@ class InsightsUploadConf(object):
         # Make sure permissions are 600
         mode = stat.S_IMODE(os.stat(self.remove_file).st_mode)
         if not mode == 0o600:
-            logger.error("ERROR: Invalid remove file permissions. "
+            logger.error("WARNING: Invalid remove file permissions. "
                          "Expected 0600 got %s" % oct(mode))
             return False
         else:
@@ -332,9 +332,10 @@ class InsightsUploadConf(object):
             logger.error('Could not parse remove.conf')
             return False
         # Using print here as this could contain sensitive information
-        print('Remove file parsed contents:')
-        print(success)
-        logger.info('Parsed successfully.')
+        if self.config.verbose or self.config.validate:
+            print('Remove file parsed contents:')
+            print(success)
+            logger.info('Parsed successfully.')
         return True
 
 
