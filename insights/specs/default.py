@@ -26,7 +26,6 @@ from insights.core.spec_factory import first_of, foreach_collect, foreach_execut
 from insights.core.spec_factory import first_file, listdir
 from insights.parsers.mount import Mount, ProcMounts
 from insights.parsers.dnf_module import DnfModuleList
-from insights.parsers.uname import Uname
 from insights.combiners.cloud_provider import CloudProvider
 from insights.combiners.satellite_version import SatelliteVersion
 from insights.components.rhel_version import IsRhel8
