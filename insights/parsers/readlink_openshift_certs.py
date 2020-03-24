@@ -1,6 +1,6 @@
 """
-Get the real path of the Openshift certificate symbolic link file
-=================================================================
+ReadLink parsers for Openshift certificate symbolic file links
+==============================================================
 
 This module contains the following parsers:
 
@@ -35,8 +35,7 @@ class ReadLinkEKubeletClientCurrent(CommandParser):
         if content is None or len(content) == 0:
             raise SkipException("No Data from command: /usr/bin/readlink -e /etc/origin/node/certificates/kubelet-client-current.pem")
 
-        for line in content:
-            self._path = line
+        self._path = content[-1]
 
     @property
     def path(self):
@@ -64,8 +63,7 @@ class ReadLinkEKubeletServerCurrent(CommandParser):
         if content is None or len(content) == 0:
             raise SkipException("No Data from command: /usr/bin/readlink -e /etc/origin/node/certificates/kubelet-server-current.pem")
 
-        for line in content:
-            self._path = line
+        self._path = content[-1]
 
     @property
     def path(self):
