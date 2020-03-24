@@ -232,6 +232,8 @@ class InsightsArchiveSpecs(Specs):
     rabbitmq_report = simple_file("insights_commands/rabbitmqctl_report")
     rabbitmq_users = simple_file("insights_commands/rabbitmqctl_list_users")
     readlink_e_etc_mtab = simple_file("insights_commands/readlink_-e_.etc.mtab")
+    readlink_e_shift_cert_client = simple_file("insights_commands/readlink_-e_.etc.origin.node.certificates.kubelet-client-current.pem")
+    readlink_e_shift_cert_server = simple_file("insights_commands/readlink_-e_.etc.origin.node.certificates.kubelet-server-current.pem")
     rhn_charsets = simple_file("insights_commands/rhn-charsets")
     rhn_schema_stats = simple_file("insights_commands/rhn-schema-stats")
     rhn_schema_version = simple_file("insights_commands/rhn-schema-version")
