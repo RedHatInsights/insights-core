@@ -421,6 +421,9 @@ class InsightsConnection(object):
 
         # handle specific status codes
         if req.status_code >= 400:
+            logger.debug("Debug Information:\nHTTP Status Code: %s",
+                        req.status_code)
+            logger.debug("HTTP Status Text: %s", req.reason)
             if req.status_code == 401:
                 logger.error("Authorization Required.")
                 logger.error("Please ensure correct credentials "
