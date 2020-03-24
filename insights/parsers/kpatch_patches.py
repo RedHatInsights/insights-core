@@ -16,7 +16,7 @@ from insights.util import deprecated
 @parser(Specs.kpatch_patch_files)
 class KpatchPatches(CommandParser):
     """
-    .. warn::
+    .. warning::
         This parser is deprecated, please use
         :py:class:`insights.parsers.kpatch_list.KpatchList` instead.
 
