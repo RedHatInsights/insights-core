@@ -1,5 +1,6 @@
 import logging
 import os
+import resource
 import shlex
 import signal
 import six
@@ -67,12 +68,15 @@ class Pipeline(object):
             os.environ.
         timeout (int): number of seconds to wait before killing the command.
             Defaults to None, which waits forever.
+        memory_limit (int): number of bytes of memory that can be used by the
+            child process. Defaults to None, which means no limits.
         signum (int): signal to send the command on timeout. Defaults to
             signal.SIGKILL
         """
 
         self.bufsize = kwargs.get("bufsize", -1)
         self.env = kwargs.get("env", os.environ)
+        self.memory_limit = kwargs.get("memory_limit")
         timeout = kwargs.get("timeout")
         signum = kwargs.get("signum", signal.SIGKILL)
 
@@ -85,21 +89,30 @@ class Pipeline(object):
                 cmds[0] = to
             else:
                 # TODO: Should this raise an exception instead?
-                log.warn("Timeout specified but timeout command unavailable.")
+                log.warning("Timeout specified but timeout command unavailable.")
         self.cmds = cmds
 
     def _build_pipes(self, out_stream=PIPE):
-        log.debug("Executing: %s" % str(self.cmds))
+        log.debug("Executing: %s", str(self.cmds))
         if len(self.cmds) == 1:
-            return Popen(self.cmds[0], bufsize=self.bufsize, stderr=STDOUT, stdout=out_stream, env=self.env)
+            return Popen(self.cmds[0], bufsize=self.bufsize, stderr=STDOUT, stdout=out_stream, env=self.env,
+                         preexec_fn=self._limit_virtual_memory)
 
-        stdout = Popen(self.cmds[0], bufsize=self.bufsize, stderr=STDOUT, stdout=PIPE, env=self.env).stdout
+        stdout = Popen(self.cmds[0], bufsize=self.bufsize, stderr=STDOUT, stdout=PIPE, env=self.env,
+                       preexec_fn=self._limit_virtual_memory).stdout
         last = len(self.cmds) - 2
         for i, arg in enumerate(self.cmds[1:]):
             if i < last:
-                stdout = Popen(arg, bufsize=self.bufsize, stdin=stdout, stderr=STDOUT, stdout=PIPE, env=self.env).stdout
+                stdout = Popen(arg, bufsize=self.bufsize, stdin=stdout, stderr=STDOUT, stdout=PIPE, env=self.env,
+                               preexec_fn=self._limit_virtual_memory).stdout
             else:
-                return Popen(arg, bufsize=self.bufsize, stdin=stdout, stderr=STDOUT, stdout=out_stream, env=self.env)
+                return Popen(arg, bufsize=self.bufsize, stdin=stdout, stderr=STDOUT, stdout=out_stream, env=self.env,
+                             preexec_fn=self._limit_virtual_memory)
+
+    def _limit_virtual_memory(self):
+        """Sets a limit for virtual memory usage for the spawning process."""
+        if self.memory_limit is not None:
+            resource.setrlimit(resource.RLIMIT_AS, (self.memory_limit, resource.RLIM_INFINITY))
 
     def __call__(self, keep_rc=False):
         """
@@ -164,6 +177,7 @@ class Pipeline(object):
 
 def call(cmd,
          timeout=None,
+         memory_limit=None,
          signum=signal.SIGKILL,
          keep_rc=False,
          encoding="utf-8",
@@ -181,6 +195,8 @@ def call(cmd,
         The command(s) to execute
     timeout: int
         Seconds before kill is issued to the process
+    memory_limit: int
+        Number of bytes that are allowed to be used by the child
     signum: int
         The signal number to issue to the process on timeout
     keep_rc: bool
@@ -204,7 +220,7 @@ def call(cmd,
     if not isinstance(cmd, list):
         cmd = [cmd]
 
-    p = Pipeline(*cmd, timeout=timeout, signum=signum, env=env)
+    p = Pipeline(*cmd, timeout=timeout, memory_limit=memory_limit, signum=signum, env=env)
     res = p(keep_rc=keep_rc)
 
     if keep_rc:
