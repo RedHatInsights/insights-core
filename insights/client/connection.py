@@ -413,14 +413,6 @@ class InsightsConnection(object):
         Bail out if we get a 401 and leave a message
         """
 
-        try:
-            logger.log(NETWORK, "HTTP Status Code: %s", req.status_code)
-            logger.log(NETWORK, "HTTP Response Text: %s", req.text)
-            logger.log(NETWORK, "HTTP Response Reason: %s", req.reason)
-            logger.log(NETWORK, "HTTP Response Content: %s", req.content)
-        except:
-            logger.error("Malformed HTTP Request.")
-
         # attempt to read the HTTP response JSON message
         try:
             logger.log(NETWORK, "HTTP Response Message: %s", req.json()["message"])
@@ -429,9 +421,6 @@ class InsightsConnection(object):
 
         # handle specific status codes
         if req.status_code >= 400:
-            logger.info("Debug Information:\nHTTP Status Code: %s",
-                        req.status_code)
-            logger.info("HTTP Status Text: %s", req.reason)
             if req.status_code == 401:
                 logger.error("Authorization Required.")
                 logger.error("Please ensure correct credentials "
