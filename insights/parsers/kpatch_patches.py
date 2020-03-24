@@ -10,11 +10,16 @@ If no modules are installed, a ContentException will be raised.
 
 from .. import parser, CommandParser
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.kpatch_patch_files)
 class KpatchPatches(CommandParser):
     """
+    .. warn::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.kpatch_list.KpatchList` instead.
+
     A parser for getting modules names of locally stored kpatch-patch files.
 
     Sample output of `ls /var/lib/kpatch/\`uname -r\`/` looks like::
@@ -30,6 +35,9 @@ class KpatchPatches(CommandParser):
         >>> kp.patches
         ['kpatch_3_10_0_1062_1_5', 'kpatch_3_10_0_1062_1_6']
     """
+    def __init__(self, *args, **kwargs):
+        deprecated(KpatchPatches, "Import KpatchList from insights.parsers.kpatch_list instead.")
+        super(KpatchPatches, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
         # convert dashes to underscores, remove file suffixes, remove duplicates
