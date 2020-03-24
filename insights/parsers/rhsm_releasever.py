@@ -43,13 +43,10 @@ class RhsmReleaseVer(JSONParser):
         """
         super(RhsmReleaseVer, self).parse_content(content)
         self.set = self.major = self.minor = None
-        rel_splits = []
         if 'releaseVer' not in self.data:
             raise SkipException('releaseVer is not in data')
-
-        rel = self.data['releaseVer']
-        if rel is not None:
-            rel_splits = rel.split('.')
+        rel = self.data.get('releaseVer') or ''
+        rel_splits = rel.split('.')
         # Release: 6.7
         if len(rel_splits) == 2:
             if rel_splits[0].isdigit() and rel_splits[-1].isdigit():
