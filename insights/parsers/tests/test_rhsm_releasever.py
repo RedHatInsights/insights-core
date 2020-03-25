@@ -9,6 +9,7 @@ RHEL_MAJ_MIN = '{"releaseVer": "6.10"}'
 RHEL_MAJ_1 = '{"releaseVer": "7Server"}'
 RHEL_MAJ_2 = '{"releaseVer": "8"}'
 RHEL_NONE = '{"releaseVer": ""}'
+RHEL_NONE_2 = '{"releaseVer": null}'
 RHEL_EMPTY = '{}'
 
 
@@ -33,6 +34,12 @@ def test_rhsm_releasever():
 
     relver = RhsmReleaseVer(context_wrap(RHEL_NONE))
     assert relver['releaseVer'] == ''
+    assert relver.set is None
+    assert relver.major is None
+    assert relver.minor is None
+
+    relver = RhsmReleaseVer(context_wrap(RHEL_NONE_2))
+    assert relver['releaseVer'] is None
     assert relver.set is None
     assert relver.major is None
     assert relver.minor is None
