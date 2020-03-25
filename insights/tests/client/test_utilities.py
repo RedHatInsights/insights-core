@@ -7,8 +7,7 @@ from insights.client.config import InsightsConfig
 import re
 import mock
 import six
-import sys
-from mock.mock import patch, MagicMock
+from mock.mock import patch
 
 
 machine_id = str(uuid.uuid4())
@@ -108,7 +107,7 @@ def test_get_version_info_no_module():
 
 @patch('insights.client.utilities.wrapper_constants')
 @patch.dict('insights.client.utilities.package_info', {'VERSION': '1', 'RELEASE': '1'})
-def test_get_version_info_OK(wrapper_constants):
+def test_get_version_info_no_version(wrapper_constants):
     '''
     insights_client constants are imported OK but
     constants object has no attribute "version."
