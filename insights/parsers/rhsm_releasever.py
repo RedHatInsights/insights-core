@@ -25,6 +25,9 @@ class RhsmReleaseVer(JSONParser):
 
         {"releaseVer": "6.10"}
 
+    Raises:
+       SkipException: When the json content of the file is empty.(i.e release version is empty. eg. {})
+
     Examples:
         >>> type(rhsm_releasever)
         <class 'insights.parsers.rhsm_releasever.RhsmReleaseVer'>
@@ -37,6 +40,7 @@ class RhsmReleaseVer(JSONParser):
         >>> rhsm_releasever.minor
         10
     """
+
     def parse_content(self, content):
         """
         Parse the contents of file ``/var/lib/rhsm/cache/releasever.json``.
@@ -45,8 +49,7 @@ class RhsmReleaseVer(JSONParser):
         self.set = self.major = self.minor = None
         if 'releaseVer' not in self.data:
             raise SkipException('releaseVer is not in data')
-
-        rel = self.data['releaseVer']
+        rel = self.data.get('releaseVer') or ''
         rel_splits = rel.split('.')
         # Release: 6.7
         if len(rel_splits) == 2:
