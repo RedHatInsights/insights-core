@@ -1,8 +1,7 @@
 # -*- coding: UTF-8 -*-
 
 from insights.client.apps.compliance import ComplianceClient, COMPLIANCE_CONTENT_TYPE
-from mock.mock import patch, Mock
-from unittest.mock import mock_open
+from mock.mock import patch, Mock, mock_open
 from pytest import raises
 import os
 
