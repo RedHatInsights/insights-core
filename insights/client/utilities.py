@@ -23,6 +23,11 @@ from .. import package_info
 from .constants import InsightsConstants as constants
 from .collection_rules import InsightsUploadConf
 
+try:
+    from insights_client.constants import InsightsConstants as wrapper_constants
+except ImportError:
+    wrapper_constants = None
+
 logger = logging.getLogger(__name__)
 
 
@@ -229,9 +234,9 @@ def get_version_info():
     Get the insights client and core versions for archival
     '''
     try:
-        from insights_client.constants import InsightsConstants as wrapper_constants
         client_version = wrapper_constants.version
-    except ImportError:
+    except AttributeError:
+        # wrapper_constants is None or has no attribute "version"
         client_version = None
     version_info = {}
     version_info['core_version'] = '%s-%s' % (package_info['VERSION'], package_info['RELEASE'])

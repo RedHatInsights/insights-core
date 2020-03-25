@@ -7,7 +7,8 @@ from insights.client.config import InsightsConfig
 import re
 import mock
 import six
-from mock.mock import patch
+import sys
+from mock.mock import patch, MagicMock
 
 
 machine_id = str(uuid.uuid4())
@@ -82,14 +83,40 @@ def test_run_command_get_output():
     assert util.run_command_get_output(cmd) == {'status': 0, 'output': u'hello\n'}
 
 
-@patch('insights.client.utilities.run_command_get_output')
+@patch('insights.client.utilities.wrapper_constants')
 @patch.dict('insights.client.utilities.package_info', {'VERSION': '1', 'RELEASE': '1'})
-def test_get_version_info(run_command_get_output):
-    # package_info['VERSION'] = '1'
-    # package_info['RELEASE'] = '1'
-    run_command_get_output.return_value = {'output': 1, 'status': 0}
+def test_get_version_info_OK(wrapper_constants):
+    '''
+    insights_client constants are imported OK and version
+    is reported. Return version as defined
+    '''
+    wrapper_constants.version = 1
     version_info = util.get_version_info()
     assert version_info == {'core_version': '1-1', 'client_version': 1}
+
+
+@patch('insights.client.utilities.wrapper_constants', new=None)
+@patch.dict('insights.client.utilities.package_info', {'VERSION': '1', 'RELEASE': '1'})
+def test_get_version_info_no_module():
+    '''
+    insights_client constants cannot be imported,
+    constants object is None. Return None version.
+    '''
+    version_info = util.get_version_info()
+    assert version_info == {'core_version': '1-1', 'client_version': None}
+
+
+@patch('insights.client.utilities.wrapper_constants')
+@patch.dict('insights.client.utilities.package_info', {'VERSION': '1', 'RELEASE': '1'})
+def test_get_version_info_OK(wrapper_constants):
+    '''
+    insights_client constants are imported OK but
+    constants object has no attribute "version."
+    Return None version
+    '''
+    del wrapper_constants.version
+    version_info = util.get_version_info()
+    assert version_info == {'core_version': '1-1', 'client_version': None}
 
 
 def test_validate_remove_file():
