@@ -103,3 +103,4 @@ def test_active_krb5_nest():
     assert result.include == ["/etc/krb5test.conf"]
     assert result.includedir == ["/etc/krb5.conf.d/"]
     assert result.module == ["/etc/krb5test.conf:residual"]
+    assert result.files == ['krb5.conf', 'test.conf', 'test2.conf']
