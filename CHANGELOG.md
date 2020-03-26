@@ -1,5 +1,13 @@
 # Change Log
 
+## [insights-core-3.0.157-1359](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.157-1359) (2020-03-26)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.156-1352...insights-core-3.0.157-1359)
+
+**Closed issues:**
+
+- RhsmReleaseVer does not handle when release version is None [\#2509](https://github.com/RedHatInsights/insights-core/issues/2509)
+- NeutronConf parser is broken [\#2412](https://github.com/RedHatInsights/insights-core/issues/2412)
+
 ## [insights-core-3.0.156-1352](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.156-1352) (2020-03-19)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.155-1346...insights-core-3.0.156-1352)
 
