@@ -58,6 +58,8 @@ class AllKrb5Conf(LegacyItemAccess):
         True
         >>> all_krb5['realms']['dns_lookup_realm']
         'false'
+        >>> all_krb5.files
+        ['krb5.conf', 'test.conf', 'test2.conf']
 
     Attributes:
         includedir (list): The directory list that `krb5.conf` includes via
@@ -66,6 +68,7 @@ class AllKrb5Conf(LegacyItemAccess):
             via `include` directive
         module (list): The module list that `krb5.conf` specifed via 'module'
             directive
+        files (list): The list of configuration file names.
 
     """
     def __init__(self, krb5configs):
@@ -74,8 +77,10 @@ class AllKrb5Conf(LegacyItemAccess):
         self.includedir = []
         self.include = []
         self.module = []
+        self.files = []
 
         for krb5_parser in krb5configs:
+            self.files.append(krb5_parser.file_name)
             if krb5_parser.file_path == "/etc/krb5.conf":
                 main_data = krb5_parser.data
                 self.includedir = krb5_parser.includedir
