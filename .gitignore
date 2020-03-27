@@ -49,3 +49,4 @@ share/
 .python*
 .pytest_cache
 .vscode
+insights/filters.yaml
