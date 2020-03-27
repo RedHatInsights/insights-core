@@ -54,10 +54,16 @@ public (active)
   ports:
   protocols:
   masquerade: no
-  forward-ports:
+  forward-ports: port=80:proto=tcp:toport=12345:toaddr=
+        port=81:proto=tcp:toport=1234:toaddr=
+        port=83:proto=tcp:toport=456:toaddr=10.72.47.45
   source-ports:
   icmp-blocks:
   rich rules:
+        rule family="ipv4" source address="10.0.0.0/24" destination address="192.168.0.10/32" port port="8080-8090" protocol="tcp" accept
+        rule family="ipv4" source address="10.0.0.0/24" destination address="192.168.0.10/32" port port="443" protocol="tcp" reject
+        rule family="ipv4" source address="192.168.0.10/24" reject
+        rule family="ipv6" source address="1:2:3:4:6::" forward-port port="4011" protocol="tcp" to-port="4012" to-addr="1::2:3:4:7"
 
 
 trusted
@@ -112,8 +118,17 @@ def test_empty_content():
 def test_firewall_info():
     zones = FirewallCmdListALLZones(context_wrap(FIREWALL_LIST_ZONES_3))
     assert 'trusted' not in zones.active_zones
-    assert zones.zones['public']['services'] == 'dhcpv6-client ssh'
-    assert zones.zones['public']['icmp-block-inversion'] == 'no'
-    assert zones.zones['public']['rich rules'] == ''
-    assert zones.zones['trusted']['services'] == ''
-    assert zones.zones['trusted']['icmp-block-inversion'] == 'yes'
+    assert zones.zones['public']['services'] == ['dhcpv6-client ssh']
+    assert zones.zones['public']['icmp-block-inversion'] == ['no']
+    assert zones.zones['trusted']['services'] == []
+    assert zones.zones['trusted']['icmp-block-inversion'] == ['yes']
+    public_zone_names = ['target', 'icmp-block-inversion', 'interfaces', 'sources', 'services',
+                         'ports', 'protocols', 'masquerade', 'forward-ports', 'source-ports',
+                         'icmp-blocks', 'rich rules']
+    assert all(key in public_zone_names for key in zones.zones['public'])
+    assert 'port=80:proto=tcp:toport=12345:toaddr=' in zones.zones['public']['forward-ports']
+    assert 'port=83:proto=tcp:toport=456:toaddr=10.72.47.45' in zones.zones['public']['forward-ports']
+    assert len(zones.zones['public']['forward-ports']) == 3
+    assert len(zones.zones['public']['rich rules']) == 4
+    assert 'rule family="ipv4" source address="10.0.0.0/24" destination address="192.168.0.10/32" port port="8080-8090" protocol="tcp" accept' in zones.zones['public']['rich rules']
+    assert 'rule family="ipv4" source address="192.168.0.10/24" reject' in zones.zones['public']['rich rules']
