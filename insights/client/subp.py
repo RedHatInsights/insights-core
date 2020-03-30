@@ -1,17 +1,18 @@
 #!/usr/bin/python
 import subprocess
-import collections
-
-ReturnTuple = collections.namedtuple('ReturnTuple',
-                                     ['return_code', 'stdout', 'stderr'])
 
 
-def subp(cmd):
+def call(cmd, keep_rc=True, env=None):
     """
     Run a command as a subprocess.
     Return a triple of return code, standard out, standard err.
     """
+    cmd = shlex.split(cmd)
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
-    out, err = proc.communicate()
-    return ReturnTuple(proc.returncode, stdout=out, stderr=err)
+                            stderr=subprocess.STDOUT,
+                            env=env)
+    stdout, stderr = proc.communicate()
+    if keep_rc:
+        return (proc.returncode, stdout.decode('utf-8', 'ignore'))
+    else:
+        return stdout.decode('utf-8', 'ignore')

@@ -60,6 +60,27 @@ if os.environ.get('INSIGHTS_DEBUG_HTTP'):
     requests_log.propagate = True
 
 
+class UnregisteredException(Exception):
+    """
+    Raised on HTTP 412 status
+    """
+    pass
+
+
+class PayloadTooLargeException(Exception):
+    """
+    Raised on HTTP 413 status
+    """
+    pass
+
+
+class InvalidContentTypeException(Exception):
+    """
+    Raised on HTTP 415 status
+    """
+    pass
+
+
 class InsightsConnection(object):
 
     """
@@ -167,6 +188,60 @@ class InsightsConnection(object):
                 connection = conns[conn]
                 connection.proxy_headers = auth_map
         return session
+
+    def _http_request(self, req, url, method, **kwargs):
+        '''
+        Perform an HTTP request, net logging, and error handling
+
+        Parameters
+            req     - request callback from the session object, e.g. session.get
+            url     - URL to perform the request against
+            method  - HTTP method, used for logging
+            kwargs  - Rest of the args to pass to the request function
+        Returns
+            HTTP response object on completion
+            None on failure to connect
+        Side effects
+            Calls handle_fail_rcs to handle messaging and exceptions for failure codes
+        '''
+        try:
+            logger.log(NETWORK, "%s %s", method, url)
+            res = req(url, timeout=self.config.http_timeout, **kwargs)
+            logger.log(NETWORK, "HTTP Status Code: %d", res.status_code)
+            logger.log(NETWORK, "HTTP Status Text: %s", res.reason)
+            logger.log(NETWORK, "HTTP Response Text: %s", res.text)
+            res.raise_for_status()
+            return res
+        except requests.Timeout as e:
+            logger.error(e)
+            logger.error('Connection timed out.')
+            return None
+        except requests.ConnectionError as e:
+            logger.error(e)
+            logger.error('The Insights API could not be reached.')
+            return None
+        except requests.exceptions.HTTPError as e:
+            logger.error(e)
+            self.handle_fail_rcs(res)
+            # python requests are falsy for failure codes, so this will work
+            #   for both true/false checks and cases when attributes need
+            #   to be accessed
+            return res
+
+    def get(self, url, **kwargs):
+        return self._http_request(self.session.get, url, 'GET', **kwargs)
+
+    def post(self, url, **kwargs):
+        return self._http_request(self.session.post, url, 'POST', **kwargs)
+
+    def put(self, url, **kwargs):
+        return self._http_request(self.session.put, url, 'PUT', **kwargs)
+
+    def patch(self, url, **kwargs):
+        return self._http_request(self.session.patch, url, 'PATCH', **kwargs)
+
+    def delete(self, url, **kwargs):
+        return self._http_request(self.session.delete, url, 'DELETE', **kwargs)
 
     @property
     def user_agent(self):
@@ -304,167 +379,152 @@ class InsightsConnection(object):
         self.proxies = proxies
         self.proxy_auth = proxy_auth
 
+    # -LEGACY-
     def _legacy_test_urls(self, url, method):
         """
-        Actually test the url
+        Send a request to test a URL (legacy version)
+
+        Parameters
+            url     - URL to send a test request to
+            method  - HTTP method to use
+
+        Returns
+            True on success
+            False on failure
         """
         # tell the api we're just testing the URL
         test_flag = {'test': 'test'}
         url = urlparse(url)
-        test_url = url.scheme + "://" + url.netloc
-        last_ex = None
-        paths = (url.path + '/', '', '/r', '/r/insights')
-        for ext in paths:
-            try:
-                logger.log(NETWORK, "Testing: %s", test_url + ext)
-                if method is "POST":
-                    test_req = self.session.post(
-                        test_url + ext, timeout=self.config.http_timeout, data=test_flag)
-                elif method is "GET":
-                    test_req = self.session.get(test_url + ext, timeout=self.config.http_timeout)
-                logger.log(NETWORK, "HTTP Status Code: %d", test_req.status_code)
-                logger.log(NETWORK, "HTTP Status Text: %s", test_req.reason)
-                logger.log(NETWORK, "HTTP Response Text: %s", test_req.text)
-                # Strata returns 405 on a GET sometimes, this isn't a big deal
-                if test_req.status_code in (200, 201):
-                    logger.info(
-                        "Successfully connected to: %s", test_url + ext)
-                    return True
-                else:
-                    logger.info("Connection failed")
-                    return False
-            except requests.ConnectionError as exc:
-                last_ex = exc
-                logger.error(
-                    "Could not successfully connect to: %s", test_url + ext)
-                print(exc)
-        if last_ex:
-            raise last_ex
+        test_url = url.scheme + "://" + url.netloc + url.path
+        logger.log(NETWORK, "Testing: %s", test_url)
+        if method is "POST":
+            test_req = self.post(test_url, data=test_flag)
+        elif method is "GET":
+            test_req = self.get(test_url)
+        if not test_req:
+            logger.error("Could not successfully connect to: %s", test_url)
+            return False
+        logger.info("Successfully connected to: %s", test_url)
+        return True
 
     def _test_urls(self, url, method):
         '''
-        Test a URL
+        Send a request to test a URL
+
+        Parameters
+            url     - URL to send a test request to
+            method  - HTTP method to use
+
+        Returns
+            True on success
+            False on failure
         '''
         if self.config.legacy_upload:
             return self._legacy_test_urls(url, method)
-        try:
-            logger.log(NETWORK, 'Testing %s', url)
-            if method is 'POST':
-                test_tar = TemporaryFile(mode='rb', suffix='.tar.gz')
-                test_files = {
-                    'file': ('test.tar.gz', test_tar, 'application/vnd.redhat.advisor.collection+tgz'),
-                    'metadata': '{\"test\": \"test\"}'
-                }
-                test_req = self.session.post(url, timeout=self.config.http_timeout, files=test_files)
-            elif method is "GET":
-                    test_req = self.session.get(url, timeout=self.config.http_timeout)
-            logger.log(NETWORK, "HTTP Status Code: %d", test_req.status_code)
-            logger.log(NETWORK, "HTTP Status Text: %s", test_req.reason)
-            logger.log(NETWORK, "HTTP Response Text: %s", test_req.text)
-            if test_req.status_code in (200, 201, 202):
-                logger.info(
-                    "Successfully connected to: %s", url)
-                return True
-            else:
-                logger.info("Connection failed")
-                return False
-        except requests.ConnectionError as exc:
-            last_ex = exc
-            logger.error(
-                "Could not successfully connect to: %s", url)
-            print(exc)
-        if last_ex:
-            raise last_ex
+        logger.log(NETWORK, 'Testing %s', url)
+        if method is 'POST':
+            test_tar = TemporaryFile(mode='rb', suffix='.tar.gz')
+            test_files = {
+                'file': ('test.tar.gz', test_tar, 'application/vnd.redhat.advisor.collection+tgz'),
+                'metadata': '{\"test\": \"test\"}'
+            }
+            test_req = self.post(url, files=test_files)
+        elif method is "GET":
+            test_req = self.get(url)
+        if not test_req:
+            logger.error("Could not successfully connect to: %s", url)
+            return False
+        logger.info("Successfully connected to: %s", url)
+        return True
 
-    def test_connection(self, rc=0):
+    def test_connection(self):
         """
-        Test connection to Red Hat
+        Test connection to Red Hat Insights URLs
+
+        Returns
+            True on success
+            False on failure
         """
         logger.debug("Proxy config: %s", self.proxies)
-        try:
-            logger.info("=== Begin Upload URL Connection Test ===")
-            upload_success = self._test_urls(self.upload_url, "POST")
-            logger.info("=== End Upload URL Connection Test: %s ===\n",
-                        "SUCCESS" if upload_success else "FAILURE")
-            logger.info("=== Begin API URL Connection Test ===")
-            if self.config.legacy_upload:
-                api_success = self._test_urls(self.base_url, "GET")
-            else:
-                api_success = self._test_urls(self.base_url + '/apicast-tests/ping', 'GET')
-            logger.info("=== End API URL Connection Test: %s ===\n",
-                        "SUCCESS" if api_success else "FAILURE")
-            if upload_success and api_success:
-                logger.info("Connectivity tests completed successfully")
-                logger.info("See %s for more details.", self.config.logging_file)
-            else:
-                logger.info("Connectivity tests completed with some errors")
-                logger.info("See %s for more details.", self.config.logging_file)
-                rc = 1
-        except requests.ConnectionError as exc:
-            print(exc)
-            logger.error('Connectivity test failed! '
-                         'Please check your network configuration')
-            logger.error('Additional information may be in'
-                         ' /var/log/' + APP_NAME + "/" + APP_NAME + ".log")
-            return 1
-        return rc
+        logger.info("=== Begin Upload URL Connection Test ===")
+        upload_success = self._test_urls(self.upload_url, "POST")
+        logger.info("=== End Upload URL Connection Test: %s ===\n",
+                    "SUCCESS" if upload_success else "FAILURE")
+        logger.info("=== Begin API URL Connection Test ===")
+        if self.config.legacy_upload:
+            api_success = self._test_urls(self.base_url, "GET")
+        else:
+            api_success = self._test_urls(self.base_url + '/apicast-tests/ping', 'GET')
+        logger.info("=== End API URL Connection Test: %s ===\n",
+                    "SUCCESS" if api_success else "FAILURE")
+        if upload_success and api_success:
+            logger.info("Connectivity tests completed successfully")
+            logger.info("See %s for more details.", self.config.logging_file)
+            return True
+        else:
+            logger.info("Connectivity tests completed with some errors")
+            logger.info("See %s for more details.", self.config.logging_file)
+            return False
 
     def handle_fail_rcs(self, req):
         """
-        Bail out if we get a 401 and leave a message
+        Handle HTTP failure codes from the API and log debug information.
+
+        Parameters:
+            req - an HTTP request object
+
+        Returns None
+
+        Side effects
+            Raises exceptions on 413, 415
         """
 
         # attempt to read the HTTP response JSON message
+        # legacy, may be removed
         try:
             logger.log(NETWORK, "HTTP Response Message: %s", req.json()["message"])
-        except:
-            logger.debug("No HTTP Response message present.")
+        except (ValueError, LookupError) as e:
+            logger.log(NETWORK, "No HTTP Response message present.")
 
-        # handle specific status codes
-        if req.status_code >= 400:
-            logger.debug("Debug Information:\nHTTP Status Code: %s",
-                        req.status_code)
-            logger.debug("HTTP Status Text: %s", req.reason)
-            if req.status_code == 401:
-                logger.error("Authorization Required.")
-                logger.error("Please ensure correct credentials "
-                             "in " + constants.default_conf_file)
-                logger.log(NETWORK, "HTTP Response Text: %s", req.text)
-            if req.status_code == 402:
-                # failed registration because of entitlement limit hit
-                logger.debug('Registration failed by 402 error.')
-                try:
-                    logger.error(req.json()["message"])
-                except LookupError:
-                    logger.error("Got 402 but no message")
-                    logger.log(NETWORK, "HTTP Response Text: %s", req.text)
-                except:
-                    logger.error("Got 402 but no message")
-                    logger.log(NETWORK, "HTTP Response Text: %s", req.text)
-            if req.status_code == 403 and self.auto_config:
-                # Insights disabled in satellite
-                rhsm_hostname = urlparse(self.base_url).hostname
-                if (rhsm_hostname != 'subscription.rhn.redhat.com' and
-                   rhsm_hostname != 'subscription.rhsm.redhat.com'):
-                    logger.error('Please enable Insights on Satellite server '
-                                 '%s to continue.', rhsm_hostname)
-            if req.status_code == 412:
-                try:
-                    unreg_date = req.json()["unregistered_at"]
-                    logger.error(req.json()["message"])
-                    write_unregistered_file(unreg_date)
-                except LookupError:
-                    unreg_date = "412, but no unreg_date or message"
-                    logger.log(NETWORK, "HTTP Response Text: %s", req.text)
-                except:
-                    unreg_date = "412, but no unreg_date or message"
-                    logger.log(NETWORK, "HTTP Response Text: %s", req.text)
-            if req.status_code == 413:
-                logger.error('Archive is too large to upload.')
-            if req.status_code == 415:
-                logger.error('Invalid content-type.')
-            return True
-        return False
+        if req.status_code < requests.codes.bad:
+            # you shouldn't even be here
+            return
+        if req.status_code == requests.codes.unauthorized:
+            logger.error("Authorization Required.")
+            logger.error("Please ensure correct credentials "
+                         "in " + constants.default_conf_file)
+        if req.status_code == requests.codes.payment:
+            # failed registration because of entitlement limit hit
+            logger.debug('Registration failed by 402 error.')
+            try:
+                logger.error(req.json()["message"])
+            except (ValueError, LookupError) as e:
+                logger.error("Got 402 but no message")
+                logger.error("Error details: %s", str(e))
+        if req.status_code == requests.codes.forbidden and self.auto_config:
+            # Insights disabled in satellite
+            rhsm_hostname = urlparse(self.base_url).hostname
+            if (rhsm_hostname != 'subscription.rhn.redhat.com' and
+               rhsm_hostname != 'subscription.rhsm.redhat.com'):
+                logger.error('Please enable Insights on Satellite server '
+                             '%s to continue.', rhsm_hostname)
+        if req.status_code == requests.codes.precondition_failed:
+            try:
+                unreg_date = req.json()["unregistered_at"]
+                logger.error(req.json()["message"])
+                write_unregistered_file(unreg_date)
+            except LookupError:
+                unreg_date = "412, but no unreg_date or message"
+            logger.error('System is unregistered. Run insights-client --register to register this system.')
+            raise UnregisteredException
+        if req.status_code == requests.codes.request_entity_too_large:
+            logger.error('Archive is too large to upload.')
+            # 413 is a hard stop for uploads, so raise an exception
+            raise PayloadTooLargeException
+        if req.status_code == requests.codes.unsupported_media_type:
+            logger.error('Invalid content-type.')
+            # 415 is a hard stop for uploads, so raise an exception
+            raise InvalidContentTypeException
 
     def get_satellite5_info(self, branch_info):
         """
@@ -507,11 +567,8 @@ class InsightsConnection(object):
 
         logger.debug(u'Obtaining branch information from %s',
                      self.branch_info_url)
-        logger.log(NETWORK, u'GET %s', self.branch_info_url)
-        response = self.session.get(self.branch_info_url,
-                                    timeout=self.config.http_timeout)
-        logger.log(NETWORK, u'GET branch_info status: %s', response.status_code)
-        if response.status_code != 200:
+        response = self.get(self.branch_info_url)
+        if not response:
             logger.debug("There was an error obtaining branch information.")
             logger.debug(u'Bad status from server: %s', response.status_code)
             logger.debug("Assuming default branch information %s" % constants.default_branch_info)
@@ -556,12 +613,9 @@ class InsightsConnection(object):
             data['display_name'] = self.config.display_name
         data = json.dumps(data)
         post_system_url = self.api_url + '/v1/systems'
-        logger.debug("POST System: %s", post_system_url)
-        logger.debug(data)
-        logger.log(NETWORK, "POST %s", post_system_url)
-        return self.session.post(post_system_url,
-                                 headers={'Content-Type': 'application/json'},
-                                 data=data)
+        return self.post(post_system_url,
+                         headers={'Content-Type': 'application/json'},
+                         data=data)
 
     # -LEGACY-
     def group_systems(self, group_name, systems):
@@ -577,38 +631,27 @@ class InsightsConnection(object):
         group_path = self.api_url + '/v1/groups'
         group_get_path = group_path + ('?display_name=%s' % quote(group_name))
 
-        logger.debug("GET group: %s", group_get_path)
-        logger.log(NETWORK, "GET %s", group_get_path)
-        get_group = self.session.get(group_get_path)
-        logger.debug("GET group status: %s", get_group.status_code)
+        get_group = self.get(group_get_path)
         if get_group.status_code == 200:
             api_group_id = get_group.json()['id']
 
         if get_group.status_code == 404:
             # Group does not exist, POST to create
-            logger.debug("POST group")
             data = json.dumps({'display_name': group_name})
-            logger.log(NETWORK, "POST", group_path)
-            post_group = self.session.post(group_path,
-                                           headers=headers,
-                                           data=data)
-            logger.debug("POST group status: %s", post_group.status_code)
-            logger.debug("POST Group: %s", post_group.json())
-            self.handle_fail_rcs(post_group)
+            post_group = self.post(group_path,
+                                   headers=headers,
+                                   data=data)
+            if not post_group:
+                return None
             api_group_id = post_group.json()['id']
 
-        logger.debug("PUT group")
         data = json.dumps(systems)
-        logger.log(NETWORK, "PUT %s", group_path + ('/%s/systems' % api_group_id))
-        put_group = self.session.put(group_path +
-                                     ('/%s/systems' % api_group_id),
-                                     headers=headers,
-                                     data=data)
-        logger.debug("PUT group status: %d", put_group.status_code)
-        logger.debug("PUT Group: %s", put_group.json())
+        put_group = self.put(group_path +
+                             ('/%s/systems' % api_group_id),
+                             headers=headers,
+                             data=data)
 
     # -LEGACY-
-    # Keeping this function around because it's not private and I don't know if anything else uses it
     def do_group(self):
         """
         Do grouping on register
@@ -624,13 +667,10 @@ class InsightsConnection(object):
         '''
         logger.debug('Checking registration status...')
         machine_id = generate_machine_id()
-        try:
-            url = self.api_url + '/v1/systems/' + machine_id
-            logger.log(NETWORK, "GET %s", url)
-            res = self.session.get(url, timeout=self.config.http_timeout)
-        except requests.ConnectionError:
+        url = self.api_url + '/v1/systems/' + machine_id
+        if not self.get(url):
             # can't connect, run connection test
-            logger.error('Connection timed out. Running connection test...')
+            logger.error('Running connection test...')
             self.test_connection()
             return False
         # had to do a quick bugfix changing this around,
@@ -666,21 +706,15 @@ class InsightsConnection(object):
             None    error connection or parsing response
         '''
         machine_id = generate_machine_id()
-        try:
-            # [circus music]
-            if self.config.legacy_upload:
-                url = self.base_url + '/platform/inventory/v1/hosts?insights_id=' + machine_id
-            else:
-                url = self.base_url + '/inventory/v1/hosts?insights_id=' + machine_id
-            logger.log(NETWORK, "GET %s", url)
-            res = self.session.get(url, timeout=self.config.http_timeout)
-        except (requests.ConnectionError, requests.Timeout) as e:
-            logger.error(e)
-            logger.error('The Insights API could not be reached.')
+        # [circus music]
+        if self.config.legacy_upload:
+            url = self.base_url + '/platform/inventory/v1/hosts?insights_id=' + machine_id
+        else:
+            url = self.base_url + '/inventory/v1/hosts?insights_id=' + machine_id
+        res = self.get(url)
+        if not res:
             return None
         try:
-            if (self.handle_fail_rcs(res)):
-                return None
             res_json = json.loads(res.content)
         except ValueError as e:
             logger.error(e)
@@ -707,6 +741,7 @@ class InsightsConnection(object):
         logger.debug('Checking registration status...')
         results = self._fetch_system_by_machine_id()
         if not results:
+            # False or None returned
             return results
 
         logger.debug('System found.')
@@ -720,18 +755,15 @@ class InsightsConnection(object):
         Unregister this system from the insights service
         """
         machine_id = generate_machine_id()
-        try:
-            logger.debug("Unregistering %s", machine_id)
-            url = self.api_url + "/v1/systems/" + machine_id
-            logger.log(NETWORK, "DELETE %s", url)
-            self.session.delete(url)
-            logger.info(
-                "Successfully unregistered from the Red Hat Insights Service")
-            return True
-        except requests.ConnectionError as e:
+        logger.debug("Unregistering %s", machine_id)
+        url = self.api_url + "/v1/systems/" + machine_id
+        if not self.delete(url):
             logger.debug(e)
             logger.error("Could not unregister this system")
             return False
+        logger.info(
+            "Successfully unregistered from the Red Hat Insights Service")
+        return True
 
     def unregister(self):
         """
@@ -740,20 +772,17 @@ class InsightsConnection(object):
         if self.config.legacy_upload:
             return self._legacy_unregister()
 
+        # TODO: cache the inventory ID from the initial registration check
+        #   so we don't have to get it again here
         results = self._fetch_system_by_machine_id()
-        try:
-            logger.debug("Unregistering host...")
-            url = self.api_url + "/inventory/v1/hosts/" + results[0]['id']
-            logger.log(NETWORK, "DELETE %s", url)
-            response = self.session.delete(url)
-            response.raise_for_status()
-            logger.info(
-                "Successfully unregistered from the Red Hat Insights Service")
-            return True
-        except (requests.ConnectionError, requests.Timeout, requests.HTTPError) as e:
-            logger.debug(e)
+        logger.debug("Unregistering host...")
+        url = self.api_url + "/inventory/v1/hosts/" + results[0]['id']
+        if not self.delete(url):
             logger.error("Could not unregister this system")
             return False
+        logger.info(
+            "Successfully unregistered from the Red Hat Insights Service")
+        return True
 
     # -LEGACY-
     def register(self):
@@ -764,13 +793,12 @@ class InsightsConnection(object):
         # This will undo a blacklist
         logger.debug("API: Create system")
         system = self.create_system(new_machine_id=False)
-        if system is False:
+        if system is None:
             return ('Could not reach the Insights service to register.', '', '', '')
 
         # If we get a 409, we know we need to generate a new machine-id
         if system.status_code == 409:
             system = self.create_system(new_machine_id=True)
-        self.handle_fail_rcs(system)
 
         logger.debug("System: %s", system.json())
 
@@ -801,9 +829,16 @@ class InsightsConnection(object):
             return (message, client_hostname, "None", "")
 
     # -LEGACY-
-    def _legacy_upload_archive(self, data_collected, duration):
+    def _legacy_upload_archive(self, data_collected, duration=None):
         '''
-        Do an HTTPS upload of the archive
+        Do an HTTPS upload of the archive (legacy version)
+
+        Parameters
+            data_collected  - Filename of the archive
+            duration        - Time in seconds it took for collection to run
+        Returns
+            Request object on success
+            None on failure
         '''
         file_name = os.path.basename(data_collected)
         try:
@@ -821,31 +856,60 @@ class InsightsConnection(object):
             'file': (file_name, open(data_collected, 'rb'), mime_type)}
 
         upload_url = self.upload_url + '/' + generate_machine_id()
-
         logger.debug("Uploading %s to %s", data_collected, upload_url)
-
         headers = {'x-rh-collection-time': str(duration)}
-        logger.log(NETWORK, "POST %s", upload_url)
-        upload = self.session.post(upload_url, files=files, headers=headers)
 
-        logger.log(NETWORK, "Upload status: %s %s %s",
-                     upload.status_code, upload.reason, upload.text)
-        if upload.status_code in (200, 201):
+        for tries in range(config.retries):
+            try:
+                upload = self.session.post(upload_url, files=files, headers=headers)
+            except (UnregisteredException, PayloadTooLargeException):
+                raise RuntimeError('Upload failed.')
+
+            if not upload:
+                logger.error("Upload attempt %d of %d failed.",
+                             tries + 1, self.config.retries)
+                if tries + 1 != self.config.retries:
+                    logger.info("Waiting %d seconds then retrying...",
+                                constants.sleep_time)
+                    time.sleep(constants.sleep_time)
+                    continue
+                else:
+                    logger.error("All attempts to upload have failed.")
+                    logger.error("Please see %s for additional information.",
+                                 self.config.logging_file)
+                    return None
+
+            # Write to last upload file
+            with open(constants.last_upload_results_file, 'w') as handler:
+                if six.PY3:
+                    handler.write(upload.text)
+                else:
+                    handler.write(upload.text.encode('utf-8'))
+            write_to_disk(constants.lastupload_file)
+
             the_json = json.loads(upload.text)
-        else:
-            logger.error("Upload archive failed with status code  %s", upload.status_code)
+
+            try:
+                account_number = the_json["upload"]["account_number"]
+            except:
+                account_number = None
+
+            msg_name = determine_hostname(self.config.display_name)
+            if account_number:
+                logger.info("Successfully uploaded report from %s to account %s.",
+                            msg_name, account_number)
+            else:
+                logger.info("Successfully uploaded report from %s.",
+                            msg_name)
+
+            logger.debug("Upload duration: %s", upload.elapsed)
             return upload
-        try:
-            self.config.account_number = the_json["upload"]["account_number"]
-        except:
-            self.config.account_number = None
-        logger.debug("Upload duration: %s", upload.elapsed)
-        return upload
 
     def upload_archive(self, data_collected, content_type, duration=None):
         """
         Do an HTTPS Upload of the archive
         """
+        logger.info('Uploading Insights data.')
         if self.config.legacy_upload:
             return self._legacy_upload_archive(data_collected, duration)
         file_name = os.path.basename(data_collected)
@@ -871,15 +935,31 @@ class InsightsConnection(object):
         }
         logger.debug("Uploading %s to %s", data_collected, upload_url)
 
-        logger.log(NETWORK, "POST %s", upload_url)
-        upload = self.session.post(upload_url, files=files, headers={})
+        for tries in range(self.config.retries):
+            try:
+                upload = self.post(upload_url, files=files, headers={})
+            except (PayloadTooLargeException, InvalidContentTypeException):
+                raise RuntimeError('Upload failed.')
 
-        logger.log(NETWORK, "Upload status: %s %s %s",
-                     upload.status_code, upload.reason, upload.text)
-        logger.debug('Request ID: %s', upload.headers.get('x-rh-insights-request-id', None))
-        if upload.status_code in (200, 202):
-            # 202 from platform, no json response
+            if not upload:
+                logger.error("Upload attempt %d of %d failed.",
+                             tries + 1, self.config.retries)
+                if tries + 1 != self.config.retries:
+                    logger.info("Waiting %d seconds then retrying...",
+                                constants.sleep_time)
+                    time.sleep(constants.sleep_time)
+                    continue
+                else:
+                    logger.error("All attempts to upload have failed.")
+                    logger.error("Please see %s for additional information.",
+                                 self.config.logging_file)
+                    return None
+
+            logger.debug('Request ID: %s', upload.headers.get('x-rh-insights-request-id', None))
             logger.debug(upload.text)
+
+            msg_name = determine_hostname(self.config.display_name)
+            logger.info("Successfully uploaded report for %s.", msg_name)            
             # upload = registration on platform
             try:
                 write_registered_file()
@@ -889,72 +969,70 @@ class InsightsConnection(object):
                     pass
                 else:
                     logger.error('Could not update local registration record: %s', str(e))
-        else:
-            logger.debug(
-                "Upload archive failed with status code %s",
-                upload.status_code)
+
+            logger.debug("Upload duration: %s", upload.elapsed)
             return upload
-        logger.debug("Upload duration: %s", upload.elapsed)
-        return upload
 
     # -LEGACY-
     def _legacy_set_display_name(self, display_name):
+        '''
+        Set display name of a system independently of upload (legacy version)
+
+        Parameters
+            display_name - display name to set for this system
+
+        Returns
+            True on success
+            False on failure
+        '''
         machine_id = generate_machine_id()
-        try:
-            url = self.api_url + '/v1/systems/' + machine_id
+        url = self.api_url + '/v1/systems/' + machine_id
+        res = self.session.get(url)
 
-            logger.log(NETWORK, "GET %s", url)
-            res = self.session.get(url, timeout=self.config.http_timeout)
-            old_display_name = json.loads(res.content).get('display_name', None)
-            if display_name == old_display_name:
-                logger.debug('Display name unchanged: %s', old_display_name)
-                return True
+        if not res:
+            logger.error('Could not fetch system profile.')
+            return False
 
-            logger.log(NETWORK, "PUT %s", url)
-            res = self.session.put(url,
-                                   timeout=self.config.http_timeout,
-                                   headers={'Content-Type': 'application/json'},
-                                   data=json.dumps(
-                                        {'display_name': display_name}))
-            if res.status_code == 200:
-                logger.info('System display name changed from %s to %s',
-                            old_display_name,
-                            display_name)
-                return True
-            elif res.status_code == 404:
+        old_display_name = json.loads(res.text).get('display_name', None)
+        if display_name == old_display_name:
+            logger.debug('Display name unchanged: %s', old_display_name)
+            return True
+
+        res = self.put(url,
+                       headers={'Content-Type': 'application/json'},
+                       data=json.dumps({'display_name': display_name}))
+
+        if not res:
+            logger.error('Unable to set display name.')
+            if res is not None and res.status_code == requests.codes.not_found:
                 logger.error('System not found. '
                              'Please run insights-client --register.')
-                return False
-            else:
-                logger.error('Unable to set display name: %s %s',
-                             res.status_code, res.text)
-                return False
-        except (requests.ConnectionError, requests.Timeout, ValueError) as e:
-            logger.error(e)
-            # can't connect, run connection test
-            return False
+
+        logger.info('System display name changed from %s to %s',
+                    old_display_name,
+                    display_name)
+        return True
 
     def set_display_name(self, display_name):
         '''
         Set display name of a system independently of upload.
+
+        Parameters
+            display_name - display name to set for this system
+
+        Returns
+            True on success
+            False on failure
         '''
         if self.config.legacy_upload:
             return self._legacy_set_display_name(display_name)
-
         system = self._fetch_system_by_machine_id()
         if not system:
-            return system
-        inventory_id = system[0]['id']
-
-        req_url = self.base_url + '/inventory/v1/hosts/' + inventory_id
-        try:
-            logger.log(NETWORK, "PATCH %s", req_url)
-            res = self.session.patch(req_url, json={'display_name': display_name})
-        except (requests.ConnectionError, requests.Timeout) as e:
-            logger.error(e)
-            logger.error('The Insights API could not be reached.')
+            logger.error('Could not fetch system profile.')
             return False
-        if (self.handle_fail_rcs(res)):
+        inventory_id = system[0]['id']
+        req_url = self.base_url + '/inventory/v1/hosts/' + inventory_id
+        if not self.patch(req_url, json={'display_name': display_name}):
             logger.error('Could not update display name.')
             return False
         logger.info('Display name updated to ' + display_name + '.')
@@ -962,8 +1040,15 @@ class InsightsConnection(object):
 
     def get_diagnosis(self, remediation_id=None):
         '''
-            Reach out to the platform and fetch a diagnosis.
-            Spirtual successor to --to-json from the old client.
+        Reach out to the platform and fetch a diagnosis.
+        Spirtual successor to --to-json from the old client.
+
+        Parameters
+            remediation_id - Optional.
+
+        Returns
+            Dict of returned data on success
+            None on failure
         '''
         # this uses machine id as identifier instead of inventory id
         diag_url = self.base_url + '/remediations/v1/diagnosis/' + generate_machine_id()
@@ -971,16 +1056,9 @@ class InsightsConnection(object):
         if remediation_id:
             # validate this?
             params['remediation'] = remediation_id
-        try:
-            logger.log(NETWORK, "GET %s", diag_url)
-            res = self.session.get(diag_url, params=params, timeout=self.config.http_timeout)
-        except (requests.ConnectionError, requests.Timeout) as e:
-            logger.error(e)
-            logger.error('The Insights API could not be reached.')
-            return False
-        if (self.handle_fail_rcs(res)):
-            logger.error('Unable to get diagnosis data: %s %s',
-                         res.status_code, res.text)
+        res = self.session.get(diag_url, params=params)
+        if not res:
+            logger.error('Unable to get diagnosis data.')
             return None
         return res.json()
 
@@ -999,8 +1077,7 @@ class InsightsConnection(object):
         if item is not None:
             headers["If-None-Match"] = item.etag
 
-        logger.log(NETWORK, "GET %s", url)
-        res = self.session.get(url, headers=headers)
+        res = self.get(url, headers=headers)
 
         if res.status_code in [requests.codes.OK, requests.codes.NOT_MODIFIED]:
             if res.status_code == requests.codes.OK:
@@ -1048,3 +1125,14 @@ class InsightsConnection(object):
             logger.debug("Wrote \"/var/lib/insights/insights-details.json\"")
 
         return json.loads(content)
+
+
+if __name__ == '__main__':
+    from insights.client import InsightsClient
+    from insights.client.config import InsightsConfig
+    conf = InsightsConfig(net_debug=False, legacy_upload=True).load_all()
+    InsightsClient(conf).set_up_logging()
+    c = InsightsConnection(conf)
+    c._init_session()
+    c.set_display_name('Toot')
+    # print(c._fetch_system_by_machine_id())

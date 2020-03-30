@@ -187,26 +187,20 @@ class InsightsUploadConf(object):
         logger.debug("Attemping to download collection rules from %s",
                      self.collection_rules_url)
 
-        logger.log(NETWORK, "GET %s", self.collection_rules_url)
-        try:
-            req = self.conn.session.get(
-                self.collection_rules_url, headers=({'accept': 'text/plain'}))
+        req = self.conn.get(
+            self.collection_rules_url, headers=({'accept': 'text/plain'}))
 
-            if req.status_code == 200:
-                logger.debug("Successfully downloaded collection rules")
-
-                json_response = NamedTemporaryFile()
-                json_response.write(req.text.encode('utf-8'))
-                json_response.file.flush()
-            else:
-                logger.error("ERROR: Could not download dynamic configuration")
-                logger.error("Debug Info: \nConf status: %s", req.status_code)
-                logger.error("Debug Info: \nConf message: %s", req.text)
-                return None
-        except requests.ConnectionError as e:
-            logger.error(
-                "ERROR: Could not download dynamic configuration: %s", e)
+        if not req:
+            logger.error("ERROR: Could not download dynamic configuration")
+            logger.error("Debug Info: \nConf status: %s", req.status_code)
+            logger.error("Debug Info: \nConf message: %s", req.text)
             return None
+
+        logger.debug("Successfully downloaded collection rules")
+
+        json_response = NamedTemporaryFile()
+        json_response.write(req.text.encode('utf-8'))
+        json_response.file.flush()
 
         if self.gpg:
             self.get_collection_rules_gpg(json_response)
@@ -224,16 +218,16 @@ class InsightsUploadConf(object):
                      self.collection_rules_url + ".asc")
 
         headers = ({'accept': 'text/plain'})
-        logger.log(NETWORK, "GET %s", self.collection_rules_url + '.asc')
-        config_sig = self.conn.session.get(self.collection_rules_url + '.asc',
-                                           headers=headers)
-        if config_sig.status_code == 200:
-            logger.debug("Successfully downloaded GPG signature")
-            return config_sig.text
-        else:
+        config_sig = self.conn.get(self.collection_rules_url + '.asc',
+                                   headers=headers)
+
+        if not config_sig:
             logger.error("ERROR: Download of GPG Signature failed!")
             logger.error("Sig status: %s", config_sig.status_code)
             return False
+
+        logger.debug("Successfully downloaded GPG signature")
+        return config_sig.text
 
     def get_collection_rules_gpg(self, collection_rules):
         """
