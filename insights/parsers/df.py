@@ -48,10 +48,10 @@ def parse_df_lines(df_content):
         in terms of inodes::
 
             - filesystem: Name of the filesystem
-            - total: total number of resources on the filesystem
-            - used: number of the resources used on the filesystem
-            - available: number of the resource available on the filesystem
-            - capacity: percentage of the resource used on the filesystem
+            - total (str): total number of resources on the filesystem
+            - used (str): number of the resources used on the filesystem
+            - available (str): number of the resource available on the filesystem
+            - capacity (str): percentage of the resource used on the filesystem
             - mounted_on: mount point of the filesystem
     """
     df_ls = {}
@@ -89,7 +89,8 @@ def parse_df_lines(df_content):
 
 
 class DiskFree(CommandParser):
-    """Class to provide methods used by all ``df`` command classes.
+    """
+    Class to provide methods used by all ``df`` command classes.
 
     Attributes:
         data (list of Record): List of ``Record`` objects for each line of command
@@ -99,6 +100,10 @@ class DiskFree(CommandParser):
             dictionary is keyed by the ``filesystem`` value of the Record.
         mounts (dict): Dictionary with each entry being a ``Record`` object
             corresponding to the ``mounted_on`` key.
+
+    Raises:
+        ParseException: When there are lines cannot be parsed or the
+            ``block size` cannot be recognized.
     """
     def __init__(self, context):
         super(DiskFree, self).__init__(context)
@@ -118,12 +123,45 @@ class DiskFree(CommandParser):
             yield row
 
     def parse_content(self, content):
+        def _digital_block_size(_block_size):
+            """
+            # man df
+            SIZE  may be (or may be an integer optionally followed by) one
+            of following: KB 1000, K 1024, MB 1000*1000, M 1024*1024, and so
+            on for G, T, P, E, Z, Y.
+            """
+            units = {
+                'B': 1,
+                'K': 1024,
+                'KB': 1000,
+                'M': 1024 * 1024,
+                'MB': 1000 * 1000,
+                'G': 1024 * 1024 * 1024,
+                'GB': 1000 * 1000 * 1000,
+                'T': 1024 * 1024 * 1024 * 1024,
+                'TB': 1000 * 1000 * 1000 * 1000,
+                'P': 1024 * 1024 * 1024 * 1024 * 1024,
+                'PB': 1000 * 1000 * 1000 * 1000 * 1000,
+                'E': 1024 * 1024 * 1024 * 1024 * 1024 * 1024,
+                'EB': 1000 * 1000 * 1000 * 1000 * 1000 * 1000,
+            }
+            suffix = _block_size[-2:].lstrip('0123456789')
+            if suffix == '':
+                # df -P --block-size=10
+                return int(_block_size)
+            suffix_up = suffix.upper()
+            if suffix_up in units:
+                return units[suffix_up]
+            raise ParseException("Unknown block size: '{0}'".format(suffix))
+
         bad_lines = ["no such file or directory"]
         content = [l for l in content if bad_lines[0] not in l.lower()]
+        self.block_size = 1024
         # Get the block_size when there is such column
         header = content[0]
         if 'blocks' in header:
-            self.block_size = [i.split('-')[0] for i in header.split() if 'blocks' in i][0]
+            block_size = [i.split('-')[0] for i in header.split() if 'blocks' in i][0]
+            self.block_size = _digital_block_size(block_size)
         self.data = parse_df_lines(content)
 
     @property
@@ -249,21 +287,25 @@ class DiskFree_ALP(DiskFree):
                 Available      available
                 Capacity       capacity
                 Mounted on     mounted_on
-        block_size (str): The unit of display values, '1024' by default.
+        block_size (int): The unit of display values, 1024 by default.
 
     Examples:
         >>> len(df_alP)
         20
         >>> len(df_alP.filesystem_names)
         16
-        >>> df_alP.block_size == '1024'
-        True
+        >>> df_alP.block_size
+        1024
         >>> df_alP.get_filesystem('/dev/sda2')[0].mounted_on == '/'
         True
         >>> '/V M T o o l s' in df_alP.mount_names
         True
-        >>> df_alP.get_mount('/boot').available == '852660'
-        True
+        >>> df_alP.get_mount('/boot').available
+        '852660'
+        >>> int(int(df_alP.get_mount('/boot').available) * df_alP.block_size / 1024)  # to KB
+        852660
+        >>> int(int(df_alP.get_mount('/boot').available) * df_alP.block_size / 1024 / 1024)  # to MB
+        832
         >>> [d.mounted_on for d in df_alP if 'sda' in d.filesystem] == ['/', '/boot']
         True
         >>> df_alP.data[0].filesystem == 'sysfs'
@@ -313,21 +355,25 @@ class DiskFree_AL(DiskFree):
                 Available      available
                 Use%           capacity
                 Mounted on     mounted_on
-        block_size (str): The unit of display values, '1K' by default.
+        block_size (int): The unit of display values, 1024 by default.
 
     Examples:
         >>> len(df_al)
         20
         >>> len(df_al.filesystem_names)
         16
-        >>> df_al.block_size == '1K'
-        True
+        >>> df_al.block_size
+        1024
         >>> df_al.get_filesystem('/dev/sda2')[0].mounted_on == '/'
         True
         >>> '/V M T o o l s' in df_al.mount_names
         True
-        >>> df_al.get_mount('/boot').available == '852660'
-        True
+        >>> df_al.get_mount('/boot').available
+        '852660'
+        >>> int(int(df_al.get_mount('/boot').available) * df_alP.block_size / 1024)  # to KB
+        852660
+        >>> int(int(df_al.get_mount('/boot').available) * df_alP.block_size / 1024 / 1024)  # to MB
+        832
         >>> [d.mounted_on for d in df_al if 'sda' in d.filesystem] == ['/', '/boot']
         True
         >>> df_al.data[0].filesystem == 'sysfs'
