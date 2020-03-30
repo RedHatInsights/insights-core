@@ -131,6 +131,7 @@ class DiskFree(CommandParser):
             on for G, T, P, E, Z, Y.
             """
             units = {
+                '': 1,
                 'B': 1,
                 'K': 1024,
                 'KB': 1000,
@@ -144,14 +145,15 @@ class DiskFree(CommandParser):
                 'PB': 1000 * 1000 * 1000 * 1000 * 1000,
                 'E': 1024 * 1024 * 1024 * 1024 * 1024 * 1024,
                 'EB': 1000 * 1000 * 1000 * 1000 * 1000 * 1000,
+                'Z': 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024,
+                'ZB': 1000 * 1000 * 1000 * 1000 * 1000 * 1000 * 1000,
+                'Y': 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024,
+                'YB': 1000 * 1000 * 1000 * 1000 * 1000 * 1000 * 1000 * 1000,
             }
             suffix = _block_size[-2:].lstrip('0123456789')
-            if suffix == '':
-                # df -P --block-size=10
-                return int(_block_size)
             suffix_up = suffix.upper()
             if suffix_up in units:
-                return units[suffix_up]
+                return units[suffix_up] * int(_block_size.rstrip('kKMGTPEZYB'))
             raise ParseException("Unknown block size: '{0}'".format(suffix))
 
         bad_lines = ["no such file or directory"]

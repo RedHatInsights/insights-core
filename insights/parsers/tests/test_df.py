@@ -221,6 +221,21 @@ def test_df_al_bad():
         df_list = df.DiskFree_AL(context_wrap(DF_AL_BAD_BS))
     assert 'Unknown block size' in str(exc)
 
+DF_AL_BS_2MB = """
+Filesystem     2MB-blocks  Used Available Use% Mounted on
+/dev/vda3           62031 49197      9680  84% /
+"""
+
+
+def test_df_al_2MB():
+    df_list = df.DiskFree_LI(context_wrap(DF_AL_BS_2MB))
+    root = df_list.get_mount('/')
+    assert root.filesystem == '/dev/vda3'
+    assert root.total == '62031'
+    assert df_list.raw_block_size == '2MB'
+    assert df_list.block_size == 2000000
+    assert int(root.total) * df_list.block_size == 124062000000  # To Bytes
+
 DF_LI_DOC = """
 Filesystem       Inodes IUsed    IFree IUse% Mounted on
 devtmpfs         242224   359   241865    1% /dev
