@@ -156,11 +156,12 @@ class DiskFree(CommandParser):
 
         bad_lines = ["no such file or directory"]
         content = [l for l in content if bad_lines[0] not in l.lower()]
-        self.block_size = 1024
+        self.block_size = self.raw_block_size = None
         # Get the block_size when there is such column
         header = content[0]
         if 'blocks' in header:
             block_size = [i.split('-')[0] for i in header.split() if 'blocks' in i][0]
+            self.raw_block_size = block_size
             self.block_size = _digital_block_size(block_size)
         self.data = parse_df_lines(content)
 
@@ -287,13 +288,16 @@ class DiskFree_ALP(DiskFree):
                 Available      available
                 Capacity       capacity
                 Mounted on     mounted_on
-        block_size (int): The unit of display values, 1024 by default.
+        raw_block_size (str): The unit of display values.
+        block_size (int): The unit of display values, which is converted to integer.
 
     Examples:
         >>> len(df_alP)
         20
         >>> len(df_alP.filesystem_names)
         16
+        >>> df_alP.raw_block_size
+        '1024'
         >>> df_alP.block_size
         1024
         >>> df_alP.get_filesystem('/dev/sda2')[0].mounted_on == '/'
@@ -355,25 +359,28 @@ class DiskFree_AL(DiskFree):
                 Available      available
                 Use%           capacity
                 Mounted on     mounted_on
-        block_size (int): The unit of display values, 1024 by default.
+        raw_block_size (str): The unit of display values.
+        block_size (int): The unit of display values, which is converted to integer.
 
     Examples:
         >>> len(df_al)
         20
         >>> len(df_al.filesystem_names)
         16
+        >>> df_al.raw_block_size
+        '1K'
         >>> df_al.block_size
         1024
         >>> df_al.get_filesystem('/dev/sda2')[0].mounted_on == '/'
         True
         >>> '/V M T o o l s' in df_al.mount_names
         True
-        >>> df_al.get_mount('/boot').available
-        '852660'
-        >>> int(int(df_al.get_mount('/boot').available) * df_alP.block_size / 1024)  # to KB
-        852660
-        >>> int(int(df_al.get_mount('/boot').available) * df_alP.block_size / 1024 / 1024)  # to MB
-        832
+        >>> df_al.get_mount('/').used
+        '2127172'
+        >>> int(int(df_al.get_mount('/').used) * df_alP.block_size / 1024)  # to KB
+        2127172
+        >>> int(int(df_al.get_mount('/').used) * df_alP.block_size / 1024 / 1024)  # to MB
+        2077
         >>> [d.mounted_on for d in df_al if 'sda' in d.filesystem] == ['/', '/boot']
         True
         >>> df_al.data[0].filesystem == 'sysfs'
