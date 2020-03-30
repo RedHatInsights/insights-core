@@ -103,7 +103,7 @@ class DiskFree(CommandParser):
 
     Raises:
         ParseException: When there are lines cannot be parsed or the
-            ``block size` cannot be recognized.
+            ``block size`` cannot be recognized.
     """
     def __init__(self, context):
         super(DiskFree, self).__init__(context)
