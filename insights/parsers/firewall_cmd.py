@@ -9,7 +9,7 @@ FirewallCmdListALLZones - command ``/usr/bin/firewall-cmd --list-all-zones``
 """
 
 from insights import parser, CommandParser
-from insights.parsers import SkipException, ParseException
+from insights.parsers import ParseException
 from insights.specs import Specs
 
 
@@ -65,7 +65,6 @@ class FirewallCmdListALLZones(CommandParser):
 
 
     Attributes:
-        active_zones (list): A list of the zone name that's active
         zones (dict): A dict of zone info
 
     Raises:
@@ -73,12 +72,16 @@ class FirewallCmdListALLZones(CommandParser):
         ParseException: Raised when the output is in invalid format
     """
 
+    def __init__(self, context, extra_bad_lines=None):
+        super(FirewallCmdListALLZones, self).__init__(context, ["firewalld is not running"])
+
+    @property
+    def active_zones(self):
+        """Return a list of active zone name"""
+        return [zone for zone in self.zones if 'attributes' in self.zones[zone] and 'active' in self.zones[zone]['attributes']]
+
     def parse_content(self, content):
-        error_line = "firewalld is not running"
-        if any(error_line in line.lower() for line in content):
-            raise SkipException("no content")
         self.zones = dict()
-        self.active_zones = []
         zone_line = True
         zone_name = ''
         zone_attr_index = -1
@@ -89,11 +92,11 @@ class FirewallCmdListALLZones(CommandParser):
                 continue
             if zone_line:
                 name_info = line.strip().split(None, 1)
-                if len(name_info) > 1 and 'active' in name_info[1]:
-                    self.active_zones.append(name_info[0])
                 zone_name = name_info[0]
-                zone_line = False
                 self.zones[zone_name] = {}
+                if len(name_info) > 1:
+                    self.zones[zone_name]['attributes'] = name_info[1][1:-1].split(',')
+                zone_line = False
                 zone_attr_index = -1
             else:
                 current_index = len(line) - len(line.strip())

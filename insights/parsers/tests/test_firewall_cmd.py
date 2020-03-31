@@ -3,7 +3,7 @@ import pytest
 from insights.parsers import firewall_cmd
 from insights.parsers.firewall_cmd import FirewallCmdListALLZones
 from insights.tests import context_wrap
-from insights.parsers import SkipException, ParseException
+from insights.parsers import ParseException
 from insights.core.plugins import ContentException
 
 FIREWALL_LIST_ZONES_1 = """
@@ -107,7 +107,7 @@ def test_docs():
 
 
 def test_empty_content():
-    with pytest.raises(SkipException):
+    with pytest.raises(ContentException):
         FirewallCmdListALLZones(context_wrap(FIREWALL_LIST_ZONES_1))
     with pytest.raises(ContentException):
         FirewallCmdListALLZones(context_wrap(FIREWALL_LIST_ZONES_2))
@@ -122,10 +122,10 @@ def test_firewall_info():
     assert zones.zones['public']['icmp-block-inversion'] == ['no']
     assert zones.zones['trusted']['services'] == []
     assert zones.zones['trusted']['icmp-block-inversion'] == ['yes']
-    public_zone_names = ['target', 'icmp-block-inversion', 'interfaces', 'sources', 'services',
+    zone_info = ['target', 'icmp-block-inversion', 'interfaces', 'sources', 'services',
                          'ports', 'protocols', 'masquerade', 'forward-ports', 'source-ports',
                          'icmp-blocks', 'rich rules']
-    assert all(key in public_zone_names for key in zones.zones['public'])
+    assert all(key in zones.zones['public'] for key in zone_info)
     assert 'port=80:proto=tcp:toport=12345:toaddr=' in zones.zones['public']['forward-ports']
     assert 'port=83:proto=tcp:toport=456:toaddr=10.72.47.45' in zones.zones['public']['forward-ports']
     assert len(zones.zones['public']['forward-ports']) == 3
