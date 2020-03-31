@@ -32,14 +32,14 @@ Examples:
     <class 'insights.parsers.hammer_compute_resource_list.HammerComputeResourceList'>
 """
 
-from insights import parser, CommandParser
-from insights.parsers import SkipException
-from insights.specs import Specs
 import json
+from insights import JSONParser, parser, CommandParser
+from insights.parsers import ParseException, SkipException
+from insights.specs import Specs
 
 
 @parser(Specs.hammer_compute_resource_list)
-class HammerComputeResourceList(CommandParser):
+class HammerComputeResourceList(CommandParser, JSONParser):
     """
     Parse the JSON output from the ``hammer --interactive 0 --output json compute-resource list`` command.
 
@@ -49,8 +49,10 @@ class HammerComputeResourceList(CommandParser):
     Attributes:
         data(list): A list of the parsed output returned by `hammer compute resource list`
     """
-
     def parse_content(self, content):
         if not content:
-            raise SkipException('No content or hammer auth failed.')
-        self.data = json.loads(''.join(content))
+            raise SkipException("No content or hammer auth failed.")
+        try:
+            self.data = json.loads(''.join(content))
+        except:
+            raise ParseException("Could not parse json.", content)
