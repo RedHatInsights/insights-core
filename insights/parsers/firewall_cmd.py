@@ -94,7 +94,7 @@ class FirewallCmdListALLZones(CommandParser):
                 zone_name = name_info[0]
                 self.zones[zone_name] = {}
                 if len(name_info) > 1:
-                    self.zones[zone_name]['_attributes'] = name_info[1][1:-1].split(',')
+                    self.zones[zone_name]['_attributes'] = [i.strip() for i in name_info[1].strip('()').split(',')]
                 zone_line = False
                 zone_attr_index = -1
             else:

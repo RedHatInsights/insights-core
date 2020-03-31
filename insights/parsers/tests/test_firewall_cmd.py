@@ -45,7 +45,7 @@ dmz
   rich rules:
 
 
-public (active)
+public (active, default)
   target: default
   icmp-block-inversion: no
   interfaces: eno1
@@ -130,5 +130,7 @@ def test_firewall_info():
     assert 'port=83:proto=tcp:toport=456:toaddr=10.72.47.45' in zones.zones['public']['forward-ports']
     assert len(zones.zones['public']['forward-ports']) == 3
     assert len(zones.zones['public']['rich rules']) == 4
+    assert 'active' in zones.zones['public']['_attributes']
+    assert 'default' in zones.zones['public']['_attributes']
     assert 'rule family="ipv4" source address="10.0.0.0/24" destination address="192.168.0.10/32" port port="8080-8090" protocol="tcp" accept' in zones.zones['public']['rich rules']
     assert 'rule family="ipv4" source address="192.168.0.10/24" reject' in zones.zones['public']['rich rules']
