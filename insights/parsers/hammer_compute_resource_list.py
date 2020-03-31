@@ -1,6 +1,6 @@
 """
 HammerComputeResourceList - command ``hammer --interactive 0 --output json compute-resource list``
-===================================================
+==================================================================================================
 
 This parser reads the compute resource list of a Satellite server using hammer in JSON format.
 It relies on the root user running the command and hammer to authenticate based on the hammer configuration file.
@@ -24,7 +24,7 @@ Sample output from the ``hammer --interactive 0 --output json compute-resource l
     "Name": "vmware67",
     "Provider": "VMware"
   }
-]
+    ]
 
 Examples:
 
