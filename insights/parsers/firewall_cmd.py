@@ -77,7 +77,7 @@ class FirewallCmdListALLZones(CommandParser):
     @property
     def active_zones(self):
         """Return a list of active zone name"""
-        return [zone for zone in self.zones if 'attributes' in self.zones[zone] and 'active' in self.zones[zone]['attributes']]
+        return [zone for zone, d in self.zones.items() if 'active' in d.get('_attributes', [])]
 
     def parse_content(self, content):
         self.zones = dict()
@@ -94,7 +94,7 @@ class FirewallCmdListALLZones(CommandParser):
                 zone_name = name_info[0]
                 self.zones[zone_name] = {}
                 if len(name_info) > 1:
-                    self.zones[zone_name]['attributes'] = name_info[1][1:-1].split(',')
+                    self.zones[zone_name]['_attributes'] = name_info[1][1:-1].split(',')
                 zone_line = False
                 zone_attr_index = -1
             else:
@@ -102,10 +102,9 @@ class FirewallCmdListALLZones(CommandParser):
                 if zone_attr_index == -1:
                     zone_attr_index = current_index
                 if current_index == zone_attr_index:
-                    attrs = line.split(':', 1)
+                    attrs = [i.strip() for i in line.split(':', 1)]
                     if len(attrs) == 2:
-                        zone_attr_name = attrs[0].strip()
-                        attr_value = attrs[1].strip()
+                        zone_attr_name, attr_value = attrs
                         if attr_value:
                             self.zones[zone_name][zone_attr_name] = [attr_value]
                         else:
