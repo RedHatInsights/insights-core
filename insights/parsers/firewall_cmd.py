@@ -68,7 +68,6 @@ class FirewallCmdListALLZones(CommandParser):
         zones (dict): A dict of zone info
 
     Raises:
-        SkipException: Raised when firewalld is not running
         ParseException: Raised when the output is in invalid format
     """
 
