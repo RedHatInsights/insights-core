@@ -62,6 +62,10 @@ class FirewallCmdListALLZones(CommandParser):
         True
         >>> 'ACCEPT' in zones.zones['trusted']['target']
         True
+        >>> zones.zones['public']['services']
+        ['dhcpv6-client ssh']
+        >>> 'port=83:proto=tcp:toport=456:toaddr=10.72.47.45' in zones.zones['public']['forward-ports']
+        True
 
 
     Attributes:
@@ -71,7 +75,7 @@ class FirewallCmdListALLZones(CommandParser):
         ParseException: Raised when the output is in invalid format
     """
 
-    def __init__(self, context, extra_bad_lines=None):
+    def __init__(self, context):
         super(FirewallCmdListALLZones, self).__init__(context, ["firewalld is not running"])
 
     @property
@@ -86,11 +90,12 @@ class FirewallCmdListALLZones(CommandParser):
         zone_attr_index = -1
         zone_attr_name = ''
         for line in content:
-            if not line.strip():
+            line_strip = line.strip()
+            if not line_strip:
                 zone_line = True
                 continue
             if zone_line:
-                name_info = line.strip().split(None, 1)
+                name_info = line_strip.split(None, 1)
                 zone_name = name_info[0]
                 self.zones[zone_name] = {}
                 if len(name_info) > 1:
@@ -98,18 +103,14 @@ class FirewallCmdListALLZones(CommandParser):
                 zone_line = False
                 zone_attr_index = -1
             else:
-                current_index = len(line) - len(line.strip())
-                if zone_attr_index == -1:
-                    zone_attr_index = current_index
+                current_index = len(line.rstrip()) - len(line_strip)
+                zone_attr_index = current_index if zone_attr_index == -1 else zone_attr_index
                 if current_index == zone_attr_index:
                     attrs = [i.strip() for i in line.split(':', 1)]
-                    if len(attrs) == 2:
-                        zone_attr_name, attr_value = attrs
-                        if attr_value:
-                            self.zones[zone_name][zone_attr_name] = [attr_value]
-                        else:
-                            self.zones[zone_name][zone_attr_name] = []
-                    else:
+                    if len(attrs) != 2:
                         raise ParseException('Invalid format')
+                    zone_attr_name, attr_value = attrs
+                    attr_value = [attr_value] if attr_value else []
+                    self.zones[zone_name][zone_attr_name] = attr_value
                 else:
-                    self.zones[zone_name][zone_attr_name].append(line.strip())
+                    self.zones[zone_name][zone_attr_name].append(line_strip)
