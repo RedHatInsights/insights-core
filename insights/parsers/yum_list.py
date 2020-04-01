@@ -173,10 +173,10 @@ class YumListInstalled(YumListBase):
         >>> type(installed_rpms.get_max('GeoIP'))
         <class 'insights.parsers.yum_list.YumListRpm'>
         >>> rpm1 = installed_rpms.get_max('GeoIP')
-        >>> rpm1.package
-        'GeoIP-1.5.0-11.el7'
-        >>> rpm1.nvr
-        'GeoIP-1.5.0-11.el7'
+        >>> rpm1.package == 'GeoIP-1.5.0-11.el7'
+        True
+        >>> rpm1.nvr == 'GeoIP-1.5.0-11.el7'
+        True
         >>> rpm1.source
         >>> rpm1.name
         'GeoIP'
