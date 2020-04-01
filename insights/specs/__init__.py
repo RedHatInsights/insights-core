@@ -157,6 +157,7 @@ class Specs(SpecSet):
     fdisk_l = RegistryPoint()
     fdisk_l_sos = RegistryPoint(multi_output=True)
     findmnt_lo_propagation = RegistryPoint()
+    firewall_cmd_list_all_zones = RegistryPoint()
     firewalld_conf = RegistryPoint(filterable=True)
     foreman_production_log = RegistryPoint(filterable=True)
     foreman_proxy_conf = RegistryPoint()
