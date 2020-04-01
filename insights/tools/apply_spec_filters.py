@@ -10,6 +10,7 @@ from collections import OrderedDict
 from insights import dr, get_filters
 from insights.core.spec_factory import RegistryPoint
 from insights.specs import Specs
+from insights.core import filters
 
 if len(sys.argv) < 3:
     print("Provide uploader.json location and packages to load")
@@ -28,9 +29,11 @@ dr.load_components("insights.specs.default")
 dr.load_components("insights.parsers")
 dr.load_components("insights.combiners")
 
+
 for package in sys.argv[2:]:
     dr.load_components(package)
 
+filters.dump()
 specs = sorted(vars(Specs))
 filters = {}
 for spec in specs:
