@@ -1,48 +1,51 @@
 """
-YumListInstalled - Command ``yum list installed``
-=================================================
+Yum List Command
+================
 
-.. warning::
-    This module is deprecated, please import the parsers in
-    :py:mod:`insights.parsers.yum_list` instead.
+The parsers contains in this module are:
+
+YumListInstalled - Command ``yum list installed``
+-------------------------------------------------
+
 """
 from collections import defaultdict
 
 from insights import CommandParser, parser, SkipComponent
 from insights.specs import Specs
 from insights.parsers.installed_rpms import InstalledRpm, RpmList
-from insights.util import deprecated
 
 
-class YumInstalledRpm(InstalledRpm):
+class YumListRpm(InstalledRpm):
     """
     The same as :py:class:`insights.parsers.installed_rpms.InstalledRpm` but
     with an additional ``.repo`` attribute.
     """
     def __init__(self, data):
-        deprecated(YumInstalledRpm, "Import YumListRpm from insights.parsers.yum_list instead")
         self.repo = None
         """str: yum / dnf repository name, if available."""
 
-        super(YumInstalledRpm, self).__init__(data)
+        super(YumListRpm, self).__init__(data)
 
 
-@parser(Specs.yum_list_installed)
-class YumListInstalled(CommandParser, RpmList):
+class YumListBase(CommandParser, RpmList):
     """
-    ``YumListInstalled`` shares the :py:class:`insights.parsers.installed_rpms.RpmList` interface with
-    :py:class:`insights.parsers.installed_rpms.InstalledRpms`. The only difference is ``YumListInstalled``
-    takes the output of ``yum list installed`` as its source data, and the
-    :py:class:`YumInstalledRpm` instances it produces contain a ``.repo``
-    attribute.
+    Base class for the ``yum list [installed|available]`` commands.  Each line
+    is parsed and stored in a ``YumListRpm`` object.
+
+    .. note::
+
+        ``YumListBase`` shares the :py:class:`insights.parsers.installed_rpms.RpmList`
+        interface with :py:class:`insights.parsers.installed_rpms.InstalledRpms`.
+        The only difference is ``YumListBase`` takes the output of ``yum list`` as
+        its source data, and the :py:class:`YumListRpm` instances it produces
+        contain a ``.repo`` attribute.
     """
 
     def __init__(self, context):
-        deprecated(YumListInstalled, "Import YumListBase from insights.parsers.yum_list instead")
         self.expired_cache = False
         """bool: Indicates if the yum repo cache is expired."""
 
-        super(YumListInstalled, self).__init__(context)
+        super(YumListBase, self).__init__(context)
 
     def _find_start(self, content):
         for i, c in enumerate(content):
@@ -86,7 +89,7 @@ class YumListInstalled(CommandParser, RpmList):
 
     def _make_record(self, package, ver_rel, repo):
         """
-        Given the fields of a ``yum list installed`` row, return a dictionary
+        Given the fields of a ``yum list`` row, return a dictionary
         of name, version, release, epoch, arch, and repo.
         """
         name, _, arch = package.rpartition(".")
@@ -116,13 +119,13 @@ class YumListInstalled(CommandParser, RpmList):
 
     def parse_content(self, content):
         """
-        ``yum list installed`` output is basically tabular with an ignorable
+        ``yum list`` output is basically tabular with an ignorable
         set of rows at the top and a line "Installed Packages" that designates
         the following rows as data. Each column has a maximum width, and if any
         column overflows, the following columns wrap to the next line and
         indent to their usual starting positions. It's also possible for the
         data rows to be followed by more lines that should be ignored. Since
-        ``yum list installed`` is for human consumption, the footer lines can be
+        ``yum list`` is for human consumption, the footer lines can be
         syntactically ambiguous with data lines. We use heuristics to check for
         an invalid row to signal the end of data.
         """
@@ -132,5 +135,66 @@ class YumListInstalled(CommandParser, RpmList):
             if self._unknown_row(row):
                 break
             rec = self._make_record(*row)
-            packages[rec["name"]].append(YumInstalledRpm(rec))
+            packages[rec["name"]].append(YumListRpm(rec))
         self.packages = dict(packages)
+
+
+@parser(Specs.yum_list_installed)
+class YumListInstalled(YumListBase):
+    """
+    The ``YumListInstalled`` class parses the output of the ``yum list installed``
+    command. Each line is parsed and stored in a ``YumListRpm`` object.
+
+    Sample input data::
+
+        Repodata is over 2 weeks old. Install yum-cron? Or run: yum makecache fast
+        Loaded plugins: product-id, search-disabled-repos, subscription-manager
+        Installed Packages
+        GConf2.x86_64                    3.2.6-8.el7             @rhel-7-server-rpms
+        GeoIP.x86_64                     1.5.0-11.el7            @anaconda/7.3
+        ImageMagick.x86_64               6.7.8.9-15.el7_2        @rhel-7-server-rpms
+        NetworkManager.x86_64            1:1.4.0-17.el7_3        installed
+        NetworkManager.x86_64            1:1.8.0-9.el7           installed
+        NetworkManager-config-server.noarch
+                                         1:1.8.0-9.el7           installed
+        Uploading Enabled Repositories Report
+        Loaded plugins: priorities, product-id, rhnplugin, rhui-lb, subscription-
+                      : manager, versionlock
+
+    Examples:
+        >>> type(installed_rpms)
+        <class 'insights.parsers.yum_list.YumListInstalled'>
+        >>> 'GeoIP' in installed_rpms
+        True
+        >>> installed_rpms.get_max('GeoIP')
+        0:GeoIP-1.5.0-11.el7
+        >>> installed_rpms.expired_cache
+        True
+        >>> type(installed_rpms.get_max('GeoIP'))
+        <class 'insights.parsers.yum_list.YumListRpm'>
+        >>> rpm1 = installed_rpms.get_max('GeoIP')
+        >>> rpm1.package
+        'GeoIP-1.5.0-11.el7'
+        >>> rpm1.nvr
+        'GeoIP-1.5.0-11.el7'
+        >>> rpm1.source
+        >>> rpm1.name
+        'GeoIP'
+        >>> rpm1.version
+        '1.5.0'
+        >>> rpm1.release
+        '11.el7'
+        >>> rpm1.arch
+        'x86_64'
+        >>> rpm1.epoch
+        '0'
+        >>> from insights.parsers.yum_list import YumListRpm
+        >>> rpm2 = YumListRpm.from_package('GeoIP-1.6.0-11.el7.x86_64')
+        >>> rpm1 == rpm2
+        False
+        >>> rpm1 > rpm2
+        False
+        >>> rpm1 < rpm2
+        True
+    """
+    pass
