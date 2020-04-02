@@ -378,6 +378,11 @@ class CleanOptions(object):
         self.keyword_file = None
         self.keywords = None
         self.no_tar_file = config.output_dir
+        self.loglevel = 'INFO'
+        self.obfuscate_macs = False
+        self.networks = None
+        self.users = None
+        self.users_file = None
 
         if rm_conf:
             try:
@@ -386,7 +391,7 @@ class CleanOptions(object):
                 self.keyword_file.write("\n".join(keywords).encode('utf-8'))
                 self.keyword_file.flush()
                 self.keyword_file.close()
-                self.keywords = [self.keyword_file.name]
+                self.keywords_file = [self.keyword_file.name]
                 logger.debug("Attmpting keyword obfuscation")
             except LookupError:
                 pass
