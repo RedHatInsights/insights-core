@@ -21,8 +21,6 @@ APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
 NETWORK = constants.custom_network_log_level
 
-expected_keys = ('commands', 'files', 'patterns', 'keywords')
-
 
 def correct_format(parsed_data, expected_keys, filename):
     '''
@@ -330,6 +328,7 @@ class InsightsUploadConf(object):
             if sections != ['remove']:
                 raise RuntimeError('ERROR: invalid section(s) in remove.conf. Only "remove" is valid.')
 
+            expected_keys = ('commands', 'files', 'patterns', 'keywords')
             rm_conf = {}
             for item, value in parsedconfig.items('remove'):
                 if item not in expected_keys:
@@ -377,7 +376,7 @@ class InsightsUploadConf(object):
             logger.warning('WARNING: %s', e)
         loaded = load_yaml(fname)
         if fname == self.redaction_file:
-            err, msg = correct_format(loaded, ('commands', 'files'), fname)
+            err, msg = correct_format(loaded, ('commands', 'files', 'components'), fname)
         elif fname == self.content_redaction_file:
             err, msg = correct_format(loaded, ('patterns', 'keywords'), fname)
         if err:
@@ -437,6 +436,7 @@ class InsightsUploadConf(object):
 
         num_commands = 0
         num_files = 0
+        num_components = 0
         num_patterns = 0
         num_keywords = 0
         using_regex = False
@@ -447,6 +447,8 @@ class InsightsUploadConf(object):
                     num_commands = length(self.rm_conf['commands'])
                 if key == 'files':
                     num_files = length(self.rm_conf['files'])
+                if key == 'components':
+                    num_components = length(self.rm_conf['components'])
                 if key == 'patterns':
                     if isinstance(self.rm_conf['patterns'], dict):
                         num_patterns = length(self.rm_conf['patterns']['regex'])
@@ -456,16 +458,17 @@ class InsightsUploadConf(object):
                 if key == 'keywords':
                     num_keywords = length(self.rm_conf['keywords'])
 
-        output = {}
-        output['obfuscate'] = self.config.obfuscate
-        output['obfuscate_hostname'] = self.config.obfuscate_hostname
-        output['commands'] = num_commands
-        output['files'] = num_files
-        output['patterns'] = num_patterns
-        output['keywords'] = num_keywords
-        output['using_new_format'] = self.using_new_format
-        output['using_patterns_regex'] = using_regex
-        return output
+        return {
+            'obfuscate': self.config.obfuscate,
+            'obfuscate_hostname': self.config.obfuscate_hostname,
+            'commands': num_commands,
+            'files': num_files,
+            'components': num_components,
+            'patterns': num_patterns,
+            'keywords': num_keywords,
+            'using_new_format': self.using_new_format,
+            'using_patterns_regex': using_regex
+        }
 
 
 if __name__ == '__main__':
