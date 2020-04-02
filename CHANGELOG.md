@@ -1,5 +1,17 @@
 # Change Log
 
+## [insights-core-3.0.158-1365](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.158-1365) (2020-04-02)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.157-1359...insights-core-3.0.158-1365)
+
+**Fixed bugs:**
+
+- Block-size of 'df -al' is not always default to 1K. DiskFree\_AL and DiskFree\_ALP need handle this. [\#2502](https://github.com/RedHatInsights/insights-core/issues/2502)
+
+**Closed issues:**
+
+- A base class for YumList\* are needed for more "yum list \[xxx\]" commands [\#2524](https://github.com/RedHatInsights/insights-core/issues/2524)
+- KpatchPatches \(kpatch\_patch\_files\) can be replaced with KpatchList \(kpatch\_list\) [\#2403](https://github.com/RedHatInsights/insights-core/issues/2403)
+
 ## [insights-core-3.0.157-1359](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.157-1359) (2020-03-26)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.156-1352...insights-core-3.0.157-1359)
 
