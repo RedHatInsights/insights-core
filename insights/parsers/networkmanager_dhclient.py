@@ -97,10 +97,6 @@ class NetworkManagerDhclient(Parser):
         >>> dhclient.has_vulnerable_block
         True
     """
-    def __init__(self, context):
-        self.has_vulnerable_block = None
-        super(NetworkManagerDhclient, self).__init__(context)
-
     def parse_content(self, content):
         if not content:
             raise SkipException("No content.")
