@@ -1,7 +1,9 @@
 import pytest
+import doctest
 
 from insights import SkipComponent
-from insights.parsers.yum_list_installed import YumListInstalled
+from insights.parsers import yum_list
+from insights.parsers.yum_list import YumListInstalled
 from insights.tests import context_wrap
 
 
@@ -45,6 +47,7 @@ jdk1.8.0_121.x86_64                       2000:1.8.0_121-fcs            @@comman
 
 HEADER_FOOTER_JUNK = """
 Loaded plugins: product-id, search-disabled-repos, subscription-manager
+Repodata is over 2 weeks old. Install yum-cron? Or run: yum makecache fast
 Installed Packages
 GConf2.x86_64                    3.2.6-8.el7             @rhel-7-server-rpms
 GeoIP.x86_64                     1.5.0-11.el7            @anaconda/7.3
@@ -157,3 +160,11 @@ def test_multiple_stanza():
     assert rpm.release == "9.el7"
     assert rpm.arch == "noarch"
     assert rpm.repo == "installed"
+
+
+def test_doc_examples():
+    env = {
+        'installed_rpms': YumListInstalled(context_wrap(HEADER_FOOTER_JUNK)),
+    }
+    failed, total = doctest.testmod(yum_list, globs=env)
+    assert failed == 0

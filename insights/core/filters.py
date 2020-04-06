@@ -198,5 +198,5 @@ def dump(stream=None):
         stream.write(dumps())
     else:
         path = os.path.join(os.path.dirname(insights.__file__), _filename)
-        with open(path, "wu") as f:
+        with open(path, "w") as f:
             f.write(dumps())
