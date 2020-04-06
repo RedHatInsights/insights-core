@@ -328,7 +328,7 @@ def get_tags(tags_file_path=os.path.join(constants.default_conf_dir, "tags.conf"
             data = f.read()
             try:
                 tags = yaml.load(data, Loader=Loader)
-            except yaml.ParserError:
+            except yaml.parser.ParserError:
                 logger.error("Unable to parse tags file")
                 return None
     else:

@@ -327,7 +327,7 @@ class InsightsUploadConf(object):
                 data = f.read()
                 try:
                     tags = yaml.load(data, Loader=yaml.CLoader)
-                except yaml.ParserError:
+                except yaml.parser.ParserError:
                     failures.append("ERROR: Unable to parse tags file")
             if type(tags) != dict:
                 failures.append("ERROR: Tags file not in yaml format")
