@@ -17,6 +17,17 @@ commands=foo
 files=bar
 """.strip().encode("utf-8")
 
+tags_file_content = """
+---
+key: foo
+key2: bar
+""".strip().encode("utf-8")
+
+tags_bad_content = """
+[not_yaml]
+wrong=keys
+""".strip().encode("utf-8")
+
 
 def test_display_name():
     assert util.determine_hostname(display_name='foo') == 'foo'
@@ -92,16 +103,26 @@ def test_get_version_info(run_command_get_output):
     assert version_info == {'core_version': '1-1', 'client_version': 1}
 
 
-def test_validate_remove_file():
+def test_validate_remove_and_tags_files():
     tf = '/tmp/remove.cfg'
     with open(tf, 'wb') as f:
         f.write(remove_file_content)
+    tags = '/tmp/tags.conf'
+    with open(tags, 'wb') as f:
+        f.write(tags_file_content)
+    bad_tags = '/tmp/some_file'
+    with open(bad_tags, 'wb') as f:
+        f.write(tags_bad_content)
     assert util.validate_remove_file(InsightsConfig(remove_file='/tmp/boop')) is False
     os.chmod(tf, 0o644)
     assert util.validate_remove_file(InsightsConfig(remove_file=tf)) is False
     os.chmod(tf, 0o600)
-    assert util.validate_remove_file(InsightsConfig(remove_file=tf)) is not False
+    assert util.validate_remove_file(InsightsConfig(remove_file=tf, tags_file=tags)) is not False
+    assert util.validate_remove_file(InsightsConfig(tags_file='/tmp/boop')) is False
+    assert util.validate_remove_file(InsightsConfig(remove_file=tf, tags_file=bad_tags)) is False
     os.remove(tf)
+    os.remove(tags)
+    os.remove(bad_tags)
 
 # TODO: DRY
 
