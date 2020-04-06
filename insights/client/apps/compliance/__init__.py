@@ -33,7 +33,8 @@ class ComplianceClient:
         for policy in policies:
             self.run_scan(
                 policy['attributes']['ref_id'],
-                self.find_scap_policy(policy['attributes']['ref_id']),
+                policy['attributes']['parent_profile_ref_id'],
+                self.find_scap_policy(policy['attributes']['parent_profile_ref_id']),
                 '/var/tmp/oscap_results-{0}.xml'.format(policy['attributes']['ref_id']),
                 tailoring_file_path=self.download_tailoring_file(policy)
             )
@@ -84,35 +85,37 @@ class ComplianceClient:
     def profile_files(self):
         return glob("{0}*rhel{1}*.xml".format(POLICY_FILE_LOCATION, self.os_release()))
 
-    def find_scap_policy(self, profile_ref_id):
-        rc, grep = call('grep ' + profile_ref_id + ' ' + ' '.join(self.profile_files()), keep_rc=True)
+    def find_scap_policy(self, parent_profile_ref_id):
+        rc, grep = call('grep ' + parent_profile_ref_id + ' ' + ' '.join(self.profile_files()), keep_rc=True)
         if rc:
-            logger.error('XML profile file not found matching ref_id {0}\n{1}\n'.format(profile_ref_id, grep))
+            logger.error('XML profile file not found matching ref_id {0}\n{1}\n'.format(parent_profile_ref_id, grep))
             exit(constants.sig_kill_bad)
         filenames = findall('/usr/share/xml/scap/.+xml', grep)
         if not filenames:
-            logger.error('No XML profile files found matching ref_id {0}\n{1}\n'.format(profile_ref_id, ' '.join(filenames)))
+            logger.error('No XML profile files found matching ref_id {0}\n{1}\n'.format(parent_profile_ref_id, ' '.join(filenames)))
             exit(constants.sig_kill_bad)
         return filenames[0]
 
-    def build_oscap_command(self, profile_ref_id, policy_xml, output_path, tailoring_file_path):
-        command = 'oscap xccdf eval --profile ' + profile_ref_id
+    def build_oscap_command(self, parent_profile_ref_id, policy_xml, output_path, tailoring_file_path):
+        command = 'oscap xccdf eval --profile ' + parent_profile_ref_id
         if tailoring_file_path:
             command += ' --tailoring-file ' + tailoring_file_path
         command += ' --results ' + output_path + ' ' + policy_xml
         return command
 
-    def run_scan(self, profile_ref_id, policy_xml, output_path, tailoring_file_path=None):
+    def run_scan(self, profile_ref_id, parent_profile_ref_id, policy_xml, output_path, tailoring_file_path=None):
         logger.info('Running scan for {0}... this may take a while'.format(profile_ref_id))
         env = os.environ.copy()
         env.update({'TZ': 'UTC'})
-        oscap_command = self.build_oscap_command(profile_ref_id, policy_xml, output_path, tailoring_file_path)
+        oscap_command = self.build_oscap_command(parent_profile_ref_id, policy_xml, output_path, tailoring_file_path)
         rc, oscap = call(oscap_command, keep_rc=True, env=env)
         if rc and rc != NONCOMPLIANT_STATUS:
             logger.error('Scan failed')
             logger.error(oscap)
             exit(constants.sig_kill_bad)
         else:
+            if (profile_ref_id != parent_profile_ref_id):
+                self._replace_profile_ref_id(output_path, parent_profile_ref_id, profile_ref_id)
             self.archive.copy_file(output_path)
 
     def _assert_oscap_rpms_exist(self):
@@ -124,3 +127,11 @@ class ComplianceClient:
             if len(rpm.strip().split('\n')) < len(REQUIRED_PACKAGES):
                 logger.error('Missing required packages for compliance scanning. Please ensure the following packages are installed: {0}\n'.format(', '.join(REQUIRED_PACKAGES)))
                 exit(constants.sig_kill_bad)
+
+    def _replace_profile_ref_id(self, filename, from_ref_id, to_ref_id):
+        from_str = 'profile idref="{}"'.format(from_ref_id)
+        to_str = 'profile idref="{}"'.format(to_ref_id)
+        rc, sed = call("sed -i.bak 's/{}/{}/' {}".format(from_str, to_str, filename), keep_rc=True)
+        if rc:
+            logger.error('Tried running sed but failed: {0}.\n'.format(sed))
+            exit(constants.sig_kill_bad)
