@@ -317,6 +317,7 @@ class InsightsUploadConf(object):
         '''
         Validate remove.conf and tags.conf
         '''
+        tags = None
         failures = []
         if not os.path.isfile(self.remove_file):
             failures.append("WARNING: Remove file does not exist")
