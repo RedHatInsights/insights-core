@@ -130,11 +130,11 @@ SATELLITE_OUT = """
 
 CANDLEPIN_LOG = """
 2016-09-09 13:45:52,650 [req=bd5a4284-d280-4fc5-a3d5-fc976b7aa5cc, org=] INFO org.candlepin.common.filter.LoggingFilter - Request: verb=GET, uri=/candlepin/consumers/f7677b4b-c470-4626-86a4-2fdf2546af4b
-2016-09-09 13:45:52,784 [req=bd5a4284-d280-4fc5-a3d5-fc976b7aa5cc, org=ING_Luxembourg_SA] INFO  org.candlepin.common.filter.LoggingFilter - Response: status=200, content-type="application/json", time=134
+2016-09-09 13:45:52,784 [req=bd5a4284-d280-4fc5-a3d5-fc976b7aa5cc, org=example_org] INFO  org.candlepin.common.filter.LoggingFilter - Response: status=200, content-type="application/json", time=134
 2016-09-09 13:45:52,947 [req=909ca4c5-f24e-4212-8f23-cc754d06ac57, org=] INFO org.candlepin.common.filter.LoggingFilter - Request: verb=GET, uri=/candlepin/consumers/f7677b4b-c470-4626-86a4-2fdf2546af4b/content_overrides
 2016-09-09 13:45:52,976 [req=909ca4c5-f24e-4212-8f23-cc754d06ac57, org=] INFO org.candlepin.common.filter.LoggingFilter - Response: status=200, content-type="application/json", time=29
 2016-09-09 13:45:53,072 [req=49becd26-5dfe-4d2f-8667-470519230d88, org=] INFO org.candlepin.common.filter.LoggingFilter - Request: verb=GET, uri=/candlepin/consumers/f7677b4b-c470-4626-86a4-2fdf2546af4b/release
-2016-09-09 13:45:53,115 [req=49becd26-5dfe-4d2f-8667-470519230d88, org=ING_Luxembourg_SA] INFO  org.candlepin.common.filter.LoggingFilter - Response: status=200, content-type="application/json", time=43
+2016-09-09 13:45:53,115 [req=49becd26-5dfe-4d2f-8667-470519230d88, org=example_org] INFO  org.candlepin.common.filter.LoggingFilter - Response: status=200, content-type="application/json", time=43
 """.strip()
 
 
