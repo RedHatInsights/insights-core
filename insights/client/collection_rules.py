@@ -36,6 +36,7 @@ class InsightsUploadConf(object):
         self.config = config
         self.fallback_file = constants.collection_fallback_file
         self.remove_file = config.remove_file
+        self.tags_file = config.tags_file
         self.collection_rules_file = constants.collection_rules_file
         self.collection_rules_url = self.config.collection_rules_url
         self.gpg = self.config.gpg
@@ -314,11 +315,21 @@ class InsightsUploadConf(object):
 
     def validate(self):
         '''
-        Validate remove.conf
+        Validate remove.conf and tags.conf
         '''
         if not os.path.isfile(self.remove_file):
             logger.warn("WARNING: Remove file does not exist")
             return False
+        if not os.path.isfile(self.tags_file):
+            logger.warn("WARNING: Tags file does not exist")
+            return False
+        else:
+            with open(self.tags_file) as f:
+                data = f.read()
+                tags = yaml.load(data, Loader=yaml.CLoader)
+            if type(tags) != dict:
+                logger.error("ERROR: Tags file not in yaml format")
+                return False
         # Make sure permissions are 600
         mode = stat.S_IMODE(os.stat(self.remove_file).st_mode)
         if not mode == 0o600:
