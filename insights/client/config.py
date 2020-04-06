@@ -250,6 +250,10 @@ DEFAULT_OPTS = {
         # non-CLI
         'default': os.path.join(constants.default_conf_dir, 'file-content-redaction.yaml')
     },
+    'tags_file': {
+        # non-CLI
+        'default': os.path.join(constants.default_conf_dir, 'tags.conf')
+    },
     'reregister': {
         'default': False,
         'opt': ['--force-reregister'],

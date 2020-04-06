@@ -108,6 +108,7 @@ class InsightsUploadConf(object):
         self.remove_file = config.remove_file
         self.redaction_file = config.redaction_file
         self.content_redaction_file = config.content_redaction_file
+        self.tags_file = config.tags_file
         self.collection_rules_file = constants.collection_rules_file
         self.collection_rules_url = self.config.collection_rules_url
         self.gpg = self.config.gpg
@@ -410,8 +411,29 @@ class InsightsUploadConf(object):
 
     def validate(self):
         '''
-        Validate remove.conf
+        Validate remove.conf and tags.conf
         '''
+        if not os.path.isfile(self.remove_file):
+            logger.warn("WARNING: Remove file does not exist")
+            return False
+        if not os.path.isfile(self.tags_file):
+            logger.warn("WARNING: Tags file does not exist")
+            return False
+        else:
+            with open(self.tags_file) as f:
+                data = f.read()
+                tags = yaml.load(data, Loader=yaml.CLoader)
+            if type(tags) != dict:
+                logger.error("ERROR: Tags file not in yaml format")
+                return False
+        # Make sure permissions are 600
+        mode = stat.S_IMODE(os.stat(self.remove_file).st_mode)
+        if not mode == 0o600:
+            logger.error("WARNING: Invalid remove file permissions. "
+                         "Expected 0600 got %s" % oct(mode))
+            return False
+        else:
+            logger.debug("Correct file permissions")
         success = self.get_rm_conf()
         if not success:
             logger.info('No contents in the blacklist configuration to validate.')
