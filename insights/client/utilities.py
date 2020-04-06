@@ -315,7 +315,7 @@ def systemd_notify(pid):
         logger.debug('systemd-notify returned %s', proc.returncode)
 
 
-def get_tags(tags_file_path=os.path.join(constants.default_conf_dir, "tags.conf")):
+def get_tags(tags_file_path=os.path.join(constants.default_conf_dir, "tags.yaml")):
     '''
     Load tag data from the tags file.
 
@@ -341,7 +341,7 @@ def get_tags(tags_file_path=os.path.join(constants.default_conf_dir, "tags.conf"
     return tags
 
 
-def write_tags(tags, tags_file_path=os.path.join(constants.default_conf_dir, "tags.conf")):
+def write_tags(tags, tags_file_path=os.path.join(constants.default_conf_dir, "tags.yaml")):
     """
     Writes tags to tags_file_path
 
