@@ -16,6 +16,10 @@ from six.moves import configparser as ConfigParser
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
 from .constants import InsightsConstants as constants
+try:
+    from yaml import CLoader as Loader
+except ImportError:
+    from yaml import Loader
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
@@ -423,7 +427,7 @@ class InsightsUploadConf(object):
             with open(self.tags_file) as f:
                 data = f.read()
                 try:
-                    tags = yaml.load(data, Loader=yaml.CLoader)
+                    tags = yaml.load(data, Loader=Loader)
                 except yaml.parser.ParserError:
                     failures.append("ERROR: Unable to parse tags file")
             if type(tags) != dict:
