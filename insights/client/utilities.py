@@ -329,7 +329,11 @@ def get_tags(tags_file_path=os.path.join(constants.default_conf_dir, "tags.yaml"
     if os.path.isfile(tags_file_path):
         with open(tags_file_path) as f:
             data = f.read()
-            tags = yaml.load(data, Loader=Loader)
+            try:
+                tags = yaml.load(data, Loader=Loader)
+            except yaml.ParserError:
+                logger.error("Unable to parse tags file")
+                return None
     else:
         logger.debug("Tags file %s does not exist", tags_file_path)
 

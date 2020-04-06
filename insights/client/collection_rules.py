@@ -415,19 +415,21 @@ class InsightsUploadConf(object):
         '''
         failures = []
         if not os.path.isfile(self.remove_file):
-            logger.warn("WARNING: Remove file does not exist")
             failures.append("WARNING: Remove file does not exist")
         if not os.path.isfile(self.tags_file):
-            logger.warn("WARNING: Tags file does not exist")
             failures.append("WARNING: Tags file does not exist")
         else:
             with open(self.tags_file) as f:
                 data = f.read()
-                tags = yaml.load(data, Loader=yaml.CLoader)
+                try:
+                    tags = yaml.load(data, Loader=yaml.CLoader)
+                except yaml.ParserError:
+                    failures.append("ERROR: Unable to parse tags file")
             if type(tags) != dict:
                 failures.append("ERROR: Tags file not in yaml format")
         if failures:
-            logger.warn(failure for failure in failures)
+            for failure in failures:
+                logger.warn(failure)
             return False
         # Make sure permissions are 600
         mode = stat.S_IMODE(os.stat(self.remove_file).st_mode)
