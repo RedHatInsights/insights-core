@@ -66,7 +66,7 @@ develop = set([
 ])
 
 docs = set([
-    'Sphinx',
+    'Sphinx<=2.4.4',
     'nbsphinx',
     'sphinx_rtd_theme',
     'ipython',
