@@ -256,7 +256,7 @@ class SOSCleaner(object):
                 command = "file %s" % filename
                 filetype = os.popen(command).read().strip(
                     '\n').split(':')[1].strip().lower()
-                if 'text' in filetype or 'json' in filetype
+                if 'text' in filetype or 'json' in filetype:
                     return True
                 else:
                     return False
