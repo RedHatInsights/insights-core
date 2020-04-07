@@ -378,25 +378,6 @@ DEFAULT_OPTS = {
         'const': True,
         'nargs': '?',
         'group': 'platform'
-    },
-    # AWS options
-    'portal_access': {
-        'default': False,
-        'opt': ['--portal-access'],
-        'group': 'platform',
-        'action': 'store_true',
-        'help': 'Entitle an AWS instance with Red Hat and register with Red Hat Insights'
-    },
-    'portal_access_no_insights': {
-        'default': False,
-        'opt': ['--portal-access-no-insights'],
-        'group': 'platform',
-        'action': 'store_true',
-        'help': 'Entitle an AWS instance with Red Hat, but do not register with Red Hat Insights'
-    },
-    'portal_access_hydra_url': {
-        # non-CLI
-        'default': constants.default_portal_access_hydra_url
     }
 }
 
@@ -626,8 +607,6 @@ class InsightsConfig(object):
         if self.enable_schedule and self.disable_schedule:
             raise ValueError(
                 'Conflicting options: --enable-schedule and --disable-schedule')
-        if self.portal_access and self.portal_access_no_insights:
-            raise ValueError('Conflicting options: --portal-access and --portal-access-no-insights')
         if self.payload and not self.content_type:
             raise ValueError(
                 '--payload requires --content-type')
@@ -696,8 +675,6 @@ class InsightsConfig(object):
             self.legacy_upload = False
         if self.payload and (self.logging_file == constants.default_log_file):
             self.logging_file = constants.default_payload_log
-        if os.path.exists(constants.register_marker_file):
-            self.register = True
         if self.output_dir or self.output_file:
             # do not upload in this case
             self.no_upload = True
