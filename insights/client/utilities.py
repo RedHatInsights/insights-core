@@ -23,6 +23,11 @@ from .. import package_info
 from .constants import InsightsConstants as constants
 from .collection_rules import InsightsUploadConf
 
+try:
+    from insights_client.constants import InsightsConstants as wrapper_constants
+except ImportError:
+    wrapper_constants = None
+
 logger = logging.getLogger(__name__)
 
 
@@ -228,16 +233,14 @@ def get_version_info():
     '''
     Get the insights client and core versions for archival
     '''
-    cmd = 'rpm -q --qf "%{VERSION}-%{RELEASE}" insights-client'
+    try:
+        client_version = wrapper_constants.version
+    except AttributeError:
+        # wrapper_constants is None or has no attribute "version"
+        client_version = None
     version_info = {}
     version_info['core_version'] = '%s-%s' % (package_info['VERSION'], package_info['RELEASE'])
-    rpm_proc = run_command_get_output(cmd)
-    if rpm_proc['status'] != 0:
-        # Unrecoverable error
-        logger.debug('Error occurred while running rpm -q. Details:\n%s' % rpm_proc['output'])
-        version_info['client_version'] = None
-    else:
-        version_info['client_version'] = rpm_proc['output']
+    version_info['client_version'] = client_version
     return version_info
 
 
