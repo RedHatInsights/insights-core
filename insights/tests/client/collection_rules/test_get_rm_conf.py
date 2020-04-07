@@ -9,8 +9,8 @@ from insights.client.collection_rules import correct_format, load_yaml, verify_p
 
 
 conf_remove_file = '/tmp/remove.conf'
-conf_file_redaction_file = '/tmp/file-redaction.conf'
-conf_file_content_redaction_file = '/tmp/file-content-redaction.conf'
+conf_file_redaction_file = '/tmp/file-redaction.yaml'
+conf_file_content_redaction_file = '/tmp/file-content-redaction.yaml'
 removed_files = ["/etc/some_file", "/tmp/another_file"]
 
 
@@ -29,21 +29,21 @@ def test_correct_format_ok_validtypes():
     Verify that valid config is allowed when
     proper keys and lists of strings are specified
     '''
-    # files and commands (file-redaction.conf)
+    # files and commands (file-redaction.yaml)
     parsed_data = {'commands': ['/bin/test', '/bin/test2'], 'files': ['/var/lib/aaa', '/var/lib/nnn']}
     expected_keys = ('commands', 'files')
     err, msg = correct_format(parsed_data, expected_keys, conf_file_redaction_file)
     assert not err
     assert msg is None
 
-    # patterns w. list of strings (file-content-redaction.conf)
+    # patterns w. list of strings (file-content-redaction.yaml)
     parsed_data = {'patterns': ['abcd', 'bcdef'], 'keywords': ['example', 'example2']}
     expected_keys = ('patterns', 'keywords')
     err, msg = correct_format(parsed_data, expected_keys, conf_file_content_redaction_file)
     assert not err
     assert msg is None
 
-    # patterns w. regex object (file-content-redaction.conf)
+    # patterns w. regex object (file-content-redaction.yaml)
     parsed_data = {'patterns': {'regex': ['abcd', 'bcdef']}, 'keywords': ['example', 'example2']}
     expected_keys = ('patterns', 'keywords')
     err, msg = correct_format(parsed_data, expected_keys, conf_file_content_redaction_file)
@@ -78,7 +78,7 @@ def test_correct_format_bad_keys_in_wrong_file():
     '''
     Verify that an otherwise valid key is not
     specified in the wrong file (i.e. patterns
-    in file-redaction.conf)
+    in file-redaction.yaml)
     '''
     parsed_data = {'files': ['/etc/example'], 'patterns': ['abc', 'def']}
     expected_keys = ('files', 'commands')

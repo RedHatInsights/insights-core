@@ -116,7 +116,7 @@ class InsightsUploadConf(object):
         #   in create_report
         self.rm_conf = None
 
-        # attribute to set when using file-redaction.conf instead of
+        # attribute to set when using file-redaction.yaml instead of
         #   remove.conf, for reporting purposes. True by default
         #   since new format is favored.
         self.using_new_format = True
@@ -342,16 +342,16 @@ class InsightsUploadConf(object):
         except ConfigParser.Error as e:
             # can't parse config file at all
             logger.debug(e)
-            logger.debug('To configure using YAML, please use file-redaction.conf and file-content-redaction.conf.')
+            logger.debug('To configure using YAML, please use file-redaction.yaml and file-content-redaction.yaml.')
             raise RuntimeError('ERROR: Cannot parse the remove.conf file.\n'
                                'See %s for more information.' % self.config.logging_file)
-        logger.warning('WARNING: remove.conf is deprecated. Please use file-redaction.conf and file-content-redaction.conf. See https://access.redhat.com/articles/4511681 for details.')
+        logger.warning('WARNING: remove.conf is deprecated. Please use file-redaction.yaml and file-content-redaction.yaml. See https://access.redhat.com/articles/4511681 for details.')
         return self.rm_conf
 
     def load_redaction_file(self, fname):
         '''
-        Load the YAML-style file-redaction.conf
-            or file-content-redaction.conf files
+        Load the YAML-style file-redaction.yaml
+            or file-content-redaction.yaml files
         '''
         if fname not in (self.redaction_file, self.content_redaction_file):
             # invalid function use, should never get here in a production situation
@@ -387,7 +387,7 @@ class InsightsUploadConf(object):
     def get_rm_conf(self):
         '''
         Try to load the the "new" version of
-        remove.conf (file-redaction.conf and file-redaction.conf)
+        remove.conf (file-redaction.yaml and file-redaction.yaml)
         '''
         rm_conf = {}
         redact_conf = self.load_redaction_file(self.redaction_file)
@@ -399,7 +399,7 @@ class InsightsUploadConf(object):
             rm_conf.update(content_redact_conf)
 
         if not redact_conf and not content_redact_conf:
-            # no file-redaction.conf or file-content-redaction.conf defined,
+            # no file-redaction.yaml or file-content-redaction.yaml defined,
             #   try to use remove.conf
             return self.get_rm_conf_old()
 

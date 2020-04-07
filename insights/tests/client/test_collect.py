@@ -16,8 +16,8 @@ stdin_uploader_json = {"some key": "some value"}
 stdin_sig = "some signature"
 stdin_payload = {"uploader.json": json_dumps(stdin_uploader_json), "sig": stdin_sig}
 conf_remove_file = "/tmp/remove.conf"
-conf_file_redaction_file = "/tmp/file-redaction.conf"
-conf_file_content_redaction_file = "/tmp/file-content-redaction.conf"
+conf_file_redaction_file = "/tmp/file-redaction.yaml"
+conf_file_content_redaction_file = "/tmp/file-content-redaction.yaml"
 removed_files = ["/etc/some_file", "/tmp/another_file"]
 
 
