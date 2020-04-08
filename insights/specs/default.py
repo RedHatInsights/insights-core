@@ -26,7 +26,6 @@ from insights.core.spec_factory import first_of, foreach_collect, foreach_execut
 from insights.core.spec_factory import first_file, listdir
 from insights.parsers.mount import Mount, ProcMounts
 from insights.parsers.dnf_module import DnfModuleList
-from insights.parsers.uname import Uname
 from insights.combiners.cloud_provider import CloudProvider
 from insights.combiners.satellite_version import SatelliteVersion
 from insights.components.rhel_version import IsRhel8
@@ -319,6 +318,7 @@ class DefaultSpecs(Specs):
     fcoeadm_i = simple_command("/usr/sbin/fcoeadm -i")
     fdisk_l = simple_command("/sbin/fdisk -l")
     findmnt_lo_propagation = simple_command("/bin/findmnt -lo+PROPAGATION")
+    firewall_cmd_list_all_zones = simple_command("/usr/bin/firewall-cmd --list-all-zones")
     firewalld_conf = simple_file("/etc/firewalld/firewalld.conf")
     foreman_production_log = simple_file("/var/log/foreman/production.log")
     foreman_proxy_conf = simple_file("/etc/foreman-proxy/settings.yml")
@@ -499,14 +499,7 @@ class DefaultSpecs(Specs):
     keystone_crontab = simple_command("/usr/bin/crontab -l -u keystone")
     keystone_crontab_container = simple_command("docker exec keystone_cron /usr/bin/crontab -l -u keystone")
     keystone_log = first_file(["/var/log/containers/keystone/keystone.log", "/var/log/keystone/keystone.log"])
-
-    @datasource(Uname, context=HostContext)
-    def kpatch_patches_running_kernel_dir(broker):
-        un = broker[Uname]
-        return r"/var/lib/kpatch/" + un.kernel
-
     kpatch_list = simple_command("/usr/sbin/kpatch list")
-    kpatch_patch_files = command_with_args("ls %s", kpatch_patches_running_kernel_dir)
     krb5 = glob_file([r"etc/krb5.conf", r"etc/krb5.conf.d/*"])
     ksmstate = simple_file("/sys/kernel/mm/ksm/run")
     kubepods_cpu_quota = glob_file("/sys/fs/cgroup/cpu/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod[a-f0-9_]*.slice/cpu.cfs_quota_us")
@@ -790,6 +783,8 @@ class DefaultSpecs(Specs):
     rc_local = simple_file("/etc/rc.d/rc.local")
     rdma_conf = simple_file("/etc/rdma/rdma.conf")
     readlink_e_etc_mtab = simple_command("/usr/bin/readlink -e /etc/mtab")
+    readlink_e_shift_cert_client = simple_command("/usr/bin/readlink -e /etc/origin/node/certificates/kubelet-client-current.pem")
+    readlink_e_shift_cert_server = simple_command("/usr/bin/readlink -e /etc/origin/node/certificates/kubelet-server-current.pem")
     redhat_release = simple_file("/etc/redhat-release")
     resolv_conf = simple_file("/etc/resolv.conf")
     rhosp_release = simple_file("/etc/rhosp-release")
@@ -888,6 +883,7 @@ class DefaultSpecs(Specs):
     satellite_custom_hiera = simple_file("/etc/foreman-installer/custom-hiera.yaml")
     block_devices = listdir("/sys/block")
     scheduler = foreach_collect(block_devices, "/sys/block/%s/queue/scheduler")
+    sched_rt_runtime_us = simple_file("/proc/sys/kernel/sched_rt_runtime_us")
     scsi = simple_file("/proc/scsi/scsi")
     scsi_eh_deadline = glob_file('/sys/class/scsi_host/host[0-9]*/eh_deadline')
     scsi_fwver = glob_file('/sys/class/scsi_host/host[0-9]*/fwrev')
@@ -929,6 +925,7 @@ class DefaultSpecs(Specs):
     swift_log = first_file(["/var/log/containers/swift/swift.log", "/var/log/swift/swift.log"])
     swift_object_expirer_conf = first_file(["/var/lib/config-data/puppet-generated/swift/etc/swift/object-expirer.conf", "/etc/swift/object-expirer.conf"])
     swift_proxy_server_conf = first_file(["/var/lib/config-data/puppet-generated/swift/etc/swift/proxy-server.conf", "/etc/swift/proxy-server.conf"])
+    sys_kernel_sched_features = simple_file("/sys/kernel/debug/sched_features")
     sysconfig_chronyd = simple_file("/etc/sysconfig/chronyd")
     sysconfig_httpd = simple_file("/etc/sysconfig/httpd")
     sysconfig_irqbalance = simple_file("etc/sysconfig/irqbalance")
