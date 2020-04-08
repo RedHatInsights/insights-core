@@ -38,9 +38,6 @@ class RpmVPackages(CommandParser):
     def parse_content(self, content):
         self.packages_list = []
 
-        if len(content) == 0:  # rpm does not report any changes
-            return self.packages_list
-
         for line in content:
             line_parts = line.split()
             if "package" in line_parts[0] or "missing" in line_parts[0]:
