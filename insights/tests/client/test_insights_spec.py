@@ -12,7 +12,7 @@ def test_read_pidfile_called(read_pidfile):
     Pidfile is read when collection starts
     '''
     dc = DataCollector(MagicMock(display_name=None))
-    dc.run_collection({'commands': [], 'files': []}, None, None)
+    dc.run_collection({'commands': [], 'files': []}, None, None, '')
     read_pidfile.assert_called_once()
 
 
