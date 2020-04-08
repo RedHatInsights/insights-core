@@ -103,6 +103,8 @@ class Bond(Parser):
         self._slave_speed = []
         self._slave_duplex = []
         self._primary_slave = None
+        self._up_delay = None
+        self._down_delay = None
 
         for line in get_active_lines(content):
             if line.startswith("Bonding Mode: "):
@@ -138,6 +140,10 @@ class Bond(Parser):
                 self._arp_ip_target = line.strip().split(':', 1)[1].strip()
             elif line.strip().startswith("Primary Slave"):
                 self._primary_slave = line.split(":", 1)[1].strip()
+            elif line.strip().startswith("Up Delay (ms):"):
+                self._up_delay = line.strip().split(':', 1)[1].strip()
+            elif line.strip().startswith("Down Delay (ms):"):
+                self._down_delay = line.strip().split(':', 1)[1].strip()
 
     @property
     def bond_mode(self):
@@ -231,3 +237,17 @@ class Bond(Parser):
         If the key is not in the bond file, ``None`` is returned.
         """
         return self._primary_slave
+
+    @property
+    def up_delay(self):
+        """Returns the "Up Delay" in the bond file if key/value exists.
+        If the key is not in the bond file, ``None`` is returned.
+        """
+        return self._up_delay
+
+    @property
+    def down_delay(self):
+        """Returns the "Down Delay" in the bond file if key/value exists.
+        If the key is not in the bond file, ``None`` is returned.
+        """
+        return self._down_delay
