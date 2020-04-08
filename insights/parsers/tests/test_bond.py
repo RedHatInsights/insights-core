@@ -265,6 +265,9 @@ def test_bond_class():
     assert bond_obj.slave_interface == ['eno1', 'eno2']
     assert bond_obj.up_delay == '0'
     assert bond_obj.down_delay == '0'
+    assert bond_obj.data['eno1']['speed'] == '1000 Mbps'
+    assert bond_obj.data['eno1']['mii_status'] == 'up'
+    assert bond_obj.data['eno2']['mii_status'] == 'up'
 
     bond_obj = Bond(context_wrap(BONDINFO_MODE_4, CONTEXT_PATH))
     assert bond_obj.bond_mode == '4'
@@ -309,6 +312,11 @@ def test_bond_class():
     assert bond_obj.file_name == 'bond0'
     assert bond_obj.up_delay == '2000'
     assert bond_obj.down_delay == '1000'
+    assert bond_obj.data['mii_status'] == 'up'
+    assert bond_obj.data['enp0s9']['mii_status'] == 'up'
+    assert bond_obj.data['enp0s8']['mii_status'] == 'down'
+    assert bond_obj.data['enp0s8']['aggregator_id'] == '2'
+    assert bond_obj.data['enp0s9']['aggregator_id'] == '1'
 
     with pytest.raises(ParseException) as exc:
         bond_obj = Bond(context_wrap(BONDINFO_UNKNOWN_BOND_MODE, CONTEXT_PATH))
