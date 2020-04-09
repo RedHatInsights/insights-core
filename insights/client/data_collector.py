@@ -272,7 +272,7 @@ class DataCollector(object):
             and archive files.
         """
         if self.config.obfuscate:
-            if 'keywords' in rm_conf and rm_conf['keywords']:
+            if rm_conf and rm_conf.get('keywords'):
                 logger.warn("WARNING: Skipping keywords defined in blacklist configuration")
             cleaner = SOSCleaner(quiet=True)
             clean_opts = CleanOptions(
