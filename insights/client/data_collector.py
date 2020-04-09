@@ -85,6 +85,11 @@ class DataCollector(object):
             t = list(chain.from_iterable(t))
             self.archive.add_metadata_to_archive(json.dumps(t), '/tags.json')
 
+    def _write_blacklist_report(self, blacklist_report):
+        logger.debug("Writing blacklist report to archive...")
+        self.archive.add_metadata_to_archive(
+            json.dumps(blacklist_report), '/blacklist_report')
+
     def _run_pre_command(self, pre_cmd):
         '''
         Run a pre command to get external args for a command
@@ -182,7 +187,7 @@ class DataCollector(object):
         else:
             return [spec]
 
-    def run_collection(self, conf, rm_conf, branch_info):
+    def run_collection(self, conf, rm_conf, branch_info, blacklist_report):
         '''
         Run specs and collect all the data
         '''
@@ -197,9 +202,9 @@ class DataCollector(object):
                 # handle the None or empty case of the sub-object
                 if 'regex' in exclude and not exclude['regex']:
                     raise LookupError
-                logger.warn("WARNING: Skipping patterns found in remove.conf")
+                logger.warn("WARNING: Skipping patterns defined in blacklist configuration")
             except LookupError:
-                logger.debug('Patterns section of remove.conf is empty.')
+                logger.debug('Patterns section of blacklist configuration is empty.')
 
         for c in conf['commands']:
             # remember hostname archive path
@@ -247,6 +252,7 @@ class DataCollector(object):
         self._write_display_name()
         self._write_version_info()
         self._write_tags()
+        self._write_blacklist_report(blacklist_report)
         logger.debug('Metadata collection finished.')
 
     def done(self, conf, rm_conf):
@@ -266,13 +272,14 @@ class DataCollector(object):
             and archive files.
         """
         if self.config.obfuscate:
+            if rm_conf and rm_conf.get('keywords'):
+                logger.warn("WARNING: Skipping keywords defined in blacklist configuration")
             cleaner = SOSCleaner(quiet=True)
             clean_opts = CleanOptions(
                 self.config, self.archive.tmp_dir, rm_conf, self.hostname_path)
             cleaner.clean_report(clean_opts, self.archive.archive_dir)
             if clean_opts.keyword_file is not None:
                 os.remove(clean_opts.keyword_file.name)
-                logger.warn("WARNING: Skipping keywords found in remove.conf")
             if self.config.output_dir:
                 # return the entire soscleaner dir
                 #   see additions to soscleaner.SOSCleaner.clean_report
