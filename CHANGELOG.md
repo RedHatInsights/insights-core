@@ -1,5 +1,12 @@
 # Change Log
 
+## [insights-core-3.0.159-1375](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.159-1375) (2020-04-09)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.158-1365...insights-core-3.0.159-1375)
+
+**Fixed bugs:**
+
+- Sphinx 3.0 breaks documentation build [\#2531](https://github.com/RedHatInsights/insights-core/issues/2531)
+
 ## [insights-core-3.0.158-1365](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.158-1365) (2020-04-02)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.157-1359...insights-core-3.0.158-1365)
 
