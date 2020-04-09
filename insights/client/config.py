@@ -242,6 +242,14 @@ DEFAULT_OPTS = {
         # non-CLI
         'default': os.path.join(constants.default_conf_dir, 'remove.conf')
     },
+    'redaction_file': {
+        # non-CLI
+        'default': os.path.join(constants.default_conf_dir, 'file-redaction.yaml')
+    },
+    'content_redaction_file': {
+        # non-CLI
+        'default': os.path.join(constants.default_conf_dir, 'file-content-redaction.yaml')
+    },
     'reregister': {
         'default': False,
         'opt': ['--force-reregister'],
