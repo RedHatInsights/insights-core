@@ -85,6 +85,11 @@ class DataCollector(object):
             t = list(chain.from_iterable(t))
             self.archive.add_metadata_to_archive(json.dumps(t), '/tags.json')
 
+    def _write_blacklist_report(self, blacklist_report):
+        logger.debug("Writing blacklist report to archive...")
+        self.archive.add_metadata_to_archive(
+            json.dumps(blacklist_report), '/blacklist_report')
+
     def _run_pre_command(self, pre_cmd):
         '''
         Run a pre command to get external args for a command
@@ -182,7 +187,7 @@ class DataCollector(object):
         else:
             return [spec]
 
-    def run_collection(self, conf, rm_conf, branch_info):
+    def run_collection(self, conf, rm_conf, branch_info, blacklist_report):
         '''
         Run specs and collect all the data
         '''
@@ -197,7 +202,7 @@ class DataCollector(object):
                 # handle the None or empty case of the sub-object
                 if 'regex' in exclude and not exclude['regex']:
                     raise LookupError
-                logger.warn("WARNING: Skipping patterns found in remove.conf")
+                logger.warn("WARNING: Skipping patterns defined in blacklist configuration")
             except LookupError:
                 logger.debug('Patterns section of remove.conf is empty.')
 
@@ -247,6 +252,7 @@ class DataCollector(object):
         self._write_display_name()
         self._write_version_info()
         self._write_tags()
+        self._write_blacklist_report(blacklist_report)
         logger.debug('Metadata collection finished.')
 
     def done(self, conf, rm_conf):
