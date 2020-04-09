@@ -105,9 +105,9 @@ class Bond(Parser):
         self._primary_slave = None
         self._up_delay = None
         self._down_delay = None
-        self.name_slave = None
         self._data = {}
 
+        name_slave = None
         for line in get_active_lines(content):
             if line.startswith("Bonding Mode: "):
                 raw_mode = line.split(":", 1)[1].strip()
@@ -122,14 +122,14 @@ class Bond(Parser):
                 self._partner_mac_address = line.split(":", 1)[1].strip()
                 self._data['partner_mac'] = self._partner_mac_address
             elif line.startswith("Slave Interface: "):
-                self.name_slave = line.split(":", 1)[1].strip()
-                self._slave_interface.append(self.name_slave)
-                self._data[self.name_slave] = {}
+                name_slave = line.split(":", 1)[1].strip()
+                self._slave_interface.append(name_slave)
+                self._data[name_slave] = {}
             elif line.strip().startswith("Aggregator ID: "):
                 agg_id = line.strip().split(':', 1)[1].strip()
                 self._aggregator_id.append(agg_id)
-                if self.name_slave:
-                    self._data[self.name_slave]['aggregator_id'] = agg_id
+                if name_slave:
+                    self._data[name_slave]['aggregator_id'] = agg_id
                 else:
                     self._data['aggregator_id'] = agg_id
             elif line.strip().startswith("Transmit Hash Policy"):
@@ -141,23 +141,23 @@ class Bond(Parser):
             elif line.strip().startswith("MII Status: "):
                 mii_status = line.strip().split(':', 1)[1].strip()
                 self._mii_status.append(mii_status)
-                if self.name_slave:
-                    self._data[self.name_slave]['mii_status'] = mii_status
+                if name_slave:
+                    self._data[name_slave]['mii_status'] = mii_status
                 else:
                     self._data['mii_status'] = mii_status
             elif line.strip().startswith("Link Failure Count: "):
                 link_fail_cnt = line.strip().split(':', 1)[1].strip()
                 self._slave_link_failure_count.append(link_fail_cnt)
-                if self.name_slave:
-                    self._data[self.name_slave]['link_fail_cnt'] = link_fail_cnt
+                if name_slave:
+                    self._data[name_slave]['link_fail_cnt'] = link_fail_cnt
             elif line.strip().startswith("Speed: "):
                 speed = line.strip().split(':', 1)[1].strip()
                 self._slave_speed.append(speed)
-                self._data[self.name_slave]['speed'] = speed
+                self._data[name_slave]['speed'] = speed
             elif line.strip().startswith("Duplex: "):
                 duplex = line.strip().split(':', 1)[1].strip()
                 self._slave_duplex.append(duplex)
-                self._data[self.name_slave]['duplex'] = duplex
+                self._data[name_slave]['duplex'] = duplex
             elif line.strip().startswith("ARP Polling Interval (ms):"):
                 self._arp_polling_interval = line.strip().split(':', 1)[1].strip()
             elif line.strip().startswith("ARP IP target/s (n.n.n.n form):"):
