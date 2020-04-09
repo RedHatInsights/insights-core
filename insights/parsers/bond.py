@@ -103,21 +103,35 @@ class Bond(Parser):
         self._slave_speed = []
         self._slave_duplex = []
         self._primary_slave = None
+        self._up_delay = None
+        self._down_delay = None
+        self._data = {}
 
+        name_slave = None
         for line in get_active_lines(content):
             if line.startswith("Bonding Mode: "):
                 raw_mode = line.split(":", 1)[1].strip()
                 self._bond_mode = raw_mode
+                self._data['mode'] = self._bond_mode
                 if raw_mode in BOND_PREFIX_MAP:
                     self._bond_mode = BOND_PREFIX_MAP[raw_mode]
+                    self._data['mode'] = self._bond_mode
                 else:
                     raise ParseException("Unrecognised bonding mode '{b}'".format(b=raw_mode))
             elif line.startswith("Partner Mac Address: "):
                 self._partner_mac_address = line.split(":", 1)[1].strip()
+                self._data['partner_mac'] = self._partner_mac_address
             elif line.startswith("Slave Interface: "):
-                self._slave_interface.append(line.split(":", 1)[1].strip())
+                name_slave = line.split(":", 1)[1].strip()
+                self._slave_interface.append(name_slave)
+                self._data[name_slave] = {}
             elif line.strip().startswith("Aggregator ID: "):
-                self._aggregator_id.append(line.strip().split(':', 1)[1].strip())
+                agg_id = line.strip().split(':', 1)[1].strip()
+                self._aggregator_id.append(agg_id)
+                if name_slave:
+                    self._data[name_slave]['aggregator_id'] = agg_id
+                else:
+                    self._data['aggregator_id'] = agg_id
             elif line.strip().startswith("Transmit Hash Policy"):
                 # No need of values in bracket:
                 # Integer notification (0), (1), (2) of layer2, layer3+4, layer2+3 resp
@@ -125,19 +139,35 @@ class Bond(Parser):
             elif line.strip().startswith("Currently Active Slave"):
                 self._active_slave = line.split(":", 1)[1].split()[0]
             elif line.strip().startswith("MII Status: "):
-                self._mii_status.append(line.strip().split(':', 1)[1].strip())
+                mii_status = line.strip().split(':', 1)[1].strip()
+                self._mii_status.append(mii_status)
+                if name_slave:
+                    self._data[name_slave]['mii_status'] = mii_status
+                else:
+                    self._data['mii_status'] = mii_status
             elif line.strip().startswith("Link Failure Count: "):
-                self._slave_link_failure_count.append(line.strip().split(':', 1)[1].strip())
+                link_fail_cnt = line.strip().split(':', 1)[1].strip()
+                self._slave_link_failure_count.append(link_fail_cnt)
+                if name_slave:
+                    self._data[name_slave]['link_fail_cnt'] = link_fail_cnt
             elif line.strip().startswith("Speed: "):
-                self._slave_speed.append(line.strip().split(':', 1)[1].strip())
+                speed = line.strip().split(':', 1)[1].strip()
+                self._slave_speed.append(speed)
+                self._data[name_slave]['speed'] = speed
             elif line.strip().startswith("Duplex: "):
-                self._slave_duplex.append(line.strip().split(':', 1)[1].strip())
+                duplex = line.strip().split(':', 1)[1].strip()
+                self._slave_duplex.append(duplex)
+                self._data[name_slave]['duplex'] = duplex
             elif line.strip().startswith("ARP Polling Interval (ms):"):
                 self._arp_polling_interval = line.strip().split(':', 1)[1].strip()
             elif line.strip().startswith("ARP IP target/s (n.n.n.n form):"):
                 self._arp_ip_target = line.strip().split(':', 1)[1].strip()
             elif line.strip().startswith("Primary Slave"):
                 self._primary_slave = line.split(":", 1)[1].strip()
+            elif line.strip().startswith("Up Delay (ms):"):
+                self._up_delay = line.strip().split(':', 1)[1].strip()
+            elif line.strip().startswith("Down Delay (ms):"):
+                self._down_delay = line.strip().split(':', 1)[1].strip()
 
     @property
     def bond_mode(self):
@@ -231,3 +261,24 @@ class Bond(Parser):
         If the key is not in the bond file, ``None`` is returned.
         """
         return self._primary_slave
+
+    @property
+    def up_delay(self):
+        """Returns the "Up Delay" in the bond file if key/value exists.
+        If the key is not in the bond file, ``None`` is returned.
+        """
+        return self._up_delay
+
+    @property
+    def down_delay(self):
+        """Returns the "Down Delay" in the bond file if key/value exists.
+        If the key is not in the bond file, ``None`` is returned.
+        """
+        return self._down_delay
+
+    @property
+    def data(self):
+        """Returns all the details of bond interface and corresponding slave details
+        on sucess else it will return empty ``{}``.
+        """
+        return self._data
