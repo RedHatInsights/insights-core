@@ -170,6 +170,84 @@ Permanent HW addr: 00:1f:f3:af:d3:f1
 Slave queue ID: 0
 """.strip()
 
+BOND_MODE_4 = """
+Ethernet Channel Bonding Driver: v3.7.1 (April 27, 2011)
+
+Bonding Mode: IEEE 802.3ad Dynamic link aggregation
+Transmit Hash Policy: layer2 (0)
+MII Status: up
+MII Polling Interval (ms): 100
+Up Delay (ms): 2000
+Down Delay (ms): 1000
+
+802.3ad info
+LACP rate: slow
+Min links: 0
+Aggregator selection policy (ad_select): stable
+System priority: 65535
+System MAC address: 08:00:27:99:a3:6b
+Active Aggregator Info:
+\t\t\t\tAggregator ID: 1
+\t\t\t\tNumber of ports: 1
+\t\t\t\tActor Key: 9
+\t\t\t\tPartner Key: 1
+\t\t\t\tPartner Mac Address: 00:00:00:00:00:00
+
+Slave Interface: enp0s9
+MII Status: up
+Speed: 1000 Mbps
+Duplex: full
+Link Failure Count: 0
+Permanent HW addr: 08:00:27:99:a3:6b
+Slave queue ID: 0
+Aggregator ID: 1
+Actor Churn State: none
+Partner Churn State: churned
+Actor Churned Count: 0
+Partner Churned Count: 1
+details actor lacp pdu:
+    system priority: 65535
+    system mac address: 08:00:27:99:a3:6b
+    port key: 9
+    port priority: 255
+    port number: 1
+    port state: 77
+details partner lacp pdu:
+    system priority: 65535
+    system mac address: 00:00:00:00:00:00
+    oper key: 1
+    port priority: 255
+    port number: 1
+    port state: 1
+
+Slave Interface: enp0s8
+MII Status: down
+Speed: Unknown
+Duplex: Unknown
+Link Failure Count: 0
+Permanent HW addr: 08:00:27:a2:8d:f5
+Slave queue ID: 0
+Aggregator ID: 2
+Actor Churn State: churned
+Partner Churn State: churned
+Actor Churned Count: 1
+Partner Churned Count: 1
+details actor lacp pdu:
+    system priority: 65535
+    system mac address: 08:00:27:99:a3:6b
+    port key: 0
+    port priority: 255
+    port number: 2
+    port state: 69
+details partner lacp pdu:
+    system priority: 65535
+    system mac address: 00:00:00:00:00:00
+    oper key: 1
+    port priority: 255
+    port number: 1
+    port state: 1
+""".strip()
+
 
 def test_netstat_doc_examples():
     env = {
@@ -185,6 +263,11 @@ def test_bond_class():
     assert not bond_obj.partner_mac_address
     assert bond_obj.bond_mode == '0'
     assert bond_obj.slave_interface == ['eno1', 'eno2']
+    assert bond_obj.up_delay == '0'
+    assert bond_obj.down_delay == '0'
+    assert bond_obj.data['eno1']['speed'] == '1000 Mbps'
+    assert bond_obj.data['eno1']['mii_status'] == 'up'
+    assert bond_obj.data['eno2']['mii_status'] == 'up'
 
     bond_obj = Bond(context_wrap(BONDINFO_MODE_4, CONTEXT_PATH))
     assert bond_obj.bond_mode == '4'
@@ -224,6 +307,16 @@ def test_bond_class():
     assert bond_obj_4.arp_polling_interval == "1000"
     assert bond_obj_4.arp_ip_target == "10.152.1.1"
     assert bond_obj_4.primary_slave == 'em3 (primary_reselect failure)'
+
+    bond_obj = Bond(context_wrap(BOND_MODE_4, CONTEXT_PATH))
+    assert bond_obj.file_name == 'bond0'
+    assert bond_obj.up_delay == '2000'
+    assert bond_obj.down_delay == '1000'
+    assert bond_obj.data['mii_status'] == 'up'
+    assert bond_obj.data['enp0s9']['mii_status'] == 'up'
+    assert bond_obj.data['enp0s8']['mii_status'] == 'down'
+    assert bond_obj.data['enp0s8']['aggregator_id'] == '2'
+    assert bond_obj.data['enp0s9']['aggregator_id'] == '1'
 
     with pytest.raises(ParseException) as exc:
         bond_obj = Bond(context_wrap(BONDINFO_UNKNOWN_BOND_MODE, CONTEXT_PATH))
