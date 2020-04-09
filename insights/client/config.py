@@ -639,10 +639,6 @@ class InsightsConfig(object):
         if self.payload and not self.content_type:
             raise ValueError(
                 '--payload requires --content-type')
-        if not self.legacy_upload:
-            if self.group:
-                raise ValueError(
-                    '--group is not supported at this time.')
         if self.offline:
             if self.to_json:
                 raise ValueError('Cannot use --to-json in offline mode.')
