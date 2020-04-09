@@ -7,6 +7,7 @@ from insights.client.config import InsightsConfig
 import re
 import mock
 import six
+import pytest
 from mock.mock import patch
 
 
@@ -82,26 +83,61 @@ def test_run_command_get_output():
     assert util.run_command_get_output(cmd) == {'status': 0, 'output': u'hello\n'}
 
 
-@patch('insights.client.utilities.run_command_get_output')
+@patch('insights.client.utilities.wrapper_constants')
 @patch.dict('insights.client.utilities.package_info', {'VERSION': '1', 'RELEASE': '1'})
-def test_get_version_info(run_command_get_output):
-    # package_info['VERSION'] = '1'
-    # package_info['RELEASE'] = '1'
-    run_command_get_output.return_value = {'output': 1, 'status': 0}
+def test_get_version_info_OK(wrapper_constants):
+    '''
+    insights_client constants are imported OK and version
+    is reported. Return version as defined
+    '''
+    wrapper_constants.version = 1
     version_info = util.get_version_info()
     assert version_info == {'core_version': '1-1', 'client_version': 1}
 
 
-def test_validate_remove_file():
+@patch('insights.client.utilities.wrapper_constants', new=None)
+@patch.dict('insights.client.utilities.package_info', {'VERSION': '1', 'RELEASE': '1'})
+def test_get_version_info_no_module():
+    '''
+    insights_client constants cannot be imported,
+    constants object is None. Return None version.
+    '''
+    version_info = util.get_version_info()
+    assert version_info == {'core_version': '1-1', 'client_version': None}
+
+
+@patch('insights.client.utilities.wrapper_constants')
+@patch.dict('insights.client.utilities.package_info', {'VERSION': '1', 'RELEASE': '1'})
+def test_get_version_info_no_version(wrapper_constants):
+    '''
+    insights_client constants are imported OK but
+    constants object has no attribute "version."
+    Return None version
+    '''
+    del wrapper_constants.version
+    version_info = util.get_version_info()
+    assert version_info == {'core_version': '1-1', 'client_version': None}
+
+
+def test_validate_remove_file_bad_perms():
     tf = '/tmp/remove.cfg'
     with open(tf, 'wb') as f:
         f.write(remove_file_content)
-    assert util.validate_remove_file(InsightsConfig(remove_file='/tmp/boop')) is False
-    os.chmod(tf, 0o644)
-    assert util.validate_remove_file(InsightsConfig(remove_file=tf)) is False
+
+    conf = InsightsConfig(remove_file=tf, redaction_file=None, content_redaction_file=None, validate=True)
+    with pytest.raises(RuntimeError):
+        os.chmod(tf, 0o644)
+        util.validate_remove_file(conf)
     os.chmod(tf, 0o600)
-    assert util.validate_remove_file(InsightsConfig(remove_file=tf)) is not False
+    assert util.validate_remove_file(conf) is not False
     os.remove(tf)
+
+
+def test_validate_remove_file_good_perms():
+    tf = '/tmp/remove.cfg'
+    with open(tf, 'wb') as f:
+        f.write(remove_file_content)
+
 
 # TODO: DRY
 
