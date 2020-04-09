@@ -328,6 +328,9 @@ def _legacy_upload(config, pconn, tar_file, content_type, collection_duration=No
                             msg_name, account_number)
             else:
                 logger.info("Successfully uploaded report for %s.", msg_name)
+            if config.register:
+                # direct to console after register + upload
+                logger.info('View the Red Hat Insights console at https://cloud.redhat.com/insights/')
             break
 
         elif upload.status_code in (412, 413):
@@ -359,6 +362,9 @@ def upload(config, pconn, tar_file, content_type, collection_duration=None):
         if upload.status_code in (200, 202):
             msg_name = determine_hostname(config.display_name)
             logger.info("Successfully uploaded report for %s.", msg_name)
+            if config.register:
+                # direct to console after register + upload
+                logger.info('View the Red Hat Insights console at https://cloud.redhat.com/insights/')
             return
         elif upload.status_code in (413, 415):
             pconn.handle_fail_rcs(upload)
