@@ -1,16 +1,17 @@
-from insights.parsers.cron_daily_rhsmd import CronDailyRhsmd
-from insights.tests import context_wrap
+import doctest
+
+from insights.parsers import cron_daily_rhsmd
 
 RHSMD_1 = """
 config=$(grep -E "^processTimeout" /etc/rhsm/rhsm.conf | grep -Po "[0-9]+")
-if [ -n $config ]; then
-  rhsmd_timeout=$config
-else
-  rhsmd_timeout=300
-fi
+rhsmd_timeout=$config
+abc=$config
 """.strip()
 
 
-def test_rhcms():
-    rhsmd = CronDailyRhsmd(context_wrap(RHSMD_1))
-    assert any("$config" in line for line in rhsmd.lines)
+def test_docs():
+    env = {
+        'RHSMD_1': RHSMD_1
+    }
+    failed, total = doctest.testmod(cron_daily_rhsmd, globs=env)
+    assert failed == 0
