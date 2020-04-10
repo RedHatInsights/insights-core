@@ -19,7 +19,7 @@ class CronDailyRhsmd(Scannable):
         rhsmd_timeout=$config
         abc=$config
 
-    Examples::
+    Examples:
 
         >>> from insights.tests import context_wrap
         >>> from insights.parsers.cron_daily_rhsmd import CronDailyRhsmd
