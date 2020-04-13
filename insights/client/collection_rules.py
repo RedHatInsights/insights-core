@@ -422,8 +422,11 @@ class InsightsUploadConf(object):
             logger.info(f"No {self.tags_file} exists")
             return None
         else:
-            load_yaml(self.tags_file)
-            
+            try:
+                load_yaml(self.tags_file)
+            except RuntimeError as e:
+                logger.info(e)
+
     def validate(self):
         '''
         Validate remove.conf and tags.conf
