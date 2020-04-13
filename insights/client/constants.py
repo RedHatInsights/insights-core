@@ -10,7 +10,7 @@ class InsightsConstants(object):
     command_blacklist = ('rm', 'kill', 'reboot', 'shutdown')
     default_conf_dir = os.getenv('INSIGHTS_CONF_DIR', default='/etc/insights-client')
     default_conf_file = os.path.join(default_conf_dir, 'insights-client.conf')
-    default_tags_file = os.path.join(default_conf_dir, 'tags.conf')
+    default_tags_file = os.path.join(default_conf_dir, 'tags.yaml')
     log_dir = os.path.join(os.sep, 'var', 'log', app_name)
     simple_find_replace_dir = '/etc/redhat-access-insights'
     default_log_file = os.path.join(log_dir, app_name + '.log')

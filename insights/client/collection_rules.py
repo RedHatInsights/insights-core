@@ -420,7 +420,7 @@ class InsightsUploadConf(object):
             try:
                 load_yaml(self.tags_file)
             except RuntimeError as e:
-                logger.info(e)
+                logger.warning(e)
                 return None
 
     def validate(self):
