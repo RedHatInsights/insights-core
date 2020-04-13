@@ -13,11 +13,6 @@ import yaml
 import stat
 from six.moves import configparser as ConfigParser
 
-try:
-    from yaml import CLoader as Loader
-except ImportError:
-    from yaml import Loader
-
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
 from .constants import InsightsConstants as constants
