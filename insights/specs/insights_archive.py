@@ -171,6 +171,7 @@ class InsightsArchiveSpecs(Specs):
     mysqladmin_status = simple_file("insights_commands/mysqladmin_status")
     named_checkconf_p = simple_file("insights_commands/named-checkconf_-p")
     namespace = simple_file("insights_commands/ls_.var.run.netns")
+    ndctl_list = simple_file("insights_commands/ndctl_list_-Ni")
     netstat = simple_file("insights_commands/netstat_-neopa")
     netstat_agn = simple_file("insights_commands/netstat_-agn")
     netstat_i = simple_file("insights_commands/netstat_-i")
