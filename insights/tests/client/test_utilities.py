@@ -141,7 +141,7 @@ def test_validate_remove_file_bad_perms():
         util.validate_remove_file(conf)
     os.chmod(tf, 0o600)
     assert util.validate_remove_file(conf) is not False
-    
+
 
 def test_validate_remove_and_tags_files():
     tf = '/tmp/remove.cfg'
