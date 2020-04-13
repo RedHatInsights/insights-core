@@ -61,7 +61,7 @@ class NdctlListNi(JSONParser, CommandParser):
 
     @property
     def blockdev_list(self):
-        """ Return a list of the blockdev attribute for all the devices if it has this attribute"""
+        """ Return a list of the blockdev attribute of all the devices if it has the attribute"""
         return [item['blockdev'] for item in self.data if 'blockdev' in item]
 
     def get_block_dev(self, dev_name):
@@ -72,7 +72,7 @@ class NdctlListNi(JSONParser, CommandParser):
             dev_name (str): the blockdev name
 
         Returns:
-            dict: return a dict with all the info if there is block device else empty dict
+            dict: return a dict with all the info if there is the block device else empty dict
 
         """
         for item in self.data:
