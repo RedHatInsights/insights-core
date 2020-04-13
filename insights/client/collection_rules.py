@@ -13,6 +13,11 @@ import yaml
 import stat
 from six.moves import configparser as ConfigParser
 
+try:
+    from yaml import CLoader as Loader
+except ImportError:
+    from yaml import Loader
+
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
 from .constants import InsightsConstants as constants
@@ -108,6 +113,7 @@ class InsightsUploadConf(object):
         self.remove_file = config.remove_file
         self.redaction_file = config.redaction_file
         self.content_redaction_file = config.content_redaction_file
+        self.tags_file = config.tags_file
         self.collection_rules_file = constants.collection_rules_file
         self.collection_rules_url = self.config.collection_rules_url
         self.gpg = self.config.gpg
@@ -408,10 +414,21 @@ class InsightsUploadConf(object):
         self.rm_conf = filtered_rm_conf
         return filtered_rm_conf
 
+    def get_tags_conf(self):
+        '''
+        Try to load the tags.conf file
+        '''
+        if not os.path.isfile(self.tags_file):
+            logger.info(f"No {self.tags_file} exists")
+            return None
+        else:
+            load_yaml(self.tags_file)
+            
     def validate(self):
         '''
-        Validate remove.conf
+        Validate remove.conf and tags.conf
         '''
+        self.get_tags_conf()
         success = self.get_rm_conf()
         if not success:
             logger.info('No contents in the blacklist configuration to validate.')

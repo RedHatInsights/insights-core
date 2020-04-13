@@ -242,6 +242,10 @@ DEFAULT_OPTS = {
         # non-CLI
         'default': os.path.join(constants.default_conf_dir, 'remove.conf')
     },
+    'tags_file': {
+        # non-CLI
+        'default': os.path.join(constants.default_tags_file, 'tags.conf')
+    },
     'redaction_file': {
         # non-CLI
         'default': os.path.join(constants.default_conf_dir, 'file-redaction.yaml')
