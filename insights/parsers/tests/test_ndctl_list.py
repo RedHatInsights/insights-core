@@ -46,5 +46,6 @@ def test_netstat_doc_examples():
 def test_get_dev_attr():
     ndctl = NdctlListNi(context_wrap(NDCTL_OUTPUT))
     assert ndctl.blockdev_list == ['pmem1']
-    assert ndctl.get_attr_by_dev('pmem1', 'map') == 'mem'
-    assert ndctl.get_attr_by_dev('pmem2', 'mode') is None
+    assert 'map' in ndctl.get_block_dev('pmem1')
+    assert ndctl.get_block_dev('pmem1').get('map') == 'mem'
+    assert ndctl.get_block_dev('pmem2') == {}

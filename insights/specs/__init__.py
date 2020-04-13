@@ -353,7 +353,7 @@ class Specs(SpecSet):
     mysqld_limits = RegistryPoint()
     named_checkconf_p = RegistryPoint(filterable=True)
     namespace = RegistryPoint()
-    ndctl_list = RegistryPoint()
+    ndctl_list_with_namespace_and_idle = RegistryPoint()
     netconsole = RegistryPoint()
     netstat_agn = RegistryPoint()
     netstat_i = RegistryPoint()

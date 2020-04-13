@@ -1,15 +1,20 @@
 """
+Commands about "libnvdimm" subsystem devices
+============================================
+
+This module contains the following parsers:
+
 NdctlListNi - command ``/usr/bin/ndctl list -Ni``
 =================================================
 """
 
-from insights.core import JSONParser
+from insights.core import JSONParser, CommandParser
 from insights.core.plugins import parser
 from insights.specs import Specs
 
 
-@parser(Specs.ndctl_list)
-class NdctlListNi(JSONParser):
+@parser(Specs.ndctl_list_with_namespace_and_idle)
+class NdctlListNi(JSONParser, CommandParser):
     """
     Class for parsing the command of ``/usr/bin/ndctl list -Ni``
 
@@ -21,7 +26,7 @@ class NdctlListNi(JSONParser):
                 "mode":"fsdax",
                 "map":"mem",
                 "size":811746721792,
-                "uuid":"6a7d93f5-60c4-461b-8d19-0409bd323a94",
+                "uuid":"6a5d93a5-6044-461b-8d19-0409bd323a94",
                 "sector_size":512,
                 "align":2097152,
                 "blockdev":"pmem1"
@@ -50,15 +55,27 @@ class NdctlListNi(JSONParser):
         <class 'insights.parsers.ndctl_list.NdctlListNi'>
         >>> ndctl_list.blockdev_list
         ['pmem1']
-        >>> ndctl_list.get_attr_by_dev('pmem1', 'mode')
+        >>> ndctl_list.get_block_dev('pmem1').get('mode')
         'fsdax'
     """
 
     @property
     def blockdev_list(self):
+        """ Return a list of the blockdev attribute for all the devices if it has this attribute"""
         return [item['blockdev'] for item in self.data if 'blockdev' in item]
 
-    def get_attr_by_dev(self, dev_name, attr_name):
+    def get_block_dev(self, dev_name):
+        """
+        Return a dict of the block device info
+
+        Args:
+            dev_name (str): the blockdev name
+
+        Returns:
+            dict: return a dict with all the info if there is block device else empty dict
+
+        """
         for item in self.data:
-            if dev_name == item.get('blockdev', ''):
-                return item.get(attr_name, '')
+            if item.get('blockdev', '') == dev_name:
+                return item
+        return {}

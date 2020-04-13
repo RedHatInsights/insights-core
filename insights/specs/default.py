@@ -622,7 +622,7 @@ class DefaultSpecs(Specs):
     mysqld_limits = foreach_collect(mysqld_pid, "/proc/%s/limits")
     named_checkconf_p = simple_command("/usr/sbin/named-checkconf -p")
     namespace = simple_command("/bin/ls /var/run/netns")
-    ndctl_list = simple_command("/usr/bin/ndctl list -Ni")
+    ndctl_list_with_namespace_and_idle = simple_command("/usr/bin/ndctl list -Ni")
     ip_netns_exec_namespace_lsof = foreach_execute(namespace, "/sbin/ip netns exec %s lsof -i")
     netconsole = simple_file("/etc/sysconfig/netconsole")
     netstat = simple_command("/bin/netstat -neopa")
