@@ -332,7 +332,7 @@ def get_tags(tags_file_path=constants.default_tags_file):
         except RuntimeError:
             return None
     else:
-        logger.debug(f"{tags_file_path} does not exist")
+        logger.debug("%s does not exist", tags_file_path)
 
     return tags
 

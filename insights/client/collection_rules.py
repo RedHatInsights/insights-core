@@ -419,13 +419,14 @@ class InsightsUploadConf(object):
         Try to load the tags.conf file
         '''
         if not os.path.isfile(self.tags_file):
-            logger.info(f"No {self.tags_file} exists")
+            logger.info("%s does not exist", self.tags_file)
             return None
         else:
             try:
                 load_yaml(self.tags_file)
             except RuntimeError as e:
                 logger.info(e)
+                return None
 
     def validate(self):
         '''
