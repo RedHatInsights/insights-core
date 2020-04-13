@@ -13,7 +13,7 @@ from insights.core.plugins import parser
 from insights.specs import Specs
 
 
-@parser(Specs.ndctl_list_with_namespace_and_idle)
+@parser(Specs.ndctl_list_Ni)
 class NdctlListNi(JSONParser, CommandParser):
     """
     Class for parsing the command of ``/usr/bin/ndctl list -Ni``
@@ -55,7 +55,7 @@ class NdctlListNi(JSONParser, CommandParser):
         <class 'insights.parsers.ndctl_list.NdctlListNi'>
         >>> ndctl_list.blockdev_list
         ['pmem1']
-        >>> ndctl_list.get_block_dev('pmem1').get('mode')
+        >>> ndctl_list.get_blockdev('pmem1').get('mode')
         'fsdax'
     """
 
@@ -64,7 +64,7 @@ class NdctlListNi(JSONParser, CommandParser):
         """ Return a list of the blockdev attribute of all the devices if it has the attribute"""
         return [item['blockdev'] for item in self.data if 'blockdev' in item]
 
-    def get_block_dev(self, dev_name):
+    def get_blockdev(self, dev_name):
         """
         Return a dict of the block device info
 
