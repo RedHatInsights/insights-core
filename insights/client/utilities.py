@@ -330,7 +330,7 @@ def get_tags(tags_file_path=constants.default_tags_file):
         try:
             tags = load_yaml(tags_file_path)
         except RuntimeError:
-            logger.error("Unable to load tags.conf\nInvalid YAML")
+            logger.error("Unable to load %s\nInvalid YAML", tags_file_path)
             return None
     else:
         logger.debug("%s does not exist", tags_file_path)

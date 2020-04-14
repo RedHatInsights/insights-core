@@ -419,8 +419,8 @@ class InsightsUploadConf(object):
         else:
             try:
                 load_yaml(self.tags_file)
-            except RuntimeError as e:
-                logger.warning(e)
+            except RuntimeError:
+                logger.warning("Unable to load %s\nInvalid YAML", self.tags_file)
                 return None
 
     def validate(self):
