@@ -59,10 +59,14 @@ class NdctlListNi(JSONParser, CommandParser):
         True
     """
 
+    def parse_content(self, content):
+        super(NdctlListNi, self).parse_content(content)
+        self._blockdevs = [item['blockdev'] for item in self.data if 'blockdev' in item]
+
     @property
     def blockdev_list(self):
         """ Return a list of the blockdev attribute of all the devices if it has the attribute"""
-        return [item['blockdev'] for item in self.data if 'blockdev' in item]
+        return self._blockdevs
 
     def get_blockdev(self, dev_name):
         """
