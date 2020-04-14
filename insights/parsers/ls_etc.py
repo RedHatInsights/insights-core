@@ -1,12 +1,12 @@
 """
-LsEtc - command ``ls -lanR /etc``
-=================================
+LsEtc - command ``ls -lan /etc </etc/sub-dirs>``
+================================================
 
-The ``ls -lanR /etc`` command provides information for the listing of
-the ``/etc`` directory. See ``FileListing`` class for additional
-information.
+The ``ls -lan /etc </etc/sub-directories>`` command provides information for
+the listing of the ``/etc`` directory and specified sub-directories.
+See ``FileListing`` class for additional information.
 
-Sample ``ls -lanR /etc`` output::
+Sample ``ls -lan /etc/sysconfig /etc/rc.d/rc3.d`` output::
 
     /etc/sysconfig:
     total 96
@@ -70,5 +70,5 @@ from insights.specs import Specs
 
 @parser(Specs.ls_etc)
 class LsEtc(CommandParser, FileListing):
-    """Parses output of ``ls -lanR /etc`` command."""
+    """Parses output of ``ls -lan /etc </etc/sub-directories>`` command."""
     pass
