@@ -62,15 +62,12 @@ class TarExtractor(object):
             raise InvalidContentType(content_type)
         return flag
 
-    def from_path(self, path, extract_dir=None, content_type=None, decompressor=None):
+    def from_path(self, path, extract_dir=None, content_type=None):
         if os.path.isdir(path):
             self.tmp_dir = path
         else:
-            if decompressor:
-                tar_flag = "-I %s" % decompressor
-            else:
-                self.content_type = content_type or content_type_from_file(path)
-                tar_flag = self._tar_flag_for_content_type(self.content_type)
+            self.content_type = content_type or content_type_from_file(path)
+            tar_flag = self._tar_flag_for_content_type(self.content_type)
             self.tmp_dir = tempfile.mkdtemp(prefix="insights-", dir=extract_dir)
             self.created_tmp_dir = True
             command = "tar --delay-directory-restore %s -x --exclude=*/dev/null -f %s -C %s" % (tar_flag, path, self.tmp_dir)
