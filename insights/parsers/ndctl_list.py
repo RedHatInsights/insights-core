@@ -1,6 +1,6 @@
 """
-Commands about "libnvdimm" subsystem devices
-============================================
+Dump the platform nvdimm device topology and attributes in json
+===============================================================
 
 This module contains the following parsers:
 
@@ -53,10 +53,10 @@ class NdctlListNi(JSONParser, CommandParser):
 
         >>> type(ndctl_list)
         <class 'insights.parsers.ndctl_list.NdctlListNi'>
-        >>> ndctl_list.blockdev_list
-        ['pmem1']
-        >>> ndctl_list.get_blockdev('pmem1').get('mode')
-        'fsdax'
+        >>> 'pmem1' in ndctl_list.blockdev_list
+        True
+        >>> ndctl_list.get_blockdev('pmem1').get('mode') == 'fsdax'
+        True
     """
 
     @property
