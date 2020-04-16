@@ -70,5 +70,7 @@ from insights.specs import Specs
 
 @parser(Specs.ls_etc)
 class LsEtc(CommandParser, FileListing):
-    """Parses output of ``ls -lan /etc </etc/sub-directories>`` command."""
+    """
+    Parses output of ``ls -lan /etc </etc/sub-directories>`` command.
+    """
     pass
