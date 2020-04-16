@@ -1,5 +1,12 @@
 # Change Log
 
+## [insights-core-3.0.160-1380](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.160-1380) (2020-04-16)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.159-1375...insights-core-3.0.160-1380)
+
+**Fixed bugs:**
+
+- The path of command "db2licm" in spec is incorrect  [\#2452](https://github.com/RedHatInsights/insights-core/issues/2452)
+
 ## [insights-core-3.0.159-1375](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.159-1375) (2020-04-09)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.158-1365...insights-core-3.0.159-1375)
 
