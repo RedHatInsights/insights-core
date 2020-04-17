@@ -16,5 +16,9 @@ from insights.specs import Specs
 class DracutModuleKdumpCaptureService(IniConfigFile):
     """
     Class for parsing the `/usr/lib/dracut/modules.d/99kdumpbase/kdump-capture.service` file.
+
+    .. note::
+        Please refer to its super-class :py:class:`insights.core.IniConfigFile`
+        for full usage.
     """
     pass
