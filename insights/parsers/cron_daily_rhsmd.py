@@ -13,6 +13,8 @@ class CronDailyRhsmd(Scannable):
     """
     Parse the ``/etc/cron.daily/rhsmd`` file.
 
+    Please refer to its super-class :class:`insights.core.Scannable` for more details.
+
     Sample input::
 
         config=$(grep -E "^processTimeout" /etc/rhsm/rhsm.conf | grep -Po "[0-9]+")
@@ -21,11 +23,8 @@ class CronDailyRhsmd(Scannable):
 
     Examples:
 
-        >>> from insights.tests import context_wrap
-        >>> from insights.parsers.cron_daily_rhsmd import CronDailyRhsmd
-        >>> CronDailyRhsmd.collect('config_lines', lambda n: n if "$config" in n else "")
-        >>> CronDailyRhsmd.any('one_config_line', lambda n: n if "$config" in n else "")
-        >>> rhsmd=CronDailyRhsmd(context_wrap(RHSMD_1))
+        >>> # CronDailyRhsmd.collect('config_lines', lambda n: n if "$config" in n else "")
+        >>> # CronDailyRhsmd.any('one_config_line', lambda n: n if "$config" in n else "")
         >>> rhsmd.config_lines
         ['rhsmd_timeout=$config', 'abc=$config']
         >>> rhsmd.one_config_line

@@ -1,6 +1,7 @@
 import doctest
 
 from insights.parsers import cron_daily_rhsmd
+from insights.parsers.cron_daily_rhsmd import CronDailyRhsmd
 from insights.tests import context_wrap
 
 RHSMD_1 = """
@@ -11,8 +12,10 @@ abc=$config
 
 
 def test_docs():
+    CronDailyRhsmd.collect('config_lines', lambda n: n if "$config" in n else "")
+    CronDailyRhsmd.any('one_config_line', lambda n: n if "$config" in n else "")
     env = {
-        'RHSMD_1': RHSMD_1
+        'rhsmd': CronDailyRhsmd(context_wrap(RHSMD_1))
     }
     failed, total = doctest.testmod(cron_daily_rhsmd, globs=env)
     assert failed == 0
