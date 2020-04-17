@@ -13,13 +13,15 @@ class CronDailyRhsmd(Scannable):
     """
     Parse the ``/etc/cron.daily/rhsmd`` file.
 
-    Please refer to its super-class :class:`insights.core.Scannable` for more details.
-
     Sample input::
 
         config=$(grep -E "^processTimeout" /etc/rhsm/rhsm.conf | grep -Po "[0-9]+")
         rhsmd_timeout=$config
         abc=$config
+
+    .. note::
+        Please refer to its super-class :py:class:`insights.core.Scannable`
+        for full usage.
 
     Examples:
 
