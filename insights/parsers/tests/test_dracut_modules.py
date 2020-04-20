@@ -1,6 +1,8 @@
+import doctest
 
 from insights.tests import context_wrap
-from insights.parsers.dracut_modueles import DracutModuleKdumpCaptureService
+from insights.parsers import dracut_modules
+from insights.parsers.dracut_modules import DracutModuleKdumpCaptureService
 
 KDUMP_CAPTURE_SERVICE = """
 [Unit]
@@ -32,3 +34,13 @@ def test_dracut_kdump_capture():
     kdump_service_conf = DracutModuleKdumpCaptureService(context_wrap(KDUMP_CAPTURE_SERVICE))
     assert 'Unit' in kdump_service_conf.sections()
     assert 'dracut-initqueue.service' in kdump_service_conf.get('Unit', 'After')
+
+
+def test_doc():
+    failed_count, tests = doctest.testmod(
+        dracut_modules,
+        globs={
+            'config': dracut_modules.DracutModuleKdumpCaptureService(context_wrap(KDUMP_CAPTURE_SERVICE)),
+        }
+    )
+    assert failed_count == 0

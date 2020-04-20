@@ -1,6 +1,6 @@
 """
-Dracut modules
-==============
+Dracut module configuration files to build and extend the initramfs image
+=========================================================================
 
 This module contains the following parsers:
 
@@ -20,5 +20,13 @@ class DracutModuleKdumpCaptureService(IniConfigFile):
     .. note::
         Please refer to its super-class :py:class:`insights.core.IniConfigFile`
         for full usage.
+
+    Examples:
+        >>> 'Service' in config.sections()
+        True
+        >>> config.has_option('Service', 'Type')
+        True
+        >>> config.get('Service', 'Type')
+        'oneshot'
     """
     pass
