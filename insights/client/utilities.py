@@ -326,6 +326,8 @@ def get_tags(tags_file_path=os.path.join(constants.default_conf_dir, "tags.yaml"
     '''
     tags = None
 
+    # before reading the file, migrate the old file if necessary
+    migrate_tags(tags_file_path)
     try:
         with open(tags_file_path) as f:
             data = f.read()
@@ -349,3 +351,30 @@ def write_tags(tags, tags_file_path=os.path.join(constants.default_conf_dir, "ta
     with open(tags_file_path, mode="w+") as f:
         data = yaml.dump(tags, Dumper=Dumper, default_flow_style=False)
         f.write(data)
+
+
+def migrate_tags(tags_file_path):
+    '''
+    We initially released the tags feature with the tags file set as
+    tags.conf, but soon after switched it over to tags.yaml. There may be
+    installations out there with tags.conf files, so rename the files.
+
+    Arguments:
+        - tags_file_path (string): tags filepath being used
+
+    Returns: None
+    '''
+    tags_conf = os.path.join(constants.default_conf_dir, 'tags.conf')
+    tags_yaml = os.path.join(constants.default_conf_dir, 'tags.yaml')
+
+    if tags_file_path != tags_conf:
+        # using a file other than the (old) default, do not perform rename
+        return
+    if os.path.exists(tags_yaml):
+        # current default file exists, do nothing
+        return
+    if os.path.exists(tags_conf):
+        # old file exists and current does not
+        logger.info('Tags file %s detected. This filename is deprecated; please use %s. The file will be renamed automatically.',
+                    tags_conf, tags_yaml)
+        os.rename(tags_conf, tags_yaml)
