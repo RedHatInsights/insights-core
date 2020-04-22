@@ -3,22 +3,15 @@ Collect all the interesting data for analysis
 """
 from __future__ import absolute_import
 import os
-import errno
 import json
 import logging
-import copy
-import glob
-import six
-import shlex
 from itertools import chain
-from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
+from insights import collect
 
-from insights.util import mangle
 from ..contrib.soscleaner import SOSCleaner
-from .utilities import _expand_paths, get_version_info, systemd_notify_init_thread, get_tags
+from .utilities import get_version_info, systemd_notify_init_thread, get_tags
 from .constants import InsightsConstants as constants
-from .insights_spec import InsightsFile, InsightsCommand
 from .archive import InsightsArchive
 
 APP_NAME = constants.app_name
@@ -90,177 +83,9 @@ class DataCollector(object):
         self.archive.add_metadata_to_archive(
             json.dumps(blacklist_report), '/blacklist_report')
 
-    def _run_pre_command(self, pre_cmd):
-        '''
-        Run a pre command to get external args for a command
-        '''
-        logger.debug('Executing pre-command: %s', pre_cmd)
-        try:
-            pre_proc = Popen(pre_cmd, stdout=PIPE, stderr=STDOUT, shell=True)
-        except OSError as err:
-            if err.errno == errno.ENOENT:
-                logger.debug('Command %s not found', pre_cmd)
-            return
-        stdout, stderr = pre_proc.communicate()
-        the_return_code = pre_proc.poll()
-        logger.debug("Pre-command results:")
-        logger.debug("STDOUT: %s", stdout)
-        logger.debug("STDERR: %s", stderr)
-        logger.debug("Return Code: %s", the_return_code)
-        if the_return_code != 0:
-            return []
-        if six.PY3:
-            stdout = stdout.decode('utf-8')
-        return stdout.splitlines()
-
-    def _parse_file_spec(self, spec):
-        '''
-        Separate wildcard specs into more specs
-        '''
-        # separate wildcard specs into more specs
-        if '*' in spec['file']:
-            expanded_paths = _expand_paths(spec['file'])
-            if not expanded_paths:
-                return []
-            expanded_specs = []
-            for p in expanded_paths:
-                _spec = copy.copy(spec)
-                _spec['file'] = p
-                expanded_specs.append(_spec)
-            return expanded_specs
-
-        else:
-            return [spec]
-
-    def _parse_glob_spec(self, spec):
-        '''
-        Grab globs of things
-        '''
-        some_globs = glob.glob(spec['glob'])
-        if not some_globs:
-            return []
-        el_globs = []
-        for g in some_globs:
-            _spec = copy.copy(spec)
-            _spec['file'] = g
-            el_globs.append(_spec)
-        return el_globs
-
-    def _blacklist_check(self, cmd):
-        def _get_nested_parts(cmd):
-            parts = shlex.split(cmd.replace(';', ' '))
-            all_parts = parts[:]
-            for p in parts:
-                if len(shlex.split(p)) > 1:
-                    all_parts += _get_nested_parts(p)
-            return all_parts
-
-        cmd_parts = _get_nested_parts(cmd)
-        return len(set.intersection(set(cmd_parts),
-                   constants.command_blacklist)) > 0
-
-    def _parse_command_spec(self, spec, precmds):
-        '''
-        Run pre_commands
-        '''
-        if 'pre_command' in spec:
-            precmd_alias = spec['pre_command']
-            try:
-                precmd = precmds[precmd_alias]
-
-                if self._blacklist_check(precmd):
-                    raise RuntimeError("Command Blacklist: " + precmd)
-
-                args = self._run_pre_command(precmd)
-                logger.debug('Pre-command results: %s', args)
-
-                expanded_specs = []
-                for arg in args:
-                    _spec = copy.copy(spec)
-                    _spec['command'] = _spec['command'] + ' ' + arg
-                    expanded_specs.append(_spec)
-                return expanded_specs
-            except LookupError:
-                logger.debug('Pre-command %s not found. Skipping %s...',
-                             precmd_alias, spec['command'])
-                return []
-        else:
-            return [spec]
-
-    def run_collection(self, conf, rm_conf, branch_info, blacklist_report):
+    def run_collection(self, rm_conf, branch_info, blacklist_report):
         '''
         Run specs and collect all the data
-        '''
-        # initialize systemd-notify thread
-        systemd_notify_init_thread()
-
-        if rm_conf is None:
-            rm_conf = {}
-        logger.debug('Beginning to run collection spec...')
-        exclude = None
-        if rm_conf:
-            try:
-                exclude = rm_conf['patterns']
-                # handle the None or empty case of the sub-object
-                if 'regex' in exclude and not exclude['regex']:
-                    raise LookupError
-                logger.warn("WARNING: Skipping patterns defined in blacklist configuration")
-            except LookupError:
-                logger.debug('Patterns section of blacklist configuration is empty.')
-
-        for c in conf['commands']:
-            # remember hostname archive path
-            if c.get('symbolic_name') == 'hostname':
-                self.hostname_path = os.path.join(
-                    'insights_commands', mangle.mangle_command(c['command']))
-            rm_commands = rm_conf.get('commands', [])
-            if c['command'] in rm_commands or c.get('symbolic_name') in rm_commands:
-                logger.warn("WARNING: Skipping command %s", c['command'])
-            elif self.mountpoint == "/" or c.get("image"):
-                cmd_specs = self._parse_command_spec(c, conf['pre_commands'])
-                for s in cmd_specs:
-                    if s['command'] in rm_commands:
-                        logger.warn("WARNING: Skipping command %s", s['command'])
-                        continue
-                    cmd_spec = InsightsCommand(self.config, s, exclude, self.mountpoint)
-                    self.archive.add_to_archive(cmd_spec)
-        for f in conf['files']:
-            rm_files = rm_conf.get('files', [])
-            if f['file'] in rm_files or f.get('symbolic_name') in rm_files:
-                logger.warn("WARNING: Skipping file %s", f['file'])
-            else:
-                file_specs = self._parse_file_spec(f)
-                for s in file_specs:
-                    # filter files post-wildcard parsing
-                    if s['file'] in rm_conf.get('files', []):
-                        logger.warn("WARNING: Skipping file %s", s['file'])
-                    else:
-                        file_spec = InsightsFile(s, exclude, self.mountpoint)
-                        self.archive.add_to_archive(file_spec)
-        if 'globs' in conf:
-            for g in conf['globs']:
-                glob_specs = self._parse_glob_spec(g)
-                for g in glob_specs:
-                    if g['file'] in rm_conf.get('files', []):
-                        logger.warn("WARNING: Skipping file %s", g)
-                    else:
-                        glob_spec = InsightsFile(g, exclude, self.mountpoint)
-                        self.archive.add_to_archive(glob_spec)
-        logger.debug('Spec collection finished.')
-
-        # collect metadata
-        logger.debug('Collecting metadata...')
-        self._write_branch_info(branch_info)
-        self._write_display_name()
-        self._write_version_info()
-        self._write_tags()
-        self._write_blacklist_report(blacklist_report)
-        logger.debug('Metadata collection finished.')
-
-    def done(self, conf, rm_conf):
-        """
-        Do finalization stuff
-
         Returns:
             default:
                 path to generated tarfile
@@ -272,10 +97,41 @@ class DataCollector(object):
                 path to generated directory, scubbed by soscleaner
         Ideally, we may want to have separate functions for directories
             and archive files.
-        """
+        '''
+        # initialize systemd-notify thread
+        systemd_notify_init_thread()
+
+        if rm_conf is None:
+            rm_conf = {}
+
+        # add tokens to limit regex handling
+        #   core parses blacklist for files and commands as regex
+        if 'files' in rm_conf:
+            for idx, f in enumerate(rm_conf['files']):
+                rm_conf['files'][idx] = '^' + f + '$'
+
+        if 'commands' in rm_conf:
+            for idx, c in enumerate(rm_conf['commands']):
+                rm_conf['commands'][idx] = '^' + c + '$'
+
+        logger.debug('Beginning to run collection...')
+        collected_data_path = collect.collect(tmp_path=self.archive.tmp_dir, rm_conf=rm_conf)
+        # update the archive object with the reported data location from Insights Core
+        self.archive.update(collected_data_path)
+        logger.debug('Collection finished.')
+
+        # collect metadata
+        logger.debug('Collecting metadata...')
+        self._write_branch_info(branch_info)
+        self._write_display_name()
+        self._write_version_info()
+        self._write_tags()
+        self._write_blacklist_report(blacklist_report)
+        logger.debug('Metadata collection finished.')
+
         if self.config.obfuscate:
             if rm_conf and rm_conf.get('keywords'):
-                logger.warn("WARNING: Skipping keywords defined in blacklist configuration")
+                logger.warning("WARNING: Skipping keywords defined in blacklist configuration")
             cleaner = SOSCleaner(quiet=True)
             clean_opts = CleanOptions(
                 self.config, self.archive.tmp_dir, rm_conf, self.hostname_path)

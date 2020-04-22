@@ -2,13 +2,9 @@
 Rules for data collection
 """
 from __future__ import absolute_import
-import hashlib
-import json
 import logging
 import six
-import shlex
 import os
-import requests
 import yaml
 import stat
 from six.moves import configparser as ConfigParser
@@ -16,10 +12,73 @@ from six.moves import configparser as ConfigParser
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
 from .constants import InsightsConstants as constants
+from collections import defaultdict
+from insights import datasource, dr, parse_plugins, load_packages
+from insights.core import spec_factory as sf
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
 NETWORK = constants.custom_network_log_level
+
+
+def resolve(d):
+    """
+    Categorizes a datasource's command, path, or template information.
+    The categorization ignores first_of, head, and find since they depend on other
+    datasources that will get resolved anyway. Ignore the listdir helper and explicit
+    @datasource functions since they're pure python.
+    """
+    if isinstance(d, sf.simple_file):
+        return ("file_static", [d.path])
+
+    if isinstance(d, sf.first_file):
+        return ("file_static", d.paths)
+
+    if isinstance(d, sf.glob_file):
+        return ("file_glob", d.patterns)
+
+    if isinstance(d, sf.foreach_collect):
+        return ("file_template", [d.path])
+
+    if isinstance(d, sf.simple_command):
+        return ("command_static", [d.cmd])
+
+    if isinstance(d, sf.command_with_args):
+        return ("command_template", [d.cmd])
+
+    if isinstance(d, sf.foreach_execute):
+        return ("command_template", [d.cmd])
+
+    return (None, None)
+
+
+def categorize(ds):
+    """
+    Extracts commands, paths, and templates from datasources and cateorizes them
+    based on their type.
+    """
+    results = defaultdict(set)
+    for d in ds:
+        (cat, res) = resolve(d)
+        if cat is not None:
+            results[cat] |= set(res)
+    return {k: sorted(v) for k, v in results.items()}
+
+
+def get_spec_report():
+    """
+    You'll need to already have the specs loaded, and then you can call this
+    procedure to get a categorized dict of the commands we might run and files
+    we might collect.
+    """
+    load("insights.specs.default")
+    ds = dr.get_components_of_type(datasource)
+    return categorize(ds)
+
+
+def load(p):
+    plugins = parse_plugins(p)
+    load_packages(plugins)
 
 
 def correct_format(parsed_data, expected_keys, filename):
@@ -97,6 +156,7 @@ def verify_permissions(f):
 class InsightsUploadConf(object):
     """
     Insights spec configuration from uploader.json
+    Now only loads remove.conf, consider renaming/refactor
     """
 
     def __init__(self, config, conn=None):
@@ -104,14 +164,10 @@ class InsightsUploadConf(object):
         Load config from parent
         """
         self.config = config
-        self.fallback_file = constants.collection_fallback_file
         self.remove_file = config.remove_file
         self.redaction_file = config.redaction_file
         self.content_redaction_file = config.content_redaction_file
         self.tags_file = config.tags_file
-        self.collection_rules_file = constants.collection_rules_file
-        self.collection_rules_url = self.config.collection_rules_url
-        self.gpg = self.config.gpg
 
         # set rm_conf as a class attribute so we can observe it
         #   in create_report
@@ -121,179 +177,6 @@ class InsightsUploadConf(object):
         #   remove.conf, for reporting purposes. True by default
         #   since new format is favored.
         self.using_new_format = True
-
-        if conn:
-            if self.collection_rules_url is None:
-                if config.legacy_upload:
-                    self.collection_rules_url = conn.base_url + '/v1/static/uploader.v2.json'
-                else:
-                    self.collection_rules_url = conn.base_url.split('/platform')[0] + '/v1/static/uploader.v2.json'
-                    # self.collection_rules_url = conn.base_url + '/static/uploader.v2.json'
-            self.conn = conn
-
-    def validate_gpg_sig(self, path, sig=None):
-        """
-        Validate the collection rules
-        """
-        logger.debug("Verifying GPG signature of Insights configuration")
-        if sig is None:
-            sig = path + ".asc"
-        command = ("/usr/bin/gpg --no-default-keyring "
-                   "--keyring " + constants.pub_gpg_path +
-                   " --verify " + sig + " " + path)
-        if not six.PY3:
-            command = command.encode('utf-8', 'ignore')
-        args = shlex.split(command)
-        logger.debug("Executing: %s", args)
-        proc = Popen(
-            args, shell=False, stdout=PIPE, stderr=STDOUT, close_fds=True)
-        stdout, stderr = proc.communicate()
-        logger.debug("STDOUT: %s", stdout)
-        logger.debug("STDERR: %s", stderr)
-        logger.debug("Status: %s", proc.returncode)
-        if proc.returncode:
-            logger.error("ERROR: Unable to validate GPG signature: %s", path)
-            return False
-        else:
-            logger.debug("GPG signature verified")
-            return True
-
-    def try_disk(self, path, gpg=True):
-        """
-        Try to load json off disk
-        """
-        if not os.path.isfile(path):
-            return
-
-        if not gpg or self.validate_gpg_sig(path):
-            stream = open(path, 'r')
-            json_stream = stream.read()
-            if len(json_stream):
-                try:
-                    json_config = json.loads(json_stream)
-                    return json_config
-                except ValueError:
-                    logger.error("ERROR: Invalid JSON in %s", path)
-                    return False
-            else:
-                logger.warn("WARNING: %s was an empty file", path)
-                return
-
-    def get_collection_rules(self, raw=False):
-        """
-        Download the collection rules
-        """
-        logger.debug("Attemping to download collection rules from %s",
-                     self.collection_rules_url)
-
-        logger.log(NETWORK, "GET %s", self.collection_rules_url)
-        try:
-            req = self.conn.session.get(
-                self.collection_rules_url, headers=({'accept': 'text/plain'}))
-
-            if req.status_code == 200:
-                logger.debug("Successfully downloaded collection rules")
-
-                json_response = NamedTemporaryFile()
-                json_response.write(req.text.encode('utf-8'))
-                json_response.file.flush()
-            else:
-                logger.error("ERROR: Could not download dynamic configuration")
-                logger.error("Debug Info: \nConf status: %s", req.status_code)
-                logger.error("Debug Info: \nConf message: %s", req.text)
-                return None
-        except requests.ConnectionError as e:
-            logger.error(
-                "ERROR: Could not download dynamic configuration: %s", e)
-            return None
-
-        if self.gpg:
-            self.get_collection_rules_gpg(json_response)
-
-        self.write_collection_data(self.collection_rules_file, req.text)
-
-        if raw:
-            return req.text
-        else:
-            return json.loads(req.text)
-
-    def fetch_gpg(self):
-        logger.debug("Attemping to download collection "
-                     "rules GPG signature from %s",
-                     self.collection_rules_url + ".asc")
-
-        headers = ({'accept': 'text/plain'})
-        logger.log(NETWORK, "GET %s", self.collection_rules_url + '.asc')
-        config_sig = self.conn.session.get(self.collection_rules_url + '.asc',
-                                           headers=headers)
-        if config_sig.status_code == 200:
-            logger.debug("Successfully downloaded GPG signature")
-            return config_sig.text
-        else:
-            logger.error("ERROR: Download of GPG Signature failed!")
-            logger.error("Sig status: %s", config_sig.status_code)
-            return False
-
-    def get_collection_rules_gpg(self, collection_rules):
-        """
-        Download the collection rules gpg signature
-        """
-        sig_text = self.fetch_gpg()
-        sig_response = NamedTemporaryFile(suffix=".asc")
-        sig_response.write(sig_text.encode('utf-8'))
-        sig_response.file.flush()
-        self.validate_gpg_sig(collection_rules.name, sig_response.name)
-        self.write_collection_data(self.collection_rules_file + ".asc", sig_text)
-
-    def write_collection_data(self, path, data):
-        """
-        Write collections rules to disk
-        """
-        flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
-        fd = os.open(path, flags, 0o600)
-        with os.fdopen(fd, 'w') as dyn_conf_file:
-            dyn_conf_file.write(data)
-
-    def get_conf_file(self):
-        """
-        Get config from local config file, first try cache, then fallback.
-        """
-        for conf_file in [self.collection_rules_file, self.fallback_file]:
-            logger.debug("trying to read conf from: " + conf_file)
-            conf = self.try_disk(conf_file, self.gpg)
-
-            if not conf:
-                continue
-
-            version = conf.get('version', None)
-            if version is None:
-                raise ValueError("ERROR: Could not find version in json")
-
-            conf['file'] = conf_file
-            logger.debug("Success reading config")
-            logger.debug(json.dumps(conf))
-            return conf
-
-        raise ValueError("ERROR: Unable to download conf or read it from disk!")
-
-    def get_conf_update(self):
-        """
-        Get updated config from URL, fallback to local file if download fails.
-        """
-        dyn_conf = self.get_collection_rules()
-
-        if not dyn_conf:
-            return self.get_conf_file()
-
-        version = dyn_conf.get('version', None)
-        if version is None:
-            raise ValueError("ERROR: Could not find version in json")
-
-        dyn_conf['file'] = self.collection_rules_file
-        logger.debug("Success reading config")
-        config_hash = hashlib.sha1(json.dumps(dyn_conf).encode('utf-8')).hexdigest()
-        logger.debug('sha1 of config: %s', config_hash)
-        return dyn_conf
 
     def get_rm_conf_old(self):
         """

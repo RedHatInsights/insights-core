@@ -5,6 +5,7 @@ import logging
 import os
 import sys
 import atexit
+import yaml
 
 from insights.client import InsightsClient
 from insights.client.config import InsightsConfig
@@ -13,6 +14,7 @@ from insights.client.support import InsightsSupport
 from insights.client.utilities import validate_remove_file, print_egg_versions, write_to_disk
 from insights.client.schedule import get_scheduler
 from insights.client.apps.compliance import ComplianceClient
+from insights.client.collection_rules import get_spec_report
 
 logger = logging.getLogger(__name__)
 
@@ -114,10 +116,6 @@ def pre_update(client, config):
 @phase
 def update(client, config):
     client.update()
-    if config.payload:
-        logger.debug('Uploading a payload. Bypassing rules update.')
-        return
-    client.update_rules()
 
 
 @phase
@@ -126,6 +124,12 @@ def post_update(client, config):
     logger.debug('Machine ID: %s', client.get_machine_id())
     logger.debug("CONFIG: %s", config)
     print_egg_versions()
+
+    if config.list:
+        # log all data that the client collects via core
+        report = get_spec_report()
+        print(yaml.dump(report))
+        sys.exit(constants.sig_kill_ok)
 
     if config.show_results:
         try:

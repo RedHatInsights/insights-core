@@ -5,28 +5,31 @@ from mock.mock import patch, Mock
 
 
 @patch('insights.client.data_collector.InsightsArchive')
-def test_archive_returned(_):
+@patch('insights.client.data_collector.collect')
+def test_archive_returned(_, __):
     c = InsightsConfig()
     r = {}   # rm_conf
     d = DataCollector(c)
-    ret = d.done(c, r)
+    ret = d.run_collection(r, {}, {})
     d.archive.create_tar_file.assert_called_once()
     assert ret == d.archive.create_tar_file.return_value
 
 
 @patch('insights.client.data_collector.InsightsArchive')
-def test_dir_returned(_):
+@patch('insights.client.data_collector.collect')
+def test_dir_returned(_, __):
     c = InsightsConfig(output_dir='test')
     r = {}   # rm_conf
     d = DataCollector(c)
-    ret = d.done(c, r)
+    ret = d.run_collection(r, {}, {})
     d.archive.create_tar_file.assert_not_called()
     assert ret == d.archive.archive_dir
 
 
 @patch('insights.client.data_collector.SOSCleaner')
 @patch('insights.client.data_collector.InsightsArchive')
-def test_soscleaner_archive_returned(_, soscleaner):
+@patch('insights.client.data_collector.collect')
+def test_soscleaner_archive_returned(_, __, soscleaner):
     '''
     Test that SOSCleaner is enabled when obfuscate=True,
     and returns an archive by default
@@ -34,7 +37,7 @@ def test_soscleaner_archive_returned(_, soscleaner):
     c = InsightsConfig(obfuscate=True)
     r = {'keywords': ['test']}
     d = DataCollector(c)
-    ret = d.done(c, r)
+    ret = d.run_collection(r, {}, {})
     soscleaner.assert_called_once()
     soscleaner.return_value.clean_report.assert_called_once()
     assert ret == soscleaner.return_value.archive_path
@@ -42,7 +45,8 @@ def test_soscleaner_archive_returned(_, soscleaner):
 
 @patch('insights.client.data_collector.SOSCleaner')
 @patch('insights.client.data_collector.InsightsArchive')
-def test_soscleaner_dir_returned(_, soscleaner):
+@patch('insights.client.data_collector.collect')
+def test_soscleaner_dir_returned(_, __, soscleaner):
     '''
     Test that SOSCleaner returns a directory when
     output_dir is specified.
@@ -50,7 +54,7 @@ def test_soscleaner_dir_returned(_, soscleaner):
     c = InsightsConfig(obfuscate=True, output_dir='test')
     r = {'keywords': ['test']}
     d = DataCollector(c)
-    ret = d.done(c, r)
+    ret = d.run_collection(r, {}, {})
     soscleaner.assert_called_once()
     soscleaner.return_value.clean_report.assert_called_once()
     assert ret == soscleaner.return_value.dir_path

@@ -353,8 +353,8 @@ class SOSCleaner:
         # this may be an option that can be enabled... --hosts or similar?
 
         try:
-            if os.path.isfile(os.path.join(self.dir_path, 'etc/hosts')):
-                with open(os.path.join(self.dir_path, 'etc/hosts')) as f:
+            if os.path.isfile(os.path.join(self.dir_path, 'data/etc/hosts')):
+                with open(os.path.join(self.dir_path, 'data/etc/hosts')) as f:
                     self.logger.con_out("Processing hosts file for better obfuscation coverage")
                     data = f.readlines()
                     for line in data:

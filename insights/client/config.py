@@ -80,10 +80,6 @@ DEFAULT_OPTS = {
         # non-CLI
         'default': constants.default_cmd_timeout
     },
-    'collection_rules_url': {
-        # non-CLI
-        'default': None
-    },
     'compliance': {
         'default': False,
         'opt': ['--compliance'],
@@ -169,6 +165,12 @@ DEFAULT_OPTS = {
         'help': 'Do not delete archive after upload',
         'action': 'store_true',
         'group': 'debug'
+    },
+    'list': {
+        'default': False,
+        'opt': ['--list'],
+        'help': 'Show list of all commands and files collected by Insights',
+        'action': 'store_true'
     },
     'logging_file': {
         'default': constants.default_log_file,
