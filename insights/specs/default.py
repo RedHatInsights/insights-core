@@ -210,6 +210,7 @@ class DefaultSpecs(Specs):
     cpuinfo_max_freq = simple_file("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq")
     cpupower_frequency_info = simple_command("/usr/bin/cpupower -c all frequency-info")
     cpuset_cpus = simple_file("/sys/fs/cgroup/cpuset/cpuset.cpus")
+    cron_daily_rhsmd = simple_file("/etc/cron.daily/rhsmd")
     crypto_policies_config = simple_file("/etc/crypto-policies/config")
     crypto_policies_state_current = simple_file("/etc/crypto-policies/state/current")
     crypto_policies_opensshserver = simple_file("/etc/crypto-policies/back-ends/opensshserver.config")
