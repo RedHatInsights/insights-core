@@ -21,12 +21,25 @@ class DracutModuleKdumpCaptureService(IniConfigFile):
         Please refer to its super-class :py:class:`insights.core.IniConfigFile`
         for full usage.
 
+    Sample input::
+
+        [Unit]
+        Description=Kdump Vmcore Save Service
+        After=initrd.target initrd-parse-etc.service sysroot.mount
+        Before=initrd-cleanup.service
+
+        [Service]
+        Type=oneshot
+        ExecStart=/bin/kdump.sh
+        StandardInput=null
+        StandardOutput=syslog
+
     Examples:
         >>> 'Service' in config.sections()
         True
         >>> config.has_option('Service', 'Type')
         True
-        >>> config.get('Service', 'Type')
-        'oneshot'
+        >>> config.get('Service', 'Type') == 'oneshot'
+        True
     """
     pass
