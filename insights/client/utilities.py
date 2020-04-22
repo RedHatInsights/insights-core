@@ -367,4 +367,7 @@ def migrate_tags():
         # old file exists and current does not
         logger.info('Tags file %s detected. This filename is deprecated; please use %s. The file will be renamed automatically.',
                     tags_conf, tags_yaml)
-        os.rename(tags_conf, tags_yaml)
+        try:
+            os.rename(tags_conf, tags_yaml)
+        except OSError as e:
+            logger.error(e)
