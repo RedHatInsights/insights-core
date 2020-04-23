@@ -76,16 +76,6 @@ class TarExtractor(object):
         return self
 
 
-def get_all_files(path):
-    names = []
-    for root, dirs, files in os.walk(path):
-        for dirname in dirs:
-            names.append(os.path.join(root, dirname) + "/")
-        for filename in files:
-            names.append(os.path.join(root, filename))
-    return names
-
-
 class Extraction(object):
     def __init__(self, tmp_dir, content_type):
         self.tmp_dir = tmp_dir
