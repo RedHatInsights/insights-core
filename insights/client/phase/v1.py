@@ -265,6 +265,7 @@ def post_update(client, config):
 def collect_and_output(client, config):
     # last phase, delete PID file on exit
     atexit.register(write_to_disk, constants.pidfile, delete=True)
+
     # register cloud (aws)
     if config.portal_access or config.portal_access_no_insights:
         if aws_main(config):

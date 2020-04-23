@@ -318,6 +318,24 @@ def systemd_notify(pid):
         logger.debug('systemd-notify returned %s', proc.returncode)
 
 
+def systemd_notify_init_thread():
+    '''
+    Use a thread to periodically ping systemd instead
+    of calling it on a per-command basis
+    '''
+    pid = read_pidfile()
+
+    def _sdnotify_loop():
+        while True:
+            # run sdnotify every 30 seconds
+            systemd_notify(pid)
+            time.sleep(30)
+
+    sdnotify_thread = threading.Thread(target=_sdnotify_loop, args=())
+    sdnotify_thread.daemon = True
+    sdnotify_thread.start()
+
+
 def get_tags(tags_file_path=constants.default_tags_file):
     '''
     Load tag data from the tags file.
