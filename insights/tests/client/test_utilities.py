@@ -294,7 +294,7 @@ def test_get_tags_empty():
     fp.write(content)
     fp.close()
     got = util.get_tags(fp.name)
-    assert got is None
+    assert got == {}
 
 
 def test_get_tags_nonexist():
