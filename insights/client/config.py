@@ -343,7 +343,7 @@ DEFAULT_OPTS = {
     'validate': {
         'default': False,
         'opt': ['--validate'],
-        'help': 'Validate remove.conf',
+        'help': 'Validate remove.conf and tags.yaml',
         'action': 'store_true'
     },
     'verbose': {
