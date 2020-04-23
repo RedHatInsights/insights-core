@@ -15,13 +15,13 @@ from subprocess import Popen, PIPE, STDOUT
 
 import yaml
 try:
-    from yaml import CLoader as Loader, CDumper as Dumper
+    from yaml import CDumper as Dumper
 except ImportError:
-    from yaml import Loader, Dumper
+    from yaml import Dumper
 
 from .. import package_info
 from .constants import InsightsConstants as constants
-from .collection_rules import InsightsUploadConf
+from .collection_rules import InsightsUploadConf, load_yaml
 
 try:
     from insights_client.constants import InsightsConstants as wrapper_constants
@@ -176,7 +176,7 @@ def _expand_paths(path):
 
 def validate_remove_file(config):
     """
-    Validate the remove file
+    Validate the remove file and tags file
     """
     return InsightsUploadConf(config).validate()
 
@@ -318,7 +318,7 @@ def systemd_notify(pid):
         logger.debug('systemd-notify returned %s', proc.returncode)
 
 
-def get_tags(tags_file_path=os.path.join(constants.default_conf_dir, "tags.yaml")):
+def get_tags(tags_file_path=constants.default_tags_file):
     '''
     Load tag data from the tags file.
 
@@ -326,17 +326,19 @@ def get_tags(tags_file_path=os.path.join(constants.default_conf_dir, "tags.yaml"
     '''
     tags = None
 
-    try:
-        with open(tags_file_path) as f:
-            data = f.read()
-            tags = yaml.load(data, Loader=Loader)
-    except EnvironmentError as e:
-        logger.debug("tags file does not exist: %s", os.strerror(e.errno))
+    if os.path.isfile(tags_file_path):
+        try:
+            tags = load_yaml(tags_file_path)
+        except RuntimeError:
+            logger.error("Invalid YAML. Unable to load %s", tags_file_path)
+            return None
+    else:
+        logger.debug("%s does not exist", tags_file_path)
 
     return tags
 
 
-def write_tags(tags, tags_file_path=os.path.join(constants.default_conf_dir, "tags.yaml")):
+def write_tags(tags, tags_file_path=constants.default_tags_file):
     """
     Writes tags to tags_file_path
 
