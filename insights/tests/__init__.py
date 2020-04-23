@@ -93,7 +93,7 @@ def deep_compare(result, expected):
         assert result["type"] == "skip", result
         return
 
-    assert eq(result, expected)
+    assert eq(result, expected), result
 
 
 def run_input_data(component, input_data):
