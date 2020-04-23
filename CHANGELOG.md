@@ -1,5 +1,20 @@
 # Change Log
 
+## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
+
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.161-1385...HEAD)
+
+**Implemented enhancements:**
+
+- Use igzip if it's available for tar decompression with fallback to gunzip. [\#2547](https://github.com/RedHatInsights/insights-core/issues/2547)
+
+## [insights-core-3.0.161-1385](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.161-1385) (2020-04-23)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.160-1380...insights-core-3.0.161-1385)
+
+**Closed issues:**
+
+- Better print out the 'result' when 'assert' failed in test [\#2551](https://github.com/RedHatInsights/insights-core/issues/2551)
+
 ## [insights-core-3.0.160-1380](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.160-1380) (2020-04-16)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.159-1375...insights-core-3.0.160-1380)
 
