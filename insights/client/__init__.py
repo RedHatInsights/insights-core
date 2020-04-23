@@ -18,7 +18,8 @@ from .utilities import (delete_registered_file,
                         write_to_disk,
                         generate_machine_id,
                         get_tags,
-                        write_tags)
+                        write_tags,
+                        migrate_tags)
 
 NETWORK = constants.custom_network_log_level
 logger = logging.getLogger(__name__)
@@ -51,6 +52,7 @@ class InsightsClient(object):
         if setup_logging:
             self.set_up_logging()
             try_auto_configuration(self.config)
+            self.initialize_tags()
         else:
             # write PID to file in case we need to ping systemd
             write_to_disk(constants.pidfile, content=str(os.getpid()))
@@ -58,13 +60,6 @@ class InsightsClient(object):
         # used for requests
         self.session = None
         self.connection = None
-
-        if self.config.group:
-            tags = get_tags()
-            if tags is None:
-                tags = {}
-            tags["group"] = self.config.group
-            write_tags(tags)
 
     def _net(func):
         def _init_connection(self, *args, **kwargs):
@@ -613,6 +608,21 @@ class InsightsClient(object):
         logger.info('Collected data copied to %s', self.config.output_file)
         if self.config.obfuscate:
             self._copy_soscleaner_files(insights_archive)
+
+    def initialize_tags(self):
+        '''
+        Initialize the tags file if needed
+        '''
+        # migrate the old file if necessary
+        migrate_tags()
+
+        # initialize with group if group was specified
+        if self.config.group:
+            tags = get_tags()
+            if tags is None:
+                tags = {}
+            tags["group"] = self.config.group
+            write_tags(tags)
 
 
 def format_config(config):
