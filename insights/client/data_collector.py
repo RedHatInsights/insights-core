@@ -115,6 +115,17 @@ class DataCollector(object):
                 rm_conf['commands'][idx] = '^' + c + '$'
 
         logger.debug('Beginning to run collection...')
+
+        if rm_conf:
+            try:
+                patterns = rm_conf['patterns']
+                # handle the None or empty case of the sub-object
+                if 'regex' in patterns and not patterns['regex']:
+                    raise LookupError
+                logger.warn("WARNING: Skipping patterns defined in blacklist configuration")
+            except LookupError:
+                logger.debug('Patterns section of blacklist configuration is empty.')
+
         collected_data_path = collect.collect(tmp_path=self.archive.tmp_dir, rm_conf=rm_conf)
         # update the archive object with the reported data location from Insights Core
         self.archive.update(collected_data_path)
@@ -181,6 +192,6 @@ class CleanOptions(object):
 
         if config.obfuscate_hostname:
             # default to its original location
-            self.hostname_path = hostname_path or 'insights_commands/hostname'
+            self.hostname_path = hostname_path or 'data/insights_commands/hostname'
         else:
             self.hostname_path = None
