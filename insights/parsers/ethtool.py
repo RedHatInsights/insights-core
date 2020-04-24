@@ -714,7 +714,6 @@ class TimeStamp(CommandParser):
 
     Attributes:
         data (dict): Dictionary of keys with values.
-        ifname (str): Interface name.
 
     Raises:
         ParseException: Raised when any problem parsing the command output.
@@ -794,7 +793,7 @@ class Ethtool(CommandParser):
             values, split into individual words.
         available_link_modes (list): A list of the 'Available link modes'
             values, split into individual words.
-        supported_link_modes (list): A list of the 'Supported ports' values,
+        supported_ports (list): A list of the 'Supported ports' values,
             split into individual words.
 
     Sample input::
