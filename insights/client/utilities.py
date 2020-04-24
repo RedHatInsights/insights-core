@@ -11,6 +11,8 @@ import datetime
 import shlex
 import re
 import sys
+import threading
+import time
 from subprocess import Popen, PIPE, STDOUT
 
 import yaml
@@ -294,20 +296,11 @@ def read_pidfile():
     return pid
 
 
-def systemd_notify(pid):
+def _systemd_notify(pid):
     '''
     Ping the systemd watchdog with the main PID so that
     the watchdog doesn't kill the process
     '''
-    if not os.getenv('NOTIFY_SOCKET'):
-        # running standalone, not via systemd job
-        return
-    if not pid:
-        logger.debug('No PID specified.')
-        return
-    if not os.path.exists('/usr/bin/systemd-notify'):
-        # RHEL 6, no systemd
-        return
     try:
         proc = Popen(['/usr/bin/systemd-notify', '--pid=' + str(pid), 'WATCHDOG=1'])
     except OSError:
@@ -324,11 +317,20 @@ def systemd_notify_init_thread():
     of calling it on a per-command basis
     '''
     pid = read_pidfile()
+    if not pid:
+        logger.debug('No PID specified.')
+        return
+    if not os.getenv('NOTIFY_SOCKET'):
+        # running standalone, not via systemd job
+        return
+    if not os.path.exists('/usr/bin/systemd-notify'):
+        # RHEL 6, no systemd
+        return
 
     def _sdnotify_loop():
         while True:
             # run sdnotify every 30 seconds
-            systemd_notify(pid)
+            _systemd_notify(pid)
             time.sleep(30)
 
     sdnotify_thread = threading.Thread(target=_sdnotify_loop, args=())
