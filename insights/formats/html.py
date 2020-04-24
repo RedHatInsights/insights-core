@@ -124,7 +124,7 @@ class HtmlFormat(TemplateFormat):
     def create_template_context(self):
         ctx = {
             "root": self.find_root() or "Unknown",
-            "start_time": self.start_time,
+            "start_time": self.start_time.strftime("%Y-%m-%d %H:%M:%S")
         }
         sorted_rules = {}
         response_type_getter = itemgetter("response_type")
