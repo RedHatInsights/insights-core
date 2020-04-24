@@ -1,5 +1,3 @@
-from insights.client.data_collector import DataCollector
-from insights.client.insights_spec import InsightsCommand
 from insights.client.insights_spec import InsightsFile
 from insights.client.insights_spec import InsightsSpec
 from mock.mock import patch, MagicMock, ANY

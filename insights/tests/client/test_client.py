@@ -9,7 +9,7 @@ from insights.client.config import InsightsConfig
 from insights import package_info
 from insights.client.constants import InsightsConstants as constants
 from insights.client.utilities import generate_machine_id
-from mock.mock import patch, Mock, mock_open, call
+from mock.mock import patch, Mock, call
 
 
 class FakeConnection(object):
