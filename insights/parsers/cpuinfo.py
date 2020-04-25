@@ -243,7 +243,16 @@ class CpuInfo(LegacyItemAccess, Parser):
         str: Returns the total number of cores for the server if available, else None.
         """
         if self.data and 'cpu_cores' in self.data:
-            return sum([int(c) for c in self.data['cpu_cores']])
+            # I guess we can't get this fancey on older versions of RHEL
+            # return sum({e['sockets']: int(e['cpu_cores']) for e in self}.values())
+            physical_dict = {}
+            for e in self:
+                # we should rename sockets here to physical_ids as cpuinfo
+                # has it there can be many physical_ids per socket
+                # see fgrep 'physical id' /proc/cpuinfo on a single
+                # package system
+                physical_dict[e['sockets']] = int(e['cpu_cores'])
+            return sum(physical_dict.values())
         else:
             return None
 
