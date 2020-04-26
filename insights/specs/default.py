@@ -210,6 +210,7 @@ class DefaultSpecs(Specs):
     cpuinfo_max_freq = simple_file("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq")
     cpupower_frequency_info = simple_command("/usr/bin/cpupower -c all frequency-info")
     cpuset_cpus = simple_file("/sys/fs/cgroup/cpuset/cpuset.cpus")
+    cron_daily_rhsmd = simple_file("/etc/cron.daily/rhsmd")
     crypto_policies_config = simple_file("/etc/crypto-policies/config")
     crypto_policies_state_current = simple_file("/etc/crypto-policies/state/current")
     crypto_policies_opensshserver = simple_file("/etc/crypto-policies/back-ends/opensshserver.config")
@@ -218,7 +219,6 @@ class DefaultSpecs(Specs):
     date = simple_command("/bin/date")
     date_iso = simple_command("/bin/date --iso-8601=seconds")
     date_utc = simple_command("/bin/date --utc")
-    db2licm_l = simple_command("/usr/bin/db2licm -l")
     df__al = simple_command("/bin/df -al")
     df__alP = simple_command("/bin/df -alP")
     df__li = simple_command("/bin/df -li")
@@ -295,6 +295,7 @@ class DefaultSpecs(Specs):
             return mounted_dev
         raise SkipComponent()
 
+    dracut_kdump_capture_service = simple_file("/usr/lib/dracut/modules.d/99kdumpbase/kdump-capture.service")
     dumpe2fs_h = foreach_execute(dumpdev, "/sbin/dumpe2fs -h %s")
     engine_config_all = simple_command("/usr/bin/engine-config --all")
     engine_log = simple_file("/var/log/ovirt-engine/engine.log")
@@ -625,6 +626,7 @@ class DefaultSpecs(Specs):
     mysqld_limits = foreach_collect(mysqld_pid, "/proc/%s/limits")
     named_checkconf_p = simple_command("/usr/sbin/named-checkconf -p")
     namespace = simple_command("/bin/ls /var/run/netns")
+    ndctl_list_Ni = simple_command("/usr/bin/ndctl list -Ni")
     ip_netns_exec_namespace_lsof = foreach_execute(namespace, "/sbin/ip netns exec %s lsof -i")
     netconsole = simple_file("/etc/sysconfig/netconsole")
     netstat = simple_command("/bin/netstat -neopa")

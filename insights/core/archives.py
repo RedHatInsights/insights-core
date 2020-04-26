@@ -4,7 +4,7 @@ import logging
 import os
 import tempfile
 from contextlib import contextmanager
-from insights.util import fs, subproc
+from insights.util import fs, subproc, which
 from insights.util.content_type import from_file as content_type_from_file
 
 logger = logging.getLogger(__name__)
@@ -50,8 +50,8 @@ class TarExtractor(object):
 
     TAR_FLAGS = {
         "application/x-xz": "-J",
-        "application/x-gzip": "-z",
-        "application/gzip": "-z",
+        "application/x-gzip": "-I igzip" if which("igzip") else "-z",
+        "application/gzip": "-I igzip" if which("igzip") else "-z",
         "application/x-bzip2": "-j",
         "application/x-tar": ""
     }
