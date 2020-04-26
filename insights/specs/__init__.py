@@ -541,7 +541,6 @@ class Specs(SpecSet):
     sealert = RegistryPoint()
     secure = RegistryPoint(filterable=True)
     selinux_config = RegistryPoint()
-    semid = RegistryPoint()
     sestatus = RegistryPoint()
     setup_named_chroot = RegistryPoint(filterable=True)
     smartctl = RegistryPoint(multi_output=True)
