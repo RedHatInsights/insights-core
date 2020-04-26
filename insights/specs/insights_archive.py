@@ -122,7 +122,7 @@ class InsightsArchiveSpecs(Specs):
     ls_disk = simple_file("insights_commands/ls_-lanR_.dev.disk")
     ls_docker_volumes = simple_file("insights_commands/ls_-lanR_.var.lib.docker.volumes")
     ls_edac_mc = simple_file("insights_commands/ls_-lan_.sys.devices.system.edac.mc")
-    ls_etc = simple_file("insights_commands/ls_-lanR_.etc")
+    ls_etc = simple_file("insights_commands/ls_-lan_.etc_.etc.cloud.cloud.cfg.d_.etc.nova.migration_.etc.pki.ovirt-vmconsole_.etc.pki.tls.certs_.etc.pki.tls.private_.etc.sysconfig")
     ls_lib_firmware = simple_file("insights_commands/ls_-lanR_.lib.firmware")
     ls_ocp_cni_openshift_sdn = simple_file("insights_commands/ls_-l_.var.lib.cni.networks.openshift-sdn")
     ls_origin_local_volumes_pods = simple_file("insights_commands/ls_-l_.var.lib.origin.openshift.local.volumes.pods")
