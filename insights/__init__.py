@@ -73,12 +73,15 @@ in this instance
 """
 
 
-def add_status(name, nvr, commit):
+def add_status(name, nvr, commit=None):
     """
     Rule repositories should call this method in their package __init__ to
     register their version information.
     """
     RULES_STATUS[name] = {"version": nvr, "commit": commit}
+
+
+add_status(package_info["NAME"], get_nvr(), package_info["COMMIT"])
 
 
 def process_dir(broker, root, graph, context, inventory=None):

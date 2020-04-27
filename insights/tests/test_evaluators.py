@@ -91,7 +91,10 @@ def test_single_evaluator():
     with SingleEvaluator(broker) as e:
         dr.run(report, broker=broker)
         result2 = e.get_response()
-        assert result1 == result2
+        assert result1["reports"] == result2["reports"]
+        for k in ["start", "finish", "execution_context", "plugin_sets"]:
+            assert k in result1["analysis_metadata"]
+            assert k in result2["analysis_metadata"]
 
 
 def test_insights_evaluator():
@@ -104,7 +107,10 @@ def test_insights_evaluator():
     with InsightsEvaluator(broker) as e:
         dr.run(report, broker=broker)
         result2 = e.get_response()
-        assert result1 == result2
+        assert result1["reports"] == result2["reports"]
+        for k in ["start", "finish", "execution_context", "plugin_sets"]:
+            assert k in result1["analysis_metadata"]
+            assert k in result2["analysis_metadata"]
 
 
 def test_insights_evaluator_attrs_serial():
