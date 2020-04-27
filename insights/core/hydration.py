@@ -22,8 +22,9 @@ else:
     def get_all_files(path):
         for root, _, files in os.walk(path):
             for f in files:
-                if os.path.isfile(f) and not os.path.islink(f):
-                    yield os.path.join(root, f)
+                full_path = os.path.join(root, f)
+                if os.path.isfile(full_path) and not os.path.islink(full_path):
+                    yield full_path
 
 
 def identify(files):
