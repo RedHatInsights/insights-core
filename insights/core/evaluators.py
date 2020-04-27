@@ -3,12 +3,16 @@ import six
 import sys
 
 from collections import defaultdict
+from datetime import datetime
 
 from ..formats import Formatter
 from ..specs import Specs
 from ..combiners.hostname import hostname as combiner_hostname
 from ..parsers.branch_info import BranchInfo
+from ..util import utc
 from . import dr, plugins
+from .context import ExecutionContext
+import insights
 
 log = logging.getLogger(__name__)
 
@@ -26,8 +30,17 @@ class Evaluator(Formatter):
         self.metadata = {}
         self.metadata_keys = {}
         self.incremental = incremental
+        self.context_cls = None
 
     def observer(self, comp, broker):
+        if self.context_cls is None:
+            for c in self.broker.instances:
+                try:
+                    if issubclass(c, ExecutionContext):
+                        self.context_cls = c
+                except:
+                    pass
+
         if comp is combiner_hostname and comp in broker:
             self.hostname = broker[comp].fqdn
 
@@ -91,7 +104,18 @@ class SingleEvaluator(Evaluator):
             if k not in ("rule", "fingerprint"):
                 r[k] = v
 
-        return self.format_response(r)
+        r = self.format_response(r)
+
+        ctx = dr.get_name(self.context_cls) if self.context_cls is not None else None
+
+        r["analysis_metadata"] = {
+            "start": self.start_time.isoformat(),
+            "finish": datetime.now(utc).isoformat(),
+            "execution_context": ctx,
+            "plugin_sets": insights.RULES_STATUS
+        }
+
+        return r
 
     def handle_result(self, plugin, r):
         type_ = r["type"]
