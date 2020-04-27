@@ -2,7 +2,9 @@ from __future__ import print_function
 import six
 import sys
 
+from datetime import datetime
 from insights import dr, rule
+from insights.util import utc
 
 
 RENDERERS = {}
@@ -57,6 +59,7 @@ class Formatter(object):
     def __init__(self, broker, stream=sys.stdout):
         self.broker = broker
         self.stream = stream
+        self.start_time = datetime.now(utc)
 
     def __enter__(self):
         self.preprocess()

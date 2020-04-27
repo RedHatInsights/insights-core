@@ -1,7 +1,6 @@
 from __future__ import print_function
 import inspect
 import sys
-from datetime import datetime
 
 from jinja2 import Template
 
@@ -91,7 +90,6 @@ class TemplateFormat(Formatter):
         Watches rules go by as they evaluate and collects information about
         them for later display in postprocess.
         """
-        self.start_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
         self.rules = []
         self.broker.add_observer(self.collect_rules, rule)
 
