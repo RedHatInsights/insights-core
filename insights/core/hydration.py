@@ -20,9 +20,10 @@ if hasattr(os, "scandir"):
 
 else:
     def get_all_files(path):
-        for f in archives.get_all_files(path):
-            if os.path.isfile(f) and not os.path.islink(f):
-                yield f
+        for root, _, files in os.walk(path):
+            for f in files:
+                if os.path.isfile(f) and not os.path.islink(f):
+                    yield os.path.join(root, f)
 
 
 def identify(files):
