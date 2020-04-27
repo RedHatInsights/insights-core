@@ -5,7 +5,7 @@ import tempfile
 import zipfile
 from contextlib import closing
 
-from insights.core import archives
+from insights.core.hydration import get_all_files
 from insights.core.archives import extract
 
 
@@ -38,7 +38,7 @@ def test_with_zip():
 
     try:
         with extract("/tmp/test.zip") as ex:
-            assert any(f.endswith("/sys/kernel/kexec_crash_size") for f in archives.get_all_files(ex.tmp_dir))
+            assert any(f.endswith("/sys/kernel/kexec_crash_size") for f in get_all_files(ex.tmp_dir))
 
     finally:
         os.unlink("/tmp/test.zip")
