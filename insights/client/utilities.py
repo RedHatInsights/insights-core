@@ -303,12 +303,14 @@ def _systemd_notify(pid):
     '''
     try:
         proc = Popen(['/usr/bin/systemd-notify', '--pid=' + str(pid), 'WATCHDOG=1'])
-    except OSError:
-        logger.debug('Could not launch systemd-notify.')
-        return
+    except OSError as e:
+        logger.debug('Could not launch systemd-notify: %s', str(e))
+        return False
     stdout, stderr = proc.communicate()
     if proc.returncode != 0:
         logger.debug('systemd-notify returned %s', proc.returncode)
+        return False
+    return True
 
 
 def systemd_notify_init_thread():
@@ -330,7 +332,9 @@ def systemd_notify_init_thread():
     def _sdnotify_loop():
         while True:
             # run sdnotify every 30 seconds
-            _systemd_notify(pid)
+            if not _systemd_notify(pid):
+                # end the loop if something goes wrong
+                break
             time.sleep(30)
 
     sdnotify_thread = threading.Thread(target=_sdnotify_loop, args=())
