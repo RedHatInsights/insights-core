@@ -700,6 +700,8 @@ class InsightsConfig(object):
         self.keep_archive = self.keep_archive or self.no_upload
         if self.to_json and self.quiet:
             self.diagnosis = True
+        if self.test_connection:
+            self.net_debug = True
         if self.payload or self.diagnosis or self.compliance or self.show_results or self.check_results:
             self.legacy_upload = False
         if self.payload and (self.logging_file == constants.default_log_file):
