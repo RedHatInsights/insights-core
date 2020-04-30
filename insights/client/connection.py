@@ -315,7 +315,7 @@ class InsightsConnection(object):
         paths = (url.path + '/', '', '/r', '/r/insights')
         for ext in paths:
             try:
-                logger.debug("Testing: %s", test_url + ext)
+                logger.log(NETWORK, "Testing: %s", test_url + ext)
                 if method is "POST":
                     test_req = self.session.post(
                         test_url + ext, timeout=self.config.http_timeout, data=test_flag)
@@ -347,7 +347,7 @@ class InsightsConnection(object):
         if self.config.legacy_upload:
             return self._legacy_test_urls(url, method)
         try:
-            logger.debug('Testing %s', url)
+            logger.log(NETWORK, 'Testing %s', url)
             if method is 'POST':
                 test_tar = TemporaryFile(mode='rb', suffix='.tar.gz')
                 test_files = {
