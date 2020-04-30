@@ -15,9 +15,6 @@ class RemoteResource(object):
     """
     RemoteResource class for accessing external Web resources.
 
-    Attributes:
-        timeout(float): Time in seconds for the requests.get api call to wait before returning a timeout exception
-
     Examples:
         >>> from insights.core.remote_resource import RemoteResource
         >>> rr = RemoteResource()
@@ -26,6 +23,7 @@ class RemoteResource(object):
     """
 
     timeout = 10
+    """ float: Time in seconds for the requests.get api call to wait before returning a timeout exception """
 
     def __init__(self, session=None):
 
@@ -55,13 +53,6 @@ class CachedRemoteResource(RemoteResource):
     """
     RemoteResource subclass that sets up caching for subsequent Web resource requests.
 
-    Attributes:
-        expire_after (float): Amount of time in seconds that the cache will expire
-        backend (str): Type of storage for cache `DictCache1`, `FileCache` or `RedisCache`
-        redis_host (str): Hostname of redis instance if `RedisCache` backend is specified
-        redis_port (int): Port used to contact the redis instance if `RedisCache` backend is specified
-        file_cache_path (string): Path to where file cache will be stored if `FileCache` backend is specified
-
     Examples:
         >>> from insights.core.remote_resource import CachedRemoteResource
         >>> crr = CachedRemoteResource()
@@ -71,12 +62,17 @@ class CachedRemoteResource(RemoteResource):
     """
 
     expire_after = 180
+    """ float: Amount of time in seconds that the cache will expire """
     backend = "DictCache"
+    """ str: Type of storage for cache `DictCache1`, `FileCache` or `RedisCache` """
     redis_port = 6379
+    """ int: Port used to contact the redis instance if `RedisCache` backend is specified """
     redis_host = 'localhost'
+    """ str: Hostname of redis instance if `RedisCache` backend is specified """
     __heuristic = 'DefaultHeuristic'
     __cache = None
     file_cache_path = '.web_cache'
+    """ str: Path to where file cache will be stored if `FileCache` backend is specified """
 
     def __init__(self):
 
@@ -101,16 +97,15 @@ class CachedRemoteResource(RemoteResource):
 class DefaultHeuristic(BaseHeuristic):
     """
     BaseHeuristic subclass that sets the default caching headers if not supplied by the remote service.
-
-    Attributes:
-        default_cache_vars (str): Message content warning that the response from the remote server did not
-          return proper HTTP cache headers so we will use default cache settings
-        server_cache_headers (str): Message content warning that we are using cache settings returned by the
-          remote server.
     """
 
     default_cache_vars = "Remote service caching headers not set correctly, using default caching"
+    """
+    str: Message content warning that the response from the remote server did not
+        return proper HTTP cache headers so we will use default cache settings
+    """
     server_cache_headers = "Caching being done based on caching headers returned by remote service"
+    """ str: Message content warning that we are using cache settings returned by the remote server. """
 
     def __init__(self, expire_after):
 
