@@ -1,12 +1,16 @@
 # Change Log
 
-## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
-
-[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.161-1385...HEAD)
+## [insights-core-3.0.162-1395](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.162-1395) (2020-04-30)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.161-1385...insights-core-3.0.162-1395)
 
 **Implemented enhancements:**
 
+- Include archive type and plugin repo status information in analyses [\#2560](https://github.com/RedHatInsights/insights-core/issues/2560)
 - Use igzip if it's available for tar decompression with fallback to gunzip. [\#2547](https://github.com/RedHatInsights/insights-core/issues/2547)
+
+**Fixed bugs:**
+
+- semid datasource shouldn't have a RegistryPoint [\#2528](https://github.com/RedHatInsights/insights-core/issues/2528)
 
 ## [insights-core-3.0.161-1385](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.161-1385) (2020-04-23)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.160-1380...insights-core-3.0.161-1385)
