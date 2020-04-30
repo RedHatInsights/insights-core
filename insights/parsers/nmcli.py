@@ -37,9 +37,6 @@ class NmcliDevShow(CommandParser, dict):
     This parser works like a python dictionary, all parsed data can be accessed
     via the ``dict`` interfaces.
 
-    Attributes:
-        connected_devices(list): list of devices who's state is connected.
-
     Sample input for ``/usr/bin/nmcli dev show``::
 
         GENERAL.DEVICE:                         em3
