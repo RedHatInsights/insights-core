@@ -66,13 +66,13 @@ develop = set([
 ])
 
 docs = set([
-    'Sphinx<=2.4.4',
+    'Sphinx<=3.0.2',
     'nbsphinx',
     'sphinx_rtd_theme',
     'ipython',
     'colorama',
     'jinja2',
-    'Pygments<2.5.1'
+    'Pygments'
 ])
 
 testing = set([
