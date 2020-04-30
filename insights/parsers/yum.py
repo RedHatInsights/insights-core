@@ -122,9 +122,6 @@ class YumRepoList(CommandParser):
                     }
                 }
 
-        rhel_repos(list): list of all the rhel repos and the item is just the repo id without server and arch info. For example::
-
-            self.rhel_repos = ['rhel-7-server-e4s-rpms', 'rhel-ha-for-rhel-7-server-e4s-rpms', 'rhel-sap-hana-for-rhel-7-server-e4s-rpms']
     """
     def parse_content(self, content):
         if not content:
@@ -177,7 +174,16 @@ class YumRepoList(CommandParser):
 
     @property
     def rhel_repos(self):
-        '''list of RHEL repos/Repo IDs'''
+        """
+        list: list of all the rhel repos and the item is just the repo id without server and arch info.
+            For example::
+
+                self.rhel_repos = [
+                    'rhel-7-server-e4s-rpms',
+                    'rhel-ha-for-rhel-7-server-e4s-rpms',
+                    'rhel-sap-hana-for-rhel-7-server-e4s-rpms'
+                ]
+        """
         return [i.split('/')[0]
                 for i in self.repos
                 if i.startswith('rhel')]
