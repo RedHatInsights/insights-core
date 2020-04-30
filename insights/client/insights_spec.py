@@ -73,7 +73,8 @@ class InsightsCommand(InsightsSpec):
         # ensure consistent locale for collected command output
         cmd_env = {'LC_ALL': 'C',
                    'PATH': '/sbin:/bin:/usr/sbin:/usr/bin',
-                   'PYTHONPATH': os.getenv('PYTHONPATH')}
+                   'PYTHONPATH': os.getenv('PYTHONPATH'),
+                   'HOME': os.getenv('HOME')}
         args = shlex.split(timeout_command)
 
         # never execute this stuff
