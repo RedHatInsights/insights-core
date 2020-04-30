@@ -62,7 +62,7 @@ def categorize(ds):
         (cat, res) = resolve(d)
         if cat is not None:
             results[cat] |= set(res)
-    return {k: sorted(v) for k, v in results.items()}
+    return dict((k, sorted(v)) for k, v in results.items())
 
 
 def get_spec_report():

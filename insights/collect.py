@@ -103,9 +103,6 @@ plugins:
         - name: insights.combiners.hostname
           enabled: true
 
-        - name: insights.specs.insights_archive
-        - enabled: true
-
     # needed because some specs aren't given names before they're used in DefaultSpecs
         - name: insights.core.spec_factory
           enabled: true
