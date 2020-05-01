@@ -19,9 +19,6 @@
 # Created By : Jamie Duncan
 # Purpose : an sosreport and data set obfuscation tool
 
-from builtins import str
-from builtins import range
-from builtins import object
 import os
 import hashlib
 import re
@@ -38,6 +35,16 @@ from ipaddr import IPv4Network, IPv4Address, IPv6Network, IPv6Address
 from random import randint
 import configparser
 import subprocess
+
+import six
+if six.PY3:
+    from builtins import str
+    from builtins import range
+    from builtins import object
+else:
+    from __builtin__ import str
+    from __builtin__ import range
+    from __builtin__ import object
 
 
 class SOSCleaner(object):
