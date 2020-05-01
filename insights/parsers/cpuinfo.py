@@ -240,7 +240,12 @@ class CpuInfo(LegacyItemAccess, Parser):
     @defaults()
     def core_total(self):
         """
-        str: Returns the total number of cores for the server if available, else None.
+        int: Returns the total number of cores for the server if available, else None.
+
+        .. warning::
+            This function is deprecated.  Please use the
+            :py:class:`insights.parsers.lscpu.LsCPU` class attribute
+            ``info['Cores per socket']`` and ``info['Sockets']`` values instead.
         """
         if self.data and 'cpu_cores' in self.data:
             # I guess we can't get this fancey on older versions of RHEL
