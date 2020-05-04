@@ -11,6 +11,7 @@ Contents:
     api
     exception_model
     api_index
+    specs_catalog
     parsers_index
     combiners_index
     components_index
