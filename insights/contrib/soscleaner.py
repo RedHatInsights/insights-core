@@ -30,7 +30,7 @@ import shutil
 import tempfile
 import logging
 import tarfile
-from ipaddr import IPv4Network, IPv4Address, IPv6Network, IPv6Address
+from insights.contrib.ipaddress import IPv4Network, IPv4Address, IPv6Network, IPv6Address
 
 from random import randint
 import configparser
@@ -74,14 +74,17 @@ class SOSCleaner(object):
         self.loglevel = 'INFO'
         self.net_db = list()  # Network Information database
         self.ip_db = list()
-        self.default_net = IPv4Network('128.0.0.0/8')
+        if six.PY3:
+            self.default_net = IPv4Network('128.0.0.0/8')
+        else:
+            self.default_net = IPv4Network(unicode('128.0.0.0/8'))
         self.default_netmask = self.default_net.prefixlen
         # we'll have to keep track of how many networks we have so we don't have to count them each time we need to create a new one.
         self.net_count = 0
         self.net_metadata = dict()
 
-        self.net_metadata[self.default_net.network.compressed] = dict()
-        self.net_metadata[self.default_net.network.compressed]['host_count'] = 0
+        self.net_metadata[self.default_net.network_address.compressed] = dict()
+        self.net_metadata[self.default_net.network_address.compressed]['host_count'] = 0
 
         # Hostname obfuscation information
         self.hn_db = dict()  # hostname database
@@ -1045,7 +1048,10 @@ class SOSCleaner(object):
                     for l in data:
                         self.logger.debug("Obfuscating Line - %s", l)
                         new_l = self._clean_line(l, f)
-                        tmp_file.write(new_l)
+                        if six.PY3:
+                            tmp_file.write(new_l.encode('utf-8'))
+                        else:
+                            tmp_file.write(new_l)
 
                     tmp_file.seek(0)
 
@@ -1056,7 +1062,7 @@ class SOSCleaner(object):
 
             try:
                 if len(data) > 0:
-                    new_fh = open(f, 'w')
+                    new_fh = open(f, 'wb')
                     for line in tmp_file:
                         new_fh.write(line)
                     new_fh.close()
@@ -1362,7 +1368,10 @@ class SOSCleaner(object):
             self.net_count += 1
             # a new string to create the new obfuscated network object
             new_net_string = "%s.0.0.0/%s" % (new_octet, netmask)
-            retval = IPv4Network(new_net_string)
+            if six.PY3:
+                retval = IPv4Network(new_net_string)
+            else:
+                retval = IPv4Network(unicode(new_net_string))
 
             return retval
 
@@ -1377,7 +1386,10 @@ class SOSCleaner(object):
         value for the subnet mask that is used to create the obfuscated network
         """
         try:
-            net = IPv4Network(network)
+            if six.PY3:
+                net = IPv4Network(network)
+            else:
+                net = IPv4Network(unicode(network))
             subnet = str(net.prefixlen)
 
             return net, subnet
@@ -1413,7 +1425,10 @@ class SOSCleaner(object):
             self.net_metadata['127.0.0.0'] = dict()
             self.net_metadata['127.0.0.0']['host_count'] = 0
 
-            lb_net = IPv4Network('127.0.0.0/8')
+            if six.PY3:
+                lb_net = IPv4Network('127.0.0.0/8')
+            else:
+                lb_net = IPv4Network(unicode('127.0.0.0/8'))
             loopback_entry = (lb_net, lb_net)
             self.net_db.append(loopback_entry)
             self.logger.con_out("Creating Loopback Network Entry")
@@ -1442,10 +1457,10 @@ class SOSCleaner(object):
                 self.logger.con_out(
                     "Created New Obfuscated Network - %s" % new_net.with_prefixlen)
 
-                self.net_metadata[new_net.network.compressed] = dict()
+                self.net_metadata[new_net.network_address.compressed] = dict()
                 self.logger.info(
                     "Adding Entry to Network Metadata Database - %s" % new_net.with_prefixlen)
-                self.net_metadata[new_net.network.compressed]['host_count'] = 0
+                self.net_metadata[new_net.network_address.compressed]['host_count'] = 0
             else:
                 self.logger.info(
                     "Network already exists in database. Not obfuscating. - %s" % network)
@@ -1462,12 +1477,15 @@ class SOSCleaner(object):
         This can be used to create a new obfuscated IP address for this value
         """
         try:
-            ip = IPv4Address(ip)    # re-cast as an IPv4 object
-            network = self.default_net.network
+            if six.PY3:
+                ip = IPv4Address(ip)    # re-cast as an IPv4 object
+            else:
+                ip = IPv4Address(unicode(ip))    # re-cast as an IPv4 object
+            network = self.default_net.network_address
             for net in self.net_db:
                 if ip in net[0]:
                     # we have a match! We'll return the proper obfuscated network
-                    network = net[1].network
+                    network = net[1].network_address
 
             return network
 
@@ -1509,8 +1527,12 @@ class SOSCleaner(object):
                 net = self._ip4_find_network(orig_ip)
                 self.net_metadata[net.compressed]['host_count'] += 1
                 # take the network and increment the number of hosts to get to the next available IP
-                obf_ip = IPv4Address(
-                    net) + self.net_metadata[net.compressed]['host_count']
+                if six.PY3:
+                    obf_ip = IPv4Address(
+                        net) + self.net_metadata[net.compressed]['host_count']
+                else:
+                    obf_ip = IPv4Address(
+                        unicode(net)) + self.net_metadata[net.compressed]['host_count']
                 self.ip_db.append((orig_ip, obf_ip))
 
                 return obf_ip.compressed
