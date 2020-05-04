@@ -38,6 +38,7 @@ from .. import Parser, parser, get_active_lines, LegacyItemAccess, CommandParser
 from . import parse_fixed_table
 from insights.parsers import ParseException
 from insights.specs import Specs
+from collections import defaultdict
 
 
 def map_keys(pvs, keys):
@@ -641,6 +642,39 @@ class LvmConf(LegacyItemAccess, Parser):
                 except Exception:
                     lvm_conf_dict[key] = value
         self.data = lvm_conf_dict
+
+
+def infer(x):
+    for t in (int, float):
+        try:
+            return t(x)
+        except:
+            pass
+    return x.strip('"')
+
+
+@parser(Specs.lvmconfig)
+class LvmConfig(CommandParser):
+
+    def parse_content(self, content):
+        derta = defaultdict(dict)
+        key = None
+        for line in content:
+            line = line.strip()
+            if not line:
+                continue
+
+            if line == "WARNING: Running as a non-root user. Functionality may be unavailable.":
+                continue
+
+            if line.endswith("{"):
+                key = line.split()[0]
+            elif line.endswith("}"):
+                key = None
+            else:
+                k, v = line.split("=", 1)
+                derta[key][k] = infer(v)
+        self.data = dict(derta)
 
 
 if __name__ == "__main__":
