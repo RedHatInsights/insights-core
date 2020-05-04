@@ -24,7 +24,7 @@ BOTH_EMPTY = """
 
 TEST_CASES = [
     (BOTH_MATCHED, "1000", "/var/crash/.reports-1000-user/whoopsie-report"),
-    (NOT_FIND_MATCHED, "1000", "/var/crash/.reports-1000-user/whoopsie-report"),
+    (NOT_FIND_MATCHED, "1000", "/var/tmp/.reports-1000-user/whoopsie-report"),
     (BOTH_NOT_FIND, None, None),
     (BOTH_EMPTY, None, None)
 ]
