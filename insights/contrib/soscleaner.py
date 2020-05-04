@@ -33,7 +33,7 @@ import tarfile
 from insights.contrib.ipaddress import IPv4Network, IPv4Address, IPv6Network, IPv6Address
 
 from random import randint
-import configparser
+from six.moves import configparser
 import subprocess
 
 import six
