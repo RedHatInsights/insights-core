@@ -318,6 +318,7 @@ class Specs(SpecSet):
     lsscsi = RegistryPoint()
     lvdisplay = RegistryPoint()
     lvm_conf = RegistryPoint(filterable=True)
+    lvmconfig = RegistryPoint()
     lvs_noheadings = RegistryPoint()
     lvs_noheadings_all = RegistryPoint()
     lvs = RegistryPoint()
