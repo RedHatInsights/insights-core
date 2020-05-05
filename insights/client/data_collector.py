@@ -5,6 +5,7 @@ from __future__ import absolute_import
 import os
 import json
 import logging
+import copy
 from itertools import chain
 from tempfile import NamedTemporaryFile
 from insights import collect
@@ -130,7 +131,7 @@ class DataCollector(object):
         #   keyword-hiding stuff we don't want to use.
         #   Obfuscation to be done in soscleaner later,
         #   so pass in a copy of rm_conf with keywords removed.
-        filtered_rm_conf = rm_conf.deepcopy()
+        filtered_rm_conf = copy.deepcopy(rm_conf)
         if 'keywords' in filtered_rm_conf:
             del filtered_rm_conf['keywords']
 
