@@ -126,7 +126,15 @@ class DataCollector(object):
             except LookupError:
                 logger.debug('Patterns section of blacklist configuration is empty.')
 
-        collected_data_path = collect.collect(tmp_path=self.archive.tmp_dir, rm_conf=rm_conf)
+        # Do not load keywords into core because core has its own
+        #   keyword-hiding stuff we don't want to use.
+        #   Obfuscation to be done in soscleaner later,
+        #   so pass in a copy of rm_conf with keywords removed.
+        filtered_rm_conf = rm_conf.deepcopy()
+        if 'keywords' in filtered_rm_conf:
+            del filtered_rm_conf['keywords']
+
+        collected_data_path = collect.collect(tmp_path=self.archive.tmp_dir, rm_conf=filtered_rm_conf)
         # update the archive object with the reported data location from Insights Core
         self.archive.update(collected_data_path)
         logger.debug('Collection finished.')
