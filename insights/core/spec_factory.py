@@ -227,6 +227,16 @@ class TextFileProvider(FileProvider):
             if not args:
                 grep.append(self.path)
             args.append(grep)
+        else:
+            # only one or the other, but we should never have a case
+            #   where both patterns and regex patterns are defined in the
+            #   blacklist under normal insights-client operations
+            regex_patterns = "\n".join(blacklist.get_disallowed_regex_patterns())
+            if regex_patterns:
+                grep = ["grep", "-v", "-E", regex_patterns]
+                if not args:
+                    grep.append(self.path)
+                args.append(grep)
 
         keywords = blacklist.get_disallowed_keywords()
         if keywords:
@@ -331,6 +341,13 @@ class CommandOutputProvider(ContentProvider):
             patterns = "\n".join(blacklist.get_disallowed_patterns())
             if patterns:
                 command.append(["grep", "-v", "-F", patterns])
+            else:
+                # only one or the other, but we should never have a case
+                #   where both patterns and regex patterns are defined in the
+                #   blacklist under normal insights-client operations
+                regex_patterns = "\n".join(blacklist.get_disallowed_regex_patterns())
+                if regex_patterns:
+                    command.append(["grep", "-v", "-E", regex_patterns])
 
             keywords = blacklist.get_disallowed_keywords()
             if keywords:

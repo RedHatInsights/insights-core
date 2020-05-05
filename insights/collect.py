@@ -131,8 +131,12 @@ def apply_blacklist(cfg):
     for b in cfg.get("commands", []):
         blacklist.add_command(b)
 
-    for b in cfg.get("patterns", []):
-        blacklist.add_pattern(b)
+    if "patterns" in cfg and "regex" in cfg["patterns"]:
+        for b in cfg["patterns"].get("regex", []):
+            blacklist.add_regex_pattern(b)
+    else:
+        for b in cfg.get("patterns", []):
+            blacklist.add_pattern(b)
 
     for b in cfg.get("keywords", []):
         blacklist.add_keyword(b)

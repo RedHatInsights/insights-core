@@ -4,6 +4,7 @@ import re
 _FILE_FILTERS = set()
 _COMMAND_FILTERS = set()
 _PATTERN_FILTERS = set()
+_REGEX_PATTERN_FILTERS = set()
 _KEYWORD_FILTERS = set()
 
 
@@ -17,6 +18,10 @@ def add_command(f):
 
 def add_pattern(f):
     _PATTERN_FILTERS.add(f)
+
+
+def add_regex_pattern(f):
+    _REGEX_PATTERN_FILTERS.add(f)
 
 
 def add_keyword(f):
@@ -33,6 +38,10 @@ def allow_command(c):
 
 def get_disallowed_patterns():
     return _PATTERN_FILTERS
+
+
+def get_disallowed_regex_patterns():
+    return _REGEX_PATTERN_FILTERS
 
 
 def get_disallowed_keywords():
