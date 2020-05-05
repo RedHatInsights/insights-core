@@ -644,20 +644,18 @@ class LvmConf(LegacyItemAccess, Parser):
         self.data = lvm_conf_dict
 
 
-def infer(x):
-    for t in (int, float):
-        try:
-            return t(x)
-        except:
-            pass
-    return x.strip('"')
+def _lvm_render(o):
+    if isinstance(o, dict):
+        parts = ['"%s": %s' % (k, _lvm_render(v)) for k, v in o.items()]
+        return "{%s}" % ",".join(parts)
+    return "%s" % o
 
 
 @parser(Specs.lvmconfig)
 class LvmConfig(CommandParser):
 
     def parse_content(self, content):
-        derta = defaultdict(dict)
+        dd = defaultdict(dict)
         key = None
         for line in content:
             line = line.strip()
@@ -673,8 +671,8 @@ class LvmConfig(CommandParser):
                 key = None
             else:
                 k, v = line.split("=", 1)
-                derta[key][k] = infer(v)
-        self.data = dict(derta)
+                dd[key][k] = v
+        self.data = json.loads(_lvm_render(dict(dd)))
 
 
 if __name__ == "__main__":
