@@ -2,14 +2,12 @@
 Handle adding files and preparing the archive for upload
 """
 from __future__ import absolute_import
-import time
 import os
 import shutil
 import subprocess
 import shlex
 import logging
 import tempfile
-import re
 import atexit
 
 from .utilities import _expand_paths, write_data_to_file

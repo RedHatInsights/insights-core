@@ -9,8 +9,6 @@ import yaml
 import stat
 from six.moves import configparser as ConfigParser
 
-from subprocess import Popen, PIPE, STDOUT
-from tempfile import NamedTemporaryFile
 from .constants import InsightsConstants as constants
 from collections import defaultdict
 from insights import datasource, dr, parse_plugins, load_packages
