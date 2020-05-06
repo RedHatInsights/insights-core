@@ -221,6 +221,9 @@ class TextFileProvider(FileProvider):
         if filters:
             args.append(["grep", "-F", filters, self.path])
 
+        # need to hide passwords here for insights-client, noop by default
+        blacklist.obfuscate_passwords(args, self.path)
+
         patterns = "\n".join(blacklist.get_disallowed_patterns())
         if patterns:
             grep = ["grep", "-v", "-F", patterns]
@@ -337,6 +340,10 @@ class CommandOutputProvider(ContentProvider):
             filters = "\n".join(get_filters(self.ds))
             if filters:
                 command.append(["grep", "-F", filters])
+
+            # need to hide passwords for insights-client, noop if
+            #   not modified by collect.py
+            blacklist.obfuscate_passwords(command)
 
             patterns = "\n".join(blacklist.get_disallowed_patterns())
             if patterns:

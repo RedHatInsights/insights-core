@@ -135,7 +135,7 @@ class DataCollector(object):
         if 'keywords' in filtered_rm_conf:
             del filtered_rm_conf['keywords']
 
-        collected_data_path = collect.collect(tmp_path=self.archive.tmp_dir, rm_conf=filtered_rm_conf)
+        collected_data_path = collect.collect(tmp_path=self.archive.tmp_dir, rm_conf=filtered_rm_conf, insights_client=True)
         # update the archive object with the reported data location from Insights Core
         self.archive.update(collected_data_path)
         logger.debug('Collection finished.')

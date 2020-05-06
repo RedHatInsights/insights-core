@@ -46,3 +46,8 @@ def get_disallowed_regex_patterns():
 
 def get_disallowed_keywords():
     return _KEYWORD_FILTERS
+
+
+def obfuscate_passwords(*args):
+    # stub method, do nothing unless modified by collect.py
+    return

@@ -22,6 +22,7 @@ from insights.core import blacklist
 from insights.core.serde import Hydration
 from insights.util import fs
 from insights.util.subproc import call, CalledProcessError
+from insights.client.utilities import obfuscate_passwords
 
 SAFE_ENV = {
     "PATH": os.path.pathsep.join([
@@ -218,7 +219,7 @@ def get_pool(parallel, kwargs):
         yield None
 
 
-def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf={}):
+def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf={}, insights_client=False):
     """
     This is the collection entry point. It accepts a manifest, a temporary
     directory in which to store output, and a boolean for optional compression.
@@ -235,6 +236,8 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf={}
         rm_conf (dict): Client-provided python dict containing keys
             "commands", "files", "components", patterns", and "keywords", to be
             injected into the manifest blacklist.
+        insights_client (boolean): Whether the insights-client is running
+            the collection
 
     Returns:
         The full path to the created tar.gz or workspace.
@@ -250,15 +253,19 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf={}
     apply_configs(plugins)
 
     apply_blacklist(client.get("blacklist", {}))
-    apply_blacklist(rm_conf)
 
-    # skip components in blacklist
-    for component in rm_conf.get('components', []):
-        if not dr.get_component_by_name(component):
-            log.warning('WARNING: Unknown component in blacklist: %s' % component)
-        else:
-            dr.set_enabled(component, enabled=False)
-            log.warning('WARNING: Skipping component: %s', component)
+    if insights_client:
+        # use the client-defined blacklist and obfuscation function
+        apply_blacklist(rm_conf)
+        blacklist.obfuscate_passwords = obfuscate_passwords
+
+        # skip components in blacklist
+        for component in rm_conf.get('components', []):
+            if not dr.get_component_by_name(component):
+                log.warning('WARNING: Unknown component in blacklist: %s' % component)
+            else:
+                dr.set_enabled(component, enabled=False)
+                log.warning('WARNING: Skipping component: %s', component)
 
     to_persist = get_to_persist(client.get("persist", set()))
 

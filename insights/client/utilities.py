@@ -396,3 +396,30 @@ def migrate_tags():
             os.rename(tags_conf, tags_yaml)
         except OSError as e:
             logger.error(e)
+
+
+def obfuscate_passwords(args, path=None):
+    '''
+    Function to add our password-hiding sed command to the pipeline
+    of the ContentProvider. The reference to this function is set
+    up in collect.py
+
+    Parameters:
+        args - pipeline list generated from a ContentProvider
+        path - path to the source of a ContentProvider (optional, files only)
+
+    Returns: None
+
+    Side effects:
+        args is modified with the needed commands
+    '''
+    regex = [
+        "s/(password[a-zA-Z0-9_]*)(\\s*\\:\\s*\\\"*\\s*|\\s*\\\"*\\s*=\\s*\\\"\\s*|\\s*=+\\s*|\\s*--md5+\\s*|\\s*)([a-zA-Z0-9_!@#$%^&*()+=/-]*)/\\1\\2********/",
+        "s/(password[a-zA-Z0-9_]*)(\\s*\\*+\\s+)(.+)/\\1\\2********/"
+    ]
+    cmd = ["sed", "-r"]
+    for r in regex:
+        cmd.extend(["-e", r])
+    if path and not args:
+        cmd.append(path)
+    args.append(cmd)
