@@ -10,13 +10,13 @@ BOTH_MATCHED = """
 """.strip()
 
 NOT_FIND_MATCHED = """
-/usr/bin/find: ‘/var/crash’: No such file or directory
+/usr/bin/find: '/var/crash': No such file or directory
 /var/tmp/.reports-1000-user/whoopsie-report
 """.strip()
 
 BOTH_NOT_FIND = """
-/usr/bin/find: ‘/var/crash’: No such file or directory
-/usr/bin/find: ‘/var/tmp’: No such file or directory
+/usr/bin/find: '/var/crash': No such file or directory
+/usr/bin/find: '/var/tmp': No such file or directory
 """.strip()
 
 BOTH_EMPTY = """
