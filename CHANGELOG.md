@@ -1,5 +1,17 @@
 # Change Log
 
+## [insights-core-3.0.163-1399](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.163-1399) (2020-05-07)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.162-1395...insights-core-3.0.163-1399)
+
+**Fixed bugs:**
+
+- Reporting the wrong number of cores\_total [\#2555](https://github.com/RedHatInsights/insights-core/issues/2555)
+
+**Closed issues:**
+
+- Please add parser: ovs\_vsctl\_list\_interface for sosreport [\#1977](https://github.com/RedHatInsights/insights-core/issues/1977)
+- Please add parser:OVSvsctlListBridge for sosreport [\#1976](https://github.com/RedHatInsights/insights-core/issues/1976)
+
 ## [insights-core-3.0.162-1395](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.162-1395) (2020-04-30)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.161-1385...insights-core-3.0.162-1395)
 
