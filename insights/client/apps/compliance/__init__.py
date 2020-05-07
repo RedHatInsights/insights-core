@@ -69,7 +69,9 @@ class ComplianceClient:
     # We need to update compliance-backend to fix this
     def get_policies(self):
         response = self.conn.session.get("https://{0}/compliance/profiles".format(self.config.base_url),
-                                         params={'search': 'system_names={0}'.format(self.hostname)})
+                                         params={
+                                             'search': 'external=false&system_names={0}'.format(self.hostname)
+                                         })
         logger.debug("Content of the response: {0} - {1}".format(response,
                                                                  response.json()))
         if response.status_code == 200:
