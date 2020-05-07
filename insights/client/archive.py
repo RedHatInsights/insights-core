@@ -30,9 +30,7 @@ class InsightsArchive(object):
         """
         self.config = config
         self.tmp_dir = tempfile.mkdtemp(prefix='/var/tmp/')
-        self.archive_tmp_dir = None
-        if not self.config.obfuscate:
-            self.archive_tmp_dir = tempfile.mkdtemp(prefix='/var/tmp/')
+        self.archive_tmp_dir = tempfile.mkdtemp(prefix='/var/tmp/')
         name = determine_hostname()
         self.archive_name = ("insights-%s-%s" %
                              (name,
