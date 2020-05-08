@@ -88,7 +88,7 @@ def main(filename):
                     line = str(v)
                     line = line.replace('\n', '\\n')
                     fh.write('    {spec}\n'.format(spec=line))
-            except Exception as e:
+            except Exception:
                 print('Error with spec: {name}'.format(name=k))
 
 
