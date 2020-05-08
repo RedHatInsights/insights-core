@@ -138,7 +138,7 @@ class Spec(dict):
                 fixed = r.replace('{', '{{').replace('}', '}}')
                 formatted_str = (''.join(['{name} =', fixed])).format(**self)
             else:
-                formatted_str = self.repr_str.replace().replace('{', '{{').replace('}', '}}').format(**self)
+                formatted_str = self.repr_str.replace('{', '{{').replace('}', '}}').format(**self)
         return formatted_str
 
     @classmethod
