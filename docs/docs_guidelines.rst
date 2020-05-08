@@ -126,24 +126,27 @@ Description
 
 .. code-block:: python
    :linenos:
-   :lineno-start: 4
 
-   This module provides plugins access to the PCI device information gathered from
-   the ``/usr/sbin/lspci`` command.
+    """
+    lspci - Command
+    ===============
 
-   Typical output of the ``lspci`` command is::
+    This module provides plugins access to the PCI device information gathered from
+    the ``/usr/sbin/lspci`` command.
 
-       00:00.0 Host bridge: Intel Corporation 2nd Generation Core Processor Family DRAM Controller (rev 09)
-       00:02.0 VGA compatible controller: Intel Corporation 2nd Generation Core Processor Family Integrated Graphics Controller (rev 09)
-       03:00.0 Network controller: Intel Corporation Centrino Advanced-N 6205 [Taylor Peak] (rev 34)
-       0d:00.0 System peripheral: Ricoh Co Ltd PCIe SDXC/MMC Host Controller (rev 07)
+    Typical output of the ``lspci`` command is::
 
-   The data is exposed via the ``obj.lines`` attribute which is a list containing
-   each line in the output.  The data may also be filtered using the
-   ``obj.get("filter string")`` method.  This method will return a list of lines
-   containing only "filter string".  The ``in`` operator may also be used to test
-   whether a particular string is in the ``lspci`` output.  Other methods/operators
-   are also supported, see the :py:class:`insights.core.LogFileOutput` class for more information.
+        00:00.0 Host bridge: Intel Corporation 2nd Generation Core Processor Family DRAM Controller (rev 09)
+        00:02.0 VGA compatible controller: Intel Corporation 2nd Generation Core Processor Family Integrated Graphics Controller (rev 09)
+        03:00.0 Network controller: Intel Corporation Centrino Advanced-N 6205 [Taylor Peak] (rev 34)
+        0d:00.0 System peripheral: Ricoh Co Ltd PCIe SDXC/MMC Host Controller (rev 07)
+
+    The data is exposed via the ``obj.lines`` attribute which is a list containing
+    each line in the output.  The data may also be filtered using the
+    ``obj.get("filter string")`` method.  This method will return a list of lines
+    containing only "filter string".  The ``in`` operator may also be used to test
+    whether a particular string is in the ``lspci`` output.  Other methods/operators
+    are also supported, see the :py:class:`insights.core.LogFileOutput` class for more information.
 
 Next comes the description of the module.
 Since this description is the first thing a developer will see when viewing
@@ -162,12 +165,26 @@ Notes/References
 
 .. code-block:: python
    :linenos:
-   :lineno-start: 22
+   :lineno-start: 20
+   :force:
+
+   """
 
    Note:
        The examples in this module may be executed with the following command:
 
        ``python -m insights.parsers.lspci``
+
+   Examples:
+       >>> pci_info.get("Intel Corporation")
+       ['00:00.0 Host bridge: Intel Corporation 2nd Generation Core Processor Family DRAM Controller (rev 09)', '00:02.0 VGA compatible controller: Intel Corporation 2nd Generation Core Processor Family Integrated Graphics Controller (rev 09)', '03:00.0 Network controller: Intel Corporation Centrino Advanced-N 6205 [Taylor Peak] (rev 34)']
+       >>> len(pci_info.get("Network controller"))
+       1
+       >>> "Centrino Advanced-N 6205" in pci_info
+       True
+       >>> "0d:00.0" in pci_info
+       True
+   """
 
 Module notes and/or references are not necessary unless there is information
 that should be included to aid a developer in understanding the parser. In
@@ -181,8 +198,10 @@ Examples
 
 .. code-block:: python
    :linenos:
-   :lineno-start: 27
+   :lineno-start: 25
 
+   """
+   
    Examples:
        >>> pci_info.get("Intel Corporation")
        ['00:00.0 Host bridge: Intel Corporation 2nd Generation Core Processor Family DRAM Controller (rev 09)', '00:02.0 VGA compatible controller: Intel Corporation 2nd Generation Core Processor Family Integrated Graphics Controller (rev 09)', '03:00.0 Network controller: Intel Corporation Centrino Advanced-N 6205 [Taylor Peak] (rev 34)']
