@@ -77,7 +77,7 @@ def main(filename):
         for v in functions:
             try:
                 fh.write('    * :py:func:`{fxn_name}() <insights.specs.default.DefaultSpecs.{fxn_name}>`\n'.format(fxn_name=v['fxn_name']))
-            except Exception as e:
+            except Exception:
                 print('Error with function spec: {name}'.format(name=v['fxn_name']))
 
         fh.write('\n\nGeneral Datasources\n^^^^^^^^^^^^^^^^^^^\n\n::\n\n')
