@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 """
-This module loads all of the components: specs, parsers and combiners, and
-creates an `.rst` file output which can be included in the documentation
-build.  The output file is a cross-reference for each type of component,
-showing the component's dependents and dependencies.  In the case of
-specs it only shows the dependents, and does not currently use the
-context specific specs.
+This module uses the inspec module to introspec information about
+all of the datasources and dynamically create a ``.rst`` document to be
+included in the sphinx build process
+
+The output file is a listing of all default specs defined in
+:py:mod:`insights.specs.default`.
 
 It can be called from the commandline to manually generate the file or
 it may also be called inside the Sphinx *conf.py* `setup` function to
@@ -20,7 +20,7 @@ and python environment for insights-core development.
 To run from the command line simply execute this utility and provide
 the name of the output file::
 
-    $ python insights/util/component_graph.py output_filename.rst
+    $ python -m insights.util.specs_catalog.main output_filename.rst
 
 """
 import argparse
@@ -79,7 +79,6 @@ def main(filename):
                 fh.write('    * :py:func:`{fxn_name}() <insights.specs.default.DefaultSpecs.{fxn_name}>`\n'.format(fxn_name=v['fxn_name']))
             except Exception as e:
                 print('Error with function spec: {name}'.format(name=v['fxn_name']))
-                raise
 
         fh.write('\n\nGeneral Datasources\n^^^^^^^^^^^^^^^^^^^\n\n::\n\n')
 
@@ -91,7 +90,6 @@ def main(filename):
                     fh.write('    {spec}\n'.format(spec=line))
             except Exception as e:
                 print('Error with spec: {name}'.format(name=k))
-                raise
 
 
 def parse_args():
