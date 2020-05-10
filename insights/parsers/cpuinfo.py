@@ -141,7 +141,6 @@ class CpuInfo(LegacyItemAccess, Parser):
             "revision": "revision",
             "address sizes": "address_sizes",
             "bugs": "bugs",
-            "apicid": "apicid"
         }
 
         for line in get_active_lines(content, comment_char="COMMAND>"):
