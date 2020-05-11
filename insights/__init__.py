@@ -25,7 +25,7 @@ import yaml
 from collections import defaultdict
 
 from .core import Scannable, LogFileOutput, Parser, IniConfigFile  # noqa: F401
-from .core import FileListing, LegacyItemAccess, SysconfigOptions  # noqa: F401
+from .core import FileListing, LegacyItemAccess, SysconfigOptions, DiskUsage  # noqa: F401
 from .core import YAMLParser, JSONParser, XMLParser, CommandParser  # noqa: F401
 from .core import AttributeDict  # noqa: F401
 from .core import Syslog  # noqa: F401

@@ -1663,6 +1663,63 @@ class FileListing(Parser):
         return self.listings[directory]['entries'][name]
 
 
+class DiskUsage(CommandParser, dict):
+    """
+    Reads output of du command and turns it into a dictionary with pathname as
+    key and size in blocks.
+
+    Supports parsing input data as long as output is 2 column data with first
+    column as space size with integer values only and second as pathname which
+    can be a file or directory. Space size with decimal values or unit suffixes
+    like M, GiB is not supported.
+
+    du command produces output in 1K blocks unless block size is specified in
+    command options or an environment variable. This parser is intended to be
+    used only with default block size of 1K which is also equal to plain "du"
+    or "du -k".
+
+    Sample input data:
+
+        56      /var/lib/alternatives
+        4       /var/lib/logrotate
+        5492	/var/lib/mlocate
+        20      /var/lib/NetworkManager
+        186484  /var/lib/pgsql
+        856	    /var/lib/rhsm
+        110712	/var/lib/rpm
+        4	    /var/lib/rsyslog
+        64	    /var/lib/systemd
+        15200	/var/lib/yum
+    """
+
+    def parse_content(self, content):
+        """
+        Parse input data into a dictionary.
+        """
+        # For errors like :
+        # /bin/du: cannot read directory '/somepath'
+        # /bin/du: cannot access `/somepath': No such file or directory
+        du_error = 'bin/du: '
+
+        for line in content:
+            if du_error in line:
+                continue
+
+            line_split = line.split(None, 1)
+            if len(line_split) != 2:
+                raise ParseException("Could not parse line: '{0}'".format(line))
+            size, path = line_split
+            # Strip '.' if relative paths and skip if current directory
+            path = path.lstrip('.').rstrip()
+            if path == '':
+                continue
+            try:
+                size = int(size)
+            except ValueError:
+                raise ParseException("Could not parse line: '{0}'".format(line))
+            self[path] = size
+
+
 class AttributeDict(dict):
     """
     Class to convert the access to each item in a dict as attribute.
