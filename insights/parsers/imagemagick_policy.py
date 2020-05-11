@@ -57,8 +57,8 @@ class ImageMagickPolicy(XMLParser):
         <class 'insights.parsers.imagemagick_policy.ImageMagickPolicy'>
         >>> len(imagemagick_policy.policies)
         10
-        >>> imagemagick_policy.policies[0].items()
-        [('domain', 'coder'), ('rights', 'none'), ('pattern', 'EPHEMERAL')]
+        >>> sorted(imagemagick_policy.policies[0].items())
+        [('domain', 'coder'), ('pattern', 'EPHEMERAL'), ('rights', 'none')]
     """
 
     def parse_content(self, content):
