@@ -2,7 +2,6 @@
 ImageMagickPolicy - files ``/etc/ImageMagick/policy.xml`` and ``/usr/lib*/ImageMagick-6.5.4/config/policy.xml``
 ===============================================================================================================
 """
-from defusedxml.ElementTree import ParseError
 
 from insights.core import XMLParser
 from insights.core.plugins import parser
@@ -67,5 +66,5 @@ class ImageMagickPolicy(XMLParser):
         try:
             super(ImageMagickPolicy, self).parse_content(content)
             self.policies = self.get_elements(".//policy")
-        except ParseError:
+        except Exception:  # file without elements
             self.policies = []
