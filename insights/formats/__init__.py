@@ -142,8 +142,11 @@ try:
 
     def format_rule(comp, val):
         content = get_content(comp, val)
+        links = {}
+        if 'links' not in val and dr.get_delegate(comp).links:
+            links = dr.get_delegate(comp).links
         if content and val.get("type") != "skip":
-            return Template(content).render(val)
+            return Template(content).render(val, links=links)
         return str(val)
 
     RENDERERS[rule] = format_rule
