@@ -350,10 +350,7 @@ class DefaultSpecs(Specs):
     grub2_cfg = simple_file("/boot/grub2/grub.cfg")
     grub2_efi_cfg = simple_file("boot/efi/EFI/redhat/grub.cfg")
     grubby_default_index = simple_command("/usr/sbin/grubby --default-index")  # only RHEL7 and updwards
-    grubby_default_kernel = first_of([
-                                        simple_command("/sbin/grubby --default-kernel"),
-                                        simple_command("/usr/sbin/grubby --default-kernel")
-                                    ])
+    grubby_default_kernel = simple_command("/sbin/grubby --default-kernel")
     hammer_ping = simple_command("/usr/bin/hammer ping")
     hammer_task_list = simple_command("/usr/bin/hammer --config /root/.hammer/cli.modules.d/foreman.yml --output csv task list --search 'state=running AND ( label=Actions::Candlepin::ListenOnCandlepinEvents OR label=Actions::Katello::EventQueue::Monitor )'")
     haproxy_cfg = first_file(["/var/lib/config-data/puppet-generated/haproxy/etc/haproxy/haproxy.cfg", "/etc/haproxy/haproxy.cfg"])
