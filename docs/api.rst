@@ -93,6 +93,8 @@ each unique context, and also provide a default set of data sources that are
 common among one or more contexts.  All available contexts are defined in the
 module :py:mod:`insights.core.context`.
   
+.. _datasources-ref:
+
 Data Sources
 ============
 

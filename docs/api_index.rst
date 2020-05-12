@@ -183,3 +183,13 @@ insights.util
     :members:
     :show-inheritance:
     :undoc-members:
+
+.. automodule:: insights.util.autology
+    :members:
+    :show-inheritance:
+    :undoc-members:
+
+.. automodule:: insights.util.autology.datasources
+    :members:
+    :show-inheritance:
+    :undoc-members:
