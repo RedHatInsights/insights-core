@@ -2,7 +2,7 @@ from glob import glob
 from insights.client.archive import InsightsArchive
 from insights.client.connection import InsightsConnection
 from insights.client.constants import InsightsConstants as constants
-from insights.util.canonical_facts import get_canonical_facts
+from insights.client.utilities import determine_hostname
 from logging import getLogger
 from platform import linux_distribution
 from re import findall
@@ -21,7 +21,7 @@ class ComplianceClient:
     def __init__(self, config):
         self.config = config
         self.conn = InsightsConnection(config)
-        self.hostname = get_canonical_facts().get('fqdn', '')
+        self.hostname = determine_hostname()
         self.archive = InsightsArchive(config)
 
     def oscap_scan(self):
