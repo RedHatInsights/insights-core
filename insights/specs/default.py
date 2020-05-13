@@ -28,8 +28,10 @@ from insights.parsers.mount import Mount, ProcMounts
 from insights.parsers.dnf_module import DnfModuleList
 from insights.combiners.cloud_provider import CloudProvider
 from insights.combiners.satellite_version import SatelliteVersion
+from insights.combiners.services import Services
 from insights.components.rhel_version import IsRhel8
 from insights.specs import Specs
+
 
 from grp import getgrgid
 from os import stat
@@ -727,6 +729,13 @@ class DefaultSpecs(Specs):
     ovs_vswitchd_limits = foreach_collect(ovs_vswitchd_pid, "/proc/%s/limits")
     pacemaker_log = first_file(["/var/log/pacemaker.log", "/var/log/pacemaker/pacemaker.log"])
     pci_rport_target_disk_paths = simple_command("/usr/bin/find /sys/devices/ -maxdepth 10 -mindepth 9 -name stat -type f")
+
+    @datasource(Services, context=HostContext)
+    def pcp_enabled(broker):
+        if not broker[Services].is_on("pmproxy"):
+            raise SkipComponent("pmproxy not enabled")
+
+    pcp_metrics = simple_command("/usr/bin/curl -s http://127.0.0.1:44322/metrics --connect-timeout 5", deps=[pcp_enabled])
 
     @datasource(ps_auxww, context=HostContext)
     def package_and_java(broker):
