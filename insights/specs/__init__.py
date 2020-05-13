@@ -657,6 +657,7 @@ class Specs(SpecSet):
     xfs_info = RegistryPoint(multi_output=True)
     xinetd_conf = RegistryPoint(multi_output=True)
     yum_conf = RegistryPoint()
+    yum_list_available = RegistryPoint()
     yum_list_installed = RegistryPoint()
     yum_log = RegistryPoint()
     yum_repolist = RegistryPoint()

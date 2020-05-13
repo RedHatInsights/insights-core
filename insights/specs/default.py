@@ -1049,6 +1049,7 @@ class DefaultSpecs(Specs):
     xfs_info = foreach_execute(xfs_mounts, "/usr/sbin/xfs_info %s")
     xinetd_conf = glob_file(["/etc/xinetd.conf", "/etc/xinetd.d/*"])
     yum_conf = simple_file("/etc/yum.conf")
+    yum_list_available = simple_command("yum -C --noplugins list available")
     yum_list_installed = simple_command("yum -C --noplugins list installed")
     yum_log = simple_file("/var/log/yum.log")
     yum_repolist = simple_command("/usr/bin/yum -C --noplugins repolist")
