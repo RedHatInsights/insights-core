@@ -2,7 +2,7 @@ from glob import glob
 from insights.client.archive import InsightsArchive
 from insights.client.connection import InsightsConnection
 from insights.client.constants import InsightsConstants as constants
-from insights.util.canonical_facts import get_canonical_facts
+from insights.client.utilities import determine_hostname
 from logging import getLogger
 from platform import linux_distribution
 from re import findall
@@ -21,7 +21,7 @@ class ComplianceClient:
     def __init__(self, config):
         self.config = config
         self.conn = InsightsConnection(config)
-        self.hostname = get_canonical_facts().get('fqdn', '')
+        self.hostname = determine_hostname()
         self.archive = InsightsArchive(config)
 
     def oscap_scan(self):
@@ -85,7 +85,7 @@ class ComplianceClient:
         return glob("{0}*rhel{1}*.xml".format(POLICY_FILE_LOCATION, self.os_release()))
 
     def find_scap_policy(self, profile_ref_id):
-        rc, grep = call('grep ' + profile_ref_id + ' ' + ' '.join(self.profile_files()), keep_rc=True)
+        rc, grep = call(('grep ' + profile_ref_id + ' ' + ' '.join(self.profile_files())).encode(), keep_rc=True)
         if rc:
             logger.error('XML profile file not found matching ref_id {0}\n{1}\n'.format(profile_ref_id, grep))
             exit(constants.sig_kill_bad)
@@ -107,7 +107,7 @@ class ComplianceClient:
         env = os.environ.copy()
         env.update({'TZ': 'UTC'})
         oscap_command = self.build_oscap_command(profile_ref_id, policy_xml, output_path, tailoring_file_path)
-        rc, oscap = call(oscap_command, keep_rc=True, env=env)
+        rc, oscap = call(oscap_command.encode(), keep_rc=True, env=env)
         if rc and rc != NONCOMPLIANT_STATUS:
             logger.error('Scan failed')
             logger.error(oscap)

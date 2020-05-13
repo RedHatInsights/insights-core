@@ -25,6 +25,7 @@ pylint.out
 cover/
 docs/plugin_catalog/*.rst
 docs/components.rst
+docs/specs_catalog.rst
 build/
 .idea*
 dist/

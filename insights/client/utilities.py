@@ -15,13 +15,13 @@ from subprocess import Popen, PIPE, STDOUT
 
 import yaml
 try:
-    from yaml import CLoader as Loader, CDumper as Dumper
+    from yaml import CDumper as Dumper
 except ImportError:
-    from yaml import Loader, Dumper
+    from yaml import Dumper
 
 from .. import package_info
 from .constants import InsightsConstants as constants
-from .collection_rules import InsightsUploadConf
+from .collection_rules import InsightsUploadConf, load_yaml
 
 try:
     from insights_client.constants import InsightsConstants as wrapper_constants
@@ -101,10 +101,6 @@ def delete_registered_file():
 def delete_unregistered_file():
     for f in constants.unregistered_files:
         write_to_disk(f, delete=True)
-    # this function only called when machine is registered,
-    #  so while registering, delete this file too. we only
-    #  need it around until we're registered
-    write_to_disk(constants.register_marker_file, delete=True)
 
 
 def delete_cache_files():
@@ -145,11 +141,14 @@ def generate_machine_id(new=False,
         logger.debug("Creating %s", destination_file)
         write_to_disk(destination_file, content=machine_id)
 
+    machine_id = str(machine_id).strip()
+
     try:
         uuid.UUID(machine_id, version=4)
-        return str(machine_id).strip()
-    except ValueError:
+        return machine_id
+    except ValueError as e:
         logger.error("Invalid machine ID: %s", machine_id)
+        logger.error("Error details: %s", str(e))
         logger.error("Remove %s and a new one will be generated.\nRerun the client with --register", destination_file)
         sys.exit(constants.sig_kill_bad)
 
@@ -176,7 +175,7 @@ def _expand_paths(path):
 
 def validate_remove_file(config):
     """
-    Validate the remove file
+    Validate the remove file and tags file
     """
     return InsightsUploadConf(config).validate()
 
@@ -318,7 +317,7 @@ def systemd_notify(pid):
         logger.debug('systemd-notify returned %s', proc.returncode)
 
 
-def get_tags(tags_file_path=os.path.join(constants.default_conf_dir, "tags.yaml")):
+def get_tags(tags_file_path=constants.default_tags_file):
     '''
     Load tag data from the tags file.
 
@@ -326,17 +325,19 @@ def get_tags(tags_file_path=os.path.join(constants.default_conf_dir, "tags.yaml"
     '''
     tags = None
 
-    try:
-        with open(tags_file_path) as f:
-            data = f.read()
-            tags = yaml.load(data, Loader=Loader)
-    except EnvironmentError as e:
-        logger.debug("tags file does not exist: %s", os.strerror(e.errno))
+    if os.path.isfile(tags_file_path):
+        try:
+            tags = load_yaml(tags_file_path)
+        except RuntimeError:
+            logger.error("Invalid YAML. Unable to load %s", tags_file_path)
+            return None
+    else:
+        logger.debug("%s does not exist", tags_file_path)
 
     return tags
 
 
-def write_tags(tags, tags_file_path=os.path.join(constants.default_conf_dir, "tags.yaml")):
+def write_tags(tags, tags_file_path=constants.default_tags_file):
     """
     Writes tags to tags_file_path
 
@@ -349,3 +350,25 @@ def write_tags(tags, tags_file_path=os.path.join(constants.default_conf_dir, "ta
     with open(tags_file_path, mode="w+") as f:
         data = yaml.dump(tags, Dumper=Dumper, default_flow_style=False)
         f.write(data)
+
+
+def migrate_tags():
+    '''
+    We initially released the tags feature with the tags file set as
+    tags.conf, but soon after switched it over to tags.yaml. There may be
+    installations out there with tags.conf files, so rename the files.
+    '''
+    tags_conf = os.path.join(constants.default_conf_dir, 'tags.conf')
+    tags_yaml = os.path.join(constants.default_conf_dir, 'tags.yaml')
+
+    if os.path.exists(tags_yaml):
+        # current default file exists, do nothing
+        return
+    if os.path.exists(tags_conf):
+        # old file exists and current does not
+        logger.info('Tags file %s detected. This filename is deprecated; please use %s. The file will be renamed automatically.',
+                    tags_conf, tags_yaml)
+        try:
+            os.rename(tags_conf, tags_yaml)
+        except OSError as e:
+            logger.error(e)

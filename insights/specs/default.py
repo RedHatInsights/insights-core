@@ -28,8 +28,10 @@ from insights.parsers.mount import Mount, ProcMounts
 from insights.parsers.dnf_module import DnfModuleList
 from insights.combiners.cloud_provider import CloudProvider
 from insights.combiners.satellite_version import SatelliteVersion
+from insights.combiners.services import Services
 from insights.components.rhel_version import IsRhel8
 from insights.specs import Specs
+
 
 from grp import getgrgid
 from os import stat
@@ -210,6 +212,7 @@ class DefaultSpecs(Specs):
     cpuinfo_max_freq = simple_file("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq")
     cpupower_frequency_info = simple_command("/usr/bin/cpupower -c all frequency-info")
     cpuset_cpus = simple_file("/sys/fs/cgroup/cpuset/cpuset.cpus")
+    cron_daily_rhsmd = simple_file("/etc/cron.daily/rhsmd")
     crypto_policies_config = simple_file("/etc/crypto-policies/config")
     crypto_policies_state_current = simple_file("/etc/crypto-policies/state/current")
     crypto_policies_opensshserver = simple_file("/etc/crypto-policies/back-ends/opensshserver.config")
@@ -218,7 +221,6 @@ class DefaultSpecs(Specs):
     date = simple_command("/bin/date")
     date_iso = simple_command("/bin/date --iso-8601=seconds")
     date_utc = simple_command("/bin/date --utc")
-    db2licm_l = simple_command("/usr/bin/db2licm -l")
     df__al = simple_command("/bin/df -al")
     df__alP = simple_command("/bin/df -alP")
     df__li = simple_command("/bin/df -li")
@@ -295,6 +297,7 @@ class DefaultSpecs(Specs):
             return mounted_dev
         raise SkipComponent()
 
+    dracut_kdump_capture_service = simple_file("/usr/lib/dracut/modules.d/99kdumpbase/kdump-capture.service")
     dumpe2fs_h = foreach_execute(dumpdev, "/sbin/dumpe2fs -h %s")
     engine_config_all = simple_command("/usr/bin/engine-config --all")
     engine_log = simple_file("/var/log/ovirt-engine/engine.log")
@@ -349,7 +352,7 @@ class DefaultSpecs(Specs):
     grub2_cfg = simple_file("/boot/grub2/grub.cfg")
     grub2_efi_cfg = simple_file("boot/efi/EFI/redhat/grub.cfg")
     grubby_default_index = simple_command("/usr/sbin/grubby --default-index")  # only RHEL7 and updwards
-    grubby_default_kernel = simple_command("/usr/sbin/grubby --default-kernel")  # RHEL6 and updwards
+    grubby_default_kernel = simple_command("/sbin/grubby --default-kernel")
     hammer_ping = simple_command("/usr/bin/hammer ping")
     hammer_task_list = simple_command("/usr/bin/hammer --config /root/.hammer/cli.modules.d/foreman.yml --output csv task list --search 'state=running AND ( label=Actions::Candlepin::ListenOnCandlepinEvents OR label=Actions::Katello::EventQueue::Monitor )'")
     haproxy_cfg = first_file(["/var/lib/config-data/puppet-generated/haproxy/etc/haproxy/haproxy.cfg", "/etc/haproxy/haproxy.cfg"])
@@ -519,7 +522,10 @@ class DefaultSpecs(Specs):
     ls_disk = simple_command("/bin/ls -lanR /dev/disk")
     ls_docker_volumes = simple_command("/bin/ls -lanR /var/lib/docker/volumes")
     ls_edac_mc = simple_command("/bin/ls -lan /sys/devices/system/edac/mc")
-    ls_etc = simple_command("/bin/ls -lanR /etc")
+    etc_and_sub_dirs = sorted(["/etc", "/etc/pki/tls/private", "/etc/pki/tls/certs",
+        "/etc/pki/ovirt-vmconsole", "/etc/nova/migration", "/etc/sysconfig",
+        "/etc/cloud/cloud.cfg.d"])
+    ls_etc = simple_command("ls -lan {0}".format(' '.join(etc_and_sub_dirs)))
     ls_lib_firmware = simple_command("/bin/ls -lanR /lib/firmware")
     ls_ocp_cni_openshift_sdn = simple_command("/bin/ls -l /var/lib/cni/networks/openshift-sdn")
     ls_origin_local_volumes_pods = simple_command("/bin/ls -l /var/lib/origin/openshift.local.volumes/pods")
@@ -622,6 +628,7 @@ class DefaultSpecs(Specs):
     mysqld_limits = foreach_collect(mysqld_pid, "/proc/%s/limits")
     named_checkconf_p = simple_command("/usr/sbin/named-checkconf -p")
     namespace = simple_command("/bin/ls /var/run/netns")
+    ndctl_list_Ni = simple_command("/usr/bin/ndctl list -Ni")
     ip_netns_exec_namespace_lsof = foreach_execute(namespace, "/sbin/ip netns exec %s lsof -i")
     netconsole = simple_file("/etc/sysconfig/netconsole")
     netstat = simple_command("/bin/netstat -neopa")
@@ -722,6 +729,13 @@ class DefaultSpecs(Specs):
     ovs_vswitchd_limits = foreach_collect(ovs_vswitchd_pid, "/proc/%s/limits")
     pacemaker_log = first_file(["/var/log/pacemaker.log", "/var/log/pacemaker/pacemaker.log"])
     pci_rport_target_disk_paths = simple_command("/usr/bin/find /sys/devices/ -maxdepth 10 -mindepth 9 -name stat -type f")
+
+    @datasource(Services, context=HostContext)
+    def pcp_enabled(broker):
+        if not broker[Services].is_on("pmproxy"):
+            raise SkipComponent("pmproxy not enabled")
+
+    pcp_metrics = simple_command("/usr/bin/curl -s http://127.0.0.1:44322/metrics --connect-timeout 5", deps=[pcp_enabled])
 
     @datasource(ps_auxww, context=HostContext)
     def package_and_java(broker):

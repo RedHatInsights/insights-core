@@ -10,6 +10,7 @@ class InsightsConstants(object):
     command_blacklist = ('rm', 'kill', 'reboot', 'shutdown')
     default_conf_dir = os.getenv('INSIGHTS_CONF_DIR', default='/etc/insights-client')
     default_conf_file = os.path.join(default_conf_dir, 'insights-client.conf')
+    default_tags_file = os.path.join(default_conf_dir, 'tags.yaml')
     log_dir = os.path.join(os.sep, 'var', 'log', app_name)
     simple_find_replace_dir = '/etc/redhat-access-insights'
     default_log_file = os.path.join(log_dir, app_name + '.log')
@@ -43,8 +44,4 @@ class InsightsConstants(object):
     sig_kill_bad = 101
     cached_branch_info = os.path.join(default_conf_dir, '.branch_info')
     pidfile = os.path.join(os.sep, 'var', 'run', 'insights-client.pid')
-    # this file is used to attempt registration when the client starts, implies --register
-    register_marker_file = os.path.join(os.sep, 'var', 'run', 'insights-client-try-register')
-    # default Hydra endpoint for posting entitlements information for AWS
-    default_portal_access_hydra_url = 'https://access.redhat.com/hydra/rest/accounts/entitle'
     valid_compressors = ("gz", "xz", "bz2", "none")
