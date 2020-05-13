@@ -21,7 +21,77 @@ APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
 NETWORK = constants.custom_network_log_level
 
-expected_keys = ('commands', 'files', 'patterns', 'keywords')
+
+def correct_format(parsed_data, expected_keys, filename):
+    '''
+    Ensure the parsed file matches the needed format
+    Returns True, <message> on error
+    Returns False, None on success
+    '''
+    # validate keys are what we expect
+    def is_list_of_strings(data):
+        '''
+        Helper function for correct_format()
+        '''
+        if data is None:
+            # nonetype, no data to parse. treat as empty list
+            return True
+        if not isinstance(data, list):
+            return False
+        for l in data:
+            if not isinstance(l, six.string_types):
+                return False
+        return True
+
+    keys = parsed_data.keys()
+    invalid_keys = set(keys).difference(expected_keys)
+    if invalid_keys:
+        return True, ('Unknown section(s) in %s: ' % filename + ', '.join(invalid_keys) +
+                      '\nValid sections are ' + ', '.join(expected_keys) + '.')
+
+    # validate format (lists of strings)
+    for k in expected_keys:
+        if k in parsed_data:
+            if k == 'patterns' and isinstance(parsed_data['patterns'], dict):
+                if 'regex' not in parsed_data['patterns']:
+                    return True, 'Patterns section contains an object but the "regex" key was not specified.'
+                if 'regex' in parsed_data['patterns'] and len(parsed_data['patterns']) > 1:
+                    return True, 'Unknown keys in the patterns section. Only "regex" is valid.'
+                if not is_list_of_strings(parsed_data['patterns']['regex']):
+                    return True, 'regex section under patterns must be a list of strings.'
+                continue
+            if not is_list_of_strings(parsed_data[k]):
+                return True, '%s section must be a list of strings.' % k
+    return False, None
+
+
+def load_yaml(filename):
+    try:
+        with open(filename) as f:
+            loaded_yaml = yaml.safe_load(f)
+        if loaded_yaml is None:
+            logger.debug('%s is empty.', filename)
+            return {}
+    except (yaml.YAMLError, yaml.parser.ParserError) as e:
+        # can't parse yaml from conf
+        raise RuntimeError('ERROR: Cannot parse %s.\n'
+                           'If using any YAML tokens such as [] in an expression, '
+                           'be sure to wrap the expression in quotation marks.\n\nError details:\n%s\n' % (filename, e))
+    if not isinstance(loaded_yaml, dict):
+        # loaded data should be a dict with at least one key
+        raise RuntimeError('ERROR: Invalid YAML loaded.')
+    return loaded_yaml
+
+
+def verify_permissions(f):
+    '''
+    Verify 600 permissions on a file
+    '''
+    mode = stat.S_IMODE(os.stat(f).st_mode)
+    if not mode == 0o600:
+        raise RuntimeError("Invalid permissions on %s. "
+                           "Expected 0600 got %s" % (f, oct(mode)))
+    logger.debug("Correct file permissions on %s", f)
 
 
 class InsightsUploadConf(object):
@@ -36,9 +106,22 @@ class InsightsUploadConf(object):
         self.config = config
         self.fallback_file = constants.collection_fallback_file
         self.remove_file = config.remove_file
+        self.redaction_file = config.redaction_file
+        self.content_redaction_file = config.content_redaction_file
+        self.tags_file = config.tags_file
         self.collection_rules_file = constants.collection_rules_file
         self.collection_rules_url = self.config.collection_rules_url
         self.gpg = self.config.gpg
+
+        # set rm_conf as a class attribute so we can observe it
+        #   in create_report
+        self.rm_conf = None
+
+        # attribute to set when using file-redaction.yaml instead of
+        #   remove.conf, for reporting purposes. True by default
+        #   since new format is favored.
+        self.using_new_format = True
+
         if conn:
             if self.collection_rules_url is None:
                 if config.legacy_upload:
@@ -217,128 +300,199 @@ class InsightsUploadConf(object):
         Get excluded files config from remove_file.
         """
         # Convert config object into dict
-        logger.debug('Trying to parse as INI file.')
+        self.using_new_format = False
         parsedconfig = ConfigParser.RawConfigParser()
-
+        if not self.remove_file:
+            # no filename defined, return nothing
+            logger.debug('remove_file is undefined')
+            return None
+        if not os.path.isfile(self.remove_file):
+            logger.debug('%s not found. No data files, commands,'
+                         ' or patterns will be ignored, and no keyword obfuscation will occur.', self.remove_file)
+            return None
+        try:
+            verify_permissions(self.remove_file)
+        except RuntimeError as e:
+            if self.config.validate:
+                # exit if permissions invalid and using --validate
+                raise RuntimeError('ERROR: %s' % e)
+            logger.warning('WARNING: %s', e)
         try:
             parsedconfig.read(self.remove_file)
+            sections = parsedconfig.sections()
+
+            if not sections:
+                # file has no sections, skip it
+                logger.debug('Remove.conf exists but no parameters have been defined.')
+                return None
+
+            if sections != ['remove']:
+                raise RuntimeError('ERROR: invalid section(s) in remove.conf. Only "remove" is valid.')
+
+            expected_keys = ('commands', 'files', 'patterns', 'keywords')
             rm_conf = {}
             for item, value in parsedconfig.items('remove'):
                 if item not in expected_keys:
-                    raise RuntimeError('Unknown section in remove.conf: ' + item +
-                                       '\nValid sections are ' + ', '.join(expected_keys) + '.')
+                    raise RuntimeError('ERROR: Unknown key in remove.conf: ' + item +
+                                       '\nValid keys are ' + ', '.join(expected_keys) + '.')
                 if six.PY3:
                     rm_conf[item] = value.strip().encode('utf-8').decode('unicode-escape').split(',')
                 else:
                     rm_conf[item] = value.strip().decode('string-escape').split(',')
-            return rm_conf
+            self.rm_conf = rm_conf
         except ConfigParser.Error as e:
             # can't parse config file at all
             logger.debug(e)
-            raise RuntimeError('ERROR: Cannot parse the remove.conf file as a YAML file '
-                               'nor as an INI file. Please check the file formatting.\n'
+            logger.debug('To configure using YAML, please use file-redaction.yaml and file-content-redaction.yaml.')
+            raise RuntimeError('ERROR: Cannot parse the remove.conf file.\n'
                                'See %s for more information.' % self.config.logging_file)
+        logger.warning('WARNING: remove.conf is deprecated. Please use file-redaction.yaml and file-content-redaction.yaml. See https://access.redhat.com/articles/4511681 for details.')
+        return self.rm_conf
 
-    def get_rm_conf(self):
+    def load_redaction_file(self, fname):
         '''
-        Load remove conf. If it's a YAML-formatted file, try to load
-        the "new" version of remove.conf
+        Load the YAML-style file-redaction.yaml
+            or file-content-redaction.yaml files
         '''
-        def is_list_of_strings(data):
-            '''
-            Helper function for correct_format()
-            '''
-            if data is None:
-                # nonetype, no data to parse. treat as empty list
-                return True
-            if not isinstance(data, list):
-                return False
-            for l in data:
-                if not isinstance(l, six.string_types):
-                    return False
-            return True
-
-        def correct_format(parsed_data):
-            '''
-            Ensure the parsed file matches the needed format
-            Returns True, <message> on error
-            '''
-            # validate keys are what we expect
-            keys = parsed_data.keys()
-            invalid_keys = set(keys).difference(expected_keys)
-            if invalid_keys:
-                return True, ('Unknown section(s) in remove.conf: ' + ', '.join(invalid_keys) +
-                              '\nValid sections are ' + ', '.join(expected_keys) + '.')
-
-            # validate format (lists of strings)
-            for k in expected_keys:
-                if k in parsed_data:
-                    if k == 'patterns' and isinstance(parsed_data['patterns'], dict):
-                        if 'regex' not in parsed_data['patterns']:
-                            return True, 'Patterns section contains an object but the "regex" key was not specified.'
-                        if 'regex' in parsed_data['patterns'] and len(parsed_data['patterns']) > 1:
-                            return True, 'Unknown keys in the patterns section. Only "regex" is valid.'
-                        if not is_list_of_strings(parsed_data['patterns']['regex']):
-                            return True, 'regex section under patterns must be a list of strings.'
-                        continue
-                    if not is_list_of_strings(parsed_data[k]):
-                        return True, '%s section must be a list of strings.' % k
-            return False, None
-
-        if not os.path.isfile(self.remove_file):
-            logger.debug('No remove.conf defined. No files/commands will be ignored.')
+        if fname not in (self.redaction_file, self.content_redaction_file):
+            # invalid function use, should never get here in a production situation
+            return None
+        if not fname:
+            # no filename defined, return nothing
+            logger.debug('redaction_file or content_redaction_file is undefined')
+            return None
+        if not fname or not os.path.isfile(fname):
+            if fname == self.redaction_file:
+                logger.debug('%s not found. No files or commands will be skipped.', self.redaction_file)
+            elif fname == self.content_redaction_file:
+                logger.debug('%s not found. '
+                             'No patterns will be skipped and no keyword obfuscation will occur.', self.content_redaction_file)
             return None
         try:
-            with open(self.remove_file) as f:
-                rm_conf = yaml.safe_load(f)
-            if rm_conf is None:
-                logger.warn('WARNING: Remove file %s is empty.', self.remove_file)
-                return {}
-        except (yaml.YAMLError, yaml.parser.ParserError) as e:
-            # can't parse yaml from conf, try old style
-            logger.debug('ERROR: Cannot parse remove.conf as a YAML file.\n'
-                         'If using any YAML tokens such as [] in an expression, '
-                         'be sure to wrap the expression in quotation marks.\n\nError details:\n%s\n', e)
-            return self.get_rm_conf_old()
-        if not isinstance(rm_conf, dict):
-            # loaded data should be a dict with at least one key (commands, files, patterns, keywords)
-            logger.debug('ERROR: Invalid YAML loaded.')
-            return self.get_rm_conf_old()
-        err, msg = correct_format(rm_conf)
+            verify_permissions(fname)
+        except RuntimeError as e:
+            if self.config.validate:
+                # exit if permissions invalid and using --validate
+                raise RuntimeError('ERROR: %s' % e)
+            logger.warning('WARNING: %s', e)
+        loaded = load_yaml(fname)
+        if fname == self.redaction_file:
+            err, msg = correct_format(loaded, ('commands', 'files', 'components'), fname)
+        elif fname == self.content_redaction_file:
+            err, msg = correct_format(loaded, ('patterns', 'keywords'), fname)
         if err:
             # YAML is correct but doesn't match the format we need
             raise RuntimeError('ERROR: ' + msg)
+        return loaded
+
+    def get_rm_conf(self):
+        '''
+        Try to load the the "new" version of
+        remove.conf (file-redaction.yaml and file-redaction.yaml)
+        '''
+        rm_conf = {}
+        redact_conf = self.load_redaction_file(self.redaction_file)
+        content_redact_conf = self.load_redaction_file(self.content_redaction_file)
+
+        if redact_conf:
+            rm_conf.update(redact_conf)
+        if content_redact_conf:
+            rm_conf.update(content_redact_conf)
+
+        if not redact_conf and not content_redact_conf:
+            # no file-redaction.yaml or file-content-redaction.yaml defined,
+            #   try to use remove.conf
+            return self.get_rm_conf_old()
+
         # remove Nones, empty strings, and empty lists
         filtered_rm_conf = dict((k, v) for k, v in rm_conf.items() if v)
+        self.rm_conf = filtered_rm_conf
         return filtered_rm_conf
+
+    def get_tags_conf(self):
+        '''
+        Try to load the tags.conf file
+        '''
+        if not os.path.isfile(self.tags_file):
+            logger.info("%s does not exist", self.tags_file)
+            return None
+        else:
+            try:
+                load_yaml(self.tags_file)
+                logger.info("%s loaded successfully", self.tags_file)
+            except RuntimeError:
+                logger.warning("Invalid YAML. Unable to load %s", self.tags_file)
+                return None
 
     def validate(self):
         '''
-        Validate remove.conf
+        Validate remove.conf and tags.conf
         '''
-        if not os.path.isfile(self.remove_file):
-            logger.warn("WARNING: Remove file does not exist")
-            return False
-        # Make sure permissions are 600
-        mode = stat.S_IMODE(os.stat(self.remove_file).st_mode)
-        if not mode == 0o600:
-            logger.error("WARNING: Invalid remove file permissions. "
-                         "Expected 0600 got %s" % oct(mode))
-            return False
-        else:
-            logger.debug("Correct file permissions")
+        self.get_tags_conf()
         success = self.get_rm_conf()
-        if success is None or success is False:
-            logger.error('Could not parse remove.conf')
-            return False
+        if not success:
+            logger.info('No contents in the blacklist configuration to validate.')
+            return None
         # Using print here as this could contain sensitive information
-        if self.config.verbose or self.config.validate:
-            print('Remove file parsed contents:')
-            print(success)
-            logger.info('Parsed successfully.')
+        print('Blacklist configuration parsed contents:')
+        print(success)
+        logger.info('Parsed successfully.')
         return True
+
+    def create_report(self):
+        def length(lst):
+            '''
+            Because of how the INI remove.conf is parsed,
+            an empty value in the conf will produce
+            the value [''] when parsed. Do not include
+            these in the report
+            '''
+            if len(lst) == 1 and lst[0] == '':
+                return 0
+            return len(lst)
+
+        num_commands = 0
+        num_files = 0
+        num_components = 0
+        num_patterns = 0
+        num_keywords = 0
+        using_regex = False
+
+        if self.rm_conf:
+            for key in self.rm_conf:
+                if key == 'commands':
+                    num_commands = length(self.rm_conf['commands'])
+                if key == 'files':
+                    num_files = length(self.rm_conf['files'])
+                if key == 'components':
+                    num_components = length(self.rm_conf['components'])
+                if key == 'patterns':
+                    if isinstance(self.rm_conf['patterns'], dict):
+                        num_patterns = length(self.rm_conf['patterns']['regex'])
+                        using_regex = True
+                    else:
+                        num_patterns = length(self.rm_conf['patterns'])
+                if key == 'keywords':
+                    num_keywords = length(self.rm_conf['keywords'])
+
+        return {
+            'obfuscate': self.config.obfuscate,
+            'obfuscate_hostname': self.config.obfuscate_hostname,
+            'commands': num_commands,
+            'files': num_files,
+            'components': num_components,
+            'patterns': num_patterns,
+            'keywords': num_keywords,
+            'using_new_format': self.using_new_format,
+            'using_patterns_regex': using_regex
+        }
 
 
 if __name__ == '__main__':
     from .config import InsightsConfig
-    print(InsightsUploadConf(InsightsConfig().load_all()))
+    config = InsightsConfig().load_all()
+    uploadconf = InsightsUploadConf(config)
+    uploadconf.validate()
+    report = uploadconf.create_report()
+
+    print(report)

@@ -7,6 +7,7 @@ from insights.client.config import InsightsConfig
 import re
 import mock
 import six
+import pytest
 from mock.mock import patch
 
 
@@ -118,16 +119,25 @@ def test_get_version_info_no_version(wrapper_constants):
     assert version_info == {'core_version': '1-1', 'client_version': None}
 
 
-def test_validate_remove_file():
+def test_validate_remove_file_bad_perms():
     tf = '/tmp/remove.cfg'
     with open(tf, 'wb') as f:
         f.write(remove_file_content)
-    assert util.validate_remove_file(InsightsConfig(remove_file='/tmp/boop')) is False
-    os.chmod(tf, 0o644)
-    assert util.validate_remove_file(InsightsConfig(remove_file=tf)) is False
+
+    conf = InsightsConfig(remove_file=tf, redaction_file=None, content_redaction_file=None, validate=True)
+    with pytest.raises(RuntimeError):
+        os.chmod(tf, 0o644)
+        util.validate_remove_file(conf)
     os.chmod(tf, 0o600)
-    assert util.validate_remove_file(InsightsConfig(remove_file=tf)) is not False
+    assert util.validate_remove_file(conf) is not False
     os.remove(tf)
+
+
+def test_validate_remove_file_good_perms():
+    tf = '/tmp/remove.cfg'
+    with open(tf, 'wb') as f:
+        f.write(remove_file_content)
+
 
 # TODO: DRY
 
@@ -284,7 +294,7 @@ def test_get_tags_empty():
     fp.write(content)
     fp.close()
     got = util.get_tags(fp.name)
-    assert got is None
+    assert got == {}
 
 
 def test_get_tags_nonexist():
@@ -298,3 +308,42 @@ def test_write_tags():
     util.write_tags(tags, tags_file_path=fp.name)
     got = util.get_tags(fp.name)
     assert got == tags
+
+
+@patch('insights.client.utilities.os.rename')
+@patch('insights.client.utilities.os.path.exists')
+def test_migrate_tags(path_exists, os_rename):
+    '''
+    Test the migrate_tags function for the following cases:
+        1) tags.yaml does not exist, tags.conf does not exist
+            - do nothing
+        2) tags.yaml exists, tags.conf does not exist
+            - do nothing
+        3) tags.yaml does not exist, tags.conf exists
+            - rename tags.conf to tags.yaml
+        4) tags.yaml exists, tags.conf exists
+            - do nothing
+    '''
+    # existence of tags.yaml is checked FIRST, tags.conf is checked SECOND
+    #   mock side effects are according to this order
+
+    # case 1
+    path_exists.side_effect = [False, False]
+    util.migrate_tags()
+    os_rename.assert_not_called()
+    os_rename.reset_mock()
+    # case 2
+    path_exists.side_effect = [True, False]
+    util.migrate_tags()
+    os_rename.assert_not_called()
+    os_rename.reset_mock()
+    # case 3
+    path_exists.side_effect = [False, True]
+    util.migrate_tags()
+    os_rename.assert_called_once()
+    os_rename.reset_mock()
+    # case 4
+    path_exists.side_effect = [True, True]
+    util.migrate_tags()
+    os_rename.assert_not_called()
+    os_rename.reset_mock()

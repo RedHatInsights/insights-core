@@ -88,7 +88,6 @@ class VDOStatus(YAMLParser):
 
     Attributes:
         data (dict): the result parsed of 'vdo status'
-        volumns (list): The list the vdo volumns involved
 
     """
 
@@ -127,12 +126,7 @@ class VDOStatus(YAMLParser):
 
     @property
     def volumns(self):
-        """
-        The volumns appeared in vdo status
-
-        Returns:
-            list: vdo volumns
-        """
+        """ list: List of the volumns in vdo status """
         return sorted(self.data['VDOs'].keys()) if 'VDOs' in self.data else []
 
     def get_slab_size_of_vol(self, vol):

@@ -242,6 +242,18 @@ DEFAULT_OPTS = {
         # non-CLI
         'default': os.path.join(constants.default_conf_dir, 'remove.conf')
     },
+    'tags_file': {
+        # non-CLI
+        'default': os.path.join(constants.default_conf_dir, 'tags.yaml')
+    },
+    'redaction_file': {
+        # non-CLI
+        'default': os.path.join(constants.default_conf_dir, 'file-redaction.yaml')
+    },
+    'content_redaction_file': {
+        # non-CLI
+        'default': os.path.join(constants.default_conf_dir, 'file-content-redaction.yaml')
+    },
     'reregister': {
         'default': False,
         'opt': ['--force-reregister'],
@@ -331,7 +343,7 @@ DEFAULT_OPTS = {
     'validate': {
         'default': False,
         'opt': ['--validate'],
-        'help': 'Validate remove.conf',
+        'help': 'Validate remove.conf and tags.yaml',
         'action': 'store_true'
     },
     'verbose': {
@@ -610,10 +622,6 @@ class InsightsConfig(object):
         if self.payload and not self.content_type:
             raise ValueError(
                 '--payload requires --content-type')
-        if not self.legacy_upload:
-            if self.group:
-                raise ValueError(
-                    '--group is not supported at this time.')
         if self.offline:
             if self.to_json:
                 raise ValueError('Cannot use --to-json in offline mode.')
@@ -671,6 +679,8 @@ class InsightsConfig(object):
         self.keep_archive = self.keep_archive or self.no_upload
         if self.to_json and self.quiet:
             self.diagnosis = True
+        if self.test_connection:
+            self.net_debug = True
         if self.payload or self.diagnosis or self.compliance or self.show_results or self.check_results:
             self.legacy_upload = False
         if self.payload and (self.logging_file == constants.default_log_file):
