@@ -74,4 +74,4 @@ class BlockIDInfo(CommandParser):
 
     def filter_by_type(self, fs_type):
         """list: Returns a list of all entries where TYPE = ``fs_type``."""
-        return [row for row in self.data if row['TYPE'] == fs_type]
+        return [row for row in self.data if row.get('TYPE') == fs_type]
