@@ -1,5 +1,12 @@
 # Change Log
 
+## [insights-core-3.0.164-1413](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.164-1413) (2020-05-14)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.163-1399...insights-core-3.0.164-1413)
+
+**Closed issues:**
+
+- "apicid" is duplicated in CpuInfo [\#2582](https://github.com/RedHatInsights/insights-core/issues/2582)
+
 ## [insights-core-3.0.163-1399](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.163-1399) (2020-05-07)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.162-1395...insights-core-3.0.163-1399)
 
