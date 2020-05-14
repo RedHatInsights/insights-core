@@ -7,6 +7,7 @@ import shlex
 import shutil
 import sys
 from subprocess import Popen, PIPE
+from requests import ConnectionError
 
 from .. import package_info
 from . import client
@@ -170,13 +171,18 @@ class InsightsClient(object):
         # If the etag was found and we are not force fetching
         # Then add it to the request
         logger.log(NETWORK, "GET %s", url)
-        if current_etag and not force:
-            logger.debug('Requesting new file with etag %s', current_etag)
-            etag_headers = {'If-None-Match': current_etag}
-            response = self.session.get(url, headers=etag_headers, timeout=self.config.http_timeout)
-        else:
-            logger.debug('Found no etag or forcing fetch')
-            response = self.session.get(url, timeout=self.config.http_timeout)
+        try:
+            if current_etag and not force:
+                logger.debug('Requesting new file with etag %s', current_etag)
+                etag_headers = {'If-None-Match': current_etag}
+                response = self.session.get(url, headers=etag_headers, timeout=self.config.http_timeout)
+            else:
+                logger.debug('Found no etag or forcing fetch')
+                response = self.session.get(url, timeout=self.config.http_timeout)
+        except ConnectionError as e:
+            logger.error(e)
+            logger.error('The Insights API could not be reached.')
+            return False
 
         # Debug information
         logger.debug('Status code: %d', response.status_code)
