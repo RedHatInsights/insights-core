@@ -1,3 +1,4 @@
+import pytest
 from six import StringIO
 from insights import dr, make_fail, rule
 from insights.formats.text import HumanReadableFormat
@@ -41,6 +42,7 @@ def test_json_format():
     assert "bar" in data
 
 
+@pytest.mark.syslog_format
 def test_syslog_format_no_archive():
     broker = dr.Broker()
     output = StringIO()
@@ -52,6 +54,7 @@ def test_syslog_format_no_archive():
     assert SL_CMD in data
 
 
+@pytest.mark.syslog_format
 def test_syslog_format_archive():
     broker = dr.Broker()
     output = StringIO()
