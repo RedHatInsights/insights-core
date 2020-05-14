@@ -7,6 +7,9 @@ The parsers contains in this module are:
 YumListInstalled - Command ``yum list installed``
 -------------------------------------------------
 
+YumListAvailable - Command ``yum list available``
+-------------------------------------------------
+
 """
 from collections import defaultdict
 
@@ -41,9 +44,12 @@ class YumListBase(CommandParser, RpmList):
         contain a ``.repo`` attribute.
     """
 
-    def __init__(self, context):
+    def __init__(self, context, package_status):
         self.expired_cache = False
         """bool: Indicates if the yum repo cache is expired."""
+
+        self.package_status = package_status
+        """str: Indicates if the list is of installed or available packages."""
 
         super(YumListBase, self).__init__(context)
 
@@ -51,7 +57,7 @@ class YumListBase(CommandParser, RpmList):
         for i, c in enumerate(content):
             if 'Repodata is over 2 weeks old' in c:
                 self.expired_cache = True
-            elif c == "Installed Packages":
+            elif c == self.package_status + " Packages":
                 break
         return i + 1
 
@@ -197,4 +203,18 @@ class YumListInstalled(YumListBase):
         >>> rpm1 < rpm2
         True
     """
-    pass
+    def __init__(self, context):
+        super(YumListInstalled, self).__init__(context, "Installed")
+
+
+@parser(Specs.yum_list_available)
+class YumListAvailable(YumListBase):
+    """
+    The ``YumListAvailable`` class parses the output of the ``yum list available``
+    command. Each line is parsed and stored in a ``YumListRpm`` object.
+
+    Input and usage examples are identical to ``YumListInstalled`` but with
+    "Installed" replaced with "Available" wherever applicable.
+    """
+    def __init__(self, context):
+        super(YumListAvailable, self).__init__(context, "Available")
