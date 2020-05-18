@@ -341,7 +341,7 @@ class __Models(dict):
             if match.test(name) and not ignore.test(name):
                 self._show_exceptions(comp)
 
-    def show_names(self, match=None, ignore=None):
+    def find(self, match=None, ignore=None):
         match, ignore = self._desugar_match_ignore(match, ignore)
         for p in sorted(self, key=str.lower):
             name = dr.get_name(self[p])
@@ -385,7 +385,6 @@ def main():
 
     load_default_plugins()
     dr.load_components("insights.parsers", "insights.combiners")
-    dr.load_components("sossy.models")
 
     load_packages(parse_plugins(args.plugins))
     handle_config(args.config)
