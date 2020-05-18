@@ -394,7 +394,10 @@ class __Models(dict):
                 s = color + "<intermediate value>" + Style.RESET_ALL
             print("{}\u250A\u254C\u254C\u254C\u254C{}".format(indent, s))
 
-    def _show_tree(self, node, indent=""):
+    def _show_tree(self, node, indent="", depth=None):
+        if depth is not None and depth == 0:
+            return
+
         if plugins.is_datasource(node) and node in self._broker:
             self._show_datasource(node, self._broker[node], indent=indent)
         else:
@@ -409,9 +412,9 @@ class __Models(dict):
         next_indent = indent + "\u250A   "
         if deps:
             for d in deps:
-                self._show_tree(d, next_indent)
+                self._show_tree(d, next_indent, depth=depth if depth is None else depth - 1)
 
-    def show_trees(self, match=None, ignore=None):
+    def show_trees(self, match=None, ignore=None, depth=None):
         """
         Show dependency trees of all matching components.
 
@@ -431,7 +434,7 @@ class __Models(dict):
 
         for name in sorted(graph):
             for c in graph[name]:
-                self._show_tree(c)
+                self._show_tree(c, depth=depth)
                 print()
 
     def show_failed(self, match=None, ignore=None):
