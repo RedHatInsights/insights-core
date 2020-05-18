@@ -38,12 +38,13 @@ class CorosyncCmapctl(CommandParser, LegacyItemAccess):
         ParseException: When there is no "=" in the content
 
     Attributes:
-        data (dict): All lines are stored in this dictionary with the left part
-                     of the equal sign witout parenthese info as the key and the
-                     right part of equal sign  as the value
-        stats_schedmiss (dict): The lines which start with "stats.schedmiss" are
-                                stored in this dictionary. The key and value format
-                                is the same with data
+        data (dict): All lines are stored in this dictionary with the left
+                     part of the equal sign witout parenthese info as the
+                     key and the right part of equal sign as the value
+        stats_schedmiss (dict): The lines which start with
+                                "stats.schedmiss" are stored in this
+                                dictionary. The key and value format is
+                                the same with data
     """
 
     def __init__(self, context):
@@ -57,8 +58,8 @@ class CorosyncCmapctl(CommandParser, LegacyItemAccess):
         for line in content:
             if '=' not in line:
                 raise ParseException("Can not parse line %s" % line)
-            key, value = line.split('=')
-            key_without_parenthese = key.strip().split()[0]
+            key, value = [item.strip() for item in line.split('=')]
+            key_without_parenthese = key.split()[0]
             if key_without_parenthese.startswith('stats.schedmiss'):
-                self.stats_schedmiss[key_without_parenthese] = value.strip()
-            self.data[key_without_parenthese] = value.strip()
+                self.stats_schedmiss[key_without_parenthese] = value
+            self.data[key_without_parenthese] = value
