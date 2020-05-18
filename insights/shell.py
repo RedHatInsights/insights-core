@@ -21,12 +21,21 @@ Loader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
 
 
 def __parse_args():
-    p = argparse.ArgumentParser()
+    desc = "Perform interactive system analysis with insights components."
+    epilog = """
+        Set env INSIGHTS_FILTERS_ENABLED=False to disable filtering that may
+        cause expected missing data.
+    """.strip()
+    p = argparse.ArgumentParser(description=desc, epilog=epilog)
+
     p.add_argument("-p", "--plugins", default="", help="Comma separated list of packages to load.")
     p.add_argument("-c", "--config", help="The insights configuration to apply.")
     p.add_argument("--cd", action="store_true", help="Change into the expanded directory for analysis.")
-    p.add_argument("-v", "--verbose", action="store_true")
-    p.add_argument("path", nargs="?")
+    p.add_argument("-v", "--verbose", action="store_true", help="Global debug level logging.")
+
+    path_desc = "Archive or path to analyze. Leave off to target the current system."
+    p.add_argument("path", nargs="?", help=path_desc)
+
     return p.parse_args()
 
 
@@ -97,8 +106,9 @@ def __get_available_models(broker):
 
 class __Models(dict):
     """
-    Represents all available components that may be available given the data
-    being analyzed. Use .find() to see them. Tab complete attributes to access them.
+    Represents all components that may be available given the data being
+    analyzed. Use .find() to see them. Tab complete attributes to access
+    them.
 
     Examples:
 
