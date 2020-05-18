@@ -1,4 +1,3 @@
-
 import doctest
 import pytest
 
@@ -27,7 +26,6 @@ logging.to_syslog (str) = yes
 nodelist.local_node_pos (u32) = 1
 nodelist.node.0.nodeid (u32) = 1
 """.strip()
-
 
 COROSYNC_CONTENT_2 = """
 stats.schedmiss.0.delay (flt) = 2023.957031
