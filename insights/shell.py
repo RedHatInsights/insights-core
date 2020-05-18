@@ -107,7 +107,7 @@ def __get_available_models(broker):
 class __Models(dict):
     """
     Represents all components that may be available given the data being
-    analyzed. Use .find() to see them. Tab complete attributes to access
+    analyzed. Use models.find() to see them. Tab complete attributes to access
     them.
 
     Examples:
@@ -119,7 +119,7 @@ class __Models(dict):
         >>> rpms.newest("bash")
         0:bash-4.1.2-48.el6
 
-        >>> models.find("yum")
+        >>> models.find("(?i)yum")  # Prefix "(?i)" ignores case.
         YumConf (insights.parsers.yum_conf.YumConf)
         YumLog (insights.parsers.yumlog.YumLog)
         YumRepoList (insights.parsers.yum.YumRepoList)
@@ -479,6 +479,7 @@ def start_session(__path, change_directory=False):
 
         IPython.core.completer.Completer.use_jedi = False
         __cfg = Config()
+        __cfg.TerminalInteractiveShell.banner1 = __Models.__doc__
         __ns = {}
         __ns.update(globals())
         __ns.update(locals())
