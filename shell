@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-
-INSIGHTS_FILTERS_ENABLED=False python -m insights.shell $@
