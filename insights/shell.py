@@ -20,7 +20,7 @@ from insights.core.spec_factory import ContentProvider, RegistryPoint
 Loader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
 
 
-def parse_args():
+def __parse_args():
     p = argparse.ArgumentParser()
     p.add_argument("-p", "--plugins", default="")
     p.add_argument("-c", "--config")
@@ -31,7 +31,15 @@ def parse_args():
 
 
 @contextmanager
-def create_new_broker(path):
+def __create_new_broker(path):
+    """
+    Create a broker and populate it by evaluating the path with all
+    registered datasources.
+
+    Args:
+        path (str): path to the archive or directory to analyze. ``None`` will
+            analyze the current system.
+    """
     datasources = dr.get_components_of_type(datasource)
 
     def make_broker(ctx):
@@ -56,6 +64,10 @@ def create_new_broker(path):
 
 
 def __get_available_models(broker):
+    """
+    Given a broker populated with datasources, figure out and return
+    everything that could run based on them.
+    """
     state = set(broker.instances.keys())
     models = {}
 
@@ -84,6 +96,41 @@ def __get_available_models(broker):
 
 
 class __Models(dict):
+    """
+    Represents all available components that may be available given the data
+    being analyzed. Use .find() to see them. Tab complete attributes to access them.
+
+    Examples:
+
+        >>> models.find("rpm")
+        InstalledRpms (insights.parsers.installed_rpms.InstalledRpms)
+
+        >>> rpms = models.InstalledRpms
+        >>> rpms.newest("bash")
+        0:bash-4.1.2-48.el6
+
+        >>> models.find("yum")
+        YumConf (insights.parsers.yum_conf.YumConf)
+        YumLog (insights.parsers.yumlog.YumLog)
+        YumRepoList (insights.parsers.yum.YumRepoList)
+        YumReposD (insights.parsers.yum_repos_d.YumReposD)
+
+        >>> models.show_trees("rpm", ignore="spec")
+        insights.parsers.installed_rpms.InstalledRpms
+        ┊   insights.specs.Specs.installed_rpms (unfiltered / lines)
+        ┊   ┊╌╌╌╌TextFileProvider("'/home/example/Downloads/archives/sosreport-example-20191225000000/sos_commands/rpm/package-data'")
+        ┊   ┊   insights.specs.insights_archive.InsightsArchiveSpecs.installed_rpms
+        ┊   ┊   ┊   insights.specs.insights_archive.InsightsArchiveSpecs.all_installed_rpms
+        ┊   ┊   ┊   ┊   insights.core.context.HostArchiveContext
+        ┊   ┊   insights.specs.sos_archive.SosSpecs.installed_rpms (unfiltered / lines)
+        ┊   ┊   ┊╌╌╌╌TextFileProvider("'/home/example/Downloads/archives/sosreport-example-20191225000000/sos_commands/rpm/package-data'")
+        ┊   ┊   ┊   insights.core.context.SosArchiveContext
+        ┊   ┊   insights.specs.default.DefaultSpecs.installed_rpms
+        ┊   ┊   ┊   insights.specs.default.DefaultSpecs.docker_installed_rpms
+        ┊   ┊   ┊   ┊   insights.core.context.DockerImageContext
+        ┊   ┊   ┊   insights.specs.default.DefaultSpecs.host_installed_rpms
+        ┊   ┊   ┊   ┊   insights.core.context.HostContext
+    """
     def __init__(self, broker, models, cwd):
         self._requested = set()
         self._broker = broker
@@ -92,6 +139,9 @@ class __Models(dict):
 
     def __dir__(self):
         return sorted(self.keys())
+
+    def __str__(self):
+        return "{} components possibly available".format(len(self))
 
     def _dump_diagnostics(self, comp):
         print("Missing Dependencies")
@@ -107,6 +157,13 @@ class __Models(dict):
         self._show_tree(comp)
 
     def evaluate(self, name):
+        """
+        Evaluate a component and return its result. Prints diagnostic information
+        in the case of failure.
+
+        Args:
+            name (str): the name of the component as shown by ``.find()``.
+        """
         comp = self.get(name)
         if not comp:
             return
@@ -131,8 +188,18 @@ class __Models(dict):
     def __getattr__(self, name):
         return self.evaluate(name)
 
-    # TODO: oh man this function is gross...
+    # TODO: lot of room for improvement here...
     def make_rule(self, path=None, overwrite=False, pick=None):
+        """
+        Show dependency trees of all matching components.
+
+        Args:
+            path(str): path to store the rule.
+            overwrite (bool): whether to overwrite an exiting file.
+            pick (str): Optionally specify which lines or line ranges
+                to use for the rule body. "1 2 3" gets lines 1,2 and 3.
+                "1 3-5 7" gets line 1, lines 3 through 5, and line 7.
+        """
         import IPython
         ip = IPython.get_ipython()
         ignore = [
@@ -156,7 +223,10 @@ class __Models(dict):
                     l = l[7:]
                 lines.append(l)
 
+        # the user asked for these models during the session.
         requested = sorted(self._requested, key=lambda i: i[0])
+
+        # figure out what we need to import for filtering.
         filterable = defaultdict(list)
         for _, c in requested:
             for d in dr.get_dependency_graph(c):
@@ -207,7 +277,7 @@ class __Models(dict):
         import_stanza = "\n".join(imports)
         decorator = "@rule({})".format(", ".join(model_names))
         func_decl = "def report({}):".format(", ".join(var_names))
-        body = "\n".join(["    " + l for l in lines]) if lines else "    pass"
+        body = "\n".join(["    " + x for x in lines]) if lines else "    pass"
 
         res = import_stanza
         if filter_stanza:
@@ -304,6 +374,15 @@ class __Models(dict):
                 self._show_tree(d, next_indent)
 
     def show_trees(self, match=None, ignore=None):
+        """
+        Show dependency trees of all matching components.
+
+        Args:
+            match (str, optional): regular expression for matching against
+                the fqdn of components to keep.
+            ignore (str, optional): regular expression for searching against
+                the fqdn of components to ignore.
+        """
         match, ignore = self._desugar_match_ignore(match, ignore)
 
         graph = defaultdict(list)
@@ -318,6 +397,15 @@ class __Models(dict):
                 print()
 
     def show_failed(self, match=None, ignore=None):
+        """
+        Show names of any components that failed during evaluation.
+
+        Args:
+            match (str, optional): regular expression for matching against
+                the fqdn of components to keep.
+            ignore (str, optional): regular expression for searching against
+                the fqdn of components to ignore.
+        """
         match, ignore = self._desugar_match_ignore(match, ignore)
 
         for c in sorted(set(dr.get_name(comp) for comp in self._broker.exceptions)):
@@ -334,6 +422,15 @@ class __Models(dict):
                 print(t)
 
     def show_exceptions(self, match=None, ignore=None):
+        """
+        Show exceptions during evaluation.
+
+        Args:
+            match (str, optional): regular expression for matching against
+                the fqdn of components to keep.
+            ignore (str, optional): regular expression for searching against
+                the fqdn of components to ignore.
+        """
         match, ignore = self._desugar_match_ignore(match, ignore)
 
         for comp in sorted(self._broker.exceptions, key=dr.get_name):
@@ -342,6 +439,16 @@ class __Models(dict):
                 self._show_exceptions(comp)
 
     def find(self, match=None, ignore=None):
+        """
+        Find components that might be available based on the data being
+        analyzed.
+
+        Args:
+            match (str, optional): regular expression for matching against
+                the fqdn of components to keep.
+            ignore (str, optional): regular expression for searching against
+                the fqdn of components to ignore.
+        """
         match, ignore = self._desugar_match_ignore(match, ignore)
         for p in sorted(self, key=str.lower):
             name = dr.get_name(self[p])
@@ -353,7 +460,7 @@ def start_session(__path, change_directory=False):
     import IPython
     from traitlets.config.loader import Config
 
-    with create_new_broker(__path) as (__working_path, __broker):
+    with __create_new_broker(__path) as (__working_path, __broker):
         __cwd = os.path.abspath(os.curdir)
         __models = __get_available_models(__broker)
         models = __Models(__broker, __models, __cwd)
@@ -373,21 +480,21 @@ def start_session(__path, change_directory=False):
             os.chdir(__cwd)
 
 
-def handle_config(config):
+def __handle_config(config):
     if config:
         with open(config) as f:
             apply_configs(yaml.load(f, Loader=Loader))
 
 
 def main():
-    args = parse_args()
+    args = __parse_args()
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.ERROR)
 
     load_default_plugins()
     dr.load_components("insights.parsers", "insights.combiners")
 
     load_packages(parse_plugins(args.plugins))
-    handle_config(args.config)
+    __handle_config(args.config)
 
     start_session(args.path, args.cd)
 
