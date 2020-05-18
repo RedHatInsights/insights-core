@@ -2,6 +2,7 @@ import argparse
 import logging
 import os
 import re
+import six
 import yaml
 
 from collections import defaultdict
@@ -16,6 +17,21 @@ from insights.core import plugins
 from insights.core.context import HostContext
 from insights.core.spec_factory import ContentProvider, RegistryPoint
 
+try:
+    from colorama import Fore, Style, init
+    init()
+except ImportError:
+    print("Install colorama if console colors are preferred.")
+
+    class Default(type):
+        def __getattr__(*args):
+            return ""
+
+    class Fore(six.with_metaclass(Default)):
+        pass
+
+    class Style(six.with_metaclass(Default)):
+        pass
 
 Loader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
 
@@ -355,7 +371,13 @@ class __Models(dict):
             mode = "unknown"
 
         desc = "{n} ({f} / {m})".format(n=dr.get_name(d), f=filtered, m=mode)
-        print(indent + desc)
+        if d in self._broker:
+            color = Fore.GREEN
+        elif d in self._broker.exceptions:
+            color = Fore.RED
+        else:
+            color = ""
+        print(indent + color + desc + Style.RESET_ALL)
 
         if not v:
             return
@@ -367,15 +389,21 @@ class __Models(dict):
 
         for i in v:
             if isinstance(i, ContentProvider):
-                print("{}\u250A\u254C\u254C\u254C\u254C{}".format(indent, i))
+                s = color + str(i) + Style.RESET_ALL
             else:
-                print("{}\u250A\u254C\u254C\u254C\u254C<intermediate value>".format(indent))
+                s = color + "<intermediate value>" + Style.RESET_ALL
+            print("{}\u250A\u254C\u254C\u254C\u254C{}".format(indent, s))
 
     def _show_tree(self, node, indent=""):
         if plugins.is_datasource(node) and node in self._broker:
             self._show_datasource(node, self._broker[node], indent=indent)
         else:
-            print(indent + dr.get_name(node))
+            if node in self._broker:
+                print(indent + Fore.GREEN + dr.get_name(node) + Style.RESET_ALL)
+            elif node in self._broker.exceptions:
+                print(indent + Fore.RED + dr.get_name(node) + Style.RESET_ALL)
+            else:
+                print(indent + dr.get_name(node))
 
         deps = dr.get_dependencies(node)
         next_indent = indent + "\u250A   "
