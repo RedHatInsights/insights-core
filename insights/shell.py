@@ -22,9 +22,9 @@ Loader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
 
 def __parse_args():
     p = argparse.ArgumentParser()
-    p.add_argument("-p", "--plugins", default="")
-    p.add_argument("-c", "--config")
-    p.add_argument("--cd", action="store_true")
+    p.add_argument("-p", "--plugins", default="", help="Comma separated list of packages to load.")
+    p.add_argument("-c", "--config", help="The insights configuration to apply.")
+    p.add_argument("--cd", action="store_true", help="Change into the expanded directory for analysis.")
     p.add_argument("-v", "--verbose", action="store_true")
     p.add_argument("path", nargs="?")
     return p.parse_args()
