@@ -489,9 +489,16 @@ class __Models(dict):
         """
         match, ignore = self._desugar_match_ignore(match, ignore)
         for p in sorted(self, key=str.lower):
-            name = dr.get_name(self[p])
+            comp = self[p]
+            name = dr.get_name(comp)
             if match.test(name) and not ignore.test(name):
-                print("{p} ({name})".format(p=p, name=name))
+                if comp in self._broker:
+                    color = Fore.GREEN
+                elif comp in self._broker.exceptions:
+                    color = Fore.RED
+                else:
+                    color = ""
+                print(color + "{p} ({name})".format(p=p, name=name) + Style.RESET_ALL)
 
 
 def start_session(__path, change_directory=False):
