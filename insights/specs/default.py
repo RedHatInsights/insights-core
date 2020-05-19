@@ -199,6 +199,12 @@ class DefaultSpecs(Specs):
     cobbler_settings = first_file(["/etc/cobbler/settings", "/conf/cobbler/settings"])
     cobbler_modules_conf = first_file(["/etc/cobbler/modules.conf", "/conf/cobbler/modules.conf"])
     corosync = simple_file("/etc/sysconfig/corosync")
+    corosync_cmapctl = foreach_execute(
+        [
+            "/usr/sbin/corosync-cmapctl",
+            '/usr/sbin/corosync-cmapctl -m stats "stats.schedmiss."',
+            '/usr/sbin/corosync-cmapctl -C schedmiss'
+        ], "%s")
     corosync_conf = simple_file("/etc/corosync/corosync.conf")
     cpu_cores = glob_file("sys/devices/system/cpu/cpu[0-9]*/online")
     cpu_siblings = glob_file("sys/devices/system/cpu/cpu[0-9]*/topology/thread_siblings_list")
