@@ -9,7 +9,7 @@ from collections import defaultdict
 from contextlib import contextmanager
 
 from insights.parsr.query import *  # noqa
-from insights.parsr.query import matches, make_child_query as q  # noqa
+from insights.parsr.query import eq, matches, make_child_query as q  # noqa
 from insights.parsr.query.boolean import FALSE, TRUE
 
 from insights import apply_configs, create_context, datasource, dr, extract, load_default_plugins, load_packages, parse_plugins
@@ -331,7 +331,10 @@ class __Models(dict):
         if match is None:
             match = TRUE
         elif isinstance(match, str):
-            match = matches(match)
+            if match in self:
+                match = eq(dr.get_name(self[match]))
+            else:
+                match = matches(match)
 
         if ignore is None:
             ignore = FALSE
@@ -427,8 +430,6 @@ class __Models(dict):
             ignore (str, optional): regular expression for searching against
                 the fqdn of components to ignore.
         """
-        if match in self:
-            match = dr.get_name(self[match])
         match, ignore = self._desugar_match_ignore(match, ignore)
 
         graph = defaultdict(list)
