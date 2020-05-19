@@ -5,15 +5,18 @@ CorosyncCmapctl - Command ``corosync-cmapctl [params]``
 This module parses the output of the ``corosync-cmapctl [params]`` command.
 """
 
-from insights import parser, CommandParser, LegacyItemAccess
+from insights import parser, CommandParser
 from insights.parsers import SkipException, ParseException
 from insights.specs import Specs
 
 
 @parser(Specs.corosync_cmapctl)
-class CorosyncCmapctl(CommandParser, LegacyItemAccess):
+class CorosyncCmapctl(CommandParser, dict):
     """
     Class for parsing the `/usr/sbin/corosync-cmapctl [params]` command.
+    All lines are stored in the dictionary with the left part of the equal
+    sign witout parenthese info as the key and the right part of equal sign
+    as the value.
 
     Typical output of the command is::
 
@@ -38,13 +41,10 @@ class CorosyncCmapctl(CommandParser, LegacyItemAccess):
         ParseException: When there is no "=" in the content
 
     Attributes:
-        data (dict): All lines are stored in this dictionary with the left
-                     part of the equal sign witout parenthese info as the
-                     key and the right part of equal sign as the value
         stats_schedmiss (dict): The lines which start with
                                 "stats.schedmiss" are stored in this
                                 dictionary. The key and value format is
-                                the same with data
+                                the same with itself.
     """
 
     def __init__(self, context):
@@ -53,7 +53,6 @@ class CorosyncCmapctl(CommandParser, LegacyItemAccess):
     def parse_content(self, content):
         if not content:
             raise SkipException
-        self.data = {}
         self.stats_schedmiss = {}
         for line in content:
             if '=' not in line:
@@ -62,4 +61,4 @@ class CorosyncCmapctl(CommandParser, LegacyItemAccess):
             key_without_parenthese = key.split()[0]
             if key_without_parenthese.startswith('stats.schedmiss'):
                 self.stats_schedmiss[key_without_parenthese] = value
-            self.data[key_without_parenthese] = value
+            self[key_without_parenthese] = value
