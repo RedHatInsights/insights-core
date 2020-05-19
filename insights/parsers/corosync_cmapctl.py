@@ -39,26 +39,21 @@ class CorosyncCmapctl(CommandParser, dict):
     Raises:
         SkipException: When there is no content
         ParseException: When there is no "=" in the content
-
-    Attributes:
-        stats_schedmiss (dict): The lines which start with
-                                "stats.schedmiss" are stored in this
-                                dictionary. The key and value format is
-                                the same with itself.
     """
 
     def __init__(self, context):
         super(CorosyncCmapctl, self).__init__(context, extra_bad_lines=['corosync-cmapctl: invalid option'])
 
+    def get_stats_schedmiss(self):
+        """ Return a dict of the stats.schedmiss info """
+        return {key: value for key, value in self.items() if key.startswith('stats.schedmiss')}
+
     def parse_content(self, content):
         if not content:
             raise SkipException
-        self.stats_schedmiss = {}
         for line in content:
             if '=' not in line:
                 raise ParseException("Can not parse line %s" % line)
             key, value = [item.strip() for item in line.split('=')]
             key_without_parenthese = key.split()[0]
-            if key_without_parenthese.startswith('stats.schedmiss'):
-                self.stats_schedmiss[key_without_parenthese] = value
             self[key_without_parenthese] = value

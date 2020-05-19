@@ -76,10 +76,11 @@ def test_corosync_doc_examples():
 
 def test_state_schemiss():
     corodata = corosync_cmapctl.CorosyncCmapctl(context_wrap(COROSYNC_CONTENT_2, path='corosync-cmapctl_-m_stats_stats.schedmiss'))
-    assert 'stats.schedmiss.0.delay' in corodata.stats_schedmiss
-    assert corodata.stats_schedmiss['stats.schedmiss.0.delay'] == '2023.957031'
-    assert corodata.stats_schedmiss['stats.schedmiss.0.timestamp'] == '5106558848098'
-    assert len(corodata.stats_schedmiss) == 20
+    schemiss_dict = corodata.get_stats_schedmiss()
+    assert 'stats.schedmiss.0.delay' in schemiss_dict
+    assert schemiss_dict['stats.schedmiss.0.delay'] == '2023.957031'
+    assert schemiss_dict['stats.schedmiss.0.timestamp'] == '5106558848098'
+    assert len(schemiss_dict) == 20
 
 
 def test_exception():
