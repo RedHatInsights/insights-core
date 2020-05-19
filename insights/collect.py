@@ -67,7 +67,7 @@ client:
           enabled: true
 
     run_strategy:
-        name: parallel
+        name: serial
         args:
             max_workers: null
 
