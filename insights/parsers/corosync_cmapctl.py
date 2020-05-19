@@ -46,7 +46,7 @@ class CorosyncCmapctl(CommandParser, dict):
 
     def get_stats_schedmiss(self):
         """ Return a dict of the stats.schedmiss info """
-        return {key: value for key, value in self.items() if key.startswith('stats.schedmiss')}
+        return dict((key, value) for key, value in self.items() if key.startswith('stats.schedmiss'))
 
     def parse_content(self, content):
         if not content:
