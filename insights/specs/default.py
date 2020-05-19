@@ -193,6 +193,7 @@ class DefaultSpecs(Specs):
     cloud_init_log = simple_file("/var/log/cloud-init.log")
     cluster_conf = simple_file("/etc/cluster/cluster.conf")
     cmdline = simple_file("/proc/cmdline")
+    cni_podman_bridge_conf = simple_file("/etc/cni/net.d/87-podman-bridge.conflist")
     cpe = simple_file("/etc/system-release-cpe")
     # are these locations for different rhel versions?
     cobbler_settings = first_file(["/etc/cobbler/settings", "/conf/cobbler/settings"])

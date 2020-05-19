@@ -75,6 +75,7 @@ class Specs(SpecSet):
     cloud_init_log = RegistryPoint(filterable=True)
     cluster_conf = RegistryPoint(filterable=True)
     cmdline = RegistryPoint()
+    cni_podman_bridge_conf = RegistryPoint()
     cobbler_modules_conf = RegistryPoint()
     cobbler_settings = RegistryPoint()
     corosync = RegistryPoint()
