@@ -170,6 +170,10 @@ class __Models(dict):
         return "{} components possibly available".format(len(self))
 
     def _dump_diagnostics(self, comp):
+        print("Dependency Tree")
+        print("===============")
+        self._show_tree(comp)
+        print()
         print("Missing Dependencies")
         print("====================")
         self._show_missing(comp)
@@ -177,10 +181,6 @@ class __Models(dict):
         print("Exceptions")
         print("==========")
         self._show_exceptions(comp)
-        print()
-        print("Dependency Tree")
-        print("===============")
-        self._show_tree(comp)
 
     def evaluate(self, name):
         """
