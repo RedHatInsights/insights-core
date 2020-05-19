@@ -232,7 +232,7 @@ class __Models(dict):
             r"=.*models\.",
             r"^(%|!|help)",
             r"make_rule",
-            r"models\.show.*",
+            r"models\.(show|find).*",
             r".*\?$",
             r"^(clear|pwd|cd *.*|ll|ls)$"
         ]
@@ -375,6 +375,8 @@ class __Models(dict):
             color = Fore.GREEN
         elif d in self._broker.exceptions:
             color = Fore.RED
+        elif d in self._broker.missing_requirements:
+            color = Fore.YELLOW
         else:
             color = ""
         print(indent + color + desc + Style.RESET_ALL)
@@ -398,21 +400,22 @@ class __Models(dict):
         if depth is not None and depth == 0:
             return
 
-        if plugins.is_datasource(node) and node in self._broker:
-            self._show_datasource(node, self._broker[node], indent=indent)
+        if plugins.is_datasource(node):
+            self._show_datasource(node, self._broker.get(node), indent=indent)
         else:
             if node in self._broker:
                 print(indent + Fore.GREEN + dr.get_name(node) + Style.RESET_ALL)
             elif node in self._broker.exceptions:
                 print(indent + Fore.RED + dr.get_name(node) + Style.RESET_ALL)
+            elif node in self._broker.missing_requirements:
+                print(indent + Fore.YELLOW + dr.get_name(node) + Style.RESET_ALL)
             else:
                 print(indent + dr.get_name(node))
 
         deps = dr.get_dependencies(node)
         next_indent = indent + "\u250A   "
-        if deps:
-            for d in deps:
-                self._show_tree(d, next_indent, depth=depth if depth is None else depth - 1)
+        for d in deps:
+            self._show_tree(d, next_indent, depth=depth if depth is None else depth - 1)
 
     def show_trees(self, match=None, ignore=None, depth=None):
         """
@@ -424,6 +427,8 @@ class __Models(dict):
             ignore (str, optional): regular expression for searching against
                 the fqdn of components to ignore.
         """
+        if match in self:
+            match = dr.get_name(self[match])
         match, ignore = self._desugar_match_ignore(match, ignore)
 
         graph = defaultdict(list)
