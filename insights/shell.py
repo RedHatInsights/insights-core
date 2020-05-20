@@ -199,12 +199,19 @@ class __Models(dict):
         match, ignore = self._desugar_match_ignore(match, ignore)
 
         tasks = []
-        for c in set(self.values()):
+        for c in self.values():
             name = dr.get_name(c)
             if match.test(name) and not ignore.test(name):
-                tasks.append(c)
+                if not any([c in self._broker.instances,
+                            c in self._broker.exceptions,
+                            c in self._broker.missing_requirements]):
+                    tasks.append(c)
+
+        if not tasks:
+            return
 
         dr.run(tasks, broker=self._broker)
+        self.find(match, ignore)
 
     def evaluate(self, name):
         """
