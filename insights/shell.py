@@ -414,9 +414,6 @@ class __Models(dict):
         if not isinstance(v, list):
             v = [v]
 
-        if not v:
-            return
-
         for i in v:
             if isinstance(i, ContentProvider):
                 s = color + str(i) + Style.RESET_ALL
@@ -426,7 +423,7 @@ class __Models(dict):
 
     def show_requested(self):
         for name, comp in sorted(self._requested):
-            print(self._color(comp) + "{} {}".format(name, dr.get_name(comp)) + Style.RESET_ALL)
+            print(self._get_color(comp) + "{} {}".format(name, dr.get_name(comp)) + Style.RESET_ALL)
 
     def _show_tree(self, node, indent="", depth=None):
         if depth is not None and depth == 0:
@@ -483,13 +480,18 @@ class __Models(dict):
         """
         match, ignore = self._desugar_match_ignore(match, ignore)
 
+        mid_dashes = "\u250A\u254C\u254C\u254C\u254C\u254C"
+        bottom_dashes = "\u2514\u254C\u254C\u254C\u254C\u254C"
         dashes = "\u2514\u254C\u254C"
         for comp in sorted(self._broker.exceptions, key=dr.get_name):
             name = dr.get_name(comp)
             if match.test(name) and not ignore.test(name):
                 color = self._get_color(comp)
                 print(color + name + Style.RESET_ALL)
-                for ex in self._broker.exceptions[comp]:
+                exes = self._broker.exceptions[comp]
+                last = len(exes) - 1
+                for i, ex in enumerate(exes):
+                    dashes = bottom_dashes if i == last else mid_dashes
                     print(color + dashes + str(ex) + Style.RESET_ALL)
                 print()
 
