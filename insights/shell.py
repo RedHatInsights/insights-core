@@ -374,14 +374,8 @@ class __Models(dict):
             mode = "unknown"
 
         desc = "{n} ({f} / {m})".format(n=dr.get_name(d), f=filtered, m=mode)
-        if d in self._broker:
-            color = Fore.GREEN
-        elif d in self._broker.exceptions:
-            color = Fore.RED
-        elif d in self._broker.missing_requirements:
-            color = Fore.YELLOW
-        else:
-            color = ""
+        color = self._get_color(d)
+
         print(indent + color + desc + Style.RESET_ALL)
 
         if not v:
@@ -406,19 +400,26 @@ class __Models(dict):
         if plugins.is_datasource(node):
             self._show_datasource(node, self._broker.get(node), indent=indent)
         else:
-            if node in self._broker:
-                print(indent + Fore.GREEN + dr.get_name(node) + Style.RESET_ALL)
-            elif node in self._broker.exceptions:
-                print(indent + Fore.RED + dr.get_name(node) + Style.RESET_ALL)
-            elif node in self._broker.missing_requirements:
-                print(indent + Fore.YELLOW + dr.get_name(node) + Style.RESET_ALL)
-            else:
-                print(indent + dr.get_name(node))
+            print(indent + self._get_color(node) + dr.get_name(node) + Style.RESET_ALL)
 
         deps = dr.get_dependencies(node)
         next_indent = indent + "\u250A   "
         for d in deps:
             self._show_tree(d, next_indent, depth=depth if depth is None else depth - 1)
+
+    def _get_color(self, comp):
+        if comp in self._broker:
+            return Fore.GREEN
+        elif comp in self._broker.exceptions:
+            return Fore.RED
+        elif comp in self._broker.missing_requirements:
+            return Fore.YELLOW
+        else:
+            return ""
+
+    def show_requested(self):
+        for name, comp in sorted(self._requested):
+            print(self._color(comp) + "{} {}".format(name, dr.get_name(comp)) + Style.RESET_ALL)
 
     def show_trees(self, match=None, ignore=None, depth=None):
         """
@@ -501,12 +502,7 @@ class __Models(dict):
             comp = self[p]
             name = dr.get_name(comp)
             if match.test(name) and not ignore.test(name):
-                if comp in self._broker:
-                    color = Fore.GREEN
-                elif comp in self._broker.exceptions:
-                    color = Fore.RED
-                else:
-                    color = ""
+                color = self._get_color(comp)
                 print(color + "{p} ({name})".format(p=p, name=name) + Style.RESET_ALL)
 
 
