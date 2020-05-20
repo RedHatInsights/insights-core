@@ -422,25 +422,31 @@ class __Models(dict):
                 s = color + str(i) + Style.RESET_ALL
             else:
                 s = color + "<intermediate value>" + Style.RESET_ALL
-            print("{}\u250A\u254C\u254C\u254C\u254C{}".format(indent, s))
+            print("{}\u250A\u254C\u254C\u254C\u254C\u254C{}".format(indent, s))
+
+    def show_requested(self):
+        for name, comp in sorted(self._requested):
+            print(self._color(comp) + "{} {}".format(name, dr.get_name(comp)) + Style.RESET_ALL)
 
     def _show_tree(self, node, indent="", depth=None):
         if depth is not None and depth == 0:
             return
 
+        color = self._get_color(node)
         if plugins.is_datasource(node):
             self._show_datasource(node, self._broker.get(node), indent=indent)
         else:
-            print(indent + self._get_color(node) + dr.get_name(node) + Style.RESET_ALL)
+            print(indent + color + dr.get_name(node) + Style.RESET_ALL)
+
+        if node in self._broker.exceptions:
+            for ex in self._broker.exceptions[node]:
+                dashes = "\u250A\u254C\u254C\u254C\u254C\u254C"
+                print(indent + dashes + color + str(ex) + Style.RESET_ALL)
 
         deps = dr.get_dependencies(node)
         next_indent = indent + "\u250A   "
         for d in deps:
             self._show_tree(d, next_indent, depth=depth if depth is None else depth - 1)
-
-    def show_requested(self):
-        for name, comp in sorted(self._requested):
-            print(self._color(comp) + "{} {}".format(name, dr.get_name(comp)) + Style.RESET_ALL)
 
     def show_trees(self, match=None, ignore=None, depth=None):
         """
