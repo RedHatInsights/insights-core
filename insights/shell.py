@@ -40,7 +40,7 @@ def __parse_args():
     desc = "Perform interactive system analysis with insights components."
     epilog = """
         Set env INSIGHTS_FILTERS_ENABLED=False to disable filtering that may
-        cause expected missing data.
+        cause unexpected missing data.
     """.strip()
     p = argparse.ArgumentParser(description=desc, epilog=epilog)
 
