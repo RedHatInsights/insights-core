@@ -217,11 +217,11 @@ class __Models(dict):
     # TODO: lot of room for improvement here...
     def make_rule(self, path=None, overwrite=False, pick=None):
         """
-        Show dependency trees of all matching components.
+        Attempt to generate a rule based on models used so far.
 
         Args:
             path(str): path to store the rule.
-            overwrite (bool): whether to overwrite an exiting file.
+            overwrite (bool): whether to overwrite an existing file.
             pick (str): Optionally specify which lines or line ranges
                 to use for the rule body. "1 2 3" gets lines 1,2 and 3.
                 "1 3-5 7" gets line 1, lines 3 through 5, and line 7.
