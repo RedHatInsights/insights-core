@@ -438,9 +438,9 @@ class __Models(dict):
         else:
             print(indent + color + dr.get_name(node) + Style.RESET_ALL)
 
+        dashes = "\u250A\u254C\u254C\u254C\u254C\u254C"
         if node in self._broker.exceptions:
             for ex in self._broker.exceptions[node]:
-                dashes = "\u250A\u254C\u254C\u254C\u254C\u254C"
                 print(indent + dashes + color + str(ex) + Style.RESET_ALL)
 
         deps = dr.get_dependencies(node)
@@ -450,7 +450,7 @@ class __Models(dict):
 
     def show_trees(self, match=None, ignore=None, depth=None):
         """
-        Show dependency trees of all matching components.
+        Show dependency trees of any components whether they're available or not.
 
         Args:
             match (str, optional): regular expression for matching against
@@ -483,9 +483,15 @@ class __Models(dict):
         """
         match, ignore = self._desugar_match_ignore(match, ignore)
 
-        for c in sorted(set(dr.get_name(comp) for comp in self._broker.exceptions)):
-            if match.test(c) and not ignore.test(c):
-                print(c)
+        dashes = "\u2514\u254C\u254C"
+        for comp in sorted(self._broker.exceptions, key=dr.get_name):
+            name = dr.get_name(comp)
+            if match.test(name) and not ignore.test(name):
+                color = self._get_color(comp)
+                print(color + name + Style.RESET_ALL)
+                for ex in self._broker.exceptions[comp]:
+                    print(color + dashes + str(ex) + Style.RESET_ALL)
+                print()
 
     def _show_exceptions(self, comp):
         name = dr.get_name(comp)
