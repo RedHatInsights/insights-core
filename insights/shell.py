@@ -47,6 +47,7 @@ def __parse_args():
     p.add_argument("-p", "--plugins", default="", help="Comma separated list of packages to load.")
     p.add_argument("-c", "--config", help="The insights configuration to apply.")
     p.add_argument("--cd", action="store_true", help="Change into the expanded directory for analysis.")
+    p.add_argument("--no-defaults", action="store_true", help="Don't load default components.")
     p.add_argument("-v", "--verbose", action="store_true", help="Global debug level logging.")
 
     path_desc = "Archive or path to analyze. Leave off to target the current system."
@@ -169,6 +170,18 @@ class __Models(dict):
     def __str__(self):
         return "{} components possibly available".format(len(self))
 
+    def _get_color(self, comp):
+        if comp in self._broker:
+            if plugins.is_type(comp, plugins.rule) and self._broker[comp].get("type") == "skip":
+                return Fore.YELLOW
+            return Fore.GREEN
+        elif comp in self._broker.exceptions:
+            return Fore.RED
+        elif comp in self._broker.missing_requirements:
+            return Fore.YELLOW
+        else:
+            return ""
+
     def _dump_diagnostics(self, comp):
         print("Dependency Tree")
         print("===============")
@@ -181,6 +194,17 @@ class __Models(dict):
         print("Exceptions")
         print("==========")
         self._show_exceptions(comp)
+
+    def evaluate_all(self, match=None, ignore=None):
+        match, ignore = self._desugar_match_ignore(match, ignore)
+
+        tasks = []
+        for c in set(self.values()) | set(self._broker.instances):
+            name = dr.get_name(c)
+            if match.test(name) and not ignore.test(name):
+                tasks.append(c)
+
+        dr.run(tasks, broker=self._broker)
 
     def evaluate(self, name):
         """
@@ -407,16 +431,6 @@ class __Models(dict):
         for d in deps:
             self._show_tree(d, next_indent, depth=depth if depth is None else depth - 1)
 
-    def _get_color(self, comp):
-        if comp in self._broker:
-            return Fore.GREEN
-        elif comp in self._broker.exceptions:
-            return Fore.RED
-        elif comp in self._broker.missing_requirements:
-            return Fore.YELLOW
-        else:
-            return ""
-
     def show_requested(self):
         for name, comp in sorted(self._requested):
             print(self._color(comp) + "{} {}".format(name, dr.get_name(comp)) + Style.RESET_ALL)
@@ -541,8 +555,9 @@ def main():
     args = __parse_args()
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.ERROR)
 
-    load_default_plugins()
-    dr.load_components("insights.parsers", "insights.combiners")
+    if not args.no_defaults:
+        load_default_plugins()
+        dr.load_components("insights.parsers", "insights.combiners")
 
     load_packages(parse_plugins(args.plugins))
     __handle_config(args.config)
