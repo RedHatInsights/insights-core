@@ -199,7 +199,7 @@ class __Models(dict):
         match, ignore = self._desugar_match_ignore(match, ignore)
 
         tasks = []
-        for c in set(self.values()) | set(self._broker.instances):
+        for c in set(self.values()):
             name = dr.get_name(c)
             if match.test(name) and not ignore.test(name):
                 tasks.append(c)
@@ -448,7 +448,7 @@ class __Models(dict):
         match, ignore = self._desugar_match_ignore(match, ignore)
 
         graph = defaultdict(list)
-        for c in set(self.values()) | set(self._broker.instances):
+        for c in dr.DELEGATES:
             name = dr.get_name(c)
             if match.test(name) and not ignore.test(name):
                 graph[name].append(c)
