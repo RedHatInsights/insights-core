@@ -480,9 +480,8 @@ class __Models(dict):
         """
         match, ignore = self._desugar_match_ignore(match, ignore)
 
-        mid_dashes = "\u250A\u254C\u254C\u254C\u254C\u254C"
-        bottom_dashes = "\u2514\u254C\u254C\u254C\u254C\u254C"
-        dashes = "\u2514\u254C\u254C"
+        mid_dashes = "\u250A\u254C\u254C"
+        bottom_dashes = "\u2514\u254C\u254C"
         for comp in sorted(self._broker.exceptions, key=dr.get_name):
             name = dr.get_name(comp)
             if match.test(name) and not ignore.test(name):
@@ -533,12 +532,20 @@ class __Models(dict):
                 the fqdn of components to ignore.
         """
         match, ignore = self._desugar_match_ignore(match, ignore)
+        mid_dashes = "\u250A\u254C\u254C"
+        bottom_dashes = "\u2514\u254C\u254C"
         for p in sorted(self, key=str.lower):
             comp = self[p]
             name = dr.get_name(comp)
             if match.test(name) and not ignore.test(name):
                 color = self._get_color(comp)
                 print(color + "{p} ({name})".format(p=p, name=name) + Style.RESET_ALL)
+                if comp in self._broker.exceptions:
+                    exes = self._broker.exceptions[comp]
+                    last = len(exes) - 1
+                    for i, ex in enumerate(exes):
+                        dashes = bottom_dashes if i == last else mid_dashes
+                        print(color + dashes + str(ex) + Style.RESET_ALL)
 
 
 def start_session(__path, change_directory=False):
