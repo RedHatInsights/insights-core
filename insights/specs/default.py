@@ -712,6 +712,7 @@ class DefaultSpecs(Specs):
     openshift_hosts = simple_file("/root/.config/openshift/hosts")
     openshift_router_pid = simple_command("/usr/bin/pgrep -n openshift-route")
     openshift_router_environ = foreach_collect(openshift_router_pid, "/proc/%s/environ")
+    openstack_server_list_all = simple_command("/usr/bin/openstack server list --all")
     openvswitch_other_config = simple_command("/usr/bin/ovs-vsctl -t 5 get Open_vSwitch . other_config")
     openvswitch_server_log = simple_file('/var/log/openvswitch/ovsdb-server.log')
     openvswitch_daemon_log = simple_file('/var/log/openvswitch/ovs-vswitchd.log')
