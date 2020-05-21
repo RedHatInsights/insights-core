@@ -1447,6 +1447,7 @@ def test_noir_cpuinfo():
     assert cpu_info.cpu_count == 32
     assert cpu_info.socket_count == 2
     assert cpu_info.core_total == 16
+    assert 'fpu' in cpu_info.flags
 
 
 def test_hetero_cpuinfo():
@@ -1459,6 +1460,8 @@ def test_empty_cpuinfo():
     cpu_info = CpuInfo(context_wrap(""))
     assert cpu_info.cpu_count == 0
     assert cpu_info.core_total is None
+    assert cpu_info.apicid == []
+    assert cpu_info.flags == []
 
 
 def test_arm_cpuinfo():
