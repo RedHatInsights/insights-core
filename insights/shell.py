@@ -1,5 +1,7 @@
 import argparse
 import logging
+import importlib
+import inspect
 import os
 import re
 import six
@@ -7,6 +9,9 @@ import yaml
 
 from collections import defaultdict
 from contextlib import contextmanager
+
+import IPython
+from traitlets.config.loader import Config
 
 from insights.parsr.query import *  # noqa
 from insights.parsr.query import eq, matches, make_child_query as q  # noqa
@@ -437,6 +442,17 @@ class __Models(dict):
         for name, comp in sorted(self._requested):
             print(self._get_color(comp) + "{} {}".format(name, dr.get_name(comp)) + Style.RESET_ALL)
 
+    def show_source(self, name):
+        """
+        Source source for the given module, class, or function name.
+        """
+        try:
+            comp = self.get(name) or dr.get_component(name) or importlib.import_module(name)
+            src = inspect.getsource(comp)
+            IPython.core.page.page(IPython.get_ipython().pycolorize(src))
+        except:
+            pass
+
     def _show_tree(self, node, indent="", depth=None):
         if depth is not None and depth == 0:
             return
@@ -561,9 +577,6 @@ class __Models(dict):
 
 
 def start_session(__path, change_directory=False):
-    import IPython
-    from traitlets.config.loader import Config
-
     with __create_new_broker(__path) as (__working_path, __broker):
         __cwd = os.path.abspath(os.curdir)
         __models = __get_available_models(__broker)
