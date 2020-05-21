@@ -472,7 +472,7 @@ class __Models(dict):
         for d in deps:
             self._show_tree(d, next_indent, depth=depth if depth is None else depth - 1)
 
-    def show_trees(self, match=None, ignore=None, depth=None):
+    def show_trees(self, match=None, ignore="spec", depth=None):
         """
         Show dependency trees of any components whether they're available or not.
 
