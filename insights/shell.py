@@ -496,9 +496,10 @@ class __Models(dict):
                 self._show_tree(c, depth=depth)
                 print()
 
-    def show_failed(self, match=None, ignore=None):
+    def show_failed(self, match=None, ignore="spec"):
         """
-        Show names of any components that failed during evaluation.
+        Show names of any components that failed during evaluation. Ignores
+        "spec" by default.
 
         Args:
             match (str, optional): regular expression for matching against
@@ -531,9 +532,10 @@ class __Models(dict):
             if t:
                 print(t)
 
-    def show_exceptions(self, match=None, ignore=None):
+    def show_exceptions(self, match=None, ignore="spec"):
         """
-        Show exceptions that occurred during evaluation.
+        Show exceptions that occurred during evaluation. Ignores "spec" by
+        default.
 
         Args:
             match (str, optional): regular expression for matching against
