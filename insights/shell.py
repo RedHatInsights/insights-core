@@ -444,7 +444,7 @@ class __Models(dict):
 
     def show_source(self, name):
         """
-        Source source for the given module, class, or function name.
+        Show source for the given module, class, or function name.
         """
         try:
             comp = self.get(name) or dr.get_component(name) or importlib.import_module(name)
