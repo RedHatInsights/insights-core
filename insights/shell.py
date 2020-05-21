@@ -125,7 +125,7 @@ class __Models(dict):
     """
     Represents all components that may be available given the data being
     analyzed. Use models.find() to see them. Tab complete attributes to access
-    them.
+    them. Use help(models) for more info.
 
     Examples:
 
@@ -196,6 +196,15 @@ class __Models(dict):
         self._show_exceptions(comp)
 
     def evaluate_all(self, match=None, ignore=None):
+        """
+        Evaluate all components that match.
+
+        Args:
+            match (str, optional): regular expression for matching against
+                the fully qualified name of components to keep.
+            ignore (str, optional): regular expression for searching against
+                the fully qualified name of components to ignore.
+        """
         match, ignore = self._desugar_match_ignore(match, ignore)
 
         tasks = []
@@ -215,13 +224,15 @@ class __Models(dict):
 
     def evaluate(self, name):
         """
-        Evaluate a component and return its result. Prints diagnostic information
-        in the case of failure.
+        Evaluate a component and return its result. Prints diagnostic
+        information in the case of failure. This function is useful when a
+        component's name contains characters that aren't valid for python
+        identifiers so you can't access it with models.<name>.
 
         Args:
             name (str): the name of the component as shown by ``.find()``.
         """
-        comp = self.get(name)
+        comp = self.get(name) or dr.get_component(name)
         if not comp:
             return
 
@@ -422,6 +433,7 @@ class __Models(dict):
             print("{}\u250A\u254C\u254C\u254C\u254C\u254C{}".format(indent, s))
 
     def show_requested(self):
+        """ Show the components you've worked with so far. """
         for name, comp in sorted(self._requested):
             print(self._get_color(comp) + "{} {}".format(name, dr.get_name(comp)) + Style.RESET_ALL)
 
@@ -451,9 +463,9 @@ class __Models(dict):
 
         Args:
             match (str, optional): regular expression for matching against
-                the fqdn of components to keep.
+                the fully qualified name of components to keep.
             ignore (str, optional): regular expression for searching against
-                the fqdn of components to ignore.
+                the fully qualified name of components to ignore.
         """
         match, ignore = self._desugar_match_ignore(match, ignore)
 
@@ -474,9 +486,9 @@ class __Models(dict):
 
         Args:
             match (str, optional): regular expression for matching against
-                the fqdn of components to keep.
+                the fully qualified name of components to keep.
             ignore (str, optional): regular expression for searching against
-                the fqdn of components to ignore.
+                the fully qualified name of components to ignore.
         """
         match, ignore = self._desugar_match_ignore(match, ignore)
 
@@ -505,13 +517,13 @@ class __Models(dict):
 
     def show_exceptions(self, match=None, ignore=None):
         """
-        Show exceptions during evaluation.
+        Show exceptions that occurred during evaluation.
 
         Args:
             match (str, optional): regular expression for matching against
-                the fqdn of components to keep.
+                the fully qualified name of components to keep.
             ignore (str, optional): regular expression for searching against
-                the fqdn of components to ignore.
+                the fully qualified name of components to ignore.
         """
         match, ignore = self._desugar_match_ignore(match, ignore)
 
@@ -527,9 +539,9 @@ class __Models(dict):
 
         Args:
             match (str, optional): regular expression for matching against
-                the fqdn of components to keep.
+                the fully qualified name of components to keep.
             ignore (str, optional): regular expression for searching against
-                the fqdn of components to ignore.
+                the fully qualified name of components to ignore.
         """
         match, ignore = self._desugar_match_ignore(match, ignore)
         mid_dashes = "\u250A\u254C\u254C"
