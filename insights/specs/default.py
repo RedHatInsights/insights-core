@@ -977,6 +977,7 @@ class DefaultSpecs(Specs):
     systemctl_show_all_services = simple_command("/bin/systemctl show *.service")
     systemctl_show_target = simple_command("/bin/systemctl show *.target")
     systemctl_smartpdc = simple_command("/bin/systemctl show smart_proxy_dynflow_core")
+    systemd_analyze_blame = simple_command("/bin/systemd-analyze blame")
     systemd_docker = simple_command("/usr/bin/systemctl cat docker.service")
     systemd_logind_conf = simple_file("/etc/systemd/logind.conf")
     systemd_openshift_node = simple_command("/usr/bin/systemctl cat atomic-openshift-node.service")
