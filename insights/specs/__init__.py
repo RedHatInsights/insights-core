@@ -603,6 +603,7 @@ class Specs(SpecSet):
     systemctl_show_all_services = RegistryPoint()
     systemctl_show_target = RegistryPoint()
     systemctl_smartpdc = RegistryPoint()
+    systemd_analyze_blame = RegistryPoint()
     systemd_docker = RegistryPoint()
     systemd_logind_conf = RegistryPoint()
     systemd_openshift_node = RegistryPoint()

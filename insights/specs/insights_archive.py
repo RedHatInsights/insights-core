@@ -277,6 +277,7 @@ class InsightsArchiveSpecs(Specs):
     systemctl_show_all_services = simple_file("insights_commands/systemctl_show_.service")
     systemctl_show_target = simple_file("insights_commands/systemctl_show_.target")
     systemctl_smartpdc = simple_file("insights_commands/systemctl_show_smart_proxy_dynflow_core")
+    systemd_analyze_blame = simple_file("insights_commands/systemd-analyze_blame")
     systemd_docker = first_file(["insights_commands/systemctl_cat_docker.service", "/usr/lib/systemd/system/docker.service"])
     systemd_openshift_node = first_file(["insights_commands/systemctl_cat_atomic-openshift-node.service", "/usr/lib/systemd/system/atomic-openshift-node.service"])
     systool_b_scsi_v = simple_file("insights_commands/systool_-b_scsi_-v")
