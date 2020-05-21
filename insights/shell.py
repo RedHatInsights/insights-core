@@ -112,7 +112,6 @@ def __get_available_models(broker):
             else:
                 name = dr.get_simple_name(comp)
 
-            name = name
             if name in models:
                 prev = models[name]
                 models[dr.get_name(prev).replace(".", "_")] = prev
