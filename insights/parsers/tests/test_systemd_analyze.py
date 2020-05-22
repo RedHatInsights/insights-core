@@ -18,6 +18,12 @@ OUTPUT = """
   770ms cloud-final.service
 """.strip()
 
+OUTPUT_IN_MIN = """
+1min 32.187s cloud-init-local.service
+        1min cloud-config.service
+      1.794s cloud-init.service
+""".strip()
+
 
 def test_output():
     output = systemd_analyze.SystemdAnalyzeBlame(context_wrap(OUTPUT))
@@ -28,6 +34,12 @@ def test_output():
 
     with pytest.raises(SkipException):
         assert systemd_analyze.SystemdAnalyzeBlame(context_wrap("")) is None
+
+
+def test_output_in_min():
+    output = systemd_analyze.SystemdAnalyzeBlame(context_wrap(OUTPUT_IN_MIN))
+    assert output.get('cloud-init-local.service', 0) == 92.187
+    assert output.get('cloud-config.service', 0) == 60
 
 
 def test_documentation():

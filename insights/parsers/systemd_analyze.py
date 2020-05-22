@@ -54,11 +54,23 @@ class SystemdAnalyzeBlame(CommandParser, dict):
         if not content:
             raise SkipException
 
-        for c in content:
-            time, service = c.split()
-            if time.endswith('ms'):
-                _time = round(float(time.strip('ms')) / 1000, 5)
+        _time = 0
+        for time_str in content:
+            *time, service = time_str.split()
+            if len(time) > 1:
+                for i in time:
+                    if i.endswith('min'):
+                        sec = round(float(i.strip('min')) * 60, 5)
+                    else:
+                        sec = round(float(i.strip('ms')), 5)
+                    _time += sec
             else:
-                _time = round(float(time.strip('ms')), 5)
+                time = time[-1]
+                if time.endswith('min'):
+                    _time = round(float(time.strip('min')) * 60, 5)
+                elif time.endswith('ms'):
+                    _time = round(float(time.strip('ms')) / 1000, 5)
+                else:
+                    _time = round(float(time.strip('ms')), 5)
 
             self[service] = _time
