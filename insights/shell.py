@@ -11,6 +11,7 @@ from collections import defaultdict
 from contextlib import contextmanager
 
 import IPython
+from pygments.console import ansiformat
 from traitlets.config.loader import Config
 
 from insights.parsr.query import *  # noqa
@@ -23,14 +24,19 @@ from insights.core.context import HostContext
 from insights.core.spec_factory import ContentProvider, RegistryPoint
 
 try:
-    from colorama import Fore, Style, init
+    from colorama import Back, Fore, Style, init
     init()
+    HAVE_COLORS = True
 except ImportError:
+    HAVE_COLORS = False
     print("Install colorama if console colors are preferred.")
 
     class Default(type):
         def __getattr__(*args):
             return ""
+
+    class Back(six.with_metaclass(Default)):
+        pass
 
     class Fore(six.with_metaclass(Default)):
         pass
@@ -39,26 +45,6 @@ except ImportError:
         pass
 
 Loader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
-
-
-def __parse_args():
-    desc = "Perform interactive system analysis with insights components."
-    epilog = """
-        Set env INSIGHTS_FILTERS_ENABLED=False to disable filtering that may
-        cause unexpected missing data.
-    """.strip()
-    p = argparse.ArgumentParser(description=desc, epilog=epilog)
-
-    p.add_argument("-p", "--plugins", default="", help="Comma separated list of packages to load.")
-    p.add_argument("-c", "--config", help="The insights configuration to apply.")
-    p.add_argument("--cd", action="store_true", help="Change into the expanded directory for analysis.")
-    p.add_argument("--no-defaults", action="store_true", help="Don't load default components.")
-    p.add_argument("-v", "--verbose", action="store_true", help="Global debug level logging.")
-
-    path_desc = "Archive or path to analyze. Leave off to target the current system."
-    p.add_argument("path", nargs="?", help=path_desc)
-
-    return p.parse_args()
 
 
 @contextmanager
@@ -162,10 +148,11 @@ class __Models(dict):
         ┊   ┊   ┊   insights.specs.default.DefaultSpecs.host_installed_rpms
         ┊   ┊   ┊   ┊   insights.core.context.HostContext
     """
-    def __init__(self, broker, models, cwd):
+    def __init__(self, broker, models, cwd, cov):
         self._requested = set()
         self._broker = broker
         self._cwd = cwd
+        self._cov = cov
         super().__init__(models)
 
     def __dir__(self):
@@ -228,7 +215,11 @@ class __Models(dict):
         if not tasks:
             return
 
+        if self._cov:
+            self._cov.start()
         dr.run(tasks, broker=self._broker)
+        if self._cov:
+            self._cov.stop()
         self.find(match, ignore)
 
     def evaluate(self, name):
@@ -255,12 +246,16 @@ class __Models(dict):
             self._dump_diagnostics(comp)
             return None
 
+        if self._cov:
+            self._cov.start()
         val = dr.run(comp, broker=self._broker).get(comp)
         if comp not in self._broker:
             if comp in self._broker.exceptions or comp in self._broker.missing_requirements:
                 self._dump_diagnostics(comp)
             else:
                 print("{} chose to skip.".format(dr.get_name(comp)))
+        if self._cov:
+            self._cov.stop()
         return val
 
     def __getattr__(self, name):
@@ -395,6 +390,10 @@ class __Models(dict):
 
         return (match, ignore)
 
+    def clear_coverage(self):
+        if self._cov:
+            self._cov.erase()
+
     def _show_missing(self, comp):
         try:
             req, alo = self._broker.missing_requirements[comp]
@@ -458,7 +457,22 @@ class __Models(dict):
                 comp = self.get(comp) or dr.get_component(comp) or importlib.import_module(comp)
             if comp in dr.DELEGATES:
                 comp = inspect.getmodule(comp)
-            IPython.get_ipython().inspector.pinfo(comp, detail_level=1)
+            ip = IPython.get_ipython()
+            if self._cov:
+                path, runnable, excluded, not_run, _ = self._cov.analysis2(comp)
+                runnable, not_run = set(runnable), set(not_run)
+                src = ip.pycolorize(inspect.getsource(comp)).splitlines()
+                results = []
+                for i, line in enumerate(src):
+                    i = i + 1
+                    prefix = "{0: 4}".format(i)
+                    if i in runnable and i not in not_run:
+                        results.append("{} {}".format(ansiformat("*green*", prefix), line))
+                    else:
+                        results.append("{} {}".format(prefix, line))
+                IPython.core.page.page("\n".join(results))
+            else:
+                ip.inspector.pinfo(comp, detail_level=1)
         except:
             pass
 
@@ -482,6 +496,8 @@ class __Models(dict):
                 if val is None:
                     return " [None]"
                 return " [{}]".format(bool(val))
+            else:
+                return ""
         except:
             return ""
 
@@ -617,11 +633,17 @@ class __Models(dict):
                         print(color + dashes + str(ex) + Style.RESET_ALL)
 
 
-def start_session(__path, change_directory=False):
+def start_session(__path, change_directory=False, __coverage=False):
     with __create_new_broker(__path) as (__working_path, __broker):
         __cwd = os.path.abspath(os.curdir)
         __models = __get_available_models(__broker)
-        models = __Models(__broker, __models, __cwd)
+        if __coverage and HAVE_COLORS:
+            from coverage import Coverage
+            __cov = Coverage(check_preimported=True, cover_pylib=False)
+        else:
+            __cov = None
+
+        models = __Models(__broker, __models, __cwd, __cov)
         if change_directory:
             os.chdir(__working_path)
 
@@ -635,6 +657,8 @@ def start_session(__path, change_directory=False):
         __ns.update(locals())
         IPython.start_ipython([], user_ns=__ns, config=__cfg)
 
+        if __cov:
+            __cov.erase()
         # TODO: we could automatically save the session here
         # see Models.make_rule
         if change_directory:
@@ -645,6 +669,27 @@ def __handle_config(config):
     if config:
         with open(config) as f:
             apply_configs(yaml.load(f, Loader=Loader))
+
+
+def __parse_args():
+    desc = "Perform interactive system analysis with insights components."
+    epilog = """
+        Set env INSIGHTS_FILTERS_ENABLED=False to disable filtering that may
+        cause unexpected missing data.
+    """.strip()
+    p = argparse.ArgumentParser(description=desc, epilog=epilog)
+
+    p.add_argument("-p", "--plugins", default="", help="Comma separated list of packages to load.")
+    p.add_argument("-c", "--config", help="The insights configuration to apply.")
+    p.add_argument("--cov", action="store_true", help="Show code coverage when viewing source.")
+    p.add_argument("--cd", action="store_true", help="Change into the expanded directory for analysis.")
+    p.add_argument("--no-defaults", action="store_true", help="Don't load default components.")
+    p.add_argument("-v", "--verbose", action="store_true", help="Global debug level logging.")
+
+    path_desc = "Archive or path to analyze. Leave off to target the current system."
+    p.add_argument("path", nargs="?", help=path_desc)
+
+    return p.parse_args()
 
 
 def main():
@@ -658,7 +703,7 @@ def main():
     load_packages(parse_plugins(args.plugins))
     __handle_config(args.config)
 
-    start_session(args.path, args.cd)
+    start_session(args.path, args.cd, __coverage=args.cov)
 
 
 if __name__ == "__main__":
