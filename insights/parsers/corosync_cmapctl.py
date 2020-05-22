@@ -10,8 +10,8 @@ from insights.parsers import SkipException, ParseException
 from insights.specs import Specs
 
 
-@parser(Specs.corosync_cmapctl_on_rhel7)
-class CorosyncCmapctlOnRHEL7(CommandParser, dict):
+@parser(Specs.corosync_cmapctl)
+class CorosyncCmapctl(CommandParser, dict):
     """
     Class for parsing the `/usr/sbin/corosync-cmapctl [params]` command.
     All lines are stored in the dictionary with the left part of the equal
@@ -30,7 +30,7 @@ class CorosyncCmapctlOnRHEL7(CommandParser, dict):
 
     Examples:
         >>> type(corosync)
-        <class 'insights.parsers.corosync_cmapctl.CorosyncCmapctlOnRHEL7'>
+        <class 'insights.parsers.corosync_cmapctl.CorosyncCmapctl'>
         >>> 'internal_configuration.service.0.name' in corosync
         True
         >>> corosync['internal_configuration.service.0.name']
@@ -42,7 +42,7 @@ class CorosyncCmapctlOnRHEL7(CommandParser, dict):
     """
 
     def __init__(self, context):
-        super(CorosyncCmapctlOnRHEL7, self).__init__(context, extra_bad_lines=['corosync-cmapctl: invalid option'])
+        super(CorosyncCmapctl, self).__init__(context, extra_bad_lines=['corosync-cmapctl: invalid option'])
 
     def parse_content(self, content):
         if not content:
@@ -53,8 +53,3 @@ class CorosyncCmapctlOnRHEL7(CommandParser, dict):
             key, value = [item.strip() for item in line.split('=')]
             key_without_parenthese = key.split()[0]
             self[key_without_parenthese] = value
-
-
-@parser(Specs.corosync_cmapctl_on_rhel8)
-class CorosyncCmapctlOnRHEL8(CorosyncCmapctlOnRHEL7):
-    pass

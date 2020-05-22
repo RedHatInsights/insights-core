@@ -82,14 +82,14 @@ runtime.schedmiss.timestamp (u64) = 1589895874915
 
 def test_corosync_doc_examples():
     env = {
-        'corosync': corosync_cmapctl.CorosyncCmapctlOnRHEL7(context_wrap(COROSYNC_CONTENT_1, path='corosync_cmpctl')),
+        'corosync': corosync_cmapctl.CorosyncCmapctl(context_wrap(COROSYNC_CONTENT_1, path='corosync_cmpctl')),
     }
     failed, total = doctest.testmod(corosync_cmapctl, globs=env)
     assert failed == 0
 
 
 def test_state_schemiss():
-    corodata = corosync_cmapctl.CorosyncCmapctlOnRHEL8(context_wrap(COROSYNC_CONTENT_2, path='corosync-cmapctl_-m_stats_stats.schedmiss'))
+    corodata = corosync_cmapctl.CorosyncCmapctl(context_wrap(COROSYNC_CONTENT_2, path='corosync-cmapctl_-m_stats_stats.schedmiss'))
     assert 'stats.schedmiss.0.delay' in corodata
     assert corodata['stats.schedmiss.0.delay'] == '2023.957031'
     assert corodata['stats.schedmiss.0.timestamp'] == '5106558848098'
@@ -98,15 +98,15 @@ def test_state_schemiss():
 
 def test_exception():
     with pytest.raises(SkipException):
-        corosync_cmapctl.CorosyncCmapctlOnRHEL7(context_wrap(COROSYNC_CONTENT_3, path="corosync_cmpctl"))
+        corosync_cmapctl.CorosyncCmapctl(context_wrap(COROSYNC_CONTENT_3, path="corosync_cmpctl"))
     with pytest.raises(ContentException):
-        corosync_cmapctl.CorosyncCmapctlOnRHEL7(context_wrap(COROSYNC_CONTENT_4, path="corosync_cmpctl_-C"))
+        corosync_cmapctl.CorosyncCmapctl(context_wrap(COROSYNC_CONTENT_4, path="corosync_cmpctl_-C"))
     with pytest.raises(ParseException):
-        corosync_cmapctl.CorosyncCmapctlOnRHEL7(context_wrap(COROSYNC_CONTENT_5, path="corosync_cmpctl"))
+        corosync_cmapctl.CorosyncCmapctl(context_wrap(COROSYNC_CONTENT_5, path="corosync_cmpctl"))
 
 
 def test_runtime_schemiss():
-    corodata = corosync_cmapctl.CorosyncCmapctlOnRHEL7(context_wrap(COROSYNC_CONTENT_6, path='corosync-cmapctl'))
+    corodata = corosync_cmapctl.CorosyncCmapctl(context_wrap(COROSYNC_CONTENT_6, path='corosync-cmapctl'))
     assert "runtime.schedmiss.delay" in corodata
     assert corodata['runtime.schedmiss.delay'] == '2282.403320'
     assert "runtime.schedmiss.timestamp" in corodata
