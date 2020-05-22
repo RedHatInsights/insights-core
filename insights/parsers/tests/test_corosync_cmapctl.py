@@ -65,28 +65,49 @@ stats.schedmiss.9.delay (flt) = 2473.122070
 stats.schedmiss.9.timestamp (u64) = 5106540630601
 """.strip()
 
+COROSYNC_CONTENT_6 = """
+config.totemconfig_reload_in_progress (u8) = 0
+internal_configuration.service.0.name (str) = corosync_cmap
+internal_configuration.service.0.ver (u32) = 0
+internal_configuration.service.1.name (str) = corosync_cfg
+internal_configuration.service.1.ver (u32) = 0
+internal_configuration.service.2.name (str) = corosync_cpg
+internal_configuration.service.2.ver (u32) = 0
+internal_configuration.service.3.name (str) = corosync_quorum
+internal_configuration.service.3.ver (u32) = 0
+runtime.schedmiss.delay (flt) = 2282.403320
+runtime.schedmiss.timestamp (u64) = 1589895874915
+""".strip()
+
 
 def test_corosync_doc_examples():
     env = {
-        'corosync': corosync_cmapctl.CorosyncCmapctl(context_wrap(COROSYNC_CONTENT_1, path='corosync_cmpctl')),
+        'corosync': corosync_cmapctl.CorosyncCmapctlOnRHEL7(context_wrap(COROSYNC_CONTENT_1, path='corosync_cmpctl')),
     }
     failed, total = doctest.testmod(corosync_cmapctl, globs=env)
     assert failed == 0
 
 
 def test_state_schemiss():
-    corodata = corosync_cmapctl.CorosyncCmapctl(context_wrap(COROSYNC_CONTENT_2, path='corosync-cmapctl_-m_stats_stats.schedmiss'))
-    schemiss_dict = corodata.get_stats_schedmiss()
-    assert 'stats.schedmiss.0.delay' in schemiss_dict
-    assert schemiss_dict['stats.schedmiss.0.delay'] == '2023.957031'
-    assert schemiss_dict['stats.schedmiss.0.timestamp'] == '5106558848098'
-    assert len(schemiss_dict) == 20
+    corodata = corosync_cmapctl.CorosyncCmapctlOnRHEL8(context_wrap(COROSYNC_CONTENT_2, path='corosync-cmapctl_-m_stats_stats.schedmiss'))
+    assert 'stats.schedmiss.0.delay' in corodata
+    assert corodata['stats.schedmiss.0.delay'] == '2023.957031'
+    assert corodata['stats.schedmiss.0.timestamp'] == '5106558848098'
+    assert len(corodata) == 20
 
 
 def test_exception():
     with pytest.raises(SkipException):
-        corosync_cmapctl.CorosyncCmapctl(context_wrap(COROSYNC_CONTENT_3, path="corosync_cmpctl"))
+        corosync_cmapctl.CorosyncCmapctlOnRHEL7(context_wrap(COROSYNC_CONTENT_3, path="corosync_cmpctl"))
     with pytest.raises(ContentException):
-        corosync_cmapctl.CorosyncCmapctl(context_wrap(COROSYNC_CONTENT_4, path="corosync_cmpctl_-C"))
+        corosync_cmapctl.CorosyncCmapctlOnRHEL7(context_wrap(COROSYNC_CONTENT_4, path="corosync_cmpctl_-C"))
     with pytest.raises(ParseException):
-        corosync_cmapctl.CorosyncCmapctl(context_wrap(COROSYNC_CONTENT_5, path="corosync_cmpctl"))
+        corosync_cmapctl.CorosyncCmapctlOnRHEL7(context_wrap(COROSYNC_CONTENT_5, path="corosync_cmpctl"))
+
+
+def test_runtime_schemiss():
+    corodata = corosync_cmapctl.CorosyncCmapctlOnRHEL7(context_wrap(COROSYNC_CONTENT_6, path='corosync-cmapctl'))
+    assert "runtime.schedmiss.delay" in corodata
+    assert corodata['runtime.schedmiss.delay'] == '2282.403320'
+    assert "runtime.schedmiss.timestamp" in corodata
+    assert corodata['runtime.schedmiss.timestamp'] == '1589895874915'
