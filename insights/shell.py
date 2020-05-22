@@ -1,7 +1,6 @@
 import argparse
 import logging
 import importlib
-import inspect
 import os
 import re
 import six
@@ -169,6 +168,11 @@ class __Models(dict):
         super().__init__(models)
 
     def __dir__(self):
+        """ Enabled ipython autocomplete. """
+        return sorted(self.keys())
+
+    def _ipython_key_completions_(self):
+        """ For autocomplete of keys when accessing models as a dict. """
         return sorted(self.keys())
 
     def __str__(self):
@@ -441,14 +445,16 @@ class __Models(dict):
         for name, comp in sorted(self._requested):
             print(self._get_color(comp) + "{} {}".format(name, dr.get_name(comp)) + Style.RESET_ALL)
 
-    def show_source(self, name):
+    def show_source(self, comp):
         """
-        Show source for the given module, class, or function name.
+        Show source for the given module, class, or function. Also accepts
+        the string names, with the side effect that the component will be
+        imported.
         """
         try:
-            comp = self.get(name) or dr.get_component(name) or importlib.import_module(name)
-            src = inspect.getsource(comp)
-            IPython.core.page.page(IPython.get_ipython().pycolorize(src))
+            if isinstance(comp, six.string_types):
+                comp = self.get(comp) or dr.get_component(comp) or importlib.import_module(comp)
+            IPython.get_ipython().inspector.psource(comp)
         except:
             pass
 
@@ -585,6 +591,8 @@ def start_session(__path, change_directory=False):
         if change_directory:
             os.chdir(__working_path)
 
+        # disable jedi since it won't autocomplete for objects with__getattr__
+        # defined.
         IPython.core.completer.Completer.use_jedi = False
         __cfg = Config()
         __cfg.TerminalInteractiveShell.banner1 = __Models.__doc__
