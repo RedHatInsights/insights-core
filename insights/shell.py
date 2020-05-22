@@ -454,7 +454,7 @@ class __Models(dict):
         try:
             if isinstance(comp, six.string_types):
                 comp = self.get(comp) or dr.get_component(comp) or importlib.import_module(comp)
-            IPython.get_ipython().inspector.psource(comp)
+            IPython.get_ipython().inspector.pinfo(comp, detail_level=1)
         except:
             pass
 
