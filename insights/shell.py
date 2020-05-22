@@ -245,7 +245,8 @@ class __Models(dict):
         if not comp:
             return
 
-        self._requested.add((name, comp))
+        if not plugins.is_rule(comp):
+            self._requested.add((name, comp))
 
         if comp in self._broker:
             return self._broker[comp]
@@ -461,6 +462,29 @@ class __Models(dict):
         except:
             pass
 
+    def _get_type_name(self, comp):
+        try:
+            return dr.get_component_type(comp).__name__
+        except:
+            return ""
+
+    def _get_suffix(self, comp):
+        try:
+            val = self._broker[comp]
+            if plugins.is_rule(comp):
+                _type = val.__class__.__name__
+                if isinstance(val, plugins.make_response):
+                    color = Fore.RED
+                else:
+                    color = ""
+                return " {}[{}]".format(color, _type)
+            elif plugins.is_type(comp, plugins.condition):
+                if val is None:
+                    return " [None]"
+                return " [{}]".format(bool(val))
+        except:
+            return ""
+
     def _show_tree(self, node, indent="", depth=None):
         if depth is not None and depth == 0:
             return
@@ -469,7 +493,11 @@ class __Models(dict):
         if plugins.is_datasource(node):
             self._show_datasource(node, self._broker.get(node), indent=indent)
         else:
-            print(indent + color + dr.get_name(node) + Style.RESET_ALL)
+            _type = self._get_type_name(node)
+            name = dr.get_name(node)
+            suffix = self._get_suffix(node)
+            desc = "{c}{name} ({t}{s}{c})".format(c=color, t=_type, name=name, s=suffix)
+            print(indent + desc + Style.RESET_ALL)
 
         dashes = "\u250A\u254C\u254C\u254C\u254C\u254C"
         if node in self._broker.exceptions:
@@ -577,7 +605,10 @@ class __Models(dict):
             name = dr.get_name(comp)
             if match.test(name) and not ignore.test(name):
                 color = self._get_color(comp)
-                print(color + "{p} ({name})".format(p=p, name=name) + Style.RESET_ALL)
+                _type = self._get_type_name(comp)
+                suffix = self._get_suffix(comp)
+                desc = "{c}{p} ({name}, {t}{s}{c})".format(c=color, p=p, t=_type, name=name, s=suffix)
+                print(desc + Style.RESET_ALL)
                 if comp in self._broker.exceptions:
                     exes = self._broker.exceptions[comp]
                     last = len(exes) - 1
