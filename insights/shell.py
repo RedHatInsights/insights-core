@@ -110,26 +110,27 @@ class __Models(dict):
         0:bash-4.1.2-48.el6
 
         >>> models.find("(?i)yum")  # Prefix "(?i)" ignores case.
-        YumConf (insights.parsers.yum_conf.YumConf)
-        YumLog (insights.parsers.yumlog.YumLog)
-        YumRepoList (insights.parsers.yum.YumRepoList)
-        YumReposD (insights.parsers.yum_repos_d.YumReposD)
+        YumConf (insights.parsers.yum_conf.YumConf, parser)
+        YumLog (insights.parsers.yumlog.YumLog, parser)
+        YumRepoList (insights.parsers.yum.YumRepoList, parser)
+        └╌╌Incorrect line: 'repolist: 33296'
+        YumReposD (insights.parsers.yum_repos_d.YumReposD, parser)
 
         >>> models.show_trees("rpm")
-        insights.parsers.installed_rpms.InstalledRpms
+        insights.parsers.installed_rpms.InstalledRpms (parser)
         ┊   insights.specs.Specs.installed_rpms (unfiltered / lines)
-        ┊   ┊╌╌╌╌TextFileProvider("'/home/example/Downloads/archives/sosreport-example-20191225000000/sos_commands/rpm/package-data'")
-        ┊   ┊   insights.specs.insights_archive.InsightsArchiveSpecs.installed_rpms
-        ┊   ┊   ┊   insights.specs.insights_archive.InsightsArchiveSpecs.all_installed_rpms
-        ┊   ┊   ┊   ┊   insights.core.context.HostArchiveContext
+        ┊   ┊╌╌╌╌╌TextFileProvider("'/home/csams/Downloads/archives/sosreport-example-20191225000000/sos_commands/rpm/package-data'")
+        ┊   ┊   insights.specs.insights_archive.InsightsArchiveSpecs.installed_rpms (unfiltered / lines)
+        ┊   ┊   ┊   insights.specs.insights_archive.InsightsArchiveSpecs.all_installed_rpms (unfiltered / lines)
+        ┊   ┊   ┊   ┊   insights.core.context.HostArchiveContext ()
         ┊   ┊   insights.specs.sos_archive.SosSpecs.installed_rpms (unfiltered / lines)
-        ┊   ┊   ┊╌╌╌╌TextFileProvider("'/home/example/Downloads/archives/sosreport-example-20191225000000/sos_commands/rpm/package-data'")
-        ┊   ┊   ┊   insights.core.context.SosArchiveContext
-        ┊   ┊   insights.specs.default.DefaultSpecs.installed_rpms
-        ┊   ┊   ┊   insights.specs.default.DefaultSpecs.docker_installed_rpms
-        ┊   ┊   ┊   ┊   insights.core.context.DockerImageContext
-        ┊   ┊   ┊   insights.specs.default.DefaultSpecs.host_installed_rpms
-        ┊   ┊   ┊   ┊   insights.core.context.HostContext
+        ┊   ┊   ┊╌╌╌╌╌TextFileProvider("'/home/csams/Downloads/archives/sosreport-example-20191225000000/sos_commands/rpm/package-data'")
+        ┊   ┊   ┊   insights.core.context.SosArchiveContext ()
+        ┊   ┊   insights.specs.default.DefaultSpecs.installed_rpms (unfiltered / lines)
+        ┊   ┊   ┊   insights.specs.default.DefaultSpecs.docker_installed_rpms (unfiltered / lines)
+        ┊   ┊   ┊   ┊   insights.core.context.DockerImageContext ()
+        ┊   ┊   ┊   insights.specs.default.DefaultSpecs.host_installed_rpms (unfiltered / lines)
+        ┊   ┊   ┊   ┊   insights.core.context.HostContext ()
     """
     def __init__(self, broker, models, cwd, cov):
         self._requested = set()
