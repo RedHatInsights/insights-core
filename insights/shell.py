@@ -359,8 +359,9 @@ class __Models(dict):
             if not os.path.exists(path) or overwrite:
                 with open(path, "w") as f:
                     f.write(res)
+                ip.magic("edit -x {}".format(path))
         else:
-            print(res)
+            IPython.core.page.page(ip.pycolorize(res))
 
     def _desugar_match_ignore(self, match, ignore):
         if match is None:
