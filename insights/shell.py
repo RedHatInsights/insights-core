@@ -22,8 +22,11 @@ from insights import apply_configs, create_context, datasource, dr, extract, loa
 from insights.core import plugins
 from insights.core.context import HostContext
 from insights.core.spec_factory import ContentProvider, RegistryPoint
+from insights.formats import render
 
 Loader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
+
+RULE_COLORS = {"fail": "red", "pass": "blue", "info": "magenta", "skip": "yellow"}
 
 
 @contextmanager
@@ -464,21 +467,26 @@ class __Models(dict):
         except:
             return ""
 
+    def _get_rule_value_kind(self, val):
+        if val is None:
+            kind = None
+        elif isinstance(val, plugins.make_response):
+            kind = "fail"
+        elif isinstance(val, plugins.make_pass):
+            kind = "pass"
+        elif isinstance(val, plugins.make_info):
+            kind = "info"
+        else:
+            kind = None
+        return kind
+
     def _get_value(self, comp):
         try:
             val = self._broker[comp]
             if plugins.is_rule(comp):
                 _type = val.__class__.__name__
-                if isinstance(val, plugins.make_response):
-                    color = "red"
-                elif isinstance(val, plugins._make_skip):
-                    color = "yellow"
-                elif isinstance(val, plugins.make_pass):
-                    color = "blue"
-                elif isinstance(val, plugins.make_info):
-                    color = "magenta"
-                else:
-                    color = ""
+                kind = self._get_rule_value_kind(val)
+                color = RULE_COLORS.get(kind, "")
                 return ansiformat(color, " [{}]".format(_type))
         except:
             pass
@@ -584,6 +592,32 @@ class __Models(dict):
             name = dr.get_name(comp)
             if match.test(name) and not ignore.test(name):
                 self._show_exceptions(comp)
+
+    def show_rule_report(self, match=None, ignore=None):
+        """
+        Print a rule report for the matching rules.
+        """
+        match, ignore = self._desugar_match_ignore(match, ignore)
+        results = defaultdict(dict)
+
+        for comp, val in self._broker.items():
+            name = dr.get_name(comp)
+            if plugins.is_rule(comp) and match.test(name) and not ignore.test(name):
+                kind = self._get_rule_value_kind(val)
+
+                if kind:
+                    results[kind][name] = render(comp, val)
+
+        report = []
+        for kind in ["info", "pass", "fail"]:
+            color = RULE_COLORS.get(kind, "")
+            hits = results.get(kind, {})
+            for name in sorted(hits):
+                report.append(ansiformat(color, name))
+                report.append(ansiformat(color, "-" * len(name)))
+                report.append(hits[name])
+                report.append("")
+        IPython.core.page.page("\n".join(report))
 
     def find(self, match=None, ignore=None):
         """
