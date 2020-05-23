@@ -23,27 +23,6 @@ from insights.core import plugins
 from insights.core.context import HostContext
 from insights.core.spec_factory import ContentProvider, RegistryPoint
 
-try:
-    from colorama import Back, Fore, Style, init
-    init()
-    HAVE_COLORS = True
-except ImportError:
-    HAVE_COLORS = False
-    print("Install colorama if console colors are preferred.")
-
-    class Default(type):
-        def __getattr__(*args):
-            return ""
-
-    class Back(six.with_metaclass(Default)):
-        pass
-
-    class Fore(six.with_metaclass(Default)):
-        pass
-
-    class Style(six.with_metaclass(Default)):
-        pass
-
 Loader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
 
 
@@ -82,8 +61,8 @@ def __create_new_broker(path):
 
 def __get_available_models(broker):
     """
-    Given a broker populated with datasources, figure out and return
-    everything that could run based on them.
+    Given a broker populated with datasources, return everything that could
+    run based on them.
     """
     state = set(broker.instances.keys())
     models = {}
@@ -132,7 +111,7 @@ class __Models(dict):
         YumRepoList (insights.parsers.yum.YumRepoList)
         YumReposD (insights.parsers.yum_repos_d.YumReposD)
 
-        >>> models.show_trees("rpm", ignore="spec")
+        >>> models.show_trees("rpm")
         insights.parsers.installed_rpms.InstalledRpms
         ┊   insights.specs.Specs.installed_rpms (unfiltered / lines)
         ┊   ┊╌╌╌╌TextFileProvider("'/home/example/Downloads/archives/sosreport-example-20191225000000/sos_commands/rpm/package-data'")
@@ -169,12 +148,12 @@ class __Models(dict):
     def _get_color(self, comp):
         if comp in self._broker:
             if plugins.is_type(comp, plugins.rule) and self._broker[comp].get("type") == "skip":
-                return Fore.YELLOW
-            return Fore.GREEN
+                return "yellow"
+            return "green"
         elif comp in self._broker.exceptions:
-            return Fore.RED
+            return "red"
         elif comp in self._broker.missing_requirements:
-            return Fore.YELLOW
+            return "yellow"
         else:
             return ""
 
@@ -190,6 +169,15 @@ class __Models(dict):
         print("Exceptions")
         print("==========")
         self._show_exceptions(comp)
+
+    @contextmanager
+    def _coverage_tracking(self):
+        if self._cov:
+            self._cov.start()
+            yield
+            self._cov.stop()
+        else:
+            yield
 
     def evaluate_all(self, match=None, ignore=None):
         """
@@ -215,11 +203,8 @@ class __Models(dict):
         if not tasks:
             return
 
-        if self._cov:
-            self._cov.start()
-        dr.run(tasks, broker=self._broker)
-        if self._cov:
-            self._cov.stop()
+        with self._coverage_tracking():
+            dr.run(tasks, broker=self._broker)
         self.find(match, ignore)
 
     def evaluate(self, name):
@@ -244,18 +229,16 @@ class __Models(dict):
 
         if comp in self._broker.exceptions or comp in self._broker.missing_requirements:
             self._dump_diagnostics(comp)
-            return None
+            return
 
-        if self._cov:
-            self._cov.start()
-        val = dr.run(comp, broker=self._broker).get(comp)
+        with self._coverage_tracking():
+            val = dr.run(comp, broker=self._broker).get(comp)
+
         if comp not in self._broker:
             if comp in self._broker.exceptions or comp in self._broker.missing_requirements:
                 self._dump_diagnostics(comp)
             else:
                 print("{} chose to skip.".format(dr.get_name(comp)))
-        if self._cov:
-            self._cov.stop()
         return val
 
     def __getattr__(self, name):
@@ -390,10 +373,6 @@ class __Models(dict):
 
         return (match, ignore)
 
-    def clear_coverage(self):
-        if self._cov:
-            self._cov.erase()
-
     def _show_missing(self, comp):
         try:
             req, alo = self._broker.missing_requirements[comp]
@@ -427,7 +406,7 @@ class __Models(dict):
         desc = "{n} ({f} / {m})".format(n=dr.get_name(d), f=filtered, m=mode)
         color = self._get_color(d)
 
-        print(indent + color + desc + Style.RESET_ALL)
+        print(indent + ansiformat(color, desc))
 
         if not v:
             return
@@ -436,15 +415,15 @@ class __Models(dict):
 
         for i in v:
             if isinstance(i, ContentProvider):
-                s = color + str(i) + Style.RESET_ALL
+                s = ansiformat(color, str(i))
             else:
-                s = color + "<intermediate value>" + Style.RESET_ALL
+                s = ansiformat(color, "<intermediate value>")
             print("{}\u250A\u254C\u254C\u254C\u254C\u254C{}".format(indent, s))
 
     def show_requested(self):
         """ Show the components you've worked with so far. """
         for name, comp in sorted(self._requested):
-            print(self._get_color(comp) + "{} {}".format(name, dr.get_name(comp)) + Style.RESET_ALL)
+            print(ansiformat(self._get_color(comp), "{} {}".format(name, dr.get_name(comp))))
 
     def show_source(self, comp):
         """
@@ -462,14 +441,17 @@ class __Models(dict):
                 path, runnable, excluded, not_run, _ = self._cov.analysis2(comp)
                 runnable, not_run = set(runnable), set(not_run)
                 src = ip.pycolorize(inspect.getsource(comp)).splitlines()
+                width = len(str(len(src)))
+                template = "{0:>%s}" % width
                 results = []
                 for i, line in enumerate(src):
                     i = i + 1
-                    prefix = "{0: 4}".format(i)
+                    prefix = template.format(i)
                     if i in runnable and i not in not_run:
-                        results.append("{} {}".format(ansiformat("*green*", prefix), line))
+                        color = "*green*"
                     else:
-                        results.append("{} {}".format(prefix, line))
+                        color = "gray"
+                    results.append("{} {}".format(ansiformat(color, prefix), line))
                 IPython.core.page.page("\n".join(results))
             else:
                 ip.inspector.pinfo(comp, detail_level=1)
@@ -482,24 +464,25 @@ class __Models(dict):
         except:
             return ""
 
-    def _get_suffix(self, comp):
+    def _get_value(self, comp):
         try:
             val = self._broker[comp]
             if plugins.is_rule(comp):
                 _type = val.__class__.__name__
                 if isinstance(val, plugins.make_response):
-                    color = Fore.RED
+                    color = "red"
+                elif isinstance(val, plugins._make_skip):
+                    color = "yellow"
+                elif isinstance(val, plugins.make_pass):
+                    color = "blue"
+                elif isinstance(val, plugins.make_info):
+                    color = "magenta"
                 else:
                     color = ""
-                return " {}[{}]".format(color, _type)
-            elif plugins.is_type(comp, plugins.condition):
-                if val is None:
-                    return " [None]"
-                return " [{}]".format(bool(val))
-            else:
-                return ""
+                return ansiformat(color, " [{}]".format(_type))
         except:
-            return ""
+            pass
+        return ""
 
     def _show_tree(self, node, indent="", depth=None):
         if depth is not None and depth == 0:
@@ -511,14 +494,14 @@ class __Models(dict):
         else:
             _type = self._get_type_name(node)
             name = dr.get_name(node)
-            suffix = self._get_suffix(node)
-            desc = "{c}{name} ({t}{s}{c})".format(c=color, t=_type, name=name, s=suffix)
-            print(indent + desc + Style.RESET_ALL)
+            suffix = self._get_value(node)
+            desc = ansiformat(color, "{n} ({t}".format(n=name, t=_type))
+            print(indent + desc + suffix + ansiformat(color, ")"))
 
         dashes = "\u250A\u254C\u254C\u254C\u254C\u254C"
         if node in self._broker.exceptions:
             for ex in self._broker.exceptions[node]:
-                print(indent + dashes + color + str(ex) + Style.RESET_ALL)
+                print(indent + dashes + ansiformat(color, str(ex)))
 
         deps = dr.get_dependencies(node)
         next_indent = indent + "\u250A   "
@@ -567,12 +550,12 @@ class __Models(dict):
             name = dr.get_name(comp)
             if match.test(name) and not ignore.test(name):
                 color = self._get_color(comp)
-                print(color + name + Style.RESET_ALL)
+                print(ansiformat(color, name))
                 exes = self._broker.exceptions[comp]
                 last = len(exes) - 1
                 for i, ex in enumerate(exes):
                     dashes = bottom_dashes if i == last else mid_dashes
-                    print(color + dashes + str(ex) + Style.RESET_ALL)
+                    print(ansiformat(color, dashes + str(ex)))
                 print()
 
     def _show_exceptions(self, comp):
@@ -622,22 +605,22 @@ class __Models(dict):
             if match.test(name) and not ignore.test(name):
                 color = self._get_color(comp)
                 _type = self._get_type_name(comp)
-                suffix = self._get_suffix(comp)
-                desc = "{c}{p} ({name}, {t}{s}{c})".format(c=color, p=p, t=_type, name=name, s=suffix)
-                print(desc + Style.RESET_ALL)
+                suffix = self._get_value(comp)
+                desc = ansiformat(color, "{p} ({n}, {t}".format(p=p, n=name, t=_type))
+                print(desc + suffix + ansiformat(color, ")"))
                 if comp in self._broker.exceptions:
                     exes = self._broker.exceptions[comp]
                     last = len(exes) - 1
                     for i, ex in enumerate(exes):
                         dashes = bottom_dashes if i == last else mid_dashes
-                        print(color + dashes + str(ex) + Style.RESET_ALL)
+                        print(ansiformat(color, dashes + str(ex)))
 
 
 def start_session(__path, change_directory=False, __coverage=False):
     with __create_new_broker(__path) as (__working_path, __broker):
         __cwd = os.path.abspath(os.curdir)
         __models = __get_available_models(__broker)
-        if __coverage and HAVE_COLORS:
+        if __coverage:
             from coverage import Coverage
             __cov = Coverage(check_preimported=True, cover_pylib=False)
         else:
@@ -681,7 +664,7 @@ def __parse_args():
 
     p.add_argument("-p", "--plugins", default="", help="Comma separated list of packages to load.")
     p.add_argument("-c", "--config", help="The insights configuration to apply.")
-    p.add_argument("--cov", action="store_true", help="Show code coverage when viewing source.")
+    p.add_argument("--no-coverage", action="store_true", help="Show code coverage when viewing source.")
     p.add_argument("--cd", action="store_true", help="Change into the expanded directory for analysis.")
     p.add_argument("--no-defaults", action="store_true", help="Don't load default components.")
     p.add_argument("-v", "--verbose", action="store_true", help="Global debug level logging.")
@@ -703,7 +686,7 @@ def main():
     load_packages(parse_plugins(args.plugins))
     __handle_config(args.config)
 
-    start_session(args.path, args.cd, __coverage=args.cov)
+    start_session(args.path, args.cd, __coverage=not args.no_coverage)
 
 
 if __name__ == "__main__":
