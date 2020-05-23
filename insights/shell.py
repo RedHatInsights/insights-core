@@ -360,6 +360,7 @@ class __Models(dict):
                 with open(path, "w") as f:
                     f.write(res)
                 ip.magic("edit -x {}".format(path))
+                print("Saved to {}".format(path))
         else:
             IPython.core.page.page(ip.pycolorize(res))
 
