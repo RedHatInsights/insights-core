@@ -704,7 +704,7 @@ def __parse_args():
 
     p.add_argument("-p", "--plugins", default="", help="Comma separated list of packages to load.")
     p.add_argument("-c", "--config", help="The insights configuration to apply.")
-    p.add_argument("--no-coverage", action="store_true", help="Show code coverage when viewing source.")
+    p.add_argument("--no-coverage", action="store_true", help="Don't show code coverage when viewing source.")
     p.add_argument("--cd", action="store_true", help="Change into the expanded directory for analysis.")
     p.add_argument("--no-defaults", action="store_true", help="Don't load default components.")
     p.add_argument("-v", "--verbose", action="store_true", help="Global debug level logging.")
