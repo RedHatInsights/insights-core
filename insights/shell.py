@@ -432,6 +432,12 @@ class __Models(dict):
         for name, comp in sorted(self._requested):
             print(ansiformat(self._get_color(comp), "{} {}".format(name, dr.get_name(comp))))
 
+    def reset_requested(self):
+        """ Reset requested state so you can work on a new rule. """
+        ip = IPython.get_ipython()
+        ip.history_manager.reset()
+        self._requested.clear()
+
     def show_source(self, comp):
         """
         Show source for the given module, class, or function. Also accepts
