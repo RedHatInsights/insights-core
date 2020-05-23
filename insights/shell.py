@@ -23,6 +23,7 @@ from insights.core import plugins
 from insights.core.context import HostContext
 from insights.core.spec_factory import ContentProvider, RegistryPoint
 from insights.formats import render
+from insights.formats.text import render_links
 
 Loader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
 
@@ -608,7 +609,9 @@ class __Models(dict):
                 kind = self._get_rule_value_kind(val)
 
                 if kind:
-                    results[kind][name] = render(comp, val)
+                    links = render_links(comp)
+                    body = render(comp, val)
+                    results[kind][name] = "\n".join([links, body])
 
         report = []
         for kind in ["info", "pass", "fail"]:
