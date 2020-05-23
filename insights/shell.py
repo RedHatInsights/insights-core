@@ -476,6 +476,8 @@ class __Models(dict):
             kind = "pass"
         elif isinstance(val, plugins.make_info):
             kind = "info"
+        elif isinstance(val, plugins._make_skip):
+            kind = "skip"
         else:
             kind = None
         return kind
