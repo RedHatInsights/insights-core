@@ -457,8 +457,7 @@ class __Models(dict):
                 width = len(str(len(src)))
                 template = "{0:>%s}" % width
                 results = []
-                for i, line in enumerate(src):
-                    i = i + 1
+                for i, line in enumerate(src, start=1):
                     prefix = template.format(i)
                     if i in runnable and i not in not_run:
                         color = "*green*"
@@ -492,7 +491,7 @@ class __Models(dict):
             kind = None
         return kind
 
-    def _get_value(self, comp):
+    def _get_rule_value(self, comp):
         try:
             val = self._broker[comp]
             if plugins.is_rule(comp):
@@ -514,7 +513,7 @@ class __Models(dict):
         else:
             _type = self._get_type_name(node)
             name = dr.get_name(node)
-            suffix = self._get_value(node)
+            suffix = self._get_rule_value(node)
             desc = ansiformat(color, "{n} ({t}".format(n=name, t=_type))
             print(indent + desc + suffix + ansiformat(color, ")"))
 
@@ -653,7 +652,7 @@ class __Models(dict):
             if match.test(name) and not ignore.test(name):
                 color = self._get_color(comp)
                 _type = self._get_type_name(comp)
-                suffix = self._get_value(comp)
+                suffix = self._get_rule_value(comp)
                 desc = ansiformat(color, "{p} ({n}, {t}".format(p=p, n=name, t=_type))
                 print(desc + suffix + ansiformat(color, ")"))
                 if comp in self._broker.exceptions:
