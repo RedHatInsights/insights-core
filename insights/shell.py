@@ -164,17 +164,19 @@ class __Models(dict):
             return ""
 
     def _dump_diagnostics(self, comp):
-        print("Dependency Tree")
-        print("===============")
-        self._show_tree(comp)
-        print()
-        print("Missing Dependencies")
-        print("====================")
-        self._show_missing(comp)
-        print()
-        print("Exceptions")
-        print("==========")
-        self._show_exceptions(comp)
+        results = []
+        results.append("Dependency Tree")
+        results.append("===============")
+        results.extend(self._show_tree(comp))
+        results.append("")
+        results.append("Missing Dependencies")
+        results.append("====================")
+        results.extend(self._show_missing(comp))
+        results.append("")
+        results.append("Exceptions")
+        results.append("==========")
+        results.extend(self._show_exceptions(comp))
+        IPython.core.page.page(os.linesep.join(results))
 
     def evaluate_all(self, match=None, ignore=None):
         """
@@ -371,31 +373,35 @@ class __Models(dict):
         return (match, ignore)
 
     def _show_missing(self, comp):
+        results = []
         try:
             req, alo = self._broker.missing_requirements[comp]
             name = dr.get_name(comp)
-            print(name)
-            print("-" * len(name))
+            results.append(name)
+            results.append("-" * len(name))
             if req:
-                print("Requires:")
+                results.append("Requires:")
                 for r in req:
-                    print("    {}".format(dr.get_name(r)))
+                    results.append("    {}".format(dr.get_name(r)))
             if alo:
                 if req:
-                    print()
-                print("Requires At Least One From Each List:")
+                    results.append("")
+                results.append("Requires At Least One From Each List:")
                 for r in alo:
-                    print("[")
+                    results.append("[")
                     for i in r:
-                        print("    {}".format(dr.get_name(i)))
-                    print("]")
+                        results.append("    {}".format(dr.get_name(i)))
+                    results.append("]")
         except:
             pass
+        return results
 
     def show_requested(self):
         """ Show the components you've worked with so far. """
+        results = []
         for name, comp in sorted(self._requested):
-            print(ansiformat(self._get_color(comp), "{} {}".format(name, dr.get_name(comp))))
+            results.append(ansiformat(self._get_color(comp), "{} {}".format(name, dr.get_name(comp))))
+        IPython.core.page.page(os.linesep.join(results))
 
     def reset_requested(self):
         """ Reset requested state so you can work on a new rule. """
@@ -652,6 +658,7 @@ class __Models(dict):
         match, ignore = self._desugar_match_ignore(match, ignore)
         mid_dashes = "\u250A\u254C\u254C"
         bottom_dashes = "\u2514\u254C\u254C"
+        results = []
         for p in sorted(self, key=str.lower):
             comp = self[p]
             name = dr.get_name(comp)
@@ -660,13 +667,14 @@ class __Models(dict):
                 _type = self._get_type_name(comp)
                 suffix = self._get_rule_value(comp)
                 desc = ansiformat(color, "{p} ({n}, {t}".format(p=p, n=name, t=_type))
-                print(desc + suffix + ansiformat(color, ")"))
+                results.append(desc + suffix + ansiformat(color, ")"))
                 if comp in self._broker.exceptions:
                     exes = self._broker.exceptions[comp]
                     last = len(exes) - 1
                     for i, ex in enumerate(exes):
                         dashes = bottom_dashes if i == last else mid_dashes
-                        print(ansiformat(color, dashes + str(ex)))
+                        results.append(ansiformat(color, dashes + str(ex)))
+        IPython.core.page.page(os.linesep.join(results))
 
 
 def start_session(__path, change_directory=False, __coverage=None):
