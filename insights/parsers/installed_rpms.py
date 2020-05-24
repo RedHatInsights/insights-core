@@ -144,7 +144,7 @@ here https://pdc.fedoraproject.org/rest_api/v1/arches/.
 """
 
 
-class Version(str):
+class RpmString(str):
     """ A string that implements proper rpm version comparison. """
     def __lt__(self, other):
         return _rpm_vercmp(self, other) < 0
@@ -153,26 +153,26 @@ class Version(str):
         return not self == other
 
     def __gt__(self, other):
-        return Version(other).__lt__(self)
+        return RpmString(other).__lt__(self)
 
     def __ge__(self, other):
         return not self.__lt__(other)
 
     def __le__(self, other):
-        return not Version(other).__lt__(self)
+        return not RpmString(other).__lt__(self)
 
 
-# ensure Version plays nice with yaml
+# ensure RpmString plays nice with yaml
 try:
-    def Version_representer(dumper, data):
+    def RpmString_representer(dumper, data):
         # https://yaml.org/type/str.html
         return dumper.represent_scalar("tag:yaml.org,2002:str", str(data))
 
     import yaml
 
-    yaml.add_representer(Version, Version_representer, Dumper=yaml.SafeDumper)
+    yaml.add_representer(RpmString, RpmString_representer, Dumper=yaml.SafeDumper)
     try:
-        yaml.add_representer(Version, Version_representer, Dumper=yaml.CSafeDumper)
+        yaml.add_representer(RpmString, RpmString_representer, Dumper=yaml.CSafeDumper)
     except:
         pass
 except:
@@ -407,7 +407,10 @@ class InstalledRpm(object):
             setattr(self, k, v)
 
         if self.version is not None:
-            self.version = Version(self.version)
+            self.version = RpmString(self.version)
+
+        if self.release is not None:
+            self.release = RpmString(self.release)
 
         self.epoch = data['epoch'] if 'epoch' in data and data['epoch'] != '(none)' else '0'
         _gpg_key_pos = data.get('sigpgp', data.get('rsaheader', data.get('pgpsig_short', data.get('pgpsig', data.get('vendor', '')))))
