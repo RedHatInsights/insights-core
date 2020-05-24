@@ -5,6 +5,7 @@ import inspect
 import os
 import re
 import six
+import traceback
 import yaml
 
 from collections import defaultdict
@@ -27,7 +28,7 @@ from insights.formats.text import render_links
 
 Loader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
 
-RULE_COLORS = {"fail": "red", "pass": "blue", "info": "magenta", "skip": "yellow"}
+RULE_COLORS = {"fail": "brightred", "pass": "blue", "info": "magenta", "skip": "yellow"}
 
 
 @contextmanager
@@ -156,7 +157,7 @@ class __Models(dict):
                 return "yellow"
             return "green"
         elif comp in self._broker.exceptions:
-            return "red"
+            return "brightred"
         elif comp in self._broker.missing_requirements:
             return "yellow"
         else:
@@ -174,15 +175,6 @@ class __Models(dict):
         print("Exceptions")
         print("==========")
         self._show_exceptions(comp)
-
-    @contextmanager
-    def _coverage_tracking(self):
-        if self._cov:
-            self._cov.start()
-            yield
-            self._cov.stop()
-        else:
-            yield
 
     def evaluate_all(self, match=None, ignore=None):
         """
@@ -208,8 +200,7 @@ class __Models(dict):
         if not tasks:
             return
 
-        with self._coverage_tracking():
-            dr.run(tasks, broker=self._broker)
+        dr.run(tasks, broker=self._broker)
         self.find(match, ignore)
 
     def evaluate(self, name):
@@ -236,8 +227,7 @@ class __Models(dict):
             self._dump_diagnostics(comp)
             return
 
-        with self._coverage_tracking():
-            val = dr.run(comp, broker=self._broker).get(comp)
+        val = dr.run(comp, broker=self._broker).get(comp)
 
         if comp not in self._broker:
             if comp in self._broker.exceptions or comp in self._broker.missing_requirements:
@@ -402,31 +392,6 @@ class __Models(dict):
         except:
             pass
 
-    def _show_datasource(self, d, v, indent=""):
-        try:
-            filtered = "filtered" if dr.DELEGATES[d].filterable else "unfiltered"
-            mode = "bytes" if dr.DELEGATES[d].raw else "lines"
-        except:
-            filtered = "unknown"
-            mode = "unknown"
-
-        desc = "{n} ({f} / {m})".format(n=dr.get_name(d), f=filtered, m=mode)
-        color = self._get_color(d)
-
-        print(indent + ansiformat(color, desc))
-
-        if not v:
-            return
-        if not isinstance(v, list):
-            v = [v]
-
-        for i in v:
-            if isinstance(i, ContentProvider):
-                s = ansiformat(color, str(i))
-            else:
-                s = ansiformat(color, "<intermediate value>")
-            print("{}\u250A\u254C\u254C\u254C\u254C\u254C{}".format(indent, s))
-
     def show_requested(self):
         """ Show the components you've worked with so far. """
         for name, comp in sorted(self._requested):
@@ -434,8 +399,7 @@ class __Models(dict):
 
     def reset_requested(self):
         """ Reset requested state so you can work on a new rule. """
-        ip = IPython.get_ipython()
-        ip.history_manager.reset()
+        IPython.get_ipython().history_manager.reset()
         self._requested.clear()
 
     def show_source(self, comp):
@@ -447,8 +411,7 @@ class __Models(dict):
         try:
             if isinstance(comp, six.string_types):
                 comp = self.get(comp) or dr.get_component(comp) or importlib.import_module(comp)
-            if comp in dr.DELEGATES:
-                comp = inspect.getmodule(comp)
+            comp = inspect.getmodule(comp)
             ip = IPython.get_ipython()
             if self._cov:
                 path, runnable, excluded, not_run, _ = self._cov.analysis2(comp)
@@ -457,10 +420,13 @@ class __Models(dict):
                 width = len(str(len(src)))
                 template = "{0:>%s}" % width
                 results = []
+                source_line = "{} {}".format(ansiformat("*red*", "Source: "), os.path.realpath(path))
+                results.append(source_line)
+                results.append("")
                 for i, line in enumerate(src, start=1):
                     prefix = template.format(i)
                     if i in runnable and i not in not_run:
-                        color = "*green*"
+                        color = "*brightgreen*"
                     else:
                         color = "gray"
                     results.append("{} {}".format(ansiformat(color, prefix), line))
@@ -468,7 +434,7 @@ class __Models(dict):
             else:
                 ip.inspector.pinfo(comp, detail_level=1)
         except:
-            pass
+            traceback.print_exc()
 
     def _get_type_name(self, comp):
         try:
@@ -487,8 +453,10 @@ class __Models(dict):
             kind = "info"
         elif isinstance(val, plugins._make_skip):
             kind = "skip"
+        elif isinstance(val, plugins.Response):
+            kind = val.response_type or ""
         else:
-            kind = None
+            kind = ""
         return kind
 
     def _get_rule_value(self, comp):
@@ -503,29 +471,58 @@ class __Models(dict):
             pass
         return ""
 
+    def _show_datasource(self, d, v, indent=""):
+        try:
+            filtered = "filtered" if dr.DELEGATES[d].filterable else "unfiltered"
+            mode = "bytes" if dr.DELEGATES[d].raw else "lines"
+        except:
+            filtered = "unknown"
+            mode = "unknown"
+
+        desc = "{n} ({f} / {m})".format(n=dr.get_name(d), f=filtered, m=mode)
+        color = self._get_color(d)
+
+        results = []
+        results.append(indent + ansiformat(color, desc))
+
+        if not v:
+            return results
+        if not isinstance(v, list):
+            v = [v]
+
+        for i in v:
+            if isinstance(i, ContentProvider):
+                s = ansiformat(color, str(i))
+            else:
+                s = ansiformat(color, "<intermediate value>")
+            results.append("{}\u250A\u254C\u254C\u254C\u254C\u254C{}".format(indent, s))
+        return results
+
     def _show_tree(self, node, indent="", depth=None):
         if depth is not None and depth == 0:
-            return
+            return []
 
+        results = []
         color = self._get_color(node)
         if plugins.is_datasource(node):
-            self._show_datasource(node, self._broker.get(node), indent=indent)
+            results.extend(self._show_datasource(node, self._broker.get(node), indent=indent))
         else:
             _type = self._get_type_name(node)
             name = dr.get_name(node)
             suffix = self._get_rule_value(node)
             desc = ansiformat(color, "{n} ({t}".format(n=name, t=_type))
-            print(indent + desc + suffix + ansiformat(color, ")"))
+            results.append(indent + desc + suffix + ansiformat(color, ")"))
 
         dashes = "\u250A\u254C\u254C\u254C\u254C\u254C"
         if node in self._broker.exceptions:
             for ex in self._broker.exceptions[node]:
-                print(indent + dashes + ansiformat(color, str(ex)))
+                results.append(indent + dashes + ansiformat(color, str(ex)))
 
         deps = dr.get_dependencies(node)
         next_indent = indent + "\u250A   "
         for d in deps:
-            self._show_tree(d, next_indent, depth=depth if depth is None else depth - 1)
+            results.extend(self._show_tree(d, next_indent, depth=depth if depth is None else depth - 1))
+        return results
 
     def show_trees(self, match=None, ignore="spec", depth=None):
         """
@@ -545,10 +542,12 @@ class __Models(dict):
             if match.test(name) and not ignore.test(name):
                 graph[name].append(c)
 
+        results = []
         for name in sorted(graph):
             for c in graph[name]:
-                self._show_tree(c, depth=depth)
-                print()
+                results.extend(self._show_tree(c, depth=depth))
+                results.append("")
+        IPython.core.page.page("\n".join(results))
 
     def show_failed(self, match=None, ignore="spec"):
         """
@@ -565,26 +564,29 @@ class __Models(dict):
 
         mid_dashes = "\u250A\u254C\u254C"
         bottom_dashes = "\u2514\u254C\u254C"
+        results = []
         for comp in sorted(self._broker.exceptions, key=dr.get_name):
             name = dr.get_name(comp)
             if match.test(name) and not ignore.test(name):
                 color = self._get_color(comp)
-                print(ansiformat(color, name))
+                results.append(ansiformat(color, name))
                 exes = self._broker.exceptions[comp]
                 last = len(exes) - 1
                 for i, ex in enumerate(exes):
                     dashes = bottom_dashes if i == last else mid_dashes
-                    print(ansiformat(color, dashes + str(ex)))
-                print()
+                    results.append(ansiformat(color, dashes + str(ex)))
+                results.append("")
+        IPython.core.page.page("\n".join(results))
 
     def _show_exceptions(self, comp):
         name = dr.get_name(comp)
-        print(name)
-        print("-" * len(name))
+        results = [ansiformat("*brightred*", name)]
+        results.append(ansiformat("*brightred*", "-" * len(name)))
         for e in self._broker.exceptions.get(comp, []):
             t = self._broker.tracebacks.get(e)
             if t:
-                print(t)
+                results.append(t)
+        return results
 
     def show_exceptions(self, match=None, ignore="spec"):
         """
@@ -599,10 +601,12 @@ class __Models(dict):
         """
         match, ignore = self._desugar_match_ignore(match, ignore)
 
+        results = []
         for comp in sorted(self._broker.exceptions, key=dr.get_name):
             name = dr.get_name(comp)
             if match.test(name) and not ignore.test(name):
-                self._show_exceptions(comp)
+                results.extend(self._show_exceptions(comp))
+        IPython.core.page.page("\n".join(results))
 
     def show_rule_report(self, match=None, ignore=None):
         """
@@ -617,9 +621,9 @@ class __Models(dict):
                 kind = self._get_rule_value_kind(val)
 
                 if kind:
-                    links = render_links(comp)
                     body = render(comp, val)
-                    results[kind][name] = "\n".join([links, body])
+                    links = render_links(comp)
+                    results[kind][name] = "\n".join([body, "", links])
 
         report = []
         for kind in ["info", "pass", "fail"]:
@@ -663,17 +667,12 @@ class __Models(dict):
                         print(ansiformat(color, dashes + str(ex)))
 
 
-def start_session(__path, change_directory=False, __coverage=False):
+def start_session(__path, change_directory=False, __coverage=None):
     with __create_new_broker(__path) as (__working_path, __broker):
         __cwd = os.path.abspath(os.curdir)
         __models = __get_available_models(__broker)
-        if __coverage:
-            from coverage import Coverage
-            __cov = Coverage(check_preimported=True, cover_pylib=False)
-        else:
-            __cov = None
 
-        models = __Models(__broker, __models, __cwd, __cov)
+        models = __Models(__broker, __models, __cwd, __coverage)
         if change_directory:
             os.chdir(__working_path)
 
@@ -687,8 +686,6 @@ def start_session(__path, change_directory=False, __coverage=False):
         __ns.update(locals())
         IPython.start_ipython([], user_ns=__ns, config=__cfg)
 
-        if __cov:
-            __cov.erase()
         # TODO: we could automatically save the session here
         # see Models.make_rule
         if change_directory:
@@ -726,6 +723,12 @@ def main():
     args = __parse_args()
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.ERROR)
 
+    cov = None
+    if not args.no_coverage:
+        from coverage import Coverage
+        cov = Coverage(cover_pylib=False)
+        cov.start()
+
     if not args.no_defaults:
         load_default_plugins()
         dr.load_components("insights.parsers", "insights.combiners")
@@ -733,7 +736,10 @@ def main():
     load_packages(parse_plugins(args.plugins))
     __handle_config(args.config)
 
-    start_session(args.path, args.cd, __coverage=not args.no_coverage)
+    start_session(args.path, args.cd, __coverage=cov)
+    if cov:
+        cov.stop()
+        cov.erase()
 
 
 if __name__ == "__main__":
