@@ -324,17 +324,17 @@ class __Models(dict):
         if filters:
             imports.append("from insights.core.filters import add_filter")
 
-        filter_stanza = "\n".join(filters)
-        import_stanza = "\n".join(imports)
+        filter_stanza = os.linesep.join(filters)
+        import_stanza = os.linesep.join(imports)
         decorator = "@rule({})".format(", ".join(model_names))
         func_decl = "def report({}):".format(", ".join(var_names))
-        body = "\n".join(["    " + x for x in lines]) if lines else "    pass"
+        body = os.linesep.join(["    " + x for x in lines]) if lines else "    pass"
 
         res = import_stanza
         if filter_stanza:
-            res += "\n\n" + filter_stanza
+            res += (os.linesep * 2) + filter_stanza
 
-        res += "\n\n\n" + decorator + "\n" + func_decl + "\n" + body
+        res += (os.linesep * 3) + decorator + os.linesep + func_decl + os.linesep + body
 
         if path:
             if not path.startswith("/"):
@@ -420,8 +420,10 @@ class __Models(dict):
                 width = len(str(len(src)))
                 template = "{0:>%s}" % width
                 results = []
-                source_line = "{} {}".format(ansiformat("*red*", "Source: "), os.path.realpath(path))
-                results.append(source_line)
+                file_line = "{} {}".format(ansiformat("red", "File:"), os.path.realpath(path))
+                explain_line = "{} numbered lines have executed.".format(ansiformat("*brightgreen*", "Green"))
+                results.append(file_line)
+                results.append(explain_line)
                 results.append("")
                 for i, line in enumerate(src, start=1):
                     prefix = template.format(i)
@@ -430,7 +432,7 @@ class __Models(dict):
                     else:
                         color = "gray"
                     results.append("{} {}".format(ansiformat(color, prefix), line))
-                IPython.core.page.page("\n".join(results))
+                IPython.core.page.page(os.linesep.join(results))
             else:
                 ip.inspector.pinfo(comp, detail_level=1)
         except:
@@ -547,7 +549,7 @@ class __Models(dict):
             for c in graph[name]:
                 results.extend(self._show_tree(c, depth=depth))
                 results.append("")
-        IPython.core.page.page("\n".join(results))
+        IPython.core.page.page(os.linesep.join(results))
 
     def show_failed(self, match=None, ignore="spec"):
         """
@@ -576,7 +578,7 @@ class __Models(dict):
                     dashes = bottom_dashes if i == last else mid_dashes
                     results.append(ansiformat(color, dashes + str(ex)))
                 results.append("")
-        IPython.core.page.page("\n".join(results))
+        IPython.core.page.page(os.linesep.join(results))
 
     def _show_exceptions(self, comp):
         name = dr.get_name(comp)
@@ -606,7 +608,7 @@ class __Models(dict):
             name = dr.get_name(comp)
             if match.test(name) and not ignore.test(name):
                 results.extend(self._show_exceptions(comp))
-        IPython.core.page.page("\n".join(results))
+        IPython.core.page.page(os.linesep.join(results))
 
     def show_rule_report(self, match=None, ignore=None):
         """
@@ -623,7 +625,7 @@ class __Models(dict):
                 if kind:
                     body = render(comp, val)
                     links = render_links(comp)
-                    results[kind][name] = "\n".join([body, "", links])
+                    results[kind][name] = os.linesep.join([body, "", links])
 
         report = []
         for kind in ["info", "pass", "fail"]:
@@ -634,7 +636,7 @@ class __Models(dict):
                 report.append(ansiformat(color, "-" * len(name)))
                 report.append(hits[name])
                 report.append("")
-        IPython.core.page.page("\n".join(report))
+        IPython.core.page.page(os.linesep.join(report))
 
     def find(self, match=None, ignore=None):
         """
