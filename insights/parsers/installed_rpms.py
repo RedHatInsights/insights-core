@@ -77,8 +77,9 @@ import warnings
 
 from ..util import rsplit
 from .. import parser, get_active_lines, CommandParser
-from .rpm_vercmp import rpm_version_compare
+from .rpm_vercmp import rpm_version_compare, _rpm_vercmp
 from insights.specs import Specs
+
 
 # This list of architectures is taken from PDC (Product Definition Center):
 # https://pdc.fedoraproject.org/rest_api/v1/arches/
@@ -141,6 +142,41 @@ KNOWN_ARCHITECTURES = [
 This list is taken from the PDC (Product Definition Center) available
 here https://pdc.fedoraproject.org/rest_api/v1/arches/.
 """
+
+
+class Version(str):
+    """ A string that implements proper rpm version comparison. """
+    def __lt__(self, other):
+        return _rpm_vercmp(self, other) < 0
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __gt__(self, other):
+        return Version(other).__lt__(self)
+
+    def __ge__(self, other):
+        return not self.__lt__(other)
+
+    def __le__(self, other):
+        return not Version(other).__lt__(self)
+
+
+# ensure Version plays nice with yaml
+try:
+    def Version_representer(dumper, data):
+        # https://yaml.org/type/str.html
+        return dumper.represent_scalar("tag:yaml.org,2002:str", str(data))
+
+    import yaml
+
+    yaml.add_representer(Version, Version_representer, Dumper=yaml.SafeDumper)
+    try:
+        yaml.add_representer(Version, Version_representer, Dumper=yaml.CSafeDumper)
+    except:
+        pass
+except:
+    pass
 
 
 class RpmList(object):
@@ -369,6 +405,10 @@ class InstalledRpm(object):
 
         for k, v in data.items():
             setattr(self, k, v)
+
+        if self.version is not None:
+            self.version = Version(self.version)
+
         self.epoch = data['epoch'] if 'epoch' in data and data['epoch'] != '(none)' else '0'
         _gpg_key_pos = data.get('sigpgp', data.get('rsaheader', data.get('pgpsig_short', data.get('pgpsig', data.get('vendor', '')))))
         if _gpg_key_pos:
