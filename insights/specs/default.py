@@ -199,6 +199,7 @@ class DefaultSpecs(Specs):
     cobbler_settings = first_file(["/etc/cobbler/settings", "/conf/cobbler/settings"])
     cobbler_modules_conf = first_file(["/etc/cobbler/modules.conf", "/conf/cobbler/modules.conf"])
     corosync = simple_file("/etc/sysconfig/corosync")
+
     @datasource([IsRhel7, IsRhel8])
     def corosync_cmapctl_cmd_list(broker):
         if broker.get(IsRhel7):
