@@ -19,7 +19,17 @@ from insights.parsr.query import *  # noqa
 from insights.parsr.query import eq, matches, make_child_query as q  # noqa
 from insights.parsr.query.boolean import FALSE, TRUE
 
-from insights import apply_configs, create_context, datasource, dr, extract, load_default_plugins, load_packages, parse_plugins
+from insights import (
+    apply_configs,
+    apply_default_enabled,
+    create_context,
+    datasource,
+    dr,
+    extract,
+    load_default_plugins,
+    load_packages,
+    parse_plugins,
+)
 from insights.core import plugins
 from insights.core.context import HostContext
 from insights.core.spec_factory import ContentProvider, RegistryPoint
@@ -77,8 +87,12 @@ def __get_available_models(broker):
             if dr.DELEGATES[comp].get_missing_dependencies(state):
                 continue
 
-            if plugins.is_type(comp, (plugins.rule, plugins.condition, plugins.incident)):
-                name = "_".join([dr.get_base_module_name(comp), dr.get_simple_name(comp)])
+            if plugins.is_type(
+                comp, (plugins.rule, plugins.condition, plugins.incident)
+            ):
+                name = "_".join(
+                    [dr.get_base_module_name(comp), dr.get_simple_name(comp)]
+                )
             else:
                 name = dr.get_simple_name(comp)
 
@@ -133,6 +147,7 @@ class __Models(dict):
         ┊   ┊   ┊   insights.specs.default.DefaultSpecs.host_installed_rpms (unfiltered / lines)
         ┊   ┊   ┊   ┊   insights.core.context.HostContext ()
     """
+
     def __init__(self, broker, models, cwd, cov):
         self._requested = set()
         self._broker = broker
@@ -153,7 +168,10 @@ class __Models(dict):
 
     def _get_color(self, comp):
         if comp in self._broker:
-            if plugins.is_type(comp, plugins.rule) and self._broker[comp].get("type") == "skip":
+            if (
+                plugins.is_type(comp, plugins.rule)
+                and self._broker[comp].get("type") == "skip"
+            ):
                 return "yellow"
             return "green"
         elif comp in self._broker.exceptions:
@@ -194,9 +212,13 @@ class __Models(dict):
         for c in self.values():
             name = dr.get_name(c)
             if match.test(name) and not ignore.test(name):
-                if not any([c in self._broker.instances,
-                            c in self._broker.exceptions,
-                            c in self._broker.missing_requirements]):
+                if not any(
+                    [
+                        c in self._broker.instances,
+                        c in self._broker.exceptions,
+                        c in self._broker.missing_requirements,
+                    ]
+                ):
                     tasks.append(c)
 
         if not tasks:
@@ -232,7 +254,10 @@ class __Models(dict):
         val = dr.run(comp, broker=self._broker).get(comp)
 
         if comp not in self._broker:
-            if comp in self._broker.exceptions or comp in self._broker.missing_requirements:
+            if (
+                comp in self._broker.exceptions
+                or comp in self._broker.missing_requirements
+            ):
                 self._dump_diagnostics(comp)
             else:
                 print("{} chose to skip.".format(dr.get_name(comp)))
@@ -254,6 +279,7 @@ class __Models(dict):
                 "1 3-5 7" gets line 1, lines 3 through 5, and line 7.
         """
         import IPython
+
         ip = IPython.get_ipython()
         ignore = [
             r"=.*models\.",
@@ -261,7 +287,7 @@ class __Models(dict):
             r"make_rule",
             r"models\.(show|find).*",
             r".*\?$",
-            r"^(clear|pwd|cd *.*|ll|ls)$"
+            r"^(clear|pwd|cd *.*|ll|ls)$",
         ]
 
         if pick:
@@ -297,7 +323,7 @@ class __Models(dict):
         imports = [
             "from insights import rule, make_fail, make_info, make_pass  # noqa",
             "from insights.parsr.query import *  # noqa",
-            ""
+            "",
         ]
 
         for _, c in requested:
@@ -345,7 +371,9 @@ class __Models(dict):
                     path = os.path.join(self._cwd, path)
 
             if os.path.exists(path) and not overwrite:
-                print("{} already exists. Use overwrite=True to overwrite.".format(path))
+                print(
+                    "{} already exists. Use overwrite=True to overwrite.".format(path)
+                )
                 return
 
             if not os.path.exists(path) or overwrite:
@@ -400,7 +428,11 @@ class __Models(dict):
         """ Show the components you've worked with so far. """
         results = []
         for name, comp in sorted(self._requested):
-            results.append(ansiformat(self._get_color(comp), "{} {}".format(name, dr.get_name(comp))))
+            results.append(
+                ansiformat(
+                    self._get_color(comp), "{} {}".format(name, dr.get_name(comp))
+                )
+            )
         IPython.core.page.page(os.linesep.join(results))
 
     def reset_requested(self):
@@ -416,7 +448,11 @@ class __Models(dict):
         """
         try:
             if isinstance(comp, six.string_types):
-                comp = self.get(comp) or dr.get_component(comp) or importlib.import_module(comp)
+                comp = (
+                    self.get(comp)
+                    or dr.get_component(comp)
+                    or importlib.import_module(comp)
+                )
             comp = inspect.getmodule(comp)
             ip = IPython.get_ipython()
             if self._cov:
@@ -426,8 +462,12 @@ class __Models(dict):
                 width = len(str(len(src)))
                 template = "{0:>%s}" % width
                 results = []
-                file_line = "{} {}".format(ansiformat("red", "File:"), os.path.realpath(path))
-                explain_line = "{} numbered lines have executed.".format(ansiformat("*brightgreen*", "Green"))
+                file_line = "{} {}".format(
+                    ansiformat("red", "File:"), os.path.realpath(path)
+                )
+                explain_line = "{} numbered lines have executed.".format(
+                    ansiformat("*brightgreen*", "Green")
+                )
                 results.append(file_line)
                 results.append(explain_line)
                 results.append("")
@@ -513,7 +553,9 @@ class __Models(dict):
         results = []
         color = self._get_color(node)
         if plugins.is_datasource(node):
-            results.extend(self._show_datasource(node, self._broker.get(node), indent=indent))
+            results.extend(
+                self._show_datasource(node, self._broker.get(node), indent=indent)
+            )
         else:
             _type = self._get_type_name(node)
             name = dr.get_name(node)
@@ -529,7 +571,11 @@ class __Models(dict):
         deps = dr.get_dependencies(node)
         next_indent = indent + "\u250A   "
         for d in deps:
-            results.extend(self._show_tree(d, next_indent, depth=depth if depth is None else depth - 1))
+            results.extend(
+                self._show_tree(
+                    d, next_indent, depth=depth if depth is None else depth - 1
+                )
+            )
         return results
 
     def show_trees(self, match=None, ignore="spec", depth=None):
@@ -705,7 +751,10 @@ def start_session(__path, change_directory=False, __coverage=None):
 def __handle_config(config):
     if config:
         with open(config) as f:
-            apply_configs(yaml.load(f, Loader=Loader))
+            cfg = yaml.load(f, Loader=Loader)
+            load_packages(cfg.get("packages", []))
+            apply_default_enabled(cfg)
+            apply_configs(cfg)
 
 
 def __parse_args():
@@ -716,12 +765,26 @@ def __parse_args():
     """.strip()
     p = argparse.ArgumentParser(description=desc, epilog=epilog)
 
-    p.add_argument("-p", "--plugins", default="", help="Comma separated list of packages to load.")
+    p.add_argument(
+        "-p", "--plugins", default="", help="Comma separated list of packages to load."
+    )
     p.add_argument("-c", "--config", help="The insights configuration to apply.")
-    p.add_argument("--no-coverage", action="store_true", help="Don't show code coverage when viewing source.")
-    p.add_argument("--cd", action="store_true", help="Change into the expanded directory for analysis.")
-    p.add_argument("--no-defaults", action="store_true", help="Don't load default components.")
-    p.add_argument("-v", "--verbose", action="store_true", help="Global debug level logging.")
+    p.add_argument(
+        "--no-coverage",
+        action="store_true",
+        help="Don't show code coverage when viewing source.",
+    )
+    p.add_argument(
+        "--cd",
+        action="store_true",
+        help="Change into the expanded directory for analysis.",
+    )
+    p.add_argument(
+        "--no-defaults", action="store_true", help="Don't load default components."
+    )
+    p.add_argument(
+        "-v", "--verbose", action="store_true", help="Global debug level logging."
+    )
 
     path_desc = "Archive or path to analyze. Leave off to target the current system."
     p.add_argument("path", nargs="?", help=path_desc)
@@ -736,6 +799,7 @@ def main():
     cov = None
     if not args.no_coverage:
         from coverage import Coverage
+
         cov = Coverage(cover_pylib=False)
         cov.start()
 
