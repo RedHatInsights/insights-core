@@ -168,10 +168,7 @@ class __Models(dict):
 
     def _get_color(self, comp):
         if comp in self._broker:
-            if (
-                plugins.is_type(comp, plugins.rule)
-                and self._broker[comp].get("type") == "skip"
-            ):
+            if plugins.is_type(comp, plugins.rule) and self._broker[comp].get("type") == "skip":
                 return "yellow"
             return "green"
         elif comp in self._broker.exceptions:
@@ -254,10 +251,7 @@ class __Models(dict):
         val = dr.run(comp, broker=self._broker).get(comp)
 
         if comp not in self._broker:
-            if (
-                comp in self._broker.exceptions
-                or comp in self._broker.missing_requirements
-            ):
+            if comp in self._broker.exceptions or comp in self._broker.missing_requirements:
                 self._dump_diagnostics(comp)
             else:
                 print("{} chose to skip.".format(dr.get_name(comp)))
@@ -448,11 +442,7 @@ class __Models(dict):
         """
         try:
             if isinstance(comp, six.string_types):
-                comp = (
-                    self.get(comp)
-                    or dr.get_component(comp)
-                    or importlib.import_module(comp)
-                )
+                comp = self.get(comp) or dr.get_component(comp) or importlib.import_module(comp)
             comp = inspect.getmodule(comp)
             ip = IPython.get_ipython()
             if self._cov:
