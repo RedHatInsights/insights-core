@@ -455,7 +455,7 @@ class __Models(dict):
                 file_line = "{} {}".format(
                     ansiformat("red", "File:"), os.path.realpath(path)
                 )
-                explain_line = "{} numbered lines have executed.".format(
+                explain_line = "{} numbered lines have executed. python standard libs are excluded.".format(
                     ansiformat("*brightgreen*", "Green")
                 )
                 results.append(file_line)
