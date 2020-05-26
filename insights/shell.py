@@ -546,7 +546,7 @@ class __Models(dict):
             results.append("{}\u250A\u254C\u254C\u254C\u254C\u254C{}".format(indent, s))
         return results
 
-    def _show_tree(self, node, indent="", depth=None):
+    def _show_tree(self, node, indent="", depth=None, dep_getter=dr.get_dependencies):
         if depth is not None and depth == 0:
             return []
 
@@ -568,17 +568,17 @@ class __Models(dict):
             for ex in self._broker.exceptions[node]:
                 results.append(indent + dashes + ansiformat(color, str(ex)))
 
-        deps = dr.get_dependencies(node)
+        deps = dep_getter(node)
         next_indent = indent + "\u250A   "
         for d in deps:
             results.extend(
                 self._show_tree(
-                    d, next_indent, depth=depth if depth is None else depth - 1
+                    d, next_indent, depth=depth if depth is None else depth - 1, dep_getter=dep_getter
                 )
             )
         return results
 
-    def show_trees(self, match=None, ignore="spec", depth=None):
+    def show_trees(self, match=None, ignore="spec", depth=None, toward_dependents=False):
         """
         Show dependency trees of any components whether they're available or not.
 
@@ -587,8 +587,10 @@ class __Models(dict):
                 the fully qualified name of components to keep.
             ignore (str, optional): regular expression for searching against
                 the fully qualified name of components to ignore.
+            depth (int, optional): how deep into the tree to explore.
         """
         match, ignore = self._desugar_match_ignore(match, ignore)
+        dep_getter = dr.get_dependents if toward_dependents else dr.get_dependencies
 
         graph = defaultdict(list)
         for c in dr.DELEGATES:
@@ -599,7 +601,7 @@ class __Models(dict):
         results = []
         for name in sorted(graph):
             for c in graph[name]:
-                results.extend(self._show_tree(c, depth=depth))
+                results.extend(self._show_tree(c, depth=depth, dep_getter=dep_getter))
                 results.append("")
         IPython.core.page.page(os.linesep.join(results))
 
