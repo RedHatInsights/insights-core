@@ -29,7 +29,7 @@ from insights.parsers.dnf_module import DnfModuleList
 from insights.combiners.cloud_provider import CloudProvider
 from insights.combiners.satellite_version import SatelliteVersion
 from insights.combiners.services import Services
-from insights.components.rhel_version import IsRhel8
+from insights.components.rhel_version import IsRhel8, IsRhel7
 from insights.specs import Specs
 
 
@@ -199,12 +199,15 @@ class DefaultSpecs(Specs):
     cobbler_settings = first_file(["/etc/cobbler/settings", "/conf/cobbler/settings"])
     cobbler_modules_conf = first_file(["/etc/cobbler/modules.conf", "/conf/cobbler/modules.conf"])
     corosync = simple_file("/etc/sysconfig/corosync")
-    corosync_cmapctl = foreach_execute(
-        [
-            "/usr/sbin/corosync-cmapctl",
-            '/usr/sbin/corosync-cmapctl -m stats "stats.schedmiss."',
-            '/usr/sbin/corosync-cmapctl -C schedmiss'
-        ], "%s")
+
+    @datasource([IsRhel7, IsRhel8])
+    def corosync_cmapctl_cmd_list(broker):
+        if broker.get(IsRhel7):
+            return ["/usr/sbin/corosync-cmapctl", 'corosync-cmapctl -d runtime.schedmiss.timestamp', 'corosync-cmapctl -d runtime.schedmiss.delay']
+        if broker.get(IsRhel8):
+            return ["/usr/sbin/corosync-cmapctl", '/usr/sbin/corosync-cmapctl -m stats', '/usr/sbin/corosync-cmapctl -C schedmiss']
+        raise SkipComponent()
+    corosync_cmapctl = foreach_execute(corosync_cmapctl_cmd_list, "%s")
     corosync_conf = simple_file("/etc/corosync/corosync.conf")
     cpu_cores = glob_file("sys/devices/system/cpu/cpu[0-9]*/online")
     cpu_siblings = glob_file("sys/devices/system/cpu/cpu[0-9]*/topology/thread_siblings_list")
