@@ -44,10 +44,6 @@ class CorosyncCmapctl(CommandParser, dict):
     def __init__(self, context):
         super(CorosyncCmapctl, self).__init__(context, extra_bad_lines=['corosync-cmapctl: invalid option'])
 
-    def get_stats_schedmiss(self):
-        """ Return a dict of the stats.schedmiss info """
-        return dict((key, value) for key, value in self.items() if key.startswith('stats.schedmiss'))
-
     def parse_content(self, content):
         if not content:
             raise SkipException
