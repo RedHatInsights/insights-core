@@ -578,6 +578,8 @@ class __Models(dict):
             ignore (str, optional): regular expression for searching against
                 the fully qualified name of components to ignore.
             depth (int, optional): how deep into the tree to explore.
+            toward_dependents (bool, optional): whether to walk the tree toward dependents.
+                Default is to walk toward dependencies.
         """
         match, ignore = self._desugar_match_ignore(match, ignore)
         dep_getter = dr.get_dependents if toward_dependents else dr.get_dependencies
