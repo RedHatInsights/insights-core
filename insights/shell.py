@@ -1,5 +1,5 @@
-"""
-"""
+# -*- coding: utf-8 -*-
+from __future__ import print_function
 import argparse
 import logging
 import importlib
@@ -112,7 +112,7 @@ def __get_available_models(broker):
 
 
 class Models(dict):
-    """
+    u"""
     Represents all components that may be available given the data being
     analyzed. Use models.find() to see them. Tab complete attributes to access
     them. Use help(models) for more info.
@@ -155,11 +155,11 @@ class Models(dict):
         self._broker = broker
         self._cwd = cwd
         self._cov = cov
-        super().__init__(models)
+        super(Models, self).__init__(models)
 
     def __dir__(self):
         """ Enabled ipython autocomplete. """
-        return sorted(self.keys())
+        return sorted(set(list(self.keys()) + dir(Models)))
 
     def _ipython_key_completions_(self):
         """ For autocomplete of keys when accessing models as a dict. """
@@ -193,7 +193,7 @@ class Models(dict):
         results.append("Exceptions")
         results.append("==========")
         results.extend(self._show_exceptions(comp))
-        IPython.core.page.page(os.linesep.join(results))
+        IPython.core.page.page(six.u(os.linesep.join(results)))
 
     def evaluate_all(self, match=None, ignore=None):
         """
@@ -429,7 +429,7 @@ class Models(dict):
                     self._get_color(comp), "{} {}".format(name, dr.get_name(comp))
                 )
             )
-        IPython.core.page.page(os.linesep.join(results))
+        IPython.core.page.page(six.u(os.linesep.join(results)))
 
     def reset_requested(self):
         """ Reset requested state so you can work on a new rule. """
@@ -470,7 +470,7 @@ class Models(dict):
                     else:
                         color = "gray"
                     results.append("{} {}".format(ansiformat(color, prefix), line))
-                IPython.core.page.page(os.linesep.join(results))
+                IPython.core.page.page(six.u(os.linesep.join(results)))
             else:
                 ip.inspector.pinfo(comp, detail_level=1)
         except:
@@ -597,7 +597,7 @@ class Models(dict):
             for c in graph[name]:
                 results.extend(self._show_tree(c, depth=depth, dep_getter=dep_getter))
                 results.append("")
-        IPython.core.page.page(os.linesep.join(results))
+        IPython.core.page.page(six.u(os.linesep.join(results)))
 
     def show_failed(self, match=None, ignore="spec"):
         """
@@ -626,7 +626,7 @@ class Models(dict):
                     dashes = bottom_dashes if i == last else mid_dashes
                     results.append(ansiformat(color, dashes + str(ex)))
                 results.append("")
-        IPython.core.page.page(os.linesep.join(results))
+        IPython.core.page.page(six.u(os.linesep.join(results)))
 
     def _show_exceptions(self, comp):
         name = dr.get_name(comp)
@@ -656,7 +656,7 @@ class Models(dict):
             name = dr.get_name(comp)
             if match.test(name) and not ignore.test(name):
                 results.extend(self._show_exceptions(comp))
-        IPython.core.page.page(os.linesep.join(results))
+        IPython.core.page.page(six.u(os.linesep.join(results)))
 
     def show_rule_report(self, match=None, ignore=None):
         """
@@ -684,7 +684,7 @@ class Models(dict):
                 report.append(ansiformat(color, "-" * len(name)))
                 report.append(hits[name])
                 report.append("")
-        IPython.core.page.page(os.linesep.join(report))
+        IPython.core.page.page(six.u(os.linesep.join(report)))
 
     def find(self, match=None, ignore=None):
         """
@@ -716,7 +716,7 @@ class Models(dict):
                     for i, ex in enumerate(exes):
                         dashes = bottom_dashes if i == last else mid_dashes
                         results.append(ansiformat(color, dashes + str(ex)))
-        IPython.core.page.page(os.linesep.join(results))
+        IPython.core.page.page(six.u(os.linesep.join(results)))
 
 
 def start_session(__path, change_directory=False, __coverage=None):
