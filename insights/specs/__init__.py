@@ -26,7 +26,6 @@ class Specs(SpecSet):
     avc_cache_threshold = RegistryPoint()
     aws_instance_id_doc = RegistryPoint()
     aws_instance_id_pkcs7 = RegistryPoint()
-    aws_instance_type = RegistryPoint()
     azure_instance_type = RegistryPoint()
     bios_uuid = RegistryPoint()
     blkid = RegistryPoint()
