@@ -16,6 +16,7 @@ Contents:
     combiners_index
     components_index
     ocp
+    shell
     docs_guidelines
     components
     embedded_content

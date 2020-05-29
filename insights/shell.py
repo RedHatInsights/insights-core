@@ -1,3 +1,5 @@
+"""
+"""
 import argparse
 import logging
 import importlib
@@ -109,7 +111,7 @@ def __get_available_models(broker):
     return models
 
 
-class __Models(dict):
+class Models(dict):
     """
     Represents all components that may be available given the data being
     analyzed. Use models.find() to see them. Tab complete attributes to access
@@ -229,10 +231,10 @@ class __Models(dict):
         Evaluate a component and return its result. Prints diagnostic
         information in the case of failure. This function is useful when a
         component's name contains characters that aren't valid for python
-        identifiers so you can't access it with models.<name>.
+        identifiers so you can't access it with ``models.<name>``.
 
         Args:
-            name (str): the name of the component as shown by ``.find()``.
+            name (str): the name of the component as shown by :func:`Models.find()`.
         """
         comp = self.get(name) or dr.get_component(name)
         if not comp:
@@ -722,7 +724,7 @@ def start_session(__path, change_directory=False, __coverage=None):
         __cwd = os.path.abspath(os.curdir)
         __models = __get_available_models(__broker)
 
-        models = __Models(__broker, __models, __cwd, __coverage)
+        models = Models(__broker, __models, __cwd, __coverage)
         if change_directory:
             os.chdir(__working_path)
 
@@ -730,7 +732,7 @@ def start_session(__path, change_directory=False, __coverage=None):
         # defined.
         IPython.core.completer.Completer.use_jedi = False
         __cfg = Config()
-        __cfg.TerminalInteractiveShell.banner1 = __Models.__doc__
+        __cfg.TerminalInteractiveShell.banner1 = Models.__doc__
         __ns = {}
         __ns.update(globals())
         __ns.update(locals())
