@@ -432,7 +432,7 @@ class InsightsUploadConf(object):
         updated_commands = []
         updated_files = []
         updated_components = []
-        core_specs = vars(DefaultSpecs).keys()
+        # core_specs = vars(DefaultSpecs).keys()
 
         uploader_json_file = pkgutil.get_data(insights.__name__, "uploader_json_map.json")
         uploader_json = json.loads(uploader_json_file)
