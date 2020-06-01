@@ -7,12 +7,16 @@ import six
 import os
 import yaml
 import stat
+import pkgutil
+import json
+import insights
 from six.moves import configparser as ConfigParser
 
 from .constants import InsightsConstants as constants
 from collections import defaultdict
 from insights import datasource, dr, parse_plugins, load_packages
 from insights.core import spec_factory as sf
+from insights.specs.default import DefaultSpecs
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
@@ -217,9 +221,9 @@ class InsightsUploadConf(object):
                     raise RuntimeError('ERROR: Unknown key in remove.conf: ' + item +
                                        '\nValid keys are ' + ', '.join(expected_keys) + '.')
                 if six.PY3:
-                    rm_conf[item] = value.strip().encode('utf-8').decode('unicode-escape').split(',')
+                    rm_conf[item] = [v.strip() for v in value.strip().encode('utf-8').decode('unicode-escape').split(',')]
                 else:
-                    rm_conf[item] = value.strip().decode('string-escape').split(',')
+                    rm_conf[item] = [v.strip() for v in value.strip().decode('string-escape').split(',')]
             self.rm_conf = rm_conf
         except ConfigParser.Error as e:
             # can't parse config file at all
@@ -283,12 +287,15 @@ class InsightsUploadConf(object):
         if not redact_conf and not content_redact_conf:
             # no file-redaction.yaml or file-content-redaction.yaml defined,
             #   try to use remove.conf
-            return self.get_rm_conf_old()
+            self.get_rm_conf_old()
+            self.map_rm_conf_classic_to_core()
+            return self.rm_conf
 
         # remove Nones, empty strings, and empty lists
         filtered_rm_conf = dict((k, v) for k, v in rm_conf.items() if v)
         self.rm_conf = filtered_rm_conf
-        return filtered_rm_conf
+        self.map_rm_conf_classic_to_core()
+        return self.rm_conf
 
     def get_tags_conf(self):
         '''
@@ -368,12 +375,128 @@ class InsightsUploadConf(object):
             'using_patterns_regex': using_regex
         }
 
+    def map_rm_conf_classic_to_core(self):
+        '''
+        In order to maximize compatibility between "classic" remove.conf
+        configurations and core collection, do the following mapping
+        strategy:
+
+        1. If remove.conf entry matches a symbolic name, disable the
+            corresponding core component.
+        2. If remove.conf entry is a raw command or file, do a reverse
+            lookup on the symbolic name based on stored uploader.json data,
+            then continue as in step 1.
+        3. If neither conditions 1 or 2 are matched it is either
+            a) a mistyped command/file, or
+            b) an arbitrary file.
+
+            For (a), classic remove.conf configs require an exact match to
+                uploader.json. We can carry that condition into our
+                compatibility with core.
+            For (b), classic collection had the ability to skip arbitrary
+                files based on filepaths in uploader.json post-expansion
+                (i.e. a specific repo file in /etc/yum.repos.d).
+                Core checks all files collected against the file
+                blacklist filters, so these files will be omitted
+                just by the nature of core collection.
+        '''
+        spec_prefix = "insights.specs.default.DefaultSpecs."
+
+        # some symbolic names need to be renamed to fit specs
+        spec_conversion = {
+            u'getconf_pagesize': u'getconf_page_size',
+            u'lspci_kernel': u'lspci',
+            u'netstat__agn': u'netstat_agn',
+            u'rpm__V_packages': u'rpm_V_packages',
+            u'ss_tupna': u'ss',
+            u'systemd_analyze_blame': None,
+
+            u'machine_id1': u'machine_id',
+            u'machine_id2': u'machine_id',
+            u'machine_id3': u'machine_id',
+            u'grub2_efi_grubenv': None,
+            u'grub2_grubenv': None,
+            u'limits_d': u'limits_conf',
+            u'modprobe_conf': u'modprobe',
+            u'modprobe_d': u'modprobe',
+            u'ps_auxwww': u'insights.specs.sos_archive.SosSpecs.ps_auxww',  # special case
+            u'rh_mongodb26_conf': u'mongod_conf',
+            u'sysconfig_rh_mongodb26': u'sysconfig_mongod',
+            u'redhat_access_proactive_log': None,
+
+            u'krb5_conf_d': u'krb5'
+        }
+
+        collected_symbolic_names = []
+
+        updated_commands = []
+        updated_files = []
+        updated_components = []
+        core_specs = vars(DefaultSpecs).keys()
+
+        uploader_json_file = pkgutil.get_data(insights.__name__, "uploader_json_map.json")
+        uploader_json = json.loads(uploader_json_file)
+
+        if not self.rm_conf:
+            return
+
+        for c in self.rm_conf.get('commands', []):
+            matched = False
+            for spec in uploader_json['commands']:
+                if c == spec['symbolic_name'] or c == spec['command']:
+                    # matches to a symbolic name or raw command, cache the symbolic name
+                    collected_symbolic_names.append(spec['symbolic_name'])
+                    matched = True
+                    break
+            if not matched:
+                # could not match the command to anything, keep in config as-is
+                updated_commands.append(c)
+
+        for f in self.rm_conf.get('files', []):
+            matched = False
+            for spec in uploader_json['files']:
+                if f == spec['symbolic_name'] or f == spec['file']:
+                    # matches to a symbolic name or raw command, cache the symbolic name
+                    collected_symbolic_names.append(spec['symbolic_name'])
+                    matched = True
+                    break
+            for spec in uploader_json['globs']:
+                if f == spec['symbolic_name']:
+                    # matches only to a symbolic name for globs
+                    collected_symbolic_names.append(spec['symbolic_name'])
+                    matched = True
+                    break
+            if not matched:
+                # could not match the file to anything, keep in config as-is
+                updated_files.append(f)
+
+        # some components have slightly different names. mend the differences
+        for n in collected_symbolic_names:
+            if n in spec_conversion and spec_conversion[n]:
+                if n == 'ps_auxwww':
+                    updated_components.append(spec_conversion[n])
+                    continue
+                updated_components.append(spec_prefix + spec_conversion[n])
+            else:
+                updated_components.append(spec_prefix + n)
+
+        # filter duplicates
+        updated_components = list(dict.fromkeys(updated_components))
+
+        self.rm_conf['commands'] = updated_commands
+        self.rm_conf['files'] = updated_files
+        self.rm_conf['components'] = updated_components
+
+        return self.rm_conf
+
 
 if __name__ == '__main__':
     from .config import InsightsConfig
     config = InsightsConfig().load_all()
     uploadconf = InsightsUploadConf(config)
-    uploadconf.validate()
-    report = uploadconf.create_report()
+    uploadconf.get_rm_conf()
+    uploadconf.map_rm_conf_classic_to_core()
+    # uploadconf.validate()
+    # report = uploadconf.create_report()
 
-    print(report)
+    # print(report)
