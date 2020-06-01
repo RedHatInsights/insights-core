@@ -742,6 +742,10 @@ class Models(dict):
 
 
 class Holder(dict):
+    """
+    This is a dictionary that holds models for multiple archives. Access each model
+    set using the path to the archive as the key. See models.keys().
+    """
     def _ipython_key_completions_(self):
         return self.keys()
 
@@ -817,7 +821,7 @@ def _parse_args():
         "-v", "--verbose", action="store_true", help="Global debug level logging."
     )
 
-    path_desc = "Archive or path to analyze. Leave off to target the current system."
+    path_desc = "Archives or paths to analyze. Leave off to target the current system."
     p.add_argument("paths", nargs="*", help=path_desc)
 
     return p.parse_args()
