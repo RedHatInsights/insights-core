@@ -44,7 +44,7 @@ RULE_COLORS = {"fail": "brightred", "pass": "blue", "info": "magenta", "skip": "
 
 
 @contextmanager
-def __create_new_broker(path):
+def _create_new_broker(path=None):
     """
     Create a broker and populate it by evaluating the path with all
     registered datasources.
@@ -76,7 +76,28 @@ def __create_new_broker(path):
         yield (os.curdir, make_broker(HostContext()))
 
 
-def __get_available_models(broker):
+# contextlib.ExitStack isn't available in all python versions
+# so just hack it.
+def with_brokers(archives, callback):
+    brokers = []
+
+    def inner(paths):
+        if paths:
+            path = paths.pop()
+            with _create_new_broker(path) as ctx:
+                brokers.append(ctx)
+                inner(paths)
+        else:
+            callback(brokers)
+
+    if archives:
+        inner(archives)
+    else:
+        with _create_new_broker() as ctx:
+            callback([ctx])
+
+
+def _get_available_models(broker):
     """
     Given a broker populated with datasources, return everything that could
     run based on them.
@@ -719,15 +740,25 @@ class Models(dict):
         IPython.core.page.page(six.u(os.linesep.join(results)))
 
 
-def start_session(__path, change_directory=False, __coverage=None):
-    with __create_new_broker(__path) as (__working_path, __broker):
-        __cwd = os.path.abspath(os.curdir)
-        __models = __get_available_models(__broker)
+class Holder(dict):
+    def _ipython_key_completions_(self):
+        return self.keys()
 
-        models = Models(__broker, __models, __cwd, __coverage)
-        if change_directory:
+
+def start_session(paths, change_directory=False, __coverage=None):
+    __cwd = os.path.abspath(os.curdir)
+
+    def callback(brokers):
+        models = Holder()
+        for path, broker in brokers:
+            avail = _get_available_models(broker)
+            models[path] = Models(broker, avail, __cwd, __coverage)
+
+        if len(brokers) == 1:
+            models = list(models.values())[0]
+        if change_directory and len(brokers) == 1:
+            __working_path, _ = brokers[0]
             os.chdir(__working_path)
-
         # disable jedi since it won't autocomplete for objects with__getattr__
         # defined.
         IPython.core.completer.Completer.use_jedi = False
@@ -735,16 +766,15 @@ def start_session(__path, change_directory=False, __coverage=None):
         __cfg.TerminalInteractiveShell.banner1 = Models.__doc__
         __ns = {}
         __ns.update(globals())
-        __ns.update(locals())
+        __ns.update({"models": models})
         IPython.start_ipython([], user_ns=__ns, config=__cfg)
 
-        # TODO: we could automatically save the session here
-        # see Models.make_rule
-        if change_directory:
-            os.chdir(__cwd)
+    with_brokers(paths, callback)
+    if change_directory:
+        os.chdir(__cwd)
 
 
-def __handle_config(config):
+def _handle_config(config):
     if config:
         with open(config) as f:
             cfg = yaml.load(f, Loader=Loader)
@@ -753,7 +783,7 @@ def __handle_config(config):
             apply_configs(cfg)
 
 
-def __parse_args():
+def _parse_args():
     desc = "Perform interactive system analysis with insights components."
     epilog = """
         Set env INSIGHTS_FILTERS_ENABLED=False to disable filtering that may
@@ -783,13 +813,13 @@ def __parse_args():
     )
 
     path_desc = "Archive or path to analyze. Leave off to target the current system."
-    p.add_argument("path", nargs="?", help=path_desc)
+    p.add_argument("paths", nargs="*", help=path_desc)
 
     return p.parse_args()
 
 
 def main():
-    args = __parse_args()
+    args = _parse_args()
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.ERROR)
 
     cov = None
@@ -804,9 +834,9 @@ def main():
         dr.load_components("insights.parsers", "insights.combiners")
 
     load_packages(parse_plugins(args.plugins))
-    __handle_config(args.config)
+    _handle_config(args.config)
 
-    start_session(args.path, args.cd, __coverage=cov)
+    start_session(args.paths, args.cd, __coverage=cov)
     if cov:
         cov.stop()
         cov.erase()
