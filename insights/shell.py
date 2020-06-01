@@ -753,10 +753,11 @@ def start_session(paths, change_directory=False, __coverage=None):
         models = Holder()
         for i, (path, broker) in enumerate(brokers):
             avail = _get_available_models(broker)
-            models[paths[i]] = Models(broker, avail, __cwd, path, __coverage)
+            if paths:
+                models[paths[i]] = Models(broker, avail, __cwd, path, __coverage)
+            else:
+                models = Models(broker, avail, __cwd, path, __coverage)
 
-        if len(brokers) == 1:
-            models = list(models.values())[0]
         if change_directory and len(brokers) == 1:
             __working_path, _ = brokers[0]
             os.chdir(__working_path)
