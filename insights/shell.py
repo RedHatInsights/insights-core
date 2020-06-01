@@ -91,7 +91,7 @@ def with_brokers(archives, callback):
             callback(brokers)
 
     if archives:
-        inner(list(archives))
+        inner(list(reversed(archives)))
     else:
         with _create_new_broker() as ctx:
             callback([ctx])
