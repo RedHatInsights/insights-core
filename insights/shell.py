@@ -91,7 +91,7 @@ def with_brokers(archives, callback):
             callback(brokers)
 
     if archives:
-        inner(archives)
+        inner(list(archives))
     else:
         with _create_new_broker() as ctx:
             callback([ctx])
@@ -171,10 +171,11 @@ class Models(dict):
         ┊   ┊   ┊   ┊   insights.core.context.HostContext ()
     """
 
-    def __init__(self, broker, models, cwd, cov):
+    def __init__(self, broker, models, cwd, tmp, cov):
         self._requested = set()
         self._broker = broker
         self._cwd = cwd
+        self._tmp = tmp
         self._cov = cov
         super(Models, self).__init__(models)
 
@@ -750,9 +751,9 @@ def start_session(paths, change_directory=False, __coverage=None):
 
     def callback(brokers):
         models = Holder()
-        for path, broker in brokers:
+        for i, (path, broker) in enumerate(brokers):
             avail = _get_available_models(broker)
-            models[path] = Models(broker, avail, __cwd, __coverage)
+            models[paths[i]] = Models(broker, avail, __cwd, path, __coverage)
 
         if len(brokers) == 1:
             models = list(models.values())[0]
