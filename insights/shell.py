@@ -754,7 +754,10 @@ def start_session(paths, change_directory=False, __coverage=None):
         for i, (path, broker) in enumerate(brokers):
             avail = _get_available_models(broker)
             if paths:
-                models[paths[i]] = Models(broker, avail, __cwd, path, __coverage)
+                if len(paths) > 1:
+                    models[paths[i]] = Models(broker, avail, __cwd, path, __coverage)
+                else:
+                    models = Models(broker, avail, __cwd, path, __coverage)
             else:
                 models = Models(broker, avail, __cwd, path, __coverage)
 
