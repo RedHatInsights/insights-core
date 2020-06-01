@@ -16,7 +16,7 @@ from .constants import InsightsConstants as constants
 from collections import defaultdict
 from insights import datasource, dr, parse_plugins, load_packages
 from insights.core import spec_factory as sf
-from insights.specs.default import DefaultSpecs
+# from insights.specs.default import DefaultSpecs
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
