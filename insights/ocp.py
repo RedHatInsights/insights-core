@@ -85,4 +85,4 @@ def conf(root):
 
     .. _tutorial: https://insights-core.readthedocs.io/en/latest/notebooks/Parsr%20Query%20Tutorial.html
     """
-    return analyze(root)
+    return analyze(root, excludes=["*.log"])
