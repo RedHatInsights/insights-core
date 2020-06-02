@@ -77,7 +77,7 @@ def _create_new_broker(path=None):
 
 
 # contextlib.ExitStack isn't available in all python versions
-# so just hack it.
+# so recurse to victory.
 def with_brokers(archives, callback):
     brokers = []
 
@@ -97,7 +97,7 @@ def with_brokers(archives, callback):
             callback([ctx])
 
 
-def _get_available_models(broker):
+def _get_available_models(broker, group=dr.GROUPS.single):
     """
     Given a broker populated with datasources, return everything that could
     run based on them.
@@ -105,7 +105,7 @@ def _get_available_models(broker):
     state = set(broker.instances.keys())
     models = {}
 
-    for comp in dr.run_order(dr.COMPONENTS[dr.GROUPS.single]):
+    for comp in dr.run_order(dr.COMPONENTS[group]):
         if comp in dr.DELEGATES and not plugins.is_datasource(comp):
             if dr.DELEGATES[comp].get_missing_dependencies(state):
                 continue
@@ -137,6 +137,10 @@ class Models(dict):
     Represents all components that may be available given the data being
     analyzed. Use models.find() to see them. Tab complete attributes to access
     them. Use help(models) for more info.
+
+    Start the shell with the environment variable
+    INSIGHTS_FILTERS_ENABLED=False to disable filtering that may cause
+    unexpected missing data.
 
     Examples:
 
