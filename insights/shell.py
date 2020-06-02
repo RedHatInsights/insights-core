@@ -725,13 +725,16 @@ class Models(dict):
         match, ignore = self._desugar_match_ignore(match, ignore)
 
         results = []
+        total = 0.0
         for comp in dr.COMPONENTS[group]:
             name = dr.get_name(comp)
             if comp in self._broker.exec_times and match.test(name) and not ignore.test(name):
                 color = self._get_color(comp)
-                results.append((self._broker.exec_times[comp], name, color))
+                t = self._broker.exec_times[comp]
+                total += t
+                results.append((t, name, color))
 
-        report = []
+        report = [ansiformat("brightmagenta", "Total: {:.10f} seconds".format(total)), ""]
         for timing, name, color in sorted(results, reverse=True):
             report.append(ansiformat(color, "{:.10f}: {}".format(timing, name)))
 
