@@ -712,6 +712,31 @@ class Models(dict):
                 report.append("")
         IPython.core.page.page(six.u(os.linesep.join(report)))
 
+    def show_timings(self, match=None, ignore="spec", group=dr.GROUPS.single):
+        """
+        Show timings for components that have successfully evaluated.
+
+        Args:
+            match (str, optional): regular expression for matching against
+                the fully qualified name of components to keep.
+            ignore (str, optional): regular expression for searching against
+                the fully qualified name of components to ignore.
+        """
+        match, ignore = self._desugar_match_ignore(match, ignore)
+
+        results = []
+        for comp in dr.COMPONENTS[group]:
+            name = dr.get_name(comp)
+            if comp in self._broker.exec_times and match.test(name) and not ignore.test(name):
+                color = self._get_color(comp)
+                results.append((self._broker.exec_times[comp], name, color))
+
+        report = []
+        for timing, name, color in sorted(results, reverse=True):
+            report.append(ansiformat(color, "{:.10f}: {}".format(timing, name)))
+
+        IPython.core.page.page(six.u(os.linesep.join(report)))
+
     def find(self, match=None, ignore=None):
         """
         Find components that might be available based on the data being
