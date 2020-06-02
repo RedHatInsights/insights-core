@@ -317,6 +317,7 @@ class InsightsUploadConf(object):
         Validate remove.conf and tags.conf
         '''
         self.get_tags_conf()
+        logger.info('Commands and files specified in blacklist configuration will be automatically mapped to insights-core components if possible.')
         success = self.get_rm_conf()
         if not success:
             logger.info('No contents in the blacklist configuration to validate.')
@@ -404,27 +405,27 @@ class InsightsUploadConf(object):
 
         # some symbolic names need to be renamed to fit specs
         spec_conversion = {
-            u'getconf_pagesize': u'getconf_page_size',
-            u'lspci_kernel': u'lspci',
-            u'netstat__agn': u'netstat_agn',
-            u'rpm__V_packages': u'rpm_V_packages',
-            u'ss_tupna': u'ss',
-            u'systemd_analyze_blame': None,
+            'getconf_pagesize': 'getconf_page_size',
+            'lspci_kernel': 'lspci',
+            'netstat__agn': 'netstat_agn',
+            'rpm__V_packages': 'rpm_V_packages',
+            'ss_tupna': 'ss',
+            'systemd_analyze_blame': None,
 
-            u'machine_id1': u'machine_id',
-            u'machine_id2': u'machine_id',
-            u'machine_id3': u'machine_id',
-            u'grub2_efi_grubenv': None,
-            u'grub2_grubenv': None,
-            u'limits_d': u'limits_conf',
-            u'modprobe_conf': u'modprobe',
-            u'modprobe_d': u'modprobe',
-            u'ps_auxwww': u'insights.specs.sos_archive.SosSpecs.ps_auxww',  # special case
-            u'rh_mongodb26_conf': u'mongod_conf',
-            u'sysconfig_rh_mongodb26': u'sysconfig_mongod',
-            u'redhat_access_proactive_log': None,
+            'machine_id1': 'machine_id',
+            'machine_id2': 'machine_id',
+            'machine_id3': 'machine_id',
+            'grub2_efi_grubenv': None,
+            'grub2_grubenv': None,
+            'limits_d': 'limits_conf',
+            'modprobe_conf': 'modprobe',
+            'modprobe_d': 'modprobe',
+            'ps_auxwww': 'insights.specs.sos_archive.SosSpecs.ps_auxww',  # special case
+            'rh_mongodb26_conf': 'mongod_conf',
+            'sysconfig_rh_mongodb26': 'sysconfig_mongod',
+            'redhat_access_proactive_log': None,
 
-            u'krb5_conf_d': u'krb5'
+            'krb5_conf_d': 'krb5'
         }
 
         collected_symbolic_names = []
@@ -445,7 +446,7 @@ class InsightsUploadConf(object):
             for spec in uploader_json['commands']:
                 if c == spec['symbolic_name'] or c == spec['command']:
                     # matches to a symbolic name or raw command, cache the symbolic name
-                    collected_symbolic_names.append(spec['symbolic_name'])
+                    collected_symbolic_names.append(spec['symbolic_name'].encode('utf-8'))
                     matched = True
                     break
             if not matched:
@@ -457,13 +458,13 @@ class InsightsUploadConf(object):
             for spec in uploader_json['files']:
                 if f == spec['symbolic_name'] or f == spec['file']:
                     # matches to a symbolic name or raw command, cache the symbolic name
-                    collected_symbolic_names.append(spec['symbolic_name'])
+                    collected_symbolic_names.append(spec['symbolic_name'].encode('utf-8'))
                     matched = True
                     break
             for spec in uploader_json['globs']:
                 if f == spec['symbolic_name']:
                     # matches only to a symbolic name for globs
-                    collected_symbolic_names.append(spec['symbolic_name'])
+                    collected_symbolic_names.append(spec['symbolic_name'].encode('utf-8'))
                     matched = True
                     break
             if not matched:
