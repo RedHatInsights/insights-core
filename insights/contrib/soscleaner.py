@@ -31,6 +31,7 @@ import tempfile
 import logging
 import tarfile
 import six
+import hashlib
 
 from insights.util import content_type
 
@@ -681,7 +682,8 @@ class SOSCleaner:
                 self._add_extra_files(options.files)
 
             if self.hostname:   # if we have a hostname that's not a None type
-                self.hn_db['host0'] = self.hostname     # we'll prime the hostname pump to clear out a ton of useless logic later
+                hashed_hostname = hashlib.md5(self.hostname).hexdigest()
+                self.hn_db[hashed_hostname] = self.hostname     # we'll prime the hostname pump to clear out a ton of useless logic later
 
             self._process_hosts_file(options)  # we'll take a dig through the hosts file and make sure it is as scrubbed as possible
 
