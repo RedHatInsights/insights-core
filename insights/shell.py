@@ -221,7 +221,7 @@ class Models(dict):
         results.extend(self._show_exceptions(comp))
         IPython.core.page.page(six.u(os.linesep.join(results)))
 
-    def evaluate_all(self, match=None, ignore=None):
+    def evaluate_all(self, match=None, ignore="spec"):
         """
         Evaluate all components that match.
 
@@ -250,7 +250,7 @@ class Models(dict):
             return
 
         dr.run(tasks, broker=self._broker)
-        self.find(match, ignore)
+        self.show_timings(match, ignore)
 
     def evaluate(self, name):
         """
