@@ -63,6 +63,7 @@ class SOSCleaner:
         self.hn_db = dict() #hostname database
         self.hostname_count = 0
         self.hostname = None
+        self.hashed_hostname = None   # addition for insights-client
 
         # Domainname obfuscation information
         self.dn_db = dict() #domainname database
@@ -682,8 +683,8 @@ class SOSCleaner:
                 self._add_extra_files(options.files)
 
             if self.hostname:   # if we have a hostname that's not a None type
-                hashed_hostname = hashlib.md5(self.hostname).hexdigest()
-                self.hn_db[hashed_hostname] = self.hostname     # we'll prime the hostname pump to clear out a ton of useless logic later
+                self.hashed_hostname = hashlib.md5(self.hostname).hexdigest() + '.example.com'
+                self.hn_db[self.hashed_hostname] = self.hostname     # we'll prime the hostname pump to clear out a ton of useless logic later
 
             self._process_hosts_file(options)  # we'll take a dig through the hosts file and make sure it is as scrubbed as possible
 

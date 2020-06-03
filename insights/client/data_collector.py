@@ -142,6 +142,28 @@ class DataCollector(object):
         self.archive.add_metadata_to_archive(
             egg_release, '/egg_release')
 
+    def _write_rhsm_facts(self, hashed_hostname, ip_csv):
+        logger.info('Writing RHSM facts...')
+        destfile = os.path.join(constants.rhsm_facts_dir, 'insights-client.json')
+        ips_list = ''
+        with open(ip_csv) as fil:
+            # remove the first line of the file with the CSV headings
+            ips_list = fil.readlines()
+            ips_list = ''.join(ips_list[1:])
+
+        facts = {
+            'insights_client.obfuscate_hostname_enabled': self.config.obfuscate_hostname,
+            'insights_client.hostname': hashed_hostname,
+            'insights_client.obfuscate_ip_enabled': self.config.obfuscate,
+            'insights_client.ips': ips_list
+        }
+
+        try:
+            with open(destfile, 'w') as fil:
+                json.dump(facts, fil)
+        except (IOError, OSError) as e:
+            logger.error('Could not write to %s: %s', destfile, str(e))
+
     def _run_pre_command(self, pre_cmd):
         '''
         Run a pre command to get external args for a command
@@ -388,6 +410,10 @@ class DataCollector(object):
             cleaner.clean_report(clean_opts, self.archive.archive_dir)
             if clean_opts.keyword_file is not None:
                 os.remove(clean_opts.keyword_file.name)
+
+            # generate RHSM facts at this point
+            self._write_rhsm_facts(cleaner.hashed_hostname, cleaner.ip_report)
+
             if self.config.output_dir:
                 # return the entire soscleaner dir
                 #   see additions to soscleaner.SOSCleaner.clean_report
