@@ -24,6 +24,7 @@ class Specs(SpecSet):
     autofs_conf = RegistryPoint()
     avc_hash_stats = RegistryPoint()
     avc_cache_threshold = RegistryPoint()
+    aws_instance_type = RegistryPoint()
     aws_instance_id_doc = RegistryPoint()
     aws_instance_id_pkcs7 = RegistryPoint()
     azure_instance_type = RegistryPoint()
