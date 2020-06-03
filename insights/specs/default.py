@@ -26,6 +26,7 @@ from insights.core.spec_factory import first_of, foreach_collect, foreach_execut
 from insights.core.spec_factory import first_file, listdir
 from insights.parsers.mount import Mount, ProcMounts
 from insights.parsers.dnf_module import DnfModuleList
+from insights.parsers.saphostctrl import SAPHostCtrlInstances
 from insights.combiners.cloud_provider import CloudProvider
 from insights.combiners.satellite_version import SatelliteVersion
 from insights.combiners.services import Services
@@ -862,10 +863,9 @@ class DefaultSpecs(Specs):
     rpm_V_packages = simple_command("/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo chrony", keep_rc=True)
     rsyslog_conf = simple_file("/etc/rsyslog.conf")
     samba = simple_file("/etc/samba/smb.conf")
-    saphostctrl_listinstances = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function ListInstances")
 
-    @datasource(saphostctrl_listinstances, hostname)
-    def sap_sid_nr(broker):
+    @datasource(SAPHostCtrlInstances, hostname)
+    def sap_instance_info(broker):
         """
         Get the SID and Instance Number
 
@@ -877,18 +877,17 @@ class DefaultSpecs(Specs):
             (list): List of tuple of SID and Instance Number.
 
         """
-        insts = broker[DefaultSpecs.saphostctrl_listinstances].content
+        insts = broker[SAPHostCtrlInstances].data
         hn = broker[DefaultSpecs.hostname].content[0].split('.')[0].strip()
         results = set()
         for ins in insts:
-            ins_splits = ins.split(' - ')
             # Local Instance
-            if ins_splits[2].strip() == hn:
-                # (sid, nr)
-                results.add((ins_splits[0].split()[-1].lower(), ins_splits[1].strip()))
+            if ins['Hostname'] == hn:
+                # (SID, SystemNumber, InstanceName)
+                results.add((ins['SID'].lower(), ins['SystemNumber'], ins['InstanceName']))
         return list(results)
 
-    @datasource(sap_sid_nr)
+    @datasource(sap_instance_info)
     def sap_sid(broker):
         """
         Get the SID
@@ -897,7 +896,18 @@ class DefaultSpecs(Specs):
             (list): List of SID.
 
         """
-        return list(set(sn[0] for sn in broker[DefaultSpecs.sap_sid_nr]))
+        return list(set(s[0] for s in broker[DefaultSpecs.sap_instance_info]))
+
+    @datasource(sap_instance_info)
+    def sap_sid_nr(broker):
+        """
+        Get the SID and SystemNumber pairs
+
+        Returns:
+            (list): List of SID and SystemNumber.
+
+        """
+        return list(set((s[0], s[1]) for s in broker[DefaultSpecs.sap_instance_info]))
 
     sap_hdb_version = foreach_execute(sap_sid, "/usr/bin/sudo -iu %sadm HDB version", keep_rc=True)
     sap_host_profile = simple_file("/usr/sap/hostctrl/exe/host_profile")
