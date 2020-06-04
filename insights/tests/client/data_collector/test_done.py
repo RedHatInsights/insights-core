@@ -40,9 +40,10 @@ def test_soscleaner_archive_returned(_, soscleaner):
     assert ret == soscleaner.return_value.archive_path
 
 
+@patch('insights.client.data_collector.DataCollector._write_rhsm_facts')
 @patch('insights.client.data_collector.SOSCleaner')
 @patch('insights.client.data_collector.InsightsArchive')
-def test_soscleaner_dir_returned(_, soscleaner):
+def test_soscleaner_dir_returned(_, soscleaner, __):
     '''
     Test that SOSCleaner returns a directory when
     output_dir is specified.
