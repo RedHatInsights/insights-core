@@ -160,3 +160,5 @@ class SosSpecs(Specs):
     vgs = first_file(["sos_commands/lvm2/vgs_-v_-o_vg_mda_count_vg_mda_free_vg_mda_size_vg_mda_used_count_vg_tags_--config_global_locking_type_0", "sos_commands/lvm2/vgs_-v", "sos_commands/devicemapper/vgs_-v"])
     xfs_info = glob_file("sos_commands/xfs/xfs_info*")
     yum_repolist = simple_file("sos_commands/yum/yum_-C_repolist")
+    sendq_socket_buffer = simple_file("proc/sys/net/ipv4/tcp_wmem")
+    recvq_socket_buffer = simple_file("proc/sys/net/ipv4/tcp_rmem")
