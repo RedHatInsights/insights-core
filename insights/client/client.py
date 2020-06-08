@@ -206,6 +206,11 @@ def _legacy_handle_unregistration(config, pconn):
     """
         returns (bool): True success, False failure
     """
+    def __cleanup_local_files():
+        write_unregistered_file()
+        get_scheduler(config).remove_scheduling()
+        delete_cache_files()
+
     check = get_registration_status(config, pconn)
 
     for m in check['messages']:
@@ -213,6 +218,8 @@ def _legacy_handle_unregistration(config, pconn):
 
     if check['unreachable']:
         # Run connection test and exit
+        if config.force:
+            __cleanup_local_files()
         return None
 
     if check['status']:
@@ -222,9 +229,7 @@ def _legacy_handle_unregistration(config, pconn):
         logger.info('This system is already unregistered.')
     if unreg:
         # only set if unreg was successful
-        write_unregistered_file()
-        get_scheduler(config).remove_scheduling()
-        delete_cache_files()
+        __cleanup_local_files()
     return unreg
 
 
@@ -239,8 +244,8 @@ def handle_unregistration(config, pconn):
         return _legacy_handle_unregistration(config, pconn)
 
     unreg = pconn.unregister()
-    if unreg:
-        # only set if unreg was successful
+    if unreg or config.force:
+        # only set if unreg was successful or --force was set
         write_unregistered_file()
         delete_cache_files()
     return unreg
