@@ -142,7 +142,7 @@ class DataCollector(object):
         self.archive.add_metadata_to_archive(
             egg_release, '/egg_release')
 
-    def _write_rhsm_facts(self, hashed_hostname, ip_csv):
+    def _write_rhsm_facts(self, hashed_fqdn, ip_csv):
         logger.info('Writing RHSM facts...')
         ips_list = ''
         with open(ip_csv) as fil:
@@ -152,7 +152,7 @@ class DataCollector(object):
 
         facts = {
             'insights_client.obfuscate_hostname_enabled': self.config.obfuscate_hostname,
-            'insights_client.hostname': hashed_hostname,
+            'insights_client.hostname': hashed_fqdn,
             'insights_client.obfuscate_ip_enabled': self.config.obfuscate,
             'insights_client.ips': ips_list
         }
@@ -411,7 +411,7 @@ class DataCollector(object):
                 os.remove(clean_opts.keyword_file.name)
 
             # generate RHSM facts at this point
-            self._write_rhsm_facts(cleaner.hashed_hostname, cleaner.ip_report)
+            self._write_rhsm_facts(cleaner.hashed_fqdn, cleaner.ip_report)
 
             if self.config.output_dir:
                 # return the entire soscleaner dir
