@@ -63,7 +63,8 @@ class SOSCleaner:
         self.hn_db = dict() #hostname database
         self.hostname_count = 0
         self.hostname = None
-        self.hashed_hostname = None   # addition for insights-client
+        self.fqdn = None
+        self.hashed_fqdn = None   # addition for insights-client
 
         # Domainname obfuscation information
         self.dn_db = dict() #domainname database
@@ -294,7 +295,7 @@ class SOSCleaner:
                         self.logger.debug("Obfuscating FQDN - %s > %s", hn, new_hn)
                         line = line.replace(hn, new_hn)
             if self.hostname:
-                line = line.replace(self.hostname, self._hn2db(self.hostname))  #catch any non-fqdn instances of the system hostname
+                line = line.replace(self.hostname, self._hn2db(self.fqdn))  #catch any non-fqdn instances of the system hostname
 
             return line
         except Exception as e: # pragma: no cover
@@ -452,13 +453,14 @@ class SOSCleaner:
             hostfile = os.path.join(self.dir_path, hostname)
             fh = open(hostfile, 'rt')
             name_list = fh.readline().rstrip().split('.')
-            hostname = '.'.join(name_list)  # insights-client needs FQDN
+            hostname = name_list[0]
+            fqdn = '.'.join(name_list)  # insights-client needs FQDN
             if len(name_list) > 1:
                 domainname = '.'.join(name_list[1:len(name_list)])
             else:
                 domainname = None
 
-            return hostname, domainname
+            return hostname, domainname, fqdn
 
         except IOError as e: #the 'hostname' file doesn't exist or isn't readable for some reason
             self.logger.warning("Unable to determine system hostname!!!")
@@ -675,16 +677,16 @@ class SOSCleaner:
             self.report = self._extract_sosreport(sosreport)
             self._make_dest_env()   # create the working directory
             if options.hostname_path:
-                self.hostname, self.domainname = self._get_hostname(options.hostname_path)
+                self.hostname, self.domainname, self.fqdn = self._get_hostname(options.hostname_path)
             else:
-                self.hostname, self.domainname = self._get_hostname()
+                self.hostname, self.domainname, self.fqdn = self._get_hostname()
 
             if options.files:
                 self._add_extra_files(options.files)
 
-            if self.hostname:   # if we have a hostname that's not a None type
-                self.hashed_hostname = hashlib.sha1(self.hostname).hexdigest() + '.example.com'
-                self.hn_db[self.hashed_hostname] = self.hostname     # we'll prime the hostname pump to clear out a ton of useless logic later
+            if self.fqdn:   # if we have a hostname that's not a None type
+                self.hashed_fqdn = hashlib.sha1(self.fqdn).hexdigest() + '.example.com'
+                self.hn_db[self.hashed_fqdn] = self.fqdn     # we'll prime the hostname pump to clear out a ton of useless logic later
 
             self._process_hosts_file(options)  # we'll take a dig through the hosts file and make sure it is as scrubbed as possible
 
