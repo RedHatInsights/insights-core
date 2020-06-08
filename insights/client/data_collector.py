@@ -161,7 +161,7 @@ class DataCollector(object):
             with open(constants.rhsm_facts_file, 'w') as fil:
                 json.dump(facts, fil)
         except (IOError, OSError) as e:
-            logger.error('Could not write to %s: %s', destfile, str(e))
+            logger.error('Could not write to %s: %s', constants.rhsm_facts_file, str(e))
 
     def _run_pre_command(self, pre_cmd):
         '''
