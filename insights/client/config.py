@@ -143,6 +143,12 @@ DEFAULT_OPTS = {
         # non-CLI
         'default': None
     },
+    'force': {
+        'default': False,
+        'opt': ['--force'],
+        'help': argparse.SUPPRESS,
+        'action': 'store_true'
+    },
     'group': {
         'default': None,
         'opt': ['--group'],
