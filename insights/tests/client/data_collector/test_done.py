@@ -24,9 +24,10 @@ def test_dir_returned(_):
     assert ret == d.archive.archive_dir
 
 
+@patch('insights.client.data_collector.DataCollector._write_rhsm_facts')
 @patch('insights.client.data_collector.SOSCleaner')
 @patch('insights.client.data_collector.InsightsArchive')
-def test_soscleaner_archive_returned(_, soscleaner):
+def test_soscleaner_archive_returned(_, soscleaner, __):
     '''
     Test that SOSCleaner is enabled when obfuscate=True,
     and returns an archive by default
