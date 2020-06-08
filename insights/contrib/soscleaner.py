@@ -452,7 +452,7 @@ class SOSCleaner:
             hostfile = os.path.join(self.dir_path, hostname)
             fh = open(hostfile, 'rt')
             name_list = fh.readline().rstrip().split('.')
-            hostname = name_list[0]
+            hostname = '.'.join(name_list)  # insights-client needs FQDN
             if len(name_list) > 1:
                 domainname = '.'.join(name_list[1:len(name_list)])
             else:
