@@ -446,7 +446,10 @@ class InsightsUploadConf(object):
             for spec in uploader_json['commands']:
                 if c == spec['symbolic_name'] or c == spec['command']:
                     # matches to a symbolic name or raw command, cache the symbolic name
-                    collected_symbolic_names.append(spec['symbolic_name'].encode('utf-8'))
+                    sname = spec['symbolic_name']
+                    if not six.PY3:
+                        sname = sname.encode('utf-8')
+                    collected_symbolic_names.append(sname)
                     matched = True
                     break
             if not matched:
@@ -458,13 +461,19 @@ class InsightsUploadConf(object):
             for spec in uploader_json['files']:
                 if f == spec['symbolic_name'] or f == spec['file']:
                     # matches to a symbolic name or raw command, cache the symbolic name
-                    collected_symbolic_names.append(spec['symbolic_name'].encode('utf-8'))
+                    sname = spec['symbolic_name']
+                    if not six.PY3:
+                        sname = sname.encode('utf-8')
+                    collected_symbolic_names.append(sname)
                     matched = True
                     break
             for spec in uploader_json['globs']:
                 if f == spec['symbolic_name']:
                     # matches only to a symbolic name for globs
-                    collected_symbolic_names.append(spec['symbolic_name'].encode('utf-8'))
+                    sname = spec['symbolic_name']
+                    if not six.PY3:
+                        sname = sname.encode('utf-8')
+                    collected_symbolic_names.append(sname)
                     matched = True
                     break
             if not matched:
@@ -473,6 +482,7 @@ class InsightsUploadConf(object):
 
         # some components have slightly different names. mend the differences
         for n in collected_symbolic_names:
+            print(type(n))
             if n in spec_conversion and spec_conversion[n]:
                 if n == 'ps_auxwww':
                     updated_components.append(spec_conversion[n])
@@ -493,10 +503,10 @@ class InsightsUploadConf(object):
 
 if __name__ == '__main__':
     from .config import InsightsConfig
-    config = InsightsConfig().load_all()
-    uploadconf = InsightsUploadConf(config)
-    uploadconf.get_rm_conf()
-    uploadconf.map_rm_conf_classic_to_core()
+    # config = InsightsConfig().load_all()
+    # uploadconf = InsightsUploadConf(config)
+    # uploadconf.get_rm_conf()
+    # uploadconf.map_rm_conf_classic_to_core()
     # uploadconf.validate()
     # report = uploadconf.create_report()
 
