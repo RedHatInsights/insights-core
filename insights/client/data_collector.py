@@ -143,18 +143,43 @@ class DataCollector(object):
             egg_release, '/egg_release')
 
     def _write_rhsm_facts(self, hashed_fqdn, ip_csv):
-        logger.info('Writing RHSM facts...')
+        logger.info('Writing RHSM facts to %s...', constants.rhsm_facts_file)
         ips_list = ''
         with open(ip_csv) as fil:
-            # remove the first line of the file with the CSV headings
+            # create IP list as JSON block with format
+            # [
+            #   {
+            #     original: <original IP>
+            #     obfuscated: <obfuscated IP>
+            #   }
+            # ]
+
             ips_list = fil.readlines()
-            ips_list = ''.join(ips_list[1:])
+            headings = ips_list[0].strip().split(',')
+            # set the indices for the IPs
+            if 'original' in headings[0].lower():
+                # soscleaner 0.4.4, original first
+                org = 0
+                obf = 1
+            else:
+                # soscleaner 0.2.2, obfuscated first
+                org = 1
+                obf = 0
+
+            ip_block = []
+            for line in ips_list[1:]:
+                ipset = line.strip().split(',')
+                ip_block.append(
+                    {
+                        'original': ipset[org],
+                        'obfuscated': ipset[obf]
+                    })
 
         facts = {
             'insights_client.obfuscate_hostname_enabled': self.config.obfuscate_hostname,
             'insights_client.hostname': hashed_fqdn,
             'insights_client.obfuscate_ip_enabled': self.config.obfuscate,
-            'insights_client.ips': ips_list
+            'insights_client.ips': json.dumps(ip_block)
         }
 
         try:
