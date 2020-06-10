@@ -15,6 +15,7 @@ import re
 from insights import parser, CommandParser
 from insights.parsers import SkipException
 from insights.specs import Specs
+from insights.util import deprecated
 
 # TODO: the following metrics need update timely per:
 # - https://access.redhat.com/solutions/2045583
@@ -96,3 +97,14 @@ class CephVersion(CommandParser):
             "major": int(community_version_mo.group(3)),
             "minor": int(community_version_mo.group(4))
         }
+
+
+class CephVersionError(Exception):
+    """
+    .. note::
+        This class is deprecated, please use :py:class:`insights.parsers.SkipException` instead.
+    """
+
+    def __init__(self, *args, **kwargs):
+        deprecated(CephVersionError, "Use SkipException instead.")
+        super(CephVersionError, self).__init__(*args, **kwargs)
