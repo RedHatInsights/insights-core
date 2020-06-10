@@ -1,6 +1,6 @@
 from insights.parsers.ceph_version import CephVersion
-from insights.parsers.ceph_version import CephVersionError
 from insights.tests import context_wrap
+from insights.parsers import SkipException
 import pytest
 
 CV1 = "ceph version 0.94.9-9.el7cp (b83334e01379f267fb2f9ce729d74a0a8fa1e92c)"
@@ -18,16 +18,16 @@ CV10_1 = "ceph version 12.2.12-74.el7cp (030358773c5213a14c1444a5147258672b2dc15
 
 
 def test_ceph_version():
-    with pytest.raises(CephVersionError) as error_context2:
+    with pytest.raises(SkipException) as error_context2:
         CephVersion(context_wrap(CV2))
     assert 'Empty Ceph Version Line' in str(error_context2)
-    with pytest.raises(CephVersionError) as error_context3:
+    with pytest.raises(SkipException) as error_context3:
         CephVersion(context_wrap(CV3))
     assert 'Wrong Format Ceph Version' in str(error_context3)
-    with pytest.raises(CephVersionError) as error_context5:
+    with pytest.raises(SkipException) as error_context5:
         CephVersion(context_wrap(CV5))
     assert 'Wrong Format Ceph Version' in str(error_context5)
-    with pytest.raises(CephVersionError) as error_context6:
+    with pytest.raises(SkipException) as error_context6:
         CephVersion(context_wrap(CV6))
     assert 'No Mapping Release Version' in str(error_context6)
 
