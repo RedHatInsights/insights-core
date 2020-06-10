@@ -19,6 +19,7 @@ from insights.util import deprecated
 
 # TODO: the following metrics need update timely per:
 # - https://access.redhat.com/solutions/2045583
+# - https://access.redhat.com/articles/1372203
 community_to_release_map = {
     "0.80.8-5": {'version': "1.2.3", 'major': '1.2', 'minor': '3', 'downstream_release': 'NA'},
     "0.94.1-15": {'version': "1.3", 'major': '1.3', 'minor': '0', 'downstream_release': 'NA'},
@@ -47,7 +48,7 @@ community_to_release_map = {
     "10.2.10-40": {'version': "2.5.2", 'major': '2', 'minor': '5', 'downstream_release': '2'},
     "10.2.10-43": {'version': "2.5.3", 'major': '2', 'minor': '5', 'downstream_release': '3'},
     "10.2.10-49": {'version': "2.5.4", 'major': '2', 'minor': '5', 'downstream_release': '4'},
-    "10.2.10-51": {'version': "2.5.5", 'major': '2', 'minor': '5', 'downstream_release': '5'},
+    "10.2.10-51": {'version': "2.5.5", 'major': '2', 'minor': '5', 'downstream_release': '5', 'els': True},
     "12.2.1-40": {'version': "3.0", 'major': '3', 'minor': '0', 'downstream_release': '0'},
     "12.2.1-45": {'version': "3.0", 'major': '3', 'minor': '0', 'downstream_release': '1'},
     "12.2.1-46": {'version': "3.0", 'major': '3', 'minor': '0', 'downstream_release': '1 CVE'},
@@ -80,6 +81,15 @@ class CephVersion(CommandParser):
 
         ceph version 0.94.9-9.el7cp (b83334e01379f267fb2f9ce729d74a0a8fa1e92c)
 
+    Attributes:
+        version (str): The Red Hat release version
+        major (str): The major version of Red Hat release version
+        minor (str): The minor version of Red Hat release version
+        is_els (boolean): If the verion in 'Extended life cycle support (ELS) add-on' phase
+        downstream_release (str): The downstream release info
+        upstream_version (dict): The detailed upstream version info with the
+            following keys `release (int)`, `major (int)` and `minor (int)`.
+
     Example:
         >>> ceph_v.version
         '1.3.3'
@@ -87,6 +97,8 @@ class CephVersion(CommandParser):
         '1.3'
         >>> ceph_v.minor
         '3'
+        >>> ceph_v.is_els
+        False
     """
 
     def parse_content(self, content):
@@ -109,6 +121,7 @@ class CephVersion(CommandParser):
         self.version = release_data['version']
         self.major = release_data['major']
         self.minor = release_data['minor']
+        self.is_els = release_data.get('els', False)
         self.downstream_release = release_data['downstream_release']
         self.upstream_version = {
             "release": int(community_version_mo.group(2)),
