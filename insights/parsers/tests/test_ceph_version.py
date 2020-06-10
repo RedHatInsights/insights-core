@@ -35,46 +35,54 @@ def test_ceph_version():
     assert ceph_version1.version == "1.3.3"
     assert ceph_version1.major == '1.3'
     assert ceph_version1.minor == "3"
+    assert not ceph_version1.is_els
     assert ceph_version1.downstream_release == "async 2"
 
     ceph_version4 = CephVersion(context_wrap(CV4))
     assert ceph_version4.version == "2.0"
     assert ceph_version4.major == '2'
     assert ceph_version4.minor == "0"
+    assert not ceph_version4.is_els
     assert ceph_version4.downstream_release == "0"
 
     ceph = CephVersion(context_wrap(CV_5))
     assert ceph.version == "2.2"
     assert ceph.major == '2'
     assert ceph.minor == '2'
+    assert not ceph.is_els
     assert ceph.downstream_release == "0"
 
     ceph_version7 = CephVersion(context_wrap(CV7))
     assert ceph_version7.version == "2.2"
     assert ceph_version7.major == '2'
     assert ceph_version7.minor == "2"
+    assert not ceph_version7.is_els
     assert ceph_version7.downstream_release == "0"
 
     ceph_version8 = CephVersion(context_wrap(CV8))
     assert ceph_version8.version == "2.3"
     assert ceph_version8.major == '2'
     assert ceph_version8.minor == "3"
+    assert not ceph_version8.is_els
     assert ceph_version8.downstream_release == "0"
 
     ceph_version9 = CephVersion(context_wrap(CV9))
     assert ceph_version9.version == "3.1.1"
     assert ceph_version9.major == '3'
     assert ceph_version9.minor == "1"
+    assert not ceph_version9.is_els
     assert ceph_version9.downstream_release == "1"
 
     ceph_version10 = CephVersion(context_wrap(CV10))
     assert ceph_version10.version == "3.2.2"
     assert ceph_version10.major == '3'
     assert ceph_version10.minor == "2"
+    assert not ceph_version10.is_els
     assert ceph_version10.downstream_release == "2"
 
     ceph_version10_1 = CephVersion(context_wrap(CV10_1))
     assert ceph_version10_1.version == "3.3.1"
     assert ceph_version10_1.major == '3'
     assert ceph_version10_1.minor == "3"
+    assert not ceph_version10_1.is_els
     assert ceph_version10_1.downstream_release == "1"
