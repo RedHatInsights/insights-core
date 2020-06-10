@@ -324,7 +324,7 @@ class InsightsUploadConf(object):
             return None
         # Using print here as this could contain sensitive information
         print('Blacklist configuration parsed contents:')
-        print(success)
+        print(json.dumps(success, indent=4))
         logger.info('Parsed successfully.')
         return True
 
@@ -401,35 +401,6 @@ class InsightsUploadConf(object):
                 blacklist filters, so these files will be omitted
                 just by the nature of core collection.
         '''
-        spec_prefix = "insights.specs.default.DefaultSpecs."
-
-        # some symbolic names need to be renamed to fit specs
-        spec_conversion = {
-            'getconf_pagesize': 'getconf_page_size',
-            'lspci_kernel': 'lspci',
-            'netstat__agn': 'netstat_agn',
-            'rpm__V_packages': 'rpm_V_packages',
-            'ss_tupna': 'ss',
-            'systemd_analyze_blame': None,
-
-            'machine_id1': 'machine_id',
-            'machine_id2': 'machine_id',
-            'machine_id3': 'machine_id',
-            'grub2_efi_grubenv': None,
-            'grub2_grubenv': None,
-            'limits_d': 'limits_conf',
-            'modprobe_conf': 'modprobe',
-            'modprobe_d': 'modprobe',
-            'ps_auxwww': 'insights.specs.sos_archive.SosSpecs.ps_auxww',  # special case
-            'rh_mongodb26_conf': 'mongod_conf',
-            'sysconfig_rh_mongodb26': 'sysconfig_mongod',
-            'redhat_access_proactive_log': None,
-
-            'krb5_conf_d': 'krb5'
-        }
-
-        collected_symbolic_names = []
-
         updated_commands = []
         updated_files = []
         updated_components = []
@@ -441,6 +412,52 @@ class InsightsUploadConf(object):
         if not self.rm_conf:
             return
 
+        logger.warning("If possible, commands and files specified in the blacklist configuration will be converted to Insights component specs that will be disabled as needed.")
+
+        # save matches to a dict for informative logging
+        cmds_files_names_map = {}
+        longest_key = 0
+
+        # loop
+        #   match command/symbol with symbolic name
+        #   get component from symbolic name
+        #   add component to components blacklist (with prefix)
+        #   add command and result (without prefix) to map for logging at the end
+
+        def _get_component_by_symbolic_name(sname):
+            # match a component to a symbolic name
+            # some symbolic names need to be renamed to fit specs
+            spec_prefix = "insights.specs.default.DefaultSpecs."
+            spec_conversion = {
+                'getconf_pagesize': 'getconf_page_size',
+                'lspci_kernel': 'lspci',
+                'netstat__agn': 'netstat_agn',
+                'rpm__V_packages': 'rpm_V_packages',
+                'ss_tupna': 'ss',
+                'systemd_analyze_blame': None,
+
+                'machine_id1': 'machine_id',
+                'machine_id2': 'machine_id',
+                'machine_id3': 'machine_id',
+                'grub2_efi_grubenv': None,
+                'grub2_grubenv': None,
+                'limits_d': 'limits_conf',
+                'modprobe_conf': 'modprobe',
+                'modprobe_d': 'modprobe',
+                'ps_auxwww': 'insights.specs.sos_archive.SosSpecs.ps_auxww',  # special case
+                'rh_mongodb26_conf': 'mongod_conf',
+                'sysconfig_rh_mongodb26': 'sysconfig_mongod',
+                'redhat_access_proactive_log': None,
+
+                'krb5_conf_d': 'krb5'
+            }
+
+            if sname in spec_conversion:
+                if sname == 'ps_auxwww':
+                    return spec_conversion[sname]
+                return spec_prefix + spec_conversion[sname]
+            return spec_prefix + sname
+
         for c in self.rm_conf.get('commands', []):
             matched = False
             for spec in uploader_json['commands']:
@@ -449,7 +466,11 @@ class InsightsUploadConf(object):
                     sname = spec['symbolic_name']
                     if not six.PY3:
                         sname = sname.encode('utf-8')
-                    collected_symbolic_names.append(sname)
+                    component = _get_component_by_symbolic_name(sname)
+                    cmds_files_names_map[c] = component
+                    if len(c) > longest_key:
+                        longest_key = len(c)
+                    updated_components.append(component)
                     matched = True
                     break
             if not matched:
@@ -464,7 +485,11 @@ class InsightsUploadConf(object):
                     sname = spec['symbolic_name']
                     if not six.PY3:
                         sname = sname.encode('utf-8')
-                    collected_symbolic_names.append(sname)
+                    component = _get_component_by_symbolic_name(sname)
+                    cmds_files_names_map[c] = component
+                    if len(c) > longest_key:
+                        longest_key = len(c)
+                    updated_components.append(component)
                     matched = True
                     break
             for spec in uploader_json['globs']:
@@ -473,25 +498,21 @@ class InsightsUploadConf(object):
                     sname = spec['symbolic_name']
                     if not six.PY3:
                         sname = sname.encode('utf-8')
-                    collected_symbolic_names.append(sname)
+                    component = _get_component_by_symbolic_name(sname)
+                    cmds_files_names_map[c] = component
+                    if len(c) > longest_key:
+                        longest_key = len(c)
+                    updated_components.append(component)
                     matched = True
                     break
             if not matched:
                 # could not match the file to anything, keep in config as-is
                 updated_files.append(f)
 
-        # some components have slightly different names. mend the differences
-        for n in collected_symbolic_names:
-            print(type(n))
-            if n in spec_conversion and spec_conversion[n]:
-                if n == 'ps_auxwww':
-                    updated_components.append(spec_conversion[n])
-                    continue
-                updated_components.append(spec_prefix + spec_conversion[n])
-            else:
-                updated_components.append(spec_prefix + n)
+        for n in cmds_files_names_map:
+            spec_name_no_prefix = cmds_files_names_map[n].rsplit('.', 1)[-1]
+            logger.warning('{0:{1}}\t=> {2}'.format(n, longest_key, spec_name_no_prefix))
 
-        # filter duplicates
         updated_components = list(dict.fromkeys(updated_components))
 
         self.rm_conf['commands'] = updated_commands
@@ -503,11 +524,11 @@ class InsightsUploadConf(object):
 
 if __name__ == '__main__':
     from .config import InsightsConfig
-    # config = InsightsConfig().load_all()
-    # uploadconf = InsightsUploadConf(config)
+    config = InsightsConfig().load_all()
+    uploadconf = InsightsUploadConf(config)
     # uploadconf.get_rm_conf()
     # uploadconf.map_rm_conf_classic_to_core()
-    # uploadconf.validate()
+    uploadconf.validate()
     # report = uploadconf.create_report()
 
     # print(report)
