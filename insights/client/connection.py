@@ -841,7 +841,7 @@ class InsightsConnection(object):
         logger.debug("Upload duration: %s", upload.elapsed)
         return upload
 
-    def upload_archive(self, data_collected, content_type, duration):
+    def upload_archive(self, data_collected, content_type, duration=None):
         """
         Do an HTTPS Upload of the archive
         """
@@ -880,7 +880,12 @@ class InsightsConnection(object):
             # 202 from platform, no json response
             logger.debug(upload.text)
             # upload = registration on platform
-            write_registered_file()
+            try:
+                write_registered_file()
+            except OSError:
+                # most likely permissions error from running as non-root
+                if os.getuid() == 0:
+                    logger.error('Could not update local registration record: %s', str(e))
         else:
             logger.debug(
                 "Upload archive failed with status code %s",
