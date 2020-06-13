@@ -1,3 +1,5 @@
+import doctest
+from insights.parsers import dmsetup
 from insights.parsers.dmsetup import DmsetupInfo, SetupInfo
 from insights.tests import context_wrap
 
@@ -76,3 +78,22 @@ def test_dmsetup_setupinfo():
         readonly=True,
         uuid='LVM-gy9uAwD7LuTIApplr2sogbOx5iS0FTax6lLmBji2ueSbX49gxcV76M29cmukQiw4'
     )
+
+
+DMSETUP_EXAMPLES = """
+Name               Maj Min Stat Open Targ Event  UUID
+VG00-tmp           253   8 L--w    1    1      0 LVM-gy9uAwD7LuTIApplr2sogbOx5iS0FTax6lLmBji2ueSbX49gxcV76M29cmukQiw4
+VG00-home          253   3 L--w    1    1      0 LVM-gy9uAwD7LuTIApplr2sogbOx5iS0FTaxCqXOnbGe2zjhX923dFiIdl1oi7mO9tXp
+VG00-var           253   6 L--w    1    2      0 LVM-gy9uAwD7LuTIApplr2sogbOx5iS0FTaxicvyvt67113nTb8vMlGfgdEjDx0LKT2O
+VG00-swap          253   1 L--w    2    1      0 LVM-gy9uAwD7LuTIApplr2sogbOx5iS0FTax3Ll2XhOYZkylx1CjOQi7G4yHgrIOsyqG
+VG00-root          253   0 L--w    1    1      0 LVM-gy9uAwD7LuTIApplr2sogbOx5iS0FTaxKpnAKYhrYMYMNMwjegkW965bUgtJFTRY
+VG00-var_log_audit 253   5 L--w    1    1      0 LVM-gy9uAwD7LuTIApplr2sogbOx5iS0FTaxwQ8R0XWJRm86QX3befq1cHRy47Von6ZW
+""".strip()
+
+
+def test_examples():
+    env = {
+        'setup_info': DmsetupInfo(context_wrap(DMSETUP_EXAMPLES))
+    }
+    failed, total = doctest.testmod(dmsetup, globs=env)
+    assert failed == 0

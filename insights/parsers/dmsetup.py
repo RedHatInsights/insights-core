@@ -62,14 +62,22 @@ class DmsetupInfo(CommandParser):
         info (list): List of devices found, in order using SetupInfo structure
 
     Example:
-        >>> len(info)
+        >>> len(setup_info)
         6
-        >>> info.names[0]
+        >>> setup_info.names[0]
         'VG00-tmp'
-        >>> info[1]['Maj']
+        >>> setup_info[1]['Maj']
         '253'
-        >>> info[1]['Stat']
+        >>> setup_info[1]['Stat']
         'L--w'
+        >>> setup_info.info[-1].name
+        'VG00-var_log_audit'
+        >>> setup_info.info[-1].major
+        253
+        >>> setup_info.info[-1].live_table
+        True
+        >>> setup_info.info[-1].readonly
+        False
     """
 
     def parse_content(self, content):
