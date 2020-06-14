@@ -122,6 +122,7 @@ class Specs(SpecSet):
     dmesg_log = RegistryPoint(filterable=True)
     dmidecode = RegistryPoint()
     dmsetup_info = RegistryPoint()
+    dnf_conf = RegistryPoint()
     dnf_modules = RegistryPoint()
     dnf_module_list = RegistryPoint()
     dnf_module_info = RegistryPoint()
