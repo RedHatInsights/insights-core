@@ -578,6 +578,7 @@ def test_rpm_google():
     assert ret.cloud_provider == CloudProvider.GOOGLE
     assert 'google-rhui-client-5.1.100-1.el7' in ret.cp_rpms.get(CloudProvider.GOOGLE)
     assert 'google-rhui-client-5.1.100-1.el6' in ret.cp_rpms.get(CloudProvider.GOOGLE)
+    assert ret.long_name == 'Google Cloud'
 
 
 def test_rpm_aws():
@@ -587,6 +588,7 @@ def test_rpm_aws():
     ret = CloudProvider(irpms, dmi, yrl)
     assert ret.cloud_provider == CloudProvider.AWS
     assert ret.cp_rpms.get(CloudProvider.AWS)[0] == 'rh-amazon-rhui-client-2.2.124-1.el7'
+    assert ret.long_name == 'Amazon Web Services'
 
 
 def test_rpm_azure():
@@ -596,6 +598,7 @@ def test_rpm_azure():
     ret = CloudProvider(irpms, dmi, yrl)
     assert ret.cloud_provider == CloudProvider.AZURE
     assert ret.cp_rpms.get(CloudProvider.AZURE)[0] == 'WALinuxAgent-2.2.18-1.el7'
+    assert ret.long_name == 'Microsoft Azure'
 
 
 def test__yum_azure():
@@ -650,6 +653,16 @@ def test_dmidecode_alibaba():
     ret = CloudProvider(irpms, dmi, yrl)
     assert ret.cloud_provider == CloudProvider.ALIBABA
     assert ret.cp_manufacturer[CloudProvider.ALIBABA] == 'Alibaba Cloud'
+    assert ret.long_name == 'Alibaba Cloud'
+
+
+def test_no_data():
+    irpms = IRPMS(context_wrap(RPMS))
+    dmi = DMIDecode(context_wrap(DMIDECODE))
+    yrl = YumRepoList(context_wrap(YUM_REPOLIST_NOT_AZURE))
+    ret = CloudProvider(irpms, dmi, yrl)
+    assert ret.cloud_provider is None
+    assert ret.long_name is None
 
 
 def test_docs():
