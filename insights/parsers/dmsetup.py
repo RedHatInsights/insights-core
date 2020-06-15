@@ -10,10 +10,17 @@ DmsetupInfo - command ``dmsetup info -C``
 -----------------------------------------
 
 """
-
+from collections import namedtuple
 from insights import parser, CommandParser
 from insights.parsers import parse_delimited_table
 from insights.specs import Specs
+
+
+SetupInfo = namedtuple('SetupInfo', [
+    'name', 'major', 'minor', 'open', 'segments', 'events',
+    'live_table', 'inactive_table', 'suspended', 'readonly', 'uuid']
+)
+""" Data structure to represent dmsetup information """
 
 
 @parser(Specs.dmsetup_info)
@@ -52,16 +59,25 @@ class DmsetupInfo(CommandParser):
         uuids (list): UUID
         by_name (dict): Access to each device by devicename
         by_uuid (dict): Access to each device by uuid
+        info (list): List of devices found, in order using SetupInfo structure
 
     Example:
-        >>> len(info)
+        >>> len(setup_info)
         6
-        >>> info.names[0]
+        >>> setup_info.names[0]
         'VG00-tmp'
-        >>> info[1]['Maj']
+        >>> setup_info[1]['Maj']
         '253'
-        >>> info[1]['Stat']
+        >>> setup_info[1]['Stat']
         'L--w'
+        >>> setup_info.info[-1].name
+        'VG00-var_log_audit'
+        >>> setup_info.info[-1].major
+        253
+        >>> setup_info.info[-1].live_table
+        True
+        >>> setup_info.info[-1].readonly
+        False
     """
 
     def parse_content(self, content):
@@ -71,6 +87,21 @@ class DmsetupInfo(CommandParser):
         self.by_name = dict((dm['Name'], dm) for dm in self.data if 'Name' in dm)
         self.uuids = [dm['UUID'] for dm in self.data if 'UUID' in dm]
         self.by_uuid = dict((dm['UUID'], dm) for dm in self.data if 'UUID' in dm)
+        self.info = []
+        for dm in self.data:
+            self.info.append(SetupInfo(
+                name=dm.get('Name'),
+                major=int(dm.get('Maj')) if 'Maj' in dm and dm.get('Maj').isdigit() else None,
+                minor=int(dm.get('Min')) if 'Min' in dm and dm.get('Min').isdigit() else None,
+                open=int(dm.get('Open')) if 'Open' in dm and dm.get('Open').isdigit() else None,
+                segments=int(dm.get('Targ')) if 'Targ' in dm and dm.get('Targ').isdigit() else None,
+                events=int(dm.get('Event')) if 'Event' in dm and dm.get('Event').isdigit() else None,
+                live_table=dm.get('Stat', '----')[0] == 'L',
+                inactive_table=dm.get('Stat', '----')[1] == 'I',
+                suspended=dm.get('Stat', '----')[2] == 's',
+                readonly=dm.get('Stat', '----')[3] == 'r',
+                uuid=dm.get('UUID')
+            ))
 
     def __len__(self):
         """
