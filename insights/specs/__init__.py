@@ -137,6 +137,7 @@ class Specs(SpecSet):
     docker_storage_setup = RegistryPoint()
     docker_sysconfig = RegistryPoint()
     dracut_kdump_capture_service = RegistryPoint()
+    du_dirs = RegistryPoint(multi_output=True)
     dumpe2fs_h = RegistryPoint(multi_output=True)
     engine_config_all = RegistryPoint()
     engine_log = RegistryPoint(filterable=True)
