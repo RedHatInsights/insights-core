@@ -92,7 +92,10 @@ class Parser(object):
         self._handle_content(context)
 
     def _handle_content(self, context):
-        self.parse_content(context.content)
+        try:
+            self.parse_content(context.content)
+        except ValueError as parse_err:
+            log.error(f"Can't parse: {context.path}\nError: {parse_err}")
 
     def parse_content(self, content):
         """This method must be implemented by classes based on this class."""
