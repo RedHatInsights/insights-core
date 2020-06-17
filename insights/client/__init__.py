@@ -101,10 +101,12 @@ class InsightsClient(object):
         Get the proper url based on the configured egg release branch
         """
         url = constants.base_url + constants.module_router_path
+        logger.log(NETWORK, "GET %s", url)
         response = self.session.get(url, timeout=self.config.http_timeout)
         if response.status_code == 200:
             return response.json()["url"]
         else:
+            logger.warning("Unable to fetch egg url. Defaulting to /release")
             return '/release'
 
     def fetch(self, force=False):
