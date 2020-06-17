@@ -1,6 +1,6 @@
 """
-Disk Usages Combiners
-=====================
+Disk Usage
+==========
 
 Combiners for gathering information from du parsers.
 """

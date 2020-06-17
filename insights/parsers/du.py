@@ -90,6 +90,6 @@ class DiskUsage(CommandParser, dict):
 class DiskUsageDir(DiskUsage):
     """
     Parser class for processing du output for multiple directories, each
-    collected using ``du -s -k {directory}``
+    collected using ``du -s -k {directory}``.
     """
     pass
