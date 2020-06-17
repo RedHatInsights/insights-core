@@ -21,13 +21,13 @@ class DiskUsageDirs(dict):
 
     Sample input data for du commands as parsed by the parsers::
 
-    # Output of the command:
-    # /bin/du -s -k /var/log
-    553500	/var/log
+        # Output of the command:
+        # /bin/du -s -k /var/log
+        553500	/var/log
 
-    # Output of the command:
-    # /bin/du -s -k /var/log
-    519228	/var/lib/pgsql
+        # Output of the command:
+        # /bin/du -s -k /var/lib/pgsql
+        519228	/var/lib/pgsql
 
     Examples:
         >>> type(disk_usage_dirs)
