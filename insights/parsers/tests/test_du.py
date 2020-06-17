@@ -1,5 +1,7 @@
 import pytest
+import doctest
 
+from insights.parsers import du
 from insights.parsers.du import DiskUsage
 from insights.tests import context_wrap
 from insights.parsers import ParseException, SkipException
@@ -147,3 +149,9 @@ def test_du_bad():
     with pytest.raises(ParseException) as exc:
         DiskUsage(context_wrap(DU_INVALID_2))
     assert 'Could not parse line' in str(exc)
+
+
+def test_du_doc_examples():
+    env = {'disk_usage': DiskUsage(context_wrap(DU_VAR_LIB_STAR))}
+    failed, total = doctest.testmod(du, globs=env)
+    assert failed == 0

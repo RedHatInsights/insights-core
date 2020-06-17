@@ -48,7 +48,7 @@ class DiskUsage(CommandParser, dict):
         True
         >>> disk_usage.get('/var/lib/pgsql')
         186484
-        >>> int(du_candlepin_activemq.get('/var/lib/pgsql') / 1024) # to MiB
+        >>> int(disk_usage.get('/var/lib/pgsql') / 1024) # to MiB
         182
 
     Raises:
