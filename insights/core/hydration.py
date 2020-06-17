@@ -41,7 +41,9 @@ def identify(files):
 
 def create_context(path, context=None):
     top = os.listdir(path)
-    arc = [os.path.join(path, f) for f in top if f.endswith(archives.COMPRESSION_TYPES)]
+    arc = [os.path.join(path, f) for f in top
+           if f.endswith(archives.COMPRESSION_TYPES) and
+           os.path.isfile(os.path.join(path, f))]
     if arc:
         return ClusterArchiveContext(path, all_files=arc)
 
