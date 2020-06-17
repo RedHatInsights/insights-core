@@ -345,6 +345,7 @@ class Models(dict):
         imports = [
             "from insights import rule, make_fail, make_info, make_pass  # noqa",
             "from insights.parsr.query import *  # noqa",
+            "from insights.parsr.query import make_child_query as q  # noqa",
             "",
         ]
 
