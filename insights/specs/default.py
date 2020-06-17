@@ -307,6 +307,7 @@ class DefaultSpecs(Specs):
         raise SkipComponent()
 
     dracut_kdump_capture_service = simple_file("/usr/lib/dracut/modules.d/99kdumpbase/kdump-capture.service")
+    du_dirs = foreach_execute(['/var/lib/candlepin/activemq-artemis'], "/bin/du -s -k %s")
     dumpe2fs_h = foreach_execute(dumpdev, "/sbin/dumpe2fs -h %s")
     engine_config_all = simple_command("/usr/bin/engine-config --all")
     engine_log = simple_file("/var/log/ovirt-engine/engine.log")
