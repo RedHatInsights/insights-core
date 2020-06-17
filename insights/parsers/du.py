@@ -6,7 +6,7 @@ Module for the processing of output from the ``du`` command.
 
 Parsers provided by this module include:
 
-DiskUsageDirs - command ``du -s -k {directory}``
+DiskUsageDir - command ``du -s -k {directory}``
 --------------------------------
 
 """
