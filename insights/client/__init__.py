@@ -95,6 +95,18 @@ class InsightsClient(object):
         """
         return client.get_branch_info(self.config, self.connection)
 
+    @_net
+    def get_egg_url(self):
+        """
+        Get the proper url based on the configured egg release branch
+        """
+        url = constants.base_url + constants.module_router_path
+        response = self.session.get(url, timeout=self.config.http_timeout)
+        if response.status_code == 200:
+            return response.json()["url"]
+        else:
+            return '/release'
+
     def fetch(self, force=False):
         """
             returns (dict): {'core': path to new egg, None if no update,
@@ -109,16 +121,17 @@ class InsightsClient(object):
         logger.debug("Beginning core fetch.")
 
         # guess the URLs based on what legacy setting is
+        egg_release = self.get_egg_url()
         egg_url = self.config.egg_path
         egg_gpg_url = self.config.egg_gpg_path
         if egg_url is None:
-            egg_url = '/v1/static/core/insights-core.egg'
+            egg_url = '/v1/static{0}/insights-core.egg'.format(egg_release)
             # if self.config.legacy_upload:
             #     egg_url = '/v1/static/core/insights-core.egg'
             # else:
             #     egg_url = '/static/insights-core.egg'
         if egg_gpg_url is None:
-            egg_gpg_url = '/v1/static/core/insights-core.egg.asc'
+            egg_gpg_url = '/v1/static{0}/insights-core.egg.asc'.format(egg_release)
             # if self.config.legacy_upload:
             #     egg_gpg_url = '/v1/static/core/insights-core.egg.asc'
             # else:

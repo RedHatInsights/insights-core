@@ -40,6 +40,7 @@ class InsightsConstants(object):
     insights_core_last_stable_gpg_sig = os.path.join(insights_core_lib_dir, 'last_stable.egg.asc')
     insights_core_newest = os.path.join(insights_core_lib_dir, 'newest.egg')
     insights_core_gpg_sig_newest = os.path.join(insights_core_lib_dir, 'newest.egg.asc')
+    module_router_path = "/module-update-router/v1/channel?module=insights-core"
     sig_kill_ok = 100
     sig_kill_bad = 101
     cached_branch_info = os.path.join(default_conf_dir, '.branch_info')
