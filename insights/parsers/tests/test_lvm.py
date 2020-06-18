@@ -1,5 +1,7 @@
 from __future__ import print_function
 from insights.parsers import lvm
+from insights.tests import context_wrap
+from .lvm_test_data import LVMCONFIG
 
 WARNINGS_CONTENT = """
 WARNING
@@ -40,3 +42,9 @@ def compare_partial_dicts(result, expected):
             print("Failed for key {k}, {r} != {e}".format(k=k, r=result[k], e=expected[k]))
             mismatches += 1
     return mismatches == 0
+
+
+def test_lvmconfig():
+    p = lvm.LvmConfig(context_wrap(LVMCONFIG))
+    assert p.data["dmeventd"]["raid_library"] == "libdevmapper-event-lvm2raid.so"
+    assert p.data["global"]["thin_check_options"] == ["-q", "--clear-needs-check-flag"]
