@@ -9,7 +9,7 @@ import os
 import yaml
 
 from fnmatch import fnmatch
-from insights.core.plugins import component
+from insights.core.plugins import component, datasource
 from insights.core.context import InsightsOperatorContext, MustGatherContext
 
 from insights.core.archives import extract
@@ -18,6 +18,7 @@ from insights.util import content_type
 
 
 log = logging.getLogger(__name__)
+contexts = [InsightsOperatorContext, MustGatherContext]
 
 try:
     # requires pyyaml installed after libyaml
@@ -67,8 +68,15 @@ def analyze(paths, excludes=None):
     return Result(children=results)
 
 
-@component([InsightsOperatorContext, MustGatherContext])
-def conf(io, mg):
+@datasource(contexts)
+def conf_root(broker):
+    for ctx in contexts:
+        if ctx in broker:
+            return broker[ctx].root
+
+
+@component(conf_root)
+def conf(root):
     """
     The ``conf`` component parses all configuration in an insights-operator or
     must-gather archive and returns an object that is part of the parsr common
@@ -77,4 +85,4 @@ def conf(io, mg):
 
     .. _tutorial: https://insights-core.readthedocs.io/en/latest/notebooks/Parsr%20Query%20Tutorial.html
     """
-    return analyze((io or mg).root)
+    return analyze(root, excludes=["*.log"])

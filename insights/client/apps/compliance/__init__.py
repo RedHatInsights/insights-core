@@ -2,13 +2,14 @@ from glob import glob
 from insights.client.archive import InsightsArchive
 from insights.client.connection import InsightsConnection
 from insights.client.constants import InsightsConstants as constants
-from insights.util.canonical_facts import get_canonical_facts
+from insights.client.utilities import determine_hostname
 from logging import getLogger
 from platform import linux_distribution
 from re import findall
 from sys import exit
 from insights.util.subproc import call
 import os
+import six
 
 NONCOMPLIANT_STATUS = 2
 COMPLIANCE_CONTENT_TYPE = 'application/vnd.redhat.compliance.something+tgz'
@@ -21,7 +22,7 @@ class ComplianceClient:
     def __init__(self, config):
         self.config = config
         self.conn = InsightsConnection(config)
-        self.hostname = get_canonical_facts().get('fqdn', '')
+        self.hostname = determine_hostname()
         self.archive = InsightsArchive(config)
 
     def oscap_scan(self):
@@ -85,7 +86,10 @@ class ComplianceClient:
         return glob("{0}*rhel{1}*.xml".format(POLICY_FILE_LOCATION, self.os_release()))
 
     def find_scap_policy(self, profile_ref_id):
-        rc, grep = call('grep ' + profile_ref_id + ' ' + ' '.join(self.profile_files()), keep_rc=True)
+        grepcmd = 'grep ' + profile_ref_id + ' ' + ' '.join(self.profile_files())
+        if not six.PY3:
+            grepcmd = grepcmd.encode()
+        rc, grep = call(grepcmd, keep_rc=True)
         if rc:
             logger.error('XML profile file not found matching ref_id {0}\n{1}\n'.format(profile_ref_id, grep))
             exit(constants.sig_kill_bad)
@@ -107,6 +111,8 @@ class ComplianceClient:
         env = os.environ.copy()
         env.update({'TZ': 'UTC'})
         oscap_command = self.build_oscap_command(profile_ref_id, policy_xml, output_path, tailoring_file_path)
+        if not six.PY3:
+            oscap_command = oscap_command.encode()
         rc, oscap = call(oscap_command, keep_rc=True, env=env)
         if rc and rc != NONCOMPLIANT_STATUS:
             logger.error('Scan failed')
@@ -116,7 +122,10 @@ class ComplianceClient:
             self.archive.copy_file(output_path)
 
     def _assert_oscap_rpms_exist(self):
-        rc, rpm = call('rpm -qa ' + ' '.join(REQUIRED_PACKAGES), keep_rc=True)
+        rpmcmd = 'rpm -qa ' + ' '.join(REQUIRED_PACKAGES)
+        if not six.PY3:
+            rpmcmd = rpmcmd.encode()
+        rc, rpm = call(rpmcmd, keep_rc=True)
         if rc:
             logger.error('Tried running rpm -qa but failed: {0}.\n'.format(rpm))
             exit(constants.sig_kill_bad)

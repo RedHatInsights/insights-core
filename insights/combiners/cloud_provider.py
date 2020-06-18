@@ -20,6 +20,8 @@ Examples:
     True
     >>> cp_aws.cp_uuid['aws']
     'EC2F58AF-2DAD-C57E-88C0-A81CB6084290'
+    >>> cp_aws.long_name
+    'Amazon Web Services'
     >>> cp_azure.cloud_provider
     'azure'
     >>> cp_azure.cp_yum == {'aws': [], 'google': [], 'azure': ['rhui-microsoft-azure-rhel7-2.2-74'], 'alibaba': []}
@@ -90,6 +92,13 @@ class CloudProvider(object):
 
     GOOGLE = __GOOGLE.name
     """GOOGLE Cloud Provider Constant"""
+
+    _long_name_mapping = {
+        'alibaba': 'Alibaba Cloud',
+        'aws': 'Amazon Web Services',
+        'azure': 'Microsoft Azure',
+        'google': 'Google Cloud'
+    }
 
     def __init__(self, rpms, dmidcd, yrl):
 
@@ -234,3 +243,10 @@ class CloudProvider(object):
                 else ''
             )
         return prov
+
+    @property
+    def long_name(self):
+        """
+        Return long name for the specific cloud provider.
+        """
+        return self._long_name_mapping.get(self.cloud_provider)

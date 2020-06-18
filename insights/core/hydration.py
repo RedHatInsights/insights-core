@@ -8,13 +8,23 @@ from insights.core.context import (ClusterArchiveContext,
 
 log = logging.getLogger(__name__)
 
+if hasattr(os, "scandir"):
+    def get_all_files(path):
+        with os.scandir(path) as it:
+            for ent in it:
+                if ent.is_dir(follow_symlinks=False):
+                    for pth in get_all_files(ent.path):
+                        yield pth
+                elif ent.is_file(follow_symlinks=False):
+                    yield ent.path
 
-def get_all_files(path):
-    all_files = []
-    for f in archives.get_all_files(path):
-        if os.path.isfile(f) and not os.path.islink(f):
-            all_files.append(f)
-    return all_files
+else:
+    def get_all_files(path):
+        for root, _, files in os.walk(path):
+            for f in files:
+                full_path = os.path.join(root, f)
+                if os.path.isfile(full_path) and not os.path.islink(full_path):
+                    yield full_path
 
 
 def identify(files):
@@ -31,11 +41,13 @@ def identify(files):
 
 def create_context(path, context=None):
     top = os.listdir(path)
-    arc = [os.path.join(path, f) for f in top if f.endswith(archives.COMPRESSION_TYPES)]
+    arc = [os.path.join(path, f) for f in top
+           if f.endswith(archives.COMPRESSION_TYPES) and
+           os.path.isfile(os.path.join(path, f))]
     if arc:
         return ClusterArchiveContext(path, all_files=arc)
 
-    all_files = get_all_files(path)
+    all_files = list(get_all_files(path))
     if not all_files:
         raise archives.InvalidArchive("No files in archive")
 

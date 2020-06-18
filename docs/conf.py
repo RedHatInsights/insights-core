@@ -18,7 +18,7 @@
 import sys
 import os
 import insights
-from insights.util import component_graph
+from insights.util import component_graph, specs_catalog
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -59,7 +59,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'insights-core'
-copyright = u'2016, 2017, 2018 Red Hat, Inc'
+copyright = u'2016, 2017, 2018, 2019, 2020 Red Hat, Inc'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -366,3 +366,7 @@ def setup(app):
     # Dynamically generate cross reference for components prior to doc build
     filename = os.path.join(app.confdir, "components.rst")
     component_graph.main(filename)
+
+    # Dynamically generate datasource documentation prior to doc build
+    filename = os.path.join(app.confdir, "specs_catalog.rst")
+    specs_catalog.main(filename)

@@ -28,8 +28,10 @@ from insights.parsers.mount import Mount, ProcMounts
 from insights.parsers.dnf_module import DnfModuleList
 from insights.combiners.cloud_provider import CloudProvider
 from insights.combiners.satellite_version import SatelliteVersion
-from insights.components.rhel_version import IsRhel8
+from insights.combiners.services import Services
+from insights.components.rhel_version import IsRhel8, IsRhel7
 from insights.specs import Specs
+
 
 from grp import getgrgid
 from os import stat
@@ -106,7 +108,6 @@ class DefaultSpecs(Specs):
 
     aws_instance_id_doc = simple_command("/usr/bin/curl -s http://169.254.169.254/latest/dynamic/instance-identity/document --connect-timeout 5", deps=[is_aws])
     aws_instance_id_pkcs7 = simple_command("/usr/bin/curl -s http://169.254.169.254/latest/dynamic/instance-identity/pkcs7 --connect-timeout 5", deps=[is_aws])
-    aws_instance_type = simple_command("/usr/bin/curl -s http://169.254.169.254/latest/meta-data/instance-type --connect-timeout 5", deps=[is_aws])
 
     @datasource(CloudProvider)
     def is_azure(broker):
@@ -191,11 +192,21 @@ class DefaultSpecs(Specs):
     cloud_init_log = simple_file("/var/log/cloud-init.log")
     cluster_conf = simple_file("/etc/cluster/cluster.conf")
     cmdline = simple_file("/proc/cmdline")
+    cni_podman_bridge_conf = simple_file("/etc/cni/net.d/87-podman-bridge.conflist")
     cpe = simple_file("/etc/system-release-cpe")
     # are these locations for different rhel versions?
     cobbler_settings = first_file(["/etc/cobbler/settings", "/conf/cobbler/settings"])
     cobbler_modules_conf = first_file(["/etc/cobbler/modules.conf", "/conf/cobbler/modules.conf"])
     corosync = simple_file("/etc/sysconfig/corosync")
+
+    @datasource([IsRhel7, IsRhel8])
+    def corosync_cmapctl_cmd_list(broker):
+        if broker.get(IsRhel7):
+            return ["/usr/sbin/corosync-cmapctl", 'corosync-cmapctl -d runtime.schedmiss.timestamp', 'corosync-cmapctl -d runtime.schedmiss.delay']
+        if broker.get(IsRhel8):
+            return ["/usr/sbin/corosync-cmapctl", '/usr/sbin/corosync-cmapctl -m stats', '/usr/sbin/corosync-cmapctl -C schedmiss']
+        raise SkipComponent()
+    corosync_cmapctl = foreach_execute(corosync_cmapctl_cmd_list, "%s")
     corosync_conf = simple_file("/etc/corosync/corosync.conf")
     cpu_cores = glob_file("sys/devices/system/cpu/cpu[0-9]*/online")
     cpu_siblings = glob_file("sys/devices/system/cpu/cpu[0-9]*/topology/thread_siblings_list")
@@ -296,6 +307,7 @@ class DefaultSpecs(Specs):
         raise SkipComponent()
 
     dracut_kdump_capture_service = simple_file("/usr/lib/dracut/modules.d/99kdumpbase/kdump-capture.service")
+    du_dirs = foreach_execute(['/var/lib/candlepin/activemq-artemis'], "/bin/du -s -k %s")
     dumpe2fs_h = foreach_execute(dumpdev, "/sbin/dumpe2fs -h %s")
     engine_config_all = simple_command("/usr/bin/engine-config --all")
     engine_log = simple_file("/var/log/ovirt-engine/engine.log")
@@ -350,7 +362,7 @@ class DefaultSpecs(Specs):
     grub2_cfg = simple_file("/boot/grub2/grub.cfg")
     grub2_efi_cfg = simple_file("boot/efi/EFI/redhat/grub.cfg")
     grubby_default_index = simple_command("/usr/sbin/grubby --default-index")  # only RHEL7 and updwards
-    grubby_default_kernel = simple_command("/usr/sbin/grubby --default-kernel")  # RHEL6 and updwards
+    grubby_default_kernel = simple_command("/sbin/grubby --default-kernel")
     hammer_ping = simple_command("/usr/bin/hammer ping")
     hammer_task_list = simple_command("/usr/bin/hammer --config /root/.hammer/cli.modules.d/foreman.yml --output csv task list --search 'state=running AND ( label=Actions::Candlepin::ListenOnCandlepinEvents OR label=Actions::Katello::EventQueue::Monitor )'")
     haproxy_cfg = first_file(["/var/lib/config-data/puppet-generated/haproxy/etc/haproxy/haproxy.cfg", "/etc/haproxy/haproxy.cfg"])
@@ -520,7 +532,10 @@ class DefaultSpecs(Specs):
     ls_disk = simple_command("/bin/ls -lanR /dev/disk")
     ls_docker_volumes = simple_command("/bin/ls -lanR /var/lib/docker/volumes")
     ls_edac_mc = simple_command("/bin/ls -lan /sys/devices/system/edac/mc")
-    ls_etc = simple_command("/bin/ls -lanR /etc")
+    etc_and_sub_dirs = sorted(["/etc", "/etc/pki/tls/private", "/etc/pki/tls/certs",
+        "/etc/pki/ovirt-vmconsole", "/etc/nova/migration", "/etc/sysconfig",
+        "/etc/cloud/cloud.cfg.d"])
+    ls_etc = simple_command("ls -lan {0}".format(' '.join(etc_and_sub_dirs)))
     ls_lib_firmware = simple_command("/bin/ls -lanR /lib/firmware")
     ls_ocp_cni_openshift_sdn = simple_command("/bin/ls -l /var/lib/cni/networks/openshift-sdn")
     ls_origin_local_volumes_pods = simple_command("/bin/ls -l /var/lib/origin/openshift.local.volumes/pods")
@@ -555,6 +570,10 @@ class DefaultSpecs(Specs):
     lsscsi = simple_command("/usr/bin/lsscsi")
     lvdisplay = simple_command("/sbin/lvdisplay")
     lvm_conf = simple_file("/etc/lvm/lvm.conf")
+    lvmconfig = first_of([
+        simple_command("/usr/sbin/lvmconfig --type full"),
+        simple_command("/usr/sbin/lvm dumpconfig --type full"),
+    ])
     lvs = None  # simple_command('/sbin/lvs -a -o +lv_tags,devices --config="global{locking_type=0}"')
     lvs_noheadings = simple_command("/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,lv_size,lv_attr,mirror_log,vg_name,devices,region_size,data_percent,metadata_percent,segtype,seg_monitor --config=\"global{locking_type=0}\"")
     lvs_noheadings_all = simple_command("/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,lv_size,lv_attr,mirror_log,vg_name,devices,region_size,data_percent,metadata_percent,segtype --config='global{locking_type=0} devices{filter=[\"a|.*|\"]}'")
@@ -725,6 +744,13 @@ class DefaultSpecs(Specs):
     pacemaker_log = first_file(["/var/log/pacemaker.log", "/var/log/pacemaker/pacemaker.log"])
     pci_rport_target_disk_paths = simple_command("/usr/bin/find /sys/devices/ -maxdepth 10 -mindepth 9 -name stat -type f")
 
+    @datasource(Services, context=HostContext)
+    def pcp_enabled(broker):
+        if not broker[Services].is_on("pmproxy"):
+            raise SkipComponent("pmproxy not enabled")
+
+    pcp_metrics = simple_command("/usr/bin/curl -s http://127.0.0.1:44322/metrics --connect-timeout 5", deps=[pcp_enabled])
+
     @datasource(ps_auxww, context=HostContext)
     def package_and_java(broker):
         """Command: package_and_java"""
@@ -833,7 +859,7 @@ class DefaultSpecs(Specs):
     rndc_status = simple_command("/usr/sbin/rndc status")
     root_crontab = simple_command("/usr/bin/crontab -l -u root")
     route = simple_command("/sbin/route -n")
-    rpm_V_packages = simple_command("/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo", keep_rc=True)
+    rpm_V_packages = simple_command("/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo chrony", keep_rc=True)
     rsyslog_conf = simple_file("/etc/rsyslog.conf")
     samba = simple_file("/etc/samba/smb.conf")
     saphostctrl_listinstances = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function ListInstances")
@@ -958,6 +984,7 @@ class DefaultSpecs(Specs):
     systemctl_show_all_services = simple_command("/bin/systemctl show *.service")
     systemctl_show_target = simple_command("/bin/systemctl show *.target")
     systemctl_smartpdc = simple_command("/bin/systemctl show smart_proxy_dynflow_core")
+    systemd_analyze_blame = simple_command("/bin/systemd-analyze blame")
     systemd_docker = simple_command("/usr/bin/systemctl cat docker.service")
     systemd_logind_conf = simple_file("/etc/systemd/logind.conf")
     systemd_openshift_node = simple_command("/usr/bin/systemctl cat atomic-openshift-node.service")
@@ -1037,6 +1064,7 @@ class DefaultSpecs(Specs):
     xfs_info = foreach_execute(xfs_mounts, "/usr/sbin/xfs_info %s")
     xinetd_conf = glob_file(["/etc/xinetd.conf", "/etc/xinetd.d/*"])
     yum_conf = simple_file("/etc/yum.conf")
+    yum_list_available = simple_command("yum -C --noplugins list available")
     yum_list_installed = simple_command("yum -C --noplugins list installed")
     yum_log = simple_file("/var/log/yum.log")
     yum_repolist = simple_command("/usr/bin/yum -C --noplugins repolist")

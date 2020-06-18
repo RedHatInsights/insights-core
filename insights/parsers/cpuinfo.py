@@ -141,7 +141,6 @@ class CpuInfo(LegacyItemAccess, Parser):
             "revision": "revision",
             "address sizes": "address_sizes",
             "bugs": "bugs",
-            "apicid": "apicid"
         }
 
         for line in get_active_lines(content, comment_char="COMMAND>"):
@@ -180,26 +179,23 @@ class CpuInfo(LegacyItemAccess, Parser):
         return self.data["cache_sizes"][0]
 
     @property
-    @defaults()
     def cpu_count(self):
         """
-        str: Returns the number of CPUs.
+        int : Returns the number of CPUs.
         """
         return len(self.data.get("cpus", []))
 
     @property
-    @defaults()
     def apicid(self):
         """
-        str: Returns the apicid of the processor.
+        list: Returns the list of apicid of the processor.
         """
-        return self.data["apicid"]
+        return self.data.get("apicid", [])
 
     @property
-    @defaults()
     def socket_count(self):
         """
-        str: Returns the number of sockets.  This is distinct from the number
+        int: Returns the number of sockets.  This is distinct from the number
         of CPUs.
         """
         return len(set(self.data.get("sockets", [])))
@@ -221,7 +217,7 @@ class CpuInfo(LegacyItemAccess, Parser):
         return self.data["model_ids"][0]
 
     @property
-    @defaults()
+    @defaults([])
     def flags(self):
         """
         list: Returns a list of feature flags for the first CPU.
@@ -240,12 +236,24 @@ class CpuInfo(LegacyItemAccess, Parser):
     @defaults()
     def core_total(self):
         """
-        str: Returns the total number of cores for the server if available, else None.
+        int: Returns the total number of cores for the server if available, else None.
+
+        .. warning::
+            This function is deprecated.  Please use the
+            :py:class:`insights.parsers.lscpu.LsCPU` class attribute
+            ``info['Cores per socket']`` and ``info['Sockets']`` values instead.
         """
         if self.data and 'cpu_cores' in self.data:
-            return sum([int(c) for c in self.data['cpu_cores']])
-        else:
-            return None
+            # I guess we can't get this fancey on older versions of RHEL
+            # return sum({e['sockets']: int(e['cpu_cores']) for e in self}.values())
+            physical_dict = {}
+            for e in self:
+                # we should rename sockets here to physical_ids as cpuinfo
+                # has it there can be many physical_ids per socket
+                # see fgrep 'physical id' /proc/cpuinfo on a single
+                # package system
+                physical_dict[e['sockets']] = int(e['cpu_cores'])
+            return sum(physical_dict.values())
 
     def get_processor_by_index(self, index):
         """

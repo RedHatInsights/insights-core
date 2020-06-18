@@ -13,7 +13,6 @@ from insights.client.support import InsightsSupport
 from insights.client.utilities import validate_remove_file, print_egg_versions, write_to_disk
 from insights.client.schedule import get_scheduler
 from insights.client.apps.compliance import ComplianceClient
-from insights.client.apps.aws import aws_main
 
 logger = logging.getLogger(__name__)
 
@@ -127,11 +126,6 @@ def post_update(client, config):
     logger.debug('Machine ID: %s', client.get_machine_id())
     logger.debug("CONFIG: %s", config)
     print_egg_versions()
-
-    # --registering an AWS machine
-    if config.portal_access or config.portal_access_no_insights:
-        logger.debug('Entitling an AWS host. Bypassing registration check.')
-        return
 
     if config.show_results:
         try:
@@ -265,13 +259,6 @@ def post_update(client, config):
 def collect_and_output(client, config):
     # last phase, delete PID file on exit
     atexit.register(write_to_disk, constants.pidfile, delete=True)
-
-    # register cloud (aws)
-    if config.portal_access or config.portal_access_no_insights:
-        if aws_main(config):
-            sys.exit(constants.sig_kill_ok)
-        else:
-            sys.exit(constants.sig_kill_bad)
     # --compliance was called
     if config.compliance:
         config.payload, config.content_type = ComplianceClient(config).oscap_scan()

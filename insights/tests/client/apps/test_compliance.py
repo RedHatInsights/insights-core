@@ -4,6 +4,7 @@ from insights.client.apps.compliance import ComplianceClient, COMPLIANCE_CONTENT
 from mock.mock import patch, Mock, mock_open
 from pytest import raises
 import os
+import six
 
 PATH = '/usr/share/xml/scap/ref_id.xml'
 
@@ -110,7 +111,10 @@ def test_run_scan(config, call):
     env = os.environ
     env.update({'TZ': 'UTC'})
     compliance_client.run_scan('ref_id', '/nonexistent', output_path)
-    call.assert_called_with("oscap xccdf eval --profile ref_id --results " + output_path + ' /nonexistent', keep_rc=True, env=env)
+    if six.PY3:
+        call.assert_called_with(("oscap xccdf eval --profile ref_id --results " + output_path + ' /nonexistent'), keep_rc=True, env=env)
+    else:
+        call.assert_called_with(("oscap xccdf eval --profile ref_id --results " + output_path + ' /nonexistent').encode(), keep_rc=True, env=env)
 
 
 @patch("insights.client.apps.compliance.call", return_value=(1, 'bad things happened'.encode('utf-8')))
@@ -122,7 +126,10 @@ def test_run_scan_fail(config, call):
     env.update({'TZ': 'UTC'})
     with raises(SystemExit):
         compliance_client.run_scan('ref_id', '/nonexistent', output_path)
-    call.assert_called_with("oscap xccdf eval --profile ref_id --results " + output_path + ' /nonexistent', keep_rc=True, env=env)
+    if six.PY3:
+        call.assert_called_with(("oscap xccdf eval --profile ref_id --results " + output_path + ' /nonexistent'), keep_rc=True, env=env)
+    else:
+        call.assert_called_with(("oscap xccdf eval --profile ref_id --results " + output_path + ' /nonexistent').encode(), keep_rc=True, env=env)
 
 
 @patch("insights.client.config.InsightsConfig")
