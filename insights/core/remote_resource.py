@@ -4,6 +4,7 @@ import redis
 import calendar
 from cachecontrol.heuristics import BaseHeuristic
 from cachecontrol.wrapper import CacheControl
+from cachecontrol.cache import DictCache
 from cachecontrol.caches.file_cache import FileCache
 
 from datetime import datetime, timedelta
@@ -70,26 +71,25 @@ class CachedRemoteResource(RemoteResource):
     redis_host = 'localhost'
     """ str: Hostname of redis instance if `RedisCache` backend is specified """
     __heuristic = 'DefaultHeuristic'
-    __cache = None
+    _cache = None
     file_cache_path = '.web_cache'
     """ str: Path to where file cache will be stored if `FileCache` backend is specified """
 
     def __init__(self):
 
         session = requests.Session()
-        hclass = globals()[self.__heuristic]
 
-        if not self.__class__.__cache:
+        if not self.__class__._cache:
             if self.backend == "RedisCache":
                 pool = redis.ConnectionPool(host=self.redis_host, port=self.redis_port, db=0)
                 r = redis.Redis(connection_pool=pool)
-                self.__class__.cache = RedisCache(r)
+                self.__class__._cache = RedisCache(r)
             elif self.backend == "FileCache":
-                self.__class__.cache = FileCache(self.file_cache_path)
+                self.__class__._cache = FileCache(self.file_cache_path)
             else:
-                self.__class__.cache = None
+                self.__class__._cache = DictCache()
 
-        session = CacheControl(session, heuristic=hclass(self.expire_after), cache=self.__class__.cache)
+        session = CacheControl(session, heuristic=DefaultHeuristic(self.expire_after), cache=self.__class__._cache)
 
         super(CachedRemoteResource, self).__init__(session)
 
