@@ -882,7 +882,7 @@ class InsightsConnection(object):
             # upload = registration on platform
             try:
                 write_registered_file()
-            except OSError:
+            except OSError as e:
                 # most likely permissions error from running as non-root
                 if os.getuid() == 0:
                     logger.error('Could not update local registration record: %s', str(e))
