@@ -55,6 +55,7 @@ class InsightsArchiveSpecs(Specs):
     docker_info = simple_file("insights_commands/docker_info")
     docker_list_containers = simple_file("insights_commands/docker_ps_--all_--no-trunc")
     docker_list_images = simple_file("insights_commands/docker_images_--all_--no-trunc_--digests")
+    du_dirs = glob_file("insights_commands/du_-s_-k_*")
     engine_config_all = simple_file("insights_commands/engine-config_--all")
     ethtool = glob_file("insights_commands/ethtool_*", ignore="ethtool_-.*")
     ethtool_S = glob_file("insights_commands/ethtool_-S_*")
@@ -153,6 +154,10 @@ class InsightsArchiveSpecs(Specs):
     lssap = simple_file("insights_commands/usr.sap.hostctrl.exe.lssap")
     lsscsi = simple_file("insights_commands/lsscsi")
     lvdisplay = simple_file("insights_commands/lvdisplay")
+    lvmconfig = first_file([
+        simple_file("insights_commands/lvmconfig_--type_full"),
+        simple_file("insights_commands/lvm_dumpconfig_--type_full"),
+    ])
     lvs_noheadings = simple_file("insights_commands/lvs_--nameprefixes_--noheadings_--separator_-a_-o_lv_name_lv_size_lv_attr_mirror_log_vg_name_devices_region_size_data_percent_metadata_percent_segtype_seg_monitor_--config_global_locking_type_0")
     lvs_noheadings_all = simple_file("insights_commands/lvs_--nameprefixes_--noheadings_--separator_-a_-o_lv_name_lv_size_lv_attr_mirror_log_vg_name_devices_region_size_data_percent_metadata_percent_segtype_--config_global_locking_type_0_devices_filter_a")
     max_uid = simple_file("insights_commands/awk_-F_if_3_max_max_3_END_print_max_.etc.passwd")
@@ -243,7 +248,7 @@ class InsightsArchiveSpecs(Specs):
     root_crontab = simple_file("insights_commands/crontab_-l_-u_root")
     rndc_status = simple_file("insights_commands/rndc_status")
     route = simple_file("insights_commands/route_-n")
-    rpm_V_packages = simple_file("insights_commands/rpm_-V_coreutils_procps_procps-ng_shadow-utils_passwd_sudo")
+    rpm_V_packages = first_file("insights_commands/rpm_-V_coreutils_procps_procps-ng_shadow-utils_passwd_sudo_chrony", "insights_commands/rpm_-V_coreutils_procps_procps-ng_shadow-utils_passwd_sudo")
     sapcontrol_getsystemupdatelist = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_sapcontrol_getsystemupdatelist")
     saphostctl_getcimobject_sapinstance = simple_file("insights_commands/usr.sap.hostctrl.exe.saphostctrl_-function_GetCIMObject_-enuminstances_SAPInstance")
     saphostexec_status = simple_file("insights_commands/usr.sap.hostctrl.exe.saphostexec_-status")

@@ -13,6 +13,12 @@ package procps is not installed
 missing     /var/db/sudo/lectured (Permission denied)
 """
 
+TEST_RPM_2 = """
+package procps is not installed
+S.5....T.  c /etc/sudoers
+S.5....T.  c /etc/chrony.conf
+"""
+
 
 def test_rpm_empty():
     rpm_pkgs = RpmVPackages(context_wrap([]))
@@ -37,6 +43,9 @@ def test_rpm():
     assert rpm_pkgs.packages_list[2] == line_3
     assert rpm_pkgs.packages_list[3] == line_4
     assert rpm_pkgs.packages_list[4] == line_5
+
+    rpm_pkgs_2 = RpmVPackages(context_wrap(TEST_RPM_2))
+    assert rpm_pkgs_2.packages_list[2].get('file', None) == '/etc/chrony.conf'
 
 
 def test_doc_examples():
