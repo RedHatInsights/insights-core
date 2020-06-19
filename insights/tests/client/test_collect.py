@@ -28,7 +28,8 @@ def collect_args(*insights_config_args, **insights_config_custom_kwargs):
     all_insights_config_kwargs = {"logging_file": "/tmp/insights.log",
                                   "remove_file": conf_remove_file,
                                   "redaction_file": conf_file_redaction_file,
-                                  "content_redaction_file": conf_file_content_redaction_file}
+                                  "content_redaction_file": conf_file_content_redaction_file,
+                                  "core_collect": False}
     all_insights_config_kwargs.update(insights_config_custom_kwargs)
     return InsightsConfig(*insights_config_args, **all_insights_config_kwargs), Mock()
 
@@ -152,7 +153,6 @@ def patch_try_disk(return_value):
 
 @patch_data_collector()
 @patch_get_conf_file()
-# @patch_get_conf_stdin()
 @patch_get_branch_info()
 def test_get_conf_file(get_branch_info, get_conf_file, data_collector):
     """
@@ -162,6 +162,19 @@ def test_get_conf_file(get_branch_info, get_conf_file, data_collector):
     collect(config, pconn)
 
     get_conf_file.assert_called_once_with()
+
+
+@patch("insights.client.client.CoreCollector")
+@patch_get_conf_file()
+@patch_get_branch_info()
+def test_get_conf_not_called_core_collection(get_branch_info, get_conf_file, core_collector):
+    """
+    Verify that uploader.json is not loaded when using core collection
+    """
+    config, pconn = collect_args(core_collect=True)
+    collect(config, pconn)
+
+    get_conf_file.assert_not_called()
 
 
 @patch_data_collector()
@@ -196,6 +209,54 @@ def test_data_collector_file(get_branch_info, get_conf_file, get_rm_conf, data_c
     blacklist_report = create_report.return_value
     data_collector.return_value.run_collection.assert_called_once_with(collection_rules, rm_conf, branch_info, blacklist_report)
     data_collector.return_value.done.assert_called_once_with(collection_rules, rm_conf)
+
+
+@patch("insights.client.client.InsightsUploadConf.create_report")
+@patch("insights.client.client.CoreCollector")
+@patch_get_rm_conf()
+@patch_get_conf_file()
+@patch_get_branch_info()
+def test_core_collector_file(get_branch_info, get_conf_file, get_rm_conf, core_collector, create_report):
+    """
+    CoreCollector is loaded with rm_conf and a None value for collection_rules
+    """
+    config, pconn = collect_args(core_collect=True)
+    collect(config, pconn)
+
+    collection_rules = None
+    rm_conf = get_rm_conf.return_value
+    branch_info = get_branch_info.return_value
+    blacklist_report = create_report.return_value
+    core_collector.return_value.run_collection.assert_called_once_with(collection_rules, rm_conf, branch_info, blacklist_report)
+    core_collector.return_value.done.assert_called_once_with(collection_rules, rm_conf)
+
+
+@patch("insights.client.client.CoreCollector")
+@patch("insights.client.client.DataCollector")
+@patch("insights.client.client.InsightsUploadConf.create_report")
+@patch_get_rm_conf()
+@patch_get_conf_file()
+@patch_get_branch_info()
+def test_correct_collector_loaded(get_branch_info, get_conf_file, get_rm_conf, create_report, data_collector, core_collector):
+    '''
+    Verify that core collection is loaded for core_collect=True, and that
+    classic collection is loaded for core_collect=False
+    '''
+    config, pconn = collect_args(core_collect=False)
+    collect(config, pconn)
+
+    data_collector.return_value.run_collection.assert_called()
+    core_collector.return_value.run_collection.assert_not_called()
+
+    # clear calls to test opposite condition
+    data_collector.return_value.run_collection.reset_mock()
+    core_collector.return_value.run_collection.reset_mock()
+
+    config.core_collect = True
+    collect(config, pconn)
+
+    data_collector.return_value.run_collection.assert_not_called()
+    core_collector.return_value.run_collection.assert_called()
 
 
 @patch_data_collector()
