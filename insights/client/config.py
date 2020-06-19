@@ -102,6 +102,9 @@ DEFAULT_OPTS = {
         'help': 'Pass a custom config file',
         'action': 'store'
     },
+    'core_collect': {
+        'default': False
+    },
     'egg_path': {
         # non-CLI
         'default': None

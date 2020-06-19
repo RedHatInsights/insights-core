@@ -117,7 +117,8 @@ def update(client, config):
     if config.payload:
         logger.debug('Uploading a payload. Bypassing rules update.')
         return
-    client.update_rules()
+    if not config.core_collect:
+        client.update_rules()
 
 
 @phase
