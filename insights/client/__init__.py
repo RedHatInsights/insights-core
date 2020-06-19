@@ -100,12 +100,7 @@ class InsightsClient(object):
         """
         Get the proper url based on the configured egg release branch
         """
-        protocol = "https://"
-        if self.config.insecure_connection:
-            protocol = "http://"
-            self.cert_verify = False
-
-        url = protocol + constants.base_url + constants.module_router_path
+        url = self.connection.base_url + constants.module_router_path
         logger.log(NETWORK, "GET %s", url)
         response = self.session.get(url, timeout=self.config.http_timeout)
         if response.status_code == 200:
