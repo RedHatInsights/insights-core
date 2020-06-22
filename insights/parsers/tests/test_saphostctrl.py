@@ -23,6 +23,7 @@ SAPHOSTCTRL_HOSTINSTANCES_DOCS = '''
  FullQualifiedHostname , String , hdb90.example.com
  IPAddress , String , 10.0.0.90
  SapVersionInfo , String , 749, patch 211, changelist 1754007
+*********************************************************
 '''
 
 SAPHOSTCTRL_HOSTINSTANCES_GOOD = '''
@@ -150,7 +151,7 @@ def test_saphostctrl():
     for sid in ['D89', 'D90', 'D79', 'D80', 'D62', 'D52', 'SMA']:
         assert sid in sap.sids
     assert sorted(sap.types) == sorted([
-        'HDB', 'HDB', 'ERS', 'ASCS', 'DVEBMGS', 'SCS', 'HDB', 'ASCS', 'D', 'SMDA'
+        'HDB', 'ERS', 'ASCS', 'DVEBMGS', 'SCS', 'D', 'SMDA'
     ])
 
 
@@ -163,5 +164,6 @@ def test_saphostctrl_bad():
         SAPHostCtrlInstances(context_wrap(''))
     assert "Empty content" in str(pe)
 
-    with pytest.raises(SkipException):
+    with pytest.raises(ParseException) as pe:
         SAPHostCtrlInstances(context_wrap(SAPHOSTCTRL_HOSTINSTANCES_BAD1))
+    assert "Missing:" in str(pe)

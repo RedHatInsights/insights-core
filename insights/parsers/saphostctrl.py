@@ -27,7 +27,7 @@ add_filter(Specs.saphostctl_getcimobject_sapinstance, SAP_INST_FILTERS)
 
 
 @parser(Specs.saphostctl_getcimobject_sapinstance)
-class SAPHostCtrlInstances(CommandParser, list):
+class SAPHostCtrlInstances(CommandParser):
     """
     This class provides processing for the output of the
     ``/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance``
@@ -57,18 +57,19 @@ class SAPHostCtrlInstances(CommandParser, list):
     Examples:
         >>> type(sap_inst)
         <class 'insights.parsers.saphostctrl.SAPHostCtrlInstances'>
-        >>> sap_inst[-1]['CreationClassName']
+        >>> sap_inst.data[-1]['CreationClassName']
         'SAPInstance'
-        >>> sap_inst[-1]['SID']
+        >>> sap_inst.data[-1]['SID']
         'D90'
-        >>> sap_inst[-1]['SapVersionInfo']  # Note: captured as one string
+        >>> sap_inst.data[-1]['SapVersionInfo']  # Note: captured as one string
         '749, patch 211, changelist 1754007'
-        >>> sap_inst[0]['InstanceType']  # Inferred code from InstanceName
+        >>> sap_inst.data[0]['InstanceType']  # Inferred code from InstanceName
         'HDB'
 
     Attributes:
         data (list): List of dicts where keys are the lead name of each line and
             values are the string value.
+        instances (list): The list of instances found in the cluster output.
         sids (list): The list of SID found in the cluster output.
         types (list): The list of instance types found in the cluster output.
     Raises:
@@ -88,61 +89,54 @@ class SAPHostCtrlInstances(CommandParser, list):
     def parse_content(self, content):
         if not content:
             raise SkipException("Empty content")
+        if len(content) == 1:
+            raise ParseException("Incorrect content: '{0}'".format(content))
 
+        self.data = []
+        self.instances = []
         _current_instance = {}
-        for line in content:
-            line = line.strip()
-            if line.startswith('******'):
-                _current_instance = {}
-                self.append(_current_instance)
-            else:
-                fields = [i.strip() for i in line.split(',', 2)]
-                if len(fields) < 3:
-                    raise ParseException("Incorrect line: '{0}'".format(line))
-                _current_instance[fields[0]] = fields[2]
+        _sids = set()
+        _types = set()
 
-        if len(self) == 0:
-            raise SkipException()
+        def _update_instance(inst):
+            for _dir in self.REQUIRED_DIRECTIVES:
+                if _dir not in inst:
+                    raise ParseException('Missing: "{0}"'.format(_dir))
 
-        self._sids = []
-        self._types = []
-        self._instances = []
-        for inst in self:
-            name = inst.get('InstanceName', '')
-            nr = inst.get('SystemNumber')
-            if not (name and name.endswith(nr)):
-                raise ParseException('Incorrect: InstanceName: "{0}", SystemNumber: "{0}"'.format(name, nr))
+            if not inst['InstanceName'].endswith(inst['SystemNumber']):
+                raise ParseException(
+                    'InstanceName: "{0}" missing match with SystemNumber: "{0}"'.format(inst['InstanceName'], inst['SystemNumber']))
             # InstanceType = The chars in InstanceName before the SystemNumber
             # subtract len(sysnumber) characters from instance name
-            inst['InstanceType'] = name[0:-len(nr)]
-            self._sids.append(inst['SID'])
-            self._types.append(inst['InstanceType'])
-            self._instances.append(name)
+            inst['InstanceType'] = inst['InstanceName'][0:-len(inst['SystemNumber'])]
 
-    @property
-    def sids(self):
-        """
-        Return the list of SAP ID of each SAP instance
-        """
-        return self._sids
+        _current_instance = {}
+        for line in (l.strip() for l in content):
+            if line.startswith('******'):
+                # Skip separator lines but save and reset current instance
+                if _current_instance:
+                    _update_instance(_current_instance)
+                    self.instances.append(_current_instance['InstanceName'])
+                    self.data.append(_current_instance)
+                    _types.add(_current_instance['InstanceType'])
+                    _sids.add(_current_instance['SID'])
+                _current_instance = {}
+                continue
+            fields = [i.strip() for i in line.split(',', 2)]
+            if len(fields) < 3:
+                raise ParseException("Incorrect line: '{0}'".format(line))
+            # TODO: if we see something other than 'String' in the second
+            # field, we could maybe change its type, say to an integer?
+            _current_instance[fields[0]] = fields[2]
+        # the last instance
+        if _current_instance:
+            _update_instance(_current_instance)
+            self.instances.append(_current_instance['InstanceName'])
+            self.data.append(_current_instance)
+            _types.add(_current_instance['InstanceType'])
+            _sids.add(_current_instance['SID'])
+        self.sids = list(_sids)
+        self.types = list(_types)
 
-    @property
-    def types(self):
-        """
-        Return the list of instance type of each SAP instance
-        """
-        return self._types
-
-    @property
-    def instances(self):
-        """
-        Return the list of instance name of each SAP instance
-        """
-        return self._instances
-
-    @property
-    def data(self):
-        """
-        Return the list to keep backward compatibility
-        """
-        return self
+    def __len__(self):
+        return len(self.data)
