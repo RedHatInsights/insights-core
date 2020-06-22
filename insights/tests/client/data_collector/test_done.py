@@ -94,7 +94,7 @@ def test_soscleaner_additions(isdir_, clean_opts):
         s._clean_files_only = Mock()
         s._extract_sosreport = Mock()
         s._make_dest_env = Mock()
-        s._get_hostname = Mock(return_value=(None, None))
+        s._get_hostname = Mock(return_value=(None, None, None))
         s._add_extra_files = Mock()
         s._process_hosts_file = Mock()
         s._domains2db = Mock()
