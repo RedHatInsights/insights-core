@@ -12,6 +12,7 @@ import pkg_resources
 import platform
 import xml.etree.ElementTree as ET
 import warnings
+import errno
 # import io
 from tempfile import TemporaryFile
 # from datetime import datetime, timedelta
@@ -883,8 +884,10 @@ class InsightsConnection(object):
             try:
                 write_registered_file()
             except OSError as e:
-                # most likely permissions error from running as non-root
-                if os.getuid() == 0:
+                if e.errno == errno.EACCES and os.getuid() != 0:
+                    # if permissions error as non-root, ignore
+                    pass
+                else:
                     logger.error('Could not update local registration record: %s', str(e))
         else:
             logger.debug(
