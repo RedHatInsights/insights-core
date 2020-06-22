@@ -26,7 +26,7 @@ from insights.core.spec_factory import first_of, foreach_collect, foreach_execut
 from insights.core.spec_factory import first_file, listdir
 from insights.parsers.mount import Mount, ProcMounts
 from insights.parsers.dnf_module import DnfModuleList
-from insights.parsers.saphostctrl import SAPHostCtrlInstances
+from insights.combiners.sap import Sap
 from insights.combiners.cloud_provider import CloudProvider
 from insights.combiners.satellite_version import SatelliteVersion
 from insights.combiners.services import Services
@@ -864,54 +864,19 @@ class DefaultSpecs(Specs):
     rsyslog_conf = simple_file("/etc/rsyslog.conf")
     samba = simple_file("/etc/samba/smb.conf")
 
-    @datasource(SAPHostCtrlInstances, hostname)
-    def sap_instance_info(broker):
-        """
-        Get the SID and Instance Number
-
-        Typical output of saphostctrl_listinstances::
-        # /usr/sap/hostctrl/exe/saphostctrl -function ListInstances
-        Inst Info : SR1 - 01 - liuxc-rhel7-hana-ent - 749, patch 418, changelist 1816226
-
-        Returns:
-            (list): List of tuple of SID and Instance Number.
-
-        """
-        insts = broker[SAPHostCtrlInstances].data
-        hn = broker[DefaultSpecs.hostname].content[0].split('.')[0].strip()
-        results = set()
-        for ins in insts:
-            # Local Instance
-            if ins['Hostname'] == hn:
-                # (SID, SystemNumber, InstanceName)
-                results.add((ins['SID'].lower(), ins['SystemNumber'], ins['InstanceName']))
-        return list(results)
-
-    @datasource(sap_instance_info)
+    @datasource(Sap)
     def sap_sid(broker):
-        """
-        Get the SID
+        sap = broker[Sap]
+        return [sap.sid(i).lower() for i in sap.local_instances]
 
-        Returns:
-            (list): List of SID.
-
-        """
-        return list(set(s[0] for s in broker[DefaultSpecs.sap_instance_info]))
-
-    @datasource(sap_instance_info)
-    def sap_sid_nr(broker):
-        """
-        Get the SID and SystemNumber pairs
-
-        Returns:
-            (list): List of SID and SystemNumber.
-
-        """
-        return list(set((s[0], s[1]) for s in broker[DefaultSpecs.sap_instance_info]))
+    @datasource(Sap)
+    def sap_sid_num(broker):
+        sap = broker[Sap]
+        return [(sap.sid(i).lower(), sap.number(i)) for i in sap.local_instances]
 
     sap_hdb_version = foreach_execute(sap_sid, "/usr/bin/sudo -iu %sadm HDB version", keep_rc=True)
     sap_host_profile = simple_file("/usr/sap/hostctrl/exe/host_profile")
-    sapcontrol_getsystemupdatelist = foreach_execute(sap_sid_nr, "/usr/bin/sudo -iu %sadm sapcontrol -nr %s -function GetSystemUpdateList", keep_rc=True)
+    sapcontrol_getsystemupdatelist = foreach_execute(sap_sid_num, "/usr/bin/sudo -iu %sadm sapcontrol -nr %s -function GetSystemUpdateList", keep_rc=True)
     saphostctl_getcimobject_sapinstance = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance")
     saphostexec_status = simple_command("/usr/sap/hostctrl/exe/saphostexec -status")
     saphostexec_version = simple_command("/usr/sap/hostctrl/exe/saphostexec -version")
