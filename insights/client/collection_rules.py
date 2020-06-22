@@ -486,9 +486,9 @@ class InsightsUploadConf(object):
                     if not six.PY3:
                         sname = sname.encode('utf-8')
                     component = _get_component_by_symbolic_name(sname)
-                    cmds_files_names_map[c] = component
-                    if len(c) > longest_key:
-                        longest_key = len(c)
+                    cmds_files_names_map[f] = component
+                    if len(f) > longest_key:
+                        longest_key = len(f)
                     updated_components.append(component)
                     matched = True
                     break
@@ -499,9 +499,9 @@ class InsightsUploadConf(object):
                     if not six.PY3:
                         sname = sname.encode('utf-8')
                     component = _get_component_by_symbolic_name(sname)
-                    cmds_files_names_map[c] = component
-                    if len(c) > longest_key:
-                        longest_key = len(c)
+                    cmds_files_names_map[f] = component
+                    if len(f) > longest_key:
+                        longest_key = len(f)
                     updated_components.append(component)
                     matched = True
                     break
