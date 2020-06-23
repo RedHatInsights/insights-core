@@ -15,9 +15,7 @@ from .utilities import (generate_machine_id,
                         delete_registered_file,
                         delete_unregistered_file,
                         delete_cache_files,
-                        determine_hostname,
-                        read_pidfile,
-                        systemd_notify)
+                        determine_hostname)
 from .collection_rules import InsightsUploadConf
 from .data_collector import DataCollector
 from .connection import InsightsConnection
@@ -310,9 +308,7 @@ def get_connection(config):
 def _legacy_upload(config, pconn, tar_file, content_type, collection_duration=None):
     logger.info('Uploading Insights data.')
     api_response = None
-    parent_pid = read_pidfile()
     for tries in range(config.retries):
-        systemd_notify(parent_pid)
         upload = pconn.upload_archive(tar_file, '', collection_duration)
 
         if upload.status_code in (200, 201):
@@ -359,9 +355,7 @@ def upload(config, pconn, tar_file, content_type, collection_duration=None):
     if config.legacy_upload:
         return _legacy_upload(config, pconn, tar_file, content_type, collection_duration)
     logger.info('Uploading Insights data.')
-    parent_pid = read_pidfile()
     for tries in range(config.retries):
-        systemd_notify(parent_pid)
         upload = pconn.upload_archive(tar_file, content_type, collection_duration)
 
         if upload.status_code in (200, 202):
