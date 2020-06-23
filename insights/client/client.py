@@ -218,6 +218,7 @@ def _legacy_handle_unregistration(config, pconn):
         # Run connection test and exit
         if config.force:
             __cleanup_local_files()
+            return True
         return None
 
     if check['status']:
