@@ -381,7 +381,6 @@ class InsightsUploadConf(object):
         In order to maximize compatibility between "classic" remove.conf
         configurations and core collection, do the following mapping
         strategy:
-
         1. If remove.conf entry matches a symbolic name, disable the
             corresponding core component.
         2. If remove.conf entry is a raw command or file, do a reverse
@@ -390,7 +389,6 @@ class InsightsUploadConf(object):
         3. If neither conditions 1 or 2 are matched it is either
             a) a mistyped command/file, or
             b) an arbitrary file.
-
             For (a), classic remove.conf configs require an exact match to
                 uploader.json. We can carry that condition into our
                 compatibility with core.
@@ -458,56 +456,56 @@ class InsightsUploadConf(object):
                 return spec_prefix + spec_conversion[sname]
             return spec_prefix + sname
 
-        for c in self.rm_conf.get('commands', []):
-            matched = False
-            for spec in uploader_json['commands']:
-                if c == spec['symbolic_name'] or c == spec['command']:
-                    # matches to a symbolic name or raw command, cache the symbolic name
-                    sname = spec['symbolic_name']
-                    if not six.PY3:
-                        sname = sname.encode('utf-8')
-                    component = _get_component_by_symbolic_name(sname)
-                    cmds_files_names_map[c] = component
-                    if len(c) > longest_key:
-                        longest_key = len(c)
-                    updated_components.append(component)
-                    matched = True
-                    break
-            if not matched:
-                # could not match the command to anything, keep in config as-is
-                updated_commands.append(c)
+        # this is a little confusing after being refactored, so:
+        #   uploader_json - the loaded uploader.json data, as a dict
+        #   rm_conf_key   - one of the section names in remove.conf (commands and files)
+        #   search_keys   - the keys to look for in uploader.json depending on rm_conf_key.
+        #                   for "commands" it's just "commands" but for "files" we're
+        #                   looking in both "files" and "globs"
+        #   singular      - search_key with the trailing "s" removed to peek into the
+        #                   uploader.json dicts
+        #   c             - one of the values of our current rm_conf_key
+        #   matched       - whether or not a match to a component has been found in the list
+        #   s             - one of the search_keys
+        #   spec          - one of the individual dicts of uploader.json
+        #   sname         - the symbolic name of a matching record
+        #   component     - the component matching to a symbolic name
 
-        for f in self.rm_conf.get('files', []):
-            matched = False
-            for spec in uploader_json['files']:
-                if f == spec['symbolic_name'] or f == spec['file']:
-                    # matches to a symbolic name or raw command, cache the symbolic name
-                    sname = spec['symbolic_name']
-                    if not six.PY3:
-                        sname = sname.encode('utf-8')
-                    component = _get_component_by_symbolic_name(sname)
-                    cmds_files_names_map[f] = component
-                    if len(f) > longest_key:
-                        longest_key = len(f)
-                    updated_components.append(component)
-                    matched = True
-                    break
-            for spec in uploader_json['globs']:
-                if f == spec['symbolic_name']:
-                    # matches only to a symbolic name for globs
-                    sname = spec['symbolic_name']
-                    if not six.PY3:
-                        sname = sname.encode('utf-8')
-                    component = _get_component_by_symbolic_name(sname)
-                    cmds_files_names_map[f] = component
-                    if len(f) > longest_key:
-                        longest_key = len(f)
-                    updated_components.append(component)
-                    matched = True
-                    break
-            if not matched:
-                # could not match the file to anything, keep in config as-is
-                updated_files.append(f)
+        #   updated_components   - the list of matching components
+        #   updated_commands     - leftover commands that could not be matched
+        #   updated_files        - leftover files that could not be matched
+        #   cmds_files_names_map - dict of rm_conf entries and the matching component for logging
+        #   longest_key          - keep track of longest entry for logging prettiness
+
+        for rm_conf_key in ['commands', 'files']:
+            # iterate over the two keys we are interested in
+            search_keys = [rm_conf_key]
+            if rm_conf_key == 'files':
+                search_keys = ['files', 'globs']
+            for c in self.rm_conf.get(rm_conf_key, []):
+                # iterate over each value in commands/files
+                matched = False
+                for s in search_keys:
+                    # will only be 1 or 2 iterations - [commands] or [files, globs]
+                    singular = s.rstrip('s')
+                    for spec in uploader_json[s]:
+                        if c == spec['symbolic_name'] or (c == spec[singular] and s != 'globs'):
+                            # matches to a symbolic name or raw command, cache the symbolic name
+                            # only match symbolic name for globs
+                            sname = spec['symbolic_name']
+                            if not six.PY3:
+                                sname = sname.encode('utf-8')
+                            component = _get_component_by_symbolic_name(sname)
+                            cmds_files_names_map[c] = component
+                            if len(c) > longest_key:
+                                longest_key = len(c)
+                            updated_components.append(component)
+                            matched = True
+                            break
+                if not matched:
+                    # could not match the command to anything, keep in config as-is
+                    if rm_conf_key == 'commands':
+                        updated_commands.append(c)
 
         for n in cmds_files_names_map:
             spec_name_no_prefix = cmds_files_names_map[n].rsplit('.', 1)[-1]
