@@ -503,9 +503,11 @@ class InsightsUploadConf(object):
                             matched = True
                             break
                 if not matched:
-                    # could not match the command to anything, keep in config as-is
+                    # could not match the command/file to anything, keep in config as-is
                     if rm_conf_key == 'commands':
                         updated_commands.append(c)
+                    if rm_conf_key == 'files':
+                        updated_files.append(c)
 
         for n in cmds_files_names_map:
             spec_name_no_prefix = cmds_files_names_map[n].rsplit('.', 1)[-1]
