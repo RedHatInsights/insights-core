@@ -7,8 +7,14 @@ from insights.client.collection_rules import InsightsUploadConf
 from mock.mock import patch, Mock, call
 from insights.specs.default import DefaultSpecs
 from insights.specs.sos_archive import SosSpecs
-from insights.client.map_components import map_rm_conf_to_components, _get_component_by_symbolic_name
+from insights.client.map_components import (map_rm_conf_to_components,
+                                            _search_uploader_json,
+                                            _get_component_by_symbolic_name)
 
+uploader_json_file = pkgutil.get_data(insights.__name__, "uploader_json_map.json")
+uploader_json = json.loads(uploader_json_file)
+default_specs = vars(DefaultSpecs).keys()
+sos_specs = vars(SosSpecs).keys()
 
 # @patch('insights.client.collection_rules.InsightsUploadConf.load_redaction_file', Mock(return_value={'test': 'test'}))
 # @patch('insights.client.collection_rules.InsightsUploadConf.get_rm_conf_old', Mock(return_value={'test': 'test'}))
@@ -34,16 +40,11 @@ from insights.client.map_components import map_rm_conf_to_components, _get_compo
 #     map_rm_conf_to_components.assert_not_called()
 
 
-def test_all_sym_names_match_components():
+def test_get_component_by_symbolic_name():
     '''
     Verify that all symbolic names in uploader.json can be mapped
     to valid components as prescribed in the conversion function
     '''
-    uploader_json_file = pkgutil.get_data(insights.__name__, "uploader_json_map.json")
-    uploader_json = json.loads(uploader_json_file)
-    default_specs = vars(DefaultSpecs).keys()
-    sos_specs = vars(SosSpecs).keys()
-
     for category in ['commands', 'files', 'globs']:
         for entry in uploader_json[category]:
             full_component = _get_component_by_symbolic_name(entry['symbolic_name'])
@@ -64,14 +65,42 @@ def test_all_sym_names_match_components():
                 assert False
 
 
-def test_all_sym_names_can_be_mapped():
+def test_search_uploader_json():
+    '''
+    Verify that all valid input from an uploader.json-based remove.conf
+    will return a symbolic name
+    '''
+    for cmd in uploader_json['commands']:
+        assert _search_uploader_json(['commands'], cmd['command'])
+        assert _search_uploader_json(['commands'], cmd['symbolic_name'])
+    for fil in uploader_json['files']:
+        assert _search_uploader_json(['files', 'globs'], fil['file'])
+        assert _search_uploader_json(['files', 'globs'], fil['symbolic_name'])
+    for glb in uploader_json['globs']:
+        assert _search_uploader_json(['files', 'globs'], glb['symbolic_name'])
+
+
+def test_search_uploader_json_invalid():
+    '''
+    Verify that invalid input will return None
+    '''
+    assert _search_uploader_json(['commands'], 'random value') is None
+    assert _search_uploader_json(['files', 'globs'], 'random value') is None
+
+
+def test_search_uploader_json_globs_symbolic_only():
+    '''
+    Verify that globs are matched by symbolic name only
+    '''
+    for glb in uploader_json['globs']:
+        assert _search_uploader_json(['files', 'globs'], glb['glob']) is None
+
+
+def test_map_rm_conf_to_components_sym_names():
     '''
     Verify that all symbolic names in uploader.json result as
     components in the output
     '''
-    uploader_json_file = pkgutil.get_data(insights.__name__, "uploader_json_map.json")
-    uploader_json = json.loads(uploader_json_file)
-
     # commands
     for cmd in uploader_json['commands']:
         # run each possible command through the function
@@ -121,7 +150,7 @@ def test_all_sym_names_can_be_mapped():
         assert new_rm_conf['components'][0] == spec_name
 
 
-def test_all_raw_cmds_files_can_be_mapped():
+def test_map_rm_conf_to_components_raw_cmds_files():
     '''
     Verify that all raw files/commands in uploader.json result as
     components in the output
@@ -165,29 +194,15 @@ def test_all_raw_cmds_files_can_be_mapped():
             assert new_rm_conf['components'][0] == spec_name
 
 
-def test_map_rm_conf_to_components_mapped():
+def test_map_rm_conf_to_components_invalid():
     '''
     Verify that matching commands/files are mapped to components
     '''
-    input_commands = []
-    input_files = []
-    expected_components = []
-
-
-def test_map_rm_conf_to_components_mismatch():
-    '''
-    Verify that commands/files not matching components are
-    left in their respective lists
-    '''
-    input_commands = []
-    input_files = []
-    expected_components = []
-
-
-def test_map_rm_conf_to_components_glob_symbolic_name_only():
-    '''
-    Verify that globs are matched by symbolic name only
-    '''
-    input_commands = []
-    input_files = []
-    expected_components = []
+    rm_conf = {'commands': ['random', 'value'], 'files': ['other', 'invalid', 'data']}
+    new_rm_conf = map_rm_conf_to_components(rm_conf)
+    # rm_conf should be unchanged
+    assert len(new_rm_conf['commands']) == 2
+    assert len(new_rm_conf['files']) == 3
+    assert len(new_rm_conf['components']) == 0
+    assert new_rm_conf['commands'] == rm_conf['commands']
+    assert new_rm_conf['files'] == rm_conf['files']

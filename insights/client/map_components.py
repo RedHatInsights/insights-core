@@ -108,11 +108,17 @@ def _search_uploader_json(headings, key):
                 if not six.PY3:
                     sname = sname.encode('utf-8')
                 return sname
+    # no match
+    return None
 
 
 def _get_component_by_symbolic_name(sname):
     # match a component to a symbolic name
     # some symbolic names need to be renamed to fit specs
+    if sname is None:
+        # toss back bad input
+        return None
+
     spec_prefix = "insights.specs.default.DefaultSpecs."
     spec_conversion = {
         'getconf_pagesize': 'getconf_page_size',
