@@ -11,6 +11,9 @@ from insights.specs.default import DefaultSpecs
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
 
+uploader_json_file = pkgutil.get_data(insights.__name__, "uploader_json_map.json")
+uploader_json = json.loads(uploader_json_file)
+
 
 def map_rm_conf_to_components(rm_conf):
     '''
@@ -39,9 +42,6 @@ def map_rm_conf_to_components(rm_conf):
     updated_files = []
     updated_components = []
 
-    uploader_json_file = pkgutil.get_data(insights.__name__, "uploader_json_map.json")
-    uploader_json = json.loads(uploader_json_file)
-
     if not rm_conf:
         return
 
@@ -49,73 +49,33 @@ def map_rm_conf_to_components(rm_conf):
 
     # save matches to a dict for informative logging
     conversion_map = {}
-    longest_key = 0
+    longest_key_len = 0
 
-    # loop
-    #   match command/symbol with symbolic name
-    #   get component from symbolic name
-    #   add component to components blacklist (with prefix)
-    #   add command and result (without prefix) to map for logging at the end
+    for section in ['commands', 'files']:
+        if section not in rm_conf:
+            continue
+        for key in rm_conf[section]:
+            if section == 'commands':
+                symbolic_name = _search_uploader_json(['commands'], key)
+            elif section == 'files':
+                # match both files and globs to rm_conf files
+                symbolic_name = _search_uploader_json(['files', 'globs'], key)
 
-    # this is a little confusing after being refactored, so:
-    #   uploader_json - the loaded uploader.json data, as a dict
-    #   rm_conf_key   - one of the section names in remove.conf (commands and files)
-    #   search_keys   - the keys to look for in uploader.json depending on rm_conf_key.
-    #                   for "commands" it's just "commands" but for "files" we're
-    #                   looking in both "files" and "globs"
-    #   singular      - search_key with the trailing "s" removed to peek into the
-    #                   uploader.json dicts
-    #   c             - one of the values of our current rm_conf_key
-    #   matched       - whether or not a match to a component has been found in the list
-    #   s             - one of the search_keys
-    #   spec          - one of the individual dicts of uploader.json
-    #   sname         - the symbolic name of a matching record
-    #   component     - the component matching to a symbolic name
-
-    #   updated_components - the list of matching components
-    #   updated_commands   - leftover commands that could not be matched
-    #   updated_files      - leftover files that could not be matched
-    #   conversion_map     - dict of rm_conf entries and the matching component for logging
-    #   longest_key        - keep track of longest entry for logging
-
-    for rm_conf_key in ['commands', 'files']:
-        # iterate over the two keys we are interested in
-        search_keys = [rm_conf_key]
-        if rm_conf_key == 'files':
-            search_keys = ['files', 'globs']
-        for c in rm_conf.get(rm_conf_key, []):
-            # iterate over each value in commands/files
-            matched = False
-            for s in search_keys:
-                # will only be 1 or 2 iterations - [commands] or [files, globs]
-                singular = s.rstrip('s')
-                for spec in uploader_json[s]:
-                    if c == spec['symbolic_name'] or (c == spec[singular] and s != 'globs'):
-                        # matches to a symbolic name or raw command, cache the symbolic name
-                        # only match symbolic name for globs
-                        sname = spec['symbolic_name']
-                        if not six.PY3:
-                            sname = sname.encode('utf-8')
-                        component = _get_component_by_symbolic_name(sname)
-                        if component is None:
-                            # the spec is not collected by core
-                            continue
-                        conversion_map[c] = component
-                        if len(c) > longest_key:
-                            longest_key = len(c)
-                        updated_components.append(component)
-                        matched = True
-                        break
-            if not matched:
-                # could not match the command to anything, keep in config as-is
-                if rm_conf_key == 'commands':
-                    updated_commands.append(c)
-                if rm_conf_key == 'files':
-                    updated_files.append(c)
+            component = _get_component_by_symbolic_name(symbolic_name)
+            if component:
+                conversion_map[key] = component
+                if len(key) > longest_key_len:
+                    longest_key_len = len(key)
+                updated_components.append(component)
+            else:
+                if section == 'commands':
+                    updated_commands.append(key)
+                elif section == 'files':
+                    updated_files.append(key)
 
     for n in conversion_map:
         spec_name_no_prefix = conversion_map[n].rsplit('.', 1)[-1]
-        logger.warning('{0:{1}}\t=> {2}'.format(n, longest_key, spec_name_no_prefix))
+        logger.warning('{0:{1}}\t=> {2}'.format(n, longest_key_len, spec_name_no_prefix))
 
     updated_components = list(dict.fromkeys(updated_components))
 
@@ -124,6 +84,30 @@ def map_rm_conf_to_components(rm_conf):
     rm_conf['components'] = updated_components
 
     return rm_conf
+
+
+def _search_uploader_json(headings, key):
+    '''
+    Search an uploader.json block for a command/file from "name"
+    and return the symbolic name if it exists
+
+    headings        - list of headings to search inside uploader.json
+    key             - raw command/file or symbolic name to search
+    conversion_map  - list of names to found components for logging
+    longest_key_len - length of longest name for logging
+    '''
+    for heading in headings:
+        # keys inside the dicts are the heading, but singular
+        singular = heading.rstrip('s')
+
+        for spec in uploader_json[heading]:
+            if key == spec['symbolic_name'] or (key == spec[singular] and heading != 'globs'):
+                # matches to a symbolic name or raw command, cache the symbolic name
+                # only match symbolic name for globs
+                sname = spec['symbolic_name']
+                if not six.PY3:
+                    sname = sname.encode('utf-8')
+                return sname
 
 
 def _get_component_by_symbolic_name(sname):
