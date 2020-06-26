@@ -16,11 +16,6 @@
             "symbolic_name": "aws_instance_id_pkcs7"
         },
         {
-            "command": "python -m insights.tools.cat --no-header aws_instance_type",
-            "pattern": [],
-            "symbolic_name": "aws_instance_type"
-        },
-        {
             "command": "python -m insights.tools.cat --no-header azure_instance_type",
             "pattern": [],
             "symbolic_name": "azure_instance_type"
@@ -155,6 +150,8 @@
                 "Device is ineligible for IOMMU domain attach due to platform RMRR requirement",
                 "Dropping TSO",
                 "EDAC ",
+                "EFI",
+                "Efi",
                 "Emulex OneConnect OCe10100, FCoE Initiator",
                 "FEATURE IBPB_SUPPORT",
                 "FEATURE SPEC_CTRL",
@@ -182,6 +179,7 @@
                 "crashkernel reservation failed",
                 "crashkernel=auto resulted in zero bytes of reserved memory",
                 "e1000: E1000 MODULE IS NOT SUPPORTED",
+                "efi",
                 "fw=8.08.",
                 "ixgbevf: Unknown parameter `InterruptThrottleRate'",
                 "l1tf",
@@ -228,6 +226,11 @@
             "command": "/usr/bin/docker images --all --no-trunc --digests",
             "pattern": [],
             "symbolic_name": "docker_list_images"
+        },
+        {
+            "command": "/bin/du -s -k /var/lib/candlepin/activemq-artemis",
+            "pattern": [],
+            "symbolic_name": "du_dirs"
         },
         {
             "command": "/sbin/ethtool",
@@ -497,11 +500,6 @@
             "symbolic_name": "ls_disk"
         },
         {
-            "command": "/bin/ls -lanR /var/lib/docker/volumes",
-            "pattern": [],
-            "symbolic_name": "ls_docker_volumes"
-        },
-        {
             "command": "/bin/ls -lan /sys/devices/system/edac/mc",
             "pattern": [],
             "symbolic_name": "ls_edac_mc"
@@ -640,6 +638,7 @@
                 "/var/log/journal",
                 "COMMAND",
                 "libcrypto",
+                "liblvm2cmd.so",
                 "libssl",
                 "libssl.so",
                 "lsnrctl",
@@ -978,9 +977,18 @@
         {
             "command": "/bin/ps alxwww",
             "pattern": [
+                "/usr/bin/gnome-shell",
+                "/usr/bin/openshift start master",
+                "/usr/bin/openshift start node",
                 "COMMAND",
                 "bash",
+                "chronyd",
+                "corosync",
                 "docker",
+                "ntpd",
+                "openshift start master api",
+                "openshift start master controllers",
+                "openshift start node",
                 "ora",
                 "pacemakerd",
                 "pcsd",
@@ -996,6 +1004,7 @@
                 "/usr/bin/docker-current",
                 "/usr/bin/docker-current daemon",
                 "/usr/bin/dockerd-current",
+                "/usr/bin/gnome-shell",
                 "/usr/bin/hyperkube kubelet",
                 "/usr/bin/openshift start master",
                 "/usr/bin/openshift start node",
@@ -1004,6 +1013,7 @@
                 "bash",
                 "ceph-osd",
                 "chronyd",
+                "corosync",
                 "docker",
                 "mysqld",
                 "ntpd",
@@ -1029,18 +1039,20 @@
         {
             "command": "/bin/ps auxww",
             "pattern": [
-                "/exe/sapstartsrv",
+                "/opt/perf/bin/midaemon",
                 "/sbin/multipathd",
+                "/usr/bin/gnome-shell",
+                "/usr/bin/openshift start master",
+                "/usr/bin/openshift start node",
                 "/usr/bin/teamd",
-                "/usr/sap/",
                 "/usr/sbin/fcoemon --syslog",
                 "COMMAND",
-                "HDB",
                 "bash",
                 "catalina.base",
                 "ceilometer-coll",
                 "chronyd",
                 "cmirrord",
+                "corosync",
                 "docker",
                 "elasticsearch",
                 "goferd",
@@ -1054,6 +1066,9 @@
                 "nova-compute",
                 "ntpd",
                 "octavia-worker",
+                "openshift start master api",
+                "openshift start master controllers",
+                "openshift start node",
                 "ora",
                 "pacemakerd",
                 "pcsd",
@@ -1071,12 +1086,21 @@
         {
             "command": "/bin/ps -ef",
             "pattern": [
+                "/usr/bin/gnome-shell",
+                "/usr/bin/openshift start master",
+                "/usr/bin/openshift start node",
                 "CMD",
                 "bash",
+                "chronyd",
+                "corosync",
                 "docker",
                 "neutron-ns-metadata-proxy",
                 "nginx: master process",
                 "nginx: worker process",
+                "ntpd",
+                "openshift start master api",
+                "openshift start master controllers",
+                "openshift start node",
                 "ora",
                 "pacemakerd",
                 "pcsd",
@@ -1147,9 +1171,9 @@
             "symbolic_name": "root_crontab"
         },
         {
-            "command": "/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo",
+            "command": "/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo chrony",
             "pattern": [],
-            "symbolic_name": "rpm__V_packages"
+            "symbolic_name": "rpm_V_packages"
         },
         {
             "command": "/usr/bin/mongo pulp_database --eval 'db.serverStatus().storageEngine'",
@@ -1731,6 +1755,8 @@
                 "Amazon EC2",
                 "CVE-2017-1000364",
                 "CVE-2018-14634",
+                "EFI",
+                "Efi",
                 "FEATURE IBPB_SUPPORT",
                 "FEATURE SPEC_CTRL",
                 "Kernel page table isolation",
@@ -1738,6 +1764,7 @@
                 "L1Tf",
                 "Linux version",
                 "__cpufreq_add_dev",
+                "efi",
                 "l1tf",
                 "x86/pti"
             ],
@@ -2173,6 +2200,7 @@
                 "Virtualization daemon",
                 "WRITE SAME failed. Manually zeroing",
                 "] trap divide error ",
+                "_NET_ACTIVE_WINDOW",
                 "as active slave; either",
                 "belongs to docker.service",
                 "callbacks suppressed",
@@ -2204,7 +2232,6 @@
                 "from image service failed: rpc error: code = Canceled desc = context canceled",
                 "host not found in upstream",
                 "http2: no cached connection was available",
-                "httpd",
                 "hv_netvsc vmbus_",
                 "hv_netvsc: probe of vmbus_",
                 "hw csum failure",
@@ -2215,6 +2242,7 @@
                 "irq handler for vector (irq -1)",
                 "is beyond advertised capabilities",
                 "is down or the link is down",
+                "is greater than comparison timestamp",
                 "iscsiadm: iscsiadm: Could not log into all portals",
                 "kernel/softirq.c:159 local_bh_enable+",
                 "kernel: BUG: soft lockup",
@@ -2891,6 +2919,7 @@
         {
             "file": "/etc/rsyslog.conf",
             "pattern": [
+                "$ActionQueueFileName",
                 "imjournal",
                 "imtcp",
                 "regex"
@@ -3253,7 +3282,7 @@
         {
             "file": "/var/log/up2date",
             "pattern": [
-                "[CAUTION] This_is_the default_filter_string_for_all_large_files!"
+                "The certificate /usr/share/rhn/RHNS-CA-CERT is expired"
             ],
             "symbolic_name": "up2date_log"
         },
@@ -3812,5 +3841,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2020-05-28T13:56:54.119585"
+    "version": "2020-06-25T15:25:20.371641"
 }
