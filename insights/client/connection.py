@@ -23,9 +23,6 @@ except ImportError:
     # python 3
     from urllib.parse import urlparse
     from urllib.parse import quote
-with warnings.catch_warnings():
-    warnings.filterwarnings("ignore", category=UserWarning)
-    import pkg_resources
 from .utilities import (determine_hostname,
                         generate_machine_id,
                         write_unregistered_file,
@@ -176,6 +173,7 @@ class InsightsConnection(object):
         """
         Generates and returns a string suitable for use as a request user-agent
         """
+        import pkg_resources
         core_version = "insights-core"
         pkg = pkg_resources.working_set.find(pkg_resources.Requirement.parse(core_version))
         if pkg is not None:
