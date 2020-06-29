@@ -208,15 +208,53 @@ def test_map_rm_conf_to_components_invalid():
     assert new_rm_conf['files'] == rm_conf['files']
 
 
-def test_rm_conf_empty():
+@patch('insights.client.map_components._search_uploader_json')
+def test_rm_conf_empty(_search_uploader_json):
     '''
     Verify the function returns rm_conf unchanged if called
     with an empty dict or None
     '''
     rm_conf = {}
     new_rm_conf = map_rm_conf_to_components(rm_conf)
+    _search_uploader_json.assert_not_called()
     assert new_rm_conf == {}
 
     rm_conf = None
     new_rm_conf = map_rm_conf_to_components(rm_conf)
+    _search_uploader_json.assert_not_called()
     assert new_rm_conf is None
+
+
+@patch('insights.client.map_components.logger.warning')
+def test_log_long_key(logger_warning):
+    '''
+    Verify the conversion table is logged with proper
+    spacing, wrapping, and unconverted specs are not logged
+    '''
+    rm_conf = {'commands': ["/usr/bin/find /etc/origin/node /etc/origin/master /etc/pki -type f -exec /usr/bin/openssl x509 -noout -enddate -in '{}' \\; -exec echo 'FileName= {}' \\;",
+                            "/usr/bin/md5sum /etc/pki/product/69.pem",
+                            "ss_tupna"],
+               'files': ["/etc/sysconfig/virt-who",
+                         "/etc/yum.repos.d/fedora-cisco-openh264.repo",
+                         "krb5_conf_d"]}
+    new_rm_conf = map_rm_conf_to_components(rm_conf)
+    logger_warning.assert_has_calls([
+        call("If possible, commands and files specified in the blacklist configuration will be converted to Insights component specs that will be disabled as needed."),
+        call("- /usr/bin/find /etc/origin/node                   => certificates_enddate\n  /etc/origin/master /etc/pki -type f -exec\n  /usr/bin/openssl x509 -noout -enddate -in '{}'\n  \\; -exec echo 'FileName= {}' \\;"),
+        call("- /usr/bin/md5sum /etc/pki/product/69.pem          => md5chk_files"),
+        call("- ss_tupna                                         => ss"),
+        call("- /etc/sysconfig/virt-who                          => sysconfig_virt_who"),
+        call("- krb5_conf_d                                      => krb5")])
+
+
+@patch('insights.client.map_components.logger.warning')
+def test_log_short_key(logger_warning):
+    '''
+    Verify the conversion table is logged without wrapping or spacing when key
+    is short
+    '''
+    rm_conf = {'commands': ["ss_tupna"]}
+    new_rm_conf = map_rm_conf_to_components(rm_conf)
+    logger_warning.assert_has_calls([
+        call("If possible, commands and files specified in the blacklist configuration will be converted to Insights component specs that will be disabled as needed."),
+        call("- ss_tupna => ss")])

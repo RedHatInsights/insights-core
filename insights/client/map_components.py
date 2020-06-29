@@ -4,6 +4,7 @@ import insights
 import json
 import six
 import logging
+import textwrap
 
 from .constants import InsightsConstants as constants
 from insights.specs.default import DefaultSpecs
@@ -73,9 +74,7 @@ def map_rm_conf_to_components(rm_conf):
                 elif section == 'files':
                     updated_files.append(key)
 
-    for n in conversion_map:
-        spec_name_no_prefix = conversion_map[n].rsplit('.', 1)[-1]
-        logger.warning('{0:{1}}\t=> {2}'.format(n, longest_key_len, spec_name_no_prefix))
+    _log_conversion_table(conversion_map, longest_key_len)
 
     updated_components = list(dict.fromkeys(updated_components))
 
@@ -150,3 +149,24 @@ def _get_component_by_symbolic_name(sname):
             return spec_conversion[sname]
         return spec_prefix + spec_conversion[sname]
     return spec_prefix + sname
+
+
+def _log_conversion_table(conversion_map, longest_key_len):
+    '''
+    Handle wrapping & logging the conversions
+    '''
+    max_log_len = 48
+
+    for n in conversion_map:
+        spec_name_no_prefix = conversion_map[n].rsplit('.', 1)[-1]
+
+        # for specs exceeding a max length, wrap them past the first line
+        if longest_key_len > max_log_len:
+            log_len = max_log_len
+        else:
+            log_len = longest_key_len
+
+        wrapped_spec = textwrap.wrap(n, max_log_len)
+        # log the conversion on the first line of the "wrap"
+        wrapped_spec[0] = '- {0:{1}} => {2}'.format(wrapped_spec[0], log_len, spec_name_no_prefix)
+        logger.warning('\n  '.join(wrapped_spec))
