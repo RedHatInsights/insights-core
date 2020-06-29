@@ -8,7 +8,6 @@ import os
 import six
 import json
 import logging
-import pkg_resources
 import platform
 import xml.etree.ElementTree as ET
 import warnings
@@ -24,6 +23,9 @@ except ImportError:
     # python 3
     from urllib.parse import urlparse
     from urllib.parse import quote
+with warnings.catch_warnings():
+    warnings.filterwarnings("ignore", category=UserWarning)
+    import pkg_resources
 from .utilities import (determine_hostname,
                         generate_machine_id,
                         write_unregistered_file,
