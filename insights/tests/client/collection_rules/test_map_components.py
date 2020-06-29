@@ -206,3 +206,17 @@ def test_map_rm_conf_to_components_invalid():
     assert len(new_rm_conf['components']) == 0
     assert new_rm_conf['commands'] == rm_conf['commands']
     assert new_rm_conf['files'] == rm_conf['files']
+
+
+def test_rm_conf_empty():
+    '''
+    Verify the function returns rm_conf unchanged if called
+    with an empty dict or None
+    '''
+    rm_conf = {}
+    new_rm_conf = map_rm_conf_to_components(rm_conf)
+    assert new_rm_conf == {}
+
+    rm_conf = None
+    new_rm_conf = map_rm_conf_to_components(rm_conf)
+    assert new_rm_conf is None

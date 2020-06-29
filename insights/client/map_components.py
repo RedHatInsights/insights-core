@@ -43,7 +43,7 @@ def map_rm_conf_to_components(rm_conf):
     updated_components = []
 
     if not rm_conf:
-        return
+        return rm_conf
 
     logger.warning("If possible, commands and files specified in the blacklist configuration will be converted to Insights component specs that will be disabled as needed.")
 
