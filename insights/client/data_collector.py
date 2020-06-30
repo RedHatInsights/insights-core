@@ -277,9 +277,9 @@ class DataCollector(object):
             logger.debug('Patterns section of blacklist configuration is empty.')
 
         logger.debug('Running content redaction...')
-        for root, dirs, files in os.walk(self.archive.archive_dir):
+        for dirpath, dirnames, filenames in os.walk(self.archive.archive_dir):
             # relative path inside the source archive dir
-            src_relpath = os.path.relpath(root, self.archive.archive_dir)
+            src_relpath = os.path.relpath(dirpath, self.archive.archive_dir)
             # absolute path for the destination archive dir
             dst_abspath = os.path.join(redacted_archive.archive_dir, src_relpath)
 
@@ -291,8 +291,8 @@ class DataCollector(object):
                     # only raise an error if it's unexpected
                     raise(e)
 
-            for f in files:
-                src_file = os.path.join(root, f)
+            for f in filenames:
+                src_file = os.path.join(dirpath, f)
                 dst_file = os.path.join(dst_abspath, f)
 
                 logger.debug('Processing %s...', src_file)
