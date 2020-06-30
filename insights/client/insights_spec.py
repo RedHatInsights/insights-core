@@ -18,23 +18,8 @@ class InsightsSpec(object):
     '''
     A spec loaded from the uploader.json
     '''
-    def __init__(self, config, spec, exclude):
+    def __init__(self, config, spec):
         self.config = config
-
-        # exclusions patterns for this spec
-        # if exclude is an array of strings, it's old style
-        # if it's an object or an array of dicts, it's new style
-        # use regex if it's defined
-        self.regex = False
-        self.exclude = None
-        if exclude and isinstance(exclude, dict):
-            if 'regex' in exclude and exclude['regex']:
-                logger.debug('Using regular expression matching in remove.conf.')
-                self.regex = True
-                self.exclude = exclude['regex']
-        else:
-            self.exclude = exclude
-        # pattern for spec collection
         self.pattern = spec['pattern'] if spec['pattern'] else None
 
 
@@ -42,8 +27,8 @@ class InsightsCommand(InsightsSpec):
     '''
     A command spec
     '''
-    def __init__(self, config, spec, exclude, mountpoint):
-        InsightsSpec.__init__(self, config, spec, exclude)
+    def __init__(self, config, spec, mountpoint):
+        InsightsSpec.__init__(self, config, spec)
         self.command = spec['command'].replace(
             '{CONTAINER_MOUNT_POINT}', mountpoint)
         self.archive_path = mangle.mangle_command(self.command)
@@ -86,37 +71,10 @@ class InsightsCommand(InsightsSpec):
             else:
                 raise err
 
+        if proc0.returncode == 126 or proc0.returncode == 127:
+            stdout = "Could not find cmd: %s", self.command
+
         dirty = False
-
-        cmd = "sed -rf " + constants.default_sed_file
-        sedcmd = Popen(shlex.split(cmd),
-                       stdin=proc0.stdout,
-                       stdout=PIPE)
-        proc0.stdout.close()
-        proc0 = sedcmd
-
-        if self.exclude is not None:
-            exclude_file = NamedTemporaryFile()
-            exclude_file.write("\n".join(self.exclude).encode('utf-8'))
-            exclude_file.flush()
-            if self.regex:
-                cmd = "grep -E -v -f %s" % exclude_file.name
-            else:
-                cmd = "grep -F -v -f %s" % exclude_file.name
-            proc1 = Popen(shlex.split(cmd),
-                          stdin=proc0.stdout,
-                          stdout=PIPE)
-            proc0.stdout.close()
-            stderr = None
-            if self.pattern is None or len(self.pattern) == 0:
-                stdout, stderr = proc1.communicate()
-
-            # always log return codes for debug
-            logger.debug('Proc1 Status: %s', proc1.returncode)
-            logger.debug('Proc1 stderr: %s', stderr)
-            proc0 = proc1
-
-            dirty = True
 
         if self.pattern is not None and len(self.pattern):
             pattern_file = NamedTemporaryFile()
@@ -139,11 +97,6 @@ class InsightsCommand(InsightsSpec):
         if not dirty:
             stdout, stderr = proc0.communicate()
 
-        # Required hack while we still pass shell=True to Popen; a Popen
-        # call with shell=False for a non-existant binary will raise OSError.
-        if proc0.returncode == 126 or proc0.returncode == 127:
-            stdout = "Could not find cmd: %s", self.command
-
         logger.debug("Proc0 Status: %s", proc0.returncode)
         logger.debug("Proc0 stderr: %s", stderr)
         return stdout.decode('utf-8', 'ignore').strip()
@@ -153,8 +106,8 @@ class InsightsFile(InsightsSpec):
     '''
     A file spec
     '''
-    def __init__(self, spec, exclude, mountpoint):
-        InsightsSpec.__init__(self, None, spec, exclude)
+    def __init__(self, spec, mountpoint):
+        InsightsSpec.__init__(self, None, spec)
         # substitute mountpoint for collection
         self.real_path = os.path.join(mountpoint, spec['file'].lstrip('/'))
         self.archive_path = spec['file']
@@ -167,33 +120,11 @@ class InsightsFile(InsightsSpec):
             logger.debug('File %s does not exist', self.real_path)
             return
 
-        cmd = []
-        cmd.append('sed')
-        cmd.append('-rf')
-        cmd.append(constants.default_sed_file)
-        cmd.append(self.real_path)
-        sedcmd = Popen(cmd,
-                       stdout=PIPE)
+        sedcmd = Popen(['sed', '', self.real_path], stdout=PIPE)
 
-        if self.exclude is not None:
-            exclude_file = NamedTemporaryFile()
-            exclude_file.write("\n".join(self.exclude).encode('utf-8'))
-            exclude_file.flush()
-
-            if self.regex:
-                cmd = "grep -E -v -f %s" % exclude_file.name
-            else:
-                cmd = "grep -F -v -f %s" % exclude_file.name
-            args = shlex.split(cmd)
-            proc = Popen(args, stdin=sedcmd.stdout, stdout=PIPE)
-            sedcmd.stdout.close()
-            stdin = proc.stdout
-            if self.pattern is None:
-                output = proc.communicate()[0]
-            else:
-                sedcmd = proc
-
-        if self.pattern is not None:
+        if self.pattern is None:
+            output = sedcmd.communicate()[0]
+        else:
             pattern_file = NamedTemporaryFile()
             pattern_file.write("\n".join(self.pattern).encode('utf-8'))
             pattern_file.flush()
@@ -203,12 +134,6 @@ class InsightsFile(InsightsSpec):
             proc1 = Popen(args, stdin=sedcmd.stdout, stdout=PIPE)
             sedcmd.stdout.close()
 
-            if self.exclude is not None:
-                stdin.close()
-
             output = proc1.communicate()[0]
-
-        if self.pattern is None and self.exclude is None:
-            output = sedcmd.communicate()[0]
 
         return output.decode('utf-8', 'ignore').strip()

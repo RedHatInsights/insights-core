@@ -197,16 +197,6 @@ class DataCollector(object):
         if rm_conf is None:
             rm_conf = {}
         logger.debug('Beginning to run collection spec...')
-        exclude = None
-        if rm_conf:
-            try:
-                exclude = rm_conf['patterns']
-                # handle the None or empty case of the sub-object
-                if 'regex' in exclude and not exclude['regex']:
-                    raise LookupError
-                logger.warn("WARNING: Skipping patterns defined in blacklist configuration")
-            except LookupError:
-                logger.debug('Patterns section of blacklist configuration is empty.')
 
         for c in conf['commands']:
             # remember hostname archive path
@@ -222,7 +212,7 @@ class DataCollector(object):
                     if s['command'] in rm_commands:
                         logger.warn("WARNING: Skipping command %s", s['command'])
                         continue
-                    cmd_spec = InsightsCommand(self.config, s, exclude, self.mountpoint)
+                    cmd_spec = InsightsCommand(self.config, s, self.mountpoint)
                     self.archive.add_to_archive(cmd_spec)
         for f in conf['files']:
             rm_files = rm_conf.get('files', [])
@@ -235,7 +225,7 @@ class DataCollector(object):
                     if s['file'] in rm_conf.get('files', []):
                         logger.warn("WARNING: Skipping file %s", s['file'])
                     else:
-                        file_spec = InsightsFile(s, exclude, self.mountpoint)
+                        file_spec = InsightsFile(s, self.mountpoint)
                         self.archive.add_to_archive(file_spec)
         if 'globs' in conf:
             for g in conf['globs']:
@@ -244,9 +234,11 @@ class DataCollector(object):
                     if g['file'] in rm_conf.get('files', []):
                         logger.warn("WARNING: Skipping file %s", g)
                     else:
-                        glob_spec = InsightsFile(g, exclude, self.mountpoint)
+                        glob_spec = InsightsFile(g, self.mountpoint)
                         self.archive.add_to_archive(glob_spec)
         logger.debug('Spec collection finished.')
+
+        self.data_redaction(rm_conf)
 
         # collect metadata
         logger.debug('Collecting metadata...')
@@ -256,6 +248,77 @@ class DataCollector(object):
         self._write_tags()
         self._write_blacklist_report(blacklist_report)
         logger.debug('Metadata collection finished.')
+
+    def data_redaction(self, rm_conf):
+        '''
+        Perform data redaction (password sed command and patterns),
+        write data to a new InsightsArchive structure, and delete the old one
+        '''
+        redacted_archive = InsightsArchive(self.config)
+
+        if rm_conf is None:
+            rm_conf = {}
+        exclude = None
+        regex = False
+        if rm_conf:
+            try:
+                exclude = rm_conf['patterns']
+                if isinstance(exclude, dict) and exclude['regex']:
+                    # if "patterns" contains a non-empty "regex" dict
+                    logger.debug('Using regular expression matching for patterns.')
+                    exclude = exclude['regex']
+                    regex = True
+                logger.warn("WARNING: Skipping patterns defined in blacklist configuration")
+            except LookupError:
+                # either "patterns" was undefined in rm conf, or
+                #   "regex" was undefined in "patterns"
+                exclude = None
+        if not exclude:
+            logger.debug('Patterns section of blacklist configuration is empty.')
+
+        logger.debug('Running content redaction...')
+        for root, dirs, files in os.walk(self.archive.archive_dir):
+            # relative path inside the source archive dir
+            src_relpath = os.path.relpath(root, self.archive.archive_dir)
+            # absolute path for the destination archive dir
+            dst_abspath = os.path.join(redacted_archive.archive_dir, src_relpath)
+
+            try:
+                os.makedirs(dst_abspath)
+            except OSError as e:
+                # dir exists
+                pass
+
+            for f in files:
+                src_file = os.path.join(root, f)
+                dst_file = os.path.join(dst_abspath, f)
+
+                logger.debug('Processing %s...', src_file)
+
+                # password removal
+                sedcmd = Popen(['sed', '-rf', constants.default_sed_file, src_file], stdout=PIPE)
+                # patterns removal
+                if exclude:
+                    exclude_file = NamedTemporaryFile()
+                    exclude_file.write("\n".join(exclude).encode('utf-8'))
+                    exclude_file.flush()
+                    if regex:
+                        flag = '-E'
+                    else:
+                        flag = '-F'
+                    grepcmd = Popen(['grep', '-v', flag, '-f', exclude_file.name], stdin=sedcmd.stdout, stdout=PIPE)
+                    sedcmd.stdout.close()
+                    stdout, stderr = grepcmd.communicate()
+                else:
+                    stdout, stderr = sedcmd.communicate()
+                with open(dst_file, 'w') as dst:
+                    dst.write(stdout)
+
+        # remove the original archive
+        self.archive.delete_tmp_dir()
+        self.archive.delete_archive_file()
+        # use the cleaned archive
+        self.archive = redacted_archive
 
     def done(self, conf, rm_conf):
         """
