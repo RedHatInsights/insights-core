@@ -287,7 +287,7 @@ class DataCollector(object):
                 os.makedirs(dst_abspath)
             except OSError as e:
                 # most likely directory exists
-                if e.errno != errno.EEXISTS:
+                if e.errno != errno.EEXIST:
                     # only raise an error if it's unexpected
                     raise(e)
 
