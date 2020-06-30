@@ -472,8 +472,9 @@ class SOSCleaner:
 
             hostname = None
             domainname = None
+            fqdn = None
 
-            return hostname, domainname
+            return hostname, domainname, fqdn
 
         except Exception as e: # pragma: no cover
             self.logger.exception(e)
