@@ -238,13 +238,11 @@ def test_log_long_key(logger_warning):
                          "/etc/yum.repos.d/fedora-cisco-openh264.repo",
                          "krb5_conf_d"]}
     new_rm_conf = map_rm_conf_to_components(rm_conf)
-    logger_warning.assert_has_calls([
-        call("If possible, commands and files specified in the blacklist configuration will be converted to Insights component specs that will be disabled as needed."),
-        call("- /usr/bin/find /etc/origin/node                   => certificates_enddate\n  /etc/origin/master /etc/pki -type f -exec\n  /usr/bin/openssl x509 -noout -enddate -in '{}'\n  \\; -exec echo 'FileName= {}' \\;"),
-        call("- /usr/bin/md5sum /etc/pki/product/69.pem          => md5chk_files"),
-        call("- ss_tupna                                         => ss"),
-        call("- /etc/sysconfig/virt-who                          => sysconfig_virt_who"),
-        call("- krb5_conf_d                                      => krb5")])
+    logger_warning.assert_any_call("- /usr/bin/find /etc/origin/node                   => certificates_enddate\n  /etc/origin/master /etc/pki -type f -exec\n  /usr/bin/openssl x509 -noout -enddate -in '{}'\n  \\; -exec echo 'FileName= {}' \\;")
+    logger_warning.assert_any_call("- /usr/bin/md5sum /etc/pki/product/69.pem          => md5chk_files")
+    logger_warning.assert_any_call("- ss_tupna                                         => ss"),
+    logger_warning.assert_any_call("- /etc/sysconfig/virt-who                          => sysconfig_virt_who")
+    logger_warning.assert_any_call("- krb5_conf_d                                      => krb5")
 
 
 @patch('insights.client.map_components.logger.warning')
@@ -255,6 +253,4 @@ def test_log_short_key(logger_warning):
     '''
     rm_conf = {'commands': ["ss_tupna"]}
     new_rm_conf = map_rm_conf_to_components(rm_conf)
-    logger_warning.assert_has_calls([
-        call("If possible, commands and files specified in the blacklist configuration will be converted to Insights component specs that will be disabled as needed."),
-        call("- ss_tupna => ss")])
+    logger_warning.assert_any_call("If possible, commands and files specified in the blacklist configuration will be converted to Insights component specs that will be disabled as needed.")
