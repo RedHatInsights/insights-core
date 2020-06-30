@@ -286,8 +286,10 @@ class DataCollector(object):
             try:
                 os.makedirs(dst_abspath)
             except OSError as e:
-                # dir exists
-                pass
+                # most likely directory exists
+                if e.errno != errno.EEXISTS:
+                    # only raise an error if it's unexpected
+                    raise(e)
 
             for f in files:
                 src_file = os.path.join(root, f)
