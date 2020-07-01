@@ -376,6 +376,7 @@ class CleanOptions(object):
         self.files = []
         self.quiet = True
         self.keyword_file = None
+        self.keywords_file = None
         self.keywords = None
         self.no_tar_file = config.output_dir
         self.loglevel = 'INFO'
