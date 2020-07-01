@@ -23,7 +23,7 @@ from insights.core.plugins import datasource
 from insights.core.spec_factory import CommandOutputProvider, ContentException, DatasourceProvider, RawFileProvider
 from insights.core.spec_factory import simple_file, simple_command, glob_file, command_with_args
 from insights.core.spec_factory import first_of, foreach_collect, foreach_execute
-from insights.core.spec_factory import first_file, listdir, head
+from insights.core.spec_factory import first_file, listdir
 from insights.parsers.mount import Mount, ProcMounts
 from insights.parsers.dnf_module import DnfModuleList
 from insights.combiners.sap import Sap
@@ -185,14 +185,7 @@ class DefaultSpecs(Specs):
     chkconfig = simple_command("/sbin/chkconfig --list")
     chrony_conf = simple_file("/etc/chrony.conf")
     chronyc_sources = simple_command("/usr/bin/chronyc sources")
-    cib_xml = first_of(
-        [
-            simple_file("/var/lib/pacemaker/cib/cib.xml"),
-            head(
-                glob_file("sos_commands/pacemaker/crm_report/*/cib.xml")
-            )
-        ]
-    )
+    cib_xml = simple_file("/var/lib/pacemaker/cib/cib.xml")
     cinder_api_log = first_file(["/var/log/containers/cinder/cinder-api.log", "/var/log/cinder/cinder-api.log"])
     cinder_conf = first_file(["/var/lib/config-data/puppet-generated/cinder/etc/cinder/cinder.conf", "/etc/cinder/cinder.conf"])
     cinder_volume_log = simple_file("/var/log/cinder/volume.log")
