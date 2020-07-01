@@ -8,7 +8,6 @@ import os
 import six
 import json
 import logging
-import pkg_resources
 import platform
 import xml.etree.ElementTree as ET
 import warnings
@@ -174,6 +173,7 @@ class InsightsConnection(object):
         """
         Generates and returns a string suitable for use as a request user-agent
         """
+        import pkg_resources
         core_version = "insights-core"
         pkg = pkg_resources.working_set.find(pkg_resources.Requirement.parse(core_version))
         if pkg is not None:
