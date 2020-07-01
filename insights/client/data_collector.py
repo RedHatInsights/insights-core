@@ -252,10 +252,8 @@ class DataCollector(object):
     def data_redaction(self, rm_conf):
         '''
         Perform data redaction (password sed command and patterns),
-        write data to a new InsightsArchive structure, and delete the old one
+        write data to the archive in place
         '''
-        redacted_archive = InsightsArchive(self.config)
-
         if rm_conf is None:
             rm_conf = {}
         exclude = None
@@ -278,27 +276,14 @@ class DataCollector(object):
 
         logger.debug('Running content redaction...')
         for dirpath, dirnames, filenames in os.walk(self.archive.archive_dir):
-            # relative path inside the source archive dir
-            src_relpath = os.path.relpath(dirpath, self.archive.archive_dir)
-            # absolute path for the destination archive dir
-            dst_abspath = os.path.join(redacted_archive.archive_dir, src_relpath)
-
-            try:
-                os.makedirs(dst_abspath)
-            except OSError as e:
-                # most likely directory exists
-                if e.errno != errno.EEXIST:
-                    # only raise an error if it's unexpected
-                    raise(e)
 
             for f in filenames:
-                src_file = os.path.join(dirpath, f)
-                dst_file = os.path.join(dst_abspath, f)
+                fullpath = os.path.join(dirpath, f)
 
-                logger.debug('Processing %s...', src_file)
+                logger.debug('Processing %s...', fullpath)
 
                 # password removal
-                sedcmd = Popen(['sed', '-rf', constants.default_sed_file, src_file], stdout=PIPE)
+                sedcmd = Popen(['sed', '-rf', constants.default_sed_file, fullpath], stdout=PIPE)
                 # patterns removal
                 if exclude:
                     exclude_file = NamedTemporaryFile()
@@ -313,14 +298,8 @@ class DataCollector(object):
                     stdout, stderr = grepcmd.communicate()
                 else:
                     stdout, stderr = sedcmd.communicate()
-                with open(dst_file, 'w') as dst:
+                with open(fullpath, 'w') as dst:
                     dst.write(stdout)
-
-        # remove the original archive
-        self.archive.delete_tmp_dir()
-        self.archive.delete_archive_file()
-        # use the cleaned archive
-        self.archive = redacted_archive
 
     def done(self, conf, rm_conf):
         """
