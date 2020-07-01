@@ -39,6 +39,8 @@ FIRST_OF_TYPE = 'first_of'
 """ str: Literal constant for a first_of Spec object """
 COMMAND_WITH_ARGS_TYPE = 'command_with_args'
 """ str: Literal constant for a command_with_args Spec object """
+HEAD_TYPE = 'head'
+""" str: Literal constant used for a head Spec object """
 UNKNOWN_TYPE = 'unknown'
 """ str: Literal constant for a Spec object with unknown type """
 ANONYMOUS_SPEC_NAME = 'anonymous'
@@ -88,6 +90,11 @@ def is_listdir(m_obj):
 def is_command_with_args(m_obj):
     """ bool: True if broker object is a is_command_with_args object """
     return isinstance(m_obj, insights.core.spec_factory.command_with_args)
+
+
+def is_head(m_obj):
+    """ bool: True if object is a head object """
+    return isinstance(m_obj, insights.core.spec_factory.head)
 
 
 def is_function(m_obj):
@@ -208,7 +215,7 @@ class Spec(dict):
         elif is_first_of(m_type):
             m_spec['type_name'] = FIRST_OF_TYPE
             deps = next((v for k, v in m_members if k == "deps"), None)
-            m_spec['deps'] = [Spec.from_object(d) for d in deps]
+            m_spec['deps'] = [cls.from_object(d) for d in deps]
             deps_repr = ', '.join(['{0}'.format(d) for d in m_spec['deps']])
             m_spec['repr'] = 'first_of([{0}])'.format(deps_repr)
 
@@ -227,6 +234,12 @@ class Spec(dict):
             if provider:
                 m_spec['provider'] = cls.from_object(provider)
             m_spec['repr'] = 'foreach_collect("{path}", provider={provider})'
+
+        elif is_head(m_type):
+            m_spec['type_name'] = HEAD_TYPE
+            dep = next((v for k, v in m_members if k == "dep"), None)
+            m_spec['dep'] = cls.from_object(dep)
+            m_spec['repr'] = 'head({0})'.format(m_spec['dep'])
 
         elif m_type is None:
             m_spec['type_name'] = NONE_TYPE
@@ -300,6 +313,11 @@ class Spec(dict):
     def is_command_with_args(self):
         """ bool: True if this spec is a command_with_args """
         return self.get('type_name', UNKNOWN_TYPE) == COMMAND_WITH_ARGS_TYPE
+
+    @property
+    def is_head(self):
+        """ bool: True if this spec is a head """
+        return self.get('type_name', UNKNOWN_TYPE) == HEAD_TYPE
 
     @property
     def is_function(self):
