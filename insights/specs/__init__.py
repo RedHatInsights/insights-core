@@ -140,6 +140,7 @@ class Specs(SpecSet):
     du_dirs = RegistryPoint(multi_output=True)
     dumpe2fs_h = RegistryPoint(multi_output=True)
     engine_config_all = RegistryPoint()
+    engine_db_query_vdsm_version = RegistryPoint()
     engine_log = RegistryPoint(filterable=True)
     etc_journald_conf_d = RegistryPoint(multi_output=True)
     etc_journald_conf = RegistryPoint()
