@@ -100,7 +100,10 @@ class InsightsClient(object):
         """
         Get the proper url based on the configured egg release branch
         """
-        url = self.connection.base_url + constants.module_router_path
+        if self.config.legacy_upload:
+            url = self.connect.base_url + '/platform' + constants.module_router_path
+        else:
+            url = self.connection.base_url + constants.module_router_path
         logger.log(NETWORK, "GET %s", url)
         response = self.session.get(url, timeout=self.config.http_timeout)
         if response.status_code == 200:
