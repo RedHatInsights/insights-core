@@ -1,4 +1,3 @@
-from insights.client.config import InsightsConfig
 from insights.client.archive import InsightsArchive
 from mock.mock import patch, Mock, call
 from unittest import TestCase

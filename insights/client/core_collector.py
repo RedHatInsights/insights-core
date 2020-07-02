@@ -4,7 +4,6 @@ Collect all the interesting data for analysis - Core version
 from __future__ import absolute_import
 import os
 import logging
-import copy
 from insights import collect
 
 from .constants import InsightsConstants as constants
