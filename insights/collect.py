@@ -18,7 +18,7 @@ import yaml
 from datetime import datetime
 
 from insights import apply_configs, apply_default_enabled, dr
-from insights.core import blacklist
+from insights.core import blacklist, filters
 from insights.core.serde import Hydration
 from insights.util import fs
 from insights.util.subproc import call
@@ -245,6 +245,16 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False):
     apply_blacklist(client.get("blacklist", {}))
 
     to_persist = get_to_persist(client.get("persist", set()))
+
+    try:
+        filters.load()
+    except IOError as e:
+        if e.errno == 0:
+            # no filters.yaml available
+            log.debug("No filters available: %s", str(e))
+    except AttributeError as e:
+        # problem loading the filters
+        log.debug("Could not parse filters: %s", str(e))
 
     hostname = call("hostname -f", env=SAFE_ENV).strip()
     suffix = datetime.utcnow().strftime("%Y%m%d%H%M%S")
