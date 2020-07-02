@@ -1312,7 +1312,10 @@ class SOSCleaner(object):
             if self.kw_count > 0:    # we have obfuscated keywords to work with
                 for keyword, o_keyword in list(self.kw_db.items()):
                     if keyword in line:
-                        line = re.sub(r'\b%s\b' % keyword, o_keyword, line)
+                        # insights-client modification to match partial
+                        #   words like old soscleaner. original expression
+                        #   is r'\b%s\b'
+                        line = re.sub(r'%s' % keyword, o_keyword, line)
                         self.logger.debug(
                             "Obfuscating Keyword - %s > %s", keyword, o_keyword)
 
