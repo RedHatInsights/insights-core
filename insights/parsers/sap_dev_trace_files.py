@@ -87,8 +87,8 @@ class SapDevDisp(LogFileOutput):
         """
         .. warning::
             The ``get_after`` function is not supported by this Parser because
-            of the structure of this file is totally different with the normal
-            log files expected by ``LogFileOutput``.
+            of the structure of the SAP trace files are totally different with
+            the log files expected by the base class``LogFileOutput``.
 
         Raises:
             ParseException: Always raises ParseException.
@@ -188,8 +188,8 @@ class SapDevRd(LogFileOutput):
         """
         .. warning::
             The ``get_after`` function is not supported by this Parser because
-            of the structure of this file is totally different with the normal
-            log files expected by ``LogFileOutput``.
+            of the structure of the SAP trace files are totally different with
+            the log files expected by the base class``LogFileOutput``.
 
         Raises:
             ParseException: Always raises ParseException.
