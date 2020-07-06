@@ -51,26 +51,32 @@ GwIRegInitRegInfo: reg_info file /usr/sap/RH1/D00/data/reginfo not found
 
 SapDevDisp.keep_scan('warning_lines', "WARNING")
 SapDevRd.keep_scan('ccms', "CCMS:")
+DISP_PATH = '/usr/sap/RH1/D00/work/dev_disp'
+RD_PATH = '/usr/sap/RH2/D03/work/dev_rd'
 
 
 def test_dev_disp():
-    dev_disp = SapDevDisp(context_wrap(SAP_DEV_DISP))
+    dev_disp = SapDevDisp(context_wrap(SAP_DEV_DISP, path=DISP_PATH))
     assert len(dev_disp.warning_lines) == len(dev_disp.get("WARNING"))
+    assert dev_disp.sid == DISP_PATH.split('/')[3]
+    assert dev_disp.instance == DISP_PATH.split('/')[4]
     with pytest.raises(ParseException):
         dev_disp.get_after()
 
 
 def test_dev_rd():
-    dev_rd = SapDevRd(context_wrap(SAP_DEV_RD))
+    dev_rd = SapDevRd(context_wrap(SAP_DEV_RD, path=RD_PATH))
     assert len(dev_rd.ccms) == len(dev_rd.get("CCMS:"))
+    assert dev_rd.sid == RD_PATH.split('/')[3]
+    assert dev_rd.instance == RD_PATH.split('/')[4]
     with pytest.raises(ParseException):
         dev_rd.get_after()
 
 
 def test_dev_docs():
     env = {
-        "dev_disp": SapDevDisp(context_wrap(SAP_DEV_DISP)),
-        "dev_rd": SapDevRd(context_wrap(SAP_DEV_RD))
+        "dev_disp": SapDevDisp(context_wrap(SAP_DEV_DISP, path=DISP_PATH)),
+        "dev_rd": SapDevRd(context_wrap(SAP_DEV_RD, path=RD_PATH))
     }
     failed, total = doctest.testmod(sap_dev_trace_files, globs=env)
     assert failed == 0

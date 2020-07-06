@@ -19,8 +19,40 @@ add_filter(Specs.sap_dev_disp, 'trc file:')  # keep the header line by default
 add_filter(Specs.sap_dev_rd, 'trc file:')  # keep the header line by default
 
 
+class SapDevTraceFile(LogFileOutput):
+    """
+    The Base class for parsing the SAP trace files.
+    """
+
+    def get_after(self, *args, **kwargs):
+        """
+        .. warning::
+            The ``get_after`` function is not supported by this Parser because
+            of the structure of the SAP trace files are totally different with
+            the log files expected by the base class``LogFileOutput``.
+
+        Raises:
+            ParseException: Always raises ParseException.
+        """
+        raise ParseException("get_after() is not supported by this Parser.")
+
+    @property
+    def sid(self):
+        """
+        The SID of this trace file.
+        """
+        return self.file_path.lstrip('/').split('/')[2]
+
+    @property
+    def instance(self):
+        """
+        The instance name of this trace file.
+        """
+        return self.file_path.lstrip('/').split('/')[3]
+
+
 @parser(Specs.sap_dev_disp)
-class SapDevDisp(LogFileOutput):
+class SapDevDisp(SapDevTraceFile):
     """
     This class reads the SAP trace files ``/usr/sap/SID/SNAME/work/dev_disp``
 
@@ -79,25 +111,20 @@ class SapDevDisp(LogFileOutput):
     Examples:
         >>> type(dev_disp)
         <class 'insights.parsers.sap_dev_trace_files.SapDevDisp'>
+        >>> dev_disp.file_path == '/usr/sap/RH1/D00/work/dev_disp'
+        True
+        >>> dev_disp.sid == 'RH1'
+        True
+        >>> dev_disp.instance == 'D00'
+        True
         >>> len(dev_disp.get("WARNING"))
         4
     """
-
-    def get_after(self, *args, **kwargs):
-        """
-        .. warning::
-            The ``get_after`` function is not supported by this Parser because
-            of the structure of the SAP trace files are totally different with
-            the log files expected by the base class``LogFileOutput``.
-
-        Raises:
-            ParseException: Always raises ParseException.
-        """
-        raise ParseException("get_after() is not supported by this Parser.")
+    pass
 
 
 @parser(Specs.sap_dev_rd)
-class SapDevRd(LogFileOutput):
+class SapDevRd(SapDevTraceFile):
     """
     This class reads the SAP trace files ``/usr/sap/SID/SNAME/work/dev_rd``
 
@@ -180,18 +207,13 @@ class SapDevRd(LogFileOutput):
     Examples:
         >>> type(dev_rd)
         <class 'insights.parsers.sap_dev_trace_files.SapDevRd'>
+        >>> dev_rd.file_path == '/usr/sap/RH2/D03/work/dev_rd'
+        True
+        >>> dev_rd.sid == 'RH2'
+        True
+        >>> dev_rd.instance == 'D03'
+        True
         >>> len(dev_rd.get("CCMS:"))
         6
     """
-
-    def get_after(self, *args, **kwargs):
-        """
-        .. warning::
-            The ``get_after`` function is not supported by this Parser because
-            of the structure of the SAP trace files are totally different with
-            the log files expected by the base class``LogFileOutput``.
-
-        Raises:
-            ParseException: Always raises ParseException.
-        """
-        raise ParseException("get_after() is not supported by this Parser.")
+    pass
