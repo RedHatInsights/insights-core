@@ -32,6 +32,41 @@ SOSCLEANER_LOGGER = logging.getLogger('insights-client.soscleaner')
 SOSCLEANER_LOGGER.setLevel(logging.ERROR)
 
 
+def _process_content_redaction(filepath, exclude, regex=False):
+    '''
+    Redact content from a file, based on
+    /etc/insights-client/.exp.sed and and the contents of "exclude"
+
+    filepath    file to modify
+    exclude     list of strings to redact
+    regex       whether exclude is a list of regular expressions
+
+    Returns the file contents with the specified data removed
+    '''
+    logger.debug('Processing %s...', filepath)
+
+    # password removal
+    sedcmd = Popen(['sed', '-rf', constants.default_sed_file, filepath], stdout=PIPE)
+    # patterns removal
+    if exclude:
+        exclude_file = NamedTemporaryFile()
+        exclude_file.write("\n".join(exclude).encode('utf-8'))
+        exclude_file.flush()
+        if regex:
+            flag = '-E'
+        else:
+            flag = '-F'
+        grepcmd = Popen(['grep', '-v', flag, '-f', exclude_file.name], stdin=sedcmd.stdout, stdout=PIPE)
+        sedcmd.stdout.close()
+        stdout, stderr = grepcmd.communicate()
+        logger.debug('Process status: %s', grepcmd.returncode)
+    else:
+        stdout, stderr = sedcmd.communicate()
+        logger.debug('Process status: %s', sedcmd.returncode)
+    logger.debug('Process stderr: %s', stderr)
+    return stdout
+
+
 class DataCollector(object):
     '''
     Run commands and collect files
@@ -239,7 +274,7 @@ class DataCollector(object):
                         self.archive.add_to_archive(glob_spec)
         logger.debug('Spec collection finished.')
 
-        self.data_redaction(rm_conf)
+        self.redact(rm_conf)
 
         # collect metadata
         logger.debug('Collecting metadata...')
@@ -250,7 +285,7 @@ class DataCollector(object):
         self._write_blacklist_report(blacklist_report)
         logger.debug('Metadata collection finished.')
 
-    def data_redaction(self, rm_conf):
+    def redact(self, rm_conf):
         '''
         Perform data redaction (password sed command and patterns),
         write data to the archive in place
@@ -284,30 +319,11 @@ class DataCollector(object):
             logger.debug('Patterns section of blacklist configuration is empty.')
 
         for dirpath, dirnames, filenames in os.walk(self.archive.archive_dir):
-
             for f in filenames:
                 fullpath = os.path.join(dirpath, f)
-
-                logger.debug('Processing %s...', fullpath)
-
-                # password removal
-                sedcmd = Popen(['sed', '-rf', constants.default_sed_file, fullpath], stdout=PIPE)
-                # patterns removal
-                if exclude:
-                    exclude_file = NamedTemporaryFile()
-                    exclude_file.write("\n".join(exclude).encode('utf-8'))
-                    exclude_file.flush()
-                    if regex:
-                        flag = '-E'
-                    else:
-                        flag = '-F'
-                    grepcmd = Popen(['grep', '-v', flag, '-f', exclude_file.name], stdin=sedcmd.stdout, stdout=PIPE)
-                    sedcmd.stdout.close()
-                    stdout, stderr = grepcmd.communicate()
-                else:
-                    stdout, stderr = sedcmd.communicate()
+                redacted_contents = _process_content_redaction(fullpath, exclude, regex)
                 with open(fullpath, 'w') as dst:
-                    dst.write(stdout)
+                    dst.write(redacted_contents)
 
     def done(self, conf, rm_conf):
         """

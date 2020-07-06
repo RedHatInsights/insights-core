@@ -28,7 +28,7 @@ class InsightsCommand(InsightsSpec):
     A command spec
     '''
     def __init__(self, config, spec, mountpoint):
-        InsightsSpec.__init__(self, config, spec)
+        super(InsightsCommand, self).__init__(config, spec)
         self.command = spec['command'].replace(
             '{CONTAINER_MOUNT_POINT}', mountpoint)
         self.archive_path = mangle.mangle_command(self.command)
@@ -107,7 +107,7 @@ class InsightsFile(InsightsSpec):
     A file spec
     '''
     def __init__(self, spec, mountpoint):
-        InsightsSpec.__init__(self, None, spec)
+        super(InsightsFile, self).__init__(None, spec)
         # substitute mountpoint for collection
         self.real_path = os.path.join(mountpoint, spec['file'].lstrip('/'))
         self.archive_path = spec['file']
