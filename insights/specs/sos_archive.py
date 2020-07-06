@@ -1,7 +1,7 @@
 from functools import partial
 from insights.specs import Specs
 from insights.core.context import SosArchiveContext
-from insights.core.spec_factory import simple_file, first_of, first_file, glob_file
+from insights.core.spec_factory import simple_file, first_of, first_file, glob_file, head
 
 first_file = partial(first_file, context=SosArchiveContext)
 glob_file = partial(glob_file, context=SosArchiveContext)
@@ -25,6 +25,14 @@ class SosSpecs(Specs):
     ceph_report = simple_file("sos_commands/ceph/ceph_report")
     ceph_health_detail = simple_file("sos_commands/ceph/ceph_health_detail_--format_json-pretty")
     chkconfig = first_file(["sos_commands/startup/chkconfig_--list", "sos_commands/services/chkconfig_--list"])
+    cib_xml = first_of(
+        [
+            simple_file("/var/lib/pacemaker/cib/cib.xml"),
+            head(
+                glob_file("sos_commands/pacemaker/crm_report/*/cib.xml")
+            )
+        ]
+    )
     cpupower_frequency_info = simple_file("sos_commands/processor/cpupower_frequency-info")
     date = first_of([simple_file("sos_commands/general/date"), simple_file("sos_commands/date/date")])
     df__al = first_file(["sos_commands/filesys/df_-al", "sos_commands/filesys/df_-al_-x_autofs"])
