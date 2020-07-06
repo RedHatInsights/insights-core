@@ -84,6 +84,15 @@ class SapDevDisp(LogFileOutput):
     """
 
     def get_after(self, *args, **kwargs):
+        """
+        .. warning::
+            The ``get_after`` function is not supported by this Parser because
+            of the structure of this file is totally different with the normal
+            log files expected by ``LogFileOutput``.
+
+        Raises:
+            ParseException: Always raises ParseException.
+        """
         raise ParseException("get_after() is not supported by this Parser.")
 
 
@@ -176,4 +185,13 @@ class SapDevRd(LogFileOutput):
     """
 
     def get_after(self, *args, **kwargs):
+        """
+        .. warning::
+            The ``get_after`` function is not supported by this Parser because
+            of the structure of this file is totally different with the normal
+            log files expected by ``LogFileOutput``.
+
+        Raises:
+            ParseException: Always raises ParseException.
+        """
         raise ParseException("get_after() is not supported by this Parser.")
