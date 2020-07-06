@@ -10,6 +10,7 @@ import copy
 import glob
 import six
 import shlex
+import re
 from itertools import chain
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
@@ -254,6 +255,14 @@ class DataCollector(object):
         Perform data redaction (password sed command and patterns),
         write data to the archive in place
         '''
+        logger.debug('Running content redaction...')
+
+        if not re.match(r'/var/tmp/.+/insights-.+', self.archive.archive_dir):
+            # sanity check to make sure we're only modifying
+            #   our own stuff in temp
+            # we should never get here but just in case
+            raise RuntimeError('ERROR: invalid Insights archive temp path')
+
         if rm_conf is None:
             rm_conf = {}
         exclude = None
@@ -274,7 +283,6 @@ class DataCollector(object):
         if not exclude:
             logger.debug('Patterns section of blacklist configuration is empty.')
 
-        logger.debug('Running content redaction...')
         for dirpath, dirnames, filenames in os.walk(self.archive.archive_dir):
 
             for f in filenames:
