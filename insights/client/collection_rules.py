@@ -7,9 +7,7 @@ import six
 import os
 import yaml
 import stat
-import pkgutil
 import json
-import insights
 from six.moves import configparser as ConfigParser
 
 from .constants import InsightsConstants as constants
