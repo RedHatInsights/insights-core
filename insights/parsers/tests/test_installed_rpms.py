@@ -1,5 +1,6 @@
 import pytest
 from insights.parsers.installed_rpms import InstalledRpms, InstalledRpm, pad_version
+from insights.parsers import SkipException
 from insights.tests import context_wrap
 
 
@@ -82,6 +83,18 @@ ERROR_DB = '''
 error: rpmdbNextIterator: skipping h#     753 Header V3 DSA signature: BAD, key ID db42a6
 yum-security-1.1.16-21.el5.noarch
 '''.strip()
+
+ERROR_DB_NO_PKG = """
+error: rpmdb: BDB0113 Thread/process 20263/140251984590912 failed: BDB1507 Thread died in Berkeley DB library
+error: db5 error(-30973) from dbenv->failchk: BDB0087 DB_RUNRECOVERY: Fatal
+error, run database recovery
+error: cannot open Packages index using db5 -  (-30973)
+error: cannot open Packages database in /var/lib/rpm
+error: rpmdb: BDB0113 Thread/process 20263/140251984590912 failed: BDB1507 Thread died in Berkeley DB library
+error: db5 error(-30973) from dbenv->failchk: BDB0087 DB_RUNRECOVERY: Fatal
+error, run database recovery
+error: cannot open Packages database in /var/lib/rpm
+""".strip()
 
 ORACLEASM_RPMS = '''
 oracleasm-2.6.18-164.el5-2.0.5-1.el5.x86_64
@@ -207,6 +220,9 @@ def test_corrupt_db():
     rpms = InstalledRpms(context_wrap(ERROR_DB))
     assert "yum-security" in rpms.packages
     assert rpms.corrupt is True
+
+    with pytest.raises(SkipException):
+        InstalledRpms(context_wrap(ERROR_DB_NO_PKG))
 
 
 def test_rpm_manifest():
