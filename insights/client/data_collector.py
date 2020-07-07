@@ -306,7 +306,7 @@ class DataCollector(object):
             try:
                 exclude = rm_conf['patterns']
                 if isinstance(exclude, dict) and exclude['regex']:
-                    # if "patterns" contains a non-empty "regex" dict
+                    # if "patterns" is a dict containing a non-empty "regex" list
                     logger.debug('Using regular expression matching for patterns.')
                     exclude = exclude['regex']
                     regex = True
