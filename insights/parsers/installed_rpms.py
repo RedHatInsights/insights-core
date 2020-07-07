@@ -78,6 +78,7 @@ import warnings
 from ..util import rsplit
 from .. import parser, get_active_lines, CommandParser
 from .rpm_vercmp import rpm_version_compare
+from insights.parsers import SkipException
 from insights.specs import Specs
 
 # This list of architectures is taken from PDC (Product Definition Center):
@@ -215,6 +216,9 @@ class InstalledRpms(CommandParser, RpmList):
     """
     A parser for working with data containing a list of installed RPM files on the system and
     related information.
+
+    Raises:
+        SkipException: When no packages are found.
     """
     def __init__(self, *args, **kwargs):
         self.errors = []
@@ -244,6 +248,8 @@ class InstalledRpms(CommandParser, RpmList):
                         except Exception:
                             # Both ways failed
                             self.unparsed.append(line)
+        if not self.packages:
+            raise SkipException()
         # Don't want defaultdict's behavior after parsing is complete
         self.packages = dict(self.packages)
 
