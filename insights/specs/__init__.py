@@ -564,6 +564,7 @@ class Specs(SpecSet):
     ss = RegistryPoint()
     sssd_config = RegistryPoint()
     sssd_logs = RegistryPoint(multi_output=True, filterable=True)
+    sssd_network_config = RegistryPoint()
     samba_logs = RegistryPoint(multi_output=True, filterable=True)
     subscription_manager_id = RegistryPoint()
     subscription_manager_list_consumed = RegistryPoint()
