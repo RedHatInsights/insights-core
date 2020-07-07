@@ -86,13 +86,11 @@ yum-security-1.1.16-21.el5.noarch
 
 ERROR_DB_NO_PKG = """
 error: rpmdb: BDB0113 Thread/process 20263/140251984590912 failed: BDB1507 Thread died in Berkeley DB library
-error: db5 error(-30973) from dbenv->failchk: BDB0087 DB_RUNRECOVERY: Fatal
-error, run database recovery
+error: db5 error(-30973) from dbenv->failchk: BDB0087 DB_RUNRECOVERY: Fatal error, run database recovery
 error: cannot open Packages index using db5 -  (-30973)
 error: cannot open Packages database in /var/lib/rpm
 error: rpmdb: BDB0113 Thread/process 20263/140251984590912 failed: BDB1507 Thread died in Berkeley DB library
-error: db5 error(-30973) from dbenv->failchk: BDB0087 DB_RUNRECOVERY: Fatal
-error, run database recovery
+error: db5 error(-30973) from dbenv->failchk: BDB0087 DB_RUNRECOVERY: Fatal error, run database recovery
 error: cannot open Packages database in /var/lib/rpm
 """.strip()
 
@@ -219,10 +217,19 @@ def test_garbage():
 def test_corrupt_db():
     rpms = InstalledRpms(context_wrap(ERROR_DB))
     assert "yum-security" in rpms.packages
+    assert "yum-security" in rpms
     assert rpms.corrupt is True
 
-    with pytest.raises(SkipException):
-        InstalledRpms(context_wrap(ERROR_DB_NO_PKG))
+    rpms = InstalledRpms(context_wrap(ERROR_DB_NO_PKG))
+    assert rpms.corrupt is True
+    with pytest.raises(TypeError):
+        assert "kernel" not in rpms
+    with pytest.raises(TypeError):
+        assert "kernel" not in rpms.packages
+    with pytest.raises(TypeError):
+        rpms.newest("kernel")
+    with pytest.raises(TypeError):
+        rpms.oldest("kernel")
 
 
 def test_rpm_manifest():

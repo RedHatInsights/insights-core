@@ -78,7 +78,6 @@ import warnings
 from ..util import rsplit
 from .. import parser, get_active_lines, CommandParser
 from .rpm_vercmp import rpm_version_compare
-from insights.parsers import SkipException
 from insights.specs import Specs
 
 # This list of architectures is taken from PDC (Product Definition Center):
@@ -159,6 +158,9 @@ class RpmList(object):
 
         Returns:
             bool: True if package name is in list of installed packages, otherwise False
+
+        Raises:
+            TypeError: When no packages list and the self.packages is ``None``.
         """
         return package_name in self.packages
 
@@ -217,20 +219,23 @@ class InstalledRpms(CommandParser, RpmList):
     A parser for working with data containing a list of installed RPM files on the system and
     related information.
 
-    Raises:
-        SkipException: When no packages are found.
     """
     def __init__(self, *args, **kwargs):
         self.errors = []
         """list: List of input lines that indicate an error acquiring the data on the client."""
         self.unparsed = []
         """list: List of input lines that raised an exception during parsing."""
-        self.packages = defaultdict(list)
-        """dict (InstalledRpm): Dictionary of RPMs keyed by package name."""
+        self.packages = None
+        """
+        dict (InstalledRpm): Dictionary of RPMs keyed by package name.  None when no packages.
+            ``None`` keeps the behavior consistent when applying ``in`` against
+            the :class:`InstalledRpms` object or against :attr:`InstalledRpms.packages` directly.
+        """
 
         super(InstalledRpms, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
+        packages = defaultdict(list)
         for line in get_active_lines(content, comment_char='COMMAND>'):
             if line.startswith('error:') or line.startswith('warning:'):
                 self.errors.append(line)
@@ -238,25 +243,29 @@ class InstalledRpms(CommandParser, RpmList):
                 try:
                     # Try to parse from JSON input
                     rpm = InstalledRpm.from_json(line)
-                    self.packages[rpm.name].append(rpm)
+                    packages[rpm.name].append(rpm)
                 except Exception:
                     # If that fails, try to parse from line input
                     if line.strip():
                         try:
                             rpm = InstalledRpm.from_line(line)
-                            self.packages[rpm.name].append(rpm)
+                            packages[rpm.name].append(rpm)
                         except Exception:
                             # Both ways failed
                             self.unparsed.append(line)
-        if not self.packages:
-            raise SkipException()
-        # Don't want defaultdict's behavior after parsing is complete
-        self.packages = dict(self.packages)
+        if packages:
+            # Don't want defaultdict's behavior after parsing is complete
+            self.packages = dict(packages)
 
     @property
     def corrupt(self):
         """bool: True if RPM database is corrupted, else False."""
-        return any('rpmdbNextIterator' in s for s in self.errors)
+        _corrupts = [
+            'error: rpmdbNextIterator',
+            'error: rpmdb: BDB0113',
+            'error: db5 error',
+        ]
+        return any(c in s for s in self.errors for c in _corrupts)
 
 
 p = re.compile(r"(\d+|[a-z]+|\.|-|_)")
