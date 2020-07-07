@@ -218,7 +218,6 @@ class InstalledRpms(CommandParser, RpmList):
     """
     A parser for working with data containing a list of installed RPM files on the system and
     related information.
-
     """
     def __init__(self, *args, **kwargs):
         self.errors = []
