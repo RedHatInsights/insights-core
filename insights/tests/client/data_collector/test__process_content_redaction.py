@@ -64,6 +64,13 @@ def test_nogrep(tmpfile, Popen):
     Popen.assert_called_once_with(['sed', '-rf', constants.default_sed_file, test_file.name], stdout=PIPE)
 
 
+# mock the .exp.sed file for QE pipeline
+mock_sed_file = NamedTemporaryFile()
+mock_sed_file.write("s/(password[a-zA-Z0-9_]*)(\\s*\\:\\s*\\\"*\\s*|\\s*\\\"*\\s*=\\s*\\\"\\s*|\\s*=+\\s*|\\s*--md5+\\s*|\\s*)([a-zA-Z0-9_!@#$%^&*()+=/-]*)/\\1\\2********/\ns/(password[a-zA-Z0-9_]*)(\\s*\\*+\\s+)(.+)/\\1\\2********/".encode('utf-8'))
+mock_sed_file.flush()
+
+
+@patch('insights.client.data_collector.constants.default_sed_file', mock_sed_file.name)
 def test_returnvalue():
     '''
     Verify that the returned data is what we expect to see
