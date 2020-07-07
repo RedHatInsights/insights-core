@@ -231,7 +231,6 @@ class InstalledRpms(CommandParser, RpmList):
             ``None`` keeps the behavior consistent when applying ``in`` against
             the :class:`InstalledRpms` object or against :attr:`InstalledRpms.packages` directly.
         """
-
         super(InstalledRpms, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):

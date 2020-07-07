@@ -1,6 +1,5 @@
 import pytest
 from insights.parsers.installed_rpms import InstalledRpms, InstalledRpm, pad_version
-from insights.parsers import SkipException
 from insights.tests import context_wrap
 
 
