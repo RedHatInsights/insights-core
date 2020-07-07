@@ -2,16 +2,16 @@ import pkgutil
 import insights
 import json
 
-from insights.client.config import InsightsConfig
-from insights.client.collection_rules import InsightsUploadConf
-from mock.mock import patch, Mock, call
+# from insights.client.config import InsightsConfig
+# from insights.client.collection_rules import InsightsUploadConf
+from mock.mock import patch
 from insights.specs.default import DefaultSpecs
 from insights.specs.sos_archive import SosSpecs
 from insights.client.map_components import (map_rm_conf_to_components,
                                             _search_uploader_json,
                                             _get_component_by_symbolic_name)
 
-uploader_json_file = pkgutil.get_data(insights.__name__, "uploader_json_map.json")
+uploader_json_file = pkgutil.get_data(insights.__name__, "uploader.json")
 uploader_json = json.loads(uploader_json_file)
 default_specs = vars(DefaultSpecs).keys()
 sos_specs = vars(SosSpecs).keys()
@@ -155,9 +155,6 @@ def test_map_rm_conf_to_components_raw_cmds_files():
     Verify that all raw files/commands in uploader.json result as
     components in the output
     '''
-    uploader_json_file = pkgutil.get_data(insights.__name__, "uploader_json_map.json")
-    uploader_json = json.loads(uploader_json_file)
-
     # commands
     for cmd in uploader_json['commands']:
         # run each possible command through the function
@@ -237,7 +234,7 @@ def test_log_long_key(logger_warning):
                'files': ["/etc/sysconfig/virt-who",
                          "/etc/yum.repos.d/fedora-cisco-openh264.repo",
                          "krb5_conf_d"]}
-    new_rm_conf = map_rm_conf_to_components(rm_conf)
+    map_rm_conf_to_components(rm_conf)
     logger_warning.assert_any_call("- /usr/bin/find /etc/origin/node                   => certificates_enddate\n  /etc/origin/master /etc/pki -type f -exec\n  /usr/bin/openssl x509 -noout -enddate -in '{}'\n  \\; -exec echo 'FileName= {}' \\;")
     logger_warning.assert_any_call("- /usr/bin/md5sum /etc/pki/product/69.pem          => md5chk_files")
     logger_warning.assert_any_call("- ss_tupna                                         => ss"),
@@ -252,5 +249,5 @@ def test_log_short_key(logger_warning):
     is short
     '''
     rm_conf = {'commands': ["ss_tupna"]}
-    new_rm_conf = map_rm_conf_to_components(rm_conf)
+    map_rm_conf_to_components(rm_conf)
     logger_warning.assert_any_call("If possible, commands and files specified in the blacklist configuration will be converted to Insights component specs that will be disabled as needed.")

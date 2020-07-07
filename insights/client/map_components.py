@@ -7,12 +7,11 @@ import logging
 import textwrap
 
 from .constants import InsightsConstants as constants
-from insights.specs.default import DefaultSpecs
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
 
-uploader_json_file = pkgutil.get_data(insights.__name__, "uploader_json_map.json")
+uploader_json_file = pkgutil.get_data(insights.__name__, "uploader.json")
 uploader_json = json.loads(uploader_json_file)
 
 
@@ -170,3 +169,15 @@ def _log_conversion_table(conversion_map, longest_key_len):
         # log the conversion on the first line of the "wrap"
         wrapped_spec[0] = '- {0:{1}} => {2}'.format(wrapped_spec[0], log_len, spec_name_no_prefix)
         logger.warning('\n  '.join(wrapped_spec))
+
+
+if __name__ == '__main__':
+    from .config import InsightsConfig
+    from .collection_rules import InsightsUploadConf
+    config = InsightsConfig().load_all()
+    uploadconf = InsightsUploadConf(config)
+    rm_conf = uploadconf.get_rm_conf()
+    report = map_rm_conf_to_components(rm_conf)
+    uploadconf.rm_conf = report
+    uploadconf.validate()
+    # print(report)
