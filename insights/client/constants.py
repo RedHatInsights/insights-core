@@ -46,3 +46,5 @@ class InsightsConstants(object):
     cached_branch_info = os.path.join(default_conf_dir, '.branch_info')
     pidfile = os.path.join(os.sep, 'var', 'run', 'insights-client.pid')
     valid_compressors = ("gz", "xz", "bz2", "none")
+    # RPM version in which core collection was released
+    core_collect_rpm_version = '3.1.0'
