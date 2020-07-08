@@ -74,7 +74,7 @@ class SosSpecs(Specs):
     ip_route_show_table_all = simple_file("sos_commands/networking/ip_route_show_table_all")
     ip_s_link = first_of([simple_file("sos_commands/networking/ip_-s_-d_link"), simple_file("sos_commands/networking/ip_-s_link"), simple_file("sos_commands/networking/ip_link")])
     iptables = first_file(["/etc/sysconfig/iptables", "/etc/sysconfig/iptables.save"])
-    journal_since_boot = first_of([simple_file("sos_commands/logs/journalctl_--no-pager_--boot"), simple_file("sos_commands/logs/journalctl_--no-pager_--catalog_--boot"), simple_file("journalctl_--all_--this-boot_--no-pager")])
+    journal_since_boot = first_of([simple_file("sos_commands/logs/journalctl_--no-pager_--boot"), simple_file("sos_commands/logs/journalctl_--no-pager_--catalog_--boot"), simple_file("sos_commands/logs/journalctl_--all_--this-boot_--no-pager")])
     locale = simple_file("sos_commands/i18n/locale")
     lsblk = first_file(["sos_commands/block/lsblk", "sos_commands/filesys/lsblk"])
     ls_boot = simple_file("sos_commands/boot/ls_-lanR_.boot")
