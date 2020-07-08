@@ -123,7 +123,7 @@ DEFAULT_OPTS = {
         'action': 'store'
     },
     'core_collect': {
-        'default': _core_collect_default()
+        'default': False
     },
     'egg_path': {
         # non-CLI
@@ -443,6 +443,11 @@ class InsightsConfig(object):
         self._imply_options()
         self._validate_options()
         self._cli_opts = None
+
+        # initialize the real default for core_collect here
+        #   because calling this function at the module scope
+        #   ignores unit test mocks
+        self.core_collect = _core_collect_default()
 
     def __str__(self):
         _str = '    '
