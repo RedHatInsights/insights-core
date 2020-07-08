@@ -41,13 +41,13 @@ class CoreCollector(DataCollector):
 
         logger.debug('Beginning to run collection...')
 
-        # TODO: load blacklist into core
+        # TODO: load this blacklist into core
         # only load files, keywords, components into core
-        # core_blacklist = {
-        #     'commands': rm_conf.get('commands', []),
-        #     'files': rm_conf.get('files', []),
-        #     'components' rm_conf.get('components', [])
-        # }
+        core_blacklist = {
+            'commands': rm_conf.get('commands', []),
+            'files': rm_conf.get('files', []),
+            'components': rm_conf.get('components', [])
+        }
 
         collected_data_path = collect.collect(tmp_path=self.archive.tmp_dir)
         # update the archive dir with the reported data location from Insights Core
@@ -57,7 +57,7 @@ class CoreCollector(DataCollector):
         self.archive.archive_name = os.path.basename(collected_data_path)
         logger.debug('Collection finished.')
 
-        # TODO: redact data
+        self.redact(rm_conf)
 
         # collect metadata
         logger.debug('Collecting metadata...')
@@ -67,10 +67,3 @@ class CoreCollector(DataCollector):
         self._write_tags()
         self._write_blacklist_report(blacklist_report)
         logger.debug('Metadata collection finished.')
-
-
-if __name__ == '__main__':
-    from insights.client.config import InsightsConfig
-    conf = InsightsConfig()
-    c = CoreCollector(conf)
-    c.run_collection()
