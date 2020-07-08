@@ -437,17 +437,18 @@ class InsightsConfig(object):
 
         self._init_attrs = copy.copy(dir(self))
         self._update_dict(DEFAULT_KVS)
+
+        # initialize the real default for core_collect here
+        #   instead of inside DEFAULT_KVS because calling
+        #   this function at the module scope ignores unit test mocks
+        self.core_collect = _core_collect_default()
+
         if args:
             self._update_dict(args[0])
         self._update_dict(kwargs)
         self._imply_options()
         self._validate_options()
         self._cli_opts = None
-
-        # initialize the real default for core_collect here
-        #   because calling this function at the module scope
-        #   ignores unit test mocks
-        self.core_collect = _core_collect_default()
 
     def __str__(self):
         _str = '    '
