@@ -10,6 +10,7 @@ import copy
 import glob
 import six
 import shlex
+import re
 from itertools import chain
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
@@ -29,6 +30,41 @@ SOSCLEANER_LOGGER.setLevel(logging.ERROR)
 # python 2.6
 SOSCLEANER_LOGGER = logging.getLogger('insights-client.soscleaner')
 SOSCLEANER_LOGGER.setLevel(logging.ERROR)
+
+
+def _process_content_redaction(filepath, exclude, regex=False):
+    '''
+    Redact content from a file, based on
+    /etc/insights-client/.exp.sed and and the contents of "exclude"
+
+    filepath    file to modify
+    exclude     list of strings to redact
+    regex       whether exclude is a list of regular expressions
+
+    Returns the file contents with the specified data removed
+    '''
+    logger.debug('Processing %s...', filepath)
+
+    # password removal
+    sedcmd = Popen(['sed', '-rf', constants.default_sed_file, filepath], stdout=PIPE)
+    # patterns removal
+    if exclude:
+        exclude_file = NamedTemporaryFile()
+        exclude_file.write("\n".join(exclude).encode('utf-8'))
+        exclude_file.flush()
+        if regex:
+            flag = '-E'
+        else:
+            flag = '-F'
+        grepcmd = Popen(['grep', '-v', flag, '-f', exclude_file.name], stdin=sedcmd.stdout, stdout=PIPE)
+        sedcmd.stdout.close()
+        stdout, stderr = grepcmd.communicate()
+        logger.debug('Process status: %s', grepcmd.returncode)
+    else:
+        stdout, stderr = sedcmd.communicate()
+        logger.debug('Process status: %s', sedcmd.returncode)
+    logger.debug('Process stderr: %s', stderr)
+    return stdout
 
 
 class DataCollector(object):
@@ -197,16 +233,6 @@ class DataCollector(object):
         if rm_conf is None:
             rm_conf = {}
         logger.debug('Beginning to run collection spec...')
-        exclude = None
-        if rm_conf:
-            try:
-                exclude = rm_conf['patterns']
-                # handle the None or empty case of the sub-object
-                if 'regex' in exclude and not exclude['regex']:
-                    raise LookupError
-                logger.warn("WARNING: Skipping patterns defined in blacklist configuration")
-            except LookupError:
-                logger.debug('Patterns section of blacklist configuration is empty.')
 
         for c in conf['commands']:
             # remember hostname archive path
@@ -222,7 +248,7 @@ class DataCollector(object):
                     if s['command'] in rm_commands:
                         logger.warn("WARNING: Skipping command %s", s['command'])
                         continue
-                    cmd_spec = InsightsCommand(self.config, s, exclude, self.mountpoint)
+                    cmd_spec = InsightsCommand(self.config, s, self.mountpoint)
                     self.archive.add_to_archive(cmd_spec)
         for f in conf['files']:
             rm_files = rm_conf.get('files', [])
@@ -235,7 +261,7 @@ class DataCollector(object):
                     if s['file'] in rm_conf.get('files', []):
                         logger.warn("WARNING: Skipping file %s", s['file'])
                     else:
-                        file_spec = InsightsFile(s, exclude, self.mountpoint)
+                        file_spec = InsightsFile(s, self.mountpoint)
                         self.archive.add_to_archive(file_spec)
         if 'globs' in conf:
             for g in conf['globs']:
@@ -244,9 +270,11 @@ class DataCollector(object):
                     if g['file'] in rm_conf.get('files', []):
                         logger.warn("WARNING: Skipping file %s", g)
                     else:
-                        glob_spec = InsightsFile(g, exclude, self.mountpoint)
+                        glob_spec = InsightsFile(g, self.mountpoint)
                         self.archive.add_to_archive(glob_spec)
         logger.debug('Spec collection finished.')
+
+        self.redact(rm_conf)
 
         # collect metadata
         logger.debug('Collecting metadata...')
@@ -256,6 +284,46 @@ class DataCollector(object):
         self._write_tags()
         self._write_blacklist_report(blacklist_report)
         logger.debug('Metadata collection finished.')
+
+    def redact(self, rm_conf):
+        '''
+        Perform data redaction (password sed command and patterns),
+        write data to the archive in place
+        '''
+        logger.debug('Running content redaction...')
+
+        if not re.match(r'/var/tmp/.+/insights-.+', self.archive.archive_dir):
+            # sanity check to make sure we're only modifying
+            #   our own stuff in temp
+            # we should never get here but just in case
+            raise RuntimeError('ERROR: invalid Insights archive temp path')
+
+        if rm_conf is None:
+            rm_conf = {}
+        exclude = None
+        regex = False
+        if rm_conf:
+            try:
+                exclude = rm_conf['patterns']
+                if isinstance(exclude, dict) and exclude['regex']:
+                    # if "patterns" is a dict containing a non-empty "regex" list
+                    logger.debug('Using regular expression matching for patterns.')
+                    exclude = exclude['regex']
+                    regex = True
+                logger.warn("WARNING: Skipping patterns defined in blacklist configuration")
+            except LookupError:
+                # either "patterns" was undefined in rm conf, or
+                #   "regex" was undefined in "patterns"
+                exclude = None
+        if not exclude:
+            logger.debug('Patterns section of blacklist configuration is empty.')
+
+        for dirpath, dirnames, filenames in os.walk(self.archive.archive_dir):
+            for f in filenames:
+                fullpath = os.path.join(dirpath, f)
+                redacted_contents = _process_content_redaction(fullpath, exclude, regex)
+                with open(fullpath, 'wb') as dst:
+                    dst.write(redacted_contents)
 
     def done(self, conf, rm_conf):
         """
