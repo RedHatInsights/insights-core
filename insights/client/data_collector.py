@@ -322,7 +322,7 @@ class DataCollector(object):
             for f in filenames:
                 fullpath = os.path.join(dirpath, f)
                 redacted_contents = _process_content_redaction(fullpath, exclude, regex)
-                with open(fullpath, 'w') as dst:
+                with open(fullpath, 'wb') as dst:
                     dst.write(redacted_contents)
 
     def done(self, conf, rm_conf):

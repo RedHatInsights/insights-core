@@ -61,7 +61,7 @@ def test_redact_call_process_redaction(_process_content_redaction):
     with patch(open_name, create=True) as mock_open:
         dc.redact(rm_conf)
         _process_content_redaction.assert_called_once_with(test_file, None, False)
-        mock_open.assert_called_once_with(test_file, 'w')
+        mock_open.assert_called_once_with(test_file, 'wb')
         mock_open.return_value.__enter__.return_value.write.assert_called_once_with(_process_content_redaction.return_value)
 
 
