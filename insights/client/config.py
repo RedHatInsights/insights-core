@@ -376,23 +376,21 @@ DEFAULT_OPTS = {
     'payload': {
         'default': None,
         'opt': ['--payload'],
-        # 'help': 'Use Insights client to upload an archive',
-        'help': argparse.SUPPRESS,
+        'help': 'Use the Insights Client to upload an archive',
         'action': 'store',
         'group': 'platform'
     },
     'content_type': {
         'default': None,
         'opt': ['--content-type'],
-        # 'help': 'Content type of the archive specified with --payload',
-        'help': argparse.SUPPRESS,
+        'help': 'Content type of the archive specified with --payload',
         'action': 'store',
         'group': 'platform'
     },
     'diagnosis': {
         'default': None,
         'opt': ['--diagnosis'],
-        'help': argparse.SUPPRESS,
+        'help': 'Retrieve a diagnosis for this system',
         'const': True,
         'nargs': '?',
         'group': 'platform'
