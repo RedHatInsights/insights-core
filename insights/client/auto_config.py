@@ -5,6 +5,7 @@ from __future__ import absolute_import
 import logging
 import os
 import requests
+import re
 
 try:
     from urlparse import urlparse
@@ -238,6 +239,6 @@ def try_auto_configuration(config):
     if config.auto_config and not config.offline:
         if not _try_satellite6_configuration(config):
             _try_satellite5_configuration(config)
-    if not config.legacy_upload and 'cloud.redhat.com' not in config.base_url:
+    if not config.legacy_upload and not re.match(r'(\w+\.)?cloud\.(\w+\.)?redhat\.com', config.base_url):
         config.base_url = config.base_url + '/platform'
     logger.debug('Updated base_url: %s', config.base_url)
