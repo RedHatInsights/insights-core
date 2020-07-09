@@ -630,6 +630,10 @@ class InsightsClient(object):
             tags["group"] = self.config.group
             write_tags(tags)
 
+    def list_specs(self):
+        logger.info("For a full list of insights-core datasources, please refer to https://insights-core.readthedocs.io/en/latest/specs_catalog.html")
+        logger.info("The items in General Datasources can be selected for omission by adding them to the 'components' section of file-redaction.yaml")
+
 
 def format_config(config):
     # Log config except the password
