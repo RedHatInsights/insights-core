@@ -29,7 +29,6 @@ docs/specs_catalog.rst
 build/
 .idea*
 dist/
-uploader.json
 file_plugin_mapping.json
 junk/
 pip-selfcheck.json

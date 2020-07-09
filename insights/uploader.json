@@ -155,6 +155,7 @@
                 "Emulex OneConnect OCe10100, FCoE Initiator",
                 "FEATURE IBPB_SUPPORT",
                 "FEATURE SPEC_CTRL",
+                "Hyper-V Host Build:",
                 "Ignoring BGRT: failed to map image header memory",
                 "Ignoring BGRT: failed to map image memory",
                 "Kernel page table isolation",
@@ -662,6 +663,16 @@
             "command": "/usr/sap/hostctrl/exe/lssap",
             "pattern": [],
             "symbolic_name": "lssap"
+        },
+        {
+            "command": "/usr/sbin/lvmconfig --type full",
+            "pattern": [],
+            "symbolic_name": "lvmconfig"
+        },
+        {
+            "command": "/usr/sbin/lvm dumpconfig --type full",
+            "pattern": [],
+            "symbolic_name": "lvmconfig"
         },
         {
             "command": "/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance",
@@ -1434,13 +1445,19 @@
         {
             "file": "/var/log/cloud-init.log",
             "pattern": [
+                "401",
                 "Attempting to load yaml from string of length 59 with allowed root types",
                 "Failed loading yaml blob. Invalid format at line 1 column 1",
                 "Network config is likely broken",
                 "No available network renderers found",
                 "Read 59 bytes from /etc/cloud/cloud.cfg.d/99-datasource.cfg",
                 "Unable to render networking",
-                "sysconfig"
+                "WARNING",
+                "bad status code",
+                "failed",
+                "http://169.254.169.254",
+                "sysconfig",
+                "url_helper.py"
             ],
             "symbolic_name": "cloud_init_log"
         },
@@ -1759,6 +1776,7 @@
                 "Efi",
                 "FEATURE IBPB_SUPPORT",
                 "FEATURE SPEC_CTRL",
+                "Hyper-V Host Build:",
                 "Kernel page table isolation",
                 "L1TF",
                 "L1Tf",
@@ -3841,5 +3859,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2020-06-25T15:25:20.371641"
+    "version": "2020-07-01T15:15:50.052070"
 }
