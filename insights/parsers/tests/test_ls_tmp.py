@@ -4,9 +4,6 @@ from insights.parsers.ls_tmp import LsTmp
 from insights.tests import context_wrap
 
 LS_TMP = """
-total 334676
-drwxrwxrwt. 30 root     root          8192 Jul 10 00:00 .
-dr-xr-xr-x. 23 root     root          4096 Feb 20  2019 ..
 drwxrwxr-x.  2 whuser   whuser         216 Jul  9 07:09 aws_sos
 -rw-r--r--.  1 rauser   rauser        1123 Jul 10 00:00 clean-old-archive.log
 -rw-rw-r--.  1 whuser   whuser        9620 Jul  9 07:09 daily-extraction-warehouse-run.log
@@ -30,8 +27,8 @@ path = 'insights_commands/ls_-la_.tmp'
 
 def test_ls_tmp():
     ls_tmp = LsTmp(context_wrap(LS_TMP, path=path))
-    assert len(ls_tmp.listing_of("/tmp")) == 18
-    assert len(ls_tmp.dirs_of("/tmp")) == 9
+    assert len(ls_tmp.listing_of("/tmp")) == 16
+    assert len(ls_tmp.dirs_of("/tmp")) == 7
     assert len(ls_tmp.files_of("/tmp")) == 9
     expected = sorted(
         [

@@ -16,11 +16,9 @@ class LsTmp(CommandParser, FileListing):
     Parses output of ``ls -lan /tmp`` command.  See ``FileListing`` class for
     additional information.
 
-    Sample output of ``ls -lan /tmp``::
+    To prevent the output content from being too large, filters should be
+    applied.  Sample output of ``ls -lan /tmp`` after filtered::
 
-        total 334676
-        drwxrwxrwt. 30 root     root          8192 Jul 10 00:00 .
-        dr-xr-xr-x. 23 root     root          4096 Feb 20  2019 ..
         drwxrwxr-x.  2 whuser   whuser         216 Jul  9 07:09 aws_sos
         -rw-r--r--.  1 rauser   rauser        1123 Jul 10 00:00 clean-old-archive.log
         -rw-rw-r--.  1 whuser   whuser        9620 Jul  9 07:09 daily-extraction-warehouse-run.log
@@ -45,7 +43,7 @@ class LsTmp(CommandParser, FileListing):
         >>> len(ls_tmp.files_of("/tmp"))
         9
         >>> len(ls_tmp.dirs_of("/tmp"))
-        9
+        7
         >>> "/tmp" in ls_tmp
         True
         >>> "aws_sos" in ls_tmp.dirs_of("/tmp")
