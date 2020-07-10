@@ -15,9 +15,6 @@ from insights.specs import Specs
 from insights.parsers import ParseException
 from insights.core.filters import add_filter
 
-add_filter(Specs.sap_dev_disp, 'trc file:')  # keep the header line by default
-add_filter(Specs.sap_dev_rd, 'trc file:')  # keep the header line by default
-
 
 class SapDevTraceFile(LogFileOutput):
     """
