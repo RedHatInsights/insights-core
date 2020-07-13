@@ -43,11 +43,11 @@ class CoreCollector(DataCollector):
 
         # TODO: load this blacklist into core
         # only load files, keywords, components into core
-        core_blacklist = {
-            'commands': rm_conf.get('commands', []),
-            'files': rm_conf.get('files', []),
-            'components': rm_conf.get('components', [])
-        }
+        # core_blacklist = {
+        #     'commands': rm_conf.get('commands', []),
+        #     'files': rm_conf.get('files', []),
+        #     'components': rm_conf.get('components', [])
+        # }
 
         collected_data_path = collect.collect(tmp_path=self.archive.tmp_dir)
         # update the archive dir with the reported data location from Insights Core
