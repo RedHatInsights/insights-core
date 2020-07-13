@@ -249,11 +249,10 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False):
     try:
         filters.load()
     except IOError as e:
-        if e.errno == 0:
-            # no filters.yaml available
-            log.debug("No filters available: %s", str(e))
+        # could not load filters file
+        log.debug("No filters available: %s", str(e))
     except AttributeError as e:
-        # problem loading the filters
+        # problem parsing the filters
         log.debug("Could not parse filters: %s", str(e))
 
     try:
