@@ -251,3 +251,22 @@ def test_log_short_key(logger_warning):
     rm_conf = {'commands': ["ss_tupna"]}
     map_rm_conf_to_components(rm_conf)
     logger_warning.assert_any_call("If possible, commands and files specified in the blacklist configuration will be converted to Insights component specs that will be disabled as needed.")
+
+
+def test_components_added():
+    '''
+    Verify that the resulting component list is
+    an aggregation of the current list and the conversion results
+    with no duplicates.
+    '''
+    rm_conf = {'commands': ["ss_tupna",
+                            "/usr/bin/md5sum /etc/pki/product/69.pem"],
+               'components': ["insights.specs.default.DefaultSpecs.ss",
+                              "insights.specs.default.DefaultSpecs.sysconfig_virt_who"]}
+    results = map_rm_conf_to_components(rm_conf)
+
+    assert results == {'commands': [],
+                       'files': [],
+                       'components': ["insights.specs.default.DefaultSpecs.ss",
+                                      "insights.specs.default.DefaultSpecs.sysconfig_virt_who",
+                                      "insights.specs.default.DefaultSpecs.md5chk_files"]}
