@@ -958,7 +958,7 @@ class SOSCleaner(object):
         access.redhat.com and registry.redhat.com will both be obfuscated as
         unique domain entries.
         """
-        self.logger.debug("Processing Line - %s", line)
+        # self.logger.debug("Processing Line - %s", line)
         potential_hostnames = re.findall(
             r'\b[a-zA-Z0-9-\.]{1,200}\.[a-zA-Z]{1,63}\b', line)
         try:
@@ -1046,7 +1046,7 @@ class SOSCleaner(object):
                 data = self._extract_file_data(f)
                 if len(data) > 0:  # if the file isn't empty:
                     for l in data:
-                        self.logger.debug("Obfuscating Line - %s", l)
+                        # self.logger.debug("Obfuscating Line - %s", l)
                         new_l = self._clean_line(l, f)
                         if six.PY3:
                             tmp_file.write(new_l.encode('utf-8'))
