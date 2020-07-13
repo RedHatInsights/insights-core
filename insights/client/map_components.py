@@ -75,11 +75,18 @@ def map_rm_conf_to_components(rm_conf):
 
     _log_conversion_table(conversion_map, longest_key_len)
 
-    updated_components = list(dict.fromkeys(updated_components))
+    if 'components' in rm_conf:
+        # update components list if there already is one
+        original_comp_set = set(rm_conf['components'])
+        updated_comp_set = set(dict.fromkeys(updated_components))
+        # avoid duplicates
+        rm_conf['components'] += list(updated_comp_set - original_comp_set)
+    else:
+        # otherwise create it
+        rm_conf['components'] = list(dict.fromkeys(updated_components))
 
     rm_conf['commands'] = updated_commands
     rm_conf['files'] = updated_files
-    rm_conf['components'] = updated_components
 
     return rm_conf
 
@@ -174,10 +181,10 @@ def _log_conversion_table(conversion_map, longest_key_len):
 if __name__ == '__main__':
     from .config import InsightsConfig
     from .collection_rules import InsightsUploadConf
-    config = InsightsConfig().load_all()
+    config = InsightsConfig(core_collect=True).load_all()
     uploadconf = InsightsUploadConf(config)
-    rm_conf = uploadconf.get_rm_conf()
-    report = map_rm_conf_to_components(rm_conf)
-    uploadconf.rm_conf = report
+    # rm_conf = uploadconf.get_rm_conf()
+    # report = map_rm_conf_to_components(rm_conf)
+    # uploadconf.rm_conf = report
     uploadconf.validate()
     # print(report)
