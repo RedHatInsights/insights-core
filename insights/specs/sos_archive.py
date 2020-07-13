@@ -33,6 +33,7 @@ class SosSpecs(Specs):
             )
         ]
     )
+    corosync_cmapctl = simple_file("sos_commands/corosync/corosync-cmapctl")
     cpupower_frequency_info = simple_file("sos_commands/processor/cpupower_frequency-info")
     date = first_of([simple_file("sos_commands/general/date"), simple_file("sos_commands/date/date")])
     df__al = first_file(["sos_commands/filesys/df_-al", "sos_commands/filesys/df_-al_-x_autofs"])
