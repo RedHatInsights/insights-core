@@ -21,7 +21,7 @@ from insights import apply_configs, apply_default_enabled, dr
 from insights.core import blacklist, filters
 from insights.core.serde import Hydration
 from insights.util import fs
-from insights.util.subproc import call
+from insights.util.subproc import call, CalledProcessError
 
 SAFE_ENV = {
     "PATH": os.path.pathsep.join([
@@ -256,7 +256,11 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False):
         # problem loading the filters
         log.debug("Could not parse filters: %s", str(e))
 
-    hostname = call("hostname -f", env=SAFE_ENV).strip()
+    try:
+        hostname = call("hostname -f", env=SAFE_ENV).strip()
+    except CalledProcessError:
+        # problem calling hostname -f
+        hostname = call("hostname", env=SAFE_ENV).strip()
     suffix = datetime.utcnow().strftime("%Y%m%d%H%M%S")
     relative_path = "insights-%s-%s" % (hostname, suffix)
     tmp_path = tmp_path or tempfile.gettempdir()
