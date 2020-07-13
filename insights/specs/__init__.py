@@ -227,6 +227,7 @@ class Specs(SpecSet):
     ifcfg_static_route = RegistryPoint(multi_output=True)
     ifconfig = RegistryPoint()
     imagemagick_policy = RegistryPoint(multi_output=True, filterable=True)
+    initctl_lst = RegistryPoint()
     init_ora = RegistryPoint()
     initscript = RegistryPoint(multi_output=True)
     init_process_cgroup = RegistryPoint()
