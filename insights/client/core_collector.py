@@ -54,6 +54,14 @@ class CoreCollector(DataCollector):
         if not collected_data_path:
             raise RuntimeError('Error running collection: no output path defined.')
         self.archive.archive_dir = collected_data_path
+
+        # set hostname_path for soscleaner
+        if os.path.exists(os.path.join(self.archive.archive_dir, 'data', 'insights_commands', 'hostname_-f')):
+            self.hostname_path = 'data/insights_commands/hostname_-f'
+        else:
+            # fall back to hostname if hostname -f not available
+            self.hostname_path = 'data/insights_commands/hostname'
+
         self.archive.archive_name = os.path.basename(collected_data_path)
         logger.debug('Collection finished.')
 
