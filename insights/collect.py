@@ -214,7 +214,7 @@ def get_pool(parallel, kwargs):
         yield None
 
 
-def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf={}):
+def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=None):
     """
     This is the collection entry point. It accepts a manifest, a temporary
     directory in which to store output, and a boolean for optional compression.
@@ -247,6 +247,7 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf={}
     apply_blacklist(client.get("blacklist", {}))
 
     # insights-client
+    rm_conf = rm_conf or {}
     apply_blacklist(rm_conf)
     for component in rm_conf.get('components', []):
         if not dr.get_component_by_name(component):
