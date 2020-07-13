@@ -13,7 +13,6 @@ SapDevRd - Files ``/usr/sap/SID/SNAME/work/dev_rd``
 from insights import parser, LogFileOutput
 from insights.specs import Specs
 from insights.parsers import ParseException
-from insights.core.filters import add_filter
 
 
 class SapDevTraceFile(LogFileOutput):
