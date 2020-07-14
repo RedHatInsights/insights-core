@@ -3,6 +3,7 @@ UPstart - Command ``initctl --system list``
 ===========================================
 
 Parser to parser the output of ``initctl --system list`` commands.
+
 """
 
 from insights import parser, CommandParser
@@ -51,11 +52,11 @@ class UPstart(CommandParser):
     Raises:
         SkipException: When nothing need to parse.
 
-    Attributes:
-        upstart_managed: This returns daemon details.
-        daemon_status: This returns daemon status.
-        dev_status: This returns device status.
 
+    Attributes:
+        upstart_managed
+        daemon_status
+        dev_status
 
     Examples:
         >>> type(upstart_obj)
@@ -111,7 +112,7 @@ class UPstart(CommandParser):
 
     def dev_status(self, dev):
         """
-        (str): This method will return the status of the tty device `start/running` or `stop/waiting`, along with `process-ID`i if it is managed by upstart else it will return `None`.
+        (str): This method will return the status of the tty device `start/running` or `stop/waiting`, along with `process-ID` if it is managed by upstart else it will return `None`.
         """
         if dev and dev in self.tty.keys():
             return self.tty[dev].get('status', None)
