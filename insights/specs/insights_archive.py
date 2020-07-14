@@ -29,7 +29,7 @@ class InsightsArchiveSpecs(Specs):
     ceph_osd_tree = first_file(["insights_commands/ceph_osd_tree_-f_json-pretty", "insights_commands/ceph_osd_tree_-f_json"])
     ceph_s = first_file(["insights_commands/ceph_-s_-f_json-pretty", "insights_commands/ceph_-s_-f_json"])
     ceph_v = simple_file("insights_commands/ceph_-v")
-    certificates_enddate = simple_file("insights_commands/find_.etc.origin.node_.etc.origin.master_.etc.pki_-type_f_-exec_.usr.bin.openssl_x509_-noout_-enddate_-in_-exec_echo_FileName")
+    certificates_enddate = first_file(["insights_commands/find_.etc.origin.node_.etc.origin.master_.etc.pki_.etc.ipa_-type_f_-exec_.usr.bin.openssl_x509_-noout_-enddate_-in_-exec_echo_FileName", "insights_commands/find_.etc.origin.node_.etc.origin.master_.etc.pki_-type_f_-exec_.usr.bin.openssl_x509_-noout_-enddate_-in_-exec_echo_FileName"])
     chkconfig = simple_file("insights_commands/chkconfig_--list")
     chronyc_sources = simple_file("insights_commands/chronyc_sources")
     cpupower_frequency_info = simple_file("insights_commands/cpupower_-c_all_frequency-info")
@@ -144,6 +144,7 @@ class InsightsArchiveSpecs(Specs):
     ls_var_tmp = simple_file("insights_commands/ls_-ln_.var.tmp")
     ls_var_run = simple_file("insights_commands/ls_-lnL_.var.run")
     ls_var_www = simple_file("insights_commands/ls_-la_.dev.null_.var.www")
+    ls_tmp = simple_file("insights_commands/ls_-la_.tmp")
     lsblk = simple_file("insights_commands/lsblk")
     lsblk_pairs = simple_file("insights_commands/lsblk_-P_-o_NAME_KNAME_MAJ_MIN_FSTYPE_MOUNTPOINT_LABEL_UUID_RA_RO_RM_MODEL_SIZE_STATE_OWNER_GROUP_MODE_ALIGNMENT_MIN-IO_OPT-IO_PHY-SEC_LOG-SEC_ROTA_SCHED_RQ-SIZE_TYPE_DISC-ALN_DISC-GRAN_DISC-MAX_DISC-ZERO")
     lscpu = simple_file("insights_commands/lscpu")
@@ -155,8 +156,8 @@ class InsightsArchiveSpecs(Specs):
     lsscsi = simple_file("insights_commands/lsscsi")
     lvdisplay = simple_file("insights_commands/lvdisplay")
     lvmconfig = first_file([
-        simple_file("insights_commands/lvmconfig_--type_full"),
-        simple_file("insights_commands/lvm_dumpconfig_--type_full"),
+        "insights_commands/lvmconfig_--type_full",
+        "insights_commands/lvm_dumpconfig_--type_full"
     ])
     lvs_noheadings = simple_file("insights_commands/lvs_--nameprefixes_--noheadings_--separator_-a_-o_lv_name_lv_size_lv_attr_mirror_log_vg_name_devices_region_size_data_percent_metadata_percent_segtype_seg_monitor_--config_global_locking_type_0")
     lvs_noheadings_all = simple_file("insights_commands/lvs_--nameprefixes_--noheadings_--separator_-a_-o_lv_name_lv_size_lv_attr_mirror_log_vg_name_devices_region_size_data_percent_metadata_percent_segtype_--config_global_locking_type_0_devices_filter_a")

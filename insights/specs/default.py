@@ -181,7 +181,7 @@ class DefaultSpecs(Specs):
     ceph_osd_tree = simple_command("/usr/bin/ceph osd tree -f json")
     ceph_s = simple_command("/usr/bin/ceph -s -f json")
     ceph_v = simple_command("/usr/bin/ceph -v")
-    certificates_enddate = simple_command("/usr/bin/find /etc/origin/node /etc/origin/master /etc/pki -type f -exec /usr/bin/openssl x509 -noout -enddate -in '{}' \; -exec echo 'FileName= {}' \;")
+    certificates_enddate = simple_command("/usr/bin/find /etc/origin/node /etc/origin/master /etc/pki /etc/ipa -type f -exec /usr/bin/openssl x509 -noout -enddate -in '{}' \; -exec echo 'FileName= {}' \;")
     chkconfig = simple_command("/sbin/chkconfig --list")
     chrony_conf = simple_file("/etc/chrony.conf")
     chronyc_sources = simple_command("/usr/bin/chronyc sources")
@@ -556,6 +556,7 @@ class DefaultSpecs(Specs):
     ls_var_tmp = simple_command("/bin/ls -ln /var/tmp")
     ls_var_run = simple_command("/bin/ls -lnL /var/run")
     ls_var_www = simple_command("/bin/ls -la /dev/null /var/www")  # https://github.com/RedHatInsights/insights-core/issues/827
+    ls_tmp = simple_command("/bin/ls -la /tmp")
     lsblk = simple_command("/bin/lsblk")
     lsblk_pairs = simple_command("/bin/lsblk -P -o NAME,KNAME,MAJ:MIN,FSTYPE,MOUNTPOINT,LABEL,UUID,RA,RO,RM,MODEL,SIZE,STATE,OWNER,GROUP,MODE,ALIGNMENT,MIN-IO,OPT-IO,PHY-SEC,LOG-SEC,ROTA,SCHED,RQ-SIZE,TYPE,DISC-ALN,DISC-GRAN,DISC-MAX,DISC-ZERO")
     lscpu = simple_command("/usr/bin/lscpu")
