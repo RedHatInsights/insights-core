@@ -215,20 +215,17 @@ def test_garbage():
 
 def test_corrupt_db():
     rpms = InstalledRpms(context_wrap(ERROR_DB))
+    assert rpms.corrupt is True
     assert "yum-security" in rpms.packages
     assert "yum-security" in rpms
-    assert rpms.corrupt is True
 
     rpms = InstalledRpms(context_wrap(ERROR_DB_NO_PKG))
     assert rpms.corrupt is True
-    with pytest.raises(TypeError):
-        assert "kernel" not in rpms
-    with pytest.raises(TypeError):
-        assert "kernel" not in rpms.packages
-    with pytest.raises(TypeError):
-        rpms.newest("kernel")
-    with pytest.raises(TypeError):
-        rpms.oldest("kernel")
+    assert not rpms.packages
+    assert "kernel" not in rpms
+    assert "kernel" not in rpms.packages
+    assert rpms.newest("kernel") is None
+    assert rpms.oldest("kernel") is None
 
 
 def test_rpm_manifest():

@@ -153,14 +153,19 @@ class RpmList(object):
         """
         Checks if package name is in list of installed RPMs.
 
+        .. note::
+            The :attr:`packages` could be empty, e.g. when rpm database corrupt.
+            When doing exclusion check, make sure the ``packages`` is NOT
+            empty, e.g.::
+
+                >>> if rpms.packages and "pkg_name" not in rpms:
+                >>>     pass
+
         Args:
             package_name (str): RPM package name such as 'bash'
 
         Returns:
             bool: True if package name is in list of installed packages, otherwise False
-
-        Raises:
-            TypeError: When no packages list and the self.packages is ``None``.
         """
         return package_name in self.packages
 
@@ -220,15 +225,21 @@ class InstalledRpms(CommandParser, RpmList):
     related information.
     """
     def __init__(self, *args, **kwargs):
-        self.errors = []
+        self.errors = list()
         """list: List of input lines that indicate an error acquiring the data on the client."""
-        self.unparsed = []
+        self.unparsed = list()
         """list: List of input lines that raised an exception during parsing."""
-        self.packages = None
+        self.packages = dict()
         """
-        dict (InstalledRpm): Dictionary of RPMs keyed by package name.  None when no packages.
-            ``None`` keeps the behavior consistent when applying ``in`` against
-            the :class:`InstalledRpms` object or against :attr:`InstalledRpms.packages` directly.
+        dict (InstalledRpm): Dictionary of RPMs keyed by package name.
+
+        .. note::
+            The ``packages`` could be empty, e.g. when rpm database corrupt.
+            When doing exclusion check, make sure the ``packages`` is NOT
+            empty, e.g.::
+
+                >>> if rpms.packages and "pkg_name" not in rpms.packages:
+                >>>     pass
         """
         super(InstalledRpms, self).__init__(*args, **kwargs)
 
@@ -251,9 +262,8 @@ class InstalledRpms(CommandParser, RpmList):
                         except Exception:
                             # Both ways failed
                             self.unparsed.append(line)
-        if packages:
-            # Don't want defaultdict's behavior after parsing is complete
-            self.packages = dict(packages)
+        # Don't want defaultdict's behavior after parsing is complete
+        self.packages = dict(packages)
 
     @property
     def corrupt(self):
