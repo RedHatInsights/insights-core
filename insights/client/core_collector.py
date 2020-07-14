@@ -3,6 +3,7 @@ Collect all the interesting data for analysis - Core version
 """
 from __future__ import absolute_import
 import os
+import six
 import logging
 from insights import collect
 
@@ -54,6 +55,13 @@ class CoreCollector(DataCollector):
         if not collected_data_path:
             raise RuntimeError('Error running collection: no output path defined.')
         self.archive.archive_dir = collected_data_path
+        self.archive.archive_name = os.path.basename(collected_data_path)
+
+        if not six.PY3:
+            # collect.py returns a unicode string, and these must be bytestrings
+            #   when we call the tar command in 2.6
+            self.archive.archive_dir = self.archive.archive_dir.encode('utf-8')
+            self.archive.archive_name = self.archive.archive_name.encode('utf-8')
 
         # set hostname_path for soscleaner
         if os.path.exists(os.path.join(self.archive.archive_dir, 'data', 'insights_commands', 'hostname_-f')):
@@ -62,7 +70,6 @@ class CoreCollector(DataCollector):
             # fall back to hostname if hostname -f not available
             self.hostname_path = 'data/insights_commands/hostname'
 
-        self.archive.archive_name = os.path.basename(collected_data_path)
         logger.debug('Collection finished.')
 
         self.redact(rm_conf)
