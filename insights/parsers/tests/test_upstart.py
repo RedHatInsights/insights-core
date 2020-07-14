@@ -35,13 +35,45 @@ rcS-sulogin stop/waiting
 serial stop/waiting
 """.strip()
 
+INITCTL_LIST_2 = """
+rc stop/waiting
+vmware-tools start/running
+/dev/tty3
+tty (/dev/tty2) start/running, process 9495
+tty (/dev/tty1) start/running, process 9493
+tty (/dev/tty6) start/running, process 9507
+tty (/dev/tty5) start/running, process 9505
+tty (/dev/ttyS0) start/running, process 9509
+tty (/dev/tty4) stop/waiting
+plymouth-shutdown stop/waiting
+control-alt-delete stop/waiting
+""".strip()
+
 
 def test_upstart():
     upstart_obj = UPstart(context_wrap(INITCTL_LIST))
     assert upstart_obj.upstart_managed('vmware-tools') == 'vmware-tools start/running'
     assert upstart_obj.daemon_status('vmware-tools') == 'start/running'
     assert upstart_obj.dev_status('/dev/tty6') == 'start/running'
+    assert upstart_obj.dev_status('/dev/tts') is None
+    assert upstart_obj.upstart_managed('RCX') is None
     assert upstart_obj.tty['/dev/tty6']['status'] == 'start/running'
     assert upstart_obj.tty['/dev/tty6']['process'] == '9507'
     assert upstart_obj.tty['/dev/tty4']['status'] == 'stop/waiting'
+    assert upstart_obj.upstart_managed('/dev/tty6') == 'tty (/dev/tty6) start/running, process 9507'
+    upstart_obj = UPstart(context_wrap(INITCTL_LIST_2))
+    assert upstart_obj.dev_status('/dev/tty3') is None
 
+
+def test_execp_upstart():
+    with pytest.raises(SkipException) as exc:
+        UPstart(context_wrap(''))
+    assert 'No Contents' in str(exc.value)
+
+
+def test_upstart_doc_examples():
+    env = {
+            'upstart_obj': UPstart(context_wrap(INITCTL_LIST))
+    }
+    failed, total = doctest.testmod(upstart, globs=env)
+    assert failed == 0

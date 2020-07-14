@@ -11,9 +11,9 @@ from insights.specs import Specs
 
 
 @parser(Specs.initctl_lst)
-class UPstart(CommandParser, list):
+class UPstart(CommandParser):
     """
-    Class to parse the output of initctl command. It allows a 
+    Class to parse the output of initctl command. It allows a
     system administrator to communicate and interact with the
     Upstart init(8) daemon and list the services managed by
     Upstart init.
@@ -51,11 +51,25 @@ class UPstart(CommandParser, list):
     Raises:
         SkipException: When nothing need to parse.
 
+    Attributes:
+        upstart_managed: This returns daemon details.
+        daemon_status: This returns daemon status.
+        dev_status: This returns device status.
+
+
     Examples:
-        >>> type(UPstart)
+        >>> type(upstart_obj)
         <class 'insights.parsers.upstart.UPstart'>
-        >>> UPstart.upstart_managed('vmware-tools')
-        "vmware-tools start/running"
+        >>> upstart_obj.upstart_managed('vmware-tools')
+        'vmware-tools start/running'
+        >>> upstart_obj.daemon_status('vmware-tools')
+        'start/running'
+        >>> upstart_obj.daemon_status('start-ttys')
+        'stop/waiting'
+        >>> upstart_obj.dev_status('/dev/tty4')
+        'stop/waiting'
+        >>> upstart_obj.upstart_managed('/dev/tty3')
+        'tty (/dev/tty3) start/running, process 9499'
     """
 
     def parse_content(self, content):
@@ -82,8 +96,7 @@ class UPstart(CommandParser, list):
 
     def upstart_managed(self, daemon):
         """
-        (str): This method returns the status of daemon service if it is managed by upstart
-               else it will return `None`.
+        (str): This method returns the status of daemon service if it is managed by upstar else it will return `None`.
         """
         for line in self.data:
             if daemon in line:
@@ -92,15 +105,13 @@ class UPstart(CommandParser, list):
 
     def daemon_status(self, daemon):
         """
-        (str): This method will return the status of the process `start/running` or `stop/waiting`
-               else it will return `None`.
+        (str): This method will return the status of the process `start/running` or `stop/waiting` if it is managed by upstart else it will return `None`.
         """
         return self.daemon_proc.get(daemon, None)
 
     def dev_status(self, dev):
         """
-        (str): This method will return the status of the tty device `start/running` or `stop/waiting`, along with `process-ID`
-               else it will return `None`.
+        (str): This method will return the status of the tty device `start/running` or `stop/waiting`, along with `process-ID`i if it is managed by upstart else it will return `None`.
         """
         if dev and dev in self.tty.keys():
             return self.tty[dev].get('status', None)
