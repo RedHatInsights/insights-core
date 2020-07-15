@@ -52,11 +52,10 @@ class UPstart(CommandParser):
     Raises:
         SkipException: When nothing need to parse.
 
-
     Attributes:
-        upstart_managed
-        daemon_status
-        dev_status
+        upstart_managed(str): Daemon details will be returned.
+        daemon_status(str): Daemon status will be returned.
+        dev_status(str): TTY Device status will be returned.
 
     Examples:
         >>> type(upstart_obj)
@@ -97,7 +96,11 @@ class UPstart(CommandParser):
 
     def upstart_managed(self, daemon):
         """
-        (str): This method returns the status of daemon service if it is managed by upstar else it will return `None`.
+        Arguments:
+            daemon(str): The daemon name
+
+        Returns:
+            (str): This method returns the status of daemon service if it is managed by upstar else it will return `None`.
         """
         for line in self.data:
             if daemon in line:
@@ -106,13 +109,21 @@ class UPstart(CommandParser):
 
     def daemon_status(self, daemon):
         """
-        (str): This method will return the status of the process `start/running` or `stop/waiting` if it is managed by upstart else it will return `None`.
+        Arguments:
+            daemon(str): The daemon name
+
+        Returns:
+            (str): This method will return the status of the process `start/running` or `stop/waiting` if it is managed by upstart else it will return `None`.
         """
         return self.daemon_proc.get(daemon, None)
 
     def dev_status(self, dev):
         """
-        (str): This method will return the status of the tty device `start/running` or `stop/waiting`, along with `process-ID` if it is managed by upstart else it will return `None`.
+        Arguments:
+            dev(str): The tty device name
+
+        Returns:
+            (str): This method will return the status of the tty device `start/running` or `stop/waiting`, along with `process-ID` if it is managed by upstart else it will return `None`.
         """
         if dev and dev in self.tty.keys():
             return self.tty[dev].get('status', None)
