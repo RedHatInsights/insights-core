@@ -53,9 +53,9 @@ class UPstart(CommandParser):
         SkipException: When nothing need to parse.
 
     Attributes:
-        upstart_managed(str): Daemon details will be returned.
-        daemon_status(str): Daemon status will be returned.
-        dev_status(str): TTY Device status will be returned.
+        data(list): Daemon details are stored as list of str.
+        tty(dict): Device details are stored with status and process id.
+        daemon_proc(dict): Daemon status are stored with its `dameon` name and `status`.
 
     Examples:
         >>> type(upstart_obj)
@@ -70,6 +70,12 @@ class UPstart(CommandParser):
         'stop/waiting'
         >>> upstart_obj.upstart_managed('/dev/tty3')
         'tty (/dev/tty3) start/running, process 9499'
+        >>> upstart_obj.daemon_proc['quit-plymouth']
+        'stop/waiting'
+        >>> upstart_obj.tty['/dev/tty4']['status']
+        'stop/waiting'
+        >>> sorted(upstart_obj.data)[0]
+        'ck-log-system-restart stop/waiting'
     """
 
     def parse_content(self, content):
