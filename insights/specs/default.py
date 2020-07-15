@@ -46,6 +46,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_owner(filename):
+    """ tuple: Return tuple containing uid and gid of file filename """
     st = stat(filename)
     name = getpwuid(st.st_uid).pw_name
     group = getgrgid(st.st_gid).gr_name
@@ -53,21 +54,32 @@ def get_owner(filename):
 
 
 def get_cmd_and_package_in_ps(broker, target_command):
-        ps = broker[DefaultSpecs.ps_auxww].content
-        ctx = broker[HostContext]
-        results = set()
-        for p in ps:
-            p_splits = p.split(None, 10)
-            cmd = p_splits[10].split()[0] if len(p_splits) == 11 else ''
-            which = ctx.shell_out("which {0}".format(cmd)) if target_command in os.path.basename(cmd) else None
-            resolved = ctx.shell_out("readlink -e {0}".format(which[0])) if which else None
-            pkg = ctx.shell_out("/bin/rpm -qf {0}".format(resolved[0])) if resolved else None
-            if cmd and pkg is not None:
-                results.add("{0} {1}".format(cmd, pkg[0]))
-        return results
+    """
+    Search for command in ``ps auxww`` output and determine RPM providing binary
+
+    Arguments:
+        broker(dict): Current state of specs collected by Insights
+        target_command(str): Command name to search for in ps output
+
+    Returns:
+        set: Set including all RPMs that provide the target command
+    """
+    ps = broker[DefaultSpecs.ps_auxww].content
+    ctx = broker[HostContext]
+    results = set()
+    for p in ps:
+        p_splits = p.split(None, 10)
+        cmd = p_splits[10].split()[0] if len(p_splits) == 11 else ''
+        which = ctx.shell_out("which {0}".format(cmd)) if target_command in os.path.basename(cmd) else None
+        resolved = ctx.shell_out("readlink -e {0}".format(which[0])) if which else None
+        pkg = ctx.shell_out("/bin/rpm -qf {0}".format(resolved[0])) if resolved else None
+        if cmd and pkg is not None:
+            results.add("{0} {1}".format(cmd, pkg[0]))
+    return results
 
 
 def _make_rpm_formatter(fmt=None):
+    """ function: Returns function that will format output of rpm query command """
     if fmt is None:
         fmt = [
             '"name":"%{NAME}"',
@@ -552,6 +564,7 @@ class DefaultSpecs(Specs):
     ls_disk = simple_command("/bin/ls -lanR /dev/disk")
     # ls_docker_volumes = simple_command("/bin/ls -lanR /var/lib/docker/volumes")
     # ls_edac_mc = simple_command("/bin/ls -lan /sys/devices/system/edac/mc")
+    # list: List of subdirs in /etc to be collected by ``ls_etc`` spec
     etc_and_sub_dirs = sorted(["/etc", "/etc/pki/tls/private", "/etc/pki/tls/certs",
         "/etc/pki/ovirt-vmconsole", "/etc/nova/migration", "/etc/sysconfig",
         "/etc/cloud/cloud.cfg.d"])
@@ -763,7 +776,7 @@ class DefaultSpecs(Specs):
 
     @datasource(Services, context=HostContext)
     def pcp_enabled(broker):
-        """ bool: Returns True if pmproxy service is on """
+        """ bool: Returns True if pmproxy service is on in services """
         if not broker[Services].is_on("pmproxy"):
             raise SkipComponent("pmproxy not enabled")
 
@@ -1070,7 +1083,7 @@ class DefaultSpecs(Specs):
 
     rpm_format = format_rpm()
 
-    host_installed_rpms = simple_command("/bin/rpm -qa --qf '%s'" % rpm_format, context=HostContext)
+    # host_installed_rpms = simple_command("/bin/rpm -qa --qf '%s'" % rpm_format, context=HostContext)
 
     # @datasource(DockerImageContext)
     # def docker_installed_rpms(broker):
@@ -1084,7 +1097,7 @@ class DefaultSpecs(Specs):
 
     # unify the different installed rpm provider types
     # installed_rpms = first_of([host_installed_rpms, docker_installed_rpms])
-    installed_rpms = host_installed_rpms
+    installed_rpms = simple_command("/bin/rpm -qa --qf '%s'" % rpm_format, context=HostContext)
 
     # @datasource(ps_auxww, context=HostContext)
     # def jboss_home(broker):
