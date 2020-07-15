@@ -42,15 +42,14 @@ class CoreCollector(DataCollector):
 
         logger.debug('Beginning to run collection...')
 
-        # TODO: load this blacklist into core
         # only load files, keywords, components into core
-        # core_blacklist = {
-        #     'commands': rm_conf.get('commands', []),
-        #     'files': rm_conf.get('files', []),
-        #     'components': rm_conf.get('components', [])
-        # }
+        core_blacklist = {
+            'commands': rm_conf.get('commands', []),
+            'files': rm_conf.get('files', []),
+            'components': rm_conf.get('components', [])
+        }
 
-        collected_data_path = collect.collect(tmp_path=self.archive.tmp_dir)
+        collected_data_path = collect.collect(tmp_path=self.archive.tmp_dir, rm_conf=core_blacklist)
         # update the archive dir with the reported data location from Insights Core
         if not collected_data_path:
             raise RuntimeError('Error running collection: no output path defined.')

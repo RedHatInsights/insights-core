@@ -3,8 +3,8 @@ import insights
 import json
 
 # from insights.client.config import InsightsConfig
-# from insights.client.collection_rules import InsightsUploadConf
-from mock.mock import patch
+from insights.client.collection_rules import InsightsUploadConf
+from mock.mock import patch, Mock
 from insights.specs.default import DefaultSpecs
 from insights.specs.sos_archive import SosSpecs
 from insights.client.map_components import (map_rm_conf_to_components,
@@ -16,28 +16,28 @@ uploader_json = json.loads(uploader_json_file)
 default_specs = vars(DefaultSpecs).keys()
 sos_specs = vars(SosSpecs).keys()
 
-# @patch('insights.client.collection_rules.InsightsUploadConf.load_redaction_file', Mock(return_value={'test': 'test'}))
-# @patch('insights.client.collection_rules.InsightsUploadConf.get_rm_conf_old', Mock(return_value={'test': 'test'}))
-# @patch('insights.client.collection_rules.map_rm_conf_to_components')
-# def test_called_when_core_collection_enabled(map_rm_conf_to_components):
-#     '''
-#     Verify that the function is called from get_rm_conf when core_collect=True
-#     '''
-#     upload_conf = InsightsUploadConf(Mock(core_collect=True))
-#     upload_conf.get_rm_conf()
-#     map_rm_conf_to_components.assert_called_once_with({'test': 'test'})
+@patch('insights.client.collection_rules.InsightsUploadConf.load_redaction_file', Mock(return_value={'test': 'test'}))
+@patch('insights.client.collection_rules.InsightsUploadConf.get_rm_conf_old', Mock(return_value={'test': 'test'}))
+@patch('insights.client.collection_rules.map_rm_conf_to_components')
+def test_called_when_core_collection_enabled(map_rm_conf_to_components):
+    '''
+    Verify that the function is called from get_rm_conf when core_collect=True
+    '''
+    upload_conf = InsightsUploadConf(Mock(core_collect=True))
+    upload_conf.get_rm_conf()
+    map_rm_conf_to_components.assert_called_once_with({'test': 'test'})
 
 
-# @patch('insights.client.collection_rules.InsightsUploadConf.load_redaction_file', Mock(return_value={'test': 'test'}))
-# @patch('insights.client.collection_rules.InsightsUploadConf.get_rm_conf_old', Mock(return_value={'test': 'test'}))
-# @patch('insights.client.collection_rules.map_rm_conf_to_components')
-# def test_not_called_when_core_collection_disabled(map_rm_conf_to_components):
-#     '''
-#     Verify that the function is not called from get_rm_conf when core_collect=False
-#     '''
-#     upload_conf = InsightsUploadConf(Mock(core_collect=False))
-#     upload_conf.get_rm_conf()
-#     map_rm_conf_to_components.assert_not_called()
+@patch('insights.client.collection_rules.InsightsUploadConf.load_redaction_file', Mock(return_value={'test': 'test'}))
+@patch('insights.client.collection_rules.InsightsUploadConf.get_rm_conf_old', Mock(return_value={'test': 'test'}))
+@patch('insights.client.collection_rules.map_rm_conf_to_components')
+def test_not_called_when_core_collection_disabled(map_rm_conf_to_components):
+    '''
+    Verify that the function is not called from get_rm_conf when core_collect=False
+    '''
+    upload_conf = InsightsUploadConf(Mock(core_collect=False))
+    upload_conf.get_rm_conf()
+    map_rm_conf_to_components.assert_not_called()
 
 
 def test_get_component_by_symbolic_name():
