@@ -26,6 +26,7 @@ from insights.core.spec_factory import first_of, foreach_collect, foreach_execut
 from insights.core.spec_factory import first_file, listdir
 from insights.parsers.mount import Mount, ProcMounts
 from insights.parsers.dnf_module import DnfModuleList
+from insights.combiners.sap import Sap
 from insights.combiners.cloud_provider import CloudProvider
 from insights.combiners.satellite_version import SatelliteVersion
 from insights.combiners.services import Services
@@ -180,7 +181,7 @@ class DefaultSpecs(Specs):
     ceph_osd_tree = simple_command("/usr/bin/ceph osd tree -f json")
     ceph_s = simple_command("/usr/bin/ceph -s -f json")
     ceph_v = simple_command("/usr/bin/ceph -v")
-    certificates_enddate = simple_command("/usr/bin/find /etc/origin/node /etc/origin/master /etc/pki -type f -exec /usr/bin/openssl x509 -noout -enddate -in '{}' \; -exec echo 'FileName= {}' \;")
+    certificates_enddate = simple_command("/usr/bin/find /etc/origin/node /etc/origin/master /etc/pki /etc/ipa -type f -exec /usr/bin/openssl x509 -noout -enddate -in '{}' \; -exec echo 'FileName= {}' \;")
     chkconfig = simple_command("/sbin/chkconfig --list")
     chrony_conf = simple_file("/etc/chrony.conf")
     chronyc_sources = simple_command("/usr/bin/chronyc sources")
@@ -555,6 +556,7 @@ class DefaultSpecs(Specs):
     ls_var_tmp = simple_command("/bin/ls -ln /var/tmp")
     ls_var_run = simple_command("/bin/ls -lnL /var/run")
     ls_var_www = simple_command("/bin/ls -la /dev/null /var/www")  # https://github.com/RedHatInsights/insights-core/issues/827
+    ls_tmp = simple_command("/bin/ls -la /tmp")
     lsblk = simple_command("/bin/lsblk")
     lsblk_pairs = simple_command("/bin/lsblk -P -o NAME,KNAME,MAJ:MIN,FSTYPE,MOUNTPOINT,LABEL,UUID,RA,RO,RM,MODEL,SIZE,STATE,OWNER,GROUP,MODE,ALIGNMENT,MIN-IO,OPT-IO,PHY-SEC,LOG-SEC,ROTA,SCHED,RQ-SIZE,TYPE,DISC-ALN,DISC-GRAN,DISC-MAX,DISC-ZERO")
     lscpu = simple_command("/usr/bin/lscpu")
@@ -862,46 +864,20 @@ class DefaultSpecs(Specs):
     rpm_V_packages = simple_command("/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo chrony", keep_rc=True)
     rsyslog_conf = simple_file("/etc/rsyslog.conf")
     samba = simple_file("/etc/samba/smb.conf")
-    saphostctrl_listinstances = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function ListInstances")
 
-    @datasource(saphostctrl_listinstances, hostname)
-    def sap_sid_nr(broker):
-        """
-        Get the SID and Instance Number
-
-        Typical output of saphostctrl_listinstances::
-        # /usr/sap/hostctrl/exe/saphostctrl -function ListInstances
-        Inst Info : SR1 - 01 - liuxc-rhel7-hana-ent - 749, patch 418, changelist 1816226
-
-        Returns:
-            (list): List of tuple of SID and Instance Number.
-
-        """
-        insts = broker[DefaultSpecs.saphostctrl_listinstances].content
-        hn = broker[DefaultSpecs.hostname].content[0].split('.')[0].strip()
-        results = set()
-        for ins in insts:
-            ins_splits = ins.split(' - ')
-            # Local Instance
-            if ins_splits[2].strip() == hn:
-                # (sid, nr)
-                results.add((ins_splits[0].split()[-1].lower(), ins_splits[1].strip()))
-        return list(results)
-
-    @datasource(sap_sid_nr)
+    @datasource(Sap)
     def sap_sid(broker):
-        """
-        Get the SID
+        sap = broker[Sap]
+        return [sap.sid(i).lower() for i in sap.local_instances]
 
-        Returns:
-            (list): List of SID.
-
-        """
-        return list(set(sn[0] for sn in broker[DefaultSpecs.sap_sid_nr]))
+    @datasource(Sap)
+    def sap_sid_num(broker):
+        sap = broker[Sap]
+        return [(sap.sid(i).lower(), sap.number(i)) for i in sap.local_instances]
 
     sap_hdb_version = foreach_execute(sap_sid, "/usr/bin/sudo -iu %sadm HDB version", keep_rc=True)
     sap_host_profile = simple_file("/usr/sap/hostctrl/exe/host_profile")
-    sapcontrol_getsystemupdatelist = foreach_execute(sap_sid_nr, "/usr/bin/sudo -iu %sadm sapcontrol -nr %s -function GetSystemUpdateList", keep_rc=True)
+    sapcontrol_getsystemupdatelist = foreach_execute(sap_sid_num, "/usr/bin/sudo -iu %sadm sapcontrol -nr %s -function GetSystemUpdateList", keep_rc=True)
     saphostctl_getcimobject_sapinstance = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance")
     saphostexec_status = simple_command("/usr/sap/hostctrl/exe/saphostexec -status")
     saphostexec_version = simple_command("/usr/sap/hostctrl/exe/saphostexec -version")
