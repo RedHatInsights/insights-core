@@ -66,7 +66,7 @@ client:
           enabled: true
 
     run_strategy:
-        name: parallel
+        name: serial
         args:
             max_workers: null
 
@@ -214,7 +214,7 @@ def get_pool(parallel, kwargs):
         yield None
 
 
-def collect(manifest=default_manifest, tmp_path=None, compress=False):
+def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=None):
     """
     This is the collection entry point. It accepts a manifest, a temporary
     directory in which to store output, and a boolean for optional compression.
@@ -228,7 +228,9 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False):
         compress (boolean): True to create a tar.gz and remove the original
             workspace containing output. False to leave the workspace without
             creating a tar.gz
-
+        rm_conf (dict): Client-provided python dict containing keys
+            "commands", "files", and "keywords", to be injected
+            into the manifest blacklist.
     Returns:
         The full path to the created tar.gz or workspace.
     """
@@ -243,6 +245,16 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False):
     apply_configs(plugins)
 
     apply_blacklist(client.get("blacklist", {}))
+
+    # insights-client
+    rm_conf = rm_conf or {}
+    apply_blacklist(rm_conf)
+    for component in rm_conf.get('components', []):
+        if not dr.get_component_by_name(component):
+            log.warning('WARNING: Unknown component in blacklist: %s' % component)
+        else:
+            dr.set_enabled(component, enabled=False)
+            log.warning('WARNING: Skipping component: %s', component)
 
     to_persist = get_to_persist(client.get("persist", set()))
 
