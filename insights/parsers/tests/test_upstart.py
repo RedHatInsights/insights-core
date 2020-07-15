@@ -1,7 +1,7 @@
 import doctest
 import pytest
 from insights.parsers import upstart, SkipException
-from insights.parsers.upstart import UPstart
+from insights.parsers.upstart import UpstartInitctlList
 from insights.tests import context_wrap
 
 
@@ -51,7 +51,7 @@ control-alt-delete stop/waiting
 
 
 def test_upstart():
-    upstart_obj = UPstart(context_wrap(INITCTL_LIST))
+    upstart_obj = UpstartInitctlList(context_wrap(INITCTL_LIST))
     assert upstart_obj.upstart_managed('vmware-tools') == 'vmware-tools start/running'
     assert upstart_obj.daemon_status('vmware-tools') == 'start/running'
     assert upstart_obj.dev_status('/dev/tty6') == 'start/running'
@@ -61,19 +61,19 @@ def test_upstart():
     assert upstart_obj.tty['/dev/tty6']['process'] == '9507'
     assert upstart_obj.tty['/dev/tty4']['status'] == 'stop/waiting'
     assert upstart_obj.upstart_managed('/dev/tty6') == 'tty (/dev/tty6) start/running, process 9507'
-    upstart_obj = UPstart(context_wrap(INITCTL_LIST_2))
+    upstart_obj = UpstartInitctlList(context_wrap(INITCTL_LIST_2))
     assert upstart_obj.dev_status('/dev/tty3') is None
 
 
 def test_execp_upstart():
     with pytest.raises(SkipException) as exc:
-        UPstart(context_wrap(''))
+        UpstartInitctlList(context_wrap(''))
     assert 'No Contents' in str(exc.value)
 
 
 def test_upstart_doc_examples():
     env = {
-            'upstart_obj': UPstart(context_wrap(INITCTL_LIST))
+            'upstart_obj': UpstartInitctlList(context_wrap(INITCTL_LIST))
     }
     failed, total = doctest.testmod(upstart, globs=env)
     assert failed == 0

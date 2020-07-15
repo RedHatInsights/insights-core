@@ -1,8 +1,8 @@
 """
-UPstart - Command ``initctl --system list``
-===========================================
+UpstartInitctlList - Command ``initctl --system list``
+======================================================
 
-Parser to parser the output of ``initctl --system list`` commands.
+Parser to parse the output of ``initctl --system list`` command.
 
 """
 
@@ -12,7 +12,7 @@ from insights.specs import Specs
 
 
 @parser(Specs.initctl_lst)
-class UPstart(CommandParser):
+class UpstartInitctlList(CommandParser):
     """
     Class to parse the output of initctl command. It allows a
     system administrator to communicate and interact with the
@@ -59,7 +59,7 @@ class UPstart(CommandParser):
 
     Examples:
         >>> type(upstart_obj)
-        <class 'insights.parsers.upstart.UPstart'>
+        <class 'insights.parsers.upstart.UpstartInitctlList'>
         >>> upstart_obj.upstart_managed('vmware-tools')
         'vmware-tools start/running'
         >>> upstart_obj.daemon_status('vmware-tools')
