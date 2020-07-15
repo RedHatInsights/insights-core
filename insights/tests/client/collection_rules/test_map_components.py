@@ -16,6 +16,7 @@ uploader_json = json.loads(uploader_json_file)
 default_specs = vars(DefaultSpecs).keys()
 sos_specs = vars(SosSpecs).keys()
 
+
 @patch('insights.client.collection_rules.InsightsUploadConf.load_redaction_file', Mock(return_value={'test': 'test'}))
 @patch('insights.client.collection_rules.InsightsUploadConf.get_rm_conf_old', Mock(return_value={'test': 'test'}))
 @patch('insights.client.collection_rules.map_rm_conf_to_components')
