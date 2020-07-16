@@ -26,6 +26,10 @@ If there are duplicate key items, merge them in to one. Like::
                             }--->    option: ["tcpka","tcplog"]
     option  tcplog
 
+Attributes:
+    data (dict): Dictionary of all parsed sections.
+    lines (list): List of all non-commented lines.
+
 Examples:
     >>> cfg = shared[HaproxyCfg]
     >>> cfg.data['global']
@@ -37,7 +41,7 @@ Examples:
     True
     >>> 'user' in cfg.data.get('global')
     True
-    """
+"""
 from .. import Parser, parser
 from insights.specs import Specs
 
