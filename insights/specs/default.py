@@ -557,6 +557,9 @@ class DefaultSpecs(Specs):
 
     @datasource(Sap)
     def sap_sid_name(broker):
+        """
+        Returns the list of (SAP SID, SAP InstanceName)
+        """
         sap = broker[Sap]
         return [(sap.sid(i), i) for i in sap.local_instances]
 
