@@ -128,6 +128,10 @@ def post_update(client, config):
     logger.debug("CONFIG: %s", config)
     print_egg_versions()
 
+    if config.list_specs:
+        client.list_specs()
+        sys.exit(constants.sig_kill_ok)
+
     if config.show_results:
         try:
             client.show_results()
