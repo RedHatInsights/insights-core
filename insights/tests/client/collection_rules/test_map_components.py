@@ -45,6 +45,71 @@ def test_get_component_by_symbolic_name():
     Verify that all symbolic names in uploader.json can be mapped
     to valid components as prescribed in the conversion function
     '''
+    # some specs have been removed for core release so because they either
+    #   A) do not appear in uploader.json, or
+    #   B) DO appear in uploader.json, but have no associated rules
+    #   Filter out the (B) specs with this list
+    skipped_specs = [
+        'ceph_osd_df',
+        'dmsetup_info',
+        'du_dirs',
+        'gluster_peer_status',
+        'gluster_v_status',
+        'heat_crontab',
+        'httpd_on_nfs',
+        'ls_edac_mc',
+        'ls_usr_lib64',
+        'ls_usr_sbin',
+        'lvmconfig',
+        'saphostexec_status',
+        'saphostexec_version',
+        'nova_migration_uid',
+        'ntpq_pn',
+        'rabbitmq_queues',
+        'rhev_data_center',
+        'root_crontab',
+        'subscription_manager_installed_product_ids',
+        'yum_list_installed',
+        'zdump_v',
+        'cni_podman_bridge_conf',
+        'cpu_smt_control',
+        'cpu_vulns_meltdown',
+        'cpu_vulns_spectre_v1',
+        'cpu_vulns_spectre_v2',
+        'cpu_vulns_spec_store_bypass',
+        'dnf_modules',
+        'docker_storage',
+        'freeipa_healthcheck_log',
+        'vmware_tools_conf',
+        'ironic_conf',
+        'octavia_conf',
+        'partitions',
+        'rhn_hibernate_conf',
+        'rhn_search_daemon_log',
+        'rhosp_release',
+        'secure',
+        'foreman_tasks_config',
+        'ssh_foreman_config',
+        'swift_conf',
+        'sys_kernel_sched_features',
+        'sysconfig_memcached',
+        'sysconfig_mongod',
+        'systemd_system_origin_accounting',
+        'tuned_conf',
+        'vdsm_conf',
+        'vdsm_id',
+        'neutron_ml2_conf',
+        'sap_host_profile',
+        'sched_rt_runtime_us',
+        'libvirtd_qemu_log',
+        'mlx4_port'
+    ]
+
+    # first, make sure our list is proper and one of these
+    #   are in the default specs
+    for s in skipped_specs:
+        assert s not in default_specs
+
     for category in ['commands', 'files', 'globs']:
         for entry in uploader_json[category]:
             full_component = _get_component_by_symbolic_name(entry['symbolic_name'])
@@ -55,6 +120,10 @@ def test_get_component_by_symbolic_name():
                 continue
 
             module, shortname = full_component.rsplit('.', 1)
+
+            # filter out specs without associated rules
+            if shortname in skipped_specs:
+                continue
 
             if module == "insights.specs.default.DefaultSpecs":
                 assert shortname in default_specs
