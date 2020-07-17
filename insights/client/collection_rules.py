@@ -16,6 +16,7 @@ from six.moves import configparser as ConfigParser
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
 from .constants import InsightsConstants as constants
+from .map_components import map_rm_conf_to_components
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
@@ -336,9 +337,9 @@ class InsightsUploadConf(object):
                     raise RuntimeError('ERROR: Unknown key in remove.conf: ' + item +
                                        '\nValid keys are ' + ', '.join(expected_keys) + '.')
                 if six.PY3:
-                    rm_conf[item] = value.strip().encode('utf-8').decode('unicode-escape').split(',')
+                    rm_conf[item] = [v.strip() for v in value.strip().encode('utf-8').decode('unicode-escape').split(',')]
                 else:
-                    rm_conf[item] = value.strip().decode('string-escape').split(',')
+                    rm_conf[item] = [v.strip() for v in value.strip().decode('string-escape').split(',')]
             self.rm_conf = rm_conf
         except ConfigParser.Error as e:
             # can't parse config file at all
@@ -402,12 +403,17 @@ class InsightsUploadConf(object):
         if not redact_conf and not content_redact_conf:
             # no file-redaction.yaml or file-content-redaction.yaml defined,
             #   try to use remove.conf
-            return self.get_rm_conf_old()
+            self.rm_conf = self.get_rm_conf_old()
+            if self.config.core_collect:
+                self.rm_conf = map_rm_conf_to_components(self.rm_conf)
+            return self.rm_conf
 
         # remove Nones, empty strings, and empty lists
         filtered_rm_conf = dict((k, v) for k, v in rm_conf.items() if v)
         self.rm_conf = filtered_rm_conf
-        return filtered_rm_conf
+        if self.config.core_collect:
+            self.rm_conf = map_rm_conf_to_components(self.rm_conf)
+        return self.rm_conf
 
     def get_tags_conf(self):
         '''
@@ -435,7 +441,7 @@ class InsightsUploadConf(object):
             return None
         # Using print here as this could contain sensitive information
         print('Blacklist configuration parsed contents:')
-        print(success)
+        print(json.dumps(success, indent=4))
         logger.info('Parsed successfully.')
         return True
 
@@ -493,6 +499,6 @@ if __name__ == '__main__':
     config = InsightsConfig().load_all()
     uploadconf = InsightsUploadConf(config)
     uploadconf.validate()
-    report = uploadconf.create_report()
+    # report = uploadconf.create_report()
 
-    print(report)
+    # print(report)
