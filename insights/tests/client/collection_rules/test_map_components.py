@@ -58,7 +58,6 @@ def test_get_component_by_symbolic_name():
         'heat_crontab',
         'httpd_on_nfs',
         'ls_edac_mc',
-        'ls_usr_lib64',
         'ls_usr_sbin',
         'lvmconfig',
         'saphostexec_status',
@@ -297,14 +296,14 @@ def test_log_long_key(logger_warning):
     Verify the conversion table is logged with proper
     spacing, wrapping, and unconverted specs are not logged
     '''
-    rm_conf = {'commands': ["/usr/bin/find /etc/origin/node /etc/origin/master /etc/pki -type f -exec /usr/bin/openssl x509 -noout -enddate -in '{}' \\; -exec echo 'FileName= {}' \\;",
+    rm_conf = {'commands': ["/usr/bin/find /etc/origin/node /etc/origin/master /etc/pki /etc/ipa -type f -exec /usr/bin/openssl x509 -noout -enddate -in '{}' \\; -exec echo 'FileName= {}' \\;",
                             "/usr/bin/md5sum /etc/pki/product/69.pem",
                             "ss_tupna"],
                'files': ["/etc/sysconfig/virt-who",
                          "/etc/yum.repos.d/fedora-cisco-openh264.repo",
                          "krb5_conf_d"]}
     map_rm_conf_to_components(rm_conf)
-    logger_warning.assert_any_call("- /usr/bin/find /etc/origin/node                   => certificates_enddate\n  /etc/origin/master /etc/pki -type f -exec\n  /usr/bin/openssl x509 -noout -enddate -in '{}'\n  \\; -exec echo 'FileName= {}' \\;")
+    logger_warning.assert_any_call("- /usr/bin/find /etc/origin/node                   => certificates_enddate\n  /etc/origin/master /etc/pki /etc/ipa -type f\n  -exec /usr/bin/openssl x509 -noout -enddate -in\n  '{}' \\; -exec echo 'FileName= {}' \\;")
     logger_warning.assert_any_call("- /usr/bin/md5sum /etc/pki/product/69.pem          => md5chk_files")
     logger_warning.assert_any_call("- ss_tupna                                         => ss"),
     logger_warning.assert_any_call("- /etc/sysconfig/virt-who                          => sysconfig_virt_who")
