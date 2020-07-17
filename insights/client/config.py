@@ -6,6 +6,8 @@ import copy
 import six
 import sys
 from six.moves import configparser as ConfigParser
+from distutils.version import LooseVersion
+from .utilities import get_version_info
 
 try:
     from .constants import InsightsConstants as constants
@@ -13,6 +15,24 @@ except:
     from constants import InsightsConstants as constants
 
 logger = logging.getLogger(__name__)
+
+
+def _core_collect_default():
+    '''
+    Core collection should be disabled by default, unless
+    the RPM version 3.1 or above
+    '''
+    rpm_version = get_version_info()['client_version']
+    if not rpm_version:
+        # problem getting the version, default to False
+        return False
+    if LooseVersion(rpm_version) < LooseVersion(constants.core_collect_rpm_version):
+        # rpm version is older than the core collection release
+        return False
+    else:
+        # rpm version is equal to or newer than the core collection release
+        return True
+
 
 DEFAULT_OPTS = {
     'analyze_container': {
@@ -101,6 +121,9 @@ DEFAULT_OPTS = {
         'opt': ['--conf', '-c'],
         'help': 'Pass a custom config file',
         'action': 'store'
+    },
+    'core_collect': {
+        'default': False
     },
     'egg_path': {
         # non-CLI
@@ -414,6 +437,12 @@ class InsightsConfig(object):
 
         self._init_attrs = copy.copy(dir(self))
         self._update_dict(DEFAULT_KVS)
+
+        # initialize the real default for core_collect here
+        #   instead of inside DEFAULT_KVS because calling
+        #   this function at the module scope ignores unit test mocks
+        self.core_collect = _core_collect_default()
+
         if args:
             self._update_dict(args[0])
         self._update_dict(kwargs)
