@@ -193,6 +193,12 @@ DEFAULT_OPTS = {
         'action': 'store_true',
         'group': 'debug'
     },
+    'list_specs': {
+        'default': False,
+        'opt': ['--list-specs'],
+        'help': 'Show insights-client collection specs',
+        'action': 'store_true'
+    },
     'logging_file': {
         'default': constants.default_log_file,
         'opt': ['--logging-file'],
