@@ -6,6 +6,7 @@ from insights import rule, make_metadata, run
 from insights.specs import Specs
 from insights.core import Parser
 from insights.core.plugins import parser
+from insights.core.dr import set_enabled
 import uuid
 
 
@@ -108,6 +109,9 @@ def canonical_facts(
 
 
 def get_canonical_facts(path=None):
+    set_enabled(canonical_facts, True)
+    set_enabled(SubscriptionManagerID, True)
+    set_enabled(IPs, True)
     br = run(canonical_facts, root=path)
     d = br[canonical_facts]
     del d["type"]
