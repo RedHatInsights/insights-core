@@ -1,7 +1,8 @@
 from insights.client.config import InsightsConfig
 from insights.client.archive import InsightsArchive
 from insights.client.data_collector import DataCollector
-from mock.mock import patch
+from insights.client.core_collector import CoreCollector
+from mock.mock import patch, Mock
 import pytest
 import os
 import six
@@ -9,8 +10,50 @@ import six
 test_file_data = 'test\nabcd\n1234\npassword: p4ssw0rd\n'
 
 
+@patch('insights.client.archive.InsightsArchive', Mock())
+@patch('insights.client.insights_spec.InsightsCommand', Mock())
+@patch('insights.client.insights_spec.InsightsFile', Mock())
+@patch('insights.client.data_collector.DataCollector._parse_command_spec', Mock())
+@patch('insights.client.data_collector.DataCollector._parse_file_spec', Mock())
+@patch('insights.client.data_collector.DataCollector._parse_glob_spec', Mock())
+@patch('insights.client.data_collector.DataCollector.redact')
+def test_redact_called_classic(redact):
+    '''
+    Verify that redact is always called during classic collection
+    '''
+    conf = InsightsConfig()
+    upload_conf = {'commands': [], 'files': [], 'globs': []}
+    rm_conf = {'test': 'test'}
+    branch_info = {'test1': 'test2'}
+    blacklist_report = {'test3': 'test4'}
+    dc = DataCollector(conf)
+    dc.run_collection(upload_conf, rm_conf, branch_info, blacklist_report)
+    redact.assert_called_once_with(rm_conf)
+
+
+@patch('insights.client.archive.InsightsArchive', Mock())
+@patch('insights.client.core_collector.CoreCollector._write_branch_info', Mock())
+@patch('insights.client.core_collector.CoreCollector._write_display_name', Mock())
+@patch('insights.client.core_collector.CoreCollector._write_version_info', Mock())
+@patch('insights.client.core_collector.CoreCollector._write_tags', Mock())
+@patch('insights.client.core_collector.CoreCollector._write_blacklist_report', Mock())
+@patch('insights.client.core_collector.collect.collect', Mock(return_value='/var/tmp/testarchive/insights-test'))
+@patch('insights.client.core_collector.CoreCollector.redact')
+def test_redact_called_core(redact):
+    '''
+    Verify that redact is always called during core collection
+    '''
+    conf = InsightsConfig(core_collect=True)
+    upload_conf = None
+    rm_conf = {'test': 'test'}
+    branch_info = {'test1': 'test2'}
+    blacklist_report = {'test3': 'test4'}
+    dc = CoreCollector(conf)
+    dc.run_collection(upload_conf, rm_conf, branch_info, blacklist_report)
+    redact.assert_called_once_with(rm_conf)
+
+
 @patch('insights.client.data_collector.os.walk')
-# @patch('insights.client.data_collector._process_content_redaction')
 def test_redact_call_walk(walk):
     '''
     Verify that redact() calls os.walk and when an
@@ -18,9 +61,7 @@ def test_redact_call_walk(walk):
     '''
     conf = InsightsConfig()
     arch = InsightsArchive(conf)
-    # TODO: uncomment this once dual collector logic is merged.
-    #   archive dir must be created explicitly
-    # arch.create_archive_dir()
+    arch.create_archive_dir()
 
     dc = DataCollector(conf, arch)
     rm_conf = {}
@@ -41,9 +82,7 @@ def test_redact_call_process_redaction(_process_content_redaction):
     '''
     conf = InsightsConfig()
     arch = InsightsArchive(conf)
-    # TODO: uncomment this once dual collector logic is merged.
-    #   archive dir must be created explicitly
-    # arch.create_archive_dir()
+    arch.create_archive_dir()
 
     # put something in the archive to redact
     test_file = os.path.join(arch.archive_dir, 'test.file')
@@ -74,9 +113,7 @@ def test_redact_exclude_regex(_process_content_redaction):
     '''
     conf = InsightsConfig()
     arch = InsightsArchive(conf)
-    # TODO: uncomment this once dual collector logic is merged.
-    #   archive dir must be created explicitly
-    # arch.create_archive_dir()
+    arch.create_archive_dir()
 
     # put something in the archive to redact
     test_file = os.path.join(arch.archive_dir, 'test.file')
@@ -105,9 +142,7 @@ def test_redact_exclude_no_regex(_process_content_redaction):
     '''
     conf = InsightsConfig()
     arch = InsightsArchive(conf)
-    # TODO: uncomment this once dual collector logic is merged.
-    #   archive dir must be created explicitly
-    # arch.create_archive_dir()
+    arch.create_archive_dir()
 
     # put something in the archive to redact
     test_file = os.path.join(arch.archive_dir, 'test.file')
@@ -136,9 +171,7 @@ def test_redact_exclude_empty(_process_content_redaction):
     '''
     conf = InsightsConfig()
     arch = InsightsArchive(conf)
-    # TODO: uncomment this once dual collector logic is merged.
-    #   archive dir must be created explicitly
-    # arch.create_archive_dir()
+    arch.create_archive_dir()
 
     # put something in the archive to redact
     test_file = os.path.join(arch.archive_dir, 'test.file')
@@ -167,9 +200,7 @@ def test_redact_exclude_none(_process_content_redaction):
     '''
     conf = InsightsConfig()
     arch = InsightsArchive(conf)
-    # TODO: uncomment this once dual collector logic is merged.
-    #   archive dir must be created explicitly
-    # arch.create_archive_dir()
+    arch.create_archive_dir()
 
     # put something in the archive to redact
     test_file = os.path.join(arch.archive_dir, 'test.file')
