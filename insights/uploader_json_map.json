@@ -76,7 +76,7 @@
             "symbolic_name": "ceph_insights"
         },
         {
-            "command": "/usr/bin/find /etc/origin/node /etc/origin/master /etc/pki -type f -exec /usr/bin/openssl x509 -noout -enddate -in '{}' \\; -exec echo 'FileName= {}' \\;",
+            "command": "/usr/bin/find /etc/origin/node /etc/origin/master /etc/pki /etc/ipa -type f -exec /usr/bin/openssl x509 -noout -enddate -in '{}' \\; -exec echo 'FileName= {}' \\;",
             "pattern": [],
             "symbolic_name": "certificates_enddate"
         },
@@ -155,7 +155,6 @@
                 "Emulex OneConnect OCe10100, FCoE Initiator",
                 "FEATURE IBPB_SUPPORT",
                 "FEATURE SPEC_CTRL",
-                "Hyper-V Host Build:",
                 "Ignoring BGRT: failed to map image header memory",
                 "Ignoring BGRT: failed to map image memory",
                 "Kernel page table isolation",
@@ -1003,6 +1002,7 @@
                 "ora",
                 "pacemakerd",
                 "pcsd",
+                "spausedd",
                 "tuned"
             ],
             "symbolic_name": "ps_alxwww"
@@ -1038,6 +1038,7 @@
                 "phc2sys",
                 "postgres",
                 "ptp4l",
+                "spausedd",
                 "tuned"
             ],
             "symbolic_name": "ps_aux"
@@ -1086,6 +1087,7 @@
                 "pkla-check-auth",
                 "postgres",
                 "smbd",
+                "spausedd",
                 "target_completi",
                 "taskomaticd",
                 "tgtd",
@@ -1115,6 +1117,7 @@
                 "ora",
                 "pacemakerd",
                 "pcsd",
+                "spausedd",
                 "tuned"
             ],
             "symbolic_name": "ps_ef"
@@ -1484,7 +1487,6 @@
         {
             "file": "/var/log/tomcat/()*catalina\\.out",
             "pattern": [
-                "APPARENT DEADLOCK!",
                 "NoCobblerTokenException: We had an error trying to login."
             ],
             "symbolic_name": "catalina_out"
@@ -1492,7 +1494,6 @@
         {
             "file": "/var/log/tomcat6/()*catalina\\.out",
             "pattern": [
-                "APPARENT DEADLOCK!",
                 "NoCobblerTokenException: We had an error trying to login."
             ],
             "symbolic_name": "catalina_out"
@@ -1500,7 +1501,6 @@
         {
             "file": "/tomcat-logs/tomcat/()*catalina\\.out",
             "pattern": [
-                "APPARENT DEADLOCK!",
                 "NoCobblerTokenException: We had an error trying to login."
             ],
             "symbolic_name": "catalina_out"
@@ -1508,7 +1508,6 @@
         {
             "file": "/tomcat-logs/tomcat6/()*catalina\\.out",
             "pattern": [
-                "APPARENT DEADLOCK!",
                 "NoCobblerTokenException: We had an error trying to login."
             ],
             "symbolic_name": "catalina_out"
@@ -1776,7 +1775,6 @@
                 "Efi",
                 "FEATURE IBPB_SUPPORT",
                 "FEATURE SPEC_CTRL",
-                "Hyper-V Host Build:",
                 "Kernel page table isolation",
                 "L1TF",
                 "L1Tf",
@@ -2181,6 +2179,7 @@
                 "Cannot assign requested address",
                 "Cannot assign requested address: AH00072",
                 "Connection amqps://subscription.rhn.redhat.com:5647 disconnected",
+                "Corosync main process was not scheduled (@",
                 "Could not set",
                 "DHCPv4 lease renewal requested",
                 "DMA Status error.  Resetting chip",
@@ -2201,6 +2200,7 @@
                 "NETDEV WATCHDOG",
                 "Neighbour table overflow",
                 "NetworkManager state is now CONNECTED_SITE",
+                "Not scheduled for",
                 "Orphaned pod",
                 "Out of MCCQ wrbs",
                 "Out of memory: Kill process",
@@ -2210,6 +2210,7 @@
                 "SCSI error: return code =",
                 "SDN initialization failed: Error: Existing service with IP: None is not part of service network",
                 "Scheduled import of stream",
+                "Steal time is >",
                 "TX driver issue detected, PF reset issued",
                 "TX stuck with port_enabled=1: resetting channels",
                 "This system does not support \"SSSE3\"",
@@ -3859,5 +3860,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2020-07-01T15:15:50.052070"
+    "version": "2020-07-16T14:49:33.251429"
 }
