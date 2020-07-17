@@ -18,6 +18,7 @@ from .utilities import (generate_machine_id,
                         determine_hostname)
 from .collection_rules import InsightsUploadConf
 from .data_collector import DataCollector
+from .core_collector import CoreCollector
 from .connection import InsightsConnection
 from .archive import InsightsArchive
 from .support import registration_check
@@ -284,18 +285,20 @@ def collect(config, pconn):
     pc = InsightsUploadConf(config)
     output = None
 
-    collection_rules = pc.get_conf_file()
     rm_conf = pc.get_rm_conf()
     blacklist_report = pc.create_report()
     if rm_conf:
         logger.warn("WARNING: Excluding data from files")
 
-    # defaults
-    mp = None
     archive = InsightsArchive(config)
 
     msg_name = determine_hostname(config.display_name)
-    dc = DataCollector(config, archive, mountpoint=mp)
+    if config.core_collect:
+        collection_rules = None
+        dc = CoreCollector(config, archive)
+    else:
+        collection_rules = pc.get_conf_file()
+        dc = DataCollector(config, archive)
     logger.info('Starting to collect Insights data for %s', msg_name)
     dc.run_collection(collection_rules, rm_conf, branch_info, blacklist_report)
     output = dc.done(collection_rules, rm_conf)

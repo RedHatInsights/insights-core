@@ -230,6 +230,9 @@ class DataCollector(object):
         # initialize systemd-notify thread
         systemd_notify_init_thread()
 
+        self.archive.create_archive_dir()
+        self.archive.create_command_dir()
+
         if rm_conf is None:
             rm_conf = {}
         logger.debug('Beginning to run collection spec...')
