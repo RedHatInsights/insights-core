@@ -404,13 +404,16 @@ class InsightsUploadConf(object):
             # no file-redaction.yaml or file-content-redaction.yaml defined,
             #   try to use remove.conf
             self.rm_conf = self.get_rm_conf_old()
-            self.rm_conf = map_rm_conf_to_components(self.rm_conf)
+            if self.config.core_collect:
+                self.rm_conf = map_rm_conf_to_components(self.rm_conf)
             return self.rm_conf
 
         # remove Nones, empty strings, and empty lists
         filtered_rm_conf = dict((k, v) for k, v in rm_conf.items() if v)
-        self.rm_conf = map_rm_conf_to_components(self.rm_conf)
-        return filtered_rm_conf
+        self.rm_conf = filtered_rm_conf
+        if self.config.core_collect:
+            self.rm_conf = map_rm_conf_to_components(self.rm_conf)
+        return self.rm_conf
 
     def get_tags_conf(self):
         '''
