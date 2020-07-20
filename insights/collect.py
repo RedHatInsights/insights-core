@@ -214,7 +214,7 @@ def get_pool(parallel, kwargs):
         yield None
 
 
-def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=None):
+def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=None, client_timeout=None):
     """
     This is the collection entry point. It accepts a manifest, a temporary
     directory in which to store output, and a boolean for optional compression.
@@ -231,6 +231,7 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
         rm_conf (dict): Client-provided python dict containing keys
             "commands", "files", and "keywords", to be injected
             into the manifest blacklist.
+        client_timeout (int): Client-provided command timeout value
     Returns:
         The full path to the created tar.gz or workspace.
     """
@@ -247,6 +248,11 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
     apply_blacklist(client.get("blacklist", {}))
 
     # insights-client
+    if client_timeout:
+        try:
+            client['context']['args']['timeout'] = client_timeout
+        except LookupError:
+            log.warning('Could not set timeout option.')
     rm_conf = rm_conf or {}
     apply_blacklist(rm_conf)
     for component in rm_conf.get('components', []):
