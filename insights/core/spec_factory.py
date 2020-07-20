@@ -381,7 +381,8 @@ class CommandOutputProvider(ContentProvider):
         args = self.create_args()
         fs.ensure_path(os.path.dirname(dst))
         if args:
-            p = Pipeline(*args, timeout=self.timeout, env=self.create_env())
+            timeout = self.timeout or self.ctx.timeout
+            p = Pipeline(*args, timeout=timeout, env=self.create_env())
             return p.write(dst, keep_rc=self.keep_rc)
 
     def __repr__(self):
