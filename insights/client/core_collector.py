@@ -49,7 +49,7 @@ class CoreCollector(DataCollector):
             'components': rm_conf.get('components', [])
         }
 
-        collected_data_path = collect.collect(tmp_path=self.archive.tmp_dir, rm_conf=core_blacklist)
+        collected_data_path = collect.collect(tmp_path=self.archive.tmp_dir, rm_conf=core_blacklist, client_timeout=self.config.cmd_timeout)
         # update the archive dir with the reported data location from Insights Core
         if not collected_data_path:
             raise RuntimeError('Error running collection: no output path defined.')
