@@ -21,6 +21,8 @@ DISABLE_ALGORITHMS = re.compile(r'disable-algorithms[^}]*};')
 DISABLE_DS_DIGESTS = re.compile(r'disable-ds-digests[^}]*};')
 # regex for matching values in single or double quotation marks
 INNER_VALLUES = re.compile(r'(?:\"|\')(.*)(?:\"|\')')
+# regex for matching 'include' section
+INCLUDE_FILES = re.compile(r'include.*;')
 
 
 @parser(Specs.named_checkconf_p)
@@ -31,6 +33,7 @@ class NamedCheckconf(CommandParser):
     Attributes:
         is_dnssec_disabled (bool): True, if dnssec is not enabled, False otherwise.
         dnssec_line (string): The line which disabled dnssec, if it is not enabled, None otherwise.
+        includes (list): List of files in 'include' section.
         disable_algorithms (dict): Dictionary where the key is a domain and
                                    the value is a list of all algorithms associated with it.
         disable_ds_digests (dict): Dictionary where the key is a domain and
@@ -149,6 +152,7 @@ class NamedCheckconf(CommandParser):
     def __init__(self, context):
         self.is_dnssec_disabled = False  # dnssec is enabled by default
         self.dnssec_line = None
+        self.includes = []
         self.disable_algorithms = {}
         self.disable_ds_digests = {}
         super(NamedCheckconf, self).__init__(context)
@@ -163,6 +167,9 @@ class NamedCheckconf(CommandParser):
         if match_dnssec:
             self.is_dnssec_disabled = True
             self.dnssec_line = match_dnssec.group(0)
+
+        for include_entry in INCLUDE_FILES.finditer(full_result):
+            self.includes.append(include_entry.group(0).replace('"', '').replace(';', '').split()[-1])
 
         self.disable_algorithms = self.retrieve_disabled(DISABLE_ALGORITHMS, full_result)
         self.disable_ds_digests = self.retrieve_disabled(DISABLE_DS_DIGESTS, full_result)
