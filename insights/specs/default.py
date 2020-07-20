@@ -331,7 +331,7 @@ class DefaultSpecs(Specs):
     ifcfg = glob_file("/etc/sysconfig/network-scripts/ifcfg-*")
     ifcfg_static_route = glob_file("/etc/sysconfig/network-scripts/route-*")
     imagemagick_policy = glob_file(["/etc/ImageMagick/policy.xml", "/usr/lib*/ImageMagick-6.5.4/config/policy.xml"])
-    initctl_lst = simple_command("initctl --system list")
+    initctl_lst = simple_command("/sbin/initctl --system list")
     init_ora = simple_file("${ORACLE_HOME}/dbs/init.ora")
     initscript = glob_file(r"etc/rc.d/init.d/*")
     init_process_cgroup = simple_file("/proc/1/cgroup")
