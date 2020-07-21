@@ -303,7 +303,7 @@ def test_file_signature_invalid(get_branch_info, validate_gpg_sig, data_collecto
     """
     config, pconn = collect_args()
     with patch_temp_conf_file():
-        with raises(ValueError):
+        with raises(RuntimeError):
             collect(config, pconn)
 
     validate_gpg_sig.assert_called()
@@ -370,7 +370,7 @@ def test_file_no_data(get_branch_info, try_disk, data_collector):
     Configuration from file is loaded from the "uploader.json" key.
     """
     config, pconn = collect_args()
-    with raises(ValueError):
+    with raises(RuntimeError):
         collect(config, pconn)
 
     data_collector.return_value.run_collection.assert_not_called()
