@@ -275,7 +275,7 @@ class InsightsUploadConf(object):
             logger.debug(json.dumps(conf))
             return conf
 
-        raise ValueError("ERROR: Unable to download conf or read it from disk!")
+        raise RuntimeError("ERROR: Unable to download conf or read it from disk!")
 
     def get_conf_update(self):
         """
