@@ -161,7 +161,7 @@ class SosSpecs(Specs):
     partitions = simple_file("/proc/partitions")
     pcs_config = simple_file("sos_commands/pacemaker/pcs_config")
     pcs_quorum_status = simple_file("sos_commands/pacemaker/pcs_quorum_status")
-    pcs_status = simple_file("sos_commands/pacemaker/pcs_status")
+    pcs_status = first_file(["sos_commands/pacemaker/pcs_status", "/sos_commands/pacemaker/pcs_status_--full"])
     podman_image_inspect = glob_file("sos_commands/podman/podman_inspect_*")
     podman_list_containers = first_file(["sos_commands/podman/podman_ps_-a", "sos_commands/podman/podman_ps"])
     podman_list_images = simple_file("sos_commands/podman/podman_images")
