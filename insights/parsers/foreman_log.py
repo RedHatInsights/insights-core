@@ -91,7 +91,7 @@ class CandlepinLog(LogFileOutput):
         # <pattern>%d{ISO8601} [thread=%thread] [%X{requestType}=%X{requestUuid}, org=%X{org}, csid=%X{csid}] %-5p %c - %m%n</pattern>
         # http://logback.qos.ch/manual/layouts.html
         msg_info = {'raw_message': line}
-        line_split = line.split(maxsplit=2)
+        line_split = line.split(None, 2)
         if len(line_split) > 2:
             try:
                 msg_info['timestamp'] = datetime.strptime(' '.join(line_split[:2]), self.time_format)
