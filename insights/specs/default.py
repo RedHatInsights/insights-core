@@ -22,6 +22,7 @@ from insights.core.spec_factory import first_of, foreach_collect, foreach_execut
 from insights.core.spec_factory import first_file, listdir
 from insights.combiners.cloud_provider import CloudProvider
 from insights.combiners.services import Services
+from insights.combiners.sap import Sap
 from insights.specs import Specs
 
 
