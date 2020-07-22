@@ -396,3 +396,19 @@ def migrate_tags():
             os.rename(tags_conf, tags_yaml)
         except OSError as e:
             logger.error(e)
+
+
+def get_parent_process():
+    '''
+    Get parent process of the client
+
+    Returns: string
+    '''
+    ppid = os.getppid()
+    output = run_command_get_output('cat /proc/%s/status' % ppid)
+    if output['status'] == 0:
+        name = output['output'].splitlines()[0].split('\t')[1]
+        return name
+    else:
+        return "unknown"
+
