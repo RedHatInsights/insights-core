@@ -22,6 +22,7 @@ from insights.core.spec_factory import first_of, foreach_collect, foreach_execut
 from insights.core.spec_factory import first_file, listdir
 from insights.combiners.cloud_provider import CloudProvider
 from insights.combiners.services import Services
+from insights.combiners.sap import Sap
 from insights.specs import Specs
 
 
@@ -557,6 +558,15 @@ class DefaultSpecs(Specs):
     rpm_V_packages = simple_command("/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo chrony", keep_rc=True)
     rsyslog_conf = simple_file("/etc/rsyslog.conf")
     samba = simple_file("/etc/samba/smb.conf")
+
+    @datasource(Sap)
+    def sap_sid_name(broker):
+        """(list): Returns the list of (SAP SID, SAP InstanceName) """
+        sap = broker[Sap]
+        return [(sap.sid(i), i) for i in sap.local_instances]
+
+    sap_dev_disp = foreach_collect(sap_sid_name, "/usr/sap/%s/%s/work/dev_disp")
+    sap_dev_rd = foreach_collect(sap_sid_name, "/usr/sap/%s/%s/work/dev_rd")
     saphostctl_getcimobject_sapinstance = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance")
     sat5_insights_properties = simple_file("/etc/redhat-access/redhat-access-insights.properties")
     satellite_mongodb_storage_engine = simple_command("/usr/bin/mongo pulp_database --eval 'db.serverStatus().storageEngine'")
