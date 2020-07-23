@@ -71,6 +71,7 @@ class InsightsArchiveSpecs(Specs):
     httpd_M = glob_file("insights_commands/*httpd*_-M")
     httpd_on_nfs = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_httpd_on_nfs")
     httpd_V = glob_file("insights_commands/*httpd*_-V")
+    initctl_lst = simple_file("insights_commands/initctl_--system_list")
     ip6tables = simple_file("insights_commands/ip6tables-save")
     ip_addr = simple_file("insights_commands/ip_addr")
     ip_addresses = simple_file("insights_commands/hostname_-I")
