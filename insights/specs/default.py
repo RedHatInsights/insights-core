@@ -130,6 +130,7 @@ class DefaultSpecs(Specs):
     boot_loader_entries = glob_file("/boot/loader/entries/*.conf")
     branch_info = simple_file("/branch_info", kind=RawFileProvider)
     brctl_show = simple_command("/usr/sbin/brctl show")
+    candlepin_log = simple_file("/var/log/candlepin/candlepin.log")
     cgroups = simple_file("/proc/cgroups")
     ps_alxwww = simple_command("/bin/ps alxwww")
     ps_aux = simple_command("/bin/ps aux")
