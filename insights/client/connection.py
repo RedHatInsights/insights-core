@@ -865,6 +865,9 @@ class InsightsConnection(object):
         for tries in range(config.retries):
             try:
                 upload = self.session.post(upload_url, files=files, headers=headers)
+            except TimeoutException:
+                # allow timeouts here because we want to retry the upload
+                upload = None
             except (UnregisteredException, PayloadTooLargeException):
                 raise RuntimeError('Upload failed.')
 
