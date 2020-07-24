@@ -662,4 +662,5 @@ class DefaultSpecs(Specs):
     yum_repos_d = glob_file("/etc/yum.repos.d/*")
     zipl_conf = simple_file("/etc/zipl.conf")
     rpm_format = format_rpm()
+    initscript = glob_file("/etc/rc.d/init.d/*")
     installed_rpms = simple_command("/bin/rpm -qa --qf '%s'" % rpm_format, context=HostContext)
