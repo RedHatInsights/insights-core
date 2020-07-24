@@ -204,8 +204,10 @@ def post_update(client, config):
         return
 
     # check registration status before anything else
-    reg_check = client.get_registration_status()
-    if reg_check is None:
+    try:
+        reg_check = client.get_registration_status()
+    except RuntimeError as e:
+        logger.error('ERROR: %s', str(e))
         sys.exit(constants.sig_kill_bad)
 
     # --status

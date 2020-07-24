@@ -81,6 +81,13 @@ class InvalidContentTypeException(Exception):
     pass
 
 
+class TimeoutException(RuntimeError):
+    """
+    Raised on connection timeout
+    """
+    pass
+
+
 class InsightsConnection(object):
 
     """
@@ -200,9 +207,9 @@ class InsightsConnection(object):
             kwargs  - Rest of the args to pass to the request function
         Returns
             HTTP response object on completion
-            None on failure to connect
         Side effects
             Calls handle_fail_rcs to handle messaging and exceptions for failure codes
+            Raises RuntimeError on timeout or failure to connect
         '''
         try:
             logger.log(NETWORK, "%s %s", method, url)
@@ -214,12 +221,10 @@ class InsightsConnection(object):
             return res
         except requests.Timeout as e:
             logger.error(e)
-            logger.error('Connection timed out.')
-            return None
+            raise TimeoutException('Connection timed out.')
         except requests.ConnectionError as e:
             logger.error(e)
-            logger.error('The Insights API could not be reached.')
-            return None
+            raise RuntimeError('The Insights API could not be reached.')
         except requests.exceptions.HTTPError as e:
             logger.error(e)
             self.handle_fail_rcs(res)
@@ -702,8 +707,7 @@ class InsightsConnection(object):
         Get a system by machine ID
         Returns
             dict    system exists in inventory
-            False   system does not exist in inventory
-            None    error connection or parsing response
+            None    system does not exist in inventory
         '''
         machine_id = generate_machine_id()
         # [circus music]
@@ -722,7 +726,7 @@ class InsightsConnection(object):
             return None
         if res_json['total'] == 0:
             logger.debug('No hosts found with machine ID: %s', machine_id)
-            return False
+            return None
         return res_json['results']
 
     def api_registration_check(self):
@@ -733,7 +737,6 @@ class InsightsConnection(object):
             Returns
                 True    system exists in inventory
                 False   system does not exist in inventory
-                None    error connection or parsing response
         '''
         if self.config.legacy_upload:
             return self._legacy_api_registration_check()
@@ -741,8 +744,7 @@ class InsightsConnection(object):
         logger.debug('Checking registration status...')
         results = self._fetch_system_by_machine_id()
         if not results:
-            # False or None returned
-            return results
+            return False
 
         logger.debug('System found.')
         logger.debug('Machine ID: %s', results[0]['insights_id'])
@@ -938,6 +940,9 @@ class InsightsConnection(object):
         for tries in range(self.config.retries):
             try:
                 upload = self.post(upload_url, files=files, headers={})
+            except TimeoutException:
+                # allow timeouts here because we want to retry the upload
+                upload = None
             except (PayloadTooLargeException, InvalidContentTypeException):
                 raise RuntimeError('Upload failed.')
 
@@ -1004,9 +1009,10 @@ class InsightsConnection(object):
 
         if not res:
             logger.error('Unable to set display name.')
-            if res is not None and res.status_code == requests.codes.not_found:
+            if res.status_code == requests.codes.not_found:
                 logger.error('System not found. '
                              'Please run insights-client --register.')
+                return False
 
         logger.info('System display name changed from %s to %s',
                     old_display_name,
@@ -1130,9 +1136,9 @@ class InsightsConnection(object):
 if __name__ == '__main__':
     from insights.client import InsightsClient
     from insights.client.config import InsightsConfig
-    conf = InsightsConfig(net_debug=False, legacy_upload=True).load_all()
+    conf = InsightsConfig(net_debug=False, legacy_upload=False).load_all()
     InsightsClient(conf).set_up_logging()
     c = InsightsConnection(conf)
-    c._init_session()
+    # c._init_session()
     c.set_display_name('Toot')
     # print(c._fetch_system_by_machine_id())
