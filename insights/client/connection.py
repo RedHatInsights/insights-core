@@ -7,6 +7,7 @@ import requests
 import os
 import six
 import json
+import time
 import logging
 import platform
 import xml.etree.ElementTree as ET
@@ -1140,5 +1141,6 @@ if __name__ == '__main__':
     InsightsClient(conf).set_up_logging()
     c = InsightsConnection(conf)
     # c._init_session()
-    c.set_display_name('Toot')
+    c.upload_archive('test.tar.gz', 'insights.client.placeholder')
+
     # print(c._fetch_system_by_machine_id())
