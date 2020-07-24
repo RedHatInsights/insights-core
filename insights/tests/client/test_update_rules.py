@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 
-from insights.client.client import update_rules
+from insights.client import InsightsClient
 from mock.mock import Mock, patch
 from pytest import mark, raises
 

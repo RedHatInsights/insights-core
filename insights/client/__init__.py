@@ -118,7 +118,7 @@ class InsightsClient(object):
         else:
             url = self.connection.base_url + constants.module_router_path
         logger.log(NETWORK, "GET %s", url)
-        response = self.session.get(url, timeout=self.config.http_timeout)
+        response = self.connection.get(url)
         if response.status_code == 200:
             return response.json()["url"]
         else:
@@ -390,22 +390,24 @@ class InsightsClient(object):
         """
         All the heavy lifting done here
         """
-        branch_info = self.branch_info()
+        branch_info = get_branch_info(self.config)
         pc = InsightsUploadConf(self.config)
         output = None
 
-        collection_rules = pc.get_conf_file()
         rm_conf = pc.get_rm_conf()
         blacklist_report = pc.create_report()
         if rm_conf:
             logger.warn("WARNING: Excluding data from files")
 
-        # defaults
-        mp = None
         archive = InsightsArchive(self.config)
 
         msg_name = determine_hostname(self.config.display_name)
-        dc = DataCollector(self.config, archive, mountpoint=mp)
+        if self.config.core_collect:
+            collection_rules = None
+            dc = CoreCollector(self.config, archive)
+        else:
+            collection_rules = pc.get_conf_file()
+            dc = DataCollector(self.config, archive)
         logger.info('Starting to collect Insights data for %s', msg_name)
         dc.run_collection(collection_rules, rm_conf, branch_info, blacklist_report)
         output = dc.done(collection_rules, rm_conf)

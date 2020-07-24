@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 
 from contextlib import contextmanager
-from insights.client.client import collect
+from insights.client import InsightsClient
 from insights.client.config import InsightsConfig
 from insights.client.data_collector import DataCollector
 from json import dump as json_dump, dumps as json_dumps
