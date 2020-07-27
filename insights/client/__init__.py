@@ -127,6 +127,14 @@ class InsightsClient(object):
 
         # guess the URLs based on what legacy setting is
         egg_release = self.get_egg_url()
+
+        try:
+            # write the release path to temp so we can collect it
+            #   in the archive
+            write_to_disk(constants.egg_release_file, content=egg_release)
+        except (OSError, IOError) as e:
+            logger.debug('Could not write egg release file: %s', str(e))
+
         egg_url = self.config.egg_path
         egg_gpg_url = self.config.egg_gpg_path
         if egg_url is None:

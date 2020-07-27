@@ -126,6 +126,22 @@ class DataCollector(object):
         self.archive.add_metadata_to_archive(
             json.dumps(blacklist_report), '/blacklist_report')
 
+    def _write_egg_release(self):
+        logger.debug("Writing egg release to archive...")
+        egg_release = ''
+        try:
+            with open(constants.egg_release_file) as fil:
+                egg_release = fil.read()
+        except IOError as e:
+            logger.debug('Could not read the egg release file :%s', str(e))
+        try:
+            os.remove(constants.egg_release_file)
+        except OSError as e:
+            logger.debug('Could not remove the egg release file: %s', str(e))
+
+        self.archive.add_metadata_to_archive(
+            egg_release, '/egg_release')
+
     def _run_pre_command(self, pre_cmd):
         '''
         Run a pre command to get external args for a command
@@ -286,6 +302,7 @@ class DataCollector(object):
         self._write_version_info()
         self._write_tags()
         self._write_blacklist_report(blacklist_report)
+        self._write_egg_release()
         logger.debug('Metadata collection finished.')
 
     def redact(self, rm_conf):
