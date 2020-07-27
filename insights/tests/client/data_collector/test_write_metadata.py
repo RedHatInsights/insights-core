@@ -2,9 +2,8 @@ import six
 import mock
 from insights.client.constants import InsightsConstants as constants
 from insights.client.config import InsightsConfig
-from insights.contrib.soscleaner import SOSCleaner
-from insights.client.data_collector import DataCollector, CleanOptions
-from mock.mock import patch, Mock, mock_open
+from insights.client.data_collector import DataCollector
+from mock.mock import patch
 
 
 @patch('insights.client.data_collector.os.remove')
@@ -23,7 +22,7 @@ def test_egg_release_file_read_and_written(archive, remove):
         mock_open.side_effect = [mock.mock_open(read_data='/testvalue').return_value]
         c = InsightsConfig()
         d = DataCollector(c)
-        ret = d._write_egg_release()
+        d._write_egg_release()
         remove.assert_called_once_with(constants.egg_release_file)
         d.archive.add_metadata_to_archive.assert_called_once_with('/testvalue', '/egg_release')
 
@@ -46,7 +45,7 @@ def test_egg_release_file_read_and_written_no_delete(archive, remove):
         mock_open.side_effect = [mock.mock_open(read_data='/testvalue').return_value]
         c = InsightsConfig()
         d = DataCollector(c)
-        ret = d._write_egg_release()
+        d._write_egg_release()
         remove.assert_called_once_with(constants.egg_release_file)
         d.archive.add_metadata_to_archive.assert_called_once_with('/testvalue', '/egg_release')
 
@@ -69,6 +68,6 @@ def test_egg_release_file_read_and_written_no_read(archive, remove):
         mock_open.side_effect = IOError('test')
         c = InsightsConfig()
         d = DataCollector(c)
-        ret = d._write_egg_release()
+        d._write_egg_release()
         remove.assert_called_once_with(constants.egg_release_file)
         d.archive.add_metadata_to_archive.assert_called_once_with('', '/egg_release')

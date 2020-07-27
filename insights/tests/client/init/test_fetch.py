@@ -54,7 +54,6 @@ def test_egg_release_written(write_to_disk, get_egg_url, insights_client):
     '''
     Verify egg release file successfully written after request
     '''
-    source_path = 'some-source-path'
     insights_client.fetch(force=False)
     write_to_disk.assert_called_once_with(constants.egg_release_file, content='/testvalue')
 
@@ -68,8 +67,6 @@ def test_egg_release_error(write_to_disk, get_egg_url, _fetch, insights_client):
     '''
     Verify OSError and IOError are caught and process continues on
     '''
-    source_path = 'some-source-path'
-
     write_to_disk.side_effect = OSError('test')
     assert insights_client.fetch(force=False)
     write_to_disk.assert_called_once_with(constants.egg_release_file, content='/testvalue')
