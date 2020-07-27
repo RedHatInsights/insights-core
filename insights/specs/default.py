@@ -334,6 +334,7 @@ class DefaultSpecs(Specs):
     ifcfg_static_route = glob_file("/etc/sysconfig/network-scripts/route-*")
     imagemagick_policy = glob_file(["/etc/ImageMagick/policy.xml", "/usr/lib*/ImageMagick-6.5.4/config/policy.xml"])
     initctl_lst = simple_command("/sbin/initctl --system list")
+    initscript = glob_file("/etc/rc.d/init.d/*")
     init_process_cgroup = simple_file("/proc/1/cgroup")
     interrupts = simple_file("/proc/interrupts")
     ip_addr = simple_command("/sbin/ip addr")
