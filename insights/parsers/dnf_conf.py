@@ -29,7 +29,10 @@ Examples:
 
 from insights import parser
 from insights.specs import Specs
+from insights.core.filters import add_filter
 from insights.parsers.yum_conf import YumConf
+
+add_filter(Specs.dnf_conf, '[')
 
 
 @parser(Specs.dnf_conf)
