@@ -117,7 +117,8 @@ def update(client, config):
     if config.payload:
         logger.debug('Uploading a payload. Bypassing rules update.')
         return
-    client.update_rules()
+    if not config.core_collect:
+        client.update_rules()
 
 
 @phase
@@ -126,6 +127,10 @@ def post_update(client, config):
     logger.debug('Machine ID: %s', client.get_machine_id())
     logger.debug("CONFIG: %s", config)
     print_egg_versions()
+
+    if config.list_specs:
+        client.list_specs()
+        sys.exit(constants.sig_kill_ok)
 
     if config.show_results:
         try:

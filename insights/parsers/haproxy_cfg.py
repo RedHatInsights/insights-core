@@ -26,6 +26,10 @@ If there are duplicate key items, merge them in to one. Like::
                             }--->    option: ["tcpka","tcplog"]
     option  tcplog
 
+Attributes:
+    data (dict): Dictionary of all parsed sections.
+    lines (list): List of all non-commented lines.
+
 Examples:
     >>> cfg = shared[HaproxyCfg]
     >>> cfg.data['global']
@@ -37,7 +41,7 @@ Examples:
     True
     >>> 'user' in cfg.data.get('global')
     True
-    """
+"""
 from .. import Parser, parser
 from insights.specs import Specs
 
@@ -46,10 +50,12 @@ def _parse_content(content):
     SECTION_NAMES = ("global", "defaults", "frontend", "backend", "listen")
     haproxy_dict = {}
     section_dict = {}
+    lines = []
     for line in content:
         line = line.strip()
         if line.startswith("#") or line == "":
             continue
+        lines.append(line)
         values = line.split(None, 1)
         if values[0] in SECTION_NAMES:
             # new section like  global:{} or listen mysql: {}
@@ -70,11 +76,11 @@ def _parse_content(content):
                     section_dict[attr_key].append(attr_value)
                 else:
                     section_dict[attr_key] = attr_value
-    return haproxy_dict
+    return haproxy_dict, lines
 
 
 @parser(Specs.haproxy_cfg)
 class HaproxyCfg(Parser):
     """Class to parse file ``haproxy.cfg``."""
     def parse_content(self, content):
-        self.data = _parse_content(content)
+        self.data, self.lines = _parse_content(content)

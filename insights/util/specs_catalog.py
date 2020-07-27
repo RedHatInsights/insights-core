@@ -46,12 +46,15 @@ A summary of the collection_types includes:
   each element in the provider into the path
 * *first_of* - collects the contents of datasource that returns data
 * *command_with_args* - collects the output of the command with each ``provider`` argument
+* *head* - collects the contents of the first item in a list
 
 Some datasources are implemented as functions and each links to the details provided in the
 function specific documentation.  Generally functions are used as a ``provider`` to other
 datasources to, for instance, get a list of running processes of a particular program.
 
-Python code that implements these datasources is located in :py:mod:`insights.specs.default`.
+Python code that implements these datasources is located in the module
+:py:mod:`insights.specs.default`.  The datasources each have a unique name in the
+class :py:class:`insights.specs.default.DefaultSpecs`.
 
 Datasources
 -----------
