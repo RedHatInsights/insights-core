@@ -30,6 +30,18 @@ from insights.specs import Specs
 
 add_filter(Specs.neutron_conf, ["["])
 
+ADDITIONAL_FILTERS = [
+    "service_plugins",
+    "allow_automatic_dhcp_failover",
+    "rpc_workers",
+    "api_workers",
+    "ipam_driver",
+    "agent_down_time",
+    "agent_report_interval",
+    "router_distributed"
+]
+add_filter(Specs.neutron_conf, ADDITIONAL_FILTERS)
+
 
 @parser(Specs.neutron_conf)
 class NeutronConf(IniConfigFile):
