@@ -449,6 +449,9 @@ class DefaultSpecs(Specs):
     netstat_s = simple_command("/bin/netstat -s")
     networkmanager_dispatcher_d = glob_file("/etc/NetworkManager/dispatcher.d/*-dhclient")
     neutron_conf = first_file(["/var/lib/config-data/puppet-generated/neutron/etc/neutron/neutron.conf", "/etc/neutron/neutron.conf"])
+    neutron_sriov_agent = first_file([
+        "/var/lib/config-data/puppet-generated/neutron/etc/neutron/plugins/ml2/sriov_agent.ini",
+        "/etc/neutron/plugins/ml2/sriov_agent.ini"])
     neutron_dhcp_agent_ini = first_file(["/var/lib/config-data/puppet-generated/neutron/etc/neutron/dhcp_agent.ini", "/etc/neutron/dhcp_agent.ini"])
     neutron_l3_agent_ini = first_file(["/var/lib/config-data/puppet-generated/neutron/etc/neutron/l3_agent.ini", "/etc/neutron/l3_agent.ini"])
     neutron_l3_agent_log = simple_file("/var/log/neutron/l3-agent.log")
