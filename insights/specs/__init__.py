@@ -105,6 +105,7 @@ class Specs(SpecSet):
     date_iso = RegistryPoint()
     date = RegistryPoint()
     date_utc = RegistryPoint()
+    designate_conf = RegistryPoint(filterable=True)
     dcbtool_gc_dcb = RegistryPoint(multi_output=True)
     df__alP = RegistryPoint()
     df__al = RegistryPoint()
