@@ -560,6 +560,7 @@ class Specs(SpecSet):
     softnet_stat = RegistryPoint()
     software_collections_list = RegistryPoint()
     spfile_ora = RegistryPoint(multi_output=True)
+    ssh_config_d = RegistryPoint(multi_output=True, filterable=True)
     ssh_config = RegistryPoint(filterable=True)
     ssh_foreman_config = RegistryPoint(filterable=True)
     ssh_foreman_proxy_config = RegistryPoint(filterable=True)
