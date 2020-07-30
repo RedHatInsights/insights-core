@@ -6,7 +6,91 @@ from insights.parsers.named_conf import NamedConf
 from insights.tests import context_wrap
 
 
-CONFIG_DISABLED_SECTIONS = """
+CONFIG_NORMAL_SECTIONS = """
+logging {
+    channel "default_debug" {
+        file "data/named.run";
+        severity dynamic;
+    };
+};
+options {
+    directory "/var/named";
+    dump-file "/var/named/data/cache_dump.db";
+    listen-on port 53 {
+        127.0.0.1/32;
+    };
+    listen-on-v6 port 53 {
+        ::1/128;
+    };
+    managed-keys-directory "/var/named/dynamic";
+    memstatistics-file "/var/named/data/named_mem_stats.txt";
+    pid-file "/run/named/named.pid";
+    recursing-file "/var/named/data/named.recursing";
+    secroots-file "/var/named/data/named.secroots";
+    session-keyfile "/run/named/session.key";
+    statistics-file "/var/named/data/named_stats.txt";
+    disable-algorithms "." {
+        "RSAMD5";
+        "DSA";
+    };
+    disable-ds-digests "." {
+        "GOST";
+    };
+    dnssec-enable yes;
+    dnssec-validation yes;
+    recursion yes;
+    allow-query {
+        "localhost";
+    };
+
+    include "/etc/crypto-policies/back-ends/bind.config";
+};
+"""
+
+CONFIG_INVALID_SECTIONS = """
+logging {
+    channel "default_debug" {
+        file "data/named.run";
+        severity dynamic;
+    };
+};
+options {
+    directory "/var/named";
+    dump-file "/var/named/data/cache_dump.db";
+    listen-on port 53 {
+        127.0.0.1/32;
+    };
+    listen-on-v6 port 53 {
+        ::1/128;
+    };
+    managed-keys-directory "/var/named/dynamic";
+    memstatistics-file "/var/named/data/named_mem_stats.txt";
+    pid-file "/run/named/named.pid";
+    recursing-file "/var/named/data/named.recursing";
+    secroots-file "/var/named/data/named.secroots";
+    session-keyfile "/run/named/session.key";
+    statistics-file "/var/named/data/named_stats.txt";
+    disable-algorithms "." {
+        "RSAMD5";
+        "DSA";
+    };
+    disable-ds-digests "." {
+        "GOST";
+    };
+    dnssec-enable yes;
+    dnssec-validation yes;
+    recursion yes;
+    allow-query {
+        "localhost";
+    };
+
+    include "";
+};
+"""
+
+CONFIG_COMPLEX_SECTIONS = """
+include "/tmp/test-unix"; # Unix style
+
 logging {
     channel "default_debug" {
         file "data/named.run";
@@ -99,7 +183,12 @@ zone "0.in-addr.arpa" IN {
     allow-update {
         "none";
     };
+
+include "/etc/crypto-policies/back-ends/bind.config-c"; /* c style */
 };
+
+    include "/etc/crypto-policies/back-ends/bind.config-c-plus"; // C++ style
+include "/etc/crypto-policies/back-ends/bind.config"; // the sname line
 """
 
 
@@ -108,15 +197,24 @@ def test_config_no_data():
         NamedConf(context_wrap(""))
 
 
-def test_config_disabled_sections():
-    include_sections = NamedConf(context_wrap(CONFIG_DISABLED_SECTIONS))
-    assert include_sections.includes != []
-    assert include_sections.includes[0] == '/etc/crypto-policies/back-ends/bind.config'
+def test_config_invalid_data():
+    with pytest.raises(SkipException):
+        NamedConf(context_wrap(CONFIG_INVALID_SECTIONS))
+
+
+def test_config_include_sections():
+    include_sections = NamedConf(context_wrap(CONFIG_COMPLEX_SECTIONS))
+    assert len(include_sections.includes) == 5
+    assert include_sections.includes[0] == '/tmp/test-unix'
+    assert include_sections.includes[1] == '/etc/crypto-policies/back-ends/bind.config'
+    assert include_sections.includes[2] == '/etc/crypto-policies/back-ends/bind.config-c'
+    assert include_sections.includes[3] == '/etc/crypto-policies/back-ends/bind.config-c-plus'
+    assert include_sections.includes[4] == '/etc/crypto-policies/back-ends/bind.config'
 
 
 def test_doc_examples():
     env = {
-        "named_conf": NamedConf(context_wrap(CONFIG_DISABLED_SECTIONS)),
+        "named_conf": NamedConf(context_wrap(CONFIG_NORMAL_SECTIONS)),
     }
     failed, total = doctest.testmod(named_conf, globs=env)
     assert failed == 0

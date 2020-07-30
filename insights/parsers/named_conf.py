@@ -6,14 +6,10 @@ NamedConf parser the file named configuration file.
 Named is a name server used by BIND.
 """
 
-import re
-
 from insights.specs import Specs
 from insights.core.plugins import parser
+from insights.parsers import SkipException
 from insights.parsers.named_checkconf import NamedCheckconf
-
-# regex for matching 'include' section
-INCLUDE_FILES = re.compile(r'include.*;')
 
 
 @parser(Specs.named_conf)
@@ -38,9 +34,13 @@ class NamedConf(NamedCheckconf):
     """
 
     def parse_content(self, content):
-        self.includes = []
-
+        includes = []
         super(NamedConf, self).parse_content(content)
 
-        for include_entry in INCLUDE_FILES.finditer('\n'.join(content)):
-            self.includes.append(include_entry.group(0).replace('"', '').replace(';', '').split()[-1])
+        try:
+            for line in [l for l in content if l.strip().startswith('include ') and ';' in l]:
+                includes.append(line.split(';')[0].replace('"', '').split()[1])
+        except IndexError:
+            raise SkipException("Syntax error of include directive")
+
+        self.includes = includes
