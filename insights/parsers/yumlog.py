@@ -117,7 +117,7 @@ class YumLog(Parser):
                 timestamp = ' '.join([month, day, time])
                 state = state.rstrip(':')
                 pkg = pkg.split(':')[-1].strip()
-                if state == self.ERASED:
+                if state == self.ERASED and len(pkg.split(".")) == 1:
                     pkg = InstalledRpm({'name': pkg})
                 else:
                     pkg = InstalledRpm.from_package(pkg)
