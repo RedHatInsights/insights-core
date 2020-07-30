@@ -440,6 +440,7 @@ class DefaultSpecs(Specs):
                           "/var/opt/rh/rh-mysql*/log/mysql/mysqld.log"
                           ])
     named_checkconf_p = simple_command("/usr/sbin/named-checkconf -p")
+    named_conf = simple_file("/etc/named.conf")
     namespace = simple_command("/bin/ls /var/run/netns")
     ndctl_list_Ni = simple_command("/usr/bin/ndctl list -Ni")
     netconsole = simple_file("/etc/sysconfig/netconsole")
