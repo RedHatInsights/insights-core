@@ -17,6 +17,7 @@ def test_write_pidfile(get_parent_process, getpid, write_to_disk):
              write_to_disk(InsightsConstants.ppidfile, content=get_parent_process.return_value)]
     write_to_disk.has_calls(calls)
 
+
 @patch("insights.client.write_to_disk")
 @patch("insights.client.os.getpid")
 def test_write_pidfile_not_called(getpid, write_to_disk):

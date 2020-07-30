@@ -411,4 +411,3 @@ def get_parent_process():
         return name
     else:
         return "unknown"
-
