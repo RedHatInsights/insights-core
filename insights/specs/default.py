@@ -405,6 +405,7 @@ class DefaultSpecs(Specs):
     lspci = simple_command("/sbin/lspci -k")
     lssap = simple_command("/usr/sap/hostctrl/exe/lssap")
     lsscsi = simple_command("/usr/bin/lsscsi")
+    lsvmbus = simple_command("/usr/sbin/lsvmbus -vv")
     lvm_conf = simple_file("/etc/lvm/lvm.conf")
     lvs_noheadings = simple_command("/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,lv_size,lv_attr,mirror_log,vg_name,devices,region_size,data_percent,metadata_percent,segtype,seg_monitor --config=\"global{locking_type=0}\"")
     mac_addresses = glob_file("/sys/class/net/*/address")
