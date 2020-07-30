@@ -243,6 +243,7 @@ class DefaultSpecs(Specs):
     ethtool = foreach_execute(ethernet_interfaces, "/sbin/ethtool %s")
     ethtool_S = foreach_execute(ethernet_interfaces, "/sbin/ethtool -S %s")
     ethtool_T = foreach_execute(ethernet_interfaces, "/sbin/ethtool -T %s")
+    ethtool_c = foreach_execute(ethernet_interfaces, "/sbin/ethtool -c %s")
     ethtool_g = foreach_execute(ethernet_interfaces, "/sbin/ethtool -g %s")
     ethtool_i = foreach_execute(ethernet_interfaces, "/sbin/ethtool -i %s")
     ethtool_k = foreach_execute(ethernet_interfaces, "/sbin/ethtool -k %s")

@@ -47,6 +47,7 @@ class InsightsArchiveSpecs(Specs):
     ethtool = glob_file("insights_commands/ethtool_*", ignore="ethtool_-.*")
     ethtool_S = glob_file("insights_commands/ethtool_-S_*")
     ethtool_T = glob_file("insights_commands/ethtool_-T_*")
+    ethtool_c = glob_file("insights_commands/ethtool_-c_*")
     ethtool_g = glob_file("insights_commands/ethtool_-g_*")
     ethtool_i = glob_file("insights_commands/ethtool_-i_*")
     ethtool_k = glob_file("insights_commands/ethtool_-k_*")
