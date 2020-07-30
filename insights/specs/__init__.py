@@ -358,6 +358,7 @@ class Specs(SpecSet):
     mysql_log = RegistryPoint(multi_output=True, filterable=True)
     mysqld_limits = RegistryPoint()
     named_checkconf_p = RegistryPoint(filterable=True)
+    named_conf = RegistryPoint(filterable=True)
     namespace = RegistryPoint()
     ndctl_list_Ni = RegistryPoint()
     netconsole = RegistryPoint()
