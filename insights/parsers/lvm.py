@@ -19,8 +19,8 @@ Vgs - command ``/sbin/vgs --nameprefixes --noheadings --separator='|' -a -o vg_a
 VgsHeadings - command ``vgs -v -o +vg_mda_count,vg_mda_free,vg_mda_size,vg_mda_used_count,vg_tags --config="global{locking_type=0}"``
 -------------------------------------------------------------------------------------------------------------------------------------
 
-Lvs - command ``/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_all``
-------------------------------------------------------------------------------------
+Lvs - command ``/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,lv_size,lv_attr,mirror_log,vg_name,devices,region_size,data_percent,metadata_percent,segtype,seg_monitor --config="global{locking_type=0}"``
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 LvsHeadings - command ``/sbin/lvs -a -o +lv_tags,devices --config="global{locking_type=0}"``
 --------------------------------------------------------------------------------------------
@@ -443,7 +443,7 @@ class VgsHeadings(LvmHeadings):
 @parser(Specs.lvs_noheadings)
 class Lvs(Lvm):
     """
-    Parse the output of the `/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_all` command.
+    Parse the output of the `/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,lv_size,lv_attr,mirror_log,vg_name,devices,region_size,data_percent,metadata_percent,segtype,seg_monitor --config="global{locking_type=0}"` command.
 
     Parse each line in the output of lvs based on the lvs datasource in
     `insights/specs/`:
