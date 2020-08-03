@@ -51,7 +51,7 @@ def test_get_policies(config):
     compliance_client.hostname = 'foo'
     compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, json=Mock(return_value={'data': [{'attributes': 'data'}]})))
     assert compliance_client.get_policies() == [{'attributes': 'data'}]
-    compliance_client.conn.session.get.assert_called_with('https://localhost/app/compliance/profiles', params={'search': 'system_names=foo'})
+    compliance_client.conn.session.get.assert_called_with('https://localhost/app/compliance/profiles', params={'search': 'system_names=foo external=false canonical=false'})
 
 
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
@@ -60,7 +60,7 @@ def test_get_policies_no_policies(config):
     compliance_client.hostname = 'foo'
     compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, json=Mock(return_value={'data': []})))
     assert compliance_client.get_policies() == []
-    compliance_client.conn.session.get.assert_called_with('https://localhost/app/compliance/profiles', params={'search': 'system_names=foo'})
+    compliance_client.conn.session.get.assert_called_with('https://localhost/app/compliance/profiles', params={'search': 'system_names=foo external=false canonical=false'})
 
 
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
@@ -69,7 +69,7 @@ def test_get_policies_error(config):
     compliance_client.hostname = 'foo'
     compliance_client.conn.session.get = Mock(return_value=Mock(status_code=500))
     assert compliance_client.get_policies() == []
-    compliance_client.conn.session.get.assert_called_with('https://localhost/app/compliance/profiles', params={'search': 'system_names=foo'})
+    compliance_client.conn.session.get.assert_called_with('https://localhost/app/compliance/profiles', params={'search': 'system_names=foo external=false canonical=false'})
 
 
 @patch("insights.client.apps.compliance.linux_distribution", return_value=(None, '6.5', None))
