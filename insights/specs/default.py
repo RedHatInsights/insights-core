@@ -668,7 +668,7 @@ class DefaultSpecs(Specs):
     yum_conf = simple_file("/etc/yum.conf")
     yum_list_available = simple_command("yum -C --noplugins list available")
     yum_repolist = simple_command("/usr/bin/yum -C --noplugins repolist")
-    yum_repos_d = glob_file("/etc/yum.repos.d/*")
+    yum_repos_d = glob_file("/etc/yum.repos.d/*.repo")
     zipl_conf = simple_file("/etc/zipl.conf")
     rpm_format = format_rpm()
     installed_rpms = simple_command("/bin/rpm -qa --qf '%s'" % rpm_format, context=HostContext)
