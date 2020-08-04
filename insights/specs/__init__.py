@@ -308,6 +308,7 @@ class Specs(SpecSet):
     ls_var_spool_postfix_maildrop = RegistryPoint()
     ls_var_tmp = RegistryPoint(filterable=True)
     ls_var_www = RegistryPoint()
+    ls_vmtools = RegistryPoint()
     ls_tmp = RegistryPoint(filterable=True)
     lsblk = RegistryPoint()
     lsblk_pairs = RegistryPoint()

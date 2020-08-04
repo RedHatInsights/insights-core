@@ -1,20 +1,9 @@
 """
 InitScript - files ``/etc/rc.d/init.d/*``
-=========================================
+-----------------------------------------
 
-InitScript is a parser for the initscripts in ``/etc/rc.d/init.d``.
-
-Because this parser read multiple files, the initscripts are stored as a list
-within the parser and need to be iterated through in order to find specific
-initscripts.
-
-Examples:
-
-    >>> for initscript in shared[InitScript]: # Parser contains list of all initscripts
-    ...     print "Name:", initscript.file_name
-    ...
-    Name: netconsole
-    Name: rhnsd
+VMWTools - file ``/etc/rc.d/init.d/vmware-tools``
+-------------------------------------------------
 
 """
 
@@ -42,6 +31,20 @@ class NotInitscriptException(ParseException):
 @parser(Specs.initscript)
 class InitScript(Parser):
     """
+    InitScript is a parser for the initscripts in ``/etc/rc.d/init.d``.
+
+    Because this parser read multiple files, the initscripts are stored as a list
+    within the parser and need to be iterated through in order to find specific
+    initscripts. The spec is applicable to sosreports only.
+
+    Examples:
+
+        >>> for initscript in shared[InitScript]: # Parser contains list of all initscripts
+        ...     print "Name:", initscript.file_name
+        ...
+        Name: netconsole
+        Name: rhnsd
+
     Parse initscript files. Each item is a dictionary with following fields:
 
     Attributes:
@@ -104,3 +107,16 @@ class InitScript(Parser):
 
         if confidence < 3:
             raise NotInitscriptException("path: %s, confidence: %d" % (self.file_path, confidence))
+
+
+@parser(Specs.ls_vmtools)
+class VMWTools(InitScript):
+    """
+    VMWTools is a parser for the initscripts in ``/etc/rc.d/init.d/vmware-tools``.
+
+    Examples:
+
+        >>> type(VMWTools)
+        <class 'insights.parsers.initscript.VMWTools'>
+    """
+    pass
