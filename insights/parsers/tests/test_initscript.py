@@ -1,6 +1,7 @@
 import pytest
-
+import doctest
 from insights.parsers.initscript import InitScript, EmptyFileException, NotInitscriptException, VMWTools
+from insights.parsers import initscript
 from insights.tests import context_wrap
 
 
@@ -420,3 +421,12 @@ def test_vmwtools():
         VMWTools(context)
     assert context.path in str(e_info.value)
     assert "confidence: 1" in str(e_info.value)
+
+
+def test_vmwtools_doc_examples():
+    env = {
+            'initobj': InitScript(context_wrap(VMTOOLS_CONTENT, path=VMTOOLS_SCRIPT)),
+            'vmwtools': VMWTools(context_wrap(VMTOOLS_CONTENT, path=VMTOOLS_SCRIPT))
+    }
+    failed, total = doctest.testmod(initscript, globs=env)
+    assert failed == 0

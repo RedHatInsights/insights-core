@@ -39,11 +39,8 @@ class InitScript(Parser):
 
     Examples:
 
-        >>> for initscript in shared[InitScript]: # Parser contains list of all initscripts
-        ...     print "Name:", initscript.file_name
-        ...
-        Name: netconsole
-        Name: rhnsd
+        >>> initobj.file_name # Parser contains list of all initscripts
+        'vmware-tools'
 
     Parse initscript files. Each item is a dictionary with following fields:
 
@@ -116,7 +113,11 @@ class VMWTools(InitScript):
 
     Examples:
 
-        >>> type(VMWTools)
+        >>> type(vmwtools)
         <class 'insights.parsers.initscript.VMWTools'>
+        >>> vmwtools.file_name
+        'vmware-tools'
+        >>> vmwtools.file_path
+        '/etc/rc.d/init.d/vmware-tools'
     """
     pass
