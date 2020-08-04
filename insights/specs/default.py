@@ -113,6 +113,7 @@ class DefaultSpecs(Specs):
 
     aws_instance_id_doc = simple_command("/usr/bin/curl -s http://169.254.169.254/latest/dynamic/instance-identity/document --connect-timeout 5", deps=[is_aws])
     aws_instance_id_pkcs7 = simple_command("/usr/bin/curl -s http://169.254.169.254/latest/dynamic/instance-identity/pkcs7 --connect-timeout 5", deps=[is_aws])
+    awx_manage_check_license = simple_command("/usr/bin/awx-manage check_license --data")
 
     @datasource(CloudProvider)
     def is_azure(broker):

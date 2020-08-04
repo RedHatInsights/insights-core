@@ -27,6 +27,7 @@ class Specs(SpecSet):
     aws_instance_id_doc = RegistryPoint()
     aws_instance_id_pkcs7 = RegistryPoint()
     aws_instance_type = RegistryPoint()
+    awx_manage_check_license = RegistryPoint()
     azure_instance_type = RegistryPoint()
     bios_uuid = RegistryPoint()
     blkid = RegistryPoint()
