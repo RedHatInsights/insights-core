@@ -119,29 +119,7 @@ def test_get_version_info_no_version(wrapper_constants):
     assert version_info == {'core_version': '1-1', 'client_version': None}
 
 
-def test_validate_remove_file_bad_perms():
-    tf = '/tmp/remove.cfg'
-    with open(tf, 'wb') as f:
-        f.write(remove_file_content)
-
-    conf = InsightsConfig(remove_file=tf, redaction_file=None, content_redaction_file=None, validate=True)
-    with pytest.raises(RuntimeError):
-        os.chmod(tf, 0o644)
-        util.validate_remove_file(conf)
-    os.chmod(tf, 0o600)
-    assert util.validate_remove_file(conf) is not False
-    os.remove(tf)
-
-
-def test_validate_remove_file_good_perms():
-    tf = '/tmp/remove.cfg'
-    with open(tf, 'wb') as f:
-        f.write(remove_file_content)
-
-
 # TODO: DRY
-
-
 @patch('insights.client.utilities.constants.registered_files',
        ['/tmp/insights-client.registered',
         '/tmp/redhat-access-insights.registered'])
@@ -248,6 +226,7 @@ def test_systemd_notify(Popen):
     Popen.assert_called_once()
 
 
+@patch('insights.client.utilities.read_pidfile', mock.Mock(return_value=None))
 @patch('insights.client.utilities.threading.Thread')
 @patch('insights.client.utilities.os.path.exists')
 @patch.dict('insights.client.utilities.os.environ', {'NOTIFY_SOCKET': '/tmp/test.sock'})
