@@ -3,11 +3,9 @@ import tempfile
 import uuid
 import insights.client.utilities as util
 from insights.client.constants import InsightsConstants as constants
-from insights.client.config import InsightsConfig
 import re
 import mock
 import six
-import pytest
 from mock.mock import patch
 
 
