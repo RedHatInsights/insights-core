@@ -106,7 +106,7 @@ class InitScript(Parser):
             raise NotInitscriptException("path: %s, confidence: %d" % (self.file_path, confidence))
 
 
-@parser(Specs.ls_vmtools)
+@parser(Specs.vmw_tools)
 class VMWTools(InitScript):
     """
     VMWTools is a parser for the initscripts in ``/etc/rc.d/init.d/vmware-tools``.
