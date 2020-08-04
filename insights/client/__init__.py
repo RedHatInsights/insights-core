@@ -62,15 +62,13 @@ class InsightsClient(object):
             write_to_disk(constants.ppidfile, content=get_parent_process())
         # setup insights connection placeholder
         # used for requests
-        self.session = None
         self.connection = None
 
     def _net(func):
         def _init_connection(self, *args, **kwargs):
             # setup a request session
-            if not self.config.offline and not self.session:
+            if not self.config.offline and not self.connection:
                 self.connection = client.get_connection(self.config)
-                self.session = self.connection.session
             return func(self, *args, **kwargs)
         return _init_connection
 
@@ -108,7 +106,7 @@ class InsightsClient(object):
         else:
             url = self.connection.base_url + constants.module_router_path
         logger.log(NETWORK, "GET %s", url)
-        response = self.session.get(url, timeout=self.config.http_timeout)
+        response = self.connection.get(url, timeout=self.config.http_timeout)
         if response.status_code == 200:
             return response.json()["url"]
         else:
@@ -196,10 +194,10 @@ class InsightsClient(object):
             if current_etag and not force:
                 logger.debug('Requesting new file with etag %s', current_etag)
                 etag_headers = {'If-None-Match': current_etag}
-                response = self.session.get(url, headers=etag_headers, timeout=self.config.http_timeout)
+                response = self.connection.get(url, headers=etag_headers, timeout=self.config.http_timeout)
             else:
                 logger.debug('Found no etag or forcing fetch')
-                response = self.session.get(url, timeout=self.config.http_timeout)
+                response = self.connection.get(url, timeout=self.config.http_timeout)
         except ConnectionError as e:
             logger.error(e)
             logger.error('The Insights API could not be reached.')
