@@ -55,7 +55,7 @@ def verify_connectivity(config):
         return False
 
 
-def set_auto_configuration(config, hostname, ca_cert, proxy, is_satellite):
+def set_auto_configuration(config, hostname, ca_cert, proxy, is_satellite, is_stage):
     """
     Set config based on discovered data
     """
@@ -76,7 +76,10 @@ def set_auto_configuration(config, hostname, ca_cert, proxy, is_satellite):
         logger.debug('Auto-configured base_url: %s', config.base_url)
     else:
         # connected directly to RHSM
-        config.base_url = hostname + '/r/insights'
+        if is_stage:
+            config.base_url = hostname + '/api'
+        else:
+            config.base_url = hostname + '/r/insights'
         logger.debug('Auto-configured base_url: %s', config.base_url)
         logger.debug('Not connected to Satellite, skipping branch_info')
         # direct connection to RHSM, skip verify_connectivity
@@ -112,6 +115,7 @@ def _try_satellite6_configuration(config):
         key = open(rhsmCertificate.keypath(), 'r').read()
         rhsm = rhsmCertificate(key, cert)
         is_satellite = False
+        is_stage = False
 
         # This will throw an exception if we are not registered
         logger.debug('Checking if system is subscription-manager registered')
@@ -154,6 +158,9 @@ def _try_satellite6_configuration(config):
         elif _is_staging_rhsm(rhsm_hostname):
             logger.debug('Connected to staging RHSM, using cloud.stage.redhat.com')
             rhsm_hostname = 'cloud.stage.redhat.com'
+            # never use legacy upload for staging
+            config.legacy_upload = False
+            is_stage = True
             rhsm_ca = None
         else:
             # Set the host path
@@ -162,7 +169,7 @@ def _try_satellite6_configuration(config):
             is_satellite = True
 
         logger.debug("Trying to set auto_configuration")
-        set_auto_configuration(config, rhsm_hostname, rhsm_ca, proxy, is_satellite)
+        set_auto_configuration(config, rhsm_hostname, rhsm_ca, proxy, is_satellite, is_stage)
         return True
     except Exception as e:
         logger.debug(e)
