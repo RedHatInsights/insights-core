@@ -2,10 +2,12 @@ from insights.client.connection import InsightsConnection
 from mock.mock import Mock, patch
 
 
-@patch("insights.client.connection.InsightsConnection._init_session")
-@patch("insights.client.connection.InsightsConnection.get_proxies")
+@patch("insights.client.connection.json.dumps")
+@patch("insights.client.connection.InsightsConnection.get")
+@patch("insights.client.connection.InsightsConnection._init_session", Mock())
+@patch("insights.client.connection.InsightsConnection.get_proxies", Mock())
 @patch("insights.client.connection.constants.cached_branch_info", "/tmp/insights-test-cached-branchinfo")
-def test_request(get_proxies, init_session):
+def test_request(get, dumps):
     """
     The request to get branch info is issued with correct timeout set.
     """
@@ -14,4 +16,5 @@ def test_request(get_proxies, init_session):
     connection = InsightsConnection(config)
     connection.get_branch_info()
 
-    init_session.return_value.get.assert_called_once_with(config.branch_info_url, timeout=config.http_timeout)
+    get.assert_called_once_with(config.branch_info_url)
+    dumps.assert_called_once_with(get.return_value.json.return_value)

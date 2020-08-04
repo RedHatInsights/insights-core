@@ -1,13 +1,14 @@
 import requests
 import json
+import pytest
 from insights.client.connection import InsightsConnection
 from mock.mock import MagicMock, Mock, patch
 
 
-@patch("insights.client.connection.generate_machine_id", return_value='xxxxxx')
-@patch("insights.client.connection.InsightsConnection._init_session")
-@patch("insights.client.connection.InsightsConnection.get_proxies")
-def test_registration_check_ok_reg(get_proxies, _init_session, _):
+@patch("insights.client.connection.generate_machine_id", Mock(return_value='xxxxxx'))
+@patch("insights.client.connection.InsightsConnection._init_session", Mock())
+@patch("insights.client.connection.InsightsConnection.get_proxies", Mock())
+def test_registration_check_ok_reg():
     '''
     Request completed OK, registered
         Returns True
@@ -28,10 +29,10 @@ def test_registration_check_ok_reg(get_proxies, _init_session, _):
                 }
             ],
             "total": 1
-        })
+        }).encode('utf-8')
     res.status_code = 200
 
-    conn.session.get = MagicMock(return_value=res)
+    conn.get = MagicMock(return_value=res)
     assert conn.api_registration_check()
 
 
@@ -54,10 +55,10 @@ def test_registration_check_ok_unreg(get_proxies, _init_session, _):
             "per_page": 50,
             "results": [],
             "total": 0
-        })
+        }).encode('utf-8')
     res.status_code = 200
 
-    conn.session.get = MagicMock(return_value=res)
+    conn.get = MagicMock(return_value=res)
     assert conn.api_registration_check() is False
 
 
@@ -67,17 +68,17 @@ def test_registration_check_ok_unreg(get_proxies, _init_session, _):
 def test_registration_check_parse_error(get_proxies, _init_session, _):
     '''
     Can't parse response
-        Returns None
+        Return False
     '''
     config = Mock(legacy_upload=False, base_url='example.com')
     conn = InsightsConnection(config)
 
     res = requests.Response()
-    res._content = 'zSDFasfghsRGH'
+    res._content = b'zSDFasfghsRGH'
     res.status_code = 200
 
-    conn.session.get = MagicMock(return_value=res)
-    assert conn.api_registration_check() is None
+    conn.get = MagicMock(return_value=res)
+    assert conn.api_registration_check() is False
 
 
 @patch("insights.client.connection.generate_machine_id", return_value='xxxxxx')
@@ -86,28 +87,30 @@ def test_registration_check_parse_error(get_proxies, _init_session, _):
 def test_registration_check_bad_res(get_proxies, _init_session, _):
     '''
     Failure HTTP response
-        Returns None
+        Return False
     '''
     config = Mock(legacy_upload=False, base_url='example.com')
     conn = InsightsConnection(config)
 
     res = requests.Response()
-    res._content = 'wakannai'
+    res._content = b'wakannai'
     res.status_code = 500
 
-    conn.session.get = MagicMock(return_value=res)
-    assert conn.api_registration_check() is None
+    conn.get = MagicMock(return_value=res)
+    assert conn.api_registration_check() is False
 
 
 @patch("insights.client.connection.generate_machine_id", return_value='xxxxxx')
 @patch("insights.client.connection.InsightsConnection._init_session")
 @patch("insights.client.connection.InsightsConnection.get_proxies")
-def test_registration_check_conn_error(get_proxies, _init_session, _):
+@patch("insights.client.connection.InsightsConnection.get")
+def test_registration_check_conn_error(get, get_proxies, _init_session, _):
     '''
     Connection error
-        Returns None
+        RuntimeError raised
     '''
     config = Mock(legacy_upload=False, base_url='example.com')
     conn = InsightsConnection(config)
-    conn.session.get.side_effect = requests.ConnectionError()
-    assert conn.api_registration_check() is None
+    get.side_effect = RuntimeError
+    with pytest.raises(RuntimeError):
+        conn.api_registration_check()

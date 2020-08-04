@@ -2,10 +2,11 @@ import sys
 import os
 import pytest
 import time
-
+import requests
 from insights.client import InsightsClient
 from insights.client.archive import InsightsArchive
 from insights.client.config import InsightsConfig
+from insights.client.connection import UnregisteredException
 from insights import package_info
 from insights.client.constants import InsightsConstants as constants
 from insights.client.utilities import generate_machine_id
@@ -262,14 +263,16 @@ def test_reg_check_unregistered_unreachable():
 
 
 @patch('insights.client.client.constants.sleep_time', 0)
-@patch('insights.client.client.InsightsConnection.upload_archive',
-       return_value=Mock(status_code=500))
-@patch('insights.client.os.path.exists', return_value=True)
-def test_upload_500_retry(_, upload_archive):
+@patch('insights.client.client.InsightsConnection.upload_archive')
+@patch('insights.client.os.path.exists', Mock(return_value=True))
+def test_upload_500_retry(upload_archive):
 
     # Hack to prevent client from parsing args to py.test
     tmp = sys.argv
     sys.argv = []
+
+    upload_archive.return_value = requests.Response()
+    upload_archive.return_value.status_code = 500
 
     try:
         retries = 3
@@ -285,15 +288,16 @@ def test_upload_500_retry(_, upload_archive):
         sys.argv = tmp
 
 
-@patch('insights.client.client.InsightsConnection.handle_fail_rcs')
-@patch('insights.client.client.InsightsConnection.upload_archive',
-       return_value=Mock(status_code=412))
-@patch('insights.client.os.path.exists', return_value=True)
-def test_upload_412_no_retry(_, upload_archive, handle_fail_rcs):
+@patch('insights.client.client.constants.sleep_time', 0)
+@patch('insights.client.client.InsightsConnection.upload_archive')
+@patch('insights.client.os.path.exists', Mock(return_value=True))
+def test_upload_412_no_retry(upload_archive):
 
     # Hack to prevent client from parsing args to py.test
     tmp = sys.argv
     sys.argv = []
+
+    upload_archive.side_effect = UnregisteredException
 
     try:
         config = InsightsConfig(logging_file='/tmp/insights.log', retries=3)
@@ -306,27 +310,29 @@ def test_upload_412_no_retry(_, upload_archive, handle_fail_rcs):
         sys.argv = tmp
 
 
-@patch('insights.client.connection.write_unregistered_file')
-@patch('insights.client.client.InsightsConnection.upload_archive',
-       return_value=Mock(**{"status_code": 412,
-                            "json.return_value": {"unregistered_at": "now", "message": "msg"}}))
-@patch('insights.client.os.path.exists', return_value=True)
-def test_upload_412_write_unregistered_file(_, upload_archive, write_unregistered_file):
+# TODO: This test should be moved to the connection.py tests for handle_fail_rcs()
 
-    # Hack to prevent client from parsing args to py.test
-    tmp = sys.argv
-    sys.argv = []
+# @patch('insights.client.connection.write_unregistered_file')
+# @patch('insights.client.client.InsightsConnection.upload_archive',
+#        return_value=Mock(**{"status_code": 412,
+#                             "json.return_value": {"unregistered_at": "now", "message": "msg"}}))
+# @patch('insights.client.os.path.exists', return_value=True)
+# def test_upload_412_write_unregistered_file(_, upload_archive, write_unregistered_file):
 
-    try:
-        config = InsightsConfig(logging_file='/tmp/insights.log', retries=3)
-        client = InsightsClient(config)
-        with pytest.raises(RuntimeError):
-            client.upload('/tmp/insights.tar.gz')
+#     # Hack to prevent client from parsing args to py.test
+#     tmp = sys.argv
+#     sys.argv = []
 
-        unregistered_at = upload_archive.return_value.json()["unregistered_at"]
-        write_unregistered_file.assert_called_once_with(unregistered_at)
-    finally:
-        sys.argv = tmp
+#     try:
+#         config = InsightsConfig(logging_file='/tmp/insights.log', retries=3)
+#         client = InsightsClient(config)
+#         with pytest.raises(RuntimeError):
+#             client.upload('/tmp/insights.tar.gz')
+
+#         unregistered_at = upload_archive.return_value.json()["unregistered_at"]
+#         write_unregistered_file.assert_called_once_with(unregistered_at)
+#     finally:
+#         sys.argv = tmp
 
 
 def test_cleanup_tmp():

@@ -115,7 +115,7 @@ def pre_update(client, config):
         try:
             checkin_success = client.checkin()
         except Exception as e:
-            print(e)
+            logger.error(e)
             sys.exit(constants.sig_kill_bad)
 
         if checkin_success:
@@ -164,7 +164,11 @@ def post_update(client, config):
     # -------delete everything below this line-------
     if config.legacy_upload:
         if config.status:
-            reg_check = client.get_registration_status()
+            try:
+                reg_check = client.get_registration_status()
+            except RuntimeError as e:
+                logger.error(e)
+                sys.exit(constants.sig_kill_bad)
             for msg in reg_check['messages']:
                 logger.info(msg)
             if reg_check['status']:
@@ -192,12 +196,14 @@ def post_update(client, config):
             else:
                 sys.exit(constants.sig_kill_bad)
 
-        reg = client.register()
-        if reg is None:
+        try:
+            reg = client.register()
+        except RuntimeError as e:
             # API unreachable
-            logger.info('Could not connect to the Insights API. Run insights-client --test-connection for more information.')
+            logger.error(e)
             sys.exit(constants.sig_kill_bad)
-        elif reg is False:
+
+        if reg is False:
             # unregistered
             sys.exit(constants.sig_kill_bad)
         if config.register and not config.disable_schedule:

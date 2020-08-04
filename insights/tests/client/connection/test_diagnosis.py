@@ -1,80 +1,77 @@
-import json
+import requests
 from insights.client import InsightsClient
 from insights.client.config import InsightsConfig
 from insights.client.connection import InsightsConnection
-from mock.mock import patch
+from mock.mock import patch, Mock
 
-TEST_REMEDIATION_ID = 123456
-
-
-class MockSession(object):
-    def __init__(self):
-        self.status_code = None
-        self.text = None
-        self.content = '{"big_dumb_error": "you_done_goofed"}'
-
-    def get(self, url=None, timeout=None, headers=None, data=None, params=None):
-        if params and params['remediation'] == TEST_REMEDIATION_ID:
-            self.content = '{"specific_dumb_error": "stop_goofin"}'
-        return MockResponse(self.status_code, self.text, self.content)
-
-    def put(self, url=None, timeout=None, headers=None, data=None):
-        return MockResponse(self.status_code, self.text, None)
+TEST_REMEDIATION_ID = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+TEST_MACHINE_ID = 'yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy'
 
 
-class MockResponse(object):
-    def __init__(self, expected_status, expected_text, expected_content):
-        self.status_code = expected_status
-        self.text = expected_text
-        self.content = expected_content
-        self.reason = ''
-
-    def json(self):
-        return json.loads(self.content)
-
-
-def mock_init_session(obj):
-    return MockSession()
-
-
-def mock_get_proxies(obj):
-    return
-
-
-@patch('insights.client.connection.InsightsConnection._init_session',
-       mock_init_session)
-@patch('insights.client.connection.InsightsConnection.get_proxies',
-       mock_get_proxies)
-@patch('insights.client.utilities.constants.machine_id_file',
-       '/tmp/machine-id')
+@patch('insights.client.connection.InsightsConnection._init_session', Mock())
+@patch('insights.client.connection.InsightsConnection.get_proxies', Mock())
+@patch('insights.client.connection.generate_machine_id', Mock(return_value=TEST_MACHINE_ID))
 def test_get_diagnosis():
+    '''
+    Verify that get_diagnosis returns a dict of response data on 200
+    and None on failure codes
+
+    Verify that no remediation ID is passed
+    '''
     conf = InsightsConfig()
     c = InsightsConnection(conf)
-    c.session.status_code = 200
-    assert c.get_diagnosis() == {'big_dumb_error': 'you_done_goofed'}
-    c.session.status_code = 404
+
+    res = requests.Response()
+    c.get = Mock(return_value=res)
+
+    # OK
+    res.status_code = 200
+    res._content = b"{\"test\": \"test\"}"
+    assert c.get_diagnosis() == {"test": "test"}
+    c.get.assert_called_with('https://' + conf.base_url + '/remediations/v1/diagnosis/' + TEST_MACHINE_ID, params={})
+
+    # not found
+    res.status_code = 404
     assert c.get_diagnosis() is None
-    c.session.status_code = 500
-    c.session.text = 'oops'
+    c.get.assert_called_with('https://' + conf.base_url + '/remediations/v1/diagnosis/' + TEST_MACHINE_ID, params={})
+
+    # server error
+    res.status_code = 500
     assert c.get_diagnosis() is None
+    c.get.assert_called_with('https://' + conf.base_url + '/remediations/v1/diagnosis/' + TEST_MACHINE_ID, params={})
 
 
-@patch('insights.client.connection.InsightsConnection._init_session',
-       mock_init_session)
-@patch('insights.client.connection.InsightsConnection.get_proxies',
-       mock_get_proxies)
-@patch('insights.client.utilities.constants.machine_id_file',
-       '/tmp/machine-id')
+@patch('insights.client.connection.InsightsConnection._init_session', Mock())
+@patch('insights.client.connection.InsightsConnection.get_proxies', Mock())
+@patch('insights.client.connection.generate_machine_id', Mock(return_value=TEST_MACHINE_ID))
 def test_get_diagnosis_with_id():
+    '''
+    Verify that get_diagnosis returns a dict of response data on 200
+    and None on failure codes
+
+    Verify that the remediation ID is passed
+    '''
     conf = InsightsConfig()
     c = InsightsConnection(conf)
-    c.session.status_code = 200
-    assert c.get_diagnosis(TEST_REMEDIATION_ID) == {'specific_dumb_error': 'stop_goofin'}
-    c.session.status_code = 404
-    assert c.get_diagnosis() is None
-    c.session.status_code = 500
-    c.session.text = 'oops'
-    assert c.get_diagnosis() is None
+
+    res = requests.Response()
+    c.get = Mock(return_value=res)
+
+    # OK
+    res.status_code = 200
+    res._content = b"{\"test\": \"test\"}"
+    assert c.get_diagnosis(TEST_REMEDIATION_ID) == {"test": "test"}
+    c.get.assert_called_with('https://' + conf.base_url + '/remediations/v1/diagnosis/' + TEST_MACHINE_ID, params={'remediation': TEST_REMEDIATION_ID})
+
+    # not found
+    res.status_code = 404
+    assert c.get_diagnosis(TEST_REMEDIATION_ID) is None
+    c.get.assert_called_with('https://' + conf.base_url + '/remediations/v1/diagnosis/' + TEST_MACHINE_ID, params={'remediation': TEST_REMEDIATION_ID})
+
+    # server error
+    res.status_code = 500
+    assert c.get_diagnosis(TEST_REMEDIATION_ID) is None
+    c.get.assert_called_with('https://' + conf.base_url + '/remediations/v1/diagnosis/' + TEST_MACHINE_ID, params={'remediation': TEST_REMEDIATION_ID})
 
 
 def test_get_diagnosis_offline():
