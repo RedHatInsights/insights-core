@@ -14,7 +14,6 @@ STD_LICENSE = """
 """.strip()
 
 
-
 def test_ansible_tower_license():
     ret = AnsibleTowerLicense(context_wrap(TRI_LICENSE))
     assert ret['instance_count'] == 100
