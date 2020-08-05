@@ -160,6 +160,7 @@ def _try_satellite6_configuration(config):
             rhsm_hostname = 'cert.cloud.stage.redhat.com'
             # never use legacy upload for staging
             config.legacy_upload = False
+            config.cert_verify = True
             is_stage = True
             rhsm_ca = None
         else:
