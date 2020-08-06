@@ -35,6 +35,40 @@ def test_rhsm_platform_url(set_auto_configuration, initConfig):
 @patch("insights.client.auto_config.open", Mock())
 @patch("insights.client.auto_config._importInitConfig")
 @patch("insights.client.auto_config.set_auto_configuration")
+def test_rhsm_stage_legacy_url(set_auto_configuration, initConfig):
+    '''
+    Ensure the correct host URL is selected for auto_config on a legacy staging RHSM upload
+
+    This will still force legacy_upload=False as there is no classic staging env,
+    so the result is the same as platform upload.
+
+    '''
+    initConfig().get.side_effect = ['subscription.rhsm.stage.redhat.com', '443', '', '', '', '', '']
+    config = Mock(base_url=None, upload_url=None, legacy_upload=True, insecure_connection=False)
+    _try_satellite6_configuration(config)
+    # config.legacy_upload is modified in the function
+    config.legacy_upload = False
+    set_auto_configuration.assert_called_with(config, 'cert.cloud.stage.redhat.com', None, None, False, True)
+
+
+@patch("insights.client.auto_config.rhsmCertificate", Mock())
+@patch("insights.client.auto_config.open", Mock())
+@patch("insights.client.auto_config._importInitConfig")
+@patch("insights.client.auto_config.set_auto_configuration")
+def test_rhsm_stage_platform_url(set_auto_configuration, initConfig):
+    '''
+    Ensure the correct host URL is selected for auto_config on a platform staging RHSM upload
+    '''
+    initConfig().get.side_effect = ['subscription.rhsm.stage.redhat.com', '443', '', '', '', '', '']
+    config = Mock(base_url=None, upload_url=None, legacy_upload=False, insecure_connection=False)
+    _try_satellite6_configuration(config)
+    set_auto_configuration.assert_called_with(config, 'cert.cloud.stage.redhat.com', None, None, False, True)
+
+
+@patch("insights.client.auto_config.rhsmCertificate", Mock())
+@patch("insights.client.auto_config.open", Mock())
+@patch("insights.client.auto_config._importInitConfig")
+@patch("insights.client.auto_config.set_auto_configuration")
 def test_sat_legacy_url(set_auto_configuration, initConfig):
     '''
     Ensure the correct host URL is selected for auto_config on a legacy Sat upload
@@ -129,3 +163,26 @@ def test_platform_path_added():
     config = Mock(base_url='test.satellite.com:443/redhat_access/r/insights', auto_config=False, legacy_upload=False, offline=False)
     try_auto_configuration(config)
     assert config.base_url == 'test.satellite.com:443/redhat_access/r/insights/platform'
+
+
+@patch("insights.client.auto_config.verify_connectivity", Mock())
+def test_rhsm_stage_legacy_base_url_configured():
+    '''
+    Ensure the correct base URL is assembled for a legacy staging RHSM upload
+
+    This will still force legacy_upload=False as there is no classic staging env,
+    so the result is the same as platform upload.
+    '''
+    config = Mock(base_url=None, upload_url=None, legacy_upload=True, insecure_connection=False, proxy=None)
+    set_auto_configuration(config, 'cert.cloud.stage.redhat.com', None, None, False, True)
+    assert config.base_url == 'cert.cloud.stage.redhat.com/api'
+
+
+@patch("insights.client.auto_config.verify_connectivity", Mock())
+def test_rhsm_stage_platform_base_url_configured():
+    '''
+    Ensure the correct base URL is assembled for a platform staging RHSM upload
+    '''
+    config = Mock(base_url=None, upload_url=None, legacy_upload=False, insecure_connection=False, proxy=None)
+    set_auto_configuration(config, 'cert.cloud.stage.redhat.com', None, None, False, True)
+    assert config.base_url == 'cert.cloud.stage.redhat.com/api'
