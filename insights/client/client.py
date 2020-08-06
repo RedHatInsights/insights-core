@@ -363,6 +363,7 @@ def upload(config, pconn, tar_file, content_type, collection_duration=None):
         upload = pconn.upload_archive(tar_file, content_type, collection_duration)
 
         if upload.status_code in (200, 202):
+            write_to_disk(constants.lastupload_file)
             msg_name = determine_hostname(config.display_name)
             logger.info("Successfully uploaded report for %s.", msg_name)
             if config.register:
