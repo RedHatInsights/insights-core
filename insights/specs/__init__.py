@@ -197,6 +197,7 @@ class Specs(SpecSet):
     grub2_efi_cfg = RegistryPoint()
     grubby_default_index = RegistryPoint()
     grubby_default_kernel = RegistryPoint()
+    hammer_compute_resource_list = RegistryPoint()
     hammer_ping = RegistryPoint()
     hammer_task_list = RegistryPoint()
     satellite_enabled_features = RegistryPoint()
