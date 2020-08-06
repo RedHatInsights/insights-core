@@ -262,3 +262,5 @@ class SosSpecs(Specs):
     xfs_info = glob_file("sos_commands/xfs/xfs_info*")
     yum_log = simple_file("/var/log/yum.log")
     yum_repolist = simple_file("sos_commands/yum/yum_-C_repolist")
+    sendq_socket_buffer = simple_file("proc/sys/net/ipv4/tcp_wmem")
+    recvq_socket_buffer = simple_file("proc/sys/net/ipv4/tcp_rmem")
