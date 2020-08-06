@@ -198,6 +198,7 @@ class Specs(SpecSet):
     grubby_default_index = RegistryPoint()
     grubby_default_kernel = RegistryPoint()
     hammer_ping = RegistryPoint()
+    hammer_settings_list = RegistryPoint()
     hammer_task_list = RegistryPoint()
     satellite_enabled_features = RegistryPoint()
     haproxy_cfg = RegistryPoint()

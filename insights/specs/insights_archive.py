@@ -64,6 +64,7 @@ class InsightsArchiveSpecs(Specs):
     grubby_default_index = simple_file("insights_commands/grubby_--default-index")
     grubby_default_kernel = simple_file("insights_commands/grubby_--default-kernel")
     gluster_v_info = simple_file("insights_commands/gluster_volume_info")
+    hammer_settings_list = head(glob_file("insights_commands/hammer_--interactive_0_--output_json_settings_list_*"))
     hammer_task_list = simple_file("insights_commands/hammer_--config_.root..hammer.cli.modules.d.foreman.yml_--output_csv_task_list_--search_state_running_AND_label_Actions_Candlepin_ListenOnCandlepinEvents_OR_label_Actions_Katello_EventQueue_Monitor")
     installed_rpms = head(all_installed_rpms)
     hostname = simple_file("insights_commands/hostname_-f")
