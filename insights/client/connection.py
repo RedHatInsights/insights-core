@@ -186,6 +186,12 @@ class InsightsConnection(object):
         if pkg is not None:
             client_version = "%s/%s" % (pkg.project_name, pkg.version)
 
+        if os.path.isfile(constants.ppidfile):
+            with open(constants.ppidfile, 'r') as f:
+                parent_process = f.read()
+        else:
+            parent_process = "unknown"
+
         requests_version = None
         pkg = pkg_resources.working_set.find(pkg_resources.Requirement.parse("requests"))
         if pkg is not None:
@@ -216,9 +222,10 @@ class InsightsConnection(object):
                 logger.warning("Failed to detect OS version: %s", e)
         kernel_version = "%s %s" % (platform.system(), platform.release())
 
-        ua = "{client_version} ({core_version}; {requests_version}) {os_family} {os_release} ({python_version}; {kernel_version})".format(
+        ua = "{client_version} ({core_version}; {requests_version}) {os_family} {os_release} ({python_version}; {kernel_version}); {parent_process}".format(
             client_version=client_version,
             core_version=core_version,
+            parent_process=parent_process,
             python_version=python_version,
             os_family=os_family,
             os_release=os_release,
