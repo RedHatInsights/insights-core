@@ -5,14 +5,17 @@ from mock.mock import patch
 
 @patch("insights.client.write_to_disk")
 @patch("insights.client.os.getpid")
-def test_write_pidfile(getpid, write_to_disk):
+@patch("insights.client.utilities.get_parent_process")
+def test_write_pidfile(get_parent_process, getpid, write_to_disk):
     '''
     Test writing of the pidfile when InsightsClient
     is called initially (when setup_logging=False)
     '''
     InsightsClient(setup_logging=False)
     getpid.assert_called_once()
-    write_to_disk.assert_called_with(InsightsConstants.pidfile, content=str(getpid.return_value))
+    calls = [write_to_disk(InsightsConstants.pidfile, content=str(getpid.return_value)),
+             write_to_disk(InsightsConstants.ppidfile, content=get_parent_process.return_value)]
+    write_to_disk.has_calls(calls)
 
 
 @patch("insights.client.write_to_disk")
