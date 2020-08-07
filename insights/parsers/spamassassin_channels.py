@@ -30,15 +30,15 @@ class SpamassassinChannels(CommandParser):
         >>> spamassassin_channels.channels
         OrderedDict([('/etc/mail/spamassassin/channel.d/sought.conf', ['sought.rules.yerp.org']), ('/etc/mail/spamassassin/channel.d/spamassassin-official.conf', ['updates.spamassassin.org'])])
     """
-    channels = None
+    def __init__(self, *args, **kwargs):
+        self.channels = OrderedDict()
+        super(SpamassassinChannels, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
-        channels = OrderedDict()
+
         for line in content:
             file_name, file_line = line.split(":", 1)
             channel = re.sub('^\\s*CHANNELURL=', '', file_line).strip()
-            if file_name not in channels:
-                channels[file_name] = []
-            channels[file_name].append(channel)
-
-        self.channels = channels
+            if file_name not in self.channels:
+                self.channels[file_name] = []
+            self.channels[file_name].append(channel)
