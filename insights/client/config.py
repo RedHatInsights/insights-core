@@ -88,7 +88,7 @@ DEFAULT_OPTS = {
     },
     'cert_verify': {
         # non-CLI
-        'default': None,
+        'default': constants.legacy_ca_cert,
     },
     'check_results': {
         'default': False,
