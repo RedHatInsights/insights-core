@@ -247,6 +247,7 @@ class Specs(SpecSet):
     ip_netns_exec_namespace_lsof = RegistryPoint(multi_output=True, filterable=True)
     ip_route_show_table_all = RegistryPoint()
     ip_s_link = RegistryPoint()
+    ipsec_conf = RegistryPoint(filterable=True)
     iptables_permanent = RegistryPoint()
     iptables = RegistryPoint()
     ipv4_neigh = RegistryPoint()

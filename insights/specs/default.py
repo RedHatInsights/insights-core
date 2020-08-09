@@ -348,6 +348,7 @@ class DefaultSpecs(Specs):
     ipcs_m = simple_command("/usr/bin/ipcs -m")
     ipcs_m_p = simple_command("/usr/bin/ipcs -m -p")
     ipcs_s = simple_command("/usr/bin/ipcs -s")
+    ipsec_conf = simple_file("/etc/ipsec.conf")
     iptables = simple_command("/sbin/iptables-save")
     iptables_permanent = simple_file("etc/sysconfig/iptables")
     ip6tables = simple_command("/sbin/ip6tables-save")
