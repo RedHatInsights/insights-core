@@ -9,7 +9,7 @@ Parsers included in this module are:
 DMModUseBlkMq - file ``/sys/module/dm_mod/parameters/use_blk_mq``
 
 SCSIModUseBlkMq - file ``/sys/module/scsi_mod/parameters/use_blk_mq``
-------------------------------------------------------------
+---------------------------------------------------------------------
 
 """
 
