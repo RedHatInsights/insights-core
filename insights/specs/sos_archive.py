@@ -11,6 +11,7 @@ simple_file = partial(simple_file, context=SosArchiveContext)
 class SosSpecs(Specs):
     auditctl_status = simple_file("sos_commands/auditd/auditctl_-s")
     autofs_conf = simple_file("/etc/autofs.conf")
+    awx_manage_check_license = simple_file("sos_commands/tower/awx-manage_check_license_--data")
 
     blkid = first_file(["sos_commands/block/blkid_-c_.dev.null", "sos_commands/filesys/blkid_-c_.dev.null"])
     candlepin_log = first_of([
