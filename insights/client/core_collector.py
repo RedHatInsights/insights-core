@@ -49,6 +49,9 @@ class CoreCollector(DataCollector):
             'components': rm_conf.get('components', [])
         }
 
+        # skip the insights-client machine-id spec
+        core_blacklist['components'].append('insights.specs.default.DefaultSpecs.machine_id')
+
         collected_data_path = collect.collect(tmp_path=self.archive.tmp_dir, rm_conf=core_blacklist, client_timeout=self.config.cmd_timeout)
         # update the archive dir with the reported data location from Insights Core
         if not collected_data_path:
@@ -75,6 +78,7 @@ class CoreCollector(DataCollector):
 
         # collect metadata
         logger.debug('Collecting metadata...')
+        self._write_insights_id()
         self._write_branch_info(branch_info)
         self._write_display_name()
         self._write_version_info()

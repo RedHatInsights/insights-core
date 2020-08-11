@@ -865,6 +865,7 @@ class InsightsConnection(object):
             c_facts = get_canonical_facts()
         except Exception as e:
             logger.debug('Error getting canonical facts: %s', e)
+        c_facts['insights_id'] = generate_machine_id()
         if self.config.display_name:
             # add display_name to canonical facts
             c_facts['display_name'] = self.config.display_name

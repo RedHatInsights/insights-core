@@ -3,6 +3,7 @@ import os
 # TODO: no bare excepts here
 # TODO: maybe call os.makedirs elsewhere
 # TODO: copy config file to local config dir if it doesn't exist and --conf is not specified
+# TODO: copy an existing machine-id file to local config dir
 
 _user_home = os.path.expanduser('~')
 _app_name = 'insights-client'

@@ -287,6 +287,7 @@ class TextFileProvider(FileProvider):
             p.write(dst)
         else:
             call([which("cp", env=SAFE_ENV), self.path, dst], env=SAFE_ENV)
+            call([which("chmod", env=SAFE_ENV), '+w', dst], env=SAFE_ENV)
 
 
 class SerializedOutputProvider(TextFileProvider):

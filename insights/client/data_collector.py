@@ -17,7 +17,7 @@ from tempfile import NamedTemporaryFile
 
 from insights.util import mangle
 from ..contrib.soscleaner import SOSCleaner
-from .utilities import _expand_paths, get_version_info, systemd_notify_init_thread, get_tags
+from .utilities import _expand_paths, get_version_info, systemd_notify_init_thread, get_tags, generate_machine_id
 from .constants import InsightsConstants as constants
 from .insights_spec import InsightsFile, InsightsCommand
 from .archive import InsightsArchive
@@ -146,6 +146,11 @@ class DataCollector(object):
         logger.debug("Writing collection stats to archive...")
         self.archive.add_metadata_to_archive(
             json.dumps(collection_stats), '/collection_stats')
+
+    def _write_insights_id(self):
+        logger.debug("Writing Insights ID to archive...")
+        self.archive.add_metadata_to_archive(
+            generate_machine_id(), '/etc/insights-client/machine-id')
 
     def _run_pre_command(self, pre_cmd):
         '''
@@ -317,6 +322,7 @@ class DataCollector(object):
 
         # collect metadata
         logger.debug('Collecting metadata...')
+        self._write_insights_id()
         self._write_branch_info(branch_info)
         self._write_display_name()
         self._write_version_info()
