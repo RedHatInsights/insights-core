@@ -105,6 +105,7 @@ class Specs(SpecSet):
     date_iso = RegistryPoint()
     date = RegistryPoint()
     date_utc = RegistryPoint()
+    designate_conf = RegistryPoint(filterable=True)
     dcbtool_gc_dcb = RegistryPoint(multi_output=True)
     df__alP = RegistryPoint()
     df__al = RegistryPoint()
@@ -675,3 +676,5 @@ class Specs(SpecSet):
     yum_repos_d = RegistryPoint(multi_output=True)
     zdump_v = RegistryPoint()
     zipl_conf = RegistryPoint()
+    sendq_socket_buffer = RegistryPoint()
+    recvq_socket_buffer = RegistryPoint()

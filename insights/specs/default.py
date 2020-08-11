@@ -216,6 +216,8 @@ class DefaultSpecs(Specs):
     current_clocksource = simple_file("/sys/devices/system/clocksource/clocksource0/current_clocksource")
     date = simple_command("/bin/date")
     date_utc = simple_command("/bin/date --utc")
+    designate_conf = first_file(["/var/lib/config-data/puppet-generated/designate/etc/designate/designate.conf",
+                                 "/etc/designate/designate.conf"])
     df__al = simple_command("/bin/df -al")
     df__alP = simple_command("/bin/df -alP")
     df__li = simple_command("/bin/df -li")
@@ -429,6 +431,7 @@ class DefaultSpecs(Specs):
                             "/etc/opt/rh/rh-mongodb26/mongod.conf"
                             ])
     mount = simple_command("/bin/mount")
+    mounts = simple_file("/proc/mounts")
     mssql_conf = simple_file("/var/opt/mssql/mssql.conf")
     multicast_querier = simple_command("/usr/bin/find /sys/devices/virtual/net/ -name multicast_querier -print -exec cat {} \;")
     multipath_conf = simple_file("/etc/multipath.conf")
@@ -666,6 +669,7 @@ class DefaultSpecs(Specs):
     xinetd_conf = glob_file(["/etc/xinetd.conf", "/etc/xinetd.d/*"])
     yum_conf = simple_file("/etc/yum.conf")
     yum_list_available = simple_command("yum -C --noplugins list available")
+    yum_log = simple_file("/var/log/yum.log")
     yum_repolist = simple_command("/usr/bin/yum -C --noplugins repolist")
     yum_repos_d = glob_file("/etc/yum.repos.d/*.repo")
     zipl_conf = simple_file("/etc/zipl.conf")
