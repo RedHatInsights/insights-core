@@ -220,6 +220,7 @@ class SosSpecs(Specs):
     sssd_logs = glob_file("var/log/sssd/*.log")
     samba_logs = glob_file("var/log/samba/log.*")
     ssh_foreman_config = simple_file("/usr/share/foreman/.ssh/ssh_config")
+    subscription_manager_id = simple_file("/sos_commands/subscription_manager/subscription-manager_identity")
     subscription_manager_list_consumed = first_file([
         'sos_commands/yum/subscription-manager_list_--consumed',
         'sos_commands/subscription_manager/subscription-manager_list_--consumed',
