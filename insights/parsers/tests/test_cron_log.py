@@ -24,7 +24,7 @@ add_filter(Specs.messages, [
 ])
 
 
-def test_cron_messages():
+def test_cron_log_messages():
     msg_info = CronLog(context_wrap(CRON_MSG_LOG))
     msg = msg_info.get("(root)")
     assert len(msg) == 9
@@ -36,7 +36,7 @@ def test_cron_messages():
     assert cron_log[0].get("raw_message") == "Feb 20 19:00:01 hostname crond[14532]: (root) FAILED to authorize user with PAM (Authentication token is no longer valid; new one required)"
 
 
-def test_cron_messages_doc():
+def test_cron_messages_log_doc():
     env = {
             'cron_log_msg': cron_log.CronLog(context_wrap(CRON_MSG_LOG)),
           }
