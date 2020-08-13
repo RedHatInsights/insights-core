@@ -7,31 +7,28 @@ from insights.parsr import (Char, EOF, HangingString, InSet, Many, OneLineCommen
                             skip_none, String, WithIndent, WS)
 
 
-def _parse_doc(content):
-    header_chars = (set(string.printable) - set(string.whitespace) - set("[]")) | set(" ")
-    sep_chars = set(":=")
-    key_chars = header_chars - sep_chars - set(" ")
-    value_chars = set(string.printable) - set("\n\r")
+header_chars = (set(string.printable) - set(string.whitespace) - set("[]")) | set(" ")
+sep_chars = set(":=")
+key_chars = header_chars - sep_chars - set(" ")
+value_chars = set(string.printable) - set("\n\r")
 
-    LeftEnd = WS >> Char("[") << WS
-    RightEnd = WS >> Char("]") << WS
-    Header = LeftEnd >> String(header_chars) << RightEnd
-    Key = WS >> String(key_chars) << WS
-    Sep = InSet(sep_chars)
-    Value = WS >> HangingString(value_chars)
-    KVPair = WithIndent(Key + Opt(Sep >> Value))
-    Comment = WS >> (OneLineComment("#") | OneLineComment(";")).map(lambda x: None)
+LeftEnd = WS >> Char("[") << WS
+RightEnd = WS >> Char("]") << WS
+Header = LeftEnd >> String(header_chars) << RightEnd
+Key = WS >> String(key_chars) << WS
+Sep = InSet(sep_chars)
+Value = WS >> HangingString(value_chars)
+KVPair = WithIndent(Key + Opt(Sep >> Value))
+Comment = WS >> (OneLineComment("#") | OneLineComment(";")).map(lambda x: None)
 
-    Line = Comment | KVPair.map(tuple)
-    Sect = (Header + Many(Line).map(skip_none).map(dict)).map(tuple)
-    Doc = Many(Comment | Sect).map(skip_none).map(dict)
-    Top = Doc << WS << EOF
-
-    return Top(content)
+Line = Comment | KVPair.map(tuple)
+Sect = (Header + Many(Line).map(skip_none).map(dict)).map(tuple)
+Doc = Many(Comment | Sect).map(skip_none).map(dict)
+Top = Doc << WS << EOF
 
 
 def parse_yum_repos(content):
-    doc = _parse_doc(content)
+    doc = Top(content)
     for k, v in doc.items():
         for special in ("baseurl", "gpgkey"):
             if special in v:
@@ -47,7 +44,7 @@ class YumReposD(LegacyItemAccess, Parser):
         return self.data.get(key)
 
     def parse_content(self, content):
-        '''
+        """
         Return an object contains a dict.
         {
             "rhel-source": {
@@ -70,7 +67,7 @@ class YumReposD(LegacyItemAccess, Parser):
         gpgcheck=1
         gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
                file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release_bak
-        '''
+        """
         self.data = parse_yum_repos("\n".join(content))
 
     def __iter__(self):
