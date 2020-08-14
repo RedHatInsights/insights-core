@@ -326,8 +326,10 @@ class Parser(with_metaclass(_ParserMeta, Node)):
         msg = "At line {} column {}:"
         print(msg.format(lineno, colno, ctx.lines), file=err)
         for parsers, msg in ctx.errors:
-            ps = "-> ".join([str(p) for p in parsers])
-            print("{}: Got {!r}. {}".format(ps, data[ctx.pos], msg), file=err)
+            names = " -> ".join([p.name for p in parsers if p.name])
+            v = data[ctx.pos] or "EOF"
+            print(names, file=err)
+            print("    {} Got {!r}.".format(msg, v), file=err)
         err.seek(0)
         raise Exception(err.read())
 
@@ -359,6 +361,7 @@ class Char(Parser):
     def __init__(self, char):
         super(Char, self).__init__()
         self.char = char
+        self.name = "Char({!r})".format(self.char)
 
     def process(self, pos, data, ctx):
         if data[pos] == self.char:
@@ -368,7 +371,7 @@ class Char(Parser):
         raise Exception(msg)
 
     def __repr__(self):
-        return "Char({!r})".format(self.char)
+        return self.name
 
 
 class InSet(Parser):
@@ -400,7 +403,7 @@ class InSet(Parser):
         raise Exception(msg)
 
     def __repr__(self):
-        if not self.name:
+        if self.name is None:
             return "InSet({!r})".format(sorted(self.values))
         return super(InSet, self).__repr__()
 
@@ -488,6 +491,7 @@ class Literal(Parser):
         self.chars = chars if not ignore_case else chars.lower()
         self.value = value
         self.ignore_case = ignore_case
+        self.name = "Literal{!r}".format(self.chars)
 
     def process(self, pos, data, ctx):
         old = pos
@@ -1167,13 +1171,10 @@ def _make_number(sign, int_part, frac_part):
 
 
 def skip_none(x):
-    """
-    Filters ``None`` values from a list. Often used with map.
-    """
     return [i for i in x if i is not None]
 
 
-EOF = EOF()
+EOF = EOF() % "EOF"
 EOL = InSet("\n\r") % "EOL"
 LineEnd = Wrapper(EOL | EOF) % "LineEnd"
 EQ = Char("=")
@@ -1189,15 +1190,15 @@ RightParen = Char(")")
 Colon = Char(":")
 SemiColon = Char(";")
 Comma = Char(",")
-AnyChar = AnyChar()
-NonZeroDigit = InSet(set(string.digits) - set("0"))
-Digit = InSet(string.digits) % "Digit"
-Digits = String(string.digits) % "Digits"
-Letter = InSet(string.ascii_letters)
-Letters = String(string.ascii_letters)
-WSChar = InSet(set(string.whitespace) - set("\n\r")) % "Whitespace w/o EOL"
-WS = Many(InSet(string.whitespace) % "WS") % "Whitespace"
-Number = (Lift(_make_number) * Opt(Char("-"), "") * Digits * Opt(Char(".") + Digits)) % "Number"
+AnyChar = AnyChar() % "any character"
+NonZeroDigit = InSet(set(string.digits) - set("0")) % "non zero digit"
+Digit = InSet(string.digits) % "digit"
+Digits = String(string.digits) % "digits"
+Letter = InSet(string.ascii_letters) % "ASCII letter"
+Letters = String(string.ascii_letters) % "ASCII letters"
+WSChar = InSet(set(string.whitespace) - set("\n\r")) % "whitespace w/o EOL"
+WS = Many(InSet(string.whitespace) % "any whitespace")
+Number = (Lift(_make_number) * Opt(Char("-"), "") * Digits * Opt(Char(".") + Digits)) % "number"
 SingleQuotedString = Char("'") >> String(set(string.printable) - set("'"), "'") << Char("'")
 DoubleQuotedString = Char('"') >> String(set(string.printable) - set('"'), '"') << Char('"')
-QuotedString = Wrapper(DoubleQuotedString | SingleQuotedString) % "Quoted String"
+QuotedString = Wrapper(DoubleQuotedString | SingleQuotedString) % "quoted string"

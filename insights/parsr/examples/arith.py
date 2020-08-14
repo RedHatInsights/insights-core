@@ -7,7 +7,7 @@ from insights.parsr import (EOF, Forward, InSet, LeftParen, Many, Number,
 
 
 def evaluate(e):
-    return Top(e)[0]
+    return Top(e)
 
 
 def op(args):
@@ -40,11 +40,11 @@ LowOps = InSet("+-")
 # at the end.
 
 # We have to declare expr before its definition since it's used recursively.
-expr = Forward() % "expr forward"
+expr = Forward()
 
 
 # A factor is a simple number or a subexpression between parentheses
-factor = WS >> (Number % "Number" | (LeftParen >> expr << RightParen)) << WS
+factor = (WS >> (Number | (LeftParen >> expr << RightParen)) << WS) % "factor"
 
 # A term handles strings of multiplication and division. As written, it would
 # convert "1 + 2 - 3 + 4" into [1, [['+', 2], ['-', 3], ['+', 4]]]. The first
@@ -59,4 +59,4 @@ term = (factor + Many(HighOps + factor)).map(op) % "term"
 expr <= (term + Many(LowOps + term)).map(op) % "expr"
 
 # Top returns [result, None] on success and raises an Exception on failure.
-Top = (expr + EOF) % "Top"
+Top = expr << EOF
