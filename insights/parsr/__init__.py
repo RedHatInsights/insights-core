@@ -220,12 +220,12 @@ class Parser(with_metaclass(_ParserMeta, Node)):
         """
         return Lift(self._accumulate) * Opt(self) * Many(sep >> self)
 
-    def until(self, pred):
+    def until(self, pred, upper=None):
         """
         Return an :py:class:`Until` parser that matches zero or more instances
         of the current parser until the pred parser succeeds.
         """
-        return Until(self, pred)
+        return Until(self, pred, upper=upper)
 
     def map(self, func):
         """
@@ -359,11 +359,12 @@ class Char(Parser):
     def __init__(self, char):
         super(Char, self).__init__()
         self.char = char
+        self.name = "Char({})".format(self.char)
 
     def process(self, pos, data, ctx):
         if data[pos] == self.char:
             return (pos + 1, self.char)
-        msg = "Expected {!r}.".format(self.char)
+        msg = "Expected {}.".format(self.char)
         ctx.set(pos, msg)
         raise Exception(msg)
 
@@ -445,6 +446,30 @@ class String(Parser):
             ctx.set(old, msg)
             raise Exception(msg)
         return pos, "".join(results)
+
+
+class StringUntil(Parser):
+    """
+    StringUntil matches any number of characters until a predicate is seen.
+
+        .. code-block:: python
+
+            su  = StringUntil(Char("="))  # parses any number of characters until 'a'
+            val = su("ab=")               # produces "ab" from the data.
+            val = su("ab")                # raises an exception
+
+    """
+    def __init__(self, term, lower=None, upper=None):
+        super(StringUntil, self).__init__()
+        self.add_child(AnyChar.until(term, upper=upper).map(lambda x: "".join(x)) & term)
+        self.lower = lower
+
+    def process(self, pos, data, ctx):
+        (newpos, res) = self.children[0].process(pos, data, ctx)
+        if self.lower is not None and len(res) < self.lower:
+            ctx.set(pos, "Expected at least {} characters.".format(self.lower))
+            raise Exception()
+        return newpos, res
 
 
 class Literal(Parser):
@@ -672,10 +697,11 @@ class Many(Parser):
             bs = Many(Char("b"), lower=1) # requires at least one "b"
 
     """
-    def __init__(self, parser, lower=0):
+    def __init__(self, parser, lower=0, upper=None):
         super(Many, self).__init__()
         self.add_child(parser)
         self.lower = lower
+        self.upper = upper
 
     def process(self, pos, data, ctx):
         orig = pos
@@ -690,6 +716,11 @@ class Many(Parser):
         if len(results) < self.lower:
             child = self.children[0]
             msg = "Expected at least {} of {}.".format(self.lower, child)
+            ctx.set(orig, msg)
+            raise Exception()
+
+        if self.upper is not None and len(results) > self.upper:
+            msg = "Expected at most {} of {}.".format(self.upper, child)
             ctx.set(orig, msg)
             raise Exception()
 
@@ -724,11 +755,13 @@ class Until(Parser):
             val = cs("abcdycc")           # returns ["a", "b", "c", "d"]
 
     """
-    def __init__(self, parser, predicate):
+    def __init__(self, parser, predicate, upper=None):
         super(Until, self).__init__()
         self.set_children([parser, predicate])
+        self.upper = upper
 
     def process(self, pos, data, ctx):
+        bound = self.upper
         parser, pred = self.children
         results = []
         while True:
@@ -740,6 +773,10 @@ class Until(Parser):
                     results.append(res)
                 except Exception:
                     break
+                if bound is not None and len(results) > bound:
+                    msg = "{} matched more than {}.".format(self.parser, bound)
+                    ctx.set(pos, msg)
+                    raise Exception()
             else:
                 break
         return pos, results
@@ -1173,7 +1210,15 @@ def skip_none(x):
     return [i for i in x if i is not None]
 
 
-EOF = EOF()
+class Space(Parser):
+    def process(self, pos, data, ctx):
+        if data[pos].isspace():
+            return pos + 1, data[pos]
+        ctx.set(pos, "Expected whitespace character.")
+        raise Exception()
+
+
+EOF = EOF() % "EOF"
 EOL = InSet("\n\r") % "EOL"
 LineEnd = Wrapper(EOL | EOF) % "LineEnd"
 EQ = Char("=")
@@ -1189,15 +1234,16 @@ RightParen = Char(")")
 Colon = Char(":")
 SemiColon = Char(";")
 Comma = Char(",")
-AnyChar = AnyChar()
-NonZeroDigit = InSet(set(string.digits) - set("0"))
-Digit = InSet(string.digits) % "Digit"
-Digits = String(string.digits) % "Digits"
-Letter = InSet(string.ascii_letters)
-Letters = String(string.ascii_letters)
-WSChar = InSet(set(string.whitespace) - set("\n\r")) % "Whitespace w/o EOL"
-WS = Many(InSet(string.whitespace) % "WS") % "Whitespace"
-Number = (Lift(_make_number) * Opt(Char("-"), "") * Digits * Opt(Char(".") + Digits)) % "Number"
+AnyChar = AnyChar() % "any character"
+NonZeroDigit = InSet(set(string.digits) - set("0")) % "non zero digit"
+Digit = InSet(string.digits) % "digit"
+Digits = String(string.digits) % "digits"
+Letter = InSet(string.ascii_letters) % "ASCII letter"
+Letters = String(string.ascii_letters) % "ASCII letters"
+Space = Space() % "any whitespace"
+WSChar = InSet(set(string.whitespace) - set("\n\r")) % "whitespace w/o EOL"
+WS = Many(Space)
+Number = (Lift(_make_number) * Opt(Char("-"), "") * Digits * Opt(Char(".") + Digits)) % "number"
 SingleQuotedString = Char("'") >> String(set(string.printable) - set("'"), "'") << Char("'")
 DoubleQuotedString = Char('"') >> String(set(string.printable) - set('"'), '"') << Char('"')
 QuotedString = Wrapper(DoubleQuotedString | SingleQuotedString) % "Quoted String"

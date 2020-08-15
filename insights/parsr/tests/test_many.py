@@ -52,3 +52,14 @@ def test_many1():
 
     ab = Many(a | b, lower=1)
     assert ab("aababb") == ["a", "a", "b", "a", "b", "b"]
+
+
+def test_many_upper():
+    a = Char("a")
+    b = Char("b")
+
+    ab = Many(a | b, upper=2)
+    assert len(ab("a")) == 1
+    assert len(ab("ab")) == 2
+    with pytest.raises(Exception):
+        ab("aba")
