@@ -120,16 +120,16 @@ def _debug_hook(func):
         if self._debug:
             line = ctx.line(pos) + 1
             col = ctx.col(pos) + 1
-            log.debug("Trying {} at line {} col {}".format(self, line, col))
+            log.debug("Trying {0} at line {1} col {2}".format(self, line, col))
         try:
             res = func(self, pos, data, ctx)
             if self._debug:
-                log.debug("Result: {}".format(res[1]))
+                log.debug("Result: {0}".format(res[1]))
             return res
         except:
             if self._debug:
                 ps = "-> ".join([str(p) for p in ctx.parser_stack])
-                log.debug("Failed: {}".format(ps))
+                log.debug("Failed: {0}".format(ps))
             raise
         finally:
             ctx.parser_stack.pop()
@@ -323,13 +323,13 @@ class Parser(with_metaclass(_ParserMeta, Node)):
 
         lineno = ctx.line(ctx.pos) + 1
         colno = ctx.col(ctx.pos) + 1
-        msg = "At line {} column {}:"
+        msg = "At line {0} column {1}:"
         print(msg.format(lineno, colno, ctx.lines), file=err)
         for parsers, msg in ctx.errors:
             names = " -> ".join([p.name for p in parsers if p.name])
             v = data[ctx.pos] or "EOF"
             print(names, file=err)
-            print("    {} Got {!r}.".format(msg, v), file=err)
+            print("    {0} Got {1!r}.".format(msg, v), file=err)
         err.seek(0)
         raise Exception(err.read())
 
@@ -361,16 +361,17 @@ class Char(Parser):
     def __init__(self, char):
         super(Char, self).__init__()
         self.char = char
-        self.name = "Char({!r})".format(self.char)
 
     def process(self, pos, data, ctx):
         if data[pos] == self.char:
             return (pos + 1, self.char)
-        msg = "Expected {!r}.".format(self.char)
+        msg = "Expected {0}.".format(self.char)
         ctx.set(pos, msg)
         raise Exception(msg)
 
     def __repr__(self):
+        if self.name is None:
+            return "Char({0})".format(self.char)
         return self.name
 
 
@@ -398,13 +399,13 @@ class InSet(Parser):
         c = data[pos]
         if c in self.values:
             return (pos + 1, c)
-        msg = "Expected {}.".format(self)
+        msg = "Expected {0}.".format(self)
         ctx.set(pos, msg)
         raise Exception(msg)
 
     def __repr__(self):
         if self.name is None:
-            return "InSet({!r})".format(sorted(self.values))
+            return "InSet({0!r})".format(sorted(self.values))
         return super(InSet, self).__repr__()
 
 
@@ -444,7 +445,7 @@ class String(Parser):
                 break
             p = data[pos]
         if len(results) < self.min_length:
-            msg = "Expected {} of {}.".format(self.min_length, sorted(self.chars))
+            msg = "Expected {0} of {1}.".format(self.min_length, sorted(self.chars))
             ctx.set(old, msg)
             raise Exception(msg)
         return pos, "".join(results)
@@ -491,7 +492,7 @@ class Literal(Parser):
         self.chars = chars if not ignore_case else chars.lower()
         self.value = value
         self.ignore_case = ignore_case
-        self.name = "Literal{!r}".format(self.chars)
+        self.name = "Literal{0!r}".format(self.chars)
 
     def process(self, pos, data, ctx):
         old = pos
@@ -500,7 +501,7 @@ class Literal(Parser):
                 if data[pos] == c:
                     pos += 1
                 else:
-                    msg = "Expected {!r}.".format(self.chars)
+                    msg = "Expected {0!r}.".format(self.chars)
                     ctx.set(old, msg)
                     raise Exception(msg)
             return pos, (self.chars if self.value is self._NULL else self.value)
@@ -511,7 +512,7 @@ class Literal(Parser):
                     result.append(data[pos])
                     pos += 1
                 else:
-                    msg = "Expected case insensitive {!r}.".format(self.chars)
+                    msg = "Expected case insensitive {0!r}.".format(self.chars)
                     ctx.set(old, msg)
                     raise Exception(msg)
             return pos, ("".join(result) if self.value is self._NULL else self.value)
@@ -693,7 +694,7 @@ class Many(Parser):
                 break
         if len(results) < self.lower:
             child = self.children[0]
-            msg = "Expected at least {} of {}.".format(self.lower, child)
+            msg = "Expected at least {0} of {1}.".format(self.lower, child)
             ctx.set(orig, msg)
             raise Exception()
 
@@ -701,7 +702,7 @@ class Many(Parser):
 
     def __repr__(self):
         if not self.name:
-            return "Many({}, lower={})".format(self.children[0], self.lower)
+            return "Many({0}, lower={1})".format(self.children[0], self.lower)
         return super(Many, self).__repr__()
 
 
@@ -805,7 +806,7 @@ class NotFollowedBy(Parser):
         except Exception:
             return new, res
         else:
-            msg = "{} can't follow {}".format(right, left)
+            msg = "{0} can't follow {1}".format(right, left)
             ctx.set(new, msg)
             raise Exception()
 
@@ -920,7 +921,7 @@ class Map(Parser):
 
     def __repr__(self):
         if not self.name:
-            return "Map({}({}))".format(self.func.__name__, self.children[0])
+            return "Map({0}({1}))".format(self.func.__name__, self.children[0])
         return super(Map, self).__repr__()
 
 
@@ -1159,7 +1160,7 @@ class EndTagName(Wrapper):
             e = expect.lower()
 
         if r != e:
-            msg = "Expected {!r}. Got {!r}.".format(expect, res)
+            msg = "Expected {0!r}. Got {1!r}.".format(expect, res)
             ctx.set(pos, msg)
             raise Exception(msg)
         return pos, res
