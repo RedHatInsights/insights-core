@@ -26,8 +26,8 @@ class XModUseBlkMq(Parser):
 
     Sample Content::
 
-        Y - for on
-        N - for off
+        Y
+
     """
 
     def parse_content(self, content):
@@ -40,7 +40,8 @@ class XModUseBlkMq(Parser):
         """
         Returns (bool or None): True for on, False for off, None for unknow case.
         """
-        return True if self.val == 'Y' else (False if self.val == 'N' else None)
+        return (True if self.val in ['Y', '1'] else (
+                            False if self.val in ['N', '0'] else None))
 
 
 @parser(Specs.dm_mod_use_blk_mq)
