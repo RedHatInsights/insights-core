@@ -28,6 +28,11 @@ class XModUseBlkMq(Parser):
 
         Y
 
+    Raises:
+        SkipException: When nothing need to parse.
+
+    Attributes:
+        val(str): Raw data of the content.
     """
 
     def parse_content(self, content):
@@ -38,7 +43,11 @@ class XModUseBlkMq(Parser):
     @property
     def is_on(self):
         """
-        Returns (bool): True for on, False for off.
+        Returns:
+            (bool): True for on, False for off.
+
+        Raises:
+            ParseException: When tell is_on for unknown cases.
         """
         if self.val in ['Y', '1']:
             return True
@@ -60,9 +69,6 @@ class DMModUseBlkMq(XModUseBlkMq):
         'Y'
         >>> dm_mod_use_blk_mq.is_on
         True
-
-    Raises:
-        SkipException: When contents are empty
     """
     pass
 
@@ -79,8 +85,5 @@ class SCSIModUseBlkMq(XModUseBlkMq):
         'N'
         >>> scsi_mod_use_blk_mq.is_on
         False
-
-    Raises:
-        SkipException: When contents are empty
     """
     pass
