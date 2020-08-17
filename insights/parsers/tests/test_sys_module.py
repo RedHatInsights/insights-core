@@ -1,6 +1,6 @@
 import doctest
 import pytest
-from insights.parsers import sys_module, SkipException
+from insights.parsers import sys_module, ParseException, SkipException
 from insights.parsers.sys_module import DMModUseBlkMq, SCSIModUseBlkMq
 from insights.tests import context_wrap
 
@@ -39,7 +39,6 @@ def test_XModUseBlkMq():
     assert scsi_mod_n.val == 'N'
 
     dm_mod_unknow = DMModUseBlkMq(context_wrap(SCSI_DM_MOD_USE_BLK_MQ_UNKNOW_CASE))
-    assert dm_mod_unknow.is_on is None
     assert dm_mod_unknow.val == 'unknow_case'
 
 
@@ -47,3 +46,8 @@ def test_class_exceptions():
     with pytest.raises(SkipException):
         dm_mod = DMModUseBlkMq(context_wrap(SCSI_DM_MOD_USE_BLK_MQ_EMPTY))
         assert dm_mod is None
+
+    with pytest.raises(ParseException) as e:
+        dm_mod_unknow = DMModUseBlkMq(context_wrap(SCSI_DM_MOD_USE_BLK_MQ_UNKNOW_CASE))
+        dm_mod_unknow.is_on
+    assert "Unknown value: unknow_case" in str(e)
