@@ -110,6 +110,10 @@ def split_kv_pairs(lines, comment_char="#", filter_string=None, split_on="=", us
     will be ignored. ::func:`get_active_lines` is called to strip comments and
     blank lines from the data.
 
+    .. note::
+        If there are two or more lines that have the same key, then we store the
+        values in a list.
+
     Parameters:
         lines (list of str): List of the strings to be split.
         comment_char (str): Char that when present in the line indicates all
@@ -147,18 +151,19 @@ def split_kv_pairs(lines, comment_char="#", filter_string=None, split_on="=", us
         # Comment line
         # Blank lines will also be removed
         keyword1 = value1   # Inline comments
+        keyword1 = value2   # Inline comments
         keyword2 = value2a=True, value2b=100M
         keyword3     # Key with no separator
         >>> split_kv_pairs(lines)
-        {'keyword2': 'value2a=True, value2b=100M', 'keyword1': 'value1'}
+        {'keyword2': 'value2a=True, value2b=100M', 'keyword1': ['value1', 'value2']}
         >>> split_kv_pairs(lines, comment_char='#')
-        {'keyword2': 'value2a=True, value2b=100M', 'keyword1': 'value1'}
+        {'keyword2': 'value2a=True, value2b=100M', 'keyword1': ['value1', 'value2']}
         >>> split_kv_pairs(lines, filter_string='keyword2')
         {'keyword2': 'value2a=True, value2b=100M'}
         >>> split_kv_pairs(lines, use_partition=True)
-        {'keyword3': '', 'keyword2': 'value2a=True, value2b=100M', 'keyword1': 'value1'}
+        {'keyword3': '', 'keyword2': 'value2a=True, value2b=100M', 'keyword1': ['value1', 'value2']}
         >>> split_kv_pairs(lines, use_partition=True, ordered=True)
-        OrderedDict([('keyword1', 'value1'), ('keyword2', 'value2a=True, value2b=100M'), ('keyword3', '')])
+        OrderedDict([('keyword1', ['value1', 'value2']), ('keyword2', 'value2a=True, value2b=100M'), ('keyword3', '')])
 
     """
     _lines = lines if comment_char is None else get_active_lines(lines, comment_char=comment_char)
@@ -166,13 +171,23 @@ def split_kv_pairs(lines, comment_char="#", filter_string=None, split_on="=", us
     kv_pairs = OrderedDict() if ordered else {}
 
     for line in _lines:
+        k, v = [None, None]
         if not use_partition:
             if split_on in line:
-                k, v = line.split(split_on, 1)
-                kv_pairs[k.strip()] = v.strip()
+                k, v = [i.strip() for i in line.split(split_on, 1)]
         else:
-            k, _, v = line.partition(split_on)
-            kv_pairs[k.strip()] = v.strip()
+            k, _, v = [i.strip() for i in line.partition(split_on)]
+
+        if k is not None:
+            if k not in kv_pairs:
+                kv_pairs[k] = v
+            else:
+                _v = kv_pairs[k]
+                _v = [_v] if not isinstance(_v, list) else _v
+                if v not in _v:
+                    _v.append(v)
+                    kv_pairs[k] = _v
+
     return kv_pairs
 
 

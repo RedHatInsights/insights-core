@@ -31,6 +31,16 @@ SPLIT_TEST_2 = """
   keyword3     @ Key with no separator
 """.strip()
 
+SPLIT_TEST_3 = """
+@ Comment line
+  keyword1: value1   @ Inline comments
+  keyword1: value2   @ Other line
+  keyword1: value2   @ Inline comments
+  keyword1: value3   @ Inline comments
+  keyword2 : value2a=True, value2b=100M
+""".strip()
+
+
 OFFSET_CONTENT_1 = """
   data 1 line
 data 2 line
@@ -96,6 +106,14 @@ def test_split_kv_pairs():
         'keyword1': 'value1',
         'keyword2': 'value2a=True, value2b=100M',
         'keyword3': ''
+    }
+
+    kv_pairs = split_kv_pairs(SPLIT_TEST_3.splitlines(), comment_char='@', split_on=':', use_partition=True)
+    assert len(kv_pairs) == 2
+    print(kv_pairs)
+    assert kv_pairs == {
+        'keyword1': ['value1', 'value2', 'value3'],
+        'keyword2': 'value2a=True, value2b=100M'
     }
 
 
