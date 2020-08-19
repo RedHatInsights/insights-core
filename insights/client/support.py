@@ -33,33 +33,14 @@ def _legacy_registration_check(pconn):
     if os.path.isfile(constants.unregistered_files[0]):
         with open(constants.unregistered_files[0]) as reg_file:
             local_record += ' Unregistered at ' + reg_file.readline()
-
-    api_reg_status = pconn.api_registration_check()
-    logger.debug('Registration status: %s', api_reg_status)
-    if api_reg_status is True:
-        api_record = 'Insights API confirms registration.'
-    elif api_reg_status is None:
-        api_record = 'Insights API says this machine is NOT registered.'
-        api_reg_status = False
-    else:
-        api_record = 'Insights API says this machine was unregistered at ' + api_reg_status
-        unreg_date = api_reg_status
-        api_reg_status = False
-
-    return {'messages': [local_record, api_record],
-            'status': api_reg_status,
-            'unreg_date': unreg_date}
+    logger.info(local_record)
+    return pconn.api_registration_check()
 
 
 def registration_check(pconn):
     if pconn.config.legacy_upload:
         return _legacy_registration_check(pconn)
-    status = pconn.api_registration_check()
-    if status:
-        write_registered_file()
-    else:
-        write_unregistered_file()
-    return status
+    return pconn.api_registration_check()
 
 
 class InsightsSupport(object):

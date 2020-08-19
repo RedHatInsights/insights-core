@@ -475,12 +475,11 @@ class InsightsClient(object):
     @_net
     def get_registration_status(self):
         """
-            returns (json):
-                {'messages': [dotfile message, api message],
-                 'status': (bool) registered = true; unregistered = false
-                 'unreg_date': Date the machine was unregistered | None}
+        Returns
+            True if registered
+            False if unregistered
         """
-        return client.get_registration_status(self.config, self.connection)
+        return self.connection.api_registration_check()
 
     @_net
     def set_display_name(self, display_name):
@@ -511,7 +510,7 @@ class InsightsClient(object):
             logger.debug('Cached branch_info file does not exist.')
 
     def get_machine_id(self):
-        return client.get_machine_id()
+        return generate_machine_id()
 
     def clear_local_registration(self):
         '''

@@ -680,11 +680,8 @@ class InsightsConnection(object):
         Check registration status through API
 
         Returns:
-            unreg_date if unregistered
             True if registered
-            None is unregistered
-
-            TODO: FIX THIS
+            False if unregistered
         '''
         logger.debug('Checking registration status...')
         machine_id = generate_machine_id()
@@ -695,7 +692,8 @@ class InsightsConnection(object):
             if res.status_code != requests.codes.not_found:
                 # non-404. consider this unreachable
                 raise RuntimeError('Could not reach the Insights API.')
-            return None
+            logger.info('Insights API says this machine is NOT registered.')
+            return False
 
         try:
             sysdata = json.loads(res.content)
@@ -705,15 +703,19 @@ class InsightsConnection(object):
             raise RuntimeError('Could not reach the Insights API.')
 
         # check the 'unregistered_at' key of the response
-        unreg_status = sysdata.get('unregistered_at', None)
+        unreg_date = sysdata.get('unregistered_at', None)
         # set the global account number
         self.config.account_number = sysdata.get('account_number', 'undefined')
 
-        if unreg_status:
+        if unreg_date:
             # machine has been unregistered, this is a timestamp
-            return unreg_status
+            logger.info('Insights API says this machine was unregistered at %s', unreg_date)
+            write_unregistered_file(date=unreg_date)
+            return False
         else:
             # unregistered_at = null, means this machine IS registered
+            logger.info('Insights API confirms registration.')
+            write_registered_file()
             return True
 
     def _fetch_system_by_machine_id(self):
@@ -758,11 +760,13 @@ class InsightsConnection(object):
         logger.debug('Checking registration status...')
         results = self._fetch_system_by_machine_id()
         if not results:
+            write_unregistered_file()
             return False
 
         logger.debug('System found.')
         logger.debug('Machine ID: %s', results[0]['insights_id'])
         logger.debug('Inventory ID: %s', results[0]['id'])
+        write_registered_file()
         return True
 
     # -LEGACY-
@@ -810,7 +814,8 @@ class InsightsConnection(object):
         logger.debug("API: Create system")
         system = self.create_system(new_machine_id=False)
         if system is None:
-            return ('Could not reach the Insights service to register.', '', '', '')
+            # does requests.post ever return None?
+            raise RuntimeError('The Insights API could not be reached.')
 
         # If we get a 409, we know we need to generate a new machine-id
         if system.status_code == 409:
@@ -824,25 +829,17 @@ class InsightsConnection(object):
         if self.config.group is not None:
             self.do_group()
 
-        # Display registration success messasge to STDOUT and logs
-        if system.status_code == 201:
-            try:
-                system_json = system.json()
-                machine_id = system_json["machine_id"]
-                account_number = system_json["account_number"]
-                logger.info("You successfully registered %s to account %s." % (machine_id, account_number))
-            except:
-                logger.debug('Received invalid JSON on system registration.')
-                logger.debug('API still indicates valid registration with 201 status code.')
-                logger.debug(system)
-                logger.debug(system.json())
-
-        if self.config.group is not None:
-            return (message, client_hostname, self.config.group, self.config.display_name)
-        elif self.config.display_name is not None:
-            return (message, client_hostname, "None", self.config.display_name)
+        if self.config.group and self.config.display_name:
+            logger.info('Successfully registered host %s as %s in group %s',
+                        hostname, display_name, group)
+        elif self.config.group and not self.config.display_name:
+            logger.info('Successfully registered host %s in group %s',
+                        hostname, group)
         else:
-            return (message, client_hostname, "None", "")
+            logger.info('Successfully registered host %s', hostname)
+
+        if message:
+            logger.info(message)
 
     # -LEGACY-
     def _legacy_upload_archive(self, data_collected, duration):

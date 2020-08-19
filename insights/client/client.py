@@ -99,28 +99,12 @@ def set_up_logging(config):
 
 
 # -LEGACY-
-def register(config, pconn):
-    """
-    Do registration using basic auth
-    """
-    username = config.username
-    password = config.password
-    authmethod = config.authmethod
-    auto_config = config.auto_config
-    if not username and not password and not auto_config and authmethod == 'BASIC':
-        logger.debug('Username and password must be defined in configuration file with BASIC authentication method.')
-        return False
-    return pconn.register()
-
-
-# -LEGACY-
 def _legacy_handle_registration(config, pconn):
     '''
     Handle the registration process
     Returns:
         True - machine is registered
         False - machine is unregistered
-        None - could not reach the API
     '''
     logger.debug('Trying registration.')
     # force-reregister -- remove machine-id files and registration files
@@ -134,50 +118,26 @@ def _legacy_handle_registration(config, pconn):
     logger.debug('Machine-id: %s', generate_machine_id(new=config.reregister))
 
     # check registration with API
-    check = get_registration_status(config, pconn)
+    check = registration_check(pconn)
 
-    for m in check['messages']:
-        logger.debug(m)
-
-    if check['status']:
-        # registered in API, resync files
+    if check:
+        # registered in API
         if config.register:
             logger.info('This host has already been registered.')
-        write_registered_file()
         return True
 
     if config.register:
         # register if specified
-        message, hostname, group, display_name = register(config, pconn)
-        if not hostname:
-            # API could not be reached, run connection test and exit
-            logger.error(message)
-            return None
-        if config.display_name is None and config.group is None:
-            logger.info('Successfully registered host %s', hostname)
-        elif config.display_name is None:
-            logger.info('Successfully registered host %s in group %s',
-                        hostname, group)
-        else:
-            logger.info('Successfully registered host %s as %s in group %s',
-                        hostname, display_name, group)
-        if message:
-            logger.info(message)
+        if config.authmethod == 'BASIC' and not (config.username and config.password):
+            logger.info('Username and password must be defined in configuration file with BASIC authentication method.')
+            return False
+        pconn.register()
         write_registered_file()
         return True
+
     else:
-        # unregistered in API, resync files
-        write_unregistered_file(date=check['unreg_date'])
-        # print messaging and exit
-        if check['unreg_date']:
-            # registered and then unregistered
-            logger.info('This machine has been unregistered. '
-                        'Use --register if you would like to '
-                        're-register this machine.')
-        else:
-            # not yet registered
-            logger.info('This machine has not yet been registered.'
-                        'Use --register to register this machine.')
+        logger.info('This machine has not been registered.'
+                    'Use --register to register this machine.')
         return False
 
 
@@ -187,17 +147,6 @@ def handle_registration(config, pconn):
     '''
     if config.legacy_upload:
         return _legacy_handle_registration(config, pconn)
-
-
-def get_registration_status(config, pconn):
-    '''
-        Handle the registration process
-        Returns:
-            True - machine is registered
-            False - machine is unregistered
-            None - could not reach the API
-    '''
-    return registration_check(pconn)
 
 
 # -LEGACY-
@@ -211,10 +160,7 @@ def _legacy_handle_unregistration(config, pconn):
         delete_cache_files()
 
     try:
-        check = get_registration_status(config, pconn)
-
-        for m in check['messages']:
-            logger.debug(m)
+        check = registration_check(pconn)
 
     except RuntimeError as e:
         if config.force:
@@ -222,7 +168,7 @@ def _legacy_handle_unregistration(config, pconn):
             return True
         raise e
 
-    if check['status']:
+    if check:
         unreg = pconn.unregister()
     else:
         unreg = True
@@ -248,10 +194,6 @@ def handle_unregistration(config, pconn):
         write_unregistered_file()
         delete_cache_files()
     return unreg
-
-
-def get_machine_id():
-    return generate_machine_id()
 
 
 def update_rules(config, pconn):
