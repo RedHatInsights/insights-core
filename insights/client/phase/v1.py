@@ -179,12 +179,15 @@ def post_update(client, config):
             else:
                 sys.exit(constants.sig_kill_bad)
 
-        reg = client.register()
-        if reg is None:
+        try:
+            reg = client.register()
+        except RuntimeError as e:
             # API unreachable
+            logger.error(e)
             logger.info('Could not connect to the Insights API. Run insights-client --test-connection for more information.')
             sys.exit(constants.sig_kill_bad)
-        elif reg is False:
+
+        if reg is False:
             # unregistered
             sys.exit(constants.sig_kill_bad)
         if config.register:

@@ -139,10 +139,6 @@ def _legacy_handle_registration(config, pconn):
     for m in check['messages']:
         logger.debug(m)
 
-    if check['unreachable']:
-        # Run connection test and exit
-        return None
-
     if check['status']:
         # registered in API, resync files
         if config.register:
@@ -214,17 +210,17 @@ def _legacy_handle_unregistration(config, pconn):
         get_scheduler(config).remove_scheduling()
         delete_cache_files()
 
-    check = get_registration_status(config, pconn)
+    try:
+        check = get_registration_status(config, pconn)
 
-    for m in check['messages']:
-        logger.debug(m)
+        for m in check['messages']:
+            logger.debug(m)
 
-    if check['unreachable']:
-        # Run connection test and exit
+    except RuntimeError as e:
         if config.force:
             __cleanup_local_files()
             return True
-        return None
+        raise e
 
     if check['status']:
         unreg = pconn.unregister()
@@ -242,7 +238,6 @@ def handle_unregistration(config, pconn):
     Returns:
         True - machine was successfully unregistered
         False - machine could not be unregistered
-        None - could not reach the API
     """
     if config.legacy_upload:
         return _legacy_handle_unregistration(config, pconn)

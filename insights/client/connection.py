@@ -678,35 +678,43 @@ class InsightsConnection(object):
     def _legacy_api_registration_check(self):
         '''
         Check registration status through API
+
+        Returns:
+            unreg_date if unregistered
+            True if registered
+            None is unregistered
+
+            TODO: FIX THIS
         '''
         logger.debug('Checking registration status...')
         machine_id = generate_machine_id()
         url = self.api_url + '/v1/systems/' + machine_id
         res = self.get(url)
 
-        # had to do a quick bugfix changing this around,
-        #   which makes the None-False-True dichotomy seem weird
-        #   TODO: reconsider what gets returned, probably this:
-        #       True for registered
-        #       False for unregistered
-        #       None for system 404
+        if not res:
+            if res.status_code != requests.codes.not_found:
+                # non-404. consider this unreachable
+                raise RuntimeError('Could not reach the Insights API.')
+            return None
+
         try:
-            # check the 'unregistered_at' key of the response
-            unreg_status = json.loads(res.content).get('unregistered_at', 'undefined')
-            # set the global account number
-            self.config.account_number = json.loads(res.content).get('account_number', 'undefined')
+            sysdata = json.loads(res.content)
         except ValueError:
             # bad response, no json object
-            return False
-        if unreg_status == 'undefined':
-            # key not found, machine not yet registered
-            return None
-        elif unreg_status is None:
-            # unregistered_at = null, means this machine IS registered
-            return True
-        else:
+            # so behavior doesn't change too much, consider this "unreachable"
+            raise RuntimeError('Could not reach the Insights API.')
+
+        # check the 'unregistered_at' key of the response
+        unreg_status = sysdata.get('unregistered_at', None)
+        # set the global account number
+        self.config.account_number = sysdata.get('account_number', 'undefined')
+
+        if unreg_status:
             # machine has been unregistered, this is a timestamp
             return unreg_status
+        else:
+            # unregistered_at = null, means this machine IS registered
+            return True
 
     def _fetch_system_by_machine_id(self):
         '''
