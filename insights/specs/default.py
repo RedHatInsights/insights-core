@@ -216,6 +216,8 @@ class DefaultSpecs(Specs):
     current_clocksource = simple_file("/sys/devices/system/clocksource/clocksource0/current_clocksource")
     date = simple_command("/bin/date")
     date_utc = simple_command("/bin/date --utc")
+    designate_conf = first_file(["/var/lib/config-data/puppet-generated/designate/etc/designate/designate.conf",
+                                 "/etc/designate/designate.conf"])
     df__al = simple_command("/bin/df -al")
     df__alP = simple_command("/bin/df -alP")
     df__li = simple_command("/bin/df -li")
@@ -336,7 +338,6 @@ class DefaultSpecs(Specs):
     ifcfg_static_route = glob_file("/etc/sysconfig/network-scripts/route-*")
     imagemagick_policy = glob_file(["/etc/ImageMagick/policy.xml", "/usr/lib*/ImageMagick-6.5.4/config/policy.xml"])
     initctl_lst = simple_command("/sbin/initctl --system list")
-    initscript = glob_file("/etc/rc.d/init.d/*")
     init_process_cgroup = simple_file("/proc/1/cgroup")
     interrupts = simple_file("/proc/interrupts")
     ip_addr = simple_command("/sbin/ip addr")
@@ -376,8 +377,8 @@ class DefaultSpecs(Specs):
     ls_disk = simple_command("/bin/ls -lanR /dev/disk")
     etc_and_sub_dirs = sorted(["/etc", "/etc/pki/tls/private", "/etc/pki/tls/certs",
         "/etc/pki/ovirt-vmconsole", "/etc/nova/migration", "/etc/sysconfig",
-        "/etc/cloud/cloud.cfg.d"])
-    ls_etc = simple_command("ls -lan {0}".format(' '.join(etc_and_sub_dirs)))
+        "/etc/cloud/cloud.cfg.d", "/etc/rc.d/init.d"])
+    ls_etc = simple_command("/bin/ls -lan {0}".format(' '.join(etc_and_sub_dirs)))
     ls_lib_firmware = simple_command("/bin/ls -lanR /lib/firmware")
     ls_ocp_cni_openshift_sdn = simple_command("/bin/ls -l /var/lib/cni/networks/openshift-sdn")
     ls_origin_local_volumes_pods = simple_command("/bin/ls -l /var/lib/origin/openshift.local.volumes/pods")
@@ -430,6 +431,7 @@ class DefaultSpecs(Specs):
                             "/etc/opt/rh/rh-mongodb26/mongod.conf"
                             ])
     mount = simple_command("/bin/mount")
+    mounts = simple_file("/proc/mounts")
     mssql_conf = simple_file("/var/opt/mssql/mssql.conf")
     multicast_querier = simple_command("/usr/bin/find /sys/devices/virtual/net/ -name multicast_querier -print -exec cat {} \;")
     multipath_conf = simple_file("/etc/multipath.conf")
@@ -596,7 +598,7 @@ class DefaultSpecs(Specs):
     software_collections_list = simple_command('/usr/bin/scl --list')
     ss = simple_command("/usr/sbin/ss -tupna")
     ssh_config = simple_file("/etc/ssh/ssh_config")
-    ssh_config_d = glob_file(r"/etc/ssh/ssh_config.d/*")
+    ssh_config_d = glob_file(r"/etc/ssh/ssh_config.d/*.conf")
     ssh_foreman_proxy_config = simple_file("/usr/share/foreman-proxy/.ssh/ssh_config")
     sshd_config = simple_file("/etc/ssh/sshd_config")
     sshd_config_perms = simple_command("/bin/ls -l /etc/ssh/sshd_config")
@@ -667,6 +669,7 @@ class DefaultSpecs(Specs):
     xinetd_conf = glob_file(["/etc/xinetd.conf", "/etc/xinetd.d/*"])
     yum_conf = simple_file("/etc/yum.conf")
     yum_list_available = simple_command("yum -C --noplugins list available")
+    yum_log = simple_file("/var/log/yum.log")
     yum_repolist = simple_command("/usr/bin/yum -C --noplugins repolist")
     yum_repos_d = glob_file("/etc/yum.repos.d/*.repo")
     zipl_conf = simple_file("/etc/zipl.conf")

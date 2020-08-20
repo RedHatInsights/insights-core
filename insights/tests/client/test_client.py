@@ -386,7 +386,9 @@ def test_unregister_upload(handle_unregistration):
 
 
 @patch('insights.client.os.path.exists', return_value=True)
+@patch('insights.client.connection.InsightsConnection.upload_archive', Mock(return_value=Mock(status_code=200)))
 @patch('insights.client.client._legacy_upload')
+@patch('insights.client.client.write_to_disk', Mock())
 def test_legacy_upload(_legacy_upload, path_exists):
     '''
     _legacy_upload called when legacy upload
@@ -398,9 +400,10 @@ def test_legacy_upload(_legacy_upload, path_exists):
 
 
 @patch('insights.client.os.path.exists', return_value=True)
-@patch('insights.client.connection.InsightsConnection.upload_archive', return_value=Mock(status_code=200))
+@patch('insights.client.connection.InsightsConnection.upload_archive', Mock(return_value=Mock(status_code=200)))
 @patch('insights.client.client._legacy_upload')
-def test_platform_upload(_legacy_upload, _, path_exists):
+@patch('insights.client.client.write_to_disk', Mock())
+def test_platform_upload(_legacy_upload, path_exists):
     '''
     _legacy_upload not called when platform upload
     '''

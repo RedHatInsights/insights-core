@@ -220,6 +220,7 @@ class SosSpecs(Specs):
     sssd_logs = glob_file("var/log/sssd/*.log")
     samba_logs = glob_file("var/log/samba/log.*")
     ssh_foreman_config = simple_file("/usr/share/foreman/.ssh/ssh_config")
+    subscription_manager_id = simple_file("/sos_commands/subscription_manager/subscription-manager_identity")
     subscription_manager_list_consumed = first_file([
         'sos_commands/yum/subscription-manager_list_--consumed',
         'sos_commands/subscription_manager/subscription-manager_list_--consumed',
@@ -262,3 +263,5 @@ class SosSpecs(Specs):
     xfs_info = glob_file("sos_commands/xfs/xfs_info*")
     yum_log = simple_file("/var/log/yum.log")
     yum_repolist = simple_file("sos_commands/yum/yum_-C_repolist")
+    sendq_socket_buffer = simple_file("proc/sys/net/ipv4/tcp_wmem")
+    recvq_socket_buffer = simple_file("proc/sys/net/ipv4/tcp_rmem")
