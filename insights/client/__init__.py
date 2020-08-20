@@ -556,7 +556,7 @@ class InsightsClient(object):
             if len(system) == 1:
                 try:
                     id = system[0]["id"]
-                    logger.info("Click the URL below to view details on cloud.redhat.com:")
+                    logger.info("View details about this system on cloud.redhat.com:")
                     logger.info(
                         "https://cloud.redhat.com/insights/inventory/{0}".format(id)
                     )
