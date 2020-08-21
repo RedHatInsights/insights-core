@@ -189,7 +189,7 @@ class InsightsArchiveSpecs(Specs):
     sestatus = simple_file("insights_commands/sestatus_-b")
     smbstatus_p = simple_file("insights_commands/smbstatus_-p")
     software_collections_list = simple_file('insights_commands/scl_--list')
-    spamassassin_channels = simple_file('insights_commands/grep_s_CHANNELURL_.etc.mail.spamassassin.channel.d._.conf')
+    spamassassin_channels = simple_file('insights_commands/grep_-r_s_CHANNELURL_.etc.mail.spamassassin.channel.d')
     ss = simple_file("insights_commands/ss_-tupna")
     sshd_config_perms = simple_file("insights_commands/ls_-l_.etc.ssh.sshd_config")
     subscription_manager_id = simple_file("insights_commands/subscription-manager_identity")

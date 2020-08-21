@@ -1,5 +1,5 @@
 """
-SpamassassinChannels - command ``/bin/grep '^\\s*CHANNELURL=' /etc/mail/spamassassin/channel.d/*.conf``
+SpamassassinChannels - command ``/bin/grep -r '^\\s*CHANNELURL=' /etc/mail/spamassassin/channel.d``
 =========================================================================================================
 """
 import re
@@ -13,7 +13,7 @@ from insights.specs import Specs
 @parser(Specs.spamassassin_channels)
 class SpamassassinChannels(CommandParser):
     """
-    Class for parsing the ``/bin/grep '^\\s*CHANNELURL=' /etc/mail/spamassassin/channel.d/*.conf``
+    Class for parsing the ``/bin/grep -r '^\\s*CHANNELURL=' /etc/mail/spamassassin/channel.d``
     command.
 
     Attributes:
