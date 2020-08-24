@@ -94,7 +94,8 @@ DEFAULT_OPTS = {
         'default': False,
         'opt': ['--check-results'],
         'help': "Check for insights results",
-        'action': "store_true"
+        'action': "store_true",
+        'group': 'actions'
     },
     'cmd_timeout': {
         # non-CLI
@@ -108,7 +109,8 @@ DEFAULT_OPTS = {
         'default': False,
         'opt': ['--compliance'],
         'help': 'Scan the system using openscap and upload the report',
-        'action': 'store_true'
+        'action': 'store_true',
+        'group': 'actions'
     },
     'compressor': {
         'default': 'gz',
@@ -140,7 +142,8 @@ DEFAULT_OPTS = {
         'default': False,
         'opt': ['--disable-schedule'],
         'help': 'Disable automatic scheduling',
-        'action': 'store_true'
+        'action': 'store_true',
+        'group': 'actions'
     },
     'display_name': {
         'default': None,
@@ -153,6 +156,7 @@ DEFAULT_OPTS = {
         'opt': ['--enable-schedule'],
         'help': 'Enable automatic scheduling for collection to run',
         'action': 'store_true',
+        'group': 'actions'
     },
     'gpg': {
         'default': True,
@@ -197,7 +201,8 @@ DEFAULT_OPTS = {
         'default': False,
         'opt': ['--list-specs'],
         'help': 'Show insights-client collection specs',
-        'action': 'store_true'
+        'action': 'store_true',
+        'group': 'actions'
     },
     'logging_file': {
         'default': constants.default_log_file,
@@ -271,7 +276,8 @@ DEFAULT_OPTS = {
         'default': False,
         'opt': ['--register'],
         'help': 'Register system to the Red Hat Insights Service',
-        'action': 'store_true'
+        'action': 'store_true',
+        'group': 'actions',
     },
     'remove_file': {
         # non-CLI
@@ -310,7 +316,8 @@ DEFAULT_OPTS = {
         'default': False,
         'opt': ['--show-results'],
         'help': "Show insights about this host",
-        'action': "store_true"
+        'action': "store_true",
+        'group': 'actions'
     },
     'silent': {
         'default': False,
@@ -339,7 +346,8 @@ DEFAULT_OPTS = {
         'default': False,
         'opt': ['--test-connection'],
         'help': 'Test connectivity to Red Hat',
-        'action': 'store_true'
+        'action': 'store_true',
+        'group': 'debug'
     },
     'to_json': {
         'default': False,
@@ -351,7 +359,8 @@ DEFAULT_OPTS = {
         'default': False,
         'opt': ['--unregister'],
         'help': 'Unregister system from the Red Hat Insights Service',
-        'action': 'store_true'
+        'action': 'store_true',
+        'group': 'actions'
     },
     'upload_url': {
         # non-CLI
@@ -379,14 +388,14 @@ DEFAULT_OPTS = {
         'default': False,
         'opt': ['--validate'],
         'help': 'Validate remove.conf and tags.yaml',
-        'action': 'store_true'
+        'action': 'store_true',
+        'group': 'actions'
     },
     'verbose': {
         'default': False,
         'opt': ['--verbose'],
         'help': "DEBUG output to stdout",
-        'action': "store_true",
-        'group': 'debug'
+        'action': "store_true"
     },
     'version': {
         'default': False,
@@ -394,9 +403,6 @@ DEFAULT_OPTS = {
         'help': "Display version",
         'action': "store_true"
     },
-
-    # platform options
-    # hide help messages with SUPPRESS until we're ready to make them public
     'legacy_upload': {
         # True: upload to insights classic API
         # False: upload to insights platform API
@@ -407,14 +413,13 @@ DEFAULT_OPTS = {
         'opt': ['--payload'],
         'help': 'Use the Insights Client to upload an archive',
         'action': 'store',
-        'group': 'platform'
+        'group': 'actions'
     },
     'content_type': {
         'default': None,
         'opt': ['--content-type'],
         'help': 'Content type of the archive specified with --payload',
-        'action': 'store',
-        'group': 'platform'
+        'action': 'store'
     },
     'diagnosis': {
         'default': None,
@@ -422,7 +427,7 @@ DEFAULT_OPTS = {
         'help': 'Retrieve a diagnosis for this system',
         'const': True,
         'nargs': '?',
-        'group': 'platform'
+        'group': 'actions'
     }
 }
 
@@ -546,23 +551,23 @@ class InsightsConfig(object):
             self._update_dict(self._cli_opts)
             return
         parser = argparse.ArgumentParser()
-        debug_grp = parser.add_argument_group('Debug options')
-        platf_grp = parser.add_argument_group('Platform options')
+        arg_groups = {
+            "actions": parser.add_argument_group("actions"),
+            "debug": parser.add_argument_group("optional debug arguments")
+        }
         cli_options = dict((k, v) for k, v in DEFAULT_OPTS.items() if (
                        'opt' in v))
         for _, o in cli_options.items():
-            group = o.pop('group', None)
-            if group == 'debug':
-                g = debug_grp
-            elif group == 'platform':
-                g = platf_grp
+            group_name = o.pop('group', None)
+            if group_name is None:
+                group = parser
             else:
-                g = parser
+                group = arg_groups[group_name]
             optnames = o.pop('opt')
             # use argparse.SUPPRESS as CLI defaults so it won't parse
             #  options that weren't specified
             o['default'] = argparse.SUPPRESS
-            g.add_argument(*optnames, **o)
+            group.add_argument(*optnames, **o)
 
         options = parser.parse_args()
 
