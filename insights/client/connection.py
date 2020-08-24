@@ -35,6 +35,7 @@ from insights.core.context import Context
 from insights.parsers.os_release import OsRelease
 from insights.parsers.redhat_release import RedhatRelease
 from insights.util.canonical_facts import get_canonical_facts
+from insights_client import constants as insights_client_constants
 
 warnings.simplefilter('ignore')
 APP_NAME = constants.app_name
@@ -181,10 +182,7 @@ class InsightsConnection(object):
         else:
             core_version = "Core %s" % package_info["VERSION"]
 
-        client_version = "insights-client"
-        pkg = pkg_resources.working_set.find(pkg_resources.Requirement.parse(client_version))
-        if pkg is not None:
-            client_version = "%s/%s" % (pkg.project_name, pkg.version)
+        client_version = "insights-client/{0}".format(insights_client_constants.InsightsConstants.version)
 
         if os.path.isfile(constants.ppidfile):
             with open(constants.ppidfile, 'r') as f:
