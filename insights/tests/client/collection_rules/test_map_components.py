@@ -102,7 +102,9 @@ def test_get_component_by_symbolic_name():
         'sap_host_profile',
         'sched_rt_runtime_us',
         'libvirtd_qemu_log',
-        'mlx4_port'
+        'mlx4_port',
+        'dm_mod_use_blk_mq',
+        'scsi_mod_use_blk_mq'
     ]
 
     # first, make sure our list is proper and one of these
