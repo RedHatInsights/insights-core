@@ -861,13 +861,6 @@ class SOSCleaner(object):
             return hostname, domainname
 
         except IOError as e:  # the 'hostname' file doesn't exist or isn't readable for some reason
-            self.logger.warning("Unable to determine system hostname!!!")
-            self.logger.warning(
-                "Automatic Hostname Data Obfuscation Will Not Occur!!!")
-            self.logger.warning(
-                "To Remedy This Situation please enable the 'general' plugin when running sosreport")
-            self.logger.warning(
-                "and/or be sure the 'hostname' symlink exists in the root directory of you sosreport")
             if not self.quiet:  # pragma: no cover
                 self.logger.exception(e)
 
