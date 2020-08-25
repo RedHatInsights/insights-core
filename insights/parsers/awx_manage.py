@@ -4,17 +4,17 @@ AwxManage - commands ``awx-manage``
 
 Parsers contains in this module are:
 
-AnsibleTowerLicense - command ``awx-manage check_license``
-----------------------------------------------------------
+AnsibleTowerLicenseType - command ``awx-manage check_license``
+--------------------------------------------------------------
 """
 
-from insights import JSONParser, parser
+from insights import JSONParser, parser, CommandParser
 from insights.parsers import SkipException, ParseException
 from insights.specs import Specs
 
 
 @parser(Specs.awx_manage_check_license)
-class AnsibleTowerLicense(JSONParser):
+class AnsibleTowerLicenseType(CommandParser, JSONParser):
     """
     Parses the output of command  ``awx-manage check_license``
 
@@ -27,7 +27,7 @@ class AnsibleTowerLicense(JSONParser):
 
     Examples:
     >>> type(awx_license)
-    <class 'insights.parsers.awx_manage.AnsibleTowerLicense'>
+    <class 'insights.parsers.awx_manage.AnsibleTowerLicenseType'>
     >>> awx_license.type == "enterprise"
     True
     """
