@@ -93,7 +93,7 @@ DEFAULT_OPTS = {
     'check_results': {
         'default': False,
         'opt': ['--check-results'],
-        'help': "Check for insights results",
+        'help': argparse.SUPPRESS,
         'action': "store_true",
         'group': 'actions'
     },
