@@ -708,6 +708,8 @@
                 "FullQualifiedHostname",
                 "Hostname",
                 "InstanceName",
+                "LOG Q0I=> NiIRead: P=<ip>:<port>:; L=<ip>:<port>:: recv",
+                "LOG Q0I=> NiPConnect2: <ip>:<port>: connect",
                 "SID",
                 "SapVersionInfo",
                 "SystemNumber"
@@ -1817,6 +1819,11 @@
                 "We recommend to increase the entry cache size nsslapd-cachememsize"
             ],
             "symbolic_name": "dirsrv_errors"
+        },
+        {
+            "file": "/sys/module/dm_mod/parameters/use_blk_mq",
+            "pattern": [],
+            "symbolic_name": "dm_mod_use_blk_mq"
         },
         {
             "file": "/var/log/dmesg",
@@ -3070,6 +3077,11 @@
             "symbolic_name": "scsi"
         },
         {
+            "file": "/sys/module/scsi_mod/parameters/use_blk_mq",
+            "pattern": [],
+            "symbolic_name": "scsi_mod_use_blk_mq"
+        },
+        {
             "file": "/proc/net/sctp/assocs",
             "pattern": [],
             "symbolic_name": "sctp_asc"
@@ -3576,6 +3588,13 @@
             "symbolic_name": "gnocchi_conf"
         },
         {
+            "file": "/etc/named.conf",
+            "pattern": [
+                "include"
+            ],
+            "symbolic_name": "named_conf"
+        },
+        {
             "file": "/etc/neutron/neutron.conf",
             "pattern": [
                 "[",
@@ -3955,6 +3974,13 @@
             "glob": "/etc/yum.repos.d/*.repo",
             "symbolic_name": "yum_repos_d",
             "pattern": []
+        },
+        {
+            "glob": "/etc/ssh/ssh_config.d/*.conf",
+            "symbolic_name": "ssh_config_d",
+            "pattern": [
+                "Include"
+            ]
         }
     ],
     "meta_specs": {
@@ -3977,5 +4003,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2020-08-06T14:32:35.711025"
+    "version": "2020-08-12T15:22:22.060797"
 }
