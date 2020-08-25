@@ -62,15 +62,13 @@ class InsightsClient(object):
             write_to_disk(constants.ppidfile, content=get_parent_process())
         # setup insights connection placeholder
         # used for requests
-        self.session = None
         self.connection = None
 
     def _net(func):
         def _init_connection(self, *args, **kwargs):
             # setup a request session
-            if not self.config.offline and not self.session:
+            if not self.config.offline and not self.connection:
                 self.connection = client.get_connection(self.config)
-                self.session = self.connection.session
             return func(self, *args, **kwargs)
         return _init_connection
 
@@ -108,7 +106,7 @@ class InsightsClient(object):
         else:
             url = self.connection.base_url + constants.module_router_path
         logger.log(NETWORK, "GET %s", url)
-        response = self.session.get(url, timeout=self.config.http_timeout)
+        response = self.connection.get(url)
         if response.status_code == 200:
             return response.json()["url"]
         else:
@@ -196,10 +194,10 @@ class InsightsClient(object):
             if current_etag and not force:
                 logger.debug('Requesting new file with etag %s', current_etag)
                 etag_headers = {'If-None-Match': current_etag}
-                response = self.session.get(url, headers=etag_headers, timeout=self.config.http_timeout)
+                response = self.connection.get(url, headers=etag_headers)
             else:
                 logger.debug('Found no etag or forcing fetch')
-                response = self.session.get(url, timeout=self.config.http_timeout)
+                response = self.connection.get(url)
         except ConnectionError as e:
             logger.error(e)
             logger.error('The Insights API could not be reached.')
@@ -386,10 +384,9 @@ class InsightsClient(object):
     @_net
     def register(self):
         """
-            returns (bool | None):
+            returns:
                 True - machine is registered
                 False - machine is unregistered
-                None - could not reach the API
         """
         return client.handle_registration(self.config, self.connection)
 
@@ -478,13 +475,11 @@ class InsightsClient(object):
     @_net
     def get_registration_status(self):
         """
-            returns (json):
-                {'messages': [dotfile message, api message],
-                 'status': (bool) registered = true; unregistered = false
-                 'unreg_date': Date the machine was unregistered | None,
-                 'unreachable': API could not be reached}
+        Returns
+            True if registered
+            False if unregistered
         """
-        return client.get_registration_status(self.config, self.connection)
+        return self.connection.api_registration_check()
 
     @_net
     def set_display_name(self, display_name):
@@ -515,7 +510,7 @@ class InsightsClient(object):
             logger.debug('Cached branch_info file does not exist.')
 
     def get_machine_id(self):
-        return client.get_machine_id()
+        return generate_machine_id()
 
     def clear_local_registration(self):
         '''

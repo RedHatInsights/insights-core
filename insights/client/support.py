@@ -24,7 +24,6 @@ logger = logging.getLogger(__name__)
 def _legacy_registration_check(pconn):
     # check local registration record
     unreg_date = None
-    unreachable = False
     if os.path.isfile(constants.registered_files[0]):
         local_record = 'System is registered locally via .registered file.'
         with open(constants.registered_files[0]) as reg_file:
@@ -34,38 +33,14 @@ def _legacy_registration_check(pconn):
     if os.path.isfile(constants.unregistered_files[0]):
         with open(constants.unregistered_files[0]) as reg_file:
             local_record += ' Unregistered at ' + reg_file.readline()
-
-    api_reg_status = pconn.api_registration_check()
-    logger.debug('Registration status: %s', api_reg_status)
-    if type(api_reg_status) is bool:
-        if api_reg_status:
-            api_record = 'Insights API confirms registration.'
-        else:
-            api_record = 'Insights API could not be reached to confirm registration status.'
-            unreachable = True
-    elif api_reg_status is None:
-        api_record = 'Insights API says this machine is NOT registered.'
-        api_reg_status = False
-    else:
-        api_record = 'Insights API says this machine was unregistered at ' + api_reg_status
-        unreg_date = api_reg_status
-        api_reg_status = False
-
-    return {'messages': [local_record, api_record],
-            'status': api_reg_status,
-            'unreg_date': unreg_date,
-            'unreachable': unreachable}
+    logger.info(local_record)
+    return pconn.api_registration_check()
 
 
 def registration_check(pconn):
     if pconn.config.legacy_upload:
         return _legacy_registration_check(pconn)
-    status = pconn.api_registration_check()
-    if status:
-        write_registered_file()
-    else:
-        write_unregistered_file()
-    return status
+    return pconn.api_registration_check()
 
 
 class InsightsSupport(object):
