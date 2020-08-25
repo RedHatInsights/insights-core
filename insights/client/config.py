@@ -76,7 +76,7 @@ DEFAULT_OPTS = {
     },
     'base_url': {
         # non-CLI
-        'default': constants.legacy_base_url
+        'default': constants.base_url
     },
     'branch_info': {
         # non-CLI
@@ -88,7 +88,7 @@ DEFAULT_OPTS = {
     },
     'cert_verify': {
         # non-CLI
-        'default': None,
+        'default': True,
     },
     'check_results': {
         'default': False,
@@ -406,7 +406,7 @@ DEFAULT_OPTS = {
     'legacy_upload': {
         # True: upload to insights classic API
         # False: upload to insights platform API
-        'default': True
+        'default': False
     },
     'payload': {
         'default': None,

@@ -58,8 +58,6 @@ def _legacy_registration_check(pconn):
 
 
 def registration_check(pconn):
-    if pconn.config.legacy_upload:
-        return _legacy_registration_check(pconn)
     status = pconn.api_registration_check()
     if status:
         write_registered_file()
@@ -106,11 +104,7 @@ class InsightsSupport(object):
             pconn = InsightsConnection(self.config)
             reg_check = registration_check(pconn)
             cfg_block.append('Registration check:')
-            if pconn.config.legacy_upload:
-                for key in reg_check:
-                    cfg_block.append(key + ': ' + str(reg_check[key]))
-            else:
-                cfg_block.append("status: " + str(reg_check))
+            cfg_block.append("status: " + str(reg_check))
 
         lastupload = 'never'
         if os.path.isfile(constants.lastupload_file):

@@ -70,22 +70,12 @@ class InsightsConnection(object):
         self.config = config
         self.username = self.config.username
         self.password = self.config.password
-
-        # workaround while we support both legacy and plat APIs
         self.cert_verify = self.config.cert_verify
-        if self.cert_verify is None:
-            # if self.config.legacy_upload:
-            self.cert_verify = os.path.join(
-                constants.default_conf_dir,
-                'cert-api.access.redhat.com.pem')
-            # else:
-            # self.cert_verify = True
-        else:
-            if isinstance(self.cert_verify, six.string_types):
-                if self.cert_verify.lower() == 'false':
-                    self.cert_verify = False
-                elif self.cert_verify.lower() == 'true':
-                    self.cert_verify = True
+        if isinstance(self.cert_verify, six.string_types):
+            if self.cert_verify.lower() == 'false':
+                self.cert_verify = False
+            elif self.cert_verify.lower() == 'true':
+                self.cert_verify = True
 
         protocol = "https://"
         insecure_connection = self.config.insecure_connection
@@ -96,24 +86,11 @@ class InsightsConnection(object):
 
         self.auto_config = self.config.auto_config
 
-        # workaround while we support both legacy and plat APIs
-        # hack to "guess" the correct base URL if autoconfig off +
-        #   no base_url in config
-        if self.config.base_url is None:
-            if self.config.legacy_upload:
-                self.base_url = protocol + constants.legacy_base_url
-            else:
-                self.base_url = protocol + constants.base_url
-        else:
-            self.base_url = protocol + self.config.base_url
-        # end hack. in the future, make cloud.redhat.com the default
+        self.base_url = protocol + self.config.base_url
 
         self.upload_url = self.config.upload_url
         if self.upload_url is None:
-            if self.config.legacy_upload:
-                self.upload_url = self.base_url + "/uploads"
-            else:
-                self.upload_url = self.base_url + '/ingress/v1/upload'
+            self.upload_url = self.base_url + '/ingress/v1/upload'
 
         self.api_url = self.base_url
         self.branch_info_url = self.config.branch_info_url
@@ -311,49 +288,10 @@ class InsightsConnection(object):
         self.proxies = proxies
         self.proxy_auth = proxy_auth
 
-    def _legacy_test_urls(self, url, method):
-        """
-        Actually test the url
-        """
-        # tell the api we're just testing the URL
-        test_flag = {'test': 'test'}
-        url = urlparse(url)
-        test_url = url.scheme + "://" + url.netloc
-        last_ex = None
-        paths = (url.path + '/', '', '/r', '/r/insights')
-        for ext in paths:
-            try:
-                logger.log(NETWORK, "Testing: %s", test_url + ext)
-                if method is "POST":
-                    test_req = self.session.post(
-                        test_url + ext, timeout=self.config.http_timeout, data=test_flag)
-                elif method is "GET":
-                    test_req = self.session.get(test_url + ext, timeout=self.config.http_timeout)
-                logger.log(NETWORK, "HTTP Status Code: %d", test_req.status_code)
-                logger.log(NETWORK, "HTTP Status Text: %s", test_req.reason)
-                logger.log(NETWORK, "HTTP Response Text: %s", test_req.text)
-                # Strata returns 405 on a GET sometimes, this isn't a big deal
-                if test_req.status_code in (200, 201):
-                    logger.info(
-                        "Successfully connected to: %s", test_url + ext)
-                    return True
-                else:
-                    logger.info("Connection failed")
-                    return False
-            except requests.ConnectionError as exc:
-                last_ex = exc
-                logger.error(
-                    "Could not successfully connect to: %s", test_url + ext)
-                print(exc)
-        if last_ex:
-            raise last_ex
-
     def _test_urls(self, url, method):
         '''
         Test a URL
         '''
-        if self.config.legacy_upload:
-            return self._legacy_test_urls(url, method)
         try:
             logger.log(NETWORK, 'Testing %s', url)
             if method is 'POST':
@@ -394,10 +332,7 @@ class InsightsConnection(object):
             logger.info("=== End Upload URL Connection Test: %s ===\n",
                         "SUCCESS" if upload_success else "FAILURE")
             logger.info("=== Begin API URL Connection Test ===")
-            if self.config.legacy_upload:
-                api_success = self._test_urls(self.base_url, "GET")
-            else:
-                api_success = self._test_urls(self.base_url + '/apicast-tests/ping', 'GET')
+            api_success = self._test_urls(self.base_url + '/apicast-tests/ping', 'GET')
             logger.info("=== End API URL Connection Test: %s ===\n",
                         "SUCCESS" if api_success else "FAILURE")
             if upload_success and api_success:
@@ -540,130 +475,6 @@ class InsightsConnection(object):
         self.config.branch_info = branch_info
         return branch_info
 
-    # -LEGACY-
-    def create_system(self, new_machine_id=False):
-        """
-        Create the machine via the API
-        """
-        client_hostname = determine_hostname()
-        machine_id = generate_machine_id(new_machine_id)
-
-        branch_info = self.config.branch_info
-        if not branch_info:
-            return False
-
-        remote_branch = branch_info['remote_branch']
-        remote_leaf = branch_info['remote_leaf']
-
-        data = {'machine_id': machine_id,
-                'remote_branch': remote_branch,
-                'remote_leaf': remote_leaf,
-                'hostname': client_hostname}
-        if self.config.display_name is not None:
-            data['display_name'] = self.config.display_name
-        data = json.dumps(data)
-        post_system_url = self.api_url + '/v1/systems'
-        logger.debug("POST System: %s", post_system_url)
-        logger.debug(data)
-        logger.log(NETWORK, "POST %s", post_system_url)
-        return self.session.post(post_system_url,
-                                 headers={'Content-Type': 'application/json'},
-                                 data=data)
-
-    # -LEGACY-
-    def group_systems(self, group_name, systems):
-        """
-        Adds an array of systems to specified group
-
-        Args:
-            group_name: Display name of group
-            systems: Array of {'machine_id': machine_id}
-        """
-        api_group_id = None
-        headers = {'Content-Type': 'application/json'}
-        group_path = self.api_url + '/v1/groups'
-        group_get_path = group_path + ('?display_name=%s' % quote(group_name))
-
-        logger.debug("GET group: %s", group_get_path)
-        logger.log(NETWORK, "GET %s", group_get_path)
-        get_group = self.session.get(group_get_path)
-        logger.debug("GET group status: %s", get_group.status_code)
-        if get_group.status_code == 200:
-            api_group_id = get_group.json()['id']
-
-        if get_group.status_code == 404:
-            # Group does not exist, POST to create
-            logger.debug("POST group")
-            data = json.dumps({'display_name': group_name})
-            logger.log(NETWORK, "POST", group_path)
-            post_group = self.session.post(group_path,
-                                           headers=headers,
-                                           data=data)
-            logger.debug("POST group status: %s", post_group.status_code)
-            logger.debug("POST Group: %s", post_group.json())
-            self.handle_fail_rcs(post_group)
-            api_group_id = post_group.json()['id']
-
-        logger.debug("PUT group")
-        data = json.dumps(systems)
-        logger.log(NETWORK, "PUT %s", group_path + ('/%s/systems' % api_group_id))
-        put_group = self.session.put(group_path +
-                                     ('/%s/systems' % api_group_id),
-                                     headers=headers,
-                                     data=data)
-        logger.debug("PUT group status: %d", put_group.status_code)
-        logger.debug("PUT Group: %s", put_group.json())
-
-    # -LEGACY-
-    # Keeping this function around because it's not private and I don't know if anything else uses it
-    def do_group(self):
-        """
-        Do grouping on register
-        """
-        group_id = self.config.group
-        systems = {'machine_id': generate_machine_id()}
-        self.group_systems(group_id, systems)
-
-    # -LEGACY-
-    def _legacy_api_registration_check(self):
-        '''
-        Check registration status through API
-        '''
-        logger.debug('Checking registration status...')
-        machine_id = generate_machine_id()
-        try:
-            url = self.api_url + '/v1/systems/' + machine_id
-            logger.log(NETWORK, "GET %s", url)
-            res = self.session.get(url, timeout=self.config.http_timeout)
-        except requests.ConnectionError:
-            # can't connect, run connection test
-            logger.error('Connection timed out. Running connection test...')
-            self.test_connection()
-            return False
-        # had to do a quick bugfix changing this around,
-        #   which makes the None-False-True dichotomy seem weird
-        #   TODO: reconsider what gets returned, probably this:
-        #       True for registered
-        #       False for unregistered
-        #       None for system 404
-        try:
-            # check the 'unregistered_at' key of the response
-            unreg_status = json.loads(res.content).get('unregistered_at', 'undefined')
-            # set the global account number
-            self.config.account_number = json.loads(res.content).get('account_number', 'undefined')
-        except ValueError:
-            # bad response, no json object
-            return False
-        if unreg_status == 'undefined':
-            # key not found, machine not yet registered
-            return None
-        elif unreg_status is None:
-            # unregistered_at = null, means this machine IS registered
-            return True
-        else:
-            # machine has been unregistered, this is a timestamp
-            return unreg_status
-
     def _fetch_system_by_machine_id(self):
         '''
         Get a system by machine ID
@@ -674,11 +485,7 @@ class InsightsConnection(object):
         '''
         machine_id = generate_machine_id()
         try:
-            # [circus music]
-            if self.config.legacy_upload:
-                url = self.base_url + '/platform/inventory/v1/hosts?insights_id=' + machine_id
-            else:
-                url = self.base_url + '/inventory/v1/hosts?insights_id=' + machine_id
+            url = self.base_url + '/inventory/v1/hosts?insights_id=' + machine_id
             logger.log(NETWORK, "GET %s", url)
             res = self.session.get(url, timeout=self.config.http_timeout)
         except (requests.ConnectionError, requests.Timeout) as e:
@@ -708,9 +515,6 @@ class InsightsConnection(object):
                 False   system does not exist in inventory
                 None    error connection or parsing response
         '''
-        if self.config.legacy_upload:
-            return self._legacy_api_registration_check()
-
         logger.debug('Checking registration status...')
         results = self._fetch_system_by_machine_id()
         if not results:
@@ -721,32 +525,10 @@ class InsightsConnection(object):
         logger.debug('Inventory ID: %s', results[0]['id'])
         return True
 
-    # -LEGACY-
-    def _legacy_unregister(self):
-        """
-        Unregister this system from the insights service
-        """
-        machine_id = generate_machine_id()
-        try:
-            logger.debug("Unregistering %s", machine_id)
-            url = self.api_url + "/v1/systems/" + machine_id
-            logger.log(NETWORK, "DELETE %s", url)
-            self.session.delete(url)
-            logger.info(
-                "Successfully unregistered from the Red Hat Insights Service")
-            return True
-        except requests.ConnectionError as e:
-            logger.debug(e)
-            logger.error("Could not unregister this system")
-            return False
-
     def unregister(self):
         """
         Unregister this system from the insights service
         """
-        if self.config.legacy_upload:
-            return self._legacy_unregister()
-
         results = self._fetch_system_by_machine_id()
         try:
             logger.debug("Unregistering host...")
@@ -762,99 +544,10 @@ class InsightsConnection(object):
             logger.error("Could not unregister this system")
             return False
 
-    # -LEGACY-
-    def register(self):
-        """
-        Register this machine
-        """
-        client_hostname = determine_hostname()
-        # This will undo a blacklist
-        logger.debug("API: Create system")
-        system = self.create_system(new_machine_id=False)
-        if system is False:
-            return ('Could not reach the Insights service to register.', '', '', '')
-
-        # If we get a 409, we know we need to generate a new machine-id
-        if system.status_code == 409:
-            system = self.create_system(new_machine_id=True)
-        self.handle_fail_rcs(system)
-
-        logger.debug("System: %s", system.json())
-
-        message = system.headers.get("x-rh-message", "")
-
-        # Do grouping
-        if self.config.group is not None:
-            self.do_group()
-
-        # Display registration success messasge to STDOUT and logs
-        if system.status_code == 201:
-            try:
-                system_json = system.json()
-                machine_id = system_json["machine_id"]
-                account_number = system_json["account_number"]
-                logger.info("You successfully registered %s to account %s." % (machine_id, account_number))
-            except:
-                logger.debug('Received invalid JSON on system registration.')
-                logger.debug('API still indicates valid registration with 201 status code.')
-                logger.debug(system)
-                logger.debug(system.json())
-
-        if self.config.group is not None:
-            return (message, client_hostname, self.config.group, self.config.display_name)
-        elif self.config.display_name is not None:
-            return (message, client_hostname, "None", self.config.display_name)
-        else:
-            return (message, client_hostname, "None", "")
-
-    # -LEGACY-
-    def _legacy_upload_archive(self, data_collected, duration):
-        '''
-        Do an HTTPS upload of the archive
-        '''
-        file_name = os.path.basename(data_collected)
-        try:
-            from insights.contrib import magic
-            m = magic.open(magic.MAGIC_MIME)
-            m.load()
-            mime_type = m.file(data_collected)
-        except ImportError:
-            magic = None
-            logger.debug('python-magic not installed, using backup function...')
-            from .utilities import magic_plan_b
-            mime_type = magic_plan_b(data_collected)
-
-        files = {
-            'file': (file_name, open(data_collected, 'rb'), mime_type)}
-
-        upload_url = self.upload_url + '/' + generate_machine_id()
-
-        logger.debug("Uploading %s to %s", data_collected, upload_url)
-
-        headers = {'x-rh-collection-time': str(duration)}
-        logger.log(NETWORK, "POST %s", upload_url)
-        upload = self.session.post(upload_url, files=files, headers=headers)
-
-        logger.log(NETWORK, "Upload status: %s %s %s",
-                     upload.status_code, upload.reason, upload.text)
-        if upload.status_code in (200, 201):
-            the_json = json.loads(upload.text)
-        else:
-            logger.error("Upload archive failed with status code  %s", upload.status_code)
-            return upload
-        try:
-            self.config.account_number = the_json["upload"]["account_number"]
-        except:
-            self.config.account_number = None
-        logger.debug("Upload duration: %s", upload.elapsed)
-        return upload
-
     def upload_archive(self, data_collected, content_type, duration=None):
         """
         Do an HTTPS Upload of the archive
         """
-        if self.config.legacy_upload:
-            return self._legacy_upload_archive(data_collected, duration)
         file_name = os.path.basename(data_collected)
         upload_url = self.upload_url
         c_facts = {}
@@ -905,6 +598,7 @@ class InsightsConnection(object):
         return upload
 
     # -LEGACY-
+    # might still need this for sat - check
     def _legacy_set_display_name(self, display_name):
         machine_id = generate_machine_id()
         try:
@@ -945,9 +639,6 @@ class InsightsConnection(object):
         '''
         Set display name of a system independently of upload.
         '''
-        if self.config.legacy_upload:
-            return self._legacy_set_display_name(display_name)
-
         system = self._fetch_system_by_machine_id()
         if not system:
             return system
