@@ -13,6 +13,10 @@ view of the file that meets the needs of the current rules.
 """
 from .. import Parser, parser, get_active_lines
 from insights.specs import Specs
+from insights.core.filters import add_filter
+
+
+add_filter(Specs.rsyslog_conf, ["{", "}", "(", ")"])
 
 
 @parser(Specs.rsyslog_conf)
