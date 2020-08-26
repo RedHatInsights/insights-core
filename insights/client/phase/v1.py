@@ -264,6 +264,7 @@ def post_update(client, config):
 def collect_and_output(client, config):
     # last phase, delete PID file on exit
     atexit.register(write_to_disk, constants.pidfile, delete=True)
+    atexit.register(write_to_disk, constants.ppidfile, delete=True)
     # --compliance was called
     if config.compliance:
         config.payload, config.content_type = ComplianceClient(config).oscap_scan()
@@ -299,6 +300,7 @@ def collect_and_output(client, config):
         if resp:
             if config.to_json:
                 print(json.dumps(resp))
+            client.show_inventory_deep_link()
 
     client.delete_cached_branch_info()
 

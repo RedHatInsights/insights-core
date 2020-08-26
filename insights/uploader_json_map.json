@@ -169,6 +169,7 @@
                 "SMBIOS ",
                 "SPLXMOD: SPLX 3.0: KHM loaded. Version [30118]",
                 "SPLXMOD: SPLX 3.0: KHM loaded. Version [30119]",
+                "Secure boot enabled",
                 "TECH PREVIEW: NVMe over FC may not be fully supported.",
                 "Uhhuh. NMI received for unknown reason",
                 "VPD access disabled",
@@ -233,10 +234,21 @@
             "symbolic_name": "du_dirs"
         },
         {
+            "command": "/bin/engine-db-query --statement \"SELECT vs.vds_name, rpm_version FROM vds_dynamic vd, vds_static vs WHERE vd.vds_id = vs.vds_id;\" --json",
+            "pattern": [],
+            "symbolic_name": "engine_db_query_vdsm_version"
+        },
+        {
             "command": "/sbin/ethtool",
             "pattern": [],
             "pre_command": "iface",
             "symbolic_name": "ethtool"
+        },
+        {
+            "command": "/sbin/ethtool -c",
+            "pattern": [],
+            "pre_command": "iface",
+            "symbolic_name": "ethtool_c"
         },
         {
             "command": "/sbin/ethtool -S",
@@ -397,6 +409,11 @@
             "image": true
         },
         {
+            "command": "/sbin/initctl --system list",
+            "pattern": [],
+            "symbolic_name": "initctl_lst"
+        },
+        {
             "command": "/sbin/ip -s -d link",
             "pattern": [],
             "symbolic_name": "ip_s_link"
@@ -542,6 +559,8 @@
         {
             "command": "/bin/ls -lan /usr/lib64",
             "pattern": [
+                "liblber",
+                "libldap",
                 "total"
             ],
             "symbolic_name": "ls_usr_lib64"
@@ -610,6 +629,14 @@
                 "foreman-ssh-cmd"
             ],
             "symbolic_name": "ls_var_tmp"
+        },
+        {
+            "command": "/bin/ls -la /tmp",
+            "pattern": [
+                ".sap",
+                ".trex"
+            ],
+            "symbolic_name": "ls_tmp"
         },
         {
             "command": "/bin/lsblk",
@@ -681,6 +708,8 @@
                 "FullQualifiedHostname",
                 "Hostname",
                 "InstanceName",
+                "LOG Q0I=> NiIRead: P=<ip>:<port>:; L=<ip>:<port>:: recv",
+                "LOG Q0I=> NiPConnect2: <ip>:<port>: connect",
                 "SID",
                 "SapVersionInfo",
                 "SystemNumber"
@@ -701,6 +730,11 @@
             "command": "/usr/bin/lsscsi",
             "pattern": [],
             "symbolic_name": "lsscsi"
+        },
+        {
+            "command": "/usr/sbin/lsvmbus -vv",
+            "pattern": [],
+            "symbolic_name": "lsvmbus"
         },
         {
             "command": "/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,lv_size,lv_attr,mirror_log,vg_name,devices,region_size,data_percent,metadata_percent,segtype,seg_monitor --config=\"global{locking_type=0}\"",
@@ -993,13 +1027,17 @@
                 "COMMAND",
                 "bash",
                 "chronyd",
+                "clvmd",
                 "corosync",
+                "crmd",
+                "dlm_controld",
                 "docker",
                 "ntpd",
                 "openshift start master api",
                 "openshift start master controllers",
                 "openshift start node",
                 "ora",
+                "pacemaker-controld",
                 "pacemakerd",
                 "pcsd",
                 "spausedd",
@@ -1024,7 +1062,10 @@
                 "bash",
                 "ceph-osd",
                 "chronyd",
+                "clvmd",
                 "corosync",
+                "crmd",
+                "dlm_controld",
                 "docker",
                 "mysqld",
                 "ntpd",
@@ -1033,6 +1074,7 @@
                 "openshift start master controllers",
                 "openshift start node",
                 "ora",
+                "pacemaker-controld",
                 "pacemakerd",
                 "pcsd",
                 "phc2sys",
@@ -1063,8 +1105,11 @@
                 "catalina.base",
                 "ceilometer-coll",
                 "chronyd",
+                "clvmd",
                 "cmirrord",
                 "corosync",
+                "crmd",
+                "dlm_controld",
                 "docker",
                 "elasticsearch",
                 "goferd",
@@ -1082,6 +1127,7 @@
                 "openshift start master controllers",
                 "openshift start node",
                 "ora",
+                "pacemaker-controld",
                 "pacemakerd",
                 "pcsd",
                 "pkla-check-auth",
@@ -1105,7 +1151,10 @@
                 "CMD",
                 "bash",
                 "chronyd",
+                "clvmd",
                 "corosync",
+                "crmd",
+                "dlm_controld",
                 "docker",
                 "neutron-ns-metadata-proxy",
                 "nginx: master process",
@@ -1115,6 +1164,7 @@
                 "openshift start master controllers",
                 "openshift start node",
                 "ora",
+                "pacemaker-controld",
                 "pacemakerd",
                 "pcsd",
                 "spausedd",
@@ -1485,6 +1535,11 @@
             "symbolic_name": "bond"
         },
         {
+            "file": "/var/log/candlepin/candlepin.log",
+            "pattern": [],
+            "symbolic_name": "candlepin_log"
+        },
+        {
             "file": "/var/log/tomcat/()*catalina\\.out",
             "pattern": [
                 "NoCobblerTokenException: We had an error trying to login."
@@ -1766,6 +1821,11 @@
             "symbolic_name": "dirsrv_errors"
         },
         {
+            "file": "/sys/module/dm_mod/parameters/use_blk_mq",
+            "pattern": [],
+            "symbolic_name": "dm_mod_use_blk_mq"
+        },
+        {
             "file": "/var/log/dmesg",
             "pattern": [
                 "Amazon EC2",
@@ -1779,12 +1839,21 @@
                 "L1TF",
                 "L1Tf",
                 "Linux version",
+                "Secure boot enabled",
                 "__cpufreq_add_dev",
                 "efi",
+                "hv_vmbus: probe failed for device",
                 "l1tf",
                 "x86/pti"
             ],
             "symbolic_name": "dmesg_log"
+        },
+        {
+            "file": "/etc/dnf/dnf.conf",
+            "pattern": [
+                "["
+            ],
+            "symbolic_name": "dnf_conf"
         },
         {
             "file": "/etc/dnf/modules.d/.*\\.module",
@@ -2165,6 +2234,7 @@
             "file": "/var/log/messages",
             "pattern": [
                 " disconnect jid=",
+                " invoked oom-killer: ",
                 "\"/var/lib/pgsql/data\" is missing or empty",
                 "(enic): transmit queue 0 timed out",
                 ", type vxfs) has no security xattr handler",
@@ -2204,9 +2274,9 @@
                 "Orphaned pod",
                 "Out of MCCQ wrbs",
                 "Out of memory: Kill process",
-                "Out of memory: kill process",
                 "PPM exceeds tolerance 500 PPM",
                 "ProcessExecutionError: Exit code: 1; Stdin: ; Stdout: ; Stderr: setting the network namespace",
+                "Result of start operation for clvmd ",
                 "SCSI error: return code =",
                 "SDN initialization failed: Error: Existing service with IP: None is not part of service network",
                 "Scheduled import of stream",
@@ -2254,6 +2324,7 @@
                 "hv_netvsc vmbus_",
                 "hv_netvsc: probe of vmbus_",
                 "hw csum failure",
+                "ill process ",
                 "in libnl.so.1",
                 "initiating reset due to tx timeout",
                 "invalid key/value pair in file /usr/lib/udev/rules.d/59-fc-wwpn-id.rules",
@@ -2267,13 +2338,14 @@
                 "kernel: BUG: soft lockup",
                 "kernel: CIFS VFS: Unexpected SMB signature",
                 "kernel: INFO: task xfsaild/md",
+                "kernel: Linux version",
                 "kernel: Memory cgroup out of memory: Kill process",
                 "kernel: TCP: out of memory -- consider tuning tcp_mem",
                 "kernel: bnx2fc: byte_count",
                 "kernel: kvm: disabled by bios",
                 "kernel: lockd: Unknown symbol register_inet6addr_notifier",
                 "kernel: lockd: Unknown symbol unregister_inet6addr_notifier",
-                "kernel: megasas: Found FW in FAULT state,will reset adapter.",
+                "kernel: megasas: Found FW in FAULT state, will reset adapter.",
                 "kernel: nfs: server",
                 "kernel: possible SYN flooding on port",
                 "khash_super_prune_nolock",
@@ -2295,6 +2367,7 @@
                 "shm_open failed, Permission denied",
                 "skb_copy",
                 "skb_over_panic",
+                "socket error sending to node",
                 "start request repeated too quickly for docker.service",
                 "state changed timeout -> done",
                 "swapper: page allocation failure",
@@ -2310,6 +2383,7 @@
                 "transmit queue",
                 "udev: renamed network interface",
                 "unknown filesystem type 'binfmt_misc'",
+                "ut of memory: ",
                 "vdsm-tool: EnvironmentError: Failed to restore the persisted networks",
                 "watch chan error: etcdserver: mvcc: required revision has been compacted"
             ],
@@ -2331,6 +2405,11 @@
                 "dbpath"
             ],
             "symbolic_name": "mongod_conf"
+        },
+        {
+            "file": "/proc/mounts",
+            "pattern": [],
+            "symbolic_name": "mounts"
         },
         {
             "file": "/var/opt/mssql/mssql.conf",
@@ -2998,6 +3077,11 @@
             "symbolic_name": "scsi"
         },
         {
+            "file": "/sys/module/scsi_mod/parameters/use_blk_mq",
+            "pattern": [],
+            "symbolic_name": "scsi_mod_use_blk_mq"
+        },
+        {
             "file": "/proc/net/sctp/assocs",
             "pattern": [],
             "symbolic_name": "sctp_asc"
@@ -3058,6 +3142,7 @@
                 "ALLOWUSERS",
                 "AllowUsers",
                 "Allowusers",
+                "AuthorizedKeysFile",
                 "CHALLENGERESPONSEAUTHENTICATION",
                 "CIPHERS",
                 "CLIENTALIVECOUNTMAX",
@@ -3124,6 +3209,7 @@
             "file": "/etc/ssh/ssh_config",
             "pattern": [
                 "Host",
+                "Include",
                 "ProxyCommand"
             ],
             "symbolic_name": "ssh_config"
@@ -3441,9 +3527,9 @@
             "symbolic_name": "yum_conf"
         },
         {
-            "file": "/etc/yum.repos.d/()*.*\\.repo",
+            "file": "/var/log/yum.log",
             "pattern": [],
-            "symbolic_name": "yum_repos_d"
+            "symbolic_name": "yum_log"
         },
         {
             "file": "/var/log/redhat_access_proactive/redhat_access_proactive.log",
@@ -3502,11 +3588,26 @@
             "symbolic_name": "gnocchi_conf"
         },
         {
+            "file": "/etc/named.conf",
+            "pattern": [
+                "include"
+            ],
+            "symbolic_name": "named_conf"
+        },
+        {
             "file": "/etc/neutron/neutron.conf",
             "pattern": [
                 "[",
+                "agent_down_time",
+                "agent_report_interval",
+                "allow_automatic_dhcp_failover",
+                "api_workers",
                 "debug",
-                "dhcp_agents_per_network"
+                "dhcp_agents_per_network",
+                "ipam_driver",
+                "router_distributed",
+                "rpc_workers",
+                "service_plugins"
             ],
             "symbolic_name": "neutron_conf"
         },
@@ -3514,8 +3615,16 @@
             "file": "/var/lib/config-data/puppet-generated/neutron/etc/neutron/neutron.conf",
             "pattern": [
                 "[",
+                "agent_down_time",
+                "agent_report_interval",
+                "allow_automatic_dhcp_failover",
+                "api_workers",
                 "debug",
-                "dhcp_agents_per_network"
+                "dhcp_agents_per_network",
+                "ipam_driver",
+                "router_distributed",
+                "rpc_workers",
+                "service_plugins"
             ],
             "symbolic_name": "neutron_conf"
         },
@@ -3544,6 +3653,28 @@
             "file": "/var/lib/config-data/puppet-generated/neutron/etc/neutron/plugin.ini",
             "pattern": [],
             "symbolic_name": "neutron_plugin_ini"
+        },
+        {
+            "file": "/etc/neutron/plugins/ml2/sriov_agent.ini",
+            "pattern": [
+                "[",
+                "debug",
+                "exclude_devices",
+                "extensions",
+                "physical_device_mappings"
+            ],
+            "symbolic_name": "neutron_sriov_agent"
+        },
+        {
+            "file": "/var/lib/config-data/puppet-generated/neutron/etc/neutron/plugins/ml2/sriov_agent.ini",
+            "pattern": [
+                "[",
+                "debug",
+                "exclude_devices",
+                "extensions",
+                "physical_device_mappings"
+            ],
+            "symbolic_name": "neutron_sriov_agent"
         },
         {
             "file": "/etc/zipl.conf",
@@ -3838,6 +3969,18 @@
             "glob": "/sys/class/scsi_host/host[0-9]*/eh_deadline",
             "symbolic_name": "scsi_eh_deadline",
             "pattern": []
+        },
+        {
+            "glob": "/etc/yum.repos.d/*.repo",
+            "symbolic_name": "yum_repos_d",
+            "pattern": []
+        },
+        {
+            "glob": "/etc/ssh/ssh_config.d/*.conf",
+            "symbolic_name": "ssh_config_d",
+            "pattern": [
+                "Include"
+            ]
         }
     ],
     "meta_specs": {
@@ -3860,5 +4003,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2020-07-16T14:49:33.251429"
+    "version": "2020-08-12T15:22:22.060797"
 }

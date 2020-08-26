@@ -47,6 +47,7 @@ class InsightsArchiveSpecs(Specs):
     ethtool = glob_file("insights_commands/ethtool_*", ignore="ethtool_-.*")
     ethtool_S = glob_file("insights_commands/ethtool_-S_*")
     ethtool_T = glob_file("insights_commands/ethtool_-T_*")
+    ethtool_c = glob_file("insights_commands/ethtool_-c_*")
     ethtool_g = glob_file("insights_commands/ethtool_-g_*")
     ethtool_i = glob_file("insights_commands/ethtool_-i_*")
     ethtool_k = glob_file("insights_commands/ethtool_-k_*")
@@ -93,7 +94,7 @@ class InsightsArchiveSpecs(Specs):
     ls_boot = simple_file("insights_commands/ls_-lanR_.boot")
     ls_dev = simple_file("insights_commands/ls_-lanR_.dev")
     ls_disk = simple_file("insights_commands/ls_-lanR_.dev.disk")
-    ls_etc = simple_file("insights_commands/ls_-lan_.etc_.etc.cloud.cloud.cfg.d_.etc.nova.migration_.etc.pki.ovirt-vmconsole_.etc.pki.tls.certs_.etc.pki.tls.private_.etc.sysconfig")
+    ls_etc = simple_file("insights_commands/ls_-lan_.etc_.etc.cloud.cloud.cfg.d_.etc.nova.migration_.etc.pki.ovirt-vmconsole_.etc.pki.tls.certs_.etc.pki.tls.private_.etc.rc.d.init.d_.etc.sysconfig")
     ls_lib_firmware = simple_file("insights_commands/ls_-lanR_.lib.firmware")
     ls_ocp_cni_openshift_sdn = simple_file("insights_commands/ls_-l_.var.lib.cni.networks.openshift-sdn")
     ls_origin_local_volumes_pods = simple_file("insights_commands/ls_-l_.var.lib.origin.openshift.local.volumes.pods")
@@ -121,6 +122,7 @@ class InsightsArchiveSpecs(Specs):
     lspci = simple_file("insights_commands/lspci_-k")
     lssap = simple_file("insights_commands/usr.sap.hostctrl.exe.lssap")
     lsscsi = simple_file("insights_commands/lsscsi")
+    lsvmbus = simple_file("insights_commands/lsvmbus_-vv")
     lvmconfig = first_file([
         "insights_commands/lvmconfig_--type_full",
         "insights_commands/lvm_dumpconfig_--type_full"
