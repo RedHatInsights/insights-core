@@ -80,4 +80,5 @@ class CoreCollector(DataCollector):
         self._write_version_info()
         self._write_tags()
         self._write_blacklist_report(blacklist_report)
+        self._write_egg_release()
         logger.debug('Metadata collection finished.')
