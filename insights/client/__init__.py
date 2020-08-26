@@ -20,7 +20,8 @@ from .utilities import (delete_registered_file,
                         generate_machine_id,
                         get_tags,
                         write_tags,
-                        migrate_tags)
+                        migrate_tags,
+                        get_parent_process)
 
 NETWORK = constants.custom_network_log_level
 logger = logging.getLogger(__name__)
@@ -57,6 +58,8 @@ class InsightsClient(object):
         else:
             # write PID to file in case we need to ping systemd
             write_to_disk(constants.pidfile, content=str(os.getpid()))
+            # write PPID to file so that we can grab the client execution method
+            write_to_disk(constants.ppidfile, content=get_parent_process())
         # setup insights connection placeholder
         # used for requests
         self.session = None
@@ -551,6 +554,24 @@ class InsightsClient(object):
                 raise Exception("Error: no report found. Run insights-client --check-results to update the report cache: %s" % e)
             else:
                 raise e
+
+    def show_inventory_deep_link(self):
+        """
+        Show a deep link to this host inventory record
+        """
+        system = self.connection._fetch_system_by_machine_id()
+        if system:
+            if len(system) == 1:
+                try:
+                    id = system[0]["id"]
+                    logger.info("View details about this system on cloud.redhat.com:")
+                    logger.info(
+                        "https://cloud.redhat.com/insights/inventory/{0}".format(id)
+                    )
+                except Exception as e:
+                    logger.error(
+                        "Error: malformed system record: {0}: {1}".format(system, e)
+                    )
 
     def _copy_soscleaner_files(self, insights_archive):
         '''
