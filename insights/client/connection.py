@@ -748,6 +748,9 @@ class InsightsConnection(object):
             return self._legacy_unregister()
 
         results = self._fetch_system_by_machine_id()
+        if not results:
+            logger.info('This host could not be found.')
+            return False
         try:
             logger.debug("Unregistering host...")
             url = self.api_url + "/inventory/v1/hosts/" + results[0]['id']
