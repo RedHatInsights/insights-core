@@ -176,6 +176,10 @@ FOREMAN_SSL_ACCESS_SSL_LOG = """
 def test_production_log():
     fm_log = ProductionLog(context_wrap(PRODUCTION_LOG))
     assert 2 == len(fm_log.get("Rendered text template"))
+    line_dict = fm_log.get("Katello::Api::V2::RepositoriesController#sync_complete")[0]
+    assert line_dict["message"] == \
+        "[I] Processing by Katello::Api::V2::RepositoriesController#sync_complete as JSON"
+    assert line_dict["timestamp"] == datetime(2015, 11, 13, 3, 30, 7)
     assert "Expired 48 Reports" in fm_log
     assert fm_log.get("Completed 200 OK in 93")[0]['raw_message'] == \
         "2015-11-13 09:41:58 [I] Completed 200 OK in 93ms (Views: 2.9ms | ActiveRecord: 0.3ms)"
