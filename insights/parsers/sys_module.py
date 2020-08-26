@@ -15,7 +15,7 @@ SCSIModUseBlkMq - file ``/sys/module/scsi_mod/parameters/use_blk_mq``
 
 
 from insights import parser, Parser
-from insights.parsers import ParseException, SkipException
+from insights.parsers import SkipException
 from insights.specs import Specs
 
 
@@ -47,14 +47,14 @@ class XModUseBlkMq(Parser):
             (bool): True for on, False for off.
 
         Raises:
-            ParseException: When tell is_on for unknown cases.
+            ValueError: When tell is_on for unknown cases.
         """
         if self.val in ['Y', '1']:
             return True
         elif self.val in ['N', '0']:
             return False
         else:
-            raise ParseException("Unknown value: {0}".format(self.val))
+            raise ValueError("Unexpected value {0}, please get raw data from attribute 'val' and tell is_on by yourself.".format(self.val))
 
 
 @parser(Specs.dm_mod_use_blk_mq)
