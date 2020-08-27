@@ -16,6 +16,11 @@
             "symbolic_name": "aws_instance_id_pkcs7"
         },
         {
+            "command": "/usr/bin/awx-manage check_license",
+            "pattern": [],
+            "symbolic_name": "awx_manage_check_license"
+        },
+        {
             "command": "python -m insights.tools.cat --no-header azure_instance_type",
             "pattern": [],
             "symbolic_name": "azure_instance_type"
@@ -177,7 +182,6 @@
                 "Warning: QLogic ISP3XXX Network Driver - this hardware has not undergone testing by Red Hat and might not be certified",
                 "__cpufreq_add_dev",
                 "blocked FC remote port time out: removing target and saving binding",
-                "crashkernel reservation failed",
                 "crashkernel=auto resulted in zero bytes of reserved memory",
                 "e1000: E1000 MODULE IS NOT SUPPORTED",
                 "efi",
@@ -522,7 +526,7 @@
             "symbolic_name": "ls_edac_mc"
         },
         {
-            "command": "/bin/ls -lan /etc /etc/cloud/cloud.cfg.d /etc/nova/migration /etc/pki/ovirt-vmconsole /etc/pki/tls/certs /etc/pki/tls/private /etc/sysconfig",
+            "command": "/bin/ls -lan /etc /etc/cloud/cloud.cfg.d /etc/nova/migration /etc/pki/ovirt-vmconsole /etc/pki/tls/certs /etc/pki/tls/private /etc/sysconfig /etc/rc.d/init.d",
             "pattern": [],
             "symbolic_name": "ls_etc"
         },
@@ -708,8 +712,6 @@
                 "FullQualifiedHostname",
                 "Hostname",
                 "InstanceName",
-                "LOG Q0I=> NiIRead: P=<ip>:<port>:; L=<ip>:<port>:: recv",
-                "LOG Q0I=> NiPConnect2: <ip>:<port>: connect",
                 "SID",
                 "SapVersionInfo",
                 "SystemNumber"
@@ -1106,7 +1108,6 @@
                 "ceilometer-coll",
                 "chronyd",
                 "clvmd",
-                "cmirrord",
                 "corosync",
                 "crmd",
                 "dlm_controld",
@@ -1263,6 +1264,11 @@
             "command": "/usr/bin/scl --list",
             "pattern": [],
             "symbolic_name": "software_collections_list"
+        },
+        {
+            "command": "/bin/grep -r '^\\s*CHANNELURL=' /etc/mail/spamassassin/channel.d",
+            "pattern": [],
+            "symbolic_name": "spamassassin_channels"
         },
         {
             "command": "/usr/sbin/subscription-manager identity",
@@ -2255,7 +2261,6 @@
                 "DMA Status error.  Resetting chip",
                 "Detected Tx Unit Hang",
                 "Device is still in reset",
-                "Device offlined - not ready after error recovery",
                 "Error I40E_AQ_RC_EINVAL adding RX filters on PF, promiscuous mode forced on",
                 "Error deleting EBS Disk volume aws",
                 "Error running DeviceResume dm_task_run failed",
@@ -2282,7 +2287,6 @@
                 "Scheduled import of stream",
                 "Steal time is >",
                 "TX driver issue detected, PF reset issued",
-                "TX stuck with port_enabled=1: resetting channels",
                 "This system does not support \"SSSE3\"",
                 "Throttling request took",
                 "TypeError: object of type 'NoneType' has no len()",
@@ -3487,12 +3491,24 @@
                 "LOCAL_ENABLE",
                 "Local_Enable",
                 "SSL_ENABLE",
+                "SSL_SSLV2",
                 "SSL_SSLV3",
+                "SSL_TLSV1",
+                "SSL_TLSV1_1",
+                "SSL_TLSV1_2",
                 "Ssl_Enable",
+                "Ssl_Sslv2",
                 "Ssl_Sslv3",
+                "Ssl_Tlsv1",
+                "Ssl_Tlsv1_1",
+                "Ssl_Tlsv1_2",
                 "local_enable",
                 "ssl_enable",
-                "ssl_sslv3"
+                "ssl_sslv2",
+                "ssl_sslv3",
+                "ssl_tlsv1",
+                "ssl_tlsv1_1",
+                "ssl_tlsv1_2"
             ],
             "symbolic_name": "vsftpd_conf"
         },
@@ -3708,7 +3724,6 @@
             "file": "/var/log/neutron/l3-agent.log",
             "pattern": [
                 "DEBUG oslo.messaging._drivers.impl_rabbit",
-                "Duplicate iptables rule detected",
                 "Error while deleting router",
                 "Stderr: Another app is currently holding the xtables lock",
                 "Timed out waiting for RPC response"
@@ -4003,5 +4018,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2020-08-12T15:22:22.060797"
+    "version": "2020-08-27T15:58:30.933074"
 }
