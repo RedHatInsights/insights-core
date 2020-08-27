@@ -113,6 +113,7 @@ class DefaultSpecs(Specs):
 
     aws_instance_id_doc = simple_command("/usr/bin/curl -s http://169.254.169.254/latest/dynamic/instance-identity/document --connect-timeout 5", deps=[is_aws])
     aws_instance_id_pkcs7 = simple_command("/usr/bin/curl -s http://169.254.169.254/latest/dynamic/instance-identity/pkcs7 --connect-timeout 5", deps=[is_aws])
+    awx_manage_check_license = simple_command("/usr/bin/awx-manage check_license")
 
     @datasource(CloudProvider)
     def is_azure(broker):
@@ -228,6 +229,7 @@ class DefaultSpecs(Specs):
     dmesg = simple_command("/bin/dmesg")
     dmesg_log = simple_file("/var/log/dmesg")
     dmidecode = simple_command("/usr/sbin/dmidecode")
+    dmsetup_info = simple_command("/usr/sbin/dmsetup info -C")
     dnf_conf = simple_file("/etc/dnf/dnf.conf")
     docker_info = simple_command("/usr/bin/docker info")
     docker_list_containers = simple_command("/usr/bin/docker ps --all --no-trunc")
@@ -596,6 +598,7 @@ class DefaultSpecs(Specs):
     sockstat = simple_file("/proc/net/sockstat")
     softnet_stat = simple_file("proc/net/softnet_stat")
     software_collections_list = simple_command('/usr/bin/scl --list')
+    spamassassin_channels = simple_command("/bin/grep -r '^\\s*CHANNELURL=' /etc/mail/spamassassin/channel.d")
     ss = simple_command("/usr/sbin/ss -tupna")
     ssh_config = simple_file("/etc/ssh/ssh_config")
     ssh_config_d = glob_file(r"/etc/ssh/ssh_config.d/*.conf")
