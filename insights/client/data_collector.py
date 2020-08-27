@@ -362,6 +362,7 @@ class DataCollector(object):
             and archive files.
         """
         if self.config.obfuscate:
+            logger.warn('WARNING: Some SOSCleaner obfuscation output formatting has changed. See https://access.redhat.com/articles/5355431 for more details.')
             if rm_conf and rm_conf.get('keywords'):
                 logger.warn("WARNING: Skipping keywords defined in blacklist configuration")
             cleaner = SOSCleaner(quiet=True)
