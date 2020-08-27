@@ -229,6 +229,7 @@ class DefaultSpecs(Specs):
     dmesg = simple_command("/bin/dmesg")
     dmesg_log = simple_file("/var/log/dmesg")
     dmidecode = simple_command("/usr/sbin/dmidecode")
+    dmsetup_info = simple_command("/usr/sbin/dmsetup info -C")
     dnf_conf = simple_file("/etc/dnf/dnf.conf")
     docker_info = simple_command("/usr/bin/docker info")
     docker_list_containers = simple_command("/usr/bin/docker ps --all --no-trunc")
