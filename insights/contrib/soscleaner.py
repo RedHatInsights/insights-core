@@ -1661,6 +1661,10 @@ class SOSCleaner(object):
         self.logger.con_out("*** SOSCleaner Processing ***")
         self.logger.info("Working Directory - %s", self.dir_path)
         for f in files:
+            relative_path = os.path.relpath(f, start=self.dir_path)
+            if relative_path in ('display_name', 'blacklist_report', 'tags.json', 'branch_info', 'version_info', 'egg_release'):
+                # do not obfuscate the insights-client metadata files
+                continue
             self.logger.debug("Cleaning %s", f)
             self._clean_file(f)
         self.logger.con_out("*** SOSCleaner Statistics ***")
