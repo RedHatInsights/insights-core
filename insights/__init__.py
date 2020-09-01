@@ -137,6 +137,7 @@ def _run(broker, graph=None, root=None, context=None, inventory=None):
 def load_default_plugins():
     dr.load_components("insights.specs.default")
     dr.load_components("insights.specs.insights_archive")
+    dr.load_components("insights.specs.core3_archive")
     dr.load_components("insights.specs.sos_archive")
     dr.load_components("insights.specs.jdr_archive")
 
