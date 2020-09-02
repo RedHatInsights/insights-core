@@ -1654,27 +1654,23 @@ class SOSCleaner(object):
                 self.hn_db['host0'] = self.hostname
 
         self._domains2db()
-        files = self._file_list(self.dir_path)
+        if options.core_collect:
+            # operate on the "data" directory when doing core collection
+            files = self._file_list(os.path.join(self.dir_path, 'data'))
+        else:
+            files = self._file_list(self.dir_path)
         self._process_users_file()
         self.logger.con_out(
             "IP Obfuscation Network Created - %s", self.default_net.compressed)
         self.logger.con_out("*** SOSCleaner Processing ***")
         self.logger.info("Working Directory - %s", self.dir_path)
         for f in files:
-            # skip certain files that insights-client needs unmodified
-            relative_path = os.path.relpath(f, start=self.dir_path)
-            if options.core_collect:
-                # core collection, archive structure is slightly different
-                # do not obfuscate anything outside the "data" dir
-                relative_path_to_data_dir = os.path.relpath(relative_path, start='data')
-                # if os.path.dirname(relative_path) != 'data':
-                # print(relative_path)
-                continue
-            else:
-                # classic collection, skip metadata files
+            if not options.core_collect:
+                # skip certain files that insights-client needs unmodified
+                # only necessary when not on core collection --
+                #   self.dir_path will only operate on the "data" directory
+                relative_path = os.path.relpath(f, start=self.dir_path)
                 if relative_path in ('display_name', 'blacklist_report', 'tags.json', 'branch_info', 'version_info', 'egg_release'):
-                    # do not obfuscate the insights-client metadata files
-                    # print(relative_path)
                     continue
             self.logger.debug("Cleaning %s", f)
             self._clean_file(f)

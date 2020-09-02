@@ -71,7 +71,9 @@ class CoreCollector(DataCollector):
 
         logger.debug('Collection finished.')
 
-        self.redact(rm_conf)
+        # we only want to redact from the data dir
+        redaction_target_path = os.path.join(self.archive.archive_dir, 'data')
+        self.redact(rm_conf, redaction_target_path)
 
         # collect metadata
         logger.debug('Collecting metadata...')

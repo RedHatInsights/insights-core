@@ -293,7 +293,7 @@ class DataCollector(object):
                         self.archive.add_to_archive(glob_spec)
         logger.debug('Spec collection finished.')
 
-        self.redact(rm_conf)
+        self.redact(rm_conf, self.archive.archive_dir)
 
         # collect metadata
         logger.debug('Collecting metadata...')
@@ -305,14 +305,14 @@ class DataCollector(object):
         self._write_egg_release()
         logger.debug('Metadata collection finished.')
 
-    def redact(self, rm_conf):
+    def redact(self, rm_conf, redaction_target_path):
         '''
         Perform data redaction (password sed command and patterns),
         write data to the archive in place
         '''
         logger.debug('Running content redaction...')
 
-        if not re.match(r'/var/tmp/.+/insights-.+', self.archive.archive_dir):
+        if not re.match(r'/var/tmp/.+/insights-.+', redaction_target_path):
             # sanity check to make sure we're only modifying
             #   our own stuff in temp
             # we should never get here but just in case
@@ -338,7 +338,7 @@ class DataCollector(object):
         if not exclude:
             logger.debug('Patterns section of blacklist configuration is empty.')
 
-        for dirpath, dirnames, filenames in os.walk(self.archive.archive_dir):
+        for dirpath, dirnames, filenames in os.walk(redaction_target_path):
             for f in filenames:
                 fullpath = os.path.join(dirpath, f)
                 redacted_contents = _process_content_redaction(fullpath, exclude, regex)
