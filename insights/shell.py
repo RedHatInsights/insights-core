@@ -17,6 +17,8 @@ import IPython
 from pygments.console import ansiformat
 from traitlets.config.loader import Config
 
+from insights.core.context import SerializedArchiveContext
+from insights.core.serde import Hydration
 from insights.parsr.query import *  # noqa
 from insights.parsr.query import eq, matches, make_child_query as q  # noqa
 from insights.parsr.query.boolean import FALSE, TRUE
@@ -58,6 +60,10 @@ def _create_new_broker(path=None):
     def make_broker(ctx):
         broker = dr.Broker()
         broker[ctx.__class__] = ctx
+
+        if isinstance(ctx, SerializedArchiveContext):
+            h = Hydration(ctx.root)
+            broker = h.hydrate(broker=broker)
 
         dr.run(datasources, broker=broker)
 

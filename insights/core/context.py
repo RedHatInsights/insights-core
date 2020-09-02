@@ -136,6 +136,8 @@ class ExecutionContextMeta(type):
             return
         ExecutionContextMeta.registry.append(cls)
 
+    # Remember that contexts are tried *in reverse order* so that they
+    # may be overridden by just loading a plugin.
     @classmethod
     def identify(cls, files):
         for e in reversed(cls.registry):
@@ -214,13 +216,13 @@ class HostContext(ExecutionContext):
 
 
 @fs_root
-class SerializedArchiveContext(ExecutionContext):
-    marker = "insights_archive.txt"
+class HostArchiveContext(ExecutionContext):
+    marker = "insights_commands"
 
 
 @fs_root
-class HostArchiveContext(ExecutionContext):
-    marker = "insights_commands"
+class SerializedArchiveContext(ExecutionContext):
+    marker = "insights_archive.txt"
 
 
 @fs_root
