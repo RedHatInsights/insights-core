@@ -293,7 +293,7 @@ class DataCollector(object):
                         self.archive.add_to_archive(glob_spec)
         logger.debug('Spec collection finished.')
 
-        self.redact(rm_conf, self.archive.archive_dir)
+        self.redact(rm_conf)
 
         # collect metadata
         logger.debug('Collecting metadata...')
@@ -305,14 +305,14 @@ class DataCollector(object):
         self._write_egg_release()
         logger.debug('Metadata collection finished.')
 
-    def redact(self, rm_conf, redaction_target_path):
+    def redact(self, rm_conf):
         '''
         Perform data redaction (password sed command and patterns),
         write data to the archive in place
         '''
         logger.debug('Running content redaction...')
 
-        if not re.match(r'/var/tmp/.+/insights-.+', redaction_target_path):
+        if not re.match(r'/var/tmp/.+/insights-.+', self.archive.archive_dir):
             # sanity check to make sure we're only modifying
             #   our own stuff in temp
             # we should never get here but just in case
@@ -338,7 +338,19 @@ class DataCollector(object):
         if not exclude:
             logger.debug('Patterns section of blacklist configuration is empty.')
 
-        for dirpath, dirnames, filenames in os.walk(redaction_target_path):
+        # TODO: consider implementing redact() in CoreCollector class rather than
+        #   special handling here
+        if self.config.core_collect:
+            # redact only from the 'data' directory
+            searchpath = os.path.join(self.archive.archive_dir, 'data')
+            if not os.path.isdir(searchpath):
+                # abort if the dir does not exist
+                # we should never get here but just in case
+                raise RuntimeError('ERROR: invalid Insights archive temp path')
+        else:
+            searchpath = self.archive.archive_dir
+
+        for dirpath, dirnames, filenames in os.walk(searchpath):
             for f in filenames:
                 fullpath = os.path.join(dirpath, f)
                 redacted_contents = _process_content_redaction(fullpath, exclude, regex)
