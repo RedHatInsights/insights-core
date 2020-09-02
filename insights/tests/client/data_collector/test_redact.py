@@ -28,7 +28,7 @@ def test_redact_called_classic(redact):
     blacklist_report = {'test3': 'test4'}
     dc = DataCollector(conf)
     dc.run_collection(upload_conf, rm_conf, branch_info, blacklist_report)
-    redact.assert_called_once_with(rm_conf)
+    redact.assert_called_once_with(rm_conf, dc.archive.archive_dir)
 
 
 @patch('insights.client.archive.InsightsArchive', Mock())
@@ -50,7 +50,7 @@ def test_redact_called_core(redact):
     blacklist_report = {'test3': 'test4'}
     dc = CoreCollector(conf)
     dc.run_collection(upload_conf, rm_conf, branch_info, blacklist_report)
-    redact.assert_called_once_with(rm_conf)
+    redact.assert_called_once_with(rm_conf, '/var/tmp/testarchive/insights-test/data')
 
 
 @patch('insights.client.data_collector.os.walk')
@@ -66,7 +66,7 @@ def test_redact_call_walk(walk):
     dc = DataCollector(conf, arch)
     rm_conf = {}
 
-    dc.redact(rm_conf)
+    dc.redact(rm_conf, dc.archive.archive_dir)
     walk.assert_called_once_with(arch.archive_dir)
 
 
@@ -98,7 +98,7 @@ def test_redact_call_process_redaction(_process_content_redaction):
         open_name = '__builtin__.open'
 
     with patch(open_name, create=True) as mock_open:
-        dc.redact(rm_conf)
+        dc.redact(rm_conf, dc.archive.archive_dir)
         _process_content_redaction.assert_called_once_with(test_file, None, False)
         mock_open.assert_called_once_with(test_file, 'wb')
         mock_open.return_value.__enter__.return_value.write.assert_called_once_with(_process_content_redaction.return_value)
@@ -129,7 +129,7 @@ def test_redact_exclude_regex(_process_content_redaction):
         open_name = '__builtin__.open'
 
     with patch(open_name, create=True):
-        dc.redact(rm_conf)
+        dc.redact(rm_conf, dc.archive.archive_dir)
         _process_content_redaction.assert_called_once_with(test_file, ['12.*4', '^abcd'], True)
 
 
@@ -158,7 +158,7 @@ def test_redact_exclude_no_regex(_process_content_redaction):
         open_name = '__builtin__.open'
 
     with patch(open_name, create=True):
-        dc.redact(rm_conf)
+        dc.redact(rm_conf, dc.archive.archive_dir)
         _process_content_redaction.assert_called_once_with(test_file, ['1234', 'abcd'], False)
 
 
@@ -187,7 +187,7 @@ def test_redact_exclude_empty(_process_content_redaction):
         open_name = '__builtin__.open'
 
     with patch(open_name, create=True):
-        dc.redact(rm_conf)
+        dc.redact(rm_conf, dc.archive.archive_dir)
         _process_content_redaction.assert_called_once_with(test_file, [], False)
 
 
@@ -216,7 +216,7 @@ def test_redact_exclude_none(_process_content_redaction):
         open_name = '__builtin__.open'
 
     with patch(open_name, create=True):
-        dc.redact(rm_conf)
+        dc.redact(rm_conf, dc.archive.archive_dir)
         _process_content_redaction.assert_called_once_with(test_file, None, False)
 
 
@@ -236,6 +236,6 @@ def test_redact_bad_location(_process_content_redaction, walk):
         dc = DataCollector(conf, arch)
         rm_conf = {}
         with pytest.raises(RuntimeError):
-            dc.redact(rm_conf)
+            dc.redact(rm_conf, dc.archive.archive_dir)
         walk.assert_not_called()
         _process_content_redaction.assert_not_called()
