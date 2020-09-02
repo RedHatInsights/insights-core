@@ -1014,8 +1014,8 @@ class SOSCleaner(object):
                 if false_positive in filename:
                     process_obfuscation = False
             new_line = self._sub_keywords(line)  # Keyword Substitution
-            if self.obfuscate_macs is True:
-                new_line = self._sub_mac(new_line)  # MAC address obfuscation
+            # if self.obfuscate_macs is True:
+            #     new_line = self._sub_mac(new_line)  # MAC address obfuscation
             if process_obfuscation:
                 new_line = self._sub_hostname(
                     new_line)  # Hostname substitution
@@ -1661,10 +1661,21 @@ class SOSCleaner(object):
         self.logger.con_out("*** SOSCleaner Processing ***")
         self.logger.info("Working Directory - %s", self.dir_path)
         for f in files:
+            # skip certain files that insights-client needs unmodified
             relative_path = os.path.relpath(f, start=self.dir_path)
-            if relative_path in ('display_name', 'blacklist_report', 'tags.json', 'branch_info', 'version_info', 'egg_release'):
-                # do not obfuscate the insights-client metadata files
+            if options.core_collect:
+                # core collection, archive structure is slightly different
+                # do not obfuscate anything outside the "data" dir
+                relative_path_to_data_dir = os.path.relpath(relative_path, start='data')
+                # if os.path.dirname(relative_path) != 'data':
+                # print(relative_path)
                 continue
+            else:
+                # classic collection, skip metadata files
+                if relative_path in ('display_name', 'blacklist_report', 'tags.json', 'branch_info', 'version_info', 'egg_release'):
+                    # do not obfuscate the insights-client metadata files
+                    # print(relative_path)
+                    continue
             self.logger.debug("Cleaning %s", f)
             self._clean_file(f)
         self.logger.con_out("*** SOSCleaner Statistics ***")
