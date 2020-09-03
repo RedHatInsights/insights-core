@@ -11,7 +11,7 @@ from insights.client.map_components import (map_rm_conf_to_components,
                                             _search_uploader_json,
                                             _get_component_by_symbolic_name)
 
-uploader_json_file = pkgutil.get_data(insights.__name__, "uploader_json_map.json")
+uploader_json_file = pkgutil.get_data(insights.__name__, "client/uploader_json_map.json")
 uploader_json = json.loads(uploader_json_file)
 default_specs = vars(DefaultSpecs).keys()
 sos_specs = vars(SosSpecs).keys()
