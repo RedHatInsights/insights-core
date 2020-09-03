@@ -301,3 +301,22 @@ def test_logs_with_two_timestamps():
         logerr = BadClassMariaDBLog(ctx)
         assert list(logerr.get_after(datetime(2017, 3, 27, 3, 39, 46))) is None
     assert 'get_after does not recognise time formats of type ' in str(exc)
+
+
+MILLISECONDS_TOWER_LOG = """
+2020-05-28 19:25:36,892 WARNING  django.request Not Found: /api/v1/me/
+2020-05-28 19:25:46,944 INFO     awx.api.authentication User admin performed a GET to /api/v2/activity_stream/ through the API
+2020-05-28 19:33:03,125 INFO     awx.api.authentication User admin performed a GET to /api/v2/job_templates/7/survey_spec/ through the API
+2020-05-28 19:33:03,413 INFO     awx.api.authentication User admin performed a GET to /api/v2/projects/ through the API
+""".strip()
+
+
+class FakeTowerLog(LogFileOutput):
+    time_format = '%Y-%m-%d %H:%M:%S,%f'
+
+
+def test_logs_with_milliseconds():
+    ctx = context_wrap(MILLISECONDS_TOWER_LOG, path='/var/log/tower/tower.log')
+    log = FakeTowerLog(ctx)
+    assert len(log.lines) == 4
+    assert len(list(log.get_after(datetime(2020, 5, 28, 19, 25, 46, 944)))) == 3
