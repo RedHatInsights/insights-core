@@ -11,7 +11,7 @@ from .constants import InsightsConstants as constants
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
 
-uploader_json_file = pkgutil.get_data(insights.__name__, "uploader_json_map.json")
+uploader_json_file = pkgutil.get_data(insights.__name__, "client/uploader_json_map.json")
 uploader_json = json.loads(uploader_json_file)
 
 
