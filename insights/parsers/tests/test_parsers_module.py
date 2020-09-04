@@ -224,6 +224,16 @@ Trailing non-data line
  Another trailing non-data line
 """.strip()
 
+FIXED_CONTENT_5 = """
+Column1    Column 2    Column 3
+
+data1      data 2      data   3
+
+data       7             data   9
+
+data10
+""".strip()
+
 
 FIXED_CONTENT_DUP_HEADER_PREFIXES = """
 NAMESPACE    NAME    LABELS
@@ -288,6 +298,8 @@ def test_parse_fixed_table():
 
     data = parse_fixed_table(FIXED_CONTENT_DUP_HEADER_PREFIXES.splitlines())
     assert data[0] == {'NAMESPACE': 'default', 'NAME': 'foo', 'LABELS': 'app=superawesome'}
+    data = parse_fixed_table(FIXED_CONTENT_5.splitlines())
+    assert len(data) == 3
 
 
 def test_parse_fixed_table_empty_exception():
