@@ -280,6 +280,8 @@ class Specs(SpecSet):
     lastupload = RegistryPoint(multi_output=True)
     libkeyutils_objdumps = RegistryPoint()
     libkeyutils = RegistryPoint()
+    libssh_client_config = RegistryPoint(filterable=True)
+    libssh_server_config = RegistryPoint(filterable=True)
     libvirtd_log = RegistryPoint(filterable=True)
     libvirtd_qemu_log = RegistryPoint(multi_output=True, filterable=True)
     limits_conf = RegistryPoint(multi_output=True)
