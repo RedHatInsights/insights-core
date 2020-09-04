@@ -371,6 +371,8 @@ class DefaultSpecs(Specs):
     lastupload = glob_file(last_upload_globs)
     libkeyutils = simple_command("/usr/bin/find -L /lib /lib64 -name 'libkeyutils.so*'")
     libkeyutils_objdumps = simple_command('/usr/bin/find -L /lib /lib64 -name libkeyutils.so.1 -exec objdump -x "{}" \;')
+    libssh_client_config = simple_file("/etc/libssh/libssh_client.config")
+    libssh_server_config = simple_file("/etc/libssh/libssh_server.config")
     libvirtd_log = simple_file("/var/log/libvirt/libvirtd.log")
     limits_conf = glob_file(["/etc/security/limits.conf", "/etc/security/limits.d/*.conf"])
     localtime = simple_command("/usr/bin/file -L /etc/localtime")
