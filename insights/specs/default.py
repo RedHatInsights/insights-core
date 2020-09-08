@@ -384,6 +384,7 @@ class DefaultSpecs(Specs):
     etc_and_sub_dirs = sorted(["/etc", "/etc/pki/tls/private", "/etc/pki/tls/certs",
         "/etc/pki/ovirt-vmconsole", "/etc/nova/migration", "/etc/sysconfig",
         "/etc/cloud/cloud.cfg.d", "/etc/rc.d/init.d"])
+    ls_edac_mc = simple_command("/bin/ls -lan /sys/devices/system/edac/mc")
     ls_etc = simple_command("/bin/ls -lan {0}".format(' '.join(etc_and_sub_dirs)))
     ls_lib_firmware = simple_command("/bin/ls -lanR /lib/firmware")
     ls_ocp_cni_openshift_sdn = simple_command("/bin/ls -l /var/lib/cni/networks/openshift-sdn")
