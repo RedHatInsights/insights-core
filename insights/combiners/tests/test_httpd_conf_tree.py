@@ -5,6 +5,10 @@ from insights.tests import context_wrap
 from insights.parsers import SkipException
 import pytest
 
+HTTPD_CONF_MIXED_NAME = '''
+H2Push on
+'''
+
 
 HTTPD_CONF_MIXED = '''
 JustFotTest_NoSec "/var/www/cgi"
@@ -785,3 +789,9 @@ def test_recursive_includes():
         httpd1 = _HttpdConf(context_wrap(MULTIPLE_INCLUDES, path='/etc/httpd/conf/httpd.conf'))
         httpd2 = _HttpdConf(context_wrap(MULTIPLE_INCLUDES, path='/etc/httpd/conf.d/05-foreman.d/hello.conf'))
         HttpdConfTree([httpd1, httpd2])
+
+
+def test_mixed_name():
+    httpd1 = _HttpdConf(context_wrap(HTTPD_CONF_MIXED_NAME, path='/etc/httpd/conf/httpd.conf'))
+    result = HttpdConfTree([httpd1])
+    assert len(result.doc["H2Push"]) == 1
