@@ -57,7 +57,6 @@ def test_get_component_by_symbolic_name():
         'gluster_v_status',
         'heat_crontab',
         'httpd_on_nfs',
-        'ls_edac_mc',
         'ls_usr_sbin',
         'lvmconfig',
         'saphostexec_status',
