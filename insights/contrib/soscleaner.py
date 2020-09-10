@@ -1014,8 +1014,6 @@ class SOSCleaner(object):
                 if false_positive in filename:
                     process_obfuscation = False
             new_line = self._sub_keywords(line)  # Keyword Substitution
-            # if self.obfuscate_macs is True:
-            #     new_line = self._sub_mac(new_line)  # MAC address obfuscation
             if process_obfuscation:
                 new_line = self._sub_hostname(
                     new_line)  # Hostname substitution
