@@ -1014,8 +1014,6 @@ class SOSCleaner(object):
                 if false_positive in filename:
                     process_obfuscation = False
             new_line = self._sub_keywords(line)  # Keyword Substitution
-            if self.obfuscate_macs is True:
-                new_line = self._sub_mac(new_line)  # MAC address obfuscation
             if process_obfuscation:
                 new_line = self._sub_hostname(
                     new_line)  # Hostname substitution
@@ -1654,13 +1652,37 @@ class SOSCleaner(object):
                 self.hn_db['host0'] = self.hostname
 
         self._domains2db()
-        files = self._file_list(self.dir_path)
+        if options.core_collect:
+            # operate on the "data" directory when doing core collection
+            files = self._file_list(os.path.join(self.dir_path, 'data'))
+        else:
+            files = self._file_list(self.dir_path)
         self._process_users_file()
         self.logger.con_out(
             "IP Obfuscation Network Created - %s", self.default_net.compressed)
         self.logger.con_out("*** SOSCleaner Processing ***")
         self.logger.info("Working Directory - %s", self.dir_path)
         for f in files:
+            if options.core_collect:
+                # set a relative path of $ARCHIVEROOT/data for core collection
+                relative_path = os.path.relpath(f, start=os.path.join(self.dir_path, 'data'))
+            else:
+                # set a relative path of $ARCHIVEROOT for non core collection
+                relative_path = os.path.relpath(f, start=self.dir_path)
+
+                # in addition to setting up that relative path, skip these
+                #  files in the archive root for classic collection
+                if relative_path in ('display_name',
+                                     'blacklist_report',
+                                     'tags.json',
+                                     'branch_info',
+                                     'version_info',
+                                     'egg_release'):
+                    continue
+            # ALWAYS skip machine-id, subman id, and insights id
+            if relative_path in ('etc/machine-id',
+                                 'etc/insights-client/machine-id'):
+                continue
             self.logger.debug("Cleaning %s", f)
             self._clean_file(f)
         self.logger.con_out("*** SOSCleaner Statistics ***")
