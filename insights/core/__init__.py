@@ -527,6 +527,7 @@ class CommandParser(Parser):
 
     __bad_single_lines = [
             "no such file or directory",
+            "not a directory",
             "command not found",
             "no module named",
             "no files found for",
