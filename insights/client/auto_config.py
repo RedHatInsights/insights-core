@@ -55,7 +55,7 @@ def verify_connectivity(config):
         return False
 
 
-def set_auto_configuration(config, hostname, ca_cert, proxy, is_satellite, is_stage):
+def set_auto_configuration(config, hostname, ca_cert, proxy, is_satellite):
     """
     Set config based on discovered data
     """
@@ -72,14 +72,11 @@ def set_auto_configuration(config, hostname, ca_cert, proxy, is_satellite, is_st
         config.proxy = proxy
     if is_satellite:
         # satellite
-        config.base_url = hostname + '/r/insights'
+        config.base_url = hostname + '/r/insights/platform'
         logger.debug('Auto-configured base_url: %s', config.base_url)
     else:
         # connected directly to RHSM
-        if is_stage:
-            config.base_url = hostname + '/api'
-        else:
-            config.base_url = hostname + '/r/insights'
+        config.base_url = hostname + '/api'
         logger.debug('Auto-configured base_url: %s', config.base_url)
         logger.debug('Not connected to Satellite, skipping branch_info')
         # direct connection to RHSM, skip verify_connectivity
@@ -115,7 +112,6 @@ def _try_satellite6_configuration(config):
         key = open(rhsmCertificate.keypath(), 'r').read()
         rhsm = rhsmCertificate(key, cert)
         is_satellite = False
-        is_stage = False
 
         # This will throw an exception if we are not registered
         logger.debug('Checking if system is subscription-manager registered')
@@ -152,16 +148,14 @@ def _try_satellite6_configuration(config):
         # Directly connected to Red Hat, use cert auth directly with the api
         if _is_rhn_or_rhsm(rhsm_hostname):
             # URL changes. my favorite
-            logger.debug("Connected to Red Hat Directly, using cert-api")
-            rhsm_hostname = 'cert-api.access.redhat.com'
+            logger.debug("Connected to Red Hat Directly, using cert.cloud.redhat.com")
+            rhsm_hostname = 'cert.cloud.redhat.com'
+            config.cert_verify = True
             rhsm_ca = None
         elif _is_staging_rhsm(rhsm_hostname):
             logger.debug('Connected to staging RHSM, using cert.cloud.stage.redhat.com')
             rhsm_hostname = 'cert.cloud.stage.redhat.com'
-            # never use legacy upload for staging
-            config.legacy_upload = False
             config.cert_verify = True
-            is_stage = True
             rhsm_ca = None
         else:
             # Set the host path
@@ -230,7 +224,7 @@ def _try_satellite5_configuration(config):
                 else:
                     proxy = proxy + proxy_host_port
                     logger.debug("RHN Proxy: %s", proxy)
-            set_auto_configuration(config, hostname, rhn_ca, proxy, True, False)
+            set_auto_configuration(config, hostname, rhn_ca, proxy, True)
         else:
             logger.debug("Could not find hostname")
             return False
@@ -247,6 +241,4 @@ def try_auto_configuration(config):
     if config.auto_config and not config.offline:
         if not _try_satellite6_configuration(config):
             _try_satellite5_configuration(config)
-    if not config.legacy_upload and not re.match(r'(\w+\.)?cloud\.(\w+\.)?redhat\.com', config.base_url):
-        config.base_url = config.base_url + '/platform'
     logger.debug('Updated base_url: %s', config.base_url)
