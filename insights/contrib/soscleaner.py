@@ -1681,8 +1681,7 @@ class SOSCleaner(object):
                     continue
             # ALWAYS skip machine-id, subman id, and insights id
             if relative_path in ('etc/machine-id',
-                                 'etc/insights-client/machine-id',
-                                 'insights_commands/subscription-manager_identity'):
+                                 'etc/insights-client/machine-id'):
                 continue
             self.logger.debug("Cleaning %s", f)
             self._clean_file(f)
