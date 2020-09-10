@@ -99,7 +99,8 @@ def optlist_to_dict(optlist, opt_sep=',', kv_sep='=', strip_quotes=False):
     return dict(make_kv(opt) for opt in optlist.split(opt_sep))
 
 
-def split_kv_pairs(lines, comment_char="#", filter_string=None, split_on="=", use_partition=False, ordered=False):
+def split_kv_pairs(lines, comment_char="#", filter_string=None, split_on="=",
+                   use_partition=False, ordered=False, allow_duplicates=False):
     """Split lines of a list into key/value pairs
 
     Use this function to filter and split all lines of a list of strings into
@@ -109,10 +110,6 @@ def split_kv_pairs(lines, comment_char="#", filter_string=None, split_on="=", us
     split character is used, other occurrences of the split char in the line
     will be ignored. ::func:`get_active_lines` is called to strip comments and
     blank lines from the data.
-
-    .. note::
-        If there are two or more lines that have the same key, then we store the
-        values in a list.
 
     Parameters:
         lines (list of str): List of the strings to be split.
@@ -138,6 +135,9 @@ def split_kv_pairs(lines, comment_char="#", filter_string=None, split_on="=", us
             `OrderedDict` type is used. If this parameter is `False` then the resulting
             dictionary is in no particular order, a base python `dict` type is used.
             The default is `False`.
+        allow_duplicates (bool): If this parameter is `True` then we store the values with
+            the same key in a list when there are two or more lines that have the same key.
+            The default is `False`.
 
     Returns:
         dict: Return value is a dictionary of the key/value pairs.  If parameter
@@ -155,15 +155,17 @@ def split_kv_pairs(lines, comment_char="#", filter_string=None, split_on="=", us
         keyword2 = value2a=True, value2b=100M
         keyword3     # Key with no separator
         >>> split_kv_pairs(lines)
-        {'keyword2': 'value2a=True, value2b=100M', 'keyword1': ['value1', 'value2']}
+        {'keyword2': 'value2a=True, value2b=100M', 'keyword1': 'value2'}
+        >>> split_kv_pairs(lines, allow_duplicates=True)
+        {'keyword2': ['value2a=True, value2b=100M'], 'keyword1': ['value1', 'value2']}
         >>> split_kv_pairs(lines, comment_char='#')
-        {'keyword2': 'value2a=True, value2b=100M', 'keyword1': ['value1', 'value2']}
+        {'keyword2': 'value2a=True, value2b=100M', 'keyword1': 'value2'}
         >>> split_kv_pairs(lines, filter_string='keyword2')
         {'keyword2': 'value2a=True, value2b=100M'}
         >>> split_kv_pairs(lines, use_partition=True)
-        {'keyword3': '', 'keyword2': 'value2a=True, value2b=100M', 'keyword1': ['value1', 'value2']}
+        {'keyword3': '', 'keyword2': 'value2a=True, value2b=100M', 'keyword1': 'value1'}
         >>> split_kv_pairs(lines, use_partition=True, ordered=True)
-        OrderedDict([('keyword1', ['value1', 'value2']), ('keyword2', 'value2a=True, value2b=100M'), ('keyword3', '')])
+        OrderedDict([('keyword1', 'value2'), ('keyword2', 'value2a=True, value2b=100M'), ('keyword3', '')])
 
     """
     _lines = lines if comment_char is None else get_active_lines(lines, comment_char=comment_char)
@@ -179,14 +181,18 @@ def split_kv_pairs(lines, comment_char="#", filter_string=None, split_on="=", us
             k, _, v = [i.strip() for i in line.partition(split_on)]
 
         if k is not None:
-            if k not in kv_pairs:
+            if not allow_duplicates:
+                # Notice: only save the last value
                 kv_pairs[k] = v
             else:
-                _v = kv_pairs[k]
-                _v = [_v] if not isinstance(_v, list) else _v
-                if v not in _v:
-                    _v.append(v)
-                    kv_pairs[k] = _v
+                if k not in kv_pairs:
+                    kv_pairs[k] = v
+                else:
+                    _v = kv_pairs[k]
+                    _v = [_v] if not isinstance(_v, list) else _v
+                    if v not in _v:
+                        _v.append(v)
+                        kv_pairs[k] = _v
 
     return kv_pairs
 

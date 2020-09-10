@@ -108,7 +108,7 @@ def test_split_kv_pairs():
         'keyword3': ''
     }
 
-    kv_pairs = split_kv_pairs(SPLIT_TEST_3.splitlines(), comment_char='@', split_on=':', use_partition=True)
+    kv_pairs = split_kv_pairs(SPLIT_TEST_3.splitlines(), comment_char='@', split_on=':', use_partition=True, allow_duplicates=True)
     assert len(kv_pairs) == 2
     print(kv_pairs)
     assert kv_pairs == {

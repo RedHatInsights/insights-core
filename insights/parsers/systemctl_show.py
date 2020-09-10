@@ -21,6 +21,10 @@ class SystemctlShowServiceAll(CommandParser, dict):
     Class for parsing ``systemctl show *.service`` command output.
     Empty properties are suppressed.
 
+    .. note::
+        If there are two or more lines that have the same key, then we store the
+        values in a list.
+
     Sample Input::
 
         Id=postfix.service
@@ -29,6 +33,8 @@ class SystemctlShowServiceAll(CommandParser, dict):
         LimitNOFILE=65536
         LimitMEMLOCK=
         LimitLOCKS=18446744073709551615
+        DummyKey1 = Value1
+        DummyKey1 = Value2
 
         Id=postgresql.service
         Names=postgresql.service
@@ -45,6 +51,7 @@ class SystemctlShowServiceAll(CommandParser, dict):
                 "LimitNOFILE"      : "65536",
                 "TimeoutStartUSec" : "1min 30s",
                 "LimitLOCKS"       : "18446744073709551615",
+                "DummyKey1"        : ["Value1", "Value2"]
             },
             "postgresql.service": {
                 "Id"               : "postgresql.service",
@@ -88,7 +95,7 @@ class SystemctlShowServiceAll(CommandParser, dict):
                 sidx = i + 1
         idx_list.append((sidx, len(content)))
         for s, e in idx_list:
-            data = split_kv_pairs(content[s:e], use_partition=False)
+            data = split_kv_pairs(content[s:e], use_partition=False, allow_duplicates=True)
             name = data.get('Names', data.get('Id'))
             if not name:
                 raise ParseException('"Names" or "Id" not found!')
