@@ -11,7 +11,7 @@ from insights.client.map_components import (map_rm_conf_to_components,
                                             _search_uploader_json,
                                             _get_component_by_symbolic_name)
 
-uploader_json_file = pkgutil.get_data(insights.__name__, "uploader_json_map.json")
+uploader_json_file = pkgutil.get_data(insights.__name__, "client/uploader_json_map.json")
 uploader_json = json.loads(uploader_json_file)
 default_specs = vars(DefaultSpecs).keys()
 sos_specs = vars(SosSpecs).keys()
@@ -57,7 +57,6 @@ def test_get_component_by_symbolic_name():
         'gluster_v_status',
         'heat_crontab',
         'httpd_on_nfs',
-        'ls_edac_mc',
         'ls_usr_sbin',
         'lvmconfig',
         'saphostexec_status',
@@ -101,9 +100,7 @@ def test_get_component_by_symbolic_name():
         'sap_host_profile',
         'sched_rt_runtime_us',
         'libvirtd_qemu_log',
-        'mlx4_port',
-        'dm_mod_use_blk_mq',
-        'scsi_mod_use_blk_mq'
+        'mlx4_port'
     ]
 
     # first, make sure our list is proper and one of these
