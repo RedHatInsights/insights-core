@@ -238,7 +238,7 @@
             "symbolic_name": "du_dirs"
         },
         {
-            "command": "/bin/engine-db-query --statement \"SELECT vs.vds_name, rpm_version FROM vds_dynamic vd, vds_static vs WHERE vd.vds_id = vs.vds_id;\" --json",
+            "command": "/bin/engine-db-query --statement \"SELECT vs.vds_name, rpm_version FROM vds_dynamic vd, vds_static vs WHERE vd.vds_id = vs.vds_id\" --json",
             "pattern": [],
             "symbolic_name": "engine_db_query_vdsm_version"
         },
@@ -526,7 +526,7 @@
             "symbolic_name": "ls_edac_mc"
         },
         {
-            "command": "/bin/ls -lan /etc /etc/cloud/cloud.cfg.d /etc/nova/migration /etc/pki/ovirt-vmconsole /etc/pki/tls/certs /etc/pki/tls/private /etc/sysconfig /etc/rc.d/init.d",
+            "command": "/bin/ls -lan /etc /etc/cloud/cloud.cfg.d /etc/nova/migration /etc/pki/ovirt-vmconsole /etc/pki/tls/certs /etc/pki/tls/private /etc/rc.d/init.d /etc/sysconfig",
             "pattern": [],
             "symbolic_name": "ls_etc"
         },
@@ -1034,6 +1034,9 @@
                 "crmd",
                 "dlm_controld",
                 "docker",
+                "heat-engine",
+                "nova-compute",
+                "nova-conductor",
                 "ntpd",
                 "openshift start master api",
                 "openshift start master controllers",
@@ -1069,7 +1072,10 @@
                 "crmd",
                 "dlm_controld",
                 "docker",
+                "heat-engine",
                 "mysqld",
+                "nova-compute",
+                "nova-conductor",
                 "ntpd",
                 "oc observe csr",
                 "openshift start master api",
@@ -1115,6 +1121,7 @@
                 "elasticsearch",
                 "goferd",
                 "greenplum",
+                "heat-engine",
                 "httpd",
                 "iscsid",
                 "multipath",
@@ -1122,6 +1129,7 @@
                 "nfsd",
                 "nginx",
                 "nova-compute",
+                "nova-conductor",
                 "ntpd",
                 "octavia-worker",
                 "openshift start master api",
@@ -1157,9 +1165,12 @@
                 "crmd",
                 "dlm_controld",
                 "docker",
+                "heat-engine",
                 "neutron-ns-metadata-proxy",
                 "nginx: master process",
                 "nginx: worker process",
+                "nova-compute",
+                "nova-conductor",
                 "ntpd",
                 "openshift start master api",
                 "openshift start master controllers",
@@ -1857,7 +1868,8 @@
         {
             "file": "/etc/dnf/dnf.conf",
             "pattern": [
-                "["
+                "[",
+                "best"
             ],
             "symbolic_name": "dnf_conf"
         },
@@ -2139,6 +2151,15 @@
             "symbolic_name": "ipaupgrade_log"
         },
         {
+            "file": "/etc/ipsec.conf",
+            "pattern": [
+                "config",
+                "include",
+                "plutodebug"
+            ],
+            "symbolic_name": "ipsec_conf"
+        },
+        {
             "file": "/etc/sysconfig/iptables",
             "pattern": [],
             "symbolic_name": "iptables_permanent"
@@ -2184,6 +2205,20 @@
             "file": "/sys/kernel/mm/ksm/run",
             "pattern": [],
             "symbolic_name": "ksmstate"
+        },
+        {
+            "file": "/etc/libssh/libssh_client.config",
+            "pattern": [
+                "Include"
+            ],
+            "symbolic_name": "libssh_client_config"
+        },
+        {
+            "file": "/etc/libssh/libssh_server.config",
+            "pattern": [
+                "Include"
+            ],
+            "symbolic_name": "libssh_server_config"
         },
         {
             "file": "/var/log/libvirt/libvirtd.log",
@@ -2247,6 +2282,8 @@
                 "- image is referenced in one or more repositories",
                 "/input/input",
                 "11000 E11000 duplicate key error index: pulp_database.repo_profile_applicability.$profile_hash_-1_repo_id_-1",
+                "17763",
+                ": possible SYN flooding on port",
                 ": segfault at ",
                 ": session replaced: jid=",
                 "Abort command issued",
@@ -2267,6 +2304,7 @@
                 "Exception happened during processing of request from",
                 "Failed to bind socket: No such file or directory",
                 "Failed to extend thin",
+                "Hyper-V Host",
                 "List /apis/image.openshift.io/v1/images",
                 "Loop callback failed with: Cannot allocate memory",
                 "MDC/MDIO access timeout",
@@ -2351,7 +2389,6 @@
                 "kernel: lockd: Unknown symbol unregister_inet6addr_notifier",
                 "kernel: megasas: Found FW in FAULT state, will reset adapter.",
                 "kernel: nfs: server",
-                "kernel: possible SYN flooding on port",
                 "khash_super_prune_nolock",
                 "link status up for interface",
                 "megaraid_sas: FW detected to be in faultstate, restarting it",
@@ -2366,7 +2403,6 @@
                 "reservation conflict",
                 "returned a bad sequence-id error",
                 "rhsmd: rhsmd process exceeded runtime and was killed",
-                "segfault at",
                 "server kernel: rhsmcertd-worke",
                 "shm_open failed, Permission denied",
                 "skb_copy",
@@ -3606,7 +3642,9 @@
         {
             "file": "/etc/named.conf",
             "pattern": [
-                "include"
+                "include",
+                "{",
+                "}"
             ],
             "symbolic_name": "named_conf"
         },
@@ -3994,7 +4032,8 @@
             "glob": "/etc/ssh/ssh_config.d/*.conf",
             "symbolic_name": "ssh_config_d",
             "pattern": [
-                "Include"
+                "Include",
+                "SendEnv"
             ]
         }
     ],
@@ -4018,5 +4057,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2020-08-27T15:58:30.933074"
+    "version": "2020-09-10T14:04:52.231084"
 }
