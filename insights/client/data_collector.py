@@ -338,9 +338,26 @@ class DataCollector(object):
         if not exclude:
             logger.debug('Patterns section of blacklist configuration is empty.')
 
-        for dirpath, dirnames, filenames in os.walk(self.archive.archive_dir):
+        # TODO: consider implementing redact() in CoreCollector class rather than
+        #   special handling here
+        if self.config.core_collect:
+            # redact only from the 'data' directory
+            searchpath = os.path.join(self.archive.archive_dir, 'data')
+            if not os.path.isdir(searchpath):
+                # abort if the dir does not exist
+                # we should never get here but just in case
+                raise RuntimeError('ERROR: invalid Insights archive temp path')
+        else:
+            searchpath = self.archive.archive_dir
+
+        for dirpath, dirnames, filenames in os.walk(searchpath):
             for f in filenames:
                 fullpath = os.path.join(dirpath, f)
+                if (fullpath.endswith('etc/insights-client/machine-id') or
+                   fullpath.endswith('etc/machine-id') or
+                   fullpath.endswith('insights_commands/subscription-manager_identity')):
+                    # do not redact the ID files
+                    continue
                 redacted_contents = _process_content_redaction(fullpath, exclude, regex)
                 with open(fullpath, 'wb') as dst:
                     dst.write(redacted_contents)
@@ -405,6 +422,8 @@ class CleanOptions(object):
         self.networks = None
         self.users = None
         self.users_file = None
+        self.obfuscate_macs = False
+        self.core_collect = config.core_collect
 
         if rm_conf:
             try:
