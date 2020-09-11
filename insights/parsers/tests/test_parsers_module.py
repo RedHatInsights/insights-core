@@ -113,7 +113,7 @@ def test_split_kv_pairs():
     print(kv_pairs)
     assert kv_pairs == {
         'keyword1': ['value1', 'value2', 'value3'],
-        'keyword2': 'value2a=True, value2b=100M'
+        'keyword2': ['value2a=True, value2b=100M']
     }
 
 

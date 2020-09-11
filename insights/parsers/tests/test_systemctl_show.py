@@ -303,19 +303,19 @@ def test_systemctl_show_service_all():
 
     assert 'postfix.service' in svc_all
     assert 'LimitMEMLOCK' not in svc_all['postfix.service']
-    assert svc_all['postfix.service']["LimitNOFILE"] == "65536"
-    assert svc_all['postfix.service']["KillSignal"] == "15"
-    assert svc_all['postfix.service']["LimitLOCKS"] == "18446744073709551615"
+    assert svc_all['postfix.service']["LimitNOFILE"] == ["65536"]
+    assert svc_all['postfix.service']["KillSignal"] == ["15"]
+    assert svc_all['postfix.service']["LimitLOCKS"] == ["18446744073709551615"]
     assert len(svc_all['postfix.service']) == 10
 
     assert 'postgresql.service' in svc_all
-    assert svc_all['postgresql.service']["User"] == "postgres"
-    assert svc_all['postgresql.service']["ControlGroup"] == "/system.slice/postgresql.service"
+    assert svc_all['postgresql.service']["User"] == ["postgres"]
+    assert svc_all['postgresql.service']["ControlGroup"] == ["/system.slice/postgresql.service"]
     assert len(svc_all['postgresql.service']) == 28
 
     assert 'tuned.service' in svc_all
-    assert svc_all['tuned.service']["Id"] == "tuned.service"
-    assert svc_all['tuned.service']["Transient"] == "no"
+    assert svc_all['tuned.service']["Id"] == ["tuned.service"]
+    assert svc_all['tuned.service']["Transient"] == ["no"]
     assert "ABC" not in svc_all['tuned.service']
     assert len(svc_all['tuned.service']) == 44
 
@@ -323,7 +323,7 @@ def test_systemctl_show_service_all():
 def test_systemctl_show_target():
     data = SystemctlShowTarget(context_wrap(SYSTEMCTL_SHOW_TARGET))
     assert 'network.target' in data
-    assert data.get('network.target').get('WantedBy', None) == 'NetworkManager.service'
+    assert data.get('network.target').get('WantedBy', None) == ['NetworkManager.service']
     assert data.get('network.target').get('RequiredBy', None) is None
 
 

@@ -68,15 +68,15 @@ class SystemctlShowServiceAll(CommandParser, dict):
         >>> 'postfix.service' in systemctl_show_all
         True
         >>> systemctl_show_all['postfix.service']['Id']
-        'postfix.service'
+        ['postfix.service']
         >>> 'LimitMEMLOCK' in systemctl_show_all['postfix.service']
         False
         >>> systemctl_show_all['postfix.service']['LimitLOCKS']
-        '18446744073709551615'
+        ['18446744073709551615']
         >>> 'postgresql.service' in systemctl_show_all
         True
         >>> systemctl_show_all['postgresql.service']['LimitNICE']
-        '0'
+        ['0']
 
     Raises:
         SkipException: When nothing needs to parse
@@ -97,9 +97,10 @@ class SystemctlShowServiceAll(CommandParser, dict):
         for s, e in idx_list:
             data = split_kv_pairs(content[s:e], use_partition=False, allow_duplicates=True)
             name = data.get('Names', data.get('Id'))
-            if not name:
+            if not name or len(name) > 1:
                 raise ParseException('"Names" or "Id" not found!')
-            self[name] = dict((k, v) for k, v in data.items() if v)
+
+            self[name[0]] = dict((k, v) for k, v in data.items() if v[0])
 
         if len(self) == 0:
             raise SkipException
@@ -171,7 +172,7 @@ class SystemctlShowTarget(SystemctlShowServiceAll):
         >>> 'network.target' in systemctl_show_target
         True
         >>> systemctl_show_target.get('network.target').get('WantedBy', None)
-        'NetworkManager.service'
+        ['NetworkManager.service']
         >>> systemctl_show_target.get('network.target').get('RequiredBy', None)
 
     Raises:

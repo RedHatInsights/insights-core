@@ -186,10 +186,9 @@ def split_kv_pairs(lines, comment_char="#", filter_string=None, split_on="=",
                 kv_pairs[k] = v
             else:
                 if k not in kv_pairs:
-                    kv_pairs[k] = v
+                    kv_pairs[k] = [v]
                 else:
                     _v = kv_pairs[k]
-                    _v = [_v] if not isinstance(_v, list) else _v
                     if v not in _v:
                         _v.append(v)
                         kv_pairs[k] = _v
