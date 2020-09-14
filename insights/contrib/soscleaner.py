@@ -113,6 +113,7 @@ class SOSCleaner(object):
         self.config_file = '/etc/soscleaner.conf'
         self._read_early_config_options()
         self.obfuscate_macs = True  # issue #98
+        self.obfuscate_hostname = False
 
     def _check_uid(self):
         """Ensures soscleaner is running as root. This isn't required for soscleaner,
@@ -1015,8 +1016,9 @@ class SOSCleaner(object):
                     process_obfuscation = False
             new_line = self._sub_keywords(line)  # Keyword Substitution
             if process_obfuscation:
-                new_line = self._sub_hostname(
-                    new_line)  # Hostname substitution
+                if self.obfuscate_hostname:
+                    new_line = self._sub_hostname(
+                        new_line)  # Hostname substitution
                 new_line = self._sub_ip(new_line)  # IP substitution
                 new_line = self._sub_username(
                     new_line)  # Username substitution
@@ -1219,7 +1221,7 @@ class SOSCleaner(object):
                 # Try converting it all to lowercase
                 if add_domain:
                     self.domain_count += 1
-                    o_domain = "ofuscateddomain%s.com" % self.domain_count
+                    o_domain = "obfuscateddomain%s.com" % self.domain_count
                     self.dn_db[domain] = o_domain
                     self.logger.con_out(
                         "Adding new obfuscated domain - %s > %s", domain, o_domain)
@@ -1609,6 +1611,8 @@ class SOSCleaner(object):
         self._read_later_config_options()
         if options.obfuscate_macs:
             self.obfuscate_macs = options.obfuscate_macs
+        if options.obfuscate_hostname:
+            self.obfuscate_hostname = options.obfuscate_hostname
         self._add_loopback_network()
         if options.networks:    # we have defined networks
             self.networks = options.networks

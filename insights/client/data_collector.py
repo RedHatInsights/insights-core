@@ -422,8 +422,8 @@ class CleanOptions(object):
         self.networks = None
         self.users = None
         self.users_file = None
-        self.obfuscate_macs = False
         self.core_collect = config.core_collect
+        self.obfuscate_hostname = config.obfuscate_hostname
 
         if rm_conf:
             try:
