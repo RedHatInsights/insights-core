@@ -2,8 +2,9 @@ import os
 
 # TODO: no bare excepts here
 # TODO: maybe call os.makedirs elsewhere
-# TODO: copy config file to local config dir if it doesn't exist and --conf is not specified
-# TODO: copy an existing machine-id file to local config dir
+# TODO: copy config file to local config dir if it doesn't exist and --conf is not specified?
+# TODO: copy an existing machine-id file to local config dir?
+# TODO: set perms on log/lib dirs
 
 _user_home = os.path.expanduser('~')
 _app_name = 'insights-client'
@@ -132,6 +133,10 @@ class InsightsConstants(object):
     module_router_path = "/module-update-router/v1/channel?module=insights-core"
     sig_kill_ok = 100
     sig_kill_bad = 101
+<<<<<<< HEAD
+=======
+    cached_branch_info = os.path.join(default_conf_dir, '.branch_info')
+>>>>>>> skip autoconfig for non-root, create log and lib dirs from egg
     egg_release_file = os.path.join(os.sep, 'tmp', 'insights-client-egg-release')
     valid_compressors = ("gz", "xz", "bz2", "none")
     # RPM version in which core collection was released

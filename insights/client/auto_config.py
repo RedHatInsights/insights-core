@@ -245,6 +245,10 @@ def try_auto_configuration(config):
     Try to auto-configure if we are attached to a sat5/6
     """
     if config.auto_config and not config.offline:
+        # non-root can only use basic auth
+        if os.getuid() != 0:
+            logger.debug('Auto configuration is only possible as root.')
+            return
         if not _try_satellite6_configuration(config):
             _try_satellite5_configuration(config)
     if not config.legacy_upload and not re.match(r'(\w+\.)?cloud\.(\w+\.)?redhat\.com', config.base_url):
