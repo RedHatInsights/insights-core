@@ -1,10 +1,12 @@
 import logging
 import os
 
-from insights.core import archives
+from insights.core import archives, dr
+from insights.core.serde import Hydration
 from insights.core.context import (ClusterArchiveContext,
                                    ExecutionContextMeta,
-                                   HostArchiveContext)
+                                   HostArchiveContext,
+                                   SerializedArchiveContext)
 
 log = logging.getLogger(__name__)
 
@@ -54,3 +56,16 @@ def create_context(path, context=None):
     common_path, ctx = identify(all_files)
     context = context or ctx
     return context(common_path, all_files=all_files)
+
+
+def initialize_broker(path, context=None, broker=None):
+    ctx = create_context(path, context=context)
+    broker = broker or dr.Broker()
+    if isinstance(ctx, ClusterArchiveContext):
+        return ctx, broker
+
+    broker[ctx.__class__] = ctx
+    if isinstance(ctx, SerializedArchiveContext):
+        h = Hydration(ctx.root)
+        broker = h.hydrate(broker=broker)
+    return ctx, broker
