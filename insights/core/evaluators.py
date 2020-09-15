@@ -151,14 +151,14 @@ class InsightsEvaluator(SingleEvaluator):
 
     def observer(self, comp, broker):
         super(InsightsEvaluator, self).observer(comp, broker)
-        if comp is Specs.machine_id and comp in broker:
+        if self.system_id is None and Specs.machine_id in broker:
             self.system_id = broker[Specs.machine_id].content[0].strip()
 
-        if comp is Specs.redhat_release and comp in broker:
-            self.release = broker[comp].content[0].strip()
+        if self.release is None and Specs.redhat_release in broker:
+            self.release = broker[Specs.redhat_release].content[0].strip()
 
-        if comp is BranchInfo and BranchInfo in broker:
-            self.branch_info = broker[comp].data
+        if not self.branch_info and BranchInfo in broker:
+            self.branch_info = broker[BranchInfo].data
 
         if comp is Specs.metadata_json and comp in broker:
             md = broker[comp]
