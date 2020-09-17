@@ -1103,12 +1103,14 @@
             "pattern": [
                 "/opt/perf/bin/midaemon",
                 "/sbin/multipathd",
+                "/sbin/rngd",
                 "/usr/bin/gnome-shell",
                 "/usr/bin/openshift start master",
                 "/usr/bin/openshift start node",
                 "/usr/bin/teamd",
                 "/usr/sbin/fcoemon --syslog",
                 "COMMAND",
+                "[rcu_sched]",
                 "bash",
                 "catalina.base",
                 "ceilometer-coll",
@@ -1141,6 +1143,8 @@
                 "pcsd",
                 "pkla-check-auth",
                 "postgres",
+                "rcu_gp_kthread",
+                "rcu_sched",
                 "smbd",
                 "spausedd",
                 "target_completi",
@@ -2334,6 +2338,7 @@
                 "_NET_ACTIVE_WINDOW",
                 "as active slave; either",
                 "belongs to docker.service",
+                "blocked for more than",
                 "callbacks suppressed",
                 "canceled DHCP transaction, DHCP client pid",
                 "chardev: opening backend \"socket\" failed",
@@ -3082,6 +3087,7 @@
                 "SECURITY",
                 "Security",
                 "[",
+                "]",
                 "comment",
                 "global",
                 "kerberos method",
@@ -3092,6 +3098,8 @@
                 "read only",
                 "realm",
                 "security",
+                "server max protocol",
+                "socket options",
                 "writable"
             ],
             "symbolic_name": "samba"
@@ -3221,7 +3229,6 @@
                 "PermitRootLogin",
                 "Permitemptypasswords",
                 "Permitrootlogin",
-                "Port",
                 "Protocol",
                 "USEPAM",
                 "UsePAM",
@@ -4057,5 +4064,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2020-09-10T14:04:52.231084"
+    "version": "2020-09-17T13:54:44.273820"
 }
