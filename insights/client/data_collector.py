@@ -338,26 +338,9 @@ class DataCollector(object):
         if not exclude:
             logger.debug('Patterns section of blacklist configuration is empty.')
 
-        # TODO: consider implementing redact() in CoreCollector class rather than
-        #   special handling here
-        if self.config.core_collect:
-            # redact only from the 'data' directory
-            searchpath = os.path.join(self.archive.archive_dir, 'data')
-            if not os.path.isdir(searchpath):
-                # abort if the dir does not exist
-                # we should never get here but just in case
-                raise RuntimeError('ERROR: invalid Insights archive temp path')
-        else:
-            searchpath = self.archive.archive_dir
-
-        for dirpath, dirnames, filenames in os.walk(searchpath):
+        for dirpath, dirnames, filenames in os.walk(self.archive.archive_dir):
             for f in filenames:
                 fullpath = os.path.join(dirpath, f)
-                if (fullpath.endswith('etc/insights-client/machine-id') or
-                   fullpath.endswith('etc/machine-id') or
-                   fullpath.endswith('insights_commands/subscription-manager_identity')):
-                    # do not redact the ID files
-                    continue
                 redacted_contents = _process_content_redaction(fullpath, exclude, regex)
                 with open(fullpath, 'wb') as dst:
                     dst.write(redacted_contents)
@@ -379,7 +362,6 @@ class DataCollector(object):
             and archive files.
         """
         if self.config.obfuscate:
-            logger.warn('WARNING: Some SOSCleaner obfuscation output formatting has changed. See https://access.redhat.com/articles/5355431 for more details.')
             if rm_conf and rm_conf.get('keywords'):
                 logger.warn("WARNING: Skipping keywords defined in blacklist configuration")
             cleaner = SOSCleaner(quiet=True)
@@ -414,16 +396,8 @@ class CleanOptions(object):
         self.files = []
         self.quiet = True
         self.keyword_file = None
-        self.keywords_file = None
         self.keywords = None
         self.no_tar_file = config.output_dir
-        self.loglevel = 'INFO'
-        self.obfuscate_macs = False
-        self.networks = None
-        self.users = None
-        self.users_file = None
-        self.obfuscate_macs = False
-        self.core_collect = config.core_collect
 
         if rm_conf:
             try:
@@ -432,7 +406,7 @@ class CleanOptions(object):
                 self.keyword_file.write("\n".join(keywords).encode('utf-8'))
                 self.keyword_file.flush()
                 self.keyword_file.close()
-                self.keywords_file = [self.keyword_file.name]
+                self.keywords = [self.keyword_file.name]
                 logger.debug("Attmpting keyword obfuscation")
             except LookupError:
                 pass
