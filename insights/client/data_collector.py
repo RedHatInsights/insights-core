@@ -343,8 +343,9 @@ class DataCollector(object):
         if self.config.core_collect:
             # redact only from the 'data' directory
             searchpath = os.path.join(self.archive.archive_dir, 'data')
-            if not os.path.isdir(searchpath):
-                # abort if the dir does not exist
+            if not (os.path.isdir(searchpath) and
+                    re.match(r'/var/tmp/.+/insights-.+/data', searchpath)):
+                # abort if the dir does not exist and isn't the correct format
                 # we should never get here but just in case
                 raise RuntimeError('ERROR: invalid Insights archive temp path')
         else:
