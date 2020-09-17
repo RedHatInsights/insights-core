@@ -22,7 +22,6 @@ from insights.parsr.query import eq
 from insights.parsr import (Char, EOF, Forward, LeftCurly, Lift, LineEnd,
         RightCurly, Many, Number, OneLineComment, Parser, PosMarker, SemiColon,
         QuotedString, skip_none, String, WS, WSChar)
-from insights.parsr import iniparser
 from insights.parsr.query import Directive, Entry, Section
 from insights.parsers import ParseException, SkipException
 from insights.specs import Specs
@@ -99,14 +98,15 @@ class PHPConf(ConfigParser):
     """
 
 
-    def parse_doc(content, ctx):
+    def parse_doc(self, content):
+        try:
             def to_directive(x):
                 name, rest = x
                 rest = [rest] if rest is not None else []
-                return Directive(name=name.value.strip(), attrs=rest, lineno=name.lineno, src=ctx)
+                return Directive(name=name.value.strip(), attrs=rest, lineno=name.lineno, src=self)
 
             def to_section(name, rest):
-                return Section(name=name.value.strip(), children=rest, lineno=name.lineno, src=ctx)
+                return Section(name=name.value.strip(), children=rest, lineno=name.lineno, src=self)
 
             def apply_defaults(cfg):
                 if "DEFAULT" not in cfg:
@@ -121,6 +121,8 @@ class PHPConf(ConfigParser):
 
                 cfg.children = list(not_defaults)
                 return cfg
+
+            content = "\n".join(content)
 
             header_chars = (set(string.printable) - set(string.whitespace) - set("[]")) | set(" ")
             sep_chars = set("=:")
@@ -147,12 +149,9 @@ class PHPConf(ConfigParser):
             Doc = Many(Comment | Sect).map(skip_none)
             Top = Doc << WS << EOF
 
-            res = Entry(children=Top(content), src=ctx)
+            res = Entry(children=Top(content), src=self)
             return apply_defaults(res)
 
-    def parse_doc(self, content):
-        try:
-            return iniparser.parse_doc("\n".join(content), self)
         except SkipException:
             raise
         except:
