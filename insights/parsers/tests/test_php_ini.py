@@ -17,6 +17,7 @@ implicit_flush = Off
 unserialize_callback_func =
 serialize_precision = -1
 disable_functions =
+; This is a comment.
 disable_classes =
 zend.enable_gc = On
 zend.exception_ignore_args = On
@@ -194,11 +195,12 @@ PHP_73_INI = ""
 
 def test_php_conf_default():
     php_c = PHPConf(context_wrap(INI_DEFAULT))
-    assert php_c["PHP"]["default_mimetype"].value == '"text/html"'  # TODO should be without ""
-    assert php_c.data["PHP"]["default_mimetype"] == '"text/html"'
-    assert php_c["PHP"]["engine"].value == 'On'  # TODO should be bool: True
-    assert php_c["PHP"]["precision"].value == '14'  # TODO should be ordinary number
-    # TODO add type number
+    assert php_c['PHP']['default_mimetype'].value == 'text/html'
+    assert php_c.data['PHP']['default_mimetype'] == 'text/html'
+    assert php_c.data['Session']['session.cache_limiter'] == 'nocache'
+    assert php_c['PHP']['engine'].value is True
+    assert php_c['PHP']['precision'].value == 14
+    assert php_c['PHP']['disable_classes'].value == ''
     # TODO add type 128M
     # TODO add type list
     # TODO add check no value specified 'option ='

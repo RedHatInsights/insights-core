@@ -40,7 +40,7 @@ import string
 
 from insights.parsr import (EOF, HangingString, InSet, LeftBracket, Lift,
                             LineEnd, Literal, Many, OneLineComment, Opt, PosMarker, RightBracket,
-                            skip_none, String, WithIndent, WS, WSChar)
+                            skip_none, String, WithIndent, WS, WSChar, DoubleQuotedString)
 from insights.parsr.query import Directive, Entry, eq, Section
 
 
@@ -125,24 +125,32 @@ class PHPConf(ConfigParser):
             content = "\n".join(content)
 
             header_chars = (set(string.printable) - set(string.whitespace) - set("[]")) | set(" ")
-            sep_chars = set("=:")
+            sep_chars = set("=")
             key_chars = header_chars - sep_chars
             value_chars = set(string.printable) - set("\n\r")
 
-            Yes = Literal("yes", True, ignore_case=True)
-            No = Literal("no", False, ignore_case=True)
+            On = Literal("on", True, ignore_case=True)
+            Off = Literal("off", False, ignore_case=True)
             Tru = Literal("true", True, ignore_case=True)
             Fals = Literal("false", False, ignore_case=True)
-            Boolean = ((Yes | No | Tru | Fals) & (WSChar | LineEnd)) % "Boolean"
+            Boolean = ((On | Off | Tru | Fals) & (WSChar | LineEnd)) % "Boolean"
+            Num = Number & (WSChar | LineEnd)
+            QuoStr = QuotedString & (WSChar | LineEnd)
+            # Handle phh.ini shorthand notation for memory limits: 1G, 8M, 50K
+            # https://www.php.net/manual/en/faq.using.php#faq.using.shorthandbytes
+            # TODO
+            #MemNum = Number & (Char('K') | Char('M') | Char('G')) & (WSChar | LineEnd)
+
+            # TODO remove grammar for multiple values in php.ini
 
             LeftEnd = (WS + LeftBracket + WS)
             RightEnd = (WS + RightBracket + WS)
             Header = (LeftEnd >> PosMarker(String(header_chars)) << RightEnd) % "Header"
             Key = WS >> PosMarker(String(key_chars)) << WS
             Sep = InSet(sep_chars, "Sep")
-            Value = WS >> (Boolean | HangingString(value_chars))
+            Value = WS >> (Boolean | Num | QuoStr | HangingString(value_chars))
             KVPair = WithIndent(Key + Opt(Sep >> Value)) % "KVPair"
-            Comment = (WS >> (OneLineComment("#") | OneLineComment(";")).map(lambda x: None))
+            Comment = (WS >> (OneLineComment(";")).map(lambda x: None))
 
             Line = Comment | KVPair.map(to_directive)
             Sect = Lift(to_section) * Header * Many(Line).map(skip_none)
