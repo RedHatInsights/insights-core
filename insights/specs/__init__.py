@@ -465,6 +465,7 @@ class Specs(SpecSet):
     pcs_config = RegistryPoint()
     pcs_quorum_status = RegistryPoint()
     pcs_status = RegistryPoint()
+    php_ini = RegistryPoint()
     pluginconf_d = RegistryPoint(multi_output=True)
     podman_container_inspect = RegistryPoint(multi_output=True)
     podman_image_inspect = RegistryPoint(multi_output=True)
