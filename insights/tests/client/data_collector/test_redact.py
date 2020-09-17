@@ -70,6 +70,25 @@ def test_redact_call_walk(walk):
     walk.assert_called_once_with(arch.archive_dir)
 
 
+@patch('insights.client.data_collector.os.walk')
+@patch('insights.client.data_collector.os.path.isdir', Mock(return_value=True))
+def test_redact_call_walk_core(walk):
+    '''
+    Verify that redact() calls os.walk and when an
+    an archive structure is present in /var/tmp/**/insights-*
+    With core collection, /data is added to the path
+    '''
+    conf = InsightsConfig(core_collect=True)
+    arch = InsightsArchive(conf)
+    arch.create_archive_dir()
+
+    dc = DataCollector(conf, arch)
+    rm_conf = {}
+
+    dc.redact(rm_conf)
+    walk.assert_called_once_with(os.path.join(arch.archive_dir, 'data'))
+
+
 @patch('insights.client.data_collector._process_content_redaction')
 def test_redact_call_process_redaction(_process_content_redaction):
     '''
