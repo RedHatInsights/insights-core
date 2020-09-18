@@ -201,10 +201,8 @@ def test_php_conf_default():
     assert php_c['PHP']['engine'].value is True
     assert php_c['PHP']['precision'].value == 14
     assert php_c['PHP']['disable_classes'].value == ''
-    # TODO add type 128M
-    # TODO add type list
-    # TODO add check no value specified 'option ='
-    assert False
+    assert php_c['PHP']['memory_limit'].value == 128 * 2**20  # Conversion of 128M to bytes.
+    assert php_c['PHP']['post_max_size'].value == 8 * 2**20  # Conversion of 8M to bytes.
 
 
 def test_php_conf_empty():

@@ -122,6 +122,15 @@ class PHPConf(ConfigParser):
                 cfg.children = list(not_defaults)
                 return cfg
 
+            def make_bytes(number, char_multiple):
+                # TODO remove number
+                if char_multiple.lower() == 'k':
+                    return number * 2**10
+                if char_multiple.lower() == 'm':
+                    return number * 2**20
+                if char_multiple.lower() == 'g':
+                    return number * 2**30
+
             content = "\n".join(content)
 
             header_chars = (set(string.printable) - set(string.whitespace) - set("[]")) | set(" ")
@@ -138,8 +147,7 @@ class PHPConf(ConfigParser):
             QuoStr = QuotedString & (WSChar | LineEnd)
             # Handle phh.ini shorthand notation for memory limits: 1G, 8M, 50K
             # https://www.php.net/manual/en/faq.using.php#faq.using.shorthandbytes
-            # TODO
-            #MemNum = Number & (Char('K') | Char('M') | Char('G')) & (WSChar | LineEnd)
+            MemNum = (Lift(make_bytes) * Number * (Char('K') | Char('M') | Char('G'))) & (WSChar | LineEnd)
 
             # TODO remove grammar for multiple values in php.ini
 
@@ -148,7 +156,7 @@ class PHPConf(ConfigParser):
             Header = (LeftEnd >> PosMarker(String(header_chars)) << RightEnd) % "Header"
             Key = WS >> PosMarker(String(key_chars)) << WS
             Sep = InSet(sep_chars, "Sep")
-            Value = WS >> (Boolean | Num | QuoStr | HangingString(value_chars))
+            Value = WS >> (Boolean | MemNum | Num | QuoStr | HangingString(value_chars))
             KVPair = WithIndent(Key + Opt(Sep >> Value)) % "KVPair"
             Comment = (WS >> (OneLineComment(";")).map(lambda x: None))
 
