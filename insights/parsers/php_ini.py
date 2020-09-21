@@ -28,7 +28,7 @@ Typical content of ``/etc/php.ini`` file is::
     error_reporting = E_ALL & ~E_DEPRECATED & ~E_STRICT
     default_mimetype = "text/html"
 
-The class has one attribute ``data`` which is a nestd ``dict`` representing sections
+The class has one attribute ``data`` which is a nested ``dict`` representing sections
 of the input INI file. Each section is represented as ``dict`` where keys are name
 of options and values are values of those options.
 
@@ -50,15 +50,14 @@ Example:
     >>> php_conf.get("PHP").get("memory_limit")  # '128M' is converted into bytes
     134217728
 """
-import os
 import string
-from insights import combiner, parser, run
-from insights.core import ConfigCombiner, ConfigParser
+from insights import parser
+from insights.core import ConfigParser
 from insights.parsr.query import eq
-from insights.parsr import (Char, EOF, Forward, HangingString, InSet,
-        LeftBracket, LeftCurly, Lift, LineEnd, Literal,  RightBracket,
-        RightCurly, Many, Number, OneLineComment, Opt, Parser, PosMarker,
-        SemiColon, QuotedString, skip_none, String, WithIndent, WS, WSChar)
+from insights.parsr import (Char, EOF, HangingString, InSet,
+        LeftBracket, Lift, LineEnd, Literal, RightBracket,
+        Many, Number, OneLineComment, Opt, PosMarker,
+        QuotedString, skip_none, String, WithIndent, WS, WSChar)
 from insights.parsr.query import Directive, Entry, Section
 from insights.parsers import ParseException, SkipException
 from insights.specs import Specs
@@ -115,7 +114,7 @@ class PHPConf(ConfigParser):
             Boolean = ((On | Off | Tru | Fals) & (WSChar | LineEnd)) % "Boolean"
             Num = Number & (WSChar | LineEnd)
             QuoStr = QuotedString & (WSChar | LineEnd)
-            # Handle phh.ini shorthand notation for memory limits: 1G, 8M, 50K
+            # Handle php.ini shorthand notation for memory limits: 1G, 8M, 50K
             # https://www.php.net/manual/en/faq.using.php#faq.using.shorthandbytes
             MemNum = (Lift(make_bytes) * Number * (Char('K') | Char('M') | Char('G'))) & (WSChar | LineEnd)
 

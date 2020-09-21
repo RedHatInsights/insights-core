@@ -1,7 +1,6 @@
 from insights.parsers.php_ini import PHPConf
 from insights.parsers import SkipException, ParseException
 from insights.tests import context_wrap
-import doctest
 import pytest
 
 # Latest production php.ini from php git repository. Comments stripped out.
