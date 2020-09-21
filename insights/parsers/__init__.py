@@ -445,15 +445,15 @@ def parse_delimited_table(table_lines,
     content = table_lines[first_line + 1:last_line]
     headings = [c.strip() if strip else c for c in header.split(header_delim)]
     r = []
-    for row in content:
-        row = row.strip()
+    for line in content:
+        row = line.strip()
         if row:
             rowsplit = row.split(delim, max_splits)
             if strip:
                 rowsplit = [i.strip() for i in rowsplit]
             o = dict(zip(headings, rowsplit))
             if raw_line_key:
-                o[raw_line_key] = row
+                o[raw_line_key] = line
             r.append(o)
     return r
 
