@@ -1,103 +1,74 @@
 """
-TODO
-TODO Add rhel7 SCL files - rh-php73-php, rh-php72-php
-PHPConfe - file ``/etc/php.ini``
-=======================================================
+php_ini - file ``/etc/php.ini``
+===============================
 
-TODO
-This module models nginx configuration as a tree. It correctly handles include
-directives by splicing individual document trees into their parents until one
-document tree is left.
+This module provides the ``PHPConfig`` class parser, for reading the
+options in the ``/etc/php.ini`` file.
 
-TODO
-A DSL is provided to query the tree through a select function or brackets [].
-The brackets allow a more conventional lookup feel but aren't quite as powerful
-as using select directly.
+Typical content of ``/etc/php.ini`` file is::
+
+    [PHP]
+    engine = On
+    short_open_tag = Off
+    precision = 14
+    output_buffering = 4096
+    zlib.output_compression = Off
+    implicit_flush = Off
+    unserialize_callback_func =
+    serialize_precision = -1
+    disable_functions =
+    disable_classes =
+    zend.enable_gc = On
+    zend.exception_ignore_args = On
+    zend.exception_string_param_max_len = 0
+    expose_php = On
+    max_execution_time = 30
+    max_input_time = 60
+    memory_limit = 128M
+    error_reporting = E_ALL & ~E_DEPRECATED & ~E_STRICT
+    default_mimetype = "text/html"
+
+The class has one attribute ``data`` which is a nestd ``dict`` representing sections
+of the input INI file. Each section is represented as ``dict`` where keys are name
+of options and values are values of those options.
+
+Example:
+    >>> php_conf["PHP"]["default_mimetype"].value
+    'text/html'
+    >>> php_config.data['PHP']['default_mimetype']
+    'text/html'
+    >>> php_conf.data['Session']['session.cache_limiter']
+    'nocache'
+    >>> php_conf["PHP"]["max_execution_time"].value
+     30
+    >>> php_conf["PHP"]["engine"].value  # 'On' turns to 'True'
+    True
+    >>> php_conf["PHP"]["short_opeh_tag"].value  # 'Off' turns to 'False'
+    False
+    >>> php_c['PHP']['precision'].value
+    14
+    >>> php_conf.get("PHP").get("memory_limit")  # '128M' is converted into bytes
+    134217728
 """
 import os
 import string
 from insights import combiner, parser, run
 from insights.core import ConfigCombiner, ConfigParser
 from insights.parsr.query import eq
-from insights.parsr import (Char, EOF, Forward, LeftCurly, Lift, LineEnd,
-        RightCurly, Many, Number, OneLineComment, Parser, PosMarker, SemiColon,
-        QuotedString, skip_none, String, WS, WSChar)
+from insights.parsr import (Char, EOF, Forward, HangingString, InSet,
+        LeftBracket, LeftCurly, Lift, LineEnd, Literal,  RightBracket,
+        RightCurly, Many, Number, OneLineComment, Opt, Parser, PosMarker,
+        SemiColon, QuotedString, skip_none, String, WithIndent, WS, WSChar)
 from insights.parsr.query import Directive, Entry, Section
 from insights.parsers import ParseException, SkipException
 from insights.specs import Specs
-
-
-# TODO php_ini - filterable to elimnate collected PII?
-
-# TODO - parsing On/Off values - as True/False - UNIT test
-# TODO - parsing multiple values - as True/False - UNIT test
-# TODO - parsing values like: "memory_limit = 128M"
-#        - solve in parser or just in a rule?
-#        - any parser e.g. httpdConfTree already doing this?
-#        - add UNIT test
-
-import string
-
-from insights.parsr import (EOF, HangingString, InSet, LeftBracket, Lift,
-                            LineEnd, Literal, Many, OneLineComment, Opt, PosMarker, RightBracket,
-                            skip_none, String, WithIndent, WS, WSChar, DoubleQuotedString)
-from insights.parsr.query import Directive, Entry, eq, Section
-
-
 
 
 @parser(Specs.php_ini, continue_on_error=False)
 class PHPConf(ConfigParser):
     """
     Class for php configuration file.
-
-    Typical content of ``/etc/php.ini`` file is::
-
-        [PHP]
-        engine = On
-        short_open_tag = Off
-        precision = 14
-        output_buffering = 4096
-        zlib.output_compression = Off
-        implicit_flush = Off
-        unserialize_callback_func =
-        serialize_precision = -1
-        disable_functions =
-        disable_classes =
-        zend.enable_gc = On
-        zend.exception_ignore_args = On
-        zend.exception_string_param_max_len = 0
-        expose_php = On
-        max_execution_time = 30
-        max_input_time = 60
-        memory_limit = 128M
-        error_reporting = E_ALL & ~E_DEPRECATED & ~E_STRICT
-        default_mimetype = "text/html"
-
-    Example:
-        >>> php_conf["PHP"]["default_mimetype"]
-        'text/html'
-        >>> php_conf["PHP"]["max_execution_time"]
-         30
-        # TODO implement
-        >>> php_conf["PHP"]["engine"]  # 'On' turns to 'True'
-        True
-        # TODO implement
-        >>> php_conf["PHP"]["short_opeh_tag"]  # 'Off' turns to 'False'
-        False
-        # TODO implement
-        >>> php_conf.get("PHP").get("memory_limit")
-        '128M'
-        >>> php_conf["PHP"]["error_reporting"].endswith("E_STRICT")
-        True
-        # TODO implement handling lists in php.ini - item separator?
-        >>> len(php_conf["PHP"]["error_reporting"])
-        3
-        >>> php_conf["PHP"]["error_reporting"]
-        ['E_ALL', '~E_DEPRECATED', '~E_STRICT']
     """
-
-
     def parse_doc(self, content):
         try:
             def to_directive(x):
@@ -123,7 +94,6 @@ class PHPConf(ConfigParser):
                 return cfg
 
             def make_bytes(number, char_multiple):
-                # TODO remove number
                 if char_multiple.lower() == 'k':
                     return number * 2**10
                 if char_multiple.lower() == 'm':
@@ -148,8 +118,6 @@ class PHPConf(ConfigParser):
             # Handle phh.ini shorthand notation for memory limits: 1G, 8M, 50K
             # https://www.php.net/manual/en/faq.using.php#faq.using.shorthandbytes
             MemNum = (Lift(make_bytes) * Number * (Char('K') | Char('M') | Char('G'))) & (WSChar | LineEnd)
-
-            # TODO remove grammar for multiple values in php.ini
 
             LeftEnd = (WS + LeftBracket + WS)
             RightEnd = (WS + RightBracket + WS)

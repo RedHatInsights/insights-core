@@ -187,10 +187,6 @@ ldap.max_links = -1
 
 INI_EMPTY = ""
 INI_INVALID = "bla bla foo ha [] ^&*@#$%"
-# TODO
-PHP_53_INI = ""
-PHP_72_INI = ""
-PHP_73_INI = ""
 
 
 def test_php_conf_default():
@@ -213,7 +209,3 @@ def test_php_conf_empty():
 def test_php_conf_invalid():
     with pytest.raises(ParseException):
         PHPConf(context_wrap(INI_INVALID))
-
-
-
-
