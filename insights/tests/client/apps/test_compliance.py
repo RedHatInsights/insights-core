@@ -99,8 +99,7 @@ def test_find_scap_policy(config, call):
 def test_find_scap_policy_not_found(config, call):
     compliance_client = ComplianceClient(config)
     compliance_client.profile_files = lambda: ['/something']
-    with raises(SystemExit):
-        compliance_client.find_scap_policy('ref_id')
+    assert compliance_client.find_scap_policy('ref_id') is None
 
 
 @patch("insights.client.apps.compliance.call", return_value=(0, ''.encode('utf-8')))
@@ -130,6 +129,17 @@ def test_run_scan_fail(config, call):
         call.assert_called_with(("oscap xccdf eval --profile ref_id --results " + output_path + ' /nonexistent'), keep_rc=True, env=env)
     else:
         call.assert_called_with(("oscap xccdf eval --profile ref_id --results " + output_path + ' /nonexistent').encode(), keep_rc=True, env=env)
+
+
+@patch("insights.client.apps.compliance.call", return_value=(0, ''.encode('utf-8')))
+@patch("insights.client.config.InsightsConfig")
+def test_run_scan_missing_profile(config, call):
+    compliance_client = ComplianceClient(config)
+    output_path = '/tmp/oscap_results-ref_id.xml'
+    env = os.environ
+    env.update({'TZ': 'UTC'})
+    assert compliance_client.run_scan('ref_id', None, output_path) is None
+    call.assert_not_called()
 
 
 @patch("insights.client.config.InsightsConfig")
