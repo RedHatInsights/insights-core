@@ -76,10 +76,6 @@ def test_soscleaner_additions(isdir_, clean_opts):
     for returning before creating the archive
     '''
     clean_opts.hostname_path = 'test'
-    clean_opts.obfuscate_macs = False
-    clean_opts.networks = None
-    clean_opts.users = None
-    clean_opts.users_file = None
 
     # test that soscleaner returns as normal by default,
     #   then that it returns None when no_tar_file is not None
@@ -91,7 +87,6 @@ def test_soscleaner_additions(isdir_, clean_opts):
         s.file_count = Mock()
         s._prep_environment = Mock(return_value=(None, '/var/tmp/test/socleaner-test', None, None, None))
         s._start_logging = Mock()
-        s._check_uid = Mock()
         s._get_disclaimer = Mock()
         s._keywords2db = Mock()
         s._clean_files_only = Mock()
@@ -103,9 +98,6 @@ def test_soscleaner_additions(isdir_, clean_opts):
         s._domains2db = Mock()
         s._file_list = Mock(return_value=[])
         s._clean_file = Mock()
-        s._process_route_file = Mock()
-        s._process_users_file = Mock()
-        s.soscleaner_checksum = Mock()
         s._create_reports = Mock(side_effect=setattr(s, 'logfile', 'test'))
         s._create_reports = Mock(side_effect=setattr(s, 'ip_report', 'test'))
         s._create_archive = Mock(side_effect=setattr(s, 'archive_path', 'test'))
