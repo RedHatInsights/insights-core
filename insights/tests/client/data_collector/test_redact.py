@@ -76,7 +76,6 @@ def test_redact_call_walk_core(walk):
     '''
     Verify that redact() calls os.walk and when an
     an archive structure is present in /var/tmp/**/insights-*
-
     With core collection, /data is added to the path
     '''
     conf = InsightsConfig(core_collect=True)

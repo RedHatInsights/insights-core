@@ -343,8 +343,9 @@ class DataCollector(object):
         if self.config.core_collect:
             # redact only from the 'data' directory
             searchpath = os.path.join(self.archive.archive_dir, 'data')
-            if not os.path.isdir(searchpath):
-                # abort if the dir does not exist
+            if not (os.path.isdir(searchpath) and
+                    re.match(r'/var/tmp/.+/insights-.+/data', searchpath)):
+                # abort if the dir does not exist and isn't the correct format
                 # we should never get here but just in case
                 raise RuntimeError('ERROR: invalid Insights archive temp path')
         else:
@@ -379,7 +380,6 @@ class DataCollector(object):
             and archive files.
         """
         if self.config.obfuscate:
-            logger.warn('WARNING: Some SOSCleaner obfuscation output formatting has changed. See https://access.redhat.com/articles/5355431 for more details.')
             if rm_conf and rm_conf.get('keywords'):
                 logger.warn("WARNING: Skipping keywords defined in blacklist configuration")
             cleaner = SOSCleaner(quiet=True)
@@ -414,15 +414,8 @@ class CleanOptions(object):
         self.files = []
         self.quiet = True
         self.keyword_file = None
-        self.keywords_file = None
         self.keywords = None
         self.no_tar_file = config.output_dir
-        self.loglevel = 'INFO'
-        self.obfuscate_macs = False
-        self.networks = None
-        self.users = None
-        self.users_file = None
-        self.obfuscate_macs = False
         self.core_collect = config.core_collect
 
         if rm_conf:
@@ -432,7 +425,7 @@ class CleanOptions(object):
                 self.keyword_file.write("\n".join(keywords).encode('utf-8'))
                 self.keyword_file.flush()
                 self.keyword_file.close()
-                self.keywords_file = [self.keyword_file.name]
+                self.keywords = [self.keyword_file.name]
                 logger.debug("Attmpting keyword obfuscation")
             except LookupError:
                 pass
