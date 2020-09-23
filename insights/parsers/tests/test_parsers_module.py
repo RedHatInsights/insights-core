@@ -386,6 +386,12 @@ POSTGRESQL_LOG = """
  (402 rows)
 """.strip()  # Normally has a --- separator line, which is ignored using get_active_lines
 
+TABLE1 = """
+THIS   IS   A   HEADER
+ this   is   some   content_with_blank_prefix
+This   is   more   content
+""".strip()
+
 TABLE2 = [
     "SID   Nr   Instance    SAPLOCALHOST                        Version                 DIR_EXECUTABLE",
     "HA2|  16|       D16|         lu0417|749, patch 10, changelist 1698137|          /usr/sap/HA2/D16/exe",
@@ -472,6 +478,15 @@ def test_parse_delimited_table():
                  "Version": "749, patch 10, changelist 1698137",
                  "DIR_EXECUTABLE": "/usr/sap/HA2/D22/exe"}]
     assert expected == result
+
+    # Test raw_line_key
+    TABLE1_SP = TABLE1.splitlines()
+    result = parse_delimited_table(TABLE1_SP, raw_line_key='raw_line')
+    assert isinstance(result, list)
+    assert len(result) == 2
+    assert isinstance(result[0], dict)
+    # Get the RAW line
+    assert result[0]['raw_line'] == TABLE1_SP[1]
 
 
 DATA_LIST = [
