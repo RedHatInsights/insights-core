@@ -257,7 +257,8 @@ def test_lssap_ascs():
     hn = Hostname(HnF(context_wrap(HOSTNAME)), None, None, None, None)
     sap = Sap(hn, None, lssap)
     assert sap['ASCS16'].sid == 'HA2'
-    assert sap.is_netweaver is False
+    # ASCS is also a kind of NetWeaver
+    assert sap.is_netweaver is True
     assert sap.is_hana is False
     assert sap.is_ascs is True
 
