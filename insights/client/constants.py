@@ -1,4 +1,55 @@
 import os
+import errno
+
+_user_home = os.path.expanduser('~')
+_app_name = 'insights-client'
+_uid = os.getuid()
+
+
+def _create_config_dir(d):
+    '''
+    Create a directory if it doesn't exist
+    '''
+    try:
+        os.makedirs(d)
+    except OSError as e:
+        if e.errno == errno.EEXIST:
+            # dir exists
+            pass
+        else:
+            raise e
+
+
+def _log_dir():
+    '''
+    Get the insights-client log dir
+
+    Default: /var/log/insights-client
+    Non-root user: $XDG_CACHE_HOME/insights-client || $HOME/.cache/insights-client
+    '''
+    if _uid == 0:
+        insights_log_dir = os.path.join(os.sep, 'var', 'log', _app_name)
+    else:
+        local_log_dir = os.getenv('XDG_CACHE_HOME', default=os.path.join(_user_home, '.cache'))
+        insights_log_dir = os.path.join(local_log_dir, _app_name)
+    _create_config_dir(insights_log_dir)
+    return insights_log_dir
+
+
+def _lib_dir():
+    '''
+    Get the insights-client egg cache dir
+
+    Default: /var/lib/insights
+    Non-root user: $HOME/.local/lib/insights-client
+    '''
+    if _uid == 0:
+        insights_lib_dir = os.path.join(os.sep, 'var', 'lib', 'insights')
+    else:
+        local_lib_dir = os.path.join(_user_home, '.local', 'lib')
+        insights_lib_dir = os.path.join(local_lib_dir, _app_name)
+    _create_config_dir(insights_lib_dir)
+    return insights_lib_dir
 
 
 class InsightsConstants(object):
@@ -11,7 +62,7 @@ class InsightsConstants(object):
     default_conf_dir = os.getenv('INSIGHTS_CONF_DIR', default='/etc/insights-client')
     default_conf_file = os.path.join(default_conf_dir, 'insights-client.conf')
     default_tags_file = os.path.join(default_conf_dir, 'tags.yaml')
-    log_dir = os.path.join(os.sep, 'var', 'log', app_name)
+    log_dir = _log_dir()
     simple_find_replace_dir = '/etc/redhat-access-insights'
     default_log_file = os.path.join(log_dir, app_name + '.log')
     default_payload_log = os.path.join(log_dir, app_name + '-payload.log')
@@ -34,7 +85,7 @@ class InsightsConstants(object):
     core_etag_file = os.path.join(default_conf_dir, '.insights-core.etag')
     core_gpg_sig_etag_file = os.path.join(default_conf_dir, '.insights-core-gpg-sig.etag')
     last_upload_results_file = os.path.join(default_conf_dir, '.last-upload.results')
-    insights_core_lib_dir = os.path.join('/', 'var', 'lib', 'insights')
+    insights_core_lib_dir = _lib_dir()
     insights_core_rpm = os.path.join(default_conf_dir, 'rpm.egg')
     insights_core_last_stable = os.path.join(insights_core_lib_dir, 'last_stable.egg')
     insights_core_last_stable_gpg_sig = os.path.join(insights_core_lib_dir, 'last_stable.egg.asc')
