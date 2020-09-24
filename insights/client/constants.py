@@ -1,5 +1,4 @@
 import os
-import errno
 
 _user_home = os.path.expanduser('~')
 _app_name = 'insights-client'
