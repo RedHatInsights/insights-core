@@ -502,6 +502,7 @@ class DefaultSpecs(Specs):
     oc_get_clusterrolebinding_with_config = simple_command("/usr/bin/oc get clusterrolebinding --config /etc/origin/master/admin.kubeconfig")
     odbc_ini = simple_file("/etc/odbc.ini")
     odbcinst_ini = simple_file("/etc/odbcinst.ini")
+    open_vm_tools_stat_raw_text_session = simple_command("/usr/bin/vmware-toolbox-cmd stat raw text session")
     openshift_hosts = simple_file("/root/.config/openshift/hosts")
     openshift_router_pid = simple_command("/usr/bin/pgrep -n openshift-route")
     openshift_router_environ = foreach_collect(openshift_router_pid, "/proc/%s/environ")
