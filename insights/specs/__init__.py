@@ -430,7 +430,7 @@ class Specs(SpecSet):
     octavia_conf = RegistryPoint(filterable=True)
     odbc_ini = RegistryPoint(filterable=True)
     odbcinst_ini = RegistryPoint()
-    open_vm_tools_stat_raw_text_session = RegistryPoint(filterable=True)
+    open_vm_tools_stat_raw_text_session = RegistryPoint()
     openvswitch_other_config = RegistryPoint()
     openvswitch_server_log = RegistryPoint(filterable=True)
     openshift_certificates = RegistryPoint(multi_output=True)
