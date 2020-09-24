@@ -159,6 +159,7 @@ class InsightsArchiveSpecs(Specs):
     numeric_user_group_name = simple_file("insights_commands/grep_-c_digit_.etc.passwd_.etc.group")
     oc_get_clusterrole_with_config = simple_file("insights_commands/oc_get_clusterrole_--config_.etc.origin.master.admin.kubeconfig")
     oc_get_clusterrolebinding_with_config = simple_file("insights_commands/oc_get_clusterrolebinding_--config_.etc.origin.master.admin.kubeconfig")
+    open_vm_tools_stat_raw_text_session = simple_file("insights_commands/vmware-toolbox-cmd_stat_raw_text_session")
     openvswitch_other_config = simple_file("insights_commands/ovs-vsctl_-t_5_get_Open_vSwitch_._other_config")
     ovs_vsctl_list_bridge = simple_file("insights_commands/ovs-vsctl_list_bridge")
     ovs_vsctl_show = simple_file("insights_commands/ovs-vsctl_show")
