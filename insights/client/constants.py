@@ -6,20 +6,6 @@ _app_name = 'insights-client'
 _uid = os.getuid()
 
 
-def _create_config_dir(d):
-    '''
-    Create a directory if it doesn't exist
-    '''
-    try:
-        os.makedirs(d)
-    except OSError as e:
-        if e.errno == errno.EEXIST:
-            # dir exists
-            pass
-        else:
-            raise e
-
-
 def _log_dir():
     '''
     Get the insights-client log dir
@@ -32,7 +18,6 @@ def _log_dir():
     else:
         local_log_dir = os.getenv('XDG_CACHE_HOME', default=os.path.join(_user_home, '.cache'))
         insights_log_dir = os.path.join(local_log_dir, _app_name)
-    _create_config_dir(insights_log_dir)
     return insights_log_dir
 
 
@@ -48,12 +33,11 @@ def _lib_dir():
     else:
         local_lib_dir = os.path.join(_user_home, '.local', 'lib')
         insights_lib_dir = os.path.join(local_lib_dir, _app_name)
-    _create_config_dir(insights_lib_dir)
     return insights_lib_dir
 
 
 class InsightsConstants(object):
-    app_name = 'insights-client'
+    app_name = _app_name
     auth_method = 'BASIC'
     package_path = os.path.dirname(
         os.path.dirname(os.path.abspath(__file__)))
