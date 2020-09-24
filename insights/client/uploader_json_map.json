@@ -986,6 +986,11 @@
             "symbolic_name": "oc_get_clusterrolebinding_with_config"
         },
         {
+            "command": "/usr/bin/vmware-toolbox-cmd stat raw text session",
+            "pattern": [],
+            "symbolic_name": "open_vm_tools_stat_raw_text_session"
+        },
+        {
             "command": "/usr/bin/ovs-vsctl -t 5 get Open_vSwitch . other_config",
             "pattern": [],
             "symbolic_name": "openvswitch_other_config"
