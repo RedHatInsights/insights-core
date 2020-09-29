@@ -33,8 +33,6 @@ class OpenVmToolsStatRawTextSession(CommandParser, dict):
         <class 'insights.parsers.open_vm_tools.OpenVmToolsStatRawTextSession'>
         >>> ovmt['version'] == 'VMware ESXi 6.0.0 build-12345'
         True
-        >>> ovmt.vmware_esxi_version == '6.0.0'
-        True
     """
 
     def parse_content(self, content):
@@ -50,17 +48,4 @@ class OpenVmToolsStatRawTextSession(CommandParser, dict):
         if not data:
             raise SkipException
 
-        self._vmware_esxi_version = None
-        version = data.get('version')
-        if "VMware ESXi" in version:
-            self._vmware_esxi_version = version.split()[2]
-
         self.update(data)
-
-    @property
-    def vmware_esxi_version(self):
-        """
-        Returns:
-            (str): The version of the VMware ESXi, e.g. '6.0.0'. None by default.
-        """
-        return self._vmware_esxi_version
