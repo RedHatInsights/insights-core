@@ -3,6 +3,7 @@ import os
 _user_home = os.path.expanduser('~')
 _app_name = 'insights-client'
 _uid = os.getuid()
+_user_cache = os.getenv('XDG_CACHE_HOME', default=os.path.join(_user_home, '.cache'))
 
 
 def _log_dir():
@@ -10,13 +11,12 @@ def _log_dir():
     Get the insights-client log dir
 
     Default: /var/log/insights-client
-    Non-root user: $XDG_CACHE_HOME/insights-client || $HOME/.cache/insights-client
+    Non-root user: $XDG_CACHE_HOME/insights-client || $HOME/.cache/insights-client/log
     '''
     if _uid == 0:
         insights_log_dir = os.path.join(os.sep, 'var', 'log', _app_name)
     else:
-        local_log_dir = os.getenv('XDG_CACHE_HOME', default=os.path.join(_user_home, '.cache'))
-        insights_log_dir = os.path.join(local_log_dir, _app_name)
+        insights_log_dir = os.path.join(_user_cache, _app_name, 'log')
     return insights_log_dir
 
 
@@ -25,13 +25,12 @@ def _lib_dir():
     Get the insights-client egg cache dir
 
     Default: /var/lib/insights
-    Non-root user: $HOME/.local/lib/insights-client
+    Non-root user: $XDG_CACHE_HOME/insights-client || $HOME/.cache/insights-client/lib
     '''
     if _uid == 0:
         insights_lib_dir = os.path.join(os.sep, 'var', 'lib', 'insights')
     else:
-        local_lib_dir = os.path.join(_user_home, '.local', 'lib')
-        insights_lib_dir = os.path.join(local_lib_dir, _app_name)
+        insights_lib_dir = os.path.join(_user_cache, _app_name, 'lib')
     return insights_lib_dir
 
 

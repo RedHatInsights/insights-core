@@ -52,7 +52,7 @@ class InsightsClient(object):
         # setup_logging is True when called from phase, but not from wrapper.
         #  use this to do any common init (like auto_config)
         if setup_logging:
-            _init_log_lib_dirs()
+            _init_client_config_dirs()
             self.set_up_logging()
             try_auto_configuration(self.config)
             self.initialize_tags()
@@ -696,9 +696,10 @@ def format_config(config):
         return json.dumps(config_copy, indent=4)
 
 
-def _init_log_lib_dirs():
+def _init_client_config_dirs():
     '''
     Initialize log and lib dirs
+    TODO: init non-root config dirs
     '''
     for d in (constants.log_dir, constants.insights_core_lib_dir):
         try:
