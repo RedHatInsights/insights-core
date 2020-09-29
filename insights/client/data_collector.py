@@ -295,7 +295,6 @@ class DataCollector(object):
                         file_spec = InsightsFile(s, self.mountpoint)
                         self.archive.add_to_archive(file_spec)
                         collection_stats[s['file']] = {
-                            'return_code': file_spec.return_code,
                             'exec_time': file_spec.exec_time,
                             'output_size': file_spec.output_size
                         }
@@ -309,7 +308,6 @@ class DataCollector(object):
                         glob_spec = InsightsFile(g, self.mountpoint)
                         self.archive.add_to_archive(glob_spec)
                         collection_stats[g['file']] = {
-                            'return_code': glob_spec.return_code,
                             'exec_time': glob_spec.exec_time,
                             'output_size': glob_spec.output_size
                         }
