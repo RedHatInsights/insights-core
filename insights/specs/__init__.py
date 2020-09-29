@@ -660,6 +660,7 @@ class Specs(SpecSet):
     vgs_noheadings = RegistryPoint()
     vgs_noheadings_all = RegistryPoint()
     vgs = RegistryPoint()
+    vhost_net_zero_copy_tx = RegistryPoint()
     virsh_list_all = RegistryPoint()
     virt_what = RegistryPoint()
     virt_who_conf = RegistryPoint(multi_output=True, filterable=True)
