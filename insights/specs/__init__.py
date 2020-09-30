@@ -352,6 +352,7 @@ class Specs(SpecSet):
     modinfo = RegistryPoint(multi_output=True)
     modinfo_all = RegistryPoint()
     modprobe = RegistryPoint(multi_output=True)
+    mokutil_sbstate = RegistryPoint()
     mongod_conf = RegistryPoint(multi_output=True, filterable=True)
     mount = RegistryPoint()
     mounts = RegistryPoint()
