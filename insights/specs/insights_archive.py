@@ -130,7 +130,12 @@ class InsightsArchiveSpecs(Specs):
         "insights_commands/lvmconfig_--type_full",
         "insights_commands/lvm_dumpconfig_--type_full"
     ])
-    lvs_noheadings = simple_file("insights_commands/lvs_--nameprefixes_--noheadings_--separator_-a_-o_lv_name_lv_size_lv_attr_mirror_log_vg_name_devices_region_size_data_percent_metadata_percent_segtype_seg_monitor_--config_global_locking_type_0")
+    lvs_noheadings = first_file(
+        [
+            "insights_commands/lvs_--nameprefixes_--noheadings_--separator_-a_-o_lv_name_lv_size_lv_attr_mirror_log_vg_name_devices_region_size_data_percent_metadata_percent_segtype_seg_monitor_lv_kernel_major_lv_kernel_minor_--config_global_locking_type_0",
+            "insights_commands/lvs_--nameprefixes_--noheadings_--separator_-a_-o_lv_name_lv_size_lv_attr_mirror_log_vg_name_devices_region_size_data_percent_metadata_percent_segtype_seg_monitor_--config_global_locking_type_0"
+        ]
+    )
     max_uid = simple_file("insights_commands/awk_-F_if_3_max_max_3_END_print_max_.etc.passwd")
     md5chk_files = glob_file("insights_commands/md5sum_*")
     mount = simple_file("insights_commands/mount")
@@ -140,6 +145,7 @@ class InsightsArchiveSpecs(Specs):
     modinfo_ixgbe = simple_file("insights_commands/modinfo_ixgbe")
     modinfo_veth = simple_file("insights_commands/modinfo_veth")
     modinfo_vmxnet3 = simple_file("insights_commands/modinfo_vmxnet3")
+    mokutil_sbstate = simple_file("insights_commands/mokutil_--sb-state")
     multicast_querier = simple_file("insights_commands/find_.sys.devices.virtual.net._-name_multicast_querier_-print_-exec_cat")
     multipath_conf_initramfs = simple_file("insights_commands/lsinitrd_-f_.etc.multipath.conf")
     multipath__v4__ll = simple_file("insights_commands/multipath_-v4_-ll")
@@ -159,6 +165,7 @@ class InsightsArchiveSpecs(Specs):
     numeric_user_group_name = simple_file("insights_commands/grep_-c_digit_.etc.passwd_.etc.group")
     oc_get_clusterrole_with_config = simple_file("insights_commands/oc_get_clusterrole_--config_.etc.origin.master.admin.kubeconfig")
     oc_get_clusterrolebinding_with_config = simple_file("insights_commands/oc_get_clusterrolebinding_--config_.etc.origin.master.admin.kubeconfig")
+    open_vm_tools_stat_raw_text_session = simple_file("insights_commands/vmware-toolbox-cmd_stat_raw_text_session")
     openvswitch_other_config = simple_file("insights_commands/ovs-vsctl_-t_5_get_Open_vSwitch_._other_config")
     ovs_vsctl_list_bridge = simple_file("insights_commands/ovs-vsctl_list_bridge")
     ovs_vsctl_show = simple_file("insights_commands/ovs-vsctl_show")
