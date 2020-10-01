@@ -53,6 +53,7 @@ Example:
 import string
 from insights import parser
 from insights.core import ConfigParser
+from insights.core.filters import add_filter
 from insights.parsr.query import eq
 from insights.parsr import (Char, EOF, HangingString, InSet,
         LeftBracket, Lift, LineEnd, Literal, RightBracket,
@@ -61,6 +62,11 @@ from insights.parsr import (Char, EOF, HangingString, InSet,
 from insights.parsr.query import Directive, Entry, Section
 from insights.parsers import ParseException, SkipException
 from insights.specs import Specs
+
+filter_list = [
+    'post_max_size',
+]
+add_filter(Specs.php_ini, filter_list)
 
 
 @parser(Specs.php_ini, continue_on_error=False)
