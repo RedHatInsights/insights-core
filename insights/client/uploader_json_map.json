@@ -739,7 +739,7 @@
             "symbolic_name": "lsvmbus"
         },
         {
-            "command": "/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,lv_size,lv_attr,mirror_log,vg_name,devices,region_size,data_percent,metadata_percent,segtype,seg_monitor --config=\"global{locking_type=0}\"",
+            "command": "/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,lv_size,lv_attr,mirror_log,vg_name,devices,region_size,data_percent,metadata_percent,segtype,seg_monitor,lv_kernel_major,lv_kernel_minor --config=\"global{locking_type=0}\"",
             "pattern": [],
             "symbolic_name": "lvs_noheadings"
         },
@@ -777,6 +777,11 @@
             "command": "/usr/bin/md5sum /usr/lib64/libfreeblpriv3.so",
             "pattern": [],
             "symbolic_name": "md5chk_files"
+        },
+        {
+            "command": "/bin/mokutil --sb-state",
+            "pattern": [],
+            "symbolic_name": "mokutil_sbstate"
         },
         {
             "command": "/bin/mount",
@@ -1714,6 +1719,28 @@
             "symbolic_name": "cinder_conf"
         },
         {
+            "file": "/var/log/containers/cinder/cinder-volume.log",
+            "pattern": [
+                "DEBUG oslo.messaging._drivers.impl_rabbit",
+                "Image cloning unsuccessful for image",
+                "Message: NFS file could not be discovered.",
+                "Timed out waiting for RPC response",
+                "[Errno 24] Too many open files"
+            ],
+            "symbolic_name": "cinder_volume_log"
+        },
+        {
+            "file": "/var/log/containers/cinder/volume.log",
+            "pattern": [
+                "DEBUG oslo.messaging._drivers.impl_rabbit",
+                "Image cloning unsuccessful for image",
+                "Message: NFS file could not be discovered.",
+                "Timed out waiting for RPC response",
+                "[Errno 24] Too many open files"
+            ],
+            "symbolic_name": "cinder_volume_log"
+        },
+        {
             "file": "/var/log/cinder/volume.log",
             "pattern": [
                 "DEBUG oslo.messaging._drivers.impl_rabbit",
@@ -2191,7 +2218,17 @@
             "file": "/var/log/ironic-inspector/ironic-inspector.log",
             "pattern": [
                 "Certificate did not match expected hostname",
-                "ERROR requests.packages.urllib3.connection"
+                "ERROR requests.packages.urllib3.connection",
+                "Failed to set boot device to PXE"
+            ],
+            "symbolic_name": "ironic_inspector_log"
+        },
+        {
+            "file": "/var/log/containers/ironic-inspector/ironic-inspector.log",
+            "pattern": [
+                "Certificate did not match expected hostname",
+                "ERROR requests.packages.urllib3.connection",
+                "Failed to set boot device to PXE"
             ],
             "symbolic_name": "ironic_inspector_log"
         },
@@ -3781,6 +3818,16 @@
             "symbolic_name": "neutron_l3_agent_log"
         },
         {
+            "file": "/var/log/containers/neutron/l3-agent.log",
+            "pattern": [
+                "DEBUG oslo.messaging._drivers.impl_rabbit",
+                "Error while deleting router",
+                "Stderr: Another app is currently holding the xtables lock",
+                "Timed out waiting for RPC response"
+            ],
+            "symbolic_name": "neutron_l3_agent_log"
+        },
+        {
             "file": "/etc/neutron/metadata_agent.ini",
             "pattern": [
                 "[",
@@ -4069,5 +4116,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2020-09-17T13:54:44.273820"
+    "version": "2020-09-24T14:46:59.896476"
 }
