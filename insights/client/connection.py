@@ -316,8 +316,6 @@ class InsightsConnection(object):
         """
         Actually test the url
         """
-        # tell the api we're just testing the URL
-        test_flag = {'test': 'test'}
         url = urlparse(url)
         test_url = url.scheme + "://" + url.netloc
         last_ex = None
@@ -326,15 +324,20 @@ class InsightsConnection(object):
             try:
                 logger.log(NETWORK, "Testing: %s", test_url + ext)
                 if method is "POST":
+                    test_tar = TemporaryFile(mode='rb', suffix='.tar.gz')
+                    test_files = {
+                        'file': ('test.tar.gz', test_tar, 'application/vnd.redhat.advisor.collection+tgz'),
+                        'metadata': '{\"test\": \"test\"}'
+                    }
                     test_req = self.session.post(
-                        test_url + ext, timeout=self.config.http_timeout, data=test_flag)
+                        test_url + ext, timeout=self.config.http_timeout, files=test_files)
                 elif method is "GET":
                     test_req = self.session.get(test_url + ext, timeout=self.config.http_timeout)
                 logger.log(NETWORK, "HTTP Status Code: %d", test_req.status_code)
                 logger.log(NETWORK, "HTTP Status Text: %s", test_req.reason)
                 logger.log(NETWORK, "HTTP Response Text: %s", test_req.text)
                 # Strata returns 405 on a GET sometimes, this isn't a big deal
-                if test_req.status_code in (200, 201):
+                if test_req.status_code in (200, 201, 202):
                     logger.info(
                         "Successfully connected to: %s", test_url + ext)
                     return True
