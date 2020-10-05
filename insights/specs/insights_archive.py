@@ -130,7 +130,12 @@ class InsightsArchiveSpecs(Specs):
         "insights_commands/lvmconfig_--type_full",
         "insights_commands/lvm_dumpconfig_--type_full"
     ])
-    lvs_noheadings = simple_file("insights_commands/lvs_--nameprefixes_--noheadings_--separator_-a_-o_lv_name_lv_size_lv_attr_mirror_log_vg_name_devices_region_size_data_percent_metadata_percent_segtype_seg_monitor_--config_global_locking_type_0")
+    lvs_noheadings = first_file(
+        [
+            "insights_commands/lvs_--nameprefixes_--noheadings_--separator_-a_-o_lv_name_lv_size_lv_attr_mirror_log_vg_name_devices_region_size_data_percent_metadata_percent_segtype_seg_monitor_lv_kernel_major_lv_kernel_minor_--config_global_locking_type_0",
+            "insights_commands/lvs_--nameprefixes_--noheadings_--separator_-a_-o_lv_name_lv_size_lv_attr_mirror_log_vg_name_devices_region_size_data_percent_metadata_percent_segtype_seg_monitor_--config_global_locking_type_0"
+        ]
+    )
     max_uid = simple_file("insights_commands/awk_-F_if_3_max_max_3_END_print_max_.etc.passwd")
     md5chk_files = glob_file("insights_commands/md5sum_*")
     mount = simple_file("insights_commands/mount")
@@ -140,6 +145,7 @@ class InsightsArchiveSpecs(Specs):
     modinfo_ixgbe = simple_file("insights_commands/modinfo_ixgbe")
     modinfo_veth = simple_file("insights_commands/modinfo_veth")
     modinfo_vmxnet3 = simple_file("insights_commands/modinfo_vmxnet3")
+    mokutil_sbstate = simple_file("insights_commands/mokutil_--sb-state")
     multicast_querier = simple_file("insights_commands/find_.sys.devices.virtual.net._-name_multicast_querier_-print_-exec_cat")
     multipath_conf_initramfs = simple_file("insights_commands/lsinitrd_-f_.etc.multipath.conf")
     multipath__v4__ll = simple_file("insights_commands/multipath_-v4_-ll")
