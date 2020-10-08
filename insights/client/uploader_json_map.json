@@ -486,16 +486,6 @@
             "symbolic_name": "kpatch_list"
         },
         {
-            "command": "/usr/bin/find -L /lib /lib64 -name 'libkeyutils.so*'",
-            "pattern": [],
-            "symbolic_name": "libkeyutils"
-        },
-        {
-            "command": "/usr/bin/find -L /lib /lib64 -name libkeyutils.so.1 -exec objdump -x \"{}\" \\;",
-            "pattern": [],
-            "symbolic_name": "libkeyutils_objdumps"
-        },
-        {
             "command": "/usr/bin/file -L /etc/localtime",
             "pattern": [],
             "symbolic_name": "localtime"
@@ -1451,11 +1441,6 @@
             "command": "/usr/sbin/virt-what",
             "pattern": [],
             "symbolic_name": "virt_what"
-        },
-        {
-            "command": "/usr/bin/find /var/crash /var/tmp -path '*.reports-*/whoopsie-report' -print -quit",
-            "pattern": [],
-            "symbolic_name": "woopsie"
         },
         {
             "command": "yum -C --noplugins list available",
