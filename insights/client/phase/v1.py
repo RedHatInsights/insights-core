@@ -22,10 +22,10 @@ def phase(func):
     def _f():
         try:
             config = InsightsConfig().load_all()
-        except ValueError as e:
+            client = InsightsClient(config)
+        except (ValueError, OSError) as e:
             sys.stderr.write('ERROR: ' + str(e) + '\n')
             sys.exit(constants.sig_kill_bad)
-        client = InsightsClient(config)
         if config.debug:
             logger.info("Core path: %s", os.path.dirname(__file__))
         try:
