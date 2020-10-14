@@ -61,6 +61,7 @@ def test_omit_symbolic_name(InsightsCommand, InsightsFile, parse_file_spec):
 @patch("insights.client.data_collector.InsightsFile")
 @patch("insights.client.data_collector.InsightsArchive")
 @patch("insights.client.data_collector.DataCollector.redact")
+@patch("insights.client.data_collector.DataCollector._write_collection_stats", MagicMock())
 def test_symbolic_name_bc(_, InsightsArchive, InsightsFile, InsightsCommand):
     """
     WICKED EDGE CASE: in case uploader.json is old and doesn't have symbolic names, don't crash
@@ -72,7 +73,7 @@ def test_symbolic_name_bc(_, InsightsArchive, InsightsFile, InsightsCommand):
                         'commands': [{"command": "/sbin/chkconfig --list", "pattern": []}],
                         'pre_commands': []}
     rm_conf = {'files': ["vsftpd"], "commands": ["chkconfig"]}
-    data_collector.run_collection(collection_rules, rm_conf, {}, '')
+    data_collector.run_collection(collection_rules, rm_conf, {}, {})
     InsightsFile.assert_called_once()
     InsightsCommand.assert_called_once()
     InsightsArchive.return_value.add_to_archive.assert_has_calls(
