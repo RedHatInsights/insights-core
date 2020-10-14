@@ -627,6 +627,7 @@ class Specs(SpecSet):
     systemd_system_origin_accounting = RegistryPoint()
     systemid = RegistryPoint()
     systool_b_scsi_v = RegistryPoint()
+    testparm_v_s = RegistryPoint(filterable=True)
     tags = RegistryPoint()
     teamdctl_config_dump = RegistryPoint(multi_output=True)
     teamdctl_state_dump = RegistryPoint(multi_output=True)

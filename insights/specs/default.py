@@ -646,6 +646,7 @@ class DefaultSpecs(Specs):
         simple_file("/conf/rhn/sysconfig/rhn/systemid")
     ])
     systool_b_scsi_v = simple_command("/bin/systool -b scsi -v")
+    testparm_v_s = simple_command("/usr/bin/testparm -v -s")
     tags = simple_file("/tags.json", kind=RawFileProvider)
     thp_use_zero_page = simple_file("/sys/kernel/mm/transparent_hugepage/use_zero_page")
     thp_enabled = simple_file("/sys/kernel/mm/transparent_hugepage/enabled")

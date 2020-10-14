@@ -68,6 +68,7 @@ Examples:
     50
 
 """
+import re
 
 from .. import add_filter, IniConfigFile, parser
 from insights.specs import Specs
@@ -108,3 +109,31 @@ class SambaConfig(IniConfigFile):
             # Merge same-named sections just as samba's `testparm` does.
             new_dict[new_key].update(old_section)
         self.data._sections = new_dict
+
+
+add_filter(Specs.testparm_v_s, ["["])
+add_filter(Specs.testparm_v_s, ["Server role:"])
+
+
+@parser(Specs.testparm_v_s)
+class SambaConfigs(SambaConfig):
+    """
+    This parser reads the Samba configuration from command `testparm -v -c` which is more
+    reliable than parsing the config as well as contains server role.
+    """
+
+    def __init__(self, *args, **kwargs):
+        self.server_role = None
+        super(SambaConfigs, self).__init__(*args, **kwargs)
+
+    def parse_content(self, content):
+        # Parse server role
+        for line in content:
+            r = re.search(r"Server role:\s+(\S+)", line)
+            if r:
+                self.server_role = r.group(1)
+                break
+
+        # Technically, the implicit [global] section handling is not needed as testparm command
+        # processes it, but for simplicity the old parser is used so the logic is not duplicated
+        super(SambaConfigs, self).parse_content(content)
