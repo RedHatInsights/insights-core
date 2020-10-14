@@ -186,7 +186,6 @@
                 "e1000: E1000 MODULE IS NOT SUPPORTED",
                 "efi",
                 "fw=8.08.",
-                "ixgbevf: Unknown parameter `InterruptThrottleRate'",
                 "l1tf",
                 "mce: ",
                 "netconsole: network logging started",
@@ -1940,11 +1939,7 @@
                 "INFO",
                 "Low disk space. Host",
                 "VDS_LOW_DISK_SPACE_ERROR",
-                "org.ovirt.engine.core.bll.storage.lease.AddVmLeaseCommand",
-                "org.ovirt.engine.core.bll.storage.lease.RemoveVmLeaseCommand",
-                "org.ovirt.engine.core.dal.dbbroker.auditloghandling.AuditLogDirector",
-                "org.ovirt.engine.core.vdsbroker.vdsbroker.HotPlugLeaseVDSCommand",
-                "org.ovirt.engine.core.vdsbroker.vdsbroker.HotUnplugLeaseVDSCommand"
+                "org.ovirt.engine.core.dal.dbbroker.auditloghandling.AuditLogDirector"
             ],
             "symbolic_name": "engine_log"
         },
@@ -2203,8 +2198,7 @@
             "file": "/var/log/ironic-inspector/ironic-inspector.log",
             "pattern": [
                 "Certificate did not match expected hostname",
-                "ERROR requests.packages.urllib3.connection",
-                "Failed to set boot device to PXE"
+                "ERROR requests.packages.urllib3.connection"
             ],
             "symbolic_name": "ironic_inspector_log"
         },
@@ -2212,8 +2206,7 @@
             "file": "/var/log/containers/ironic-inspector/ironic-inspector.log",
             "pattern": [
                 "Certificate did not match expected hostname",
-                "ERROR requests.packages.urllib3.connection",
-                "Failed to set boot device to PXE"
+                "ERROR requests.packages.urllib3.connection"
             ],
             "symbolic_name": "ironic_inspector_log"
         },
@@ -2370,7 +2363,6 @@
                 "canceled DHCP transaction, DHCP client pid",
                 "chardev: opening backend \"socket\" failed",
                 "clearing Tx timestamp hang",
-                "dev_set_mac_address of dev",
                 "device-mapper: multipath: Failing path",
                 "does not seem to be present, delaying initialization",
                 "drivers/input/input-leds.c:115 input_leds_connect",
@@ -2382,10 +2374,8 @@
                 "eviction manager: must evict pod(s) to reclaim nodefsInodes",
                 "eviction manager: observations: signal=allocatableNodeFs.available, available: -",
                 "ext4_ext_search_left",
-                "failed to modify QP to RTR: -22",
                 "failed while handling",
                 "failed with error -110",
-                "failed! ALB mode requires that the base driver support setting the hw address also when the network",
                 "failed: Connection amqps:",
                 "failed: Invalid argument",
                 "failed: rpc error: code = 2 desc = unable to inspect docker image",
@@ -2600,7 +2590,6 @@
                 "libvirt-guests.sh",
                 "libvirtError: Requested operation is not valid: domain has assigned non-USB host devices",
                 "libvirtError: Unable to delete file /var/lib/nova/instances/",
-                "unsupported configuration: Target device drive address",
                 "unsupported configuration: Target network card MTU",
                 "unsupported configuration: Unable to find security driver for model selinux"
             ],
@@ -2644,7 +2633,6 @@
                 "libvirt-guests.sh",
                 "libvirtError: Requested operation is not valid: domain has assigned non-USB host devices",
                 "libvirtError: Unable to delete file /var/lib/nova/instances/",
-                "unsupported configuration: Target device drive address",
                 "unsupported configuration: Target network card MTU",
                 "unsupported configuration: Unable to find security driver for model selinux"
             ],
@@ -4101,5 +4089,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2020-09-24T14:46:59.896476"
+    "version": "2020-10-08T10:01:47.114185"
 }
