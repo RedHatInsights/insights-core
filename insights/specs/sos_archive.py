@@ -76,6 +76,7 @@ class SosSpecs(Specs):
     ethtool_k = glob_file("sos_commands/networking/ethtool_-k_*")
     exim_conf = simple_file("etc/exim.conf")
     fdisk_l_sos = first_of([glob_file(r"sos_commands/filesys/fdisk_-l_*"), glob_file(r"sos_commands/block/fdisk_-l_*")])
+    firewall_cmd_list_all_zones = simple_file("sos_commands/firewalld/firewall-cmd_--list-all-zones")
     foreman_production_log = first_of([simple_file("/var/log/foreman/production.log"), simple_file("sos_commands/foreman/foreman-debug/var/log/foreman/production.log")])
     foreman_proxy_conf = first_of([simple_file("/etc/foreman-proxy/settings.yml"), simple_file("sos_commands/foreman/foreman-debug/etc/foreman-proxy/settings.yml")])
     foreman_proxy_log = first_of([simple_file("/var/log/foreman-proxy/proxy.log"), simple_file("sos_commands/foreman/foreman-debug/var/log/foreman-proxy/proxy.log")])
