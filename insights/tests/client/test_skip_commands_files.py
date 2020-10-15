@@ -132,3 +132,15 @@ def test_omit_after_parse_command(InsightsCommand, run_pre_command):
     rm_conf = {'commands': ["/sbin/ethtool -i eth0"]}
     data_collector.run_collection(collection_rules, rm_conf, {}, '')
     InsightsCommand.assert_not_called()
+
+
+@patch("insights.client.data_collector.DataCollector._parse_glob_spec", return_value=[{'glob': '/etc/yum.repos.d/*.repo', 'symbolic_name': 'yum_repos_d', 'pattern': [], 'file': '/etc/yum.repos.d/test.repo'}])
+@patch("insights.client.data_collector.logger.warn")
+def test_run_collection_logs_skipped_files(warn, parse_glob_spec):
+    c = InsightsConfig()
+    data_collector = DataCollector(c)
+
+    collection_rules = {'commands': [], 'files': [], 'globs': [{'glob': '/etc/yum.repos.d/*.repo', 'symbolic_name': 'yum_repos_d', 'pattern': []}]}
+    rm_conf = {'files': ["/etc/yum.repos.d/test.repo"]}
+    data_collector.run_collection(collection_rules, rm_conf, {}, '')
+    warn.assert_called_once_with("WARNING: Skipping file %s", "/etc/yum.repos.d/test.repo")
