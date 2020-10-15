@@ -4,10 +4,10 @@ Cloud Provider
 
 Combiner for Cloud information. It uses the results of the multiple parsers:
 
-* :class:`insights.parsers.rpms.InstalledRpms`,
-* :class:`insights.parsers.yum.YumRepoList`
-* :class:`insights.parsers.dmidecode.DMIDecode` and
-* :class:`insights.parsers.rhsm_conf.RHSMConf` parsers
+* :py:class:`insights.parsers.installed_rpms.InstalledRpms`
+* :py:class:`insights.parsers.yum.YumRepoList`
+* :py:class:`insights.parsers.dmidecode.DMIDecode`
+* :py:class:`insights.parsers.rhsm_conf.RHSMConf`
 
 The combiner uses these parsers determine the Cloud Provider based on a set of
 criteria that is unique to each cloud provider.
@@ -188,6 +188,11 @@ class CloudProviderInstance(object):
 
 
 class GoogleCloudProvider(CloudProviderInstance):
+    """
+    Class to identify Google Cloud provider
+
+    Google CP can be identified by RPM and BIOS vendor/version
+    """
     _NAME = 'google'
     _LONG_NAME = 'Google Cloud'
 
@@ -202,6 +207,11 @@ class GoogleCloudProvider(CloudProviderInstance):
 
 
 class AlibabaCloudProvider(CloudProviderInstance):
+    """
+    Class to identify Alibaba Cloud provider
+
+    Alibaba CP can be identified by manufacturer
+    """
     _NAME = 'alibaba'
     _LONG_NAME = 'Alibaba Cloud'
 
@@ -213,6 +223,12 @@ class AlibabaCloudProvider(CloudProviderInstance):
 
 
 class AmazonCloudProvider(CloudProviderInstance):
+    """
+    Class to identify Amazon Cloud provider
+
+    Amazon CP can be identified by RPM, BIOS verndor/version,
+    and system UUID
+    """
     _NAME = 'aws'
     _LONG_NAME = 'Amazon Web Services'
 
@@ -229,6 +245,11 @@ class AmazonCloudProvider(CloudProviderInstance):
 
 
 class AzureCloudProvider(CloudProviderInstance):
+    """
+    Class to identify Azure Cloud provider
+
+    Azure CP can be identified by RPM, Yum repo, and system asset tag
+    """
     _NAME = 'azure'
     _LONG_NAME = 'Microsoft Azure'
 
@@ -244,6 +265,11 @@ class AzureCloudProvider(CloudProviderInstance):
 
 
 class IBMCloudProvider(CloudProviderInstance):
+    """
+    Class to identify IBM Cloud provider
+
+    IBM CP can be identified by rhsm.conf server hostname setting
+    """
     _NAME = 'ibm'
     _LONG_NAME = 'IBM Cloud'
 
