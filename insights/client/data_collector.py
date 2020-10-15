@@ -142,6 +142,11 @@ class DataCollector(object):
         self.archive.add_metadata_to_archive(
             egg_release, '/egg_release')
 
+    def _write_collection_stats(self, collection_stats):
+        logger.debug("Writing collection stats to archive...")
+        self.archive.add_metadata_to_archive(
+            json.dumps(collection_stats), '/collection_stats')
+
     def _run_pre_command(self, pre_cmd):
         '''
         Run a pre command to get external args for a command
@@ -249,6 +254,8 @@ class DataCollector(object):
         self.archive.create_archive_dir()
         self.archive.create_command_dir()
 
+        collection_stats = {}
+
         if rm_conf is None:
             rm_conf = {}
         logger.debug('Beginning to run collection spec...')
@@ -269,6 +276,11 @@ class DataCollector(object):
                         continue
                     cmd_spec = InsightsCommand(self.config, s, self.mountpoint)
                     self.archive.add_to_archive(cmd_spec)
+                    collection_stats[s['command']] = {
+                        'return_code': cmd_spec.return_code,
+                        'exec_time': cmd_spec.exec_time,
+                        'output_size': cmd_spec.output_size
+                    }
         for f in conf['files']:
             rm_files = rm_conf.get('files', [])
             if f['file'] in rm_files or f.get('symbolic_name') in rm_files:
@@ -282,6 +294,10 @@ class DataCollector(object):
                     else:
                         file_spec = InsightsFile(s, self.mountpoint)
                         self.archive.add_to_archive(file_spec)
+                        collection_stats[s['file']] = {
+                            'exec_time': file_spec.exec_time,
+                            'output_size': file_spec.output_size
+                        }
         if 'globs' in conf:
             for g in conf['globs']:
                 glob_specs = self._parse_glob_spec(g)
@@ -291,6 +307,10 @@ class DataCollector(object):
                     else:
                         glob_spec = InsightsFile(g, self.mountpoint)
                         self.archive.add_to_archive(glob_spec)
+                        collection_stats[g['file']] = {
+                            'exec_time': glob_spec.exec_time,
+                            'output_size': glob_spec.output_size
+                        }
         logger.debug('Spec collection finished.')
 
         self.redact(rm_conf)
@@ -303,6 +323,7 @@ class DataCollector(object):
         self._write_tags()
         self._write_blacklist_report(blacklist_report)
         self._write_egg_release()
+        self._write_collection_stats(collection_stats)
         logger.debug('Metadata collection finished.')
 
     def redact(self, rm_conf):
