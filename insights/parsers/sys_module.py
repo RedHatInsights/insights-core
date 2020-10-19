@@ -7,13 +7,12 @@ A parser to parse the system module information.
 Parsers included in this module are:
 
 DMModUseBlkMq - file ``/sys/module/dm_mod/parameters/use_blk_mq``
-
+------------------------------------------------------------------
 SCSIModUseBlkMq - file ``/sys/module/scsi_mod/parameters/use_blk_mq``
 ---------------------------------------------------------------------
-
+VHostNetZeroCopyTx - file ``/sys/module/vhost_net/parameters/experimental_zcopytx``
+-----------------------------------------------------------------------------------
 """
-
-
 from insights import parser, Parser
 from insights.parsers import SkipException
 from insights.specs import Specs
@@ -51,10 +50,9 @@ class XModUseBlkMq(Parser):
         """
         if self.val in ['Y', '1']:
             return True
-        elif self.val in ['N', '0']:
+        if self.val in ['N', '0']:
             return False
-        else:
-            raise ValueError("Unexpected value {0}, please get raw data from attribute 'val' and tell is_on by yourself.".format(self.val))
+        raise ValueError("Unexpected value {0}, please get raw data from attribute 'val' and tell is_on by yourself.".format(self.val))
 
 
 @parser(Specs.dm_mod_use_blk_mq)
@@ -85,5 +83,21 @@ class SCSIModUseBlkMq(XModUseBlkMq):
         'N'
         >>> scsi_mod_use_blk_mq.is_on
         False
+    """
+    pass
+
+
+@parser(Specs.vhost_net_zero_copy_tx)
+class VHostNetZeroCopyTx(XModUseBlkMq):
+    """This file `/sys/module/vhost_net/parameters/experimental_zcopytx` shows if
+    vhost_net's zero-copy tx parameter is enabled or not.
+
+    Examples::
+
+        >>> vhost_net_zero_copy_tx.val
+        '0'
+        >>> vhost_net_zero_copy_tx.is_on
+        False
+
     """
     pass
