@@ -1551,7 +1551,10 @@
         },
         {
             "file": "/var/log/candlepin/candlepin.log",
-            "pattern": [],
+            "pattern": [
+                "Candlepin initializing context",
+                "No Dead Letter Address configured for queue event.org.candlepin.audit.DatabaseListener in AddressSettings"
+            ],
             "symbolic_name": "candlepin_log"
         },
         {
@@ -2316,6 +2319,9 @@
                 "Cannot assign requested address",
                 "Cannot assign requested address: AH00072",
                 "Connection amqps://subscription.rhn.redhat.com:5647 disconnected",
+                "Connection amqps://subscription.rhn.redhat.com:5647 timed out: Opening connection",
+                "Connection amqps://subscription.rhsm.redhat.com:5647 disconnected",
+                "Connection amqps://subscription.rhsm.redhat.com:5647 timed out: Opening connection",
                 "Corosync main process was not scheduled (@",
                 "Could not set",
                 "DHCPv4 lease renewal requested",
@@ -2398,7 +2404,6 @@
                 "is down or the link is down",
                 "is greater than comparison timestamp",
                 "iscsiadm: iscsiadm: Could not log into all portals",
-                "kernel/softirq.c:159 local_bh_enable+",
                 "kernel: BUG: soft lockup",
                 "kernel: CIFS VFS: Unexpected SMB signature",
                 "kernel: INFO: task xfsaild/md",
@@ -4089,5 +4094,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2020-10-08T10:01:47.114185"
+    "version": "2020-10-14T14:41:32.281672"
 }
