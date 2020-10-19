@@ -238,6 +238,7 @@ class DefaultSpecs(Specs):
     docker_storage_setup = simple_file("/etc/sysconfig/docker-storage-setup")
     docker_sysconfig = simple_file("/etc/sysconfig/docker")
     dracut_kdump_capture_service = simple_file("/usr/lib/dracut/modules.d/99kdumpbase/kdump-capture.service")
+    du_dirs = foreach_execute(['/var/lib/candlepin/activemq-artemis'], "/bin/du -s -k %s")
     engine_db_query_vdsm_version = simple_command('engine-db-query --statement "SELECT vs.vds_name, rpm_version FROM vds_dynamic vd, vds_static vs WHERE vd.vds_id = vs.vds_id" --json')
     engine_log = simple_file("/var/log/ovirt-engine/engine.log")
     etc_journald_conf = simple_file(r"etc/systemd/journald.conf")
@@ -660,6 +661,7 @@ class DefaultSpecs(Specs):
     usr_journald_conf_d = glob_file(r"usr/lib/systemd/journald.conf.d/*.conf")  # note that etc_journald.conf.d also exists
     vdo_status = simple_command("/usr/bin/vdo status")
     vgdisplay = simple_command("/sbin/vgdisplay")
+    vhost_net_zero_copy_tx = simple_file("/sys/module/vhost_net/parameters/experimental_zcopytx")
     vdsm_log = simple_file("var/log/vdsm/vdsm.log")
     vdsm_logger_conf = simple_file("etc/vdsm/logger.conf")
     vma_ra_enabled = simple_file("/sys/kernel/mm/swap/vma_ra_enabled")
