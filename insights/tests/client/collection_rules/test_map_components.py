@@ -52,7 +52,6 @@ def test_get_component_by_symbolic_name():
     #   Filter out the (B) specs with this list
     skipped_specs = [
         'ceph_osd_df',
-        'du_dirs',
         'gluster_peer_status',
         'gluster_v_status',
         'heat_crontab',
