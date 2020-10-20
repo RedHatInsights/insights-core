@@ -198,7 +198,6 @@ class GoogleCloudProvider(CloudProviderInstance):
 
     def __init__(self, *args, **kwargs):
         super(GoogleCloudProvider, self).__init__(*args, **kwargs)
-        # __GOOGLE = __CP(name='google', rpm='google-rhui-client', yum='', vv='google', manuf='')
         self.rpm = 'google-rhui-client'
         self.bios_vendor_version = 'google'
         self.cp_bios_vendor = self._get_cp_bios_vendor(self.bios_vendor_version)
@@ -217,7 +216,6 @@ class AlibabaCloudProvider(CloudProviderInstance):
 
     def __init__(self, *args, **kwargs):
         super(AlibabaCloudProvider, self).__init__(*args, **kwargs)
-        # __ALIBABA = __CP(name='alibaba', rpm='', yum='', vv='', manuf='alibaba cloud')
         self.manuf = 'alibaba cloud'
         self.cp_manufacturer = self._get_cp_from_manuf(self.manuf)
 
@@ -234,7 +232,6 @@ class AmazonCloudProvider(CloudProviderInstance):
 
     def __init__(self, *args, **kwargs):
         super(AmazonCloudProvider, self).__init__(*args, **kwargs)
-        # __AWS = __CP(name='aws', rpm='rh-amazon-rhui-client', yum='', vv='amazon', manuf='')
         self.rpm = 'rh-amazon-rhui-client'
         self.bios_vendor_version = 'amazon'
         self.uuid = 'ec2'
@@ -255,7 +252,6 @@ class AzureCloudProvider(CloudProviderInstance):
 
     def __init__(self, *args, **kwargs):
         super(AzureCloudProvider, self).__init__(*args, **kwargs)
-        # __AZURE = __CP(name='azure', rpm='walinuxagent', yum='rhui-microsoft-azure', vv='', manuf='')
         self.rpm = 'walinuxagent'
         self.yum = 'rhui-microsoft-azure'
         self.asset_tag = '7783-7084-3265-9085-8269-3286-77'
@@ -275,7 +271,6 @@ class IBMCloudProvider(CloudProviderInstance):
 
     def __init__(self, *args, **kwargs):
         super(IBMCloudProvider, self).__init__(*args, **kwargs)
-        # __IBM = __CP(name='ibm', rpm='', yum='', vv='', manuf='', rhsm_server_hostname='networklayer.com')
         self.rhsm_server_hostname = 'networklayer.com'
         self.cp_rpms = self._get_rpm_cp_info(self.rpm)
         self.cp_yum = self._get_cp_from_yum(self.yum)
@@ -355,7 +350,7 @@ class CloudProvider(object):
 
     def _select_provider(self):
         """
-        This methos provides the logic to identify which cloud provider is present.
+        This method provides the logic to identify which cloud provider is present.
 
         If new data sources and/or cloud providers are added you must add logic here to
         identify the new cloud provider.
