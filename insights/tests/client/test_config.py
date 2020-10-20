@@ -165,64 +165,6 @@ def test_output_dir_file_implies_no_upload_true_keep_archive_false():
     assert not c.keep_archive
 
 
-# empty argv so parse_args isn't polluted with pytest arguments
-@patch('insights.client.config.sys.argv', [sys.argv[0]])
-def test_compressor_option_validate():
-    '''
-    Compressor options are validated in config.py
-    (used to be in archive.py)
-    If an unsupported option is given, select 'gz'
-    '''
-    for comp in ('gz', 'bz2', 'xz', 'none'):
-        c = InsightsConfig(compressor=comp)
-        c.load_all()
-        assert c.compressor == comp
-
-    c = InsightsConfig(compressor='hullabaloo')
-    c.load_all()
-    assert c.compressor == 'gz'
-
-
-# empty argv so parse_args isn't polluted with pytest arguments
-@patch('insights.client.config.sys.argv', [sys.argv[0]])
-def test_output_file_guess_file_ext():
-    '''
-    If --output-file is selected, automatically guess
-    the compressor option based on the file extension.
-
-    If the compressor cannot be guessed from the filename,
-    the filename will be given an extension based on the
-    compressor option (default .tar.gz).
-
-    If the proper extension is already part of the
-    output file, the output file is unchanged.
-    '''
-    c = InsightsConfig(output_file='test-abc')
-    c.load_all()
-    assert c.output_file == os.path.abspath('test-abc.tar.gz')
-    assert c.compressor == 'gz'
-
-    c = InsightsConfig(output_file='test-def.tar.gz')
-    c.load_all()
-    assert c.output_file == os.path.abspath('test-def.tar.gz')
-    assert c.compressor == 'gz'
-
-    c = InsightsConfig(output_file='test-ghi.tar.bz2', compressor='bz2')
-    c.load_all()
-    assert c.output_file == os.path.abspath('test-ghi.tar.bz2')
-    assert c.compressor == 'bz2'
-
-    c = InsightsConfig(output_file='test-jkl', compressor='valkyrie')
-    c.load_all()
-    assert c.output_file == os.path.abspath('test-jkl.tar.gz')
-    assert c.compressor == 'gz'
-
-    c = InsightsConfig(output_file='test-mno.tar')
-    c.load_all()
-    assert c.output_file == os.path.abspath('test-mno.tar')
-    assert c.compressor == 'none'
-
-
 @patch('insights.client.config.get_version_info')
 def test_core_collect_default(get_version_info):
     '''

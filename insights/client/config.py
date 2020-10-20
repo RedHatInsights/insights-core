@@ -112,12 +112,6 @@ DEFAULT_OPTS = {
         'action': 'store_true',
         'group': 'actions'
     },
-    'compressor': {
-        'default': 'gz',
-        'opt': ['--compressor'],
-        'help': argparse.SUPPRESS,
-        'action': 'store'
-    },
     'conf': {
         'default': constants.default_conf_file,
         'opt': ['--conf', '-c'],
@@ -735,11 +729,6 @@ class InsightsConfig(object):
             # don't keep the archive or files in temp
             #   if we're writing it to a specified location
             self.keep_archive = False
-        if self.compressor not in constants.valid_compressors:
-            # set default compressor if an invalid one is supplied
-            if self._print_errors:
-                sys.stdout.write('The compressor {0} is not supported. Using default: gz\n'.format(self.compressor))
-            self.compressor = 'gz'
         if self.output_dir:
             # get full path
             self.output_dir = os.path.abspath(self.output_dir)
@@ -750,35 +739,17 @@ class InsightsConfig(object):
 
     def _determine_filename_and_extension(self):
         '''
-        Attempt to automatically determine compressor
-        and filename for --output-file based on the given config.
+        Attempt to automatically determine filename
+        for --output-file based on the given config.
         '''
-        def _tar_ext(comp):
-            '''
-            Helper function to generate .tar file extension
-            '''
-            ext = '' if comp == 'none' else '.%s' % comp
-            return '.tar' + ext
-
         # make sure we're not attempting to write an existing directory first
         if os.path.isdir(self.output_file):
             raise ValueError('%s is a directory.' % self.output_file)
 
-        # attempt to determine compressor from filename
-        for x in constants.valid_compressors:
-            if self.output_file.endswith(_tar_ext(x)):
-                if self.compressor != x:
-                    if self._print_errors:
-                        sys.stdout.write('The given output file {0} does not match the given compressor {1}. '
-                                         'Setting compressor to match the file extension.\n'.format(self.output_file, self.compressor))
-                self.compressor = x
-                return
-
-        # if we don't return from the loop, we could
-        #   not determine compressor from filename, so
-        #   set the filename from the given
-        #   compressor
-        self.output_file = self.output_file + _tar_ext(self.compressor)
+        # if the filename does not end in .tar.gz,
+        #   add the extension
+        if not self.output_file.endswith('.tar.gz'):
+            self.output_file = self.output_file + '.tar.gz'
 
 
 if __name__ == '__main__':

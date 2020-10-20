@@ -10,7 +10,7 @@ PATH = '/usr/share/xml/scap/ref_id.xml'
 
 
 @patch("insights.client.apps.compliance.ComplianceClient._assert_oscap_rpms_exist")
-@patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None, compressor='gz')
+@patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
 def test_oscap_scan(config, assert_rpms):
     compliance_client = ComplianceClient(config)
     compliance_client.get_policies = lambda: [{'attributes': {'ref_id': 'foo', 'tailored': False}}]
