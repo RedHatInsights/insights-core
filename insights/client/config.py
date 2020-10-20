@@ -232,6 +232,12 @@ DEFAULT_OPTS = {
         'action': 'store_true',
         'group': 'debug'
     },
+    'module': {
+        'default': None,
+        'opt': ['--module', '-m'],
+        'help': 'Directly run a Python module within the insights-core package',
+        'action': 'store'
+    },
     'obfuscate': {
         # non-CLI
         'default': False
