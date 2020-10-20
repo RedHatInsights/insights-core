@@ -686,7 +686,10 @@ class SOSCleaner:
                 self._add_extra_files(options.files)
 
             if self.fqdn:   # if we have a hostname that's not a None type
-                self.hashed_fqdn = hashlib.sha1(self.fqdn).hexdigest() + '.example.com'
+                if six.PY3:
+                    self.hashed_fqdn = hashlib.sha1(self.fqdn.encode('utf-8')).hexdigest() + '.example.com'
+                else:
+                    self.hashed_fqdn = hashlib.sha1(self.fqdn).hexdigest() + '.example.com'
                 self.hn_db[self.hashed_fqdn] = self.fqdn     # we'll prime the hostname pump to clear out a ton of useless logic later
 
             self._process_hosts_file(options)  # we'll take a dig through the hosts file and make sure it is as scrubbed as possible
