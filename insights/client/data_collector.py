@@ -303,7 +303,7 @@ class DataCollector(object):
                 glob_specs = self._parse_glob_spec(g)
                 for g in glob_specs:
                     if g['file'] in rm_conf.get('files', []):
-                        logger.warn("WARNING: Skipping file %s", g)
+                        logger.warn("WARNING: Skipping file %s", g['file'])
                     else:
                         glob_spec = InsightsFile(g, self.mountpoint)
                         self.archive.add_to_archive(glob_spec)
