@@ -372,6 +372,7 @@ class Specs(SpecSet):
     netstat_i = RegistryPoint()
     netstat = RegistryPoint()
     netstat_s = RegistryPoint()
+    networkmanager_conf = RegistryPoint()
     networkmanager_dispatcher_d = RegistryPoint(multi_output=True)
     neutron_conf = RegistryPoint(filterable=True)
     neutron_sriov_agent = RegistryPoint(filterable=True)
