@@ -236,7 +236,8 @@ DEFAULT_OPTS = {
         'default': None,
         'opt': ['--module', '-m'],
         'help': 'Directly run a Python module within the insights-core package',
-        'action': 'store'
+        'action': 'store',
+        'help': argparse.SUPPRESS
     },
     'obfuscate': {
         # non-CLI
