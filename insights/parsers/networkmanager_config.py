@@ -14,8 +14,8 @@ Given a file containing the following test data::
 Example:
     >>> type(networkmanager_config_obj)
     <class 'insights.parsers.networkmanager_config.NetworkManagerConfig'>
-    >>> networkmanager_config_obj.get('main', 'dhcp')
-    'dhclient'
+    >>> networkmanager_config_obj.get('main', 'dhcp') == 'dhclient'
+    True
 """
 
 from .. import parser, IniConfigFile
