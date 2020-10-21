@@ -16,6 +16,7 @@ class Openshift(SpecSet):
 
 
 class Specs(SpecSet):
+    abrt_ccpp_conf = RegistryPoint(filterable=True)
     abrt_status_bare = RegistryPoint()
     amq_broker = RegistryPoint(multi_output=True)
     auditctl_status = RegistryPoint()
