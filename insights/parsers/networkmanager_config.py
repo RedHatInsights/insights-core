@@ -14,7 +14,7 @@ Given a file containing the following test data::
 Example:
     >>> type(networkmanager_config_obj)
     <class 'insights.parsers.networkmanager_config.NetworkManagerConfig'>
-    >>> networkmanager_config_obj.data.get('main', 'dhcp')
+    >>> networkmanager_config_obj.get('main', 'dhcp')
     'dhclient'
 """
 
