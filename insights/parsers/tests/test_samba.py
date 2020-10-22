@@ -1,4 +1,6 @@
-from insights.parsers import samba
+import pytest
+
+from insights.parsers import samba, ParseException
 from insights.tests import context_wrap
 from doctest import testmod
 
@@ -215,7 +217,8 @@ Server role: ROLE_STANDALONE
 
 def test_match():
     for config in [samba.SambaConfig(context_wrap(SAMBA_CONFIG)),
-                   samba.SambaConfigs(context_wrap(SAMBA_CONFIG))]:
+                   samba.SambaConfigs(context_wrap("Server role: ROLE_STANDALONE\n\n" +
+                                                   SAMBA_CONFIG))]:
         assert config.get('global', 'this option should be in global') == 'yes'
         assert config.get('global', 'this option should also be in global') == 'true'
         assert config.get('global', 'this another option should also be in global') == '1'
@@ -258,4 +261,10 @@ def test_server_role():
     assert config.get('homes', 'browseable') == 'No'
     assert config.get('global', 'afs username map') == ''
     assert config.server_role == "ROLE_STANDALONE"
+
+
+def test_server_role_missing():
+    with pytest.raises(ParseException) as e:
+        samba.SambaConfigs(context_wrap(SAMBA_CONFIG))
+        assert e.value == "Server role not found."
 

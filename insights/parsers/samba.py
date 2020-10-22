@@ -70,6 +70,7 @@ Examples:
 """
 import re
 
+from . import ParseException
 from .. import add_filter, IniConfigFile, parser
 from insights.specs import Specs
 
@@ -120,12 +121,10 @@ class SambaConfigs(SambaConfig):
     """
     This parser reads the Samba configuration from command `testparm -v -c` which is more
     reliable than parsing the config as well as contains server role.
+
+    Attributes:
+    server_role (string): Server role as reported by the command.
     """
-
-    def __init__(self, *args, **kwargs):
-        self.server_role = None
-        super(SambaConfigs, self).__init__(*args, **kwargs)
-
     def parse_content(self, content):
         # Parse server role
         for line in content:
@@ -133,6 +132,8 @@ class SambaConfigs(SambaConfig):
             if r:
                 self.server_role = r.group(1)
                 break
+        else:
+            raise ParseException("Server role not found.")
 
         # Technically, the implicit [global] section handling is not needed as testparm command
         # processes it, but for simplicity the old parser is used so the logic is not duplicated
