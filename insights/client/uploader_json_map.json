@@ -1109,7 +1109,6 @@
                 "/usr/bin/teamd",
                 "/usr/sbin/fcoemon --syslog",
                 "COMMAND",
-                "[rcu_sched]",
                 "bash",
                 "catalina.base",
                 "ceilometer-coll",
@@ -1142,8 +1141,6 @@
                 "pcsd",
                 "pkla-check-auth",
                 "postgres",
-                "rcu_gp_kthread",
-                "rcu_sched",
                 "smbd",
                 "spausedd",
                 "target_completi",
@@ -2319,9 +2316,6 @@
                 "Cannot assign requested address",
                 "Cannot assign requested address: AH00072",
                 "Connection amqps://subscription.rhn.redhat.com:5647 disconnected",
-                "Connection amqps://subscription.rhn.redhat.com:5647 timed out: Opening connection",
-                "Connection amqps://subscription.rhsm.redhat.com:5647 disconnected",
-                "Connection amqps://subscription.rhsm.redhat.com:5647 timed out: Opening connection",
                 "Corosync main process was not scheduled (@",
                 "Could not set",
                 "DHCPv4 lease renewal requested",
@@ -2364,7 +2358,6 @@
                 "_NET_ACTIVE_WINDOW",
                 "as active slave; either",
                 "belongs to docker.service",
-                "blocked for more than",
                 "callbacks suppressed",
                 "canceled DHCP transaction, DHCP client pid",
                 "chardev: opening backend \"socket\" failed",
@@ -2445,13 +2438,11 @@
                 "there is a meaningful conflict",
                 "timed out",
                 "timeout before we got a set response",
-                "timeout; kill it",
                 "timing out command, waited",
                 "transmit queue",
                 "udev: renamed network interface",
                 "unknown filesystem type 'binfmt_misc'",
                 "ut of memory: ",
-                "vdsm-tool: EnvironmentError: Failed to restore the persisted networks",
                 "watch chan error: etcdserver: mvcc: required revision has been compacted"
             ],
             "symbolic_name": "messages"
@@ -2902,6 +2893,27 @@
             "file": "/etc/pam.d/password-auth",
             "pattern": [],
             "symbolic_name": "password_auth"
+        },
+        {
+            "file": "/etc/opt/rh/php73/php.ini",
+            "pattern": [
+                "post_max_size"
+            ],
+            "symbolic_name": "php_ini"
+        },
+        {
+            "file": "/etc/opt/rh/php72/php.ini",
+            "pattern": [
+                "post_max_size"
+            ],
+            "symbolic_name": "php_ini"
+        },
+        {
+            "file": "/etc/php.ini",
+            "pattern": [
+                "post_max_size"
+            ],
+            "symbolic_name": "php_ini"
         },
         {
             "file": "/etc/yum/pluginconf.d/()*\\w+\\.conf",
@@ -3500,6 +3512,11 @@
             "symbolic_name": "vdsm_logger_conf"
         },
         {
+            "file": "/sys/module/vhost_net/parameters/experimental_zcopytx",
+            "pattern": [],
+            "symbolic_name": "vhost_net_zero_copy_tx"
+        },
+        {
             "file": "/etc/()*virt-who\\.conf",
             "pattern": [
                 "[",
@@ -4094,5 +4111,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2020-10-14T14:41:32.281672"
+    "version": "2020-10-19T12:07:39.171878"
 }
