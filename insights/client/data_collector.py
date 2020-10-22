@@ -147,11 +147,6 @@ class DataCollector(object):
         self.archive.add_metadata_to_archive(
             json.dumps(collection_stats), '/collection_stats')
 
-    def _write_insights_id(self):
-        logger.debug("Writing Insights ID to archive...")
-        self.archive.add_metadata_to_archive(
-            generate_machine_id(), '/etc/insights-client/machine-id')
-
     def _run_pre_command(self, pre_cmd):
         '''
         Run a pre command to get external args for a command
@@ -322,7 +317,6 @@ class DataCollector(object):
 
         # collect metadata
         logger.debug('Collecting metadata...')
-        self._write_insights_id()
         self._write_branch_info(branch_info)
         self._write_display_name()
         self._write_version_info()

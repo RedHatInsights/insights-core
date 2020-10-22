@@ -672,6 +672,9 @@ class InsightsConnection(object):
             None    error connection or parsing response
         '''
         machine_id = generate_machine_id()
+        if not machine_id:
+            # nothing to find
+            return False
         try:
             # [circus music]
             if self.config.legacy_upload:
@@ -865,7 +868,13 @@ class InsightsConnection(object):
             c_facts = get_canonical_facts()
         except Exception as e:
             logger.debug('Error getting canonical facts: %s', e)
-        c_facts['insights_id'] = generate_machine_id()
+        insights_id = generate_machine_id()
+        if insights_id:
+            c_facts['insights_id'] = insights_id
+        else:
+            logger.warning('No machine-id was found.')
+            logger.warning('If an Advisor upload is performed without the machine-id file, this host will not be registered in the inventory.')
+            logger.warning('Run Insights Client as a superuser to generate a machine-id.')
         if self.config.display_name:
             # add display_name to canonical facts
             c_facts['display_name'] = self.config.display_name

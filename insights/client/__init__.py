@@ -699,9 +699,8 @@ def format_config(config):
 def _init_client_config_dirs():
     '''
     Initialize log and lib dirs
-    TODO: init non-root config dirs
     '''
-    for d in (constants.log_dir, constants.insights_core_lib_dir):
+    for d in (constants.log_dir, constants.insights_core_lib_dir, constants.default_conf_dir):
         try:
             os.makedirs(d)
         except OSError as e:

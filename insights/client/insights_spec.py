@@ -140,10 +140,6 @@ class InsightsFile(InsightsSpec):
 
         exec_start = time.time()
 
-        if 'machine-id' in self.real_path and 'insights' in self.real_path:
-            # add this in archive metadata instead
-            return
-
         sedcmd = Popen(['sed', '', self.real_path], stdout=PIPE)
 
         if self.pattern is None:

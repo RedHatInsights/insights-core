@@ -18,7 +18,7 @@ def _log_dir():
     Get the insights-client log dir
 
     Default: /var/log/insights-client
-    Non-root user: $XDG_CACHE_HOME/insights-client || $HOME/.cache/insights-client/log
+    Non-root user: $XDG_CACHE_HOME/insights-client/log || $HOME/.cache/insights-client/log
     '''
     if _uid == 0:
         insights_log_dir = os.path.join(os.sep, 'var', 'log', _app_name)
@@ -32,7 +32,7 @@ def _lib_dir():
     Get the insights-client egg cache dir
 
     Default: /var/lib/insights
-    Non-root user: $XDG_CACHE_HOME/insights-client || $HOME/.cache/insights-client/lib
+    Non-root user: $XDG_CACHE_HOME/insights-client/lib || $HOME/.cache/insights-client/lib
     '''
     if _uid == 0:
         insights_lib_dir = os.path.join(os.sep, 'var', 'lib', 'insights')
@@ -86,28 +86,24 @@ class InsightsConstants(object):
     insights_core_rpm = os.path.join(_etc_insights_client_dir, 'rpm.egg')
     default_egg_gpg_key = os.path.join(_etc_insights_client_dir, 'insights-core.gpg')
     legacy_ca_cert = os.path.join(_etc_insights_client_dir, 'cert-api.access.redhat.com.pem')
+    machine_id_file = os.path.join(_etc_insights_client_dir, 'machine-id')
 
     # read/write etc files
     default_conf_dir = _conf_dir()
     simple_find_replace_dir = _bc_conf_dir()
     default_conf_file = os.path.join(default_conf_dir, 'insights-client.conf')
     default_tags_file = os.path.join(default_conf_dir, 'tags.yaml')
-    simple_find_replace_dir = '/etc/redhat-access-insights'
-    default_log_file = os.path.join(log_dir, app_name + '.log')
-    default_payload_log = os.path.join(log_dir, app_name + '-payload.log')
+    simple_find_replace_dir = _bc_conf_dir()
     custom_network_log_level = 11
-    default_sed_file = os.path.join(default_conf_dir, '.exp.sed')
     collection_rules_file = os.path.join(default_conf_dir, '.cache.json')
     unregistered_files = [os.path.join(default_conf_dir, '.unregistered'),
                           os.path.join(simple_find_replace_dir, '.unregistered')]
     registered_files = [os.path.join(default_conf_dir, '.registered'),
                         os.path.join(simple_find_replace_dir, '.registered')]
     lastupload_file = os.path.join(default_conf_dir, '.lastupload')
-    machine_id_file = os.path.join(default_conf_dir, 'machine-id')
     core_etag_file = os.path.join(default_conf_dir, '.insights-core.etag')
     core_gpg_sig_etag_file = os.path.join(default_conf_dir, '.insights-core-gpg-sig.etag')
     last_upload_results_file = os.path.join(default_conf_dir, '.last-upload.results')
-    insights_core_rpm = os.path.join(default_conf_dir, 'rpm.egg')
     cached_branch_info = os.path.join(default_conf_dir, '.branch_info')
 
     # read/write lib files
@@ -133,10 +129,6 @@ class InsightsConstants(object):
     module_router_path = "/module-update-router/v1/channel?module=insights-core"
     sig_kill_ok = 100
     sig_kill_bad = 101
-<<<<<<< HEAD
-=======
-    cached_branch_info = os.path.join(default_conf_dir, '.branch_info')
->>>>>>> skip autoconfig for non-root, create log and lib dirs from egg
     egg_release_file = os.path.join(os.sep, 'tmp', 'insights-client-egg-release')
     valid_compressors = ("gz", "xz", "bz2", "none")
     # RPM version in which core collection was released
