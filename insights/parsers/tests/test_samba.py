@@ -212,13 +212,13 @@ Server role: ROLE_STANDALONE
 [homes]
 	browseable = No
 
-"""
+"""  # noqa: E101,W191,W291
 
 
 def test_match():
-    for config in [samba.SambaConfig(context_wrap(SAMBA_CONFIG)),
+    for config in [samba.SambaConfig(context_wrap(SAMBA_CONFIG)),  # noqa: E101
                    samba.SambaConfigs(context_wrap("Server role: ROLE_STANDALONE\n\n" +
-                                                   SAMBA_CONFIG))]:
+                                      SAMBA_CONFIG))]:
         assert config.get('global', 'this option should be in global') == 'yes'
         assert config.get('global', 'this option should also be in global') == 'true'
         assert config.get('global', 'this another option should also be in global') == '1'
@@ -267,4 +267,3 @@ def test_server_role_missing():
     with pytest.raises(ParseException) as e:
         samba.SambaConfigs(context_wrap(SAMBA_CONFIG))
         assert e.value == "Server role not found."
-
