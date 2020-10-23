@@ -45,6 +45,9 @@ class SubscriptionManagerList(CommandParser):
         # it starts a new record.
 
         for line in content:
+            if 'Traceback' in line:
+                self.error = content[-1]
+                break
             # Check for match of key/value line
             match = key_val_re.search(line)
             if match:
@@ -86,9 +89,6 @@ class SubscriptionManagerList(CommandParser):
         # Save the last read record if we had one.
         if current_record:
             self.records.append(current_record)
-        else:
-            if 'Traceback' in content[0]:
-                self.error = content[-1]
 
     def search(self, *args, **kwargs):
         """
