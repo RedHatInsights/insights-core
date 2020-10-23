@@ -6,6 +6,7 @@ import tempfile
 import shlex
 import shutil
 import sys
+import atexit
 from subprocess import Popen, PIPE
 from requests import ConnectionError
 
@@ -65,6 +66,7 @@ class InsightsClient(object):
         # used for requests
         self.session = None
         self.connection = None
+        self.tmpdir = None
 
     def _net(func):
         def _init_connection(self, *args, **kwargs):
@@ -121,10 +123,11 @@ class InsightsClient(object):
             returns (dict): {'core': path to new egg, None if no update,
                              'gpg_sig': path to new sig, None if no update}
         """
-        tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.mkdtemp()
+        atexit.register(self.delete_tmpdir)
         fetch_results = {
-            'core': os.path.join(tmpdir, 'insights-core.egg'),
-            'gpg_sig': os.path.join(tmpdir, 'insights-core.egg.asc')
+            'core': os.path.join(self.tmpdir, 'insights-core.egg'),
+            'gpg_sig': os.path.join(self.tmpdir, 'insights-core.egg.asc')
         }
 
         logger.debug("Beginning core fetch.")
@@ -371,6 +374,11 @@ class InsightsClient(object):
 
         logger.debug("The new Insights Core was installed successfully.")
         return {'success': True}
+
+    def delete_tmpdir(self):
+        if self.tmpdir:
+            logger.debug("Deleting temp directory %s." % (self.tmpdir))
+            shutil.rmtree(self.tmpdir, True)
 
     @_net
     def update_rules(self):
