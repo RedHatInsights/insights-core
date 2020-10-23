@@ -248,6 +248,7 @@ class SosSpecs(Specs):
     systemd_system_origin_accounting = simple_file("/etc/systemd/system.conf.d/origin-accounting.conf")
     teamdctl_config_dump = glob_file("sos_commands/teamd/teamdctl_*_config_dump")
     teamdctl_state_dump = glob_file("sos_commands/teamd/teamdctl_*_state_dump")
+    testparm_s = simple_file("sos_commands/samba/testparm_s")
     tomcat_web_xml = first_of([glob_file("/etc/tomcat*/web.xml"),
                                   glob_file("/conf/tomcat/tomcat*/web.xml")])
     tuned_conf = simple_file("/etc/tuned.conf")

@@ -218,6 +218,7 @@ class InsightsArchiveSpecs(Specs):
     systemd_docker = first_file(["insights_commands/systemctl_cat_docker.service", "/usr/lib/systemd/system/docker.service"])
     systemd_openshift_node = first_file(["insights_commands/systemctl_cat_atomic-openshift-node.service", "/usr/lib/systemd/system/atomic-openshift-node.service"])
     systool_b_scsi_v = simple_file("insights_commands/systool_-b_scsi_-v")
+    testparm_s = simple_file("insights_commands/testparm_-s")
     testparm_v_s = simple_file("insights_commands/testparm_-v_-s")
     tomcat_vdc_fallback = simple_file("insights_commands/find_.usr.share_-maxdepth_1_-name_tomcat_-exec_.bin.grep_-R_-s_VirtualDirContext_--include_.xml")
     tuned_adm = simple_file("insights_commands/tuned-adm_list")

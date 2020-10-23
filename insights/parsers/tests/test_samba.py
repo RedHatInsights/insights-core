@@ -218,7 +218,10 @@ Server role: ROLE_STANDALONE
 def test_match():
     for config in [samba.SambaConfig(context_wrap(SAMBA_CONFIG)),  # noqa: E101
                    samba.SambaConfigs(context_wrap("Server role: ROLE_STANDALONE\n\n" +
-                                      SAMBA_CONFIG))]:
+                                      SAMBA_CONFIG)),
+                   samba.SambaConfigsAll(context_wrap("Server role: ROLE_STANDALONE\n\n" +
+                                      SAMBA_CONFIG)),
+                   ]:
         assert config.get('global', 'this option should be in global') == 'yes'
         assert config.get('global', 'this option should also be in global') == 'true'
         assert config.get('global', 'this another option should also be in global') == '1'
