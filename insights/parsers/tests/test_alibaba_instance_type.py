@@ -4,7 +4,6 @@ from insights.parsers import alibaba_instance_type
 from insights.parsers.alibaba_instance_type import AlibabaInstanceType
 from insights.tests import context_wrap
 from insights.parsers import SkipException, ParseException
-from insights.core.plugins import ContentException
 
 ALIBABA_TYPE_1 = "ecs.ebmg5s.24xlarge"
 ALIBABA_TYPE_2 = "ecs.g6a.64xlarge"
