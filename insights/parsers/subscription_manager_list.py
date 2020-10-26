@@ -27,7 +27,7 @@ class SubscriptionManagerList(CommandParser):
     or ``--installed``.
 
     Attributes:
-        records (list): A list of dict with the output info
+        records (list): A list of dict with the output info, it's empty when the ``error`` occurs
         error (str): The raised exception when there is traceback
     """
     def parse_content(self, content):
