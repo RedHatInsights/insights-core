@@ -4,7 +4,6 @@ from insights.parsers import google_instance_type
 from insights.parsers.google_instance_type import GoogleInstanceType
 from insights.tests import context_wrap
 from insights.parsers import SkipException, ParseException
-from insights.core.plugins import ContentException
 
 GOOGLE_TYPE_1 = "projects/123456789/machineTypes/n2-highcpu-16"
 GOOGLE_TYPE_2 = "projects/123456789/machineTypes/e2-medium"
