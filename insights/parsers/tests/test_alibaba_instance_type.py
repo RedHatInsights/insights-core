@@ -28,9 +28,6 @@ curl: (28) connect() timed out!
 ALIBABA_TYPE_AB_4 = """
 .micro
 """.strip()
-ALIBABA_TYPE_AB_5 = """
-No module named insights.tools
-""".strip()
 
 
 def test_alibaba_instance_type_ab_other():
@@ -46,9 +43,6 @@ def test_alibaba_instance_type_ab_other():
     with pytest.raises(ParseException) as pe:
         AlibabaInstanceType(context_wrap(ALIBABA_TYPE_AB_4))
         assert 'Unrecognized type' in str(pe)
-
-    with pytest.raises(ContentException) as pe:
-        AlibabaInstanceType(context_wrap(ALIBABA_TYPE_AB_5))
 
 
 def test_alibaba_instance_type_ab_empty():
