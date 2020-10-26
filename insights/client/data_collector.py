@@ -300,16 +300,21 @@ class DataCollector(object):
                         }
         if 'globs' in conf:
             for g in conf['globs']:
-                glob_specs = self._parse_glob_spec(g)
-                for g in glob_specs:
-                    if g['file'] in rm_conf.get('files', []):
-                        logger.warn("WARNING: Skipping file %s", g['file'])
-                    else:
-                        glob_spec = InsightsFile(g, self.mountpoint)
-                        self.archive.add_to_archive(glob_spec)
-                        collection_stats[g['file']] = {
-                            'exec_time': glob_spec.exec_time,
-                            'output_size': glob_spec.output_size
+                rm_files = rm_conf.get('files', [])
+                if g.get('symbolic_name') in rm_files:
+                    # ignore glob via symbolic name
+                    logger.warn("WARNING: Skipping file %s", g['glob'])
+                else:
+                    glob_specs = self._parse_glob_spec(g)
+                    for g in glob_specs:
+                        if g['file'] in rm_conf.get('files', []):
+                            logger.warn("WARNING: Skipping file %s", g['file'])
+                        else:
+                            glob_spec = InsightsFile(g, self.mountpoint)
+                            self.archive.add_to_archive(glob_spec)
+                            collection_stats[g['file']] = {
+                                'exec_time': glob_spec.exec_time,
+                                'output_size': glob_spec.output_size
                         }
         logger.debug('Spec collection finished.')
 
