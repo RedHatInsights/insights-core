@@ -11,7 +11,7 @@ from insights.parsers import SkipException, ParseException
 from insights.specs import Specs
 
 
-@parser(Specs.docker_info)
+@parser(Specs.dotnet_version)
 class DotNetVersion(CommandParser):
     """
     Class for parsing the output of the ``/usr/bin/dotnet --version`` command.
