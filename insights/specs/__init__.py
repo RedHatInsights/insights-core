@@ -203,6 +203,7 @@ class Specs(SpecSet):
     gnocchi_conf = RegistryPoint(filterable=True)
     gnocchi_metricd_log = RegistryPoint(filterable=True)
     greenboot_status = RegistryPoint(filterable=True)
+    gcp_instance_type = RegistryPoint()
     grub_conf = RegistryPoint()
     grub_config_perms = RegistryPoint()
     grub_efi_conf = RegistryPoint()
