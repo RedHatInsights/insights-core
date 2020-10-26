@@ -315,7 +315,7 @@ class DataCollector(object):
                             collection_stats[g['file']] = {
                                 'exec_time': glob_spec.exec_time,
                                 'output_size': glob_spec.output_size
-                        }
+                            }
         logger.debug('Spec collection finished.')
 
         self.redact(rm_conf)
