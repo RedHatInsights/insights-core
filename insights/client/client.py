@@ -338,7 +338,7 @@ def _legacy_upload(config, pconn, tar_file, content_type, collection_duration=No
                 logger.info('View the Red Hat Insights console at https://cloud.redhat.com/insights/')
             break
 
-        elif upload.status_code in (412, 413):
+        elif upload.status_code in (412, 413, 415):
             pconn.handle_fail_rcs(upload)
             raise RuntimeError('Upload failed.')
         else:
