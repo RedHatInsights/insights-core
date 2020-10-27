@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 class InsightsClient(object):
 
-    def __init__(self, config=None, setup_logging=True, **kwargs):
+    def __init__(self, config=None, from_phase=True, **kwargs):
         """
         The Insights client interface
         """
@@ -50,18 +50,14 @@ class InsightsClient(object):
                     sys.exit(constants.sig_kill_bad)
             # END hack. in the future, just set self.config=config
 
-        # setup_logging is True when called from phase, but not from wrapper.
-        #  use this to do any common init (like auto_config)
-        if setup_logging:
+        if from_phase:
             _init_client_config_dirs()
             self.set_up_logging()
             try_auto_configuration(self.config)
             self.initialize_tags()
-        else:
-            # write PID to file in case we need to ping systemd
-            write_to_disk(constants.pidfile, content=str(os.getpid()))
-            # write PPID to file so that we can grab the client execution method
-            write_to_disk(constants.ppidfile, content=get_parent_process())
+        else:  # from wrapper
+            _write_pid_files()
+
         # setup insights connection placeholder
         # used for requests
         self.session = None
@@ -718,3 +714,12 @@ def _init_client_config_dirs():
                 pass
             else:
                 raise e
+
+
+def _write_pid_files():
+    for file, content in (
+        (constants.pidfile, str(os.getpid())),  # PID in case we need to ping systemd
+        (constants.ppidfile, get_parent_process())  # PPID so that we can grab the client execution method
+    ):
+        write_to_disk(file, content=content)
+        atexit.register(write_to_disk, file, delete=True)
