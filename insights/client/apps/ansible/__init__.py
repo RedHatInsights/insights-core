@@ -30,7 +30,7 @@ def verify_playbook(unverified_playbook: str) -> str:
     Error: exception
     """
     # Skeleton implementation ... "bless" the incoming playbook 
-    ERROR = os.getenv('TOTALLY_BUSTED')
+    ERROR = os.getenv('THROW_ERROR')
     if ERROR:
         raise PlaybookValidationError(unverified_playbook)
 
@@ -45,7 +45,6 @@ def read_playbook() -> str:
     return unverified_playbook
 
 if __name__ == "__main__":
-    ERROR = os.getenv('TOTALLY_BUSTED')
     # Read playbook from stdin
     unverified_playbook = read_playbook()
 
