@@ -110,6 +110,10 @@ def pre_update(client, config):
         print(json.dumps(resp))
         sys.exit(constants.sig_kill_ok)
 
+    if config.checkin:
+        client.checkin()
+        sys.exit(constants.sig_kill_ok)
+
 
 @phase
 def update(client, config):
