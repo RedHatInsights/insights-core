@@ -121,6 +121,8 @@ class InsightsConnection(object):
             # workaround for a workaround for a workaround
             base_url_base = self.base_url.split('/platform')[0]
             self.branch_info_url = base_url_base + '/v1/branch_info'
+        self.inventory_url = self.api_url + "/inventory/v1"
+
         self.authmethod = self.config.authmethod
         self.systemid = self.config.systemid or None
         self.get_proxies()
@@ -679,7 +681,7 @@ class InsightsConnection(object):
             if self.config.legacy_upload:
                 url = self.base_url + '/platform/inventory/v1/hosts?insights_id=' + machine_id
             else:
-                url = self.base_url + '/inventory/v1/hosts?insights_id=' + machine_id
+                url = self.inventory_url + '/hosts?insights_id=' + machine_id
             logger.log(NETWORK, "GET %s", url)
             res = self.session.get(url, timeout=self.config.http_timeout)
         except (requests.ConnectionError, requests.Timeout) as e:
@@ -754,7 +756,7 @@ class InsightsConnection(object):
             return False
         try:
             logger.debug("Unregistering host...")
-            url = self.api_url + "/inventory/v1/hosts/" + results[0]['id']
+            url = self.inventory_url + "/hosts/" + results[0]['id']
             logger.log(NETWORK, "DELETE %s", url)
             response = self.session.delete(url)
             response.raise_for_status()
@@ -957,7 +959,7 @@ class InsightsConnection(object):
             return system
         inventory_id = system[0]['id']
 
-        req_url = self.base_url + '/inventory/v1/hosts/' + inventory_id
+        req_url = self.inventory_url + '/hosts/' + inventory_id
         try:
             logger.log(NETWORK, "PATCH %s", req_url)
             res = self.session.patch(req_url, json={'display_name': display_name})
@@ -1030,7 +1032,7 @@ class InsightsConnection(object):
         '''
             Retrieve advisor report
         '''
-        url = self.base_url + "/inventory/v1/hosts?insights_id=%s" % generate_machine_id()
+        url = self.inventory_url + "/hosts?insights_id=%s" % generate_machine_id()
         content = self._get(url)
         if content is None:
             return None
