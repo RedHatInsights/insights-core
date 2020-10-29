@@ -1,6 +1,7 @@
 import os
 import sys
-__all__ = ("verify_playbook")
+
+__all__ = ("verify_playbook", "PlaybookValidationError")
 
 ####  PLAYBOOK VALIDATION ERROR MESSAGE ####
 class PlaybookValidationError(Exception):
@@ -41,7 +42,7 @@ def read_playbook() -> str:
     """
     unverified_playbook = ''
     for line in sys.stdin:
-        unverified_playbook += line.rstrip()
+        unverified_playbook += line
 
     return unverified_playbook
 
