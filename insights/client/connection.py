@@ -1061,3 +1061,14 @@ class InsightsConnection(object):
             logger.debug("Wrote \"/var/lib/insights/insights-details.json\"")
 
         return json.loads(content)
+
+    def checkin(self):
+        '''
+            Sends an ultralight check-in request containing only the machine ID.
+        '''
+        machine_id = generate_machine_id()
+        url = self.inventory_url + "/hosts/checkin"
+        payload = {"canonical_facts": {"insights_id": machine_id}}
+        logger.info("Checking in… %s %s" % (url, payload))
+        response = self.session.put(url, headers={"Content-Type": "application/json"}, data=json.dumps(payload))
+        print(response, response.text)
