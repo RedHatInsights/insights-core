@@ -12,16 +12,14 @@ class PlaybookValidationError(Exception):
         message -- explanation of why validation failed
     """
 
-    def __init__(self, playbook, message = " #### PLAYBOOK VALIDATION FAILED ####: ", code = -1):
-        self.playbook = playbook
+    def __init__(self, message = "PLAYBOOK VALIDATION FAILED"):
         self.message = message
-        self.code = code
         super().__init__(self.message)
 
     def __str__(self):
-        return f'{self.message} {self.playbook}, error code: {self.code}'
+        return f'{self.message}'
 
-def verify_playbook(unverified_playbook: str) -> str:
+def verify(unverified_playbook: str) -> str:
     """
     Verify the signed playbook.
 
@@ -30,9 +28,9 @@ def verify_playbook(unverified_playbook: str) -> str:
     Error: exception
     """
     # Skeleton implementation ... "bless" the incoming playbook 
-    ERROR = os.getenv('THROW_ERROR')
+    ERROR = os.getenv('ANSIBLE_PLAYBOOK_VERIFIER_THROW_ERROR')
     if ERROR:
-        raise PlaybookValidationError(unverified_playbook)
+        raise PlaybookValidationError()
 
     verified_playbook = unverified_playbook
     return verified_playbook
@@ -41,7 +39,10 @@ def read_playbook() -> str:
     """
     Read in the stringified playbook yaml from stdin
     """
-    unverified_playbook = sys.stdin.readline()
+    unverified_playbook = ''
+    for line in sys.stdin:
+        unverified_playbook += line.rstrip()
+
     return unverified_playbook
 
 if __name__ == "__main__":
@@ -50,10 +51,11 @@ if __name__ == "__main__":
 
     # Pass playbook to verify_playbook method
     try:
-        verified_playbook = verify_playbook(unverified_playbook)
-    except PlaybookValidationError as e:
-        raise e
+        verified_playbook = verify(unverified_playbook)
+    except Exception as e:
+        print(e, file=sys.stderr)
+        sys.exit(1)
 
     # Output verified playbook
     # On error...set return code to non-zero, output error message to stderr
-    print("Verified Playbook: ", verified_playbook)
+    print(verified_playbook)
