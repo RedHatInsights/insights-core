@@ -109,12 +109,12 @@ domains=ALL
 
 def test_networkmanager_config_match():
     result = NetworkManagerConfig(context_wrap(NETWORKMANAGER_CONF))
-    result.get('main', 'dhcp') == 'dhclient'
+    assert result.get('main', 'dhcp') == 'dhclient'
 
 
 def test_networkmanager_config_notmatch():
     result = NetworkManagerConfig(context_wrap(NETWORKMANAGER_CONF_NOTMATCH))
-    result.has_option('main', 'dhcp') is False
+    assert result.has_option('main', 'dhcp') is False
 
 
 def test_networkmanager_config_doc_examples():
