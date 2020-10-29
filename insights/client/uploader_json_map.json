@@ -232,6 +232,11 @@
             "symbolic_name": "docker_list_images"
         },
         {
+            "command": "/usr/bin/dotnet --version",
+            "pattern": [],
+            "symbolic_name": "dotnet_version"
+        },
+        {
             "command": "/bin/du -s -k /var/lib/candlepin/activemq-artemis",
             "pattern": [],
             "symbolic_name": "du_dirs"
@@ -1252,6 +1257,11 @@
             "symbolic_name": "rpm_V_packages"
         },
         {
+            "command": "python -m insights.tools.cat --no-header sap_hdb_version",
+            "pattern": [],
+            "symbolic_name": "sap_hdb_version"
+        },
+        {
             "command": "/usr/bin/mongo pulp_database --eval 'db.serverStatus().storageEngine'",
             "pattern": [],
             "symbolic_name": "satellite_mongodb_storage_engine"
@@ -1394,6 +1404,16 @@
             "symbolic_name": "systool_b_scsi_v"
         },
         {
+            "command": "/usr/bin/testparm -s",
+            "pattern": [],
+            "symbolic_name": "testparm_s"
+        },
+        {
+            "command": "/usr/bin/testparm -v -s",
+            "pattern": [],
+            "symbolic_name": "testparm_v_s"
+        },
+        {
             "command": "/usr/bin/find /usr/share -maxdepth 1 -name 'tomcat*' -exec /bin/grep -R -s 'VirtualDirContext' --include '*.xml' '{}' +",
             "pattern": [],
             "symbolic_name": "tomcat_vdc_fallback"
@@ -1460,6 +1480,11 @@
         }
     ],
     "files": [
+        {
+            "file": "/etc/abrt/plugins/CCpp.conf",
+            "pattern": [],
+            "symbolic_name": "abrt_ccpp_conf"
+        },
         {
             "file": "/root/.config/openshift/hosts",
             "pattern": [
@@ -2169,9 +2194,7 @@
         {
             "file": "/etc/ipsec.conf",
             "pattern": [
-                "config",
-                "include",
-                "plutodebug"
+                "include"
             ],
             "symbolic_name": "ipsec_conf"
         },
@@ -2313,6 +2336,7 @@
                 "Abort command issued",
                 "Broken pipe",
                 "Buffer I/O error on device",
+                "Cannot allocate memory",
                 "Cannot assign requested address",
                 "Cannot assign requested address: AH00072",
                 "Connection amqps://subscription.rhn.redhat.com:5647 disconnected",
@@ -2501,6 +2525,11 @@
             "file": "/etc/sysconfig/netconsole",
             "pattern": [],
             "symbolic_name": "netconsole"
+        },
+        {
+            "file": "/etc/NetworkManager/NetworkManager.conf",
+            "pattern": [],
+            "symbolic_name": "networkmanager_conf"
         },
         {
             "file": "/etc/NetworkManager/dispatcher.d/.*-dhclient",
@@ -2897,21 +2926,21 @@
         {
             "file": "/etc/opt/rh/php73/php.ini",
             "pattern": [
-                "post_max_size"
+                "["
             ],
             "symbolic_name": "php_ini"
         },
         {
             "file": "/etc/opt/rh/php72/php.ini",
             "pattern": [
-                "post_max_size"
+                "["
             ],
             "symbolic_name": "php_ini"
         },
         {
             "file": "/etc/php.ini",
             "pattern": [
-                "post_max_size"
+                "["
             ],
             "symbolic_name": "php_ini"
         },
@@ -3484,20 +3513,16 @@
             "file": "/var/log/vdsm/vdsm.log",
             "pattern": [
                 "(mailbox-spm) [storage.Misc.excCmd] /usr/bin/taskset --cpu-list",
-                "Bad volume specification",
                 "Changed state to Down: 'NoneType' object has no attribute 'attrib'",
                 "Changed state to Down: internal error: Attempted double use of PCI slot",
                 "ERROR (mailbox-spm) [storage.MailBox.SpmMailMonitor]",
-                "INFO",
                 "RPC call Host.setupNetworks failed",
                 "Stopping connection",
                 "The name org.fedoraproject.FirewallD1 was not provided by any .service files",
                 "The vm start process failed",
-                "_report_inconsistency",
                 "lastCheck",
                 "libvirtError: internal error: failed to format device alias",
-                "looking for unfetched domain",
-                "storage.TaskManager.Task"
+                "looking for unfetched domain"
             ],
             "symbolic_name": "vdsm_log"
         },
@@ -4111,5 +4136,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2020-10-19T12:07:39.171878"
+    "version": "2020-10-22T11:31:29.359264"
 }
