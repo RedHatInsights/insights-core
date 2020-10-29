@@ -238,6 +238,7 @@ class DefaultSpecs(Specs):
     docker_list_images = simple_command("/usr/bin/docker images --all --no-trunc --digests")
     docker_storage_setup = simple_file("/etc/sysconfig/docker-storage-setup")
     docker_sysconfig = simple_file("/etc/sysconfig/docker")
+    dotnet_version = simple_command("/usr/bin/dotnet --version")
     dracut_kdump_capture_service = simple_file("/usr/lib/dracut/modules.d/99kdumpbase/kdump-capture.service")
     du_dirs = foreach_execute(['/var/lib/candlepin/activemq-artemis'], "/bin/du -s -k %s")
     engine_db_query_vdsm_version = simple_command('engine-db-query --statement "SELECT vs.vds_name, rpm_version FROM vds_dynamic vd, vds_static vs WHERE vd.vds_id = vs.vds_id" --json')
