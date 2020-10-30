@@ -289,8 +289,9 @@ def parse_fixed_table(table_lines,
     data in fixed positions in each remaining row of table data.
     Table columns must not contain spaces within the column name.  Column headings
     are assumed to be left justified and the column data width is the width of the
-    heading label plus all whitespace to the right of the label.  This function
-    will handle blank columns.
+    heading label plus all whitespace to the right of the label. This function will
+    remove all blank rows in data but it will handle blank columns if some of the
+    columns aren't empty.
 
     Arguments:
         table_lines (list): List of strings with the first line containing column
@@ -330,6 +331,7 @@ def parse_fixed_table(table_lines,
         [{'Column1': 'data1', 'Column2': 'data 2', 'Column3': 'data   3'},
          {'Column1': 'data4', 'Column2': 'data5', 'Column3': 'data6'}]
     """
+
     def calc_column_indices(line, headers):
         idx = []
         for h in headers:
@@ -355,13 +357,14 @@ def parse_fixed_table(table_lines,
 
     table_data = []
     for line in table_lines[first_line + 1:last_line]:
-        col_data = {}
-        for i, (s, e) in enumerate(idx_pairs):
-            val = line[s:e].strip()
-            if empty_exception and not val:
-                raise ParseException('Incorrect line: \'{0}\''.format(line))
-            col_data[col_headers[i]] = val
-        table_data.append(col_data)
+        if line.strip():
+            col_data = {}
+            for i, (s, e) in enumerate(idx_pairs):
+                val = line[s:e].strip()
+                if empty_exception and not val:
+                    raise ParseException('Incorrect line: \'{0}\''.format(line))
+                col_data[col_headers[i]] = val
+            table_data.append(col_data)
 
     return table_data
 
@@ -442,15 +445,15 @@ def parse_delimited_table(table_lines,
     content = table_lines[first_line + 1:last_line]
     headings = [c.strip() if strip else c for c in header.split(header_delim)]
     r = []
-    for row in content:
-        row = row.strip()
+    for line in content:
+        row = line.strip()
         if row:
             rowsplit = row.split(delim, max_splits)
             if strip:
                 rowsplit = [i.strip() for i in rowsplit]
             o = dict(zip(headings, rowsplit))
             if raw_line_key:
-                o[raw_line_key] = row
+                o[raw_line_key] = line
             r.append(o)
     return r
 

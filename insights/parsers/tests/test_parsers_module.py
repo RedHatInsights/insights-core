@@ -224,6 +224,16 @@ Trailing non-data line
  Another trailing non-data line
 """.strip()
 
+FIXED_CONTENT_5 = """
+Column1    Column 2    Column 3
+
+data1      data 2      data   3
+
+data       7             data   9
+
+data10
+""".strip()
+
 
 FIXED_CONTENT_DUP_HEADER_PREFIXES = """
 NAMESPACE    NAME    LABELS
@@ -288,6 +298,8 @@ def test_parse_fixed_table():
 
     data = parse_fixed_table(FIXED_CONTENT_DUP_HEADER_PREFIXES.splitlines())
     assert data[0] == {'NAMESPACE': 'default', 'NAME': 'foo', 'LABELS': 'app=superawesome'}
+    data = parse_fixed_table(FIXED_CONTENT_5.splitlines())
+    assert len(data) == 3
 
 
 def test_parse_fixed_table_empty_exception():
@@ -373,6 +385,12 @@ POSTGRESQL_LOG = """
  public | rhnpublicchannelfamily         |        0
  (402 rows)
 """.strip()  # Normally has a --- separator line, which is ignored using get_active_lines
+
+TABLE1 = """
+THIS   IS   A   HEADER
+ this   is   some   content_with_blank_prefix
+This   is   more   content
+""".strip()
 
 TABLE2 = [
     "SID   Nr   Instance    SAPLOCALHOST                        Version                 DIR_EXECUTABLE",
@@ -460,6 +478,15 @@ def test_parse_delimited_table():
                  "Version": "749, patch 10, changelist 1698137",
                  "DIR_EXECUTABLE": "/usr/sap/HA2/D22/exe"}]
     assert expected == result
+
+    # Test raw_line_key
+    TABLE1_SP = TABLE1.splitlines()
+    result = parse_delimited_table(TABLE1_SP, raw_line_key='raw_line')
+    assert isinstance(result, list)
+    assert len(result) == 2
+    assert isinstance(result[0], dict)
+    # Get the RAW line
+    assert result[0]['raw_line'] == TABLE1_SP[1]
 
 
 DATA_LIST = [

@@ -85,7 +85,7 @@ def test_soscleaner_additions(isdir_, clean_opts):
         s = SOSCleaner()
         s.logger = Mock()
         s.file_count = Mock()
-        s._prep_environment = Mock(return_value=(None, None, None, None, None))
+        s._prep_environment = Mock(return_value=(None, '/var/tmp/test/socleaner-test', None, None, None))
         s._start_logging = Mock()
         s._get_disclaimer = Mock()
         s._keywords2db = Mock()

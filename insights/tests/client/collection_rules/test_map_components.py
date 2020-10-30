@@ -11,7 +11,7 @@ from insights.client.map_components import (map_rm_conf_to_components,
                                             _search_uploader_json,
                                             _get_component_by_symbolic_name)
 
-uploader_json_file = pkgutil.get_data(insights.__name__, "uploader_json_map.json")
+uploader_json_file = pkgutil.get_data(insights.__name__, "client/uploader_json_map.json")
 uploader_json = json.loads(uploader_json_file)
 default_specs = vars(DefaultSpecs).keys()
 sos_specs = vars(SosSpecs).keys()
@@ -52,13 +52,10 @@ def test_get_component_by_symbolic_name():
     #   Filter out the (B) specs with this list
     skipped_specs = [
         'ceph_osd_df',
-        'dmsetup_info',
-        'du_dirs',
         'gluster_peer_status',
         'gluster_v_status',
         'heat_crontab',
         'httpd_on_nfs',
-        'ls_edac_mc',
         'ls_usr_sbin',
         'lvmconfig',
         'saphostexec_status',

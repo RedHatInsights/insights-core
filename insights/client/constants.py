@@ -1,8 +1,41 @@
 import os
 
+_user_home = os.path.expanduser('~')
+_app_name = 'insights-client'
+_uid = os.getuid()
+_user_cache = os.getenv('XDG_CACHE_HOME', default=os.path.join(_user_home, '.cache'))
+
+
+def _log_dir():
+    '''
+    Get the insights-client log dir
+
+    Default: /var/log/insights-client
+    Non-root user: $XDG_CACHE_HOME/insights-client || $HOME/.cache/insights-client/log
+    '''
+    if _uid == 0:
+        insights_log_dir = os.path.join(os.sep, 'var', 'log', _app_name)
+    else:
+        insights_log_dir = os.path.join(_user_cache, _app_name, 'log')
+    return insights_log_dir
+
+
+def _lib_dir():
+    '''
+    Get the insights-client egg cache dir
+
+    Default: /var/lib/insights
+    Non-root user: $XDG_CACHE_HOME/insights-client || $HOME/.cache/insights-client/lib
+    '''
+    if _uid == 0:
+        insights_lib_dir = os.path.join(os.sep, 'var', 'lib', 'insights')
+    else:
+        insights_lib_dir = os.path.join(_user_cache, _app_name, 'lib')
+    return insights_lib_dir
+
 
 class InsightsConstants(object):
-    app_name = 'insights-client'
+    app_name = _app_name
     auth_method = 'BASIC'
     package_path = os.path.dirname(
         os.path.dirname(os.path.abspath(__file__)))
@@ -11,7 +44,7 @@ class InsightsConstants(object):
     default_conf_dir = os.getenv('INSIGHTS_CONF_DIR', default='/etc/insights-client')
     default_conf_file = os.path.join(default_conf_dir, 'insights-client.conf')
     default_tags_file = os.path.join(default_conf_dir, 'tags.yaml')
-    log_dir = os.path.join(os.sep, 'var', 'log', app_name)
+    log_dir = _log_dir()
     simple_find_replace_dir = '/etc/redhat-access-insights'
     default_log_file = os.path.join(log_dir, app_name + '.log')
     default_payload_log = os.path.join(log_dir, app_name + '-payload.log')
@@ -34,7 +67,7 @@ class InsightsConstants(object):
     core_etag_file = os.path.join(default_conf_dir, '.insights-core.etag')
     core_gpg_sig_etag_file = os.path.join(default_conf_dir, '.insights-core-gpg-sig.etag')
     last_upload_results_file = os.path.join(default_conf_dir, '.last-upload.results')
-    insights_core_lib_dir = os.path.join('/', 'var', 'lib', 'insights')
+    insights_core_lib_dir = _lib_dir()
     insights_core_rpm = os.path.join(default_conf_dir, 'rpm.egg')
     insights_core_last_stable = os.path.join(insights_core_lib_dir, 'last_stable.egg')
     insights_core_last_stable_gpg_sig = os.path.join(insights_core_lib_dir, 'last_stable.egg.asc')
@@ -45,6 +78,7 @@ class InsightsConstants(object):
     sig_kill_bad = 101
     cached_branch_info = os.path.join(default_conf_dir, '.branch_info')
     pidfile = os.path.join(os.sep, 'var', 'run', 'insights-client.pid')
+    egg_release_file = os.path.join(os.sep, 'tmp', 'insights-client-egg-release')
     ppidfile = os.path.join(os.sep, 'tmp', 'insights-client.ppid')
     valid_compressors = ("gz", "xz", "bz2", "none")
     # RPM version in which core collection was released

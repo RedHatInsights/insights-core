@@ -95,6 +95,7 @@ format_rpm = _make_rpm_formatter()
 
 
 class DefaultSpecs(Specs):
+    abrt_ccpp_conf = simple_file("/etc/abrt/plugins/CCpp.conf")
     abrt_status_bare = simple_command("/usr/bin/abrt status --bare=True")
     amq_broker = glob_file("/var/opt/amq-broker/*/etc/broker.xml")
     auditctl_status = simple_command("/sbin/auditctl -s")
@@ -113,6 +114,7 @@ class DefaultSpecs(Specs):
 
     aws_instance_id_doc = simple_command("/usr/bin/curl -s http://169.254.169.254/latest/dynamic/instance-identity/document --connect-timeout 5", deps=[is_aws])
     aws_instance_id_pkcs7 = simple_command("/usr/bin/curl -s http://169.254.169.254/latest/dynamic/instance-identity/pkcs7 --connect-timeout 5", deps=[is_aws])
+    awx_manage_check_license = simple_command("/usr/bin/awx-manage check_license")
 
     @datasource(CloudProvider)
     def is_azure(broker):
@@ -192,7 +194,7 @@ class DefaultSpecs(Specs):
     cib_xml = simple_file("/var/lib/pacemaker/cib/cib.xml")
     cinder_api_log = first_file(["/var/log/containers/cinder/cinder-api.log", "/var/log/cinder/cinder-api.log"])
     cinder_conf = first_file(["/var/lib/config-data/puppet-generated/cinder/etc/cinder/cinder.conf", "/etc/cinder/cinder.conf"])
-    cinder_volume_log = simple_file("/var/log/cinder/volume.log")
+    cinder_volume_log = first_file(["/var/log/containers/cinder/volume.log", "/var/log/containers/cinder/cinder-volume.log", "/var/log/cinder/volume.log"])
     cloud_init_custom_network = simple_file("/etc/cloud/cloud.cfg.d/99-custom-networking.cfg")
     cloud_init_log = simple_file("/var/log/cloud-init.log")
     cluster_conf = simple_file("/etc/cluster/cluster.conf")
@@ -225,17 +227,21 @@ class DefaultSpecs(Specs):
     dig_edns = simple_command("/usr/bin/dig +edns=0 . SOA")
     dig_noedns = simple_command("/usr/bin/dig +noedns . SOA")
     dirsrv_errors = glob_file("var/log/dirsrv/*/errors*")
+    dm_mod_use_blk_mq = simple_file("/sys/module/dm_mod/parameters/use_blk_mq")
     dmesg = simple_command("/bin/dmesg")
     dmesg_log = simple_file("/var/log/dmesg")
     dmidecode = simple_command("/usr/sbin/dmidecode")
+    dmsetup_info = simple_command("/usr/sbin/dmsetup info -C")
     dnf_conf = simple_file("/etc/dnf/dnf.conf")
     docker_info = simple_command("/usr/bin/docker info")
     docker_list_containers = simple_command("/usr/bin/docker ps --all --no-trunc")
     docker_list_images = simple_command("/usr/bin/docker images --all --no-trunc --digests")
     docker_storage_setup = simple_file("/etc/sysconfig/docker-storage-setup")
     docker_sysconfig = simple_file("/etc/sysconfig/docker")
+    dotnet_version = simple_command("/usr/bin/dotnet --version")
     dracut_kdump_capture_service = simple_file("/usr/lib/dracut/modules.d/99kdumpbase/kdump-capture.service")
-    engine_db_query_vdsm_version = simple_command('engine-db-query --statement "SELECT vs.vds_name, rpm_version FROM vds_dynamic vd, vds_static vs WHERE vd.vds_id = vs.vds_id;" --json')
+    du_dirs = foreach_execute(['/var/lib/candlepin/activemq-artemis'], "/bin/du -s -k %s")
+    engine_db_query_vdsm_version = simple_command('engine-db-query --statement "SELECT vs.vds_name, rpm_version FROM vds_dynamic vd, vds_static vs WHERE vd.vds_id = vs.vds_id" --json')
     engine_log = simple_file("/var/log/ovirt-engine/engine.log")
     etc_journald_conf = simple_file(r"etc/systemd/journald.conf")
     etc_journald_conf_d = glob_file(r"etc/systemd/journald.conf.d/*.conf")
@@ -348,12 +354,13 @@ class DefaultSpecs(Specs):
     ipcs_m = simple_command("/usr/bin/ipcs -m")
     ipcs_m_p = simple_command("/usr/bin/ipcs -m -p")
     ipcs_s = simple_command("/usr/bin/ipcs -s")
+    ipsec_conf = simple_file("/etc/ipsec.conf")
     iptables = simple_command("/sbin/iptables-save")
     iptables_permanent = simple_file("etc/sysconfig/iptables")
     ip6tables = simple_command("/sbin/ip6tables-save")
     ipv4_neigh = simple_command("/sbin/ip -4 neighbor show nud all")
     ipv6_neigh = simple_command("/sbin/ip -6 neighbor show nud all")
-    ironic_inspector_log = simple_file("/var/log/ironic-inspector/ironic-inspector.log")
+    ironic_inspector_log = first_file(["/var/log/containers/ironic-inspector/ironic-inspector.log", "/var/log/ironic-inspector/ironic-inspector.log"])
     iscsiadm_m_session = simple_command("/usr/sbin/iscsiadm -m session")
     kdump_conf = simple_file("/etc/kdump.conf")
     kernel_config = glob_file("/boot/config-*")
@@ -365,8 +372,8 @@ class DefaultSpecs(Specs):
     kubepods_cpu_quota = glob_file("/sys/fs/cgroup/cpu/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod[a-f0-9_]*.slice/cpu.cfs_quota_us")
     last_upload_globs = ["/etc/redhat-access-insights/.lastupload", "/etc/insights-client/.lastupload"]
     lastupload = glob_file(last_upload_globs)
-    libkeyutils = simple_command("/usr/bin/find -L /lib /lib64 -name 'libkeyutils.so*'")
-    libkeyutils_objdumps = simple_command('/usr/bin/find -L /lib /lib64 -name libkeyutils.so.1 -exec objdump -x "{}" \;')
+    libssh_client_config = simple_file("/etc/libssh/libssh_client.config")
+    libssh_server_config = simple_file("/etc/libssh/libssh_server.config")
     libvirtd_log = simple_file("/var/log/libvirt/libvirtd.log")
     limits_conf = glob_file(["/etc/security/limits.conf", "/etc/security/limits.d/*.conf"])
     localtime = simple_command("/usr/bin/file -L /etc/localtime")
@@ -375,6 +382,7 @@ class DefaultSpecs(Specs):
     ls_boot = simple_command("/bin/ls -lanR /boot")
     ls_dev = simple_command("/bin/ls -lanR /dev")
     ls_disk = simple_command("/bin/ls -lanR /dev/disk")
+    ls_edac_mc = simple_command("/bin/ls -lan /sys/devices/system/edac/mc")
     etc_and_sub_dirs = sorted(["/etc", "/etc/pki/tls/private", "/etc/pki/tls/certs",
         "/etc/pki/ovirt-vmconsole", "/etc/nova/migration", "/etc/sysconfig",
         "/etc/cloud/cloud.cfg.d", "/etc/rc.d/init.d"])
@@ -408,7 +416,7 @@ class DefaultSpecs(Specs):
     lsscsi = simple_command("/usr/bin/lsscsi")
     lsvmbus = simple_command("/usr/sbin/lsvmbus -vv")
     lvm_conf = simple_file("/etc/lvm/lvm.conf")
-    lvs_noheadings = simple_command("/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,lv_size,lv_attr,mirror_log,vg_name,devices,region_size,data_percent,metadata_percent,segtype,seg_monitor --config=\"global{locking_type=0}\"")
+    lvs_noheadings = simple_command("/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,lv_size,lv_attr,mirror_log,vg_name,devices,region_size,data_percent,metadata_percent,segtype,seg_monitor,lv_kernel_major,lv_kernel_minor --config=\"global{locking_type=0}\"")
     mac_addresses = glob_file("/sys/class/net/*/address")
     machine_id = first_file(["etc/insights-client/machine-id", "etc/redhat-access-insights/machine-id", "etc/redhat_access_proactive/machine-id"])
     mariadb_log = simple_file("/var/log/mariadb/mariadb.log")
@@ -425,6 +433,7 @@ class DefaultSpecs(Specs):
     modinfo_veth = simple_command("/sbin/modinfo veth")
     modinfo_vmxnet3 = simple_command("/sbin/modinfo vmxnet3")
     modprobe = glob_file(["/etc/modprobe.conf", "/etc/modprobe.d/*.conf"])
+    mokutil_sbstate = simple_command("/bin/mokutil --sb-state")
     mongod_conf = glob_file([
                             "/etc/mongod.conf",
                             "/etc/mongodb.conf",
@@ -452,6 +461,7 @@ class DefaultSpecs(Specs):
     netstat_agn = simple_command("/bin/netstat -agn")
     netstat_i = simple_command("/bin/netstat -i")
     netstat_s = simple_command("/bin/netstat -s")
+    networkmanager_conf = simple_file("/etc/NetworkManager/NetworkManager.conf")
     networkmanager_dispatcher_d = glob_file("/etc/NetworkManager/dispatcher.d/*-dhclient")
     neutron_conf = first_file(["/var/lib/config-data/puppet-generated/neutron/etc/neutron/neutron.conf", "/etc/neutron/neutron.conf"])
     neutron_sriov_agent = first_file([
@@ -459,7 +469,7 @@ class DefaultSpecs(Specs):
         "/etc/neutron/plugins/ml2/sriov_agent.ini"])
     neutron_dhcp_agent_ini = first_file(["/var/lib/config-data/puppet-generated/neutron/etc/neutron/dhcp_agent.ini", "/etc/neutron/dhcp_agent.ini"])
     neutron_l3_agent_ini = first_file(["/var/lib/config-data/puppet-generated/neutron/etc/neutron/l3_agent.ini", "/etc/neutron/l3_agent.ini"])
-    neutron_l3_agent_log = simple_file("/var/log/neutron/l3-agent.log")
+    neutron_l3_agent_log = first_file(["/var/log/containers/neutron/l3-agent.log", "/var/log/neutron/l3-agent.log"])
     neutron_metadata_agent_ini = first_file(["/var/lib/config-data/puppet-generated/neutron/etc/neutron/metadata_agent.ini", "/etc/neutron/metadata_agent.ini"])
     neutron_metadata_agent_log = first_file(["/var/log/containers/neutron/metadata-agent.log", "/var/log/neutron/metadata-agent.log"])
     neutron_ovs_agent_log = first_file(["/var/log/containers/neutron/openvswitch-agent.log", "/var/log/neutron/openvswitch-agent.log"])
@@ -495,6 +505,7 @@ class DefaultSpecs(Specs):
     oc_get_clusterrolebinding_with_config = simple_command("/usr/bin/oc get clusterrolebinding --config /etc/origin/master/admin.kubeconfig")
     odbc_ini = simple_file("/etc/odbc.ini")
     odbcinst_ini = simple_file("/etc/odbcinst.ini")
+    open_vm_tools_stat_raw_text_session = simple_command("/usr/bin/vmware-toolbox-cmd stat raw text session")
     openshift_hosts = simple_file("/root/.config/openshift/hosts")
     openshift_router_pid = simple_command("/usr/bin/pgrep -n openshift-route")
     openshift_router_environ = foreach_collect(openshift_router_pid, "/proc/%s/environ")
@@ -520,6 +531,7 @@ class DefaultSpecs(Specs):
     password_auth = simple_file("/etc/pam.d/password-auth")
     pcs_quorum_status = simple_command("/usr/sbin/pcs quorum status")
     pcs_status = simple_command("/usr/sbin/pcs status")
+    php_ini = first_file(["/etc/opt/rh/php73/php.ini", "/etc/opt/rh/php72/php.ini", "/etc/php.ini"])
     pluginconf_d = glob_file("/etc/yum/pluginconf.d/*.conf")
     postgresql_conf = first_file([
                                  "/var/lib/pgsql/data/postgresql.conf",
@@ -569,6 +581,11 @@ class DefaultSpecs(Specs):
     samba = simple_file("/etc/samba/smb.conf")
 
     @datasource(Sap)
+    def sap_sid(broker):
+        sap = broker[Sap]
+        return [sap.sid(i).lower() for i in sap.local_instances]
+
+    @datasource(Sap)
     def sap_sid_name(broker):
         """(list): Returns the list of (SAP SID, SAP InstanceName) """
         sap = broker[Sap]
@@ -576,6 +593,7 @@ class DefaultSpecs(Specs):
 
     sap_dev_disp = foreach_collect(sap_sid_name, "/usr/sap/%s/%s/work/dev_disp")
     sap_dev_rd = foreach_collect(sap_sid_name, "/usr/sap/%s/%s/work/dev_rd")
+    sap_hdb_version = foreach_execute(sap_sid, "/usr/bin/sudo -iu %sadm HDB version", keep_rc=True)
     saphostctl_getcimobject_sapinstance = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance")
     sat5_insights_properties = simple_file("/etc/redhat-access/redhat-access-insights.properties")
     satellite_mongodb_storage_engine = simple_command("/usr/bin/mongo pulp_database --eval 'db.serverStatus().storageEngine'")
@@ -584,6 +602,7 @@ class DefaultSpecs(Specs):
     scsi = simple_file("/proc/scsi/scsi")
     scsi_eh_deadline = glob_file('/sys/class/scsi_host/host[0-9]*/eh_deadline')
     scsi_fwver = glob_file('/sys/class/scsi_host/host[0-9]*/fwrev')
+    scsi_mod_use_blk_mq = simple_file("/sys/module/scsi_mod/parameters/use_blk_mq")
     sctp_asc = simple_file('/proc/net/sctp/assocs')
     sctp_eps = simple_file('/proc/net/sctp/eps')
     sctp_snmp = simple_file('/proc/net/sctp/snmp')
@@ -596,6 +615,7 @@ class DefaultSpecs(Specs):
     sockstat = simple_file("/proc/net/sockstat")
     softnet_stat = simple_file("proc/net/softnet_stat")
     software_collections_list = simple_command('/usr/bin/scl --list')
+    spamassassin_channels = simple_command("/bin/grep -r '^\\s*CHANNELURL=' /etc/mail/spamassassin/channel.d")
     ss = simple_command("/usr/sbin/ss -tupna")
     ssh_config = simple_file("/etc/ssh/ssh_config")
     ssh_config_d = glob_file(r"/etc/ssh/ssh_config.d/*.conf")
@@ -637,6 +657,8 @@ class DefaultSpecs(Specs):
         simple_file("/conf/rhn/sysconfig/rhn/systemid")
     ])
     systool_b_scsi_v = simple_command("/bin/systool -b scsi -v")
+    testparm_s = simple_command("/usr/bin/testparm -s")
+    testparm_v_s = simple_command("/usr/bin/testparm -v -s")
     tags = simple_file("/tags.json", kind=RawFileProvider)
     thp_use_zero_page = simple_file("/sys/kernel/mm/transparent_hugepage/use_zero_page")
     thp_enabled = simple_file("/sys/kernel/mm/transparent_hugepage/enabled")
@@ -651,6 +673,7 @@ class DefaultSpecs(Specs):
     usr_journald_conf_d = glob_file(r"usr/lib/systemd/journald.conf.d/*.conf")  # note that etc_journald.conf.d also exists
     vdo_status = simple_command("/usr/bin/vdo status")
     vgdisplay = simple_command("/sbin/vgdisplay")
+    vhost_net_zero_copy_tx = simple_file("/sys/module/vhost_net/parameters/experimental_zcopytx")
     vdsm_log = simple_file("var/log/vdsm/vdsm.log")
     vdsm_logger_conf = simple_file("etc/vdsm/logger.conf")
     vma_ra_enabled = simple_file("/sys/kernel/mm/swap/vma_ra_enabled")
@@ -661,7 +684,6 @@ class DefaultSpecs(Specs):
     virtlogd_conf = simple_file("/etc/libvirt/virtlogd.conf")
     vsftpd = simple_file("/etc/pam.d/vsftpd")
     vsftpd_conf = simple_file("/etc/vsftpd/vsftpd.conf")
-    woopsie = simple_command(r"/usr/bin/find /var/crash /var/tmp -path '*.reports-*/whoopsie-report' -print -quit")
     x86_pti_enabled = simple_file("sys/kernel/debug/x86/pti_enabled")
     x86_ibpb_enabled = simple_file("sys/kernel/debug/x86/ibpb_enabled")
     x86_ibrs_enabled = simple_file("sys/kernel/debug/x86/ibrs_enabled")

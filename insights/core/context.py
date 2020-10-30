@@ -136,6 +136,8 @@ class ExecutionContextMeta(type):
             return
         ExecutionContextMeta.registry.append(cls)
 
+    # Remember that contexts are tried *in reverse order* so that they
+    # may be overridden by just loading a plugin.
     @classmethod
     def identify(cls, files):
         for e in reversed(cls.registry):
@@ -160,12 +162,22 @@ class ExecutionContext(six.with_metaclass(ExecutionContextMeta)):
 
         sep = os.path.sep
         m = sep + cls.marker.lstrip(sep)
+        marker_root = set()
         for f in files:
             if m in f:
                 i = f.find(m)
                 if f.endswith(m) or f[i + len(m)] == sep:
                     root = os.path.dirname(f[:i + 1])
-                    return root, cls
+                    marker_root.add(root)
+        if len(marker_root) == 1:
+            return (marker_root.pop(), cls)
+        if len(marker_root) > 1:
+            # when more marker found, return the one which is closest to root
+            closest_root = marker_root.pop()
+            for left_one in marker_root:
+                if len(left_one) < len(closest_root):
+                    closest_root = left_one
+            return (closest_root, cls)
         return (None, None)
 
     def check_output(self, cmd, timeout=None, keep_rc=False, env=None):
@@ -214,13 +226,13 @@ class HostContext(ExecutionContext):
 
 
 @fs_root
-class SerializedArchiveContext(ExecutionContext):
-    marker = "insights_archive.txt"
+class HostArchiveContext(ExecutionContext):
+    marker = "insights_commands"
 
 
 @fs_root
-class HostArchiveContext(ExecutionContext):
-    marker = "insights_commands"
+class SerializedArchiveContext(ExecutionContext):
+    marker = "insights_archive.txt"
 
 
 @fs_root

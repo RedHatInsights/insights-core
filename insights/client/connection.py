@@ -181,10 +181,11 @@ class InsightsConnection(object):
         else:
             core_version = "Core %s" % package_info["VERSION"]
 
-        client_version = "insights-client"
-        pkg = pkg_resources.working_set.find(pkg_resources.Requirement.parse(client_version))
-        if pkg is not None:
-            client_version = "%s/%s" % (pkg.project_name, pkg.version)
+        try:
+            from insights_client import constants as insights_client_constants
+            client_version = "insights-client/{0}".format(insights_client_constants.InsightsConstants.version)
+        except ImportError:
+            client_version = "insights-client"
 
         if os.path.isfile(constants.ppidfile):
             with open(constants.ppidfile, 'r') as f:
@@ -748,6 +749,9 @@ class InsightsConnection(object):
             return self._legacy_unregister()
 
         results = self._fetch_system_by_machine_id()
+        if not results:
+            logger.info('This host could not be found.')
+            return False
         try:
             logger.debug("Unregistering host...")
             url = self.api_url + "/inventory/v1/hosts/" + results[0]['id']

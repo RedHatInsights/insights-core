@@ -3,6 +3,7 @@ rhsm.conf - File /etc/rhsm/rhsm.conf
 ====================================
 
 Typical content of "/etc/rhsm/rhsm.conf" is::
+
     [rhsm]
     # Content base URL:
     baseurl= https://cdn.redhat.com

@@ -92,7 +92,7 @@ class ComplianceClient:
         rc, grep = call(grepcmd, keep_rc=True)
         if rc:
             logger.error('XML profile file not found matching ref_id {0}\n{1}\n'.format(profile_ref_id, grep))
-            exit(constants.sig_kill_bad)
+            return None
         filenames = findall('/usr/share/xml/scap/.+xml', grep)
         if not filenames:
             logger.error('No XML profile files found matching ref_id {0}\n{1}\n'.format(profile_ref_id, ' '.join(filenames)))
@@ -107,6 +107,8 @@ class ComplianceClient:
         return command
 
     def run_scan(self, profile_ref_id, policy_xml, output_path, tailoring_file_path=None):
+        if policy_xml is None:
+            return
         logger.info('Running scan for {0}... this may take a while'.format(profile_ref_id))
         env = os.environ.copy()
         env.update({'TZ': 'UTC'})

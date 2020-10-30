@@ -49,8 +49,24 @@ class SatelliteLog(LogFileOutput):
 
 @parser(Specs.foreman_production_log)
 class ProductionLog(LogFileOutput):
-    """Class for parsing ``foreman/production.log`` file."""
-    pass
+    """Class for parsing ``foreman/production.log`` file.
+
+    Each line is parsed into a dictionary with the following keys:
+
+        * raw_message (str) - complete log line
+        * message (str) - the body of the log
+        * timestamp (datetime) - date and time of log as datetime object
+    """
+    def _parse_line(self, line):
+        msg_info = {'raw_message': line}
+        line_split = line.split(None, 2)
+        if len(line_split) > 2:
+            try:
+                msg_info['timestamp'] = datetime.strptime(' '.join(line_split[:2]), self.time_format)
+                msg_info['message'] = line_split[2]
+            except ValueError:
+                pass
+        return msg_info
 
 
 @parser(Specs.candlepin_log)
