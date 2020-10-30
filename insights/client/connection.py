@@ -1081,8 +1081,8 @@ class InsightsConnection(object):
         except Exception as e:
             logger.debug('Error getting canonical facts: %s', e)
             logger.debug('Falling back to only machine ID.')
-            machine_id = generate_machine_id()
-            canonical_facts = {"insights_id": str(machine_id)}
+            insights_id = generate_machine_id()
+            canonical_facts = {"insights_id": str(insights_id)}
 
         payload = {"canonical_facts": canonical_facts}
 
