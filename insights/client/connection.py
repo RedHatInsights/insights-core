@@ -49,6 +49,8 @@ URLLIB3_LOGGER.setLevel(logging.WARNING)
 URLLIB3_LOGGER = logging.getLogger('requests.packages.urllib3.connectionpool')
 URLLIB3_LOGGER.setLevel(logging.WARNING)
 
+REQUEST_FAILED_EXCEPTIONS = (requests.ConnectionError, requests.Timeout)
+
 # TODO: Document this, or turn it into a real option
 if os.environ.get('INSIGHTS_DEBUG_HTTP'):
     import httplib
@@ -58,6 +60,12 @@ if os.environ.get('INSIGHTS_DEBUG_HTTP'):
     requests_log = logging.getLogger("urllib3")
     requests_log.setLevel(logging.DEBUG)
     requests_log.propagate = True
+
+
+def _api_request_failed(exception, message='The Insights API could not be reached.'):
+    logger.error(exception)
+    if message:
+        logger.error(message)
 
 
 class InsightsConnection(object):
@@ -684,9 +692,8 @@ class InsightsConnection(object):
                 url = self.inventory_url + '/hosts?insights_id=' + machine_id
             logger.log(NETWORK, "GET %s", url)
             res = self.session.get(url, timeout=self.config.http_timeout)
-        except (requests.ConnectionError, requests.Timeout) as e:
-            logger.error(e)
-            logger.error('The Insights API could not be reached.')
+        except REQUEST_FAILED_EXCEPTIONS as e:
+            _api_request_failed(e)
             return None
         try:
             if (self.handle_fail_rcs(res)):
@@ -942,8 +949,8 @@ class InsightsConnection(object):
                 logger.error('Unable to set display name: %s %s',
                              res.status_code, res.text)
                 return False
-        except (requests.ConnectionError, requests.Timeout, ValueError) as e:
-            logger.error(e)
+        except REQUEST_FAILED_EXCEPTIONS + (ValueError,) as e:
+            _api_request_failed(e, None)
             # can't connect, run connection test
             return False
 
@@ -963,9 +970,8 @@ class InsightsConnection(object):
         try:
             logger.log(NETWORK, "PATCH %s", req_url)
             res = self.session.patch(req_url, json={'display_name': display_name})
-        except (requests.ConnectionError, requests.Timeout) as e:
-            logger.error(e)
-            logger.error('The Insights API could not be reached.')
+        except REQUEST_FAILED_EXCEPTIONS as e:
+            _api_request_failed(e)
             return False
         if (self.handle_fail_rcs(res)):
             logger.error('Could not update display name.')
@@ -988,8 +994,7 @@ class InsightsConnection(object):
             logger.log(NETWORK, "GET %s", diag_url)
             res = self.session.get(diag_url, params=params, timeout=self.config.http_timeout)
         except (requests.ConnectionError, requests.Timeout) as e:
-            logger.error(e)
-            logger.error('The Insights API could not be reached.')
+            _api_request_failed(e)
             return False
         if (self.handle_fail_rcs(res)):
             logger.error('Unable to get diagnosis data: %s %s',
@@ -1064,11 +1069,39 @@ class InsightsConnection(object):
 
     def checkin(self):
         '''
-            Sends an ultralight check-in request containing only the machine ID.
+            Sends an ultralight check-in request containing only the Canonical Facts.
         '''
-        machine_id = generate_machine_id()
         url = self.inventory_url + "/hosts/checkin"
-        payload = {"canonical_facts": {"insights_id": machine_id}}
-        logger.info("Checking in… %s %s" % (url, payload))
-        response = self.session.put(url, headers={"Content-Type": "application/json"}, data=json.dumps(payload))
-        print(response, response.text)
+        try:
+            raise RuntimeError
+            canonical_facts = get_canonical_facts()
+        except Exception as e:
+            logger.debug('Error getting canonical facts: %s', e)
+            logger.debug('Falling back to only machine ID.')
+            machine_id = generate_machine_id()
+            from uuid import uuid4
+            canonical_facts = {"insights_id": str(uuid4())}
+
+        payload = {"canonical_facts": canonical_facts}
+
+        logger.info("Checking in…")
+        logger.debug("Sending check-in request to %s with %s" % (url, payload))
+        try:
+            response = self.session.put(url, headers={"Content-Type": "application/json"}, data=json.dumps(payload))
+            # Change to POST when the API is fixed.
+        except REQUEST_FAILED_EXCEPTIONS as exception:
+            _api_request_failed(exception)
+            return None
+        logger.debug("Check-in response status code %d" % (response.status_code))
+
+        if response.status_code in (requests.codes.BAD_REQUEST, requests.codes.NOT_FOUND):
+            # Remove BAD_REQUEST when the API is fixed.
+            _host_not_found()
+        elif response.status_code in (requests.codes.OK, requests.codes.CREATED):
+            # Remove OK when the API is fixed.
+            return True
+        else:
+            logger.error(e)
+            logger.error('The Insights API could not be reached.')
+
+        return response.status_code in (requests.codes.OK, requests.codes.CREATED)
