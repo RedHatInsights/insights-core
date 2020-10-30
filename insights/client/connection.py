@@ -62,6 +62,10 @@ if os.environ.get('INSIGHTS_DEBUG_HTTP'):
     requests_log.propagate = True
 
 
+def _host_not_found():
+    raise Exception("Error: failed to find host with matching machine-id. Run insights-client --status to check registration status")
+
+
 def _api_request_failed(exception, message='The Insights API could not be reached.'):
     logger.error(exception)
     if message:
@@ -1044,7 +1048,7 @@ class InsightsConnection(object):
 
         host_details = json.loads(content)
         if host_details["total"] < 1:
-            raise Exception("Error: failed to find host with matching machine-id. Run insights-client --status to check registration status")
+            _host_not_found()
         if host_details["total"] > 1:
             raise Exception("Error: multiple hosts detected (insights_id = %s)" % generate_machine_id())
 
@@ -1073,14 +1077,12 @@ class InsightsConnection(object):
         '''
         url = self.inventory_url + "/hosts/checkin"
         try:
-            raise RuntimeError
             canonical_facts = get_canonical_facts()
         except Exception as e:
             logger.debug('Error getting canonical facts: %s', e)
             logger.debug('Falling back to only machine ID.')
             machine_id = generate_machine_id()
-            from uuid import uuid4
-            canonical_facts = {"insights_id": str(uuid4())}
+            canonical_facts = {"insights_id": str(machine_id)}
 
         payload = {"canonical_facts": canonical_facts}
 
@@ -1092,16 +1094,17 @@ class InsightsConnection(object):
         except REQUEST_FAILED_EXCEPTIONS as exception:
             _api_request_failed(exception)
             return None
-        logger.debug("Check-in response status code %d" % (response.status_code))
+        logger.debug("Check-in response status code %d" % response.status_code)
 
-        if response.status_code in (requests.codes.BAD_REQUEST, requests.codes.NOT_FOUND):
+        if response.status_code in (requests.codes.OK, requests.codes.CREATED):
+            # Remove OK when the API is fixed.
+            logger.info("Successfully checked in!")
+            return True
+        elif response.status_code in (requests.codes.BAD_REQUEST, requests.codes.NOT_FOUND):
             # Remove BAD_REQUEST when the API is fixed.
             _host_not_found()
-        elif response.status_code in (requests.codes.OK, requests.codes.CREATED):
-            # Remove OK when the API is fixed.
-            return True
+            return False
         else:
-            logger.error(e)
-            logger.error('The Insights API could not be reached.')
-
-        return response.status_code in (requests.codes.OK, requests.codes.CREATED)
+            logger.error("Unknown check-in API response")
+            logger.debug("Received data %s" % response.text)
+            return False

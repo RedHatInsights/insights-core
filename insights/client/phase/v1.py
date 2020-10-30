@@ -111,8 +111,11 @@ def pre_update(client, config):
         sys.exit(constants.sig_kill_ok)
 
     if config.checkin:
-        client.checkin()
-        sys.exit(constants.sig_kill_ok)
+        checkin_success = client.checkin()
+        if checkin_success:
+            sys.exit(constants.sig_kill_ok)
+        else:
+            sys.exit(constants.sig_kill_)
 
 
 @phase
