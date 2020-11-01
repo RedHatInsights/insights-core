@@ -138,10 +138,14 @@ def generate_machine_id(new=False,
         with open(destination_file, 'r') as machine_id_file:
             machine_id = machine_id_file.read()
     else:
-        logger.debug('Could not find %s file, creating', logging_name)
-        machine_id = str(uuid.uuid4())
-        logger.debug("Creating %s", destination_file)
-        write_to_disk(destination_file, content=machine_id)
+        if os.getuid() == 0:
+            logger.debug('Could not find %s file, creating', logging_name)
+            machine_id = str(uuid.uuid4())
+            logger.debug("Creating %s", destination_file)
+            write_to_disk(destination_file, content=machine_id)
+        else:
+            logger.debug('The %s file must be created by a superuser.', logging_name)
+            return
 
     machine_id = str(machine_id).strip()
 

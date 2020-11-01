@@ -11,7 +11,7 @@ from tempfile import NamedTemporaryFile
 from insights.util import mangle
 
 from .constants import InsightsConstants as constants
-from .utilities import determine_hostname
+from .utilities import determine_hostname, generate_machine_id
 
 logger = logging.getLogger(__name__)
 
@@ -139,6 +139,7 @@ class InsightsFile(InsightsSpec):
             return
 
         exec_start = time.time()
+
         sedcmd = Popen(['sed', '', self.real_path], stdout=PIPE)
 
         if self.pattern is None:

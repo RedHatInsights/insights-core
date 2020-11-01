@@ -17,7 +17,7 @@ from tempfile import NamedTemporaryFile
 
 from insights.util import mangle
 from ..contrib.soscleaner import SOSCleaner
-from .utilities import _expand_paths, get_version_info, systemd_notify_init_thread, get_tags
+from .utilities import _expand_paths, get_version_info, systemd_notify_init_thread, get_tags, generate_machine_id
 from .constants import InsightsConstants as constants
 from .insights_spec import InsightsFile, InsightsCommand
 from .archive import InsightsArchive
