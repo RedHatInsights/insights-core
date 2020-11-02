@@ -91,7 +91,7 @@ class Sap(dict):
             self.all_instances = insts.instances
             for inst in insts.data:
                 k = inst['InstanceName']
-                self.local_instances.append(k) if hn == inst['Hostname'] else None
+                self.local_instances.append(k) if hn == inst['Hostname'].split('.')[0] else None
                 data[k] = SAPInstances(k,
                                        inst['Hostname'],
                                        inst['SID'],
@@ -105,7 +105,7 @@ class Sap(dict):
                 t = k.rstrip('1234567890')
                 self.all_instances.append(k)
                 self._types.add(t)
-                self.local_instances.append(k) if hn == inst['SAPLOCALHOST'] else None
+                self.local_instances.append(k) if hn == inst['SAPLOCALHOST'].split('.')[0] else None
                 data[k] = SAPInstances(k,
                                        inst['SAPLOCALHOST'],
                                        inst['SID'],
