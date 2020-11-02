@@ -1075,7 +1075,7 @@ class InsightsConnection(object):
         '''
             Sends an ultralight check-in request containing only the Canonical Facts.
         '''
-        logger.info("Checking in…")
+        logger.info("Checking in...")
 
         try:
             canonical_facts = get_canonical_facts()
