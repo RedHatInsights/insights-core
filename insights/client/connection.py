@@ -1075,7 +1075,8 @@ class InsightsConnection(object):
         '''
             Sends an ultralight check-in request containing only the Canonical Facts.
         '''
-        url = self.inventory_url + "/hosts/checkin"
+        logger.info("Checking in…")
+
         try:
             canonical_facts = get_canonical_facts()
         except Exception as e:
@@ -1086,7 +1087,7 @@ class InsightsConnection(object):
 
         payload = {"canonical_facts": canonical_facts}
 
-        logger.info("Checking in…")
+        url = self.inventory_url + "/hosts/checkin"
         logger.debug("Sending check-in request to %s with %s" % (url, payload))
         try:
             response = self.session.put(url, headers={"Content-Type": "application/json"}, data=json.dumps(payload))
@@ -1103,8 +1104,6 @@ class InsightsConnection(object):
         elif response.status_code in (requests.codes.BAD_REQUEST, requests.codes.NOT_FOUND):
             # Remove BAD_REQUEST when the API is fixed.
             _host_not_found()
-            return False
         else:
-            logger.error("Unknown check-in API response")
-            logger.debug("Received data %s" % response.text)
-            return False
+            logger.debug("Check-in response body %s" % response.text)
+            raise RuntimeError("Unknown check-in API response")
