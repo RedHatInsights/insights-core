@@ -49,10 +49,11 @@ class InsightsClient(object):
                     sys.exit(constants.sig_kill_bad)
             # END hack. in the future, just set self.config=config
 
+        # initialize directories
+        _init_client_config_dirs()
         # setup_logging is True when called from phase, but not from wrapper.
         #  use this to do any common init (like auto_config)
         if setup_logging:
-            _init_client_config_dirs()
             self.set_up_logging()
             try_auto_configuration(self.config)
             self.initialize_tags()
@@ -709,3 +710,9 @@ def _init_client_config_dirs():
                 pass
             else:
                 raise e
+    # copy the default config file to the user's local dir if it doesn't exist
+    if not os.path.isfile(constants.default_conf_file):
+        try:
+            shutil.copyfile(constants._etc_config_file, constants.default_conf_file)
+        except OSError as e:
+            logger.error('Cannot initialize user\'s config file.')

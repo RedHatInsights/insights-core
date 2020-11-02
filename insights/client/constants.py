@@ -87,6 +87,7 @@ class InsightsConstants(object):
     default_egg_gpg_key = os.path.join(_etc_insights_client_dir, 'insights-core.gpg')
     legacy_ca_cert = os.path.join(_etc_insights_client_dir, 'cert-api.access.redhat.com.pem')
     machine_id_file = os.path.join(_etc_insights_client_dir, 'machine-id')
+    _etc_config_file = os.path.join(_etc_insights_client_dir, 'insights-client.conf')
 
     # read/write etc files
     default_conf_dir = _conf_dir()
