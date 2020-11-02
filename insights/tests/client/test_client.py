@@ -644,3 +644,13 @@ def test_checkin_error():
         client.checkin()
 
     client.connection.checkin.assert_called_once_with()
+
+
+def test_checkin_offline():
+    config = InsightsConfig(offline=True)
+    client = InsightsClient(config)
+    client.connection = Mock()
+
+    result = client.checkin()
+    assert result is None
+    client.connection.checkin.assert_not_called()

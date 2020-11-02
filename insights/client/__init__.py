@@ -690,6 +690,10 @@ class InsightsClient(object):
 
     @_net
     def checkin(self):
+        if self.config.offline:
+            logger.error('Cannot check-in in offline mode.')
+            return None
+
         return self.connection.checkin()
 
 
