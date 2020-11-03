@@ -238,6 +238,7 @@ class DefaultSpecs(Specs):
     docker_list_images = simple_command("/usr/bin/docker images --all --no-trunc --digests")
     docker_storage_setup = simple_file("/etc/sysconfig/docker-storage-setup")
     docker_sysconfig = simple_file("/etc/sysconfig/docker")
+    dotnet_version = simple_command("/usr/bin/dotnet --version")
     dracut_kdump_capture_service = simple_file("/usr/lib/dracut/modules.d/99kdumpbase/kdump-capture.service")
     du_dirs = foreach_execute(['/var/lib/candlepin/activemq-artemis'], "/bin/du -s -k %s")
     engine_db_query_vdsm_version = simple_command('engine-db-query --statement "SELECT vs.vds_name, rpm_version FROM vds_dynamic vd, vds_static vs WHERE vd.vds_id = vs.vds_id" --json')
@@ -460,6 +461,7 @@ class DefaultSpecs(Specs):
     netstat_agn = simple_command("/bin/netstat -agn")
     netstat_i = simple_command("/bin/netstat -i")
     netstat_s = simple_command("/bin/netstat -s")
+    networkmanager_conf = simple_file("/etc/NetworkManager/NetworkManager.conf")
     networkmanager_dispatcher_d = glob_file("/etc/NetworkManager/dispatcher.d/*-dhclient")
     neutron_conf = first_file(["/var/lib/config-data/puppet-generated/neutron/etc/neutron/neutron.conf", "/etc/neutron/neutron.conf"])
     neutron_sriov_agent = first_file([
@@ -531,6 +533,7 @@ class DefaultSpecs(Specs):
     pcs_status = simple_command("/usr/sbin/pcs status")
     php_ini = first_file(["/etc/opt/rh/php73/php.ini", "/etc/opt/rh/php72/php.ini", "/etc/php.ini"])
     pluginconf_d = glob_file("/etc/yum/pluginconf.d/*.conf")
+    postconf_builtin = simple_command("/usr/sbin/postconf -C builtin")
     postgresql_conf = first_file([
                                  "/var/lib/pgsql/data/postgresql.conf",
                                  "/opt/rh/postgresql92/root/var/lib/pgsql/data/postgresql.conf",
@@ -579,6 +582,11 @@ class DefaultSpecs(Specs):
     samba = simple_file("/etc/samba/smb.conf")
 
     @datasource(Sap)
+    def sap_sid(broker):
+        sap = broker[Sap]
+        return [sap.sid(i).lower() for i in sap.local_instances]
+
+    @datasource(Sap)
     def sap_sid_name(broker):
         """(list): Returns the list of (SAP SID, SAP InstanceName) """
         sap = broker[Sap]
@@ -586,6 +594,7 @@ class DefaultSpecs(Specs):
 
     sap_dev_disp = foreach_collect(sap_sid_name, "/usr/sap/%s/%s/work/dev_disp")
     sap_dev_rd = foreach_collect(sap_sid_name, "/usr/sap/%s/%s/work/dev_rd")
+    sap_hdb_version = foreach_execute(sap_sid, "/usr/bin/sudo -iu %sadm HDB version", keep_rc=True)
     saphostctl_getcimobject_sapinstance = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance")
     sat5_insights_properties = simple_file("/etc/redhat-access/redhat-access-insights.properties")
     satellite_mongodb_storage_engine = simple_command("/usr/bin/mongo pulp_database --eval 'db.serverStatus().storageEngine'")
@@ -649,6 +658,8 @@ class DefaultSpecs(Specs):
         simple_file("/conf/rhn/sysconfig/rhn/systemid")
     ])
     systool_b_scsi_v = simple_command("/bin/systool -b scsi -v")
+    testparm_s = simple_command("/usr/bin/testparm -s")
+    testparm_v_s = simple_command("/usr/bin/testparm -v -s")
     tags = simple_file("/tags.json", kind=RawFileProvider)
     thp_use_zero_page = simple_file("/sys/kernel/mm/transparent_hugepage/use_zero_page")
     thp_enabled = simple_file("/sys/kernel/mm/transparent_hugepage/enabled")
