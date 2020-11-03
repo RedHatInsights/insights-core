@@ -6,13 +6,13 @@ Shared parser for parsing output of the ``sudo -iu <SID>adm HDB version``
 commands.
 
 """
-from .. import parser, CommandParser, LegacyItemAccess
+from insights import parser, CommandParser
 from insights.parsers import SkipException
 from insights.specs import Specs
 
 
 @parser(Specs.sap_hdb_version)
-class HDBVersion(CommandParser, LegacyItemAccess):
+class HDBVersion(CommandParser, dict):
     """
     Class for parsing the output of `HDB version` command.
 
@@ -59,17 +59,25 @@ class HDBVersion(CommandParser, LegacyItemAccess):
     """
 
     def parse_content(self, content):
+        _ignore_bad_lines = [
+            'HDB: Command not found',
+            'standard error',
+            'does not exist',
+        ]
         if len(content) <= 1:
             raise SkipException("Incorrect content.")
-        self.data = {}
+        data = {}
         self.sid = self.version = self.revision = None
         self.major = self.minor = self.patchlevel = None
         # get the "sid" from the file_name: "sudo_-iu_<sid>adm_HDB_version"
         if self.file_name and 'adm' in self.file_name:
             self.sid = [i for i in self.file_name.split('_') if i.endswith('adm')][0][:-3]
-        for line in content[1:]:
+        for line in content:
+            # Skip unexpected lines
+            if ':' not in line or any(i in line for i in _ignore_bad_lines):
+                continue
             key, val = [i.strip() for i in line.split(':', 1)]
-            self.data[key] = val
+            data[key] = val
             if key == 'version':
                 self.version = val
                 val_splits = val.split('.')
@@ -81,3 +89,9 @@ class HDBVersion(CommandParser, LegacyItemAccess):
                 self.patchlevel = val_splits[3]
         if not self.version:
             raise SkipException("Incorrect content.")
+
+        self.update(data)
+
+    @property
+    def data(self):
+        return self
