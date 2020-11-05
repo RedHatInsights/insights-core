@@ -21,7 +21,7 @@ class PlaybookValidationError(Exception):
         return self.message
 
 
-def verify(unverified_playbook: str) -> str:
+def verify(unverified_playbook):
     """
     Verify the signed playbook.
 
