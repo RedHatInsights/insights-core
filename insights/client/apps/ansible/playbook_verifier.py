@@ -56,7 +56,7 @@ if __name__ == "__main__":
     try:
         verified_playbook = verify(unverified_playbook)
     except Exception as e:
-        print(e, file=sys.stderr)
+        sys.stderr.write(e.message)
         sys.exit(1)
 
     print(verified_playbook)
