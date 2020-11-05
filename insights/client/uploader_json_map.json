@@ -178,7 +178,6 @@
                 "TECH PREVIEW: NVMe over FC may not be fully supported.",
                 "Uhhuh. NMI received for unknown reason",
                 "VPD access disabled",
-                "WRITE SAME failed. Manually zeroing",
                 "Warning: QLogic ISP3XXX Network Driver - this hardware has not undergone testing by Red Hat and might not be certified",
                 "__cpufreq_add_dev",
                 "blocked FC remote port time out: removing target and saving binding",
@@ -1405,12 +1404,18 @@
         },
         {
             "command": "/usr/bin/testparm -s",
-            "pattern": [],
+            "pattern": [
+                "Server role:",
+                "["
+            ],
             "symbolic_name": "testparm_s"
         },
         {
             "command": "/usr/bin/testparm -v -s",
-            "pattern": [],
+            "pattern": [
+                "Server role:",
+                "["
+            ],
             "symbolic_name": "testparm_v_s"
         },
         {
@@ -1482,7 +1487,9 @@
     "files": [
         {
             "file": "/etc/abrt/plugins/CCpp.conf",
-            "pattern": [],
+            "pattern": [
+                "CreateCoreBacktrace"
+            ],
             "symbolic_name": "abrt_ccpp_conf"
         },
         {
@@ -1971,9 +1978,7 @@
         {
             "file": "/var/log/ovirt-engine/server.log",
             "pattern": [
-                "ERROR [org.jboss.as.controller.management-operation]",
                 "INFO  [org.wildfly.extension.undertow",
-                "Operation (\"deploy\") failed",
                 "Registered web context: '/ovirt-engine/api' for server"
             ],
             "symbolic_name": "ovirt_engine_server_log"
@@ -2350,7 +2355,6 @@
                 "Error deleting EBS Disk volume aws",
                 "Error running DeviceResume dm_task_run failed",
                 "Exception happened during processing of request from",
-                "Failed to bind socket: No such file or directory",
                 "Failed to extend thin",
                 "Hyper-V Host",
                 "List /apis/image.openshift.io/v1/images",
@@ -2377,14 +2381,12 @@
                 "Throttling request took",
                 "TypeError: object of type 'NoneType' has no len()",
                 "Virtualization daemon",
-                "WRITE SAME failed. Manually zeroing",
                 "] trap divide error ",
                 "_NET_ACTIVE_WINDOW",
                 "as active slave; either",
                 "belongs to docker.service",
                 "callbacks suppressed",
                 "canceled DHCP transaction, DHCP client pid",
-                "chardev: opening backend \"socket\" failed",
                 "clearing Tx timestamp hang",
                 "device-mapper: multipath: Failing path",
                 "does not seem to be present, delaying initialization",
@@ -2926,21 +2928,24 @@
         {
             "file": "/etc/opt/rh/php73/php.ini",
             "pattern": [
-                "["
+                "[",
+                "post_max_size"
             ],
             "symbolic_name": "php_ini"
         },
         {
             "file": "/etc/opt/rh/php72/php.ini",
             "pattern": [
-                "["
+                "[",
+                "post_max_size"
             ],
             "symbolic_name": "php_ini"
         },
         {
             "file": "/etc/php.ini",
             "pattern": [
-                "["
+                "[",
+                "post_max_size"
             ],
             "symbolic_name": "php_ini"
         },
@@ -4136,5 +4141,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2020-10-22T11:31:29.359264"
+    "version": "2020-10-29T14:46:39.878759"
 }
