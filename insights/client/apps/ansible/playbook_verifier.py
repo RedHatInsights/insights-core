@@ -38,7 +38,7 @@ def verify(unverified_playbook):
     return verified_playbook
 
 
-def read_playbook() -> str:
+def read_playbook():
     """
     Read in the stringified playbook yaml from stdin
     """
