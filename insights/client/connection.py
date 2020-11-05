@@ -1090,18 +1090,18 @@ class InsightsConnection(object):
         url = self.inventory_url + "/hosts/checkin"
         logger.debug("Sending check-in request to %s with %s" % (url, payload))
         try:
-            response = self.session.put(url, headers={"Content-Type": "application/json"}, data=json.dumps(payload))
+            response = self.session.post(url, headers={"Content-Type": "application/json"}, data=json.dumps(payload))
             # Change to POST when the API is fixed.
         except REQUEST_FAILED_EXCEPTIONS as exception:
             _api_request_failed(exception)
             return None
         logger.debug("Check-in response status code %d" % response.status_code)
 
-        if response.status_code in (requests.codes.OK, requests.codes.CREATED):
+        if response.status_code == requests.codes.CREATED:
             # Remove OK when the API is fixed.
             logger.info("Successfully checked in!")
             return True
-        elif response.status_code in (requests.codes.BAD_REQUEST, requests.codes.NOT_FOUND):
+        elif response.status_code == requests.codes.NOT_FOUND:
             # Remove BAD_REQUEST when the API is fixed.
             _host_not_found()
         else:

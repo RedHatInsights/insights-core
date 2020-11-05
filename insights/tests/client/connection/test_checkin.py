@@ -14,7 +14,7 @@ from insights.client.connection import InsightsConnection
 @patch("insights.client.connection.get_canonical_facts", return_value={"subscription_manager_id": str(uuid4())})
 @patch(
     "insights.client.connection.InsightsConnection._init_session",
-    **{"return_value.put.return_value.status_code": codes.OK}
+    **{"return_value.post.return_value.status_code": codes.CREATED}
 )
 @patch("insights.client.connection.InsightsConnection.get_proxies")
 def test_canonical_facts_request(get_proxies, init_session, get_canonical_facts):
@@ -30,7 +30,7 @@ def test_canonical_facts_request(get_proxies, init_session, get_canonical_facts)
     expected_url = connection.inventory_url + "/hosts/checkin"
     expected_headers = {"Content-Type": "application/json"}
     expected_data = {"canonical_facts": get_canonical_facts.return_value}
-    init_session.return_value.put.assert_called_once_with(
+    init_session.return_value.post.assert_called_once_with(
         expected_url, headers=expected_headers, data=dumps(expected_data)
     )
 
@@ -39,7 +39,7 @@ def test_canonical_facts_request(get_proxies, init_session, get_canonical_facts)
 @patch("insights.client.connection.get_canonical_facts", side_effect=RuntimeError())
 @patch(
     "insights.client.connection.InsightsConnection._init_session",
-    **{"return_value.put.return_value.status_code": codes.OK}
+    **{"return_value.post.return_value.status_code": codes.CREATED}
 )
 @patch("insights.client.connection.InsightsConnection.get_proxies")
 def test_insights_id_request(get_proxies, init_session, get_canonical_facts, generate_machine_id):
@@ -55,7 +55,7 @@ def test_insights_id_request(get_proxies, init_session, get_canonical_facts, gen
     expected_url = connection.inventory_url + "/hosts/checkin"
     expected_headers = {"Content-Type": "application/json"}
     expected_data = {"canonical_facts": {"insights_id": generate_machine_id.return_value}}
-    init_session.return_value.put.assert_called_once_with(
+    init_session.return_value.post.assert_called_once_with(
         expected_url, headers=expected_headers, data=dumps(expected_data)
     )
 
@@ -68,7 +68,7 @@ def test_request_http_failure(get_proxies, init_session, get_canonical_facts, ex
     """
     If the checkin-request fails, None is returned.
     """
-    init_session.return_value.put.side_effect = exception
+    init_session.return_value.post.side_effect = exception
 
     config = Mock(base_url="www.example.com")
 
@@ -78,7 +78,7 @@ def test_request_http_failure(get_proxies, init_session, get_canonical_facts, ex
 
 
 @patch("insights.client.connection.get_canonical_facts", return_value={})
-@patch("insights.client.connection.InsightsConnection._init_session", **{"return_value.put.side_effect": RuntimeError()})
+@patch("insights.client.connection.InsightsConnection._init_session", **{"return_value.post.side_effect": RuntimeError()})
 @patch("insights.client.connection.InsightsConnection.get_proxies")
 def test_request_unknown_exception(get_proxies, init_session, get_canonical_facts):
     """
@@ -87,21 +87,18 @@ def test_request_unknown_exception(get_proxies, init_session, get_canonical_fact
     config = Mock(base_url="www.example.com")
     connection = InsightsConnection(config)
 
-    expected_exception = type(init_session.return_value.put.side_effect)
+    expected_exception = type(init_session.return_value.post.side_effect)
     with raises(expected_exception):
         connection.checkin()
 
 
-@mark.parametrize(("status_code",), ((codes.OK,), (codes.CREATED,)))
 @patch("insights.client.connection.get_canonical_facts", return_value={})
-@patch("insights.client.connection.InsightsConnection._init_session")
+@patch("insights.client.connection.InsightsConnection._init_session", **{"return_value.post.return_value.status_code": codes.CREATED})
 @patch("insights.client.connection.InsightsConnection.get_proxies")
-def test_response_success(get_proxies, init_session, get_canonical_facts, status_code):
+def test_response_success(get_proxies, init_session, get_canonical_facts):
     """
-    If an unknown exception occurs, the call crashes.
+    If a CREATED status code is received, the check-in was successful.
     """
-    init_session.return_value.put.return_value.status_code = status_code
-
     config = Mock(base_url="www.example.com")
     connection = InsightsConnection(config)
 
@@ -109,15 +106,15 @@ def test_response_success(get_proxies, init_session, get_canonical_facts, status
     assert result is True
 
 
-@mark.parametrize(("status_code",), ((codes.BAD_REQUEST,), (codes.NOT_FOUND,), (codes.SERVER_ERROR,)))
+@mark.parametrize(("status_code",), ((codes.OK,), (codes.BAD_REQUEST,), (codes.NOT_FOUND,), (codes.SERVER_ERROR,)))
 @patch("insights.client.connection.get_canonical_facts", return_value={})
 @patch("insights.client.connection.InsightsConnection._init_session")
 @patch("insights.client.connection.InsightsConnection.get_proxies")
 def test_response_failure(get_proxies, init_session, get_canonical_facts, status_code):
     """
-    If an unknown exception occurs, the call crashes.
+    If an unexpected status code is received, the check-in failed and an exception is raised.
     """
-    init_session.return_value.put.return_value.status_code = status_code
+    init_session.return_value.post.return_value.status_code = status_code
 
     config = Mock(base_url="www.example.com")
     connection = InsightsConnection(config)
