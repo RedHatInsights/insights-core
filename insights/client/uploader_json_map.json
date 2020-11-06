@@ -178,7 +178,6 @@
                 "TECH PREVIEW: NVMe over FC may not be fully supported.",
                 "Uhhuh. NMI received for unknown reason",
                 "VPD access disabled",
-                "WRITE SAME failed. Manually zeroing",
                 "Warning: QLogic ISP3XXX Network Driver - this hardware has not undergone testing by Red Hat and might not be certified",
                 "__cpufreq_add_dev",
                 "blocked FC remote port time out: removing target and saving binding",
@@ -186,7 +185,6 @@
                 "e1000: E1000 MODULE IS NOT SUPPORTED",
                 "efi",
                 "fw=8.08.",
-                "ixgbevf: Unknown parameter `InterruptThrottleRate'",
                 "l1tf",
                 "mce: ",
                 "netconsole: network logging started",
@@ -231,6 +229,11 @@
             "command": "/usr/bin/docker images --all --no-trunc --digests",
             "pattern": [],
             "symbolic_name": "docker_list_images"
+        },
+        {
+            "command": "/usr/bin/dotnet --version",
+            "pattern": [],
+            "symbolic_name": "dotnet_version"
         },
         {
             "command": "/bin/du -s -k /var/lib/candlepin/activemq-artemis",
@@ -486,16 +489,6 @@
             "symbolic_name": "kpatch_list"
         },
         {
-            "command": "/usr/bin/find -L /lib /lib64 -name 'libkeyutils.so*'",
-            "pattern": [],
-            "symbolic_name": "libkeyutils"
-        },
-        {
-            "command": "/usr/bin/find -L /lib /lib64 -name libkeyutils.so.1 -exec objdump -x \"{}\" \\;",
-            "pattern": [],
-            "symbolic_name": "libkeyutils_objdumps"
-        },
-        {
             "command": "/usr/bin/file -L /etc/localtime",
             "pattern": [],
             "symbolic_name": "localtime"
@@ -739,7 +732,7 @@
             "symbolic_name": "lsvmbus"
         },
         {
-            "command": "/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,lv_size,lv_attr,mirror_log,vg_name,devices,region_size,data_percent,metadata_percent,segtype,seg_monitor --config=\"global{locking_type=0}\"",
+            "command": "/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,lv_size,lv_attr,mirror_log,vg_name,devices,region_size,data_percent,metadata_percent,segtype,seg_monitor,lv_kernel_major,lv_kernel_minor --config=\"global{locking_type=0}\"",
             "pattern": [],
             "symbolic_name": "lvs_noheadings"
         },
@@ -777,6 +770,11 @@
             "command": "/usr/bin/md5sum /usr/lib64/libfreeblpriv3.so",
             "pattern": [],
             "symbolic_name": "md5chk_files"
+        },
+        {
+            "command": "/bin/mokutil --sb-state",
+            "pattern": [],
+            "symbolic_name": "mokutil_sbstate"
         },
         {
             "command": "/bin/mount",
@@ -1115,7 +1113,6 @@
                 "/usr/bin/teamd",
                 "/usr/sbin/fcoemon --syslog",
                 "COMMAND",
-                "[rcu_sched]",
                 "bash",
                 "catalina.base",
                 "ceilometer-coll",
@@ -1148,8 +1145,6 @@
                 "pcsd",
                 "pkla-check-auth",
                 "postgres",
-                "rcu_gp_kthread",
-                "rcu_sched",
                 "smbd",
                 "spausedd",
                 "target_completi",
@@ -1259,6 +1254,11 @@
             "command": "/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo chrony",
             "pattern": [],
             "symbolic_name": "rpm_V_packages"
+        },
+        {
+            "command": "python -m insights.tools.cat --no-header sap_hdb_version",
+            "pattern": [],
+            "symbolic_name": "sap_hdb_version"
         },
         {
             "command": "/usr/bin/mongo pulp_database --eval 'db.serverStatus().storageEngine'",
@@ -1403,6 +1403,22 @@
             "symbolic_name": "systool_b_scsi_v"
         },
         {
+            "command": "/usr/bin/testparm -s",
+            "pattern": [
+                "Server role:",
+                "["
+            ],
+            "symbolic_name": "testparm_s"
+        },
+        {
+            "command": "/usr/bin/testparm -v -s",
+            "pattern": [
+                "Server role:",
+                "["
+            ],
+            "symbolic_name": "testparm_v_s"
+        },
+        {
             "command": "/usr/bin/find /usr/share -maxdepth 1 -name 'tomcat*' -exec /bin/grep -R -s 'VirtualDirContext' --include '*.xml' '{}' +",
             "pattern": [],
             "symbolic_name": "tomcat_vdc_fallback"
@@ -1448,11 +1464,6 @@
             "symbolic_name": "virt_what"
         },
         {
-            "command": "/usr/bin/find /var/crash /var/tmp -path '*.reports-*/whoopsie-report' -print -quit",
-            "pattern": [],
-            "symbolic_name": "woopsie"
-        },
-        {
             "command": "yum -C --noplugins list available",
             "pattern": [],
             "symbolic_name": "yum_list_available"
@@ -1474,6 +1485,13 @@
         }
     ],
     "files": [
+        {
+            "file": "/etc/abrt/plugins/CCpp.conf",
+            "pattern": [
+                "CreateCoreBacktrace"
+            ],
+            "symbolic_name": "abrt_ccpp_conf"
+        },
         {
             "file": "/root/.config/openshift/hosts",
             "pattern": [
@@ -1562,7 +1580,10 @@
         },
         {
             "file": "/var/log/candlepin/candlepin.log",
-            "pattern": [],
+            "pattern": [
+                "Candlepin initializing context",
+                "No Dead Letter Address configured for queue event.org.candlepin.audit.DatabaseListener in AddressSettings"
+            ],
             "symbolic_name": "candlepin_log"
         },
         {
@@ -1712,6 +1733,28 @@
             "file": "/var/lib/config-data/puppet-generated/cinder/etc/cinder/cinder.conf",
             "pattern": [],
             "symbolic_name": "cinder_conf"
+        },
+        {
+            "file": "/var/log/containers/cinder/cinder-volume.log",
+            "pattern": [
+                "DEBUG oslo.messaging._drivers.impl_rabbit",
+                "Image cloning unsuccessful for image",
+                "Message: NFS file could not be discovered.",
+                "Timed out waiting for RPC response",
+                "[Errno 24] Too many open files"
+            ],
+            "symbolic_name": "cinder_volume_log"
+        },
+        {
+            "file": "/var/log/containers/cinder/volume.log",
+            "pattern": [
+                "DEBUG oslo.messaging._drivers.impl_rabbit",
+                "Image cloning unsuccessful for image",
+                "Message: NFS file could not be discovered.",
+                "Timed out waiting for RPC response",
+                "[Errno 24] Too many open files"
+            ],
+            "symbolic_name": "cinder_volume_log"
         },
         {
             "file": "/var/log/cinder/volume.log",
@@ -1928,20 +1971,14 @@
                 "INFO",
                 "Low disk space. Host",
                 "VDS_LOW_DISK_SPACE_ERROR",
-                "org.ovirt.engine.core.bll.storage.lease.AddVmLeaseCommand",
-                "org.ovirt.engine.core.bll.storage.lease.RemoveVmLeaseCommand",
-                "org.ovirt.engine.core.dal.dbbroker.auditloghandling.AuditLogDirector",
-                "org.ovirt.engine.core.vdsbroker.vdsbroker.HotPlugLeaseVDSCommand",
-                "org.ovirt.engine.core.vdsbroker.vdsbroker.HotUnplugLeaseVDSCommand"
+                "org.ovirt.engine.core.dal.dbbroker.auditloghandling.AuditLogDirector"
             ],
             "symbolic_name": "engine_log"
         },
         {
             "file": "/var/log/ovirt-engine/server.log",
             "pattern": [
-                "ERROR [org.jboss.as.controller.management-operation]",
                 "INFO  [org.wildfly.extension.undertow",
-                "Operation (\"deploy\") failed",
                 "Registered web context: '/ovirt-engine/api' for server"
             ],
             "symbolic_name": "ovirt_engine_server_log"
@@ -2162,9 +2199,7 @@
         {
             "file": "/etc/ipsec.conf",
             "pattern": [
-                "config",
-                "include",
-                "plutodebug"
+                "include"
             ],
             "symbolic_name": "ipsec_conf"
         },
@@ -2189,6 +2224,14 @@
         },
         {
             "file": "/var/log/ironic-inspector/ironic-inspector.log",
+            "pattern": [
+                "Certificate did not match expected hostname",
+                "ERROR requests.packages.urllib3.connection"
+            ],
+            "symbolic_name": "ironic_inspector_log"
+        },
+        {
+            "file": "/var/log/containers/ironic-inspector/ironic-inspector.log",
             "pattern": [
                 "Certificate did not match expected hostname",
                 "ERROR requests.packages.urllib3.connection"
@@ -2298,6 +2341,7 @@
                 "Abort command issued",
                 "Broken pipe",
                 "Buffer I/O error on device",
+                "Cannot allocate memory",
                 "Cannot assign requested address",
                 "Cannot assign requested address: AH00072",
                 "Connection amqps://subscription.rhn.redhat.com:5647 disconnected",
@@ -2311,7 +2355,6 @@
                 "Error deleting EBS Disk volume aws",
                 "Error running DeviceResume dm_task_run failed",
                 "Exception happened during processing of request from",
-                "Failed to bind socket: No such file or directory",
                 "Failed to extend thin",
                 "Hyper-V Host",
                 "List /apis/image.openshift.io/v1/images",
@@ -2338,17 +2381,13 @@
                 "Throttling request took",
                 "TypeError: object of type 'NoneType' has no len()",
                 "Virtualization daemon",
-                "WRITE SAME failed. Manually zeroing",
                 "] trap divide error ",
                 "_NET_ACTIVE_WINDOW",
                 "as active slave; either",
                 "belongs to docker.service",
-                "blocked for more than",
                 "callbacks suppressed",
                 "canceled DHCP transaction, DHCP client pid",
-                "chardev: opening backend \"socket\" failed",
                 "clearing Tx timestamp hang",
-                "dev_set_mac_address of dev",
                 "device-mapper: multipath: Failing path",
                 "does not seem to be present, delaying initialization",
                 "drivers/input/input-leds.c:115 input_leds_connect",
@@ -2360,10 +2399,8 @@
                 "eviction manager: must evict pod(s) to reclaim nodefsInodes",
                 "eviction manager: observations: signal=allocatableNodeFs.available, available: -",
                 "ext4_ext_search_left",
-                "failed to modify QP to RTR: -22",
                 "failed while handling",
                 "failed with error -110",
-                "failed! ALB mode requires that the base driver support setting the hw address also when the network",
                 "failed: Connection amqps:",
                 "failed: Invalid argument",
                 "failed: rpc error: code = 2 desc = unable to inspect docker image",
@@ -2386,7 +2423,6 @@
                 "is down or the link is down",
                 "is greater than comparison timestamp",
                 "iscsiadm: iscsiadm: Could not log into all portals",
-                "kernel/softirq.c:159 local_bh_enable+",
                 "kernel: BUG: soft lockup",
                 "kernel: CIFS VFS: Unexpected SMB signature",
                 "kernel: INFO: task xfsaild/md",
@@ -2428,13 +2464,11 @@
                 "there is a meaningful conflict",
                 "timed out",
                 "timeout before we got a set response",
-                "timeout; kill it",
                 "timing out command, waited",
                 "transmit queue",
                 "udev: renamed network interface",
                 "unknown filesystem type 'binfmt_misc'",
                 "ut of memory: ",
-                "vdsm-tool: EnvironmentError: Failed to restore the persisted networks",
                 "watch chan error: etcdserver: mvcc: required revision has been compacted"
             ],
             "symbolic_name": "messages"
@@ -2493,6 +2527,11 @@
             "file": "/etc/sysconfig/netconsole",
             "pattern": [],
             "symbolic_name": "netconsole"
+        },
+        {
+            "file": "/etc/NetworkManager/NetworkManager.conf",
+            "pattern": [],
+            "symbolic_name": "networkmanager_conf"
         },
         {
             "file": "/etc/NetworkManager/dispatcher.d/.*-dhclient",
@@ -2578,7 +2617,6 @@
                 "libvirt-guests.sh",
                 "libvirtError: Requested operation is not valid: domain has assigned non-USB host devices",
                 "libvirtError: Unable to delete file /var/lib/nova/instances/",
-                "unsupported configuration: Target device drive address",
                 "unsupported configuration: Target network card MTU",
                 "unsupported configuration: Unable to find security driver for model selinux"
             ],
@@ -2622,7 +2660,6 @@
                 "libvirt-guests.sh",
                 "libvirtError: Requested operation is not valid: domain has assigned non-USB host devices",
                 "libvirtError: Unable to delete file /var/lib/nova/instances/",
-                "unsupported configuration: Target device drive address",
                 "unsupported configuration: Target network card MTU",
                 "unsupported configuration: Unable to find security driver for model selinux"
             ],
@@ -2887,6 +2924,30 @@
             "file": "/etc/pam.d/password-auth",
             "pattern": [],
             "symbolic_name": "password_auth"
+        },
+        {
+            "file": "/etc/opt/rh/php73/php.ini",
+            "pattern": [
+                "[",
+                "post_max_size"
+            ],
+            "symbolic_name": "php_ini"
+        },
+        {
+            "file": "/etc/opt/rh/php72/php.ini",
+            "pattern": [
+                "[",
+                "post_max_size"
+            ],
+            "symbolic_name": "php_ini"
+        },
+        {
+            "file": "/etc/php.ini",
+            "pattern": [
+                "[",
+                "post_max_size"
+            ],
+            "symbolic_name": "php_ini"
         },
         {
             "file": "/etc/yum/pluginconf.d/()*\\w+\\.conf",
@@ -3457,20 +3518,16 @@
             "file": "/var/log/vdsm/vdsm.log",
             "pattern": [
                 "(mailbox-spm) [storage.Misc.excCmd] /usr/bin/taskset --cpu-list",
-                "Bad volume specification",
                 "Changed state to Down: 'NoneType' object has no attribute 'attrib'",
                 "Changed state to Down: internal error: Attempted double use of PCI slot",
                 "ERROR (mailbox-spm) [storage.MailBox.SpmMailMonitor]",
-                "INFO",
                 "RPC call Host.setupNetworks failed",
                 "Stopping connection",
                 "The name org.fedoraproject.FirewallD1 was not provided by any .service files",
                 "The vm start process failed",
-                "_report_inconsistency",
                 "lastCheck",
                 "libvirtError: internal error: failed to format device alias",
-                "looking for unfetched domain",
-                "storage.TaskManager.Task"
+                "looking for unfetched domain"
             ],
             "symbolic_name": "vdsm_log"
         },
@@ -3483,6 +3540,11 @@
             "file": "/etc/vdsm/logger.conf",
             "pattern": [],
             "symbolic_name": "vdsm_logger_conf"
+        },
+        {
+            "file": "/sys/module/vhost_net/parameters/experimental_zcopytx",
+            "pattern": [],
+            "symbolic_name": "vhost_net_zero_copy_tx"
         },
         {
             "file": "/etc/()*virt-who\\.conf",
@@ -3781,6 +3843,16 @@
             "symbolic_name": "neutron_l3_agent_log"
         },
         {
+            "file": "/var/log/containers/neutron/l3-agent.log",
+            "pattern": [
+                "DEBUG oslo.messaging._drivers.impl_rabbit",
+                "Error while deleting router",
+                "Stderr: Another app is currently holding the xtables lock",
+                "Timed out waiting for RPC response"
+            ],
+            "symbolic_name": "neutron_l3_agent_log"
+        },
+        {
             "file": "/etc/neutron/metadata_agent.ini",
             "pattern": [
                 "[",
@@ -4069,5 +4141,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2020-09-17T13:54:44.273820"
+    "version": "2020-10-29T14:46:39.878759"
 }

@@ -45,6 +45,8 @@ class InsightsArchiveSpecs(Specs):
     docker_info = simple_file("insights_commands/docker_info")
     docker_list_containers = simple_file("insights_commands/docker_ps_--all_--no-trunc")
     docker_list_images = simple_file("insights_commands/docker_images_--all_--no-trunc_--digests")
+    dotnet_version = simple_file("insights_commands/dotnet_--version")
+    du_dirs = glob_file("insights_commands/du_-s_-k_*")
     engine_db_query_vdsm_version = simple_file("insights_commands/engine-db-query_--statement_SELECT_vs.vds_name_rpm_version_FROM_vds_dynamic_vd_vds_static_vs_WHERE_vd.vds_id_vs.vds_id_--json")
     ethtool = glob_file("insights_commands/ethtool_*", ignore="ethtool_-.*")
     ethtool_S = glob_file("insights_commands/ethtool_-S_*")
@@ -89,8 +91,6 @@ class InsightsArchiveSpecs(Specs):
     iscsiadm_m_session = simple_file("insights_commands/iscsiadm_-m_session")
     keystone_crontab = simple_file("insights_commands/crontab_-l_-u_keystone")
     kpatch_list = simple_file("insights_commands/kpatch_list")
-    libkeyutils = simple_file("insights_commands/find_-L_.lib_.lib64_-name_libkeyutils.so")
-    libkeyutils_objdumps = simple_file("insights_commands/find_-L_.lib_.lib64_-name_libkeyutils.so.1_-exec_objdump_-x")
     localtime = simple_file("insights_commands/file_-L_.etc.localtime")
     lpstat_p = simple_file("insights_commands/lpstat_-p")
     ls_boot = simple_file("insights_commands/ls_-lanR_.boot")
@@ -130,7 +130,12 @@ class InsightsArchiveSpecs(Specs):
         "insights_commands/lvmconfig_--type_full",
         "insights_commands/lvm_dumpconfig_--type_full"
     ])
-    lvs_noheadings = simple_file("insights_commands/lvs_--nameprefixes_--noheadings_--separator_-a_-o_lv_name_lv_size_lv_attr_mirror_log_vg_name_devices_region_size_data_percent_metadata_percent_segtype_seg_monitor_--config_global_locking_type_0")
+    lvs_noheadings = first_file(
+        [
+            "insights_commands/lvs_--nameprefixes_--noheadings_--separator_-a_-o_lv_name_lv_size_lv_attr_mirror_log_vg_name_devices_region_size_data_percent_metadata_percent_segtype_seg_monitor_lv_kernel_major_lv_kernel_minor_--config_global_locking_type_0",
+            "insights_commands/lvs_--nameprefixes_--noheadings_--separator_-a_-o_lv_name_lv_size_lv_attr_mirror_log_vg_name_devices_region_size_data_percent_metadata_percent_segtype_seg_monitor_--config_global_locking_type_0"
+        ]
+    )
     max_uid = simple_file("insights_commands/awk_-F_if_3_max_max_3_END_print_max_.etc.passwd")
     md5chk_files = glob_file("insights_commands/md5sum_*")
     mount = simple_file("insights_commands/mount")
@@ -140,6 +145,7 @@ class InsightsArchiveSpecs(Specs):
     modinfo_ixgbe = simple_file("insights_commands/modinfo_ixgbe")
     modinfo_veth = simple_file("insights_commands/modinfo_veth")
     modinfo_vmxnet3 = simple_file("insights_commands/modinfo_vmxnet3")
+    mokutil_sbstate = simple_file("insights_commands/mokutil_--sb-state")
     multicast_querier = simple_file("insights_commands/find_.sys.devices.virtual.net._-name_multicast_querier_-print_-exec_cat")
     multipath_conf_initramfs = simple_file("insights_commands/lsinitrd_-f_.etc.multipath.conf")
     multipath__v4__ll = simple_file("insights_commands/multipath_-v4_-ll")
@@ -168,6 +174,7 @@ class InsightsArchiveSpecs(Specs):
     pcp_metrics = simple_file("insights_commands/curl_-s_http_..127.0.0.1_44322.metrics_--connect-timeout_5")
     pcs_quorum_status = simple_file("insights_commands/pcs_quorum_status")
     pcs_status = simple_file("insights_commands/pcs_status")
+    postconf_builtin = simple_file("insights_commands/postconf_-C_builtin")
     ps_alxwww = simple_file("insights_commands/ps_alxwww")
     ps_aux = simple_file("insights_commands/ps_aux")
     ps_auxcww = simple_file("insights_commands/ps_auxcww")
@@ -187,6 +194,7 @@ class InsightsArchiveSpecs(Specs):
     rpm_V_packages = first_file(["insights_commands/rpm_-V_coreutils_procps_procps-ng_shadow-utils_passwd_sudo_chrony", "insights_commands/rpm_-V_coreutils_procps_procps-ng_shadow-utils_passwd_sudo"])
     sap_dev_disp = glob_file("/usr/sap/*/*/work/dev_disp")
     sap_dev_rd = glob_file("/usr/sap/*/*/work/dev_rd")
+    sap_hdb_version = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_sap_hdb_version")
     saphostctl_getcimobject_sapinstance = simple_file("insights_commands/usr.sap.hostctrl.exe.saphostctrl_-function_GetCIMObject_-enuminstances_SAPInstance")
     satellite_mongodb_storage_engine = simple_file("insights_commands/mongo_pulp_database_--eval_db.serverStatus_.storageEngine")
     sealert = simple_file('insights_commands/sealert_-l')
@@ -214,6 +222,8 @@ class InsightsArchiveSpecs(Specs):
     systemd_docker = first_file(["insights_commands/systemctl_cat_docker.service", "/usr/lib/systemd/system/docker.service"])
     systemd_openshift_node = first_file(["insights_commands/systemctl_cat_atomic-openshift-node.service", "/usr/lib/systemd/system/atomic-openshift-node.service"])
     systool_b_scsi_v = simple_file("insights_commands/systool_-b_scsi_-v")
+    testparm_s = simple_file("insights_commands/testparm_-s")
+    testparm_v_s = simple_file("insights_commands/testparm_-v_-s")
     tomcat_vdc_fallback = simple_file("insights_commands/find_.usr.share_-maxdepth_1_-name_tomcat_-exec_.bin.grep_-R_-s_VirtualDirContext_--include_.xml")
     tuned_adm = simple_file("insights_commands/tuned-adm_list")
     uname = simple_file("insights_commands/uname_-a")
@@ -224,6 +234,5 @@ class InsightsArchiveSpecs(Specs):
     vgs_noheadings = simple_file("insights_commands/vgs_--nameprefixes_--noheadings_--separator_-a_-o_vg_all_--config_global_locking_type_0")
     virsh_list_all = simple_file("insights_commands/virsh_--readonly_list_--all")
     virt_what = simple_file("insights_commands/virt-what")
-    woopsie = simple_file("insights_commands/find_.var.crash_.var.tmp_-path_.reports-_.whoopsie-report")
     yum_list_available = simple_file("insights_commands/yum_-C_--noplugins_list_available")
     yum_repolist = first_file(["insights_commands/yum_-C_--noplugins_repolist", "insights_commands/yum_-C_repolist"])
