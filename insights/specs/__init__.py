@@ -537,7 +537,7 @@ class Specs(SpecSet):
     root_crontab = RegistryPoint()
     route = RegistryPoint()
     rpm_V_packages = RegistryPoint()
-    rsyslog_conf = RegistryPoint(filterable=True, multi_output=True)
+    rsyslog_conf = RegistryPoint(filterable=True)
     samba = RegistryPoint(filterable=True)
     sap_dev_disp = RegistryPoint(multi_output=True, filterable=True)
     sap_dev_rd = RegistryPoint(multi_output=True, filterable=True)
