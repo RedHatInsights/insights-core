@@ -112,6 +112,13 @@ DEFAULT_OPTS = {
         'action': 'store_true',
         'group': 'actions'
     },
+    'resource_optimization': {
+        'default': False,
+        'opt': ['--resource-optimization'],
+        'help': 'Configure system for Performance monitoring',
+        'action': 'store_true',
+        'group': 'actions'
+    },
     'compressor': {
         'default': 'gz',
         'opt': ['--compressor'],
@@ -725,7 +732,7 @@ class InsightsConfig(object):
             self.diagnosis = True
         if self.test_connection:
             self.net_debug = True
-        if self.payload or self.diagnosis or self.compliance or self.show_results or self.check_results:
+        if self.payload or self.diagnosis or self.compliance or self.resource_optimization or self.show_results or self.check_results:
             self.legacy_upload = False
         if self.payload and (self.logging_file == constants.default_log_file):
             self.logging_file = constants.default_payload_log

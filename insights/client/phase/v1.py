@@ -12,6 +12,7 @@ from insights.client.support import InsightsSupport
 from insights.client.utilities import validate_remove_file, print_egg_versions
 from insights.client.schedule import get_scheduler
 from insights.client.apps.compliance import ComplianceClient
+from insights.client.apps.resource_optimization import RosClient
 
 logger = logging.getLogger(__name__)
 
@@ -261,6 +262,10 @@ def post_update(client, config):
 
 @phase
 def collect_and_output(client, config):
+    # --resource-optimization was called
+    if config.resource_optimization:
+        config.payload, config.content_type = RosClient(config).collect_metrics()
+
     # --compliance was called
     if config.compliance:
         config.payload, config.content_type = ComplianceClient(config).oscap_scan()
