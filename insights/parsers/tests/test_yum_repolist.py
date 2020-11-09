@@ -99,6 +99,21 @@ rhel-7-server-e4s-rpms/x86_64                       Red Hat Enterprise Linux 7 S
 repolist: 12,768
 """.strip()
 
+YUM_REPOLIST_RHEL8 = """
+Updating Subscription Management repositories.
+Repository packages-microsoft-com-prod is listed more than once in the configuration
+repo id                                                                           repo name
+fast-datapath-for-rhel-8-x86_64-rpms                                              Fast Datapath for RHEL 8 x86_64 (RPMs)
+packages-microsoft-com-mssql-server-2019                                          packages-microsoft-com-mssql-server-2019
+packages-microsoft-com-prod                                                       packages-microsoft-com-prod
+rhel-8-for-x86_64-appstream-rpms                                                  Red Hat Enterprise Linux 8 for x86_64 - AppStream (RPMs)
+rhel-8-for-x86_64-baseos-rpms                                                     Red Hat Enterprise Linux 8 for x86_64 - BaseOS (RPMs)
+rhel-8-for-x86_64-highavailability-rpms                                           Red Hat Enterprise Linux 8 for x86_64 - High Availability (RPMs)
+rhel-8-for-x86_64-sap-solutions-rpms                                              Red Hat Enterprise Linux 8 for x86_64 - SAP Solutions (RPMs)
+rhel-8-for-x86_64-supplementary-rpms                                              Red Hat Enterprise Linux 8 for x86_64 - Supplementary (RPMs)
+satellite-tools-6.7-for-rhel-8-x86_64-rpms                                        Red Hat Satellite Tools 6.7 for RHEL 8 x86_64 (RPMs)
+""".strip()
+
 YUM_REPOLIST_DOC_NO_REPONAME = """
 Loaded plugins: package_upload, product-id, search-disabled-repos, security, subscription-manager
 repo id                                                                               status
@@ -157,6 +172,10 @@ def test_rhel_repos():
                                              'rhel-7-server-satellite-6.1-rpms',
                                              'rhel-7-server-satellite-capsule-6.1-rpms',
                                              'rhel-server-rhscl-7-rpms'])
+
+    repo_list = YumRepoList(context_wrap(YUM_REPOLIST_RHEL8))
+    assert len(repo_list.rhel_repos) == 7
+    assert 'satellite-tools-6.7-for-rhel-8-x86_64-rpms' in repo_list.rhel_repos
 
 
 def test_rhel_repos_missing_status():

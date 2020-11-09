@@ -246,6 +246,7 @@ class DefaultSpecs(Specs):
     etc_journald_conf = simple_file(r"etc/systemd/journald.conf")
     etc_journald_conf_d = glob_file(r"etc/systemd/journald.conf.d/*.conf")
     etc_machine_id = simple_file("/etc/machine-id")
+    etc_udev_40_redhat_rules = simple_file("/etc/udev/rules.d/40-redhat.rules")
     etcd_conf = simple_file("/etc/etcd/etcd.conf")
     ethernet_interfaces = listdir("/sys/class/net", context=HostContext)
     ethtool = foreach_execute(ethernet_interfaces, "/sbin/ethtool %s")
@@ -578,7 +579,7 @@ class DefaultSpecs(Specs):
     rhsm_releasever = simple_file('/var/lib/rhsm/cache/releasever.json')
     rndc_status = simple_command("/usr/sbin/rndc status")
     rpm_V_packages = simple_command("/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo chrony", keep_rc=True)
-    rsyslog_conf = simple_file("/etc/rsyslog.conf")
+    rsyslog_conf = glob_file(["/etc/rsyslog.conf", "/etc/rsyslog.d/test.conf"])
     samba = simple_file("/etc/samba/smb.conf")
 
     @datasource(Sap)
