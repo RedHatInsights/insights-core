@@ -35,7 +35,7 @@ class Specs(SpecSet):
     bond = RegistryPoint(multi_output=True)
     bond_dynamic_lb = RegistryPoint(multi_output=True)
     boot_loader_entries = RegistryPoint(multi_output=True)
-    branch_info = RegistryPoint()
+    branch_info = RegistryPoint(raw=True)
     brctl_show = RegistryPoint()
     candlepin_error_log = RegistryPoint(filterable=True)
     candlepin_log = RegistryPoint(filterable=True)
