@@ -29,7 +29,7 @@ def test_canonical_facts_request(get_proxies, init_session, get_canonical_facts)
 
     expected_url = connection.inventory_url + "/hosts/checkin"
     expected_headers = {"Content-Type": "application/json"}
-    expected_data = {"canonical_facts": get_canonical_facts.return_value}
+    expected_data = get_canonical_facts.return_value
     init_session.return_value.post.assert_called_once_with(
         expected_url, headers=expected_headers, data=dumps(expected_data)
     )
@@ -54,7 +54,7 @@ def test_insights_id_request(get_proxies, init_session, get_canonical_facts, gen
 
     expected_url = connection.inventory_url + "/hosts/checkin"
     expected_headers = {"Content-Type": "application/json"}
-    expected_data = {"canonical_facts": {"insights_id": generate_machine_id.return_value}}
+    expected_data = {"insights_id": generate_machine_id.return_value}
     init_session.return_value.post.assert_called_once_with(
         expected_url, headers=expected_headers, data=dumps(expected_data)
     )

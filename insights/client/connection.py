@@ -1085,12 +1085,10 @@ class InsightsConnection(object):
             insights_id = generate_machine_id()
             canonical_facts = {"insights_id": str(insights_id)}
 
-        payload = {"canonical_facts": canonical_facts}
-
         url = self.inventory_url + "/hosts/checkin"
-        logger.debug("Sending check-in request to %s with %s" % (url, payload))
+        logger.debug("Sending check-in request to %s with %s" % (url, canonical_facts))
         try:
-            response = self.session.post(url, headers={"Content-Type": "application/json"}, data=json.dumps(payload))
+            response = self.session.post(url, headers={"Content-Type": "application/json"}, data=json.dumps(canonical_facts))
             # Change to POST when the API is fixed.
         except REQUEST_FAILED_EXCEPTIONS as exception:
             _api_request_failed(exception)
