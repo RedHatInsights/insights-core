@@ -220,9 +220,9 @@ class DefaultSpecs(Specs):
     date_utc = simple_command("/bin/date --utc")
     designate_conf = first_file(["/var/lib/config-data/puppet-generated/designate/etc/designate/designate.conf",
                                  "/etc/designate/designate.conf"])
-    df__al = simple_command("/bin/df -al")
-    df__alP = simple_command("/bin/df -alP")
-    df__li = simple_command("/bin/df -li")
+    df__al = simple_command("/bin/df -al -x autofs")
+    df__alP = simple_command("/bin/df -alP -x autofs")
+    df__li = simple_command("/bin/df -li -x autofs")
     dig_dnssec = simple_command("/usr/bin/dig +dnssec . SOA")
     dig_edns = simple_command("/usr/bin/dig +edns=0 . SOA")
     dig_noedns = simple_command("/usr/bin/dig +noedns . SOA")
