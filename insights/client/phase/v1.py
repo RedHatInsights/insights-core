@@ -4,6 +4,7 @@ import json
 import logging
 import os
 import sys
+import runpy
 
 from insights.client import InsightsClient
 from insights.client.config import InsightsConfig
@@ -261,6 +262,15 @@ def post_update(client, config):
 
 @phase
 def collect_and_output(client, config):
+    # run a specified module
+    if config.module:
+        try:
+            runpy.run_module(config.module)
+        except ImportError as e:
+            logger.error(e)
+            sys.exit(constants.sig_kill_bad)
+        sys.exit(constants.sig_kill_ok)
+
     # --compliance was called
     if config.compliance:
         config.payload, config.content_type = ComplianceClient(config).oscap_scan()
