@@ -314,8 +314,12 @@ class Result(Entry):
         helps queries behave more like dictionaries when you know only one
         result should exist.
         """
+        if len(self.children) == 0:
+            return None
+
         if len(self.children) == 1:
             return self.children[0].string_value
+
         raise Exception("More than one value to return.")
 
     @property
