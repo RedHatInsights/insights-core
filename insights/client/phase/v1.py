@@ -262,7 +262,7 @@ def post_update(client, config):
 
 @phase
 def collect_and_output(client, config):
-     # run a specified module
+    # run a specified module
     if config.module:
         try:
             runpy.run_module(config.module)
