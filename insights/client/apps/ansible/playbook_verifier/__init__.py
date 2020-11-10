@@ -36,27 +36,3 @@ def verify(unverified_playbook):
 
     verified_playbook = unverified_playbook
     return verified_playbook
-
-
-def read_playbook():
-    """
-    Read in the stringified playbook yaml from stdin
-    """
-    unverified_playbook = ''
-    for line in sys.stdin:
-        unverified_playbook += line
-
-    return unverified_playbook
-
-
-if __name__ == "__main__":
-
-    unverified_playbook = read_playbook()
-
-    try:
-        verified_playbook = verify(unverified_playbook)
-    except Exception as e:
-        sys.stderr.write(e.message)
-        sys.exit(1)
-
-    print(verified_playbook)
