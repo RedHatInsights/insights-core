@@ -95,6 +95,7 @@ format_rpm = _make_rpm_formatter()
 
 
 class DefaultSpecs(Specs):
+    abrt_ccpp_conf = simple_file("/etc/abrt/plugins/CCpp.conf")
     abrt_status_bare = simple_command("/usr/bin/abrt status --bare=True")
     amq_broker = glob_file("/var/opt/amq-broker/*/etc/broker.xml")
     auditctl_status = simple_command("/sbin/auditctl -s")
@@ -219,9 +220,9 @@ class DefaultSpecs(Specs):
     date_utc = simple_command("/bin/date --utc")
     designate_conf = first_file(["/var/lib/config-data/puppet-generated/designate/etc/designate/designate.conf",
                                  "/etc/designate/designate.conf"])
-    df__al = simple_command("/bin/df -al")
-    df__alP = simple_command("/bin/df -alP")
-    df__li = simple_command("/bin/df -li")
+    df__al = simple_command("/bin/df -al -x autofs")
+    df__alP = simple_command("/bin/df -alP -x autofs")
+    df__li = simple_command("/bin/df -li -x autofs")
     dig_dnssec = simple_command("/usr/bin/dig +dnssec . SOA")
     dig_edns = simple_command("/usr/bin/dig +edns=0 . SOA")
     dig_noedns = simple_command("/usr/bin/dig +noedns . SOA")
@@ -237,6 +238,7 @@ class DefaultSpecs(Specs):
     docker_list_images = simple_command("/usr/bin/docker images --all --no-trunc --digests")
     docker_storage_setup = simple_file("/etc/sysconfig/docker-storage-setup")
     docker_sysconfig = simple_file("/etc/sysconfig/docker")
+    dotnet_version = simple_command("/usr/bin/dotnet --version")
     dracut_kdump_capture_service = simple_file("/usr/lib/dracut/modules.d/99kdumpbase/kdump-capture.service")
     du_dirs = foreach_execute(['/var/lib/candlepin/activemq-artemis'], "/bin/du -s -k %s")
     engine_db_query_vdsm_version = simple_command('engine-db-query --statement "SELECT vs.vds_name, rpm_version FROM vds_dynamic vd, vds_static vs WHERE vd.vds_id = vs.vds_id" --json')
@@ -244,6 +246,7 @@ class DefaultSpecs(Specs):
     etc_journald_conf = simple_file(r"etc/systemd/journald.conf")
     etc_journald_conf_d = glob_file(r"etc/systemd/journald.conf.d/*.conf")
     etc_machine_id = simple_file("/etc/machine-id")
+    etc_udev_40_redhat_rules = simple_file("/etc/udev/rules.d/40-redhat.rules")
     etcd_conf = simple_file("/etc/etcd/etcd.conf")
     ethernet_interfaces = listdir("/sys/class/net", context=HostContext)
     ethtool = foreach_execute(ethernet_interfaces, "/sbin/ethtool %s")
@@ -459,6 +462,7 @@ class DefaultSpecs(Specs):
     netstat_agn = simple_command("/bin/netstat -agn")
     netstat_i = simple_command("/bin/netstat -i")
     netstat_s = simple_command("/bin/netstat -s")
+    networkmanager_conf = simple_file("/etc/NetworkManager/NetworkManager.conf")
     networkmanager_dispatcher_d = glob_file("/etc/NetworkManager/dispatcher.d/*-dhclient")
     neutron_conf = first_file(["/var/lib/config-data/puppet-generated/neutron/etc/neutron/neutron.conf", "/etc/neutron/neutron.conf"])
     neutron_sriov_agent = first_file([
@@ -528,7 +532,9 @@ class DefaultSpecs(Specs):
     password_auth = simple_file("/etc/pam.d/password-auth")
     pcs_quorum_status = simple_command("/usr/sbin/pcs quorum status")
     pcs_status = simple_command("/usr/sbin/pcs status")
+    php_ini = first_file(["/etc/opt/rh/php73/php.ini", "/etc/opt/rh/php72/php.ini", "/etc/php.ini"])
     pluginconf_d = glob_file("/etc/yum/pluginconf.d/*.conf")
+    postconf_builtin = simple_command("/usr/sbin/postconf -C builtin")
     postgresql_conf = first_file([
                                  "/var/lib/pgsql/data/postgresql.conf",
                                  "/opt/rh/postgresql92/root/var/lib/pgsql/data/postgresql.conf",
@@ -573,8 +579,13 @@ class DefaultSpecs(Specs):
     rhsm_releasever = simple_file('/var/lib/rhsm/cache/releasever.json')
     rndc_status = simple_command("/usr/sbin/rndc status")
     rpm_V_packages = simple_command("/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo chrony", keep_rc=True)
-    rsyslog_conf = simple_file("/etc/rsyslog.conf")
+    rsyslog_conf = glob_file(["/etc/rsyslog.conf", "/etc/rsyslog.d/test.conf"])
     samba = simple_file("/etc/samba/smb.conf")
+
+    @datasource(Sap)
+    def sap_sid(broker):
+        sap = broker[Sap]
+        return [sap.sid(i).lower() for i in sap.local_instances]
 
     @datasource(Sap)
     def sap_sid_name(broker):
@@ -584,6 +595,7 @@ class DefaultSpecs(Specs):
 
     sap_dev_disp = foreach_collect(sap_sid_name, "/usr/sap/%s/%s/work/dev_disp")
     sap_dev_rd = foreach_collect(sap_sid_name, "/usr/sap/%s/%s/work/dev_rd")
+    sap_hdb_version = foreach_execute(sap_sid, "/usr/bin/sudo -iu %sadm HDB version", keep_rc=True)
     saphostctl_getcimobject_sapinstance = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance")
     sat5_insights_properties = simple_file("/etc/redhat-access/redhat-access-insights.properties")
     satellite_mongodb_storage_engine = simple_command("/usr/bin/mongo pulp_database --eval 'db.serverStatus().storageEngine'")
@@ -647,6 +659,8 @@ class DefaultSpecs(Specs):
         simple_file("/conf/rhn/sysconfig/rhn/systemid")
     ])
     systool_b_scsi_v = simple_command("/bin/systool -b scsi -v")
+    testparm_s = simple_command("/usr/bin/testparm -s")
+    testparm_v_s = simple_command("/usr/bin/testparm -v -s")
     tags = simple_file("/tags.json", kind=RawFileProvider)
     thp_use_zero_page = simple_file("/sys/kernel/mm/transparent_hugepage/use_zero_page")
     thp_enabled = simple_file("/sys/kernel/mm/transparent_hugepage/enabled")

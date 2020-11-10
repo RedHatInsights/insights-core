@@ -4,14 +4,13 @@ import json
 import logging
 import os
 import sys
-import atexit
 import runpy
 
 from insights.client import InsightsClient
 from insights.client.config import InsightsConfig
 from insights.client.constants import InsightsConstants as constants
 from insights.client.support import InsightsSupport
-from insights.client.utilities import validate_remove_file, print_egg_versions, write_to_disk
+from insights.client.utilities import validate_remove_file, print_egg_versions
 from insights.client.schedule import get_scheduler
 from insights.client.apps.compliance import ComplianceClient
 
@@ -263,10 +262,6 @@ def post_update(client, config):
 
 @phase
 def collect_and_output(client, config):
-    # last phase, delete PID file on exit
-    atexit.register(write_to_disk, constants.pidfile, delete=True)
-    atexit.register(write_to_disk, constants.ppidfile, delete=True)
-
      # run a specified module
     if config.module:
         try:

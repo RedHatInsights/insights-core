@@ -1,30 +1,59 @@
 from insights.client import InsightsClient
 from insights.client.constants import InsightsConstants
+from mock.mock import call
 from mock.mock import patch
 
 
+@patch("insights.client.atexit.register")
 @patch("insights.client.write_to_disk")
 @patch("insights.client.os.getpid")
-@patch("insights.client.utilities.get_parent_process")
-def test_write_pidfile(get_parent_process, getpid, write_to_disk):
+@patch("insights.client.get_parent_process")
+def test_write_pidfile(get_parent_process, getpid, write_to_disk, register):
     '''
     Test writing of the pidfile when InsightsClient
-    is called initially (when setup_logging=False)
+    is called initially (when from_phase=False)
     '''
-    InsightsClient(setup_logging=False)
+    InsightsClient(from_phase=False)
     getpid.assert_called_once()
-    calls = [write_to_disk(InsightsConstants.pidfile, content=str(getpid.return_value)),
-             write_to_disk(InsightsConstants.ppidfile, content=get_parent_process.return_value)]
-    write_to_disk.has_calls(calls)
+    write_to_disk.assert_has_calls((
+        call(InsightsConstants.pidfile, content=str(getpid.return_value)),
+        call(InsightsConstants.ppidfile, content=get_parent_process.return_value)
+    ))
+
+
+@patch("insights.client.atexit.register")
+@patch("insights.client.write_to_disk")
+def test_atexit_delete_pidfile(write_to_disk, register):
+    '''
+    Test delete of the pidfile is registered when InsightsClient
+    is called initially (when from_phase=False)
+    '''
+    InsightsClient(from_phase=False)
+    register.assert_has_calls((
+        call(write_to_disk, InsightsConstants.pidfile, delete=True),
+        call(write_to_disk, InsightsConstants.ppidfile, delete=True)
+    ))
 
 
 @patch("insights.client.write_to_disk")
+@patch("insights.client.get_parent_process")
 @patch("insights.client.os.getpid")
-def test_write_pidfile_not_called(getpid, write_to_disk):
+def test_write_pidfile_not_called(getpid, get_parent_process, write_to_disk):
     '''
     Test that the pidfile is not written when
-    called from a phase (setup_logging=True)
+    called from a phase (from-phase=True)
     '''
-    InsightsClient(setup_logging=True)
+    InsightsClient(from_phase=True)
+    get_parent_process.assert_not_called()
     getpid.assert_not_called()
     write_to_disk.assert_not_called()
+
+
+@patch("insights.client.atexit.register")
+def test_atexit_delete_pidfile_not_called(register):
+    '''
+    Test that delete of the pidfile is not registered when
+    called from a phase (from_phase=True)
+    '''
+    InsightsClient(from_phase=True)
+    register.assert_not_called()
