@@ -135,6 +135,7 @@ def load_default_plugins():
     dr.load_components("insights.specs.core3_archive")
     dr.load_components("insights.specs.sos_archive")
     dr.load_components("insights.specs.jdr_archive")
+    dr.load_components("insights.specs.must_gather_archive")
 
 
 def load_packages(packages):
