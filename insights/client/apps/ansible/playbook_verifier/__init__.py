@@ -1,5 +1,4 @@
 import os
-import sys
 
 __all__ = ("verify", "PlaybookValidationError")
 
