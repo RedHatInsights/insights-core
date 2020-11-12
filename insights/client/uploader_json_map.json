@@ -111,17 +111,17 @@
             "symbolic_name": "date_utc"
         },
         {
-            "command": "/bin/df -al",
+            "command": "/bin/df -al -x autofs",
             "pattern": [],
             "symbolic_name": "df__al"
         },
         {
-            "command": "/bin/df -alP",
+            "command": "/bin/df -alP -x autofs",
             "pattern": [],
             "symbolic_name": "df__alP"
         },
         {
-            "command": "/bin/df -li",
+            "command": "/bin/df -li -x autofs",
             "pattern": [],
             "symbolic_name": "df__li"
         },
@@ -667,7 +667,6 @@
                 "libssl.so",
                 "lsnrctl",
                 "ovs-vswit",
-                "rgw_swift",
                 "tnslsnr"
             ],
             "symbolic_name": "lsof"
@@ -1148,7 +1147,6 @@
                 "smbd",
                 "spausedd",
                 "target_completi",
-                "taskomaticd",
                 "tgtd",
                 "tuned",
                 "virt-who"
@@ -1671,16 +1669,14 @@
         {
             "file": "/etc/ceph/ceph.conf",
             "pattern": [
-                "[",
-                "rgw_swift_account_in_url"
+                "["
             ],
             "symbolic_name": "ceph_conf"
         },
         {
             "file": "/var/lib/config-data/puppet-generated/ceph/etc/ceph/ceph.conf",
             "pattern": [
-                "[",
-                "rgw_swift_account_in_url"
+                "["
             ],
             "symbolic_name": "ceph_conf"
         },
@@ -2326,7 +2322,6 @@
         {
             "file": "/var/log/messages",
             "pattern": [
-                " disconnect jid=",
                 " invoked oom-killer: ",
                 "\"/var/lib/pgsql/data\" is missing or empty",
                 "(enic): transmit queue 0 timed out",
@@ -2337,7 +2332,6 @@
                 "17763",
                 ": possible SYN flooding on port",
                 ": segfault at ",
-                ": session replaced: jid=",
                 "Abort command issued",
                 "Broken pipe",
                 "Buffer I/O error on device",
@@ -2376,6 +2370,9 @@
                 "SDN initialization failed: Error: Existing service with IP: None is not part of service network",
                 "Scheduled import of stream",
                 "Steal time is >",
+                "TCP listen overflows",
+                "TCP request queue full SYN cookie replies",
+                "TCP request queue full drops",
                 "TX driver issue detected, PF reset issued",
                 "This system does not support \"SSSE3\"",
                 "Throttling request took",
@@ -4098,6 +4095,20 @@
             "pattern": []
         },
         {
+            "glob": "/etc/rsyslog.d/*.conf",
+            "pattern": [
+                "$ActionQueueFileName",
+                "imjournal",
+                "imtcp",
+                "regex",
+                "[",
+                "]",
+                "{",
+                "}"
+            ],
+            "symbolic_name": "rsyslog_conf"
+        },
+        {
             "glob": "/sys/class/scsi_host/host[0-9]*/fwrev",
             "symbolic_name": "scsi_fwver",
             "pattern": []
@@ -4141,5 +4152,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2020-10-29T14:46:39.878759"
+    "version": "2020-11-05T15:21:17.758393"
 }
