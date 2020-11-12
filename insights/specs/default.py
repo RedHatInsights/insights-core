@@ -579,7 +579,7 @@ class DefaultSpecs(Specs):
     rhsm_releasever = simple_file('/var/lib/rhsm/cache/releasever.json')
     rndc_status = simple_command("/usr/sbin/rndc status")
     rpm_V_packages = simple_command("/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo chrony", keep_rc=True)
-    rsyslog_conf = glob_file(["/etc/rsyslog.conf", "/etc/rsyslog.d/test.conf"])
+    rsyslog_conf = glob_file(["/etc/rsyslog.conf", "/etc/rsyslog.d/*.conf"])
     samba = simple_file("/etc/samba/smb.conf")
 
     @datasource(Sap)
