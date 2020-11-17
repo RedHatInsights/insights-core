@@ -46,6 +46,7 @@ class InsightsArchiveSpecs(Specs):
     docker_list_containers = simple_file("insights_commands/docker_ps_--all_--no-trunc")
     docker_list_images = simple_file("insights_commands/docker_images_--all_--no-trunc_--digests")
     dotnet_version = simple_file("insights_commands/dotnet_--version")
+    doveconf = simple_file("insights_commands/doveconf")
     du_dirs = glob_file("insights_commands/du_-s_-k_*")
     engine_db_query_vdsm_version = simple_file("insights_commands/engine-db-query_--statement_SELECT_vs.vds_name_rpm_version_FROM_vds_dynamic_vd_vds_static_vs_WHERE_vd.vds_id_vs.vds_id_--json")
     ethtool = glob_file("insights_commands/ethtool_*", ignore="ethtool_-.*")
