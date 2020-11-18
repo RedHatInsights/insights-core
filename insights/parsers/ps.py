@@ -75,6 +75,9 @@ class Ps(CommandParser):
             # The above list comprehension assures all rows have a command.
             for proc in self.data:
                 cmd = proc[self.command_name]
+                # skip the insights-client self grep process
+                if cmd.startswith('grep -F'):
+                    continue
                 self.running.add(cmd)
                 cmd_name = cmd
                 if cmd.startswith('/'):
