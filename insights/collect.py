@@ -54,7 +54,8 @@ client:
     blacklist:
         files: []
         commands: []
-        patterns: []
+        patterns:
+            - "grep -F"
         keywords: []
 
     # Can be a list of dictionaries with name/enabled fields or a list of strings
