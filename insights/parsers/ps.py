@@ -76,7 +76,7 @@ class Ps(CommandParser):
             for proc in self.data:
                 cmd = proc[self.command_name]
                 # skip the insights-client self grep process
-                if cmd.startswith('grep') and 'httpd' in cmd and 'nginx' in cmd and 'corosync' in cmd:
+                if cmd.startswith('grep -F'):
                     continue
                 self.running.add(cmd)
                 cmd_name = cmd
