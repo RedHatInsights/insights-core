@@ -9,9 +9,19 @@ from requests import Timeout
 from requests import codes
 
 from insights.client.connection import InsightsConnection
+from insights.core.plugins import make_metadata
 
 
-@patch("insights.client.connection.get_canonical_facts", return_value={"subscription_manager_id": str(uuid4())})
+def _get_canonical_facts_response(canonical_facts):
+    d = make_metadata(**canonical_facts)
+    del d["type"]
+    return d
+
+
+@patch(
+    "insights.client.connection.get_canonical_facts",
+    return_value=_get_canonical_facts_response({"subscription_manager_id": str(uuid4())})
+)
 @patch(
     "insights.client.connection.InsightsConnection._init_session",
     **{"return_value.post.return_value.status_code": codes.CREATED}
@@ -19,7 +29,7 @@ from insights.client.connection import InsightsConnection
 @patch("insights.client.connection.InsightsConnection.get_proxies")
 def test_canonical_facts_request(get_proxies, init_session, get_canonical_facts):
     """
-    A PUT requests to the check-in endpoint is issued with correct headers and
+    A POST requests to the check-in endpoint is issued with correct headers and
     body containing Canonical Facts.
     """
     config = Mock(base_url="www.example.com")
@@ -44,7 +54,7 @@ def test_canonical_facts_request(get_proxies, init_session, get_canonical_facts)
 @patch("insights.client.connection.InsightsConnection.get_proxies")
 def test_insights_id_request(get_proxies, init_session, get_canonical_facts, generate_machine_id):
     """
-    A PUT requests to the check-in endpoint is issued with correct headers and
+    A POST requests to the check-in endpoint is issued with correct headers and
     body containing only an Insights ID if Canonical Facts collection fails.
     """
     config = Mock(base_url="www.example.com")
@@ -61,7 +71,10 @@ def test_insights_id_request(get_proxies, init_session, get_canonical_facts, gen
 
 
 @mark.parametrize(("exception",), ((ConnectionError,), (Timeout,)))
-@patch("insights.client.connection.get_canonical_facts", return_value={})
+@patch(
+    "insights.client.connection.get_canonical_facts",
+    return_value=_get_canonical_facts_response({"subscription_manager_id": "notauuid"})
+)
 @patch("insights.client.connection.InsightsConnection._init_session")
 @patch("insights.client.connection.InsightsConnection.get_proxies")
 def test_request_http_failure(get_proxies, init_session, get_canonical_facts, exception):
@@ -78,7 +91,10 @@ def test_request_http_failure(get_proxies, init_session, get_canonical_facts, ex
 
 
 @patch("insights.client.connection.get_canonical_facts", return_value={})
-@patch("insights.client.connection.InsightsConnection._init_session", **{"return_value.post.side_effect": RuntimeError()})
+@patch(
+    "insights.client.connection.InsightsConnection._init_session",
+    **{"return_value.post.side_effect": RuntimeError()}
+)
 @patch("insights.client.connection.InsightsConnection.get_proxies")
 def test_request_unknown_exception(get_proxies, init_session, get_canonical_facts):
     """
@@ -93,7 +109,10 @@ def test_request_unknown_exception(get_proxies, init_session, get_canonical_fact
 
 
 @patch("insights.client.connection.get_canonical_facts", return_value={})
-@patch("insights.client.connection.InsightsConnection._init_session", **{"return_value.post.return_value.status_code": codes.CREATED})
+@patch(
+    "insights.client.connection.InsightsConnection._init_session",
+    **{"return_value.post.return_value.status_code": codes.CREATED}
+)
 @patch("insights.client.connection.InsightsConnection.get_proxies")
 def test_response_success(get_proxies, init_session, get_canonical_facts):
     """
@@ -106,8 +125,11 @@ def test_response_success(get_proxies, init_session, get_canonical_facts):
     assert result is True
 
 
-@mark.parametrize(("status_code",), ((codes.OK,), (codes.BAD_REQUEST,), (codes.NOT_FOUND,), (codes.SERVER_ERROR,)))
-@patch("insights.client.connection.get_canonical_facts", return_value={})
+@mark.parametrize(
+    ("status_code",),
+    ((codes.OK,), (codes.BAD_REQUEST,), (codes.NOT_FOUND,), (codes.SERVER_ERROR,))
+)
+@patch("insights.client.connection.get_canonical_facts", return_value=_get_canonical_facts_response({}))
 @patch("insights.client.connection.InsightsConnection._init_session")
 @patch("insights.client.connection.InsightsConnection.get_proxies")
 def test_response_failure(get_proxies, init_session, get_canonical_facts, status_code):
