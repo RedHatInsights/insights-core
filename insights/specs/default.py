@@ -233,14 +233,21 @@ class DefaultSpecs(Specs):
     dmidecode = simple_command("/usr/sbin/dmidecode")
     dmsetup_info = simple_command("/usr/sbin/dmsetup info -C")
     dnf_conf = simple_file("/etc/dnf/dnf.conf")
+    dnf_modules = glob_file("/etc/dnf/modules.d/*.module")
     docker_info = simple_command("/usr/bin/docker info")
     docker_list_containers = simple_command("/usr/bin/docker ps --all --no-trunc")
     docker_list_images = simple_command("/usr/bin/docker images --all --no-trunc --digests")
+    doveconf = simple_command("/usr/bin/doveconf")
     docker_storage_setup = simple_file("/etc/sysconfig/docker-storage-setup")
     docker_sysconfig = simple_file("/etc/sysconfig/docker")
     dotnet_version = simple_command("/usr/bin/dotnet --version")
     dracut_kdump_capture_service = simple_file("/usr/lib/dracut/modules.d/99kdumpbase/kdump-capture.service")
-    du_dirs = foreach_execute(['/var/lib/candlepin/activemq-artemis'], "/bin/du -s -k %s")
+
+    @datasource()
+    def du_dirs_list(broker):
+        """ Provide a list of directorys for the ``du_dirs`` spec to scan """
+        return ['/var/lib/candlepin/activemq-artemis']
+    du_dirs = foreach_execute(du_dirs_list, "/bin/du -s -k %s")
     engine_db_query_vdsm_version = simple_command('engine-db-query --statement "SELECT vs.vds_name, rpm_version FROM vds_dynamic vd, vds_static vs WHERE vd.vds_id = vs.vds_id" --json')
     engine_log = simple_file("/var/log/ovirt-engine/engine.log")
     etc_journald_conf = simple_file(r"etc/systemd/journald.conf")
@@ -422,9 +429,12 @@ class DefaultSpecs(Specs):
     machine_id = first_file(["etc/insights-client/machine-id", "etc/redhat-access-insights/machine-id", "etc/redhat_access_proactive/machine-id"])
     mariadb_log = simple_file("/var/log/mariadb/mariadb.log")
     max_uid = simple_command("/bin/awk -F':' '{ if($3 > max) max = $3 } END { print max }' /etc/passwd")
-    md5chk_files = foreach_execute(
-        ["/etc/pki/product/69.pem", "/etc/pki/product-default/69.pem", "/usr/lib/libsoftokn3.so", "/usr/lib64/libsoftokn3.so", "/usr/lib/libfreeblpriv3.so", "/usr/lib64/libfreeblpriv3.so"],
-        "/usr/bin/md5sum %s")
+
+    @datasource()
+    def md5chk_file_list(broker):
+        """ Provide a list of files to be processed by the ``md5chk_files`` spec """
+        return ["/etc/pki/product/69.pem", "/etc/pki/product-default/69.pem", "/usr/lib/libsoftokn3.so", "/usr/lib64/libsoftokn3.so", "/usr/lib/libfreeblpriv3.so", "/usr/lib64/libfreeblpriv3.so"]
+    md5chk_files = foreach_execute(md5chk_file_list, "/usr/bin/md5sum %s")
     mdstat = simple_file("/proc/mdstat")
     meminfo = first_file(["/proc/meminfo", "/meminfo"])
     messages = simple_file("/var/log/messages")

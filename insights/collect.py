@@ -129,6 +129,16 @@ plugins:
         - name: insights.combiners.services
           enabled: true
 
+    # needed to collect the sap_hdb_version spec that uses the Sap combiner
+        - name: insights.parsers.lssap
+          enabled: true
+
+        - name: insights.parsers.saphostctrl
+          enabled: true
+
+        - name: insights.combiners.sap
+          enabled: true
+
     # needed because some specs aren't given names before they're used in DefaultSpecs
         - name: insights.core.spec_factory
           enabled: true
