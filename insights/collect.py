@@ -103,6 +103,32 @@ plugins:
         - name: insights.combiners.hostname
           enabled: true
 
+    # needed for the CloudProvider combiner
+        - name: insights.parsers.installed_rpms
+          enabled: true
+
+        - name: insights.parsers.dmidecode
+          enabled: true
+
+        - name: insights.parsers.yum
+          enabled: true
+
+        - name: insights.parsers.rhsm_conf
+          enabled: true
+
+        - name: insights.combiners.cloud_provider
+          enabled: true
+
+    # needed for the Services combiner
+        - name: insights.parsers.chkconfig
+          enabled: true
+
+        - name: insights.parsers.systemd.unitfiles
+          enabled: true
+
+        - name: insights.combiners.services
+          enabled: true
+
     # needed to collect the sap_hdb_version spec that uses the Sap combiner
         - name: insights.parsers.lssap
           enabled: true
