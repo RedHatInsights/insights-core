@@ -34,6 +34,14 @@ SAFE_ENV = {
     "LC_ALL": "C",
 }
 
+FILTER_COMMAND = "grep -F"
+"""
+Command used to filter results collected from the system
+in insights/client/insights_spec.py. It will be added to
+the blacklist here so that its not included in the collected
+data.
+"""
+
 if "LANG" in os.environ:
     SAFE_ENV["LANG"] = os.environ["LANG"]
 
@@ -55,7 +63,7 @@ client:
         files: []
         commands: []
         patterns:
-            - "grep -F"
+            - "{filter_cmd}"
         keywords: []
 
     # Can be a list of dictionaries with name/enabled fields or a list of strings
@@ -107,7 +115,7 @@ plugins:
     # needed because some specs aren't given names before they're used in DefaultSpecs
         - name: insights.core.spec_factory
           enabled: true
-""".strip()
+""".format(filter_cmd=FILTER_COMMAND).strip()
 
 
 def load_manifest(data):
@@ -246,7 +254,10 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
     apply_default_enabled(plugins)
     apply_configs(plugins)
 
-    apply_blacklist(client.get("blacklist", {}))
+    blacklist = client.get("blacklist", {})
+    if FILTER_COMMAND not in blacklist:
+        blacklist.add(FILTER_COMMAND)
+    apply_blacklist(blacklist)
 
     # insights-client
     if client_timeout:
