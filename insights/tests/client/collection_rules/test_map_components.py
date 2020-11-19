@@ -74,7 +74,6 @@ def test_get_component_by_symbolic_name():
         'cpu_vulns_spectre_v1',
         'cpu_vulns_spectre_v2',
         'cpu_vulns_spec_store_bypass',
-        'dnf_modules',
         'docker_storage',
         'freeipa_healthcheck_log',
         'vmware_tools_conf',
