@@ -14,3 +14,4 @@ simple_file = partial(simple_file, context=SerializedArchiveContext)
 
 class Core3Specs(Specs):
     branch_info = simple_file("/branch_info", kind=RawFileProvider)
+    display_name = simple_file("display_name")
