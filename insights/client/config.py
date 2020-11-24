@@ -35,33 +35,6 @@ def _core_collect_default():
 
 
 DEFAULT_OPTS = {
-    'analyze_container': {
-        'default': False,
-        'opt': ['--analyze-container'],
-        'help': argparse.SUPPRESS,
-        'action': 'store_true'
-    },
-    'analyze_image_id': {
-        'default': False,
-        'opt': ['--analyze-image-id'],
-        'help': argparse.SUPPRESS,
-        'const': True,
-        'nargs': '?',
-    },
-    'analyze_file': {
-        'default': False,
-        'opt': ['--analyze-file'],
-        'help': argparse.SUPPRESS,
-        'const': True,
-        'nargs': '?',
-    },
-    'analyze_mountpoint': {
-        'default': False,
-        'opt': ['--analyze-mountpoint'],
-        'help': argparse.SUPPRESS,
-        'const': True,
-        'nargs': '?',
-    },
     'authmethod': {
         # non-CLI
         'default': 'BASIC'
@@ -373,20 +346,6 @@ DEFAULT_OPTS = {
         # non-CLI
         'default': None
     },
-    'use_atomic': {
-        'default': None,
-        'opt': ['--use-atomic'],
-        'help': argparse.SUPPRESS,
-        'action': 'store_true',
-        'group': 'debug'
-    },
-    'use_docker': {
-        'default': None,
-        'opt': ['--use-docker'],
-        'help': argparse.SUPPRESS,
-        'action': 'store_true',
-        'group': 'debug'
-    },
     'username': {
         # non-CLI
         'default': ''
@@ -646,24 +605,6 @@ class InsightsConfig(object):
         '''
         Make sure there are no conflicting or invalid options
         '''
-        if self.analyze_image_id:
-            raise ValueError(
-                '--analyze-image-id is no longer supported.')
-        if self.analyze_file:
-            raise ValueError(
-                '--analyze-file is no longer supported.')
-        if self.analyze_mountpoint:
-            raise ValueError(
-                '--analyze-mountpoint is no longer supported.')
-        if self.analyze_container:
-            raise ValueError(
-                '--analyze-container is no longer supported.')
-        if self.use_atomic:
-            raise ValueError(
-                '--use-atomic is no longer supported.')
-        if self.use_docker:
-            raise ValueError(
-                '--use-docker is no longer supported.')
         if self.obfuscate_hostname and not self.obfuscate:
             raise ValueError(
                 'Option `obfuscate_hostname` requires `obfuscate`')
@@ -722,12 +663,6 @@ class InsightsConfig(object):
         '''
         self.no_upload = self.no_upload or self.offline
         self.auto_update = self.auto_update and not self.offline
-        if (self.analyze_container or
-           self.analyze_file or
-           self.analyze_mountpoint or
-           self.analyze_image_id):
-            self.analyze_container = True
-        self.to_json = self.to_json or self.analyze_container
         self.register = (self.register or self.reregister) and not self.offline
         self.keep_archive = self.keep_archive or self.no_upload
         if self.to_json and self.quiet:

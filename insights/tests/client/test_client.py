@@ -138,21 +138,6 @@ def test_force_reregister():
     assert old_reg_file2_ts != new_reg_file2_ts
 
 
-def test_register_container():
-    with pytest.raises(ValueError):
-        InsightsConfig(register=True, analyze_container=True)
-
-
-def test_unregister_container():
-    with pytest.raises(ValueError):
-        InsightsConfig(unregister=True, analyze_container=True)
-
-
-def test_force_reregister_container():
-    with pytest.raises(ValueError):
-        InsightsConfig(reregister=True, analyze_container=True)
-
-
 @pytest.mark.skip(reason="Mocked paths not working in QE jenkins")
 @patch('insights.client.utilities.constants.registered_files',
        ['/tmp/insights-client.registered',
