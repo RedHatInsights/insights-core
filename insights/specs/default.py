@@ -403,6 +403,7 @@ class DefaultSpecs(Specs):
     ls_R_var_lib_nova_instances = simple_command("/bin/ls -laR /var/lib/nova/instances")
     ls_sys_firmware = simple_command("/bin/ls -lanR /sys/firmware")
     ls_tmp = simple_command("/bin/ls -la /tmp")
+    ls_usr_bin = simple_command("/bin/ls -lan /usr/bin")
     ls_usr_lib64 = simple_command("/bin/ls -lan /usr/lib64")
     ls_var_lib_mongodb = simple_command("/bin/ls -la /var/lib/mongodb")
     ls_var_lib_nova_instances = simple_command("/bin/ls -laRZ /var/lib/nova/instances")
