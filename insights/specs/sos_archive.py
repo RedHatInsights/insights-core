@@ -9,6 +9,7 @@ simple_file = partial(simple_file, context=SosArchiveContext)
 
 
 class SosSpecs(Specs):
+    alternatives_display_python = simple_file("sos_commands/alternatives/alternatives_--display_python")
     auditctl_status = simple_file("sos_commands/auditd/auditctl_-s")
     autofs_conf = simple_file("/etc/autofs.conf")
 

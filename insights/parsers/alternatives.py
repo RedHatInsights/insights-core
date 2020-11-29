@@ -151,3 +151,27 @@ class JavaAlternatives(AlternativesOutput):
         '/usr/lib/jvm/jre-1.6.0-ibm.x86_64/bin/ControlPanel'
     """
     pass
+
+
+@parser(Specs.alternatives_display_python)
+class PythonAlternatives(AlternativesOutput):
+    """
+    Class to read the ``/usr/sbin/alternatives --display python`` output.
+
+    Uses the ``AlternativesOutput`` base class to get information about the
+    alternatives for ``best`` available and which one is currently in use.
+
+    Examples:
+        >>> python = shared[AlternativesOutput]
+        >>> python.program
+        'python'
+        >>> python.link
+        '/usr/bin/python3'
+        >>> len(java.paths)
+        2
+        >>> python.paths[0]['path']
+        '/usr/libexec/no-python'
+        >>> python.paths[0]['priority']
+        404
+    """
+    pass
