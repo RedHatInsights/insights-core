@@ -9,7 +9,6 @@ data sources that standard Insights `Parsers` resolve against.
 """
 
 import logging
-import os
 import re
 
 from insights.core.context import HostContext
@@ -26,6 +25,7 @@ from insights.combiners.sap import Sap
 from insights.parsers.mdstat import Mdstat
 from insights.parsers.lsmod import LsMod
 from insights.components.rhel_version import IsRhel8, IsRhel7
+from insights.parsers.ps import PsAuxcww
 from insights.specs import Specs
 
 
@@ -45,29 +45,47 @@ def get_owner(filename):
     return (name, group)
 
 
-def get_cmd_and_package_in_ps(broker, target_command):
+def _get_running_commands(broker, command):
     """
-    Search for command in ``ps auxww`` output and determine RPM providing binary
+    Search for command in ``ps auxcww`` output and determine RPM providing binary
 
     Arguments:
         broker(dict): Current state of specs collected by Insights
-        target_command(str): Command name to search for in ps output
+        command(str): Command name to search for in ps output
 
     Returns:
-        set: Set including all RPMs that provide the target command
+        list: List of the full command paths of the ``command``.
     """
-    ps = broker[DefaultSpecs.ps_auxww].content
+    ps = broker[PsAuxcww].search(COMMAND__contains=command)
     ctx = broker[HostContext]
-    results = set()
+    ret = set()
     for p in ps:
-        p_splits = p.split(None, 10)
-        cmd = p_splits[10].split()[0] if len(p_splits) == 11 else ''
-        which = ctx.shell_out("which {0}".format(cmd)) if target_command in os.path.basename(cmd) else None
-        resolved = ctx.shell_out("readlink -e {0}".format(which[0])) if which else None
-        pkg = ctx.shell_out("/bin/rpm -qf {0}".format(resolved[0])) if resolved else None
-        if cmd and pkg is not None:
-            results.add("{0} {1}".format(cmd, pkg[0]))
-    return results
+        cmd = p['COMMAND_NAME']
+        if cmd != command:
+            continue
+        which = ctx.shell_out("/usr/bin/which {0}".format(cmd))
+        ret.add(which[0]) if which else None
+    return sorted(ret)
+
+
+def _get_package(broker, command):
+    """
+    Arguments:
+        broker(dict): Current state of specs collected by Insights
+        command(str): The full command name to get the package
+
+    Returns:
+        str: The package that provides the ``command``.
+    """
+    ctx = broker[HostContext]
+    which = ctx.shell_out("/usr/bin/which {0}".format(command))
+    if which:
+        resolved = ctx.shell_out("/usr/bin/readlink -e {0}".format(which[0]))
+        if resolved:
+            pkg = ctx.shell_out("/usr/bin/rpm -qf {0}".format(resolved[0]))
+            if pkg:
+                return pkg[0]
+    raise SkipComponent
 
 
 def _make_rpm_formatter(fmt=None):
@@ -174,12 +192,11 @@ class DefaultSpecs(Specs):
     ceph_df_detail = simple_command("/usr/bin/ceph df detail -f json")
     ceph_health_detail = simple_command("/usr/bin/ceph health detail -f json")
 
-    @datasource(ps_auxww)
+    @datasource(PsAuxcww)
     def is_ceph_monitor(broker):
         """ bool: Returns True if ceph monitor process ceph-mon is running on this node """
-        ps = broker[DefaultSpecs.ps_auxww].content
-        findall = re.compile(r"ceph\-mon").findall
-        if any(findall(p) for p in ps):
+        ps = broker[PsAuxcww]
+        if ps.search(COMMAND__contains='ceph-mon'):
             return True
         raise SkipComponent()
 
@@ -336,29 +353,16 @@ class DefaultSpecs(Specs):
     jbcs_httpd24_httpd_error_log = simple_file("/opt/rh/jbcs-httpd24/root/etc/httpd/logs/error_log")
     virt_uuid_facts = simple_file("/etc/rhsm/facts/virt_uuid.facts")
 
-    @datasource(ps_auxww)
+    @datasource(PsAuxcww)
     def httpd_cmd(broker):
         """
-        Function to search the output of ``ps auxww`` to find all running Apache
+        Function to search the output of ``ps auxcww`` to find all running Apache
         webserver processes and extract the binary path.
 
         Returns:
             list: List of the binary paths to each running process
         """
-        ps = broker[DefaultSpecs.ps_auxww].content
-        ps_httpds = set()
-        for p in ps:
-            p_splits = p.split(None, 10)
-            if len(p_splits) >= 11:
-                cmd = p_splits[10].split()[0]
-                # Should compatible with RHEL6
-                # e.g. /usr/sbin/httpd, /usr/sbin/httpd.worker and /usr/sbin/httpd.event
-                #      and SCL's httpd24-httpd
-                if os.path.basename(cmd).startswith('httpd'):
-                    ps_httpds.add(cmd)
-        # Running multiple httpd instances on RHEL is supported
-        # https://access.redhat.com/solutions/21680
-        return list(ps_httpds)
+        return _get_running_commands(broker, 'httpd')
 
     httpd_pid = simple_command("/usr/bin/pgrep -o httpd")
     httpd_limits = foreach_collect(httpd_pid, "/proc/%s/limits")
@@ -553,6 +557,17 @@ class DefaultSpecs(Specs):
     ovirt_engine_ui_log = simple_file("/var/log/ovirt-engine/ui.log")
     ovs_vsctl_list_bridge = simple_command("/usr/bin/ovs-vsctl list bridge")
     ovs_vsctl_show = simple_command("/usr/bin/ovs-vsctl show")
+
+    @datasource(PsAuxcww, context=HostContext)
+    def java_cmd_and_pkg(broker):
+        """Command: echo the command and package string"""
+        pkg_cmd = list()
+        for cmd in _get_running_commands(broker, 'java'):
+            pkg_cmd.append("{0} {1}".format(cmd, _get_package(broker, cmd)))
+        return pkg_cmd
+
+    package_provides_java = foreach_execute(java_cmd_and_pkg, "/usr/bin/echo %s")
+
     pacemaker_log = first_file(["/var/log/pacemaker.log", "/var/log/pacemaker/pacemaker.log"])
     pci_rport_target_disk_paths = simple_command("/usr/bin/find /sys/devices/ -maxdepth 10 -mindepth 9 -name stat -type f")
 

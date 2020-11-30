@@ -10,6 +10,7 @@ which is parsed by the PackageProvidesJava parser.
 from .. import LegacyItemAccess
 from insights.core.plugins import combiner
 from insights.parsers.package_provides_java import PackageProvidesJava
+from insights.util import deprecated
 
 
 @combiner(PackageProvidesJava)
@@ -40,6 +41,10 @@ class PackageProvidesJavaAll(LegacyItemAccess):
     """
 
     def __init__(self, package_provides_java):
+        deprecated(
+            PackageProvidesJavaAll,
+            'Please use the :class:`insights.combiners.package_provides.PackageProvidesJavaAll` instead.'
+        )
         self.data = {}
         for pkg in package_provides_java:
             self.data[pkg.command] = pkg.package

@@ -43,6 +43,7 @@ Raises:
 from insights import parser, CommandParser
 from ..parsers import ParseException, SkipException
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.package_provides_java)
@@ -58,6 +59,10 @@ class PackageProvidesJava(CommandParser):
     """
 
     def parse_content(self, content):
+        deprecated(
+            PackageProvidesJava,
+            'Please use the :class:`insights.parsers.package_provides.PackageProvidesJava` instead.'
+        )
         if len(content) == 0:
             raise ParseException("Error: ", 'there is not java application running')
         l = content[0].split()
