@@ -622,6 +622,8 @@ class DefaultSpecs(Specs):
     selinux_config = simple_file("/etc/selinux/config")
     sestatus = simple_command("/usr/sbin/sestatus -b")
     setup_named_chroot = simple_file("/usr/libexec/setup-named-chroot.sh")
+    smartctl_block = listdir("/sys/class/block", context=HostContext)
+    smartctl_l_scterc = foreach_execute(smartctl_block, "/sbin/smartctl -l scterc %s")
     smbstatus_p = simple_command("/usr/bin/smbstatus -p")
     smartpdc_settings = simple_file("/etc/smart_proxy_dynflow_core/settings.yml")
     sockstat = simple_file("/proc/net/sockstat")

@@ -1,8 +1,10 @@
-from insights.parsers.smartctl import SMARTctl
+from insights.parsers import smartctl
+from insights.parsers.smartctl import SMARTctl, SMARTctlSCTERC
 from insights.parsers import ParseException
 from insights.tests import context_wrap
 
 import pytest
+import doctest
 
 STANDARD_DRIVE = """
 smartctl 6.2 2013-07-26 r3841 [x86_64-linux-3.10.0-267.el7.x86_64] (local build)
@@ -252,6 +254,22 @@ Device does not support Self Test logging
 
 """  # noqa
 
+NO_SCT_ERC_DRIVE = """
+smartctl 7.1 2020-04-05 r5049 [x86_64-linux-4.18.0-240.el8.x86_64] (local build)
+Copyright (C) 2002-19, Bruce Allen, Christian Franke, www.smartmontools.org
+SCT Error Recovery Control:
+ Read: Disabled
+ Write: Disabled
+"""  # noqa
+
+SCT_ERC_DRIVE = """
+smartctl 7.1 2020-04-05 r5049 [x86_64-linux-4.18.0-240.el8.x86_64] (local build)
+Copyright (C) 2002-19, Bruce Allen, Christian Franke, www.smartmontools.org
+SCT Error Recovery Control set to:
+ Read: 200 (20.0 seconds)
+ Write: 200 (20.0 seconds)
+"""  # noqa
+
 
 def test_netapp_drive():
     data = SMARTctl(context_wrap(
@@ -284,3 +302,26 @@ def test_netapp_drive():
     assert data.health == 'not parsed'
     assert data.values == {}
     assert data.attributes == {}
+
+
+def test_doc_examples():
+    env = {
+        'drive': SMARTctl(context_wrap(
+            STANDARD_DRIVE, path='sos_commands/ata/smartctl_-a_.dev.sda'
+        )),
+        'smartctl': SMARTctlSCTERC(context_wrap(
+            SCT_ERC_DRIVE, path='insights_commands/smartctl_-l_scterc_.dev.sda'
+        )),
+    }
+    failed, total = doctest.testmod(smartctl, globs=env)
+    assert failed == 0
+
+
+def test_smartctl_l_scterc():
+    data = SMARTctlSCTERC(context_wrap(
+        NO_SCT_ERC_DRIVE, path='insights_commands/smartctl_-l_scterc_.dev.sda'
+    ))
+    assert data.device == '/dev/sda'
+    print(data.scterc)
+    assert data.scterc['Read'] == 'Disabled'
+    assert data.scterc['Write'] == 'Disabled'

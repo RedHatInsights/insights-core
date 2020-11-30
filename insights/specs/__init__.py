@@ -568,6 +568,7 @@ class Specs(SpecSet):
     sestatus = RegistryPoint()
     setup_named_chroot = RegistryPoint(filterable=True)
     smartctl = RegistryPoint(multi_output=True)
+    smartctl_l_scterc = RegistryPoint(multi_output=True)
     smartpdc_settings = RegistryPoint(filterable=True)
     smbstatus_p = RegistryPoint()
     smbstatus_S = RegistryPoint()

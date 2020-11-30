@@ -1,6 +1,17 @@
 """
+SMARTctl parsers
+================
+
+Classes to parse ``smartctl`` command information.
+
+Parsers provided by this module include:
+
 SMARTctl - command ``/sbin/smartctl -a {device}``
-=================================================
+-------------------------------------------------
+
+SCT Error Recovery Control - command ``/sbin/smartctl -l scterc {device}``
+--------------------------------------------------------------------------
+
 """
 
 from insights.core import CommandParser
@@ -63,17 +74,15 @@ class SMARTctl(CommandParser):
         ...
 
     Examples:
-        >>> for drive in shared[SMARTctl]:
-        ...     print "Device:", drive.device
-        ...     print "Model:", drive.information['Device Model']
-        ...     print "Health check:", drive.health
-        ...     print "Last self-test status:", drive.values['Self-test execution status']
-        ...     print "Raw read error rate:", drive.attributes['Raw_Read_Error_Rate']['RAW_VALUE']
-        ...
+        >>> print ("Device:", drive.device)
         Device: /dev/sda
+        >>> print ("Model:", drive.information['Device Model'])
         Model: ST500LM021-1KJ152
+        >>> print ("Health check:", drive.health)
         Health check: PASSED
+        >>> print ("Last self-test status:", drive.values['Self-test execution status'])
         Last self-test status: 0
+        >>> print ("Raw read error rate:", drive.attributes['Raw_Read_Error_Rate']['raw_value'])
         Raw read error rate: 179599704
 
     """
@@ -202,3 +211,53 @@ class SMARTctl(CommandParser):
 
         # Delete temporary full line storage
         del self.full_line
+
+
+@parser(Specs.smartctl_l_scterc)
+class SMARTctlSCTERC(CommandParser):
+    """
+    Parser for output of ``smartctl -l scterc`` for each drive in system.
+
+    This stores the SCT ERC (Smart Command Transfer Error Recovery Control) information
+    from the output of `smartctl -l scterc` in the following properties:
+    following properties:
+
+    * ``device`` - the name of the device after /dev/ - e.g. sda
+    * ``scterc`` - the SCT Error Recovery Control settings - e.g. 'Read': 20 seconds
+
+    Sample output::
+
+        smartctl 7.1 2020-04-05 r5049 [x86_64-linux-4.18.0-240.el8.x86_64] (local build)
+        Copyright (C) 2002-19, Bruce Allen, Christian Franke, www.smartmontools.org
+        SCT Error Recovery Control set to:
+         Read: 200 (20.0 seconds)
+         Write: 200 (20.0 seconds)
+
+    Examples:
+        >>> smartctl.device
+        '/dev/sda'
+        >>> smartctl.scterc['Read']
+        20.0
+        >>> smartctl.scterc['Write']
+        20.0
+
+    """
+
+    def __init__(self, context):
+        filename_re = re.compile(r'smartctl_-l_scterc_\.dev\.(?P<device>\w+)$')
+        match = filename_re.search(context.path)
+        if match:
+            self.device = '/dev/' + match.group('device')
+        else:
+            raise ParseException('Cannot parse device name from path {p}'.format(p=context.path))
+        super(SMARTctlSCTERC, self).__init__(context)
+
+    def parse_content(self, content):
+        self.scterc = {}
+        key_values = [l.split()[:2] for l in content if "Read:" in l or "Write:" in l]
+
+        for k, v in key_values:
+            if v.isdigit():
+                v = int(v) / 10
+
+            self.scterc[k[:-1]] = v
