@@ -10,6 +10,7 @@ which is parsed by the PackageProvidesHttpd parser.
 from insights.core.plugins import combiner
 from insights.parsers.package_provides_httpd import PackageProvidesHttpd
 from .. import LegacyItemAccess
+from insights.util import deprecated
 
 
 @combiner(PackageProvidesHttpd)
@@ -33,6 +34,10 @@ class PackageProvidesHttpdAll(LegacyItemAccess):
     """
 
     def __init__(self, package_provides_httpd):
+        deprecated(
+            PackageProvidesHttpdAll,
+            'Please use the :class:`insights.combiners.package_provides.PackageProvidesHttpdAll` instead.'
+        )
         self.data = {}
         for pkg in package_provides_httpd:
             self.data[pkg.command] = pkg.package

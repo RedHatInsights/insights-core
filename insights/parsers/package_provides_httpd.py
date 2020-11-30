@@ -22,6 +22,7 @@ Examples:
 from insights import parser, CommandParser
 from insights.specs import Specs
 from ..parsers import SkipException
+from insights.util import deprecated
 
 
 @parser(Specs.package_provides_httpd)
@@ -35,6 +36,10 @@ class PackageProvidesHttpd(CommandParser):
     """
 
     def parse_content(self, content):
+        deprecated(
+            PackageProvidesHttpd,
+            'Please use the :class:`insights.parsers.package_provides.PackageProvidesHttpd` instead.'
+        )
         if len(content) == 0:
             raise SkipException("Error: ", 'there is not httpd application running')
         l = content[0].split()
