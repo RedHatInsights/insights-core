@@ -111,17 +111,17 @@
             "symbolic_name": "date_utc"
         },
         {
-            "command": "/bin/df -al",
+            "command": "/bin/df -al -x autofs",
             "pattern": [],
             "symbolic_name": "df__al"
         },
         {
-            "command": "/bin/df -alP",
+            "command": "/bin/df -alP -x autofs",
             "pattern": [],
             "symbolic_name": "df__alP"
         },
         {
-            "command": "/bin/df -li",
+            "command": "/bin/df -li -x autofs",
             "pattern": [],
             "symbolic_name": "df__li"
         },
@@ -178,7 +178,6 @@
                 "TECH PREVIEW: NVMe over FC may not be fully supported.",
                 "Uhhuh. NMI received for unknown reason",
                 "VPD access disabled",
-                "WRITE SAME failed. Manually zeroing",
                 "Warning: QLogic ISP3XXX Network Driver - this hardware has not undergone testing by Red Hat and might not be certified",
                 "__cpufreq_add_dev",
                 "blocked FC remote port time out: removing target and saving binding",
@@ -230,6 +229,11 @@
             "command": "/usr/bin/docker images --all --no-trunc --digests",
             "pattern": [],
             "symbolic_name": "docker_list_images"
+        },
+        {
+            "command": "/usr/bin/dotnet --version",
+            "pattern": [],
+            "symbolic_name": "dotnet_version"
         },
         {
             "command": "/bin/du -s -k /var/lib/candlepin/activemq-artemis",
@@ -663,7 +667,6 @@
                 "libssl.so",
                 "lsnrctl",
                 "ovs-vswit",
-                "rgw_swift",
                 "tnslsnr"
             ],
             "symbolic_name": "lsof"
@@ -1109,7 +1112,6 @@
                 "/usr/bin/teamd",
                 "/usr/sbin/fcoemon --syslog",
                 "COMMAND",
-                "[rcu_sched]",
                 "bash",
                 "catalina.base",
                 "ceilometer-coll",
@@ -1142,12 +1144,9 @@
                 "pcsd",
                 "pkla-check-auth",
                 "postgres",
-                "rcu_gp_kthread",
-                "rcu_sched",
                 "smbd",
                 "spausedd",
                 "target_completi",
-                "taskomaticd",
                 "tgtd",
                 "tuned",
                 "virt-who"
@@ -1253,6 +1252,11 @@
             "command": "/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo chrony",
             "pattern": [],
             "symbolic_name": "rpm_V_packages"
+        },
+        {
+            "command": "python -m insights.tools.cat --no-header sap_hdb_version",
+            "pattern": [],
+            "symbolic_name": "sap_hdb_version"
         },
         {
             "command": "/usr/bin/mongo pulp_database --eval 'db.serverStatus().storageEngine'",
@@ -1397,6 +1401,22 @@
             "symbolic_name": "systool_b_scsi_v"
         },
         {
+            "command": "/usr/bin/testparm -s",
+            "pattern": [
+                "Server role:",
+                "["
+            ],
+            "symbolic_name": "testparm_s"
+        },
+        {
+            "command": "/usr/bin/testparm -v -s",
+            "pattern": [
+                "Server role:",
+                "["
+            ],
+            "symbolic_name": "testparm_v_s"
+        },
+        {
             "command": "/usr/bin/find /usr/share -maxdepth 1 -name 'tomcat*' -exec /bin/grep -R -s 'VirtualDirContext' --include '*.xml' '{}' +",
             "pattern": [],
             "symbolic_name": "tomcat_vdc_fallback"
@@ -1463,6 +1483,13 @@
         }
     ],
     "files": [
+        {
+            "file": "/etc/abrt/plugins/CCpp.conf",
+            "pattern": [
+                "CreateCoreBacktrace"
+            ],
+            "symbolic_name": "abrt_ccpp_conf"
+        },
         {
             "file": "/root/.config/openshift/hosts",
             "pattern": [
@@ -1642,16 +1669,14 @@
         {
             "file": "/etc/ceph/ceph.conf",
             "pattern": [
-                "[",
-                "rgw_swift_account_in_url"
+                "["
             ],
             "symbolic_name": "ceph_conf"
         },
         {
             "file": "/var/lib/config-data/puppet-generated/ceph/etc/ceph/ceph.conf",
             "pattern": [
-                "[",
-                "rgw_swift_account_in_url"
+                "["
             ],
             "symbolic_name": "ceph_conf"
         },
@@ -1949,9 +1974,7 @@
         {
             "file": "/var/log/ovirt-engine/server.log",
             "pattern": [
-                "ERROR [org.jboss.as.controller.management-operation]",
                 "INFO  [org.wildfly.extension.undertow",
-                "Operation (\"deploy\") failed",
                 "Registered web context: '/ovirt-engine/api' for server"
             ],
             "symbolic_name": "ovirt_engine_server_log"
@@ -2172,9 +2195,7 @@
         {
             "file": "/etc/ipsec.conf",
             "pattern": [
-                "config",
-                "include",
-                "plutodebug"
+                "include"
             ],
             "symbolic_name": "ipsec_conf"
         },
@@ -2301,7 +2322,6 @@
         {
             "file": "/var/log/messages",
             "pattern": [
-                " disconnect jid=",
                 " invoked oom-killer: ",
                 "\"/var/lib/pgsql/data\" is missing or empty",
                 "(enic): transmit queue 0 timed out",
@@ -2312,16 +2332,13 @@
                 "17763",
                 ": possible SYN flooding on port",
                 ": segfault at ",
-                ": session replaced: jid=",
                 "Abort command issued",
                 "Broken pipe",
                 "Buffer I/O error on device",
+                "Cannot allocate memory",
                 "Cannot assign requested address",
                 "Cannot assign requested address: AH00072",
                 "Connection amqps://subscription.rhn.redhat.com:5647 disconnected",
-                "Connection amqps://subscription.rhn.redhat.com:5647 timed out: Opening connection",
-                "Connection amqps://subscription.rhsm.redhat.com:5647 disconnected",
-                "Connection amqps://subscription.rhsm.redhat.com:5647 timed out: Opening connection",
                 "Corosync main process was not scheduled (@",
                 "Could not set",
                 "DHCPv4 lease renewal requested",
@@ -2332,7 +2349,6 @@
                 "Error deleting EBS Disk volume aws",
                 "Error running DeviceResume dm_task_run failed",
                 "Exception happened during processing of request from",
-                "Failed to bind socket: No such file or directory",
                 "Failed to extend thin",
                 "Hyper-V Host",
                 "List /apis/image.openshift.io/v1/images",
@@ -2354,20 +2370,20 @@
                 "SDN initialization failed: Error: Existing service with IP: None is not part of service network",
                 "Scheduled import of stream",
                 "Steal time is >",
+                "TCP listen overflows",
+                "TCP request queue full SYN cookie replies",
+                "TCP request queue full drops",
                 "TX driver issue detected, PF reset issued",
                 "This system does not support \"SSSE3\"",
                 "Throttling request took",
                 "TypeError: object of type 'NoneType' has no len()",
                 "Virtualization daemon",
-                "WRITE SAME failed. Manually zeroing",
                 "] trap divide error ",
                 "_NET_ACTIVE_WINDOW",
                 "as active slave; either",
                 "belongs to docker.service",
-                "blocked for more than",
                 "callbacks suppressed",
                 "canceled DHCP transaction, DHCP client pid",
-                "chardev: opening backend \"socket\" failed",
                 "clearing Tx timestamp hang",
                 "device-mapper: multipath: Failing path",
                 "does not seem to be present, delaying initialization",
@@ -2445,13 +2461,11 @@
                 "there is a meaningful conflict",
                 "timed out",
                 "timeout before we got a set response",
-                "timeout; kill it",
                 "timing out command, waited",
                 "transmit queue",
                 "udev: renamed network interface",
                 "unknown filesystem type 'binfmt_misc'",
                 "ut of memory: ",
-                "vdsm-tool: EnvironmentError: Failed to restore the persisted networks",
                 "watch chan error: etcdserver: mvcc: required revision has been compacted"
             ],
             "symbolic_name": "messages"
@@ -2510,6 +2524,11 @@
             "file": "/etc/sysconfig/netconsole",
             "pattern": [],
             "symbolic_name": "netconsole"
+        },
+        {
+            "file": "/etc/NetworkManager/NetworkManager.conf",
+            "pattern": [],
+            "symbolic_name": "networkmanager_conf"
         },
         {
             "file": "/etc/NetworkManager/dispatcher.d/.*-dhclient",
@@ -2902,6 +2921,30 @@
             "file": "/etc/pam.d/password-auth",
             "pattern": [],
             "symbolic_name": "password_auth"
+        },
+        {
+            "file": "/etc/opt/rh/php73/php.ini",
+            "pattern": [
+                "[",
+                "post_max_size"
+            ],
+            "symbolic_name": "php_ini"
+        },
+        {
+            "file": "/etc/opt/rh/php72/php.ini",
+            "pattern": [
+                "[",
+                "post_max_size"
+            ],
+            "symbolic_name": "php_ini"
+        },
+        {
+            "file": "/etc/php.ini",
+            "pattern": [
+                "[",
+                "post_max_size"
+            ],
+            "symbolic_name": "php_ini"
         },
         {
             "file": "/etc/yum/pluginconf.d/()*\\w+\\.conf",
@@ -3472,20 +3515,16 @@
             "file": "/var/log/vdsm/vdsm.log",
             "pattern": [
                 "(mailbox-spm) [storage.Misc.excCmd] /usr/bin/taskset --cpu-list",
-                "Bad volume specification",
                 "Changed state to Down: 'NoneType' object has no attribute 'attrib'",
                 "Changed state to Down: internal error: Attempted double use of PCI slot",
                 "ERROR (mailbox-spm) [storage.MailBox.SpmMailMonitor]",
-                "INFO",
                 "RPC call Host.setupNetworks failed",
                 "Stopping connection",
                 "The name org.fedoraproject.FirewallD1 was not provided by any .service files",
                 "The vm start process failed",
-                "_report_inconsistency",
                 "lastCheck",
                 "libvirtError: internal error: failed to format device alias",
-                "looking for unfetched domain",
-                "storage.TaskManager.Task"
+                "looking for unfetched domain"
             ],
             "symbolic_name": "vdsm_log"
         },
@@ -3498,6 +3537,11 @@
             "file": "/etc/vdsm/logger.conf",
             "pattern": [],
             "symbolic_name": "vdsm_logger_conf"
+        },
+        {
+            "file": "/sys/module/vhost_net/parameters/experimental_zcopytx",
+            "pattern": [],
+            "symbolic_name": "vhost_net_zero_copy_tx"
         },
         {
             "file": "/etc/()*virt-who\\.conf",
@@ -4051,6 +4095,20 @@
             "pattern": []
         },
         {
+            "glob": "/etc/rsyslog.d/*.conf",
+            "pattern": [
+                "$ActionQueueFileName",
+                "imjournal",
+                "imtcp",
+                "regex",
+                "[",
+                "]",
+                "{",
+                "}"
+            ],
+            "symbolic_name": "rsyslog_conf"
+        },
+        {
             "glob": "/sys/class/scsi_host/host[0-9]*/fwrev",
             "symbolic_name": "scsi_fwver",
             "pattern": []
@@ -4094,5 +4152,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2020-10-14T14:41:32.281672"
+    "version": "2020-11-05T15:21:17.758393"
 }

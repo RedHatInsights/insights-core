@@ -7,10 +7,11 @@ from functools import partial
 
 from insights.core.context import SerializedArchiveContext
 from insights.specs import Specs
-from insights.core.spec_factory import simple_file
+from insights.core.spec_factory import RawFileProvider, simple_file
 
 simple_file = partial(simple_file, context=SerializedArchiveContext)
 
 
 class Core3Specs(Specs):
-    branch_info = simple_file("/branch_info")
+    branch_info = simple_file("/branch_info", kind=RawFileProvider)
+    display_name = simple_file("display_name")

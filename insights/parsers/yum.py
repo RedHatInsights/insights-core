@@ -186,4 +186,4 @@ class YumRepoList(CommandParser):
         """
         return [i.split('/')[0]
                 for i in self.repos
-                if i.startswith('rhel')]
+                if i.startswith('rhel-') or '-rhel-' in i]

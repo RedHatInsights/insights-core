@@ -226,6 +226,13 @@ DEFAULT_OPTS = {
         'action': 'store_true',
         'group': 'debug'
     },
+    'module': {
+        'default': None,
+        'opt': ['--module', '-m'],
+        'help': 'Directly run a Python module within the insights-core package',
+        'action': 'store',
+        'help': argparse.SUPPRESS
+    },
     'obfuscate': {
         # non-CLI
         'default': False
@@ -700,6 +707,8 @@ class InsightsConfig(object):
             if self.obfuscate:
                 if self._print_errors:
                     sys.stdout.write('WARNING: SOSCleaner reports will be created alongside the output archive.\n')
+        if self.module and not self.module.startswith('insights.client.apps.'):
+            raise ValueError('You can only run modules within the namespace insights.client.apps.*')
 
     def _imply_options(self):
         '''
