@@ -28,7 +28,7 @@ class PackageProvides(dict):
     @property
     def data(self):
         """
-        .. warn::
+        .. warning::
             This is to keep backward compatibility. This combiner works as a
             dict, please use the built-in attributes of `dict` instead.
         """
