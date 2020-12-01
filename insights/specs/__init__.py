@@ -687,7 +687,7 @@ class Specs(SpecSet):
     yum_conf = RegistryPoint()
     yum_list_available = RegistryPoint()
     yum_list_installed = RegistryPoint()
-    yum_log = RegistryPoint()
+    yum_log = RegistryPoint(filterable=True)
     yum_repolist = RegistryPoint()
     yum_repos_d = RegistryPoint(multi_output=True)
     zdump_v = RegistryPoint()

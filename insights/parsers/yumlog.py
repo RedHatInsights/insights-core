@@ -55,19 +55,18 @@ Examples:
     True
 """
 
-from .. import Parser, get_active_lines, parser
+from .. import get_active_lines, LogFileOutput, parser
 from ..parsers import ParseException
 from .installed_rpms import InstalledRpm
 from collections import defaultdict, namedtuple
 from insights.specs import Specs
-
 
 Entry = namedtuple('Entry', field_names='idx timestamp state pkg')
 """namedtuple: Represents a line in ``/var/log/yum.log``."""
 
 
 @parser(Specs.yum_log)
-class YumLog(Parser):
+class YumLog(LogFileOutput):
     """Class for parsing /var/log/yum.log"""
 
     ERASED = 'Erased'
@@ -106,6 +105,7 @@ class YumLog(Parser):
         Raises:
             ParseException: if a line can't be parsed for any reason.
         """
+        super(YumLog, self).parse_content(content)
         self.data = []
         self.pkgs = defaultdict(list)
         for idx, line in enumerate(get_active_lines(content)):
