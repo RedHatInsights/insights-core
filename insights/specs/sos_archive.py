@@ -131,6 +131,7 @@ class SosSpecs(Specs):
     ])
     lsscsi = simple_file("sos_commands/scsi/lsscsi")
     ls_dev = first_file(["sos_commands/block/ls_-lanR_.dev", "sos_commands/devicemapper/ls_-lanR_.dev"])
+    lvm_conf = simple_file("/etc/lvm/lvm.conf")
     lvs = first_file(["sos_commands/lvm2/lvs_-a_-o_lv_tags_devices_--config_global_locking_type_0", "sos_commands/lvm2/lvs_-a_-o_devices"])
     manila_conf = first_file(["/var/lib/config-data/puppet-generated/manila/etc/manila/manila.conf", "/etc/manila/manila.conf"])
     mistral_executor_log = simple_file("/var/log/mistral/executor.log")
