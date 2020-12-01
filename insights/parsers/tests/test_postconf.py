@@ -3,7 +3,7 @@ import doctest
 
 from insights.core import ContentException
 from insights.parsers import postconf, SkipException
-from insights.parsers.postconf import PostconfBuiltin
+from insights.parsers.postconf import PostconfBuiltin, Postconf, _Postconf
 from insights.tests import context_wrap
 
 V_OUT1 = """
@@ -35,19 +35,46 @@ def test_PostconfBuiltin():
     assert p['smtpd_tls_mandatory_protocols'] == '!SSLv2, !SSLv3, !TLSv1'
 
 
+def test_Postconf():
+    with pytest.raises(SkipException):
+        Postconf(context_wrap(V_OUT1))
+
+    with pytest.raises(ContentException):
+        Postconf(context_wrap(V_OUT3))
+
+    p = Postconf(context_wrap(V_OUT2))
+    assert p['smtpd_tls_loglevel'] == '0'
+    assert p['smtpd_tls_mandatory_ciphers'] == 'medium'
+    assert p['smtpd_tls_mandatory_exclude_ciphers'] == ''
+    assert p['smtpd_tls_mandatory_protocols'] == '!SSLv2, !SSLv3, !TLSv1'
+
+
 def test_empty():
     with pytest.raises(SkipException):
         PostconfBuiltin(context_wrap(""))
+    with pytest.raises(SkipException):
+        Postconf(context_wrap(""))
 
 
 def test_invalid():
     with pytest.raises(SkipException):
         PostconfBuiltin(context_wrap("asdf"))
+    with pytest.raises(SkipException):
+        Postconf(context_wrap("asdf"))
 
 
 def test_doc_examples():
     env = {
-        'postconf': PostconfBuiltin(context_wrap(V_OUT2)),
+        'postconfb': PostconfBuiltin(context_wrap(V_OUT2)),
+        'postconf': Postconf(context_wrap(V_OUT2)),
+        '_postconf': _Postconf(context_wrap(V_OUT2)),
     }
     failed, total = doctest.testmod(postconf, globs=env)
     assert failed == 0
+
+    # TODO
+    # env = {
+    #     'postconf': Postconf(context_wrap(V_OUT2)),
+    # }
+    # failed, total = doctest.testmod(postconf, globs=env)
+    # assert failed == 0
