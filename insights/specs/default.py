@@ -545,6 +545,7 @@ class DefaultSpecs(Specs):
     php_ini = first_file(["/etc/opt/rh/php73/php.ini", "/etc/opt/rh/php72/php.ini", "/etc/php.ini"])
     pluginconf_d = glob_file("/etc/yum/pluginconf.d/*.conf")
     postconf_builtin = simple_command("/usr/sbin/postconf -C builtin")
+    postconf = simple_command("/usr/sbin/postconf")
     postgresql_conf = first_file([
                                  "/var/lib/pgsql/data/postgresql.conf",
                                  "/opt/rh/postgresql92/root/var/lib/pgsql/data/postgresql.conf",
