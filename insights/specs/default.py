@@ -598,14 +598,6 @@ class DefaultSpecs(Specs):
         sap = broker[Sap]
         return [sap.sid(i).lower() for i in sap.local_instances]
 
-    @datasource(Sap)
-    def sap_sid_name(broker):
-        """(list): Returns the list of (SAP SID, SAP InstanceName) """
-        sap = broker[Sap]
-        return [(sap.sid(i), i) for i in sap.local_instances]
-
-    sap_dev_disp = foreach_collect(sap_sid_name, "/usr/sap/%s/%s/work/dev_disp")
-    sap_dev_rd = foreach_collect(sap_sid_name, "/usr/sap/%s/%s/work/dev_rd")
     sap_hdb_version = foreach_execute(sap_sid, "/usr/bin/sudo -iu %sadm HDB version", keep_rc=True)
     saphostctl_getcimobject_sapinstance = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance")
     sat5_insights_properties = simple_file("/etc/redhat-access/redhat-access-insights.properties")
