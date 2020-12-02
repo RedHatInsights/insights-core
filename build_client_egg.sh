@@ -4,11 +4,10 @@ PYTHON=${1:-python}
 rm -f insights.zip
 rm -rf insights_core.egg-info
 
-# TEMPORARY:
-#   clone insights-client-runner if it doesn't exist
-git clone https://github.com/RedHatInsights/insights-client-runner.git insights/client 
-if [ $? -ne 0 ]; then
-    echo "ERROR: Could not clone insights-client-runner. Tread carefully."
+if [ ! -d "insights/client" ]; then
+    echo "ERROR: Clone insights-client-runner before creating client egg:"
+    echo "      $ git clone https://github.com/RedHatInsights/insights-client-runner.git insights/client"
+    exit 1
 fi
 
 cp MANIFEST.in.client MANIFEST.in
@@ -22,7 +21,7 @@ rm -rf insights/archive
 find insights -path '*tests/*' -delete
 find insights -name '*.pyc' -delete
 # delete the git metadata from insights/client
-find insights/client -path '*.git/*' -delete
+find insights/client -path '*.git*' -delete
 
 git rev-parse --short HEAD > insights/COMMIT
 
@@ -31,9 +30,5 @@ find . -type f -exec chmod 0444 {} \;
 find . -type f -print | sort -df | xargs zip -X --no-dir-entries -r ../insights.zip
 cd ..
 rm -rf tmp
-
-# TEMPORARY:
-#   delete cloned insights-client-runner repo
-rm -rf insights/client
 
 git checkout MANIFEST.in
