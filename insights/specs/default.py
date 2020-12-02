@@ -78,13 +78,11 @@ def _get_package(broker, command):
         str: The package that provides the ``command``.
     """
     ctx = broker[HostContext]
-    which = ctx.shell_out("/usr/bin/which {0}".format(command))
-    if which:
-        resolved = ctx.shell_out("/usr/bin/readlink -e {0}".format(which[0]))
-        if resolved:
-            pkg = ctx.shell_out("/usr/bin/rpm -qf {0}".format(resolved[0]))
-            if pkg:
-                return pkg[0]
+    resolved = ctx.shell_out("/usr/bin/readlink -e {0}".format(command))
+    if resolved:
+        pkg = ctx.shell_out("/usr/bin/rpm -qf {0}".format(resolved[0]))
+        if pkg:
+            return pkg[0]
     raise SkipComponent
 
 
