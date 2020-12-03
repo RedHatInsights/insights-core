@@ -74,16 +74,16 @@ class SMARTctl(CommandParser):
         ...
 
     Examples:
-        >>> print ("Device:", drive.device)
-        Device: /dev/sda
-        >>> print ("Model:", drive.information['Device Model'])
-        Model: ST500LM021-1KJ152
-        >>> print ("Health check:", drive.health)
-        Health check: PASSED
-        >>> print ("Last self-test status:", drive.values['Self-test execution status'])
-        Last self-test status: 0
-        >>> print ("Raw read error rate:", drive.attributes['Raw_Read_Error_Rate']['raw_value'])
-        Raw read error rate: 179599704
+        >>> drive.device
+        '/dev/sda'
+        >>> drive.information['Device Model']
+        'ST500LM021-1KJ152'
+        >>> drive.health
+        'PASSED'
+        >>> drive.values['Self-test execution status']
+        '0'
+        >>> drive.attributes['Raw_Read_Error_Rate']['raw_value']
+        '179599704'
 
     """
 
@@ -214,7 +214,7 @@ class SMARTctl(CommandParser):
 
 
 @parser(Specs.smartctl_l_scterc)
-class SMARTctlSCTERC(CommandParser):
+class SMARTctlSCTERC(CommandParser, dict):
     """
     Parser for output of ``smartctl -l scterc`` for each drive in system.
 
@@ -223,7 +223,6 @@ class SMARTctlSCTERC(CommandParser):
     following properties:
 
     * ``device`` - the name of the device after /dev/ - e.g. sda
-    * ``scterc`` - the SCT Error Recovery Control settings - e.g. 'Read': 20 seconds
 
     Sample output::
 
@@ -234,11 +233,11 @@ class SMARTctlSCTERC(CommandParser):
          Write: 200 (20.0 seconds)
 
     Examples:
-        >>> smartctl.device
+        >>> scterc.device
         '/dev/sda'
-        >>> smartctl.scterc['Read']
+        >>> scterc['Read']
         20.0
-        >>> smartctl.scterc['Write']
+        >>> scterc['Write']
         20.0
 
     """
@@ -253,11 +252,10 @@ class SMARTctlSCTERC(CommandParser):
         super(SMARTctlSCTERC, self).__init__(context)
 
     def parse_content(self, content):
-        self.scterc = {}
         key_values = [l.split()[:2] for l in content if "Read:" in l or "Write:" in l]
 
-        for k, v in key_values:
-            if v.isdigit():
-                v = int(v) / 10
+        for key, val in key_values:
+            if val.isdigit():
+                val = float(int(val) / 10)
 
-            self.scterc[k[:-1]] = v
+            self[key[:-1]] = val

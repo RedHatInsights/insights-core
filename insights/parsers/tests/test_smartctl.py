@@ -309,7 +309,7 @@ def test_doc_examples():
         'drive': SMARTctl(context_wrap(
             STANDARD_DRIVE, path='sos_commands/ata/smartctl_-a_.dev.sda'
         )),
-        'smartctl': SMARTctlSCTERC(context_wrap(
+        'scterc': SMARTctlSCTERC(context_wrap(
             SCT_ERC_DRIVE, path='insights_commands/smartctl_-l_scterc_.dev.sda'
         )),
     }
@@ -322,6 +322,5 @@ def test_smartctl_l_scterc():
         NO_SCT_ERC_DRIVE, path='insights_commands/smartctl_-l_scterc_.dev.sda'
     ))
     assert data.device == '/dev/sda'
-    print(data.scterc)
-    assert data.scterc['Read'] == 'Disabled'
-    assert data.scterc['Write'] == 'Disabled'
+    assert data['Read'] == 'Disabled'
+    assert data['Write'] == 'Disabled'
