@@ -199,6 +199,7 @@ class InsightsArchiveSpecs(Specs):
     rpm_V_packages = first_file(["insights_commands/rpm_-V_coreutils_procps_procps-ng_shadow-utils_passwd_sudo_chrony", "insights_commands/rpm_-V_coreutils_procps_procps-ng_shadow-utils_passwd_sudo"])
     sap_hdb_version = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_sap_hdb_version")
     saphostctl_getcimobject_sapinstance = simple_file("insights_commands/usr.sap.hostctrl.exe.saphostctrl_-function_GetCIMObject_-enuminstances_SAPInstance")
+    satellite_content_hosts_count = simple_file("insights_commands/su_-_postgres_-c_psql_-d_foreman_-c_select_count_from_hosts")
     satellite_mongodb_storage_engine = simple_file("insights_commands/mongo_pulp_database_--eval_db.serverStatus_.storageEngine")
     sealert = simple_file('insights_commands/sealert_-l')
     sestatus = simple_file("insights_commands/sestatus_-b")
