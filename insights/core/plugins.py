@@ -471,7 +471,8 @@ class Response(dict):
         keys = sorted(self)
         if self.key_name in keys:
             keys.remove(self.key_name)
-        keys.remove("type")
+        if "type" in keys:
+            keys.remove("type")
 
         buf = StringIO()
         if not keys:
