@@ -62,3 +62,10 @@ def test_response_too_big():
         "error_key": "TESTING",
         "max_detail_length_error": len(json.dumps({"error_key": "TESTING", "type": "rule", "big": content}))
     }
+
+
+def test_str_without_type():
+    d = plugins.make_response("TESTING", foo="bar")
+    del d["type"]
+    str(d)
+    assert True
