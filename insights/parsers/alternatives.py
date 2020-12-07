@@ -36,7 +36,7 @@ class AlternativesOutput(CommandParser):
       alternative path and its priority.
     * Lines starting with 'slave *program*: *path*' are recorded against the
       alternative path.
-    * Lines starting with 'Current \`best' version is' indicate the default
+    * Lines starting with 'Current `best' version is' indicate the default
       choice of an 'auto' status alternative.
 
     The output of ``alternatives --display *program*`` can only ever list one
@@ -61,20 +61,19 @@ class AlternativesOutput(CommandParser):
                 the path to that program for this alternative path.
 
     Examples:
-        >>> java = AlternativesOutput(context_wrap(JAVA_ALTERNATIVES))
-        >>> java.program
+        >>> java_alt.program
         'java'
-        >>> java.link
-        '/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.111-1.b15.el7_2.x86_64/jre/bin/java'
-        >>> len(java.paths)
-        3
-        >>> java.paths[0]['path']
-        '/usr/lib/jvm/java-1.7.0-openjdk-1.7.0.111-2.6.7.2.el7_2.x86_64/jre/bin/java'
-        >>> java.paths[0]['priority']
-        1700111
-        >>> java.paths[2]['slave']['ControlPanel']
+        >>> java_alt.link
+        '/usr/lib/jvm/jre-1.6.0-ibm.x86_64/bin/java'
+        >>> len(java_alt.paths)
+        2
+        >>> java_alt.paths[0]['path']
+        '/usr/lib/jvm/jre-1.6.0-ibm.x86_64/bin/java'
+        >>> java_alt.paths[0]['priority']
+        16091
+        >>> java_alt.paths[0]['slave']['ControlPanel']
         '/usr/lib/jvm/jre-1.6.0-ibm.x86_64/bin/ControlPanel'
-"""
+    """
 
     def parse_content(self, content):
         """
@@ -136,18 +135,17 @@ class JavaAlternatives(AlternativesOutput):
     alternatives for ``java`` available and which one is currently in use.
 
     Examples:
-        >>> java = shared[JavaAlternatives]
-        >>> java.program
+        >>> java_alt.program
         'java'
-        >>> java.link
-        '/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.111-1.b15.el7_2.x86_64/jre/bin/java'
-        >>> len(java.paths)
-        3
-        >>> java.paths[0]['path']
-        '/usr/lib/jvm/java-1.7.0-openjdk-1.7.0.111-2.6.7.2.el7_2.x86_64/jre/bin/java'
-        >>> java.paths[0]['priority']
-        1700111
-        >>> java.paths[2]['slave']['ControlPanel']
+        >>> java_alt.link
+        '/usr/lib/jvm/jre-1.6.0-ibm.x86_64/bin/java'
+        >>> len(java_alt.paths)
+        2
+        >>> java_alt.paths[0]['path']
+        '/usr/lib/jvm/jre-1.6.0-ibm.x86_64/bin/java'
+        >>> java_alt.paths[0]['priority']
+        16091
+        >>> java_alt.paths[0]['slave']['ControlPanel']
         '/usr/lib/jvm/jre-1.6.0-ibm.x86_64/bin/ControlPanel'
     """
     pass
@@ -162,16 +160,15 @@ class PythonAlternatives(AlternativesOutput):
     alternatives for ``best`` available and which one is currently in use.
 
     Examples:
-        >>> python = shared[AlternativesOutput]
-        >>> python.program
+        >>> python_alt.program
         'python'
-        >>> python.link
+        >>> python_alt.link
         '/usr/bin/python3'
-        >>> len(java.paths)
+        >>> len(python_alt.paths)
         2
-        >>> python.paths[0]['path']
+        >>> python_alt.paths[0]['path']
         '/usr/libexec/no-python'
-        >>> python.paths[0]['priority']
+        >>> python_alt.paths[0]['priority']
         404
     """
     pass

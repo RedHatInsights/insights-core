@@ -1,6 +1,8 @@
+import doctest
 import pytest
 
 from insights.tests import context_wrap
+from insights.parsers import alternatives
 from insights.parsers.alternatives import AlternativesOutput, JavaAlternatives
 from insights.parsers.alternatives import PythonAlternatives
 from insights.core import ParseException
@@ -205,3 +207,12 @@ def test_class_python_auto():
     assert python.status == 'auto'
     assert python.best == '/usr/libexec/no-python'
     assert python.link == python.best
+
+
+def test_python_alternatives_documentation():
+    env = {
+        'java_alt': JavaAlternatives(context_wrap(alter_java)),
+        'python_alt': PythonAlternatives(context_wrap(ALTERNATIVE_PYTHON_MANUAL)),
+    }
+    failed, total = doctest.testmod(alternatives, globs=env)
+    assert failed == 0
