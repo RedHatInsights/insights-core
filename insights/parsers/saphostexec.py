@@ -46,13 +46,13 @@ class SAPHostExecStatus(CommandParser, dict):
     def parse_content(self, content):
         data = {}
         for line in content:
-            line_sp = line.split(None, 1)
-            print(line_sp)
+            if not line.strip():
+                continue
+            line_sp = line.strip().split(None, 1)
             if len(line_sp) == 2:
                 value_sp = line_sp[1].replace('(', '').replace(')', '').split()
                 svc, sta, pid = line_sp[0], value_sp[0], value_sp[-1]
                 data[svc] = self.SAPHostAgentService(sta, pid)
-                print(svc, pid)
             else:
                 raise ParseException("Incorrect line: '{0}'".format(line))
         if data:

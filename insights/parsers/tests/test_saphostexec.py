@@ -44,6 +44,8 @@ Linux
 
 SHA_STOP = """
 saphostexec stopped
+
+sapstartsrv running (pid = 9163)
 """.strip()
 
 
