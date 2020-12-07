@@ -71,7 +71,7 @@ class Ps(CommandParser):
                     raw_line_key=raw_line_key
                 )
                 # skip the insights-client self grep process "grep -F .."
-                if self.command_name in row and not row[self.command_name].startswith('grep -F')
+                if self.command_name in row and not row[self.command_name].startswith('grep -F ')
             ]
             # The above list comprehension assures all rows have a command.
             for proc in self.data:
