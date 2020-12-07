@@ -36,7 +36,7 @@ class AlternativesOutput(CommandParser):
       alternative path and its priority.
     * Lines starting with 'slave *program*: *path*' are recorded against the
       alternative path.
-    * Lines starting with 'Current `best' version is' indicate the default
+    * Lines starting with 'Current \`best' version is' indicate the default
       choice of an 'auto' status alternative.
 
     The output of ``alternatives --display *program*`` can only ever list one
