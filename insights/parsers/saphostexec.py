@@ -71,8 +71,10 @@ class SAPHostExecStatus(CommandParser, dict):
     def data(self):
         """
         .. warning::
+
             Deprecated, the parser works as a dict please use the built-in
             accesses of `dict`
+
         Returns the parsed data.
         """
         return self
@@ -151,8 +153,10 @@ class SAPHostExecVersion(CommandParser, dict):
     def data(self):
         """
         .. warning::
+
             Deprecated, the parser works as a dict please use the built-in
             accesses of `dict`
+
         Returns the parsed data.
         """
         return self
