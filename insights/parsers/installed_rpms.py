@@ -387,7 +387,7 @@ class InstalledRpm(object):
         """bool: True when RPM package is signed by Red Hat, False when RPM package is not signed by Red Hat,
         None when no sufficient info to determine"""
         self.vendor = None
-        """str: RPM package vendor."""
+        """str: RPM package vendor. `None` when no 'vendor' info"""
 
         if isinstance(data, six.string_types):
             data = self._parse_package(data)
