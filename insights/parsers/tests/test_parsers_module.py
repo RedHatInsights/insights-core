@@ -620,6 +620,24 @@ def test_keyword_search():
         certificate__contains='encryption'
     ) == []
 
+PS_LIST = [
+    {'PID': '692', 'PPID': '2', 'COMMAND': 'kdmflush', '_line': ' 692 2 kdmflush'},
+    {'PID': '701', 'PPID': '2', 'COMMAND': 'kdmflush', '_line': ' 701 2 kdmflush'},
+    {'PID': '725', 'PPID': '2', 'COMMAND': 'xfsalloc', '_line': ' 725 2 xfsalloc'},
+    {'PID': '726', 'PPID': '2', 'COMMAND': None, '_line': ' 726 2 grep -F xx'},
+]
+
+
+def test_keyword_search_None():
+    # Normal search
+    assert keyword_search(PS_LIST, COMMAND__default=None)[0]['PID'] == '726'
+    assert keyword_search(PS_LIST, _line__contains='alloc')[0]['PID'] == '725'
+    assert keyword_search(PS_LIST, COMMAND__startswith='xfs')[0]['PID'] == '725'
+    assert len(keyword_search(PS_LIST, COMMAND__lower_value='KDMFLUSH')) == 2
+    # Check that searches for non-existing keys
+    assert keyword_search(PS_LIST, NONE__default=None) == []
+    assert keyword_search(PS_LIST, NONE__startswith='xfs') == []
+
 
 def test_parse_exception():
     with pytest.raises(ParseException) as e_info:
