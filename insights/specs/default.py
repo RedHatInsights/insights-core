@@ -97,6 +97,16 @@ format_rpm = _make_rpm_formatter()
 class DefaultSpecs(Specs):
     abrt_ccpp_conf = simple_file("/etc/abrt/plugins/CCpp.conf")
     abrt_status_bare = simple_command("/usr/bin/abrt status --bare=True")
+
+    @datasource(CloudProvider)
+    def is_alibaba(broker):
+        """ bool: Returns True if this node is identified as running in Alibaba"""
+        cp = broker[CloudProvider]
+        if cp and cp.cloud_provider == CloudProvider.ALIBABA:
+            return True
+        raise SkipComponent()
+
+    alibaba_instance_type = simple_command("/usr/bin/curl http://100.100.100.200/latest/meta-data/instance/instance-type --connect-timeout 5", deps=[is_alibaba])
     amq_broker = glob_file("/var/opt/amq-broker/*/etc/broker.xml")
     auditctl_status = simple_command("/sbin/auditctl -s")
     auditd_conf = simple_file("/etc/audit/auditd.conf")
