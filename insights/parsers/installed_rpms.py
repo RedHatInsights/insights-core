@@ -395,7 +395,7 @@ class InstalledRpm(object):
         for k, v in data.items():
             setattr(self, k, v)
         self.epoch = data['epoch'] if 'epoch' in data and data['epoch'] != '(none)' else '0'
-        self.vendor = data['vendor'] if 'vendor' in data and data['vendor'] != '(none)' else None
+        self.vendor = data['vendor'] if 'vendor' in data else None
         _gpg_key_pos = data.get('sigpgp', data.get('rsaheader', data.get('pgpsig_short', data.get('pgpsig', data.get('vendor', '')))))
         if _gpg_key_pos:
             self.redhat_signed = any(key in _gpg_key_pos for key in self.PRODUCT_SIGNING_KEYS)
