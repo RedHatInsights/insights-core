@@ -511,9 +511,9 @@ def keyword_search(rows, **kwargs):
     # __startswith
     matchers = {
         'default': lambda s, v: s == v,
-        'contains': lambda s, v: v in s,
-        'startswith': lambda s, v: s.startswith(v),
-        'lower_value': lambda s, v: s.lower() == v.lower(),
+        'contains': lambda s, v: s is not None and v in s,
+        'startswith': lambda s, v: s is not None and s.startswith(v),
+        'lower_value': lambda s, v: None not in (s, v) and s.lower() == v.lower(),
     }
 
     def key_match(row, key, value):
