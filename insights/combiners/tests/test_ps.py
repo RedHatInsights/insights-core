@@ -246,3 +246,25 @@ def test_docs():
     }
     failed, total = doctest.testmod(ps, globs=env)
     assert failed == 0
+
+
+PS_ALXWWW_W_GREP = """
+F   UID   PID  PPID PRI  NI    VSZ   RSS WCHAN  STAT TTY        TIME COMMAND
+4     0     1     0  20   0 128292  6944 ep_pol Ss   ?          0:02 /usr/lib/systemd/systemd --switched-root --system --deserialize 22
+1     0     2     0  20   0      0     0 kthrea S    ?          0:00 [kthreadd]
+1     0     3     2  20   0      0     0 smpboo S    ?          0:00 [ksoftirqd/0]
+5     0     4     2  20   0      0     0 worker S    ?          0:00 [kworker/0:0]
+1     0     5     2   0 -20      0     0 worker S<   ?          0:00 [kworker/0:0H]
+4     0  1585     1  20   0  39336  3872 ep_pol Ss   ?          0:00 /usr/lib/systemd/systemd-journald
+5     0  2964     1  16  -4  55520   900 ep_pol S<sl ?          0:00 /sbin/auditd
+4     0  2966  2964  12  -8  84552   896 futex_ S<sl ?          0:00 /sbin/audispd
+4     0  2968  2966  16  -4  55628  1404 unix_s S<   ?          0:00 /usr/sbin/sedispatch
+4    81  3000     1  20   0  69800  3580 ep_pol Ssl  ?          0:00 /usr/bin/dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation
+4     0  3001     1  20   0  69800  3580 ep_pol Ssl  ?          0:00 grep -F COMMAND sedispatch audispd
+"""
+
+
+def test_search_ps_alxwww_w_grep():
+    p = PsAlxwww(context_wrap(PS_ALXWWW_W_GREP))
+    ps = Ps(p, None, None, None, None, None)
+    assert len(ps.search(COMMAND_NAME__contains='dbus')) == 1
