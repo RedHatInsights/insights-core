@@ -63,7 +63,7 @@ RPMS_JSON = '''
 {"name": "libteam","version": "1.17","epoch": "(none)","release": "6.el7_2","arch": "x86_64","installtime": "Fri 24 Jun 2016 04:18:17 PM EDT","buildtime": "1454604485","rsaheader": "RSA/SHA256, Wed 17 Feb 2016 02:25:16 AM EST, Key ID 199e2f91fd431d51","dsaheader": "(none)","srpm": "libteam-1.17-6.el7_2.src.rpm"}
 {"name": "crash","epoch":"(none)","version":"7.1.0","release":"8.el6","arch":"x86_64","installtime":"Fri Jul 13 06:53:28 2018","buildtime":"1524061059","vendor":"Red Hat, Inc.","buildhost":"x86-032.build.eng.bos.redhat.com","sigpgp":"RSA/8, Wed Apr 18 10:40:59 2018, Key ID 199e2f91fd431d51"}
 {"name": "xorg-x11-drv-vmmouse","epoch":"(none)","version":"13.1.0","release":"1.el6","arch":"x86_64","installtime":"Thu Aug  4 12:23:32 2016","buildtime":"1447274489","vendor":"Red Hat, Inc.","buildhost":"x86-028.build.eng.bos.redhat.com","sigpgp":"RSA/8, Mon Apr 4 11:35:36 2016, Key ID 199e2f91fd431d51"}
-{"name": "libnl","epoch":"(none)","version":"1.1.4","release":"2.el6","arch":"x86_64","installtime":"Mon Jun 16 13:21:21 2014","buildtime":"1378459378","vendor":"Red Hat, Inc.","buildhost":"x86-007.build.bos.redhat.com","sigpgp":"RSA/8, Mon Sep 23 07:25:47 2013, Key ID 199e2f91fd431d51"}
+{"name": "libnl","epoch":"(none)","version":"1.1.4","release":"2.el6","arch":"x86_64","installtime":"Mon Jun 16 13:21:21 2014","buildtime":"1378459378","vendor":"(none)","buildhost":"x86-007.build.bos.redhat.com","sigpgp":"RSA/8, Mon Sep 23 07:25:47 2013, Key ID 199e2f91fd431d51"}
 '''.strip()
 
 RPMS_MULTIPLE = '''
@@ -204,7 +204,8 @@ def test_from_json():
     assert rpms.get_max("util-linux").epoch == '0'
     assert rpms.get_max("jboss-servlet-3.0-api").redhat_signed
 
-    assert rpms.newest('libnl').vendor == 'Red Hat, Inc.'
+    assert rpms.newest('libnl').vendor == '(none)'
+    assert rpms.newest('crash').vendor == 'Red Hat, Inc.'
     assert rpms.newest('log4j').vendor is None
 
 
