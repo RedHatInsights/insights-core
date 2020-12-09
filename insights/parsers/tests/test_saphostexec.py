@@ -1,4 +1,4 @@
-from insights.parsers import saphostexec, SkipException
+from insights.parsers import saphostexec, SkipException, ParseException
 from insights.parsers.saphostexec import SAPHostExecStatus, SAPHostExecVersion
 from insights.tests import context_wrap
 import pytest
@@ -12,8 +12,7 @@ saposcol running (pid = 9323)
 
 STATUS_ABNORMAL = """
 saphostexec running (pid = 9159)
-sapstartsrv run (pid = 9163)
-saposcol (pid = 9323)
+sapstartsrv
 """.strip()
 
 VER_DOC = """
@@ -45,26 +44,35 @@ Linux
 
 SHA_STOP = """
 saphostexec stopped
+
+sapstartsrv running (pid = 9163)
 """.strip()
 
 
 def test_saphostexec_status_abnormal():
-    with pytest.raises(SkipException) as s:
+    with pytest.raises(ParseException) as s:
         SAPHostExecStatus(context_wrap(STATUS_ABNORMAL))
-    assert "Incorrect status: 'sapstartsrv run (pid = 9163)'" in str(s)
-    assert "Incorrect status: 'saposcol (pid = 9,23)'" not in str(s)
+    assert "Incorrect line: 'sapstartsrv'" in str(s)
+
+    with pytest.raises(SkipException):
+        SAPHostExecStatus(context_wrap(''))
 
 
 def test_saphostexec_status():
     sha_status = SAPHostExecStatus(context_wrap(STATUS_DOC))
     assert sha_status.is_running is True
-    assert sha_status.services['saphostexec'] == '9159'
+    assert sha_status.services['saphostexec'].status == 'running'
+    assert sha_status.services['saphostexec'].pid == '9159'
     assert 'saposcol' in sha_status
 
     sha_status = SAPHostExecStatus(context_wrap(SHA_STOP))
     assert sha_status.is_running is False
-    assert sha_status.services == {}
     assert 'saposcol' not in sha_status
+
+
+def test_saphostexec_version_abnormal():
+    with pytest.raises(SkipException):
+        SAPHostExecVersion(context_wrap(''))
 
 
 def test_saphostexec_version():
