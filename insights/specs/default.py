@@ -23,6 +23,7 @@ from insights.core.spec_factory import first_file, listdir
 from insights.combiners.cloud_provider import CloudProvider
 from insights.combiners.services import Services
 from insights.combiners.sap import Sap
+from insights.parsers.lsmod import LsMod
 from insights.specs import Specs
 
 
@@ -623,7 +624,20 @@ class DefaultSpecs(Specs):
     softnet_stat = simple_file("proc/net/softnet_stat")
     software_collections_list = simple_command('/usr/bin/scl --list')
     spamassassin_channels = simple_command("/bin/grep -r '^\\s*CHANNELURL=' /etc/mail/spamassassin/channel.d")
-    ss = simple_command("/usr/sbin/ss -tupna")
+
+    @datasource(LsMod)
+    def is_mod_loaded_for_ss(broker):
+        """
+        bool: Returns True if the kernel modules required by ``ss -tupna``
+        command are loaded.
+        """
+        lsmod = broker[LsMod]
+        req_mods = ['inet_diag', 'tcp_diag', 'udp_diag']
+        if all(mod in lsmod for mod in req_mods):
+            return True
+        raise SkipComponent
+
+    ss = simple_command("/usr/sbin/ss -tupna", deps=[is_mod_loaded_for_ss])
     ssh_config = simple_file("/etc/ssh/ssh_config")
     ssh_config_d = glob_file(r"/etc/ssh/ssh_config.d/*.conf")
     ssh_foreman_proxy_config = simple_file("/usr/share/foreman-proxy/.ssh/ssh_config")
