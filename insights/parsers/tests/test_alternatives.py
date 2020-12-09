@@ -1,7 +1,10 @@
+import doctest
 import pytest
 
 from insights.tests import context_wrap
+from insights.parsers import alternatives
 from insights.parsers.alternatives import AlternativesOutput, JavaAlternatives
+from insights.parsers.alternatives import PythonAlternatives
 from insights.core import ParseException
 
 ALT_MTA = """
@@ -153,3 +156,63 @@ def test_class_has_java():
         'tnameserv', 'jre_exports', 'jre'
     ])
     assert java.paths[1]['slave']['ControlPanel'] == '(null)'
+
+
+ALTERNATIVE_PYTHON_MANUAL = """
+python - status is manual.
+ link currently points to /usr/bin/python3
+/usr/libexec/no-python - priority 404
+ slave unversioned-python: (null)
+ slave unversioned-python-man: /usr/share/man/man1/unversioned-python.1.gz
+/usr/bin/python3 - priority 300
+ slave unversioned-python: /usr/bin/python3
+ slave unversioned-python-man: /usr/share/man/man1/python3.1.gz
+Current `best' version is /usr/libexec/no-python.
+""".strip()
+
+ALTERNATIVE_PYTHON_AUTO = """
+python - status is auto.
+ link currently points to /usr/libexec/no-python
+/usr/libexec/no-python - priority 404
+ slave unversioned-python: (null)
+ slave unversioned-python-man: /usr/share/man/man1/unversioned-python.1.gz
+/usr/bin/python3 - priority 300
+ slave unversioned-python: /usr/bin/python3
+ slave unversioned-python-man: /usr/share/man/man1/python3.1.gz
+Current `best' version is /usr/libexec/no-python.
+""".strip()
+
+
+def test_class_python_manual():
+    python = PythonAlternatives(context_wrap(ALTERNATIVE_PYTHON_MANUAL))
+
+    assert python.program == 'python'
+    assert python.status == 'manual'
+    assert python.link == '/usr/bin/python3'
+    assert python.best == '/usr/libexec/no-python'
+
+    assert len(python.paths) == 2
+
+    for i in ('path', 'priority', 'slave'):
+        assert i in python.paths[0]
+
+    assert python.paths[0]['path'] == python.best
+    assert python.paths[0]['priority'] == 404
+    assert python.paths[1]['path'] == python.link
+    assert python.paths[1]['priority'] == 300
+
+
+def test_class_python_auto():
+    python = PythonAlternatives(context_wrap(ALTERNATIVE_PYTHON_AUTO))
+    assert python.status == 'auto'
+    assert python.best == '/usr/libexec/no-python'
+    assert python.link == python.best
+
+
+def test_python_alternatives_documentation():
+    env = {
+        'java_alt': JavaAlternatives(context_wrap(alter_java)),
+        'python_alt': PythonAlternatives(context_wrap(ALTERNATIVE_PYTHON_MANUAL)),
+    }
+    failed, total = doctest.testmod(alternatives, globs=env)
+    assert failed == 0
