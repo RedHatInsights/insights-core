@@ -304,6 +304,7 @@ class Specs(SpecSet):
     ls_run_systemd_generator = RegistryPoint()
     ls_R_var_lib_nova_instances = RegistryPoint()
     ls_sys_firmware = RegistryPoint()
+    ls_usr_bin = RegistryPoint(filterable=True)
     ls_usr_lib64 = RegistryPoint(filterable=True)
     ls_usr_sbin = RegistryPoint(filterable=True)
     ls_var_lib_mongodb = RegistryPoint()
