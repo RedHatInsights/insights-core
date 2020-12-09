@@ -28,7 +28,5 @@ from .. import parser, CommandParser, FileListing
 
 @parser(Specs.ls_ipa_idoverride_memberof)
 class LsIPAIdoverrideMemberof(CommandParser, FileListing):
-    """
-    Parse the /usr/share/ipa/ui/js/plugins/idoverride-memberof directory listing using a standard FileListing parser.
-    """
+    """Parses output of ``ls -lan /usr/share/ipa/ui/js/plugins/idoverride-memberof`` command."""
     pass

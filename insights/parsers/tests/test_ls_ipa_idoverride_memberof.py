@@ -12,6 +12,7 @@ drwxr-xr-x. 4 0 0 0 Nov 11 11:44 ..
 -rw-rw-r--. 1 0 0 0 Nov 11 11:44 idoverride-admemberof.js
 """
 
+
 def test_ls_ipa_idoverride_memberof():
     ls_ipa_idoverride_memberof = LsIPAIdoverrideMemberof(context_wrap(LS_IPA_IDOVERRIDEMEMBEROF))
     assert '/usr/share/ipa/ui/js/plugins/idoverride-memberof' in ls_ipa_idoverride_memberof
