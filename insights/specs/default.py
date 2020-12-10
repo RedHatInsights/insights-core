@@ -348,6 +348,8 @@ class DefaultSpecs(Specs):
         # https://access.redhat.com/solutions/21680
         return list(ps_httpds)
 
+    httpd_pid = simple_command("/usr/bin/pgrep -o httpd")
+    httpd_limits = foreach_collect(httpd_pid, "/proc/%s/limits")
     httpd_M = foreach_execute(httpd_cmd, "%s -M")
     httpd_V = foreach_execute(httpd_cmd, "%s -V")
     ifcfg = glob_file("/etc/sysconfig/network-scripts/ifcfg-*")
