@@ -22,7 +22,8 @@ from .utilities import (delete_registered_file,
                         get_tags,
                         write_tags,
                         migrate_tags,
-                        get_parent_process)
+                        get_parent_process,
+                        all_egg_versions)
 
 NETWORK = constants.custom_network_log_level
 logger = logging.getLogger(__name__)
@@ -81,7 +82,12 @@ class InsightsClient(object):
         return client.set_up_logging(self.config)
 
     def version(self):
-        return "%s-%s" % (package_info["VERSION"], package_info["RELEASE"])
+        '''
+        Returns a formatted list of all egg versions available on the system
+        '''
+        eggs = all_egg_versions()
+        eggs = [k + ': ' + v['core_version'] for (k,v) in eggs.items()]
+        return '\t' + eggs[0] + '\n\t' + '\n\t'.join(eggs[1:])
 
     @_net
     def test_connection(self):
