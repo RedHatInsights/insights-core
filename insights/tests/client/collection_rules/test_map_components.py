@@ -65,7 +65,6 @@ def test_get_component_by_symbolic_name():
         'rabbitmq_queues',
         'rhev_data_center',
         'root_crontab',
-        'subscription_manager_installed_product_ids',
         'yum_list_installed',
         'zdump_v',
         'cni_podman_bridge_conf',
