@@ -22,9 +22,16 @@ instances instead of a simple lookup.
 """
 import operator
 import re
+import sys
 from collections import defaultdict
 from itertools import chain
 from insights.parsr.query.boolean import All, Any, Boolean, Not, pred, pred2, TRUE
+
+# intern was a builtin until it moved to sys in python3
+try:
+    intern = sys.intern
+except:
+    pass
 
 
 class Entry(object):
@@ -35,7 +42,7 @@ class Entry(object):
     __slots__ = ("_name", "attrs", "children", "parent", "lineno", "src")
 
     def __init__(self, name=None, attrs=None, children=None, lineno=None, src=None):
-        self._name = name
+        self._name = intern(name) if name is not None else name
         self.attrs = attrs or []
         self.children = children or []
         self.parent = None
