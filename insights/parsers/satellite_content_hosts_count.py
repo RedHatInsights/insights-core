@@ -1,11 +1,11 @@
 """
-SatelliteContentHostsCount - command ``/usr/bin/su - postgres -c "psql -d foreman -c 'select count(*) from hosts'"``
-====================================================================================================================
+SatelliteContentHostsCount - command ``psql -d foreman -c 'select count(*) from hosts'``
+========================================================================================
 
 The SatelliteContentHostsCount parser reads the output of
-``/usr/bin/su - postgres -c "psql -d foreman -c 'select count(*) from hosts'"``.
+``psql -d foreman -c 'select count(*) from hosts'``.
 
-Sample output of ``/usr/bin/su - postgres -c "psql -d foreman -c 'select count(*) from hosts'"``::
+Sample output of ``psql -d foreman -c 'select count(*) from hosts'``::
 
      count
     -------
@@ -28,7 +28,7 @@ from insights.parsers import SkipException, ParseException
 @parser(Specs.satellite_content_hosts_count)
 class SatelliteContentHostsCount(CommandParser):
     """
-    Read the ``/usr/bin/su - postgres -c "psql -d foreman -c 'select count(*) from hosts'"``
+    Read the ``psql -d foreman -c 'select count(*) from hosts'``
     and set the hosts count to property ``count``.
 
     Attributes:
