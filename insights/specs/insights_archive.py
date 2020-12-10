@@ -208,6 +208,7 @@ class InsightsArchiveSpecs(Specs):
     ss = simple_file("insights_commands/ss_-tupna")
     sshd_config_perms = simple_file("insights_commands/ls_-l_.etc.ssh.sshd_config")
     subscription_manager_id = simple_file("insights_commands/subscription-manager_identity")
+    subscription_manager_installed_product_ids = simple_file("insights_commands/find_.etc.pki.product-default._.etc.pki.product._-name_pem_-exec_rct_cat-cert_--no-content")
     sysctl = simple_file("insights_commands/sysctl_-a")
     systemctl_cat_rpcbind_socket = simple_file("insights_commands/systemctl_cat_rpcbind.socket")
     systemctl_cinder_volume = simple_file("insights_commands/systemctl_show_openstack-cinder-volume")
