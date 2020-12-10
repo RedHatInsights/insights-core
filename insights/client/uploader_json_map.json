@@ -6,6 +6,11 @@
             "symbolic_name": "abrt_status_bare"
         },
         {
+            "command": "/usr/sbin/alternatives --display python",
+            "pattern": [],
+            "symbolic_name": "alternatives_display_python"
+        },
+        {
             "command": "python -m insights.tools.cat --no-header aws_instance_id_doc",
             "pattern": [],
             "symbolic_name": "aws_instance_id_doc"
@@ -534,6 +539,11 @@
             "symbolic_name": "ls_sys_firmware"
         },
         {
+            "command": "/bin/ls -lan /usr/bin",
+            "pattern": [],
+            "symbolic_name": "ls_usr_bin"
+        },
+        {
             "command": "/bin/ls -la /var/lib/mongodb",
             "pattern": [],
             "symbolic_name": "ls_var_lib_mongodb"
@@ -1023,8 +1033,18 @@
         },
         {
             "command": "/usr/sbin/postconf -C builtin",
-            "pattern": [],
+            "pattern": [
+                "smtp_tls_mandatory_protocols",
+                "smtp_tls_protocols",
+                "smtpd_tls_mandatory_protocols",
+                "smtpd_tls_protocols"
+            ],
             "symbolic_name": "postconf_builtin"
+        },
+        {
+            "command": "/usr/sbin/postconf",
+            "pattern": [],
+            "symbolic_name": "postconf"
         },
         {
             "command": "/bin/ps alxwww",
@@ -1033,6 +1053,7 @@
                 "/usr/bin/openshift start master",
                 "/usr/bin/openshift start node",
                 "COMMAND",
+                "auditd",
                 "avahi",
                 "bash",
                 "chronyd",
@@ -1042,6 +1063,7 @@
                 "dlm_controld",
                 "docker",
                 "heat-engine",
+                "mongdb",
                 "nova-compute",
                 "nova-conductor",
                 "ntpd",
@@ -1052,6 +1074,8 @@
                 "pacemaker-controld",
                 "pacemakerd",
                 "pcsd",
+                "redis-server",
+                "sap",
                 "spausedd",
                 "tuned"
             ],
@@ -1071,6 +1095,7 @@
                 "/usr/bin/openshift start node",
                 "COMMAND",
                 "STAP/8.2",
+                "auditd",
                 "bash",
                 "ceph-osd",
                 "chronyd",
@@ -1080,6 +1105,7 @@
                 "dlm_controld",
                 "docker",
                 "heat-engine",
+                "mongdb",
                 "mysqld",
                 "nova-compute",
                 "nova-conductor",
@@ -1095,6 +1121,8 @@
                 "phc2sys",
                 "postgres",
                 "ptp4l",
+                "redis-server",
+                "sap",
                 "spausedd",
                 "tuned"
             ],
@@ -1117,6 +1145,7 @@
                 "/usr/bin/teamd",
                 "/usr/sbin/fcoemon --syslog",
                 "COMMAND",
+                "auditd",
                 "bash",
                 "catalina.base",
                 "ceilometer-coll",
@@ -1132,6 +1161,7 @@
                 "heat-engine",
                 "httpd",
                 "iscsid",
+                "mongdb",
                 "multipath",
                 "nfs-server",
                 "nfsd",
@@ -1149,12 +1179,13 @@
                 "pcsd",
                 "pkla-check-auth",
                 "postgres",
+                "redis-server",
+                "sap",
                 "smbd",
                 "spausedd",
                 "target_completi",
                 "tgtd",
-                "tuned",
-                "virt-who"
+                "tuned"
             ],
             "symbolic_name": "ps_auxww"
         },
@@ -1165,6 +1196,7 @@
                 "/usr/bin/openshift start master",
                 "/usr/bin/openshift start node",
                 "CMD",
+                "auditd",
                 "bash",
                 "chronyd",
                 "clvmd",
@@ -1173,6 +1205,7 @@
                 "dlm_controld",
                 "docker",
                 "heat-engine",
+                "mongdb",
                 "neutron-ns-metadata-proxy",
                 "nginx: master process",
                 "nginx: worker process",
@@ -1186,6 +1219,8 @@
                 "pacemaker-controld",
                 "pacemakerd",
                 "pcsd",
+                "redis-server",
+                "sap",
                 "spausedd",
                 "tuned"
             ],
@@ -1304,16 +1339,6 @@
                 "ID:"
             ],
             "symbolic_name": "subscription_manager_installed_product_ids"
-        },
-        {
-            "command": "/usr/sbin/ss -tupna",
-            "pattern": [],
-            "symbolic_name": "ss"
-        },
-        {
-            "command": "/usr/sbin/ss -tupna",
-            "pattern": [],
-            "symbolic_name": "ss_tupna"
         },
         {
             "command": "/bin/ls -l /etc/ssh/sshd_config",
@@ -2340,7 +2365,6 @@
                 ", type vxfs) has no security xattr handler",
                 "- image is referenced in one or more repositories",
                 "/input/input",
-                "11000 E11000 duplicate key error index: pulp_database.repo_profile_applicability.$profile_hash_-1_repo_id_-1",
                 "17763",
                 ": segfault at ",
                 "Abort command issued",
@@ -2442,6 +2466,7 @@
                 "kernel: megasas: Found FW in FAULT state, will reset adapter.",
                 "kernel: nfs: server",
                 "khash_super_prune_nolock",
+                "kill: Binary: arguments must be process or job IDs",
                 "link status up for interface",
                 "megaraid_sas: FW detected to be in faultstate, restarting it",
                 "mode:0x20",
@@ -4162,5 +4187,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2020-11-25T09:46:55.836781"
+    "version": "2020-12-03T16:24:04.611058"
 }
