@@ -30,6 +30,7 @@ class InsightsArchiveSpecs(Specs):
     certificates_enddate = first_file(["insights_commands/find_.etc.origin.node_.etc.origin.master_.etc.pki_.etc.ipa_-type_f_-exec_.usr.bin.openssl_x509_-noout_-enddate_-in_-exec_echo_FileName", "insights_commands/find_.etc.origin.node_.etc.origin.master_.etc.pki_-type_f_-exec_.usr.bin.openssl_x509_-noout_-enddate_-in_-exec_echo_FileName"])
     chkconfig = simple_file("insights_commands/chkconfig_--list")
     chronyc_sources = simple_file("insights_commands/chronyc_sources")
+    corosync_cmapctl = glob_file("insights_commands/corosync-cmapctl*")
     cpupower_frequency_info = simple_file("insights_commands/cpupower_-c_all_frequency-info")
     date = simple_file("insights_commands/date")
     date_utc = simple_file("insights_commands/date_--utc")
