@@ -130,7 +130,6 @@ def _get_component_by_symbolic_name(sname):
         'lspci_kernel': 'lspci',
         'netstat__agn': 'netstat_agn',
         'rpm__V_packages': 'rpm_V_packages',
-        'ss_tupna': 'ss',
 
         'machine_id1': 'machine_id',
         'machine_id2': 'machine_id',
