@@ -43,8 +43,8 @@ class Entry(object):
 
     def __init__(self, name=None, attrs=None, children=None, lineno=None, src=None):
         self._name = intern(name) if name is not None else name
-        self.attrs = attrs or []
-        self.children = children or []
+        self.attrs = attrs if isinstance(attrs, (list, tuple)) else tuple()
+        self.children = children if isinstance(children, (list, tuple)) else []
         self.parent = None
         self.lineno = lineno
         self.src = src
@@ -99,7 +99,7 @@ class Entry(object):
         """
         Returns the original first line of text that generated the ``Entry``.
         """
-        if self.src is not None:
+        if self.src is not None and self.lineno is not None:
             return self.src.content[self.lineno - 1]
 
     @property
@@ -729,12 +729,12 @@ def from_dict(orig):
                     if isinstance(res[0], Entry):
                         result.extend(res)
                     else:
-                        result.append(Entry(name=k, attrs=res))
+                        result.append(Entry(name=k, attrs=tuple(res)))
                 else:
-                    result.append(Entry(name=k, attrs=[]))
+                    result.append(Entry(name=k))
             else:
-                result.append(Entry(name=k, attrs=[v]))
-        return result
+                result.append(Entry(name=k, attrs=(v,)))
+        return tuple(result)
     return Entry(children=inner(orig))
 
 
