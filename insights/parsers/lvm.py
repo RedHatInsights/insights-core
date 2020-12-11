@@ -81,7 +81,6 @@ def find_warnings(content):
             "failed.",
             "Invalid metadata",
             "response failed",
-            "unknown device",
             "duplicate",
             "not found",
             "Missing device",
