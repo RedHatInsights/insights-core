@@ -39,6 +39,7 @@ when it's fully applied.
         gt_five_and_lt_10 = gt(5) & lt(10)
 
 """
+from itertools import count
 
 
 class Boolean(object):
@@ -56,6 +57,47 @@ class Boolean(object):
 
     def __call__(self, value):
         return self.test(value)
+
+    def to_pyfunc(self):
+        env = {}
+        ids = count()
+
+        def expr(b):
+            if b is TRUE:
+                return " True "
+            elif b is FALSE:
+                return " False "
+            elif isinstance(b, All):
+                return "(" + " and ".join(expr(p) for p in b.exprs) + ")"
+            elif isinstance(b, Any):
+                return "(" + " or ".join(expr(p) for p in b.exprs) + ")"
+            elif isinstance(b, Not):
+                return "(" + "not " + expr(b.query) + ")"
+            elif isinstance(b, Predicate):
+                num = next(ids)
+
+                func = f"func_{num}"
+                args = f"args_{num}"
+
+                env[func] = b.func
+                env[args] = b.args
+
+                if isinstance(b, CaselessPredicate):
+                    return func + "(value.lower(), " + "*" + args + ")"
+                return func + "(value, " + "*" + args + ")"
+            else:
+                raise Exception(b)
+
+        func = """
+def predicate(value):
+    try:
+        return {}
+    except Exception as ex:
+        return False
+        """.format(expr(self))
+
+        exec(func, env, env)
+        return env["predicate"]
 
 
 class TRUE(Boolean):

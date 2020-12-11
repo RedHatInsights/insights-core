@@ -24,8 +24,8 @@ import operator
 import re
 import sys
 from collections import defaultdict
-from itertools import chain
-from insights.parsr.query.boolean import All, Any, Boolean, Not, pred, pred2, TRUE
+from itertools import chain, count
+from insights.parsr.query.boolean import All, Any, Boolean, Not, pred, pred2
 
 # intern was a builtin until it moved to sys in python3
 try:
@@ -146,7 +146,7 @@ class Entry(object):
         pred = _desugar(query)
         parent = self.parent
         while parent is not None:
-            if pred.test(parent):
+            if pred(parent):
                 return parent
             parent = parent.parent
 
@@ -189,14 +189,19 @@ class Entry(object):
         ['2019-08-04T23:17:08Z', '2019-08-04T23:32:14Z']
         """
         if isinstance(name, _EntryQuery):
-            query = name
+            query = name.to_pyfunc()
         elif isinstance(name, Boolean):
-            query = child_query(name, value)
+            query = child_query(name, value).to_pyfunc()
         elif callable(name):
-            query = SimpleQuery(pred(name))
+            def predicate(e):
+                try:
+                    return name(e)
+                except:
+                    return False
+            query = predicate
         else:
-            query = child_query(name, value)
-        return Result(children=self.children if query.test(self) else [])
+            query = child_query(name, value).to_pyfunc()
+        return Result(children=self.children if query(self) else [])
 
     @property
     def section(self):
@@ -232,7 +237,7 @@ class Entry(object):
         if isinstance(query, (int, slice)):
             return self.children[query]
         query = _desugar(query)
-        return Result(children=[c for c in self.children if query.test(c)])
+        return Result(children=[c for c in self.children if query(c)])
 
     def __bool__(self):
         return bool(self._name or self.attrs or self.children)
@@ -423,7 +428,7 @@ class Result(Entry):
             tmp[c.parent].append(c)
 
         results = []
-        for p, v in tmp.items():
+        for _, v in tmp.items():
             try:
                 r = v[n]
                 if isinstance(r, list):
@@ -458,17 +463,22 @@ class Result(Entry):
         ['2019-08-04T23:17:08Z', '2019-08-04T23:32:14Z']
         """
         if isinstance(name, _EntryQuery):
-            query = name
+            query = name.to_pyfunc()
         elif isinstance(name, Boolean):
-            query = child_query(name, value)
+            query = child_query(name, value).to_pyfunc()
         elif callable(name):
-            query = SimpleQuery(pred(name))
+            def predicate(e):
+                try:
+                    return name(e)
+                except:
+                    return False
+            query = predicate
         else:
-            query = child_query(name, value)
+            query = child_query(name, value).to_pyfunc()
         results = []
         seen = set()
         for c in self.children:
-            if c not in seen and query.test(c):
+            if c not in seen and query(c):
                 results.append(c)
         return Result(children=results)
 
@@ -476,7 +486,7 @@ class Result(Entry):
         if isinstance(query, (int, slice)):
             return self.children[query]
         query = _desugar(query)
-        return Result(children=[c for c in self.grandchildren if query.test(c)])
+        return Result(children=[c for c in self.grandchildren if query(c)])
 
 
 class _EntryQuery(object):
@@ -492,6 +502,34 @@ class _EntryQuery(object):
     def __invert__(self):
         return _NotEntryQuery(self)
 
+    def to_pyfunc(self):
+        env = {}
+        ids = count()
+
+        def expr(b):
+            if isinstance(b, _AllEntryQuery):
+                return "(" + " and ".join(expr(p) for p in b.exprs) + ")"
+            elif isinstance(b, _AnyEntryQuery):
+                return "(" + " or ".join(expr(p) for p in b.exprs) + ")"
+            elif isinstance(b, _NotEntryQuery):
+                return "(" + "not " + expr(b.query) + ")"
+            else:
+                num = next(ids)
+                func = f"func_{num}"
+                env[func] = b.test
+                return func + "(value)"
+
+        func = """
+def predicate(value):
+    try:
+        return {}
+    except Exception as ex:
+        return False
+        """.format(expr(self))
+
+        exec(func, env, env)
+        return env["predicate"]
+
 
 class _AllEntryQuery(_EntryQuery, All):
     pass
@@ -505,31 +543,20 @@ class _NotEntryQuery(_EntryQuery, Not):
     pass
 
 
-class NameQuery(_EntryQuery):
-    """
-    A query against the name of an :py:class:`Entry`.
-    """
-    def __init__(self, expr):
-        self.expr = expr
-
-    def test(self, n):
-        return self.expr.test(n.name)
-
-
 class _AllAttrQuery(_EntryQuery):
     def __init__(self, expr):
-        self.expr = expr
+        self.expr = expr.to_pyfunc()
 
-    def test(self, n):
-        return all(self.expr.test(a) for a in n.attrs)
+    def test(self, e):
+        return all(self.expr(a) for a in e.attrs)
 
 
 class _AnyAttrQuery(_EntryQuery):
     def __init__(self, expr):
-        self.expr = expr
+        self.expr = expr.to_pyfunc()
 
-    def test(self, n):
-        return any(self.expr.test(a) for a in n.attrs)
+    def test(self, e):
+        return any(self.expr(a) for a in e.attrs)
 
 
 def all_(expr):
@@ -548,36 +575,21 @@ def any_(expr):
     return _AnyAttrQuery(_desugar_attr(expr))
 
 
-class SimpleQuery(_EntryQuery):
-    """
-    Automatically used in ``Entry.where`` or ``Result.where``. ``SimpleQuery``
-    wraps a function or a lambda that will be passed each ``Entry`` of the
-    current result. The passed function should return ``True`` or ``False``.
-    """
-    def __init__(self, expr):
-        if not isinstance(expr, Boolean):
-            expr = pred(expr)
-        self.expr = expr
-
-    def test(self, node):
-        return self.expr.test(node)
-
-
 class ChildQuery(_EntryQuery):
     """
-    Returns True if any child node passes the query.
+    Returns True if any child entry passes the query.
     """
     def __init__(self, expr):
         self.expr = expr
 
-    def test(self, node):
-        return any(self.expr.test(n) for n in node.children)
+    def test(self, e):
+        return any(self.expr(n) for n in e.children)
 
 
 def child_query(name, value=None):
     """
-    Converts a query into a ChildQuery that works on all child nodes at once
-    to determine if the current node is accepted.
+    Converts a query into a ChildQuery that works on all child entries at once
+    to determine if the current entry is accepted.
     """
     q = _desugar((name, value) if value is not None else name)
     return ChildQuery(q)
@@ -588,14 +600,18 @@ make_child_query = child_query
 
 def _desugar_name(q):
     if q is None:
-        return NameQuery(TRUE)
-    if isinstance(q, NameQuery):
-        return q
+        return lambda _: True
     if isinstance(q, Boolean):
-        return NameQuery(q)
+        f = q.to_pyfunc()
+        return lambda e: f(e._name)
     if callable(q):
-        return NameQuery(pred(q))
-    return NameQuery(eq(q))
+        def predicate(e):
+            try:
+                return q(e._name)
+            except:
+                return False
+        return predicate
+    return lambda e: e._name == q
 
 
 def _desugar_attr(q):
@@ -613,20 +629,23 @@ def _desugar_attrs(q):
         q = q[0]
         return q if isinstance(q, _EntryQuery) else _AnyAttrQuery(_desugar_attr(q))
     else:
+        # conf[name, q0, q1] means "name and (q0 or q1 for any attribute)"
         attr_queries = [_desugar_attr(a) for a in q]
         return _AnyAttrQuery(Any(*attr_queries))
 
 
 def _desugar(q):
     if isinstance(q, _EntryQuery):
-        return q
+        return q.to_pyfunc()
     if isinstance(q, tuple):
-        q = list(q)
         name_query = _desugar_name(q[0])
         attrs_query = _desugar_attrs(q[1:])
         if attrs_query:
-            return All(name_query, attrs_query)
+            aq = attrs_query.to_pyfunc()
+            return lambda e: name_query(e) and aq(e)
         return name_query
+    if q is None:
+        return lambda _: True
     return _desugar_name(q)
 
 
@@ -635,9 +654,9 @@ def _flatten(nodes):
     Flatten the config tree into a list of nodes.
     """
     def inner(n):
-        res = [n]
-        res.extend(chain.from_iterable(inner(c) for c in n.children))
-        return res
+        yield n
+        for i in chain.from_iterable(inner(c) for c in n.children):
+            yield i
     return list(chain.from_iterable(inner(n) for n in nodes))
 
 
@@ -654,11 +673,13 @@ def compile_queries(*queries):
     are `or'd` together and that result is `anded` with the name query. Any
     query that raises an exception is treated as ``False``.
     """
+    queries = [_desugar(q) for q in queries]
+
     def match(qs, nodes):
-        q = _desugar(qs[0])
-        res = [n for n in nodes if q.test(n)]
+        q = qs[0]
         qs = qs[1:]
-        if qs:
+        res = [n for n in nodes if q(n)]
+        if qs and res:
             gc = list(chain.from_iterable(n.children for n in res))
             return match(qs, gc)
         return res
