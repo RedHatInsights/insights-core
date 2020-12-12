@@ -25,7 +25,7 @@ import re
 import sys
 from collections import defaultdict
 from itertools import chain, count
-from insights.parsr.query.boolean import All, Any, Boolean, Not, pred, pred2
+from insights.parsr.query.boolean import All, Any, Boolean, Not, pred, pred2  # noqa
 
 # intern was a builtin until it moved to sys in python3
 try:
@@ -143,10 +143,10 @@ class Entry(object):
         """
         Go up from the current node to the first node that matches query.
         """
-        pred = _desugar(query)
+        predicate = _desugar(query)
         parent = self.parent
         while parent is not None:
-            if pred(parent):
+            if predicate(parent):
                 return parent
             parent = parent.parent
 
@@ -545,7 +545,7 @@ class _NotEntryQuery(_EntryQuery, Not):
 
 class _AllAttrQuery(_EntryQuery):
     def __init__(self, expr):
-        self.expr = expr.to_pyfunc()
+        self.expr = expr
 
     def test(self, e):
         return all(self.expr(a) for a in e.attrs)
@@ -553,7 +553,7 @@ class _AllAttrQuery(_EntryQuery):
 
 class _AnyAttrQuery(_EntryQuery):
     def __init__(self, expr):
-        self.expr = expr.to_pyfunc()
+        self.expr = expr
 
     def test(self, e):
         return any(self.expr(a) for a in e.attrs)
@@ -616,10 +616,15 @@ def _desugar_name(q):
 
 def _desugar_attr(q):
     if isinstance(q, Boolean):
-        return q
+        return q.to_pyfunc()
     if callable(q):
-        return pred(q)
-    return eq(q)
+        def predicate(v):
+            try:
+                return q(v)
+            except:
+                return False
+        return predicate
+    return lambda v: v == q
 
 
 def _desugar_attrs(q):
@@ -631,7 +636,7 @@ def _desugar_attrs(q):
     else:
         # conf[name, q0, q1] means "name and (q0 or q1 for any attribute)"
         attr_queries = [_desugar_attr(a) for a in q]
-        return _AnyAttrQuery(Any(*attr_queries))
+        return _AnyAttrQuery(lambda v: any(p(v) for p in attr_queries))
 
 
 def _desugar(q):
