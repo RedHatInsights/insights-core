@@ -74,7 +74,7 @@ class Entry(object):
         """
         Returns the unique names of all the children as a list.
         """
-        return sorted(set(c.name for c in self.children))
+        return sorted(set(c._name for c in self.children if c._name))
 
     def __dir__(self):
         """
