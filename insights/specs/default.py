@@ -22,9 +22,9 @@ from insights.core.spec_factory import first_file, listdir
 from insights.combiners.cloud_provider import CloudProvider
 from insights.combiners.services import Services
 from insights.combiners.sap import Sap
+from insights.components.rhel_version import IsRhel8, IsRhel7
 from insights.parsers.mdstat import Mdstat
 from insights.parsers.lsmod import LsMod
-from insights.components.rhel_version import IsRhel8, IsRhel7
 from insights.parsers.ps import PsAuxcww
 from insights.specs import Specs
 
@@ -560,7 +560,7 @@ class DefaultSpecs(Specs):
     def java_cmd_and_pkg(broker):
         """Command: echo the command and package string"""
         pkg_cmd = list()
-        for cmd in _get_running_commands(broker, 'java'):
+        for cmd in _get_running_commands(broker, 'vim'):
             pkg_cmd.append("{0} {1}".format(cmd, _get_package(broker, cmd)))
         return pkg_cmd
 
