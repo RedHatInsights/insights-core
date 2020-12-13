@@ -1,12 +1,12 @@
 """
 MDAdm - command ``/usr/sbin/mdadm -E {device}``
-=================================================
+===============================================
 """
 
 from insights.core import CommandParser
 from insights.core.plugins import parser
 from insights.parsers import split_kv_pairs
-from insights.parsers import ParseException
+from insights.parsers import SkipException
 
 from insights.specs import Specs
 
@@ -20,31 +20,32 @@ class MDAdmMetadata(CommandParser, dict):
     * ``device`` - the name of the device after /dev/ - e.g. loop0
 
     Sample output::
-    /dev/loop0:
-    Magic : a92b4efc
-    Version : 1.0
-    Feature Map : 0x0
-    Array UUID : 98e098ef:c8662ce2:2ed2aa5f:7f0416a9
-    Name : 0
-    Creation Time : Mon Jun 29 02:16:52 2020
-    Raid Level : raid1
-    Raid Devices : 2
 
-    Avail Dev Size : 16383968 sectors (7.81 GiB 8.39 GB)
-    Array Size : 1048576 KiB (1024.00 MiB 1073.74 MB)
-    Used Dev Size : 2097152 sectors (1024.00 MiB 1073.74 MB)
-    Super Offset : 16383984 sectors
-    Unused Space : before=0 sectors, after=14286824 sectors
-    State : clean
-    Device UUID : 5e249ed9:a9ee800a:c09c963f:363a18d2
+        /dev/loop0:
+        Magic : a92b4efc
+        Version : 1.0
+        Feature Map : 0x0
+        Array UUID : 98e098ef:c8662ce2:2ed2aa5f:7f0416a9
+        Name : 0
+        Creation Time : Mon Jun 29 02:16:52 2020
+        Raid Level : raid1
+        Raid Devices : 2
 
-    Update Time : Mon Jun 29 02:19:56 2020
-    Bad Block Log : 512 entries available at offset -8 sectors
-    Checksum : 395066e8 - correct
-    Events : 60
+        Avail Dev Size : 16383968 sectors (7.81 GiB 8.39 GB)
+        Array Size : 1048576 KiB (1024.00 MiB 1073.74 MB)
+        Used Dev Size : 2097152 sectors (1024.00 MiB 1073.74 MB)
+        Super Offset : 16383984 sectors
+        Unused Space : before=0 sectors, after=14286824 sectors
+        State : clean
+        Device UUID : 5e249ed9:a9ee800a:c09c963f:363a18d2
 
-    Device Role : Active device 0
-    Array State : AA ('A' == active, '.' == missing, 'R' == replacing)
+        Update Time : Mon Jun 29 02:19:56 2020
+        Bad Block Log : 512 entries available at offset -8 sectors
+        Checksum : 395066e8 - correct
+        Events : 60
+
+        Device Role : Active device 0
+        Array State : AA ('A' == active, '.' == missing, 'R' == replacing)
 
     Examples:
         >>> mdadm.device
@@ -53,20 +54,14 @@ class MDAdmMetadata(CommandParser, dict):
         '5e249ed9:a9ee800a:c09c963f:363a18d2'
         >>> mdadm["Events"]
         60
-
     """
-
-    def __init__(self, context):
-        # E.g context.path: insights_commands/mdadm_-E_.dev.loop0
-        mdadm_dev = "insights_commands/mdadm_-E_.dev."
-
-        if mdadm_dev in context.path:
-            self.device = '/dev/' + context.path.split(mdadm_dev)[1].strip()
-        else:
-            raise ParseException('Cannot parse device name from path {p}'.format(p=context.path))
-        super(MDAdmMetadata, self).__init__(context)
-
     def parse_content(self, content):
+        mdadm_dev = "/mdadm_-E_.dev."
+        if mdadm_dev in self.file_path:
+            self.device = '/dev/' + self.file_path.split(mdadm_dev)[1].strip()
+        else:
+            raise SkipException('Cannot parse device name from path {p}'.format(p=self.file_path))
+
         for key, val in split_kv_pairs(content, split_on=':').items():
             if val.isdigit():
                 val = int(val)

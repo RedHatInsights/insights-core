@@ -23,6 +23,7 @@ from insights.core.spec_factory import first_file, listdir
 from insights.combiners.cloud_provider import CloudProvider
 from insights.combiners.services import Services
 from insights.combiners.sap import Sap
+from insights.parsers.mdstat import Mdstat
 from insights.specs import Specs
 
 
@@ -436,7 +437,14 @@ class DefaultSpecs(Specs):
         return ["/etc/pki/product/69.pem", "/etc/pki/product-default/69.pem", "/usr/lib/libsoftokn3.so", "/usr/lib64/libsoftokn3.so", "/usr/lib/libfreeblpriv3.so", "/usr/lib64/libfreeblpriv3.so"]
     md5chk_files = foreach_execute(md5chk_file_list, "/usr/bin/md5sum %s")
     mdstat = simple_file("/proc/mdstat")
-    mdadm_E = foreach_execute(mdstat, "/usr/sbin/mdadm -E %s")
+
+    @datasource(Mdstat)
+    def md_device_list(broker):
+        md = broker[Mdstat]
+        if md.components:
+            return [dev["device_name"] for dev in md.components if dev["active"]]
+        raise SkipComponent()
+    mdadm_E = foreach_execute(md_device_list, "/usr/sbin/mdadm -E %s")
     meminfo = first_file(["/proc/meminfo", "/meminfo"])
     messages = simple_file("/var/log/messages")
     modinfo_i40e = simple_command("/sbin/modinfo i40e")
