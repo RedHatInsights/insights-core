@@ -87,7 +87,7 @@ class InsightsClient(object):
         '''
         eggs = all_egg_versions()
         eggs = [k + ': ' + v['core_version'] for (k,v) in eggs.items()]
-        return '\t' + eggs[0] + '\n\t' + '\n\t'.join(eggs[1:])
+        return '\t' + '\n\t'.join(eggs)
 
     @_net
     def test_connection(self):

@@ -246,13 +246,6 @@ def get_version_info():
     return version_info
 
 
-def _egg_version():
-    '''
-    Get the version of the current egg (package)
-    '''
-    return 
-
-
 def all_egg_versions():
     '''
     Get the versions of all installed eggs
@@ -294,7 +287,8 @@ def print_egg_versions():
     '''
     versions = get_version_info()
     logger.debug('Client version: %s', versions['client_version'])
-    logger.debug('Core version: %s', versions['core_version'])
+    logger.debug('Core version in use: %s', versions['core_version'])
+    # TODO: include runner version once client is separated
     logger.debug('All egg versions:')
     egg_versions = all_egg_versions()
     for e in egg_versions:
