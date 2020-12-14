@@ -341,6 +341,7 @@ class Specs(SpecSet):
     manila_conf = RegistryPoint()
     mariadb_log = RegistryPoint(filterable=True)
     max_uid = RegistryPoint()
+    mdadm_E = RegistryPoint(multi_output=True)
     md5chk_files = RegistryPoint(multi_output=True)
     mdstat = RegistryPoint()
     meminfo = RegistryPoint()
