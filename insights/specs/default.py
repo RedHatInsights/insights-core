@@ -23,6 +23,7 @@ from insights.core.spec_factory import first_file, listdir
 from insights.combiners.cloud_provider import CloudProvider
 from insights.combiners.services import Services
 from insights.combiners.sap import Sap
+from insights.parsers.lsblk import LSBlock
 from insights.specs import Specs
 
 
@@ -622,8 +623,14 @@ class DefaultSpecs(Specs):
     selinux_config = simple_file("/etc/selinux/config")
     sestatus = simple_command("/usr/sbin/sestatus -b")
     setup_named_chroot = simple_file("/usr/libexec/setup-named-chroot.sh")
-    smartctl_block = listdir("/sys/class/block", context=HostContext)
-    smartctl_l_scterc = foreach_execute(smartctl_block, "/sbin/smartctl -l scterc %s")
+
+    @datasource(LSBlock)
+    def hard_disk_list(broker):
+        lsblk = broker[LSBlock]
+        if lsblk.rows:
+            return [block.name for block in lsblk.rows if block.type == "disk"]
+        raise SkipComponent()
+    smartctl_l_scterc = foreach_execute(hard_disk_list, "/usr/sbin/smartctl -l scterc %s")
     smbstatus_p = simple_command("/usr/bin/smbstatus -p")
     smartpdc_settings = simple_file("/etc/smart_proxy_dynflow_core/settings.yml")
     sockstat = simple_file("/proc/net/sockstat")
