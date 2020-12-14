@@ -97,6 +97,13 @@ DEFAULT_OPTS = {
         'action': "store_true",
         'group': 'actions'
     },
+    'checkin': {
+        'default': False,
+        'opt': ['--checkin'],
+        'help': 'Do a lightweight check-in instead of full upload',
+        'action': "store_true",
+        'group': 'actions'
+    },
     'cmd_timeout': {
         # non-CLI
         'default': constants.default_cmd_timeout
@@ -680,6 +687,8 @@ class InsightsConfig(object):
                 raise ValueError('Cannot check registration status in offline mode.')
             if self.test_connection:
                 raise ValueError('Cannot run connection test in offline mode.')
+            if self.checkin:
+                raise ValueError('Cannot check in in offline mode.')
         if self.output_dir and self.output_file:
             raise ValueError('Specify only one: --output-dir or --output-file.')
         if self.output_dir == '':

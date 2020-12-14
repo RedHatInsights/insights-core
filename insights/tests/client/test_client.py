@@ -10,6 +10,8 @@ from insights import package_info
 from insights.client.constants import InsightsConstants as constants
 from insights.client.utilities import generate_machine_id
 from mock.mock import patch, Mock, call
+from pytest import mark
+from pytest import raises
 
 
 class FakeConnection(object):
@@ -618,3 +620,37 @@ def test_copy_to_output_file_obfuscate_on(shutil_, _copy_soscleaner_files):
     client.copy_to_output_file('test')
     shutil_.copyfile.assert_called_once()
     _copy_soscleaner_files.assert_called_once()
+
+
+@mark.parametrize(("result",), ((True,), (None,)))
+def test_checkin_result(result):
+    config = InsightsConfig()
+    client = InsightsClient(config)
+    client.connection = Mock(**{"checkin.return_value": result})
+    client.session = True
+
+    result = client.checkin()
+    client.connection.checkin.assert_called_once_with()
+    assert result is result
+
+
+def test_checkin_error():
+    config = InsightsConfig()
+    client = InsightsClient(config)
+    client.connection = Mock(**{"checkin.side_effect": Exception})
+    client.session = True
+
+    with raises(Exception):
+        client.checkin()
+
+    client.connection.checkin.assert_called_once_with()
+
+
+def test_checkin_offline():
+    config = InsightsConfig(offline=True)
+    client = InsightsClient(config)
+    client.connection = Mock()
+
+    result = client.checkin()
+    assert result is None
+    client.connection.checkin.assert_not_called()

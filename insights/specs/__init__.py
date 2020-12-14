@@ -18,6 +18,7 @@ class Openshift(SpecSet):
 class Specs(SpecSet):
     abrt_ccpp_conf = RegistryPoint(filterable=True)
     abrt_status_bare = RegistryPoint()
+    alternatives_display_python = RegistryPoint()
     amq_broker = RegistryPoint(multi_output=True)
     auditctl_status = RegistryPoint()
     auditd_conf = RegistryPoint()
@@ -304,6 +305,7 @@ class Specs(SpecSet):
     ls_run_systemd_generator = RegistryPoint()
     ls_R_var_lib_nova_instances = RegistryPoint()
     ls_sys_firmware = RegistryPoint()
+    ls_usr_bin = RegistryPoint(filterable=True)
     ls_usr_lib64 = RegistryPoint(filterable=True)
     ls_usr_sbin = RegistryPoint(filterable=True)
     ls_var_lib_mongodb = RegistryPoint()
