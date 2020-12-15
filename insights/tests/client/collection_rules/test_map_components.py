@@ -58,8 +58,6 @@ def test_get_component_by_symbolic_name():
         'httpd_on_nfs',
         'ls_usr_sbin',
         'lvmconfig',
-        'saphostexec_status',
-        'saphostexec_version',
         'nova_migration_uid',
         'ntpq_pn',
         'rabbitmq_queues',
