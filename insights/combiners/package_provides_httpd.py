@@ -24,7 +24,7 @@ class PackageProvidesHttpdAll(LegacyItemAccess):
     .. warning::
 
         This Combiner is deprecated, please use
-        :class:`insights.parsers.package_provides.PackageProvidesHttpdAll`
+        :class:`insights.parsers.package_provides.PackageProvidesHttpd`
         Parsers instead.
 
     This combiner will receive a list of parsers named PackageProvidesHttpd, one for each running instance of httpd
@@ -47,7 +47,7 @@ class PackageProvidesHttpdAll(LegacyItemAccess):
     def __init__(self, package_provides_httpd):
         deprecated(
             PackageProvidesHttpdAll,
-            'Please use the :class:`insights.combiners.package_provides.PackageProvidesHttpdAll` instead.'
+            'Please use the :class:`insights.parsers.package_provides.PackageProvidesHttpd` instead.'
         )
         self.data = {}
         for pkg in package_provides_httpd:

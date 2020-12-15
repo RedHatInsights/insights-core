@@ -1,13 +1,14 @@
 """
-PackageProvidesCommand - commands ``/bin/echo {command_package}``
-==========================================================
-This command reads the output of the pre-command::
+PackageProvidesCommand - Command ``/bin/echo {command_package}``
+================================================================
+This module provides the follow Parsers:
 
-    for jp in `/bin/ps auxcww | grep <cmd> | grep -v grep| awk '{print $11}' | sort -u`; do echo $jp `readlink -e $jp | xargs rpm -qf`; done
+PackageProvidesHttpd - Command ``packages provided the running httpd``
+----------------------------------------------------------------------
 
-This command looks for all versions of ``cmd`` running and tries to find the
-RPM packages which provide them.  The running command and its package name
-are stored as properties ``command`` and ``package`` of the object.
+PackageProvidesJava - Command ``packages provided the running java``
+--------------------------------------------------------------------
+
 """
 
 from insights import parser, CommandParser
@@ -17,9 +18,7 @@ from insights.specs import Specs
 
 class PackageProvidesCommand(CommandParser, dict):
     """
-    Base class to parse the output of the following command::
-
-        for jp in `/bin/ps auxcww | grep <cmd> | grep -v grep | awk '{print $11}' | sort -u`; do echo "$jp `readlink -e $jp | xargs rpm -qf`"; done
+    Base class to parse the specified running commands and its packages.
 
     Raises:
         SkipException: When no such command detected running on this host.
