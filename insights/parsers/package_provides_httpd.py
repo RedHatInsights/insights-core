@@ -2,6 +2,11 @@
 PackageProvidesHttpd - command ``/bin/echo {httpd_command_package}``
 ====================================================================
 
+.. warning::
+
+    This module is deprecated, please use
+    :mod:`insights.parsers.package_provides` instead.
+
 This module parses the content that contains running instances of 'httpd' and
 its corresponding RPM package which provide them. The running command and its
 package name are stored as properties ``command`` and ``package`` of the object.
@@ -28,6 +33,11 @@ from insights.util import deprecated
 @parser(Specs.package_provides_httpd)
 class PackageProvidesHttpd(CommandParser):
     """
+    .. warning::
+
+        This Combiner is deprecated, please use
+        :class:`insights.parsers.package_provides.PackageProvidesHttpd` instead.
+
     Parse the content like '/opt/rh/httpd24/root/usr/sbin/httpd /usr/sbin/httpd'
 
     Attributes:

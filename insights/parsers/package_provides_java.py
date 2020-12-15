@@ -2,6 +2,11 @@
 PackageProvidesJava - command ``/bin/echo {java_command_package}``
 ==================================================================
 
+.. warning::
+
+    This module is deprecated, please use
+    :mod:`insights.parsers.package_provides` instead.
+
 This command reads the output of the pre-command:
 
 ``for jp in `/bin/ps auxwww | grep java | grep -v grep| awk '{print $11}' | sort -u`; do echo $jp `readlink -e $jp | xargs rpm -qf`; done``
@@ -49,6 +54,11 @@ from insights.util import deprecated
 @parser(Specs.package_provides_java)
 class PackageProvidesJava(CommandParser):
     """
+    .. warning::
+
+        This Combiner is deprecated, please use
+        :class:`insights.parsers.package_provides.PackageProvidesJava` instead.
+
     Parse the output of pre_command::
 
         ``for jp in `/bin/ps auxwww | grep java | grep -v grep| awk '{print $11}' | sort -u`; do echo "$jp `readlink -e $jp | xargs rpm -qf`"; done``.
