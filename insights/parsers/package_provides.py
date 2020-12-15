@@ -64,10 +64,10 @@ class PackageProvidesJava(PackageProvidesCommand):
         /usr/lib/jvm/jre/bin/java java-1.8.0-openjdk-1.8.0.272.b10-3.el8_3.x86_64
 
     Examples:
-        >>> java_package.commands
-        ['/usr/bin/java', '/usr/lib/jvm/jre/bin/java']
-        >>> java_package.packages
-        ['java-11-openjdk-11.0.9.11-2.el8_3.x86_64', 'java-1.8.0-openjdk-1.8.0.272.b10-3.el8_3.x86_64']
+        >>> '/usr/lib/jvm/jre/bin/java' in java_package.commands
+        True
+        >>> 'java-11-openjdk-11.0.9.11-2.el8_3.x86_64' in java_package.packages
+        True
         >>> java_package['/usr/lib/jvm/jre/bin/java']
         'java-1.8.0-openjdk-1.8.0.272.b10-3.el8_3.x86_64'
     """
@@ -87,10 +87,10 @@ class PackageProvidesHttpd(PackageProvidesCommand):
         /opt/rh/httpd24/root/usr/sbin/httpd httpd24-httpd-2.4.34-7.el7.x86_64
 
     Examples:
-        >>> httpd_package.commands
-        ['/usr/sbin/httpd', '/opt/rh/httpd24/root/usr/sbin/httpd']
-        >>> httpd_package.packages
-        ['httpd-2.4.22-7.el7.x86_64', 'httpd24-httpd-2.4.34-7.el7.x86_64']
+        >>> '/usr/sbin/httpd' in httpd_package.commands
+        True
+        >>> 'httpd24-httpd-2.4.34-7.el7.x86_64' in httpd_package.packages
+        True
         >>> httpd_package['/usr/sbin/httpd']
         'httpd-2.4.22-7.el7.x86_64'
     """

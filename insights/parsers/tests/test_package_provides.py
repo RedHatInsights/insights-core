@@ -30,8 +30,8 @@ bin/httpd file /root/bin/httpd is not owned by any package
 
 def test_package_provides_java_match():
     package = PackageProvidesJava(context_wrap(PACKAGE_COMMAND_JAVA))
-    assert package.commands == ['/usr/bin/java', '/usr/lib/jvm/jre/bin/java']
-    assert package.packages == ['java-11-openjdk-11.0.9.11-2.el8_3.x86_64', 'java-1.8.0-openjdk-1.8.0.272.b10-3.el8_3.x86_64']
+    assert sorted(package.commands) == sorted(['/usr/bin/java', '/usr/lib/jvm/jre/bin/java'])
+    assert sorted(package.packages) == sorted(['java-11-openjdk-11.0.9.11-2.el8_3.x86_64', 'java-1.8.0-openjdk-1.8.0.272.b10-3.el8_3.x86_64'])
     assert package['/usr/bin/java'] == 'java-11-openjdk-11.0.9.11-2.el8_3.x86_64'
 
 
@@ -45,8 +45,8 @@ def test_package_provides_java_AB():
 
 def test_package_provides_httpd_match():
     package = PackageProvidesHttpd(context_wrap(PACKAGE_COMMAND_HTTPD))
-    assert package.commands == ['/usr/sbin/httpd', '/opt/rh/httpd24/root/usr/sbin/httpd']
-    assert package.packages == ['httpd-2.4.22-7.el7.x86_64', 'httpd24-httpd-2.4.34-7.el7.x86_64']
+    assert sorted(package.commands) == sorted(['/usr/sbin/httpd', '/opt/rh/httpd24/root/usr/sbin/httpd'])
+    assert sorted(package.packages) == sorted(['httpd-2.4.22-7.el7.x86_64', 'httpd24-httpd-2.4.34-7.el7.x86_64'])
 
 
 def test_package_provides_httpd_AB():
