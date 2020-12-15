@@ -10,7 +10,6 @@ import atexit
 from subprocess import Popen, PIPE
 from requests import ConnectionError
 
-from .. import package_info
 from . import client
 from .constants import InsightsConstants as constants
 from .config import InsightsConfig
@@ -86,7 +85,7 @@ class InsightsClient(object):
         Returns a formatted list of all egg versions available on the system
         '''
         eggs = all_egg_versions()
-        eggs = [k + ': ' + v['core_version'] for (k,v) in eggs.items()]
+        eggs = [k + ': ' + v['core_version'] for (k, v) in eggs.items()]
         # happily, the eggs should sort nicely in reverse alphabetical with descending versions,
         #   i.e., latest will be at the top
         return '\t' + '\n\t'.join(sorted(eggs, reverse=True))

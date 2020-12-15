@@ -281,6 +281,7 @@ def all_egg_versions():
         egg_versions[egg] = json.loads(version)
     return egg_versions
 
+
 def print_egg_versions():
     '''
     Log all available eggs' versions
