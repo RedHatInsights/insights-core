@@ -34,7 +34,7 @@ class FakeConnection(object):
 
 # @TODO DRY the args hack.
 
-@patch('insights.client.all_egg_versions', return_value={'/var/lib/insights/newest.egg': {'core_version': '3.0.8-dev'}, '/var/lib/insights/last_stable.egg': {'core_version': '3.0.8-dev'}, '/etc/insights-client/rpm.egg': {'core_version': '3.0.8-dev'}})
+@patch('insights.client.all_egg_versions', return_value={'/var/lib/insights/newest.egg': {'core_version': '3.0.2'}, '/var/lib/insights/last_stable.egg': {'core_version': '3.0.1'}, '/etc/insights-client/rpm.egg': {'core_version': '3.0.0'}})
 def test_version(all_egg_versions):
 
     # Hack to prevent client from parsing args to py.test
@@ -45,7 +45,8 @@ def test_version(all_egg_versions):
         config = InsightsConfig(logging_file='/tmp/insights.log')
         client = InsightsClient(config)
         result = client.version()
-        assert result == '\t' + '\n\t'.join(['/var/lib/insights/newest.egg: 3.0.8-dev', '/var/lib/insights/last_stable.egg: 3.0.8-dev', '/etc/insights-client/rpm.egg: 3.0.8-dev'])
+        print(result)
+        assert result == '\t' + '\n\t'.join(['/var/lib/insights/newest.egg: 3.0.2', '/var/lib/insights/last_stable.egg: 3.0.1', '/etc/insights-client/rpm.egg: 3.0.0'])
     finally:
         sys.argv = tmp
 
