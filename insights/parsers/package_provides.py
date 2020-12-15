@@ -20,6 +20,11 @@ class PackageProvidesCommand(CommandParser, dict):
     """
     Base class to parse the specified running commands and its packages.
 
+    This parser will receive a list of string pairs, one for each running
+    instance of the specified ``command`` and the package that provides this
+    command.  It works as a `dict` with the ``command`` as the key and the
+    corresponding package name as the value.
+
     Raises:
         SkipException: When no such command detected running on this host.
         ParseException: When there is un-parseble line.
