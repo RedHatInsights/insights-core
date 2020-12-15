@@ -23,10 +23,10 @@ from insights.core.spec_factory import first_file, listdir
 from insights.combiners.cloud_provider import CloudProvider
 from insights.combiners.services import Services
 from insights.combiners.sap import Sap
+from insights.combiners.ps import Ps
 from insights.components.rhel_version import IsRhel8, IsRhel7
 from insights.parsers.mdstat import Mdstat
 from insights.parsers.lsmod import LsMod
-from insights.parsers.ps import PsAuxcww
 from insights.specs import Specs
 
 
@@ -57,14 +57,15 @@ def _get_running_commands(broker, command):
     Returns:
         list: List of the full command paths of the ``command``.
     """
-    ps = broker[PsAuxcww].search(COMMAND__contains=command)
+    ps = broker[Ps].search(COMMAND_NAME__contains=command)
     ctx = broker[HostContext]
     ret = set()
     for p in ps:
         cmd = p['COMMAND_NAME']
-        if cmd != command:
+        try:
+            which = ctx.shell_out("/usr/bin/which {0}".format(cmd))
+        except Exception:
             continue
-        which = ctx.shell_out("/usr/bin/which {0}".format(cmd))
         ret.add(which[0]) if which else None
     return sorted(ret)
 
@@ -191,10 +192,10 @@ class DefaultSpecs(Specs):
     ceph_df_detail = simple_command("/usr/bin/ceph df detail -f json")
     ceph_health_detail = simple_command("/usr/bin/ceph health detail -f json")
 
-    @datasource(PsAuxcww)
+    @datasource(Ps)
     def is_ceph_monitor(broker):
         """ bool: Returns True if ceph monitor process ceph-mon is running on this node """
-        ps = broker[PsAuxcww]
+        ps = broker[Ps]
         if ps.search(COMMAND__contains='ceph-mon'):
             return True
         raise SkipComponent()
@@ -352,7 +353,7 @@ class DefaultSpecs(Specs):
     jbcs_httpd24_httpd_error_log = simple_file("/opt/rh/jbcs-httpd24/root/etc/httpd/logs/error_log")
     virt_uuid_facts = simple_file("/etc/rhsm/facts/virt_uuid.facts")
 
-    @datasource(PsAuxcww)
+    @datasource(Ps)
     def httpd_cmd(broker):
         """
         Function to search the output of ``ps auxcww`` to find all running Apache
@@ -557,9 +558,9 @@ class DefaultSpecs(Specs):
     ovs_vsctl_list_bridge = simple_command("/usr/bin/ovs-vsctl list bridge")
     ovs_vsctl_show = simple_command("/usr/bin/ovs-vsctl show")
 
-    @datasource(PsAuxcww, context=HostContext)
+    @datasource(Ps, context=HostContext)
     def java_cmd_and_pkg(broker):
-        """Command: echo all the commands and packages string"""
+        """Command: Returns all the commands and packages string of java"""
         pkg_cmd = list()
         for cmd in _get_running_commands(broker, 'java'):
             pkg_cmd.append("{0} {1}".format(cmd, _get_package(broker, cmd)))
@@ -568,7 +569,6 @@ class DefaultSpecs(Specs):
         raise SkipComponent
 
     package_provides_java = command_with_args("/usr/bin/echo '%s'", java_cmd_and_pkg)
-
     pacemaker_log = first_file(["/var/log/pacemaker.log", "/var/log/pacemaker/pacemaker.log"])
     pci_rport_target_disk_paths = simple_command("/usr/bin/find /sys/devices/ -maxdepth 10 -mindepth 9 -name stat -type f")
 
