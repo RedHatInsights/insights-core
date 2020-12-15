@@ -626,7 +626,7 @@ class DefaultSpecs(Specs):
     sap_hdb_version = foreach_execute(sap_sid, "/usr/bin/sudo -iu %sadm HDB version", keep_rc=True)
     saphostctl_getcimobject_sapinstance = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance")
     sat5_insights_properties = simple_file("/etc/redhat-access/redhat-access-insights.properties")
-    satellite_content_hosts_count = simple_command("/usr/bin/su - postgres -c \"psql -d foreman -c 'select count(*) from hosts'\"")
+    satellite_content_hosts_count = simple_command("/usr/bin/sudo -iu postgres psql -d foreman -c 'select count(*) from hosts'")
     satellite_mongodb_storage_engine = simple_command("/usr/bin/mongo pulp_database --eval 'db.serverStatus().storageEngine'")
     satellite_version_rb = simple_file("/usr/share/foreman/lib/satellite/version.rb")
     satellite_custom_hiera = simple_file("/etc/foreman-installer/custom-hiera.yaml")
