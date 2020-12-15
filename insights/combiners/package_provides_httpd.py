@@ -5,7 +5,7 @@ PackageProvidesHttpdAll - Combiner for packages which provide httpd
 .. warning::
 
     This module is deprecated, please use
-    :mod:`insights.combiners.package_provides` instead.
+    :mod:`insights.parsers.package_provides` instead.
 
 Combiner for collecting all the running httpd command and the corresponding RPM package name
 which is parsed by the PackageProvidesHttpd parser.
@@ -24,7 +24,8 @@ class PackageProvidesHttpdAll(LegacyItemAccess):
     .. warning::
 
         This Combiner is deprecated, please use
-        :class:`insights.combiners.package_provides.PackageProvidesHttpdAll` instead.
+        :class:`insights.parsers.package_provides.PackageProvidesHttpdAll`
+        Parsers instead.
 
     This combiner will receive a list of parsers named PackageProvidesHttpd, one for each running instance of httpd
     and each parser instance will contain the command information and the RPM package information.

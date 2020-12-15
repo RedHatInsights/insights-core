@@ -5,7 +5,7 @@ PackageProvidesJavaAll - Combiner for packages which provide java
 .. warning::
 
     This module is deprecated, please use
-    :mod:`insights.combiners.package_provides` instead.
+    :mod:`insights.parsers.package_provides` instead.
 
 Combiner for collecting all the java command and the corresponding package name
 which is parsed by the PackageProvidesJava parser.
@@ -24,7 +24,7 @@ class PackageProvidesJavaAll(LegacyItemAccess):
     .. warning::
 
         This Combiner is deprecated, please use
-        :class:`insights.combiners.package_provides.PackageProvidesJavaAll` instead.
+        :class:`insights.parsers.package_provides.PackageProvidesJava` Parser instead.
 
     Combiner for collecting all the java command and the corresponding package
     name which is parsed by the PackageProvidesJava parser.
