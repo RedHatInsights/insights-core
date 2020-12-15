@@ -51,10 +51,16 @@ class PackageProvidesCommand(CommandParser, dict):
 
     @property
     def commands(self):
+        """
+        Returns the list of specified commands that are running on this host.
+        """
         return list(self.keys())
 
     @property
     def packages(self):
+        """
+        Returns the list of the packages that provide the specified ``commands``.
+        """
         return list(self.values())
 
 
