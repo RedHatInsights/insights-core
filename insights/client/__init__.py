@@ -87,7 +87,9 @@ class InsightsClient(object):
         '''
         eggs = all_egg_versions()
         eggs = [k + ': ' + v['core_version'] for (k,v) in eggs.items()]
-        return '\t' + '\n\t'.join(eggs)
+        # happily, the eggs should sort nicely in reverse alphabetical with descending versions,
+        #   i.e., latest will be at the top
+        return '\t' + '\n\t'.join(sorted(eggs, reverse=True))
 
     @_net
     def test_connection(self):

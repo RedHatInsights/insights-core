@@ -45,8 +45,7 @@ def test_version(all_egg_versions):
         config = InsightsConfig(logging_file='/tmp/insights.log')
         client = InsightsClient(config)
         result = client.version()
-        print(result)
-        assert result == '\t' + '\n\t'.join(['/var/lib/insights/newest.egg: 3.0.2', '/var/lib/insights/last_stable.egg: 3.0.1', '/etc/insights-client/rpm.egg: 3.0.0'])
+        assert result == '\t' + '\n\t'.join(sorted(['/var/lib/insights/newest.egg: 3.0.2', '/var/lib/insights/last_stable.egg: 3.0.1', '/etc/insights-client/rpm.egg: 3.0.0'], reverse=True))
     finally:
         sys.argv = tmp
 
