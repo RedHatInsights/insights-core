@@ -17,7 +17,8 @@ from insights.core.dr import SkipComponent
 from insights.core.plugins import datasource
 from insights.core.spec_factory import RawFileProvider
 from insights.core.spec_factory import simple_file, simple_command, glob_file
-from insights.core.spec_factory import first_of, foreach_collect, foreach_execute
+from insights.core.spec_factory import first_of, command_with_args
+from insights.core.spec_factory import foreach_collect, foreach_execute
 from insights.core.spec_factory import first_file, listdir
 from insights.combiners.cloud_provider import CloudProvider
 from insights.combiners.services import Services
@@ -558,13 +559,15 @@ class DefaultSpecs(Specs):
 
     @datasource(PsAuxcww, context=HostContext)
     def java_cmd_and_pkg(broker):
-        """Command: echo the command and package string"""
+        """Command: echo all the commands and packages string"""
         pkg_cmd = list()
-        for cmd in _get_running_commands(broker, 'vim'):
+        for cmd in _get_running_commands(broker, 'java'):
             pkg_cmd.append("{0} {1}".format(cmd, _get_package(broker, cmd)))
-        return pkg_cmd
+        if pkg_cmd:
+            return '\n'.join(pkg_cmd)
+        raise SkipComponent
 
-    package_provides_java = foreach_execute(java_cmd_and_pkg, "/usr/bin/echo %s")
+    package_provides_java = command_with_args("/usr/bin/echo '%s'", java_cmd_and_pkg)
 
     pacemaker_log = first_file(["/var/log/pacemaker.log", "/var/log/pacemaker/pacemaker.log"])
     pci_rport_target_disk_paths = simple_command("/usr/bin/find /sys/devices/ -maxdepth 10 -mindepth 9 -name stat -type f")
