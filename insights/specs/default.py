@@ -60,7 +60,7 @@ def _get_running_commands(broker, command):
     ps = broker[Ps].search(COMMAND_NAME__contains=command)
     ctx = broker[HostContext]
     ret = set()
-    cmds = {p['COMMAND_NAME'] for p in ps}
+    cmds = set(p['COMMAND_NAME'] for p in ps)
     for cmd in cmds:
         try:
             which = ctx.shell_out("/usr/bin/which {0}".format(cmd))
