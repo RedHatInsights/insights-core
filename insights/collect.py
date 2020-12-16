@@ -129,6 +129,16 @@ plugins:
         - name: insights.combiners.services
           enabled: true
 
+    # needed for multiple Datasouce specs
+        - name: insights.parsers.ps.PsAuxcww
+          enabled: true
+
+        - name: insights.parsers.ps.PsAuxww
+          enabled: true
+
+        - name: insights.combiners.ps
+          enabled: true
+
     # needed to collect the sap_hdb_version spec that uses the Sap combiner
         - name: insights.parsers.lssap
           enabled: true
