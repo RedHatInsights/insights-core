@@ -626,11 +626,12 @@ class DefaultSpecs(Specs):
 
     @datasource(LSBlock)
     def hard_disk_list(broker):
+        """(list): Returns the list of hard disk names. """
         lsblk = broker[LSBlock]
         if lsblk.rows:
             return [block.name for block in lsblk.rows if block.type == "disk"]
         raise SkipComponent()
-    smartctl_l_scterc = foreach_execute(hard_disk_list, "/usr/sbin/smartctl -l scterc %s")
+    smartctl_l_scterc = foreach_execute(hard_disk_list, "/usr/sbin/smartctl -l scterc /dev/%s")
     smbstatus_p = simple_command("/usr/bin/smbstatus -p")
     smartpdc_settings = simple_file("/etc/smart_proxy_dynflow_core/settings.yml")
     sockstat = simple_file("/proc/net/sockstat")
