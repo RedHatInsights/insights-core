@@ -20,8 +20,7 @@ class PackageProvidesCommand(CommandParser, dict):
     key and the corresponding package name as the value.
 
     To check the provider package of the specified command, please add the
-    command to the
-    :var:`insights.specs.default.DefaultSpecs.cmd_and_pkg.COMMANDS`
+    command to the ``COMMANDS`` of :func:`insights.specs.default.DefaultSpecs.cmd_and_pkg`
 
     Sample output::
 
