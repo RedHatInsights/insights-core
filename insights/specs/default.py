@@ -58,11 +58,12 @@ def _get_running_commands(broker, commands=None):
         list: List of the full command paths of the ``command``.
     """
     commands = [] if commands is None else commands
-    ps_cmds = [i for i in [broker[Ps].search(COMMAND_NAME__contains=c) for c in commands]]
+    ps_list = [broker[Ps].search(COMMAND_NAME__contains=c) for c in commands]
+    ps_cmds = [i for sub_l in ps_list for i in sub_l]
     ctx = broker[HostContext]
 
     ret = set()
-    for cmd in set(p['COMMAND_NAME'] for p in ps):
+    for cmd in set(p['COMMAND_NAME'] for p in ps_cmds):
         try:
             which = ctx.shell_out("/usr/bin/which {0}".format(cmd))
         except Exception:
@@ -561,9 +562,14 @@ class DefaultSpecs(Specs):
 
     @datasource(Ps, context=HostContext)
     def cmd_and_pkg(broker):
-        """Command: Returns all the commands and packages string of java"""
+        """
+        Returns:
+            list: List of the command and provider package string of the specified commands.
+
+        Attributes:
+            COMMANDS (list): List of the specified commands that need to check the provider package.
+        """
         COMMANDS = ['java']
-        """List: The specified commands that need to check the provided packages"""
         pkg_cmd = list()
         for cmd in _get_running_commands(broker, COMMANDS):
             pkg_cmd.append("{0} {1}".format(cmd, _get_package(broker, cmd)))
