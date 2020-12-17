@@ -6,6 +6,11 @@
             "symbolic_name": "abrt_status_bare"
         },
         {
+            "command": "/usr/sbin/alternatives --display python",
+            "pattern": [],
+            "symbolic_name": "alternatives_display_python"
+        },
+        {
             "command": "python -m insights.tools.cat --no-header aws_instance_id_doc",
             "pattern": [],
             "symbolic_name": "aws_instance_id_doc"
@@ -534,6 +539,11 @@
             "symbolic_name": "ls_sys_firmware"
         },
         {
+            "command": "/bin/ls -lan /usr/bin",
+            "pattern": [],
+            "symbolic_name": "ls_usr_bin"
+        },
+        {
             "command": "/bin/ls -la /var/lib/mongodb",
             "pattern": [],
             "symbolic_name": "ls_var_lib_mongodb"
@@ -622,8 +632,7 @@
         {
             "command": "/bin/ls -ln /var/tmp",
             "pattern": [
-                "/var/tmp",
-                "foreman-ssh-cmd"
+                "/var/tmp"
             ],
             "symbolic_name": "ls_var_tmp"
         },
@@ -1023,12 +1032,29 @@
             "symbolic_name": "pcs_status"
         },
         {
+            "command": "/usr/sbin/postconf -C builtin",
+            "pattern": [
+                "smtp_tls_mandatory_protocols",
+                "smtp_tls_protocols",
+                "smtpd_tls_mandatory_protocols",
+                "smtpd_tls_protocols"
+            ],
+            "symbolic_name": "postconf_builtin"
+        },
+        {
+            "command": "/usr/sbin/postconf",
+            "pattern": [],
+            "symbolic_name": "postconf"
+        },
+        {
             "command": "/bin/ps alxwww",
             "pattern": [
                 "/usr/bin/gnome-shell",
                 "/usr/bin/openshift start master",
                 "/usr/bin/openshift start node",
                 "COMMAND",
+                "auditd",
+                "avahi",
                 "bash",
                 "chronyd",
                 "clvmd",
@@ -1037,6 +1063,7 @@
                 "dlm_controld",
                 "docker",
                 "heat-engine",
+                "mongdb",
                 "nova-compute",
                 "nova-conductor",
                 "ntpd",
@@ -1047,6 +1074,8 @@
                 "pacemaker-controld",
                 "pacemakerd",
                 "pcsd",
+                "redis-server",
+                "sap",
                 "spausedd",
                 "tuned"
             ],
@@ -1066,6 +1095,7 @@
                 "/usr/bin/openshift start node",
                 "COMMAND",
                 "STAP/8.2",
+                "auditd",
                 "bash",
                 "ceph-osd",
                 "chronyd",
@@ -1075,6 +1105,7 @@
                 "dlm_controld",
                 "docker",
                 "heat-engine",
+                "mongdb",
                 "mysqld",
                 "nova-compute",
                 "nova-conductor",
@@ -1090,6 +1121,8 @@
                 "phc2sys",
                 "postgres",
                 "ptp4l",
+                "redis-server",
+                "sap",
                 "spausedd",
                 "tuned"
             ],
@@ -1112,6 +1145,7 @@
                 "/usr/bin/teamd",
                 "/usr/sbin/fcoemon --syslog",
                 "COMMAND",
+                "auditd",
                 "bash",
                 "catalina.base",
                 "ceilometer-coll",
@@ -1127,6 +1161,7 @@
                 "heat-engine",
                 "httpd",
                 "iscsid",
+                "mongdb",
                 "multipath",
                 "nfs-server",
                 "nfsd",
@@ -1144,12 +1179,13 @@
                 "pcsd",
                 "pkla-check-auth",
                 "postgres",
+                "redis-server",
+                "sap",
                 "smbd",
                 "spausedd",
                 "target_completi",
                 "tgtd",
-                "tuned",
-                "virt-who"
+                "tuned"
             ],
             "symbolic_name": "ps_auxww"
         },
@@ -1160,6 +1196,7 @@
                 "/usr/bin/openshift start master",
                 "/usr/bin/openshift start node",
                 "CMD",
+                "auditd",
                 "bash",
                 "chronyd",
                 "clvmd",
@@ -1168,6 +1205,7 @@
                 "dlm_controld",
                 "docker",
                 "heat-engine",
+                "mongdb",
                 "neutron-ns-metadata-proxy",
                 "nginx: master process",
                 "nginx: worker process",
@@ -1181,6 +1219,8 @@
                 "pacemaker-controld",
                 "pacemakerd",
                 "pcsd",
+                "redis-server",
+                "sap",
                 "spausedd",
                 "tuned"
             ],
@@ -1301,16 +1341,6 @@
             "symbolic_name": "subscription_manager_installed_product_ids"
         },
         {
-            "command": "/usr/sbin/ss -tupna",
-            "pattern": [],
-            "symbolic_name": "ss"
-        },
-        {
-            "command": "/usr/sbin/ss -tupna",
-            "pattern": [],
-            "symbolic_name": "ss_tupna"
-        },
-        {
             "command": "/bin/ls -l /etc/ssh/sshd_config",
             "pattern": [],
             "symbolic_name": "sshd_config_perms"
@@ -1412,7 +1442,8 @@
             "command": "/usr/bin/testparm -v -s",
             "pattern": [
                 "Server role:",
-                "["
+                "[",
+                "server schannel"
             ],
             "symbolic_name": "testparm_v_s"
         },
@@ -1514,6 +1545,13 @@
             "symbolic_name": "etc_machine_id"
         },
         {
+            "file": "/etc/udev/rules.d/40-redhat.rules",
+            "pattern": [
+                "SUBSYSTEM!=\"memory\", ACTION!=\"add\", GOTO=\"memory_hotplug_end\""
+            ],
+            "symbolic_name": "etc_udev_40_redhat_rules"
+        },
+        {
             "file": "/proc/1/cgroup",
             "pattern": [],
             "symbolic_name": "init_process_cgroup"
@@ -1526,7 +1564,6 @@
         {
             "file": "/var/log/audit/audit.log",
             "pattern": [
-                "comm=\"logrotate\" path=\"/var/log/candlepin",
                 "comm=\"virtlogd\" name=\"console.log\"",
                 "type=AVC"
             ],
@@ -2328,9 +2365,7 @@
                 ", type vxfs) has no security xattr handler",
                 "- image is referenced in one or more repositories",
                 "/input/input",
-                "11000 E11000 duplicate key error index: pulp_database.repo_profile_applicability.$profile_hash_-1_repo_id_-1",
                 "17763",
-                ": possible SYN flooding on port",
                 ": segfault at ",
                 "Abort command issued",
                 "Broken pipe",
@@ -2376,7 +2411,6 @@
                 "TX driver issue detected, PF reset issued",
                 "This system does not support \"SSSE3\"",
                 "Throttling request took",
-                "TypeError: object of type 'NoneType' has no len()",
                 "Virtualization daemon",
                 "] trap divide error ",
                 "_NET_ACTIVE_WINDOW",
@@ -2398,7 +2432,6 @@
                 "ext4_ext_search_left",
                 "failed while handling",
                 "failed with error -110",
-                "failed: Connection amqps:",
                 "failed: Invalid argument",
                 "failed: rpc error: code = 2 desc = unable to inspect docker image",
                 "fiid_obj_get: 'present_countdown_value': data not available",
@@ -2433,6 +2466,7 @@
                 "kernel: megasas: Found FW in FAULT state, will reset adapter.",
                 "kernel: nfs: server",
                 "khash_super_prune_nolock",
+                "kill: Binary: arguments must be process or job IDs",
                 "link status up for interface",
                 "megaraid_sas: FW detected to be in faultstate, restarting it",
                 "mode:0x20",
@@ -3126,9 +3160,13 @@
             "file": "/etc/rsyslog.conf",
             "pattern": [
                 "$ActionQueueFileName",
+                "(",
+                ")",
                 "imjournal",
                 "imtcp",
-                "regex"
+                "regex",
+                "{",
+                "}"
             ],
             "symbolic_name": "rsyslog_conf"
         },
@@ -3318,9 +3356,7 @@
         {
             "file": "/etc/ssh/ssh_config",
             "pattern": [
-                "Host",
-                "Include",
-                "ProxyCommand"
+                "Include"
             ],
             "symbolic_name": "ssh_config"
         },
@@ -3523,7 +3559,6 @@
                 "The name org.fedoraproject.FirewallD1 was not provided by any .service files",
                 "The vm start process failed",
                 "lastCheck",
-                "libvirtError: internal error: failed to format device alias",
                 "looking for unfetched domain"
             ],
             "symbolic_name": "vdsm_log"
@@ -4098,11 +4133,11 @@
             "glob": "/etc/rsyslog.d/*.conf",
             "pattern": [
                 "$ActionQueueFileName",
+                "(",
+                ")",
                 "imjournal",
                 "imtcp",
                 "regex",
-                "[",
-                "]",
                 "{",
                 "}"
             ],
@@ -4152,5 +4187,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2020-11-05T15:21:17.758393"
+    "version": "2020-12-03T16:24:04.611058"
 }
