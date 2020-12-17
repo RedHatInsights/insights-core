@@ -271,14 +271,19 @@ def all_egg_versions():
         try:
             proc = Popen([sys.executable, '-c',
                          'from insights.client.utilities import get_version_info; \
-                          import json; print(json.dumps(get_version_info()))'],
+                          import json; \
+                          print(json.dumps(get_version_info()))'],
                          env={'PYTHONPATH': egg, 'PATH': os.getenv('PATH')}, stdout=PIPE, stderr=STDOUT)
         except OSError:
             logger.debug('Could not start python.')
             return
         stdout, stderr = proc.communicate()
         version = stdout.decode('utf-8', 'ignore').strip()
-        egg_versions[egg] = json.loads(version)
+        try:
+            egg_versions[egg] = json.loads(version)
+        except ValueError as e:
+            logger.debug('Could not parse version: %s', e)
+            egg_versions[egg] = {'client_version': 'unknown', 'core_version': 'unknown'}
     return egg_versions
 
 
