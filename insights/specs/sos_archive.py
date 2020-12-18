@@ -39,6 +39,8 @@ class SosSpecs(Specs):
         ]
     )
     cni_podman_bridge_conf = simple_file("/etc/cni/net.d/87-podman-bridge.conflist")
+    cobbler_settings = first_file(["/etc/cobbler/settings", "/conf/cobbler/settings"])
+    cobbler_modules_conf = first_file(["/etc/cobbler/modules.conf", "/conf/cobbler/modules.conf"])
     corosync_cmapctl = glob_file("sos_commands/corosync/corosync-cmapctl*")
     cpe = simple_file("/etc/system-release-cpe")
     cpu_smt_control = simple_file("sys/devices/system/cpu/smt/control")
@@ -205,16 +207,21 @@ class SosSpecs(Specs):
     rabbitmq_report_of_containers = glob_file("sos_commands/rabbitmq/docker_exec_-t_rabbitmq-bundle-docker-*_rabbitmqctl_report")
     rabbitmq_startup_err = simple_file("/var/log/rabbitmq/startup_err")
     rhn_charsets = first_file(["sos_commands/satellite/rhn-charsets", "sos_commands/rhn/rhn-charsets"])
+    rhn_entitlement_cert_xml = first_of([glob_file("/etc/sysconfig/rhn/rhn-entitlement-cert.xml*"),
+                                   glob_file("/conf/rhn/sysconfig/rhn/rhn-entitlement-cert.xml*")])
     rhn_hibernate_conf = first_file(["/usr/share/rhn/config-defaults/rhn_hibernate.conf", "/config-defaults/rhn_hibernate.conf"])
     rhn_search_daemon_log = first_file([
         "/var/log/rhn/search/rhn_search_daemon.log",
         "/rhn-logs/rhn/search/rhn_search_daemon.log"
     ])
+    rhn_schema_version = simple_file("sos_commands/satellite/rhn-schema-version")
     rhn_server_satellite_log = simple_file("var/log/rhn/rhn_server_satellite.log")
     rhn_server_xmlrpc_log = first_file([
         "/var/log/rhn/rhn_server_xmlrpc.log",
         "/rhn-logs/rhn/rhn_server_xmlrpc.log"
     ])
+    rhn_taskomatic_daemon_log = first_file(["/var/log/rhn/rhn_taskomatic_daemon.log",
+                                               "rhn-logs/rhn/rhn_taskomatic_daemon.log"])
     rhosp_release = simple_file("/etc/rhosp-release")
     root_crontab = first_file(["sos_commands/crontab/root_crontab", "sos_commands/cron/root_crontab"])
     route = simple_file("sos_commands/networking/route_-n")

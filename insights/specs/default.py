@@ -292,8 +292,6 @@ class DefaultSpecs(Specs):
     cloud_init_log = simple_file("/var/log/cloud-init.log")
     cluster_conf = simple_file("/etc/cluster/cluster.conf")
     cmdline = simple_file("/proc/cmdline")
-    cobbler_settings = first_file(["/etc/cobbler/settings", "/conf/cobbler/settings"])
-    cobbler_modules_conf = first_file(["/etc/cobbler/modules.conf", "/conf/cobbler/modules.conf"])
     corosync = simple_file("/etc/sysconfig/corosync")
 
     @datasource([IsRhel7, IsRhel8])
@@ -709,11 +707,6 @@ class DefaultSpecs(Specs):
     redhat_release = simple_file("/etc/redhat-release")
     resolv_conf = simple_file("/etc/resolv.conf")
     rhn_conf = first_file(["/etc/rhn/rhn.conf", "/conf/rhn/rhn/rhn.conf"])
-    rhn_entitlement_cert_xml = first_of([glob_file("/etc/sysconfig/rhn/rhn-entitlement-cert.xml*"),
-                                   glob_file("/conf/rhn/sysconfig/rhn/rhn-entitlement-cert.xml*")])
-    rhn_schema_version = simple_command("/usr/bin/rhn-schema-version")
-    rhn_taskomatic_daemon_log = first_file(["/var/log/rhn/rhn_taskomatic_daemon.log",
-                                               "rhn-logs/rhn/rhn_taskomatic_daemon.log"])
     rhsm_conf = simple_file("/etc/rhsm/rhsm.conf")
     rhsm_log = simple_file("/var/log/rhsm/rhsm.log")
     rhsm_releasever = simple_file('/var/lib/rhsm/cache/releasever.json')
