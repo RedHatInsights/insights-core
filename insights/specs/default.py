@@ -46,22 +46,23 @@ def get_owner(filename):
     return (name, group)
 
 
-def _get_running_commands(broker, command):
+def _get_running_commands(broker, commands=None):
     """
     Search for command in ``ps auxcww`` output and determine RPM providing binary
 
     Arguments:
         broker(dict): Current state of specs collected by Insights
-        command(str): Command name to search for in ps output
+        commands(str or list): Command or list of commands to search for in ps output
 
     Returns:
         list: List of the full command paths of the ``command``.
     """
-    ps = broker[Ps].search(COMMAND_NAME__contains=command)
+    commands = [] if commands is None else commands
+    ps_cmds = [i for i in [broker[Ps].search(COMMAND_NAME__contains=c) for c in commands]]
     ctx = broker[HostContext]
+
     ret = set()
-    cmds = set(p['COMMAND_NAME'] for p in ps)
-    for cmd in cmds:
+    for cmd in set(p['COMMAND_NAME'] for p in ps):
         try:
             which = ctx.shell_out("/usr/bin/which {0}".format(cmd))
         except Exception:
@@ -559,16 +560,19 @@ class DefaultSpecs(Specs):
     ovs_vsctl_show = simple_command("/usr/bin/ovs-vsctl show")
 
     @datasource(Ps, context=HostContext)
-    def java_cmd_and_pkg(broker):
+    def cmd_and_pkg(broker):
         """Command: Returns all the commands and packages string of java"""
+        COMMANDS = ['java']
+        """List: The specified commands that need to check the provided packages"""
         pkg_cmd = list()
-        for cmd in _get_running_commands(broker, 'java'):
+        for cmd in _get_running_commands(broker, COMMANDS):
             pkg_cmd.append("{0} {1}".format(cmd, _get_package(broker, cmd)))
         if pkg_cmd:
             return '\n'.join(pkg_cmd)
         raise SkipComponent
 
-    package_provides_java = command_with_args("/usr/bin/echo '%s'", java_cmd_and_pkg)
+    package_provides_command = command_with_args("/usr/bin/echo '%s'", cmd_and_pkg)
+    package_provides_java = foreach_execute(cmd_and_pkg, "/usr/bin/echo '%s'")
     pacemaker_log = first_file(["/var/log/pacemaker.log", "/var/log/pacemaker/pacemaker.log"])
     pci_rport_target_disk_paths = simple_command("/usr/bin/find /sys/devices/ -maxdepth 10 -mindepth 9 -name stat -type f")
 

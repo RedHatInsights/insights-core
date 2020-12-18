@@ -57,7 +57,7 @@ class PackageProvidesJava(CommandParser):
     .. warning::
 
         This Combiner is deprecated, please use
-        :class:`insights.parsers.package_provides.PackageProvidesJava` instead.
+        :class:`insights.parsers.package_provides.PackageProvidesCommand` instead.
 
     Parse the output of pre_command::
 
@@ -71,7 +71,7 @@ class PackageProvidesJava(CommandParser):
     def parse_content(self, content):
         deprecated(
             PackageProvidesJava,
-            'Please use the :class:`insights.parsers.package_provides.PackageProvidesJava` instead.'
+            'Please use the :class:`insights.parsers.package_provides.PackageProvidesCommand` instead.'
         )
         if len(content) == 0:
             raise ParseException("Error: ", 'there is not java application running')

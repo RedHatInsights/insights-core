@@ -1,14 +1,6 @@
 """
 PackageProvidesCommand - Command ``/bin/echo {command_package}``
 ================================================================
-This module provides the follow Parsers:
-
-PackageProvidesHttpd - Command ``packages provided the running httpd``
-----------------------------------------------------------------------
-
-PackageProvidesJava - Command ``packages provided the running java``
---------------------------------------------------------------------
-
 """
 
 from insights import parser, CommandParser
@@ -16,6 +8,7 @@ from insights.parsers import SkipException, ParseException
 from insights.specs import Specs
 
 
+@parser(Specs.package_provides_command)
 class PackageProvidesCommand(CommandParser, dict):
     """
     Base class to parse the specified running commands and its packages.
@@ -26,14 +19,34 @@ class PackageProvidesCommand(CommandParser, dict):
     provides this command.  It works as a `dict` with the ``command`` as the
     key and the corresponding package name as the value.
 
+    To check the provider package of the specified command, please add the
+    command to the
+    :var:`insights.specs.default.DefaultSpecs.cmd_and_pkg.COMMANDS`
+
     Sample output::
 
         /usr/bin/java java-11-openjdk-11.0.9.11-2.el8_3.x86_64
+        /usr/sbin/httpd httpd-2.4.22-7.el7.x86_64
         /usr/lib/jvm/jre/bin/java java-1.8.0-openjdk-1.8.0.272.b10-3.el8_3.x86_64
+        /opt/rh/httpd24/root/usr/sbin/httpd httpd24-httpd-2.4.34-7.el7.x86_64
 
     Raises:
         SkipException: When no such command detected running on this host.
         ParseException: When there is un-parseble line.
+
+    Example:
+        >>> '/usr/lib/jvm/jre/bin/java' in cmd_package.commands
+        True
+        >>> 'java-11-openjdk-11.0.9.11-2.el8_3.x86_64' in cmd_package.packages
+        True
+        >>> '/usr/sbin/httpd' in cmd_package.commands
+        True
+        >>> 'httpd24-httpd-2.4.34-7.el7.x86_64' in cmd_package.packages
+        True
+        >>> cmd_package['/usr/lib/jvm/jre/bin/java']
+        'java-1.8.0-openjdk-1.8.0.272.b10-3.el8_3.x86_64'
+        >>> cmd_package['/usr/sbin/httpd']
+        'httpd-2.4.22-7.el7.x86_64'
     """
 
     def parse_content(self, content):
@@ -62,48 +75,3 @@ class PackageProvidesCommand(CommandParser, dict):
         Returns the list of the packages that provide the specified ``commands``.
         """
         return list(self.values())
-
-
-@parser(Specs.package_provides_java)
-class PackageProvidesJava(PackageProvidesCommand):
-    """
-    This Parser provides the packages which actually provide the ``java``
-    commands running on the host.
-
-    Typical output::
-
-        /usr/bin/java java-11-openjdk-11.0.9.11-2.el8_3.x86_64
-        /usr/lib/jvm/jre/bin/java java-1.8.0-openjdk-1.8.0.272.b10-3.el8_3.x86_64
-
-    Examples:
-        >>> '/usr/lib/jvm/jre/bin/java' in java_package.commands
-        True
-        >>> 'java-11-openjdk-11.0.9.11-2.el8_3.x86_64' in java_package.packages
-        True
-        >>> java_package['/usr/lib/jvm/jre/bin/java']
-        'java-1.8.0-openjdk-1.8.0.272.b10-3.el8_3.x86_64'
-    """
-    pass
-
-
-@parser(Specs.package_provides_httpd)
-class PackageProvidesHttpd(PackageProvidesCommand):
-    """
-    This Parser provides the packages which actually provide the ``httpd``
-    commands running on the host.
-
-
-    Typical output::
-
-        /usr/sbin/httpd httpd-2.4.22-7.el7.x86_64
-        /opt/rh/httpd24/root/usr/sbin/httpd httpd24-httpd-2.4.34-7.el7.x86_64
-
-    Examples:
-        >>> '/usr/sbin/httpd' in httpd_package.commands
-        True
-        >>> 'httpd24-httpd-2.4.34-7.el7.x86_64' in httpd_package.packages
-        True
-        >>> httpd_package['/usr/sbin/httpd']
-        'httpd-2.4.22-7.el7.x86_64'
-    """
-    pass

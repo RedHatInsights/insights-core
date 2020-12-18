@@ -36,7 +36,7 @@ class PackageProvidesHttpd(CommandParser):
     .. warning::
 
         This Combiner is deprecated, please use
-        :class:`insights.parsers.package_provides.PackageProvidesHttpd` instead.
+        :class:`insights.parsers.package_provides.PackageProvidesCommand` instead.
 
     Parse the content like '/opt/rh/httpd24/root/usr/sbin/httpd /usr/sbin/httpd'
 
@@ -48,7 +48,7 @@ class PackageProvidesHttpd(CommandParser):
     def parse_content(self, content):
         deprecated(
             PackageProvidesHttpd,
-            'Please use the :class:`insights.parsers.package_provides.PackageProvidesHttpd` instead.'
+            'Please use the :class:`insights.parsers.package_provides.PackageProvidesCommand` instead.'
         )
         if len(content) == 0:
             raise SkipException("Error: ", 'there is not httpd application running')
