@@ -219,10 +219,7 @@ class SMARTctlSCTERC(CommandParser, dict):
     Parser for output of ``smartctl -l scterc`` for each drive in system.
 
     This stores the SCT ERC (Smart Command Transfer Error Recovery Control) information
-    from the output of `smartctl -l scterc` in the following properties:
-    following properties:
-
-    * ``device`` - the name of the device after /dev/ - e.g. sda
+    from the output of `smartctl -l scterc`
 
     Sample output::
 
@@ -235,10 +232,15 @@ class SMARTctlSCTERC(CommandParser, dict):
     Examples:
         >>> scterc.device
         '/dev/sda'
-        >>> scterc['Read']
+        >>> scterc.Read
         20.0
-        >>> scterc['Write']
+        >>> scterc.Write
         20.0
+
+    Attributes:
+        device (string): the name of the device after /dev/ - e.g. sda
+        Read (float or 'Disabled'): the read time of the SCT Error Recovery Control settings (in seconds)
+        Write (float or 'Disabled'): the write time of the SCT Error Recovery Control settings (in seconds)
 
     """
 
@@ -258,4 +260,7 @@ class SMARTctlSCTERC(CommandParser, dict):
             if val.isdigit():
                 val = float(int(val) / 10)
 
-            self[key[:-1]] = val
+            if "Read" in key:
+                self.Read = val
+            if "Write" in key:
+                self.Write = val

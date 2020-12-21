@@ -322,5 +322,5 @@ def test_smartctl_l_scterc():
         NO_SCT_ERC_DRIVE, path='insights_commands/smartctl_-l_scterc_.dev.sda'
     ))
     assert data.device == '/dev/sda'
-    assert data['Read'] == 'Disabled'
-    assert data['Write'] == 'Disabled'
+    assert data.Read == 'Disabled'
+    assert data.Write == 'Disabled'
