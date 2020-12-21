@@ -24,6 +24,9 @@ from insights.combiners.cloud_provider import CloudProvider
 from insights.combiners.services import Services
 from insights.combiners.sap import Sap
 from insights.parsers.lsblk import LSBlock
+from insights.parsers.mdstat import Mdstat
+from insights.parsers.lsmod import LsMod
+from insights.components.rhel_version import IsRhel8, IsRhel7
 from insights.specs import Specs
 
 
@@ -98,6 +101,7 @@ format_rpm = _make_rpm_formatter()
 class DefaultSpecs(Specs):
     abrt_ccpp_conf = simple_file("/etc/abrt/plugins/CCpp.conf")
     abrt_status_bare = simple_command("/usr/bin/abrt status --bare=True")
+    alternatives_display_python = simple_command("/usr/sbin/alternatives --display python")
     amq_broker = glob_file("/var/opt/amq-broker/*/etc/broker.xml")
     auditctl_status = simple_command("/sbin/auditctl -s")
     auditd_conf = simple_file("/etc/audit/auditd.conf")
@@ -203,6 +207,16 @@ class DefaultSpecs(Specs):
     cobbler_settings = first_file(["/etc/cobbler/settings", "/conf/cobbler/settings"])
     cobbler_modules_conf = first_file(["/etc/cobbler/modules.conf", "/conf/cobbler/modules.conf"])
     corosync = simple_file("/etc/sysconfig/corosync")
+
+    @datasource([IsRhel7, IsRhel8])
+    def corosync_cmapctl_cmd_list(broker):
+        if broker.get(IsRhel7):
+            return ["/usr/sbin/corosync-cmapctl", 'corosync-cmapctl -d runtime.schedmiss.timestamp', 'corosync-cmapctl -d runtime.schedmiss.delay']
+        if broker.get(IsRhel8):
+            return ["/usr/sbin/corosync-cmapctl", '/usr/sbin/corosync-cmapctl -m stats', '/usr/sbin/corosync-cmapctl -C schedmiss']
+        raise SkipComponent()
+    corosync_cmapctl = foreach_execute(corosync_cmapctl_cmd_list, "%s")
+
     corosync_conf = simple_file("/etc/corosync/corosync.conf")
     cpu_cores = glob_file("sys/devices/system/cpu/cpu[0-9]*/online")
     cpu_siblings = glob_file("sys/devices/system/cpu/cpu[0-9]*/topology/thread_siblings_list")
@@ -347,6 +361,8 @@ class DefaultSpecs(Specs):
         # https://access.redhat.com/solutions/21680
         return list(ps_httpds)
 
+    httpd_pid = simple_command("/usr/bin/pgrep -o httpd")
+    httpd_limits = foreach_collect(httpd_pid, "/proc/%s/limits")
     httpd_M = foreach_execute(httpd_cmd, "%s -M")
     httpd_V = foreach_execute(httpd_cmd, "%s -V")
     ifcfg = glob_file("/etc/sysconfig/network-scripts/ifcfg-*")
@@ -404,6 +420,7 @@ class DefaultSpecs(Specs):
     ls_R_var_lib_nova_instances = simple_command("/bin/ls -laR /var/lib/nova/instances")
     ls_sys_firmware = simple_command("/bin/ls -lanR /sys/firmware")
     ls_tmp = simple_command("/bin/ls -la /tmp")
+    ls_usr_bin = simple_command("/bin/ls -lan /usr/bin")
     ls_usr_lib64 = simple_command("/bin/ls -lan /usr/lib64")
     ls_var_lib_mongodb = simple_command("/bin/ls -la /var/lib/mongodb")
     ls_var_lib_nova_instances = simple_command("/bin/ls -laRZ /var/lib/nova/instances")
@@ -437,6 +454,14 @@ class DefaultSpecs(Specs):
         return ["/etc/pki/product/69.pem", "/etc/pki/product-default/69.pem", "/usr/lib/libsoftokn3.so", "/usr/lib64/libsoftokn3.so", "/usr/lib/libfreeblpriv3.so", "/usr/lib64/libfreeblpriv3.so"]
     md5chk_files = foreach_execute(md5chk_file_list, "/usr/bin/md5sum %s")
     mdstat = simple_file("/proc/mdstat")
+
+    @datasource(Mdstat)
+    def md_device_list(broker):
+        md = broker[Mdstat]
+        if md.components:
+            return [dev["device_name"] for dev in md.components if dev["active"]]
+        raise SkipComponent()
+    mdadm_E = foreach_execute(md_device_list, "/usr/sbin/mdadm -E %s")
     meminfo = first_file(["/proc/meminfo", "/meminfo"])
     messages = simple_file("/var/log/messages")
     modinfo_i40e = simple_command("/sbin/modinfo i40e")
@@ -546,6 +571,7 @@ class DefaultSpecs(Specs):
     php_ini = first_file(["/etc/opt/rh/php73/php.ini", "/etc/opt/rh/php72/php.ini", "/etc/php.ini"])
     pluginconf_d = glob_file("/etc/yum/pluginconf.d/*.conf")
     postconf_builtin = simple_command("/usr/sbin/postconf -C builtin")
+    postconf = simple_command("/usr/sbin/postconf")
     postgresql_conf = first_file([
                                  "/var/lib/pgsql/data/postgresql.conf",
                                  "/opt/rh/postgresql92/root/var/lib/pgsql/data/postgresql.conf",
@@ -598,17 +624,12 @@ class DefaultSpecs(Specs):
         sap = broker[Sap]
         return [sap.sid(i).lower() for i in sap.local_instances]
 
-    @datasource(Sap)
-    def sap_sid_name(broker):
-        """(list): Returns the list of (SAP SID, SAP InstanceName) """
-        sap = broker[Sap]
-        return [(sap.sid(i), i) for i in sap.local_instances]
-
-    sap_dev_disp = foreach_collect(sap_sid_name, "/usr/sap/%s/%s/work/dev_disp")
-    sap_dev_rd = foreach_collect(sap_sid_name, "/usr/sap/%s/%s/work/dev_rd")
     sap_hdb_version = foreach_execute(sap_sid, "/usr/bin/sudo -iu %sadm HDB version", keep_rc=True)
     saphostctl_getcimobject_sapinstance = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance")
+    saphostexec_status = simple_command("/usr/sap/hostctrl/exe/saphostexec -status")
+    saphostexec_version = simple_command("/usr/sap/hostctrl/exe/saphostexec -version")
     sat5_insights_properties = simple_file("/etc/redhat-access/redhat-access-insights.properties")
+    satellite_content_hosts_count = simple_command("/usr/bin/sudo -iu postgres psql -d foreman -c 'select count(*) from hosts'")
     satellite_mongodb_storage_engine = simple_command("/usr/bin/mongo pulp_database --eval 'db.serverStatus().storageEngine'")
     satellite_version_rb = simple_file("/usr/share/foreman/lib/satellite/version.rb")
     satellite_custom_hiera = simple_file("/etc/foreman-installer/custom-hiera.yaml")
@@ -638,7 +659,20 @@ class DefaultSpecs(Specs):
     softnet_stat = simple_file("proc/net/softnet_stat")
     software_collections_list = simple_command('/usr/bin/scl --list')
     spamassassin_channels = simple_command("/bin/grep -r '^\\s*CHANNELURL=' /etc/mail/spamassassin/channel.d")
-    ss = simple_command("/usr/sbin/ss -tupna")
+
+    @datasource(LsMod)
+    def is_mod_loaded_for_ss(broker):
+        """
+        bool: Returns True if the kernel modules required by ``ss -tupna``
+        command are loaded.
+        """
+        lsmod = broker[LsMod]
+        req_mods = ['inet_diag', 'tcp_diag', 'udp_diag']
+        if all(mod in lsmod for mod in req_mods):
+            return True
+        raise SkipComponent
+
+    ss = simple_command("/usr/sbin/ss -tupna", deps=[is_mod_loaded_for_ss])
     ssh_config = simple_file("/etc/ssh/ssh_config")
     ssh_config_d = glob_file(r"/etc/ssh/ssh_config.d/*.conf")
     ssh_foreman_proxy_config = simple_file("/usr/share/foreman-proxy/.ssh/ssh_config")
@@ -646,6 +680,7 @@ class DefaultSpecs(Specs):
     sshd_config_perms = simple_command("/bin/ls -l /etc/ssh/sshd_config")
     sssd_config = simple_file("/etc/sssd/sssd.conf")
     subscription_manager_id = simple_command("/usr/sbin/subscription-manager identity")  # use "/usr/sbin" here, BZ#1690529
+    subscription_manager_installed_product_ids = simple_command("/usr/bin/find /etc/pki/product-default/ /etc/pki/product/ -name '*pem' -exec rct cat-cert --no-content '{}' \;")
     swift_object_expirer_conf = first_file(["/var/lib/config-data/puppet-generated/swift/etc/swift/object-expirer.conf", "/etc/swift/object-expirer.conf"])
     swift_proxy_server_conf = first_file(["/var/lib/config-data/puppet-generated/swift/etc/swift/proxy-server.conf", "/etc/swift/proxy-server.conf"])
     sysconfig_kdump = simple_file("etc/sysconfig/kdump")
