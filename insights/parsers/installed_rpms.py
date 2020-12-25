@@ -512,6 +512,9 @@ class InstalledRpm(object):
         rpm = cls._parse_package(pkg)
         rest = rest.split('\t')
         for i, value in enumerate(rest):
+            # the vendor maybe 'None' or '(none)'
+            if 'none' in value.lower():
+                value = None
             rpm[cls.SOSREPORT_KEYS[i]] = value
         return rpm
 

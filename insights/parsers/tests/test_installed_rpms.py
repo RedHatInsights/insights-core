@@ -165,6 +165,14 @@ xz-libs-5.1.2-12alpha.el7
 xz-libs-5.2.2-1.el7
 '''.strip()
 
+RPM_PKGS_WITH_NONE_VENDOE1 = """
+katello-server-ca-1.0-1.noarch  Thu Oct  1 12:14:35 2020    1601568875  None    satellite-15052019.tcsg.edu (none)  (none)
+""".strip()
+
+RPM_PKGS_WITH_NONE_VENDOE2 = """
+gpg-pubkey-fd431d51-4ae0493b.(none) Thu Oct  1 08:54:34 2020    1601556874  (none)  localhost   (none)  (none)
+""".strip()
+
 
 def test_from_package():
     rpms = InstalledRpms(context_wrap(RPMS_PACKAGE))
@@ -194,6 +202,12 @@ def test_from_line():
     assert rpms.newest('BESAgent').vendor == 'IBM Corp.'
     assert rpms.newest('yum').vendor == 'Red Hat, Inc.'
     assert rpms.newest('kernel').vendor is None
+
+    rpms = InstalledRpms(context_wrap(RPM_PKGS_WITH_NONE_VENDOE1))
+    assert rpms.newest('katello-server-ca').vendor is None
+
+    rpms = InstalledRpms(context_wrap(RPM_PKGS_WITH_NONE_VENDOE2))
+    assert rpms.newest('gpg-pubkey').vendor is None
 
 
 def test_from_json():
