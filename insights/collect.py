@@ -139,10 +139,6 @@ plugins:
         - name: insights.combiners.sap
           enabled: true
 
-    # needed for the 'pre-check' of the 'ss' spec
-        - name: insights.parsers.lsmod
-          enabled: true
-
     # needed because some specs aren't given names before they're used in DefaultSpecs
         - name: insights.core.spec_factory
           enabled: true
