@@ -186,6 +186,7 @@ class InsightsArchiveSpecs(Specs):
     ps_auxww = simple_file("insights_commands/ps_auxww")
     ps_ef = simple_file("insights_commands/ps_-ef")
     ps_eo = simple_file("insights_commands/ps_-eo_pid_ppid_comm")
+    puppet_ca_cert_expire_date = simple_file("insights_commands/openssl_x509_-in_.etc.puppetlabs.puppet.ssl.ca.ca_crt.pem_-enddate_-noout")
     pvs_noheadings = simple_file("insights_commands/pvs_--nameprefixes_--noheadings_--separator_-a_-o_pv_all_vg_name_--config_global_locking_type_0")
     qpid_stat_g = simple_file("insights_commands/qpid-stat_-g_--ssl-certificate_.etc.pki.katello.qpid_client_striped.crt_-b_amqps_..localhost_5671")
     rabbitmq_report = simple_file("insights_commands/rabbitmqctl_report")

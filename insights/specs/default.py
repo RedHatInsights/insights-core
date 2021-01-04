@@ -588,6 +588,7 @@ class DefaultSpecs(Specs):
     proc_snmp_ipv6 = simple_file("proc/net/snmp6")
     proc_stat = simple_file("proc/stat")
     pulp_worker_defaults = simple_file("etc/default/pulp_workers")
+    puppet_ca_cert_expire_date = simple_command("/usr/bin/openssl x509 -in /etc/puppetlabs/puppet/ssl/ca/ca_crt.pem -enddate -noout")
     pvs_noheadings = simple_command("/sbin/pvs --nameprefixes --noheadings --separator='|' -a -o pv_all,vg_name --config=\"global{locking_type=0}\"")
     qemu_conf = simple_file("/etc/libvirt/qemu.conf")
     qemu_xml = glob_file(r"/etc/libvirt/qemu/*.xml")
