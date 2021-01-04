@@ -136,6 +136,7 @@ class SosSpecs(Specs):
     manila_conf = first_file(["/var/lib/config-data/puppet-generated/manila/etc/manila/manila.conf", "/etc/manila/manila.conf"])
     mistral_executor_log = simple_file("/var/log/mistral/executor.log")
     modinfo_all = glob_file("sos_commands/kernel/modinfo_*")
+    mokutil_sbstate = simple_file("sos_commands/boot/mokutil_--sb-state")
     mount = simple_file("sos_commands/filesys/mount_-l")
     mounts = simple_file("/proc/mounts")
     mlx4_port = glob_file("/sys/bus/pci/devices/*/mlx4_port[0-9]")
