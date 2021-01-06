@@ -29,7 +29,7 @@ class ComplianceClient:
         self._assert_oscap_rpms_exist()
         policies = self.get_policies()
         if not policies:
-            logger.error("System is not associated with any profiles. Assign profiles by either uploading a SCAP scan or using the compliance web UI.\n")
+            logger.error("System is not associated with any profiles. Assign profiles using the Compliance web UI.\n")
             exit(constants.sig_kill_bad)
         for policy in policies:
             self.run_scan(
