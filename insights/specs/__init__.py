@@ -500,6 +500,7 @@ class Specs(SpecSet):
     pulp_worker_defaults = RegistryPoint()
     puppet_ssl_cert_ca_pem = RegistryPoint()
     puppetserver_config = RegistryPoint(filterable=True)
+    puppet_ca_cert_expire_date = RegistryPoint()
     pvs_noheadings = RegistryPoint()
     pvs_noheadings_all = RegistryPoint()
     pvs = RegistryPoint()
