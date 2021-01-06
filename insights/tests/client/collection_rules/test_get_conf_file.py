@@ -120,5 +120,5 @@ def test_no_file_error(try_disk):
     """
     upload_conf = insights_upload_conf()
 
-    with raises(ValueError):
+    with raises(RuntimeError):
         upload_conf.get_conf_file()

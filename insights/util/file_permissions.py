@@ -217,7 +217,7 @@ class FilePermissions(object):
         read bits for root user/group are not checked because root can
         read/write anything regardless of the read/write permissions.
 
-        When called with ``root_root_group_can_read`` = ``True``:
+        When called with ``root_group_can_read`` = ``True``:
 
         * owner must be root
         * and 'others' permissions must not contain read
@@ -245,7 +245,7 @@ class FilePermissions(object):
             -??r??-??    nonroot root
             ---------    nonroot nonroot
 
-        When called with ``root_root_group_can_read`` = ``False``:
+        When called with ``root_group_can_read`` = ``False``:
 
         * owner must be root
         * and 'group' and 'others' permissions must not contain read
@@ -297,7 +297,7 @@ class FilePermissions(object):
         write bits for root user/group are not checked because root can
         read/write anything regardless of the read/write permissions.
 
-        When called with ``root_root_group_can_write`` = ``True``:
+        When called with ``root_group_can_write`` = ``True``:
 
         * owner must be root
         * and 'others' permissions must not contain write
@@ -324,7 +324,7 @@ class FilePermissions(object):
             ?-??w??-?    nonroot root
             ---------    nonroot nonroot
 
-        When called with ``root_root_group_can_write`` = ``False``:
+        When called with ``root_group_can_write`` = ``False``:
 
         * owner must be root
         * and 'group' and 'others' permissions must not contain write
@@ -338,7 +338,7 @@ class FilePermissions(object):
             -w-------    root    nonroot
             rwxr-x---    root    root
             rwxr-x---    root    nonroot
-            rwxr-xrwx    root    nonroot
+            rwxr-xr-x    root    nonroot
 
         Specifically, these cases are NOT valid because the owner can chmod
         permissions and grant themselves permissions without root's

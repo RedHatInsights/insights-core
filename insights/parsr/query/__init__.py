@@ -293,14 +293,33 @@ class Result(Entry):
         return sorted(set(c.get_crumbs() for c in self.children))
 
     @property
+    def line(self):
+        """
+        Returns the line of the child if only one child exists. This helps
+        queries behave more like dictionaries when you know only one result
+        should exist.
+        """
+        if len(self.children) == 0:
+            return None
+
+        if len(self.children) == 1:
+            return self.children[0].line
+
+        raise Exception("More than one value to return.")
+
+    @property
     def string_value(self):
         """
         Returns the string value of the child if only one child exists. This
         helps queries behave more like dictionaries when you know only one
         result should exist.
         """
+        if len(self.children) == 0:
+            return None
+
         if len(self.children) == 1:
             return self.children[0].string_value
+
         raise Exception("More than one value to return.")
 
     @property

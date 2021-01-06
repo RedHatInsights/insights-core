@@ -19,8 +19,8 @@ Vgs - command ``/sbin/vgs --nameprefixes --noheadings --separator='|' -a -o vg_a
 VgsHeadings - command ``vgs -v -o +vg_mda_count,vg_mda_free,vg_mda_size,vg_mda_used_count,vg_tags --config="global{locking_type=0}"``
 -------------------------------------------------------------------------------------------------------------------------------------
 
-Lvs - command ``/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_all``
-------------------------------------------------------------------------------------
+Lvs - command ``/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,lv_size,lv_attr,mirror_log,vg_name,devices,region_size,data_percent,metadata_percent,segtype,seg_monitor --config="global{locking_type=0}"``
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 LvsHeadings - command ``/sbin/lvs -a -o +lv_tags,devices --config="global{locking_type=0}"``
 --------------------------------------------------------------------------------------------
@@ -32,12 +32,21 @@ LvmConf - file ``/etc/lvm/lvm.conf``
 from __future__ import print_function
 
 import json
-from ..util import parse_keypair_lines
-from .. import add_filter
-from .. import Parser, parser, get_active_lines, LegacyItemAccess, CommandParser
-from . import parse_fixed_table
+from collections import defaultdict
+
 from insights.parsers import ParseException
 from insights.specs import Specs
+
+from .. import (
+    CommandParser,
+    LegacyItemAccess,
+    Parser,
+    add_filter,
+    get_active_lines,
+    parser,
+)
+from ..util import parse_keypair_lines
+from . import parse_fixed_table
 
 
 def map_keys(pvs, keys):
@@ -57,23 +66,46 @@ def map_keys(pvs, keys):
 
 def find_warnings(content):
     """Look for lines containing warning/error/info strings instead of data."""
-    keywords = [k.lower() for k in [
-        "WARNING", "Couldn't find device", "Configuration setting",
-        "read failed", "Was device resized?", "Invalid argument",
-        "leaked on lvs", "Checksum error", "is exported", "failed.",
-        "Invalid metadata", "response failed", "unknown device",
-        "duplicate", "not found", "Missing device", "Internal error",
-        "Input/output error", "Incorrect metadata", "Cannot process volume",
-        "No such file or directory", "Logging initialised", "changed sizes",
-        "vsnprintf failed", "write failed", "correction failed",
-        "Failed to write", "Couldn't read", "marked missing",
-        "Attempt to close device", "Ignoring supplied major",
-        "not match metadata"
-    ]]
+    keywords = [
+        k.lower()
+        for k in [
+            "WARNING",
+            "Couldn't find device",
+            "Configuration setting",
+            "read failed",
+            "Was device resized?",
+            "Invalid argument",
+            "leaked on lvs",
+            "Checksum error",
+            "is exported",
+            "failed.",
+            "Invalid metadata",
+            "response failed",
+            "duplicate",
+            "not found",
+            "Missing device",
+            "Internal error",
+            "Input/output error",
+            "Incorrect metadata",
+            "Cannot process volume",
+            "No such file or directory",
+            "Logging initialised",
+            "changed sizes",
+            "vsnprintf failed",
+            "write failed",
+            "correction failed",
+            "Failed to write",
+            "Couldn't read",
+            "marked missing",
+            "Attempt to close device",
+            "Ignoring supplied major",
+            "not match metadata",
+        ]
+    ]
     for l in content:
         lower = l.strip().lower()
         # Avoid hitting keywords inside the data
-        if not lower.startswith('lvm2'):
+        if not lower.startswith("lvm2"):
             if any(k in lower for k in keywords):
                 yield l
 
@@ -110,8 +142,8 @@ class Lvm(CommandParser):
 
     def __getitem__(self, key):
         if isinstance(key, int):
-            return self.data['content'][key]
-        for i in self.data['content']:
+            return self.data["content"][key]
+        for i in self.data["content"]:
             if i[self.PRIMARY_KEY] == key:
                 return i
         return None
@@ -161,6 +193,7 @@ class Pvs(Lvm):
     unique key for each PV is created by joining the `PV_NAME and PV_UUID fields with a `+`
     character.  This key is added to the dictionary as the `PV_KEY` field.
     """
+
     KEYS = {
         "LVM2_PV_MDA_USED_COUNT": "#PMdaUse",
         "LVM2_PV_UUID": "PV_UUID",
@@ -183,17 +216,17 @@ class Pvs(Lvm):
         "LVM2_PV_FREE": "PFree",
         "LVM2_PV_ALLOCATABLE": "Allocatable",
         "LVM2_PV_MDA_SIZE": "PMdaSize",
-        "LVM2_PV_MISSING": "Missing"
+        "LVM2_PV_MISSING": "Missing",
     }
 
     PRIMARY_KEY = "PV"
 
     def parse_content(self, content):
         super(Pvs, self).parse_content(content)
-        for pv in self.data['content']:
-            pv_name = pv.get('PV') if pv.get('PV') is not None else 'no_name'
-            pv_uuid = pv.get('PV_UUID') if pv.get('PV_UUID') is not None else 'no_uuid'
-            pv.update({'PV_KEY': '+'.join([pv_name, pv_uuid])})
+        for pv in self.data["content"]:
+            pv_name = pv.get("PV") if pv.get("PV") is not None else "no_name"
+            pv_uuid = pv.get("PV_UUID") if pv.get("PV_UUID") is not None else "no_uuid"
+            pv.update({"PV_KEY": "+".join([pv_name, pv_uuid])})
 
     def vg(self, name):
         """Return all physical volumes assigned to the given volume group"""
@@ -207,6 +240,7 @@ class PvsAll(Pvs):
 
     Uses the ``Pvs`` class defined in this module.
     """
+
     pass
 
 
@@ -251,6 +285,8 @@ class PvsHeadings(LvmHeadings):
     Attributes:
         data (list): List of dicts, each dict containing one row of the table
             with column headings as keys.
+        warnings (set): Set of lines from input data containing
+            warning strings.
 
     Examples:
         >>> pvs_data = shared[PvsHeadings]
@@ -262,19 +298,23 @@ class PvsHeadings(LvmHeadings):
         '/dev/fedora/home'
 
     """
+
     PRIMARY_KEY = Pvs.PRIMARY_KEY
 
     def parse_content(self, content):
-        self.data = parse_fixed_table(content,
-                                      heading_ignore=['PV '],
-                                      header_substitute=[('PV UUID', 'PV_UUID'),
-                                                         ('1st PE', '1st_PE')],
-                                      trailing_ignore=['Reloading', 'Wiping'])
+        self.warnings = set(find_warnings(content))
+        content = [l for l in content if l not in self.warnings]
+        self.data = parse_fixed_table(
+            content,
+            heading_ignore=["PV "],
+            header_substitute=[("PV UUID", "PV_UUID"), ("1st PE", "1st_PE")],
+            trailing_ignore=["Reloading", "Wiping"],
+        )
         self.data = map_keys(self.data, Pvs.KEYS)
         for pv in self.data:
-            pv_name = pv.get('PV') if pv.get('PV') is not None else 'no_name'
-            pv_uuid = pv.get('PV_UUID') if pv.get('PV_UUID') is not None else 'no_uuid'
-            pv.update({'PV_KEY': '+'.join([pv_name, pv_uuid])})
+            pv_name = pv.get("PV") if pv.get("PV") is not None else "no_name"
+            pv_uuid = pv.get("PV_UUID") if pv.get("PV_UUID") is not None else "no_uuid"
+            pv.update({"PV_KEY": "+".join([pv_name, pv_uuid])})
 
     def vg(self, name):
         """Return all physical volumes assigned to the given volume group"""
@@ -309,6 +349,7 @@ class Vgs(Lvm):
             }
         ]
     """
+
     KEYS = {
         "LVM2_VG_EXTENDABLE": "Extendable",
         "LVM2_VG_EXTENT_SIZE": "Ext",
@@ -341,7 +382,7 @@ class Vgs(Lvm):
         "LVM2_VG_CLUSTERED": "Clustered",
         "LVM2_VG_LOCKARGS": "Lock Args",
         "LVM2_MAX_LV": "MaxLV",
-        "LVM2_VG_SIZE": "VSize"
+        "LVM2_VG_SIZE": "VSize",
     }
 
     PRIMARY_KEY = "VG"
@@ -354,6 +395,7 @@ class VgsAll(Vgs):
 
     Uses the ``Vgs`` class defined in this module.
     """
+
     pass
 
 
@@ -380,6 +422,8 @@ class VgsHeadings(LvmHeadings):
     Attributes:
         data (list): List of dicts, each dict containing one row of the table
             with column headings as keys.
+        warnings (set): Set of lines from input data containing
+            warning strings.
 
     Examples:
         >>> vgs_info = shared[VgsHeadings]
@@ -388,21 +432,25 @@ class VgsHeadings(LvmHeadings):
         >>> vgs_info.data[2]['LSize']
         '2.00g'
     """
+
     PRIMARY_KEY = Vgs.PRIMARY_KEY
 
     def parse_content(self, content):
-        self.data = parse_fixed_table(content,
-                                      heading_ignore=['VG '],
-                                      header_substitute=[('VG Tags', 'VG_Tags'),
-                                                         ('VG UUID', 'VG_UUID')],
-                                      trailing_ignore=['Reloading', 'Wiping'])
+        self.warnings = set(find_warnings(content))
+        content = [l for l in content if l not in self.warnings]
+        self.data = parse_fixed_table(
+            content,
+            heading_ignore=["VG "],
+            header_substitute=[("VG Tags", "VG_Tags"), ("VG UUID", "VG_UUID")],
+            trailing_ignore=["Reloading", "Wiping"],
+        )
         self.data = map_keys(self.data, Vgs.KEYS)
 
 
 @parser(Specs.lvs_noheadings)
 class Lvs(Lvm):
     """
-    Parse the output of the `/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_all` command.
+    Parse the output of the `/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,lv_size,lv_attr,mirror_log,vg_name,devices,region_size,data_percent,metadata_percent,segtype,seg_monitor --config="global{locking_type=0}"` command.
 
     Parse each line in the output of lvs based on the lvs datasource in
     `insights/specs/`:
@@ -429,6 +477,7 @@ class Lvs(Lvm):
             }
         ]
     """
+
     KEYS = {
         "LVM2_POOL_LV_UUID": "Pool_UUID",
         "LVM2_LV_PARENT": "Parent",
@@ -513,7 +562,7 @@ class Lvs(Lvm):
         "LVM2_LV_DESCENDANTS": "Descendants",
         "LVM2_REGION_SIZE": "Region",
         "LVM2_SEGTYPE": "SegType",
-        "LVM2_SEG_MONITOR": "Monitor"
+        "LVM2_SEG_MONITOR": "Monitor",
     }
 
     PRIMARY_KEY = "LV"
@@ -540,6 +589,7 @@ class LvsAll(Lvs):
 
     Uses the ``Lvs`` class defined in this module.
     """
+
     pass
 
 
@@ -565,6 +615,8 @@ class LvsHeadings(LvmHeadings):
     Attributes:
         data (list): List of dicts, each dict containing one row of the table
             with column headings as keys.
+        warnings (set): Set of lines from input data containing
+            warning strings.
 
     Examples:
         >>> lvs_info = shared[LvsHeadings]
@@ -575,12 +627,15 @@ class LvsHeadings(LvmHeadings):
         >>> lvs_info.data[2]['LSize']
         '2.00g'
     """
+
     PRIMARY_KEY = Lvs.PRIMARY_KEY
 
     def parse_content(self, content):
-        self.data = parse_fixed_table(content,
-                                      heading_ignore=['LV '],
-                                      header_substitute=[('LV Tags', 'LV_Tags')])
+        self.warnings = set(find_warnings(content))
+        content = [l for l in content if l not in self.warnings]
+        self.data = parse_fixed_table(
+            content, heading_ignore=["LV "], header_substitute=[("LV Tags", "LV_Tags")]
+        )
         self.data = map_keys(self.data, Lvs.KEYS)
 
 
@@ -592,7 +647,7 @@ for cls in (Lvs, Pvs, Vgs):
 LVM_CONF_FILTERS = [
     "locking_type",  # CMIRROR_PERF_ISSUE
     "filter",  # LVM_CONF_REMOVE_BOOTDEV HA_LVM_RELOCATE_ISSUE LVM_FILTER_ISSUE
-    "volume_list"  # HA_LVM_RELOCATE_ISSUE
+    "volume_list",  # HA_LVM_RELOCATE_ISSUE
 ]
 add_filter(Specs.lvm_conf, LVM_CONF_FILTERS)
 
@@ -635,12 +690,41 @@ class LvmConf(LegacyItemAccess, Parser):
         lvm_conf_dict = {}
         for line in get_active_lines(content):
             if "=" in line:
-                (key, value) = [item.strip() for item in line.split('=', 1)]
+                (key, value) = [item.strip() for item in line.split("=", 1)]
                 try:
                     lvm_conf_dict[key] = json.loads(value)
                 except Exception:
                     lvm_conf_dict[key] = value
         self.data = lvm_conf_dict
+
+
+def _lvm_render(o):
+    if isinstance(o, dict):
+        parts = ['"%s": %s' % (k, _lvm_render(v)) for k, v in o.items()]
+        return "{%s}" % ",".join(parts)
+    return "%s" % o
+
+
+@parser(Specs.lvmconfig)
+class LvmConfig(CommandParser):
+    def parse_content(self, content):
+        dd = defaultdict(dict)
+        key = None
+        for line in content:
+            line = line.rstrip()
+            if not line:
+                continue
+
+            if line[-1] == "{":
+                key = line.split()[0]
+            elif line[0] == "}":
+                key = None
+            elif line[0] == "\t":
+                k, v = line.strip().split("=", 1)
+                dd[key][k] = v
+            else:
+                pass  # inferring this a stderr, so skipping
+        self.data = json.loads(_lvm_render(dict(dd)))
 
 
 if __name__ == "__main__":
@@ -652,6 +736,8 @@ if __name__ == "__main__":
 
     content = sys.stdin.read().splitlines()
     headers = [h.strip().replace(" ", "_") for h in content[0].split("|")]
-    nameprefixes = [v.split("=")[0].strip() for v in content[1].replace("0 ", "0").split("|")]
+    nameprefixes = [
+        v.split("=")[0].strip() for v in content[1].replace("0 ", "0").split("|")
+    ]
     pairs = zip(nameprefixes, headers)
     print(json.dumps(OrderedDict(sorted(pairs))))

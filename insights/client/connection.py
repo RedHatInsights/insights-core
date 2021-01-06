@@ -8,10 +8,10 @@ import os
 import six
 import json
 import logging
-import pkg_resources
 import platform
 import xml.etree.ElementTree as ET
 import warnings
+import errno
 # import io
 from tempfile import TemporaryFile
 # from datetime import datetime, timedelta
@@ -49,6 +49,8 @@ URLLIB3_LOGGER.setLevel(logging.WARNING)
 URLLIB3_LOGGER = logging.getLogger('requests.packages.urllib3.connectionpool')
 URLLIB3_LOGGER.setLevel(logging.WARNING)
 
+REQUEST_FAILED_EXCEPTIONS = (requests.ConnectionError, requests.Timeout)
+
 # TODO: Document this, or turn it into a real option
 if os.environ.get('INSIGHTS_DEBUG_HTTP'):
     import httplib
@@ -58,6 +60,16 @@ if os.environ.get('INSIGHTS_DEBUG_HTTP'):
     requests_log = logging.getLogger("urllib3")
     requests_log.setLevel(logging.DEBUG)
     requests_log.propagate = True
+
+
+def _host_not_found():
+    raise Exception("Error: failed to find host with matching machine-id. Run insights-client --status to check registration status")
+
+
+def _api_request_failed(exception, message='The Insights API could not be reached.'):
+    logger.error(exception)
+    if message:
+        logger.error(message)
 
 
 class InsightsConnection(object):
@@ -121,6 +133,8 @@ class InsightsConnection(object):
             # workaround for a workaround for a workaround
             base_url_base = self.base_url.split('/platform')[0]
             self.branch_info_url = base_url_base + '/v1/branch_info'
+        self.inventory_url = self.api_url + "/inventory/v1"
+
         self.authmethod = self.config.authmethod
         self.systemid = self.config.systemid or None
         self.get_proxies()
@@ -173,6 +187,7 @@ class InsightsConnection(object):
         """
         Generates and returns a string suitable for use as a request user-agent
         """
+        import pkg_resources
         core_version = "insights-core"
         pkg = pkg_resources.working_set.find(pkg_resources.Requirement.parse(core_version))
         if pkg is not None:
@@ -180,10 +195,17 @@ class InsightsConnection(object):
         else:
             core_version = "Core %s" % package_info["VERSION"]
 
-        client_version = "insights-client"
-        pkg = pkg_resources.working_set.find(pkg_resources.Requirement.parse(client_version))
-        if pkg is not None:
-            client_version = "%s/%s" % (pkg.project_name, pkg.version)
+        try:
+            from insights_client import constants as insights_client_constants
+            client_version = "insights-client/{0}".format(insights_client_constants.InsightsConstants.version)
+        except ImportError:
+            client_version = "insights-client"
+
+        if os.path.isfile(constants.ppidfile):
+            with open(constants.ppidfile, 'r') as f:
+                parent_process = f.read()
+        else:
+            parent_process = "unknown"
 
         requests_version = None
         pkg = pkg_resources.working_set.find(pkg_resources.Requirement.parse("requests"))
@@ -215,9 +237,10 @@ class InsightsConnection(object):
                 logger.warning("Failed to detect OS version: %s", e)
         kernel_version = "%s %s" % (platform.system(), platform.release())
 
-        ua = "{client_version} ({core_version}; {requests_version}) {os_family} {os_release} ({python_version}; {kernel_version})".format(
+        ua = "{client_version} ({core_version}; {requests_version}) {os_family} {os_release} ({python_version}; {kernel_version}); {parent_process}".format(
             client_version=client_version,
             core_version=core_version,
+            parent_process=parent_process,
             python_version=python_version,
             os_family=os_family,
             os_release=os_release,
@@ -670,12 +693,11 @@ class InsightsConnection(object):
             if self.config.legacy_upload:
                 url = self.base_url + '/platform/inventory/v1/hosts?insights_id=' + machine_id
             else:
-                url = self.base_url + '/inventory/v1/hosts?insights_id=' + machine_id
+                url = self.inventory_url + '/hosts?insights_id=' + machine_id
             logger.log(NETWORK, "GET %s", url)
             res = self.session.get(url, timeout=self.config.http_timeout)
-        except (requests.ConnectionError, requests.Timeout) as e:
-            logger.error(e)
-            logger.error('The Insights API could not be reached.')
+        except REQUEST_FAILED_EXCEPTIONS as e:
+            _api_request_failed(e)
             return None
         try:
             if (self.handle_fail_rcs(res)):
@@ -740,9 +762,12 @@ class InsightsConnection(object):
             return self._legacy_unregister()
 
         results = self._fetch_system_by_machine_id()
+        if not results:
+            logger.info('This host could not be found.')
+            return False
         try:
             logger.debug("Unregistering host...")
-            url = self.api_url + "/inventory/v1/hosts/" + results[0]['id']
+            url = self.inventory_url + "/hosts/" + results[0]['id']
             logger.log(NETWORK, "DELETE %s", url)
             response = self.session.delete(url)
             response.raise_for_status()
@@ -841,7 +866,7 @@ class InsightsConnection(object):
         logger.debug("Upload duration: %s", upload.elapsed)
         return upload
 
-    def upload_archive(self, data_collected, content_type, duration):
+    def upload_archive(self, data_collected, content_type, duration=None):
         """
         Do an HTTPS Upload of the archive
         """
@@ -880,7 +905,14 @@ class InsightsConnection(object):
             # 202 from platform, no json response
             logger.debug(upload.text)
             # upload = registration on platform
-            write_registered_file()
+            try:
+                write_registered_file()
+            except OSError as e:
+                if e.errno == errno.EACCES and os.getuid() != 0:
+                    # if permissions error as non-root, ignore
+                    pass
+                else:
+                    logger.error('Could not update local registration record: %s', str(e))
         else:
             logger.debug(
                 "Upload archive failed with status code %s",
@@ -921,8 +953,8 @@ class InsightsConnection(object):
                 logger.error('Unable to set display name: %s %s',
                              res.status_code, res.text)
                 return False
-        except (requests.ConnectionError, requests.Timeout, ValueError) as e:
-            logger.error(e)
+        except REQUEST_FAILED_EXCEPTIONS + (ValueError,) as e:
+            _api_request_failed(e, None)
             # can't connect, run connection test
             return False
 
@@ -938,13 +970,12 @@ class InsightsConnection(object):
             return system
         inventory_id = system[0]['id']
 
-        req_url = self.base_url + '/inventory/v1/hosts/' + inventory_id
+        req_url = self.inventory_url + '/hosts/' + inventory_id
         try:
             logger.log(NETWORK, "PATCH %s", req_url)
             res = self.session.patch(req_url, json={'display_name': display_name})
-        except (requests.ConnectionError, requests.Timeout) as e:
-            logger.error(e)
-            logger.error('The Insights API could not be reached.')
+        except REQUEST_FAILED_EXCEPTIONS as e:
+            _api_request_failed(e)
             return False
         if (self.handle_fail_rcs(res)):
             logger.error('Could not update display name.')
@@ -967,8 +998,7 @@ class InsightsConnection(object):
             logger.log(NETWORK, "GET %s", diag_url)
             res = self.session.get(diag_url, params=params, timeout=self.config.http_timeout)
         except (requests.ConnectionError, requests.Timeout) as e:
-            logger.error(e)
-            logger.error('The Insights API could not be reached.')
+            _api_request_failed(e)
             return False
         if (self.handle_fail_rcs(res)):
             logger.error('Unable to get diagnosis data: %s %s',
@@ -1011,14 +1041,14 @@ class InsightsConnection(object):
         '''
             Retrieve advisor report
         '''
-        url = self.base_url + "/inventory/v1/hosts?insights_id=%s" % generate_machine_id()
+        url = self.inventory_url + "/hosts?insights_id=%s" % generate_machine_id()
         content = self._get(url)
         if content is None:
             return None
 
         host_details = json.loads(content)
         if host_details["total"] < 1:
-            raise Exception("Error: failed to find host with matching machine-id. Run insights-client --status to check registration status")
+            _host_not_found()
         if host_details["total"] > 1:
             raise Exception("Error: multiple hosts detected (insights_id = %s)" % generate_machine_id())
 
@@ -1040,3 +1070,38 @@ class InsightsConnection(object):
             logger.debug("Wrote \"/var/lib/insights/insights-details.json\"")
 
         return json.loads(content)
+
+    def checkin(self):
+        '''
+            Sends an ultralight check-in request containing only the Canonical Facts.
+        '''
+        logger.info("Checking in...")
+
+        try:
+            canonical_facts = get_canonical_facts()
+        except Exception as e:
+            logger.debug('Error getting canonical facts: %s', e)
+            logger.debug('Falling back to only machine ID.')
+            insights_id = generate_machine_id()
+            canonical_facts = {"insights_id": str(insights_id)}
+
+        url = self.inventory_url + "/hosts/checkin"
+        logger.debug("Sending check-in request to %s with %s" % (url, canonical_facts))
+        try:
+            response = self.session.post(url, headers={"Content-Type": "application/json"}, data=json.dumps(canonical_facts))
+            # Change to POST when the API is fixed.
+        except REQUEST_FAILED_EXCEPTIONS as exception:
+            _api_request_failed(exception)
+            return None
+        logger.debug("Check-in response status code %d" % response.status_code)
+
+        if response.status_code == requests.codes.CREATED:
+            # Remove OK when the API is fixed.
+            logger.info("Successfully checked in!")
+            return True
+        elif response.status_code == requests.codes.NOT_FOUND:
+            # Remove BAD_REQUEST when the API is fixed.
+            _host_not_found()
+        else:
+            logger.debug("Check-in response body %s" % response.text)
+            raise RuntimeError("Unknown check-in API response")

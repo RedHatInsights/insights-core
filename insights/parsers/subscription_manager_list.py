@@ -25,6 +25,10 @@ class SubscriptionManagerList(CommandParser):
     A general object for parsing the output of ``subscription-manager list``.
     This should be subclassed to read the specific output - e.g. ``--consumed``
     or ``--installed``.
+
+    Attributes:
+        records (list): A list of dict with the output info, it's empty when the ``error`` occurs
+        error (str): The raised exception when there is traceback
     """
     def parse_content(self, content):
         self.records = []
@@ -41,6 +45,9 @@ class SubscriptionManagerList(CommandParser):
         # it starts a new record.
 
         for line in content:
+            if 'Traceback' in line:
+                self.error = content[-1]
+                break
             # Check for match of key/value line
             match = key_val_re.search(line)
             if match:

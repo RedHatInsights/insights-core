@@ -4,6 +4,7 @@ from insights.client.apps.compliance import ComplianceClient, COMPLIANCE_CONTENT
 from mock.mock import patch, Mock, mock_open
 from pytest import raises
 import os
+import six
 
 PATH = '/usr/share/xml/scap/ref_id.xml'
 
@@ -50,7 +51,7 @@ def test_get_policies(config):
     compliance_client.hostname = 'foo'
     compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, json=Mock(return_value={'data': [{'attributes': 'data'}]})))
     assert compliance_client.get_policies() == [{'attributes': 'data'}]
-    compliance_client.conn.session.get.assert_called_with('https://localhost/app/compliance/profiles', params={'search': 'system_names=foo'})
+    compliance_client.conn.session.get.assert_called_with('https://localhost/app/compliance/profiles', params={'search': 'system_names=foo external=false canonical=false'})
 
 
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
@@ -59,7 +60,7 @@ def test_get_policies_no_policies(config):
     compliance_client.hostname = 'foo'
     compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, json=Mock(return_value={'data': []})))
     assert compliance_client.get_policies() == []
-    compliance_client.conn.session.get.assert_called_with('https://localhost/app/compliance/profiles', params={'search': 'system_names=foo'})
+    compliance_client.conn.session.get.assert_called_with('https://localhost/app/compliance/profiles', params={'search': 'system_names=foo external=false canonical=false'})
 
 
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
@@ -68,7 +69,7 @@ def test_get_policies_error(config):
     compliance_client.hostname = 'foo'
     compliance_client.conn.session.get = Mock(return_value=Mock(status_code=500))
     assert compliance_client.get_policies() == []
-    compliance_client.conn.session.get.assert_called_with('https://localhost/app/compliance/profiles', params={'search': 'system_names=foo'})
+    compliance_client.conn.session.get.assert_called_with('https://localhost/app/compliance/profiles', params={'search': 'system_names=foo external=false canonical=false'})
 
 
 @patch("insights.client.apps.compliance.linux_distribution", return_value=(None, '6.5', None))
@@ -98,8 +99,7 @@ def test_find_scap_policy(config, call):
 def test_find_scap_policy_not_found(config, call):
     compliance_client = ComplianceClient(config)
     compliance_client.profile_files = lambda: ['/something']
-    with raises(SystemExit):
-        compliance_client.find_scap_policy('ref_id')
+    assert compliance_client.find_scap_policy('ref_id') is None
 
 
 @patch("insights.client.apps.compliance.call", return_value=(0, ''.encode('utf-8')))
@@ -110,7 +110,10 @@ def test_run_scan(config, call):
     env = os.environ
     env.update({'TZ': 'UTC'})
     compliance_client.run_scan('ref_id', '/nonexistent', output_path)
-    call.assert_called_with(("oscap xccdf eval --profile ref_id --results " + output_path + ' /nonexistent').encode(), keep_rc=True, env=env)
+    if six.PY3:
+        call.assert_called_with(("oscap xccdf eval --profile ref_id --results " + output_path + ' /nonexistent'), keep_rc=True, env=env)
+    else:
+        call.assert_called_with(("oscap xccdf eval --profile ref_id --results " + output_path + ' /nonexistent').encode(), keep_rc=True, env=env)
 
 
 @patch("insights.client.apps.compliance.call", return_value=(1, 'bad things happened'.encode('utf-8')))
@@ -122,7 +125,21 @@ def test_run_scan_fail(config, call):
     env.update({'TZ': 'UTC'})
     with raises(SystemExit):
         compliance_client.run_scan('ref_id', '/nonexistent', output_path)
-    call.assert_called_with(("oscap xccdf eval --profile ref_id --results " + output_path + ' /nonexistent').encode(), keep_rc=True, env=env)
+    if six.PY3:
+        call.assert_called_with(("oscap xccdf eval --profile ref_id --results " + output_path + ' /nonexistent'), keep_rc=True, env=env)
+    else:
+        call.assert_called_with(("oscap xccdf eval --profile ref_id --results " + output_path + ' /nonexistent').encode(), keep_rc=True, env=env)
+
+
+@patch("insights.client.apps.compliance.call", return_value=(0, ''.encode('utf-8')))
+@patch("insights.client.config.InsightsConfig")
+def test_run_scan_missing_profile(config, call):
+    compliance_client = ComplianceClient(config)
+    output_path = '/tmp/oscap_results-ref_id.xml'
+    env = os.environ
+    env.update({'TZ': 'UTC'})
+    assert compliance_client.run_scan('ref_id', None, output_path) is None
+    call.assert_not_called()
 
 
 @patch("insights.client.config.InsightsConfig")

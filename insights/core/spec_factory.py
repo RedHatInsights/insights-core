@@ -175,6 +175,7 @@ class FileProvider(ContentProvider):
 
     def validate(self):
         if not blacklist.allow_file("/" + self.relative_path):
+            log.warning("WARNING: Skipping file %s", "/" + self.relative_path)
             raise dr.SkipComponent()
 
         if not os.path.exists(self.path):
@@ -244,8 +245,12 @@ class TextFileProvider(FileProvider):
             rc, out = self.ctx.shell_out(args, keep_rc=True, env=SAFE_ENV)
             self.rc = rc
             return out
-        with codecs.open(self.path, "r", encoding="utf-8", errors="surrogateescape") as f:
-            return [l.rstrip("\n") for l in f]
+        if six.PY3:
+            with open(self.path, "r", encoding="utf-8", errors="surrogateescape") as f:
+                return [l.rstrip("\n") for l in f]
+        else:
+            with codecs.open(self.path, "r", encoding="utf-8", errors="surrogateescape") as f:
+                return [l.rstrip("\n") for l in f]
 
     def _stream(self):
         """
@@ -262,8 +267,12 @@ class TextFileProvider(FileProvider):
                     with streams.connect(*args, env=SAFE_ENV) as s:
                         yield s
                 else:
-                    with codecs.open(self.path, "r", encoding="utf-8", errors="surrogateescape") as f:
-                        yield f
+                    if six.PY3:
+                        with open(self.path, "r", encoding="utf-8", errors="surrogateescape") as f:
+                            yield f
+                    else:
+                        with codecs.open(self.path, "r", encoding="utf-8", errors="surrogateescape") as f:
+                            yield f
         except StopIteration:
             raise
         except Exception as ex:
@@ -313,6 +322,7 @@ class CommandOutputProvider(ContentProvider):
 
     def validate(self):
         if not blacklist.allow_command(self.cmd):
+            log.warning("WARNING: Skipping command %s", self.cmd)
             raise dr.SkipComponent()
 
         if not which(shlex.split(self.cmd)[0], env=self.create_env()):
@@ -379,7 +389,8 @@ class CommandOutputProvider(ContentProvider):
         args = self.create_args()
         fs.ensure_path(os.path.dirname(dst))
         if args:
-            p = Pipeline(*args, timeout=self.timeout, env=self.create_env())
+            timeout = self.timeout or self.ctx.timeout
+            p = Pipeline(*args, timeout=timeout, env=self.create_env())
             return p.write(dst, keep_rc=self.keep_rc)
 
     def __repr__(self):

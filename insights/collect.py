@@ -18,10 +18,10 @@ import yaml
 from datetime import datetime
 
 from insights import apply_configs, apply_default_enabled, dr
-from insights.core import blacklist
+from insights.core import blacklist, filters
 from insights.core.serde import Hydration
 from insights.util import fs
-from insights.util.subproc import call
+from insights.util.subproc import call, CalledProcessError
 
 SAFE_ENV = {
     "PATH": os.path.pathsep.join([
@@ -66,7 +66,7 @@ client:
           enabled: true
 
     run_strategy:
-        name: parallel
+        name: serial
         args:
             max_workers: null
 
@@ -101,6 +101,52 @@ plugins:
           enabled: true
 
         - name: insights.combiners.hostname
+          enabled: true
+
+    # needed for the CloudProvider combiner
+        - name: insights.parsers.installed_rpms
+          enabled: true
+
+        - name: insights.parsers.dmidecode
+          enabled: true
+
+        - name: insights.parsers.yum
+          enabled: true
+
+        - name: insights.parsers.rhsm_conf
+          enabled: true
+
+        - name: insights.combiners.cloud_provider
+          enabled: true
+
+    # needed for the Services combiner
+        - name: insights.parsers.chkconfig
+          enabled: true
+
+        - name: insights.parsers.systemd.unitfiles
+          enabled: true
+
+        - name: insights.combiners.services
+          enabled: true
+
+    # needed for multiple Datasouce specs
+        - name: insights.parsers.ps.PsAuxcww
+          enabled: true
+
+        - name: insights.parsers.ps.PsAuxww
+          enabled: true
+
+        - name: insights.combiners.ps
+          enabled: true
+
+    # needed to collect the sap_hdb_version spec that uses the Sap combiner
+        - name: insights.parsers.lssap
+          enabled: true
+
+        - name: insights.parsers.saphostctrl
+          enabled: true
+
+        - name: insights.combiners.sap
           enabled: true
 
     # needed because some specs aren't given names before they're used in DefaultSpecs
@@ -214,7 +260,7 @@ def get_pool(parallel, kwargs):
         yield None
 
 
-def collect(manifest=default_manifest, tmp_path=None, compress=False):
+def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=None, client_timeout=None):
     """
     This is the collection entry point. It accepts a manifest, a temporary
     directory in which to store output, and a boolean for optional compression.
@@ -228,7 +274,10 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False):
         compress (boolean): True to create a tar.gz and remove the original
             workspace containing output. False to leave the workspace without
             creating a tar.gz
-
+        rm_conf (dict): Client-provided python dict containing keys
+            "commands", "files", and "keywords", to be injected
+            into the manifest blacklist.
+        client_timeout (int): Client-provided command timeout value
     Returns:
         The full path to the created tar.gz or workspace.
     """
@@ -244,9 +293,37 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False):
 
     apply_blacklist(client.get("blacklist", {}))
 
+    # insights-client
+    if client_timeout:
+        try:
+            client['context']['args']['timeout'] = client_timeout
+        except LookupError:
+            log.warning('Could not set timeout option.')
+    rm_conf = rm_conf or {}
+    apply_blacklist(rm_conf)
+    for component in rm_conf.get('components', []):
+        if not dr.get_component_by_name(component):
+            log.warning('WARNING: Unknown component in blacklist: %s' % component)
+        else:
+            dr.set_enabled(component, enabled=False)
+            log.warning('WARNING: Skipping component: %s', component)
+
     to_persist = get_to_persist(client.get("persist", set()))
 
-    hostname = call("hostname -f", env=SAFE_ENV).strip()
+    try:
+        filters.load()
+    except IOError as e:
+        # could not load filters file
+        log.debug("No filters available: %s", str(e))
+    except AttributeError as e:
+        # problem parsing the filters
+        log.debug("Could not parse filters: %s", str(e))
+
+    try:
+        hostname = call("hostname -f", env=SAFE_ENV).strip()
+    except CalledProcessError:
+        # problem calling hostname -f
+        hostname = call("hostname", env=SAFE_ENV).strip()
     suffix = datetime.utcnow().strftime("%Y%m%d%H%M%S")
     relative_path = "insights-%s-%s" % (hostname, suffix)
     tmp_path = tmp_path or tempfile.gettempdir()

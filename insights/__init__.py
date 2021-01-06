@@ -34,13 +34,12 @@ from .core.archives import COMPRESSION_TYPES, extract, InvalidArchive, InvalidCo
 from .core import dr  # noqa: F401
 from .core.context import ClusterArchiveContext, HostContext, HostArchiveContext, SerializedArchiveContext, ExecutionContext  # noqa: F401
 from .core.dr import SkipComponent  # noqa: F401
-from .core.hydration import create_context
+from .core.hydration import create_context, initialize_broker  # noqa: F401
 from .core.plugins import combiner, fact, metadata, parser, rule  # noqa: F401
 from .core.plugins import datasource, condition, incident  # noqa: F401
 from .core.plugins import make_response, make_metadata, make_fingerprint  # noqa: F401
 from .core.plugins import make_pass, make_fail, make_info  # noqa: F401
 from .core.filters import add_filter, apply_filters, get_filters  # noqa: F401
-from .core.serde import Hydration
 from .formats import get_formatter
 from .parsers import get_active_lines  # noqa: F401
 from .util import defaults  # noqa: F401
@@ -85,7 +84,7 @@ add_status(package_info["NAME"], get_nvr(), package_info["COMMIT"])
 
 
 def process_dir(broker, root, graph, context, inventory=None):
-    ctx = create_context(root, context)
+    ctx, broker = initialize_broker(root, context=context, broker=broker)
     log.debug("Processing %s with %s" % (root, ctx))
 
     if isinstance(ctx, ClusterArchiveContext):
@@ -93,10 +92,6 @@ def process_dir(broker, root, graph, context, inventory=None):
         archives = [f for f in ctx.all_files if f.endswith(COMPRESSION_TYPES)]
         return process_cluster(graph, archives, broker=broker, inventory=inventory)
 
-    broker[ctx.__class__] = ctx
-    if isinstance(ctx, SerializedArchiveContext):
-        h = Hydration(ctx.root)
-        broker = h.hydrate(broker=broker)
     graph = dict((k, v) for k, v in graph.items() if k in dr.COMPONENTS[dr.GROUPS.single])
     broker = dr.run(graph, broker=broker)
     return broker
@@ -137,8 +132,10 @@ def _run(broker, graph=None, root=None, context=None, inventory=None):
 def load_default_plugins():
     dr.load_components("insights.specs.default")
     dr.load_components("insights.specs.insights_archive")
+    dr.load_components("insights.specs.core3_archive")
     dr.load_components("insights.specs.sos_archive")
     dr.load_components("insights.specs.jdr_archive")
+    dr.load_components("insights.specs.must_gather_archive")
 
 
 def load_packages(packages):

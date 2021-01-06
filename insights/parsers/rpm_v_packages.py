@@ -1,6 +1,15 @@
 """
-RpmVPackages - command ``/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo``
-==========================================================================================
+RpmVPackages - command ``/bin/rpm -V <packages>``
+=================================================
+
+Below packages are verified:
+    - coreutils
+    - procps
+    - procps-ng
+    - shadow-utils
+    - passwd
+    - sudo
+    - chrony
 """
 
 from insights.core import CommandParser
@@ -11,7 +20,7 @@ from insights.specs import Specs
 @parser(Specs.rpm_V_packages)
 class RpmVPackages(CommandParser):
     """
-    Class for parsing ``/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo`` command.
+    Class for parsing ``/bin/rpm -V <packages>`` command.
 
     Attributes:
         packages_list (list of dictionaries): every dictionary contains information about one entry

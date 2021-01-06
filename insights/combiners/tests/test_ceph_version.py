@@ -85,6 +85,7 @@ def test_ceph_version():
     assert ret.version == "3.2"
     assert ret.major == "3"
     assert ret.minor == "2"
+    assert not ret.is_els
     assert ret.downstream_release == "0"
     assert ret.upstream_version["release"] == 12
     assert ret.upstream_version["major"] == 2
@@ -98,6 +99,7 @@ def test_ceph_version_2():
     assert ret.version == "3.2"
     assert ret.major == "3"
     assert ret.minor == "2"
+    assert not ret.is_els
     assert ret.downstream_release == "0"
     assert ret.upstream_version["release"] == 12
     assert ret.upstream_version["major"] == 2
@@ -110,6 +112,7 @@ def test_ceph_insights():
     assert ret.version == "3.2"
     assert ret.major == "3"
     assert ret.minor == "2"
+    assert not ret.is_els
     assert ret.downstream_release == "0"
     assert ret.upstream_version["release"] == 12
     assert ret.upstream_version["major"] == 2
@@ -122,6 +125,7 @@ def test_ceph_report():
     assert ret.version == "3.2"
     assert ret.major == "3"
     assert ret.minor == "2"
+    assert not ret.is_els
     assert ret.downstream_release == "0"
     assert ret.upstream_version["release"] == 12
     assert ret.upstream_version["major"] == 2

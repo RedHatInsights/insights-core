@@ -61,6 +61,9 @@ RPMS_JSON = '''
 {"name": "ca-certificates","version": "2015.2.6","epoch": "(none)","release": "70.1.el7_2","arch": "noarch","installtime": "Fri 24 Jun 2016 04:18:04 PM EDT","buildtime": "1453976868","rsaheader": "RSA/SHA256, Tue 02 Feb 2016 09:45:04 AM EST, Key ID 199e2f91fd431d51","dsaheader": "(none)","srpm": "ca-certificates-2015.2.6-70.1.el7_2.src.rpm"}
 {"name": "jline","version": "1.0","epoch": "(none)","release": "8.el7","arch": "noarch","installtime": "Thu 02 Jun 2016 05:10:32 PM EDT","buildtime": "1388212830","rsaheader": "RSA/SHA256, Tue 01 Apr 2014 02:54:16 PM EDT, Key ID 199e2f91fd431d51","dsaheader": "(none)","srpm": "jline-1.0-8.el7.src.rpm"}
 {"name": "libteam","version": "1.17","epoch": "(none)","release": "6.el7_2","arch": "x86_64","installtime": "Fri 24 Jun 2016 04:18:17 PM EDT","buildtime": "1454604485","rsaheader": "RSA/SHA256, Wed 17 Feb 2016 02:25:16 AM EST, Key ID 199e2f91fd431d51","dsaheader": "(none)","srpm": "libteam-1.17-6.el7_2.src.rpm"}
+{"name": "crash","epoch":"(none)","version":"7.1.0","release":"8.el6","arch":"x86_64","installtime":"Fri Jul 13 06:53:28 2018","buildtime":"1524061059","vendor":"Red Hat, Inc.","buildhost":"x86-032.build.eng.bos.redhat.com","sigpgp":"RSA/8, Wed Apr 18 10:40:59 2018, Key ID 199e2f91fd431d51"}
+{"name": "xorg-x11-drv-vmmouse","epoch":"(none)","version":"13.1.0","release":"1.el6","arch":"x86_64","installtime":"Thu Aug  4 12:23:32 2016","buildtime":"1447274489","vendor":"Red Hat, Inc.","buildhost":"x86-028.build.eng.bos.redhat.com","sigpgp":"RSA/8, Mon Apr 4 11:35:36 2016, Key ID 199e2f91fd431d51"}
+{"name": "libnl","epoch":"(none)","version":"1.1.4","release":"2.el6","arch":"x86_64","installtime":"Mon Jun 16 13:21:21 2014","buildtime":"1378459378","vendor":"(none)","buildhost":"x86-007.build.bos.redhat.com","sigpgp":"RSA/8, Mon Sep 23 07:25:47 2013, Key ID 199e2f91fd431d51"}
 '''.strip()
 
 RPMS_MULTIPLE = '''
@@ -79,6 +82,16 @@ ERROR_DB = '''
 error: rpmdbNextIterator: skipping h#     753 Header V3 DSA signature: BAD, key ID db42a6
 yum-security-1.1.16-21.el5.noarch
 '''.strip()
+
+ERROR_DB_NO_PKG = """
+error: rpmdb: BDB0113 Thread/process 20263/140251984590912 failed: BDB1507 Thread died in Berkeley DB library
+error: db5 error(-30973) from dbenv->failchk: BDB0087 DB_RUNRECOVERY: Fatal error, run database recovery
+error: cannot open Packages index using db5 -  (-30973)
+error: cannot open Packages database in /var/lib/rpm
+error: rpmdb: BDB0113 Thread/process 20263/140251984590912 failed: BDB1507 Thread died in Berkeley DB library
+error: db5 error(-30973) from dbenv->failchk: BDB0087 DB_RUNRECOVERY: Fatal error, run database recovery
+error: cannot open Packages database in /var/lib/rpm
+""".strip()
 
 ORACLEASM_RPMS = '''
 oracleasm-2.6.18-164.el5-2.0.5-1.el5.x86_64
@@ -178,6 +191,10 @@ def test_from_line():
     assert rpms.get_max("yum").redhat_signed
     assert rpms.corrupt is False
 
+    assert rpms.newest('BESAgent').vendor == 'IBM Corp.'
+    assert rpms.newest('yum').vendor == 'Red Hat, Inc.'
+    assert rpms.newest('kernel').vendor is None
+
 
 def test_from_json():
     rpms = InstalledRpms(context_wrap(RPMS_JSON))
@@ -187,6 +204,10 @@ def test_from_json():
     assert rpms.get_max("util-linux").epoch == '0'
     assert rpms.get_max("jboss-servlet-3.0-api").redhat_signed
 
+    assert rpms.newest('libnl').vendor == '(none)'
+    assert rpms.newest('crash').vendor == 'Red Hat, Inc.'
+    assert rpms.newest('log4j').vendor is None
+
 
 def test_garbage():
     rpms = InstalledRpms(context_wrap(RPMS_PACKAGE_WITH_GARBAGE))
@@ -195,8 +216,17 @@ def test_garbage():
 
 def test_corrupt_db():
     rpms = InstalledRpms(context_wrap(ERROR_DB))
-    assert "yum-security" in rpms.packages
     assert rpms.corrupt is True
+    assert "yum-security" in rpms.packages
+    assert "yum-security" in rpms
+
+    rpms = InstalledRpms(context_wrap(ERROR_DB_NO_PKG))
+    assert rpms.corrupt is True
+    assert not rpms.packages
+    assert "kernel" not in rpms
+    assert "kernel" not in rpms.packages
+    assert rpms.newest("kernel") is None
+    assert rpms.oldest("kernel") is None
 
 
 def test_rpm_manifest():

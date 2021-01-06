@@ -9,6 +9,9 @@ Parsers provided by this module are:
 EtcSshConfig - file ``/etc/ssh/ssh_config``
 -------------------------------------------
 
+EtcSshConfigD - files ``/etc/ssh/ssh_config.d/*``
+-------------------------------------------------
+
 ForemanSshConfig - file ``/usr/share/foreman/.ssh/ssh_config``
 --------------------------------------------------------------
 
@@ -25,6 +28,51 @@ from insights.parsers import SkipException
 class SshClientConfig(Parser):
     """
     Base class for ssh client configuration file.
+
+    Sample output::
+
+        # This is the ssh client system-wide configuration file.  See
+        # ssh_config(5) for more information.  This file provides defaults for
+        # users, and the values can be changed in per-user configuration files
+        # or on the command line.
+
+        ProxyCommand ssh -q -W %h:%p gateway.example.com
+
+        Host *
+                GSSAPIAuthentication yes
+        # If this option is set to yes then remote X11 clients will have full access
+        # to the original X11 display. As virtually no X11 client supports the untrusted
+        # mode correctly we set this to yes.
+                ForwardX11Trusted yes
+        # Send locale-related environment variables
+                SendEnv LANG LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY LC_MESSAGES
+                SendEnv LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT
+                SendEnv LC_IDENTIFICATION LC_ALL LANGUAGE
+                SendEnv XMODIFIERS
+
+        Host proxytest
+            HostName 192.168.122.2
+
+    Attributes:
+
+        global_lines (list): The list of site-wide configuration, as
+            namedtuple('KeyValue', ['keyword', 'value', 'line']).
+        host_lines (dict): The dict of all host-specific definitions, as
+            {'Host_name': [namedtuple('KeyValue', ['keyword', 'value', 'line'])]}
+
+    Examples:
+        >>> len(sshconfig.global_lines)
+        1
+        >>> sshconfig.global_lines[0].keyword
+        'ProxyCommand'
+        >>> sshconfig.global_lines[0].value
+        'ssh -q -W %h:%p gateway.example.com'
+        >>> 'Host_*' in sshconfig.host_lines
+        True
+        >>> sshconfig.host_lines['Host_proxytest'][0].keyword
+        'HostName'
+        >>> sshconfig.host_lines['Host_proxytest'][0].value
+        '192.168.122.2'
 
     Raises:
         SkipException: When input content is empty. Not found any parse results.
@@ -120,6 +168,51 @@ class EtcSshConfig(SshClientConfig):
         'HostName'
         >>> etcsshconfig.host_lines['Host_proxytest'][0].value
         '192.168.122.2'
+    """
+    pass
+
+
+@parser(Specs.ssh_config_d)
+class EtcSshConfigD(SshClientConfig):
+    """
+    This Parser reads the files ``/etc/ssh/ssh_config.d/*``
+
+    Sample output::
+
+        # The options here are in the "Match final block" to be applied as the last
+        # options and could be potentially overwritten by the user configuration
+        Match final all
+                # Follow system-wide Crypto Policy, if defined:
+                Include /etc/crypto-policies/back-ends/openssh.config
+
+                GSSAPIAuthentication yes
+
+        # If this option is set to yes then remote X11 clients will have full access
+        # to the original X11 display. As virtually no X11 client supports the untrusted
+        # mode correctly we set this to yes.
+                ForwardX11Trusted yes
+
+        # Send locale-related environment variables
+                SendEnv LANG LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY LC_MESSAGES
+                SendEnv LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT
+                SendEnv LC_IDENTIFICATION LC_ALL LANGUAGE
+                SendEnv XMODIFIERS
+
+        # Uncomment this if you want to use .local domain
+        # Host *.local
+
+    Attributes:
+
+        global_lines (list): The list of site-wide configuration, as
+            namedtuple('KeyValue', ['keyword', 'value', 'line']).
+        host_lines (dict): The dict of all host-specific definitions, as
+            {'Host_name': [namedtuple('KeyValue', ['keyword', 'value', 'line'])]}
+
+    Examples:
+        >>> etcsshconfigd.global_lines[1].keyword
+        'Include'
+        >>> etcsshconfigd.global_lines[1].value
+        '/etc/crypto-policies/back-ends/openssh.config'
     """
     pass
 

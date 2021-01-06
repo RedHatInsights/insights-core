@@ -2,6 +2,11 @@
 PackageProvidesJavaAll - Combiner for packages which provide java
 =================================================================
 
+.. warning::
+
+    This module is deprecated, please use
+    :mod:`insights.parsers.package_provides` instead.
+
 Combiner for collecting all the java command and the corresponding package name
 which is parsed by the PackageProvidesJava parser.
 
@@ -10,11 +15,17 @@ which is parsed by the PackageProvidesJava parser.
 from .. import LegacyItemAccess
 from insights.core.plugins import combiner
 from insights.parsers.package_provides_java import PackageProvidesJava
+from insights.util import deprecated
 
 
 @combiner(PackageProvidesJava)
 class PackageProvidesJavaAll(LegacyItemAccess):
     """
+    .. warning::
+
+        This Combiner is deprecated, please use
+        :class:`insights.parsers.package_provides.PackageProvidesCommand` Parser instead.
+
     Combiner for collecting all the java command and the corresponding package
     name which is parsed by the PackageProvidesJava parser.
     It works as a ``dict`` with the java command as the key and the
@@ -40,6 +51,10 @@ class PackageProvidesJavaAll(LegacyItemAccess):
     """
 
     def __init__(self, package_provides_java):
+        deprecated(
+            PackageProvidesJavaAll,
+            'Please use the :class:`insights.parsers.package_provides.PackageProvidesCommand` instead.'
+        )
         self.data = {}
         for pkg in package_provides_java:
             self.data[pkg.command] = pkg.package

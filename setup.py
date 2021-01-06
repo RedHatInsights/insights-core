@@ -20,8 +20,6 @@ entry_points = {
         'insights-inspect = insights.tools.insights_inspect:main',
         'insights-info = insights.tools.query:main',
         'insights-ocpshell= insights.ocpshell:main',
-        'gen_api = insights.tools.generate_api_config:main',
-        'insights-perf = insights.tools.perf:main',
         'client = insights.client:run',
         'mangle = insights.util.mangle:main'
     ]

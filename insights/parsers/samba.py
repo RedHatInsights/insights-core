@@ -2,17 +2,17 @@
 SambaConfig - file ``/etc/samba/smb.conf``
 ==========================================
 
-This parser reads the SaMBa configuration file ``/etc/samba/smb.conf``, which
+This parser reads the Samba configuration file ``/etc/samba/smb.conf``, which
 is in standard .ini format, with a couple of notable features:
 
-* SaMBa ignores spaces at the start of options, which the ConfigParser class
-  normally does not.  This spacing is stripped by this parser.
-* SaMBa likewise ignores spaces in section heading names.
-* SaMBa allows the same section to be defined multiple times, with the
+* Samba ignores spaces at the start of options, which the ConfigParser class
+  normally does not. This spacing is stripped by this parser.
+* Samba likewise ignores spaces in section heading names.
+* Samba allows the same section to be defined multiple times, with the
   options therein being merged as if they were one section.
-* SaMBa allows options to be declared before the first section marker.
+* Samba allows options to be declared before the first section marker.
   This parser puts these options in a `global` section.
-* SaMBa treats ';' as a comment prefix, similar to '#'.
+* Samba treats ';' as a comment prefix, similar to '#'.
 
 Sample configuration file::
 
@@ -68,19 +68,30 @@ Examples:
     50
 
 """
+import re
 
+from . import ParseException
 from .. import add_filter, IniConfigFile, parser
 from insights.specs import Specs
 
 add_filter(Specs.samba, ["["])
 
+add_filter(Specs.testparm_s, ["["])
+add_filter(Specs.testparm_s, ["Server role:"])
+
+add_filter(Specs.testparm_v_s, ["["])
+add_filter(Specs.testparm_v_s, ["Server role:"])
+
 
 @parser(Specs.samba)
 class SambaConfig(IniConfigFile):
     """
-    This parser reads the SaMBa configuration file ``/etc/samba/smb.conf``.
-    """
+    This parser reads the Samba configuration file ``/etc/samba/smb.conf``.
 
+    Note: It is needed for better resolution descriptions when it is necessary to know what exactly
+    is in the configuration file. For generic tasks use ``SambaConfigs`` or ``SambaConfigsAll``
+    instead.
+    """
     def parse_content(self, content):
         # smb.conf is special from other ini files in the property that
         # whatever is before the first section (before the first section)
@@ -108,3 +119,46 @@ class SambaConfig(IniConfigFile):
             # Merge same-named sections just as samba's `testparm` does.
             new_dict[new_key].update(old_section)
         self.data._sections = new_dict
+
+
+@parser(Specs.testparm_s)
+class SambaConfigs(SambaConfig):
+    """
+    This parser reads the Samba configuration from command `testparm -s` which is more reliable
+    than parsing the config file, as it includes configuration in internal registry. It also
+    includes server role.
+
+    Note: This is the most suitable parser when only user changes to the configuration are important
+    for the detection logic, i.e. misconfiguration.
+
+    Attributes:
+        server_role (string): Server role as reported by the command.
+    """
+    def parse_content(self, content):
+        # Parse server role
+        for line in content:
+            r = re.search(r"Server role:\s+(\S+)", line)
+            if r:
+                self.server_role = r.group(1)
+                break
+        else:
+            raise ParseException("Server role not found.")
+
+        super(SambaConfigs, self).parse_content(content)
+
+
+@parser(Specs.testparm_v_s)
+class SambaConfigsAll(SambaConfigs):
+    """
+    This parser reads the Samba configuration from command `testparm -v -s` which is more reliable
+    than parsing the config file, as it includes configuration in internal registry. It also
+    includes all default values and server role.
+
+    Note: This parser is needed for cases when active value of specific option is needed for the
+    detection logic, irrespective of its origin from user changes or defaults, i.e. security
+    vulnerabilities.
+
+    Attributes:
+        server_role (string): Server role as reported by the command.
+    """
+    pass

@@ -4,13 +4,13 @@ import json
 import logging
 import os
 import sys
-import atexit
+import runpy
 
 from insights.client import InsightsClient
 from insights.client.config import InsightsConfig
 from insights.client.constants import InsightsConstants as constants
 from insights.client.support import InsightsSupport
-from insights.client.utilities import validate_remove_file, print_egg_versions, write_to_disk
+from insights.client.utilities import validate_remove_file, print_egg_versions
 from insights.client.schedule import get_scheduler
 from insights.client.apps.compliance import ComplianceClient
 
@@ -22,10 +22,10 @@ def phase(func):
     def _f():
         try:
             config = InsightsConfig().load_all()
-        except ValueError as e:
+            client = InsightsClient(config)
+        except (ValueError, OSError) as e:
             sys.stderr.write('ERROR: ' + str(e) + '\n')
             sys.exit(constants.sig_kill_bad)
-        client = InsightsClient(config)
         if config.debug:
             logger.info("Core path: %s", os.path.dirname(__file__))
         try:
@@ -110,6 +110,13 @@ def pre_update(client, config):
         print(json.dumps(resp))
         sys.exit(constants.sig_kill_ok)
 
+    if config.checkin:
+        checkin_success = client.checkin()
+        if checkin_success:
+            sys.exit(constants.sig_kill_ok)
+        else:
+            sys.exit(constants.sig_kill_bad)
+
 
 @phase
 def update(client, config):
@@ -117,7 +124,8 @@ def update(client, config):
     if config.payload:
         logger.debug('Uploading a payload. Bypassing rules update.')
         return
-    client.update_rules()
+    if not config.core_collect:
+        client.update_rules()
 
 
 @phase
@@ -126,6 +134,10 @@ def post_update(client, config):
     logger.debug('Machine ID: %s', client.get_machine_id())
     logger.debug("CONFIG: %s", config)
     print_egg_versions()
+
+    if config.list_specs:
+        client.list_specs()
+        sys.exit(constants.sig_kill_ok)
 
     if config.show_results:
         try:
@@ -257,8 +269,15 @@ def post_update(client, config):
 
 @phase
 def collect_and_output(client, config):
-    # last phase, delete PID file on exit
-    atexit.register(write_to_disk, constants.pidfile, delete=True)
+    # run a specified module
+    if config.module:
+        try:
+            runpy.run_module(config.module)
+        except ImportError as e:
+            logger.error(e)
+            sys.exit(constants.sig_kill_bad)
+        sys.exit(constants.sig_kill_ok)
+
     # --compliance was called
     if config.compliance:
         config.payload, config.content_type = ComplianceClient(config).oscap_scan()
@@ -294,6 +313,7 @@ def collect_and_output(client, config):
         if resp:
             if config.to_json:
                 print(json.dumps(resp))
+            client.show_inventory_deep_link()
 
     client.delete_cached_branch_info()
 

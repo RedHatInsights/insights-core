@@ -5,4 +5,5 @@ include insights/COMMIT
 include insights/RELEASE
 include insights/filters.yaml
 include LICENSE
+include insights/client/uploader_json_map.json
 graft insights/archive/repository/base_archives

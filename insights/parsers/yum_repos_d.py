@@ -1,5 +1,39 @@
-from .. import Parser, parser, get_active_lines, LegacyItemAccess
+import re
+import string
+
+from .. import Parser, parser, LegacyItemAccess
 from insights.specs import Specs
+from insights.parsr import (Char, EOF, HangingString, InSet, Many, OneLineComment, Opt,
+                            skip_none, String, WithIndent, WS)
+
+
+header_chars = (set(string.printable) - set(string.whitespace) - set("[]")) | set(" ")
+sep_chars = set(":=")
+key_chars = header_chars - sep_chars - set(" ")
+value_chars = set(string.printable) - set("\n\r")
+
+LeftEnd = WS >> Char("[") << WS
+RightEnd = WS >> Char("]") << WS
+Header = LeftEnd >> String(header_chars) << RightEnd
+Key = WS >> String(key_chars) << WS
+Sep = InSet(sep_chars)
+Value = WS >> HangingString(value_chars)
+KVPair = WithIndent(Key + Opt(Sep >> Value))
+Comment = WS >> (OneLineComment("#") | OneLineComment(";")).map(lambda x: None)
+
+Line = Comment | KVPair.map(tuple)
+Sect = (Header + Many(Line).map(skip_none).map(dict)).map(tuple)
+Doc = Many(Comment | Sect).map(skip_none).map(dict)
+Top = Doc << WS << EOF
+
+
+def parse_yum_repos(content):
+    doc = Top(content)
+    for k, v in doc.items():
+        for special in ("baseurl", "gpgkey"):
+            if special in v:
+                v[special] = [i.strip() for i in re.split(",| ", v[special])]
+    return doc
 
 
 @parser(Specs.yum_repos_d)
@@ -10,7 +44,7 @@ class YumReposD(LegacyItemAccess, Parser):
         return self.data.get(key)
 
     def parse_content(self, content):
-        '''
+        """
         Return an object contains a dict.
         {
             "rhel-source": {
@@ -33,25 +67,8 @@ class YumReposD(LegacyItemAccess, Parser):
         gpgcheck=1
         gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
                file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release_bak
-        '''
-        repos_dict = {}
-        section_dict = {}
-        key = None
-        for line in get_active_lines(content):
-            if line.startswith('['):
-                section_dict = {}
-                repos_dict[line[1:-1]] = section_dict
-            elif '=' in line:
-                key, value = [s.strip() for s in line.split("=", 1)]
-                if key in ('baseurl', 'gpgkey'):
-                    section_dict[key] = [v.strip() for v in value.split(",")]
-                else:
-                    section_dict[key] = value
-            else:
-                if key and isinstance(section_dict[key], list):
-                    section_dict[key].extend(v.strip() for v in line.split(","))
-                # Otherwise ignore line if no key or we don't store multiple values
-        self.data = repos_dict
+        """
+        self.data = parse_yum_repos("\n".join(content))
 
     def __iter__(self):
         for repo in self.data:

@@ -15,11 +15,10 @@ from .utilities import (generate_machine_id,
                         delete_registered_file,
                         delete_unregistered_file,
                         delete_cache_files,
-                        determine_hostname,
-                        read_pidfile,
-                        systemd_notify)
+                        determine_hostname)
 from .collection_rules import InsightsUploadConf
 from .data_collector import DataCollector
+from .core_collector import CoreCollector
 from .connection import InsightsConnection
 from .archive import InsightsArchive
 from .support import registration_check
@@ -177,7 +176,7 @@ def _legacy_handle_registration(config, pconn):
                         're-register this machine.')
         else:
             # not yet registered
-            logger.info('This machine has not yet been registered.'
+            logger.info('This machine has not yet been registered. '
                         'Use --register to register this machine.')
         return False
 
@@ -206,6 +205,11 @@ def _legacy_handle_unregistration(config, pconn):
     """
         returns (bool): True success, False failure
     """
+    def __cleanup_local_files():
+        write_unregistered_file()
+        get_scheduler(config).remove_scheduling()
+        delete_cache_files()
+
     check = get_registration_status(config, pconn)
 
     for m in check['messages']:
@@ -213,6 +217,9 @@ def _legacy_handle_unregistration(config, pconn):
 
     if check['unreachable']:
         # Run connection test and exit
+        if config.force:
+            __cleanup_local_files()
+            return True
         return None
 
     if check['status']:
@@ -222,9 +229,7 @@ def _legacy_handle_unregistration(config, pconn):
         logger.info('This system is already unregistered.')
     if unreg:
         # only set if unreg was successful
-        write_unregistered_file()
-        get_scheduler(config).remove_scheduling()
-        delete_cache_files()
+        __cleanup_local_files()
     return unreg
 
 
@@ -239,8 +244,8 @@ def handle_unregistration(config, pconn):
         return _legacy_handle_unregistration(config, pconn)
 
     unreg = pconn.unregister()
-    if unreg:
-        # only set if unreg was successful
+    if unreg or config.force:
+        # only set if unreg was successful or --force was set
         write_unregistered_file()
         delete_cache_files()
     return unreg
@@ -280,18 +285,20 @@ def collect(config, pconn):
     pc = InsightsUploadConf(config)
     output = None
 
-    collection_rules = pc.get_conf_file()
     rm_conf = pc.get_rm_conf()
     blacklist_report = pc.create_report()
     if rm_conf:
         logger.warn("WARNING: Excluding data from files")
 
-    # defaults
-    mp = None
     archive = InsightsArchive(config)
 
     msg_name = determine_hostname(config.display_name)
-    dc = DataCollector(config, archive, mountpoint=mp)
+    if config.core_collect:
+        collection_rules = None
+        dc = CoreCollector(config, archive)
+    else:
+        collection_rules = pc.get_conf_file()
+        dc = DataCollector(config, archive)
     logger.info('Starting to collect Insights data for %s', msg_name)
     dc.run_collection(collection_rules, rm_conf, branch_info, blacklist_report)
     output = dc.done(collection_rules, rm_conf)
@@ -305,9 +312,7 @@ def get_connection(config):
 def _legacy_upload(config, pconn, tar_file, content_type, collection_duration=None):
     logger.info('Uploading Insights data.')
     api_response = None
-    parent_pid = read_pidfile()
     for tries in range(config.retries):
-        systemd_notify(parent_pid)
         upload = pconn.upload_archive(tar_file, '', collection_duration)
 
         if upload.status_code in (200, 201):
@@ -354,12 +359,11 @@ def upload(config, pconn, tar_file, content_type, collection_duration=None):
     if config.legacy_upload:
         return _legacy_upload(config, pconn, tar_file, content_type, collection_duration)
     logger.info('Uploading Insights data.')
-    parent_pid = read_pidfile()
     for tries in range(config.retries):
-        systemd_notify(parent_pid)
         upload = pconn.upload_archive(tar_file, content_type, collection_duration)
 
         if upload.status_code in (200, 202):
+            write_to_disk(constants.lastupload_file)
             msg_name = determine_hostname(config.display_name)
             logger.info("Successfully uploaded report for %s.", msg_name)
             if config.register:

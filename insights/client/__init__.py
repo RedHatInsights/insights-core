@@ -6,6 +6,7 @@ import tempfile
 import shlex
 import shutil
 import sys
+import atexit
 from subprocess import Popen, PIPE
 from requests import ConnectionError
 
@@ -20,7 +21,8 @@ from .utilities import (delete_registered_file,
                         generate_machine_id,
                         get_tags,
                         write_tags,
-                        migrate_tags)
+                        migrate_tags,
+                        get_parent_process)
 
 NETWORK = constants.custom_network_log_level
 logger = logging.getLogger(__name__)
@@ -28,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 class InsightsClient(object):
 
-    def __init__(self, config=None, setup_logging=True, **kwargs):
+    def __init__(self, config=None, from_phase=True, **kwargs):
         """
         The Insights client interface
         """
@@ -48,19 +50,19 @@ class InsightsClient(object):
                     sys.exit(constants.sig_kill_bad)
             # END hack. in the future, just set self.config=config
 
-        # setup_logging is True when called from phase, but not from wrapper.
-        #  use this to do any common init (like auto_config)
-        if setup_logging:
+        if from_phase:
+            _init_client_config_dirs()
             self.set_up_logging()
             try_auto_configuration(self.config)
             self.initialize_tags()
-        else:
-            # write PID to file in case we need to ping systemd
-            write_to_disk(constants.pidfile, content=str(os.getpid()))
+        else:  # from wrapper
+            _write_pid_files()
+
         # setup insights connection placeholder
         # used for requests
         self.session = None
         self.connection = None
+        self.tmpdir = None
 
     def _net(func):
         def _init_connection(self, *args, **kwargs):
@@ -95,30 +97,57 @@ class InsightsClient(object):
         """
         return client.get_branch_info(self.config, self.connection)
 
+    @_net
+    def get_egg_url(self):
+        """
+        Get the proper url based on the configured egg release branch
+        """
+        if self.config.legacy_upload:
+            url = self.connection.base_url + '/platform' + constants.module_router_path
+        else:
+            url = self.connection.base_url + constants.module_router_path
+        logger.log(NETWORK, "GET %s", url)
+        response = self.session.get(url, timeout=self.config.http_timeout)
+        if response.status_code == 200:
+            return response.json()["url"]
+        else:
+            logger.warning("Unable to fetch egg url. Defaulting to /release")
+            return '/release'
+
     def fetch(self, force=False):
         """
             returns (dict): {'core': path to new egg, None if no update,
                              'gpg_sig': path to new sig, None if no update}
         """
-        tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.mkdtemp()
+        atexit.register(self.delete_tmpdir)
         fetch_results = {
-            'core': os.path.join(tmpdir, 'insights-core.egg'),
-            'gpg_sig': os.path.join(tmpdir, 'insights-core.egg.asc')
+            'core': os.path.join(self.tmpdir, 'insights-core.egg'),
+            'gpg_sig': os.path.join(self.tmpdir, 'insights-core.egg.asc')
         }
 
         logger.debug("Beginning core fetch.")
 
         # guess the URLs based on what legacy setting is
+        egg_release = self.get_egg_url()
+
+        try:
+            # write the release path to temp so we can collect it
+            #   in the archive
+            write_to_disk(constants.egg_release_file, content=egg_release)
+        except (OSError, IOError) as e:
+            logger.debug('Could not write egg release file: %s', str(e))
+
         egg_url = self.config.egg_path
         egg_gpg_url = self.config.egg_gpg_path
         if egg_url is None:
-            egg_url = '/v1/static/core/insights-core.egg'
+            egg_url = '/v1/static{0}/insights-core.egg'.format(egg_release)
             # if self.config.legacy_upload:
             #     egg_url = '/v1/static/core/insights-core.egg'
             # else:
             #     egg_url = '/static/insights-core.egg'
         if egg_gpg_url is None:
-            egg_gpg_url = '/v1/static/core/insights-core.egg.asc'
+            egg_gpg_url = '/v1/static{0}/insights-core.egg.asc'.format(egg_release)
             # if self.config.legacy_upload:
             #     egg_gpg_url = '/v1/static/core/insights-core.egg.asc'
             # else:
@@ -342,6 +371,11 @@ class InsightsClient(object):
         logger.debug("The new Insights Core was installed successfully.")
         return {'success': True}
 
+    def delete_tmpdir(self):
+        if self.tmpdir:
+            logger.debug("Deleting temp directory %s." % (self.tmpdir))
+            shutil.rmtree(self.tmpdir, True)
+
     @_net
     def update_rules(self):
         """
@@ -526,6 +560,24 @@ class InsightsClient(object):
             else:
                 raise e
 
+    def show_inventory_deep_link(self):
+        """
+        Show a deep link to this host inventory record
+        """
+        system = self.connection._fetch_system_by_machine_id()
+        if system:
+            if len(system) == 1:
+                try:
+                    id = system[0]["id"]
+                    logger.info("View details about this system on cloud.redhat.com:")
+                    logger.info(
+                        "https://cloud.redhat.com/insights/inventory/{0}".format(id)
+                    )
+                except Exception as e:
+                    logger.error(
+                        "Error: malformed system record: {0}: {1}".format(system, e)
+                    )
+
     def _copy_soscleaner_files(self, insights_archive):
         '''
         Helper function to copy the .csv reports generated by SOScleaner
@@ -630,6 +682,20 @@ class InsightsClient(object):
             tags["group"] = self.config.group
             write_tags(tags)
 
+    def list_specs(self):
+        logger.info("For a full list of insights-core datasources, please refer to https://insights-core.readthedocs.io/en/latest/specs_catalog.html")
+        logger.info("The items in General Datasources can be selected for omission by adding them to the 'components' section of file-redaction.yaml")
+        logger.info("When specifying these items in file-redaction.yaml, they must be prefixed with 'insights.specs.default.DefaultSpecs.', i.e. 'insights.specs.default.DefaultSpecs.httpd_V'")
+        logger.info("This information applies only to Insights Core collection. To use Core collection, set core_collect=True in %s", self.config.conf)
+
+    @_net
+    def checkin(self):
+        if self.config.offline:
+            logger.error('Cannot check-in in offline mode.')
+            return None
+
+        return self.connection.checkin()
+
 
 def format_config(config):
     # Log config except the password
@@ -640,3 +706,28 @@ def format_config(config):
         del config_copy["proxy"]
     finally:
         return json.dumps(config_copy, indent=4)
+
+
+def _init_client_config_dirs():
+    '''
+    Initialize log and lib dirs
+    TODO: init non-root config dirs
+    '''
+    for d in (constants.log_dir, constants.insights_core_lib_dir):
+        try:
+            os.makedirs(d)
+        except OSError as e:
+            if e.errno == errno.EEXIST:
+                # dir exists, this is OK
+                pass
+            else:
+                raise e
+
+
+def _write_pid_files():
+    for file, content in (
+        (constants.pidfile, str(os.getpid())),  # PID in case we need to ping systemd
+        (constants.ppidfile, get_parent_process())  # PPID so that we can grab the client execution method
+    ):
+        write_to_disk(file, content=content)
+        atexit.register(write_to_disk, file, delete=True)

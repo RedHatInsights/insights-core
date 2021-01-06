@@ -275,7 +275,10 @@ class DocParser(object):
         Complex = Forward()
         Comment = (WS >> OneLineComment("#")).map(lambda x: None)
 
-        Name = String(string.ascii_letters + "_/")
+        First = InSet(string.ascii_letters + "_/")
+        Rest = String(string.ascii_letters + "_/" + string.digits)
+        Name = (First + Rest).map("".join)
+
         Num = Number & (WSChar | LineEnd)
 
         StartName = WS >> PosMarker(StartTagName(Letters)) << WS

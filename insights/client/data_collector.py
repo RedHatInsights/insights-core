@@ -10,13 +10,14 @@ import copy
 import glob
 import six
 import shlex
+import re
 from itertools import chain
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
 
 from insights.util import mangle
 from ..contrib.soscleaner import SOSCleaner
-from .utilities import _expand_paths, get_version_info, read_pidfile, get_tags
+from .utilities import _expand_paths, get_version_info, systemd_notify_init_thread, get_tags
 from .constants import InsightsConstants as constants
 from .insights_spec import InsightsFile, InsightsCommand
 from .archive import InsightsArchive
@@ -29,6 +30,41 @@ SOSCLEANER_LOGGER.setLevel(logging.ERROR)
 # python 2.6
 SOSCLEANER_LOGGER = logging.getLogger('insights-client.soscleaner')
 SOSCLEANER_LOGGER.setLevel(logging.ERROR)
+
+
+def _process_content_redaction(filepath, exclude, regex=False):
+    '''
+    Redact content from a file, based on
+    /etc/insights-client/.exp.sed and and the contents of "exclude"
+
+    filepath    file to modify
+    exclude     list of strings to redact
+    regex       whether exclude is a list of regular expressions
+
+    Returns the file contents with the specified data removed
+    '''
+    logger.debug('Processing %s...', filepath)
+
+    # password removal
+    sedcmd = Popen(['sed', '-rf', constants.default_sed_file, filepath], stdout=PIPE)
+    # patterns removal
+    if exclude:
+        exclude_file = NamedTemporaryFile()
+        exclude_file.write("\n".join(exclude).encode('utf-8'))
+        exclude_file.flush()
+        if regex:
+            flag = '-E'
+        else:
+            flag = '-F'
+        grepcmd = Popen(['grep', '-v', flag, '-f', exclude_file.name], stdin=sedcmd.stdout, stdout=PIPE)
+        sedcmd.stdout.close()
+        stdout, stderr = grepcmd.communicate()
+        logger.debug('Process status: %s', grepcmd.returncode)
+    else:
+        stdout, stderr = sedcmd.communicate()
+        logger.debug('Process status: %s', sedcmd.returncode)
+    logger.debug('Process stderr: %s', stderr)
+    return stdout
 
 
 class DataCollector(object):
@@ -89,6 +125,27 @@ class DataCollector(object):
         logger.debug("Writing blacklist report to archive...")
         self.archive.add_metadata_to_archive(
             json.dumps(blacklist_report), '/blacklist_report')
+
+    def _write_egg_release(self):
+        logger.debug("Writing egg release to archive...")
+        egg_release = ''
+        try:
+            with open(constants.egg_release_file) as fil:
+                egg_release = fil.read()
+        except IOError as e:
+            logger.debug('Could not read the egg release file :%s', str(e))
+        try:
+            os.remove(constants.egg_release_file)
+        except OSError as e:
+            logger.debug('Could not remove the egg release file: %s', str(e))
+
+        self.archive.add_metadata_to_archive(
+            egg_release, '/egg_release')
+
+    def _write_collection_stats(self, collection_stats):
+        logger.debug("Writing collection stats to archive...")
+        self.archive.add_metadata_to_archive(
+            json.dumps(collection_stats), '/collection_stats')
 
     def _run_pre_command(self, pre_cmd):
         '''
@@ -191,27 +248,26 @@ class DataCollector(object):
         '''
         Run specs and collect all the data
         '''
-        parent_pid = read_pidfile()
+        # initialize systemd-notify thread
+        systemd_notify_init_thread()
+
+        self.archive.create_archive_dir()
+        self.archive.create_command_dir()
+
+        collection_stats = {}
+
         if rm_conf is None:
             rm_conf = {}
         logger.debug('Beginning to run collection spec...')
-        exclude = None
-        if rm_conf:
-            try:
-                exclude = rm_conf['patterns']
-                # handle the None or empty case of the sub-object
-                if 'regex' in exclude and not exclude['regex']:
-                    raise LookupError
-                logger.warn("WARNING: Skipping patterns defined in blacklist configuration")
-            except LookupError:
-                logger.debug('Patterns section of blacklist configuration is empty.')
+
+        rm_commands = rm_conf.get('commands', [])
+        rm_files = rm_conf.get('files', [])
 
         for c in conf['commands']:
             # remember hostname archive path
             if c.get('symbolic_name') == 'hostname':
                 self.hostname_path = os.path.join(
                     'insights_commands', mangle.mangle_command(c['command']))
-            rm_commands = rm_conf.get('commands', [])
             if c['command'] in rm_commands or c.get('symbolic_name') in rm_commands:
                 logger.warn("WARNING: Skipping command %s", c['command'])
             elif self.mountpoint == "/" or c.get("image"):
@@ -220,10 +276,14 @@ class DataCollector(object):
                     if s['command'] in rm_commands:
                         logger.warn("WARNING: Skipping command %s", s['command'])
                         continue
-                    cmd_spec = InsightsCommand(self.config, s, exclude, self.mountpoint, parent_pid)
+                    cmd_spec = InsightsCommand(self.config, s, self.mountpoint)
                     self.archive.add_to_archive(cmd_spec)
+                    collection_stats[s['command']] = {
+                        'return_code': cmd_spec.return_code,
+                        'exec_time': cmd_spec.exec_time,
+                        'output_size': cmd_spec.output_size
+                    }
         for f in conf['files']:
-            rm_files = rm_conf.get('files', [])
             if f['file'] in rm_files or f.get('symbolic_name') in rm_files:
                 logger.warn("WARNING: Skipping file %s", f['file'])
             else:
@@ -233,18 +293,32 @@ class DataCollector(object):
                     if s['file'] in rm_conf.get('files', []):
                         logger.warn("WARNING: Skipping file %s", s['file'])
                     else:
-                        file_spec = InsightsFile(s, exclude, self.mountpoint, parent_pid)
+                        file_spec = InsightsFile(s, self.mountpoint)
                         self.archive.add_to_archive(file_spec)
+                        collection_stats[s['file']] = {
+                            'exec_time': file_spec.exec_time,
+                            'output_size': file_spec.output_size
+                        }
         if 'globs' in conf:
             for g in conf['globs']:
-                glob_specs = self._parse_glob_spec(g)
-                for g in glob_specs:
-                    if g['file'] in rm_conf.get('files', []):
-                        logger.warn("WARNING: Skipping file %s", g)
-                    else:
-                        glob_spec = InsightsFile(g, exclude, self.mountpoint, parent_pid)
-                        self.archive.add_to_archive(glob_spec)
+                if g.get('symbolic_name') in rm_files:
+                    # ignore glob via symbolic name
+                    logger.warn("WARNING: Skipping file %s", g['glob'])
+                else:
+                    glob_specs = self._parse_glob_spec(g)
+                    for g in glob_specs:
+                        if g['file'] in rm_files:
+                            logger.warn("WARNING: Skipping file %s", g['file'])
+                        else:
+                            glob_spec = InsightsFile(g, self.mountpoint)
+                            self.archive.add_to_archive(glob_spec)
+                            collection_stats[g['file']] = {
+                                'exec_time': glob_spec.exec_time,
+                                'output_size': glob_spec.output_size
+                            }
         logger.debug('Spec collection finished.')
+
+        self.redact(rm_conf)
 
         # collect metadata
         logger.debug('Collecting metadata...')
@@ -253,7 +327,67 @@ class DataCollector(object):
         self._write_version_info()
         self._write_tags()
         self._write_blacklist_report(blacklist_report)
+        self._write_egg_release()
+        self._write_collection_stats(collection_stats)
         logger.debug('Metadata collection finished.')
+
+    def redact(self, rm_conf):
+        '''
+        Perform data redaction (password sed command and patterns),
+        write data to the archive in place
+        '''
+        logger.debug('Running content redaction...')
+
+        if not re.match(r'/var/tmp/.+/insights-.+', self.archive.archive_dir):
+            # sanity check to make sure we're only modifying
+            #   our own stuff in temp
+            # we should never get here but just in case
+            raise RuntimeError('ERROR: invalid Insights archive temp path')
+
+        if rm_conf is None:
+            rm_conf = {}
+        exclude = None
+        regex = False
+        if rm_conf:
+            try:
+                exclude = rm_conf['patterns']
+                if isinstance(exclude, dict) and exclude['regex']:
+                    # if "patterns" is a dict containing a non-empty "regex" list
+                    logger.debug('Using regular expression matching for patterns.')
+                    exclude = exclude['regex']
+                    regex = True
+                logger.warn("WARNING: Skipping patterns defined in blacklist configuration")
+            except LookupError:
+                # either "patterns" was undefined in rm conf, or
+                #   "regex" was undefined in "patterns"
+                exclude = None
+        if not exclude:
+            logger.debug('Patterns section of blacklist configuration is empty.')
+
+        # TODO: consider implementing redact() in CoreCollector class rather than
+        #   special handling here
+        if self.config.core_collect:
+            # redact only from the 'data' directory
+            searchpath = os.path.join(self.archive.archive_dir, 'data')
+            if not (os.path.isdir(searchpath) and
+                    re.match(r'/var/tmp/.+/insights-.+/data', searchpath)):
+                # abort if the dir does not exist and isn't the correct format
+                # we should never get here but just in case
+                raise RuntimeError('ERROR: invalid Insights archive temp path')
+        else:
+            searchpath = self.archive.archive_dir
+
+        for dirpath, dirnames, filenames in os.walk(searchpath):
+            for f in filenames:
+                fullpath = os.path.join(dirpath, f)
+                if (fullpath.endswith('etc/insights-client/machine-id') or
+                   fullpath.endswith('etc/machine-id') or
+                   fullpath.endswith('insights_commands/subscription-manager_identity')):
+                    # do not redact the ID files
+                    continue
+                redacted_contents = _process_content_redaction(fullpath, exclude, regex)
+                with open(fullpath, 'wb') as dst:
+                    dst.write(redacted_contents)
 
     def done(self, conf, rm_conf):
         """
@@ -308,6 +442,7 @@ class CleanOptions(object):
         self.keyword_file = None
         self.keywords = None
         self.no_tar_file = config.output_dir
+        self.core_collect = config.core_collect
 
         if rm_conf:
             try:

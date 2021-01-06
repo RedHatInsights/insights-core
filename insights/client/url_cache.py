@@ -17,6 +17,7 @@ class URLCache(object):
         URLCache is a simple pickle cache, intended to be used as an HTTP
         response cache.
     """
+
     def __init__(self, path=None):
         """
             Initialize a URLCache, loading entries from @path, if provided.
@@ -36,7 +37,7 @@ class URLCache(object):
         try:
             item = self._cache[url]
             if item.cached_at + _KEEPTIME <= time.time():
-                del (self._cache, url)
+                del self._cache[url]
                 return None
             return self._cache[url]
         except KeyError:

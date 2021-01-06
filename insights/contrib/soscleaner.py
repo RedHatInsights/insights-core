@@ -347,14 +347,19 @@ class SOSCleaner:
         except Exception as e:    #pragma: no cover
             self.logger.exception(e)
 
-    def _process_hosts_file(self):
+    def _process_hosts_file(self, options):
         # this will process the hosts file more thoroughly to try and capture as many server short names/aliases as possible
         # could lead to false positives if people use dumb things for server aliases, like 'file' or 'server' or other common terms
         # this may be an option that can be enabled... --hosts or similar?
 
+        if options.core_collect:
+            hosts_file = os.path.join(self.dir_path, 'data', 'etc/hosts')
+        else:
+            hosts_file = os.path.join(self.dir_path, 'etc/hosts')
+
         try:
-            if os.path.isfile(os.path.join(self.dir_path, 'etc/hosts')):
-                with open(os.path.join(self.dir_path, 'etc/hosts')) as f:
+            if os.path.isfile(hosts_file):
+                with open(hosts_file) as f:
                     self.logger.con_out("Processing hosts file for better obfuscation coverage")
                     data = f.readlines()
                     for line in data:
@@ -678,14 +683,38 @@ class SOSCleaner:
             if self.hostname:   # if we have a hostname that's not a None type
                 self.hn_db['host0'] = self.hostname     # we'll prime the hostname pump to clear out a ton of useless logic later
 
-            self._process_hosts_file()  # we'll take a dig through the hosts file and make sure it is as scrubbed as possible
+            self._process_hosts_file(options)  # we'll take a dig through the hosts file and make sure it is as scrubbed as possible
 
         self._domains2db()
-        files = self._file_list(self.dir_path)
+        if options.core_collect:
+            # operate on the "data" directory when doing core collection
+            files = self._file_list(os.path.join(self.dir_path, 'data'))
+        else:
+            files = self._file_list(self.dir_path)
         self.logger.con_out("IP Obfuscation Start Address - %s", self.start_ip)
         self.logger.con_out("*** SOSCleaner Processing ***")
         self.logger.info("Working Directory - %s", self.dir_path)
         for f in files:
+            if options.core_collect:
+                # set a relative path of $ARCHIVEROOT/data for core collection
+                relative_path = os.path.relpath(f, start=os.path.join(self.dir_path, 'data'))
+            else:
+                # set a relative path of $ARCHIVEROOT for non core collection
+                relative_path = os.path.relpath(f, start=self.dir_path)
+
+                # in addition to setting up that relative path, skip these
+                #  files in the archive root for classic collection
+                if relative_path in ('display_name',
+                                     'blacklist_report',
+                                     'tags.json',
+                                     'branch_info',
+                                     'version_info',
+                                     'egg_release'):
+                    continue
+            # ALWAYS skip machine-id, subman id, and insights id
+            if relative_path in ('etc/machine-id',
+                                 'etc/insights-client/machine-id'):
+                continue
             self.logger.debug("Cleaning %s", f)
             self._clean_file(f)
         self.logger.con_out("*** SOSCleaner Statistics ***")

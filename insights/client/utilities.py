@@ -11,6 +11,8 @@ import datetime
 import shlex
 import re
 import sys
+import threading
+import time
 from subprocess import Popen, PIPE, STDOUT
 
 import yaml
@@ -293,28 +295,50 @@ def read_pidfile():
     return pid
 
 
-def systemd_notify(pid):
+def _systemd_notify(pid):
     '''
     Ping the systemd watchdog with the main PID so that
     the watchdog doesn't kill the process
     '''
-    if not os.getenv('NOTIFY_SOCKET'):
-        # running standalone, not via systemd job
-        return
+    try:
+        proc = Popen(['/usr/bin/systemd-notify', '--pid=' + str(pid), 'WATCHDOG=1'])
+    except OSError as e:
+        logger.debug('Could not launch systemd-notify: %s', str(e))
+        return False
+    stdout, stderr = proc.communicate()
+    if proc.returncode != 0:
+        logger.debug('systemd-notify returned %s', proc.returncode)
+        return False
+    return True
+
+
+def systemd_notify_init_thread():
+    '''
+    Use a thread to periodically ping systemd instead
+    of calling it on a per-command basis
+    '''
+    pid = read_pidfile()
     if not pid:
         logger.debug('No PID specified.')
+        return
+    if not os.getenv('NOTIFY_SOCKET'):
+        # running standalone, not via systemd job
         return
     if not os.path.exists('/usr/bin/systemd-notify'):
         # RHEL 6, no systemd
         return
-    try:
-        proc = Popen(['/usr/bin/systemd-notify', '--pid=' + str(pid), 'WATCHDOG=1'])
-    except OSError:
-        logger.debug('Could not launch systemd-notify.')
-        return
-    stdout, stderr = proc.communicate()
-    if proc.returncode != 0:
-        logger.debug('systemd-notify returned %s', proc.returncode)
+
+    def _sdnotify_loop():
+        while True:
+            # run sdnotify every 30 seconds
+            if not _systemd_notify(pid):
+                # end the loop if something goes wrong
+                break
+            time.sleep(30)
+
+    sdnotify_thread = threading.Thread(target=_sdnotify_loop, args=())
+    sdnotify_thread.daemon = True
+    sdnotify_thread.start()
 
 
 def get_tags(tags_file_path=constants.default_tags_file):
@@ -372,3 +396,18 @@ def migrate_tags():
             os.rename(tags_conf, tags_yaml)
         except OSError as e:
             logger.error(e)
+
+
+def get_parent_process():
+    '''
+    Get parent process of the client
+
+    Returns: string
+    '''
+    ppid = os.getppid()
+    output = run_command_get_output('cat /proc/%s/status' % ppid)
+    if output['status'] == 0:
+        name = output['output'].splitlines()[0].split('\t')[1]
+        return name
+    else:
+        return "unknown"

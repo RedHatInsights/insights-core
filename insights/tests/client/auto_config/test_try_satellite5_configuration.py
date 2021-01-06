@@ -18,4 +18,5 @@ def test_set_auto_configuration(isfile_mock, read_systemid_file_mock, open_mock,
                                                         "some-hostname/redhat_access",
                                                         "some-certificate",
                                                         None,
-                                                        True)
+                                                        True,
+                                                        False)

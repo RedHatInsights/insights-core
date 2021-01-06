@@ -22,6 +22,7 @@ def patch_insights_config(old_function):
                        "return_value.load_all.return_value.diagnosis": None,
                        "return_value.load_all.return_value.payload": None,
                        "return_value.load_all.return_value.compliance": False,
+                       "return_value.load_all.return_value.module": False,
                        "return_value.load_all.return_value.output_dir": None,
                        "return_value.load_all.return_value.output_file": None})
     return patcher(old_function)

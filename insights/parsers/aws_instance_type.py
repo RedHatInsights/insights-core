@@ -11,11 +11,16 @@ which is used to check the type of the AWS instance on the host.
 from insights.parsers import SkipException, ParseException
 from insights import parser, CommandParser
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.aws_instance_type)
 class AWSInstanceType(CommandParser):
     """
+    .. note::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.aws_instance_id.AWSInstanceIdDoc` instead.
+
     Class for parsing the AWS Instance type returned by command
     ``curl -s http://169.254.169.254/latest/meta-data/instance-type``
 
@@ -37,6 +42,10 @@ class AWSInstanceType(CommandParser):
         >>> aws_inst.raw
         'r3.xlarge'
     """
+
+    def __init__(self, *args, **kwargs):
+        deprecated(AWSInstanceType, "Use AWSInstanceIdDoc in insights.insights.aws_instance_id instead.")
+        super(AWSInstanceType, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
         if not content or 'curl: ' in content[0]:

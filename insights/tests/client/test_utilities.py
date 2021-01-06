@@ -3,11 +3,9 @@ import tempfile
 import uuid
 import insights.client.utilities as util
 from insights.client.constants import InsightsConstants as constants
-from insights.client.config import InsightsConfig
 import re
 import mock
 import six
-import pytest
 from mock.mock import patch
 
 
@@ -119,29 +117,7 @@ def test_get_version_info_no_version(wrapper_constants):
     assert version_info == {'core_version': '1-1', 'client_version': None}
 
 
-def test_validate_remove_file_bad_perms():
-    tf = '/tmp/remove.cfg'
-    with open(tf, 'wb') as f:
-        f.write(remove_file_content)
-
-    conf = InsightsConfig(remove_file=tf, redaction_file=None, content_redaction_file=None, validate=True)
-    with pytest.raises(RuntimeError):
-        os.chmod(tf, 0o644)
-        util.validate_remove_file(conf)
-    os.chmod(tf, 0o600)
-    assert util.validate_remove_file(conf) is not False
-    os.remove(tf)
-
-
-def test_validate_remove_file_good_perms():
-    tf = '/tmp/remove.cfg'
-    with open(tf, 'wb') as f:
-        f.write(remove_file_content)
-
-
 # TODO: DRY
-
-
 @patch('insights.client.utilities.constants.registered_files',
        ['/tmp/insights-client.registered',
         '/tmp/redhat-access-insights.registered'])
@@ -224,59 +200,56 @@ def test_read_pidfile_failure():
         assert util.read_pidfile() is None
 
 
-@patch('insights.client.utilities.Popen')
+@patch('insights.client.utilities.threading.Thread')
 @patch('insights.client.utilities.os.path.exists')
-def test_systemd_notify_no_socket(exists, Popen):
+def test_systemd_notify_init_thread_no_socket(exists, thread):
     '''
     Test this function when NOTIFY_SOCKET is
     undefined, i.e. when we run the client on demand
     and not via systemd job
     '''
     exists.return_value = True
-    Popen.return_value.communicate.return_value = ('', '')
-    util.systemd_notify('420')
-    Popen.assert_not_called()
+    util.systemd_notify_init_thread()
+    thread.assert_not_called()
 
 
 @patch('insights.client.utilities.Popen')
-@patch('insights.client.utilities.os.path.exists')
-@patch.dict('insights.client.utilities.os.environ', {'NOTIFY_SOCKET': '/tmp/test.sock'})
-def test_systemd_notify(exists, Popen):
+def test_systemd_notify(Popen):
     '''
     Test calling systemd-notify with a "valid" PID
     On RHEL 7, exists(/usr/bin/systemd-notify) == True
     '''
-    exists.return_value = True
     Popen.return_value.communicate.return_value = ('', '')
-    util.systemd_notify('420')
+    util._systemd_notify('420')
     Popen.assert_called_once()
 
 
-@patch('insights.client.utilities.Popen')
+@patch('insights.client.utilities.read_pidfile', mock.Mock(return_value=None))
+@patch('insights.client.utilities.threading.Thread')
 @patch('insights.client.utilities.os.path.exists')
 @patch.dict('insights.client.utilities.os.environ', {'NOTIFY_SOCKET': '/tmp/test.sock'})
-def test_systemd_notify_failure_bad_pid(exists, Popen):
+def test_systemd_notify_init_thread_failure_bad_pid(exists, thread):
     '''
-    Test calling systemd-notify with an invalid PID
+    Test initializing systemd-notify loop with an invalid PID
     On RHEL 7, exists(/usr/bin/systemd-notify) == True
     '''
     exists.return_value = True
-    util.systemd_notify(None)
+    util.systemd_notify_init_thread()
     exists.assert_not_called()
-    Popen.assert_not_called()
+    thread.assert_not_called()
 
 
-@patch('insights.client.utilities.Popen')
+@patch('insights.client.utilities.threading.Thread')
 @patch('insights.client.utilities.os.path.exists')
 @patch.dict('insights.client.utilities.os.environ', {'NOTIFY_SOCKET': '/tmp/test.sock'})
-def test_systemd_notify_failure_rhel_6(exists, Popen):
+def test_systemd_notify_init_thread_failure_rhel_6(exists, thread):
     '''
     Test calling systemd-notify on RHEL 6
     On RHEL 6, exists(/usr/bin/systemd-notify) == False
     '''
     exists.return_value = False
-    util.systemd_notify('420')
-    Popen.assert_not_called()
+    util.systemd_notify_init_thread()
+    thread.assert_not_called()
 
 
 def test_get_tags():

@@ -246,6 +246,7 @@ def test_haproxy_cls_1():
     r = HaproxyCfg(context_wrap(haproxy_osp, osp=osp_c))
     assert r.data.get("global").get("maxconn") == "10000"
     assert r.data.get("listen galera").get("mode") == "tcp"
+    assert r.lines[2] == "group  haproxy"
 
 
 def test_haproxy_cls_2():

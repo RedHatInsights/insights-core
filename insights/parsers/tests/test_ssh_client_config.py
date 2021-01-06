@@ -28,6 +28,30 @@ Host proxytest
     HostName 192.168.122.2
 """
 
+SSH_CONFIG_D_INPUT = """
+# The options here are in the "Match final block" to be applied as the last
+# options and could be potentially overwritten by the user configuration
+Match final all
+        # Follow system-wide Crypto Policy, if defined:
+        Include /etc/crypto-policies/back-ends/openssh.config
+
+        GSSAPIAuthentication yes
+
+# If this option is set to yes then remote X11 clients will have full access
+# to the original X11 display. As virtually no X11 client supports the untrusted
+# mode correctly we set this to yes.
+        ForwardX11Trusted yes
+
+# Send locale-related environment variables
+        SendEnv LANG LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY LC_MESSAGES
+        SendEnv LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT
+        SendEnv LC_IDENTIFICATION LC_ALL LANGUAGE
+        SendEnv XMODIFIERS
+
+# Uncomment this if you want to use .local domain
+# Host *.local
+"""
+
 SSH_CONFIG_INPUT_EMPTY = """
 #   ProxyCommand ssh -q -W %h:%p gateway.example.com
 #   RekeyLimit 1G 1h
@@ -62,7 +86,9 @@ def test_ssh_config_AB():
 
 def test_ssh_client_config_docs():
     env = {
+        'sshconfig': scc.SshClientConfig(context_wrap(SSH_CONFIG_INPUT)),
         'etcsshconfig': scc.EtcSshConfig(context_wrap(SSH_CONFIG_INPUT)),
+        'etcsshconfigd': scc.EtcSshConfigD(context_wrap(SSH_CONFIG_D_INPUT)),
         'foremansshconfig': scc.ForemanSshConfig(context_wrap(SSH_CONFIG_INPUT)),
         'foreman_proxy_ssh_config': scc.ForemanProxySshConfig(context_wrap(SSH_CONFIG_INPUT))
     }

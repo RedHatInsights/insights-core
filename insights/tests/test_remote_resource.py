@@ -1,3 +1,4 @@
+from cachecontrol.cache import DictCache
 from insights.core.remote_resource import RemoteResource, CachedRemoteResource
 from insights.tests.mock_web_server import TestMockServer
 import sys
@@ -52,3 +53,14 @@ class TestRemoteResource(TestMockServer):
         url = 'http://localhost:{port}/moc/'.format(port=self.server_port)
         rtn = crr.get(url)
         assert rtn.content == NOT_FOUND
+
+    def test_save_dict_cache(self):
+        crr = CachedRemoteResource()
+        assert crr._cache is not None
+        assert isinstance(crr._cache, DictCache)
+
+        crr2 = CachedRemoteResource()
+        assert crr2._cache is not None
+        assert isinstance(crr2._cache, DictCache)
+
+        assert crr._cache is crr2._cache

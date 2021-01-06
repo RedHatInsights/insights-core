@@ -153,6 +153,14 @@ class RpmList(object):
         """
         Checks if package name is in list of installed RPMs.
 
+        .. note::
+            The :attr:`packages` could be empty, e.g. when rpm database corrupt.
+            When doing exclusion check, make sure the ``packages`` is NOT
+            empty, e.g.::
+
+                >>> if rpms.packages and "pkg_name" not in rpms:
+                >>>     pass
+
         Args:
             package_name (str): RPM package name such as 'bash'
 
@@ -217,16 +225,26 @@ class InstalledRpms(CommandParser, RpmList):
     related information.
     """
     def __init__(self, *args, **kwargs):
-        self.errors = []
+        self.errors = list()
         """list: List of input lines that indicate an error acquiring the data on the client."""
-        self.unparsed = []
+        self.unparsed = list()
         """list: List of input lines that raised an exception during parsing."""
-        self.packages = defaultdict(list)
-        """dict (InstalledRpm): Dictionary of RPMs keyed by package name."""
+        self.packages = dict()
+        """
+        dict (InstalledRpm): Dictionary of RPMs keyed by package name.
 
+        .. note::
+            The ``packages`` could be empty, e.g. when rpm database corrupt.
+            When doing exclusion check, make sure the ``packages`` is NOT
+            empty, e.g.::
+
+                >>> if rpms.packages and "pkg_name" not in rpms.packages:
+                >>>     pass
+        """
         super(InstalledRpms, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
+        packages = defaultdict(list)
         for line in get_active_lines(content, comment_char='COMMAND>'):
             if line.startswith('error:') or line.startswith('warning:'):
                 self.errors.append(line)
@@ -234,23 +252,28 @@ class InstalledRpms(CommandParser, RpmList):
                 try:
                     # Try to parse from JSON input
                     rpm = InstalledRpm.from_json(line)
-                    self.packages[rpm.name].append(rpm)
+                    packages[rpm.name].append(rpm)
                 except Exception:
                     # If that fails, try to parse from line input
                     if line.strip():
                         try:
                             rpm = InstalledRpm.from_line(line)
-                            self.packages[rpm.name].append(rpm)
+                            packages[rpm.name].append(rpm)
                         except Exception:
                             # Both ways failed
                             self.unparsed.append(line)
         # Don't want defaultdict's behavior after parsing is complete
-        self.packages = dict(self.packages)
+        self.packages = dict(packages)
 
     @property
     def corrupt(self):
         """bool: True if RPM database is corrupted, else False."""
-        return any('rpmdbNextIterator' in s for s in self.errors)
+        _corrupts = [
+            'error: rpmdbNextIterator',
+            'error: rpmdb: BDB0113',
+            'error: db5 error',
+        ]
+        return any(c in s for s in self.errors for c in _corrupts)
 
 
 p = re.compile(r"(\d+|[a-z]+|\.|-|_)")
@@ -339,7 +362,7 @@ class InstalledRpm(object):
         'F76F66C3D4082792', '199e2f91fd431d51', '5326810137017186',
         '45689c882fa658e0', '219180cddb42a60e', '7514f77d8366b0d9',
         'fd372689897da07a', '938a80caf21541eb',
-        '08b871e6a5787476',
+        '08b871e6a5787476', '1AC4971355A34A82'
         'E191DDB2C509E861'
     ]
     """
@@ -363,6 +386,8 @@ class InstalledRpm(object):
         self.redhat_signed = None
         """bool: True when RPM package is signed by Red Hat, False when RPM package is not signed by Red Hat,
         None when no sufficient info to determine"""
+        self.vendor = None
+        """str: RPM package vendor. `None` when no 'vendor' info"""
 
         if isinstance(data, six.string_types):
             data = self._parse_package(data)
@@ -370,6 +395,7 @@ class InstalledRpm(object):
         for k, v in data.items():
             setattr(self, k, v)
         self.epoch = data['epoch'] if 'epoch' in data and data['epoch'] != '(none)' else '0'
+        self.vendor = data['vendor'] if 'vendor' in data else None
         _gpg_key_pos = data.get('sigpgp', data.get('rsaheader', data.get('pgpsig_short', data.get('pgpsig', data.get('vendor', '')))))
         if _gpg_key_pos:
             self.redhat_signed = any(key in _gpg_key_pos for key in self.PRODUCT_SIGNING_KEYS)

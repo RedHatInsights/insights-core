@@ -29,6 +29,12 @@ CIB_CONFIG = """
 
 
 def test_cib():
-    cib = CIB(context_wrap(CIB_CONFIG))
+    cib = CIB(context_wrap(CIB_CONFIG, path="/var/lib/pacemaker/cib/cib.xml"))
+    assert cib is not None
+    assert cib.nodes == ['foo', 'bar', 'baz']
+
+
+def test_cib_in_sosreport():
+    cib = CIB(context_wrap(CIB_CONFIG, path="sos_commands/pacemaker/crm_report/abc/cib.xml"))
     assert cib is not None
     assert cib.nodes == ['foo', 'bar', 'baz']

@@ -6,6 +6,8 @@ import copy
 import six
 import sys
 from six.moves import configparser as ConfigParser
+from distutils.version import LooseVersion
+from .utilities import get_version_info
 
 try:
     from .constants import InsightsConstants as constants
@@ -13,6 +15,24 @@ except:
     from constants import InsightsConstants as constants
 
 logger = logging.getLogger(__name__)
+
+
+def _core_collect_default():
+    '''
+    Core collection should be disabled by default, unless
+    the RPM version 3.1 or above
+    '''
+    rpm_version = get_version_info()['client_version']
+    if not rpm_version:
+        # problem getting the version, default to False
+        return False
+    if LooseVersion(rpm_version) < LooseVersion(constants.core_collect_rpm_version):
+        # rpm version is older than the core collection release
+        return False
+    else:
+        # rpm version is equal to or newer than the core collection release
+        return True
+
 
 DEFAULT_OPTS = {
     'analyze_container': {
@@ -73,8 +93,16 @@ DEFAULT_OPTS = {
     'check_results': {
         'default': False,
         'opt': ['--check-results'],
-        'help': "Check for insights results",
-        'action': "store_true"
+        'help': argparse.SUPPRESS,
+        'action': "store_true",
+        'group': 'actions'
+    },
+    'checkin': {
+        'default': False,
+        'opt': ['--checkin'],
+        'help': 'Do a lightweight check-in instead of full upload',
+        'action': "store_true",
+        'group': 'actions'
     },
     'cmd_timeout': {
         # non-CLI
@@ -88,7 +116,8 @@ DEFAULT_OPTS = {
         'default': False,
         'opt': ['--compliance'],
         'help': 'Scan the system using openscap and upload the report',
-        'action': 'store_true'
+        'action': 'store_true',
+        'group': 'actions'
     },
     'compressor': {
         'default': 'gz',
@@ -101,6 +130,9 @@ DEFAULT_OPTS = {
         'opt': ['--conf', '-c'],
         'help': 'Pass a custom config file',
         'action': 'store'
+    },
+    'core_collect': {
+        'default': False
     },
     'egg_path': {
         # non-CLI
@@ -117,7 +149,8 @@ DEFAULT_OPTS = {
         'default': False,
         'opt': ['--disable-schedule'],
         'help': 'Disable automatic scheduling',
-        'action': 'store_true'
+        'action': 'store_true',
+        'group': 'actions'
     },
     'display_name': {
         'default': None,
@@ -130,6 +163,7 @@ DEFAULT_OPTS = {
         'opt': ['--enable-schedule'],
         'help': 'Enable automatic scheduling for collection to run',
         'action': 'store_true',
+        'group': 'actions'
     },
     'gpg': {
         'default': True,
@@ -142,6 +176,12 @@ DEFAULT_OPTS = {
     'egg_gpg_path': {
         # non-CLI
         'default': None
+    },
+    'force': {
+        'default': False,
+        'opt': ['--force'],
+        'help': argparse.SUPPRESS,
+        'action': 'store_true'
     },
     'group': {
         'default': None,
@@ -163,6 +203,13 @@ DEFAULT_OPTS = {
         'help': 'Do not delete archive after upload',
         'action': 'store_true',
         'group': 'debug'
+    },
+    'list_specs': {
+        'default': False,
+        'opt': ['--list-specs'],
+        'help': 'Show insights-client collection specs',
+        'action': 'store_true',
+        'group': 'actions'
     },
     'logging_file': {
         'default': constants.default_log_file,
@@ -191,6 +238,13 @@ DEFAULT_OPTS = {
         'help': 'Do not upload the archive',
         'action': 'store_true',
         'group': 'debug'
+    },
+    'module': {
+        'default': None,
+        'opt': ['--module', '-m'],
+        'help': 'Directly run a Python module within the insights-core package',
+        'action': 'store',
+        'help': argparse.SUPPRESS
     },
     'obfuscate': {
         # non-CLI
@@ -236,7 +290,8 @@ DEFAULT_OPTS = {
         'default': False,
         'opt': ['--register'],
         'help': 'Register system to the Red Hat Insights Service',
-        'action': 'store_true'
+        'action': 'store_true',
+        'group': 'actions',
     },
     'remove_file': {
         # non-CLI
@@ -275,7 +330,8 @@ DEFAULT_OPTS = {
         'default': False,
         'opt': ['--show-results'],
         'help': "Show insights about this host",
-        'action': "store_true"
+        'action': "store_true",
+        'group': 'actions'
     },
     'silent': {
         'default': False,
@@ -304,7 +360,8 @@ DEFAULT_OPTS = {
         'default': False,
         'opt': ['--test-connection'],
         'help': 'Test connectivity to Red Hat',
-        'action': 'store_true'
+        'action': 'store_true',
+        'group': 'debug'
     },
     'to_json': {
         'default': False,
@@ -316,7 +373,8 @@ DEFAULT_OPTS = {
         'default': False,
         'opt': ['--unregister'],
         'help': 'Unregister system from the Red Hat Insights Service',
-        'action': 'store_true'
+        'action': 'store_true',
+        'group': 'actions'
     },
     'upload_url': {
         # non-CLI
@@ -344,14 +402,14 @@ DEFAULT_OPTS = {
         'default': False,
         'opt': ['--validate'],
         'help': 'Validate remove.conf and tags.yaml',
-        'action': 'store_true'
+        'action': 'store_true',
+        'group': 'actions'
     },
     'verbose': {
         'default': False,
         'opt': ['--verbose'],
         'help': "DEBUG output to stdout",
-        'action': "store_true",
-        'group': 'debug'
+        'action': "store_true"
     },
     'version': {
         'default': False,
@@ -359,9 +417,6 @@ DEFAULT_OPTS = {
         'help': "Display version",
         'action': "store_true"
     },
-
-    # platform options
-    # hide help messages with SUPPRESS until we're ready to make them public
     'legacy_upload': {
         # True: upload to insights classic API
         # False: upload to insights platform API
@@ -370,26 +425,23 @@ DEFAULT_OPTS = {
     'payload': {
         'default': None,
         'opt': ['--payload'],
-        # 'help': 'Use Insights client to upload an archive',
-        'help': argparse.SUPPRESS,
+        'help': 'Use the Insights Client to upload an archive',
         'action': 'store',
-        'group': 'platform'
+        'group': 'actions'
     },
     'content_type': {
         'default': None,
         'opt': ['--content-type'],
-        # 'help': 'Content type of the archive specified with --payload',
-        'help': argparse.SUPPRESS,
-        'action': 'store',
-        'group': 'platform'
+        'help': 'Content type of the archive specified with --payload',
+        'action': 'store'
     },
     'diagnosis': {
         'default': None,
         'opt': ['--diagnosis'],
-        'help': argparse.SUPPRESS,
+        'help': 'Retrieve a diagnosis for this system',
         'const': True,
         'nargs': '?',
-        'group': 'platform'
+        'group': 'actions'
     }
 }
 
@@ -410,6 +462,12 @@ class InsightsConfig(object):
 
         self._init_attrs = copy.copy(dir(self))
         self._update_dict(DEFAULT_KVS)
+
+        # initialize the real default for core_collect here
+        #   instead of inside DEFAULT_KVS because calling
+        #   this function at the module scope ignores unit test mocks
+        self.core_collect = _core_collect_default()
+
         if args:
             self._update_dict(args[0])
         self._update_dict(kwargs)
@@ -507,23 +565,23 @@ class InsightsConfig(object):
             self._update_dict(self._cli_opts)
             return
         parser = argparse.ArgumentParser()
-        debug_grp = parser.add_argument_group('Debug options')
-        platf_grp = parser.add_argument_group('Platform options')
+        arg_groups = {
+            "actions": parser.add_argument_group("actions"),
+            "debug": parser.add_argument_group("optional debug arguments")
+        }
         cli_options = dict((k, v) for k, v in DEFAULT_OPTS.items() if (
                        'opt' in v))
         for _, o in cli_options.items():
-            group = o.pop('group', None)
-            if group == 'debug':
-                g = debug_grp
-            elif group == 'platform':
-                g = platf_grp
+            group_name = o.pop('group', None)
+            if group_name is None:
+                group = parser
             else:
-                g = parser
+                group = arg_groups[group_name]
             optnames = o.pop('opt')
             # use argparse.SUPPRESS as CLI defaults so it won't parse
             #  options that weren't specified
             o['default'] = argparse.SUPPRESS
-            g.add_argument(*optnames, **o)
+            group.add_argument(*optnames, **o)
 
         options = parser.parse_args()
 
@@ -629,6 +687,8 @@ class InsightsConfig(object):
                 raise ValueError('Cannot check registration status in offline mode.')
             if self.test_connection:
                 raise ValueError('Cannot run connection test in offline mode.')
+            if self.checkin:
+                raise ValueError('Cannot check in in offline mode.')
         if self.output_dir and self.output_file:
             raise ValueError('Specify only one: --output-dir or --output-file.')
         if self.output_dir == '':
@@ -662,6 +722,8 @@ class InsightsConfig(object):
             if self.obfuscate:
                 if self._print_errors:
                     sys.stdout.write('WARNING: SOSCleaner reports will be created alongside the output archive.\n')
+        if self.module and not self.module.startswith('insights.client.apps.'):
+            raise ValueError('You can only run modules within the namespace insights.client.apps.*')
 
     def _imply_options(self):
         '''

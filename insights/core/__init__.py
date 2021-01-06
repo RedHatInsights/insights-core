@@ -527,6 +527,7 @@ class CommandParser(Parser):
 
     __bad_single_lines = [
             "no such file or directory",
+            "not a directory",
             "command not found",
             "no module named",
             "no files found for",
@@ -1186,7 +1187,7 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
             'p': r'\w{2}',  # AM / PM
             'M': r'([012345]\d)',  # Minutes
             'S': r'([012345]\d|60)',  # Seconds, including leap second
-            'f': r'\d{6}',  # Microseconds
+            'f': r'\d{1,6}',  # Microseconds
         }
 
         # Construct the regex from the time string

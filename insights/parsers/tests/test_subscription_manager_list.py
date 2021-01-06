@@ -64,6 +64,21 @@ subscription_manager_list_no_installed_products = '''
 No installed products to list
 '''
 
+subscription_manager_list_errors = """
+Traceback (most recent call last):
+  File "/usr/sbin/subscription-manager", line 9, in <module>
+    load_entry_point('subscription-manager==1.21.10', 'console_scripts', 'subscription-manager')()
+  File "/usr/lib/python2.7/site-packages/pkg_resources.py", line 378, in load_entry_point
+    return get_distribution(dist).load_entry_point(group, name)
+  File "/usr/lib/python2.7/site-packages/pkg_resources.py", line 2566, in load_entry_point
+    return ep.load()
+  File "/usr/lib/python2.7/site-packages/pkg_resources.py", line 2260, in load
+    entry = __import__(self.module_name, globals(),globals(), ['__name__'])
+  File "/usr/lib64/python2.7/site-packages/subscription_manager/scripts/subscription_manager.py", line 29, in <module>
+    if six.PY2:
+AttributeError: 'module' object has no attribute 'PY2'
+"""
+
 
 def test_subscription_manager_list_exceptions():
     sml = subscription_manager_list.SubscriptionManagerListConsumed(
@@ -90,3 +105,11 @@ def test_subscription_manager_list_docs():
     }
     failed, total = doctest.testmod(subscription_manager_list, globs=env)
     assert failed == 0
+
+
+def test_exception():
+    sml = subscription_manager_list.SubscriptionManagerListConsumed(
+        context_wrap(subscription_manager_list_errors)
+    )
+    assert not sml.records
+    assert "AttributeError: 'module' object has no attribute 'PY2'" in sml.error

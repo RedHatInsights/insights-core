@@ -20,6 +20,23 @@ SAPInstances = namedtuple("SAPInstances",
         field_names=["name", "hostname", "sid", "type", "number", "fqdn", "version"])
 """namedtuple: Type for storing the SAP instance."""
 
+FUNC_TYPES = ('SMDA',)
+"""
+SMDA   :    Solution Manager Diagnostics Agents
+"""
+NETW_TYPES = ('D', 'ASCS', 'DVEBMGS', 'J', 'SCS', 'ERS', 'W', 'G', 'JC')
+"""
+D      :    NetWeaver (ABAP Dialog Instance)
+ASCS   :    NetWeaver (ABAP Central Services)
+DVEBMGS:    NetWeaver (Primary Application server
+J      :    NetWeaver (Java App Server Instance)
+SCS    :    NetWeaver (Java Central Services)
+ERS    :    NetWeaver (Enqueue Replication Server)
+W      :    NetWeaver (WebDispatcher)
+G      :    NetWeaver (Gateway)
+JC     :    NetWeaver (Java App Server Instance)
+"""
+
 
 @combiner(hostname, [SAPHostCtrlInstances, Lssap])
 class Sap(dict):
@@ -59,7 +76,6 @@ class Sap(dict):
                                    E.g. HANA, NetWeaver, ASCS, or others
         local_instances (list): List of all SAP instances running on this host
     """
-    FUNC_INSTS = ('SMDA',)
     """ tuple: Tuple of the prefix string of the functional SAP instances"""
 
     def __init__(self, hostname, insts, lssap):
@@ -71,11 +87,11 @@ class Sap(dict):
         self.all_instances = []
         self._types = set()
         if insts:
+            self._types = insts.types
+            self.all_instances = insts.instances
             for inst in insts.data:
                 k = inst['InstanceName']
-                self.all_instances.append(k)
-                self._types.add(inst['InstanceType'])
-                self.local_instances.append(k) if hn == inst['Hostname'] else None
+                self.local_instances.append(k) if hn == inst['Hostname'].split('.')[0] else None
                 data[k] = SAPInstances(k,
                                        inst['Hostname'],
                                        inst['SID'],
@@ -89,7 +105,7 @@ class Sap(dict):
                 t = k.rstrip('1234567890')
                 self.all_instances.append(k)
                 self._types.add(t)
-                self.local_instances.append(k) if hn == inst['SAPLOCALHOST'] else None
+                self.local_instances.append(k) if hn == inst['SAPLOCALHOST'].split('.')[0] else None
                 data[k] = SAPInstances(k,
                                        inst['SAPLOCALHOST'],
                                        inst['SID'],
@@ -103,7 +119,7 @@ class Sap(dict):
         self.update(data)
 
         for i in self.all_instances:
-            (self.function_instances if i.startswith(self.FUNC_INSTS) else self.business_instances).append(i)
+            (self.function_instances if i.startswith(FUNC_TYPES) else self.business_instances).append(i)
 
     def version(self, instance):
         """str: Returns the version of the ``instance``."""
@@ -128,7 +144,7 @@ class Sap(dict):
     @property
     def is_netweaver(self):
         """bool: Is any SAP NetWeaver instance detected?"""
-        return 'D' in self._types
+        return any(_t in self._types for _t in NETW_TYPES)
 
     @property
     def is_hana(self):
@@ -137,7 +153,7 @@ class Sap(dict):
 
     @property
     def is_ascs(self):
-        """bool: Is any SAP System Central Services instance detected?"""
+        """bool: Is any ABAP Central Services instance detected?"""
         return 'ASCS' in self._types
 
     @property

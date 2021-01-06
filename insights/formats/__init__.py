@@ -89,7 +89,7 @@ class EvaluatorFormatterAdapter(FormatterAdapter):
 
     def __init__(self, args=None):
         if args:
-            hn = "insights.combiners.hostname"
+            hn = "insights.combiners.hostname, insights.parsers.branch_info"
             args.plugins = ",".join([args.plugins, hn]) if args.plugins else hn
             if args.fail_only:
                 print('Options conflict: -f and -F, drops -F', file=sys.stderr)
