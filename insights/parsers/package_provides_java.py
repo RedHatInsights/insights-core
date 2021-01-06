@@ -2,6 +2,11 @@
 PackageProvidesJava - command ``/bin/echo {java_command_package}``
 ==================================================================
 
+.. warning::
+
+    This module is deprecated, please use
+    :mod:`insights.parsers.package_provides` instead.
+
 This command reads the output of the pre-command:
 
 ``for jp in `/bin/ps auxwww | grep java | grep -v grep| awk '{print $11}' | sort -u`; do echo $jp `readlink -e $jp | xargs rpm -qf`; done``
@@ -43,11 +48,17 @@ Raises:
 from insights import parser, CommandParser
 from ..parsers import ParseException, SkipException
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.package_provides_java)
 class PackageProvidesJava(CommandParser):
     """
+    .. warning::
+
+        This Combiner is deprecated, please use
+        :class:`insights.parsers.package_provides.PackageProvidesCommand` instead.
+
     Parse the output of pre_command::
 
         ``for jp in `/bin/ps auxwww | grep java | grep -v grep| awk '{print $11}' | sort -u`; do echo "$jp `readlink -e $jp | xargs rpm -qf`"; done``.
@@ -58,6 +69,10 @@ class PackageProvidesJava(CommandParser):
     """
 
     def parse_content(self, content):
+        deprecated(
+            PackageProvidesJava,
+            'Please use the :class:`insights.parsers.package_provides.PackageProvidesCommand` instead.'
+        )
         if len(content) == 0:
             raise ParseException("Error: ", 'there is not java application running')
         l = content[0].split()
