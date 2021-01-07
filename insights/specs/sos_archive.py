@@ -121,6 +121,7 @@ class SosSpecs(Specs):
     locale = simple_file("sos_commands/i18n/locale")
     lsblk = first_file(["sos_commands/block/lsblk", "sos_commands/filesys/lsblk"])
     ls_boot = simple_file("sos_commands/boot/ls_-lanR_.boot")
+    ls_sys_firmware = simple_file("sos_commands/boot/ls_-lanR_.sys.firmware")
     lscpu = simple_file("sos_commands/processor/lscpu")
     lsinitrd = simple_file("sos_commands/boot/lsinitrd")
     lsof = simple_file("sos_commands/process/lsof_-b_M_-n_-l")
