@@ -529,6 +529,11 @@
             "symbolic_name": "ls_etc"
         },
         {
+            "command": "/bin/ls -lan /usr/share/ipa/ui/js/plugins/idoverride-memberof",
+            "pattern": [],
+            "symbolic_name": "ls_ipa_idoverride_memberof"
+        },
+        {
             "command": "/bin/ls -lanR /lib/firmware",
             "pattern": [],
             "symbolic_name": "ls_lib_firmware"
@@ -540,7 +545,9 @@
         },
         {
             "command": "/bin/ls -lan /usr/bin",
-            "pattern": [],
+            "pattern": [
+                "total"
+            ],
             "symbolic_name": "ls_usr_bin"
         },
         {
@@ -1043,7 +1050,12 @@
         },
         {
             "command": "/usr/sbin/postconf",
-            "pattern": [],
+            "pattern": [
+                "smtp_tls_mandatory_protocols",
+                "smtp_tls_protocols",
+                "smtpd_tls_mandatory_protocols",
+                "smtpd_tls_protocols"
+            ],
             "symbolic_name": "postconf"
         },
         {
@@ -1232,6 +1244,11 @@
             "symbolic_name": "ps_eo"
         },
         {
+            "command": "/usr/bin/openssl x509 -in /etc/puppetlabs/puppet/ssl/ca/ca_crt.pem -enddate -noout",
+            "pattern": [],
+            "symbolic_name": "puppet_ca_cert_expire_date"
+        },
+        {
             "command": "/sbin/pvs --nameprefixes --noheadings --separator='|' -a -o pv_all,vg_name --config=\"global{locking_type=0}\"",
             "pattern": [],
             "symbolic_name": "pvs_noheadings"
@@ -1297,6 +1314,11 @@
             "command": "python -m insights.tools.cat --no-header sap_hdb_version",
             "pattern": [],
             "symbolic_name": "sap_hdb_version"
+        },
+        {
+            "command": "/usr/bin/sudo -iu postgres psql -d foreman -c 'select count(*) from hosts'",
+            "pattern": [],
+            "symbolic_name": "satellite_content_hosts_count"
         },
         {
             "command": "/usr/bin/mongo pulp_database --eval 'db.serverStatus().storageEngine'",
@@ -2360,7 +2382,6 @@
             "file": "/var/log/messages",
             "pattern": [
                 " invoked oom-killer: ",
-                "\"/var/lib/pgsql/data\" is missing or empty",
                 "(enic): transmit queue 0 timed out",
                 ", type vxfs) has no security xattr handler",
                 "- image is referenced in one or more repositories",
@@ -2385,9 +2406,16 @@
                 "Error running DeviceResume dm_task_run failed",
                 "Exception happened during processing of request from",
                 "Failed to extend thin",
+                "File system is filling up",
+                "High directory name cache miss rate",
+                "High number of saturated processors",
+                "High per CPU processor utilization",
+                "High per CPU system call rate",
                 "Hyper-V Host",
                 "List /apis/image.openshift.io/v1/images",
                 "Loop callback failed with: Cannot allocate memory",
+                "Low buffer cache read hit ratio",
+                "Low free swap space",
                 "MDC/MDIO access timeout",
                 "Medium access timeout failure. Offlining disk!",
                 "MountVolume.SetUp succeeded for volume",
@@ -2404,11 +2432,14 @@
                 "SCSI error: return code =",
                 "SDN initialization failed: Error: Existing service with IP: None is not part of service network",
                 "Scheduled import of stream",
+                "Severe demand for real memory",
+                "Some CPU busy executing in system mode",
                 "Steal time is >",
                 "TCP listen overflows",
                 "TCP request queue full SYN cookie replies",
                 "TCP request queue full drops",
                 "TX driver issue detected, PF reset issued",
+                "The threshold number of context switches per second per CPU",
                 "This system does not support \"SSSE3\"",
                 "Throttling request took",
                 "Virtualization daemon",
@@ -4187,5 +4218,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2020-12-03T16:24:04.611058"
+    "version": "2020-12-10T15:23:43.704559"
 }
