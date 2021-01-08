@@ -523,10 +523,10 @@ class _EntryQuery(object):
         func = """
 def predicate(value):
     try:
-        return {}
+        return {body}
     except Exception as ex:
         return False
-        """.format(expr(self))
+        """.format(body=expr(self))
 
         six.exec_(func, env, env)
         return env["predicate"]
