@@ -22,6 +22,7 @@ instances instead of a simple lookup.
 """
 import operator
 import re
+import six
 import sys
 from collections import defaultdict
 from itertools import chain, count
@@ -527,7 +528,7 @@ def predicate(value):
         return False
         """.format(expr(self))
 
-        exec(func, env, env)
+        six.exec_(func, env, env)
         return env["predicate"]
 
 

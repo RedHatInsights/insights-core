@@ -40,6 +40,7 @@ when it's fully applied.
 
 """
 from itertools import count
+import six
 
 
 class Boolean(object):
@@ -96,7 +97,7 @@ def predicate(value):
         return False
         """.format(expr(self))
 
-        exec(func, env, env)
+        six.exec_(func, env, env)
         return env["predicate"]
 
 
