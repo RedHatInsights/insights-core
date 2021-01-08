@@ -61,7 +61,8 @@ class Boolean(object):
         return self.test(value)
 
     def to_pyfunc(self):
-        if sys.version_info <= (2, 6):
+        ver = sys.version_info
+        if ver[0] == 2 and ver[1] == 6:
             return self.test
 
         env = {}
