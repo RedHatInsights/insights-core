@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 # Per PEP 263
 import doctest
+import pytest
 from insights.tests import context_wrap
+from insights.parsers import SkipException
 from insights.parsers.systemd import unitfiles
 from insights.parsers.systemd.unitfiles import UnitFiles, ListUnits
 
@@ -414,3 +416,20 @@ def test_unitfiles_doc_examples():
     }
     failed, total = doctest.testmod(unitfiles, globs=env)
     assert failed == 0
+
+
+UNITFILES_NG = """
+Failed to list unit files: Connection timed out
+""".strip()
+
+LISTUNITS_NG = """
+Failed to list units
+""".strip()
+
+
+def test_unitfile_NG():
+    with pytest.raises(SkipException):
+        UnitFiles(context_wrap(UNITFILES_NG))
+
+    with pytest.raises(SkipException):
+        ListUnits(context_wrap(LISTUNITS_NG))
