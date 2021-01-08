@@ -43,7 +43,7 @@ class Entry(object):
     __slots__ = ("_name", "attrs", "children", "parent", "lineno", "src")
 
     def __init__(self, name=None, attrs=None, children=None, lineno=None, src=None):
-        self._name = intern(name) if name is not None else name
+        self._name = intern(six.ensure_str(name)) if name is not None else name
         self.attrs = attrs if isinstance(attrs, (list, tuple)) else tuple()
         self.children = children if isinstance(children, (list, tuple)) else []
         self.parent = None
