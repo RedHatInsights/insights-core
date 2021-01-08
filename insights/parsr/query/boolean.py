@@ -76,8 +76,8 @@ class Boolean(object):
             elif isinstance(b, Predicate):
                 num = next(ids)
 
-                func = f"func_{num}"
-                args = f"args_{num}"
+                func = "func_{num}".format(num=num)
+                args = "args_{num}".format(num=num)
 
                 env[func] = b.func
                 env[args] = b.args

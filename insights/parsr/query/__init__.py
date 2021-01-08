@@ -515,7 +515,7 @@ class _EntryQuery(object):
                 return "(" + "not " + expr(b.query) + ")"
             else:
                 num = next(ids)
-                func = f"func_{num}"
+                func = "func_{num}".format(num=num)
                 env[func] = b.test
                 return func + "(value)"
 
