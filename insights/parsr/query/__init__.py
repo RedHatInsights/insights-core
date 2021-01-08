@@ -504,6 +504,9 @@ class _EntryQuery(object):
         return _NotEntryQuery(self)
 
     def to_pyfunc(self):
+        if sys.version_info <= (2, 6):
+            return self.test
+
         env = {}
         ids = count()
 

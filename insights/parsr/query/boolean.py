@@ -41,6 +41,7 @@ when it's fully applied.
 """
 from itertools import count
 import six
+import sys
 
 
 class Boolean(object):
@@ -60,6 +61,9 @@ class Boolean(object):
         return self.test(value)
 
     def to_pyfunc(self):
+        if sys.version_info <= (2, 6):
+            return self.test
+
         env = {}
         ids = count()
 
