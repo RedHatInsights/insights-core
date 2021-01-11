@@ -320,3 +320,27 @@ def test_logs_with_milliseconds():
     log = FakeTowerLog(ctx)
     assert len(log.lines) == 4
     assert len(list(log.get_after(datetime(2020, 5, 28, 19, 25, 46, 944)))) == 3
+
+
+MESSAGES_PERSIST = """
+Mar 27 03:18:15 system rsyslogd: [origin software="rsyslogd" swVersion="5.8.10" x-pid="1870" x-info="http://www.rsyslog.com"] first
+Mar 27 03:18:16 system rsyslogd-2177: imuxsock lost 141 messages from pid 55082 due to rate-limiting
+Mar 27 03:18:19 system rsyslogd-2177: imuxsock begins to drop messages from pid 55082 due to rate-limiting
+Mar 27 03:18:21 system pulp: pulp.server.db.connection:INFO: Attempting Database connection with seeds = localhost:27017
+Mar 27 03:18:21 system pulp: pulp.server.db.connection:INFO: Connection Arguments: {'max_pool_size': 10}
+Mar 27 03:18:21 system pulp: pulp.server.db.connection:INFO: Database connection established with: seeds = localhost:27017, name = pulp_database
+Mar 27 03:18:22 system rsyslogd-2177: imuxsock lost 145 messages from pid 55082 due to rate-limiting
+Mar 27 03:18:24 system puppet-master[48226]: Setting manifest is deprecated in puppet.conf. See http://links.puppetlabs.com/env-settings-deprecations
+Mar 27 03:18:24 system puppet-master[48226]:    (at /usr/lib/ruby/site_ruby/1.8/puppet/settings.rb:1095:in `issue_deprecations')
+""".strip()
+
+
+def test_persist():
+    parser = LogFileOutput(context_wrap(MESSAGES_PERSIST, path='/var/log/somefile.log'))
+    assert parser is not None
+    results = parser.persist()
+    assert 'raw_message' in results
+    assert len(results) == 1
+    assert len(results['raw_message']) == 9
+    assert results['raw_message'][0] == MESSAGES_PERSIST.splitlines()[0]
+    assert results['raw_message'][-1] == MESSAGES_PERSIST.splitlines()[-1]

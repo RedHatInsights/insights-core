@@ -1487,6 +1487,18 @@ def test_power_cpuinfo():
         assert cpu["revision"] == "2.0 (pvr 004a 0200)"
 
 
+def test_persist():
+    parser = CpuInfo(context_wrap(CPUINFO))
+    assert parser is not None
+    results = parser.persist()
+    assert results is not None
+    assert len(results) == 8
+    assert len(results['cpu_speed']) == 1
+    assert results['cpu_speed'] == [2900.0, ]
+    assert results['cache_size'] == [20480 * 1024, ]
+    assert results['model_number'] == ['45', ]
+
+
 def test_cpuinfo_doc_examples():
     env = {
             'cpu_info': CpuInfo(context_wrap(CPUINFO)),

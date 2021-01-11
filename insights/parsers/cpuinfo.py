@@ -67,7 +67,7 @@ Examples:
     'GenuineIntel'
 """
 
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from .. import Parser, parser, defaults, get_active_lines, LegacyItemAccess
 from insights.specs import Specs
 
@@ -266,3 +266,46 @@ class CpuInfo(LegacyItemAccess, Parser):
             dict: A dictionary of the information for that CPU.
         """
         return dict((k, v[index]) for k, v in self.data.items())
+
+    def persist(self):
+        """
+        Persist parser data
+
+        Returns:
+            OrderedDict: Returns an ordered dict of data from the parser
+        """
+        _base = 1024
+        _conversions = {
+            "kb": _base,
+            "mb": pow(_base, 2),
+            "gb": pow(_base, 3)
+        }
+        KEYS = [
+            'cpu_speed',
+            'cache_size',
+            'cpu_count',
+            'core_total',
+            'socket_count',
+            'model_name',
+            'model_number',
+            'vendor'
+        ]
+
+        data = OrderedDict([(k, []) for k in KEYS])
+
+        if self.cache_size:
+            cache_size, _, units = self.cache_size.partition(" ")
+            cache_size = int(cache_size) * _conversions.get(units.lower(), 1)
+        else:
+            cache_size = None
+
+        data["cpu_speed"] = [float(self.cpu_speed) if self.cpu_speed else None, ]
+        data["cache_size"] = [cache_size, ]
+        data["cpu_count"] = [int(self.cpu_count) if self.cpu_count else None, ]
+        data["core_total"] = [int(self.core_total) if self.core_total else None, ]
+        data["socket_count"] = [int(self.socket_count) if self.socket_count else None, ]
+        data["model_name"] = [self.model_name, ]
+        data["model_number"] = [str(self.model_number) if self.model_number else None, ]
+        data["vendor"] = [self.vendor, ]
+
+        return data

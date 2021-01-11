@@ -8,6 +8,7 @@ import re
 import shlex
 import yaml
 import six
+from collections import OrderedDict
 from fnmatch import fnmatch
 
 from insights.parsr import iniparser
@@ -1285,6 +1286,18 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
                 # If we're including lines, add this continuation line
                 if including_lines:
                     yield self._parse_line(line)
+
+    def persist(self):
+        """
+        Persist collected lines of log file to OrderedDict
+        """
+        KEYS = [
+            'raw_message',
+        ]
+        results = OrderedDict([(k, []) for k in KEYS])
+        results['raw_message'] = self.lines
+
+        return results
 
 
 class Syslog(LogFileOutput):

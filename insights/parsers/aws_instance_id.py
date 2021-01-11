@@ -11,6 +11,7 @@ from AWS instances.
 from __future__ import print_function
 import json
 
+from collections import OrderedDict
 from insights.parsers import SkipException, ParseException
 from insights import parser, CommandParser
 from insights.specs import Specs
@@ -80,6 +81,30 @@ class AWSInstanceIdDoc(CommandParser, dict):
         except ValueError as e:
             raise ParseException('Failed to parse json with error: %s', str(e))
 
+    def persist(self):
+        """
+        Persist parser data
+
+        Returns:
+            OrderedDict: Returns an ordered dict of data from the parser
+        """
+        KEYS = [
+            "devpayProductCodes", "marketplaceProductCodes", "availabilityZone", "privateIp",
+            "version", "instanceId", "billingProducts", "instanceType", "accountId", "imageId",
+            "pendingTime", "architecture", "kernelId", "ramdiskId", "region"
+        ]
+
+        KEYS_WITH_LISTS = ["devpayProductCodes", "marketplaceProductCodes", "billingProducts"]
+
+        data = OrderedDict([(k, []) for k in KEYS])
+        for k in KEYS:
+            if k not in KEYS_WITH_LISTS:
+                data[k].append(str(self.get(k)))
+            else:
+                val = self.get(k, ['None', ]) or ['None', ]
+                data[k].append(','.join(val))
+        return data
+
 
 @parser(Specs.aws_instance_id_pkcs7)
 class AWSInstanceIdPkcs7(CommandParser):
@@ -130,3 +155,16 @@ class AWSInstanceIdPkcs7(CommandParser):
             startline += 1
 
         self.signature = '-----BEGIN PKCS7-----\n' + '\n'.join([l.rstrip() for l in content[startline:]]) + "\n-----END PKCS7-----"
+
+    def persist(self):
+        """
+        Persist parser data
+
+        Returns:
+            OrderedDict: Returns an ordered dict of data from the parser
+        """
+        KEYS = ['signature']
+
+        data = OrderedDict([(KEYS[0], [self.signature, ]), ])
+
+        return data
