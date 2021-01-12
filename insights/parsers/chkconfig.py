@@ -4,8 +4,9 @@ ChkConfig - command ``chkconfig``
 """
 from collections import namedtuple
 from .. import parser, CommandParser
-import re
 from insights.specs import Specs
+from insights.parsers import SkipException
+import re
 
 
 @parser(Specs.chkconfig)
@@ -14,6 +15,9 @@ class ChkConfig(CommandParser):
     A parser for working with data gathered from `chkconfig` utility.
 
     Sample input data is shown as `content` in the examples below.
+
+    Raises:
+        SkipException: When nothing is parsed.
 
     Examples:
         >>> content = '''
@@ -118,6 +122,9 @@ class ChkConfig(CommandParser):
                     num, state = level.split(':')
                     states.append(self.LevelState(num.strip(), state.strip()))
                 self.level_states[service] = states
+
+        if not self.services:
+            raise SkipException
 
     def is_on(self, service_name):
         """
