@@ -1,6 +1,7 @@
 import pytest
 from ...tests import context_wrap
 from ..chkconfig import ChkConfig
+from insights.parsers import SkipException
 
 SERVICES = """
 auditd         	0:off	1:off	2:on	3:on	4:on	5:on	6:off
@@ -42,6 +43,17 @@ xinetd based services:
         tcpmux-server:  off
         time-dgram:     off
         time-stream:    off
+"""
+
+SERVICES_NG = """
+Note: This output shows SysV services only and does not include native
+      systemd services. SysV configuration data might be overridden by native
+      systemd configuration.
+
+      If you want to list systemd services use 'systemctl list-unit-files'.
+      To see services enabled on particular target use
+      'systemctl list-dependencies [target]'.
+
 """
 
 
@@ -87,3 +99,8 @@ def test_rhel_73():
     assert chkconfig.levels_off('netconsole') == set(['0', '1', '2', '3', '4', '5', '6'])
     assert chkconfig.levels_on('network') == set(['2', '3', '4', '5'])
     assert chkconfig.levels_on('rsync') == set(['0', '1', '2', '3', '4', '5', '6'])
+
+
+def test_chkconfig_ng():
+    with pytest.raises(SkipException):
+        ChkConfig(context_wrap(SERVICES_NG))
