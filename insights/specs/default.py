@@ -61,7 +61,7 @@ def _get_running_commands(broker, commands):
         Exception: Raises an exception if commands object is not a list or is empty
     """
     if not commands or not isinstance(commands, list):
-        raise Exception('Commands argument must be a list object and contain at least on item')
+        raise Exception('Commands argument must be a list object and contain at least one item')
 
     ps_list = [broker[Ps].search(COMMAND_NAME__contains=c) for c in commands]
     ps_cmds = [i for sub_l in ps_list for i in sub_l]
