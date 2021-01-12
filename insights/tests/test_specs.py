@@ -6,6 +6,7 @@ from insights.core.context import HostContext
 from insights.core.plugins import ContentException
 from insights.core.spec_factory import (DatasourceProvider, simple_file,
                                         simple_command, glob_file, SpecSet)
+import insights.specs.default as default_specs
 import tempfile
 import pytest
 import glob
@@ -102,3 +103,13 @@ def test_datasource_provider():
     p = MyParser(ds)
     assert p.content == data.splitlines()
     assert list(ds.stream()) == data.splitlines()
+
+
+def test_get_running_commands():
+    broker = dr.Broker()
+    broker[HostContext] = HostContext()
+    with pytest.raises(Exception):
+        default_specs._get_running_commands(broker, 'not_a_list')
+
+    with pytest.raises(Exception):
+        default_specs._get_running_commands(broker, [])
