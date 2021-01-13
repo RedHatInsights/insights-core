@@ -233,6 +233,12 @@ class DefaultSpecs(Specs):
 
     @datasource([IsRhel7, IsRhel8])
     def corosync_cmapctl_cmd_list(broker):
+        """
+        corosync-cmapctl add different arguments on RHEL7 and RHEL8.
+
+        Returns:
+            list: A list of related corosync-cmapctl commands based the RHEL version.
+        """
         if broker.get(IsRhel7):
             return ["/usr/sbin/corosync-cmapctl", 'corosync-cmapctl -d runtime.schedmiss.timestamp', 'corosync-cmapctl -d runtime.schedmiss.delay']
         if broker.get(IsRhel8):
