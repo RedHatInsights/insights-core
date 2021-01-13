@@ -14,6 +14,7 @@ UnitFiles - command ``/bin/systemctl list-unit-files``
 from .. import get_active_lines
 from ... import Parser, parser
 from insights.specs import Specs
+from insights.parsers import SkipException
 
 
 @parser(Specs.systemctl_list_unit_files)
@@ -31,6 +32,9 @@ class UnitFiles(Parser):
         runlevel0.target                              disabled
         runlevel1.target                              disabled
         runlevel2.target                              enabled
+
+    Raises:
+        SkipException: When nothing is parsed.
 
     Example:
 
@@ -93,6 +97,9 @@ class UnitFiles(Parser):
                 self.parsed_lines[service] = line
                 self.service_list.append(service)
 
+        if not self.services:
+            raise SkipException
+
     def is_on(self, service_name):
         """
         Checks if the service is enabled in systemctl.
@@ -143,6 +150,9 @@ class ListUnits(Parser):
 
         161 loaded units listed. Pass --all to see loaded but inactive units, too.
         To show all installed unit files use 'systemctl list-unit-files'.
+
+    Raises:
+        SkipException: When nothing is parsed.
 
     Example:
 
@@ -207,6 +217,9 @@ class ListUnits(Parser):
             service_details = self.parse_service_details(parts[first_part:])
             if service_details:
                 self.unit_list[parts[first_part]] = service_details
+
+        if not self.unit_list:
+            raise SkipException
 
     def get_service_details(self, service_name):
         """
