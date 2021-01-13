@@ -708,7 +708,7 @@ class simple_command(object):
     Execute a simple command that has no dynamic arguments
 
     Args:
-        cmd (list of lists): the command(s) to execute. Breaking apart a command
+        cmd (str): the command(s) to execute. Breaking apart a command
             string that might contain multiple commands separated by a pipe,
             getting them ready for subproc operations.
             IE. A command with filters applied
@@ -753,7 +753,7 @@ class command_with_args(object):
     Execute a command that has dynamic arguments
 
     Args:
-        cmd (list of lists): the command to execute. Breaking apart a command
+        cmd (str): the command to execute. Breaking apart a command
             string that might require arguments.
         provider (str or tuple): argument string or a tuple of argument strings.
         context (ExecutionContext): the context under which the datasource
@@ -811,7 +811,7 @@ class foreach_execute(object):
 
     Args:
         provider (list): a list of elements or tuples.
-        cmd (list of lists): a command with substitution parameters. Breaking
+        cmd (str): a command with substitution parameters. Breaking
             apart a command string that might contain multiple commands
             separated by a pipe, getting them ready for subproc operations.
             IE. A command with filters applied
