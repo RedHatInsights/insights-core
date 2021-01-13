@@ -46,7 +46,7 @@ def get_owner(filename):
     return (name, group)
 
 
-def _get_running_commands(broker, commands=None):
+def _get_running_commands(broker, commands):
     """
     Search for command in ``ps auxcww`` output and determine RPM providing binary
 
@@ -56,8 +56,13 @@ def _get_running_commands(broker, commands=None):
 
     Returns:
         list: List of the full command paths of the ``command``.
+
+    Raises:
+        Exception: Raises an exception if commands object is not a list or is empty
     """
-    commands = [] if commands is None else commands
+    if not commands or not isinstance(commands, list):
+        raise Exception('Commands argument must be a list object and contain at least one item')
+
     ps_list = [broker[Ps].search(COMMAND_NAME__contains=c) for c in commands]
     ps_cmds = [i for sub_l in ps_list for i in sub_l]
     ctx = broker[HostContext]
@@ -364,7 +369,7 @@ class DefaultSpecs(Specs):
         Returns:
             list: List of the binary paths to each running process
         """
-        return _get_running_commands(broker, 'httpd')
+        return _get_running_commands(broker, ['httpd', ])
 
     httpd_pid = simple_command("/usr/bin/pgrep -o httpd")
     httpd_limits = foreach_collect(httpd_pid, "/proc/%s/limits")

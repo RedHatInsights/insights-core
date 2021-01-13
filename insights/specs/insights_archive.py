@@ -5,6 +5,7 @@ from insights.specs import Specs
 
 simple_file = partial(simple_file, context=HostArchiveContext)
 glob_file = partial(glob_file, context=HostArchiveContext)
+first_file = partial(first_file, context=HostArchiveContext)
 
 
 class InsightsArchiveSpecs(Specs):
