@@ -8,7 +8,7 @@ def test_url_guess_legacy(get_proxies, init_session):
     """
     Connection should guess the right URLs if there's nothing in the config (the default)
     """
-    config = Mock(base_url=None, upload_url=None, legacy_upload=True, insecure_connection=False, analyze_container=False)
+    config = Mock(base_url=None, upload_url=None, legacy_upload=True, analyze_container=False)
 
     connection = InsightsConnection(config)
     assert connection.base_url == 'https://cert-api.access.redhat.com/r/insights'
@@ -21,7 +21,7 @@ def test_url_guess_platform(get_proxies, init_session):
     """
     Connection should guess the right URLs if there's nothing in the config (the default)
     """
-    config = Mock(base_url=None, upload_url=None, legacy_upload=False, insecure_connection=False)
+    config = Mock(base_url=None, upload_url=None, legacy_upload=False)
 
     connection = InsightsConnection(config)
     # assert connection.base_url == 'https://cloud.redhat.com/api'
@@ -36,7 +36,7 @@ def test_branch_info_url_guess_legacy(get_proxies, init_session):
     """
     Satellite branch info URL should be set properly
     """
-    config = Mock(base_url='sat.test.com:443/redhat_access/r/insights', upload_url=None, legacy_upload=True, insecure_connection=False, branch_info_url=None)
+    config = Mock(base_url='sat.test.com:443/redhat_access/r/insights', upload_url=None, legacy_upload=True, branch_info_url=None)
 
     connection = InsightsConnection(config)
     assert connection.branch_info_url == 'https://sat.test.com:443/redhat_access/r/insights/v1/branch_info'
@@ -48,7 +48,7 @@ def test_branch_info_url_guess_platform(get_proxies, init_session):
     """
     Satellite branch info URL should be the same on platform as on legacy
     """
-    config = Mock(base_url='sat.test.com:443/redhat_access/r/insights', upload_url=None, legacy_upload=False, insecure_connection=False, branch_info_url=None)
+    config = Mock(base_url='sat.test.com:443/redhat_access/r/insights', upload_url=None, legacy_upload=False, branch_info_url=None)
 
     connection = InsightsConnection(config)
     assert connection.branch_info_url == 'https://sat.test.com:443/redhat_access/r/insights/v1/branch_info'

@@ -193,10 +193,6 @@ DEFAULT_OPTS = {
         # non-CLI
         'default': 120.0
     },
-    'insecure_connection': {
-        # non-CLI
-        'default': False
-    },
     'keep_archive': {
         'default': False,
         'opt': ['--keep-archive'],
