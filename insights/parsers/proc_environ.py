@@ -38,11 +38,9 @@ class ProcEnviron(Parser, dict):
     """
 
     def parse_content(self, content):
-        print('0000000000000')
         if len(content) > 1:
             raise ParseException("Incorrect content: '{0}'".format(content[-1]))
 
-        print('0000i00000000')
         data = {}
         cnt = content[0] if content else ''
         for item in cnt.split('\x00'):
