@@ -294,6 +294,7 @@ class DefaultSpecs(Specs):
     du_dirs = foreach_execute(du_dirs_list, "/bin/du -s -k %s")
     engine_db_query_vdsm_version = simple_command('engine-db-query --statement "SELECT vs.vds_name, rpm_version FROM vds_dynamic vd, vds_static vs WHERE vd.vds_id = vs.vds_id" --json')
     engine_log = simple_file("/var/log/ovirt-engine/engine.log")
+    environ_all = glob_file("/proc/*/environ")
     etc_journald_conf = simple_file(r"etc/systemd/journald.conf")
     etc_journald_conf_d = glob_file(r"etc/systemd/journald.conf.d/*.conf")
     etc_machine_id = simple_file("/etc/machine-id")

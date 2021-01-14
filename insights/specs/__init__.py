@@ -150,6 +150,7 @@ class Specs(SpecSet):
     engine_config_all = RegistryPoint()
     engine_db_query_vdsm_version = RegistryPoint()
     engine_log = RegistryPoint(filterable=True)
+    environ_all = RegistryPoint(multi_output=True)
     etc_journald_conf_d = RegistryPoint(multi_output=True)
     etc_journald_conf = RegistryPoint()
     etc_machine_id = RegistryPoint()
