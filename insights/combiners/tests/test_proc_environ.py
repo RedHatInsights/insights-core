@@ -1,4 +1,3 @@
-import pytest
 import doctest
 from insights.tests import context_wrap
 from insights.parsers.proc_environ import ProcEnviron
