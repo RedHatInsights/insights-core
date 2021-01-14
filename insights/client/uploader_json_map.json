@@ -546,6 +546,8 @@
         {
             "command": "/bin/ls -lan /usr/bin",
             "pattern": [
+                "/usr/bin",
+                "python",
                 "total"
             ],
             "symbolic_name": "ls_usr_bin"
@@ -1061,7 +1063,6 @@
         {
             "command": "/bin/ps alxwww",
             "pattern": [
-                "/usr/bin/gnome-shell",
                 "/usr/bin/openshift start master",
                 "/usr/bin/openshift start node",
                 "COMMAND",
@@ -1070,10 +1071,14 @@
                 "bash",
                 "chronyd",
                 "clvmd",
+                "cmirrord",
                 "corosync",
                 "crmd",
                 "dlm_controld",
                 "docker",
+                "elasticsearch",
+                "gnome-shell",
+                "haproxy",
                 "heat-engine",
                 "mongdb",
                 "nova-compute",
@@ -1084,10 +1089,17 @@
                 "openshift start node",
                 "ora",
                 "pacemaker-controld",
+                "pacemaker_remote",
                 "pacemakerd",
                 "pcsd",
+                "pkla-check-auth",
+                "pmcd",
+                "pmie",
+                "radosgw",
                 "redis-server",
+                "rngd",
                 "sap",
+                "snmpd",
                 "spausedd",
                 "tuned"
             ],
@@ -1101,7 +1113,6 @@
                 "/usr/bin/docker-current",
                 "/usr/bin/docker-current daemon",
                 "/usr/bin/dockerd-current",
-                "/usr/bin/gnome-shell",
                 "/usr/bin/hyperkube kubelet",
                 "/usr/bin/openshift start master",
                 "/usr/bin/openshift start node",
@@ -1112,10 +1123,14 @@
                 "ceph-osd",
                 "chronyd",
                 "clvmd",
+                "cmirrord",
                 "corosync",
                 "crmd",
                 "dlm_controld",
                 "docker",
+                "elasticsearch",
+                "gnome-shell",
+                "haproxy",
                 "heat-engine",
                 "mongdb",
                 "mysqld",
@@ -1128,13 +1143,20 @@
                 "openshift start node",
                 "ora",
                 "pacemaker-controld",
+                "pacemaker_remote",
                 "pacemakerd",
                 "pcsd",
                 "phc2sys",
+                "pkla-check-auth",
+                "pmcd",
+                "pmie",
                 "postgres",
                 "ptp4l",
+                "radosgw",
                 "redis-server",
+                "rngd",
                 "sap",
+                "snmpd",
                 "spausedd",
                 "tuned"
             ],
@@ -1151,7 +1173,6 @@
                 "/opt/perf/bin/midaemon",
                 "/sbin/multipathd",
                 "/sbin/rngd",
-                "/usr/bin/gnome-shell",
                 "/usr/bin/openshift start master",
                 "/usr/bin/openshift start node",
                 "/usr/bin/teamd",
@@ -1163,13 +1184,16 @@
                 "ceilometer-coll",
                 "chronyd",
                 "clvmd",
+                "cmirrord",
                 "corosync",
                 "crmd",
                 "dlm_controld",
                 "docker",
                 "elasticsearch",
+                "gnome-shell",
                 "goferd",
                 "greenplum",
+                "haproxy",
                 "heat-engine",
                 "httpd",
                 "iscsid",
@@ -1187,13 +1211,19 @@
                 "openshift start node",
                 "ora",
                 "pacemaker-controld",
+                "pacemaker_remote",
                 "pacemakerd",
                 "pcsd",
                 "pkla-check-auth",
+                "pmcd",
+                "pmie",
                 "postgres",
+                "radosgw",
                 "redis-server",
+                "rngd",
                 "sap",
                 "smbd",
+                "snmpd",
                 "spausedd",
                 "target_completi",
                 "tgtd",
@@ -1204,7 +1234,6 @@
         {
             "command": "/bin/ps -ef",
             "pattern": [
-                "/usr/bin/gnome-shell",
                 "/usr/bin/openshift start master",
                 "/usr/bin/openshift start node",
                 "CMD",
@@ -1212,10 +1241,14 @@
                 "bash",
                 "chronyd",
                 "clvmd",
+                "cmirrord",
                 "corosync",
                 "crmd",
                 "dlm_controld",
                 "docker",
+                "elasticsearch",
+                "gnome-shell",
+                "haproxy",
                 "heat-engine",
                 "mongdb",
                 "neutron-ns-metadata-proxy",
@@ -1229,10 +1262,17 @@
                 "openshift start node",
                 "ora",
                 "pacemaker-controld",
+                "pacemaker_remote",
                 "pacemakerd",
                 "pcsd",
+                "pkla-check-auth",
+                "pmcd",
+                "pmie",
+                "radosgw",
                 "redis-server",
+                "rngd",
                 "sap",
+                "snmpd",
                 "spausedd",
                 "tuned"
             ],
@@ -1728,14 +1768,16 @@
         {
             "file": "/etc/ceph/ceph.conf",
             "pattern": [
-                "["
+                "[",
+                "wait"
             ],
             "symbolic_name": "ceph_conf"
         },
         {
             "file": "/var/lib/config-data/puppet-generated/ceph/etc/ceph/ceph.conf",
             "pattern": [
-                "["
+                "[",
+                "wait"
             ],
             "symbolic_name": "ceph_conf"
         },
@@ -1963,6 +2005,9 @@
                 "L1TF",
                 "L1Tf",
                 "Linux version",
+                "PM: Creating hibernation image",
+                "PM: hibernation entry",
+                "PM: hibernation exit",
                 "Secure boot enabled",
                 "__cpufreq_add_dev",
                 "efi",
@@ -2394,7 +2439,6 @@
                 "Cannot allocate memory",
                 "Cannot assign requested address",
                 "Cannot assign requested address: AH00072",
-                "Connection amqps://subscription.rhn.redhat.com:5647 disconnected",
                 "Corosync main process was not scheduled (@",
                 "Could not set",
                 "DHCPv4 lease renewal requested",
@@ -2416,6 +2460,7 @@
                 "Loop callback failed with: Cannot allocate memory",
                 "Low buffer cache read hit ratio",
                 "Low free swap space",
+                "Low random number entropy available",
                 "MDC/MDIO access timeout",
                 "Medium access timeout failure. Offlining disk!",
                 "MountVolume.SetUp succeeded for volume",
@@ -2571,8 +2616,10 @@
             "file": "/var/log/mysql/mysqld.log",
             "pattern": [
                 "OpenSSL internal error, assertion failed: Digest MD5 forbidden in FIPS mode!",
+                "SSL error",
                 "Too many open files",
-                "[ERROR]"
+                "[ERROR]",
+                "handshake with remote endpoint ssl"
             ],
             "symbolic_name": "mysql_log"
         },
@@ -2580,8 +2627,10 @@
             "file": "/var/log/mysql.log",
             "pattern": [
                 "OpenSSL internal error, assertion failed: Digest MD5 forbidden in FIPS mode!",
+                "SSL error",
                 "Too many open files",
-                "[ERROR]"
+                "[ERROR]",
+                "handshake with remote endpoint ssl"
             ],
             "symbolic_name": "mysql_log"
         },
@@ -4151,8 +4200,10 @@
             "symbolic_name": "mysql_log",
             "pattern": [
                 "OpenSSL internal error, assertion failed: Digest MD5 forbidden in FIPS mode!",
+                "SSL error",
                 "Too many open files",
-                "[ERROR]"
+                "[ERROR]",
+                "handshake with remote endpoint ssl"
             ]
         },
         {
@@ -4218,5 +4269,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2020-12-10T15:23:43.704559"
+    "version": "2021-01-07T14:02:30.044043"
 }
