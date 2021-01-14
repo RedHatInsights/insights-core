@@ -46,7 +46,7 @@ def test_filter_dumps_loads():
     filters.loads(r)
 
     assert Specs.ps_aux in filters.FILTERS
-    assert filters.FILTERS[Specs.ps_aux] == set(["COMMAND"])
+    assert filters.FILTERS[Specs.ps_aux] == set(["COMMAND", "PID"])
 
 
 def test_get_filter():
