@@ -27,6 +27,7 @@ from insights.combiners.ps import Ps
 from insights.components.rhel_version import IsRhel8, IsRhel7
 from insights.parsers.mdstat import Mdstat
 from insights.parsers.lsmod import LsMod
+from insights.combiners.satellite_version import SatelliteVersion
 from insights.specs import Specs
 
 
@@ -667,7 +668,20 @@ class DefaultSpecs(Specs):
     saphostexec_status = simple_command("/usr/sap/hostctrl/exe/saphostexec -status")
     saphostexec_version = simple_command("/usr/sap/hostctrl/exe/saphostexec -version")
     sat5_insights_properties = simple_file("/etc/redhat-access/redhat-access-insights.properties")
-    satellite_content_hosts_count = simple_command("/usr/bin/sudo -iu postgres psql -d foreman -c 'select count(*) from hosts'")
+
+    @datasource(SatelliteVersion)
+    def is_satellite_server(broker):
+        """
+        bool: Returns True if the host is satellite server.
+        """
+        if broker[SatelliteVersion]:
+            return True
+        raise SkipComponent
+
+    satellite_content_hosts_count = simple_command(
+        "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c 'select count(*) from hosts'",
+        deps=[is_satellite_server]
+    )
     satellite_mongodb_storage_engine = simple_command("/usr/bin/mongo pulp_database --eval 'db.serverStatus().storageEngine'")
     satellite_version_rb = simple_file("/usr/share/foreman/lib/satellite/version.rb")
     satellite_custom_hiera = simple_file("/etc/foreman-installer/custom-hiera.yaml")
