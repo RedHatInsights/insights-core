@@ -27,6 +27,7 @@ from insights.combiners.ps import Ps
 from insights.components.rhel_version import IsRhel8, IsRhel7
 from insights.parsers.mdstat import Mdstat
 from insights.parsers.lsmod import LsMod
+from insights.combiners.satellite_version import SatelliteVersion
 from insights.specs import Specs
 
 
@@ -233,6 +234,12 @@ class DefaultSpecs(Specs):
 
     @datasource([IsRhel7, IsRhel8])
     def corosync_cmapctl_cmd_list(broker):
+        """
+        corosync-cmapctl add different arguments on RHEL7 and RHEL8.
+
+        Returns:
+            list: A list of related corosync-cmapctl commands based the RHEL version.
+        """
         if broker.get(IsRhel7):
             return ["/usr/sbin/corosync-cmapctl", 'corosync-cmapctl -d runtime.schedmiss.timestamp', 'corosync-cmapctl -d runtime.schedmiss.delay']
         if broker.get(IsRhel8):
@@ -661,7 +668,20 @@ class DefaultSpecs(Specs):
     saphostexec_status = simple_command("/usr/sap/hostctrl/exe/saphostexec -status")
     saphostexec_version = simple_command("/usr/sap/hostctrl/exe/saphostexec -version")
     sat5_insights_properties = simple_file("/etc/redhat-access/redhat-access-insights.properties")
-    satellite_content_hosts_count = simple_command("/usr/bin/sudo -iu postgres psql -d foreman -c 'select count(*) from hosts'")
+
+    @datasource(SatelliteVersion)
+    def is_satellite_server(broker):
+        """
+        bool: Returns True if the host is satellite server.
+        """
+        if broker[SatelliteVersion]:
+            return True
+        raise SkipComponent
+
+    satellite_content_hosts_count = simple_command(
+        "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c 'select count(*) from hosts'",
+        deps=[is_satellite_server]
+    )
     satellite_mongodb_storage_engine = simple_command("/usr/bin/mongo pulp_database --eval 'db.serverStatus().storageEngine'")
     satellite_version_rb = simple_file("/usr/share/foreman/lib/satellite/version.rb")
     satellite_custom_hiera = simple_file("/etc/foreman-installer/custom-hiera.yaml")
