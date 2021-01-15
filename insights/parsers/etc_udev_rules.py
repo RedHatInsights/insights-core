@@ -16,7 +16,7 @@ from insights.core import LogFileOutput
 from insights.specs import Specs
 
 
-@parser(Specs.etc_udev_40_redhat_rules)
+@parser(Specs.udev_40_redhat_rules)
 class UdevRules40Redhat(LogFileOutput):
     """
     Read the content of ``/etc/udev/rules.d/40-redhat.rules`` file.
