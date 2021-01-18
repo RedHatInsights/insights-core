@@ -35,6 +35,18 @@ except:
     pass
 
 
+def _make_str(s):
+    """
+    Inspired by six.ensure_str in six version 1.15. See the six module for
+    copyright notice.
+    """
+    if six.PY2 and isinstance(s, six.text_type):
+        return s.encode("utf-8", "strict")
+    if six.PY3 and isinstance(s, six.binary_type):
+        return s.decode("utf-8", "strict")
+    return s
+
+
 class Entry(object):
     """
     Entry is the base class for the data model, which is a tree of Entry
@@ -43,7 +55,13 @@ class Entry(object):
     __slots__ = ("_name", "attrs", "children", "parent", "lineno", "src")
 
     def __init__(self, name=None, attrs=None, children=None, lineno=None, src=None):
-        self._name = intern(six.ensure_str(name)) if name is not None else name
+        if type(name) is str:
+            self._name = intern(name)
+        elif isinstance(name, (six.text_type, six.binary_type)):
+            self._name = intern(_make_str(name))
+        else:
+            self._name = name
+
         self.attrs = attrs if isinstance(attrs, (list, tuple)) else tuple()
         self.children = children if isinstance(children, (list, tuple)) else []
         self.parent = None
