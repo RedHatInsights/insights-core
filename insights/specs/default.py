@@ -479,6 +479,13 @@ class DefaultSpecs(Specs):
     kubepods_cpu_quota = glob_file("/sys/fs/cgroup/cpu/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod[a-f0-9_]*.slice/cpu.cfs_quota_us")
     last_upload_globs = ["/etc/redhat-access-insights/.lastupload", "/etc/insights-client/.lastupload"]
     lastupload = glob_file(last_upload_globs)
+
+    @datasource()
+    def regular_users(broker):
+        ctx = broker[HostContext]
+        return ctx.shell_out("/bin/awk -F':' '!/nologin|false|sync|halt|shutdown/{print $1}' /etc/passwd")
+
+    ld_library_path = foreach_execute(regular_users, "/usr/bin/su -l %s -c 'echo $LD_LIBRARY_PATH'")
     libssh_client_config = simple_file("/etc/libssh/libssh_client.config")
     libssh_server_config = simple_file("/etc/libssh/libssh_server.config")
     libvirtd_log = simple_file("/var/log/libvirt/libvirtd.log")
