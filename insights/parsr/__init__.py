@@ -47,7 +47,9 @@ Here's an example that evaluates arithmetic expressions.
 from __future__ import print_function
 import functools
 import logging
+import os
 import string
+import traceback
 from bisect import bisect_left
 from six import StringIO, with_metaclass
 
@@ -116,6 +118,9 @@ def _debug_hook(func):
     """
     @functools.wraps(func)
     def inner(self, pos, data, ctx):
+        if ctx.function_error is not None:
+            # no point in continuing...
+            raise Exception()
         ctx.parser_stack.append(self)
         if self._debug:
             line = ctx.line(pos) + 1
@@ -136,6 +141,15 @@ def _debug_hook(func):
     return inner
 
 
+class Backtrack(Exception):
+    """
+    Mapped or Lifted functions should Backtrack if they want to fail without
+    causing parsing to fail.
+    """
+    def __init__(self, msg):
+        super(Backtrack, self).__init__(msg)
+
+
 class Context(object):
     """
     An instance of Context is threaded through the process call to every
@@ -151,6 +165,7 @@ class Context(object):
         self.lines = [i for i, x in enumerate(lines) if x == "\n"]
         self.parser_stack = []
         self.errors = []
+        self.function_error = None
 
     def set(self, pos, msg):
         """
@@ -318,6 +333,13 @@ class Parser(with_metaclass(_ParserMeta, Node)):
             return ret
         except Exception:
             pass
+
+        if ctx.function_error is not None:
+            pos, msg = ctx.function_error
+            lineno = ctx.line(pos) + 1
+            colno = ctx.col(pos) + 1
+            msg = "At line {0} column {1}: {2}".format(lineno, colno, msg)
+            raise Exception(msg)
 
         err = StringIO()
 
@@ -917,7 +939,16 @@ class Map(Parser):
 
     def process(self, pos, data, ctx):
         pos, res = self.children[0].process(pos, data, ctx)
-        return pos, self.func(res)
+        try:
+            return pos, self.func(res)
+        except Backtrack as bt:
+            ctx.set(pos, bt.msg)
+            raise
+        except:
+            tb = traceback.format_exc()
+            msg = (self.name or "Map") + " raised{l}{tb}".format(l=os.linesep, tb=tb)
+            ctx.function_error = (pos, msg)
+            raise
 
     def __repr__(self):
         if not self.name:
@@ -969,8 +1000,14 @@ class Lift(Parser):
             results.append(res)
         try:
             return pos, self.func(*results)
-        except Exception as e:
-            ctx.set(pos, str(e))
+        except Backtrack as bt:
+            ctx.set(pos, bt.msg)
+            raise
+        except:
+            tb = traceback.format_exc()
+            msg = (self.name or "Lift") + " raised{l}{tb}".format(l=os.linesep, tb=tb)
+            ctx.set(pos, msg)
+            ctx.function_error = (pos, msg)
             raise
 
 
