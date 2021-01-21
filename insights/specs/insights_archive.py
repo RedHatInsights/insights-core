@@ -250,3 +250,4 @@ class InsightsArchiveSpecs(Specs):
     virt_what = simple_file("insights_commands/virt-what")
     yum_list_available = simple_file("insights_commands/yum_-C_--noplugins_list_available")
     yum_repolist = first_file(["insights_commands/yum_-C_--noplugins_repolist", "insights_commands/yum_-C_repolist"])
+    yum_updateinfo = simple_file("insights_commands/yum_-C_updateinfo_list")
