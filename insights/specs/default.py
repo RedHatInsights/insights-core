@@ -10,12 +10,18 @@ data sources that standard Insights `Parsers` resolve against.
 
 import logging
 import re
+import json
+
+from grp import getgrgid
+from os import stat
+from pwd import getpwuid
+
+import yaml
 
 from insights.core.context import HostContext
-
 from insights.core.dr import SkipComponent
 from insights.core.plugins import datasource
-from insights.core.spec_factory import RawFileProvider
+from insights.core.spec_factory import RawFileProvider, DatasourceProvider
 from insights.core.spec_factory import simple_file, simple_command, glob_file
 from insights.core.spec_factory import first_of, command_with_args
 from insights.core.spec_factory import foreach_collect, foreach_execute
@@ -29,11 +35,6 @@ from insights.parsers.mdstat import Mdstat
 from insights.parsers.lsmod import LsMod
 from insights.combiners.satellite_version import SatelliteVersion
 from insights.specs import Specs
-
-
-from grp import getgrgid
-from os import stat
-from pwd import getpwuid
 
 
 logger = logging.getLogger(__name__)
@@ -224,6 +225,69 @@ class DefaultSpecs(Specs):
     cinder_api_log = first_file(["/var/log/containers/cinder/cinder-api.log", "/var/log/cinder/cinder-api.log"])
     cinder_conf = first_file(["/var/lib/config-data/puppet-generated/cinder/etc/cinder/cinder.conf", "/etc/cinder/cinder.conf"])
     cinder_volume_log = first_file(["/var/log/containers/cinder/volume.log", "/var/log/containers/cinder/cinder-volume.log", "/var/log/cinder/volume.log"])
+
+    @datasource(HostContext)
+    def cloud_cfg(broker):
+        """This datasource provides the network configuration collected
+        from ``/etc/cloud/cloud.cfg``.
+
+        Typical content of ``/etc/cloud/cloud.cfg`` file is::
+
+            #cloud-config
+            users:
+              - name: demo
+                ssh-authorized-keys:
+                  - key_one
+                  - key_two
+                passwd: $6$j212wezy$7H/1LT4f9/N3wpgNunhsIqtMj62OKiS3nyNwuizouQc3u7MbYCarYeAHWYPYb2FT.lbioDm2RrkJPb9BZMN1O/
+
+            network:
+              version: 1
+              config:
+                - type: physical
+                  name: eth0
+                  subnets:
+                    - type: dhcp
+                    - type: dhcp6
+
+            system_info:
+              default_user:
+                name: user2
+                plain_text_passwd: 'someP@assword'
+                home: /home/user2
+
+            debug:
+              output: /var/log/cloud-init-debug.log
+              verbose: true
+
+        Note:
+            This datasource may be executed using the following command:
+
+            ``insights-cat --no-header cloud_cfg``
+
+        Example:
+
+            ``{"version": 1, "config": [{"type": "physical", "name": "eth0", "subnets": [{"type": "dhcp"}, {"type": "dhcp6"}]}]}``
+
+        Returns:
+            str: JSON string when the ``network`` parameter is configure, else nothing is returned.
+
+        Raises:
+            SkipComponent: When the path does not exist.
+        """
+        relative_path = '/etc/cloud/cloud.cfg'
+        network_config = ''
+
+        try:
+            with open(relative_path, 'r') as f:
+                content = yaml.load(f, Loader=yaml.SafeLoader)
+                network_config = content.get('network', None)
+                if network_config:
+                    return DatasourceProvider(content=json.dumps(network_config), relative_path=relative_path)
+
+        except OSError:
+            raise SkipComponent()
+
     cloud_init_custom_network = simple_file("/etc/cloud/cloud.cfg.d/99-custom-networking.cfg")
     cloud_init_log = simple_file("/var/log/cloud-init.log")
     cluster_conf = simple_file("/etc/cluster/cluster.conf")
