@@ -794,6 +794,7 @@ class DefaultSpecs(Specs):
     yum_log = simple_file("/var/log/yum.log")
     yum_repolist = simple_command("/usr/bin/yum -C --noplugins repolist")
     yum_repos_d = glob_file("/etc/yum.repos.d/*.repo")
+    yum_updateinfo = simple_command("/usr/bin/yum -C updateinfo list")
     zipl_conf = simple_file("/etc/zipl.conf")
     rpm_format = format_rpm()
     installed_rpms = simple_command("/bin/rpm -qa --qf '%s'" % rpm_format, context=HostContext)
