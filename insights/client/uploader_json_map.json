@@ -241,6 +241,11 @@
             "symbolic_name": "dotnet_version"
         },
         {
+            "command": "/usr/bin/doveconf",
+            "pattern": [],
+            "symbolic_name": "doveconf"
+        },
+        {
             "command": "/bin/du -s -k /var/lib/candlepin/activemq-artemis",
             "pattern": [],
             "symbolic_name": "du_dirs"
@@ -1063,6 +1068,7 @@
         {
             "command": "/bin/ps alxwww",
             "pattern": [
+                "/sbin/rngd",
                 "/usr/bin/openshift start master",
                 "/usr/bin/openshift start node",
                 "COMMAND",
@@ -1075,6 +1081,7 @@
                 "corosync",
                 "crmd",
                 "dlm_controld",
+                "dnsmasq",
                 "docker",
                 "elasticsearch",
                 "gnome-shell",
@@ -1108,6 +1115,7 @@
         {
             "command": "/bin/ps aux",
             "pattern": [
+                "/sbin/rngd",
                 "/usr/bin/docker",
                 "/usr/bin/docker daemon",
                 "/usr/bin/docker-current",
@@ -1234,6 +1242,7 @@
         {
             "command": "/bin/ps -ef",
             "pattern": [
+                "/sbin/rngd",
                 "/usr/bin/openshift start master",
                 "/usr/bin/openshift start node",
                 "CMD",
@@ -1354,11 +1363,6 @@
             "command": "python -m insights.tools.cat --no-header sap_hdb_version",
             "pattern": [],
             "symbolic_name": "sap_hdb_version"
-        },
-        {
-            "command": "/usr/bin/sudo -iu postgres psql -d foreman -c 'select count(*) from hosts'",
-            "pattern": [],
-            "symbolic_name": "satellite_content_hosts_count"
         },
         {
             "command": "/usr/bin/mongo pulp_database --eval 'db.serverStatus().storageEngine'",
@@ -1568,6 +1572,11 @@
             "command": "/usr/bin/yum -C --noplugins repolist",
             "pattern": [],
             "symbolic_name": "yum_repolist"
+        },
+        {
+            "command": "/usr/bin/yum -C updateinfo list",
+            "pattern": [],
+            "symbolic_name": "yum_updateinfo"
         },
         {
             "command": "/usr/sbin/zdump -v /etc/localtime -c 2019,2039",
@@ -4269,5 +4278,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2021-01-07T14:02:30.044043"
+    "version": "2021-01-20T09:06:09.239668"
 }
