@@ -33,7 +33,7 @@ from insights.combiners.ps import Ps
 from insights.components.rhel_version import IsRhel8, IsRhel7
 from insights.parsers.mdstat import Mdstat
 from insights.parsers.lsmod import LsMod
-from insights.combiners.satellite_version import SatelliteVersion
+from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersion
 from insights.specs import Specs
 
 
@@ -743,11 +743,24 @@ class DefaultSpecs(Specs):
             return True
         raise SkipComponent
 
+    @datasource(CapsuleVersion)
+    def is_satellite_capsule(broker):
+        """
+        bool: Returns True if the host is satellite capsule.
+        """
+        if broker[CapsuleVersion]:
+            return True
+        raise SkipComponent
+
     satellite_content_hosts_count = simple_command(
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c 'select count(*) from hosts'",
         deps=[is_satellite_server]
     )
     satellite_mongodb_storage_engine = simple_command("/usr/bin/mongo pulp_database --eval 'db.serverStatus().storageEngine'")
+    satellite_non_yum_type_repos = simple_command(
+        "/usr/bin/mongo pulp_database --eval 'db.repo_importers.find({\"importer_type_id\": { $ne: \"yum_importer\"}}).count()'",
+        deps=[[is_satellite_server, is_satellite_capsule]]
+    )
     satellite_version_rb = simple_file("/usr/share/foreman/lib/satellite/version.rb")
     satellite_custom_hiera = simple_file("/etc/foreman-installer/custom-hiera.yaml")
     scsi = simple_file("/proc/scsi/scsi")
