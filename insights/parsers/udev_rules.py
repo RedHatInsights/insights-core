@@ -36,7 +36,7 @@ class UdevRulesFCWWPN(LogFileOutput):
     pass
 
 
-@parser(Specs.udev_40_redhat_rules)
+@parser(Specs.etc_udev_40_redhat_rules)
 class UdevRules40Redhat(LogFileOutput):
     """
     Read the content of ``40-redhat.rules`` file.

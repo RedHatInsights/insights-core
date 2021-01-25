@@ -153,7 +153,7 @@ class Specs(SpecSet):
     etc_journald_conf_d = RegistryPoint(multi_output=True)
     etc_journald_conf = RegistryPoint()
     etc_machine_id = RegistryPoint()
-    udev_40_redhat_rules = RegistryPoint(filterable=True)
+    etc_udev_40_redhat_rules = RegistryPoint(filterable=True)
     etcd_conf = RegistryPoint(filterable=True)
     ethernet_interfaces = RegistryPoint()
     ethtool_a = RegistryPoint(multi_output=True)

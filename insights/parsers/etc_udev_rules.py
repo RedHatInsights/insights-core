@@ -17,7 +17,7 @@ from insights.specs import Specs
 from insights.util import deprecated
 
 
-@parser(Specs.udev_40_redhat_rules)
+@parser(Specs.etc_udev_40_redhat_rules)
 class UdevRules40Redhat(LogFileOutput):
     """
     .. warning::
