@@ -1,46 +1,57 @@
-from insights.parsers.ld_library_path import LdLibraryPath
+from insights.parsers.ld_library_path import PidLdLibraryPath
 from insights.tests import context_wrap
-from insights.parsers import ld_library_path, SkipException
+from insights.parsers import ld_library_path, SkipException, ParseException
 import doctest
 import pytest
 
 LD_LIBRARY_PATH_EMPTY = """
 """.strip()
 
-LD_LIBRARY_PATH_EMPTY_1 = """
+LD_LIBRARY_PATH_INVALID = """
 LD_LIBRARY_PATH: Undefined variable.
 """.strip()
 
 LD_LIBRARY_PATH_DOC = """
-/usr/sap/RH1/SYS/exe/run:/usr/sap/RH1/SYS/exe/uc/linuxx86_64:/sapdb/clients/RH1/lib
+105901 /usr/sap/RH1/SYS/exe/run:/usr/sap/RH1/SYS/exe/uc/linuxx86_64:/sapdb/clients/RH1/lib
+105902 /usr/sap/RH1/SYS/exe/uc/linuxx86_64:/usr/sap/RH1/SYS/exe/run
 """.strip()
 
 LD_LIBRARY_PATH = """
-tset: standard error: Inappropriate ioctl for device
+105901 /usr/sap/RH1/SYS/exe/run:/usr/sap/RH1/SYS/exe/uc/linuxx86_64:/sapdb/clients/RH1/lib
+105902 "/usr/sap/RH1/SYS/exe/uc/linuxx86_64:/usr/sap/RH1/SYS/exe/run"
+105903 
+105904 ''
+""".strip()  # noqa: W391
 
-/usr/sap/SR1/HDB02/exe/krb5/lib/krb5/plugins/preauth:/usr/sap/SR1/HDB02/exe/krb5/lib:/usr/sap/SR1/HDB02/exe:/usr/sap/SR1/HDB02/exe/Python/lib:/usr/sap/SR1/HDB02/exe/filter:/usr/sap/SR1/HDB02/exe/dat_bin_dir:/usr/sap/SR1/HDB02/exe/plugins/afl
-""".strip()
 
-
-def test_proc_environ():
-    ret = LdLibraryPath(context_wrap(LD_LIBRARY_PATH, path='insights_commands/su_-l_sr1adm_-c_echo_LD_LIBRARY_PATH'))
-    assert len(ret) == 7
-    for p in LD_LIBRARY_PATH.splitlines()[-1].split(':'):
-        assert p in ret
-    ret.user = 'sr1adm'
+def test_ld_library_path():
+    ret = PidLdLibraryPath(context_wrap(LD_LIBRARY_PATH))
+    assert len(ret) == 4
+    assert ret[0].pid == '105901'
+    assert ret[1].pid == '105902'
+    assert ret[2].pid == '105903'
+    assert ret[1].raw == LD_LIBRARY_PATH.splitlines()[1].split()[-1]
+    assert ret[2].raw == ''
+    assert ret[3].raw == "''"
+    assert ret[2].path == ['']
+    assert ret[3].path == ['']
+    for p in LD_LIBRARY_PATH.splitlines()[0].split()[-1].split(':'):
+        assert p in ret[0].path
+    for p in LD_LIBRARY_PATH.splitlines()[1].split()[-1].strip('"').split(':'):
+        assert p in ret[1].path
 
 
 def test_empty_and_invalid():
     with pytest.raises(SkipException):
-        LdLibraryPath(context_wrap(LD_LIBRARY_PATH_EMPTY))
+        PidLdLibraryPath(context_wrap(LD_LIBRARY_PATH_EMPTY))
 
-    with pytest.raises(SkipException):
-        LdLibraryPath(context_wrap(LD_LIBRARY_PATH_EMPTY_1))
+    with pytest.raises(ParseException):
+        PidLdLibraryPath(context_wrap(LD_LIBRARY_PATH_INVALID))
 
 
 def test_doc_examples():
     env = {
-        'ld_lib_path': LdLibraryPath(context_wrap(LD_LIBRARY_PATH_DOC, path='insights_commands/su_-l_sr2adm_-c_echo_LD_LIBRARY_PATH')),
+        'ld_lib_path': PidLdLibraryPath(context_wrap(LD_LIBRARY_PATH_DOC)),
     }
     failed, total = doctest.testmod(ld_library_path, globs=env)
     assert failed == 0

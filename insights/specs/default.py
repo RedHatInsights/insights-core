@@ -13,7 +13,7 @@ import re
 import json
 
 from grp import getgrgid
-from os import stat
+from os import stat, listdir as os_listdir
 from pwd import getpwuid
 
 import yaml
@@ -481,11 +481,18 @@ class DefaultSpecs(Specs):
     lastupload = glob_file(last_upload_globs)
 
     @datasource()
-    def regular_users(broker):
-        ctx = broker[HostContext]
-        return ctx.shell_out("/bin/awk -F':' '!/nologin|false|sync|halt|shutdown/{print $1}' /etc/passwd")
+    def ld_library_path_of_pid(broker):
+        pids = [p for p in sorted(os_listdir('/proc/')) if p.isdigit()]
+        llds = []
+        for p in pids:
+            with open('/proc/{0}/environ'.format(p), 'r') as fp:
+                vars = fp.read()
+                lld = [v.split('=', 1)[-1] for v in vars.split('\x00') if v.startswith('LD_LIBRARY_PATH=')]
+                llds.append("{0} {1}".format(p, lld[0])) if lld else None
+        if llds:
+            return DatasourceProvider('\n'.join(llds), relative_path='insights_commands/cat_all_PID_LD_LIBRARY_PATH')
+        raise SkipComponent
 
-    ld_library_path = foreach_execute(regular_users, "/usr/bin/su -l %s -c 'echo $LD_LIBRARY_PATH'")
     libssh_client_config = simple_file("/etc/libssh/libssh_client.config")
     libssh_server_config = simple_file("/etc/libssh/libssh_server.config")
     libvirtd_log = simple_file("/var/log/libvirt/libvirtd.log")
