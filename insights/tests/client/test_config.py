@@ -85,6 +85,47 @@ def test_env_number_bad_values():
         c._load_env()
 
 
+@patch('insights.client.config.os.environ', {})
+def test_env_no_proxy_no_warning():
+    with patch('insights.client.config.sys.stdout.write') as write:
+        c = InsightsConfig(_print_errors=True)
+        c._load_env()
+        write.assert_not_called()
+
+
+@patch('insights.client.config.os.environ', {'HTTP_PROXY': '127.0.0.1'})
+def test_env_http_proxy_warning():
+    with patch('insights.client.config.sys.stdout.write') as write:
+        c = InsightsConfig(_print_errors=True)
+        c._load_env()
+        write.assert_called_once()
+
+
+@patch('insights.client.config.os.environ', {'HTTP_PROXY': '127.0.0.1'})
+@pytest.mark.parametrize(("kwargs",), (({},), ({"_print_errors": False},)))
+def test_env_http_proxy_no_warning(kwargs):
+    with patch('insights.client.config.sys.stdout.write') as write:
+        c = InsightsConfig(**kwargs)
+        c._load_env()
+        write.assert_not_called()
+
+
+@patch('insights.client.config.os.environ', {'HTTP_PROXY': '127.0.0.1', 'HTTPS_PROXY': '127.0.0.1'})
+def test_env_http_and_https_proxy_no_warning():
+    with patch('insights.client.config.sys.stdout.write') as write:
+        c = InsightsConfig(_print_errors=True)
+        c._load_env()
+        write.assert_not_called()
+
+
+@patch('insights.client.config.os.environ', {'HTTPS_PROXY': '127.0.0.1'})
+def test_env_https_proxy_no_warning():
+    with patch('insights.client.config.sys.stdout.write') as write:
+        c = InsightsConfig(_print_errors=True)
+        c._load_env()
+        write.assert_not_called()
+
+
 # empty argv so parse_args isn't polluted with pytest arguments
 @patch('insights.client.config.sys.argv', [sys.argv[0]])
 def test_diagnosis_implies_legacy():
