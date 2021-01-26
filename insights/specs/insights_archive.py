@@ -210,7 +210,6 @@ class InsightsArchiveSpecs(Specs):
     saphostexec_status = simple_file("insights_commands/usr.sap.hostctrl.exe.saphostexec_-status")
     saphostexec_version = simple_file("insights_commands/usr.sap.hostctrl.exe.saphostexec_-version")
     satellite_mongodb_storage_engine = simple_file("insights_commands/mongo_pulp_database_--eval_db.serverStatus_.storageEngine")
-    satellite_non_yum_type_repos = simple_file("insights_commands/mongo_pulp_database_--eval_db.repo_importers.find_importer_type_id_ne_yum_importer_.count")
     sealert = simple_file('insights_commands/sealert_-l')
     sestatus = simple_file("insights_commands/sestatus_-b")
     smbstatus_p = simple_file("insights_commands/smbstatus_-p")
