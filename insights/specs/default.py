@@ -135,7 +135,7 @@ class DefaultSpecs(Specs):
     avc_hash_stats = simple_file("/sys/fs/selinux/avc/hash_stats")
     avc_cache_threshold = simple_file("/sys/fs/selinux/avc/cache_threshold")
 
-    @datasource(CloudProvider)
+    @datasource(CloudProvider, HostContext)
     def is_aws(broker):
         """ bool: Returns True if this node is identified as running in AWS """
         cp = broker[CloudProvider]
@@ -147,7 +147,7 @@ class DefaultSpecs(Specs):
     aws_instance_id_pkcs7 = simple_command("/usr/bin/curl -s http://169.254.169.254/latest/dynamic/instance-identity/pkcs7 --connect-timeout 5", deps=[is_aws])
     awx_manage_check_license = simple_command("/usr/bin/awx-manage check_license")
 
-    @datasource(CloudProvider)
+    @datasource(CloudProvider, HostContext)
     def is_azure(broker):
         """ bool: Returns True if this node is identified as running in Azure """
         cp = broker[CloudProvider]
@@ -172,7 +172,7 @@ class DefaultSpecs(Specs):
     ps_ef = simple_command("/bin/ps -ef")
     ps_eo = simple_command("/usr/bin/ps -eo pid,ppid,comm")
 
-    @datasource(ps_auxww)
+    @datasource(ps_auxww, HostContext)
     def tomcat_base(broker):
         """
         Function to search the output of ``ps auxww`` to find all running tomcat
@@ -201,7 +201,7 @@ class DefaultSpecs(Specs):
     ceph_df_detail = simple_command("/usr/bin/ceph df detail -f json")
     ceph_health_detail = simple_command("/usr/bin/ceph health detail -f json")
 
-    @datasource(Ps)
+    @datasource(Ps, HostContext)
     def is_ceph_monitor(broker):
         """ bool: Returns True if ceph monitor process ceph-mon is running on this node """
         ps = broker[Ps]
@@ -296,7 +296,7 @@ class DefaultSpecs(Specs):
     cobbler_modules_conf = first_file(["/etc/cobbler/modules.conf", "/conf/cobbler/modules.conf"])
     corosync = simple_file("/etc/sysconfig/corosync")
 
-    @datasource([IsRhel7, IsRhel8])
+    @datasource(HostContext, [IsRhel7, IsRhel8])
     def corosync_cmapctl_cmd_list(broker):
         """
         corosync-cmapctl add different arguments on RHEL7 and RHEL8.
@@ -352,7 +352,7 @@ class DefaultSpecs(Specs):
     dotnet_version = simple_command("/usr/bin/dotnet --version")
     dracut_kdump_capture_service = simple_file("/usr/lib/dracut/modules.d/99kdumpbase/kdump-capture.service")
 
-    @datasource()
+    @datasource(HostContext)
     def du_dirs_list(broker):
         """ Provide a list of directorys for the ``du_dirs`` spec to scan """
         return ['/var/lib/candlepin/activemq-artemis']
@@ -431,7 +431,7 @@ class DefaultSpecs(Specs):
     jbcs_httpd24_httpd_error_log = simple_file("/opt/rh/jbcs-httpd24/root/etc/httpd/logs/error_log")
     virt_uuid_facts = simple_file("/etc/rhsm/facts/virt_uuid.facts")
 
-    @datasource(Ps)
+    @datasource(Ps, HostContext)
     def httpd_cmd(broker):
         """
         Function to search the output of ``ps auxcww`` to find all running Apache
@@ -530,14 +530,14 @@ class DefaultSpecs(Specs):
     mariadb_log = simple_file("/var/log/mariadb/mariadb.log")
     max_uid = simple_command("/bin/awk -F':' '{ if($3 > max) max = $3 } END { print max }' /etc/passwd")
 
-    @datasource()
+    @datasource(HostContext)
     def md5chk_file_list(broker):
         """ Provide a list of files to be processed by the ``md5chk_files`` spec """
         return ["/etc/pki/product/69.pem", "/etc/pki/product-default/69.pem", "/usr/lib/libsoftokn3.so", "/usr/lib64/libsoftokn3.so", "/usr/lib/libfreeblpriv3.so", "/usr/lib64/libfreeblpriv3.so"]
     md5chk_files = foreach_execute(md5chk_file_list, "/usr/bin/md5sum %s")
     mdstat = simple_file("/proc/mdstat")
 
-    @datasource(Mdstat)
+    @datasource(Mdstat, HostContext)
     def md_device_list(broker):
         md = broker[Mdstat]
         if md.components:
@@ -637,7 +637,7 @@ class DefaultSpecs(Specs):
     ovs_vsctl_list_bridge = simple_command("/usr/bin/ovs-vsctl list bridge")
     ovs_vsctl_show = simple_command("/usr/bin/ovs-vsctl show")
 
-    @datasource(Ps, context=HostContext)
+    @datasource(Ps, HostContext)
     def cmd_and_pkg(broker):
         """
         Returns:
@@ -659,7 +659,7 @@ class DefaultSpecs(Specs):
     pacemaker_log = first_file(["/var/log/pacemaker.log", "/var/log/pacemaker/pacemaker.log"])
     pci_rport_target_disk_paths = simple_command("/usr/bin/find /sys/devices/ -maxdepth 10 -mindepth 9 -name stat -type f")
 
-    @datasource(Services, context=HostContext)
+    @datasource(Services, HostContext)
     def pcp_enabled(broker):
         """ bool: Returns True if pmproxy service is on in services """
         if not broker[Services].is_on("pmproxy"):
@@ -722,7 +722,7 @@ class DefaultSpecs(Specs):
     rsyslog_conf = glob_file(["/etc/rsyslog.conf", "/etc/rsyslog.d/*.conf"])
     samba = simple_file("/etc/samba/smb.conf")
 
-    @datasource(Sap)
+    @datasource(Sap, HostContext)
     def sap_sid(broker):
         sap = broker[Sap]
         return [sap.sid(i).lower() for i in sap.local_instances]
@@ -733,7 +733,7 @@ class DefaultSpecs(Specs):
     saphostexec_version = simple_command("/usr/sap/hostctrl/exe/saphostexec -version")
     sat5_insights_properties = simple_file("/etc/redhat-access/redhat-access-insights.properties")
 
-    @datasource(SatelliteVersion)
+    @datasource(SatelliteVersion, HostContext)
     def is_satellite_server(broker):
         """
         bool: Returns True if the host is satellite server.
@@ -767,7 +767,7 @@ class DefaultSpecs(Specs):
     software_collections_list = simple_command('/usr/bin/scl --list')
     spamassassin_channels = simple_command("/bin/grep -r '^\\s*CHANNELURL=' /etc/mail/spamassassin/channel.d")
 
-    @datasource(LsMod)
+    @datasource(LsMod, HostContext)
     def is_mod_loaded_for_ss(broker):
         """
         bool: Returns True if the kernel modules required by ``ss -tupna``
