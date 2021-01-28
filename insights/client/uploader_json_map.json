@@ -242,7 +242,12 @@
         },
         {
             "command": "/usr/bin/doveconf",
-            "pattern": [],
+            "pattern": [
+                "ssl_min_protocol",
+                "ssl_protocols",
+                "{",
+                "}"
+            ],
             "symbolic_name": "doveconf"
         },
         {
@@ -553,6 +558,7 @@
             "pattern": [
                 "/usr/bin",
                 "python",
+                "sudo",
                 "total"
             ],
             "symbolic_name": "ls_usr_bin"
@@ -1068,7 +1074,6 @@
         {
             "command": "/bin/ps alxwww",
             "pattern": [
-                "/sbin/rngd",
                 "/usr/bin/openshift start master",
                 "/usr/bin/openshift start node",
                 "COMMAND",
@@ -1115,7 +1120,6 @@
         {
             "command": "/bin/ps aux",
             "pattern": [
-                "/sbin/rngd",
                 "/usr/bin/docker",
                 "/usr/bin/docker daemon",
                 "/usr/bin/docker-current",
@@ -1242,7 +1246,6 @@
         {
             "command": "/bin/ps -ef",
             "pattern": [
-                "/sbin/rngd",
                 "/usr/bin/openshift start master",
                 "/usr/bin/openshift start node",
                 "CMD",
@@ -1620,6 +1623,21 @@
             "pattern": [
                 "SUBSYSTEM!=\"memory\", ACTION!=\"add\", GOTO=\"memory_hotplug_end\""
             ],
+            "symbolic_name": "etc_udev_40_redhat_rules"
+        },
+        {
+            "file": "/run/udev/rules.d/40-redhat.rules",
+            "pattern": [],
+            "symbolic_name": "etc_udev_40_redhat_rules"
+        },
+        {
+            "file": "/usr/lib/udev/rules.d/40-redhat.rules",
+            "pattern": [],
+            "symbolic_name": "etc_udev_40_redhat_rules"
+        },
+        {
+            "file": "/usr/local/lib/udev/rules.d/40-redhat.rules",
+            "pattern": [],
             "symbolic_name": "etc_udev_40_redhat_rules"
         },
         {
@@ -4278,5 +4296,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2021-01-20T09:06:09.239668"
+    "version": "2021-01-26T11:44:37.067394"
 }
