@@ -191,7 +191,6 @@ class Hydration(object):
                 doc["results"] = marshal(value, root=self.data, pool=self.pool)
             except Exception:
                 errors.append(traceback.format_exc())
-                log.debug(traceback.format_exc())
                 doc["results"] = None
             finally:
                 doc["ser_time"] = time.time() - start
