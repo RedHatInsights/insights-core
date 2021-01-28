@@ -29,8 +29,8 @@ class PidLdLibraryPath(Parser, list):
     Examples:
         >>> len(ld_lib_path)
         2
-        >>> type(ld_lib_path[0].path)
-        <class 'list'>
+        >>> isinstance(ld_lib_path[0].path, list)
+        True
         >>> len(ld_lib_path[0].path)
         3
         >>> '/sapdb/clients/RH1/lib' in ld_lib_path[0].path
