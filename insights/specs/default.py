@@ -743,7 +743,7 @@ class DefaultSpecs(Specs):
             return True
         raise SkipComponent
 
-    @datasource(CapsuleVersion)
+    @datasource(CapsuleVersion, HostContext)
     def is_satellite_capsule(broker):
         """
         bool: Returns True if the host is satellite capsule.
