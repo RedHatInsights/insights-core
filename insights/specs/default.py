@@ -837,6 +837,7 @@ class DefaultSpecs(Specs):
     uptime = simple_command("/usr/bin/uptime")
     usr_journald_conf_d = glob_file(r"usr/lib/systemd/journald.conf.d/*.conf")  # note that etc_journald.conf.d also exists
     vdo_status = simple_command("/usr/bin/vdo status")
+    version_info = simple_file("/version_info")
     vgdisplay = simple_command("/sbin/vgdisplay")
     vhost_net_zero_copy_tx = simple_file("/sys/module/vhost_net/parameters/experimental_zcopytx")
     vdsm_log = simple_file("var/log/vdsm/vdsm.log")
