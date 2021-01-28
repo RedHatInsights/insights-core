@@ -37,7 +37,7 @@ def _get_files(path):
 def _load(path):
     with open(path) as f:
         doc = yaml.load(f, Loader=Loader)
-        return from_dict(doc)
+        return from_dict(doc, src=path)
 
 
 def _process(path, excludes=None):
