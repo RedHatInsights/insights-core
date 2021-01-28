@@ -385,7 +385,7 @@ class DefaultSpecs(Specs):
     getenforce = simple_command("/usr/sbin/getenforce")
     getsebool = simple_command("/usr/sbin/getsebool -a")
 
-    @datasource(Mount, RedHatRelease)
+    @datasource(Mount, RedHatRelease, HostContext)
     def gfs2_mount_points(broker):
         """
         Function to search the output of ``mount`` to find all the gfs2 file
