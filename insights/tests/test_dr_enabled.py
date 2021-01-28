@@ -1,5 +1,5 @@
 from insights import combiner, dr
-
+from insights.core.context import HostContext
 from insights.parsers.uname import Uname
 
 
@@ -21,9 +21,13 @@ def test_enabled_object():
     assert dr.is_enabled(Uname)
 
 
+def test_set_enabled_object():
+    dr.set_enabled(HostContext)
+    assert dr.is_enabled(HostContext)
+
+
 def test_disabled_string():
     dr.set_enabled("insights.core.context.HostContext", False)
-    from insights.core.context import HostContext
     assert not dr.is_enabled(HostContext)
 
 
