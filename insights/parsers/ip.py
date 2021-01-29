@@ -119,10 +119,9 @@ def parse_link(line, d):
         d["peer"] = split_content[3]
     elif len(split_content) >= 2:
         d["mac"] = split_content[1]
-        for item in split_content:
-            if item == "promiscuity":
-                index = split_content.index(item)
-                d["promiscuity_mode"] = split_content[index + 1]
+        if "promiscuity" in split_content:
+            d["promiscuity"] = split_content[
+                split_content.index('promiscuity') + 1]
 
 
 def parse_inet(line, d):
