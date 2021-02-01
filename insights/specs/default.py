@@ -286,7 +286,7 @@ class DefaultSpecs(Specs):
                 if network_config:
                     return DatasourceProvider(content=json.dumps(network_config), relative_path=relative_path)
 
-        except OSError:
+        except IOError:
             raise SkipComponent()
 
     cloud_init_custom_network = simple_file("/etc/cloud/cloud.cfg.d/99-custom-networking.cfg")
