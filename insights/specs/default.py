@@ -733,7 +733,7 @@ class DefaultSpecs(Specs):
     @datasource(Sap, HostContext)
     def sap_sid(broker):
         sap = broker[Sap]
-        return [sap.sid(i).lower() for i in sap.local_instances]
+        return [sap.sid(i).lower() for i in sap.all_instances]
 
     sap_hdb_version = foreach_execute(sap_sid, "/usr/bin/sudo -iu %sadm HDB version", keep_rc=True)
     saphostctl_getcimobject_sapinstance = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance")
