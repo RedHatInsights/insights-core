@@ -13,15 +13,33 @@
 # Fixes test:ping
 # Identifier: (test:ping,fix)
 # Version: unknown
-- name: ping
-  hosts: "host1,host2"
-  tasks:
-    - ping:
+# - name: ping
+#   hosts: host1,host2
+#   vars:
+#     insights_signature_exclude: /hosts,/vars/insights_signature
+#     insights_signature: !!binary |
+#       TFMwdExTMUNSVWRKVGlCUVIxQWdVMGxIVGtGVVZWSkZMUzB0TFMwS0NtbFJSWHBDUVVGQ1EwRkJa
+#       RVpwUlVWQmMzVTJTbWsxYkhoUlpqTlRkVTgyT1U0ek1WWXdZMUU1U1RCR1FXMUJhRmxQTUVGRFoy
+#       dFJPVTR6TVZZd1kxRUtPVWt6YjJsM1ppdE5WakpKWWpZMWRtOXBWVEI0UlhvMFNXb3pObVJ4TlVs
+#       S2FHazBTVlJoYkU5RGJIZFRlVmQzUXk5R1ZFdEhUVm93VWtSWVJGcE5UUXB0UTFkTlRrdG5SVVE0
+#       Wm1SaFNFMVJZbXRtT1VORU5tdG1VVE5KYWsxT1VUYzBjbFZUVGpaTmEwcG5SMjl2WkZKVlFWQm1h
+#       Vm96YW1GeVVHWnhNR0ZLQ201RVV6QkdlVGQ2VFZOUGMwMUlSU3RZZVhKR1JIZElWbUpRV0c0NWFq
+#       aGpVQ3QwTkhsU1lYQjVTVmd4Y0VkemVESkpPVTF5Tm1od1UxWktURlZGVW1VS00ycHJWbmw1ZG5K
+#       MmVHWXpVa0pQWnpaR1RsRlRUVWR3WVRsSFFYSTJjVEpDYVdwdFZ6TTBTa2hFZURaSlVWVjJPSGxq
+#       S3pNd01uWjJiMnhHWTNsaE53cFFkRXB4U2s5UU4ydHVja00xVjAxelprUk1lVmxwU2s5eU1YQlFk
+#       a1pQYWxCWGFFRndjMWs1U21saWFWSktjVk5RZVV0dU1raG5TMHhtYW14dGRqZ3ZDbkExV2tacGFu
+#       SkVlamxYUVhGbU1IZEJObmR1TVRKMUswbFNhbTFRZHowOUNqMVlZbWxRQ2kwdExTMHRSVTVFSUZC
+#       SFVDQlRTVWRPUVZSVlVrVXRMUzB0TFFvPQ==
+#   tasks:
+#      - ping: null
 
 - name: run insights
-  hosts: "host1,host2"
-  become: True
-  gather_facts: False
+  hosts: host1,host2
+  become: true
+  gather_facts: false
+  vars:
+    insights_signature_exclude: /hosts,/vars/insights_signature
+    insights_signature: LS0tLS1CRUdJTiBQR1AgU0lHTkFUVVJFLS0tLS0KCmlRRXpCQUFCQ0FBZEZpRUVBc3U2Smk1bHhRZjNTdU82OU4zMVYwY1E5STBGQW1BdWVQTUFDZ2tROU4zMVYwY1EKOUkyQmFRZ0FuQWpPMlBIdktRTmpIenFSUWlUS3JNSXBnMFl1TWtMb3JzbSs3alhWMkJWQUtMVEgxMnlUYmZGKwpYcXNkOXEybk5GSGgrV3VXcDZBYk1mU0VrT0VYa00zR3ZIcG01dnpYeEdLdFlBd2xkTzd4RUplSm1MNm9EelByCmpxZnhqTytrc3dRZGl1Yjh6UEdtOHpuQWFINzVYdU54NUd1d2p0VXNRWkNqcTVHVzlwMXhFUDR5ZEFMRUo1Zi8KeTFxazIwQjcvZkI0SmdvZ0FFYW1ocFpLTHpnUTlYVmZ0b3ZmNlo4QjZwN0IzaDVKTXNBaWRESlExVHpWOWQ0RQpuazRpTXlOdjJPMnltMlNIV0ZrSm1pTUNkWlhjMVF4TUN2UlF4bzNhSnRZRi83OHoyWGFBWE4zK3ZGeHUza2wwCjNQRkNIcHk1ZTF1dndCaVlpRjZldHdaTC9rRWU0QT09Cj13SENoCi0tLS0tRU5EIFBHUCBTSUdOQVRVUkUtLS0tLQo=
   tasks:
     - name: run insights
       command: insights-client
