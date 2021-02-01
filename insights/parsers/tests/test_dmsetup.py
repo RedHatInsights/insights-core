@@ -1,6 +1,7 @@
 import doctest
 from insights.parsers import dmsetup
 from insights.parsers.dmsetup import DmsetupInfo, SetupInfo
+from insights.parsers.dmsetup import DmsetupStatus, SetupStatus
 from insights.tests import context_wrap
 
 DMSETUP_INFO_1 = """
@@ -80,6 +81,86 @@ def test_dmsetup_setupinfo():
     )
 
 
+DMSETUP_STATUS_1 = """
+rootvg-tanlv: 0 6291456 linear
+rootvg-ssnap: 0 16384000 snapshot 1560768/5120000 6088
+rootvg-optvolapp: 0 8192000 snapshot-origin
+docker-253:10-1234567-0df13579: 0 20971520 thin 1922048 20971519
+docker-253:10-4254621-0496628a: 0 20971520 thin 1951744 20971519
+docker-253:10-4254621-d392682f: 0 20971520 thin 7106560 20971519
+rootvg-docker--pool: 0 129548288 thin-pool 1 20/49152 38/126512 - rw no_discard_passdown queue_if_no_space -
+rootvg-tmpvol: 0 2048000 linear
+rootvg-varvol: 0 18874368 snapshot Invalid
+rootvg-optvol: 0 8192000 snapshot 616408/5120000 2408
+rootvg-varvol-cow: 0 5120000 linear
+appsvg-lvapps_docker: 0 104857600 thin-pool 441 697/2048 20663/102400 - rw no_discard_passdown queue_if_no_space -
+""".strip()
+
+DMSETUP_STATUS_2 = """
+rootvg-tanlv: 0 6291456
+rootvg-ssnap: 0 16384000 unknown-type
+rootvg-docker--pool: 0 129548288 thin-pool 1 20/49152 38/126512 - rw no_discard_passdown queue_if_no_space
+rootvg-optvol: 0 8192000 snapshot-origin
+docker-253:10-4254621-d392682f: 0 20971520 thin 7106560 20971519
+docker-253:10-1234567-0df13579: 0 20971520 thin 1922048
+""".strip()
+
+
+def test_dmsetup_status():
+    r = DmsetupStatus(context_wrap(DMSETUP_STATUS_1))
+    assert len(r) == 12
+    assert len(r[0]) == 6
+    assert r[0].device_name == 'rootvg-tanlv'
+    assert r[0].start_sector == '0'
+    assert r[0].num_sectors == '6291456'
+    assert r[0].target_type == 'linear'
+    assert r[0].target_args is None
+    assert r[0].parsed_args is None
+    assert r.names == ['rootvg-tanlv', 'rootvg-ssnap', 'rootvg-optvolapp',
+            'docker-253:10-1234567-0df13579', 'docker-253:10-4254621-0496628a',
+            'docker-253:10-4254621-d392682f', 'rootvg-docker--pool',
+            'rootvg-tmpvol', 'rootvg-varvol', 'rootvg-optvol',
+            'rootvg-varvol-cow', 'appsvg-lvapps_docker']
+
+    assert len(r.by_name) == len([dev.device_name for dev in r])
+    assert r.data[0] == SetupStatus(
+            device_name='rootvg-tanlv', start_sector='0',
+            num_sectors='6291456', target_type='linear',
+            target_args=None, parsed_args=None,
+    )
+    assert r.data[-1] == SetupStatus(
+            device_name='appsvg-lvapps_docker', start_sector='0',
+            num_sectors='104857600', target_type='thin-pool',
+            target_args='441 697/2048 20663/102400 - rw no_discard_passdown queue_if_no_space -',
+            parsed_args={
+                'transaction_id': '441',
+                'used_metadata_blocks': '697',
+                'total_metadata_blocks': '2048',
+                'used_data_blocks': '20663',
+                'total_data_blocks': '102400',
+                'held_metadata_root': '-',
+                'opts': ['rw', 'no_discard_passdown', 'queue_if_no_space', '-'],
+                'metadata_low_watermark': None
+            })
+    assert r.data[3] == SetupStatus(
+            device_name='docker-253:10-1234567-0df13579', start_sector='0',
+            num_sectors='20971520', target_type='thin', target_args='1922048 20971519',
+            parsed_args={'nr_mapped_sectors': '1922048', 'highest_mapped_sector': '20971519'}
+    )
+    assert r.data[-3] == SetupStatus(
+            device_name='rootvg-optvol', start_sector='0', num_sectors='8192000',
+            target_type='snapshot', target_args='616408/5120000 2408',
+            parsed_args={'sectors_allocated': '616408', 'total_sectors': '5120000', 'metadata_sectors': '2408'}
+    )
+    assert r.data[-4] == SetupStatus(
+            device_name='rootvg-varvol', start_sector='0', num_sectors='18874368',
+            target_type='snapshot', target_args='Invalid', parsed_args=None
+    )
+
+    r = DmsetupStatus(context_wrap(DMSETUP_STATUS_2))
+    assert len(r) == 5
+
+
 DMSETUP_EXAMPLES = """
 Name               Maj Min Stat Open Targ Event  UUID
 VG00-tmp           253   8 L--w    1    1      0 LVM-gy9uAwD7LuTIApplr2sogbOx5iS0FTax6lLmBji2ueSbX49gxcV76M29cmukQiw4
@@ -93,7 +174,8 @@ VG00-var_log_audit 253   5 L--w    1    1      0 LVM-gy9uAwD7LuTIApplr2sogbOx5iS
 
 def test_examples():
     env = {
-        'setup_info': DmsetupInfo(context_wrap(DMSETUP_EXAMPLES))
+        'setup_info': DmsetupInfo(context_wrap(DMSETUP_EXAMPLES)),
+        'dmsetup_status': DmsetupStatus(context_wrap(DMSETUP_STATUS_1))
     }
     failed, total = doctest.testmod(dmsetup, globs=env)
     assert failed == 0

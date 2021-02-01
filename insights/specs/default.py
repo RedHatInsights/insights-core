@@ -341,6 +341,7 @@ class DefaultSpecs(Specs):
     dmesg_log = simple_file("/var/log/dmesg")
     dmidecode = simple_command("/usr/sbin/dmidecode")
     dmsetup_info = simple_command("/usr/sbin/dmsetup info -C")
+    dmsetup_status = simple_command("/usr/sbin/dmsetup status")
     dnf_conf = simple_file("/etc/dnf/dnf.conf")
     dnf_modules = glob_file("/etc/dnf/modules.d/*.module")
     docker_info = simple_command("/usr/bin/docker info")

@@ -65,6 +65,7 @@ class SosSpecs(Specs):
     dmesg = first_file(["sos_commands/kernel/dmesg", "sos_commands/general/dmesg", "var/log/dmesg"])
     dmidecode = simple_file("sos_commands/hardware/dmidecode")
     dmsetup_info = simple_file("sos_commands/devicemapper/dmsetup_info_-c")
+    dmsetup_status = simple_file("sos_commands/devicemapper/dmsetup_status")
     dnsmasq_config = glob_file(["/etc/dnsmasq.conf", "/etc/dnsmasq.d/*.conf"])
     dumpe2fs_h = glob_file("sos_commands/filesys/dumpe2fs_-h_*")
     ethtool = glob_file("sos_commands/networking/ethtool_*", ignore="ethtool_-.*")
