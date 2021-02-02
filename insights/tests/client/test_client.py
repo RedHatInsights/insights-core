@@ -622,16 +622,16 @@ def test_copy_to_output_file_obfuscate_on(shutil_, _copy_soscleaner_files):
     _copy_soscleaner_files.assert_called_once()
 
 
-@mark.parametrize(("result",), ((True,), (None,)))
-def test_checkin_result(result):
+@mark.parametrize(("expected_result",), ((True,), (None,)))
+def test_checkin_result(expected_result):
     config = InsightsConfig()
     client = InsightsClient(config)
-    client.connection = Mock(**{"checkin.return_value": result})
+    client.connection = Mock(**{"checkin.return_value": expected_result})
     client.session = True
 
-    result = client.checkin()
+    actual_result = client.checkin()
     client.connection.checkin.assert_called_once_with()
-    assert result is result
+    assert actual_result is expected_result
 
 
 def test_checkin_error():
