@@ -743,7 +743,7 @@ class InsightsConfig(object):
             self.diagnosis = True
         if self.test_connection:
             self.net_debug = True
-        if self.payload or self.diagnosis or self.compliance or self.show_results or self.check_results:
+        if self.payload or self.diagnosis or self.compliance or self.check_results or self.checkin:
             self.legacy_upload = False
         if self.payload and (self.logging_file == constants.default_log_file):
             self.logging_file = constants.default_payload_log

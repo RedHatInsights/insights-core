@@ -4,6 +4,7 @@ import os
 from io import TextIOWrapper, BytesIO
 from insights.client.config import InsightsConfig, DEFAULT_OPTS, _core_collect_default
 from mock.mock import patch
+from pytest import mark
 
 
 @patch('insights.client.config.ConfigParser.open')
@@ -127,12 +128,19 @@ def test_env_https_proxy_no_warning():
 
 
 # empty argv so parse_args isn't polluted with pytest arguments
+@mark.parametrize(("config",), (
+    ({"payload": "./payload.tar.gz", "content_type": "application/gzip"},),
+    ({"diagnosis": True},),
+    ({"compliance": True},),
+    ({"check_results": True},),
+    ({"checkin": True},),
+))
 @patch('insights.client.config.sys.argv', [sys.argv[0]])
-def test_diagnosis_implies_legacy():
+def test_implied_non_legacy_upload(config):
     '''
-    --diagnosis should always imply legacy_upload=False
+    Some arguments should always imply legacy_upload=False.
     '''
-    c = InsightsConfig(diagnosis=True)
+    c = InsightsConfig(**config)
     c.load_all()
     assert c.legacy_upload is False
 
