@@ -24,12 +24,16 @@ class IsRhel6(object):
     to determine RHEL version. It checks if RHEL6, if not
     RHEL6 it raises ``SkipComponent``.
 
+    Attributes:
+        minor (int): The minor version of RHEL 6.
+
     Raises:
         SkipComponent: When RHEL version is not RHEL6.
     """
     def __init__(self, rhel):
         if rhel.major != 6:
             raise SkipComponent('Not RHEL6')
+        self.minor = rhel.minor
 
 
 @component(RedHatRelease)
@@ -39,12 +43,16 @@ class IsRhel7(object):
     to determine RHEL version. It checks if RHEL7, if not \
     RHEL7 it raises ``SkipComponent``.
 
+    Attributes:
+        minor (int): The minor version of RHEL 7.
+
     Raises:
         SkipComponent: When RHEL version is not RHEL7.
     """
     def __init__(self, rhel):
         if rhel.major != 7:
             raise SkipComponent('Not RHEL7')
+        self.minor = rhel.minor
 
 
 @component(RedHatRelease)
@@ -54,9 +62,13 @@ class IsRhel8(object):
     to determine RHEL version. It checks if RHEL8, if not
     RHEL8 it raises ``SkipComponent``.
 
+    Attributes:
+        minor (int): The minor version of RHEL 8.
+
     Raises:
         SkipComponent: When RHEL version is not RHEL8.
     """
     def __init__(self, rhel):
         if rhel.major != 8:
             raise SkipComponent('Not RHEL8')
+        self.minor = rhel.minor
