@@ -197,7 +197,6 @@ class InsightsArchiveSpecs(Specs):
     readlink_e_etc_mtab = simple_file("insights_commands/readlink_-e_.etc.mtab")
     readlink_e_shift_cert_client = simple_file("insights_commands/readlink_-e_.etc.origin.node.certificates.kubelet-client-current.pem")
     readlink_e_shift_cert_server = simple_file("insights_commands/readlink_-e_.etc.origin.node.certificates.kubelet-server-current.pem")
-    rhn_schema_version = simple_file("insights_commands/rhn-schema-version")
     rhev_data_center = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_rhev_data_center")
     rndc_status = simple_file("insights_commands/rndc_status")
     rpm_V_packages = first_file(["insights_commands/rpm_-V_coreutils_procps_procps-ng_shadow-utils_passwd_sudo_chrony", "insights_commands/rpm_-V_coreutils_procps_procps-ng_shadow-utils_passwd_sudo"])
