@@ -157,6 +157,10 @@ plugins:
         - name: insights.combiners.satellite_version.SatelliteVersion
           enabled: true
 
+    # needed for the 'pre-check' of the 'is_satellite_capsule' spec
+        - name: insights.combiners.satellite_version.CapsuleVersion
+          enabled: true
+
     # needed because some specs aren't given names before they're used in DefaultSpecs
         - name: insights.core.spec_factory
           enabled: true
