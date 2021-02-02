@@ -273,6 +273,7 @@ class SosSpecs(Specs):
     vdsm_import_log = glob_file("var/log/vdsm/import/import-*.log")
     vgdisplay = first_file(["sos_commands/lvm2/vgdisplay_-vv_--config_global_locking_type_0", "sos_commands/lvm2/vgdisplay_-vv"])
     vgs = first_file(["sos_commands/lvm2/vgs_-v_-o_vg_mda_count_vg_mda_free_vg_mda_size_vg_mda_used_count_vg_tags_--config_global_locking_type_0", "sos_commands/lvm2/vgs_-v", "sos_commands/devicemapper/vgs_-v"])
+    virsh_list_all = simple_file("sos_commands/virsh/virsh_-r_list_--all")
     vmcore_dmesg = glob_file("/var/crash/*/vmcore-dmesg.txt")
     vmware_tools_conf = simple_file("etc/vmware-tools/tools.conf")
     xfs_info = glob_file("sos_commands/xfs/xfs_info*")
