@@ -13,7 +13,7 @@ import re
 import json
 
 from grp import getgrgid
-from os import stat
+from os import stat, listdir as os_listdir
 from pwd import getpwuid
 
 import yaml
@@ -479,6 +479,20 @@ class DefaultSpecs(Specs):
     kubepods_cpu_quota = glob_file("/sys/fs/cgroup/cpu/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod[a-f0-9_]*.slice/cpu.cfs_quota_us")
     last_upload_globs = ["/etc/redhat-access-insights/.lastupload", "/etc/insights-client/.lastupload"]
     lastupload = glob_file(last_upload_globs)
+
+    @datasource()
+    def ld_library_path_of_pid(broker):
+        pids = [p for p in sorted(os_listdir('/proc/')) if p.isdigit()]
+        llds = []
+        for p in pids:
+            with open('/proc/{0}/environ'.format(p), 'r') as fp:
+                vars = fp.read()
+                lld = [v.split('=', 1)[-1] for v in vars.split('\x00') if v.startswith('LD_LIBRARY_PATH=')]
+                llds.append("{0} {1}".format(p, lld[0])) if lld else None
+        if llds:
+            return DatasourceProvider('\n'.join(llds), relative_path='insights_commands/cat_all_PID_LD_LIBRARY_PATH')
+        raise SkipComponent
+
     libssh_client_config = simple_file("/etc/libssh/libssh_client.config")
     libssh_server_config = simple_file("/etc/libssh/libssh_server.config")
     libvirtd_log = simple_file("/var/log/libvirt/libvirtd.log")
