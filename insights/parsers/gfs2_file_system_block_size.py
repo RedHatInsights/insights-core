@@ -10,7 +10,7 @@ from insights.specs import Specs
 from insights.parsers import SkipException
 
 
-@parser(Specs.httpd_M)
+@parser(Specs.gfs2_file_system_block_size)
 class GFS2FileSystemBlockSize(CommandParser):
     """
     Class for parsing ``stat -fc %s <mount_point_path>`` command output.

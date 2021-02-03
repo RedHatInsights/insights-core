@@ -30,8 +30,7 @@ from insights.combiners.cloud_provider import CloudProvider
 from insights.combiners.services import Services
 from insights.combiners.sap import Sap
 from insights.combiners.ps import Ps
-from insights.components.rhel_version import IsRhel8, IsRhel7
-from insights.combiners.redhat_release import RedHatRelease
+from insights.components.rhel_version import IsRhel8, IsRhel7, IsRhel6
 from insights.parsers.mdstat import Mdstat
 from insights.parsers.lsmod import LsMod
 from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersion
@@ -385,7 +384,7 @@ class DefaultSpecs(Specs):
     getenforce = simple_command("/usr/sbin/getenforce")
     getsebool = simple_command("/usr/sbin/getsebool -a")
 
-    @datasource(Mount, RedHatRelease, HostContext)
+    @datasource(Mount, [IsRhel6, IsRhel7, IsRhel8], HostContext)
     def gfs2_mount_points(broker):
         """
         Function to search the output of ``mount`` to find all the gfs2 file
@@ -398,9 +397,8 @@ class DefaultSpecs(Specs):
             list: a list of mount points of which the file system type is gfs2
         """
         gfs2_mount_points = []
-        if (broker[RedHatRelease] and
-            broker[RedHatRelease].major in [6, 7] or
-                (broker[RedHatRelease].major == 8 and broker[RedHatRelease].minor < 3)):
+        if (broker.get(IsRhel6) or broker.get(IsRhel7) or
+                (broker.get(IsRhel8) and broker[IsRhel8].minor < 3)):
             for mnt in broker[Mount]:
                 if mnt.mount_type == "gfs2":
                     gfs2_mount_points.append(mnt.mount_point)
