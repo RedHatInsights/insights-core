@@ -13,7 +13,7 @@ import re
 import json
 
 from grp import getgrgid
-from os import stat, listdir as os_listdir
+from os import stat, path, listdir as os_listdir
 from pwd import getpwuid
 
 import yaml
@@ -277,17 +277,15 @@ class DefaultSpecs(Specs):
             SkipComponent: When the path does not exist.
         """
         relative_path = '/etc/cloud/cloud.cfg'
-        network_config = ''
 
-        try:
+        if path.isfile(relative_path):
             with open(relative_path, 'r') as f:
                 content = yaml.load(f, Loader=yaml.SafeLoader)
                 network_config = content.get('network', None)
                 if network_config:
                     return DatasourceProvider(content=json.dumps(network_config), relative_path=relative_path)
 
-        except IOError:
-            raise SkipComponent()
+        raise SkipComponent()
 
     cloud_init_custom_network = simple_file("/etc/cloud/cloud.cfg.d/99-custom-networking.cfg")
     cloud_init_log = simple_file("/var/log/cloud-init.log")
