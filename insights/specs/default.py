@@ -35,6 +35,8 @@ from insights.parsers.mdstat import Mdstat
 from insights.parsers.lsmod import LsMod
 from insights.combiners.satellite_version import SatelliteVersion
 from insights.specs import Specs
+from insights.client.utilities import determine_hostname
+import datetime
 
 
 logger = logging.getLogger(__name__)
@@ -864,3 +866,15 @@ class DefaultSpecs(Specs):
     zipl_conf = simple_file("/etc/zipl.conf")
     rpm_format = format_rpm()
     installed_rpms = simple_command("/bin/rpm -qa --qf '%s'" % rpm_format, context=HostContext)
+
+    @datasource(Ps, HostContext)
+    def is_pmlogger_running(broker):
+        """ bool: Returns True if pmlogger process ceph-mon is running on this node """
+        ps = broker[Ps]
+        if ps.search(COMMAND__contains='pmlogger'):
+            return True
+        raise SkipComponent()
+
+    pcp_log_date = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y%m%d")
+    hostname = determine_hostname()
+    pmlogsummary = simple_command("pmlogsummary /var/log/pcp/pmlogger/%s/%s.index mem.util.used mem.physmem kernel.all.cpu.user kernel.all.cpu.sys kernel.all.cpu.nice kernel.all.cpu.steal kernel.all.cpu.idle disk.all.total" % (hostname, pcp_log_date), deps=[is_pmlogger_running])
