@@ -120,12 +120,21 @@ def pre_update(client, config):
 
 @phase
 def update(client, config):
-    client.update()
+    success = client.update()
     if config.payload:
         logger.debug('Uploading a payload. Bypassing rules update.')
         return
     if not config.core_collect:
         client.update_rules()
+    if config.just_update:
+        # just update, quit now
+        if success and success['success']:
+            logger.info('Update complete.')
+            sys.exit(constants.sig_kill_ok)
+        else:
+            logger.error('Update failed.')
+            print('See %s for more details.' % config.logging_file)
+            sys.exit(constants.sig_kill_bad)
 
 
 @phase

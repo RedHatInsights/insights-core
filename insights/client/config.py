@@ -197,6 +197,13 @@ DEFAULT_OPTS = {
         # non-CLI
         'default': False
     },
+    'just_update': {
+        'default': False,
+        'opt': ['--update'],
+        'help': 'Update the insights-core module without performing an upload.',
+        'action': 'store_true',
+        'group': 'actions'
+    }
     'keep_archive': {
         'default': False,
         'opt': ['--keep-archive'],
