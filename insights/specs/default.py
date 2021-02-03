@@ -732,6 +732,9 @@ class DefaultSpecs(Specs):
 
     @datasource(Sap, HostContext)
     def sap_sid(broker):
+        """
+        list: List of the SID of all SAP Instances.
+        """
         sap = broker[Sap]
         return [sap.sid(i).lower() for i in sap.all_instances]
 
