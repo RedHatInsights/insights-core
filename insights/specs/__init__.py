@@ -476,6 +476,7 @@ class Specs(SpecSet):
     password_auth = RegistryPoint()
     pci_rport_target_disk_paths = RegistryPoint()
     pcp_metrics = RegistryPoint()
+    pmlogsummary = RegistryPoint()
     pcs_config = RegistryPoint()
     pcs_quorum_status = RegistryPoint()
     pcs_status = RegistryPoint()
