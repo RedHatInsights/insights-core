@@ -188,6 +188,7 @@ class Specs(SpecSet):
     getconf_page_size = RegistryPoint()
     getenforce = RegistryPoint()
     getsebool = RegistryPoint()
+    gfs2_file_system_block_size = RegistryPoint(multi_output=True)
     glance_api_conf = RegistryPoint()
     glance_api_log = RegistryPoint(filterable=True)
     glance_cache_conf = RegistryPoint()
