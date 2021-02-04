@@ -30,10 +30,11 @@ from insights.combiners.cloud_provider import CloudProvider
 from insights.combiners.services import Services
 from insights.combiners.sap import Sap
 from insights.combiners.ps import Ps
-from insights.components.rhel_version import IsRhel8, IsRhel7
+from insights.components.rhel_version import IsRhel8, IsRhel7, IsRhel6
 from insights.parsers.mdstat import Mdstat
 from insights.parsers.lsmod import LsMod
 from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersion
+from insights.parsers.mount import Mount
 from insights.specs import Specs
 
 
@@ -382,6 +383,29 @@ class DefaultSpecs(Specs):
     getconf_page_size = simple_command("/usr/bin/getconf PAGE_SIZE")
     getenforce = simple_command("/usr/sbin/getenforce")
     getsebool = simple_command("/usr/sbin/getsebool -a")
+
+    @datasource(Mount, [IsRhel6, IsRhel7, IsRhel8], HostContext)
+    def gfs2_mount_points(broker):
+        """
+        Function to search the output of ``mount`` to find all the gfs2 file
+        systems.
+        And only run the ``stat`` command on RHEL version that's less than
+        8.3. With 8.3 and later, the command ``blkid`` will also output the
+        block size info.
+
+        Returns:
+            list: a list of mount points of which the file system type is gfs2
+        """
+        gfs2_mount_points = []
+        if (broker.get(IsRhel6) or broker.get(IsRhel7) or
+                (broker.get(IsRhel8) and broker[IsRhel8].minor < 3)):
+            for mnt in broker[Mount]:
+                if mnt.mount_type == "gfs2":
+                    gfs2_mount_points.append(mnt.mount_point)
+        if gfs2_mount_points:
+            return gfs2_mount_points
+        raise SkipComponent
+    gfs2_file_system_block_size = foreach_execute(gfs2_mount_points, "/usr/bin/stat -fc %%s %s")
     gluster_v_info = simple_command("/usr/sbin/gluster volume info")
     gnocchi_conf = first_file(["/var/lib/config-data/puppet-generated/gnocchi/etc/gnocchi/gnocchi.conf", "/etc/gnocchi/gnocchi.conf"])
     gnocchi_metricd_log = first_file(["/var/log/containers/gnocchi/gnocchi-metricd.log", "/var/log/gnocchi/metricd.log"])
