@@ -226,8 +226,9 @@ class DefaultSpecs(Specs):
     cinder_api_log = first_file(["/var/log/containers/cinder/cinder-api.log", "/var/log/cinder/cinder-api.log"])
     cinder_conf = first_file(["/var/lib/config-data/puppet-generated/cinder/etc/cinder/cinder.conf", "/etc/cinder/cinder.conf"])
     cinder_volume_log = first_file(["/var/log/containers/cinder/volume.log", "/var/log/containers/cinder/cinder-volume.log", "/var/log/cinder/volume.log"])
+    cloud_cfg_input = simple_file("/etc/cloud/cloud.cfg")
 
-    @datasource(HostContext)
+    @datasource(cloud_cfg_input, HostContext)
     def cloud_cfg(broker):
         """This datasource provides the network configuration collected
         from ``/etc/cloud/cloud.cfg``.
@@ -274,20 +275,20 @@ class DefaultSpecs(Specs):
             str: JSON string when the ``network`` parameter is configure, else nothing is returned.
 
         Raises:
-            SkipComponent: When the path does not exist.
+            SkipComponent: When the path does not exist or any exception occurs.
         """
         relative_path = '/etc/cloud/cloud.cfg'
-        network_config = ''
-
         try:
-            with open(relative_path, 'r') as f:
-                content = yaml.load(f, Loader=yaml.SafeLoader)
+            content = broker[DefaultSpecs.cloud_cfg_input].content
+            if content:
+                content = yaml.load('\n'.join(content), Loader=yaml.SafeLoader)
                 network_config = content.get('network', None)
                 if network_config:
                     return DatasourceProvider(content=json.dumps(network_config), relative_path=relative_path)
+        except Exception as e:
+            raise SkipComponent("Unexpected exception:{e}".format(e=str(e)))
 
-        except OSError:
-            raise SkipComponent()
+        raise SkipComponent()
 
     cloud_init_custom_network = simple_file("/etc/cloud/cloud.cfg.d/99-custom-networking.cfg")
     cloud_init_log = simple_file("/var/log/cloud-init.log")
