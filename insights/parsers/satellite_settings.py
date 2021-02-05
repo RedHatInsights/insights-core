@@ -47,29 +47,31 @@ class SatelliteSettings(CommandParser, dict):
 
     def parse_content(self, content):
         columns = ['name', 'value', 'default']
-        if len(content) >= 4 and all(column in content[0] for column in columns):
-            rows = content[2:]  # skip title and '---'
-            name = val = new_val = ''
-            for row in rows:
-                if '|' not in row:
-                    continue
-                data = row.split('|')
-                if len(data) != len(columns):
-                    raise SkipException("The returned data is in bad format")
-                if not name:
-                    name, val, default_val = [item.strip() for item in data]
-                else:
-                    _, new_val, new_default_val = [item.strip() for item in data]
-                    if val.endswith('+'):
-                        val = val.rstrip(' +') + os.linesep + new_val
-                    if default_val.endswith('+'):
-                        default_val = default_val.rstrip(' +') + os.linesep + new_default_val
-                if not (val.endswith('+') or default_val.endswith('+')):
-                    real_val = val or default_val
-                    try:
-                        self[name] = yaml.safe_load(real_val)
-                    except Exception:
-                        raise ParseException('Could not parse the value for satellite settings of name %s ' % name)
-                    name = val = new_val = ''
+        if len(content) >= 4:
+            columns_in_data = [item.strip() for item in content[0].split('|')]
+            if columns_in_data == columns:
+                rows = content[2:]  # skip title and '---'
+                name = val = new_val = ''
+                for row in rows:
+                    if '|' not in row:
+                        continue
+                    data = row.split('|')
+                    if len(data) != len(columns):
+                        raise SkipException("The returned data is in bad format")
+                    if not name:
+                        name, val, default_val = [item.strip() for item in data]
+                    else:
+                        _, new_val, new_default_val = [item.strip() for item in data]
+                        if val.endswith('+'):
+                            val = val.rstrip(' +') + os.linesep + new_val
+                        if default_val.endswith('+'):
+                            default_val = default_val.rstrip(' +') + os.linesep + new_default_val
+                    if not (val.endswith('+') or default_val.endswith('+')):
+                        real_val = val or default_val
+                        try:
+                            self[name] = yaml.safe_load(real_val)
+                        except Exception:
+                            raise ParseException('Could not parse the value for satellite settings of name %s ' % name)
+                        name = val = new_val = ''
         if not self:
             raise SkipException("Cannot get the satellite settings")

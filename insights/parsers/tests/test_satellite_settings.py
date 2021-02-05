@@ -57,6 +57,16 @@ destroy_vm_on_host_delete |          | --- true +
 (2 rows)
 '''
 
+SATELLITE_SETTINGS_BAD_6 = '''
+           name            | default |  value
+---------------------------+-------+-----------
+ unregister_delete_host    |       | --- false+
+                           |       | ...
+ destroy_vm_on_host_delete |       | --- true +
+                           |       | ...
+(2 rows)
+
+'''
 
 SATELLITE_SETTINGS_WRONG_1 = '''
 -bash: psql: command not found
@@ -100,3 +110,5 @@ def test_exception():
         satellite_settings.SatelliteSettings(context_wrap(SATELLITE_SETTINGS_BAD_4))
     with pytest.raises(ParseException):
         satellite_settings.SatelliteSettings(context_wrap(SATELLITE_SETTINGS_BAD_5))
+    with pytest.raises(SkipException):
+        satellite_settings.SatelliteSettings(context_wrap(SATELLITE_SETTINGS_BAD_6))
