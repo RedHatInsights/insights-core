@@ -505,6 +505,13 @@ class DefaultSpecs(Specs):
 
     @datasource()
     def ld_library_path_of_pid(broker):
+        """
+        This component reads the `LD_LIBRARY_PATH` from each
+        ``/proc/<PID>/environ`` file if it's defined.
+
+        Returns:
+            list: List of strings which joined the PID and LD_LIBRARY_PATH pairs.
+        """
         pids = [p for p in sorted(os_listdir('/proc/')) if p.isdigit()]
         llds = []
         for p in pids:
