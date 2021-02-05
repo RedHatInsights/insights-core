@@ -1092,7 +1092,9 @@
                 "gnome-shell",
                 "haproxy",
                 "heat-engine",
+                "httpd",
                 "mongdb",
+                "nginx",
                 "nova-compute",
                 "nova-conductor",
                 "ntpd",
@@ -1103,7 +1105,6 @@
                 "pacemaker-controld",
                 "pacemaker_remote",
                 "pacemakerd",
-                "pcsd",
                 "pkla-check-auth",
                 "pmcd",
                 "pmie",
@@ -1144,8 +1145,10 @@
                 "gnome-shell",
                 "haproxy",
                 "heat-engine",
+                "httpd",
                 "mongdb",
                 "mysqld",
+                "nginx",
                 "nova-compute",
                 "nova-conductor",
                 "ntpd",
@@ -1157,7 +1160,6 @@
                 "pacemaker-controld",
                 "pacemaker_remote",
                 "pacemakerd",
-                "pcsd",
                 "phc2sys",
                 "pkla-check-auth",
                 "pmcd",
@@ -1225,7 +1227,6 @@
                 "pacemaker-controld",
                 "pacemaker_remote",
                 "pacemakerd",
-                "pcsd",
                 "pkla-check-auth",
                 "pmcd",
                 "pmie",
@@ -1262,8 +1263,10 @@
                 "gnome-shell",
                 "haproxy",
                 "heat-engine",
+                "httpd",
                 "mongdb",
                 "neutron-ns-metadata-proxy",
+                "nginx",
                 "nginx: master process",
                 "nginx: worker process",
                 "nova-compute",
@@ -1276,7 +1279,6 @@
                 "pacemaker-controld",
                 "pacemaker_remote",
                 "pacemakerd",
-                "pcsd",
                 "pkla-check-auth",
                 "pmcd",
                 "pmie",
@@ -1334,11 +1336,6 @@
             "command": "/usr/bin/readlink -e /etc/origin/node/certificates/kubelet-server-current.pem",
             "pattern": [],
             "symbolic_name": "readlink_e_shift_cert_server"
-        },
-        {
-            "command": "/usr/bin/rhn-schema-version",
-            "pattern": [],
-            "symbolic_name": "rhn_schema_version"
         },
         {
             "command": "python -m insights.tools.cat --no-header rhev_data_center",
@@ -1627,17 +1624,23 @@
         },
         {
             "file": "/run/udev/rules.d/40-redhat.rules",
-            "pattern": [],
+            "pattern": [
+                "SUBSYSTEM!=\"memory\", ACTION!=\"add\", GOTO=\"memory_hotplug_end\""
+            ],
             "symbolic_name": "etc_udev_40_redhat_rules"
         },
         {
             "file": "/usr/lib/udev/rules.d/40-redhat.rules",
-            "pattern": [],
+            "pattern": [
+                "SUBSYSTEM!=\"memory\", ACTION!=\"add\", GOTO=\"memory_hotplug_end\""
+            ],
             "symbolic_name": "etc_udev_40_redhat_rules"
         },
         {
             "file": "/usr/local/lib/udev/rules.d/40-redhat.rules",
-            "pattern": [],
+            "pattern": [
+                "SUBSYSTEM!=\"memory\", ACTION!=\"add\", GOTO=\"memory_hotplug_end\""
+            ],
             "symbolic_name": "etc_udev_40_redhat_rules"
         },
         {
@@ -1912,16 +1915,6 @@
             "file": "/etc/corosync/corosync.conf",
             "pattern": [],
             "symbolic_name": "corosync_conf"
-        },
-        {
-            "file": "/etc/cobbler/modules.conf",
-            "pattern": [],
-            "symbolic_name": "cobbler_modules_conf"
-        },
-        {
-            "file": "/etc/cobbler/settings",
-            "pattern": [],
-            "symbolic_name": "cobbler_settings"
         },
         {
             "file": "/etc/sysconfig/corosync",
@@ -3208,31 +3201,9 @@
             "symbolic_name": "rh_mongodb26_conf"
         },
         {
-            "file": "/etc/sysconfig/rhn/()*rhn-entitlement-cert\\.xml.*",
-            "pattern": [],
-            "symbolic_name": "rhn_entitlement_cert_xml"
-        },
-        {
             "file": "/etc/rhn/rhn.conf",
             "pattern": [],
             "symbolic_name": "rhn_conf"
-        },
-        {
-            "file": "/usr/share/rhn/config-defaults/rhn_hibernate.conf",
-            "pattern": [],
-            "symbolic_name": "rhn_hibernate_conf"
-        },
-        {
-            "file": "/var/log/rhn/search/rhn_search_daemon.log",
-            "pattern": [
-                "APPARENT DEADLOCK!"
-            ],
-            "symbolic_name": "rhn_search_daemon_log"
-        },
-        {
-            "file": "/var/log/rhn/rhn_taskomatic_daemon.log",
-            "pattern": [],
-            "symbolic_name": "rhn_taskomatic_daemon_log"
         },
         {
             "file": "/etc/rhosp-release",
@@ -4296,5 +4267,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2021-01-26T11:44:37.067394"
+    "version": "2021-01-28T16:16:27.908132"
 }
