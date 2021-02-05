@@ -3,10 +3,15 @@ LsvmBus - Command ``lsvmbus -vv``
 =================================
 
 This module parses the output of the command ``lsvmbus -vv``.
+
+LsVMBus - datasource ``lsvmbus``
+================================
 """
 import re
+from ast import literal_eval
 
-from insights import parser, CommandParser
+from insights.util import deprecated
+from insights import parser, Parser, CommandParser
 from insights.parsers import SkipException
 from insights.specs import Specs
 
@@ -14,6 +19,10 @@ from insights.specs import Specs
 @parser(Specs.lsvmbus)
 class LsvmBus(CommandParser):
     """Parse the output of ``lsvmbus -vv`` as list.
+
+    .. warning::
+        This parser class is deprecated, please use
+        :py:class:`insights.parser.lsvmbus.LsVMBus` instead.
 
     Typical output::
 
@@ -34,15 +43,6 @@ class LsvmBus(CommandParser):
                 Sysfs path: /sys/bus/vmbus/devices/47505500-0004-0001-3130-444531303244
                 Rel_ID=74, target_cpu=0
 
-    Examples:
-
-        >>> assert len(lsvmbus.devices) == 4
-        >>> assert lsvmbus.devices[0].get('vmbus_id', None) == '18'
-        >>> assert lsvmbus.devices[0].get('device_id', None) == '47505500-0001-0000-3130-444531303244'
-        >>> assert lsvmbus.devices[0].get('rel_id', None) == '18'
-        >>> assert lsvmbus.devices[0].get('sysfs_path', None) == '/sys/bus/vmbus/devices/47505500-0001-0000-3130-444531303244'
-        >>> assert lsvmbus.devices[0].get('target_cpu', None) == '0'
-
     Attributes:
         devices (list): List of ``dict`` for each device. For example::
 
@@ -60,6 +60,10 @@ class LsvmBus(CommandParser):
                         ]
 
     """
+    def __init__(self, *args, **kwargs):
+        deprecated(LsvmBus, "Use the LsVMBus parser instead")
+        super(LsvmBus, self).__init__(*args, **kwargs)
+
     def parse_content(self, content):
         if not content:
             raise SkipException('No content.')
@@ -84,3 +88,32 @@ class LsvmBus(CommandParser):
                     'target_cpu': patrn_targetcpu.search(part[3]).groups()[0],
                 }
             )
+
+
+@parser(Specs.lsvmbus)
+class LsVMBus(Parser, list):
+    """This parser parses the output of ``lsvmbus`` datasource.
+
+    Typical output from the datasource is::
+
+        [
+         {'device_id': '5620e0c7-8062-4dce-aeb7-520c7ef76171', 'class_id': 'da0a7802-e377-4aac-8e77-0558eb1073f8', 'description': 'Synthetic framebuffer adapter'},
+         {'device_id': '47505500-0001-0000-3130-444531444234', 'class_id': '44c4f61d-4444-4400-9d52-802e27ede19f', 'description': 'PCI Express pass-through'},
+         {'device_id': '4487b255-b88c-403f-bb51-d1f69cf17f87', 'class_id': '3375baf4-9e15-4b30-b765-67acb10d607b', 'description': 'Unknown'}
+        ]
+
+
+    Attributes:
+
+        devices(list): List of ``dict``.
+
+    Examples:
+        >>> assert len(lsvmbus.devices) == 3
+        >>> assert lsvmbus.devices[1].get('device_id', None) == '47505500-0001-0000-3130-444531444234'
+        >>> assert lsvmbus.devices[1].get('description', None) == 'PCI Express pass-through'
+    """
+    def parse_content(self, content):
+        if not content:
+            raise SkipException('No content.')
+
+        self.devices = literal_eval(content[0])

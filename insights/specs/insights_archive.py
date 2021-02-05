@@ -131,7 +131,6 @@ class InsightsArchiveSpecs(Specs):
     lspci = simple_file("insights_commands/lspci_-k")
     lssap = simple_file("insights_commands/usr.sap.hostctrl.exe.lssap")
     lsscsi = simple_file("insights_commands/lsscsi")
-    lsvmbus = simple_file("insights_commands/lsvmbus_-vv")
     lvmconfig = first_file([
         "insights_commands/lvmconfig_--type_full",
         "insights_commands/lvm_dumpconfig_--type_full"

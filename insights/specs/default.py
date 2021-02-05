@@ -13,7 +13,7 @@ import re
 import json
 
 from grp import getgrgid
-from os import stat, listdir as os_listdir
+from os import stat, listdir as os_listdir, path as os_path
 from pwd import getpwuid
 
 import yaml
@@ -120,6 +120,17 @@ def _make_rpm_formatter(fmt=None):
         else:
             return "\{" + ",".join(fmt) + "\}\n"
     return inner
+
+
+def _get_vmbus_dev_attr(dev_path, attr):
+    try:
+        f = open('%s/%s' % (dev_path, attr), 'r')
+        lines = f.readlines()
+        f.close()
+    except Exception as e:
+        raise SkipComponent("Unexpected exception:{e}".format(e=str(e)))
+
+    return lines
 
 
 format_rpm = _make_rpm_formatter()
@@ -560,7 +571,6 @@ class DefaultSpecs(Specs):
     lspci = simple_command("/sbin/lspci -k")
     lssap = simple_command("/usr/sap/hostctrl/exe/lssap")
     lsscsi = simple_command("/usr/bin/lsscsi")
-    lsvmbus = simple_command("/usr/sbin/lsvmbus -vv")
     lvm_conf = simple_file("/etc/lvm/lvm.conf")
     lvs_noheadings = simple_command("/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,lv_size,lv_attr,mirror_log,vg_name,devices,region_size,data_percent,metadata_percent,segtype,seg_monitor,lv_kernel_major,lv_kernel_minor --config=\"global{locking_type=0}\"")
     mac_addresses = glob_file("/sys/class/net/*/address")
@@ -891,6 +901,50 @@ class DefaultSpecs(Specs):
     vdsm_log = simple_file("var/log/vdsm/vdsm.log")
     vdsm_logger_conf = simple_file("etc/vdsm/logger.conf")
     vma_ra_enabled = simple_file("/sys/kernel/mm/swap/vma_ra_enabled")
+
+    @datasource(HostContext)
+    def lsvmbus(broker):
+        """This datasource provides the device details of the VMBus devices.
+        A crude implementation of https://github.com/torvalds/linux/blob/master/tools/hv/lsvmbus.
+
+        Note:
+            This datasource may be executed using the following command:
+
+            ``insights-cat --no-header lsvmbus``
+
+        Example:
+
+            ``[{'device_id': '47505500-0001-0000-3130-444531444234', 'class_id': '44c4f61d-4444-4400-9d52-802e27ede19f', 'description': 'PCI Express pass-through'}]``
+
+        Returns:
+            list: List of ``dict`` if the path exist, else nothing is returned.
+
+        Raises:
+            SkipComponent: When the path does not exist or any exception occurs.
+        """
+        devs = []
+        vmbus_sys_path = '/sys/bus/vmbus/devices'
+
+        # Please refer to
+        # https://github.com/torvalds/linux/blob/master/tools/hv/lsvmbus#L23 for
+        # full list of Class ID mapping.
+        vmbus_dev_dict = {
+            '44c4f61d-4444-4400-9d52-802e27ede19f': 'PCI Express pass-through',
+            'da0a7802-e377-4aac-8e77-0558eb1073f8': 'Synthetic framebuffer adapter'
+        }
+
+        if os_path.isdir(vmbus_sys_path):
+            for d in os_listdir(vmbus_sys_path):
+                device_id = _get_vmbus_dev_attr(os_path.join(vmbus_sys_path, d), 'device_id')[0].strip('{}\n')
+                class_id = _get_vmbus_dev_attr(os_path.join(vmbus_sys_path, d), 'class_id')[0].strip('{}\n')
+                desc = vmbus_dev_dict.get(class_id, 'Unknown')
+
+                devs.append({'device_id': device_id, 'class_id': class_id, 'description': desc})
+
+            if devs:
+                return DatasourceProvider(content=devs, relative_path='insights_commands/cat_lsvmbus')
+        raise SkipComponent
+
     vgs_noheadings = simple_command("/sbin/vgs --nameprefixes --noheadings --separator='|' -a -o vg_all --config=\"global{locking_type=0}\"")
     virsh_list_all = simple_command("/usr/bin/virsh --readonly list --all")
     virt_what = simple_command("/usr/sbin/virt-what")
