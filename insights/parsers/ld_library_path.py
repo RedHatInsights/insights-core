@@ -13,7 +13,7 @@ from insights.parsers import SkipException, ParseException
 from insights.specs import Specs
 
 LdLibraryPathU = namedtuple('LdLibraryPathU', ('path', 'raw'))
-"""namedtuple: Type for storing the LdLibraryPath of users"""
+"""namedtuple: Type for storing the LD_LIBRARY_PATH of users"""
 
 
 @parser(Specs.ld_library_path_of_user)
@@ -45,9 +45,6 @@ class UserLdLibraryPath(Parser, list):
     """
 
     def parse_content(self, content):
-        if not content:
-            raise SkipException
-
         llds = []
         for line in content:
             raw = line
@@ -61,9 +58,14 @@ class UserLdLibraryPath(Parser, list):
         self.extend(llds)
 
 
-# Deprecated
 LdLibraryPath = namedtuple('LdLibraryPath', ('pid', 'path', 'raw'))
-"""namedtuple: Type for storing the LdLibraryPath of PID"""
+"""
+.. warning::
+
+    This type is deprecated please use the :py:class:`LdLibraryPathU` instead.
+
+namedtuple: Type for storing the LdLibraryPath of PID
+"""
 
 
 class PidLdLibraryPath(Parser, list):
@@ -78,8 +80,8 @@ class PidLdLibraryPath(Parser, list):
 
     Typical content looks like::
 
-        /usr/sap/RH1/SYS/exe/run:/usr/sap/RH1/SYS/exe/uc/linuxx86_64:/sapdb/clients/RH1/lib
-        /usr/sap/RH1/SYS/exe/uc/linuxx86_64:/usr/sap/RH1/SYS/exe/run
+        105901 /usr/sap/RH1/SYS/exe/run:/usr/sap/RH1/SYS/exe/uc/linuxx86_64:/sapdb/clients/RH1/lib
+        105902 /usr/sap/RH1/SYS/exe/uc/linuxx86_64:/usr/sap/RH1/SYS/exe/run
 
     Raises:
         SkipException: When the output is empty or nothing needs to parse.

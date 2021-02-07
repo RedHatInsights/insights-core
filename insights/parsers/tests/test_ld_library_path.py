@@ -54,7 +54,6 @@ def test_doc_examples():
     assert failed == 0
 
 
-# The following test are Deprecated
 PID_LD_LIBRARY_PATH_DOC = """
 105901 /usr/sap/RH1/SYS/exe/run:/usr/sap/RH1/SYS/exe/uc/linuxx86_64:/sapdb/clients/RH1/lib
 105902 /usr/sap/RH1/SYS/exe/uc/linuxx86_64:/usr/sap/RH1/SYS/exe/run

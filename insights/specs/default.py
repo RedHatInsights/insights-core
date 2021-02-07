@@ -14,7 +14,7 @@ import re
 import json
 
 from grp import getgrgid
-from os import stat, listdir as os_listdir
+from os import stat
 from pwd import getpwuid
 
 import yaml
@@ -533,10 +533,12 @@ class DefaultSpecs(Specs):
         ctx = broker[HostContext]
         llds = []
         for u in users:
-            for v in ctx.shell_out("/bin/su -l {0} -c export".format(u)):
-                if "LD_LIBRARY_PATH=" in v:
-                    lld = v.split('=', 2)[-1].strip('"')
-                    llds.append(lld)
+            ret, vvs = ctx.shell_out("/bin/su -l {0} -c export".format(u), keep_rc=True)
+            if ret == 0 and vvs:
+                for v in vvs:
+                    if "LD_LIBRARY_PATH=" in v:
+                        lld = v.split('=', 2)[-1].strip('"')
+                        llds.append(lld)
         if llds:
             return DatasourceProvider('\n'.join(llds), relative_path='insights_commands/echo_user_LD_LIBRARY_PATH')
         raise SkipComponent
