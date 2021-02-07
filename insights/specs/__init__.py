@@ -285,7 +285,7 @@ class Specs(SpecSet):
     ksmstate = RegistryPoint()
     kubepods_cpu_quota = RegistryPoint(multi_output=True)
     lastupload = RegistryPoint(multi_output=True)
-    ld_library_path_of_pid = RegistryPoint()
+    ld_library_path_of_user = RegistryPoint()
     libssh_client_config = RegistryPoint(filterable=True)
     libssh_server_config = RegistryPoint(filterable=True)
     libvirtd_log = RegistryPoint(filterable=True)
