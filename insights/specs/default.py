@@ -30,10 +30,11 @@ from insights.combiners.cloud_provider import CloudProvider
 from insights.combiners.services import Services
 from insights.combiners.sap import Sap
 from insights.combiners.ps import Ps
-from insights.components.rhel_version import IsRhel8, IsRhel7
+from insights.components.rhel_version import IsRhel8, IsRhel7, IsRhel6
 from insights.parsers.mdstat import Mdstat
 from insights.parsers.lsmod import LsMod
 from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersion
+from insights.parsers.mount import Mount
 from insights.specs import Specs
 
 
@@ -225,8 +226,9 @@ class DefaultSpecs(Specs):
     cinder_api_log = first_file(["/var/log/containers/cinder/cinder-api.log", "/var/log/cinder/cinder-api.log"])
     cinder_conf = first_file(["/var/lib/config-data/puppet-generated/cinder/etc/cinder/cinder.conf", "/etc/cinder/cinder.conf"])
     cinder_volume_log = first_file(["/var/log/containers/cinder/volume.log", "/var/log/containers/cinder/cinder-volume.log", "/var/log/cinder/volume.log"])
+    cloud_cfg_input = simple_file("/etc/cloud/cloud.cfg")
 
-    @datasource(HostContext)
+    @datasource(cloud_cfg_input, HostContext)
     def cloud_cfg(broker):
         """This datasource provides the network configuration collected
         from ``/etc/cloud/cloud.cfg``.
@@ -273,20 +275,20 @@ class DefaultSpecs(Specs):
             str: JSON string when the ``network`` parameter is configure, else nothing is returned.
 
         Raises:
-            SkipComponent: When the path does not exist.
+            SkipComponent: When the path does not exist or any exception occurs.
         """
         relative_path = '/etc/cloud/cloud.cfg'
-        network_config = ''
-
         try:
-            with open(relative_path, 'r') as f:
-                content = yaml.load(f, Loader=yaml.SafeLoader)
+            content = broker[DefaultSpecs.cloud_cfg_input].content
+            if content:
+                content = yaml.load('\n'.join(content), Loader=yaml.SafeLoader)
                 network_config = content.get('network', None)
                 if network_config:
                     return DatasourceProvider(content=json.dumps(network_config), relative_path=relative_path)
+        except Exception as e:
+            raise SkipComponent("Unexpected exception:{e}".format(e=str(e)))
 
-        except OSError:
-            raise SkipComponent()
+        raise SkipComponent()
 
     cloud_init_custom_network = simple_file("/etc/cloud/cloud.cfg.d/99-custom-networking.cfg")
     cloud_init_log = simple_file("/var/log/cloud-init.log")
@@ -382,6 +384,29 @@ class DefaultSpecs(Specs):
     getconf_page_size = simple_command("/usr/bin/getconf PAGE_SIZE")
     getenforce = simple_command("/usr/sbin/getenforce")
     getsebool = simple_command("/usr/sbin/getsebool -a")
+
+    @datasource(Mount, [IsRhel6, IsRhel7, IsRhel8], HostContext)
+    def gfs2_mount_points(broker):
+        """
+        Function to search the output of ``mount`` to find all the gfs2 file
+        systems.
+        And only run the ``stat`` command on RHEL version that's less than
+        8.3. With 8.3 and later, the command ``blkid`` will also output the
+        block size info.
+
+        Returns:
+            list: a list of mount points of which the file system type is gfs2
+        """
+        gfs2_mount_points = []
+        if (broker.get(IsRhel6) or broker.get(IsRhel7) or
+                (broker.get(IsRhel8) and broker[IsRhel8].minor < 3)):
+            for mnt in broker[Mount]:
+                if mnt.mount_type == "gfs2":
+                    gfs2_mount_points.append(mnt.mount_point)
+        if gfs2_mount_points:
+            return gfs2_mount_points
+        raise SkipComponent
+    gfs2_file_system_block_size = foreach_execute(gfs2_mount_points, "/usr/bin/stat -fc %%s %s")
     gluster_v_info = simple_command("/usr/sbin/gluster volume info")
     gnocchi_conf = first_file(["/var/lib/config-data/puppet-generated/gnocchi/etc/gnocchi/gnocchi.conf", "/etc/gnocchi/gnocchi.conf"])
     gnocchi_metricd_log = first_file(["/var/log/containers/gnocchi/gnocchi-metricd.log", "/var/log/gnocchi/metricd.log"])
@@ -732,8 +757,11 @@ class DefaultSpecs(Specs):
 
     @datasource(Sap, HostContext)
     def sap_sid(broker):
+        """
+        list: List of the SID of all SAP Instances.
+        """
         sap = broker[Sap]
-        return [sap.sid(i).lower() for i in sap.local_instances]
+        return list(set(sap.sid(i).lower() for i in sap.all_instances))
 
     sap_hdb_version = foreach_execute(sap_sid, "/usr/bin/sudo -iu %sadm HDB version", keep_rc=True)
     saphostctl_getcimobject_sapinstance = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance")
