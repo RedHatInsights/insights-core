@@ -28,7 +28,7 @@ class InsightsSchedulerCron(object):
             return os.path.isfile(self.target)
         return False
 
-    def set_daily(self):
+    def schedule(self):
         logger.debug('Scheduling cron.daily')
         try:
             if not os.path.exists(self.target):
@@ -61,7 +61,7 @@ class InsightsSchedulerSystemd(object):
             logger.exception('Could not get systemd status')
             return False
 
-    def set_daily(self):
+    def schedule(self):
         logger.debug('Starting systemd timer')
         try:
             # Start timers in the case of rhel 7 running systemd
