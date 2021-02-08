@@ -51,7 +51,7 @@ class InsightsSchedulerCron(object):
 
 
 class InsightsSchedulerSystemd(object):
-    SYSTEMD_TIMERS = ("insights-client",)
+    SYSTEMD_TIMERS = ("insights-client", "insights-client-checkin")
 
     @staticmethod
     def _run_systemctl_command(args):
