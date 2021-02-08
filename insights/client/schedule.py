@@ -51,15 +51,40 @@ class InsightsSchedulerCron(object):
 
 
 class InsightsSchedulerSystemd(object):
+    SYSTEMD_TIMERS = ("insights-client",)
+
+    @staticmethod
+    def _run_systemctl_command(args):
+        command = 'systemctl %s' % args
+        logger.debug('Running command %s', command)
+        try:
+            result = run_command_get_output(command)
+        except OSError:
+            logger.exception('Could not run %s', command)
+            return None
+        else:
+            logger.debug("Status: %s", result['status'])
+            logger.debug("Output: %s", result['output'])
+            return result
+
+    @classmethod
+    def _run_systemctl_commands(cls, args):
+        results = {}
+
+        for timer in cls.SYSTEMD_TIMERS:
+            unit = '%s.timer' % timer
+            command = '%s %s' % (args, unit)
+            result = cls._run_systemctl_command(command)
+            if not result:
+                return None
+            results[timer] = result
+
+        return results
 
     @property
     def active(self):
-        try:
-            systemctl_status = run_command_get_output('systemctl is-enabled insights-client.timer')
-            return systemctl_status['status'] == 0
-        except OSError:
-            logger.exception('Could not get systemd status')
-            return False
+        results = self._run_systemctl_commands('is-enabled')
+        return results and all(result['status'] == 0 for result in results.values())
 
     def schedule(self):
         logger.debug('Starting systemd timer')
