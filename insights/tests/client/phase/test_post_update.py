@@ -133,7 +133,7 @@ def test_post_update_register_registered(insights_config, insights_client, get_s
     insights_client.return_value.get_registration_status.assert_called_once()
     insights_client.return_value.clear_local_registration.assert_not_called()
     insights_client.return_value.set_display_name.assert_not_called()
-    get_scheduler.return_value.schedule.assert_called_once()
+    get_scheduler.return_value.set_daily.assert_called_once()
 
 
 @patch("insights.client.phase.v1.get_scheduler")
@@ -154,7 +154,7 @@ def test_post_update_register_unregistered(insights_config, insights_client, get
     insights_client.return_value.get_registration_status.assert_called_once()
     insights_client.return_value.clear_local_registration.assert_not_called()
     insights_client.return_value.set_display_name.assert_not_called()
-    get_scheduler.return_value.schedule.assert_called_once()
+    get_scheduler.return_value.set_daily.assert_called_once()
 
 
 @patch("insights.client.phase.v1.get_scheduler")
@@ -217,7 +217,7 @@ def test_post_update_force_register_registered(insights_config, insights_client,
     insights_client.return_value.get_registration_status.assert_called_once()
     insights_client.return_value.clear_local_registration.assert_called_once()
     insights_client.return_value.set_display_name.assert_not_called()
-    get_scheduler.return_value.schedule.assert_called_once()
+    get_scheduler.return_value.set_daily.assert_called_once()
 
 
 @patch("insights.client.phase.v1.get_scheduler")
@@ -239,7 +239,7 @@ def test_post_update_force_register_unregistered(insights_config, insights_clien
     insights_client.return_value.get_registration_status.assert_called_once()
     insights_client.return_value.clear_local_registration.assert_called_once()
     insights_client.return_value.set_display_name.assert_not_called()
-    get_scheduler.return_value.schedule.assert_called_once()  # ASK
+    get_scheduler.return_value.set_daily.assert_called_once()
 
 
 @patch("insights.client.phase.v1.get_scheduler")
@@ -259,7 +259,7 @@ def test_post_update_set_display_name_cli_no_register_unreg(insights_config, ins
     insights_client.return_value.get_machine_id.assert_called_once()
     insights_client.return_value.get_registration_status.assert_called_once()
     insights_client.return_value.set_display_name.assert_not_called()
-    get_scheduler.return_value.schedule.assert_not_called()
+    get_scheduler.return_value.set_daily.assert_not_called()
 
 
 @patch("insights.client.phase.v1.get_scheduler")
@@ -279,7 +279,7 @@ def test_post_update_set_display_name_cli_no_register_reg(insights_config, insig
     insights_client.return_value.get_machine_id.assert_called_once()
     insights_client.return_value.get_registration_status.assert_called_once()
     insights_client.return_value.set_display_name.assert_called_once()
-    get_scheduler.return_value.schedule.assert_not_called()
+    get_scheduler.return_value.set_daily.assert_not_called()
 
 
 @patch("insights.client.phase.v1.get_scheduler")
@@ -301,7 +301,7 @@ def test_post_update_set_display_name_cli_register(insights_config, insights_cli
     insights_client.return_value.get_registration_status.assert_called_once()
     insights_client.return_value.clear_local_registration.assert_called_once()
     insights_client.return_value.set_display_name.assert_not_called()
-    get_scheduler.return_value.schedule.assert_called_once()
+    get_scheduler.return_value.set_daily.assert_called_once()
 
 
 @patch("insights.client.phase.v1.InsightsClient")
