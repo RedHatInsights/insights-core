@@ -57,8 +57,8 @@ class InsightsSchedulerSystemd(object):
         try:
             systemctl_status = run_command_get_output('systemctl is-enabled insights-client.timer')
             return systemctl_status['status'] == 0
-        except OSError:
-            logger.exception('Could not get systemd status')
+        except OSError as e:
+            logger.exception('Could not get systemd status %s', e)
             return False
 
     def set_daily(self):
@@ -70,8 +70,8 @@ class InsightsSchedulerSystemd(object):
             logger.debug("Status: %s", systemctl_timer['status'])
             logger.debug("Output: %s", systemctl_timer['output'])
             return self.active
-        except OSError:
-            logger.exception('Could not start systemd timer')
+        except OSError as e:
+            logger.exception('Could not start systemd timer %s', e)
             return False
 
     def remove_scheduling(self):
@@ -83,8 +83,8 @@ class InsightsSchedulerSystemd(object):
             logger.debug("Status: %s", systemctl_timer['status'])
             logger.debug("Output: %s", systemctl_timer['output'])
             return not self.active
-        except OSError:
-            logger.exception('Could not stop systemd timer')
+        except OSError as e:
+            logger.exception('Could not stop systemd timer %s', e)
             return False
 
 
