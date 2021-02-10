@@ -132,7 +132,6 @@ class VirshListAll(CommandParser):
 
             str: State of VM. Returns None if, ``vmname`` does not exist.
         '''
-        vmname = vmname.lower()
-        if vmname in self.keywords:
+        if vmname.lower() in self.keywords:
             return self.search(name=vmname)[0]['state']
         return None
