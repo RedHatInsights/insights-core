@@ -41,6 +41,7 @@ def test_virsh_output():
     assert output.get_vm_state('rhel9.0') is None
     assert ('cfme' in output) is False
     assert ('cfme-5.7.13' in output) is True
+    assert output.get_vm_state("RHOSP10") == "shut off"
 
 
 def test_virsh_output_no_vms():
