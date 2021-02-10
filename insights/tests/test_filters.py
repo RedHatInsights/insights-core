@@ -108,3 +108,8 @@ def test_add_filter_exception_not_filterable():
 def test_add_filter_exception_raw():
     with pytest.raises(Exception):
         filters.add_filter(Specs.metadata_json, "[]")
+
+
+def test_add_filter_exception_empty():
+    with pytest.raises(Exception):
+        filters.add_filter(Specs.ps_aux, "")
