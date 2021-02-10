@@ -28,6 +28,7 @@ from insights.core.spec_factory import first_of, command_with_args
 from insights.core.spec_factory import foreach_collect, foreach_execute
 from insights.core.spec_factory import first_file, listdir
 from insights.combiners.cloud_provider import CloudProvider
+from insights.combiners.hostname import Hostname
 from insights.combiners.services import Services
 from insights.combiners.sap import Sap
 from insights.combiners.ps import Ps
@@ -37,7 +38,6 @@ from insights.parsers.lsmod import LsMod
 from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersion
 from insights.parsers.mount import Mount
 from insights.specs import Specs
-from insights.client.utilities import determine_hostname
 import datetime
 
 
@@ -723,6 +723,34 @@ class DefaultSpecs(Specs):
     pcs_status = simple_command("/usr/sbin/pcs status")
     php_ini = first_file(["/etc/opt/rh/php73/php.ini", "/etc/opt/rh/php72/php.ini", "/etc/php.ini"])
     pluginconf_d = glob_file("/etc/yum/pluginconf.d/*.conf")
+
+    @datasource(Ps, Hostname, HostContext)
+    def pmlog_summary(broker):
+        """
+        Returns the output of the pmlogsummary command if a running ``pmlogger``
+        process is detected on the system.
+
+        Returns:
+            DatasourceProvider: contains the output of the command
+
+        Raises:
+            SkipComponent: raises this exception when the command is not present or fails
+        """
+        ps = broker[Ps]
+        hostname = broker[Hostname].fqdn
+        if ps.search(COMMAND__contains='pmlogger'):
+            pcp_log_date = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y%m%d")
+            try:
+                cmd = "pmlogsummary /var/log/pcp/pmlogger/%s/%s.index mem.util.used mem.physmem kernel.all.cpu.user kernel.all.cpu.sys kernel.all.cpu.nice kernel.all.cpu.steal kernel.all.cpu.idle disk.all.total" % (hostname, pcp_log_date)
+                ctx = broker[HostContext]
+                output = ctx.shell_out(cmd)
+                if output:
+                    return DatasourceProvider(output, relative_path='insights_commands/pmlogsummary')
+            except Exception as e:
+                raise SkipComponent("Failed to execute pmlogsummary: {0}".format(str(e)))
+
+        raise SkipComponent
+
     postconf_builtin = simple_command("/usr/sbin/postconf -C builtin")
     postconf = simple_command("/usr/sbin/postconf")
     postgresql_conf = first_file([
@@ -929,15 +957,3 @@ class DefaultSpecs(Specs):
     zipl_conf = simple_file("/etc/zipl.conf")
     rpm_format = format_rpm()
     installed_rpms = simple_command("/bin/rpm -qa --qf '%s'" % rpm_format, context=HostContext)
-
-    @datasource(Ps, HostContext)
-    def is_pmlogger_running(broker):
-        """ bool: Returns True if pmlogger process ceph-mon is running on this node """
-        ps = broker[Ps]
-        if ps.search(COMMAND__contains='pmlogger'):
-            return True
-        raise SkipComponent()
-
-    pcp_log_date = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y%m%d")
-    hostname = determine_hostname()
-    pmlogsummary = simple_command("pmlogsummary /var/log/pcp/pmlogger/%s/%s.index mem.util.used mem.physmem kernel.all.cpu.user kernel.all.cpu.sys kernel.all.cpu.nice kernel.all.cpu.steal kernel.all.cpu.idle disk.all.total" % (hostname, pcp_log_date), deps=[is_pmlogger_running])
