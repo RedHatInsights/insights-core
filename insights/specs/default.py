@@ -741,7 +741,7 @@ class DefaultSpecs(Specs):
         if ps.search(COMMAND__contains='pmlogger'):
             pcp_log_date = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y%m%d")
             try:
-                cmd = "pmlogsummary /var/log/pcp/pmlogger/%s/%s.index mem.util.used mem.physmem kernel.all.cpu.user kernel.all.cpu.sys kernel.all.cpu.nice kernel.all.cpu.steal kernel.all.cpu.idle disk.all.total" % (hostname, pcp_log_date)
+                cmd = "/usr/bin/pmlogsummary /var/log/pcp/pmlogger/%s/%s.index mem.util.used mem.physmem kernel.all.cpu.user kernel.all.cpu.sys kernel.all.cpu.nice kernel.all.cpu.steal kernel.all.cpu.idle disk.all.total" % (hostname, pcp_log_date)
                 ctx = broker[HostContext]
                 output = ctx.shell_out(cmd)
                 if output:
