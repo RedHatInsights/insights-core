@@ -564,6 +564,11 @@
             "symbolic_name": "ls_usr_bin"
         },
         {
+            "command": "/bin/ls -lan /var/cache/pulp",
+            "pattern": [],
+            "symbolic_name": "ls_var_cache_pulp"
+        },
+        {
             "command": "/bin/ls -la /var/lib/mongodb",
             "pattern": [],
             "symbolic_name": "ls_var_lib_mongodb"
@@ -1358,11 +1363,6 @@
             "command": "/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo chrony",
             "pattern": [],
             "symbolic_name": "rpm_V_packages"
-        },
-        {
-            "command": "python -m insights.tools.cat --no-header sap_hdb_version",
-            "pattern": [],
-            "symbolic_name": "sap_hdb_version"
         },
         {
             "command": "/usr/bin/mongo pulp_database --eval 'db.serverStatus().storageEngine'",
@@ -3091,6 +3091,11 @@
             "symbolic_name": "postgresql_conf"
         },
         {
+            "file": "/var/opt/rh/rh-postgresql12/lib/pgsql/data/postgresql.conf",
+            "pattern": [],
+            "symbolic_name": "postgresql_conf"
+        },
+        {
             "file": "/var/lib/pgsql/data/pg_log/()*postgresql-.+\\.log",
             "pattern": [
                 "FATAL",
@@ -4210,6 +4215,11 @@
             "pattern": []
         },
         {
+            "glob": "/var/opt/rh/rh-postgresql12/lib/pgsql/data/log/postgresql-*.log",
+            "symbolic_name": "postgresql_log",
+            "pattern": []
+        },
+        {
             "glob": "/etc/rsyslog.d/*.conf",
             "pattern": [
                 "$ActionQueueFileName",
@@ -4267,5 +4277,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2021-01-28T16:16:27.908132"
+    "version": "2021-02-05T09:05:41.082538"
 }
