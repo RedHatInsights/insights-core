@@ -12,6 +12,7 @@ import logging
 import os
 import re
 import json
+import os
 
 from grp import getgrgid
 from os import stat, listdir as os_listdir
@@ -725,32 +726,36 @@ class DefaultSpecs(Specs):
     pluginconf_d = glob_file("/etc/yum/pluginconf.d/*.conf")
 
     @datasource(Ps, Hostname, HostContext)
-    def pmlog_summary(broker):
+    def pmlog_summary_file(broker):
         """
-        Returns the output of the pmlogsummary command if a running ``pmlogger``
+        Determines the name for the pmlogger file and checks for its existance
+
+        Returns the name of the latest pmlogger summary file if a running ``pmlogger``
         process is detected on the system.
 
         Returns:
-            DatasourceProvider: contains the output of the command
+            str: Full path to the latest pmlogger file
 
         Raises:
-            SkipComponent: raises this exception when the command is not present or fails
+            SkipComponent: raises this exception when the command is not present or
+                the file is not present
         """
         ps = broker[Ps]
-        hostname = broker[Hostname].fqdn
         if ps.search(COMMAND__contains='pmlogger'):
+            hostname = broker[Hostname].fqdn
             pcp_log_date = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y%m%d")
+            file = "/var/log/pcp/pmlogger/%s/%s.index" % (hostname, pcp_log_date)
             try:
-                cmd = "/usr/bin/pmlogsummary /var/log/pcp/pmlogger/%s/%s.index mem.util.used mem.physmem kernel.all.cpu.user kernel.all.cpu.sys kernel.all.cpu.nice kernel.all.cpu.steal kernel.all.cpu.idle disk.all.total" % (hostname, pcp_log_date)
-                ctx = broker[HostContext]
-                output = ctx.shell_out(cmd)
-                if output:
-                    return DatasourceProvider(output, relative_path='insights_commands/pmlogsummary')
+                if os.path.exists(file) and os.path.isfile(file):
+                    return file
             except Exception as e:
-                raise SkipComponent("Failed to execute pmlogsummary: {0}".format(str(e)))
+                SkipComponent("Failed to check for pmlogger file existance: {0}".format(str(e)))
 
         raise SkipComponent
 
+    pmlog_summary = command_with_args(
+        "/usr/bin/pmlogsummary %s mem.util.used mem.physmem kernel.all.cpu.user kernel.all.cpu.sys kernel.all.cpu.nice kernel.all.cpu.steal kernel.all.cpu.idle disk.all.total",
+        pmlog_summary_file)
     postconf_builtin = simple_command("/usr/sbin/postconf -C builtin")
     postconf = simple_command("/usr/sbin/postconf")
     postgresql_conf = first_file([

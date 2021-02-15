@@ -23,11 +23,21 @@ PMLOG_EMPTY = """
 
 def test_pmlog_summary():
     pmlog_summary = PmLogSummary(context_wrap(PMLOG))
-    assert len(pmlog_summary) == 8
-    assert pmlog_summary['mem.util.used'] == '3133919.812 Kbyte'
-    assert pmlog_summary['disk.all.total'] == '0.252 count / sec'
+    assert len(pmlog_summary) == 3
+    assert len(pmlog_summary['mem']) == 2
+    assert pmlog_summary['mem']['util']['used'] == {'val': 3133919.812, 'units': 'Kbyte'}
+    assert pmlog_summary['mem']['physmem'] == {'val': 3997600.0, 'units': 'Kbyte'}
+    assert pmlog_summary['disk']['all']['total'] == {'val': 0.252, 'units': 'count / sec'}
     assert 'not.present' not in pmlog_summary
-    assert 'kernel.all.cpu.sys' in pmlog_summary
+    assert pmlog_summary['kernel'] == {
+        'all': {'cpu': {
+            'user': {'val': 0.003, 'units': 'none'},
+            'sys': {'val': 0.004, 'units': 'none'},
+            'nice': {'val': 0.0, 'units': 'none'},
+            'steal': {'val': 0.0, 'units': 'none'},
+            'idle': {'val': 3.986, 'units': 'none'},
+        }}
+    }
 
 
 def test_pmlog_summmary():
