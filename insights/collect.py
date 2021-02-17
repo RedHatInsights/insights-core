@@ -361,7 +361,7 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
 
     # Capture all logging for dr.run_all in a separate archive log
     LOG_FORMAT = ("%(asctime)s %(levelname)8s %(name)s %(message)s")
-    log_path = os.path.join(output_path, 'metadata', 'collection.log')
+    log_path = os.path.join(output_path, 'meta_data')
     fs.ensure_path(log_path)
     log_file = os.path.join(log_path, 'collection.log')
     file_handler = logging.FileHandler(log_file)
