@@ -29,7 +29,6 @@ from insights.core.spec_factory import first_of, command_with_args
 from insights.core.spec_factory import foreach_collect, foreach_execute
 from insights.core.spec_factory import first_file, listdir
 from insights.combiners.cloud_provider import CloudProvider
-from insights.combiners.hostname import Hostname
 from insights.combiners.services import Services
 from insights.combiners.sap import Sap
 from insights.combiners.ps import Ps
@@ -725,7 +724,7 @@ class DefaultSpecs(Specs):
     php_ini = first_file(["/etc/opt/rh/php73/php.ini", "/etc/opt/rh/php72/php.ini", "/etc/php.ini"])
     pluginconf_d = glob_file("/etc/yum/pluginconf.d/*.conf")
 
-    @datasource(Ps, Hostname, HostContext)
+    @datasource(Ps, HostContext)
     def pmlog_summary_file(broker):
         """
         Determines the name for the pmlogger file and checks for its existance
@@ -742,9 +741,8 @@ class DefaultSpecs(Specs):
         """
         ps = broker[Ps]
         if ps.search(COMMAND__contains='pmlogger'):
-            hostname = broker[Hostname].fqdn
             pcp_log_date = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y%m%d")
-            file = "/var/log/pcp/pmlogger/%s/%s.index" % (hostname, pcp_log_date)
+            file = "/var/log/pcp/pmlogger/ros/%s.index" % (pcp_log_date)
             try:
                 if os.path.exists(file) and os.path.isfile(file):
                     return file
@@ -754,7 +752,7 @@ class DefaultSpecs(Specs):
         raise SkipComponent
 
     pmlog_summary = command_with_args(
-        "/usr/bin/pmlogsummary %s mem.util.used mem.physmem kernel.all.cpu.user kernel.all.cpu.sys kernel.all.cpu.nice kernel.all.cpu.steal kernel.all.cpu.idle disk.all.total",
+        "/usr/bin/pmlogsummary %s mem.util.used mem.physmem kernel.all.cpu.user kernel.all.cpu.sys kernel.all.cpu.nice kernel.all.cpu.steal kernel.all.cpu.idle disk.all.total mem.util.cached mem.util.bufmem mem.util.free",
         pmlog_summary_file)
     postconf_builtin = simple_command("/usr/sbin/postconf -C builtin")
     postconf = simple_command("/usr/sbin/postconf")
