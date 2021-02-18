@@ -9,6 +9,7 @@ data sources that standard Insights `Parsers` resolve against.
 """
 
 import logging
+import os
 import re
 import json
 
@@ -304,13 +305,22 @@ class DefaultSpecs(Specs):
         Returns:
             list: A list of related corosync-cmapctl commands based the RHEL version.
         """
-        if broker.get(IsRhel7):
-            return ["/usr/sbin/corosync-cmapctl", 'corosync-cmapctl -d runtime.schedmiss.timestamp', 'corosync-cmapctl -d runtime.schedmiss.delay']
-        if broker.get(IsRhel8):
-            return ["/usr/sbin/corosync-cmapctl", '/usr/sbin/corosync-cmapctl -m stats', '/usr/sbin/corosync-cmapctl -C schedmiss']
-        raise SkipComponent()
-    corosync_cmapctl = foreach_execute(corosync_cmapctl_cmd_list, "%s")
+        corosync_cmd = '/usr/sbin/corosync-cmapctl'
+        if os.path.exists(corosync_cmd):
+            if broker.get(IsRhel7):
+                return [
+                    corosync_cmd,
+                    ' '.join([corosync_cmd, '-d runtime.schedmiss.timestamp']),
+                    ' '.join([corosync_cmd, '-d runtime.schedmiss.delay'])]
+            if broker.get(IsRhel8):
+                return [
+                    corosync_cmd,
+                    ' '.join([corosync_cmd, '-m stats']),
+                    ' '.join([corosync_cmd, '-C schedmiss'])]
 
+        raise SkipComponent()
+
+    corosync_cmapctl = foreach_execute(corosync_cmapctl_cmd_list, "%s")
     corosync_conf = simple_file("/etc/corosync/corosync.conf")
     cpu_cores = glob_file("sys/devices/system/cpu/cpu[0-9]*/online")
     cpu_siblings = glob_file("sys/devices/system/cpu/cpu[0-9]*/topology/thread_siblings_list")
