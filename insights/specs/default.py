@@ -12,7 +12,6 @@ import logging
 import os
 import re
 import json
-import os
 
 from grp import getgrgid
 from os import stat, listdir as os_listdir
