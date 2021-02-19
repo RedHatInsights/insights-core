@@ -37,6 +37,7 @@ from insights.parsers.lsmod import LsMod
 from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersion
 from insights.parsers.mount import Mount
 from insights.specs import Specs
+import datetime
 
 
 logger = logging.getLogger(__name__)
@@ -721,6 +722,37 @@ class DefaultSpecs(Specs):
     pcs_status = simple_command("/usr/sbin/pcs status")
     php_ini = first_file(["/etc/opt/rh/php73/php.ini", "/etc/opt/rh/php72/php.ini", "/etc/php.ini"])
     pluginconf_d = glob_file("/etc/yum/pluginconf.d/*.conf")
+
+    @datasource(Ps, HostContext)
+    def pmlog_summary_file(broker):
+        """
+        Determines the name for the pmlogger file and checks for its existance
+
+        Returns the name of the latest pmlogger summary file if a running ``pmlogger``
+        process is detected on the system.
+
+        Returns:
+            str: Full path to the latest pmlogger file
+
+        Raises:
+            SkipComponent: raises this exception when the command is not present or
+                the file is not present
+        """
+        ps = broker[Ps]
+        if ps.search(COMMAND__contains='pmlogger'):
+            pcp_log_date = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y%m%d")
+            file = "/var/log/pcp/pmlogger/ros/%s.index" % (pcp_log_date)
+            try:
+                if os.path.exists(file) and os.path.isfile(file):
+                    return file
+            except Exception as e:
+                SkipComponent("Failed to check for pmlogger file existance: {0}".format(str(e)))
+
+        raise SkipComponent
+
+    pmlog_summary = command_with_args(
+        "/usr/bin/pmlogsummary %s mem.util.used mem.physmem kernel.all.cpu.user kernel.all.cpu.sys kernel.all.cpu.nice kernel.all.cpu.steal kernel.all.cpu.idle disk.all.total mem.util.cached mem.util.bufmem mem.util.free",
+        pmlog_summary_file)
     postconf_builtin = simple_command("/usr/sbin/postconf -C builtin")
     postconf = simple_command("/usr/sbin/postconf")
     postgresql_conf = first_file([
