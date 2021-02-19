@@ -1,6 +1,6 @@
 import os
 import copy
-import pickle
+import yaml
 import base64
 import requests
 import gnupg
@@ -84,7 +84,8 @@ def excludeDynamicElements(snippet):
 
 
 def executeVerification(snippet, encodedSignature):
-    serializedSnippet = pickle.dumps(snippet)
+    serializedSnippet = bytes(yaml.dump(snippet).encode("UTF-8"))
+
     decodedSignature = base64.b64decode(encodedSignature)
 
     # load public key
