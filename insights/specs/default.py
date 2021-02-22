@@ -839,10 +839,6 @@ class DefaultSpecs(Specs):
         deps=[is_satellite_server]
     )
     satellite_mongodb_storage_engine = simple_command("/usr/bin/mongo pulp_database --eval 'db.serverStatus().storageEngine'")
-    satellite_non_yum_type_repos = simple_command(
-        "/usr/bin/mongo pulp_database --eval 'db.repo_importers.find({\"importer_type_id\": { $ne: \"yum_importer\"}}).count()'",
-        deps=[[is_satellite_server, is_satellite_capsule]]
-    )
     satellite_version_rb = simple_file("/usr/share/foreman/lib/satellite/version.rb")
     satellite_custom_hiera = simple_file("/etc/foreman-installer/custom-hiera.yaml")
     scsi = simple_file("/proc/scsi/scsi")
