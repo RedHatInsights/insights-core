@@ -533,12 +533,9 @@ class DefaultSpecs(Specs):
         ctx = broker[HostContext]
         llds = []
         for u in users:
-            ret, vvs = ctx.shell_out("/bin/su -l {0} -c export".format(u), keep_rc=True)
+            ret, vvs = ctx.shell_out("/bin/su -l {0} -c /bin/env".format(u), keep_rc=True)
             if ret == 0 and vvs:
-                for v in vvs:
-                    if "LD_LIBRARY_PATH=" in v:
-                        lld = v.split('=', 2)[-1].strip('"')
-                        llds.append(lld)
+                llds.extend(v.split('=', 1)[-1] for v in vvs if "LD_LIBRARY_PATH=" in v)
         if llds:
             return DatasourceProvider('\n'.join(llds), relative_path='insights_commands/echo_user_LD_LIBRARY_PATH')
         raise SkipComponent

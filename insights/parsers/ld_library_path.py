@@ -12,7 +12,7 @@ from insights.util import deprecated
 from insights.parsers import SkipException, ParseException
 from insights.specs import Specs
 
-LdLibraryPathU = namedtuple('LdLibraryPathU', ('path', 'raw'))
+LdLibraryPath = namedtuple('LdLibraryPath', ('path', 'raw'))
 """namedtuple: Type for storing the LD_LIBRARY_PATH of users"""
 
 
@@ -50,62 +50,7 @@ class UserLdLibraryPath(Parser, list):
             raw = line
             if line and line[0] == line[-1] and line[0] in ('\'', '"'):
                 line = line[1:-1]
-            llds.append(LdLibraryPathU(line.split(':'), raw))
-
-        if not llds:
-            raise SkipException("LD_LIBRARY_PATH not set.")
-
-        self.extend(llds)
-
-
-LdLibraryPath = namedtuple('LdLibraryPath', ('pid', 'path', 'raw'))
-"""
-.. warning::
-
-    This type is deprecated please use the :py:class:`LdLibraryPathU` instead.
-
-namedtuple: Type for storing the LdLibraryPath of PID
-"""
-
-
-class PidLdLibraryPath(Parser, list):
-    """
-    .. warning::
-
-        This Parser is deprecated please use the :py:class:`UserLdLibraryPath`
-        instead.
-
-    Base class for parsing the ``LD_LIBRARY_PATH`` variable of each regular
-    user of the system into a list.
-
-    Typical content looks like::
-
-        105901 /usr/sap/RH1/SYS/exe/run:/usr/sap/RH1/SYS/exe/uc/linuxx86_64:/sapdb/clients/RH1/lib
-        105902 /usr/sap/RH1/SYS/exe/uc/linuxx86_64:/usr/sap/RH1/SYS/exe/run
-
-    Raises:
-        SkipException: When the output is empty or nothing needs to parse.
-        ParseException: When the line cannot be parsed.
-
-    """
-    def __init__(self, *args, **kwargs):
-        deprecated(PidLdLibraryPath, "Please use the UserLdLibraryPath.")
-        super(PidLdLibraryPath, self).__init__(*args, **kwargs)
-
-    def parse_content(self, content):
-        if not content:
-            raise SkipException
-
-        llds = []
-        for line in content:
-            pid, _, raw = [s.strip() for s in line.partition(' ')]
-            paths = raw
-            if not pid.isdigit():
-                raise ParseException('Incorrect line: {0}'.format(line))
-            if raw and raw[0] == raw[-1] and raw[0] in ('\'', '"'):
-                paths = raw[1:-1]
-            paths = paths.split(':')
-            llds.append(LdLibraryPath(pid, paths, raw))
+            llds.append(LdLibraryPath(line.split(':'), raw))
 
         if not llds:
             raise SkipException("LD_LIBRARY_PATH not set.")
