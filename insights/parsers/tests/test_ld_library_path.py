@@ -1,6 +1,6 @@
 from insights.parsers.ld_library_path import UserLdLibraryPath
 from insights.tests import context_wrap
-from insights.parsers import ld_library_path, SkipException, ParseException
+from insights.parsers import ld_library_path, SkipException
 import doctest
 import pytest
 

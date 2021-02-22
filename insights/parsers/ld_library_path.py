@@ -8,8 +8,7 @@ Parser for parsing the environment variable LD_LIBRARY_PATH of each user
 
 from collections import namedtuple
 from insights import parser, Parser
-from insights.util import deprecated
-from insights.parsers import SkipException, ParseException
+from insights.parsers import SkipException
 from insights.specs import Specs
 
 LdLibraryPath = namedtuple('LdLibraryPath', ('path', 'raw'))
