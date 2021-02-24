@@ -242,6 +242,7 @@ class Specs(SpecSet):
     init_ora = RegistryPoint()
     initscript = RegistryPoint(multi_output=True)
     init_process_cgroup = RegistryPoint()
+    insights_client_conf = RegistryPoint(filterable=True)
     installed_rpms = RegistryPoint()
     interrupts = RegistryPoint()
     ip6tables_permanent = RegistryPoint()
