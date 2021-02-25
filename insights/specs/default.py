@@ -486,6 +486,7 @@ class DefaultSpecs(Specs):
     imagemagick_policy = glob_file(["/etc/ImageMagick/policy.xml", "/usr/lib*/ImageMagick-6.5.4/config/policy.xml"])
     initctl_lst = simple_command("/sbin/initctl --system list")
     init_process_cgroup = simple_file("/proc/1/cgroup")
+    insights_client_conf = simple_file('/etc/insights-client/insights-client.conf')
     interrupts = simple_file("/proc/interrupts")
     ip_addr = simple_command("/sbin/ip addr")
     ip_addresses = simple_command("/bin/hostname -I")
