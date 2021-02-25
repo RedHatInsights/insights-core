@@ -87,11 +87,11 @@ def serialize(obj, root=None):
 
 
 def deserialize(data, root=None):
-    try:
-        (_type, from_dict) = DESERIALIZERS.get(data["type"])
-        return from_dict(_type, data["object"], root=root)
-    except Exception:
+    type_data = DESERIALIZERS.get(data["type"])
+    if type_data is None:
         raise Exception("Unrecognized type: %s" % data["type"])
+    (_type, from_dict) = type_data
+    return from_dict(_type, data["object"], root=root)
 
 
 def marshal(v, root=None, pool=None):
@@ -146,6 +146,8 @@ class Hydration(object):
         Loads a Broker from a previously saved one. A Broker is created if one
         isn't provided.
         """
+        from insights.core.spec_factory import ContentException
+
         broker = broker or dr.Broker()
         for path in glob(os.path.join(self.meta_data, "*")):
             try:
@@ -156,6 +158,8 @@ class Hydration(object):
                     if results:
                         broker[comp] = results
                         broker.exec_times[comp] = exec_time + ser_time
+            except ContentException as ex:
+                log.debug(ex)
             except Exception as ex:
                 log.warning(ex)
         return broker
