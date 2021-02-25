@@ -1649,6 +1649,11 @@
             "symbolic_name": "init_process_cgroup"
         },
         {
+            "file": "/etc/insights-client/insights-client.conf",
+            "pattern": [],
+            "symbolic_name": "insights_client_conf"
+        },
+        {
             "file": "/etc/insights-client/machine-id",
             "pattern": [],
             "symbolic_name": "machine_id3"
@@ -4284,5 +4289,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2021-02-11T11:20:06.722974"
+    "version": "2021-02-18T12:21:36.722918"
 }
