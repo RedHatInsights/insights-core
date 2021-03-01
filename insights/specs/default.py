@@ -514,33 +514,6 @@ class DefaultSpecs(Specs):
     kubepods_cpu_quota = glob_file("/sys/fs/cgroup/cpu/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod[a-f0-9_]*.slice/cpu.cfs_quota_us")
     last_upload_globs = ["/etc/redhat-access-insights/.lastupload", "/etc/insights-client/.lastupload"]
     lastupload = glob_file(last_upload_globs)
-
-    @datasource(HostContext)
-    def regular_users(broker):
-        """
-        Returns: The username of all regular users which could log in.
-                 But do NOT collect or store them.
-        """
-        ctx = broker[HostContext]
-        return ctx.shell_out("/bin/awk -F':' '!/nologin|false|sync|halt|shutdown/{print $1}' /etc/passwd")
-
-    @datasource(regular_users, HostContext)
-    def ld_library_path_of_user(broker):
-        """
-        Returns: The list of LD_LIBRARY_PATH of each regular user.
-                 Username is NOT collected or stored.
-        """
-        users = broker[DefaultSpecs.regular_users]
-        ctx = broker[HostContext]
-        llds = []
-        for u in users:
-            ret, vvs = ctx.shell_out("/bin/su -l {0} -c /bin/env".format(u), keep_rc=True)
-            if ret == 0 and vvs:
-                llds.extend(v.split('=', 1)[-1] for v in vvs if "LD_LIBRARY_PATH=" in v)
-        if llds:
-            return DatasourceProvider('\n'.join(llds), relative_path='insights_commands/echo_user_LD_LIBRARY_PATH')
-        raise SkipComponent
-
     libssh_client_config = simple_file("/etc/libssh/libssh_client.config")
     libssh_server_config = simple_file("/etc/libssh/libssh_server.config")
     libvirtd_log = simple_file("/var/log/libvirt/libvirtd.log")
@@ -823,6 +796,27 @@ class DefaultSpecs(Specs):
         """
         sap = broker[Sap]
         return list(set(sap.sid(i).lower() for i in sap.all_instances))
+
+    @datasource(sap_sid, HostContext)
+    def ld_library_path_of_user(broker):
+        """
+        Returns: The list of LD_LIBRARY_PATH of specified users.
+                 Username is combined from SAP <SID> and 'adm' and is also stored.
+        """
+        sids = broker[DefaultSpecs.sap_sid]
+        ctx = broker[HostContext]
+        llds = []
+        for sid in sids:
+            usr = '{0}adm'.format(sid)
+            ret, vvs = ctx.shell_out("/bin/su -l {0} -c /bin/env".format(usr), keep_rc=True)
+            if ret != 0:
+                continue
+            for v in vvs:
+                if "LD_LIBRARY_PATH=" in v:
+                    llds.append('{0} {1}'.format(usr, v.split('=', 1)[-1]))
+        if llds:
+            return DatasourceProvider('\n'.join(llds), relative_path='insights_commands/echo_user_LD_LIBRARY_PATH')
+        raise SkipComponent
 
     sap_hdb_version = foreach_execute(sap_sid, "/usr/bin/sudo -iu %sadm HDB version", keep_rc=True)
     saphostctl_getcimobject_sapinstance = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance")
