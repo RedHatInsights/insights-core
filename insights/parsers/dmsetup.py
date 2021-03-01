@@ -1,21 +1,22 @@
 """
 dmsetup commands - Command ``dmsetup``
-======================================
+--------------------------------------
 
 Parsers for parsing and extracting data from output of commands related to
 ``dmsetup``.
 Parsers contained in this module are:
 
 DmsetupInfo - command ``dmsetup info -C``
------------------------------------------
+=========================================
 
 DmsetupStatus - command ``dmsetup status``
-------------------------------------------
+==========================================
 
 """
 from collections import namedtuple
 from insights import parser, CommandParser
 from insights.parsers import parse_delimited_table
+from insights.parsers import ParseException
 from insights.specs import Specs
 
 
@@ -133,7 +134,7 @@ class DmsetupInfo(CommandParser):
 
 
 @parser(Specs.dmsetup_status)
-class DmsetupStatus(CommandParser):
+class DmsetupStatus(CommandParser, list):
     """
     ``dmsetup status -C`` command output
 
@@ -166,6 +167,7 @@ class DmsetupStatus(CommandParser):
         data (list): List of devices found, in order using SetupStatus structure
         names (list): Device names, in order found
         by_name (dict): Access to each device by devicename
+        unparseable_lines (list): Unparseable raw lines
 
     Example:
         >>> len(dmsetup_status)
@@ -178,28 +180,32 @@ class DmsetupStatus(CommandParser):
         '0'
         >>> len(dmsetup_status.by_name)
         12
-        >>> dmsetup_status.data[-1].parsed_args['used_metadata_blocks']
+        >>> dmsetup_status[-1].parsed_args['used_metadata_blocks']
         '697'
-        >>> dmsetup_status.data[-1].parsed_args['total_metadata_blocks']
+        >>> dmsetup_status[-1].parsed_args['total_metadata_blocks']
         '2048'
-        >>> dmsetup_status.data[-1].parsed_args['opts']
+        >>> dmsetup_status[-1].parsed_args['opts']
         ['rw', 'no_discard_passdown', 'queue_if_no_space', '-']
     """
 
     def parse_content(self, content):
-        self.data = []
+        self.unparseable_lines = []
         for line in content:
             _device_name, _device_info_str = line.rsplit(':', 1)
             device_name = _device_name.strip()
             device_info_spl = _device_info_str.strip().split(' ', 3)
             if len(device_info_spl) < 3:
+                self.unparseable_lines.append(line)
                 continue
             target_type = device_info_spl[2]
             target_args = device_info_spl[3] if len(device_info_spl) == 4 else None
             parsed_args = None
             if target_args:
-                parsed_args = self._parse_target_args(target_type, target_args)
-            self.data.append(SetupStatus(
+                try:
+                    parsed_args = self._parse_target_args(target_type, target_args)
+                except ParseException:
+                    self.unparseable_lines.append(line)
+            self.append(SetupStatus(
                 device_name=device_name,
                 start_sector=device_info_spl[0],
                 num_sectors=device_info_spl[1],
@@ -207,8 +213,14 @@ class DmsetupStatus(CommandParser):
                 target_args=target_args,
                 parsed_args=parsed_args,
             ))
-        self.names = [dm[0] for dm in self.data]
-        self.by_name = dict((dm[0], dm) for dm in self.data)
+
+    @property
+    def names(self):
+        return [dm[0] for dm in self]
+
+    @property
+    def by_name(self):
+        return dict((dm[0], dm) for dm in self)
 
     def _parse_target_args(self, target_type, target_args):
         pars_func_name = '_parse_target_args_' + target_type.replace('-', '_')
@@ -226,7 +238,7 @@ class DmsetupStatus(CommandParser):
         """
         args = target_args.split()
         if len(args) < 8 or '/' not in args[1] or '/' not in args[2]:
-            return
+            raise ParseException("Invalid thin_pool target_args: {0}".format(target_args))
         parsed_args = {}
         parsed_args['transaction_id'] = args[0]
         parsed_args['used_metadata_blocks'], parsed_args['total_metadata_blocks'] = args[1].split('/', 1)
@@ -244,7 +256,7 @@ class DmsetupStatus(CommandParser):
         """
         args = target_args.split()
         if len(args) < 2:
-            return
+            raise ParseException("Invalid thin target_args: {0}".format(target_args))
         parsed_args = {}
         parsed_args['nr_mapped_sectors'] = args[0]
         parsed_args['highest_mapped_sector'] = args[1]
@@ -258,27 +270,8 @@ class DmsetupStatus(CommandParser):
         """
         args = target_args.split()
         if len(args) < 2 or '/' not in args[0]:
-            return
+            raise ParseException("Invalid snapshot target_args: {0}".format(target_args))
         parsed_args = {}
         parsed_args['sectors_allocated'], parsed_args['total_sectors'] = args[0].split('/', 1)
         parsed_args['metadata_sectors'] = args[1]
         return parsed_args
-
-    def __len__(self):
-        """
-        The length of the devices list
-        """
-        return len(self.data)
-
-    def __iter__(self):
-        """
-        Iterate through the devices list
-        """
-        for dm in self.data:
-            yield dm
-
-    def __getitem__(self, idx):
-        """
-        Fetch a device by index in devices list
-        """
-        return self.data[idx]

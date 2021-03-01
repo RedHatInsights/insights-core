@@ -123,12 +123,12 @@ def test_dmsetup_status():
             'rootvg-varvol-cow', 'appsvg-lvapps_docker']
 
     assert len(r.by_name) == len([dev.device_name for dev in r])
-    assert r.data[0] == SetupStatus(
+    assert r[0] == SetupStatus(
             device_name='rootvg-tanlv', start_sector='0',
             num_sectors='6291456', target_type='linear',
             target_args=None, parsed_args=None,
     )
-    assert r.data[-1] == SetupStatus(
+    assert r[-1] == SetupStatus(
             device_name='appsvg-lvapps_docker', start_sector='0',
             num_sectors='104857600', target_type='thin-pool',
             target_args='441 697/2048 20663/102400 - rw no_discard_passdown queue_if_no_space -',
@@ -142,23 +142,28 @@ def test_dmsetup_status():
                 'opts': ['rw', 'no_discard_passdown', 'queue_if_no_space', '-'],
                 'metadata_low_watermark': None
             })
-    assert r.data[3] == SetupStatus(
+    assert r[3] == SetupStatus(
             device_name='docker-253:10-1234567-0df13579', start_sector='0',
             num_sectors='20971520', target_type='thin', target_args='1922048 20971519',
             parsed_args={'nr_mapped_sectors': '1922048', 'highest_mapped_sector': '20971519'}
     )
-    assert r.data[-3] == SetupStatus(
+    assert r[-3] == SetupStatus(
             device_name='rootvg-optvol', start_sector='0', num_sectors='8192000',
             target_type='snapshot', target_args='616408/5120000 2408',
             parsed_args={'sectors_allocated': '616408', 'total_sectors': '5120000', 'metadata_sectors': '2408'}
     )
-    assert r.data[-4] == SetupStatus(
+    assert r[-4] == SetupStatus(
             device_name='rootvg-varvol', start_sector='0', num_sectors='18874368',
             target_type='snapshot', target_args='Invalid', parsed_args=None
     )
+    assert r.unparseable_lines == ['rootvg-varvol: 0 18874368 snapshot Invalid']
 
     r = DmsetupStatus(context_wrap(DMSETUP_STATUS_2))
     assert len(r) == 5
+    assert r.unparseable_lines == [
+            'rootvg-tanlv: 0 6291456',
+            'rootvg-docker--pool: 0 129548288 thin-pool 1 20/49152 38/126512 - rw no_discard_passdown queue_if_no_space', 
+            'docker-253:10-1234567-0df13579: 0 20971520 thin 1922048']
 
 
 DMSETUP_EXAMPLES = """
