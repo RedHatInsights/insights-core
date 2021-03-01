@@ -162,7 +162,7 @@ def test_dmsetup_status():
     assert len(r) == 5
     assert r.unparseable_lines == [
             'rootvg-tanlv: 0 6291456',
-            'rootvg-docker--pool: 0 129548288 thin-pool 1 20/49152 38/126512 - rw no_discard_passdown queue_if_no_space', 
+            'rootvg-docker--pool: 0 129548288 thin-pool 1 20/49152 38/126512 - rw no_discard_passdown queue_if_no_space',
             'docker-253:10-1234567-0df13579: 0 20971520 thin 1922048']
 
 
