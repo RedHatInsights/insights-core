@@ -14,7 +14,7 @@ import re
 import json
 
 from grp import getgrgid
-from os import stat, listdir as os_listdir
+from os import stat
 from pwd import getpwuid
 
 import yaml
@@ -515,17 +515,30 @@ class DefaultSpecs(Specs):
     last_upload_globs = ["/etc/redhat-access-insights/.lastupload", "/etc/insights-client/.lastupload"]
     lastupload = glob_file(last_upload_globs)
 
-    @datasource()
-    def ld_library_path_of_pid(broker):
-        pids = [p for p in sorted(os_listdir('/proc/')) if p.isdigit()]
+    @datasource(HostContext)
+    def regular_users(broker):
+        """
+        Returns: The username of all regular users which could log in.
+                 But do NOT collect or store them.
+        """
+        ctx = broker[HostContext]
+        return ctx.shell_out("/bin/awk -F':' '!/nologin|false|sync|halt|shutdown/{print $1}' /etc/passwd")
+
+    @datasource(regular_users, HostContext)
+    def ld_library_path_of_user(broker):
+        """
+        Returns: The list of LD_LIBRARY_PATH of each regular user.
+                 Username is NOT collected or stored.
+        """
+        users = broker[DefaultSpecs.regular_users]
+        ctx = broker[HostContext]
         llds = []
-        for p in pids:
-            with open('/proc/{0}/environ'.format(p), 'r') as fp:
-                vars = fp.read()
-                lld = [v.split('=', 1)[-1] for v in vars.split('\x00') if v.startswith('LD_LIBRARY_PATH=')]
-                llds.append("{0} {1}".format(p, lld[0])) if lld else None
+        for u in users:
+            ret, vvs = ctx.shell_out("/bin/su -l {0} -c /bin/env".format(u), keep_rc=True)
+            if ret == 0 and vvs:
+                llds.extend(v.split('=', 1)[-1] for v in vvs if "LD_LIBRARY_PATH=" in v)
         if llds:
-            return DatasourceProvider('\n'.join(llds), relative_path='insights_commands/cat_all_PID_LD_LIBRARY_PATH')
+            return DatasourceProvider('\n'.join(llds), relative_path='insights_commands/echo_user_LD_LIBRARY_PATH')
         raise SkipComponent
 
     libssh_client_config = simple_file("/etc/libssh/libssh_client.config")
