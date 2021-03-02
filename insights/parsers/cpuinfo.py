@@ -65,6 +65,8 @@ Examples:
     '0'
     >>> cpu_info.get_processor_by_index(0)['vendors']
     'GenuineIntel'
+    >>> cpu_info.microcode
+    '1808'
 """
 
 from collections import defaultdict
@@ -141,6 +143,7 @@ class CpuInfo(LegacyItemAccess, Parser):
             "revision": "revision",
             "address sizes": "address_sizes",
             "bugs": "bugs",
+            "microcode": "microcode"
         }
 
         for line in get_active_lines(content, comment_char="COMMAND>"):
@@ -231,6 +234,14 @@ class CpuInfo(LegacyItemAccess, Parser):
         str: Returns the vendor of the first CPU.
         """
         return self.data["vendors"][0]
+
+    @property
+    @defaults()
+    def microcode(self):
+        """
+        str: Returns the microcode of the first CPU.
+        """
+        return self.data["microcode"][0]
 
     @property
     @defaults()
