@@ -1430,6 +1430,7 @@ def test_cpuinfo():
     assert cpu_info.cpu_speed == "2900.000"
     assert cpu_info.cache_size == "20480 KB"
     assert cpu_info.model_number == "45"
+    assert cpu_info.microcode == "1808"
     assert "mmx" in cpu_info.flags
     assert "avx512f" not in cpu_info.flags
     for i, cpu in enumerate(cpu_info):
