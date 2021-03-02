@@ -155,7 +155,7 @@ class DmsetupStatus(CommandParser, list):
 
     Example data structure produced::
 
-        data = [
+        [
             SetupStatus(
                 device_name='rootvg-tanlv', start_sector='0',
                 num_sectors='6291456', target_type='linear',
@@ -164,7 +164,6 @@ class DmsetupStatus(CommandParser, list):
         ]
 
     Attributes:
-        data (list): List of devices found, in order using SetupStatus structure
         names (list): Device names, in order found
         by_name (dict): Access to each device by devicename
         unparseable_lines (list): Unparseable raw lines
