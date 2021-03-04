@@ -35,6 +35,14 @@ CUSTOM_HIERA_CONFIG_2 = """
 
 """
 
+CUSTOM_HIERA_INVALID_YAML = """
+---
+This is invalid YAML
+
+# Foreman Proxy
+foreman_proxy::tls_disabled_versions: ['1.1']
+"""
+
 
 def test_custom_hiera():
     result = satellite_installer_configurations.CustomHiera(context_wrap(CUSTOM_HIERA_CONFIG))
@@ -44,6 +52,11 @@ def test_custom_hiera():
 
     result = satellite_installer_configurations.CustomHiera(context_wrap(CUSTOM_HIERA_CONFIG_2))
     assert result.data is None
+    assert result.is_invalid_yaml is False
+
+    result = satellite_installer_configurations.CustomHiera(context_wrap(CUSTOM_HIERA_INVALID_YAML))
+    assert hasattr(result, 'data') is False
+    assert result.is_invalid_yaml is True
 
 
 def test_doc():
