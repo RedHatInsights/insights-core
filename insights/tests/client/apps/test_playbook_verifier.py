@@ -1,7 +1,6 @@
 # -*- coding: UTF-8 -*-
 import sys
 import pytest
-import requests
 
 from insights.client.apps.ansible.playbook_verifier import verify, PlaybookVerificationError
 from mock.mock import patch
