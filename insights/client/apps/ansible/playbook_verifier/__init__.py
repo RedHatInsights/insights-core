@@ -5,9 +5,10 @@ import base64
 import requests
 import tempfile
 import pkgutil
-from logging import getLogger
-from insights.client.utilities import get_version_info
 import insights.client.apps.ansible
+from logging import getLogger
+from distutils.version import LooseVersion
+from insights.client.utilities import get_version_info
 from insights.client.apps.ansible.playbook_verifier.contrib import gnupg
 from insights.client.constants import InsightsConstants as constants
 
@@ -44,7 +45,7 @@ def eggVersioningCheck(checkVersion):
     runningVersion = get_version_info()['core_version']
 
     if checkVersion:
-        if currentVersion.strip() != runningVersion:
+        if LooseVersion(currentVersion.strip()) < LooseVersion(runningVersion):
             raise PlaybookVerificationError(message="EGG VERSION ERROR: Current running egg is not the most recent version")
 
     return currentVersion
