@@ -86,7 +86,7 @@ def excludeDynamicElements(snippet):
 
 def executeVerification(snippet, encodedSignature):
     gpg = gnupg.GPG(gnupghome=constants.insights_core_lib_dir)
-    serializedSnippet = bytes(yaml.dump(snippet).encode("UTF-8"))
+    serializedSnippet = bytes(yaml.dump(snippet, default_flow_style=False).encode("UTF-8"))
 
     decodedSignature = base64.b64decode(encodedSignature)
 
