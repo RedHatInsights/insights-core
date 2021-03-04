@@ -11,7 +11,7 @@ from insights import parser, Parser
 from insights.parsers import SkipException
 from insights.specs import Specs
 
-LdLibraryPath = namedtuple('LdLibraryPath', ('path', 'raw'))
+LdLibraryPath = namedtuple('LdLibraryPath', ('user', 'path', 'raw'))
 """namedtuple: Type for storing the LD_LIBRARY_PATH of users"""
 
 
@@ -21,11 +21,16 @@ class UserLdLibraryPath(Parser, list):
     Base class for parsing the ``LD_LIBRARY_PATH`` variable of each regular
     user of the system into a list.
 
+    .. note::
+
+        Currently, only the LD_LIBRARY_PATH SAP users is collected, where the
+        username is merged by SID and "adm".
+
     Typical content looks like::
 
-        /usr/sap/RH1/SYS/exe/run:/usr/sap/RH1/SYS/exe/uc/linuxx86_64:/sapdb/clients/RH1/lib
-
-        /usr/sap/RH1/SYS/exe/uc/linuxx86_64:/usr/sap/RH1/SYS/exe/run
+        sr1adm /usr/sap/RH1/SYS/exe/run:/usr/sap/RH1/SYS/exe/uc/linuxx86_64:/sapdb/clients/RH1/lib
+        sr2adm
+        rh1adm /usr/sap/RH1/SYS/exe/uc/linuxx86_64:/usr/sap/RH1/SYS/exe/run
 
     Examples:
         >>> len(ld_lib_path)
@@ -36,6 +41,8 @@ class UserLdLibraryPath(Parser, list):
         3
         >>> '/sapdb/clients/RH1/lib' in ld_lib_path[0].path
         True
+        >>> ld_lib_path[1].user  # The empty value is kept.
+        'sr2adm'
         >>> '' in ld_lib_path[1].path  # The empty value is kept.
         True
 
@@ -46,10 +53,11 @@ class UserLdLibraryPath(Parser, list):
     def parse_content(self, content):
         llds = []
         for line in content:
-            raw = line
-            if line and line[0] == line[-1] and line[0] in ('\'', '"'):
-                line = line[1:-1]
-            llds.append(LdLibraryPath(line.split(':'), raw))
+            user, _, raw = [s.strip() for s in line.partition(' ')]
+            paths = raw
+            if raw and raw[0] == raw[-1] and raw[0] in ('\'', '"'):
+                paths = raw[1:-1]
+            llds.append(LdLibraryPath(user, paths.split(':'), raw))
 
         if not llds:
             raise SkipException("LD_LIBRARY_PATH not set.")
