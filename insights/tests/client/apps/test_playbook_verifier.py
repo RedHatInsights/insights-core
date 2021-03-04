@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 import sys
 import pytest
+import requests
 
 from insights.client.apps.ansible.playbook_verifier import verify, PlaybookVerificationError
 from mock.mock import patch
@@ -14,7 +15,9 @@ def test_skip_validation():
 
 
 @pytest.mark.skipif(sys.version_info < (2, 7), reason='Playbook verifier must be run on python 2.7 or above')
-def test_egg_validation_error():
+@patch('requests.get')
+def test_egg_validation_error(mock_get):
+    mock_get.return_value.text = '3.0.0'
     egg_error = 'EGG VERSION ERROR: Current running egg is not the most recent version'
     fake_playbook = [{'name': "test playbook"}]
 

@@ -41,6 +41,7 @@ class PlaybookVerificationError(Exception):
 
 def eggVersioningCheck(checkVersion):
     currentVersion = requests.get(VERSIONING_URL)
+    print('currentVersion: ', currentVersion)
     currentVersion = currentVersion.text
     runningVersion = get_version_info()['core_version']
 
