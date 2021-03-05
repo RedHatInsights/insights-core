@@ -14,7 +14,7 @@ import re
 import json
 
 from grp import getgrgid
-from os import stat, listdir as os_listdir
+from os import stat
 from pwd import getpwuid
 
 import yaml
@@ -352,6 +352,7 @@ class DefaultSpecs(Specs):
     dmesg_log = simple_file("/var/log/dmesg")
     dmidecode = simple_command("/usr/sbin/dmidecode")
     dmsetup_info = simple_command("/usr/sbin/dmsetup info -C")
+    dmsetup_status = simple_command("/usr/sbin/dmsetup status")
     dnf_conf = simple_file("/etc/dnf/dnf.conf")
     dnf_modules = glob_file("/etc/dnf/modules.d/*.module")
     docker_info = simple_command("/usr/bin/docker info")
@@ -486,6 +487,7 @@ class DefaultSpecs(Specs):
     imagemagick_policy = glob_file(["/etc/ImageMagick/policy.xml", "/usr/lib*/ImageMagick-6.5.4/config/policy.xml"])
     initctl_lst = simple_command("/sbin/initctl --system list")
     init_process_cgroup = simple_file("/proc/1/cgroup")
+    insights_client_conf = simple_file('/etc/insights-client/insights-client.conf')
     interrupts = simple_file("/proc/interrupts")
     ip_addr = simple_command("/sbin/ip addr")
     ip_addresses = simple_command("/bin/hostname -I")
@@ -513,20 +515,6 @@ class DefaultSpecs(Specs):
     kubepods_cpu_quota = glob_file("/sys/fs/cgroup/cpu/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod[a-f0-9_]*.slice/cpu.cfs_quota_us")
     last_upload_globs = ["/etc/redhat-access-insights/.lastupload", "/etc/insights-client/.lastupload"]
     lastupload = glob_file(last_upload_globs)
-
-    @datasource()
-    def ld_library_path_of_pid(broker):
-        pids = [p for p in sorted(os_listdir('/proc/')) if p.isdigit()]
-        llds = []
-        for p in pids:
-            with open('/proc/{0}/environ'.format(p), 'r') as fp:
-                vars = fp.read()
-                lld = [v.split('=', 1)[-1] for v in vars.split('\x00') if v.startswith('LD_LIBRARY_PATH=')]
-                llds.append("{0} {1}".format(p, lld[0])) if lld else None
-        if llds:
-            return DatasourceProvider('\n'.join(llds), relative_path='insights_commands/cat_all_PID_LD_LIBRARY_PATH')
-        raise SkipComponent
-
     libssh_client_config = simple_file("/etc/libssh/libssh_client.config")
     libssh_server_config = simple_file("/etc/libssh/libssh_server.config")
     libvirtd_log = simple_file("/var/log/libvirt/libvirtd.log")
@@ -751,7 +739,7 @@ class DefaultSpecs(Specs):
         raise SkipComponent
 
     pmlog_summary = command_with_args(
-        "/usr/bin/pmlogsummary %s mem.util.used mem.physmem kernel.all.cpu.user kernel.all.cpu.sys kernel.all.cpu.nice kernel.all.cpu.steal kernel.all.cpu.idle disk.all.total mem.util.cached mem.util.bufmem mem.util.free",
+        "/usr/bin/pmlogsummary %s mem.util.used mem.physmem kernel.all.cpu.user kernel.all.cpu.sys kernel.all.cpu.nice kernel.all.cpu.steal kernel.all.cpu.idle disk.all.total mem.util.cached mem.util.bufmem mem.util.free kernel.all.cpu.wait.total",
         pmlog_summary_file)
     postconf_builtin = simple_command("/usr/sbin/postconf -C builtin")
     postconf = simple_command("/usr/sbin/postconf")
@@ -809,6 +797,27 @@ class DefaultSpecs(Specs):
         """
         sap = broker[Sap]
         return list(set(sap.sid(i).lower() for i in sap.all_instances))
+
+    @datasource(sap_sid, HostContext)
+    def ld_library_path_of_user(broker):
+        """
+        Returns: The list of LD_LIBRARY_PATH of specified users.
+                 Username is combined from SAP <SID> and 'adm' and is also stored.
+        """
+        sids = broker[DefaultSpecs.sap_sid]
+        ctx = broker[HostContext]
+        llds = []
+        for sid in sids:
+            usr = '{0}adm'.format(sid)
+            ret, vvs = ctx.shell_out("/bin/su -l {0} -c /bin/env".format(usr), keep_rc=True)
+            if ret != 0:
+                continue
+            for v in vvs:
+                if "LD_LIBRARY_PATH=" in v:
+                    llds.append('{0} {1}'.format(usr, v.split('=', 1)[-1]))
+        if llds:
+            return DatasourceProvider('\n'.join(llds), relative_path='insights_commands/echo_user_LD_LIBRARY_PATH')
+        raise SkipComponent
 
     sap_hdb_version = foreach_execute(sap_sid, "/usr/bin/sudo -iu %sadm HDB version", keep_rc=True)
     saphostctl_getcimobject_sapinstance = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance")

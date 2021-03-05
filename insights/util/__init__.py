@@ -61,11 +61,13 @@ def which(cmd, env=None):
             return cmd
         return None
 
-    paths = env.get("PATH").split(os.pathsep)
-    for path in paths:
-        c = os.path.join(path, cmd)
-        if os.access(c, os.X_OK) and os.path.isfile(c):
-            return c
+    envpath = env.get("PATH")
+    if envpath:
+        paths = envpath.split(os.pathsep)
+        for path in paths:
+            c = os.path.join(path, cmd)
+            if os.access(c, os.X_OK) and os.path.isfile(c):
+                return c
     return None
 
 
