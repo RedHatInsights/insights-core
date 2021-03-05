@@ -377,24 +377,22 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
     file_handler.setFormatter(logging.Formatter(LOG_FORMAT))
     info_filter = IgnoreInfoFilter()
     file_handler.addFilter(info_filter)
-    # dr.run module logging
-    dr_logger = logging.getLogger(dr.run_all.__module__)
-    dr_logger_level = dr_logger.getEffectiveLevel()
-    dr_logger.setLevel(logging.DEBUG)
-    dr_logger.addHandler(file_handler)
-    dr_logger.propagate = False
-    # plugins module logging
-    plugins_logger = logging.getLogger(core_plugins.__name__)
-    plugins_logger_level = plugins_logger.getEffectiveLevel()
-    plugins_logger.setLevel(logging.DEBUG)
-    plugins_logger.addHandler(file_handler)
-    plugins_logger.propagate = False
-    # spec_factory module logging
-    sf_logger = logging.getLogger(spec_factory.__name__)
-    sf_logger_level = sf_logger.getEffectiveLevel()
-    sf_logger.setLevel(logging.DEBUG)
-    sf_logger.addHandler(file_handler)
-    sf_logger.propagate = False
+    mod_loggers = {
+        dr.__name__: None,
+        core_plugins.__name__: None,
+        spec_factory.__name__: None
+    }
+    mod_logger_levels = {
+        dr.__name__: None,
+        core_plugins.__name__: None,
+        spec_factory.__name__: None
+    }
+    for mod in mod_loggers.keys():
+        mod_loggers[mod] = logging.getLogger(mod)
+        mod_logger_levels[mod] = mod_loggers[mod].getEffectiveLevel()
+        mod_loggers[mod].setLevel(logging.DEBUG)
+        mod_loggers[mod].addHandler(file_handler)
+        mod_loggers[mod].propagate = False
 
     broker = dr.Broker()
     ctx = create_context(client.get("context", {}))
@@ -408,12 +406,9 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
         dr.run_all(broker=broker, pool=pool)
 
     # Restore logging state and close log  before completing
-    dr_logger.removeHandler(file_handler)
-    dr_logger.setLevel(dr_logger_level)
-    plugins_logger.removeHandler(file_handler)
-    plugins_logger.setLevel(plugins_logger_level)
-    sf_logger.removeHandler(file_handler)
-    sf_logger.setLevel(sf_logger_level)
+    for mod in mod_loggers.keys():
+        mod_loggers[mod].removeHandler(file_handler)
+        mod_loggers[mod].setLevel(mod_logger_levels[mod])
     file_handler.close()
 
     if compress:
