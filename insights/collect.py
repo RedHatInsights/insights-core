@@ -18,7 +18,7 @@ import yaml
 from datetime import datetime
 
 from insights import apply_configs, apply_default_enabled, dr
-from insights.core import blacklist, filters
+from insights.core import blacklist, filters, plugins as core_plugins, spec_factory
 from insights.core.serde import Hydration
 from insights.util import fs
 from insights.util.subproc import call, CalledProcessError
@@ -288,6 +288,17 @@ def get_pool(parallel, kwargs):
         yield None
 
 
+class IgnoreInfoFilter(logging.Filter):
+    """
+    Logging filter to remove all INFO messages from log. All other
+    messages will be kept
+    """
+    def filter(self, record):
+        if (record.levelno != logging.INFO):
+            return True
+        return False
+
+
 def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=None, client_timeout=None):
     """
     This is the collection entry point. It accepts a manifest, a temporary
@@ -359,17 +370,31 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
     fs.ensure_path(output_path)
     fs.touch(os.path.join(output_path, "insights_archive.txt"))
 
-    # Capture all logging for dr.run_all in a separate archive log
+    # Capture all logging for core modules in a separate file in the archive
     LOG_FORMAT = ("%(asctime)s %(levelname)8s %(name)s %(message)s")
-    log_path = os.path.join(output_path, 'meta_data')
-    fs.ensure_path(log_path)
-    log_file = os.path.join(log_path, 'collection.log')
+    log_file = os.path.join(output_path, 'collection.log')
     file_handler = logging.FileHandler(log_file)
     file_handler.setFormatter(logging.Formatter(LOG_FORMAT))
+    info_filter = IgnoreInfoFilter()
+    file_handler.addFilter(info_filter)
+    # dr.run module logging
     dr_logger = logging.getLogger(dr.run_all.__module__)
+    dr_logger_level = dr_logger.getEffectiveLevel()
     dr_logger.setLevel(logging.DEBUG)
     dr_logger.addHandler(file_handler)
     dr_logger.propagate = False
+    # plugins module logging
+    plugins_logger = logging.getLogger(core_plugins.__name__)
+    plugins_logger_level = plugins_logger.getEffectiveLevel()
+    plugins_logger.setLevel(logging.DEBUG)
+    plugins_logger.addHandler(file_handler)
+    plugins_logger.propagate = False
+    # spec_factory module logging
+    sf_logger = logging.getLogger(spec_factory.__name__)
+    sf_logger_level = sf_logger.getEffectiveLevel()
+    sf_logger.setLevel(logging.DEBUG)
+    sf_logger.addHandler(file_handler)
+    sf_logger.propagate = False
 
     broker = dr.Broker()
     ctx = create_context(client.get("context", {}))
@@ -381,6 +406,15 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
         h = Hydration(output_path, pool=pool)
         broker.add_observer(h.make_persister(to_persist))
         dr.run_all(broker=broker, pool=pool)
+
+    # Restore logging state and close log  before completing
+    dr_logger.removeHandler(file_handler)
+    dr_logger.setLevel(dr_logger_level)
+    plugins_logger.removeHandler(file_handler)
+    plugins_logger.setLevel(plugins_logger_level)
+    sf_logger.removeHandler(file_handler)
+    sf_logger.setLevel(sf_logger_level)
+    file_handler.close()
 
     if compress:
         return create_archive(output_path)
