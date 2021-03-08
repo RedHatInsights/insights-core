@@ -18,7 +18,7 @@ import yaml
 from datetime import datetime
 
 from insights import apply_configs, apply_default_enabled, dr
-from insights.core import blacklist, filters, plugins as core_plugins, spec_factory
+from insights.core import blacklist, filters
 from insights.core.serde import Hydration
 from insights.util import fs
 from insights.util.subproc import call, CalledProcessError
