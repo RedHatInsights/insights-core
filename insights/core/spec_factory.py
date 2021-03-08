@@ -326,7 +326,7 @@ class CommandOutputProvider(ContentProvider):
             raise dr.SkipComponent()
 
         if not which(shlex.split(self.cmd)[0], env=self.create_env()):
-            raise ContentException("Couldn't execute: %s" % self.cmd)
+            raise ContentException("Command not present/executable: %s" % self.cmd)
 
     def create_args(self):
         command = [shlex.split(self.cmd)]
