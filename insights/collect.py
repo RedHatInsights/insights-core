@@ -377,22 +377,11 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
     file_handler.setFormatter(logging.Formatter(LOG_FORMAT))
     info_filter = IgnoreInfoFilter()
     file_handler.addFilter(info_filter)
-    mod_loggers = {
-        dr.__name__: None,
-        core_plugins.__name__: None,
-        spec_factory.__name__: None
-    }
-    mod_logger_levels = {
-        dr.__name__: None,
-        core_plugins.__name__: None,
-        spec_factory.__name__: None
-    }
-    for mod in mod_loggers.keys():
-        mod_loggers[mod] = logging.getLogger(mod)
-        mod_logger_levels[mod] = mod_loggers[mod].getEffectiveLevel()
-        mod_loggers[mod].setLevel(logging.DEBUG)
-        mod_loggers[mod].addHandler(file_handler)
-        mod_loggers[mod].propagate = False
+    dr_logger = logging.getLogger(dr.__name__)
+    dr_logger_level = dr_logger.getEffectiveLevel()
+    dr_logger.setLevel(logging.DEBUG)
+    dr_logger.addHandler(file_handler)
+    dr_logger.propagate = False
 
     broker = dr.Broker()
     ctx = create_context(client.get("context", {}))
@@ -406,9 +395,9 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
         dr.run_all(broker=broker, pool=pool)
 
     # Restore logging state and close log  before completing
-    for mod in mod_loggers.keys():
-        mod_loggers[mod].removeHandler(file_handler)
-        mod_loggers[mod].setLevel(mod_logger_levels[mod])
+    dr_logger.removeHandler(file_handler)
+    dr_logger.setLevel(dr_logger_level)
+    dr_logger.propagate = True
     file_handler.close()
 
     if compress:
