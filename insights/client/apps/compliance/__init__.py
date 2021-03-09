@@ -27,7 +27,9 @@ class ComplianceClient:
 
     def oscap_scan(self):
         self._assert_oscap_rpms_exist()
-        policies = self.get_policies()
+        initial_profiles = self.get_initial_profiles()
+        matching_os_profiles = self.get_profiles_matching_os()
+        policies = self.profile_union_by_ref_id(matching_os_profiles, initial_profiles)
         if not policies:
             logger.error("System is not associated with any profiles. Assign profiles using the Compliance web UI.\n")
             exit(constants.sig_kill_bad)
@@ -42,7 +44,8 @@ class ComplianceClient:
         return self.archive.create_tar_file(), COMPLIANCE_CONTENT_TYPE
 
     def download_tailoring_file(self, policy):
-        if 'tailored' not in policy['attributes'] or policy['attributes']['tailored'] is False:
+        if ('tailored' not in policy['attributes'] or policy['attributes']['tailored'] is False or
+                ('os_minor_version' in policy['attributes'] and policy['attributes']['os_minor_version'] != self.os_minor_version())):
             return None
 
         # Download tailoring file to pass as argument to run_scan
@@ -66,11 +69,9 @@ class ComplianceClient:
 
         return tailoring_file_path
 
-    # TODO: Not a typo! This endpoint gives OSCAP policies, not profiles
-    # We need to update compliance-backend to fix this
-    def get_policies(self):
+    def get_profiles(self, search):
         response = self.conn.session.get("https://{0}/compliance/profiles".format(self.config.base_url),
-                                         params={'search': 'system_names={0} external=false canonical=false'.format(self.hostname)})
+                                         params={'search': search})
         logger.debug("Content of the response: {0} - {1}".format(response,
                                                                  response.json()))
         if response.status_code == 200:
@@ -78,12 +79,30 @@ class ComplianceClient:
         else:
             return []
 
+    def get_initial_profiles(self):
+        return self.get_profiles('system_names={0} canonical=false external=false'.format(self.hostname))
+
+    def get_profiles_matching_os(self):
+        return self.get_profiles('system_names={0} canonical=false os_minor_version={1}'.format(self.hostname, self.os_minor_version()))
+
+    def profile_union_by_ref_id(self, prioritized_profiles, merged_profiles):
+        profiles = dict((p['attributes']['ref_id'], p) for p in merged_profiles)
+        profiles.update(dict((p['attributes']['ref_id'], p) for p in prioritized_profiles))
+
+        return list(profiles.values())
+
     def os_release(self):
         _, version, _ = linux_distribution()
-        return findall("^[6-8]", version)[0]
+        return version
+
+    def os_major_version(self):
+        return findall("^[6-8]", self.os_release())[0]
+
+    def os_minor_version(self):
+        return findall("\d+$", self.os_release())[0]
 
     def profile_files(self):
-        return glob("{0}*rhel{1}*.xml".format(POLICY_FILE_LOCATION, self.os_release()))
+        return glob("{0}*rhel{1}*.xml".format(POLICY_FILE_LOCATION, self.os_major_version()))
 
     def find_scap_policy(self, profile_ref_id):
         grepcmd = 'grep ' + profile_ref_id + ' ' + ' '.join(self.profile_files())
