@@ -1,7 +1,7 @@
 from insights import dr, rule, make_fail, make_pass, make_fingerprint
 from insights.core.plugins import component, Response
 from insights.core.evaluators import InsightsEvaluator, SingleEvaluator
-from insights.combiners.hostname import hostname
+from insights.combiners.hostname import Hostname
 from insights.specs import Specs
 from insights.tests import context_wrap
 
@@ -66,7 +66,7 @@ def show_links():
 
 
 components = [
-    hostname,
+    Hostname,
     Specs.redhat_release,
     Specs.machine_id,
     one,
@@ -235,7 +235,7 @@ def test_insights_evaluator_make_unsure():
 
 def test_insights_evaluator_show_links():
     components = [
-        hostname,
+        Hostname,
         Specs.redhat_release,
         Specs.machine_id,
         show_links,

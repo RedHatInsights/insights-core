@@ -11,7 +11,7 @@ Prefer the ``SAPHostCtrlInstances`` to ``Lssap``.
 from collections import namedtuple
 from insights import SkipComponent
 from insights.core.plugins import combiner
-from insights.combiners.hostname import hostname
+from insights.combiners.hostname import Hostname
 from insights.parsers.lssap import Lssap
 from insights.parsers.saphostctrl import SAPHostCtrlInstances
 
@@ -38,7 +38,7 @@ JC     :    NetWeaver (Java App Server Instance)
 """
 
 
-@combiner(hostname, [SAPHostCtrlInstances, Lssap])
+@combiner(Hostname, [SAPHostCtrlInstances, Lssap])
 class Sap(dict):
     """
     Combiner for combining the result of :class:`insights.parsers.lssap.Lssap`
