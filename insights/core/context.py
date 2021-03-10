@@ -238,7 +238,6 @@ class HostContext(ExecutionContext):
             command.startswith('yum') or
                 command.startswith('/usr/bin/yum')):
             signum = signal.SIGTERM
-            log.debug('Using SIGTERM for command: {0}'.format(command))
 
         return subproc.call(cmd, timeout=timeout or self.timeout, signum=signum,
                 keep_rc=keep_rc, env=env)
