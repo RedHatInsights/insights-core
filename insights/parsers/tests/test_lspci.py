@@ -303,6 +303,8 @@ def test_lspci_vmmkn():
     assert lspci_vmmkn[2].get('SVendor') == '1af4'
     assert lspci_vmmkn[3].get('SDevice') == '0001'
     assert lspci_vmmkn[-1].get('Driver') == 'virtio-pci'
+    assert sorted(lspci_vmmkn[1].get('Module')) == sorted(['ata_piix', 'ata_generic'])
+    assert lspci_vmmkn[-1].get('Module') is None
 
 
 def test_lspci_vmmkn_ab():

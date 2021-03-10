@@ -168,6 +168,8 @@ class LsPciVmmkn(CommandParser, list):
         True
         >>> lspci_vmmkn[-1].get('Driver')
         'virtio-pci'
+        >>> len(lspci_vmmkn[1].get('Module'))
+        2
 
     Attributes:
 
@@ -188,7 +190,14 @@ class LsPciVmmkn(CommandParser, list):
                     self.append(dev)
                 continue
             key, val = [i.strip() for i in line.split(':', 1)]
-            dev[key] = val
+            # Module could have multiple values
+            if key == 'Module':
+                if key in dev:
+                    dev[key].append(val)
+                else:
+                    dev[key] = [val]
+            else:
+                dev[key] = val
 
         if len(self) <= 1 and not dev:
             raise SkipException()
