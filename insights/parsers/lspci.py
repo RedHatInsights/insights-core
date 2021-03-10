@@ -1,13 +1,20 @@
 """
-LsPci - Command ``lspci -k``
-============================
+LsPci - Commands ``lspci``
+==========================
 
-To parse the PCI device information gathered from the ``/sbin/lspci -k`` command.
+The parsers in this module are to parse the PCI device information gathered
+from the ``/sbin/lspci` commands.
+
+LsPci - Commands ``lspci -k``
+-----------------------------
+
+LsPciVmmkn - Commands ``lspci -vmmkn``
+--------------------------------------
 
 """
 import re
 
-from .. import LogFileOutput, parser, CommandParser, get_active_lines
+from insights import LogFileOutput, parser, CommandParser, get_active_lines
 from insights.specs import Specs
 
 
@@ -84,6 +91,107 @@ class LsPci(CommandParser, LogFileOutput):
             elif bus_device_function and (line.split(":")[0].strip() in fields):
                 parts = line.split(':')
                 self.data[bus_device_function][parts[0]] = parts[1].lstrip()
+
+    def pci_dev_details(self, dev_name):
+        """
+        It will return the PCI device and it's details.
+
+        Args:
+            PCI Bus Device function number eg: '00:01:0'
+
+        Returns:
+            (dict): Returns device details along with 'Subsystem', 'Kernel Driver in Use', 'Kernel Modules'.
+            Returns `None` if device doesn't exists
+        """
+        return self.data.get(dev_name, None)
+
+    @property
+    def pci_dev_list(self):
+        """
+        The list of PCI devices.
+        """
+        return self.data.keys()
+
+
+@parser(Specs.lspci_vmmkn)
+class LsPciVmmkn(CommandParser, list):
+    """
+    Class to parse the PCI device information gathered from the
+    ``/sbin/lspci -vmmkn`` command.
+
+    Typical output of the ``lspci -vmmkn`` command is::
+
+        Slot:   00:00.0
+        Class:  0600
+        Vendor: 8086
+        Device: 1237
+        SVendor:    1af4
+        SDevice:    1100
+        Rev:    02
+
+        Slot:   00:01.0
+        Class:  0101
+        Vendor: 8086
+        Device: 7010
+        SVendor:    1af4
+        SDevice:    1100
+        ProgIf: 80
+        Driver: ata_piix
+        Module: ata_piix
+        Module: ata_generic
+
+        Slot:   00:01.1
+        Class:  0c03
+        Vendor: 8086
+        Device: 7020
+        SVendor:    1af4
+        SDevice:    1100
+        Rev:    01
+        Driver: uhci_hcd
+
+        Slot:   00:03.0
+        Class:  0200
+        Vendor: 1af4
+        Device: 1000
+        SVendor:    1af4
+        SDevice:    0001
+        PhySlot:    3
+        Driver: virtio-pci
+
+    Examples:
+        >>> type(lspci_vmmkn)
+        <class 'insights.parsers.lspci.LsPciVmmkn'>
+        >>> lspci_vmmkn
+        '00:00.0 Host bridge: Intel Corporation 5500 I/O Hub to ESI Port (rev 13)'
+        >>> len(lspci.get("Network controller"))
+        1
+        >>> "Centrino Advanced-N 6205" in lspci
+        True
+        >>> "0d:00.0" in lspci
+        False
+        >>> sorted(lspci.pci_dev_list)
+        ['00:00.0', '00:01.0', '00:02.0', '03:00.0', '06:00.0']
+        >>> lspci.pci_dev_details('00:00.0')['Subsystem']
+        'Cisco Systems Inc Device 0101'
+        >>> lspci.pci_dev_details('00:00.0')['Dev_Details']
+        'Host bridge: Intel Corporation 5500 I/O Hub to ESI Port (rev 13)'
+
+    Attributes:
+
+    """
+    def parse_content(self, content):
+        dev = {}
+        self.append(dev)
+        for line in content:
+            line = line.strip()
+            if not line:
+                dev = {}
+                self.append(dev)
+            key, val = [i.strip() for i in line.split(':', 1)]
+            dev[key] = val
+
+        if len(self) == 0:
+            raise SkipException()
 
     def pci_dev_details(self, dev_name):
         """
