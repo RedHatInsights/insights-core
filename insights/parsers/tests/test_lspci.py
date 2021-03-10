@@ -244,6 +244,7 @@ SDevice:    1100
 Rev:    01
 Driver: uhci_hcd
 
+
 Slot:   00:03.0
 Class:  0200
 Vendor: 1af4
@@ -253,6 +254,7 @@ SDevice:    0001
 PhySlot:    3
 Driver: virtio-pci
 """.strip()
+
 
 def test_lspci():
     LsPci.token_scan('centrino', 'Centrino')
@@ -306,6 +308,9 @@ def test_lspci_vmmkn():
 def test_lspci_vmmkn_ab():
     with pytest.raises(SkipException):
         LsPciVmmkn(context_wrap(''))
+
+    with pytest.raises(SkipException):
+        LsPciVmmkn(context_wrap(' \n '.splitlines()))
 
 
 def test_doc_examples():

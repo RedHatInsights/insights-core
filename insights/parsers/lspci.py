@@ -173,13 +173,19 @@ class LsPciVmmkn(CommandParser, list):
 
     """
     def parse_content(self, content):
+        # Remove the white-trailing of the output
+        while content and not content[-1].strip():
+            content.pop(-1)
+
         dev = {}
         self.append(dev)
         for line in content:
             line = line.strip()
             if not line:
-                dev = {}
-                self.append(dev)
+                # Skip empty lines
+                if dev:
+                    dev = {}
+                    self.append(dev)
                 continue
             key, val = [i.strip() for i in line.split(':', 1)]
             dev[key] = val
