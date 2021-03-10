@@ -10,6 +10,7 @@ SatelliteAdminSettings - command ``psql -d foreman -c 'select name, value, "defa
 
 import os
 import yaml
+from collections import defaultdict
 
 from insights import parser, CommandParser
 from insights.specs import Specs
@@ -208,25 +209,38 @@ class SatelliteAdminSettings(SatellitePostgreSQLQuery):
         return ''
 
     def parse_content(self, content):
-        super(SatelliteAdminSettings, self).parse_content(content)
-        for row in self:
-            if 'value' in row:
-                row['value'] = self._parse_yaml(row['value'])
+        """
+        The "default" and "value" columns must be selected, or else the
+        settings value can't be determined.
+        The "default" and "value" column are in yaml format, it is
+        transferred to boolean.
+        To query efficiently, the rows are transferred to dict format.
 
-            if 'default' in row:
-                row['default'] = self._parse_yaml(row['default'])
+        Raises::
+
+            ParseException: when no value or default column found in the table
+        """
+        super(SatelliteAdminSettings, self).parse_content(content)
+        self.data = defaultdict(dict)
+        if 'value' not in self[0] or 'default' not in self[0]:
+            raise ParseException('No default, value columns in the table.')
+        for row in self:
+            for key, value in row.items():
+                if key in ['default', 'value']:
+                    self.data[row['name']][key] = self._parse_yaml(value)
+                elif key != 'name':
+                    self.data[row['name']][key] = value
 
     def get_setting(self, setting_name):
         """
         Get the actual value of setting_name.
-        It is only valid when there are default, value columns in the table.
+        If the value column isn't empty, the value of the setting_name is the
+        value column, or else it's the default column.
 
         Raises::
 
-            ParseException: when there are no default, value columns in the table
+            ParseException: when the setting_name not found.
         """
-        if all(item in self._columns for item in ['default', 'value']):
-            if self.get_column('value', name=setting_name) == '':
-                return self.get_column('default', name=setting_name)
-            return self.get_column('value', name=setting_name)
-        raise ParseException('No default, value columns in the table.')
+        if setting_name in self.data:
+            return self.data[setting_name]['default'] if self.data[setting_name]['value'] == '' else self.data[setting_name]['value']
+        raise ParseException("No %s found in the settings table" % setting_name)

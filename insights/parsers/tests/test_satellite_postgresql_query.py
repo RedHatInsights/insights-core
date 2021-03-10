@@ -145,6 +145,16 @@ SATELLITE_SETTINGS_4 = '''
 (2 rows)
 '''
 
+SATELLITE_SETTINGS_5 = '''
+           name            |  value   |  default  | settings_type
+---------------------------+----------+-----------+---------------
+ unregister_delete_host    | --- true+| --- false+| boolean
+                           | ...      | ...       | 
+ destroy_vm_on_host_delete |          | --- true +| boolean
+                           |          | ...       | 
+(2 rows)
+'''
+
 SATELLITE_SETTINGS_BAD_4 = '''
            name            | value |  default
 ---------------------------+-------+-----------
@@ -261,12 +271,14 @@ def test_no_value():
     assert(len(settings)) == 2
     assert not settings.get_setting('unregister_delete_host')
     assert settings.get_setting('destroy_vm_on_host_delete')
-
-    settings = satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_SETTINGS_4))
-    assert(len(settings)) == 2
-    assert settings.get_column('settings_type', name='unregister_delete_host') == 'boolean'
     with pytest.raises(ParseException):
-        settings.get_setting('unregister_delete_host')
+        settings.get_setting('non_existing_column')
+
+    with pytest.raises(ParseException):
+        settings = satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_SETTINGS_4))
+    settings = satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_SETTINGS_3))
+    settings = satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_SETTINGS_5))
+    assert settings.get_column('settings_type', name='unregister_delete_host') == 'boolean'
 
 
 def test_exception():
