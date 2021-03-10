@@ -5,16 +5,17 @@ LsPci - Commands ``lspci``
 The parsers in this module are to parse the PCI device information gathered
 from the ``/sbin/lspci` commands.
 
-LsPci - Commands ``lspci -k``
------------------------------
+LsPci - Command ``lspci -k``
+----------------------------
 
-LsPciVmmkn - Commands ``lspci -vmmkn``
---------------------------------------
+LsPciVmmkn - Command ``lspci -vmmkn``
+-------------------------------------
 
 """
 import re
 
 from insights import LogFileOutput, parser, CommandParser, get_active_lines
+from insights.parsers import SkipException
 from insights.specs import Specs
 
 
@@ -110,7 +111,7 @@ class LsPci(CommandParser, LogFileOutput):
         """
         The list of PCI devices.
         """
-        return self.data.keys()
+        return list(self.data.keys())
 
 
 @parser(Specs.lspci_vmmkn)
@@ -161,20 +162,12 @@ class LsPciVmmkn(CommandParser, list):
     Examples:
         >>> type(lspci_vmmkn)
         <class 'insights.parsers.lspci.LsPciVmmkn'>
-        >>> lspci_vmmkn
-        '00:00.0 Host bridge: Intel Corporation 5500 I/O Hub to ESI Port (rev 13)'
-        >>> len(lspci.get("Network controller"))
-        1
-        >>> "Centrino Advanced-N 6205" in lspci
+        >>> sorted(lspci_vmmkn.pci_dev_list)
+        ['00:00.0', '00:01.0', '00:01.1', '00:03.0']
+        >>> lspci_vmmkn[0].get('Driver') is None
         True
-        >>> "0d:00.0" in lspci
-        False
-        >>> sorted(lspci.pci_dev_list)
-        ['00:00.0', '00:01.0', '00:02.0', '03:00.0', '06:00.0']
-        >>> lspci.pci_dev_details('00:00.0')['Subsystem']
-        'Cisco Systems Inc Device 0101'
-        >>> lspci.pci_dev_details('00:00.0')['Dev_Details']
-        'Host bridge: Intel Corporation 5500 I/O Hub to ESI Port (rev 13)'
+        >>> lspci_vmmkn[-1].get('Driver')
+        'virtio-pci'
 
     Attributes:
 
@@ -187,28 +180,16 @@ class LsPciVmmkn(CommandParser, list):
             if not line:
                 dev = {}
                 self.append(dev)
+                continue
             key, val = [i.strip() for i in line.split(':', 1)]
             dev[key] = val
 
-        if len(self) == 0:
+        if len(self) <= 1 and not dev:
             raise SkipException()
-
-    def pci_dev_details(self, dev_name):
-        """
-        It will return the PCI device and it's details.
-
-        Args:
-            PCI Bus Device function number eg: '00:01:0'
-
-        Returns:
-            (dict): Returns device details along with 'Subsystem', 'Kernel Driver in Use', 'Kernel Modules'.
-            Returns `None` if device doesn't exists
-        """
-        return self.data.get(dev_name, None)
 
     @property
     def pci_dev_list(self):
         """
         The list of PCI devices.
         """
-        return self.data.keys()
+        return [i['Slot'] for i in self]
