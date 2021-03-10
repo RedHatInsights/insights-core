@@ -29,43 +29,43 @@ class ComplianceClient:
         self._assert_oscap_rpms_exist()
         initial_profiles = self.get_initial_profiles()
         matching_os_profiles = self.get_profiles_matching_os()
-        policies = self.profile_union_by_ref_id(matching_os_profiles, initial_profiles)
-        if not policies:
+        profiles = self.profile_union_by_ref_id(matching_os_profiles, initial_profiles)
+        if not profiles:
             logger.error("System is not associated with any profiles. Assign profiles using the Compliance web UI.\n")
             exit(constants.sig_kill_bad)
-        for policy in policies:
+        for profile in profiles:
             self.run_scan(
-                policy['attributes']['ref_id'],
-                self.find_scap_policy(policy['attributes']['ref_id']),
-                '/var/tmp/oscap_results-{0}.xml'.format(policy['attributes']['ref_id']),
-                tailoring_file_path=self.download_tailoring_file(policy)
+                profile['attributes']['ref_id'],
+                self.find_scap_policy(profile['attributes']['ref_id']),
+                '/var/tmp/oscap_results-{0}.xml'.format(profile['attributes']['ref_id']),
+                tailoring_file_path=self.download_tailoring_file(profile)
             )
 
         return self.archive.create_tar_file(), COMPLIANCE_CONTENT_TYPE
 
-    def download_tailoring_file(self, policy):
-        if ('tailored' not in policy['attributes'] or policy['attributes']['tailored'] is False or
-                ('os_minor_version' in policy['attributes'] and policy['attributes']['os_minor_version'] != self.os_minor_version())):
+    def download_tailoring_file(self, profile):
+        if ('tailored' not in profile['attributes'] or profile['attributes']['tailored'] is False or
+                ('os_minor_version' in profile['attributes'] and profile['attributes']['os_minor_version'] != self.os_minor_version())):
             return None
 
         # Download tailoring file to pass as argument to run_scan
         logger.debug(
-            "Policy {0} is a tailored policy. Starting tailoring file download...".format(policy['attributes']['ref_id'])
+            "Policy {0} is a tailored policy. Starting tailoring file download...".format(profile['attributes']['ref_id'])
         )
-        tailoring_file_path = "/var/tmp/oscap_tailoring_file-{0}.xml".format(policy['attributes']['ref_id'])
+        tailoring_file_path = "/var/tmp/oscap_tailoring_file-{0}.xml".format(profile['attributes']['ref_id'])
         response = self.conn.session.get(
-            "https://{0}/compliance/profiles/{1}/tailoring_file".format(self.config.base_url, policy['id'])
+            "https://{0}/compliance/profiles/{1}/tailoring_file".format(self.config.base_url, profile['id'])
         )
         logger.debug("Response code: {0}".format(response.status_code))
         if response.content is None:
-            logger.info("Problem downloading tailoring file for {0} to {1}".format(policy['attributes']['ref_id'], tailoring_file_path))
+            logger.info("Problem downloading tailoring file for {0} to {1}".format(profile['attributes']['ref_id'], tailoring_file_path))
             return None
 
         with open(tailoring_file_path, mode="w+b") as f:
             f.write(response.content)
-            logger.info("Saved tailoring file for {0} to {1}".format(policy['attributes']['ref_id'], tailoring_file_path))
+            logger.info("Saved tailoring file for {0} to {1}".format(profile['attributes']['ref_id'], tailoring_file_path))
 
-        logger.debug("Policy {0} tailoring file download finished".format(policy['attributes']['ref_id']))
+        logger.debug("Policy {0} tailoring file download finished".format(profile['attributes']['ref_id']))
 
         return tailoring_file_path
 
