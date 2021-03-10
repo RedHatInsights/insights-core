@@ -1,11 +1,11 @@
 from insights import combiner
-from insights.combiners.hostname import hostname
+from insights.combiners.hostname import Hostname
 from insights.core.context import create_product
 from insights.parsers.metadata import MetadataJson
 from insights.specs import Specs
 
 
-@combiner(MetadataJson, [hostname, Specs.machine_id])
+@combiner(MetadataJson, [Hostname, Specs.machine_id])
 def multinode_product(md, hn, machine_id):
     hn = hn.fqdn if hn else machine_id.content[0].rstrip()
     return create_product(md.data, hn)
