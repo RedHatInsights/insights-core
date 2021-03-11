@@ -852,7 +852,7 @@ class DefaultSpecs(Specs):
         deps=[[is_satellite_server, is_satellite_capsule]]
     )
     satellite_settings = simple_command(
-        "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c \"select name, value, \\\"default\\\" from settings where name in ('destroy_vm_on_host_delete', 'unregister_delete_host')\"",
+        "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c \"select name, value, \\\"default\\\" from settings where name in ('destroy_vm_on_host_delete', 'unregister_delete_host')\" --csv",
         deps=[is_satellite_server]
     )
     satellite_version_rb = simple_file("/usr/share/foreman/lib/satellite/version.rb")

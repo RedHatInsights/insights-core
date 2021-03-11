@@ -4,13 +4,13 @@ Satellite PostgreSQL database queries
 
 This module contains the following parsers:
 
-SatelliteAdminSettings - command ``psql -d foreman -c 'select name, value, "default" from settings where name in (\'destroy_vm_on_host_delete\', \'unregister_delete_host\')'``
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SatelliteAdminSettings - command ``psql -d foreman -c 'select name, value, "default" from settings where name in (\'destroy_vm_on_host_delete\', \'unregister_delete_host\') --csv'``
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 """
 
 import os
 import yaml
-from collections import defaultdict
+from csv import DictReader
 
 from insights import parser, CommandParser
 from insights.specs import Specs
@@ -21,16 +21,6 @@ from insights.parsers import keyword_search
 class SatellitePostgreSQLQuery(CommandParser, list):
     """
     Parent class of satellite postgresql table queries.
-    In some satellite postgresql table, the value of some column goes across
-    multiple lines. To distinguish different rows, the value of
-    first column shouldn't go across multiple lines.
-
-    For each row, if the value of the first column:
-
-    1. is not empty, then it is the starting of a new row.
-
-    2. is empty, then it is still the value of last row.
-
     It saves the rows data into a list. Each row is saved into a dict.
     The key is the column name, the value is the value of the column.
 
@@ -39,151 +29,101 @@ class SatellitePostgreSQLQuery(CommandParser, list):
         [
             {
                 'name': 'abc',
-                'url': [],
-                'value': ['--- false+', '...']
+                'url': '',
+                'value': 'test'
             },
             {
                 'name': 'def',
-                'url': ['http://xx.com'],
-                'value': ['--- true +', '...']
+                'url': 'http://xx.com',
+                'value': ''
             }
         ]
 
     Sample Output::
 
-                   name            |  url          |  value
-        ---------------------------+---------------+-------
-         abc                       |               | --- false+
-                                   |               | ...
-         def                       | http://xx.com | --- true +
-                                   |               | ...
-         (2 rows)
+        name,url,value
+        abc,,test
+        def,http://xx.com,
 
 
     Examples::
 
         >>> type(query)
         <class 'insights.parsers.satellite_postgresql_query.SatellitePostgreSQLQuery'>
-        >>> query.get_column('url', name='def')
-        'http://xx.com'
-        >>> query.get_column('value', name='def')
-        ['--- true +', '...']
+        >>> rows = query.search(name='abc')
+        >>> len(rows)
+        1
+        >>> rows[0]['value']
+        'test'
+        >>> columns=query.get_columns()
+        >>> 'url' in columns
+        True
+        >>> 'name' in columns
+        True
 
     Raises::
 
-        SkipException: when there is no valid data in the table
-        ParseException: when the row is not matched to columns or
-                        the count of rows isn't the same with the
-                        row count output
+        SkipException: when there isn't data in the table
+        ParseException: when the output isn't in good csv format
     """
 
-    def _get_row_count(self, line):
-        try:
-            return int(line.split()[0].strip('('))
-        except Exception:
-            raise ParseException('The row count is not in int format')
-
     def parse_content(self, content):
-        """
-        It parses the rows in the table, and save all the rows data in a list.
-        Each row is saved to a dict. The key is the column name, the value
-        is the mapping value of the column in the row.
-        Except the value of the first column is saved to a string,
-        all the other columns are saved to a list in case it goes across
-        multiple lines.
-
-        Raises::
-
-            SkipException: when there is no valid data in the table
-            ParseException: when the count number in the last count line
-                            like "(2 rows)", isn't in int format, or
-                            the data of some row isn't matched to the
-                            length of columns, or the count of rows in
-                            the table isn't the same with the last count line.
-        """
-        if not content:
+        if not content or len(content) == 1:
             raise SkipException("There is no data in the table")
-        self._columns = [item.strip() for item in content[0].split('|')]
-        for row in content[2:-1]:  # skip the first two lines and bottom count line
-            row_data = [item.strip() for item in row.split('|')]
-            if len(row_data) != len(self._columns):
-                raise ParseException("Invalid line: '{0}'".format(row_data))
-            if row_data[0]:
-                data = {}
-                data[self._columns[0]] = row_data[0]
-                data.update(dict(zip(self._columns[1:], [[] for i in range(1, len(self._columns))])))
-                self.append(data)
-                for i in range(1, len(self._columns)):
-                    if row_data[i]:
-                        data[self._columns[i]].append(row_data[i])
-            else:
-                for i in range(1, len(self._columns)):
-                    if row_data[i]:
-                        data[self._columns[i]].append(row_data[i])
-        if not len(self):
-            raise SkipException("There is no data")
-        self.count = self._get_row_count(content[-1])
-        if self.count != len(self):
-            raise ParseException('The count of rows is not equal to the number of the last row')
+        try:
+            # keep the line break for yaml parse in some table
+            reader = DictReader(os.linesep.join(content).splitlines(True))
+        except Exception:
+            raise ParseException("The content isn't in csv format")
+        for row in reader:
+            self.append(row)
 
-    def get_column(self, column_name, **row_criteria):
+    def get_columns(self):
+        return list(self[0].keys())
+
+    def search(self, **kwargs):
         """
-        Get the value of some column by searching the table with row_criteria.
+        Get the rows by searching the table with kwargs.
         This uses the :py:func:`insights.parsers.keyword_search` function for
-        searching; see its documentation for usage details.  If no search
+        searching; see its documentation for usage details. If no search
         parameters are given, no rows are returned.
 
         It simplify the value of the column according to actual usage.
 
         Returns::
 
-            An empty_string when there is no value,
-            the first element when the value has only one line,
-            the value itself when the value has multiple lines
+            list: A list of dictionaries of rows that match the given
+            search criteria.
 
-        Args::
+        Examples::
 
-            column_name(str): the colunm name you want to get the value for
-            row_criteria(dict): key-value pairs to identify one row
-
-        Raises::
-
-            ParseException: when the column doesn't exist in the table, or no
-                            rows found by the criteria or multiple rows found.
-                            It's unusual that getting column of multiple rows.
-                            So it isn't supported.
+            >>> query.search(name__startswith='abc') == [
+            ... {'name': 'abc', 'url': '', 'value': 'test'},
+            ... {'name': 'abcdef', 'url': '', 'value': 'test2'}
+            ... ]
+            True
+            >>> query.search(name__startswith='abc', value='test') == [
+            ... {'name': 'abc', 'url': '', 'value': 'test'}
+            ... ]
+            True
         """
-        if column_name not in self._columns:
-            raise ParseException("Column %s not found in the table" % column_name)
-        rows = keyword_search(self, **row_criteria)
-        if len(rows) > 1:
-            raise ParseException("Multiple rows returned, only support getting column for one row.")
-        elif len(rows) == 0:
-            raise ParseException("No rows found")
-        else:
-            row = rows[0]
-            if isinstance(row[column_name], list):
-                if len(row[column_name]) == 0:
-                    return ''
-                if len(row[column_name]) == 1:
-                    return row[column_name][0]
-            return row[column_name]
+
+        return keyword_search(self, **kwargs)
 
 
 @parser(Specs.satellite_settings)
 class SatelliteAdminSettings(SatellitePostgreSQLQuery):
     """
-    Parse the output of the command ``psql -d foreman -c '"select name, value, "default" from settings where name in ('destroy_vm_on_host_delete', 'unregister_delete_host')"``.
+    Parse the output of the command ``psql -d foreman -c '"select name, value, "default" from settings where name in ('destroy_vm_on_host_delete', 'unregister_delete_host') --csv"``.
 
     Sample output::
 
-                name               |  value   |  default
-        ---------------------------+----------+-----------
-        unregister_delete_host     | --- true+| --- false+
-                                   | ...      | ...
-        destroy_vm_on_host_delete  |          | --- true +
-                                   |          | ...
-        (2 rows)
+        name,value,default
+        unregister_delete_host,"--- true
+        ...","--- false
+        ..."
+        destroy_vm_on_host_delete,,"--- true
+        ..."
 
     Examples::
 
@@ -193,54 +133,42 @@ class SatelliteAdminSettings(SatellitePostgreSQLQuery):
         True
         >>> table.get_setting('destroy_vm_on_host_delete')
         True
-
-    Raises::
-
-        ParseException: when the value of the columns "default" or "value"
-                        is not valid yaml.
     """
 
-    def _parse_yaml(self, lines):
-        if lines:
+    def _parse_yaml(self, value):
+        if value:
             try:
-                return yaml.safe_load(os.linesep.join([line.rstrip(' +') for line in lines]))
+                return yaml.safe_load(value)
             except Exception:
-                raise ParseException("Bad format value: %s" % os.linesep.join(lines))
-        return ''
+                raise ParseException("Bad format value: %s" % value)
+        return value
 
     def parse_content(self, content):
         """
         The "default" and "value" columns must be selected, or else the
         settings value can't be determined.
-        The "default" and "value" column are in yaml format, it is
-        transferred to boolean.
-        To query efficiently, the rows are transferred to dict format.
+        The "default" and "value" column are in yaml format, it is transfer to
+        python boolean value.
 
         Raises::
 
-            ParseException: when no value or default column found in the table
+            SkipException: when value or default column isn't found in the
+                            table.
+            ParseException: when the value or default in bad yaml format.
         """
         super(SatelliteAdminSettings, self).parse_content(content)
-        self.data = defaultdict(dict)
-        if 'value' not in self[0] or 'default' not in self[0]:
-            raise ParseException('No default, value columns in the table.')
+        if not all(item in self.get_columns() for item in ['default', 'value']):
+            raise SkipException('No default, value columns in the table.')
         for row in self:
-            for key, value in row.items():
-                if key in ['default', 'value']:
-                    self.data[row['name']][key] = self._parse_yaml(value)
-                elif key != 'name':
-                    self.data[row['name']][key] = value
+            row['default'] = self._parse_yaml(row['default'])
+            row['value'] = self._parse_yaml(row['value'])
 
     def get_setting(self, setting_name):
         """
         Get the actual value of setting_name.
         If the value column isn't empty, the value of the setting_name is the
         value column, or else it's the default column.
-
-        Raises::
-
-            ParseException: when the setting_name not found.
         """
-        if setting_name in self.data:
-            return self.data[setting_name]['default'] if self.data[setting_name]['value'] == '' else self.data[setting_name]['value']
-        raise ParseException("No %s found in the settings table" % setting_name)
+        rows = self.search(name=setting_name)
+        if rows:
+            return rows[0].get('default') if rows[0].get('value') == '' else rows[0].get('value')
