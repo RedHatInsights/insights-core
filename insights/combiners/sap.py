@@ -80,6 +80,7 @@ class Sap(dict):
 
     def __init__(self, hostname, insts, lssap):
         hn = hostname.hostname
+        fqdn = hostname.fqdn
         data = {}
         self.local_instances = []
         self.business_instances = []
@@ -91,7 +92,10 @@ class Sap(dict):
             self.all_instances = insts.instances
             for inst in insts.data:
                 k = inst['InstanceName']
-                self.local_instances.append(k) if hn == inst['Hostname'].split('.')[0] else None
+                if (hn == inst['Hostname'].split('.')[0] or
+                        fqdn == inst['FullQualifiedHostname'] or
+                        fqdn == inst['Hostname']):
+                    self.local_instances.append(k)
                 data[k] = SAPInstances(k,
                                        inst['Hostname'],
                                        inst['SID'],
