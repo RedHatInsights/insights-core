@@ -184,6 +184,51 @@ SAPHOSTCTRL_HOSTINSTANCES_GOOD = '''
 *********************************************************
 '''
 
+SAPHOSTCTRL_HOSTINSTANCES_R_CASE = '''
+*********************************************************
+ CreationClassName , String , SAPInstance
+ SID , String , R4D
+ SystemNumber , String , 12
+ InstanceName , String , DVEBMGS12
+ Hostname , String , r4d00
+ FullQualifiedHostname , String , r4d00.example.corp
+ SapVersionInfo , String , 753, patch 501, changelist 1967207
+*********************************************************
+ CreationClassName , String , SAPInstance
+ SID , String , R4D
+ SystemNumber , String , 10
+ InstanceName , String , ASCS10
+ Hostname , String , r4d01
+ FullQualifiedHostname , String , r4d01.example.corp
+ SapVersionInfo , String , 753, patch 501, changelist 1967207
+*********************************************************
+ CreationClassName , String , SAPInstance
+ SID , String , WDX
+ SystemNumber , String , 20
+ InstanceName , String , W20
+ Hostname , String , r4d02
+ FullQualifiedHostname , String , host_97.example.corp
+ SapVersionInfo , String , 773, patch 121, changelist 1917131
+*********************************************************
+ CreationClassName , String , SAPInstance
+ SID , String , SMD
+ SystemNumber , String , 98
+ InstanceName , String , SMDA98
+ Hostname , String , r4d01
+ FullQualifiedHostname , String , host_97.example.corp
+ SapVersionInfo , String , 745, patch 400, changelist 1734487
+*********************************************************
+ CreationClassName , String , SAPInstance
+ SID , String , SMD
+ SystemNumber , String , 97
+ InstanceName , String , SMDA97
+ Hostname , String , r4d00
+ FullQualifiedHostname , String , host_97.example.corp
+ SapVersionInfo , String , 745, patch 400, changelist 1734487
+'''
+
+HOSTNAME2 = 'host_97.example.corp'
+
 
 def test_lssap_netweaver():
     lssap = Lssap(context_wrap(Lssap_nw_TEST))
@@ -223,7 +268,7 @@ def test_saphostcrtl_hana_2():
     sap = Sap(hn, inst, lssap)
     assert 'D50' not in sap
     assert 'HDB00' in sap
-    assert sorted(sap.local_instances) == sorted(['HDB88', 'HDB90', 'SMDA91'])
+    assert sorted(sap.local_instances) == sorted(['HDB88', 'HDB90', 'SMDA91', 'HDB62', 'HDB00'])
     assert sorted(sap.all_instances) == sorted([
         'ASCS07', 'ASCS52', 'D54', 'DVEBMGS09', 'ERS08', 'HDB00', 'HDB62',
         'HDB88', 'HDB90', 'SCS10', 'SMDA91'])
@@ -271,6 +316,18 @@ def test_all():
     assert sap['ASCS16'].hostname == 'lu0417'
     assert sap.is_netweaver is True
     assert sap.is_hana is True
+    assert sap.is_ascs is True
+
+
+def test_r_case():
+    saphostctrl = SAPHostCtrlInstances(context_wrap(SAPHOSTCTRL_HOSTINSTANCES_R_CASE))
+    hn = Hostname(HnF(context_wrap(HOSTNAME2)), None, None, None, None)
+    sap = Sap(hn, saphostctrl, None)
+    assert sorted(sap.local_instances) == sorted(['W20', 'SMDA98', 'SMDA97'])
+    assert sap['DVEBMGS12'].version == '753, patch 501, changelist 1967207'
+    assert sap['ASCS10'].hostname == 'r4d01'
+    assert sap.is_netweaver is True
+    assert sap.is_hana is False
     assert sap.is_ascs is True
 
 
