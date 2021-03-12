@@ -75,6 +75,43 @@ destroy_vm_on_host_delete,"--- false
 ..."
 '''
 
+SATELLITE_SETTINGS_WITH_DIFFERENT_TYPES = '''
+name,value,default
+http_proxy_except_list,,--- []
+trusted_hosts,,--- []
+oidc_audience,,--- []
+ignored_interface_identifiers,,"---
+- lo
+- en*v*
+- usb*
+- vnet*
+- macvtap*
+- _vdsmdummy_
+- veth*
+- docker*
+- tap*
+- qbr*
+- qvb*
+- qvo*
+- qr-*
+- qg-*
+- vlinuxbr*
+- vovsbr*"
+dns_timeout,,"---
+- 5
+- 10
+- 15
+- 20"
+foreman_tasks_troubleshooting_url,,"--- https://access.redhat.com/solutions/satellite6-tasks#%{label}
+..."
+remote_execution_ssh_user,,"--- root
+..."
+foreman_tasks_sync_task_timeout,,"--- 120
+..."
+foreman_tasks_proxy_action_retry_count,,"--- 4
+..."
+'''
+
 SATELLITE_SETTINGS_BAD_1 = '''
 name,value
 unregister_delete_host,"--- true
@@ -135,7 +172,7 @@ def test_HTL_doc_examples():
     assert failed == 0
 
 
-def test_satellite_admin__settings():
+def test_satellite_admin_settings():
     settings = satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_SETTINGS_2))
     assert(len(settings)) == 2
     assert not settings.get_setting('unregister_delete_host')
@@ -147,8 +184,22 @@ def test_satellite_admin__settings():
     assert not settings.get_setting('destroy_vm_on_host_delete')
     assert settings.get_setting('non_exist_column') is None
 
+    table = satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_SETTINGS_WITH_DIFFERENT_TYPES))
+    setting_value = table.get_setting('ignored_interface_identifiers')
+    assert isinstance(setting_value, list)
+    for item in ['lo', 'en*v*', 'usb*', 'vnet*', 'macvtap*', '_vdsmdummy_', 'veth*',
+                 'docker*', 'tap*', 'qbr*', 'qvb*', 'qvo*', 'qr-*', 'qg-*',
+                 'vlinuxbr*', 'vovsbr*']:
+        assert item in setting_value
+    setting_value = table.get_setting('foreman_tasks_troubleshooting_url')
+    assert isinstance(setting_value, str)
+    assert setting_value == 'https://access.redhat.com/solutions/satellite6-tasks#%{label}'
+    setting_value = table.get_setting('foreman_tasks_sync_task_timeout')
+    assert isinstance(setting_value, int)
+    assert setting_value == 120
 
-def test_exception():
+
+def test_satellite_admin_settings_exception():
     with pytest.raises(SkipException):
         satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_SETTINGS_BAD_1))
     with pytest.raises(ParseException):

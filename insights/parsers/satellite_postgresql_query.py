@@ -148,7 +148,7 @@ class SatelliteAdminSettings(SatellitePostgreSQLQuery):
         The "default" and "value" columns must be selected, or else the
         settings value can't be determined.
         The "default" and "value" column are in yaml format, it is transfer to
-        python boolean value.
+        python object.
 
         Raises::
 
@@ -168,6 +168,14 @@ class SatelliteAdminSettings(SatellitePostgreSQLQuery):
         Get the actual value of setting_name.
         If the value column isn't empty, the value of the setting_name is the
         value column, or else it's the default column.
+
+        Args:
+            setting_name (str): the value of name column which is searched in the table.
+
+        Returns:
+            It depends on the setting, maybe boolean, string, int,
+            a list or None if the setting_name doesn't exist in the
+            table.
         """
         rows = self.search(name=setting_name)
         if rows:
