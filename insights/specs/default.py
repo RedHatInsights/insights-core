@@ -37,7 +37,7 @@ from insights.parsers.mount import Mount
 from insights.specs import Specs
 from insights.specs.datasources import (
     awx_manage, cloud_init, candlepin_broker, ethernet, get_running_commands, ipcs, lpstat, package_provides,
-    ps as ps_datasource, sap, satellite_missed_queues)
+    ps as ps_datasource, sap, satellite_missed_queues, yum_updates)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 
 
@@ -786,6 +786,8 @@ class DefaultSpecs(Specs):
     yum_repolist = simple_command("/usr/bin/yum -C --noplugins repolist", signum=signal.SIGTERM)
     yum_repos_d = glob_file("/etc/yum.repos.d/*.repo")
     yum_updateinfo = simple_command("/usr/bin/yum -C updateinfo list", signum=signal.SIGTERM)
+    yum_updates = yum_updates.yum_updates
+
     zipl_conf = simple_file("/etc/zipl.conf")
     rpm_format = format_rpm()
     installed_rpms = simple_command("/bin/rpm -qa --qf '%s'" % rpm_format, context=HostContext, signum=signal.SIGTERM)

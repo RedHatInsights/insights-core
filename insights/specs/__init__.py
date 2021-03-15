@@ -724,6 +724,7 @@ class Specs(SpecSet):
     yum_repolist = RegistryPoint()
     yum_repos_d = RegistryPoint(multi_output=True)
     yum_updateinfo = RegistryPoint()
+    yum_updates = RegistryPoint()
     zdump_v = RegistryPoint()
     zipl_conf = RegistryPoint()
     sendq_socket_buffer = RegistryPoint()
