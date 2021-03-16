@@ -74,6 +74,19 @@ HA2 | N16 | D16
 HB2 | foo | bar
 """.strip()
 
+Lssap_extra_lines = """
+*** ERROR => CTrcOpen: fopen dev_lssap
+
+---------------------------------------------------
+trc file: "dev_lssap", trc level: 1, release: "721"
+---------------------------------------------------
+ - lssap version 1.0 -
+==========================================
+  SID   Nr   Instance   SAPLOCALHOST                        Version                 DIR_EXECUTABLE
+ D02|  50|       D50|     sapcbapp09|722, patch 201, changelist 1718183|         /usr/sap/D02/D50/exe
+==========================================
+""".strip()
+
 
 def test_doc_examples():
     env = {'lssap': lssap.Lssap(context_wrap(Lssap_nw_TEST))}
@@ -153,3 +166,8 @@ def test_fail():
     with pytest.raises(ParseException) as excinfo:
         lssap.Lssap(context_wrap('test'))
     assert "Lssap: Unable to parse 1 line(s) of content: (['test'])" in str(excinfo)
+
+
+def test_valid_extra_lines():
+    sap = lssap.Lssap(context_wrap(Lssap_extra_lines))
+    assert sap is not None
