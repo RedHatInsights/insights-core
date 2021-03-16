@@ -55,7 +55,9 @@ maybe_require("argparse")
 
 
 client = set([
-    'requests'
+    'requests',
+    'python-gnupg==0.4.6',
+    'oyaml'
 ])
 
 develop = set([
