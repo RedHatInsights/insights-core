@@ -1,13 +1,21 @@
 """
-LsPci - Command ``lspci -k``
-============================
+LsPci - Commands ``lspci``
+==========================
 
-To parse the PCI device information gathered from the ``/sbin/lspci -k`` command.
+The parsers in this module are to parse the PCI device information gathered
+from the ``/sbin/lspci`` commands.
+
+LsPci - Command ``lspci -k``
+----------------------------
+
+LsPciVmmkn - Command ``lspci -vmmkn``
+-------------------------------------
 
 """
 import re
 
-from .. import LogFileOutput, parser, CommandParser, get_active_lines
+from insights import LogFileOutput, parser, CommandParser, get_active_lines
+from insights.parsers import SkipException
 from insights.specs import Specs
 
 
@@ -103,4 +111,100 @@ class LsPci(CommandParser, LogFileOutput):
         """
         The list of PCI devices.
         """
-        return self.data.keys()
+        return list(self.data.keys())
+
+
+@parser(Specs.lspci_vmmkn)
+class LsPciVmmkn(CommandParser, list):
+    """
+    Class to parse the PCI device information gathered from the
+    ``/sbin/lspci -vmmkn`` command.
+
+    Typical output of the ``lspci -vmmkn`` command is::
+
+        Slot:   00:00.0
+        Class:  0600
+        Vendor: 8086
+        Device: 1237
+        SVendor:    1af4
+        SDevice:    1100
+        Rev:    02
+
+        Slot:   00:01.0
+        Class:  0101
+        Vendor: 8086
+        Device: 7010
+        SVendor:    1af4
+        SDevice:    1100
+        ProgIf: 80
+        Driver: ata_piix
+        Module: ata_piix
+        Module: ata_generic
+
+        Slot:   00:01.1
+        Class:  0c03
+        Vendor: 8086
+        Device: 7020
+        SVendor:    1af4
+        SDevice:    1100
+        Rev:    01
+        Driver: uhci_hcd
+
+        Slot:   00:03.0
+        Class:  0200
+        Vendor: 1af4
+        Device: 1000
+        SVendor:    1af4
+        SDevice:    0001
+        PhySlot:    3
+        Driver: virtio-pci
+
+    Examples:
+        >>> type(lspci_vmmkn)
+        <class 'insights.parsers.lspci.LsPciVmmkn'>
+        >>> sorted(lspci_vmmkn.pci_dev_list)
+        ['00:00.0', '00:01.0', '00:01.1', '00:03.0']
+        >>> lspci_vmmkn[0].get('Driver') is None
+        True
+        >>> lspci_vmmkn[-1].get('Driver')
+        'virtio-pci'
+        >>> len(lspci_vmmkn[1].get('Module'))
+        2
+
+    Attributes:
+
+    """
+    def parse_content(self, content):
+        # Remove the white-trailing of the output
+        while content and not content[-1].strip():
+            content.pop(-1)
+
+        dev = {}
+        self.append(dev)
+        for line in content:
+            line = line.strip()
+            if not line:
+                # Skip empty lines
+                if dev:
+                    dev = {}
+                    self.append(dev)
+                continue
+            key, val = [i.strip() for i in line.split(':', 1)]
+            # Module could have multiple values
+            if key == 'Module':
+                if key in dev:
+                    dev[key].append(val)
+                else:
+                    dev[key] = [val]
+            else:
+                dev[key] = val
+
+        if len(self) <= 1 and not dev:
+            raise SkipException()
+
+    @property
+    def pci_dev_list(self):
+        """
+        The list of PCI devices.
+        """
+        return [i['Slot'] for i in self]

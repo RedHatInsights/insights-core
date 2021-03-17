@@ -334,6 +334,7 @@ class Specs(SpecSet):
     lsmod = RegistryPoint()
     lsof = RegistryPoint(filterable=True)
     lspci = RegistryPoint()
+    lspci_vmmkn = RegistryPoint()
     lssap = RegistryPoint()
     lsscsi = RegistryPoint()
     lsvmbus = RegistryPoint()
