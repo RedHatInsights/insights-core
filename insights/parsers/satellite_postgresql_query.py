@@ -46,7 +46,7 @@ class SatellitePostgreSQLQuery(CommandParser, list):
         def,http://xx.com,
 
 
-    Examples::
+    Examples:
 
         >>> type(query)
         <class 'insights.parsers.satellite_postgresql_query.SatellitePostgreSQLQuery'>
@@ -61,7 +61,7 @@ class SatellitePostgreSQLQuery(CommandParser, list):
         >>> 'name' in columns
         True
 
-    Raises::
+    Raises:
 
         SkipException: when there isn't data in the table
         ParseException: when the output isn't in good csv format
@@ -90,12 +90,12 @@ class SatellitePostgreSQLQuery(CommandParser, list):
 
         It simplify the value of the column according to actual usage.
 
-        Returns::
+        Returns:
 
             list: A list of dictionaries of rows that match the given
             search criteria.
 
-        Examples::
+        Examples:
 
             >>> query.search(name__startswith='abc') == [
             ... {'name': 'abc', 'url': '', 'value': 'test'},
@@ -125,7 +125,7 @@ class SatelliteAdminSettings(SatellitePostgreSQLQuery):
         destroy_vm_on_host_delete,,"--- true
         ..."
 
-    Examples::
+    Examples:
 
         >>> type(table)
         <class 'insights.parsers.satellite_postgresql_query.SatelliteAdminSettings'>
@@ -152,7 +152,7 @@ class SatelliteAdminSettings(SatellitePostgreSQLQuery):
         The "default" and "value" column are in yaml format, it is transfer to
         python object.
 
-        Raises::
+        Raises:
 
             SkipException: when value or default column isn't found in the
                             table.
@@ -176,21 +176,22 @@ class SatelliteAdminSettings(SatellitePostgreSQLQuery):
         If the value column isn't empty, the value of the setting_name is the
         value column, or else it's the default column.
 
-        Args::
+        Args:
 
             setting_name (str): the value of name column which is searched in the table.
 
-        Returns::
+        Returns:
 
             It depends on the setting, maybe boolean, string, int,
             a list.
 
-        Raises::
+        Raises:
 
             KeyError: when setting_name does not exist in the table
 
         """
         rows = self.search(name=setting_name)
         if rows:
-            return rows[0].get('default') if rows[0].get('value') == '' else rows[0].get('value')
+            value = rows[0].get('value')
+            return rows[0].get('default') if value == '' else value
         raise KeyError("The setting %s does not exist" % setting_name)
