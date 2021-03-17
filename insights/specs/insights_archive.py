@@ -131,6 +131,7 @@ class InsightsArchiveSpecs(Specs):
     lsmod = simple_file("insights_commands/lsmod")
     lsof = simple_file("insights_commands/lsof")
     lspci = simple_file("insights_commands/lspci_-k")
+    lspci_vmmkn = simple_file("insights_commands/lspci_-vmmkn")
     lsscsi = simple_file("insights_commands/lsscsi")
     lsvmbus = simple_file("insights_commands/lsvmbus_-vv")
     lvmconfig = first_file([

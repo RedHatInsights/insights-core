@@ -558,6 +558,7 @@ class DefaultSpecs(Specs):
     lsmod = simple_command("/sbin/lsmod")
     lsof = simple_command("/usr/sbin/lsof")
     lspci = simple_command("/sbin/lspci -k")
+    lspci_vmmkn = simple_command("/sbin/lspci -vmmkn")
     lsscsi = simple_command("/usr/bin/lsscsi")
     lsvmbus = simple_command("/usr/sbin/lsvmbus -vv")
     lvm_conf = simple_file("/etc/lvm/lvm.conf")
