@@ -33,7 +33,7 @@ class CertificateChainEnddates(CommandParser, list):
         notBefore=Nov 30 07:02:42 2020 GMT
         notAfter=Jan 18 07:02:43 2018 GMT
 
-    Examples::
+    Examples:
 
         >>> type(certs)
         <class 'insights.parsers.certificate_chain_enddates.CertificateChainEnddates'>
@@ -50,7 +50,7 @@ class CertificateChainEnddates(CommandParser, list):
         Parse the content of crt chain file. And it saves the expiration
         info of each crt in a list of dict.
 
-        Raises::
+        Raises:
 
             ParseException: when the output isn't in key=value format or
                             the notAfter or notBefore isn't expected format.
@@ -103,7 +103,7 @@ class SatelliteCustomCaChain(CertificateChainEnddates):
         subject= /C=US/ST=North Carolina/O=Katello/OU=SomeOrgUnit/CN=test.b.com
         notAfter=Jan 18 07:02:43 2028 GMT
 
-    Examples::
+    Examples:
 
         >>> type(satellite_ca_certs)
         <class 'insights.parsers.certificate_chain_enddates.SatelliteCustomCaChain'>
