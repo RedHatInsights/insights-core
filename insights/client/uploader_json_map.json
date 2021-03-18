@@ -721,6 +721,11 @@
             "symbolic_name": "lspci_kernel"
         },
         {
+            "command": "/sbin/lspci -vmmkn",
+            "pattern": [],
+            "symbolic_name": "lspci_vmmkn"
+        },
+        {
             "command": "/usr/sbin/lvmconfig --type full",
             "pattern": [],
             "symbolic_name": "lvmconfig"
@@ -3372,7 +3377,7 @@
         {
             "file": "/var/log/secure",
             "pattern": [
-                "[CAUTION] This_is_the default_filter_string_for_all_large_files!"
+                "Could not set limit for 'nofile': Operation not permitted"
             ],
             "symbolic_name": "secure"
         },
@@ -4325,5 +4330,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2021-03-04T14:18:04.414559"
+    "version": "2021-03-11T11:43:31.335066"
 }
