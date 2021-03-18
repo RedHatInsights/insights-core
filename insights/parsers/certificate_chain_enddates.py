@@ -34,7 +34,6 @@ class CertificateChainEnddates(CommandParser, list):
         notAfter=Jan 18 07:02:43 2018 GMT
 
     Examples:
-
         >>> type(certs)
         <class 'insights.parsers.certificate_chain_enddates.CertificateChainEnddates'>
         >>> len(certs)
@@ -51,13 +50,11 @@ class CertificateChainEnddates(CommandParser, list):
         info of each crt in a list of dict.
 
         Attributes:
-
             earliest_date(ExpirationDate): The earliest datetime of the cert in the chain
                                             or None when there isn't "notAfter" for all
                                             the certs in the chain.
 
         Raises:
-
             ParseException: when the output isn't in key=value format or
                             the notAfter or notBefore isn't expected format.
         """
@@ -111,7 +108,6 @@ class SatelliteCustomCaChain(CertificateChainEnddates):
         notAfter=Jan 18 07:02:43 2028 GMT
 
     Examples:
-
         >>> type(satellite_ca_certs)
         <class 'insights.parsers.certificate_chain_enddates.SatelliteCustomCaChain'>
         >>> len(satellite_ca_certs)
