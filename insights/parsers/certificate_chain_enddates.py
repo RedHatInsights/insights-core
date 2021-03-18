@@ -10,7 +10,7 @@ SatelliteCustomCaChain - command ``awk 'BEGIN { pipe="openssl x509 -noout -subje
 
 from insights import parser, CommandParser
 from datetime import datetime
-from insights.parsers import ParseException
+from insights.parsers import ParseException, SkipException
 from insights.specs import Specs
 from insights.parsers.certificates_enddate import ExpirationDate
 
@@ -50,18 +50,28 @@ class CertificateChainEnddates(CommandParser, list):
         Parse the content of crt chain file. And it saves the expiration
         info of each crt in a list of dict.
 
+        Attributes:
+
+            earliest_date(ExpirationDate): The earliest datetime of the cert in the chain
+                                            or None when there isn't "notAfter" for all
+                                            the certs in the chain.
+
         Raises:
 
             ParseException: when the output isn't in key=value format or
                             the notAfter or notBefore isn't expected format.
         """
+        if len(content) < 1:
+            raise SkipException("No cert in the output")
+        data = {}
+        self.append(data)
+        self.earliest_date = None
         for index, line in enumerate(content):
-            if index == 0:
-                data = {}
             if not line.strip():
                 # a new cert starts
-                self.append(data)
-                data = {}
+                if data:
+                    data = {}
+                    self.append(data)
                 continue
             if '=' not in line:
                 raise ParseException('The line %s is not in key=value format' % line)
@@ -73,19 +83,16 @@ class CertificateChainEnddates(CommandParser, list):
                     raise ParseException('The %s is not in %s format.' % (key, self.expire_date_format))
                 value = ExpirationDate(value, date_time)
             data[key] = value
-            if index == len(content) - 1:
-                # append the last cert
-                self.append(data)
+
+        for one_cert in self:
+            expire_date = one_cert.get('notAfter')
+            if expire_date and (self.earliest_date is None or expire_date.datetime < self.earliest_date.datetime):
+                self.earliest_date = expire_date
 
     @property
     def earliest_expiration_date(self):
-        """This will return the earliest expiration date or None if notAfter not found"""
-        earliest_date = None
-        for one_cert in self:
-            expire_date = one_cert.get('notAfter')
-            if expire_date and (earliest_date is None or expire_date.datetime < earliest_date.datetime):
-                earliest_date = expire_date
-        return earliest_date
+        """This will return the earliest expiration date or None if notAfter is not found"""
+        return self.earliest_date
 
 
 @parser(Specs.satellite_custom_ca_chain)
