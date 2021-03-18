@@ -87,7 +87,7 @@ class LsPci(CommandParser, LogFileOutput):
 
             if bus_device_function_re.match(parts[0]):
                 bus_device_function = parts[0]
-                device_details = ' '.join(map(str, parts[1:]))
+                device_details = line.split(None, 1)[-1]  # keep the raw line
                 self.data[bus_device_function] = {'Dev_Details': device_details.lstrip()}
             elif bus_device_function and (line.split(":")[0].strip() in fields):
                 parts = line.split(':')
