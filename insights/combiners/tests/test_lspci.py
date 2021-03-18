@@ -1,5 +1,4 @@
 import doctest
-import pytest
 
 from insights.combiners import lspci
 from insights.combiners.lspci import LsPci
