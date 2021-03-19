@@ -129,8 +129,6 @@ class SatelliteAdminSettings(SatellitePostgreSQLQuery):
 
         >>> type(table)
         <class 'insights.parsers.satellite_postgresql_query.SatelliteAdminSettings'>
-        >>> table.has_setting('destroy_vm_on_host_delete')
-        True
         >>> table.get_setting('unregister_delete_host')
         True
         >>> table.get_setting('destroy_vm_on_host_delete')
@@ -165,11 +163,6 @@ class SatelliteAdminSettings(SatellitePostgreSQLQuery):
             row['default'] = self._parse_yaml(row['default'])
             row['value'] = self._parse_yaml(row['value'])
 
-    def has_setting(self, setting_name):
-        """Return True if the setting_name exists in the table otherwise False"""
-        rows = self.search(name=setting_name)
-        return True if rows else False
-
     def get_setting(self, setting_name):
         """
         Get the actual value of setting_name.
@@ -177,21 +170,14 @@ class SatelliteAdminSettings(SatellitePostgreSQLQuery):
         value column, or else it's the default column.
 
         Args:
-
             setting_name (str): the value of name column which is searched in the table.
 
         Returns:
-
             It depends on the setting, maybe boolean, string, int,
-            a list.
-
-        Raises:
-
-            KeyError: when setting_name does not exist in the table
-
+            a list or None if the setting_name doesn't exist in the
+            table.
         """
         rows = self.search(name=setting_name)
         if rows:
             value = rows[0].get('value')
             return rows[0].get('default') if value == '' else value
-        raise KeyError("The setting %s does not exist" % setting_name)

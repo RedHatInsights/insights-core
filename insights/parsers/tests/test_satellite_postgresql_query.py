@@ -182,9 +182,7 @@ def test_satellite_admin_settings():
     assert(len(settings)) == 2
     assert not settings.get_setting('unregister_delete_host')
     assert not settings.get_setting('destroy_vm_on_host_delete')
-    assert not settings.has_setting('non_exist_column')
-    with pytest.raises(KeyError):
-        settings.get_setting('non_exist_column')
+    assert settings.get_setting('non_exist_column') is None
 
     table = satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_SETTINGS_WITH_DIFFERENT_TYPES))
     setting_value = table.get_setting('ignored_interface_identifiers')
