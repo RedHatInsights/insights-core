@@ -47,7 +47,6 @@ class SatellitePostgreSQLQuery(CommandParser, list):
 
 
     Examples:
-
         >>> type(query)
         <class 'insights.parsers.satellite_postgresql_query.SatellitePostgreSQLQuery'>
         >>> rows = query.search(name='abc')
@@ -62,7 +61,6 @@ class SatellitePostgreSQLQuery(CommandParser, list):
         True
 
     Raises:
-
         SkipException: when there isn't data in the table
         ParseException: when the output isn't in good csv format
     """
@@ -91,12 +89,10 @@ class SatellitePostgreSQLQuery(CommandParser, list):
         It simplify the value of the column according to actual usage.
 
         Returns:
-
             list: A list of dictionaries of rows that match the given
             search criteria.
 
         Examples:
-
             >>> query.search(name__startswith='abc') == [
             ... {'name': 'abc', 'url': '', 'value': 'test'},
             ... {'name': 'abcdef', 'url': '', 'value': 'test2'}
@@ -126,7 +122,6 @@ class SatelliteAdminSettings(SatellitePostgreSQLQuery):
         ..."
 
     Examples:
-
         >>> type(table)
         <class 'insights.parsers.satellite_postgresql_query.SatelliteAdminSettings'>
         >>> table.get_setting('unregister_delete_host')
@@ -151,7 +146,6 @@ class SatelliteAdminSettings(SatellitePostgreSQLQuery):
         python object.
 
         Raises:
-
             SkipException: when value or default column isn't found in the
                             table.
             ParseException: when the value or default in bad yaml format.
