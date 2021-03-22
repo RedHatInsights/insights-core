@@ -38,7 +38,7 @@ class CertificateChainEnddates(CommandParser, list):
         <class 'insights.parsers.certificate_chain_enddates.CertificateChainEnddates'>
         >>> len(certs)
         2
-        >>> certs.earliest_expiration_date.str
+        >>> certs.earliest_expiry_date.str
         'Jan 18 07:02:43 2018 GMT'
     """
 
@@ -50,9 +50,10 @@ class CertificateChainEnddates(CommandParser, list):
         info of each crt in a list of dict.
 
         Attributes:
-            earliest_date(ExpirationDate): The earliest datetime of the cert in the chain
-                                            or None when there isn't "notAfter" for all
-                                            the certs in the chain.
+            earliest_expiry_date(ExpirationDate):
+                The earliest expiry datetime of the certs in the chain.
+                None when there isn't "notAfter" for all the certs
+                in the chain.
 
         Raises:
             ParseException: when the output isn't in key=value format or
@@ -62,7 +63,7 @@ class CertificateChainEnddates(CommandParser, list):
             raise SkipException("No cert in the output")
         data = {}
         self.append(data)
-        self.earliest_date = None
+        self.earliest_expiry_date = None
         for index, line in enumerate(content):
             if not line.strip():
                 # a new cert starts
@@ -83,13 +84,8 @@ class CertificateChainEnddates(CommandParser, list):
 
         for one_cert in self:
             expire_date = one_cert.get('notAfter')
-            if expire_date and (self.earliest_date is None or expire_date.datetime < self.earliest_date.datetime):
-                self.earliest_date = expire_date
-
-    @property
-    def earliest_expiration_date(self):
-        """This will return the earliest expiration date or None if notAfter is not found"""
-        return self.earliest_date
+            if expire_date and (self.earliest_expiry_date is None or expire_date.datetime < self.earliest_expiry_date.datetime):
+                self.earliest_expiry_date = expire_date
 
 
 @parser(Specs.satellite_custom_ca_chain)
@@ -112,7 +108,7 @@ class SatelliteCustomCaChain(CertificateChainEnddates):
         <class 'insights.parsers.certificate_chain_enddates.SatelliteCustomCaChain'>
         >>> len(satellite_ca_certs)
         2
-        >>> satellite_ca_certs.earliest_expiration_date.str
+        >>> satellite_ca_certs.earliest_expiry_date.str
         'Jan 18 07:02:43 2028 GMT'
     """
     pass
