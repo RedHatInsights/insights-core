@@ -167,9 +167,8 @@ class SatelliteAdminSettings(SatellitePostgreSQLQuery):
             setting_name (str): the value of name column which is searched in the table.
 
         Returns:
-            It depends on the setting, maybe boolean, string, int,
-            a list or None if the setting_name doesn't exist in the
-            table.
+            It depends on the setting, maybe boolean, string, int or a list.
+            None if the setting_name doesn't exist in the table.
         """
         rows = self.search(name=setting_name)
         if rows:
