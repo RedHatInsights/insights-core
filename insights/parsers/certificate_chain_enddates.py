@@ -39,7 +39,7 @@ class CertificateChainEnddates(CommandParser, list):
         >>> len(certs)
         2
         >>> certs.earliest_expiry_date.str
-        'Jan 18 07:02:43 2018 GMT'
+        'Jan 18 07:02:43 2018'
     """
 
     expire_date_format = '%b %d %H:%M:%S %Y'
@@ -74,12 +74,13 @@ class CertificateChainEnddates(CommandParser, list):
             if '=' not in line:
                 raise ParseException('The line %s is not in key=value format' % line)
             key, value = [item.strip() for item in line.split('=', 1)]
+            value_without_tz = value.rsplit(" ", 1)[0]
             if key in ['notBefore', 'notAfter']:
                 try:
-                    date_time = datetime.strptime(value.rsplit(" ", 1)[0], self.expire_date_format)
+                    date_time = datetime.strptime(value_without_tz, self.expire_date_format)
                 except Exception:
                     raise ParseException('The %s is not in %s format.' % (key, self.expire_date_format))
-                value = ExpirationDate(value, date_time)
+                value = ExpirationDate(value_without_tz, date_time)
             data[key] = value
 
         for one_cert in self:
@@ -109,6 +110,6 @@ class SatelliteCustomCaChain(CertificateChainEnddates):
         >>> len(satellite_ca_certs)
         2
         >>> satellite_ca_certs.earliest_expiry_date.str
-        'Jan 18 07:02:43 2028 GMT'
+        'Jan 18 07:02:43 2028'
     """
     pass
