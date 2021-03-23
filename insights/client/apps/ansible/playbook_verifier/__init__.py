@@ -15,7 +15,7 @@ from insights.client.constants import InsightsConstants as constants
 __all__ = ("verify", "PlaybookVerificationError")
 
 SIGKEY = 'insights_signature'
-PUBLIC_KEY_FOLDER = pkgutil.get_data(insights.client.apps.ansible.__name__, 'playbook_verifier/public.gpg')    # Update this when we have the key generated
+PUBLIC_KEY_FOLDER = pkgutil.get_data(insights.client.apps.ansible.__name__, 'playbook_verifier/public.gpg')
 VERSIONING_URL = 'https://cloud.redhat.com/api/v1/static/egg_version'
 EXCLUDABLE_VARIABLES = ['hosts', 'vars']
 
