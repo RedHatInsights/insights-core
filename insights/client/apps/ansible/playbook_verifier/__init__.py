@@ -1,6 +1,5 @@
 import os
 import copy
-import yaml
 import base64
 import requests
 import tempfile

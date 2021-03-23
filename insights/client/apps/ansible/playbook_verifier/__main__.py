@@ -1,9 +1,9 @@
 import sys
-#from insights.client.apps.ansible.playbook_verifier.contrib import oyaml as yaml
 from insights.client.apps.ansible.playbook_verifier.contrib.ruamel_yaml import YAML
 from insights.client.apps.ansible.playbook_verifier import verify
 
 yaml = YAML(typ='rt')
+
 
 def read_playbook():
     """
