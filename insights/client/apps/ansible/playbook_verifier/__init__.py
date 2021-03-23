@@ -5,6 +5,7 @@ import base64
 import requests
 import tempfile
 import pkgutil
+import hashlib
 import insights.client.apps.ansible
 from logging import getLogger
 from distutils.version import LooseVersion
@@ -37,6 +38,18 @@ class PlaybookVerificationError(Exception):
 
     def __str__(self):
         return self.message
+
+
+def createSnippetHash(snippet):
+    """
+    Function that creates and returns a hash of the snippet given to the function.
+        output: snippetHash (bytes)
+    """
+    snippetHash = hashlib.sha256()
+    serializedSnippet = bytes(str(snippet).encode("UTF-8"))
+    snippetHash.update(serializedSnippet)
+
+    return snippetHash.digest()
 
 
 def eggVersioningCheck(checkVersion):
@@ -88,7 +101,7 @@ def excludeDynamicElements(snippet):
 
 def executeVerification(snippet, encodedSignature):
     gpg = gnupg.GPG(gnupghome=constants.insights_core_lib_dir)
-    serializedSnippet = bytes(yaml.dump(snippet, default_flow_style=False).encode("UTF-8"))
+    snippetHash = createSnippetHash(snippet)
 
     decodedSignature = base64.b64decode(encodedSignature)
 
@@ -99,7 +112,7 @@ def executeVerification(snippet, encodedSignature):
     os.write(fd, decodedSignature)
     os.close(fd)
 
-    result = gpg.verify_data(fn, serializedSnippet)
+    result = gpg.verify_data(fn, snippetHash)
     os.unlink(fn)
 
     return result
