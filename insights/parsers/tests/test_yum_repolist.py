@@ -133,6 +133,16 @@ rhel-6-server-satellite-tools-6.2-rpms                                          
 repolist: 58096
 """.strip()
 
+# This output occurred in Bugzilla 1929384
+YUM_REPOLIST_ZERO = """
+repolist: 0
+""".strip()
+
+YUM_REPOLIST_MISSING_HEADER = """
+Loaded plugins: product-id, rhnplugin, security, subscription-manager
+Updating certificate-based repositories.
+"""
+
 
 def test_yum_repolist():
     repo_list = YumRepoList(context_wrap(YUM_REPOLIST_CONTENT))
@@ -234,3 +244,15 @@ def test_repos_without_ends():
     repo_list = YumRepoList(context_wrap(YUM_REPOLIST_CONTENT_MISSING_END))
     assert 1 == len(repo_list)
     assert 0 == len(repo_list.rhel_repos)
+
+
+def test_repolist_zero():
+    with pytest.raises(SkipException) as se:
+        YumRepoList(context_wrap(YUM_REPOLIST_ZERO))
+    assert 'No repolist.' in str(se)
+
+
+def test_repolist_missing_header():
+    with pytest.raises(ParseException) as se:
+        YumRepoList(context_wrap(YUM_REPOLIST_MISSING_HEADER))
+    assert 'Failed to parser yum repolist' in str(se)
