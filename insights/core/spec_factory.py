@@ -1076,4 +1076,4 @@ def serialize_datasource_provider(obj, root):
 
 @deserializer(DatasourceProvider)
 def deserialize_datasource_provider(_type, data, root):
-    return SerializedRawOutputProvider(data["relative_path"], root)
+    return SerializedOutputProvider(data["relative_path"], root)
