@@ -1,4 +1,6 @@
 # coding=utf-8
+import pytest
+
 from insights.parsr.query import first
 from insights.combiners.logrotate_conf import _LogRotateConf, LogRotateConfTree
 from insights.tests import context_wrap
@@ -66,6 +68,22 @@ JUNK_SPACE = """
 """.strip()
 
 
+LOGROTATE_MISSING_ENDSCRIPT = """
+/var/log/example/*.log {
+  daily
+  missingok
+  rotate 10
+  dateext
+  dateyesterday
+  notifempty
+  sharedscripts
+  postrotate
+    [ ! -f /var/run/openresty.pid ] || kill -USR1 `cat /var/run/example.pid`
+    /usr/local/bin/mc cp $1 minio/matrix-prod-cluster/node1/example/
+}
+""".strip()
+
+
 def test_logrotate_tree():
     p = _LogRotateConf(context_wrap(CONF, path="/etc/logrotate.conf"))
     conf = LogRotateConfTree([p])
@@ -82,3 +100,9 @@ def test_junk_space():
     p = _LogRotateConf(context_wrap(JUNK_SPACE, path="/etc/logrotate.conf"))
     conf = LogRotateConfTree([p])
     assert "compress" in conf["/var/log/spooler"]
+
+
+def test_logrotate_conf_combiner_missing_endscript():
+    with pytest.raises(Exception):
+        p = _LogRotateConf(context_wrap(LOGROTATE_MISSING_ENDSCRIPT, path='/etc/logrotate.conf')),
+        print(p)

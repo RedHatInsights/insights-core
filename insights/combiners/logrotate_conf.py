@@ -159,8 +159,8 @@ class DocParser(object):
         ScriptStart = WS >> PosMarker(Choice([Literal(s) for s in scripts])) << WS
         ScriptEnd = Literal("endscript")
         Line = (WS >> AnyChar.until(EOL) << WS).map(lambda x: "".join(x))
-        Lines = Line.until(ScriptEnd).map(lambda x: "\n".join(x))
-        Script = ScriptStart + Lines << ScriptEnd
+        Lines = Line.until(ScriptEnd | EOF).map(lambda x: "\n".join(x))
+        Script = ScriptStart + Lines << Opt(ScriptEnd)
         Script = Script.map(lambda x: [x[0], [x[1]], None])
         BeginBlock = WS >> LeftCurly << WS
         EndBlock = WS >> RightCurly
@@ -172,7 +172,7 @@ class DocParser(object):
         Stanza <= WS >> (Stmt | Comment) << WS
         Doc = Many(Stanza).map(skip_none).map(self.to_entries)
 
-        self.Top = Doc + EOF
+        self.Top = Doc << EOF
 
     def to_entries(self, x):
         ret = []
@@ -194,7 +194,7 @@ def parse_doc(content, ctx=None):
     if isinstance(content, list):
         content = "\n".join(content)
     parse = DocParser(ctx)
-    result = parse(content)[0]
+    result = parse(content)
     return Entry(children=result, src=ctx)
 
 
