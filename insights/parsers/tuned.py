@@ -31,35 +31,50 @@ Sample data::
 
 Examples:
 
-    >>> result = shared[Tuned]
-    >>> 'active' in result.data
+    >>> type(tuned)
+    <class 'insights.parsers.tuned.Tuned'>
+    >>> 'active' in tuned
     True
-    >>> result.data['active']
+    >>> tuned['active']
     'virtual-guest'
-    >>> len(result.data['available'])
+    >>> len(tuned['available'])
     9
-    >>> 'balanced' in result.data['available']
+    >>> 'balanced' in tuned['available']
     True
 """
 
-from .. import parser, CommandParser
+from insights import parser, CommandParser
+from insights.parsers import SkipException
 from insights.specs import Specs
 
 
 @parser(Specs.tuned_adm)
-class Tuned(CommandParser):
+class Tuned(CommandParser, dict):
     """
-    Parse data from the ``/usr/sbin/tuned-adm list`` command.
+    Parse output from the ``/usr/sbin/tuned-adm list`` command.
+
+    Raises:
+        SkipException: When noting needs to parse
     """
 
     def parse_content(self, content):
-        self.data = {}
-        self.data['available'] = []
+        data = {}
         for line in content:
             if line.startswith('-'):
-                self.data['available'].append(line.split('- ')[1])
+                data.update(available=[]) if 'available' not in data else None
+                data['available'].append([i.strip() for i in line.split('- ')][1])
             elif line.startswith('Current'):
-                self.data['active'] = line.split(': ')[1]
+                data['active'] = [i.strip() for i in line.split(': ')][1]
             elif line.startswith('Preset'):
-                self.data['preset'] = line.split(': ')[1]
+                data['preset'] = [i.strip() for i in line.split(': ')][1]
             # Ignore everything else for now
+        if not data:
+            raise SkipException
+        self.update(data)
+
+    @property
+    def data(self):
+        '''
+        For backward compatibility.
+        '''
+        return self
