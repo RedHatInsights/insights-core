@@ -10,9 +10,10 @@ from logging import getLogger
 from distutils.version import LooseVersion
 from insights.client.utilities import get_version_info
 from insights.client.apps.ansible.playbook_verifier.contrib import gnupg
+from insights.client.apps.ansible.playbook_verifier.contrib import oyaml as yaml
 from insights.client.constants import InsightsConstants as constants
 
-__all__ = ("verify", "PlaybookVerificationError")
+__all__ = ("loadPlaybookYaml", "verify", "PlaybookVerificationError")
 
 SIGKEY = 'insights_signature'
 PUBLIC_KEY_FOLDER = pkgutil.get_data(insights.client.apps.ansible.__name__, 'playbook_verifier/public.gpg')    # Update this when we have the key generated
@@ -141,3 +142,11 @@ def verify(playbook, checkVersion=True, skipVerify=False):
 
     logger.info('All templates successfully validated')
     return playbook
+
+
+def loadPlaybookYaml (playbook):
+    """
+    Load playbook yaml using current yaml library implementation
+        output: playbook yaml
+    """
+    return yaml.load(playbook)
