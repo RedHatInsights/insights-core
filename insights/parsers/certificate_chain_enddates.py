@@ -12,7 +12,7 @@ from insights import parser, CommandParser
 from datetime import datetime
 from insights.parsers import ParseException, SkipException
 from insights.specs import Specs
-from insights.parsers.certificates_enddate import ExpirationDate
+from insights.parsers.certificates_enddate import CertificatesEnddate
 
 
 class CertificateChainEnddates(CommandParser, list):
@@ -47,7 +47,9 @@ class CertificateChainEnddates(CommandParser, list):
     def parse_content(self, content):
         """
         Parse the content of crt chain file. And it saves the expiration
-        info of each crt in a list of dict.
+        info of each crt in a list of dict. The value of notBefore and
+        notAfter are saved to an instance of ExpirationDate, it
+        contains the date in string and datetime format.
 
         Attributes:
             earliest_expiry_date(ExpirationDate):
@@ -80,7 +82,7 @@ class CertificateChainEnddates(CommandParser, list):
                     date_time = datetime.strptime(value_without_tz, self.expire_date_format)
                 except Exception:
                     raise ParseException('The %s is not in %s format.' % (key, self.expire_date_format))
-                value = ExpirationDate(value_without_tz, date_time)
+                value = CertificatesEnddate.ExpirationDate(value_without_tz, date_time)
             data[key] = value
 
         for one_cert in self:
