@@ -10,9 +10,10 @@ from logging import getLogger
 from distutils.version import LooseVersion
 from insights.client.utilities import get_version_info
 from insights.client.apps.ansible.playbook_verifier.contrib import gnupg
+from insights.client.apps.ansible.playbook_verifier.contrib.ruamel_yaml import YAML
 from insights.client.constants import InsightsConstants as constants
 
-__all__ = ("verify", "PlaybookVerificationError")
+__all__ = ("loadYaml", "verify", "PlaybookVerificationError")
 
 SIGKEY = 'insights_signature'
 PUBLIC_KEY_FOLDER = pkgutil.get_data(insights.client.apps.ansible.__name__, 'playbook_verifier/public.gpg')
@@ -20,6 +21,7 @@ VERSIONING_URL = 'https://cloud.redhat.com/api/v1/static/egg_version'
 EXCLUDABLE_VARIABLES = ['hosts', 'vars']
 
 logger = getLogger(__name__)
+yaml = YAML(typ='rt')
 
 
 class PlaybookVerificationError(Exception):
@@ -153,3 +155,6 @@ def verify(playbook, checkVersion=True, skipVerify=False):
 
     logger.info('All templates successfully validated')
     return playbook
+
+def loadPlaybookYaml(playbook):
+    return yaml.load(playbook)
