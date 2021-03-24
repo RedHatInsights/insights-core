@@ -1,6 +1,6 @@
 """
-Get Certificate Chain Endates
-=============================
+Get Certificate Chain Info
+==========================
 
 This module contains the following parsers:
 
@@ -15,11 +15,12 @@ from insights.specs import Specs
 from insights.parsers.certificates_enddate import CertificatesEnddate
 
 
-class CertificateChainEnddates(CommandParser, list):
+class CertificateChain(CommandParser, list):
     """
-    Class to parse the expiration dates of a certificate chain file.
-    Blank line is added to distinguish different certs.
-    Currently it only supports the output in key=value pairs.
+    Class to parse the output of "openssl -in <certificate_chain_file> -xxx -xxx".
+    Blank line is added to distinguish different certs in the chain.
+    Currently it only supports the attributes which the output is in
+    key=value pairs.
 
     Sample Output::
 
@@ -35,7 +36,7 @@ class CertificateChainEnddates(CommandParser, list):
 
     Examples:
         >>> type(certs)
-        <class 'insights.parsers.certificate_chain_enddates.CertificateChainEnddates'>
+        <class 'insights.parsers.certificate_chain.CertificateChain'>
         >>> len(certs)
         2
         >>> certs.earliest_expiry_date.str
@@ -92,10 +93,10 @@ class CertificateChainEnddates(CommandParser, list):
 
 
 @parser(Specs.satellite_custom_ca_chain)
-class SatelliteCustomCaChain(CertificateChainEnddates):
+class SatelliteCustomCaChain(CertificateChain):
     """
     .. note::
-        Please refer to its super-class :class:`insights.parsers.certificate_chain_enddates.CertificateChainEnddates` for more
+        Please refer to its super-class :class:`insights.parsers.certificate_chain.CertificateChain` for more
         details.
 
     Sample Output::
@@ -108,7 +109,7 @@ class SatelliteCustomCaChain(CertificateChainEnddates):
 
     Examples:
         >>> type(satellite_ca_certs)
-        <class 'insights.parsers.certificate_chain_enddates.SatelliteCustomCaChain'>
+        <class 'insights.parsers.certificate_chain.SatelliteCustomCaChain'>
         >>> len(satellite_ca_certs)
         2
         >>> satellite_ca_certs.earliest_expiry_date.str

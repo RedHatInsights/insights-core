@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.parsers import certificate_chain_enddates, ParseException, SkipException
+from insights.parsers import certificate_chain, ParseException, SkipException
 from insights.tests import context_wrap
 
 
@@ -39,6 +39,12 @@ notAfter=Jan 18 07:02:43 2018 GMT
 
 """
 
+OUTPUT2 = """
+notAfter=Dec  4 07:04:05 2035 GMT
+subject= /CN=Puppet CA: abc.d.com
+issuer= /C=US/ST=North Carolina/L=Raleigh/O=Katello/OU=SomeOrgUnit/CN=abc.d.com
+"""
+
 BAD_OUTPUT1 = """
 subject= /C=US/ST=North Carolina/L=Raleigh/O=Katello/OU=SomeOrgUnit/CN=test.a.com
 notAfterJan 18 07:02:33 2038 GMT
@@ -68,8 +74,8 @@ BAD_OUTPUT3 = """
 """
 
 
-def test_certificates_chain_enddates():
-    certs = certificate_chain_enddates.SatelliteCustomCaChain(context_wrap(OUTPUT1))
+def test_certificates_chain():
+    certs = certificate_chain.SatelliteCustomCaChain(context_wrap(OUTPUT1))
     assert len(certs) == 2
     assert certs.earliest_expiry_date.str == 'Jan 18 07:02:43 2018'
     for cert in certs:
@@ -79,9 +85,13 @@ def test_certificates_chain_enddates():
             assert cert['subject'] == '/C=US/ST=North Carolina/O=Katello/OU=SomeOrgUnit/CN=test.c.com'
             assert cert['notBefore'].str == 'Nov 30 07:02:42 2020'
 
+    certs = certificate_chain.SatelliteCustomCaChain(context_wrap(OUTPUT2))
+    assert len(certs) == 1
+    assert certs[0]['issuer'] == '/C=US/ST=North Carolina/L=Raleigh/O=Katello/OU=SomeOrgUnit/CN=abc.d.com'
+
 
 def test_satellite_ca_chain():
-    certs = certificate_chain_enddates.CertificateChainEnddates(context_wrap(SATELLITE_OUTPUT1))
+    certs = certificate_chain.CertificateChain(context_wrap(SATELLITE_OUTPUT1))
     assert len(certs) == 3
     assert certs.earliest_expiry_date.str == 'Jan 18 07:02:43 2018'
     for cert in certs:
@@ -90,20 +100,20 @@ def test_satellite_ca_chain():
 
 
 def test_doc():
-    certs = certificate_chain_enddates.CertificateChainEnddates(context_wrap(OUTPUT1))
-    satellite_ca_certs = certificate_chain_enddates.SatelliteCustomCaChain(context_wrap(SATELLITE_OUTPUT2))
+    certs = certificate_chain.CertificateChain(context_wrap(OUTPUT1))
+    satellite_ca_certs = certificate_chain.SatelliteCustomCaChain(context_wrap(SATELLITE_OUTPUT2))
     globs = {
         'certs': certs,
         'satellite_ca_certs': satellite_ca_certs
     }
-    failed, tested = doctest.testmod(certificate_chain_enddates, globs=globs)
+    failed, tested = doctest.testmod(certificate_chain, globs=globs)
     assert failed == 0
 
 
-def test__certificates_chain_enddates_except():
+def test_certificates_chain_except():
     with pytest.raises(ParseException):
-        certificate_chain_enddates.CertificateChainEnddates(context_wrap(BAD_OUTPUT1))
+        certificate_chain.CertificateChain(context_wrap(BAD_OUTPUT1))
     with pytest.raises(ParseException):
-        certificate_chain_enddates.CertificateChainEnddates(context_wrap(BAD_OUTPUT2))
+        certificate_chain.CertificateChain(context_wrap(BAD_OUTPUT2))
     with pytest.raises(SkipException):
-        certificate_chain_enddates.SatelliteCustomCaChain(context_wrap(BAD_OUTPUT3))
+        certificate_chain.SatelliteCustomCaChain(context_wrap(BAD_OUTPUT3))
