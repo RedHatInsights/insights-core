@@ -62,11 +62,11 @@ class Tuned(CommandParser, dict):
         for line in content:
             if line.startswith('-'):
                 data.update(available=[]) if 'available' not in data else None
-                data['available'].append([i.strip() for i in line.split('- ')][1])
+                data['available'].append(line.split('- ')[1].strip())
             elif line.startswith('Current'):
-                data['active'] = [i.strip() for i in line.split(': ')][1]
+                data['active'] = line.split(': ')[1].strip()
             elif line.startswith('Preset'):
-                data['preset'] = [i.strip() for i in line.split(': ')][1]
+                data['preset'] = line.split(': ')[1].strip()
             # Ignore everything else for now
         if not data:
             raise SkipException
