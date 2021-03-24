@@ -93,6 +93,9 @@ def test_tuned_profile():
     assert 'sap-netweaver' in tuned_output.get('available')
     assert 'virtual-guest-vmware' in tuned_output.get('available')
 
+    with pytest.raises(SkipException):
+        Tuned(context_wrap(''))
+
 
 def test_doc_example():
     env = {'tuned': Tuned(context_wrap(TUNED_OUTPUT))}
