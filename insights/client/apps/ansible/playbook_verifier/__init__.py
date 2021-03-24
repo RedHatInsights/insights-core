@@ -1,6 +1,5 @@
 import os
 import copy
-import yaml
 import base64
 import requests
 import tempfile
@@ -144,7 +143,7 @@ def verify(playbook, checkVersion=True, skipVerify=False):
     return playbook
 
 
-def loadPlaybookYaml (playbook):
+def loadPlaybookYaml(playbook):
     """
     Load playbook yaml using current yaml library implementation
         output: playbook yaml
