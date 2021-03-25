@@ -151,6 +151,7 @@
                 " is now offline",
                 "AMD Secure Memory Encryption (SME) active",
                 "Amazon EC2",
+                "BIOS Hyper-V UEFI Release",
                 "Brought up ",
                 "CIFS VFS: protocol revalidation - security settings mismatch",
                 "CSUM",
@@ -165,6 +166,7 @@
                 "Emulex OneConnect OCe10100, FCoE Initiator",
                 "FEATURE IBPB_SUPPORT",
                 "FEATURE SPEC_CTRL",
+                "Hyper-V Host Build",
                 "Ignoring BGRT: failed to map image header memory",
                 "Ignoring BGRT: failed to map image memory",
                 "Kernel page table isolation",
@@ -1408,6 +1410,11 @@
             "symbolic_name": "rpm_V_packages"
         },
         {
+            "command": "/usr/bin/awk 'BEGIN { pipe=\"openssl x509 -noout -subject -enddate\"} /^-+BEGIN CERT/,/^-+END CERT/ { print | pipe } /^-+END CERT/ { close(pipe); printf(\"\\n\")}' /etc/pki/katello/certs/katello-server-ca.crt",
+            "pattern": [],
+            "symbolic_name": "satellite_custom_ca_chain"
+        },
+        {
             "command": "/usr/bin/mongo pulp_database --eval 'db.serverStatus().storageEngine'",
             "pattern": [],
             "symbolic_name": "satellite_mongodb_storage_engine"
@@ -1695,7 +1702,8 @@
             "file": "/etc/insights-client/insights-client.conf",
             "pattern": [
                 "[",
-                "auto_update"
+                "auto_update",
+                "core_collect"
             ],
             "symbolic_name": "insights_client_conf"
         },
@@ -2472,9 +2480,7 @@
         {
             "file": "/var/log/mariadb/mariadb.log",
             "pattern": [
-                "Duplicate entry",
-                "Too many open files",
-                "for key 'PRIMARY'"
+                "Too many open files"
             ],
             "symbolic_name": "mariadb_log"
         },
@@ -4330,5 +4336,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2021-03-11T11:43:31.335066"
+    "version": "2021-03-24T20:04:01.898853"
 }
