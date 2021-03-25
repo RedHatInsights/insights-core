@@ -209,6 +209,7 @@ class InsightsArchiveSpecs(Specs):
     ])
     saphostexec_status = simple_file("insights_commands/usr.sap.hostctrl.exe.saphostexec_-status")
     saphostexec_version = simple_file("insights_commands/usr.sap.hostctrl.exe.saphostexec_-version")
+    satellite_custom_ca_chain = simple_file("insights_commands/awk_BEGIN_pipe_openssl_x509_-noout_-subject_-enddate_._-_BEGIN_CERT._._-_END_CERT._print_pipe_._-_END_CERT._close_pipe_printf_n_.etc.pki.katello.certs.katello-server-ca.crt")
     satellite_mongodb_storage_engine = simple_file("insights_commands/mongo_pulp_database_--eval_db.serverStatus_.storageEngine")
     sealert = simple_file('insights_commands/sealert_-l')
     sestatus = simple_file("insights_commands/sestatus_-b")
