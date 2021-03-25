@@ -1,6 +1,5 @@
 import sys
-from insights.client.apps.ansible.playbook_verifier.contrib import oyaml as yaml
-from insights.client.apps.ansible.playbook_verifier import verify
+from insights.client.apps.ansible.playbook_verifier import verify, loadPlaybookYaml
 
 
 def read_playbook():
@@ -15,7 +14,7 @@ def read_playbook():
 
 
 playbook = read_playbook()
-playbook_yaml = yaml.load(playbook)
+playbook_yaml = loadPlaybookYaml(playbook)
 
 try:
     verified_playbook = verify(playbook_yaml, checkVersion=False)
