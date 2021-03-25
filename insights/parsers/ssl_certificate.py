@@ -12,19 +12,45 @@ RhsmKatelloDefaultCACert - command ``openssl x509 -in /etc/rhsm/ca/katello-defau
 
 from insights import parser, CommandParser
 from datetime import datetime
-from insights.parsers import ParseException, SkipException
+from insights.parsers import ParseException
 from insights.specs import Specs
-from insights.core.context import Context
 from insights.parsers.certificates_enddate import CertificatesEnddate
+
+
+def parse_openssl_output(content):
+    """
+    It parses the output of "openssl -in <single_certificate_file> -xxx".
+    Currently it only supports the attributes which the output is in
+    key=value pairs. It saves the cert info into a dict. The value of notBefore and
+    notAfter are saved to an instance of ExpirationDate, which contains the date
+    in string and datetime format.
+
+    Raises:
+        ParseException: when the output isn't in key=value format or
+                        the notAfter or notBefore isn't expected format.
+    """
+    date_format = '%b %d %H:%M:%S %Y'
+    data = {}
+    for line in content:
+        if '=' not in line:
+            raise ParseException('The line %s is not in key=value format' % line)
+        key, value = [item.strip() for item in line.split('=', 1)]
+        if key in ['notBefore', 'notAfter']:
+            value_without_tz = value.rsplit(" ", 1)[0]
+            try:
+                date_time = datetime.strptime(value_without_tz, date_format)
+            except Exception:
+                raise ParseException('The %s is not in %s format.' % (key, date_format))
+            value = CertificatesEnddate.ExpirationDate(value_without_tz, date_time)
+        data[key] = value
+    return data
 
 
 class CertificateInfo(CommandParser, dict):
     """
     Base class to parse the output of "openssl -in <single_certificate_file> -xxx".
     Currently it only supports the attributes which the output is in
-    key=value pairs. It saves the cert info into a dict. The value of notBefore and
-    notAfter are saved to an instance of ExpirationDate, which contains the date
-    in string and datetime format.
+    key=value pairs.
 
     Sample Output::
 
@@ -42,13 +68,7 @@ class CertificateInfo(CommandParser, dict):
         '/C=US/ST=North Carolina/L=Raleigh/O=Katello/OU=SomeOrgUnit/CN=a.b.c.com'
         >>> cert['notBefore'].str
         'Dec  7 07:02:33 2020'
-
-    Raises:
-        ParseException: when the output isn't in key=value format or
-                        the notAfter or notBefore isn't expected format.
-        SkipException: when the content is empty.
     """
-    date_format = '%b %d %H:%M:%S %Y'
 
     def __init__(self, context):
         super(CertificateInfo, self).__init__(
@@ -56,20 +76,12 @@ class CertificateInfo(CommandParser, dict):
             extra_bad_lines=['error opening certificate', 'unable to load certificate'])
 
     def parse_content(self, content):
-        if len(content) < 1:
-            raise SkipException("No cert in the output")
-        for line in content:
-            if '=' not in line:
-                raise ParseException('The line %s is not in key=value format' % line)
-            key, value = [item.strip() for item in line.split('=', 1)]
-            if key in ['notBefore', 'notAfter']:
-                value_without_tz = value.rsplit(" ", 1)[0]
-                try:
-                    date_time = datetime.strptime(value_without_tz, self.date_format)
-                except Exception:
-                    raise ParseException('The %s is not in %s format.' % (key, self.date_format))
-                value = CertificatesEnddate.ExpirationDate(value_without_tz, date_time)
-            self[key] = value
+        """
+        This uses the :py:func:`insights.parsers.ssl_certificate.parse_openssl_output` function.
+        See its documentation for parsing details.
+        """
+
+        self.update(parse_openssl_output(content))
 
 
 class CertificateChain(CommandParser, list):
@@ -103,8 +115,9 @@ class CertificateChain(CommandParser, list):
     def parse_content(self, content):
         """
         Parse the content of cert chain file. And it saves the certs
-        in a list of dict. Each cert is saved as an CertificateInfo
-        instance.
+        in a list of dict.
+        This uses the :py:func:`insights.parsers.ssl_certificate.parse_openssl_output` function.
+        See its documentation for parsing details.
 
         Attributes:
             earliest_expiry_date(ExpirationDate):
@@ -117,10 +130,12 @@ class CertificateChain(CommandParser, list):
         start_index = 0
         for index, line in enumerate(content):
             if not line.strip():
-                self.append(CertificateInfo(Context(content=content[start_index:index], path=None)))
+                # one cert ends
+                if start_index != index:
+                    self.append(parse_openssl_output(content[start_index:index]))
                 start_index = index + 1
             if index == len(content) - 1:
-                self.append(CertificateInfo(Context(content=content[start_index:index + 1], path=None)))
+                self.append(parse_openssl_output(content=content[start_index:index + 1]))
         for one_cert in self:
             expire_date = one_cert.get('notAfter')
             if expire_date and (self.earliest_expiry_date is None or expire_date.datetime < self.earliest_expiry_date.datetime):

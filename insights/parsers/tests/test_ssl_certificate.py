@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.parsers import ssl_certificate, ParseException, SkipException
+from insights.parsers import ssl_certificate, ParseException
 from insights.core.plugins import ContentException
 from insights.tests import context_wrap
 
@@ -19,11 +19,11 @@ subject= /C=US/ST=North Carolina/L=Raleigh/O=Katello/OU=SomeOrgUnit/CN=test.b.co
 notBefore=Dec  7 07:02:33 2020 GMT
 notAfter=Jan 18 07:02:33 2038 GMT
 
+
 issuer= /C=US/ST=North Carolina/L=Raleigh/O=Katello/OU=SomeOrgUnit/CN=test.d.com
 subject= /C=US/ST=North Carolina/O=Katello/OU=SomeOrgUnit/CN=test.c.com
 notBefore=Nov 30 07:02:42 2020 GMT
 notAfter=Jan 18 07:02:43 2018 GMT
-
 """
 
 CERTIFICATE_CHAIN_OUTPUT2 = """
@@ -41,7 +41,6 @@ notAfter=Jan 18 07:02:43 2018 GMT
 
 subject= /C=US/ST=North Carolina/O=Katello/OU=SomeOrgUnit/CN=test.c.com
 notAfter=Jan 18 07:02:43 2048 GMT
-
 """
 
 SATELLITE_OUTPUT2 = """
@@ -50,7 +49,6 @@ notAfter=Jan 18 07:02:33 2038 GMT
 
 subject= /C=US/ST=North Carolina/O=Katello/OU=SomeOrgUnit/CN=test.b.com
 notAfter=Jan 18 07:02:43 2028 GMT
-
 """
 
 RHSM_KATELLO_CERT_OUTPUT1 = """
@@ -68,10 +66,6 @@ notAfter=2038 Jan 18 07:02:33 GMT
 """
 
 BAD_OUTPUT3 = """
-
-"""
-
-BAD_OUTPUT4 = """
 Error opening Certificate /etc/rhsm/ca/katello-default-ca.pem
 139814540982160:error:02001002:system library:fopen:No such file or directory:bss_file.c:402:fopen('/etc/rhsm/ca/katello-default-ca.pem','r')
 139814540982160:error:20074002:BIO routines:FILE_CTRL:system lib:bss_file.c:404:
@@ -84,10 +78,8 @@ def test_certificate_info_exception():
         ssl_certificate.CertificateInfo(context_wrap(BAD_OUTPUT1))
     with pytest.raises(ParseException):
         ssl_certificate.CertificateInfo(context_wrap(BAD_OUTPUT2))
-    with pytest.raises(SkipException):
-        ssl_certificate.CertificateInfo(context_wrap(BAD_OUTPUT3))
     with pytest.raises(ContentException):
-        ssl_certificate.CertificateInfo(context_wrap(BAD_OUTPUT4))
+        ssl_certificate.CertificateInfo(context_wrap(BAD_OUTPUT3))
 
 
 def test_certificate_info():
@@ -99,7 +91,7 @@ def test_certificate_info():
 
 
 def test_certificates_chain():
-    certs = ssl_certificate.SatelliteCustomCaChain(context_wrap(CERTIFICATE_CHAIN_OUTPUT1))
+    certs = ssl_certificate.CertificateChain(context_wrap(CERTIFICATE_CHAIN_OUTPUT1))
     assert len(certs) == 2
     assert certs.earliest_expiry_date.str == 'Jan 18 07:02:43 2018'
     for cert in certs:
@@ -109,18 +101,24 @@ def test_certificates_chain():
             assert cert['subject'] == '/C=US/ST=North Carolina/O=Katello/OU=SomeOrgUnit/CN=test.c.com'
             assert cert['notBefore'].str == 'Nov 30 07:02:42 2020'
 
-    certs = ssl_certificate.SatelliteCustomCaChain(context_wrap(CERTIFICATE_CHAIN_OUTPUT2))
+    certs = ssl_certificate.CertificateChain(context_wrap(CERTIFICATE_CHAIN_OUTPUT2))
     assert len(certs) == 1
     assert certs[0]['issuer'] == '/C=US/ST=North Carolina/L=Raleigh/O=Katello/OU=SomeOrgUnit/CN=abc.d.com'
 
+    certs = ssl_certificate.CertificateChain(context_wrap(RHSM_KATELLO_CERT_OUTPUT1))
+    assert len(certs) == 1
+
 
 def test_satellite_ca_chain():
-    certs = ssl_certificate.CertificateChain(context_wrap(SATELLITE_OUTPUT1))
+    certs = ssl_certificate.SatelliteCustomCaChain(context_wrap(SATELLITE_OUTPUT1))
     assert len(certs) == 3
     assert certs.earliest_expiry_date.str == 'Jan 18 07:02:43 2018'
-    for cert in certs:
-        if cert['notAfter'].str == certs.earliest_expiry_date.str:
-            assert cert['subject'] == '/C=US/ST=North Carolina/O=Katello/OU=SomeOrgUnit/CN=test.b.com'
+    assert certs[0]['subject'] == '/C=US/ST=North Carolina/L=Raleigh/O=Katello/OU=SomeOrgUnit/CN=test.a.com'
+    assert certs[0]['notAfter'].str == 'Jan 18 07:02:33 2038'
+    assert certs[1]['subject'] == '/C=US/ST=North Carolina/O=Katello/OU=SomeOrgUnit/CN=test.b.com'
+    assert certs[1]['notAfter'].str == 'Jan 18 07:02:43 2018'
+    assert certs[2]['subject'] == '/C=US/ST=North Carolina/O=Katello/OU=SomeOrgUnit/CN=test.c.com'
+    assert certs[2]['notAfter'].str == 'Jan 18 07:02:43 2048'
 
 
 def test_rhsm_katello_default_ca():
