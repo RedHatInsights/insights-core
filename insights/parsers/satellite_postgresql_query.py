@@ -193,7 +193,7 @@ class SatelliteComputeResources(SatellitePostgreSQLQuery):
         test_compute_resource1,Foreman::Model::Libvirt
         test_compute_resource2,Foreman::Model::RHV
 
-    Examples::
+    Examples:
         >>> type(resources_table)
         <class 'insights.parsers.satellite_postgresql_query.SatelliteComputeResources'>
         >>> rows=resources_table.search(type='Foreman::Model::Libvirt')
