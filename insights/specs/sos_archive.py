@@ -265,6 +265,7 @@ class SosSpecs(Specs):
     testparm_s = simple_file("sos_commands/samba/testparm_s")
     tomcat_web_xml = first_of([glob_file("/etc/tomcat*/web.xml"),
                                   glob_file("/conf/tomcat/tomcat*/web.xml")])
+    tuned_adm = simple_file("sos_commands/tuned/tuned-adm_list")
     tuned_conf = simple_file("/etc/tuned.conf")
     udev_persistent_net_rules = simple_file("/etc/udev/rules.d/70-persistent-net.rules")
     uname = simple_file("sos_commands/kernel/uname_-a")
