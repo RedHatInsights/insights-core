@@ -12,7 +12,7 @@ RhsmKatelloDefaultCACert - command ``openssl x509 -in /etc/rhsm/ca/katello-defau
 
 from insights import parser, CommandParser
 from datetime import datetime
-from insights.parsers import ParseException
+from insights.parsers import ParseException, SkipException
 from insights.specs import Specs
 from insights.parsers.certificates_enddate import CertificatesEnddate
 
@@ -68,6 +68,9 @@ class CertificateInfo(CommandParser, dict):
         '/C=US/ST=North Carolina/L=Raleigh/O=Katello/OU=SomeOrgUnit/CN=a.b.c.com'
         >>> cert['notBefore'].str
         'Dec  7 07:02:33 2020'
+
+    Raises:
+        SkipException: when the command output is empty.
     """
 
     def __init__(self, context):
@@ -82,6 +85,8 @@ class CertificateInfo(CommandParser, dict):
         """
 
         self.update(parse_openssl_output(content))
+        if not self:
+            raise SkipException("There is not any info in the cert.")
 
 
 class CertificateChain(CommandParser, list):
@@ -124,6 +129,9 @@ class CertificateChain(CommandParser, list):
                 The earliest expiry datetime of the certs in the chain.
                 None when there isn't "notAfter" for all the certs
                 in the chain.
+
+        Raises:
+            SkipException: when the command output is empty.
         """
 
         self.earliest_expiry_date = None
@@ -136,6 +144,8 @@ class CertificateChain(CommandParser, list):
                 start_index = index + 1
             if index == len(content) - 1:
                 self.append(parse_openssl_output(content=content[start_index:index + 1]))
+        if not self:
+            raise SkipException("There is not any info in the ca cert chain.")
         for one_cert in self:
             expire_date = one_cert.get('notAfter')
             if expire_date and (self.earliest_expiry_date is None or expire_date.datetime < self.earliest_expiry_date.datetime):

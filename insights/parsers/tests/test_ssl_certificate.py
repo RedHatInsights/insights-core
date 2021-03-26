@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.parsers import ssl_certificate, ParseException
+from insights.parsers import ssl_certificate, ParseException, SkipException
 from insights.core.plugins import ContentException
 from insights.tests import context_wrap
 
@@ -72,6 +72,10 @@ Error opening Certificate /etc/rhsm/ca/katello-default-ca.pem
 unable to load certificate
 """
 
+BAD_OUTPUT4 = """
+
+"""
+
 
 def test_certificate_info_exception():
     with pytest.raises(ParseException):
@@ -80,6 +84,13 @@ def test_certificate_info_exception():
         ssl_certificate.CertificateInfo(context_wrap(BAD_OUTPUT2))
     with pytest.raises(ContentException):
         ssl_certificate.CertificateInfo(context_wrap(BAD_OUTPUT3))
+    with pytest.raises(SkipException):
+        ssl_certificate.CertificateInfo(context_wrap(BAD_OUTPUT4))
+
+
+def test_certificate_chain_exception():
+    with pytest.raises(SkipException):
+        ssl_certificate.CertificateChain(context_wrap(BAD_OUTPUT4))
 
 
 def test_certificate_info():
