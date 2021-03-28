@@ -783,6 +783,7 @@ class DefaultSpecs(Specs):
     resolv_conf = simple_file("/etc/resolv.conf")
     rhn_conf = first_file(["/etc/rhn/rhn.conf", "/conf/rhn/rhn/rhn.conf"])
     rhsm_conf = simple_file("/etc/rhsm/rhsm.conf")
+    rhsm_enabledrepolist = simple_command("/usr/bin/subscription-manager repos --list-enabled")
     rhsm_log = simple_file("/var/log/rhsm/rhsm.log")
     rhsm_releasever = simple_file('/var/lib/rhsm/cache/releasever.json')
     rndc_status = simple_command("/usr/sbin/rndc status")
