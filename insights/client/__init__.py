@@ -251,10 +251,16 @@ class InsightsClient(object):
     def update(self):
         # dont update if running in offline mode
         if self.config.offline:
-            logger.debug("Not updating Core. Running in offline mode.")
+            if self.config.just_update:
+                # log to console if using --update
+                _loglevel = 'INFO'
+            else:
+                _loglevel = 'DEBUG'
+            logger.log(_loglevel, "Not updating Core. Running in offline mode.")
             return True
 
-        if self.config.auto_update:
+        if self.config.auto_update or self.config.just_update:
+            # --updater overrides disabled auto_update
             # fetch the new eggs and gpg
             egg_paths = self.fetch()
 
