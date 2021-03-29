@@ -843,6 +843,10 @@ class DefaultSpecs(Specs):
             return True
         raise SkipComponent
 
+    satellite_compute_resources = simple_command(
+        "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c 'select name, type from compute_resources' --csv",
+        deps=[is_satellite_server]
+    )
     satellite_content_hosts_count = simple_command(
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c 'select count(*) from hosts'",
         deps=[is_satellite_server]
