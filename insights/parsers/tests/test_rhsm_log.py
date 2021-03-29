@@ -1,4 +1,8 @@
+import doctest
+from datetime import datetime
+
 from insights import add_filter
+from insights.parsers import rhsm_log
 from insights.parsers.rhsm_log import RhsmLog
 from insights.specs import Specs
 from insights.tests import context_wrap
@@ -18,6 +22,12 @@ LOG2 = """
     File "/usr/share/rhsm/subscription_manager/managercli.py", line 600, in _do_command
 """.strip()
 
+# For Coverage
+LOG3 = """
+[ERROR]
+2011-12-27-08:41:13,104 [ERROR]  @managercli.py:66 - certificate verify failed
+"""
+
 add_filter(Specs.rhsm_log, [
     "[ERROR]",
     "[Errno"
@@ -29,9 +39,23 @@ def test_rhsm_log():
     ern_list = rlog.get('[Errno -2]')
     assert 1 == len(ern_list)
     assert ern_list[0]['raw_message'] == "2016-07-31 04:07:21,245 [ERROR] rhsmcertd-worker:24440 @entcertlib.py:121 - [Errno -2] Name or service not known"
+    assert ern_list[0]['timestamp'] == datetime(2016, 7, 31, 4, 7, 21, 245000)
+    assert ern_list[0]['message'] == "[ERROR] rhsmcertd-worker:24440 @entcertlib.py:121 - [Errno -2] Name or service not known"
 
     rlog = RhsmLog(context_wrap(LOG2))
     ern_list = rlog.get('[Errno -2]')
     assert 0 == len(ern_list)
     err_list = rlog.get('ERROR')
     assert 2 == len(err_list)
+
+    rlog = RhsmLog(context_wrap(LOG3))
+    err_list = rlog.get('ERROR')
+    assert err_list[0].get('timestamp') is None
+    assert err_list[1].get('timestamp') is None
+
+
+def test_doc():
+    failed_count, tests = doctest.testmod(
+        rhsm_log, globs={'rhsm_log': RhsmLog(context_wrap(LOG1))}
+    )
+    assert failed_count == 0
