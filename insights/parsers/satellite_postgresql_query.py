@@ -6,6 +6,8 @@ This module contains the following parsers:
 
 SatelliteAdminSettings - command ``psql -d foreman -c 'select name, value, "default" from settings where name in (\'destroy_vm_on_host_delete\', \'unregister_delete_host\') --csv'``
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SatelliteComputeResources - command ``psql -d foreman -c 'select name, type from compute_resources'``
+-----------------------------------------------------------------------------------------------------
 """
 
 import os
@@ -174,3 +176,30 @@ class SatelliteAdminSettings(SatellitePostgreSQLQuery):
         if rows:
             value = rows[0].get('value')
             return rows[0].get('default') if value == '' else value
+
+
+@parser(Specs.satellite_compute_resources)
+class SatelliteComputeResources(SatellitePostgreSQLQuery):
+    """
+    Parse the output of the command ``psql -d foreman -c 'select name, type from compute_resources' --csv``.
+
+    .. note::
+        Please refer to its super-class :class:`insights.parsers.satellite_postgresql_query.SatellitePostgreSQLQuery` for more
+        details.
+
+    Sample output::
+
+        name,type
+        test_compute_resource1,Foreman::Model::Libvirt
+        test_compute_resource2,Foreman::Model::RHV
+
+    Examples:
+        >>> type(resources_table)
+        <class 'insights.parsers.satellite_postgresql_query.SatelliteComputeResources'>
+        >>> rows=resources_table.search(type='Foreman::Model::Libvirt')
+        >>> len(rows)
+        1
+        >>> rows[0]['name']
+        'test_compute_resource1'
+    """
+    pass
