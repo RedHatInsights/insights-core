@@ -153,6 +153,30 @@ plugins:
         - name: insights.parsers.lsmod
           enabled: true
 
+    # needed for the 'pre-check' of the 'is_satellite_server' spec
+        - name: insights.combiners.satellite_version.SatelliteVersion
+          enabled: true
+
+    # needed for the 'pre-check' of the 'is_satellite_capsule' spec
+        - name: insights.combiners.satellite_version.CapsuleVersion
+          enabled: true
+
+    # needed for the 'pre-check' of the 'gfs2_mount_points' spec
+        - name: insights.parsers.mount.Mount
+          enabled: true
+        - name: insights.combiners.redhat_release.RedHatRelease
+          enabled: true
+        - name: insights.parsers.uname.Uname
+          enabled: true
+        - name: insights.parsers.redhat_release.RedhatRelease
+          enabled: true
+        - name: insights.components.rhel_version.IsRhel6
+          enabled: true
+        - name: insights.components.rhel_version.IsRhel7
+          enabled: true
+        - name: insights.components.rhel_version.IsRhel8
+          enabled: true
+
     # needed because some specs aren't given names before they're used in DefaultSpecs
         - name: insights.core.spec_factory
           enabled: true

@@ -11,7 +11,7 @@ YumRepoList - command ``yum -C --noplugins repolist``
 """
 
 from insights import parser, CommandParser
-from insights.parsers import SkipException, parse_fixed_table
+from insights.parsers import SkipException, parse_fixed_table, ParseException
 from insights.specs import Specs
 
 eus = [
@@ -127,6 +127,9 @@ class YumRepoList(CommandParser):
         if not content:
             raise SkipException('No repolist.')
 
+        if content[0].startswith('repolist:'):
+            raise SkipException('No repolist.')
+
         trailing_line_prefix = [
                 'repolist:',
                 'Uploading Enabled',
@@ -137,12 +140,16 @@ class YumRepoList(CommandParser):
 
         self.data = []
         self.repos = {}
-        self.data = parse_fixed_table(
-                content,
-                heading_ignore=['repo id'],
-                header_substitute=[('repo id', 'id     '), ('repo name', 'name     ')],
-                trailing_ignore=trailing_line_prefix,
-                empty_exception=True)
+        try:
+            self.data = parse_fixed_table(
+                    content,
+                    heading_ignore=['repo id'],
+                    header_substitute=[('repo id', 'id     '), ('repo name', 'name     ')],
+                    trailing_ignore=trailing_line_prefix,
+                    empty_exception=True)
+        except ValueError as e:
+            # ValueError raised by parse_fixed_table
+            raise ParseException('Failed to parser yum repolist: {0}'.format(str(e)))
 
         if not self.data:
             raise SkipException('No repolist.')
