@@ -13,7 +13,7 @@ def test_inventory_url_from_base_url(get_proxies, init_session):
     """
     Inventory URL is composed correctly from the given base URL.
     """
-    config = Mock(base_url="www.example.com", insecure_connection=False)
+    config = Mock(base_url="www.example.com")
     connection = InsightsConnection(config)
     assert connection.inventory_url == "https://www.example.com/inventory/v1"
 
