@@ -12,6 +12,7 @@ import logging
 import os
 import re
 import json
+import signal
 
 from grp import getgrgid
 from os import stat
@@ -94,7 +95,7 @@ def _get_package(broker, command):
     ctx = broker[HostContext]
     resolved = ctx.shell_out("/usr/bin/readlink -e {0}".format(command))
     if resolved:
-        pkg = ctx.shell_out("/usr/bin/rpm -qf {0}".format(resolved[0]))
+        pkg = ctx.shell_out("/usr/bin/rpm -qf {0}".format(resolved[0]), signum=signal.SIGTERM)
         if pkg:
             return pkg[0]
     raise SkipComponent
@@ -786,7 +787,7 @@ class DefaultSpecs(Specs):
     rhsm_log = simple_file("/var/log/rhsm/rhsm.log")
     rhsm_releasever = simple_file('/var/lib/rhsm/cache/releasever.json')
     rndc_status = simple_command("/usr/sbin/rndc status")
-    rpm_V_packages = simple_command("/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo chrony", keep_rc=True)
+    rpm_V_packages = simple_command("/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo chrony", keep_rc=True, signum=signal.SIGTERM)
     rsyslog_conf = glob_file(["/etc/rsyslog.conf", "/etc/rsyslog.d/*.conf"])
     samba = simple_file("/etc/samba/smb.conf")
 
@@ -971,11 +972,11 @@ class DefaultSpecs(Specs):
     x86_retp_enabled = simple_file("sys/kernel/debug/x86/retp_enabled")
     xinetd_conf = glob_file(["/etc/xinetd.conf", "/etc/xinetd.d/*"])
     yum_conf = simple_file("/etc/yum.conf")
-    yum_list_available = simple_command("yum -C --noplugins list available")
+    yum_list_available = simple_command("yum -C --noplugins list available", signum=signal.SIGTERM)
     yum_log = simple_file("/var/log/yum.log")
-    yum_repolist = simple_command("/usr/bin/yum -C --noplugins repolist")
+    yum_repolist = simple_command("/usr/bin/yum -C --noplugins repolist", signum=signal.SIGTERM)
     yum_repos_d = glob_file("/etc/yum.repos.d/*.repo")
-    yum_updateinfo = simple_command("/usr/bin/yum -C updateinfo list")
+    yum_updateinfo = simple_command("/usr/bin/yum -C updateinfo list", signum=signal.SIGTERM)
     zipl_conf = simple_file("/etc/zipl.conf")
     rpm_format = format_rpm()
-    installed_rpms = simple_command("/bin/rpm -qa --qf '%s'" % rpm_format, context=HostContext)
+    installed_rpms = simple_command("/bin/rpm -qa --qf '%s'" % rpm_format, context=HostContext, signum=signal.SIGTERM)

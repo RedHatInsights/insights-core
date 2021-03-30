@@ -1,6 +1,5 @@
 import logging
 import os
-import signal
 import six
 from contextlib import contextmanager
 from insights.util import streams, subproc
@@ -181,17 +180,17 @@ class ExecutionContext(six.with_metaclass(ExecutionContextMeta)):
             return (closest_root, cls)
         return (None, None)
 
-    def check_output(self, cmd, timeout=None, keep_rc=False, env=None):
+    def check_output(self, cmd, timeout=None, keep_rc=False, env=None, signum=None):
         """ Subclasses can override to provide special
             environment setup, command prefixes, etc.
         """
-        return subproc.call(cmd, timeout=timeout or self.timeout,
+        return subproc.call(cmd, timeout=timeout or self.timeout, signum=signum,
                 keep_rc=keep_rc, env=env)
 
-    def shell_out(self, cmd, split=True, timeout=None, keep_rc=False, env=None):
+    def shell_out(self, cmd, split=True, timeout=None, keep_rc=False, env=None, signum=None):
         env = env or os.environ
         rc = None
-        raw = self.check_output(cmd, timeout=timeout, keep_rc=keep_rc, env=env)
+        raw = self.check_output(cmd, timeout=timeout, keep_rc=keep_rc, env=env, signum=signum)
         if keep_rc:
             rc, output = raw
         else:
@@ -224,23 +223,6 @@ class ExecutionContext(six.with_metaclass(ExecutionContextMeta)):
 class HostContext(ExecutionContext):
     def __init__(self, root='/', timeout=30, all_files=None):
         super(HostContext, self).__init__(root=root, timeout=timeout, all_files=all_files)
-
-    def check_output(self, cmd, timeout=None, keep_rc=False, env=None):
-        """ Subclasses can override to provide special
-            environment setup, command prefixes, etc.
-        """
-        signum = signal.SIGKILL
-        if isinstance(cmd, list):
-            command = cmd[0][0]
-        else:
-            command = cmd
-        if (command.startswith('/bin/rpm') or
-            command.startswith('yum') or
-                command.startswith('/usr/bin/yum')):
-            signum = signal.SIGTERM
-
-        return subproc.call(cmd, timeout=timeout or self.timeout, signum=signum,
-                keep_rc=keep_rc, env=env)
 
 
 @fs_root
