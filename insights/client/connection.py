@@ -100,11 +100,6 @@ class InsightsConnection(object):
                     self.cert_verify = True
 
         protocol = "https://"
-        insecure_connection = self.config.insecure_connection
-        if insecure_connection:
-            # This really should not be used.
-            protocol = "http://"
-            self.cert_verify = False
 
         self.auto_config = self.config.auto_config
 

@@ -128,6 +128,12 @@ destroy_vm_on_host_delete,,"--- true
 ..."
 '''
 
+SATELLITE_COMPUTE_RESOURCE_1 = '''
+name,type
+test_compute_resource1,Foreman::Model::Libvirt
+test_compute_resource2,Foreman::Model::RHV
+'''
+
 
 def test_satellite_postgesql_query_exception():
     with pytest.raises(ContentException):
@@ -164,9 +170,11 @@ def test_satellite_postgesql_query():
 def test_HTL_doc_examples():
     query = satellite_postgresql_query.SatellitePostgreSQLQuery(context_wrap(test_data_3))
     settings = satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_SETTINGS_1))
+    resources_table = satellite_postgresql_query.SatelliteComputeResources(context_wrap(SATELLITE_COMPUTE_RESOURCE_1))
     globs = {
         'query': query,
-        'table': settings
+        'table': settings,
+        'resources_table': resources_table,
     }
     failed, tested = doctest.testmod(satellite_postgresql_query, globs=globs)
     assert failed == 0
@@ -204,3 +212,11 @@ def test_satellite_admin_settings_exception():
         satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_SETTINGS_BAD_1))
     with pytest.raises(ParseException):
         satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_SETTINGS_BAD_2))
+
+
+def test_satellite_compute_resources():
+    resources_table = satellite_postgresql_query.SatelliteComputeResources(context_wrap(SATELLITE_COMPUTE_RESOURCE_1))
+    assert len(resources_table) == 2
+    rows = resources_table.search(type='Foreman::Model::RHV')
+    assert len(rows) == 1
+    assert rows[0]['name'] == 'test_compute_resource2'
