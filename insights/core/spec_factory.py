@@ -2,6 +2,7 @@ import itertools
 import logging
 import os
 import re
+import signal
 import six
 import traceback
 import codecs
@@ -314,7 +315,7 @@ class CommandOutputProvider(ContentProvider):
         self.ds = ds
         self.timeout = timeout
         self.inherit_env = inherit_env or []
-        self.signum = signum
+        self.signum = signum or signal.SIGKILL
 
         self._content = None
         self.rc = None
@@ -391,7 +392,7 @@ class CommandOutputProvider(ContentProvider):
         fs.ensure_path(os.path.dirname(dst))
         if args:
             timeout = self.timeout or self.ctx.timeout
-            p = Pipeline(*args, timeout=timeout, env=self.create_env())
+            p = Pipeline(*args, timeout=timeout, signum=self.signum, env=self.create_env())
             return p.write(dst, keep_rc=self.keep_rc)
 
     def __repr__(self):
