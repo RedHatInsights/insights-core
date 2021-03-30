@@ -26,6 +26,18 @@ FEDORA = """
 Fedora release 23 (Twenty Three)
 """.strip()
 
+REDHAT_RELEASE8 = """
+Red Hat Enterprise Linux release 8.2 (Ootpa)
+""".strip()
+
+REDHAT_RELEASE8_SERVER = """
+Red Hat Enterprise Linux release Server 8.2 (Ootpa)
+""".strip()
+
+REDHAT_RELEASE10 = """
+Red Hat Enterprise Linux Server release 6.10 (Santiago)
+""".strip()
+
 
 def test_rhe6():
     release = RedhatRelease(context_wrap(REDHAT_RELEASE1))
@@ -85,3 +97,33 @@ def test_fedora23():
     assert release.version == "23"
     assert not release.is_rhel
     assert release.product == "Fedora"
+
+
+def test_rhel6_10():
+    release = RedhatRelease(context_wrap(REDHAT_RELEASE10))
+    assert release.raw == REDHAT_RELEASE10
+    assert release.major == 6
+    assert release.minor == 10
+    assert release.version == "6.10"
+    assert release.is_rhel
+    assert release.product == "Red Hat Enterprise Linux Server"
+
+
+def test_rhel8():
+    release = RedhatRelease(context_wrap(REDHAT_RELEASE8))
+    assert release.raw == REDHAT_RELEASE8
+    assert release.major == 8
+    assert release.minor == 2
+    assert release.version == "8.2"
+    assert release.is_rhel
+    assert release.product == "Red Hat Enterprise Linux"
+
+
+def test_rhel8_server():
+    release = RedhatRelease(context_wrap(REDHAT_RELEASE8_SERVER))
+    assert release.raw == REDHAT_RELEASE8_SERVER
+    assert release.major == 8
+    assert release.minor == 2
+    assert release.version == "8.2"
+    assert release.is_rhel
+    assert release.product == "Red Hat Enterprise Linux release Server"
