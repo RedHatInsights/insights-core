@@ -204,6 +204,8 @@ def call(cmd,
     if not isinstance(cmd, list):
         cmd = [cmd]
 
+    signum = signum or signal.SIGKILL
+
     p = Pipeline(*cmd, timeout=timeout, signum=signum, env=env)
     res = p(keep_rc=keep_rc)
 
