@@ -548,6 +548,7 @@ class Specs(SpecSet):
     rhn_taskomatic_daemon_log = RegistryPoint(filterable=False)
     rhosp_release = RegistryPoint()
     rhsm_conf = RegistryPoint()
+    rhsm_katello_default_ca_cert = RegistryPoint()
     rhsm_log = RegistryPoint(filterable=True)
     rhsm_releasever = RegistryPoint()
     rndc_status = RegistryPoint()
