@@ -1,3 +1,6 @@
+import doctest
+
+from insights.parsers import redhat_release
 from insights.parsers.redhat_release import RedhatRelease
 from insights.tests import context_wrap
 
@@ -30,12 +33,12 @@ REDHAT_RELEASE8 = """
 Red Hat Enterprise Linux release 8.2 (Ootpa)
 """.strip()
 
-REDHAT_RELEASE8_SERVER = """
-Red Hat Enterprise Linux release Server 8.2 (Ootpa)
+REDHAT_RELEASE10 = """
+Red Hat Enterprise Linux Server release 6.10(Santiago)
 """.strip()
 
-REDHAT_RELEASE10 = """
-Red Hat Enterprise Linux Server release 6.10 (Santiago)
+REDHAT_RELEASE_BETA = """
+Red Hat Enterprise Linux Server release 8.5 Beta (Ootpa)
 """.strip()
 
 
@@ -119,11 +122,22 @@ def test_rhel8():
     assert release.product == "Red Hat Enterprise Linux"
 
 
-def test_rhel8_server():
-    release = RedhatRelease(context_wrap(REDHAT_RELEASE8_SERVER))
-    assert release.raw == REDHAT_RELEASE8_SERVER
+def test_rhel_beta():
+    release = RedhatRelease(context_wrap(REDHAT_RELEASE_BETA))
+    assert release.raw == REDHAT_RELEASE_BETA
     assert release.major == 8
-    assert release.minor == 2
-    assert release.version == "8.2"
+    assert release.minor == 5
+    assert release.version == "8.5"
     assert release.is_rhel
-    assert release.product == "Red Hat Enterprise Linux release Server"
+    assert release.is_beta
+    assert release.parsed['code_name'] == 'Ootpa'
+    assert release.product == "Red Hat Enterprise Linux Server"
+
+
+def test_examples():
+    release = RedhatRelease(context_wrap(REDHAT_RELEASE2))
+    globs = {
+        'rh_release': release
+    }
+    failed, tested = doctest.testmod(redhat_release, globs=globs)
+    assert failed == 0
