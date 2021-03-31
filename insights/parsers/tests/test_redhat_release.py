@@ -41,6 +41,14 @@ REDHAT_RELEASE_BETA = """
 Red Hat Enterprise Linux Server release 8.5 Beta (Ootpa)
 """.strip()
 
+CENTOS_STREAM = """
+CentOS Stream release 8
+""".strip()
+
+CENTOS_7 = """
+CentOS Linux release 7.6.1810 (Core)
+""".strip()
+
 
 def test_rhe6():
     release = RedhatRelease(context_wrap(REDHAT_RELEASE1))
@@ -99,6 +107,7 @@ def test_fedora23():
     assert release.minor is None
     assert release.version == "23"
     assert not release.is_rhel
+    assert release.is_fedora
     assert release.product == "Fedora"
 
 
@@ -132,6 +141,25 @@ def test_rhel_beta():
     assert release.is_beta
     assert release.parsed['code_name'] == 'Ootpa'
     assert release.product == "Red Hat Enterprise Linux Server"
+
+
+def test_centos_stream():
+    release = RedhatRelease(context_wrap(CENTOS_STREAM))
+    assert release.major == 8
+    assert release.minor is None
+    assert release.product == 'CentOS Stream'
+    assert release.is_centos
+    assert not release.is_rhel
+
+
+def test_centos_7():
+    release = RedhatRelease(context_wrap(CENTOS_7))
+    assert release.major == 7
+    assert release.minor == 6
+    assert release.product == 'CentOS Linux'
+    assert release.code_name == 'Core'
+    assert release.is_centos
+    assert not release.is_rhel
 
 
 def test_examples():
