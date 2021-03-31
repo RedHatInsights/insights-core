@@ -718,11 +718,6 @@
             "symbolic_name": "lspci"
         },
         {
-            "command": "/sbin/lspci -k",
-            "pattern": [],
-            "symbolic_name": "lspci_kernel"
-        },
-        {
             "command": "/sbin/lspci -vmmkn",
             "pattern": [],
             "symbolic_name": "lspci_vmmkn"
