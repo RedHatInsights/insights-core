@@ -42,11 +42,31 @@ connecting to: mongodb://127.0.0.1:27017/pulp_database
 }
 '''.strip()
 
+MONGO_PULP_NON_YUM_TYPE_REPOS_OUTPUT1 = """
+0
+"""
+
+MONGO_PULP_NON_YUM_TYPE_REPOS_OUTPUT2 = """
+MongoDB shell version v3.4.9
+connecting to: mongodb://127.0.0.1:27017/pulp_database
+MongoDB server version: 3.4.9
+0
+"""
+
+MONGO_PULP_NON_YUM_TYPE_REPOS_OUTPUT3 = """
+MongoDB shell version v3.4.9
+connecting to: mongodb://127.0.0.1:27017/pulp_database
+MongoDB server version: 3.4.9
+ab
+"""
+
 
 def test_doc_examples():
-    output = satellite_mongodb.MongoDBStorageEngine(context_wrap(MONGO_PULP_STORAGE_ENGINE_OUTPUT1))
+    engine_output = satellite_mongodb.MongoDBStorageEngine(context_wrap(MONGO_PULP_STORAGE_ENGINE_OUTPUT1))
+    repos_output = satellite_mongodb.MongoDBNonYumTypeRepos(context_wrap(MONGO_PULP_NON_YUM_TYPE_REPOS_OUTPUT2))
     globs = {
-        'satellite_storage_engine': output
+        'satellite_storage_engine': engine_output,
+        'satellite_non_yum_type_repos': repos_output
     }
     failed, tested = doctest.testmod(satellite_mongodb, globs=globs)
     assert failed == 0
@@ -66,3 +86,10 @@ def test_no_storage_engine():
         satellite_mongodb.MongoDBStorageEngine(context_wrap(MONGO_PULP_STORAGE_ENGINE_OUTPUT3))
     with pytest.raises(ParseException):
         satellite_mongodb.MongoDBStorageEngine(context_wrap(MONGO_PULP_STORAGE_ENGINE_OUTPUT4))
+
+
+def test_bad_yum_repos_output():
+    with pytest.raises(SkipException):
+        satellite_mongodb.MongoDBNonYumTypeRepos(context_wrap(MONGO_PULP_NON_YUM_TYPE_REPOS_OUTPUT1))
+    with pytest.raises(SkipException):
+        satellite_mongodb.MongoDBNonYumTypeRepos(context_wrap(MONGO_PULP_NON_YUM_TYPE_REPOS_OUTPUT3))

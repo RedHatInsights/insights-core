@@ -14,11 +14,16 @@ UdevRules40Redhat - file ``/etc/udev/rules.d/40-redhat.rules``
 from insights import parser
 from insights.core import LogFileOutput
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.etc_udev_40_redhat_rules)
 class UdevRules40Redhat(LogFileOutput):
     """
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.udev_rules.UdevRules40Redhat` instead.
+
     Read the content of ``/etc/udev/rules.d/40-redhat.rules`` file.
 
     .. note::
@@ -44,4 +49,6 @@ class UdevRules40Redhat(LogFileOutput):
         >>> 'LABEL="memory_hotplug_end"' in udev_rules.lines
         True
     """
-    pass
+    def __init__(self, *args, **kwargs):
+        deprecated(UdevRules40Redhat, "Import UdevRules40Redhat from insights.parsers.udev_rules instread.")
+        super(UdevRules40Redhat, self).__init__(*args, **kwargs)

@@ -5,6 +5,7 @@ from insights.specs import Specs
 
 simple_file = partial(simple_file, context=HostArchiveContext)
 glob_file = partial(glob_file, context=HostArchiveContext)
+first_file = partial(first_file, context=HostArchiveContext)
 
 
 class InsightsArchiveSpecs(Specs):
@@ -44,6 +45,7 @@ class InsightsArchiveSpecs(Specs):
     dmesg = simple_file("insights_commands/dmesg")
     dmidecode = simple_file("insights_commands/dmidecode")
     dmsetup_info = simple_file("insights_commands/dmsetup_info_-C")
+    dmsetup_status = simple_file("insights_commands/dmsetup_status")
     docker_info = simple_file("insights_commands/docker_info")
     docker_list_containers = simple_file("insights_commands/docker_ps_--all_--no-trunc")
     docker_list_images = simple_file("insights_commands/docker_images_--all_--no-trunc_--digests")
@@ -101,6 +103,7 @@ class InsightsArchiveSpecs(Specs):
     ls_disk = simple_file("insights_commands/ls_-lanR_.dev.disk")
     ls_edac_mc = simple_file("insights_commands/ls_-lan_.sys.devices.system.edac.mc")
     ls_etc = simple_file("insights_commands/ls_-lan_.etc_.etc.cloud.cloud.cfg.d_.etc.nova.migration_.etc.pki.ovirt-vmconsole_.etc.pki.tls.certs_.etc.pki.tls.private_.etc.rc.d.init.d_.etc.sysconfig")
+    ls_ipa_idoverride_memberof = simple_file("insights_commands/ls_-lan_.usr.share.ipa.ui.js.plugins.idoverride-memberof")
     ls_lib_firmware = simple_file("insights_commands/ls_-lanR_.lib.firmware")
     ls_ocp_cni_openshift_sdn = simple_file("insights_commands/ls_-l_.var.lib.cni.networks.openshift-sdn")
     ls_origin_local_volumes_pods = simple_file("insights_commands/ls_-l_.var.lib.origin.openshift.local.volumes.pods")
@@ -111,6 +114,7 @@ class InsightsArchiveSpecs(Specs):
     ls_tmp = simple_file("insights_commands/ls_-la_.tmp")
     ls_usr_bin = simple_file("insights_commands/ls_-lan_.usr.bin")
     ls_usr_lib64 = simple_file("insights_commands/ls_-lan_.usr.lib64")
+    ls_var_cache_pulp = simple_file("insights_commands/ls_-lan_.var.cache.pulp")
     ls_var_lib_mongodb = simple_file("insights_commands/ls_-la_.var.lib.mongodb")
     ls_var_lib_nova_instances = simple_file("insights_commands/ls_-laRZ_.var.lib.nova.instances")
     ls_var_log = simple_file("insights_commands/ls_-la_.var.log_.var.log.audit")
@@ -127,6 +131,7 @@ class InsightsArchiveSpecs(Specs):
     lsmod = simple_file("insights_commands/lsmod")
     lsof = simple_file("insights_commands/lsof")
     lspci = simple_file("insights_commands/lspci_-k")
+    lspci_vmmkn = simple_file("insights_commands/lspci_-vmmkn")
     lssap = simple_file("insights_commands/usr.sap.hostctrl.exe.lssap")
     lsscsi = simple_file("insights_commands/lsscsi")
     lsvmbus = simple_file("insights_commands/lsvmbus_-vv")
@@ -173,6 +178,7 @@ class InsightsArchiveSpecs(Specs):
     openvswitch_other_config = simple_file("insights_commands/ovs-vsctl_-t_5_get_Open_vSwitch_._other_config")
     ovs_vsctl_list_bridge = simple_file("insights_commands/ovs-vsctl_list_bridge")
     ovs_vsctl_show = simple_file("insights_commands/ovs-vsctl_show")
+    package_provides_command = glob_file("insights_commands/echo_*java*")
     passenger_status = simple_file("insights_commands/passenger-status")
     pci_rport_target_disk_paths = simple_file("insights_commands/find_.sys.devices._-maxdepth_10_-mindepth_9_-name_stat_-type_f")
     pcp_metrics = simple_file("insights_commands/curl_-s_http_..127.0.0.1_44322.metrics_--connect-timeout_5")
@@ -186,6 +192,7 @@ class InsightsArchiveSpecs(Specs):
     ps_auxww = simple_file("insights_commands/ps_auxww")
     ps_ef = simple_file("insights_commands/ps_-ef")
     ps_eo = simple_file("insights_commands/ps_-eo_pid_ppid_comm")
+    puppet_ca_cert_expire_date = simple_file("insights_commands/openssl_x509_-in_.etc.puppetlabs.puppet.ssl.ca.ca_crt.pem_-enddate_-noout")
     pvs_noheadings = simple_file("insights_commands/pvs_--nameprefixes_--noheadings_--separator_-a_-o_pv_all_vg_name_--config_global_locking_type_0")
     qpid_stat_g = simple_file("insights_commands/qpid-stat_-g_--ssl-certificate_.etc.pki.katello.qpid_client_striped.crt_-b_amqps_..localhost_5671")
     rabbitmq_report = simple_file("insights_commands/rabbitmqctl_report")
@@ -193,12 +200,18 @@ class InsightsArchiveSpecs(Specs):
     readlink_e_etc_mtab = simple_file("insights_commands/readlink_-e_.etc.mtab")
     readlink_e_shift_cert_client = simple_file("insights_commands/readlink_-e_.etc.origin.node.certificates.kubelet-client-current.pem")
     readlink_e_shift_cert_server = simple_file("insights_commands/readlink_-e_.etc.origin.node.certificates.kubelet-server-current.pem")
-    rhn_schema_version = simple_file("insights_commands/rhn-schema-version")
     rhev_data_center = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_rhev_data_center")
+    rhsm_katello_default_ca_cert = simple_file("insights_commands/openssl_x509_-in_.etc.rhsm.ca.katello-default-ca.pem_-noout_-issuer")
     rndc_status = simple_file("insights_commands/rndc_status")
     rpm_V_packages = first_file(["insights_commands/rpm_-V_coreutils_procps_procps-ng_shadow-utils_passwd_sudo_chrony", "insights_commands/rpm_-V_coreutils_procps_procps-ng_shadow-utils_passwd_sudo"])
-    sap_hdb_version = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_sap_hdb_version")
     saphostctl_getcimobject_sapinstance = simple_file("insights_commands/usr.sap.hostctrl.exe.saphostctrl_-function_GetCIMObject_-enuminstances_SAPInstance")
+    satellite_content_hosts_count = first_file([
+        "insights_commands/sudo_-iu_postgres_.usr.bin.psql_-d_foreman_-c_select_count_from_hosts",
+        "insights_commands/sudo_-iu_postgres_psql_-d_foreman_-c_select_count_from_hosts"
+    ])
+    saphostexec_status = simple_file("insights_commands/usr.sap.hostctrl.exe.saphostexec_-status")
+    saphostexec_version = simple_file("insights_commands/usr.sap.hostctrl.exe.saphostexec_-version")
+    satellite_custom_ca_chain = simple_file("insights_commands/awk_BEGIN_pipe_openssl_x509_-noout_-subject_-enddate_._-_BEGIN_CERT._._-_END_CERT._print_pipe_._-_END_CERT._close_pipe_printf_n_.etc.pki.katello.certs.katello-server-ca.crt")
     satellite_mongodb_storage_engine = simple_file("insights_commands/mongo_pulp_database_--eval_db.serverStatus_.storageEngine")
     sealert = simple_file('insights_commands/sealert_-l')
     sestatus = simple_file("insights_commands/sestatus_-b")
@@ -240,3 +253,4 @@ class InsightsArchiveSpecs(Specs):
     virt_what = simple_file("insights_commands/virt-what")
     yum_list_available = simple_file("insights_commands/yum_-C_--noplugins_list_available")
     yum_repolist = first_file(["insights_commands/yum_-C_--noplugins_repolist", "insights_commands/yum_-C_repolist"])
+    yum_updateinfo = simple_file("insights_commands/yum_-C_updateinfo_list")

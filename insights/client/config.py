@@ -193,10 +193,6 @@ DEFAULT_OPTS = {
         # non-CLI
         'default': 120.0
     },
-    'insecure_connection': {
-        # non-CLI
-        'default': False
-    },
     'keep_archive': {
         'default': False,
         'opt': ['--keep-archive'],
@@ -534,7 +530,7 @@ class InsightsConfig(object):
                 return v
 
         # put this warning here so the error msg only prints once
-        if os.environ.get('HTTP_PROXY') and self._print_errors:
+        if os.environ.get('HTTP_PROXY') and not os.environ.get('HTTPS_PROXY') and self._print_errors:
             sys.stdout.write('WARNING: HTTP_PROXY is unused by insights-client. Please use HTTPS_PROXY.\n')
 
         # ignore these env as they are not config vars
@@ -743,7 +739,7 @@ class InsightsConfig(object):
             self.diagnosis = True
         if self.test_connection:
             self.net_debug = True
-        if self.payload or self.diagnosis or self.compliance or self.show_results or self.check_results:
+        if self.payload or self.diagnosis or self.compliance or self.check_results or self.checkin:
             self.legacy_upload = False
         if self.payload and (self.logging_file == constants.default_log_file):
             self.logging_file = constants.default_payload_log
