@@ -112,7 +112,12 @@ def pre_update(client, config):
         sys.exit(constants.sig_kill_ok)
 
     if config.checkin:
-        checkin_success = client.checkin()
+        try:
+            checkin_success = client.checkin()
+        except Exception as e:
+            print(e)
+            sys.exit(constants.sig_kill_bad)
+
         if checkin_success:
             sys.exit(constants.sig_kill_ok)
         else:
