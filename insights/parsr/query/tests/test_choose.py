@@ -121,3 +121,8 @@ def test_rename():
     assert "mytype" in res
     assert "reason" in res
     assert "type" not in res
+
+
+def test_scalar_value():
+    res = conf.status.conditions.choose(lambda c: ({"reason": c.reason.value or "None Provided"}, c.status))
+    assert res.where("reason", "None Provided")
