@@ -351,9 +351,11 @@ class Entry(object):
                     for k, v in r.items():
                         if isinstance(v, list):
                             tmp.append(Entry(k, children=v, set_parents=False))
-                        else:
+                        elif isinstance(v, Entry):
                             for i in v.children:
                                 tmp.append(Entry(k, i.attrs, i.children, set_parents=False))
+                        else:
+                            tmp.append(Entry(k, attrs=(v,), set_parents=False))
                 else:
                     if isinstance(r, list):
                         tmp.extend(r)
