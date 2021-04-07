@@ -878,6 +878,9 @@ class InsightsConnection(object):
         if self.config.display_name:
             # add display_name to canonical facts
             c_facts['display_name'] = self.config.display_name
+        if self.config.ansible_hostname:
+            # add ansible_hostname to canonical facts
+            c_facts['ansible_hostname'] = self.config.ansible_hostname
         if self.config.branch_info:
             c_facts["branch_info"] = self.config.branch_info
             c_facts["satellite_id"] = self.config.branch_info["remote_leaf"]
@@ -976,6 +979,28 @@ class InsightsConnection(object):
             logger.error('Could not update display name.')
             return False
         logger.info('Display name updated to ' + display_name + '.')
+        return True
+
+    def set_ansible_hostname(self, ansible_hostname):
+        '''
+        Set Ansible hostname of a system independently of upload.
+        '''
+        system = self._fetch_system_by_machine_id()
+        if not system:
+            return system
+        inventory_id = system[0]['id']
+
+        req_url = self.inventory_url + '/hosts/' + inventory_id
+        try:
+            logger.log(NETWORK, "PATCH %s", req_url)
+            res = self.session.patch(req_url, json={'ansible_hostname': ansible_hostname})
+        except REQUEST_FAILED_EXCEPTIONS as e:
+            _api_request_failed(e)
+            return False
+        if (self.handle_fail_rcs(res)):
+            logger.error('Could not update Ansible hostname.')
+            return False
+        logger.info('Ansible hostname updated to ' + ansible_hostname + '.')
         return True
 
     def get_diagnosis(self, remediation_id=None):

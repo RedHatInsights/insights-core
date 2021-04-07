@@ -507,6 +507,13 @@ class InsightsClient(object):
         return self.connection.set_display_name(display_name)
 
     @_net
+    def set_ansible_hostname(self, ansible_hostname):
+        '''
+            returns True on success, False on failure
+        '''
+        return self.connection.set_ansible_hostname(ansible_hostname)
+
+    @_net
     def get_diagnosis(self, remediation_id=None):
         '''
             returns JSON of diagnosis data on success, None on failure
