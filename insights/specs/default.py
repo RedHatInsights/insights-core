@@ -32,6 +32,7 @@ from insights.combiners.cloud_provider import CloudProvider
 from insights.combiners.services import Services
 from insights.combiners.sap import Sap
 from insights.combiners.ps import Ps
+from insights.combiners.hostname import Hostname
 from insights.components.rhel_version import IsRhel8, IsRhel7, IsRhel6
 from insights.parsers.mdstat import Mdstat
 from insights.parsers.lsmod import LsMod
@@ -742,6 +743,37 @@ class DefaultSpecs(Specs):
     pmlog_summary = command_with_args(
         "/usr/bin/pmlogsummary %s mem.util.used mem.physmem kernel.all.cpu.user kernel.all.cpu.sys kernel.all.cpu.nice kernel.all.cpu.steal kernel.all.cpu.idle disk.all.total mem.util.cached mem.util.bufmem mem.util.free kernel.all.cpu.wait.total",
         pmlog_summary_file)
+
+    @datasource(Ps, Hostname, HostContext)
+    def pmlog_summary_past_file(broker, past_days):
+        """
+        Determines the name for the pmlogger file and checks for its existance
+
+        Returns the name of the latest pmlogger summary file if a running ``pmlogger``
+        process is detected on the system.
+
+        Returns:
+            list: The value of the required log file path
+
+        Raises:
+            SkipComponent: raises this exception when the command is not present or
+                the file is not present
+        """
+        ps = broker[Ps]
+        hostname = broker[Hostname]
+        log_hostname = hostname.fqdn
+        results = []
+        if ps.search(COMMAND__contains='pmlogger'):
+            for day in range(past_days):
+                pcp_log_date = (datetime.date.today() - datetime.timedelta(days=day)).strftime("%Y%m%d")
+                file = "/var/log/pcp/pmlogger/%s/%s.index" % (log_hostname, pcp_log_date)
+                if os.path.exists(file) and os.path.isfile(file):
+                    results.append(file)
+        if results:
+            return results
+        raise SkipComponent
+
+    pmlog_summary_mssql_buffer_cache_hit_ratio = foreach_execute(pmlog_summary_past_file(10), "/usr/bin/pmlogsummary %s mssql.buffer_manager.buffer_cache_hit_ratio")
     postconf_builtin = simple_command("/usr/sbin/postconf -C builtin")
     postconf = simple_command("/usr/sbin/postconf")
     postgresql_conf = first_file([
