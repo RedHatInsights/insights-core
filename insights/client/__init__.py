@@ -507,11 +507,11 @@ class InsightsClient(object):
         return self.connection.set_display_name(display_name)
 
     @_net
-    def set_ansible_hostname(self, ansible_hostname):
+    def set_ansible_host(self, ansible_host):
         '''
             returns True on success, False on failure
         '''
-        return self.connection.set_ansible_hostname(ansible_hostname)
+        return self.connection.set_ansible_host(ansible_host)
 
     @_net
     def get_diagnosis(self, remediation_id=None):

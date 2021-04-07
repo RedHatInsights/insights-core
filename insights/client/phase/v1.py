@@ -277,8 +277,8 @@ def post_update(client, config):
 
     # set --ansible-hostname independent of register
     # only do this if set from the CLI. normally display_name is sent on upload
-    if 'ansible_hostname' in config._cli_opts and not config.register:
-        if client.set_ansible_hostname(config.ansible_hostname):
+    if 'ansible_host' in config._cli_opts and not config.register:
+        if client.set_ansible_host(config.ansible_host):
             sys.exit(constants.sig_kill_ok)
         else:
             sys.exit(constants.sig_kill_bad)

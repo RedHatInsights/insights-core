@@ -62,9 +62,9 @@ DEFAULT_OPTS = {
         'const': True,
         'nargs': '?',
     },
-    'ansible_hostname': {
+    'ansible_host': {
         'default': None,
-        'opt': ['--ansible-hostname'],
+        'opt': ['--ansible-host'],
         'help': 'Set an Ansible hostname for this system. ',
         'action': 'store'
     },
@@ -767,7 +767,7 @@ class InsightsConfig(object):
             # get full path
             self.output_file = os.path.abspath(self.output_file)
             self._determine_filename_and_extension()
-        if self._cli_opts and "ansible_hostname" in self._cli_opts and not self.register:
+        if self._cli_opts and "ansible_host" in self._cli_opts and not self.register:
             # Specific use case, explained here:
             #
             #   Ansible hostname is, more or less, a second display name.
@@ -787,7 +787,7 @@ class InsightsConfig(object):
             #   upload *is* disabled, the ansible hostname will also be
             #   included in the upload metadata.
             #
-            #   The reason to explicitly look for ansible_hostname in the CLI
+            #   The reason to explicitly look for ansible_host in the CLI
             #   parameters *only* is because, due to a customer request from
             #   long ago, a display_name specified in the config file should
             #   be applied as part of the upload, and conversely, specifying
