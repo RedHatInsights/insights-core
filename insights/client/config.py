@@ -62,6 +62,12 @@ DEFAULT_OPTS = {
         'const': True,
         'nargs': '?',
     },
+    'ansible_hostname': {
+        'default': None,
+        'opt': ['--ansible-hostname'],
+        'help': 'Set an Ansible hostname for this system. ',
+        'action': 'store'
+    },
     'authmethod': {
         # non-CLI
         'default': 'BASIC'
