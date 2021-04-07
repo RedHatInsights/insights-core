@@ -467,9 +467,9 @@ class InsightsConfig(object):
         if args:
             self._update_dict(args[0])
         self._update_dict(kwargs)
+        self._cli_opts = None
         self._imply_options()
         self._validate_options()
-        self._cli_opts = None
 
     def __str__(self):
         _str = '    '
@@ -761,7 +761,7 @@ class InsightsConfig(object):
             # get full path
             self.output_file = os.path.abspath(self.output_file)
             self._determine_filename_and_extension()
-        if "ansible_hostname" in self._cli_opts and not config.register:
+        if self._cli_opts and "ansible_hostname" in self._cli_opts and not self.register:
             # Specific use case, explained here:
             #
             #   Ansible hostname is, more or less, a second display name.
