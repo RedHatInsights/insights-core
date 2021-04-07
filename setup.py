@@ -66,6 +66,7 @@ develop = set([
 ])
 
 docs = set([
+    'docutils==0.16',
     'Sphinx<=3.0.2',
     'nbsphinx',
     'sphinx_rtd_theme',
