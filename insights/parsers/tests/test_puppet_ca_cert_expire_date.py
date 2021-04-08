@@ -1,6 +1,7 @@
 import doctest
 import pytest
 
+from insights.core.plugins import ContentException
 from insights.parsers import (
     puppet_ca_cert_expire_date, SkipException, ParseException)
 from insights.tests import context_wrap
@@ -25,6 +26,10 @@ WRONG_PUPPET_CERT_INFO_3 = '''
 Mon Jan  4 02:31:28 EST 202
 '''
 
+WRONG_PUPPET_CERT_INFO_4 = '''
+abc=def
+'''
+
 
 def test_HTL_doc_examples():
     date_info = puppet_ca_cert_expire_date.PuppetCertExpireDate(context_wrap(PUPPET_CERT_EXPIRE_INFO))
@@ -35,10 +40,18 @@ def test_HTL_doc_examples():
     assert failed == 0
 
 
+def test_parser():
+    date_info = puppet_ca_cert_expire_date.PuppetCertExpireDate(context_wrap(PUPPET_CERT_EXPIRE_INFO))
+    assert 'notAfter' in date_info
+    assert date_info['notAfter'].str == 'Dec  4 07:04:05 2035'
+
+
 def test_wrong_output():
-    with pytest.raises(SkipException):
+    with pytest.raises(ContentException):
         puppet_ca_cert_expire_date.PuppetCertExpireDate(context_wrap(WRONG_PUPPET_CERT_INFO_1))
-    with pytest.raises(SkipException):
+    with pytest.raises(ParseException):
         puppet_ca_cert_expire_date.PuppetCertExpireDate(context_wrap(WRONG_PUPPET_CERT_INFO_3))
     with pytest.raises(ParseException):
         puppet_ca_cert_expire_date.PuppetCertExpireDate(context_wrap(WRONG_PUPPET_CERT_INFO_2))
+    with pytest.raises(SkipException):
+        puppet_ca_cert_expire_date.PuppetCertExpireDate(context_wrap(WRONG_PUPPET_CERT_INFO_4))
