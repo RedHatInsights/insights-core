@@ -745,7 +745,7 @@ class DefaultSpecs(Specs):
         pmlog_summary_file)
 
     @datasource(Ps, Hostname, HostContext)
-    def pmlog_summary_past_file(broker, past_days):
+    def pmlog_summary_past_file(broker):
         """
         Determines the name for the pmlogger file and checks for its existance
 
@@ -763,6 +763,7 @@ class DefaultSpecs(Specs):
         hostname = broker[Hostname]
         log_hostname = hostname.fqdn
         results = []
+        past_days = 3
         if ps.search(COMMAND__contains='pmlogger'):
             for day in range(past_days):
                 pcp_log_date = (datetime.date.today() - datetime.timedelta(days=day)).strftime("%Y%m%d")
@@ -773,7 +774,7 @@ class DefaultSpecs(Specs):
             return results
         raise SkipComponent
 
-    pmlog_summary_mssql_buffer_cache_hit_ratio = foreach_execute(pmlog_summary_past_file(10), "/usr/bin/pmlogsummary %s mssql.buffer_manager.buffer_cache_hit_ratio")
+    pmlog_summary_mssql_buffer_cache_hit_ratio = foreach_execute(pmlog_summary_past_file, "/usr/bin/pmlogsummary %s mssql.buffer_manager.buffer_cache_hit_ratio")
     postconf_builtin = simple_command("/usr/sbin/postconf -C builtin")
     postconf = simple_command("/usr/sbin/postconf")
     postgresql_conf = first_file([
