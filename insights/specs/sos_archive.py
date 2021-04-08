@@ -229,7 +229,6 @@ class SosSpecs(Specs):
     route = simple_file("sos_commands/networking/route_-n")
     sap_host_profile = simple_file("/usr/sap/hostctrl/exe/host_profile")
     sched_rt_runtime_us = simple_file("/proc/sys/kernel/sched_rt_runtime_us")
-    scheduler = glob_file("/sys/block/*/queue/scheduler")
     scsi_mod_use_blk_mq = simple_file("/sys/module/scsi_mod/parameters/use_blk_mq")
     secure = simple_file("/var/log/secure")
     sestatus = simple_file("sos_commands/selinux/sestatus_-b")
