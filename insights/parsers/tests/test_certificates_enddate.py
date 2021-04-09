@@ -63,6 +63,13 @@ FileName= /etc/pki/consumer/cert.pem
 
 PATH1 = "/etc/origin/node/cert.pem"
 
+CRT7 = """
+/usr/bin/find: '/etc/origin/node': No such file or directory
+/usr/bin/find: '/etc/origin/master': No such file or directory
+/usr/bin/find: '/etc/pki': No such file or directory
+/usr/bin/find: '/etc/ipa': No such file or directory
+"""
+
 
 def test_certificates_enddate():
 
@@ -88,6 +95,9 @@ def test_certificates_enddate():
     Cert5 = CertificatesEnddate(context_wrap(CRT5))
     assert (set(Cert5.certificates_path) == set([
             '/etc/pki/ca-trust/extracted/pem/email-ca-bundle.pem']))
+
+    Cert6 = CertificatesEnddate(context_wrap(CRT7))
+    assert not Cert6.data
 
 
 def test_certificates_enddate_unparsable_datatime():
