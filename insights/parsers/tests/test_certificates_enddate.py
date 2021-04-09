@@ -1,6 +1,9 @@
+import pytest
+import doctest
 from datetime import datetime
-from insights.parsers.certificates_enddate import CertificatesEnddate
+from insights.parsers import certificates_enddate
 from insights.tests import context_wrap
+from insights.parsers import SkipException
 
 
 CRT1 = """
@@ -23,8 +26,6 @@ FileName= /etc/pki/consumer/cert.pem
 notAfter=Jan  1 04:59:59 2022 GMT
 FileName= /etc/pki/entitlement/2387590574974617178.pem
 """.strip()
-
-CRT2 = ""
 
 CRT3 = """
 FileName= /etc/origin/node/cert.pem
@@ -63,35 +64,39 @@ FileName= /etc/pki/consumer/cert.pem
 
 PATH1 = "/etc/origin/node/cert.pem"
 
+CRT7 = """
+/usr/bin/find: '/etc/origin/node': No such file or directory
+/usr/bin/find: '/etc/origin/master': No such file or directory
+/usr/bin/find: '/etc/pki': No such file or directory
+/usr/bin/find: '/etc/ipa': No such file or directory
+"""
+
 
 def test_certificates_enddate():
 
-    Cert1 = CertificatesEnddate(context_wrap(CRT1))
+    Cert1 = certificates_enddate.CertificatesEnddate(context_wrap(CRT1))
     assert PATH1 in Cert1.certificates_path
     expiration_date = Cert1.expiration_date(PATH1)
     assert expiration_date.str == 'May 25 16:39:40 2019'
     assert expiration_date.datetime == datetime(2019, 5, 25, 16, 39, 40)
 
-    Cert2 = CertificatesEnddate(context_wrap(CRT2))
-    assert Cert2.certificates_path == []
-
-    Cert3 = CertificatesEnddate(context_wrap(CRT3))
+    Cert3 = certificates_enddate.CertificatesEnddate(context_wrap(CRT3))
     assert (set(Cert3.certificates_path) == set([
             '/etc/pki/consumer/cert.pem',
             '/etc/pki/ca-trust/extracted/pem/email-ca-bundle.pem']))
 
-    Cert4 = CertificatesEnddate(context_wrap(CRT4))
+    Cert4 = certificates_enddate.CertificatesEnddate(context_wrap(CRT4))
     assert (set(Cert4.certificates_path) == set([
             '/etc/pki/consumer/cert.pem',
             '/etc/pki/ca-trust/extracted/pem/email-ca-bundle.pem']))
 
-    Cert5 = CertificatesEnddate(context_wrap(CRT5))
+    Cert5 = certificates_enddate.CertificatesEnddate(context_wrap(CRT5))
     assert (set(Cert5.certificates_path) == set([
             '/etc/pki/ca-trust/extracted/pem/email-ca-bundle.pem']))
 
 
 def test_certificates_enddate_unparsable_datatime():
-    Cert6 = CertificatesEnddate(context_wrap(CRT6))
+    Cert6 = certificates_enddate.CertificatesEnddate(context_wrap(CRT6))
     assert (set(Cert6.certificates_path) == set([
             '/etc/pki/consumer/cert.pem',
             '/etc/pki/ca-trust/extracted/pem/email-ca-bundle.pem']))
@@ -102,3 +107,18 @@ def test_certificates_enddate_unparsable_datatime():
     assert (Cert6.expiration_date(
         '/etc/pki/ca-trust/extracted/pem/email-ca-bundle.pem').datetime is None)
     assert (Cert6.expiration_date('/etc/pki/email-ca-bundle.pem') is None)
+
+
+def test_doc():
+    cert_enddate = certificates_enddate.CertificatesEnddate(context_wrap(CRT1))
+
+    globs = {
+        'cert_enddate': cert_enddate
+    }
+    failed, tested = doctest.testmod(certificates_enddate, globs=globs)
+    assert failed == 0
+
+
+def test_exception():
+    with pytest.raises(SkipException):
+        certificates_enddate.CertificatesEnddate(context_wrap(CRT7))
