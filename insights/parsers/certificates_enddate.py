@@ -2,9 +2,9 @@
 CertificatesEnddate - command ``/usr/bin/openssl x509 -noout -enddate -in path/to/cert/file``
 =============================================================================================
 
-This command gets the enddates of certificate files.
+This command gets the enddate of the certificate files.
 
-Typical output of this command is::
+Sample Output::
 
     /usr/bin/find: '/etc/origin/node': No such file or directory
     /usr/bin/find: '/etc/origin/master': No such file or directory
@@ -26,41 +26,49 @@ Typical output of this command is::
     FileName= /etc/pki/entitlement/2387590574974617178.pem
 
 Examples:
-    >>> cert_enddate = shared[CertificatesEnddate]
-    >>> paths = cert_enddate.get_certificates_path
-    >>> paths[0]
-    '/etc/origin/node/cert.pem'
-    >>> cert_enddate.expiration_date(paths[0]).datetime
-    datetime(2019, 05, 25, 16, 39, 40)
-    >>> cert_enddate.expiration_date(paths[0]).str
+    >>> type(cert_enddate)
+    <class 'insights.parsers.certificates_enddate.CertificatesEnddate'>
+    >>> paths = cert_enddate.certificates_path
+    >>> '/etc/origin/node/cert.pem' in paths
+    True
+    >>> cert_enddate.expiration_date('/etc/origin/node/cert.pem').datetime
+    datetime.datetime(2019, 5, 25, 16, 39, 40)
+    >>> cert_enddate.expiration_date('/etc/origin/node/cert.pem').str
     'May 25 16:39:40 2019'
 """
 
 from datetime import datetime
 from collections import namedtuple
-from .. import parser, LegacyItemAccess, CommandParser
+from insights import parser, CommandParser
+from insights.parsers import SkipException
 from insights.specs import Specs
 
 
 @parser(Specs.certificates_enddate)
-class CertificatesEnddate(LegacyItemAccess, CommandParser):
-    """Class to parse the expiration dates."""
+class CertificatesEnddate(CommandParser, dict):
+    """Class to parse the expiration date."""
 
     ExpirationDate = namedtuple('ExpirationDate', ['str', 'datetime'])
     """namedtuple: contains the expiration date in string and datetime format."""
 
     def parse_content(self, content):
         """Parse the content of crt files."""
-        self.data = {}
         datestamp = None
         for l in content:
             if datestamp and l.startswith("FileName="):
-                self.data[l.split("=")[-1].strip()] = datestamp
+                self[l.split("=")[-1].strip()] = datestamp
                 datestamp = None
             elif l.startswith("notAfter="):
                 datestamp = l.split("=")[-1].rsplit(" ", 1)[0]
             else:
                 datestamp = None
+        if not self:
+            raise SkipException("No certification files found.")
+
+    @property
+    def data(self):
+        """ Set data as property to keep compatibility """
+        return self
 
     @property
     def certificates_path(self):
@@ -83,5 +91,5 @@ class CertificatesEnddate(LegacyItemAccess, CommandParser):
             try:
                 path_datetime = datetime.strptime(path_date, '%b %d %H:%M:%S %Y')
                 return self.ExpirationDate(path_date, path_datetime)
-            except:
+            except Exception:
                 return self.ExpirationDate(path_date, None)
