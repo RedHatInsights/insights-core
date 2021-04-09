@@ -71,3 +71,26 @@ def test_egg_release_file_read_and_written_no_read(archive, remove):
         d._write_egg_release()
         remove.assert_called_once_with(constants.egg_release_file)
         d.archive.add_metadata_to_archive.assert_called_once_with('', '/egg_release')
+
+
+@patch('insights.client.data_collector.os.remove')
+@patch('insights.client.data_collector.InsightsArchive')
+def test_egg_release_file_read_memory_error(archive, remove):
+    '''
+    Verify that a memory error on the egg release file read is not
+    fatal.
+    '''
+    if six.PY3:
+        open_name = 'builtins.open'
+    else:
+        open_name = '__builtin__.open'
+
+    with patch(open_name, create=True) as mock_open:
+        file_mock = mock.mock_open().return_value
+        file_mock.read.side_effect = MemoryError()
+        mock_open.side_effect = [file_mock]
+        c = InsightsConfig()
+        d = DataCollector(c)
+        d._write_egg_release()
+        remove.assert_called_once_with(constants.egg_release_file)
+        d.archive.add_metadata_to_archive.assert_called_once_with('', '/egg_release')

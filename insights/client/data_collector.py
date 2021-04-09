@@ -132,7 +132,7 @@ class DataCollector(object):
         try:
             with open(constants.egg_release_file) as fil:
                 egg_release = fil.read()
-        except IOError as e:
+        except (IOError, MemoryError) as e:
             logger.debug('Could not read the egg release file :%s', str(e))
         try:
             os.remove(constants.egg_release_file)
