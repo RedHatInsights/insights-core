@@ -530,7 +530,7 @@ class DefaultSpecs(Specs):
     etc_and_sub_dirs = sorted(["/etc", "/etc/pki/tls/private", "/etc/pki/tls/certs",
         "/etc/pki/ovirt-vmconsole", "/etc/nova/migration", "/etc/sysconfig",
         "/etc/cloud/cloud.cfg.d", "/etc/rc.d/init.d"])
-    ls_etc = simple_command("/bin/ls -lan {0}".format(' '.join(etc_and_sub_dirs)))
+    ls_etc = simple_command("/bin/ls -lan {0}".format(' '.join(etc_and_sub_dirs)), keep_rc=True)
     ls_ipa_idoverride_memberof = simple_command("/bin/ls -lan /usr/share/ipa/ui/js/plugins/idoverride-memberof")
     ls_lib_firmware = simple_command("/bin/ls -lanR /lib/firmware")
     ls_ocp_cni_openshift_sdn = simple_command("/bin/ls -l /var/lib/cni/networks/openshift-sdn")
@@ -573,7 +573,7 @@ class DefaultSpecs(Specs):
     def md5chk_file_list(broker):
         """ Provide a list of files to be processed by the ``md5chk_files`` spec """
         return ["/etc/pki/product/69.pem", "/etc/pki/product-default/69.pem", "/usr/lib/libsoftokn3.so", "/usr/lib64/libsoftokn3.so", "/usr/lib/libfreeblpriv3.so", "/usr/lib64/libfreeblpriv3.so"]
-    md5chk_files = foreach_execute(md5chk_file_list, "/usr/bin/md5sum %s")
+    md5chk_files = foreach_execute(md5chk_file_list, "/usr/bin/md5sum %s", keep_rc=True)
     mdstat = simple_file("/proc/mdstat")
 
     @datasource(Mdstat, HostContext)
