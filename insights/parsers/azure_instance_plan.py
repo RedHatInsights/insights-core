@@ -11,7 +11,7 @@ For more details, See: https://docs.microsoft.com/en-us/rest/api/compute/virtual
 """
 import json
 
-from insights.parsers import SkipException
+from insights.parsers import SkipException, ParseException
 from insights import parser, CommandParser
 from insights.specs import Specs
 
@@ -41,19 +41,22 @@ class AzureInstancePlan(CommandParser):
         raw (str): The full JSON of the plan returned by the ``curl`` command
 
     Examples:
-        >>> azure_plan.name
-        'planName'
-        >>> azure_plan.product
-        'planProduct'
-        >>> azure_plan.publisher
-        'planPublisher'
+        >>> azure_plan.name == 'planName'
+        True
+        >>> azure_plan.product == 'planProduct'
+        True
+        >>> azure_plan.publisher == 'planPublisher'
+        True
     """
 
     def parse_content(self, content):
         if not content or 'curl: ' in content[0]:
             raise SkipException()
+        try:
+            plan = json.loads(content[0])
+        except:
+            raise ParseException("Unable to parse JSON")
 
-        plan = json.loads(content[0])
         self.raw = content[0]
         self.name = plan["name"] if plan["name"] != "" else None
         self.product = plan["product"] if plan["product"] != "" else None

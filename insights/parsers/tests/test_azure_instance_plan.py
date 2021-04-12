@@ -4,7 +4,7 @@ import doctest
 from insights.parsers import azure_instance_plan
 from insights.parsers.azure_instance_plan import AzureInstancePlan
 from insights.tests import context_wrap
-from insights.parsers import SkipException
+from insights.parsers import SkipException, ParseException
 
 AZURE_PLAN_1 = '{"name": "rhel7", "product": "rhel", "publisher": "Red Hat"}'
 AZURE_PLAN_2 = '{"name": "", "product": "", "publisher": "Red Hat"}'
@@ -43,6 +43,9 @@ def test_azure_instance_place_ab_other():
 
     with pytest.raises(SkipException):
         AzureInstancePlan(context_wrap(''))
+
+    with pytest.raises(ParseException):
+        AzureInstancePlan(context_wrap(AZURE_PLAN_4))
 
 
 def test_azure_instance_plan():
