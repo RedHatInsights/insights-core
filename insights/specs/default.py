@@ -747,15 +747,11 @@ class DefaultSpecs(Specs):
     postgresql_conf = first_file([
         "/var/opt/rh/rh-postgresql12/lib/pgsql/data/postgresql.conf",
         "/var/lib/pgsql/data/postgresql.conf",
-        "/opt/rh/postgresql92/root/var/lib/pgsql/data/postgresql.conf",
-        "database/postgresql.conf"
     ])
     postgresql_log = first_of(
         [
             glob_file("/var/opt/rh/rh-postgresql12/lib/pgsql/data/log/postgresql-*.log"),
             glob_file("/var/lib/pgsql/data/pg_log/postgresql-*.log"),
-            glob_file("/opt/rh/postgresql92/root/var/lib/pgsql/data/pg_log/postgresql-*.log"),
-            glob_file("/database/postgresql-*.log")
         ]
     )
     puppetserver_config = simple_file("/etc/sysconfig/puppetserver")
