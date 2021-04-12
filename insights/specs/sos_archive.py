@@ -175,6 +175,18 @@ class SosSpecs(Specs):
     podman_image_inspect = glob_file("sos_commands/podman/podman_inspect_*")
     podman_list_containers = first_file(["sos_commands/podman/podman_ps_-a", "sos_commands/podman/podman_ps"])
     podman_list_images = simple_file("sos_commands/podman/podman_images")
+    postgresql_conf = first_file([
+        "/var/opt/rh/rh-postgresql12/lib/pgsql/data/postgresql.conf",
+        "/var/lib/pgsql/data/postgresql.conf",
+        "database/postgresql.conf"
+    ])
+    postgresql_log = first_of(
+        [
+            glob_file("/var/opt/rh/rh-postgresql12/lib/pgsql/data/log/postgresql-*.log"),
+            glob_file("/var/lib/pgsql/data/pg_log/postgresql-*.log"),
+            glob_file("/database/postgresql-*.log")
+        ]
+    )
     ps_alxwww = simple_file("sos_commands/process/ps_alxwww")
     ps_aux = first_file(["sos_commands/process/ps_aux", "sos_commands/process/ps_auxwww", "sos_commands/process/ps_auxcww"])
     ps_auxcww = first_file(["sos_commands/process/ps_auxcww", "sos_commands/process/ps_auxwww", "sos_commands/process/ps_aux"])
