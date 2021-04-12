@@ -1,6 +1,6 @@
 """
 AzureInstancePlan
-=========
+=================
 
 This parser reads the output of a command
 ``curl -s -H Metadata:true http://169.254.169.254/metadata/instance/compute/plan?api-version=2018-10-01&format=json``,
