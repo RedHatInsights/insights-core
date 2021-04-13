@@ -9,8 +9,8 @@ from pytest import raises
 
 @pytest.mark.skipif(sys.version_info < (2, 7), reason='Playbook verifier must be run on python 2.7 or above')
 def test_skip_validation():
-    result = verify([{'name': "test playbook"}], skipVerify=True, checkVersion=False)
-    assert result == [{'name': "test playbook"}]
+    result = verify([{'name': "test playbook", 'vars': {}}], skipVerify=True, checkVersion=False)
+    assert result == [{'name': "test playbook", 'vars': {}}]
 
 
 @pytest.mark.skipif(sys.version_info < (2, 7), reason='Playbook verifier must be run on python 2.7 or above')
@@ -21,7 +21,7 @@ def test_egg_validation_error(mock_get):
     fake_playbook = [{'name': "test playbook"}]
 
     with raises(PlaybookVerificationError) as error:
-        verify(fake_playbook)
+        verify(fake_playbook, checkVersion=True)
     assert egg_error in str(error.value)
 
 
@@ -31,7 +31,7 @@ def test_vars_not_found_error():
     fake_playbook = [{'name': "test playbook"}]
 
     with raises(PlaybookVerificationError) as error:
-        verify(fake_playbook, checkVersion=False)
+        verify(fake_playbook, skipVerify=False)
     assert vars_error in str(error.value)
 
 
@@ -41,7 +41,7 @@ def test_signature_not_found_error():
     fake_playbook = [{'name': "test playbook", 'vars': {}}]
 
     with raises(PlaybookVerificationError) as error:
-        verify(fake_playbook, checkVersion=False)
+        verify(fake_playbook, skipVerify=False)
     assert sig_error in str(error.value)
 
 
@@ -58,7 +58,7 @@ def test_key_not_imported():
     }]
 
     with raises(PlaybookVerificationError) as error:
-        verify(fake_playbook, checkVersion=False)
+        verify(fake_playbook, skipVerify=False)
     assert key_error in str(error.value)
 
 
@@ -75,7 +75,7 @@ def test_key_import_error():
     }]
 
     with raises(PlaybookVerificationError) as error:
-        verify(fake_playbook, checkVersion=False)
+        verify(fake_playbook, skipVerify=False)
     assert key_error in str(error.value)
 
 
@@ -92,7 +92,7 @@ def test_playbook_verification_error(call):
     }]
 
     with raises(PlaybookVerificationError) as error:
-        verify(fake_playbook, checkVersion=False)
+        verify(fake_playbook, skipVerify=False)
     assert key_error in str(error.value)
 
 
@@ -108,5 +108,5 @@ def test_playbook_verification_success(mock_method):
         }
     }]
 
-    result = verify(fake_playbook, checkVersion=False)
+    result = verify(fake_playbook, skipVerify=False)
     assert result == fake_playbook
