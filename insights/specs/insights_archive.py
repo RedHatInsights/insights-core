@@ -13,7 +13,6 @@ class InsightsArchiveSpecs(Specs):
     abrt_status_bare = simple_file("insights_commands/abrt_status_--bare_True")
     all_installed_rpms = glob_file("insights_commands/rpm_-qa*")
     alternatives_display_python = simple_file("insights_commands/alternatives_--display_python")
-    ansible_host = simple_file("ansible_host")
     auditctl_status = simple_file("insights_commands/auditctl_-s")
     aws_instance_id_doc = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_aws_instance_id_doc")
     aws_instance_id_pkcs7 = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_aws_instance_id_pkcs7")
