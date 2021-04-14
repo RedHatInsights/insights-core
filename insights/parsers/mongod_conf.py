@@ -1,13 +1,15 @@
 """
-MongodbConf - files ``/etc/mongod.conf``, ``/etc/mongod.conf`` and ``/etc/opt/rh/rh-mongodb26/mongod.conf``
-===========================================================================================================
+MongodbConf - files - Configuration files for MongoDB
+=====================================================
 
 This module contains the following files:
     ``/etc/mongod.conf``,
     ``/etc/mongodb.conf`` ,
-    ``/etc/opt/rh/rh-mongodb26/mongod.conf``.
+    ``/etc/opt/rh/rh-mongodb26/mongod.conf``
+    ``/etc/opt/rh/rh-mongodb34/mongod.conf``
 
-They are provided by package mongodb-server or rh-mongodb26-mongodb-server.
+They are provided by package mongodb-server, rh-mongodb26-mongodb-server or
+rh-mongodb34-mongodb-server.
 These MongoDB configuration files may use the **YAML** format
 or the standard **key-value pair** format.
 
