@@ -595,7 +595,8 @@ class DefaultSpecs(Specs):
     mongod_conf = glob_file([
                             "/etc/mongod.conf",
                             "/etc/mongodb.conf",
-                            "/etc/opt/rh/rh-mongodb26/mongod.conf"
+                            "/etc/opt/rh/rh-mongodb26/mongod.conf",
+                            "/etc/opt/rh/rh-mongodb34/mongod.conf"
                             ])
     mount = simple_command("/bin/mount")
     mounts = simple_file("/proc/mounts")
