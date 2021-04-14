@@ -798,6 +798,14 @@ class DefaultSpecs(Specs):
         sap = broker[Sap]
         return list(set(sap.sid(i).lower() for i in sap.all_instances))
 
+    @datasource(Sap, HostContext)
+    def sap_hana_sid(broker):
+        """
+        list: List of the SID of SAP HANA Instances.
+        """
+        sap = broker[Sap]
+        return list(set(sap.sid(i).lower() for i in sap.all_instances if sap.type(i) == 'HDB'))
+
     @datasource(sap_sid, HostContext)
     def ld_library_path_of_user(broker):
         """
@@ -819,7 +827,7 @@ class DefaultSpecs(Specs):
             return DatasourceProvider('\n'.join(llds), relative_path='insights_commands/echo_user_LD_LIBRARY_PATH')
         raise SkipComponent
 
-    sap_hdb_version = foreach_execute(sap_sid, "/usr/bin/sudo -iu %sadm HDB version", keep_rc=True)
+    sap_hdb_version = foreach_execute(sap_hana_sid, "/usr/bin/sudo -iu %sadm HDB version", keep_rc=True)
     saphostctl_getcimobject_sapinstance = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance")
     saphostexec_status = simple_command("/usr/sap/hostctrl/exe/saphostexec -status")
     saphostexec_version = simple_command("/usr/sap/hostctrl/exe/saphostexec -version")
