@@ -18,6 +18,7 @@ class InsightsArchiveSpecs(Specs):
     aws_instance_id_pkcs7 = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_aws_instance_id_pkcs7")
     awx_manage_check_license = simple_file("insights_commands/awx-manage_check_license")
     azure_instance_type = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_azure_instance_type")
+    azure_instance_plan = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_azure_instance_plan")
     bios_uuid = simple_file("insights_commands/dmidecode_-s_system-uuid")
     blkid = simple_file("insights_commands/blkid_-c_.dev.null")
     brctl_show = simple_file("insights_commands/brctl_show")
