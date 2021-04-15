@@ -31,6 +31,11 @@
             "symbolic_name": "azure_instance_type"
         },
         {
+            "command": "python -m insights.tools.cat --no-header azure_instance_plan",
+            "pattern": [],
+            "symbolic_name": "azure_instance_plan"
+        },
+        {
             "command": "/sbin/auditctl -s",
             "pattern": [],
             "symbolic_name": "auditctl_status"
@@ -313,11 +318,6 @@
             "command": "/usr/bin/facter",
             "pattern": [],
             "symbolic_name": "facter"
-        },
-        {
-            "command": "/usr/bin/qpid-stat -g --ssl-certificate=/etc/pki/katello/qpid_client_striped.crt -b amqps://localhost:5671",
-            "pattern": [],
-            "symbolic_name": "qpid_stat_g"
         },
         {
             "command": "/bin/fc-match -sv 'sans:regular:roman' family fontformat",
@@ -690,6 +690,11 @@
             "command": "/usr/bin/lscpu",
             "pattern": [],
             "symbolic_name": "lscpu"
+        },
+        {
+            "command": "/usr/bin/lsinitrd",
+            "pattern": [],
+            "symbolic_name": "lsinitrd"
         },
         {
             "command": "/sbin/lsmod",
@@ -4310,6 +4315,11 @@
             "symbolic_name": "rsyslog_conf"
         },
         {
+            "glob": "/sys/block/*/queue/scheduler",
+            "symbolic_name": "scheduler",
+            "pattern": []
+        },
+        {
             "glob": "/sys/class/scsi_host/host[0-9]*/fwrev",
             "symbolic_name": "scsi_fwver",
             "pattern": []
@@ -4353,5 +4363,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2021-03-25T10:42:19.047966"
+    "version": "2021-03-31T16:03:45.694442"
 }
