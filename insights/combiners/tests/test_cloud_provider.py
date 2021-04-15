@@ -3,6 +3,7 @@ from insights.combiners import cloud_provider
 from insights.combiners.cloud_provider import CloudProvider
 from insights.parsers.installed_rpms import InstalledRpms as IRPMS
 from insights.parsers.dmidecode import DMIDecode
+from insights.parsers.rhsm_conf import RHSMConf
 from insights.parsers.yum import YumRepoList
 from insights.tests import context_wrap
 
@@ -569,12 +570,31 @@ Handle 0x7F00, DMI type 127, 4 bytes
 End Of Table
 """  # noqa: E101,W191
 
+IBM_RHSM_CONF = """
+# Red Hat Subscription Manager Configuration File:
+
+# Unified Entitlement Platform Configuration
+[server]
+# Server hostname:
+hostname = host.networklayer.com
+
+# Server prefix:
+prefix = /subscription
+
+# Server port:
+port = 443
+
+# Set to 1 to disable certificate validation:
+insecure = 0
+
+""".strip()
+
 
 def test_rpm_google():
     irpms = IRPMS(context_wrap(RPMS_GOOGLE))
     dmi = DMIDecode(context_wrap(DMIDECODE))
     yrl = YumRepoList(context_wrap(YUM_REPOLIST_NOT_AZURE))
-    ret = CloudProvider(irpms, dmi, yrl)
+    ret = CloudProvider(irpms, dmi, yrl, None)
     assert ret.cloud_provider == CloudProvider.GOOGLE
     assert 'google-rhui-client-5.1.100-1.el7' in ret.cp_rpms.get(CloudProvider.GOOGLE)
     assert 'google-rhui-client-5.1.100-1.el6' in ret.cp_rpms.get(CloudProvider.GOOGLE)
@@ -585,7 +605,7 @@ def test_rpm_aws():
     irpms = IRPMS(context_wrap(RPMS_AWS))
     dmi = DMIDecode(context_wrap(DMIDECODE))
     yrl = YumRepoList(context_wrap(YUM_REPOLIST_NOT_AZURE))
-    ret = CloudProvider(irpms, dmi, yrl)
+    ret = CloudProvider(irpms, dmi, yrl, None)
     assert ret.cloud_provider == CloudProvider.AWS
     assert ret.cp_rpms.get(CloudProvider.AWS)[0] == 'rh-amazon-rhui-client-2.2.124-1.el7'
     assert ret.long_name == 'Amazon Web Services'
@@ -595,7 +615,7 @@ def test_rpm_azure():
     irpms = IRPMS(context_wrap(RPMS_AZURE))
     dmi = DMIDecode(context_wrap(DMIDECODE_BARE_METAL))
     yrl = YumRepoList(context_wrap(YUM_REPOLIST_NOT_AZURE))
-    ret = CloudProvider(irpms, dmi, yrl)
+    ret = CloudProvider(irpms, dmi, yrl, None)
     assert ret.cloud_provider == CloudProvider.AZURE
     assert ret.cp_rpms.get(CloudProvider.AZURE)[0] == 'WALinuxAgent-2.2.18-1.el7'
     assert ret.long_name == 'Microsoft Azure'
@@ -605,7 +625,7 @@ def test__yum_azure():
     irpms = IRPMS(context_wrap(RPMS))
     dmi = DMIDecode(context_wrap(DMIDECODE))
     yrl = YumRepoList(context_wrap(YUM_REPOLIST_AZURE))
-    ret = CloudProvider(irpms, dmi, yrl)
+    ret = CloudProvider(irpms, dmi, yrl, None)
     assert ret.cloud_provider == CloudProvider.AZURE
     assert 'rhui-microsoft-azure-rhel7-2.2-74' in ret.cp_yum.get(CloudProvider.AZURE)
 
@@ -614,7 +634,7 @@ def test__bios_version_aws():
     irpms = IRPMS(context_wrap(RPMS))
     dmi = DMIDecode(context_wrap(DMIDECODE_AWS))
     yrl = YumRepoList(context_wrap(YUM_REPOLIST_AZURE))
-    ret = CloudProvider(irpms, dmi, yrl)
+    ret = CloudProvider(irpms, dmi, yrl, None)
     assert ret.cloud_provider == CloudProvider.AWS
     assert ret.cp_bios_version[CloudProvider.AWS] == '4.2.amazon'
 
@@ -623,7 +643,7 @@ def test__bios_vendor_google():
     irpms = IRPMS(context_wrap(RPMS))
     dmi = DMIDecode(context_wrap(DMIDECODE_GOOGLE))
     yrl = YumRepoList(context_wrap(YUM_REPOLIST_AZURE))
-    ret = CloudProvider(irpms, dmi, yrl)
+    ret = CloudProvider(irpms, dmi, yrl, None)
     assert ret.cloud_provider == CloudProvider.GOOGLE
     assert ret.cp_bios_vendor[CloudProvider.GOOGLE] == 'Google'
 
@@ -632,7 +652,7 @@ def test__asset_tag_azure():
     irpms = IRPMS(context_wrap(RPMS))
     dmi = DMIDecode(context_wrap(DMIDECODE_AZURE_ASSET_TAG))
     yrl = YumRepoList(context_wrap(YUM_REPOLIST_NOT_AZURE))
-    ret = CloudProvider(irpms, dmi, yrl)
+    ret = CloudProvider(irpms, dmi, yrl, None)
     assert ret.cloud_provider == CloudProvider.AZURE
     assert ret.cp_asset_tag[CloudProvider.AZURE] == '7783-7084-3265-9085-8269-3286-77'
 
@@ -641,7 +661,7 @@ def test__uuid():
     irpms = IRPMS(context_wrap(RPMS))
     dmi = DMIDecode(context_wrap(DMIDECODE_AWS_UUID))
     yrl = YumRepoList(context_wrap(YUM_REPOLIST_NOT_AZURE))
-    ret = CloudProvider(irpms, dmi, yrl)
+    ret = CloudProvider(irpms, dmi, yrl, None)
     assert ret.cloud_provider == CloudProvider.AWS
     assert ret.cp_uuid[CloudProvider.AWS] == 'EC2F58AF-2DAD-C57E-88C0-A81CB6084290'
 
@@ -650,17 +670,25 @@ def test_dmidecode_alibaba():
     irpms = IRPMS(context_wrap(RPMS))
     dmi = DMIDecode(context_wrap(DMIDECODE_ALIBABA))
     yrl = YumRepoList(context_wrap(YUM_REPOLIST_NOT_AZURE))
-    ret = CloudProvider(irpms, dmi, yrl)
+    ret = CloudProvider(irpms, dmi, yrl, None)
     assert ret.cloud_provider == CloudProvider.ALIBABA
     assert ret.cp_manufacturer[CloudProvider.ALIBABA] == 'Alibaba Cloud'
     assert ret.long_name == 'Alibaba Cloud'
+
+
+def test_rhsm_conf_ibm():
+    rhsm_conf = RHSMConf(context_wrap(IBM_RHSM_CONF))
+    ret = CloudProvider(None, None, None, rhsm_conf)
+    assert ret.cloud_provider == CloudProvider.IBM
+    assert ret.cp_rhsm_server_hostname[CloudProvider.IBM] == 'host.networklayer.com'
+    assert ret.long_name == 'IBM Cloud'
 
 
 def test_no_data():
     irpms = IRPMS(context_wrap(RPMS))
     dmi = DMIDecode(context_wrap(DMIDECODE))
     yrl = YumRepoList(context_wrap(YUM_REPOLIST_NOT_AZURE))
-    ret = CloudProvider(irpms, dmi, yrl)
+    ret = CloudProvider(irpms, dmi, yrl, None)
     assert ret.cloud_provider is None
     assert ret.long_name is None
 
@@ -669,22 +697,29 @@ def test_docs():
     cp_aws = CloudProvider(
         IRPMS(context_wrap(RPMS_AWS)),
         DMIDecode(context_wrap(DMIDECODE_AWS)),
-        YumRepoList(context_wrap(YUM_REPOLIST_NOT_AZURE))
+        YumRepoList(context_wrap(YUM_REPOLIST_NOT_AZURE)),
+        None
     )
     cp_azure = CloudProvider(
         IRPMS(context_wrap(RPMS_AZURE)),
         DMIDecode(context_wrap(DMIDECODE_AZURE_ASSET_TAG)),
-        YumRepoList(context_wrap(YUM_REPOLIST_AZURE))
+        YumRepoList(context_wrap(YUM_REPOLIST_AZURE)),
+        None
     )
     cp_alibaba = CloudProvider(
         IRPMS(context_wrap(RPMS)),
         DMIDecode(context_wrap(DMIDECODE_ALIBABA)),
-        YumRepoList(context_wrap(YUM_REPOLIST_NOT_AZURE))
+        YumRepoList(context_wrap(YUM_REPOLIST_NOT_AZURE)),
+        None
+    )
+    cp_ibm = CloudProvider(
+        None, None, None, RHSMConf(context_wrap(IBM_RHSM_CONF))
     )
     env = {
         'cp_aws': cp_aws,
         'cp_azure': cp_azure,
-        'cp_alibaba': cp_alibaba
+        'cp_alibaba': cp_alibaba,
+        'cp_ibm': cp_ibm
     }
     failed, total = doctest.testmod(cloud_provider, globs=env)
     assert failed == 0

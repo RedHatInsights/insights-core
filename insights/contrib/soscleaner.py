@@ -95,6 +95,9 @@ class SOSCleaner:
                     #if mode == '200' or mode == '444' or mode == '400':
                     #    skip_list.append(f)
                     mime_type = content_type.from_file(f_full)
+                    if f == 'insights_archive.txt':
+                        # don't exclude this file! we need it to parse core collection archives
+                        continue
                     if 'text' not in mime_type and 'json' not in mime_type:
                         skip_list.append(f)
 
@@ -347,14 +350,19 @@ class SOSCleaner:
         except Exception as e:    #pragma: no cover
             self.logger.exception(e)
 
-    def _process_hosts_file(self):
+    def _process_hosts_file(self, options):
         # this will process the hosts file more thoroughly to try and capture as many server short names/aliases as possible
         # could lead to false positives if people use dumb things for server aliases, like 'file' or 'server' or other common terms
         # this may be an option that can be enabled... --hosts or similar?
 
+        if options.core_collect:
+            hosts_file = os.path.join(self.dir_path, 'data', 'etc/hosts')
+        else:
+            hosts_file = os.path.join(self.dir_path, 'etc/hosts')
+
         try:
-            if os.path.isfile(os.path.join(self.dir_path, 'etc/hosts')):
-                with open(os.path.join(self.dir_path, 'etc/hosts')) as f:
+            if os.path.isfile(hosts_file):
+                with open(hosts_file) as f:
                     self.logger.con_out("Processing hosts file for better obfuscation coverage")
                     data = f.readlines()
                     for line in data:
@@ -678,7 +686,7 @@ class SOSCleaner:
             if self.hostname:   # if we have a hostname that's not a None type
                 self.hn_db['host0'] = self.hostname     # we'll prime the hostname pump to clear out a ton of useless logic later
 
-            self._process_hosts_file()  # we'll take a dig through the hosts file and make sure it is as scrubbed as possible
+            self._process_hosts_file(options)  # we'll take a dig through the hosts file and make sure it is as scrubbed as possible
 
         self._domains2db()
         if options.core_collect:

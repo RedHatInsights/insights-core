@@ -6,6 +6,7 @@ from insights.specs import Specs
 from insights.specs.default import DefaultSpecs
 
 import pytest
+import sys
 
 
 def setup_function(func):
@@ -38,6 +39,7 @@ def teardown_function(func):
         del filters.FILTERS[Specs.ps_aux]
 
 
+@pytest.mark.skipif(sys.version_info < (2, 7), reason='Playbook verifier code uses oyaml library which is incompatable with this test')
 def test_filter_dumps_loads():
     r = filters.dumps()
     assert r is not None
@@ -108,3 +110,8 @@ def test_add_filter_exception_not_filterable():
 def test_add_filter_exception_raw():
     with pytest.raises(Exception):
         filters.add_filter(Specs.metadata_json, "[]")
+
+
+def test_add_filter_exception_empty():
+    with pytest.raises(Exception):
+        filters.add_filter(Specs.ps_aux, "")

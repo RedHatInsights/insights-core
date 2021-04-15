@@ -54,7 +54,18 @@ class Lssap(CommandParser):
 
         self.data = []
         # remove lssap version and bar text from content
-        clean_content = content[2:-1]
+        start_ndx = end_index = -1
+        for i, l in enumerate(content):
+            if start_ndx == -1 and l.lstrip().startswith("========"):
+                start_ndx = i
+                continue
+            if end_index == -1 and l.strip().startswith("========"):
+                end_index = i
+                break
+        if start_ndx == -1 or end_index == -1:
+            raise ParseException("Lssap: Unable to parse {0} line(s) of content: ({1})".format(len(content), content))
+
+        clean_content = content[start_ndx + 1:end_index]
         if len(clean_content) > 0 and clean_content[0].lstrip().startswith("SID"):
             self.data = parse_delimited_table(clean_content, delim='|', header_delim=None)
         else:

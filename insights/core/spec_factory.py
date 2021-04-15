@@ -2,6 +2,7 @@ import itertools
 import logging
 import os
 import re
+import signal
 import six
 import traceback
 import codecs
@@ -302,7 +303,7 @@ class CommandOutputProvider(ContentProvider):
     """
     Class used in datasources to return output from commands.
     """
-    def __init__(self, cmd, ctx, args=None, split=True, keep_rc=False, ds=None, timeout=None, inherit_env=None):
+    def __init__(self, cmd, ctx, args=None, split=True, keep_rc=False, ds=None, timeout=None, inherit_env=None, signum=None):
         super(CommandOutputProvider, self).__init__()
         self.cmd = cmd
         self.root = "insights_commands"
@@ -314,6 +315,7 @@ class CommandOutputProvider(ContentProvider):
         self.ds = ds
         self.timeout = timeout
         self.inherit_env = inherit_env or []
+        self.signum = signum or signal.SIGKILL
 
         self._content = None
         self.rc = None
@@ -359,7 +361,7 @@ class CommandOutputProvider(ContentProvider):
         command = self.create_args()
 
         raw = self.ctx.shell_out(command, split=self.split, keep_rc=self.keep_rc,
-                timeout=self.timeout, env=self.create_env())
+                timeout=self.timeout, env=self.create_env(), signum=self.signum)
         if self.keep_rc:
             self.rc, output = raw
         else:
@@ -390,7 +392,7 @@ class CommandOutputProvider(ContentProvider):
         fs.ensure_path(os.path.dirname(dst))
         if args:
             timeout = self.timeout or self.ctx.timeout
-            p = Pipeline(*args, timeout=timeout, env=self.create_env())
+            p = Pipeline(*args, timeout=timeout, signum=self.signum, env=self.create_env())
             return p.write(dst, keep_rc=self.keep_rc)
 
     def __repr__(self):
@@ -708,7 +710,7 @@ class simple_command(object):
     Execute a simple command that has no dynamic arguments
 
     Args:
-        cmd (list of lists): the command(s) to execute. Breaking apart a command
+        cmd (str): the command(s) to execute. Breaking apart a command
             string that might contain multiple commands separated by a pipe,
             getting them ready for subproc operations.
             IE. A command with filters applied
@@ -731,7 +733,7 @@ class simple_command(object):
             no arguments
     """
 
-    def __init__(self, cmd, context=HostContext, deps=[], split=True, keep_rc=False, timeout=None, inherit_env=[], **kwargs):
+    def __init__(self, cmd, context=HostContext, deps=[], split=True, keep_rc=False, timeout=None, inherit_env=[], signum=None, **kwargs):
         self.cmd = cmd
         self.context = context
         self.split = split
@@ -739,13 +741,14 @@ class simple_command(object):
         self.keep_rc = keep_rc
         self.timeout = timeout
         self.inherit_env = inherit_env
+        self.signum = signum
         self.__name__ = self.__class__.__name__
         datasource(self.context, *deps, raw=self.raw, **kwargs)(self)
 
     def __call__(self, broker):
         ctx = broker[self.context]
         return CommandOutputProvider(self.cmd, ctx, split=self.split,
-                keep_rc=self.keep_rc, ds=self, timeout=self.timeout, inherit_env=self.inherit_env)
+                keep_rc=self.keep_rc, ds=self, timeout=self.timeout, inherit_env=self.inherit_env, signum=self.signum)
 
 
 class command_with_args(object):
@@ -753,7 +756,7 @@ class command_with_args(object):
     Execute a command that has dynamic arguments
 
     Args:
-        cmd (list of lists): the command to execute. Breaking apart a command
+        cmd (str): the command to execute. Breaking apart a command
             string that might require arguments.
         provider (str or tuple): argument string or a tuple of argument strings.
         context (ExecutionContext): the context under which the datasource
@@ -775,7 +778,7 @@ class command_with_args(object):
             specified arguments passed by the provider.
     """
 
-    def __init__(self, cmd, provider, context=HostContext, deps=None, split=True, keep_rc=False, timeout=None, inherit_env=None, **kwargs):
+    def __init__(self, cmd, provider, context=HostContext, deps=None, split=True, keep_rc=False, timeout=None, inherit_env=None, signum=None, **kwargs):
         deps = deps if deps is not None else []
         self.cmd = cmd
         self.provider = provider
@@ -785,6 +788,7 @@ class command_with_args(object):
         self.keep_rc = keep_rc
         self.timeout = timeout
         self.inherit_env = inherit_env if inherit_env is not None else []
+        self.signum = signum
         self.__name__ = self.__class__.__name__
         datasource(self.provider, self.context, *deps, raw=self.raw, **kwargs)(self)
 
@@ -796,7 +800,7 @@ class command_with_args(object):
         try:
             self.cmd = self.cmd % source
             return CommandOutputProvider(self.cmd, ctx, split=self.split,
-                    keep_rc=self.keep_rc, ds=self, timeout=self.timeout, inherit_env=self.inherit_env)
+                    keep_rc=self.keep_rc, ds=self, timeout=self.timeout, inherit_env=self.inherit_env, signum=self.signum)
         except:
             log.debug(traceback.format_exc())
         raise ContentException("No results found for [%s]" % self.cmd)
@@ -811,7 +815,7 @@ class foreach_execute(object):
 
     Args:
         provider (list): a list of elements or tuples.
-        cmd (list of lists): a command with substitution parameters. Breaking
+        cmd (str): a command with substitution parameters. Breaking
             apart a command string that might contain multiple commands
             separated by a pipe, getting them ready for subproc operations.
             IE. A command with filters applied
@@ -835,7 +839,7 @@ class foreach_execute(object):
             created by substituting each element of provider into the cmd template.
     """
 
-    def __init__(self, provider, cmd, context=HostContext, deps=[], split=True, keep_rc=False, timeout=None, inherit_env=[], **kwargs):
+    def __init__(self, provider, cmd, context=HostContext, deps=[], split=True, keep_rc=False, timeout=None, inherit_env=[], signum=None, **kwargs):
         self.provider = provider
         self.cmd = cmd
         self.context = context
@@ -844,6 +848,7 @@ class foreach_execute(object):
         self.keep_rc = keep_rc
         self.timeout = timeout
         self.inherit_env = inherit_env
+        self.signum = signum
         self.__name__ = self.__class__.__name__
         datasource(self.provider, self.context, *deps, multi_output=True, raw=self.raw, **kwargs)(self)
 
@@ -860,7 +865,7 @@ class foreach_execute(object):
                 the_cmd = self.cmd % e
                 cop = CommandOutputProvider(the_cmd, ctx, args=e,
                         split=self.split, keep_rc=self.keep_rc, ds=self,
-                        timeout=self.timeout, inherit_env=self.inherit_env)
+                        timeout=self.timeout, inherit_env=self.inherit_env, signum=self.signum)
                 result.append(cop)
             except:
                 log.debug(traceback.format_exc())
@@ -1076,4 +1081,4 @@ def serialize_datasource_provider(obj, root):
 
 @deserializer(DatasourceProvider)
 def deserialize_datasource_provider(_type, data, root):
-    return SerializedRawOutputProvider(data["relative_path"], root)
+    return SerializedOutputProvider(data["relative_path"], root)

@@ -97,6 +97,13 @@ DEFAULT_OPTS = {
         'action': "store_true",
         'group': 'actions'
     },
+    'checkin': {
+        'default': False,
+        'opt': ['--checkin'],
+        'help': 'Do a lightweight check-in instead of full upload',
+        'action': "store_true",
+        'group': 'actions'
+    },
     'cmd_timeout': {
         # non-CLI
         'default': constants.default_cmd_timeout
@@ -186,10 +193,6 @@ DEFAULT_OPTS = {
         # non-CLI
         'default': 120.0
     },
-    'insecure_connection': {
-        # non-CLI
-        'default': False
-    },
     'keep_archive': {
         'default': False,
         'opt': ['--keep-archive'],
@@ -231,6 +234,13 @@ DEFAULT_OPTS = {
         'help': 'Do not upload the archive',
         'action': 'store_true',
         'group': 'debug'
+    },
+    'module': {
+        'default': None,
+        'opt': ['--module', '-m'],
+        'help': 'Directly run a Python module within the insights-core package',
+        'action': 'store',
+        'help': argparse.SUPPRESS
     },
     'obfuscate': {
         # non-CLI
@@ -520,7 +530,7 @@ class InsightsConfig(object):
                 return v
 
         # put this warning here so the error msg only prints once
-        if os.environ.get('HTTP_PROXY') and self._print_errors:
+        if os.environ.get('HTTP_PROXY') and not os.environ.get('HTTPS_PROXY') and self._print_errors:
             sys.stdout.write('WARNING: HTTP_PROXY is unused by insights-client. Please use HTTPS_PROXY.\n')
 
         # ignore these env as they are not config vars
@@ -673,6 +683,8 @@ class InsightsConfig(object):
                 raise ValueError('Cannot check registration status in offline mode.')
             if self.test_connection:
                 raise ValueError('Cannot run connection test in offline mode.')
+            if self.checkin:
+                raise ValueError('Cannot check in in offline mode.')
         if self.output_dir and self.output_file:
             raise ValueError('Specify only one: --output-dir or --output-file.')
         if self.output_dir == '':
@@ -706,6 +718,8 @@ class InsightsConfig(object):
             if self.obfuscate:
                 if self._print_errors:
                     sys.stdout.write('WARNING: SOSCleaner reports will be created alongside the output archive.\n')
+        if self.module and not self.module.startswith('insights.client.apps.'):
+            raise ValueError('You can only run modules within the namespace insights.client.apps.*')
 
     def _imply_options(self):
         '''
@@ -725,7 +739,7 @@ class InsightsConfig(object):
             self.diagnosis = True
         if self.test_connection:
             self.net_debug = True
-        if self.payload or self.diagnosis or self.compliance or self.show_results or self.check_results:
+        if self.payload or self.diagnosis or self.compliance or self.check_results or self.checkin:
             self.legacy_upload = False
         if self.payload and (self.logging_file == constants.default_log_file):
             self.logging_file = constants.default_payload_log

@@ -2,6 +2,11 @@
 PackageProvidesHttpd - command ``/bin/echo {httpd_command_package}``
 ====================================================================
 
+.. warning::
+
+    This module is deprecated, please use
+    :mod:`insights.parsers.package_provides` instead.
+
 This module parses the content that contains running instances of 'httpd' and
 its corresponding RPM package which provide them. The running command and its
 package name are stored as properties ``command`` and ``package`` of the object.
@@ -22,11 +27,17 @@ Examples:
 from insights import parser, CommandParser
 from insights.specs import Specs
 from ..parsers import SkipException
+from insights.util import deprecated
 
 
 @parser(Specs.package_provides_httpd)
 class PackageProvidesHttpd(CommandParser):
     """
+    .. warning::
+
+        This Combiner is deprecated, please use
+        :class:`insights.parsers.package_provides.PackageProvidesCommand` instead.
+
     Parse the content like '/opt/rh/httpd24/root/usr/sbin/httpd /usr/sbin/httpd'
 
     Attributes:
@@ -35,6 +46,10 @@ class PackageProvidesHttpd(CommandParser):
     """
 
     def parse_content(self, content):
+        deprecated(
+            PackageProvidesHttpd,
+            'Please use the :class:`insights.parsers.package_provides.PackageProvidesCommand` instead.'
+        )
         if len(content) == 0:
             raise SkipException("Error: ", 'there is not httpd application running')
         l = content[0].split()

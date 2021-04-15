@@ -1,4 +1,5 @@
 import os
+import sys
 import tempfile
 import uuid
 import insights.client.utilities as util
@@ -6,6 +7,7 @@ from insights.client.constants import InsightsConstants as constants
 import re
 import mock
 import six
+import pytest
 from mock.mock import patch
 
 
@@ -275,6 +277,7 @@ def test_get_tags_nonexist():
     assert got is None
 
 
+@pytest.mark.skipif(sys.version_info < (2, 7), reason='Playbook verifier uses oyaml library which is incompatable with this test')
 def test_write_tags():
     tags = {'foo': 'bar'}
     fp = tempfile.NamedTemporaryFile()

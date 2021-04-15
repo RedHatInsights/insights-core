@@ -1,7 +1,9 @@
-from insights.parsers import lspci
-from insights.parsers.lspci import LsPci
-from insights.tests import context_wrap
 import doctest
+import pytest
+
+from insights.parsers import lspci, SkipException
+from insights.parsers.lspci import LsPci, LsPciVmmkn
+from insights.tests import context_wrap
 
 
 LSPCI_0 = """
@@ -213,6 +215,46 @@ LSPCI_OUTPUT_WITH_BAD_LINES = """
         Kernel modules: iwlwifi
 """.strip()
 
+LSPCI_VMMKN = """
+Slot:   00:00.0
+Class:  0600
+Vendor: 8086
+Device: 1237
+SVendor:    1af4
+SDevice:    1100
+Rev:    02
+
+Slot:   00:01.0
+Class:  0101
+Vendor: 8086
+Device: 7010
+SVendor:    1af4
+SDevice:    1100
+ProgIf: 80
+Driver: ata_piix
+Module: ata_piix
+Module: ata_generic
+
+Slot:   00:01.1
+Class:  0c03
+Vendor: 8086
+Device: 7020
+SVendor:    1af4
+SDevice:    1100
+Rev:    01
+Driver: uhci_hcd
+
+
+Slot:   00:03.0
+Class:  0200
+Vendor: 1af4
+Device: 1000
+SVendor:    1af4
+SDevice:    0001
+PhySlot:    3
+Driver: virtio-pci
+""".strip()
+
 
 def test_lspci():
     LsPci.token_scan('centrino', 'Centrino')
@@ -252,9 +294,31 @@ def test_lspci_driver():
     assert len(output.pci_dev_list) == 1
 
 
+def test_lspci_vmmkn():
+    lspci_vmmkn = LsPciVmmkn(context_wrap(LSPCI_VMMKN))
+    assert sorted(lspci_vmmkn.pci_dev_list) == ['00:00.0', '00:01.0', '00:01.1', '00:03.0']
+    assert lspci_vmmkn[0].get('Driver') is None
+    assert lspci_vmmkn[1].get('Vendor') == '8086'
+    assert lspci_vmmkn[1].get('Device') == '7010'
+    assert lspci_vmmkn[2].get('SVendor') == '1af4'
+    assert lspci_vmmkn[3].get('SDevice') == '0001'
+    assert lspci_vmmkn[-1].get('Driver') == 'virtio-pci'
+    assert sorted(lspci_vmmkn[1].get('Module')) == sorted(['ata_piix', 'ata_generic'])
+    assert lspci_vmmkn[-1].get('Module') is None
+
+
+def test_lspci_vmmkn_ab():
+    with pytest.raises(SkipException):
+        LsPciVmmkn(context_wrap(''))
+
+    with pytest.raises(SkipException):
+        LsPciVmmkn(context_wrap(' \n '.splitlines()))
+
+
 def test_doc_examples():
     env = {
-            'lspci': LsPci(context_wrap(LSPCI_DRIVER_DOC))
+            'lspci': LsPci(context_wrap(LSPCI_DRIVER_DOC)),
+            'lspci_vmmkn': LsPciVmmkn(context_wrap(LSPCI_VMMKN))
           }
     failed, total = doctest.testmod(lspci, globs=env)
     assert failed == 0

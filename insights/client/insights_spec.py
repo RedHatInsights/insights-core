@@ -4,6 +4,8 @@ import errno
 import shlex
 import logging
 import six
+import time
+import sys
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
 from insights.util import mangle
@@ -21,6 +23,9 @@ class InsightsSpec(object):
     def __init__(self, config, spec):
         self.config = config
         self.pattern = spec['pattern'] if spec['pattern'] else None
+        self.return_code = None
+        self.exec_time = None
+        self.output_size = None
 
 
 class InsightsCommand(InsightsSpec):
@@ -69,6 +74,7 @@ class InsightsCommand(InsightsSpec):
         if set.intersection(set(args), constants.command_blacklist):
             raise RuntimeError("Command Blacklist: " + self.command)
 
+        exec_start = time.time()
         try:
             logger.debug('Executing: %s', args)
             proc0 = Popen(args, shell=False, stdout=PIPE, stderr=STDOUT,
@@ -108,6 +114,9 @@ class InsightsCommand(InsightsSpec):
 
         logger.debug("Proc0 Status: %s", proc0.returncode)
         logger.debug("Proc0 stderr: %s", stderr)
+        self.return_code = proc0.returncode
+        self.exec_time = time.time() - exec_start
+        self.output_size = sys.getsizeof(stdout)
         return stdout.decode('utf-8', 'ignore').strip()
 
 
@@ -129,6 +138,7 @@ class InsightsFile(InsightsSpec):
             logger.debug('File %s does not exist', self.real_path)
             return
 
+        exec_start = time.time()
         sedcmd = Popen(['sed', '', self.real_path], stdout=PIPE)
 
         if self.pattern is None:
@@ -144,5 +154,6 @@ class InsightsFile(InsightsSpec):
             sedcmd.stdout.close()
 
             output = proc1.communicate()[0]
-
+        self.exec_time = time.time() - exec_start
+        self.output_size = sys.getsizeof(output)
         return output.decode('utf-8', 'ignore').strip()
