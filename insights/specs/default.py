@@ -160,6 +160,7 @@ class DefaultSpecs(Specs):
         raise SkipComponent()
 
     azure_instance_type = simple_command("/usr/bin/curl -s -H Metadata:true http://169.254.169.254/metadata/instance/compute/vmSize?api-version=2018-10-01&format=text --connect-timeout 5", deps=[is_azure])
+    azure_instance_plan = simple_command("/usr/bin/curl -s -H Metadata:true http://169.254.169.254/metadata/instance/compute/plan?api-version=2018-10-01&format=json --connect-timeout 5", deps=[is_azure])
     bios_uuid = simple_command("/usr/sbin/dmidecode -s system-uuid")
     blkid = simple_command("/sbin/blkid -c /dev/null")
     bond = glob_file("/proc/net/bonding/bond*")
@@ -221,7 +222,7 @@ class DefaultSpecs(Specs):
     ceph_osd_tree = simple_command("/usr/bin/ceph osd tree -f json")
     ceph_s = simple_command("/usr/bin/ceph -s -f json")
     ceph_v = simple_command("/usr/bin/ceph -v")
-    certificates_enddate = simple_command("/usr/bin/find /etc/origin/node /etc/origin/master /etc/pki /etc/ipa -type f -exec /usr/bin/openssl x509 -noout -enddate -in '{}' \; -exec echo 'FileName= {}' \;")
+    certificates_enddate = simple_command("/usr/bin/find /etc/origin/node /etc/origin/master /etc/pki /etc/ipa -type f -exec /usr/bin/openssl x509 -noout -enddate -in '{}' \; -exec echo 'FileName= {}' \;", keep_rc=True)
     chkconfig = simple_command("/sbin/chkconfig --list")
     chrony_conf = simple_file("/etc/chrony.conf")
     chronyc_sources = simple_command("/usr/bin/chronyc sources")
@@ -530,7 +531,7 @@ class DefaultSpecs(Specs):
     etc_and_sub_dirs = sorted(["/etc", "/etc/pki/tls/private", "/etc/pki/tls/certs",
         "/etc/pki/ovirt-vmconsole", "/etc/nova/migration", "/etc/sysconfig",
         "/etc/cloud/cloud.cfg.d", "/etc/rc.d/init.d"])
-    ls_etc = simple_command("/bin/ls -lan {0}".format(' '.join(etc_and_sub_dirs)))
+    ls_etc = simple_command("/bin/ls -lan {0}".format(' '.join(etc_and_sub_dirs)), keep_rc=True)
     ls_ipa_idoverride_memberof = simple_command("/bin/ls -lan /usr/share/ipa/ui/js/plugins/idoverride-memberof")
     ls_lib_firmware = simple_command("/bin/ls -lanR /lib/firmware")
     ls_ocp_cni_openshift_sdn = simple_command("/bin/ls -l /var/lib/cni/networks/openshift-sdn")
@@ -556,6 +557,7 @@ class DefaultSpecs(Specs):
     lsblk = simple_command("/bin/lsblk")
     lsblk_pairs = simple_command("/bin/lsblk -P -o NAME,KNAME,MAJ:MIN,FSTYPE,MOUNTPOINT,LABEL,UUID,RA,RO,RM,MODEL,SIZE,STATE,OWNER,GROUP,MODE,ALIGNMENT,MIN-IO,OPT-IO,PHY-SEC,LOG-SEC,ROTA,SCHED,RQ-SIZE,TYPE,DISC-ALN,DISC-GRAN,DISC-MAX,DISC-ZERO")
     lscpu = simple_command("/usr/bin/lscpu")
+    lsinitrd = simple_command("/usr/bin/lsinitrd")
     lsmod = simple_command("/sbin/lsmod")
     lsof = simple_command("/usr/sbin/lsof")
     lspci = simple_command("/sbin/lspci -k")
@@ -573,7 +575,7 @@ class DefaultSpecs(Specs):
     def md5chk_file_list(broker):
         """ Provide a list of files to be processed by the ``md5chk_files`` spec """
         return ["/etc/pki/product/69.pem", "/etc/pki/product-default/69.pem", "/usr/lib/libsoftokn3.so", "/usr/lib64/libsoftokn3.so", "/usr/lib/libfreeblpriv3.so", "/usr/lib64/libfreeblpriv3.so"]
-    md5chk_files = foreach_execute(md5chk_file_list, "/usr/bin/md5sum %s")
+    md5chk_files = foreach_execute(md5chk_file_list, "/usr/bin/md5sum %s", keep_rc=True)
     mdstat = simple_file("/proc/mdstat")
 
     @datasource(Mdstat, HostContext)
@@ -595,7 +597,8 @@ class DefaultSpecs(Specs):
     mongod_conf = glob_file([
                             "/etc/mongod.conf",
                             "/etc/mongodb.conf",
-                            "/etc/opt/rh/rh-mongodb26/mongod.conf"
+                            "/etc/opt/rh/rh-mongodb26/mongod.conf",
+                            "/etc/opt/rh/rh-mongodb34/mongod.conf"
                             ])
     mount = simple_command("/bin/mount")
     mounts = simple_file("/proc/mounts")
@@ -747,15 +750,11 @@ class DefaultSpecs(Specs):
     postgresql_conf = first_file([
         "/var/opt/rh/rh-postgresql12/lib/pgsql/data/postgresql.conf",
         "/var/lib/pgsql/data/postgresql.conf",
-        "/opt/rh/postgresql92/root/var/lib/pgsql/data/postgresql.conf",
-        "database/postgresql.conf"
     ])
     postgresql_log = first_of(
         [
             glob_file("/var/opt/rh/rh-postgresql12/lib/pgsql/data/log/postgresql-*.log"),
             glob_file("/var/lib/pgsql/data/pg_log/postgresql-*.log"),
-            glob_file("/opt/rh/postgresql92/root/var/lib/pgsql/data/pg_log/postgresql-*.log"),
-            glob_file("/database/postgresql-*.log")
         ]
     )
     puppetserver_config = simple_file("/etc/sysconfig/puppetserver")
@@ -770,7 +769,6 @@ class DefaultSpecs(Specs):
     rhsm_katello_default_ca_cert = simple_command("/usr/bin/openssl x509 -in /etc/rhsm/ca/katello-default-ca.pem -noout -issuer")
     qemu_conf = simple_file("/etc/libvirt/qemu.conf")
     qemu_xml = glob_file(r"/etc/libvirt/qemu/*.xml")
-    qpid_stat_g = simple_command("/usr/bin/qpid-stat -g --ssl-certificate=/etc/pki/katello/qpid_client_striped.crt -b amqps://localhost:5671")
     qpidd_conf = simple_file("/etc/qpid/qpidd.conf")
     rabbitmq_env = simple_file("/etc/rabbitmq/rabbitmq-env.conf")
     rabbitmq_report = simple_command("/usr/sbin/rabbitmqctl report")
@@ -800,6 +798,14 @@ class DefaultSpecs(Specs):
         sap = broker[Sap]
         return list(set(sap.sid(i).lower() for i in sap.all_instances))
 
+    @datasource(Sap, HostContext)
+    def sap_hana_sid(broker):
+        """
+        list: List of the SID of SAP HANA Instances.
+        """
+        sap = broker[Sap]
+        return list(set(sap.sid(i).lower() for i in sap.all_instances if sap.type(i) == 'HDB'))
+
     @datasource(sap_sid, HostContext)
     def ld_library_path_of_user(broker):
         """
@@ -821,7 +827,7 @@ class DefaultSpecs(Specs):
             return DatasourceProvider('\n'.join(llds), relative_path='insights_commands/echo_user_LD_LIBRARY_PATH')
         raise SkipComponent
 
-    sap_hdb_version = foreach_execute(sap_sid, "/usr/bin/sudo -iu %sadm HDB version", keep_rc=True)
+    sap_hdb_version = foreach_execute(sap_hana_sid, "/bin/su -l %sadm -c 'HDB version'", keep_rc=True)
     saphostctl_getcimobject_sapinstance = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance")
     saphostexec_status = simple_command("/usr/sap/hostctrl/exe/saphostexec -status")
     saphostexec_version = simple_command("/usr/sap/hostctrl/exe/saphostexec -version")
@@ -867,6 +873,7 @@ class DefaultSpecs(Specs):
     )
     satellite_version_rb = simple_file("/usr/share/foreman/lib/satellite/version.rb")
     satellite_custom_hiera = simple_file("/etc/foreman-installer/custom-hiera.yaml")
+    scheduler = glob_file("/sys/block/*/queue/scheduler")
     scsi = simple_file("/proc/scsi/scsi")
     scsi_eh_deadline = glob_file('/sys/class/scsi_host/host[0-9]*/eh_deadline')
     scsi_fwver = glob_file('/sys/class/scsi_host/host[0-9]*/fwrev')
