@@ -768,7 +768,6 @@ class DefaultSpecs(Specs):
     rhsm_katello_default_ca_cert = simple_command("/usr/bin/openssl x509 -in /etc/rhsm/ca/katello-default-ca.pem -noout -issuer")
     qemu_conf = simple_file("/etc/libvirt/qemu.conf")
     qemu_xml = glob_file(r"/etc/libvirt/qemu/*.xml")
-    qpid_stat_g = simple_command("/usr/bin/qpid-stat -g --ssl-certificate=/etc/pki/katello/qpid_client_striped.crt -b amqps://localhost:5671")
     qpidd_conf = simple_file("/etc/qpid/qpidd.conf")
     rabbitmq_env = simple_file("/etc/rabbitmq/rabbitmq-env.conf")
     rabbitmq_report = simple_command("/usr/sbin/rabbitmqctl report")
