@@ -22,7 +22,7 @@ pipeline {
                 virtualenv .testenv
                 source .testenv/bin/activate
                 pip install https://github.com/kjd/idna/archive/refs/tags/v2.7.zip
-                pip install "pycparser<=2.18"
+                pip install https://github.com/eliben/pycparser/archive/refs/tags/release_v2.18.zip
                 pip install -e .[testing]
                 pytest
             """
@@ -31,7 +31,7 @@ pipeline {
                 virtualenv .lintenv
                 source .lintenv/bin/activate
                 pip install https://github.com/kjd/idna/archive/refs/tags/v2.7.zip
-                pip install "pycparser<=2.18"
+                pip install https://github.com/eliben/pycparser/archive/refs/tags/release_v2.18.zip
                 pip install -e .[linting]
                 flake8
             """
