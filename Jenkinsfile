@@ -21,7 +21,7 @@ pipeline {
             sh """
                 virtualenv .testenv
                 source .testenv/bin/activate
-                pip install --upgrade https://github.com/pypa/pip/archive/refs/tags/9.0.3.tar.gz
+                pip install --upgrade "pip<10"
                 pip install "idna<=2.7"
                 pip install "pycparser<=2.18"
                 pip install -e .[testing]
