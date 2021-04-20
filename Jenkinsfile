@@ -22,8 +22,8 @@ pipeline {
                 virtualenv .testenv
                 source .testenv/bin/activate
                 pip install --upgrade https://github.com/pypa/pip/archive/refs/tags/9.0.3.tar.gz
-                pip install https://github.com/kjd/idna/archive/refs/tags/v2.7.zip
-                pip install https://github.com/eliben/pycparser/archive/refs/tags/release_v2.18.zip
+                pip install "idna<=2.7"
+                pip install "pycparser<=2.18"
                 pip install -e .[testing]
                 pytest
             """
