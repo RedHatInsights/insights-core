@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import doctest
+from insights.parsers import rpm_ostree_status
 from insights.parsers.rpm_ostree_status import RpmOstreeStatus
 from insights.tests import context_wrap
 
@@ -50,3 +52,12 @@ def test_good_data():
     status = RpmOstreeStatus(data)
     assert status.data["deployments"][0]["booted"]
     assert len(status.query.deployments.where("booted", True)) == 1
+
+
+def test_doc_examples():
+    data = context_wrap(GOOD)
+    env = {
+        'status': RpmOstreeStatus(data)
+    }
+    failed, _ = doctest.testmod(rpm_ostree_status, globs=env)
+    assert failed == 0
