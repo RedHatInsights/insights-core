@@ -29,6 +29,7 @@ class GCPLicenseCodes(CommandParser):
 
     Raises:
         SkipException: When content is empty or no parse-able content.
+        ParseException: When the json is unable to be parsed
 
     Attributes:
         ids (list): A list containing the IDs found on the instance
