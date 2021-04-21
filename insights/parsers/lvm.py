@@ -130,7 +130,8 @@ class Lvm(CommandParser):
         if "Unrecognised field:" in content[-1]:
             raise ParseException(content[-1])
         d = {"warnings": set(find_warnings(content))}
-        content = [l for l in content if l not in d["warnings"]]
+        content = [l for l in content
+                   if l not in d["warnings"] and not l.startswith("File descriptor ")]
         d["content"] = list(map_keys(parse_keypair_lines(content), self.KEYS))
         self.data = d if d else None
 
