@@ -801,20 +801,44 @@ class DefaultSpecs(Specs):
     samba = simple_file("/etc/samba/smb.conf")
 
     @datasource(Sap, HostContext)
-    def sap_sid(broker):
+    def sap_instance(broker):
         """
-        list: List of the SID of all SAP Instances.
+        list: List of all SAP Instances.
         """
         sap = broker[Sap]
-        return list(set(sap.sid(i).lower() for i in sap.all_instances))
+        return list(v for v in sap.values())
 
-    @datasource(Sap, HostContext)
+    @datasource(sap_instance, HostContext)
+    def sap_hana_instance(broker):
+        """
+        list: List of the SAP HANA Instances.
+        """
+        sap = broker[DefaultSpecs.sap_instance]
+        return list(v for v in sap if v.type == 'HDB')
+
+    @datasource(sap_instance, HostContext)
+    def sap_sid(broker):
+        """
+        list: List of the SID of all the SAP Instances.
+        """
+        sap = broker[DefaultSpecs.sap_instance]
+        return list(set(h.sid.lower() for h in sap))
+
+    @datasource(sap_hana_instance, HostContext)
     def sap_hana_sid(broker):
         """
         list: List of the SID of SAP HANA Instances.
         """
-        sap = broker[Sap]
-        return list(set(sap.sid(i).lower() for i in sap.all_instances if sap.type(i) == 'HDB'))
+        hana = broker[DefaultSpecs.sap_hana_instance]
+        return list(set(h.sid.lower() for h in hana))
+
+    @datasource(sap_hana_instance, HostContext)
+    def sap_hana_sid_SID_nr(broker):
+        """
+        list: List of tuples (sid, SID, Nr) of SAP HANA Instances.
+        """
+        hana = broker[DefaultSpecs.sap_hana_instance]
+        return list((h.sid.lower(), h.sid, h.number) for h in hana)
 
     @datasource(sap_sid, HostContext)
     def ld_library_path_of_user(broker):
@@ -837,6 +861,7 @@ class DefaultSpecs(Specs):
             return DatasourceProvider('\n'.join(llds), relative_path='insights_commands/echo_user_LD_LIBRARY_PATH')
         raise SkipComponent
 
+    sap_hana_landscape = foreach_execute(sap_hana_sid_SID_nr, "/bin/su -l %sadm -c 'python /usr/sap/%s/HDB%s/exe/python_support/landscapeHostConfiguration.py'", keep_rc=True)
     sap_hdb_version = foreach_execute(sap_hana_sid, "/bin/su -l %sadm -c 'HDB version'", keep_rc=True)
     saphostctl_getcimobject_sapinstance = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance")
     saphostexec_status = simple_command("/usr/sap/hostctrl/exe/saphostexec -status")

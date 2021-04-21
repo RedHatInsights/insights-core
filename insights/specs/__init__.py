@@ -562,6 +562,7 @@ class Specs(SpecSet):
     samba = RegistryPoint(filterable=True)
     sap_dev_disp = RegistryPoint(multi_output=True, filterable=True)
     sap_dev_rd = RegistryPoint(multi_output=True, filterable=True)
+    sap_hana_landscape = RegistryPoint(multi_output=True)
     sap_hdb_version = RegistryPoint(multi_output=True)
     sap_host_profile = RegistryPoint(filterable=True)
     sapcontrol_getsystemupdatelist = RegistryPoint()
