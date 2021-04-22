@@ -15,11 +15,11 @@ Sample ``pmrep -t 1s -T 1s network.interface.out.packets network.interface.colli
 Examples:
     >>> type(pmrep_doc_obj)
     <class 'insights.parsers.pmrep.PMREPMetrics'>
-    >>> pmrep_doc_obj.data['n.i.o.packets']
+    >>> pmrep_doc_obj.data.get('n.i.o.packets', None)
     [{'eth0': '1.000'}, {'lo': '2.000'}]
-    >>> pmrep_doc_obj.data['n.i.collisions']
+    >>> pmrep_doc_obj.data.get('n.i.collisions', None)
     [{'eth0': '3.000'}, {'lo': '4.000'}]
-    >>> pmrep_doc_obj.data['s.pagesout']
+    >>> pmrep_doc_obj.data.get('s.pagesout', None)
     ['5.000']
 """
 

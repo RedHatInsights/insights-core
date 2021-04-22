@@ -35,19 +35,19 @@ PMREPMETRIC_EMPTY_DATA = """
 
 def test_pmrep_info():
     pmrep = PMREPMetrics(context_wrap(PMREPMETRIC_DATA))
-    assert pmrep.data['n.i.o.packets'] == [{'eth0': '1.000'}, {'lo': '2.000'}]
-    assert pmrep.data['n.i.collisions'] == [{'eth0': '3.000'}, {'lo': '4.000'}]
-    assert pmrep.data['s.pagesout'] == ['5.000']
+    assert pmrep.data.get('n.i.o.packets', None) == [{'eth0': '1.000'}, {'lo': '2.000'}]
+    assert pmrep.data.get('n.i.collisions', None) == [{'eth0': '3.000'}, {'lo': '4.000'}]
+    assert pmrep.data.get('s.pagesout', None) == ['5.000']
 
     pmrep = PMREPMetrics(context_wrap(PMREPMETRIC_DATA_2))
-    assert pmrep.data['n.i.o.packets'] == [{'lo': '1.000'}]
-    assert pmrep.data['n.i.collisions'] == [{'lo': '2.000'}]
-    assert pmrep.data['s.pagesout'] == ['5.000']
+    assert pmrep.data.get('n.i.o.packets', None) == [{'lo': '1.000'}]
+    assert pmrep.data.get('n.i.collisions', None) == [{'lo': '2.000'}]
+    assert pmrep.data.get('s.pagesout', None) == ['5.000']
 
     pmrep = PMREPMetrics(context_wrap(PMREPMETRIC_DATA_3))
-    assert pmrep.data['n.i.o.packets'] == [{'eth0': '1.000'}, {'lo': '2.000'}, {'eth1': '3.000'}]
-    assert pmrep.data['n.i.collisions'] == [{'eth0': '4.000'}, {'lo': '5.000'}, {'eth1': '6.000'}]
-    assert pmrep.data['s.pagesout'] == ['5.000']
+    assert pmrep.data.get('n.i.o.packets', None) == [{'eth0': '1.000'}, {'lo': '2.000'}, {'eth1': '3.000'}]
+    assert pmrep.data.get('n.i.collisions', None) == [{'eth0': '4.000'}, {'lo': '5.000'}, {'eth1': '6.000'}]
+    assert pmrep.data.get('s.pagesout', None) == ['5.000']
 
 
 def test_empty():
