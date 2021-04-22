@@ -166,8 +166,6 @@
                 "Device is ineligible for IOMMU domain attach due to platform RMRR requirement",
                 "Dropping TSO",
                 "EDAC ",
-                "EFI",
-                "Efi",
                 "Emulex OneConnect OCe10100, FCoE Initiator",
                 "FEATURE IBPB_SUPPORT",
                 "FEATURE SPEC_CTRL",
@@ -195,7 +193,6 @@
                 "blocked FC remote port time out: removing target and saving binding",
                 "crashkernel=auto resulted in zero bytes of reserved memory",
                 "e1000: E1000 MODULE IS NOT SUPPORTED",
-                "efi",
                 "fw=8.08.",
                 "l1tf",
                 "mce: ",
@@ -338,6 +335,11 @@
             "command": "/usr/bin/firewall-cmd --list-all-zones",
             "pattern": [],
             "symbolic_name": "firewall_cmd_list_all_zones"
+        },
+        {
+            "command": "python -m insights.tools.cat --no-header gcp_license_codes",
+            "pattern": [],
+            "symbolic_name": "gcp_license_codes"
         },
         {
             "command": "/usr/bin/getconf PAGE_SIZE",
@@ -693,7 +695,11 @@
         },
         {
             "command": "/usr/bin/lsinitrd",
-            "pattern": [],
+            "pattern": [
+                "=====",
+                "Image:",
+                "lvm"
+            ],
             "symbolic_name": "lsinitrd"
         },
         {
@@ -1116,6 +1122,7 @@
                 "neutron-dhcp-ag",
                 "neutron-l3-agen",
                 "neutron-server",
+                "nfsd",
                 "nginx",
                 "nova-compute",
                 "nova-conductor",
@@ -1133,11 +1140,11 @@
                 "pkla-check-auth",
                 "pmcd",
                 "pmie",
-                "puppetserver",
                 "radosgw",
                 "redis-server",
                 "rngd",
                 "sap",
+                "smbd",
                 "snmpd",
                 "spausedd",
                 "swift-proxy-ser",
@@ -1185,6 +1192,7 @@
                 "neutron-dhcp-ag",
                 "neutron-l3-agen",
                 "neutron-server",
+                "nfsd",
                 "nginx",
                 "nova-compute",
                 "nova-conductor",
@@ -1204,13 +1212,12 @@
                 "pkla-check-auth",
                 "pmcd",
                 "pmie",
-                "postgres",
                 "ptp4l",
-                "puppetserver",
                 "radosgw",
                 "redis-server",
                 "rngd",
                 "sap",
+                "smbd",
                 "snmpd",
                 "spausedd",
                 "swift-proxy-ser",
@@ -1237,7 +1244,6 @@
                 "auditd",
                 "bash",
                 "catalina.base",
-                "ceilometer-coll",
                 "ceilometer-poll",
                 "chronyd",
                 "cinder-volume",
@@ -1284,7 +1290,6 @@
                 "pmcd",
                 "pmie",
                 "postgres",
-                "puppetserver",
                 "radosgw",
                 "redis-server",
                 "rngd",
@@ -1331,6 +1336,7 @@
                 "neutron-l3-agen",
                 "neutron-ns-metadata-proxy",
                 "neutron-server",
+                "nfsd",
                 "nginx",
                 "nginx: master process",
                 "nginx: worker process",
@@ -1350,11 +1356,11 @@
                 "pkla-check-auth",
                 "pmcd",
                 "pmie",
-                "puppetserver",
                 "radosgw",
                 "redis-server",
                 "rngd",
                 "sap",
+                "smbd",
                 "snmpd",
                 "spausedd",
                 "swift-proxy-ser",
@@ -1926,8 +1932,7 @@
             "file": "/var/log/cinder/cinder-api.log",
             "pattern": [
                 "DEBUG oslo.messaging._drivers.impl_rabbit",
-                "Timed out waiting for RPC response",
-                "Too many connections"
+                "Timed out waiting for RPC response"
             ],
             "symbolic_name": "cinder_api_log"
         },
@@ -1935,8 +1940,7 @@
             "file": "/var/log/containers/cinder/cinder-api.log",
             "pattern": [
                 "DEBUG oslo.messaging._drivers.impl_rabbit",
-                "Timed out waiting for RPC response",
-                "Too many connections"
+                "Timed out waiting for RPC response"
             ],
             "symbolic_name": "cinder_api_log"
         },
@@ -1949,10 +1953,7 @@
             "file": "/var/log/containers/cinder/cinder-volume.log",
             "pattern": [
                 "DEBUG oslo.messaging._drivers.impl_rabbit",
-                "Image cloning unsuccessful for image",
-                "Message: NFS file could not be discovered.",
-                "Timed out waiting for RPC response",
-                "[Errno 24] Too many open files"
+                "Timed out waiting for RPC response"
             ],
             "symbolic_name": "cinder_volume_log"
         },
@@ -1960,10 +1961,7 @@
             "file": "/var/log/containers/cinder/volume.log",
             "pattern": [
                 "DEBUG oslo.messaging._drivers.impl_rabbit",
-                "Image cloning unsuccessful for image",
-                "Message: NFS file could not be discovered.",
-                "Timed out waiting for RPC response",
-                "[Errno 24] Too many open files"
+                "Timed out waiting for RPC response"
             ],
             "symbolic_name": "cinder_volume_log"
         },
@@ -1971,10 +1969,7 @@
             "file": "/var/log/cinder/volume.log",
             "pattern": [
                 "DEBUG oslo.messaging._drivers.impl_rabbit",
-                "Image cloning unsuccessful for image",
-                "Message: NFS file could not be discovered.",
-                "Timed out waiting for RPC response",
-                "[Errno 24] Too many open files"
+                "Timed out waiting for RPC response"
             ],
             "symbolic_name": "cinder_volume_log"
         },
@@ -2101,8 +2096,6 @@
                 "Amazon EC2",
                 "CVE-2017-1000364",
                 "CVE-2018-14634",
-                "EFI",
-                "Efi",
                 "FEATURE IBPB_SUPPORT",
                 "FEATURE SPEC_CTRL",
                 "Kernel page table isolation",
@@ -2114,7 +2107,6 @@
                 "PM: hibernation exit",
                 "Secure boot enabled",
                 "__cpufreq_add_dev",
-                "efi",
                 "hv_vmbus: probe failed for device",
                 "l1tf",
                 "x86/pti"
@@ -2711,7 +2703,6 @@
         {
             "file": "/var/log/mysql/mysqld.log",
             "pattern": [
-                "OpenSSL internal error, assertion failed: Digest MD5 forbidden in FIPS mode!",
                 "SSL error",
                 "Too many open files",
                 "[ERROR]",
@@ -2722,7 +2713,6 @@
         {
             "file": "/var/log/mysql.log",
             "pattern": [
-                "OpenSSL internal error, assertion failed: Digest MD5 forbidden in FIPS mode!",
                 "SSL error",
                 "Too many open files",
                 "[ERROR]",
@@ -2770,9 +2760,7 @@
             "file": "/var/log/nova/nova-api.log",
             "pattern": [
                 "DEBUG oslo.messaging._drivers.impl_rabbit",
-                "Timed out waiting for RPC response",
-                "Timed out waiting for a reply to message ID",
-                "Too many connections"
+                "Timed out waiting for RPC response"
             ],
             "symbolic_name": "nova_api_log"
         },
@@ -2780,9 +2768,7 @@
             "file": "/var/log/containers/nova/nova-api.log",
             "pattern": [
                 "DEBUG oslo.messaging._drivers.impl_rabbit",
-                "Timed out waiting for RPC response",
-                "Timed out waiting for a reply to message ID",
-                "Too many connections"
+                "Timed out waiting for RPC response"
             ],
             "symbolic_name": "nova_api_log"
         },
@@ -2808,7 +2794,6 @@
                 "INFO os_brick.initiator.linuxscsi",
                 "Instance shutdown by itself. Calling the stop API.",
                 "Live Migration failure: internal error: process exited while connecting to monitor",
-                "Live Migration failure: operation failed: Failed to connect to remote libvirt URI qemu+ssh",
                 "Migration pre-check error: Unable to migrate",
                 "No such device or address",
                 "Resuming guest",
@@ -2816,16 +2801,13 @@
                 "Successfully plugged vif VIFBridge",
                 "Timed out waiting for RPC response",
                 "cmt=off: Property '.cmt' not found",
-                "does not match source",
                 "error: Failed to start domain",
                 "from mountpoint /dev",
                 "is not active",
                 "is not on shared storage",
                 "libvirt-guests.sh",
                 "libvirtError: Requested operation is not valid: domain has assigned non-USB host devices",
-                "libvirtError: Unable to delete file /var/lib/nova/instances/",
-                "unsupported configuration: Target network card MTU",
-                "unsupported configuration: Unable to find security driver for model selinux"
+                "libvirtError: Unable to delete file /var/lib/nova/instances/"
             ],
             "symbolic_name": "nova_compute_log"
         },
@@ -2851,7 +2833,6 @@
                 "INFO os_brick.initiator.linuxscsi",
                 "Instance shutdown by itself. Calling the stop API.",
                 "Live Migration failure: internal error: process exited while connecting to monitor",
-                "Live Migration failure: operation failed: Failed to connect to remote libvirt URI qemu+ssh",
                 "Migration pre-check error: Unable to migrate",
                 "No such device or address",
                 "Resuming guest",
@@ -2859,16 +2840,13 @@
                 "Successfully plugged vif VIFBridge",
                 "Timed out waiting for RPC response",
                 "cmt=off: Property '.cmt' not found",
-                "does not match source",
                 "error: Failed to start domain",
                 "from mountpoint /dev",
                 "is not active",
                 "is not on shared storage",
                 "libvirt-guests.sh",
                 "libvirtError: Requested operation is not valid: domain has assigned non-USB host devices",
-                "libvirtError: Unable to delete file /var/lib/nova/instances/",
-                "unsupported configuration: Target network card MTU",
-                "unsupported configuration: Unable to find security driver for model selinux"
+                "libvirtError: Unable to delete file /var/lib/nova/instances/"
             ],
             "symbolic_name": "nova_compute_log"
         },
@@ -3177,8 +3155,6 @@
                 "FATAL",
                 "checkpoints are occurring too frequently",
                 "connection limit exceeded for non-superusers",
-                "database is not accepting commands to avoid wraparound data loss in database",
-                "must be vacuumed within",
                 "remaining connection slots are reserved for non-replication superuser connections"
             ],
             "symbolic_name": "postgresql_log"
@@ -3476,7 +3452,6 @@
                 "MAXAUTHTRIES",
                 "MAXSTARTUPS",
                 "Macs",
-                "Match",
                 "MaxAuthTries",
                 "MaxStartups",
                 "Maxauthtries",
@@ -3484,7 +3459,6 @@
                 "PERMITEMPTYPASSWORDS",
                 "PERMITROOTLOGIN",
                 "PROTOCOL",
-                "PasswordAuthentication",
                 "PermitEmptyPasswords",
                 "PermitRootLogin",
                 "Permitemptypasswords",
@@ -3920,7 +3894,6 @@
                 "allow_automatic_dhcp_failover",
                 "api_workers",
                 "debug",
-                "dhcp_agents_per_network",
                 "ipam_driver",
                 "router_distributed",
                 "rpc_workers",
@@ -3937,7 +3910,6 @@
                 "allow_automatic_dhcp_failover",
                 "api_workers",
                 "debug",
-                "dhcp_agents_per_network",
                 "ipam_driver",
                 "router_distributed",
                 "rpc_workers",
@@ -4044,16 +4016,14 @@
         {
             "file": "/etc/neutron/metadata_agent.ini",
             "pattern": [
-                "[",
-                "auth_url"
+                "["
             ],
             "symbolic_name": "neutron_metadata_agent_ini"
         },
         {
             "file": "/var/lib/config-data/puppet-generated/neutron/etc/neutron/metadata_agent.ini",
             "pattern": [
-                "[",
-                "auth_url"
+                "["
             ],
             "symbolic_name": "neutron_metadata_agent_ini"
         },
@@ -4276,7 +4246,6 @@
             "glob": "/var/opt/rh/rh-mysql*/log/mysql/mysqld.log",
             "symbolic_name": "mysql_log",
             "pattern": [
-                "OpenSSL internal error, assertion failed: Digest MD5 forbidden in FIPS mode!",
                 "SSL error",
                 "Too many open files",
                 "[ERROR]",
@@ -4295,8 +4264,6 @@
                 "FATAL",
                 "checkpoints are occurring too frequently",
                 "connection limit exceeded for non-superusers",
-                "database is not accepting commands to avoid wraparound data loss in database",
-                "must be vacuumed within",
                 "remaining connection slots are reserved for non-replication superuser connections"
             ]
         },
@@ -4363,5 +4330,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2021-03-31T16:03:45.694442"
+    "version": "2021-04-15T15:33:43.735037"
 }
