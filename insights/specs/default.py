@@ -424,6 +424,16 @@ class DefaultSpecs(Specs):
     gluster_v_info = simple_command("/usr/sbin/gluster volume info")
     gnocchi_conf = first_file(["/var/lib/config-data/puppet-generated/gnocchi/etc/gnocchi/gnocchi.conf", "/etc/gnocchi/gnocchi.conf"])
     gnocchi_metricd_log = first_file(["/var/log/containers/gnocchi/gnocchi-metricd.log", "/var/log/gnocchi/metricd.log"])
+
+    @datasource(CloudProvider, HostContext)
+    def is_gcp(broker):
+        """ bool: Returns True if this node is identified as running in GCP """
+        cp = broker[CloudProvider]
+        if cp and cp.cloud_provider == CloudProvider.GOOGLE:
+            return True
+        raise SkipComponent()
+
+    gcp_license_codes = simple_command("/usr/bin/curl -s curl -H Metadata-Flavor: Google http://metadata.google.internal/computeMetadata/v1/instance/licenses/?recursive=True --connect-timeout 5", deps=[is_gcp])
     grub_conf = simple_file("/boot/grub/grub.conf")
     grub_config_perms = simple_command("/bin/ls -l /boot/grub2/grub.cfg")  # only RHEL7 and updwards
     grub_efi_conf = simple_file("/boot/efi/EFI/redhat/grub.conf")
