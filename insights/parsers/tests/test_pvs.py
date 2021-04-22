@@ -3,6 +3,8 @@ from insights.parsers.lvm import Pvs, PvsHeadings
 from insights.tests import context_wrap
 from .test_lvm import compare_partial_dicts
 
+FD_LEAK_HEADER = "File descriptor 5 (/dev/null) leaked on invocation. Parent PID 99999: timeout\n"
+
 PVS_INFO = """
     WARNING: Locking disabled. Be careful! This could corrupt your metadata.
     LVM2_PV_FMT=''|LVM2_PV_UUID=''|LVM2_DEV_SIZE='500.00m'|LVM2_PV_NAME='/dev/sda1'|LVM2_PV_MDA_FREE='0 '|LVM2_PV_MDA_SIZE='0 '|LVM2_PE_START='0 '|LVM2_PV_SIZE='0 '|LVM2_PV_FREE='0 '|LVM2_PV_USED='0 '|LVM2_PV_ATTR='---'|LVM2_PV_ALLOCATABLE=''|LVM2_PV_EXPORTED=''|LVM2_PV_MISSING=''|LVM2_PV_PE_COUNT='0'|LVM2_PV_PE_ALLOC_COUNT='0'|LVM2_PV_TAGS=''|LVM2_PV_MDA_COUNT='0'|LVM2_PV_MDA_USED_COUNT='0'|LVM2_PV_BA_START='0 '|LVM2_PV_BA_SIZE='0 '|LVM2_PV_MAJOR='253'|LVM2_PV_MINOR='1'
@@ -125,12 +127,15 @@ PVS_HEADINGS_6 = {
 
 
 def test_pvs():
-    pvs_records = Pvs(context_wrap(PVS_INFO))
-    assert len(list(pvs_records)) == 2
-    for k, v in PVS_SDA2_INFO.items():
-        assert pvs_records.data["content"][1][k] == v
-    assert pvs_records["/dev/sda1"]["Attr"] == "---"
-    assert pvs_records.data["content"][0]['LVM2_PV_MINOR'] == '1'
+    def check(pvs_records):
+        assert len(list(pvs_records)) == 2
+        for k, v in PVS_SDA2_INFO.items():
+            assert pvs_records.data["content"][1][k] == v
+        assert pvs_records["/dev/sda1"]["Attr"] == "---"
+        assert pvs_records.data["content"][0]['LVM2_PV_MINOR'] == '1'
+
+    check(Pvs(context_wrap(PVS_INFO)))
+    check(Pvs(context_wrap(FD_LEAK_HEADER + PVS_INFO)))
 
     pvs_records = Pvs(context_wrap(PVS_INFO_LONG))
     assert len(list(pvs_records)) == 31
@@ -173,11 +178,16 @@ def test_pvs_dup():
 
 
 def test_pvs_headings():
+    def check(pvs_records):
+        assert len(pvs_records.data) == 9
+        for k, v in PVS_HEADINGS_6.items():
+            assert pvs_records[6][k] == v
+        assert pvs_records[6]['Missing'] is None
+
     pvs_records = PvsHeadings(context_wrap(PVS_HEADINGS))
-    assert len(pvs_records.data) == 9
-    for k, v in PVS_HEADINGS_6.items():
-        assert pvs_records[6][k] == v
-    assert pvs_records[6]['Missing'] is None
+    check(pvs_records)
+    pvs_records = PvsHeadings(context_wrap(FD_LEAK_HEADER + PVS_HEADINGS))
+    check(pvs_records)
 
     # Test vg method
     fedora_pvs = pvs_records.vg('fedora')
