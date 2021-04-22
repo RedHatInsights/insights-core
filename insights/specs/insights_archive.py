@@ -187,6 +187,7 @@ class InsightsArchiveSpecs(Specs):
     pcp_metrics = simple_file("insights_commands/curl_-s_http_..127.0.0.1_44322.metrics_--connect-timeout_5")
     pcs_quorum_status = simple_file("insights_commands/pcs_quorum_status")
     pcs_status = simple_file("insights_commands/pcs_status")
+    pmrep_metrics = simple_file("insights_commands/pmrep_-t_1s_-T_1s_network.interface.out.packets_network.interface.collisions_swap.pagesout")
     postconf_builtin = simple_file("insights_commands/postconf_-C_builtin")
     postconf = simple_file("insights_commands/postconf")
     ps_alxwww = simple_file("insights_commands/ps_alxwww")
