@@ -38,7 +38,6 @@ class PMREPMetrics(CommandParser, list):
         if not content or len(content) == 1:
             raise SkipException("There is no data in the table")
         try:
-            # keep the line break for yaml parse in some table
             reader = DictReader(os.linesep.join(content).splitlines(True))
         except Exception:
             raise ParseException("The content isn't in csv format")
