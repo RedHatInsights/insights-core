@@ -660,6 +660,8 @@ class Specs(SpecSet):
     systemd_system_origin_accounting = RegistryPoint()
     systemid = RegistryPoint()
     systool_b_scsi_v = RegistryPoint()
+    sys_vmbus_device_id = RegistryPoint(multi_output=True)
+    sys_vmbus_class_id = RegistryPoint(multi_output=True)
     testparm_s = RegistryPoint(filterable=True)
     testparm_v_s = RegistryPoint(filterable=True)
     tags = RegistryPoint()

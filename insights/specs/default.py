@@ -982,6 +982,8 @@ class DefaultSpecs(Specs):
         simple_file("/conf/rhn/sysconfig/rhn/systemid")
     ])
     systool_b_scsi_v = simple_command("/bin/systool -b scsi -v")
+    sys_vmbus_device_id = glob_file('/sys/bus/vmbus/devices/*/device_id')
+    sys_vmbus_class_id = glob_file('/sys/bus/vmbus/devices/*/class_id')
     testparm_s = simple_command("/usr/bin/testparm -s")
     testparm_v_s = simple_command("/usr/bin/testparm -v -s")
     tags = simple_file("/tags.json", kind=RawFileProvider)
