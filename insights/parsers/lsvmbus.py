@@ -6,6 +6,7 @@ This module parses the output of the command ``lsvmbus -vv``.
 """
 import re
 
+from insights.util import deprecated
 from insights import parser, CommandParser
 from insights.parsers import SkipException
 from insights.specs import Specs
@@ -14,6 +15,10 @@ from insights.specs import Specs
 @parser(Specs.lsvmbus)
 class LsvmBus(CommandParser):
     """Parse the output of ``lsvmbus -vv`` as list.
+
+    .. warning::
+        This parser class is deprecated, please use
+        :py:class:`insights.combiner.sys_vmbus_devices.SysVmBusDeviceInfo` instead.
 
     Typical output::
 
@@ -60,6 +65,10 @@ class LsvmBus(CommandParser):
                         ]
 
     """
+    def __init__(self, *args, **kwargs):
+        deprecated(LsvmBus, "Use the SysVmBusDeviceInfo combiner instead")
+        super(LsvmBus, self).__init__(*args, **kwargs)
+
     def parse_content(self, content):
         if not content:
             raise SkipException('No content.')
