@@ -10,7 +10,7 @@ Sample ``pmrep -t 1s -T 1s network.interface.out.packets network.interface.colli
              eth0             lo            eth0              lo
           count/s        count/s         count/s         count/s     count/s
               N/A            N/A             N/A             N/A         N/A
-            1.997          0.000           0.000           0.000       0.000
+            1.000          2.000           3.000           4.000       5.000
 
 Examples:
     >>> type(pmrep_doc_obj)
