@@ -6,54 +6,52 @@ from insights.parsers import pmrep
 from insights.parsers.pmrep import PMREPMetrics
 
 PMREPMETRIC_DATA = """
-  n.i.o.packets  n.i.o.packets  n.i.collisions  n.i.collisions  s.pagesout
-           eth0             lo            eth0              lo
-        count/s        count/s         count/s         count/s     count/s
-            N/A            N/A             N/A             N/A         N/A
-          1.000          2.000           3.000           4.000       5.000
-"""
+Time,"network.interface.out.packets-lo","network.interface.out.packets-eth0","network.interface.collisions-lo","network.interface.collisions-eth0","swap.pagesout"
+2021-04-26 05:42:24,,,,,
+2021-04-26 05:42:25,1.000,2.000,3.000,4.000,5.000
+""".strip()
 
 PMREPMETRIC_DATA_2 = """
-  n.i.o.packets  n.i.collisions  s.pagesout
-             lo              lo
-        count/s         count/s     count/s
-            N/A             N/A         N/A
-          1.000           2.000       5.000
-"""
+Time,"network.interface.out.packets-lo","network.interface.collisions-lo","swap.pagesout"
+2021-04-26 05:42:24,,,
+2021-04-26 05:42:25,1.000,2.000,3.000
+""".strip()
 
-PMREPMETRIC_DATA_3 = """
-  n.i.o.packets  n.i.o.packets  n.i.o.packets  n.i.collisions  n.i.collisions  n.i.collisions  s.pagesout
-           eth0             lo           eth1            eth0              lo            eth1
-        count/s        count/s        count/s         count/s         count/s         count/s     count/s
-            N/A            N/A            N/A             N/A             N/A             N/A         N/A
-          1.000          2.000          3.000           4.000           5.000           6.000       5.000
-"""
+PMREPMETRIC_WRONG_DATA = """
+Time,"network.interface.out.packets-lo","network.interface.collisions-lo","swap.pagesout"
+""".strip()
+
 
 PMREPMETRIC_EMPTY_DATA = """
 """.strip()
 
 
 def test_pmrep_info():
-    pmrep = PMREPMetrics(context_wrap(PMREPMETRIC_DATA))
-    assert pmrep.data.get('n.i.o.packets', None) == [{'eth0': '1.000'}, {'lo': '2.000'}]
-    assert pmrep.data.get('n.i.collisions', None) == [{'eth0': '3.000'}, {'lo': '4.000'}]
-    assert pmrep.data.get('s.pagesout', None) == ['5.000']
+    pmrep_table = PMREPMetrics(context_wrap(PMREPMETRIC_DATA))
+    assert pmrep_table.data[0] == {'Time': '2021-04-26 05:42:25'}
+    assert pmrep_table.data[1] == {'network.interface.out.packets-lo': '1.000'}
+    assert pmrep_table.data[2] == {'network.interface.out.packets-eth0': '2.000'}
+    assert pmrep_table.data[3] == {'network.interface.collisions-lo': '3.000'}
+    assert pmrep_table.data[4] == {'network.interface.collisions-eth0': '4.000'}
+    assert pmrep_table.data[5] == {'swap.pagesout': '5.000'}
 
-    pmrep = PMREPMetrics(context_wrap(PMREPMETRIC_DATA_2))
-    assert pmrep.data.get('n.i.o.packets', None) == [{'lo': '1.000'}]
-    assert pmrep.data.get('n.i.collisions', None) == [{'lo': '2.000'}]
-    assert pmrep.data.get('s.pagesout', None) == ['5.000']
-
-    pmrep = PMREPMetrics(context_wrap(PMREPMETRIC_DATA_3))
-    assert pmrep.data.get('n.i.o.packets', None) == [{'eth0': '1.000'}, {'lo': '2.000'}, {'eth1': '3.000'}]
-    assert pmrep.data.get('n.i.collisions', None) == [{'eth0': '4.000'}, {'lo': '5.000'}, {'eth1': '6.000'}]
-    assert pmrep.data.get('s.pagesout', None) == ['5.000']
+    pmrep_table = PMREPMetrics(context_wrap(PMREPMETRIC_DATA_2))
+    assert pmrep_table.data[0] == {'Time': '2021-04-26 05:42:25'}
+    assert pmrep_table.data[1] == {'network.interface.out.packets-lo': '1.000'}
+    assert pmrep_table.data[2] == {'network.interface.collisions-lo': '2.000'}
+    assert pmrep_table.data[3] == {'swap.pagesout': '3.000'}
 
 
 def test_empty():
     with pytest.raises(SkipException) as e:
         PMREPMetrics(context_wrap(PMREPMETRIC_EMPTY_DATA))
-    assert 'Empty content' in str(e)
+    assert 'There is no data in the table' in str(e)
+
+
+def test_wrong_data():
+    with pytest.raises(SkipException) as e:
+        PMREPMetrics(context_wrap(PMREPMETRIC_WRONG_DATA))
+    assert 'There is no data in the table' in str(e)
 
 
 def test_pmrep_doc_examples():

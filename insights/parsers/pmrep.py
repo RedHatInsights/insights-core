@@ -1,80 +1,52 @@
 """
-Pmrep - command ``pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout``
-==============================================================================================================
+Pmrep - command ``pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout -o csv``
+=====================================================================================================================
 
-Parse the content of the ``pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout`` command.
+Parse the content of the ``pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout -o csv`` command.
 
-Sample ``pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout`` command output::
+Sample ``pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout -o csv`` command output::
 
-    n.i.o.packets  n.i.o.packets  n.i.collisions  n.i.collisions  s.pagesout
-             eth0             lo            eth0              lo
-          count/s        count/s         count/s         count/s     count/s
-              N/A            N/A             N/A             N/A         N/A
-            1.000          2.000           3.000           4.000       5.000
+    Time,"network.interface.out.packets-lo","network.interface.out.packets-eth0","network.interface.collisions-lo","network.interface.collisions-eth0","swap.pagesout"
+    2021-04-26 05:42:24,,,,,
+    2021-04-26 05:42:25,1.000,2.000,3.000,4.000,5.000
 
 Examples:
     >>> type(pmrep_doc_obj)
     <class 'insights.parsers.pmrep.PMREPMetrics'>
-    >>> pmrep_doc_obj.data.get('n.i.o.packets', None)
-    [{'eth0': '1.000'}, {'lo': '2.000'}]
-    >>> pmrep_doc_obj.data.get('n.i.collisions', None)
-    [{'eth0': '3.000'}, {'lo': '4.000'}]
-    >>> pmrep_doc_obj.data.get('s.pagesout', None)
-    ['5.000']
+    >>> pmrep_doc_obj.data[1]
+    {'network.interface.out.packets-lo': '1.000'}
+    >>> pmrep_doc_obj.data[4]
+    {'network.interface.collisions-eth0': '4.000'}
+    >>> pmrep_doc_obj.data[5]
+    {'swap.pagesout': '5.000'}
 """
 
-from insights import Parser, parser
+import os
+from csv import DictReader
+
+from insights import parser, CommandParser
 from insights.specs import Specs
-from insights.parsers import SkipException
+from insights.parsers import SkipException, ParseException
 
 
 @parser(Specs.pmrep_metrics)
-class PMREPMetrics(Parser):
-    """Parses output of ``pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout`` command."""
+class PMREPMetrics(CommandParser, list):
+    """Parses output of ``pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout -o csv`` command."""
     def parse_content(self, content):
-        if not content:
-            raise SkipException("Empty content.")
+        self.data = []
+        temp = {}
+        if not content or len(content) == 1:
+            raise SkipException("There is no data in the table")
+        try:
+            # keep the line break for yaml parse in some table
+            reader = DictReader(os.linesep.join(content).splitlines(True))
+        except Exception:
+            raise ParseException("The content isn't in csv format")
+        for row in reader:
+            self.append(row)
 
-        heading_keys = ["n.i.o.packets", "n.i.collisions", "s.pagesout"]
-        ignore_values = ["count/s", "N/A"]
-        header_value = []
-        self.data = {}
-
-        for item in range(len(content)):
-            content_data = content[item].split()
-            if set(ignore_values).intersection(content_data):
-                continue
-            elif set(heading_keys).intersection(content_data):
-                header_keys = content_data
-            else:
-                header_value.append(content_data)
-
-        if len(header_value) > 0:
-            data_keys = header_value[0]
-            data_values = header_value[1]
-            data_klist = []
-            data_list = []
-
-            datakeys_len = len(data_keys)
-            for item in range(len(data_values)):
-                if datakeys_len > 0:
-                    # Create a key value pair
-                    data_klist.append({data_keys[item]: data_values[item]})
-                    datakeys_len -= 1
-                else:
-                    data_klist.append(data_values[item])
-
-            datalist_len = len(data_klist)
-            for item in range(len(header_keys)):
-                if datalist_len > 1:
-                    # If its the first entry or header key already exits
-                    if len(self.data) == 0 or header_keys[item] in self.data:
-                        data_list.append(data_klist[item])
-                    else:
-                        data_list = []
-                        self.data[header_keys[item]] = [data_klist[item]]
-                        data_list.append(data_klist[item])
-                        continue
-                    self.data[header_keys[item]] = data_list
-                    datalist_len -= 1
-            return self.data
+        for k, v in dict(row).items():
+            temp[k] = dict(row)[k]
+            self.data.append(temp)
+            temp = {}
+        return self.data
