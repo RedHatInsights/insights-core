@@ -33,17 +33,11 @@ from insights.parsers import SkipException, ParseException
 class PMREPMetrics(CommandParser, list):
     """Parses output of ``pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout -o csv`` command."""
     def parse_content(self, content):
-        temp = {}
         if not content or len(content) == 1:
             raise SkipException("There is no data in the table")
         try:
             reader = DictReader(os.linesep.join(content).splitlines(True))
         except Exception:
             raise ParseException("The content isn't in csv format")
-        for row in reader:
-            # check the "swap.pagesout" metric value is empty, if the value is empty for this key, will be empty for the remaining keys except the "Time" key
-            if row["swap.pagesout"]:
-                for k, v in dict(row).items():
-                    temp[k] = dict(row)[k]
-                    self.append(temp)
-                    temp = {}
+        for k, v in dict(list(reader)[-1]).items():
+            self.append({k: v})
