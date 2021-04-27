@@ -28,19 +28,19 @@ PMREPMETRIC_EMPTY_DATA = """
 
 def test_pmrep_info():
     pmrep_table = PMREPMetrics(context_wrap(PMREPMETRIC_DATA))
-    pmrep_table = sorted(pmrep_table, key=lambda x: x.keys())
+    pmrep_table = sorted(pmrep_table, key=lambda x: sorted(x.keys())[0])
     assert pmrep_table[0] == {'Time': '2021-04-26 05:42:25'}
-    assert pmrep_table[1] == {'network.interface.out.packets-lo': '1.000'}
-    assert pmrep_table[2] == {'network.interface.out.packets-eth0': '2.000'}
-    assert pmrep_table[3] == {'network.interface.collisions-lo': '3.000'}
-    assert pmrep_table[4] == {'network.interface.collisions-eth0': '4.000'}
+    assert pmrep_table[1] == {'network.interface.collisions-eth0': '4.000'}
+    assert pmrep_table[2] == {'network.interface.collisions-lo': '3.000'}
+    assert pmrep_table[3] == {'network.interface.out.packets-eth0': '2.000'}
+    assert pmrep_table[4] == {'network.interface.out.packets-lo': '1.000'}
     assert pmrep_table[5] == {'swap.pagesout': '5.000'}
 
     pmrep_table = PMREPMetrics(context_wrap(PMREPMETRIC_DATA_2))
-    pmrep_table = sorted(pmrep_table, key=lambda x: x.keys())
+    pmrep_table = sorted(pmrep_table, key=lambda x: sorted(x.keys())[0])
     assert pmrep_table[0] == {'Time': '2021-04-26 05:42:25'}
-    assert pmrep_table[1] == {'network.interface.out.packets-lo': '1.000'}
-    assert pmrep_table[2] == {'network.interface.collisions-lo': '2.000'}
+    assert pmrep_table[1] == {'network.interface.collisions-lo': '2.000'}
+    assert pmrep_table[2] == {'network.interface.out.packets-lo': '1.000'}
     assert pmrep_table[3] == {'swap.pagesout': '3.000'}
 
 
