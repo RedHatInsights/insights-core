@@ -37,6 +37,7 @@ def test_pmrep_info():
     assert pmrep_table[5] == {'swap.pagesout': '5.000'}
 
     pmrep_table = PMREPMetrics(context_wrap(PMREPMETRIC_DATA_2))
+    pmrep_table = sorted(pmrep_table, key=lambda x: x.keys())
     assert pmrep_table[0] == {'Time': '2021-04-26 05:42:25'}
     assert pmrep_table[1] == {'network.interface.out.packets-lo': '1.000'}
     assert pmrep_table[2] == {'network.interface.collisions-lo': '2.000'}
