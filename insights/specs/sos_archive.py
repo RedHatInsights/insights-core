@@ -137,7 +137,13 @@ class SosSpecs(Specs):
     ])
     lsscsi = simple_file("sos_commands/scsi/lsscsi")
     ls_dev = first_file(["sos_commands/block/ls_-lanR_.dev", "sos_commands/devicemapper/ls_-lanR_.dev"])
-    lvs = first_file(["sos_commands/lvm2/lvs_-a_-o_lv_tags_devices_--config_global_locking_type_0", "sos_commands/lvm2/lvs_-a_-o_devices"])
+    lvs = first_file([
+        "sos_commands/lvm2/lvs_-a_-o_lv_tags_devices_lv_kernel_read_ahead_lv_read_ahead_stripes_stripesize_--config_global_metadata_read_only_1_--nolocking_--foreign",
+        "sos_commands/lvm2/lvs_-a_-o_lv_tags_devices_lv_kernel_read_ahead_lv_read_ahead_stripes_stripesize_--config_global_locking_type_0_metadata_read_only_1",
+        "sos_commands/lvm2/lvs_-a_-o_lv_tags_devices_--config_global_locking_type_0",
+        "sos_commands/lvm2/lvs_-a_-o_devices",
+        "sos_commands/devicemapper/lvs_-a_-o__devices"
+    ])
     manila_conf = first_file(["/var/lib/config-data/puppet-generated/manila/etc/manila/manila.conf", "/etc/manila/manila.conf"])
     mdadm_E = glob_file("sos_commands/md/mdadm_-E_*")
     mistral_executor_log = simple_file("/var/log/mistral/executor.log")
@@ -195,7 +201,13 @@ class SosSpecs(Specs):
         "/etc/puppetlabs/puppet/ssl/certs/ca.pem",
         "sos_commands/foreman/foreman-debug/var/lib/puppet/ssl/certs/ca.pem"
     ])
-    pvs = first_file(["sos_commands/lvm2/pvs_-a_-v_-o_pv_mda_free_pv_mda_size_pv_mda_count_pv_mda_used_count_pe_start_--config_global_locking_type_0", "sos_commands/lvm2/pvs_-a_-v", "sos_commands/devicemapper/pvs_-a_-v"])
+    pvs = first_file([
+        "sos_commands/lvm2/pvs_-a_-v_-o_pv_mda_free_pv_mda_size_pv_mda_count_pv_mda_used_count_pe_start_--config_global_metadata_read_only_1_--nolocking_--foreign",
+        "sos_commands/lvm2/pvs_-a_-v_-o_pv_mda_free_pv_mda_size_pv_mda_count_pv_mda_used_count_pe_start_--config_global_locking_type_0_metadata_read_only_1",
+        "sos_commands/lvm2/pvs_-a_-v_-o_pv_mda_free_pv_mda_size_pv_mda_count_pv_mda_used_count_pe_start_--config_global_locking_type_0",
+        "sos_commands/lvm2/pvs_-a_-v",
+        "sos_commands/devicemapper/pvs_-a_-v"
+    ])
     qpid_stat_q = first_file([
         "sos_commands/pulp/qpid-stat_-q_--ssl-certificate_.etc.pki.pulp.qpid.client.crt_-b_amqps_..localhost_5671",
         "sos_commands/pulp/qpid-stat_-q_--ssl-certificate_.etc.pki.katello.qpid_client_striped.crt_-b_amqps_..localhost_5671",
@@ -285,8 +297,20 @@ class SosSpecs(Specs):
     vdsm_conf = simple_file("etc/vdsm/vdsm.conf")
     vdsm_id = simple_file("etc/vdsm/vdsm.id")
     vdsm_import_log = glob_file("var/log/vdsm/import/import-*.log")
-    vgdisplay = first_file(["sos_commands/lvm2/vgdisplay_-vv_--config_global_locking_type_0", "sos_commands/lvm2/vgdisplay_-vv"])
-    vgs = first_file(["sos_commands/lvm2/vgs_-v_-o_vg_mda_count_vg_mda_free_vg_mda_size_vg_mda_used_count_vg_tags_--config_global_locking_type_0", "sos_commands/lvm2/vgs_-v", "sos_commands/devicemapper/vgs_-v"])
+    vgdisplay = first_file([
+        "sos_commands/lvm2/vgdisplay_-vv_--config_global_metadata_read_only_1_--nolocking_--foreign",
+        "sos_commands/lvm2/vgdisplay_-vv_--config_global_locking_type_0_metadata_read_only_1",
+        "sos_commands/lvm2/vgdisplay_-vv_--config_global_locking_type_0",
+        "sos_commands/lvm2/vgdisplay_-vv",
+        "sos_commands/devicemapper/vgdisplay_-vv"
+    ])
+    vgs = first_file([
+        "sos_commands/lvm2/vgs_-v_-o_vg_mda_count_vg_mda_free_vg_mda_size_vg_mda_used_count_vg_tags_systemid_--config_global_metadata_read_only_1_--nolocking_--foreign",
+        "sos_commands/lvm2/vgs_-v_-o_vg_mda_count_vg_mda_free_vg_mda_size_vg_mda_used_count_vg_tags_--config_global_locking_type_0_metadata_read_only_1",
+        "sos_commands/lvm2/vgs_-v_-o_vg_mda_count_vg_mda_free_vg_mda_size_vg_mda_used_count_vg_tags_--config_global_locking_type_0",
+        "sos_commands/lvm2/vgs_-v",
+        "sos_commands/devicemapper/vgs_-v"
+    ])
     virsh_list_all = simple_file("sos_commands/virsh/virsh_-r_list_--all")
     vmcore_dmesg = glob_file("/var/crash/*/vmcore-dmesg.txt")
     vmware_tools_conf = simple_file("etc/vmware-tools/tools.conf")
