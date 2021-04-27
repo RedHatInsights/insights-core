@@ -147,7 +147,7 @@ class MongodbConf(Parser, LegacyItemAccess):
         if a key-value pair conf.
         """
         if self.is_yaml:
-            return self.get('storage', {}).get('dbPath')
+            return self.get('storage', {}).get('dbPath') or self.get('storage.dbPath')
         else:
             return self.get('dbpath')
 
