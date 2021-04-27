@@ -36,8 +36,8 @@ def _get_files(path):
 
 def _load(path):
     with open(path) as f:
-        doc = yaml.load(f, Loader=Loader)
-        return from_dict(doc, src=path)
+        for doc in yaml.load_all(f, Loader=Loader):
+            yield from_dict(doc, src=path)
 
 
 def _process(path, excludes=None):
@@ -46,7 +46,8 @@ def _process(path, excludes=None):
         if excludes and any(fnmatch(f, e) for e in excludes):
             continue
         try:
-            yield _load(f)
+            for d in _load(f):
+                yield d
         except Exception:
             log.debug("Failed to load %s; skipping.", f)
 
@@ -58,7 +59,7 @@ def analyze(paths, excludes=None):
     results = []
     for path in paths:
         if content_type.from_file(path) == "text/plain":
-            results.append(_load(path))
+            results.extend(_load(path))
         elif os.path.isdir(path):
             results.extend(_process(path, excludes))
         else:
