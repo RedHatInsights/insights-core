@@ -13,6 +13,7 @@ Sample ``pmrep -t 1s -T 1s network.interface.out.packets network.interface.colli
 Examples:
     >>> type(pmrep_doc_obj)
     <class 'insights.parsers.pmrep.PMREPMetrics'>
+    >>> pmrep_doc_obj = sorted(pmrep_doc_obj, key=lambda x: x.keys())
     >>> pmrep_doc_obj[1]
     {'network.interface.out.packets-lo': '1.000'}
     >>> pmrep_doc_obj[4]
