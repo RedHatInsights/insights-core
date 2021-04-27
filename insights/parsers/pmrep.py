@@ -13,11 +13,11 @@ Sample ``pmrep -t 1s -T 1s network.interface.out.packets network.interface.colli
 Examples:
     >>> type(pmrep_doc_obj)
     <class 'insights.parsers.pmrep.PMREPMetrics'>
-    >>> pmrep_doc_obj.data[1]
+    >>> pmrep_doc_obj[1]
     {'network.interface.out.packets-lo': '1.000'}
-    >>> pmrep_doc_obj.data[4]
+    >>> pmrep_doc_obj[4]
     {'network.interface.collisions-eth0': '4.000'}
-    >>> pmrep_doc_obj.data[5]
+    >>> pmrep_doc_obj[5]
     {'swap.pagesout': '5.000'}
 """
 
@@ -33,7 +33,6 @@ from insights.parsers import SkipException, ParseException
 class PMREPMetrics(CommandParser, list):
     """Parses output of ``pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout -o csv`` command."""
     def parse_content(self, content):
-        self.data = []
         temp = {}
         if not content or len(content) == 1:
             raise SkipException("There is no data in the table")
@@ -42,10 +41,9 @@ class PMREPMetrics(CommandParser, list):
         except Exception:
             raise ParseException("The content isn't in csv format")
         for row in reader:
-            self.append(row)
-
-        for k, v in dict(row).items():
-            temp[k] = dict(row)[k]
-            self.data.append(temp)
-            temp = {}
-        return self.data
+            # check the "swap.pagesout" metric value is empty, if the value is empty for this key, will be empty for the remaining keys except the "Time" key
+            if row["swap.pagesout"]:
+                for k, v in dict(row).items():
+                    temp[k] = dict(row)[k]
+                    self.append(temp)
+                    temp = {}
