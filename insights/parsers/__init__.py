@@ -513,6 +513,7 @@ def keyword_search(rows, **kwargs):
         'default': lambda s, v: s == v,
         'contains': lambda s, v: s is not None and v in s,
         'startswith': lambda s, v: s is not None and s.startswith(v),
+        'endswith': lambda s, v: s is not None and s.endswith(v),
         'lower_value': lambda s, v: None not in (s, v) and s.lower() == v.lower(),
     }
 
