@@ -28,19 +28,19 @@ PMREPMETRIC_EMPTY_DATA = """
 
 def test_pmrep_info():
     pmrep_table = PMREPMetrics(context_wrap(PMREPMETRIC_DATA))
-    pmrep_table = sorted(pmrep_table, key=lambda x: sorted(x.keys())[0])
+    pmrep_table = sorted(pmrep_table, key=lambda x: x['name'])
     assert pmrep_table[0] == {'name': 'Time', 'value': '2021-04-26 05:42:25'}
-    assert pmrep_table[1] == {'name': 'network.interface.out.packets-lo', 'value': '1.000'}
-    assert pmrep_table[2] == {'name': 'network.interface.out.packets-eth0', 'value': '2.000'}
-    assert pmrep_table[3] == {'name': 'network.interface.collisions-lo', 'value': '3.000'}
-    assert pmrep_table[4] == {'name': 'network.interface.collisions-eth0', 'value': '4.000'}
+    assert pmrep_table[1] == {'name': 'network.interface.collisions-eth0', 'value': '4.000'}
+    assert pmrep_table[2] == {'name': 'network.interface.collisions-lo', 'value': '3.000'}
+    assert pmrep_table[3] == {'name': 'network.interface.out.packets-eth0', 'value': '2.000'}
+    assert pmrep_table[4] == {'name': 'network.interface.out.packets-lo', 'value': '1.000'}
     assert pmrep_table[5] == {'name': 'swap.pagesout', 'value': '5.000'}
 
     pmrep_table = PMREPMetrics(context_wrap(PMREPMETRIC_DATA_2))
-    pmrep_table = sorted(pmrep_table, key=lambda x: sorted(x.keys())[0])
+    pmrep_table = sorted(pmrep_table, key=lambda x: x['name'])
     assert pmrep_table[0] == {'name': 'Time', 'value': '2021-04-26 05:42:25'}
-    assert pmrep_table[1] == {'name': 'network.interface.out.packets-lo', 'value': '1.000'}
-    assert pmrep_table[2] == {'name': 'network.interface.collisions-lo', 'value': '2.000'}
+    assert pmrep_table[1] == {'name': 'network.interface.collisions-lo', 'value': '2.000'}
+    assert pmrep_table[2] == {'name': 'network.interface.out.packets-lo', 'value': '1.000'}
     assert pmrep_table[3] == {'name': 'swap.pagesout', 'value': '3.000'}
 
     pmrep_table = PMREPMetrics(context_wrap(PMREPMETRIC_DATA))

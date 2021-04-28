@@ -13,11 +13,11 @@ Sample ``pmrep -t 1s -T 1s network.interface.out.packets network.interface.colli
 Examples:
     >>> type(pmrep_doc_obj)
     <class 'insights.parsers.pmrep.PMREPMetrics'>
-    >>> pmrep_doc_obj = sorted(pmrep_doc_obj, key=lambda x: sorted(x.keys())[0])
+    >>> pmrep_doc_obj = sorted(pmrep_doc_obj, key=lambda x: x['name'])
     >>> pmrep_doc_obj[1]
-    {'name': 'network.interface.out.packets-lo', 'value': '1.000'}
-    >>> pmrep_doc_obj[4]
     {'name': 'network.interface.collisions-eth0', 'value': '4.000'}
+    >>> pmrep_doc_obj[4]
+    {'name': 'network.interface.out.packets-lo', 'value': '1.000'}
     >>> pmrep_doc_obj[5]
     {'name': 'swap.pagesout', 'value': '5.000'}
 """
