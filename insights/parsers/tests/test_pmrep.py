@@ -43,6 +43,11 @@ def test_pmrep_info():
     assert pmrep_table[2] == {'network.interface.out.packets-lo': '1.000'}
     assert pmrep_table[3] == {'swap.pagesout': '3.000'}
 
+    pmrep_table = PMREPMetrics(context_wrap(PMREPMETRIC_DATA))
+    assert pmrep_table.search(network_interface_out_packets_lo__default='1.000')
+    assert pmrep_table.search(network_interface_collisions_eth0__default='4.000')
+    assert pmrep_table.search(swap_pagesout__default='5.000')
+
 
 def test_empty():
     with pytest.raises(SkipException) as e:

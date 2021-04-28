@@ -27,7 +27,7 @@ from csv import DictReader
 
 from insights import parser, CommandParser
 from insights.specs import Specs
-from insights.parsers import SkipException, ParseException
+from insights.parsers import SkipException, ParseException, keyword_search
 
 
 @parser(Specs.pmrep_metrics)
@@ -42,3 +42,22 @@ class PMREPMetrics(CommandParser, list):
             raise ParseException("The content isn't in csv format")
         for k, v in dict(list(reader)[-1]).items():
             self.append({k: v})
+
+    def search(self, **kwargs):
+        """
+        Get the rows by searching the table with kwargs.
+        This uses the :py:func:`insights.parsers.keyword_search` function for
+        searching; see its documentation for usage details. If no search
+        parameters are given, no rows are returned.
+
+        Returns:
+            list: A list of dictionaries of rows that match the given
+            search criteria.
+
+        Examples:
+            >>> pmrep_doc_obj.search(network_interface_out_packets_lo__default='1.000')
+            [{'network.interface.out.packets-lo': '1.000'}]
+            >>> pmrep_doc_obj.search(swap_pagesout__default='5.000')
+            [{'swap.pagesout': '5.000'}]
+        """
+        return keyword_search(self, **kwargs)

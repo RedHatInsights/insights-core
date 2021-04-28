@@ -463,7 +463,7 @@ def keyword_search(rows, **kwargs):
     Takes a list of dictionaries and finds all the dictionaries where the
     keys and values match those found in the keyword arguments.
 
-    Keys in the row data have ' ' and '-' replaced with '_', so they can
+    Keys in the row data have ' ', '-' and '.' replaced with '_', so they can
     match the keyword argument parsing.  For example, the keyword argument
     'fix_up_path' will match a key named 'fix-up path'.
 
@@ -517,10 +517,10 @@ def keyword_search(rows, **kwargs):
     }
 
     def key_match(row, key, value):
-        # Translate ' ' and '-' of keys in dict to '_' to match keyword arguments.
+        # Translate ' ', '-' and '.' of keys in dict to '_' to match keyword arguments.
         my_row = {}
         for my_key, val in row.items():
-            my_row[my_key.replace(' ', '_').replace('-', '_')] = val
+            my_row[my_key.replace(' ', '_').replace('-', '_').replace('.', '_')] = val
         matcher_fn = matchers['default']
         if '__' in key:
             key, matcher = key.split('__', 1)
