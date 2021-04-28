@@ -15,16 +15,14 @@ Examples:
     <class 'insights.parsers.pmrep.PMREPMetrics'>
     >>> pmrep_doc_obj = sorted(pmrep_doc_obj, key=lambda x: sorted(x.keys())[0])
     >>> pmrep_doc_obj[1]
-    {'network.interface.collisions-eth0': '4.000'}
+    {'name': 'network.interface.out.packets-lo', 'value': '1.000'}
     >>> pmrep_doc_obj[4]
-    {'network.interface.out.packets-lo': '1.000'}
+    {'name': 'network.interface.collisions-eth0', 'value': '4.000'}
     >>> pmrep_doc_obj[5]
-    {'swap.pagesout': '5.000'}
+    {'name': 'swap.pagesout', 'value': '5.000'}
 """
 
-import os
 from csv import DictReader
-
 from insights import parser, CommandParser
 from insights.specs import Specs
 from insights.parsers import SkipException, ParseException, keyword_search
@@ -41,7 +39,7 @@ class PMREPMetrics(CommandParser, list):
         except Exception:
             raise ParseException("The content isn't in csv format")
         for k, v in dict(list(reader)[-1]).items():
-            self.append({k: v})
+            self.append(dict(name=k, value=v))
 
     def search(self, **kwargs):
         """
@@ -55,9 +53,9 @@ class PMREPMetrics(CommandParser, list):
             search criteria.
 
         Examples:
-            >>> pmrep_doc_obj.search(network_interface_out_packets_lo__default='1.000')
-            [{'network.interface.out.packets-lo': '1.000'}]
-            >>> pmrep_doc_obj.search(swap_pagesout__default='5.000')
-            [{'swap.pagesout': '5.000'}]
+            >>> pmrep_doc_obj.search(name__endswith='lo')
+            [{'name': 'network.interface.out.packets-lo', 'value': '1.000'}, {'name': 'network.interface.collisions-lo', 'value': '3.000'}]
+            >>> pmrep_doc_obj.search(name__endswith='swap.pagesout')
+            [{'name': 'swap.pagesout', 'value': '5.000'}]
         """
         return keyword_search(self, **kwargs)
