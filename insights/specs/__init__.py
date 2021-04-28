@@ -489,6 +489,7 @@ class Specs(SpecSet):
     php_ini = RegistryPoint(filterable=True)
     pluginconf_d = RegistryPoint(multi_output=True)
     pmlog_summary = RegistryPoint()
+    pmrep_metrics = RegistryPoint()
     podman_container_inspect = RegistryPoint(multi_output=True)
     podman_image_inspect = RegistryPoint(multi_output=True)
     podman_list_containers = RegistryPoint()
