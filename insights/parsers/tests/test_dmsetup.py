@@ -105,6 +105,10 @@ docker-253:10-4254621-d392682f: 0 20971520 thin 7106560 20971519
 docker-253:10-1234567-0df13579: 0 20971520 thin 1922048
 """.strip()
 
+DMSETUP_STATUS_3 = """
+No devices found
+""".strip()
+
 
 def test_dmsetup_status():
     r = DmsetupStatus(context_wrap(DMSETUP_STATUS_1))
@@ -164,6 +168,10 @@ def test_dmsetup_status():
             'rootvg-tanlv: 0 6291456',
             'rootvg-docker--pool: 0 129548288 thin-pool 1 20/49152 38/126512 - rw no_discard_passdown queue_if_no_space',
             'docker-253:10-1234567-0df13579: 0 20971520 thin 1922048']
+
+    r = DmsetupStatus(context_wrap(DMSETUP_STATUS_3))
+    assert len(r) == 0
+    assert r.unparseable_lines == []
 
 
 DMSETUP_EXAMPLES = """
