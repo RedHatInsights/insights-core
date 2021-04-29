@@ -694,15 +694,6 @@
             "symbolic_name": "lscpu"
         },
         {
-            "command": "/usr/bin/lsinitrd",
-            "pattern": [
-                "=====",
-                "Image:",
-                "lvm"
-            ],
-            "symbolic_name": "lsinitrd"
-        },
-        {
             "command": "/sbin/lsmod",
             "pattern": [],
             "symbolic_name": "lsmod"
@@ -1068,6 +1059,11 @@
             "command": "/usr/sbin/pcs status",
             "pattern": [],
             "symbolic_name": "pcs_status"
+        },
+        {
+            "command": "pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout -o csv",
+            "pattern": [],
+            "symbolic_name": "pmrep_metrics"
         },
         {
             "command": "/usr/sbin/postconf -C builtin",
@@ -4330,5 +4326,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2021-04-15T15:33:43.735037"
+    "version": "2021-04-22T11:04:17.009396"
 }
