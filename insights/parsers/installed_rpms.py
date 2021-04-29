@@ -333,6 +333,11 @@ class InstalledRpm(object):
     It may also contain supplementary information from SOS report or epoch
     information from JSON.
 
+    When comparing rpms whose epoch is not ``null``, it is necessary to create
+    InstalledRpm object with epoch information like following example::
+
+        InstalledRpm.from_json('{"name":"microcode_ctl","epoch":"4","version":"20200609","release":"2.20201027.1.el8_3"}'
+
     Factory methods are provided such as ``from_package`` to create an object from a
     short package string::
 
