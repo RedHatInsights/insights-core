@@ -65,10 +65,15 @@ def main():
     import IPython
     from traitlets.config.loader import Config
 
+    ns = dict(locals())
+    ns["analyze"] = analyze
+    ns["ALL"] = None
+    ns["ANY"] = None
+
     IPython.core.completer.Completer.use_jedi = False
     c = Config()
     c.TerminalInteractiveShell.banner1 = banner
-    IPython.start_ipython([], user_ns=locals(), config=c)
+    IPython.start_ipython([], user_ns=ns, config=c)
 
 
 if __name__ == "__main__":
