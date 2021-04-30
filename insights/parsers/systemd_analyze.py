@@ -55,10 +55,34 @@ class SystemdAnalyzeBlame(CommandParser, dict):
             raise SkipException
 
         for c in content:
-            time, service = c.split()
-            if time.endswith('ms'):
-                _time = round(float(time.strip('ms')) / 1000, 5)
-            else:
-                _time = round(float(time.strip('ms')), 5)
+            cols = c.split()
+            # Check to make sure that the first character of the first
+            # entry is a number. This will hopefully exclude any errors
+            # that are outputted in the file.
+            if cols[0][0].isdigit():
+                # The service should be the last column, so just
+                # remove the last column from the list before looping.
+                service = cols.pop()
+                time = 0
+                for x in cols:
+                    # Convert each column to seconds, and add them up.
+                    if x.endswith('y'):
+                        # Pulled the 31557600 from systemd src.
+                        time += int(x.strip('y')) * 31557600
+                    elif x.endswith('month'):
+                        # Pulled the 2629800 from systemd src.
+                        time += int(x.strip('month')) * 2629800
+                    elif x.endswith('w'):
+                        time += int(x.strip('w')) * 7 * 24 * 60 ** 2
+                    elif x.endswith('d'):
+                        time += int(x.strip('d')) * 24 * 60 ** 2
+                    elif x.endswith('h'):
+                        time += int(x.strip('h')) * 60 ** 2
+                    elif x.endswith('min'):
+                        time += int(x.strip('min')) * 60
+                    elif x.endswith('ms'):
+                        time += float(x.strip('ms')) / 1000
+                    elif x.endswith('s'):
+                        time += float(x.strip('s'))
 
-            self[service] = _time
+                self[service] = time
