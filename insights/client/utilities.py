@@ -416,6 +416,7 @@ def get_parent_process():
     else:
         return "unknown"
 
+
 def os_release_info():
     '''
     Use insights-core to fetch the os-release or redhat-release info
