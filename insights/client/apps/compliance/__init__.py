@@ -2,9 +2,8 @@ from glob import glob
 from insights.client.archive import InsightsArchive
 from insights.client.connection import InsightsConnection
 from insights.client.constants import InsightsConstants as constants
-from insights.client.utilities import determine_hostname
+from insights.client.utilities import determine_hostname, os_release_info
 from logging import getLogger
-from platform import linux_distribution
 from re import findall
 from sys import exit
 from insights.util.subproc import call
@@ -92,7 +91,7 @@ class ComplianceClient:
         return list(profiles.values())
 
     def os_release(self):
-        _, version, _ = linux_distribution()
+        _, version = os_release_info()
         return version
 
     def os_major_version(self):
