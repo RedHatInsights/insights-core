@@ -19,6 +19,7 @@ lib64
 include/
 !requirements.txt
 !all_requirements.txt
+!requirements_with_links.txt
 tags
 man
 pylint.out

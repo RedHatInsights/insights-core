@@ -17,23 +17,27 @@ pipeline {
             }
           }
           steps {
+            echo "Setup testing environment..."
+            sh """
+                yum install -y https://archives.fedoraproject.org/pub/archive/epel/6/x86_64/epel-release-6-8.noarch.rpm &&
+                yum install -y python-pip.noarch python-virtualenv.noarch &&
+                mkdir pip_packages && cd pip_packages && xargs -n 1 curl -L -O < ../insights-core/requirements_with_links.txt && cd ../ &&
+                cat requirements_with_links.txt | awk -F '/' '{print $8}' | sed 's/.tar.gz//g;s/.zip//g;s/-\\([0-9]\\)/==\\1/g' > requirements_without_links.txt &&
+                virtualenv insights-core/venv &&
+                source insights-core/venv/bin/activate &&
+                pip install pip_packages/setuptools* &&
+                pip install pip_packages/{pbr*,pytest-runner*} &&
+                pip install -v -r requirements_without_links.txt --no-index --find-links=./pip_packages/;
+            """
             echo "Testing with Pytest..."
             sh """
-                virtualenv .testenv
-                source .testenv/bin/activate
-                pip install --upgrade "pip<10"
-                pip install "idna<=2.7"
-                pip install "pycparser<=2.18"
-                pip install -e .[testing]
+                source insights-core/venv/bin/activate
                 pytest
             """
+
             echo "Testing with Linter..."
             sh """
-                virtualenv .lintenv
-                source .lintenv/bin/activate
-                pip install https://github.com/kjd/idna/archive/refs/tags/v2.7.zip
-                pip install https://github.com/eliben/pycparser/archive/refs/tags/release_v2.18.zip
-                pip install -e .[linting]
+                source insights-core/venv/bin/activate
                 flake8
             """
           }
