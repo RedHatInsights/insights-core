@@ -87,9 +87,9 @@ def test_get_initial_profiles(config):
     compliance_client.conn.session.get.assert_called_with('https://localhost/app/compliance/profiles', params={'search': 'system_ids=068040f1-08c8-43e4-949f-7d6470e9111c canonical=false external=false'})
 
 
-@patch("insights.client.apps.compliance.linux_distribution", return_value=(None, '6.5', None))
+@patch("insights.client.apps.compliance.os_release_info", return_value=(None, '6.5'))
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
-def test_get_profiles_matching_os(config, linux_distro_mock):
+def test_get_profiles_matching_os(config, os_release_info_mock):
     compliance_client = ComplianceClient(config)
     compliance_client.inventory_id = '068040f1-08c8-43e4-949f-7d6470e9111c'
     compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, json=Mock(return_value={'data': [{'attributes': 'data'}]})))
@@ -97,23 +97,23 @@ def test_get_profiles_matching_os(config, linux_distro_mock):
     compliance_client.conn.session.get.assert_called_with('https://localhost/app/compliance/profiles', params={'search': 'system_ids=068040f1-08c8-43e4-949f-7d6470e9111c canonical=false os_minor_version=5'})
 
 
-@patch("insights.client.apps.compliance.linux_distribution", return_value=(None, '6.5', None))
+@patch("insights.client.apps.compliance.os_release_info", return_value=(None, '6.5'))
 @patch("insights.client.config.InsightsConfig")
-def test_os_release(config, linux_distro_mock):
+def test_os_release(config, os_release_info_mock):
     compliance_client = ComplianceClient(config)
     assert compliance_client.os_release() == '6.5'
 
 
-@patch("insights.client.apps.compliance.linux_distribution", return_value=(None, '6.5', None))
+@patch("insights.client.apps.compliance.os_release_info", return_value=(None, '6.5'))
 @patch("insights.client.config.InsightsConfig")
-def test_os_minor_version(config, linux_distro_mock):
+def test_os_minor_version(config, os_release_info_mock):
     compliance_client = ComplianceClient(config)
     assert compliance_client.os_minor_version() == '5'
 
 
-@patch("insights.client.apps.compliance.linux_distribution", return_value=(None, '6.5', None))
+@patch("insights.client.apps.compliance.os_release_info", return_value=(None, '6.5'))
 @patch("insights.client.config.InsightsConfig")
-def test_os_major_version(config, linux_distro_mock):
+def test_os_major_version(config, os_release_info_mock):
     compliance_client = ComplianceClient(config)
     assert compliance_client.os_major_version() == '6'
 
@@ -203,19 +203,19 @@ def test_tailored_file_is_downloaded_from_initial_profile_if_os_minor_version_is
     assert compliance_client.download_tailoring_file({'id': 'foo', 'attributes': {'tailored': False, 'ref_id': 'aaaaa'}}) is None
 
 
-@patch("insights.client.apps.compliance.linux_distribution", return_value=(None, '6.5', None))
+@patch("insights.client.apps.compliance.os_release_info", return_value=(None, '6.5'))
 @patch("insights.client.config.InsightsConfig")
-def test_tailored_file_is_not_downloaded_if_os_minor_version_mismatches(config, linux_distro_mock):
+def test_tailored_file_is_not_downloaded_if_os_minor_version_mismatches(config, os_release_info_mock):
     compliance_client = ComplianceClient(config)
     compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, json=Mock(return_value={'data': [{'attributes': 'data'}]})))
     assert compliance_client.download_tailoring_file({'id': 'foo', 'attributes': {'tailored': True, 'ref_id': 'aaaaa', 'os_minor_version': '2'}}) is None
     assert compliance_client.download_tailoring_file({'id': 'foo', 'attributes': {'tailored': False, 'ref_id': 'aaaaa', 'os_minor_version': '2'}}) is None
 
 
-@patch("insights.client.apps.compliance.linux_distribution", return_value=(None, '6.5', None))
+@patch("insights.client.apps.compliance.os_release_info", return_value=(None, '6.5'))
 @patch("insights.client.apps.compliance.open", new_callable=mock_open)
 @patch("insights.client.config.InsightsConfig")
-def test_tailored_file_is_downloaded_if_needed(config, call, linux_distro_mock):
+def test_tailored_file_is_downloaded_if_needed(config, call, os_release_info_mock):
     compliance_client = ComplianceClient(config)
     compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, json=Mock(return_value={'data': [{'attributes': 'data'}]})))
     tailoring_file_path = "/var/tmp/oscap_tailoring_file-aaaaa.xml"
