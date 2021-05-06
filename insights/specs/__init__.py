@@ -559,6 +559,7 @@ class Specs(SpecSet):
     rndc_status = RegistryPoint()
     root_crontab = RegistryPoint()
     route = RegistryPoint()
+    rpm_ostree_status = RegistryPoint()
     rpm_V_packages = RegistryPoint()
     rsyslog_conf = RegistryPoint(filterable=True, multi_output=True)
     samba = RegistryPoint(filterable=True)
