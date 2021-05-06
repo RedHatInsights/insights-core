@@ -4,12 +4,13 @@ import base64
 import requests
 import tempfile
 import pkgutil
+import hashlib
 import insights.client.apps.ansible
 from logging import getLogger
 from distutils.version import LooseVersion
 from insights.client.utilities import get_version_info
 from insights.client.apps.ansible.playbook_verifier.contrib import gnupg
-from insights.client.apps.ansible.playbook_verifier.contrib import oyaml as yaml
+from insights.client.apps.ansible.playbook_verifier.contrib.ruamel_yaml.ruamel import yaml
 from insights.client.constants import InsightsConstants as constants
 
 __all__ = ("loadPlaybookYaml", "verify", "PlaybookVerificationError")
@@ -20,6 +21,12 @@ VERSIONING_URL = 'https://cloud.redhat.com/api/v1/static/egg_version'
 EXCLUDABLE_VARIABLES = ['hosts', 'vars']
 
 logger = getLogger(__name__)
+
+yaml = yaml.YAML(typ='rt')
+yaml.indent(mapping=2, sequence=4, offset=2)
+yaml.default_flow_style = False
+yaml.preserve_quotes = True
+yaml.width = 200
 
 
 class PlaybookVerificationError(Exception):
@@ -37,6 +44,18 @@ class PlaybookVerificationError(Exception):
 
     def __str__(self):
         return self.message
+
+
+def createSnippetHash(snippet):
+    """
+    Function that creates and returns a hash of the snippet given to the function.
+        output: snippetHash (bytes)
+    """
+    snippetHash = hashlib.sha256()
+    serializedSnippet = str(snippet).encode("UTF-8")
+    snippetHash.update(serializedSnippet)
+
+    return snippetHash.digest()
 
 
 def eggVersioningCheck(checkVersion):
@@ -87,7 +106,7 @@ def excludeDynamicElements(snippet):
 
 def executeVerification(snippet, encodedSignature):
     gpg = gnupg.GPG(gnupghome=constants.insights_core_lib_dir)
-    serializedSnippet = bytes(yaml.dump(snippet, default_flow_style=False).encode("UTF-8"))
+    snippetHash = createSnippetHash(snippet)
 
     decodedSignature = base64.b64decode(encodedSignature)
 
@@ -98,7 +117,7 @@ def executeVerification(snippet, encodedSignature):
     os.write(fd, decodedSignature)
     os.close(fd)
 
-    result = gpg.verify_data(fn, serializedSnippet)
+    result = gpg.verify_data(fn, snippetHash)
     os.unlink(fn)
 
     return result
