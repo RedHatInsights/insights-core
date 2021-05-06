@@ -118,6 +118,7 @@ def test_os_major_version(config, linux_distro_mock):
     assert compliance_client.os_major_version() == '6'
 
 
+@patch("insights.client.apps.compliance.InsightsArchive", Mock())
 @patch("insights.client.config.InsightsConfig")
 def test_profile_files(config):
     compliance_client = ComplianceClient(config)
