@@ -2,7 +2,6 @@ from glob import glob
 from insights.client.archive import InsightsArchive
 from insights.client.connection import InsightsConnection
 from insights.client.constants import InsightsConstants as constants
-from insights.client.utilities import determine_hostname
 from logging import getLogger
 from platform import linux_distribution
 from re import findall
@@ -22,10 +21,10 @@ class ComplianceClient:
     def __init__(self, config):
         self.config = config
         self.conn = InsightsConnection(config)
-        self.hostname = determine_hostname()
         self.archive = InsightsArchive(config)
 
     def oscap_scan(self):
+        self.inventory_id = self._get_inventory_id()
         self._assert_oscap_rpms_exist()
         initial_profiles = self.get_initial_profiles()
         matching_os_profiles = self.get_profiles_matching_os()
@@ -80,10 +79,10 @@ class ComplianceClient:
             return []
 
     def get_initial_profiles(self):
-        return self.get_profiles('system_names={0} canonical=false external=false'.format(self.hostname))
+        return self.get_profiles('system_ids={0} canonical=false external=false'.format(self.inventory_id))
 
     def get_profiles_matching_os(self):
-        return self.get_profiles('system_names={0} canonical=false os_minor_version={1}'.format(self.hostname, self.os_minor_version()))
+        return self.get_profiles('system_ids={0} canonical=false os_minor_version={1}'.format(self.inventory_id, self.os_minor_version()))
 
     def profile_union_by_ref_id(self, prioritized_profiles, merged_profiles):
         profiles = dict((p['attributes']['ref_id'], p) for p in merged_profiles)
@@ -154,3 +153,11 @@ class ComplianceClient:
             if len(rpm.strip().split('\n')) < len(REQUIRED_PACKAGES):
                 logger.error('Missing required packages for compliance scanning. Please ensure the following packages are installed: {0}\n'.format(', '.join(REQUIRED_PACKAGES)))
                 exit(constants.sig_kill_bad)
+
+    def _get_inventory_id(self):
+        systems = self.conn._fetch_system_by_machine_id()
+        if len(systems) == 1 and 'id' in systems[0]:
+            return systems[0].get('id')
+        else:
+            logger.error('Failed to find system in Inventory')
+            exit(constants.sig_kill_bad)
