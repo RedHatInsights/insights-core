@@ -4,7 +4,7 @@ import pytest
 
 # don't even bother on 2.6
 if sys.version_info >= (2, 7):
-    from insights.client.apps.ansible.playbook_verifier import verify, PlaybookVerificationError  # noqa: E402
+    from insights.client.apps.ansible.playbook_verifier import verify, PlaybookVerificationError  # noqa
 
 from mock.mock import patch
 from pytest import raises
