@@ -2,6 +2,11 @@
 PackageProvidesHttpdAll - Combiner for packages which provide httpd
 ===================================================================
 
+.. warning::
+
+    This module is deprecated, please use
+    :mod:`insights.parsers.package_provides` instead.
+
 Combiner for collecting all the running httpd command and the corresponding RPM package name
 which is parsed by the PackageProvidesHttpd parser.
 
@@ -10,11 +15,18 @@ which is parsed by the PackageProvidesHttpd parser.
 from insights.core.plugins import combiner
 from insights.parsers.package_provides_httpd import PackageProvidesHttpd
 from .. import LegacyItemAccess
+from insights.util import deprecated
 
 
 @combiner(PackageProvidesHttpd)
 class PackageProvidesHttpdAll(LegacyItemAccess):
     """
+    .. warning::
+
+        This Combiner is deprecated, please use
+        :class:`insights.parsers.package_provides.PackageProvidesCommand`
+        Parsers instead.
+
     This combiner will receive a list of parsers named PackageProvidesHttpd, one for each running instance of httpd
     and each parser instance will contain the command information and the RPM package information.
     It works as a ``dict`` with the httpd command information as the key and the
@@ -33,6 +45,10 @@ class PackageProvidesHttpdAll(LegacyItemAccess):
     """
 
     def __init__(self, package_provides_httpd):
+        deprecated(
+            PackageProvidesHttpdAll,
+            'Please use the :class:`insights.parsers.package_provides.PackageProvidesCommand` instead.'
+        )
         self.data = {}
         for pkg in package_provides_httpd:
             self.data[pkg.command] = pkg.package

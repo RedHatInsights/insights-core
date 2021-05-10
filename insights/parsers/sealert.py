@@ -6,7 +6,6 @@ Sealert - command ``/usr/bin/sealert -l "*"``
 from insights import CommandParser
 from insights import parser
 from insights.specs import Specs
-from insights.parsers import SkipException
 
 
 class Report(object):
@@ -101,11 +100,12 @@ class Sealert(CommandParser):
     Raises:
         SkipException: When output is empty
     """
+    SELINUX_DISABLED_MESSAGE = "unable to establish connection to setroubleshoot daemon!"
+
+    def __init__(self, context):
+        super(Sealert, self).__init__(context, extra_bad_lines=[self.SELINUX_DISABLED_MESSAGE])
 
     def parse_content(self, content):
-        if not content:
-            raise SkipException("Input content is empty")
-
         self.raw_lines = content
         self.reports = []
 
@@ -114,6 +114,3 @@ class Sealert(CommandParser):
                 self.reports.append(Report())
             if self.reports:  # skips the first report if it contains only partial data
                 self.reports[-1].append_line(line)
-
-        if not self.reports:
-            raise SkipException("No sealert reports")

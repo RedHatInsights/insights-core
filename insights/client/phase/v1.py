@@ -4,13 +4,13 @@ import json
 import logging
 import os
 import sys
-import atexit
+import runpy
 
 from insights.client import InsightsClient
 from insights.client.config import InsightsConfig
 from insights.client.constants import InsightsConstants as constants
 from insights.client.support import InsightsSupport
-from insights.client.utilities import validate_remove_file, print_egg_versions, write_to_disk
+from insights.client.utilities import validate_remove_file, print_egg_versions
 from insights.client.schedule import get_scheduler
 from insights.client.apps.compliance import ComplianceClient
 
@@ -73,7 +73,8 @@ def pre_update(client, config):
     if config.enable_schedule:
         # enable automatic scheduling
         logger.debug('Updating config...')
-        updated = get_scheduler(config).set_daily()
+        scheduler = get_scheduler(config)
+        updated = scheduler.schedule()
         if updated:
             logger.info('Automatic scheduling for Insights has been enabled.')
         sys.exit(constants.sig_kill_ok)
@@ -109,6 +110,18 @@ def pre_update(client, config):
             sys.exit(constants.sig_kill_bad)
         print(json.dumps(resp))
         sys.exit(constants.sig_kill_ok)
+
+    if config.checkin:
+        try:
+            checkin_success = client.checkin()
+        except Exception as e:
+            print(e)
+            sys.exit(constants.sig_kill_bad)
+
+        if checkin_success:
+            sys.exit(constants.sig_kill_ok)
+        else:
+            sys.exit(constants.sig_kill_bad)
 
 
 @phase
@@ -187,9 +200,10 @@ def post_update(client, config):
         elif reg is False:
             # unregistered
             sys.exit(constants.sig_kill_bad)
-        if config.register:
-            if (not config.disable_schedule and
-               get_scheduler(config).set_daily()):
+        if config.register and not config.disable_schedule:
+            scheduler = get_scheduler(config)
+            updated = scheduler.schedule()
+            if updated:
                 logger.info('Automatic scheduling for Insights has been enabled.')
         return
     # -------delete everything above this line-------
@@ -247,9 +261,11 @@ def post_update(client, config):
         #   system creation and upload are a single event on the platform
         if reg_check:
             logger.info('This host has already been registered.')
-        if (not config.disable_schedule and
-           get_scheduler(config).set_daily()):
-            logger.info('Automatic scheduling for Insights has been enabled.')
+        if not config.disable_schedule:
+            scheduler = get_scheduler(config)
+            updated = scheduler.schedule()
+            if updated:
+                logger.info('Automatic scheduling for Insights has been enabled.')
 
     # set --display-name independent of register
     # only do this if set from the CLI. normally display_name is sent on upload
@@ -262,9 +278,15 @@ def post_update(client, config):
 
 @phase
 def collect_and_output(client, config):
-    # last phase, delete PID file on exit
-    atexit.register(write_to_disk, constants.pidfile, delete=True)
-    atexit.register(write_to_disk, constants.ppidfile, delete=True)
+    # run a specified module
+    if config.module:
+        try:
+            runpy.run_module(config.module)
+        except ImportError as e:
+            logger.error(e)
+            sys.exit(constants.sig_kill_bad)
+        sys.exit(constants.sig_kill_ok)
+
     # --compliance was called
     if config.compliance:
         config.payload, config.content_type = ComplianceClient(config).oscap_scan()

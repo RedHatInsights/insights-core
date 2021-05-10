@@ -89,10 +89,11 @@ ENABLED = defaultdict(lambda: True)
 def set_enabled(component, enabled=True):
     """
     Enable a component for evaluation. If set to False, the component is
-    skipped, and all components that require it will not execute. If component
-    is a fully qualified name string of a callable object instead of the
-    callable object itself, the component's module is loaded as a side effect
-    of calling this function.
+    skipped, and all components that require it will not execute.
+
+    If component is a fully qualified name string of a callable object
+    instead of the callable object itself, the component's module is loaded
+    as a side effect of calling this function.
 
     Args:
         component (str or callable): fully qualified name of the component or
@@ -102,7 +103,11 @@ def set_enabled(component, enabled=True):
     Returns:
         None
     """
-    ENABLED[get_component(component) or component] = enabled
+    if isinstance(component, six.string_types):
+        component = get_component(component)
+
+    if component:
+        ENABLED[component] = enabled
 
 
 def is_enabled(component):
@@ -156,9 +161,7 @@ def _import_component(name):
     for f in (_get_from_module, _get_from_class):
         try:
             return f(name)
-        except Exception as e:
-            log.debug("Couldn't load %s" % name)
-            log.debug(e, exc_info=True)
+        except:
             pass
 
 

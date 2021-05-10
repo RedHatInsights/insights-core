@@ -1,22 +1,7 @@
-## Developer Setup
-Instructions are for RHSM-subscribed machines only.
-1. Clone this repo and https://github.com/RedHatInsights/insights-client to the same directory.
+## Insights Client (Core) Developer Notes
 
-```
-$ git clone git@github.com:RedHatInsights/insights-client.git
-$ git clone git@github.com:RedHatInsights/insights-core.git
-```
-2. Build the egg and install the client.
+* ### **See https://github.com/RedHatInsights/insights-client for build and usage instructions, and details about configuration and runtime.**
 
-```
-$ cd insights-client
-$ sh lay-the-eggs.sh
-```
+* To rebuild the egg from source, run `./build_client_egg.sh` from the repo root. This will generate a file `insights.zip` that you can pass to `insights-client` with the `EGG` environment variable.
 
-3. Run the client with the following options to disable GPG since this egg is unsigned.
-
-```
-$ sudo BYPASS_GPG=True EGG=/etc/insights-client/rpm.egg insights-client --no-gpg
-```
-
-4. Repeat steps 2 & 3 upon making code changes. The majority of the client code lives in this directory, `insights-core/insights/client`.
+* The `uploader_json_map.json` file is **NOT** `uploader.json`. Its purpose is to serve as a compatibility layer between denylist configurations for classic collection and core collection. Changes to this file will not affect the commands or files that are collected. It is advised not to make changes to this file as it is copied from the production-ready uploader.json file at release time and not intended to be modified further.

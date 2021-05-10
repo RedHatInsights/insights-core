@@ -9,6 +9,7 @@ simple_file = partial(simple_file, context=SosArchiveContext)
 
 
 class SosSpecs(Specs):
+    alternatives_display_python = simple_file("sos_commands/alternatives/alternatives_--display_python")
     auditctl_status = simple_file("sos_commands/auditd/auditctl_-s")
     autofs_conf = simple_file("/etc/autofs.conf")
 
@@ -38,6 +39,8 @@ class SosSpecs(Specs):
         ]
     )
     cni_podman_bridge_conf = simple_file("/etc/cni/net.d/87-podman-bridge.conflist")
+    cobbler_settings = first_file(["/etc/cobbler/settings", "/conf/cobbler/settings"])
+    cobbler_modules_conf = first_file(["/etc/cobbler/modules.conf", "/conf/cobbler/modules.conf"])
     corosync_cmapctl = glob_file("sos_commands/corosync/corosync-cmapctl*")
     cpe = simple_file("/etc/system-release-cpe")
     cpu_smt_control = simple_file("sys/devices/system/cpu/smt/control")
@@ -64,6 +67,7 @@ class SosSpecs(Specs):
     dmesg = first_file(["sos_commands/kernel/dmesg", "sos_commands/general/dmesg", "var/log/dmesg"])
     dmidecode = simple_file("sos_commands/hardware/dmidecode")
     dmsetup_info = simple_file("sos_commands/devicemapper/dmsetup_info_-c")
+    dmsetup_status = simple_file("sos_commands/devicemapper/dmsetup_status")
     dnsmasq_config = glob_file(["/etc/dnsmasq.conf", "/etc/dnsmasq.d/*.conf"])
     dumpe2fs_h = glob_file("sos_commands/filesys/dumpe2fs_-h_*")
     ethtool = glob_file("sos_commands/networking/ethtool_*", ignore="ethtool_-.*")
@@ -119,7 +123,9 @@ class SosSpecs(Specs):
     libvirtd_qemu_log = glob_file(r"/var/log/libvirt/qemu/*.log")
     locale = simple_file("sos_commands/i18n/locale")
     lsblk = first_file(["sos_commands/block/lsblk", "sos_commands/filesys/lsblk"])
+    lsblk_pairs = simple_file("sos_commands/block/lsblk_-O_-P")
     ls_boot = simple_file("sos_commands/boot/ls_-lanR_.boot")
+    ls_sys_firmware = simple_file("sos_commands/boot/ls_-lanR_.sys.firmware")
     lscpu = simple_file("sos_commands/processor/lscpu")
     lsinitrd = simple_file("sos_commands/boot/lsinitrd")
     lsof = simple_file("sos_commands/process/lsof_-b_M_-n_-l")
@@ -131,10 +137,18 @@ class SosSpecs(Specs):
     ])
     lsscsi = simple_file("sos_commands/scsi/lsscsi")
     ls_dev = first_file(["sos_commands/block/ls_-lanR_.dev", "sos_commands/devicemapper/ls_-lanR_.dev"])
-    lvs = first_file(["sos_commands/lvm2/lvs_-a_-o_lv_tags_devices_--config_global_locking_type_0", "sos_commands/lvm2/lvs_-a_-o_devices"])
+    lvs = first_file([
+        "sos_commands/lvm2/lvs_-a_-o_lv_tags_devices_lv_kernel_read_ahead_lv_read_ahead_stripes_stripesize_--config_global_metadata_read_only_1_--nolocking_--foreign",
+        "sos_commands/lvm2/lvs_-a_-o_lv_tags_devices_lv_kernel_read_ahead_lv_read_ahead_stripes_stripesize_--config_global_locking_type_0_metadata_read_only_1",
+        "sos_commands/lvm2/lvs_-a_-o_lv_tags_devices_--config_global_locking_type_0",
+        "sos_commands/lvm2/lvs_-a_-o_devices",
+        "sos_commands/devicemapper/lvs_-a_-o__devices"
+    ])
     manila_conf = first_file(["/var/lib/config-data/puppet-generated/manila/etc/manila/manila.conf", "/etc/manila/manila.conf"])
+    mdadm_E = glob_file("sos_commands/md/mdadm_-E_*")
     mistral_executor_log = simple_file("/var/log/mistral/executor.log")
     modinfo_all = glob_file("sos_commands/kernel/modinfo_*")
+    mokutil_sbstate = simple_file("sos_commands/boot/mokutil_--sb-state")
     mount = simple_file("sos_commands/filesys/mount_-l")
     mounts = simple_file("/proc/mounts")
     mlx4_port = glob_file("/sys/bus/pci/devices/*/mlx4_port[0-9]")
@@ -167,6 +181,18 @@ class SosSpecs(Specs):
     podman_image_inspect = glob_file("sos_commands/podman/podman_inspect_*")
     podman_list_containers = first_file(["sos_commands/podman/podman_ps_-a", "sos_commands/podman/podman_ps"])
     podman_list_images = simple_file("sos_commands/podman/podman_images")
+    postgresql_conf = first_file([
+        "/var/opt/rh/rh-postgresql12/lib/pgsql/data/postgresql.conf",
+        "/var/lib/pgsql/data/postgresql.conf",
+        "database/postgresql.conf"
+    ])
+    postgresql_log = first_of(
+        [
+            glob_file("/var/opt/rh/rh-postgresql12/lib/pgsql/data/log/postgresql-*.log"),
+            glob_file("/var/lib/pgsql/data/pg_log/postgresql-*.log"),
+            glob_file("/database/postgresql-*.log")
+        ]
+    )
     ps_alxwww = simple_file("sos_commands/process/ps_alxwww")
     ps_aux = first_file(["sos_commands/process/ps_aux", "sos_commands/process/ps_auxwww", "sos_commands/process/ps_auxcww"])
     ps_auxcww = first_file(["sos_commands/process/ps_auxcww", "sos_commands/process/ps_auxwww", "sos_commands/process/ps_aux"])
@@ -175,7 +201,13 @@ class SosSpecs(Specs):
         "/etc/puppetlabs/puppet/ssl/certs/ca.pem",
         "sos_commands/foreman/foreman-debug/var/lib/puppet/ssl/certs/ca.pem"
     ])
-    pvs = first_file(["sos_commands/lvm2/pvs_-a_-v_-o_pv_mda_free_pv_mda_size_pv_mda_count_pv_mda_used_count_pe_start_--config_global_locking_type_0", "sos_commands/lvm2/pvs_-a_-v", "sos_commands/devicemapper/pvs_-a_-v"])
+    pvs = first_file([
+        "sos_commands/lvm2/pvs_-a_-v_-o_pv_mda_free_pv_mda_size_pv_mda_count_pv_mda_used_count_pe_start_--config_global_metadata_read_only_1_--nolocking_--foreign",
+        "sos_commands/lvm2/pvs_-a_-v_-o_pv_mda_free_pv_mda_size_pv_mda_count_pv_mda_used_count_pe_start_--config_global_locking_type_0_metadata_read_only_1",
+        "sos_commands/lvm2/pvs_-a_-v_-o_pv_mda_free_pv_mda_size_pv_mda_count_pv_mda_used_count_pe_start_--config_global_locking_type_0",
+        "sos_commands/lvm2/pvs_-a_-v",
+        "sos_commands/devicemapper/pvs_-a_-v"
+    ])
     qpid_stat_q = first_file([
         "sos_commands/pulp/qpid-stat_-q_--ssl-certificate_.etc.pki.pulp.qpid.client.crt_-b_amqps_..localhost_5671",
         "sos_commands/pulp/qpid-stat_-q_--ssl-certificate_.etc.pki.katello.qpid_client_striped.crt_-b_amqps_..localhost_5671",
@@ -201,22 +233,26 @@ class SosSpecs(Specs):
     rabbitmq_report_of_containers = glob_file("sos_commands/rabbitmq/docker_exec_-t_rabbitmq-bundle-docker-*_rabbitmqctl_report")
     rabbitmq_startup_err = simple_file("/var/log/rabbitmq/startup_err")
     rhn_charsets = first_file(["sos_commands/satellite/rhn-charsets", "sos_commands/rhn/rhn-charsets"])
+    rhn_entitlement_cert_xml = first_of([glob_file("/etc/sysconfig/rhn/rhn-entitlement-cert.xml*"),
+                                   glob_file("/conf/rhn/sysconfig/rhn/rhn-entitlement-cert.xml*")])
     rhn_hibernate_conf = first_file(["/usr/share/rhn/config-defaults/rhn_hibernate.conf", "/config-defaults/rhn_hibernate.conf"])
     rhn_search_daemon_log = first_file([
         "/var/log/rhn/search/rhn_search_daemon.log",
         "/rhn-logs/rhn/search/rhn_search_daemon.log"
     ])
+    rhn_schema_version = simple_file("sos_commands/satellite/rhn-schema-version")
     rhn_server_satellite_log = simple_file("var/log/rhn/rhn_server_satellite.log")
     rhn_server_xmlrpc_log = first_file([
         "/var/log/rhn/rhn_server_xmlrpc.log",
         "/rhn-logs/rhn/rhn_server_xmlrpc.log"
     ])
+    rhn_taskomatic_daemon_log = first_file(["/var/log/rhn/rhn_taskomatic_daemon.log",
+                                               "rhn-logs/rhn/rhn_taskomatic_daemon.log"])
     rhosp_release = simple_file("/etc/rhosp-release")
     root_crontab = first_file(["sos_commands/crontab/root_crontab", "sos_commands/cron/root_crontab"])
     route = simple_file("sos_commands/networking/route_-n")
     sap_host_profile = simple_file("/usr/sap/hostctrl/exe/host_profile")
     sched_rt_runtime_us = simple_file("/proc/sys/kernel/sched_rt_runtime_us")
-    scheduler = glob_file("/sys/block/*/queue/scheduler")
     scsi_mod_use_blk_mq = simple_file("/sys/module/scsi_mod/parameters/use_blk_mq")
     secure = simple_file("/var/log/secure")
     sestatus = simple_file("sos_commands/selinux/sestatus_-b")
@@ -249,8 +285,10 @@ class SosSpecs(Specs):
     systemd_system_origin_accounting = simple_file("/etc/systemd/system.conf.d/origin-accounting.conf")
     teamdctl_config_dump = glob_file("sos_commands/teamd/teamdctl_*_config_dump")
     teamdctl_state_dump = glob_file("sos_commands/teamd/teamdctl_*_state_dump")
+    testparm_s = simple_file("sos_commands/samba/testparm_s")
     tomcat_web_xml = first_of([glob_file("/etc/tomcat*/web.xml"),
                                   glob_file("/conf/tomcat/tomcat*/web.xml")])
+    tuned_adm = simple_file("sos_commands/tuned/tuned-adm_list")
     tuned_conf = simple_file("/etc/tuned.conf")
     udev_persistent_net_rules = simple_file("/etc/udev/rules.d/70-persistent-net.rules")
     uname = simple_file("sos_commands/kernel/uname_-a")
@@ -259,8 +297,21 @@ class SosSpecs(Specs):
     vdsm_conf = simple_file("etc/vdsm/vdsm.conf")
     vdsm_id = simple_file("etc/vdsm/vdsm.id")
     vdsm_import_log = glob_file("var/log/vdsm/import/import-*.log")
-    vgdisplay = first_file(["sos_commands/lvm2/vgdisplay_-vv_--config_global_locking_type_0", "sos_commands/lvm2/vgdisplay_-vv"])
-    vgs = first_file(["sos_commands/lvm2/vgs_-v_-o_vg_mda_count_vg_mda_free_vg_mda_size_vg_mda_used_count_vg_tags_--config_global_locking_type_0", "sos_commands/lvm2/vgs_-v", "sos_commands/devicemapper/vgs_-v"])
+    vgdisplay = first_file([
+        "sos_commands/lvm2/vgdisplay_-vv_--config_global_metadata_read_only_1_--nolocking_--foreign",
+        "sos_commands/lvm2/vgdisplay_-vv_--config_global_locking_type_0_metadata_read_only_1",
+        "sos_commands/lvm2/vgdisplay_-vv_--config_global_locking_type_0",
+        "sos_commands/lvm2/vgdisplay_-vv",
+        "sos_commands/devicemapper/vgdisplay_-vv"
+    ])
+    vgs = first_file([
+        "sos_commands/lvm2/vgs_-v_-o_vg_mda_count_vg_mda_free_vg_mda_size_vg_mda_used_count_vg_tags_systemid_--config_global_metadata_read_only_1_--nolocking_--foreign",
+        "sos_commands/lvm2/vgs_-v_-o_vg_mda_count_vg_mda_free_vg_mda_size_vg_mda_used_count_vg_tags_--config_global_locking_type_0_metadata_read_only_1",
+        "sos_commands/lvm2/vgs_-v_-o_vg_mda_count_vg_mda_free_vg_mda_size_vg_mda_used_count_vg_tags_--config_global_locking_type_0",
+        "sos_commands/lvm2/vgs_-v",
+        "sos_commands/devicemapper/vgs_-v"
+    ])
+    virsh_list_all = simple_file("sos_commands/virsh/virsh_-r_list_--all")
     vmcore_dmesg = glob_file("/var/crash/*/vmcore-dmesg.txt")
     vmware_tools_conf = simple_file("etc/vmware-tools/tools.conf")
     xfs_info = glob_file("sos_commands/xfs/xfs_info*")

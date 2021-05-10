@@ -260,12 +260,14 @@ class DataCollector(object):
             rm_conf = {}
         logger.debug('Beginning to run collection spec...')
 
+        rm_commands = rm_conf.get('commands', [])
+        rm_files = rm_conf.get('files', [])
+
         for c in conf['commands']:
             # remember hostname archive path
             if c.get('symbolic_name') == 'hostname':
                 self.hostname_path = os.path.join(
                     'insights_commands', mangle.mangle_command(c['command']))
-            rm_commands = rm_conf.get('commands', [])
             if c['command'] in rm_commands or c.get('symbolic_name') in rm_commands:
                 logger.warn("WARNING: Skipping command %s", c['command'])
             elif self.mountpoint == "/" or c.get("image"):
@@ -282,7 +284,6 @@ class DataCollector(object):
                         'output_size': cmd_spec.output_size
                     }
         for f in conf['files']:
-            rm_files = rm_conf.get('files', [])
             if f['file'] in rm_files or f.get('symbolic_name') in rm_files:
                 logger.warn("WARNING: Skipping file %s", f['file'])
             else:
@@ -300,17 +301,21 @@ class DataCollector(object):
                         }
         if 'globs' in conf:
             for g in conf['globs']:
-                glob_specs = self._parse_glob_spec(g)
-                for g in glob_specs:
-                    if g['file'] in rm_conf.get('files', []):
-                        logger.warn("WARNING: Skipping file %s", g['file'])
-                    else:
-                        glob_spec = InsightsFile(g, self.mountpoint)
-                        self.archive.add_to_archive(glob_spec)
-                        collection_stats[g['file']] = {
-                            'exec_time': glob_spec.exec_time,
-                            'output_size': glob_spec.output_size
-                        }
+                if g.get('symbolic_name') in rm_files:
+                    # ignore glob via symbolic name
+                    logger.warn("WARNING: Skipping file %s", g['glob'])
+                else:
+                    glob_specs = self._parse_glob_spec(g)
+                    for g in glob_specs:
+                        if g['file'] in rm_files:
+                            logger.warn("WARNING: Skipping file %s", g['file'])
+                        else:
+                            glob_spec = InsightsFile(g, self.mountpoint)
+                            self.archive.add_to_archive(glob_spec)
+                            collection_stats[g['file']] = {
+                                'exec_time': glob_spec.exec_time,
+                                'output_size': glob_spec.output_size
+                            }
         logger.debug('Spec collection finished.')
 
         self.redact(rm_conf)

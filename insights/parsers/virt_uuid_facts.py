@@ -16,7 +16,6 @@ Examples:
     2
 """
 
-from insights.util import deprecated
 from insights.specs import Specs
 
 from .. import JSONParser, parser
@@ -24,12 +23,4 @@ from .. import JSONParser, parser
 
 @parser(Specs.virt_uuid_facts)
 class VirtUuidFacts(JSONParser):
-    """
-    .. warning::
-        This parser is deprecated, please use
-        :py:class:`insights.parsers.subscription_manager_list.SubscriptionManagerFactsList` instead.
-
-    """
-    def __init__(self, *args, **kwargs):
-        deprecated(VirtUuidFacts, "Import SubscriptionManagerFactsList from insights.parsers.subscription_manager_list instead")
-        super(VirtUuidFacts, self).__init__(*args, **kwargs)
+    pass

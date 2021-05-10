@@ -81,7 +81,6 @@ def find_warnings(content):
             "failed.",
             "Invalid metadata",
             "response failed",
-            "unknown device",
             "duplicate",
             "not found",
             "Missing device",
@@ -131,7 +130,8 @@ class Lvm(CommandParser):
         if "Unrecognised field:" in content[-1]:
             raise ParseException(content[-1])
         d = {"warnings": set(find_warnings(content))}
-        content = [l for l in content if l not in d["warnings"]]
+        content = [l for l in content
+                   if l not in d["warnings"] and not l.startswith("File descriptor ")]
         d["content"] = list(map_keys(parse_keypair_lines(content), self.KEYS))
         self.data = d if d else None
 
@@ -286,6 +286,8 @@ class PvsHeadings(LvmHeadings):
     Attributes:
         data (list): List of dicts, each dict containing one row of the table
             with column headings as keys.
+        warnings (set): Set of lines from input data containing
+            warning strings.
 
     Examples:
         >>> pvs_data = shared[PvsHeadings]
@@ -301,6 +303,8 @@ class PvsHeadings(LvmHeadings):
     PRIMARY_KEY = Pvs.PRIMARY_KEY
 
     def parse_content(self, content):
+        self.warnings = set(find_warnings(content))
+        content = [l for l in content if l not in self.warnings]
         self.data = parse_fixed_table(
             content,
             heading_ignore=["PV "],
@@ -419,6 +423,8 @@ class VgsHeadings(LvmHeadings):
     Attributes:
         data (list): List of dicts, each dict containing one row of the table
             with column headings as keys.
+        warnings (set): Set of lines from input data containing
+            warning strings.
 
     Examples:
         >>> vgs_info = shared[VgsHeadings]
@@ -431,6 +437,8 @@ class VgsHeadings(LvmHeadings):
     PRIMARY_KEY = Vgs.PRIMARY_KEY
 
     def parse_content(self, content):
+        self.warnings = set(find_warnings(content))
+        content = [l for l in content if l not in self.warnings]
         self.data = parse_fixed_table(
             content,
             heading_ignore=["VG "],
@@ -608,6 +616,8 @@ class LvsHeadings(LvmHeadings):
     Attributes:
         data (list): List of dicts, each dict containing one row of the table
             with column headings as keys.
+        warnings (set): Set of lines from input data containing
+            warning strings.
 
     Examples:
         >>> lvs_info = shared[LvsHeadings]
@@ -622,6 +632,8 @@ class LvsHeadings(LvmHeadings):
     PRIMARY_KEY = Lvs.PRIMARY_KEY
 
     def parse_content(self, content):
+        self.warnings = set(find_warnings(content))
+        content = [l for l in content if l not in self.warnings]
         self.data = parse_fixed_table(
             content, heading_ignore=["LV "], header_substitute=[("LV Tags", "LV_Tags")]
         )

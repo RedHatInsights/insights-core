@@ -1,6 +1,8 @@
 from insights.parsers.lvm import Vgs, VgsHeadings
 from insights.tests import context_wrap
 
+FD_LEAK_HEADER = "File descriptor 5 (/dev/null) leaked on invocation. Parent PID 99999: timeout\n"
+
 VGS_INFO = """
 LVM2_VG_FMT='lvm2'|LVM2_VG_UUID='YCpusB-LEly-THGL-YXhC-t3q6-mUQV-wyFZrx'|LVM2_VG_NAME='rhel'|LVM2_VG_ATTR='wz--n-'|LVM2_VG_PERMISSIONS='writeable'|LVM2_VG_EXTENDABLE='extendable'|LVM2_VG_EXPORTED=''|LVM2_VG_PARTIAL=''|LVM2_VG_ALLOCATION_POLICY='normal'|LVM2_VG_CLUSTERED=''|LVM2_VG_SIZE='476.45g'|LVM2_VG_FREE='4.00m'|LVM2_VG_SYSID=''|LVM2_VG_SYSTEMID=''|LVM2_VG_LOCKTYPE=''|LVM2_VG_LOCKARGS=''|LVM2_VG_EXTENT_SIZE='4.00m'|LVM2_VG_EXTENT_COUNT='121971'|LVM2_VG_FREE_COUNT='1'|LVM2_MAX_LV='0'|LVM2_MAX_PV='0'|LVM2_PV_COUNT='1'|LVM2_LV_COUNT='3'|LVM2_SNAP_COUNT='0'|LVM2_VG_SEQNO='4'|LVM2_VG_TAGS=''|LVM2_VG_PROFILE=''|LVM2_VG_MDA_COUNT='1'|LVM2_VG_MDA_USED_COUNT='1'|LVM2_VG_MDA_FREE='0 '|LVM2_VG_MDA_SIZE='1020.00k'|LVM2_VG_MDA_COPIES='unmanaged'
 LVM2_VG_FMT='lvm2'|LVM2_VG_UUID='123456-LEly-THGL-YXhC-t3q6-mUQV-123456'|LVM2_VG_NAME='fedora'|LVM2_VG_ATTR='wz--n-'|LVM2_VG_PERMISSIONS='writeable'|LVM2_VG_EXTENDABLE='extendable'|LVM2_VG_EXPORTED=''|LVM2_VG_PARTIAL=''|LVM2_VG_ALLOCATION_POLICY='normal'|LVM2_VG_CLUSTERED=''|LVM2_VG_SIZE='476.45g'|LVM2_VG_FREE='4.00m'|LVM2_VG_SYSID=''|LVM2_VG_SYSTEMID=''|LVM2_VG_LOCKTYPE=''|LVM2_VG_LOCKARGS=''|LVM2_VG_EXTENT_SIZE='4.00m'|LVM2_VG_EXTENT_COUNT='121971'|LVM2_VG_FREE_COUNT='1'|LVM2_MAX_LV='0'|LVM2_MAX_PV='0'|LVM2_PV_COUNT='1'|LVM2_LV_COUNT='3'|LVM2_SNAP_COUNT='0'|LVM2_VG_SEQNO='4'|LVM2_VG_TAGS=''|LVM2_VG_PROFILE=''|LVM2_VG_MDA_COUNT='1'|LVM2_VG_MDA_USED_COUNT='1'|LVM2_VG_MDA_FREE='0 '|LVM2_VG_MDA_SIZE='1020.00k'|LVM2_VG_MDA_COPIES='unmanaged'
@@ -76,17 +78,23 @@ VGS_HEADER_5 = {
 
 
 def test_vgs():
-    vgs_records = Vgs(context_wrap(VGS_INFO))
-    assert len(list(vgs_records)) == 2
-    for k, v in VGS_INFO_FEDORA.items():
-        assert vgs_records["fedora"][k] == v
-    assert vgs_records["fedora"]['LVM2_VG_SEQNO'] == '4'
+    def check(vgs_records):
+        assert len(list(vgs_records)) == 2
+        for k, v in VGS_INFO_FEDORA.items():
+            assert vgs_records["fedora"][k] == v
+        assert vgs_records["fedora"]['LVM2_VG_SEQNO'] == '4'
+
+    check(Vgs(context_wrap(VGS_INFO)))
+    check(Vgs(context_wrap(FD_LEAK_HEADER + VGS_INFO)))
 
 
 def test_vgs_headers():
-    vgs_info = VgsHeadings(context_wrap(VGS_HEADER_INFO))
-    assert vgs_info is not None
-    assert len(vgs_info.data) == 6
-    for k, v in VGS_HEADER_5.items():
-        assert vgs_info[5][k] == v
-    assert vgs_info[5]['VPerms'] is None
+    def check(vgs_info):
+        assert vgs_info is not None
+        assert len(vgs_info.data) == 6
+        for k, v in VGS_HEADER_5.items():
+            assert vgs_info[5][k] == v
+        assert vgs_info[5]['VPerms'] is None
+
+    check(VgsHeadings(context_wrap(VGS_HEADER_INFO)))
+    check(VgsHeadings(context_wrap(FD_LEAK_HEADER + VGS_HEADER_INFO)))

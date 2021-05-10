@@ -69,14 +69,21 @@ def add_filter(component, patterns):
     def inner(component, patterns):
         if component in _CACHE:
             del _CACHE[component]
+
+        types = six.string_types + (list, set)
+        if not isinstance(patterns, types):
+            raise TypeError("Filter patterns must be of type string, list, or set.")
+
         if isinstance(patterns, six.string_types):
-            FILTERS[component].add(patterns)
+            patterns = set([patterns])
         elif isinstance(patterns, list):
-            FILTERS[component] |= set(patterns)
-        elif isinstance(patterns, set):
-            FILTERS[component] |= patterns
-        else:
-            raise TypeError("patterns must be string, list, or set.")
+            patterns = set(patterns)
+
+        for pat in patterns:
+            if not pat:
+                raise Exception("Filter patterns must not be empy.")
+
+        FILTERS[component] |= patterns
 
     if not plugins.is_datasource(component):
         for dep in dr.run_order(dr.get_dependency_graph(component)):

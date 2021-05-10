@@ -26,14 +26,12 @@ except ImportError:
 from .utilities import (determine_hostname,
                         generate_machine_id,
                         write_unregistered_file,
-                        write_registered_file)
+                        write_registered_file,
+                        os_release_info)
 from .cert_auth import rhsmCertificate
 from .constants import InsightsConstants as constants
 from .url_cache import URLCache
 from insights import package_info
-from insights.core.context import Context
-from insights.parsers.os_release import OsRelease
-from insights.parsers.redhat_release import RedhatRelease
 from insights.util.canonical_facts import get_canonical_facts
 
 warnings.simplefilter('ignore')
@@ -49,6 +47,8 @@ URLLIB3_LOGGER.setLevel(logging.WARNING)
 URLLIB3_LOGGER = logging.getLogger('requests.packages.urllib3.connectionpool')
 URLLIB3_LOGGER.setLevel(logging.WARNING)
 
+REQUEST_FAILED_EXCEPTIONS = (requests.ConnectionError, requests.Timeout)
+
 # TODO: Document this, or turn it into a real option
 if os.environ.get('INSIGHTS_DEBUG_HTTP'):
     import httplib
@@ -58,6 +58,16 @@ if os.environ.get('INSIGHTS_DEBUG_HTTP'):
     requests_log = logging.getLogger("urllib3")
     requests_log.setLevel(logging.DEBUG)
     requests_log.propagate = True
+
+
+def _host_not_found():
+    raise Exception("Error: failed to find host with matching machine-id. Run insights-client --status to check registration status")
+
+
+def _api_request_failed(exception, message='The Insights API could not be reached.'):
+    logger.error(exception)
+    if message:
+        logger.error(message)
 
 
 class InsightsConnection(object):
@@ -88,11 +98,6 @@ class InsightsConnection(object):
                     self.cert_verify = True
 
         protocol = "https://"
-        insecure_connection = self.config.insecure_connection
-        if insecure_connection:
-            # This really should not be used.
-            protocol = "http://"
-            self.cert_verify = False
 
         self.auto_config = self.config.auto_config
 
@@ -121,6 +126,8 @@ class InsightsConnection(object):
             # workaround for a workaround for a workaround
             base_url_base = self.base_url.split('/platform')[0]
             self.branch_info_url = base_url_base + '/v1/branch_info'
+        self.inventory_url = self.api_url + "/inventory/v1"
+
         self.authmethod = self.config.authmethod
         self.systemid = self.config.systemid or None
         self.get_proxies()
@@ -200,27 +207,7 @@ class InsightsConnection(object):
 
         python_version = "%s %s" % (platform.python_implementation(), platform.python_version())
 
-        os_family = "Unknown"
-        os_release = ""
-        for p in ["/etc/os-release", "/etc/redhat-release"]:
-            try:
-                with open(p) as f:
-                    data = f.readlines()
-
-                ctx = Context(content=data, path=p, relative_path=p)
-                if p == "/etc/os-release":
-                    rls = OsRelease(ctx)
-                    os_family = rls.data.get("NAME")
-                    os_release = rls.data.get("VERSION_ID")
-                elif p == "/etc/redhat-release":
-                    rls = RedhatRelease(ctx)
-                    os_family = rls.product
-                    os_release = rls.version
-                break
-            except IOError:
-                continue
-            except Exception as e:
-                logger.warning("Failed to detect OS version: %s", e)
+        os_family, os_release = os_release_info()
         kernel_version = "%s %s" % (platform.system(), platform.release())
 
         ua = "{client_version} ({core_version}; {requests_version}) {os_family} {os_release} ({python_version}; {kernel_version}); {parent_process}".format(
@@ -679,12 +666,11 @@ class InsightsConnection(object):
             if self.config.legacy_upload:
                 url = self.base_url + '/platform/inventory/v1/hosts?insights_id=' + machine_id
             else:
-                url = self.base_url + '/inventory/v1/hosts?insights_id=' + machine_id
+                url = self.inventory_url + '/hosts?insights_id=' + machine_id
             logger.log(NETWORK, "GET %s", url)
             res = self.session.get(url, timeout=self.config.http_timeout)
-        except (requests.ConnectionError, requests.Timeout) as e:
-            logger.error(e)
-            logger.error('The Insights API could not be reached.')
+        except REQUEST_FAILED_EXCEPTIONS as e:
+            _api_request_failed(e)
             return None
         try:
             if (self.handle_fail_rcs(res)):
@@ -754,7 +740,7 @@ class InsightsConnection(object):
             return False
         try:
             logger.debug("Unregistering host...")
-            url = self.api_url + "/inventory/v1/hosts/" + results[0]['id']
+            url = self.inventory_url + "/hosts/" + results[0]['id']
             logger.log(NETWORK, "DELETE %s", url)
             response = self.session.delete(url)
             response.raise_for_status()
@@ -940,8 +926,8 @@ class InsightsConnection(object):
                 logger.error('Unable to set display name: %s %s',
                              res.status_code, res.text)
                 return False
-        except (requests.ConnectionError, requests.Timeout, ValueError) as e:
-            logger.error(e)
+        except REQUEST_FAILED_EXCEPTIONS + (ValueError,) as e:
+            _api_request_failed(e, None)
             # can't connect, run connection test
             return False
 
@@ -957,13 +943,12 @@ class InsightsConnection(object):
             return system
         inventory_id = system[0]['id']
 
-        req_url = self.base_url + '/inventory/v1/hosts/' + inventory_id
+        req_url = self.inventory_url + '/hosts/' + inventory_id
         try:
             logger.log(NETWORK, "PATCH %s", req_url)
             res = self.session.patch(req_url, json={'display_name': display_name})
-        except (requests.ConnectionError, requests.Timeout) as e:
-            logger.error(e)
-            logger.error('The Insights API could not be reached.')
+        except REQUEST_FAILED_EXCEPTIONS as e:
+            _api_request_failed(e)
             return False
         if (self.handle_fail_rcs(res)):
             logger.error('Could not update display name.')
@@ -986,8 +971,7 @@ class InsightsConnection(object):
             logger.log(NETWORK, "GET %s", diag_url)
             res = self.session.get(diag_url, params=params, timeout=self.config.http_timeout)
         except (requests.ConnectionError, requests.Timeout) as e:
-            logger.error(e)
-            logger.error('The Insights API could not be reached.')
+            _api_request_failed(e)
             return False
         if (self.handle_fail_rcs(res)):
             logger.error('Unable to get diagnosis data: %s %s',
@@ -1030,14 +1014,14 @@ class InsightsConnection(object):
         '''
             Retrieve advisor report
         '''
-        url = self.base_url + "/inventory/v1/hosts?insights_id=%s" % generate_machine_id()
+        url = self.inventory_url + "/hosts?insights_id=%s" % generate_machine_id()
         content = self._get(url)
         if content is None:
             return None
 
         host_details = json.loads(content)
         if host_details["total"] < 1:
-            raise Exception("Error: failed to find host with matching machine-id. Run insights-client --status to check registration status")
+            _host_not_found()
         if host_details["total"] > 1:
             raise Exception("Error: multiple hosts detected (insights_id = %s)" % generate_machine_id())
 
@@ -1059,3 +1043,38 @@ class InsightsConnection(object):
             logger.debug("Wrote \"/var/lib/insights/insights-details.json\"")
 
         return json.loads(content)
+
+    def checkin(self):
+        '''
+            Sends an ultralight check-in request containing only the Canonical Facts.
+        '''
+        logger.info("Checking in...")
+
+        try:
+            canonical_facts = get_canonical_facts()
+        except Exception as e:
+            logger.debug('Error getting canonical facts: %s', e)
+            logger.debug('Falling back to only machine ID.')
+            insights_id = generate_machine_id()
+            canonical_facts = {"insights_id": str(insights_id)}
+
+        url = self.inventory_url + "/hosts/checkin"
+        logger.debug("Sending check-in request to %s with %s" % (url, canonical_facts))
+        try:
+            response = self.session.post(url, headers={"Content-Type": "application/json"}, data=json.dumps(canonical_facts))
+            # Change to POST when the API is fixed.
+        except REQUEST_FAILED_EXCEPTIONS as exception:
+            _api_request_failed(exception)
+            return None
+        logger.debug("Check-in response status code %d" % response.status_code)
+
+        if response.status_code == requests.codes.CREATED:
+            # Remove OK when the API is fixed.
+            logger.info("Successfully checked in!")
+            return True
+        elif response.status_code == requests.codes.NOT_FOUND:
+            # Remove BAD_REQUEST when the API is fixed.
+            _host_not_found()
+        else:
+            logger.debug("Check-in response body %s" % response.text)
+            raise RuntimeError("Unknown check-in API response")

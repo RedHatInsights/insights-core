@@ -58,31 +58,32 @@ def test_get_component_by_symbolic_name():
         'httpd_on_nfs',
         'ls_usr_sbin',
         'lvmconfig',
-        'saphostexec_status',
-        'saphostexec_version',
         'nova_migration_uid',
         'ntpq_pn',
         'rabbitmq_queues',
         'rhev_data_center',
         'root_crontab',
-        'subscription_manager_installed_product_ids',
         'yum_list_installed',
         'zdump_v',
         'cni_podman_bridge_conf',
+        'cobbler_modules_conf',
+        'cobbler_settings',
         'cpu_smt_control',
         'cpu_vulns_meltdown',
         'cpu_vulns_spectre_v1',
         'cpu_vulns_spectre_v2',
         'cpu_vulns_spec_store_bypass',
-        'dnf_modules',
         'docker_storage',
         'freeipa_healthcheck_log',
         'vmware_tools_conf',
         'ironic_conf',
         'octavia_conf',
         'partitions',
+        'rhn_entitlement_cert_xml',
         'rhn_hibernate_conf',
+        'rhn_schema_version',
         'rhn_search_daemon_log',
+        'rhn_taskomatic_daemon_log',
         'rhosp_release',
         'secure',
         'foreman_tasks_config',
@@ -99,7 +100,9 @@ def test_get_component_by_symbolic_name():
         'sap_host_profile',
         'sched_rt_runtime_us',
         'libvirtd_qemu_log',
-        'mlx4_port'
+        'mlx4_port',
+        'qpid_stat_g',
+        'lsinitrd'
     ]
 
     # first, make sure our list is proper and one of these
@@ -295,15 +298,13 @@ def test_log_long_key(logger_warning):
     spacing, wrapping, and unconverted specs are not logged
     '''
     rm_conf = {'commands': ["/usr/bin/find /etc/origin/node /etc/origin/master /etc/pki /etc/ipa -type f -exec /usr/bin/openssl x509 -noout -enddate -in '{}' \\; -exec echo 'FileName= {}' \\;",
-                            "/usr/bin/md5sum /etc/pki/product/69.pem",
-                            "ss_tupna"],
+                            "/usr/bin/md5sum /etc/pki/product/69.pem"],
                'files': ["/etc/sysconfig/virt-who",
                          "/etc/yum.repos.d/fedora-cisco-openh264.repo",
                          "krb5_conf_d"]}
     map_rm_conf_to_components(rm_conf)
     logger_warning.assert_any_call("- /usr/bin/find /etc/origin/node                   => certificates_enddate\n  /etc/origin/master /etc/pki /etc/ipa -type f\n  -exec /usr/bin/openssl x509 -noout -enddate -in\n  '{}' \\; -exec echo 'FileName= {}' \\;")
     logger_warning.assert_any_call("- /usr/bin/md5sum /etc/pki/product/69.pem          => md5chk_files")
-    logger_warning.assert_any_call("- ss_tupna                                         => ss"),
     logger_warning.assert_any_call("- /etc/sysconfig/virt-who                          => sysconfig_virt_who")
     logger_warning.assert_any_call("- krb5_conf_d                                      => krb5")
 
@@ -325,14 +326,11 @@ def test_components_added():
     an aggregation of the current list and the conversion results
     with no duplicates.
     '''
-    rm_conf = {'commands': ["ss_tupna",
-                            "/usr/bin/md5sum /etc/pki/product/69.pem"],
-               'components': ["insights.specs.default.DefaultSpecs.ss",
-                              "insights.specs.default.DefaultSpecs.sysconfig_virt_who"]}
+    rm_conf = {'commands': ["/usr/bin/md5sum /etc/pki/product/69.pem"],
+               'components': ["insights.specs.default.DefaultSpecs.sysconfig_virt_who"]}
     results = map_rm_conf_to_components(rm_conf)
 
     assert results == {'commands': [],
                        'files': [],
-                       'components': ["insights.specs.default.DefaultSpecs.ss",
-                                      "insights.specs.default.DefaultSpecs.sysconfig_virt_who",
+                       'components': ["insights.specs.default.DefaultSpecs.sysconfig_virt_who",
                                       "insights.specs.default.DefaultSpecs.md5chk_files"]}

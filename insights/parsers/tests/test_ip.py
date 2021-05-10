@@ -114,6 +114,14 @@ IP_S_LINK = """
     0          8        0       0       0       0
     TX: bytes  packets  errors  dropped carrier collsns
     0          12        0       0       0       0
+5: tm0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master br0 state UP mode DEFAULT group default qlen 1000
+    link/ether d4:f5:ef:01:1a:3c brd ff:ff:ff:ff:ff:ff promiscuity 1
+    team
+    bridge_slave state forwarding priority 32 cost 100 hairpin off guard off root_block off fastleave off learning on flood on port_id 0x8001 port_no 0x1 designated_port 32769 designated_cost 0 designated_bridge 8000.d4:f5:ef:1:1a:3c designated_root 8000.d4:f5:ef:1:1a:3c hold_timer    0.00 message_age_timer    0.00 forward_delay_timer    0.00 topology_change_ack 0 config_pending 0 proxy_arp off proxy_arp_wifi off mcast_router 1 mcast_fast_leave off mcast_flood on neigh_suppress off group_fwd_mask 0x0 group_fwd_mask_str 0x0 vlan_tunnel off addrgenmode none numtxqueues 16 numrxqueues 16 gso_max_size 65536 gso_max_segs 65535
+    RX: bytes  packets  errors  dropped overrun mcast
+    959425     11784    0       0       0       1
+    TX: bytes  packets  errors  dropped carrier collsns
+    2980335    14289    0       0       0       0
 """.strip()
 
 IP_S_LINK_ALL = """
@@ -326,12 +334,13 @@ def test_ip_data_Link():
     if_list_all_2 = link_info_all_2.active
     if_list_all = link_info_all.active
     if_list = link_info.active
-    assert len(if_list) == 4
-    assert keys_in(["lo", "enp0s3", "enp0s8", "enp0s9"], if_list)
+    assert len(if_list) == 5
+
+    assert keys_in(["lo", "enp0s3", "enp0s8", "enp0s9", "tm0"], if_list)
     assert keys_in(['ppp0', 'lo', 'tun0', 'enp0s25', 'vnet0', 'virbr0'], if_list_all)
     assert keys_in(['lo', 'eno1', 'eno2', 'ovs-system', 'br-ex', 'vxlan_sys_4789'], if_list_all_2)
 
-    assert sorted(link_info.active) == sorted(['lo', 'enp0s3', 'enp0s8', 'enp0s9'])
+    assert sorted(link_info.active) == sorted(['lo', 'enp0s3', 'enp0s8', 'enp0s9', 'tm0'])
 
     lo = link_info["lo"]
     assert lo["mac"] == "00:00:00:00:00:00"
@@ -367,6 +376,15 @@ def test_ip_data_Link():
     geneve_obj = link_info_all_3['geneve0']
     assert len(geneve_obj.data['geneve']) == 11
     assert sorted(geneve_obj.data['geneve']) == sorted(['geneve', 'id', '10', 'remote', '192.168.43.254', 'dstport', '6081', 'noudpcsum', 'udp6zerocsumrx', 'addrgenmode', 'eui64'])
+
+    tm0 = link_info["tm0"]
+    # import pdb;pdb.set_trace()
+    assert tm0["mac"] == "d4:f5:ef:01:1a:3c"
+    assert tm0["flags"] == ['BROADCAST', 'MULTICAST', 'UP', 'LOWER_UP']
+    assert tm0["type"] == "ether"
+    assert tm0["mtu"] == 1500
+    assert tm0['promiscuity'] == '1'
+    assert tm0["rx_packets"] == 11784
 
 
 IP_ROUTE_SHOW_TABLE_ALL_TEST = """
