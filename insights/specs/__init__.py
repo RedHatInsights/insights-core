@@ -370,7 +370,7 @@ class Specs(SpecSet):
     modinfo_all = RegistryPoint()
     modprobe = RegistryPoint(multi_output=True)
     mokutil_sbstate = RegistryPoint()
-    mongod_conf = RegistryPoint(multi_output=True, filterable=True)
+    mongod_conf = RegistryPoint(filterable=True)
     mount = RegistryPoint()
     mounts = RegistryPoint()
     mssql_conf = RegistryPoint()
