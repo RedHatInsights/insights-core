@@ -604,7 +604,7 @@ class DefaultSpecs(Specs):
     modinfo_vmxnet3 = simple_command("/sbin/modinfo vmxnet3")
     modprobe = glob_file(["/etc/modprobe.conf", "/etc/modprobe.d/*.conf"])
     mokutil_sbstate = simple_command("/bin/mokutil --sb-state")
-    mongod_conf = first_file([
+    mongod_conf = glob_file([
         "/etc/mongod.conf",
         "/etc/opt/rh/rh-mongodb34/mongod.conf"
     ])
