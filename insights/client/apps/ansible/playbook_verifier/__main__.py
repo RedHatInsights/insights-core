@@ -1,5 +1,6 @@
 import os
 import sys
+from insights.client.constants import InsightsConstants as constants
 from insights.client.apps.ansible.playbook_verifier import verify, loadPlaybookYaml
 
 
@@ -28,6 +29,6 @@ try:
     verified_playbook = verify(playbook_yaml, checkVersion, skipVerify)
 except Exception as e:
     sys.stderr.write(e.message)
-    sys.exit(1)
+    sys.exit(constants.sig_kill_bad)
 
 print(playbook)

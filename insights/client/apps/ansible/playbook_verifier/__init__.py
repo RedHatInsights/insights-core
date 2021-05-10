@@ -59,9 +59,12 @@ def createSnippetHash(snippet):
 
 
 def eggVersioningCheck(checkVersion):
-    currentVersion = requests.get(VERSIONING_URL)
-    currentVersion = currentVersion.text
-    runningVersion = get_version_info()['core_version']
+    try:
+        currentVersion = requests.get(VERSIONING_URL)
+        currentVersion = currentVersion.text
+        runningVersion = get_version_info()['core_version']
+    except:
+        raise PlaybookVerificationError(message="EGG VERSION ERROR: Version not pulled correctly")
 
     if checkVersion:
         if LooseVersion(currentVersion.strip()) < LooseVersion(runningVersion):
@@ -125,9 +128,11 @@ def executeVerification(snippet, encodedSignature):
 
 def verifyPlaybookSnippet(snippet):
     if ('vars' not in snippet.keys()):
-        raise PlaybookVerificationError(message='VARS FIELD NOT FOUND: Verification failed')
+        raise PlaybookVerificationError(message='VERIFICATION FAILED: Vars field not found')
+    elif (snippet['vars'] is None):
+        raise PlaybookVerificationError(message='VERIFICATION FAILED: Empty vars field')
     elif (SIGKEY not in snippet['vars']):
-        raise PlaybookVerificationError(message='SIGNATURE NOT FOUND: Verification failed')
+        raise PlaybookVerificationError(message='VERIFICATION FAILED: Signature not found')
 
     encodedSignature = snippet['vars'][SIGKEY]
     snippetCopy = copy.deepcopy(snippet)
