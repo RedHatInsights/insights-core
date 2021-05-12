@@ -11,6 +11,7 @@ UNAME1 = "Linux foo.example.com 2.6.32-504.el6.x86_64 #1 SMP Tue Sep 16 01:56:35
 UNAME2 = "Linux rhel7box 3.10.0-229.el7.x86_64 #1 SMP Mon Mar 3 13:32:45 EST 2014 x86_64 x86_64 x86_64 GNU/Linux"
 UNAME3 = "Linux map1a 2.6.18-53.el5PAE #1 SMP Wed Oct 10 16:48:18 EDT 2007 i686 i686 i386 GNU/Linux"
 UNAME4 = "Linux cvlvtsmsrv01 3.10.0-229.el7.x86_64 #1 SMP Thu Jan 29 18:37:38 EST 2015 x86_64 x86_64 x86_64 GNU/Linux"
+UNAME4_DEBUG = "Linux cvlvtsmsrv01 3.10.0-229.el7.x86_64.debug #1 SMP Thu Jan 29 18:37:38 EST 2015 x86_64 x86_64 x86_64 GNU/Linux"
 UNAME5 = "Linux cvlvtsmsrv01 2.6.32-504.8.2.bgq.el6.x86_64 #1 SMP Thu Jan 29 18:37:38 EST 2015 x86_64 x86_64 x86_64 GNU/Linux"
 UNAME_RT_1 = "Linux localhost.localdomain 2.6.24.7-101.el5rt.x86_64 #1 SMP PREEMPT RT Thu Oct 29 21:54:23 EDT 2015 x86_64 x86_64 x86_64 GNU/Linux"
 UNAME_RT_1pre = "Linux localhost.localdomain 2.6.24.6-101.el5rt.x86_64 #1 SMP PREEMPT RT Thu Oct 29 21:54:23 EDT 2015 x86_64 x86_64 x86_64 GNU/Linux"
@@ -53,6 +54,7 @@ def test_uname():
     uname2 = uname.Uname(context_wrap(UNAME2))
     uname3 = uname.Uname(context_wrap(UNAME3))
     uname4 = uname.Uname(context_wrap(UNAME4))
+    uname4_debug = uname.Uname(context_wrap(UNAME4_DEBUG))
     uname5 = uname.Uname(context_wrap(UNAME5))
     uname6 = uname.Uname(context_wrap(UNAME_BLANK_LINE))
     uname7 = uname.Uname(context_wrap(UNAME_FOREMAN_DEBUG))
@@ -75,18 +77,25 @@ def test_uname():
     assert uname1.rhel_release == ['6', '6']
     assert uname1.ver_rel == '2.6.32-504.el6'
     assert uname1.version == '2.6.32'
+    assert uname1.debug_kernel is False
     assert uname1._lv_release == LooseVersion('504.0.0.0.el6')
     assert uname1._lv_version == LooseVersion('2.6.32')
     assert uname1._rel_maj == '504'
     assert uname1._sv_version == StrictVersion('2.6.32')
 
+    # Test that the debug kernel returns True
+    assert uname4_debug.debug_kernel is True
+
     # Test the equality and inequality operators
     assert uname1 != uname2
     assert uname2 == uname4
+    assert uname2 == uname4_debug
     assert uname2 > uname1
     assert uname4 >= uname3
+    assert uname4_debug >= uname3
     assert uname3 < uname2
     assert uname1 <= uname4
+    assert uname1 <= uname4_debug
 
     # String and repr tests
     assert str(uname1) == 'version: 2.6.32; release: 504.el6; rel_maj: 504; lv_release: 504.0.0.0.el6'
