@@ -74,7 +74,8 @@ docs = set([
     'colorama',
     'jinja2<=2.11.3',
     'Pygments',
-    'jedi',
+    'jedi<0.18.0',    # Open issue with jedi 0.18.0 and iPython <= 7.19
+                      # https://github.com/davidhalter/jedi/issues/1714
 ])
 
 testing = set([
