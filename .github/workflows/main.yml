@@ -7,7 +7,7 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
+  code-test:
 
     runs-on: ubuntu-latest
     strategy:
@@ -22,7 +22,6 @@ jobs:
         python-version: ${{ matrix.python-versions }}
     - name: Install dependencies
       run: |
-        sudo apt-get install pandoc
         python -m pip install --upgrade pip
     - name: flake8
       run: |
@@ -32,7 +31,23 @@ jobs:
       run: |
         pip install -e .[testing]
         pytest
+
+  docs-test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.6
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.6
+    - name: install dependencies
+      run: |
+        sudo apt-get install pandoc
+        python -m pip install --upgrade pip
     - name: docs Test
       run: |
+        pip install docutils==0.17
         pip install -e .[docs]
         sphinx-build -W -b html -qa -E docs docs/_build/html
