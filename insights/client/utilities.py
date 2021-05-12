@@ -449,6 +449,7 @@ def os_release_info():
             logger.warning("Failed to detect OS version: %s", e)
     return (os_family, os_release)
 
+
 def largest_files_in_archive(archive_file):
     '''
     Determine the largest files in the archive, so the user may
@@ -476,6 +477,54 @@ def largest_files_in_archive(archive_file):
             if fsize > biggest_file[1]:
                 biggest_file = (f, fsize)
     return biggest_file
+
+
+def largest_spec_in_archive(archive_file):
+    '''
+    Using insights-core metadata, determine the largest file in the archive
+    nd the spec it's associated with.
+    '''
+    logger.info("Checking for large files...")
+    tmpdir = mkdtemp()
+    atexit.register(shutil.rmtree, tmpdir)
+    untar_cmd = ["/usr/bin/tar", "-C", tmpdir, "-xf", archive_file]
+    proc = Popen(untar_cmd,
+             stdout=PIPE, stderr=STDOUT)
+    stdout, stderr = proc.communicate()
+    if proc.returncode != 0:
+        logger.error("Error opening archive for inspection.")
+        return None
+
+    tmpdir_top = os.listdir(tmpdir)
+    archive_top = os.path.join(tmpdir, tmpdir_top[0])
+    data_top = os.path.join(archive_top, "data")
+    metadata_top = os.path.join(archive_top, "meta_data")
+
+    largest_fsize = 0
+    largest_fname = ""
+    largest_spec = ""
+
+    for m in os.listdir(metadata_top):
+        with open(os.path.join(metadata_top, m), "r") as meta:
+            spec_metadata = json.load(meta)
+            results = spec_metadata.get("results", [])
+            if not results:
+                # results is None
+                continue
+            if type(results) != list:
+                # specs with only one resulting file are not in list form
+                results = [results]
+            for result in results:
+                # get the path of the spec result and check its filesize
+                fname = result.get("object", {}).get("relative_path")
+                abs_fname = os.path.join(data_top, fname)
+                fsize = os.stat(abs_fname).st_size
+                if fsize > largest_fsize:
+                    largest_fsize = fsize
+                    largest_fname = fname
+                    largest_spec = spec_metadata["name"]
+    return (largest_fname, largest_fsize, largest_spec)
+
 
 def size_in_mb(num_bytes)
     return num_bytes / (1024 * 1024)
