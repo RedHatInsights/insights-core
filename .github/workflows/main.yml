@@ -38,21 +38,28 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: apt-install python26
+      run: |
+        sudo apt-get install python2.6
     - name: Install python-2.6
       run: |
         sudo apt-get install build-essential
         wget https://www.python.org/ftp/python/2.6.7/Python-2.6.7.tgz
         tar -zxvf Python-2.6.7.tgz
         cd ./Python-2.6.7
-        ./configure --prefix=/python2 && make && make install
+        ./configure --prefix=/home/runner/python2 && make && sudo make install
+    - name: get pip
+      run: |
+        curl -O https://bootstrap.pypa.io/get-pip.py
+        sudo /home/runner/python2/bin/python2.6 get-pip.py
     - name: flake8
       run: |
-        ./python2/bin/python2.6 -m pip install -e .[linting]
-        ./python2/bin/python2.6 -m flake8 .
+        /home/runner/python2/bin/pip install -e .[linting]
+        /home/runner/python2/bin/python2.6 -m flake8 .
     - name: pytest
       run: |
-        ./python2/bin/python2.6 -m pip install -e .[testing]
-        ./python2/bin/python2.6 -m pytest
+        /home/runner/python2/bin/pip install -e .[testing]
+        /home/runner/python2/bin/python2.6 -m pytest
 
   docs-test:
 
