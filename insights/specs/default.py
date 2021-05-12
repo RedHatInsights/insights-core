@@ -605,11 +605,9 @@ class DefaultSpecs(Specs):
     modprobe = glob_file(["/etc/modprobe.conf", "/etc/modprobe.d/*.conf"])
     mokutil_sbstate = simple_command("/bin/mokutil --sb-state")
     mongod_conf = glob_file([
-                            "/etc/mongod.conf",
-                            "/etc/mongodb.conf",
-                            "/etc/opt/rh/rh-mongodb26/mongod.conf",
-                            "/etc/opt/rh/rh-mongodb34/mongod.conf"
-                            ])
+        "/etc/mongod.conf",
+        "/etc/opt/rh/rh-mongodb34/mongod.conf"
+    ])
     mount = simple_command("/bin/mount")
     mounts = simple_file("/proc/mounts")
     mssql_conf = simple_file("/var/opt/mssql/mssql.conf")
