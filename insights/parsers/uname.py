@@ -173,6 +173,8 @@ class Uname(CommandParser):
       ``version-release``.
     - `rhel_release`: A list of two elements, the major and minor RHEL product
       release numbers.
+    - `debug_kernel`: A bool that's returns True when the server is running the
+      debug kernel.
 
     """
     keys = [
@@ -191,6 +193,7 @@ class Uname(CommandParser):
         'arch',
         'ver_rel',
         'rhel_release',
+        'debug_kernel',
         '_lv_release',
         '_rel_maj',
         '_sv_version',
@@ -333,6 +336,14 @@ class Uname(CommandParser):
             data = dict(cls.defaults)
 
         data['version'], data['release_arch'] = nvr.split('-', 1)
+
+        # Debug kernels have .debug appended to the end, so remove it before continuing.
+        if data['release_arch'].endswith('.debug'):
+            data['debug_kernel'] = True
+            data['release_arch'] = data['release_arch'].rsplit('.', 1)[0]
+        else:
+            data['debug_kernel'] = False
+
         if arch:
             try:
                 data['release'], data['arch'] = data['release_arch'].rsplit('.', 1)
