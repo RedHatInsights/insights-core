@@ -45,15 +45,16 @@ jobs:
         sudo apt-get install python2.6
     - name: get pip
       run: |
-        curl -O https://bootstrap.pypa.io/get-pip.py | sudo python2.6
+        curl -O https://bootstrap.pypa.io/get-pip.py
+        sudo python2.6 get-pip.py
     - name: flake8
       run: |
         sudo python2.6 -m pip install -e .[linting]
-        sudo python2.6 -m -m flake8 .
+        sudo python2.6 -m flake8 .
     - name: pytest
       run: |
         sudo python2.6 -m pip install -e .[testing]
-        sudo python2.6 -m -m pytest
+        sudo python2.6 -m pytest
 
   docs-test:
 
