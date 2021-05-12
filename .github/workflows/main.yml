@@ -32,6 +32,28 @@ jobs:
         pip install -e .[testing]
         pytest
 
+  python26-test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install python-2.6
+      run: |
+        sudo apt-get build-essential
+        wget https://www.python.org/ftp/python/2.6.7/Python-2.6.7.tgz
+        tar -zxvf Python-2.6.7.tgz
+        cd ./Python-2.6.7
+        ./configure --prefix=/python2 && make && make install
+    - name: flake8
+      run: |
+        ./python2/bin/python2.6 -m pip install -e .[linting]
+        ./python2/bin/python2.6 -m flake8 .
+    - name: pytest
+      run: |
+        ./python2/bin/python2.6 -m pip install -e .[testing]
+        ./python2/bin/python2.6 -m pytest
+
   docs-test:
 
     runs-on: ubuntu-latest
