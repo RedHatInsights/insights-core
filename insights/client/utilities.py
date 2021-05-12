@@ -13,7 +13,10 @@ import re
 import sys
 import threading
 import time
+import shutil
+import atexit
 from subprocess import Popen, PIPE, STDOUT
+from tempfile import mkdtemp
 
 import yaml
 try:
@@ -445,3 +448,56 @@ def os_release_info():
         except Exception as e:
             logger.warning("Failed to detect OS version: %s", e)
     return (os_family, os_release)
+
+def largest_files_in_archive(archive_file):
+    '''
+    Determine the largest files in the archive, so the user may
+    omit things that put it over the filesize limit
+
+    Returns a dict of information
+    '''
+    def _size_in_mb(fsize):
+        # represent the size in KB
+        return fsize
+
+    logger.info("Checking for large files...")
+    tmpdir = mkdtemp()
+    atexit.register(shutil.rmtree, tmpdir)
+    untar_cmd = ["/usr/bin/tar", "-C", tmpdir, "-xf", archive_file]
+    proc = Popen(untar_cmd,
+             stdout=PIPE, stderr=STDOUT)
+    stdout, stderr = proc.communicate()
+    if proc.returncode != 0:
+        print("Error opening archive for inspection.")
+        return None
+    original_size = os.stat(archive_file).st_size
+    # walk the tar directory and determine the largest file
+    biggest_file = None
+    biggest_filesize = 0
+    for dirpath, dirnames, filenames in os.walk(tmpdir):
+        for f in filenames:
+            fullpath = os.path.join(dirpath, f)
+            fsize = os.stat(fullpath).st_size
+            if fsize > biggest_filesize:
+                biggest_file = f
+                biggest_filesize = fsize
+
+    # calculate how big the tar would be with these files removed
+    logger.info("Calculating theoretical archive size...")
+    tar_cmd = ["/usr/bin/tar", "-czf", "-", "--exclude", biggest_file, tmpdir]
+    proc = Popen(untar_cmd,
+                 stdout=PIPE, stderr=STDOUT)
+    stdout, stderr = proc.communicate()
+    if proc.returncode != 0:
+        print("Error calculating archive size.")
+        return None
+
+    theoretical_size = sys.getsizeof(stdout)
+    print(theoretical_size)
+
+    return {
+        "biggest_file": biggest_file,
+        "biggest_filesize": _size_in_mb(biggest_filesize),
+        "archive_original_size": _size_in_mb(original_size),
+        "archive_size_without_file": _size_in_mb(theoretical_size)
+    }
