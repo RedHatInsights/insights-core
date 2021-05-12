@@ -40,7 +40,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install python-2.6
       run: |
-        sudo apt-get build-essential
+        sudo apt-get install build-essential
         wget https://www.python.org/ftp/python/2.6.7/Python-2.6.7.tgz
         tar -zxvf Python-2.6.7.tgz
         cd ./Python-2.6.7
