@@ -34,7 +34,7 @@ runtime = set([
     'cachecontrol[filecache]',
     'defusedxml',
     'lockfile',
-    'jinja2',
+    'jinja2<=2.11.3',
 ])
 
 if (sys.version_info < (2, 7)):
@@ -66,16 +66,15 @@ develop = set([
 ])
 
 docs = set([
-    'docutils==0.16',
-    'Sphinx<=3.0.2',
+    'docutils',
+    'Sphinx',
     'nbsphinx',
     'sphinx_rtd_theme',
     'ipython',
     'colorama',
-    'jinja2',
+    'jinja2<=2.11.3',
     'Pygments',
-    'jedi<0.18.0'    # Open issue with jedi 0.18.0 and iPython <= 7.19
-                     # https://github.com/davidhalter/jedi/issues/1714
+    'jedi',
 ])
 
 testing = set([
