@@ -45,8 +45,8 @@ jobs:
         sudo apt-get install python2.6
     - name: get pip
       run: |
-        curl -O https://bootstrap.pypa.io/get-pip.py
-        sudo python2.6 get-pip.py
+        curl -L https://raw.githubusercontent.com/pypa/get-pip/430ba37776ae2ad89f794c7a43b90dc23bac334c/get-pip.py -o get-pip.py
+        sudo python2.6 get-pip.py pip==9.0.3
     - name: flake8
       run: |
         sudo python2.6 -m pip install -e .[linting]
