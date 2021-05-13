@@ -139,7 +139,7 @@ class InsightsFile(InsightsSpec):
             return
 
         exec_start = time.time()
-        sedcmd = Popen(['sed', '', self.real_path], stdout=PIPE)
+        sedcmd = Popen(['sed', '-Ef', self.real_path], stdout=PIPE)
 
         if self.pattern is None:
             output = sedcmd.communicate()[0]

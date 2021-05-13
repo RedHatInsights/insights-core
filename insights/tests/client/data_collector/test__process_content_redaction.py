@@ -26,7 +26,7 @@ def test_subproc_calls_egrep(tmpfile, Popen):
     tmpfile.return_value.write.assert_called_once_with('\n'.join(['test1', 'test2']).encode('utf-8'))
     tmpfile.return_value.flush.assert_called_once()
     Popen.assert_has_calls([
-        call(['sed', '-rf', constants.default_sed_file, test_file.name], stdout=PIPE),
+        call(['sed', '-Ef', constants.default_sed_file, test_file.name], stdout=PIPE),
         call(['grep', '-v', '-E', '-f', tmpfile.return_value.name], stdin=Popen.return_value.stdout, stdout=PIPE)
     ])
 
@@ -46,7 +46,7 @@ def test_subproc_calls_fgrep(tmpfile, Popen):
     tmpfile.return_value.write.assert_called_once_with('\n'.join(['test1', 'test2']).encode('utf-8'))
     tmpfile.return_value.flush.assert_called_once()
     Popen.assert_has_calls([
-        call(['sed', '-rf', constants.default_sed_file, test_file.name], stdout=PIPE),
+        call(['sed', '-Ef', constants.default_sed_file, test_file.name], stdout=PIPE),
         call(['grep', '-v', '-F', '-f', tmpfile.return_value.name], stdin=Popen.return_value.stdout, stdout=PIPE)
     ])
 
@@ -61,7 +61,7 @@ def test_nogrep(tmpfile, Popen):
     Popen.return_value.communicate = Mock(return_value=('test', None))
     _process_content_redaction(test_file.name, None, False)
     tmpfile.assert_not_called()
-    Popen.assert_called_once_with(['sed', '-rf', constants.default_sed_file, test_file.name], stdout=PIPE)
+    Popen.assert_called_once_with(['sed', '-Ef', constants.default_sed_file, test_file.name], stdout=PIPE)
 
 
 # mock the .exp.sed file for QE pipeline

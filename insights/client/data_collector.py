@@ -46,7 +46,7 @@ def _process_content_redaction(filepath, exclude, regex=False):
     logger.debug('Processing %s...', filepath)
 
     # password removal
-    sedcmd = Popen(['sed', '-rf', constants.default_sed_file, filepath], stdout=PIPE)
+    sedcmd = Popen(['sed', '-Ef', constants.default_sed_file, filepath], stdout=PIPE)
     # patterns removal
     if exclude:
         exclude_file = NamedTemporaryFile()
