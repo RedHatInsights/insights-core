@@ -43,18 +43,23 @@ jobs:
         sudo add-apt-repository ppa:deadsnakes/ppa
         sudo apt-get update
         sudo apt-get install python2.6
-    - name: get pip
+        sudo update-alternatives --install /usr/bin/python python /usr/bin/python2.6 1
+        sudo update-alternatives --set python /usr/bin/python2.6
+    - name: get depenencies
       run: |
-        curl -L https://raw.githubusercontent.com/pypa/get-pip/430ba37776ae2ad89f794c7a43b90dc23bac334c/get-pip.py -o get-pip.py
-        sudo python2.6 get-pip.py pip==9.0.3
+        curl https://bootstrap.pypa.io/pip/2.7/get-pip.py -o get-pip.py
+        python get-pip.py
+        git clone https://github.com/SteveHNH/jenkins-s2i-example.git pips
+        pip install ./pips/slave26/pip_packages/pip-9.0.3-py2.py3-none-any.whl
+        pip install -r ./pips/slave26/ci_requirements.txt -f ./pips/slave26/pip_packages
     - name: flake8
       run: |
-        sudo python2.6 -m pip install -e .[linting]
-        sudo python2.6 -m flake8 .
+        pip install -e .[linting] -f ./pips/slave26/pip_packages
+        flake8 .
     - name: pytest
       run: |
-        sudo python2.6 -m pip install -e .[testing]
-        sudo python2.6 -m pytest
+        pip install -e .[testing] -f ./pips/slave26/pip_packages
+        pytest
 
   docs-test:
 
