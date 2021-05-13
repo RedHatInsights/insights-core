@@ -12,6 +12,9 @@ from insights.client.utilities import get_version_info
 from insights.client.apps.ansible.playbook_verifier.contrib import gnupg
 from insights.client.apps.ansible.playbook_verifier.contrib.ruamel_yaml.ruamel import yaml
 from insights.client.constants import InsightsConstants as constants
+from insights.client.auto_config import try_auto_configuration
+from insights.client.connection import InsightsConnection
+from insights.client.config import InsightsConfig
 
 __all__ = ("loadPlaybookYaml", "verify", "PlaybookVerificationError")
 
@@ -58,16 +61,34 @@ def createSnippetHash(snippet):
     return snippetHash.digest()
 
 
+def initializeInsightsConnection ():
+    config = InsightsConfig().load_all()
+    try_auto_configuration(config)
+    connection = InsightsConnection(config)
+
+    return connection, config
+
+
 def eggVersioningCheck(checkVersion):
-    currentVersion = requests.get(VERSIONING_URL)
-    currentVersion = currentVersion.text
-    runningVersion = get_version_info()['core_version']
+    connection, config = initializeInsightsConnection()
 
-    if checkVersion:
-        if LooseVersion(currentVersion.strip()) < LooseVersion(runningVersion):
-            raise PlaybookVerificationError(message="EGG VERSION ERROR: Current running egg is not the most recent version")
+    try:
+        if config.legacy_upload:
+            path = "/v1/static/core/egg_version"
+        else:
+            path = "/v1/static/egg_version"
 
-    return currentVersion
+        currentVersion = connection.session.get(connection.base_url + path, timeout=config.http_timeout)
+        currentVersion = currentVersion.text
+        runningVersion = get_version_info()['core_version']
+
+        if checkVersion:
+            if LooseVersion(currentVersion.strip()) < LooseVersion(runningVersion):
+                raise PlaybookVerificationError(message="EGG VERSION ERROR: Current running egg is not the most recent version")
+
+        return currentVersion
+    except:
+        raise PlaybookVerificationError(message="EGG VERSION CHECK ERROR: Error in egg versioning check")
 
 
 def getPublicKey(gpg):
@@ -125,9 +146,11 @@ def executeVerification(snippet, encodedSignature):
 
 def verifyPlaybookSnippet(snippet):
     if ('vars' not in snippet.keys()):
-        raise PlaybookVerificationError(message='VARS FIELD NOT FOUND: Verification failed')
+        raise PlaybookVerificationError(message='VERIFICATION FAILED: vars field not found')
+    elif (snippet['vars'] is None):
+        raise PlaybookVerificationError(message='VERIFICATION FAILED: Empty vars field')
     elif (SIGKEY not in snippet['vars']):
-        raise PlaybookVerificationError(message='SIGNATURE NOT FOUND: Verification failed')
+        raise PlaybookVerificationError(message='VERIFICATION FAILED: Signature not found')
 
     encodedSignature = snippet['vars'][SIGKEY]
     snippetCopy = copy.deepcopy(snippet)
