@@ -269,11 +269,13 @@ def all_egg_versions():
             logger.debug('%s not found.', egg)
             continue
         try:
+            # force the egg to the front of sys.path so it gets loaded first
             proc = Popen([sys.executable, '-c',
-                         'from insights.client.utilities import get_version_info; \
-                          import json; \
+                         'import json, sys, os; \
+                          sys.path.insert(0, \"' + egg  + '\"); \
+                          from insights.client.utilities import get_version_info; \
                           print(json.dumps(get_version_info()))'],
-                         env={'PYTHONPATH': egg, 'PATH': os.getenv('PATH')}, stdout=PIPE, stderr=STDOUT)
+                         stdout=PIPE, stderr=STDOUT)
         except OSError:
             logger.debug('Could not start python.')
             return
@@ -431,3 +433,4 @@ def get_parent_process():
         return name
     else:
         return "unknown"
+
