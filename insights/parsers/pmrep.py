@@ -2,7 +2,7 @@
 Pmrep - command ``pmrep -t 1s -T 1s <metrics> -o csv``
 ======================================================
 
-Parse the content of the ``pmrep -t 1s -T 1s <metrics> -o csv`` command.
+Parse the content of the ``pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout mssql.memory_manager.stolen_server_memory mssql.memory_manager.total_server_memory -o csv`` command.
 
 Sample ``pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout -o csv`` command output::
 

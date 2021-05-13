@@ -29,18 +29,6 @@ PMREPMETRIC_EMPTY_DATA = """
 def test_pmrep_info():
     pmrep_table = PMREPMetrics(context_wrap(PMREPMETRIC_DATA))
     pmrep_table = sorted(pmrep_table, key=lambda x: x['name'])
-    # print ("90909090")
-    # print (pmrep_table[0])
-    # print (pmrep_table[1])
-    # print (pmrep_table[2])
-    # print (pmrep_table[3])
-    # print (pmrep_table[4])
-    # print (pmrep_table[5])
-    # print (pmrep_table[6])
-    # print (pmrep_table[7])
-    # pmrep_table = PMREPMetrics(context_wrap(PMREPMETRIC_DATA))
-    # print (pmrep_table.search(name__endswith='lo'))
-    # print (pmrep_table.search(name__endswith='swap.pagesout'))
     assert pmrep_table[0] == {'name': 'Time', 'value': '2021-04-26 05:42:25'}
     assert pmrep_table[1] == {'name': 'mssql.memory_manager.stolen_server_memory', 'value': '349816'}
     assert pmrep_table[2] == {'name': 'mssql.memory_manager.total_server_memory', 'value': '442000'}
