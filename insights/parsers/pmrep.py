@@ -1,8 +1,8 @@
 """
-Pmrep - command ``pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout -o csv``
-=====================================================================================================================
+Pmrep - command ``pmrep -t 1s -T 1s <metrics> -o csv``
+======================================================
 
-Parse the content of the ``pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout -o csv`` command.
+Parse the content of the ``pmrep -t 1s -T 1s <metrics> -o csv`` command.
 
 Sample ``pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout -o csv`` command output::
 
@@ -14,11 +14,11 @@ Examples:
     >>> type(pmrep_doc_obj)
     <class 'insights.parsers.pmrep.PMREPMetrics'>
     >>> pmrep_doc_obj = sorted(pmrep_doc_obj, key=lambda x: x['name'])
-    >>> pmrep_doc_obj[1]
+    >>> pmrep_doc_obj[3]
     {'name': 'network.interface.collisions-eth0', 'value': '4.000'}
-    >>> pmrep_doc_obj[4]
+    >>> pmrep_doc_obj[6]
     {'name': 'network.interface.out.packets-lo', 'value': '1.000'}
-    >>> pmrep_doc_obj[5]
+    >>> pmrep_doc_obj[7]
     {'name': 'swap.pagesout', 'value': '5.000'}
 """
 
@@ -30,7 +30,7 @@ from insights.parsers import SkipException, ParseException, keyword_search
 
 @parser(Specs.pmrep_metrics)
 class PMREPMetrics(CommandParser, list):
-    """Parses output of ``pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout -o csv`` command."""
+    """Parses output of ``pmrep -t 1s -T 1s <metrics> -o csv`` command."""
     def parse_content(self, content):
         if not content or len(content) == 1:
             raise SkipException("There is no data in the table")
@@ -54,7 +54,7 @@ class PMREPMetrics(CommandParser, list):
 
         Examples:
             >>> pmrep_doc_obj.search(name__endswith='lo')
-            [{'name': 'network.interface.out.packets-lo', 'value': '1.000'}, {'name': 'network.interface.collisions-lo', 'value': '3.000'}]
+            [{'name': 'network.interface.collisions-lo', 'value': '3.000'}, {'name': 'network.interface.out.packets-lo', 'value': '1.000'}]
             >>> pmrep_doc_obj.search(name__endswith='swap.pagesout')
             [{'name': 'swap.pagesout', 'value': '5.000'}]
         """

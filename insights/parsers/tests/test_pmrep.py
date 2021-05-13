@@ -6,9 +6,9 @@ from insights.parsers import pmrep
 from insights.parsers.pmrep import PMREPMetrics
 
 PMREPMETRIC_DATA = """
-Time,"network.interface.out.packets-lo","network.interface.out.packets-eth0","network.interface.collisions-lo","network.interface.collisions-eth0","swap.pagesout"
+Time,"network.interface.out.packets-lo","network.interface.out.packets-eth0","network.interface.collisions-lo","network.interface.collisions-eth0","swap.pagesout","mssql.memory_manager.stolen_server_memory","mssql.memory_manager.total_server_memory"
 2021-04-26 05:42:24,,,,,
-2021-04-26 05:42:25,1.000,2.000,3.000,4.000,5.000
+2021-04-26 05:42:25,1.000,2.000,3.000,4.000,5.000,349816,442000
 """.strip()
 
 PMREPMETRIC_DATA_2 = """
@@ -29,12 +29,26 @@ PMREPMETRIC_EMPTY_DATA = """
 def test_pmrep_info():
     pmrep_table = PMREPMetrics(context_wrap(PMREPMETRIC_DATA))
     pmrep_table = sorted(pmrep_table, key=lambda x: x['name'])
+    # print ("90909090")
+    # print (pmrep_table[0])
+    # print (pmrep_table[1])
+    # print (pmrep_table[2])
+    # print (pmrep_table[3])
+    # print (pmrep_table[4])
+    # print (pmrep_table[5])
+    # print (pmrep_table[6])
+    # print (pmrep_table[7])
+    # pmrep_table = PMREPMetrics(context_wrap(PMREPMETRIC_DATA))
+    # print (pmrep_table.search(name__endswith='lo'))
+    # print (pmrep_table.search(name__endswith='swap.pagesout'))
     assert pmrep_table[0] == {'name': 'Time', 'value': '2021-04-26 05:42:25'}
-    assert pmrep_table[1] == {'name': 'network.interface.collisions-eth0', 'value': '4.000'}
-    assert pmrep_table[2] == {'name': 'network.interface.collisions-lo', 'value': '3.000'}
-    assert pmrep_table[3] == {'name': 'network.interface.out.packets-eth0', 'value': '2.000'}
-    assert pmrep_table[4] == {'name': 'network.interface.out.packets-lo', 'value': '1.000'}
-    assert pmrep_table[5] == {'name': 'swap.pagesout', 'value': '5.000'}
+    assert pmrep_table[1] == {'name': 'mssql.memory_manager.stolen_server_memory', 'value': '349816'}
+    assert pmrep_table[2] == {'name': 'mssql.memory_manager.total_server_memory', 'value': '442000'}
+    assert pmrep_table[3] == {'name': 'network.interface.collisions-eth0', 'value': '4.000'}
+    assert pmrep_table[4] == {'name': 'network.interface.collisions-lo', 'value': '3.000'}
+    assert pmrep_table[5] == {'name': 'network.interface.out.packets-eth0', 'value': '2.000'}
+    assert pmrep_table[6] == {'name': 'network.interface.out.packets-lo', 'value': '1.000'}
+    assert pmrep_table[7] == {'name': 'swap.pagesout', 'value': '5.000'}
 
     pmrep_table = PMREPMetrics(context_wrap(PMREPMETRIC_DATA_2))
     pmrep_table = sorted(pmrep_table, key=lambda x: x['name'])
@@ -44,7 +58,7 @@ def test_pmrep_info():
     assert pmrep_table[3] == {'name': 'swap.pagesout', 'value': '3.000'}
 
     pmrep_table = PMREPMetrics(context_wrap(PMREPMETRIC_DATA))
-    assert pmrep_table.search(name__endswith='lo') == [{'name': 'network.interface.out.packets-lo', 'value': '1.000'}, {'name': 'network.interface.collisions-lo', 'value': '3.000'}]
+    assert pmrep_table.search(name__endswith='lo') == [{'name': 'network.interface.collisions-lo', 'value': '3.000'}, {'name': 'network.interface.out.packets-lo', 'value': '1.000'}]
     assert pmrep_table.search(name__endswith='swap.pagesout') == [{'name': 'swap.pagesout', 'value': '5.000'}]
 
 
