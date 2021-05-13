@@ -271,7 +271,7 @@ def all_egg_versions():
         try:
             # force the egg to the front of sys.path so it gets loaded first
             proc = Popen([sys.executable, '-c',
-                         'import json, sys, os; \
+                         'import json, sys; \
                           sys.path.insert(0, \"' + egg  + '\"); \
                           from insights.client.utilities import get_version_info; \
                           print(json.dumps(get_version_info()))'],
