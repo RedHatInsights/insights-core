@@ -28,7 +28,7 @@ from .utilities import (determine_hostname,
                         write_unregistered_file,
                         write_registered_file,
                         os_release_info,
-                        largest_files_in_archive,
+                        largest_spec_in_archive,
                         size_in_mb)
 from .cert_auth import rhsmCertificate
 from .constants import InsightsConstants as constants
@@ -805,6 +805,26 @@ class InsightsConnection(object):
         else:
             return (message, client_hostname, "None", "")
 
+    def _archive_too_big(self, archive_file):
+        '''
+        Some helpful messaging for when the archive is too large for ingress
+        '''
+        archive_filesize = size_in_mb(
+            os.stat(archive_file).st_size)
+        logger.info("Archive is {fsize} MB which is larger than the maximum allowed size of {flimit} MB.".format(
+            fsize=archive_filesize, flimit="100"))
+
+        if not self.config.core_collect:
+            logger.error("Cannot estimate the spec with largest filesize because core collection is not enabled. "
+                    "Enable core collection by setting core_collect=True in %s, and attempt the upload again.", self.config.conf)
+            return
+
+        biggest_file = largest_spec_in_archive(archive_file)
+        if biggest_file is not None:
+            logger.info("The largest file in the archive is %s at %s MB.", biggest_file[0], size_in_mb(biggest_file[1]))
+            logger.info("Please add this spec:\n\n\t%s\n\nto your denylist configuration according to the documentation, and try the upload again.", biggest_file[2])
+
+
     # -LEGACY-
     def _legacy_upload_archive(self, data_collected, duration):
         '''
@@ -836,6 +856,9 @@ class InsightsConnection(object):
             the_json = json.loads(upload.text)
         else:
             logger.error("Upload archive failed with status code  %s", upload.status_code)
+            if upload.status_code == 413:
+                # let the user know what file is bloating the archive
+                self._archive_too_big(data_collected)
             return upload
         try:
             self.config.account_number = the_json["upload"]["account_number"]
@@ -897,14 +920,7 @@ class InsightsConnection(object):
                 upload.status_code)
             if upload.status_code == 413:
                 # let the user know what file is bloating the archive
-                archive_filesize = size_in_mb(
-                    os.stat(data_collected).st_size)
-                logger.info("Archive is {fsize} MB which is larger than the maximum allowed size of {flimit} MB.".format(
-                    fsize=archive_filesize, flimit="100"))
-                biggest_file = largest_files_in_archive(data_collected)
-                if biggest_file is not None:
-                    logger.info("The largest file in the archive is {fname} at {fsize}.".format(fname=biggest_file[0], fsize=size_in_mb(biggest_file[1]))
-                    logger.info("Please add the spec to your denylist configuration according to the documentation, and try the upload again.")
+                self._archive_too_big(data_collected)
             return upload
         logger.debug("Upload duration: %s", upload.elapsed)
         return upload

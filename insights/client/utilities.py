@@ -15,6 +15,7 @@ import threading
 import time
 import shutil
 import atexit
+import json
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import mkdtemp
 
@@ -450,39 +451,10 @@ def os_release_info():
     return (os_family, os_release)
 
 
-def largest_files_in_archive(archive_file):
-    '''
-    Determine the largest files in the archive, so the user may
-    omit things that put it over the filesize limit
-
-    Returns a tuple with the file name and file size
-    '''
-    logger.info("Checking for large files...")
-    tmpdir = mkdtemp()
-    atexit.register(shutil.rmtree, tmpdir)
-    untar_cmd = ["/usr/bin/tar", "-C", tmpdir, "-xf", archive_file]
-    proc = Popen(untar_cmd,
-             stdout=PIPE, stderr=STDOUT)
-    stdout, stderr = proc.communicate()
-    if proc.returncode != 0:
-        logger.error("Error opening archive for inspection.")
-        return None
-
-    # walk the tar directory and determine the largest file
-    biggest_file = ("unknown", 0)
-    for dirpath, dirnames, filenames in os.walk(tmpdir):
-        for f in filenames:
-            fullpath = os.path.join(dirpath, f)
-            fsize = os.stat(fullpath).st_size
-            if fsize > biggest_file[1]:
-                biggest_file = (f, fsize)
-    return biggest_file
-
-
 def largest_spec_in_archive(archive_file):
     '''
     Using insights-core metadata, determine the largest file in the archive
-    nd the spec it's associated with.
+    and the spec it's associated with.
     '''
     logger.info("Checking for large files...")
     tmpdir = mkdtemp()
@@ -496,7 +468,9 @@ def largest_spec_in_archive(archive_file):
         return None
 
     tmpdir_top = os.listdir(tmpdir)
+    # archive contents are within a dir extracted inside the temp dir
     archive_top = os.path.join(tmpdir, tmpdir_top[0])
+    # this will only work with a core collection archive
     data_top = os.path.join(archive_top, "data")
     metadata_top = os.path.join(archive_top, "meta_data")
 
@@ -526,5 +500,5 @@ def largest_spec_in_archive(archive_file):
     return (largest_fname, largest_fsize, largest_spec)
 
 
-def size_in_mb(num_bytes)
+def size_in_mb(num_bytes):
     return num_bytes / (1024 * 1024)
