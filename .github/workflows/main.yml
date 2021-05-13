@@ -47,18 +47,29 @@ jobs:
         sudo update-alternatives --set python /usr/bin/python2.6
     - name: get depenencies
       run: |
-        curl https://bootstrap.pypa.io/pip/2.7/get-pip.py -o get-pip.py
-        python get-pip.py
+        # curl https://bootstrap.pypa.io/pip/2.7/get-pip.py -o get-pip.py
+        # python get-pip.py
         git clone https://github.com/SteveHNH/jenkins-s2i-example.git pips
-        pip install ./pips/slave26/pip_packages/pip-9.0.3-py2.py3-none-any.whl
-        pip install -r ./pips/slave26/ci_requirements.txt -f ./pips/slave26/pip_packages
+        # pip install ./pips/slave26/pip_packages/pip-9.0.3-py2.py3-none-any.whl
+        CUR_DIR=$(pwd)
+        mkdir ../tools && cd ../tools
+        curl -L -O https://files.pythonhosted.org/packages/b8/04/be569e393006fa9a2c10ef72ea33133c2902baa115dd1d4279dae55c3b3b/setuptools-36.8.0.zip
+        unzip setuptools-36.8.0.zip && cd setuptools-36.8.0
+        python setup.py install --user && cd ..
+        curl -L -O https://github.com/pypa/pip/archive/refs/tags/9.0.3.tar.gz
+        tar -xvzf 9.0.3.tar.gz && cd pip-9.0.3
+        python setup.py install --user && cd ${CUR_DIR}
+        pip install --user -r ./pips/slave26/ci_requirements.txt -f ./pips/slave26/pip_packages
+        mkdir ../collections_module
+        sudo curl -L -o ./../collections_module/collections.py https://raw.githubusercontent.com/RedHatInsights/insights-core/5c8ca0f2fb3de45908e8d931d40758af34a7997a/.collections.py
     - name: flake8
       run: |
-        pip install -e .[linting] -f ./pips/slave26/pip_packages
+        pip install --user -e .[linting] -f ./pips/slave26/pip_packages
         flake8 .
     - name: pytest
       run: |
-        pip install -e .[testing] -f ./pips/slave26/pip_packages
+        pip install --user -e .[testing] -f ./pips/slave26/pip_packages
+        export PYTHONPATH=${PYTHONPATH}:./../collections_module
         pytest
 
   docs-test:
