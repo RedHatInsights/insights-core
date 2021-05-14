@@ -680,6 +680,7 @@ class Specs(SpecSet):
     tuned_conf = RegistryPoint()
     udev_persistent_net_rules = RegistryPoint()
     udev_fc_wwpn_id_rules = RegistryPoint(filterable=True)
+    umask = RegistryPoint()
     uname = RegistryPoint()
     up2date = RegistryPoint()
     up2date_log = RegistryPoint(filterable=True)
