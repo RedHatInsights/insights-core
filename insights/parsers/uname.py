@@ -101,6 +101,12 @@ rhel_release_map = {
     "3.10.0-1062": "7.7",
     "3.10.0-1127": "7.8",
     "3.10.0-1160": "7.9",
+    # Added alt to the below 3 kernel entries since they're part of the
+    # kernel-alt pkg, if we don't it would create duplicate entries and
+    # mess with what's returned by from_release.
+    "4.11.0-44": "7.4.alt",
+    "4.14.0-49": "7.5.alt",
+    "4.14.0-115": "7.6.alt",
     "4.18.0-80": "8.0",
     "4.18.0-147": "8.1",
     "4.18.0-193": "8.2",
