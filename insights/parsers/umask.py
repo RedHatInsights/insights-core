@@ -1,6 +1,6 @@
 """
 Umask - command ``/usr/bin/umask``
-=======================================
+==================================
 The ``Umask`` class implements the parsing of ``/usr/bin/umask``
 command, which is the value of default system umask.
 """
@@ -25,7 +25,7 @@ class Umask(Parser, dict):
 
         >>> type(umask_obj)
         <class 'insights.parsers.umask.Umask'>
-        >>> umask_obj
+        >>> umask_obj['value']
         '0022'
 
 
@@ -34,7 +34,8 @@ class Umask(Parser, dict):
         "0022"
 
     Raises:
-        SkipException: When contents are empty
+        SkipException: When contents are empty or invalid
+
     """
 
     def parse_content(self, content):
@@ -42,4 +43,7 @@ class Umask(Parser, dict):
         if not content:
             raise SkipException("No Contents")
 
-        return
+        if len(content) == 1 and content[0].isdigit():
+            self['value'] = content[0]
+        else:
+            raise SkipException("No Valid Contents")
