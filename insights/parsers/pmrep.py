@@ -58,4 +58,4 @@ class PMREPMetrics(CommandParser, list):
             >>> pmrep_doc_obj.search(name__endswith='swap.pagesout')
             [{'name': 'swap.pagesout', 'value': '5.000'}]
         """
-        return keyword_search(self, **kwargs)
+        return sorted(keyword_search(self, **kwargs), key=lambda x: x['name'])
