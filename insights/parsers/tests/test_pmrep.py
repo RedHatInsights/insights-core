@@ -46,8 +46,8 @@ def test_pmrep_info():
     assert pmrep_table[3] == {'name': 'swap.pagesout', 'value': '3.000'}
 
     pmrep_table = PMREPMetrics(context_wrap(PMREPMETRIC_DATA))
-    assert pmrep_table.search(name__endswith='lo') == [{'name': 'network.interface.collisions-lo', 'value': '3.000'}, {'name': 'network.interface.out.packets-lo', 'value': '1.000'}]
-    assert pmrep_table.search(name__endswith='swap.pagesout') == [{'name': 'swap.pagesout', 'value': '5.000'}]
+    assert sorted(pmrep_table.search(name__endswith='lo'), key=lambda x: x['name']) == [{'name': 'network.interface.collisions-lo', 'value': '3.000'}, {'name': 'network.interface.out.packets-lo', 'value': '1.000'}]
+    assert sorted(pmrep_table.search(name__endswith='swap.pagesout'), key=lambda x: x['name']) == [{'name': 'swap.pagesout', 'value': '5.000'}]
 
 
 def test_empty():
