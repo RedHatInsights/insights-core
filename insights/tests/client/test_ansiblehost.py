@@ -50,6 +50,7 @@ def test_set_ansible_host():
     c.session.text = 'oops'
     assert not c.set_ansible_host('GO STICK YOUR HEAD IN A PIG')
 
+
 def test_ansible_host_no_reg_forces_legacy_false():
     '''
     When not specifying --register, using --ansible-host on the CLI forces legacy_upload to False
@@ -62,6 +63,7 @@ def test_ansible_host_no_reg_forces_legacy_false():
     conf._cli_opts = ["ansible_host"]
     conf._imply_options()
     assert not conf.legacy_upload
+
 
 def test_ansible_host_reg_legacy_no_change():
     '''
