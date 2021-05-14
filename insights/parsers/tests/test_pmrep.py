@@ -65,6 +65,7 @@ def test_wrong_data():
 def test_pmrep_doc_examples():
     env = {
         'pmrep_doc_obj': PMREPMetrics(context_wrap(PMREPMETRIC_DATA)),
+        'pmrep_doc_obj_search': PMREPMetrics(context_wrap(PMREPMETRIC_DATA))
     }
     failed, total = doctest.testmod(pmrep, globs=env)
     assert failed == 0

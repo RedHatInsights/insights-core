@@ -53,9 +53,9 @@ class PMREPMetrics(CommandParser, list):
             search criteria.
 
         Examples:
-            >>> pmrep_doc_obj.search(name__endswith='lo')
+            >>> sorted(pmrep_doc_obj_search.search(name__endswith='lo'), key=lambda x: x['name'])
             [{'name': 'network.interface.collisions-lo', 'value': '3.000'}, {'name': 'network.interface.out.packets-lo', 'value': '1.000'}]
-            >>> pmrep_doc_obj.search(name__endswith='swap.pagesout')
+            >>> sorted(pmrep_doc_obj_search.search(name__endswith='swap.pagesout'), key=lambda x: x['name'])
             [{'name': 'swap.pagesout', 'value': '5.000'}]
         """
-        return sorted(keyword_search(self, **kwargs), key=lambda x: x['name'])
+        return keyword_search(self, **kwargs)
