@@ -21,18 +21,18 @@ pipeline {
             sh """
                 virtualenv .testenv
                 source .testenv/bin/activate
-                pip install "idna<=2.7"
-                pip install "pycparser<=2.18"
-                pip install -e .[testing]
+                pip install /pip_packages/pip-9.0.3-py2.py3-none-any.whl
+                pip install -r /var/lib/jenkins/ci_requirements.txt -f /pip_packages
+                pip install -e .[testing] -f /pip_packages
                 pytest
             """
             echo "Testing with Linter..."
             sh """
                 virtualenv .lintenv
                 source .lintenv/bin/activate
-                pip install "idna<=2.7"
-                pip install "pycparser<=2.18"
-                pip install -e .[linting]
+                pip install /pip_packages/pip-9.0.3-py2.py3-none-any.whl
+                pip install -r /var/lib/jenkins/ci_requirements.txt -f /pip_packages
+                pip install -e .[linting] -f /pip_packages
                 flake8
             """
           }

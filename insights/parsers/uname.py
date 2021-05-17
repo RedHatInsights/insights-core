@@ -101,6 +101,12 @@ rhel_release_map = {
     "3.10.0-1062": "7.7",
     "3.10.0-1127": "7.8",
     "3.10.0-1160": "7.9",
+    # Added alt to the below 3 kernel entries since they're part of the
+    # kernel-alt pkg, if we don't it would create duplicate entries and
+    # mess with what's returned by from_release.
+    "4.11.0-44": "7.4.alt",
+    "4.14.0-49": "7.5.alt",
+    "4.14.0-115": "7.6.alt",
     "4.18.0-80": "8.0",
     "4.18.0-147": "8.1",
     "4.18.0-193": "8.2",
@@ -173,6 +179,8 @@ class Uname(CommandParser):
       ``version-release``.
     - `rhel_release`: A list of two elements, the major and minor RHEL product
       release numbers.
+    - `debug_kernel`: A bool that's returns True when the server is running the
+      debug kernel.
 
     """
     keys = [
@@ -191,6 +199,7 @@ class Uname(CommandParser):
         'arch',
         'ver_rel',
         'rhel_release',
+        'debug_kernel',
         '_lv_release',
         '_rel_maj',
         '_sv_version',
@@ -333,6 +342,14 @@ class Uname(CommandParser):
             data = dict(cls.defaults)
 
         data['version'], data['release_arch'] = nvr.split('-', 1)
+
+        # Debug kernels have .debug appended to the end, so remove it before continuing.
+        if data['release_arch'].endswith('.debug'):
+            data['debug_kernel'] = True
+            data['release_arch'] = data['release_arch'].rsplit('.', 1)[0]
+        else:
+            data['debug_kernel'] = False
+
         if arch:
             try:
                 data['release'], data['arch'] = data['release_arch'].rsplit('.', 1)
