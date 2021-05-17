@@ -16,9 +16,9 @@ UMASK_NO_DATA = """
 
 def test_umask():
     umask_obj = Umask(context_wrap(UMASK_DATA))
-    assert umask_obj['user'] == 'rwx'
-    assert umask_obj['group'] == 'rx'
-    assert umask_obj['other'] == 'rx'
+    assert umask_obj.user == 'rwx'
+    assert umask_obj.group == 'rx'
+    assert umask_obj.other == 'rx'
 
     with pytest.raises(SkipException) as exc:
         umask_obj = Umask(context_wrap(UMASK_NO_DATA))
