@@ -634,6 +634,7 @@ class IfCFGStaticRoute(SysconfigOptions):
         self.static_route_name = self.file_name.split("route-", 1)[1]
         super(IfCFGStaticRoute, self).parse_content(content)
 
+
 @parser(Specs.sysconfig_grub)
 class GrubSysconfig(SysconfigOptions):
     """
