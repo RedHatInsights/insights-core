@@ -142,3 +142,20 @@ def test_doc_examples(cpu_all_online):
     }
     failed, total = doctest.testmod(smt, globs=env)
     assert failed == 0
+
+
+def test_without_hyperthreading_all_online_missing_cpu0_online_file():
+    online = [
+        CpuCoreOnline(context_wrap("1", path=ONLINE_PATH.format(1))),
+    ]
+    siblings = [
+        CpuSiblings(context_wrap("0", path=SIBLINGS_PATH.format(0))),
+        CpuSiblings(context_wrap("1", path=SIBLINGS_PATH.format(1)))
+    ]
+
+    cpu_topology = CpuTopology(online, siblings)
+    assert cpu_topology.online(0)
+    assert cpu_topology.siblings(0) == [0]
+    assert cpu_topology.online(1)
+    assert cpu_topology.siblings(1) == [1]
+    assert cpu_topology.all_solitary
