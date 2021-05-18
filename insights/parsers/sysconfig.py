@@ -73,7 +73,7 @@ IfCFGStaticRoute - files ``/etc/sysconfig/network-scripts/route-*``
 -------------------------------------------------------------------
 
 GrubSysconfig - files ``/etc/sysconfig/grub``
--------------------------------------------------------------------
+---------------------------------------------
 """
 
 
@@ -639,6 +639,8 @@ class IfCFGStaticRoute(SysconfigOptions):
 class GrubSysconfig(SysconfigOptions):
     """
     Class to parse the ``/etc/sysconfig/grub``
+
+    ``/etc/sysconfig/grub`` is a symlink of ``/etc/default/grub`` file
 
     Typical content example::
 
