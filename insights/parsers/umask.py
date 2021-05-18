@@ -19,9 +19,9 @@ class Umask(CommandParser):
         u=rwx,g=rx,o=rx
 
     Attributes:
-        user (str): The default user permission of created file
-        group (str): The default group permission of created file
-        other (str): The default other permission of created file
+        user (str): The default user permission of the created file
+        group (str): The default group permission of the created file
+        other (str): The default other permission of the created file
         raw (str): The raw value of the command output
 
     Examples:
