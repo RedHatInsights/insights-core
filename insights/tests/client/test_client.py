@@ -9,6 +9,8 @@ from insights.client.config import InsightsConfig
 from insights.client.constants import InsightsConstants as constants
 from insights.client.utilities import generate_machine_id
 from mock.mock import patch, Mock, call
+from pytest import mark
+from pytest import raises
 
 
 class FakeConnection(object):
