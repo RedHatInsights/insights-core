@@ -605,11 +605,9 @@ class DefaultSpecs(Specs):
     modprobe = glob_file(["/etc/modprobe.conf", "/etc/modprobe.d/*.conf"])
     mokutil_sbstate = simple_command("/bin/mokutil --sb-state")
     mongod_conf = glob_file([
-                            "/etc/mongod.conf",
-                            "/etc/mongodb.conf",
-                            "/etc/opt/rh/rh-mongodb26/mongod.conf",
-                            "/etc/opt/rh/rh-mongodb34/mongod.conf"
-                            ])
+        "/etc/mongod.conf",
+        "/etc/opt/rh/rh-mongodb34/mongod.conf"
+    ])
     mount = simple_command("/bin/mount")
     mounts = simple_file("/proc/mounts")
     mssql_conf = simple_file("/var/opt/mssql/mssql.conf")
@@ -755,7 +753,7 @@ class DefaultSpecs(Specs):
     pmlog_summary = command_with_args(
         "/usr/bin/pmlogsummary %s mem.util.used mem.physmem kernel.all.cpu.user kernel.all.cpu.sys kernel.all.cpu.nice kernel.all.cpu.steal kernel.all.cpu.idle disk.all.total mem.util.cached mem.util.bufmem mem.util.free kernel.all.cpu.wait.total",
         pmlog_summary_file)
-    pmrep_metrics = simple_command("pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout -o csv")
+    pmrep_metrics = simple_command("/usr/bin/pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout mssql.memory_manager.stolen_server_memory mssql.memory_manager.total_server_memory -o csv")
     postconf_builtin = simple_command("/usr/sbin/postconf -C builtin")
     postconf = simple_command("/usr/sbin/postconf")
     postgresql_conf = first_file([
@@ -983,6 +981,8 @@ class DefaultSpecs(Specs):
         simple_file("/conf/rhn/sysconfig/rhn/systemid")
     ])
     systool_b_scsi_v = simple_command("/bin/systool -b scsi -v")
+    sys_vmbus_device_id = glob_file('/sys/bus/vmbus/devices/*/device_id')
+    sys_vmbus_class_id = glob_file('/sys/bus/vmbus/devices/*/class_id')
     testparm_s = simple_command("/usr/bin/testparm -s")
     testparm_v_s = simple_command("/usr/bin/testparm -v -s")
     tags = simple_file("/tags.json", kind=RawFileProvider)
