@@ -258,6 +258,18 @@ def test_from_release():
     from_nvr = uname.Uname.from_kernel("2.6.32-358")
     assert str(from_release) == str(from_nvr)
 
+    # Test the regular 7.4 version.
+    release = ("7", "4")
+    from_release = uname.Uname.from_release(release)
+    from_nvr = uname.Uname.from_kernel("3.10.0-693")
+    assert str(from_release) == str(from_nvr)
+
+    # Test the kernel-alt 7.4 version.
+    release = ("7", "4", "alt")
+    from_release = uname.Uname.from_release(release)
+    from_nvr = uname.Uname.from_kernel("4.11.0-44")
+    assert str(from_release) == str(from_nvr)
+
     unknown_list = ["2.4.21-3", "2.6.9-4", "2.6.18-7", "2.6.32-70", "3.10.0-53"]
     known_list = [{'version': "2.4.21-4", 'rhel_release': ["3", "0"]},
                   {'version': "2.6.9-55", 'rhel_release': ["4", "5"]},
