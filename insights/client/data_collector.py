@@ -91,6 +91,12 @@ class DataCollector(object):
             self.archive.add_metadata_to_archive(
                 self.config.display_name, '/display_name')
 
+    def _write_ansible_host(self):
+        if self.config.ansible_host:
+            logger.debug("Writing ansible_host to archive...")
+            self.archive.add_metadata_to_archive(
+                self.config.ansible_host, '/ansible_host')
+
     def _write_version_info(self):
         logger.debug("Writing version information to archive...")
         version_info = get_version_info()
@@ -324,6 +330,7 @@ class DataCollector(object):
         logger.debug('Collecting metadata...')
         self._write_branch_info(branch_info)
         self._write_display_name()
+        self._write_ansible_host()
         self._write_version_info()
         self._write_tags()
         self._write_blacklist_report(blacklist_report)
