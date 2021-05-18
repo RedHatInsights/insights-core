@@ -424,6 +424,17 @@ class DefaultSpecs(Specs):
     gluster_v_info = simple_command("/usr/sbin/gluster volume info")
     gnocchi_conf = first_file(["/var/lib/config-data/puppet-generated/gnocchi/etc/gnocchi/gnocchi.conf", "/etc/gnocchi/gnocchi.conf"])
     gnocchi_metricd_log = first_file(["/var/log/containers/gnocchi/gnocchi-metricd.log", "/var/log/gnocchi/metricd.log"])
+
+    @datasource(CloudProvider, HostContext)
+    def is_gcp(broker):
+        """ bool: Returns True if this node is identified as running in GCP """
+        cp = broker[CloudProvider]
+        if cp and cp.cloud_provider == CloudProvider.GOOGLE:
+            return True
+        raise SkipComponent()
+
+    gcp_license_codes = simple_command("/usr/bin/curl -s curl -H Metadata-Flavor: Google http://metadata.google.internal/computeMetadata/v1/instance/licenses/?recursive=True --connect-timeout 5", deps=[is_gcp])
+    greenboot_status = simple_command("/usr/libexec/greenboot/greenboot-status")
     grub_conf = simple_file("/boot/grub/grub.conf")
     grub_config_perms = simple_command("/bin/ls -l /boot/grub2/grub.cfg")  # only RHEL7 and updwards
     grub_efi_conf = simple_file("/boot/efi/EFI/redhat/grub.conf")
@@ -557,7 +568,6 @@ class DefaultSpecs(Specs):
     lsblk = simple_command("/bin/lsblk")
     lsblk_pairs = simple_command("/bin/lsblk -P -o NAME,KNAME,MAJ:MIN,FSTYPE,MOUNTPOINT,LABEL,UUID,RA,RO,RM,MODEL,SIZE,STATE,OWNER,GROUP,MODE,ALIGNMENT,MIN-IO,OPT-IO,PHY-SEC,LOG-SEC,ROTA,SCHED,RQ-SIZE,TYPE,DISC-ALN,DISC-GRAN,DISC-MAX,DISC-ZERO")
     lscpu = simple_command("/usr/bin/lscpu")
-    lsinitrd = simple_command("/usr/bin/lsinitrd")
     lsmod = simple_command("/sbin/lsmod")
     lsof = simple_command("/usr/sbin/lsof")
     lspci = simple_command("/sbin/lspci -k")
@@ -595,11 +605,9 @@ class DefaultSpecs(Specs):
     modprobe = glob_file(["/etc/modprobe.conf", "/etc/modprobe.d/*.conf"])
     mokutil_sbstate = simple_command("/bin/mokutil --sb-state")
     mongod_conf = glob_file([
-                            "/etc/mongod.conf",
-                            "/etc/mongodb.conf",
-                            "/etc/opt/rh/rh-mongodb26/mongod.conf",
-                            "/etc/opt/rh/rh-mongodb34/mongod.conf"
-                            ])
+        "/etc/mongod.conf",
+        "/etc/opt/rh/rh-mongodb34/mongod.conf"
+    ])
     mount = simple_command("/bin/mount")
     mounts = simple_file("/proc/mounts")
     mssql_conf = simple_file("/var/opt/mssql/mssql.conf")
@@ -745,6 +753,7 @@ class DefaultSpecs(Specs):
     pmlog_summary = command_with_args(
         "/usr/bin/pmlogsummary %s mem.util.used mem.physmem kernel.all.cpu.user kernel.all.cpu.sys kernel.all.cpu.nice kernel.all.cpu.steal kernel.all.cpu.idle disk.all.total mem.util.cached mem.util.bufmem mem.util.free kernel.all.cpu.wait.total",
         pmlog_summary_file)
+    pmrep_metrics = simple_command("pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout mssql.memory_manager.stolen_server_memory mssql.memory_manager.total_server_memory -o csv")
     postconf_builtin = simple_command("/usr/sbin/postconf -C builtin")
     postconf = simple_command("/usr/sbin/postconf")
     postgresql_conf = first_file([
@@ -786,25 +795,50 @@ class DefaultSpecs(Specs):
     rhsm_log = simple_file("/var/log/rhsm/rhsm.log")
     rhsm_releasever = simple_file('/var/lib/rhsm/cache/releasever.json')
     rndc_status = simple_command("/usr/sbin/rndc status")
+    rpm_ostree_status = simple_command("/usr/bin/rpm-ostree status --json")
     rpm_V_packages = simple_command("/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo chrony", keep_rc=True, signum=signal.SIGTERM)
     rsyslog_conf = glob_file(["/etc/rsyslog.conf", "/etc/rsyslog.d/*.conf"])
     samba = simple_file("/etc/samba/smb.conf")
 
     @datasource(Sap, HostContext)
-    def sap_sid(broker):
+    def sap_instance(broker):
         """
-        list: List of the SID of all SAP Instances.
+        list: List of all SAP Instances.
         """
         sap = broker[Sap]
-        return list(set(sap.sid(i).lower() for i in sap.all_instances))
+        return list(v for v in sap.values())
 
-    @datasource(Sap, HostContext)
+    @datasource(sap_instance, HostContext)
+    def sap_hana_instance(broker):
+        """
+        list: List of the SAP HANA Instances.
+        """
+        sap = broker[DefaultSpecs.sap_instance]
+        return list(v for v in sap if v.type == 'HDB')
+
+    @datasource(sap_instance, HostContext)
+    def sap_sid(broker):
+        """
+        list: List of the SID of all the SAP Instances.
+        """
+        sap = broker[DefaultSpecs.sap_instance]
+        return list(set(h.sid.lower() for h in sap))
+
+    @datasource(sap_hana_instance, HostContext)
     def sap_hana_sid(broker):
         """
         list: List of the SID of SAP HANA Instances.
         """
-        sap = broker[Sap]
-        return list(set(sap.sid(i).lower() for i in sap.all_instances if sap.type(i) == 'HDB'))
+        hana = broker[DefaultSpecs.sap_hana_instance]
+        return list(set(h.sid.lower() for h in hana))
+
+    @datasource(sap_hana_instance, HostContext)
+    def sap_hana_sid_SID_nr(broker):
+        """
+        list: List of tuples (sid, SID, Nr) of SAP HANA Instances.
+        """
+        hana = broker[DefaultSpecs.sap_hana_instance]
+        return list((h.sid.lower(), h.sid, h.number) for h in hana)
 
     @datasource(sap_sid, HostContext)
     def ld_library_path_of_user(broker):
@@ -827,6 +861,7 @@ class DefaultSpecs(Specs):
             return DatasourceProvider('\n'.join(llds), relative_path='insights_commands/echo_user_LD_LIBRARY_PATH')
         raise SkipComponent
 
+    sap_hana_landscape = foreach_execute(sap_hana_sid_SID_nr, "/bin/su -l %sadm -c 'python /usr/sap/%s/HDB%s/exe/python_support/landscapeHostConfiguration.py'", keep_rc=True)
     sap_hdb_version = foreach_execute(sap_hana_sid, "/bin/su -l %sadm -c 'HDB version'", keep_rc=True)
     saphostctl_getcimobject_sapinstance = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance")
     saphostexec_status = simple_command("/usr/sap/hostctrl/exe/saphostexec -status")
@@ -946,6 +981,8 @@ class DefaultSpecs(Specs):
         simple_file("/conf/rhn/sysconfig/rhn/systemid")
     ])
     systool_b_scsi_v = simple_command("/bin/systool -b scsi -v")
+    sys_vmbus_device_id = glob_file('/sys/bus/vmbus/devices/*/device_id')
+    sys_vmbus_class_id = glob_file('/sys/bus/vmbus/devices/*/class_id')
     testparm_s = simple_command("/usr/bin/testparm -s")
     testparm_v_s = simple_command("/usr/bin/testparm -v -s")
     tags = simple_file("/tags.json", kind=RawFileProvider)

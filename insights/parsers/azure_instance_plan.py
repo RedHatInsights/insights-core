@@ -36,7 +36,7 @@ class AzureInstancePlan(CommandParser):
 
     Attributes:
         name (str): The name of the plan for the VM Instance in Azure, e.g: rhel7
-        size (str): The product of the plan for the VM Instance in Azure, e.g: RHEL
+        product (str): The product of the plan for the VM Instance in Azure, e.g: RHEL
         publisher (str): The publisher of the plan for the VM Instance in Azure, e.g: Red hat
         raw (str): The full JSON of the plan returned by the ``curl`` command
 

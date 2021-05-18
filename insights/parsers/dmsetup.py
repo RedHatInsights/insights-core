@@ -189,6 +189,9 @@ class DmsetupStatus(CommandParser, list):
 
     def parse_content(self, content):
         self.unparseable_lines = []
+        if content[0].lower() == "no devices found":
+            return
+
         for line in content:
             _device_name, _device_info_str = line.rsplit(':', 1)
             device_name = _device_name.strip()

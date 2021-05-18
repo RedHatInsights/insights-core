@@ -90,6 +90,11 @@ systemLog:
 
 """.strip()
 
+YAML_CONF_FORMAT_2 = """
+storage.dbPath: /var/lib/mongodb
+storage.journal.enabled: true
+"""
+
 
 def test_mongodb_conf():
 
@@ -118,6 +123,10 @@ def test_mongodb_conf():
     assert result.logpath == '/var/log/mongodb/mongodb.log'
     assert result.get("abc") == ''
     assert result.get("def") is None
+
+    result = MongodbConf(context_wrap(YAML_CONF_FORMAT_2))
+    assert result.is_yaml
+    assert result.dbpath == '/var/lib/mongodb'
 
     result = MongodbConf(context_wrap(NORMAL_CONF_V1))
     assert result.is_yaml is False

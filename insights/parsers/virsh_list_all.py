@@ -76,6 +76,10 @@ class VirshListAll(CommandParser):
         self.fields = []
         self.cols = []
         self.keywords = []
+        # Check and remove any error message, or empty lines. This to
+        # prevent any ValueError exceptions when parse_fixed_table is
+        # called below.
+        content = [l for l in content if not l.startswith("error: ") and l != ""]
         if not content:
             return
 

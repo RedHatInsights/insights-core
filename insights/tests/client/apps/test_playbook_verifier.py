@@ -1,10 +1,12 @@
 # -*- coding: UTF-8 -*-
 import sys
 import pytest
-
-from insights.client.apps.ansible.playbook_verifier import verify, PlaybookVerificationError
 from mock.mock import patch
 from pytest import raises
+
+# don't even bother on 2.6
+if sys.version_info >= (2, 7):
+    from insights.client.apps.ansible.playbook_verifier import verify, PlaybookVerificationError  # noqa
 
 
 @pytest.mark.skipif(sys.version_info < (2, 7), reason='Playbook verifier must be run on python 2.7 or above')
