@@ -274,6 +274,7 @@ class SosSpecs(Specs):
     swift_log = first_file(["/var/log/containers/swift/swift.log", "/var/log/swift/swift.log"])
     sys_kernel_sched_features = simple_file("/sys/kernel/debug/sched_features")
     sysconfig_chronyd = simple_file("/etc/sysconfig/chronyd")
+    sysconfig_grub = simple_file("/etc/sysconfig/grub")
     sysconfig_httpd = simple_file("/etc/sysconfig/httpd")
     sysconfig_irqbalance = simple_file("etc/sysconfig/irqbalance")
     sysconfig_memcached = first_file(["/var/lib/config-data/puppet-generated/memcached/etc/sysconfig/memcached", "/etc/sysconfig/memcached"])

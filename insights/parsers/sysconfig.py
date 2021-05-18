@@ -71,6 +71,9 @@ VirtWhoSysconfig - file ``/etc/sysconfig/virt-who``
 
 IfCFGStaticRoute - files ``/etc/sysconfig/network-scripts/route-*``
 -------------------------------------------------------------------
+
+GrubSysconfig - files ``/etc/sysconfig/grub``
+-------------------------------------------------------------------
 """
 
 
@@ -630,3 +633,30 @@ class IfCFGStaticRoute(SysconfigOptions):
     def parse_content(self, content):
         self.static_route_name = self.file_name.split("route-", 1)[1]
         super(IfCFGStaticRoute, self).parse_content(content)
+
+@parser(Specs.sysconfig_grub)
+class GrubSysconfig(SysconfigOptions):
+    """
+    Class to parse the ``/etc/sysconfig/grub``
+
+    Typical content example::
+
+        GRUB_TIMEOUT=1
+        GRUB_DISTRIBUTOR="$(sed 's, release .*$,,g' /etc/system-release)"
+        GRUB_DEFAULT=saved
+        GRUB_DISABLE_SUBMENU=true
+        GRUB_TERMINAL_OUTPUT="console"
+        GRUB_CMDLINE_LINUX="console=ttyS0 console=ttyS0,115200n8 no_timer_check net.ifnames=0 crashkernel=auto"
+        GRUB_DISABLE_RECOVERY="true"
+        GRUB_ENABLE_BLSCFG=true
+
+    Examples:
+        >>> grub_syscfg.get('GRUB_ENABLE_BLSCFG')
+        true
+        >>> 'NONEXISTENT_VAR' in grub_syscfg
+        False
+        >>> 'GRUB_ENABLE_BLSCFG' in grub_syscfg
+        True
+
+    """
+    pass
