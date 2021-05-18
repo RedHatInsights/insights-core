@@ -21,18 +21,18 @@ pipeline {
             sh """
                 virtualenv .testenv
                 source .testenv/bin/activate
-                pip install "idna<=2.7"
-                pip install "pycparser<=2.18"
-                pip install -e .[testing]
+                pip install /pip_packages/pip-9.0.3-py2.py3-none-any.whl
+                pip install -r /var/lib/jenkins/ci_requirements.txt -f /pip_packages
+                pip install -e .[testing] -f /pip_packages
                 pytest
             """
             echo "Testing with Linter..."
             sh """
                 virtualenv .lintenv
                 source .lintenv/bin/activate
-                pip install "idna<=2.7"
-                pip install "pycparser<=2.18"
-                pip install -e .[linting]
+                pip install /pip_packages/pip-9.0.3-py2.py3-none-any.whl
+                pip install -r /var/lib/jenkins/ci_requirements.txt -f /pip_packages
+                pip install -e .[linting] -f /pip_packages
                 flake8
             """
           }
@@ -69,14 +69,14 @@ pipeline {
           steps {
             echo "Testing with Pytest..."
             sh """
-                /bin/python36 -m venv .testenv
+                /bin/python3 -m venv .testenv
                 source .testenv/bin/activate
                 pip install -e .[testing]
                 pytest
             """
             echo "Testing with Linter..."
             sh """
-                /bin/python36 -m venv .lintenv
+                /bin/python3 -m venv .lintenv
                 source .lintenv/bin/activate
                 pip install -e .[linting]
                 flake8
@@ -99,7 +99,7 @@ pipeline {
       steps {
         echo "Building Docs..."
         sh """
-            /bin/python36 -m venv .docenv
+            /bin/python3 -m venv .docenv
             source .docenv/bin/activate
             pip install -e .[docs]
             sphinx-build -W -b html -qa -E docs docs/_build/html

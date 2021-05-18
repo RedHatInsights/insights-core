@@ -73,7 +73,8 @@ def pre_update(client, config):
     if config.enable_schedule:
         # enable automatic scheduling
         logger.debug('Updating config...')
-        updated = get_scheduler(config).set_daily()
+        scheduler = get_scheduler(config)
+        updated = scheduler.schedule()
         if updated:
             logger.info('Automatic scheduling for Insights has been enabled.')
         sys.exit(constants.sig_kill_ok)
@@ -111,7 +112,12 @@ def pre_update(client, config):
         sys.exit(constants.sig_kill_ok)
 
     if config.checkin:
-        checkin_success = client.checkin()
+        try:
+            checkin_success = client.checkin()
+        except Exception as e:
+            print(e)
+            sys.exit(constants.sig_kill_bad)
+
         if checkin_success:
             sys.exit(constants.sig_kill_ok)
         else:
@@ -194,9 +200,10 @@ def post_update(client, config):
         elif reg is False:
             # unregistered
             sys.exit(constants.sig_kill_bad)
-        if config.register:
-            if (not config.disable_schedule and
-               get_scheduler(config).set_daily()):
+        if config.register and not config.disable_schedule:
+            scheduler = get_scheduler(config)
+            updated = scheduler.schedule()
+            if updated:
                 logger.info('Automatic scheduling for Insights has been enabled.')
         return
     # -------delete everything above this line-------
@@ -254,9 +261,11 @@ def post_update(client, config):
         #   system creation and upload are a single event on the platform
         if reg_check:
             logger.info('This host has already been registered.')
-        if (not config.disable_schedule and
-           get_scheduler(config).set_daily()):
-            logger.info('Automatic scheduling for Insights has been enabled.')
+        if not config.disable_schedule:
+            scheduler = get_scheduler(config)
+            updated = scheduler.schedule()
+            if updated:
+                logger.info('Automatic scheduling for Insights has been enabled.')
 
     # set --display-name independent of register
     # only do this if set from the CLI. normally display_name is sent on upload

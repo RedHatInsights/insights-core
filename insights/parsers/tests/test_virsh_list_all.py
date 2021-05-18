@@ -7,6 +7,12 @@ from insights.tests import context_wrap
 BLANK = """
 """.strip()
 
+ERROR = """
+error: Failed to reconnect to the hypervisor
+error: no valid connection
+error: internal error Unable to locate libvirtd daemon in /usr/sbin (to override, set $LIBVIRTD_PATH to the name of the libvirtd binary)
+""".strip()
+
 NO_RESULT = """
  Id    Name                           State
 ----------------------------------------------------
@@ -31,6 +37,13 @@ OUTPUT = """
 """.strip()
 
 
+def assert_if_none(output):
+    assert output.fields == []
+    assert output.cols == []
+    assert output.keywords == []
+    assert output.get_vm_state('NORHEL') is None
+
+
 def test_virsh_output():
     output = virsh_list_all.VirshListAll(context_wrap(OUTPUT))
     assert len(output.search(state='shut off')) == 11
@@ -41,22 +54,19 @@ def test_virsh_output():
     assert output.get_vm_state('rhel9.0') is None
     assert ('cfme' in output) is False
     assert ('cfme-5.7.13' in output) is True
+    assert output.get_vm_state("RHOSP10") == "shut off"
 
 
 def test_virsh_output_no_vms():
-    output = virsh_list_all.VirshListAll(context_wrap(NO_RESULT))
-    assert output.fields == []
-    assert output.cols == []
-    assert output.keywords == []
-    assert output.get_vm_state('NORHEL') is None
+    assert_if_none(virsh_list_all.VirshListAll(context_wrap(NO_RESULT)))
 
 
 def test_virsh_output_blank():
-    output = virsh_list_all.VirshListAll(context_wrap(BLANK))
-    assert output.fields == []
-    assert output.cols == []
-    assert output.keywords == []
-    assert output.get_vm_state('NORHEL') is None
+    assert_if_none(virsh_list_all.VirshListAll(context_wrap(BLANK)))
+
+
+def test_virsh_output_error():
+    assert_if_none(virsh_list_all.VirshListAll(context_wrap(ERROR)))
 
 
 def test_virsh_list_all_documentation():

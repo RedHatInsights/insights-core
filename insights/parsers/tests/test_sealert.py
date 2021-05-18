@@ -1,4 +1,4 @@
-from insights.parsers import SkipException
+from insights.core import ContentException
 from insights.tests import context_wrap
 from insights.parsers.sealert import Sealert, Report
 import pytest
@@ -120,6 +120,18 @@ INPUT_2 = """
 """.format(REPORT_1, REPORT_2)
 
 
+INPUT_NO_REPORTS = ""
+
+INPUT_DISABLED = """
+Unable to establish connection to setroubleshoot daemon!
+Check output of 'journalctl -t setroubleshoot' for more details.
+"""
+
+INPUT_NOT_INSTALLED = """
+bash: /bin/sealert: No such file or directory
+"""
+
+
 def test_report():
     r = Report()
     r.append_line("")
@@ -134,13 +146,27 @@ def test_report():
 
 
 def test_sealert():
-    with pytest.raises(SkipException):
-        Sealert(context_wrap(INPUT_1))
-    with pytest.raises(SkipException):
-        Sealert(context_wrap(""))
     sealert = Sealert(context_wrap(INPUT_2))
     assert len(sealert.reports) == 2
     assert str(sealert.reports[0]) == REPORT_1
     assert str(sealert.reports[1]) == REPORT_2
     assert sealert.reports[0].lines[10] == REPORT_1.split("\n")[10]
     assert sealert.reports[0].lines_stripped() == REPORT_1.split("\n")
+
+
+def test_sealert_edge_cases():
+    # No reports
+    sealert = Sealert(context_wrap(INPUT_NO_REPORTS))
+    assert len(sealert.reports) == 0
+
+    # Invalid data
+    sealert = Sealert(context_wrap(INPUT_1))
+    assert len(sealert.reports) == 0
+
+    # Not available due to disabled
+    with pytest.raises(ContentException):
+        Sealert(context_wrap(INPUT_DISABLED))
+
+    # Not installed
+    with pytest.raises(ContentException):
+        Sealert(context_wrap(INPUT_NOT_INSTALLED))

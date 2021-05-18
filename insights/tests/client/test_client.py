@@ -618,3 +618,37 @@ def test_copy_to_output_file_obfuscate_on(shutil_, _copy_soscleaner_files):
     client.copy_to_output_file('test')
     shutil_.copyfile.assert_called_once()
     _copy_soscleaner_files.assert_called_once()
+
+
+@mark.parametrize(("expected_result",), ((True,), (None,)))
+def test_checkin_result(expected_result):
+    config = InsightsConfig()
+    client = InsightsClient(config)
+    client.connection = Mock(**{"checkin.return_value": expected_result})
+    client.session = True
+
+    actual_result = client.checkin()
+    client.connection.checkin.assert_called_once_with()
+    assert actual_result is expected_result
+
+
+def test_checkin_error():
+    config = InsightsConfig()
+    client = InsightsClient(config)
+    client.connection = Mock(**{"checkin.side_effect": Exception})
+    client.session = True
+
+    with raises(Exception):
+        client.checkin()
+
+    client.connection.checkin.assert_called_once_with()
+
+
+def test_checkin_offline():
+    config = InsightsConfig(offline=True)
+    client = InsightsClient(config)
+    client.connection = Mock()
+
+    result = client.checkin()
+    assert result is None
+    client.connection.checkin.assert_not_called()
