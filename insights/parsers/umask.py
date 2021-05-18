@@ -22,6 +22,7 @@ class Umask(CommandParser):
         user (str): The default user permission of created file
         group (str): The default group permission of created file
         other (str): The default other permission of created file
+        raw (str): The raw value of the command output
 
     Examples:
 
@@ -33,12 +34,15 @@ class Umask(CommandParser):
         'rx'
         >>> umask_obj.other
         'rx'
+        >>> umask_obj.raw
+        'u=rwx,g=rx,o=rx'
     """
     def parse_content(self, content):
         """Parse output of ``/usr/bin/umask -S`` command"""
         if not content:
             raise SkipException("No Contents")
         split_result = content[0].split(',')
+        self.raw = content[0]
         self.user = split_result[0].split('=')[1].strip()
         self.group = split_result[1].split('=')[1].strip()
         self.other = split_result[2].split('=')[1].strip()
