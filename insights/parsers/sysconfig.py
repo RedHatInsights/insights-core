@@ -653,7 +653,7 @@ class GrubSysconfig(SysconfigOptions):
 
     Examples:
         >>> grub_syscfg.get('GRUB_ENABLE_BLSCFG')
-        true
+        'true'
         >>> 'NONEXISTENT_VAR' in grub_syscfg
         False
         >>> 'GRUB_ENABLE_BLSCFG' in grub_syscfg
