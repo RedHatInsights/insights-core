@@ -1062,7 +1062,7 @@
             "symbolic_name": "pcs_status"
         },
         {
-            "command": "pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout -o csv",
+            "command": "/usr/bin/pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout mssql.memory_manager.stolen_server_memory mssql.memory_manager.total_server_memory -o csv",
             "pattern": [],
             "symbolic_name": "pmrep_metrics"
         },
@@ -2531,6 +2531,7 @@
                 "Error running DeviceResume dm_task_run failed",
                 "Exception happened during processing of request from",
                 "File system is filling up",
+                "High collision rate in packet sends",
                 "High directory name cache miss rate",
                 "High number of saturated processors",
                 "High per CPU processor utilization",
@@ -2663,7 +2664,10 @@
         },
         {
             "file": "/etc/opt/rh/rh-mongodb34/mongod.conf",
-            "symbolic_name": "mongod_conf"
+            "symbolic_name": "mongod_conf",
+            "pattern": [
+                "dbpath"
+            ]
         },
         {
             "file": "/proc/mounts",
@@ -4253,6 +4257,16 @@
             "symbolic_name": "rsyslog_conf"
         },
         {
+            "glob": "/sys/bus/vmbus/devices/*/class_id",
+            "pattern": [],
+            "symbolic_name": "sys_vmbus_class_id"
+        },
+        {
+            "glob": "/sys/bus/vmbus/devices/*/device_id",
+            "pattern": [],
+            "symbolic_name": "sys_vmbus_device_id"
+        },
+        {
             "glob": "/sys/block/*/queue/scheduler",
             "symbolic_name": "scheduler",
             "pattern": []
@@ -4301,5 +4315,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2021-05-06T16:06:41.477806"
+    "version": "2021-05-13T13:38:29.298898"
 }
