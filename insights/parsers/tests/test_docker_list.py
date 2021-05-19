@@ -23,6 +23,15 @@ DOCKER_LIST_IMAGES_NO_DATA = """
 REPOSITORY                           TAG                 DIGEST              IMAGE ID                                                           CREATED             VIRTUAL SIZE
 """
 
+DOCKER_HELP_OUTPUT = """
+/usr/bin/docker - version 1.5
+
+Usage: /usr/bin/docker [OPTIONS]
+
+Options:
+  -help             Show this help.
+"""
+
 
 def test_docker_list_images():
     result = docker_list.DockerListImages(context_wrap(DOCKER_LIST_IMAGES))
@@ -72,6 +81,16 @@ def test_docker_list_images_no_data():
     with pytest.raises(SkipException) as ex:
         docker_list.DockerListImages(context_wrap(DOCKER_LIST_IMAGES_NO_DATA))
     assert 'No data.' in str(ex)
+
+
+def test_docker_list_images_help_output():
+    with pytest.raises(SkipException) as ex:
+        docker_list.DockerListImages(context_wrap(DOCKER_HELP_OUTPUT))
+    assert 'No data only help output.' in str(ex)
+
+    with pytest.raises(SkipException) as ex:
+        docker_list.DockerListContainers(context_wrap(DOCKER_HELP_OUTPUT))
+    assert 'No data only help output.' in str(ex)
 
 
 def test_undefined_key_field():
