@@ -12,6 +12,7 @@ from insights.parsers.sysconfig import DockerStorageSetupSysconfig, DirsrvSyscon
 from insights.parsers.sysconfig import CorosyncSysconfig
 from insights.parsers.sysconfig import IfCFGStaticRoute
 from insights.parsers.sysconfig import NetworkSysconfig
+from insights.parsers.sysconfig import GrubSysconfig
 import doctest
 
 
@@ -156,6 +157,18 @@ GATEWAY=172.31.0.1
 NM_BOND_VLAN_ENABLED=no
 """.strip()
 
+GRUB_SYSCONFIG = """
+
+GRUB_TIMEOUT=1
+GRUB_DISTRIBUTOR="$(sed 's, release .*$,,g' /etc/system-release)"
+GRUB_DEFAULT=saved
+GRUB_DISABLE_SUBMENU=true
+GRUB_TERMINAL_OUTPUT="console"
+GRUB_CMDLINE_LINUX="console=ttyS0 console=ttyS0,115200n8 no_timer_check net.ifnames=0 crashkernel=auto"
+GRUB_DISABLE_RECOVERY="true"
+GRUB_ENABLE_BLSCFG=true
+""".strip()
+
 
 def test_sysconfig_doc():
     env = {
@@ -179,7 +192,8 @@ def test_sysconfig_doc():
             'dirsrv_syscfg': DirsrvSysconfig(context_wrap(DIRSRVSYSCONFG)),
             'cs_syscfg': CorosyncSysconfig(context_wrap(COROSYNCSYSCONFIG)),
             'conn_info': IfCFGStaticRoute(context_wrap(STATIC_ROUTE_1, CONTEXT_PATH_DEVICE_1)),
-            'net_syscfg': NetworkSysconfig(context_wrap(NETWORK_SYSCONFIG))
+            'net_syscfg': NetworkSysconfig(context_wrap(NETWORK_SYSCONFIG)),
+            'grub_syscfg': GrubSysconfig(context_wrap(GRUB_SYSCONFIG))
           }
     failed, total = doctest.testmod(sysconfig, globs=env)
     assert failed == 0
