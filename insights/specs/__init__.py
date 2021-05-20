@@ -625,6 +625,7 @@ class Specs(SpecSet):
     swift_proxy_server_conf = RegistryPoint()
     sys_kernel_sched_features = RegistryPoint()
     sysconfig_chronyd = RegistryPoint()
+    sysconfig_grub = RegistryPoint()
     sysconfig_httpd = RegistryPoint()
     sysconfig_irqbalance = RegistryPoint()
     sysconfig_kdump = RegistryPoint()
