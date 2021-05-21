@@ -1010,6 +1010,7 @@ class DefaultSpecs(Specs):
     virt_what = simple_command("/usr/sbin/virt-what")
     virt_who_conf = glob_file([r"etc/virt-who.conf", r"etc/virt-who.d/*.conf"])
     virtlogd_conf = simple_file("/etc/libvirt/virtlogd.conf")
+    vmware_tools_conf = simple_file("/etc/vmware-tools/tools.conf")
     vsftpd = simple_file("/etc/pam.d/vsftpd")
     vsftpd_conf = simple_file("/etc/vsftpd/vsftpd.conf")
     x86_pti_enabled = simple_file("sys/kernel/debug/x86/pti_enabled")
