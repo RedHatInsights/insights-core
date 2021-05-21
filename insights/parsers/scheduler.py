@@ -1,17 +1,50 @@
-from .. import parser, get_active_lines, Parser
+"""
+Scheduler - file ``/sys/block/*/queue/scheduler``
+=================================================================
+
+This parser parses the content from scheduler files. It stores available
+values and also current selection for every device.
+
+Sample content from schduler file:
+
+    noop deadline [cfq]
+
+Examples:
+    >>> type(scheduler_obj)
+    <class 'insights.parsers.scheduler.Scheduler'>
+    >>> scheduler_obj.data
+    {'sda': '[cfq]'}
+    >>> scheduler_obj.device
+    'sda'
+    >>> scheduler_obj.schedulers
+    ['noop', 'deadline', 'cfq']
+    >>> scheduler_obj.active_scheduler
+    'cfg'
+
+"""
+
 import re
+
 from insights.specs import Specs
+from .. import parser, get_active_lines, Parser
 
 
 @parser(Specs.scheduler)
 class Scheduler(Parser):
+    ACTIVE_SCHEDULER_PATTERN = re.compile(r'\[(.*)]')
 
     def parse_content(self, content):
-        active_scheduler_regex = re.compile(r'\[.*]')
-        result = {}
+        self.device = None
+        self.schedulers = []
+        self.active_scheduler = None
+
+        self.device = self.file_path.split('/')[3]
         for line in get_active_lines(content):
-            for sched in line.split():
-                active_scheduler = active_scheduler_regex.search(sched)
-                if active_scheduler:
-                    result[self.file_path.split('/')[3]] = active_scheduler.group()
-        self.data = result
+            r = self.ACTIVE_SCHEDULER_PATTERN.search(line)
+            if r:
+                self.active_scheduler = r.group(1)
+
+            self.schedulers = line.replace('[', '').replace(']', '').split()
+
+        # Legacy values
+        self.data = {self.device: '[' + self.active_scheduler + ']'}

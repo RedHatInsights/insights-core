@@ -31,3 +31,32 @@ def test_scheduler_deadline():
 def test_scheduler_noop():
     r = scheduler.Scheduler(context_wrap(VDC_SCHEDULER, VDC_PATH))
     assert r.data["vdc"] == '[noop]'
+
+
+def test_schedulers_defaults():
+    r = scheduler.Scheduler(context_wrap('[none] mq-deadline kyber bfq',
+                                         '/sys/block/nvme0n1/queue/scheduler'))
+    assert r.device == 'nvme0n1'
+    assert r.schedulers == ['none', 'mq-deadline', 'kyber', 'bfq']
+    assert r.active_scheduler == 'none'
+
+    # RHEL 6
+    r = scheduler.Scheduler(context_wrap('noop anticipatory deadline [cfq]',
+                                         '/sys/block/vda/queue/scheduler'))
+    assert r.device == 'vda'
+    assert r.schedulers == ['noop', 'anticipatory', 'deadline', 'cfq']
+    assert r.active_scheduler == 'cfq'
+
+    # RHEL 7
+    r = scheduler.Scheduler(context_wrap('[mq-deadline] kyber none',
+                                         '/sys/block/vda/queue/scheduler'))
+    assert r.device == 'vda'
+    assert r.schedulers == ['mq-deadline', 'kyber', 'none']
+    assert r.active_scheduler == 'mq-deadline'
+
+    # RHEL 8
+    r = scheduler.Scheduler(context_wrap('[mq-deadline] kyber bfq none',
+                                         '/sys/block/vda/queue/scheduler'))
+    assert r.device == 'vda'
+    assert r.schedulers == ['mq-deadline', 'kyber', 'bfq', 'none']
+    assert r.active_scheduler == 'mq-deadline'
