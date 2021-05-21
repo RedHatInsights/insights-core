@@ -75,7 +75,6 @@ def test_get_component_by_symbolic_name():
         'cpu_vulns_spec_store_bypass',
         'docker_storage',
         'freeipa_healthcheck_log',
-        'vmware_tools_conf',
         'ironic_conf',
         'octavia_conf',
         'partitions',
