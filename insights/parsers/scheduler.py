@@ -1,6 +1,6 @@
 """
 Scheduler - file ``/sys/block/*/queue/scheduler``
-=================================================================
+=================================================
 
 This parser parses the content from scheduler files. It stores available
 values and also current selection for every device.
