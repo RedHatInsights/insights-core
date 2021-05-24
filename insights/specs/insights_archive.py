@@ -187,7 +187,7 @@ class InsightsArchiveSpecs(Specs):
     pcp_metrics = simple_file("insights_commands/curl_-s_http_..127.0.0.1_44322.metrics_--connect-timeout_5")
     pcs_quorum_status = simple_file("insights_commands/pcs_quorum_status")
     pcs_status = simple_file("insights_commands/pcs_status")
-    pmrep_metrics = simple_file("insights_commands/pmrep_-t_1s_-T_1s_network.interface.out.packets_network.interface.collisions_swap.pagesout_-o_csv")
+    pmrep_metrics = first_file(["insights_commands/pmrep_-t_1s_-T_1s_network.interface.out.packets_network.interface.collisions_swap.pagesout_mssql.memory_manager.stolen_server_memory_mssql.memory_manager.total_server_memory_-o_csv", "insights_commands/pmrep_-t_1s_-T_1s_network.interface.out.packets_network.interface.collisions_swap.pagesout_-o_csv"])
     postconf_builtin = simple_file("insights_commands/postconf_-C_builtin")
     postconf = simple_file("insights_commands/postconf")
     ps_alxwww = simple_file("insights_commands/ps_alxwww")
@@ -206,6 +206,7 @@ class InsightsArchiveSpecs(Specs):
     rhev_data_center = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_rhev_data_center")
     rhsm_katello_default_ca_cert = simple_file("insights_commands/openssl_x509_-in_.etc.rhsm.ca.katello-default-ca.pem_-noout_-issuer")
     rndc_status = simple_file("insights_commands/rndc_status")
+    rpm_ostree_status = simple_file("insights_commands/rpm-ostree_status_--json")
     rpm_V_packages = first_file(["insights_commands/rpm_-V_coreutils_procps_procps-ng_shadow-utils_passwd_sudo_chrony", "insights_commands/rpm_-V_coreutils_procps_procps-ng_shadow-utils_passwd_sudo"])
     saphostctl_getcimobject_sapinstance = simple_file("insights_commands/usr.sap.hostctrl.exe.saphostctrl_-function_GetCIMObject_-enuminstances_SAPInstance")
     satellite_content_hosts_count = first_file([

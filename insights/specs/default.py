@@ -605,11 +605,9 @@ class DefaultSpecs(Specs):
     modprobe = glob_file(["/etc/modprobe.conf", "/etc/modprobe.d/*.conf"])
     mokutil_sbstate = simple_command("/bin/mokutil --sb-state")
     mongod_conf = glob_file([
-                            "/etc/mongod.conf",
-                            "/etc/mongodb.conf",
-                            "/etc/opt/rh/rh-mongodb26/mongod.conf",
-                            "/etc/opt/rh/rh-mongodb34/mongod.conf"
-                            ])
+        "/etc/mongod.conf",
+        "/etc/opt/rh/rh-mongodb34/mongod.conf"
+    ])
     mount = simple_command("/bin/mount")
     mounts = simple_file("/proc/mounts")
     mssql_conf = simple_file("/var/opt/mssql/mssql.conf")
@@ -755,7 +753,7 @@ class DefaultSpecs(Specs):
     pmlog_summary = command_with_args(
         "/usr/bin/pmlogsummary %s mem.util.used mem.physmem kernel.all.cpu.user kernel.all.cpu.sys kernel.all.cpu.nice kernel.all.cpu.steal kernel.all.cpu.idle disk.all.total mem.util.cached mem.util.bufmem mem.util.free kernel.all.cpu.wait.total",
         pmlog_summary_file)
-    pmrep_metrics = simple_command("pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout -o csv")
+    pmrep_metrics = simple_command("/usr/bin/pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout mssql.memory_manager.stolen_server_memory mssql.memory_manager.total_server_memory -o csv")
     postconf_builtin = simple_command("/usr/sbin/postconf -C builtin")
     postconf = simple_command("/usr/sbin/postconf")
     postgresql_conf = first_file([
@@ -797,6 +795,7 @@ class DefaultSpecs(Specs):
     rhsm_log = simple_file("/var/log/rhsm/rhsm.log")
     rhsm_releasever = simple_file('/var/lib/rhsm/cache/releasever.json')
     rndc_status = simple_command("/usr/sbin/rndc status")
+    rpm_ostree_status = simple_command("/usr/bin/rpm-ostree status --json")
     rpm_V_packages = simple_command("/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo chrony", keep_rc=True, signum=signal.SIGTERM)
     rsyslog_conf = glob_file(["/etc/rsyslog.conf", "/etc/rsyslog.d/*.conf"])
     samba = simple_file("/etc/samba/smb.conf")
@@ -951,6 +950,7 @@ class DefaultSpecs(Specs):
     subscription_manager_installed_product_ids = simple_command("/usr/bin/find /etc/pki/product-default/ /etc/pki/product/ -name '*pem' -exec rct cat-cert --no-content '{}' \;")
     swift_object_expirer_conf = first_file(["/var/lib/config-data/puppet-generated/swift/etc/swift/object-expirer.conf", "/etc/swift/object-expirer.conf"])
     swift_proxy_server_conf = first_file(["/var/lib/config-data/puppet-generated/swift/etc/swift/proxy-server.conf", "/etc/swift/proxy-server.conf"])
+    sysconfig_grub = simple_file("/etc/default/grub")  # This is the file where the "/etc/sysconfig/grub" point to
     sysconfig_kdump = simple_file("etc/sysconfig/kdump")
     sysconfig_libvirt_guests = simple_file("etc/sysconfig/libvirt-guests")
     sysconfig_network = simple_file("etc/sysconfig/network")
@@ -982,6 +982,8 @@ class DefaultSpecs(Specs):
         simple_file("/conf/rhn/sysconfig/rhn/systemid")
     ])
     systool_b_scsi_v = simple_command("/bin/systool -b scsi -v")
+    sys_vmbus_device_id = glob_file('/sys/bus/vmbus/devices/*/device_id')
+    sys_vmbus_class_id = glob_file('/sys/bus/vmbus/devices/*/class_id')
     testparm_s = simple_command("/usr/bin/testparm -s")
     testparm_v_s = simple_command("/usr/bin/testparm -v -s")
     tags = simple_file("/tags.json", kind=RawFileProvider)
@@ -1008,6 +1010,7 @@ class DefaultSpecs(Specs):
     virt_what = simple_command("/usr/sbin/virt-what")
     virt_who_conf = glob_file([r"etc/virt-who.conf", r"etc/virt-who.d/*.conf"])
     virtlogd_conf = simple_file("/etc/libvirt/virtlogd.conf")
+    vmware_tools_conf = simple_file("/etc/vmware-tools/tools.conf")
     vsftpd = simple_file("/etc/pam.d/vsftpd")
     vsftpd_conf = simple_file("/etc/vsftpd/vsftpd.conf")
     x86_pti_enabled = simple_file("sys/kernel/debug/x86/pti_enabled")

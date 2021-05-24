@@ -252,6 +252,7 @@
         {
             "command": "/usr/bin/doveconf",
             "pattern": [
+                "auth_mechanisms",
                 "ssl_min_protocol",
                 "ssl_protocols",
                 "{",
@@ -1061,7 +1062,7 @@
             "symbolic_name": "pcs_status"
         },
         {
-            "command": "pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout -o csv",
+            "command": "/usr/bin/pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout mssql.memory_manager.stolen_server_memory mssql.memory_manager.total_server_memory -o csv",
             "pattern": [],
             "symbolic_name": "pmrep_metrics"
         },
@@ -1152,11 +1153,8 @@
             "command": "/bin/ps aux",
             "pattern": [
                 "/usr/bin/docker",
-                "/usr/bin/docker daemon",
                 "/usr/bin/docker-current",
-                "/usr/bin/docker-current daemon",
                 "/usr/bin/dockerd-current",
-                "/usr/bin/hyperkube kubelet",
                 "/usr/bin/openshift start master",
                 "/usr/bin/openshift start node",
                 "COMMAND",
@@ -1672,8 +1670,7 @@
         {
             "file": "/root/.config/openshift/hosts",
             "pattern": [
-                "[",
-                "openshift_use_crio"
+                "["
             ],
             "symbolic_name": "openshift_hosts"
         },
@@ -2513,7 +2510,6 @@
                 " invoked oom-killer: ",
                 "(enic): transmit queue 0 timed out",
                 ", type vxfs) has no security xattr handler",
-                "- image is referenced in one or more repositories",
                 "/input/input",
                 "/usr/lib/ocf/resource.d/heartbeat/azure-lb: line 91: kill: Binary: arguments must be process or job IDs",
                 "17763",
@@ -2532,11 +2528,10 @@
                 "Device is still in reset",
                 "Disable lvmetad in lvm.conf. lvmetad should never be enabled in a clustered environment. Set use_lvmetad=0 and kill the lvmetad process",
                 "Error I40E_AQ_RC_EINVAL adding RX filters on PF, promiscuous mode forced on",
-                "Error deleting EBS Disk volume aws",
                 "Error running DeviceResume dm_task_run failed",
                 "Exception happened during processing of request from",
-                "Failed to extend thin",
                 "File system is filling up",
+                "High collision rate in packet sends",
                 "High directory name cache miss rate",
                 "High number of saturated processors",
                 "High per CPU processor utilization",
@@ -2549,20 +2544,16 @@
                 "Low random number entropy available",
                 "MDC/MDIO access timeout",
                 "Medium access timeout failure. Offlining disk!",
-                "MountVolume.SetUp succeeded for volume",
                 "NETDEV WATCHDOG",
                 "Neighbour table overflow",
                 "NetworkManager state is now CONNECTED_SITE",
                 "Not scheduled for",
-                "Orphaned pod",
                 "Out of MCCQ wrbs",
                 "Out of memory: Kill process",
                 "PPM exceeds tolerance 500 PPM",
                 "ProcessExecutionError: Exit code: 1; Stdin: ; Stdout: ; Stderr: setting the network namespace",
                 "Result of start operation for clvmd ",
                 "SCSI error: return code =",
-                "SDN initialization failed: Error: Existing service with IP: None is not part of service network",
-                "Scheduled import of stream",
                 "Severe demand for real memory",
                 "Some CPU busy executing in system mode",
                 "Steal time is >",
@@ -2572,14 +2563,12 @@
                 "TX driver issue detected, PF reset issued",
                 "The threshold number of context switches per second per CPU",
                 "This system does not support \"SSSE3\"",
-                "Throttling request took",
                 "Unit ip6tables.service entered failed state",
                 "Unit iptables.service entered failed state",
                 "Virtualization daemon",
                 "] trap divide error ",
                 "_NET_ACTIVE_WINDOW",
                 "as active slave; either",
-                "belongs to docker.service",
                 "callbacks suppressed",
                 "canceled DHCP transaction, DHCP client pid",
                 "clearing Tx timestamp hang",
@@ -2589,21 +2578,15 @@
                 "enabling it in",
                 "end_request: I/O error, dev",
                 "error Error on attach: Node not found",
-                "evicted, waiting for pod to be cleaned up",
-                "eviction manager: eviction criteria not yet met for threshold",
                 "eviction manager: must evict pod(s) to reclaim nodefsInodes",
-                "eviction manager: observations: signal=allocatableNodeFs.available, available: -",
                 "ext4_ext_search_left",
                 "failed while handling",
                 "failed with error -110",
                 "failed: Invalid argument",
-                "failed: rpc error: code = 2 desc = unable to inspect docker image",
                 "fiid_obj_get: 'present_countdown_value': data not available",
                 "firewalld - dynamic firewall daemon",
-                "fit failure summary on nodes : Insufficient pods",
                 "from image service failed: rpc error: code = Canceled desc = context canceled",
                 "host not found in upstream",
-                "http2: no cached connection was available",
                 "hv_netvsc vmbus_",
                 "hv_netvsc: probe of vmbus_",
                 "hw csum failure",
@@ -2650,9 +2633,7 @@
                 "start request repeated too quickly for docker.service",
                 "state changed timeout -> done",
                 "swapper: page allocation failure",
-                "systemd[1]: Received SIGCHLD from PID",
                 "tg3_start_xmit",
-                "there is a meaningful conflict",
                 "timed out",
                 "timeout before we got a set response",
                 "timing out command, waited",
@@ -2675,11 +2656,18 @@
             "symbolic_name": "modprobe_d"
         },
         {
-            "file": "/etc/()*mongod.conf",
+            "file": "/etc/mongod.conf",
             "pattern": [
                 "dbpath"
             ],
             "symbolic_name": "mongod_conf"
+        },
+        {
+            "file": "/etc/opt/rh/rh-mongodb34/mongod.conf",
+            "symbolic_name": "mongod_conf",
+            "pattern": [
+                "dbpath"
+            ]
         },
         {
             "file": "/proc/mounts",
@@ -3243,15 +3231,6 @@
             "file": "/etc/resolv.conf",
             "pattern": [],
             "symbolic_name": "resolv_conf"
-        },
-        {
-            "file": "/etc/opt/rh/rh-mongodb26/()*mongod.conf",
-            "pattern": [
-                "destination",
-                "syslog",
-                "systemLog"
-            ],
-            "symbolic_name": "rh_mongodb26_conf"
         },
         {
             "file": "/etc/rhn/rhn.conf",
@@ -4278,6 +4257,16 @@
             "symbolic_name": "rsyslog_conf"
         },
         {
+            "glob": "/sys/bus/vmbus/devices/*/class_id",
+            "pattern": [],
+            "symbolic_name": "sys_vmbus_class_id"
+        },
+        {
+            "glob": "/sys/bus/vmbus/devices/*/device_id",
+            "pattern": [],
+            "symbolic_name": "sys_vmbus_device_id"
+        },
+        {
             "glob": "/sys/block/*/queue/scheduler",
             "symbolic_name": "scheduler",
             "pattern": []
@@ -4326,5 +4315,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2021-04-22T11:04:17.009396"
+    "version": "2021-05-13T13:38:29.298898"
 }

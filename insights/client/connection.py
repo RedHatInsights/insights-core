@@ -26,14 +26,12 @@ except ImportError:
 from .utilities import (determine_hostname,
                         generate_machine_id,
                         write_unregistered_file,
-                        write_registered_file)
+                        write_registered_file,
+                        os_release_info)
 from .cert_auth import rhsmCertificate
 from .constants import InsightsConstants as constants
 from .url_cache import URLCache
 from insights import package_info
-from insights.core.context import Context
-from insights.parsers.os_release import OsRelease
-from insights.parsers.redhat_release import RedhatRelease
 from insights.util.canonical_facts import get_canonical_facts
 
 warnings.simplefilter('ignore')
@@ -286,27 +284,7 @@ class InsightsConnection(object):
 
         python_version = "%s %s" % (platform.python_implementation(), platform.python_version())
 
-        os_family = "Unknown"
-        os_release = ""
-        for p in ["/etc/os-release", "/etc/redhat-release"]:
-            try:
-                with open(p) as f:
-                    data = f.readlines()
-
-                ctx = Context(content=data, path=p, relative_path=p)
-                if p == "/etc/os-release":
-                    rls = OsRelease(ctx)
-                    os_family = rls.data.get("NAME")
-                    os_release = rls.data.get("VERSION_ID")
-                elif p == "/etc/redhat-release":
-                    rls = RedhatRelease(ctx)
-                    os_family = rls.product
-                    os_release = rls.version
-                break
-            except IOError:
-                continue
-            except Exception as e:
-                logger.warning("Failed to detect OS version: %s", e)
+        os_family, os_release = os_release_info()
         kernel_version = "%s %s" % (platform.system(), platform.release())
 
         ua = "{client_version} ({core_version}; {requests_version}) {os_family} {os_release} ({python_version}; {kernel_version}); {parent_process}".format(

@@ -25,6 +25,10 @@ from .. import package_info
 from .constants import InsightsConstants as constants
 from .collection_rules import InsightsUploadConf, load_yaml
 
+from insights.core.context import Context
+from insights.parsers.os_release import OsRelease
+from insights.parsers.redhat_release import RedhatRelease
+
 try:
     from insights_client.constants import InsightsConstants as wrapper_constants
 except ImportError:
@@ -411,3 +415,33 @@ def get_parent_process():
         return name
     else:
         return "unknown"
+
+
+def os_release_info():
+    '''
+    Use insights-core to fetch the os-release or redhat-release info
+
+    Returns a tuple of OS name and version
+    '''
+    os_family = "Unknown"
+    os_release = ""
+    for p in ["/etc/os-release", "/etc/redhat-release"]:
+        try:
+            with open(p) as f:
+                data = f.readlines()
+
+            ctx = Context(content=data, path=p, relative_path=p)
+            if p == "/etc/os-release":
+                rls = OsRelease(ctx)
+                os_family = rls.data.get("NAME")
+                os_release = rls.data.get("VERSION_ID")
+            elif p == "/etc/redhat-release":
+                rls = RedhatRelease(ctx)
+                os_family = rls.product
+                os_release = rls.version
+            break
+        except IOError:
+            continue
+        except Exception as e:
+            logger.warning("Failed to detect OS version: %s", e)
+    return (os_family, os_release)
