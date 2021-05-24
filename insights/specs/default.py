@@ -992,7 +992,7 @@ class DefaultSpecs(Specs):
     tomcat_vdc_fallback = simple_command("/usr/bin/find /usr/share -maxdepth 1 -name 'tomcat*' -exec /bin/grep -R -s 'VirtualDirContext' --include '*.xml' '{}' +")
     tuned_adm = simple_command("/usr/sbin/tuned-adm list")
     udev_fc_wwpn_id_rules = simple_file("/usr/lib/udev/rules.d/59-fc-wwpn-id.rules")
-    umask = simple_command("/usr/bin/umask -S")
+    umask = simple_command("/usr/bin/su -l root -c 'umask -S'")
     uname = simple_command("/usr/bin/uname -a")
     up2date = simple_file("/etc/sysconfig/rhn/up2date")
     up2date_log = simple_file("/var/log/up2date")

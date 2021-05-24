@@ -1,7 +1,7 @@
 """
-Umask - command ``/usr/bin/umask -S``
+Umask - command ``/usr/bin/su -l root -c 'umask -S'``
 =====================================
-This parser parses the output of ``/usr/bin/umask -S`` command.
+This parser parses the output of ``/usr/bin/su -l root -c 'umask -S'`` command.
 """
 
 from insights import CommandParser, parser
@@ -12,9 +12,9 @@ from insights.specs import Specs
 @parser(Specs.umask)
 class Umask(CommandParser):
     """
-    Class for parsing the output of ``/usr/bin/umask -S`` command.
+    Class for parsing the output of ``/usr/bin/su -l root -c 'umask -S'`` command.
 
-    Sample ``/usr/bin/umask -S`` command output::
+    Sample ``/usr/bin/su -l root -c 'umask -S'`` command output::
 
         u=rwx,g=rx,o=rx
 
@@ -38,7 +38,7 @@ class Umask(CommandParser):
         'u=rwx,g=rx,o=rx'
     """
     def parse_content(self, content):
-        """Parse output of ``/usr/bin/umask -S`` command"""
+        """Parse output of ``/usr/bin/su -l root -c 'umask -S'`` command"""
         if not content:
             raise SkipException("No Contents")
         split_result = content[0].split(',')

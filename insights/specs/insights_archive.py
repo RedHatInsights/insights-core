@@ -247,7 +247,7 @@ class InsightsArchiveSpecs(Specs):
     testparm_v_s = simple_file("insights_commands/testparm_-v_-s")
     tomcat_vdc_fallback = simple_file("insights_commands/find_.usr.share_-maxdepth_1_-name_tomcat_-exec_.bin.grep_-R_-s_VirtualDirContext_--include_.xml")
     tuned_adm = simple_file("insights_commands/tuned-adm_list")
-    umask = simple_file("insights_commands/umask_-S")
+    umask = simple_file("insights_commands/su_-l_root_-c_umask_-S")
     uname = simple_file("insights_commands/uname_-a")
     uptime = simple_file("insights_commands/uptime")
     version_info = simple_file("version_info")
