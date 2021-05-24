@@ -10,24 +10,6 @@ if sys.version_info >= (2, 7):
 
 
 @pytest.mark.skipif(sys.version_info < (2, 7), reason='Playbook verifier must be run on python 2.7 or above')
-def test_skip_validation():
-    result = verify([{'name': "test playbook", 'vars': {}}], skipVerify=True, checkVersion=False)
-    assert result == [{'name': "test playbook", 'vars': {}}]
-
-
-@pytest.mark.skipif(sys.version_info < (2, 7), reason='Playbook verifier must be run on python 2.7 or above')
-@patch('requests.get')
-def test_egg_validation_error(mock_get):
-    mock_get.return_value.text = '3.0.0'
-    egg_error = 'EGG VERSION ERROR: Current running egg is not the most recent version'
-    fake_playbook = [{'name': "test playbook"}]
-
-    with raises(PlaybookVerificationError) as error:
-        verify(fake_playbook, checkVersion=True)
-    assert egg_error in str(error.value)
-
-
-@pytest.mark.skipif(sys.version_info < (2, 7), reason='Playbook verifier must be run on python 2.7 or above')
 def test_vars_not_found_error():
     vars_error = 'VERIFICATION FAILED: Vars field not found'
     fake_playbook = [{'name': "test playbook"}]
