@@ -58,21 +58,6 @@ def createSnippetHash(snippet):
     return snippetHash.digest()
 
 
-def eggVersioningCheck(checkVersion):
-    try:
-        currentVersion = requests.get(VERSIONING_URL)
-        currentVersion = currentVersion.text
-        runningVersion = get_version_info()['core_version']
-    except:
-        raise PlaybookVerificationError(message="EGG VERSION ERROR: Version not pulled correctly")
-
-    if checkVersion:
-        if LooseVersion(currentVersion.strip()) < LooseVersion(runningVersion):
-            raise PlaybookVerificationError(message="EGG VERSION ERROR: Current running egg is not the most recent version")
-
-    return currentVersion
-
-
 def getPublicKey(gpg):
         if not PUBLIC_KEY_FOLDER:
             raise PlaybookVerificationError(message="PUBLIC KEY IMPORT ERROR: Public key file not found")
@@ -142,7 +127,7 @@ def verifyPlaybookSnippet(snippet):
     return executeVerification(snippetCopy, encodedSignature)
 
 
-def verify(playbook, checkVersion=False, skipVerify=True):
+def verify(playbook, skipVerify=True):
     """
     Verify the signed playbook.
 
@@ -151,9 +136,6 @@ def verify(playbook, checkVersion=False, skipVerify=True):
     Error: Playbook Verification failure / Playbook Signature not found.
     """
     logger.info('Playbook Verification has started')
-
-    # Egg Version Check
-    eggVersioningCheck(checkVersion)
 
     if not skipVerify:
         for snippet in playbook:
