@@ -1,6 +1,6 @@
 """
 Umask - command ``/usr/bin/su -l root -c 'umask -S'``
-=====================================
+=====================================================
 This parser parses the output of ``/usr/bin/su -l root -c 'umask -S'`` command.
 """
 
