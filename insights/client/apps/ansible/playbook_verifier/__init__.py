@@ -1,14 +1,11 @@
 import os
 import copy
 import base64
-import requests
 import tempfile
 import pkgutil
 import hashlib
 import insights.client.apps.ansible
 from logging import getLogger
-from distutils.version import LooseVersion
-from insights.client.utilities import get_version_info
 from insights.client.apps.ansible.playbook_verifier.contrib import gnupg
 from insights.client.apps.ansible.playbook_verifier.contrib.ruamel_yaml.ruamel import yaml
 from insights.client.constants import InsightsConstants as constants
