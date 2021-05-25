@@ -19,7 +19,7 @@ Examples:
     >>> scheduler_obj.schedulers
     ['noop', 'deadline', 'cfq']
     >>> scheduler_obj.active_scheduler
-    'cfg'
+    'cfq'
 
 """
 
@@ -31,6 +31,17 @@ from .. import parser, get_active_lines, Parser
 
 @parser(Specs.scheduler)
 class Scheduler(Parser):
+    """
+    This class provides parsing for content of ``/sys/block/*/queue/scheduler``
+    files.
+
+    Attributes:
+        device (str): Block device name
+        schedulers (list): A list of available schedulers
+        active_scheduler (str): An active scheduler
+        data (dict): A dictionary with block device name as a key and an active scheduler as
+            a value.
+    """
     ACTIVE_SCHEDULER_PATTERN = re.compile(r'\[(.*)]')
 
     def parse_content(self, content):

@@ -1,3 +1,5 @@
+import doctest
+
 from insights.parsers import scheduler
 from insights.tests import context_wrap
 
@@ -60,3 +62,11 @@ def test_schedulers_defaults():
     assert r.device == 'vda'
     assert r.schedulers == ['mq-deadline', 'kyber', 'bfq', 'none']
     assert r.active_scheduler == 'mq-deadline'
+
+
+def test_docs():
+    env = {
+        'scheduler_obj': scheduler.Scheduler(context_wrap(SDA_SCHEDULER, SDA_PATH))
+    }
+    failed, total = doctest.testmod(scheduler, globs=env)
+    assert failed == 0
