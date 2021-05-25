@@ -6,14 +6,30 @@ from collections import namedtuple
 
 from pprint import pprint
 from six import StringIO
-from insights import dr, datasource, rule, condition, incident, parser
+from insights import _COLOR, dr, datasource, rule, condition, incident, parser
 from insights.core.context import ExecutionContext
 from insights.formats import Formatter, FormatterAdapter, render
 
 
 try:
-    from colorama import Fore, Style, init
-    init()
+    from colorama import init
+
+    if _COLOR == "always":
+        from colorama import Fore, Style
+        init(strip=False)
+    elif _COLOR == "auto":
+        from colorama import Fore, Style
+        init()
+    elif _COLOR == "never":
+        class Default(type):
+            def __getattr__(*args):
+                return ""
+
+        class Fore(six.with_metaclass(Default)):
+            pass
+
+        class Style(six.with_metaclass(Default)):
+            pass
 except ImportError:
     print("Install colorama if console colors are preferred.")
 
