@@ -61,6 +61,12 @@ class DockerList(CommandParser):
         if not (self.key_field and self.attr_name):
             raise NotImplementedError("'key_field' or 'attr_name' is not defined")
 
+        # There is another application named docker that's a kde system tray, that
+        # will output help when the spec is run due to incorrect arguments. So check
+        # the content for any lines starting with Usage: so it can be skipped.
+        if any(l for l in content if l.startswith("Usage: ")):
+            raise SkipException('No data only help output.')
+
         self.rows = parse_fixed_table(content,
                                       heading_ignore=self.heading_ignore,
                                       header_substitute=self.substitutions)
