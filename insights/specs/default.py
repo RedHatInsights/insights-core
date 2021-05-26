@@ -9,36 +9,25 @@ data sources that standard Insights `Parsers` resolve against.
 """
 
 import logging
-import os
-import re
-import json
 import signal
 
 from grp import getgrgid
 from os import stat
 from pwd import getpwuid
 
-import yaml
-
 from insights.core.context import HostContext
-from insights.core.dr import SkipComponent
-from insights.core.plugins import datasource
-from insights.core.spec_factory import RawFileProvider, DatasourceProvider
+from insights.core.spec_factory import RawFileProvider
 from insights.core.spec_factory import simple_file, simple_command, glob_file
 from insights.core.spec_factory import first_of, command_with_args
 from insights.core.spec_factory import foreach_collect, foreach_execute
 from insights.core.spec_factory import first_file, listdir
-from insights.combiners.cloud_provider import CloudProvider
-from insights.combiners.services import Services
-from insights.combiners.sap import Sap
-from insights.combiners.ps import Ps
-from insights.components.rhel_version import IsRhel8, IsRhel7, IsRhel6
-from insights.parsers.mdstat import Mdstat
-from insights.parsers.lsmod import LsMod
-from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersion
-from insights.parsers.mount import Mount
 from insights.specs import Specs
-import datetime
+from insights.specs.datasources import (
+    cloud_init, corosync as corosync_mod, gfs2, java, pcp, sap, tomcat,
+    du_dirs_list, is_aws, is_azure, is_ceph_monitor, is_gcp, httpd_cmds,
+    md5chk_file_list, md_device_list, is_pcp_enabled, is_satellite_capsule,
+    is_satellite_server, is_mod_loaded_for_ss
+)
 
 
 logger = logging.getLogger(__name__)
@@ -50,56 +39,6 @@ def get_owner(filename):
     name = getpwuid(st.st_uid).pw_name
     group = getgrgid(st.st_gid).gr_name
     return (name, group)
-
-
-def _get_running_commands(broker, commands):
-    """
-    Search for command in ``ps auxcww`` output and determine RPM providing binary
-
-    Arguments:
-        broker(dict): Current state of specs collected by Insights
-        commands(str or list): Command or list of commands to search for in ps output
-
-    Returns:
-        list: List of the full command paths of the ``command``.
-
-    Raises:
-        Exception: Raises an exception if commands object is not a list or is empty
-    """
-    if not commands or not isinstance(commands, list):
-        raise Exception('Commands argument must be a list object and contain at least one item')
-
-    ps_list = [broker[Ps].search(COMMAND_NAME__contains=c) for c in commands]
-    ps_cmds = [i for sub_l in ps_list for i in sub_l]
-    ctx = broker[HostContext]
-
-    ret = set()
-    for cmd in set(p['COMMAND'] for p in ps_cmds):
-        try:
-            cmd_prefix = cmd.split(None, 1)[0]
-            which = ctx.shell_out("/usr/bin/which {0}".format(cmd_prefix))
-        except Exception:
-            continue
-        ret.add(which[0]) if which else None
-    return sorted(ret)
-
-
-def _get_package(broker, command):
-    """
-    Arguments:
-        broker(dict): Current state of specs collected by Insights
-        command(str): The full command name to get the package
-
-    Returns:
-        str: The package that provides the ``command``.
-    """
-    ctx = broker[HostContext]
-    resolved = ctx.shell_out("/usr/bin/readlink -e {0}".format(command))
-    if resolved:
-        pkg = ctx.shell_out("/usr/bin/rpm -qf {0}".format(resolved[0]), signum=signal.SIGTERM)
-        if pkg:
-            return pkg[0]
-    raise SkipComponent
 
 
 def _make_rpm_formatter(fmt=None):
@@ -139,27 +78,9 @@ class DefaultSpecs(Specs):
     audit_log = simple_file("/var/log/audit/audit.log")
     avc_hash_stats = simple_file("/sys/fs/selinux/avc/hash_stats")
     avc_cache_threshold = simple_file("/sys/fs/selinux/avc/cache_threshold")
-
-    @datasource(CloudProvider, HostContext)
-    def is_aws(broker):
-        """ bool: Returns True if this node is identified as running in AWS """
-        cp = broker[CloudProvider]
-        if cp and cp.cloud_provider == CloudProvider.AWS:
-            return True
-        raise SkipComponent()
-
     aws_instance_id_doc = simple_command("/usr/bin/curl -s http://169.254.169.254/latest/dynamic/instance-identity/document --connect-timeout 5", deps=[is_aws])
     aws_instance_id_pkcs7 = simple_command("/usr/bin/curl -s http://169.254.169.254/latest/dynamic/instance-identity/pkcs7 --connect-timeout 5", deps=[is_aws])
     awx_manage_check_license = simple_command("/usr/bin/awx-manage check_license")
-
-    @datasource(CloudProvider, HostContext)
-    def is_azure(broker):
-        """ bool: Returns True if this node is identified as running in Azure """
-        cp = broker[CloudProvider]
-        if cp and cp.cloud_provider == CloudProvider.AZURE:
-            return True
-        raise SkipComponent()
-
     azure_instance_type = simple_command("/usr/bin/curl -s -H Metadata:true http://169.254.169.254/metadata/instance/compute/vmSize?api-version=2018-10-01&format=text --connect-timeout 5", deps=[is_azure])
     azure_instance_plan = simple_command("/usr/bin/curl -s -H Metadata:true http://169.254.169.254/metadata/instance/compute/plan?api-version=2018-10-01&format=json --connect-timeout 5", deps=[is_azure])
     bios_uuid = simple_command("/usr/sbin/dmidecode -s system-uuid")
@@ -177,27 +98,7 @@ class DefaultSpecs(Specs):
     ps_auxww = simple_command("/bin/ps auxww")
     ps_ef = simple_command("/bin/ps -ef")
     ps_eo = simple_command("/usr/bin/ps -eo pid,ppid,comm")
-
-    @datasource(ps_auxww, HostContext)
-    def tomcat_base(broker):
-        """
-        Function to search the output of ``ps auxww`` to find all running tomcat
-        processes and extract the base path where the process was started.
-
-        Returns:
-            list: List of the paths to each running process
-        """
-        ps = broker[DefaultSpecs.ps_auxww].content
-        results = []
-        findall = re.compile(r"\-Dcatalina\.base=(\S+)").findall
-        for p in ps:
-            found = findall(p)
-            if found:
-                # Only get the path which is absolute
-                results.extend(f for f in found if f[0] == '/')
-        return list(set(results))
-
-    catalina_out = foreach_collect(tomcat_base, "%s/catalina.out")
+    catalina_out = foreach_collect(tomcat.base_paths, "%s/catalina.out")
     cciss = glob_file("/proc/driver/cciss/cciss*")
     cdc_wdm = simple_file("/sys/bus/usb/drivers/cdc_wdm/module/refcnt")
     ceilometer_collector_log = first_file(["/var/log/containers/ceilometer/collector.log", "/var/log/ceilometer/collector.log"])
@@ -206,15 +107,6 @@ class DefaultSpecs(Specs):
     ceph_conf = first_file(["/var/lib/config-data/puppet-generated/ceph/etc/ceph/ceph.conf", "/etc/ceph/ceph.conf"])
     ceph_df_detail = simple_command("/usr/bin/ceph df detail -f json")
     ceph_health_detail = simple_command("/usr/bin/ceph health detail -f json")
-
-    @datasource(Ps, HostContext)
-    def is_ceph_monitor(broker):
-        """ bool: Returns True if ceph monitor process ceph-mon is running on this node """
-        ps = broker[Ps]
-        if ps.search(COMMAND__contains='ceph-mon'):
-            return True
-        raise SkipComponent()
-
     ceph_insights = simple_command("/usr/bin/ceph insights", deps=[is_ceph_monitor])
     ceph_log = glob_file(r"var/log/ceph/ceph.log*")
     ceph_osd_dump = simple_command("/usr/bin/ceph osd dump -f json")
@@ -231,100 +123,13 @@ class DefaultSpecs(Specs):
     cinder_api_log = first_file(["/var/log/containers/cinder/cinder-api.log", "/var/log/cinder/cinder-api.log"])
     cinder_conf = first_file(["/var/lib/config-data/puppet-generated/cinder/etc/cinder/cinder.conf", "/etc/cinder/cinder.conf"])
     cinder_volume_log = first_file(["/var/log/containers/cinder/volume.log", "/var/log/containers/cinder/cinder-volume.log", "/var/log/cinder/volume.log"])
-    cloud_cfg_input = simple_file("/etc/cloud/cloud.cfg")
-
-    @datasource(cloud_cfg_input, HostContext)
-    def cloud_cfg(broker):
-        """This datasource provides the network configuration collected
-        from ``/etc/cloud/cloud.cfg``.
-
-        Typical content of ``/etc/cloud/cloud.cfg`` file is::
-
-            #cloud-config
-            users:
-              - name: demo
-                ssh-authorized-keys:
-                  - key_one
-                  - key_two
-                passwd: $6$j212wezy$7H/1LT4f9/N3wpgNunhsIqtMj62OKiS3nyNwuizouQc3u7MbYCarYeAHWYPYb2FT.lbioDm2RrkJPb9BZMN1O/
-
-            network:
-              version: 1
-              config:
-                - type: physical
-                  name: eth0
-                  subnets:
-                    - type: dhcp
-                    - type: dhcp6
-
-            system_info:
-              default_user:
-                name: user2
-                plain_text_passwd: 'someP@assword'
-                home: /home/user2
-
-            debug:
-              output: /var/log/cloud-init-debug.log
-              verbose: true
-
-        Note:
-            This datasource may be executed using the following command:
-
-            ``insights-cat --no-header cloud_cfg``
-
-        Example:
-
-            ``{"version": 1, "config": [{"type": "physical", "name": "eth0", "subnets": [{"type": "dhcp"}, {"type": "dhcp6"}]}]}``
-
-        Returns:
-            str: JSON string when the ``network`` parameter is configure, else nothing is returned.
-
-        Raises:
-            SkipComponent: When the path does not exist or any exception occurs.
-        """
-        relative_path = '/etc/cloud/cloud.cfg'
-        try:
-            content = broker[DefaultSpecs.cloud_cfg_input].content
-            if content:
-                content = yaml.load('\n'.join(content), Loader=yaml.SafeLoader)
-                network_config = content.get('network', None)
-                if network_config:
-                    return DatasourceProvider(content=json.dumps(network_config), relative_path=relative_path)
-        except Exception as e:
-            raise SkipComponent("Unexpected exception:{e}".format(e=str(e)))
-
-        raise SkipComponent()
-
+    cloud_cfg = cloud_init.cloud_cfg
     cloud_init_custom_network = simple_file("/etc/cloud/cloud.cfg.d/99-custom-networking.cfg")
     cloud_init_log = simple_file("/var/log/cloud-init.log")
     cluster_conf = simple_file("/etc/cluster/cluster.conf")
     cmdline = simple_file("/proc/cmdline")
     corosync = simple_file("/etc/sysconfig/corosync")
-
-    @datasource(HostContext, [IsRhel7, IsRhel8])
-    def corosync_cmapctl_cmd_list(broker):
-        """
-        corosync-cmapctl add different arguments on RHEL7 and RHEL8.
-
-        Returns:
-            list: A list of related corosync-cmapctl commands based the RHEL version.
-        """
-        corosync_cmd = '/usr/sbin/corosync-cmapctl'
-        if os.path.exists(corosync_cmd):
-            if broker.get(IsRhel7):
-                return [
-                    corosync_cmd,
-                    ' '.join([corosync_cmd, '-d runtime.schedmiss.timestamp']),
-                    ' '.join([corosync_cmd, '-d runtime.schedmiss.delay'])]
-            if broker.get(IsRhel8):
-                return [
-                    corosync_cmd,
-                    ' '.join([corosync_cmd, '-m stats']),
-                    ' '.join([corosync_cmd, '-C schedmiss'])]
-
-        raise SkipComponent()
-
-    corosync_cmapctl = foreach_execute(corosync_cmapctl_cmd_list, "%s")
+    corosync_cmapctl = foreach_execute(corosync_mod.cmapctl_cmd_list, "%s")
     corosync_conf = simple_file("/etc/corosync/corosync.conf")
     cpu_cores = glob_file("sys/devices/system/cpu/cpu[0-9]*/online")
     cpu_siblings = glob_file("sys/devices/system/cpu/cpu[0-9]*/topology/thread_siblings_list")
@@ -366,11 +171,6 @@ class DefaultSpecs(Specs):
     docker_sysconfig = simple_file("/etc/sysconfig/docker")
     dotnet_version = simple_command("/usr/bin/dotnet --version")
     dracut_kdump_capture_service = simple_file("/usr/lib/dracut/modules.d/99kdumpbase/kdump-capture.service")
-
-    @datasource(HostContext)
-    def du_dirs_list(broker):
-        """ Provide a list of directorys for the ``du_dirs`` spec to scan """
-        return ['/var/lib/candlepin/activemq-artemis']
     du_dirs = foreach_execute(du_dirs_list, "/bin/du -s -k %s")
     engine_db_query_vdsm_version = simple_command('engine-db-query --statement "SELECT vs.vds_name, rpm_version FROM vds_dynamic vd, vds_static vs WHERE vd.vds_id = vs.vds_id" --json')
     engine_log = simple_file("/var/log/ovirt-engine/engine.log")
@@ -378,7 +178,7 @@ class DefaultSpecs(Specs):
     etc_journald_conf_d = glob_file(r"etc/systemd/journald.conf.d/*.conf")
     etc_machine_id = simple_file("/etc/machine-id")
     etc_udev_40_redhat_rules = first_file(["/etc/udev/rules.d/40-redhat.rules", "/run/udev/rules.d/40-redhat.rules",
-                                       "/usr/lib/udev/rules.d/40-redhat.rules", "/usr/local/lib/udev/rules.d/40-redhat.rules"])
+                                           "/usr/lib/udev/rules.d/40-redhat.rules", "/usr/local/lib/udev/rules.d/40-redhat.rules"])
     etcd_conf = simple_file("/etc/etcd/etcd.conf")
     ethernet_interfaces = listdir("/sys/class/net", context=HostContext)
     ethtool = foreach_execute(ethernet_interfaces, "/sbin/ethtool %s")
@@ -399,41 +199,10 @@ class DefaultSpecs(Specs):
     getconf_page_size = simple_command("/usr/bin/getconf PAGE_SIZE")
     getenforce = simple_command("/usr/sbin/getenforce")
     getsebool = simple_command("/usr/sbin/getsebool -a")
-
-    @datasource(Mount, [IsRhel6, IsRhel7, IsRhel8], HostContext)
-    def gfs2_mount_points(broker):
-        """
-        Function to search the output of ``mount`` to find all the gfs2 file
-        systems.
-        And only run the ``stat`` command on RHEL version that's less than
-        8.3. With 8.3 and later, the command ``blkid`` will also output the
-        block size info.
-
-        Returns:
-            list: a list of mount points of which the file system type is gfs2
-        """
-        gfs2_mount_points = []
-        if (broker.get(IsRhel6) or broker.get(IsRhel7) or
-                (broker.get(IsRhel8) and broker[IsRhel8].minor < 3)):
-            for mnt in broker[Mount]:
-                if mnt.mount_type == "gfs2":
-                    gfs2_mount_points.append(mnt.mount_point)
-        if gfs2_mount_points:
-            return gfs2_mount_points
-        raise SkipComponent
-    gfs2_file_system_block_size = foreach_execute(gfs2_mount_points, "/usr/bin/stat -fc %%s %s")
+    gfs2_file_system_block_size = foreach_execute(gfs2.mount_points, "/usr/bin/stat -fc %%s %s")
     gluster_v_info = simple_command("/usr/sbin/gluster volume info")
     gnocchi_conf = first_file(["/var/lib/config-data/puppet-generated/gnocchi/etc/gnocchi/gnocchi.conf", "/etc/gnocchi/gnocchi.conf"])
     gnocchi_metricd_log = first_file(["/var/log/containers/gnocchi/gnocchi-metricd.log", "/var/log/gnocchi/metricd.log"])
-
-    @datasource(CloudProvider, HostContext)
-    def is_gcp(broker):
-        """ bool: Returns True if this node is identified as running in GCP """
-        cp = broker[CloudProvider]
-        if cp and cp.cloud_provider == CloudProvider.GOOGLE:
-            return True
-        raise SkipComponent()
-
     gcp_instance_type = simple_command("/usr/bin/curl -s -H 'Metadata-Flavor: Google' http://metadata.google.internal/computeMetadata/v1/instance/machine-type --connect-timeout 5", deps=[is_gcp])
     gcp_license_codes = simple_command("/usr/bin/curl -s -H 'Metadata-Flavor: Google' http://metadata.google.internal/computeMetadata/v1/instance/licenses/?recursive=True --connect-timeout 5", deps=[is_gcp])
     greenboot_status = simple_command("/usr/libexec/greenboot/greenboot-status")
@@ -481,22 +250,10 @@ class DefaultSpecs(Specs):
     httpd24_httpd_error_log = simple_file("/opt/rh/httpd24/root/etc/httpd/logs/error_log")
     jbcs_httpd24_httpd_error_log = simple_file("/opt/rh/jbcs-httpd24/root/etc/httpd/logs/error_log")
     virt_uuid_facts = simple_file("/etc/rhsm/facts/virt_uuid.facts")
-
-    @datasource(Ps, HostContext)
-    def httpd_cmd(broker):
-        """
-        Function to search the output of ``ps auxcww`` to find all running Apache
-        webserver processes and extract the binary path.
-
-        Returns:
-            list: List of the binary paths to each running process
-        """
-        return _get_running_commands(broker, ['httpd', ])
-
     httpd_pid = simple_command("/usr/bin/pgrep -o httpd")
     httpd_limits = foreach_collect(httpd_pid, "/proc/%s/limits")
-    httpd_M = foreach_execute(httpd_cmd, "%s -M")
-    httpd_V = foreach_execute(httpd_cmd, "%s -V")
+    httpd_M = foreach_execute(httpd_cmds, "%s -M")
+    httpd_V = foreach_execute(httpd_cmds, "%s -V")
     ifcfg = glob_file("/etc/sysconfig/network-scripts/ifcfg-*")
     ifcfg_static_route = glob_file("/etc/sysconfig/network-scripts/route-*")
     imagemagick_policy = glob_file(["/etc/ImageMagick/policy.xml", "/usr/lib*/ImageMagick-6.5.4/config/policy.xml"])
@@ -582,20 +339,8 @@ class DefaultSpecs(Specs):
     machine_id = first_file(["etc/insights-client/machine-id", "etc/redhat-access-insights/machine-id", "etc/redhat_access_proactive/machine-id"])
     mariadb_log = simple_file("/var/log/mariadb/mariadb.log")
     max_uid = simple_command("/bin/awk -F':' '{ if($3 > max) max = $3 } END { print max }' /etc/passwd")
-
-    @datasource(HostContext)
-    def md5chk_file_list(broker):
-        """ Provide a list of files to be processed by the ``md5chk_files`` spec """
-        return ["/etc/pki/product/69.pem", "/etc/pki/product-default/69.pem", "/usr/lib/libsoftokn3.so", "/usr/lib64/libsoftokn3.so", "/usr/lib/libfreeblpriv3.so", "/usr/lib64/libfreeblpriv3.so"]
     md5chk_files = foreach_execute(md5chk_file_list, "/usr/bin/md5sum %s", keep_rc=True)
     mdstat = simple_file("/proc/mdstat")
-
-    @datasource(Mdstat, HostContext)
-    def md_device_list(broker):
-        md = broker[Mdstat]
-        if md.components:
-            return [dev["device_name"] for dev in md.components if dev["active"]]
-        raise SkipComponent()
     mdadm_E = foreach_execute(md_device_list, "/usr/sbin/mdadm -E %s")
     meminfo = first_file(["/proc/meminfo", "/meminfo"])
     messages = simple_file("/var/log/messages")
@@ -688,73 +433,20 @@ class DefaultSpecs(Specs):
     ovirt_engine_ui_log = simple_file("/var/log/ovirt-engine/ui.log")
     ovs_vsctl_list_bridge = simple_command("/usr/bin/ovs-vsctl list bridge")
     ovs_vsctl_show = simple_command("/usr/bin/ovs-vsctl show")
-
-    @datasource(Ps, HostContext)
-    def cmd_and_pkg(broker):
-        """
-        Returns:
-            list: List of the command and provider package string of the specified commands.
-
-        Attributes:
-            COMMANDS (list): List of the specified commands that need to check the provider package.
-        """
-        COMMANDS = ['java', 'httpd']
-        pkg_cmd = list()
-        for cmd in _get_running_commands(broker, COMMANDS):
-            pkg_cmd.append("{0} {1}".format(cmd, _get_package(broker, cmd)))
-        if pkg_cmd:
-            return '\n'.join(pkg_cmd)
-        raise SkipComponent
-
-    package_provides_command = command_with_args("/usr/bin/echo '%s'", cmd_and_pkg)
+    package_provides_command = command_with_args("/usr/bin/echo '%s'", java.cmd_and_pkg)
+    package_provides_java = foreach_execute(java.cmd_and_pkg, "/usr/bin/echo '%s'")
     pacemaker_log = first_file(["/var/log/pacemaker.log", "/var/log/pacemaker/pacemaker.log"])
-    partitions = simple_file("/proc/partitions")
     pci_rport_target_disk_paths = simple_command("/usr/bin/find /sys/devices/ -maxdepth 10 -mindepth 9 -name stat -type f")
-
-    @datasource(Services, HostContext)
-    def pcp_enabled(broker):
-        """ bool: Returns True if pmproxy service is on in services """
-        if not broker[Services].is_on("pmproxy"):
-            raise SkipComponent("pmproxy not enabled")
-
-    pcp_metrics = simple_command("/usr/bin/curl -s http://127.0.0.1:44322/metrics --connect-timeout 5", deps=[pcp_enabled])
+    pcp_metrics = simple_command("/usr/bin/curl -s http://127.0.0.1:44322/metrics --connect-timeout 5", deps=[is_pcp_enabled])
     passenger_status = simple_command("/usr/bin/passenger-status")
     password_auth = simple_file("/etc/pam.d/password-auth")
     pcs_quorum_status = simple_command("/usr/sbin/pcs quorum status")
     pcs_status = simple_command("/usr/sbin/pcs status")
     php_ini = first_file(["/etc/opt/rh/php73/php.ini", "/etc/opt/rh/php72/php.ini", "/etc/php.ini"])
     pluginconf_d = glob_file("/etc/yum/pluginconf.d/*.conf")
-
-    @datasource(Ps, HostContext)
-    def pmlog_summary_file(broker):
-        """
-        Determines the name for the pmlogger file and checks for its existance
-
-        Returns the name of the latest pmlogger summary file if a running ``pmlogger``
-        process is detected on the system.
-
-        Returns:
-            str: Full path to the latest pmlogger file
-
-        Raises:
-            SkipComponent: raises this exception when the command is not present or
-                the file is not present
-        """
-        ps = broker[Ps]
-        if ps.search(COMMAND__contains='pmlogger'):
-            pcp_log_date = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y%m%d")
-            file = "/var/log/pcp/pmlogger/ros/%s.index" % (pcp_log_date)
-            try:
-                if os.path.exists(file) and os.path.isfile(file):
-                    return file
-            except Exception as e:
-                SkipComponent("Failed to check for pmlogger file existance: {0}".format(str(e)))
-
-        raise SkipComponent
-
     pmlog_summary = command_with_args(
         "/usr/bin/pmlogsummary %s mem.util.used mem.physmem kernel.all.cpu.user kernel.all.cpu.sys kernel.all.cpu.nice kernel.all.cpu.steal kernel.all.cpu.idle disk.all.total mem.util.cached mem.util.bufmem mem.util.free kernel.all.cpu.wait.total",
-        pmlog_summary_file)
+        pcp.pmlog_summary_file)
     pmrep_metrics = simple_command("/usr/bin/pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout mssql.memory_manager.stolen_server_memory mssql.memory_manager.total_server_memory -o csv")
     postconf_builtin = simple_command("/usr/sbin/postconf -C builtin")
     postconf = simple_command("/usr/sbin/postconf")
@@ -801,93 +493,13 @@ class DefaultSpecs(Specs):
     rpm_V_packages = simple_command("/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo chrony", keep_rc=True, signum=signal.SIGTERM)
     rsyslog_conf = glob_file(["/etc/rsyslog.conf", "/etc/rsyslog.d/*.conf"])
     samba = simple_file("/etc/samba/smb.conf")
-
-    @datasource(Sap, HostContext)
-    def sap_instance(broker):
-        """
-        list: List of all SAP Instances.
-        """
-        sap = broker[Sap]
-        return list(v for v in sap.values())
-
-    @datasource(sap_instance, HostContext)
-    def sap_hana_instance(broker):
-        """
-        list: List of the SAP HANA Instances.
-        """
-        sap = broker[DefaultSpecs.sap_instance]
-        return list(v for v in sap if v.type == 'HDB')
-
-    @datasource(sap_instance, HostContext)
-    def sap_sid(broker):
-        """
-        list: List of the SID of all the SAP Instances.
-        """
-        sap = broker[DefaultSpecs.sap_instance]
-        return list(set(h.sid.lower() for h in sap))
-
-    @datasource(sap_hana_instance, HostContext)
-    def sap_hana_sid(broker):
-        """
-        list: List of the SID of SAP HANA Instances.
-        """
-        hana = broker[DefaultSpecs.sap_hana_instance]
-        return list(set(h.sid.lower() for h in hana))
-
-    @datasource(sap_hana_instance, HostContext)
-    def sap_hana_sid_SID_nr(broker):
-        """
-        list: List of tuples (sid, SID, Nr) of SAP HANA Instances.
-        """
-        hana = broker[DefaultSpecs.sap_hana_instance]
-        return list((h.sid.lower(), h.sid, h.number) for h in hana)
-
-    @datasource(sap_sid, HostContext)
-    def ld_library_path_of_user(broker):
-        """
-        Returns: The list of LD_LIBRARY_PATH of specified users.
-                 Username is combined from SAP <SID> and 'adm' and is also stored.
-        """
-        sids = broker[DefaultSpecs.sap_sid]
-        ctx = broker[HostContext]
-        llds = []
-        for sid in sids:
-            usr = '{0}adm'.format(sid)
-            ret, vvs = ctx.shell_out("/bin/su -l {0} -c /bin/env".format(usr), keep_rc=True)
-            if ret != 0:
-                continue
-            for v in vvs:
-                if "LD_LIBRARY_PATH=" in v:
-                    llds.append('{0} {1}'.format(usr, v.split('=', 1)[-1]))
-        if llds:
-            return DatasourceProvider('\n'.join(llds), relative_path='insights_commands/echo_user_LD_LIBRARY_PATH')
-        raise SkipComponent
-
-    sap_hana_landscape = foreach_execute(sap_hana_sid_SID_nr, "/bin/su -l %sadm -c 'python /usr/sap/%s/HDB%s/exe/python_support/landscapeHostConfiguration.py'", keep_rc=True)
-    sap_hdb_version = foreach_execute(sap_hana_sid, "/bin/su -l %sadm -c 'HDB version'", keep_rc=True)
+    ld_library_path_of_user = sap.ld_library_path_of_user
+    sap_hana_landscape = foreach_execute(sap.hana_sid_SID_nr, "/bin/su -l %sadm -c 'python /usr/sap/%s/HDB%s/exe/python_support/landscapeHostConfiguration.py'", keep_rc=True)
+    sap_hdb_version = foreach_execute(sap.hana_sid, "/bin/su -l %sadm -c 'HDB version'", keep_rc=True)
     saphostctl_getcimobject_sapinstance = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance")
     saphostexec_status = simple_command("/usr/sap/hostctrl/exe/saphostexec -status")
     saphostexec_version = simple_command("/usr/sap/hostctrl/exe/saphostexec -version")
     sat5_insights_properties = simple_file("/etc/redhat-access/redhat-access-insights.properties")
-
-    @datasource(SatelliteVersion, HostContext)
-    def is_satellite_server(broker):
-        """
-        bool: Returns True if the host is satellite server.
-        """
-        if broker[SatelliteVersion]:
-            return True
-        raise SkipComponent
-
-    @datasource(CapsuleVersion, HostContext)
-    def is_satellite_capsule(broker):
-        """
-        bool: Returns True if the host is satellite capsule.
-        """
-        if broker[CapsuleVersion]:
-            return True
-        raise SkipComponent
-
     satellite_compute_resources = simple_command(
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c 'select name, type from compute_resources' --csv",
         deps=[is_satellite_server]
@@ -928,19 +540,6 @@ class DefaultSpecs(Specs):
     softnet_stat = simple_file("proc/net/softnet_stat")
     software_collections_list = simple_command('/usr/bin/scl --list')
     spamassassin_channels = simple_command("/bin/grep -r '^\\s*CHANNELURL=' /etc/mail/spamassassin/channel.d")
-
-    @datasource(LsMod, HostContext)
-    def is_mod_loaded_for_ss(broker):
-        """
-        bool: Returns True if the kernel modules required by ``ss -tupna``
-        command are loaded.
-        """
-        lsmod = broker[LsMod]
-        req_mods = ['inet_diag', 'tcp_diag', 'udp_diag']
-        if all(mod in lsmod for mod in req_mods):
-            return True
-        raise SkipComponent
-
     ss = simple_command("/usr/sbin/ss -tupna", deps=[is_mod_loaded_for_ss])
     ssh_config = simple_file("/etc/ssh/ssh_config")
     ssh_config_d = glob_file(r"/etc/ssh/ssh_config.d/*.conf")
