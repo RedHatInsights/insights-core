@@ -1,9 +1,13 @@
 import re
 
 from insights.core.dr import SkipComponent
+from insights.core.context import HostContext
+from insights.core.plugins import datasource
+from insights.specs import Specs
 
 
-def base_paths(ps_auxww):
+@datasource(Specs.ps_auxww, HostContext)
+def base_paths(broker):
     """
     Function to search the output of ``ps auxww`` to find all running tomcat
     processes and extract the base path where the process was started.
@@ -11,7 +15,7 @@ def base_paths(ps_auxww):
     Returns:
         list: List of the paths to each running process
     """
-    ps = ps_auxww.content
+    ps = broker[Specs.ps_auxww].content
     results = []
     findall = re.compile(r"\-Dcatalina\.base=(\S+)").findall
     for p in ps:

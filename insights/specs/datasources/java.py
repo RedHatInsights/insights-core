@@ -1,7 +1,12 @@
+from insights.combiners.ps import Ps
+from insights.core.context import HostContext
 from insights.core.dr import SkipComponent
+from insights.core.plugins import datasource
+
 from . import get_package, get_running_commands
 
 
+@datasource(Ps, HostContext)
 def cmd_and_pkg(broker):
     """
     Returns:
@@ -18,4 +23,4 @@ def cmd_and_pkg(broker):
     if pkg_cmd:
         return '\n'.join(pkg_cmd)
 
-    raise SkipComponent
+    raise SkipComponent()

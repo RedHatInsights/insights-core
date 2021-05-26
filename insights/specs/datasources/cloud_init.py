@@ -1,7 +1,9 @@
 import json
 import yaml
 
+from insights.core.context import HostContext
 from insights.core.dr import SkipComponent
+from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider, simple_file
 from insights.specs import Specs
 
@@ -10,6 +12,7 @@ class LocalSpecs(Specs):
     cloud_cfg_input = simple_file("/etc/cloud/cloud.cfg")
 
 
+@datasource(LocalSpecs.cloud_cfg_input, HostContext)
 def cloud_cfg(broker):
     """This datasource provides the network configuration collected
     from ``/etc/cloud/cloud.cfg``.
