@@ -15,7 +15,7 @@ import json
 import signal
 
 from grp import getgrgid
-from os import stat, listdir as os_listdir
+from os import stat
 from pwd import getpwuid
 
 import yaml
@@ -952,37 +952,37 @@ class DefaultSpecs(Specs):
     @datasource(Ps, HostContext)
     def proc_swap_memory(broker):
         ps = broker[Ps]
-        pids = [p for p in sorted(os_listdir("/proc/")) if p.isdigit()]
         data = []
-        for pid_id in pids:
-            with open("/proc/{0}/smaps".format(pid_id), "r") as fi:
-                vars = fi.read()
-                swap = {}
-                for index in vars.split('\n'):
-                    if not len(index):
-                        continue
-                    else:
-                        k, v = index.split(":", 1)
-                        if index[0].isdigit():
+        for p_id in ps:
+            pid_id = p_id["PID"]
+            try:
+                with open("/proc/{0}/smaps".format(pid_id), "r") as fp:
+                    swap = {}
+                    for line in fp.readlines():
+                        if not len(line):
                             continue
-                        elif k == "Swap" and "Swap" not in swap:
-                            swap[k] = int(v.split()[0])
-                        elif k == "Swap" and "Swap" in swap:
-                            swap[k] = swap[k] + int(v.split()[0])
-                        elif k == "SwapPss" and "SwapPss" not in swap:
-                            swap[k] = int(v.split()[0])
-                        elif k == "SwapPss" and "SwapPss" in swap:
-                            swap[k] = swap[k] + int(v.split()[0])
                         else:
-                            continue
-                if swap:
-                    data.append(dict(pid=int(pid_id), det=swap))
+                            k, v = line.split(":", 1)
+                            if "00000000" in k or k == "VmFlags" or line[0].isdigit():
+                                continue
+                            elif k not in swap:
+                                swap[k] = int(v.split()[0])
+                            elif k in swap:
+                                swap[k] = swap[k] + int(v.split()[0])
+                            else:
+                                continue
+                    if swap:
+                        data.append(dict(pid=int(pid_id), det=swap))
+            except Exception:
+                continue
 
         smaps_data = []
         for proc in ps:
             for process in data:
                 if proc["PID"] == process["pid"]:
-                    smaps_data.append(dict(pid=process["pid"], command=proc["COMMAND"], swap=process["det"]["Swap"], swappss=process["det"]["SwapPss"]))
+                    process["det"]["PID"] = proc["PID"]
+                    process["det"]['COMMAND'] = proc["COMMAND"]
+                    smaps_data.append(process['det'].copy())
 
         if smaps_data:
             return DatasourceProvider(smaps_data, relative_path="insights_commands/cat_all_PID_SWAP_SWAPPSS_MEMORY")
