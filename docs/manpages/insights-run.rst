@@ -39,6 +39,12 @@ OPTIONS
     -c CONFIG --config CONFIG
         Configure components.
 
+    \-\-color [=WHEN]
+        Choose if and how the color encoding is outputted. When can be 'always', 'auto', or
+        'never'. If always the color encoding isn't stripped from the output, so it can be
+        piped. If auto the color is outputted in the terminal but is stripped if piped. If
+        never then no color encoding is outputted.
+
     \-\-context CONTEXT
         Execution Context. Defaults to HostContext if an archive isn't passed.
         See :ref:`context-label` for additional information.
