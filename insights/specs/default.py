@@ -15,7 +15,7 @@ import json
 import signal
 
 from grp import getgrgid
-from os import stat
+from os import stat, listdir as os_listdir
 from pwd import getpwuid
 
 import yaml
@@ -948,6 +948,46 @@ class DefaultSpecs(Specs):
     sssd_config = simple_file("/etc/sssd/sssd.conf")
     subscription_manager_id = simple_command("/usr/sbin/subscription-manager identity")  # use "/usr/sbin" here, BZ#1690529
     subscription_manager_installed_product_ids = simple_command("/usr/bin/find /etc/pki/product-default/ /etc/pki/product/ -name '*pem' -exec rct cat-cert --no-content '{}' \;")
+
+
+    @datasource(Ps, HostContext)
+    def proc_swap_memory(broker):
+        pids = [p for p in sorted(os_listdir("/proc/")) if p.isdigit()]
+        data = []
+        for pid_id in pids:
+            with open("/proc/{0}/smaps".format(pid_id), "r") as fi:
+                vars = fi.read()
+                swap = {}
+                for index in vars.split('\n'):
+                    if not len(index):
+                        continue
+                    else:
+                        k, v = index.split(":", 1)
+                        if index[0].isdigit():
+                            continue
+                        elif k == "Swap" and "Swap" not in swap:
+                            swap[k] = int(v.split()[0])
+                        elif k == "Swap" and "Swap" in swap:
+                            swap[k] = swap[k] + int(v.split()[0])
+                        elif k == "SwapPss" and "SwapPss" not in swap:
+                            swap[k] = int(v.split()[0])
+                        elif k == "SwapPss" and "SwapPss" in swap:
+                            swap[k] = swap[k] + int(v.split()[0])
+                        else:
+                            continue
+                if swap:
+                    data.append(dict(pid=int(pid_id), det=swap))
+
+        smaps_data = []
+        for proc in ps:
+            for process in data:
+                if proc["PID"] == process["pid"]:
+                    smaps_data.append(dict(pid=process["pid"], command=proc["COMMAND"], swap=process["det"]["Swap"], swappss=process["det"]["SwapPss"]))
+
+        if smaps_data:
+            return DatasourceProvider(smaps_data, relative_path="insights_commands/cat_all_PID_SWAP_SWAPPSS_MEMORY")
+        raise SkipComponent
+
     swift_object_expirer_conf = first_file(["/var/lib/config-data/puppet-generated/swift/etc/swift/object-expirer.conf", "/etc/swift/object-expirer.conf"])
     swift_proxy_server_conf = first_file(["/var/lib/config-data/puppet-generated/swift/etc/swift/proxy-server.conf", "/etc/swift/proxy-server.conf"])
     sysconfig_grub = simple_file("/etc/default/grub")  # This is the file where the "/etc/sysconfig/grub" point to
