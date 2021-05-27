@@ -952,6 +952,7 @@ class DefaultSpecs(Specs):
 
     @datasource(Ps, HostContext)
     def proc_swap_memory(broker):
+        ps = broker[Ps]
         pids = [p for p in sorted(os_listdir("/proc/")) if p.isdigit()]
         data = []
         for pid_id in pids:
