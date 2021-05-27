@@ -6,7 +6,7 @@ from insights.parsers import proc_swap_memory
 from insights.parsers.proc_swap_memory import ProcSwapMemory
 
 SWAP_MEM_INFO = """
-[{"pid": 3065, "command": "/usr/libexec/packagekitd", "swap": 348, "swappss": 348}, {"pid": 2873, "command": "/usr/bin/gnome-shell", "swap": 13576, "swappss": 348}, {"pid": 1498, "command": "/usr/bin/mongod -f /etc/mongod.conf", "swap": 2996, "swappss": 2152}, {"pid": 31072, "command": "/opt/google/chrome/chrome", "swap": 4488, "swappss": 4204}]
+[{"pid": 3065, "command": "/usr/libexec/packagekitd", "swap": 348, "swappss": 348}, {"pid": 2873, "command": "/usr/bin/gnome-shell", "swap": 13576, "swappss": 348}]
 """.strip()
 
 SWAP_MEM_EMPTY_DATA = """
@@ -15,11 +15,8 @@ SWAP_MEM_EMPTY_DATA = """
 
 def test_proc_swap_memory():
     swap_mem_info = ProcSwapMemory(context_wrap(SWAP_MEM_INFO))
-    assert len(swap_mem_info.data) == 4
-    assert swap_mem_info.data[0]['pid'] == 3065
-    assert swap_mem_info.data[0]['command'] == u'/usr/libexec/packagekitd'
-    assert swap_mem_info.data[0]['swap'] == 348
-    assert swap_mem_info.data[0]['swappss'] == 348
+    #import pdb; pdb.set_trace()
+    assert swap_mem_info.data == [{'pid': 3065, 'command': '/usr/libexec/packagekitd', 'swap': 348, 'swappss': 348}, {'pid': 2873, 'command': '/usr/bin/gnome-shell', 'swap': 13576, 'swappss': 348}]
 
 
 def test_empty():

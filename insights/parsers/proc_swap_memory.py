@@ -28,12 +28,8 @@ class ProcSwapMemory(CommandParser):
     Examples:
     >>> type(swap_memory_doc_obj)
     <class 'insights.parsers.proc_swap_memory.ProcSwapMemory'>
-    >>> swap_memory_doc_obj.data[0]['pid']
-    3065
-    >>> swap_memory_doc_obj.data[0]['command']
-    u'/usr/libexec/packagekitd'
-    >>> swap_memory_doc_obj.data[0]['swap']
-    348
+    >>> swap_memory_doc_obj.data
+    [{'pid': 3065, 'command': '/usr/libexec/packagekitd', 'swap': 348, 'swappss': 348}, {'pid': 2873, 'command': '/usr/bin/gnome-shell', 'swap': 13576, 'swappss': 348}]
     """
     def parse_content(self, content):
         if not content:
