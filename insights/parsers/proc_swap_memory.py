@@ -31,7 +31,7 @@ class ProcSwapMemory(CommandParser):
     >>> swap_memory_doc_obj.data[0]['pid']
     3065
     >>> swap_memory_doc_obj.data[0]['command']
-    '/usr/libexec/packagekitd'
+    u'/usr/libexec/packagekitd'
     >>> swap_memory_doc_obj.data[0]['swap']
     348
     """

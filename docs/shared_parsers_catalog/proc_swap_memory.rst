@@ -1,3 +1,3 @@
-.. automodule:: insights.parsers.swap_memory_usage
+.. automodule:: insights.parsers.proc_swap_memory
    :members:
    :show-inheritance:
