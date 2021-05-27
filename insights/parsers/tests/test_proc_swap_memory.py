@@ -15,7 +15,6 @@ SWAP_MEM_EMPTY_DATA = """
 
 def test_proc_swap_memory():
     swap_mem_info = ProcSwapMemory(context_wrap(SWAP_MEM_INFO))
-    #import pdb; pdb.set_trace()
     assert swap_mem_info.data == [{'pid': 3065, 'command': '/usr/libexec/packagekitd', 'swap': 348, 'swappss': 348}, {'pid': 2873, 'command': '/usr/bin/gnome-shell', 'swap': 13576, 'swappss': 348}]
 
 
