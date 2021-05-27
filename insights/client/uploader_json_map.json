@@ -2658,7 +2658,8 @@
         {
             "file": "/etc/mongod.conf",
             "pattern": [
-                "dbpath"
+                "dbPath",
+                "storage"
             ],
             "symbolic_name": "mongod_conf"
         },
@@ -2666,7 +2667,8 @@
             "file": "/etc/opt/rh/rh-mongodb34/mongod.conf",
             "symbolic_name": "mongod_conf",
             "pattern": [
-                "dbpath"
+                "dbPath",
+                "storage"
             ]
         },
         {
@@ -3524,6 +3526,11 @@
             "symbolic_name": "sys_kernel_sched_features"
         },
         {
+            "file": "/etc/default/grub",
+            "pattern": [],
+            "symbolic_name": "sysconfig_grub"
+        },
+        {
             "file": "/etc/sysconfig/kdump",
             "pattern": [],
             "symbolic_name": "sysconfig_kdump"
@@ -4315,5 +4322,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2021-05-13T13:38:29.298898"
+    "version": "2021-05-18T12:17:02.852717"
 }
