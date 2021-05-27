@@ -1,6 +1,6 @@
 """
-ProcSwapMemoryUsage
-===================
+ProcSwapMemory
+==============
 
 Parser for calculating the total SWAP memory of each PID.
 
