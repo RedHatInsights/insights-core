@@ -950,7 +950,7 @@ class DefaultSpecs(Specs):
     subscription_manager_installed_product_ids = simple_command("/usr/bin/find /etc/pki/product-default/ /etc/pki/product/ -name '*pem' -exec rct cat-cert --no-content '{}' \;")
 
     @datasource(Ps, HostContext)
-    def proc_swap_memory(broker):
+    def proc_smaps(broker):
         ps = broker[Ps]
         data = []
         for p_id in ps:
