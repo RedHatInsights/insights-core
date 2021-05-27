@@ -17,7 +17,7 @@ def test_proc_swap_memory():
     swap_mem_info = ProcSwapMemory(context_wrap(SWAP_MEM_INFO))
     assert len(swap_mem_info.data) == 4
     assert swap_mem_info.data[0]['pid'] == 3065
-    assert swap_mem_info.data[0]['command'] == "/usr/libexec/packagekitd"
+    assert swap_mem_info.data[0]['command'] == u'/usr/libexec/packagekitd'
     assert swap_mem_info.data[0]['swap'] == 348
     assert swap_mem_info.data[0]['swappss'] == 348
 
