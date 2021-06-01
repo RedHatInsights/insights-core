@@ -1,14 +1,11 @@
 import os
 import copy
 import base64
-import requests
 import tempfile
 import pkgutil
 import hashlib
 import insights.client.apps.ansible
 from logging import getLogger
-from distutils.version import LooseVersion
-from insights.client.utilities import get_version_info
 from insights.client.apps.ansible.playbook_verifier.contrib import gnupg
 from insights.client.apps.ansible.playbook_verifier.contrib.ruamel_yaml.ruamel import yaml
 from insights.client.constants import InsightsConstants as constants
@@ -17,7 +14,6 @@ __all__ = ("loadPlaybookYaml", "verify", "PlaybookVerificationError")
 
 SIGKEY = 'insights_signature'
 PUBLIC_KEY_FOLDER = pkgutil.get_data(insights.client.apps.ansible.__name__, 'playbook_verifier/public.gpg')    # Update this when we have the key generated
-VERSIONING_URL = 'https://cloud.redhat.com/api/v1/static/egg_version'
 EXCLUDABLE_VARIABLES = ['hosts', 'vars']
 
 logger = getLogger(__name__)
@@ -56,18 +52,6 @@ def createSnippetHash(snippet):
     snippetHash.update(serializedSnippet)
 
     return snippetHash.digest()
-
-
-def eggVersioningCheck(checkVersion):
-    currentVersion = requests.get(VERSIONING_URL)
-    currentVersion = currentVersion.text
-    runningVersion = get_version_info()['core_version']
-
-    if checkVersion:
-        if LooseVersion(currentVersion.strip()) < LooseVersion(runningVersion):
-            raise PlaybookVerificationError(message="EGG VERSION ERROR: Current running egg is not the most recent version")
-
-    return currentVersion
 
 
 def getPublicKey(gpg):
@@ -125,9 +109,11 @@ def executeVerification(snippet, encodedSignature):
 
 def verifyPlaybookSnippet(snippet):
     if ('vars' not in snippet.keys()):
-        raise PlaybookVerificationError(message='VARS FIELD NOT FOUND: Verification failed')
+        raise PlaybookVerificationError(message='VERIFICATION FAILED: Vars field not found')
+    elif (snippet['vars'] is None):
+        raise PlaybookVerificationError(message='VERIFICATION FAILED: Empty vars field')
     elif (SIGKEY not in snippet['vars']):
-        raise PlaybookVerificationError(message='SIGNATURE NOT FOUND: Verification failed')
+        raise PlaybookVerificationError(message='VERIFICATION FAILED: Signature not found')
 
     encodedSignature = snippet['vars'][SIGKEY]
     snippetCopy = copy.deepcopy(snippet)
@@ -137,7 +123,7 @@ def verifyPlaybookSnippet(snippet):
     return executeVerification(snippetCopy, encodedSignature)
 
 
-def verify(playbook, checkVersion=False, skipVerify=True):
+def verify(playbook, skipVerify=True):
     """
     Verify the signed playbook.
 
@@ -146,9 +132,6 @@ def verify(playbook, checkVersion=False, skipVerify=True):
     Error: Playbook Verification failure / Playbook Signature not found.
     """
     logger.info('Playbook Verification has started')
-
-    # Egg Version Check
-    eggVersioningCheck(checkVersion)
 
     if not skipVerify:
         for snippet in playbook:
