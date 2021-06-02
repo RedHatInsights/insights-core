@@ -91,96 +91,104 @@ plugins:
         - name: insights.specs.default.DefaultSpecs
           enabled: true
 
-        - name: insights.parsers.hostname
+        # needed because some specs aren't given names before they're used in DefaultSpecs
+        - name: insights.core.spec_factory
           enabled: true
 
-        - name: insights.parsers.facter
+        #
+        # Components
+        #
+        - name: insights.components.rhel_version.IsRhel6
           enabled: true
 
-        - name: insights.parsers.systemid
+        - name: insights.components.rhel_version.IsRhel7
+          enabled: true
+
+        - name: insights.components.rhel_version.IsRhel8
+          enabled: true
+
+        #
+        # Combiners
+        #
+        - name: insights.combiners.cloud_provider
           enabled: true
 
         - name: insights.combiners.hostname
           enabled: true
 
-    # needed for the CloudProvider combiner
-        - name: insights.parsers.installed_rpms
+        - name: insights.combiners.ps
           enabled: true
 
-        - name: insights.parsers.dmidecode
+        - name: insights.combiners.redhat_release.RedHatRelease
           enabled: true
 
-        - name: insights.parsers.yum
+        - name: insights.combiners.sap
           enabled: true
 
-        - name: insights.parsers.rhsm_conf
+        - name: insights.combiners.satellite_version.CapsuleVersion
           enabled: true
 
-        - name: insights.combiners.cloud_provider
-          enabled: true
-
-    # needed for the Services combiner
-        - name: insights.parsers.chkconfig
-          enabled: true
-
-        - name: insights.parsers.systemd.unitfiles
+        - name: insights.combiners.satellite_version.SatelliteVersion
           enabled: true
 
         - name: insights.combiners.services
           enabled: true
 
-    # needed for multiple Datasouce specs
+        #
+        # Parsers
+        #
+        - name: insights.parsers.chkconfig
+          enabled: true
+
+        - name: insights.parsers.dmidecode
+          enabled: true
+
+        - name: insights.parsers.facter
+          enabled: true
+
+        - name: insights.parsers.hostname
+          enabled: true
+
+        - name: insights.parsers.installed_rpms
+          enabled: true
+
+        - name: insights.parsers.lsmod
+          enabled: true
+
+        - name: insights.parsers.lssap
+          enabled: true
+
+        - name: insights.parsers.mount.Mount
+          enabled: true
+
         - name: insights.parsers.ps.PsAuxcww
           enabled: true
 
         - name: insights.parsers.ps.PsAuxww
           enabled: true
 
-        - name: insights.combiners.ps
+        - name: insights.parsers.redhat_release.RedhatRelease
           enabled: true
 
-    # needed to collect the sap_hdb_version spec that uses the Sap combiner
-        - name: insights.parsers.lssap
+        - name: insights.parsers.rhsm_conf
           enabled: true
 
         - name: insights.parsers.saphostctrl
           enabled: true
 
-        - name: insights.combiners.sap
+        - name: insights.parsers.systemid
           enabled: true
 
-    # needed for the 'pre-check' of the 'ss' spec
-        - name: insights.parsers.lsmod
-          enabled: true
-
-    # needed for the 'pre-check' of the 'is_satellite_server' spec
-        - name: insights.combiners.satellite_version.SatelliteVersion
-          enabled: true
-
-    # needed for the 'pre-check' of the 'is_satellite_capsule' spec
-        - name: insights.combiners.satellite_version.CapsuleVersion
-          enabled: true
-
-    # needed for the 'pre-check' of the 'gfs2_mount_points' spec
-        - name: insights.parsers.mount.Mount
-          enabled: true
-        - name: insights.combiners.redhat_release.RedHatRelease
-          enabled: true
         - name: insights.parsers.uname.Uname
           enabled: true
-        - name: insights.parsers.redhat_release.RedhatRelease
-          enabled: true
-        - name: insights.components.rhel_version.IsRhel6
-          enabled: true
-        - name: insights.components.rhel_version.IsRhel7
-          enabled: true
-        - name: insights.components.rhel_version.IsRhel8
+
+        - name: insights.parsers.systemd.unitfiles
           enabled: true
 
-    # needed because some specs aren't given names before they're used in DefaultSpecs
-        - name: insights.core.spec_factory
+        - name: insights.parsers.yum
           enabled: true
 """.strip()
+""" str: Default YAML configuration for collection """
 
 
 def load_manifest(data):

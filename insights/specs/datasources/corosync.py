@@ -1,3 +1,6 @@
+"""
+Custom datasources for corosync information
+"""
 import os
 
 from insights.components.rhel_version import IsRhel8, IsRhel7

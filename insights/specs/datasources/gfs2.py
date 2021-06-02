@@ -1,3 +1,6 @@
+"""
+Custom datasources for gfs2 information
+"""
 from insights.components.rhel_version import IsRhel8, IsRhel7, IsRhel6
 from insights.core.context import HostContext
 from insights.core.dr import SkipComponent

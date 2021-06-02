@@ -1,3 +1,14 @@
+"""
+Custom datasources provide functionality beyond ``simple_file`` and ``simple_command``
+type datasources.  If the custom datasource is short and concise it may be added to
+this module.  Other datasources should be added as a separate module.
+
+Normally custom datasources are necessary for core-collection.  In order for a custom
+datasource to execute, all of its dependencies must be explicitly loaded by the client.
+The client uses the YAML template :py:data:`insights.collect.default_manifest` and each
+parser/combiner/component required by a custom datasource must be included in the YAML
+template to ensure it is loaded.
+"""
 import signal
 
 from insights.combiners.cloud_provider import CloudProvider
@@ -116,7 +127,7 @@ def httpd_cmds(broker):
 
 @datasource(HostContext)
 def md5chk_file_list(broker):
-    """ Provide a list of files to be processed by the ``md5chk_files`` spec """
+    """ list: Provide a list of files to be processed by the ``md5chk_files`` spec """
     return [
         "/etc/pki/product/69.pem", "/etc/pki/product-default/69.pem", "/usr/lib/libsoftokn3.so",
         "/usr/lib64/libsoftokn3.so", "/usr/lib/libfreeblpriv3.so", "/usr/lib64/libfreeblpriv3.so"
@@ -125,6 +136,7 @@ def md5chk_file_list(broker):
 
 @datasource(Mdstat, HostContext)
 def md_device_list(broker):
+    """ list: Returns a list of device names for active devices in ``/proc/mdstat`` """
     md = broker[Mdstat]
     if md.components:
         return [dev["device_name"] for dev in md.components if dev["active"]]

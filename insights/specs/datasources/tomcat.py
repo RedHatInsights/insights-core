@@ -1,3 +1,6 @@
+"""
+Custom datasources for Tomcat information
+"""
 import re
 
 from insights.core.dr import SkipComponent

@@ -51,6 +51,7 @@ A summary of the collection_types includes:
 Some datasources are implemented as functions and each links to the details provided in the
 function specific documentation.  Generally functions are used as a ``provider`` to other
 datasources to, for instance, get a list of running processes of a particular program.
+Functions implemented as custom datasources can be found in :ref:`custom-datasources`.
 
 Python code that implements these datasources is located in the module
 :py:mod:`insights.specs.default`.  The datasources each have a unique name in the

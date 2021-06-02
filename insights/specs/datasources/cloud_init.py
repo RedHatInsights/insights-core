@@ -1,3 +1,6 @@
+"""
+Custom datasources for cloud initialization information
+"""
 import json
 import yaml
 
@@ -9,12 +12,16 @@ from insights.specs import Specs
 
 
 class LocalSpecs(Specs):
+    """ Local specs used only by cloud_init datasources """
+
     cloud_cfg_input = simple_file("/etc/cloud/cloud.cfg")
+    """ Returns the contents of the file ``/etc/cloud/cloud.cfg`` """
 
 
 @datasource(LocalSpecs.cloud_cfg_input, HostContext)
 def cloud_cfg(broker):
-    """This datasource provides the network configuration collected
+    """
+    This datasource provides the network configuration information collected
     from ``/etc/cloud/cloud.cfg``.
 
     Typical content of ``/etc/cloud/cloud.cfg`` file is::
@@ -49,14 +56,26 @@ def cloud_cfg(broker):
     Note:
         This datasource may be executed using the following command:
 
-        ``insights-cat --no-header cloud_cfg``
+        ``insights cat --no-header cloud_cfg``
 
-    Example:
+    Sample data returned includes only the ``network`` portion of the input file in JSON format::
 
-        ``{"version": 1, "config": [{"type": "physical", "name": "eth0", "subnets": [{"type": "dhcp"}, {"type": "dhcp6"}]}]}``
+        {
+            "version": 1,
+            "config": [
+                {
+                    "type": "physical",
+                    "name": "eth0",
+                    "subnets": [
+                        {"type": "dhcp"},
+                        {"type": "dhcp6"}
+                    ]
+                }
+            ]
+        }
 
     Returns:
-        str: JSON string when the ``network`` parameter is configure, else nothing is returned.
+        str: JSON string when the ``network`` parameter includes content, else `None` is returned.
 
     Raises:
         SkipComponent: When the path does not exist or any exception occurs.
