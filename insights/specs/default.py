@@ -74,9 +74,10 @@ def _get_running_commands(broker, commands):
     ctx = broker[HostContext]
 
     ret = set()
-    for cmd in set(p['COMMAND_NAME'] for p in ps_cmds):
+    for cmd in set(p['COMMAND'] for p in ps_cmds):
         try:
-            which = ctx.shell_out("/usr/bin/which {0}".format(cmd))
+            cmd_prefix = cmd.split(None, 1)[0]
+            which = ctx.shell_out("/usr/bin/which {0}".format(cmd_prefix))
         except Exception:
             continue
         ret.add(which[0]) if which else None
@@ -696,7 +697,7 @@ class DefaultSpecs(Specs):
         Attributes:
             COMMANDS (list): List of the specified commands that need to check the provider package.
         """
-        COMMANDS = ['java']
+        COMMANDS = ['java', 'httpd']
         pkg_cmd = list()
         for cmd in _get_running_commands(broker, COMMANDS):
             pkg_cmd.append("{0} {1}".format(cmd, _get_package(broker, cmd)))
