@@ -705,7 +705,6 @@ class DefaultSpecs(Specs):
         raise SkipComponent
 
     package_provides_command = command_with_args("/usr/bin/echo '%s'", cmd_and_pkg)
-    package_provides_java = foreach_execute(cmd_and_pkg, "/usr/bin/echo '%s'")
     pacemaker_log = first_file(["/var/log/pacemaker.log", "/var/log/pacemaker/pacemaker.log"])
     pci_rport_target_disk_paths = simple_command("/usr/bin/find /sys/devices/ -maxdepth 10 -mindepth 9 -name stat -type f")
 
