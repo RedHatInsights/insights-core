@@ -137,7 +137,7 @@ from the current master branch of the upstream project.
    the information requested in the PR template.  If your PR fixes an
    issue make sure to reference the issue using a
    [keyword](https://docs.github.com/en/issues/tracking-your-work-with-issues/creating-issues/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword)
-   so that it will be closed once your issue is merged.
+   so that it will be closed once your PR is merged.
 
 7. Repeat steps 4 and 5 as necessary.  Note that a forced push to the
    topic branch will work as expected.  The pull request will be
