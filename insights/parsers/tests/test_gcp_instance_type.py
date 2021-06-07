@@ -1,7 +1,7 @@
 import pytest
 import doctest
-from insights.parsers import google_instance_type
-from insights.parsers.google_instance_type import GoogleInstanceType
+from insights.parsers import gcp_instance_type
+from insights.parsers.gcp_instance_type import GCPInstanceType
 from insights.tests import context_wrap
 from insights.parsers import SkipException, ParseException
 
@@ -29,34 +29,34 @@ GOOGLE_TYPE_AB_4 = """
 """.strip()
 
 
-def test_google_instance_type_ab_other():
+def test_gcp_instance_type_ab_other():
     with pytest.raises(SkipException):
-        GoogleInstanceType(context_wrap(GOOGLE_TYPE_AB_1))
+        GCPInstanceType(context_wrap(GOOGLE_TYPE_AB_1))
 
     with pytest.raises(SkipException):
-        GoogleInstanceType(context_wrap(GOOGLE_TYPE_AB_2))
+        GCPInstanceType(context_wrap(GOOGLE_TYPE_AB_2))
 
     with pytest.raises(SkipException):
-        GoogleInstanceType(context_wrap(GOOGLE_TYPE_AB_3))
+        GCPInstanceType(context_wrap(GOOGLE_TYPE_AB_3))
 
     with pytest.raises(ParseException) as pe:
-        GoogleInstanceType(context_wrap(GOOGLE_TYPE_AB_4))
+        GCPInstanceType(context_wrap(GOOGLE_TYPE_AB_4))
         assert 'Unrecognized type' in str(pe)
 
 
-def test_google_instance_type_ab_empty():
+def test_gcp_instance_type_ab_empty():
     with pytest.raises(SkipException):
-        GoogleInstanceType(context_wrap(''))
+        GCPInstanceType(context_wrap(''))
 
 
-def test_google_instance_type():
-    google = GoogleInstanceType(context_wrap(GOOGLE_TYPE_1))
+def test_gcp_instance_type():
+    google = GCPInstanceType(context_wrap(GOOGLE_TYPE_1))
     assert google.type == "n2"
     assert google.size == "highcpu-16"
     assert google.raw == "n2-highcpu-16"
     assert google.raw_line == GOOGLE_TYPE_1
 
-    google = GoogleInstanceType(context_wrap(GOOGLE_TYPE_2))
+    google = GCPInstanceType(context_wrap(GOOGLE_TYPE_2))
     assert google.type == "e2"
     assert google.size == "medium"
     assert google.raw == "e2-medium"
@@ -64,8 +64,8 @@ def test_google_instance_type():
     assert "e2-medium" in str(google)
 
 
-def test_google_instance_type_stats():
-    google = GoogleInstanceType(context_wrap(GOOGLE_TYPE_3))
+def test_gcp_instance_type_stats():
+    google = GCPInstanceType(context_wrap(GOOGLE_TYPE_3))
     assert google.type == "e2"
     assert google.size == "medium"
     assert google.raw == "e2-medium"
@@ -75,7 +75,7 @@ def test_google_instance_type_stats():
 
 def test_doc_examples():
     env = {
-            'google_inst': GoogleInstanceType(context_wrap(GOOGLE_TYPE_DOC))
+            'gcp_inst': GCPInstanceType(context_wrap(GOOGLE_TYPE_DOC))
           }
-    failed, total = doctest.testmod(google_instance_type, globs=env)
+    failed, total = doctest.testmod(gcp_instance_type, globs=env)
     assert failed == 0

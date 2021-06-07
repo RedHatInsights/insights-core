@@ -1,5 +1,5 @@
 """
-GoogleInstanceType
+GCPInstanceType
 ==================
 
 This parser simply reads the output of command
@@ -17,10 +17,10 @@ from insights.specs import Specs
 from insights.parsers import SkipException, ParseException
 
 
-@parser(Specs.google_instance_type)
-class GoogleInstanceType(CommandParser):
+@parser(Specs.gcp_instance_type)
+class GCPInstanceType(CommandParser):
     """
-    Class for parsing the Google Instance type returned by command
+    Class for parsing the GCP Instance type returned by command
     ``curl -s -H 'Metadata-Flavor: Google' http://metadata.google.internal/computeMetadata/v1/instance/machine-type``,
 
 
@@ -34,17 +34,17 @@ class GoogleInstanceType(CommandParser):
         ParseException: When type cannot be recognized.
 
     Attributes:
-        type (str): The type of VM instance in Google, e.g: n2
-        size (str): The size of VM instance in Google, e.g: highcpu-16
+        type (str): The type of VM instance in GCP, e.g: n2
+        size (str): The size of VM instance in GCP, e.g: highcpu-16
         raw (str): The fully type string, e.g. 'n2-highcpu-16'
         raw_line (str): The fully type string returned by the ``curl`` command
 
     Examples:
-        >>> google_inst.type
+        >>> gcp_inst.type
         'n2'
-        >>> google_inst.size
+        >>> gcp_inst.size
         'highcpu-16'
-        >>> google_inst.raw
+        >>> gcp_inst.raw
         'n2-highcpu-16'
     """
 
@@ -66,5 +66,5 @@ class GoogleInstanceType(CommandParser):
             raise ParseException('Unrecognized type: "{0}"', content[0])
 
     def __repr__(self):
-        return "<google_type: {t}, size: {s}, raw: {r}>".format(
+        return "<gcp_type: {t}, size: {s}, raw: {r}>".format(
                 t=self.type, s=self.size, r=self.raw_line)
