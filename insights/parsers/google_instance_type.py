@@ -21,7 +21,7 @@ from insights.parsers import SkipException, ParseException
 class GoogleInstanceType(CommandParser):
     """
     Class for parsing the Google Instance type returned by command
-    ``curl http://metadata.google.internal/computeMetadata/v1/instance/machine-type -H 'Metadata-Flavor: Google'``,
+    ``curl -s -H 'Metadata-Flavor: Google' http://metadata.google.internal/computeMetadata/v1/instance/machine-type``,
 
 
     Typical output of this command is::

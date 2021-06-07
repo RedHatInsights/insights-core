@@ -433,9 +433,9 @@ class DefaultSpecs(Specs):
             return True
         raise SkipComponent()
 
+    gcp_instance_type = simple_command("/usr/bin/curl -s -H 'Metadata-Flavor: Google' http://metadata.google.internal/computeMetadata/v1/instance/machine-type --connect-timeout 5", deps=[is_gcp])
     gcp_license_codes = simple_command("/usr/bin/curl -s -H 'Metadata-Flavor: Google' http://metadata.google.internal/computeMetadata/v1/instance/licenses/?recursive=True --connect-timeout 5", deps=[is_gcp])
     greenboot_status = simple_command("/usr/libexec/greenboot/greenboot-status")
-    gcp_instance_type = simple_command("/usr/bin/curl http://metadata.google.internal/computeMetadata/v1/instance/machine-type -H 'Metadata-Flavor: Google' --connect-timeout 5", deps=[is_gcp])
     grub_conf = simple_file("/boot/grub/grub.conf")
     grub_config_perms = simple_command("/bin/ls -l /boot/grub2/grub.cfg")  # only RHEL7 and updwards
     grub_efi_conf = simple_file("/boot/efi/EFI/redhat/grub.conf")
