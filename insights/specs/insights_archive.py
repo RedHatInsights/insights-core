@@ -71,7 +71,6 @@ class InsightsArchiveSpecs(Specs):
     getconf_page_size = simple_file("insights_commands/getconf_PAGE_SIZE")
     getenforce = simple_file("insights_commands/getenforce")
     getsebool = simple_file("insights_commands/getsebool_-a")
-    google_machine_type = simple_file("insights_commands/curl_http_..metadata.google.internal.computeMetadata.v1.instance.machine-type_-H_Metadata-Flavor_Google_--connect-timeout_5")
     grub1_config_perms = simple_file("insights_commands/ls_-l_.boot.grub.grub.conf")
     grub_config_perms = simple_file("insights_commands/ls_-l_.boot.grub2.grub.cfg")
     grubby_default_index = simple_file("insights_commands/grubby_--default-index")
