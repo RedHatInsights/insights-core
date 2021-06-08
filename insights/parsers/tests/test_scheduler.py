@@ -64,6 +64,15 @@ def test_schedulers_defaults():
     assert r.active_scheduler == 'mq-deadline'
 
 
+def test_none():
+    r = scheduler.Scheduler(context_wrap('none',
+                                         '/sys/block/vda/queue/scheduler'))
+    assert r.device == 'vda'
+    assert r.schedulers == ['none']
+    assert r.active_scheduler is None
+    assert r.data == {}
+
+
 def test_docs():
     env = {
         'scheduler_obj': scheduler.Scheduler(context_wrap(SDA_SCHEDULER, SDA_PATH))
