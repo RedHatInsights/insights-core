@@ -17,6 +17,7 @@ from .config import InsightsConfig
 from .auto_config import try_auto_configuration
 from .utilities import (delete_registered_file,
                         delete_unregistered_file,
+                        write_data_to_file,
                         write_to_disk,
                         generate_machine_id,
                         get_tags,
@@ -134,7 +135,7 @@ class InsightsClient(object):
         try:
             # write the release path to temp so we can collect it
             #   in the archive
-            write_to_disk(constants.egg_release_file, content=egg_release)
+            write_data_to_file(egg_release, constants.egg_release_file)
         except (OSError, IOError) as e:
             logger.debug('Could not write egg release file: %s', str(e))
 
@@ -505,6 +506,13 @@ class InsightsClient(object):
             returns True on success, False on failure
         '''
         return self.connection.set_display_name(display_name)
+
+    @_net
+    def set_ansible_host(self, ansible_host):
+        '''
+            returns True on success, False on failure
+        '''
+        return self.connection.set_ansible_host(ansible_host)
 
     @_net
     def get_diagnosis(self, remediation_id=None):

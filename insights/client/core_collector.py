@@ -77,6 +77,7 @@ class CoreCollector(DataCollector):
         logger.debug('Collecting metadata...')
         self._write_branch_info(branch_info)
         self._write_display_name()
+        self._write_ansible_host()
         self._write_version_info()
         self._write_tags()
         self._write_blacklist_report(blacklist_report)

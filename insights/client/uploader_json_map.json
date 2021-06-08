@@ -176,8 +176,6 @@
                 "L1TF",
                 "L1Tf",
                 "Linux version",
-                "Machine Check Exception",
-                "Machine check events logged",
                 "NUMA: ",
                 "Node 0 CPUs: ",
                 "QLogic QLE2692 - QLogic 16Gb FC Dual-port HBA",
@@ -1062,7 +1060,7 @@
             "symbolic_name": "pcs_status"
         },
         {
-            "command": "pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout -o csv",
+            "command": "/usr/bin/pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout mssql.memory_manager.stolen_server_memory mssql.memory_manager.total_server_memory -o csv",
             "pattern": [],
             "symbolic_name": "pmrep_metrics"
         },
@@ -1094,7 +1092,6 @@
                 "COMMAND",
                 "auditd",
                 "avahi",
-                "bash",
                 "ceilometer-poll",
                 "chronyd",
                 "cinder-volume",
@@ -1105,6 +1102,7 @@
                 "dlm_controld",
                 "dnsmasq",
                 "docker",
+                "docker-runc-current",
                 "elasticsearch",
                 "gnocchi-metricd",
                 "gnome-shell",
@@ -1129,7 +1127,8 @@
                 "openshift start master api",
                 "openshift start master controllers",
                 "openshift start node",
-                "ora",
+                "ora_",
+                "oracle",
                 "ovs-vswitchd",
                 "pacemaker-controld",
                 "pacemaker_remote",
@@ -1141,6 +1140,7 @@
                 "redis-server",
                 "rngd",
                 "sap",
+                "setup.sh",
                 "smbd",
                 "snmpd",
                 "spausedd",
@@ -1160,7 +1160,6 @@
                 "COMMAND",
                 "STAP/8.2",
                 "auditd",
-                "bash",
                 "ceilometer-poll",
                 "ceph-osd",
                 "chronyd",
@@ -1171,6 +1170,7 @@
                 "crmd",
                 "dlm_controld",
                 "docker",
+                "docker-runc-current",
                 "elasticsearch",
                 "gnocchi-metricd",
                 "gnome-shell",
@@ -1197,7 +1197,8 @@
                 "openshift start master api",
                 "openshift start master controllers",
                 "openshift start node",
-                "ora",
+                "ora_",
+                "oracle",
                 "ovs-vswitchd",
                 "pacemaker-controld",
                 "pacemaker_remote",
@@ -1211,6 +1212,7 @@
                 "redis-server",
                 "rngd",
                 "sap",
+                "setup.sh",
                 "smbd",
                 "snmpd",
                 "spausedd",
@@ -1236,7 +1238,6 @@
                 "/usr/sbin/fcoemon --syslog",
                 "COMMAND",
                 "auditd",
-                "bash",
                 "catalina.base",
                 "ceilometer-poll",
                 "chronyd",
@@ -1247,6 +1248,7 @@
                 "crmd",
                 "dlm_controld",
                 "docker",
+                "docker-runc-current",
                 "elasticsearch",
                 "gnocchi-metricd",
                 "gnome-shell",
@@ -1275,7 +1277,8 @@
                 "openshift start master api",
                 "openshift start master controllers",
                 "openshift start node",
-                "ora",
+                "ora_",
+                "oracle",
                 "ovs-vswitchd",
                 "pacemaker-controld",
                 "pacemaker_remote",
@@ -1288,6 +1291,7 @@
                 "redis-server",
                 "rngd",
                 "sap",
+                "setup.sh",
                 "smbd",
                 "snmpd",
                 "spausedd",
@@ -1305,7 +1309,6 @@
                 "/usr/bin/openshift start node",
                 "CMD",
                 "auditd",
-                "bash",
                 "ceilometer-poll",
                 "chronyd",
                 "cinder-volume",
@@ -1315,6 +1318,7 @@
                 "crmd",
                 "dlm_controld",
                 "docker",
+                "docker-runc-current",
                 "elasticsearch",
                 "gnocchi-metricd",
                 "gnome-shell",
@@ -1342,7 +1346,8 @@
                 "openshift start master api",
                 "openshift start master controllers",
                 "openshift start node",
-                "ora",
+                "ora_",
+                "oracle",
                 "ovs-vswitchd",
                 "pacemaker-controld",
                 "pacemaker_remote",
@@ -1354,6 +1359,7 @@
                 "redis-server",
                 "rngd",
                 "sap",
+                "setup.sh",
                 "smbd",
                 "snmpd",
                 "spausedd",
@@ -2531,6 +2537,7 @@
                 "Error running DeviceResume dm_task_run failed",
                 "Exception happened during processing of request from",
                 "File system is filling up",
+                "High collision rate in packet sends",
                 "High directory name cache miss rate",
                 "High number of saturated processors",
                 "High per CPU processor utilization",
@@ -2657,13 +2664,18 @@
         {
             "file": "/etc/mongod.conf",
             "pattern": [
-                "dbpath"
+                "dbPath",
+                "storage"
             ],
             "symbolic_name": "mongod_conf"
         },
         {
             "file": "/etc/opt/rh/rh-mongodb34/mongod.conf",
-            "symbolic_name": "mongod_conf"
+            "symbolic_name": "mongod_conf",
+            "pattern": [
+                "dbPath",
+                "storage"
+            ]
         },
         {
             "file": "/proc/mounts",
@@ -3520,6 +3532,11 @@
             "symbolic_name": "sys_kernel_sched_features"
         },
         {
+            "file": "/etc/default/grub",
+            "pattern": [],
+            "symbolic_name": "sysconfig_grub"
+        },
+        {
             "file": "/etc/sysconfig/kdump",
             "pattern": [],
             "symbolic_name": "sysconfig_kdump"
@@ -4253,6 +4270,16 @@
             "symbolic_name": "rsyslog_conf"
         },
         {
+            "glob": "/sys/bus/vmbus/devices/*/class_id",
+            "pattern": [],
+            "symbolic_name": "sys_vmbus_class_id"
+        },
+        {
+            "glob": "/sys/bus/vmbus/devices/*/device_id",
+            "pattern": [],
+            "symbolic_name": "sys_vmbus_device_id"
+        },
+        {
             "glob": "/sys/block/*/queue/scheduler",
             "symbolic_name": "scheduler",
             "pattern": []
@@ -4301,5 +4328,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2021-05-06T16:06:41.477806"
+    "version": "2021-05-26T13:40:04.964795"
 }
