@@ -62,6 +62,12 @@ DEFAULT_OPTS = {
         'const': True,
         'nargs': '?',
     },
+    'ansible_host': {
+        'default': None,
+        'opt': ['--ansible-host'],
+        'help': 'Set an Ansible hostname for this system. ',
+        'action': 'store'
+    },
     'authmethod': {
         # non-CLI
         'default': 'BASIC'
@@ -467,9 +473,9 @@ class InsightsConfig(object):
         if args:
             self._update_dict(args[0])
         self._update_dict(kwargs)
+        self._cli_opts = None
         self._imply_options()
         self._validate_options()
-        self._cli_opts = None
 
     def __str__(self):
         _str = '    '
@@ -761,6 +767,38 @@ class InsightsConfig(object):
             # get full path
             self.output_file = os.path.abspath(self.output_file)
             self._determine_filename_and_extension()
+        if self._cli_opts and "ansible_host" in self._cli_opts and not self.register:
+            # Specific use case, explained here:
+            #
+            #   Ansible hostname is, more or less, a second display name.
+            #   However, there is no method in the legacy API to handle
+            #   changes to the ansible hostname. So, if a user specifies
+            #   --ansible-hostname on the CLI to change it like they would
+            #   --display-name, in order to actually change it, we need to
+            #   force disable legacy_upload to make the proper HTTP requests.
+            #
+            #   As of now, registration still needs to be tied to the legacy
+            #   API, so if the user has legacy upload enabled (the default),
+            #   we can't force disable it when registering. Thus, if
+            #   specifying --ansible-hostname alongside --register, all the
+            #   necessary legacy API calls will still be made, the
+            #   ansible-hostname will be packed into the archive, and the
+            #   rest will be handled by ingress. Incidentally, if legacy
+            #   upload *is* disabled, the ansible hostname will also be
+            #   included in the upload metadata.
+            #
+            #   The reason to explicitly look for ansible_host in the CLI
+            #   parameters *only* is because, due to a customer request from
+            #   long ago, a display_name specified in the config file should
+            #   be applied as part of the upload, and conversely, specifying
+            #   it on the command line (WITHOUT --register) should be a
+            #   "once and done" option that does a single HTTP call to modify
+            #   it. We are going to mimic that behavior with the Ansible
+            #   hostname.
+            #
+            #   Therefore, only force legacy_upload to False when attempting
+            #   to change Ansible hostname from the CLI, when not registering.
+            self.legacy_upload = False
 
     def _determine_filename_and_extension(self):
         '''
