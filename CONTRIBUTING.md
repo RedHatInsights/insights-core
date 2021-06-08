@@ -16,24 +16,24 @@ phase).
 
 ## Rule Development Setup
 
-Clone the project::
+Clone the project:
 
     git clone git@github.com:RedHatInsights/insights-core.git
 
-Or, alternatively, using HTTPS::
+Or, alternatively, using HTTPS:
 
     git clone https://github.com/RedHatInsights/insights-core.git
 
-Initialize a virtualenv::
+Initialize a virtualenv:
 
     cd insights-core
     virtualenv .
 
-Install the project and its dependencies::
+Install the project and its dependencies:
 
     bin/pip install -e .
 
-Install a rule repository::
+Install a rule repository:
 
     bin/pip install -e path/to/rule/repo
 
@@ -42,16 +42,16 @@ Install a rule repository::
 
 If you wish to contribute to the insights-core project you'll need to create a fork in github.
 
-1. Clone your fork::
+1. Clone your fork:
 
     git clone git@github.com:your-user/insights-core.git
 
-2. Reference the original project as "upstream"::
+2. Reference the original project as "upstream":
 
     git remote add upstream git@github.com:RedHatInsights/insights-core.git
 
 At this point, you would synchronize your fork with the upstream project
-using the following commands::
+using the following commands:
 
     git pull upstream master
     git push origin master
