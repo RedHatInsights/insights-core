@@ -6,7 +6,6 @@ GREEN = """
 Boot Status is GREEN - Health Check SUCCESS
 """
 
-
 RED = """
 Mar 04 15:47:12 example greenboot[768]: Script 'check-dns.sh' SUCCESS
 Mar 04 15:47:12 example required-services.sh[999]: active
@@ -55,6 +54,13 @@ Mar 04 15:47:12 example greenboot-status[1010]: SYSTEM is UNHEALTHY, but boot_co
 Mar 04 15:47:12 example systemd[1]: Started greenboot MotD Generator.
 """
 
+FALLBACK = """
+Feb 22 22:50:26 example systemd[1]: Starting greenboot MotD Generator...
+Feb 22 22:50:26 example greenboot-status[905]: Boot Status is GREEN - Health Check SUCCESS
+Feb 22 22:50:26 example greenboot-status[905]: FALLBACK BOOT DETECTED! Default rpm-ostree deployment has been rolled back.
+Feb 22 22:50:26 example systemd[1]: Started greenboot MotD Generator.
+"""
+
 
 def test_greenboot_status_green():
     green = context_wrap(GREEN)
@@ -68,3 +74,10 @@ def test_greenboot_status_red():
     p = GreenbootStatus(red)
     assert p.red
     assert not p.green
+
+
+def test_greenboot_status_fallback():
+    fb = context_wrap(FALLBACK)
+    p = GreenbootStatus(fb)
+    assert p.green
+    assert p.fallback

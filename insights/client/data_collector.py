@@ -138,15 +138,20 @@ class DataCollector(object):
         try:
             with open(constants.egg_release_file) as fil:
                 egg_release = fil.read()
-        except IOError as e:
-            logger.debug('Could not read the egg release file :%s', str(e))
+        except (IOError, MemoryError) as e:
+            logger.debug('Could not read the egg release file: %s', str(e))
         try:
             os.remove(constants.egg_release_file)
         except OSError as e:
             logger.debug('Could not remove the egg release file: %s', str(e))
 
-        self.archive.add_metadata_to_archive(
-            egg_release, '/egg_release')
+        try:
+            self.archive.add_metadata_to_archive(
+                egg_release, '/egg_release')
+        except OSError as e:
+            logger.debug('Could not add the egg release file to the archive: %s', str(e))
+            self.archive.add_metadata_to_archive(
+                '', '/egg_release')
 
     def _write_collection_stats(self, collection_stats):
         logger.debug("Writing collection stats to archive...")

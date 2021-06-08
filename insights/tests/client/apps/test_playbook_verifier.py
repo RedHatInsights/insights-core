@@ -10,26 +10,8 @@ if sys.version_info >= (2, 7):
 
 
 @pytest.mark.skipif(sys.version_info < (2, 7), reason='Playbook verifier must be run on python 2.7 or above')
-def test_skip_validation():
-    result = verify([{'name': "test playbook", 'vars': {}}], skipVerify=True, checkVersion=False)
-    assert result == [{'name': "test playbook", 'vars': {}}]
-
-
-@pytest.mark.skipif(sys.version_info < (2, 7), reason='Playbook verifier must be run on python 2.7 or above')
-@patch('requests.get')
-def test_egg_validation_error(mock_get):
-    mock_get.return_value.text = '3.0.0'
-    egg_error = 'EGG VERSION ERROR: Current running egg is not the most recent version'
-    fake_playbook = [{'name': "test playbook"}]
-
-    with raises(PlaybookVerificationError) as error:
-        verify(fake_playbook, checkVersion=True)
-    assert egg_error in str(error.value)
-
-
-@pytest.mark.skipif(sys.version_info < (2, 7), reason='Playbook verifier must be run on python 2.7 or above')
 def test_vars_not_found_error():
-    vars_error = 'VARS FIELD NOT FOUND: Verification failed'
+    vars_error = 'VERIFICATION FAILED: Vars field not found'
     fake_playbook = [{'name': "test playbook"}]
 
     with raises(PlaybookVerificationError) as error:
@@ -38,8 +20,18 @@ def test_vars_not_found_error():
 
 
 @pytest.mark.skipif(sys.version_info < (2, 7), reason='Playbook verifier must be run on python 2.7 or above')
+def test_empty_vars_error():
+    sig_error = 'VERIFICATION FAILED: Empty vars field'
+    fake_playbook = [{'name': "test playbook", 'vars': None}]
+
+    with raises(PlaybookVerificationError) as error:
+        verify(fake_playbook, skipVerify=False)
+    assert sig_error in str(error.value)
+
+
+@pytest.mark.skipif(sys.version_info < (2, 7), reason='Playbook verifier must be run on python 2.7 or above')
 def test_signature_not_found_error():
-    sig_error = 'SIGNATURE NOT FOUND: Verification failed'
+    sig_error = 'VERIFICATION FAILED: Signature not found'
     fake_playbook = [{'name': "test playbook", 'vars': {}}]
 
     with raises(PlaybookVerificationError) as error:
