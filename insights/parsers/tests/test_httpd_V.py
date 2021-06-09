@@ -81,7 +81,7 @@ Server compiled with....
 
 
 def test_httpd_V():
-    result = HttpdV(context_wrap(HTTPD_V_22, path='/usr/sbin/httpd_-V'))
+    result = HttpdV(context_wrap(HTTPD_V_22, path='/usr/sbin/httpd_-V', args='/usr/sbin/httpd'))
     assert result["Server MPM"] == "prefork"
     assert result["Server version"] == "apache/2.2.15 (unix)"
     assert result["forked"] == "yes (variable process count)"
@@ -93,7 +93,7 @@ def test_httpd_V():
     assert result.mpm == "prefork"
     assert result.version == "apache/2.2.15 (unix)"
 
-    result = HttpdV(context_wrap(HTTPD_V_24, path='/usr/sbin/httpd.worker_-V'))
+    result = HttpdV(context_wrap(HTTPD_V_24, path='/usr/sbin/httpd.worker_-V', args='/usr/sbin/httpd.worker'))
     assert result["Server MPM"] == "worker"
     assert result["Server version"] == "apache/2.4.6 (red hat enterprise linux)"
     assert result["forked"] == "yes (variable process count)"
