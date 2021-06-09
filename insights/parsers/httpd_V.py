@@ -97,12 +97,10 @@ class HttpdV(LegacyItemAccess, CommandParser):
     @property
     def httpd_command(self):
         """
-        str: The full path of a running httpd. An Empty string when nothing
-        is found.  To identify which httpd binaries the instance run with.
+        Return the full binary path of a running httpd or None when nothing
+        is found. It's to identify which httpd binaries the instance run with.
         """
-        # Typical `file_path` of HttpdV looks like: '/usr/sbin/httpd_-V'
-        # Remove the trailing '_-V'
-        return self.file_path[:-3] if self.file_path else ''
+        return self.args
 
     @property
     def mpm(self):
