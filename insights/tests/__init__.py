@@ -225,7 +225,7 @@ class InputData(object):
         """
         self.data[comp] = obj
 
-    def add(self, spec, content, path=None, do_filter=True):
+    def add(self, spec, content, path=None, do_filter=True, **kwargs):
         if not path:  # path must change to allow parsers to fire
             path = self._make_path()
         if not path.startswith("/"):
@@ -242,7 +242,7 @@ class InputData(object):
             if do_filter:
                 content_iter = list(apply_filters(spec, content_iter))
 
-        content_provider = context_wrap(content_iter, path=path, split=False)
+        content_provider = context_wrap(content_iter, path=path, split=False, **kwargs)
         if dr.get_delegate(spec).multi_output:
             if spec not in self.data:
                 self.data[spec] = []

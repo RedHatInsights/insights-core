@@ -103,7 +103,8 @@ class Context(object):
         self.cmd = None
         optional_attrs = [
             "content", "path", "hostname", "release",
-            "machine_id", "target", "last_client_run", "relative_path"
+            "machine_id", "target", "last_client_run", "relative_path",
+            "args"
         ]
         for k in optional_attrs:
             setattr(self, k, kwargs.pop(k, None))
