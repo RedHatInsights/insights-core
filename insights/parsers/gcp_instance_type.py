@@ -1,6 +1,6 @@
 """
 GCPInstanceType
-==================
+===============
 
 This parser simply reads the output of command
 ``curl http://metadata.google.internal/computeMetadata/v1/instance/machine-type -H 'Metadata-Flavor: Google'``,
