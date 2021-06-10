@@ -172,6 +172,11 @@ FOREMAN_SSL_ACCESS_SSL_LOG = """
 10.181.73.211 - rhcapkdc.example2.com [27/Mar/2017:13:34:52 -0400] "GET /rhsm/consumers/385e688f-43ad-41b2-9fc7-593942ddec78/entitlements?exclude=certificates.key&exclude=certificates.cert HTTP/1.1" 200 9920 "-" "-"
 """.strip()
 
+FOREMAN_SSL_ACCESS_SSL_LOG_WRONG = """
+"GET /rhsm/consumers/385e688f-43ad-41b2-9fc7-593942ddec78 HTTP/1.1" 200
+10.181.73.211 - rhcapkdc.example2.com [27/Mar/2017:13:34:52:0400] "GET /rhsm/status HTTP/1.1" 200 263 "-" "-"
+""".strip()
+
 
 def test_production_log():
     fm_log = ProductionLog(context_wrap(PRODUCTION_LOG))
@@ -225,7 +230,11 @@ def test_foreman_ssl_access_ssl_log():
     assert "385e688f-43ad-41b2-9fc7-593942ddec78" in foreman_ssl_access_log
     assert len(foreman_ssl_access_log.get("GET /rhsm/consumers")) == 5
     assert len(foreman_ssl_access_log.get("385e688f-43ad-41b2-9fc7-593942ddec78")) == 3
-    assert len(list(foreman_ssl_access_log.get_after(datetime(2017, 3, 27, 13, 34, 0)))) == 7
+    assert foreman_ssl_access_log.get('/rhsm/consumers')[0].get('host') == '10.181.73.211'
+    assert foreman_ssl_access_log.get('/rhsm/consumers')[0].get('timestamp') == datetime(2017, 3, 27, 13, 34, 52)
+
+    foreman_ssl_access_log = ForemanSSLAccessLog(context_wrap(FOREMAN_SSL_ACCESS_SSL_LOG_WRONG))
+    assert len(foreman_ssl_access_log.get('GET')) == 2
 
 
 def test_doc():
