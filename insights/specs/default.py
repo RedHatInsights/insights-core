@@ -133,6 +133,7 @@ class DefaultSpecs(Specs):
     abrt_status_bare = simple_command("/usr/bin/abrt status --bare=True")
     alternatives_display_python = simple_command("/usr/sbin/alternatives --display python")
     amq_broker = glob_file("/var/opt/amq-broker/*/etc/broker.xml")
+    ansible_tower_config_custom = simple_file("/etc/tower/conf.d/custom.py")
     auditctl_status = simple_command("/sbin/auditctl -s")
     auditd_conf = simple_file("/etc/audit/auditd.conf")
     audit_log = simple_file("/var/log/audit/audit.log")
