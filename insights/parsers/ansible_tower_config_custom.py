@@ -21,31 +21,16 @@ class AnsibleTowerConfigCustom(Parser, LegacyItemAccess):
             ldap.OPT_REFERRALS: False,
         }
         LOGGING['handlers']['tower_warnings']['level'] = 'DEBUG'
-        DATABASES = {
-            'default': {
-                'ATOMIC_REQUESTS': True,
-                'ENGINE': 'awx.main.db.profiled_pg',
-                'NAME': 'awx',
-                'USER': 'awx',
-                'HOST': '127.0.0.1',
-                'PORT': '5432',
-                'OPTIONS': { 'sslmode': 'prefer',
-                    'sslrootcert': '/etc/pki/tls/certs/ca-bundle.crt',
-                },
-            }
-        }
 
     Examples::
     >>> type(conf)
     <class 'insights.parsers.ansible_tower_config_custom.AnsibleTowerConfigCustom'>
     >>> conf["LOGGING['handlers']['tower_warnings']['level']"]
     'DEBUG'
-    >>> conf['DATABASES']['default']['NAME']
-    u'awx'
-    >>> conf['DATABASES']['default']['ATOMIC_REQUESTS']
-    True
-    >>> conf['DATABASES']['default']['OPTIONS']['sslmode']
-    u'prefer'
+    >>> conf['AUTH_LDAP_GLOBAL_OPTIONS']['ldap.OPT_REFERRALS']
+    False
+    >>> conf['AWX_CLEANUP_PATHS']
+    False
     """
 
     def parse_content(self, content):
@@ -63,6 +48,10 @@ class AnsibleTowerConfigCustom(Parser, LegacyItemAccess):
                             value = value[1:]
                         if value.endswith("'") or value.endswith('"'):
                             value = value[:-1]
+                        if value == "False":
+                            value = False
+                        if value == "True":
+                            value = True
                         self.data[key] = value
                     else:
                         section_key, value = [i.strip() for i in line.split('=', 1)]
