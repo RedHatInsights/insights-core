@@ -187,6 +187,7 @@ class Specs(SpecSet):
     freeipa_healthcheck_log = RegistryPoint()
     fstab = RegistryPoint()
     galera_cnf = RegistryPoint()
+    gcp_instance_type = RegistryPoint()
     gcp_license_codes = RegistryPoint()
     getcert_list = RegistryPoint()
     getconf_page_size = RegistryPoint()
