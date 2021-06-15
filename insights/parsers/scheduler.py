@@ -48,6 +48,7 @@ class Scheduler(Parser):
         self.device = None
         self.schedulers = []
         self.active_scheduler = None
+        self.data = {}  # Legacy value to keep backwards compatibility
 
         self.device = self.file_path.split('/')[3]
         for line in get_active_lines(content):
@@ -57,5 +58,6 @@ class Scheduler(Parser):
 
             self.schedulers = line.replace('[', '').replace(']', '').split()
 
-        # Legacy values
-        self.data = {self.device: '[' + self.active_scheduler + ']'}
+        # Set legacy values
+        if self.active_scheduler:
+            self.data = {self.device: '[' + self.active_scheduler + ']'}
