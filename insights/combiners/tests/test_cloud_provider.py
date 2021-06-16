@@ -209,7 +209,7 @@ System Information
 \tProduct Name: X9SCL/X9SCM
 \tVersion: 0123456789
 \tSerial Number: 0123456789
-\tUUID: 12345678-1234-1234-1234-123456681234
+\tUUID: EC245678-1234-1234-1234-123456681234
 \tWake-up Type: Power Switch
 \tSKU Number: To be filled by O.E.M.
 \tFamily: To be filled by O.E.M.
@@ -313,7 +313,7 @@ Chassis Information
 \tLock: Not Present
 \tVersion: Not Specified
 \tSerial Number: Not Specified
-\tAsset Tag: Not Specified
+\tAsset Tag: Amazon EC2
 \tBoot-up State: Safe
 \tPower Supply State: Safe
 \tThermal State: Safe
@@ -664,6 +664,15 @@ def test__uuid():
     ret = CloudProvider(irpms, dmi, yrl, None)
     assert ret.cloud_provider == CloudProvider.AWS
     assert ret.cp_uuid[CloudProvider.AWS] == 'EC2F58AF-2DAD-C57E-88C0-A81CB6084290'
+
+
+def test__uuid_not_aws():
+    irpms = IRPMS(context_wrap(RPMS))
+    dmi = DMIDecode(context_wrap(DMIDECODE_BARE_METAL))
+    yrl = YumRepoList(context_wrap(YUM_REPOLIST_NOT_AZURE))
+    ret = CloudProvider(irpms, dmi, yrl, None)
+    assert ret.cloud_provider is None
+    assert ret.cp_uuid[CloudProvider.AWS] == 'EC245678-1234-1234-1234-123456681234'
 
 
 def test_dmidecode_alibaba():
