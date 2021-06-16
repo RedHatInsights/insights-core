@@ -10,6 +10,7 @@ from insights.parsers import SkipException
 
 add_filter(Specs.ansible_tower_config_custom, ["AWX_CLEANUP_PATHS", "="])
 
+
 @parser(Specs.ansible_tower_config_custom)
 class AnsibleTowerConfigCustom(Parser, LegacyItemAccess):
     """
@@ -18,6 +19,12 @@ class AnsibleTowerConfigCustom(Parser, LegacyItemAccess):
     Sample ``/etc/tower/conf.d/custom.py`` file::
 
         AWX_CLEANUP_PATHS = False
+
+    Attributes:
+        data (dict): A dict of "key=value" from configuration file
+
+    Raises:
+        SkipException: the file is empty or there is no valid data
 
     Examples::
     >>> type(conf)
