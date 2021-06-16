@@ -24,7 +24,7 @@ class AnsibleTowerConfigCustom(Parser, LegacyItemAccess):
         data (dict): A dict of "key=value" from configuration file
 
     Raises:
-        SkipException: the file is empty or there is no valid data
+        SkipException: the file is empty or there is no valid content
 
     Examples::
     >>> type(conf)
