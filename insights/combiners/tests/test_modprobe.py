@@ -5,6 +5,9 @@ from insights.tests import context_wrap
 MOD_OPTION_INFO = """
 options ipv6 disable=1
 install ipv6 /bin/true
+
+# Test duplicate entry.
+blacklist vfat
 """
 
 MOD_OPTION_INFO_PATH = "/etc/modprobe.d/ipv6.conf"
@@ -38,6 +41,9 @@ options bnx2 disable_msi=1
 alias
 alias scsi_hostadapter2 ata_piix failed comment
 balclkist ieee80211
+
+# Test duplicate entry.
+blacklist vfat
 """
 
 MOD_COMPLETE_PATH = "/etc/modprobe.conf"
@@ -59,6 +65,7 @@ def test_all_modprobe():
     assert 'blacklist' in all_data
     assert all_data['blacklist'] == {
         'i8xx_tco': ModProbeValue(value=True, source=MOD_COMPLETE_PATH),
+        'vfat': ModProbeValue(value=True, source=MOD_OPTION_INFO_PATH),
     }
 
     assert 'install' in all_data
