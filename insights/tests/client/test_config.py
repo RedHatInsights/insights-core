@@ -170,6 +170,12 @@ def test_offline_disables_options():
     with pytest.raises(ValueError):
         InsightsConfig(status=True, offline=True)
 
+    with pytest.raises(ValueError):
+        InsightsConfig(checkin=True, offline=True)
+
+    with pytest.raises(ValueError):
+        InsightsConfig(unregister=True, offline=True)
+
 
 # empty argv so parse_args isn't polluted with pytest arguments
 @patch('insights.client.config.sys.argv', [sys.argv[0]])
