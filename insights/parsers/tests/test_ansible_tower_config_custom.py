@@ -15,7 +15,7 @@ ANSIBLE_TOWER_CONFIG_CUSTOM_INVALID = '''
 
 def test_ansible_tower_config_custom():
     conf = ansible_tower_config_custom.AnsibleTowerConfigCustom(context_wrap(ANSIBLE_TOWER_CONFIG_CUSTOM))
-    assert conf['AWX_CLEANUP_PATHS'] == 'False'
+    assert conf.data['AWX_CLEANUP_PATHS'] == 'False'
 
     with pytest.raises(SkipException) as exc:
         ansible_tower_config_custom.AnsibleTowerConfigCustom(context_wrap(ANSIBLE_TOWER_CONFIG_CUSTOM_INVALID))

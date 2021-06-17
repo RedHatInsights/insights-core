@@ -3,16 +3,16 @@ AnsibleTowerConfigCustom - file ``/etc/tower/conf.d/custom.py``
 ===============================================================
 The AnsibleTowerConfigCustom class parses the file ``/etc/tower/conf.d/custom.py``.
 """
-from insights import parser, get_active_lines, Parser, LegacyItemAccess
+from insights import parser, get_active_lines, Parser
 from insights.core.filters import add_filter
 from insights.specs import Specs
 from insights.parsers import SkipException
 
-add_filter(Specs.ansible_tower_config_custom, ["AWX_CLEANUP_PATHS", "="])
+add_filter(Specs.ansible_tower_config_custom, ["AWX_CLEANUP_PATHS"])
 
 
 @parser(Specs.ansible_tower_config_custom)
-class AnsibleTowerConfigCustom(Parser, LegacyItemAccess):
+class AnsibleTowerConfigCustom(Parser, dict):
     """
     Class for content of ansible tower config file /etc/tower/conf.d/custom.py.
 
@@ -29,7 +29,7 @@ class AnsibleTowerConfigCustom(Parser, LegacyItemAccess):
     Examples::
     >>> type(conf)
     <class 'insights.parsers.ansible_tower_config_custom.AnsibleTowerConfigCustom'>
-    >>> conf['AWX_CLEANUP_PATHS']
+    >>> conf.data['AWX_CLEANUP_PATHS']
     'False'
     """
 
