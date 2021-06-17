@@ -707,6 +707,7 @@ class DefaultSpecs(Specs):
 
     package_provides_command = command_with_args("/usr/bin/echo '%s'", cmd_and_pkg)
     pacemaker_log = first_file(["/var/log/pacemaker.log", "/var/log/pacemaker/pacemaker.log"])
+    partitions = simple_file("/proc/partitions")
     pci_rport_target_disk_paths = simple_command("/usr/bin/find /sys/devices/ -maxdepth 10 -mindepth 9 -name stat -type f")
 
     @datasource(Services, HostContext)
