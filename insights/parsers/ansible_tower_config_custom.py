@@ -29,7 +29,7 @@ class AnsibleTowerConfigCustom(Parser, dict):
     Examples::
     >>> type(conf)
     <class 'insights.parsers.ansible_tower_config_custom.AnsibleTowerConfigCustom'>
-    >>> conf.data['AWX_CLEANUP_PATHS']
+    >>> conf['AWX_CLEANUP_PATHS']
     'False'
     """
 
@@ -37,8 +37,11 @@ class AnsibleTowerConfigCustom(Parser, dict):
         """Parse content of of ansible tower config file '/etc/tower/conf.d/custom.py'"""
         if not content:
             raise SkipException("No Valid Configuration")
-        self.data = {}
+        data = {}
         for line in get_active_lines(content):
             if "=" in line:
                 key, value = line.split("=")
-                self.data[key.strip()] = value.strip()
+                data[key.strip()] = value.strip()
+        if not data:
+            raise SkipException("No Valid Configuration")
+        self.update(data)
