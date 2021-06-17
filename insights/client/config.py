@@ -691,6 +691,8 @@ class InsightsConfig(object):
                 raise ValueError('Cannot run connection test in offline mode.')
             if self.checkin:
                 raise ValueError('Cannot check in in offline mode.')
+            if self.unregister:
+                raise ValueError('Cannot unregister in offline mode.')
         if self.output_dir and self.output_file:
             raise ValueError('Specify only one: --output-dir or --output-file.')
         if self.output_dir == '':
