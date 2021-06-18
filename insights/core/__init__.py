@@ -1697,3 +1697,35 @@ class AttributeDict(dict):
         deprecated(AttributeDict, "Please set attributes explicitly.")
         super(AttributeDict, self).__init__(*args, **kwargs)
         self.__dict__ = self
+
+
+class PackageProvidesParser(CommandParser):
+    """
+    Parse the content of the spec which consists of "command RPM_info".
+
+    Parsers using this class should have custom datasources using cmd_and_pkg
+    to collect the data.  Input data consists of a 1 or more lines where each
+    line contains a command, a space, and RPM info.
+
+    Sample input data is a list of::
+
+        /usr/lib/jvm/jre/bin/java java-1.8.0-openjdk-headless-1.8.0.141-3.b16.el6_9.x86_64
+        /usr/sbin/httpd httpd-2.4.48-1.el8_4.x86_64
+
+    Attributes:
+        command (str): The httpd command that starts application.
+        package (str): httpd package that provides above httpd command.
+
+    Raises:
+        SkipException: When cmd is not running or cmd is not provided by any RPM
+    """
+    def parse_content(self, content):
+        if len(content) == 0:
+            raise SkipException("Error: ", 'there is no application running')
+        l = content[0].split()
+        if len(l) != 2:
+            raise SkipException(
+                "Error: there is no RPM providing the running application"
+            )
+        self.command = l[0]
+        self.package = l[1]

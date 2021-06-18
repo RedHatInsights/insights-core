@@ -35,6 +35,14 @@ insights.specs.datasources.gfs2
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.httpd
+--------------------------------
+    
+.. automodule:: insights.specs.datasources.httpd
+    :members:
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.java
 -------------------------------
     

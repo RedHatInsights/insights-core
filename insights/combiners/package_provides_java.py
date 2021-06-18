@@ -5,7 +5,7 @@ PackageProvidesJavaAll - Combiner for packages which provide java
 .. warning::
 
     This module is deprecated, please use
-    :mod:`insights.parsers.package_provides` instead.
+    :mod:`insights.combiners.package_provides` instead.
 
 Combiner for collecting all the java command and the corresponding package name
 which is parsed by the PackageProvidesJava parser.
@@ -24,7 +24,7 @@ class PackageProvidesJavaAll(LegacyItemAccess):
     .. warning::
 
         This Combiner is deprecated, please use
-        :class:`insights.parsers.package_provides.PackageProvidesCommand` Parser instead.
+        :class:`insights.combiner.package_provides.PackageProvidesCommand` Combiner instead.
 
     Combiner for collecting all the java command and the corresponding package
     name which is parsed by the PackageProvidesJava parser.
@@ -53,7 +53,7 @@ class PackageProvidesJavaAll(LegacyItemAccess):
     def __init__(self, package_provides_java):
         deprecated(
             PackageProvidesJavaAll,
-            'Please use the :class:`insights.parsers.package_provides.PackageProvidesCommand` instead.'
+            'Please use the :class:`insights.combiners.package_provides.PackageProvidesCommand` instead.'
         )
         self.data = {}
         for pkg in package_provides_java:

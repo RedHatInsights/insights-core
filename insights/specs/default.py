@@ -23,7 +23,7 @@ from insights.core.spec_factory import foreach_collect, foreach_execute
 from insights.core.spec_factory import first_file, listdir
 from insights.specs import Specs
 from insights.specs.datasources import (
-    cloud_init, corosync as corosync_mod, gfs2, java, pcp, sap, tomcat,
+    cloud_init, corosync as corosync_mod, gfs2, httpd, java, pcp, sap, tomcat,
     du_dirs_list, is_aws, is_azure, is_ceph_monitor, is_gcp, httpd_cmds,
     md5chk_file_list, md_device_list, is_pcp_enabled, is_satellite_capsule,
     is_satellite_server, is_mod_loaded_for_ss
@@ -434,8 +434,10 @@ class DefaultSpecs(Specs):
     ovs_vsctl_list_bridge = simple_command("/usr/bin/ovs-vsctl list bridge")
     ovs_vsctl_show = simple_command("/usr/bin/ovs-vsctl show")
     package_provides_command = command_with_args("/usr/bin/echo '%s'", java.cmd_and_pkg)
+    package_provides_httpd = foreach_execute(httpd.cmd_and_pkg, "/usr/bin/echo '%s'")
     package_provides_java = foreach_execute(java.cmd_and_pkg, "/usr/bin/echo '%s'")
     pacemaker_log = first_file(["/var/log/pacemaker.log", "/var/log/pacemaker/pacemaker.log"])
+    partitions = simple_file("/proc/partitions")
     pci_rport_target_disk_paths = simple_command("/usr/bin/find /sys/devices/ -maxdepth 10 -mindepth 9 -name stat -type f")
     pcp_metrics = simple_command("/usr/bin/curl -s http://127.0.0.1:44322/metrics --connect-timeout 5", deps=[is_pcp_enabled])
     passenger_status = simple_command("/usr/bin/passenger-status")

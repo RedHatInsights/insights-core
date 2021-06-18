@@ -24,7 +24,7 @@ from insights.parsers.mdstat import Mdstat
 
 def get_running_commands(broker, commands):
     """
-    Search for command in ``ps auxcww`` output and determine RPM providing binary
+    Search for command in ``ps`` output and returns the full path
 
     Arguments:
         broker(dict): Current state of specs collected by Insights
@@ -55,12 +55,14 @@ def get_running_commands(broker, commands):
 
 def get_package(broker, command):
     """
+    Function to get the RPM info for a command
+
     Arguments:
         broker(dict): Current state of specs collected by Insights
         command(str): The full command name to get the package
 
     Returns:
-        str: The package that provides the ``command``.
+        str: The package that provides the ``command`` or None.
     """
     ctx = broker[HostContext]
     resolved = ctx.shell_out("/usr/bin/readlink -e {0}".format(command))
@@ -68,7 +70,33 @@ def get_package(broker, command):
         pkg = ctx.shell_out("/usr/bin/rpm -qf {0}".format(resolved[0]), signum=signal.SIGTERM)
         if pkg:
             return pkg[0]
-    raise SkipComponent
+
+    return None
+
+
+def cmd_and_pkg(broker, commands):
+    """
+    Function to get a list of the running commands and for each command, the RPM
+    package providing that command.
+
+    Arguments:
+        broker(dict): Current state of specs collected by Insights
+        commands(list): List of the command names to search for
+
+    Returns:
+        str: A multiline string of the command and provider package for the specified
+            commands or None.
+    """
+    pkg_cmd = list()
+    for cmd in get_running_commands(broker, commands):
+        pkg = get_package(broker, cmd)
+        if pkg is not None:
+            pkg_cmd.append("{0} {1}".format(cmd, ))
+
+    if pkg_cmd:
+        return '\n'.join(pkg_cmd)
+
+    return None
 
 
 @datasource(CloudProvider, HostContext)
