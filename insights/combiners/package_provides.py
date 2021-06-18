@@ -92,7 +92,7 @@ class PackageProvidesCommand(dict):
         dict: Returns the commands and RPM info as a dictionary
             that have ``command_name`` as the tail of the command path.
         """
-        return {
-            cmd: self[cmd] for cmd in self.commands_by_name(command_name)
+        return dict([
+            (cmd, self[cmd]) for cmd in self.commands_by_name(command_name)
             if command_name == os.path.split(cmd)[-1]
-        }
+        ])
