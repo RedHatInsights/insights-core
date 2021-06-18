@@ -365,6 +365,7 @@ class DefaultSpecs(Specs):
     docker_sysconfig = simple_file("/etc/sysconfig/docker")
     dotnet_version = simple_command("/usr/bin/dotnet --version")
     dracut_kdump_capture_service = simple_file("/usr/lib/dracut/modules.d/99kdumpbase/kdump-capture.service")
+    dracut_multipathd_service = simple_file("/usr/lib/dracut/modules.d/90multipath/multipathd.service")
 
     @datasource(HostContext)
     def du_dirs_list(broker):

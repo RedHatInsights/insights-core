@@ -149,6 +149,7 @@ class Specs(SpecSet):
     dotnet_version = RegistryPoint()
     doveconf = RegistryPoint(filterable=True)
     dracut_kdump_capture_service = RegistryPoint()
+    dracut_multipathd_service = RegistryPoint()
     du_dirs = RegistryPoint(multi_output=True)
     dumpe2fs_h = RegistryPoint(multi_output=True)
     engine_config_all = RegistryPoint()
