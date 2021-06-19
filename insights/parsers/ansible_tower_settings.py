@@ -1,22 +1,20 @@
 """
-AnsibleTowerConfigCustom - file ``/etc/tower/conf.d/custom.py``
-===============================================================
-The AnsibleTowerConfigCustom class parses the file ``/etc/tower/conf.d/custom.py``.
+AnsibleTowerSettings - file ``/etc/tower/conf.d/*.py`` and ``/etc/tower/settings.py``
+=====================================================================================
+The AnsibleTowerSettings class parses the file ``/etc/tower/conf.d/*.py`` and
+``/etc/tower/settings.py``.
 """
 from insights import parser, get_active_lines, Parser
-from insights.core.filters import add_filter
 from insights.specs import Specs
 from insights.parsers import SkipException
 
-add_filter(Specs.ansible_tower_config_custom, ["AWX_CLEANUP_PATHS"])
 
-
-@parser(Specs.ansible_tower_config_custom)
-class AnsibleTowerConfigCustom(Parser, dict):
+@parser(Specs.ansible_tower_settings)
+class AnsibleTowerSettings(Parser, dict):
     """
-    Class for content of ansible tower config file /etc/tower/conf.d/custom.py.
+    Class for content of ansible tower config file ``/etc/tower/conf.d/*.py`` and ``/etc/tower/settings.py``.
 
-    Sample ``/etc/tower/conf.d/custom.py`` file::
+    Sample ``/etc/tower/conf.d/*.py`` file::
 
         AWX_CLEANUP_PATHS = False
 
@@ -28,13 +26,13 @@ class AnsibleTowerConfigCustom(Parser, dict):
 
     Examples::
     >>> type(conf)
-    <class 'insights.parsers.ansible_tower_config_custom.AnsibleTowerConfigCustom'>
+    <class 'insights.parsers.ansible_tower_settings.AnsibleTowerSettings'>
     >>> conf['AWX_CLEANUP_PATHS']
     'False'
     """
 
     def parse_content(self, content):
-        """Parse content of of ansible tower config file '/etc/tower/conf.d/custom.py'"""
+        """Parse content of of ansible tower config file ``/etc/tower/conf.d/*.py`` and ``/etc/tower/settings.py``"""
         if not content:
             raise SkipException("No Valid Configuration")
         data = {}
