@@ -303,6 +303,7 @@ def test_core_collect_default(get_version_info):
     conf = InsightsConfig()
     assert conf.core_collect
 
+
 @patch('insights.client.config.sys.argv', [sys.argv[0], "--status"])
 def test_command_line_parse_twice():
     '''
