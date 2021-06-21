@@ -302,3 +302,16 @@ def test_core_collect_default(get_version_info):
     assert _core_collect_default()
     conf = InsightsConfig()
     assert conf.core_collect
+
+@patch('insights.client.config.sys.argv', [sys.argv[0], "--status"])
+def test_command_line_parse_twice():
+    '''
+    Verify that running _load_command_line() twice does not
+    raise an argparse error.
+
+    Previously would raise a SystemExit due to argparse not
+    being loaded with the correct options.
+    '''
+    c = InsightsConfig()
+    c._load_command_line()
+    c._load_command_line()
