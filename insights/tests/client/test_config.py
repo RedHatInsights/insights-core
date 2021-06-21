@@ -315,4 +315,6 @@ def test_command_line_parse_twice():
     '''
     c = InsightsConfig()
     c._load_command_line()
+    assert c.status
     c._load_command_line()
+    assert c.status
