@@ -77,7 +77,6 @@ def test_get_component_by_symbolic_name():
         'freeipa_healthcheck_log',
         'ironic_conf',
         'octavia_conf',
-        'partitions',
         'rhn_entitlement_cert_xml',
         'rhn_hibernate_conf',
         'rhn_schema_version',
