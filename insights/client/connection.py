@@ -175,7 +175,7 @@ class InsightsConnection(object):
                 connection.proxy_headers = auth_map
         return session
 
-def _http_request(self, url, method, **kwargs):
+    def _http_request(self, url, method, **kwargs):
         '''
         Perform an HTTP request, net logging, and error handling
         Parameters
