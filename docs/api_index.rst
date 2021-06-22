@@ -193,3 +193,11 @@ insights.util
     :members:
     :show-inheritance:
     :undoc-members:
+
+insights
+--------
+
+.. automodule:: insights.collect
+    :members: default_manifest, collect
+    :show-inheritance:
+    :undoc-members:
