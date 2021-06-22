@@ -61,16 +61,14 @@ class InsightsClient(object):
 
         # setup insights connection placeholder
         # used for requests
-        self.session = None
         self.connection = None
         self.tmpdir = None
 
     def _net(func):
         def _init_connection(self, *args, **kwargs):
             # setup a request session
-            if not self.config.offline and not self.session:
+            if not self.config.offline and not self.connection:
                 self.connection = client.get_connection(self.config)
-                self.session = self.connection.session
             return func(self, *args, **kwargs)
         return _init_connection
 
@@ -107,8 +105,7 @@ class InsightsClient(object):
             url = self.connection.base_url + '/platform' + constants.module_router_path
         else:
             url = self.connection.base_url + constants.module_router_path
-        logger.log(NETWORK, "GET %s", url)
-        response = self.session.get(url, timeout=self.config.http_timeout)
+        response = self.connection.get(url, timeout=self.config.http_timeout)
         if response.status_code == 200:
             return response.json()["url"]
         else:

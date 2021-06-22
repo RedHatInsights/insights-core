@@ -175,6 +175,37 @@ class InsightsConnection(object):
                 connection.proxy_headers = auth_map
         return session
 
+def _http_request(self, url, method, **kwargs):
+        '''
+        Perform an HTTP request, net logging, and error handling
+        Parameters
+            url     - URL to perform the request against
+            method  - HTTP method, used for logging
+            kwargs  - Rest of the args to pass to the request function
+        Returns
+            HTTP response object
+        '''
+        logger.log(NETWORK, "%s %s", method, url)
+        res = self.session.request(url=url, method=method, timeout=self.config.http_timeout, **kwargs)
+        logger.log(NETWORK, "HTTP Status: %d %s", res.status_code, res.reason)
+        logger.log(NETWORK, "HTTP Response Text: %s", res.text)
+        return res
+
+    def get(self, url, **kwargs):
+        return self._http_request(url, 'GET', **kwargs)
+
+    def post(self, url, **kwargs):
+        return self._http_request(url, 'POST', **kwargs)
+
+    def put(self, url, **kwargs):
+        return self._http_request(url, 'PUT', **kwargs)
+
+    def patch(self, url, **kwargs):
+        return self._http_request(url, 'PATCH', **kwargs)
+
+    def delete(self, url, **kwargs):
+        return self._http_request(url, 'DELETE', **kwargs)
+
     @property
     def user_agent(self):
         """
@@ -313,13 +344,9 @@ class InsightsConnection(object):
             try:
                 logger.log(NETWORK, "Testing: %s", test_url + ext)
                 if method is "POST":
-                    test_req = self.session.post(
-                        test_url + ext, timeout=self.config.http_timeout, data=test_flag)
+                    test_req = self.post(test_url + ext, data=test_flag)
                 elif method is "GET":
-                    test_req = self.session.get(test_url + ext, timeout=self.config.http_timeout)
-                logger.log(NETWORK, "HTTP Status Code: %d", test_req.status_code)
-                logger.log(NETWORK, "HTTP Status Text: %s", test_req.reason)
-                logger.log(NETWORK, "HTTP Response Text: %s", test_req.text)
+                    test_req = self.get(test_url + ext)
                 # Strata returns 405 on a GET sometimes, this isn't a big deal
                 if test_req.status_code in (200, 201):
                     logger.info(
@@ -350,12 +377,9 @@ class InsightsConnection(object):
                     'file': ('test.tar.gz', test_tar, 'application/vnd.redhat.advisor.collection+tgz'),
                     'metadata': '{\"test\": \"test\"}'
                 }
-                test_req = self.session.post(url, timeout=self.config.http_timeout, files=test_files)
+                test_req = self.post(url, files=test_files)
             elif method is "GET":
-                    test_req = self.session.get(url, timeout=self.config.http_timeout)
-            logger.log(NETWORK, "HTTP Status Code: %d", test_req.status_code)
-            logger.log(NETWORK, "HTTP Status Text: %s", test_req.reason)
-            logger.log(NETWORK, "HTTP Response Text: %s", test_req.text)
+                    test_req = self.get(url)
             if test_req.status_code in (200, 201, 202):
                 logger.info(
                     "Successfully connected to: %s", url)
@@ -502,10 +526,7 @@ class InsightsConnection(object):
 
         logger.debug(u'Obtaining branch information from %s',
                      self.branch_info_url)
-        logger.log(NETWORK, u'GET %s', self.branch_info_url)
-        response = self.session.get(self.branch_info_url,
-                                    timeout=self.config.http_timeout)
-        logger.log(NETWORK, u'GET branch_info status: %s', response.status_code)
+        response = self.get(self.branch_info_url)
         if response.status_code != 200:
             logger.debug("There was an error obtaining branch information.")
             logger.debug(u'Bad status from server: %s', response.status_code)
@@ -553,10 +574,9 @@ class InsightsConnection(object):
         post_system_url = self.api_url + '/v1/systems'
         logger.debug("POST System: %s", post_system_url)
         logger.debug(data)
-        logger.log(NETWORK, "POST %s", post_system_url)
-        return self.session.post(post_system_url,
-                                 headers={'Content-Type': 'application/json'},
-                                 data=data)
+        return self.post(post_system_url,
+                         headers={'Content-Type': 'application/json'},
+                         data=data)
 
     # -LEGACY-
     def group_systems(self, group_name, systems):
@@ -572,35 +592,25 @@ class InsightsConnection(object):
         group_path = self.api_url + '/v1/groups'
         group_get_path = group_path + ('?display_name=%s' % quote(group_name))
 
-        logger.debug("GET group: %s", group_get_path)
-        logger.log(NETWORK, "GET %s", group_get_path)
-        get_group = self.session.get(group_get_path)
-        logger.debug("GET group status: %s", get_group.status_code)
+        get_group = self.get(group_get_path)
         if get_group.status_code == 200:
             api_group_id = get_group.json()['id']
 
         if get_group.status_code == 404:
             # Group does not exist, POST to create
-            logger.debug("POST group")
             data = json.dumps({'display_name': group_name})
-            logger.log(NETWORK, "POST", group_path)
-            post_group = self.session.post(group_path,
-                                           headers=headers,
-                                           data=data)
-            logger.debug("POST group status: %s", post_group.status_code)
-            logger.debug("POST Group: %s", post_group.json())
+            post_group = self.post(group_path,
+                                   headers=headers,
+                                   data=data)
             self.handle_fail_rcs(post_group)
             api_group_id = post_group.json()['id']
 
-        logger.debug("PUT group")
         data = json.dumps(systems)
-        logger.log(NETWORK, "PUT %s", group_path + ('/%s/systems' % api_group_id))
-        put_group = self.session.put(group_path +
-                                     ('/%s/systems' % api_group_id),
-                                     headers=headers,
-                                     data=data)
-        logger.debug("PUT group status: %d", put_group.status_code)
-        logger.debug("PUT Group: %s", put_group.json())
+        put_group = self.put(group_path +
+                             ('/%s/systems' % api_group_id),
+                             headers=headers,
+                             data=data)
+
 
     # -LEGACY-
     # Keeping this function around because it's not private and I don't know if anything else uses it
@@ -621,8 +631,7 @@ class InsightsConnection(object):
         machine_id = generate_machine_id()
         try:
             url = self.api_url + '/v1/systems/' + machine_id
-            logger.log(NETWORK, "GET %s", url)
-            res = self.session.get(url, timeout=self.config.http_timeout)
+            res = self.get(url)
         except requests.ConnectionError:
             # can't connect, run connection test
             logger.error('Connection timed out. Running connection test...')
@@ -667,8 +676,7 @@ class InsightsConnection(object):
                 url = self.base_url + '/platform/inventory/v1/hosts?insights_id=' + machine_id
             else:
                 url = self.inventory_url + '/hosts?insights_id=' + machine_id
-            logger.log(NETWORK, "GET %s", url)
-            res = self.session.get(url, timeout=self.config.http_timeout)
+            res = self.get(url, timeout=self.config.http_timeout)
         except REQUEST_FAILED_EXCEPTIONS as e:
             _api_request_failed(e)
             return None
@@ -717,8 +725,7 @@ class InsightsConnection(object):
         try:
             logger.debug("Unregistering %s", machine_id)
             url = self.api_url + "/v1/systems/" + machine_id
-            logger.log(NETWORK, "DELETE %s", url)
-            self.session.delete(url)
+            self.delete(url)
             logger.info(
                 "Successfully unregistered from the Red Hat Insights Service")
             return True
@@ -741,8 +748,7 @@ class InsightsConnection(object):
         try:
             logger.debug("Unregistering host...")
             url = self.inventory_url + "/hosts/" + results[0]['id']
-            logger.log(NETWORK, "DELETE %s", url)
-            response = self.session.delete(url)
+            response = self.delete(url)
             response.raise_for_status()
             logger.info(
                 "Successfully unregistered from the Red Hat Insights Service")
@@ -822,11 +828,8 @@ class InsightsConnection(object):
         logger.debug("Uploading %s to %s", data_collected, upload_url)
 
         headers = {'x-rh-collection-time': str(duration)}
-        logger.log(NETWORK, "POST %s", upload_url)
-        upload = self.session.post(upload_url, files=files, headers=headers)
+        upload = self.post(upload_url, files=files, headers=headers)
 
-        logger.log(NETWORK, "Upload status: %s %s %s",
-                     upload.status_code, upload.reason, upload.text)
         if upload.status_code in (200, 201):
             the_json = json.loads(upload.text)
         else:
@@ -870,12 +873,8 @@ class InsightsConnection(object):
             'metadata': c_facts
         }
         logger.debug("Uploading %s to %s", data_collected, upload_url)
+        upload = self.post(upload_url, files=files, headers={})
 
-        logger.log(NETWORK, "POST %s", upload_url)
-        upload = self.session.post(upload_url, files=files, headers={})
-
-        logger.log(NETWORK, "Upload status: %s %s %s",
-                     upload.status_code, upload.reason, upload.text)
         logger.debug('Request ID: %s', upload.headers.get('x-rh-insights-request-id', None))
         if upload.status_code in (200, 202):
             # 202 from platform, no json response
@@ -903,19 +902,16 @@ class InsightsConnection(object):
         try:
             url = self.api_url + '/v1/systems/' + machine_id
 
-            logger.log(NETWORK, "GET %s", url)
-            res = self.session.get(url, timeout=self.config.http_timeout)
+            res = self.get(url)
             old_display_name = json.loads(res.content).get('display_name', None)
             if display_name == old_display_name:
                 logger.debug('Display name unchanged: %s', old_display_name)
                 return True
 
-            logger.log(NETWORK, "PUT %s", url)
-            res = self.session.put(url,
-                                   timeout=self.config.http_timeout,
-                                   headers={'Content-Type': 'application/json'},
-                                   data=json.dumps(
-                                        {'display_name': display_name}))
+            res = self.put(url,
+                           headers={'Content-Type': 'application/json'},
+                           data=json.dumps(
+                               {'display_name': display_name}))
             if res.status_code == 200:
                 logger.info('System display name changed from %s to %s',
                             old_display_name,
@@ -948,8 +944,7 @@ class InsightsConnection(object):
 
         req_url = self.inventory_url + '/hosts/' + inventory_id
         try:
-            logger.log(NETWORK, "PATCH %s", req_url)
-            res = self.session.patch(req_url, json={'display_name': display_name})
+            res = self.patch(req_url, json={'display_name': display_name})
         except REQUEST_FAILED_EXCEPTIONS as e:
             _api_request_failed(e)
             return False
@@ -970,8 +965,7 @@ class InsightsConnection(object):
 
         req_url = self.inventory_url + '/hosts/' + inventory_id
         try:
-            logger.log(NETWORK, "PATCH %s", req_url)
-            res = self.session.patch(req_url, json={'ansible_host': ansible_host})
+            res = self.patch(req_url, json={'ansible_host': ansible_host})
         except REQUEST_FAILED_EXCEPTIONS as e:
             _api_request_failed(e)
             return False
@@ -993,8 +987,7 @@ class InsightsConnection(object):
             # validate this?
             params['remediation'] = remediation_id
         try:
-            logger.log(NETWORK, "GET %s", diag_url)
-            res = self.session.get(diag_url, params=params, timeout=self.config.http_timeout)
+            res = self.get(diag_url, params=params)
         except (requests.ConnectionError, requests.Timeout) as e:
             _api_request_failed(e)
             return False
@@ -1004,7 +997,7 @@ class InsightsConnection(object):
             return None
         return res.json()
 
-    def _get(self, url):
+    def _cached_get(self, url):
         '''
             Submits a GET request to @url, caching the result, and returning
             the response body, if any. It makes the response status code opaque
@@ -1019,8 +1012,7 @@ class InsightsConnection(object):
         if item is not None:
             headers["If-None-Match"] = item.etag
 
-        logger.log(NETWORK, "GET %s", url)
-        res = self.session.get(url, headers=headers)
+        res = self.get(url, headers=headers)
 
         if res.status_code in [requests.codes.OK, requests.codes.NOT_MODIFIED]:
             if res.status_code == requests.codes.OK:
@@ -1040,7 +1032,7 @@ class InsightsConnection(object):
             Retrieve advisor report
         '''
         url = self.inventory_url + "/hosts?insights_id=%s" % generate_machine_id()
-        content = self._get(url)
+        content = self._cached_get(url)
         if content is None:
             return None
 
@@ -1086,7 +1078,7 @@ class InsightsConnection(object):
         url = self.inventory_url + "/hosts/checkin"
         logger.debug("Sending check-in request to %s with %s" % (url, canonical_facts))
         try:
-            response = self.session.post(url, headers={"Content-Type": "application/json"}, data=json.dumps(canonical_facts))
+            response = self.post(url, headers={"Content-Type": "application/json"}, data=json.dumps(canonical_facts))
             # Change to POST when the API is fixed.
         except REQUEST_FAILED_EXCEPTIONS as exception:
             _api_request_failed(exception)
