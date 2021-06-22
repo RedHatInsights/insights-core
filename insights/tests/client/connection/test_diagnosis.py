@@ -85,6 +85,7 @@ def test_get_diagnosis_offline():
     c = InsightsClient(conf)
     assert c.get_diagnosis() is None
 
+
 @patch('insights.client.connection.InsightsConnection._init_session', Mock())
 @patch('insights.client.connection.InsightsConnection.get_proxies', Mock())
 @patch('insights.client.utilities.constants.machine_id_file', '/tmp/machine-id')

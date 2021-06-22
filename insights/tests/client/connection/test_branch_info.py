@@ -16,4 +16,3 @@ def test_request(get_proxies, init_session):
     connection.get_branch_info()
 
     connection.get.assert_called_once_with(config.branch_info_url)
-

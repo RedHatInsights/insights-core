@@ -606,11 +606,10 @@ class InsightsConnection(object):
             api_group_id = post_group.json()['id']
 
         data = json.dumps(systems)
-        put_group = self.put(group_path +
-                             ('/%s/systems' % api_group_id),
-                             headers=headers,
-                             data=data)
-
+        self.put(group_path +
+                 ('/%s/systems' % api_group_id),
+                 headers=headers,
+                 data=data)
 
     # -LEGACY-
     # Keeping this function around because it's not private and I don't know if anything else uses it
