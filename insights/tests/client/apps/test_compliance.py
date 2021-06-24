@@ -198,8 +198,7 @@ def test_tailored_file_is_not_downloaded_if_tailored_is_missing(config):
 def test_tailored_file_is_downloaded_from_initial_profile_if_os_minor_version_is_missing(config, call):
     compliance_client = ComplianceClient(config)
     compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, json=Mock(return_value={'data': [{'attributes': 'data'}]})))
-    tailoring_file_path = "/var/tmp/oscap_tailoring_file-aaaaa.xml"
-    assert tailoring_file_path == compliance_client.download_tailoring_file({'id': 'foo', 'attributes': {'tailored': True, 'ref_id': 'aaaaa'}})
+    assert 'oscap_tailoring_file-aaaaa' in compliance_client.download_tailoring_file({'id': 'foo', 'attributes': {'tailored': True, 'ref_id': 'aaaaa'}})
     assert compliance_client.download_tailoring_file({'id': 'foo', 'attributes': {'tailored': False, 'ref_id': 'aaaaa'}}) is None
 
 
@@ -218,8 +217,7 @@ def test_tailored_file_is_not_downloaded_if_os_minor_version_mismatches(config, 
 def test_tailored_file_is_downloaded_if_needed(config, call, os_release_info_mock):
     compliance_client = ComplianceClient(config)
     compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, json=Mock(return_value={'data': [{'attributes': 'data'}]})))
-    tailoring_file_path = "/var/tmp/oscap_tailoring_file-aaaaa.xml"
-    assert tailoring_file_path == compliance_client.download_tailoring_file({'id': 'foo', 'attributes': {'tailored': True, 'ref_id': 'aaaaa', 'os_minor_version': '5'}})
+    assert 'oscap_tailoring_file-aaaaa' in compliance_client.download_tailoring_file({'id': 'foo', 'attributes': {'tailored': True, 'ref_id': 'aaaaa', 'os_minor_version': '5'}})
     assert compliance_client.download_tailoring_file({'id': 'foo', 'attributes': {'tailored': False, 'ref_id': 'aaaaa', 'os_minor_version': '5'}}) is None
 
 
