@@ -528,12 +528,8 @@ class InsightsConfig(object):
         "INSIGHTS_" prepended to it.
         '''
         def _boolify(v):
-            if v.lower() == 'true':
-                return True
-            elif v.lower() == 'false':
-                return False
-            else:
-                return v
+            # anything not specifically False is treated as True
+            return not v.lower() in ("false", "")
 
         # put this warning here so the error msg only prints once
         if os.environ.get('HTTP_PROXY') and not os.environ.get('HTTPS_PROXY') and self._print_errors:
