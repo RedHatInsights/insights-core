@@ -1092,6 +1092,7 @@
                 "COMMAND",
                 "auditd",
                 "avahi",
+                "catalina.base",
                 "ceilometer-poll",
                 "chronyd",
                 "cinder-volume",
@@ -1136,6 +1137,7 @@
                 "pkla-check-auth",
                 "pmcd",
                 "pmie",
+                "postmaster",
                 "radosgw",
                 "redis-server",
                 "rngd",
@@ -1160,6 +1162,7 @@
                 "COMMAND",
                 "STAP/8.2",
                 "auditd",
+                "catalina.base",
                 "ceilometer-poll",
                 "ceph-osd",
                 "chronyd",
@@ -1207,6 +1210,7 @@
                 "pkla-check-auth",
                 "pmcd",
                 "pmie",
+                "postmaster",
                 "ptp4l",
                 "radosgw",
                 "redis-server",
@@ -1287,6 +1291,7 @@
                 "pmcd",
                 "pmie",
                 "postgres",
+                "postmaster",
                 "radosgw",
                 "redis-server",
                 "rngd",
@@ -1308,7 +1313,9 @@
                 "/usr/bin/openshift start master",
                 "/usr/bin/openshift start node",
                 "CMD",
+                "COMMAND",
                 "auditd",
+                "catalina.base",
                 "ceilometer-poll",
                 "chronyd",
                 "cinder-volume",
@@ -1355,6 +1362,7 @@
                 "pkla-check-auth",
                 "pmcd",
                 "pmie",
+                "postmaster",
                 "radosgw",
                 "redis-server",
                 "rngd",
@@ -2300,7 +2308,6 @@
                 "AH00485: scoreboard is full, not at MaxRequestWorkers",
                 "ModSecurity: collections_remove_stale: Failed deleting collection",
                 "Require ServerLimit > 0, setting to 1",
-                "Resource temporarily unavailable",
                 "The mpm module (prefork.c) is not supported by mod_http2",
                 "[crit] Memory allocation failed, aborting process",
                 "and would exceed the ServerLimit value of ",
@@ -4328,5 +4335,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2021-05-26T13:40:04.964795"
+    "version": "2021-06-17T12:53:13.800630"
 }

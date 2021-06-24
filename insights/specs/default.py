@@ -11,14 +11,11 @@ data sources that standard Insights `Parsers` resolve against.
 import logging
 import os
 import re
-import json
 import signal
 
 from grp import getgrgid
 from os import stat
 from pwd import getpwuid
-
-import yaml
 
 from insights.core.context import HostContext
 from insights.core.dr import SkipComponent
@@ -38,6 +35,7 @@ from insights.parsers.lsmod import LsMod
 from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersion
 from insights.parsers.mount import Mount
 from insights.specs import Specs
+from insights.specs.datasources import cloud_init
 import datetime
 
 
@@ -74,9 +72,10 @@ def _get_running_commands(broker, commands):
     ctx = broker[HostContext]
 
     ret = set()
-    for cmd in set(p['COMMAND_NAME'] for p in ps_cmds):
+    for cmd in set(p['COMMAND'] for p in ps_cmds):
         try:
-            which = ctx.shell_out("/usr/bin/which {0}".format(cmd))
+            cmd_prefix = cmd.split(None, 1)[0]
+            which = ctx.shell_out("/usr/bin/which {0}".format(cmd_prefix))
         except Exception:
             continue
         ret.add(which[0]) if which else None
@@ -230,70 +229,7 @@ class DefaultSpecs(Specs):
     cinder_api_log = first_file(["/var/log/containers/cinder/cinder-api.log", "/var/log/cinder/cinder-api.log"])
     cinder_conf = first_file(["/var/lib/config-data/puppet-generated/cinder/etc/cinder/cinder.conf", "/etc/cinder/cinder.conf"])
     cinder_volume_log = first_file(["/var/log/containers/cinder/volume.log", "/var/log/containers/cinder/cinder-volume.log", "/var/log/cinder/volume.log"])
-    cloud_cfg_input = simple_file("/etc/cloud/cloud.cfg")
-
-    @datasource(cloud_cfg_input, HostContext)
-    def cloud_cfg(broker):
-        """This datasource provides the network configuration collected
-        from ``/etc/cloud/cloud.cfg``.
-
-        Typical content of ``/etc/cloud/cloud.cfg`` file is::
-
-            #cloud-config
-            users:
-              - name: demo
-                ssh-authorized-keys:
-                  - key_one
-                  - key_two
-                passwd: $6$j212wezy$7H/1LT4f9/N3wpgNunhsIqtMj62OKiS3nyNwuizouQc3u7MbYCarYeAHWYPYb2FT.lbioDm2RrkJPb9BZMN1O/
-
-            network:
-              version: 1
-              config:
-                - type: physical
-                  name: eth0
-                  subnets:
-                    - type: dhcp
-                    - type: dhcp6
-
-            system_info:
-              default_user:
-                name: user2
-                plain_text_passwd: 'someP@assword'
-                home: /home/user2
-
-            debug:
-              output: /var/log/cloud-init-debug.log
-              verbose: true
-
-        Note:
-            This datasource may be executed using the following command:
-
-            ``insights-cat --no-header cloud_cfg``
-
-        Example:
-
-            ``{"version": 1, "config": [{"type": "physical", "name": "eth0", "subnets": [{"type": "dhcp"}, {"type": "dhcp6"}]}]}``
-
-        Returns:
-            str: JSON string when the ``network`` parameter is configure, else nothing is returned.
-
-        Raises:
-            SkipComponent: When the path does not exist or any exception occurs.
-        """
-        relative_path = '/etc/cloud/cloud.cfg'
-        try:
-            content = broker[DefaultSpecs.cloud_cfg_input].content
-            if content:
-                content = yaml.load('\n'.join(content), Loader=yaml.SafeLoader)
-                network_config = content.get('network', None)
-                if network_config:
-                    return DatasourceProvider(content=json.dumps(network_config), relative_path=relative_path)
-        except Exception as e:
-            raise SkipComponent("Unexpected exception:{e}".format(e=str(e)))
-
-        raise SkipComponent()
-
+    cloud_cfg = cloud_init.cloud_cfg
     cloud_init_custom_network = simple_file("/etc/cloud/cloud.cfg.d/99-custom-networking.cfg")
     cloud_init_log = simple_file("/var/log/cloud-init.log")
     cluster_conf = simple_file("/etc/cluster/cluster.conf")
@@ -433,6 +369,7 @@ class DefaultSpecs(Specs):
             return True
         raise SkipComponent()
 
+    gcp_instance_type = simple_command("/usr/bin/curl -s -H 'Metadata-Flavor: Google' http://metadata.google.internal/computeMetadata/v1/instance/machine-type --connect-timeout 5", deps=[is_gcp])
     gcp_license_codes = simple_command("/usr/bin/curl -s -H 'Metadata-Flavor: Google' http://metadata.google.internal/computeMetadata/v1/instance/licenses/?recursive=True --connect-timeout 5", deps=[is_gcp])
     greenboot_status = simple_command("/usr/libexec/greenboot/greenboot-status")
     grub_conf = simple_file("/boot/grub/grub.conf")
@@ -696,7 +633,7 @@ class DefaultSpecs(Specs):
         Attributes:
             COMMANDS (list): List of the specified commands that need to check the provider package.
         """
-        COMMANDS = ['java']
+        COMMANDS = ['java', 'httpd']
         pkg_cmd = list()
         for cmd in _get_running_commands(broker, COMMANDS):
             pkg_cmd.append("{0} {1}".format(cmd, _get_package(broker, cmd)))
@@ -706,6 +643,7 @@ class DefaultSpecs(Specs):
 
     package_provides_command = command_with_args("/usr/bin/echo '%s'", cmd_and_pkg)
     pacemaker_log = first_file(["/var/log/pacemaker.log", "/var/log/pacemaker/pacemaker.log"])
+    partitions = simple_file("/proc/partitions")
     pci_rport_target_disk_paths = simple_command("/usr/bin/find /sys/devices/ -maxdepth 10 -mindepth 9 -name stat -type f")
 
     @datasource(Services, HostContext)
