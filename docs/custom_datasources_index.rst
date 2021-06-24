@@ -3,6 +3,14 @@
 Custom Datasources Catalog
 ==========================
 
+insights.specs.datasources
+--------------------------
+
+.. automodule:: insights.specs.datasources
+    :members:
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.candlepin_broker
 -------------------------------------------
 
@@ -31,7 +39,7 @@ insights.specs.datasources.package_provides
 -------------------------------------------
 
 .. automodule:: insights.specs.datasources.package_provides
-    :members: cmd_and_package, get_package
+    :members: cmd_and_pkg, get_package
     :show-inheritance:
     :undoc-members:
 

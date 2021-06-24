@@ -53,6 +53,10 @@ def cmd_and_pkg(broker):
     enable collection.  If a command is not provided by an RPM then it will not be included
     in the output.
 
+    In order for the full command line to be present in the Ps combiner a filter must be added
+    to the spec ``ps_auxww``.  A filter must also be added to ``package_provides_command`` so
+    this datasource will look for the command in Ps.
+
     Arguments:
         broker: the broker object for the current session
 
