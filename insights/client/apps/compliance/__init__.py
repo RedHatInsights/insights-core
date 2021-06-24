@@ -6,8 +6,10 @@ from insights.client.utilities import os_release_info
 from logging import getLogger
 from re import findall
 from sys import exit
+import tempfile
 from insights.util.subproc import call
 import os
+import os.path
 import six
 
 NONCOMPLIANT_STATUS = 2
@@ -32,13 +34,18 @@ class ComplianceClient:
         if not profiles:
             logger.error("System is not associated with any profiles. Assign profiles using the Compliance web UI.\n")
             exit(constants.sig_kill_bad)
+
+        archive_dir = self.archive.create_archive_dir()
         for profile in profiles:
+            tailoring_file = self.download_tailoring_file(profile)
             self.run_scan(
                 profile['attributes']['ref_id'],
                 self.find_scap_policy(profile['attributes']['ref_id']),
-                '/var/tmp/oscap_results-{0}.xml'.format(profile['attributes']['ref_id']),
-                tailoring_file_path=self.download_tailoring_file(profile)
+                self._results_file(archive_dir, profile),
+                tailoring_file_path=tailoring_file
             )
+            if tailoring_file:
+                os.remove(tailoring_file)
 
         return self.archive.create_tar_file(), COMPLIANCE_CONTENT_TYPE
 
@@ -51,7 +58,11 @@ class ComplianceClient:
         logger.debug(
             "Policy {0} is a tailored policy. Starting tailoring file download...".format(profile['attributes']['ref_id'])
         )
-        tailoring_file_path = "/var/tmp/oscap_tailoring_file-{0}.xml".format(profile['attributes']['ref_id'])
+        tailoring_file_path = tempfile.mkstemp(
+            prefix='oscap_tailoring_file-{0}.'.format(profile['attributes']['ref_id']),
+            suffix='.xml',
+            dir='/var/tmp'
+        )[1]
         response = self.conn.session.get(
             "https://{0}/compliance/profiles/{1}/tailoring_file".format(self.config.base_url, profile['id'])
         )
@@ -138,8 +149,6 @@ class ComplianceClient:
             logger.error('Scan failed')
             logger.error(oscap)
             exit(constants.sig_kill_bad)
-        else:
-            self.archive.copy_file(output_path)
 
     def _assert_oscap_rpms_exist(self):
         rpmcmd = 'rpm -qa ' + ' '.join(REQUIRED_PACKAGES)
@@ -161,3 +170,9 @@ class ComplianceClient:
         else:
             logger.error('Failed to find system in Inventory')
             exit(constants.sig_kill_bad)
+
+    def _results_file(self, archive_dir, profile):
+        return os.path.join(
+            archive_dir,
+            'oscap_results-{0}.xml'.format(profile['attributes']['ref_id'])
+        )
