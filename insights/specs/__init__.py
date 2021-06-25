@@ -192,6 +192,7 @@ class Specs(SpecSet):
     getcert_list = RegistryPoint()
     getconf_page_size = RegistryPoint()
     getenforce = RegistryPoint()
+    get_satellite_version_from_client = RegistryPoint()
     getsebool = RegistryPoint()
     gfs2_file_system_block_size = RegistryPoint(multi_output=True)
     glance_api_conf = RegistryPoint()

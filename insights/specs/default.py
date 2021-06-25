@@ -36,6 +36,7 @@ from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersio
 from insights.parsers.mount import Mount
 from insights.specs import Specs
 from insights.specs.datasources import cloud_init
+from insights.specs.datasources.get_satellite_api_base_url import base_url_of_satellite_api
 import datetime
 
 
@@ -331,6 +332,7 @@ class DefaultSpecs(Specs):
     firewalld_conf = simple_file("/etc/firewalld/firewalld.conf")
     fstab = simple_file("/etc/fstab")
     galera_cnf = first_file(["/var/lib/config-data/puppet-generated/mysql/etc/my.cnf.d/galera.cnf", "/etc/my.cnf.d/galera.cnf"])
+    get_satellite_version_from_client = command_with_args("/usr/bin/curl -k -s %s/katello/api/status --connect-timeout 5", base_url_of_satellite_api)
     getconf_page_size = simple_command("/usr/bin/getconf PAGE_SIZE")
     getenforce = simple_command("/usr/sbin/getenforce")
     getsebool = simple_command("/usr/sbin/getsebool -a")
