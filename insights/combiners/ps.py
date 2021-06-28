@@ -6,8 +6,8 @@ This combiner provides information about running processes based on the ``ps`` c
 More specifically this consolidates data from
 :py:class:`insights.parsers.ps.PsEo`,
 :py:class:`insights.parsers.ps.PsAuxcww`,
-:py:class:`insights.parsers.ps.PsEf`,
 :py:class:`insights.parsers.ps.PsEoCmd`,
+:py:class:`insights.parsers.ps.PsEf`,
 :py:class:`insights.parsers.ps.PsAux`,
 :py:class:`insights.parsers.ps.PsAuxww` and
 :py:class:`insights.parsers.ps.PsAlxwww` parsers (in that specific order).
@@ -22,7 +22,7 @@ Note:
 
 Examples:
 
-    >>> ps_combiner.pids
+    >>> sorted(ps_combiner.pids)
     [1, 2, 3, 8, 9, 10, 11, 12, 13]
     >>> '[kthreadd]' in ps_combiner.commands
     True
@@ -106,6 +106,8 @@ class Ps(object):
             self.__update_data(ps_eo)
         if ps_auxcww:
             self.__update_data(ps_auxcww)
+        if ps_eo_cmd:
+            self.__update_data(ps_eo_cmd)
         if ps_ef:
             # mapping configurations to combine PsEf data
             mapping = {
@@ -116,8 +118,6 @@ class Ps(object):
                 'STIME': ('START', True)
             }
             self.__update_data(ps_ef, mapping)
-        if ps_eo_cmd:
-            self.__update_data(ps_eo_cmd)
         if ps_aux:
             self.__update_data(ps_aux)
         if ps_auxww:
