@@ -50,3 +50,11 @@ insights.specs.datasources.ps
     :members: ps_eo_cmd, LocalSpecs
     :show-inheritance:
     :undoc-members:
+
+insights.specs.datasources.sap
+----------------------------------
+
+.. automodule:: insights.specs.datasources.sap
+    :members: ld_library_path_of_user, LocalSpecs
+    :show-inheritance:
+    :undoc-members:
