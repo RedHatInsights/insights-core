@@ -18,9 +18,6 @@ class AnsibleTowerSettings(Parser, dict):
 
         AWX_CLEANUP_PATHS = False
 
-    Attributes:
-        data (dict): A dict of "key=value" from configuration file
-
     Raises:
         SkipException: the file is empty or there is no valid content
 
