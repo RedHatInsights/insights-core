@@ -573,7 +573,10 @@ class InsightsConfig(object):
         }
         cli_options = dict((k, v) for k, v in DEFAULT_OPTS.items() if (
                        'opt' in v))
-        for _, o in cli_options.items():
+        for _, _o in cli_options.items():
+            # cli_options contains references to DEFAULT_OPTS, so
+            #   make a copy so we don't mutate DEFAULT_OPTS
+            o = copy.copy(_o)
             group_name = o.pop('group', None)
             if group_name is None:
                 group = parser
