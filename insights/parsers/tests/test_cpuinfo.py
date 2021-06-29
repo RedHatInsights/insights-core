@@ -1402,6 +1402,48 @@ model		: IBM,8231-E2D
 machine		: CHRP IBM,8231-E2D
 """
 
+S390X_CPUINFO_R7 = """
+vendor_id       : IBM/S390
+# processors    : 2
+bogomips per cpu: 24038.00
+max thread id   : 0
+features	: esan3 zarch stfle msa ldisp eimm dfp edat etf3eh highgprs te vx vxd vxe gs
+facilities      : 0 1 2 3 4 6 7 8 9 10 12 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 30 31 32 33 34 35 36 37 38 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 57 58 59 60 61 73 74 75 76 77 80 81 82 128 129 130 131 133 134 135 146 147 148 150 151 152 155 156 168
+cache0          : level=1 type=Data scope=Private size=128K line_size=256 associativity=8
+cache1          : level=1 type=Instruction scope=Private size=128K line_size=256 associativity=8
+cache2          : level=2 type=Data scope=Private size=4096K line_size=256 associativity=8
+cache3          : level=2 type=Instruction scope=Private size=4096K line_size=256 associativity=8
+cache4          : level=3 type=Unified scope=Shared size=262144K line_size=256 associativity=32
+cache5          : level=4 type=Unified scope=Shared size=983040K line_size=256 associativity=60
+processor 0: version = FF,  identification = 0E19C8,  machine = 8561
+processor 1: version = FF,  identification = 0E19C8,  machine = 8561
+"""
+
+S390X_CPUINFO_R8 = """
+vendor_id       : IBM/S390
+# processors    : 2
+bogomips per cpu: 21881.00
+max thread id   : 0
+features	: esan3 zarch stfle msa ldisp eimm dfp edat etf3eh highgprs te vx vxd vxe gs
+facilities      : 0 1 2 3 4 6 7 8 9 10 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 30 31 32 33 34 35 36 37 38 40 41 42 43 44 45 47 48 49 50 51 52 53 54 57 58 59 60 64 65 69 71 72 73 74 75 76 77 78 80 81 82 129 130 131 133 134 135 138 139 146 147
+cache0          : level=1 type=Data scope=Private size=128K line_size=256 associativity=8
+cache1          : level=1 type=Instruction scope=Private size=128K line_size=256 associativity=8
+cache2          : level=2 type=Data scope=Private size=4096K line_size=256 associativity=8
+cache3          : level=2 type=Instruction scope=Private size=2048K line_size=256 associativity=8
+cache4          : level=3 type=Unified scope=Shared size=131072K line_size=256 associativity=32
+cache5          : level=4 type=Unified scope=Shared size=688128K line_size=256 associativity=42
+processor 0: version = FF,  identification = 1E41E8,  machine = 3906
+processor 1: version = FF,  identification = 1E41E8,  machine = 3906
+
+cpu number      : 0
+cpu MHz dynamic : 5208
+cpu MHz static  : 5208
+
+cpu number      : 1
+cpu MHz dynamic : 5208
+cpu MHz static  : 5208
+"""
+
 
 def test_cpuinfo():
     cpu_info = CpuInfo(context_wrap(CPUINFO))
@@ -1424,11 +1466,13 @@ def test_cpuinfo():
         "apicid": "0",
         "flags": "fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch epb intel_pt tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 hle avx2 smep bmi2 erms invpcid rtm mpx rdseed adx smap clflushopt xsaveopt xsavec xgetbv1 dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp",
         "address_sizes": "40 bits physical, 48 bits virtual",
-        "bugs": "cpu_meltdown spectre_v1 spectre_v2 spec_store_bypass l1tf mds swapgs taa itlb_multihit"
+        "bugs": "cpu_meltdown spectre_v1 spectre_v2 spec_store_bypass l1tf mds swapgs taa itlb_multihit",
+        "microcode": "1808"
     }
     assert cpu_info.cpu_speed == "2900.000"
     assert cpu_info.cache_size == "20480 KB"
     assert cpu_info.model_number == "45"
+    assert cpu_info.microcode == "1808"
     assert "mmx" in cpu_info.flags
     assert "avx512f" not in cpu_info.flags
     for i, cpu in enumerate(cpu_info):
@@ -1485,6 +1529,25 @@ def test_power_cpuinfo():
     for i, cpu in enumerate(cpu_info):
         assert cpu["cpu"] == "POWER7 (architected), altivec supported"
         assert cpu["revision"] == "2.0 (pvr 004a 0200)"
+        assert cpu["model_ids"] == "IBM,8231-E2D"
+
+
+def test_s390x_cpuinfo():
+    def test_common(info):
+        assert info.cpu_count == 2
+        assert info.socket_count == 0
+        assert info.vendor == "IBM/S390"
+        for i, cpu in enumerate(info):
+            assert cpu["features"] == "esan3 zarch stfle msa ldisp eimm dfp edat etf3eh highgprs te vx vxd vxe gs"
+
+    # Test r7 output.
+    cpu_info = CpuInfo(context_wrap(S390X_CPUINFO_R7))
+    test_common(cpu_info)
+
+    # Test r8 output.
+    cpu_info = CpuInfo(context_wrap(S390X_CPUINFO_R8))
+    test_common(cpu_info)
+    assert cpu_info.cpu_speed == "5208"
 
 
 def test_cpuinfo_doc_examples():

@@ -65,6 +65,8 @@ Examples:
     '0'
     >>> cpu_info.get_processor_by_index(0)['vendors']
     'GenuineIntel'
+    >>> cpu_info.microcode
+    '1808'
 """
 
 from collections import defaultdict
@@ -141,16 +143,36 @@ class CpuInfo(LegacyItemAccess, Parser):
             "revision": "revision",
             "address sizes": "address_sizes",
             "bugs": "bugs",
+            "microcode": "microcode",
+            "cpu MHz static": "clockspeeds",
+            "features": "features"
         }
 
         for line in get_active_lines(content, comment_char="COMMAND>"):
             key, value = [p.strip() for p in line.split(":", 1)]
+            # For s390x the : symbol is after the number instead of before.
+            # So re-split and set the key and value before checking mappings.
+            if key.startswith("processor") and key[-1].isdigit():
+                key, value = key.split(" ", 1)
+
             if key in mappings:
                 self.data[mappings[key]].append(value)
 
         if "cpu" in self.data and "POWER" in self.data["cpu"][0]:
             # this works differently than on x86 and is not per-cpu
-            del self.data["model_ids"]
+            model_id = self.data["model_ids"][0]
+            cpu_cnt = self.cpu_count
+            self.data["model_ids"] = [model_id] * cpu_cnt
+
+        # s390x cpuinfo is setup drastically differently than other arches.
+        # It doesn't print the same information for each cpu, like other arches.
+        # So any info not repeated per cpu, copy, delete and then add for each cpu entry.
+        if "vendors" in self.data and "IBM/S390" in self.data["vendors"][0]:
+            vendor = self.data["vendors"][0]
+            features = self.data["features"][0]
+            cpu_cnt = self.cpu_count
+            self.data["vendors"] = [vendor] * cpu_cnt
+            self.data["features"] = [features] * cpu_cnt
 
         self.data = dict(self.data)
 
@@ -231,6 +253,14 @@ class CpuInfo(LegacyItemAccess, Parser):
         str: Returns the vendor of the first CPU.
         """
         return self.data["vendors"][0]
+
+    @property
+    @defaults()
+    def microcode(self):
+        """
+        str: Returns the microcode of the first CPU.
+        """
+        return self.data["microcode"][0]
 
     @property
     @defaults()

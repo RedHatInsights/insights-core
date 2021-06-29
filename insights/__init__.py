@@ -56,6 +56,8 @@ package_info = dict((k, None) for k in ["RELEASE", "COMMIT", "VERSION", "NAME"])
 for name in package_info:
     package_info[name] = pkgutil.get_data(__name__, name).strip().decode("utf-8")
 
+_COLOR = "auto"
+
 
 def get_nvr():
     return "{0}-{1}-{2}".format(package_info["NAME"],
@@ -135,6 +137,7 @@ def load_default_plugins():
     dr.load_components("insights.specs.core3_archive")
     dr.load_components("insights.specs.sos_archive")
     dr.load_components("insights.specs.jdr_archive")
+    dr.load_components("insights.specs.must_gather_archive")
 
 
 def load_packages(packages):
@@ -262,6 +265,8 @@ def run(component=None, root=None, print_summary=False,
         p.add_argument("--tags", help="Expression to select rules by tag.")
         p.add_argument("-D", "--debug", help="Verbose debug output.", action="store_true")
         p.add_argument("--context", help="Execution Context. Defaults to HostContext if an archive isn't passed.")
+        p.add_argument("--color", default="auto", choices=["always", "auto", "never"], metavar="[=WHEN]",
+                       help="Choose if and how the color encoding is outputted. When is 'always', 'auto', or 'never'.")
 
         class Args(object):
             pass
@@ -269,6 +274,8 @@ def run(component=None, root=None, print_summary=False,
         formatters = []
         args = Args()
         p.parse_known_args(namespace=args)
+        global _COLOR
+        _COLOR = args.color
         p = argparse.ArgumentParser(parents=[p])
         args.format = "insights.formats._json" if args.format == "json" else args.format
         args.format = "insights.formats._yaml" if args.format == "yaml" else args.format

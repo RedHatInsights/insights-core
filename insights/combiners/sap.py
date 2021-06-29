@@ -11,7 +11,7 @@ Prefer the ``SAPHostCtrlInstances`` to ``Lssap``.
 from collections import namedtuple
 from insights import SkipComponent
 from insights.core.plugins import combiner
-from insights.combiners.hostname import hostname
+from insights.combiners.hostname import Hostname
 from insights.parsers.lssap import Lssap
 from insights.parsers.saphostctrl import SAPHostCtrlInstances
 
@@ -38,7 +38,7 @@ JC     :    NetWeaver (Java App Server Instance)
 """
 
 
-@combiner(hostname, [SAPHostCtrlInstances, Lssap])
+@combiner(Hostname, [SAPHostCtrlInstances, Lssap])
 class Sap(dict):
     """
     Combiner for combining the result of :class:`insights.parsers.lssap.Lssap`
@@ -80,6 +80,7 @@ class Sap(dict):
 
     def __init__(self, hostname, insts, lssap):
         hn = hostname.hostname
+        fqdn = hostname.fqdn
         data = {}
         self.local_instances = []
         self.business_instances = []
@@ -91,7 +92,10 @@ class Sap(dict):
             self.all_instances = insts.instances
             for inst in insts.data:
                 k = inst['InstanceName']
-                self.local_instances.append(k) if hn == inst['Hostname'] else None
+                if (hn == inst['Hostname'].split('.')[0] or
+                        fqdn == inst['FullQualifiedHostname'] or
+                        fqdn == inst['Hostname']):
+                    self.local_instances.append(k)
                 data[k] = SAPInstances(k,
                                        inst['Hostname'],
                                        inst['SID'],
@@ -105,7 +109,7 @@ class Sap(dict):
                 t = k.rstrip('1234567890')
                 self.all_instances.append(k)
                 self._types.add(t)
-                self.local_instances.append(k) if hn == inst['SAPLOCALHOST'] else None
+                self.local_instances.append(k) if hn == inst['SAPLOCALHOST'].split('.')[0] else None
                 data[k] = SAPInstances(k,
                                        inst['SAPLOCALHOST'],
                                        inst['SID'],

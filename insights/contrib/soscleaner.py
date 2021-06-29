@@ -98,6 +98,9 @@ class SOSCleaner:
                     #if mode == '200' or mode == '444' or mode == '400':
                     #    skip_list.append(f)
                     mime_type = content_type.from_file(f_full)
+                    if f == 'insights_archive.txt':
+                        # don't exclude this file! we need it to parse core collection archives
+                        continue
                     if 'text' not in mime_type and 'json' not in mime_type:
                         skip_list.append(f)
 

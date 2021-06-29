@@ -78,6 +78,7 @@ plugins:
     # packages and modules to load
     packages:
         - insights.specs.default
+        - insights.specs.datasources
 
     # configuration of loaded components. names are prefixes, so any component with
     # a fully qualified name that starts with a key will get the associated
@@ -85,6 +86,9 @@ plugins:
     # datasources. Can specify metadata, which must be a dictionary and will be
     # merged with the components' default metadata.
     configs:
+        - name: insights.specs.datasources
+          enabled: true
+
         - name: insights.specs.Specs
           enabled: true
 
@@ -101,6 +105,80 @@ plugins:
           enabled: true
 
         - name: insights.combiners.hostname
+          enabled: true
+
+    # needed for the CloudProvider combiner
+        - name: insights.parsers.installed_rpms
+          enabled: true
+
+        - name: insights.parsers.dmidecode
+          enabled: true
+
+        - name: insights.parsers.yum
+          enabled: true
+
+        - name: insights.parsers.rhsm_conf
+          enabled: true
+
+        - name: insights.combiners.cloud_provider
+          enabled: true
+
+    # needed for the Services combiner
+        - name: insights.parsers.chkconfig
+          enabled: true
+
+        - name: insights.parsers.systemd.unitfiles
+          enabled: true
+
+        - name: insights.combiners.services
+          enabled: true
+
+    # needed for multiple Datasouce specs
+        - name: insights.parsers.ps.PsAuxcww
+          enabled: true
+
+        - name: insights.parsers.ps.PsAuxww
+          enabled: true
+
+        - name: insights.combiners.ps
+          enabled: true
+
+    # needed to collect the sap_hdb_version spec that uses the Sap combiner
+        - name: insights.parsers.lssap
+          enabled: true
+
+        - name: insights.parsers.saphostctrl
+          enabled: true
+
+        - name: insights.combiners.sap
+          enabled: true
+
+    # needed for the 'pre-check' of the 'ss' spec
+        - name: insights.parsers.lsmod
+          enabled: true
+
+    # needed for the 'pre-check' of the 'is_satellite_server' spec
+        - name: insights.combiners.satellite_version.SatelliteVersion
+          enabled: true
+
+    # needed for the 'pre-check' of the 'is_satellite_capsule' spec
+        - name: insights.combiners.satellite_version.CapsuleVersion
+          enabled: true
+
+    # needed for the 'pre-check' of the 'gfs2_mount_points' spec
+        - name: insights.parsers.mount.Mount
+          enabled: true
+        - name: insights.combiners.redhat_release.RedHatRelease
+          enabled: true
+        - name: insights.parsers.uname.Uname
+          enabled: true
+        - name: insights.parsers.redhat_release.RedhatRelease
+          enabled: true
+        - name: insights.components.rhel_version.IsRhel6
+          enabled: true
+        - name: insights.components.rhel_version.IsRhel7
+          enabled: true
+        - name: insights.components.rhel_version.IsRhel8
           enabled: true
 
     # needed because some specs aren't given names before they're used in DefaultSpecs

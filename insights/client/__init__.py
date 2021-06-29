@@ -6,6 +6,7 @@ import tempfile
 import shlex
 import shutil
 import sys
+import atexit
 from subprocess import Popen, PIPE
 from requests import ConnectionError
 
@@ -16,6 +17,7 @@ from .config import InsightsConfig
 from .auto_config import try_auto_configuration
 from .utilities import (delete_registered_file,
                         delete_unregistered_file,
+                        write_data_to_file,
                         write_to_disk,
                         generate_machine_id,
                         get_tags,
@@ -29,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 class InsightsClient(object):
 
-    def __init__(self, config=None, setup_logging=True, **kwargs):
+    def __init__(self, config=None, from_phase=True, **kwargs):
         """
         The Insights client interface
         """
@@ -49,21 +51,19 @@ class InsightsClient(object):
                     sys.exit(constants.sig_kill_bad)
             # END hack. in the future, just set self.config=config
 
-        # setup_logging is True when called from phase, but not from wrapper.
-        #  use this to do any common init (like auto_config)
-        if setup_logging:
+        if from_phase:
+            _init_client_config_dirs()
             self.set_up_logging()
             try_auto_configuration(self.config)
             self.initialize_tags()
-        else:
-            # write PID to file in case we need to ping systemd
-            write_to_disk(constants.pidfile, content=str(os.getpid()))
-            # write PPID to file so that we can grab the client execution method
-            write_to_disk(constants.ppidfile, content=get_parent_process())
+        else:  # from wrapper
+            _write_pid_files()
+
         # setup insights connection placeholder
         # used for requests
         self.session = None
         self.connection = None
+        self.tmpdir = None
 
     def _net(func):
         def _init_connection(self, *args, **kwargs):
@@ -120,10 +120,11 @@ class InsightsClient(object):
             returns (dict): {'core': path to new egg, None if no update,
                              'gpg_sig': path to new sig, None if no update}
         """
-        tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.mkdtemp()
+        atexit.register(self.delete_tmpdir)
         fetch_results = {
-            'core': os.path.join(tmpdir, 'insights-core.egg'),
-            'gpg_sig': os.path.join(tmpdir, 'insights-core.egg.asc')
+            'core': os.path.join(self.tmpdir, 'insights-core.egg'),
+            'gpg_sig': os.path.join(self.tmpdir, 'insights-core.egg.asc')
         }
 
         logger.debug("Beginning core fetch.")
@@ -134,7 +135,7 @@ class InsightsClient(object):
         try:
             # write the release path to temp so we can collect it
             #   in the archive
-            write_to_disk(constants.egg_release_file, content=egg_release)
+            write_data_to_file(egg_release, constants.egg_release_file)
         except (OSError, IOError) as e:
             logger.debug('Could not write egg release file: %s', str(e))
 
@@ -371,6 +372,11 @@ class InsightsClient(object):
         logger.debug("The new Insights Core was installed successfully.")
         return {'success': True}
 
+    def delete_tmpdir(self):
+        if self.tmpdir:
+            logger.debug("Deleting temp directory %s." % (self.tmpdir))
+            shutil.rmtree(self.tmpdir, True)
+
     @_net
     def update_rules(self):
         """
@@ -500,6 +506,13 @@ class InsightsClient(object):
             returns True on success, False on failure
         '''
         return self.connection.set_display_name(display_name)
+
+    @_net
+    def set_ansible_host(self, ansible_host):
+        '''
+            returns True on success, False on failure
+        '''
+        return self.connection.set_ansible_host(ansible_host)
 
     @_net
     def get_diagnosis(self, remediation_id=None):
@@ -683,6 +696,14 @@ class InsightsClient(object):
         logger.info("When specifying these items in file-redaction.yaml, they must be prefixed with 'insights.specs.default.DefaultSpecs.', i.e. 'insights.specs.default.DefaultSpecs.httpd_V'")
         logger.info("This information applies only to Insights Core collection. To use Core collection, set core_collect=True in %s", self.config.conf)
 
+    @_net
+    def checkin(self):
+        if self.config.offline:
+            logger.error('Cannot check-in in offline mode.')
+            return None
+
+        return self.connection.checkin()
+
 
 def format_config(config):
     # Log config except the password
@@ -693,3 +714,28 @@ def format_config(config):
         del config_copy["proxy"]
     finally:
         return json.dumps(config_copy, indent=4)
+
+
+def _init_client_config_dirs():
+    '''
+    Initialize log and lib dirs
+    TODO: init non-root config dirs
+    '''
+    for d in (constants.log_dir, constants.insights_core_lib_dir):
+        try:
+            os.makedirs(d)
+        except OSError as e:
+            if e.errno == errno.EEXIST:
+                # dir exists, this is OK
+                pass
+            else:
+                raise e
+
+
+def _write_pid_files():
+    for file, content in (
+        (constants.pidfile, str(os.getpid())),  # PID in case we need to ping systemd
+        (constants.ppidfile, get_parent_process())  # PPID so that we can grab the client execution method
+    ):
+        write_to_disk(file, content=content)
+        atexit.register(write_to_disk, file, delete=True)

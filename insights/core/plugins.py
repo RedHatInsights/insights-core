@@ -243,7 +243,7 @@ class rule(PluginType):
 
     At least one of the arguments to parameters of an "at least one"
     list will not be ``None``. In the example, either or both of ``chk_config``
-    and unit_files will not be ``None``.
+    and ``unit_files`` will not be ``None``.
 
     Any or all arguments for optional parameters may be ``None``.
 
@@ -471,7 +471,8 @@ class Response(dict):
         keys = sorted(self)
         if self.key_name in keys:
             keys.remove(self.key_name)
-        keys.remove("type")
+        if "type" in keys:
+            keys.remove("type")
 
         buf = StringIO()
         if not keys:

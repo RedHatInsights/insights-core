@@ -76,6 +76,10 @@ class VirshListAll(CommandParser):
         self.fields = []
         self.cols = []
         self.keywords = []
+        # Check and remove any error message, or empty lines. This to
+        # prevent any ValueError exceptions when parse_fixed_table is
+        # called below.
+        content = [l for l in content if not l.startswith("error: ") and l != ""]
         if not content:
             return
 
@@ -132,7 +136,6 @@ class VirshListAll(CommandParser):
 
             str: State of VM. Returns None if, ``vmname`` does not exist.
         '''
-        vmname = vmname.lower()
-        if vmname in self.keywords:
+        if vmname.lower() in self.keywords:
             return self.search(name=vmname)[0]['state']
         return None

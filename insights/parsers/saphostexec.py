@@ -4,22 +4,22 @@ saphostexec - Commands
 
 Shared parsers for parsing output of the ``saphostexec [option]`` commands.
 
-SAPHostExecStatus- command ``saphostexec -status``
---------------------------------------------------
+SAPHostExecStatus - command ``saphostexec -status``
+---------------------------------------------------
 
 SAPHostExecVersion - command ``saphostexec -version``
 -----------------------------------------------------
 """
-from .. import parser, CommandParser, LegacyItemAccess
-from insights.parsers import SkipException
+from insights import parser, CommandParser
+from insights.parsers import SkipException, ParseException
 from insights.specs import Specs
 from collections import namedtuple
 
 
 @parser(Specs.saphostexec_status)
-class SAPHostExecStatus(CommandParser, LegacyItemAccess):
+class SAPHostExecStatus(CommandParser, dict):
     """
-    Class for parsing the output of `saphostexec -status` command.
+    Class for parsing the output of ``saphostexec -status`` command.
 
     Typical output of the command is::
 
@@ -27,38 +27,70 @@ class SAPHostExecStatus(CommandParser, LegacyItemAccess):
         sapstartsrv running (pid = 9163)
         saposcol running (pid = 9323)
 
-    Attributes:
-        is_running (bool): The SAP Host Agent is running or not.
-        services (list): List of services.
-
     Examples:
         >>> type(sha_status)
         <class 'insights.parsers.saphostexec.SAPHostExecStatus'>
         >>> sha_status.is_running
         True
-        >>> sha_status.services['saphostexec']
+        >>> sha_status.services['saphostexec'].status
+        'running'
+        >>> sha_status['saphostexec'].status
+        'running'
+        >>> sha_status['saphostexec'].pid
         '9159'
     """
 
-    def parse_content(self, content):
-        self.is_running = False
-        self.services = self.data = {}
-        if 'saphostexec stopped' not in content[0]:
-            for line in content:
-                line_splits = line.split()
-                self.services[line_splits[0]] = ''
-                if len(line_splits) == 5 and line_splits[1] == 'running':
-                    self.services[line_splits[0]] = line_splits[-1][:-1]
-                else:
-                    raise SkipException("Incorrect status: '{0}'".format(line))
+    SAPHostAgentService = namedtuple("SAPHostAgentService", field_names=["status", "pid"])
+    """namedtuple: Type for storing the lines of ``saphostexec -status``"""
 
-            self.is_running = self.services and all(p for p in self.services.values())
+    def parse_content(self, content):
+        data = {}
+        for line in content:
+            if not line.strip():
+                continue
+            line_sp = line.strip().split(None, 1)
+            if len(line_sp) == 2:
+                value_sp = line_sp[1].replace('(', '').replace(')', '').split()
+                svc, sta, pid = line_sp[0], value_sp[0], value_sp[-1]
+                data[svc] = self.SAPHostAgentService(sta, pid)
+            else:
+                raise ParseException("Incorrect line: '{0}'".format(line))
+        if data:
+            self.update(data)
+        else:
+            raise SkipException
+
+    @property
+    def is_running(self):
+        """
+        Returns if the SAPHostAgent is running or not.
+        """
+        return all(p.status == 'running' for p in self.values())
+
+    @property
+    def data(self):
+        """
+        .. warning::
+
+            Deprecated, the parser works as a dict please use the built-in
+            accesses of `dict`
+
+        Returns the parsed data.
+        """
+        return self
+
+    @property
+    def services(self):
+        """
+        Returns the parsed lines.
+        """
+        return self
 
 
 @parser(Specs.saphostexec_version)
-class SAPHostExecVersion(CommandParser, LegacyItemAccess):
+class SAPHostExecVersion(CommandParser, dict):
     """
-    Class for parsing the output of `saphostexec -version` command.
+    Class for parsing the output of ``saphostexec -version`` command.
 
     Typical output of the command is::
 
@@ -87,25 +119,23 @@ class SAPHostExecVersion(CommandParser, LegacyItemAccess):
         Linux 3
         Linux
 
-
-    Attributes:
-        components (dict): Dict of :py:class:`SAPComponent` instances.
-
     Examples:
         >>> type(sha_version)
         <class 'insights.parsers.saphostexec.SAPHostExecVersion'>
         >>> sha_version.components['saphostexec'].version
         '721'
-        >>> sha_version.components['saphostexec'].patch
+        >>> sha_version['saphostexec'].version
+        '721'
+        >>> sha_version['saphostexec'].patch
         '1011'
     """
 
-    SAPComponent = namedtuple("SAPComponent",
+    SAPHostAgentComponent = namedtuple("SAPHostAgentComponent",
             field_names=["version", "patch", "changelist"])
-    """namedtuple: Type for storing the SAP components"""
+    """namedtuple: Type for storing the lines of ``saphostexec -version``"""
 
     def parse_content(self, content):
-        self.components = self.data = {}
+        data = {}
         for line in content:
             # Only process component lines for now
             if not line.startswith('/usr/sap/hostctrl/exe/'):
@@ -113,4 +143,27 @@ class SAPHostExecVersion(CommandParser, LegacyItemAccess):
             key, val = line.split(':', 1)
             key = key.split('/')[-1]
             ver, pch, chl, _ = [s.split()[-1].strip() for s in val.split(', ', 3)]
-            self.components[key] = self.SAPComponent(ver, pch, chl)
+            data[key] = self.SAPHostAgentComponent(ver, pch, chl)
+        if data:
+            self.update(data)
+        else:
+            raise SkipException
+
+    @property
+    def data(self):
+        """
+        .. warning::
+
+            Deprecated, the parser works as a dict please use the built-in
+            accesses of `dict`
+
+        Returns the parsed data.
+        """
+        return self
+
+    @property
+    def components(self):
+        """
+        Return the dict of :py:class:`SAPHostAgentComponent` instances.
+        """
+        return self

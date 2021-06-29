@@ -127,10 +127,8 @@ def _get_component_by_symbolic_name(sname):
     spec_prefix = "insights.specs.default.DefaultSpecs."
     spec_conversion = {
         'getconf_pagesize': 'getconf_page_size',
-        'lspci_kernel': 'lspci',
         'netstat__agn': 'netstat_agn',
         'rpm__V_packages': 'rpm_V_packages',
-        'ss_tupna': 'ss',
 
         'machine_id1': 'machine_id',
         'machine_id2': 'machine_id',

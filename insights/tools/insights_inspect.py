@@ -98,9 +98,10 @@ import yaml
 
 from contextlib import contextmanager
 
-from insights import (apply_configs, create_context, dr, extract, HostContext,
+from insights import (apply_configs, dr, extract, HostContext,
                       load_default_plugins)
 from insights.core import filters
+from insights.core.hydration import initialize_broker
 from IPython import embed
 from IPython.terminal.embed import InteractiveShellEmbed
 
@@ -162,9 +163,8 @@ def create_broker(root=None):
         yield broker
     else:
         def from_dir(d):
-            broker = dr.Broker()
-            ctx = create_context(d, None)
-            broker[ctx.__class__] = ctx
+            # ctx is returned here, but its already in the broker so not needed
+            _, broker = initialize_broker(d)
             return broker
 
         if os.path.isdir(root):

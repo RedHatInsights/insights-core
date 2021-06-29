@@ -1,3 +1,3 @@
 [flake8]
 ignore = E501,E126,E127,E128,E722,E741
-exclude = insights/contrib,bin,docs,include,lib,lib64,.git,.collections.py,insights/parsers/tests/lvm_test_data.py
+exclude = insights/contrib,bin,docs,include,lib,lib64,.git,.collections.py,insights/parsers/tests/lvm_test_data.py,insights/client/apps/ansible/playbook_verifier/contrib

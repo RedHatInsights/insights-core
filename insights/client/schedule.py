@@ -28,7 +28,7 @@ class InsightsSchedulerCron(object):
             return os.path.isfile(self.target)
         return False
 
-    def set_daily(self):
+    def schedule(self):
         logger.debug('Scheduling cron.daily')
         try:
             if not os.path.exists(self.target):
@@ -51,41 +51,91 @@ class InsightsSchedulerCron(object):
 
 
 class InsightsSchedulerSystemd(object):
+    ALL_TIMERS = ("insights-client", "insights-client-checkin")
+
+    def __init__(self):
+        """
+        Looks for loaded timers using `systemctl show`, stores their names in self.loaded_timers. No loaded timers
+        produce (). If an error occurs, self.loaded_timers becomes None and all methods (schedule, remove_scheduling,
+        active) then return None.
+        """
+        results = self._run_systemctl_commands(self.ALL_TIMERS, "show", "--property", "LoadState")
+        if not results:
+            self.loaded_timers = None  # Command failed.
+        else:
+            self.loaded_timers = tuple(
+                timer
+                for timer, result in results.items()
+                if result["status"] == 0 and result["output"] == "LoadState=loaded\n"
+            )
+            if not self.loaded_timers:
+                logger.warning("No loaded timers found")
+
+    @staticmethod
+    def _run_systemctl_command(*args):
+        cmd_args = " ".join(args)
+        command = "systemctl %s" % cmd_args
+        logger.debug("Running command %s", command)
+        try:
+            result = run_command_get_output(command)
+        except OSError:
+            logger.exception("Could not run %s", command)
+            return None
+        else:
+            logger.debug("Status: %s", result["status"])
+            logger.debug("Output: %s", result["output"])
+            return result
+
+    @classmethod
+    def _run_systemctl_commands(cls, timers, *args):
+        if timers is None:
+            return None  # Could not list loaded timers on init.
+
+        results = {}
+
+        for timer in timers:
+            unit = "%s.timer" % timer
+            command_args = args + (unit,)
+            result = cls._run_systemctl_command(*command_args)
+            if not result:
+                return None  # Command failed.
+            results[timer] = result
+
+        return results
 
     @property
     def active(self):
-        try:
-            systemctl_status = run_command_get_output('systemctl is-enabled insights-client.timer')
-            return systemctl_status['status'] == 0
-        except OSError:
-            logger.exception('Could not get systemd status')
-            return False
+        """
+        Runs systemctl is-enabled for each loaded timers. Returns True if all loaded timers are enabled, None if any
+        systemctl command fails - here or in init.
+        """
+        results = self._run_systemctl_commands(self.loaded_timers, "is-enabled")
+        return results and all(result["status"] == 0 for result in results.values())
 
-    def set_daily(self):
-        logger.debug('Starting systemd timer')
-        try:
-            # Start timers in the case of rhel 7 running systemd
-            systemctl_timer = run_command_get_output('systemctl enable --now insights-client.timer')
-            logger.debug("Starting Insights Client systemd timer.")
-            logger.debug("Status: %s", systemctl_timer['status'])
-            logger.debug("Output: %s", systemctl_timer['output'])
-            return self.active
-        except OSError:
-            logger.exception('Could not start systemd timer')
-            return False
+    def schedule(self):
+        """
+        Runs systemctl enable --now for each loaded timers. Returns True if all loaded timers are successfully enabled,
+        False if any of them remains inactive. If no timer is loaded, returns {}, if any systemctl command fails - here
+        or in init - returns None. Both falsey as nothing has been actually enabled.
+        """
+        logger.debug("Starting systemd timers")
+        results = self._run_systemctl_commands(self.loaded_timers, "enable", "--now")
+        return results and self.active
 
     def remove_scheduling(self):
-        logger.debug('Stopping all systemd timers')
-        try:
-            # Stop timers in the case of rhel 7 running systemd
-            systemctl_timer = run_command_get_output('systemctl disable --now insights-client.timer')
-            logger.debug("Stopping Insights Client systemd timer.")
-            logger.debug("Status: %s", systemctl_timer['status'])
-            logger.debug("Output: %s", systemctl_timer['output'])
-            return not self.active
-        except OSError:
-            logger.exception('Could not stop systemd timer')
-            return False
+        """
+        Runs systemctl disable --now for each loaded timers. Returns True if all loaded timers are successfully
+        disabled, False if any of them remains active. If no timer is loaded, returns {}, if any systemctl command
+        fails - here or in init - returns None. Both falsey as nothing has been actually disabled.
+        """
+        logger.debug("Stopping all systemd timers")
+        results = self._run_systemctl_commands(self.loaded_timers, "disable", "--now")
+
+        if results:
+            active = self.active
+            return None if active is None else not active
+        else:
+            return results
 
 
 def get_scheduler(config, source=None, target='/etc/cron.daily/' + APP_NAME):

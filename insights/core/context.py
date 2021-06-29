@@ -103,7 +103,8 @@ class Context(object):
         self.cmd = None
         optional_attrs = [
             "content", "path", "hostname", "release",
-            "machine_id", "target", "last_client_run", "relative_path"
+            "machine_id", "target", "last_client_run", "relative_path",
+            "args"
         ]
         for k in optional_attrs:
             setattr(self, k, kwargs.pop(k, None))
@@ -180,17 +181,17 @@ class ExecutionContext(six.with_metaclass(ExecutionContextMeta)):
             return (closest_root, cls)
         return (None, None)
 
-    def check_output(self, cmd, timeout=None, keep_rc=False, env=None):
+    def check_output(self, cmd, timeout=None, keep_rc=False, env=None, signum=None):
         """ Subclasses can override to provide special
             environment setup, command prefixes, etc.
         """
-        return subproc.call(cmd, timeout=timeout or self.timeout,
+        return subproc.call(cmd, timeout=timeout or self.timeout, signum=signum,
                 keep_rc=keep_rc, env=env)
 
-    def shell_out(self, cmd, split=True, timeout=None, keep_rc=False, env=None):
+    def shell_out(self, cmd, split=True, timeout=None, keep_rc=False, env=None, signum=None):
         env = env or os.environ
         rc = None
-        raw = self.check_output(cmd, timeout=timeout, keep_rc=keep_rc, env=env)
+        raw = self.check_output(cmd, timeout=timeout, keep_rc=keep_rc, env=env, signum=signum)
         if keep_rc:
             rc, output = raw
         else:

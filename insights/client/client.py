@@ -176,7 +176,7 @@ def _legacy_handle_registration(config, pconn):
                         're-register this machine.')
         else:
             # not yet registered
-            logger.info('This machine has not yet been registered.'
+            logger.info('This machine has not yet been registered. '
                         'Use --register to register this machine.')
         return False
 

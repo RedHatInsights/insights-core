@@ -4,6 +4,7 @@ import os
 from io import TextIOWrapper, BytesIO
 from insights.client.config import InsightsConfig, DEFAULT_OPTS, _core_collect_default
 from mock.mock import patch
+from pytest import mark
 
 
 @patch('insights.client.config.ConfigParser.open')
@@ -85,13 +86,61 @@ def test_env_number_bad_values():
         c._load_env()
 
 
+@patch('insights.client.config.os.environ', {})
+def test_env_no_proxy_no_warning():
+    with patch('insights.client.config.sys.stdout.write') as write:
+        c = InsightsConfig(_print_errors=True)
+        c._load_env()
+        write.assert_not_called()
+
+
+@patch('insights.client.config.os.environ', {'HTTP_PROXY': '127.0.0.1'})
+def test_env_http_proxy_warning():
+    with patch('insights.client.config.sys.stdout.write') as write:
+        c = InsightsConfig(_print_errors=True)
+        c._load_env()
+        write.assert_called_once()
+
+
+@patch('insights.client.config.os.environ', {'HTTP_PROXY': '127.0.0.1'})
+@pytest.mark.parametrize(("kwargs",), (({},), ({"_print_errors": False},)))
+def test_env_http_proxy_no_warning(kwargs):
+    with patch('insights.client.config.sys.stdout.write') as write:
+        c = InsightsConfig(**kwargs)
+        c._load_env()
+        write.assert_not_called()
+
+
+@patch('insights.client.config.os.environ', {'HTTP_PROXY': '127.0.0.1', 'HTTPS_PROXY': '127.0.0.1'})
+def test_env_http_and_https_proxy_no_warning():
+    with patch('insights.client.config.sys.stdout.write') as write:
+        c = InsightsConfig(_print_errors=True)
+        c._load_env()
+        write.assert_not_called()
+
+
+@patch('insights.client.config.os.environ', {'HTTPS_PROXY': '127.0.0.1'})
+def test_env_https_proxy_no_warning():
+    with patch('insights.client.config.sys.stdout.write') as write:
+        c = InsightsConfig(_print_errors=True)
+        c._load_env()
+        write.assert_not_called()
+
+
 # empty argv so parse_args isn't polluted with pytest arguments
+@mark.parametrize(("config",), (
+    ({"payload": "./payload.tar.gz", "content_type": "application/gzip"},),
+    ({"diagnosis": True},),
+    ({"compliance": True},),
+    ({"check_results": True},),
+    ({"checkin": True},),
+))
 @patch('insights.client.config.sys.argv', [sys.argv[0]])
-def test_diagnosis_implies_legacy():
+def test_implied_non_legacy_upload(config):
     '''
-    --diagnosis should always imply legacy_upload=False
+    Some arguments should always imply legacy_upload=False.
     '''
-    c = InsightsConfig(diagnosis=True)
+    c = InsightsConfig(**config)
     c.load_all()
     assert c.legacy_upload is False
 
@@ -120,6 +169,12 @@ def test_offline_disables_options():
 
     with pytest.raises(ValueError):
         InsightsConfig(status=True, offline=True)
+
+    with pytest.raises(ValueError):
+        InsightsConfig(checkin=True, offline=True)
+
+    with pytest.raises(ValueError):
+        InsightsConfig(unregister=True, offline=True)
 
 
 # empty argv so parse_args isn't polluted with pytest arguments
@@ -247,3 +302,19 @@ def test_core_collect_default(get_version_info):
     assert _core_collect_default()
     conf = InsightsConfig()
     assert conf.core_collect
+
+
+@patch('insights.client.config.sys.argv', [sys.argv[0], "--status"])
+def test_command_line_parse_twice():
+    '''
+    Verify that running _load_command_line() twice does not
+    raise an argparse error.
+
+    Previously would raise a SystemExit due to argparse not
+    being loaded with the correct options.
+    '''
+    c = InsightsConfig()
+    c._load_command_line()
+    assert c.status
+    c._load_command_line()
+    assert c.status
