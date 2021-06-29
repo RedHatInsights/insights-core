@@ -64,7 +64,8 @@ class LocalSpecs(Specs):
 @datasource(LocalSpecs.sap_sid, HostContext)
 def ld_library_path_of_user(broker):
     """
-    list: The list of "Username LD_LIBRARY_PATH", e.g.:
+    list: The list of "Username LD_LIBRARY_PATH", e.g.::
+
           [
             'sr1adm /usr/sap/RH1/SYS/exe/run:/usr/lib/',
             'sr2adm /usr/sap/RH2/SYS/exe/run',
