@@ -168,6 +168,7 @@ class DefaultSpecs(Specs):
     boot_loader_entries = glob_file("/boot/loader/entries/*.conf")
     branch_info = simple_file("/branch_info", kind=RawFileProvider)
     brctl_show = simple_command("/usr/sbin/brctl show")
+    candlepin_broker = candlepin_broker.candlepin_broker
     candlepin_log = simple_file("/var/log/candlepin/candlepin.log")
     cgroups = simple_file("/proc/cgroups")
     ps_alxwww = simple_command("/bin/ps alxwww")
@@ -232,7 +233,6 @@ class DefaultSpecs(Specs):
     cinder_conf = first_file(["/var/lib/config-data/puppet-generated/cinder/etc/cinder/cinder.conf", "/etc/cinder/cinder.conf"])
     cinder_volume_log = first_file(["/var/log/containers/cinder/volume.log", "/var/log/containers/cinder/cinder-volume.log", "/var/log/cinder/volume.log"])
     cloud_cfg = cloud_init.cloud_cfg
-    candlepin_broker = candlepin_broker.candlepin_broker
     cloud_init_custom_network = simple_file("/etc/cloud/cloud.cfg.d/99-custom-networking.cfg")
     cloud_init_log = simple_file("/var/log/cloud-init.log")
     cluster_conf = simple_file("/etc/cluster/cluster.conf")

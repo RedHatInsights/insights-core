@@ -1,26 +1,13 @@
 """
 Custom datasources for candlepin broker.xml
 """
-import sys
-
 from insights.core.context import HostContext
 from insights.core.dr import SkipComponent
 from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider, simple_file
 from insights.specs import Specs
 from insights.specs.default import SatelliteVersion
-# Since XPath expression is not supported by the ElementTree in Python 2.6,
-# import insights.contrib.ElementTree when running python is prior to 2.6 for compatibility.
-# Script insights.contrib.ElementTree is the same with xml.etree.ElementTree in Python 2.7.14
-# Otherwise, import defusedxml.ElementTree to avoid XML vulnerabilities,
-# if dependency not installed import xml.etree.ElementTree instead.
-if sys.version_info[0] == 2 and sys.version_info[1] <= 6:
-    import insights.contrib.ElementTree as ET
-else:
-    try:
-        import defusedxml.ElementTree as ET
-    except Exception:
-        import xml.etree.ElementTree as ET
+from insights.core import ET
 
 
 class LocalSpecs(Specs):
