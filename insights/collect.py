@@ -175,6 +175,10 @@ plugins:
         - name: insights.combiners.satellite_version.SatelliteVersion
           enabled: true
 
+    # needed for the 'pre-check' of the 'satellite_missed_pulp_agent_queues' spec
+        - name: insights.parsers.messages.Messages
+          enabled: true
+
     # needed for the 'pre-check' of the 'is_satellite_capsule' spec
         - name: insights.combiners.satellite_version.CapsuleVersion
           enabled: true

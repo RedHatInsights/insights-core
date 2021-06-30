@@ -66,3 +66,11 @@ insights.specs.datasources.sap
     :members: sap_sid, sap_hana_sid, sap_hana_sid_SID_nr, ld_library_path_of_user, LocalSpecs
     :show-inheritance:
     :undoc-members:
+
+insights.specs.datasources.get_satellite_missed_queues
+------------------------------------------------------
+
+.. automodule:: insights.specs.datasources.get_satellite_missed_queues
+    :members: get_satellite_missed_pulp_agent_queues
+    :show-inheritance:
+    :undoc-members:
