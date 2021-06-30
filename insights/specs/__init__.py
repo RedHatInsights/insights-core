@@ -19,6 +19,7 @@ class Specs(SpecSet):
     abrt_ccpp_conf = RegistryPoint(filterable=True)
     abrt_status_bare = RegistryPoint()
     alternatives_display_python = RegistryPoint()
+    ansible_tower_settings = RegistryPoint(filterable=True, multi_output=True)
     amq_broker = RegistryPoint(multi_output=True)
     ansible_host = RegistryPoint()
     auditctl_status = RegistryPoint()
