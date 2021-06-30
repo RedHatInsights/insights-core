@@ -33,6 +33,7 @@ class Ps(CommandParser):
             arguments.
         services (list): List of tuples in format (cmd names, user/uid/pid, raw_line) for
             each command.
+        pid_info (dict): Dictionary indexed by ``pid`` returning dict of process info.
 
     """
     command_name = "COMMAND_TEMPLATE"
@@ -56,6 +57,7 @@ class Ps(CommandParser):
         self.running = set()
         self.cmd_names = set()
         self.services = []
+        self.pid_info = {}
         super(Ps, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
@@ -87,6 +89,10 @@ class Ps(CommandParser):
                 proc["ARGS"] = cmd.split(" ", 1)[1] if " " in cmd else ""
                 self.services.append((cmd_name, proc[self.user_name], proc[raw_line_key]))
                 del proc[raw_line_key]
+
+            for row in self.data:
+                self.pid_info[row['PID']] = row
+
         else:
             raise ParseException(
                 "{0}: Cannot find ps header line containing {1} and {2} in output".format(
@@ -353,9 +359,6 @@ class PsEo(Ps):
         17259     2 kworker/0:0
         18294  3357 sshd
 
-    Attributes:
-        pid_info(dict): Dictionary with PID as key containing ps row as a dict
-
     Examples:
         >>> type(ps_eo)
         <class 'insights.parsers.ps.PsEo'>
@@ -372,12 +375,6 @@ class PsEo(Ps):
     command_name = 'COMMAND'
     user_name = 'PID'
     max_splits = 3
-
-    def parse_content(self, content):
-        super(PsEo, self).parse_content(content)
-        self.pid_info = {}
-        for row in self.data:
-            self.pid_info[row['PID']] = row
 
     def children(self, ppid):
         """list: Returns a list of dict for all rows with `ppid` as parent PID"""
@@ -426,3 +423,41 @@ class PsAlxwww(Ps):
     max_splits = 12
 
     pass
+
+
+@parser(Specs.ps_eo_cmd)
+class PsEoCmd(Ps):
+    """
+    Class to parse the command `ps -eo pid,args` where the
+    datasource `ps_eo_cmd` trims off all args leaving only the full
+    path to the command.
+
+    Sample output from the ``ps -eo pid, args`` command::
+
+        PID COMMAND
+          1 /usr/lib/systemd/systemd --switched-root --system --deserialize 31
+          2 [kthreadd]
+         11 /usr/bin/python3 /home/user1/pythonapp.py
+         12 [kworker/u16:0-kcryptd/253:0]
+
+    Sample data after trimming by the datasource::
+
+        PID COMMAND
+          1 /usr/lib/systemd/systemd
+          2 [kthreadd]
+         11 /usr/bin/python3
+         12 [kworker/u16:0-kcryptd/253:0]
+
+    Examples:
+        >>> type(ps_eo_cmd)
+        <class 'insights.parsers.ps.PsEoCmd'>
+        >>> ps_eo_cmd.running_pids() == ['1', '2', '11', '12']
+        True
+        >>> ps_eo_cmd.search(COMMAND__contains='python3') == [
+        ...     {'PID': '11', 'COMMAND': '/usr/bin/python3', 'COMMAND_NAME': 'python3', 'ARGS': ''}
+        ... ]
+        True
+    """
+    command_name = 'COMMAND'
+    user_name = 'PID'
+    max_splits = 1

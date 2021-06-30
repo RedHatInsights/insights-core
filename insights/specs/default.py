@@ -35,7 +35,7 @@ from insights.parsers.lsmod import LsMod
 from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersion
 from insights.parsers.mount import Mount
 from insights.specs import Specs
-from insights.specs.datasources import cloud_init
+from insights.specs.datasources import cloud_init, ps as ps_datasource
 import datetime
 
 
@@ -175,6 +175,7 @@ class DefaultSpecs(Specs):
     ps_auxww = simple_command("/bin/ps auxww")
     ps_ef = simple_command("/bin/ps -ef")
     ps_eo = simple_command("/usr/bin/ps -eo pid,ppid,comm")
+    ps_eo_cmd = ps_datasource.ps_eo_cmd
 
     @datasource(ps_auxww, HostContext)
     def tomcat_base(broker):
