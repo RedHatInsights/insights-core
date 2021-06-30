@@ -281,9 +281,3 @@ class OpenStackContext(ExecutionContext):
     def __init__(self, hostname):
         super(OpenStackContext, self).__init__()
         self.hostname = hostname
-
-
-class OpenShiftContext(ExecutionContext):
-    def __init__(self, hostname):
-        super(OpenShiftContext, self).__init__()
-        self.hostname = hostname
