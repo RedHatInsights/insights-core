@@ -1,7 +1,8 @@
 import pytest
+from mock.mock import Mock
 
+from insights.core.spec_factory import DatasourceProvider
 from insights.core.dr import SkipComponent
-from insights.core.spec_factory import DatasourceProvider, simple_file
 from insights.specs.datasources.candlepin_broker import candlepin_broker, LocalSpecs
 
 
@@ -141,8 +142,9 @@ RELATIVE_PATH = '/etc/candlepin/broker.xml'
 
 
 def test_candlepin_broker():
-    simple_file.content = CANDLEPIN_BROKER.splitlines()
-    broker = {LocalSpecs.candlepin_broker_input: simple_file}
+    candlepin_broker_file = Mock()
+    candlepin_broker_file.content = CANDLEPIN_BROKER.splitlines()
+    broker = {LocalSpecs.candlepin_broker_input: candlepin_broker_file}
     result = candlepin_broker(broker)
     assert result is not None
     assert isinstance(result, DatasourceProvider)
@@ -152,16 +154,18 @@ def test_candlepin_broker():
 
 
 def test_candlepin_broker_bad():
-    simple_file.content = CANDLEPIN_BROKER_BAD.splitlines()
-    broker = {LocalSpecs.candlepin_broker_input: simple_file}
+    candlepin_broker_file = Mock()
+    candlepin_broker_file.content = CANDLEPIN_BROKER_BAD.splitlines()
+    broker = {LocalSpecs.candlepin_broker_input: candlepin_broker_file}
     with pytest.raises(SkipComponent) as e:
         candlepin_broker(broker)
     assert 'Unexpected exception' in str(e)
 
 
 def test_candlpin_broker_no_sensitive_info():
-    simple_file.content = CANDLEPIN_BROKER_NO_SENSITIVE_INFO.splitlines()
-    broker = {LocalSpecs.candlepin_broker_input: simple_file}
+    candlepin_broker_file = Mock()
+    candlepin_broker_file.content = CANDLEPIN_BROKER_NO_SENSITIVE_INFO.splitlines()
+    broker = {LocalSpecs.candlepin_broker_input: candlepin_broker_file}
     result = candlepin_broker(broker)
     assert result is not None
     assert isinstance(result, DatasourceProvider)
