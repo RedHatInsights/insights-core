@@ -1,6 +1,6 @@
-from insights.parsers.ipcs import IpcsS
-from insights.tests import context_wrap
-from insights.specs.datasources import get_semid
+from mock.mock import Mock
+
+from insights.specs.datasources import ipcs
 
 IPCS_OUTPUT1 = """
 
@@ -21,10 +21,11 @@ key        semid      owner      perms      nsems
 """.strip()
 
 
-def test_getsemid():
-    ipcs_s_obj = IpcsS(context_wrap(IPCS_OUTPUT1))
-    broker = {IpcsS: ipcs_s_obj}
-    result = get_semid.get_semid(broker)
+def test_semid():
+    ipcs_command = Mock()
+    ipcs_command.content = IPCS_OUTPUT1.splitlines()
+    broker = {ipcs.LocalSpecs.ipcs_s_cmd: ipcs_command}
+    result = ipcs.semid(broker)
     assert result is not None
     assert isinstance(result, list)
     assert '65570' in result

@@ -190,9 +190,6 @@ plugins:
           enabled: true
         - name: insights.components.rhel_version.IsRhel8
           enabled: true
-    # neededfor the 'pre-check' of 'ipcs_s_i' spec
-        - name: insights.parsers.ipcs.IpcsS
-          enabled: true
 
     # needed because some specs aren't given names before they're used in DefaultSpecs
         - name: insights.core.spec_factory
