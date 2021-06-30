@@ -25,7 +25,7 @@ class IsAWS(object):
         SkipComponent: When it's not an instance from AWS.
     """
     def __init__(self, cp):
-        if not(cp and cp.cloud_provider == CloudProvider.AWS):
+        if not cp or cp.cloud_provider != CloudProvider.AWS:
             raise SkipComponent("Not AWS instance")
 
 
@@ -40,7 +40,7 @@ class IsAzure(object):
         SkipComponent: When it's not an instance from Azure.
     """
     def __init__(self, cp):
-        if not(cp and cp.cloud_provider == CloudProvider.AZURE):
+        if not cp or cp.cloud_provider != CloudProvider.AZURE:
             raise SkipComponent("Not Azure instance")
 
 
@@ -55,5 +55,5 @@ class IsGCP(object):
         SkipComponent: When it's not an instance from GCP.
     """
     def __init__(self, cp):
-        if not(cp and cp.cloud_provider == CloudProvider.GOOGLE):
+        if not cp or cp.cloud_provider != CloudProvider.GOOGLE:
             raise SkipComponent("Not Google Cloud Platform instance")
