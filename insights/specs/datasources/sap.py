@@ -31,37 +31,40 @@ class LocalSpecs(Specs):
             return insts
         raise SkipComponent()
 
-    @datasource(sap_instance, HostContext)
-    def sap_sid(broker):
-        """
-        list: List of the SID of all the SAP Instances.
-        """
-        sap = broker[LocalSpecs.sap_instance]
-        return sorted(set(h.sid.lower() for h in sap))
 
-    @datasource(sap_hana_instance, HostContext)
-    def sap_hana_sid(broker):
-        """
-        list: List of the SID of SAP HANA Instances.  """
-        hana = broker[LocalSpecs.sap_hana_instance]
-        sids = sorted(set(h.sid.lower() for h in hana))
-        if sids:
-            return sids
-        raise SkipComponent()
-
-    @datasource(sap_hana_instance, HostContext)
-    def sap_hana_sid_SID_nr(broker):
-        """
-        list: List of tuples (sid, SID, Nr) of SAP HANA Instances.
-        """
-        hana = broker[LocalSpecs.sap_hana_instance]
-        sids = sorted((h.sid.lower(), h.sid, h.number) for h in hana)
-        if sids:
-            return sids
-        raise SkipComponent()
+@datasource(LocalSpecs.sap_instance, HostContext)
+def sap_sid(broker):
+    """
+    list: List of the SID of all the SAP Instances.
+    """
+    sap = broker[LocalSpecs.sap_instance]
+    return sorted(set(h.sid.lower() for h in sap))
 
 
-@datasource(LocalSpecs.sap_sid, HostContext)
+@datasource(LocalSpecs.sap_hana_instance, HostContext)
+def sap_hana_sid(broker):
+    """
+    list: List of the SID of SAP HANA Instances.  """
+    hana = broker[LocalSpecs.sap_hana_instance]
+    sids = sorted(set(h.sid.lower() for h in hana))
+    if sids:
+        return sids
+    raise SkipComponent()
+
+
+@datasource(LocalSpecs.sap_hana_instance, HostContext)
+def sap_hana_sid_SID_nr(broker):
+    """
+    list: List of tuples (sid, SID, Nr) of SAP HANA Instances.
+    """
+    hana = broker[LocalSpecs.sap_hana_instance]
+    sids = sorted((h.sid.lower(), h.sid, h.number) for h in hana)
+    if sids:
+        return sids
+    raise SkipComponent()
+
+
+@datasource(sap_sid, HostContext)
 def ld_library_path_of_user(broker):
     """
     list: The list of "Username LD_LIBRARY_PATH", e.g.::
@@ -76,7 +79,7 @@ def ld_library_path_of_user(broker):
     """
     ctx = broker[HostContext]
     llds = []
-    for sid in broker[LocalSpecs.sap_sid]:
+    for sid in broker[sap_sid]:
         usr = '{0}adm'.format(sid)
         ret, vvs = ctx.shell_out("/bin/su -l {0} -c /bin/env".format(usr), keep_rc=True)
         if ret != 0:

@@ -38,7 +38,8 @@ from insights.parsers.mount import Mount
 from insights.specs import Specs
 from insights.specs.datasources import (
     cloud_init, candlepin_broker, get_running_commands, ipcs, package_provides,
-    ps as ps_datasource, sap)
+    ps as ps_datasource)
+from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 
 
 logger = logging.getLogger(__name__)
@@ -639,8 +640,8 @@ class DefaultSpecs(Specs):
     rpm_V_packages = simple_command("/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo chrony", keep_rc=True, signum=signal.SIGTERM)
     rsyslog_conf = glob_file(["/etc/rsyslog.conf", "/etc/rsyslog.d/*.conf"])
     samba = simple_file("/etc/samba/smb.conf")
-    sap_hana_landscape = foreach_execute(sap.LocalSpecs.sap_hana_sid_SID_nr, "/bin/su -l %sadm -c 'python /usr/sap/%s/HDB%s/exe/python_support/landscapeHostConfiguration.py'", keep_rc=True)
-    sap_hdb_version = foreach_execute(sap.LocalSpecs.sap_hana_sid, "/bin/su -l %sadm -c 'HDB version'", keep_rc=True)
+    sap_hana_landscape = foreach_execute(sap_hana_sid_SID_nr, "/bin/su -l %sadm -c 'python /usr/sap/%s/HDB%s/exe/python_support/landscapeHostConfiguration.py'", keep_rc=True)
+    sap_hdb_version = foreach_execute(sap_hana_sid, "/bin/su -l %sadm -c 'HDB version'", keep_rc=True)
     saphostctl_getcimobject_sapinstance = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance")
     saphostexec_status = simple_command("/usr/sap/hostctrl/exe/saphostexec -status")
     saphostexec_version = simple_command("/usr/sap/hostctrl/exe/saphostexec -version")

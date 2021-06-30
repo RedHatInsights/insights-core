@@ -10,7 +10,9 @@ from insights.combiners.hostname import Hostname
 from insights.combiners.tests.test_sap import (
         SAPHOSTCTRL_HOSTINSTANCES_R_CASE,
         SAPHOSTCTRL_HOSTINSTANCES_GOOD, HOSTNAME1)
-from insights.specs.datasources.sap import LocalSpecs, ld_library_path_of_user
+from insights.specs.datasources.sap import (
+        LocalSpecs, sap_sid, sap_hana_sid, sap_hana_sid_SID_nr,
+        ld_library_path_of_user)
 
 SAPHOSTCTRL_HOSTINSTANCES = '''
 *********************************************************
@@ -150,7 +152,7 @@ def test_sid():
     sap = Sap(hn, inst, None)
     broker = {Sap: sap}
     broker.update({LocalSpecs.sap_instance: LocalSpecs.sap_instance(broker)})
-    result = LocalSpecs.sap_sid(broker)
+    result = sap_sid(broker)
     assert result is not None
     assert isinstance(result, list)
     assert result == sorted(set(v.sid.lower() for v in sap.values()))
@@ -164,7 +166,7 @@ def test_hana_sid():
     broker = {Sap: sap}
     broker.update({LocalSpecs.sap_instance: LocalSpecs.sap_instance(broker)})
     broker.update({LocalSpecs.sap_hana_instance: LocalSpecs.sap_hana_instance(broker)})
-    result = LocalSpecs.sap_hana_sid(broker)
+    result = sap_hana_sid(broker)
     assert result is not None
     assert isinstance(result, list)
     assert result == list(set(v.sid.lower() for v in sap.values() if v.type == 'HDB'))
@@ -172,7 +174,7 @@ def test_hana_sid():
     # Bad
     broker.update({LocalSpecs.sap_hana_instance: []})
     with pytest.raises(SkipComponent):
-        LocalSpecs.sap_hana_sid(broker)
+        sap_hana_sid(broker)
 
 
 def test_hana_sid_SID_nr():
@@ -183,7 +185,7 @@ def test_hana_sid_SID_nr():
     broker = {Sap: sap}
     broker.update({LocalSpecs.sap_instance: LocalSpecs.sap_instance(broker)})
     broker.update({LocalSpecs.sap_hana_instance: LocalSpecs.sap_hana_instance(broker)})
-    result = LocalSpecs.sap_hana_sid_SID_nr(broker)
+    result = sap_hana_sid_SID_nr(broker)
     assert result is not None
     assert isinstance(result, list)
     assert result == list((v.sid.lower(), v.sid, v.number) for v in sap.values() if v.type == 'HDB')
@@ -191,7 +193,7 @@ def test_hana_sid_SID_nr():
     # Bad
     broker.update({LocalSpecs.sap_hana_instance: []})
     with pytest.raises(SkipComponent):
-        LocalSpecs.sap_hana_sid_SID_nr(broker)
+        sap_hana_sid_SID_nr(broker)
 
 
 def test_ld_library_path_of_user():
@@ -201,7 +203,7 @@ def test_ld_library_path_of_user():
     sap = Sap(hn, inst, None)
     broker = {Sap: sap, HostContext: FakeContext()}
     broker.update({LocalSpecs.sap_instance: LocalSpecs.sap_instance(broker)})
-    broker.update({LocalSpecs.sap_sid: LocalSpecs.sap_sid(broker)})
+    broker.update({sap_sid: sap_sid(broker)})
     result = ld_library_path_of_user(broker)
     assert result is not None
     assert isinstance(result, DatasourceProvider)
@@ -217,7 +219,7 @@ def test_ld_library_path_of_user():
     sap = Sap(hn, inst, None)
     broker = {Sap: sap, HostContext: FakeContext()}
     broker.update({LocalSpecs.sap_instance: LocalSpecs.sap_instance(broker)})
-    broker.update({LocalSpecs.sap_sid: LocalSpecs.sap_sid(broker)})
+    broker.update({sap_sid: sap_sid(broker)})
     with pytest.raises(SkipComponent):
         result = ld_library_path_of_user(broker)
         assert result is None

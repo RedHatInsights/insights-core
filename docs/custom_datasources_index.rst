@@ -55,6 +55,6 @@ insights.specs.datasources.sap
 ----------------------------------
 
 .. automodule:: insights.specs.datasources.sap
-    :members: ld_library_path_of_user, LocalSpecs
+    :members: sap_sid, sap_hana_sid, sap_hana_sid_SID_nr, ld_library_path_of_user, LocalSpecs
     :show-inheritance:
     :undoc-members:
