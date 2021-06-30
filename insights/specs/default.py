@@ -35,7 +35,7 @@ from insights.parsers.lsmod import LsMod
 from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersion
 from insights.parsers.mount import Mount
 from insights.specs import Specs
-from insights.specs.datasources import cloud_init, ps as ps_datasource, candlepin_broker
+from insights.specs.datasources import cloud_init, ps as ps_datasource, candlepin_broker, ipcs
 import datetime
 
 
@@ -423,6 +423,7 @@ class DefaultSpecs(Specs):
     ipcs_m = simple_command("/usr/bin/ipcs -m")
     ipcs_m_p = simple_command("/usr/bin/ipcs -m -p")
     ipcs_s = simple_command("/usr/bin/ipcs -s")
+    ipcs_s_i = foreach_execute(get_semid.get_semid, "/usr/bin/ipcs -s -i %s")
     ipsec_conf = simple_file("/etc/ipsec.conf")
     iptables = simple_command("/sbin/iptables-save")
     iptables_permanent = simple_file("etc/sysconfig/iptables")
