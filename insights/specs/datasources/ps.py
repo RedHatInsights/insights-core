@@ -58,6 +58,7 @@ def ps_eo_cmd(broker):
     content = broker[LocalSpecs.ps_eo_args].content
     data = []
     data.append('PID COMMAND')
+    start = False
     for l in content:
         if 'PID' in l and 'COMMAND' in l:
             start = True
