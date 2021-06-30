@@ -45,6 +45,7 @@ insights.specs.datasources.package_provides
 
 insights.specs.datasources.ps
 -----------------------------
+
 .. automodule:: insights.specs.datasources.ps
     :members: ps_eo_cmd, LocalSpecs
     :show-inheritance:
