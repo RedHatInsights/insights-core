@@ -4,7 +4,7 @@ Components identify Cloud Provider
 
 The ``Is*`` component is valid if the
 :py:class:`insights.combiners.cloud_provider.CloudProvider` combiner indicates
-the host is from the specifiec Cloud Provider.  Otherwise, it raises a
+the host is from the specific Cloud Provider.  Otherwise, it raises a
 :py:class:`insights.core.dr.SkipComponent` to prevent dependent components from
 executing.
 
