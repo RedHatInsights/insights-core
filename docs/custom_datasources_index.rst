@@ -18,3 +18,11 @@ insights.specs.datasources.ps
     :members: ps_eo_cmd, LocalSpecs
     :show-inheritance:
     :undoc-members:
+
+insights.specs.datasources.candlepin_broker
+-------------------------------------------
+
+.. automodule:: insights.specs.datasources.candlepin_broker
+    :members: candlepin_broker, LocalSpecs
+    :show-inheritance:
+    :undoc-members:
