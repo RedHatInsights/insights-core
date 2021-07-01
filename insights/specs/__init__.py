@@ -27,6 +27,7 @@ class Specs(SpecSet):
     boot_loader_entries = RegistryPoint(multi_output=True)
     branch_info = RegistryPoint(raw=True)
     brctl_show = RegistryPoint()
+    candlepin_broker = RegistryPoint()
     candlepin_error_log = RegistryPoint(filterable=True)
     candlepin_log = RegistryPoint(filterable=True)
     cdc_wdm = RegistryPoint()
