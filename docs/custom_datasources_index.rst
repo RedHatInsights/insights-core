@@ -52,7 +52,7 @@ insights.specs.datasources.ps
     :undoc-members:
 
 insights.specs.datasources.sap
-----------------------------------
+------------------------------
 
 .. automodule:: insights.specs.datasources.sap
     :members: sap_sid, sap_hana_sid, sap_hana_sid_SID_nr, ld_library_path_of_user, LocalSpecs

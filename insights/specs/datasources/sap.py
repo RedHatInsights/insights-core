@@ -7,6 +7,7 @@ from insights.core.dr import SkipComponent
 from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider
 from insights.combiners.sap import Sap
+from insights.specs.datasources import DEFAULT_SHELL_TIMEOUT
 
 
 class LocalSpecs(Specs):
@@ -81,7 +82,7 @@ def ld_library_path_of_user(broker):
     llds = []
     for sid in broker[sap_sid]:
         usr = '{0}adm'.format(sid)
-        ret, vvs = ctx.shell_out("/bin/su -l {0} -c /bin/env".format(usr), keep_rc=True)
+        ret, vvs = ctx.shell_out("/bin/su -l {0} -c /bin/env".format(usr), keep_rc=True, timeout=DEFAULT_SHELL_TIMEOUT)
         if ret != 0:
             continue
         for v in vvs:
