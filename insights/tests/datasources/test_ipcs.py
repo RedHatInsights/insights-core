@@ -1,6 +1,8 @@
+import pytest
 from mock.mock import Mock
 
 from insights.specs.datasources import ipcs
+from insights.core.dr import SkipComponent
 
 IPCS_OUTPUT1 = """
 
@@ -31,3 +33,11 @@ def test_semid():
     assert '65570' in result
     assert '98357' in result
     assert len(result) == 6
+
+
+def test_exception():
+    ipcs_command = Mock()
+    ipcs_command.content = IPCS_OUTPUT2.splitlines()
+    broker = {ipcs.LocalSpecs.ipcs_s_cmd: ipcs_command}
+    with pytest.raises(SkipComponent):
+        ipcs.semid(broker)

@@ -1,11 +1,12 @@
 """
-Custom datasources to get all semid of all the inter-processes.
+Custom datasources to get the semid of all the inter-processes.
 """
 
 from insights.core.context import HostContext
 from insights.core.spec_factory import simple_command
 from insights.core.plugins import datasource
 from insights.specs import Specs
+from insights.core.dr import SkipComponent
 
 
 class LocalSpecs(Specs):
@@ -41,4 +42,6 @@ def semid(broker):
         # 0x00000000 65536      apache     600        1
         if len(s_splits) == 5 and s_splits[1].isdigit():
             results.add(s_splits[1])
-    return list(results)
+    if results:
+        return list(results)
+    raise SkipComponent
