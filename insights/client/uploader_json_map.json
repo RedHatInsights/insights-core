@@ -159,6 +159,7 @@
                 "BIOS Hyper-V UEFI Release",
                 "Brought up ",
                 "CIFS VFS: protocol revalidation - security settings mismatch",
+                "CQE error - vendor syndrome",
                 "CSUM",
                 "CVE-2017-1000364",
                 "CVE-2018-14634",
@@ -198,7 +199,6 @@
                 "page allocation failure: order:",
                 "resetting",
                 "smpboot: CPU ",
-                "temperature above threshold",
                 "the DIE domain not a subset of the NUMA domain",
                 "tx hang",
                 "vmxnet3",
@@ -1092,6 +1092,7 @@
                 "COMMAND",
                 "auditd",
                 "avahi",
+                "backupserver",
                 "catalina.base",
                 "ceilometer-poll",
                 "chronyd",
@@ -1100,6 +1101,10 @@
                 "cmirrord",
                 "corosync",
                 "crmd",
+                "dataserver",
+                "diagbs",
+                "diagserver",
+                "diagxps",
                 "dlm_controld",
                 "dnsmasq",
                 "docker",
@@ -1109,10 +1114,12 @@
                 "gnome-shell",
                 "haproxy",
                 "heat-engine",
+                "histserver",
                 "httpd",
                 "libvirtd",
                 "memcached",
                 "mongdb",
+                "monserver",
                 "multipath",
                 "multipathd",
                 "neutron-dhcp-ag",
@@ -1147,7 +1154,8 @@
                 "snmpd",
                 "spausedd",
                 "swift-proxy-ser",
-                "tuned"
+                "tuned",
+                "xpserver"
             ],
             "symbolic_name": "ps_alxwww"
         },
@@ -1162,6 +1170,7 @@
                 "COMMAND",
                 "STAP/8.2",
                 "auditd",
+                "backupserver",
                 "catalina.base",
                 "ceilometer-poll",
                 "ceph-osd",
@@ -1171,6 +1180,10 @@
                 "cmirrord",
                 "corosync",
                 "crmd",
+                "dataserver",
+                "diagbs",
+                "diagserver",
+                "diagxps",
                 "dlm_controld",
                 "docker",
                 "docker-runc-current",
@@ -1179,10 +1192,12 @@
                 "gnome-shell",
                 "haproxy",
                 "heat-engine",
+                "histserver",
                 "httpd",
                 "libvirtd",
                 "memcached",
                 "mongdb",
+                "monserver",
                 "multipath",
                 "multipathd",
                 "mysqld",
@@ -1206,12 +1221,10 @@
                 "pacemaker-controld",
                 "pacemaker_remote",
                 "pacemakerd",
-                "phc2sys",
                 "pkla-check-auth",
                 "pmcd",
                 "pmie",
                 "postmaster",
-                "ptp4l",
                 "radosgw",
                 "redis-server",
                 "rngd",
@@ -1221,7 +1234,8 @@
                 "snmpd",
                 "spausedd",
                 "swift-proxy-ser",
-                "tuned"
+                "tuned",
+                "xpserver"
             ],
             "symbolic_name": "ps_aux"
         },
@@ -1242,6 +1256,7 @@
                 "/usr/sbin/fcoemon --syslog",
                 "COMMAND",
                 "auditd",
+                "backupserver",
                 "catalina.base",
                 "ceilometer-poll",
                 "chronyd",
@@ -1250,6 +1265,10 @@
                 "cmirrord",
                 "corosync",
                 "crmd",
+                "dataserver",
+                "diagbs",
+                "diagserver",
+                "diagxps",
                 "dlm_controld",
                 "docker",
                 "docker-runc-current",
@@ -1260,11 +1279,13 @@
                 "greenplum",
                 "haproxy",
                 "heat-engine",
+                "histserver",
                 "httpd",
                 "iscsid",
                 "libvirtd",
                 "memcached",
                 "mongdb",
+                "monserver",
                 "multipath",
                 "multipathd",
                 "neutron-dhcp-ag",
@@ -1303,7 +1324,8 @@
                 "swift-proxy-ser",
                 "target_completi",
                 "tgtd",
-                "tuned"
+                "tuned",
+                "xpserver"
             ],
             "symbolic_name": "ps_auxww"
         },
@@ -1315,6 +1337,7 @@
                 "CMD",
                 "COMMAND",
                 "auditd",
+                "backupserver",
                 "catalina.base",
                 "ceilometer-poll",
                 "chronyd",
@@ -1323,6 +1346,10 @@
                 "cmirrord",
                 "corosync",
                 "crmd",
+                "dataserver",
+                "diagbs",
+                "diagserver",
+                "diagxps",
                 "dlm_controld",
                 "docker",
                 "docker-runc-current",
@@ -1331,10 +1358,12 @@
                 "gnome-shell",
                 "haproxy",
                 "heat-engine",
+                "histserver",
                 "httpd",
                 "libvirtd",
                 "memcached",
                 "mongdb",
+                "monserver",
                 "multipath",
                 "multipathd",
                 "neutron-dhcp-ag",
@@ -1372,7 +1401,8 @@
                 "snmpd",
                 "spausedd",
                 "swift-proxy-ser",
-                "tuned"
+                "tuned",
+                "xpserver"
             ],
             "symbolic_name": "ps_ef"
         },
@@ -2493,6 +2523,7 @@
         {
             "file": "/etc/lvm/lvm.conf",
             "pattern": [
+                "auto_activation_volume_list",
                 "filter",
                 "locking_type",
                 "use_lvmetad",
@@ -3088,14 +3119,14 @@
         {
             "file": "/var/log/pacemaker.log",
             "pattern": [
-                "pcmk_dbus_find_error"
+                "is active on 2 nodes (attempting recovery)"
             ],
             "symbolic_name": "pacemaker_log"
         },
         {
             "file": "/var/log/pacemaker/pacemaker.log",
             "pattern": [
-                "pcmk_dbus_find_error"
+                "is active on 2 nodes (attempting recovery)"
             ],
             "symbolic_name": "pacemaker_log"
         },
@@ -3771,6 +3802,7 @@
                 "Ssl_Tlsv1_1",
                 "Ssl_Tlsv1_2",
                 "local_enable",
+                "session_support",
                 "ssl_enable",
                 "ssl_sslv2",
                 "ssl_sslv3",
@@ -4335,5 +4367,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2021-06-17T12:53:13.800630"
+    "version": "2021-06-24T11:02:05.835577"
 }
