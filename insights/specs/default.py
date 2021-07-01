@@ -35,7 +35,7 @@ from insights.parsers.lsmod import LsMod
 from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersion
 from insights.parsers.mount import Mount
 from insights.specs import Specs
-from insights.specs.datasources import cloud_init, ps as ps_datasource
+from insights.specs.datasources import cloud_init, ps as ps_datasource, candlepin_broker
 import datetime
 
 
@@ -150,6 +150,7 @@ class DefaultSpecs(Specs):
     boot_loader_entries = glob_file("/boot/loader/entries/*.conf")
     branch_info = simple_file("/branch_info", kind=RawFileProvider)
     brctl_show = simple_command("/usr/sbin/brctl show")
+    candlepin_broker = candlepin_broker.candlepin_broker
     candlepin_log = simple_file("/var/log/candlepin/candlepin.log")
     cgroups = simple_file("/proc/cgroups")
     ps_alxwww = simple_command("/bin/ps alxwww")
