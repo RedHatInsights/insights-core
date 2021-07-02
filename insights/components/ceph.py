@@ -25,4 +25,4 @@ class IsCephMonitor(object):
     """
     def __init__(self, ps):
         if not ps.search(COMMAND_NAME__contains='ceph-mon'):
-            raise SkipComponent("Not AWS instance")
+            raise SkipComponent("Not Ceph Monitor")
