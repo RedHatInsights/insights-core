@@ -1,24 +1,11 @@
 from insights.core.spec_factory import SpecSet, RegistryPoint
 
 
-class Openshift(SpecSet):
-    cluster_operators = RegistryPoint(raw=True)
-    crds = RegistryPoint(raw=True)
-    crs = RegistryPoint(raw=True, multi_output=True)
-    machine_configs = RegistryPoint(raw=True)
-    machines = RegistryPoint(raw=True)
-    machine_id = RegistryPoint(raw=True)  # stand in for system id
-    namespaces = RegistryPoint(raw=True)
-    nodes = RegistryPoint(raw=True)
-    pods = RegistryPoint(raw=True)
-    pvcs = RegistryPoint(raw=True)
-    storage_classes = RegistryPoint(raw=True)
-
-
 class Specs(SpecSet):
     abrt_ccpp_conf = RegistryPoint(filterable=True)
     abrt_status_bare = RegistryPoint()
     alternatives_display_python = RegistryPoint()
+    ansible_tower_settings = RegistryPoint(filterable=True, multi_output=True)
     amq_broker = RegistryPoint(multi_output=True)
     ansible_host = RegistryPoint()
     auditctl_status = RegistryPoint()
@@ -40,6 +27,7 @@ class Specs(SpecSet):
     boot_loader_entries = RegistryPoint(multi_output=True)
     branch_info = RegistryPoint(raw=True)
     brctl_show = RegistryPoint()
+    candlepin_broker = RegistryPoint()
     candlepin_error_log = RegistryPoint(filterable=True)
     candlepin_log = RegistryPoint(filterable=True)
     cdc_wdm = RegistryPoint()
@@ -511,6 +499,7 @@ class Specs(SpecSet):
     ps_auxww = RegistryPoint(filterable=True)
     ps_ef = RegistryPoint(filterable=True)
     ps_eo = RegistryPoint()
+    ps_eo_cmd = RegistryPoint()
     pulp_worker_defaults = RegistryPoint()
     puppet_ssl_cert_ca_pem = RegistryPoint()
     puppetserver_config = RegistryPoint(filterable=True)

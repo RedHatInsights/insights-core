@@ -1,8 +1,9 @@
 import json
 import pytest
+from mock.mock import Mock
 
 from insights.core.dr import SkipComponent
-from insights.core.spec_factory import DatasourceProvider, simple_file
+from insights.core.spec_factory import DatasourceProvider
 from insights.specs.datasources.cloud_init import cloud_cfg, LocalSpecs
 
 CLOUD_CFG = """
@@ -57,8 +58,9 @@ RELATIVE_PATH = '/etc/cloud/cloud.cfg'
 
 
 def test_cloud_cfg():
-    simple_file.content = CLOUD_CFG.splitlines()
-    broker = {LocalSpecs.cloud_cfg_input: simple_file}
+    cloud_init_file = Mock()
+    cloud_init_file.content = CLOUD_CFG.splitlines()
+    broker = {LocalSpecs.cloud_cfg_input: cloud_init_file}
     result = cloud_cfg(broker)
     assert result is not None
     assert isinstance(result, DatasourceProvider)
@@ -68,16 +70,18 @@ def test_cloud_cfg():
 
 
 def test_cloud_cfg_bad():
-    simple_file.content = CLOUD_CFG_BAD.splitlines()
-    broker = {LocalSpecs.cloud_cfg_input: simple_file}
+    cloud_init_file = Mock()
+    cloud_init_file.content = CLOUD_CFG_BAD.splitlines()
+    broker = {LocalSpecs.cloud_cfg_input: cloud_init_file}
     with pytest.raises(SkipComponent) as e:
         cloud_cfg(broker)
     assert 'Unexpected exception' in str(e)
 
 
 def test_cloud_cfg_no_network():
-    simple_file.content = CLOUD_CFG_NO_NETWORK.splitlines()
-    broker = {LocalSpecs.cloud_cfg_input: simple_file}
+    cloud_init_file = Mock()
+    cloud_init_file.content = CLOUD_CFG_NO_NETWORK.splitlines()
+    broker = {LocalSpecs.cloud_cfg_input: cloud_init_file}
     with pytest.raises(SkipComponent) as e:
         cloud_cfg(broker)
     assert 'No network section in yaml' in str(e)
