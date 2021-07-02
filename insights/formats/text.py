@@ -115,7 +115,8 @@ class HumanReadableFormat(Formatter):
                                   title="Fingerprint : "),
             'metadata': response(color=Fore.YELLOW, label="META", intl='M', title="Metadata    : "),
             'metadata_key': response(color=Fore.MAGENTA, label="META", intl='K', title="Metadata Key: "),
-            'exception': response(color=Fore.RED, label="EXCEPT", intl='E', title="Exceptions  : ")
+            'exception': response(color=Fore.RED, label="EXCEPT", intl='E', title="Exceptions  : "),
+            'none': response(color=Fore.BLUE, label="RETURNED NONE", intl='N', title="Ret'd None  : ")
         }
 
         self.counts = {}

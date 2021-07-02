@@ -3,7 +3,7 @@ from collections import OrderedDict
 from itertools import groupby
 from operator import itemgetter
 
-from insights import make_info, make_fail, make_response, make_pass
+from insights import make_info, make_fail, make_response, make_pass, make_none
 from insights.formats import FormatterAdapter
 from insights.formats.template import TemplateFormat
 
@@ -135,7 +135,7 @@ class HtmlFormat(TemplateFormat):
             sorted_rules[response_type] = rules
 
         ctx["rules"] = OrderedDict()
-        for key in (make_info, make_fail, make_response, make_pass):
+        for key in (make_info, make_fail, make_response, make_pass, make_none):
             name = key.__name__
             if name in sorted_rules:
                 ctx["rules"][name] = sorted_rules[name]
