@@ -26,3 +26,11 @@ insights.specs.datasources.candlepin_broker
     :members: candlepin_broker, LocalSpecs
     :show-inheritance:
     :undoc-members:
+
+insights.specs.datasources.ipcs
+-------------------------------
+
+.. automodule:: insights.specs.datasources.ipcs
+    :members: semid
+    :show-inheritance:
+    :undoc-members:
