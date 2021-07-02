@@ -30,6 +30,7 @@ from insights.combiners.sap import Sap
 from insights.combiners.ps import Ps
 from insights.components.rhel_version import IsRhel8, IsRhel7, IsRhel6
 from insights.components.cloud_provider import IsAWS, IsAzure, IsGCP
+from insights.components.ceph import IsCephMonitor
 from insights.parsers.mdstat import Mdstat
 from insights.parsers.lsmod import LsMod
 from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersion
@@ -189,16 +190,7 @@ class DefaultSpecs(Specs):
     ceph_conf = first_file(["/var/lib/config-data/puppet-generated/ceph/etc/ceph/ceph.conf", "/etc/ceph/ceph.conf"])
     ceph_df_detail = simple_command("/usr/bin/ceph df detail -f json")
     ceph_health_detail = simple_command("/usr/bin/ceph health detail -f json")
-
-    @datasource(Ps, HostContext)
-    def is_ceph_monitor(broker):
-        """ bool: Returns True if ceph monitor process ceph-mon is running on this node """
-        ps = broker[Ps]
-        if ps.search(COMMAND__contains='ceph-mon'):
-            return True
-        raise SkipComponent()
-
-    ceph_insights = simple_command("/usr/bin/ceph insights", deps=[is_ceph_monitor])
+    ceph_insights = simple_command("/usr/bin/ceph insights", deps=[IsCephMonitor])
     ceph_log = glob_file(r"var/log/ceph/ceph.log*")
     ceph_osd_dump = simple_command("/usr/bin/ceph osd dump -f json")
     ceph_osd_ec_profile_ls = simple_command("/usr/bin/ceph osd erasure-code-profile ls")
