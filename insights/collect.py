@@ -133,6 +133,10 @@ plugins:
         - name: insights.components.cloud_provider.IsGCP
           enabled: true
 
+    # needed for the ceph related specs
+        - name: insights.components.ceph.IsCephMonitor
+          enabled: true
+
     # needed for the Services combiner
         - name: insights.parsers.chkconfig
           enabled: true
