@@ -3,19 +3,12 @@ Custom datasources to get the semid of all the inter-processes.
 """
 
 from insights.core.context import HostContext
-from insights.core.spec_factory import simple_command
 from insights.core.plugins import datasource
 from insights.specs import Specs
 from insights.core.dr import SkipComponent
 
 
-class LocalSpecs(Specs):
-    """ Local specs used only by semid datasources """
-
-    ipcs_s_cmd = simple_command("/usr/bin/ipcs -s")
-
-
-@datasource(LocalSpecs.ipcs_s_cmd, HostContext)
+@datasource(Specs.ipcs_s, HostContext)
 def semid(broker):
     """
     This datasource provides a list of the semid of all the inter-processes.
@@ -34,7 +27,7 @@ def semid(broker):
     Returns:
         list: A list of the semid of all the inter-processes.
     """
-    content = broker[LocalSpecs.ipcs_s_cmd].content
+    content = broker[Specs.ipcs_s].content
     results = set()
     for s in content:
         s_splits = s.split()

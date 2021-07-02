@@ -422,7 +422,7 @@ class DefaultSpecs(Specs):
     ipaupgrade_log = simple_file("/var/log/ipaupgrade.log")
     ipcs_m = simple_command("/usr/bin/ipcs -m")
     ipcs_m_p = simple_command("/usr/bin/ipcs -m -p")
-    ipcs_s = ipcs.LocalSpecs.ipcs_s_cmd
+    ipcs_s = simple_command("/usr/bin/ipcs -s")
     ipcs_s_i = foreach_execute(ipcs.semid, "/usr/bin/ipcs -s -i %s")
     ipsec_conf = simple_file("/etc/ipsec.conf")
     iptables = simple_command("/sbin/iptables-save")

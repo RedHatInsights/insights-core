@@ -3,6 +3,8 @@ from mock.mock import Mock
 
 from insights.specs.datasources import ipcs
 from insights.core.dr import SkipComponent
+from insights.specs import Specs
+
 
 IPCS_OUTPUT1 = """
 
@@ -26,7 +28,7 @@ key        semid      owner      perms      nsems
 def test_semid():
     ipcs_command = Mock()
     ipcs_command.content = IPCS_OUTPUT1.splitlines()
-    broker = {ipcs.LocalSpecs.ipcs_s_cmd: ipcs_command}
+    broker = {Specs.ipcs_s: ipcs_command}
     result = ipcs.semid(broker)
     assert result is not None
     assert isinstance(result, list)
@@ -38,6 +40,6 @@ def test_semid():
 def test_exception():
     ipcs_command = Mock()
     ipcs_command.content = IPCS_OUTPUT2.splitlines()
-    broker = {ipcs.LocalSpecs.ipcs_s_cmd: ipcs_command}
+    broker = {Specs.ipcs_s: ipcs_command}
     with pytest.raises(SkipComponent):
         ipcs.semid(broker)
