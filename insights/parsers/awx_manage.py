@@ -1,16 +1,17 @@
 """
-AwxManage - commands ``awx-manage``
-===================================
+AnsibleTowerLicense - commands ``awx-manage check_license``
+===========================================================
 
 Parsers contains in this module are:
 
-AnsibleTowerLicenseType - command ``awx-manage check_license``
---------------------------------------------------------------
+AnsibleTowerLicense - command ``awx-manage check_license``
+----------------------------------------------------------
 """
 
 from insights import JSONParser, parser, CommandParser
 from insights.parsers import SkipException
 from insights.specs import Specs
+from insights.util import deprecated
 import json
 
 
@@ -18,7 +19,8 @@ import json
 class AnsibleTowerLicenseType(CommandParser, JSONParser):
     """
     Parses the output of command  ``awx-manage check_license``
-    NOTE: This class is deprecated, consider to use class AnsibleTowerLicense
+    .. note::
+        This class is deprecated, consider to use class AnsibleTowerLicense
 
     Sample output of the command::
 
@@ -33,6 +35,10 @@ class AnsibleTowerLicenseType(CommandParser, JSONParser):
     >>> awx_license.type == "enterprise"
     True
     """
+    def __init__(self, *args, **kwargs):
+        deprecated(AnsibleTowerLicenseType, "Use AnsibleTowerLicense in insights.insights.awx_manage instead.")
+        super(AnsibleTowerLicenseType, self).__init__(*args, **kwargs)
+
     def parse_content(self, content):
         if not content:
             raise SkipException

@@ -3,8 +3,12 @@ import pytest
 
 from insights.parsers import awx_manage, SkipException
 from insights.core import ContentException
+from insights.core import filters
+from insights.specs import Specs
 from insights.parsers.awx_manage import AnsibleTowerLicenseType, AnsibleTowerLicense
 from insights.tests import context_wrap
+
+filters.add_filter(Specs.awx_manage_check_license, ["license_type", "support_level", "instance_count", "time_remaining"])
 
 
 NO_LICENSE = """
@@ -52,6 +56,7 @@ def test_ansible_tower_license():
     assert ret.get("license_type") == 'enterprise'
     assert ret.get("instance_count") == 100
     assert ret.get("time_remaining") == 29885220
+    assert ret.get("contact_email") == "test@redhat.com"
 
 
 def test_awx_manage_doc_examples():

@@ -1,13 +1,13 @@
 """
 Custom datasources for awx_manage information
 """
-import json
-
 from insights.core.context import HostContext
 from insights.core.dr import SkipComponent
 from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider, simple_command
+from insights.core.filters import get_filters
 from insights.specs import Specs
+import json
 
 
 class LocalSpecs(Specs):
@@ -34,17 +34,16 @@ def awx_manage_check_license_data(broker):
         SkipComponent: When the path does not exist or any exception occurs.
     """
     try:
+        filter_result = get_filters(Specs.awx_manage_check_license)
         content = broker[LocalSpecs.awx_manage_check_license_data_raw].content
-        if content:
+        if content and filter_result:
             json_data = json.load(content)
             filter_result = {}
-            filter_keys = [
-                "subscription_name", "date_expired", "valid_key", "support_level", "current_instances", "instance_count",
-                "free_instances", "time_remaining", "available_instances", "grace_period_remaining", "trial", "date_warning",
-                "license_type", "compliant", "license_date", "product_name"
-            ]
-            for item in filter_keys:
+            for item in filter_result:
                 filter_result[item] = json_data.get(item)
-            return DatasourceProvider(content=json.dumps(filter_result))
+            if filter_result:
+                return DatasourceProvider(content=json.dumps(filter_result), relative_path='insights_commands/awx-manage_check_license_--data')
     except Exception as e:
         raise SkipComponent("Unexpected exception:{e}".format(e=str(e)))
+
+    raise SkipComponent
