@@ -14,7 +14,7 @@ class LocalSpecs(Specs):
     """ Local specs used only by awx_manage datasources """
 
     awx_manage_check_license_data_raw = simple_command("/usr/bin/awx-manage check_license --data")
-    """ Returns the output of command ``/usr/bin/awx-manage check_license --data``  """
+    """ Returns the output of command ``/usr/bin/awx-manage check_license --data`` """
 
 
 @datasource(LocalSpecs.awx_manage_check_license_data_raw, HostContext)
@@ -31,19 +31,18 @@ def awx_manage_check_license_data(broker):
         str: JSON string containing non-sensitive information.
 
     Raises:
-        SkipComponent: When the path does not exist or any exception occurs.
+        SkipComponent: When the filter/path does not exist or any exception occurs.
     """
     try:
-        filter_result = get_filters(Specs.awx_manage_check_license)
+        filters = get_filters(Specs.awx_manage_check_license)
         content = broker[LocalSpecs.awx_manage_check_license_data_raw].content
-        if content and filter_result:
-            json_data = json.load(content)
+        if content and filters:
+            json_data = json.loads(content[0])
             filter_result = {}
-            for item in filter_result:
+            for item in filters:
                 filter_result[item] = json_data.get(item)
             if filter_result:
                 return DatasourceProvider(content=json.dumps(filter_result), relative_path='insights_commands/awx-manage_check_license_--data')
     except Exception as e:
         raise SkipComponent("Unexpected exception:{e}".format(e=str(e)))
-
     raise SkipComponent
