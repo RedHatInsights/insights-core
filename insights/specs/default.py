@@ -8,6 +8,7 @@ this file with the same `name` keyword argument. This allows overriding the
 data sources that standard Insights `Parsers` resolve against.
 """
 
+import datetime
 import logging
 import os
 import re
@@ -36,8 +37,8 @@ from insights.parsers.lsmod import LsMod
 from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersion
 from insights.parsers.mount import Mount
 from insights.specs import Specs
-from insights.specs.datasources import cloud_init, ps as ps_datasource, candlepin_broker, ipcs
-import datetime
+from insights.specs.datasources import (
+    cloud_init, candlepin_broker, get_running_commands, ipcs, package_provides, ps as ps_datasource)
 
 
 logger = logging.getLogger(__name__)
@@ -49,56 +50,6 @@ def get_owner(filename):
     name = getpwuid(st.st_uid).pw_name
     group = getgrgid(st.st_gid).gr_name
     return (name, group)
-
-
-def _get_running_commands(broker, commands):
-    """
-    Search for command in ``ps auxcww`` output and determine RPM providing binary
-
-    Arguments:
-        broker(dict): Current state of specs collected by Insights
-        commands(str or list): Command or list of commands to search for in ps output
-
-    Returns:
-        list: List of the full command paths of the ``command``.
-
-    Raises:
-        Exception: Raises an exception if commands object is not a list or is empty
-    """
-    if not commands or not isinstance(commands, list):
-        raise Exception('Commands argument must be a list object and contain at least one item')
-
-    ps_list = [broker[Ps].search(COMMAND_NAME__contains=c) for c in commands]
-    ps_cmds = [i for sub_l in ps_list for i in sub_l]
-    ctx = broker[HostContext]
-
-    ret = set()
-    for cmd in set(p['COMMAND'] for p in ps_cmds):
-        try:
-            cmd_prefix = cmd.split(None, 1)[0]
-            which = ctx.shell_out("/usr/bin/which {0}".format(cmd_prefix))
-        except Exception:
-            continue
-        ret.add(which[0]) if which else None
-    return sorted(ret)
-
-
-def _get_package(broker, command):
-    """
-    Arguments:
-        broker(dict): Current state of specs collected by Insights
-        command(str): The full command name to get the package
-
-    Returns:
-        str: The package that provides the ``command``.
-    """
-    ctx = broker[HostContext]
-    resolved = ctx.shell_out("/usr/bin/readlink -e {0}".format(command))
-    if resolved:
-        pkg = ctx.shell_out("/usr/bin/rpm -qf {0}".format(resolved[0]), signum=signal.SIGTERM)
-        if pkg:
-            return pkg[0]
-    raise SkipComponent
 
 
 def _make_rpm_formatter(fmt=None):
@@ -394,7 +345,7 @@ class DefaultSpecs(Specs):
         Returns:
             list: List of the binary paths to each running process
         """
-        return _get_running_commands(broker, ['httpd', ])
+        return get_running_commands(broker[Ps], broker[HostContext], ['httpd', ])
 
     httpd_pid = simple_command("/usr/bin/pgrep -o httpd")
     httpd_limits = foreach_collect(httpd_pid, "/proc/%s/limits")
@@ -592,25 +543,7 @@ class DefaultSpecs(Specs):
     ovirt_engine_ui_log = simple_file("/var/log/ovirt-engine/ui.log")
     ovs_vsctl_list_bridge = simple_command("/usr/bin/ovs-vsctl list bridge")
     ovs_vsctl_show = simple_command("/usr/bin/ovs-vsctl show")
-
-    @datasource(Ps, HostContext)
-    def cmd_and_pkg(broker):
-        """
-        Returns:
-            list: List of the command and provider package string of the specified commands.
-
-        Attributes:
-            COMMANDS (list): List of the specified commands that need to check the provider package.
-        """
-        COMMANDS = ['java', 'httpd']
-        pkg_cmd = list()
-        for cmd in _get_running_commands(broker, COMMANDS):
-            pkg_cmd.append("{0} {1}".format(cmd, _get_package(broker, cmd)))
-        if pkg_cmd:
-            return '\n'.join(pkg_cmd)
-        raise SkipComponent
-
-    package_provides_command = command_with_args("/usr/bin/echo '%s'", cmd_and_pkg)
+    package_provides_command = package_provides.cmd_and_pkg
     pacemaker_log = first_file(["/var/log/pacemaker.log", "/var/log/pacemaker/pacemaker.log"])
     partitions = simple_file("/proc/partitions")
     pci_rport_target_disk_paths = simple_command("/usr/bin/find /sys/devices/ -maxdepth 10 -mindepth 9 -name stat -type f")
