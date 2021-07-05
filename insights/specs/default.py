@@ -38,7 +38,7 @@ from insights.parsers.mount import Mount
 from insights.specs import Specs
 from insights.specs.datasources import (
     cloud_init, candlepin_broker, get_running_commands, ipcs, package_provides,
-    ps as ps_datasource)
+    ps as ps_datasource, sap)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 
 
