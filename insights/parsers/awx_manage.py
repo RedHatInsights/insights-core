@@ -20,6 +20,7 @@ class AnsibleTowerLicenseType(CommandParser, JSONParser):
     """
     Parses the output of command  ``awx-manage check_license``
     .. note::
+
         This class is deprecated, consider to use class AnsibleTowerLicense
 
     Sample output of the command::
