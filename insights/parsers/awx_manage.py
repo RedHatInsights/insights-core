@@ -27,10 +27,10 @@ class AnsibleTowerLicenseType(CommandParser, JSONParser):
         {"instance_count": 100, "license_date": 1655092799, "license_type": "enterprise", "support_level": "Standard", "time_remaining": 29885220, "trial": false, "grace_period_remaining": 32477220, "compliant": true, "date_warning": false, "date_expired": false}
 
     Examples:
-    >>> type(awx_license)
-    <class 'insights.parsers.awx_manage.AnsibleTowerLicenseType'>
-    >>> awx_license.type == "enterprise"
-    True
+        >>> type(awx_license)
+        <class 'insights.parsers.awx_manage.AnsibleTowerLicenseType'>
+        >>> awx_license.type == "enterprise"
+        True
     """
     def __init__(self, *args, **kwargs):
         deprecated(AnsibleTowerLicenseType, "Use AnsibleTowerLicense in insights.insights.awx_manage instead.")
@@ -53,11 +53,11 @@ class AnsibleTowerLicense(CommandParser, JSONParser):
         {"instance_count": 100, "license_date": 1655092799, "license_type": "enterprise", "support_level": "Standard", "time_remaining": 29885220, "trial": false, "grace_period_remaining": 32477220, "compliant": true, "date_warning": false, "date_expired": false}
 
     Examples:
-    >>> type(awx_manage_license)
-    <class 'insights.parsers.awx_manage.AnsibleTowerLicense'>
-    >>> awx_manage_license.data['license_type'] == "enterprise"
-    True
-    >>> awx_manage_license.data['time_remaining']
-    29885220
+        >>> type(awx_manage_license)
+        <class 'insights.parsers.awx_manage.AnsibleTowerLicense'>
+        >>> awx_manage_license.data['license_type'] == "enterprise"
+        True
+        >>> awx_manage_license.data['time_remaining']
+        29885220
     """
     pass
