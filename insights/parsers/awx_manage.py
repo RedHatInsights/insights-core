@@ -24,7 +24,7 @@ class AnsibleTowerLicenseType(CommandParser, JSONParser):
 
     Sample output of the command::
 
-       {"instance_count": 100, "license_date": 1655092799, "license_type": "enterprise", "support_level": "Standard", "time_remaining": 29885220, "trial": false, "grace_period_remaining": 32477220, "compliant": true, "date_warning": false, "date_expired": false}
+        {"instance_count": 100, "license_date": 1655092799, "license_type": "enterprise", "support_level": "Standard", "time_remaining": 29885220, "trial": false, "grace_period_remaining": 32477220, "compliant": true, "date_warning": false, "date_expired": false}
 
     Examples:
     >>> type(awx_license)
@@ -50,7 +50,7 @@ class AnsibleTowerLicense(CommandParser, JSONParser):
 
     Sample output of the command::
 
-       {"instance_count": 100, "license_date": 1655092799, "license_type": "enterprise", "support_level": "Standard", "time_remaining": 29885220, "trial": false, "grace_period_remaining": 32477220, "compliant": true, "date_warning": false, "date_expired": false}
+        {"instance_count": 100, "license_date": 1655092799, "license_type": "enterprise", "support_level": "Standard", "time_remaining": 29885220, "trial": false, "grace_period_remaining": 32477220, "compliant": true, "date_warning": false, "date_expired": false}
 
     Examples:
     >>> type(awx_manage_license)
