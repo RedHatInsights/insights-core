@@ -38,7 +38,7 @@ from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersio
 from insights.parsers.mount import Mount
 from insights.specs import Specs
 from insights.specs.datasources import (
-    cloud_init, candlepin_broker, get_running_commands, ipcs, package_provides, ps as ps_datasource)
+    cloud_init, candlepin_broker, ethernet, get_running_commands, ipcs, package_provides, ps as ps_datasource)
 
 
 logger = logging.getLogger(__name__)
@@ -244,13 +244,13 @@ class DefaultSpecs(Specs):
                                        "/usr/lib/udev/rules.d/40-redhat.rules", "/usr/local/lib/udev/rules.d/40-redhat.rules"])
     etcd_conf = simple_file("/etc/etcd/etcd.conf")
     ethernet_interfaces = listdir("/sys/class/net", context=HostContext)
-    ethtool = foreach_execute(ethernet_interfaces, "/sbin/ethtool %s")
-    ethtool_S = foreach_execute(ethernet_interfaces, "/sbin/ethtool -S %s")
-    ethtool_T = foreach_execute(ethernet_interfaces, "/sbin/ethtool -T %s")
-    ethtool_c = foreach_execute(ethernet_interfaces, "/sbin/ethtool -c %s")
-    ethtool_g = foreach_execute(ethernet_interfaces, "/sbin/ethtool -g %s")
-    ethtool_i = foreach_execute(ethernet_interfaces, "/sbin/ethtool -i %s")
-    ethtool_k = foreach_execute(ethernet_interfaces, "/sbin/ethtool -k %s")
+    ethtool = foreach_execute(ethernet.interfaces, "/sbin/ethtool %s")
+    ethtool_S = foreach_execute(ethernet.interfaces, "/sbin/ethtool -S %s")
+    ethtool_T = foreach_execute(ethernet.interfaces, "/sbin/ethtool -T %s")
+    ethtool_c = foreach_execute(ethernet.interfaces, "/sbin/ethtool -c %s")
+    ethtool_g = foreach_execute(ethernet.interfaces, "/sbin/ethtool -g %s")
+    ethtool_i = foreach_execute(ethernet.interfaces, "/sbin/ethtool -i %s")
+    ethtool_k = foreach_execute(ethernet.interfaces, "/sbin/ethtool -k %s")
     facter = simple_command("/usr/bin/facter")
     fc_match = simple_command("/bin/fc-match -sv 'sans:regular:roman' family fontformat")
     fcoeadm_i = simple_command("/usr/sbin/fcoeadm -i")
