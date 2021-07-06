@@ -8,6 +8,7 @@ from insights.core.spec_factory import DatasourceProvider, simple_command
 from insights.core.filters import get_filters
 from insights.specs import Specs
 import json
+import collections
 
 
 class LocalSpecs(Specs):
@@ -42,7 +43,7 @@ def awx_manage_check_license_data(broker):
             for item in filters:
                 filter_result[item] = json_data.get(item)
             if filter_result:
-                return DatasourceProvider(content=json.dumps(filter_result), relative_path='insights_commands/awx-manage_check_license_--data')
+                return DatasourceProvider(content=json.dumps(collections.OrderedDict(sorted(filter_result.items()))), relative_path='insights_commands/awx-manage_check_license_--data')
     except Exception as e:
         raise SkipComponent("Unexpected exception:{e}".format(e=str(e)))
     raise SkipComponent
