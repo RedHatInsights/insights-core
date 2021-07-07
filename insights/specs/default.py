@@ -706,32 +706,13 @@ class DefaultSpecs(Specs):
     saphostexec_status = simple_command("/usr/sap/hostctrl/exe/saphostexec -status")
     saphostexec_version = simple_command("/usr/sap/hostctrl/exe/saphostexec -version")
     sat5_insights_properties = simple_file("/etc/redhat-access/redhat-access-insights.properties")
-
-    @datasource(SatelliteVersion, HostContext)
-    def is_satellite_server(broker):
-        """
-        bool: Returns True if the host is satellite server.
-        """
-        if broker[SatelliteVersion]:
-            return True
-        raise SkipComponent
-
-    @datasource(CapsuleVersion, HostContext)
-    def is_satellite_capsule(broker):
-        """
-        bool: Returns True if the host is satellite capsule.
-        """
-        if broker[CapsuleVersion]:
-            return True
-        raise SkipComponent
-
     satellite_compute_resources = simple_command(
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c 'select name, type from compute_resources' --csv",
-        deps=[is_satellite_server]
+        deps=[SatelliteVersion]
     )
     satellite_content_hosts_count = simple_command(
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c 'select count(*) from hosts'",
-        deps=[is_satellite_server]
+        deps=[SatelliteVersion]
     )
     satellite_custom_ca_chain = simple_command(
         '/usr/bin/awk \'BEGIN { pipe="openssl x509 -noout -subject -enddate"} /^-+BEGIN CERT/,/^-+END CERT/ { print | pipe } /^-+END CERT/ { close(pipe); printf("\\n")}\' /etc/pki/katello/certs/katello-server-ca.crt',
@@ -739,11 +720,11 @@ class DefaultSpecs(Specs):
     satellite_mongodb_storage_engine = simple_command("/usr/bin/mongo pulp_database --eval 'db.serverStatus().storageEngine'")
     satellite_non_yum_type_repos = simple_command(
         "/usr/bin/mongo pulp_database --eval 'db.repo_importers.find({\"importer_type_id\": { $ne: \"yum_importer\"}}).count()'",
-        deps=[[is_satellite_server, is_satellite_capsule]]
+        deps=[[SatelliteVersion, CapsuleVersion]]
     )
     satellite_settings = simple_command(
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c \"select name, value, \\\"default\\\" from settings where name in ('destroy_vm_on_host_delete', 'unregister_delete_host')\" --csv",
-        deps=[is_satellite_server]
+        deps=[SatelliteVersion]
     )
     satellite_version_rb = simple_file("/usr/share/foreman/lib/satellite/version.rb")
     satellite_custom_hiera = simple_file("/etc/foreman-installer/custom-hiera.yaml")
