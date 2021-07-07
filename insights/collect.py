@@ -123,6 +123,20 @@ plugins:
         - name: insights.combiners.cloud_provider
           enabled: true
 
+    # needed for the cloud related specs
+        - name: insights.components.cloud_provider.IsAWS
+          enabled: true
+
+        - name: insights.components.cloud_provider.IsAzure
+          enabled: true
+
+        - name: insights.components.cloud_provider.IsGCP
+          enabled: true
+
+    # needed for the ceph related specs
+        - name: insights.components.ceph.IsCephMonitor
+          enabled: true
+
     # needed for the Services combiner
         - name: insights.parsers.chkconfig
           enabled: true

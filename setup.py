@@ -61,7 +61,6 @@ client = set([
 ])
 
 develop = set([
-    'futures==3.0.5',
     'wheel',
 ])
 
