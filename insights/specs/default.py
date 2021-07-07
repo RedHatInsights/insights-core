@@ -39,10 +39,14 @@ from insights.parsers.mount import Mount
 from insights.specs import Specs
 from insights.specs.datasources import (
 <<<<<<< HEAD
+<<<<<<< HEAD
     cloud_init, candlepin_broker, ethernet, get_running_commands, ipcs, package_provides, ps as ps_datasource)
 =======
     cloud_init, candlepin_broker, get_running_commands, ipcs, package_provides, ps as ps_datasource, awx_manage)
 >>>>>>> Enhance parser awx_manage.py
+=======
+    cloud_init, candlepin_broker, ethernet, get_running_commands, ipcs, package_provides, ps as ps_datasource, awx_manage)
+>>>>>>> Update default.py
 
 
 logger = logging.getLogger(__name__)
