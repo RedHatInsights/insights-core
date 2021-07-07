@@ -8,6 +8,7 @@ this file with the same `name` keyword argument. This allows overriding the
 data sources that standard Insights `Parsers` resolve against.
 """
 
+import datetime
 import logging
 import os
 import re
@@ -25,18 +26,19 @@ from insights.core.spec_factory import simple_file, simple_command, glob_file
 from insights.core.spec_factory import first_of, command_with_args
 from insights.core.spec_factory import foreach_collect, foreach_execute
 from insights.core.spec_factory import first_file, listdir
-from insights.combiners.cloud_provider import CloudProvider
 from insights.combiners.services import Services
 from insights.combiners.sap import Sap
 from insights.combiners.ps import Ps
 from insights.components.rhel_version import IsRhel8, IsRhel7, IsRhel6
+from insights.components.cloud_provider import IsAWS, IsAzure, IsGCP
+from insights.components.ceph import IsCephMonitor
 from insights.parsers.mdstat import Mdstat
 from insights.parsers.lsmod import LsMod
 from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersion
 from insights.parsers.mount import Mount
 from insights.specs import Specs
-from insights.specs.datasources import cloud_init
-import datetime
+from insights.specs.datasources import (
+    cloud_init, candlepin_broker, ethernet, get_running_commands, ipcs, package_provides, ps as ps_datasource)
 
 
 logger = logging.getLogger(__name__)
@@ -48,56 +50,6 @@ def get_owner(filename):
     name = getpwuid(st.st_uid).pw_name
     group = getgrgid(st.st_gid).gr_name
     return (name, group)
-
-
-def _get_running_commands(broker, commands):
-    """
-    Search for command in ``ps auxcww`` output and determine RPM providing binary
-
-    Arguments:
-        broker(dict): Current state of specs collected by Insights
-        commands(str or list): Command or list of commands to search for in ps output
-
-    Returns:
-        list: List of the full command paths of the ``command``.
-
-    Raises:
-        Exception: Raises an exception if commands object is not a list or is empty
-    """
-    if not commands or not isinstance(commands, list):
-        raise Exception('Commands argument must be a list object and contain at least one item')
-
-    ps_list = [broker[Ps].search(COMMAND_NAME__contains=c) for c in commands]
-    ps_cmds = [i for sub_l in ps_list for i in sub_l]
-    ctx = broker[HostContext]
-
-    ret = set()
-    for cmd in set(p['COMMAND'] for p in ps_cmds):
-        try:
-            cmd_prefix = cmd.split(None, 1)[0]
-            which = ctx.shell_out("/usr/bin/which {0}".format(cmd_prefix))
-        except Exception:
-            continue
-        ret.add(which[0]) if which else None
-    return sorted(ret)
-
-
-def _get_package(broker, command):
-    """
-    Arguments:
-        broker(dict): Current state of specs collected by Insights
-        command(str): The full command name to get the package
-
-    Returns:
-        str: The package that provides the ``command``.
-    """
-    ctx = broker[HostContext]
-    resolved = ctx.shell_out("/usr/bin/readlink -e {0}".format(command))
-    if resolved:
-        pkg = ctx.shell_out("/usr/bin/rpm -qf {0}".format(resolved[0]), signum=signal.SIGTERM)
-        if pkg:
-            return pkg[0]
-    raise SkipComponent
 
 
 def _make_rpm_formatter(fmt=None):
@@ -132,34 +84,17 @@ class DefaultSpecs(Specs):
     abrt_status_bare = simple_command("/usr/bin/abrt status --bare=True")
     alternatives_display_python = simple_command("/usr/sbin/alternatives --display python")
     amq_broker = glob_file("/var/opt/amq-broker/*/etc/broker.xml")
+    ansible_tower_settings = glob_file(["/etc/tower/settings.py", "/etc/tower/conf.d/*.py"])
     auditctl_status = simple_command("/sbin/auditctl -s")
     auditd_conf = simple_file("/etc/audit/auditd.conf")
     audit_log = simple_file("/var/log/audit/audit.log")
     avc_hash_stats = simple_file("/sys/fs/selinux/avc/hash_stats")
     avc_cache_threshold = simple_file("/sys/fs/selinux/avc/cache_threshold")
-
-    @datasource(CloudProvider, HostContext)
-    def is_aws(broker):
-        """ bool: Returns True if this node is identified as running in AWS """
-        cp = broker[CloudProvider]
-        if cp and cp.cloud_provider == CloudProvider.AWS:
-            return True
-        raise SkipComponent()
-
-    aws_instance_id_doc = simple_command("/usr/bin/curl -s http://169.254.169.254/latest/dynamic/instance-identity/document --connect-timeout 5", deps=[is_aws])
-    aws_instance_id_pkcs7 = simple_command("/usr/bin/curl -s http://169.254.169.254/latest/dynamic/instance-identity/pkcs7 --connect-timeout 5", deps=[is_aws])
+    aws_instance_id_doc = simple_command("/usr/bin/curl -s http://169.254.169.254/latest/dynamic/instance-identity/document --connect-timeout 5", deps=[IsAWS])
+    aws_instance_id_pkcs7 = simple_command("/usr/bin/curl -s http://169.254.169.254/latest/dynamic/instance-identity/pkcs7 --connect-timeout 5", deps=[IsAWS])
     awx_manage_check_license = simple_command("/usr/bin/awx-manage check_license")
-
-    @datasource(CloudProvider, HostContext)
-    def is_azure(broker):
-        """ bool: Returns True if this node is identified as running in Azure """
-        cp = broker[CloudProvider]
-        if cp and cp.cloud_provider == CloudProvider.AZURE:
-            return True
-        raise SkipComponent()
-
-    azure_instance_type = simple_command("/usr/bin/curl -s -H Metadata:true http://169.254.169.254/metadata/instance/compute/vmSize?api-version=2018-10-01&format=text --connect-timeout 5", deps=[is_azure])
-    azure_instance_plan = simple_command("/usr/bin/curl -s -H Metadata:true http://169.254.169.254/metadata/instance/compute/plan?api-version=2018-10-01&format=json --connect-timeout 5", deps=[is_azure])
+    azure_instance_type = simple_command("/usr/bin/curl -s -H Metadata:true http://169.254.169.254/metadata/instance/compute/vmSize?api-version=2018-10-01&format=text --connect-timeout 5", deps=[IsAzure])
+    azure_instance_plan = simple_command("/usr/bin/curl -s -H Metadata:true http://169.254.169.254/metadata/instance/compute/plan?api-version=2018-10-01&format=json --connect-timeout 5", deps=[IsAzure])
     bios_uuid = simple_command("/usr/sbin/dmidecode -s system-uuid")
     blkid = simple_command("/sbin/blkid -c /dev/null")
     bond = glob_file("/proc/net/bonding/bond*")
@@ -167,6 +102,7 @@ class DefaultSpecs(Specs):
     boot_loader_entries = glob_file("/boot/loader/entries/*.conf")
     branch_info = simple_file("/branch_info", kind=RawFileProvider)
     brctl_show = simple_command("/usr/sbin/brctl show")
+    candlepin_broker = candlepin_broker.candlepin_broker
     candlepin_log = simple_file("/var/log/candlepin/candlepin.log")
     cgroups = simple_file("/proc/cgroups")
     ps_alxwww = simple_command("/bin/ps alxwww")
@@ -175,6 +111,7 @@ class DefaultSpecs(Specs):
     ps_auxww = simple_command("/bin/ps auxww")
     ps_ef = simple_command("/bin/ps -ef")
     ps_eo = simple_command("/usr/bin/ps -eo pid,ppid,comm")
+    ps_eo_cmd = ps_datasource.ps_eo_cmd
 
     @datasource(ps_auxww, HostContext)
     def tomcat_base(broker):
@@ -204,16 +141,7 @@ class DefaultSpecs(Specs):
     ceph_conf = first_file(["/var/lib/config-data/puppet-generated/ceph/etc/ceph/ceph.conf", "/etc/ceph/ceph.conf"])
     ceph_df_detail = simple_command("/usr/bin/ceph df detail -f json")
     ceph_health_detail = simple_command("/usr/bin/ceph health detail -f json")
-
-    @datasource(Ps, HostContext)
-    def is_ceph_monitor(broker):
-        """ bool: Returns True if ceph monitor process ceph-mon is running on this node """
-        ps = broker[Ps]
-        if ps.search(COMMAND__contains='ceph-mon'):
-            return True
-        raise SkipComponent()
-
-    ceph_insights = simple_command("/usr/bin/ceph insights", deps=[is_ceph_monitor])
+    ceph_insights = simple_command("/usr/bin/ceph insights", deps=[IsCephMonitor])
     ceph_log = glob_file(r"var/log/ceph/ceph.log*")
     ceph_osd_dump = simple_command("/usr/bin/ceph osd dump -f json")
     ceph_osd_ec_profile_ls = simple_command("/usr/bin/ceph osd erasure-code-profile ls")
@@ -316,13 +244,13 @@ class DefaultSpecs(Specs):
                                        "/usr/lib/udev/rules.d/40-redhat.rules", "/usr/local/lib/udev/rules.d/40-redhat.rules"])
     etcd_conf = simple_file("/etc/etcd/etcd.conf")
     ethernet_interfaces = listdir("/sys/class/net", context=HostContext)
-    ethtool = foreach_execute(ethernet_interfaces, "/sbin/ethtool %s")
-    ethtool_S = foreach_execute(ethernet_interfaces, "/sbin/ethtool -S %s")
-    ethtool_T = foreach_execute(ethernet_interfaces, "/sbin/ethtool -T %s")
-    ethtool_c = foreach_execute(ethernet_interfaces, "/sbin/ethtool -c %s")
-    ethtool_g = foreach_execute(ethernet_interfaces, "/sbin/ethtool -g %s")
-    ethtool_i = foreach_execute(ethernet_interfaces, "/sbin/ethtool -i %s")
-    ethtool_k = foreach_execute(ethernet_interfaces, "/sbin/ethtool -k %s")
+    ethtool = foreach_execute(ethernet.interfaces, "/sbin/ethtool %s")
+    ethtool_S = foreach_execute(ethernet.interfaces, "/sbin/ethtool -S %s")
+    ethtool_T = foreach_execute(ethernet.interfaces, "/sbin/ethtool -T %s")
+    ethtool_c = foreach_execute(ethernet.interfaces, "/sbin/ethtool -c %s")
+    ethtool_g = foreach_execute(ethernet.interfaces, "/sbin/ethtool -g %s")
+    ethtool_i = foreach_execute(ethernet.interfaces, "/sbin/ethtool -i %s")
+    ethtool_k = foreach_execute(ethernet.interfaces, "/sbin/ethtool -k %s")
     facter = simple_command("/usr/bin/facter")
     fc_match = simple_command("/bin/fc-match -sv 'sans:regular:roman' family fontformat")
     fcoeadm_i = simple_command("/usr/sbin/fcoeadm -i")
@@ -360,17 +288,8 @@ class DefaultSpecs(Specs):
     gluster_v_info = simple_command("/usr/sbin/gluster volume info")
     gnocchi_conf = first_file(["/var/lib/config-data/puppet-generated/gnocchi/etc/gnocchi/gnocchi.conf", "/etc/gnocchi/gnocchi.conf"])
     gnocchi_metricd_log = first_file(["/var/log/containers/gnocchi/gnocchi-metricd.log", "/var/log/gnocchi/metricd.log"])
-
-    @datasource(CloudProvider, HostContext)
-    def is_gcp(broker):
-        """ bool: Returns True if this node is identified as running in GCP """
-        cp = broker[CloudProvider]
-        if cp and cp.cloud_provider == CloudProvider.GOOGLE:
-            return True
-        raise SkipComponent()
-
-    gcp_instance_type = simple_command("/usr/bin/curl -s -H 'Metadata-Flavor: Google' http://metadata.google.internal/computeMetadata/v1/instance/machine-type --connect-timeout 5", deps=[is_gcp])
-    gcp_license_codes = simple_command("/usr/bin/curl -s -H 'Metadata-Flavor: Google' http://metadata.google.internal/computeMetadata/v1/instance/licenses/?recursive=True --connect-timeout 5", deps=[is_gcp])
+    gcp_instance_type = simple_command("/usr/bin/curl -s -H 'Metadata-Flavor: Google' http://metadata.google.internal/computeMetadata/v1/instance/machine-type --connect-timeout 5", deps=[IsGCP])
+    gcp_license_codes = simple_command("/usr/bin/curl -s -H 'Metadata-Flavor: Google' http://metadata.google.internal/computeMetadata/v1/instance/licenses/?recursive=True --connect-timeout 5", deps=[IsGCP])
     greenboot_status = simple_command("/usr/libexec/greenboot/greenboot-status")
     grub_conf = simple_file("/boot/grub/grub.conf")
     grub_config_perms = simple_command("/bin/ls -l /boot/grub2/grub.cfg")  # only RHEL7 and updwards
@@ -426,7 +345,7 @@ class DefaultSpecs(Specs):
         Returns:
             list: List of the binary paths to each running process
         """
-        return _get_running_commands(broker, ['httpd', ])
+        return get_running_commands(broker[Ps], broker[HostContext], ['httpd', ])
 
     httpd_pid = simple_command("/usr/bin/pgrep -o httpd")
     httpd_limits = foreach_collect(httpd_pid, "/proc/%s/limits")
@@ -447,6 +366,7 @@ class DefaultSpecs(Specs):
     ipcs_m = simple_command("/usr/bin/ipcs -m")
     ipcs_m_p = simple_command("/usr/bin/ipcs -m -p")
     ipcs_s = simple_command("/usr/bin/ipcs -s")
+    ipcs_s_i = foreach_execute(ipcs.semid, "/usr/bin/ipcs -s -i %s")
     ipsec_conf = simple_file("/etc/ipsec.conf")
     iptables = simple_command("/sbin/iptables-save")
     iptables_permanent = simple_file("etc/sysconfig/iptables")
@@ -623,25 +543,7 @@ class DefaultSpecs(Specs):
     ovirt_engine_ui_log = simple_file("/var/log/ovirt-engine/ui.log")
     ovs_vsctl_list_bridge = simple_command("/usr/bin/ovs-vsctl list bridge")
     ovs_vsctl_show = simple_command("/usr/bin/ovs-vsctl show")
-
-    @datasource(Ps, HostContext)
-    def cmd_and_pkg(broker):
-        """
-        Returns:
-            list: List of the command and provider package string of the specified commands.
-
-        Attributes:
-            COMMANDS (list): List of the specified commands that need to check the provider package.
-        """
-        COMMANDS = ['java', 'httpd']
-        pkg_cmd = list()
-        for cmd in _get_running_commands(broker, COMMANDS):
-            pkg_cmd.append("{0} {1}".format(cmd, _get_package(broker, cmd)))
-        if pkg_cmd:
-            return '\n'.join(pkg_cmd)
-        raise SkipComponent
-
-    package_provides_command = command_with_args("/usr/bin/echo '%s'", cmd_and_pkg)
+    package_provides_command = package_provides.cmd_and_pkg
     pacemaker_log = first_file(["/var/log/pacemaker.log", "/var/log/pacemaker/pacemaker.log"])
     partitions = simple_file("/proc/partitions")
     pci_rport_target_disk_paths = simple_command("/usr/bin/find /sys/devices/ -maxdepth 10 -mindepth 9 -name stat -type f")

@@ -1,6 +1,6 @@
 from insights.combiners import ps
 from insights.combiners.ps import Ps
-from insights.parsers.ps import PsAlxwww, PsAuxww, PsAux, PsAuxcww, PsEo, PsEf
+from insights.parsers.ps import PsAlxwww, PsAuxww, PsAux, PsAuxcww, PsEo, PsEf, PsEoCmd
 from insights.tests import context_wrap
 import doctest
 
@@ -13,6 +13,17 @@ PS_EO_LINES = """
     8     2 migration/0
     9     2 rcu_bh
     10    2 rcu_sched
+ """
+
+PS_EO_CMD_LINES = """
+  PID  COMMAND
+    1  /usr/lib/systemd/systemd
+    2  [kthreadd]
+    3  [ksoftirqd/0]
+    8  [migration/0]
+    9  [rcu_bh]
+   10  [rcu_sched]
+   13  /usr/bin/python3.6
  """
 
 PS_AUXCWW_LINES = """
@@ -65,7 +76,7 @@ F   UID   PID  PPID PRI  NI    VSZ   RSS WCHAN  STAT TTY        TIME COMMAND
 
 def test_pseo_parser():
     ps_eo = PsEo(context_wrap(PS_EO_LINES, strip=False))
-    ps = Ps(None, None, None, None, None, ps_eo)
+    ps = Ps(None, None, None, None, None, ps_eo, None)
     assert len(ps.processes) == 6
     proc = ps[1]
     assert proc['USER'] is None
@@ -78,7 +89,7 @@ def test_pseo_parser():
 def test_pseo_and_psauxcww_parsers():
     ps_eo = PsEo(context_wrap(PS_EO_LINES, strip=False))
     ps_auxcww = PsAuxcww(context_wrap(PS_AUXCWW_LINES))
-    ps = Ps(None, None, None, None, ps_auxcww, ps_eo)
+    ps = Ps(None, None, None, None, ps_auxcww, ps_eo, None)
     assert len(ps.processes) == 7
     proc9 = ps[9]
     assert proc9['USER'] == 'root'
@@ -96,7 +107,7 @@ def test_pseo_and_psauxcww_parsers():
 
 def test_psef_parser():
     ps_ef = PsEf(context_wrap(PS_EF_LINES))
-    ps = Ps(None, None, None, ps_ef, None, None)
+    ps = Ps(None, None, None, ps_ef, None, None, None)
     len(ps.processes) == 6
     proc = ps[1]
     assert proc.get('UID') is None
@@ -112,7 +123,7 @@ def test_psef_parser():
 def test_psauxcww_and_ps_ef_parsers():
     ps_auxcww = PsAuxcww(context_wrap(PS_AUXCWW_LINES))
     ps_ef = PsEf(context_wrap(PS_EF_LINES))
-    ps = Ps(None, None, None, ps_ef, ps_auxcww, None)
+    ps = Ps(None, None, None, ps_ef, ps_auxcww, None, None)
     assert len(ps.processes) == 7
     proc1 = ps[1]
     assert proc1['COMMAND'] == '/usr/lib/systemd/systemd --switched-root --system --deserialize 21'
@@ -133,7 +144,7 @@ def test_psalxwww_and_psauxww_and_psaux_parsers():
     ps_alxwww = PsAlxwww(context_wrap(PS_ALXWWW_LINES))
     ps_auxww = PsAuxww(context_wrap(PS_AUXWW_LINES))
     ps_aux = PsAux(context_wrap(PS_AUX_LINES))
-    ps = Ps(ps_alxwww, ps_auxww, ps_aux, None, None, None)
+    ps = Ps(ps_alxwww, ps_auxww, ps_aux, None, None, None, None)
     len(ps.processes) == 5
     ps = ps[1]
     assert ps['PID'] == 1
@@ -163,7 +174,7 @@ def test_psalxwww_and_psauxww_and_psaux_and_psef_and_psauxcww_and_ps_eo_parsers(
     ps_ef = PsEf(context_wrap(PS_EF_LINES))
     ps_auxcww = PsAuxcww(context_wrap(PS_AUXCWW_LINES))
     ps_eo = PsEo(context_wrap(PS_EO_LINES, strip=False))
-    ps = Ps(ps_alxwww, ps_auxww, ps_aux, ps_ef, ps_auxcww, ps_eo)
+    ps = Ps(ps_alxwww, ps_auxww, ps_aux, ps_ef, ps_auxcww, ps_eo, None)
     len(ps.processes) == 8
     ps = ps[1]
     assert ps['PID'] == 1
@@ -190,7 +201,7 @@ def test_type_conversion():
     ps_alxwww = PsAlxwww(context_wrap(PS_ALXWWW_LINES))
     ps_ef = PsEf(context_wrap(PS_EF_LINES))
     ps_auxcww = PsAuxcww(context_wrap(PS_AUXCWW_LINES))
-    ps = Ps(ps_alxwww, None, None, ps_ef, ps_auxcww, None)
+    ps = Ps(ps_alxwww, None, None, ps_ef, ps_auxcww, None, None)
     assert all(isinstance(p['PID'], int) for p in ps.processes)
     assert all(p['UID'] is None or isinstance(p['UID'], int) for p in ps.processes)
     assert all(p['PID'] is None or isinstance(p['PID'], int) for p in ps.processes)
@@ -203,7 +214,7 @@ def test_type_conversion():
 
 def test_combiner_api():
     ps_auxcww = PsAuxcww(context_wrap(PS_AUXCWW_LINES))
-    ps = Ps(None, None, None, None, ps_auxcww, None)
+    ps = Ps(None, None, None, None, ps_auxcww, None, None)
     assert ps.pids == [1, 2, 3, 8, 9, 11]
     assert len(ps.processes) == 6
     assert ps.processes[0]
@@ -240,7 +251,8 @@ def test_docs():
     ps_ef = PsEf(context_wrap(PS_EF_LINES))
     ps_auxcww = PsAuxcww(context_wrap(PS_AUXCWW_LINES))
     ps_eo = PsEo(context_wrap(PS_EO_LINES, strip=False))
-    ps_combiner = Ps(ps_alxwww, ps_auxww, ps_aux, ps_ef, ps_auxcww, ps_eo)
+    ps_eo_cmd = PsEoCmd(context_wrap(PS_EO_CMD_LINES, strip=False))
+    ps_combiner = Ps(ps_alxwww, ps_auxww, ps_aux, ps_ef, ps_auxcww, ps_eo, ps_eo_cmd)
     env = {
         'ps_combiner': ps_combiner
     }
@@ -266,5 +278,37 @@ F   UID   PID  PPID PRI  NI    VSZ   RSS WCHAN  STAT TTY        TIME COMMAND
 
 def test_search_ps_alxwww_w_grep():
     p = PsAlxwww(context_wrap(PS_ALXWWW_W_GREP))
-    ps = Ps(p, None, None, None, None, None)
+    ps = Ps(p, None, None, None, None, None, None)
     assert len(ps.search(COMMAND_NAME__contains='dbus')) == 1
+
+
+def test_psalxwww_and_psauxww_and_psaux_and_psef_and_psauxcww_and_ps_eo_cmd_parsers():
+    ps_alxwww = PsAlxwww(context_wrap(PS_ALXWWW_LINES))
+    ps_auxww = PsAuxww(context_wrap(PS_AUXWW_LINES))
+    ps_aux = PsAux(context_wrap(PS_AUX_LINES))
+    ps_ef = PsEf(context_wrap(PS_EF_LINES))
+    ps_auxcww = PsAuxcww(context_wrap(PS_AUXCWW_LINES))
+    ps_eo_cmd = PsEoCmd(context_wrap(PS_EO_CMD_LINES, strip=False))
+    ps_combiner = Ps(ps_alxwww, ps_auxww, ps_aux, ps_ef, ps_auxcww, None, ps_eo_cmd)
+    len(ps_combiner.processes) == 9
+    ps = ps_combiner[1]
+    assert ps['PID'] == 1
+    assert ps['USER'] == 'root'
+    assert ps['UID'] == 0
+    assert ps['PPID'] == 0
+    assert ps['%CPU'] == 0.1
+    assert ps['%MEM'] == 0.0
+    assert ps['VSZ'] == 195712.0
+    assert ps['RSS'] == 7756.0
+    assert ps['STAT'] == 'Ss'
+    assert ps['TTY'] == '?'
+    assert ps['START'] == '2019'
+    assert ps['TIME'] == '478:05'
+    assert ps['COMMAND'] == '/usr/lib/systemd/systemd --switched-root --system --deserialize 21'
+    assert ps['COMMAND_NAME'] == 'systemd'
+    assert ps['F'] == '4'
+    assert ps['PRI'] == 20
+    assert ps['NI'] == '0'
+    assert ps['WCHAN'] == 'ep_pol'
+
+    assert ps_combiner[13]['COMMAND'] == '/usr/bin/python3.6'
