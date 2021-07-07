@@ -3,14 +3,31 @@ import re
 from insights.core.context import HostContext
 from insights.core.dr import SkipComponent
 from insights.core.plugins import datasource
-from insights.core.spec_factory import DatasourceProvider
-from insights.parsers.messages import Messages
+from insights.core.spec_factory import DatasourceProvider, simple_command
 from insights.combiners.satellite_version import SatelliteVersion
-Messages.keep_scan('qpidd_node_not_found_errors', 'error Error on attach: Node not found')
+from insights.specs import Specs
+from insights.core.filters import add_filter
 
 
-@datasource(HostContext, SatelliteVersion, Messages)
-def get_satellite_missed_pulp_agent_queues(broker):
+NODE_NOT_FOUND_ERROR = 'error Error on attach: Node not found'
+add_filter(Specs.messages, NODE_NOT_FOUND_ERROR)
+
+
+class LocalSpecs(Specs):
+    """ Local specs used only by get_satellite_missed_pulp_agent_queues datasources """
+
+    content_host_uuids = simple_command(
+        '/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c "select uuid from katello_content_facets where uuid is not null;"',
+        deps=[SatelliteVersion]
+    )
+    qpid_queues = simple_command(
+        '/usr/bin/qpid-stat -q --ssl-certificate=/etc/pki/pulp/qpid/client.crt -b amqps://localhost:5671',
+        deps=[SatelliteVersion]
+    )
+
+
+@datasource(LocalSpecs.content_host_uuids, LocalSpecs.qpid_queues, Specs.messages, HostContext, SatelliteVersion)
+def satellite_missed_pulp_agent_queues(broker):
     """
     This datasource provides the missed pulp agent queues information on satellite server.
 
@@ -26,7 +43,11 @@ def get_satellite_missed_pulp_agent_queues(broker):
         0
 
     Returns:
-        str: The missed pulp agent queues and the mark if the data is truncated.
+        str: All the missed pulp agent queues and the boolean mark if the data is
+            truncated in the last line. If the value of last line is 0,
+            it means all the missed queues are returned. If the value of the
+            last line is 1, it means there are a lot of missed queues, to
+            avoid render error, only the first 10 missed queues are returned.
 
     Raises:
         SkipComponent: When the error doen't happen or the missed queues have been recreated.
@@ -37,21 +58,21 @@ def get_satellite_missed_pulp_agent_queues(broker):
             r'^(?P<date>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) \[Protocol\] error Error on attach: Node not found: (?P<agentq>pulp.agent.[0-9a-f-]+)$'
         )
         agent_queue_last_date = {}
-        for message in ms_obj.qpidd_node_not_found_errors:
-            line = message['raw_message']
-            info, msg = [i.strip() for i in line.split(': ', 1)]
-            info_splits = info.rsplit(None, 2)
-            if info_splits[2].startswith('qpidd'):
-                # The timestamp from syslog doesn't contain the year, but the
-                # message itself does - so use that.
-                match = agentq_date_re.search(msg)
-                if match:
-                    agent_queue_last_date[match.group('agentq')] = match.group('date')
+        ms_obj = broker[Specs.messages]
+        for line in ms_obj.stream():
+            if NODE_NOT_FOUND_ERROR in line:
+                info, msg = [i.strip() for i in line.split(': ', 1)]
+                info_splits = info.rsplit(None, 2)
+                if len(info_splits) >= 3 and info_splits[2].startswith('qpidd'):
+                    # The timestamp from syslog doesn't contain the year, but the
+                    # message itself does - so use that.
+                    match = agentq_date_re.search(msg)
+                    if match:
+                        agent_queue_last_date[match.group('agentq')] = match.group('date')
         return agent_queue_last_date
 
     def _get_content_host_uuid():
-        cmd = '/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c "select uuid from katello_content_facets where uuid is not null;"'
-        output = ctx.shell_out(cmd)
+        output = broker[LocalSpecs.content_host_uuids].content
         host_uuids = []
         if len(output) > 3:
             for line in output[2:-1]:
@@ -59,15 +80,12 @@ def get_satellite_missed_pulp_agent_queues(broker):
         return host_uuids
 
     def _get_qpid_queues():
-        cmd = '/usr/bin/qpid-stat -q --ssl-certificate=/etc/pki/pulp/qpid/client.crt -b amqps://localhost:5671'
-        output = ctx.shell_out(cmd)
+        output = broker[LocalSpecs.qpid_queues].content
         current_queues = []
         if len(output) > 3:
             current_queues = [line.split()[0].strip() for line in output[3:] if line.split()[0].startswith('pulp.agent')]
         return current_queues
 
-    ms_obj = broker[Messages]
-    ctx = broker[HostContext]
     missed_queues_in_log = _parse_non_existing_queues_in_msg()
     if missed_queues_in_log:
         host_uuids = _get_content_host_uuid()

@@ -1,11 +1,10 @@
 import pytest
+from mock.mock import Mock
 
-from insights.tests import context_wrap
-from insights.core.context import HostContext
 from insights.core.dr import SkipComponent
-from insights.parsers.messages import Messages
 from insights.core.spec_factory import DatasourceProvider
-from insights.specs.datasources.get_satellite_missed_queues import get_satellite_missed_pulp_agent_queues
+from insights.specs import Specs
+from insights.specs.datasources.satellite_missed_queues import LocalSpecs, satellite_missed_pulp_agent_queues
 
 
 MESSAGE_WITH_ERRORS = """
@@ -65,6 +64,12 @@ HOST_UUIDS = """
  09008eec-aba6-4174-aa9f-e930004ce5c9
  fac7ebbc-ee4f-44b4-9fe0-3f4e42c7f024
 (6 rows)
+""".strip()
+
+HOST_UUIDS_1 = """
+                 uuid
+--------------------------------------
+(0 rows)
 """.strip()
 
 HOST_UUIDS_2 = """
@@ -157,31 +162,34 @@ pulp.agent.076a1c3f-3dde-4523-b26c-fcfffbd93bfe:2018-01-16 00:06:36
 RELATIVE_PATH = "insights_commands/satellite_missed_qpid_queues"
 
 
-class FakeContextA(object):
-    def shell_out(self, cmd, split=True, timeout=None, keep_rc=False, env=None, signum=None):
-        tmp_cmd = cmd.strip().split()
-        if 'postgres' in tmp_cmd and '/usr/bin/psql' in tmp_cmd:
-            return HOST_UUIDS.splitlines()
-        if '/usr/bin/qpid-stat' in tmp_cmd:
-            return QPID_QUEUES.splitlines()
-        return []
+def mock_stream():
+    for line in MESSAGE_WITH_ERRORS.splitlines():
+        yield line
 
 
-class FakeContextB(object):
-    def shell_out(self, cmd, split=True, timeout=None, keep_rc=False, env=None, signum=None):
-        tmp_cmd = cmd.strip().split()
-        if 'postgres' in tmp_cmd and '/usr/bin/psql' in tmp_cmd:
-            return HOST_UUIDS_2.splitlines()
-        if '/usr/bin/qpid-stat' in tmp_cmd:
-            return QPID_QUEUES.splitlines()
-        return []
+def mock_stream_without_error():
+    for line in MESSAGE_WITHOUT_ERROR.splitlines():
+        yield line
+
+
+def mock_stream_with_queue_exists():
+    for line in MESSAGE_WITH_ERROR_BUT_QUEUE_EXISTS.splitlines():
+        yield line
 
 
 def test_satellite_missed_queues():
-    message_obj = Messages(context_wrap(MESSAGE_WITH_ERRORS))
-    ctx = FakeContextA()
-    broker = {Messages: message_obj, HostContext: ctx}
-    result = get_satellite_missed_pulp_agent_queues(broker)
+    host_uuids = Mock()
+    host_uuids.content = HOST_UUIDS.splitlines()
+    qpid_queues = Mock()
+    qpid_queues.content = QPID_QUEUES.splitlines()
+    messages = Mock()
+    messages.stream = mock_stream
+    broker = {
+        Specs.messages: messages,
+        LocalSpecs.content_host_uuids: host_uuids,
+        LocalSpecs.qpid_queues: qpid_queues,
+    }
+    result = satellite_missed_pulp_agent_queues(broker)
     assert result is not None
     assert isinstance(result, DatasourceProvider)
     expected = DatasourceProvider(content=MISSED_QUEUES_OUTPUT.splitlines(), relative_path=RELATIVE_PATH)
@@ -190,10 +198,18 @@ def test_satellite_missed_queues():
 
 
 def test_satellite_missed_queues_with_more_data():
-    message_obj = Messages(context_wrap(MESSAGE_WITH_ERRORS))
-    ctx = FakeContextB()
-    broker = {Messages: message_obj, HostContext: ctx}
-    result = get_satellite_missed_pulp_agent_queues(broker)
+    host_uuids = Mock()
+    host_uuids.content = HOST_UUIDS_2.splitlines()
+    qpid_queues = Mock()
+    qpid_queues.content = QPID_QUEUES.splitlines()
+    messages = Mock()
+    messages.stream = mock_stream
+    broker = {
+        Specs.messages: messages,
+        LocalSpecs.content_host_uuids: host_uuids,
+        LocalSpecs.qpid_queues: qpid_queues,
+    }
+    result = satellite_missed_pulp_agent_queues(broker)
     assert result is not None
     assert isinstance(result, DatasourceProvider)
     expected = DatasourceProvider(content=MISSED_QUEUES_OUTPUT_2.splitlines(), relative_path=RELATIVE_PATH)
@@ -202,14 +218,28 @@ def test_satellite_missed_queues_with_more_data():
 
 
 def test_exception():
-    message_obj = Messages(context_wrap(MESSAGE_WITHOUT_ERROR))
-    ctx = FakeContextA()
-    broker = {Messages: message_obj, HostContext: ctx}
+    host_uuids = Mock()
+    host_uuids.content = HOST_UUIDS_2.splitlines()
+    qpid_queues = Mock()
+    qpid_queues.content = QPID_QUEUES.splitlines()
+    messages = Mock()
+    messages.stream = mock_stream_without_error
+    broker = {
+        Specs.messages: messages,
+        LocalSpecs.content_host_uuids: host_uuids,
+        LocalSpecs.qpid_queues: qpid_queues,
+    }
     with pytest.raises(SkipComponent):
-        get_satellite_missed_pulp_agent_queues(broker)
+        satellite_missed_pulp_agent_queues(broker)
 
-    message_obj = Messages(context_wrap(MESSAGE_WITH_ERROR_BUT_QUEUE_EXISTS))
-    ctx = FakeContextA()
-    broker = {Messages: message_obj, HostContext: ctx}
+    new_messages = Mock()
+    new_messages.stream = mock_stream_with_queue_exists
+    broker[Specs.messages] = new_messages
     with pytest.raises(SkipComponent):
-        get_satellite_missed_pulp_agent_queues(broker)
+        satellite_missed_pulp_agent_queues(broker)
+
+    empty_uuids = Mock()
+    empty_uuids.content = HOST_UUIDS_1.splitlines()
+    broker[LocalSpecs.content_host_uuids] = empty_uuids
+    with pytest.raises(SkipComponent):
+        satellite_missed_pulp_agent_queues(broker)

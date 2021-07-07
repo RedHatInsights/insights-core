@@ -67,10 +67,10 @@ insights.specs.datasources.sap
     :show-inheritance:
     :undoc-members:
 
-insights.specs.datasources.get_satellite_missed_queues
-------------------------------------------------------
+insights.specs.datasources.satellite_missed_queues
+--------------------------------------------------
 
-.. automodule:: insights.specs.datasources.get_satellite_missed_queues
-    :members: get_satellite_missed_pulp_agent_queues
+.. automodule:: insights.specs.datasources.satellite_missed_queues
+    :members: satellite_missed_pulp_agent_queues, LocalSpecs
     :show-inheritance:
     :undoc-members:
