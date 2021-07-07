@@ -27,6 +27,14 @@ insights.specs.datasources.cloud_init
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.ethernet
+-------------------------------------
+
+.. automodule:: insights.specs.datasources.ethernet
+    :members: interfaces, LocalSpecs
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.ipcs
 -------------------------------
 
