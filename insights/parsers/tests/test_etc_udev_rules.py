@@ -1,6 +1,6 @@
 import doctest
 from insights.parsers import etc_udev_rules
-from insights.parsers.etc_udev_rules import UdevRules40Redhat
+from insights.parsers.etc_udev_rules import UdevRules40Redhat, UdevRulesOracleASM
 from insights.tests import context_wrap
 
 UDEV_RULES_CONTENT = """
@@ -64,6 +64,23 @@ PROGRAM="/bin/uname -p", RESULT=="s390*", GOTO="memory_hotplug_end"
 LABEL="memory_hotplug_end"
 """.strip()
 
+ORACLE_ASM_UDEV_RULES = """
+KERNEL=="dm*", PROGRAM=="scsi_id --page=0x83 --whitelisted --device=/dev/%k", \
+RESULT=="360060e80164c210000014c2100007a8f", \
+SYMLINK+="oracleasm/disks/asm_sbe80_7a8f", OWNER="oracle", GROUP="dba", MODE="0660"
+
+KERNEL=="dm*", PROGRAM=="scsi_id --page=0x83 --whitelisted --device=/dev/%k", \
+RESULT=="360060e80164c210000014c2100007a90", \
+SYMLINK+="oracleasm/disks/asm_sbe80_7a90", OWNER="oracle", GROUP="dba", MODE="0660"
+
+KERNEL=="dm*", PROGRAM=="scsi_id --page=0x83 --whitelisted --device=/dev/%k", \
+RESULT=="360060e80164c210000014c2100007a91", \
+SYMLINK+="oracleasm/disks/asm_sbe80_7a91", OWNER="oracle", GROUP="dba", MODE="0660"
+
+# NOTE: Insert new Oracle ASM LUN configuration before this comment
+ACTION=="add|change", KERNEL=="sd*", OPTIONS:="nowatch"
+""".strip()
+
 
 def test_udev_rules():
     result = UdevRules40Redhat(context_wrap(UDEV_RULES_CONTENT))
@@ -74,6 +91,17 @@ def test_udev_rules():
 
 
 def test_documentation():
-    env = {'udev_rules': UdevRules40Redhat(context_wrap(SAMPLE_INPUT))}
+    env = {'udev_rules': UdevRules40Redhat(context_wrap(SAMPLE_INPUT)),
+           'udev_oracle_asm_rules': UdevRulesOracleASM(context_wrap(ORACLE_ASM_UDEV_RULES))}
     failed_count, tests = doctest.testmod(etc_udev_rules, globs=env)
     assert failed_count == 0
+
+
+def test_udev_oracle_asm_rules():
+    result = UdevRulesOracleASM(context_wrap(ORACLE_ASM_UDEV_RULES))
+    for line in ['ACTION=="add|change", KERNEL=="sd*", OPTIONS:="nowatch"',
+                 'KERNEL=="dm*", PROGRAM=="scsi_id --page=0x83 --whitelisted --device=/dev/%k", RESULT=="360060e80164c210000014c2100007a8f", SYMLINK+="oracleasm/disks/asm_sbe80_7a8f", OWNER="oracle", GROUP="dba", MODE="0660"']:
+        assert line in result.lines
+    actions = result.get('ACTION')
+    assert len(actions) == 1
+    assert actions[0]['raw_message'] == 'ACTION=="add|change", KERNEL=="sd*", OPTIONS:="nowatch"'
