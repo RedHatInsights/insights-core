@@ -2,10 +2,13 @@ import doctest
 import pytest
 
 from insights.parsers import awx_manage, SkipException
-from insights.core import ContentException
+from insights.core import ContentException, ParseException
 from insights.parsers.awx_manage import AnsibleTowerLicenseType, AnsibleTowerLicense
 from insights.tests import context_wrap
 
+GOOD_LICENSE = """
+enterprise
+""".strip()
 
 NO_LICENSE = """
 none
@@ -29,7 +32,9 @@ AWX_MANAGE_LICENSE = """
 
 
 def test_ansible_tower_license_type():
-    ret = AnsibleTowerLicenseType(context_wrap(AWX_MANAGE_LICENSE))
+    ret = AnsibleTowerLicenseType(context_wrap(NO_LICENSE))
+    assert ret.type == 'none'
+    ret = AnsibleTowerLicenseType(context_wrap(GOOD_LICENSE))
     assert ret.type == 'enterprise'
 
 
@@ -40,14 +45,11 @@ def test_ansible_tower_license_ab_type():
     with pytest.raises(ContentException):
         AnsibleTowerLicenseType(context_wrap(NG_COMMAND_1))
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ParseException):
         AnsibleTowerLicenseType(context_wrap(NG_COMMAND_2))
 
-    with pytest.raises(ValueError):
-        AnsibleTowerLicenseType(context_wrap(NO_LICENSE))
 
-
-def test_ansible_tower_license():
+def test_ansible_tower_license_data():
     ret = AnsibleTowerLicense(context_wrap(AWX_MANAGE_LICENSE))
     assert ret.get("license_type") == 'enterprise'
     assert ret.get("instance_count") == 100
@@ -55,9 +57,23 @@ def test_ansible_tower_license():
     assert ret.get("contact_email") == "test@redhat.com"
 
 
+def test_ansible_tower_license__data_ab_type():
+    with pytest.raises(ParseException):
+        AnsibleTowerLicense(context_wrap(NG_COMMAND_0))
+
+    with pytest.raises(ContentException):
+        AnsibleTowerLicense(context_wrap(NG_COMMAND_1))
+
+    with pytest.raises(ParseException):
+        AnsibleTowerLicense(context_wrap(NG_COMMAND_2))
+
+    with pytest.raises(ParseException):
+        AnsibleTowerLicense(context_wrap(NO_LICENSE))
+
+
 def test_awx_manage_doc_examples():
     env = {
-        'awx_license': AnsibleTowerLicenseType(context_wrap(AWX_MANAGE_LICENSE)),
+        'awx_license': AnsibleTowerLicenseType(context_wrap(GOOD_LICENSE)),
         'awx_manage_license': AnsibleTowerLicense(context_wrap(AWX_MANAGE_LICENSE)),
     }
     failed, total = doctest.testmod(awx_manage, globs=env)

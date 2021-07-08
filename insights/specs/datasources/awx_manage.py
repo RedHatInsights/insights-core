@@ -19,7 +19,7 @@ class LocalSpecs(Specs):
 
 
 @datasource(LocalSpecs.awx_manage_check_license_data_raw, HostContext)
-def awx_manage_check_license_data(broker):
+def awx_manage_check_license_data_datasource(broker):
     """
     This datasource provides the not-sensitive information collected
     from ``/usr/bin/awx-manage check_license --data``.
@@ -35,7 +35,7 @@ def awx_manage_check_license_data(broker):
         SkipComponent: When the filter/path does not exist or any exception occurs.
     """
     try:
-        filters = get_filters(Specs.awx_manage_check_license)
+        filters = get_filters(Specs.awx_manage_check_license_data)
         content = broker[LocalSpecs.awx_manage_check_license_data_raw].content
         if content and filters:
             json_data = json.loads(content[0])
