@@ -1173,7 +1173,6 @@
                 "backupserver",
                 "catalina.base",
                 "ceilometer-poll",
-                "ceph-osd",
                 "chronyd",
                 "cinder-volume",
                 "clvmd",
@@ -1717,6 +1716,14 @@
                 "["
             ],
             "symbolic_name": "openshift_hosts"
+        },
+        {
+            "file": "/etc/tower/settings.py",
+            "pattern": [
+                "AWX_CLEANUP_PATHS",
+                "AWX_PROOT_BASE_PATH"
+            ],
+            "symbolic_name": "ansible_tower_settings"
         },
         {
             "file": "/etc/redhat-access-insights/machine-id",
@@ -2337,7 +2344,6 @@
                 "(28)No space left on device: ",
                 "AH00485: scoreboard is full, not at MaxRequestWorkers",
                 "ModSecurity: collections_remove_stale: Failed deleting collection",
-                "Require ServerLimit > 0, setting to 1",
                 "The mpm module (prefork.c) is not supported by mod_http2",
                 "[crit] Memory allocation failed, aborting process",
                 "and would exceed the ServerLimit value of ",
@@ -2345,13 +2351,10 @@
                 "consider raising the MaxRequestWorkers setting",
                 "exceed ServerLimit of",
                 "exceeds ServerLimit value of",
-                "exceeds compile time limit of",
-                "exceeds compile-time limit of",
                 "exit signal Segmentation fault",
                 "manager_handler CONFIG error: MEM: Can't update or insert node",
                 "manager_handler ENABLE-APP error: MEM: Can't update or insert context",
-                "manager_handler ENABLE-APP error: MEM: Can't update or insert host alias",
-                "not allowed, increasing to 1"
+                "manager_handler ENABLE-APP error: MEM: Can't update or insert host alias"
             ],
             "symbolic_name": "httpd_error_log"
         },
@@ -4137,6 +4140,14 @@
     ],
     "globs": [
         {
+            "glob": "/etc/tower/conf.d/*.py",
+            "pattern": [
+                "AWX_CLEANUP_PATHS",
+                "AWX_PROOT_BASE_PATH"
+            ],
+            "symbolic_name": "ansible_tower_settings"
+        },
+        {
             "glob": "/sys/devices/system/cpu/cpu[0-9]*/online",
             "symbolic_name": "cpu_cores",
             "pattern": []
@@ -4342,8 +4353,7 @@
             "glob": "/etc/ssh/ssh_config.d/*.conf",
             "symbolic_name": "ssh_config_d",
             "pattern": [
-                "Include",
-                "SendEnv"
+                "Include"
             ]
         }
     ],
@@ -4365,7 +4375,7 @@
         }
     },
     "pre_commands": {
-        "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"
+        "iface": "/sbin/ip -o link | awk -F ': |@' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2021-06-24T11:02:05.835577"
+    "version": "2021-07-01T12:56:10.617317"
 }
