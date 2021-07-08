@@ -38,7 +38,7 @@ from insights.parsers.mount import Mount
 from insights.specs import Specs
 from insights.specs.datasources import (
     cloud_init, candlepin_broker, ethernet, get_running_commands, ipcs, package_provides,
-    ps as ps_datasource, sap)
+    ps as ps_datasource, sap, satellite_missed_queues)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 
 
@@ -657,6 +657,7 @@ class DefaultSpecs(Specs):
     satellite_custom_ca_chain = simple_command(
         '/usr/bin/awk \'BEGIN { pipe="openssl x509 -noout -subject -enddate"} /^-+BEGIN CERT/,/^-+END CERT/ { print | pipe } /^-+END CERT/ { close(pipe); printf("\\n")}\' /etc/pki/katello/certs/katello-server-ca.crt',
     )
+    satellite_missed_pulp_agent_queues = satellite_missed_queues.satellite_missed_pulp_agent_queues
     satellite_mongodb_storage_engine = simple_command("/usr/bin/mongo pulp_database --eval 'db.serverStatus().storageEngine'")
     satellite_non_yum_type_repos = simple_command(
         "/usr/bin/mongo pulp_database --eval 'db.repo_importers.find({\"importer_type_id\": { $ne: \"yum_importer\"}}).count()'",
