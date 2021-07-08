@@ -348,6 +348,7 @@ class Specs(SpecSet):
     meminfo = RegistryPoint()
     messages = RegistryPoint(filterable=True)
     metadata_json = RegistryPoint(raw=True)
+    satellite_missed_pulp_agent_queues = RegistryPoint()
     mistral_executor_log = RegistryPoint(filterable=True)
     mlx4_port = RegistryPoint(multi_output=True)
     modinfo_i40e = RegistryPoint()
