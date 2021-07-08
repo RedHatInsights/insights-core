@@ -58,3 +58,19 @@ insights.specs.datasources.ps
     :members: ps_eo_cmd, LocalSpecs
     :show-inheritance:
     :undoc-members:
+
+insights.specs.datasources.sap
+------------------------------
+
+.. automodule:: insights.specs.datasources.sap
+    :members: sap_sid, sap_hana_sid, sap_hana_sid_SID_nr, ld_library_path_of_user, LocalSpecs
+    :show-inheritance:
+    :undoc-members:
+
+insights.specs.datasources.satellite_missed_queues
+--------------------------------------------------
+
+.. automodule:: insights.specs.datasources.satellite_missed_queues
+    :members: satellite_missed_pulp_agent_queues, LocalSpecs
+    :show-inheritance:
+    :undoc-members:

@@ -21,13 +21,12 @@ from pwd import getpwuid
 from insights.core.context import HostContext
 from insights.core.dr import SkipComponent
 from insights.core.plugins import datasource
-from insights.core.spec_factory import RawFileProvider, DatasourceProvider
+from insights.core.spec_factory import RawFileProvider
 from insights.core.spec_factory import simple_file, simple_command, glob_file
 from insights.core.spec_factory import first_of, command_with_args
 from insights.core.spec_factory import foreach_collect, foreach_execute
 from insights.core.spec_factory import first_file, listdir
 from insights.combiners.services import Services
-from insights.combiners.sap import Sap
 from insights.combiners.ps import Ps
 from insights.components.rhel_version import IsRhel8, IsRhel7, IsRhel6
 from insights.components.cloud_provider import IsAWS, IsAzure, IsGCP
@@ -38,7 +37,9 @@ from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersio
 from insights.parsers.mount import Mount
 from insights.specs import Specs
 from insights.specs.datasources import (
-    cloud_init, candlepin_broker, ethernet, get_running_commands, ipcs, package_provides, ps as ps_datasource)
+    cloud_init, candlepin_broker, ethernet, get_running_commands, ipcs, package_provides,
+    ps as ps_datasource, sap, satellite_missed_queues)
+from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 
 
 logger = logging.getLogger(__name__)
@@ -385,6 +386,7 @@ class DefaultSpecs(Specs):
     kubepods_cpu_quota = glob_file("/sys/fs/cgroup/cpu/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod[a-f0-9_]*.slice/cpu.cfs_quota_us")
     last_upload_globs = ["/etc/redhat-access-insights/.lastupload", "/etc/insights-client/.lastupload"]
     lastupload = glob_file(last_upload_globs)
+    ld_library_path_of_user = sap.ld_library_path_of_user
     libssh_client_config = simple_file("/etc/libssh/libssh_client.config")
     libssh_server_config = simple_file("/etc/libssh/libssh_server.config")
     libvirtd_log = simple_file("/var/log/libvirt/libvirtd.log")
@@ -638,112 +640,32 @@ class DefaultSpecs(Specs):
     rpm_V_packages = simple_command("/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo chrony", keep_rc=True, signum=signal.SIGTERM)
     rsyslog_conf = glob_file(["/etc/rsyslog.conf", "/etc/rsyslog.d/*.conf"])
     samba = simple_file("/etc/samba/smb.conf")
-
-    @datasource(Sap, HostContext)
-    def sap_instance(broker):
-        """
-        list: List of all SAP Instances.
-        """
-        sap = broker[Sap]
-        return list(v for v in sap.values())
-
-    @datasource(sap_instance, HostContext)
-    def sap_hana_instance(broker):
-        """
-        list: List of the SAP HANA Instances.
-        """
-        sap = broker[DefaultSpecs.sap_instance]
-        return list(v for v in sap if v.type == 'HDB')
-
-    @datasource(sap_instance, HostContext)
-    def sap_sid(broker):
-        """
-        list: List of the SID of all the SAP Instances.
-        """
-        sap = broker[DefaultSpecs.sap_instance]
-        return list(set(h.sid.lower() for h in sap))
-
-    @datasource(sap_hana_instance, HostContext)
-    def sap_hana_sid(broker):
-        """
-        list: List of the SID of SAP HANA Instances.
-        """
-        hana = broker[DefaultSpecs.sap_hana_instance]
-        return list(set(h.sid.lower() for h in hana))
-
-    @datasource(sap_hana_instance, HostContext)
-    def sap_hana_sid_SID_nr(broker):
-        """
-        list: List of tuples (sid, SID, Nr) of SAP HANA Instances.
-        """
-        hana = broker[DefaultSpecs.sap_hana_instance]
-        return list((h.sid.lower(), h.sid, h.number) for h in hana)
-
-    @datasource(sap_sid, HostContext)
-    def ld_library_path_of_user(broker):
-        """
-        Returns: The list of LD_LIBRARY_PATH of specified users.
-                 Username is combined from SAP <SID> and 'adm' and is also stored.
-        """
-        sids = broker[DefaultSpecs.sap_sid]
-        ctx = broker[HostContext]
-        llds = []
-        for sid in sids:
-            usr = '{0}adm'.format(sid)
-            ret, vvs = ctx.shell_out("/bin/su -l {0} -c /bin/env".format(usr), keep_rc=True)
-            if ret != 0:
-                continue
-            for v in vvs:
-                if "LD_LIBRARY_PATH=" in v:
-                    llds.append('{0} {1}'.format(usr, v.split('=', 1)[-1]))
-        if llds:
-            return DatasourceProvider('\n'.join(llds), relative_path='insights_commands/echo_user_LD_LIBRARY_PATH')
-        raise SkipComponent
-
     sap_hana_landscape = foreach_execute(sap_hana_sid_SID_nr, "/bin/su -l %sadm -c 'python /usr/sap/%s/HDB%s/exe/python_support/landscapeHostConfiguration.py'", keep_rc=True)
     sap_hdb_version = foreach_execute(sap_hana_sid, "/bin/su -l %sadm -c 'HDB version'", keep_rc=True)
     saphostctl_getcimobject_sapinstance = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance")
     saphostexec_status = simple_command("/usr/sap/hostctrl/exe/saphostexec -status")
     saphostexec_version = simple_command("/usr/sap/hostctrl/exe/saphostexec -version")
     sat5_insights_properties = simple_file("/etc/redhat-access/redhat-access-insights.properties")
-
-    @datasource(SatelliteVersion, HostContext)
-    def is_satellite_server(broker):
-        """
-        bool: Returns True if the host is satellite server.
-        """
-        if broker[SatelliteVersion]:
-            return True
-        raise SkipComponent
-
-    @datasource(CapsuleVersion, HostContext)
-    def is_satellite_capsule(broker):
-        """
-        bool: Returns True if the host is satellite capsule.
-        """
-        if broker[CapsuleVersion]:
-            return True
-        raise SkipComponent
-
     satellite_compute_resources = simple_command(
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c 'select name, type from compute_resources' --csv",
-        deps=[is_satellite_server]
+        deps=[SatelliteVersion]
     )
     satellite_content_hosts_count = simple_command(
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c 'select count(*) from hosts'",
-        deps=[is_satellite_server]
+        deps=[SatelliteVersion]
     )
     satellite_custom_ca_chain = simple_command(
         '/usr/bin/awk \'BEGIN { pipe="openssl x509 -noout -subject -enddate"} /^-+BEGIN CERT/,/^-+END CERT/ { print | pipe } /^-+END CERT/ { close(pipe); printf("\\n")}\' /etc/pki/katello/certs/katello-server-ca.crt',
     )
+    satellite_missed_pulp_agent_queues = satellite_missed_queues.satellite_missed_pulp_agent_queues
     satellite_mongodb_storage_engine = simple_command("/usr/bin/mongo pulp_database --eval 'db.serverStatus().storageEngine'")
     satellite_non_yum_type_repos = simple_command(
         "/usr/bin/mongo pulp_database --eval 'db.repo_importers.find({\"importer_type_id\": { $ne: \"yum_importer\"}}).count()'",
-        deps=[[is_satellite_server, is_satellite_capsule]]
+        deps=[[SatelliteVersion, CapsuleVersion]]
     )
     satellite_settings = simple_command(
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c \"select name, value, \\\"default\\\" from settings where name in ('destroy_vm_on_host_delete', 'unregister_delete_host')\" --csv",
-        deps=[is_satellite_server]
+        deps=[SatelliteVersion]
     )
     satellite_version_rb = simple_file("/usr/share/foreman/lib/satellite/version.rb")
     satellite_custom_hiera = simple_file("/etc/foreman-installer/custom-hiera.yaml")
