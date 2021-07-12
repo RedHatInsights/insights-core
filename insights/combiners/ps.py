@@ -6,6 +6,7 @@ This combiner provides information about running processes based on the ``ps`` c
 More specifically this consolidates data from
 :py:class:`insights.parsers.ps.PsEo`,
 :py:class:`insights.parsers.ps.PsAuxcww`,
+:py:class:`insights.parsers.ps.PsEoCmd`,
 :py:class:`insights.parsers.ps.PsEf`,
 :py:class:`insights.parsers.ps.PsAux`,
 :py:class:`insights.parsers.ps.PsAuxww` and
@@ -21,8 +22,8 @@ Note:
 
 Examples:
 
-    >>> ps_combiner.pids
-    [1, 2, 3, 8, 9, 10, 11, 12]
+    >>> sorted(ps_combiner.pids)
+    [1, 2, 3, 8, 9, 10, 11, 12, 13]
     >>> '[kthreadd]' in ps_combiner.commands
     True
     >>> '[kthreadd]' in ps_combiner
@@ -53,10 +54,10 @@ Examples:
 
 from insights.core.plugins import combiner
 from insights.parsers import keyword_search
-from insights.parsers.ps import PsAlxwww, PsAuxww, PsAux, PsAuxcww, PsEo, PsEf
+from insights.parsers.ps import PsAlxwww, PsAuxww, PsAux, PsAuxcww, PsEo, PsEf, PsEoCmd
 
 
-@combiner([PsAlxwww, PsAuxww, PsAux, PsEf, PsAuxcww, PsEo])
+@combiner([PsAlxwww, PsAuxww, PsAux, PsEf, PsAuxcww, PsEo, PsEoCmd])
 class Ps(object):
     """
     ``Ps`` combiner consolidates data from the parsers in ``insights.parsers.ps`` module.
@@ -97,7 +98,7 @@ class Ps(object):
         'WCHAN': None
     }
 
-    def __init__(self, ps_alxwww, ps_auxww, ps_aux, ps_ef, ps_auxcww, ps_eo):
+    def __init__(self, ps_alxwww, ps_auxww, ps_aux, ps_ef, ps_auxcww, ps_eo, ps_eo_cmd):
         self._pid_data = {}
 
         # order of parsers is important here
@@ -105,6 +106,8 @@ class Ps(object):
             self.__update_data(ps_eo)
         if ps_auxcww:
             self.__update_data(ps_auxcww)
+        if ps_eo_cmd:
+            self.__update_data(ps_eo_cmd)
         if ps_ef:
             # mapping configurations to combine PsEf data
             mapping = {
