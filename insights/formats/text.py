@@ -187,9 +187,10 @@ class HumanReadableFormat(Formatter):
             _type = v.get('type')
             if _type in self.responses:
                 self.counts[_type] += 1
-            if (_type and ((self.fail_only and _type == 'rule') or
-                           ((self.missing and _type == 'skip') or
-                            (not self.fail_only and _type != 'skip')))):
+            if (_type and _type != 'none' and
+                ((self.fail_only and _type == 'rule') or
+                 ((self.missing and _type == 'skip') or
+                    (not self.fail_only and _type != 'skip')))):
                 printit(c, v)
         print(file=self.stream)
 
