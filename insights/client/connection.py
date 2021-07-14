@@ -130,6 +130,8 @@ class InsightsConnection(object):
 
         self.authmethod = self.config.authmethod
         self.systemid = self.config.systemid or None
+        print(self.get_proxies)
+        raise
         self.get_proxies()
         self.session = self._init_session()
 
