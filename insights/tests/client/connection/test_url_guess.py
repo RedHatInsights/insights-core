@@ -10,6 +10,10 @@ def test_url_guess_legacy(get_proxies, init_session):
     """
     config = Mock(base_url=None, upload_url=None, legacy_upload=True, analyze_container=False)
 
+    from six.moves import reload_module
+    from insights.client import connection
+    reload_module(connection)
+
     connection = InsightsConnection(config)
     assert connection.base_url == 'https://cert-api.access.redhat.com/r/insights'
     assert connection.upload_url == 'https://cert-api.access.redhat.com/r/insights/uploads'
