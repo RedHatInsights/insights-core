@@ -1,86 +1,111 @@
 """
-HaproxyCfg - file ``/etc/haproxy/haproxy.cfg``
-==============================================
+Haproxy configuration files
+===========================
 
-Contents of the `haproxy.cfg` file look like::
+Parsers provided by this module are:
 
-    global
-        daemon
-        group       haproxy
-        log         /dev/log local0
-        user        haproxy
-        maxconn     20480
-        pidfile     /var/run/haproxy.pid
-
-    defaults
-        retries     3
-        maxconn     4096
-        log         global
-        timeout     http-request 10s
-        timeout     queue 1m
-        timeout     connect 10s
-
-If there are duplicate key items, merge them in to one. Like::
-
-    option  tcpka
-                            }--->    option: ["tcpka","tcplog"]
-    option  tcplog
-
-Attributes:
-    data (dict): Dictionary of all parsed sections.
-    lines (list): List of all non-commented lines.
-
-Examples:
-    >>> cfg = shared[HaproxyCfg]
-    >>> cfg.data['global']
-    {"daemon": "", "group": "haproxy", "log": " /dev/log local0",
-     "user": "haproxy", "maxconn": "20480", "pidfile": "/var/run/haproxy.pid"}
-    >>> cfg.data['global']['group']
-    "haproxy"
-    >>> 'global' in cfg.data
-    True
-    >>> 'user' in cfg.data.get('global')
-    True
+HaproxyCfg - file ``/var/lib/config-data/puppet-generated/haproxy/etc/haproxy/haproxy.cfg`` or ``/etc/haproxy/haproxy.cfg``
+---------------------------------------------------------------------------------------------------------------------------
+HaproxyCfgScl - file ``/etc/opt/rh/rh-haproxy18/haproxy/haproxy.cfg``
+---------------------------------------------------------------------
 """
-from .. import Parser, parser
+
+from insights.core import Parser
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 
-def _parse_content(content):
+class HaproxyFile(Parser):
+    """
+    Base class for ``HaproxyCfg`` and ``HaproxyCfgScl`` classes.
+
+    Attributes:
+        data (dict): Dictionary of all parsed sections.
+        lines (list): List of all non-commented lines.
+
+    Content of the `haproxy.cfg` file looks like::
+
+        global
+            daemon
+            group       haproxy
+            log         /dev/log local0
+            user        haproxy
+            maxconn     20480
+            pidfile     /var/run/haproxy.pid
+
+        defaults
+            retries     3
+            maxconn     4096
+            log         global
+            timeout     http-request 10s
+            timeout     queue 1m
+            timeout     connect 10s
+
+    Examples:
+        >>> type(haproxy)
+        <class 'insights.parsers.haproxy_cfg.HaproxyFile'>
+        >>> haproxy.data['global']
+        {'daemon': '', 'group': 'haproxy', 'log': '/dev/log local0', 'user': 'haproxy', 'maxconn': '20480', 'pidfile': '/var/run/haproxy.pid'}
+        >>> haproxy.data['global']['group']
+        'haproxy'
+        >>> 'global' in haproxy.data
+        True
+        >>> 'user' in haproxy.data.get('global')
+        True
+        >>> haproxy.data['defaults']
+        {'retries': '3', 'maxconn': '4096', 'log': 'global', 'timeout': ['http-request 10s', 'queue 1m', 'connect 10s']}
+    """
+
     SECTION_NAMES = ("global", "defaults", "frontend", "backend", "listen")
-    haproxy_dict = {}
-    section_dict = {}
-    lines = []
-    for line in content:
-        line = line.strip()
-        if line.startswith("#") or line == "":
-            continue
-        lines.append(line)
-        values = line.split(None, 1)
-        if values[0] in SECTION_NAMES:
-            # new section like  global:{} or listen mysql: {}
-            section_dict = {}
-            i_key = values[0] if len(values) == 1 else values[0] + " " + values[1]
-            haproxy_dict.update({i_key: section_dict})
-        else:
-            # handle attributes in one section
-            if len(values) == 1:
-                section_dict[line] = ""
+
+    def __init__(self, context):
+        self.data = {}
+        self.lines = []
+        super(HaproxyFile, self).__init__(context)
+
+    def parse_content(self, content):
+        section_dict = {}
+
+        for line in content:
+            line = line.strip()
+            if line.startswith("#") or line == "":
+                continue
+
+            self.lines.append(line)
+            split_items = line.split(None, 1)
+
+            # Create a new section, e.g. global: {}
+            if split_items[0] in self.SECTION_NAMES:
+                section_dict = {}
+                section = split_items[0] if len(split_items) == 1 else split_items[0] + " " + split_items[1]
+                self.data.update({section: section_dict})
+            # Handle attributes inside section
             else:
-                attr_key = values[0]
-                attr_value = values[1]
-                if attr_key in section_dict:
-                    # if it is not list, convert it to list
-                    if not isinstance(section_dict[attr_key], list):
-                        section_dict[attr_key] = [section_dict[attr_key]]
-                    section_dict[attr_key].append(attr_value)
+                if len(split_items) == 1:
+                    section_dict[line] = ""
                 else:
-                    section_dict[attr_key] = attr_value
-    return haproxy_dict, lines
+                    key = split_items[0]
+                    value = split_items[1]
+                    if key in section_dict:
+                        # Convert value into list in case of duplicate key items
+                        if not isinstance(section_dict[key], list):
+                            section_dict[key] = [section_dict[key]]
+                        section_dict[key].append(value)
+                    else:
+                        section_dict[key] = value
 
 
 @parser(Specs.haproxy_cfg)
-class HaproxyCfg(Parser):
-    """Class to parse file ``haproxy.cfg``."""
-    def parse_content(self, content):
-        self.data, self.lines = _parse_content(content)
+class HaproxyCfg(HaproxyFile):
+    """
+    Class to parse file ``/var/lib/config-data/puppet-generated/haproxy/etc/haproxy/haproxy.cfg`` or ``haproxy.cfg``.
+    """
+    pass
+
+
+@parser(Specs.haproxy_cfg_scl)
+class HaproxyCfgScl(HaproxyFile):
+    """
+    Class to parse file ``/etc/opt/rh/rh-haproxy18/haproxy/haproxy.cfg``.
+    """
+    pass
