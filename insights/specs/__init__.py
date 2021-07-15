@@ -204,6 +204,7 @@ class Specs(SpecSet):
     hammer_task_list = RegistryPoint()
     satellite_enabled_features = RegistryPoint()
     haproxy_cfg = RegistryPoint()
+    haproxy_cfg_scl = RegistryPoint()
     heat_api_log = RegistryPoint(filterable=True)
     heat_conf = RegistryPoint()
     heat_crontab = RegistryPoint()
