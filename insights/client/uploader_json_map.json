@@ -4377,5 +4377,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': |@' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2021-07-01T12:56:10.617317"
+    "version": "2021-07-08T13:34:47.107154"
 }
