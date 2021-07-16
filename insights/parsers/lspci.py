@@ -57,6 +57,8 @@ class LsPci(CommandParser, LogFileOutput):
         False
         >>> sorted(lspci.pci_dev_list)
         ['00:00.0', '00:01.0', '00:02.0', '03:00.0', '06:00.0']
+        >>> lspci.pci_dev_details('00:00.0')['Slot']
+        '00:00.0'
         >>> lspci.pci_dev_details('00:00.0')['Subsystem']
         'Cisco Systems Inc Device 0101'
         >>> lspci.pci_dev_details('00:00.0')['Dev_Details']
