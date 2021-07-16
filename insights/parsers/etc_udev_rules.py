@@ -9,10 +9,6 @@ The parsers included in this module are:
 
 UdevRules40Redhat - file ``/etc/udev/rules.d/40-redhat.rules``
 --------------------------------------------------------------
-
-UdevRulesOracleASM - file ``/etc/udev/rules.d/*asm*.rules``
------------------------------------------------------------
-
 """
 from insights import parser
 from insights.core import LogFileOutput
@@ -55,39 +51,3 @@ class UdevRules40Redhat(LogFileOutput):
     def __init__(self, *args, **kwargs):
         deprecated(UdevRules40Redhat, "Import UdevRules40Redhat from insights.parsers.udev_rules instread.")
         super(UdevRules40Redhat, self).__init__(*args, **kwargs)
-
-
-@parser(Specs.etc_udev_oracle_asm_rules)
-class UdevRulesOracleASM(LogFileOutput):
-    """
-    Read the content of ``/etc/udev/rules.d/*asm*.rules`` file.
-
-    .. note::
-
-        The syntax of the `.rules` file is complex, and no rules require to
-        get the serialized parsed result currently.  An only existing rule's
-        supposed to check the syntax of some specific lines, so here the
-        :class:`insights.core.LogFileOutput` is the base class.
-
-    Sample input::
-
-        KERNEL=="dm*", PROGRAM=="scsi_id --page=0x83 --whitelisted --device=/dev/%k", \
-        RESULT=="360060e80164c210000014c2100007a8f", \
-        SYMLINK+="oracleasm/disks/asm_sbe80_7a8f", OWNER="oracle", GROUP="dba", MODE="0660"
-
-
-        KERNEL=="dm*", PROGRAM=="scsi_id --page=0x83 --whitelisted --device=/dev/%k", \
-        RESULT=="360060e80164c210000014c2100007a91", \
-        SYMLINK+="oracleasm/disks/asm_sbe80_7a91", OWNER="oracle", GROUP="dba", MODE="0660"
-
-        # NOTE: Insert new Oracle ASM LUN configuration before this comment
-        ACTION=="add|change", KERNEL=="sd*", OPTIONS:="nowatch"
-
-    Examples:
-
-    >>> 'ACTION=="add|change", KERNEL=="sd*", OPTIONS:="nowatch"' in udev_oracle_asm_rules.lines
-    True
-    >>> udev_oracle_asm_rules.get('ACTION')[0]['raw_message']
-    'ACTION=="add|change", KERNEL=="sd*", OPTIONS:="nowatch"'
-    """
-    pass
