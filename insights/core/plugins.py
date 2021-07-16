@@ -28,6 +28,7 @@ from __future__ import print_function
 
 import logging
 import traceback
+import sys
 
 from pprint import pformat
 from six import StringIO
@@ -199,6 +200,53 @@ class combiner(PluginType):
     single, cohesive, higher level interface.
     """
     pass
+
+
+class command():
+    """
+    A decorator to uses on a member function of a PluginType
+    (typically a combiner) to register it as a externally accessible command
+
+    A typical use case is to perform some kind of filtering, comparison or
+    processing on the data stored on a component such as a combiner or parser
+    """
+    def __init__(self, component):
+        self.component = component
+        name = getattr(self.component, "__qualname__", self.component.__name__)
+        qualified = name.rsplit('.')
+        self.class_name = qualified[0] if len(qualified) == 2 else None
+        dr.COMMANDS[name] = self
+
+    def run(self, broker, *args, **kwargs):
+        """
+        Execute the command on the data provided by the broker
+
+        The component which the command is member of is searched on the broker.
+        If it's found, its command is executed with the provided arguments
+        """
+        if not self.class_name:
+            raise Exception("Command {} is not part of a component".format(
+                self.component))
+
+        class_type = getattr(sys.modules[self.component.__module__],
+                             self.class_name, None)
+        if not class_type:
+            raise Exception("Command {} is not part of a component".format(
+                self.component))
+
+        broker = dr.run(class_type, broker)
+        instance = broker.get(class_type)
+        if not instance:
+            raise Exception("Failed to find instance of type {}".format(
+                class_type))
+
+        return self.component.__call__(instance, *args, **kwargs)
+
+    def doc(self):
+        """
+        Return the command's documentation
+        """
+        return self.component.__doc__
 
 
 class remoteresource(PluginType):

@@ -35,7 +35,7 @@ from .core import dr  # noqa: F401
 from .core.context import ClusterArchiveContext, HostContext, HostArchiveContext, SerializedArchiveContext, ExecutionContext  # noqa: F401
 from .core.dr import SkipComponent  # noqa: F401
 from .core.hydration import create_context, initialize_broker  # noqa: F401
-from .core.plugins import combiner, fact, metadata, parser, rule  # noqa: F401
+from .core.plugins import combiner, fact, metadata, parser, rule, command # noqa: F401
 from .core.plugins import datasource, condition, incident  # noqa: F401
 from .core.plugins import make_response, make_metadata, make_fingerprint  # noqa: F401
 from .core.plugins import make_pass, make_fail, make_info  # noqa: F401

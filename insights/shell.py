@@ -258,6 +258,18 @@ class Models(dict):
         dr.run(tasks, broker=self._broker)
         self.show_timings(match, ignore)
 
+    def commands(self):
+        """ Prints the available commands and their documentation
+        """
+        for cmd, component in dr.COMMANDS.items():
+            print("{}: ".format(cmd))
+            print(component.doc())
+
+    def run_command(self, name, *args, **kwargs):
+        """ Run a command
+        """
+        return dr.run_command(name, self._broker, *args, **kwargs)
+
     def evaluate(self, name):
         """
         Evaluate a component and return its result. Prints diagnostic

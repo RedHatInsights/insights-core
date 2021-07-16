@@ -79,6 +79,7 @@ COMPONENTS_BY_TYPE = defaultdict(set)
 DEPENDENCIES = defaultdict(set)
 DEPENDENTS = defaultdict(set)
 COMPONENTS = defaultdict(lambda: defaultdict(set))
+COMMANDS = defaultdict()
 
 DELEGATES = {}
 HIDDEN = set()
@@ -1023,3 +1024,13 @@ def run_all(components=None, broker=None, pool=None):
         return [f.result() for f in futures]
     else:
         return list(run_incremental(components=components, broker=broker))
+
+
+def run_command(name, broker, *args, **kwargs):
+    """ Run a command on the results stored on a broker
+    """
+    cmd = COMMANDS.get(name)
+    if not cmd:
+        raise Exception("%s is not a registered command" % name)
+
+    return cmd.run(broker, *args, **kwargs)
