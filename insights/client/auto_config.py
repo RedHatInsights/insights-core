@@ -247,10 +247,11 @@ def try_auto_configuration(config):
     if config.auto_config and not config.offline:
         if not _try_satellite6_configuration(config):
             _try_satellite5_configuration(config)
-    if not config.legacy_upload and not re.match(r'(\w+\.)?cloud\.(\w+\.)?redhat\.com\/api', config.base_url):
+    if not config.legacy_upload and re.match(r'(.+)?\/r\/insights', config.base_url):
         # When to append /platform
         #   base url ~= cloud.redhat.com/r/insights
         #   base url ~= cert-api.access.redhat.com/r/insights
+        #   base url ~= satellite.host.example.com/redhat_access/r/insights
         # When not to append /platform
         #   base url ~= cloud.redhat.com/api
         config.base_url = config.base_url + '/platform'
