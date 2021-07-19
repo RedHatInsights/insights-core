@@ -37,7 +37,7 @@ from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersio
 from insights.parsers.mount import Mount
 from insights.specs import Specs
 from insights.specs.datasources import (
-    cloud_init, candlepin_broker, ethernet, get_running_commands, ipcs, package_provides,
+    awx_manage, cloud_init, candlepin_broker, ethernet, get_running_commands, ipcs, package_provides,
     ps as ps_datasource, sap, satellite_missed_queues)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 
@@ -94,6 +94,7 @@ class DefaultSpecs(Specs):
     aws_instance_id_doc = simple_command("/usr/bin/curl -s http://169.254.169.254/latest/dynamic/instance-identity/document --connect-timeout 5", deps=[IsAWS])
     aws_instance_id_pkcs7 = simple_command("/usr/bin/curl -s http://169.254.169.254/latest/dynamic/instance-identity/pkcs7 --connect-timeout 5", deps=[IsAWS])
     awx_manage_check_license = simple_command("/usr/bin/awx-manage check_license")
+    awx_manage_check_license_data = awx_manage.awx_manage_check_license_data_datasource
     azure_instance_type = simple_command("/usr/bin/curl -s -H Metadata:true http://169.254.169.254/metadata/instance/compute/vmSize?api-version=2018-10-01&format=text --connect-timeout 5", deps=[IsAzure])
     azure_instance_plan = simple_command("/usr/bin/curl -s -H Metadata:true http://169.254.169.254/metadata/instance/compute/plan?api-version=2018-10-01&format=json --connect-timeout 5", deps=[IsAzure])
     bios_uuid = simple_command("/usr/sbin/dmidecode -s system-uuid")
