@@ -100,7 +100,7 @@ class EvaluatorFormatterAdapter(FormatterAdapter):
             args.plugins = ",".join([args.plugins, hn]) if args.plugins else hn
             self.missing = args.missing
             fail_only = args.fail_only
-            if args.missing and args.fail_only:
+            if args.missing and fail_only:
                 # Drops the '-F' silently when specifying '-m' and '-F' together
                 # --> Do NOT break the Format of the output
                 fail_only = None
