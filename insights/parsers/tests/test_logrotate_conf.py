@@ -161,3 +161,5 @@ def test_logrotate_conf_4():
     log_rt = LogrotateConf(context_wrap(LOGROTATE_CONF_4, path='/etc/logrotate.d/abc'))
     assert '/var/log/news/olds.crit' in log_rt.log_files
     assert 'mv -f $E /var/log/actlog/sysinfo/${E_backup}' in log_rt['/var/log/news/olds.crit']['prerotate']
+    assert '} >>${ACTLOG_RLOG} 2>&1' in log_rt['/var/log/news/olds.crit']['prerotate']
+    assert len(log_rt['/var/log/news/olds.crit']['prerotate']) == 12
