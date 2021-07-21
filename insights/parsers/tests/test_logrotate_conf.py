@@ -97,6 +97,31 @@ compress
 """.strip()
 
 
+LOGROTATE_CONF_4 = """
+/var/log/news/olds.crit  {
+    monthly
+    rotate 2
+    olddir /var/log/news/old
+    missingok
+    prerotate
+        export LANG=C
+        ACTLOG_RLOG=/var/log/actlog/selfinfo/postrotate
+        {
+                E=/var/log/actlog.exports/eventlog.1
+                C=/var/log/actlog.exports/cpuload.1
+                if [ -e ${C}.gz -a -e $E ] ; then
+                        E_backup=eventlog.1-`date -r $E +%F.%H%M%S`
+                        echo "WARNING: Both ${C}.gz and $E exist ; move eventlog.1 to sysinfo/${E_backup}"
+                        mv -f $E /var/log/actlog/sysinfo/${E_backup}
+                fi
+        } >>${ACTLOG_RLOG} 2>&1
+        exit 0
+  endscript
+    nocompress
+}
+""".strip()
+
+
 def test_web_xml_doc_examples():
     env = {
             'log_rt': LogrotateConf(context_wrap(LOGROTATE_MAN_PAGE_DOC, path='/etc/logrotate.conf')),
@@ -130,3 +155,11 @@ def test_logrotate_conf_3():
     assert log_rt['/var/log/cron']['sharedscripts'] is True
     assert log_rt['/var/log/messages']['postrotate'] == [
             '/bin/kill -HUP `cat /var/run/syslogd.pid 2> /dev/null` 2> /dev/null || true']
+
+
+def test_logrotate_conf_4():
+    log_rt = LogrotateConf(context_wrap(LOGROTATE_CONF_4, path='/etc/logrotate.d/abc'))
+    assert '/var/log/news/olds.crit' in log_rt.log_files
+    assert 'mv -f $E /var/log/actlog/sysinfo/${E_backup}' in log_rt['/var/log/news/olds.crit']['prerotate']
+    assert '} >>${ACTLOG_RLOG} 2>&1' in log_rt['/var/log/news/olds.crit']['prerotate']
+    assert len(log_rt['/var/log/news/olds.crit']['prerotate']) == 12
