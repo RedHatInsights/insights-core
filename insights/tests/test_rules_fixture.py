@@ -36,6 +36,6 @@ def test_rules_fixture(run_rule):
     assert results == expected
 
     input_data = InputData('test_ret_none')
-    results = run_rule(rules_fixture_plugin.report, input_data)
+    results = run_rule(rules_fixture_plugin.report, input_data, return_make_none=True)
     expected = make_none()
     assert results == expected
