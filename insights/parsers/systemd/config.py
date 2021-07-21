@@ -16,6 +16,9 @@ SystemdLogindConf - file ``/etc/systemd/logind.conf``
 SystemdRpcbindSocketConf - unit file ``rpcbind.socket``
 -------------------------------------------------------
 
+SystemdDnsmasqConf - unit file ``dnsmasq.service``
+--------------------------------------------------
+
 SystemdOpenshiftNode - file ``/usr/lib/systemd/system/atomic-openshift-node.service``
 -------------------------------------------------------------------------------------
 
@@ -204,6 +207,30 @@ class SystemdRpcbindSocketConf(SystemdConf):
     Example:
         >>> rpcbind_socket["Socket"]["ListenStream"]
         ['/run/rpcbind.sock', '0.0.0.0:111', '[::]:111']
+    """
+    pass
+
+
+@parser(Specs.systemctl_cat_dnsmasq_service)
+class SystemdDnsmasqServiceConf(SystemdConf):
+    """
+    Class for systemd configuration for dnsmasq.service unit.
+
+    Typical content of the ``dnsmasq.service`` unit file is::
+
+        [Unit]
+        Description=DNS caching server.
+        After=network.target
+
+        [Service]
+        ExecStart=/usr/sbin/dnsmasq -k
+
+        [Install]
+        WantedBy=multi-user.target
+
+    Example:
+        >>> dnsmasq_service["Unit"]["After"]
+        'network.target'
     """
     pass
 
