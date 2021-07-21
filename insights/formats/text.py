@@ -97,7 +97,7 @@ class HumanReadableFormat(Formatter):
         self.none = none
         self.tracebacks = tracebacks
         self.dropped = dropped
-        self.show_rules = show_rules
+        self.show_rules = [] if show_rules is None else show_rules
 
     def print_header(self, header, color):
         ln = len(header)
