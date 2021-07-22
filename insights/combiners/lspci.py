@@ -115,8 +115,10 @@ class LsPci(list):
     def __init__(self, lspci_k, lspci_vmmkn):
         if lspci_vmmkn:
             for dev in lspci_vmmkn:
+                # use the local copy to prevent from writing back to the parser
                 dev = dev.copy()
                 if lspci_k and dev['Slot'] in lspci_k:
+                    # use the local copy to prevent from writing back to the parser
                     dev_k = lspci_k.data[dev['Slot']].copy()
                     dev_k.pop('Kernel driver in use') if 'Kernel driver in use' in dev_k else None
                     dev_k.pop('Kernel modules') if 'Kernel modules' in dev_k else None
@@ -125,6 +127,7 @@ class LsPci(list):
             self._pci_dev_list = lspci_vmmkn.pci_dev_list
         else:
             for dev in lspci_k.data.values():
+                # use the local copy to prevent from writing back to the parser
                 dev = dev.copy()
                 dev.update(Driver=dev.pop('Kernel driver in use')) if 'Kernel driver in use' in dev else None
                 dev.update(Module=[i.strip() for i in dev.pop('Kernel modules').split(',')]) if 'Kernel modules' in dev else None
