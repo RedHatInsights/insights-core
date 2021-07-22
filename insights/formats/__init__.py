@@ -53,6 +53,7 @@ class FormatterAdapter(six.with_metaclass(FormatterAdapterMeta)):
         Called after all components have been run. Useful for interrogating
         the broker for final state.
         """
+        pass
 
 
 class Formatter(object):
@@ -84,19 +85,33 @@ class EvaluatorFormatterAdapter(FormatterAdapter):
 
     @staticmethod
     def configure(p):
-        """ Override to add arguments to the ArgumentParser. """
-        p.add_argument("-F", "--fail-only", help="Show FAIL results only. Conflict with '-m' or '-f', will be dropped when using them together", action="store_true")
+        p.add_argument("-m", "--missing", help="Show missing requirements.", action="store_true")
+        p.add_argument("-S", "--show-rules", nargs="+",
+                       choices=["fail", "info", "pass", "metadata", "fingerprint"],
+                       metavar="TYPE",
+                       help="Show results per rule type(s).")
+        p.add_argument("-F", "--fail-only",
+                       help="Show FAIL results only. Conflict with '-m', will be dropped when using them together. This option is deprecated by '-S fail'",
+                       action="store_true")
 
     def __init__(self, args=None):
         if args:
             hn = "insights.combiners.hostname, insights.parsers.branch_info"
             args.plugins = ",".join([args.plugins, hn]) if args.plugins else hn
-            if args.fail_only:
-                print('Options conflict: -f and -F, drops -F', file=sys.stderr)
-                args.fail_only = False
+            self.missing = args.missing
+            fail_only = args.fail_only
+            if args.missing and fail_only:
+                # Drops the '-F' silently when specifying '-m' and '-F' together
+                # --> Do NOT break the Format of the output
+                fail_only = None
+            self.show_rules = []  # Empty by default, means show ALL types
+            if not args.show_rules and fail_only:
+                self.show_rules = ['rule']
+            elif args.show_rules:
+                self.show_rules = [opt.replace('fail', 'rule') for opt in args.show_rules]
 
     def preprocess(self, broker):
-        self.formatter = self.Impl(broker)
+        self.formatter = self.Impl(broker, self.missing, self.show_rules)
         self.formatter.preprocess()
 
     def postprocess(self, broker):
@@ -155,3 +170,22 @@ def render(comp, val):
     _type = dr.get_component_type(comp)
     func = RENDERERS.get(_type)
     return func(comp, val) if func else str(val)
+
+
+def get_response_of_types(response, missing=True, show_rules=None):
+    if not missing and 'skips' in response:
+        response.pop('skips')
+    if not show_rules:
+        return response
+    if 'metadata' not in show_rules and 'metadata' in response.get('system', {}):
+        response['system'].pop('metadata')
+    if 'rule' not in show_rules and 'reports' in response:
+        response.pop('reports')
+    if 'info' not in show_rules and 'info' in response:
+        response.pop('info')
+    if 'pass' not in show_rules and 'pass' in response:
+        response.pop('pass')
+    if 'fingerprint' not in show_rules and 'fingerprints' in response:
+        response.pop('fingerprints')
+
+    return response
