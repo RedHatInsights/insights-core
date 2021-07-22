@@ -633,6 +633,7 @@ class Specs(SpecSet):
     sysctl_conf_initramfs = RegistryPoint(multi_output=True)
     sysctl_conf = RegistryPoint()
     sysctl = RegistryPoint()
+    systemctl_cat_dnsmasq_service = RegistryPoint()
     systemctl_cat_rpcbind_socket = RegistryPoint()
     systemctl_cinder_volume = RegistryPoint()
     systemctl_httpd = RegistryPoint()
