@@ -80,14 +80,14 @@ class LsPci(CommandParser, LogFileOutput):
         # Parse kernel driver lines
         self.data = {}
         slot = None
-        solt_re = re.compile(r'^[0-9a-f]+:[0-9a-f]+.[0-9a-f]+')
+        slot_re = re.compile(r'^[0-9a-f]+:[0-9a-f]+.[0-9a-f]+')
 
         fields = ["Subsystem", "Kernel driver in use", "Kernel modules"]
 
         for line in get_active_lines(content):
             parts = line.split()
 
-            if solt_re.match(parts[0]):
+            if slot_re.match(parts[0]):
                 slot = parts[0]
                 device_details = line.split(None, 1)[-1]  # keep the raw line
                 self.data[slot] = {
