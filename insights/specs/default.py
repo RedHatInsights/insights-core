@@ -723,6 +723,7 @@ class DefaultSpecs(Specs):
     sysconfig_virt_who = simple_file("/etc/sysconfig/virt-who")
     sysctl = simple_command("/sbin/sysctl -a")
     sysctl_conf = simple_file("/etc/sysctl.conf")
+    systemctl_cat_dnsmasq_service = simple_command("/bin/systemctl cat dnsmasq.service")
     systemctl_cat_rpcbind_socket = simple_command("/bin/systemctl cat rpcbind.socket")
     systemctl_cinder_volume = simple_command("/bin/systemctl show openstack-cinder-volume")
     systemctl_httpd = simple_command("/bin/systemctl show httpd")
