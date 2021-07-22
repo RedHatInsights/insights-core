@@ -137,6 +137,18 @@ ListenDatagram=[::]:111
 WantedBy=sockets.target
 """.strip()
 
+SYSTEMD_DNSMASQ_SERVICE = """
+[Unit]
+Description=DNS caching server.
+After=network.target
+
+[Service]
+ExecStart=/usr/sbin/dnsmasq -k
+
+[Install]
+WantedBy=multi-user.target
+""".strip()
+
 SYSTEMD_SYSTEM_CONF = """
 #  This file is part of systemd.
 #
@@ -258,6 +270,11 @@ def test_systemd_rpcbind_socket_conf():
     assert rpcbind_socket["Socket"]["ListenDatagram"] == ['0.0.0.0:111', '[::]:111']
 
 
+def test_systemd_dnsmasq_conf():
+    dnsmasq_service_conf = config.SystemdDnsmasqServiceConf(context_wrap(SYSTEMD_DNSMASQ_SERVICE))
+    assert dnsmasq_service_conf["Unit"]["After"] == "network.target"
+
+
 def test_systemd_empty():
     with pytest.raises(SkipException):
         assert config.SystemdLogindConf(context_wrap('')) is None
@@ -270,7 +287,8 @@ def test_doc_examples():
             'system_origin_accounting': config.SystemdOriginAccounting(context_wrap(SYSTEMD_SYSTEM_ORIGIN_ACCOUNTING)),
             'openshift_node_service': config.SystemdOpenshiftNode(context_wrap(SYSTEMD_OPENSHIFT_NODE)),
             'logind_conf': config.SystemdLogindConf(context_wrap(SYSTEMD_LOGIND_CONF)),
-            'rpcbind_socket': config.SystemdRpcbindSocketConf(context_wrap(SYSTEMD_RPCBIND_SOCKET))
+            'rpcbind_socket': config.SystemdRpcbindSocketConf(context_wrap(SYSTEMD_RPCBIND_SOCKET)),
+            'dnsmasq_service': config.SystemdDnsmasqServiceConf(context_wrap(SYSTEMD_DNSMASQ_SERVICE))
           }
     failed, total = doctest.testmod(config, globs=env)
     assert failed == 0
