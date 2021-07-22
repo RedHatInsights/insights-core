@@ -1535,6 +1535,11 @@
             "symbolic_name": "sysctl"
         },
         {
+            "command": "/bin/systemctl cat dnsmasq.service",
+            "pattern": [],
+            "symbolic_name": "systemctl_cat_dnsmasq_service"
+        },
+        {
             "command": "/bin/systemctl cat rpcbind.socket",
             "pattern": [],
             "symbolic_name": "systemctl_cat_rpcbind_socket"
@@ -2303,6 +2308,11 @@
             "symbolic_name": "haproxy_cfg"
         },
         {
+            "file": "/etc/opt/rh/rh-haproxy18/haproxy/haproxy.cfg",
+            "pattern": [],
+            "symbolic_name": "haproxy_cfg_scl"
+        },
+        {
             "file": "/etc/heat/heat.conf",
             "pattern": [],
             "symbolic_name": "heat_conf"
@@ -2343,7 +2353,6 @@
             "pattern": [
                 "(28)No space left on device: ",
                 "AH00485: scoreboard is full, not at MaxRequestWorkers",
-                "ModSecurity: collections_remove_stale: Failed deleting collection",
                 "The mpm module (prefork.c) is not supported by mod_http2",
                 "[crit] Memory allocation failed, aborting process",
                 "and would exceed the ServerLimit value of ",
@@ -4377,5 +4386,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': |@' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2021-07-08T13:34:47.107154"
+    "version": "2021-07-15T11:42:35.950625"
 }
