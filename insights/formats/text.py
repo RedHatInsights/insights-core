@@ -89,13 +89,14 @@ class HumanReadableFormat(Formatter):
             missing=False,
             tracebacks=False,
             dropped=False,
-            show_rules=None,
+            fail_only=False,
             stream=sys.stdout):
-        super(HumanReadableFormat, self).__init__(broker, stream=stream)
+        self.broker = broker
         self.missing = missing
         self.tracebacks = tracebacks
         self.dropped = dropped
-        self.show_rules = [] if show_rules is None else show_rules
+        self.fail_only = fail_only
+        self.stream = stream
 
     def print_header(self, header, color):
         ln = len(header)
@@ -185,8 +186,9 @@ class HumanReadableFormat(Formatter):
             _type = v.get('type')
             if _type in self.responses:
                 self.counts[_type] += 1
-            if (self.missing and _type == 'skip' or
-                    (self.show_rules == [] or _type in self.show_rules)):
+            if (_type and ((self.fail_only and _type == 'rule') or
+                           ((self.missing and _type == 'skip') or
+                            (not self.fail_only and _type != 'skip')))):
                 printit(c, v)
         print(file=self.stream)
 
@@ -211,34 +213,24 @@ class HumanReadableFormatAdapter(FormatterAdapter):
 
     @staticmethod
     def configure(p):
+        p.add_argument("-m", "--missing", help="Show missing requirements.", action="store_true")
         p.add_argument("-t", "--tracebacks", help="Show stack traces.", action="store_true")
         p.add_argument("-d", "--dropped", help="Show collected files that weren't processed.", action="store_true")
-        p.add_argument("-m", "--missing", help="Show missing requirements.", action="store_true")
-        p.add_argument("-S", "--show-rules", default=[], nargs="+",
-                       choices=["fail", "info", "pass", "metadata", "fingerprint"],
-                       metavar="TYPE",
-                       help="Show results per rule type(s).")
-        p.add_argument("-F", "--fail-only",
-                       help="Show FAIL results only. Conflict with '-m', will be dropped when using them together. This option is deprecated by '-S fail'",
-                       action="store_true")
+        p.add_argument("-F", "--fail-only", help="Show FAIL results only. Conflict with '-m' or '-f', will be dropped when using them together", action="store_true")
 
-    def __init__(self, args=None):
+    def __init__(self, args):
         self.missing = args.missing
-        fail_only = args.fail_only
-        if args.missing and fail_only:
-            print(Fore.YELLOW + 'Options conflict: -m and -F, drops -F', file=sys.stderr)
-            fail_only = None
-        self.show_rules = []  # Empty by default, means show ALL types
-        if not args.show_rules and fail_only:
-            self.show_rules = ['rule']
-        elif args.show_rules:
-            self.show_rules = [opt.replace('fail', 'rule') for opt in args.show_rules]
         self.tracebacks = args.tracebacks
         self.dropped = args.dropped
+        self.fail_only = args.fail_only
+        self.formatter = None
+        if self.missing and self.fail_only:
+            print(Fore.YELLOW + 'Options conflict: -m and -F, drops -F', file=sys.stderr)
+            self.fail_only = False
 
     def preprocess(self, broker):
         self.formatter = HumanReadableFormat(broker,
-                self.missing, self.tracebacks, self.dropped, self.show_rules)
+                self.missing, self.tracebacks, self.dropped, self.fail_only)
         self.formatter.preprocess()
 
     def postprocess(self, broker):
