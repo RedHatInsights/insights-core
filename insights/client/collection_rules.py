@@ -129,7 +129,6 @@ class InsightsUploadConf(object):
                     self.collection_rules_url = conn.base_url + '/v1/static/uploader.v2.json'
                 else:
                     self.collection_rules_url = conn.base_url.split('/platform')[0] + '/v1/static/uploader.v2.json'
-                    # self.collection_rules_url = conn.base_url + '/static/uploader.v2.json'
             self.conn = conn
 
     def validate_gpg_sig(self, path, sig=None):
@@ -263,23 +262,21 @@ class InsightsUploadConf(object):
             logger.debug("trying to read conf from: " + conf_file)
             conf = self.try_disk(conf_file, self.gpg)
 
-            if not conf:
-                continue
+            if conf:
+                version = conf.get('version', None)
+                if version is None:
+                    raise ValueError("ERROR: Could not find version in json")
 
-            version = conf.get('version', None)
-            if version is None:
-                raise ValueError("ERROR: Could not find version in json")
-
-            conf['file'] = conf_file
-            logger.debug("Success reading config")
-            logger.debug(json.dumps(conf))
-            return conf
+                conf['file'] = conf_file
+                logger.debug("Success reading config")
+                logger.debug(json.dumps(conf))
+                return conf
 
         raise RuntimeError("ERROR: Unable to download conf or read it from disk!")
 
     def get_conf_update(self):
         """
-        Get updated config from URL, fallback to local file if download fails.
+        Get updated config from URL.
         """
         dyn_conf = self.get_collection_rules()
 
@@ -405,14 +402,14 @@ class InsightsUploadConf(object):
             #   try to use remove.conf
             self.rm_conf = self.get_rm_conf_old()
             if self.config.core_collect:
-                self.rm_conf = map_rm_conf_to_components(self.rm_conf)
+                self.rm_conf = map_rm_conf_to_components(self.rm_conf, self.get_conf_file())
             return self.rm_conf
 
         # remove Nones, empty strings, and empty lists
         filtered_rm_conf = dict((k, v) for k, v in rm_conf.items() if v)
         self.rm_conf = filtered_rm_conf
         if self.config.core_collect:
-            self.rm_conf = map_rm_conf_to_components(self.rm_conf)
+            self.rm_conf = map_rm_conf_to_components(self.rm_conf, self.get_conf_file())
         return self.rm_conf
 
     def get_tags_conf(self):

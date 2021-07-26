@@ -4,6 +4,8 @@ import json
 
 # from insights.client.config import InsightsConfig
 from insights.client.collection_rules import InsightsUploadConf
+from insights.client.connection import InsightsConnection
+from insights.client.config import InsightsConfig
 from mock.mock import patch, Mock
 from insights.specs.default import DefaultSpecs
 from insights.specs.sos_archive import SosSpecs
@@ -11,8 +13,9 @@ from insights.client.map_components import (map_rm_conf_to_components,
                                             _search_uploader_json,
                                             _get_component_by_symbolic_name)
 
-uploader_json_file = pkgutil.get_data(insights.__name__, "client/uploader_json_map.json")
-uploader_json = json.loads(uploader_json_file)
+config = InsightsConfig()
+conn = InsightsConnection(config)
+uploader_json = InsightsUploadConf(config, conn).get_conf_update()
 default_specs = vars(DefaultSpecs).keys()
 sos_specs = vars(SosSpecs).keys()
 
@@ -137,21 +140,21 @@ def test_search_uploader_json():
     will return a symbolic name
     '''
     for cmd in uploader_json['commands']:
-        assert _search_uploader_json(['commands'], cmd['command'])
-        assert _search_uploader_json(['commands'], cmd['symbolic_name'])
+        assert _search_uploader_json(uploader_json, ['commands'], cmd['command'])
+        assert _search_uploader_json(uploader_json, ['commands'], cmd['symbolic_name'])
     for fil in uploader_json['files']:
-        assert _search_uploader_json(['files', 'globs'], fil['file'])
-        assert _search_uploader_json(['files', 'globs'], fil['symbolic_name'])
+        assert _search_uploader_json(uploader_json, ['files', 'globs'], fil['file'])
+        assert _search_uploader_json(uploader_json, ['files', 'globs'], fil['symbolic_name'])
     for glb in uploader_json['globs']:
-        assert _search_uploader_json(['files', 'globs'], glb['symbolic_name'])
+        assert _search_uploader_json(uploader_json, ['files', 'globs'], glb['symbolic_name'])
 
 
 def test_search_uploader_json_invalid():
     '''
     Verify that invalid input will return None
     '''
-    assert _search_uploader_json(['commands'], 'random value') is None
-    assert _search_uploader_json(['files', 'globs'], 'random value') is None
+    assert _search_uploader_json(uploader_json, ['commands'], 'random value') is None
+    assert _search_uploader_json(uploader_json, ['files', 'globs'], 'random value') is None
 
 
 def test_search_uploader_json_globs_symbolic_only():
@@ -159,7 +162,7 @@ def test_search_uploader_json_globs_symbolic_only():
     Verify that globs are matched by symbolic name only
     '''
     for glb in uploader_json['globs']:
-        assert _search_uploader_json(['files', 'globs'], glb['glob']) is None
+        assert _search_uploader_json(uploader_json, ['files', 'globs'], glb['glob']) is None
 
 
 def test_map_rm_conf_to_components_sym_names():
@@ -174,7 +177,7 @@ def test_map_rm_conf_to_components_sym_names():
         rm_conf = {'commands': [sym_name]}
         # figure out the destination name should be
         spec_name = _get_component_by_symbolic_name(sym_name)
-        new_rm_conf = map_rm_conf_to_components(rm_conf)
+        new_rm_conf = map_rm_conf_to_components(rm_conf, uploader_json)
         # commands should be empty, components should have 1 item
         assert len(new_rm_conf['commands']) == 0
         assert len(new_rm_conf['components']) == 1
@@ -187,7 +190,7 @@ def test_map_rm_conf_to_components_sym_names():
         rm_conf = {'files': [sym_name]}
         # figure out the destination name should be
         spec_name = _get_component_by_symbolic_name(sym_name)
-        new_rm_conf = map_rm_conf_to_components(rm_conf)
+        new_rm_conf = map_rm_conf_to_components(rm_conf, uploader_json)
         # files should be empty, components should have 1 item
         # except for these which cannot be mapped to specs.
         # in which case, components empty and these remain in files
@@ -209,7 +212,7 @@ def test_map_rm_conf_to_components_sym_names():
         rm_conf = {'files': [sym_name]}
         # figure out the destination name should be
         spec_name = _get_component_by_symbolic_name(sym_name)
-        new_rm_conf = map_rm_conf_to_components(rm_conf)
+        new_rm_conf = map_rm_conf_to_components(rm_conf, uploader_json)
         # files should be empty, components should have 1 item
         assert len(new_rm_conf['files']) == 0
         assert len(new_rm_conf['components']) == 1
@@ -228,7 +231,7 @@ def test_map_rm_conf_to_components_raw_cmds_files():
         sym_name = cmd['symbolic_name']
         # figure out the destination name should be
         spec_name = _get_component_by_symbolic_name(sym_name)
-        new_rm_conf = map_rm_conf_to_components(rm_conf)
+        new_rm_conf = map_rm_conf_to_components(rm_conf, uploader_json)
         # commands should be empty, components should have 1 item
         assert len(new_rm_conf['commands']) == 0
         assert len(new_rm_conf['components']) == 1
@@ -241,7 +244,7 @@ def test_map_rm_conf_to_components_raw_cmds_files():
         sym_name = fil['symbolic_name']
         # figure out the destination name should be
         spec_name = _get_component_by_symbolic_name(sym_name)
-        new_rm_conf = map_rm_conf_to_components(rm_conf)
+        new_rm_conf = map_rm_conf_to_components(rm_conf, uploader_json)
         # files should be empty, components should have 1 item
         # except for these which cannot be mapped to specs.
         # in which case, components empty and these remain in files
@@ -262,7 +265,7 @@ def test_map_rm_conf_to_components_invalid():
     Verify that matching commands/files are mapped to components
     '''
     rm_conf = {'commands': ['random', 'value'], 'files': ['other', 'invalid', 'data']}
-    new_rm_conf = map_rm_conf_to_components(rm_conf)
+    new_rm_conf = map_rm_conf_to_components(rm_conf, uploader_json)
     # rm_conf should be unchanged
     assert len(new_rm_conf['commands']) == 2
     assert len(new_rm_conf['files']) == 3
@@ -278,12 +281,12 @@ def test_rm_conf_empty(_search_uploader_json):
     with an empty dict or None
     '''
     rm_conf = {}
-    new_rm_conf = map_rm_conf_to_components(rm_conf)
+    new_rm_conf = map_rm_conf_to_components(rm_conf, uploader_json)
     _search_uploader_json.assert_not_called()
     assert new_rm_conf == {}
 
     rm_conf = None
-    new_rm_conf = map_rm_conf_to_components(rm_conf)
+    new_rm_conf = map_rm_conf_to_components(rm_conf, uploader_json)
     _search_uploader_json.assert_not_called()
     assert new_rm_conf is None
 
@@ -299,7 +302,7 @@ def test_log_long_key(logger_warning):
                'files': ["/etc/sysconfig/virt-who",
                          "/etc/yum.repos.d/fedora-cisco-openh264.repo",
                          "krb5_conf_d"]}
-    map_rm_conf_to_components(rm_conf)
+    map_rm_conf_to_components(rm_conf, uploader_json)
     logger_warning.assert_any_call("- /usr/bin/find /etc/origin/node                   => certificates_enddate\n  /etc/origin/master /etc/pki /etc/ipa -type f\n  -exec /usr/bin/openssl x509 -noout -enddate -in\n  '{}' \\; -exec echo 'FileName= {}' \\;")
     logger_warning.assert_any_call("- /usr/bin/md5sum /etc/pki/product/69.pem          => md5chk_files")
     logger_warning.assert_any_call("- /etc/sysconfig/virt-who                          => sysconfig_virt_who")
@@ -313,7 +316,7 @@ def test_log_short_key(logger_warning):
     is short
     '''
     rm_conf = {'commands': ["ss_tupna"]}
-    map_rm_conf_to_components(rm_conf)
+    map_rm_conf_to_components(rm_conf, uploader_json)
     logger_warning.assert_any_call("If possible, commands and files specified in the blacklist configuration will be converted to Insights component specs that will be disabled as needed.")
 
 
@@ -325,7 +328,7 @@ def test_components_added():
     '''
     rm_conf = {'commands': ["/usr/bin/md5sum /etc/pki/product/69.pem"],
                'components': ["insights.specs.default.DefaultSpecs.sysconfig_virt_who"]}
-    results = map_rm_conf_to_components(rm_conf)
+    results = map_rm_conf_to_components(rm_conf, uploader_json)
 
     assert results == {'commands': [],
                        'files': [],
