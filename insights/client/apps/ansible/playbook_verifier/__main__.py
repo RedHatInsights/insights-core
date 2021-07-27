@@ -17,6 +17,7 @@ def read_playbook():
 
 playbook = read_playbook()
 playbook_yaml = loadPlaybookYaml(playbook)
+skipVerify = False
 
 if (os.environ.get('SKIP_VERIFY')):
     skipVerify = True
