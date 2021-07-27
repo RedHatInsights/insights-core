@@ -1,4 +1,5 @@
 from insights.parsers.teamdctl_state_dump import TeamdctlStateDump
+from insights.parsers.tests import test_empty_skip
 from insights.tests import context_wrap
 
 TEAMDCTL_STATE_DUMP_INFO = """
@@ -110,3 +111,7 @@ def test_teamdctl_state_dump_none():
     assert result['setup']['runner_name'] == 'activebackup'
     assert result.runner_type == 'activebackup'
     assert result.team_ifname is None
+
+
+def test_teamdctl_state_dump_empty():
+    assert 'Empty output.' in test_empty_skip(TeamdctlStateDump)

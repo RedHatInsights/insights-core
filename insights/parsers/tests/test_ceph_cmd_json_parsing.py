@@ -1,8 +1,10 @@
 import doctest
 import pytest
-from insights.parsers import ceph_cmd_json_parsing, ParseException, SkipException
+
+from insights.parsers import ceph_cmd_json_parsing, ParseException
 from insights.parsers.ceph_cmd_json_parsing import CephOsdDump, CephOsdDf, CephS, CephECProfileGet, CephCfgInfo, \
     CephHealthDetail, CephDfDetail, CephOsdTree, CephReport
+from insights.parsers.tests import test_empty_skip
 from insights.tests import context_wrap
 
 CEPH_OSD_DUMP_INFO = """
@@ -163,7 +165,7 @@ CEPHINFO = """
 {
     "name": "osd.1",
     "cluster": "ceph",
-    "debug_none": "0\/5",
+    "debug_none": "0/5",
     "heartbeat_interval": "5",
     "heartbeat_file": "",
     "heartbeat_inject_failure": "0",
@@ -493,8 +495,6 @@ CEPH_REPORT_INVALID = """
 }
 """.strip()
 
-CEPH_REPORT_EMPTY = """""".strip()
-
 
 def test_ceph_doc_examples():
     env = {
@@ -534,6 +534,9 @@ class TestCephOsdDump():
         }
         assert result['pools'][0]['min_size'] == 2
 
+    def test_ceph_osd_dump_empty(self):
+        assert 'Empty output.' in test_empty_skip(CephOsdDump)
+
 
 class TestCephOsdDf():
     def test_ceph_osd_df(self):
@@ -570,6 +573,9 @@ class TestCephOsdDf():
         }
         assert result['nodes'][0]['pgs'] == 945
 
+    def test_ceph_os_df_empty(self):
+        assert 'Empty output.' in test_empty_skip(CephOsdDf)
+
 
 class TestCephS():
     def test_ceph_s(self):
@@ -600,6 +606,9 @@ class TestCephS():
         }
         assert result['pgmap']['pgs_by_state'][0]['state_name'] == 'active+clean'
 
+    def test_ceph_s_empty(self):
+        assert 'Empty output.' in test_empty_skip(CephS)
+
 
 class TestCephECProfileGet():
     def test_ceph_ec_profile_get(self):
@@ -614,9 +623,12 @@ class TestCephECProfileGet():
         assert result['k'] == "2"
         assert result['m'] == "1"
 
+    def test_ceph_ec_profile_get_empty(self):
+        assert 'Empty output.' in test_empty_skip(CephECProfileGet)
+
 
 class TestCephCfgInfo():
-    def test_cephcfginfo(self):
+    def test_ceph_cfg_info(self):
         result = CephCfgInfo(context_wrap(CEPHINFO))
 
         assert result.data == {
@@ -637,6 +649,9 @@ class TestCephCfgInfo():
 
         assert result.max_open_files == '131072'
 
+    def test_ceph_cfg_info_empty(self):
+        assert 'Empty output.' in test_empty_skip(CephCfgInfo)
+
 
 class TestCephHealthDetail():
     def test_ceph_health_detail(self):
@@ -655,6 +670,9 @@ class TestCephHealthDetail():
             "detail": []
         }
         assert result['overall_status'] == 'HEALTH_OK'
+
+    def test_ceph_health_detail_empty(self):
+        assert 'Empty output.' in test_empty_skip(CephHealthDetail)
 
 
 class TestCephDfDetail():
@@ -704,6 +722,9 @@ class TestCephDfDetail():
             ]
         }
         assert result['stats']['total_avail_bytes'] == 16910123008
+
+    def test_ceph_df_detail_empty(self):
+        assert 'Empty output.' in test_empty_skip(CephDfDetail)
 
 
 class TestCephOsdTree():
@@ -836,6 +857,9 @@ class TestCephOsdTree():
 
         assert len(result['nodes'][0]['children']) == 4
 
+    def test_ceph_osd_tree_empty(self):
+        assert 'Empty output.' in test_empty_skip(CephOsdTree)
+
 
 class TestCephReport():
     def test_ceph_report(self):
@@ -852,7 +876,5 @@ class TestCephReport():
             CephReport(context_wrap(CEPH_REPORT_INVALID_JSON))
         assert "Could not parse json." in str(e)
 
-    def test_invalid_empty(self):
-        with pytest.raises(SkipException) as e:
-            CephReport(context_wrap(CEPH_REPORT_EMPTY))
-        assert "Empty output." in str(e)
+    def test_ceph_report_empty(self):
+        assert 'Empty output.' in test_empty_skip(CephReport)

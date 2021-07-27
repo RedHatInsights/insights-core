@@ -1,8 +1,9 @@
 import doctest
 
-from insights.tests import context_wrap
 from insights.parsers import cni_podman_bridge_conf
 from insights.parsers.cni_podman_bridge_conf import CNIPodmanBridgeConf
+from insights.parsers.tests import test_empty_skip
+from insights.tests import context_wrap
 
 PODMAN_CNI_FILE = '''
 {
@@ -61,3 +62,7 @@ def test_cni_podman_bridge_conf():
     conf = CNIPodmanBridgeConf(context_wrap(PODMAN_CNI_FILE))
     assert len(conf["plugins"]) == 4
     assert conf["plugins"][3]["type"] == "tuning"
+
+
+def test_cni_podman_bridge_conf_empty():
+    assert 'Empty output.' in test_empty_skip(CNIPodmanBridgeConf)
