@@ -1,6 +1,7 @@
 import doctest
 from doctest import (DebugRunner, DocTestFinder, DocTestRunner,
                      OutputChecker)
+import pytest
 import re
 import sys
 
@@ -35,3 +36,13 @@ def ic_testmod(m, name=None, globs=None, verbose=None,
         runner.summarize()
 
     return doctest.TestResults(runner.failures, runner.tries)
+
+
+@pytest.fixture()
+def test_empty_skip(parser_obj):
+    from insights.parsers import SkipException
+    from insights.tests import context_wrap
+
+    with pytest.raises(SkipException) as ex:
+        parser_obj(context_wrap(""))
+    return str(ex)

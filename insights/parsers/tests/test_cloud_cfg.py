@@ -1,5 +1,7 @@
 import doctest
+
 from insights.parsers import cloud_cfg
+from insights.parsers.tests import test_empty_skip
 from insights.tests import context_wrap
 
 
@@ -18,6 +20,10 @@ def test_cloud_cfg():
 
     result = cloud_cfg.CloudCfg(context_wrap(CONFIG_2))
     assert result.data['config'][0]['name'] == 'eth0'
+
+
+def test_cloud_cfg_empty():
+    assert 'Empty output.' in test_empty_skip(cloud_cfg.CloudCfg)
 
 
 def test_doc_examples():
