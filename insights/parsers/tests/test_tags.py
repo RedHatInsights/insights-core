@@ -1,4 +1,5 @@
 from insights.parsers.tags import Tags
+from insights.parsers.tests import test_empty_skip
 from insights.tests import context_wrap
 
 tags_json_content = """
@@ -14,3 +15,7 @@ def test_tags_json():
     assert result.data['owner'] == "test"
     assert result.data['exclude'] == "true"
     assert result.data['group'] == "app-db-01"
+
+
+def test_tags_empty():
+    assert 'Empty output.' in test_empty_skip(Tags)
