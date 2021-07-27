@@ -192,6 +192,7 @@ def test_platform_path_added_cloud_redhat():
     try_auto_configuration(config)
     assert config.base_url == 'cloud.redhat.com/api'
 
+
 @patch("insights.client.auto_config.verify_connectivity", Mock())
 def test_rhsm_stage_legacy_base_url_configured():
     '''
