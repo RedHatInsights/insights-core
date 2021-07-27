@@ -1,24 +1,11 @@
 from insights.core.spec_factory import SpecSet, RegistryPoint
 
 
-class Openshift(SpecSet):
-    cluster_operators = RegistryPoint(raw=True)
-    crds = RegistryPoint(raw=True)
-    crs = RegistryPoint(raw=True, multi_output=True)
-    machine_configs = RegistryPoint(raw=True)
-    machines = RegistryPoint(raw=True)
-    machine_id = RegistryPoint(raw=True)  # stand in for system id
-    namespaces = RegistryPoint(raw=True)
-    nodes = RegistryPoint(raw=True)
-    pods = RegistryPoint(raw=True)
-    pvcs = RegistryPoint(raw=True)
-    storage_classes = RegistryPoint(raw=True)
-
-
 class Specs(SpecSet):
     abrt_ccpp_conf = RegistryPoint(filterable=True)
     abrt_status_bare = RegistryPoint()
     alternatives_display_python = RegistryPoint()
+    ansible_tower_settings = RegistryPoint(filterable=True, multi_output=True)
     amq_broker = RegistryPoint(multi_output=True)
     ansible_host = RegistryPoint()
     auditctl_status = RegistryPoint()
@@ -31,6 +18,7 @@ class Specs(SpecSet):
     aws_instance_id_pkcs7 = RegistryPoint()
     aws_instance_type = RegistryPoint()
     awx_manage_check_license = RegistryPoint()
+    awx_manage_check_license_data = RegistryPoint(filterable=True)
     azure_instance_type = RegistryPoint()
     azure_instance_plan = RegistryPoint()
     bios_uuid = RegistryPoint()
@@ -40,6 +28,7 @@ class Specs(SpecSet):
     boot_loader_entries = RegistryPoint(multi_output=True)
     branch_info = RegistryPoint(raw=True)
     brctl_show = RegistryPoint()
+    candlepin_broker = RegistryPoint()
     candlepin_error_log = RegistryPoint(filterable=True)
     candlepin_log = RegistryPoint(filterable=True)
     cdc_wdm = RegistryPoint()
@@ -216,6 +205,7 @@ class Specs(SpecSet):
     hammer_task_list = RegistryPoint()
     satellite_enabled_features = RegistryPoint()
     haproxy_cfg = RegistryPoint()
+    haproxy_cfg_scl = RegistryPoint()
     heat_api_log = RegistryPoint(filterable=True)
     heat_conf = RegistryPoint()
     heat_crontab = RegistryPoint()
@@ -360,6 +350,7 @@ class Specs(SpecSet):
     meminfo = RegistryPoint()
     messages = RegistryPoint(filterable=True)
     metadata_json = RegistryPoint(raw=True)
+    satellite_missed_pulp_agent_queues = RegistryPoint()
     mistral_executor_log = RegistryPoint(filterable=True)
     mlx4_port = RegistryPoint(multi_output=True)
     modinfo_i40e = RegistryPoint()
@@ -474,7 +465,7 @@ class Specs(SpecSet):
     ovs_vsctl_show = RegistryPoint()
     ovs_vswitchd_limits = RegistryPoint()
     pacemaker_log = RegistryPoint(filterable=True)
-    package_provides_command = RegistryPoint()
+    package_provides_command = RegistryPoint(filterable=True)
     package_provides_java = RegistryPoint(multi_output=True)
     package_provides_httpd = RegistryPoint(multi_output=True)
     pam_conf = RegistryPoint()
@@ -511,6 +502,7 @@ class Specs(SpecSet):
     ps_auxww = RegistryPoint(filterable=True)
     ps_ef = RegistryPoint(filterable=True)
     ps_eo = RegistryPoint()
+    ps_eo_cmd = RegistryPoint()
     pulp_worker_defaults = RegistryPoint()
     puppet_ssl_cert_ca_pem = RegistryPoint()
     puppetserver_config = RegistryPoint(filterable=True)
@@ -641,6 +633,7 @@ class Specs(SpecSet):
     sysctl_conf_initramfs = RegistryPoint(multi_output=True)
     sysctl_conf = RegistryPoint()
     sysctl = RegistryPoint()
+    systemctl_cat_dnsmasq_service = RegistryPoint()
     systemctl_cat_rpcbind_socket = RegistryPoint()
     systemctl_cinder_volume = RegistryPoint()
     systemctl_httpd = RegistryPoint()
