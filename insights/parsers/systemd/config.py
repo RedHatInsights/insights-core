@@ -16,8 +16,8 @@ SystemdLogindConf - file ``/etc/systemd/logind.conf``
 SystemdRpcbindSocketConf - unit file ``rpcbind.socket``
 -------------------------------------------------------
 
-SystemdDnsmasqConf - unit file ``dnsmasq.service``
---------------------------------------------------
+SystemdDnsmasqServiceConf - unit file ``dnsmasq.service``
+---------------------------------------------------------
 
 SystemdOpenshiftNode - file ``/usr/lib/systemd/system/atomic-openshift-node.service``
 -------------------------------------------------------------------------------------
