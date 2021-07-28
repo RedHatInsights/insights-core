@@ -718,6 +718,7 @@ class DefaultSpecs(Specs):
     sysconfig_libvirt_guests = simple_file("etc/sysconfig/libvirt-guests")
     sysconfig_network = simple_file("etc/sysconfig/network")
     sysconfig_ntpd = simple_file("/etc/sysconfig/ntpd")
+    sysconfig_oracleasm = simple_file("/etc/sysconfig/oracleasm")
     sysconfig_prelink = simple_file("/etc/sysconfig/prelink")
     sysconfig_sshd = simple_file("/etc/sysconfig/sshd")
     sysconfig_virt_who = simple_file("/etc/sysconfig/virt-who")
