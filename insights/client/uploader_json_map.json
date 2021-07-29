@@ -2176,6 +2176,11 @@
             "symbolic_name": "dnf_modules"
         },
         {
+            "file": "/etc/dnsmasq.conf",
+            "pattern": [],
+            "symbolic_name": "dnsmasq_config"
+        },
+        {
             "file": "/etc/sysconfig/docker-storage-setup",
             "pattern": [],
             "symbolic_name": "docker_storage_setup"
@@ -4172,6 +4177,11 @@
             "pattern": []
         },
         {
+            "glob": "/etc/dnsmasq.d/*.conf",
+            "pattern": [],
+            "symbolic_name": "dnsmasq_config"
+        },
+        {
             "glob": "/sys/class/net/*/address",
             "symbolic_name": "mac_addresses",
             "pattern": []
@@ -4386,5 +4396,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': |@' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2021-07-15T11:42:35.950625"
+    "version": "2021-07-22T13:39:35.175760"
 }
