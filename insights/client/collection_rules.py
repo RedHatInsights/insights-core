@@ -114,6 +114,10 @@ class InsightsUploadConf(object):
         self.collection_rules_url = self.config.collection_rules_url
         self.gpg = self.config.gpg
 
+        # initialize an attribute to store the content of uploader.json
+        #   once it is loaded and verified
+        self.uploader_json = None
+
         # set rm_conf as a class attribute so we can observe it
         #   in create_report
         self.rm_conf = None
@@ -258,6 +262,9 @@ class InsightsUploadConf(object):
         """
         Get config from local config file, first try cache, then fallback.
         """
+        if self.uploader_json:
+            return self.uploader_json
+
         for conf_file in [self.collection_rules_file, self.fallback_file]:
             logger.debug("trying to read conf from: " + conf_file)
             conf = self.try_disk(conf_file, self.gpg)
@@ -270,6 +277,7 @@ class InsightsUploadConf(object):
                 conf['file'] = conf_file
                 logger.debug("Success reading config")
                 logger.debug(json.dumps(conf))
+                self.uploader_json = conf
                 return conf
 
         raise RuntimeError("ERROR: Unable to download conf or read it from disk!")

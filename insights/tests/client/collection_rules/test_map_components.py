@@ -1,6 +1,5 @@
-import pkgutil
-import insights
 import json
+import requests
 
 # from insights.client.config import InsightsConfig
 from insights.client.collection_rules import InsightsUploadConf
@@ -15,13 +14,23 @@ from insights.client.map_components import (map_rm_conf_to_components,
 
 config = InsightsConfig()
 conn = InsightsConnection(config)
-uploader_json = InsightsUploadConf(config, conn).get_conf_update()
 default_specs = vars(DefaultSpecs).keys()
 sos_specs = vars(SosSpecs).keys()
 
+def get_uploader_json():
+    '''
+    Download latest uploader.json to use for unit tests
+    '''
+    print("Downloading a fresh and hot uploader.json...")
+    url = "https://api.access.redhat.com/r/insights/v1/static/uploader.v2.json"
+    uploader_json = requests.get(url).json()
+    return uploader_json
+
+uploader_json = get_uploader_json()
 
 @patch('insights.client.collection_rules.InsightsUploadConf.load_redaction_file', Mock(return_value={'test': 'test'}))
 @patch('insights.client.collection_rules.InsightsUploadConf.get_rm_conf_old', Mock(return_value={'test': 'test'}))
+@patch('insights.client.collection_rules.InsightsUploadConf.get_conf_file', Mock(return_value={'test': 'test'}))
 @patch('insights.client.collection_rules.map_rm_conf_to_components')
 def test_called_when_core_collection_enabled(map_rm_conf_to_components):
     '''
@@ -29,11 +38,12 @@ def test_called_when_core_collection_enabled(map_rm_conf_to_components):
     '''
     upload_conf = InsightsUploadConf(Mock(core_collect=True))
     upload_conf.get_rm_conf()
-    map_rm_conf_to_components.assert_called_once_with({'test': 'test'})
+    map_rm_conf_to_components.assert_called_once_with({'test': 'test'}, {'test': 'test'})
 
 
 @patch('insights.client.collection_rules.InsightsUploadConf.load_redaction_file', Mock(return_value={'test': 'test'}))
 @patch('insights.client.collection_rules.InsightsUploadConf.get_rm_conf_old', Mock(return_value={'test': 'test'}))
+@patch('insights.client.collection_rules.InsightsUploadConf.get_conf_file', Mock(return_value={'test': 'test'}))
 @patch('insights.client.collection_rules.map_rm_conf_to_components')
 def test_not_called_when_core_collection_disabled(map_rm_conf_to_components):
     '''

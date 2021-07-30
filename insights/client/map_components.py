@@ -178,8 +178,9 @@ if __name__ == '__main__':
     from .collection_rules import InsightsUploadConf
     config = InsightsConfig(core_collect=True).load_all()
     uploadconf = InsightsUploadConf(config)
-    # rm_conf = uploadconf.get_rm_conf()
-    # report = map_rm_conf_to_components(rm_conf)
+    rm_conf = uploadconf.get_rm_conf()
+    uploader_json = uploadconf.get_conf_file()
+    report = map_rm_conf_to_components(rm_conf, uploader_json)
     # uploadconf.rm_conf = report
-    uploadconf.validate()
-    # print(report)
+    # uploadconf.validate()
+    print(report)
