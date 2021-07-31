@@ -1,4 +1,3 @@
-import json
 import requests
 
 # from insights.client.config import InsightsConfig
@@ -17,6 +16,7 @@ conn = InsightsConnection(config)
 default_specs = vars(DefaultSpecs).keys()
 sos_specs = vars(SosSpecs).keys()
 
+
 def get_uploader_json():
     '''
     Download latest uploader.json to use for unit tests
@@ -27,6 +27,7 @@ def get_uploader_json():
     return uploader_json
 
 uploader_json = get_uploader_json()
+
 
 @patch('insights.client.collection_rules.InsightsUploadConf.load_redaction_file', Mock(return_value={'test': 'test'}))
 @patch('insights.client.collection_rules.InsightsUploadConf.get_rm_conf_old', Mock(return_value={'test': 'test'}))
