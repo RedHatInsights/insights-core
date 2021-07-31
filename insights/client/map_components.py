@@ -1,7 +1,4 @@
 from __future__ import absolute_import
-import pkgutil
-import insights
-import json
 import six
 import logging
 import textwrap
