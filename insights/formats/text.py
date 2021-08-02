@@ -181,6 +181,7 @@ class HumanReadableFormat(Formatter):
             print(name, file=self.stream)
             print(underline, file=self.stream)
             if v.get('type') != 'none':
+                print(render_links(c), file=self.stream)
                 print(render(c, v), file=self.stream)
             print(file=self.stream)
 
