@@ -183,19 +183,19 @@ def get_response_of_types(response, missing=True, show_rules=None):
     #  - When neither "-m" nor "-S" is specified, show all the HIT rules (exclude the "skips")
     if not show_rules:
         return response
-    # Discard the "medadata" rules when it's not specified in the "-S" option
+    #  - Discard the "medadata" rules when it's not specified in the "-S" option
     if 'metadata' not in show_rules and 'metadata' in response.get('system', {}):
         response['system'].pop('metadata')
-    # Discard the "make_fail" rules when it's not specified in the "-S" option
+    #  - Discard the "make_fail" rules when it's not specified in the "-S" option
     if 'rule' not in show_rules and 'reports' in response:
         response.pop('reports')
-    # Discard the "make_info" rules when it's not specified in the "-S" option
+    #  - Discard the "make_info" rules when it's not specified in the "-S" option
     if 'info' not in show_rules and 'info' in response:
         response.pop('info')
-    # Discard the "make_pass" rules when it's not specified in the "-S" option
+    #  - Discard the "make_pass" rules when it's not specified in the "-S" option
     if 'pass' not in show_rules and 'pass' in response:
         response.pop('pass')
-    # Discard the "fingerprint" rules when it's not specified in the "-S" option
+    #  - Discard the "fingerprint" rules when it's not specified in the "-S" option
     if 'fingerprint' not in show_rules and 'fingerprints' in response:
         response.pop('fingerprints')
     return response
