@@ -37,6 +37,19 @@ JS         642  648        polkitd    1u      CHR                1,3       0t0  
 JS         642  648        polkitd    2u      CHR                1,3       0t0       4674 /dev/null
 """.strip()
 
+LSOF_GOOD_V2 = """
+lsof: avoiding readlink(/sys): -b was specified.
+lsof: avoiding stat(/sys): -b was specified.
+lsof: WARNING: can't stat() sysfs file system /sys
+      Output information may be incomplete.
+COMMAND       PID     USER   FD      TYPE             DEVICE  SIZE/OFF       NODE NAME
+systemd         1        0  cwd       DIR              253,0       251        128 /
+systemd         1        0    0u      CHR                1,3       0t0       1032 /dev/null
+systemd         1        0   19u     unix 0xffff998f20251f80       0t0  132266239 /run/systemd/journal/stdout type=STREAM
+blkcg_pun      36        0  txt   unknown                                         /proc/36/exe
+rsyslogd   772018        0    5w      REG              253,6 151175680       1351 /var/log/messages-20210221 (deleted)
+""".strip()
+
 columns = ["COMMAND", "PID", "TID", "USER", "FD", "TYPE", "DEVICE", "SIZE/OFF", "NODE", "NAME"]
 
 
@@ -113,6 +126,38 @@ def test_lsof_good():
         "SIZE/OFF": "0t0",
         "NODE": "4674",
         "NAME": "/dev/null"
+    }
+
+
+def test_lsof_good_v2():
+    ctx = context_wrap(LSOF_GOOD_V2)
+    d = list(lsof.Lsof(ctx).parse(LSOF_GOOD_V2.splitlines()))
+    assert d[0] == {
+        'COMMAND': 'systemd',
+        'PID': '1',
+        'USER': '0',
+        'FD': 'cwd',
+        'TYPE': 'DIR',
+        'DEVICE': '253,0',
+        'SIZE/OFF': '251',
+        'NODE': '128',
+        'NAME': '/'
+    }
+
+    # wide and empty values checks
+    assert d[2]['DEVICE'] == '0xffff998f20251f80'
+    assert d[3]['DEVICE'] == ''
+
+    assert d[-1] == {
+        'COMMAND': 'rsyslogd',
+        'PID': '772018',
+        'USER': '0',
+        'FD': '5w',
+        'TYPE': 'REG',
+        'DEVICE': '253,6',
+        'SIZE/OFF': '151175680',
+        'NODE': '1351',
+        'NAME': '/var/log/messages-20210221 (deleted)'
     }
 
 
