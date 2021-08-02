@@ -148,7 +148,8 @@ class MarkdownFormat(Formatter):
             if _type:
                 if self.missing and _type == 'skip':
                     print_missing(c, v)
-                elif self.show_rules == [] or _type in self.show_rules:
+                elif ((self.show_rules and _type in self.show_rules) or
+                        (not self.show_rules and _type != 'skip')):
                     printit(c, v)
         print(file=self.stream)
 
