@@ -1,6 +1,7 @@
 import doctest
 
 from insights.parsers import virt_uuid_facts
+from insights.parsers.tests import test_empty_skip
 from insights.parsers.virt_uuid_facts import VirtUuidFacts
 from insights.tests import context_wrap
 
@@ -18,6 +19,10 @@ def test_virt_uuid_facts():
             "uname.machine": "x86"
     }
     assert result.data['virt.uuid'] == '4546B285-6C41-5D6R-86G5-0BFR4B3625FS'
+
+
+def test_virt_uuid_facts_empty():
+    assert 'Empty output.' in test_empty_skip(VirtUuidFacts)
 
 
 def test_virt_uuid_facts_doc_examples():

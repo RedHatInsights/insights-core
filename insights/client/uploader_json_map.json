@@ -1535,6 +1535,11 @@
             "symbolic_name": "sysctl"
         },
         {
+            "command": "/bin/systemctl cat dnsmasq.service",
+            "pattern": [],
+            "symbolic_name": "systemctl_cat_dnsmasq_service"
+        },
+        {
             "command": "/bin/systemctl cat rpcbind.socket",
             "pattern": [],
             "symbolic_name": "systemctl_cat_rpcbind_socket"
@@ -2171,6 +2176,11 @@
             "symbolic_name": "dnf_modules"
         },
         {
+            "file": "/etc/dnsmasq.conf",
+            "pattern": [],
+            "symbolic_name": "dnsmasq_config"
+        },
+        {
             "file": "/etc/sysconfig/docker-storage-setup",
             "pattern": [],
             "symbolic_name": "docker_storage_setup"
@@ -2303,6 +2313,11 @@
             "symbolic_name": "haproxy_cfg"
         },
         {
+            "file": "/etc/opt/rh/rh-haproxy18/haproxy/haproxy.cfg",
+            "pattern": [],
+            "symbolic_name": "haproxy_cfg_scl"
+        },
+        {
             "file": "/etc/heat/heat.conf",
             "pattern": [],
             "symbolic_name": "heat_conf"
@@ -2343,7 +2358,6 @@
             "pattern": [
                 "(28)No space left on device: ",
                 "AH00485: scoreboard is full, not at MaxRequestWorkers",
-                "ModSecurity: collections_remove_stale: Failed deleting collection",
                 "The mpm module (prefork.c) is not supported by mod_http2",
                 "[crit] Memory allocation failed, aborting process",
                 "and would exceed the ServerLimit value of ",
@@ -4163,6 +4177,11 @@
             "pattern": []
         },
         {
+            "glob": "/etc/dnsmasq.d/*.conf",
+            "pattern": [],
+            "symbolic_name": "dnsmasq_config"
+        },
+        {
             "glob": "/sys/class/net/*/address",
             "symbolic_name": "mac_addresses",
             "pattern": []
@@ -4377,5 +4396,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': |@' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2021-07-01T12:56:10.617317"
+    "version": "2021-07-22T13:39:35.175760"
 }
