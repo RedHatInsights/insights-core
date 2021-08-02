@@ -128,7 +128,11 @@ class SosSpecs(Specs):
     ls_sys_firmware = simple_file("sos_commands/boot/ls_-lanR_.sys.firmware")
     lscpu = simple_file("sos_commands/processor/lscpu")
     lsinitrd = simple_file("sos_commands/boot/lsinitrd")
-    lsof = simple_file("sos_commands/process/lsof_-b_M_-n_-l")
+    lsof = first_file([
+        "sos_commands/process/lsof_M_-n_-l_-c",
+        "sos_commands/process/lsof_-b_M_-n_-l_-c",
+        "sos_commands/process/lsof_-b_M_-n_-l"
+    ])
     lsmod = simple_file("sos_commands/kernel/lsmod")
     lspci = first_of([
         simple_file("sos_commands/pci/lspci_-nnvv"),
