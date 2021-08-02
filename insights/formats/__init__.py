@@ -173,10 +173,14 @@ def render(comp, val):
 
 
 def get_response_of_types(response, missing=True, show_rules=None):
-    # When "-m" is NOT specified, do not show the "skips" rules
+    # Check the "-m" option:
+    #  - When "-m" is specified, show the "skips" rules
+    #  - When "-m" is NOT specified, do not show the "skips" rules
     if not missing and 'skips' in response:
         response.pop('skips')
-    # When neither "-m" nor "-S" is specified, show the HIT rules only (excludes "skips")
+    # Check the "-S" option:
+    #  - When "-m" is specified but "-S" is NOT specified, show all the loaded rules
+    #  - When neither "-m" nor "-S" is specified, show all the HIT rules (exclude the "skips")
     if not show_rules:
         return response
     # Discard the "medadata" rules when it's not specified in the "-S" option
