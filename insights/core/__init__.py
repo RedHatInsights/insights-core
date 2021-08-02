@@ -750,11 +750,15 @@ class JSONParser(Parser, LegacyItemAccess):
         try:
             self.data = json.loads(''.join(content))
         except:
-            tb = sys.exc_info()[2]
-            cls = self.__class__
-            name = ".".join([cls.__module__, cls.__name__])
-            msg = "%s couldn't parse json." % name
-            six.reraise(ParseException, ParseException(msg), tb)
+            # If content is empty then raise a skip exception instead of a parse exception.
+            if not content:
+                raise SkipException("Empty output.")
+            else:
+                tb = sys.exc_info()[2]
+                cls = self.__class__
+                name = ".".join([cls.__module__, cls.__name__])
+                msg = "%s couldn't parse json." % name
+                six.reraise(ParseException, ParseException(msg), tb)
 
 
 class ScanMeta(type):

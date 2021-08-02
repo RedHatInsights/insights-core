@@ -116,7 +116,7 @@ class LogrotateConf(Parser, LegacyItemAccess):
                     self.options.append(key1)
             else:
                 # in log_file section
-                if line.endswith('}'):
+                if line.endswith('}') and script is None:
                     # end of the section,
                     # save options for each log_file individually
                     for lf in log_files:

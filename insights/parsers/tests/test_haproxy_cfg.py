@@ -1,6 +1,10 @@
+import doctest
+
 from insights.core.context import OSP
-from insights.parsers.haproxy_cfg import HaproxyCfg
+from insights.parsers import haproxy_cfg
+from insights.parsers.haproxy_cfg import HaproxyFile, HaproxyCfg, HaproxyCfgScl
 from insights.tests import context_wrap
+
 
 haproxy_osp = """
 # This file managed by Puppet
@@ -241,6 +245,80 @@ listen mysql
 osp_c = OSP()
 osp_c.role = "Controller"
 
+HAPROXY_CFG_SCL = """
+global
+    log         127.0.0.1 local2
+
+    chroot      /var/opt/rh/rh-haproxy18/lib/haproxy
+    pidfile     /var/run/rh-haproxy18-haproxy.pid
+    maxconn     4000
+    user        haproxy
+    group       haproxy
+    daemon
+
+    # turn on stats unix socket
+    stats socket /var/opt/rh/rh-haproxy18/lib/haproxy/stats
+
+    # utilize system-wide crypto-policies
+    ssl-default-bind-ciphers PROFILE=SYSTEM
+    ssl-default-server-ciphers PROFILE=SYSTEM
+
+defaults
+    mode                    http
+    log                     global
+    option                  httplog
+    option                  dontlognull
+    option http-server-close
+    option forwardfor       except 127.0.0.0/8
+    option                  redispatch
+    retries                 3
+    timeout http-request    10s
+    timeout queue           1m
+    timeout connect         10s
+    timeout client          1m
+    timeout server          1m
+    timeout http-keep-alive 10s
+    timeout check           10s
+    maxconn                 3000
+
+frontend main
+    bind *:5000
+    acl url_static       path_beg       -i /static /images /javascript /stylesheets
+    acl url_static       path_end       -i .jpg .gif .png .css .js
+
+    use_backend static          if url_static
+    default_backend             app
+
+backend static
+    balance     roundrobin
+    server      static 127.0.0.1:4331 check
+
+backend app
+    balance     roundrobin
+    server  app1 127.0.0.1:5001 check
+    server  app2 127.0.0.1:5002 check
+    server  app3 127.0.0.1:5003 check
+    server  app4 127.0.0.1:5004 check
+"""
+
+HAPROXY_DOCTEST = """
+global
+    daemon
+    group       haproxy
+    log         /dev/log local0
+    user        haproxy
+    maxconn     20480
+    pidfile     /var/run/haproxy.pid
+
+defaults
+    retries     3
+    maxconn     4096
+    log         global
+    timeout     http-request 10s
+    timeout     queue 1m
+    timeout     connect 10s
+"""
+
 
 def test_haproxy_cls_1():
     r = HaproxyCfg(context_wrap(haproxy_osp, osp=osp_c))
@@ -255,3 +333,18 @@ def test_haproxy_cls_2():
     assert "maxconn" in result.data.get("global")
     assert result.data.get("defaults").get("maxconn") == "4096"
     assert "queue 1m" in result.data.get("defaults").get("timeout")
+
+
+def test_haproxy_cfg_scl():
+    haproxy_cfg_scl = HaproxyCfgScl(context_wrap(HAPROXY_CFG_SCL))
+    assert "stats socket /var/opt/rh/rh-haproxy18/lib/haproxy/stats" in haproxy_cfg_scl.lines
+    assert "/var/opt/rh/rh-haproxy18/lib/haproxy" in haproxy_cfg_scl.data.get("global").get("chroot")
+    assert len(haproxy_cfg_scl.data.get("global")) == 10
+
+
+def test_doc_examples():
+    env = {
+        "haproxy": HaproxyFile(context_wrap(HAPROXY_DOCTEST))
+    }
+    failed, total = doctest.testmod(haproxy_cfg, globs=env)
+    assert failed == 0
