@@ -88,6 +88,7 @@ class ContentProvider(object):
         self.args = None
         self.rc = None
         self.root = None
+        self.data = None
         self.relative_path = None
         self.loaded = False
         self._content = None
@@ -109,7 +110,10 @@ class ContentProvider(object):
 
     @property
     def path(self):
-        return os.path.join(self.root, self.relative_path)
+        # self.data
+        # - is empty ('./') for old collection
+        # - is 'data' ('./data') for new core collection
+        return os.path.join(self.data, self.relative_path)
 
     @property
     def content(self):
@@ -137,11 +141,12 @@ class ContentProvider(object):
 
 
 class DatasourceProvider(ContentProvider):
-    def __init__(self, content, relative_path, root='/', ds=None, ctx=None):
+    def __init__(self, content, relative_path, root='/', data=None, ds=None, ctx=None):
         super(DatasourceProvider, self).__init__()
         self.relative_path = relative_path
         self._content = content if isinstance(content, list) else content.splitlines()
         self.root = root
+        self.data = os.path.join(root, data) if data else root
         self.ds = ds
         self.ctx = ctx
 
@@ -164,9 +169,10 @@ class DatasourceProvider(ContentProvider):
 
 
 class FileProvider(ContentProvider):
-    def __init__(self, relative_path, root="/", ds=None, ctx=None):
+    def __init__(self, relative_path, root="/", data=None, ds=None, ctx=None):
         super(FileProvider, self).__init__()
         self.root = root
+        self.data = os.path.join(root, data) if data else root
         self.relative_path = relative_path.lstrip("/")
         self.file_name = os.path.basename(self.path)
 
@@ -183,7 +189,7 @@ class FileProvider(ContentProvider):
             raise ContentException("%s does not exist." % self.path)
 
         resolved = os.path.realpath(self.path)
-        if not resolved.startswith(os.path.realpath(self.root)):
+        if not resolved.startswith(os.path.realpath(self.data)):
             msg = "Relative path points outside the root: %s -> %s."
             raise Exception(msg % (self.path, resolved))
 
@@ -215,7 +221,6 @@ class TextFileProvider(FileProvider):
     Class used in datasources that returns the contents of a file a list of
     lines. Each line is filtered if filters are defined for the datasource.
     """
-
     def create_args(self):
         args = []
         filters = "\n".join(get_filters(self.ds)) if self.ds else None
@@ -291,12 +296,16 @@ class TextFileProvider(FileProvider):
 
 
 class SerializedOutputProvider(TextFileProvider):
+    def __init__(self, relative_path, root='/', data='data', ds=None, ctx=None):
+        super(SerializedOutputProvider, self).__init__(relative_path, root, data, ds, ctx)
+
     def create_args(self):
         pass
 
 
 class SerializedRawOutputProvider(RawFileProvider):
-    pass
+    def __init__(self, relative_path, root='/', data='data', ds=None, ctx=None):
+        super(SerializedRawOutputProvider, self).__init__(relative_path, root, data, ds, ctx)
 
 
 class CommandOutputProvider(ContentProvider):
@@ -566,7 +575,8 @@ class simple_file(object):
 
     def __call__(self, broker):
         ctx = _get_context(self.context, broker)
-        return self.kind(ctx.locate_path(self.path), root=ctx.root, ds=self, ctx=ctx)
+        return self.kind(ctx.locate_path(self.path), root=ctx.root,
+                data=ctx.data, ds=self, ctx=ctx)
 
 
 class glob_file(object):

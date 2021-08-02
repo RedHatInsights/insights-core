@@ -153,6 +153,7 @@ class ExecutionContext(six.with_metaclass(ExecutionContextMeta)):
 
     def __init__(self, root="/", timeout=None, all_files=None):
         self.root = root
+        self.data = root
         self.timeout = timeout
         self.all_files = all_files or []
 
@@ -234,6 +235,10 @@ class HostArchiveContext(ExecutionContext):
 @fs_root
 class SerializedArchiveContext(ExecutionContext):
     marker = "insights_archive.txt"
+
+    def __init__(self, root='/', data='data', timeout=30, all_files=None):
+        super(SerializedArchiveContext, self).__init__(root=root, timeout=timeout, all_files=all_files)
+        self.data = os.path.join(root, data) if data else root
 
 
 @fs_root

@@ -138,7 +138,10 @@ class Hydration(object):
             raise ValueError("{} is not a loaded component.".format(name))
         exec_time = doc["exec_time"]
         ser_time = doc["ser_time"]
-        results = unmarshal(doc["results"], root=self.data)
+        # unmarshal with `self.root`
+        # - the 'unmarshal' targets are SerializedOutputProvider which
+        #   customizes the `self.path` with `self.data`
+        results = unmarshal(doc["results"], root=self.root)
         return (key, results, exec_time, ser_time)
 
     def hydrate(self, broker=None):
@@ -192,6 +195,8 @@ class Hydration(object):
 
             try:
                 start = time.time()
+                # marshal with `self.data`
+                # - 'marshal' the components in 'data' for core collection
                 doc["results"] = marshal(value, root=self.data, pool=self.pool)
             except Exception:
                 errors.append(traceback.format_exc())
