@@ -302,7 +302,7 @@ class rule(PluginType):
             return _make_skip(dr.get_name(self.component), missing)
         r = self.invoke(broker)
         if r is None:
-            raise dr.SkipComponent()
+            return make_none()
         if not isinstance(r, Response):
             raise Exception("rules must return Response objects.")
         return r
@@ -660,3 +660,17 @@ class _make_skip(Response):
                                         rule_fqdn=rule_fqdn,
                                         reason="MISSING_REQUIREMENTS",
                                         details=details)
+
+
+class make_none(Response):
+    """
+    Used to create a response for a rule that returns None
+
+    This is not intended to be used by plugins, only infrastructure
+    but it not private so that we can easily add it to reporting.
+    """
+    response_type = "none"
+    key_name = "none_key"
+
+    def __init__(self):
+        super(make_none, self).__init__(key="NONE_KEY")
