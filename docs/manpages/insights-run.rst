@@ -75,6 +75,9 @@ OPTIONS
     -m --missing
         Show missing requirements.
 
+    -n --none
+        Show rules returning ``None``.
+
     -p PLUGINS --plugins PLUGINS
         Comma-separated list without spaces of package(s) or module(s) containing plugins.
 
