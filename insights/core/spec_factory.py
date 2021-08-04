@@ -189,7 +189,7 @@ class FileProvider(ContentProvider):
             raise ContentException("%s does not exist." % self.path)
 
         resolved = os.path.realpath(self.path)
-        if not resolved.startswith(os.path.realpath(self.data)):
+        if not resolved.startswith(os.path.realpath(self.root)):
             msg = "Relative path points outside the root: %s -> %s."
             raise Exception(msg % (self.path, resolved))
 
