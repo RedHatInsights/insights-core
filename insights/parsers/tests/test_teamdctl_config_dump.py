@@ -1,7 +1,9 @@
-from insights.parsers.teamdctl_config_dump import TeamdctlConfigDump
-from insights.parsers import teamdctl_config_dump
-from insights.tests import context_wrap
 import doctest
+
+from insights.parsers import teamdctl_config_dump
+from insights.parsers.teamdctl_config_dump import TeamdctlConfigDump
+from insights.parsers.tests import test_empty_skip
+from insights.tests import context_wrap
 
 TEAMDCTL_CONFIG_DUMP_INFO = """
 {
@@ -36,6 +38,10 @@ def test_teamdctl_state_dump():
     assert result.device_name == 'team0'
     assert result.runner_name == 'activebackup'
     assert result.runner_hwaddr_policy == 'only_active'
+
+
+def test_teamdctl_state_dump_empty():
+    assert 'Empty output.' in test_empty_skip(TeamdctlConfigDump)
 
 
 def test_nmcli_doc_examples():
