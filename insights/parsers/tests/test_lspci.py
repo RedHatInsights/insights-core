@@ -274,14 +274,16 @@ def test_lspci_driver():
     lspci_obj = LsPci(context_wrap(LSPCI_DRIVER_DETAILS))
     assert len(lspci_obj.data) == 44
     dev_info = lspci_obj.pci_dev_details('00:01.0')
-    assert len(dev_info) == 3
+    assert len(dev_info) == 4
     assert dev_info['Kernel driver in use'] == 'pcieport'
+    assert dev_info['Slot'] == '00:01.0'
     assert len(lspci_obj.pci_dev_list) == 44
 
     lspci_obj = LsPci(context_wrap(LSPCI_DRIVER_DETAILS_2))
     assert len(lspci_obj.data) == 4
     dev_info = lspci_obj.pci_dev_details('04:00.0')
-    assert len(dev_info) == 1
+    assert len(dev_info) == 2
+    assert dev_info['Slot'] == '04:00.0'
     assert 'Kernel driver in use' not in dev_info
     assert len(lspci_obj.pci_dev_list) == 4
 
@@ -298,10 +300,14 @@ def test_lspci_vmmkn():
     lspci_vmmkn = LsPciVmmkn(context_wrap(LSPCI_VMMKN))
     assert sorted(lspci_vmmkn.pci_dev_list) == ['00:00.0', '00:01.0', '00:01.1', '00:03.0']
     assert lspci_vmmkn[0].get('Driver') is None
+    assert lspci_vmmkn[0].get('Slot') == '00:00.0'
     assert lspci_vmmkn[1].get('Vendor') == '8086'
+    assert lspci_vmmkn[1].get('Slot') == '00:01.0'
     assert lspci_vmmkn[1].get('Device') == '7010'
+    assert lspci_vmmkn[2].get('Slot') == '00:01.1'
     assert lspci_vmmkn[2].get('SVendor') == '1af4'
     assert lspci_vmmkn[3].get('SDevice') == '0001'
+    assert lspci_vmmkn[3].get('Slot') == '00:03.0'
     assert lspci_vmmkn[-1].get('Driver') == 'virtio-pci'
     assert sorted(lspci_vmmkn[1].get('Module')) == sorted(['ata_piix', 'ata_generic'])
     assert lspci_vmmkn[-1].get('Module') is None
