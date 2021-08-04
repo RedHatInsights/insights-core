@@ -221,6 +221,7 @@ class TextFileProvider(FileProvider):
     Class used in datasources that returns the contents of a file a list of
     lines. Each line is filtered if filters are defined for the datasource.
     """
+
     def create_args(self):
         args = []
         filters = "\n".join(get_filters(self.ds)) if self.ds else None
@@ -575,8 +576,7 @@ class simple_file(object):
 
     def __call__(self, broker):
         ctx = _get_context(self.context, broker)
-        return self.kind(ctx.locate_path(self.path), root=ctx.root,
-                data=ctx.data, ds=self, ctx=ctx)
+        return self.kind(ctx.locate_path(self.path), root=ctx.root, data=ctx.data, ds=self, ctx=ctx)
 
 
 class glob_file(object):
