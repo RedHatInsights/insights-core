@@ -254,8 +254,8 @@ class HumanReadableFormatAdapter(FormatterAdapter):
             self.missing,
             self.tracebacks,
             self.dropped,
+            self.none,
             self.show_rules,
-            self.none
         )
         self.formatter.preprocess()
 
