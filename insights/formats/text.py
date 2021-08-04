@@ -195,6 +195,7 @@ class HumanReadableFormat(Formatter):
 
             if ((self.missing and _type == 'skip') or
                     (self.show_rules and _type in self.show_rules) or
+                    (self.none and _type == 'none') or
                     (not self.show_rules and _type not in ['skip', 'none'])):
                 printit(c, v)
 
