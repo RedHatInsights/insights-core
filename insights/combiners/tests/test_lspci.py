@@ -102,6 +102,7 @@ def test_lspci_k():
     assert sorted(lspci.pci_dev_list) == ['00:00.0', '00:02.0', '00:03.0', '00:16.0', '00:19.0', '00:1b.0']
     assert lspci.search(Dev_Details__contains='I218') == [
         {
+            'Slot': '00:19.0',
             'Driver': 'e1000e', 'Module': ['e1000e'],
             'Subsystem': 'Lenovo ThinkPad X240',
             'Dev_Details': 'Ethernet controller: Intel Corporation Ethernet Connection I218-LM (rev 04)'
