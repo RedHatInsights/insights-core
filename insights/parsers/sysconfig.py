@@ -74,6 +74,9 @@ IfCFGStaticRoute - files ``/etc/sysconfig/network-scripts/route-*``
 
 GrubSysconfig - files ``/etc/sysconfig/grub``
 ---------------------------------------------
+
+OracleasmSysconfig - files ``/etc/sysconfig/oracleasm``
+-------------------------------------------------------
 """
 
 
@@ -660,6 +663,50 @@ class GrubSysconfig(SysconfigOptions):
         False
         >>> 'GRUB_ENABLE_BLSCFG' in grub_syscfg
         True
+
+    """
+    pass
+
+
+@parser(Specs.sysconfig_oracleasm)
+class OracleasmSysconfig(SysconfigOptions):
+    """
+    Class to parse the ``/etc/sysconfig/oracleasm``
+
+    Typical content example::
+
+        #
+        # This is a configuration file for automatic loading of the Oracle
+        # Automatic Storage Management library kernel driver.  It is generated
+        # By running /etc/init.d/oracleasm configure.  Please use that method
+        # to modify this file
+        #
+
+        # ORACLEASM_ENABELED: 'true' means to load the driver on boot.
+        ORACLEASM_ENABLED=true
+
+        # ORACLEASM_UID: Default user owning the /dev/oracleasm mount point.
+        ORACLEASM_UID=oracle
+
+        # ORACLEASM_GID: Default group owning the /dev/oracleasm mount point.
+        ORACLEASM_GID=oinstall
+
+        # ORACLEASM_SCANBOOT: 'true' means scan for ASM disks on boot.
+        ORACLEASM_SCANBOOT=true
+
+        # ORACLEASM_SCANORDER: Matching patterns to order disk scanning
+        ORACLEASM_SCANORDER="dm"
+
+        # ORACLEASM_SCANEXCLUDE: Matching patterns to exclude disks from scan
+        ORACLEASM_SCANEXCLUDE="sd"
+
+    Examples:
+        >>> oracleasm_syscfg.get('ORACLEASM_SCANBOOT')
+        'true'
+        >>> 'ORACLEASM_SCANORDER' in oracleasm_syscfg
+        True
+        >>> 'ORACLEASM_SCANEXCLUDE_1' in oracleasm_syscfg
+        False
 
     """
     pass
