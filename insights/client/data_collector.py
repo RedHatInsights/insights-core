@@ -158,6 +158,52 @@ class DataCollector(object):
         self.archive.add_metadata_to_archive(
             json.dumps(collection_stats), '/collection_stats')
 
+    def _write_rhsm_facts(self, hashed_fqdn, ip_csv):
+        logger.info('Writing RHSM facts to %s...', constants.rhsm_facts_file)
+        ips_list = ''
+        with open(ip_csv) as fil:
+            # create IP list as JSON block with format
+            # [
+            #   {
+            #     original: <original IP>
+            #     obfuscated: <obfuscated IP>
+            #   }
+            # ]
+
+            ips_list = fil.readlines()
+            headings = ips_list[0].strip().split(',')
+            # set the indices for the IPs
+            if 'original' in headings[0].lower():
+                # soscleaner 0.4.4, original first
+                org = 0
+                obf = 1
+            else:
+                # soscleaner 0.2.2, obfuscated first
+                org = 1
+                obf = 0
+
+            ip_block = []
+            for line in ips_list[1:]:
+                ipset = line.strip().split(',')
+                ip_block.append(
+                    {
+                        'original': ipset[org],
+                        'obfuscated': ipset[obf]
+                    })
+
+        facts = {
+            'insights_client.obfuscate_hostname_enabled': self.config.obfuscate_hostname,
+            'insights_client.hostname': hashed_fqdn,
+            'insights_client.obfuscate_ip_enabled': self.config.obfuscate,
+            'insights_client.ips': json.dumps(ip_block)
+        }
+
+        try:
+            with open(constants.rhsm_facts_file, 'w') as fil:
+                json.dump(facts, fil)
+        except (IOError, OSError) as e:
+            logger.error('Could not write to %s: %s', constants.rhsm_facts_file, str(e))
+
     def _run_pre_command(self, pre_cmd):
         '''
         Run a pre command to get external args for a command
@@ -426,6 +472,10 @@ class DataCollector(object):
             cleaner.clean_report(clean_opts, self.archive.archive_dir)
             if clean_opts.keyword_file is not None:
                 os.remove(clean_opts.keyword_file.name)
+
+            # generate RHSM facts at this point
+            self._write_rhsm_facts(cleaner.hashed_fqdn, cleaner.ip_report)
+
             if self.config.output_dir:
                 # return the entire soscleaner dir
                 #   see additions to soscleaner.SOSCleaner.clean_report
