@@ -24,9 +24,10 @@ def test_dir_returned(_):
     assert ret == d.archive.archive_dir
 
 
+@patch('insights.client.data_collector.DataCollector._write_rhsm_facts')
 @patch('insights.client.data_collector.SOSCleaner')
 @patch('insights.client.data_collector.InsightsArchive')
-def test_soscleaner_archive_returned(_, soscleaner):
+def test_soscleaner_archive_returned(_, soscleaner, __):
     '''
     Test that SOSCleaner is enabled when obfuscate=True,
     and returns an archive by default
@@ -40,9 +41,10 @@ def test_soscleaner_archive_returned(_, soscleaner):
     assert ret == soscleaner.return_value.archive_path
 
 
+@patch('insights.client.data_collector.DataCollector._write_rhsm_facts')
 @patch('insights.client.data_collector.SOSCleaner')
 @patch('insights.client.data_collector.InsightsArchive')
-def test_soscleaner_dir_returned(_, soscleaner):
+def test_soscleaner_dir_returned(_, soscleaner, __):
     '''
     Test that SOSCleaner returns a directory when
     output_dir is specified.
@@ -92,7 +94,7 @@ def test_soscleaner_additions(isdir_, clean_opts):
         s._clean_files_only = Mock()
         s._extract_sosreport = Mock()
         s._make_dest_env = Mock()
-        s._get_hostname = Mock(return_value=(None, None))
+        s._get_hostname = Mock(return_value=(None, None, None))
         s._add_extra_files = Mock()
         s._process_hosts_file = Mock()
         s._domains2db = Mock()
