@@ -1535,6 +1535,11 @@
             "symbolic_name": "sysctl"
         },
         {
+            "command": "/bin/systemctl cat dnsmasq.service",
+            "pattern": [],
+            "symbolic_name": "systemctl_cat_dnsmasq_service"
+        },
+        {
             "command": "/bin/systemctl cat rpcbind.socket",
             "pattern": [],
             "symbolic_name": "systemctl_cat_rpcbind_socket"
@@ -2171,6 +2176,11 @@
             "symbolic_name": "dnf_modules"
         },
         {
+            "file": "/etc/dnsmasq.conf",
+            "pattern": [],
+            "symbolic_name": "dnsmasq_config"
+        },
+        {
             "file": "/etc/sysconfig/docker-storage-setup",
             "pattern": [],
             "symbolic_name": "docker_storage_setup"
@@ -2303,6 +2313,11 @@
             "symbolic_name": "haproxy_cfg"
         },
         {
+            "file": "/etc/opt/rh/rh-haproxy18/haproxy/haproxy.cfg",
+            "pattern": [],
+            "symbolic_name": "haproxy_cfg_scl"
+        },
+        {
             "file": "/etc/heat/heat.conf",
             "pattern": [],
             "symbolic_name": "heat_conf"
@@ -2343,7 +2358,6 @@
             "pattern": [
                 "(28)No space left on device: ",
                 "AH00485: scoreboard is full, not at MaxRequestWorkers",
-                "ModSecurity: collections_remove_stale: Failed deleting collection",
                 "The mpm module (prefork.c) is not supported by mod_http2",
                 "[crit] Memory allocation failed, aborting process",
                 "and would exceed the ServerLimit value of ",
@@ -2609,7 +2623,6 @@
                 "TCP request queue full drops",
                 "TX driver issue detected, PF reset issued",
                 "The threshold number of context switches per second per CPU",
-                "This system does not support \"SSSE3\"",
                 "Unit ip6tables.service entered failed state",
                 "Unit iptables.service entered failed state",
                 "Virtualization daemon",
@@ -2643,7 +2656,6 @@
                 "invalid key/value pair in file /usr/lib/udev/rules.d/59-fc-wwpn-id.rules",
                 "ip_local_port_range: prefer different parity for start/end values",
                 "irq handler for vector (irq -1)",
-                "is beyond advertised capabilities",
                 "is down or the link is down",
                 "is greater than comparison timestamp",
                 "iscsiadm: iscsiadm: Could not log into all portals",
@@ -2675,7 +2687,6 @@
                 "rhsmd: rhsmd process exceeded runtime and was killed",
                 "shm_open failed, Permission denied",
                 "skb_copy",
-                "skb_over_panic",
                 "socket error sending to node",
                 "start request repeated too quickly for docker.service",
                 "state changed timeout -> done",
@@ -3618,6 +3629,11 @@
             "symbolic_name": "sysconfig_rh_mongodb26"
         },
         {
+            "file": "/etc/sysconfig/oracleasm",
+            "pattern": [],
+            "symbolic_name": "sysconfig_oracleasm"
+        },
+        {
             "file": "/etc/sysconfig/prelink",
             "pattern": [],
             "symbolic_name": "sysconfig_prelink"
@@ -4148,6 +4164,14 @@
             "symbolic_name": "ansible_tower_settings"
         },
         {
+            "glob": "/etc/udev/rules.d/*asm*.rules",
+            "pattern": [
+                "oracleasm",
+                "ACTION=="
+            ],
+            "symbolic_name": "etc_udev_oracle_asm_rules"
+        },
+        {
             "glob": "/sys/devices/system/cpu/cpu[0-9]*/online",
             "symbolic_name": "cpu_cores",
             "pattern": []
@@ -4161,6 +4185,11 @@
             "glob": "/sys/devices/system/cpu/vulnerabilities/*",
             "symbolic_name": "cpu_vulns",
             "pattern": []
+        },
+        {
+            "glob": "/etc/dnsmasq.d/*.conf",
+            "pattern": [],
+            "symbolic_name": "dnsmasq_config"
         },
         {
             "glob": "/sys/class/net/*/address",
@@ -4377,5 +4406,5 @@
     "pre_commands": {
         "iface": "/sbin/ip -o link | awk -F ': |@' '/.*link\\/ether/ {print $2}'"
     },
-    "version": "2021-07-08T13:34:47.107154"
+    "version": "2021-07-29T13:51:55.397132"
 }
