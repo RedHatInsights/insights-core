@@ -497,13 +497,3 @@ class InsightsUploadConf(object):
             'using_new_format': self.using_new_format,
             'using_patterns_regex': using_regex
         }
-
-
-if __name__ == '__main__':
-    from .config import InsightsConfig
-    config = InsightsConfig().load_all()
-    uploadconf = InsightsUploadConf(config)
-    uploadconf.validate()
-    # report = uploadconf.create_report()
-
-    # print(report)
