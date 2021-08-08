@@ -5,7 +5,7 @@ import mock
 import pytest
 from .helpers import insights_upload_conf
 from mock.mock import patch, Mock
-from insights.client.collection_rules import correct_format, load_yaml, verify_permissions, InsightsUploadConf
+from insights.client.collection_rules import correct_format, load_yaml, verify_permissions
 
 
 conf_remove_file = '/tmp/remove.conf'
