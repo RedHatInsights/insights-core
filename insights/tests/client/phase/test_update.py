@@ -18,7 +18,7 @@ def test_update_payload_on(insights_config, insights_client):
     except SystemExit:
         pass
     insights_client.return_value.update.assert_called_once()
-    insights_client.return_value.update_rules.assert_called_once()
+    insights_client.return_value.update_rules.assert_not_called()
 
 
 @patch("insights.client.phase.v1.InsightsClient")
