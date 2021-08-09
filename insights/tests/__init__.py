@@ -19,6 +19,7 @@ import insights
 from insights import apply_filters
 from insights.core import dr, filters, spec_factory
 from insights.core.context import Context
+from insights.core.plugins import make_none
 from insights.core.spec_factory import RegistryPoint
 from insights.specs import Specs
 
@@ -82,12 +83,20 @@ HEARTBEAT_NAME = "insights-heartbeat-9cd6f607-6b28-44ef-8481-62b0e7773614"
 DEFAULT_RELEASE = "Red Hat Enterprise Linux Server release 7.2 (Maipo)"
 DEFAULT_HOSTNAME = "hostname.example.com"
 
+MAKE_NONE_RESULT = make_none()
+
 
 def deep_compare(result, expected):
     """
     Deep compare rule reducer results when testing.
     """
     logger.debug("--Comparing-- (%s) %s to (%s) %s", type(result), result, type(expected), expected)
+
+    # This case ensures that when rules return a make_none() response, all of the older
+    # CI tests that are looking for None instead of make_none() will still pass
+    if result is None or (isinstance(result, dict) and result.get("type") == "none"):
+        assert (expected is None or expected == MAKE_NONE_RESULT), result
+        return
 
     if isinstance(result, dict) and expected is None:
         assert result["type"] == "skip", result
@@ -108,7 +117,7 @@ def run_input_data(component, input_data):
     return broker
 
 
-def run_test(component, input_data, expected=None):
+def run_test(component, input_data, expected=None, return_make_none=False):
     if filters.ENABLED:
         mod = component.__module__
         sup_mod = '.'.join(mod.split('.')[:-1])
@@ -121,9 +130,14 @@ def run_test(component, input_data, expected=None):
             raise Exception(msg % (mod, ", ".join(names)))
 
     broker = run_input_data(component, input_data)
+    result = broker.get(component)
     if expected:
-        deep_compare(broker.get(component), expected)
-    return broker.get(component)
+        deep_compare(result, expected)
+    elif result == MAKE_NONE_RESULT and not return_make_none:
+        # Convert make_none() result to None as default unless
+        # make_none explicitly requested
+        return None
+    return result
 
 
 def integrate(input_data, component):
