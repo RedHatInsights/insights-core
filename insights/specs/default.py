@@ -37,7 +37,7 @@ from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersio
 from insights.parsers.mount import Mount
 from insights.specs import Specs
 from insights.specs.datasources import (
-    cloud_init, candlepin_broker, ethernet, get_running_commands, ipcs, package_provides,
+    awx_manage, cloud_init, candlepin_broker, ethernet, get_running_commands, ipcs, package_provides,
     ps as ps_datasource, sap, satellite_missed_queues)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 
@@ -94,6 +94,7 @@ class DefaultSpecs(Specs):
     aws_instance_id_doc = simple_command("/usr/bin/curl -s http://169.254.169.254/latest/dynamic/instance-identity/document --connect-timeout 5", deps=[IsAWS])
     aws_instance_id_pkcs7 = simple_command("/usr/bin/curl -s http://169.254.169.254/latest/dynamic/instance-identity/pkcs7 --connect-timeout 5", deps=[IsAWS])
     awx_manage_check_license = simple_command("/usr/bin/awx-manage check_license")
+    awx_manage_check_license_data = awx_manage.awx_manage_check_license_data_datasource
     azure_instance_type = simple_command("/usr/bin/curl -s -H Metadata:true http://169.254.169.254/metadata/instance/compute/vmSize?api-version=2018-10-01&format=text --connect-timeout 5", deps=[IsAzure])
     azure_instance_plan = simple_command("/usr/bin/curl -s -H Metadata:true http://169.254.169.254/metadata/instance/compute/plan?api-version=2018-10-01&format=json --connect-timeout 5", deps=[IsAzure])
     bios_uuid = simple_command("/usr/sbin/dmidecode -s system-uuid")
@@ -222,6 +223,7 @@ class DefaultSpecs(Specs):
     dmsetup_status = simple_command("/usr/sbin/dmsetup status")
     dnf_conf = simple_file("/etc/dnf/dnf.conf")
     dnf_modules = glob_file("/etc/dnf/modules.d/*.module")
+    dnsmasq_config = glob_file(["/etc/dnsmasq.conf", "/etc/dnsmasq.d/*.conf"])
     docker_info = simple_command("/usr/bin/docker info")
     docker_list_containers = simple_command("/usr/bin/docker ps --all --no-trunc")
     docker_list_images = simple_command("/usr/bin/docker images --all --no-trunc --digests")
@@ -243,6 +245,7 @@ class DefaultSpecs(Specs):
     etc_machine_id = simple_file("/etc/machine-id")
     etc_udev_40_redhat_rules = first_file(["/etc/udev/rules.d/40-redhat.rules", "/run/udev/rules.d/40-redhat.rules",
                                        "/usr/lib/udev/rules.d/40-redhat.rules", "/usr/local/lib/udev/rules.d/40-redhat.rules"])
+    etc_udev_oracle_asm_rules = glob_file(r"/etc/udev/rules.d/*asm*.rules")
     etcd_conf = simple_file("/etc/etcd/etcd.conf")
     ethernet_interfaces = listdir("/sys/class/net", context=HostContext)
     ethtool = foreach_execute(ethernet.interfaces, "/sbin/ethtool %s")
@@ -302,6 +305,7 @@ class DefaultSpecs(Specs):
     grubby_default_kernel = simple_command("/sbin/grubby --default-kernel")
     hammer_task_list = simple_command("/usr/bin/hammer --config /root/.hammer/cli.modules.d/foreman.yml --output csv task list --search 'state=running AND ( label=Actions::Candlepin::ListenOnCandlepinEvents OR label=Actions::Katello::EventQueue::Monitor )'")
     haproxy_cfg = first_file(["/var/lib/config-data/puppet-generated/haproxy/etc/haproxy/haproxy.cfg", "/etc/haproxy/haproxy.cfg"])
+    haproxy_cfg_scl = simple_file("/etc/opt/rh/rh-haproxy18/haproxy/haproxy.cfg")
     heat_api_log = first_file(["/var/log/containers/heat/heat_api.log", "/var/log/heat/heat-api.log", "/var/log/heat/heat_api.log"])
     heat_conf = first_file(["/var/lib/config-data/puppet-generated/heat/etc/heat/heat.conf", "/etc/heat/heat.conf"])
     hostname = simple_command("/bin/hostname -f")
@@ -716,11 +720,13 @@ class DefaultSpecs(Specs):
     sysconfig_libvirt_guests = simple_file("etc/sysconfig/libvirt-guests")
     sysconfig_network = simple_file("etc/sysconfig/network")
     sysconfig_ntpd = simple_file("/etc/sysconfig/ntpd")
+    sysconfig_oracleasm = simple_file("/etc/sysconfig/oracleasm")
     sysconfig_prelink = simple_file("/etc/sysconfig/prelink")
     sysconfig_sshd = simple_file("/etc/sysconfig/sshd")
     sysconfig_virt_who = simple_file("/etc/sysconfig/virt-who")
     sysctl = simple_command("/sbin/sysctl -a")
     sysctl_conf = simple_file("/etc/sysctl.conf")
+    systemctl_cat_dnsmasq_service = simple_command("/bin/systemctl cat dnsmasq.service")
     systemctl_cat_rpcbind_socket = simple_command("/bin/systemctl cat rpcbind.socket")
     systemctl_cinder_volume = simple_command("/bin/systemctl show openstack-cinder-volume")
     systemctl_httpd = simple_command("/bin/systemctl show httpd")

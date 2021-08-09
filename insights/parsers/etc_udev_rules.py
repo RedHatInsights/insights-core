@@ -9,7 +9,6 @@ The parsers included in this module are:
 
 UdevRules40Redhat - file ``/etc/udev/rules.d/40-redhat.rules``
 --------------------------------------------------------------
-
 """
 from insights import parser
 from insights.core import LogFileOutput

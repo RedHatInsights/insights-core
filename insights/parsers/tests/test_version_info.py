@@ -1,5 +1,7 @@
 import doctest
+
 from insights.parsers import version_info
+from insights.parsers.tests import test_empty_skip
 from insights.tests import context_wrap
 
 
@@ -20,6 +22,10 @@ def test_version_info():
     ret = version_info.VersionInfo(context_wrap(VER_INFO_2))
     assert ret.core_version == '3.0.203-1'
     assert ret.client_version == '3.1.1'
+
+
+def test_version_info_empty():
+    assert 'Empty output.' in test_empty_skip(version_info.VersionInfo)
 
 
 def test_doc_examples():

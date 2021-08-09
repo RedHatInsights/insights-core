@@ -13,6 +13,7 @@ from insights.parsers.sysconfig import CorosyncSysconfig
 from insights.parsers.sysconfig import IfCFGStaticRoute
 from insights.parsers.sysconfig import NetworkSysconfig
 from insights.parsers.sysconfig import GrubSysconfig
+from insights.parsers.sysconfig import OracleasmSysconfig
 import doctest
 
 
@@ -169,6 +170,27 @@ GRUB_DISABLE_RECOVERY="true"
 GRUB_ENABLE_BLSCFG=true
 """.strip()
 
+ORACLEASM_SYSCONFIG = """
+#
+# This is a configuration file for automatic loading of the Oracle
+# Automatic Storage Management library kernel driver.  It is generated
+# By running /etc/init.d/oracleasm configure.  Please use that method
+# to modify this file
+#
+# ORACLEASM_ENABELED: 'true' means to load the driver on boot.
+ORACLEASM_ENABLED=true
+# ORACLEASM_UID: Default user owning the /dev/oracleasm mount point.
+ORACLEASM_UID=oracle
+# ORACLEASM_GID: Default group owning the /dev/oracleasm mount point.
+ORACLEASM_GID=oinstall
+# ORACLEASM_SCANBOOT: 'true' means scan for ASM disks on boot.
+ORACLEASM_SCANBOOT=true
+# ORACLEASM_SCANORDER: Matching patterns to order disk scanning
+ORACLEASM_SCANORDER="dm"
+# ORACLEASM_SCANEXCLUDE: Matching patterns to exclude disks from scan
+ORACLEASM_SCANEXCLUDE="sd"
+""".strip()
+
 
 def test_sysconfig_doc():
     env = {
@@ -193,7 +215,8 @@ def test_sysconfig_doc():
             'cs_syscfg': CorosyncSysconfig(context_wrap(COROSYNCSYSCONFIG)),
             'conn_info': IfCFGStaticRoute(context_wrap(STATIC_ROUTE_1, CONTEXT_PATH_DEVICE_1)),
             'net_syscfg': NetworkSysconfig(context_wrap(NETWORK_SYSCONFIG)),
-            'grub_syscfg': GrubSysconfig(context_wrap(GRUB_SYSCONFIG))
+            'grub_syscfg': GrubSysconfig(context_wrap(GRUB_SYSCONFIG)),
+            'oracleasm_syscfg': OracleasmSysconfig(context_wrap(ORACLEASM_SYSCONFIG))
           }
     failed, total = doctest.testmod(sysconfig, globs=env)
     assert failed == 0

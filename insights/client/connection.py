@@ -312,10 +312,10 @@ class InsightsConnection(object):
         for ext in paths:
             try:
                 logger.log(NETWORK, "Testing: %s", test_url + ext)
-                if method is "POST":
+                if method == "POST":
                     test_req = self.session.post(
                         test_url + ext, timeout=self.config.http_timeout, data=test_flag)
-                elif method is "GET":
+                elif method == "GET":
                     test_req = self.session.get(test_url + ext, timeout=self.config.http_timeout)
                 logger.log(NETWORK, "HTTP Status Code: %d", test_req.status_code)
                 logger.log(NETWORK, "HTTP Status Text: %s", test_req.reason)
@@ -344,14 +344,14 @@ class InsightsConnection(object):
             return self._legacy_test_urls(url, method)
         try:
             logger.log(NETWORK, 'Testing %s', url)
-            if method is 'POST':
+            if method == 'POST':
                 test_tar = TemporaryFile(mode='rb', suffix='.tar.gz')
                 test_files = {
                     'file': ('test.tar.gz', test_tar, 'application/vnd.redhat.advisor.collection+tgz'),
                     'metadata': '{\"test\": \"test\"}'
                 }
                 test_req = self.session.post(url, timeout=self.config.http_timeout, files=test_files)
-            elif method is "GET":
+            elif method == "GET":
                     test_req = self.session.get(url, timeout=self.config.http_timeout)
             logger.log(NETWORK, "HTTP Status Code: %d", test_req.status_code)
             logger.log(NETWORK, "HTTP Status Text: %s", test_req.reason)
@@ -515,8 +515,8 @@ class InsightsConnection(object):
         logger.debug(u'Branch information: %s', json.dumps(branch_info))
 
         # Determine if we are connected to Satellite 5
-        if ((branch_info[u'remote_branch'] is not -1 and
-             branch_info[u'remote_leaf'] is -1)):
+        if ((branch_info[u'remote_branch'] != -1 and
+             branch_info[u'remote_leaf'] == -1)):
             self.get_satellite5_info(branch_info)
 
         # logger.debug(u'Saving branch info to file.')

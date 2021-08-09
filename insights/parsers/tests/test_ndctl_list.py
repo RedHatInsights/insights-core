@@ -1,6 +1,8 @@
 import doctest
+
 from insights.parsers import ndctl_list
 from insights.parsers.ndctl_list import NdctlListNi
+from insights.parsers.tests import test_empty_skip
 from insights.tests import context_wrap
 
 NDCTL_OUTPUT = """
@@ -35,7 +37,7 @@ NDCTL_OUTPUT = """
 """.strip()
 
 
-def test_netstat_doc_examples():
+def test_ndctl_list_doc_examples():
     env = {
         'ndctl_list': NdctlListNi(context_wrap(NDCTL_OUTPUT))
     }
@@ -49,3 +51,7 @@ def test_get_dev_attr():
     assert 'map' in ndctl.get_blockdev('pmem1')
     assert ndctl.get_blockdev('pmem1').get('map') == 'mem'
     assert ndctl.get_blockdev('pmem2') == {}
+
+
+def test_empty():
+    assert 'Empty output.' in test_empty_skip(NdctlListNi)
