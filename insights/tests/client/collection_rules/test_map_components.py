@@ -59,7 +59,6 @@ def test_get_component_by_symbolic_name():
         'ls_usr_sbin',
         'lvmconfig',
         'nova_migration_uid',
-        'ntpq_pn',
         'rabbitmq_queues',
         'rhev_data_center',
         'root_crontab',
