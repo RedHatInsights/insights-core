@@ -29,6 +29,6 @@ class AwxManagePrintSettings(CommandParser, JSONParser):
         >>> settings['AWX_CLEANUP_PATHS']
         False
         >>> settings['SYSTEM_UUID']
-        u'eecfd8dc-5028-46ef-9868-86f7d595da13'
+        'eecfd8dc-5028-46ef-9868-86f7d595da13'
     """
     pass
