@@ -1,6 +1,8 @@
 import doctest
+
 from insights.parsers import freeipa_healthcheck_log
 from insights.parsers.freeipa_healthcheck_log import FreeIPAHealthCheckLog
+from insights.parsers.tests import test_empty_skip
 from insights.tests import context_wrap
 
 LONG_FREEIPA_HEALTHCHECK_LOG_OK = """
@@ -94,6 +96,10 @@ def test_freeipa_healthcheck_get_results_not_ok():
         assert result['result'] in ['ERROR', 'CRITICAL']
         assert result['check'] == 'FileSystemSpaceCheck'
         assert result['source'] == 'ipahealthcheck.system.filesystemspace'
+
+
+def test_freeipa_healthcheck_log_empty():
+    assert 'Empty output.' in test_empty_skip(FreeIPAHealthCheckLog)
 
 
 def test_freeipa_healthcheck_log__documentation():

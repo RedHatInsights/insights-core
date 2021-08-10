@@ -223,6 +223,7 @@ class DefaultSpecs(Specs):
     dmsetup_status = simple_command("/usr/sbin/dmsetup status")
     dnf_conf = simple_file("/etc/dnf/dnf.conf")
     dnf_modules = glob_file("/etc/dnf/modules.d/*.module")
+    dnsmasq_config = glob_file(["/etc/dnsmasq.conf", "/etc/dnsmasq.d/*.conf"])
     docker_info = simple_command("/usr/bin/docker info")
     docker_list_containers = simple_command("/usr/bin/docker ps --all --no-trunc")
     docker_list_images = simple_command("/usr/bin/docker images --all --no-trunc --digests")
@@ -244,6 +245,7 @@ class DefaultSpecs(Specs):
     etc_machine_id = simple_file("/etc/machine-id")
     etc_udev_40_redhat_rules = first_file(["/etc/udev/rules.d/40-redhat.rules", "/run/udev/rules.d/40-redhat.rules",
                                        "/usr/lib/udev/rules.d/40-redhat.rules", "/usr/local/lib/udev/rules.d/40-redhat.rules"])
+    etc_udev_oracle_asm_rules = glob_file(r"/etc/udev/rules.d/*asm*.rules")
     etcd_conf = simple_file("/etc/etcd/etcd.conf")
     ethernet_interfaces = listdir("/sys/class/net", context=HostContext)
     ethtool = foreach_execute(ethernet.interfaces, "/sbin/ethtool %s")
@@ -718,6 +720,7 @@ class DefaultSpecs(Specs):
     sysconfig_libvirt_guests = simple_file("etc/sysconfig/libvirt-guests")
     sysconfig_network = simple_file("etc/sysconfig/network")
     sysconfig_ntpd = simple_file("/etc/sysconfig/ntpd")
+    sysconfig_oracleasm = simple_file("/etc/sysconfig/oracleasm")
     sysconfig_prelink = simple_file("/etc/sysconfig/prelink")
     sysconfig_sshd = simple_file("/etc/sysconfig/sshd")
     sysconfig_virt_who = simple_file("/etc/sysconfig/virt-who")

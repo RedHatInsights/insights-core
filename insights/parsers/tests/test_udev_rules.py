@@ -1,6 +1,6 @@
 import doctest
 from insights.parsers import udev_rules
-from insights.parsers.udev_rules import UdevRulesFCWWPN, UdevRules40Redhat
+from insights.parsers.udev_rules import UdevRulesFCWWPN, UdevRules40Redhat, UdevRulesOracleASM
 from insights.tests import context_wrap
 
 UDEV_RULES_FILT_HIT = """
@@ -70,10 +70,28 @@ KERNEL=="sd*[0-9]", SUBSYSTEMS=="scsi", ENV{.ID_ZFCP_BUS}=="1", ENV{DEVTYPE}=="p
 LABEL="zfcp_scsi_device_end"
 """.strip()
 
+ORACLE_ASM_UDEV_RULES = """
+KERNEL=="dm*", PROGRAM=="scsi_id --page=0x83 --whitelisted --device=/dev/%k", \
+RESULT=="360060e80164c210000014c2100007a8f", \
+SYMLINK+="oracleasm/disks/asm_sbe80_7a8f", OWNER="oracle", GROUP="dba", MODE="0660"
+
+KERNEL=="dm*", PROGRAM=="scsi_id --page=0x83 --whitelisted --device=/dev/%k", \
+RESULT=="360060e80164c210000014c2100007a90", \
+SYMLINK+="oracleasm/disks/asm_sbe80_7a90", OWNER="oracle", GROUP="dba", MODE="0660"
+
+KERNEL=="dm*", PROGRAM=="scsi_id --page=0x83 --whitelisted --device=/dev/%k", \
+RESULT=="360060e80164c210000014c2100007a91", \
+SYMLINK+="oracleasm/disks/asm_sbe80_7a91", OWNER="oracle", GROUP="dba", MODE="0660"
+
+# NOTE: Insert new Oracle ASM LUN configuration before this comment
+ACTION=="add|change", KERNEL=="sd*", OPTIONS:="nowatch"
+""".strip()
+
 
 def test_documentation():
     env = {'udev_rules': UdevRulesFCWWPN(context_wrap(UDEV_RULES_FILT_HIT)),
-           'udev_40_redhat_rules': UdevRules40Redhat(context_wrap(SAMPLE_40_REDHAT_RULES))}
+           'udev_40_redhat_rules': UdevRules40Redhat(context_wrap(SAMPLE_40_REDHAT_RULES)),
+           'udev_oracle_asm_rules': UdevRulesOracleASM(context_wrap(ORACLE_ASM_UDEV_RULES))}
     failed_count, tests = doctest.testmod(udev_rules, globs=env)
     assert failed_count == 0
 
@@ -92,3 +110,13 @@ def test_udev_40_redhat_rules():
                  'SUBSYSTEM!="memory", GOTO="memory_hotplug_end"',
                  'ACTION!="add", GOTO="memory_hotplug_end"']:
         assert line in result.lines
+
+
+def test_udev_oracle_asm_rules():
+    result = UdevRulesOracleASM(context_wrap(ORACLE_ASM_UDEV_RULES))
+    for line in ['ACTION=="add|change", KERNEL=="sd*", OPTIONS:="nowatch"',
+                 'KERNEL=="dm*", PROGRAM=="scsi_id --page=0x83 --whitelisted --device=/dev/%k", RESULT=="360060e80164c210000014c2100007a8f", SYMLINK+="oracleasm/disks/asm_sbe80_7a8f", OWNER="oracle", GROUP="dba", MODE="0660"']:
+        assert line in result.lines
+    actions = result.get('ACTION')
+    assert len(actions) == 1
+    assert actions[0]['raw_message'] == 'ACTION=="add|change", KERNEL=="sd*", OPTIONS:="nowatch"'
