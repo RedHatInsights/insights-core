@@ -5,7 +5,6 @@ EngineDBQuery - command ``engine-db-query --statement "<DB_QUERY>" --json``
 Parses the output of the command `engine-db-query` returned in JSON format.
 """
 from insights.core import CommandParser, JSONParser
-from insights.parsers import SkipException
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -46,9 +45,6 @@ class EngineDBQueryVDSMversion(CommandParser, JSONParser):
         True
     """
     def parse_content(self, content):
-        if not content:
-            raise SkipException("Empty output.")
-
         super(EngineDBQueryVDSMversion, self).parse_content(content)
 
     @property

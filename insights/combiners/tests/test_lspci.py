@@ -102,12 +102,16 @@ def test_lspci_k():
     assert sorted(lspci.pci_dev_list) == ['00:00.0', '00:02.0', '00:03.0', '00:16.0', '00:19.0', '00:1b.0']
     assert lspci.search(Dev_Details__contains='I218') == [
         {
+            'Slot': '00:19.0',
             'Driver': 'e1000e', 'Module': ['e1000e'],
             'Subsystem': 'Lenovo ThinkPad X240',
             'Dev_Details': 'Ethernet controller: Intel Corporation Ethernet Connection I218-LM (rev 04)'
         }
     ]
     assert lspci.search(Slot__startwith='00:1b.0') == []
+    # Make sure the original parser is untouched
+    assert lspci_k.pci_dev_details('00:00.0').get('Kernel driver in use') == 'hsw_uncore'
+    assert lspci_k.pci_dev_details('00:1b.0').get('Kernel driver in use') == 'snd_hda_intel'
 
 
 def test_lspci_vmmkn():
@@ -122,6 +126,9 @@ def test_lspci_vmmkn():
         }
     ]
     assert lspci.search(Dev_Details__contains='I218') == []
+    # Make sure the original parser is untouched
+    assert sorted(lspci_vmmkn[0].keys()) == sorted(['Slot', 'Class', 'Vendor',
+                        'Device', 'SVendor', 'SDevice', 'Rev', 'Driver'])
 
 
 def test_lspci_both():
@@ -148,6 +155,13 @@ def test_lspci_both():
             'Dev_Details': 'Audio device: Intel Corporation 8 Series HD Audio Controller (rev 04)'
         }
     ]
+    # Make sure the original parsers are untouched
+    assert lspci_k.pci_dev_details('00:00.0').get('Kernel driver in use') == 'hsw_uncore'
+    assert lspci_k.pci_dev_details('00:1b.0').get('Kernel driver in use') == 'snd_hda_intel'
+    assert sorted(lspci_vmmkn[0].keys()) == sorted(['Slot', 'Class', 'Vendor',
+            'Device', 'SVendor', 'SDevice', 'Rev', 'Driver'])
+    assert sorted(lspci_vmmkn[-1].keys()) == sorted(['Class', 'Device',
+            'Driver', 'Module', 'Rev', 'SDevice', 'SVendor', 'Slot', 'Vendor'])
 
 
 def test_doc_examples():
