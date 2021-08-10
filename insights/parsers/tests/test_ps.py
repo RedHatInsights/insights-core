@@ -60,6 +60,14 @@ F   UID   PID  PPID PRI  NI    VSZ   RSS WCHAN  STAT TTY        TIME COMMAND
 1     0     8     2  20   0      0     0 rcu_gp S    ?          0:00 [rcu_bh]
 """
 
+PsEoCmd_TEST_DOC = """
+  PID COMMAND
+    1 /usr/lib/systemd/systemd
+    2 [kthreadd]
+    11 /usr/bin/python3
+    12 [kworker/u16:0-kcryptd/253:0]
+"""
+
 
 def test_doc_examples():
     env = {
@@ -67,7 +75,8 @@ def test_doc_examples():
         'ps_auxww': ps.PsAuxww(context_wrap(PsAuxww_TEST_DOC)),
         'ps_ef': ps.PsEf(context_wrap(PsEf_TEST_DOC)),
         'ps_eo': ps.PsEo(context_wrap(PsEo_TEST_DOC, strip=False)),
-        'ps_alxwww': ps.PsAlxwww(context_wrap(PsAlxwww_TEST_DOC))
+        'ps_alxwww': ps.PsAlxwww(context_wrap(PsAlxwww_TEST_DOC)),
+        'ps_eo_cmd': ps.PsEoCmd(context_wrap(PsEoCmd_TEST_DOC))
     }
     failed, total = doctest.testmod(ps, globs=env)
     assert failed == 0
@@ -428,3 +437,36 @@ def test_ps_alxwww():
     assert dbus_proc['COMMAND_NAME'] == 'dbus-daemon'
     assert dbus_proc['UID'] == '81'
     assert dbus_proc['ARGS'] == '--system --address=systemd: --nofork --nopidfile --systemd-activation'
+
+PS_EO_CMD_NORMAL = """
+    PID COMMAND
+      1 /usr/lib/systemd/systemd
+      2 [kthreadd]
+      3 [rcu_gp]
+  93831 qmgr
+  93838 tlsmgr
+1221279 /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.242.b08-4.el8.x86_64/jre/bin/java
+1221774 /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.242.b08-4.el8.x86_64/jre/bin/java
+"""
+
+
+def test_ps_eo_cmd():
+    p = ps.PsEoCmd(context_wrap(PS_EO_CMD_NORMAL, strip=False))
+    assert p is not None
+    assert len(p.running_pids()) == 7
+    assert '93838' in p.pid_info
+    assert p.pid_info['1221279'] == {
+        'PID': '1221279', 'COMMAND': '/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.242.b08-4.el8.x86_64/jre/bin/java', 'COMMAND_NAME': 'java', 'ARGS': ''
+    }
+    assert p.pid_info['3'] == {
+        'PID': '3', 'COMMAND': '[rcu_gp]', 'COMMAND_NAME': '[rcu_gp]', 'ARGS': ''
+    }
+    assert p.pid_info['93831'] == {
+        'PID': '93831', 'COMMAND': 'qmgr', 'COMMAND_NAME': 'qmgr', 'ARGS': ''
+    }
+
+
+def test_ps_eo_cmd_stripped():
+    p = ps.PsEo(context_wrap(PS_EO_CMD_NORMAL, strip=True))
+    assert p is not None
+    assert len(p.running_pids()) == 7

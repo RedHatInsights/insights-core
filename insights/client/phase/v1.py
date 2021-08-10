@@ -130,8 +130,7 @@ def update(client, config):
     if config.payload:
         logger.debug('Uploading a payload. Bypassing rules update.')
         return
-    if not config.core_collect:
-        client.update_rules()
+    client.update_rules()
 
 
 @phase
@@ -271,6 +270,14 @@ def post_update(client, config):
     # only do this if set from the CLI. normally display_name is sent on upload
     if 'display_name' in config._cli_opts and not config.register:
         if client.set_display_name(config.display_name):
+            sys.exit(constants.sig_kill_ok)
+        else:
+            sys.exit(constants.sig_kill_bad)
+
+    # set --ansible-hostname independent of register
+    # only do this if set from the CLI. normally display_name is sent on upload
+    if 'ansible_host' in config._cli_opts and not config.register:
+        if client.set_ansible_host(config.ansible_host):
             sys.exit(constants.sig_kill_ok)
         else:
             sys.exit(constants.sig_kill_bad)

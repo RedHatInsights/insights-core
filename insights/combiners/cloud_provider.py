@@ -235,10 +235,12 @@ class AmazonCloudProvider(CloudProviderInstance):
         self.rpm = 'rh-amazon-rhui-client'
         self.bios_vendor_version = 'amazon'
         self.uuid = 'ec2'
+        self.asset_tag = 'Amazon EC2'
         self.cp_bios_vendor = self._get_cp_bios_vendor(self.bios_vendor_version)
         self.cp_bios_version = self._get_cp_bios_version(self.bios_vendor_version)
         self.cp_rpms = self._get_rpm_cp_info(self.rpm)
         self.cp_uuid = self._get_cp_from_uuid(self.uuid)
+        self.cp_asset_tag = self._get_cp_from_asset_tag(self.asset_tag)
 
 
 class AzureCloudProvider(CloudProviderInstance):
@@ -387,7 +389,7 @@ class CloudProvider(object):
         if self._cp_objects[self.AZURE].cp_yum or self._cp_objects[self.AZURE].cp_asset_tag:
             return self.AZURE
 
-        if self._cp_objects[self.AWS].cp_uuid:
+        if self._cp_objects[self.AWS].cp_uuid and self._cp_objects[self.AWS].cp_asset_tag:
             return self.AWS
 
         if self._cp_objects[self.ALIBABA].cp_manufacturer:

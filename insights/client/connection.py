@@ -312,10 +312,10 @@ class InsightsConnection(object):
         for ext in paths:
             try:
                 logger.log(NETWORK, "Testing: %s", test_url + ext)
-                if method is "POST":
+                if method == "POST":
                     test_req = self.session.post(
                         test_url + ext, timeout=self.config.http_timeout, data=test_flag)
-                elif method is "GET":
+                elif method == "GET":
                     test_req = self.session.get(test_url + ext, timeout=self.config.http_timeout)
                 logger.log(NETWORK, "HTTP Status Code: %d", test_req.status_code)
                 logger.log(NETWORK, "HTTP Status Text: %s", test_req.reason)
@@ -344,14 +344,14 @@ class InsightsConnection(object):
             return self._legacy_test_urls(url, method)
         try:
             logger.log(NETWORK, 'Testing %s', url)
-            if method is 'POST':
+            if method == 'POST':
                 test_tar = TemporaryFile(mode='rb', suffix='.tar.gz')
                 test_files = {
                     'file': ('test.tar.gz', test_tar, 'application/vnd.redhat.advisor.collection+tgz'),
                     'metadata': '{\"test\": \"test\"}'
                 }
                 test_req = self.session.post(url, timeout=self.config.http_timeout, files=test_files)
-            elif method is "GET":
+            elif method == "GET":
                     test_req = self.session.get(url, timeout=self.config.http_timeout)
             logger.log(NETWORK, "HTTP Status Code: %d", test_req.status_code)
             logger.log(NETWORK, "HTTP Status Text: %s", test_req.reason)
@@ -516,8 +516,8 @@ class InsightsConnection(object):
         logger.debug(u'Branch information: %s', json.dumps(branch_info))
 
         # Determine if we are connected to Satellite 5
-        if ((branch_info[u'remote_branch'] is not -1 and
-             branch_info[u'remote_leaf'] is -1)):
+        if ((branch_info[u'remote_branch'] != -1 and
+             branch_info[u'remote_leaf'] == -1)):
             self.get_satellite5_info(branch_info)
 
         # logger.debug(u'Saving branch info to file.')
@@ -856,6 +856,9 @@ class InsightsConnection(object):
         if self.config.display_name:
             # add display_name to canonical facts
             c_facts['display_name'] = self.config.display_name
+        if self.config.ansible_host:
+            # add ansible_host to canonical facts
+            c_facts['ansible_host'] = self.config.ansible_host
         if self.config.branch_info:
             c_facts["branch_info"] = self.config.branch_info
             c_facts["satellite_id"] = self.config.branch_info["remote_leaf"]
@@ -954,6 +957,28 @@ class InsightsConnection(object):
             logger.error('Could not update display name.')
             return False
         logger.info('Display name updated to ' + display_name + '.')
+        return True
+
+    def set_ansible_host(self, ansible_host):
+        '''
+        Set Ansible hostname of a system independently of upload.
+        '''
+        system = self._fetch_system_by_machine_id()
+        if not system:
+            return system
+        inventory_id = system[0]['id']
+
+        req_url = self.inventory_url + '/hosts/' + inventory_id
+        try:
+            logger.log(NETWORK, "PATCH %s", req_url)
+            res = self.session.patch(req_url, json={'ansible_host': ansible_host})
+        except REQUEST_FAILED_EXCEPTIONS as e:
+            _api_request_failed(e)
+            return False
+        if (self.handle_fail_rcs(res)):
+            logger.error('Could not update Ansible hostname.')
+            return False
+        logger.info('Ansible hostname updated to ' + ansible_host + '.')
         return True
 
     def get_diagnosis(self, remediation_id=None):

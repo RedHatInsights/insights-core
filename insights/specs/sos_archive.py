@@ -11,6 +11,7 @@ simple_file = partial(simple_file, context=SosArchiveContext)
 class SosSpecs(Specs):
     alternatives_display_python = simple_file("sos_commands/alternatives/alternatives_--display_python")
     auditctl_status = simple_file("sos_commands/auditd/auditctl_-s")
+    auditd_conf = simple_file("/etc/audit/auditd.conf")
     autofs_conf = simple_file("/etc/autofs.conf")
 
     blkid = first_file(["sos_commands/block/blkid_-c_.dev.null", "sos_commands/filesys/blkid_-c_.dev.null"])
@@ -113,9 +114,8 @@ class SosSpecs(Specs):
     ip_s_link = first_of([simple_file("sos_commands/networking/ip_-s_-d_link"), simple_file("sos_commands/networking/ip_-s_link"), simple_file("sos_commands/networking/ip_link")])
     ip6tables_permanent = simple_file("etc/sysconfig/ip6tables")
     iptables = first_file(["/etc/sysconfig/iptables", "/etc/sysconfig/iptables.save"])
-    journal_since_boot = first_of([simple_file("sos_commands/logs/journalctl_--no-pager_--boot"), simple_file("sos_commands/logs/journalctl_--no-pager_--catalog_--boot"), simple_file("sos_commands/logs/journalctl_--all_--this-boot_--no-pager")])
+    journal_since_boot = first_file(["sos_commands/logs/journalctl_--no-pager_--boot", "sos_commands/logs/journalctl_--no-pager_--catalog_--boot", "sos_commands/logs/journalctl_--all_--this-boot_--no-pager"])
     ironic_conf = first_file(["/var/lib/config-data/puppet-generated/ironic/etc/ironic/ironic.conf", "/etc/ironic/ironic.conf"])
-    journal_since_boot = first_of([simple_file("sos_commands/logs/journalctl_--no-pager_--boot"), simple_file("sos_commands/logs/journalctl_--no-pager_--catalog_--boot")])
     kerberos_kdc_log = simple_file("var/log/krb5kdc.log")
     keystone_log = first_file(["/var/log/containers/keystone/keystone.log", "/var/log/keystone/keystone.log"])
     kexec_crash_loaded = simple_file("/sys/kernel/kexec_crash_loaded")
@@ -128,7 +128,11 @@ class SosSpecs(Specs):
     ls_sys_firmware = simple_file("sos_commands/boot/ls_-lanR_.sys.firmware")
     lscpu = simple_file("sos_commands/processor/lscpu")
     lsinitrd = simple_file("sos_commands/boot/lsinitrd")
-    lsof = simple_file("sos_commands/process/lsof_-b_M_-n_-l")
+    lsof = first_file([
+        "sos_commands/process/lsof_M_-n_-l_-c",
+        "sos_commands/process/lsof_-b_M_-n_-l_-c",
+        "sos_commands/process/lsof_-b_M_-n_-l"
+    ])
     lsmod = simple_file("sos_commands/kernel/lsmod")
     lspci = first_of([
         simple_file("sos_commands/pci/lspci_-nnvv"),

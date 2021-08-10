@@ -38,7 +38,7 @@ from .core.hydration import create_context, initialize_broker  # noqa: F401
 from .core.plugins import combiner, fact, metadata, parser, rule  # noqa: F401
 from .core.plugins import datasource, condition, incident  # noqa: F401
 from .core.plugins import make_response, make_metadata, make_fingerprint  # noqa: F401
-from .core.plugins import make_pass, make_fail, make_info  # noqa: F401
+from .core.plugins import make_pass, make_fail, make_info, make_none  # noqa: F401
 from .core.filters import add_filter, apply_filters, get_filters  # noqa: F401
 from .formats import get_formatter
 from .parsers import get_active_lines  # noqa: F401
@@ -55,6 +55,8 @@ package_info = dict((k, None) for k in ["RELEASE", "COMMIT", "VERSION", "NAME"])
 
 for name in package_info:
     package_info[name] = pkgutil.get_data(__name__, name).strip().decode("utf-8")
+
+_COLOR = "auto"
 
 
 def get_nvr():
@@ -263,6 +265,8 @@ def run(component=None, root=None, print_summary=False,
         p.add_argument("--tags", help="Expression to select rules by tag.")
         p.add_argument("-D", "--debug", help="Verbose debug output.", action="store_true")
         p.add_argument("--context", help="Execution Context. Defaults to HostContext if an archive isn't passed.")
+        p.add_argument("--color", default="auto", choices=["always", "auto", "never"], metavar="[=WHEN]",
+                       help="Choose if and how the color encoding is outputted. When is 'always', 'auto', or 'never'.")
 
         class Args(object):
             pass
@@ -270,6 +274,8 @@ def run(component=None, root=None, print_summary=False,
         formatters = []
         args = Args()
         p.parse_known_args(namespace=args)
+        global _COLOR
+        _COLOR = args.color
         p = argparse.ArgumentParser(parents=[p])
         args.format = "insights.formats._json" if args.format == "json" else args.format
         args.format = "insights.formats._yaml" if args.format == "yaml" else args.format

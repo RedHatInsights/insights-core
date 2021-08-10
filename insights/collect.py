@@ -78,6 +78,7 @@ plugins:
     # packages and modules to load
     packages:
         - insights.specs.default
+        - insights.specs.datasources
 
     # configuration of loaded components. names are prefixes, so any component with
     # a fully qualified name that starts with a key will get the associated
@@ -85,6 +86,9 @@ plugins:
     # datasources. Can specify metadata, which must be a dictionary and will be
     # merged with the components' default metadata.
     configs:
+        - name: insights.specs.datasources
+          enabled: true
+
         - name: insights.specs.Specs
           enabled: true
 
@@ -117,6 +121,20 @@ plugins:
           enabled: true
 
         - name: insights.combiners.cloud_provider
+          enabled: true
+
+    # needed for the cloud related specs
+        - name: insights.components.cloud_provider.IsAWS
+          enabled: true
+
+        - name: insights.components.cloud_provider.IsAzure
+          enabled: true
+
+        - name: insights.components.cloud_provider.IsGCP
+          enabled: true
+
+    # needed for the ceph related specs
+        - name: insights.components.ceph.IsCephMonitor
           enabled: true
 
     # needed for the Services combiner

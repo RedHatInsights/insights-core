@@ -103,7 +103,8 @@ class Context(object):
         self.cmd = None
         optional_attrs = [
             "content", "path", "hostname", "release",
-            "machine_id", "target", "last_client_run", "relative_path"
+            "machine_id", "target", "last_client_run", "relative_path",
+            "args"
         ]
         for k in optional_attrs:
             setattr(self, k, kwargs.pop(k, None))
@@ -279,10 +280,4 @@ class MustGatherContext(ExecutionContext):
 class OpenStackContext(ExecutionContext):
     def __init__(self, hostname):
         super(OpenStackContext, self).__init__()
-        self.hostname = hostname
-
-
-class OpenShiftContext(ExecutionContext):
-    def __init__(self, hostname):
-        super(OpenShiftContext, self).__init__()
         self.hostname = hostname
