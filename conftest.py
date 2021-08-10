@@ -28,7 +28,7 @@ def run_rule():
     internal support rules that will not be used in the customer facing Insights
     product.
     """
-    def _run_rule(rule, input_data):
+    def _run_rule(rule, input_data, return_make_none=False):
         """
         Fixture for rule integration testing
 
@@ -47,11 +47,15 @@ def run_rule():
             rule (object): Your rule function object.
             data (InputData):  InputData obj containing all of the necessary data
                 for the test.
+            return_make_none (bool): Set to true if you are testing for ``make_none()``
+                results in your CI tests instead of ``None``.
         """
-        result = run_test(rule, input_data)
+        result = run_test(rule, input_data, return_make_none=return_make_none)
         # Check result for skip to be compatible with archive_provider decorator
         # Return None instead of result indicating missing component(s)
-        if result is not None and 'type' in result and result['type'] == 'skip':
+        if (result is not None and 'type' in result and
+            (result['type'] == 'skip' or
+                (result['type'] == 'none' and not return_make_none))):
             return None
         else:
             return result

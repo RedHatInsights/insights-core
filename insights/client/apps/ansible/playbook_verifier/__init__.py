@@ -123,7 +123,7 @@ def verifyPlaybookSnippet(snippet):
     return executeVerification(snippetCopy, encodedSignature)
 
 
-def verify(playbook, skipVerify=True):
+def verify(playbook, skipVerify=False):
     """
     Verify the signed playbook.
 
