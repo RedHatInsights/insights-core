@@ -165,6 +165,34 @@ def test_platform_path_added():
     assert config.base_url == 'test.satellite.com:443/redhat_access/r/insights/platform'
 
 
+@patch("insights.client.auto_config._try_satellite6_configuration", Mock())
+@patch("insights.client.auto_config._try_satellite5_configuration", Mock())
+def test_platform_path_added_cloud_redhat():
+    '''
+    Ensure /platform is added when legacy_upload is false
+    for any base_url ending in /r/insights, otherwise not added
+    '''
+    # classic API
+    config = Mock(base_url='cert-api.access.redhat.com/r/insights', auto_config=True, legacy_upload=False, offline=False)
+    try_auto_configuration(config)
+    assert config.base_url == 'cert-api.access.redhat.com/r/insights/platform'
+
+    # satellite
+    config = Mock(base_url='test.satellite.com:443/redhat_access/r/insights', auto_config=True, legacy_upload=False, offline=False)
+    try_auto_configuration(config)
+    assert config.base_url == 'test.satellite.com:443/redhat_access/r/insights/platform'
+
+    # cloud.redhat.com compatibility layer - classic API hosted on c.rh.c
+    config = Mock(base_url='cloud.redhat.com/r/insights', auto_config=True, legacy_upload=False, offline=False)
+    try_auto_configuration(config)
+    assert config.base_url == 'cloud.redhat.com/r/insights/platform'
+
+    # cloud.redhat.com API directly connected
+    config = Mock(base_url='cloud.redhat.com/api', auto_config=True, legacy_upload=False, offline=False)
+    try_auto_configuration(config)
+    assert config.base_url == 'cloud.redhat.com/api'
+
+
 @patch("insights.client.auto_config.verify_connectivity", Mock())
 def test_rhsm_stage_legacy_base_url_configured():
     '''
