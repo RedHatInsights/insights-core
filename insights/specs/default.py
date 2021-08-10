@@ -95,6 +95,7 @@ class DefaultSpecs(Specs):
     aws_instance_id_pkcs7 = simple_command("/usr/bin/curl -s http://169.254.169.254/latest/dynamic/instance-identity/pkcs7 --connect-timeout 5", deps=[IsAWS])
     awx_manage_check_license = simple_command("/usr/bin/awx-manage check_license")
     awx_manage_check_license_data = awx_manage.awx_manage_check_license_data_datasource
+    awx_manage_print_settings = simple_command("/usr/bin/awx-manage print_settings INSIGHTS_TRACKING_STATE SYSTEM_UUID INSTALL_UUID TOWER_URL_BASE AWX_CLEANUP_PATHS AWX_PROOT_BASE_PATH --format json")
     azure_instance_type = simple_command("/usr/bin/curl -s -H Metadata:true http://169.254.169.254/metadata/instance/compute/vmSize?api-version=2018-10-01&format=text --connect-timeout 5", deps=[IsAzure])
     azure_instance_plan = simple_command("/usr/bin/curl -s -H Metadata:true http://169.254.169.254/metadata/instance/compute/plan?api-version=2018-10-01&format=json --connect-timeout 5", deps=[IsAzure])
     bios_uuid = simple_command("/usr/sbin/dmidecode -s system-uuid")
