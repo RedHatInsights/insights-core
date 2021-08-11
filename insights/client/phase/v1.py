@@ -182,6 +182,10 @@ def post_update(client, config):
             logger.debug('Running client in offline mode. Bypassing registration.')
             return
 
+        if config.no_upload:
+            logger.debug("Running client without uploading. Bypassing registration.")
+            return
+
         if config.display_name and not config.register:
             # setting display name independent of registration
             if client.set_display_name(config.display_name):
@@ -209,6 +213,10 @@ def post_update(client, config):
 
     if config.offline:
         logger.debug('Running client in offline mode. Bypassing registration.')
+        return
+
+    if config.no_upload:
+        logger.debug("Running client without uploading. Bypassing registration.")
         return
 
     # --payload short circuits registration check
