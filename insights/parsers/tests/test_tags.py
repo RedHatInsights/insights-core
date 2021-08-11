@@ -1,5 +1,5 @@
 from insights.parsers.tags import Tags
-from insights.parsers.tests import test_empty_skip
+from insights.parsers.tests import skip_exception_check
 from insights.tests import context_wrap
 
 tags_json_content = """
@@ -18,4 +18,4 @@ def test_tags_json():
 
 
 def test_tags_empty():
-    assert 'Empty output.' in test_empty_skip(Tags)
+    assert 'Empty output.' in skip_exception_check(Tags)
