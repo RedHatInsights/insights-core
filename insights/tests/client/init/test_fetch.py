@@ -30,7 +30,6 @@ def test_request_with_etag(insights_client):
 
     url = "{0}{1}".format(insights_client.connection.base_url, source_path)
     headers = {'If-None-Match': etag_value}
-    timeout = insights_client.config.http_timeout
     insights_client.connection.get.assert_called_once_with(url, headers=headers)
 
 
@@ -42,7 +41,6 @@ def test_request_forced(insights_client):
     insights_client._fetch(source_path, "", "", force=False)
 
     url = "{0}{1}".format(insights_client.connection.base_url, source_path)
-    timeout = insights_client.config.http_timeout
     insights_client.connection.get.assert_called_once_with(url)
 
 
