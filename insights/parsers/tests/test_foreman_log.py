@@ -4,6 +4,7 @@ from insights.parsers.foreman_log import SatelliteLog, ProductionLog
 from insights.parsers.foreman_log import CandlepinLog, ProxyLog
 from insights.parsers.foreman_log import CandlepinErrorLog
 from insights.parsers.foreman_log import ForemanSSLAccessLog
+from insights.parsers.foreman_log import ForemanSSLErrorLog
 from datetime import datetime
 import doctest
 
@@ -177,6 +178,16 @@ FOREMAN_SSL_ACCESS_SSL_LOG_WRONG = """
 10.181.73.211 - rhcapkdc.example2.com [27/Mar/2017:13:34:52:0400] "GET /rhsm/status HTTP/1.1" 200 263 "-" "-"
 """.strip()
 
+FOREMAN_SSL_ERROR_SSL_LOG = """
+[Mon Aug 09 09:31:04.075673 2021] [ssl:warn] [pid 746] [client 10.72.44.126:43266] AH02227: Failed to set r->user to 'SSL_CLIENT_S_DN_CN'
+[Mon Aug 09 09:31:10.343254 2021] [ssl:warn] [pid 747] [client 10.72.44.126:43346] AH02227: Failed to set r->user to 'SSL_CLIENT_S_DN_CN'
+[Mon Aug 09 09:31:10.364351 2021] [ssl:warn] [pid 753] [client 10.72.44.126:43350] AH02227: Failed to set r->user to 'SSL_CLIENT_S_DN_CN'
+[Mon Aug 09 10:01:22.512497 2021] [ssl:warn] [pid 747] [client 10.72.44.126:47188] AH02227: Failed to set r->user to 'SSL_CLIENT_S_DN_CN'
+[Mon Aug 09 10:01:22.548717 2021] [ssl:warn] [pid 5881] [client 10.72.44.126:47190] AH02227: Failed to set r->user to 'SSL_CLIENT_S_DN_CN'
+[Mon Aug 09 11:02:23.229609 2021] [proxy_http:error] [pid 749] (20014)Internal error: [client 10.72.44.126:47920] AH01102: error reading status line from remote server yyy
+[Mon Aug 09 11:17:52.204503 2021] [proxy_http:error] [pid 5854] (20014)Internal error: [client 10.72.44.126:48016] AH01102: error reading status line from remote server yyy
+""".strip()
+
 
 def test_production_log():
     fm_log = ProductionLog(context_wrap(PRODUCTION_LOG))
@@ -237,9 +248,19 @@ def test_foreman_ssl_access_ssl_log():
     assert len(foreman_ssl_access_log.get('GET')) == 2
 
 
+def test_foreman_ssl_error_ssl_log():
+    ForemanSSLErrorLog.last_scan('test_error_1', 'error reading status line from remote server')
+    foreman_ssl_access_log = ForemanSSLErrorLog(context_wrap(FOREMAN_SSL_ERROR_SSL_LOG))
+    assert foreman_ssl_access_log.test_error_1
+    assert 'error reading status line from remote server yyy' in foreman_ssl_access_log.test_error_1.get('raw_message')
+
+
 def test_doc():
     failed_count, tests = doctest.testmod(foreman_log,
-        globs={"cp_log": CandlepinLog(context_wrap(CANDLEPIN_LOG)),
-               "candlepin_log": CandlepinErrorLog(context_wrap(CANDLEPIN_ERROR_LOG)),
-               "foreman_ssl_acess_log": ForemanSSLAccessLog(context_wrap(FOREMAN_SSL_ACCESS_SSL_LOG))})
+        globs={
+            "cp_log": CandlepinLog(context_wrap(CANDLEPIN_LOG)),
+            "candlepin_log": CandlepinErrorLog(context_wrap(CANDLEPIN_ERROR_LOG)),
+            "foreman_ssl_acess_log": ForemanSSLAccessLog(context_wrap(FOREMAN_SSL_ACCESS_SSL_LOG))
+        }
+    )
     assert failed_count == 0

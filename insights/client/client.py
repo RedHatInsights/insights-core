@@ -324,7 +324,9 @@ def _legacy_upload(config, pconn, tar_file, content_type, collection_duration=No
                     handler.write(upload.text)
                 else:
                     handler.write(upload.text.encode('utf-8'))
+            os.chmod(constants.last_upload_results_file, 0o644)
             write_to_disk(constants.lastupload_file)
+            os.chmod(constants.lastupload_file, 0o644)
 
             msg_name = determine_hostname(config.display_name)
             account_number = config.account_number
@@ -364,6 +366,7 @@ def upload(config, pconn, tar_file, content_type, collection_duration=None):
 
         if upload.status_code in (200, 202):
             write_to_disk(constants.lastupload_file)
+            os.chmod(constants.lastupload_file, 0o644)
             msg_name = determine_hostname(config.display_name)
             logger.info("Successfully uploaded report for %s.", msg_name)
             if config.register:
