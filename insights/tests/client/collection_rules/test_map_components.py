@@ -1,6 +1,5 @@
 import requests
 
-# from insights.client.config import InsightsConfig
 from insights.client.collection_rules import InsightsUploadConf
 from insights.client.connection import InsightsConnection
 from insights.client.config import InsightsConfig
@@ -53,96 +52,6 @@ def test_not_called_when_core_collection_disabled(map_rm_conf_to_components):
     upload_conf = InsightsUploadConf(Mock(core_collect=False))
     upload_conf.get_rm_conf()
     map_rm_conf_to_components.assert_not_called()
-
-
-def test_get_component_by_symbolic_name():
-    '''
-    Verify that all symbolic names in uploader.json can be mapped
-    to valid components as prescribed in the conversion function
-    '''
-    # some specs have been removed for core release so because they either
-    #   A) do not appear in uploader.json, or
-    #   B) DO appear in uploader.json, but have no associated rules
-    #   Filter out the (B) specs with this list
-    skipped_specs = [
-        'ceph_osd_df',
-        'gluster_peer_status',
-        'gluster_v_status',
-        'heat_crontab',
-        'httpd_on_nfs',
-        'ls_usr_sbin',
-        'lvmconfig',
-        'nova_migration_uid',
-        'rabbitmq_queues',
-        'rhev_data_center',
-        'root_crontab',
-        'yum_list_installed',
-        'zdump_v',
-        'cni_podman_bridge_conf',
-        'cobbler_modules_conf',
-        'cobbler_settings',
-        'cpu_smt_control',
-        'cpu_vulns_meltdown',
-        'cpu_vulns_spectre_v1',
-        'cpu_vulns_spectre_v2',
-        'cpu_vulns_spec_store_bypass',
-        'docker_storage',
-        'freeipa_healthcheck_log',
-        'ironic_conf',
-        'octavia_conf',
-        'rhn_entitlement_cert_xml',
-        'rhn_hibernate_conf',
-        'rhn_schema_version',
-        'rhn_search_daemon_log',
-        'rhn_taskomatic_daemon_log',
-        'rhosp_release',
-        'secure',
-        'foreman_tasks_config',
-        'ssh_foreman_config',
-        'swift_conf',
-        'sys_kernel_sched_features',
-        'sysconfig_memcached',
-        'sysconfig_mongod',
-        'systemd_system_origin_accounting',
-        'tuned_conf',
-        'vdsm_conf',
-        'vdsm_id',
-        'neutron_ml2_conf',
-        'sap_host_profile',
-        'sched_rt_runtime_us',
-        'libvirtd_qemu_log',
-        'mlx4_port',
-        'qpid_stat_g',
-        'lsinitrd'
-    ]
-
-    # first, make sure our list is proper and one of these
-    #   are in the default specs
-    for s in skipped_specs:
-        assert s not in default_specs
-
-    for category in ['commands', 'files', 'globs']:
-        for entry in uploader_json[category]:
-            full_component = _get_component_by_symbolic_name(entry['symbolic_name'])
-
-            if full_component is None:
-                # this entry should not be in core, so assert that it's missing
-                assert entry['symbolic_name'] not in default_specs
-                continue
-
-            module, shortname = full_component.rsplit('.', 1)
-
-            # filter out specs without associated rules
-            if shortname in skipped_specs:
-                continue
-
-            if module == "insights.specs.default.DefaultSpecs":
-                assert shortname in default_specs
-            elif module == "insights.specs.sos_archive.SosSpecs":
-                assert shortname in sos_specs
-            else:
-                # invalid module name
-                assert False
 
 
 def test_search_uploader_json():
