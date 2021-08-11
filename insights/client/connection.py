@@ -414,17 +414,16 @@ class InsightsConnection(object):
                         "SUCCESS" if api_success else "FAILURE")
             if upload_success and api_success:
                 logger.info("Connectivity tests completed successfully")
-                logger.info("See %s for more details.", self.config.logging_file)
+                print("See %s for more details." % self.config.logging_file)
             else:
                 logger.info("Connectivity tests completed with some errors")
-                logger.info("See %s for more details.", self.config.logging_file)
+                print("See %s for more details." % self.config.logging_file)
                 rc = 1
         except requests.ConnectionError as exc:
             print(exc)
             logger.error('Connectivity test failed! '
                          'Please check your network configuration')
-            logger.error('Additional information may be in'
-                         ' /var/log/' + APP_NAME + "/" + APP_NAME + ".log")
+            print('Additional information may be in %s' % self.config.logging_file)
             return 1
         return rc
 

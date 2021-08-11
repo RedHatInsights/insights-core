@@ -352,7 +352,7 @@ def _legacy_upload(config, pconn, tar_file, content_type, collection_duration=No
                 time.sleep(constants.sleep_time)
             else:
                 logger.error("All attempts to upload have failed!")
-                logger.error("Please see %s for additional information", config.logging_file)
+                print("Please see %s for additional information" % config.logging_file)
                 raise RuntimeError('Upload failed.')
     return api_response
 
@@ -385,5 +385,5 @@ def upload(config, pconn, tar_file, content_type, collection_duration=None):
                 time.sleep(constants.sleep_time)
             else:
                 logger.error("All attempts to upload have failed!")
-                logger.error("Please see %s for additional information", config.logging_file)
+                print("Please see %s for additional information" % config.logging_file)
                 raise RuntimeError('Upload failed.')
