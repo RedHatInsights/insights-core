@@ -19,6 +19,7 @@ def patch_insights_config(old_function):
                        "return_value.load_all.return_value.list_specs": False,
                        "return_value.load_all.return_value.show_results": False,
                        "return_value.load_all.return_value.check_results": False,
+                       "return_value.load_all.return_value.no_upload": False,
                        "return_value.load_all.return_value.core_collect": False})
     return patcher(old_function)
 
@@ -63,3 +64,18 @@ def test_exit_ok(insights_config, insights_client):
     with raises(SystemExit) as exc_info:
         post_update()
     assert exc_info.value.code == 0
+
+
+@patch("insights.client.phase.v1.InsightsClient")
+@patch_insights_config
+def test_post_update_no_upload(insights_config, insights_client):
+    """
+    No-upload short circuits this phase
+    """
+    insights_config.return_value.load_all.return_value.no_upload = True
+    try:
+        post_update()
+    except SystemExit:
+        pass
+    insights_client.return_value.register.assert_not_called()
+    insights_client.return_value.get_machine_id.assert_called_once()

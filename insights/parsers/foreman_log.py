@@ -28,6 +28,9 @@ SatelliteLog - file ``/var/log/foreman-installer/satellite.log``
 ForemanSSLAccessLog - file ``/var/log/httpd/foreman-ssl_access_ssl.log``
 ------------------------------------------------------------------------
 
+ForemanSSLErrorLog - file ``/var/log/httpd/foreman-ssl_error_ssl.log``
+----------------------------------------------------------------------
+
 """
 from datetime import datetime
 
@@ -190,3 +193,22 @@ class ForemanSSLAccessLog(LogFileOutput):
             except ValueError:
                 pass
         return msg_info
+
+
+@parser(Specs.foreman_ssl_error_ssl_log)
+class ForemanSSLErrorLog(LogFileOutput):
+    """
+    Class for parsing ``/var/log/httpd/foreman-ssl_error_ssl.log`` file.
+
+    .. note::
+
+        Please refer to its super-class :class:`insights.core.LogFileOutput` for examples.
+
+    Sample log contents::
+
+        [Mon Aug 09 10:01:22.548717 2021] [ssl:warn] [pid 5881] [client 10.72.44.126:47190] AH02227: Failed to set r->user to 'SSL_CLIENT_S_DN_CN'
+        [Mon Aug 09 11:02:23.229609 2021] [proxy_http:error] [pid 749] (20014)Internal error: [client 10.72.44.126:47920] AH01102: error reading status line from remote server yyy
+        [Mon Aug 09 11:17:52.204503 2021] [proxy_http:error] [pid 5854] (20014)Internal error: [client 10.72.44.126:48016] AH01102: error reading status line from remote server yyy
+    """
+
+    time_format = '%a %b %d %H:%M:%S.%f %Y'
