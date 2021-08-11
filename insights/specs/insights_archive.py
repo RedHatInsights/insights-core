@@ -173,6 +173,7 @@ class InsightsArchiveSpecs(Specs):
     nova_crontab = simple_file("insights_commands/crontab_-l_-u_nova")
     nova_uid = simple_file("insights_commands/id_-u_nova")
     ntpq_leap = simple_file("insights_commands/ntpq_-c_rv_0_leap")
+    ntpq_pn = simple_file("insights_commands/ntpq_-pn")
     ntptime = simple_file("insights_commands/ntptime")
     numeric_user_group_name = simple_file("insights_commands/grep_-c_digit_.etc.passwd_.etc.group")
     oc_get_clusterrole_with_config = simple_file("insights_commands/oc_get_clusterrole_--config_.etc.origin.master.admin.kubeconfig")

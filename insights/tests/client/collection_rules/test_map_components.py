@@ -1,9 +1,8 @@
-import pkgutil
-import insights
-import json
+import requests
 
-# from insights.client.config import InsightsConfig
 from insights.client.collection_rules import InsightsUploadConf
+from insights.client.connection import InsightsConnection
+from insights.client.config import InsightsConfig
 from mock.mock import patch, Mock
 from insights.specs.default import DefaultSpecs
 from insights.specs.sos_archive import SosSpecs
@@ -11,14 +10,27 @@ from insights.client.map_components import (map_rm_conf_to_components,
                                             _search_uploader_json,
                                             _get_component_by_symbolic_name)
 
-uploader_json_file = pkgutil.get_data(insights.__name__, "client/uploader_json_map.json")
-uploader_json = json.loads(uploader_json_file)
+config = InsightsConfig()
+conn = InsightsConnection(config)
 default_specs = vars(DefaultSpecs).keys()
 sos_specs = vars(SosSpecs).keys()
 
 
+def get_uploader_json():
+    '''
+    Download latest uploader.json to use for unit tests
+    '''
+    print("Downloading a fresh and hot uploader.json...")
+    url = "https://api.access.redhat.com/r/insights/v1/static/uploader.v2.json"
+    uploader_json = requests.get(url).json()
+    return uploader_json
+
+uploader_json = get_uploader_json()
+
+
 @patch('insights.client.collection_rules.InsightsUploadConf.load_redaction_file', Mock(return_value={'test': 'test'}))
 @patch('insights.client.collection_rules.InsightsUploadConf.get_rm_conf_old', Mock(return_value={'test': 'test'}))
+@patch('insights.client.collection_rules.InsightsUploadConf.get_conf_file', Mock(return_value={'test': 'test'}))
 @patch('insights.client.collection_rules.map_rm_conf_to_components')
 def test_called_when_core_collection_enabled(map_rm_conf_to_components):
     '''
@@ -26,11 +38,12 @@ def test_called_when_core_collection_enabled(map_rm_conf_to_components):
     '''
     upload_conf = InsightsUploadConf(Mock(core_collect=True))
     upload_conf.get_rm_conf()
-    map_rm_conf_to_components.assert_called_once_with({'test': 'test'})
+    map_rm_conf_to_components.assert_called_once_with({'test': 'test'}, {'test': 'test'})
 
 
 @patch('insights.client.collection_rules.InsightsUploadConf.load_redaction_file', Mock(return_value={'test': 'test'}))
 @patch('insights.client.collection_rules.InsightsUploadConf.get_rm_conf_old', Mock(return_value={'test': 'test'}))
+@patch('insights.client.collection_rules.InsightsUploadConf.get_conf_file', Mock(return_value={'test': 'test'}))
 @patch('insights.client.collection_rules.map_rm_conf_to_components')
 def test_not_called_when_core_collection_disabled(map_rm_conf_to_components):
     '''
@@ -41,118 +54,27 @@ def test_not_called_when_core_collection_disabled(map_rm_conf_to_components):
     map_rm_conf_to_components.assert_not_called()
 
 
-def test_get_component_by_symbolic_name():
-    '''
-    Verify that all symbolic names in uploader.json can be mapped
-    to valid components as prescribed in the conversion function
-    '''
-    # some specs have been removed for core release so because they either
-    #   A) do not appear in uploader.json, or
-    #   B) DO appear in uploader.json, but have no associated rules
-    #   Filter out the (B) specs with this list
-    skipped_specs = [
-        'ceph_osd_df',
-        'gluster_peer_status',
-        'gluster_v_status',
-        'heat_crontab',
-        'httpd_on_nfs',
-        'ls_usr_sbin',
-        'lvmconfig',
-        'nova_migration_uid',
-        'ntpq_pn',
-        'rabbitmq_queues',
-        'rhev_data_center',
-        'root_crontab',
-        'yum_list_installed',
-        'zdump_v',
-        'cni_podman_bridge_conf',
-        'cobbler_modules_conf',
-        'cobbler_settings',
-        'cpu_smt_control',
-        'cpu_vulns_meltdown',
-        'cpu_vulns_spectre_v1',
-        'cpu_vulns_spectre_v2',
-        'cpu_vulns_spec_store_bypass',
-        'docker_storage',
-        'freeipa_healthcheck_log',
-        'ironic_conf',
-        'octavia_conf',
-        'rhn_entitlement_cert_xml',
-        'rhn_hibernate_conf',
-        'rhn_schema_version',
-        'rhn_search_daemon_log',
-        'rhn_taskomatic_daemon_log',
-        'rhosp_release',
-        'secure',
-        'foreman_tasks_config',
-        'ssh_foreman_config',
-        'swift_conf',
-        'sys_kernel_sched_features',
-        'sysconfig_memcached',
-        'sysconfig_mongod',
-        'systemd_system_origin_accounting',
-        'tuned_conf',
-        'vdsm_conf',
-        'vdsm_id',
-        'neutron_ml2_conf',
-        'sap_host_profile',
-        'sched_rt_runtime_us',
-        'libvirtd_qemu_log',
-        'mlx4_port',
-        'qpid_stat_g',
-        'lsinitrd'
-    ]
-
-    # first, make sure our list is proper and one of these
-    #   are in the default specs
-    for s in skipped_specs:
-        assert s not in default_specs
-
-    for category in ['commands', 'files', 'globs']:
-        for entry in uploader_json[category]:
-            full_component = _get_component_by_symbolic_name(entry['symbolic_name'])
-
-            if full_component is None:
-                # this entry should not be in core, so assert that it's missing
-                assert entry['symbolic_name'] not in default_specs
-                continue
-
-            module, shortname = full_component.rsplit('.', 1)
-
-            # filter out specs without associated rules
-            if shortname in skipped_specs:
-                continue
-
-            if module == "insights.specs.default.DefaultSpecs":
-                assert shortname in default_specs
-            elif module == "insights.specs.sos_archive.SosSpecs":
-                assert shortname in sos_specs
-            else:
-                # invalid module name
-                assert False
-
-
 def test_search_uploader_json():
     '''
     Verify that all valid input from an uploader.json-based remove.conf
     will return a symbolic name
     '''
     for cmd in uploader_json['commands']:
-        assert _search_uploader_json(['commands'], cmd['command'])
-        assert _search_uploader_json(['commands'], cmd['symbolic_name'])
+        assert _search_uploader_json(uploader_json, ['commands'], cmd['command'])
+        assert _search_uploader_json(uploader_json, ['commands'], cmd['symbolic_name'])
     for fil in uploader_json['files']:
-        assert _search_uploader_json(['files', 'globs'], fil['file'])
-        assert _search_uploader_json(['files', 'globs'], fil['symbolic_name'])
+        assert _search_uploader_json(uploader_json, ['files', 'globs'], fil['file'])
+        assert _search_uploader_json(uploader_json, ['files', 'globs'], fil['symbolic_name'])
     for glb in uploader_json['globs']:
-        assert _search_uploader_json(['files', 'globs'], glb['symbolic_name'])
+        assert _search_uploader_json(uploader_json, ['files', 'globs'], glb['symbolic_name'])
 
 
 def test_search_uploader_json_invalid():
     '''
     Verify that invalid input will return None
     '''
-    assert _search_uploader_json(['commands'], 'random value') is None
-    assert _search_uploader_json(['files', 'globs'], 'random value') is None
+    assert _search_uploader_json(uploader_json, ['commands'], 'random value') is None
+    assert _search_uploader_json(uploader_json, ['files', 'globs'], 'random value') is None
 
 
 def test_search_uploader_json_globs_symbolic_only():
@@ -160,7 +82,7 @@ def test_search_uploader_json_globs_symbolic_only():
     Verify that globs are matched by symbolic name only
     '''
     for glb in uploader_json['globs']:
-        assert _search_uploader_json(['files', 'globs'], glb['glob']) is None
+        assert _search_uploader_json(uploader_json, ['files', 'globs'], glb['glob']) is None
 
 
 def test_map_rm_conf_to_components_sym_names():
@@ -175,7 +97,7 @@ def test_map_rm_conf_to_components_sym_names():
         rm_conf = {'commands': [sym_name]}
         # figure out the destination name should be
         spec_name = _get_component_by_symbolic_name(sym_name)
-        new_rm_conf = map_rm_conf_to_components(rm_conf)
+        new_rm_conf = map_rm_conf_to_components(rm_conf, uploader_json)
         # commands should be empty, components should have 1 item
         assert len(new_rm_conf['commands']) == 0
         assert len(new_rm_conf['components']) == 1
@@ -188,7 +110,7 @@ def test_map_rm_conf_to_components_sym_names():
         rm_conf = {'files': [sym_name]}
         # figure out the destination name should be
         spec_name = _get_component_by_symbolic_name(sym_name)
-        new_rm_conf = map_rm_conf_to_components(rm_conf)
+        new_rm_conf = map_rm_conf_to_components(rm_conf, uploader_json)
         # files should be empty, components should have 1 item
         # except for these which cannot be mapped to specs.
         # in which case, components empty and these remain in files
@@ -210,7 +132,7 @@ def test_map_rm_conf_to_components_sym_names():
         rm_conf = {'files': [sym_name]}
         # figure out the destination name should be
         spec_name = _get_component_by_symbolic_name(sym_name)
-        new_rm_conf = map_rm_conf_to_components(rm_conf)
+        new_rm_conf = map_rm_conf_to_components(rm_conf, uploader_json)
         # files should be empty, components should have 1 item
         assert len(new_rm_conf['files']) == 0
         assert len(new_rm_conf['components']) == 1
@@ -229,7 +151,7 @@ def test_map_rm_conf_to_components_raw_cmds_files():
         sym_name = cmd['symbolic_name']
         # figure out the destination name should be
         spec_name = _get_component_by_symbolic_name(sym_name)
-        new_rm_conf = map_rm_conf_to_components(rm_conf)
+        new_rm_conf = map_rm_conf_to_components(rm_conf, uploader_json)
         # commands should be empty, components should have 1 item
         assert len(new_rm_conf['commands']) == 0
         assert len(new_rm_conf['components']) == 1
@@ -242,7 +164,7 @@ def test_map_rm_conf_to_components_raw_cmds_files():
         sym_name = fil['symbolic_name']
         # figure out the destination name should be
         spec_name = _get_component_by_symbolic_name(sym_name)
-        new_rm_conf = map_rm_conf_to_components(rm_conf)
+        new_rm_conf = map_rm_conf_to_components(rm_conf, uploader_json)
         # files should be empty, components should have 1 item
         # except for these which cannot be mapped to specs.
         # in which case, components empty and these remain in files
@@ -263,7 +185,7 @@ def test_map_rm_conf_to_components_invalid():
     Verify that matching commands/files are mapped to components
     '''
     rm_conf = {'commands': ['random', 'value'], 'files': ['other', 'invalid', 'data']}
-    new_rm_conf = map_rm_conf_to_components(rm_conf)
+    new_rm_conf = map_rm_conf_to_components(rm_conf, uploader_json)
     # rm_conf should be unchanged
     assert len(new_rm_conf['commands']) == 2
     assert len(new_rm_conf['files']) == 3
@@ -279,12 +201,12 @@ def test_rm_conf_empty(_search_uploader_json):
     with an empty dict or None
     '''
     rm_conf = {}
-    new_rm_conf = map_rm_conf_to_components(rm_conf)
+    new_rm_conf = map_rm_conf_to_components(rm_conf, uploader_json)
     _search_uploader_json.assert_not_called()
     assert new_rm_conf == {}
 
     rm_conf = None
-    new_rm_conf = map_rm_conf_to_components(rm_conf)
+    new_rm_conf = map_rm_conf_to_components(rm_conf, uploader_json)
     _search_uploader_json.assert_not_called()
     assert new_rm_conf is None
 
@@ -300,7 +222,7 @@ def test_log_long_key(logger_warning):
                'files': ["/etc/sysconfig/virt-who",
                          "/etc/yum.repos.d/fedora-cisco-openh264.repo",
                          "krb5_conf_d"]}
-    map_rm_conf_to_components(rm_conf)
+    map_rm_conf_to_components(rm_conf, uploader_json)
     logger_warning.assert_any_call("- /usr/bin/find /etc/origin/node                   => certificates_enddate\n  /etc/origin/master /etc/pki /etc/ipa -type f\n  -exec /usr/bin/openssl x509 -noout -enddate -in\n  '{}' \\; -exec echo 'FileName= {}' \\;")
     logger_warning.assert_any_call("- /usr/bin/md5sum /etc/pki/product/69.pem          => md5chk_files")
     logger_warning.assert_any_call("- /etc/sysconfig/virt-who                          => sysconfig_virt_who")
@@ -314,7 +236,7 @@ def test_log_short_key(logger_warning):
     is short
     '''
     rm_conf = {'commands': ["ss_tupna"]}
-    map_rm_conf_to_components(rm_conf)
+    map_rm_conf_to_components(rm_conf, uploader_json)
     logger_warning.assert_any_call("If possible, commands and files specified in the blacklist configuration will be converted to Insights component specs that will be disabled as needed.")
 
 
@@ -326,7 +248,7 @@ def test_components_added():
     '''
     rm_conf = {'commands': ["/usr/bin/md5sum /etc/pki/product/69.pem"],
                'components': ["insights.specs.default.DefaultSpecs.sysconfig_virt_who"]}
-    results = map_rm_conf_to_components(rm_conf)
+    results = map_rm_conf_to_components(rm_conf, uploader_json)
 
     assert results == {'commands': [],
                        'files': [],

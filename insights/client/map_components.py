@@ -1,7 +1,4 @@
 from __future__ import absolute_import
-import pkgutil
-import insights
-import json
 import six
 import logging
 import textwrap
@@ -11,11 +8,8 @@ from .constants import InsightsConstants as constants
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
 
-uploader_json_file = pkgutil.get_data(insights.__name__, "client/uploader_json_map.json")
-uploader_json = json.loads(uploader_json_file)
 
-
-def map_rm_conf_to_components(rm_conf):
+def map_rm_conf_to_components(rm_conf, uploader_json):
     '''
     In order to maximize compatibility between "classic" remove.conf
     configurations and core collection, do the following mapping
@@ -56,10 +50,10 @@ def map_rm_conf_to_components(rm_conf):
             continue
         for key in rm_conf[section]:
             if section == 'commands':
-                symbolic_name = _search_uploader_json(['commands'], key)
+                symbolic_name = _search_uploader_json(uploader_json, ['commands'], key)
             elif section == 'files':
                 # match both files and globs to rm_conf files
-                symbolic_name = _search_uploader_json(['files', 'globs'], key)
+                symbolic_name = _search_uploader_json(uploader_json, ['files', 'globs'], key)
 
             component = _get_component_by_symbolic_name(symbolic_name)
             if component:
@@ -91,7 +85,7 @@ def map_rm_conf_to_components(rm_conf):
     return rm_conf
 
 
-def _search_uploader_json(headings, key):
+def _search_uploader_json(uploader_json, headings, key):
     '''
     Search an uploader.json block for a command/file from "name"
     and return the symbolic name if it exists
@@ -174,15 +168,3 @@ def _log_conversion_table(conversion_map, longest_key_len):
         # log the conversion on the first line of the "wrap"
         wrapped_spec[0] = '- {0:{1}} => {2}'.format(wrapped_spec[0], log_len, spec_name_no_prefix)
         logger.warning('\n  '.join(wrapped_spec))
-
-
-if __name__ == '__main__':
-    from .config import InsightsConfig
-    from .collection_rules import InsightsUploadConf
-    config = InsightsConfig(core_collect=True).load_all()
-    uploadconf = InsightsUploadConf(config)
-    # rm_conf = uploadconf.get_rm_conf()
-    # report = map_rm_conf_to_components(rm_conf)
-    # uploadconf.rm_conf = report
-    uploadconf.validate()
-    # print(report)

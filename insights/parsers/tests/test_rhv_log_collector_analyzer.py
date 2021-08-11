@@ -1,5 +1,5 @@
 from insights.parsers.rhv_log_collector_analyzer import RhvLogCollectorJson
-from insights.parsers.tests import test_empty_skip
+from insights.parsers.tests import skip_exception_check
 from insights.tests import context_wrap
 
 RHV_ANALYZER_JSON = """
@@ -139,4 +139,4 @@ class TestRhvLogCollectorJson():
         assert result['rhv-log-collector-analyzer'][0]['file'] == 'cluster_query_migration_policy_check_legacy.sql'
 
     def test_empty(self):
-        assert 'Empty output.' in test_empty_skip(RhvLogCollectorJson)
+        assert 'Empty output.' in skip_exception_check(RhvLogCollectorJson)
