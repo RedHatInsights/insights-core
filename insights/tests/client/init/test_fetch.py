@@ -10,8 +10,9 @@ from tempfile import NamedTemporaryFile
 def insights_client():
     config = InsightsConfig(http_timeout=123)
     client = InsightsClient(config)
-    client.session = Mock(**{"get.return_value.headers.items.return_value": []})
-    client.connection = Mock(base_url="http://www.example.com/")
+    client.connection = Mock(**{
+        "base_url": "http://www.example.com/", "get.return_value.headers.items.return_value": []
+    })
     return client
 
 
@@ -30,7 +31,7 @@ def test_request_with_etag(insights_client):
     url = "{0}{1}".format(insights_client.connection.base_url, source_path)
     headers = {'If-None-Match': etag_value}
     timeout = insights_client.config.http_timeout
-    insights_client.session.get.assert_called_once_with(url, headers=headers, timeout=timeout)
+    insights_client.connection.get.assert_called_once_with(url, headers=headers, timeout=timeout)
 
 
 def test_request_forced(insights_client):
@@ -42,7 +43,7 @@ def test_request_forced(insights_client):
 
     url = "{0}{1}".format(insights_client.connection.base_url, source_path)
     timeout = insights_client.config.http_timeout
-    insights_client.session.get.assert_called_once_with(url, timeout=timeout)
+    insights_client.connection.get.assert_called_once_with(url, timeout=timeout)
 
 
 @patch('insights.client.InsightsClient._fetch', Mock())
