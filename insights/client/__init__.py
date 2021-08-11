@@ -105,7 +105,7 @@ class InsightsClient(object):
             url = self.connection.base_url + '/platform' + constants.module_router_path
         else:
             url = self.connection.base_url + constants.module_router_path
-        response = self.connection.get(url, timeout=self.config.http_timeout)
+        response = self.connection.get(url)
         if response.status_code == 200:
             return response.json()["url"]
         else:
@@ -253,6 +253,7 @@ class InsightsClient(object):
             return True
 
         if self.config.auto_update:
+            logger.debug("Egg update enabled")
             # fetch the new eggs and gpg
             egg_paths = self.fetch()
 

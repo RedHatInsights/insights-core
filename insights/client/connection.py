@@ -675,7 +675,7 @@ class InsightsConnection(object):
                 url = self.base_url + '/platform/inventory/v1/hosts?insights_id=' + machine_id
             else:
                 url = self.inventory_url + '/hosts?insights_id=' + machine_id
-            res = self.get(url, timeout=self.config.http_timeout)
+            res = self.get(url)
         except REQUEST_FAILED_EXCEPTIONS as e:
             _api_request_failed(e)
             return None
