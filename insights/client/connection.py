@@ -420,9 +420,9 @@ class InsightsConnection(object):
                         req.status_code)
             logger.debug("HTTP Status Text: %s", req.reason)
             if req.status_code == 401:
-                logger.error("Authorization Required.")
-                logger.error("Please ensure correct credentials "
-                             "in " + constants.default_conf_file)
+                logger.error("Please ensure that the system is registered "
+                             "with RHSM for CERT auth, or that correct "
+                             "credentials are set in %s for BASIC auth.", self.config.conf)
                 logger.log(NETWORK, "HTTP Response Text: %s", req.text)
             if req.status_code == 402:
                 # failed registration because of entitlement limit hit
@@ -633,6 +633,7 @@ class InsightsConnection(object):
         #       True for registered
         #       False for unregistered
         #       None for system 404
+        self.handle_fail_rcs(res)
         try:
             # check the 'unregistered_at' key of the response
             unreg_status = json.loads(res.content).get('unregistered_at', 'undefined')
