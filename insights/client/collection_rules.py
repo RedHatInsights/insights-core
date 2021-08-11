@@ -269,16 +269,18 @@ class InsightsUploadConf(object):
             logger.debug("trying to read conf from: " + conf_file)
             conf = self.try_disk(conf_file, self.gpg)
 
-            if conf:
-                version = conf.get('version', None)
-                if version is None:
-                    raise ValueError("ERROR: Could not find version in json")
+            if not conf:
+                continue
 
-                conf['file'] = conf_file
-                logger.debug("Success reading config")
-                logger.debug(json.dumps(conf))
-                self.uploader_json = conf
-                return conf
+            version = conf.get('version', None)
+            if version is None:
+                raise ValueError("ERROR: Could not find version in json")
+
+            conf['file'] = conf_file
+            logger.debug("Success reading config")
+            logger.debug(json.dumps(conf))
+            self.uploader_json = conf
+            return conf
 
         raise RuntimeError("ERROR: Unable to download conf or read it from disk!")
 
