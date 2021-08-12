@@ -114,6 +114,10 @@ class InsightsUploadConf(object):
         self.collection_rules_url = self.config.collection_rules_url
         self.gpg = self.config.gpg
 
+        # initialize an attribute to store the content of uploader.json
+        #   once it is loaded and verified
+        self.uploader_json = None
+
         # set rm_conf as a class attribute so we can observe it
         #   in create_report
         self.rm_conf = None
@@ -129,7 +133,6 @@ class InsightsUploadConf(object):
                     self.collection_rules_url = conn.base_url + '/v1/static/uploader.v2.json'
                 else:
                     self.collection_rules_url = conn.base_url.split('/platform')[0] + '/v1/static/uploader.v2.json'
-                    # self.collection_rules_url = conn.base_url + '/static/uploader.v2.json'
             self.conn = conn
 
     def validate_gpg_sig(self, path, sig=None):
@@ -257,6 +260,9 @@ class InsightsUploadConf(object):
         """
         Get config from local config file, first try cache, then fallback.
         """
+        if self.uploader_json:
+            return self.uploader_json
+
         for conf_file in [self.collection_rules_file, self.fallback_file]:
             logger.debug("trying to read conf from: " + conf_file)
             conf = self.try_disk(conf_file, self.gpg)
@@ -271,13 +277,14 @@ class InsightsUploadConf(object):
             conf['file'] = conf_file
             logger.debug("Success reading config")
             logger.debug(json.dumps(conf))
+            self.uploader_json = conf
             return conf
 
         raise RuntimeError("ERROR: Unable to download conf or read it from disk!")
 
     def get_conf_update(self):
         """
-        Get updated config from URL, fallback to local file if download fails.
+        Get updated config from URL.
         """
         dyn_conf = self.get_collection_rules()
 
@@ -403,14 +410,14 @@ class InsightsUploadConf(object):
             #   try to use remove.conf
             self.rm_conf = self.get_rm_conf_old()
             if self.config.core_collect:
-                self.rm_conf = map_rm_conf_to_components(self.rm_conf)
+                self.rm_conf = map_rm_conf_to_components(self.rm_conf, self.get_conf_file())
             return self.rm_conf
 
         # remove Nones, empty strings, and empty lists
         filtered_rm_conf = dict((k, v) for k, v in rm_conf.items() if v)
         self.rm_conf = filtered_rm_conf
         if self.config.core_collect:
-            self.rm_conf = map_rm_conf_to_components(self.rm_conf)
+            self.rm_conf = map_rm_conf_to_components(self.rm_conf, self.get_conf_file())
         return self.rm_conf
 
     def get_tags_conf(self):
@@ -490,13 +497,3 @@ class InsightsUploadConf(object):
             'using_new_format': self.using_new_format,
             'using_patterns_regex': using_regex
         }
-
-
-if __name__ == '__main__':
-    from .config import InsightsConfig
-    config = InsightsConfig().load_all()
-    uploadconf = InsightsUploadConf(config)
-    uploadconf.validate()
-    # report = uploadconf.create_report()
-
-    # print(report)
