@@ -54,6 +54,7 @@ class MarkdownFormat(Formatter):
             'pass': self.response(label="PASS", title="Passed      : "),
             'rule': self.response(label="FAIL", title="Failed      : "),
             'info': self.response(label="INFO", title="Info        : "),
+            'none': self.response(label="RETURNED NONE", title="Ret'd None  : "),
             'metadata': self.response(label="META", title="Metadata    : "),
             'metadata_key': self.response(label="META", title="Metadata Key: "),
             'fingerprint': self.response(label="FINGERPRINT", title="Fingerprint : "),
@@ -148,8 +149,10 @@ class MarkdownFormat(Formatter):
             if _type:
                 if self.missing and _type == 'skip':
                     print_missing(c, v)
-                elif ((self.show_rules and _type in self.show_rules) or
-                        (not self.show_rules and _type != 'skip')):
+                elif (
+                        (self.show_rules and _type in self.show_rules) or
+                        (not self.show_rules and _type not in ['skip', 'none'])
+                ):
                     printit(c, v)
         print(file=self.stream)
 
@@ -184,9 +187,9 @@ class MarkdownFormatAdapter(FormatterAdapter):
         p.add_argument("-d", "--dropped", help="Show collected files that weren't processed.", action="store_true")
         p.add_argument("-m", "--missing", help="Show missing requirements.", action="store_true")
         p.add_argument("-S", "--show-rules", nargs="+",
-                       choices=["fail", "info", "pass", "metadata", "fingerprint"],
+                       choices=["fail", "info", "pass", "none", "metadata", "fingerprint"],
                        metavar="TYPE",
-                       help="Show results per rule type(s).")
+                       help="Show results per rule's type: 'fail', 'info', 'pass', 'none', 'metadata', and 'fingerprint'")
         p.add_argument("-F", "--fail-only",
                        help="Show FAIL results only. Conflict with '-m', will be dropped when using them together. This option is deprecated by '-S fail'",
                        action="store_true")
@@ -197,7 +200,7 @@ class MarkdownFormatAdapter(FormatterAdapter):
         if args.missing and fail_only:
             print('Options conflict: -m and -F, drops -F', file=sys.stderr)
             fail_only = None
-        self.show_rules = []  # Empty by default, means show ALL types
+        self.show_rules = []  # Empty by default, means show ALL types (exclude "none")
         if not args.show_rules and fail_only:
             self.show_rules = ['rule']
         elif args.show_rules:

@@ -89,12 +89,10 @@ class HumanReadableFormat(Formatter):
             missing=False,
             tracebacks=False,
             dropped=False,
-            none=False,
             show_rules=None,
             stream=sys.stdout):
         super(HumanReadableFormat, self).__init__(broker, stream=stream)
         self.missing = missing
-        self.none = none
         self.tracebacks = tracebacks
         self.dropped = dropped
         self.show_rules = [] if show_rules is None else show_rules
@@ -111,13 +109,13 @@ class HumanReadableFormat(Formatter):
             'pass': response(color=Fore.GREEN, label="PASS", intl='P', title="Passed      : "),
             'rule': response(color=Fore.RED, label="FAIL", intl='F', title="Failed      : "),
             'info': response(color=Fore.WHITE, label="INFO", intl='I', title="Info        : "),
+            'none': response(color=Fore.BLUE, label="RETURNED NONE", intl='N', title="Ret'd None  : "),
             'skip': response(color=Fore.BLUE, label="SKIP", intl='S', title="Missing Deps: "),
             'fingerprint': response(color=Fore.YELLOW, label="FINGERPRINT", intl='P',
                                   title="Fingerprint : "),
             'metadata': response(color=Fore.YELLOW, label="META", intl='M', title="Metadata    : "),
             'metadata_key': response(color=Fore.MAGENTA, label="META", intl='K', title="Metadata Key: "),
             'exception': response(color=Fore.RED, label="EXCEPT", intl='E', title="Exceptions  : "),
-            'none': response(color=Fore.BLUE, label="RETURNED NONE", intl='N', title="Ret'd None  : ")
         }
 
         self.counts = {}
@@ -193,10 +191,11 @@ class HumanReadableFormat(Formatter):
             if _type in self.responses:
                 self.counts[_type] += 1
 
-            if ((self.missing and _type == 'skip') or
+            if (
+                    (self.missing and _type == 'skip') or
                     (self.show_rules and _type in self.show_rules) or
-                    (self.none and _type == 'none') or
-                    (not self.show_rules and _type not in ['skip', 'none'])):
+                    (not self.show_rules and _type not in ['skip', 'none'])
+            ):
                 printit(c, v)
 
         print(file=self.stream)
@@ -225,11 +224,10 @@ class HumanReadableFormatAdapter(FormatterAdapter):
         p.add_argument("-t", "--tracebacks", help="Show stack traces.", action="store_true")
         p.add_argument("-d", "--dropped", help="Show collected files that weren't processed.", action="store_true")
         p.add_argument("-m", "--missing", help="Show missing requirements.", action="store_true")
-        p.add_argument("-n", "--none", help="Show rules returning None", action="store_true")
         p.add_argument("-S", "--show-rules", default=[], nargs="+",
-                       choices=["fail", "info", "pass", "metadata", "fingerprint"],
+                       choices=["fail", "info", "pass", "none", "metadata", "fingerprint"],
                        metavar="TYPE",
-                       help="Show results per rule type(s).")
+                       help="Show results per rule's type: 'fail', 'info', 'pass', 'none', 'metadata', and 'fingerprint'")
         p.add_argument("-F", "--fail-only",
                        help="Show FAIL results only. Conflict with '-m', will be dropped when using them together. This option is deprecated by '-S fail'",
                        action="store_true")
@@ -238,12 +236,11 @@ class HumanReadableFormatAdapter(FormatterAdapter):
         self.tracebacks = args.tracebacks
         self.dropped = args.dropped
         self.missing = args.missing
-        self.none = args.none
         fail_only = args.fail_only
-        if (self.missing or self.none) and fail_only:
-            print(Fore.YELLOW + 'Options conflict: -m/-n and -F, drops -F', file=sys.stderr)
+        if self.missing and fail_only:
+            print(Fore.YELLOW + 'Options conflict: -m and -F, drops -F', file=sys.stderr)
             fail_only = None
-        self.show_rules = []  # Empty by default, means show ALL types
+        self.show_rules = []  # Empty by default, means show ALL types (excludes "none")
         if not args.show_rules and fail_only:
             self.show_rules = ['rule']
         elif args.show_rules:
@@ -255,7 +252,6 @@ class HumanReadableFormatAdapter(FormatterAdapter):
             self.missing,
             self.tracebacks,
             self.dropped,
-            self.none,
             self.show_rules,
         )
         self.formatter.preprocess()

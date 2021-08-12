@@ -87,9 +87,9 @@ class EvaluatorFormatterAdapter(FormatterAdapter):
     def configure(p):
         p.add_argument("-m", "--missing", help="Show missing requirements.", action="store_true")
         p.add_argument("-S", "--show-rules", nargs="+",
-                       choices=["fail", "info", "pass", "metadata", "fingerprint"],
+                       choices=["fail", "info", "pass", "none", "metadata", "fingerprint"],
                        metavar="TYPE",
-                       help="Show results per rule type(s).")
+                       help="Show results per rule's type: 'fail', 'info', 'pass', 'none', 'metadata', and 'fingerprint'")
         p.add_argument("-F", "--fail-only",
                        help="Show FAIL results only. Conflict with '-m', will be dropped when using them together. This option is deprecated by '-S fail'",
                        action="store_true")
@@ -104,7 +104,7 @@ class EvaluatorFormatterAdapter(FormatterAdapter):
                 # Drops the '-F' silently when specifying '-m' and '-F' together
                 # --> Do NOT break the Format of the output
                 fail_only = None
-            self.show_rules = []  # Empty by default, means show ALL types
+            self.show_rules = []  # Empty by default, means show ALL types (exclude "none")
             if not args.show_rules and fail_only:
                 self.show_rules = ['rule']
             elif args.show_rules:
@@ -182,6 +182,9 @@ def get_response_of_types(response, missing=True, show_rules=None):
     #  - When "-m" is specified but "-S" is NOT specified, show all the loaded rules
     #  - When neither "-m" nor "-S" is specified, show all the HIT rules (exclude the "skips")
     if not show_rules:
+        #  - Discard the "make_none" by default when no "-S"
+        #  That means show "make_none" rules only when "none" is specified in "-S"
+        response.pop('none')
         return response
     #  - Discard the "medadata" rules when it's not specified in the "-S" option
     if 'metadata' not in show_rules and 'metadata' in response.get('system', {}):
@@ -195,6 +198,9 @@ def get_response_of_types(response, missing=True, show_rules=None):
     #  - Discard the "make_pass" rules when it's not specified in the "-S" option
     if 'pass' not in show_rules and 'pass' in response:
         response.pop('pass')
+    #  - Discard the "make_none" rules when it's not specified in the "-S" option
+    if 'none' not in show_rules and 'none' in response:
+        response.pop('none')
     #  - Discard the "fingerprint" rules when it's not specified in the "-S" option
     if 'fingerprint' not in show_rules and 'fingerprints' in response:
         response.pop('fingerprints')
