@@ -167,14 +167,14 @@ def test_get_conf_file(get_branch_info, get_conf_file, data_collector):
 @patch("insights.client.client.CoreCollector")
 @patch_get_conf_file()
 @patch_get_branch_info()
-def test_get_conf_not_called_core_collection(get_branch_info, get_conf_file, core_collector):
+def test_get_conf_called_core_collection(get_branch_info, get_conf_file, core_collector):
     """
-    Verify that uploader.json is not loaded when using core collection
+    Verify that uploader.json IS loaded when using core collection (from get_rm_conf function)
     """
     config, pconn = collect_args(core_collect=True)
     collect(config, pconn)
 
-    get_conf_file.assert_not_called()
+    get_conf_file.assert_called_once()
 
 
 @patch_data_collector()

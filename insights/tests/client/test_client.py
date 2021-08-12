@@ -13,6 +13,18 @@ from pytest import mark
 from pytest import raises
 
 
+@pytest.fixture(autouse=True)
+def mock_os_chmod():
+    with patch('insights.client.client.os.chmod', Mock()) as os_chmod:
+        yield os_chmod
+
+
+@pytest.fixture(autouse=True)
+def mock_os_umask():
+    with patch('insights.client.client.os.umask', Mock()) as os_umask:
+        yield os_umask
+
+
 class FakeConnection(object):
     '''
     For stubbing out network calls

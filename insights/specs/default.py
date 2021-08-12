@@ -261,6 +261,7 @@ class DefaultSpecs(Specs):
     findmnt_lo_propagation = simple_command("/bin/findmnt -lo+PROPAGATION")
     firewall_cmd_list_all_zones = simple_command("/usr/bin/firewall-cmd --list-all-zones")
     firewalld_conf = simple_file("/etc/firewalld/firewalld.conf")
+    foreman_ssl_error_ssl_log = simple_file("/var/log/httpd/foreman-ssl_error_ssl.log")
     fstab = simple_file("/etc/fstab")
     galera_cnf = first_file(["/var/lib/config-data/puppet-generated/mysql/etc/my.cnf.d/galera.cnf", "/etc/my.cnf.d/galera.cnf"])
     getconf_page_size = simple_command("/usr/bin/getconf PAGE_SIZE")
