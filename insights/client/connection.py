@@ -1050,7 +1050,7 @@ class InsightsConnection(object):
 
         host_id = host_details["results"][0]["id"]
         url = self.base_url + "/insights/v1/system/%s/reports/" % host_id
-        content = self._get(url)
+        content = self._cached_get(url)
         if content is None:
             return None
 
