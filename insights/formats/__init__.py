@@ -184,7 +184,7 @@ def get_response_of_types(response, missing=True, show_rules=None):
     if not show_rules:
         #  - Discard the "make_none" by default when no "-S"
         #  That means show "make_none" rules only when "none" is specified in "-S"
-        response.pop('none')
+        response.pop('none') if 'none' in response else None
         return response
     #  - Discard the "medadata" rules when it's not specified in the "-S" option
     if 'metadata' not in show_rules and 'metadata' in response.get('system', {}):
