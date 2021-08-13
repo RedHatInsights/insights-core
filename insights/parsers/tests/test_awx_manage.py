@@ -4,7 +4,7 @@ import pytest
 from insights.core import ContentException, ParseException
 from insights.parsers import awx_manage, SkipException
 from insights.parsers.awx_manage import AnsibleTowerLicenseType, AnsibleTowerLicense, AwxManagePrintSettings
-from insights.parsers.tests import test_empty_skip
+from insights.parsers.tests import skip_exception_check
 from insights.tests import context_wrap
 
 GOOD_LICENSE = """
@@ -70,7 +70,7 @@ def test_ansible_tower_license_data():
 
 
 def test_ansible_tower_license__data_ab_type():
-    assert 'Empty output.' in test_empty_skip(AnsibleTowerLicense)
+    assert 'Empty output.' in skip_exception_check(AnsibleTowerLicense)
 
     with pytest.raises(ContentException):
         AnsibleTowerLicense(context_wrap(NG_COMMAND_1))
