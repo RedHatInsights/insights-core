@@ -1,11 +1,10 @@
 """
-MssqlApiAssessment - file ``/var/opt/mssql/api_assessment_output``
-==================================================================
+MssqlApiAssessment - file ``/var/opt/mssql/log/assessments/assessment-latest``
+==============================================================================
 
 Parsers contains in this module are:
 
-MssqlApiAssessment - file ``/var/opt/mssql/api_assessment_output``
---------------------------------------------------------------------------
+MssqlApiAssessment - file ``/var/opt/mssql/log/assessments/assessment-latest``
 """
 
 from insights import JSONParser, parser
@@ -15,7 +14,7 @@ from insights.specs import Specs
 @parser(Specs.mssql_api_assessment)
 class MssqlApiAssessment(JSONParser):
     """
-    Parses the file: ``/var/opt/mssql/api_assessment_output``
+    Parses the file: ``/var/opt/mssql/log/assessments/assessment-latest``
 
     Sample content of the file::
 
@@ -47,12 +46,11 @@ class MssqlApiAssessment(JSONParser):
             "HelpLink": "https://support.microsoft.com/kb/3210239"
           }
         ]
+
     Examples:
         >>> type(mssql_api_assessment_output)
         <class 'insights.parsers.mssql_api_assessment.MssqlApiAssessment'>
-        >>> mssql_api_assessment_output[0]["Severity"]
-        u'Information'
-        >>> mssql_api_assessment_output[0]["CheckId"]
-        u'TF174'
+        >>> mssql_api_assessment_output[0]["Severity"] == 'Information'
+        True
     """
     pass
