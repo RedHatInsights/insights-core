@@ -1,6 +1,7 @@
 import pytest
 from mock.mock import Mock
 
+from insights.core import ET
 from insights.core.spec_factory import DatasourceProvider
 from insights.core.dr import SkipComponent
 from insights.specs.default import candlepin_broker
@@ -141,6 +142,53 @@ CANDLE_BROKER_NO_SENTISVE_INFO = """
 RELATIVE_PATH = '/etc/candlepin/broker.xml'
 
 
+def xml_check_removed(result):
+    root = ET.fromstring('\n'.join(result))
+    assert root is not None
+    core_ele = root.find('core')
+    assert core_ele is not None
+
+    search_tags = ['cluster-password', 'acceptors']
+    for tag in search_tags:
+        found = core_ele.find(tag)
+        assert found is None, 'Tag {} should not be in result'.format(tag)
+
+
+def xml_compare(result, expected):
+    root_result = ET.fromstring('\n'.join(result))
+    root_expected = ET.fromstring('\n'.join(expected))
+
+    re_core_ele = root_result.find('core')
+    assert re_core_ele is not None
+    ex_core_ele = root_expected.find('core')
+    assert ex_core_ele is not None
+
+    search_tags = ['cluster-user', 'security-enabled']
+    for tag in search_tags:
+        ex_found = ex_core_ele.find(tag)
+        if ex_found is not None:
+            re_found = re_core_ele.find(tag)
+            assert re_found is not None, 'Tag {} is in expected but not in result'.format(tag)
+            assert re_found.text == ex_found.text, 'Tag {} text is different in expected and result'.format(tag)
+
+    ex_settings = ex_core_ele.find('security-settings')
+    if ex_settings is not None:
+        re_settings = re_core_ele.find('security-settings')
+        assert re_found is not None, 'Tag security-settings is in expected but not in result'
+        assert re_found.text == ex_found.text, 'Tag {} text is different in expected and result'.format(tag)
+        ex_settings_dict = {}
+        re_settings_dict = {}
+        for setting in ex_settings.findall('security-setting'):
+            ex_settings_dict[setting.get('match')] = []
+            for perm in setting.findall('permission'):
+                ex_settings_dict[setting.get('match')].append((perm.get('roles'), perm.get('type')))
+        for setting in re_settings.findall('security-setting'):
+            re_settings_dict[setting.get('match')] = []
+            for perm in setting.findall('permission'):
+                re_settings_dict[setting.get('match')].append((perm.get('roles'), perm.get('type')))
+        assert ex_settings_dict == re_settings_dict
+
+
 def test_candlepin_broker():
     candlepin_broker_file = Mock()
     candlepin_broker_file.content = CANDLEPIN_BROKER.splitlines()
@@ -149,7 +197,8 @@ def test_candlepin_broker():
     assert result is not None
     assert isinstance(result, DatasourceProvider)
     expected = DatasourceProvider(content=CANDLEPIN_BROKER_XML.splitlines(), relative_path=RELATIVE_PATH)
-    assert result.content == expected.content
+    xml_check_removed(result.content)
+    xml_compare(result.content, expected.content)
     assert result.relative_path == expected.relative_path
 
 
@@ -170,5 +219,6 @@ def test_candlpin_broker_no_sensitive_info():
     assert result is not None
     assert isinstance(result, DatasourceProvider)
     expected = DatasourceProvider(content=CANDLE_BROKER_NO_SENTISVE_INFO.splitlines(), relative_path=RELATIVE_PATH)
-    assert result.content == expected.content
+    xml_check_removed(result.content)
+    xml_compare(result.content, expected.content)
     assert result.relative_path == expected.relative_path
