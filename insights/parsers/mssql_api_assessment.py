@@ -8,18 +8,16 @@ MssqlApiAssessment - file ``/var/opt/mssql/api_assessment_output``
 --------------------------------------------------------------------------
 """
 
-from insights import JSONParser, parser, CommandParser
-from insights.parsers import SkipException, ParseException
+from insights import JSONParser, parser
 from insights.specs import Specs
-
 
 
 @parser(Specs.mssql_api_assessment)
 class MssqlApiAssessment(JSONParser):
     """
-    Parses the output of command  ``/var/opt/mssql/api_assessment_output``
+    Parses the file: ``/var/opt/mssql/api_assessment_output``
 
-    Sample output of the command::
+    Sample content of the file::
 
         [
           {
