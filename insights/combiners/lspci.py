@@ -20,7 +20,7 @@ class LsPci(list):
     .. note::
         In case the ``lspci -k`` sometimes outputs the `Slot` in the full
         format of ``domain:bus:device.function``, and the ``lspci -k`` is more
-        common than ``lspci -vmmkn`, so this combiner will take the `Slot` of
+        common than ``lspci -vmmkn``, so this combiner will take the `Slot` of
         the `lspci -k` as the key.
 
     Typical output of the ``lspci -k`` command is::
