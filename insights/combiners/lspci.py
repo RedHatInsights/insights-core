@@ -19,8 +19,9 @@ class LsPci(list):
 
     .. note::
         In case the ``lspci -k`` sometimes outputs the `Slot` in the full
-        format of ``domain:bus:device.function``, the combiner will take the
-        `Slot` of the `lspci -k` as the key.
+        format of ``domain:bus:device.function``, and the ``lspci -k`` is more
+        common than ``lspci -vmmkn`, so this combiner will take the `Slot` of
+        the `lspci -k` as the key.
 
     Typical output of the ``lspci -k`` command is::
 
@@ -125,9 +126,10 @@ class LsPci(list):
                 if lspci_k and dev['Slot'] in lspci_k:
                     # use the local copy to prevent from writing back to the parser
                     dev_k = [v for v in lspci_k.data.values() if v['Slot'].endswith(dev['Slot'])][0].copy()
-                    # Since the 'lspci -k' is a more command than the 'lspci -vmmkn',
-                    #  the following line should be commented out to use the
-                    #  'Slot' in 'lspci -k' as the 'Slot' in this combiner:
+                    # Since the 'lspci -k' is a more common command than the
+                    #  'lspci -vmmkn', the following line should be commented
+                    #  out to use the 'Slot' in 'lspci -k' as the 'Slot' in
+                    #  this combiner:
                     # dev_k.pop('Slot') if 'Slot' in dev_k else None
                     dev_k.pop('Kernel driver in use') if 'Kernel driver in use' in dev_k else None
                     dev_k.pop('Kernel modules') if 'Kernel modules' in dev_k else None
