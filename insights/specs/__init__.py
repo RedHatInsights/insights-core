@@ -368,6 +368,7 @@ class Specs(SpecSet):
     mount = RegistryPoint()
     mounts = RegistryPoint()
     mssql_conf = RegistryPoint()
+    mssql_api_assessment = RegistryPoint()
     multicast_querier = RegistryPoint()
     multipath_conf = RegistryPoint()
     multipath_conf_initramfs = RegistryPoint()
