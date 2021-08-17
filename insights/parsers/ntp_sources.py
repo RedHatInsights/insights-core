@@ -82,6 +82,9 @@ class ChronycSources(CommandParser, list):
 
     @property
     def data(self):
+        """
+        Set data as property to keep compatibility
+        """
         return self
 
 
@@ -120,10 +123,16 @@ class NtpqLeap(CommandParser, dict):
 
     @property
     def data(self):
+        """
+        Set data as property to keep compatibility
+        """
         return self
 
     @property
     def leap(self):
+        """
+        Return the value of the 'leap'
+        """
         return self.get('leap')
 
 
@@ -178,4 +187,7 @@ class NtpqPn(CommandParser, list):
 
     @property
     def data(self):
+        """
+        Set data as property to keep compatibility
+        """
         return self
