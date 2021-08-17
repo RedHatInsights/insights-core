@@ -19,6 +19,7 @@ class Specs(SpecSet):
     aws_instance_type = RegistryPoint()
     awx_manage_check_license = RegistryPoint()
     awx_manage_check_license_data = RegistryPoint(filterable=True)
+    awx_manage_print_settings = RegistryPoint()
     azure_instance_type = RegistryPoint()
     azure_instance_plan = RegistryPoint()
     bios_uuid = RegistryPoint()
