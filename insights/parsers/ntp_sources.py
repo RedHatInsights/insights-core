@@ -114,7 +114,7 @@ class NtpqLeap(CommandParser, dict):
         leap = None
         for line in content:
             if 'leap=' in line:
-                leap = line.split('leap=')[1].split()[0]
+                leap = line.split('leap=')[1].rstrip()
 
         if leap is None:
             raise SkipComponent()
