@@ -92,7 +92,10 @@ class Lsof(CommandParser, Scannable):
 
         line = next(content)
         while 'COMMAND ' not in line:
-            line = next(content)
+            line = next(content, '')
+
+        if not line:
+            return iter([])
 
         self._calc_indexes(line)
         return content
@@ -112,7 +115,7 @@ class Lsof(CommandParser, Scannable):
             for heading in self.headings[:-1]:
                 # Use value if (start, end) index of heading is not empty
                 if line[slice(*self.indexes[heading])].strip():
-                    rdict[heading] = next(rowsplit)
+                    rdict[heading] = next(rowsplit, '')
         else:
             rdict = dict(zip(self.headings, rowsplit))
         rdict['NAME'] = command
