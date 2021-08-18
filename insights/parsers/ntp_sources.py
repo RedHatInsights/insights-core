@@ -14,23 +14,20 @@ Parsers in this module are:
 ChronycSources - command ``/usr/bin/chronyc sources``
 -----------------------------------------------------
 
-NtpqLeap - command ``/usr/sbin/ntpq -c 'rv 0 leap'``
-----------------------------------------------------
-
 NtpqPn - command ``/usr/sbin/ntpq -pn``
 ---------------------------------------
 
-
+NtpqLeap - command ``/usr/sbin/ntpq -c 'rv 0 leap'``
+----------------------------------------------------
 """
 
-import re
-from .. import parser, CommandParser
+from insights import parser, CommandParser
 from insights.core.dr import SkipComponent
 from insights.specs import Specs
 
 
 @parser(Specs.chronyc_sources)
-class ChronycSources(CommandParser):
+class ChronycSources(CommandParser, list):
     """
     Chronyc Sources parser
 
@@ -49,14 +46,15 @@ class ChronycSources(CommandParser):
 
     Examples:
 
-        >>> sources = shared[ChronycSources].data
-        >>> len(sources)
+        >>> type(chrony_sources)
+        <class 'insights.parsers.ntp_sources.ChronycSources'>
+        >>> len(chrony_sources)
         4
-        >>> sources[0]['source']
+        >>> chrony_sources[0]['source']
         '10.20.30.40'
-        >>> sources[0]['mode']
+        >>> chrony_sources[0]['mode']
         '^'
-        >>> sources[0]['state']
+        >>> chrony_sources[0]['state']
         '-'
     """
 
@@ -64,15 +62,34 @@ class ChronycSources(CommandParser):
         """
         Get source, mode and state for chrony
         """
-        self.data = []
-        for row in content[3:]:
-            if row.strip():
-                values = row.split(" ", 2)
-                self.data.append({"source": values[1], "mode": values[0][0], "state": values[0][1]})
+        data = []
+        if len(content) > 3:
+            for row in content[3:]:
+                if row.strip():
+                    values = row.split(" ", 2)
+                    data.append(
+                        {
+                            "source": values[1],
+                            "mode": values[0][0],
+                            "state": values[0][1]
+                        }
+                    )
+
+        if not data:
+            raise SkipComponent()
+
+        self.extend(data)
+
+    @property
+    def data(self):
+        """
+        Set data as property to keep compatibility
+        """
+        return self
 
 
 @parser(Specs.ntpq_leap)
-class NtpqLeap(CommandParser):
+class NtpqLeap(CommandParser, dict):
     """
     Converts the output of ``ntpq -c 'rv 0 leap'`` into a dictionary in the
     ``data`` property, and sets the ``leap`` property to the value of the
@@ -84,26 +101,43 @@ class NtpqLeap(CommandParser):
 
     Examples:
 
-        >>> print shared[NtpqLeap].leap  # same data
+        >>> type(ntpq)
+        <class 'insights.parsers.ntp_sources.NtpqLeap'>
+        >>> ntpq.leap
         '00'
     """
 
     def parse_content(self, content):
-        if "Connection refused" in content[0]:
+        if content and "Connection refused" in content[0]:
             raise SkipComponent("NTP service is down and connection refused")
-        self.data = {}
+
+        leap = None
         for line in content:
-            m = re.search(r'leap=(\d*)', line)
-            if m:
-                self.data["leap"] = m.group(1)
+            if 'leap=' in line:
+                leap = line.split('leap=')[1].rstrip()
+
+        if leap is None:
+            raise SkipComponent()
+
+        self.update(leap=leap)
+
+    @property
+    def data(self):
+        """
+        Set data as property to keep compatibility
+        """
+        return self
 
     @property
     def leap(self):
-        return self.data.get('leap')
+        """
+        Return the value of the 'leap'
+        """
+        return self.get('leap')
 
 
 @parser(Specs.ntpq_pn)
-class NtpqPn(CommandParser):
+class NtpqPn(CommandParser, list):
     """
     Get source and flag for each NTP time source from the output of
     ``/usr/sbin/ntpq -pn``.
@@ -124,21 +158,36 @@ class NtpqPn(CommandParser):
 
     Examples:
 
-        >>> sources = shared[NtpqPn].data
-        >>> len(sources)
+        >>> type(ntp_sources)
+        <class 'insights.parsers.ntp_sources.NtpqPn'>
+        >>> len(ntp_sources)
         4
-        >>> sources[0]
-        {'flag': '*', 'source', '10.20.30.40'}
+        >>> ntp_sources[0]['source']
+        '10.20.30.40'
     """
 
     def parse_content(self, content):
-        if "Connection refused" in content[0]:
+        if content and "Connection refused" in content[0]:
             raise SkipComponent("NTP service is down and connection refused")
-        self.data = []
-        for row in content[2:]:
-            if row.strip():
-                values = row.split(" ", 2)
-                if row.startswith(" "):
-                    self.data.append({"source": values[1], "flag": " "})
-                else:
-                    self.data.append({"source": values[0][1:], "flag": values[0][0]})
+
+        data = []
+        if len(content) > 2:
+            for row in content[2:]:
+                if row.strip():
+                    values = row.split(" ", 2)
+                    if row.startswith(" "):
+                        data.append({"source": values[1], "flag": " "})
+                    else:
+                        data.append({"source": values[0][1:], "flag": values[0][0]})
+
+        if not data:
+            raise SkipComponent()
+
+        self.extend(data)
+
+    @property
+    def data(self):
+        """
+        Set data as property to keep compatibility
+        """
+        return self
