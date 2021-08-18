@@ -48,7 +48,7 @@ class MarkdownFormat(Formatter):
         self.dropped = dropped
         self.show_rules = [] if show_rules is None else show_rules
 
-        self.counts = {'skip': 0, 'pass': 0, 'rule': 0, 'info': 0, 'metadata': 0, 'metadata_key': 0, 'fingerprint': 0, 'exception': 0}
+        self.counts = {'skip': 0, 'pass': 0, 'rule': 0, 'info': 0, 'none': 0, 'metadata': 0, 'metadata_key': 0, 'fingerprint': 0, 'exception': 0}
         self.responses = {
             'skip': self.response(label="SKIP", title="Missing Deps: "),
             'pass': self.response(label="PASS", title="Passed      : "),

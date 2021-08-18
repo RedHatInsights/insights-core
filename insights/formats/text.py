@@ -106,15 +106,14 @@ class HumanReadableFormat(Formatter):
     def preprocess(self):
         response = namedtuple('response', 'color label intl title')
         self.responses = {
+            'skip': response(color=Fore.BLUE, label="SKIP", intl='S', title="Missing Deps: "),
             'pass': response(color=Fore.GREEN, label="PASS", intl='P', title="Passed      : "),
             'rule': response(color=Fore.RED, label="FAIL", intl='F', title="Failed      : "),
             'info': response(color=Fore.WHITE, label="INFO", intl='I', title="Info        : "),
             'none': response(color=Fore.BLUE, label="RETURNED NONE", intl='N', title="Ret'd None  : "),
-            'skip': response(color=Fore.BLUE, label="SKIP", intl='S', title="Missing Deps: "),
-            'fingerprint': response(color=Fore.YELLOW, label="FINGERPRINT", intl='P',
-                                  title="Fingerprint : "),
             'metadata': response(color=Fore.YELLOW, label="META", intl='M', title="Metadata    : "),
             'metadata_key': response(color=Fore.MAGENTA, label="META", intl='K', title="Metadata Key: "),
+            'fingerprint': response(color=Fore.YELLOW, label="FINGERPRINT", intl='P', title="Fingerprint : "),
             'exception': response(color=Fore.RED, label="EXCEPT", intl='E', title="Exceptions  : "),
         }
 
