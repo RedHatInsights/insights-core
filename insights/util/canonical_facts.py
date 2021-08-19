@@ -2,6 +2,9 @@
 
 from __future__ import print_function
 
+import re
+import socket
+
 from insights import rule, make_metadata, run
 from insights.specs import Specs
 from insights.core import Parser
@@ -22,14 +25,41 @@ def valid_uuid_or_None(s):
         return None
 
 
+def valid_ipv4_address_or_None(addr):
+    """ str: Returns the input value if it is a valid IPV4 address """
+    try:
+        socket.inet_pton(socket.AF_INET, addr)
+        return addr
+    except socket.error:
+        return None
+
+
+def valid_mac_addresses(mac_address_datasources):
+    """ list: Return a list of valid mac addresses from a list of datasources """
+    valid_addrs = []
+    for ds in mac_address_datasources:
+        try:
+            addr = ds.content[0].strip()
+        except Exception:
+            continue
+        # Only look for addresses in the form 00:00:00:00:00:00
+        match = re.match("^([0-9a-f]{2}:){5}[0-9a-f]{2}$", addr)
+        if match is not None:
+            valid_addrs.append(addr)
+
+    return valid_addrs
+
+
 @parser(Specs.ip_addresses)
 class IPs(Parser):
     """
-    Reads the output of hostname -I and constructs a list of all assigned IP
-    addresses.
+    Reads the output of ``hostname -I`` and constructs a list of all assigned IP
+    addresses. This command should only output IPV4 addresses and should not
+    include localhost, but sometimes it does.  The validation function removes
+    those from the list.
 
     Example output::
-       192.168.1.71 10.88.0.1 172.17.0.1 172.18.0.1 10.10.121.131 2600:1700:720:7e30:e4ef:e9d0:7ea1:c8a7
+       192.168.1.71 10.88.0.1 172.17.0.1 172.18.0.1 10.10.121.131
 
     Resultant data structure::
         [
@@ -38,12 +68,10 @@ class IPs(Parser):
             "172.17.0.1",
             "172.18.0.1",
             "10.10.121.131",
-            "2600:1700:720:7e30:e4ef:e9d0:7ea1:c8a7"
         ]
     """
-
     def parse_content(self, content):
-        self.data = content[0].rstrip().split()
+        self.data = list(filter(None, [valid_ipv4_address_or_None(addr) for addr in content[0].rstrip().split()]))
 
 
 @parser(Specs.subscription_manager_id)
@@ -99,9 +127,7 @@ def canonical_facts(
         bios_uuid=valid_uuid_or_None(_safe_parse(bios_uuid)),
         subscription_manager_id=valid_uuid_or_None(submanid.data if submanid else None),
         ip_addresses=ips.data if ips else [],
-        mac_addresses=list(
-            filter(None, (_safe_parse(c) for c in mac_addresses))
-        ) if mac_addresses else [],
+        mac_addresses=valid_mac_addresses(mac_addresses) if mac_addresses else [],
         fqdn=_safe_parse(fqdn),
     )
 
