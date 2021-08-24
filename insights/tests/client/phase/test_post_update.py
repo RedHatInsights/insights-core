@@ -22,6 +22,7 @@ def patch_insights_config(old_function):
                        "return_value.load_all.return_value.list_specs": False,
                        "return_value.load_all.return_value.show_results": False,
                        "return_value.load_all.return_value.check_results": False,
+                       "return_value.load_all.return_value.no_upload": False,
                        "return_value.load_all.return_value.core_collect": False})
     return patcher(old_function)
 
@@ -311,6 +312,23 @@ def test_post_update_offline(insights_config, insights_client):
     Offline mode short circuits this phase
     """
     insights_config.return_value.load_all.return_value.offline = True
+    try:
+        post_update()
+    except SystemExit:
+        pass
+    insights_client.return_value.get_machine_id.assert_called_once()
+    insights_client.return_value.get_registration_status.assert_not_called()
+    insights_client.return_value.clear_local_registration.assert_not_called()
+    insights_client.return_value.set_display_name.assert_not_called()
+
+
+@patch("insights.client.phase.v1.InsightsClient")
+@patch_insights_config
+def test_post_update_no_upload(insights_config, insights_client):
+    """
+    No-upload short circuits this phase
+    """
+    insights_config.return_value.load_all.return_value.no_upload = True
     try:
         post_update()
     except SystemExit:

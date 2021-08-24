@@ -390,17 +390,16 @@ class InsightsConnection(object):
                         "SUCCESS" if api_success else "FAILURE")
             if upload_success and api_success:
                 logger.info("Connectivity tests completed successfully")
-                logger.info("See %s for more details.", self.config.logging_file)
+                print("See %s for more details." % self.config.logging_file)
             else:
                 logger.info("Connectivity tests completed with some errors")
-                logger.info("See %s for more details.", self.config.logging_file)
+                print("See %s for more details." % self.config.logging_file)
                 rc = 1
         except requests.ConnectionError as exc:
             print(exc)
             logger.error('Connectivity test failed! '
                          'Please check your network configuration')
-            logger.error('Additional information may be in'
-                         ' /var/log/' + APP_NAME + "/" + APP_NAME + ".log")
+            print('Additional information may be in %s' % self.config.logging_file)
             return 1
         return rc
 
@@ -421,9 +420,9 @@ class InsightsConnection(object):
                         req.status_code)
             logger.debug("HTTP Status Text: %s", req.reason)
             if req.status_code == 401:
-                logger.error("Authorization Required.")
-                logger.error("Please ensure correct credentials "
-                             "in " + constants.default_conf_file)
+                logger.error("Please ensure that the system is registered "
+                             "with RHSM for CERT auth, or that correct "
+                             "credentials are set in %s for BASIC auth.", self.config.conf)
                 logger.log(NETWORK, "HTTP Response Text: %s", req.text)
             if req.status_code == 402:
                 # failed registration because of entitlement limit hit
@@ -634,6 +633,7 @@ class InsightsConnection(object):
         #       True for registered
         #       False for unregistered
         #       None for system 404
+        self.handle_fail_rcs(res)
         try:
             # check the 'unregistered_at' key of the response
             unreg_status = json.loads(res.content).get('unregistered_at', 'undefined')
