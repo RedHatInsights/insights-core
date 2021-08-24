@@ -95,6 +95,7 @@ class DefaultSpecs(Specs):
     aws_instance_id_pkcs7 = simple_command("/usr/bin/curl -s http://169.254.169.254/latest/dynamic/instance-identity/pkcs7 --connect-timeout 5", deps=[IsAWS])
     awx_manage_check_license = simple_command("/usr/bin/awx-manage check_license")
     awx_manage_check_license_data = awx_manage.awx_manage_check_license_data_datasource
+    awx_manage_print_settings = simple_command("/usr/bin/awx-manage print_settings INSIGHTS_TRACKING_STATE SYSTEM_UUID INSTALL_UUID TOWER_URL_BASE AWX_CLEANUP_PATHS AWX_PROOT_BASE_PATH --format json")
     azure_instance_type = simple_command("/usr/bin/curl -s -H Metadata:true http://169.254.169.254/metadata/instance/compute/vmSize?api-version=2018-10-01&format=text --connect-timeout 5", deps=[IsAzure])
     azure_instance_plan = simple_command("/usr/bin/curl -s -H Metadata:true http://169.254.169.254/metadata/instance/compute/plan?api-version=2018-10-01&format=json --connect-timeout 5", deps=[IsAzure])
     bios_uuid = simple_command("/usr/sbin/dmidecode -s system-uuid")
@@ -261,6 +262,7 @@ class DefaultSpecs(Specs):
     findmnt_lo_propagation = simple_command("/bin/findmnt -lo+PROPAGATION")
     firewall_cmd_list_all_zones = simple_command("/usr/bin/firewall-cmd --list-all-zones")
     firewalld_conf = simple_file("/etc/firewalld/firewalld.conf")
+    foreman_ssl_error_ssl_log = simple_file("/var/log/httpd/foreman-ssl_error_ssl.log")
     fstab = simple_file("/etc/fstab")
     galera_cnf = first_file(["/var/lib/config-data/puppet-generated/mysql/etc/my.cnf.d/galera.cnf", "/etc/my.cnf.d/galera.cnf"])
     getconf_page_size = simple_command("/usr/bin/getconf PAGE_SIZE")
@@ -529,6 +531,7 @@ class DefaultSpecs(Specs):
     nsswitch_conf = simple_file("/etc/nsswitch.conf")
     ntp_conf = simple_file("/etc/ntp.conf")
     ntpq_leap = simple_command("/usr/sbin/ntpq -c 'rv 0 leap'")
+    ntpq_pn = simple_command("/usr/sbin/ntpq -pn")
     ntptime = simple_command("/usr/sbin/ntptime")
     numa_cpus = glob_file("/sys/devices/system/node/node[0-9]*/cpulist")
     numeric_user_group_name = simple_command("/bin/grep -c '^[[:digit:]]' /etc/passwd /etc/group")

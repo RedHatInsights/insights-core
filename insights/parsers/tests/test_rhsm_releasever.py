@@ -3,7 +3,7 @@ import pytest
 
 from insights.parsers import rhsm_releasever as rhsm_releasever_module, SkipException
 from insights.parsers.rhsm_releasever import RhsmReleaseVer
-from insights.parsers.tests import test_empty_skip
+from insights.parsers.tests import skip_exception_check
 from insights.tests import context_wrap
 
 RHEL_MAJ_MIN = '{"releaseVer": "6.10"}'
@@ -51,7 +51,7 @@ def test_rhsm_releasever():
 
 
 def test_empty():
-    assert 'Empty output.' in test_empty_skip(RhsmReleaseVer)
+    assert 'Empty output.' in skip_exception_check(RhsmReleaseVer)
 
 
 def test_doc_examples():

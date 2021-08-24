@@ -41,7 +41,7 @@ def test_update_payload_off(insights_config, insights_client):
 @patch("insights.client.phase.v1.InsightsConfig")
 def test_update_core_collect_on(insights_config, insights_client):
     """
-    Rules are not updated when using core collection
+    Rules ARE updated when using core collection
     """
     insights_config.return_value.load_all.return_value.payload = False
     insights_config.return_value.load_all.return_value.core_collect = True
