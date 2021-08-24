@@ -25,6 +25,34 @@ def test_oscap_scan(config, assert_rpms):
     assert content_type == COMPLIANCE_CONTENT_TYPE
 
 
+@patch("insights.client.apps.compliance.ComplianceClient._assert_oscap_rpms_exist")
+@patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None, compressor='gz')
+def test_oscap_scan_with_results_repaired(config, assert_rpms, tmpdir):
+    results_file = tmpdir.mkdir('results').join('result.xml')
+    results_file.write("""
+<xml>
+  <version>0.9</version>
+</xml>
+    """)
+
+    compliance_client = ComplianceClient(config)
+    compliance_client._ssg_version = '0.1.25'
+    compliance_client._get_inventory_id = lambda: ''
+    compliance_client.get_initial_profiles = lambda: [{'attributes': {'ref_id': 'foo', 'tailored': False}}]
+    compliance_client.get_profiles_matching_os = lambda: []
+    compliance_client.find_scap_policy = lambda ref_id: '/usr/share/xml/scap/foo.xml'
+    compliance_client._results_file = lambda archive_dir, profile: str(results_file)
+    compliance_client.run_scan = lambda ref_id, policy_xml, output_path, tailoring_file_path: None
+    compliance_client.archive.archive_tmp_dir = '/tmp'
+    compliance_client.archive.archive_name = 'insights-compliance-test'
+    archive, content_type = compliance_client.oscap_scan()
+    assert archive == '/tmp/insights-compliance-test.tar.gz'
+    assert content_type == COMPLIANCE_CONTENT_TYPE
+
+    repaired_results = open(str(results_file)).read()
+    assert '<version>0.1.25</version>' in repaired_results
+
+
 @patch("insights.client.apps.compliance.call", return_value=(0, ''))
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
 def test_missing_packages(config, call):
@@ -49,6 +77,22 @@ def test_errored_rpm_call(config, call):
     compliance_client.run_scan = lambda ref_id, policy_xml: None
     with raises(SystemExit):
         compliance_client.oscap_scan()
+
+
+@patch("insights.client.apps.compliance.call", return_value=(0, '1.2.3'))
+@patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
+def test_get_ssg_version(config, call):
+    ssg_version = ComplianceClient(config).ssg_version
+    assert ssg_version == '1.2.3'
+    call.assert_called_with('rpm -qa --qf "%{VERSION}" scap-security-guide', keep_rc=True)
+
+
+@patch("insights.client.apps.compliance.call", return_value=(1, '0.0.0'))
+@patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
+def test_get_ssg_version_with_failure(config, call):
+    ssg_version = ComplianceClient(config).ssg_version
+    assert not ssg_version
+    call.assert_called_with('rpm -qa --qf "%{VERSION}" scap-security-guide', keep_rc=True)
 
 
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
