@@ -32,7 +32,6 @@ from insights.components.rhel_version import IsRhel8, IsRhel7, IsRhel6
 from insights.components.cloud_provider import IsAWS, IsAzure, IsGCP
 from insights.components.ceph import IsCephMonitor
 from insights.parsers.mdstat import Mdstat
-from insights.parsers.lsmod import LsMod
 from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersion
 from insights.parsers.mount import Mount
 from insights.specs import Specs
@@ -95,6 +94,7 @@ class DefaultSpecs(Specs):
     aws_instance_id_pkcs7 = simple_command("/usr/bin/curl -s http://169.254.169.254/latest/dynamic/instance-identity/pkcs7 --connect-timeout 5", deps=[IsAWS])
     awx_manage_check_license = simple_command("/usr/bin/awx-manage check_license")
     awx_manage_check_license_data = awx_manage.awx_manage_check_license_data_datasource
+    awx_manage_print_settings = simple_command("/usr/bin/awx-manage print_settings INSIGHTS_TRACKING_STATE SYSTEM_UUID INSTALL_UUID TOWER_URL_BASE AWX_CLEANUP_PATHS AWX_PROOT_BASE_PATH --format json")
     azure_instance_type = simple_command("/usr/bin/curl -s -H Metadata:true http://169.254.169.254/metadata/instance/compute/vmSize?api-version=2018-10-01&format=text --connect-timeout 5", deps=[IsAzure])
     azure_instance_plan = simple_command("/usr/bin/curl -s -H Metadata:true http://169.254.169.254/metadata/instance/compute/plan?api-version=2018-10-01&format=json --connect-timeout 5", deps=[IsAzure])
     bios_uuid = simple_command("/usr/sbin/dmidecode -s system-uuid")
@@ -693,20 +693,7 @@ class DefaultSpecs(Specs):
     softnet_stat = simple_file("proc/net/softnet_stat")
     software_collections_list = simple_command('/usr/bin/scl --list')
     spamassassin_channels = simple_command("/bin/grep -r '^\\s*CHANNELURL=' /etc/mail/spamassassin/channel.d")
-
-    @datasource(LsMod, HostContext)
-    def is_mod_loaded_for_ss(broker):
-        """
-        bool: Returns True if the kernel modules required by ``ss -tupna``
-        command are loaded.
-        """
-        lsmod = broker[LsMod]
-        req_mods = ['inet_diag', 'tcp_diag', 'udp_diag']
-        if all(mod in lsmod for mod in req_mods):
-            return True
-        raise SkipComponent
-
-    ss = simple_command("/usr/sbin/ss -tupna", deps=[is_mod_loaded_for_ss])
+    ss = simple_command("/usr/sbin/ss -tupna")
     ssh_config = simple_file("/etc/ssh/ssh_config")
     ssh_config_d = glob_file(r"/etc/ssh/ssh_config.d/*.conf")
     ssh_foreman_proxy_config = simple_file("/usr/share/foreman-proxy/.ssh/ssh_config")

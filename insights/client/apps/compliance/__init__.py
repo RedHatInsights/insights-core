@@ -15,7 +15,13 @@ import six
 NONCOMPLIANT_STATUS = 2
 COMPLIANCE_CONTENT_TYPE = 'application/vnd.redhat.compliance.something+tgz'
 POLICY_FILE_LOCATION = '/usr/share/xml/scap/ssg/content/'
-REQUIRED_PACKAGES = ['scap-security-guide', 'openscap-scanner', 'openscap']
+SSG_PACKAGE = 'scap-security-guide'
+REQUIRED_PACKAGES = [SSG_PACKAGE, 'openscap-scanner', 'openscap']
+
+# SSG versions that need the <version> in XML repaired
+VERSIONS_FOR_REPAIR = '0.1.18 0.1.19 0.1.21 0.1.25'.split()
+SNIPPET_TO_FIX = '<version>0.9</version>'
+
 logger = getLogger(__name__)
 
 
@@ -24,6 +30,7 @@ class ComplianceClient:
         self.config = config
         self.conn = InsightsConnection(config)
         self.archive = InsightsArchive(config)
+        self._ssg_version = None
 
     def oscap_scan(self):
         self.inventory_id = self._get_inventory_id()
@@ -36,14 +43,19 @@ class ComplianceClient:
             exit(constants.sig_kill_bad)
 
         archive_dir = self.archive.create_archive_dir()
+        results_need_repair = self.results_need_repair()
+
         for profile in profiles:
             tailoring_file = self.download_tailoring_file(profile)
+            results_file = self._results_file(archive_dir, profile)
             self.run_scan(
                 profile['attributes']['ref_id'],
                 self.find_scap_policy(profile['attributes']['ref_id']),
-                self._results_file(archive_dir, profile),
+                results_file,
                 tailoring_file_path=tailoring_file
             )
+            if results_need_repair:
+                self.repair_results(results_file)
             if tailoring_file:
                 os.remove(tailoring_file)
 
@@ -149,6 +161,65 @@ class ComplianceClient:
             logger.error('Scan failed')
             logger.error(oscap)
             exit(constants.sig_kill_bad)
+
+    @property
+    def ssg_version(self):
+        if not self._ssg_version:
+            self._ssg_version = self.get_ssg_version()
+        return self._ssg_version
+
+    def get_ssg_version(self):
+        rpmcmd = 'rpm -qa --qf "%{VERSION}" ' + SSG_PACKAGE
+        if not six.PY3:
+            rpmcmd = rpmcmd.encode()
+
+        rc, ssg_version = call(rpmcmd, keep_rc=True)
+        if rc:
+            logger.warning('Tried determinig SSG version but failed: {0}.\n'.format(ssg_version))
+            return
+
+        logger.info('System uses SSG version %s', ssg_version)
+        return ssg_version
+
+    def results_need_repair(self):
+        return self.ssg_version in VERSIONS_FOR_REPAIR
+
+    def repair_results(self, results_file):
+        if not os.path.isfile(results_file):
+            return
+        if not self.ssg_version:
+            logger.warning("Couldn't repair SSG version in results file %s", results_file)
+            return
+
+        results_file_in = '{0}.in'.format(results_file)
+        os.rename(results_file, results_file_in)
+
+        with open(results_file_in, 'r') as in_file:
+            with open(results_file, 'w') as out_file:
+                is_repaired = self._repair_ssg_version_in_results(
+                    in_file, out_file, self.ssg_version
+                )
+
+        os.remove(results_file_in)
+        if is_repaired:
+            logger.debug('Repaired version in results file %s', results_file)
+        return is_repaired
+
+    def _repair_ssg_version_in_results(self, in_file, out_file, ssg_version):
+        replacement = '<version>{0}</version>'.format(ssg_version)
+        is_repaired = False
+        for line in in_file:
+            if is_repaired or SNIPPET_TO_FIX not in line:
+                out_file.write(line)
+            else:
+                out_file.write(line.replace(SNIPPET_TO_FIX, replacement))
+                is_repaired = True
+                logger.debug(
+                    'Substituted "%s" with "%s" in %s',
+                    SNIPPET_TO_FIX, replacement, out_file.name
+                )
+
+        return is_repaired
 
     def _assert_oscap_rpms_exist(self):
         rpmcmd = 'rpm -qa ' + ' '.join(REQUIRED_PACKAGES)
