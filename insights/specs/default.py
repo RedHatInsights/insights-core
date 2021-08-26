@@ -400,7 +400,6 @@ class DefaultSpecs(Specs):
     logrotate_conf = glob_file(["/etc/logrotate.conf", "/etc/logrotate.d/*"])
     lpstat_p = simple_command("/usr/bin/lpstat -p")
     lpstat_protocol_printers = lpstat.lpstat_protocol_printers_info
-    cups_queue_ppd = glob_file("/etc/cups/ppd/*")
     ls_boot = simple_command("/bin/ls -lanR /boot")
     ls_dev = simple_command("/bin/ls -lanR /dev")
     ls_disk = simple_command("/bin/ls -lanR /dev/disk")
