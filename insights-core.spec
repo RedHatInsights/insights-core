@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.8
+Version:        3.0.240
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
