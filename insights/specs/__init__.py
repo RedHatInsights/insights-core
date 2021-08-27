@@ -295,6 +295,7 @@ class Specs(SpecSet):
     localtime = RegistryPoint()
     logrotate_conf = RegistryPoint(multi_output=True)
     lpstat_p = RegistryPoint()
+    lpstat_protocol_printers = RegistryPoint()
     ls_boot = RegistryPoint()
     ls_dev = RegistryPoint()
     ls_disk = RegistryPoint()

@@ -36,7 +36,7 @@ from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersio
 from insights.parsers.mount import Mount
 from insights.specs import Specs
 from insights.specs.datasources import (
-    awx_manage, cloud_init, candlepin_broker, ethernet, get_running_commands, ipcs, package_provides,
+    awx_manage, cloud_init, candlepin_broker, ethernet, get_running_commands, ipcs, lpstat, package_provides,
     ps as ps_datasource, sap, satellite_missed_queues)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 
@@ -399,6 +399,7 @@ class DefaultSpecs(Specs):
     localtime = simple_command("/usr/bin/file -L /etc/localtime")
     logrotate_conf = glob_file(["/etc/logrotate.conf", "/etc/logrotate.d/*"])
     lpstat_p = simple_command("/usr/bin/lpstat -p")
+    lpstat_protocol_printers = lpstat.lpstat_protocol_printers_info
     ls_boot = simple_command("/bin/ls -lanR /boot")
     ls_dev = simple_command("/bin/ls -lanR /dev")
     ls_disk = simple_command("/bin/ls -lanR /dev/disk")
