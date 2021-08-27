@@ -98,6 +98,7 @@ class Specs(SpecSet):
     crypto_policies_bind = RegistryPoint()
     crt = RegistryPoint()
     current_clocksource = RegistryPoint()
+    cups_ppd = RegistryPoint(multi_output=True)
     date_iso = RegistryPoint()
     date = RegistryPoint()
     date_utc = RegistryPoint()
