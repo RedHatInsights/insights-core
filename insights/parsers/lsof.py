@@ -1,6 +1,6 @@
 """
 Lsof - command ``/usr/sbin/lsof``
-=======================================
+=================================
 
 This parser reads the output of the ``/usr/sbin/lsof`` command and makes each
 line available as a dictionary keyed on the fields in the lsof output (with
@@ -60,6 +60,7 @@ Examples:
 
 """
 
+from insights.core.dr import SkipComponent
 from .. import add_filter, Scannable, parser, CommandParser
 from insights.specs import Specs
 
@@ -88,11 +89,16 @@ class Lsof(CommandParser, Scannable):
         Consumes lines from content until the HEADER is found and processed.
         Returns an iterator over the remaining lines.
         """
-        content = iter(content)
+        start = len(content)
+        for n, line in enumerate(content):
+            if 'COMMAND ' in line:
+                start = n + 1
+                break
 
-        line = next(content)
-        while 'COMMAND ' not in line:
-            line = next(content)
+        if start >= len(content):
+            raise SkipComponent
+
+        content = iter(content[start:])
 
         self._calc_indexes(line)
         return content
@@ -112,7 +118,7 @@ class Lsof(CommandParser, Scannable):
             for heading in self.headings[:-1]:
                 # Use value if (start, end) index of heading is not empty
                 if line[slice(*self.indexes[heading])].strip():
-                    rdict[heading] = next(rowsplit)
+                    rdict[heading] = next(rowsplit, '')
         else:
             rdict = dict(zip(self.headings, rowsplit))
         rdict['NAME'] = command
