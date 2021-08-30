@@ -44,8 +44,8 @@ class LpstatPrinters(CommandParser):
     Examples::
     >>> type(lpstat_printers)
     <class 'insights.parsers.lpstat.LpstatPrinters'>
-    >>> lpstat_printers.printers
-    [{'status': 'IDLE', 'name': 'idle_printer'}, {'status': 'DISABLED', 'name': 'disabled_printer'}, {'status': 'PROCESSING', 'name': 'processing_printer'}]
+    >>> len(lpstat_printers.printers)
+    3
     >>> lpstat_printers.printer_names_by_status('DISABLED')
     ['disabled_printer']
     """
