@@ -31,7 +31,7 @@ def test_registration_check_ok_reg(get_proxies, _init_session, _):
         })
     res.status_code = 200
 
-    conn.session.get = MagicMock(return_value=res)
+    conn.get = MagicMock(return_value=res)
     assert conn.api_registration_check()
 
 
@@ -57,7 +57,7 @@ def test_registration_check_ok_unreg(get_proxies, _init_session, _):
         })
     res.status_code = 200
 
-    conn.session.get = MagicMock(return_value=res)
+    conn.get = MagicMock(return_value=res)
     assert conn.api_registration_check() is False
 
 
@@ -76,7 +76,7 @@ def test_registration_check_parse_error(get_proxies, _init_session, _):
     res._content = 'zSDFasfghsRGH'
     res.status_code = 200
 
-    conn.session.get = MagicMock(return_value=res)
+    conn.get = MagicMock(return_value=res)
     assert conn.api_registration_check() is None
 
 
@@ -95,7 +95,7 @@ def test_registration_check_bad_res(get_proxies, _init_session, _):
     res._content = 'wakannai'
     res.status_code = 500
 
-    conn.session.get = MagicMock(return_value=res)
+    conn.get = MagicMock(return_value=res)
     assert conn.api_registration_check() is None
 
 
@@ -109,5 +109,6 @@ def test_registration_check_conn_error(get_proxies, _init_session, _):
     '''
     config = Mock(legacy_upload=False, base_url='example.com')
     conn = InsightsConnection(config)
-    conn.session.get.side_effect = requests.ConnectionError()
+    conn.get = MagicMock()
+    conn.get.side_effect = requests.ConnectionError()
     assert conn.api_registration_check() is None
