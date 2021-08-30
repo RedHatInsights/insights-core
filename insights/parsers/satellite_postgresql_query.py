@@ -6,8 +6,10 @@ This module contains the following parsers:
 
 SatelliteAdminSettings - command ``psql -d foreman -c 'select name, value, "default" from settings where name in (\'destroy_vm_on_host_delete\', \'unregister_delete_host\') --csv'``
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-SatelliteComputeResources - command ``psql -d foreman -c 'select name, type from compute_resources'``
------------------------------------------------------------------------------------------------------
+SatelliteComputeResources - command ``psql -d foreman -c 'select name, type from compute_resources' --csv``
+-----------------------------------------------------------------------------------------------------------
+SatelliteSCAStatus - command ``psql -d candlepin -c "select displayname, content_access_mode from cp_owner" --csv``
+-------------------------------------------------------------------------------------------------------------------
 """
 
 import os
@@ -203,3 +205,34 @@ class SatelliteComputeResources(SatellitePostgreSQLQuery):
         'test_compute_resource1'
     """
     pass
+
+
+@parser(Specs.satellite_sca_status)
+class SatelliteSCAStatus(SatellitePostgreSQLQuery):
+    """
+    Parse the output of the command ``psql -d candlepin -c "select displayname, content_access_mode from cp_owner" --csv``.
+
+    .. note::
+        Please refer to its super-class :class:`insights.parsers.satellite_postgresql_query.SatellitePostgreSQLQuery` for more
+        details.
+
+    Sample output::
+
+        displayname,content_access_mode
+        Default Organization,entitlement
+        Orgq,org_environment
+
+    Examples:
+        >>> type(sat_sca_info)
+        <class 'insights.parsers.satellite_postgresql_query.SatelliteSCAStatus'>
+        >>> sat_sca_info.sca_enabled
+        True
+    """
+
+    @property
+    def sca_enabled(self):
+        """
+        If the value of content_access_mode is "org_environment", it means the SCA is enabled for this organization
+        Return True if SCA is enabled on the satellite else False
+        """
+        return bool(len(self.search(content_access_mode='org_environment')))
