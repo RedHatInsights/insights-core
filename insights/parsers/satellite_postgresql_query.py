@@ -232,7 +232,7 @@ class SatelliteSCAStatus(SatellitePostgreSQLQuery):
     @property
     def sca_enabled(self):
         """
-        If the value of content_access_mode is "org_environment", it means the SCA is enabled for this organization
-        Return True if SCA is enabled on the satellite else False
+        If the value of content_access_mode is "org_environment", it means the SCA is enabled for this organization.
+        Return True if any organization has SCA enabled on the satellite else False
         """
         return bool(len(self.search(content_access_mode='org_environment')))
