@@ -301,11 +301,13 @@ def test_bond_class():
     assert bond_obj_3.mii_status == ['up', 'up', 'up']
     assert bond_obj_3.arp_polling_interval is None
     assert bond_obj_3.arp_ip_target is None
+    assert bond_obj_3.mii_polling_interval == "100"
 
     bond_obj_4 = Bond(context_wrap(BONDINFO_MODE_7, CONTEXT_PATH))
     assert bond_obj_4.file_name == 'bond0'
     assert bond_obj_4.arp_polling_interval == "1000"
     assert bond_obj_4.arp_ip_target == "10.152.1.1"
+    assert bond_obj_4.mii_polling_interval == "0"
     assert bond_obj_4.primary_slave == 'em3 (primary_reselect failure)'
 
     bond_obj = Bond(context_wrap(BOND_MODE_4, CONTEXT_PATH))

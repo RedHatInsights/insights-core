@@ -96,6 +96,7 @@ class Bond(Parser):
         self.xmit_hash_policy = None
         self._arp_polling_interval = None
         self._arp_ip_target = None
+        self._mii_polling_interval = None
         self._slave_interface = []
         self._aggregator_id = []
         self._mii_status = []
@@ -162,6 +163,8 @@ class Bond(Parser):
                 self._arp_polling_interval = line.strip().split(':', 1)[1].strip()
             elif line.strip().startswith("ARP IP target/s (n.n.n.n form):"):
                 self._arp_ip_target = line.strip().split(':', 1)[1].strip()
+            elif line.strip().startswith("MII Polling Interval (ms):"):
+                self._mii_polling_interval = line.strip().split(':', 1)[1].strip()
             elif line.strip().startswith("Primary Slave"):
                 self._primary_slave = line.split(":", 1)[1].strip()
             elif line.strip().startswith("Up Delay (ms):"):
@@ -254,6 +257,13 @@ class Bond(Parser):
         if no "ARP IP target/s (n.n.n.n form)" key is found.
         """
         return self._arp_ip_target
+
+    @property
+    def mii_polling_interval(self):
+        """Returns the mii polling interval as a string. ``None`` is returned
+        if no "MII Polling Interval (ms)" key is found.
+        """
+        return self._mii_polling_interval
 
     @property
     def primary_slave(self):
