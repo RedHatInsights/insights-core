@@ -11,6 +11,7 @@ LpstatProtocol - command ``/usr/bin/lpstat -v``
 
 from .. import parser, CommandParser
 from insights.specs import Specs
+from insights.parsers import SkipException
 
 # Printer states
 PRINTER_STATUS_IDLE = 'IDLE'
@@ -92,7 +93,7 @@ class LpstatPrinters(CommandParser):
 
 
 @parser(Specs.lpstat_protocol_printers)
-class LpstatProtocol(CommandParser):
+class LpstatProtocol(CommandParser, dict):
     """
     Class to parse ``lpstat -v`` command output.
 
@@ -107,11 +108,14 @@ class LpstatProtocol(CommandParser):
         'ipp'
     """
     def parse_content(self, content):
-        self.data = {}
+        if not content:
+            raise SkipException("No Valid Output")
+        data = {}
         for line in content:
-            protocol = line.split(":")[-1].strip()
-            printer = line.split(":")[0].split()[-1].strip()
-            self.data[printer] = protocol
-
-    def __getitem__(self, item):
-        return self.data[item]
+            if line.startswith("device for "):
+                protocol = line.split(":")[-1].strip()
+                printer = line.split(":")[0].split()[-1].strip()
+                data[printer] = protocol
+        if not data:
+            raise SkipException("No Valid Output")
+        self.update(data)

@@ -2,7 +2,7 @@ import doctest
 import pytest
 
 from insights.parsers import lpstat
-from insights.parsers.lpstat import LpstatPrinters, LpstatProtocol
+from insights.parsers.lpstat import LpstatPrinters, LpstatProtocol, SkipException
 from insights.tests import context_wrap
 
 
@@ -21,6 +21,13 @@ printer unknown_printer may be jammed.  enabled since Fri 20 Jan 2017 09:55:50 P
 LPSTAT_V_OUTPUT = """
 device for NAY_10F_Smurfs: ipp
 device for PEK_8F_Autumn: ipp
+""".strip()
+
+LPSTAT_V_OUTPUT_INVALID_1 = """
+""".strip()
+
+LPSTAT_V_OUTPUT_INVALID_2 = """
+lpstat: Transport endpoint is not connected
 """.strip()
 
 
@@ -75,6 +82,16 @@ def test_lpstat_printer_names_by_status(status, expected_name):
 def test_lpstat_protocol():
     lpstat_protocol = LpstatProtocol(context_wrap(LPSTAT_V_OUTPUT))
     assert lpstat_protocol["NAY_10F_Smurfs"] == "ipp"
+
+
+def test_lpstat_protocol_invalid_state():
+    with pytest.raises(SkipException) as exc:
+        LpstatProtocol(context_wrap(LPSTAT_V_OUTPUT_INVALID_1))
+    assert 'No Valid Output' in str(exc)
+
+    with pytest.raises(SkipException) as exc:
+        LpstatProtocol(context_wrap(LPSTAT_V_OUTPUT_INVALID_2))
+    assert 'No Valid Output' in str(exc)
 
 
 def test_lpstat_doc_examples():

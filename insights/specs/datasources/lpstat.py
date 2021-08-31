@@ -26,7 +26,7 @@ def lpstat_protocol_printers_info(broker):
         "device for NAY_10F_Smurfs: ipp://cups.nay.redhat.com/printers/NAY_10F_Smurfs"
 
     Returns:
-        dict: string containing non-sensitive information.
+        DatasourceProvider: Returns the collected content containing non-sensitive information
 
     Raises:
         SkipComponent: When the filter/path does not exist or any exception occurs.
@@ -36,6 +36,7 @@ def lpstat_protocol_printers_info(broker):
         result = []
         for line in content:
             if "device for " in line:
+                "Remove printer address information"
                 result.append(line.rsplit(":", 1)[0])
         if result:
             return DatasourceProvider(content="\n".join(result), relative_path='insights_commands/lpstat_-v')
