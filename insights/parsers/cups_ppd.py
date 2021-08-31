@@ -23,9 +23,14 @@ class CupsPpd(Parser, dict):
         *FileVersion: "2.2"
         *LanguageVersion: English
         *LanguageEncoding: ISOLatin1
+        *PCFileName: "ippeve.ppd"
+        *Manufacturer: "Canon"
+        *ModelName: "iR-ADV C3525/3530 PPD"
+        *Product: "(iR-ADV C3525/3530 PPD)"
+        *NickName: "iR-ADV C3525/3530 PPD"
+        *ShortNickName: "iR-ADV C3525/3530 PPD"
         *cupsFilter2: "application/vnd.cups-pdf application/pdf 10 -"
         *cupsFilter2: "application/vnd.cups-postscript application/postscript 10 -"
-        *cupsFilter2: "application/vnd.cups-banner application/vnd.cups-banner 10 -"
 
     Examples:
         >>> type(cups_ppd)

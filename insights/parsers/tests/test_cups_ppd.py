@@ -30,23 +30,23 @@ ShortNickName
 
 
 def test_cups_ppd():
-    cups_ppd_result = CupsPpd(context_wrap(CUPS_PPD, path='/etc/cups/ppd/NAY_10F_Smurfs.ppd'))
+    cups_ppd_result = CupsPpd(context_wrap(CUPS_PPD, path='/etc/cups/ppd/test_printer1.ppd'))
     assert cups_ppd_result["PCFileName"] == '"ippeve.ppd"'
     assert cups_ppd_result["cupsFilter2"] == ['"application/vnd.cups-pdf application/pdf 10 -"', '"application/vnd.cups-postscript application/postscript 10 -"']
 
     with pytest.raises(SkipException) as exc:
-        CupsPpd(context_wrap(CUPS_PPD_INVALID1, path='/etc/cups/ppd/NAY_10F_Smurfs.ppd'))
+        CupsPpd(context_wrap(CUPS_PPD_INVALID1, path='/etc/cups/ppd/test_printer1.ppd'))
     assert 'No Valid Configuration' in str(exc)
 
     with pytest.raises(SkipException) as exc:
-        CupsPpd(context_wrap(CUPS_PPD_INVALID2, path='/etc/cups/ppd/NAY_10F_Smurfs.ppd'))
+        CupsPpd(context_wrap(CUPS_PPD_INVALID2, path='/etc/cups/ppd/test_printer1.ppd'))
     assert 'No Valid Configuration' in str(exc)
 
 
 def test_cups_ppd_documentation():
     env = {
         'cups_ppd': CupsPpd(context_wrap(CUPS_PPD,
-            path='/etc/cups/ppd/NAY_10F_Smurfs.ppd'))
+            path='/etc/cups/ppd/test_printer1.ppd'))
     }
     failed, total = doctest.testmod(cups_ppd, globs=env)
     assert failed == 0
