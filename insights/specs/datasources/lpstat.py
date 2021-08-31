@@ -23,7 +23,7 @@ def lpstat_protocol_printers_info(broker):
 
     Typical content of ``/usr/bin/lpstat -v`` file is::
 
-        "device for NAY_10F_Smurfs: ipp://cups.nay.redhat.com/printers/NAY_10F_Smurfs"
+        "device for test_printer1: ipp://cups.nay.redhat.com/printers/test_printer1"
 
     Returns:
         DatasourceProvider: Returns the collected content containing non-sensitive information

@@ -33,16 +33,16 @@ class LpstatPrinters(CommandParser):
     * DISABLED (``PRINTER_STATUS_DISABLED``)
     * UNKNOWN (``PRINTER_STATUS_UNKNOWN``)
 
-    Sample output of the command::
+    Sample output of the command:
 
         printer idle_printer is idle.  enabled since Fri 20 Jan 2017 09:55:50 PM CET
         printer disabled_printer disabled since Wed 15 Feb 2017 12:01:11 PM EST -
         reason unknown
 
-    Raises::
+    Raises:
         ValueError: Raised if any error occurs parsing the content.
 
-    Examples::
+    Examples:
     >>> type(lpstat_printers)
     <class 'insights.parsers.lpstat.LpstatPrinters'>
     >>> len(lpstat_printers.printers)
@@ -98,13 +98,14 @@ class LpstatProtocol(CommandParser, dict):
     Class to parse ``lpstat -v`` command output.
 
     Sample output of the command::
-        device for NAY_10F_Smurfs: ipp
-        device for PEK_8F_Autumn: ipp
+
+        device for test_printer1: ipp
+        device for test_printer2: ipp
 
     Examples:
         >>> type(lpstat_protocol)
         <class 'insights.parsers.lpstat.LpstatProtocol'>
-        >>> lpstat_protocol['NAY_10F_Smurfs']
+        >>> lpstat_protocol['test_printer1']
         'ipp'
     """
     def parse_content(self, content):
