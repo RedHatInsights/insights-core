@@ -6,8 +6,8 @@ from insights.specs.datasources.lpstat import LocalSpecs, lpstat_protocol_printe
 
 
 LPSTAT_V = """
-device for test_printer1: ipp://cups.nay.redhat.com/printers/test_printer1
-device for test_printer2: ipp://cups.nay.redhat.com/printers/test_printer2
+device for test_printer1: ipp://cups.test.com/printers/test_printer1
+device for test_printer2: ipp://cups.test.com/printers/test_printer2
 """.strip()
 
 LPSTAT_V_NOT_GOOD = """
