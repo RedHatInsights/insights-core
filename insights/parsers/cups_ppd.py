@@ -8,10 +8,11 @@ Parser to parse the content of files ``/etc/cups/ppd/*``
 from insights import Parser
 from insights import parser
 from insights.specs import Specs
+from insights.parsers import SkipException
 
 
 @parser(Specs.cups_ppd)
-class CupsPpd(Parser):
+class CupsPpd(Parser, dict):
     """
     Class to parse ``/etc/cups/ppd/*`` files.
 
@@ -35,18 +36,20 @@ class CupsPpd(Parser):
         ['"application/vnd.cups-pdf application/pdf 10 -"', '"application/vnd.cups-postscript application/postscript 10 -"']
     """
     def parse_content(self, content):
-        self.data = {}
+        if not content:
+            raise SkipException("No Valid Configuration")
+        data = {}
         for line in content:
             if "*" in line and ":" in line:
                 key = line.split(":")[0].split("*")[-1].strip()
                 value = line.split(":")[-1].strip()
-                if key in self.data:
-                    if isinstance(self.data[key], list):
-                        self.data[key].append(value)
+                if key in data:
+                    if isinstance(data[key], list):
+                        data[key].append(value)
                     else:
-                        self.data[key] = [self.data[key], value]
+                        data[key] = [data[key], value]
                 else:
-                    self.data[key] = value
-
-    def __getitem__(self, item):
-        return self.data[item]
+                    data[key] = value
+        if not data:
+            raise SkipException("No Valid Configuration")
+        self.update(data)
