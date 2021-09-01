@@ -669,6 +669,10 @@ class DefaultSpecs(Specs):
         "/usr/bin/mongo pulp_database --eval 'db.repo_importers.find({\"importer_type_id\": { $ne: \"yum_importer\"}}).count()'",
         deps=[[SatelliteVersion, CapsuleVersion]]
     )
+    satellite_sca_status = simple_command(
+        "/usr/bin/sudo -iu postgres /usr/bin/psql -d candlepin -c \"select displayname,content_access_mode from cp_owner\" --csv",
+        deps=[SatelliteVersion]
+    )
     satellite_settings = simple_command(
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c \"select name, value, \\\"default\\\" from settings where name in ('destroy_vm_on_host_delete', 'unregister_delete_host')\" --csv",
         deps=[SatelliteVersion]

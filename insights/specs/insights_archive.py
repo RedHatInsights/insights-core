@@ -211,14 +211,15 @@ class InsightsArchiveSpecs(Specs):
     rpm_ostree_status = simple_file("insights_commands/rpm-ostree_status_--json")
     rpm_V_packages = first_file(["insights_commands/rpm_-V_coreutils_procps_procps-ng_shadow-utils_passwd_sudo_chrony", "insights_commands/rpm_-V_coreutils_procps_procps-ng_shadow-utils_passwd_sudo"])
     saphostctl_getcimobject_sapinstance = simple_file("insights_commands/usr.sap.hostctrl.exe.saphostctrl_-function_GetCIMObject_-enuminstances_SAPInstance")
+    saphostexec_status = simple_file("insights_commands/usr.sap.hostctrl.exe.saphostexec_-status")
+    saphostexec_version = simple_file("insights_commands/usr.sap.hostctrl.exe.saphostexec_-version")
     satellite_content_hosts_count = first_file([
         "insights_commands/sudo_-iu_postgres_.usr.bin.psql_-d_foreman_-c_select_count_from_hosts",
         "insights_commands/sudo_-iu_postgres_psql_-d_foreman_-c_select_count_from_hosts"
     ])
-    saphostexec_status = simple_file("insights_commands/usr.sap.hostctrl.exe.saphostexec_-status")
-    saphostexec_version = simple_file("insights_commands/usr.sap.hostctrl.exe.saphostexec_-version")
     satellite_custom_ca_chain = simple_file("insights_commands/awk_BEGIN_pipe_openssl_x509_-noout_-subject_-enddate_._-_BEGIN_CERT._._-_END_CERT._print_pipe_._-_END_CERT._close_pipe_printf_n_.etc.pki.katello.certs.katello-server-ca.crt")
     satellite_mongodb_storage_engine = simple_file("insights_commands/mongo_pulp_database_--eval_db.serverStatus_.storageEngine")
+    satellite_sca_status = simple_file("insights_commands/sudo_-iu_postgres_.usr.bin.psql_-d_candlepin_-c_select_displayname_content_access_mode_from_cp_owner_--csv")
     sealert = simple_file('insights_commands/sealert_-l')
     sestatus = simple_file("insights_commands/sestatus_-b")
     smbstatus_p = simple_file("insights_commands/smbstatus_-p")

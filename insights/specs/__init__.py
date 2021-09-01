@@ -575,6 +575,7 @@ class Specs(SpecSet):
     satellite_custom_ca_chain = RegistryPoint()
     satellite_mongodb_storage_engine = RegistryPoint()
     satellite_non_yum_type_repos = RegistryPoint()
+    satellite_sca_status = RegistryPoint()
     satellite_settings = RegistryPoint()
     satellite_version_rb = RegistryPoint()
     satellite_custom_hiera = RegistryPoint()
