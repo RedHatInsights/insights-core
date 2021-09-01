@@ -1,6 +1,7 @@
 from insights.parsers.ros_config import RosConfig
 from insights.tests import context_wrap
 
+
 ROS_CONFIG_INPUT = """
 log mandatory on default {
     mem.util.used
@@ -21,6 +22,7 @@ disallow .* : all;
 disallow :* : all;
 allow local:* : enquire;
 """
+
 
 def test_ros_config():
     ros_config = RosConfig(context_wrap(ROS_CONFIG_INPUT))
