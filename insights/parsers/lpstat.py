@@ -1,35 +1,17 @@
 """
-LpstatPrinters - command ``lpstat -p``
-======================================
+Lpstat - command ``lpstat``
+===========================
 
-Parses the output of ``lpstat -p``, to get locally configured printers.
+Parsers contains in this module are:
 
-Current available printer states are:
+LpstatPrinters - command ``/usr/bin/lpstat -p``
 
-* IDLE (``PRINTER_STATUS_IDLE``)
-* PROCESSING (``PRINTER_STATUS_PROCESSING``) -- printing
-* DISABLED (``PRINTER_STATUS_DISABLED``)
-* UNKNOWN (``PRINTER_STATUS_UNKNOWN``)
-
-
-Examples:
-    >>> from insights.parsers.lpstat import LpstatPrinters, PRINTER_STATUS_DISABLED
-    >>> from insights.tests import context_wrap
-    >>> LPSTAT_P_OUTPUT = '''
-    ... printer idle_printer is idle.  enabled since Fri 20 Jan 2017 09:55:50 PM CET
-    ... printer disabled_printer disabled since Wed 15 Feb 2017 12:01:11 PM EST -
-    ...     reason unknown
-    ... '''
-    >>> lpstat = LpstatPrinters(context_wrap(LPSTAT_P_OUTPUT))
-    >>> lpstat.printers
-    [{'status': 'IDLE', 'name': 'idle_printer'}, {'status': 'DISABLED', 'name': 'disabled_printer'}]
-    >>> lpstat.printer_names_by_status(PRINTER_STATUS_DISABLED)
-    ['disabled_printer']
-
+LpstatProtocol - command ``/usr/bin/lpstat -v``
 """
 
 from .. import parser, CommandParser
 from insights.specs import Specs
+from insights.parsers import SkipException
 
 # Printer states
 PRINTER_STATUS_IDLE = 'IDLE'
@@ -42,10 +24,31 @@ START_LINE_MARKER = 'printer '
 
 @parser(Specs.lpstat_p)
 class LpstatPrinters(CommandParser):
-    """Class to parse ``lpstat -p`` command output.
+    """
+    Class to parse ``lpstat -p`` command output. Parses the output of ``lpstat -p``, to get locally configured printers.
+    Current available printer states are:
+
+    * IDLE (``PRINTER_STATUS_IDLE``)
+    * PROCESSING (``PRINTER_STATUS_PROCESSING``) -- printing
+    * DISABLED (``PRINTER_STATUS_DISABLED``)
+    * UNKNOWN (``PRINTER_STATUS_UNKNOWN``)
+
+    Sample output of the command:
+
+        printer idle_printer is idle.  enabled since Fri 20 Jan 2017 09:55:50 PM CET
+        printer disabled_printer disabled since Wed 15 Feb 2017 12:01:11 PM EST -
+        reason unknown
 
     Raises:
         ValueError: Raised if any error occurs parsing the content.
+
+    Examples:
+    >>> type(lpstat_printers)
+    <class 'insights.parsers.lpstat.LpstatPrinters'>
+    >>> len(lpstat_printers.printers)
+    3
+    >>> lpstat_printers.printer_names_by_status('DISABLED')
+    ['disabled_printer']
     """
 
     def __init__(self, *args, **kwargs):
@@ -87,3 +90,33 @@ class LpstatPrinters(CommandParser):
         """
         names = [prntr['name'] for prntr in self.printers if prntr['status'] == status]
         return names
+
+
+@parser(Specs.lpstat_protocol_printers)
+class LpstatProtocol(CommandParser, dict):
+    """
+    Class to parse ``lpstat -v`` command output.
+
+    Sample output of the command::
+
+        device for test_printer1: ipp
+        device for test_printer2: ipp
+
+    Examples:
+        >>> type(lpstat_protocol)
+        <class 'insights.parsers.lpstat.LpstatProtocol'>
+        >>> lpstat_protocol['test_printer1']
+        'ipp'
+    """
+    def parse_content(self, content):
+        if not content:
+            raise SkipException("No Valid Output")
+        data = {}
+        for line in content:
+            if line.startswith("device for "):
+                protocol = line.split(":")[-1].strip()
+                printer = line.split(":")[0].split()[-1].strip()
+                data[printer] = protocol
+        if not data:
+            raise SkipException("No Valid Output")
+        self.update(data)
