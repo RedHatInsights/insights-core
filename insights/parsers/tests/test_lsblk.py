@@ -52,6 +52,24 @@ sdg                          8:96   0 1000.1G  0 disk
     `-appdg-app (dm-7)     253:7    0    2.8T  0 lvm   /splunk
 """
 
+LSBLK_DATA3 = """
+NAME                 MAJ:MIN RM  SIZE RO TYPE  MOUNTPOINT
+vda                  252:0    0   10G  0 disk
+|-vda1               252:1    0  501M  0 part
+| `-md127              9:127  0  500M  0 raid1 /boot
+`-vda2               252:2    0  9.5G  0 part
+  `-md126              9:126  0  9.5G  0 raid1
+    |-rhel-root 253:0    0  9.4G  0 lvm   /
+    `-rhel-swap 253:1    0  100M  0 lvm   [SWAP]
+vdb                  252:16   0   10G  0 disk
+|-vdb1               252:17   0  501M  0 part
+| `-md127              9:127  0  500M  0 raid1 /boot
+`-vdb2               252:18   0  9.5G  0 part
+  `-md126              9:126  0  9.5G  0 raid1
+    |-rhel-root 253:0    0  9.4G  0 lvm   /
+    `-rhel-swap 253:1    0  100M  0 lvm   [SWAP]
+"""
+
 # lsblk -P -o
 LSBLK_EXT_DATA = """
 ALIGNMENT="0" DISC-ALN="0" DISC-GRAN="0B" DISC-MAX="0B" DISC-ZERO="0" FSTYPE="" GROUP="cdrom" KNAME="sr0" LABEL="" LOG-SEC="512" MAJ:MIN="11:0" MIN-IO="512" MODE="brw-rw----" MODEL="DVD+-RW DVD8801 " MOUNTPOINT="" NAME="sr0" OPT-IO="0" OWNER="root" PHY-SEC="512" RA="128" RM="1" RO="0" ROTA="1" RQ-SIZE="128" SCHED="cfq" SIZE="1024M" STATE="running" TYPE="rom" UUID=""
@@ -154,6 +172,47 @@ def test_lsblk():
     assert sdf_appdg.type == "lvm"
     assert sdf_appdg.mountpoint == "/splunk"
     assert sdf_appdg.parent_names == ["sdf", "mpatha (dm-1)", "mpathap1 (dm-5)"]
+
+    # LSBLK_DATA3 - aka MD raid lsblk output
+    results = lsblk.LSBlock(context_wrap(LSBLK_DATA3))
+    assert results is not None
+    assert len(results) == 14
+
+    rhel_root = None
+    md127 = None
+    for result in results:
+        if result.name == 'rhel-root':
+            rhel_root = result
+        elif result.name == 'md127':
+            md127 = result
+
+    assert rhel_root is not None
+    assert rhel_root.maj_min == "253:0"
+    assert rhel_root.removable is False
+    assert rhel_root.size == "9.4G"
+    assert rhel_root.read_only is False
+    assert rhel_root.type == "lvm"
+    assert rhel_root.mountpoint == "/"
+    assert rhel_root.parent_names == ["vdb", "vdb2", "md126"]
+
+    assert md127 is not None
+    assert md127.maj_min == "9:127"
+    assert md127.removable is False
+    assert md127.size == "500M"
+    assert md127.read_only is False
+    assert md127.type == "raid1"
+    assert md127.mountpoint == "/boot"
+    assert md127.parent_names == ["vdb", "vdb1"]
+
+    assert hasattr(results, 'device_data')
+    assert isinstance(results.device_data, dict)
+    assert sorted(results.device_data.keys()) == sorted([
+        'vda', 'vda1', 'vda2', 'rhel-root', 'rhel-swap', 'vdb', 'vdb1', 'vdb2', 'md126', 'md127'
+    ])
+    assert results.device_data['md127'] == md127
+    assert md127.get('MAJ_MIN') == md127.maj_min
+    assert str(rhel_root) == 'lvm:rhel-root(/)'
+    assert str(md127) == 'raid1:md127(/boot)'
 
 
 LSBLK_DATA_BAD = """
