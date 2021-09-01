@@ -1,3 +1,5 @@
+import pytest
+from insights.core.dr import SkipComponent
 from insights.parsers import lsof
 from insights.tests import context_wrap
 
@@ -12,6 +14,7 @@ meventd     674  688           root  txt       REG              253,1     36344 
 dmeventd    674  688           root  mem       REG              253,1     20032  134413763 /usr/lib64/libuuid.so.1.3.0
 dmeventd    674  688           root  mem       REG              253,1    248584  135108725 /usr/lib64/libblkid.so.1.1.0
 bioset      611                root  txt   unknown                                         /proc/611/exe
+systemd       1                root  cwd       DIR              253,1      4096        128 /
 """.strip()
 
 LSOF_GOOD_V1 = """
@@ -77,7 +80,7 @@ def test_lsof():
     assert d[5]["TYPE"] == "REG"
     assert d[7]["NAME"] == "/proc/611/exe"
 
-    assert d[-1] == {
+    assert d[-2] == {
         "COMMAND": "bioset",
         "PID": "611",
         "TID": "",
@@ -88,6 +91,18 @@ def test_lsof():
         "SIZE/OFF": "",
         "NODE": "",
         "NAME": "/proc/611/exe"
+    }
+    assert d[-1] == {
+        "COMMAND": "systemd",
+        "PID": "1",
+        "TID": "",
+        "USER": "root",
+        "FD": "cwd",
+        "TYPE": "DIR",
+        "DEVICE": "253,1",
+        "SIZE/OFF": "4096",
+        "NODE": "128",
+        "NAME": "/"
     }
 
 
@@ -197,3 +212,14 @@ def test_lsof_scan():
     assert l.root_stdin[1]['SIZE/OFF'] == '0t0'
     assert l.root_stdin[1]['NODE'] == '4674'
     assert l.root_stdin[1]['NAME'] == '/dev/null'
+
+
+LSOF_BAD = """
+lsof: WARNING: can't stat() xfs file system /var/lib/origin/openshift.local.volumes/pods/abca2a21-da4c-22eb-b49c-011d3a938eb5/volume-subpaths/config/wh/0
+"""
+
+
+def test_lsof_bad():
+    with pytest.raises(SkipComponent) as e:
+        lsof.Lsof(context_wrap(LSOF_BAD))
+    assert e is not None
