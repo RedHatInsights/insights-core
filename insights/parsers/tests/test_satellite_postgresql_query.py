@@ -135,6 +135,19 @@ test_compute_resource2,Foreman::Model::RHV
 '''
 
 
+SATELLITE_SCA_INFO_1 = '''
+displayname,content_access_mode
+Default Organization,entitlement
+Orgq,org_environment
+'''
+
+SATELLITE_SCA_INFO_2 = '''
+displayname,content_access_mode
+Default Organization,entitlement
+Orgq,entitlement
+'''
+
+
 def test_satellite_postgesql_query_exception():
     with pytest.raises(ContentException):
         satellite_postgresql_query.SatellitePostgreSQLQuery(context_wrap(SATELLITE_POSTGRESQL_WRONG_1))
@@ -171,10 +184,12 @@ def test_HTL_doc_examples():
     query = satellite_postgresql_query.SatellitePostgreSQLQuery(context_wrap(test_data_3))
     settings = satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_SETTINGS_1))
     resources_table = satellite_postgresql_query.SatelliteComputeResources(context_wrap(SATELLITE_COMPUTE_RESOURCE_1))
+    sat_sca_info = satellite_postgresql_query.SatelliteSCAStatus(context_wrap(SATELLITE_SCA_INFO_1))
     globs = {
         'query': query,
         'table': settings,
         'resources_table': resources_table,
+        'sat_sca_info': sat_sca_info
     }
     failed, tested = doctest.testmod(satellite_postgresql_query, globs=globs)
     assert failed == 0
@@ -220,3 +235,8 @@ def test_satellite_compute_resources():
     rows = resources_table.search(type='Foreman::Model::RHV')
     assert len(rows) == 1
     assert rows[0]['name'] == 'test_compute_resource2'
+
+
+def test_satellite_sca():
+    sat_sca_info = satellite_postgresql_query.SatelliteSCAStatus(context_wrap(SATELLITE_SCA_INFO_2))
+    assert not sat_sca_info.sca_enabled
