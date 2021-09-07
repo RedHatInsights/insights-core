@@ -291,6 +291,7 @@ def collect(config, pconn):
         logger.warn("WARNING: Excluding data from files")
 
     archive = InsightsArchive(config)
+    archive.rm_conf = rm_conf
 
     msg_name = determine_hostname(config.display_name)
     if config.core_collect:
@@ -301,8 +302,7 @@ def collect(config, pconn):
         dc = DataCollector(config, archive)
     logger.info('Starting to collect Insights data for %s', msg_name)
     dc.run_collection(collection_rules, rm_conf, branch_info, blacklist_report)
-    output = dc.done(collection_rules, rm_conf)
-    return output
+    return archive.create_tar_file()
 
 
 def get_connection(config):

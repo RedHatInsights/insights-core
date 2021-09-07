@@ -11,17 +11,62 @@ import logging
 import tempfile
 import re
 import atexit
+from subprocess import Popen, PIPE, STDOUT
+from .constants import InsightsConstants as constants
 
-from .utilities import determine_hostname, _expand_paths, write_data_to_file
+from .utilities import determine_hostname, _expand_paths, write_data_to_file, write_rhsm_facts
 from .insights_spec import InsightsFile, InsightsCommand
+from ..contrib.soscleaner import SOSCleaner
 
 logger = logging.getLogger(__name__)
+# python 2.7
+SOSCLEANER_LOGGER = logging.getLogger('soscleaner')
+SOSCLEANER_LOGGER.setLevel(logging.ERROR)
+# python 2.6
+SOSCLEANER_LOGGER = logging.getLogger('insights-client.soscleaner')
+SOSCLEANER_LOGGER.setLevel(logging.ERROR)
+
+
+def _process_content_redaction(filepath, exclude, regex=False):
+    '''
+    Redact content from a file, based on
+    /etc/insights-client/.exp.sed and and the contents of "exclude"
+
+    filepath    file to modify
+    exclude     list of strings to redact
+    regex       whether exclude is a list of regular expressions
+
+    Returns the file contents with the specified data removed
+    '''
+    logger.debug('Processing %s...', filepath)
+
+    # password removal
+    sedcmd = Popen(['sed', '-rf', constants.default_sed_file, filepath], stdout=PIPE)
+    # patterns removal
+    if exclude:
+        exclude_file = NamedTemporaryFile()
+        exclude_file.write("\n".join(exclude).encode('utf-8'))
+        exclude_file.flush()
+        if regex:
+            flag = '-E'
+        else:
+            flag = '-F'
+        grepcmd = Popen(['grep', '-v', flag, '-f', exclude_file.name], stdin=sedcmd.stdout, stdout=PIPE)
+        sedcmd.stdout.close()
+        stdout, stderr = grepcmd.communicate()
+        logger.debug('Process status: %s', grepcmd.returncode)
+    else:
+        stdout, stderr = sedcmd.communicate()
+        logger.debug('Process status: %s', sedcmd.returncode)
+    logger.debug('Process stderr: %s', stderr)
+    return stdout
 
 
 class InsightsArchive(object):
     """
     This class is an interface for adding command output
-    and files to the insights archive
+    and files to the insights archive, as well as redaction
+    and obfuscation of the archive prior to upload.
 
     Attributes:
         config          - an InsightsConfig object
@@ -32,6 +77,9 @@ class InsightsArchive(object):
         cmd_dir         - insights_commands directory inside archive_dir
         compressor      - tar compression flag to use
         tar_file        - path of the final archive file
+        rm_conf         - contents of the denylist
+        hostname_path   - location of the file containing the
+                          hostname in the archive, provided by the data collector
     """
     def __init__(self, config):
         """
@@ -57,6 +105,14 @@ class InsightsArchive(object):
 
         self.compressor = config.compressor
         self.tar_file = None
+
+        self.rm_conf = None
+        self.hostname_path = None
+
+        # subdirectory to treat as the top-level for redaction
+        # necessary for core collection because output is within the "data" dir
+        self.redaction_topdir = None
+
         atexit.register(self.cleanup_tmp)
 
     def create_archive_dir(self):
@@ -147,8 +203,45 @@ class InsightsArchive(object):
 
     def create_tar_file(self):
         """
-        Create tar file to be compressed
+        Generate the archive output.
+        "create_tar_file" is an anachronism provided for compatibility.
+        Perform redaction, and obfuscation if required.
+
+        Returns a path.
+        If --output-dir is specified, return the tmp path.
+        Otherwise run tar and return the tar file.
+
+        default:
+            path to generated tarfile
+        conf.obfuscate==True:
+            path to generated tarfile, scrubbed by soscleaner
+        conf.output_dir:
+            path to a generated directory
+        conf.obfuscate==True && conf.output_dir:
+            path to generated directory, scubbed by soscleaner
         """
+        self._redact()
+        if self.config.obfuscate:
+            # run obfuscation
+            soscleaner = self._obfuscate()
+            # generate RHSM facts at this point
+            write_rhsm_facts(self.config, soscleaner.hashed_fqdn, soscleaner.ip_report)
+
+            if self.config.output_dir:
+                # return the entire soscleaner dir
+                #   see additions to soscleaner.SOSCleaner.clean_report
+                #   for details
+                return soscleaner.dir_path
+            else:
+                # return the generated soscleaner archive
+                self.tar_file = soscleaner.archive_path
+                return soscleaner.archive_path
+
+        if self.config.output_dir:
+            # return the directory
+            return self.archive_dir
+
+        # create tar file
         if not self.archive_tmp_dir:
             # we should never get here but bail out if we do
             raise RuntimeError('Archive temporary directory not defined.')
@@ -232,3 +325,119 @@ class InsightsArchive(object):
         else:
             self.delete_archive_file()
         self.delete_tmp_dir()
+
+    def _redact(self):
+        '''
+        Perform data redaction (password sed command and patterns),
+        on an InsightsArchive. The files under self.archive_dir
+        will have redaction applied based on the values in self.rm_conf.
+        If self.redaction_topdir is set, the redaction will start from that directory
+        within self.archive_dir
+
+        :param self:   an InsightsArchive instance
+
+        :return: None
+
+        :raises RuntimeError: when the InsightsArchive path is invalid
+        '''
+        logger.debug('Running content redaction...')
+
+        # normalize path to prevent any ../ from happening
+        searchpath = os.path.normpath(self.archive_dir)
+
+        if not re.match(r'/var/tmp/[A-Za-z0-9]+/insights-.+', searchpath):
+            # sanity check to make sure we're only modifying
+            #   our own stuff in temp
+            # we should never get here but just in case
+            raise RuntimeError('ERROR: invalid Insights archive temp path: %s' % searchpath)
+
+        if self.rm_conf is None:
+            self.rm_conf = {}
+        exclude = None
+        regex = False
+        if self.rm_conf:
+            try:
+                exclude = self.rm_conf['patterns']
+                if isinstance(exclude, dict) and exclude['regex']:
+                    # if "patterns" is a dict containing a non-empty "regex" list
+                    logger.debug('Using regular expression matching for patterns.')
+                    exclude = exclude['regex']
+                    regex = True
+                logger.warn("WARNING: Skipping patterns defined in denylist configuration")
+            except LookupError:
+                # either "patterns" was undefined in rm conf, or
+                #   "regex" was undefined in "patterns"
+                exclude = None
+        if not exclude:
+            logger.debug('Patterns section of denylist configuration is empty.')
+
+        if self.redaction_topdir:
+            # redact only from "redaction_topdir" down
+            # normalize path
+            topdir = os.path.normpath(self.redaction_topdir)
+            searchpath = os.path.join(searchpath, topdir)
+            if not (os.path.isdir(searchpath) and re.match(r'/var/tmp/[A-Za-z0-9]+/insights-.+/.+', searchpath)):
+                # abort if the dir does not exist or isn't the correct format
+                # we should never get here but just in case
+                raise RuntimeError('ERROR: invalid Insights archive temp path: %s' % searchpath)
+
+        for dirpath, dirnames, filenames in os.walk(searchpath):
+            for f in filenames:
+                fullpath = os.path.join(dirpath, f)
+                if (fullpath.endswith('etc/insights-client/machine-id') or
+                   fullpath.endswith('etc/machine-id') or
+                   fullpath.endswith('insights_commands/subscription-manager_identity')):
+                    # do not redact the ID files
+                    continue
+                redacted_contents = _process_content_redaction(fullpath, exclude, regex)
+                with open(fullpath, 'wb') as dst:
+                    dst.write(redacted_contents)
+
+    def _obfuscate(self):
+        """
+        Initialize a SOScleaner to obfuscate the archive contents.
+
+        Returns a SOScleaner object.
+        """
+        if self.rm_conf and self.rm_conf.get('keywords'):
+            logger.warn("WARNING: Skipping keywords defined in blacklist configuration")
+        cleaner = SOSCleaner(quiet=True)
+        clean_opts = CleanOptions(
+            self.config, self.tmp_dir, self.rm_conf, self.hostname_path)
+        cleaner.clean_report(clean_opts, self.archive_dir)
+        if clean_opts.keyword_file is not None:
+            os.remove(clean_opts.keyword_file.name)
+        return cleaner
+
+
+class CleanOptions(object):
+    """
+    Options for soscleaner
+    """
+    def __init__(self, config, tmp_dir, rm_conf, hostname_path):
+        self.report_dir = tmp_dir
+        self.domains = []
+        self.files = []
+        self.quiet = True
+        self.keyword_file = None
+        self.keywords = None
+        self.no_tar_file = config.output_dir
+        self.core_collect = config.core_collect
+
+        if rm_conf:
+            try:
+                keywords = rm_conf['keywords']
+                self.keyword_file = NamedTemporaryFile(delete=False)
+                self.keyword_file.write("\n".join(keywords).encode('utf-8'))
+                self.keyword_file.flush()
+                self.keyword_file.close()
+                self.keywords = [self.keyword_file.name]
+                logger.debug("Attmpting keyword obfuscation")
+            except LookupError:
+                pass
+
+        if config.obfuscate_hostname:
+            # default to its original location
+            self.hostname_path = hostname_path or 'insights_commands/hostname'
+        else:
+            self.hostname_path = None

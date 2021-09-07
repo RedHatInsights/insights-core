@@ -16,7 +16,6 @@ from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
 
 from insights.util import mangle
-from ..contrib.soscleaner import SOSCleaner
 from .utilities import _expand_paths, get_version_info, systemd_notify_init_thread, get_tags
 from .constants import InsightsConstants as constants
 from .insights_spec import InsightsFile, InsightsCommand
@@ -24,12 +23,6 @@ from .archive import InsightsArchive
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
-# python 2.7
-SOSCLEANER_LOGGER = logging.getLogger('soscleaner')
-SOSCLEANER_LOGGER.setLevel(logging.ERROR)
-# python 2.6
-SOSCLEANER_LOGGER = logging.getLogger('insights-client.soscleaner')
-SOSCLEANER_LOGGER.setLevel(logging.ERROR)
 
 
 def _process_content_redaction(filepath, exclude, regex=False):
@@ -78,7 +71,6 @@ class DataCollector(object):
         self.mountpoint = '/'
         if mountpoint:
             self.mountpoint = mountpoint
-        self.hostname_path = None
 
     def _write_branch_info(self, branch_info):
         logger.debug("Writing branch information to archive...")
@@ -157,52 +149,6 @@ class DataCollector(object):
         logger.debug("Writing collection stats to archive...")
         self.archive.add_metadata_to_archive(
             json.dumps(collection_stats), '/collection_stats')
-
-    def _write_rhsm_facts(self, hashed_fqdn, ip_csv):
-        logger.info('Writing RHSM facts to %s...', constants.rhsm_facts_file)
-        ips_list = ''
-        with open(ip_csv) as fil:
-            # create IP list as JSON block with format
-            # [
-            #   {
-            #     original: <original IP>
-            #     obfuscated: <obfuscated IP>
-            #   }
-            # ]
-
-            ips_list = fil.readlines()
-            headings = ips_list[0].strip().split(',')
-            # set the indices for the IPs
-            if 'original' in headings[0].lower():
-                # soscleaner 0.4.4, original first
-                org = 0
-                obf = 1
-            else:
-                # soscleaner 0.2.2, obfuscated first
-                org = 1
-                obf = 0
-
-            ip_block = []
-            for line in ips_list[1:]:
-                ipset = line.strip().split(',')
-                ip_block.append(
-                    {
-                        'original': ipset[org],
-                        'obfuscated': ipset[obf]
-                    })
-
-        facts = {
-            'insights_client.obfuscate_hostname_enabled': self.config.obfuscate_hostname,
-            'insights_client.hostname': hashed_fqdn,
-            'insights_client.obfuscate_ip_enabled': self.config.obfuscate,
-            'insights_client.ips': json.dumps(ip_block)
-        }
-
-        try:
-            with open(constants.rhsm_facts_file, 'w') as fil:
-                json.dump(facts, fil)
-        except (IOError, OSError) as e:
-            logger.error('Could not write to %s: %s', constants.rhsm_facts_file, str(e))
 
     def _run_pre_command(self, pre_cmd):
         '''
@@ -323,7 +269,7 @@ class DataCollector(object):
         for c in conf['commands']:
             # remember hostname archive path
             if c.get('symbolic_name') == 'hostname':
-                self.hostname_path = os.path.join(
+                self.archive.hostname_path = os.path.join(
                     'insights_commands', mangle.mangle_command(c['command']))
             if c['command'] in rm_commands or c.get('symbolic_name') in rm_commands:
                 logger.warn("WARNING: Skipping command %s", c['command'])
@@ -375,8 +321,6 @@ class DataCollector(object):
                             }
         logger.debug('Spec collection finished.')
 
-        self.redact(rm_conf)
-
         # collect metadata
         logger.debug('Collecting metadata...')
         self._write_branch_info(branch_info)
@@ -389,137 +333,5 @@ class DataCollector(object):
         self._write_collection_stats(collection_stats)
         logger.debug('Metadata collection finished.')
 
-    def redact(self, rm_conf):
-        '''
-        Perform data redaction (password sed command and patterns),
-        write data to the archive in place
-        '''
-        logger.debug('Running content redaction...')
-
-        if not re.match(r'/var/tmp/.+/insights-.+', self.archive.archive_dir):
-            # sanity check to make sure we're only modifying
-            #   our own stuff in temp
-            # we should never get here but just in case
-            raise RuntimeError('ERROR: invalid Insights archive temp path')
-
-        if rm_conf is None:
-            rm_conf = {}
-        exclude = None
-        regex = False
-        if rm_conf:
-            try:
-                exclude = rm_conf['patterns']
-                if isinstance(exclude, dict) and exclude['regex']:
-                    # if "patterns" is a dict containing a non-empty "regex" list
-                    logger.debug('Using regular expression matching for patterns.')
-                    exclude = exclude['regex']
-                    regex = True
-                logger.warn("WARNING: Skipping patterns defined in blacklist configuration")
-            except LookupError:
-                # either "patterns" was undefined in rm conf, or
-                #   "regex" was undefined in "patterns"
-                exclude = None
-        if not exclude:
-            logger.debug('Patterns section of blacklist configuration is empty.')
-
-        # TODO: consider implementing redact() in CoreCollector class rather than
-        #   special handling here
-        if self.config.core_collect:
-            # redact only from the 'data' directory
-            searchpath = os.path.join(self.archive.archive_dir, 'data')
-            if not (os.path.isdir(searchpath) and
-                    re.match(r'/var/tmp/.+/insights-.+/data', searchpath)):
-                # abort if the dir does not exist and isn't the correct format
-                # we should never get here but just in case
-                raise RuntimeError('ERROR: invalid Insights archive temp path')
-        else:
-            searchpath = self.archive.archive_dir
-
-        for dirpath, dirnames, filenames in os.walk(searchpath):
-            for f in filenames:
-                fullpath = os.path.join(dirpath, f)
-                if (fullpath.endswith('etc/insights-client/machine-id') or
-                   fullpath.endswith('etc/machine-id') or
-                   fullpath.endswith('insights_commands/subscription-manager_identity')):
-                    # do not redact the ID files
-                    continue
-                redacted_contents = _process_content_redaction(fullpath, exclude, regex)
-                with open(fullpath, 'wb') as dst:
-                    dst.write(redacted_contents)
-
-    def done(self, conf, rm_conf):
-        """
-        Do finalization stuff
-
-        Returns:
-            default:
-                path to generated tarfile
-            conf.obfuscate==True:
-                path to generated tarfile, scrubbed by soscleaner
-            conf.output_dir:
-                path to a generated directory
-            conf.obfuscate==True && conf.output_dir:
-                path to generated directory, scubbed by soscleaner
-        Ideally, we may want to have separate functions for directories
-            and archive files.
-        """
-        if self.config.obfuscate:
-            if rm_conf and rm_conf.get('keywords'):
-                logger.warn("WARNING: Skipping keywords defined in blacklist configuration")
-            cleaner = SOSCleaner(quiet=True)
-            clean_opts = CleanOptions(
-                self.config, self.archive.tmp_dir, rm_conf, self.hostname_path)
-            cleaner.clean_report(clean_opts, self.archive.archive_dir)
-            if clean_opts.keyword_file is not None:
-                os.remove(clean_opts.keyword_file.name)
-
-            # generate RHSM facts at this point
-            self._write_rhsm_facts(cleaner.hashed_fqdn, cleaner.ip_report)
-
-            if self.config.output_dir:
-                # return the entire soscleaner dir
-                #   see additions to soscleaner.SOSCleaner.clean_report
-                #   for details
-                return cleaner.dir_path
-            else:
-                # return the generated soscleaner archive
-                self.archive.tar_file = cleaner.archive_path
-                return cleaner.archive_path
-
-        if self.config.output_dir:
-            return self.archive.archive_dir
-        else:
-            return self.archive.create_tar_file()
-
-
-class CleanOptions(object):
-    """
-    Options for soscleaner
-    """
-    def __init__(self, config, tmp_dir, rm_conf, hostname_path):
-        self.report_dir = tmp_dir
-        self.domains = []
-        self.files = []
-        self.quiet = True
-        self.keyword_file = None
-        self.keywords = None
-        self.no_tar_file = config.output_dir
-        self.core_collect = config.core_collect
-
-        if rm_conf:
-            try:
-                keywords = rm_conf['keywords']
-                self.keyword_file = NamedTemporaryFile(delete=False)
-                self.keyword_file.write("\n".join(keywords).encode('utf-8'))
-                self.keyword_file.flush()
-                self.keyword_file.close()
-                self.keywords = [self.keyword_file.name]
-                logger.debug("Attmpting keyword obfuscation")
-            except LookupError:
-                pass
-
-        if config.obfuscate_hostname:
-            # default to its original location
-            self.hostname_path = hostname_path or 'insights_commands/hostname'
-        else:
-            self.hostname_path = None
+    def done(self):
+        return archive.create_tar_file()

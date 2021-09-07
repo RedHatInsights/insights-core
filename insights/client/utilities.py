@@ -13,6 +13,7 @@ import re
 import sys
 import threading
 import time
+import json
 from subprocess import Popen, PIPE, STDOUT
 
 import yaml
@@ -445,3 +446,50 @@ def os_release_info():
         except Exception as e:
             logger.warning("Failed to detect OS version: %s", e)
     return (os_family, os_release)
+
+
+def write_rhsm_facts(config, hashed_fqdn, ip_csv):
+    logger.info('Writing RHSM facts to %s...', constants.rhsm_facts_file)
+    ips_list = ''
+    with open(ip_csv) as fil:
+        # create IP list as JSON block with format
+        # [
+        #   {
+        #     original: <original IP>
+        #     obfuscated: <obfuscated IP>
+        #   }
+        # ]
+
+        ips_list = fil.readlines()
+        headings = ips_list[0].strip().split(',')
+        # set the indices for the IPs
+        if 'original' in headings[0].lower():
+            # soscleaner 0.4.4, original first
+            org = 0
+            obf = 1
+        else:
+            # soscleaner 0.2.2, obfuscated first
+            org = 1
+            obf = 0
+
+        ip_block = []
+        for line in ips_list[1:]:
+            ipset = line.strip().split(',')
+            ip_block.append(
+                {
+                    'original': ipset[org],
+                    'obfuscated': ipset[obf]
+                })
+
+    facts = {
+        'insights_client.obfuscate_hostname_enabled': config.obfuscate_hostname,
+        'insights_client.hostname': hashed_fqdn,
+        'insights_client.obfuscate_ip_enabled': config.obfuscate,
+        'insights_client.ips': json.dumps(ip_block)
+    }
+
+    try:
+        with open(constants.rhsm_facts_file, 'w') as fil:
+            json.dump(facts, fil)
+    except (IOError, OSError) as e:
+        logger.error('Could not write to %s: %s', constants.rhsm_facts_file, str(e))

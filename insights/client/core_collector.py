@@ -64,14 +64,18 @@ class CoreCollector(DataCollector):
 
         # set hostname_path for soscleaner
         if os.path.exists(os.path.join(self.archive.archive_dir, 'data', 'insights_commands', 'hostname_-f')):
-            self.hostname_path = 'data/insights_commands/hostname_-f'
+            self.archive.hostname_path = 'data/insights_commands/hostname_-f'
         else:
             # fall back to hostname if hostname -f not available
-            self.hostname_path = 'data/insights_commands/hostname'
+            self.archive.hostname_path = 'data/insights_commands/hostname'
 
         logger.debug('Collection finished.')
 
+<<<<<<< HEAD
         self.redact(rm_conf)
+=======
+        self.archive.redaction_topdir = "data"
+>>>>>>> move redaction functions to InsightsArchive
 
         # collect metadata
         logger.debug('Collecting metadata...')
