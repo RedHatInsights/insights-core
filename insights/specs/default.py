@@ -11,7 +11,6 @@ data sources that standard Insights `Parsers` resolve against.
 import datetime
 import logging
 import os
-import re
 import signal
 
 from grp import getgrgid
@@ -28,12 +27,10 @@ from insights.core.spec_factory import foreach_collect, foreach_execute
 from insights.core.spec_factory import first_file, listdir
 from insights.combiners.services import Services
 from insights.combiners.ps import Ps
-from insights.components.rhel_version import IsRhel8, IsRhel7, IsRhel6
+from insights.components.rhel_version import IsRhel8, IsRhel7
 from insights.components.cloud_provider import IsAWS, IsAzure, IsGCP
 from insights.components.ceph import IsCephMonitor
-from insights.parsers.mdstat import Mdstat
 from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersion
-from insights.parsers.mount import Mount
 from insights.specs import Specs
 from insights.specs.datasources import (
     awx_manage, cloud_init, candlepin_broker, ethernet, get_running_commands, ipcs, lpstat, package_provides,
