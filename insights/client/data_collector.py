@@ -13,7 +13,6 @@ import shlex
 import re
 from itertools import chain
 from subprocess import Popen, PIPE, STDOUT
-from tempfile import NamedTemporaryFile
 
 from insights.util import mangle
 from .utilities import _expand_paths, get_version_info, systemd_notify_init_thread, get_tags
@@ -23,41 +22,6 @@ from .archive import InsightsArchive
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
-
-
-def _process_content_redaction(filepath, exclude, regex=False):
-    '''
-    Redact content from a file, based on
-    /etc/insights-client/.exp.sed and and the contents of "exclude"
-
-    filepath    file to modify
-    exclude     list of strings to redact
-    regex       whether exclude is a list of regular expressions
-
-    Returns the file contents with the specified data removed
-    '''
-    logger.debug('Processing %s...', filepath)
-
-    # password removal
-    sedcmd = Popen(['sed', '-rf', constants.default_sed_file, filepath], stdout=PIPE)
-    # patterns removal
-    if exclude:
-        exclude_file = NamedTemporaryFile()
-        exclude_file.write("\n".join(exclude).encode('utf-8'))
-        exclude_file.flush()
-        if regex:
-            flag = '-E'
-        else:
-            flag = '-F'
-        grepcmd = Popen(['grep', '-v', flag, '-f', exclude_file.name], stdin=sedcmd.stdout, stdout=PIPE)
-        sedcmd.stdout.close()
-        stdout, stderr = grepcmd.communicate()
-        logger.debug('Process status: %s', grepcmd.returncode)
-    else:
-        stdout, stderr = sedcmd.communicate()
-        logger.debug('Process status: %s', sedcmd.returncode)
-    logger.debug('Process stderr: %s', stderr)
-    return stdout
 
 
 class DataCollector(object):

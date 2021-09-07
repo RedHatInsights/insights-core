@@ -11,7 +11,9 @@ import logging
 import tempfile
 import re
 import atexit
+from tempfile import NamedTemporaryFile
 from subprocess import Popen, PIPE, STDOUT
+from .collection_rules import InsightsUploadConf
 from .constants import InsightsConstants as constants
 
 from .utilities import determine_hostname, _expand_paths, write_data_to_file, write_rhsm_facts
@@ -81,7 +83,7 @@ class InsightsArchive(object):
         hostname_path   - location of the file containing the
                           hostname in the archive, provided by the data collector
     """
-    def __init__(self, config):
+    def __init__(self, config, rm_conf=None):
         """
         Initialize the Insights Archive
         """
@@ -106,7 +108,8 @@ class InsightsArchive(object):
         self.compressor = config.compressor
         self.tar_file = None
 
-        self.rm_conf = None
+        if not rm_conf:
+            self.rm_conf = InsightsUploadConf(config).get_rm_conf()
         self.hostname_path = None
 
         # subdirectory to treat as the top-level for redaction

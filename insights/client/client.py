@@ -290,8 +290,7 @@ def collect(config, pconn):
     if rm_conf:
         logger.warn("WARNING: Excluding data from files")
 
-    archive = InsightsArchive(config)
-    archive.rm_conf = rm_conf
+    archive = InsightsArchive(config, rm_conf=rm_conf)
 
     msg_name = determine_hostname(config.display_name)
     if config.core_collect:
