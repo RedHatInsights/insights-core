@@ -394,20 +394,22 @@ def _import(path, continue_on_error):
 
 
 def _load_components(path, include=".*", exclude="test", continue_on_error=True):
+    do_include = re.compile(include).search if include else lambda x: True
+    do_exclude = re.compile(exclude).search if exclude else lambda x: False
+
     num_loaded = 0
     if path.endswith(".py"):
         path, _ = os.path.splitext(path)
 
     path = path.rstrip("/").replace("/", ".")
+    if do_exclude(path):
+        return 0
 
     package = _import(path, continue_on_error)
     if not package:
         return 0
 
     num_loaded += 1
-
-    do_include = re.compile(include).search if include else lambda x: True
-    do_exclude = re.compile(exclude).search if exclude else lambda x: False
 
     if not hasattr(package, "__path__"):
         return num_loaded
