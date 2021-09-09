@@ -103,6 +103,7 @@ class SOSCleaner:
                         continue
                     if 'text' not in mime_type and 'json' not in mime_type:
                         skip_list.append(f)
+
         return skip_list
 
     def _start_logging(self, filename):
