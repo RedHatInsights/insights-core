@@ -108,13 +108,12 @@ class InsightsArchive(object):
         self.compressor = config.compressor
         self.tar_file = None
 
-        if not rm_conf:
+        if rm_conf:
+            self.rm_conf = rm_conf
+        else:
+            # if not provided, initialize it from config (need this for non-advisor collections)
             self.rm_conf = InsightsUploadConf(config).get_rm_conf()
         self.hostname_path = None
-
-        # subdirectory to treat as the top-level for redaction
-        # necessary for core collection because output is within the "data" dir
-        self.redaction_topdir = None
 
         atexit.register(self.cleanup_tmp)
 
@@ -334,21 +333,15 @@ class InsightsArchive(object):
         Perform data redaction (password sed command and patterns),
         on an InsightsArchive. The files under self.archive_dir
         will have redaction applied based on the values in self.rm_conf.
-        If self.redaction_topdir is set, the redaction will start from that directory
-        within self.archive_dir
 
-        :param self:   an InsightsArchive instance
-
-        :return: None
-
-        :raises RuntimeError: when the InsightsArchive path is invalid
+        Raises RuntimeError when self.archive_dir is invalid
         '''
         logger.debug('Running content redaction...')
 
         # normalize path to prevent any ../ from happening
         searchpath = os.path.normpath(self.archive_dir)
 
-        if not re.match(r'/var/tmp/[A-Za-z0-9]+/insights-.+', searchpath):
+        if not re.match(r'/var/tmp/\w+/insights-.+', searchpath):
             # sanity check to make sure we're only modifying
             #   our own stuff in temp
             # we should never get here but just in case
@@ -374,27 +367,23 @@ class InsightsArchive(object):
         if not exclude:
             logger.debug('Patterns section of denylist configuration is empty.')
 
-        if self.redaction_topdir:
-            # redact only from "redaction_topdir" down
-            # normalize path
-            topdir = os.path.normpath(self.redaction_topdir)
-            searchpath = os.path.join(searchpath, topdir)
-            if not (os.path.isdir(searchpath) and re.match(r'/var/tmp/[A-Za-z0-9]+/insights-.+/.+', searchpath)):
-                # abort if the dir does not exist or isn't the correct format
-                # we should never get here but just in case
-                raise RuntimeError('ERROR: invalid Insights archive temp path: %s' % searchpath)
-
         for dirpath, dirnames, filenames in os.walk(searchpath):
-            for f in filenames:
-                fullpath = os.path.join(dirpath, f)
-                if (fullpath.endswith('etc/insights-client/machine-id') or
-                   fullpath.endswith('etc/machine-id') or
-                   fullpath.endswith('insights_commands/subscription-manager_identity')):
-                    # do not redact the ID files
-                    continue
-                redacted_contents = _process_content_redaction(fullpath, exclude, regex)
-                with open(fullpath, 'wb') as dst:
-                    dst.write(redacted_contents)
+            relative_dirpath = os.path.relpath(dirpath, start=searchpath)
+            if relative_dirpath in constants.redact_skip_dirs:
+                # skip the meta_data directory
+                logger.debug("Ignoring directory %s", relative_dirpath)
+            else:
+                for f in filenames:
+                    fullpath = os.path.join(dirpath, f)
+                    relative_path = os.path.relpath(fullpath, start=searchpath)
+
+                    if relative_path in constants.redact_skip_files:
+                        # do not redact the ID files or other top-level data
+                        logger.debug("Ignoring file %s", relative_path)
+                    else:
+                        redacted_contents = _process_content_redaction(fullpath, exclude, regex)
+                        with open(fullpath, 'wb') as dst:
+                            dst.write(redacted_contents)
 
     def _obfuscate(self):
         """
@@ -425,7 +414,9 @@ class CleanOptions(object):
         self.keyword_file = None
         self.keywords = None
         self.no_tar_file = config.output_dir
-        self.core_collect = config.core_collect
+
+        self.skip_files = constants.redact_skip_files
+        self.skip_dirs = constants.redact_skip_dirs
 
         if rm_conf:
             try:

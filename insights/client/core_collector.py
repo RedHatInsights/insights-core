@@ -71,12 +71,6 @@ class CoreCollector(DataCollector):
 
         logger.debug('Collection finished.')
 
-<<<<<<< HEAD
-        self.redact(rm_conf)
-=======
-        self.archive.redaction_topdir = "data"
->>>>>>> move redaction functions to InsightsArchive
-
         # collect metadata
         logger.debug('Collecting metadata...')
         self._write_branch_info(branch_info)

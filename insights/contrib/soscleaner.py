@@ -103,7 +103,6 @@ class SOSCleaner:
                         continue
                     if 'text' not in mime_type and 'json' not in mime_type:
                         skip_list.append(f)
-
         return skip_list
 
     def _start_logging(self, filename):
@@ -358,9 +357,9 @@ class SOSCleaner:
         # could lead to false positives if people use dumb things for server aliases, like 'file' or 'server' or other common terms
         # this may be an option that can be enabled... --hosts or similar?
 
-        if options.core_collect:
-            hosts_file = os.path.join(self.dir_path, 'data', 'etc/hosts')
-        else:
+        # try core collection path first. if it doesn't exist fall back
+        hosts_file = os.path.join(self.dir_path, 'data', 'etc/hosts')
+        if not os.path.isfile(hosts_file):
             hosts_file = os.path.join(self.dir_path, 'etc/hosts')
 
         try:
@@ -698,37 +697,19 @@ class SOSCleaner:
             self._process_hosts_file(options)  # we'll take a dig through the hosts file and make sure it is as scrubbed as possible
 
         self._domains2db()
-        if options.core_collect:
-            # operate on the "data" directory when doing core collection
-            files = self._file_list(os.path.join(self.dir_path, 'data'))
-        else:
-            files = self._file_list(self.dir_path)
+
+        files = self._file_list(self.dir_path)
         self.logger.con_out("IP Obfuscation Start Address - %s", self.start_ip)
         self.logger.con_out("*** SOSCleaner Processing ***")
         self.logger.info("Working Directory - %s", self.dir_path)
         for f in files:
-            if options.core_collect:
-                # set a relative path of $ARCHIVEROOT/data for core collection
-                relative_path = os.path.relpath(f, start=os.path.join(self.dir_path, 'data'))
+            # get the relative path of the current working dir
+            relative_path = os.path.relpath(f, start=self.dir_path)
+            if relative_path in options.skip_files or os.path.dirname(relative_path) in options.skip_dirs:
+                self.logger.debug("Skipping %s", f)
             else:
-                # set a relative path of $ARCHIVEROOT for non core collection
-                relative_path = os.path.relpath(f, start=self.dir_path)
-
-                # in addition to setting up that relative path, skip these
-                #  files in the archive root for classic collection
-                if relative_path in ('display_name',
-                                     'blacklist_report',
-                                     'tags.json',
-                                     'branch_info',
-                                     'version_info',
-                                     'egg_release'):
-                    continue
-            # ALWAYS skip machine-id, subman id, and insights id
-            if relative_path in ('etc/machine-id',
-                                 'etc/insights-client/machine-id'):
-                continue
-            self.logger.debug("Cleaning %s", f)
-            self._clean_file(f)
+                self.logger.debug("Cleaning %s", f)
+                self._clean_file(f)
         self.logger.con_out("*** SOSCleaner Statistics ***")
         self.logger.con_out("IP Addresses Obfuscated - %s", len(self.ip_db))
         self.logger.con_out("Hostnames Obfuscated - %s" , len(self.hn_db))

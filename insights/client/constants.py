@@ -85,3 +85,15 @@ class InsightsConstants(object):
     core_collect_rpm_version = '3.1.0'
     rhsm_facts_dir = os.path.join(os.sep, 'etc', 'rhsm', 'facts')
     rhsm_facts_file = os.path.join(os.sep, 'etc', 'rhsm', 'facts', 'insights-client.facts')
+    redact_skip_files = ['data/etc/machine-id',
+                      'data/etc/insights-client/machine-id',
+                      'data/insights_commands/subscription-manager_identity',
+                      'etc/machine-id',
+                      'etc/insights-client/machine-id',
+                      'insights_commands/subscription-manager_identity',
+                      'display_name',
+                      'blacklist_report',
+                      'tags.json',
+                      'version_info',
+                      'egg_release']
+    redact_skip_dirs = ['meta_data']
