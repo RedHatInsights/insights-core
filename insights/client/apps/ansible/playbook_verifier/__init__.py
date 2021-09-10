@@ -1,4 +1,5 @@
 import os
+import six
 import copy
 import base64
 import tempfile
@@ -8,6 +9,7 @@ import insights.client.apps.ansible
 from logging import getLogger
 from insights.client.apps.ansible.playbook_verifier.contrib import gnupg
 from insights.client.apps.ansible.playbook_verifier.contrib.ruamel_yaml.ruamel import yaml
+from insights.client.apps.ansible.playbook_verifier.contrib.ruamel_yaml.ruamel.yaml.comments import CommentedMap, CommentedSeq, ordereddict
 from insights.client.constants import InsightsConstants as constants
 
 __all__ = ("loadPlaybookYaml", "verify", "PlaybookVerificationError")
@@ -48,7 +50,13 @@ def createSnippetHash(snippet):
         output: snippetHash (bytes)
     """
     snippetHash = hashlib.sha256()
-    serializedSnippet = str(snippet).encode("UTF-8")
+    if six.PY2:
+        print("Snippet BEFORE: ", snippet)
+        normalizedSnippet = normalizeSnippet(snippet)
+        print("Snippet AFTER: ", normalizedSnippet)
+        serializedSnippet = str(normalizedSnippet).encode("UTF-8")
+    else:
+        serializedSnippet = str(snippet).encode("UTF-8")
     snippetHash.update(serializedSnippet)
 
     return snippetHash.digest()
@@ -150,3 +158,25 @@ def loadPlaybookYaml(playbook):
         output: playbook yaml
     """
     return yaml.load(playbook)
+
+
+def normalizeSnippet(snippet):
+    """
+    Normalize python2 snippet and get rid of any default unicode values
+        output: normalized snippet
+    """
+    new = CommentedMap()
+    for key, value in snippet.iteritems():
+        if isinstance(value, CommentedMap):
+            new[key] = CommentedMap(normalizeSnippet(value))
+        elif isinstance(value, CommentedSeq):
+            new_sequence = CommentedSeq()
+            for item in value:
+                new_sequence.append(normalizeSnippet(item))
+            new[key] = new_sequence
+        elif isinstance(value, unicode):
+            new[key] = value.encode('ascii', 'ignore')
+        else:
+            new[key] = value
+
+    return new
