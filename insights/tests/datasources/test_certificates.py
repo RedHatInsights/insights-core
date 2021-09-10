@@ -74,7 +74,7 @@ def test_get_certificate_info_file():
     result = get_certificate_info(ctx, test_pem)
     assert len(result) == 5
     assert result[1] == 'notBefore=Dec 7 07:02:33 2022 GMT'
-    assert result[-1] == 'FileName= {}'.format(test_pem)
+    assert result[-1] == 'FileName= {0}'.format(test_pem)
     os.remove(test_pem)
 
 
@@ -86,10 +86,7 @@ def test_get_certificate_info_dir():
     open(os.path.join(test_dir, 'test_def.pem'), 'a').close()
     result = get_certificate_info(ctx, test_dir)
     assert len(result) == 10
-    assert result[1] == 'notBefore=Dec 7 07:02:33 2042 GMT'
-    assert result[4] == 'FileName= {}'.format(os.path.join(test_dir, 'test_def.pem'))
-    assert result[6] == 'notBefore=Dec 7 07:02:33 2022 GMT'
-    assert result[-1] == 'FileName= {}'.format(os.path.join(test_dir, 'test_abc.pem'))
+    assert sorted(result) == sorted(CONTENT_1 + ['FileName= /tmp/test_pki/test_abc.pem'] + CONTENT_2 + ['FileName= /tmp/test_pki/test_def.pem'])
     shutil.rmtree(test_dir)
 
 
