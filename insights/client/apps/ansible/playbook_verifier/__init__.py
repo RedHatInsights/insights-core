@@ -9,7 +9,7 @@ import insights.client.apps.ansible
 from logging import getLogger
 from insights.client.apps.ansible.playbook_verifier.contrib import gnupg
 from insights.client.apps.ansible.playbook_verifier.contrib.ruamel_yaml.ruamel import yaml
-from insights.client.apps.ansible.playbook_verifier.contrib.ruamel_yaml.ruamel.yaml.comments import CommentedMap, CommentedSeq, ordereddict
+from insights.client.apps.ansible.playbook_verifier.contrib.ruamel_yaml.ruamel.yaml.comments import CommentedMap, CommentedSeq
 from insights.client.constants import InsightsConstants as constants
 
 __all__ = ("loadPlaybookYaml", "verify", "PlaybookVerificationError")
