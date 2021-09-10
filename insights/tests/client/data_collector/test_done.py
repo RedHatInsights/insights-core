@@ -1,5 +1,6 @@
 from insights.client.config import InsightsConfig
 from insights.client.data_collector import DataCollector
+from mock.mock import patch
 
 
 @patch('insights.client.data_collector.InsightsArchive')
