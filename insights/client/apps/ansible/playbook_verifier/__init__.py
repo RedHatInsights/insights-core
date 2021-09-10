@@ -53,7 +53,7 @@ def createSnippetHash(snippet):
     if six.PY2:
         normalizedSnippet = normalizeSnippet(snippet)
         serializedSnippet = str(normalizedSnippet).encode("UTF-8")
-    else:
+    elif six.PY3:
         serializedSnippet = str(snippet).encode("UTF-8")
     snippetHash.update(serializedSnippet)
 
