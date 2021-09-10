@@ -1,8 +1,5 @@
 from insights.client.config import InsightsConfig
-from insights.contrib.soscleaner import SOSCleaner
 from insights.client.data_collector import DataCollector
-from insights.client.archive import CleanOptions
-from mock.mock import patch, Mock
 
 
 @patch('insights.client.data_collector.InsightsArchive')

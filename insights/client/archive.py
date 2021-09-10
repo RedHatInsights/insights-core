@@ -12,7 +12,7 @@ import tempfile
 import re
 import atexit
 from tempfile import NamedTemporaryFile
-from subprocess import Popen, PIPE, STDOUT
+from subprocess import Popen, PIPE
 from .collection_rules import InsightsUploadConf
 from .constants import InsightsConstants as constants
 

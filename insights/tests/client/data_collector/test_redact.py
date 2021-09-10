@@ -260,7 +260,6 @@
 #         _process_content_redaction.assert_not_called()
 
 
-
 # @patch('insights.client.data_collector.DataCollector._write_rhsm_facts')
 # @patch('insights.client.data_collector.SOSCleaner')
 # @patch('insights.client.data_collector.InsightsArchive')

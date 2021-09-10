@@ -283,7 +283,6 @@ def collect(config, pconn):
     """
     branch_info = get_branch_info(config)
     pc = InsightsUploadConf(config)
-    output = None
 
     rm_conf = pc.get_rm_conf() or {}
     blacklist_report = pc.create_report()

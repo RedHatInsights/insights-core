@@ -10,7 +10,6 @@ import copy
 import glob
 import six
 import shlex
-import re
 from itertools import chain
 from subprocess import Popen, PIPE, STDOUT
 
