@@ -11,14 +11,14 @@ from insights.specs.datasources.certificates import get_certificate_info, cert_a
 
 CONTENT_1 = [
     'issuer= /C=US/ST=North Carolina/L=Raleigh/O=Katello/OU=SomeOrgUnit/CN=a.b.c.com',
-    'notBefore=Dec  7 07:02:33 2022 GMT',
+    'notBefore=Dec 7 07:02:33 2022 GMT',
     'notAfter=Jan 18 07:02:33 2038 GMT',
     'subject= /C=US/ST=North Carolina/L=Raleigh/O=Katello/OU=SomeOrgUnit/CN=a.b.c.com',
 ]
 
 CONTENT_2 = [
     'issuer= /C=US/ST=North Carolina/L=Raleigh/O=Katello/OU=SomeOrgUnit/CN=a.b.c.com',
-    'notBefore=Dec  7 07:02:33 2042 GMT',
+    'notBefore=Dec 7 07:02:33 2042 GMT',
     'notAfter=Jan 18 07:02:33 2048 GMT',
     'subject= /C=US/ST=North Carolina/L=Raleigh/O=Katello/OU=SomeOrgUnit/CN=a.b.c.com',
 ]
@@ -27,9 +27,23 @@ CONTENT_2 = [
 class FakeContext(HostContext):
     def shell_out(self, cmd, split=True, timeout=None, keep_rc=False, env=None, signum=None):
         if 'test_abc' in cmd:
-            return (0, CONTENT_1.copy())
+            return (0,
+                [
+                    'issuer= /C=US/ST=North Carolina/L=Raleigh/O=Katello/OU=SomeOrgUnit/CN=a.b.c.com',
+                    'notBefore=Dec 7 07:02:33 2022 GMT',
+                    'notAfter=Jan 18 07:02:33 2038 GMT',
+                    'subject= /C=US/ST=North Carolina/L=Raleigh/O=Katello/OU=SomeOrgUnit/CN=a.b.c.com',
+                ]
+            )
         elif 'test_def' in cmd:
-            return (0, CONTENT_2.copy())
+            return (0,
+                [
+                    'issuer= /C=US/ST=North Carolina/L=Raleigh/O=Katello/OU=SomeOrgUnit/CN=a.b.c.com',
+                    'notBefore=Dec 7 07:02:33 2042 GMT',
+                    'notAfter=Jan 18 07:02:33 2048 GMT',
+                    'subject= /C=US/ST=North Carolina/L=Raleigh/O=Katello/OU=SomeOrgUnit/CN=a.b.c.com',
+                ]
+            )
         else:
             return (-1, [])
 
@@ -59,7 +73,7 @@ def test_get_certificate_info_file():
     open(test_pem, 'a').close()
     result = get_certificate_info(ctx, test_pem)
     assert len(result) == 5
-    assert result[1] == 'notBefore=Dec  7 07:02:33 2022 GMT'
+    assert result[1] == 'notBefore=Dec 7 07:02:33 2022 GMT'
     assert result[-1] == 'FileName= {}'.format(test_pem)
     os.remove(test_pem)
 
@@ -72,9 +86,9 @@ def test_get_certificate_info_dir():
     open(os.path.join(test_dir, 'test_def.pem'), 'a').close()
     result = get_certificate_info(ctx, test_dir)
     assert len(result) == 10
-    assert result[1] == 'notBefore=Dec  7 07:02:33 2042 GMT'
+    assert result[1] == 'notBefore=Dec 7 07:02:33 2042 GMT'
     assert result[4] == 'FileName= {}'.format(os.path.join(test_dir, 'test_def.pem'))
-    assert result[6] == 'notBefore=Dec  7 07:02:33 2022 GMT'
+    assert result[6] == 'notBefore=Dec 7 07:02:33 2022 GMT'
     assert result[-1] == 'FileName= {}'.format(os.path.join(test_dir, 'test_abc.pem'))
     shutil.rmtree(test_dir)
 
