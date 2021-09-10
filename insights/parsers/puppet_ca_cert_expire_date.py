@@ -2,6 +2,10 @@
 PuppetCertExpireDate - command ``openssl x509 -in /etc/puppetlabs/puppet/ssl/ca/ca_crt.pem -enddate -noout``
 ============================================================================================================
 
+. warning::
+   This Parser is deprecated, please use the
+   :class:`insights.parsers.ssl_certificate.CertificatesInfo` instead.
+
 The PuppetCertExpireDate parser reads the output of
 ``openssl x509 -in /etc/puppetlabs/puppet/ssl/ca/ca_crt.pem -enddate -noout``.
 
@@ -30,7 +34,7 @@ class PuppetCertExpireDate(CertificateInfo):
     """
     .. warning::
         This Parser is deprecated, please use the
-        :class:`insights.parsers.ssl_certificates.CertificatesInfo` instead.
+        :class:`insights.parsers.ssl_certificate.CertificatesInfo` instead.
 
     .. note::
         Please refer to its super-class :class:`insights.parsers.ssl_certificate.CertificateInfo` for more
@@ -48,7 +52,7 @@ class PuppetCertExpireDate(CertificateInfo):
     Raises:
         SkipException: when notAfter isn't in the output
     """
-    def __init__(self, *args, **kwargs)
+    def __init__(self, *args, **kwargs):
         deprecated(PuppetCertExpireDate, "Import 'insights.parsers.ssl_certificate.CertificatesInfo' instead.")
         super(PuppetCertExpireDate, self).__init__(*args, **kwargs)
 

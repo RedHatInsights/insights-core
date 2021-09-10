@@ -74,7 +74,6 @@ def cert_and_path(broker):
 
     if paths:
         cert_path = list()
-        for cmd in get_running_commands(broker[Ps], broker[HostContext], list(commands)):
         for path in paths:
             c_p = get_certificate_enddate(broker[HostContext], path)
             cert_path.extend(c_p) if c_p else None

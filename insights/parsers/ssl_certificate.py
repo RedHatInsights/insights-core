@@ -16,6 +16,7 @@ CertificatesInfo - command ``openssl x509 -noout -dates -issuer -subject -in /pa
 """
 
 from datetime import datetime
+from collections import namedtuple
 from insights import parser, CommandParser
 from insights.specs import Specs
 from insights.parsers import ParseException, SkipException
@@ -30,42 +31,55 @@ class CertificatesInfo(CommandParser, dict):
     Sample Output::
 
         issuer= /C=US/ST=North Carolina/L=Raleigh/O=Katello/OU=SomeOrgUnit/CN=a.b.c.com
-        notBefore=Dec  7 07:02:33 2020 GMT
+        notBefore=Dec  7 07:02:33 2022 GMT
         notAfter=Jan 18 07:02:33 2038 GMT
         subject= /C=US/ST=North Carolina/L=Raleigh/O=Katello/OU=SomeOrgUnit/CN=a.b.c.com
         FileName= /etc/origin/node/cert.pem
         error opening certificate
         139881193203616:error:0906D066:PEM routines:PEM_read_bio:bad end line:pem_lib.c:802:
+        FileName= /etc/ng1.pem
         unable to load certificate
         140695459370912:error:0906D06C:PEM routines:PEM_read_bio:no start line:pem_lib.c:703:Expecting: TRUSTED CERTIFICATE
+        FileName= /etc/ng2.pem
         issuer= /C=US/ST=North Carolina/L=Raleigh/O=Katello/OU=SomeOrgUnit/CN=test.a.com
         subject= /C=US/ST=North Carolina/L=Raleigh/O=Katello/OU=SomeOrgUnit/CN=test.b.com
-        notBefore=Dec  7 07:02:33 2020 GMT
-        notAfter=Jan 18 07:02:33 2038 GMT
+        notBefore=Dec  7 07:02:33 2010 GMT
+        notAfter=Dec 31 00:00:00 2018 GMT
         FileName= /etc/pki/ca-trust/extracted/pem/email-ca-bundle.pem
         issuer= /C=US/ST=North Carolina/L=Raleigh/O=Katello/OU=SomeOrgUnit/CN=test.c.com
         subject= /C=US/ST=North Carolina/O=Katello/OU=SomeOrgUnit/CN=test.d.com
         notBefore=Nov 30 07:02:42 2020 GMT
-        notAfter=Jan 18 07:02:43 2018 GMT
+        notAfter=Jan 18 07:02:43 2028 GMT
         FileName= /etc/pki/consumer/cert.pem
+
+    Example:
+        >>> type(certs)
+        <class 'insights.parsers.ssl_certificate.CertificatesInfo'>
+        >>> len(certs.certificates_path)
+        5
+        >>> '/etc/theNotAfterIsIncorrect.pem' in certs.certificates_path
+        True
+        >>> certs.expiration_date('/etc/theNotAfterIsIncorrect.pem').datetime is None
+        True
+        >>> '/etc/pki/consumer/cert.pem' in certs.certificates_path
+        True
+        >>> certs.expiration_date('/etc/pki/consumer/cert.pem').datetime
+        datetime.datetime(2028, 1, 18, 7, 2, 43)
+        >>> certs.earliest_expiration_date_of_chain(certs.certificates_path).str
+        'Dec 31 00:00:00 2018 GMT'
     """
     ExpirationDate = namedtuple('ExpirationDate', ['str', 'datetime'])
     """namedtuple: contains the expiration date in string and datetime format."""
-
-    def __init__(self, context):
-        super(CertificatesInfo, self).__init__(
-            context,
-            extra_bad_lines=['error opening certificate', 'unable to load certificate'])
 
     def parse_content(self, content):
         """Parse the content of crt files."""
         cert_data = dict()
         for line in content:
             if '=' not in line:
-                raise ParseException("Not a 'key=value' format line: {}".format(line))
+                continue
             key, value = [item.strip() for item in line.split('=', 1)]
-            if cert_data and key == "FileName":
-                self[key] = cert_data
+            if key == "FileName":
+                self.update({value: cert_data}) if cert_data else None
                 cert_data = dict()
                 continue
             cert_data[key] = value
@@ -91,7 +105,8 @@ class CertificatesInfo(CommandParser, dict):
         path_date = self.get(path).get('notAfter')
         if path_date:
             try:
-                path_datetime = datetime.strptime(path_date, '%b %d %H:%M:%S %Y')
+                pd_wo_tz = path_date.rsplit(" ", 1)[0]
+                path_datetime = datetime.strptime(pd_wo_tz, '%b %d %H:%M:%S %Y')
                 return self.ExpirationDate(path_date, path_datetime)
             except Exception:
                 return self.ExpirationDate(path_date, None)
@@ -188,11 +203,11 @@ class CertificateChain(CommandParser, list):
         notAfter=Jan 18 07:02:43 2018 GMT
 
     Examples:
-        >>> type(certs)
+        >>> type(ca_cert)
         <class 'insights.parsers.ssl_certificate.CertificateChain'>
-        >>> len(certs)
+        >>> len(ca_cert)
         2
-        >>> certs.earliest_expiry_date.str
+        >>> ca_cert.earliest_expiry_date.str
         'Jan 18 07:02:43 2018'
     """
 

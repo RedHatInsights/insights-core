@@ -49,6 +49,8 @@ from insights.parsers import SkipException
 from insights.specs import Specs
 from insights.util import deprecated
 
+from insights.parsers.ssl_certificate import CertificatesInfo
+
 
 @parser(Specs.certificates_enddate)
 class CertificatesEnddate(CommandParser, dict):
@@ -59,10 +61,8 @@ class CertificatesEnddate(CommandParser, dict):
         This Parser is deprecated, please use the
         :class:`insights.parsers.ssl_certificate.CertificatesInfo` instead.
     """
-    ExpirationDate = namedtuple('ExpirationDate', ['str', 'datetime'])
-    """namedtuple: contains the expiration date in string and datetime format."""
 
-    def __init__(self, *args, **kwargs)
+    def __init__(self, *args, **kwargs):
         deprecated(CertificatesEnddate, "Import 'insights.parsers.ssl_certificate.CertificatesInfo' instead.")
         super(CertificatesEnddate, self).__init__(*args, **kwargs)
 
@@ -105,6 +105,6 @@ class CertificatesEnddate(CommandParser, dict):
         if path_date:
             try:
                 path_datetime = datetime.strptime(path_date, '%b %d %H:%M:%S %Y')
-                return self.ExpirationDate(path_date, path_datetime)
+                return CertificatesInfo.ExpirationDate(path_date, path_datetime)
             except Exception:
-                return self.ExpirationDate(path_date, None)
+                return CertificatesInfo.ExpirationDate(path_date, None)
