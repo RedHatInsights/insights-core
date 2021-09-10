@@ -172,7 +172,7 @@ def normalizeSnippet(snippet):
             for item in value:
                 new_sequence.append(normalizeSnippet(item))
             new[key] = new_sequence
-        elif isinstance(value, unicode):
+        elif isinstance(value, six.text_type):
             new[key] = value.encode('ascii', 'ignore')
         else:
             new[key] = value
