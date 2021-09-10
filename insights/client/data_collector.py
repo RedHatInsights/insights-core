@@ -298,4 +298,4 @@ class DataCollector(object):
         logger.debug('Metadata collection finished.')
 
     def done(self):
-        return archive.create_tar_file()
+        return self.archive.create_tar_file()
