@@ -51,9 +51,7 @@ def createSnippetHash(snippet):
     """
     snippetHash = hashlib.sha256()
     if six.PY2:
-        print("Snippet BEFORE: ", snippet)
         normalizedSnippet = normalizeSnippet(snippet)
-        print("Snippet AFTER: ", normalizedSnippet)
         serializedSnippet = str(normalizedSnippet).encode("UTF-8")
     else:
         serializedSnippet = str(snippet).encode("UTF-8")
