@@ -43,7 +43,6 @@ Examples:
 """
 
 from datetime import datetime
-from collections import namedtuple
 from insights import parser, CommandParser
 from insights.parsers import SkipException
 from insights.specs import Specs

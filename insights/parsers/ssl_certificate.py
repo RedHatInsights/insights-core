@@ -164,6 +164,7 @@ class CertificateInfo(CommandParser, dict):
     """
 
     def __init__(self, context):
+        deprecated(CertificateInfo, "Import 'CertificatesInfo' instead.")
         super(CertificateInfo, self).__init__(
             context,
             extra_bad_lines=['error opening certificate', 'unable to load certificate'])
@@ -210,6 +211,9 @@ class CertificateChain(CommandParser, list):
         >>> ca_cert.earliest_expiry_date.str
         'Jan 18 07:02:43 2018'
     """
+    def __init__(self, context):
+        deprecated(CertificateChain, "Import 'CertificatesInfo' instead.")
+        super(CertificateChain, self).__init__(context)
 
     def parse_content(self, content):
         """
@@ -316,6 +320,7 @@ def parse_openssl_output(content):
         ParseException: when the output isn't in key=value format or
                         the notAfter or notBefore isn't expected format.
     """
+    deprecated(parse_openssl_output, "Use 'CertificatesInfo' instead.")
     date_format = '%b %d %H:%M:%S %Y'
     data = {}
     for line in content:

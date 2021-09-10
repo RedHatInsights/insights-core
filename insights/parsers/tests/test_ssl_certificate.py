@@ -110,6 +110,7 @@ BAD_OUTPUT4 = """
 
 """
 
+
 def test_certificates_info():
     certs = ssl_certificate.CertificatesInfo(context_wrap(CERTIFICATES_INFO))
     assert len(certs.certificates_path) == 5
