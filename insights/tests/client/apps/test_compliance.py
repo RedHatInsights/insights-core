@@ -59,6 +59,7 @@ def test_oscap_scan_with_results_repaired(config, assert_rpms, tmpdir):
     assert '<version>0.1.25</version>' in repaired_results
 
 
+@patch("insights.client.apps.compliance.InsightsArchive", Mock())
 @patch("insights.client.apps.compliance.call", return_value=(0, ''))
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
 def test_missing_packages(config, call):
@@ -72,6 +73,7 @@ def test_missing_packages(config, call):
         compliance_client.oscap_scan()
 
 
+@patch("insights.client.apps.compliance.InsightsArchive", Mock())
 @patch("insights.client.apps.compliance.call", return_value=(1, ''))
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
 def test_errored_rpm_call(config, call):
@@ -85,6 +87,7 @@ def test_errored_rpm_call(config, call):
         compliance_client.oscap_scan()
 
 
+@patch("insights.client.apps.compliance.InsightsArchive", Mock())
 @patch("insights.client.apps.compliance.call", return_value=(0, '1.2.3'))
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
 def test_get_ssg_version(config, call):
@@ -93,6 +96,7 @@ def test_get_ssg_version(config, call):
     call.assert_called_with('rpm -qa --qf "%{VERSION}" scap-security-guide', keep_rc=True)
 
 
+@patch("insights.client.apps.compliance.InsightsArchive", Mock())
 @patch("insights.client.apps.compliance.call", return_value=(1, '0.0.0'))
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
 def test_get_ssg_version_with_failure(config, call):
@@ -101,6 +105,7 @@ def test_get_ssg_version_with_failure(config, call):
     call.assert_called_with('rpm -qa --qf "%{VERSION}" scap-security-guide', keep_rc=True)
 
 
+@patch("insights.client.apps.compliance.InsightsArchive", Mock())
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
 def test_get_profiles(config):
     compliance_client = ComplianceClient(config)
@@ -110,6 +115,7 @@ def test_get_profiles(config):
     compliance_client.conn.session.get.assert_called_with('https://localhost/app/compliance/profiles', params={'search': 'search string'})
 
 
+@patch("insights.client.apps.compliance.InsightsArchive", Mock())
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
 def test_get_profiles_no_profiles(config):
     compliance_client = ComplianceClient(config)
@@ -119,6 +125,7 @@ def test_get_profiles_no_profiles(config):
     compliance_client.conn.session.get.assert_called_with('https://localhost/app/compliance/profiles', params={'search': 'search string'})
 
 
+@patch("insights.client.apps.compliance.InsightsArchive", Mock())
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
 def test_get_profiles_error(config):
     compliance_client = ComplianceClient(config)
@@ -128,6 +135,7 @@ def test_get_profiles_error(config):
     compliance_client.conn.session.get.assert_called_with('https://localhost/app/compliance/profiles', params={'search': 'search string'})
 
 
+@patch("insights.client.apps.compliance.InsightsArchive", Mock())
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
 def test_get_initial_profiles(config):
     compliance_client = ComplianceClient(config)
@@ -137,6 +145,7 @@ def test_get_initial_profiles(config):
     compliance_client.conn.session.get.assert_called_with('https://localhost/app/compliance/profiles', params={'search': 'system_ids=068040f1-08c8-43e4-949f-7d6470e9111c canonical=false external=false'})
 
 
+@patch("insights.client.apps.compliance.InsightsArchive", Mock())
 @patch("insights.client.apps.compliance.os_release_info", return_value=(None, '6.5'))
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None)
 def test_get_profiles_matching_os(config, os_release_info_mock):
@@ -147,6 +156,7 @@ def test_get_profiles_matching_os(config, os_release_info_mock):
     compliance_client.conn.session.get.assert_called_with('https://localhost/app/compliance/profiles', params={'search': 'system_ids=068040f1-08c8-43e4-949f-7d6470e9111c canonical=false os_minor_version=5'})
 
 
+@patch("insights.client.apps.compliance.InsightsArchive", Mock())
 @patch("insights.client.apps.compliance.os_release_info", return_value=(None, '6.5'))
 @patch("insights.client.config.InsightsConfig")
 def test_os_release(config, os_release_info_mock):
@@ -154,6 +164,7 @@ def test_os_release(config, os_release_info_mock):
     assert compliance_client.os_release() == '6.5'
 
 
+@patch("insights.client.apps.compliance.InsightsArchive", Mock())
 @patch("insights.client.apps.compliance.os_release_info", return_value=(None, '6.5'))
 @patch("insights.client.config.InsightsConfig")
 def test_os_minor_version(config, os_release_info_mock):
@@ -161,6 +172,7 @@ def test_os_minor_version(config, os_release_info_mock):
     assert compliance_client.os_minor_version() == '5'
 
 
+@patch("insights.client.apps.compliance.InsightsArchive", Mock())
 @patch("insights.client.apps.compliance.os_release_info", return_value=(None, '6.5'))
 @patch("insights.client.config.InsightsConfig")
 def test_os_major_version(config, os_release_info_mock):
@@ -168,6 +180,7 @@ def test_os_major_version(config, os_release_info_mock):
     assert compliance_client.os_major_version() == '6'
 
 
+@patch("insights.client.apps.compliance.InsightsArchive", Mock())
 @patch("insights.client.config.InsightsConfig")
 def test_profile_files(config):
     compliance_client = ComplianceClient(config)
@@ -175,6 +188,7 @@ def test_profile_files(config):
     assert compliance_client.profile_files() == []
 
 
+@patch("insights.client.apps.compliance.InsightsArchive", Mock())
 @patch("insights.client.apps.compliance.call", return_value=(0, PATH))
 @patch("insights.client.config.InsightsConfig")
 def test_find_scap_policy(config, call):
@@ -183,6 +197,7 @@ def test_find_scap_policy(config, call):
     assert compliance_client.find_scap_policy('ref_id') == PATH
 
 
+@patch("insights.client.apps.compliance.InsightsArchive", Mock())
 @patch("insights.client.apps.compliance.call", return_value=(1, 'bad things happened'.encode('utf-8')))
 @patch("insights.client.config.InsightsConfig")
 def test_find_scap_policy_not_found(config, call):
@@ -191,6 +206,7 @@ def test_find_scap_policy_not_found(config, call):
     assert compliance_client.find_scap_policy('ref_id') is None
 
 
+@patch("insights.client.apps.compliance.InsightsArchive", Mock())
 @patch("insights.client.apps.compliance.call", return_value=(0, ''.encode('utf-8')))
 @patch("insights.client.config.InsightsConfig")
 def test_run_scan(config, call):
