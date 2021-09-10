@@ -82,3 +82,11 @@ insights.specs.datasources.yum_updates
     :members: yum_updates
     :show-inheritance:
     :undoc-members:
+
+insights.specs.datasources.httpd_certificate
+--------------------------------------------
+
+.. automodule:: insights.specs.datasources.httpd_certificate
+    :members: ssl_certificate_file
+    :show-inheritance:
+    :undoc-members:
