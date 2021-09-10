@@ -285,7 +285,7 @@ def collect(config, pconn):
     pc = InsightsUploadConf(config)
     output = None
 
-    rm_conf = pc.get_rm_conf()
+    rm_conf = pc.get_rm_conf() or {}
     blacklist_report = pc.create_report()
     if rm_conf:
         logger.warn("WARNING: Excluding data from files")
@@ -301,7 +301,7 @@ def collect(config, pconn):
         dc = DataCollector(config, archive)
     logger.info('Starting to collect Insights data for %s', msg_name)
     dc.run_collection(collection_rules, rm_conf, branch_info, blacklist_report)
-    return archive.create_tar_file()
+    return dc.done()
 
 
 def get_connection(config):

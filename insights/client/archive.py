@@ -108,7 +108,7 @@ class InsightsArchive(object):
         self.compressor = config.compressor
         self.tar_file = None
 
-        if rm_conf:
+        if rm_conf is not None:
             self.rm_conf = rm_conf
         else:
             # if not provided, initialize it from config (need this for non-advisor collections)
