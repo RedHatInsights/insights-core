@@ -38,7 +38,7 @@ def get_certificate_info(ctx, path):
             keep_rc=True
         )
         if rc == 0 and ce:
-            ce.append("FileName= {}".format(file_path))
+            ce.append("FileName= {0}".format(file_path))
             return ce
 
     ret = list()
