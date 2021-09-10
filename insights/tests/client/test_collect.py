@@ -208,8 +208,7 @@ def test_data_collector_file(get_branch_info, get_conf_file, get_rm_conf, data_c
     branch_info = get_branch_info.return_value
     blacklist_report = create_report.return_value
     data_collector.return_value.run_collection.assert_called_once_with(collection_rules, rm_conf, branch_info, blacklist_report)
-    data_collector.return_value.done.assert_called_once_with(collection_rules, rm_conf)
-
+    data_collector.return_value.done.assert_called_once()
 
 @patch("insights.client.client.InsightsUploadConf.create_report")
 @patch("insights.client.client.CoreCollector")
@@ -228,7 +227,7 @@ def test_core_collector_file(get_branch_info, get_conf_file, get_rm_conf, core_c
     branch_info = get_branch_info.return_value
     blacklist_report = create_report.return_value
     core_collector.return_value.run_collection.assert_called_once_with(collection_rules, rm_conf, branch_info, blacklist_report)
-    core_collector.return_value.done.assert_called_once_with(collection_rules, rm_conf)
+    core_collector.return_value.done.assert_called_once()
 
 
 @patch("insights.client.client.CoreCollector")

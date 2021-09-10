@@ -1,6 +1,7 @@
 from insights.client.config import InsightsConfig
 from insights.contrib.soscleaner import SOSCleaner
-from insights.client.data_collector import DataCollector, CleanOptions
+from insights.client.data_collector import DataCollector
+from insights.client.archive import CleanOptions
 from mock.mock import patch, Mock
 
 
@@ -9,7 +10,7 @@ def test_archive_returned(_):
     c = InsightsConfig()
     r = {}   # rm_conf
     d = DataCollector(c)
-    ret = d.done(c, r)
+    ret = d.done()
     d.archive.create_tar_file.assert_called_once()
     assert ret == d.archive.create_tar_file.return_value
 
@@ -19,7 +20,7 @@ def test_dir_returned(_):
     c = InsightsConfig(output_dir='test')
     r = {}   # rm_conf
     d = DataCollector(c)
-    ret = d.done(c, r)
+    ret = d.done()
     d.archive.create_tar_file.assert_not_called()
     assert ret == d.archive.archive_dir
 

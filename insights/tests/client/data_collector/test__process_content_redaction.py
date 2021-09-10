@@ -1,4 +1,4 @@
-from insights.client.data_collector import _process_content_redaction
+from insights.client.archive import _process_content_redaction
 from insights.client.constants import InsightsConstants as constants
 from mock.mock import patch, Mock, call
 from tempfile import NamedTemporaryFile
@@ -11,8 +11,8 @@ test_file.write(test_file_data.encode('utf-8'))
 test_file.flush()
 
 
-@patch('insights.client.data_collector.Popen')
-@patch('insights.client.data_collector.NamedTemporaryFile')
+@patch('insights.client.archive.Popen')
+@patch('insights.client.archive.NamedTemporaryFile')
 def test_subproc_calls_egrep(tmpfile, Popen):
     '''
     Verify that the sed command to remove passwords is called
@@ -31,8 +31,8 @@ def test_subproc_calls_egrep(tmpfile, Popen):
     ])
 
 
-@patch('insights.client.data_collector.Popen')
-@patch('insights.client.data_collector.NamedTemporaryFile')
+@patch('insights.client.archive.Popen')
+@patch('insights.client.archive.NamedTemporaryFile')
 def test_subproc_calls_fgrep(tmpfile, Popen):
     '''
     Verify that the sed command to remove passwords is called
@@ -51,8 +51,8 @@ def test_subproc_calls_fgrep(tmpfile, Popen):
     ])
 
 
-@patch('insights.client.data_collector.Popen')
-@patch('insights.client.data_collector.NamedTemporaryFile')
+@patch('insights.client.archive.Popen')
+@patch('insights.client.archive.NamedTemporaryFile')
 def test_nogrep(tmpfile, Popen):
     '''
     Verify that grep is not called when no patterns to exclude
@@ -70,7 +70,7 @@ mock_sed_file.write("s/(password[a-zA-Z0-9_]*)(\\s*\\:\\s*\\\"*\\s*|\\s*\\\"*\\s
 mock_sed_file.flush()
 
 
-@patch('insights.client.data_collector.constants.default_sed_file', mock_sed_file.name)
+@patch('insights.client.archive.constants.default_sed_file', mock_sed_file.name)
 def test_returnvalue():
     '''
     Verify that the returned data is what we expect to see
