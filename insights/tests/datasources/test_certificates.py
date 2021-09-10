@@ -105,7 +105,7 @@ def test_cert_and_path():
     open(os.path.join(test_dir, 'test_def.pem'), 'a').close()
 
     result = cert_and_path(broker)
-    assert result.content == CONTENT_1 + ['FileName= /tmp/test_abc.pem'] + CONTENT_2 + ['FileName= /tmp/test_pki/test_def.pem']
+    assert sorted(result.content) == sorted(CONTENT_1 + ['FileName= /tmp/test_abc.pem'] + CONTENT_2 + ['FileName= /tmp/test_pki/test_def.pem'])
 
     os.remove(test_pem)
     shutil.rmtree(test_dir)
