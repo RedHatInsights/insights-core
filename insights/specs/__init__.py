@@ -57,6 +57,7 @@ class Specs(SpecSet):
     ceph_s = RegistryPoint()
     ceph_v = RegistryPoint()
     certificates_enddate = RegistryPoint()
+    certificates_info = RegistryPoint(filterable=True)
     cgroups = RegistryPoint()
     chkconfig = RegistryPoint()
     chrony_conf = RegistryPoint()
