@@ -20,6 +20,7 @@ def test_oscap_scan(config, assert_rpms):
     compliance_client.run_scan = lambda ref_id, policy_xml, output_path, tailoring_file_path: None
     compliance_client.archive.archive_tmp_dir = '/tmp'
     compliance_client.archive.archive_name = 'insights-compliance-test'
+    compliance_client.archive.create_tar_file = Mock(return_value='/tmp/insights-compliance-test.tar.gz')
     archive, content_type = compliance_client.oscap_scan()
     assert archive == '/tmp/insights-compliance-test.tar.gz'
     assert content_type == COMPLIANCE_CONTENT_TYPE
@@ -45,6 +46,7 @@ def test_oscap_scan_with_results_repaired(config, assert_rpms, tmpdir):
     compliance_client.run_scan = lambda ref_id, policy_xml, output_path, tailoring_file_path: None
     compliance_client.archive.archive_tmp_dir = '/tmp'
     compliance_client.archive.archive_name = 'insights-compliance-test'
+    compliance_client.archive.create_tar_file = Mock(return_value='/tmp/insights-compliance-test.tar.gz')
     archive, content_type = compliance_client.oscap_scan()
     assert archive == '/tmp/insights-compliance-test.tar.gz'
     assert content_type == COMPLIANCE_CONTENT_TYPE

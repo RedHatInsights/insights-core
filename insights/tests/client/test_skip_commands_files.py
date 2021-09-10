@@ -60,9 +60,8 @@ def test_omit_symbolic_name(InsightsCommand, InsightsFile, parse_file_spec):
 @patch("insights.client.data_collector.InsightsCommand")
 @patch("insights.client.data_collector.InsightsFile")
 @patch("insights.client.data_collector.InsightsArchive")
-@patch("insights.client.data_collector.DataCollector.redact")
 @patch("insights.client.data_collector.DataCollector._write_collection_stats", MagicMock())
-def test_symbolic_name_bc(_, InsightsArchive, InsightsFile, InsightsCommand):
+def test_symbolic_name_bc(InsightsArchive, InsightsFile, InsightsCommand):
     """
     WICKED EDGE CASE: in case uploader.json is old and doesn't have symbolic names, don't crash
     """
