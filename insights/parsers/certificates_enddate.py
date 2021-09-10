@@ -2,6 +2,11 @@
 CertificatesEnddate - command ``/usr/bin/openssl x509 -noout -enddate -in path/to/cert/file``
 =============================================================================================
 
+.. warning::
+    The Parsers in this module are deprecated, please use the
+    :class:`insights.parsers.ssl_certificate.CertificatesInfo` instead.
+
+
 This command gets the enddate of the certificate files.
 
 Sample Output::
@@ -42,14 +47,24 @@ from collections import namedtuple
 from insights import parser, CommandParser
 from insights.parsers import SkipException
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.certificates_enddate)
 class CertificatesEnddate(CommandParser, dict):
-    """Class to parse the expiration date."""
+    """
+    Class to parse the expiration date.
 
+    .. warning::
+        This Parser is deprecated, please use the
+        :class:`insights.parsers.ssl_certificate.CertificatesInfo` instead.
+    """
     ExpirationDate = namedtuple('ExpirationDate', ['str', 'datetime'])
     """namedtuple: contains the expiration date in string and datetime format."""
+
+    def __init__(self, *args, **kwargs)
+        deprecated(CertificatesEnddate, "Import 'insights.parsers.ssl_certificate.CertificatesInfo' instead.")
+        super(CertificatesEnddate, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
         """Parse the content of crt files."""

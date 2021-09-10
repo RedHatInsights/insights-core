@@ -27,6 +27,14 @@ insights.specs.datasources.cloud_init
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.certificates
+---------------------------------------
+
+.. automodule:: insights.specs.datasources.certificates
+    :members: cert_and_path
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.ethernet
 -------------------------------------
 

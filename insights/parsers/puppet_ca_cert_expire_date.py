@@ -22,11 +22,16 @@ from insights import parser
 from insights.specs import Specs
 from insights.parsers import SkipException
 from insights.parsers.ssl_certificate import CertificateInfo
+from insights.util import deprecated
 
 
 @parser(Specs.puppet_ca_cert_expire_date)
 class PuppetCertExpireDate(CertificateInfo):
     """
+    .. warning::
+        This Parser is deprecated, please use the
+        :class:`insights.parsers.ssl_certificates.CertificatesInfo` instead.
+
     .. note::
         Please refer to its super-class :class:`insights.parsers.ssl_certificate.CertificateInfo` for more
         details.
@@ -43,6 +48,9 @@ class PuppetCertExpireDate(CertificateInfo):
     Raises:
         SkipException: when notAfter isn't in the output
     """
+    def __init__(self, *args, **kwargs)
+        deprecated(PuppetCertExpireDate, "Import 'insights.parsers.ssl_certificate.CertificatesInfo' instead.")
+        super(PuppetCertExpireDate, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
         super(PuppetCertExpireDate, self).parse_content(content)
