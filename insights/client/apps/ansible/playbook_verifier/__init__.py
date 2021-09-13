@@ -164,13 +164,19 @@ def normalizeSnippet(snippet):
         output: normalized snippet
     """
     new = CommentedMap()
+    print("snippet: ", snippet)
     for key, value in snippet.iteritems():
         if isinstance(value, CommentedMap):
             new[key] = CommentedMap(normalizeSnippet(value))
         elif isinstance(value, CommentedSeq):
             new_sequence = CommentedSeq()
             for item in value:
-                new_sequence.append(normalizeSnippet(item))
+                if not isinstance(item, CommentedMap):
+                    new_sequence.append(item)
+                elif isinstance(item, six.text_type):
+                    new_sequence.append(item.encode('ascii', 'ignore'))
+                else:
+                    new_sequence.append(normalizeSnippet(item))
             new[key] = new_sequence
         elif isinstance(value, six.text_type):
             new[key] = value.encode('ascii', 'ignore')
