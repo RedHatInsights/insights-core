@@ -179,16 +179,12 @@ plugins:
         - name: insights.combiners.satellite_version.CapsuleVersion
           enabled: true
 
-    # needed for the 'pre-check' of the 'gfs2_mount_points' spec
-        - name: insights.parsers.mount.Mount
-          enabled: true
+    # needed for the 'pre-check' of the 'corosync_cmapctl_cmd_list' spec
         - name: insights.combiners.redhat_release.RedHatRelease
           enabled: true
         - name: insights.parsers.uname.Uname
           enabled: true
         - name: insights.parsers.redhat_release.RedhatRelease
-          enabled: true
-        - name: insights.components.rhel_version.IsRhel6
           enabled: true
         - name: insights.components.rhel_version.IsRhel7
           enabled: true
