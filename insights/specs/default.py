@@ -476,6 +476,7 @@ class DefaultSpecs(Specs):
     ])
     mount = simple_command("/bin/mount")
     mounts = simple_file("/proc/mounts")
+    mssql_api_assessment = simple_file("/var/opt/mssql/log/assessments/assessment-latest")
     mssql_conf = simple_file("/var/opt/mssql/mssql.conf")
     multicast_querier = simple_command("/usr/bin/find /sys/devices/virtual/net/ -name multicast_querier -print -exec cat {} \;")
     multipath_conf = simple_file("/etc/multipath.conf")
