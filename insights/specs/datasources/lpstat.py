@@ -37,7 +37,12 @@ def lpstat_protocol_printers_info(broker):
         for line in content:
             if "device for " in line:
                 "Remove printer address information"
-                result.append(line.rsplit(":", 1)[0])
+                [device, address] = line.split(":", 1)
+                if "://" in address:
+                    protocol = address.split(":")[0]
+                    result.append(device.strip() + ": " + protocol.strip())
+                if "///dev/null" in address:
+                    result.append(line)
         if result:
             return DatasourceProvider(content="\n".join(result), relative_path='insights_commands/lpstat_-v')
     except Exception as e:
