@@ -11,7 +11,6 @@ data sources that standard Insights `Parsers` resolve against.
 import datetime
 import logging
 import os
-import re
 import signal
 
 from grp import getgrgid
@@ -28,12 +27,10 @@ from insights.core.spec_factory import foreach_collect, foreach_execute
 from insights.core.spec_factory import first_file, listdir
 from insights.combiners.services import Services
 from insights.combiners.ps import Ps
-from insights.components.rhel_version import IsRhel8, IsRhel7, IsRhel6
+from insights.components.rhel_version import IsRhel8, IsRhel7
 from insights.components.cloud_provider import IsAWS, IsAzure, IsGCP
 from insights.components.ceph import IsCephMonitor
-from insights.parsers.mdstat import Mdstat
 from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersion
-from insights.parsers.mount import Mount
 from insights.specs import Specs
 from insights.specs.datasources import (
     awx_manage, cloud_init, candlepin_broker, ethernet, get_running_commands, ipcs, lpstat, package_provides,
@@ -114,27 +111,6 @@ class DefaultSpecs(Specs):
     ps_ef = simple_command("/bin/ps -ef")
     ps_eo = simple_command("/usr/bin/ps -eo pid,ppid,comm")
     ps_eo_cmd = ps_datasource.ps_eo_cmd
-
-    @datasource(ps_auxww, HostContext)
-    def tomcat_base(broker):
-        """
-        Function to search the output of ``ps auxww`` to find all running tomcat
-        processes and extract the base path where the process was started.
-
-        Returns:
-            list: List of the paths to each running process
-        """
-        ps = broker[DefaultSpecs.ps_auxww].content
-        results = []
-        findall = re.compile(r"\-Dcatalina\.base=(\S+)").findall
-        for p in ps:
-            found = findall(p)
-            if found:
-                # Only get the path which is absolute
-                results.extend(f for f in found if f[0] == '/')
-        return list(set(results))
-
-    catalina_out = foreach_collect(tomcat_base, "%s/catalina.out")
     cciss = glob_file("/proc/driver/cciss/cciss*")
     cdc_wdm = simple_file("/sys/bus/usb/drivers/cdc_wdm/module/refcnt")
     ceilometer_collector_log = first_file(["/var/log/containers/ceilometer/collector.log", "/var/log/ceilometer/collector.log"])
@@ -268,29 +244,6 @@ class DefaultSpecs(Specs):
     getconf_page_size = simple_command("/usr/bin/getconf PAGE_SIZE")
     getenforce = simple_command("/usr/sbin/getenforce")
     getsebool = simple_command("/usr/sbin/getsebool -a")
-
-    @datasource(Mount, [IsRhel6, IsRhel7, IsRhel8], HostContext)
-    def gfs2_mount_points(broker):
-        """
-        Function to search the output of ``mount`` to find all the gfs2 file
-        systems.
-        And only run the ``stat`` command on RHEL version that's less than
-        8.3. With 8.3 and later, the command ``blkid`` will also output the
-        block size info.
-
-        Returns:
-            list: a list of mount points of which the file system type is gfs2
-        """
-        gfs2_mount_points = []
-        if (broker.get(IsRhel6) or broker.get(IsRhel7) or
-                (broker.get(IsRhel8) and broker[IsRhel8].minor < 3)):
-            for mnt in broker[Mount]:
-                if mnt.mount_type == "gfs2":
-                    gfs2_mount_points.append(mnt.mount_point)
-        if gfs2_mount_points:
-            return gfs2_mount_points
-        raise SkipComponent
-    gfs2_file_system_block_size = foreach_execute(gfs2_mount_points, "/usr/bin/stat -fc %%s %s")
     gluster_v_info = simple_command("/usr/sbin/gluster volume info")
     gnocchi_conf = first_file(["/var/lib/config-data/puppet-generated/gnocchi/etc/gnocchi/gnocchi.conf", "/etc/gnocchi/gnocchi.conf"])
     gnocchi_metricd_log = first_file(["/var/log/containers/gnocchi/gnocchi-metricd.log", "/var/log/gnocchi/metricd.log"])
@@ -454,13 +407,6 @@ class DefaultSpecs(Specs):
     md5chk_files = foreach_execute(md5chk_file_list, "/usr/bin/md5sum %s", keep_rc=True)
     mdstat = simple_file("/proc/mdstat")
 
-    @datasource(Mdstat, HostContext)
-    def md_device_list(broker):
-        md = broker[Mdstat]
-        if md.components:
-            return [dev["device_name"] for dev in md.components if dev["active"]]
-        raise SkipComponent()
-    mdadm_E = foreach_execute(md_device_list, "/usr/sbin/mdadm -E %s")
     meminfo = first_file(["/proc/meminfo", "/meminfo"])
     messages = simple_file("/var/log/messages")
     modinfo_i40e = simple_command("/sbin/modinfo i40e")
@@ -476,6 +422,7 @@ class DefaultSpecs(Specs):
     ])
     mount = simple_command("/bin/mount")
     mounts = simple_file("/proc/mounts")
+    mssql_api_assessment = simple_file("/var/opt/mssql/log/assessments/assessment-latest")
     mssql_conf = simple_file("/var/opt/mssql/mssql.conf")
     multicast_querier = simple_command("/usr/bin/find /sys/devices/virtual/net/ -name multicast_querier -print -exec cat {} \;")
     multipath_conf = simple_file("/etc/multipath.conf")
