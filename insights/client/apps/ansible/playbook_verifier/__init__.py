@@ -164,7 +164,6 @@ def normalizeSnippet(snippet):
         output: normalized snippet
     """
     new = CommentedMap()
-    print("snippet: ", snippet)
     for key, value in snippet.iteritems():
         if isinstance(value, CommentedMap):
             new[key] = CommentedMap(normalizeSnippet(value))
