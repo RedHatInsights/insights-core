@@ -932,7 +932,11 @@ class first_of(object):
     """
     def __init__(self, deps):
         self.deps = deps
-        self.raw = getattr(deps[0], 'raw') if hasattr(deps[0], 'raw') else False
+        self.raw = False
+        for c in deps:
+            if hasattr(c, 'raw'):
+                self.raw = c.raw
+                break
         self.__name__ = self.__class__.__name__
         datasource(deps)(self)
 
