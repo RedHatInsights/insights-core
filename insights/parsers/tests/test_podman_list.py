@@ -1,7 +1,7 @@
 import doctest
 import pytest
-from insights.parsers import podman_list
-from insights.parsers import SkipException
+
+from insights.parsers import podman_list, SkipException
 from insights.tests import context_wrap
 
 
@@ -61,7 +61,7 @@ def test_podman_list_containers():
     assert result.rows[1].get("CONTAINER ID") == "95516ea08b565e37e2a4bca3333af40a240c368131b77276da8dec629b7fe102"
     assert result.rows[1].get("COMMAND") == '"/bin/sh -c \'yum install -y vsftpd-2.2.2-6.el6\'"'
     assert result.rows[1]['STATUS'] == 'Exited (137) 18 hours ago'
-    assert result.rows[1].get("PORTS") is ''
+    assert result.rows[1].get("PORTS") == ''
 
     assert sorted(result.containers.keys()) == sorted(['angry_saha', 'tender_rosalind'])
     assert result.containers['angry_saha'] == result.rows[0]
