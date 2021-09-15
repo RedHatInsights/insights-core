@@ -19,6 +19,8 @@ class CupsPpd(Parser, dict):
     Sample output for files::
 
         *PPD-Adobe: "4.3"
+        *% Copyright 2007-2014 by Apple Inc.
+        *% Copyright: 1997-2007 by Easy Software Products.
         *FormatVersion: "4.3"
         *FileVersion: "2.2"
         *LanguageVersion: English
@@ -45,7 +47,7 @@ class CupsPpd(Parser, dict):
             raise SkipException("No Valid Configuration")
         data = {}
         for line in content:
-            if "*" in line and ":" in line:
+            if line.startswith("*") and ":" in line and not line.startswith("*%"):
                 key = line.split(":")[0].split("*")[-1].strip()
                 value = line.split(":")[-1].strip()
                 if key in data:
