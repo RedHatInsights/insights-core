@@ -7,6 +7,8 @@ import pytest
 
 CUPS_PPD = """
 *PPD-Adobe: "4.3"
+*% Copyright 2007-2014 by Apple Inc.
+*% test: this line is used to check comment
 *FormatVersion: "4.3"
 *FileVersion: "2.2"
 *LanguageVersion: English
@@ -33,6 +35,7 @@ def test_cups_ppd():
     cups_ppd_result = CupsPpd(context_wrap(CUPS_PPD, path='/etc/cups/ppd/test_printer1.ppd'))
     assert cups_ppd_result["PCFileName"] == '"ippeve.ppd"'
     assert cups_ppd_result["cupsFilter2"] == ['"application/vnd.cups-pdf application/pdf 10 -"', '"application/vnd.cups-postscript application/postscript 10 -"']
+    assert "test" not in cups_ppd_result
 
     with pytest.raises(SkipException) as exc:
         CupsPpd(context_wrap(CUPS_PPD_INVALID1, path='/etc/cups/ppd/test_printer1.ppd'))
