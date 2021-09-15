@@ -35,7 +35,7 @@ def test_cups_ppd():
     cups_ppd_result = CupsPpd(context_wrap(CUPS_PPD, path='/etc/cups/ppd/test_printer1.ppd'))
     assert cups_ppd_result["PCFileName"] == '"ippeve.ppd"'
     assert cups_ppd_result["cupsFilter2"] == ['"application/vnd.cups-pdf application/pdf 10 -"', '"application/vnd.cups-postscript application/postscript 10 -"']
-    assert "test"not in cups_ppd_result
+    assert "test" not in cups_ppd_result
 
     with pytest.raises(SkipException) as exc:
         CupsPpd(context_wrap(CUPS_PPD_INVALID1, path='/etc/cups/ppd/test_printer1.ppd'))
