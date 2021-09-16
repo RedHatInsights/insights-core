@@ -64,7 +64,7 @@ class XModUseBlkMq(Parser):
 class MaxLUNs(Parser):
     """
     Parse for file `/sys/module/{scsi_mod, lpfc, ...}/parameters/{max_report_luns, lpfc_max_luns, ...}`.
-    File content shows if use_blk_mq parameter is on.
+    File content shows the maximum LUN value currently supported.
 
     Sample Content::
 
@@ -74,7 +74,7 @@ class MaxLUNs(Parser):
         SkipException: When content is empty or no parse-able content.
 
     Attributes:
-        val(str): Raw data of the content.
+        val(int): Convert the raw data of the content to int.
     """
 
     def parse_content(self, content):
@@ -139,7 +139,7 @@ class LpfcMaxLUNs(MaxLUNs):
     This file `/sys/module/lpfc/parameters/lpfc_max_luns` shows the max LUN number
     supported by lpfc driver.
 
-    Examples::
+    Examples:
 
         >>> lpfc_max_luns.val
         512
@@ -153,7 +153,7 @@ class Ql2xMaxLUN(MaxLUNs):
     This file `/sys/module/qla2xxx/parameters/ql2xmaxlun` shows the max LUN number
     supported by qla2xxxx driver.
 
-    Examples::
+    Examples:
 
         >>> ql2xmaxlun.val
         512
@@ -167,7 +167,7 @@ class SCSIModMaxReportLUNs(MaxLUNs):
     This file `/sys/module/scsi_mod/parameters/max_report_luns` shows the max LUN number
     supported by OS.
 
-    Examples::
+    Examples:
 
         >>> scsi_mod_max_report_luns.val
         512
