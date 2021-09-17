@@ -8,6 +8,9 @@ from insights.specs.datasources.lpstat import LocalSpecs, lpstat_protocol_printe
 LPSTAT_V = """
 device for test_printer1: ipp://cups.test.com/printers/test_printer1
 device for test_printer2: ipp://cups.test.com/printers/test_printer2
+device for test_printer3: socket://192.168.1.5:9100
+device for test_printer4: usb://smth
+device for test_printer5: ///dev/null
 """.strip()
 
 LPSTAT_V_NOT_GOOD = """
@@ -17,6 +20,9 @@ lpstat: Transport endpoint is not connected
 LPSTAT_V_RESULT = """
 device for test_printer1: ipp
 device for test_printer2: ipp
+device for test_printer3: socket
+device for test_printer4: usb
+device for test_printer5: ///dev/null
 """.strip()
 
 RELATIVE_PATH = 'insights_commands/lpstat_-v'
