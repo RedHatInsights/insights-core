@@ -137,7 +137,7 @@ class FakeContext(object):
 
 def test_hana_instance_skip():
     inst = SAPHostCtrlInstances(context_wrap(SAPHOSTCTRL_HOSTINSTANCES_R_CASE))
-    hn = Hostname(HostnameParser(context_wrap(HOSTNAME)), None, None, None, None)
+    hn = Hostname(HostnameParser(context_wrap(HOSTNAME)), None, None, None)
     sap = Sap(hn, inst, None)
     broker = {Sap: sap}
     broker.update({LocalSpecs.sap_instance: LocalSpecs.sap_instance(broker)})
@@ -148,7 +148,7 @@ def test_hana_instance_skip():
 def test_sid():
     # Good
     inst = SAPHostCtrlInstances(context_wrap(SAPHOSTCTRL_HOSTINSTANCES))
-    hn = Hostname(HostnameParser(context_wrap(HOSTNAME)), None, None, None, None)
+    hn = Hostname(HostnameParser(context_wrap(HOSTNAME)), None, None, None)
     sap = Sap(hn, inst, None)
     broker = {Sap: sap}
     broker.update({LocalSpecs.sap_instance: LocalSpecs.sap_instance(broker)})
@@ -161,7 +161,7 @@ def test_sid():
 def test_hana_sid():
     # Good
     inst = SAPHostCtrlInstances(context_wrap(SAPHOSTCTRL_HOSTINSTANCES))
-    hn = Hostname(HostnameParser(context_wrap(HOSTNAME)), None, None, None, None)
+    hn = Hostname(HostnameParser(context_wrap(HOSTNAME)), None, None, None)
     sap = Sap(hn, inst, None)
     broker = {Sap: sap}
     broker.update({LocalSpecs.sap_instance: LocalSpecs.sap_instance(broker)})
@@ -180,7 +180,7 @@ def test_hana_sid():
 def test_hana_sid_SID_nr():
     # Good
     inst = SAPHostCtrlInstances(context_wrap(SAPHOSTCTRL_HOSTINSTANCES))
-    hn = Hostname(HostnameParser(context_wrap(HOSTNAME)), None, None, None, None)
+    hn = Hostname(HostnameParser(context_wrap(HOSTNAME)), None, None, None)
     sap = Sap(hn, inst, None)
     broker = {Sap: sap}
     broker.update({LocalSpecs.sap_instance: LocalSpecs.sap_instance(broker)})
@@ -199,7 +199,7 @@ def test_hana_sid_SID_nr():
 def test_ld_library_path_of_user():
     # Good
     inst = SAPHostCtrlInstances(context_wrap(SAPHOSTCTRL_HOSTINSTANCES))
-    hn = Hostname(HostnameParser(context_wrap(HOSTNAME)), None, None, None, None)
+    hn = Hostname(HostnameParser(context_wrap(HOSTNAME)), None, None, None)
     sap = Sap(hn, inst, None)
     broker = {Sap: sap, HostContext: FakeContext()}
     broker.update({LocalSpecs.sap_instance: LocalSpecs.sap_instance(broker)})
@@ -215,7 +215,7 @@ def test_ld_library_path_of_user():
 
     # Bad
     inst = SAPHostCtrlInstances(context_wrap(SAPHOSTCTRL_HOSTINSTANCES_GOOD))
-    hn = Hostname(HostnameParser(context_wrap(HOSTNAME1)), None, None, None, None)
+    hn = Hostname(HostnameParser(context_wrap(HOSTNAME1)), None, None, None)
     sap = Sap(hn, inst, None)
     broker = {Sap: sap, HostContext: FakeContext()}
     broker.update({LocalSpecs.sap_instance: LocalSpecs.sap_instance(broker)})
