@@ -351,6 +351,7 @@ class DefaultSpecs(Specs):
     limits_conf = glob_file(["/etc/security/limits.conf", "/etc/security/limits.d/*.conf"])
     localtime = simple_command("/usr/bin/file -L /etc/localtime")
     logrotate_conf = glob_file(["/etc/logrotate.conf", "/etc/logrotate.d/*"])
+    lpfc_max_luns = simple_file("/sys/module/lpfc/parameters/lpfc_max_luns")
     lpstat_p = simple_command("/usr/bin/lpstat -p")
     lpstat_protocol_printers = lpstat.lpstat_protocol_printers_info
     ls_boot = simple_command("/bin/ls -lanR /boot")
@@ -573,6 +574,7 @@ class DefaultSpecs(Specs):
     rhsm_katello_default_ca_cert = simple_command("/usr/bin/openssl x509 -in /etc/rhsm/ca/katello-default-ca.pem -noout -issuer")
     qemu_conf = simple_file("/etc/libvirt/qemu.conf")
     qemu_xml = glob_file(r"/etc/libvirt/qemu/*.xml")
+    ql2xmaxlun = simple_file("/sys/module/qla2xxx/parameters/ql2xmaxlun")
     qpidd_conf = simple_file("/etc/qpid/qpidd.conf")
     rabbitmq_env = simple_file("/etc/rabbitmq/rabbitmq-env.conf")
     rabbitmq_report = simple_command("/usr/sbin/rabbitmqctl report")
@@ -631,6 +633,7 @@ class DefaultSpecs(Specs):
     scsi = simple_file("/proc/scsi/scsi")
     scsi_eh_deadline = glob_file('/sys/class/scsi_host/host[0-9]*/eh_deadline')
     scsi_fwver = glob_file('/sys/class/scsi_host/host[0-9]*/fwrev')
+    scsi_mod_max_report_luns = simple_file("/sys/module/scsi_mod/parameters/max_report_luns")
     scsi_mod_use_blk_mq = simple_file("/sys/module/scsi_mod/parameters/use_blk_mq")
     sctp_asc = simple_file('/proc/net/sctp/assocs')
     sctp_eps = simple_file('/proc/net/sctp/eps')
