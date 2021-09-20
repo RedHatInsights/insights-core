@@ -98,9 +98,6 @@ plugins:
         - name: insights.parsers.hostname
           enabled: true
 
-        - name: insights.parsers.facter
-          enabled: true
-
         - name: insights.parsers.systemid
           enabled: true
 
