@@ -3,7 +3,7 @@ Hostname
 ========
 
 Combiner for ``hostname`` information. It uses the results of all the
-``Hostname`` parsers, ``Facter`` and the ``SystemID`` parser to get the fqdn,
+``Hostname`` parsers and the ``SystemID`` parser to get the fqdn,
 hostname and domain information.
 
 
@@ -12,17 +12,16 @@ hostname and domain information.
 from insights.core.plugins import combiner
 from insights.core.serde import deserializer, serializer
 from insights.parsers.hostname import Hostname as HnF, HostnameShort as HnS, HostnameDefault as HnD
-from insights.parsers.facter import Facter
 from insights.parsers.systemid import SystemID
 from insights.util import deprecated
 
 
-@combiner([HnF, HnD, HnS, Facter, SystemID])
+@combiner([HnF, HnD, HnS, SystemID])
 class Hostname(object):
     """
-    Check hostname, facter and systemid to get the fqdn, hostname and domain.
+    Check hostname and systemid to get the fqdn, hostname and domain.
 
-    Prefer hostname to facter and systemid.
+    Prefer hostname to systemid.
 
     Examples:
         >>> type(hostname)
@@ -37,19 +36,16 @@ class Hostname(object):
     Raises:
         Exception: If no hostname can be found in any of the source parsers.
     """
-    def __init__(self, hf, hd, hs, ft, sid):
+    def __init__(self, hf, hd, hs, sid):
         self.fqdn = self.hostname = self.domain = None
 
-        if hf or hs or hd or ft:
-            hn = hf or hs or hd or ft
+        if hf or hs or hd:
+            hn = hf or hs or hd
             self.hostname = self.fqdn = hn.hostname
             self.domain = ''
             if hf and hf.fqdn:
                 self.fqdn = hf.fqdn
                 self.domain = hf.domain
-            elif ft and ft.fqdn:
-                self.fqdn = ft.fqdn
-                self.domain = ft.domain if ft.domain else ".".join(self.fqdn.split(".")[1:])
         else:
             self.fqdn = sid.get("profile_name")
             if self.fqdn:
@@ -60,16 +56,16 @@ class Hostname(object):
             raise Exception("Unable to get hostname.")
 
 
-@combiner([HnF, HnD, HnS, Facter, SystemID])
-def hostname(hf, hd, hs, ft, sid):
+@combiner([HnF, HnD, HnS, SystemID])
+def hostname(hf, hd, hs, sid):
     """
     .. warning::
         This combiner methode is deprecated, please use
         :py:class:`insights.combiners.hostname.Hostname` instead.
 
-    Check hostname, facter and systemid to get the fqdn, hostname and domain.
+    Check hostname and systemid to get the fqdn, hostname and domain.
 
-    Prefer hostname to facter and systemid.
+    Prefer hostname to systemid.
 
     Examples:
         >>> hn.fqdn
@@ -87,7 +83,7 @@ def hostname(hf, hd, hs, ft, sid):
         Exception: If no hostname can be found in any of the source parsers.
     """
     deprecated(hostname, "Use the `Hostname` class instead.")
-    return Hostname(hf, hd, hs, ft, sid)
+    return Hostname(hf, hd, hs, sid)
 
 
 @serializer(Hostname)
