@@ -26,10 +26,10 @@ Sample input data is in the format::
     allow local:* : enquire;
 """
 
-from insights import Parser
+from insights import parser, Parser
+from insights.specs import Specs
 from insights.parsr import EOF, EOL, Char, Literal, Many, OneLineComment, Opt, QuotedString, String, WSChar
 import string
-# import logging
 
 
 # https://man7.org/linux/man-pages/man1/pmlogger.1.html#CONFIGURATION_FILE_SYNTAX
@@ -76,8 +76,6 @@ LogSpec = Preamble + MetricSpecs
 
 LogSpecs = Many(LogSpec)
 
-parse = LogSpecs << EOF
-
 AccessHeader = WS >> Literal("[access]") << WS
 Allow = WS >> Literal("allow") << WS
 Disallow = WS >> Literal("disallow") << WS
@@ -107,6 +105,8 @@ Doc = LogSpecs + Opt(AccessControl)
 parse = Doc << EOF
 
 
+@parser(Specs.ros_config)
 class RosConfig(Parser):
     def parse_content(self, content):
+        print(content)
         self.data = parse("\n".join(content))
