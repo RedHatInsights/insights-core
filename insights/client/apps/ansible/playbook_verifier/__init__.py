@@ -10,6 +10,7 @@ from logging import getLogger
 from insights.client.apps.ansible.playbook_verifier.contrib import gnupg
 from insights.client.apps.ansible.playbook_verifier.contrib.ruamel_yaml.ruamel import yaml
 from insights.client.apps.ansible.playbook_verifier.contrib.ruamel_yaml.ruamel.yaml.comments import CommentedMap, CommentedSeq
+from insights.client.apps.ansible.playbook_verifier.contrib.ruamel_yaml.ruamel.yaml.scalarint import ScalarInt
 from insights.client.constants import InsightsConstants as constants
 
 __all__ = ("loadPlaybookYaml", "verify", "PlaybookVerificationError")
@@ -170,15 +171,17 @@ def normalizeSnippet(snippet):
         elif isinstance(value, CommentedSeq):
             new_sequence = CommentedSeq()
             for item in value:
+                if isinstance(item, six.text_type):
+                    new_sequence.append(item.encode('ascii', 'ignore'))
                 if not isinstance(item, CommentedMap):
                     new_sequence.append(item)
-                elif isinstance(item, six.text_type):
-                    new_sequence.append(item.encode('ascii', 'ignore'))
                 else:
                     new_sequence.append(normalizeSnippet(item))
             new[key] = new_sequence
         elif isinstance(value, six.text_type):
             new[key] = value.encode('ascii', 'ignore')
+        elif isinstance(value, ScalarInt):
+            new[key] = int(value)
         else:
             new[key] = value
 
