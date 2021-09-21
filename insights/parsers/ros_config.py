@@ -110,3 +110,13 @@ class RosConfig(Parser):
     def parse_content(self, content):
         print(content)
         self.data = parse("\n".join(content))
+        self.specs = []
+        specifications = self.data[0]
+        for spec in specifications:
+            state = spec[0][0]
+            logging_interval = spec[0][1] if state.endswith('on') else None
+            self.specs.append({'state': state, 'logging_interval': logging_interval, 'metrics': spec[1]})
+        access_rules = self.data[1][1]
+        self.rules = []
+        for rule in access_rules:
+            self.rules.append({'allow_disallow': rule[0], 'hostlist': rule[1], 'operationlist': rule[3]})
