@@ -1,8 +1,9 @@
-from ...parsers import ps, ParseException
-from ...tests import context_wrap
-from ...util import keys_in
-import pytest
 import doctest
+import pytest
+
+from insights.parsers import ps, ParseException
+from insights.tests import context_wrap
+from insights.util import keys_in
 
 PsAuxww_TEST_DOC = """
  USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
@@ -437,6 +438,7 @@ def test_ps_alxwww():
     assert dbus_proc['COMMAND_NAME'] == 'dbus-daemon'
     assert dbus_proc['UID'] == '81'
     assert dbus_proc['ARGS'] == '--system --address=systemd: --nofork --nopidfile --systemd-activation'
+
 
 PS_EO_CMD_NORMAL = """
     PID COMMAND
