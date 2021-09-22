@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.241
+Version:        3.0.242
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,20 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Wed Sep 22 2021 Vitaliy Dymna <vdymna@redhat.com> 3.0.242-1
+- [3.0] Update requires in core rpm spec for el7 (#3229) (rblakley@redhat.com)
+- Fixed flake8 errors for the newest version of flake8 (#3222)
+  (rblakley@redhat.com)
+- Update verifier code to remove long suffix python2 (#3227)
+  (44471274+aleccohan@users.noreply.github.com)
+- Fixed flake8 errors for the newest version of flake8 for the client (#3226)
+  (rblakley@redhat.com)
+- Stop collection of facter and remove dependencies (#3224)
+  (20520336+bfahr@users.noreply.github.com)
+- New specs and parsers for scsi_mod, lpfc driver and qla2xxx driver ma…
+  (#3221) (30404410+qinpingli@users.noreply.github.com)
+- Enhance datasource lpstat (#3219) (jiazhang@redhat.com)
+
 * Wed Sep 15 2021 Bob Fahr <20520336+bfahr@users.noreply.github.com> 3.0.241-1
 - Add in missing tito file (#3217) (rblakley@redhat.com)
 - Remove old spec ansible_tower_settings (#3216) (jiazhang@redhat.com)
