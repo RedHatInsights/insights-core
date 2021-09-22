@@ -203,13 +203,65 @@ class SOSCleaner:
             ips = [each[0] for each in re.findall(pattern, line)]
             if len(ips) > 0:
                 for ip in ips:
-                    new_ip = self._ip2db(ip)
-                    self.logger.debug("Obfuscating IP - %s > %s", ip, new_ip)
-                    line = line.replace(ip, new_ip)
+                    # skip loopback (https://github.com/RedHatInsights/insights-core/issues/3230#issuecomment-924859845)
+                    if ip != "127.0.0.1":
+                        new_ip = self._ip2db(ip)
+                        self.logger.debug("Obfuscating IP - %s > %s", ip, new_ip)
+                        line = line.replace(ip, new_ip)
             return line
         except Exception as e: # pragma: no cover
             self.logger.exception(e)
             raise Exception('SubIPError: Unable to Substitute IP Address - %s', ip)
+
+    def _sub_ip_netstat(self, line):
+        '''
+        Special version of _sub_ip for netstat to preserve spacing
+        '''
+        try:
+            pattern = r"(((\b25[0-5]|\b2[0-4][0-9]|\b1[0-9][0-9]|\b[1-9][0-9]|\b[1-9]))(\.(\b25[0-5]|\b2[0-4][0-9]|\b1[0-9][0-9]|\b[1-9][0-9]|\b[0-9])){3})"
+            ips = [each[0] for each in re.findall(pattern, line)]
+            if len(ips) > 0:
+                for ip in ips:
+                    # skip loopback (https://github.com/RedHatInsights/insights-core/issues/3230#issuecomment-924859845)
+                    if ip != "127.0.0.1":
+                        ip_len = len(ip)
+                        new_ip = self._ip2db(ip)
+                        new_ip_len = len(new_ip)
+
+                        self.logger.debug("Obfuscating IP - %s > %s", ip, new_ip)
+
+                        # pad or remove spaces to allow for the new length
+                        if ip_len > new_ip_len:
+                            numspaces = ip_len - new_ip_len
+                            line = line.replace(ip, new_ip)
+
+                            # shift past port specification to add spaces
+                            idx = line.index(new_ip) + len(new_ip)
+                            c = line[idx]
+                            while c != " ":
+                                idx += 1
+                                c = line[idx]
+                            line = line[0:idx] + numspaces * " " + line[idx:]
+
+                        elif new_ip_len > ip_len:
+                            numspaces = new_ip_len - ip_len
+                            line = line.replace(ip, new_ip)
+
+                            # shift past port specification to skip spaces
+                            idx = line.index(new_ip) + len(new_ip)
+                            c = line[idx]
+                            while c != " ":
+                                idx += 1
+                                c = line[idx]
+                            line = line[0:idx] + line[(idx+numspaces):]
+
+                        else:
+                            line = line.replace(ip, new_ip)
+            return line
+        except Exception as e: # pragma: no cover
+            self.logger.exception(e)
+            raise Exception('SubIPError: Unable to Substitute IP Address - %s', ip)
+
 
     def _get_disclaimer(self):  # pragma: no cover
         #prints a disclaimer that this isn't an excuse for manual or any other sort of data verification
@@ -572,10 +624,13 @@ class SOSCleaner:
         self.file_count = len(rtn)  #a count of the files we'll have in the final cleaned sosreport, for reporting
         return rtn
 
-    def _clean_line(self, l):
+    def _clean_line(self, l, f=None):
         '''this will return a line with obfuscations for all possible variables, hostname, ip, etc.'''
 
-        new_line = self._sub_ip(l)                  # IP substitution
+        if f and f.endswith("netstat_-neopa"):
+            new_line = self._sub_ip_netstat(l)                  # IP substitution
+        else:
+            new_line = self._sub_ip(l)                  # IP substitution
         new_line = self._sub_hostname(new_line)     # Hostname substitution
         new_line = self._sub_keywords(new_line)     # Keyword Substitution
 
@@ -592,7 +647,7 @@ class SOSCleaner:
                 fh.close()
                 if len(data) > 0: #if the file isn't empty:
                     for l in data:
-                        new_l = self._clean_line(l)
+                        new_l = self._clean_line(l, f)
                         if six.PY3:
                             tmp_file.write(new_l.encode('utf-8'))
                         else:
