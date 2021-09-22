@@ -627,7 +627,7 @@ class SOSCleaner:
     def _clean_line(self, l, f=None):
         '''this will return a line with obfuscations for all possible variables, hostname, ip, etc.'''
 
-        if f.endswith("netstat_-neopa"):
+        if f and f.endswith("netstat_-neopa"):
             new_line = self._sub_ip_netstat(l)                  # IP substitution
         else:
             new_line = self._sub_ip(l)                  # IP substitution
