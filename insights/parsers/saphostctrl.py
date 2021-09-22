@@ -8,9 +8,9 @@ SAPHostCtrlInstances - Command ``saphostctrl -function GetCIMObject -enuminstanc
 ------------------------------------------------------------------------------------------------
 """
 from insights import parser, CommandParser
+from insights.core.filters import add_filter
 from insights.parsers import ParseException, SkipException
 from insights.specs import Specs
-from insights.core.filters import add_filter
 
 
 SAP_INST_FILTERS = [
@@ -105,7 +105,7 @@ class SAPHostCtrlInstances(CommandParser):
 
             if not inst['InstanceName'].endswith(inst['SystemNumber']):
                 raise ParseException(
-                    'InstanceName: "{0}" missing match with SystemNumber: "{0}"'.format(inst['InstanceName'], inst['SystemNumber']))
+                    'InstanceName: "{0}" missing match with SystemNumber: "{1}"'.format(inst['InstanceName'], inst['SystemNumber']))
             # InstanceType = The chars in InstanceName before the SystemNumber
             # subtract len(sysnumber) characters from instance name
             inst['InstanceType'] = inst['InstanceName'][0:-len(inst['SystemNumber'])]

@@ -100,7 +100,8 @@ openshift = set([
 ])
 
 linting = set([
-    'flake8==2.6.2',
+    'flake8==2.6.2; python_version < "2.7"',
+    'flake8; python_version >= "2.7"'
 ])
 
 optional = set([

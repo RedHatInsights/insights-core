@@ -1,5 +1,7 @@
-from insights.tests import context_wrap
 from insights.parsers import rhsm_conf
+from insights.tests import context_wrap
+
+
 CONFIG = """
 # Red Hat Subscription Manager Configuration File:
 
@@ -78,9 +80,9 @@ RETURN_VALUE = """
 
 
 def test_rhsm_conf():
-        resault = rhsm_conf.RHSMConf(context_wrap(CONFIG))
+    resault = rhsm_conf.RHSMConf(context_wrap(CONFIG))
 
-        assert resault.get('rhsm', 'pluginConfDir') == '/etc/rhsm/pluginconf.d'
-        assert resault.get('rhsm', 'full_refresh_on_yum') == '0'
-        assert resault.get('rhsm', 'consumerCertDir') == '/etc/pki/consumer'
-        assert resault.get('rhsm', 'repo_ca_cert') == '%(ca_cert_dir)sredhat-uep.pem'
+    assert resault.get('rhsm', 'pluginConfDir') == '/etc/rhsm/pluginconf.d'
+    assert resault.get('rhsm', 'full_refresh_on_yum') == '0'
+    assert resault.get('rhsm', 'consumerCertDir') == '/etc/pki/consumer'
+    assert resault.get('rhsm', 'repo_ca_cert') == '%(ca_cert_dir)sredhat-uep.pem'

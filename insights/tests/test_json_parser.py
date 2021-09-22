@@ -7,6 +7,7 @@ from insights.tests import context_wrap
 class MyJsonParser(JSONParser):
     pass
 
+
 json_test_strings = {
     '{"a": "1", "b": "2"}': {'a': '1', 'b': '2'},
     '[{"a": "1", "b": "2"},{"a": "3", "b": "4"}]':
