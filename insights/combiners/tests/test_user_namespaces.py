@@ -1,7 +1,7 @@
-from ..user_namespaces import UserNamespaces
-from ...parsers.cmdline import CmdLine
-from ...parsers.grub_conf import Grub2Config
-from ...tests import context_wrap
+from insights.combiners.user_namespaces import UserNamespaces
+from insights.parsers.cmdline import CmdLine
+from insights.parsers.grub_conf import Grub2Config
+from insights.tests import context_wrap
 
 ENABLE_TOK_A = '''
 user_namespaces.enable=1
@@ -79,12 +79,12 @@ CASES = [
         # Dash syntax, rather than underscore
         ((CMDLINE.format(ENABLE_TOK_B), GRUB2_CONF.format(ENABLE_TOK_B, '')),
          (True, [MENUENTRY_0]))
-        ]
+]
 
 
 def test_integration():
     for case in CASES:
-        context = {}
+        context = dict()
         context[CmdLine] = CmdLine(context_wrap(case[0][0]))
         if case[0][1] is not None:
             context[Grub2Config] = Grub2Config(context_wrap(case[0][1]))

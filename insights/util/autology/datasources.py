@@ -424,12 +424,13 @@ class SosSpecs(DefaultSpecs):
 
     pass
 
+
 if __name__ == "__main__":
     specs = DefaultSpecs()
     for k, v in specs.items():
         try:
             print(v)
-        except Exception as e:
+        except Exception:
             print('======= Error with spec: ', k)
             print('repr_str :', v.repr_str)
             for dk, dv in v.items():
