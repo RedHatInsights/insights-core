@@ -1,7 +1,7 @@
+from insights.contrib import ipaddress
 from insights.parsers import ip
 from insights.tests import context_wrap
 from insights.util import keys_in
-from insights.contrib import ipaddress
 
 
 IP_ADDR_TEST = """
@@ -787,6 +787,7 @@ def test_ipv6_neigh():
         "dev": "tun0", "nud": "NOARP", "lladdr": "33:33:ff:ea:2c:00",
         'addr': ipaddress.ip_address(u'ff02::1:ffea:2c00')
     }
+
 
 IP_NEIGH_SHOW = """
 2a04:9a00:1:1:ec4:7aff:febb:d3ca dev bond0.104 lladdr 0c:c4:7a:bb:d3:ca REACHABLE
