@@ -932,6 +932,8 @@ class first_of(object):
     """
     def __init__(self, deps):
         self.deps = deps
+        # Get the 'raw' attribute from the first item who does have such an
+        # attribute, otherwise set the `self.raw` as False
         self.raw = False
         for c in deps:
             if hasattr(c, 'raw'):

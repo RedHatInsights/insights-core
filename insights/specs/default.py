@@ -130,6 +130,7 @@ class DefaultSpecs(Specs):
     certificates_enddate = simple_command("/usr/bin/find /etc/origin/node /etc/origin/master /etc/pki /etc/ipa -type f -exec /usr/bin/openssl x509 -noout -enddate -in '{}' \; -exec echo 'FileName= {}' \;", keep_rc=True)
     certificates_info = first_of(
         [
+            # Get the datasource spec at first when supporting core collection
             certificates.cert_and_path,
             # To support the old insights-client without core collection
             simple_command("/usr/bin/find /etc/origin/node /etc/origin/master /etc/pki /etc/ipa /etc/puppetlabs/puppet/ssl/ca/ca_crt.pem /etc/rhsm/ca/katello-default-ca.pem /etc/rhsm/ca/katello-default-ca.pem -type f -exec /usr/bin/openssl x509 -noout -dates -issuer -subject -in '{}' \; -exec echo 'FileName= {}' \;", keep_rc=True)
