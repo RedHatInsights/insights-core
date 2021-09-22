@@ -203,6 +203,7 @@ class SOSCleaner:
             ips = [each[0] for each in re.findall(pattern, line)]
             if len(ips) > 0:
                 for ip in ips:
+                    # skip loopback (https://github.com/RedHatInsights/insights-core/issues/3230#issuecomment-924859845)
                     if ip != "127.0.0.1":
                         new_ip = self._ip2db(ip)
                         self.logger.debug("Obfuscating IP - %s > %s", ip, new_ip)
