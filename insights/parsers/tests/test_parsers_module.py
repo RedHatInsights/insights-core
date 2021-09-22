@@ -1,8 +1,8 @@
 import pytest
+
 from collections import OrderedDict
-from insights.parsers import split_kv_pairs, unsplit_lines, parse_fixed_table
-from insights.parsers import calc_offset, optlist_to_dict, keyword_search
-from insights.parsers import parse_delimited_table, ParseException, SkipException
+from insights.parsers import (calc_offset, keyword_search, optlist_to_dict, parse_delimited_table, parse_fixed_table,
+                              split_kv_pairs, unsplit_lines, ParseException, SkipException)
 
 SPLIT_TEST_1 = """
 # Comment line
@@ -619,6 +619,7 @@ def test_keyword_search():
         CERT_LIST,
         certificate__contains='encryption'
     ) == []
+
 
 PS_LIST = [
     {'PID': '692', 'PPID': '2', 'COMMAND': 'kdmflush', '_line': ' 692 2 kdmflush'},
