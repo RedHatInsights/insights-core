@@ -1,12 +1,11 @@
-from ..ipv6 import IPv6
-from ...parsers.modprobe import ModProbe
-from ...parsers.lsmod import LsMod
-from ...parsers.cmdline import CmdLine
-from ...parsers.sysctl import Sysctl
-from ...parsers.uname import Uname
-from ...tests import context_wrap
-
 from collections import namedtuple
+from insights.combiners.ipv6 import IPv6
+from insights.parsers.cmdline import CmdLine
+from insights.parsers.lsmod import LsMod
+from insights.parsers.modprobe import ModProbe
+from insights.parsers.sysctl import Sysctl
+from insights.parsers.uname import Uname
+from insights.tests import context_wrap
 
 Case = namedtuple('Case', ['cmdline', 'lsmod', 'modprobe', 'sysctl'])
 
@@ -96,70 +95,70 @@ net.ipv6.route.gc_timeout = 60
 '''  # noqa
 
 CASES = [
-        # noqa
-        # RHEL7 not disabled
-        (7, Case(CMDLINE_NOT_DISABLED, None, None, SYSCTL_NOT_DISABLED),
-            (False, set())),
-        # RHEL7 disabled via cmdline
-        (7, Case(CMDLINE_DISABLED, None, None, SYSCTL_NOT_DISABLED),
-            (True, set(['cmdline']))),
-        # RHEL7 disabled via sysctl
-        (7, Case(CMDLINE_NOT_DISABLED, None, None, SYSCTL_DISABLED),
-            (True, set(['sysctl']))),
-        # RHEL7 disabled by both cmdline and sysctl
-        (7, Case(CMDLINE_DISABLED, None, None, SYSCTL_DISABLED),
-            (True, set(['cmdline', 'sysctl']))),
-        # RHEL7 with only uname provided
-        (7, Case(None, None, None, None),
-            (False, set())),
-        # RHEL6 loaded not disabled
-        (6, Case(None, LSMOD_LOADED, MODPROBE_NOT_DISABLED,
-                 SYSCTL_NOT_DISABLED), (False, set())),
-        # RHEL6 not loaded but not disabled
-        (6, Case(None, LSMOD_NOT_LOADED, MODPROBE_NOT_DISABLED,
-                 SYSCTL_NOT_DISABLED), (False, set())),
-        # RHEL6 fake installed but loaded
-        (6, Case(None, LSMOD_LOADED, MODPROBE_FAKE, SYSCTL_NOT_DISABLED),
-            (False, set())),
-        # RHEL6 not loaded, fake install commented
-        (6, Case(None, LSMOD_NOT_LOADED, MODPROBE_FAKE_COMMENTED,
-                 SYSCTL_NOT_DISABLED), (False, set())),
-        # RHEL6 loaded but disabled via modprobe
-        (6, Case(None, LSMOD_LOADED, MODPROBE_DISABLED, SYSCTL_NOT_DISABLED),
-            (True, set(['modprobe_disable']))),
-        # RHEL6 not loaded, disabled via modprobe
-        (6, Case(None, LSMOD_NOT_LOADED, MODPROBE_DISABLED,
-                 SYSCTL_NOT_DISABLED), (True, set(['modprobe_disable']))),
-        # RHEL6 not loaded, disabled via fake install
-        (6, Case(None, LSMOD_NOT_LOADED, MODPROBE_FAKE, SYSCTL_NOT_DISABLED),
-            (True, set(['fake_install']))),
-        # RHEL6 loaded but disabled by sysctl
-        (6, Case(None, LSMOD_LOADED, MODPROBE_NOT_DISABLED, SYSCTL_DISABLED),
-            (True, set(['sysctl']))),
-        # RHEL6 not loaded, disabled by sysctl
-        (6, Case(None, LSMOD_NOT_LOADED, MODPROBE_NOT_DISABLED,
-                 SYSCTL_DISABLED), (True, set(['sysctl']))),
-        # RHEL6 disabled by modprobe and sysctl
-        (6, Case(None, LSMOD_NOT_LOADED, MODPROBE_DISABLED, SYSCTL_DISABLED),
-            (True, set(['sysctl', 'modprobe_disable']))),
-        # RHEL6 with lsmod but no modprobe
-        (6, Case(None, LSMOD_LOADED, None, None),
-            (False, set())),
-        # RHEL6 with modprobe but no lsmod
-        (6, Case(None, None, MODPROBE_DISABLED, None),
-            (True, set(['modprobe_disable']))),
-        # RHEL6 with fake install but no lsmod (insufficient data)
-        (6, Case(None, None, MODPROBE_FAKE, None),
-            (False, set())),
-        # RHEL6 with command line only
-        (6, Case(CMDLINE_RHEL6_DISABLED, None, None, None),
-            (True, set(['cmdline']))),
-        ]
+    # noqa
+    # RHEL7 not disabled
+    (7, Case(CMDLINE_NOT_DISABLED, None, None, SYSCTL_NOT_DISABLED),
+        (False, set())),
+    # RHEL7 disabled via cmdline
+    (7, Case(CMDLINE_DISABLED, None, None, SYSCTL_NOT_DISABLED),
+        (True, set(['cmdline']))),
+    # RHEL7 disabled via sysctl
+    (7, Case(CMDLINE_NOT_DISABLED, None, None, SYSCTL_DISABLED),
+        (True, set(['sysctl']))),
+    # RHEL7 disabled by both cmdline and sysctl
+    (7, Case(CMDLINE_DISABLED, None, None, SYSCTL_DISABLED),
+        (True, set(['cmdline', 'sysctl']))),
+    # RHEL7 with only uname provided
+    (7, Case(None, None, None, None),
+        (False, set())),
+    # RHEL6 loaded not disabled
+    (6, Case(None, LSMOD_LOADED, MODPROBE_NOT_DISABLED,
+             SYSCTL_NOT_DISABLED), (False, set())),
+    # RHEL6 not loaded but not disabled
+    (6, Case(None, LSMOD_NOT_LOADED, MODPROBE_NOT_DISABLED,
+             SYSCTL_NOT_DISABLED), (False, set())),
+    # RHEL6 fake installed but loaded
+    (6, Case(None, LSMOD_LOADED, MODPROBE_FAKE, SYSCTL_NOT_DISABLED),
+        (False, set())),
+    # RHEL6 not loaded, fake install commented
+    (6, Case(None, LSMOD_NOT_LOADED, MODPROBE_FAKE_COMMENTED,
+             SYSCTL_NOT_DISABLED), (False, set())),
+    # RHEL6 loaded but disabled via modprobe
+    (6, Case(None, LSMOD_LOADED, MODPROBE_DISABLED, SYSCTL_NOT_DISABLED),
+        (True, set(['modprobe_disable']))),
+    # RHEL6 not loaded, disabled via modprobe
+    (6, Case(None, LSMOD_NOT_LOADED, MODPROBE_DISABLED,
+             SYSCTL_NOT_DISABLED), (True, set(['modprobe_disable']))),
+    # RHEL6 not loaded, disabled via fake install
+    (6, Case(None, LSMOD_NOT_LOADED, MODPROBE_FAKE, SYSCTL_NOT_DISABLED),
+        (True, set(['fake_install']))),
+    # RHEL6 loaded but disabled by sysctl
+    (6, Case(None, LSMOD_LOADED, MODPROBE_NOT_DISABLED, SYSCTL_DISABLED),
+        (True, set(['sysctl']))),
+    # RHEL6 not loaded, disabled by sysctl
+    (6, Case(None, LSMOD_NOT_LOADED, MODPROBE_NOT_DISABLED,
+             SYSCTL_DISABLED), (True, set(['sysctl']))),
+    # RHEL6 disabled by modprobe and sysctl
+    (6, Case(None, LSMOD_NOT_LOADED, MODPROBE_DISABLED, SYSCTL_DISABLED),
+        (True, set(['sysctl', 'modprobe_disable']))),
+    # RHEL6 with lsmod but no modprobe
+    (6, Case(None, LSMOD_LOADED, None, None),
+        (False, set())),
+    # RHEL6 with modprobe but no lsmod
+    (6, Case(None, None, MODPROBE_DISABLED, None),
+        (True, set(['modprobe_disable']))),
+    # RHEL6 with fake install but no lsmod (insufficient data)
+    (6, Case(None, None, MODPROBE_FAKE, None),
+        (False, set())),
+    # RHEL6 with command line only
+    (6, Case(CMDLINE_RHEL6_DISABLED, None, None, None),
+        (True, set(['cmdline']))),
+]
 
 
 def test_integration():
     for rhel, case, result in CASES:
-        context = {}
+        context = dict()
         context[Uname] = Uname(context_wrap(
                                UNAME_RHEL7 if rhel == 7 else UNAME_RHEL6))
 

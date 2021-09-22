@@ -151,7 +151,7 @@ def test_sctp_eps_exceptions():
     with pytest.raises(ParseException) as exc:
         sctp_obj = SCTPEps(context_wrap(SCTP_EPS_DETAILS_NO))
         assert sctp_obj is None   # Just added to remove flake8 warnings
-    assert 'Contents are not compatible to this parser' in str(exc)
+    assert 'The following line is not compatible with this parser' in str(exc)
 
     with pytest.raises(SkipException) as exc:
         sctp_obj = SCTPEps(context_wrap(SCTP_EPS_DETAILS_NO_2))
@@ -163,7 +163,7 @@ def test_sctp_asc_exceptions():
     with pytest.raises(ParseException) as exc:
         sctp_asc = SCTPAsc(context_wrap(SCTP_ASSOC_NO_2))
         assert sctp_asc is None
-    assert 'Contents are not compatible to this parser' in str(exc)
+    assert 'The following line is not compatible with this parser' in str(exc)
     with pytest.raises(SkipException) as exc:
         sctp_asc = SCTPAsc(context_wrap(SCTP_ASSOC_NO))
         assert sctp_asc is None

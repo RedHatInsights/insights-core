@@ -18,10 +18,9 @@ SCTPSnmp - file ``/proc/net/sctp/snmp``
 """
 
 from insights import Parser, parser
-from insights.parsers import SkipException, ParseException
-from . import keyword_search
-from insights.specs import Specs
 from insights.components.rhel_version import IsRhel6, IsRhel7
+from insights.parsers import keyword_search, SkipException, ParseException
+from insights.specs import Specs
 
 
 @parser(Specs.sctp_eps)
@@ -77,7 +76,7 @@ class SCTPEps(Parser):
         line = content[0].strip().split()
         keys_cnt = len(self.COLUMN_IDX)
         if "LPORT" not in line or len(line) != keys_cnt:
-            raise ParseException("Contents are not compatible to this parser".format(line))
+            raise ParseException("The following line is not compatible with this parser: {0}".format(line))
 
         self.data = []
         for line in content[1:]:
@@ -153,7 +152,7 @@ class SCTPAscBase(Parser):
         line = content[0].strip().split()
         keys_cnt = len(self.COLUMN_IDX)
         if "LPORT" not in line or len(line) != keys_cnt:
-            raise ParseException("Contents are not compatible to this parser".format(line))
+            raise ParseException("The following line is not compatible with this parser: {0}".format(line))
 
         laddr_idx = line.index('LADDRS')
         raddr_ridx = len(line) - line.index('RADDRS')
