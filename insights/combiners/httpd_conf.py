@@ -22,8 +22,7 @@ from insights.parsr.query import (Directive, Entry, pred, pred2, Section,
         startswith)
 from insights.parsr import (Char, EOF, EOL, EndTagName, Forward, FS, GT, InSet,
         Literal, LT, Letters, Lift, LineEnd, Many, Number, OneLineComment,
-        PosMarker, QuotedString, skip_none, StartTagName, String, WS, WSChar,
-        EmptyAttr)
+        PosMarker, QuotedString, skip_none, StartTagName, String, WS, WSChar)
 from insights.parsers.httpd_conf import HttpdConf, dict_deep_merge, ParsedData
 from insights.specs import Specs
 from insights.util import deprecated
@@ -291,6 +290,7 @@ class DocParser(object):
 
         OpAttr = (Literal("!=") | Literal("<=") | Literal(">=") | InSet("<>")) & WSChar
         BareAttr = String(set(string.printable) - (set(string.whitespace) | set("<>'\"")))
+        EmptyAttr = String('"\'', min_length=2)
         Attr = AttrStart >> (Num | QuotedString | OpAttr | BareAttr | EmptyAttr) << AttrEnd
         Attrs = Many(Attr)
 

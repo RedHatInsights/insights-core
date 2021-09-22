@@ -1240,4 +1240,3 @@ Number = (Lift(_make_number) * Opt(Char("-"), "") * Digits * Opt(Char(".") + Dig
 SingleQuotedString = Char("'") >> String(set(string.printable) - set("'"), "'") << Char("'")
 DoubleQuotedString = Char('"') >> String(set(string.printable) - set('"'), '"') << Char('"')
 QuotedString = Wrapper(DoubleQuotedString | SingleQuotedString) % "quoted string"
-EmptyAttr = String('"\'', min_length=2)
