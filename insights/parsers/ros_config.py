@@ -3,27 +3,6 @@ RosConfig - file ``/var/lib/pcp/config/pmlogger/config.ros``
 ============================================================
 This class provides parsing for the files:
     ``/var/lib/pcp/config/pmlogger/config.ros``
-
-Sample input data is in the format::
-
-    log mandatory on default {
-        mem.util.used
-        mem.physmem
-        kernel.all.cpu.user
-        kernel.all.cpu.sys
-        kernel.all.cpu.nice
-        kernel.all.cpu.steal
-        kernel.all.cpu.idle
-        kernel.all.cpu.wait.total
-        disk.all.total
-        mem.util.cached
-        mem.util.bufmem
-        mem.util.free
-    }
-    [access]
-    disallow .* : all;
-    disallow :* : all;
-    allow local:* : enquire;
 """
 
 from insights import parser, Parser
@@ -107,6 +86,53 @@ parse = Doc << EOF
 
 @parser(Specs.ros_config)
 class RosConfig(Parser):
+    """
+    Sample input data is in the format::
+
+        log mandatory on default {
+            mem.util.used
+            mem.physmem
+            kernel.all.cpu.user
+            kernel.all.cpu.sys
+            kernel.all.cpu.nice
+            kernel.all.cpu.steal
+            kernel.all.cpu.idle
+            kernel.all.cpu.wait.total
+            disk.all.total
+            mem.util.cached
+            mem.util.bufmem
+            mem.util.free
+        }
+        [access]
+        disallow .* : all;
+        disallow :* : all;
+        allow local:* : enquire;
+
+    Examples:
+        >>> type(ros_config)
+        <class 'insights.parsers.ros_config.RosConfig'>
+        >>> ros_config.data
+        [[[['mandatory on', 'default'], {'mem.util.used': [], 'mem.physmem': [], 'kernel.all.cpu.user': [], 'kernel.all.cpu.sys': [], 'kernel.all.cpu.nice': [], 'kernel.all.cpu.steal': [], 'kernel.all.cpu.idle': [], 'kernel.all.cpu.wait.total': [], 'disk.all.total': [], 'mem.util.cached': [], 'mem.util.bufmem': [], 'mem.util.free': []}]], ['[access]', [['disallow', ['.*'], ':', ['all']], ['disallow', [':*'], ':', ['all']], ['allow', ['local:*'], ':', ['enquire']]]]]
+        >>> ros_config.specs
+        [{'state': 'mandatory on', 'logging_interval': 'default', 'metrics': {'mem.util.used': [], 'mem.physmem': [], 'kernel.all.cpu.user': [], 'kernel.all.cpu.sys': [], 'kernel.all.cpu.nice': [], 'kernel.all.cpu.steal': [], 'kernel.all.cpu.idle': [], 'kernel.all.cpu.wait.total': [], 'disk.all.total': [], 'mem.util.cached': [], 'mem.util.bufmem': [], 'mem.util.free': []}}]
+        >>> ros_config.rules
+        [{'allow_disallow': 'disallow', 'hostlist': ['.*'], 'operationlist': ['all']}, {'allow_disallow': 'disallow', 'hostlist': [':*'], 'operationlist': ['all']}, {'allow_disallow': 'allow', 'hostlist': ['local:*'], 'operationlist': ['enquire']}]
+        >>> ros_config.specs[0].get('state')
+        'mandatory on'
+        >>> ros_config.specs[0].get('metrics')
+        {'mem.util.used': [], 'mem.physmem': [], 'kernel.all.cpu.user': [], 'kernel.all.cpu.sys': [], 'kernel.all.cpu.nice': [],'kernel.all.cpu.steal': [], 'kernel.all.cpu.idle': [], 'kernel.all.cpu.wait.total': [], 'disk.all.total': [], 'mem.util.cached': [], 'mem.util.bufmem': [], 'mem.util.free': []}
+        >>> ros_config.specs[0].get('logging_interval')
+        'default'
+
+    Attributes:
+        data(list): All parsed options and log files are stored in this
+            list.
+        specs(list of dicts): List of the ROS specifications present in
+            config.ros file.
+        rules(list of dicts): List of access control rules applied for
+            config.ros file.
+
+    """
     def parse_content(self, content):
         print(content)
         self.data = parse("\n".join(content))
