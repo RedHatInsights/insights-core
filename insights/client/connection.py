@@ -379,7 +379,7 @@ class InsightsConnection(object):
                 }
                 test_req = self.post(url, files=test_files)
             elif method == "GET":
-                    test_req = self.get(url)
+                test_req = self.get(url)
             if test_req.status_code in (200, 201, 202):
                 logger.info(
                     "Successfully connected to: %s", url)

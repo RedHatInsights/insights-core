@@ -62,15 +62,15 @@ def createSnippetHash(snippet):
 
 
 def getPublicKey(gpg):
-        if not PUBLIC_KEY_FOLDER:
-            raise PlaybookVerificationError(message="PUBLIC KEY IMPORT ERROR: Public key file not found")
+    if not PUBLIC_KEY_FOLDER:
+        raise PlaybookVerificationError(message="PUBLIC KEY IMPORT ERROR: Public key file not found")
 
-        publicKey = PUBLIC_KEY_FOLDER
-        importResults = gpg.import_keys(publicKey)
-        if (importResults.count < 1):
-            raise PlaybookVerificationError(message="PUBLIC KEY NOT IMPORTED: Public key import failed")
+    publicKey = PUBLIC_KEY_FOLDER
+    importResults = gpg.import_keys(publicKey)
+    if (importResults.count < 1):
+        raise PlaybookVerificationError(message="PUBLIC KEY NOT IMPORTED: Public key import failed")
 
-        return importResults
+    return importResults
 
 
 def excludeDynamicElements(snippet):
