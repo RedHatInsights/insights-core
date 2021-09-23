@@ -488,6 +488,15 @@ MULTIPLE_INCLUDES = """
 </IfVersion>
 """
 
+HTTPD_EMPTY_ATTR = """
+<VirtualHost *:80>
+    RequestHeader set X_FORWARDED_PROTO "http"
+    RequestHeader set SSL_CLIENT_S_DN ""
+    RequestHeader set SSL_CLIENT_CERT ""
+    RequestHeader set SSL_CLIENT_VERIFY ""
+</VirtualHost>
+""".strip()
+
 
 def test_mixed_case_tags():
     httpd = _HttpdConf(context_wrap(HTTPD_CONF_MIXED, path='/etc/httpd/conf/httpd.conf'))
@@ -795,3 +804,11 @@ def test_mixed_name():
     httpd1 = _HttpdConf(context_wrap(HTTPD_CONF_MIXED_NAME, path='/etc/httpd/conf/httpd.conf'))
     result = HttpdConfTree([httpd1])
     assert len(result.doc["H2Push"]) == 1
+
+
+def test_empty_attr():
+    httpd1 = _HttpdConf(context_wrap(HTTPD_EMPTY_ATTR, path='/etc/httpd/conf/httpd.conf'))
+    result = HttpdConfTree([httpd1])
+    assert len(result['VirtualHost']['RequestHeader']) == 4
+    assert result['VirtualHost']['RequestHeader'][0].value == 'set X_FORWARDED_PROTO http'
+    assert result['VirtualHost']['RequestHeader'][-1].value == 'set SSL_CLIENT_VERIFY ""'
