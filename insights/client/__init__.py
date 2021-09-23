@@ -717,7 +717,6 @@ def format_config(config):
 def _init_client_config_dirs():
     '''
     Initialize log and lib dirs
-    TODO: init non-root config dirs
     '''
     for d in (constants.log_dir, constants.insights_core_lib_dir):
         try:
