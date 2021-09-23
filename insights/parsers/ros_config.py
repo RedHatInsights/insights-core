@@ -109,19 +109,21 @@ class RosConfig(Parser):
         allow local:* : enquire;
 
     Examples:
-        >>> type(ros_config)
+        >>> type(ros_input)
         <class 'insights.parsers.ros_config.RosConfig'>
-        >>> ros_config.data
-        [[[['mandatory on', 'default'], {'mem.util.used': [], 'mem.physmem': [], 'kernel.all.cpu.user': [], 'kernel.all.cpu.sys': [], 'kernel.all.cpu.nice': [], 'kernel.all.cpu.steal': [], 'kernel.all.cpu.idle': [], 'kernel.all.cpu.wait.total': [], 'disk.all.total': [], 'mem.util.cached': [], 'mem.util.bufmem': [], 'mem.util.free': []}]], ['[access]', [['disallow', ['.*'], ':', ['all']], ['disallow', [':*'], ':', ['all']], ['allow', ['local:*'], ':', ['enquire']]]]]
-        >>> ros_config.specs
-        [{'state': 'mandatory on', 'logging_interval': 'default', 'metrics': {'mem.util.used': [], 'mem.physmem': [], 'kernel.all.cpu.user': [], 'kernel.all.cpu.sys': [], 'kernel.all.cpu.nice': [], 'kernel.all.cpu.steal': [], 'kernel.all.cpu.idle': [], 'kernel.all.cpu.wait.total': [], 'disk.all.total': [], 'mem.util.cached': [], 'mem.util.bufmem': [], 'mem.util.free': []}}]
-        >>> ros_config.rules
-        [{'allow_disallow': 'disallow', 'hostlist': ['.*'], 'operationlist': ['all']}, {'allow_disallow': 'disallow', 'hostlist': [':*'], 'operationlist': ['all']}, {'allow_disallow': 'allow', 'hostlist': ['local:*'], 'operationlist': ['enquire']}]
-        >>> ros_config.specs[0].get('state')
+        >>> ros_input.rules[0]['allow_disallow']
+        'disallow'
+        >>> ros_input.rules[0]['hostlist']
+        ['.*']
+        >>> ros_input.rules[0]['operationlist']
+        ['all']
+        >>> ros_input.specs[0].get('state')
         'mandatory on'
-        >>> ros_config.specs[0].get('metrics')
-        {'mem.util.used': [], 'mem.physmem': [], 'kernel.all.cpu.user': [], 'kernel.all.cpu.sys': [], 'kernel.all.cpu.nice': [],'kernel.all.cpu.steal': [], 'kernel.all.cpu.idle': [], 'kernel.all.cpu.wait.total': [], 'disk.all.total': [], 'mem.util.cached': [], 'mem.util.bufmem': [], 'mem.util.free': []}
-        >>> ros_config.specs[0].get('logging_interval')
+        >>> ros_input.specs[0].get('metrics')['mem.util.used']
+        []
+        >>> ros_input.specs[0].get('metrics')['kernel.all.cpu.user']
+        []
+        >>> ros_input.specs[0].get('logging_interval')
         'default'
 
     Attributes:
@@ -134,7 +136,6 @@ class RosConfig(Parser):
 
     """
     def parse_content(self, content):
-        print(content)
         self.data = parse("\n".join(content))
         self.specs = []
         specifications = self.data[0]
