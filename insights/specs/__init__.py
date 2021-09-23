@@ -558,6 +558,7 @@ class Specs(SpecSet):
     rhsm_releasever = RegistryPoint()
     rndc_status = RegistryPoint()
     root_crontab = RegistryPoint()
+    ros_config = RegistryPoint()
     route = RegistryPoint()
     rpm_ostree_status = RegistryPoint()
     rpm_V_packages = RegistryPoint()
