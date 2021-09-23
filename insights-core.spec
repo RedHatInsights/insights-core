@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.242
+Version:        3.0.243
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,13 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Sep 23 2021 Vitaliy Dymna <vdymna@redhat.com> 3.0.243-1
+- Add config.ros parser (#3197) (apuntamb@redhat.com)
+- Fix bug about some httpd directives may have empty string as attribute
+  (#3218) (44796653+huali027@users.noreply.github.com)
+- preserve alignment in netstat -neopa output in obfuscation (#3231)
+  (gravitypriest@users.noreply.github.com)
+
 * Wed Sep 22 2021 Vitaliy Dymna <vdymna@redhat.com> 3.0.242-1
 - [3.0] Update requires in core rpm spec for el7 (#3229) (rblakley@redhat.com)
 - Fixed flake8 errors for the newest version of flake8 (#3222)
