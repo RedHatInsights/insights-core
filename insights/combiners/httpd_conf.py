@@ -290,7 +290,8 @@ class DocParser(object):
 
         OpAttr = (Literal("!=") | Literal("<=") | Literal(">=") | InSet("<>")) & WSChar
         BareAttr = String(set(string.printable) - (set(string.whitespace) | set("<>'\"")))
-        Attr = AttrStart >> (Num | QuotedString | OpAttr | BareAttr) << AttrEnd
+        EmptyAttr = String('"\'', min_length=2)
+        Attr = AttrStart >> (Num | QuotedString | OpAttr | BareAttr | EmptyAttr) << AttrEnd
         Attrs = Many(Attr)
 
         StartTag = (WS + LT) >> (StartName + Attrs) << (GT + WS)
