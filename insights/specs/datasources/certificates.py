@@ -22,6 +22,9 @@ PERMITTED_PATHS = [
 ]
 """ Only the above paths are permitted to be 'walked' by this datasource."""
 
+# For unit test only
+UNIT_TEST = False
+
 
 def get_certificate_info(ctx, path):
     """
@@ -55,7 +58,7 @@ def get_certificate_info(ctx, path):
 
     ret = list()
     if os.path.isdir(path):
-        if path not in PERMITTED_PATHS:
+        if not UNIT_TEST and path not in PERMITTED_PATHS:
             # Don't collect the cert info of this path unless it's in PERMITTED_PATHS
             return ret
         for dirpath, dirnames, filenames in os.walk(path):
