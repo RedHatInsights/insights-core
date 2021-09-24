@@ -48,6 +48,7 @@ def get_certificate_info(ctx, path):
             timeout=DEFAULT_SHELL_TIMEOUT,
             keep_rc=True
         )
+        logger.info("Get the certificate info of '%s'", file_path)
         if rc == 0 and ce:
             ce.append("FileName= {0}".format(file_path))
             return ce
@@ -55,15 +56,14 @@ def get_certificate_info(ctx, path):
     ret = list()
     if os.path.isdir(path):
         if path not in PERMITTED_PATHS:
-            # Don't collect any paths unless it's in PERMITTED_PATHS
+            # Don't collect the cert info of this path unless it's in PERMITTED_PATHS
             return ret
         for dirpath, dirnames, filenames in os.walk(path):
             for fn in filenames:
                 rt = get_it(os.path.join(dirpath, fn))
                 ret.extend(rt) if rt else None
     elif os.path.isfile(path):
-        rt = get_it(path)
-        ret.extend(rt) if rt else None
+        ret = get_it(path) or list()
     return ret
 
 
