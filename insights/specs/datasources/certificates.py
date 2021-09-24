@@ -14,24 +14,35 @@ from insights.specs.datasources import DEFAULT_SHELL_TIMEOUT
 
 logger = logging.getLogger(__name__)
 
+PERMITTED_PATHS = [
+    '/etc/origin/node',
+    '/etc/origin/master',
+    '/etc/pki',
+    '/etc/ipa',
+]
+""" Only the above paths are permitted to be 'walked' by this datasource."""
+
 
 def get_certificate_info(ctx, path):
     """
-    If `path` is a directory get the certificates enddate information of each
-    file under the `path` directory.
-    If `path` is a file get the certificates enddate information of file.
+    If `path` is a directory of PERMITTED_PATHS, get the certificates
+    information of each file under the `path` directory.
+    If `path` is a directory but not a permitted on in the PERMITTED_PATHS, do
+    nothing.
+    If `path` is a file get the certificates information of file.
 
     Arguments:
         ctx: The current execution context
-        path(str): The full path to search
+        path(str): The full path to check. If it's a directory, it must be one
+        path of the `PERMITTED_PATHS`
 
     Returns:
-        list: The list of the certificates enddate information and the path of
-        each certificate.
+        list: The list of the certificates information and the path of each
+        certificate.
     """
     def get_it(file_path):
         # Currently, it supports the following options:
-        # dates, issure, subject
+        # dates, issuer, subject
         rc, ce = ctx.shell_out(
             "/usr/bin/openssl x509 -noout -dates -issuer -subject -in {0}".format(file_path),
             timeout=DEFAULT_SHELL_TIMEOUT,
@@ -43,6 +54,9 @@ def get_certificate_info(ctx, path):
 
     ret = list()
     if os.path.isdir(path):
+        if path not in PERMITTED_PATHS:
+            # Don't collect any paths unless it's in PERMITTED_PATHS
+            return ret
         for dirpath, dirnames, filenames in os.walk(path):
             for fn in filenames:
                 rt = get_it(os.path.join(dirpath, fn))
@@ -58,9 +72,14 @@ def cert_and_path(broker):
     """
     Collect a list of certificate information and the path to each
     certificate.  The certificates are based on filters so rules must add
-    the desired certificates or the path that the certificate would be located
-    in as filters to enable collection.  If a certificate is not an exist
-    certificate file then it will not be included in the output.
+    the desired certificates as filters to enable collection.  If a
+    certificate is not an exist certificate file then it will not be included
+    in the output.
+
+    .. note::
+        Normally, only certificate files can be added as filters.
+        For directories, only paths listed in the ``PERMITTED_PATHS`` are
+        permitted for this method.
 
     Arguments:
         broker: the broker object for the current session
@@ -71,12 +90,11 @@ def cert_and_path(broker):
     Raises:
         SkipComponent: Raised if no data is collected
     """
-    paths = get_filters(Specs.certificates_info)
-    """ list: List of paths to search for, added as filters for the spec """
-
-    if paths:
+    file_paths = get_filters(Specs.certificates_info)
+    """ list: List of certificate files to check, added as filters for the spec """
+    if file_paths:
         cert_path = list()
-        for path in paths:
+        for path in file_paths:
             c_p = get_certificate_info(broker[HostContext], path)
             cert_path.extend(c_p) if c_p else None
         if cert_path:
