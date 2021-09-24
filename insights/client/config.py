@@ -443,6 +443,12 @@ DEFAULT_OPTS = {
         'const': True,
         'nargs': '?',
         'group': 'actions'
+    },
+    "manifest": {
+        'default': None,
+        'opt': ['--manifest'],
+        'help': 'Insights core manifest to use for collection specs',
+        'action': 'store'
     }
 }
 
@@ -730,6 +736,8 @@ class InsightsConfig(object):
                     sys.stdout.write('WARNING: SOSCleaner reports will be created alongside the output archive.\n')
         if self.module and not self.module.startswith('insights.client.apps.'):
             raise ValueError('You can only run modules within the namespace insights.client.apps.*')
+        if self.manifest and not os.path.isfile(self.manifest):
+            raise ValueError("Not a file: %s" % self.manifest)
 
     def _imply_options(self):
         '''
