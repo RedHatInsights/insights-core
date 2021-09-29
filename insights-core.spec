@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.243
+Version:        3.0.244
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,11 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Wed Sep 29 2021 Ryan Blakley <rblakley@redhat.com> 3.0.244-1
+- Add yum_updates to documentation (#3225) (mhornick@redhat.com)
+- Add combiner for ansible information (#3232)
+  (20520336+bfahr@users.noreply.github.com)
+
 * Thu Sep 23 2021 Vitaliy Dymna <vdymna@redhat.com> 3.0.243-1
 - Add config.ros parser (#3197) (apuntamb@redhat.com)
 - Fix bug about some httpd directives may have empty string as attribute
