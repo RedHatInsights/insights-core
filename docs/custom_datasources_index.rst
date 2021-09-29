@@ -74,3 +74,11 @@ insights.specs.datasources.satellite_missed_queues
     :members: satellite_missed_pulp_agent_queues, LocalSpecs
     :show-inheritance:
     :undoc-members:
+
+insights.specs.datasources.yum_updates
+--------------------------------------
+
+.. automodule:: insights.specs.datasources.yum_updates
+    :members: yum_updates
+    :show-inheritance:
+    :undoc-members:
