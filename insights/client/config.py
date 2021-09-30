@@ -772,6 +772,9 @@ class InsightsConfig(object):
             if self._print_errors:
                 sys.stdout.write('The compressor {0} is not supported. Using default: gz\n'.format(self.compressor))
             self.compressor = 'gz'
+        if self.manifest:
+            self.core_collect = True
+            self.legacy_upload = False
         if self.output_dir:
             # get full path
             self.output_dir = os.path.abspath(self.output_dir)
