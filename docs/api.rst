@@ -14,7 +14,7 @@ SOSReports
 A SOSReport_ is a command-line tool for Red Hat Enterprise Linux (and other
 systems) to collect configuration and diagnostic information from the system.
 
-.. _SOSReport: https://github.com/sos/sosreport
+.. _SOSReport: https://github.com/sosreport/sos
 
 Insights Archives
 -----------------
