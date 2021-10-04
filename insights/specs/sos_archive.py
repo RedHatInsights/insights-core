@@ -31,6 +31,7 @@ class SosSpecs(Specs):
     ceph_health_detail = simple_file("sos_commands/ceph/ceph_health_detail_--format_json-pretty")
     checkin_conf = simple_file("/etc/splice/checkin.conf")
     chkconfig = first_file(["sos_commands/startup/chkconfig_--list", "sos_commands/services/chkconfig_--list"])
+    chronyc_sources = simple_file("sos_commands/chrony/chronyc_-n_sources")
     cib_xml = first_of(
         [
             simple_file("/var/lib/pacemaker/cib/cib.xml"),
