@@ -1,106 +1,103 @@
 """
 Mdstat - file ``/proc/mdstat``
 ==============================
-
-Represents the information in the ``/proc/mdstat`` file.  Several
-examples of possible data containe in the file can be found on the
-`MDstat kernel.org wiki page <https://raid.wiki.kernel.org/index.php/Mdstat>`_.
-
-In particular, the discussion here will focus on initial extraction of information
-form lines such as::
-
-    Personalities : [raid1] [raid6] [raid5] [raid4]
-    md1 : active raid1 sdb2[1] sda2[0]
-          136448 blocks [2/2] [UU]
-
-    md2 : active raid1 sdb3[1] sda3[0]
-          129596288 blocks [2/2] [UU]
-
-    md3 : active raid5 sdl1[9] sdk1[8] sdj1[7] sdi1[6] sdh1[5] sdg1[4] sdf1[3] sde1[2] sdd1[1] sdc1[0]
-          1318680576 blocks level 5, 1024k chunk, algorithm 2 [10/10] [UUUUUUUUUU]
-
-The data contained in ``mdstat`` is represented with three top level members -
-``personalities``, ``components`` and ``mds``.
-
-Examples:
-
-    >>> mdstat = shared[Mdstat]
-    >>> mdstat.personalities
-    ['raid1', 'raid6', 'raid5', 'raid4']
-    >>> len(mdstat.components) # The individual component devices
-    14
-    >>> mdstat.components[0]['device_name']
-    'md1'
-    >>> sdb2 = mdstat.components[0]
-    >>> sdb2['component_name']
-    'sdb2'
-    >>> sdb2['active']
-    True
-    >>> sdb2['raid']
-    'raid1'
-    >>> sdb2['role']
-    1
-    >>> sdb2['up']
-    True
-    >>> sorted(mdstat.mds.keys()) # dictionary of MD devices by device name
-    ['md1', 'md2', 'md3']
-    >>> mdstat.mds['md1']['active']
-    True
-    >>> len(mdstat.mds['md1']['devices']) # list of devices in this MD
-    2
-    >>> mdstat.mds['md1']['devices'][0]['component_name'] # device information
-    'sdb2'
 """
 import re
-from .. import parser, CommandParser
+
+from insights import parser, CommandParser
+from insights.parsers import ParseException, SkipException
 from insights.specs import Specs
 
 
 @parser(Specs.mdstat)
 class Mdstat(CommandParser):
     """
-    Represents the information in the ``/proc/mdstat`` file.
+    Represents the information in the ``/proc/mdstat`` file.  Several
+    examples of possible data containe in the file can be found on the
+    `MDstat kernel.org wiki page <https://raid.wiki.kernel.org/index.php/Mdstat>`_.
 
-    Attributes
-    ----------
+    In particular, the discussion here will focus on initial extraction of information
+    form lines such as::
 
-    personalities : list
-        A list of RAID levels the kernel currently supports
+        Personalities : [raid1] [raid6] [raid5] [raid4]
+        md1 : active raid1 sdb2[1] sda2[0]
+              136448 blocks [2/2] [UU]
 
-    components : list of dicts
-        A list containing a dict of md component device information
-        Each of these dicts contains the following keys
+        md2 : active raid1 sdb3[1] sda3[0]
+              129596288 blocks [2/2] [UU]
 
-        - ``device_name`` : string - name of the array device
-        - ``active`` : boolean - ``True`` if the array is active, ``False``
-          if it is inactive.
-        - ``component_name`` : string - name of the component device
-        - ``raid`` : string - with the raid level, e.g., "raid1" for "md1"
-        - ``role`` : int - raid role number
-        - ``device_flag`` : str - device component status flag.  Known values
-          include 'F' (failed device), 'S', and 'W'
-        - ``up`` : boolean - ``True`` if the component device is up
-        - ``auto_read_only`` : boolean - ``True`` if the array device is
-          "auto-read-only"
-        - ``blocks`` : the number of blocks in the device
-        - ``level`` : the current RAID level, if found in the status line
-        - ``chunk`` : the device chunk size, if found in the status line
-        - ``algorithm`` : the current conflict resolution algorithm, if found
-          in the status line
+        md3 : active raid5 sdl1[9] sdk1[8] sdj1[7] sdi1[6] sdh1[5] sdg1[4] sdf1[3] sde1[2] sdd1[1] sdc1[0]
+              1318680576 blocks level 5, 1024k chunk, algorithm 2 [10/10] [UUUUUUUUUU]
 
-    mds : dict of dicts
-        A dictionary keyed on the MD device name, with the following keys
+        unused devices: <none>
 
-         - ``name``: Name of the MD device
-         - ``active``: Whether the MD device is active
-         - ``raid``: The RAID type string
-         - ``devices``: a list of the devices in this
-         - ``blocks``, ``level``, ``chunk`` and ``algorithm`` - the same
-           information given above per component device (if found)
+    The data contained in ``mdstat`` is represented with three top level members -
+    ``personalities``, ``components`` and ``mds``.
 
+    Attributes:
+        personalities (list): A list of RAID levels the kernel currently supports.
+        components (list): A list containing a dict of md component device information.
+            Each of these dicts contains the following keys
+
+            - ``device_name`` : string - name of the array device
+            - ``active`` : boolean - ``True`` if the array is active, ``False``
+              if it is inactive.
+            - ``component_name`` : string - name of the component device
+            - ``raid`` : string - with the raid level, e.g., "raid1" for "md1"
+            - ``role`` : int - raid role number
+            - ``device_flag`` : str - device component status flag.  Known values
+              include 'F' (failed device), 'S', and 'W'
+            - ``up`` : boolean - ``True`` if the component device is up
+            - ``auto_read_only`` : boolean - ``True`` if the array device is
+              "auto-read-only"
+            - ``blocks`` : the number of blocks in the device
+            - ``level`` : the current RAID level, if found in the status line
+            - ``chunk`` : the device chunk size, if found in the status line
+            - ``algorithm`` : the current conflict resolution algorithm, if found
+              in the status line
+        mds (dict): A dictionary keyed on the MD device name.
+            Each dict contains the following keys
+
+            - ``name``: Name of the MD device
+            - ``active``: Whether the MD device is active
+            - ``raid``: The RAID type string
+            - ``devices``: a list of the devices in this
+            - ``blocks``, ``level``, ``chunk`` and ``algorithm`` - the same
+              information given above per component device (if found)
+
+    Examples:
+        >>> type(mdstat)
+        <class 'insights.parsers.mdstat.Mdstat'>
+        >>> mdstat.personalities
+        ['raid1', 'raid6', 'raid5', 'raid4']
+        >>> len(mdstat.components)
+        14
+        >>> mdstat.components[0]['device_name']
+        'md1'
+        >>> sdb2 = mdstat.components[0]
+        >>> sdb2['component_name']
+        'sdb2'
+        >>> sdb2['active']
+        True
+        >>> sdb2['raid']
+        'raid1'
+        >>> sdb2['role']
+        1
+        >>> sdb2['up']
+        True
+        >>> sorted(mdstat.mds.keys())
+        ['md1', 'md2', 'md3']
+        >>> mdstat.mds['md1']['active']
+        True
+        >>> len(mdstat.mds['md1']['devices'])
+        2
+        >>> mdstat.mds['md1']['devices'][0]['component_name']
+        'sdb2'
     """
-
     def parse_content(self, content):
+        if not content:
+            raise SkipException("Empty output.")
+
         self.mds = {}
         self.components = []
         self.personalities = []
@@ -111,12 +108,19 @@ class Mdstat(CommandParser):
         for line in content:
             line = line.strip()
             if line.startswith('Personalities'):
+                # If the line doesn't have any raid types then md raid isn't active.
+                if line == "Personalities :":
+                    raise SkipException("No parseable md devices present.")
+
                 in_component = False
                 self.personalities = parse_personalities(line)
-            elif line.startswith("md"):  # Starting a component array stanza
+            # Starting a component array stanza.
+            elif line.startswith("md"):
                 in_component = True
                 current_components = parse_array_start(line)
-            elif not line:  # blank line, ending a component array stanza
+            # Catch any blank lines, this signals
+            # the end of the component array stanza.
+            elif not line:
                 if in_component:
                     self.components.extend(current_components)
                     current_components = None
@@ -128,7 +132,7 @@ class Mdstat(CommandParser):
                     if upstring:
                         apply_upstring(upstring, current_components)
 
-        # Map component devices into MDs dictionary by device name
+        # Map component devices into MDs dictionary by device name.
         for comp in self.components:
             devname = comp['device_name']
             if devname not in self.mds:
@@ -146,7 +150,7 @@ class Mdstat(CommandParser):
                 (k, comp[k]) for k in comp if k in ['component_name', 'role', 'up']
             ))
 
-        # Keep self.data just for backwards compat
+        # Keep self.data just for backwards compatibility.
         self.data = {
             'personalities': self.personalities,
             'components': self.components
@@ -154,107 +158,115 @@ class Mdstat(CommandParser):
 
 
 def parse_personalities(personalities_line):
-    """Parse the "personalities" line of ``/proc/mdstat``.
+    """
+    Parse the "personalities" line of ``/proc/mdstat``.
 
-    Lines are expected to be like:
+    Sample of personalities_line::
 
         Personalities : [linear] [raid0] [raid1] [raid5] [raid4] [raid6]
 
-    If they do not have this format, an error will be raised since it
-    would be considered an unexpected parsing error.
+    Args:
+        personalities_line (str): A single "Personalities" line from an
+        ``/proc/mdstat`` files.
 
-    Parameters
-    ----------
+    Returns:
+        list: A list of raid "personalities" listed on the line.
 
-    personalities_line : str
-        A single "Personalities" line from an ``/proc/mdstat`` files.
-
-    Returns
-    -------
-        A list of raid "personalities" listed on the line.
+    Raises:
+        ParseException: If the format isn't like the sample above.
     """
-    tokens = personalities_line.split()
-    assert tokens.pop(0) == "Personalities"
-    assert tokens.pop(0) == ":"
-
     personalities = []
-    for token in tokens:
-        assert token.startswith('[') and token.endswith(']')
-        personalities.append(token.strip('[]'))
+
+    if "Personalities :" not in personalities_line:
+        raise ParseException("Incorrectly formatted personalities line.")
+
+    tokens = personalities_line.split()
+    for token in tokens[2:]:
+        if token.startswith('[') and token.endswith(']'):
+            personalities.append(token.strip('[]'))
+        else:
+            raise ParseException("Incorrectly formatted personalities line.")
 
     return personalities
 
 
 def parse_array_start(md_line):
-    """Parse the initial line of a device array stanza in
-    ``/proc/mdstat``.
+    """
+    Parse the initial line of a device array stanza in ``/proc/mdstat``.
 
-    Lines are expected to be like:
+    Sample of md_line::
 
         md2 : active raid1 sdb3[1] sda3[0]
 
-    If they do not have this format, an error will be raised since it
-    would be considered an unexpected parsing error.
+    Args:
+        md_line (str): A single line from the start of a device array stanza.
 
-    Parameters
-    ----------
+    Returns:
+        list: A list of dictionaries, one dictionary for each component
+            device making up the array.
 
-    md_line : str
-        A single line from the start of a device array stanza from a
-        ``/proc/mdstat`` file.
-
-    Returns
-    -------
-        A list of dictionaries, one dictionrary for each component
-        device making up the array.
+    Raises:
+        ParseException: If the format isn't like the sample above.
     """
+    auto_read_only = False
     components = []
+    device_flag = None
+    raid = None
+
+    # Split the line to create tokens, and
+    # set device_name to the first token.
     tokens = md_line.split()
     device_name = tokens.pop(0)
-    assert device_name.startswith("md")
-    assert tokens.pop(0) == ":"
+
+    if not device_name.startswith("md") or ":" not in tokens:
+        raise ParseException("The md line isn't as expected.")
+
+    # Remove the : symbol.
+    tokens.pop(0)
 
     active_string = tokens.pop(0)
-    active = False
     if active_string == "active":
         active = True
+    elif active_string == "inactive":
+        active = False
     else:
-        assert active_string == "inactive"
+        raise ParseException("The raid isn't marked as active or inactive.")
 
-    raid_read_only_token = tokens.pop(0)
-    auto_read_only = False
-    raid = None
-    if raid_read_only_token == "(auto-read-only)":
-        auto_read_only = True
-        raid = tokens.pop(0)
-    elif active:
-        raid = raid_read_only_token
-    else:  # Inactive devices don't list the raid type
-        raid = None
-        tokens.insert(0, raid_read_only_token)
+    # Only active raids have the auto-read-only
+    # entry or the raid level.
+    if active:
+        raid_read_only_token = tokens.pop(0)
+        if raid_read_only_token == "(auto-read-only)":
+            auto_read_only = True
+            raid = tokens.pop(0)
+        else:
+            raid = raid_read_only_token
 
     for token in tokens:
-        subtokens = re.split(r"\[|]", token)
-        assert len(subtokens) > 1
-        comp_name = subtokens[0]
-        assert comp_name
+        # Token should be sda1[0] or sda1[0](S) for
+        # example, and subtokens should be
+        # ['sda1', '0'] or ['sda1', '0', '(S)'].
+        subtokens = re.split(r"[\[\]]", token)
 
+        if len(subtokens) <= 1:
+            raise ParseException("The len of subtokens '{s_tokens}' is incorrect.".format(s_tokens=subtokens))
+
+        comp_name = subtokens[0]
         role = int(subtokens[1])
 
-        device_flag = None
         if len(subtokens) > 2:
-            device_flag = subtokens[2]
-            if device_flag:
-                device_flag = device_flag.strip('()')
+            device_flag = subtokens[2].strip('()')
 
-        component_row = {"device_name": device_name,
-                         "raid": raid,
-                         "active": active,
-                         "auto_read_only": auto_read_only,
-                         "component_name": comp_name,
-                         "role": role,
-                         "device_flag": device_flag}
-        components.append(component_row)
+        components.append({
+            "device_name": device_name,
+            "raid": raid,
+            "active": active,
+            "auto_read_only": auto_read_only,
+            "component_name": comp_name,
+            "role": role,
+            "device_flag": device_flag
+        })
+
     return components
 
 
@@ -281,6 +293,10 @@ def parse_array_status(line, components):
         1465151808 blocks level 5, 64k chunk, algorithm 2 [4/3] [UUU_]
         136448 blocks [2/2] [UU]
         6306 blocks super external:imsm<Paste>
+
+    Args:
+        line (str): The array status line to parse.
+        components (list): A list of component dicts.
     """
     status_line_re = r'(?P<blocks>\d+) blocks' + \
         r'(?: super (?P<super>\S+))?' + \
@@ -307,30 +323,20 @@ def parse_array_status(line, components):
 def parse_upstring(line):
     """
     Parse the subsequent lines of a device array stanza in ``/proc/mdstat``
-    for the "up" indictor string.
+    for the "up" indicator string. The up indicator is "U" and down indicator
+    is "_".
 
-    Lines are expected to be like:
+    Samples of line::
 
         129596288 blocks [2/2] [UU]
-
-    or
-
         1318680576 blocks level 5, 1024k chunk, algorithm 2 [10/10] [UUU_UUUUUU]
 
-    In particular, this method searchs for the string like ``[UU]`` which
-    indicates whether component devices or up, ``U`` or down, ``_``.
-
     Parameters
-    ----------
+        line (str): A single line from a device array stanza.
 
-    line : str
-        A single line from a device array stanza.
-
-    Returns
-    -------
-
-        The string containing a series of ``U`` and ``\_`` characters if
-        found in the string, and ``None`` if the uptime string is not found.
+    Returns:
+        str: The string containing a series of ``U`` and ``_`` characters if
+        found in the string, and ``None`` if the up string is not found.
     """
     UP_STRING_REGEX = r"\[(U|_)+]"
 
@@ -357,21 +363,20 @@ def apply_upstring(upstring, component_list):
     If there the number of rows in component_list does not match the
     number of characters in upstring, an ``AssertionError`` is raised.
 
-    Parameters
-    ----------
-
-    upstring : str
-        String sequence of ``U``s and ``_``s as determined by the
-        ``parse_upstring`` method
-
-    component_list : list
-        List of dictionaries output from the ``parse_array_start`` method.
+    Args:
+        upstring (str): String sequence of ``U``s and ``_``s as determined
+            by the ``parse_upstring`` method.
+        component_list (list): List of dictionaries output from the
+            ``parse_array_start`` method.
     """
-    assert len(upstring) == len(component_list)
+    def add_up_key(comp, up_char):
+        if up_char not in ['U', '_']:
+            raise ParseException("Invalid character for up_indicator '{word}'.".format(word=up_char))
 
-    def add_up_key(comp_dict, up_indicator):
-        assert up_indicator == 'U' or up_indicator == "_"
-        comp_dict['up'] = up_indicator == 'U'
+        comp['up'] = up_char == 'U'
+
+    if len(upstring) != len(component_list):
+        raise ParseException("Length of upstring and component_list doesn't match.")
 
     for comp_dict, up_indicator in zip(component_list, upstring):
         add_up_key(comp_dict, up_indicator)
