@@ -1,13 +1,9 @@
+import doctest
 import pytest
 
-from insights.parsers import nfnetlink_queue
+from insights.parsers import nfnetlink_queue, ParseException
+from insights.parsers.tests import skip_exception_check
 from insights.tests import context_wrap
-import doctest
-
-
-def test_nfnetlink_doc_examples():
-    failed, total = doctest.testmod(nfnetlink_queue)
-    assert failed == 0
 
 
 NFNETLINK_QUEUE = """
@@ -37,6 +33,19 @@ CORRUPT_NFNETLINK_QUEUE_2 = """
     5  -4428     0 2 65535     0     0       16  1
 """.strip()
 
+NFNETLINK_DOC = """
+0  -4423     0 2 65535     0     0       22  1
+1  -4424     0 2 65535     0     0       27  1
+""".strip()
+
+
+def test_nfnetlink_doc_examples():
+    env = {
+        'nf': nfnetlink_queue.NfnetLinkQueue(context_wrap(NFNETLINK_DOC))
+    }
+    failed, total = doctest.testmod(nfnetlink_queue, globs=env)
+    assert failed == 0
+
 
 def test_parse_content():
     nfnet_link_queue = nfnetlink_queue.NfnetLinkQueue(context_wrap(NFNETLINK_QUEUE))
@@ -62,10 +71,14 @@ def test_parse_content():
 
 
 def test_missing_columns():
-    with pytest.raises(AssertionError):
+    with pytest.raises(ParseException):
         nfnetlink_queue.NfnetLinkQueue(context_wrap(CORRUPT_NFNETLINK_QUEUE_1))
 
 
 def test_wrong_type():
     with pytest.raises(ValueError):
         nfnetlink_queue.NfnetLinkQueue(context_wrap(CORRUPT_NFNETLINK_QUEUE_2))
+
+
+def test_empty_content():
+    skip_exception_check(nfnetlink_queue.NfnetLinkQueue)

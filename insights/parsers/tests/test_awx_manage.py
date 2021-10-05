@@ -38,7 +38,9 @@ AWX_MANAGE_PRINT_SETTINGS = '''
     "INSIGHTS_TRACKING_STATE": true,
     "INSTALL_UUID": "c0d38a6a-4449-4e13-a64b-00e0248ad229",
     "SYSTEM_UUID": "eecfd8dc-5028-46ef-9868-86f7d595da13",
-    "TOWER_URL_BASE": "https://10.72.37.79"
+    "TOWER_URL_BASE": "https://10.72.37.79",
+    "LOG_AGGREGATOR_ENABLED": true,
+    "LOG_AGGREGATOR_LEVEL": "DEBUG"
 }
 '''.strip()
 
@@ -87,6 +89,7 @@ def test_awx_manage_print_settings():
     assert not settings['AWX_CLEANUP_PATHS']
     assert settings['INSIGHTS_TRACKING_STATE']
     assert settings['SYSTEM_UUID'] == "eecfd8dc-5028-46ef-9868-86f7d595da13"
+    assert settings['LOG_AGGREGATOR_LEVEL'] == "DEBUG"
 
 
 def test_awx_manage_doc_examples():

@@ -272,7 +272,9 @@ class NetstatSection(object):
 
     def __init__(self, name):
         self.name = name.strip()
-        assert self.name in NETSTAT_SECTION_ID
+        if self.name not in NETSTAT_SECTION_ID:
+            raise ParseException("The name '{name}' isn't a valid name.".format(name=self.name))
+
         self.meta = NETSTAT_SECTION_ID[self.name]
         self.data = {}
         for m in self.meta:

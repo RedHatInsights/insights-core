@@ -1,5 +1,8 @@
+import doctest
 import pytest
-from insights.parsers import mdstat
+
+from insights.parsers import mdstat, ParseException
+from insights.parsers.tests import skip_exception_check
 from insights.tests import context_wrap
 
 MDSTAT_TEST_1 = """
@@ -98,6 +101,12 @@ MD_RESULT_2 = [
         {"device_name": "md0", "active": True, "auto_read_only": True, "raid": "raid6", "component_name": "sdd1", "role": 2, "device_flag": 'S'}
 ]
 
+MD_TEST_3 = "md0 : inactive sdb[1](S) sda[0](S)"
+MD_RESULT_3 = [
+    {'device_flag': 'S', 'raid': None, 'device_name': 'md0', 'role': 1, 'active': False, 'auto_read_only': False, 'component_name': 'sdb'},
+    {'device_flag': 'S', 'raid': None, 'device_name': 'md0', 'role': 0, 'active': False, 'auto_read_only': False, 'component_name': 'sda'}
+]
+
 MD_FAIL = [
     "what? : active raid5 sdh1[6] sdg1[4] sdf1[3] sde1[2] sdd1[1] sdc1[0]",
     "md124  active raid5 sdh1[6] sdg1[4] sdf1[3] sde1[2] sdd1[1] sdc1[0]",
@@ -112,13 +121,40 @@ UPSTRING_TEST_1 = "488383936 blocks [6/4] [_UUU_U]"
 UPSTRING_TEST_2 = "1318680576 blocks level 5, 1024k chunk, algorithm 2 [10/10] [UUUUUUUUUU]"
 UPSTRING_TEST_3 = "[==>..................]  recovery = 12.6% (37043392/292945152) finish=127.5min speed=33440K/sec"
 
+NO_MD_DEVICES = """
+Personalities :
+unused devices: <none>
+""".strip()
+
+MD_DOC = """
+Personalities : [raid1] [raid6] [raid5] [raid4]
+md1 : active raid1 sdb2[1] sda2[0]
+      136448 blocks [2/2] [UU]
+
+md2 : active raid1 sdb3[1] sda3[0]
+      129596288 blocks [2/2] [UU]
+
+md3 : active raid5 sdl1[9] sdk1[8] sdj1[7] sdi1[6] sdh1[5] sdg1[4] sdf1[3] sde1[2] sdd1[1] sdc1[0]
+      1318680576 blocks level 5, 1024k chunk, algorithm 2 [10/10] [UUUUUUUUUU]
+
+unused devices: <none>
+""".strip()
+
+
+def test_doc_examples():
+    env = {
+        'mdstat': mdstat.Mdstat(context_wrap(MD_DOC))
+    }
+    failed, total = doctest.testmod(mdstat, globs=env)
+    assert failed == 0
+
 
 def test_parse_personalities():
     result = mdstat.parse_personalities(PERSONALITIES_TEST)
     assert ["linear", "raid0", "raid1", "raid5", "raid4", "raid6"] == result
 
     for line in PERSONALITIES_FAIL:
-        with pytest.raises(AssertionError):
+        with pytest.raises(ParseException):
             mdstat.parse_personalities(line)
 
 
@@ -129,8 +165,11 @@ def test_parse_array_start():
     result = mdstat.parse_array_start(MD_TEST_2)
     assert MD_RESULT_2 == result
 
+    result = mdstat.parse_array_start(MD_TEST_3)
+    assert MD_RESULT_3 == result
+
     for md_line in MD_FAIL:
-        with pytest.raises(AssertionError):
+        with pytest.raises(ParseException):
             mdstat.parse_array_start(md_line)
 
 
@@ -153,10 +192,10 @@ def test_apply_upstring():
     assert test_dict[2]['up']
     assert not test_dict[3]['up']
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ParseException):
         mdstat.apply_upstring('U?_U', test_dict)
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ParseException):
         mdstat.apply_upstring('U_U', test_dict)
 
 
@@ -201,3 +240,8 @@ def test_mdstat_construction():
 
     result = mdstat.Mdstat(context_wrap(MDSTAT_TEST_4))
     compare_mdstat_data(MDSTAT_RESULT_4, result)
+
+
+def test_skip():
+    skip_exception_check(mdstat.Mdstat, output_str=NO_MD_DEVICES)
+    skip_exception_check(mdstat.Mdstat)
