@@ -41,17 +41,31 @@ users
 
 
 CLOUD_CFG_JSON = {
-    'version': 1,
-    'config': [
+    "users": [
         {
-            'type': 'physical',
-            'name': 'eth0',
-            'subnets': [
-                {'type': 'dhcp'},
-                {'type': 'dhcp6'}
+            "name": "demo",
+            "ssh-authorized-keys": [
+                "key_one",
+                "key_two"
             ]
-        }
-    ]
+        }],
+    "network": {
+        "version": 1,
+        "config": [
+            {
+                "type": "physical",
+                "name": "eth0",
+                "subnets": [
+                    {
+                        "type": "dhcp"
+                    },
+                    {
+                        "type": "dhcp6"
+                    }
+                ]
+            }
+        ]
+    }
 }
 
 RELATIVE_PATH = '/etc/cloud/cloud.cfg'
@@ -75,13 +89,4 @@ def test_cloud_cfg_bad():
     broker = {LocalSpecs.cloud_cfg_input: cloud_init_file}
     with pytest.raises(SkipComponent) as e:
         cloud_cfg(broker)
-    assert 'Unexpected exception' in str(e)
-
-
-def test_cloud_cfg_no_network():
-    cloud_init_file = Mock()
-    cloud_init_file.content = CLOUD_CFG_NO_NETWORK.splitlines()
-    broker = {LocalSpecs.cloud_cfg_input: cloud_init_file}
-    with pytest.raises(SkipComponent) as e:
-        cloud_cfg(broker)
-    assert 'No network section in yaml' in str(e)
+    assert 'Bad cloud.cfg file' in str(e)

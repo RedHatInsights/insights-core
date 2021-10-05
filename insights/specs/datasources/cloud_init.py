@@ -21,8 +21,7 @@ class LocalSpecs(Specs):
 @datasource(LocalSpecs.cloud_cfg_input, HostContext)
 def cloud_cfg(broker):
     """
-    This datasource provides the network configuration information collected
-    from ``/etc/cloud/cloud.cfg``.
+    This datasource provides configuration collected from ``/etc/cloud/cloud.cfg``.
 
     Typical content of ``/etc/cloud/cloud.cfg`` file is::
 
@@ -58,37 +57,66 @@ def cloud_cfg(broker):
 
         ``insights cat --no-header cloud_cfg``
 
-    Sample data returned includes only the ``network`` portion of the input file in JSON format::
+    Sample output in JSON format::
 
         {
+          "users": [
+            {
+              "name": "demo",
+              "ssh-authorized-keys": [
+                "key_one",
+                "key_two"
+              ],
+              "passwd": "$6$j212wezy$7H/1LT4f9/N3wpgNunhsIqtMj62OKiS3nyNwuizouQc3u7MbYCarYeAHWYPYb2FT.lbioDm2RrkJPb9BZMN1O/"
+            }
+          ],
+          "network": {
             "version": 1,
             "config": [
-                {
-                    "type": "physical",
-                    "name": "eth0",
-                    "subnets": [
-                        {"type": "dhcp"},
-                        {"type": "dhcp6"}
-                    ]
-                }
+              {
+                "type": "physical",
+                "name": "eth0",
+                "subnets": [
+                  {
+                    "type": "dhcp"
+                  },
+                  {
+                    "type": "dhcp6"
+                  }
+                ]
+              }
             ]
+          },
+          "system_info": {
+            "default_user": {
+              "name": "user2",
+              "plain_text_passwd": "someP@assword",
+              "home": "/home/user2"
+            }
+          },
+          "debug": {
+            "output": "/var/log/cloud-init-debug.log",
+            "verbose": true
+          }
         }
 
     Returns:
-        str: JSON string when the ``network`` parameter includes content, else `None` is returned.
+        str: JSON string, else `None` is returned.
 
     Raises:
         SkipComponent: When the path does not exist or any exception occurs.
     """
     relative_path = '/etc/cloud/cloud.cfg'
-    try:
-        content = broker[LocalSpecs.cloud_cfg_input].content
-        if content:
-            content = yaml.load('\n'.join(content), Loader=yaml.SafeLoader)
-            network_config = content.get('network', None)
-            if network_config:
-                return DatasourceProvider(content=json.dumps(network_config), relative_path=relative_path)
-    except Exception as e:
-        raise SkipComponent("Unexpected exception:{e}".format(e=str(e)))
+    content = broker[LocalSpecs.cloud_cfg_input].content
+    if content:
+        content = yaml.load('\n'.join(content), Loader=yaml.SafeLoader)
+        if isinstance(content, dict):
+            try:
+                if content:
+                    return DatasourceProvider(content=json.dumps(content), relative_path=relative_path)
+            except Exception as e:
+                raise SkipComponent("Unexpected exception:{e}".format(e=str(e)))
+        else:
+            raise SkipComponent("Bad cloud.cfg file")
 
-    raise SkipComponent('No network section in yaml')
+    raise SkipComponent('No content')
