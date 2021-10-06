@@ -2,6 +2,16 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.245](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.245) (2021-10-06)
+- Add doctest to messages parser (#3248)
+- Update changelog with recent changes (#3247)
+- Add Spec path of chronyc_sources for sos_archive (#3246)
+- Update mdstat parser to remove asserts (#3240)
+- Update the nfnetlink parser (#3239)
+- Replace assert with parse exception in netstat parser (#3238)
+- Enhance awx_manage parser (#3242)
+- Fixing broken sosreport link (#3243)
+
 ## [insights-core-3.0.244](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.244) (2021-09-29)
 
 - PR \#3225 - Add documentation for `yum_updates` datasource (Issue \#3223)

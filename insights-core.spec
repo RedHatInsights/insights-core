@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.244
+Version:        3.0.245
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,20 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Wed Oct 06 2021 Lloyd Huett <lhuett@redhat.com> 3.0.245-1
+- Add doctest to messages parser (#3248) (rblakley@redhat.com)
+- Update changelog with recent changes (#3247)
+  (20520336+bfahr@users.noreply.github.com)
+- Add Spec path of chronyc_sources for sos_archive (roarora@redhat.com)
+- Update mdstat parser to remove asserts (#3240) (rblakley@redhat.com)
+- Update the nfnetlink parser (#3239) (rblakley@redhat.com)
+- Replace assert with parse exception in netstat parser (#3238)
+  (rblakley@redhat.com)
+- Enhance awx_manage parser (#3242) (44598880+rasrivas-
+  redhat@users.noreply.github.com)
+- Fixing broken sosreport link (#3243)
+  (73747618+gkamathe@users.noreply.github.com)
+
 * Wed Sep 29 2021 Ryan Blakley <rblakley@redhat.com> 3.0.244-1
 - Add yum_updates to documentation (#3225) (mhornick@redhat.com)
 - Add combiner for ansible information (#3232)
