@@ -33,6 +33,8 @@ def cloud_cfg(broker):
               - key_two
             passwd: $6$j212wezy$7H/1LT4f9/N3wpgNunhsIqtMj62OKiS3nyNwuizouQc3u7MbYCarYeAHWYPYb2FT.lbioDm2RrkJPb9BZMN1O/
 
+        ssh_deletekeys: 1
+
         network:
             version: 1
             config:
@@ -62,14 +64,15 @@ def cloud_cfg(broker):
         {
           "users": [
             {
-              "name": "demo",
+              "name": "",
               "ssh-authorized-keys": [
                 "key_one",
                 "key_two"
               ],
-              "passwd": "$6$j212wezy$7H/1LT4f9/N3wpgNunhsIqtMj62OKiS3nyNwuizouQc3u7MbYCarYeAHWYPYb2FT.lbioDm2RrkJPb9BZMN1O/"
+              "passwd": ""
             }
           ],
+          "ssh_deletekeys": 1,
           "network": {
             "version": 1,
             "config": [
@@ -89,9 +92,9 @@ def cloud_cfg(broker):
           },
           "system_info": {
             "default_user": {
-              "name": "user2",
-              "plain_text_passwd": "someP@assword",
-              "home": "/home/user2"
+              "name": "",
+              "plain_text_passwd": "",
+              "home": ""
             }
           },
           "debug": {
@@ -101,22 +104,37 @@ def cloud_cfg(broker):
         }
 
     Returns:
-        str: JSON string, else `None` is returned.
+        str: JSON string after removing the sensitive information.
 
     Raises:
         SkipComponent: When the path does not exist or any exception occurs.
     """
     relative_path = '/etc/cloud/cloud.cfg'
-    content = broker[LocalSpecs.cloud_cfg_input].content
-    if content:
-        content = yaml.load('\n'.join(content), Loader=yaml.SafeLoader)
-        if isinstance(content, dict):
-            try:
-                if content:
-                    return DatasourceProvider(content=json.dumps(content), relative_path=relative_path)
-            except Exception as e:
-                raise SkipComponent("Unexpected exception:{e}".format(e=str(e)))
-        else:
-            raise SkipComponent("Bad cloud.cfg file")
+    try:
+        content = broker[LocalSpecs.cloud_cfg_input].content
+        if content:
+            content = yaml.load('\n'.join(content), Loader=yaml.SafeLoader)
+            if isinstance(content, dict):
+                # remove sensitive data
+                users = content.get('users', None)
+                system_info = content.get('system_info', None)
+                if users:
+                    for user in users:
+                        if user.get('name', None):
+                            user.update({'name': ''})
+                        if user.get('passwd', None):
+                            user.update({'passwd': ''})
+                if system_info:
+                    default_user = system_info.get('default_user', None)
+                    if default_user:
+                        if default_user.get('name', None):
+                            default_user.update({'name': ''})
+                        if default_user.get('plain_text_passwd', None):
+                            default_user.update({'plain_text_passwd': ''})
+                        if default_user.get('home', None):
+                            default_user.update({'home': ''})
 
-    raise SkipComponent('No content')
+                return DatasourceProvider(content=json.dumps(content), relative_path=relative_path)
+            raise SkipComponent("Invalid YAML format")
+    except Exception as e:
+        raise SkipComponent("Unexpected exception:{e}".format(e=str(e)))

@@ -12,6 +12,9 @@ users:
     ssh-authorized-keys:
       - key_one
       - key_two
+    passwd: $6$j212wezy$7H/1LT4f9/N3wpgNunhsIqtMj62OKiS3nyNwuizouQc3u7MbYCarYeAHWYPYb2FT.lbioDm2RrkJPb9BZMN1O/
+
+ssh_deletekeys: 1
 
 network:
   version: 1
@@ -23,12 +26,25 @@ network:
         - type: dhcp6
 """.strip()
 
-CLOUD_CFG_NO_NETWORK = """
+CLOUD_CFG_BAD_INDENT = """
+#cloud-config
 users:
   - name: demo
     ssh-authorized-keys:
       - key_one
       - key_two
+    passwd: $6$j212wezy$7H/1LT4f9/N3wpgNunhsIqtMj62OKiS3nyNwuizouQc3u7MbYCarYeAHWYPYb2FT.lbioDm2RrkJPb9BZMN1O/
+
+ssh_deletekeys: 1
+
+network:
+  config: disabled
+
+ system_info:
+   default_user:
+    name: user2
+    plain_text_passwd: 'someP@assword'
+    home: /home/user2
 """.strip()
 
 CLOUD_CFG_BAD = """
@@ -43,12 +59,14 @@ users
 CLOUD_CFG_JSON = {
     "users": [
         {
-            "name": "demo",
+            "name": "",
             "ssh-authorized-keys": [
                 "key_one",
                 "key_two"
-            ]
+            ],
+            "passwd": ""
         }],
+    "ssh_deletekeys": 1,
     "network": {
         "version": 1,
         "config": [
@@ -89,4 +107,10 @@ def test_cloud_cfg_bad():
     broker = {LocalSpecs.cloud_cfg_input: cloud_init_file}
     with pytest.raises(SkipComponent) as e:
         cloud_cfg(broker)
-    assert 'Bad cloud.cfg file' in str(e)
+    assert 'Invalid YAML format' in str(e)
+
+    cloud_init_file.content = CLOUD_CFG_BAD_INDENT.splitlines()
+    broker = {LocalSpecs.cloud_cfg_input: cloud_init_file}
+    with pytest.raises(SkipComponent) as e:
+        cloud_cfg(broker)
+    assert 'Unexpected exception' in str(e)

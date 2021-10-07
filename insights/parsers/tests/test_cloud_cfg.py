@@ -6,11 +6,11 @@ from insights.tests import context_wrap
 
 
 CONFIG_1 = """
-{"users": [{"name": "demo", "ssh-authorized-keys": ["key_one", "key_two"], "passwd": "$6$j212wezy$7H/1LT4f9/N3wpgNunhsIqtMj62OKiS3nyNwuizouQc3u7MbYCarYeAHWYPYb2FT.lbioDm2RrkJPb9BZMN1O/"}], "network": {"config": "disabled"}, "system_info": {"default_user": {"name": "user2", "plain_text_passwd": "someP@assword", "home": "/home/user2"}}}
+{"users": [{"name": "", "ssh-authorized-keys": ["key_one", "key_two"], "passwd": ""}], "ssh_deletekeys": 1, "network": {"config": "disabled"}, "system_info": {"default_user": {"name": "", "plain_text_passwd": "", "home": ""}}}
 """
 
 CONFIG_2 = """
-{"users": [{"name": "demo", "ssh-authorized-keys": ["key_one", "key_two"], "passwd": "$6$j212wezy$7H/1LT4f9/N3wpgNunhsIqtMj62OKiS3nyNwuizouQc3u7MbYCarYeAHWYPYb2FT.lbioDm2RrkJPb9BZMN1O/"}], "network": {"version": 1, "config": [{"type": "physical", "name": "eth0", "subnets": [{"type": "dhcp"}, {"type": "dhcp6"}]}]}, "system_info": {"default_user": {"name": "user2", "plain_text_passwd": "someP@assword", "home": "/home/user2"}}, "debug": {"output": "/var/log/cloud-init-debug.log", "verbose": true}}
+{"users": [{"name": "", "ssh-authorized-keys": ["key_one", "key_two"], "passwd": ""}], "ssh_deletekeys": 1, "network": {"version": 1, "config": [{"type": "physical", "name": "eth0", "subnets": [{"type": "dhcp"}, {"type": "dhcp6"}]}]}, "system_info": {"default_user": {"name": "", "plain_text_passwd": "", "home": ""}}, "debug": {"output": "/var/log/cloud-init-debug.log", "verbose": true}}
 """
 
 
