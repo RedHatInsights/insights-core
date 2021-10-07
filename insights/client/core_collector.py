@@ -50,17 +50,16 @@ class CoreCollector(DataCollector):
             'components': rm_conf.get('components', [])
         }
 
+        manifest = collect.default_manifest
         if self.config.manifest:
             with open(self.config.manifest) as f:
                 try:
                     manifest = yaml.safe_load(f)
-                except (yaml.YAMLError, yaml.parser.ParserError) as e:
-                    # can't parse yaml from conf
+                except Exception as e:
                     raise RuntimeError('ERROR: Cannot parse %s.\n'
-                                    'Error details:\n%s\n' % (f, e))
-            collected_data_path = collect.collect(manifest=manifest, tmp_path=self.archive.tmp_dir, rm_conf=core_blacklist, client_timeout=self.config.cmd_timeout)
-        else:
-            collected_data_path = collect.collect(tmp_path=self.archive.tmp_dir, rm_conf=core_blacklist, client_timeout=self.config.cmd_timeout)
+                                       'Error details:\n%s\n' % (f, e))
+        collected_data_path = collect.collect(manifest=manifest, tmp_path=self.archive.tmp_dir, rm_conf=core_blacklist, client_timeout=self.config.cmd_timeout)
+
         # update the archive dir with the reported data location from Insights Core
         if not collected_data_path:
             raise RuntimeError('Error running collection: no output path defined.')

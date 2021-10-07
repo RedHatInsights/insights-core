@@ -316,12 +316,16 @@ def collect_and_output(client, config):
         except RuntimeError as e:
             logger.error(e)
             sys.exit(constants.sig_kill_bad)
+        config.content_type = 'application/vnd.redhat.advisor.collection+tgz'
         if config.manifest:
             with open(config.manifest) as m:
-                manifest = yaml.safe_load(m)
-                config.content_type = manifest['content_type']
-        else:
-            config.content_type = 'application/vnd.redhat.advisor.collection+tgz'
+                try:
+                    manifest = yaml.safe_load(m)
+                except Exception as e:
+                    raise RuntimeError('ERROR: Cannot parse %s.\n'
+                                       'Error details:\n%s\n' % (m, e))
+                if manifest.get('content-type'):
+                    config.content_type = manifest['content-type']
 
     if config.no_upload:
         # output options for which upload is not performed
