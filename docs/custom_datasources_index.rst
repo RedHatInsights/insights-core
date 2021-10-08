@@ -31,7 +31,7 @@ insights.specs.datasources.certificates
 ---------------------------------------
 
 .. automodule:: insights.specs.datasources.certificates
-    :members: cert_and_path
+    :members: cert_and_path, PERMITTED_CERT_PATHS
     :show-inheritance:
     :undoc-members:
 
