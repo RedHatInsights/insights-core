@@ -119,8 +119,8 @@ def test_cert_and_path():
 def test_empty_permitted_paths():
     for item in [test_dir1, test_dir2, test_pem1, test_pem2]:
         CERT_PATHS.remove(item) if item in CERT_PATHS else None
-    tmp = CERT_PATHS.copy()
-    CERT_PATHS.clear()
+    tmp = []; tmp.extend(CERT_PATHS)
+    CERT_PATHS[:] = []
     broker = dr.Broker()
     broker[HostContext] = FakeContext()
     with pytest.raises(SkipComponent):
