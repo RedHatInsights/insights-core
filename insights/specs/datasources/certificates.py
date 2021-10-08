@@ -27,7 +27,7 @@ The paths added to this list should be strictly reviewed.
 """
 
 
-def _get_certificate_info(ctx, path):
+def get_certificate_info(ctx, path):
     """
     If `path` is a directory, get the certificates information of each file
     under the `path` directory.
@@ -82,7 +82,7 @@ def cert_and_path(broker):
     """
     cert_path = list()
     for path in PERMITTED_CERT_PATHS:
-        c_p = _get_certificate_info(broker[HostContext], path)
+        c_p = get_certificate_info(broker[HostContext], path)
         cert_path.extend(c_p) if c_p else None
 
     if cert_path:
