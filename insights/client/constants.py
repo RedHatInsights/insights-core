@@ -59,6 +59,7 @@ class InsightsConstants(object):
     registered_files = [os.path.join(default_conf_dir, '.registered'),
                         os.path.join(simple_find_replace_dir, '.registered')]
     lastupload_file = os.path.join(default_conf_dir, '.lastupload')
+    last_malware_scan_file = os.path.join(default_conf_dir, '.lastmalwarescan')
     pub_gpg_path = os.path.join(default_conf_dir, 'redhattools.pub.gpg')
     machine_id_file = os.path.join(default_conf_dir, 'machine-id')
     default_branch_info = {'remote_branch': -1, 'remote_leaf': -1}

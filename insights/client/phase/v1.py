@@ -324,8 +324,8 @@ def collect_and_output(client, config):
                 except Exception as e:
                     raise RuntimeError('ERROR: Cannot parse %s.\n'
                                        'Error details:\n%s\n' % (m, e))
-                if manifest.get('content-type'):
-                    config.content_type = manifest['content-type']
+                if manifest.get('content_type'):
+                    config.content_type = manifest['content_type']
 
     if config.no_upload:
         # output options for which upload is not performed
