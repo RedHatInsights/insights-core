@@ -178,6 +178,8 @@ class Specs(SpecSet):
     foreman_tasks_config = RegistryPoint(filterable=True)
     freeipa_healthcheck_log = RegistryPoint()
     fstab = RegistryPoint()
+    fw_devices = RegistryPoint()
+    fw_security = RegistryPoint()
     galera_cnf = RegistryPoint()
     gcp_instance_type = RegistryPoint()
     gcp_license_codes = RegistryPoint()

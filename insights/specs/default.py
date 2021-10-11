@@ -238,6 +238,8 @@ class DefaultSpecs(Specs):
     firewalld_conf = simple_file("/etc/firewalld/firewalld.conf")
     foreman_ssl_error_ssl_log = simple_file("/var/log/httpd/foreman-ssl_error_ssl.log")
     fstab = simple_file("/etc/fstab")
+    fw_devices = simple_command("/bin/fwupdagent get-devices")
+    fw_security = simple_command("/bin/fwupdagent security --force")
     galera_cnf = first_file(["/var/lib/config-data/puppet-generated/mysql/etc/my.cnf.d/galera.cnf", "/etc/my.cnf.d/galera.cnf"])
     getconf_page_size = simple_command("/usr/bin/getconf PAGE_SIZE")
     getenforce = simple_command("/usr/sbin/getenforce")
