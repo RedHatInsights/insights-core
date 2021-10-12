@@ -17,6 +17,7 @@ from grp import getgrgid
 from os import stat
 from pwd import getpwuid
 
+from insights.components.virtualization import IsBareMetal
 from insights.core.context import HostContext
 from insights.core.dr import SkipComponent
 from insights.core.plugins import datasource
@@ -238,8 +239,8 @@ class DefaultSpecs(Specs):
     firewalld_conf = simple_file("/etc/firewalld/firewalld.conf")
     foreman_ssl_error_ssl_log = simple_file("/var/log/httpd/foreman-ssl_error_ssl.log")
     fstab = simple_file("/etc/fstab")
-    fw_devices = simple_command("/bin/fwupdagent get-devices")
-    fw_security = simple_command("/bin/fwupdagent security --force")
+    fw_devices = simple_command("/bin/fwupdagent get-devices", deps=[IsBareMetal])
+    fw_security = simple_command("/bin/fwupdagent security --force", deps=[IsBareMetal])
     galera_cnf = first_file(["/var/lib/config-data/puppet-generated/mysql/etc/my.cnf.d/galera.cnf", "/etc/my.cnf.d/galera.cnf"])
     getconf_page_size = simple_command("/usr/bin/getconf PAGE_SIZE")
     getenforce = simple_command("/usr/sbin/getenforce")
