@@ -148,9 +148,8 @@ def verify(playbook, skipVerify=False):
             verified = verifyPlaybookSnippet(snippet)
 
             if not verified:
-                if 'name' not in snippet.keys():
-                    raise PlaybookVerificationError(message="SIGNATURE NOT VALID: Template [NAME UNAVAILABLE] has invalid signature")
-                raise PlaybookVerificationError(message="SIGNATURE NOT VALID: Template [name: {0}] has invalid signature".format(snippet['name']))
+                name = snippet.get('name', 'NAME UNAVAILABLE')
+                raise PlaybookVerificationError(message="SIGNATURE NOT VALID: Template [name: {0}] has invalid signature".format(name))
 
     logger.info('All templates successfully validated')
     return playbook
@@ -165,7 +164,7 @@ def loadPlaybookYaml(playbook):
         playbookYaml = yaml.load(playbook)
         return playbookYaml
     except:
-        raise PlaybookVerificationError(message="PLAYBOOK VERIFICATION FAILURE: Failed to load yaml")
+        raise PlaybookVerificationError(message="PLAYBOOK VERIFICATION FAILURE: Failed to load playbook yaml because yaml is not valid")
 
 
 def normalizeSnippet(snippet):
