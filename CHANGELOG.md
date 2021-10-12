@@ -3,19 +3,20 @@
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
 ## [insights-core-3.0.245](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.245) (2021-10-06)
-- Add doctest to messages parser (#3248)
-- Update changelog with recent changes (#3247)
-- Add Spec path of chronyc_sources for sos_archive (#3246)
-- Update mdstat parser to remove asserts (#3240)
-- Update the nfnetlink parser (#3239)
-- Replace assert with parse exception in netstat parser (#3238)
-- Enhance awx_manage parser (#3242)
-- Fixing broken sosreport link (#3243)
+
+- Add doctest to messages parser ([PR 3248](https://github.com/RedHatInsights/insights-core/pull/3248), [Issue 3029](https://github.com/RedHatInsights/insights-core/issues/3029))
+- Update changelog with recent changes ([PR 3247](https://github.com/RedHatInsights/insights-core/pull/3247))
+- Add Spec path of chronyc_sources for sos_archive ([PR 3246](https://github.com/RedHatInsights/insights-core/pull/3246))
+- Update mdstat parser to remove asserts ([PR 3240](https://github.com/RedHatInsights/insights-core/pull/3240))
+- Update the nfnetlink parser ([PR 3239](https://github.com/RedHatInsights/insights-core/pull/3239))
+- Replace assert with parse exception in netstat parser ([PR 3238](https://github.com/RedHatInsights/insights-core/pull/3238))
+- Enhance awx_manage parser ([PR 3242](https://github.com/RedHatInsights/insights-core/pull/3242))
+- Fixing broken sosreport link ([PR 3243](https://github.com/RedHatInsights/insights-core/pull/3243))
 
 ## [insights-core-3.0.244](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.244) (2021-09-29)
 
-- PR \#3225 - Add documentation for `yum_updates` datasource (Issue \#3223)
-- PR \#3232 - Add new combiner AnsibleInfo for ansible information
+- [PR 3225](https://github.com/RedHatInsights/insights-core/pull/3225) - Add documentation for `yum_updates` datasource ([Issue 3223](https://github.com/RedHatInsights/insights-core/issues/3223), [Bugzilla 2006300](https://bugzilla.redhat.com/show_bug.cgi?id=2006300))
+- [PR 3232](https://github.com/RedHatInsights/insights-core/pull/3232) - Add new combiner AnsibleInfo for ansible information
 
 ## [insights-core-3.0.243](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.243) (2021-09-23)
 
