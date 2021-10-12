@@ -74,6 +74,9 @@ def getPublicKey(gpg):
 
 
 def excludeDynamicElements(snippet):
+    if 'insights_signature_exclude' not in snippet['vars']:
+        raise PlaybookVerificationError(message='EXCLUDE MISSING: the insights_signature_exclude var does not exist.')
+
     exclusions = snippet['vars']['insights_signature_exclude'].split(',')
 
     for element in exclusions:
@@ -82,7 +85,7 @@ def excludeDynamicElements(snippet):
         # remove empty strings
         element = [string for string in element if string != '']
 
-        if (len(element) == 1 and element[0] in EXCLUDABLE_VARIABLES):
+        if (len(element) == 1 and element[0] in EXCLUDABLE_VARIABLES and element[0] in snippet.keys()):
             del snippet[element[0]]
         elif (len(element) == 2 and element[0] in EXCLUDABLE_VARIABLES):
             try:
@@ -145,6 +148,8 @@ def verify(playbook, skipVerify=False):
             verified = verifyPlaybookSnippet(snippet)
 
             if not verified:
+                if 'name' not in snippet.keys():
+                    raise PlaybookVerificationError(message="SIGNATURE NOT VALID: Template [NAME UNAVAILABLE] has invalid signature")
                 raise PlaybookVerificationError(message="SIGNATURE NOT VALID: Template [name: {0}] has invalid signature".format(snippet['name']))
 
     logger.info('All templates successfully validated')
@@ -156,7 +161,11 @@ def loadPlaybookYaml(playbook):
     Load playbook yaml using current yaml library implementation
         output: playbook yaml
     """
-    return yaml.load(playbook)
+    try:
+        playbookYaml = yaml.load(playbook)
+        return playbookYaml
+    except:
+        raise PlaybookVerificationError(message="PLAYBOOK VERIFICATION FAILURE: Failed to load yaml")
 
 
 def normalizeSnippet(snippet):
