@@ -224,7 +224,7 @@ class LSBlock(BlockDevices):
         See the discussion of the key ``PARENT_NAMES`` above.
     """
     def parse_content(self, content):
-        r = re.compile(r"([\s\|\`\-]*)(\S+.*) (\d+:\d+)\s+(\d)\s+(\d+(\.\d)?[A-Z])\s+(\d)\s+([a-z0-9]+)(.*)")
+        r = re.compile(r"([\s\|\`\├\└\─\-]*)(\S+.*) (\d+:\d+)\s+(\d)\s+(\d+(\.\d)?[A-Z])\s+(\d)\s+([a-z0-9]+)(.*)")
         device_list = []
         parents = [None] * MAX_GENERATIONS
         for line in content[1:]:

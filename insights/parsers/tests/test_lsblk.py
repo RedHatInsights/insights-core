@@ -70,6 +70,16 @@ vdb                  252:16   0   10G  0 disk
     `-rhel-swap 253:1    0  100M  0 lvm   [SWAP]
 """
 
+LSBLK_DATA_RHEL8 = """
+NAME          MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+sda             8:0    0   30G  0 disk
+├─sda1          8:1    0    1G  0 part /boot
+└─sda2          8:2    0   29G  0 part
+  ├─rhel-root 253:0    0   26G  0 lvm  /
+  └─rhel-swap 253:1    0    3G  0 lvm  [SWAP]
+sr0            11:0    1  6.6G  0 rom
+"""
+
 # lsblk -P -o
 LSBLK_EXT_DATA = """
 ALIGNMENT="0" DISC-ALN="0" DISC-GRAN="0B" DISC-MAX="0B" DISC-ZERO="0" FSTYPE="" GROUP="cdrom" KNAME="sr0" LABEL="" LOG-SEC="512" MAJ:MIN="11:0" MIN-IO="512" MODE="brw-rw----" MODEL="DVD+-RW DVD8801 " MOUNTPOINT="" NAME="sr0" OPT-IO="0" OWNER="root" PHY-SEC="512" RA="128" RM="1" RO="0" ROTA="1" RQ-SIZE="128" SCHED="cfq" SIZE="1024M" STATE="running" TYPE="rom" UUID=""
@@ -145,6 +155,23 @@ def test_lsblk():
     assert results.search(TYPE='disk') == [
         results.rows[0], results.rows[5]
     ]
+
+    results = lsblk.LSBlock(context_wrap(LSBLK_DATA_RHEL8))
+    assert results is not None
+    assert len(results) == 6
+    rhel_root = None
+    sda = None
+    for result in results:
+        if result.name == 'rhel-root':
+            rhel_root = result
+        elif result.name == 'sda':
+            sda = result
+    assert rhel_root is not None
+    assert rhel_root.maj_min == "253:0"
+    assert rhel_root.size == "26G"
+    assert sda is not None
+    assert sda.maj_min == "8:0"
+    assert sda.size == "30G"
 
     results = lsblk.LSBlock(context_wrap(LSBLK_DATA2))
     assert results is not None
