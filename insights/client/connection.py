@@ -824,7 +824,6 @@ class InsightsConnection(object):
             logger.info("The largest file in the archive is %s at %s MB.", biggest_file[0], size_in_mb(biggest_file[1]))
             logger.info("Please add this spec:\n\n\t%s\n\nto your denylist configuration according to the documentation, and try the upload again.", biggest_file[2])
 
-
     # -LEGACY-
     def _legacy_upload_archive(self, data_collected, duration):
         '''
