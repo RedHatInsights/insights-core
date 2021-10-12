@@ -24,9 +24,6 @@ try:
     playbook = read_playbook()
     playbook_yaml = loadPlaybookYaml(playbook)
     verified_playbook = verify(playbook_yaml, skipVerify)
-except TypeError:
-    sys.stderr.write("VERIFICATION FAILURE: Playbook failed to be loaded in")
-    sys.exit(constants.sig_kill_bad)
 except PlaybookVerificationError as err:
     sys.stderr.write(err.message)
     sys.exit(constants.sig_kill_bad)
