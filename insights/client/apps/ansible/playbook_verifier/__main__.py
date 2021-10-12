@@ -5,6 +5,7 @@ from insights.client.apps.ansible.playbook_verifier import verify, loadPlaybookY
 
 skipVerify = False
 
+
 def read_playbook():
     """
     Read in the stringified playbook yaml from stdin
@@ -14,6 +15,7 @@ def read_playbook():
         unverified_playbook += line
 
     return unverified_playbook
+
 
 if (os.environ.get('SKIP_VERIFY')):
     skipVerify = True
