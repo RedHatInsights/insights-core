@@ -1,6 +1,10 @@
+# -*- coding: utf-8 -*-
+
 import doctest
 
-from insights.parsers import fwupdagent
+import pytest
+
+from insights.parsers import fwupdagent, ParseException
 from insights.parsers.fwupdagent import FwupdagentDevices, FwupdagentSecurity
 from insights.tests import context_wrap
 
@@ -124,6 +128,29 @@ SECURITY = """
 }
 """
 
+SECURITY_ERROR_1 = """
+Failed to parse arguments: Unknown option --force
+"""
+
+SECURITY_ERROR_2 = """
+Command not found
+
+Usage:
+  fwupdagent [OPTION…]
+
+  get-devices                       Get all devices and possible releases
+  get-updates                       Gets the list of updates for connected hardware
+  get-upgrades                      Alias to get-updates
+
+Help Options:
+  -h, --help        Show help options
+
+Application Options:
+  -v, --verbose     Show extra debugging information
+
+This tool can be used from other tools and from shell scripts.
+"""
+
 
 def test_devices():
     devices = FwupdagentDevices(context_wrap(DEVICES))
@@ -142,6 +169,12 @@ def test_security():
     assert security["HostSecurityAttributes"][0]["HsiResult"] == "not-tainted"
     assert security["HostSecurityAttributes"][1]["Name"] == "Encrypted RAM"
     assert security["HostSecurityAttributes"][1]["HsiLevel"] == 4
+
+    with pytest.raises(ParseException):
+        FwupdagentSecurity(context_wrap(SECURITY_ERROR_1))
+
+    with pytest.raises(ParseException):
+        FwupdagentSecurity(context_wrap(SECURITY_ERROR_2))
 
 
 def test_doc_examples():
