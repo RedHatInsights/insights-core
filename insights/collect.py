@@ -164,6 +164,19 @@ plugins:
         - name: insights.combiners.sap
           enabled: true
 
+    # needed for fw_devices and fw_security specs
+        - name: insights.parsers.dmidecode.DMIDecode
+          enabled: true
+
+        - name: insights.parsers.virt_what.VirtWhat
+          enabled: true
+
+        - name: insights.combiners.virt_what.VirtWhat
+          enabled: true
+
+        - name: insights.components.virtualization.IsBareMetal
+          enabled: true
+
     # needed for the 'pre-check' of the 'ss' spec
         - name: insights.parsers.lsmod
           enabled: true
