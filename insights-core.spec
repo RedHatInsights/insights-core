@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.245
+Version:        3.0.246
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,11 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Wed Oct 13 2021 Vitaliy Dymna <vdymna@redhat.com> 3.0.246-1
+- Add parsers and combiners for data from fwupdagent (#3253)
+- Add links to recent changes (#3256)
+- Automatic commit of package [insights-core] release [3.0.245-1].
+
 * Wed Oct 06 2021 Lloyd Huett <lhuett@redhat.com> 3.0.245-1
 - Add doctest to messages parser (#3248) (rblakley@redhat.com)
 - Update changelog with recent changes (#3247)

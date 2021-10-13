@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.246](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.246) (2021-10-13)
+
+- Add parsers and combiners for data from fwupdagent ([PR 3253](https://github.com/RedHatInsights/insights-core/pull/3253))
+- Add links to recent changes  ([PR 3256](https://github.com/RedHatInsights/insights-core/pull/3256))
+
 ## [insights-core-3.0.245](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.245) (2021-10-06)
 
 - Add doctest to messages parser ([PR 3248](https://github.com/RedHatInsights/insights-core/pull/3248), [Issue 3029](https://github.com/RedHatInsights/insights-core/issues/3029))
