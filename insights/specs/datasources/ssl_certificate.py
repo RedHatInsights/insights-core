@@ -1,5 +1,5 @@
 """
-Custom datasource for apache ssl_certificate_file
+Custom datasource to get ssl certificate file path.
 """
 
 from insights.combiners.httpd_conf import HttpdConfTree
@@ -9,9 +9,9 @@ from insights.core.plugins import datasource
 
 
 @datasource(HttpdConfTree, HostContext)
-def ssl_certificate_file(broker):
+def httpd_ssl_certificate_file(broker):
     """
-    Get the SSL certificate file path configured by "SSLCertificateFile"
+    Get the httpd SSL certificate file path configured by "SSLCertificateFile"
 
     Arguments:
         broker: the broker object for the current session
@@ -24,6 +24,6 @@ def ssl_certificate_file(broker):
     """
     conf = broker[HttpdConfTree]
     ssl_cert = conf.find('SSLCertificateFile')
-    if ssl_cert:
+    if ssl_cert and ssl_cert[0].value:
         return str(ssl_cert[0].value)
     raise SkipComponent
