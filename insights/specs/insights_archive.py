@@ -31,7 +31,7 @@ class InsightsArchiveSpecs(Specs):
     ceph_osd_tree = first_file(["insights_commands/ceph_osd_tree_-f_json-pretty", "insights_commands/ceph_osd_tree_-f_json"])
     ceph_s = first_file(["insights_commands/ceph_-s_-f_json-pretty", "insights_commands/ceph_-s_-f_json"])
     ceph_v = simple_file("insights_commands/ceph_-v")
-    certificates_enddate = first_file(["insights_commands/find_.etc.origin.node_.etc.origin.master_.etc.pki_.etc.ipa_-type_f_-exec_.usr.bin.openssl_x509_-noout_-enddate_-in_-exec_echo_FileName", "insights_commands/find_.etc.origin.node_.etc.origin.master_.etc.pki_-type_f_-exec_.usr.bin.openssl_x509_-noout_-enddate_-in_-exec_echo_FileName"])
+    certificates_enddate = first_file(["insights_commands/find_.etc.origin.node_.etc.origin.master_.etc.pki_.etc.ipa_.etc.tower_-type_f_-exec_.usr.bin.openssl_x509_-noout_-enddate_-in_-exec_echo_FileName", "insights_commands/find_.etc.origin.node_.etc.origin.master_.etc.pki_-type_f_-exec_.usr.bin.openssl_x509_-noout_-enddate_-in_-exec_echo_FileName"])
     chkconfig = simple_file("insights_commands/chkconfig_--list")
     chronyc_sources = simple_file("insights_commands/chronyc_sources")
     corosync_cmapctl = glob_file("insights_commands/corosync-cmapctl*")
