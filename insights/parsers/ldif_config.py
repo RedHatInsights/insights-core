@@ -41,7 +41,7 @@ class LDIFParser(Parser, list):
 
         Attributes:
             data (list): List of lines in the file.
-        
+
         Raises:
             SkipException: When nothing is parsered.
         """
