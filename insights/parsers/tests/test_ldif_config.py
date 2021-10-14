@@ -2051,9 +2051,10 @@ LDIF_CONFIG_EMPTY = ""
 
 def test_ldip_parser():
     ldif_config = LDIFParser(context_wrap(LDIF_CONFIG))
-    assert ldif_config.data[1]['dn_name'] == 'dn: cn=config'
-    assert ldif_config.data[1]['cn_name'][7]['modifiersName'] == 'cn=directory manager'
-    assert ldif_config.data[1]['cn_name'][8]['modifyTimestamp'] == '20210609192548Z'
+    #import pdb; pdb.set_trace()
+    assert ldif_config[1]['dn_name'] == 'dn: cn=config'
+    assert ldif_config[1]['cn_name'][7]['modifiersName'] == 'cn=directory manager'
+    assert ldif_config[1]['cn_name'][8]['modifyTimestamp'] == '20210609192548Z'
 
 
 def test_empty():
