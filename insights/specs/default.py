@@ -35,7 +35,7 @@ from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersio
 from insights.specs import Specs
 from insights.specs.datasources import (
     awx_manage, cloud_init, candlepin_broker, ethernet, get_running_commands, ipcs, lpstat, package_provides,
-    ps as ps_datasource, sap, satellite_missed_queues, yum_updates, ssl_certificate)
+    ps as ps_datasource, sap, satellite_missed_queues, ssl_certificate, yum_updates)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 
 
