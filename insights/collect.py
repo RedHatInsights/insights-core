@@ -154,6 +154,13 @@ plugins:
         - name: insights.combiners.ps
           enabled: true
 
+    # needed for httpd_certificate
+        - name: insights.combiners.httpd_conf.HttpdConfTree
+          enabled: true
+
+        - name: insights.combiners.httpd_conf._HttpdConf
+          enabled: true
+
     # needed to collect the sap_hdb_version spec that uses the Sap combiner
         - name: insights.parsers.lssap
           enabled: true
