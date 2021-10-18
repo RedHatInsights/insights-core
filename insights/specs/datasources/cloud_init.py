@@ -119,21 +119,9 @@ def cloud_cfg(broker):
                 users = content.get('users', None)
                 system_info = content.get('system_info', None)
                 if users:
-                    for user in users:
-                        if user.get('name', None):
-                            user.update({'name': ''})
-                        if user.get('passwd', None):
-                            user.update({'passwd': ''})
+                    content.update({'users': ''})
                 if system_info:
-                    default_user = system_info.get('default_user', None)
-                    if default_user:
-                        if default_user.get('name', None):
-                            default_user.update({'name': ''})
-                        if default_user.get('plain_text_passwd', None):
-                            default_user.update({'plain_text_passwd': ''})
-                        if default_user.get('home', None):
-                            default_user.update({'home': ''})
-
+                    content.update({'system_info': ''})
                 return DatasourceProvider(content=json.dumps(content), relative_path=relative_path)
             raise SkipComponent("Invalid YAML format")
     except Exception as e:

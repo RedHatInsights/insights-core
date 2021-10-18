@@ -57,15 +57,7 @@ users
 
 
 CLOUD_CFG_JSON = {
-    "users": [
-        {
-            "name": "",
-            "ssh-authorized-keys": [
-                "key_one",
-                "key_two"
-            ],
-            "passwd": ""
-        }],
+    "users": "",
     "ssh_deletekeys": 1,
     "network": {
         "version": 1,
