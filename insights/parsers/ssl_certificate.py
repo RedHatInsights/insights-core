@@ -8,6 +8,8 @@ SatelliteCustomCaChain - command ``awk 'BEGIN { pipe="openssl x509 -noout -subje
 ========================================================================================================================================================================================================================================
 RhsmKatelloDefaultCACert - command ``openssl x509 -in /etc/rhsm/ca/katello-default-ca.pem -noout -issuer``
 ==========================================================================================================
+HttpdSSLCertExpireDate - command ``openssl x509 -in httpd_certificate_path -enddate -noout``
+============================================================================================
 """
 
 from insights import parser, CommandParser
@@ -194,5 +196,27 @@ class RhsmKatelloDefaultCACert(CertificateInfo):
         <class 'insights.parsers.ssl_certificate.RhsmKatelloDefaultCACert'>
         >>> rhsm_katello_default_ca['issuer']
         '/C=US/ST=North Carolina/L=Raleigh/O=Katello/OU=SomeOrgUnit/CN=a.b.c.com'
+    """
+    pass
+
+
+@parser(Specs.httpd_ssl_cert_enddate)
+class HttpdSSLCertExpireDate(CertificateInfo):
+    """
+    .. note::
+        Please refer to its super-class :class:`insights.parsers.ssl_certificate.CertificateInfo` for more
+        details.
+
+    It parses the output of ``openssl x509 -in httpd_ssl_certificate_path -enddate -noout``
+
+    Sample output of ``openssl x509 -in httpd_certificate_path -enddate -noout``::
+
+        notAfter=Dec 4 07:04:05 2035 GMT
+
+    Examples:
+        >>> type(date_info)
+        <class 'insights.parsers.ssl_certificate.HttpdSSLCertExpireDate'>
+        >>> date_info['notAfter'].datetime
+        datetime.datetime(2038, 1, 18, 7, 2, 43)
     """
     pass
