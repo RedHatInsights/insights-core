@@ -7,7 +7,7 @@ import six
 import sys
 from six.moves import configparser as ConfigParser
 from distutils.version import LooseVersion
-from .utilities import get_version_info, write_app_default_manifest
+from .utilities import get_version_info, write_app_manifest
 
 try:
     from .constants import InsightsConstants as constants
@@ -781,10 +781,9 @@ class InsightsConfig(object):
                 sys.stdout.write('The compressor {0} is not supported. Using default: gz\n'.format(self.compressor))
             self.compressor = 'gz'
         if self.app:
-            # First time the collector app is run its manifest may not exist, so write out the default one
+            # Write out the app's manifest
             self.manifest = os.path.join(constants.insights_core_lib_dir, 'manifests', self.app + '-manifest.yml')
-            if not os.path.isfile(self.manifest):
-                write_app_default_manifest(self.app, self.manifest)
+            write_app_manifest(self.app, self.manifest)
         if self.manifest:
             self.core_collect = True
             self.legacy_upload = False

@@ -1,14 +1,14 @@
 """
-App default manifests for use with the --collector APP option
+App manifests for use with the --collector APP option
 Define the app manifest and add it to the manifests dict at the bottom of the file
 """
 
-malware_default_manifest = """
-# Manifest file for malware data collection
+malware_detection_manifest = """
+# Manifest file for malware detection app data collection
 ---
 # version is for the format of this file, not its contents.
 version: 0
-content_type: application/vnd.redhat.malware.results+tgz
+content_type: application/vnd.redhat.malware-detection.results+tgz
 
 client:
     context:
@@ -24,7 +24,7 @@ client:
 
     persist:
       # determines what will appear in the archive
-        - name: insights.specs.malware.MalwareSpecs
+        - name: insights.specs.malware_detection.MalwareDetectionSpecs
           enabled: true
 
     run_strategy:
@@ -38,11 +38,11 @@ plugins:
     default_component_enabled: false
     packages:
       # determines which packages are loaded. These will be namespaced to the relevant collector
-        - insights.specs.malware
+        - insights.specs.malware_detection
         - insights.specs.default
     configs:
         # determines which specs get loaded
-        - name: insights.specs.malware.MalwareSpecs
+        - name: insights.specs.malware_detection.MalwareDetectionSpecs
           enabled: true
         # Enable specs for collecting the system's canonical facts
         - name: insights.specs.default.DefaultSpecs.mac_addresses
@@ -75,4 +75,4 @@ plugins:
           enabled: true
 """.lstrip()
 
-default_manifests = {'malware': malware_default_manifest}
+manifests = {'malware-detection': malware_detection_manifest}

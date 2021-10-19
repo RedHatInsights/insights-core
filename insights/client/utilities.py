@@ -28,7 +28,7 @@ from .collection_rules import InsightsUploadConf, load_yaml
 from insights.core.context import Context
 from insights.parsers.os_release import OsRelease
 from insights.parsers.redhat_release import RedhatRelease
-from insights.specs.app_default_manifests import default_manifests
+from insights.client.apps.manifests import manifests
 
 try:
     from insights_client.constants import InsightsConstants as wrapper_constants
@@ -448,15 +448,14 @@ def os_release_info():
     return (os_family, os_release)
 
 
-def write_app_default_manifest(app, manifest_file):
+def write_app_manifest(app, manifest_file):
     """
-    Write the default manifest string for app to the manifest file
-    Should only be called when the manifest_file doesn't exist
+    Write the manifest string for app to its manifest file
     """
-    if default_manifests.get(app):
-        logger.info("Writing default manifest for '%s' app to %s", app, manifest_file)
-        write_data_to_file(default_manifests[app], manifest_file)
+    if manifests.get(app):
+        logger.debug("Writing manifest for %s app to %s", app, manifest_file)
+        write_data_to_file(manifests[app], manifest_file)
     else:
-        logger.error("ERROR: Unable to find default manifest for app '%s'.  App unable to function without a manifest.\n"
-                     "List of available apps with default manifests: %s", app, ', '.join(default_manifests.keys()))
+        logger.error("ERROR: Unable to find app: %s\n"
+                     "List of available apps: %s", app, ', '.join(sorted(manifests.keys())))
         exit(constants.sig_kill_bad)
