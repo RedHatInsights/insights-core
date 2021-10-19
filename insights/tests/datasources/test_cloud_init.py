@@ -57,7 +57,6 @@ users
 
 
 CLOUD_CFG_JSON = {
-    "users": "",
     "ssh_deletekeys": 1,
     "network": {
         "version": 1,

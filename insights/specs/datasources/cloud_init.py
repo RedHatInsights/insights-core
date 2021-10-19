@@ -62,16 +62,6 @@ def cloud_cfg(broker):
     Sample output in JSON format::
 
         {
-          "users": [
-            {
-              "name": "",
-              "ssh-authorized-keys": [
-                "key_one",
-                "key_two"
-              ],
-              "passwd": ""
-            }
-          ],
           "ssh_deletekeys": 1,
           "network": {
             "version": 1,
@@ -89,13 +79,6 @@ def cloud_cfg(broker):
                 ]
               }
             ]
-          },
-          "system_info": {
-            "default_user": {
-              "name": "",
-              "plain_text_passwd": "",
-              "home": ""
-            }
           },
           "debug": {
             "output": "/var/log/cloud-init-debug.log",
@@ -119,9 +102,9 @@ def cloud_cfg(broker):
                 users = content.get('users', None)
                 system_info = content.get('system_info', None)
                 if users:
-                    content.update({'users': ''})
+                    content.pop('users', None)
                 if system_info:
-                    content.update({'system_info': ''})
+                    content.pop('system_info', None)
                 return DatasourceProvider(content=json.dumps(content), relative_path=relative_path)
             raise SkipComponent("Invalid YAML format")
     except Exception as e:

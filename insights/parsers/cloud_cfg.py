@@ -12,7 +12,7 @@ class CloudCfg(JSONParser):
 
     Typical output from the datasource is::
 
-        {"users": "", "ssh_deletekeys": 1, "network": {"version": 1, "config": [{"type": "physical", "name": "eth0", "subnets": [{"type": "dhcp"}, {"type": "dhcp6"}]}]}, "system_info": "", "debug": {"output": "/var/log/cloud-init-debug.log", "verbose": true}}
+        {"ssh_deletekeys": 1, "network": {"version": 1, "config": [{"type": "physical", "name": "eth0", "subnets": [{"type": "dhcp"}, {"type": "dhcp6"}]}]}, "debug": {"output": "/var/log/cloud-init-debug.log", "verbose": true}}
 
     Attributes:
 
