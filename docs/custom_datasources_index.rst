@@ -79,7 +79,7 @@ insights.specs.datasources.ssl_certificate
 ------------------------------------------
 
 .. automodule:: insights.specs.datasources.ssl_certificate
-    :members: httpd_ssl_certificate_file
+    :members: httpd_ssl_certificate_file, nginx_ssl_certificate_file
     :show-inheritance:
     :undoc-members:
 
