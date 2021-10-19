@@ -24,7 +24,7 @@ client:
 
     persist:
       # determines what will appear in the archive
-        - name: insights.specs.malware_detection.MalwareDetectionSpecs
+        - name: insights.specs.datasources.malware_detection.MalwareDetectionSpecs
           enabled: true
 
     run_strategy:
@@ -38,11 +38,11 @@ plugins:
     default_component_enabled: false
     packages:
       # determines which packages are loaded. These will be namespaced to the relevant collector
-        - insights.specs.malware_detection
+        - insights.specs.datasources.malware_detection
         - insights.specs.default
     configs:
         # determines which specs get loaded
-        - name: insights.specs.malware_detection.MalwareDetectionSpecs
+        - name: insights.specs.datasources.malware_detection.MalwareDetectionSpecs
           enabled: true
         # Enable specs for collecting the system's canonical facts
         - name: insights.specs.default.DefaultSpecs.mac_addresses
