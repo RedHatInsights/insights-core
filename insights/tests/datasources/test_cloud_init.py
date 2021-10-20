@@ -2,9 +2,12 @@ import json
 import pytest
 from mock.mock import Mock
 
+from insights.core import filters
 from insights.core.dr import SkipComponent
 from insights.core.spec_factory import DatasourceProvider
+from insights.specs import Specs
 from insights.specs.datasources.cloud_init import cloud_cfg, LocalSpecs
+
 
 CLOUD_CFG = """
 users:
@@ -57,7 +60,6 @@ users
 
 
 CLOUD_CFG_JSON = {
-    "ssh_deletekeys": 1,
     "network": {
         "version": 1,
         "config": [
@@ -74,10 +76,30 @@ CLOUD_CFG_JSON = {
                 ]
             }
         ]
-    }
+    },
+    "ssh_deletekeys": 1,
 }
 
 RELATIVE_PATH = '/etc/cloud/cloud.cfg'
+
+
+def setup_function(func):
+    if Specs.cloud_cfg in filters._CACHE:
+        del filters._CACHE[Specs.cloud_cfg]
+    if Specs.cloud_cfg in filters.FILTERS:
+        del filters.FILTERS[Specs.cloud_cfg]
+
+    if func is test_cloud_cfg:
+        filters.add_filter(Specs.cloud_cfg, ['ssh_deletekeys', 'network', 'debug'])
+    if func is test_cloud_cfg_no_filter:
+        filters.add_filter(Specs.cloud_cfg, [])
+    elif func is test_cloud_cfg_bad:
+        filters.add_filter(Specs.cloud_cfg, ['not_found'])
+
+
+def teardown_function(func):
+    if func is test_cloud_cfg_bad or func is test_cloud_cfg:
+        del filters.FILTERS[Specs.cloud_cfg]
 
 
 def test_cloud_cfg():
@@ -90,6 +112,15 @@ def test_cloud_cfg():
     expected = DatasourceProvider(content=json.dumps(CLOUD_CFG_JSON), relative_path=RELATIVE_PATH)
     assert result.content == expected.content
     assert result.relative_path == expected.relative_path
+
+
+def test_cloud_cfg_no_filter():
+    cloud_init_file = Mock()
+    cloud_init_file.content = CLOUD_CFG.splitlines()
+    broker = {LocalSpecs.cloud_cfg_input: cloud_init_file}
+    with pytest.raises(SkipComponent) as e:
+        cloud_cfg(broker)
+    assert 'SkipComponent' in str(e)
 
 
 def test_cloud_cfg_bad():

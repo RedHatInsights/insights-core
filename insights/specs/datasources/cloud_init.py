@@ -7,6 +7,7 @@ import yaml
 from insights.core.context import HostContext
 from insights.core.dr import SkipComponent
 from insights.core.plugins import datasource
+from insights.core.filters import get_filters
 from insights.core.spec_factory import DatasourceProvider, simple_file
 from insights.specs import Specs
 
@@ -94,8 +95,10 @@ def cloud_cfg(broker):
     """
     relative_path = '/etc/cloud/cloud.cfg'
     try:
+        filters = get_filters(Specs.cloud_cfg)
         content = broker[LocalSpecs.cloud_cfg_input].content
-        if content:
+        if content and filters:
+            result = dict()
             content = yaml.load('\n'.join(content), Loader=yaml.SafeLoader)
             if isinstance(content, dict):
                 # remove sensitive data
@@ -105,7 +108,16 @@ def cloud_cfg(broker):
                     content.pop('users', None)
                 if system_info:
                     content.pop('system_info', None)
-                return DatasourceProvider(content=json.dumps(content), relative_path=relative_path)
+                # apply filters
+                for item in filters:
+                    val = content.get(item, None)
+                    if val:
+                        result[item] = val
+
+                if result:
+                    result = dict(sorted(result.items(), key=lambda x: x[0]))
+                    return DatasourceProvider(content=json.dumps(result), relative_path=relative_path)
             raise SkipComponent("Invalid YAML format")
     except Exception as e:
         raise SkipComponent("Unexpected exception:{e}".format(e=str(e)))
+    raise SkipComponent
