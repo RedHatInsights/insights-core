@@ -52,12 +52,7 @@ class CoreCollector(DataCollector):
 
         manifest = collect.default_manifest
         if self.config.manifest:
-            with open(self.config.manifest) as f:
-                try:
-                    manifest = yaml.safe_load(f)
-                except Exception as e:
-                    raise RuntimeError('ERROR: Cannot parse %s.\n'
-                                       'Error details:\n%s\n' % (f, e))
+            manifest = self.config.manifest
         collected_data_path = collect.collect(manifest=manifest, tmp_path=self.archive.tmp_dir, rm_conf=core_blacklist, client_timeout=self.config.cmd_timeout)
 
         # update the archive dir with the reported data location from Insights Core

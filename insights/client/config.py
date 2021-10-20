@@ -7,7 +7,8 @@ import six
 import sys
 from six.moves import configparser as ConfigParser
 from distutils.version import LooseVersion
-from .utilities import get_version_info, write_app_manifest
+from .utilities import get_version_info
+from insights.client.apps.manifests import manifests, content_types
 
 try:
     from .constants import InsightsConstants as constants
@@ -451,12 +452,6 @@ DEFAULT_OPTS = {
         'const': True,
         'nargs': '?',
         'group': 'actions'
-    },
-    "manifest": {
-        'default': None,
-        'opt': ['--manifest'],
-        'help': 'Insights core manifest to use for collection specs',
-        'action': 'store'
     }
 }
 
@@ -744,8 +739,9 @@ class InsightsConfig(object):
                     sys.stdout.write('WARNING: SOSCleaner reports will be created alongside the output archive.\n')
         if self.module and not self.module.startswith('insights.client.apps.'):
             raise ValueError('You can only run modules within the namespace insights.client.apps.*')
-        if self.manifest and not os.path.isfile(self.manifest):
-            raise ValueError("Not a file: %s" % self.manifest)
+        if self.app and not self.manifest:
+            raise ValueError("Unable to find app: %s\nList of available apps: %s"
+                             % (self.app, ', '.join(sorted(manifests.keys()))))
 
     def _imply_options(self):
         '''
@@ -781,10 +777,9 @@ class InsightsConfig(object):
                 sys.stdout.write('The compressor {0} is not supported. Using default: gz\n'.format(self.compressor))
             self.compressor = 'gz'
         if self.app:
-            # Write out the app's manifest
-            self.manifest = os.path.join(constants.insights_core_lib_dir, 'manifests', self.app + '-manifest.yml')
-            write_app_manifest(self.app, self.manifest)
-        if self.manifest:
+            # Get the manifest for the specified app
+            self.manifest = manifests.get(self.app)
+            self.content_type = content_types.get(self.app)
             self.core_collect = True
             self.legacy_upload = False
         if self.output_dir:

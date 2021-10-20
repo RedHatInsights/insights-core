@@ -8,7 +8,6 @@ malware_detection_manifest = """
 ---
 # version is for the format of this file, not its contents.
 version: 0
-content_type: application/vnd.redhat.malware-detection.results+tgz
 
 client:
     context:
@@ -76,3 +75,4 @@ plugins:
 """.lstrip()
 
 manifests = {'malware-detection': malware_detection_manifest}
+content_types = {'malware-detection': 'application/vnd.redhat.malware-detection.results+tgz'}
