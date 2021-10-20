@@ -17,6 +17,7 @@ from grp import getgrgid
 from os import stat
 from pwd import getpwuid
 
+from insights.components.virtualization import IsBareMetal
 from insights.core.context import HostContext
 from insights.core.dr import SkipComponent
 from insights.core.plugins import datasource
@@ -34,7 +35,7 @@ from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersio
 from insights.specs import Specs
 from insights.specs.datasources import (
     awx_manage, cloud_init, candlepin_broker, ethernet, get_running_commands, ipcs, lpstat, package_provides,
-    ps as ps_datasource, sap, satellite_missed_queues, yum_updates)
+    ps as ps_datasource, sap, satellite_missed_queues, ssl_certificate, yum_updates)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 
 
@@ -238,6 +239,8 @@ class DefaultSpecs(Specs):
     firewalld_conf = simple_file("/etc/firewalld/firewalld.conf")
     foreman_ssl_error_ssl_log = simple_file("/var/log/httpd/foreman-ssl_error_ssl.log")
     fstab = simple_file("/etc/fstab")
+    fw_devices = simple_command("/bin/fwupdagent get-devices", deps=[IsBareMetal])
+    fw_security = simple_command("/bin/fwupdagent security --force", deps=[IsBareMetal])
     galera_cnf = first_file(["/var/lib/config-data/puppet-generated/mysql/etc/my.cnf.d/galera.cnf", "/etc/my.cnf.d/galera.cnf"])
     getconf_page_size = simple_command("/usr/bin/getconf PAGE_SIZE")
     getenforce = simple_command("/usr/sbin/getenforce")
@@ -308,6 +311,7 @@ class DefaultSpecs(Specs):
     httpd_pid = simple_command("/usr/bin/pgrep -o httpd")
     httpd_limits = foreach_collect(httpd_pid, "/proc/%s/limits")
     httpd_M = foreach_execute(httpd_cmd, "%s -M")
+    httpd_ssl_cert_enddate = command_with_args('/usr/bin/openssl x509 -in %s -enddate -noout', ssl_certificate.httpd_ssl_certificate_file)
     httpd_V = foreach_execute(httpd_cmd, "%s -V")
     ifcfg = glob_file("/etc/sysconfig/network-scripts/ifcfg-*")
     ifcfg_static_route = glob_file("/etc/sysconfig/network-scripts/route-*")
