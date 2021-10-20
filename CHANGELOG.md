@@ -2,6 +2,13 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.247](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.247) (2021-10-20)
+
+- Add new GrubEnv spec and parser ([PR 3244](https://github.com/RedHatInsights/insights-core/pull/3244))
+- Update \_load_component's default exclude ([PR 3252](https://github.com/RedHatInsights/insights-core/pull/3252))
+- New spec and parser to check httpd ssl certificate expire date ([PR 3212](https://github.com/RedHatInsights/insights-core/pull/3212))
+- RHCLOUD-16475: Investigate error handling issue found by sat team ([PR 3255](https://github.com/RedHatInsights/insights-core/pull/3255))
+
 ## [insights-core-3.0.246](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.246) (2021-10-13)
 
 - Add parsers and combiners for data from fwupdagent ([PR 3253](https://github.com/RedHatInsights/insights-core/pull/3253))

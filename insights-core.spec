@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.246
+Version:        3.0.247
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,14 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Wed Oct 20 2021 Bob Fahr <20520336+bfahr@users.noreply.github.com> 3.0.247-1
+- Add new GrubEnv spec and parser (#3244) (rblakley@redhat.com)
+- Update _load_component's default exclude (#3252) (rblakley@redhat.com)
+- New spec and parser to check httpd ssl certificate expire date (#3212)
+  (44796653+huali027@users.noreply.github.com)
+- RHCLOUD-16475: Investigate error handling issue found by sat team (#3255)
+  (alcohan@redhat.com)
+
 * Wed Oct 13 2021 Vitaliy Dymna <vdymna@redhat.com> 3.0.246-1
 - Add parsers and combiners for data from fwupdagent (#3253)
 - Add links to recent changes (#3256)
