@@ -102,12 +102,8 @@ def cloud_cfg(broker):
             content = yaml.load('\n'.join(content), Loader=yaml.SafeLoader)
             if isinstance(content, dict):
                 # remove sensitive data
-                users = content.get('users', None)
-                system_info = content.get('system_info', None)
-                if users:
-                    content.pop('users', None)
-                if system_info:
-                    content.pop('system_info', None)
+                content.pop('users', None)
+                content.pop('system_info', None)
                 # apply filters
                 for item in filters:
                     val = content.get(item, None)
