@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.248](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.248) (2021-10-21)
+
+- Update the default exclude in load_components ([PR 3262](https://github.com/RedHatInsights/insights-core/pull/3262))
+- [CloudCfg] Include full context in the output ([PR 3249](https://github.com/RedHatInsights/insights-core/pull/3249))
+
 ## [insights-core-3.0.247](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.247) (2021-10-20)
 
 - Add new GrubEnv spec and parser ([PR 3244](https://github.com/RedHatInsights/insights-core/pull/3244))

@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.247
+Version:        3.0.248
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,10 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Oct 21 2021 Bob Fahr <20520336+bfahr@users.noreply.github.com> 3.0.248-1
+- Update the default exclude in load_components (#3262) (rblakley@redhat.com)
+- [CloudCfg] Include full context in the output (#3249) (psachin@redhat.com)
+
 * Wed Oct 20 2021 Bob Fahr <20520336+bfahr@users.noreply.github.com> 3.0.247-1
 - Add new GrubEnv spec and parser (#3244) (rblakley@redhat.com)
 - Update _load_component's default exclude (#3252) (rblakley@redhat.com)
