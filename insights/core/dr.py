@@ -393,7 +393,7 @@ def _import(path, continue_on_error):
             raise
 
 
-def _load_components(path, include=".*", exclude="insights\\..+\\.tests", continue_on_error=True):
+def _load_components(path, include=".*", exclude="\\.tests", continue_on_error=True):
     do_include = re.compile(include).search if include else lambda x: True
     do_exclude = re.compile(exclude).search if exclude else lambda x: False
 
