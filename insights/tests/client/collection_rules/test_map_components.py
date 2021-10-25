@@ -115,9 +115,7 @@ def test_map_rm_conf_to_components_sym_names():
         # files should be empty, components should have 1 item
         # except for these which cannot be mapped to specs.
         # in which case, components empty and these remain in files
-        if sym_name in ['grub2_efi_grubenv',
-                        'grub2_grubenv',
-                        'redhat_access_proactive_log']:
+        if sym_name == 'redhat_access_proactive_log':
             assert len(new_rm_conf['files']) == 1
             assert new_rm_conf['files'][0] == sym_name
             assert len(new_rm_conf['components']) == 0
@@ -169,9 +167,7 @@ def test_map_rm_conf_to_components_raw_cmds_files():
         # files should be empty, components should have 1 item
         # except for these which cannot be mapped to specs.
         # in which case, components empty and these remain in files
-        if fil['file'] in ['/boot/efi/EFI/redhat/grubenv',
-                           '/boot/grub2/grubenv',
-                           '/var/log/redhat_access_proactive/redhat_access_proactive.log']:
+        if fil['file'] == '/var/log/redhat_access_proactive/redhat_access_proactive.log':
             assert len(new_rm_conf['files']) == 1
             assert new_rm_conf['files'][0] == fil['file']
             assert len(new_rm_conf['components']) == 0
