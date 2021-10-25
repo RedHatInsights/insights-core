@@ -5,7 +5,7 @@ from insights.tests import context_wrap
 from insights.combiners.httpd_conf import _HttpdConf, HttpdConfTree
 from insights.combiners.nginx_conf import _NginxConf, NginxConfTree
 from insights.specs.datasources.ssl_certificate import (
-    httpd_ssl_certificate_file, nginx_ssl_certificate_file
+    httpd_ssl_certificate_file, nginx_ssl_certificate_files
 )
 
 
@@ -55,8 +55,29 @@ http {
 
 NGINX_SSL_CONF = """
 server {
-  ssl_certificate      "/a/b/c.crt";
-  ssl_certificate_key   "/a/b/c.key";
+  ssl_certificate      "/a/b/c.rsa.crt";
+  ssl_certificate_key   "/a/b/c.rsa.key";
+
+  ssl_certificate     "/a/b/c.cecdsa.crt";
+  ssl_certificate_key "/a/b/c.cecdsa.key";
+}
+""".strip()
+
+NGINX_SSL_CONF_MULTIPLE_SERVERS = """
+server {
+    listen          443 ssl;
+    server_name     www.example.com;
+    ssl_certificate      "/a/b/www.example.com.crt";
+    ssl_certificate_key   "/a/b/www.example.com.key";
+    ssl_certificate     "/a/b/www.example.com.cecdsa.crt";
+    ssl_certificate_key "/a/b/www.example.com.cecdsa.key";
+}
+
+server {
+    listen          443 ssl;
+    server_name     www.example.org;
+    ssl_certificate      "/a/b/www.example.org.crt";
+    ssl_certificate_key   "/a/b/www.example.org.key";
 }
 """.strip()
 
@@ -87,8 +108,18 @@ def test_nginx_certificate():
     broker = {
         NginxConfTree: conf_tree
     }
-    result = nginx_ssl_certificate_file(broker)
-    assert result == '/a/b/c.crt'
+    result = nginx_ssl_certificate_files(broker)
+    assert result == ['/a/b/c.rsa.crt', '/a/b/c.cecdsa.crt']
+
+    conf1 = _NginxConf(context_wrap(NGINX_CONF, path='/etc/nginx/nginx.conf'))
+    conf2 = _NginxConf(context_wrap(NGINX_SSL_CONF_MULTIPLE_SERVERS, path='/etc/nginx/conf.d/ssl.conf'))
+    conf_tree = NginxConfTree([conf1, conf2])
+
+    broker = {
+        NginxConfTree: conf_tree
+    }
+    result = nginx_ssl_certificate_files(broker)
+    assert result == ['/a/b/www.example.com.crt', '/a/b/www.example.com.cecdsa.crt', '/a/b/www.example.org.crt']
 
 
 def test_httpd_ssl_cert_exception():
@@ -117,4 +148,4 @@ def test_nginx_ssl_cert_exception():
         NginxConfTree: conf_tree
     }
     with pytest.raises(SkipComponent):
-        nginx_ssl_certificate_file(broker1)
+        nginx_ssl_certificate_files(broker1)

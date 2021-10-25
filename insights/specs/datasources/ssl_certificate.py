@@ -31,7 +31,7 @@ def httpd_ssl_certificate_file(broker):
 
 
 @datasource(NginxConfTree, HostContext)
-def nginx_ssl_certificate_file(broker):
+def nginx_ssl_certificate_files(broker):
     """
     Get the nginx SSL certificate file path configured by "ssl_certificate"
 
@@ -45,7 +45,7 @@ def nginx_ssl_certificate_file(broker):
         SkipComponent: Raised if "ssl_certificate" directive isn't found
     """
     conf = broker[NginxConfTree]
-    ssl_cert = conf.find('ssl_certificate')
-    if ssl_cert and ssl_cert[0].value:
-        return str(ssl_cert[0].value)
+    ssl_certs = conf.find('ssl_certificate')
+    if ssl_certs:
+        return [str(ssl_cert.value) for ssl_cert in ssl_certs]
     raise SkipComponent

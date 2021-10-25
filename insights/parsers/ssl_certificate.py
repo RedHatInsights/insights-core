@@ -92,6 +92,11 @@ class CertificateInfo(CommandParser, dict):
         if not self:
             raise SkipException("There is not any info in the cert.")
 
+    @property
+    def cert_path(self):
+        '''Return the certificate path.'''
+        return self.args
+
 
 class CertificateChain(CommandParser, list):
     """
@@ -242,5 +247,7 @@ class NginxSSLCertExpireDate(CertificateInfo):
         <class 'insights.parsers.ssl_certificate.NginxSSLCertExpireDate'>
         >>> nginx_date_info['notAfter'].datetime
         datetime.datetime(2038, 1, 18, 7, 2, 43)
+        >>> nginx_date_info.cert_path
+        '/a/b/c.pem'
     """
     pass
