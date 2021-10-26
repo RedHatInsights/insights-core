@@ -45,6 +45,14 @@ class PlaybookVerificationError(Exception):
         return self.message
 
 
+def decodeSignature(encodedSignature):
+    try:
+        decodedSignature = base64.b64decode(encodedSignature)
+        return decodedSignature
+    except:
+        raise PlaybookVerificationError(message='VERIFICATION FAILED: Error Decoding Signature')
+
+
 def createSnippetHash(snippet):
     """
     Function that creates and returns a hash of the snippet given to the function.
@@ -101,12 +109,7 @@ def excludeDynamicElements(snippet):
 def executeVerification(snippet, encodedSignature):
     gpg = gnupg.GPG(gnupghome=constants.insights_core_lib_dir)
     snippetHash = createSnippetHash(snippet)
-    decodedSignature = bytes
-
-    try:
-        decodedSignature = base64.b64decode(encodedSignature)
-    except:
-        raise PlaybookVerificationError(message='VERIFICATION FAILED: Error Decoding Signature')
+    decodedSignature = decodeSignature(encodedSignature)
 
     # load public key
     getPublicKey(gpg)
