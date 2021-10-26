@@ -4,63 +4,59 @@ Combiners for getting the earliest expiry date from a lot of SSL certificates
 
 This module contains the following combiners:
 
-EarliestNginxSSLCertExpireDate - The earliest expire date of nginx ssl certificates
------------------------------------------------------------------------------------
-Combiner to get the earliest expire date of nginx ssl certificates.
+EarliestNginxSSLCertExpireDate - The earliest expire date in a lot of nginx ssl certificates
+--------------------------------------------------------------------------------------------
+Combiner to get the earliest expire date in a lot of nginx ssl certificates.
 """
 
+from insights.core.dr import SkipComponent
 from insights.parsers.ssl_certificate import NginxSSLCertExpireDate
 from insights.parsers.certificates_enddate import CertificatesEnddate
 from insights.core.plugins import combiner
-from insights.core.dr import SkipComponent
 
 
 class EarliestSSLCertExpireDate(object):
     """
-    The base class to get the earliest expiry date from a lot of CertificateInfo instances.
+    The base class to get the earliest expiry date from a lot of :class:`insights.parsers.ssl_certificate.CertificateInfo` instances.
 
-    .. note::
-        Please refer to :class:`insights.parsers.ssl_certificate.CertificateInfo` for more
-        details.
+    Attributes:
+        earliest_expire_date (str): The earliest expire date in string format.
+        ssl_cert_path (str): The SSL certificate path which is expired first.
+
+    Examples:
+        >>> type(ssl_certs)
+        <class 'insights.combiners.ssl_certificate.EarliestSSLCertExpireDate'>
+        >>> ssl_certs.earliest_expire_date
+        'Dec 18 07:02:43 2021'
+        >>> ssl_certs.ssl_cert_path
+        '/test/b.pem'
     """
-    def __init__(self, ssl_cert_expiry_date_list):
-        self.ssl_cert_expiry_date_list = ssl_cert_expiry_date_list
-
-    @property
-    def earliest_expire_date(self):
-        '''
-        Return the earliest expiry date and the corresponding SSL certificate path.
-
-        Raises:
-            SkipComponent: when can not find expiry date info from the ssl certificate list.
-        '''
-        earliest_date = None
-        ssl_cert_path = None
-        for ssl_cert_expiry_date in self.ssl_cert_expiry_date_list:
-            if (earliest_date is None or
+    def __init__(self, certificate_info_list):
+        self.earliest_expire_date = None
+        self.ssl_cert_path = None
+        for ssl_cert_expiry_date in certificate_info_list:
+            if (self.earliest_expire_date is None or
                 (isinstance(ssl_cert_expiry_date.get('notAfter', ''), CertificatesEnddate.ExpirationDate) and
-                    ssl_cert_expiry_date['notAfter'].datetime < earliest_date.datetime)):
-                earliest_date = ssl_cert_expiry_date['notAfter']
-                ssl_cert_path = ssl_cert_expiry_date.cert_path
-        if earliest_date:
-            return earliest_date.str, ssl_cert_path
-        raise SkipComponent
+                    ssl_cert_expiry_date['notAfter'].datetime < self.earliest_expire_date.datetime)):
+                self.earliest_expire_date = ssl_cert_expiry_date['notAfter']
+                self.ssl_cert_path = ssl_cert_expiry_date.cert_path
+        if self.earliest_expire_date is None:
+            raise SkipComponent
+        else:
+            self.earliest_expire_date = self.earliest_expire_date.str
 
 
 @combiner(NginxSSLCertExpireDate)
 class EarliestNginxSSLCertExpireDate(EarliestSSLCertExpireDate):
     """
-    .. note::
-        Please refer to its super-class :class:`insights.combiners.ssl_certificate.EarliestSSLCertExpireDate` for more
-        details.
+    Combiner to get the earliest expire date in a lot of nginx ssl certificates.
 
     Examples:
         >>> type(nginx_certs)
         <class 'insights.combiners.ssl_certificate.EarliestNginxSSLCertExpireDate'>
-        >>> expire_date, file_path = nginx_certs.earliest_expire_date
-        >>> expire_date
+        >>> nginx_certs.earliest_expire_date
         'Dec 18 07:02:43 2021'
-        >>> file_path
+        >>> nginx_certs.ssl_cert_path
         '/test/d.pem'
     """
     pass
