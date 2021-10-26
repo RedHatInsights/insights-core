@@ -5,7 +5,6 @@ import logging
 import os
 import sys
 import runpy
-import yaml
 
 from insights.client import InsightsClient
 from insights.client.config import InsightsConfig

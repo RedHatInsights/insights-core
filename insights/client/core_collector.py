@@ -3,7 +3,6 @@ Collect all the interesting data for analysis - Core version
 """
 from __future__ import absolute_import
 import os
-import yaml
 import six
 import logging
 from insights import collect
@@ -51,7 +50,7 @@ class CoreCollector(DataCollector):
         }
 
         manifest = collect.default_manifest
-        if self.config.manifest:
+        if hasattr(self.config, 'manifest') and self.config.manifest:
             manifest = self.config.manifest
         collected_data_path = collect.collect(manifest=manifest, tmp_path=self.archive.tmp_dir, rm_conf=core_blacklist, client_timeout=self.config.cmd_timeout)
 
