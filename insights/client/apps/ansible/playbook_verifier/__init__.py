@@ -108,7 +108,6 @@ def executeVerification(snippet, encodedSignature):
     except:
         raise PlaybookVerificationError(message='VERIFICATION FAILED: Error Decoding Signature')
 
-
     # load public key
     getPublicKey(gpg)
 
