@@ -26,7 +26,7 @@ class EarliestSSLCertExpireDate(object):
     Examples:
         >>> type(ssl_certs)
         <class 'insights.combiners.ssl_certificate.EarliestSSLCertExpireDate'>
-        >>> ssl_certs.earliest_expire_date
+        >>> ssl_certs.earliest_expire_date.str
         'Dec 18 07:02:43 2021'
         >>> ssl_certs.ssl_cert_path
         '/test/b.pem'
@@ -42,8 +42,6 @@ class EarliestSSLCertExpireDate(object):
                 self.ssl_cert_path = ssl_cert_expiry_date.cert_path
         if self.earliest_expire_date is None:
             raise SkipComponent
-        else:
-            self.earliest_expire_date = self.earliest_expire_date.str
 
 
 @combiner(NginxSSLCertExpireDate)
@@ -54,7 +52,7 @@ class EarliestNginxSSLCertExpireDate(EarliestSSLCertExpireDate):
     Examples:
         >>> type(nginx_certs)
         <class 'insights.combiners.ssl_certificate.EarliestNginxSSLCertExpireDate'>
-        >>> nginx_certs.earliest_expire_date
+        >>> nginx_certs.earliest_expire_date.str
         'Dec 18 07:02:43 2021'
         >>> nginx_certs.ssl_cert_path
         '/test/d.pem'
