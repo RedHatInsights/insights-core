@@ -410,6 +410,7 @@ class Specs(SpecSet):
     nfs_exports_d = RegistryPoint(multi_output=True)
     nfs_exports = RegistryPoint()
     nginx_conf = RegistryPoint(multi_output=True)
+    nginx_ssl_cert_enddate = RegistryPoint(multi_output=True)
     nmcli_conn_show = RegistryPoint()
     nmcli_dev_show = RegistryPoint()
     nmcli_dev_show_sos = RegistryPoint(multi_output=True)
