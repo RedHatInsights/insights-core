@@ -10,6 +10,8 @@ RhsmKatelloDefaultCACert - command ``openssl x509 -in /etc/rhsm/ca/katello-defau
 ==========================================================================================================
 HttpdSSLCertExpireDate - command ``openssl x509 -in httpd_certificate_path -enddate -noout``
 ============================================================================================
+NginxSSLCertExpireDate - command ``openssl x509 -in nginx_certificate_path -enddate -noout``
+============================================================================================
 """
 
 from insights import parser, CommandParser
@@ -89,6 +91,11 @@ class CertificateInfo(CommandParser, dict):
         self.update(parse_openssl_output(content))
         if not self:
             raise SkipException("There is not any info in the cert.")
+
+    @property
+    def cert_path(self):
+        '''Return the certificate path.'''
+        return self.args
 
 
 class CertificateChain(CommandParser, list):
@@ -207,7 +214,7 @@ class HttpdSSLCertExpireDate(CertificateInfo):
         Please refer to its super-class :class:`insights.parsers.ssl_certificate.CertificateInfo` for more
         details.
 
-    It parses the output of ``openssl x509 -in httpd_ssl_certificate_path -enddate -noout``
+    It parses the output of ``openssl x509 -in httpd_ssl_certificate_path -enddate -noout``.
 
     Sample output of ``openssl x509 -in httpd_certificate_path -enddate -noout``::
 
@@ -218,5 +225,29 @@ class HttpdSSLCertExpireDate(CertificateInfo):
         <class 'insights.parsers.ssl_certificate.HttpdSSLCertExpireDate'>
         >>> date_info['notAfter'].datetime
         datetime.datetime(2038, 1, 18, 7, 2, 43)
+    """
+    pass
+
+
+@parser(Specs.nginx_ssl_cert_enddate)
+class NginxSSLCertExpireDate(CertificateInfo):
+    """
+    .. note::
+        Please refer to its super-class :class:`insights.parsers.ssl_certificate.CertificateInfo` for more
+        details.
+
+    It parses the output of ``openssl x509 -in nginx_certificate_path -enddate -noout``.
+
+    Sample output of ``openssl x509 -in nginx_certificate_path -enddate -noout``::
+
+        notAfter=Dec 4 07:04:05 2035 GMT
+
+    Examples:
+        >>> type(nginx_date_info)
+        <class 'insights.parsers.ssl_certificate.NginxSSLCertExpireDate'>
+        >>> nginx_date_info['notAfter'].datetime
+        datetime.datetime(2038, 1, 18, 7, 2, 43)
+        >>> nginx_date_info.cert_path
+        '/a/b/c.pem'
     """
     pass

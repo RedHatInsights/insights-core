@@ -161,6 +161,13 @@ plugins:
         - name: insights.combiners.httpd_conf._HttpdConf
           enabled: true
 
+    # needed for nginx_ssl_cert_enddate
+        - name: insights.combiners.nginx_conf.NginxConfTree
+          enabled: true
+
+        - name: insights.combiners.nginx_conf._NginxConf
+          enabled: true
+
     # needed to collect the sap_hdb_version spec that uses the Sap combiner
         - name: insights.parsers.lssap
           enabled: true
