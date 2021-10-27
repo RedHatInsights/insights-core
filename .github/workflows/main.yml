@@ -15,6 +15,13 @@ jobs:
         python-versions: [2.7, 3.6]
 
     steps:
+    - name: Install yara
+      run: |
+        sudo apt-get install automake libtool make gcc pkg-config
+        CUR_DIR=$(pwd)
+        cd ${CUR_DIR} && curl -L -o yara.tar.gz https://github.com/VirusTotal/yara/archive/refs/tags/v4.1.1.tar.gz && \
+          tar -xvzf yara.tar.gz && cd yara-4.1.1 && ./bootstrap.sh && ./configure && make && sudo make install && cd ${CUR_DIR} && \
+          sudo sh -c 'echo "/usr/local/lib" >> /etc/ld.so.conf' && sudo ldconfig
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-versions }}
       uses: actions/setup-python@v2
@@ -60,9 +67,11 @@ jobs:
         pip install --user -r ./pips/slave26/ci_requirements.txt -f ./pips/slave26/pip_packages
         mkdir ../collections_module
         sudo curl -L -o ./../collections_module/collections.py https://raw.githubusercontent.com/RedHatInsights/insights-core/5c8ca0f2fb3de45908e8d931d40758af34a7997a/.collections.py
+    - name: Install yara
+      run: |
         cd ${CUR_DIR} && curl -L -o yara.tar.gz https://github.com/VirusTotal/yara/archive/refs/tags/v4.1.1.tar.gz && \
-          tar -xvzf yara.tar.gz && cd yara-4.1.1 && ./bootstrap.sh && ./configure && make && make install && cd ${CUR_DIR} && \
-          echo "/usr/local/lib" >> /etc/ld.so.conf && sudo ldconfig
+          tar -xvzf yara.tar.gz && cd yara-4.1.1 && ./bootstrap.sh && ./configure && make && sudo make install && cd ${CUR_DIR} && \
+          sudo sh -c 'echo "/usr/local/lib" >> /etc/ld.so.conf' && sudo ldconfig
     - name: flake8
       run: |
         pip install --user -e .[linting] -f ./pips/slave26/pip_packages
