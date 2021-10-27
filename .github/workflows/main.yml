@@ -45,6 +45,7 @@ jobs:
         sudo apt-get install python2.6
         sudo update-alternatives --install /usr/bin/python python /usr/bin/python2.6 1
         sudo update-alternatives --set python /usr/bin/python2.6
+        sudo apt-get install automake libtool make gcc pkg-config
     - name: get depenencies
       run: |
         git clone https://github.com/SteveHNH/jenkins-s2i-example.git pips
@@ -59,6 +60,9 @@ jobs:
         pip install --user -r ./pips/slave26/ci_requirements.txt -f ./pips/slave26/pip_packages
         mkdir ../collections_module
         sudo curl -L -o ./../collections_module/collections.py https://raw.githubusercontent.com/RedHatInsights/insights-core/5c8ca0f2fb3de45908e8d931d40758af34a7997a/.collections.py
+        cd ${CUR_DIR} && curl -L -o yara.tar.gz https://github.com/VirusTotal/yara/archive/refs/tags/v4.1.1.tar.gz && \
+          tar -xvzf yara.tar.gz && cd yara-4.1.1 && ./bootstrap.sh && ./configure && make && make install && cd ${CUR_DIR} && \
+          echo "/usr/local/lib" >> /etc/ld.so.conf && sudo ldconfig
     - name: flake8
       run: |
         pip install --user -e .[linting] -f ./pips/slave26/pip_packages
