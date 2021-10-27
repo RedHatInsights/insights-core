@@ -49,30 +49,51 @@ class LDIFParser(Parser, list):
             raise SkipException('The file is empty')
         m_flag = 0
         s_flag = 0
+        temp3 = ""
+        temp4 = {}
 
         for line in content:
             temp1 = {}
+            import pdb; pdb.set_trace()
             if not line:
                 continue
             elif line.startswith('dn:'):
-                temp1['cn_name'] = []
-                temp1['dn_name'] = line.strip(':')
+                #temp1['cn_name'] = []
+                #temp1['dn_name'] = line.strip(':')
+                temp1[line.split(':', 1)[1].split(' ', 1)[1]] = []
                 self.append(temp1)
+                temp3 = line.split(':', 1)[1].split(' ', 1)[1]
                 m_flag = m_flag + 1
                 s_flag = 0
+            elif line.startswith('aci:'):
+                if re.search('.:\s', line):
+                    temp4 = {}
+                    temp4["aci"] = line.split(':', 1)[1].split(' ', 1)[1]
+                    s_flag = s_flag + 1
+                else:
+                    #temp4 = {}
+                    #key = list(self[m_flag - 1]['cn_name'][s_flag - 1].keys())[0]
+                    #key = list(self[m_flag - 1][temp3].keys())[0]
+                    #final_line = self[m_flag - 1]['cn_name'][s_flag - 1][key] + line.split(' ', 1)[1]
+                    final_line = self[m_flag -1][temp3][key] + line.split(' ', 1)[1]
             elif re.search('.:\s', line):
                 temp2 = {}
                 temp2[line.split(':', 1)[0]] = line.split(':', 1)[1].split(' ', 1)[1]
                 s_flag = s_flag + 1
             else:
                 temp2 = {}
-                key = list(self[m_flag - 1]['cn_name'][s_flag - 1].keys())[0]
-                final_line = self[m_flag - 1]['cn_name'][s_flag - 1][key] + line.split(' ', 1)[1]
+                #key = list(self[m_flag - 1]['cn_name'][s_flag - 1].keys())[0]
+                key = list(self[m_flag - 1][temp3].keys())[0]
+                #final_line = self[m_flag - 1]['cn_name'][s_flag - 1][key] + line.split(' ', 1)[1]
+                final_line = self[m_flag -1][temp3][key] + line.split(' ', 1)[1]
 
             if self and line.startswith('dn:'):
                 continue
             elif self and re.search('.:\s', line):
-                self[m_flag - 1]['cn_name'].append(temp2)
+                #self[m_flag - 1]['cn_name'].append(temp2)
+                self[m_flag - 1][temp3] = temp2
             else:
-                key = list(self[m_flag - 1]['cn_name'][s_flag - 1].keys())[0]
-                self[m_flag - 1]['cn_name'][s_flag - 1][key] = final_line
+                #key = list(self[m_flag - 1]['cn_name'][s_flag - 1].keys())[0]
+                key = list(self[m_flag - 1][temp3].keys())[0]
+                #self[m_flag - 1]['cn_name'][s_flag - 1][key] = final_line
+                self[m_flag -1][temp3][key] = final_line

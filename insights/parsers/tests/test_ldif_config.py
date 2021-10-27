@@ -5,22 +5,6 @@ from insights.parsers import ldif_config, SkipException
 from insights.parsers.ldif_config import LDIFParser
 
 LDIF_CONFIG = """
-dn:
-aci: (targetattr != "aci")(version 3.0; aci "rootdse anon read access"; allow(
- read,search,compare) userdn="ldap:///anyone";)
-createTimestamp: 20201026161200Z
-creatorsName: cn=server,cn=plugins,cn=config
-modifiersName: cn=Directory Manager
-modifyTimestamp: 20210608144722Z
-nsslapd-return-default-opattr: namingContexts
-nsslapd-return-default-opattr: supportedControl
-nsslapd-return-default-opattr: supportedExtension
-nsslapd-return-default-opattr: supportedLDAPVersion
-nsslapd-return-default-opattr: supportedSASLMechanisms
-nsslapd-return-default-opattr: vendorName
-nsslapd-return-default-opattr: vendorVersion
-objectClass: top
-
 dn: cn=config
 aci: (targetattr != aci)(version 3.0; aci "cert manager read access"; allow (r
  ead, search, compare) userdn = "ldap:///uid=pkidbuser,ou=people,o=ipaca";)
