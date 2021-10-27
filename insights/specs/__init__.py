@@ -233,7 +233,7 @@ class Specs(SpecSet):
     httpd_M = RegistryPoint(multi_output=True)
     httpd_on_nfs = RegistryPoint()
     httpd_ssl_access_log = RegistryPoint(filterable=True)
-    httpd_ssl_cert_enddate = RegistryPoint()
+    httpd_ssl_cert_enddate = RegistryPoint(multi_output=True)
     httpd_ssl_error_log = RegistryPoint(filterable=True)
     httpd_V = RegistryPoint(multi_output=True)
     virt_uuid_facts = RegistryPoint()

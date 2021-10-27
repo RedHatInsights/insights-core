@@ -10,7 +10,7 @@ from insights.core.plugins import datasource
 
 
 @datasource(HttpdConfTree, HostContext)
-def httpd_ssl_certificate_file(broker):
+def httpd_ssl_certificate_files(broker):
     """
     Get the httpd SSL certificate file path configured by "SSLCertificateFile"
 
@@ -24,9 +24,9 @@ def httpd_ssl_certificate_file(broker):
         SkipComponent: Raised if "SSLCertificateFile" directive isn't found
     """
     conf = broker[HttpdConfTree]
-    ssl_cert = conf.find('SSLCertificateFile')
-    if ssl_cert and ssl_cert[0].value:
-        return str(ssl_cert[0].value)
+    ssl_certs = conf.find('SSLCertificateFile')
+    if ssl_certs:
+        return [str(ssl_cert.value) for ssl_cert in ssl_certs]
     raise SkipComponent
 
 
