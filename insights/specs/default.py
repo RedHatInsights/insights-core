@@ -127,7 +127,7 @@ class DefaultSpecs(Specs):
     ceph_osd_tree = simple_command("/usr/bin/ceph osd tree -f json")
     ceph_s = simple_command("/usr/bin/ceph -s -f json")
     ceph_v = simple_command("/usr/bin/ceph -v")
-    certificates_enddate = simple_command("/usr/bin/find /etc/origin/node /etc/origin/master /etc/pki /etc/ipa -type f -exec /usr/bin/openssl x509 -noout -enddate -in '{}' \; -exec echo 'FileName= {}' \;", keep_rc=True)
+    certificates_enddate = simple_command("/usr/bin/find /etc/origin/node /etc/origin/master /etc/pki /etc/ipa /etc/tower/tower.cert -type f -exec /usr/bin/openssl x509 -noout -enddate -in '{}' \; -exec echo 'FileName= {}' \;", keep_rc=True)
     chkconfig = simple_command("/sbin/chkconfig --list")
     chrony_conf = simple_file("/etc/chrony.conf")
     chronyc_sources = simple_command("/usr/bin/chronyc sources")
@@ -469,6 +469,7 @@ class DefaultSpecs(Specs):
                            "/opt/rh/nginx*/root/etc/nginx/*.conf", "/opt/rh/nginx*/root/etc/nginx/conf.d/*", "/opt/rh/nginx*/root/etc/nginx/default.d/*",
                            "/etc/opt/rh/rh-nginx*/nginx/*.conf", "/etc/opt/rh/rh-nginx*/nginx/conf.d/*", "/etc/opt/rh/rh-nginx*/nginx/default.d/*"
                            ])
+    nginx_ssl_cert_enddate = foreach_execute(ssl_certificate.nginx_ssl_certificate_files, "/usr/bin/openssl x509 -in %s -enddate -noout")
     nmcli_conn_show = simple_command("/usr/bin/nmcli conn show")
     nmcli_dev_show = simple_command("/usr/bin/nmcli dev show")
     nova_api_log = first_file(["/var/log/containers/nova/nova-api.log", "/var/log/nova/nova-api.log"])
