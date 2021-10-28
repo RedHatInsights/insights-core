@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.248
+Version:        3.0.249
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,18 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Oct 28 2021 Bob Fahr <20520336+bfahr@users.noreply.github.com> 3.0.249-1
+- Feat: Add spec filtering to context_wrap for unit tests (#3265)
+  (20520336+bfahr@users.noreply.github.com)
+- Fix: Update verification code with an additional fix (#3266)
+  (44471274+aleccohan@users.noreply.github.com)
+- New nginx spec to get ssl certificate expire data (#3259)
+  (44796653+huali027@users.noreply.github.com)
+- Enhanced the certificates_enddate spec to support tower cert (#3258)
+  (44598880+rasrivas-redhat@users.noreply.github.com)
+- fix: Remove old grub specs from client tests (#3263)
+  (20520336+bfahr@users.noreply.github.com)
+
 * Thu Oct 21 2021 Bob Fahr <20520336+bfahr@users.noreply.github.com> 3.0.248-1
 - Update the default exclude in load_components (#3262) (rblakley@redhat.com)
 - [CloudCfg] Include full context in the output (#3249) (psachin@redhat.com)
