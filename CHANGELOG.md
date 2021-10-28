@@ -2,6 +2,14 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.249](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.249) (2021-10-28)
+
+- Feat: Add spec filtering to context_wrap for unit tests ([PR 3265](https://github.com/RedHatInsights/insights-core/pull/3265))
+- Fix: Update verification code with an additional fix ([PR 3266](https://github.com/RedHatInsights/insights-core/pull/3266))
+- New nginx spec to get ssl certificate expire data ([PR 3259](https://github.com/RedHatInsights/insights-core/pull/3259))
+- Enhanced the certificates_enddate spec to support tower cert ([PR 3258](https://github.com/RedHatInsights/insights-core/pull/3258))
+- fix: Remove old grub specs from client tests ([PR 3263](https://github.com/RedHatInsights/insights-core/pull/3263))
+
 ## [insights-core-3.0.248](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.248) (2021-10-21)
 
 - Update the default exclude in load_components ([PR 3262](https://github.com/RedHatInsights/insights-core/pull/3262))
