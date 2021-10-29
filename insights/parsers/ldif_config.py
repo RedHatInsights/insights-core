@@ -1,30 +1,6 @@
 """
 LDIF Configuration - file ``/etc/dirsrv/slapd-*/dse.ldif``
 ==========================================================
-
-This module provides content of the directory server configuration from
-the ``/etc/dirsrv/slapd-*/dse.ldif`` file.
-
-Typical output of the ``/etc/dirsrv/slapd-*/dse.ldif`` file is::
-
-    dn: cn=changelog5,cn=config
-    cn: changelog5
-    createTimestamp: 20201026161228Z
-    creatorsName: cn=Directory Manager
-    modifiersName: cn=Directory Manager
-    modifyTimestamp: 20201026161228Z
-    nsslapd-changelogdir: /var/lib/dirsrv/slapd-IDM-NYPD-FINEST/cldb
-    nsslapd-changelogmaxage: 7d
-    objectClass: top
-    objectClass: extensibleobject
-
-    Examples:
-    >>> ldif_config[3]['dn_name']
-    'dn: cn=changelog5,cn=config'
-    >>> ldif_config[3]['cn_name'][3]['modifiersName']
-    'cn=Directory Manager'
-    >>> ldif_config[3]['cn_name'][4]['modifyTimestamp']
-    '20201026161228Z'
 """
 
 from insights import Parser, parser
@@ -35,65 +11,96 @@ import re
 
 @parser(Specs.ldif_config)
 class LDIFParser(Parser, list):
+    """
+    Parse the content of the directory server configuration from
+    the ``/etc/dirsrv/slapd-*/dse.ldif`` file.
+
+    The file dse.ldif is in the LDIF format. LDIF contains multi-row records
+    where each record is identified by a ``dn:`` line ("dn" as in "distinguished
+    name") and the record's other lines are attributes. The value may be specified
+    as UTF-8 text or as base64 encoded data, or a URI may be provided to the
+    location of the attribute value.
+
+    Sample output of the ``/etc/dirsrv/slapd-*/dse.ldif`` file::
+
+        dn: cn=changelog5,cn=config
+        cn: changelog5
+        createTimestamp: 20201026161228Z
+        creatorsName: cn=Directory Manager
+        modifiersName: cn=Directory Manager
+        modifyTimestamp: 20201026161228Z
+        nsslapd-changelogdir: /var/lib/dirsrv/slapd-IDM-NYPD-FINEST/cldb
+        nsslapd-changelogmaxage: 7d
+        objectClass: top
+        objectClass: extensibleobject
+
+    Examples:
+        >>> ldif_config[3]['cn=changelog5,cn=config']['modifiersName']
+        'cn=Directory Manager'
+        >>> ldif_config[3]['cn=changelog5,cn=config']['modifyTimestamp']
+        '20201026161228Z'
+    """
     def parse_content(self, content):
-        """
-        Parse the LDIF data from the `/etc/dirsrv/slapd-*/dse.ldif` file.
-
-        Attributes:
-            data (list): List of lines in the file.
-
-        Raises:
-            SkipException: When nothing is parsered.
-        """
         if not content:
             raise SkipException('The file is empty')
-        m_flag = 0
-        s_flag = 0
-        temp3 = ""
-        temp4 = {}
 
+        m_flag = 0
         for line in content:
-            temp1 = {}
-            import pdb; pdb.set_trace()
+            attr_kval = {}
+            # line is emtpy
             if not line:
                 continue
+            elif line.startswith('#'):
+                # lines beginning with # are ignored
+                continue
+            # line starts with 'dn' attribute
             elif line.startswith('dn:'):
-                #temp1['cn_name'] = []
-                #temp1['dn_name'] = line.strip(':')
-                temp1[line.split(':', 1)[1].split(' ', 1)[1]] = []
-                self.append(temp1)
-                temp3 = line.split(':', 1)[1].split(' ', 1)[1]
-                m_flag = m_flag + 1
-                s_flag = 0
+                aci_kline = []
+                aci_flag = 0
+                m_flag += 1
+                # line starts with 'dn' attribute line
+                if line == 'dn:':
+                    attr_kval[line.split(':', 1)[0]] = {}
+                    self.append(attr_kval)
+                    dn_kname = line.split(':', 1)[0]
+                else:
+                    attr_kval[line.split(':', 1)[1].split(' ', 1)[1]] = {}
+                    self.append(attr_kval)
+                    dn_kname = line.split(':', 1)[1].split(' ', 1)[1]
+            # line starts with 'aci' attribute
             elif line.startswith('aci:'):
                 if re.search('.:\s', line):
-                    temp4 = {}
-                    temp4["aci"] = line.split(':', 1)[1].split(' ', 1)[1]
-                    s_flag = s_flag + 1
-                else:
-                    #temp4 = {}
-                    #key = list(self[m_flag - 1]['cn_name'][s_flag - 1].keys())[0]
-                    #key = list(self[m_flag - 1][temp3].keys())[0]
-                    #final_line = self[m_flag - 1]['cn_name'][s_flag - 1][key] + line.split(' ', 1)[1]
-                    final_line = self[m_flag -1][temp3][key] + line.split(' ', 1)[1]
-            elif re.search('.:\s', line):
-                temp2 = {}
-                temp2[line.split(':', 1)[0]] = line.split(':', 1)[1].split(' ', 1)[1]
-                s_flag = s_flag + 1
+                    aci_val = line.split(':', 1)[1].split(' ', 1)[1]
+                    aci_key = line.split(':', 1)[0].split(' ', 1)[0]
+                    if len(aci_kline) == 0:
+                        aci_kline.append(aci_val)
+                    else:
+                        aci_kline[0] = aci_kline[0] + aci_val
+                    aci_flag += 1
+                    continue
+            # line is a muti-line value with the 'aci' attribute
+            elif (not re.search('.:\s', line) and aci_flag > 0):
+                aci_val = line.split(' ', 1)[1]
+                aci_kline[0] = aci_kline[0] + aci_val
+                continue
+            # line is a non 'aci' attribute or file-backed value attribute
+            elif re.search('.:\s', line) or re.search('.:<\s', line):
+                attr_kval = {}
+                attr_val = line.split(':', 1)[1].split(' ', 1)[1]
+                attr_kval[line.split(':', 1)[0]] = attr_val
+                attr_name = list(attr_kval.keys())[0]
+            # line is a muti-line attribute lined for the non 'aci' attribute
             else:
-                temp2 = {}
-                #key = list(self[m_flag - 1]['cn_name'][s_flag - 1].keys())[0]
-                key = list(self[m_flag - 1][temp3].keys())[0]
-                #final_line = self[m_flag - 1]['cn_name'][s_flag - 1][key] + line.split(' ', 1)[1]
-                final_line = self[m_flag -1][temp3][key] + line.split(' ', 1)[1]
+                attr_kval = {}
+                attr_kval[attr_name] = attr_val
+                attr_kval[attr_name] = attr_val + line.split(' ', 1)[1]
 
             if self and line.startswith('dn:'):
                 continue
             elif self and re.search('.:\s', line):
-                #self[m_flag - 1]['cn_name'].append(temp2)
-                self[m_flag - 1][temp3] = temp2
+                if aci_key and aci_flag > 0:
+                    self[m_flag - 1][dn_kname][aci_key] = aci_kline
+                    aci_flag = 0
+                self[m_flag - 1][dn_kname].update(attr_kval)
             else:
-                #key = list(self[m_flag - 1]['cn_name'][s_flag - 1].keys())[0]
-                key = list(self[m_flag - 1][temp3].keys())[0]
-                #self[m_flag - 1]['cn_name'][s_flag - 1][key] = final_line
-                self[m_flag -1][temp3][key] = final_line
+                self[m_flag - 1][dn_kname].update(attr_kval)
