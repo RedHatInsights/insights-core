@@ -60,13 +60,13 @@ class LDIFParser(Parser, list):
                 m_flag += 1
                 # line starts with 'dn' attribute line
                 if line == 'dn:':
-                    attr_kval[line.split(':', 1)[0]] = {}
+                    dn_kname = 'dn'
+                    attr_kval[dn_kname] = {}
                     self.append(attr_kval)
-                    dn_kname = line.split(':', 1)[0]
                 else:
-                    attr_kval[line.split(':', 1)[1].split(' ', 1)[1]] = {}
-                    self.append(attr_kval)
                     dn_kname = line.split(':', 1)[1].split(' ', 1)[1]
+                    attr_kval[dn_kname] = {}
+                    self.append(attr_kval)
             # line starts with 'aci' attribute
             elif line.startswith('aci:'):
                 if re.search('.:\s', line):
@@ -90,6 +90,7 @@ class LDIFParser(Parser, list):
                 attr_kval[line.split(':', 1)[0]] = attr_val
                 attr_name = list(attr_kval.keys())[0]
             # line is a muti-line attribute lined for the non 'aci' attribute
+            # line with a same attribute in mutiple line is ignored
             else:
                 attr_kval = {}
                 attr_kval[attr_name] = attr_val

@@ -158,6 +158,11 @@ def test_ldip_parser():
     assert ldif_config[1]['cn=config']['modifiersName'] == 'cn=directory manager'
     assert ldif_config[1]['cn=config']['modifyTimestamp'] == '20210609192548Z'
     assert ldif_config[1]['cn=config']['objectClass'] == 'nsslapdConfig'
+    assert ldif_config[3]['cn=changelog5,cn=config']['cn'] == 'changelog5'
+    assert ldif_config[3]['cn=changelog5,cn=config']['createTimestamp'] == '20201026161228Z'
+    assert ldif_config[3]['cn=changelog5,cn=config']['creatorsName'] == 'cn=Directory Manager'
+    assert ldif_config[3]['cn=changelog5,cn=config']['nsslapd-changelogdir'] == '/var/lib/dirsrv/slapd-IDM-NYPD-FINEST/cldb'
+    assert ldif_config[3]['cn=changelog5,cn=config']['objectClass'] == 'extensibleobject'
 
 
 def test_empty():
