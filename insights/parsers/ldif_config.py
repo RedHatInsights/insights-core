@@ -47,7 +47,7 @@ class LDIFParser(Parser, list):
         m_flag = 0
         for line in content:
             attr_kval = {}
-            # line is emtpy
+            line = line.strip()
             if not line:
                 continue
             elif line.startswith('#'):
@@ -80,8 +80,7 @@ class LDIFParser(Parser, list):
                     continue
             # line is a muti-line value with the 'aci' attribute
             elif (not re.search('.:\s', line) and aci_flag > 0):
-                aci_val = line.split(' ', 1)[1]
-                aci_kline[0] = aci_kline[0] + aci_val
+                aci_kline[0] = aci_kline[0] + line
                 continue
             # line is a non 'aci' attribute or file-backed value attribute
             elif re.search('.:\s', line) or re.search('.:<\s', line):
@@ -94,7 +93,7 @@ class LDIFParser(Parser, list):
             else:
                 attr_kval = {}
                 attr_kval[attr_name] = attr_val
-                attr_kval[attr_name] = attr_val + line.split(' ', 1)[1]
+                attr_kval[attr_name] = attr_val + line
 
             if self and line.startswith('dn:'):
                 continue
