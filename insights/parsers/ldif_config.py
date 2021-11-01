@@ -35,8 +35,6 @@ class LDIFParser(Parser, list):
         objectClass: extensibleobject
 
     Examples:
-        >>> assert ldif_config[3]['cn=changelog5,cn=config']['cn']
-        'changelog5'
         >>> ldif_config[3]['cn=changelog5,cn=config']['modifiersName']
         'cn=Directory Manager'
         >>> ldif_config[3]['cn=changelog5,cn=config']['modifyTimestamp']
