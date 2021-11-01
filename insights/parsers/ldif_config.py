@@ -89,7 +89,7 @@ class LDIFParser(Parser, list):
                 attr_kval[line.split(':', 1)[0]] = attr_val
                 attr_name = list(attr_kval.keys())[0]
             # line is a muti-line attribute lined for the non 'aci' attribute
-            # line with a same attribute in mutiple line is ignored
+            # line with the same attribute in multiple lines is ignored
             else:
                 attr_kval = {}
                 attr_kval[attr_name] = attr_val
