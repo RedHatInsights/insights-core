@@ -422,6 +422,7 @@ class Specs(SpecSet):
     nova_uid = RegistryPoint()
     nova_migration_uid = RegistryPoint()
     nscd_conf = RegistryPoint(filterable=True)
+    nss_rhel7 = RegistryPoint()
     nsswitch_conf = RegistryPoint(filterable=True)
     ntp_conf = RegistryPoint()
     ntpq_leap = RegistryPoint()

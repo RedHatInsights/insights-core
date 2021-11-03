@@ -481,6 +481,7 @@ class DefaultSpecs(Specs):
     nova_crontab = simple_command("/usr/bin/crontab -l -u nova")
     nova_uid = simple_command("/usr/bin/id -u nova")
     nscd_conf = simple_file("/etc/nscd.conf")
+    nss_rhel7 = simple_file("/etc/pki/nss-legacy/nss-rhel7.config")
     nsswitch_conf = simple_file("/etc/nsswitch.conf")
     ntp_conf = simple_file("/etc/ntp.conf")
     ntpq_leap = simple_command("/usr/sbin/ntpq -c 'rv 0 leap'")
