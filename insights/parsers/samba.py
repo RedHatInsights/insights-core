@@ -135,20 +135,22 @@ class SambaConfigs(SambaConfig):
         server_role (string): Server role as reported by the command.
     """
     def parse_content(self, content):
-        # The output of `testparm` sometimes includes progress lines such as
-        # `Processing section "[homes]"`, so those should be removed.
-        content = [line for line in content if not line.startswith("Processing section")]
-
         # Parse server role
-        for line in content:
+        # The output of `testparm` sometimes includes progress lines such as
+        # `Processing section "[homes]"`. These lines are output before the server
+        # role definition, so only pass output from that line onward.
+        server_role_line = None
+        for i, line in enumerate(content):
             r = re.search(r"Server role:\s+(\S+)", line)
             if r:
                 self.server_role = r.group(1)
+                server_role_line = i
                 break
-        else:
+
+        if server_role_line is None:
             raise ParseException("Server role not found.")
 
-        super(SambaConfigs, self).parse_content(content)
+        super(SambaConfigs, self).parse_content(content[server_role_line:])
 
 
 @parser(Specs.testparm_v_s)
