@@ -21,7 +21,12 @@ class LDIFParser(Parser, list):
     as UTF-8 text or as base64 encoded data, or a URI may be provided to the
     location of the attribute value.
 
-    Sample output of the ``/etc/dirsrv/slapd-*/dse.ldif`` file::
+    Attributes:
+
+    data (list): A list containing a dictionary for each 'dn' attribute block::
+
+    Sample output of the 'cn=changelog5,cn=config' dn attribute block of the
+    ``/etc/dirsrv/slapd-*/dse.ldif`` file::
 
         dn: cn=changelog5,cn=config
         cn: changelog5
@@ -35,9 +40,9 @@ class LDIFParser(Parser, list):
         objectClass: extensibleobject
 
     Examples:
-        >>> ldif_config[3]['cn=changelog5,cn=config']['modifiersName']
+        >>> ldif_config[3]['dn: cn=changelog5,cn=config']['modifiersName']
         'cn=Directory Manager'
-        >>> ldif_config[3]['cn=changelog5,cn=config']['modifyTimestamp']
+        >>> ldif_config[3]['dn: cn=changelog5,cn=config']['modifyTimestamp']
         '20201026161228Z'
     """
     def parse_content(self, content):
@@ -60,11 +65,12 @@ class LDIFParser(Parser, list):
                 m_flag += 1
                 # line starts with 'dn' attribute line
                 if line == 'dn:':
-                    dn_kname = 'dn'
+                    # add value 'dn:' manuaully for the 'dn:' attribute block
+                    dn_kname = 'dn:'
                     attr_kval[dn_kname] = {}
                     self.append(attr_kval)
                 else:
-                    dn_kname = line.split(':', 1)[1].split(' ', 1)[1]
+                    dn_kname = line
                     attr_kval[dn_kname] = {}
                     self.append(attr_kval)
             # line starts with 'aci' attribute
