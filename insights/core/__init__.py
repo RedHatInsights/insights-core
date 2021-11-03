@@ -129,12 +129,6 @@ def default_parser_deserializer(_type, data):
     return obj
 
 
-def find_main(confs, name):
-    for c in confs:
-        if c.file_name == name:
-            return c
-
-
 def flatten(docs, pred):
     """
     Replace include nodes with their config trees.  Allows the same files to be
@@ -370,7 +364,7 @@ class ConfigCombiner(ConfigComponent):
     """
     def __init__(self, confs, main_file, include_finder):
         self.confs = confs
-        self.main = find_main(confs, main_file)
+        self.main = self.find_main(main_file)
         server_root = self.conf_path
 
         # Set the children of all include directives to the contents of the
@@ -390,6 +384,13 @@ class ConfigCombiner(ConfigComponent):
     def find_matches(self, confs, pattern):
         results = [c for c in confs if fnmatch(c.file_path, pattern)]
         return sorted(results, key=operator.attrgetter("file_name"))
+
+    def find_main(self, name):
+        for c in self.confs:
+            if c.file_name == name:
+                return c
+
+        raise SkipException("The main conf {main_conf} doesn't exist.".format(main_conf=name))
 
 
 class LegacyItemAccess(object):
