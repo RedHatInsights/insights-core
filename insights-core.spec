@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.249
+Version:        3.0.250
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,18 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Nov 04 2021 Bob Fahr <20520336+bfahr@users.noreply.github.com> 3.0.250-1
+- Fix: RHICOMPL-1980 Adding the 'relationships' API attribute to the client
+  profiles API call. (#3241) (87209745+marleystipich2@users.noreply.github.com)
+- Feat: Spec & parser for 389-ds TLS-related settings. (#3264)
+  (jsvoboda@redhat.com)
+- fix: check 'tab' in lines of ntp.conf (#3272) (xiangceliu@redhat.com)
+- Feat: Spec & parser for nss-rhel7.config (#3269) (jsvoboda@redhat.com)
+- Fix: Add raise SkipException to ConfigCombiner for missing main_file (#3277)
+  (rblakley@redhat.com)
+- Fix: Fix issue in client test due to spec change (#3275)
+  (20520336+bfahr@users.noreply.github.com)
+
 * Thu Oct 28 2021 Bob Fahr <20520336+bfahr@users.noreply.github.com> 3.0.249-1
 - Feat: Add spec filtering to context_wrap for unit tests (#3265)
   (20520336+bfahr@users.noreply.github.com)
