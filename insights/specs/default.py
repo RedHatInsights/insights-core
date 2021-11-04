@@ -8,7 +8,6 @@ this file with the same `name` keyword argument. This allows overriding the
 data sources that standard Insights `Parsers` resolve against.
 """
 
-import datetime
 import logging
 import os
 import signal
@@ -26,7 +25,6 @@ from insights.core.spec_factory import simple_file, simple_command, glob_file
 from insights.core.spec_factory import first_of, command_with_args
 from insights.core.spec_factory import foreach_collect, foreach_execute
 from insights.core.spec_factory import first_file, listdir
-from insights.combiners.services import Services
 from insights.combiners.ps import Ps
 from insights.components.rhel_version import IsRhel8, IsRhel7
 from insights.components.cloud_provider import IsAWS, IsAzure, IsGCP
@@ -37,6 +35,8 @@ from insights.specs.datasources import (
     awx_manage, cloud_init, candlepin_broker, ethernet, get_running_commands, ipcs, lpstat, package_provides,
     ps as ps_datasource, sap, satellite_missed_queues, ssl_certificate, yum_updates)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
+from insights.specs.datasources.pcp import (
+    pcp_enabled, pmlog_summary_metrics, pmlog_summary_file)
 
 
 logger = logging.getLogger(__name__)
@@ -514,13 +514,6 @@ class DefaultSpecs(Specs):
     pacemaker_log = first_file(["/var/log/pacemaker.log", "/var/log/pacemaker/pacemaker.log"])
     partitions = simple_file("/proc/partitions")
     pci_rport_target_disk_paths = simple_command("/usr/bin/find /sys/devices/ -maxdepth 10 -mindepth 9 -name stat -type f")
-
-    @datasource(Services, HostContext)
-    def pcp_enabled(broker):
-        """ bool: Returns True if pmproxy service is on in services """
-        if not broker[Services].is_on("pmproxy"):
-            raise SkipComponent("pmproxy not enabled")
-
     pcp_metrics = simple_command("/usr/bin/curl -s http://127.0.0.1:44322/metrics --connect-timeout 5", deps=[pcp_enabled])
     passenger_status = simple_command("/usr/bin/passenger-status")
     password_auth = simple_file("/etc/pam.d/password-auth")
@@ -528,37 +521,7 @@ class DefaultSpecs(Specs):
     pcs_status = simple_command("/usr/sbin/pcs status")
     php_ini = first_file(["/etc/opt/rh/php73/php.ini", "/etc/opt/rh/php72/php.ini", "/etc/php.ini"])
     pluginconf_d = glob_file("/etc/yum/pluginconf.d/*.conf")
-
-    @datasource(Ps, HostContext)
-    def pmlog_summary_file(broker):
-        """
-        Determines the name for the pmlogger file and checks for its existance
-
-        Returns the name of the latest pmlogger summary file if a running ``pmlogger``
-        process is detected on the system.
-
-        Returns:
-            str: Full path to the latest pmlogger file
-
-        Raises:
-            SkipComponent: raises this exception when the command is not present or
-                the file is not present
-        """
-        ps = broker[Ps]
-        if ps.search(COMMAND__contains='pmlogger'):
-            pcp_log_date = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y%m%d")
-            file = "/var/log/pcp/pmlogger/ros/%s.index" % (pcp_log_date)
-            try:
-                if os.path.exists(file) and os.path.isfile(file):
-                    return file
-            except Exception as e:
-                SkipComponent("Failed to check for pmlogger file existance: {0}".format(str(e)))
-
-        raise SkipComponent
-
-    pmlog_summary = command_with_args(
-        "/usr/bin/pmlogsummary %s mem.util.used mem.physmem kernel.all.cpu.user kernel.all.cpu.sys kernel.all.cpu.nice kernel.all.cpu.steal kernel.all.cpu.idle disk.all.total mem.util.cached mem.util.bufmem mem.util.free kernel.all.cpu.wait.total",
-        pmlog_summary_file)
+    pmlog_summary = command_with_args("/usr/bin/pmlogsummary %s {0}".format(pmlog_summary_metrics), pmlog_summary_file)
     pmrep_metrics = simple_command("/usr/bin/pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout mssql.memory_manager.stolen_server_memory mssql.memory_manager.total_server_memory -o csv")
     postconf_builtin = simple_command("/usr/sbin/postconf -C builtin")
     postconf = simple_command("/usr/sbin/postconf")
