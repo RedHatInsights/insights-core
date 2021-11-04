@@ -2,6 +2,15 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.250](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.250) (2021-11-04)
+
+- Fix: RHICOMPL-1980 Adding the 'relationships' API attribute to the client profiles API call. ([PR 3241](https://github.com/RedHatInsights/insights-core/pull/3241))
+- Feat: Spec & parser for 389-ds TLS-related settings. ([PR 3264](https://github.com/RedHatInsights/insights-core/pull/3264))
+- fix: check 'tab' in lines of ntp.conf ([PR 3272](https://github.com/RedHatInsights/insights-core/pull/3272))
+- Feat: Spec & parser for nss-rhel7.config ([PR 3269](https://github.com/RedHatInsights/insights-core/pull/3269))
+- Fix: Add raise SkipException to ConfigCombiner for missing main_file ([PR 3277](https://github.com/RedHatInsights/insights-core/pull/3277))
+- Fix: Fix issue in client test due to spec change ([PR 3275](https://github.com/RedHatInsights/insights-core/pull/3275))
+
 ## [insights-core-3.0.249](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.249) (2021-10-28)
 
 - Feat: Add spec filtering to context_wrap for unit tests ([PR 3265](https://github.com/RedHatInsights/insights-core/pull/3265))
