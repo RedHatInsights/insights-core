@@ -430,6 +430,7 @@ class DefaultSpecs(Specs):
     mounts = simple_file("/proc/mounts")
     mssql_api_assessment = simple_file("/var/opt/mssql/log/assessments/assessment-latest")
     mssql_conf = simple_file("/var/opt/mssql/mssql.conf")
+
     @datasource(MsSQLConf, HostContext)
     def mssql_tls_cert_file(broker):
         mssql_conf_content = broker[MsSQLConf]
