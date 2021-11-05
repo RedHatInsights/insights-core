@@ -168,6 +168,10 @@ plugins:
         - name: insights.combiners.nginx_conf._NginxConf
           enabled: true
 
+    # needed for mssql_tls_cert_enddate
+        - name: insights.parsers.mssql_conf.MsSQLConf
+          enabled: true
+
     # needed to collect the sap_hdb_version spec that uses the Sap combiner
         - name: insights.parsers.lssap
           enabled: true
