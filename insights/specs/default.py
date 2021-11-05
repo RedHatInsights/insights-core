@@ -26,7 +26,6 @@ from insights.core.spec_factory import simple_file, simple_command, glob_file
 from insights.core.spec_factory import first_of, command_with_args
 from insights.core.spec_factory import foreach_collect, foreach_execute
 from insights.core.spec_factory import first_file, listdir
-from insights.parsers.mssql_conf import MsSQLConf
 from insights.combiners.services import Services
 from insights.combiners.ps import Ps
 from insights.components.rhel_version import IsRhel8, IsRhel7
@@ -430,15 +429,7 @@ class DefaultSpecs(Specs):
     mounts = simple_file("/proc/mounts")
     mssql_api_assessment = simple_file("/var/opt/mssql/log/assessments/assessment-latest")
     mssql_conf = simple_file("/var/opt/mssql/mssql.conf")
-
-    @datasource(MsSQLConf, HostContext)
-    def mssql_tls_cert_file(broker):
-        mssql_conf_content = broker[MsSQLConf]
-        if mssql_conf_content.has_option("network", "tlscert"):
-            ssl_file = mssql_conf_content.get("network", "tlscert")
-            return ssl_file
-        raise SkipComponent("mssql tlscert is not configured")
-    mssql_tls_cert_enddate = simple_command(mssql_tls_cert_file, "/usr/bin/openssl x509 -in %s -enddate -noout")
+    mssql_tls_cert_enddate = simple_command(ssl_certificate.mssql_tls_cert_file, "/usr/bin/openssl x509 -in %s -enddate -noout")
     multicast_querier = simple_command("/usr/bin/find /sys/devices/virtual/net/ -name multicast_querier -print -exec cat {} \;")
     multipath_conf = simple_file("/etc/multipath.conf")
     multipath_conf_initramfs = simple_command("/bin/lsinitrd -f /etc/multipath.conf")

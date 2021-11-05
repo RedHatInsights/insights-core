@@ -4,8 +4,9 @@ from insights.core.dr import SkipComponent
 from insights.tests import context_wrap
 from insights.combiners.httpd_conf import _HttpdConf, HttpdConfTree
 from insights.combiners.nginx_conf import _NginxConf, NginxConfTree
+from insights.parsers.mssql_conf import MsSQLConf
 from insights.specs.datasources.ssl_certificate import (
-    httpd_ssl_certificate_file, nginx_ssl_certificate_files
+    httpd_ssl_certificate_file, nginx_ssl_certificate_files, mssql_tls_cert_file
 )
 
 
@@ -87,6 +88,32 @@ server {
 }
 """.strip()
 
+MSSQL_WITH_TLS = """
+[sqlagent]
+enabled = true
+
+[EULA]
+accepteula = Y
+
+[memory]
+memorylimitmb = 2048
+
+[network]
+tlscert = /tmp/mssql.pem
+""".strip()
+
+
+MSSQL_WITHOUT_TLS = """
+[sqlagent]
+enabled = true
+
+[EULA]
+accepteula = Y
+
+[memory]
+memorylimitmb = 2048
+""".strip()
+
 
 def test_httpd_certificate():
     conf1 = _HttpdConf(context_wrap(HTTPD_CONF, path='/etc/httpd/conf/httpd.conf'))
@@ -149,3 +176,21 @@ def test_nginx_ssl_cert_exception():
     }
     with pytest.raises(SkipComponent):
         nginx_ssl_certificate_files(broker1)
+
+
+def test_mssql_tls_cert_exception():
+    conf1 = MsSQLConf(context_wrap(MSSQL_WITH_TLS, path='/var/opt/mssql/mssql.conf'))
+    broker1 = {
+        MsSQLConf: conf1
+    }
+    result = mssql_tls_cert_file(broker1)
+    assert result == "/tmp/mssql.pem"
+
+
+def test_mssql_tls_no_cert_exception():
+    conf1 = MsSQLConf(context_wrap(MSSQL_WITHOUT_TLS, path='/var/opt/mssql/mssql.conf'))
+    broker1 = {
+        MsSQLConf: conf1
+    }
+    with pytest.raises(SkipComponent):
+        mssql_tls_cert_file(broker1)
