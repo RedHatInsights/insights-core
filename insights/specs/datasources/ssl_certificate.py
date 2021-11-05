@@ -69,4 +69,4 @@ def mssql_tls_cert_file(broker):
     mssql_conf_content = broker[MsSQLConf]
     if mssql_conf_content.has_option("network", "tlscert"):
         return mssql_conf_content.get("network", "tlscert")
-    raise SkipComponent("mssql tlscert is not configured")
+    raise SkipComponent
