@@ -377,6 +377,7 @@ class Specs(SpecSet):
     mounts = RegistryPoint()
     mssql_conf = RegistryPoint()
     mssql_api_assessment = RegistryPoint()
+    mssql_tls_cert_enddate = RegistryPoint()
     multicast_querier = RegistryPoint()
     multipath_conf = RegistryPoint()
     multipath_conf_initramfs = RegistryPoint()
