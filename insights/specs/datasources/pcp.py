@@ -35,7 +35,8 @@ def pmlog_summary_args(broker):
     Determines the pmlogger file and the metrics to collect via `pmlog_summary`
 
     Returns:
-        str: Full arguments string that pass to the `pmlog_summary`
+        str: Full arguments string that will be passed to the `pmlog_summary`,
+             which contains the `pmloger` file and the required `metrics`.
 
     Raises:
         SkipComponent: Raises when meeting one of the following scenario:
