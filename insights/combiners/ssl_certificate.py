@@ -7,10 +7,14 @@ This module contains the following combiners:
 EarliestNginxSSLCertExpireDate - The earliest expire date in a lot of nginx ssl certificates
 --------------------------------------------------------------------------------------------
 Combiner to get the earliest expire date in a lot of nginx ssl certificates.
+
+EarliestHttpdSSLCertExpireDate - The earliest expire date in a lot of httpd ssl certificates
+--------------------------------------------------------------------------------------------
+Combiner to get the earliest expire date in a lot of httpd ssl certificates.
 """
 
 from insights.core.dr import SkipComponent
-from insights.parsers.ssl_certificate import NginxSSLCertExpireDate
+from insights.parsers.ssl_certificate import NginxSSLCertExpireDate, HttpdSSLCertExpireDate
 from insights.parsers.certificates_enddate import CertificatesEnddate
 from insights.core.plugins import combiner
 
@@ -55,6 +59,22 @@ class EarliestNginxSSLCertExpireDate(EarliestSSLCertExpireDate):
         >>> nginx_certs.earliest_expire_date.str
         'Dec 18 07:02:43 2021'
         >>> nginx_certs.ssl_cert_path
+        '/test/d.pem'
+    """
+    pass
+
+
+@combiner(HttpdSSLCertExpireDate)
+class EarliestHttpdSSLCertExpireDate(EarliestSSLCertExpireDate):
+    """
+    Combiner to get the earliest expire date in a lot of httpd ssl certificates.
+
+    Examples:
+        >>> type(httpd_certs)
+        <class 'insights.combiners.ssl_certificate.EarliestHttpdSSLCertExpireDate'>
+        >>> httpd_certs.earliest_expire_date.str
+        'Dec 18 07:02:43 2021'
+        >>> httpd_certs.ssl_cert_path
         '/test/d.pem'
     """
     pass
