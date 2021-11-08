@@ -35,8 +35,7 @@ from insights.specs.datasources import (
     awx_manage, cloud_init, candlepin_broker, ethernet, get_running_commands, ipcs, lpstat, package_provides,
     ps as ps_datasource, sap, satellite_missed_queues, ssl_certificate, yum_updates)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
-from insights.specs.datasources.pcp import (
-    pcp_enabled, pmlog_summary_metrics, pmlog_summary_file)
+from insights.specs.datasources.pcp import pcp_enabled, pmlog_summary_args
 
 
 logger = logging.getLogger(__name__)
@@ -521,7 +520,7 @@ class DefaultSpecs(Specs):
     pcs_status = simple_command("/usr/sbin/pcs status")
     php_ini = first_file(["/etc/opt/rh/php73/php.ini", "/etc/opt/rh/php72/php.ini", "/etc/php.ini"])
     pluginconf_d = glob_file("/etc/yum/pluginconf.d/*.conf")
-    pmlog_summary = command_with_args("/usr/bin/pmlogsummary %s {0}".format(pmlog_summary_metrics), pmlog_summary_file)
+    pmlog_summary = command_with_args("/usr/bin/pmlogsummary %s", pmlog_summary_args)
     pmrep_metrics = simple_command("/usr/bin/pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout mssql.memory_manager.stolen_server_memory mssql.memory_manager.total_server_memory -o csv")
     postconf_builtin = simple_command("/usr/sbin/postconf -C builtin")
     postconf = simple_command("/usr/sbin/postconf")

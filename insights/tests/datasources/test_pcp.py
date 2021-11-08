@@ -9,7 +9,7 @@ from insights.parsers.systemd.unitfiles import UnitFiles
 from insights.parsers.ros_config import RosConfig
 from insights.combiners.ps import Ps
 from insights.combiners.services import Services
-from insights.specs.datasources.pcp import pcp_enabled, pmlog_summary_metrics, pmlog_summary_file
+from insights.specs.datasources.pcp import pcp_enabled, pmlog_summary_args
 from insights.tests import context_wrap
 
 PS_AUXCWW = """
@@ -95,49 +95,55 @@ def test_pcp_enabled():
 
 @patch("insights.specs.datasources.pcp.os.path.exists", return_value=True)
 @patch("insights.specs.datasources.pcp.os.path.isfile", return_value=True)
-def test_pmlog_summary_file(isfile, exists):
+def test_pmlog_summary_args(isfile, exists):
+    # Case 1: OK
+    ros = RosConfig(context_wrap(ROS_CONFIG))
     ps_auxcww = PsAuxcww(context_wrap(PS_AUXCWW))
     ps = Ps(None, None, None, None, ps_auxcww, None, None)
+
     broker = dr.Broker()
     broker[Ps] = ps
+    broker[RosConfig] = ros
 
     pcp_log_date = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y%m%d")
     mock_file = "/var/log/pcp/pmlogger/ros/%s.index" % (pcp_log_date)
 
-    result = pmlog_summary_file(broker)
-    assert result == mock_file
+    result = pmlog_summary_args(broker)
 
+    metrics = ' '.join(sorted([i.strip() for i in ROS_CONFIG.split('\n')[1:5]]))
+    expected = '{0} {1}'.format(mock_file, metrics)
+    assert result == expected
+
+    # Case 2 NG metrics
+    ros = RosConfig(context_wrap(ROS_CONFIG_NG))
+    broker = dr.Broker()
+    broker[Ps] = ps
+    broker[RosConfig] = ros
+
+    with pytest.raises(SkipComponent):
+        pmlog_summary_args(broker)
+
+    # Case 3 No pmloger proc in ps
+    ros = RosConfig(context_wrap(ROS_CONFIG))
     ps_auxcww = PsAuxcww(context_wrap(PS_AUXCWW_NG))
     ps = Ps(None, None, None, None, ps_auxcww, None, None)
     broker = dr.Broker()
     broker[Ps] = ps
+    broker[RosConfig] = ros
 
     with pytest.raises(SkipComponent):
-        pmlog_summary_file(broker)
+        pmlog_summary_args(broker)
 
 
 @patch("insights.specs.datasources.pcp.os.path.exists", return_value=False)
-def test_pmlog_summary_file_exp(isfile):
+def test_pmlog_summary_args_no_pmloger_file(isfile):
+    ros = RosConfig(context_wrap(ROS_CONFIG))
     ps_auxcww = PsAuxcww(context_wrap(PS_AUXCWW))
     ps = Ps(None, None, None, None, ps_auxcww, None, None)
+
     broker = dr.Broker()
     broker[Ps] = ps
-
-    with pytest.raises(SkipComponent):
-        pmlog_summary_file(broker)
-
-
-def test_pmlog_summary_metrics():
-    ros = RosConfig(context_wrap(ROS_CONFIG))
-    broker = dr.Broker()
-    broker[RosConfig] = ros
-
-    result = pmlog_summary_metrics(broker)
-    assert result == ' '.join(sorted([i.strip() for i in ROS_CONFIG.split('\n')[1:5]]))
-
-    ros = RosConfig(context_wrap(ROS_CONFIG_NG))
-    broker = dr.Broker()
     broker[RosConfig] = ros
 
     with pytest.raises(SkipComponent):
-        pmlog_summary_metrics(broker)
+        pmlog_summary_args(broker)
