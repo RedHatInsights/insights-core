@@ -12,7 +12,7 @@ Sample input::
     :custom:
         :lock_package_versions: true
     :facts:
-        tuning: medium
+        tuning: default
         mongo_cache_size: 6.25
 
 Examples:
