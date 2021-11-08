@@ -27,7 +27,6 @@ the following installed:
 
 * Python 3 (recommended Python 3.6)
 * Git
-* Python Virtualenv
 * Python PIP
 
 Further requirements can be found in the
@@ -37,7 +36,8 @@ file associated with the insights-core project.
 .. HINT::
    You might also need to install ``gcc`` to be able to build some python modules,
    ``unzip`` to be able to run `pytest` on the ``insights-core`` repo,
-   and ``pandoc`` to build Insights Core documentation.
+   ``pandoc`` to build Insights Core documentation, and ``platform-python-devel`` 
+   and ``openssl-devel`` to build ``rhsm``.
 
 **********************
 Rule Development Setup
@@ -74,7 +74,7 @@ version of python using the `-p` option and the name or path of the python you w
 example `-p python3` or `-p /usr/bin/python3.6`)::
 
     [userone@hostone project_dir]$ cd insights-core
-    [userone@hostone project_dir/insights-core]$ virtualenv -p python3.6 .
+    [userone@hostone project_dir/insights-core]$ python3.6 -m venv .
 
 Verify that you have the desired version of python by enabling the virtualenv::
 
