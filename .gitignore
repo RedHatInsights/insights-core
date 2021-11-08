@@ -12,6 +12,7 @@ htmlcov
 json-loader/.gradle
 json-loader/build
 bin/
+pyvenv.cfg
 !telemetry/bin
 lib/
 lib64

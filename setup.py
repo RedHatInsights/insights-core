@@ -62,6 +62,7 @@ client = set([
 
 develop = set([
     'wheel',
+    'rhsm',
 ])
 
 docs = set([
