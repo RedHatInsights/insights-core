@@ -55,7 +55,7 @@ insights.specs.datasources.pcp
 ------------------------------
 
 .. automodule:: insights.specs.datasources.pcp
-    :members: pcp_enabled, pmlog_summary_file, pmlog_summary_metrics
+    :members: pcp_enabled, pmlog_summary_args
     :show-inheritance:
     :undoc-members:
 
