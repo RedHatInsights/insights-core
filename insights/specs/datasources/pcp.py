@@ -64,7 +64,8 @@ def pmlog_summary_metrics(broker):
     for the pmlogger summary file.
 
     Returns:
-        str: Full path to the latest pmlogger file
+        str: All the metrics specified in the "mandatory on" section in the
+        `config.ros` file, separated with a blank space.
 
     Raises:
         SkipComponent: When no metrics get from the RosConfig
