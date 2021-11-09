@@ -171,9 +171,9 @@ def test_ldip_parser():
     assert ldif_config[6]['aci'] == '(target ="ldap:///cn=monitor*")(targetattr != "aci || connection")(version 3.0; acl "monitor"; allow( read, search, compare ) userdn = "ldap:///anyone";)'
 
     ldif_config = LDIFParser(context_wrap(LDIF_CONFIG))
-    assert sorted(ldif_config.search(dn='cn=features,cn=config')) == [{'dn': 'cn=features,cn=config', 'objectClass': 'nsContainer', 'numSubordinates': '5', 'cn': 'features'}]
-    assert sorted(ldif_config.search(dn='cn=sasl,cn=config')) == [{'dn': 'cn=sasl,cn=config', 'cn': 'sasl', 'objectClass': 'nsContainer', 'numSubordinates': '1'}]
-    assert sorted(ldif_config.search(cn='features')) == [{'dn': 'cn=features,cn=config', 'objectClass': 'nsContainer', 'numSubordinates': '5', 'cn': 'features'}]
+    assert ldif_config.search(dn='cn=features,cn=config')[0] == ldif_config[5]
+    assert ldif_config.search(dn='cn=sasl,cn=config')[0] == ldif_config[7]
+    assert ldif_config.search(cn='features')[0] == ldif_config[5]
 
 
 def test_empty():
