@@ -5,7 +5,7 @@ LDIF Configuration - file ``/etc/dirsrv/slapd-*/dse.ldif``
 
 from insights import Parser, parser
 from insights.specs import Specs
-from insights.parsers import SkipException
+from insights.parsers import SkipException, keyword_search
 import re
 
 
@@ -23,7 +23,7 @@ class LDIFParser(Parser, list):
 
     Attributes:
 
-    data (list): A list containing a dictionary for each 'dn' attribute block::
+    list: A list of dictionaries for each 'dn' attribute block of the ldif configuration::
 
     Sample output of the 'cn=changelog5,cn=config' dn attribute block of the
     ``/etc/dirsrv/slapd-*/dse.ldif`` file::
@@ -40,9 +40,11 @@ class LDIFParser(Parser, list):
         objectClass: extensibleobject
 
     Examples:
-        >>> ldif_config[3]['dn: cn=changelog5,cn=config']['modifiersName']
+        >>> ldif_config[3]['dn']
+        'cn=changelog5,cn=config'
+        >>> ldif_config[3]['modifiersName']
         'cn=Directory Manager'
-        >>> ldif_config[3]['dn: cn=changelog5,cn=config']['modifyTimestamp']
+        >>> ldif_config[3]['modifyTimestamp']
         '20201026161228Z'
     """
     def parse_content(self, content):
@@ -65,25 +67,21 @@ class LDIFParser(Parser, list):
                 m_flag += 1
                 # line starts with 'dn' attribute line
                 if line == 'dn:':
-                    # add value 'dn:' manuaully for the 'dn:' attribute block
-                    dn_kname = 'dn:'
-                    attr_kval[dn_kname] = {}
+                    attr_kval[line.split(':', 1)[0]] = line.split(':', 1)[1]
                     self.append(attr_kval)
                 else:
-                    dn_kname = line
-                    attr_kval[dn_kname] = {}
+                    attr_kval[line.split(':', 1)[0].split(' ', 1)[0]] = line.split(':', 1)[1].split(' ', 1)[1]
                     self.append(attr_kval)
             # line starts with 'aci' attribute
             elif line.startswith('aci:'):
-                if re.search('.:\s', line):
-                    aci_val = line.split(':', 1)[1].split(' ', 1)[1]
-                    aci_key = line.split(':', 1)[0].split(' ', 1)[0]
-                    if len(aci_kline) == 0:
-                        aci_kline.append(aci_val)
-                    else:
-                        aci_kline[0] = aci_kline[0] + aci_val
-                    aci_flag += 1
-                    continue
+                aci_val = line.split(':', 1)[1].split(' ', 1)[1]
+                aci_key = line.split(':', 1)[0].split(' ', 1)[0]
+                if len(aci_kline) == 0:
+                    aci_kline.append(aci_val)
+                else:
+                    aci_kline[0] = aci_kline[0] + aci_val
+                aci_flag += 1
+                continue
             # line is a muti-line value with the 'aci' attribute
             elif (not re.search('.:\s', line) and aci_flag > 0):
                 aci_kline[0] = aci_kline[0] + line
@@ -105,8 +103,29 @@ class LDIFParser(Parser, list):
                 continue
             elif self and re.search('.:\s', line):
                 if aci_key and aci_flag > 0:
-                    self[m_flag - 1][dn_kname][aci_key] = aci_kline
+                    self[m_flag - 1][aci_key] = aci_kline[0]
                     aci_flag = 0
-                self[m_flag - 1][dn_kname].update(attr_kval)
+                self[m_flag - 1].update(attr_kval)
             else:
-                self[m_flag - 1][dn_kname].update(attr_kval)
+                self[m_flag - 1].update(attr_kval)
+
+    def search(self, **kwargs):
+        """
+        Get the list for the 'dn' attribute block by searching the ldif configuration.
+        This uses the :py:func:`insights.parsers.keyword_search` function for searching,
+        see its documentation for usage details. If no search parameters are given or does
+        match the search, then nothing will be returned.
+
+        Returns:
+            list: A list of dictionaries for each 'dn' attribute block of the ldif configuration that match the given
+            search criteria.
+
+        Examples:
+            >>> ldif_config.search(dn='cn=features,cn=config')
+            [{'dn': 'cn=features,cn=config', 'cn': 'features', 'objectClass': 'nsContainer', 'numSubordinates': '5'}]
+            >>> ldif_config.search(dn='cn=sasl,cn=config')
+            [{'dn': 'cn=sasl,cn=config', 'cn': 'sasl', 'objectClass': 'nsContainer', 'numSubordinates': '1'}]
+            >>> ldif_config.search(cn='features')
+            [{'dn': 'cn=features,cn=config', 'cn': 'features', 'objectClass': 'nsContainer', 'numSubordinates': '5'}]
+        """
+        return keyword_search(self, **kwargs)

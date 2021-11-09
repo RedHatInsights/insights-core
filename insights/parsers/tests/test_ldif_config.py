@@ -72,8 +72,10 @@ objectClass: top
 objectClass: extensibleobject
 
 dn: cn=encryption,cn=config
+aci: (target ="ldap:///cn=monitor*")(targetattr != "aci)
 CACertExtractFile: /etc/dirsrv/slapd-IDM-NYPD-FINEST/IDM.NYPD.FINEST20IPA20CA.
  pem
+# ldif config
 allowWeakCipher: off
 cn: encryption
 createTimestamp: 20201026161200Z
@@ -155,14 +157,22 @@ LDIF_CONFIG_EMPTY = ""
 
 def test_ldip_parser():
     ldif_config = LDIFParser(context_wrap(LDIF_CONFIG))
-    assert ldif_config[1]['dn: cn=config']['modifiersName'] == 'cn=directory manager'
-    assert ldif_config[1]['dn: cn=config']['modifyTimestamp'] == '20210609192548Z'
-    assert ldif_config[1]['dn: cn=config']['objectClass'] == 'nsslapdConfig'
-    assert ldif_config[3]['dn: cn=changelog5,cn=config']['cn'] == 'changelog5'
-    assert ldif_config[3]['dn: cn=changelog5,cn=config']['createTimestamp'] == '20201026161228Z'
-    assert ldif_config[3]['dn: cn=changelog5,cn=config']['creatorsName'] == 'cn=Directory Manager'
-    assert ldif_config[3]['dn: cn=changelog5,cn=config']['nsslapd-changelogdir'] == '/var/lib/dirsrv/slapd-IDM-NYPD-FINEST/cldb'
-    assert ldif_config[3]['dn: cn=changelog5,cn=config']['objectClass'] == 'extensibleobject'
+    assert ldif_config[1]['dn'] == 'cn=config'
+    assert ldif_config[1]['modifiersName'] == 'cn=directory manager'
+    assert ldif_config[1]['modifyTimestamp'] == '20210609192548Z'
+    assert ldif_config[1]['objectClass'] == 'nsslapdConfig'
+    assert ldif_config[2]['dn'] == 'cn=monitor'
+    assert ldif_config[2]['aci'] == '(target ="ldap:///cn=monitor*")(targetattr != "aci || connection")(version 3.0; acl "monitor"; allow( read, search, compare ) userdn = "ldap:///anyone";)'
+    assert ldif_config[3]['dn'] == 'cn=changelog5,cn=config'
+    assert ldif_config[3]['createTimestamp'] == '20201026161228Z'
+    assert ldif_config[3]['creatorsName'] == 'cn=Directory Manager'
+    assert ldif_config[3]['nsslapd-changelogdir'] == '/var/lib/dirsrv/slapd-IDM-NYPD-FINEST/cldb'
+    assert ldif_config[3]['objectClass'] == 'extensibleobject'
+
+    ldif_config = LDIFParser(context_wrap(LDIF_CONFIG))
+    assert ldif_config.search(dn='cn=features,cn=config') == [{'dn': 'cn=features,cn=config', 'cn': 'features', 'objectClass': 'nsContainer', 'numSubordinates': '5'}]
+    assert ldif_config.search(dn='cn=sasl,cn=config') == [{'dn': 'cn=sasl,cn=config', 'cn': 'sasl', 'objectClass': 'nsContainer', 'numSubordinates': '1'}]
+    assert ldif_config.search(cn='features') == [{'dn': 'cn=features,cn=config', 'cn': 'features', 'objectClass': 'nsContainer', 'numSubordinates': '5'}]
 
 
 def test_empty():
