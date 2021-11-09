@@ -6,7 +6,7 @@ from insights.combiners.httpd_conf import _HttpdConf, HttpdConfTree
 from insights.combiners.nginx_conf import _NginxConf, NginxConfTree
 from insights.parsers.mssql_conf import MsSQLConf
 from insights.specs.datasources.ssl_certificate import (
-    httpd_ssl_certificate_file, nginx_ssl_certificate_files, mssql_tls_cert_file
+    httpd_ssl_certificate_files, nginx_ssl_certificate_files, mssql_tls_cert_file
 )
 
 
@@ -25,6 +25,33 @@ HTTPD_SSL_CONF = """
   SSLCertificateChainFile "/etc/pki/katello/certs/katello-server-ca.crt"
   SSLVerifyClient         optional
   SSLCACertificateFile    "/etc/pki/katello/certs/katello-default-ca.crt"
+  SSLVerifyDepth          3
+  SSLOptions +StdEnvVars +ExportCertData
+</VirtualHost>
+""".strip()
+
+HTTPD_SSL_CONF_2 = """
+<VirtualHost *:443>
+  ## SSL directives
+  ServerName a.b.c.com
+  SSLEngine on
+  SSLCertificateFile      "/etc/pki/katello/certs/katello-apache.crt"
+  SSLCertificateKeyFile   "/etc/pki/katello/private/katello-apache.key"
+  SSLCertificateChainFile "/etc/pki/katello/certs/katello-server-ca.crt"
+  SSLVerifyClient         optional
+  SSLCACertificateFile    "/etc/pki/katello/certs/katello-default-ca.crt"
+  SSLVerifyDepth          3
+  SSLOptions +StdEnvVars +ExportCertData
+</VirtualHost>
+<VirtualHost *:443>
+  ## SSL directives
+  ServerName  d.c.e.com
+  SSLEngine on
+  SSLCertificateFile      "/etc/pki/katello/certs/katello-apache_d.crt"
+  SSLCertificateKeyFile   "/etc/pki/katello/private/katello-apache_d.key"
+  SSLCertificateChainFile "/etc/pki/katello/certs/katello-server-ca_d.crt"
+  SSLVerifyClient         optional
+  SSLCACertificateFile    "/etc/pki/katello/certs/katello-default-ca_d.crt"
   SSLVerifyDepth          3
   SSLOptions +StdEnvVars +ExportCertData
 </VirtualHost>
@@ -123,8 +150,18 @@ def test_httpd_certificate():
     broker = {
         HttpdConfTree: conf_tree
     }
-    result = httpd_ssl_certificate_file(broker)
-    assert result == '/etc/pki/katello/certs/katello-apache.crt'
+    result = httpd_ssl_certificate_files(broker)
+    assert result == ['/etc/pki/katello/certs/katello-apache.crt']
+
+    conf1 = _HttpdConf(context_wrap(HTTPD_CONF, path='/etc/httpd/conf/httpd.conf'))
+    conf2 = _HttpdConf(context_wrap(HTTPD_SSL_CONF_2, path='/etc/httpd/conf.d/ssl.conf'))
+    conf_tree = HttpdConfTree([conf1, conf2])
+
+    broker = {
+        HttpdConfTree: conf_tree
+    }
+    result = httpd_ssl_certificate_files(broker)
+    assert result == ['/etc/pki/katello/certs/katello-apache.crt', '/etc/pki/katello/certs/katello-apache_d.crt']
 
 
 def test_nginx_certificate():
@@ -163,8 +200,8 @@ def test_httpd_ssl_cert_exception():
         HttpdConfTree: conf_tree
     }
     with pytest.raises(SkipComponent):
-        httpd_ssl_certificate_file(broker1)
-        httpd_ssl_certificate_file(broker2)
+        httpd_ssl_certificate_files(broker1)
+        httpd_ssl_certificate_files(broker2)
 
 
 def test_nginx_ssl_cert_exception():
