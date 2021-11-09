@@ -122,11 +122,11 @@ class LDIFParser(Parser, list):
             search criteria.
 
         Examples:
-            >>> ldif_config.search(dn='cn=features,cn=config')
+            >>> sorted(ldif_config.search(dn='cn=features,cn=config'))
             [{'dn': 'cn=features,cn=config', 'cn': 'features', 'objectClass': 'nsContainer', 'numSubordinates': '5'}]
-            >>> ldif_config.search(dn='cn=sasl,cn=config')
+            >>> sorted(ldif_config.search(dn='cn=sasl,cn=config'))
             [{'dn': 'cn=sasl,cn=config', 'cn': 'sasl', 'objectClass': 'nsContainer', 'numSubordinates': '1'}]
-            >>> ldif_config.search(cn='features')
+            >>> sorted(ldif_config.search(cn='features'))
             [{'dn': 'cn=features,cn=config', 'cn': 'features', 'objectClass': 'nsContainer', 'numSubordinates': '5'}]
         """
         return keyword_search(self, **kwargs)
