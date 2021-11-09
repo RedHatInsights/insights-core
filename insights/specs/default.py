@@ -313,7 +313,7 @@ class DefaultSpecs(Specs):
     httpd_pid = simple_command("/usr/bin/pgrep -o httpd")
     httpd_limits = foreach_collect(httpd_pid, "/proc/%s/limits")
     httpd_M = foreach_execute(httpd_cmd, "%s -M")
-    httpd_ssl_cert_enddate = command_with_args('/usr/bin/openssl x509 -in %s -enddate -noout', ssl_certificate.httpd_ssl_certificate_file)
+    httpd_ssl_cert_enddate = foreach_execute(ssl_certificate.httpd_ssl_certificate_files, "/usr/bin/openssl x509 -in %s -enddate -noout")
     httpd_V = foreach_execute(httpd_cmd, "%s -V")
     ifcfg = glob_file("/etc/sysconfig/network-scripts/ifcfg-*")
     ifcfg_static_route = glob_file("/etc/sysconfig/network-scripts/route-*")
