@@ -27,7 +27,6 @@ class TestInsightsArchive(TestCase):
         assert archive.archive_tmp_dir
         assert archive.archive_dir is None
         assert archive.cmd_dir is None
-        assert archive.compressor == config.compressor
         assert archive.archive_name == test_archive_name
 
         mkdtemp.assert_has_calls([call(prefix='/var/tmp/'),

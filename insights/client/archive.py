@@ -30,7 +30,6 @@ class InsightsArchive(object):
         archive_tmp_dir - a temporary directory to write the final archive file
         archive_name    - filename of the archive and archive_dir
         cmd_dir         - insights_commands directory inside archive_dir
-        compressor      - tar compression flag to use
         tar_file        - path of the final archive file
     """
     def __init__(self, config):
@@ -55,7 +54,6 @@ class InsightsArchive(object):
         self.archive_dir = None
         self.cmd_dir = None
 
-        self.compressor = config.compressor
         self.tar_file = None
         atexit.register(self.cleanup_tmp)
 
@@ -137,14 +135,6 @@ class InsightsArchive(object):
                 logger.debug("Not a directory: %s", directory)
         return path
 
-    def get_compression_flag(self, compressor):
-        return {
-            "gz": "z",
-            "xz": "J",
-            "bz2": "j",
-            "none": ""
-        }.get(compressor, "z")
-
     def create_tar_file(self):
         """
         Create tar file to be compressed
@@ -153,16 +143,11 @@ class InsightsArchive(object):
             # we should never get here but bail out if we do
             raise RuntimeError('Archive temporary directory not defined.')
         tar_file_name = os.path.join(self.archive_tmp_dir, self.archive_name)
-        ext = "" if self.compressor == "none" else ".%s" % self.compressor
-        tar_file_name = tar_file_name + ".tar" + ext
+        tar_file_name = tar_file_name + ".tar.gz"
         logger.debug("Tar File: " + tar_file_name)
-        return_code = subprocess.call(shlex.split("tar c%sfS %s -C %s ." % (
-            self.get_compression_flag(self.compressor),
+        return_code = subprocess.call(shlex.split("tar czfS %s -C %s ." % (
             tar_file_name, self.tmp_dir)),
             stderr=subprocess.PIPE)
-        if (self.compressor in ["bz2", "xz"] and return_code != 0):
-            logger.error("ERROR: %s compressor is not installed, cannot compress file", self.compressor)
-            return None
         self.delete_archive_dir()
         logger.debug("Tar File Size: %s", str(os.path.getsize(tar_file_name)))
         self.tar_file = tar_file_name
