@@ -123,10 +123,10 @@ class LDIFParser(Parser, list):
 
         Examples:
             >>> sorted(ldif_config.search(dn='cn=features,cn=config'))
-            [{'dn': 'cn=features,cn=config', 'cn': 'features', 'objectClass': 'nsContainer', 'numSubordinates': '5'}]
+            [{'dn': 'cn=features,cn=config', 'objectClass': 'nsContainer', 'numSubordinates': '5', 'cn': 'features'}]
             >>> sorted(ldif_config.search(dn='cn=sasl,cn=config'))
             [{'dn': 'cn=sasl,cn=config', 'cn': 'sasl', 'objectClass': 'nsContainer', 'numSubordinates': '1'}]
             >>> sorted(ldif_config.search(cn='features'))
-            [{'dn': 'cn=features,cn=config', 'cn': 'features', 'objectClass': 'nsContainer', 'numSubordinates': '5'}]
+            [{'dn': 'cn=features,cn=config', 'objectClass': 'nsContainer', 'numSubordinates': '5', 'cn': 'features'}]
         """
         return keyword_search(self, **kwargs)
