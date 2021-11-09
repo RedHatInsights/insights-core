@@ -45,6 +45,14 @@ class PlaybookVerificationError(Exception):
         return self.message
 
 
+def decodeSignature(encodedSignature):
+    try:
+        decodedSignature = base64.b64decode(encodedSignature)
+        return decodedSignature
+    except:
+        raise PlaybookVerificationError(message='VERIFICATION FAILED: Error Decoding Signature')
+
+
 def createSnippetHash(snippet):
     """
     Function that creates and returns a hash of the snippet given to the function.
@@ -74,6 +82,9 @@ def getPublicKey(gpg):
 
 
 def excludeDynamicElements(snippet):
+    if 'insights_signature_exclude' not in snippet['vars']:
+        raise PlaybookVerificationError(message='EXCLUDE MISSING: the insights_signature_exclude var does not exist.')
+
     exclusions = snippet['vars']['insights_signature_exclude'].split(',')
 
     for element in exclusions:
@@ -82,7 +93,7 @@ def excludeDynamicElements(snippet):
         # remove empty strings
         element = [string for string in element if string != '']
 
-        if (len(element) == 1 and element[0] in EXCLUDABLE_VARIABLES):
+        if (len(element) == 1 and element[0] in EXCLUDABLE_VARIABLES and element[0] in snippet.keys()):
             del snippet[element[0]]
         elif (len(element) == 2 and element[0] in EXCLUDABLE_VARIABLES):
             try:
@@ -98,8 +109,7 @@ def excludeDynamicElements(snippet):
 def executeVerification(snippet, encodedSignature):
     gpg = gnupg.GPG(gnupghome=constants.insights_core_lib_dir)
     snippetHash = createSnippetHash(snippet)
-
-    decodedSignature = base64.b64decode(encodedSignature)
+    decodedSignature = decodeSignature(encodedSignature)
 
     # load public key
     getPublicKey(gpg)
@@ -141,11 +151,14 @@ def verify(playbook, skipVerify=False):
     logger.info('Playbook Verification has started')
 
     if not skipVerify:
+        if not playbook:
+            raise PlaybookVerificationError(message="PLAYBOOK VERIFICATION FAILURE: Playbook is empty")
         for snippet in playbook:
             verified = verifyPlaybookSnippet(snippet)
 
             if not verified:
-                raise PlaybookVerificationError(message="SIGNATURE NOT VALID: Template [name: {0}] has invalid signature".format(snippet['name']))
+                name = snippet.get('name', 'NAME UNAVAILABLE')
+                raise PlaybookVerificationError(message="SIGNATURE NOT VALID: Template [name: {0}] has invalid signature".format(name))
 
     logger.info('All templates successfully validated')
     return playbook
@@ -156,7 +169,11 @@ def loadPlaybookYaml(playbook):
     Load playbook yaml using current yaml library implementation
         output: playbook yaml
     """
-    return yaml.load(playbook)
+    try:
+        playbookYaml = yaml.load(playbook)
+        return playbookYaml
+    except:
+        raise PlaybookVerificationError(message="PLAYBOOK VERIFICATION FAILURE: Failed to load playbook yaml because yaml is not valid")
 
 
 def normalizeSnippet(snippet):

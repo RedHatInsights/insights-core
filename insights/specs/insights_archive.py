@@ -31,7 +31,11 @@ class InsightsArchiveSpecs(Specs):
     ceph_osd_tree = first_file(["insights_commands/ceph_osd_tree_-f_json-pretty", "insights_commands/ceph_osd_tree_-f_json"])
     ceph_s = first_file(["insights_commands/ceph_-s_-f_json-pretty", "insights_commands/ceph_-s_-f_json"])
     ceph_v = simple_file("insights_commands/ceph_-v")
-    certificates_enddate = first_file(["insights_commands/find_.etc.origin.node_.etc.origin.master_.etc.pki_.etc.ipa_-type_f_-exec_.usr.bin.openssl_x509_-noout_-enddate_-in_-exec_echo_FileName", "insights_commands/find_.etc.origin.node_.etc.origin.master_.etc.pki_-type_f_-exec_.usr.bin.openssl_x509_-noout_-enddate_-in_-exec_echo_FileName"])
+    certificates_enddate = first_file([
+        "insights_commands/find_.etc.origin.node_.etc.origin.master_.etc.pki_.etc.ipa_.etc.tower.tower.cert_-type_f_-exec_.usr.bin.openssl_x509_-noout_-enddate_-in_-exec_echo_FileName",
+        "insights_commands/find_.etc.origin.node_.etc.origin.master_.etc.pki_.etc.ipa_-type_f_-exec_.usr.bin.openssl_x509_-noout_-enddate_-in_-exec_echo_FileName",
+        "insights_commands/find_.etc.origin.node_.etc.origin.master_.etc.pki_-type_f_-exec_.usr.bin.openssl_x509_-noout_-enddate_-in_-exec_echo_FileName"
+    ])
     chkconfig = simple_file("insights_commands/chkconfig_--list")
     chronyc_sources = simple_file("insights_commands/chronyc_sources")
     corosync_cmapctl = glob_file("insights_commands/corosync-cmapctl*")
@@ -68,6 +72,8 @@ class InsightsArchiveSpecs(Specs):
     fcoeadm_i = simple_file("insights_commands/fcoeadm_-i")
     findmnt_lo_propagation = simple_file("insights_commands/findmnt_-lo_PROPAGATION")
     firewall_cmd_list_all_zones = simple_file("insights_commands/firewall-cmd_--list-all-zones")
+    fw_devices = simple_file("insights_commands/fwupdagent_get-devices")
+    fw_security = simple_file("insights_commands/fwupdagent_security_--force")
     gcp_license_codes = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_gcp_license_codes")
     getconf_page_size = simple_file("insights_commands/getconf_PAGE_SIZE")
     getenforce = simple_file("insights_commands/getenforce")

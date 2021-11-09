@@ -75,6 +75,14 @@ insights.specs.datasources.satellite_missed_queues
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.ssl_certificate
+------------------------------------------
+
+.. automodule:: insights.specs.datasources.ssl_certificate
+    :members: httpd_ssl_certificate_files, nginx_ssl_certificate_files
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.yum_updates
 --------------------------------------
 

@@ -154,6 +154,20 @@ plugins:
         - name: insights.combiners.ps
           enabled: true
 
+    # needed for httpd_certificate
+        - name: insights.combiners.httpd_conf.HttpdConfTree
+          enabled: true
+
+        - name: insights.combiners.httpd_conf._HttpdConf
+          enabled: true
+
+    # needed for nginx_ssl_cert_enddate
+        - name: insights.combiners.nginx_conf.NginxConfTree
+          enabled: true
+
+        - name: insights.combiners.nginx_conf._NginxConf
+          enabled: true
+
     # needed to collect the sap_hdb_version spec that uses the Sap combiner
         - name: insights.parsers.lssap
           enabled: true
@@ -162,6 +176,19 @@ plugins:
           enabled: true
 
         - name: insights.combiners.sap
+          enabled: true
+
+    # needed for fw_devices and fw_security specs
+        - name: insights.parsers.dmidecode.DMIDecode
+          enabled: true
+
+        - name: insights.parsers.virt_what.VirtWhat
+          enabled: true
+
+        - name: insights.combiners.virt_what.VirtWhat
+          enabled: true
+
+        - name: insights.components.virtualization.IsBareMetal
           enabled: true
 
     # needed for the 'pre-check' of the 'ss' spec

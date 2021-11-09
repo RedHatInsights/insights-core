@@ -76,6 +76,14 @@ BAD_OUTPUT4 = """
 
 """
 
+HTTPD_CERT_EXPIRE_INFO = '''
+notAfter=Jan 18 07:02:43 2038 GMT
+'''
+
+NGINX_CERT_EXPIRE_INFO = '''
+notAfter=Jan 18 07:02:43 2038 GMT
+'''
+
 
 def test_certificate_info_exception():
     with pytest.raises(ParseException):
@@ -94,11 +102,12 @@ def test_certificate_chain_exception():
 
 
 def test_certificate_info():
-    cert = ssl_certificate.CertificateInfo(context_wrap(CERTIFICATE_OUTPUT1))
+    cert = ssl_certificate.CertificateInfo(context_wrap(CERTIFICATE_OUTPUT1, args='/a/b/c.pem'))
     assert cert['issuer'] == '/C=US/ST=North Carolina/L=Raleigh/O=Katello/OU=SomeOrgUnit/CN=a.b.c.com'
     assert cert['notBefore'].str == 'Dec  7 07:02:33 2020'
     assert cert['notAfter'].str == 'Jan 18 07:02:33 2038'
     assert cert['subject'] == '/C=US/ST=North Carolina/L=Raleigh/O=Katello/OU=SomeOrgUnit/CN=a.b.c.com'
+    assert cert.cert_path == '/a/b/c.pem'
 
 
 def test_certificates_chain():
@@ -142,12 +151,28 @@ def test_doc():
     ca_cert = ssl_certificate.CertificateChain(context_wrap(CERTIFICATE_CHAIN_OUTPUT1))
     satellite_ca_certs = ssl_certificate.SatelliteCustomCaChain(context_wrap(SATELLITE_OUTPUT2))
     rhsm_katello_default_ca = ssl_certificate.RhsmKatelloDefaultCACert(context_wrap(RHSM_KATELLO_CERT_OUTPUT1))
-
+    date_info = ssl_certificate.HttpdSSLCertExpireDate(context_wrap(HTTPD_CERT_EXPIRE_INFO))
+    nginx_date_info = ssl_certificate.NginxSSLCertExpireDate(context_wrap(HTTPD_CERT_EXPIRE_INFO, args='/a/b/c.pem'))
     globs = {
         'cert': cert,
         'certs': ca_cert,
         'satellite_ca_certs': satellite_ca_certs,
-        'rhsm_katello_default_ca': rhsm_katello_default_ca
+        'rhsm_katello_default_ca': rhsm_katello_default_ca,
+        'date_info': date_info,
+        'nginx_date_info': nginx_date_info
     }
-    failed, tested = doctest.testmod(ssl_certificate, globs=globs)
+    failed, _ = doctest.testmod(ssl_certificate, globs=globs)
     assert failed == 0
+
+
+def test_httpd_ssl_cert_parser():
+    date_info = ssl_certificate.HttpdSSLCertExpireDate(context_wrap(HTTPD_CERT_EXPIRE_INFO))
+    assert 'notAfter' in date_info
+    assert date_info['notAfter'].str == 'Jan 18 07:02:43 2038'
+
+
+def test_nginx_ssl_cert_parser():
+    date_info = ssl_certificate.NginxSSLCertExpireDate(context_wrap(NGINX_CERT_EXPIRE_INFO, args='/test/c.pem'))
+    assert 'notAfter' in date_info
+    assert date_info['notAfter'].str == 'Jan 18 07:02:43 2038'
+    assert date_info.cert_path == '/test/c.pem'
