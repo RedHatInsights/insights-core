@@ -12,7 +12,7 @@ HttpdSSLCertExpireDate - command ``openssl x509 -in httpd_certificate_path -endd
 ============================================================================================
 NginxSSLCertExpireDate - command ``openssl x509 -in nginx_certificate_path -enddate -noout``
 ============================================================================================
-MssqlTLSCertExpireDate - command ``openssl x509 -in mssql_tls_cert_enddate -enddate -noout``
+MssqlTLSCertExpireDate - command ``openssl x509 -in mssql_tls_cert_file -enddate -noout``
 ============================================================================================
 """
 
@@ -261,9 +261,13 @@ class MssqlTLSCertExpireDate(CertificateInfo):
     .. note::
         Please refer to its super-class :class:`insights.parsers.ssl_certificate.CertificateInfo` for more
         details.
-    It parses the output of ``openssl x509 -in mssql_certificate_path -enddate -noout``.
-    Sample output of ``openssl x509 -in mssql_certificate_path -enddate -noout``::
+
+    It parses the output of ``openssl x509 -in mssql_tls_cert_file -enddate -noout``.
+
+    Sample output of ``openssl x509 -in mssql_tls_cert_file -enddate -noout``::
+
         notAfter=Dec 4 07:04:05 2035 GMT
+
     Examples:
         >>> type(mssql_date_info)
         <class 'insights.parsers.ssl_certificate.MssqlTLSCertExpireDate'>
@@ -271,4 +275,3 @@ class MssqlTLSCertExpireDate(CertificateInfo):
         datetime.datetime(2022, 11, 5, 1, 43, 59)
     """
     pass
-
