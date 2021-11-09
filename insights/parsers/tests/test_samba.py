@@ -197,8 +197,12 @@ this another option should also be in global = 1
 #
 # Load smb config files from /etc/samba/smb.conf
 # Loaded services file OK.
+# Because status messages include section names, they aren't
+# removed by filtering.
 
 TESTPARM = """
+Processing section "[homes]"
+Processing section "[printers]"
 Server role: ROLE_STANDALONE
 
 # Global parameters
