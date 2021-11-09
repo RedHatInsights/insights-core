@@ -12,18 +12,14 @@ import re
 @parser(Specs.ldif_config)
 class LDIFParser(Parser, list):
     """
-    Parse the content of the directory server configuration from
-    the ``/etc/dirsrv/slapd-*/dse.ldif`` file.
+    Parse the content of the directory server configuration of the
+    ``/etc/dirsrv/slapd-*/dse.ldif`` file.
 
     The file dse.ldif is in the LDIF format. LDIF contains multi-row records
     where each record is identified by a ``dn:`` line ("dn" as in "distinguished
     name") and the record's other lines are attributes. The value may be specified
     as UTF-8 text or as base64 encoded data, or a URI may be provided to the
     location of the attribute value.
-
-    Attributes:
-
-    list: A list of dictionaries for each 'dn' attribute block of the ldif configuration::
 
     Sample output of the 'cn=changelog5,cn=config' dn attribute block of the
     ``/etc/dirsrv/slapd-*/dse.ldif`` file::
@@ -39,7 +35,12 @@ class LDIFParser(Parser, list):
         objectClass: top
         objectClass: extensibleobject
 
+    Returns:
+
+        list: A list of dictionaries for each 'dn' attribute block of the ldif configuration.
+
     Examples:
+
         >>> ldif_config = sorted(ldif_config, key=lambda x: x['dn'])
         >>> ldif_config[1]['dn']
         'cn=changelog5,cn=config'
