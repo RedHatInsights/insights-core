@@ -40,11 +40,12 @@ class LDIFParser(Parser, list):
         objectClass: extensibleobject
 
     Examples:
-        >>> ldif_config[3]['dn']
+        >>> ldif_config = sorted(ldif_config, key=lambda x: x['dn'])
+        >>> ldif_config[1]['dn']
         'cn=changelog5,cn=config'
-        >>> ldif_config[3]['modifiersName']
+        >>> ldif_config[1]['modifiersName']
         'cn=Directory Manager'
-        >>> ldif_config[3]['modifyTimestamp']
+        >>> ldif_config[1]['modifyTimestamp']
         '20201026161228Z'
     """
     def parse_content(self, content):
