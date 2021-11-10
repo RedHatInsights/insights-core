@@ -621,6 +621,7 @@ class DefaultSpecs(Specs):
     satellite_custom_ca_chain = simple_command(
         '/usr/bin/awk \'BEGIN { pipe="openssl x509 -noout -subject -enddate"} /^-+BEGIN CERT/,/^-+END CERT/ { print | pipe } /^-+END CERT/ { close(pipe); printf("\\n")}\' /etc/pki/katello/certs/katello-server-ca.crt',
     )
+    satellite_custom_hiera = simple_file("/etc/foreman-installer/custom-hiera.yaml")
     satellite_missed_pulp_agent_queues = satellite_missed_queues.satellite_missed_pulp_agent_queues
     satellite_mongodb_storage_engine = simple_command("/usr/bin/mongo pulp_database --eval 'db.serverStatus().storageEngine'")
     satellite_non_yum_type_repos = simple_command(
@@ -636,7 +637,6 @@ class DefaultSpecs(Specs):
         deps=[SatelliteVersion]
     )
     satellite_version_rb = simple_file("/usr/share/foreman/lib/satellite/version.rb")
-    satellite_custom_hiera = simple_file("/etc/foreman-installer/custom-hiera.yaml")
     scheduler = glob_file("/sys/block/*/queue/scheduler")
     scsi = simple_file("/proc/scsi/scsi")
     scsi_eh_deadline = glob_file('/sys/class/scsi_host/host[0-9]*/eh_deadline')
