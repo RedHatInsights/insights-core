@@ -152,28 +152,62 @@ objectClass: nsContainer
 numSubordinates: 1
 """
 
+LDIF_CONFIG_DOC = """
+dn:
+aci: (targetattr != "aci")(version 3.0; aci "rootdse anon read access"; allow(
+ read,search,compare) userdn="ldap:///anyone";)
+createTimestamp: 20201026161200Z
+creatorsName: cn=server,cn=plugins,cn=config
+modifiersName: cn=Directory Manager
+modifyTimestamp: 20210608144722Z
+nsslapd-return-default-opattr: namingContexts
+nsslapd-return-default-opattr: supportedControl
+nsslapd-return-default-opattr: supportedExtension
+nsslapd-return-default-opattr: supportedLDAPVersion
+nsslapd-return-default-opattr: supportedSASLMechanisms
+nsslapd-return-default-opattr: vendorName
+nsslapd-return-default-opattr: vendorVersion
+objectClass: top
+
+dn: cn=changelog5,cn=config
+cn: changelog5
+createTimestamp: 20201026161228Z
+creatorsName: cn=Directory Manager
+modifiersName: cn=Directory Manager
+modifyTimestamp: 20201026161228Z
+nsslapd-changelogdir: /var/lib/dirsrv/slapd-IDM-NYPD-FINEST/cldb
+nsslapd-changelogmaxage: 7d
+objectClass: top
+objectClass: extensibleobject
+"""
+
 LDIF_CONFIG_EMPTY = ""
 
 
-def test_ldip_parser():
+def test_ldif_parser():
     ldif_config = LDIFParser(context_wrap(LDIF_CONFIG))
-    ldif_config = sorted(ldif_config, key=lambda x: x['dn'])
-    assert ldif_config[1]['dn'] == 'cn=changelog5,cn=config'
-    assert ldif_config[1]['createTimestamp'] == '20201026161228Z'
-    assert ldif_config[1]['creatorsName'] == 'cn=Directory Manager'
-    assert ldif_config[1]['nsslapd-changelogdir'] == '/var/lib/dirsrv/slapd-IDM-NYPD-FINEST/cldb'
-    assert ldif_config[1]['objectClass'] == 'extensibleobject'
-    assert ldif_config[2]['dn'] == 'cn=config'
-    assert ldif_config[2]['modifiersName'] == 'cn=directory manager'
-    assert ldif_config[2]['modifyTimestamp'] == '20210609192548Z'
-    assert ldif_config[2]['objectClass'] == 'nsslapdConfig'
-    assert ldif_config[6]['dn'] == 'cn=monitor'
-    assert ldif_config[6]['aci'] == '(target ="ldap:///cn=monitor*")(targetattr != "aci || connection")(version 3.0; acl "monitor"; allow( read, search, compare ) userdn = "ldap:///anyone";)'
+    for item in ldif_config:
+        if item['dn'] == "":
+            item['aci'] == '(targetattr != "aci")(version 3.0; aci "rootdse anon read access"; allow(read,search,compare) userdn="ldap:///anyone";)'
+            item['modifiersName'] == 'cn=Directory Manager'
+        if item['dn'] == 'cn=changelog5,cn=config':
+            assert item['createTimestamp'] == '20201026161228Z'
+            assert item['creatorsName'] == 'cn=Directory Manager'
+            assert item['nsslapd-changelogdir'] == '/var/lib/dirsrv/slapd-IDM-NYPD-FINEST/cldb'
+            assert item['objectClass'] == 'extensibleobject'
+        if item['dn'] == 'cn=config':
+            assert item['aci'] == '(targetattr != aci)(version 3.0; aci "cert manager read access"; allow (read, search, compare) userdn = "ldap:///uid=pkidbuser,ou=people,o=ipaca";)(target = "ldap:///cn=automember rebuild membership,cn=tasks,cn=config")(targetattr=*)(version 3.0;acl "permission:Add Automember Rebuil Membership Task";allow (add) groupdn = "ldap:///cn=Add Automember Rebuild Membership Task,cn=permissions,cn=pbac,dc=idm,dc=nypd,dc=finest";)(targetattr = "cn || createtimestamp || entryusn || modifytimestamp || objectclass || passsyncmanagersdns*")(target = "ldap:///cn=ipa_pwd_extop,cn=plugins,cn=config")(version 3.0;acl "permission:Read PassSync Managers Configuration";allow (compare,read,search) groupdn = "ldap:///cn=Read PassSync Managers Configuration,cn=permissions,cn=pbac,dc=idm,dc=nypd,dc=finest";)'
+            assert item['modifiersName'] == 'cn=directory manager'
+            assert item['modifyTimestamp'] == '20210609192548Z'
+            assert item['objectClass'] == 'nsslapdConfig'
+        if item['dn'] == 'cn=monitor':
+            assert item['aci'] == '(target ="ldap:///cn=monitor*")(targetattr != "aci || connection")(version 3.0; acl "monitor"; allow( read, search, compare ) userdn = "ldap:///anyone";)'
 
     ldif_config = LDIFParser(context_wrap(LDIF_CONFIG))
     assert ldif_config.search(dn='cn=features,cn=config')[0] == ldif_config[5]
     assert ldif_config.search(dn='cn=sasl,cn=config')[0] == ldif_config[7]
     assert ldif_config.search(cn='features')[0] == ldif_config[5]
+    assert ldif_config.search(dn='cn=sasl,cn=config')[0] == ldif_config[-1]
 
 
 def test_empty():
@@ -184,7 +218,7 @@ def test_empty():
 
 def test_ldif_config_doc_examples():
     env = {
-        'ldif_config': LDIFParser(context_wrap(LDIF_CONFIG)),
+        'ldif_config': LDIFParser(context_wrap(LDIF_CONFIG_DOC)),
     }
     failed, total = doctest.testmod(ldif_config, globs=env)
     assert failed == 0
