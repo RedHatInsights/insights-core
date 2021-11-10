@@ -156,6 +156,8 @@ LDIF_CONFIG_DOC = """
 dn:
 aci: (targetattr != "aci")(version 3.0; aci "rootdse anon read access"; allow(
  read,search,compare) userdn="ldap:///anyone";)
+aci: (target = "ldap:///cn=automember rebuild membership,cn=tasks,cn=config")(
+ ,cn=permissions,cn=pbac,dc=idm";)
 createTimestamp: 20201026161200Z
 creatorsName: cn=server,cn=plugins,cn=config
 modifiersName: cn=Directory Manager
@@ -203,7 +205,6 @@ def test_ldif_parser():
         if item['dn'] == 'cn=monitor':
             assert item['aci'] == '(target ="ldap:///cn=monitor*")(targetattr != "aci || connection")(version 3.0; acl "monitor"; allow( read, search, compare ) userdn = "ldap:///anyone";)'
 
-    ldif_config = LDIFParser(context_wrap(LDIF_CONFIG))
     assert ldif_config.search(dn='cn=features,cn=config')[0] == ldif_config[5]
     assert ldif_config.search(dn='cn=sasl,cn=config')[0] == ldif_config[7]
     assert ldif_config.search(cn='features')[0] == ldif_config[5]

@@ -6,7 +6,6 @@ LDIF Configuration - file ``/etc/dirsrv/slapd-*/dse.ldif``
 from insights import Parser, parser
 from insights.specs import Specs
 from insights.parsers import SkipException, keyword_search
-import re
 
 
 @parser(Specs.ldif_config)
@@ -21,14 +20,18 @@ class LDIFParser(Parser, list):
     as UTF-8 text or as base64 encoded data, or a URI may be provided to the
     location of the attribute value.
 
-    Please note this parser only handles the multiple 'aci' attribute for a specific 'dn'
-    block and the final output is appended in a single line.
+    .. note::
+        1. This parser unwraps the multiple 'aci:' lines to a single line.
+        2. This parser only keeps the last value of a multiple keys and
+           discrads the others before it.
 
     Sample output::
 
         dn:
         aci: (targetattr != "aci")(version 3.0; aci "rootdse anon read access"; allow(
          read,search,compare) userdn="ldap:///anyone";)
+        aci: (target = "ldap:///cn=automember rebuild membership,cn=tasks,cn=config")(
+         ,cn=permissions,cn=pbac,dc=idm";)
         createTimestamp: 20201026161200Z
         creatorsName: cn=server,cn=plugins,cn=config
         modifiersName: cn=Directory Manager
@@ -61,8 +64,8 @@ class LDIFParser(Parser, list):
 
         >>> ldif_config[0]['dn']
         ''
-        >>> ldif_config[0]['aci']
-        '(targetattr != "aci")(version 3.0; aci "rootdse anon read access"; allow(read,search,compare) userdn="ldap:///anyone";)'
+        >>> ldif_config[0]['aci']  # the 2 aci are connected into one
+        '(targetattr != "aci")(version 3.0; aci "rootdse anon read access"; allow(read,search,compare) userdn="ldap:///anyone";)(target = "ldap:///cn=automember rebuild membership,cn=tasks,cn=config")(,cn=permissions,cn=pbac,dc=idm";)'
         >>> ldif_config[0]['nsslapd-return-default-opattr']  # only keep the last
         'vendorVersion'
         >>> ldif_config[1]['dn']
@@ -76,57 +79,32 @@ class LDIFParser(Parser, list):
         if not content:
             raise SkipException('The file is empty')
 
-        m_flag = 0
+        attr_kval = {}
         for line in content:
-            attr_kval = {}
+            # lines beginning with # are ignored
             line = line.strip()
-            if not line:
-                continue
-            elif line.startswith('#'):
-                # lines beginning with # are ignored
+            if not line or line.startswith('#'):
                 continue
             # line starts with 'dn' attribute
             elif line.startswith('dn:'):
-                aci_kline = ""
-                aci_key = ""
-                aci_flag = 0
-                m_flag += 1
-                attr_kval[line.split(':', 1)[0].strip()] = line.split(':', 1)[1].strip()
+                aci_flag = False
+                attr_kval = dict(dn=line.split(':', 1)[1].strip())
                 self.append(attr_kval)
             # line starts with 'aci' attribute
             elif line.startswith('aci:'):
-                aci_val = line.split(':', 1)[1].strip()
-                aci_key = line.split(':', 1)[0].strip()
-                if not aci_kline:
-                    aci_kline = aci_val
+                if 'aci' in attr_kval:
+                    attr_kval['aci'] += line.split(':', 1)[1].strip()
                 else:
-                    aci_kline = aci_kline + aci_val
-                aci_flag += 1
-                continue
+                    attr_kval['aci'] = line.split(':', 1)[1].strip()
+                aci_flag = True
             # line is a muti-line value with the 'aci' attribute
-            elif (not re.search('.:\s', line) and aci_flag > 0):
-                aci_kline = aci_kline + line
-                continue
+            elif aci_flag and ': ' not in line:
+                attr_kval['aci'] += line
             # line is a non 'aci' attribute or file-backed value attribute
-            elif re.search('.:\s', line) or re.search('.:<\s', line):
-                attr_val = line.split(':', 1)[1].strip()
-                attr_kval[line.split(':', 1)[0].strip()] = attr_val
-                attr_name = list(attr_kval.keys())[0]
-            # line is a muti-line attribute lined for the non 'aci' attribute
-            # line with the same attribute in multiple lines is ignored
-            else:
-                attr_kval[attr_name] = attr_val
-                attr_kval[attr_name] = attr_val + line
-
-            if self and line.startswith('dn:'):
-                continue
-            elif self and re.search('.:\s', line):
-                if aci_key and aci_flag > 0:
-                    self[m_flag - 1][aci_key] = aci_kline
-                    aci_flag = 0
-                self[m_flag - 1].update(attr_kval)
-            else:
-                self[m_flag - 1].update(attr_kval)
+            elif not line.startswith('aci:') and ': ' in line:
+                aci_flag = False
+                key, val = [i.strip() for i in line.split(':', 1)]
+                attr_kval[key] = val
 
     def search(self, **kwargs):
         """
