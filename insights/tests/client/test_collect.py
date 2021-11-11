@@ -31,7 +31,7 @@ def collect_args(*insights_config_args, **insights_config_custom_kwargs):
                                   "content_redaction_file": conf_file_content_redaction_file,
                                   "core_collect": False}
     all_insights_config_kwargs.update(insights_config_custom_kwargs)
-    return InsightsConfig(*insights_config_args, **all_insights_config_kwargs), Mock()
+    return InsightsConfig(*insights_config_args, **all_insights_config_kwargs)
 
 
 @contextmanager
@@ -158,8 +158,8 @@ def test_get_conf_file(get_branch_info, get_conf_file, data_collector):
     """
     If there is no config passed via stdin, it is loaded from a file instead.
     """
-    config, pconn = collect_args()
-    collect(config, pconn)
+    config = collect_args()
+    collect(config)
 
     get_conf_file.assert_called_once_with()
 
@@ -171,8 +171,8 @@ def test_get_conf_called_core_collection(get_branch_info, get_conf_file, core_co
     """
     Verify that uploader.json IS loaded when using core collection (from get_rm_conf function)
     """
-    config, pconn = collect_args(core_collect=True)
-    collect(config, pconn)
+    config = collect_args(core_collect=True)
+    collect(config)
 
     get_conf_file.assert_called_once()
 
@@ -185,8 +185,8 @@ def test_get_rm_conf_file(get_branch_info, get_conf_file, get_rm_conf, data_coll
     """
     Load configuration of files removed from collection when collection rules are loaded from a file.
     """
-    config, pconn = collect_args()
-    collect(config, pconn)
+    config = collect_args()
+    collect(config)
 
     get_rm_conf.assert_called_once_with()
 
@@ -200,8 +200,8 @@ def test_data_collector_file(get_branch_info, get_conf_file, get_rm_conf, data_c
     """
     Configuration from a file is passed to the DataCollector along with removed files configuration.
     """
-    config, pconn = collect_args()
-    collect(config, pconn)
+    config = collect_args()
+    collect(config)
 
     collection_rules = get_conf_file.return_value
     rm_conf = get_rm_conf.return_value
@@ -220,8 +220,8 @@ def test_core_collector_file(get_branch_info, get_conf_file, get_rm_conf, core_c
     """
     CoreCollector is loaded with rm_conf and a None value for collection_rules
     """
-    config, pconn = collect_args(core_collect=True)
-    collect(config, pconn)
+    config = collect_args(core_collect=True)
+    collect(config)
 
     collection_rules = None
     rm_conf = get_rm_conf.return_value
@@ -242,8 +242,8 @@ def test_correct_collector_loaded(get_branch_info, get_conf_file, get_rm_conf, c
     Verify that core collection is loaded for core_collect=True, and that
     classic collection is loaded for core_collect=False
     '''
-    config, pconn = collect_args(core_collect=False)
-    collect(config, pconn)
+    config = collect_args(core_collect=False)
+    collect(config)
 
     data_collector.return_value.run_collection.assert_called()
     core_collector.return_value.run_collection.assert_not_called()
@@ -253,7 +253,7 @@ def test_correct_collector_loaded(get_branch_info, get_conf_file, get_rm_conf, c
     core_collector.return_value.run_collection.reset_mock()
 
     config.core_collect = True
-    collect(config, pconn)
+    collect(config)
 
     data_collector.return_value.run_collection.assert_not_called()
     core_collector.return_value.run_collection.assert_called()
@@ -268,9 +268,9 @@ def test_file_signature_ignored(get_branch_info, validate_gpg_sig, data_collecto
     Signature of configuration from a file is not validated if validation is disabled.
     """
 
-    config, pconn = collect_args(gpg=False)
+    config = collect_args(gpg=False)
     with patch_temp_conf_file():
-        collect(config, pconn)
+        collect(config)
 
     validate_gpg_sig.assert_not_called()
 
@@ -285,9 +285,9 @@ def test_file_signature_valid(get_branch_info, validate_gpg_sig, data_collector)
     """
     Correct signature of configuration from a file is recognized.
     """
-    config, pconn = collect_args()
+    config = collect_args()
     with patch_temp_conf_file():
-        collect(config, pconn)
+        collect(config)
 
     validate_gpg_sig.assert_called_once()
 
@@ -301,10 +301,10 @@ def test_file_signature_invalid(get_branch_info, validate_gpg_sig, data_collecto
     """
     Incorrect signature of configuration from a file skips that file.
     """
-    config, pconn = collect_args()
+    config = collect_args()
     with patch_temp_conf_file():
         with raises(RuntimeError):
-            collect(config, pconn)
+            collect(config)
 
     validate_gpg_sig.assert_called()
 
@@ -331,8 +331,8 @@ def test_file_result(get_branch_info, try_disk, raw_config_parser, data_collecto
                                  mock.mock_open(read_data='').return_value,
                                  mock.mock_open(read_data='[remove]\nfiles=/etc/some_file,/tmp/another_file').return_value]
         raw_config_parser.side_effect = [Mock(sections=Mock(return_value=['remove']), items=Mock(return_value=[('files', '/etc/some_file,/tmp/another_file')]))]
-        config, pconn = collect_args()
-        collect(config, pconn)
+        config = collect_args()
+        collect(config)
 
         name, args, kwargs = try_disk.mock_calls[0]
         collection_rules = try_disk.return_value.copy()
@@ -353,9 +353,9 @@ def test_file_no_version(get_branch_info, try_disk, data_collector):
     """
     Configuration from file is loaded from the "uploader.json" key.
     """
-    config, pconn = collect_args()
+    config = collect_args()
     with raises(ValueError):
-        collect(config, pconn)
+        collect(config)
 
     data_collector.return_value.run_collection.assert_not_called()
     data_collector.return_value.done.assert_not_called()
@@ -369,16 +369,16 @@ def test_file_no_data(get_branch_info, try_disk, data_collector):
     """
     Configuration from file is loaded from the "uploader.json" key.
     """
-    config, pconn = collect_args()
+    config = collect_args()
     with raises(RuntimeError):
-        collect(config, pconn)
+        collect(config)
 
     data_collector.return_value.run_collection.assert_not_called()
     data_collector.return_value.done.assert_not_called()
 
 
 def test_cmd_blacklist():
-    config, pconn = collect_args()
+    config = collect_args()
     dc = DataCollector(config)
     assert dc._blacklist_check('rm')
     assert dc._blacklist_check('reboot')

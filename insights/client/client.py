@@ -277,13 +277,12 @@ def get_branch_info(config):
     return config.branch_info
 
 
-def collect(config, pconn):
+def collect(config):
     """
     All the heavy lifting done here
     """
     branch_info = get_branch_info(config)
     pc = InsightsUploadConf(config)
-    output = None
 
     rm_conf = pc.get_rm_conf()
     blacklist_report = pc.create_report()
