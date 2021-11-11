@@ -243,6 +243,7 @@ class DefaultSpecs(Specs):
     fw_devices = simple_command("/bin/fwupdagent get-devices", deps=[IsBareMetal])
     fw_security = simple_command("/bin/fwupdagent security --force", deps=[IsBareMetal])
     galera_cnf = first_file(["/var/lib/config-data/puppet-generated/mysql/etc/my.cnf.d/galera.cnf", "/etc/my.cnf.d/galera.cnf"])
+    getcert_list = simple_command("/usr/bin/getcert list")
     getconf_page_size = simple_command("/usr/bin/getconf PAGE_SIZE")
     getenforce = simple_command("/usr/sbin/getenforce")
     getsebool = simple_command("/usr/sbin/getsebool -a")

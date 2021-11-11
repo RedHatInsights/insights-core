@@ -75,6 +75,7 @@ class InsightsArchiveSpecs(Specs):
     fw_devices = simple_file("insights_commands/fwupdagent_get-devices")
     fw_security = simple_file("insights_commands/fwupdagent_security_--force")
     gcp_license_codes = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_gcp_license_codes")
+    getcert_list = simple_file("insights_commands/getcert_list")
     getconf_page_size = simple_file("insights_commands/getconf_PAGE_SIZE")
     getenforce = simple_file("insights_commands/getenforce")
     getsebool = simple_file("insights_commands/getsebool_-a")
