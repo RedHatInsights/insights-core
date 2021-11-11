@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.250
+Version:        3.0.251
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,21 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Nov 11 2021 Xiangce Liu <xiangceliu@redhat.com> 3.0.251-1
+- Add parser mssql_tls_file (#3283) (jiazhang@redhat.com)
+- Add spec "/etc/foreman-installer/scenarios.d/satellite.yaml" (#3280)
+  (44796653+huali027@users.noreply.github.com)
+- New parser ldap config (#3257) (44598880+rasrivas-
+  redhat@users.noreply.github.com)
+- Added spec for the getcert_list parser (#3274) (44598880+rasrivas-
+  redhat@users.noreply.github.com)
+- fix: Correct the order of satellite_custom_hiera in the list of specs (#3282)
+  (44796653+huali027@users.noreply.github.com)
+- chore: RHEL 8.5 is GA (#3285) (xiangceliu@redhat.com)
+- Fix: Strip progress messages from testparm output (#3273) (kgrant@redhat.com)
+- Get all SSL certificates for httpd incase different expired date used (#3270)
+  (44796653+huali027@users.noreply.github.com)
+
 * Thu Nov 04 2021 Bob Fahr <20520336+bfahr@users.noreply.github.com> 3.0.250-1
 - Fix: RHICOMPL-1980 Adding the 'relationships' API attribute to the client
   profiles API call. (#3241) (87209745+marleystipich2@users.noreply.github.com)
