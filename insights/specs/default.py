@@ -639,6 +639,7 @@ class DefaultSpecs(Specs):
         deps=[SatelliteVersion]
     )
     satellite_version_rb = simple_file("/usr/share/foreman/lib/satellite/version.rb")
+    satellite_yaml = simple_file("/etc/foreman-installer/scenarios.d/satellite.yaml")
     scheduler = glob_file("/sys/block/*/queue/scheduler")
     scsi = simple_file("/proc/scsi/scsi")
     scsi_eh_deadline = glob_file('/sys/class/scsi_host/host[0-9]*/eh_deadline')

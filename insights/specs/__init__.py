@@ -591,6 +591,7 @@ class Specs(SpecSet):
     satellite_sca_status = RegistryPoint()
     satellite_settings = RegistryPoint()
     satellite_version_rb = RegistryPoint()
+    satellite_yaml = RegistryPoint()
     scheduler = RegistryPoint(multi_output=True)
     sched_rt_runtime_us = RegistryPoint()
     scsi = RegistryPoint()
