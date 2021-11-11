@@ -389,7 +389,7 @@ class InsightsClient(object):
     @_net
     def collect(self):
         # return collection results
-        tar_file = client.collect(self.config, self.connection)
+        tar_file = client.collect(self.config)
 
         # it is important to note that --to-stdout is utilized via the wrapper RPM
         # this file is received and then we invoke shutil.copyfileobj
