@@ -84,6 +84,10 @@ NGINX_CERT_EXPIRE_INFO = '''
 notAfter=Jan 18 07:02:43 2038 GMT
 '''
 
+MSSQL_CERT_EXPIRE_INFO = '''
+notAfter=Nov  5 01:43:59 2022 GMT
+'''
+
 
 def test_certificate_info_exception():
     with pytest.raises(ParseException):
@@ -153,13 +157,15 @@ def test_doc():
     rhsm_katello_default_ca = ssl_certificate.RhsmKatelloDefaultCACert(context_wrap(RHSM_KATELLO_CERT_OUTPUT1))
     date_info = ssl_certificate.HttpdSSLCertExpireDate(context_wrap(HTTPD_CERT_EXPIRE_INFO))
     nginx_date_info = ssl_certificate.NginxSSLCertExpireDate(context_wrap(HTTPD_CERT_EXPIRE_INFO, args='/a/b/c.pem'))
+    mssql_date_info = ssl_certificate.MssqlTLSCertExpireDate(context_wrap(MSSQL_CERT_EXPIRE_INFO))
     globs = {
         'cert': cert,
         'certs': ca_cert,
         'satellite_ca_certs': satellite_ca_certs,
         'rhsm_katello_default_ca': rhsm_katello_default_ca,
         'date_info': date_info,
-        'nginx_date_info': nginx_date_info
+        'nginx_date_info': nginx_date_info,
+        'mssql_date_info': mssql_date_info
     }
     failed, _ = doctest.testmod(ssl_certificate, globs=globs)
     assert failed == 0
@@ -176,3 +182,9 @@ def test_nginx_ssl_cert_parser():
     assert 'notAfter' in date_info
     assert date_info['notAfter'].str == 'Jan 18 07:02:43 2038'
     assert date_info.cert_path == '/test/c.pem'
+
+
+def test_mssql_tls_cert_parser():
+    date_info = ssl_certificate.MssqlTLSCertExpireDate(context_wrap(MSSQL_CERT_EXPIRE_INFO))
+    assert 'notAfter' in date_info
+    assert date_info['notAfter'].str == 'Nov  5 01:43:59 2022'
