@@ -44,18 +44,23 @@ def pmlog_summary_args(broker):
                        - No pmloger file
                        - No "mandatory on" metrics in `config.ros`
     """
-    ps = broker[Ps]
+    pm_file = None
+    try:
+        ps = broker[Ps]
+        if not ps.search(COMMAND_NAME__contains='pmlogger'):
+            raise SkipComponent("No 'pmlogger' is running")
 
-    if ps.search(COMMAND_NAME__contains='pmlogger'):
         pcp_log_date = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y%m%d")
-        pm_file = "/var/log/pcp/pmlogger/ros/%s.index" % (pcp_log_date)
-        try:
-            if not (os.path.exists(pm_file) and os.path.isfile(pm_file)):
-                raise SkipComponent("No such file: {0}".format(pm_file))
-        except Exception as e:
-            raise SkipComponent("Failed to check for pmlogger file existence: {0}".format(str(e)))
+        pm_file = "/var/log/pcp/pmlogger/ros/{0}.index".format(pcp_log_date)
 
-        metrics = set()
+        if not (os.path.exists(pm_file) and os.path.isfile(pm_file)):
+            raise SkipComponent("No pmlogger file: {0}".format(pm_file))
+
+    except Exception as e:
+        raise SkipComponent("Failed to check pmlogger file existence: {0}".format(str(e)))
+
+    metrics = set()
+    try:
         ros = broker[RosConfig]
         for spec in ros.specs:
             if spec.get('state') == 'mandatory on':
@@ -64,6 +69,7 @@ def pmlog_summary_args(broker):
         if not metrics:
             raise SkipComponent("No 'mandatory on' metrics in config.ros")
 
-        return "{0} {1}".format(pm_file, ' '.join(sorted(metrics)))
+    except Exception as e:
+        raise SkipComponent("Failed to get pmlogger metrics: {0}".format(str(e)))
 
-    raise SkipComponent
+    return "{0} {1}".format(pm_file, ' '.join(sorted(metrics)))
