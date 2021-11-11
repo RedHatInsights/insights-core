@@ -243,6 +243,7 @@ class DefaultSpecs(Specs):
     fw_devices = simple_command("/bin/fwupdagent get-devices", deps=[IsBareMetal])
     fw_security = simple_command("/bin/fwupdagent security --force", deps=[IsBareMetal])
     galera_cnf = first_file(["/var/lib/config-data/puppet-generated/mysql/etc/my.cnf.d/galera.cnf", "/etc/my.cnf.d/galera.cnf"])
+    getcert_list = simple_command("/usr/bin/getcert list")
     getconf_page_size = simple_command("/usr/bin/getconf PAGE_SIZE")
     getenforce = simple_command("/usr/sbin/getenforce")
     getsebool = simple_command("/usr/sbin/getsebool -a")
@@ -350,6 +351,7 @@ class DefaultSpecs(Specs):
     last_upload_globs = ["/etc/redhat-access-insights/.lastupload", "/etc/insights-client/.lastupload"]
     lastupload = glob_file(last_upload_globs)
     ld_library_path_of_user = sap.ld_library_path_of_user
+    ldif_config = glob_file("/etc/dirsrv/slapd-*/dse.ldif")
     libssh_client_config = simple_file("/etc/libssh/libssh_client.config")
     libssh_server_config = simple_file("/etc/libssh/libssh_server.config")
     libvirtd_log = simple_file("/var/log/libvirt/libvirtd.log")
@@ -429,6 +431,7 @@ class DefaultSpecs(Specs):
     mounts = simple_file("/proc/mounts")
     mssql_api_assessment = simple_file("/var/opt/mssql/log/assessments/assessment-latest")
     mssql_conf = simple_file("/var/opt/mssql/mssql.conf")
+    mssql_tls_cert_enddate = command_with_args("/usr/bin/openssl x509 -in %s -enddate -noout", ssl_certificate.mssql_tls_cert_file)
     multicast_querier = simple_command("/usr/bin/find /sys/devices/virtual/net/ -name multicast_querier -print -exec cat {} \;")
     multipath_conf = simple_file("/etc/multipath.conf")
     multipath_conf_initramfs = simple_command("/bin/lsinitrd -f /etc/multipath.conf")
@@ -637,6 +640,7 @@ class DefaultSpecs(Specs):
         deps=[SatelliteVersion]
     )
     satellite_version_rb = simple_file("/usr/share/foreman/lib/satellite/version.rb")
+    satellite_yaml = simple_file("/etc/foreman-installer/scenarios.d/satellite.yaml")
     scheduler = glob_file("/sys/block/*/queue/scheduler")
     scsi = simple_file("/proc/scsi/scsi")
     scsi_eh_deadline = glob_file('/sys/class/scsi_host/host[0-9]*/eh_deadline')
