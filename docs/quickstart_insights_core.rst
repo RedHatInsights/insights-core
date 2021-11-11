@@ -36,8 +36,10 @@ file associated with the insights-core project.
 .. HINT::
    You might also need to install ``gcc`` to be able to build some python modules,
    ``unzip`` to be able to run `pytest` on the ``insights-core`` repo,
-   ``pandoc`` to build Insights Core documentation, and ``platform-python-devel`` 
-   and ``openssl-devel`` to build ``rhsm``.
+   ``pandoc`` to build Insights Core documentation. 
+   
+   To develop insights-client, you might need to install ``platform-python-devel`` and 
+   ``openss-devel`` as they are dependencies of `rhsm`.
 
 **********************
 Rule Development Setup
