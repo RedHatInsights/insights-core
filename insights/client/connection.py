@@ -871,6 +871,7 @@ class InsightsConnection(object):
             'file': (file_name, open(data_collected, 'rb'), content_type),
             'metadata': c_facts
         }
+        logger.debug('content-type: %s', content_type)
         logger.debug("Uploading %s to %s", data_collected, upload_url)
         upload = self.post(upload_url, files=files, headers={})
 
