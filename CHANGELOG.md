@@ -2,6 +2,17 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.251](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.251) (2021-11-11)
+
+- Add parser mssql_tls_file ([PR 3283](https://github.com/RedHatInsights/insights-core/pull/3283))
+- Add spec "/etc/foreman-installer/scenarios.d/satellite.yaml" ([PR 3280](https://github.com/RedHatInsights/insights-core/pull/3280))
+- New parser ldap config ([PR 3257](https://github.com/RedHatInsights/insights-core/pull/3257))
+- Added spec for the getcert_list parser ([PR 3274](https://github.com/RedHatInsights/insights-core/pull/3274))
+- fix: Correct the order of satellite_custom_hiera in the list of specs ([PR 3282](https://github.com/RedHatInsights/insights-core/pull/3282))
+- chore: RHEL 8.5 is GA ([PR 3285](https://github.com/RedHatInsights/insights-core/pull/3285))
+- Fix: Strip progress messages from testparm output ([PR 3273](https://github.com/RedHatInsights/insights-core/pull/3273))
+- Get all SSL certificates for httpd incase different expired date used ([PR 3270](https://github.com/RedHatInsights/insights-core/pull/3270))
+
 ## [insights-core-3.0.250](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.250) (2021-11-04)
 
 - Fix: RHICOMPL-1980 Adding the 'relationships' API attribute to the client profiles API call. ([PR 3241](https://github.com/RedHatInsights/insights-core/pull/3241))
