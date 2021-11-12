@@ -21,6 +21,8 @@ def patch_insights_config(old_function):
                        "return_value.load_all.return_value.register": False,
                        "return_value.load_all.return_value.diagnosis": None,
                        "return_value.load_all.return_value.payload": None,
+                       "return_value.load_all.return_value.manifest": None,
+                       "return_value.load_all.return_value.content_type": None,
                        "return_value.load_all.return_value.compliance": False,
                        "return_value.load_all.return_value.module": False,
                        "return_value.load_all.return_value.output_dir": None,
