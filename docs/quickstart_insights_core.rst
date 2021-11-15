@@ -39,12 +39,12 @@ file associated with the insights-core project.
    ``unzip`` to be able to run `pytest` on the ``insights-core`` repo,
    and ``pandoc`` to build Insights Core documentation.
 
-*************
+***************************
 Insights Development Setup
-*************
+***************************
 
 Insights Core Development
-================
+=========================
 
 Clone the project::
 
@@ -99,7 +99,7 @@ command.
    with the command `pip install --upgrade insights-core`.
 
 Insights Client Development
-================
+===========================
 
 Clone the project::
 
