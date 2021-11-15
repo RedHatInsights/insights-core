@@ -90,6 +90,7 @@ class RedHatRelease(object):
         rhel6 (str): The RHEL version when it's RHEL6, otherwise None
         rhel7 (str): The RHEL version when it's RHEL7, otherwise None
         rhel8 (str): The RHEL version when it's RHEL8, otherwise None
+        rhel9 (str): The RHEL version when it's RHEL9, otherwise None
 
     Raises:
         SkipComponent: If the version can't be determined even though a Uname
@@ -126,6 +127,7 @@ class RedHatRelease(object):
         self.rhel6 = self.rhel if self.major == 6 else None
         self.rhel7 = self.rhel if self.major == 7 else None
         self.rhel8 = self.rhel if self.major == 8 else None
+        self.rhel9 = self.rhel if self.major == 9 else None
 
 
 @serializer(RedHatRelease)
@@ -137,6 +139,7 @@ def serialize_RedHatRelease(obj, root=None):
             "rhel6": obj.rhel6,
             "rhel7": obj.rhel7,
             "rhel8": obj.rhel8,
+            "rhel9": obj.rhel9,
     }
 
 
@@ -149,4 +152,5 @@ def deserialize_RedHatRelease(_type, obj, root=None):
     foo.rhel6 = obj.get("rhel6")
     foo.rhel7 = obj.get("rhel7")
     foo.rhel8 = obj.get("rhel8")
+    foo.rhel9 = obj.get("rhel9")
     return foo
