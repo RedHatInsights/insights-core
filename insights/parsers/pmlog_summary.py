@@ -88,6 +88,7 @@ class PmLogSummary(CommandParser, dict):
     Keys are a hierarchy of the input key value split on the "." character.
 
     For instance::
+
         1. Input line "mem.util.used  3133919.812 Kbyte" is parsed as:
             {
                 'mem': {
