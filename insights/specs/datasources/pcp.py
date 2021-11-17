@@ -33,15 +33,16 @@ def pcp_enabled(broker):
 def pmlog_summary_args(broker):
     """
     Determines the pmlogger file and the metrics to collect via `pmlog_summary`
+    spec.
 
     Returns:
-        str: Full arguments string that will be passed to the `pmlog_summary`,
-             which contains the `pmloger` file and the required `metrics`.
+        str: Full arguments string that will be passed to the `pmlogsummary`,
+             which contains the `pmlogger` archive file and the required `metrics`.
 
     Raises:
         SkipComponent: Raises when meeting one of the following scenario:
                        - No pmlogger process is running
-                       - No pmloger file
+                       - No pmlogger file
                        - No "mandatory on" metrics in `config.ros`
     """
     pm_file = None
@@ -54,7 +55,7 @@ def pmlog_summary_args(broker):
         pm_file = "/var/log/pcp/pmlogger/ros/{0}.index".format(pcp_log_date)
 
         if not (os.path.exists(pm_file) and os.path.isfile(pm_file)):
-            raise SkipComponent("No pmlogger file: {0}".format(pm_file))
+            raise SkipComponent("No pmlogger archive file: {0}".format(pm_file))
 
     except Exception as e:
         raise SkipComponent("Failed to check pmlogger file existence: {0}".format(str(e)))
