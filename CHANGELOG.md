@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.252](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.252) (2021-11-18)
+
+- Feat: Add Malware app as a manifest spec ([PR 3236](https://github.com/RedHatInsights/insights-core/pull/3236))
+- adding the missed CHANGELOG ([PR 3286](https://github.com/RedHatInsights/insights-core/pull/3286))
+- Remove unused collect variables ([PR 3284](https://github.com/RedHatInsights/insights-core/pull/3284))
+
 ## [insights-core-3.0.251](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.251) (2021-11-11)
 
 - Add parser mssql_tls_file ([PR 3283](https://github.com/RedHatInsights/insights-core/pull/3283))
