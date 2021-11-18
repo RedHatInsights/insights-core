@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.251
+Version:        3.0.252
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,10 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Nov 18 2021 Sachin Patil <psachin@redhat.com> 3.0.252-1
+- Feat: Add Malware app as a manifest spec (#3236) (gravitypriest@users.noreply.github.com)
+- adding the missed CHANGELOG (#3286) (xiangceliu@redhat.com)
+- Remove unused collect variables (#3284) (stomsa@redhat.com)
 * Thu Nov 11 2021 Xiangce Liu <xiangceliu@redhat.com> 3.0.251-1
 - Add parser mssql_tls_file (#3283) (jiazhang@redhat.com)
 - Add spec "/etc/foreman-installer/scenarios.d/satellite.yaml" (#3280)
