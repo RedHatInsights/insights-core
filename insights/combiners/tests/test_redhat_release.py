@@ -74,6 +74,7 @@ def test_RedHatRelease_both():
     assert result.rhel == result.rhel7 == '7.2'
     assert result.rhel6 is None
     assert result.rhel8 is None
+    assert result.rhel9 is None
 
 
 def test_raise():

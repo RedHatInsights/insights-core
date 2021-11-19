@@ -41,6 +41,10 @@ REDHAT_RELEASE_BETA = """
 Red Hat Enterprise Linux Server release 8.5 Beta (Ootpa)
 """.strip()
 
+REDHAT_RELEASE9_BETA = """
+Red Hat Enterprise Linux release 9.0 Beta (Plow)
+""".strip()
+
 CENTOS_STREAM = """
 CentOS Stream release 8
 """.strip()
@@ -141,6 +145,18 @@ def test_rhel_beta():
     assert release.is_beta
     assert release.parsed['code_name'] == 'Ootpa'
     assert release.product == "Red Hat Enterprise Linux Server"
+
+
+def test_rhel9_beta():
+    release = RedhatRelease(context_wrap(REDHAT_RELEASE9_BETA))
+    assert release.raw == REDHAT_RELEASE9_BETA
+    assert release.major == 9
+    assert release.minor == 0
+    assert release.version == "9.0"
+    assert release.is_rhel
+    assert release.is_beta
+    assert release.parsed['code_name'] == 'Plow'
+    assert release.product == "Red Hat Enterprise Linux"
 
 
 def test_centos_stream():

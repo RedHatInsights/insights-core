@@ -1,6 +1,6 @@
 """
-IsRhel6, IsRhel7 and IsRhel8
-===============================
+IsRhel6, IsRhel7, IsRhel8, and IsRhel9
+=========================================
 
 An ``IsRhel*`` component is valid if the
 :py:class:`insights.combiners.redhat_release.RedHatRelease` combiner indicates
@@ -71,4 +71,23 @@ class IsRhel8(object):
     def __init__(self, rhel):
         if rhel.major != 8:
             raise SkipComponent('Not RHEL8')
+        self.minor = rhel.minor
+
+
+@component(RedHatRelease)
+class IsRhel9(object):
+    """
+    This component uses ``RedhatRelease`` combiner
+    to determine RHEL version. It checks if RHEL9, if not
+    RHEL9 it raises ``SkipComponent``.
+
+    Attributes:
+        minor (int): The minor version of RHEL 9.
+
+    Raises:
+        SkipComponent: When RHEL version is not RHEL9.
+    """
+    def __init__(self, rhel):
+        if rhel.major != 9:
+            raise SkipComponent('Not RHEL9')
         self.minor = rhel.minor
