@@ -218,6 +218,8 @@ plugins:
           enabled: true
         - name: insights.components.rhel_version.IsRhel8
           enabled: true
+        - name: insights.components.rhel_version.IsRhel9
+          enabled: true
 
     # needed because some specs aren't given names before they're used in DefaultSpecs
         - name: insights.core.spec_factory
