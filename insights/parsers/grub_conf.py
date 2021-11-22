@@ -53,7 +53,7 @@ BootLoaderEntries - file ``/boot/loader/entries/*.conf``
 
 from insights import Parser, parser, get_active_lines
 from insights.parsers import ParseException, SkipException
-from insights.components.rhel_version import IsRhel6, IsRhel7, IsRhel8
+from insights.components.rhel_version import IsRhel6, IsRhel7, IsRhel8, IsRhel9
 from insights.specs import Specs
 
 
@@ -356,7 +356,7 @@ class Grub2EFIConfig(Grub2Config):
         self._efi = True
 
 
-@parser(Specs.boot_loader_entries, IsRhel8)
+@parser(Specs.boot_loader_entries, [IsRhel8, IsRhel9])
 class BootLoaderEntries(Parser, dict):
     """
     Parses the ``/boot/loader/entries/*.conf`` files.
