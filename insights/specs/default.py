@@ -28,7 +28,7 @@ from insights.core.spec_factory import foreach_collect, foreach_execute
 from insights.core.spec_factory import first_file, listdir
 from insights.combiners.services import Services
 from insights.combiners.ps import Ps
-from insights.components.rhel_version import IsRhel8, IsRhel7
+from insights.components.rhel_version import IsRhel7, IsRhel8, IsRhel9
 from insights.components.cloud_provider import IsAWS, IsAzure, IsGCP
 from insights.components.ceph import IsCephMonitor
 from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersion
@@ -143,7 +143,7 @@ class DefaultSpecs(Specs):
     cmdline = simple_file("/proc/cmdline")
     corosync = simple_file("/etc/sysconfig/corosync")
 
-    @datasource(HostContext, [IsRhel7, IsRhel8])
+    @datasource(HostContext, [IsRhel7, IsRhel8, IsRhel9])
     def corosync_cmapctl_cmd_list(broker):
         """
         corosync-cmapctl add different arguments on RHEL7 and RHEL8.
@@ -158,7 +158,7 @@ class DefaultSpecs(Specs):
                     corosync_cmd,
                     ' '.join([corosync_cmd, '-d runtime.schedmiss.timestamp']),
                     ' '.join([corosync_cmd, '-d runtime.schedmiss.delay'])]
-            if broker.get(IsRhel8):
+            if broker.get(IsRhel8) or broker.get(IsRhel9):
                 return [
                     corosync_cmd,
                     ' '.join([corosync_cmd, '-m stats']),
