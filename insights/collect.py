@@ -221,6 +221,10 @@ plugins:
         - name: insights.components.rhel_version.IsRhel9
           enabled: true
 
+    # needed for the 'pmlog_summary' spec
+        - name: insights.parsers.ros_config.RosConfig
+          enabled: true
+
     # needed because some specs aren't given names before they're used in DefaultSpecs
         - name: insights.core.spec_factory
           enabled: true
