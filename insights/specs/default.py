@@ -394,7 +394,10 @@ class DefaultSpecs(Specs):
     lsblk_pairs = simple_command("/bin/lsblk -P -o NAME,KNAME,MAJ:MIN,FSTYPE,MOUNTPOINT,LABEL,UUID,RA,RO,RM,MODEL,SIZE,STATE,OWNER,GROUP,MODE,ALIGNMENT,MIN-IO,OPT-IO,PHY-SEC,LOG-SEC,ROTA,SCHED,RQ-SIZE,TYPE,DISC-ALN,DISC-GRAN,DISC-MAX,DISC-ZERO")
     lscpu = simple_command("/usr/bin/lscpu")
     lsmod = simple_command("/sbin/lsmod")
-    lsof = simple_command("/usr/sbin/lsof")
+    lsof = first_of([
+        simple_command("/usr/sbin/lsof"),
+        simple_command("/usr/bin/lsof")
+    ])
     lspci = simple_command("/sbin/lspci -k")
     lspci_vmmkn = simple_command("/sbin/lspci -vmmkn")
     lsscsi = simple_command("/usr/bin/lsscsi")
@@ -514,7 +517,10 @@ class DefaultSpecs(Specs):
     partitions = simple_file("/proc/partitions")
     pci_rport_target_disk_paths = simple_command("/usr/bin/find /sys/devices/ -maxdepth 10 -mindepth 9 -name stat -type f")
     pcp_metrics = simple_command("/usr/bin/curl -s http://127.0.0.1:44322/metrics --connect-timeout 5", deps=[pcp_enabled])
-    passenger_status = simple_command("/usr/bin/passenger-status")
+    passenger_status = first_of([
+        simple_command("/usr/bin/passenger-status"),
+        simple_command("/usr/sbin/passenger-status")
+    ])
     password_auth = simple_file("/etc/pam.d/password-auth")
     pcs_quorum_status = simple_command("/usr/sbin/pcs quorum status")
     pcs_status = simple_command("/usr/sbin/pcs status")
@@ -666,7 +672,10 @@ class DefaultSpecs(Specs):
         simple_file("/etc/sysconfig/rhn/systemid"),
         simple_file("/conf/rhn/sysconfig/rhn/systemid")
     ])
-    systool_b_scsi_v = simple_command("/bin/systool -b scsi -v")
+    systool_b_scsi_v = first_of([
+        simple_command("/bin/systool -b scsi -v"),
+        simple_command("/usr/bin/systool -b scsi -v")
+    ])
     sys_vmbus_device_id = glob_file('/sys/bus/vmbus/devices/*/device_id')
     sys_vmbus_class_id = glob_file('/sys/bus/vmbus/devices/*/class_id')
     testparm_s = simple_command("/usr/bin/testparm -s")
