@@ -394,7 +394,10 @@ class DefaultSpecs(Specs):
     lsblk_pairs = simple_command("/bin/lsblk -P -o NAME,KNAME,MAJ:MIN,FSTYPE,MOUNTPOINT,LABEL,UUID,RA,RO,RM,MODEL,SIZE,STATE,OWNER,GROUP,MODE,ALIGNMENT,MIN-IO,OPT-IO,PHY-SEC,LOG-SEC,ROTA,SCHED,RQ-SIZE,TYPE,DISC-ALN,DISC-GRAN,DISC-MAX,DISC-ZERO")
     lscpu = simple_command("/usr/bin/lscpu")
     lsmod = simple_command("/sbin/lsmod")
-    lsof = simple_command("/usr/sbin/lsof")
+    lsof = first_of([
+        simple_command("/usr/bin/lsof"),
+        simple_command("/usr/sbin/lsof")
+    ])
     lspci = simple_command("/sbin/lspci -k")
     lspci_vmmkn = simple_command("/sbin/lspci -vmmkn")
     lsscsi = simple_command("/usr/bin/lsscsi")
@@ -666,7 +669,10 @@ class DefaultSpecs(Specs):
         simple_file("/etc/sysconfig/rhn/systemid"),
         simple_file("/conf/rhn/sysconfig/rhn/systemid")
     ])
-    systool_b_scsi_v = simple_command("/bin/systool -b scsi -v")
+    systool_b_scsi_v = first_of([
+        simple_command("/usr/bin/systool -b scsi -v"),
+        simple_command("/bin/systool -b scsi -v")
+    ])
     sys_vmbus_device_id = glob_file('/sys/bus/vmbus/devices/*/device_id')
     sys_vmbus_class_id = glob_file('/sys/bus/vmbus/devices/*/class_id')
     testparm_s = simple_command("/usr/bin/testparm -s")
