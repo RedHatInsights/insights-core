@@ -395,8 +395,8 @@ class DefaultSpecs(Specs):
     lscpu = simple_command("/usr/bin/lscpu")
     lsmod = simple_command("/sbin/lsmod")
     lsof = first_of([
-        simple_command("/usr/sbin/lsof"),
-        simple_command("/usr/bin/lsof")
+        simple_command("/usr/bin/lsof"),
+        simple_command("/usr/sbin/lsof")
     ])
     lspci = simple_command("/sbin/lspci -k")
     lspci_vmmkn = simple_command("/sbin/lspci -vmmkn")
@@ -517,10 +517,7 @@ class DefaultSpecs(Specs):
     partitions = simple_file("/proc/partitions")
     pci_rport_target_disk_paths = simple_command("/usr/bin/find /sys/devices/ -maxdepth 10 -mindepth 9 -name stat -type f")
     pcp_metrics = simple_command("/usr/bin/curl -s http://127.0.0.1:44322/metrics --connect-timeout 5", deps=[pcp_enabled])
-    passenger_status = first_of([
-        simple_command("/usr/bin/passenger-status"),
-        simple_command("/usr/sbin/passenger-status")
-    ])
+    passenger_status = simple_command("/usr/bin/passenger-status")
     password_auth = simple_file("/etc/pam.d/password-auth")
     pcs_quorum_status = simple_command("/usr/sbin/pcs quorum status")
     pcs_status = simple_command("/usr/sbin/pcs status")
@@ -673,8 +670,8 @@ class DefaultSpecs(Specs):
         simple_file("/conf/rhn/sysconfig/rhn/systemid")
     ])
     systool_b_scsi_v = first_of([
-        simple_command("/bin/systool -b scsi -v"),
-        simple_command("/usr/bin/systool -b scsi -v")
+        simple_command("/usr/bin/systool -b scsi -v"),
+        simple_command("/bin/systool -b scsi -v")
     ])
     sys_vmbus_device_id = glob_file('/sys/bus/vmbus/devices/*/device_id')
     sys_vmbus_class_id = glob_file('/sys/bus/vmbus/devices/*/class_id')
