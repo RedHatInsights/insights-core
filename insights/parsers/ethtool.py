@@ -876,27 +876,36 @@ class Ethtool(CommandParser):
         if "ethtool: bad command line argument(s)" in content[0]:
             raise ParseException('ethtool: bad command line argument for ethtool', content)
 
-        if "Settings for" not in content[0]:
-            raise ParseException("ethtool: unrecognised first line '{l}'".format(l=content[0]))
-
-        self.data['ETHNIC'] = content[0].split()[-1].strip(':')
-
-        if "No data available" in content[1]:
-            raise ParseException('Fake ethnic as ethtool command argument', content)
-
-        key = value = None
-        for line in content[1:]:
+        key = started = None
+        for line in content:
             line = line.strip()
             if line:
-                try:
-                    if ':' in line:
-                        key, value = line.split(':', 1)
-                        key = key.strip()
-                        self.data[key] = [value.strip()]
-                    else:
-                        self.data[key].append(line)
-                except:
-                    raise ParseException('Ethtool unable to parse content', line)
+                # Started is set when a line containing Settings for <nic>:
+                # is found, ignore all other lines prior to this one.
+                if not started:
+                    if "Settings for" in line:
+                        started = 1
+                        self.data['ETHNIC'] = line.split()[-1].strip(':')
+
+                    continue
+                else:
+                    if "No data available" in line:
+                        raise ParseException('Fake ethnic as ethtool command argument', content)
+
+                    try:
+                        if ':' in line:
+                            key, value = line.split(':', 1)
+                            key = key.strip()
+                            self.data[key] = [value.strip()]
+                        else:
+                            self.data[key].append(line)
+                    except KeyError:
+                        raise ParseException('Ethtool unable to parse content', line)
+
+        # If started was never set then there wasn't any
+        # valid lines found so raise a parse exception.
+        if not started:
+            raise ParseException('Ethtool does not contain Settings for <nic>:')
 
         self.supported_link_modes = []
         if 'Supported link modes' in self.data:
