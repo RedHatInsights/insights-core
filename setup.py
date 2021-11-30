@@ -1,5 +1,4 @@
 import os
-import sys
 from setuptools import setup, find_packages
 
 __here__ = os.path.dirname(os.path.abspath(__file__))
@@ -20,7 +19,6 @@ entry_points = {
         'insights-inspect = insights.tools.insights_inspect:main',
         'insights-info = insights.tools.query:main',
         'insights-ocpshell= insights.ocpshell:main',
-        'client = insights.client:run',
         'mangle = insights.util.mangle:main'
     ]
 }
@@ -35,12 +33,9 @@ runtime = set([
     'defusedxml',
     'lockfile',
     'jinja2<=2.11.3',
+    'pyyaml>=3.10,<=3.13; python_version < "2.7"',
+    'pyyaml; python_version >= "2.7"',
 ])
-
-if (sys.version_info < (2, 7)):
-    runtime.add('pyyaml>=3.10,<=3.13')
-else:
-    runtime.add('pyyaml')
 
 
 def maybe_require(pkg):
