@@ -274,6 +274,7 @@ class Specs(SpecSet):
     jboss_standalone_server_log = RegistryPoint(multi_output=True, filterable=True)
     jboss_standalone_main_config = RegistryPoint(multi_output=True)
     jboss_version = RegistryPoint(multi_output=True)
+    journal_all = RegistryPoint(filterable=True)
     journal_since_boot = RegistryPoint(filterable=True)
     katello_service_status = RegistryPoint(filterable=True)
     kdump_conf = RegistryPoint()
