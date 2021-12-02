@@ -2,6 +2,16 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.253](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.253) (2021-12-02)
+
+- DOC: Added new section for client development ([PR 3287](https://github.com/RedHatInsights/insights-core/pull/3287))
+- Update setup.py ([PR 3289](https://github.com/RedHatInsights/insights-core/pull/3289))
+- Fix: Enhance some spec path ([PR 3293](https://github.com/RedHatInsights/insights-core/pull/3293))
+- Update ethtool's parsing logic ([PR 3291](https://github.com/RedHatInsights/insights-core/pull/3291))
+- Refactor: read metrics from config.ros for pmlog_summary ([PR 3278](https://github.com/RedHatInsights/insights-core/pull/3278))
+- Add in IsRhel9 component ([PR 3288](https://github.com/RedHatInsights/insights-core/pull/3288))
+- fix: update the pmlog_summary to support new metrics ([PR 3290](https://github.com/RedHatInsights/insights-core/pull/3290))
+
 ## [insights-core-3.0.252](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.252) (2021-11-18)
 
 - Feat: Add Malware app as a manifest spec ([PR 3236](https://github.com/RedHatInsights/insights-core/pull/3236))

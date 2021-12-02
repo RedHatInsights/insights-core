@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.252
+Version:        3.0.253
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,18 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Dec 02 2021 Xiangce Liu <xiangceliu@redhat.com> 3.0.253-1
+- DOC: Added new section for client development (#3287)
+  (93577878+ahitacat@users.noreply.github.com)
+- Update setup.py (#3289) (rblakley@redhat.com)
+- Fix: Enhance some spec path (#3293) (jiazhang@redhat.com)
+- Update ethtool's parsing logic (#3291) (rblakley@redhat.com)
+- Refactor: read metrics from config.ros for pmlog_summary (#3278)
+  (xiangceliu@redhat.com)
+- Add in IsRhel9 component (#3288) (rblakley@redhat.com)
+- fix: update the pmlog_summary to support new metrics (#3290)
+  (xiangceliu@redhat.com)
+
 * Thu Nov 18 2021 Sachin Patil <psachin@redhat.com> 3.0.252-1
 - Feat: Add Malware app as a manifest spec (#3236) (gravitypriest@users.noreply.github.com)
 - adding the missed CHANGELOG (#3286) (xiangceliu@redhat.com)
