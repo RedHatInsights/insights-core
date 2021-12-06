@@ -134,7 +134,6 @@ test_compute_resource1,Foreman::Model::Libvirt
 test_compute_resource2,Foreman::Model::RHV
 '''
 
-
 SATELLITE_SCA_INFO_1 = '''
 displayname,content_access_mode
 Default Organization,entitlement
@@ -146,6 +145,12 @@ displayname,content_access_mode
 Default Organization,entitlement
 Orgq,entitlement
 '''
+
+SATELLITE_KATELLO_ROOT_REPOSITORIES = """
+id,name
+54,testa
+55,testb
+"""
 
 
 def test_satellite_postgesql_query_exception():
@@ -185,11 +190,13 @@ def test_HTL_doc_examples():
     settings = satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_SETTINGS_1))
     resources_table = satellite_postgresql_query.SatelliteComputeResources(context_wrap(SATELLITE_COMPUTE_RESOURCE_1))
     sat_sca_info = satellite_postgresql_query.SatelliteSCAStatus(context_wrap(SATELLITE_SCA_INFO_1))
+    repositories = satellite_postgresql_query.SatelliteKatelloEmptyURLRepositories(context_wrap(SATELLITE_KATELLO_ROOT_REPOSITORIES))
     globs = {
         'query': query,
         'table': settings,
         'resources_table': resources_table,
-        'sat_sca_info': sat_sca_info
+        'sat_sca_info': sat_sca_info,
+        'katello_root_repositories': repositories
     }
     failed, tested = doctest.testmod(satellite_postgresql_query, globs=globs)
     assert failed == 0
@@ -240,3 +247,8 @@ def test_satellite_compute_resources():
 def test_satellite_sca():
     sat_sca_info = satellite_postgresql_query.SatelliteSCAStatus(context_wrap(SATELLITE_SCA_INFO_2))
     assert not sat_sca_info.sca_enabled
+
+
+def test_satellite_katello_empty_url_repositories():
+    repositories = satellite_postgresql_query.SatelliteKatelloEmptyURLRepositories(context_wrap(SATELLITE_KATELLO_ROOT_REPOSITORIES))
+    assert repositories[1]['name'] == 'testb'

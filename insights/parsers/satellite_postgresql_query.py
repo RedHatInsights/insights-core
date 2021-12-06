@@ -10,6 +10,8 @@ SatelliteComputeResources - command ``psql -d foreman -c 'select name, type from
 -----------------------------------------------------------------------------------------------------------
 SatelliteSCAStatus - command ``psql -d candlepin -c "select displayname, content_access_mode from cp_owner" --csv``
 -------------------------------------------------------------------------------------------------------------------
+SatelliteKatelloEmptyURLRepositories - command ``psql -d foreman -c 'select id, name from katello_root_repositories where url is NULL;' --csv``
+-----------------------------------------------------------------------------------------------------------------------------------------------
 """
 
 import os
@@ -203,6 +205,28 @@ class SatelliteComputeResources(SatellitePostgreSQLQuery):
         1
         >>> rows[0]['name']
         'test_compute_resource1'
+    """
+    pass
+
+
+@parser(Specs.satellite_katello_empty_url_repositories)
+class SatelliteKatelloEmptyURLRepositories(SatellitePostgreSQLQuery):
+    """
+    Parse the output of the command ``psql -d foreman -c 'select id, name from katello_root_repositories where url is NULL;' --csv``.
+
+    Sample output::
+
+        id,name
+        54,testa
+        55,testb
+
+    Examples:
+        >>> type(katello_root_repositories)
+        <class 'insights.parsers.satellite_postgresql_query.SatelliteKatelloEmptyURLRepositories'>
+        >>> len(katello_root_repositories)
+        2
+        >>> katello_root_repositories[0]['name']
+        'testa'
     """
     pass
 
