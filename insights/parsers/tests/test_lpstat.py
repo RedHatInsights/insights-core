@@ -21,6 +21,8 @@ printer unknown_printer may be jammed.  enabled since Fri 20 Jan 2017 09:55:50 P
 LPSTAT_V_OUTPUT = """
 device for test_printer1: ipp
 device for test_printer2: ipp
+device for savtermhpc: implicitclass:savtermhpc
+device for A1: marshaA1:/tmp/A1
 """.strip()
 
 LPSTAT_V_OUTPUT_INVALID_1 = """
@@ -82,6 +84,7 @@ def test_lpstat_printer_names_by_status(status, expected_name):
 def test_lpstat_protocol():
     lpstat_protocol = LpstatProtocol(context_wrap(LPSTAT_V_OUTPUT))
     assert lpstat_protocol["test_printer1"] == "ipp"
+    assert lpstat_protocol["savtermhpc"] == "implicitclass"
 
 
 def test_lpstat_protocol_invalid_state():

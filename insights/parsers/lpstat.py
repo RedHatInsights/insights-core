@@ -101,6 +101,8 @@ class LpstatProtocol(CommandParser, dict):
 
         device for test_printer1: ipp
         device for test_printer2: ipp
+        device for savtermhpc: implicitclass:savtermhpc
+        device for A1: marshaA1:/tmp/A1
 
     Examples:
         >>> type(lpstat_protocol)
@@ -114,7 +116,7 @@ class LpstatProtocol(CommandParser, dict):
         data = {}
         for line in content:
             if line.startswith("device for "):
-                protocol = line.split(":")[-1].strip()
+                protocol = line.split(":")[1].strip()
                 printer = line.split(":")[0].split()[-1].strip()
                 data[printer] = protocol
         if not data:
