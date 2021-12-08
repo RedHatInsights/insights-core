@@ -175,7 +175,7 @@ class InsightsConnection(object):
                 connection.proxy_headers = auth_map
         return session
 
-    def _http_request(self, url, method, **kwargs):
+    def _http_request(self, url, method, log_response_text=True, **kwargs):
         '''
         Perform an HTTP request, net logging, and error handling
         Parameters
@@ -188,7 +188,8 @@ class InsightsConnection(object):
         logger.log(NETWORK, "%s %s", method, url)
         res = self.session.request(url=url, method=method, timeout=self.config.http_timeout, **kwargs)
         logger.log(NETWORK, "HTTP Status: %d %s", res.status_code, res.reason)
-        logger.log(NETWORK, "HTTP Response Text: %s", res.text)
+        if log_response_text or res.status_code != 200:
+            logger.log(NETWORK, "HTTP Response Text: %s", res.text)
         return res
 
     def get(self, url, **kwargs):
