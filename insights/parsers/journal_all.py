@@ -1,6 +1,6 @@
 """
 JournalAll file ``/sos_commands/logs/journalctl_--no-pager``
-=========================================================================
+============================================================
 """
 
 from .. import Syslog, parser
@@ -22,7 +22,7 @@ class JournalAll(Syslog):
         May 18 15:24:28 lxc-rhel68-sat56 yum[11597]: Installed: lynx-2.8.6-27.el6.x86_64
         May 18 15:36:19 lxc-rhel68-sat56 yum[11954]: Updated: sos-3.2-40.el6.noarch
 
-    Note:
+    .. note::
         Because journal timestamps by default have no year,
         the year of the logs will be inferred from the year in your timestamp.
         This will also work around December/January crossovers.
