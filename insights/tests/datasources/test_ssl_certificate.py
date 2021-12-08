@@ -55,6 +55,18 @@ HTTPD_SSL_CONF_2 = """
   SSLVerifyDepth          3
   SSLOptions +StdEnvVars +ExportCertData
 </VirtualHost>
+<VirtualHost *:443>
+  ## SSL directives
+  ServerName  f.g.e.com
+  SSLEngine off
+  SSLCertificateFile      "/etc/pki/katello/certs/katello-apache_d.crt"
+  SSLCertificateKeyFile   "/etc/pki/katello/private/katello-apache_d.key"
+  SSLCertificateChainFile "/etc/pki/katello/certs/katello-server-ca_d.crt"
+  SSLVerifyClient         optional
+  SSLCACertificateFile    "/etc/pki/katello/certs/katello-default-ca_d.crt"
+  SSLVerifyDepth          3
+  SSLOptions +StdEnvVars +ExportCertData
+</VirtualHost>
 """.strip()
 
 HTTPD_CONF_WITHOUT_SSL = """

@@ -25,9 +25,16 @@ def httpd_ssl_certificate_files(broker):
         SkipComponent: Raised if "SSLCertificateFile" directive isn't found
     """
     conf = broker[HttpdConfTree]
-    ssl_certs = conf.find('SSLCertificateFile')
+    virtual_hosts = conf.find('VirtualHost')
+    ssl_certs = []
+    for host in virtual_hosts:
+        ssl_cert = ssl_engine = None
+        ssl_engine = host.select('SSLEngine')
+        ssl_cert = host.select('SSLCertificateFile')
+        if ssl_engine and ssl_engine.value and ssl_cert:
+            ssl_certs.append(str(ssl_cert.value))
     if ssl_certs:
-        return [str(ssl_cert.value) for ssl_cert in ssl_certs]
+        return ssl_certs
     raise SkipComponent
 
 
