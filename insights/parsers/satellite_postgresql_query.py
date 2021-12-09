@@ -231,6 +231,8 @@ class SatelliteKatelloEmptyURLRepositories(SatellitePostgreSQLQuery):
         2
         >>> katello_root_repositories[0]['name']
         'testa'
+    """
+    pass
 
 
 @parser(Specs.satellite_core_taskreservedresource_count)
