@@ -10,6 +10,8 @@ SatelliteComputeResources - command ``psql -d foreman -c 'select name, type from
 -----------------------------------------------------------------------------------------------------------
 SatelliteSCAStatus - command ``psql -d candlepin -c "select displayname, content_access_mode from cp_owner" --csv``
 -------------------------------------------------------------------------------------------------------------------
+SatelliteCoreTaskReservedResourceCount - command ``psql -d pulpcore -c 'select count(*) from core_taskreservedresource' --csv``
+-------------------------------------------------------------------------------------------------------------------------------
 """
 
 import os
@@ -203,6 +205,25 @@ class SatelliteComputeResources(SatellitePostgreSQLQuery):
         1
         >>> rows[0]['name']
         'test_compute_resource1'
+    """
+    pass
+
+
+@parser(Specs.satellite_core_taskreservedresource_count)
+class SatelliteCoreTaskReservedResourceCount(SatellitePostgreSQLQuery):
+    """
+    Parse the output of the command ``psql -d pulpcore -c 'select count(*) from core_taskreservedresource' --csv``.
+
+    Sample output::
+
+        count
+        0
+
+    Examples:
+        >>> type(tasks)
+        <class 'insights.parsers.satellite_postgresql_query.SatelliteCoreTaskReservedResourceCount'>
+        >>> tasks[0]['count']
+        '0'
     """
     pass
 
