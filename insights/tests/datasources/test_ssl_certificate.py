@@ -55,6 +55,18 @@ HTTPD_SSL_CONF_2 = """
   SSLVerifyDepth          3
   SSLOptions +StdEnvVars +ExportCertData
 </VirtualHost>
+<VirtualHost *:443>
+  ## SSL directives
+  ServerName  f.g.e.com
+  SSLEngine off
+  SSLCertificateFile      "/etc/pki/katello/certs/katello-apache_e.crt"
+  SSLCertificateKeyFile   "/etc/pki/katello/private/katello-apache_e.key"
+  SSLCertificateChainFile "/etc/pki/katello/certs/katello-server-ca_e.crt"
+  SSLVerifyClient         optional
+  SSLCACertificateFile    "/etc/pki/katello/certs/katello-default-ca_e.crt"
+  SSLVerifyDepth          3
+  SSLOptions +StdEnvVars +ExportCertData
+</VirtualHost>
 """.strip()
 
 HTTPD_CONF_WITHOUT_SSL = """
@@ -155,6 +167,7 @@ def test_httpd_certificate():
         HttpdConfTree: conf_tree
     }
     result = httpd_ssl_certificate_files(broker)
+    # "/etc/pki/katello/certs/katello-apache_e.crt" not in the result
     assert result == ['/etc/pki/katello/certs/katello-apache.crt', '/etc/pki/katello/certs/katello-apache_d.crt']
 
 
