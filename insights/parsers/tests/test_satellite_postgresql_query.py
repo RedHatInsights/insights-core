@@ -152,6 +152,11 @@ id,name
 55,testb
 """
 
+SATELLITE_TASK_RESERVERDRESOURCE_CONTENT = """
+count
+0
+"""
+
 
 def test_satellite_postgesql_query_exception():
     with pytest.raises(ContentException):
@@ -191,12 +196,14 @@ def test_HTL_doc_examples():
     resources_table = satellite_postgresql_query.SatelliteComputeResources(context_wrap(SATELLITE_COMPUTE_RESOURCE_1))
     sat_sca_info = satellite_postgresql_query.SatelliteSCAStatus(context_wrap(SATELLITE_SCA_INFO_1))
     repositories = satellite_postgresql_query.SatelliteKatelloEmptyURLRepositories(context_wrap(SATELLITE_KATELLO_ROOT_REPOSITORIES))
+    tasks = satellite_postgresql_query.SatelliteCoreTaskReservedResourceCount(context_wrap(SATELLITE_TASK_RESERVERDRESOURCE_CONTENT))
     globs = {
         'query': query,
         'table': settings,
         'resources_table': resources_table,
         'sat_sca_info': sat_sca_info,
         'katello_root_repositories': repositories
+        'tasks': tasks
     }
     failed, tested = doctest.testmod(satellite_postgresql_query, globs=globs)
     assert failed == 0
@@ -252,3 +259,8 @@ def test_satellite_sca():
 def test_satellite_katello_empty_url_repositories():
     repositories = satellite_postgresql_query.SatelliteKatelloEmptyURLRepositories(context_wrap(SATELLITE_KATELLO_ROOT_REPOSITORIES))
     assert repositories[1]['name'] == 'testb'
+
+    
+def test_satellite_taskreservedresource():
+    tasks = satellite_postgresql_query.SatelliteCoreTaskReservedResourceCount(context_wrap(SATELLITE_TASK_RESERVERDRESOURCE_CONTENT))
+    assert tasks[0]['count'] == '0'
