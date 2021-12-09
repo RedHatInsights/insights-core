@@ -202,7 +202,7 @@ def test_HTL_doc_examples():
         'table': settings,
         'resources_table': resources_table,
         'sat_sca_info': sat_sca_info,
-        'katello_root_repositories': repositories
+        'katello_root_repositories': repositories,
         'tasks': tasks
     }
     failed, tested = doctest.testmod(satellite_postgresql_query, globs=globs)
