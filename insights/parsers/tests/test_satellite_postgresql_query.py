@@ -260,7 +260,7 @@ def test_satellite_katello_empty_url_repositories():
     repositories = satellite_postgresql_query.SatelliteKatelloEmptyURLRepositories(context_wrap(SATELLITE_KATELLO_ROOT_REPOSITORIES))
     assert repositories[1]['name'] == 'testb'
 
-    
+
 def test_satellite_taskreservedresource():
     tasks = satellite_postgresql_query.SatelliteCoreTaskReservedResourceCount(context_wrap(SATELLITE_TASK_RESERVERDRESOURCE_CONTENT))
     assert tasks[0]['count'] == '0'
