@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.253
+Version:        3.0.254
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,22 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Dec 09 2021 Sachin Patil <psachin@redhat.com> 3.0.254-1
+
+- Fix: Only get "SSLCertificateFile" when "SSLEngine on" is configured (#3305)
+  (44796653+huali027@users.noreply.github.com)
+- feat: Add spec and parser for sos_commands/logs/journalctl_--no-pager…
+  (#3297) (30404410+qinpingli@users.noreply.github.com)
+- feat: New spec to get satelltie empty url repositories (#3299)
+  (44796653+huali027@users.noreply.github.com)
+- feat: New spec to get the count of satellite tasks with reserved resource
+  (#3300) (44796653+huali027@users.noreply.github.com)
+- Remove old rules files before starting a new scan (#3302) (mhuth@redhat.com)
+- Fix test system (#3294) (93577878+ahitacat@users.noreply.github.com)
+- Enhance parser LpstatProtocol (#3301) (jiazhang@redhat.com)
+- Add log_response_text flag to log downloads or not in verbose mode (#3298)
+  (mhuth@redhat.com)
+- Remove yara_binary as a config option (#3296) (mhuth@redhat.com)
 * Thu Dec 02 2021 Xiangce Liu <xiangceliu@redhat.com> 3.0.253-1
 - DOC: Added new section for client development (#3287)
   (93577878+ahitacat@users.noreply.github.com)

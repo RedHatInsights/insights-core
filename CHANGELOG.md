@@ -2,6 +2,18 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.254](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.254) (2021-12-09)
+
+- Fix: Only get "SSLCertificateFile" when "SSLEngine on" is configured ([PR 3305](https://github.com/RedHatInsights/insights-core/pull/3305))
+- feat: Add spec and parser for sos_commands/logs/journalctl_--no-pager file ([PR 3297](https://github.com/RedHatInsights/insights-core/pull/3297))
+- feat: New spec to get satelltie empty url repositories ([PR 3299](https://github.com/RedHatInsights/insights-core/pull/3299))
+- feat: New spec to get the count of satellite tasks with reserved resource ([PR 3300](https://github.com/RedHatInsights/insights-core/pull/3300))
+- Remove old rules files before starting a new scan ([PR 3302](https://github.com/RedHatInsights/insights-core/pull/3302))
+- Fix test system ([PR 3294](https://github.com/RedHatInsights/insights-core/pull/3294))
+- Enhance parser LpstatProtocol ([PR 3301](https://github.com/RedHatInsights/insights-core/pull/3301))
+- Add log_response_text flag to log downloads or not in verbose mode ([PR 3298](https://github.com/RedHatInsights/insights-core/pull/3298))
+- Remove yara_binary as a config option ([PR 3296](https://github.com/RedHatInsights/insights-core/pull/3296))
+
 ## [insights-core-3.0.253](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.253) (2021-12-02)
 
 - DOC: Added new section for client development ([PR 3287](https://github.com/RedHatInsights/insights-core/pull/3287))
