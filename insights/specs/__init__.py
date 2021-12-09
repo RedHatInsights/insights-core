@@ -588,6 +588,7 @@ class Specs(SpecSet):
     satellite_core_taskreservedresource_count = RegistryPoint()
     satellite_custom_ca_chain = RegistryPoint()
     satellite_custom_hiera = RegistryPoint()
+    satellite_katello_empty_url_repositories = RegistryPoint()
     satellite_mongodb_storage_engine = RegistryPoint()
     satellite_non_yum_type_repos = RegistryPoint()
     satellite_sca_status = RegistryPoint()
