@@ -585,6 +585,7 @@ class Specs(SpecSet):
     sat5_insights_properties = RegistryPoint()
     satellite_compute_resources = RegistryPoint()
     satellite_content_hosts_count = RegistryPoint()
+    satellite_core_taskreservedresource_count = RegistryPoint()
     satellite_custom_ca_chain = RegistryPoint()
     satellite_custom_hiera = RegistryPoint()
     satellite_mongodb_storage_engine = RegistryPoint()
