@@ -25,6 +25,9 @@ from insights.core.dr import SkipComponent
 from insights.parsers import ParseException, SkipException
 from insights.specs import Specs
 from insights.parsers.certificates_enddate import CertificatesEnddate
+from insights.core.filters import add_filter
+
+add_filter(Specs.httpd_cert_info_in_nss, "Not After :")
 
 
 def parse_openssl_output(content):
