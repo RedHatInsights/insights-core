@@ -6,7 +6,8 @@ from insights.combiners.httpd_conf import _HttpdConf, HttpdConfTree
 from insights.combiners.nginx_conf import _NginxConf, NginxConfTree
 from insights.parsers.mssql_conf import MsSQLConf
 from insights.specs.datasources.ssl_certificate import (
-    httpd_ssl_certificate_files, nginx_ssl_certificate_files, mssql_tls_cert_file
+    httpd_ssl_certificate_files, nginx_ssl_certificate_files,
+    mssql_tls_cert_file, httpd_certificate_info_in_nss
 )
 
 
@@ -147,6 +148,41 @@ accepteula = Y
 memorylimitmb = 2048
 """.strip()
 
+HTTPD_NSS_CERT_ENDATE = """
+Not After : Mon Jan 18 07:02:43 2038
+""".strip()
+
+HTTPD_WITH_NSS = """
+Listen 8443
+<VirtualHost _default_:8443>
+ServerName www.examplea.com:8443
+NSSEngine on
+NSSCertificateDatabase /etc/httpd/aliasa
+NSSNickname testcerta
+</VirtualHost>
+<VirtualHost :8443>
+ServerName www.exampleb.com:8443
+NSSEngine on
+NSSCertificateDatabase /etc/httpd/aliasb
+NSSNickname testcertb
+</VirtualHost>
+<VirtualHost :8443>
+ServerName www.examplec.com:8443
+NSSEngine off
+NSSCertificateDatabase /etc/httpd/aliasc
+NSSNickname testcertc
+</VirtualHost>
+""".strip()
+
+HTTPD_WITH_NSS_OFF = """
+Listen 8443
+<VirtualHost _default_:8443>
+NSSEngine off
+NSSCertificateDatabase /etc/httpd/alias
+NSSNickname testcert
+</VirtualHost>
+""".strip()
+
 
 def test_httpd_certificate():
     conf1 = _HttpdConf(context_wrap(HTTPD_CONF, path='/etc/httpd/conf/httpd.conf'))
@@ -238,3 +274,25 @@ def test_mssql_tls_no_cert_exception():
     }
     with pytest.raises(SkipComponent):
         mssql_tls_cert_file(broker1)
+
+
+def test_httpd_certificate_info_in_nss():
+    conf1 = _HttpdConf(context_wrap(HTTPD_CONF, path='/etc/httpd/conf/httpd.conf'))
+    conf2 = _HttpdConf(context_wrap(HTTPD_WITH_NSS, path='/etc/httpd/conf.d/nss.conf'))
+    conf_tree = HttpdConfTree([conf1, conf2])
+    broker = {
+        HttpdConfTree: conf_tree
+    }
+    result = httpd_certificate_info_in_nss(broker)
+    assert result == [('/etc/httpd/aliasa', 'testcerta'), ('/etc/httpd/aliasb', 'testcertb')]
+
+
+def test_httpd_certificate_info_in_nss_exception():
+    conf1 = _HttpdConf(context_wrap(HTTPD_CONF, path='/etc/httpd/conf/httpd.conf'))
+    conf2 = _HttpdConf(context_wrap(HTTPD_WITH_NSS_OFF, path='/etc/httpd/conf.d/nss.conf'))
+    conf_tree = HttpdConfTree([conf1, conf2])
+    broker = {
+        HttpdConfTree: conf_tree
+    }
+    with pytest.raises(SkipComponent):
+        httpd_certificate_info_in_nss(broker)
