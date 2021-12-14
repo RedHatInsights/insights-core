@@ -224,6 +224,7 @@ class Specs(SpecSet):
     hosts = RegistryPoint()
     hponcfg_g = RegistryPoint()
     httpd_access_log = RegistryPoint(filterable=True)
+    httpd_cert_info_in_nss = RegistryPoint(multi_output=True, filterable=True)
     httpd_conf = RegistryPoint(multi_output=True)
     httpd_conf_scl_httpd24 = RegistryPoint(multi_output=True)
     httpd_conf_scl_jbcs_httpd24 = RegistryPoint(multi_output=True)

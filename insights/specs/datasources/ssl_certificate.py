@@ -11,6 +11,35 @@ from insights.core.plugins import datasource
 
 
 @datasource(HttpdConfTree, HostContext)
+def httpd_certificate_info_in_nss(broker):
+    """
+    Get the certificate info configured in nss database
+
+    Arguments:
+        broker: the broker object for the current session
+
+    Returns:
+        list: Returns a list of tuple with the Nss database path and the certificate nickname
+
+    Raises:
+        SkipComponent: Raised when NSSEngine isn't enabled or "NSSCertificateDatabase" and "NSSNickname" directives aren't found
+    """
+    conf = broker[HttpdConfTree]
+    path_pairs = []
+    virtual_hosts = conf.find('VirtualHost')
+    for host in virtual_hosts:
+        nss_engine = nss_database = cert_name = None
+        nss_engine = host.select('NSSEngine')
+        nss_database = host.select('NSSCertificateDatabase')
+        cert_name = host.select('NSSNickname')
+        if nss_engine and nss_engine.value and nss_database and cert_name:
+            path_pairs.append((nss_database[0].value, cert_name[0].value))
+    if path_pairs:
+        return path_pairs
+    raise SkipComponent
+
+
+@datasource(HttpdConfTree, HostContext)
 def httpd_ssl_certificate_files(broker):
     """
     Get the httpd SSL certificate file path configured by "SSLCertificateFile"
