@@ -294,6 +294,7 @@ class DefaultSpecs(Specs):
             "/opt/rh/jbcs-httpd24/root/etc/httpd/conf.modules.d/*.conf"
         ]
     )
+    httpd_cert_info_in_nss = foreach_execute(ssl_certificate.httpd_certificate_info_in_nss, '/usr/bin/certutil -d %s -L -n %s')
     httpd_error_log = simple_file("var/log/httpd/error_log")
     httpd24_httpd_error_log = simple_file("/opt/rh/httpd24/root/etc/httpd/logs/error_log")
     jbcs_httpd24_httpd_error_log = simple_file("/opt/rh/jbcs-httpd24/root/etc/httpd/logs/error_log")
