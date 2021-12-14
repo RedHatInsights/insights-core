@@ -11,10 +11,14 @@ Combiner to get the earliest expire date in a lot of nginx ssl certificates.
 EarliestHttpdSSLCertExpireDate - The earliest expire date in a lot of httpd ssl certificates
 --------------------------------------------------------------------------------------------
 Combiner to get the earliest expire date in a lot of httpd ssl certificates.
+
+EarliestHttpdCertInNSSExpireDate - The earliest expire date in a lot of httpd certificates stored in nss database
+-----------------------------------------------------------------------------------------------------------------
+Combiner to get the earliest expire date in a lot of httpd certificates stored in nss database.
 """
 
 from insights.core.dr import SkipComponent
-from insights.parsers.ssl_certificate import NginxSSLCertExpireDate, HttpdSSLCertExpireDate
+from insights.parsers.ssl_certificate import HttpdCertInfoInNSS, NginxSSLCertExpireDate, HttpdSSLCertExpireDate
 from insights.parsers.certificates_enddate import CertificatesEnddate
 from insights.core.plugins import combiner
 
@@ -76,5 +80,21 @@ class EarliestHttpdSSLCertExpireDate(EarliestSSLCertExpireDate):
         'Dec 18 07:02:43 2021'
         >>> httpd_certs.ssl_cert_path
         '/test/d.pem'
+    """
+    pass
+
+
+@combiner(HttpdCertInfoInNSS)
+class EarliestHttpdCertInNSSExpireDate(EarliestSSLCertExpireDate):
+    """
+    Combiner to get the earliest expire date in a lot of httpd certificates stored in NSS database.
+
+    Examples:
+        >>> type(httpd_certs_in_nss)
+        <class 'insights.combiners.ssl_certificate.EarliestHttpdCertInNSSExpireDate'>
+        >>> httpd_certs_in_nss.earliest_expire_date.str
+        'Sun Jan 07 05:26:10 2022'
+        >>> httpd_certs_in_nss.ssl_cert_path
+        ('/etc/httpd/nss', 'testcerta')
     """
     pass
