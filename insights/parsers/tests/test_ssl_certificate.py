@@ -1,4 +1,5 @@
 import doctest
+from insights.core.dr import SkipComponent
 import pytest
 
 from insights.parsers import ssl_certificate, ParseException, SkipException
@@ -88,6 +89,16 @@ MSSQL_CERT_EXPIRE_INFO = '''
 notAfter=Nov  5 01:43:59 2022 GMT
 '''
 
+NSS_CERT_OUTPUT = """
+        Not After : Sun Dec 07 05:26:10 2025"""
+
+NSS_CERT_BAD_OUTPUT_1 = """
+            Not After : Dec 07 05:26:10 2025"""
+
+NSS_CERT_BAD_OUTPUT_2 = """
+        Issuer: "CN=Certificate Shack,O=huali.node2.redhat.com,C=CN
+""".strip()
+
 
 def test_certificate_info_exception():
     with pytest.raises(ParseException):
@@ -158,6 +169,7 @@ def test_doc():
     date_info = ssl_certificate.HttpdSSLCertExpireDate(context_wrap(HTTPD_CERT_EXPIRE_INFO))
     nginx_date_info = ssl_certificate.NginxSSLCertExpireDate(context_wrap(HTTPD_CERT_EXPIRE_INFO, args='/a/b/c.pem'))
     mssql_date_info = ssl_certificate.MssqlTLSCertExpireDate(context_wrap(MSSQL_CERT_EXPIRE_INFO))
+    cert_info = ssl_certificate.HttpdCertInfoInNSS(context_wrap(NSS_CERT_OUTPUT))
     globs = {
         'cert': cert,
         'certs': ca_cert,
@@ -165,7 +177,8 @@ def test_doc():
         'rhsm_katello_default_ca': rhsm_katello_default_ca,
         'date_info': date_info,
         'nginx_date_info': nginx_date_info,
-        'mssql_date_info': mssql_date_info
+        'mssql_date_info': mssql_date_info,
+        'nss_cert_info': cert_info
     }
     failed, _ = doctest.testmod(ssl_certificate, globs=globs)
     assert failed == 0
@@ -188,3 +201,17 @@ def test_mssql_tls_cert_parser():
     date_info = ssl_certificate.MssqlTLSCertExpireDate(context_wrap(MSSQL_CERT_EXPIRE_INFO))
     assert 'notAfter' in date_info
     assert date_info['notAfter'].str == 'Nov  5 01:43:59 2022'
+
+
+def test_httpd_cert_info_in_nss():
+    cert_info = ssl_certificate.HttpdCertInfoInNSS(context_wrap(NSS_CERT_OUTPUT))
+    assert 'notAfter' in cert_info
+    assert cert_info['notAfter'].str == 'Sun Dec 07 05:26:10 2025'
+
+
+def test_httpd_cert_info_in_nss_exception():
+    with pytest.raises(ParseException):
+        ssl_certificate.HttpdCertInfoInNSS(context_wrap(NSS_CERT_BAD_OUTPUT_1))
+
+    with pytest.raises(SkipComponent):
+        ssl_certificate.HttpdCertInfoInNSS(context_wrap(NSS_CERT_BAD_OUTPUT_2))
