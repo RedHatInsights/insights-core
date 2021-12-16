@@ -152,7 +152,7 @@ def test_revocation_list_empty(call_1, call_2):
 @pytest.mark.skipif(sys.version_info < (2, 7), reason='Playbook verifier must be run on python 2.7 or above')
 @patch('insights.client.apps.ansible.playbook_verifier.contrib.ruamel_yaml.ruamel.yaml.YAML.load',
        return_value=[{'revoked_playbooks': [{'name': 'banned book', 'hash': 'deadbeef'}]}])
-@patch('insights.client.apps.ansible.playbook_verifier.verifyPlaybookSnippet', return_value=(True, bytearray.fromhex('deadbeef')))
+@patch('insights.client.apps.ansible.playbook_verifier.verifyPlaybookSnippet', return_value=(True, bytearray.fromhex(u'deadbeef')))
 def test_revoked_playbook(call_1, call_2):
     revoked_error = 'REVOKED PLAYBOOK: Template is on the revoked list [name: banned book]'
     fake_playbook = [{
