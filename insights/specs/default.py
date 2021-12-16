@@ -237,6 +237,7 @@ class DefaultSpecs(Specs):
     findmnt_lo_propagation = simple_command("/bin/findmnt -lo+PROPAGATION")
     firewall_cmd_list_all_zones = simple_command("/usr/bin/firewall-cmd --list-all-zones")
     firewalld_conf = simple_file("/etc/firewalld/firewalld.conf")
+    foreman_production_log = simple_file("/var/log/foreman/production.log")
     foreman_ssl_error_ssl_log = simple_file("/var/log/httpd/foreman-ssl_error_ssl.log")
     fstab = simple_file("/etc/fstab")
     fw_devices = simple_command("/bin/fwupdagent get-devices", deps=[IsBareMetal])
