@@ -152,7 +152,7 @@ def getRevocationList():
         # verification code.  There will only ever be one list, so we just grab the first element...
         revoked_playbooks = yaml.load(pkgutil.get_data('insights', 'revoked_playbooks.yaml'))[0]
 
-    except Exception as e:
+    except Exception:
         raise PlaybookVerificationError(message='VERIFICATION FAILED: Error loading revocation list')
 
     # verify the list signature!
@@ -163,7 +163,6 @@ def getRevocationList():
 
     revocationList = revoked_playbooks.get('revoked_playbooks', [])
     return revocationList
-
 
 
 def verify(playbook, skipVerify=False):

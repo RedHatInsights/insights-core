@@ -7,7 +7,7 @@ from pytest import raises
 # don't even bother on 2.6
 if sys.version_info >= (2, 7):
     from insights.client.apps.ansible.playbook_verifier import verify, PlaybookVerificationError, getRevocationList  # noqa
-    from insights.client.apps.ansible.playbook_verifier.contrib import ruamel_yaml
+
 
 @pytest.mark.skipif(sys.version_info < (2, 7), reason='Playbook verifier must be run on python 2.7 or above')
 def test_vars_not_found_error():
@@ -74,7 +74,7 @@ def test_key_import_error():
 
 
 @pytest.mark.skipif(sys.version_info < (2, 7), reason='Playbook verifier must be run on python 2.7 or above')
-@patch('insights.client.apps.ansible.playbook_verifier.verifyPlaybookSnippet', return_value=([],[]))
+@patch('insights.client.apps.ansible.playbook_verifier.verifyPlaybookSnippet', return_value=([], []))
 @patch('insights.client.apps.ansible.playbook_verifier.getRevocationList', return_value=[])
 def test_playbook_verification_error(call_1, call_2):
     key_error = 'SIGNATURE NOT VALID: Template [name: test playbook] has invalid signature'
@@ -114,7 +114,7 @@ def test_revocation_list_not_found(mock_method):
     load_error = 'VERIFICATION FAILED: Error loading revocation list'
 
     with raises(PlaybookVerificationError) as error:
-        revoked_list = getRevocationList()
+        getRevocationList()
 
     assert load_error in str(error.value)
 
@@ -126,7 +126,7 @@ def test_revocation_list_signature_invalid(mock_method):
     load_error = 'VERIFICATION FAILED: Revocation list signature invalid'
 
     with raises(PlaybookVerificationError) as error:
-        revoked_list = getRevocationList()
+        getRevocationList()
 
     assert load_error in str(error.value)
 
