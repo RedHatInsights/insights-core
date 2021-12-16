@@ -121,7 +121,7 @@ def executeVerification(snippet, encodedSignature):
     result = gpg.verify_data(fn, snippetHash)
     os.unlink(fn)
 
-    return result
+    return result, snippetHash
 
 
 def verifyPlaybookSnippet(snippet):
@@ -140,6 +140,32 @@ def verifyPlaybookSnippet(snippet):
     return executeVerification(snippetCopy, encodedSignature)
 
 
+def getRevocationList():
+    """
+    Load the list of revoked playbook snippet hashes from the egg
+
+    Returns:
+        dictionary of revocation list entries (name, hash)
+    """
+    try:
+        # Import revoked list yaml.  The yaml is structured as a list of lists, so we can reuse the playbook signing and
+        # verification code.  There will only ever be one list, so we just grab the first element...
+        revoked_playbooks = yaml.load(pkgutil.get_data('insights', 'revoked_playbooks.yaml'))[0]
+
+    except Exception as e:
+        raise PlaybookVerificationError(message='VERIFICATION FAILED: Error loading revocation list')
+
+    # verify the list signature!
+    verified, snippetHash = verifyPlaybookSnippet(revoked_playbooks)
+
+    if not verified:
+        raise PlaybookVerificationError(message='VERIFICATION FAILED: Revocation list signature invalid')
+
+    revocationList = revoked_playbooks.get('revoked_playbooks', [])
+    return revocationList
+
+
+
 def verify(playbook, skipVerify=False):
     """
     Verify the signed playbook.
@@ -153,12 +179,20 @@ def verify(playbook, skipVerify=False):
     if not skipVerify:
         if not playbook:
             raise PlaybookVerificationError(message="PLAYBOOK VERIFICATION FAILURE: Playbook is empty")
+
+        revocationList = getRevocationList()
+
         for snippet in playbook:
-            verified = verifyPlaybookSnippet(snippet)
+            verified, snippetHash = verifyPlaybookSnippet(snippet)
 
             if not verified:
                 name = snippet.get('name', 'NAME UNAVAILABLE')
                 raise PlaybookVerificationError(message="SIGNATURE NOT VALID: Template [name: {0}] has invalid signature".format(name))
+
+            # check if snippetHash is on the revoked list
+            for revokedItem in revocationList:
+                if snippetHash == bytearray.fromhex(revokedItem['hash']):
+                    raise PlaybookVerificationError(message="REVOKED PLAYBOOK: Template is on the revoked list [name: {0}]".format(revokedItem['name']))
 
     logger.info('All templates successfully validated')
     return playbook
