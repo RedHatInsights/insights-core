@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.255](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.255) (2021-12-16)
+
+- Add spec "foreman_production_log" back. ([PR 3308](https://github.com/RedHatInsights/insights-core/pull/3308))
+- Enh: Improved excluding of the insights-client log files ([PR 3306](https://github.com/RedHatInsights/insights-core/pull/3306))
+- Feat: New spec to get the httpd certificate expire info stored in NSS... ([PR 3303](https://github.com/RedHatInsights/insights-core/pull/3303))
+
 ## [insights-core-3.0.254](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.254) (2021-12-09)
 
 - Fix: Only get "SSLCertificateFile" when "SSLEngine on" is configured ([PR 3305](https://github.com/RedHatInsights/insights-core/pull/3305))
