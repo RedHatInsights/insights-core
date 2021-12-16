@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.254
+Version:        3.0.255
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,14 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Dec 16 2021 Xiangce Liu <xiangceliu@redhat.com> 3.0.255-1
+- Add spec "foreman_production_log" back. (#3308)
+  (44796653+huali027@users.noreply.github.com)
+- Enh: Improved excluding of the insights-client log files (#3306)
+  (mhuth@redhat.com)
+- Feat: New spec to get the httpd certificate expire info stored in NSS…
+  (#3303) (44796653+huali027@users.noreply.github.com)
+
 * Thu Dec 09 2021 Sachin Patil <psachin@redhat.com> 3.0.254-1
 
 - Fix: Only get "SSLCertificateFile" when "SSLEngine on" is configured (#3305)
