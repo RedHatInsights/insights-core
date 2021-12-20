@@ -154,6 +154,24 @@ plugins:
         - name: insights.combiners.ps
           enabled: true
 
+    # needed for httpd_certificate
+        - name: insights.combiners.httpd_conf.HttpdConfTree
+          enabled: true
+
+        - name: insights.combiners.httpd_conf._HttpdConf
+          enabled: true
+
+    # needed for nginx_ssl_cert_enddate
+        - name: insights.combiners.nginx_conf.NginxConfTree
+          enabled: true
+
+        - name: insights.combiners.nginx_conf._NginxConf
+          enabled: true
+
+    # needed for mssql_tls_cert_enddate
+        - name: insights.parsers.mssql_conf.MsSQLConf
+          enabled: true
+
     # needed to collect the sap_hdb_version spec that uses the Sap combiner
         - name: insights.parsers.lssap
           enabled: true
@@ -162,6 +180,19 @@ plugins:
           enabled: true
 
         - name: insights.combiners.sap
+          enabled: true
+
+    # needed for fw_devices and fw_security specs
+        - name: insights.parsers.dmidecode.DMIDecode
+          enabled: true
+
+        - name: insights.parsers.virt_what.VirtWhat
+          enabled: true
+
+        - name: insights.combiners.virt_what.VirtWhat
+          enabled: true
+
+        - name: insights.components.virtualization.IsBareMetal
           enabled: true
 
     # needed for the 'pre-check' of the 'ss' spec
@@ -186,6 +217,12 @@ plugins:
         - name: insights.components.rhel_version.IsRhel7
           enabled: true
         - name: insights.components.rhel_version.IsRhel8
+          enabled: true
+        - name: insights.components.rhel_version.IsRhel9
+          enabled: true
+
+    # needed for the 'pmlog_summary' spec
+        - name: insights.parsers.ros_config.RosConfig
           enabled: true
 
     # needed because some specs aren't given names before they're used in DefaultSpecs

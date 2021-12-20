@@ -1,9 +1,9 @@
 from insights.combiners.grub_conf import GrubConf, BootLoaderEntries
 from insights.combiners.redhat_release import RedHatRelease
 from insights.parsers.redhat_release import RedhatRelease
-from insights.parsers.grub_conf import Grub1Config, Grub2Config
-from insights.parsers.grub_conf import Grub2EFIConfig, Grub1EFIConfig
-from insights.parsers.grub_conf import BootLoaderEntries as BLE
+from insights.parsers.grub_conf import (Grub1Config, Grub2Config, Grub2EFIConfig, Grub1EFIConfig,
+                                        BootLoaderEntries as BLE)
+from insights.parsers.grubenv import GrubEnv
 from insights.parsers.ls_sys_firmware import LsSysFirmware
 from insights.parsers.installed_rpms import InstalledRpms
 from insights.parsers.cmdline import CmdLine
@@ -36,7 +36,7 @@ title Red Hat Enterprise Linux 6 (2.6.32-642.el6.x86_64-2)
         root (hd0,0)
         kernel /vmlinuz-2.6.32-642.el6.x86_64 {kernel_boot_options} ro root=/dev/mapper/VolGroup-lv_root rd_NO_LUKS LANG=en_US.UTF-8 rd_NO_MD rd_LVM_LV=VolGroup/lv_swap SYSFONT=latarcyrheb-sun16 crashkernel=auto rd_LVM_LV=VolGroup/lv_root  KEYBOARDTYPE=pc KEYTABLE=us rd_NO_DM rhgb quiet
         initrd /initramfs-2.6.32-642.el6.x86_64.img
-"""
+""".strip()  # noqa
 
 # rhel-7
 GRUB2_TEMPLATE = """
@@ -91,7 +91,7 @@ menuentry 'Red Hat Enterprise Linux Server (0-rescue-9f20b35c9faa49aebe171f62a11
         linux16 /vmlinuz-0-rescue-9f20b35c9faa49aebe171f62a11b236f %s root=/dev/mapper/rhel-root ro crashkernel=auto rd.lvm.lv=rhel/root rd.lvm.lv=rhel/swap rhgb quiet
         initrd16 /initramfs-0-rescue-9f20b35c9faa49aebe171f62a11b236f.img
 }
-"""
+""".strip()  # noqa
 
 GRUB2_EFI_CFG = """
 ### BEGIN /etc/grub.d/10_linux ###
@@ -176,7 +176,7 @@ title Red Hat Enterprise Linux (2.6.32-71.el6.x86_64)
         root (hd0,1)
         kernel /vmlinuz-2.6.32-71.el6.x86_64 ro root=/dev/mapper/VolGroup-lv_root rd_LVM_LV=VolGroup/lv_root rd_LVM_LV=VolGroup/lv_swap rd_NO_LUKS rd_NO_MD rd_NO_DM LANG=en_US.UTF-8 SYSFONT=latarcyrheb-sun16 KEYBOARDTYPE=pc KEYTABLE=us crashkernel=auto rhgb quiet
         initrd /initramfs-2.6.32-71.el6.x86_64.img
-""".strip()
+""".strip()  # noqa
 
 SYS_FIRMWARE_DIR_NOEFI = """
 /sys/firmware:
@@ -226,11 +226,11 @@ xorg-x11-drv-vmmouse-13.0.0-12.el7.x86_64   Wed May 10 14:10:36 2017
 
 CMDLINE_V1 = """
 ro root=/dev/mapper/vg_rhel6box-lv_root rd_NO_LUKS LANG=en_US.UTF-8 rd_LVM_LV=vg_rhel6box/lv_swap rd_LVM_LV=vg_rhel6box/lv_root rd_NO_MD SYSFONT=latarcyrheb-sun16 crashkernel=129M@0M  KEYBOAR DTYPE=pc KEYTABLE=us rd_NO_DM rhgb quiet
-""".strip()
+""".strip()  # noqa
 
 CMDLINE_V2 = """
 BOOT_IMAGE=/vmlinuz-3.10.0-514.10.2.el7.x86_64 root=/dev/mapper/vg_system-lv_root ro crashkernel=auto rd.lvm.lv=vg_system/lv_root rd.lvm.lv=vg_system/lv_swap rhgb quiet LANG=en_US.UTF-8
-""".strip()
+""".strip()  # noqa
 
 BOOT_LOADER_ENTRIES_1 = """
 title Red Hat Enterprise Linux (4.18.0-80.1.2.el8_0.x86_64) 8.0 (Ootpa)
@@ -242,7 +242,7 @@ id rhel-20190428101407-4.18.0-80.1.2.el8_0.x86_64
 grub_users $grub_users
 grub_arg --unrestricted
 grub_class kernel
-""".strip()
+""".strip()  # noqa
 
 BOOT_LOADER_ENTRIES_2 = """
 title Red Hat Enterprise Linux (4.18.0-32.el8.x86_64) 8.0 (Ootpa)
@@ -254,7 +254,30 @@ id rhel-20181027203430-4.18.0-32.el8.x86_64
 grub_users $grub_users
 grub_arg --unrestricted
 grub_class kernel
+""".strip()  # noqa
+
+BOOT_LOADER_ENTRIES_3 = """
+title Red Hat Enterprise Linux (4.18.0-305.el8.x86_64) 8.4 (Ootpa)
+version 4.18.0-305.el8.x86_64
+linux /vmlinuz-4.18.0-305.el8.x86_64
+initrd /initramfs-4.18.0-305.el8.x86_64.img $tuned_initrd
+options $kernelopts $tuned_params
+id rhel-20210429130346-4.18.0-305.el8.x86_64
+grub_users $grub_users
+grub_arg --unrestricted
+grub_class kernel
 """.strip()
+
+GRUBENV_WITH_TUNED_PARAMS = """
+# GRUB Environment Block
+saved_entry=295e1ba1696e4fad9e062f096f92d147-4.18.0-305.el8.x86_64
+kernelopts=root=/dev/mapper/root_vg-lv_root ro crashkernel=auto resume=/dev/mapper/root_vg-lv_swap rd.lvm.lv=root_vg/lv_root rd.lvm.lv=root_vg/lv_swap console=tty0 console=ttyS0,115200 noapic
+boot_success=0
+boot_indeterminate=2
+tuned_params=transparent_hugepages=never
+tuned_initrd=
+###############################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################
+""".strip()  # noqa
 
 
 def test_grub1_only1():
@@ -350,7 +373,7 @@ def test_grub2_cmdline():
     assert result.kernel_initrds['grub_kernels'][0] == 'vmlinuz-3.10.0-327.el7.x86_64'
     assert result.kernel_initrds['grub_initrds'][0] == 'initramfs-3.10.0-327.el7.x86_64.img'
     assert result.is_kdump_iommu_enabled is False
-    assert result.get_grub_cmdlines('/vmlinuz-3.10.0')[0].name == "'Red Hat Enterprise Linux Server (3.10.0-327.el7.x86_64) 7.2 (Maipo)' --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option 'gnulinux-3.10.0-327.el7.x86_64-advanced-4f80b3d4-90ba-4545-869c-febdecc586ce'"
+    assert result.get_grub_cmdlines('/vmlinuz-3.10.0')[0].name == "'Red Hat Enterprise Linux Server (3.10.0-327.el7.x86_64) 7.2 (Maipo)' --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option 'gnulinux-3.10.0-327.el7.x86_64-advanced-4f80b3d4-90ba-4545-869c-febdecc586ce'"  # noqa
     assert result.get_grub_cmdlines('test') == []
     assert result.get_grub_cmdlines('') == []
     assert len(result.get_grub_cmdlines()) == 2
@@ -384,7 +407,7 @@ def test_grub2_rpms():
     assert result.kernel_initrds['grub_kernels'][0] == 'vmlinuz-3.10.0-327.el7.x86_64'
     assert result.kernel_initrds['grub_initrds'][0] == 'initramfs-3.10.0-327.el7.x86_64.img'
     assert result.is_kdump_iommu_enabled is False
-    assert result.get_grub_cmdlines('/vmlinuz-3.10.0')[0].name == "'Red Hat Enterprise Linux Server (3.10.0-327.el7.x86_64) 7.2 (Maipo)' --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option 'gnulinux-3.10.0-327.el7.x86_64-advanced-4f80b3d4-90ba-4545-869c-febdecc586ce'"
+    assert result.get_grub_cmdlines('/vmlinuz-3.10.0')[0].name == "'Red Hat Enterprise Linux Server (3.10.0-327.el7.x86_64) 7.2 (Maipo)' --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option 'gnulinux-3.10.0-327.el7.x86_64-advanced-4f80b3d4-90ba-4545-869c-febdecc586ce'"  # noqa
     assert result.get_grub_cmdlines('test') == []
     assert result.get_grub_cmdlines('') == []
     assert len(result.get_grub_cmdlines()) == 2
@@ -435,7 +458,7 @@ def test_grub2_grubenv():
     grub2 = Grub2Config(context_wrap(GRUB2_TEMPLATE))
     grub_ble1 = BLE(context_wrap(BOOT_LOADER_ENTRIES_1))
     grub_ble2 = BLE(context_wrap(BOOT_LOADER_ENTRIES_2))
-    grub_bles = BootLoaderEntries([grub_ble1, grub_ble2], None)
+    grub_bles = BootLoaderEntries([grub_ble1, grub_ble2], None, None)
     rhel8 = RedhatRelease(context_wrap(RHEL8))
     rhel = RedHatRelease(None, rhel8)
     rpms = InstalledRpms(context_wrap(INSTALLED_RPMS_V2))
@@ -443,6 +466,23 @@ def test_grub2_grubenv():
     result = GrubConf(None, grub2, None, None, grub_bles, rpms, None, sys_firmware, rhel)
     assert len(result.get_grub_cmdlines()) == 2
     assert 'noapic' not in result.get_grub_cmdlines()[1]['cmdline']
+    assert 'transparent_hugepages' not in result.get_grub_cmdlines()[0]['cmdline']
+    assert result.version == 2
+    assert not result.is_efi
+
+
+def test_grub2_grubenv_with_kernelopts():
+    grub2 = Grub2Config(context_wrap(GRUB2_TEMPLATE))
+    grub_ble3 = BLE(context_wrap(BOOT_LOADER_ENTRIES_3))
+    grub_bles = BootLoaderEntries([grub_ble3], None, None)
+    rhel8 = RedhatRelease(context_wrap(RHEL8))
+    rhel = RedHatRelease(None, rhel8)
+    rpms = InstalledRpms(context_wrap(INSTALLED_RPMS_V2))
+    sys_firmware = LsSysFirmware(context_wrap(SYS_FIRMWARE_DIR_NOEFI))
+    result = GrubConf(None, grub2, None, None, grub_bles, rpms, None, sys_firmware, rhel)
+    assert len(result.get_grub_cmdlines()) == 1
+    assert 'noapic' not in result.get_grub_cmdlines()[0]['cmdline']
+    assert 'transparent_hugepages' not in result.get_grub_cmdlines()[0]['cmdline']
     assert result.version == 2
     assert not result.is_efi
 
@@ -451,7 +491,7 @@ def test_grub2_boot_loader_entries():
     grub2 = Grub2Config(context_wrap(GRUB2_TEMPLATE))
     grub_ble1 = BLE(context_wrap(BOOT_LOADER_ENTRIES_1))
     grub_ble2 = BLE(context_wrap(BOOT_LOADER_ENTRIES_2))
-    grub_bles = BootLoaderEntries([grub_ble1, grub_ble2], None)
+    grub_bles = BootLoaderEntries([grub_ble1, grub_ble2], None, None)
     rhel8 = RedhatRelease(context_wrap(RHEL8))
     rhel = RedHatRelease(None, rhel8)
     rpms = InstalledRpms(context_wrap(INSTALLED_RPMS_V2))
@@ -459,5 +499,25 @@ def test_grub2_boot_loader_entries():
     result = GrubConf(None, grub2, None, None, grub_bles, rpms, None, sys_firmware, rhel)
     assert len(result.get_grub_cmdlines()) == 2
     assert 'noapic' in result.get_grub_cmdlines()[0]['cmdline']
+    assert result.version == 2
+    assert result.is_efi
+
+
+def test_grub2_boot_loader_entries_with_grubenv():
+    grubenv = GrubEnv(context_wrap(GRUBENV_WITH_TUNED_PARAMS))
+    grub2 = Grub2Config(context_wrap(GRUB2_TEMPLATE))
+    grub_ble1 = BLE(context_wrap(BOOT_LOADER_ENTRIES_1))
+    grub_ble3 = BLE(context_wrap(BOOT_LOADER_ENTRIES_3))
+    grub_bles = BootLoaderEntries([grub_ble1, grub_ble3], grubenv, None)
+    rhel8 = RedhatRelease(context_wrap(RHEL8))
+    rhel = RedHatRelease(None, rhel8)
+    rpms = InstalledRpms(context_wrap(INSTALLED_RPMS_V2))
+    sys_firmware = LsSysFirmware(context_wrap(SYS_FIRMWARE_DIR_EFI))
+    result = GrubConf(None, grub2, None, None, grub_bles, rpms, None, sys_firmware, rhel)
+    assert len(result.get_grub_cmdlines()) == 2
+    assert 'noapic' in result.get_grub_cmdlines()[0]['cmdline']
+    assert 'transparent_hugepages' in result.get_grub_cmdlines()[0]['cmdline']
+    assert 'noapic' in result.get_grub_cmdlines()[1]['cmdline']
+    assert 'transparent_hugepages' in result.get_grub_cmdlines()[1]['cmdline']
     assert result.version == 2
     assert result.is_efi

@@ -6,20 +6,20 @@ from insights.tests import context_wrap
 
 
 CONFIG_1 = """
-{"config": "disabled"}
+{"ssh_deletekeys": 1, "network": {"config": "disabled"}}
 """
 
 CONFIG_2 = """
-{"version": 1, "config": [{"type": "physical", "name": "eth0", "subnets": [{"type": "dhcp"}, {"type": "dhcp6"}]}]}
+{"ssh_deletekeys": 1, "network": {"version": 1, "config": [{"type": "physical", "name": "eth0", "subnets": [{"type": "dhcp"}, {"type": "dhcp6"}]}]}, "debug": {"output": "/var/log/cloud-init-debug.log", "verbose": true}}
 """
 
 
 def test_cloud_cfg():
     result = cloud_cfg.CloudCfg(context_wrap(CONFIG_1))
-    assert result.data['config'] == 'disabled'
+    assert result.data['network'] == {'config': 'disabled'}
 
     result = cloud_cfg.CloudCfg(context_wrap(CONFIG_2))
-    assert result.data['config'][0]['name'] == 'eth0'
+    assert result.data['network']['config'][0]['name'] == 'eth0'
 
 
 def test_cloud_cfg_empty():

@@ -1,5 +1,7 @@
+import doctest
+
 from insights import add_filter
-from insights.parsers.messages import Messages
+from insights.parsers import messages
 from insights.specs import Specs
 from insights.tests import context_wrap
 
@@ -25,8 +27,17 @@ add_filter(Specs.messages, [
 ])
 
 
+def test_doc_examples():
+    env = {
+        'msgs': messages.Messages(context_wrap(MSGINFO)),
+        'Messages': messages.Messages
+    }
+    failed, total = doctest.testmod(messages, globs=env)
+    assert failed == 0
+
+
 def test_messages():
-    msg_info = Messages(context_wrap(MSGINFO))
+    msg_info = messages.Messages(context_wrap(MSGINFO))
     bona_list = msg_info.get('(root) LIST (root)')
     assert 2 == len(bona_list)
     assert bona_list[0].get('timestamp') == "Apr 22 10:37:32"

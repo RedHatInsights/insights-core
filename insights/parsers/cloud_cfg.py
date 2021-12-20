@@ -12,16 +12,16 @@ class CloudCfg(JSONParser):
 
     Typical output from the datasource is::
 
-        {"version": 1, "config": [{"type": "physical", "name": "eth0", "subnets": [{"type": "dhcp"}, {"type": "dhcp6"}]}]}
+        {"ssh_deletekeys": 1, "network": {"version": 1, "config": [{"type": "physical", "name": "eth0", "subnets": [{"type": "dhcp"}, {"type": "dhcp6"}]}]}, "debug": {"output": "/var/log/cloud-init-debug.log", "verbose": true}}
 
     Attributes:
 
         data(dict): Cloud-init network configuration.
 
     Examples:
-        >>> cloud_cfg.data['version'] == 1
+        >>> cloud_cfg.data['network']['version'] == 1
         True
-        >>> cloud_cfg.data['config'] == [{"type": "physical", "name": "eth0", "subnets": [{"type": "dhcp"}, {"type": "dhcp6"}]}]
+        >>> cloud_cfg.data['network']['config'] == [{"type": "physical", "name": "eth0", "subnets": [{"type": "dhcp"}, {"type": "dhcp6"}]}]
         True
 """
     pass

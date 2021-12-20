@@ -146,6 +146,17 @@ tinker step step
 tinker step 0.4
 """
 
+NTP_CONF_TAB = """
+server\tntp1.inta.ok\tprefer
+server\tntp2.inta.ok
+server\tntp3.inta.ok
+
+driftfile /var/lib/ntp/drift
+logfile /var/lib/ntp/log
+# Set tinker panic value (0 recommended by redhat)
+tinker panic 0
+"""
+
 
 def test_chrony_conf():
     ntp_obj = system_time.ChronyConf(context_wrap(CHRONY_CONF))
@@ -354,3 +365,13 @@ def test_ntp_get_tinker():
     assert ntp_obj.get_last('tinker', 'step') == '0.4'
     assert ntp_obj.get_last('tinker', param='step', default='1') == '0.4'  # Value from config
     assert ntp_obj.get_last('tinker', 'step', '1') == '0.4'
+
+
+def test_ntp_conf_tab():
+    ntp_obj = system_time.NTPConf(context_wrap(NTP_CONF_TAB))
+    assert hasattr(ntp_obj, 'data')
+    assert 'tinker' in ntp_obj.data
+    assert hasattr(ntp_obj, 'servers')
+    assert ntp_obj.servers[0] == 'ntp1.inta.ok\tprefer'
+    assert ntp_obj.servers[1] == 'ntp2.inta.ok'
+    assert ntp_obj.servers[2] == 'ntp3.inta.ok'

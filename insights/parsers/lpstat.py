@@ -101,12 +101,16 @@ class LpstatProtocol(CommandParser, dict):
 
         device for test_printer1: ipp
         device for test_printer2: ipp
+        device for savtermhpc: implicitclass:savtermhpc
+        device for A1: marshaA1:/tmp/A1
 
     Examples:
         >>> type(lpstat_protocol)
         <class 'insights.parsers.lpstat.LpstatProtocol'>
         >>> lpstat_protocol['test_printer1']
         'ipp'
+        >>> lpstat_protocol['savtermhpc']
+        'implicitclass'
     """
     def parse_content(self, content):
         if not content:
@@ -114,8 +118,9 @@ class LpstatProtocol(CommandParser, dict):
         data = {}
         for line in content:
             if line.startswith("device for "):
-                protocol = line.split(":")[-1].strip()
-                printer = line.split(":")[0].split()[-1].strip()
+                line_split = line.split(":")
+                protocol = line_split[1].strip()
+                printer = line_split[0].split()[-1].strip()
                 data[printer] = protocol
         if not data:
             raise SkipException("No Valid Output")

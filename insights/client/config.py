@@ -8,6 +8,7 @@ import sys
 from six.moves import configparser as ConfigParser
 from distutils.version import LooseVersion
 from .utilities import get_version_info
+from insights.client.apps.manifests import manifests, content_types
 
 try:
     from .constants import InsightsConstants as constants
@@ -117,6 +118,14 @@ DEFAULT_OPTS = {
     'collection_rules_url': {
         # non-CLI
         'default': None
+    },
+    'app': {
+        'default': None,
+        'opt': ['--collector'],
+        'help': 'Run the specified app and upload its results archive',
+        'action': 'store',
+        'group': 'actions',
+        'dest': 'app'
     },
     'compliance': {
         'default': False,
@@ -730,6 +739,9 @@ class InsightsConfig(object):
                     sys.stdout.write('WARNING: SOSCleaner reports will be created alongside the output archive.\n')
         if self.module and not self.module.startswith('insights.client.apps.'):
             raise ValueError('You can only run modules within the namespace insights.client.apps.*')
+        if self.app and not self.manifest:
+            raise ValueError("Unable to find app: %s\nList of available apps: %s"
+                             % (self.app, ', '.join(sorted(manifests.keys()))))
 
     def _imply_options(self):
         '''
@@ -764,6 +776,12 @@ class InsightsConfig(object):
             if self._print_errors:
                 sys.stdout.write('The compressor {0} is not supported. Using default: gz\n'.format(self.compressor))
             self.compressor = 'gz'
+        if self.app:
+            # Get the manifest for the specified app
+            self.manifest = manifests.get(self.app)
+            self.content_type = content_types.get(self.app)
+            self.core_collect = True
+            self.legacy_upload = False
         if self.output_dir:
             # get full path
             self.output_dir = os.path.abspath(self.output_dir)

@@ -59,7 +59,7 @@ def test_redact_call_walk(walk):
     Verify that redact() calls os.walk and when an
     an archive structure is present in /var/tmp/**/insights-*
     '''
-    conf = InsightsConfig()
+    conf = InsightsConfig(core_collect=False)
     arch = InsightsArchive(conf)
     arch.create_archive_dir()
 
@@ -99,7 +99,7 @@ def test_redact_call_process_redaction(_process_content_redaction):
     "regex" parameter is False in the _process_content_redaction
     call when rm_conf is empty
     '''
-    conf = InsightsConfig()
+    conf = InsightsConfig(core_collect=False)
     arch = InsightsArchive(conf)
     arch.create_archive_dir()
 
@@ -130,7 +130,7 @@ def test_redact_exclude_regex(_process_content_redaction):
     exclude == list of strings and regex == True when a list of
     regex strings is defined in rm_conf
     '''
-    conf = InsightsConfig()
+    conf = InsightsConfig(core_collect=False)
     arch = InsightsArchive(conf)
     arch.create_archive_dir()
 
@@ -159,7 +159,7 @@ def test_redact_exclude_no_regex(_process_content_redaction):
     exclude == list of strings and regex == False when a list
     of pattern strings is defined in rm_conf
     '''
-    conf = InsightsConfig()
+    conf = InsightsConfig(core_collect=False)
     arch = InsightsArchive(conf)
     arch.create_archive_dir()
 
@@ -188,7 +188,7 @@ def test_redact_exclude_empty(_process_content_redaction):
     exclude == [] and regex == False when the patterns key is
     defined but value is an empty list
     '''
-    conf = InsightsConfig()
+    conf = InsightsConfig(core_collect=False)
     arch = InsightsArchive(conf)
     arch.create_archive_dir()
 
@@ -217,7 +217,7 @@ def test_redact_exclude_none(_process_content_redaction):
     exclude == None and regex == False when the patterns key is
     defined but value is an empty dict
     '''
-    conf = InsightsConfig()
+    conf = InsightsConfig(core_collect=False)
     arch = InsightsArchive(conf)
     arch.create_archive_dir()
 
@@ -247,7 +247,7 @@ def test_redact_bad_location(_process_content_redaction, walk):
     if the directory present in InsightsArchive is
     in a location other than /var/tmp/**/insights-*
     '''
-    conf = InsightsConfig()
+    conf = InsightsConfig(core_collect=False)
     arch = InsightsArchive(conf)
 
     for bad_path in ['/', '/home', '/etc', '/var/log/', '/home/test', '/var/tmp/f22D1d/ins2ghts']:

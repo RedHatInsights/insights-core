@@ -30,17 +30,14 @@ class Messages(Syslog):
         This will also work around December/January crossovers.
 
     Examples:
-        >>> Messages.filters.append('wrapper')
         >>> Messages.token_scan('daemon_start', 'Wrapper Started as Daemon')
-        >>> msgs = shared[Messages]
+        >>> type(msgs)
+        <class 'insights.parsers.messages.Messages'>
         >>> len(msgs.lines)
+        9
         >>> wrapper_msgs = msgs.get('wrapper') # Can only rely on lines filtered being present
-        >>> wrapper_msgs[0]
-        {'timestamp': 'May 18 15:13:36', 'hostname': 'lxc-rhel68-sat56',
-         'procname': wrapper[11375]', 'message': '--> Wrapper Started as Daemon',
-         'raw_message': 'May 18 15:13:36 lxc-rhel68-sat56 wrapper[11375]: --> Wrapper Started as Daemon'
-        }
-        >>> msgs.daemon_start # Token set if matching lines present in logs
+        >>> result = {'raw_message': 'May 18 15:13:36 lxc-rhel68-sat56 wrapper[11375]: --> Wrapper Started as Daemon', 'message': '--> Wrapper Started as Daemon', 'timestamp': 'May 18 15:13:36', 'hostname': 'lxc-rhel68-sat56', 'procname': 'wrapper[11375]'}
+        >>> wrapper_msgs[0] == result
         True
     """
     pass

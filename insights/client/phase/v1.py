@@ -315,7 +315,8 @@ def collect_and_output(client, config):
         except RuntimeError as e:
             logger.error(e)
             sys.exit(constants.sig_kill_bad)
-        config.content_type = 'application/vnd.redhat.advisor.collection+tgz'
+        if not config.content_type:
+            config.content_type = 'application/vnd.redhat.advisor.collection+tgz'
 
     if config.no_upload:
         # output options for which upload is not performed

@@ -8,7 +8,6 @@ this file with the same `name` keyword argument. This allows overriding the
 data sources that standard Insights `Parsers` resolve against.
 """
 
-import datetime
 import logging
 import os
 import signal
@@ -17,6 +16,7 @@ from grp import getgrgid
 from os import stat
 from pwd import getpwuid
 
+from insights.components.virtualization import IsBareMetal
 from insights.core.context import HostContext
 from insights.core.dr import SkipComponent
 from insights.core.plugins import datasource
@@ -25,17 +25,17 @@ from insights.core.spec_factory import simple_file, simple_command, glob_file
 from insights.core.spec_factory import first_of, command_with_args
 from insights.core.spec_factory import foreach_collect, foreach_execute
 from insights.core.spec_factory import first_file, listdir
-from insights.combiners.services import Services
 from insights.combiners.ps import Ps
-from insights.components.rhel_version import IsRhel8, IsRhel7
+from insights.components.rhel_version import IsRhel7, IsRhel8, IsRhel9
 from insights.components.cloud_provider import IsAWS, IsAzure, IsGCP
 from insights.components.ceph import IsCephMonitor
 from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersion
 from insights.specs import Specs
 from insights.specs.datasources import (
     awx_manage, cloud_init, candlepin_broker, ethernet, get_running_commands, ipcs, lpstat, package_provides,
-    ps as ps_datasource, sap, satellite_missed_queues, yum_updates)
+    ps as ps_datasource, sap, satellite_missed_queues, ssl_certificate, yum_updates)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
+from insights.specs.datasources.pcp import pcp_enabled, pmlog_summary_args
 
 
 logger = logging.getLogger(__name__)
@@ -81,6 +81,7 @@ class DefaultSpecs(Specs):
     abrt_status_bare = simple_command("/usr/bin/abrt status --bare=True")
     alternatives_display_python = simple_command("/usr/sbin/alternatives --display python")
     amq_broker = glob_file("/var/opt/amq-broker/*/etc/broker.xml")
+    dse_ldif = glob_file("/etc/dirsrv/*/dse.ldif")
     auditctl_status = simple_command("/sbin/auditctl -s")
     auditd_conf = simple_file("/etc/audit/auditd.conf")
     audit_log = simple_file("/var/log/audit/audit.log")
@@ -126,7 +127,7 @@ class DefaultSpecs(Specs):
     ceph_osd_tree = simple_command("/usr/bin/ceph osd tree -f json")
     ceph_s = simple_command("/usr/bin/ceph -s -f json")
     ceph_v = simple_command("/usr/bin/ceph -v")
-    certificates_enddate = simple_command("/usr/bin/find /etc/origin/node /etc/origin/master /etc/pki /etc/ipa -type f -exec /usr/bin/openssl x509 -noout -enddate -in '{}' \; -exec echo 'FileName= {}' \;", keep_rc=True)
+    certificates_enddate = simple_command("/usr/bin/find /etc/origin/node /etc/origin/master /etc/pki /etc/ipa /etc/tower/tower.cert -type f -exec /usr/bin/openssl x509 -noout -enddate -in '{}' \; -exec echo 'FileName= {}' \;", keep_rc=True)
     chkconfig = simple_command("/sbin/chkconfig --list")
     chrony_conf = simple_file("/etc/chrony.conf")
     chronyc_sources = simple_command("/usr/bin/chronyc sources")
@@ -141,7 +142,7 @@ class DefaultSpecs(Specs):
     cmdline = simple_file("/proc/cmdline")
     corosync = simple_file("/etc/sysconfig/corosync")
 
-    @datasource(HostContext, [IsRhel7, IsRhel8])
+    @datasource(HostContext, [IsRhel7, IsRhel8, IsRhel9])
     def corosync_cmapctl_cmd_list(broker):
         """
         corosync-cmapctl add different arguments on RHEL7 and RHEL8.
@@ -156,7 +157,7 @@ class DefaultSpecs(Specs):
                     corosync_cmd,
                     ' '.join([corosync_cmd, '-d runtime.schedmiss.timestamp']),
                     ' '.join([corosync_cmd, '-d runtime.schedmiss.delay'])]
-            if broker.get(IsRhel8):
+            if broker.get(IsRhel8) or broker.get(IsRhel9):
                 return [
                     corosync_cmd,
                     ' '.join([corosync_cmd, '-m stats']),
@@ -236,9 +237,13 @@ class DefaultSpecs(Specs):
     findmnt_lo_propagation = simple_command("/bin/findmnt -lo+PROPAGATION")
     firewall_cmd_list_all_zones = simple_command("/usr/bin/firewall-cmd --list-all-zones")
     firewalld_conf = simple_file("/etc/firewalld/firewalld.conf")
+    foreman_production_log = simple_file("/var/log/foreman/production.log")
     foreman_ssl_error_ssl_log = simple_file("/var/log/httpd/foreman-ssl_error_ssl.log")
     fstab = simple_file("/etc/fstab")
+    fw_devices = simple_command("/bin/fwupdagent get-devices", deps=[IsBareMetal])
+    fw_security = simple_command("/bin/fwupdagent security --force", deps=[IsBareMetal])
     galera_cnf = first_file(["/var/lib/config-data/puppet-generated/mysql/etc/my.cnf.d/galera.cnf", "/etc/my.cnf.d/galera.cnf"])
+    getcert_list = simple_command("/usr/bin/getcert list")
     getconf_page_size = simple_command("/usr/bin/getconf PAGE_SIZE")
     getenforce = simple_command("/usr/sbin/getenforce")
     getsebool = simple_command("/usr/sbin/getsebool -a")
@@ -248,6 +253,7 @@ class DefaultSpecs(Specs):
     gcp_instance_type = simple_command("/usr/bin/curl -s -H 'Metadata-Flavor: Google' http://metadata.google.internal/computeMetadata/v1/instance/machine-type --connect-timeout 5", deps=[IsGCP])
     gcp_license_codes = simple_command("/usr/bin/curl -s -H 'Metadata-Flavor: Google' http://metadata.google.internal/computeMetadata/v1/instance/licenses/?recursive=True --connect-timeout 5", deps=[IsGCP])
     greenboot_status = simple_command("/usr/libexec/greenboot/greenboot-status")
+    grubenv = first_file(["/boot/grub2/grubenv", "/boot/efi/EFI/redhat/grubenv"])
     grub_conf = simple_file("/boot/grub/grub.conf")
     grub_config_perms = simple_command("/bin/ls -l /boot/grub2/grub.cfg")  # only RHEL7 and updwards
     grub_efi_conf = simple_file("/boot/efi/EFI/redhat/grub.conf")
@@ -289,6 +295,7 @@ class DefaultSpecs(Specs):
             "/opt/rh/jbcs-httpd24/root/etc/httpd/conf.modules.d/*.conf"
         ]
     )
+    httpd_cert_info_in_nss = foreach_execute(ssl_certificate.httpd_certificate_info_in_nss, '/usr/bin/certutil -d %s -L -n %s')
     httpd_error_log = simple_file("var/log/httpd/error_log")
     httpd24_httpd_error_log = simple_file("/opt/rh/httpd24/root/etc/httpd/logs/error_log")
     jbcs_httpd24_httpd_error_log = simple_file("/opt/rh/jbcs-httpd24/root/etc/httpd/logs/error_log")
@@ -308,6 +315,7 @@ class DefaultSpecs(Specs):
     httpd_pid = simple_command("/usr/bin/pgrep -o httpd")
     httpd_limits = foreach_collect(httpd_pid, "/proc/%s/limits")
     httpd_M = foreach_execute(httpd_cmd, "%s -M")
+    httpd_ssl_cert_enddate = foreach_execute(ssl_certificate.httpd_ssl_certificate_files, "/usr/bin/openssl x509 -in %s -enddate -noout")
     httpd_V = foreach_execute(httpd_cmd, "%s -V")
     ifcfg = glob_file("/etc/sysconfig/network-scripts/ifcfg-*")
     ifcfg_static_route = glob_file("/etc/sysconfig/network-scripts/route-*")
@@ -344,6 +352,7 @@ class DefaultSpecs(Specs):
     last_upload_globs = ["/etc/redhat-access-insights/.lastupload", "/etc/insights-client/.lastupload"]
     lastupload = glob_file(last_upload_globs)
     ld_library_path_of_user = sap.ld_library_path_of_user
+    ldif_config = glob_file("/etc/dirsrv/slapd-*/dse.ldif")
     libssh_client_config = simple_file("/etc/libssh/libssh_client.config")
     libssh_server_config = simple_file("/etc/libssh/libssh_server.config")
     libvirtd_log = simple_file("/var/log/libvirt/libvirtd.log")
@@ -387,7 +396,10 @@ class DefaultSpecs(Specs):
     lsblk_pairs = simple_command("/bin/lsblk -P -o NAME,KNAME,MAJ:MIN,FSTYPE,MOUNTPOINT,LABEL,UUID,RA,RO,RM,MODEL,SIZE,STATE,OWNER,GROUP,MODE,ALIGNMENT,MIN-IO,OPT-IO,PHY-SEC,LOG-SEC,ROTA,SCHED,RQ-SIZE,TYPE,DISC-ALN,DISC-GRAN,DISC-MAX,DISC-ZERO")
     lscpu = simple_command("/usr/bin/lscpu")
     lsmod = simple_command("/sbin/lsmod")
-    lsof = simple_command("/usr/sbin/lsof")
+    lsof = first_of([
+        simple_command("/usr/bin/lsof"),
+        simple_command("/usr/sbin/lsof")
+    ])
     lspci = simple_command("/sbin/lspci -k")
     lspci_vmmkn = simple_command("/sbin/lspci -vmmkn")
     lsscsi = simple_command("/usr/bin/lsscsi")
@@ -423,6 +435,7 @@ class DefaultSpecs(Specs):
     mounts = simple_file("/proc/mounts")
     mssql_api_assessment = simple_file("/var/opt/mssql/log/assessments/assessment-latest")
     mssql_conf = simple_file("/var/opt/mssql/mssql.conf")
+    mssql_tls_cert_enddate = command_with_args("/usr/bin/openssl x509 -in %s -enddate -noout", ssl_certificate.mssql_tls_cert_file)
     multicast_querier = simple_command("/usr/bin/find /sys/devices/virtual/net/ -name multicast_querier -print -exec cat {} \;")
     multipath_conf = simple_file("/etc/multipath.conf")
     multipath_conf_initramfs = simple_command("/bin/lsinitrd -f /etc/multipath.conf")
@@ -463,6 +476,7 @@ class DefaultSpecs(Specs):
                            "/opt/rh/nginx*/root/etc/nginx/*.conf", "/opt/rh/nginx*/root/etc/nginx/conf.d/*", "/opt/rh/nginx*/root/etc/nginx/default.d/*",
                            "/etc/opt/rh/rh-nginx*/nginx/*.conf", "/etc/opt/rh/rh-nginx*/nginx/conf.d/*", "/etc/opt/rh/rh-nginx*/nginx/default.d/*"
                            ])
+    nginx_ssl_cert_enddate = foreach_execute(ssl_certificate.nginx_ssl_certificate_files, "/usr/bin/openssl x509 -in %s -enddate -noout")
     nmcli_conn_show = simple_command("/usr/bin/nmcli conn show")
     nmcli_dev_show = simple_command("/usr/bin/nmcli dev show")
     nova_api_log = first_file(["/var/log/containers/nova/nova-api.log", "/var/log/nova/nova-api.log"])
@@ -475,6 +489,7 @@ class DefaultSpecs(Specs):
     nova_crontab = simple_command("/usr/bin/crontab -l -u nova")
     nova_uid = simple_command("/usr/bin/id -u nova")
     nscd_conf = simple_file("/etc/nscd.conf")
+    nss_rhel7 = simple_file("/etc/pki/nss-legacy/nss-rhel7.config")
     nsswitch_conf = simple_file("/etc/nsswitch.conf")
     ntp_conf = simple_file("/etc/ntp.conf")
     ntpq_leap = simple_command("/usr/sbin/ntpq -c 'rv 0 leap'")
@@ -503,13 +518,6 @@ class DefaultSpecs(Specs):
     pacemaker_log = first_file(["/var/log/pacemaker.log", "/var/log/pacemaker/pacemaker.log"])
     partitions = simple_file("/proc/partitions")
     pci_rport_target_disk_paths = simple_command("/usr/bin/find /sys/devices/ -maxdepth 10 -mindepth 9 -name stat -type f")
-
-    @datasource(Services, HostContext)
-    def pcp_enabled(broker):
-        """ bool: Returns True if pmproxy service is on in services """
-        if not broker[Services].is_on("pmproxy"):
-            raise SkipComponent("pmproxy not enabled")
-
     pcp_metrics = simple_command("/usr/bin/curl -s http://127.0.0.1:44322/metrics --connect-timeout 5", deps=[pcp_enabled])
     passenger_status = simple_command("/usr/bin/passenger-status")
     password_auth = simple_file("/etc/pam.d/password-auth")
@@ -517,37 +525,7 @@ class DefaultSpecs(Specs):
     pcs_status = simple_command("/usr/sbin/pcs status")
     php_ini = first_file(["/etc/opt/rh/php73/php.ini", "/etc/opt/rh/php72/php.ini", "/etc/php.ini"])
     pluginconf_d = glob_file("/etc/yum/pluginconf.d/*.conf")
-
-    @datasource(Ps, HostContext)
-    def pmlog_summary_file(broker):
-        """
-        Determines the name for the pmlogger file and checks for its existance
-
-        Returns the name of the latest pmlogger summary file if a running ``pmlogger``
-        process is detected on the system.
-
-        Returns:
-            str: Full path to the latest pmlogger file
-
-        Raises:
-            SkipComponent: raises this exception when the command is not present or
-                the file is not present
-        """
-        ps = broker[Ps]
-        if ps.search(COMMAND__contains='pmlogger'):
-            pcp_log_date = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y%m%d")
-            file = "/var/log/pcp/pmlogger/ros/%s.index" % (pcp_log_date)
-            try:
-                if os.path.exists(file) and os.path.isfile(file):
-                    return file
-            except Exception as e:
-                SkipComponent("Failed to check for pmlogger file existance: {0}".format(str(e)))
-
-        raise SkipComponent
-
-    pmlog_summary = command_with_args(
-        "/usr/bin/pmlogsummary %s mem.util.used mem.physmem kernel.all.cpu.user kernel.all.cpu.sys kernel.all.cpu.nice kernel.all.cpu.steal kernel.all.cpu.idle disk.all.total mem.util.cached mem.util.bufmem mem.util.free kernel.all.cpu.wait.total",
-        pmlog_summary_file)
+    pmlog_summary = command_with_args("/usr/bin/pmlogsummary %s", pmlog_summary_args)
     pmrep_metrics = simple_command("/usr/bin/pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout mssql.memory_manager.stolen_server_memory mssql.memory_manager.total_server_memory -o csv")
     postconf_builtin = simple_command("/usr/sbin/postconf -C builtin")
     postconf = simple_command("/usr/sbin/postconf")
@@ -610,8 +588,17 @@ class DefaultSpecs(Specs):
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c 'select count(*) from hosts'",
         deps=[SatelliteVersion]
     )
+    satellite_core_taskreservedresource_count = simple_command(
+        "/usr/bin/sudo -iu postgres /usr/bin/psql -d pulpcore -c 'select count(*) from core_taskreservedresource' --csv",
+        deps=[SatelliteVersion]
+    )
     satellite_custom_ca_chain = simple_command(
         '/usr/bin/awk \'BEGIN { pipe="openssl x509 -noout -subject -enddate"} /^-+BEGIN CERT/,/^-+END CERT/ { print | pipe } /^-+END CERT/ { close(pipe); printf("\\n")}\' /etc/pki/katello/certs/katello-server-ca.crt',
+    )
+    satellite_custom_hiera = simple_file("/etc/foreman-installer/custom-hiera.yaml")
+    satellite_katello_empty_url_repositories = simple_command(
+        "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c 'select id, name from katello_root_repositories where url is NULL;' --csv",
+        deps=[SatelliteVersion]
     )
     satellite_missed_pulp_agent_queues = satellite_missed_queues.satellite_missed_pulp_agent_queues
     satellite_mongodb_storage_engine = simple_command("/usr/bin/mongo pulp_database --eval 'db.serverStatus().storageEngine'")
@@ -628,7 +615,7 @@ class DefaultSpecs(Specs):
         deps=[SatelliteVersion]
     )
     satellite_version_rb = simple_file("/usr/share/foreman/lib/satellite/version.rb")
-    satellite_custom_hiera = simple_file("/etc/foreman-installer/custom-hiera.yaml")
+    satellite_yaml = simple_file("/etc/foreman-installer/scenarios.d/satellite.yaml")
     scheduler = glob_file("/sys/block/*/queue/scheduler")
     scsi = simple_file("/proc/scsi/scsi")
     scsi_eh_deadline = glob_file('/sys/class/scsi_host/host[0-9]*/eh_deadline')
@@ -692,7 +679,10 @@ class DefaultSpecs(Specs):
         simple_file("/etc/sysconfig/rhn/systemid"),
         simple_file("/conf/rhn/sysconfig/rhn/systemid")
     ])
-    systool_b_scsi_v = simple_command("/bin/systool -b scsi -v")
+    systool_b_scsi_v = first_of([
+        simple_command("/usr/bin/systool -b scsi -v"),
+        simple_command("/bin/systool -b scsi -v")
+    ])
     sys_vmbus_device_id = glob_file('/sys/bus/vmbus/devices/*/device_id')
     sys_vmbus_class_id = glob_file('/sys/bus/vmbus/devices/*/class_id')
     testparm_s = simple_command("/usr/bin/testparm -s")

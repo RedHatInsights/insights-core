@@ -732,6 +732,8 @@ TEST_ETHTOOL_DOCS = '''
 '''
 
 ETHTOOL_INFO = """
+Cannot get wake-on-lan settings: Operation not permitted
+Cannot get link status: Operation not permitted
 Settings for eth1:
     Supported ports: [ TP MII ]
     Supported link modes: 10baseT/Half 10baseT/Full
@@ -815,7 +817,7 @@ def test_ethtool_fail():
 
     with pytest.raises(ParseException) as e:
         ethtool.Ethtool(context_wrap(ETHTOOL_INFO_BAD_2, path="ethtool_eth1"))
-    assert "ethtool: unrecognised first line " in str(e.value)
+    assert "Ethtool does not contain Settings for <nic>:" in str(e.value)
 
     with pytest.raises(ParseException) as e:
         ethtool.Ethtool(context_wrap(ETHTOOL_INFO_BAD_3, path="ethtool_eth1"))

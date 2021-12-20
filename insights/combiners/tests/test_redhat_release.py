@@ -62,6 +62,7 @@ def test_RedHatRelease_redhat_release():
     assert result.minor == expected[1]
     assert result.rhel == result.rhel7 == '7.2'
     assert result.rhel8 is None
+    assert result.rhel9 is None
 
 
 def test_RedHatRelease_both():
@@ -74,6 +75,7 @@ def test_RedHatRelease_both():
     assert result.rhel == result.rhel7 == '7.2'
     assert result.rhel6 is None
     assert result.rhel8 is None
+    assert result.rhel9 is None
 
 
 def test_raise():

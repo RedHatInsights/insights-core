@@ -51,6 +51,14 @@ insights.specs.datasources.package_provides
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.pcp
+------------------------------
+
+.. automodule:: insights.specs.datasources.pcp
+    :members: pcp_enabled, pmlog_summary_args
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.ps
 -----------------------------
 
@@ -72,6 +80,14 @@ insights.specs.datasources.satellite_missed_queues
 
 .. automodule:: insights.specs.datasources.satellite_missed_queues
     :members: satellite_missed_pulp_agent_queues, LocalSpecs
+    :show-inheritance:
+    :undoc-members:
+
+insights.specs.datasources.ssl_certificate
+------------------------------------------
+
+.. automodule:: insights.specs.datasources.ssl_certificate
+    :members: httpd_certificate_info_in_nss, httpd_ssl_certificate_files, nginx_ssl_certificate_files, mssql_tls_cert_file
     :show-inheritance:
     :undoc-members:
 

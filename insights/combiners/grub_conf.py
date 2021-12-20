@@ -1,7 +1,7 @@
 """
 GrubConf - The valid GRUB configuration
 =======================================
-Combiner for Red Hat Grub v1 and Grub v2 information.
+Combiner for Red Hat Grub v1 Grub v2, and BLS information.
 
 This combiner uses the parsers:
 :class:`insights.parsers.grub_conf.Grub1Config`,
@@ -9,37 +9,33 @@ This combiner uses the parsers:
 :class:`insights.parsers.grub_conf.Grub2Config`,
 :class:`insights.parsers.grub_conf.Grub2EFIConfig`, and
 :class:`insights.parsers.grub_conf.BootLoaderEntries`.
+:class:`insights.parsers.grub_env.GrubEnv`.
 
-It determines which parser was used by checking one of the follwing
+It determines which parser was used by checking one of the following
 parsers/combiners:
 :class:`insights.parsers.installed_rpms.InstalledRpms`,
 :class:`insights.parsers.cmdline.CmdLine`,
 :class:`insights.parsers.ls_sys_firmware.LsSysFirmware`, and
 :class:`insights.combiners.redhat_release.RedHatRelease`.
-
-
 """
+import re
 
-from insights.core.plugins import combiner
-from insights.combiners.redhat_release import RedHatRelease
-from insights.parsers.grub_conf import BootEntry, get_kernel_initrds
-from insights.parsers.grub_conf import Grub1Config, Grub1EFIConfig
-from insights.parsers.grub_conf import Grub2Config, Grub2EFIConfig
-from insights.parsers.grub_conf import BootLoaderEntries as BLE
-from insights.parsers.ls_sys_firmware import LsSysFirmware
-from insights.parsers.installed_rpms import InstalledRpms
-from insights.parsers.cmdline import CmdLine
 from insights import SkipComponent
+from insights.combiners.redhat_release import RedHatRelease
+from insights.core.plugins import combiner
+from insights.parsers.cmdline import CmdLine
+from insights.parsers.grub_conf import (get_kernel_initrds, BootEntry, Grub1Config, Grub1EFIConfig, Grub2Config,
+                                        Grub2EFIConfig, BootLoaderEntries as BLE)
+from insights.parsers.grubenv import GrubEnv
+from insights.parsers.installed_rpms import InstalledRpms
+from insights.parsers.ls_sys_firmware import LsSysFirmware
 
 
-@combiner(BLE, optional=[LsSysFirmware])
+@combiner(BLE, optional=[GrubEnv, LsSysFirmware])
 class BootLoaderEntries(object):
     """
     Combine all :class:`insights.parsers.grub_conf.BootLoaderEntries`
     parsers into one Combiner
-
-    Raises:
-        SkipComponent: when no any BootLoaderEntries Parsers.
 
     Attributes:
         version (int): The version of the GRUB configuration, 1 or 2
@@ -50,30 +46,68 @@ class BootLoaderEntries(object):
         kernel_initrds (dict): Dict of the `kernel` and `initrd` files
             referenced in GRUB configuration files
         is_kdump_iommu_enabled (bool): If any kernel entry contains "intel_iommu=on"
+
+    Raises:
+        SkipComponent: when no any BootLoaderEntries Parsers.
     """
-    def __init__(self, grub_bles, sys_firmware):
+    def __init__(self, grub_bles, grubenv, sys_firmware):
         self.version = self._version = 2
         self.is_efi = self._efi = '/sys/firmware/efi' in sys_firmware if sys_firmware else False
         self.entries = []
         self.boot_entries = []
         self.is_kdump_iommu_enabled = False
+
         for ble in grub_bles:
-            self.entries.append(ble.entry)
-            self.boot_entries.append(BootEntry({'name': ble.title, 'cmdline': ble.cmdline}))
+            # Make a copy of the ble entry, so that no write
+            # backs occur below when expanding variables.
+            self.entries.append(ble.entry.copy())
+            self.boot_entries.append(BootEntry({'name': ble.title, 'cmdline': ble.cmdline,
+                                                'version': ble.entry.get('version')}))
             self.is_kdump_iommu_enabled = self.is_kdump_iommu_enabled or ble.is_kdump_iommu_enabled
+
+        # If grub_bles and grubenv expand the $kernelopts,
+        # $tuned_params, and $tuned_initrd variables.
+        if grub_bles and grubenv:
+            for entry in self.entries:
+                entry_options = entry.get('options', "")
+                if "$kernelopts" in entry_options or "$tuned_params" in entry_options:
+                    entry['options'] = re.sub("\\$kernelopts", grubenv.kernelopts,
+                                              entry['options']).strip()
+                    entry['options'] = re.sub("\\$tuned_params", grubenv.tuned_params,
+                                              entry['options']).strip()
+
+                if "$tuned_initrd" in entry.get('initrd', "") and grubenv.get('tuned_initrd'):
+                    entry['initrd'] = re.sub("\\$tuned_initrd", grubenv.get('tuned_initrd', ""),
+                                             entry['initrd']).strip()
+
+            for entry in self.boot_entries:
+                entry_options = entry.get('cmdline', "")
+                if "$kernelopts" in entry_options or "$tuned_params" in entry_options:
+                    entry['cmdline'] = re.sub("\\$kernelopts", grubenv.kernelopts, entry['cmdline']).strip()
+                    entry['cmdline'] = re.sub("\\$tuned_params", grubenv.tuned_params, entry['cmdline']).strip()
+
         self.kernel_initrds = get_kernel_initrds(self.entries)
 
         if not self.entries:
             raise SkipComponent()
 
 
-@combiner([Grub1Config, Grub2Config,
-           Grub1EFIConfig, Grub2EFIConfig,
-           BootLoaderEntries],
+@combiner([Grub1Config, Grub2Config, Grub1EFIConfig, Grub2EFIConfig, BootLoaderEntries],
           optional=[InstalledRpms, CmdLine, LsSysFirmware, RedHatRelease])
 class GrubConf(object):
     """
-    Process Grub configuration v1 or v2 based on which type is passed in.
+    Process Grub configuration v1, v2, and BLS based on which type is passed in.
+
+    Attributes:
+        version (int): returns 1 or 2, version of the GRUB configuration
+        is_efi (bool): returns True if the host is boot with EFI
+        kernel_initrds (dict): returns a dict of the `kernel` and `initrd`
+            files referenced in GRUB configuration files
+        is_kdump_iommu_enabled (bool): returns True if any kernel entry
+            contains "intel_iommu=on"
+
+    Raises:
+        Exception: when cannot find any valid grub configuration.
 
     Examples:
         >>> type(grub_conf)
@@ -89,27 +123,13 @@ class GrubConf(object):
         False
         >>> grub_conf.get_grub_cmdlines('')
         []
-
-    Raises:
-        Exception: when cannot find any valid grub configuration.
-
-    Attributes:
-        version (int): returns 1 or 2, version of the GRUB configuration
-        is_efi (bool): returns True if the host is boot with EFI
-        kernel_initrds (dict): returns a dict of the `kernel` and `initrd`
-            files referenced in GRUB configuration files
-        is_kdump_iommu_enabled (bool): returns True if any kernel entry
-            contains "intel_iommu=on"
     """
-
     def __init__(self, grub1, grub2, grub1_efi, grub2_efi, grub_bles,
                  rpms, cmdline, sys_firmware, rh_rel):
-
         self.version = self.is_kdump_iommu_enabled = None
         self.grub = self.kernel_initrds = None
-        _grubs = list(filter(None, [grub1, grub2, grub1_efi, grub2_efi, grub_bles]))
-        # Check if `/sys/firmware/efi` exist?
         self.is_efi = '/sys/firmware/efi' in sys_firmware if sys_firmware else False
+        _grubs = list(filter(None, [grub1, grub2, grub1_efi, grub2_efi, grub_bles]))
 
         if len(_grubs) == 1:
             self.grub = _grubs[0]

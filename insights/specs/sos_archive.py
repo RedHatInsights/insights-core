@@ -31,6 +31,7 @@ class SosSpecs(Specs):
     ceph_health_detail = simple_file("sos_commands/ceph/ceph_health_detail_--format_json-pretty")
     checkin_conf = simple_file("/etc/splice/checkin.conf")
     chkconfig = first_file(["sos_commands/startup/chkconfig_--list", "sos_commands/services/chkconfig_--list"])
+    chronyc_sources = simple_file("sos_commands/chrony/chronyc_-n_sources")
     cib_xml = first_of(
         [
             simple_file("/var/lib/pacemaker/cib/cib.xml"),
@@ -114,6 +115,7 @@ class SosSpecs(Specs):
     ip_s_link = first_of([simple_file("sos_commands/networking/ip_-s_-d_link"), simple_file("sos_commands/networking/ip_-s_link"), simple_file("sos_commands/networking/ip_link")])
     ip6tables_permanent = simple_file("etc/sysconfig/ip6tables")
     iptables = first_file(["/etc/sysconfig/iptables", "/etc/sysconfig/iptables.save"])
+    journal_all = simple_file("sos_commands/logs/journalctl_--no-pager")
     journal_since_boot = first_file(["sos_commands/logs/journalctl_--no-pager_--boot", "sos_commands/logs/journalctl_--no-pager_--catalog_--boot", "sos_commands/logs/journalctl_--all_--this-boot_--no-pager"])
     ironic_conf = first_file(["/var/lib/config-data/puppet-generated/ironic/etc/ironic/ironic.conf", "/etc/ironic/ironic.conf"])
     kerberos_kdc_log = simple_file("var/log/krb5kdc.log")

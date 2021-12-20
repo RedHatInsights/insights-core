@@ -1,4 +1,4 @@
-from insights.components.rhel_version import IsRhel6, IsRhel7, IsRhel8
+from insights.components.rhel_version import IsRhel6, IsRhel7, IsRhel8, IsRhel9
 from insights.combiners.redhat_release import RedHatRelease as RR
 from insights.parsers.uname import Uname
 from insights.parsers.redhat_release import RedhatRelease
@@ -23,6 +23,10 @@ Red Hat Enterprise Linux release 7.5-0.14
 
 REDHAT_RELEASE4 = """
 Red Hat Enterprise Linux release 8.0 (Ootpa)
+""".strip()
+
+REDHAT_RELEASE5 = """
+Red Hat Enterprise Linux release 9.0 (Plow)
 """.strip()
 
 
@@ -96,3 +100,19 @@ def test_not_rhel8():
     with pytest.raises(SkipComponent) as e:
         IsRhel8(rel)
     assert "Not RHEL8" in str(e)
+
+
+# RHEL9 Tests
+def test_is_rhel9():
+    rr = RedhatRelease(context_wrap(REDHAT_RELEASE5))
+    rel = RR(None, rr)
+    result = IsRhel9(rel)
+    assert isinstance(result, IsRhel9)
+
+
+def test_not_rhel9():
+    rr = RedhatRelease(context_wrap(REDHAT_RELEASE2))
+    rel = RR(None, rr)
+    with pytest.raises(SkipComponent) as e:
+        IsRhel9(rel)
+    assert "Not RHEL9" in str(e)

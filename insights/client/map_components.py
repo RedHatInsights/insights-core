@@ -127,8 +127,6 @@ def _get_component_by_symbolic_name(sname):
         'machine_id1': 'machine_id',
         'machine_id2': 'machine_id',
         'machine_id3': 'machine_id',
-        'grub2_efi_grubenv': None,
-        'grub2_grubenv': None,
         'limits_d': 'limits_conf',
         'modprobe_conf': 'modprobe',
         'modprobe_d': 'modprobe',
