@@ -237,6 +237,7 @@ class DefaultSpecs(Specs):
     findmnt_lo_propagation = simple_command("/bin/findmnt -lo+PROPAGATION")
     firewall_cmd_list_all_zones = simple_command("/usr/bin/firewall-cmd --list-all-zones")
     firewalld_conf = simple_file("/etc/firewalld/firewalld.conf")
+    foreman_production_log = simple_file("/var/log/foreman/production.log")
     foreman_ssl_error_ssl_log = simple_file("/var/log/httpd/foreman-ssl_error_ssl.log")
     fstab = simple_file("/etc/fstab")
     fw_devices = simple_command("/bin/fwupdagent get-devices", deps=[IsBareMetal])
@@ -294,6 +295,7 @@ class DefaultSpecs(Specs):
             "/opt/rh/jbcs-httpd24/root/etc/httpd/conf.modules.d/*.conf"
         ]
     )
+    httpd_cert_info_in_nss = foreach_execute(ssl_certificate.httpd_certificate_info_in_nss, '/usr/bin/certutil -d %s -L -n %s')
     httpd_error_log = simple_file("var/log/httpd/error_log")
     httpd24_httpd_error_log = simple_file("/opt/rh/httpd24/root/etc/httpd/logs/error_log")
     jbcs_httpd24_httpd_error_log = simple_file("/opt/rh/jbcs-httpd24/root/etc/httpd/logs/error_log")
@@ -586,10 +588,18 @@ class DefaultSpecs(Specs):
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c 'select count(*) from hosts'",
         deps=[SatelliteVersion]
     )
+    satellite_core_taskreservedresource_count = simple_command(
+        "/usr/bin/sudo -iu postgres /usr/bin/psql -d pulpcore -c 'select count(*) from core_taskreservedresource' --csv",
+        deps=[SatelliteVersion]
+    )
     satellite_custom_ca_chain = simple_command(
         '/usr/bin/awk \'BEGIN { pipe="openssl x509 -noout -subject -enddate"} /^-+BEGIN CERT/,/^-+END CERT/ { print | pipe } /^-+END CERT/ { close(pipe); printf("\\n")}\' /etc/pki/katello/certs/katello-server-ca.crt',
     )
     satellite_custom_hiera = simple_file("/etc/foreman-installer/custom-hiera.yaml")
+    satellite_katello_empty_url_repositories = simple_command(
+        "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c 'select id, name from katello_root_repositories where url is NULL;' --csv",
+        deps=[SatelliteVersion]
+    )
     satellite_missed_pulp_agent_queues = satellite_missed_queues.satellite_missed_pulp_agent_queues
     satellite_mongodb_storage_engine = simple_command("/usr/bin/mongo pulp_database --eval 'db.serverStatus().storageEngine'")
     satellite_non_yum_type_repos = simple_command(
