@@ -157,6 +157,24 @@ count
 0
 """
 
+SATELLITE_QUERY_DATA1 = """
+logname: no login name
+/etc/profile.d/hkuser.sh: line 40: HISTFILE: readonly variable
+id,name
+1,Puppet_Base
+""".strip()
+
+SATELLITE_QUERY_DATA2 = """
+logname: no login name
+/etc/profile.d/hkuser.sh: line 40: HISTFILE: readonly variable
+id,name
+""".strip()
+
+SATELLITE_QUERY_DATA3 = """
+logname: no login name
+/etc/profile.d/hkuser.sh: line 40: HISTFILE: readonly variable
+""".strip()
+
 
 def test_satellite_postgesql_query_exception():
     with pytest.raises(ContentException):
@@ -259,6 +277,17 @@ def test_satellite_sca():
 def test_satellite_katello_empty_url_repositories():
     repositories = satellite_postgresql_query.SatelliteKatelloEmptyURLRepositories(context_wrap(SATELLITE_KATELLO_ROOT_REPOSITORIES))
     assert repositories[1]['name'] == 'testb'
+
+    table = satellite_postgresql_query.SatelliteKatelloEmptyURLRepositories(context_wrap(SATELLITE_QUERY_DATA1))
+    assert len(table) == 1
+    assert table[0]['id'] == '1'
+    assert table[0]['name'] == 'Puppet_Base'
+
+    with pytest.raises(SkipException):
+        satellite_postgresql_query.SatelliteKatelloEmptyURLRepositories(context_wrap(SATELLITE_QUERY_DATA2))
+
+    with pytest.raises(SkipException):
+        satellite_postgresql_query.SatelliteKatelloEmptyURLRepositories(context_wrap(SATELLITE_QUERY_DATA3))
 
 
 def test_satellite_taskreservedresource():

@@ -72,15 +72,24 @@ class SatellitePostgreSQLQuery(CommandParser, list):
 
     Raises:
         SkipException: when there isn't data in the table
-        ParseException: when the output isn't in good csv format
+        ParseException: when the output isn't in good csv format or the subclass doesn't define headers
     """
+    headers = []
 
     def parse_content(self, content):
-        if not content or len(content) == 1:
-            raise SkipException("There is no data in the table")
+        if self.__class__.__name__ != 'SatellitePostgreSQLQuery' and not self.headers:
+            raise ParseException("Please define the headers attribute which contains the column names.")
+        start_index = None
+        for index, line in enumerate(content):
+            if ','.join(self.headers) in line:
+                start_index = index
+                break
+        valid_lines = content[start_index:]
+        if start_index is None or len(valid_lines) <= 1:
+            raise SkipException('There is no data in the table')
         try:
             # keep the line break for yaml parse in some table
-            reader = DictReader(os.linesep.join(content).splitlines(True))
+            reader = DictReader(os.linesep.join(valid_lines).splitlines(True))
         except Exception:
             raise ParseException("The content isn't in csv format")
         for row in reader:
@@ -139,6 +148,7 @@ class SatelliteAdminSettings(SatellitePostgreSQLQuery):
         >>> table.get_setting('destroy_vm_on_host_delete')
         True
     """
+    headers = ['name', 'value', 'default']
 
     def _parse_yaml(self, value):
         if value:
@@ -210,7 +220,7 @@ class SatelliteComputeResources(SatellitePostgreSQLQuery):
         >>> rows[0]['name']
         'test_compute_resource1'
     """
-    pass
+    headers = ['name', 'type']
 
 
 @parser(Specs.satellite_katello_empty_url_repositories)
@@ -232,7 +242,7 @@ class SatelliteKatelloEmptyURLRepositories(SatellitePostgreSQLQuery):
         >>> katello_root_repositories[0]['name']
         'testa'
     """
-    pass
+    headers = ['id', 'name']
 
 
 @parser(Specs.satellite_core_taskreservedresource_count)
@@ -251,7 +261,7 @@ class SatelliteCoreTaskReservedResourceCount(SatellitePostgreSQLQuery):
         >>> tasks[0]['count']
         '0'
     """
-    pass
+    headers = ['count']
 
 
 @parser(Specs.satellite_sca_status)
@@ -275,6 +285,8 @@ class SatelliteSCAStatus(SatellitePostgreSQLQuery):
         >>> sat_sca_info.sca_enabled
         True
     """
+
+    headers = ['displayname', 'content_access_mode']
 
     @property
     def sca_enabled(self):
