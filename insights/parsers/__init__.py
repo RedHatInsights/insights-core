@@ -220,7 +220,7 @@ def unsplit_lines(lines, cont_char='\\', keep_cont_char=False):
         yield ''.join(unsplit_lines)
 
 
-def calc_offset(lines, target, invert_search=False):
+def calc_offset(lines, target, invert_search=False, require_all=False):
     """
     Function to search for a line in a list starting with a target string.
     If `target` is `None` or an empty string then `0` is returned.  This
@@ -238,6 +238,10 @@ def calc_offset(lines, target, invert_search=False):
             An empty line is implicitly included in target.  Default is `False`.
             This would typically be used if trimming trailing lines off of a
             file by passing `reversed(lines)` as the `lines` argument.
+        require_all (boolean): If `True` this flag causes the search to *also*
+            require all the items of the `target` being in the line.
+            This flag only works with `invert_search == False`, when
+            `invert_search` is `True`, it will be ignored.
 
     Returns:
         int: index into the `lines` indicating the location of `target`. If
@@ -256,19 +260,30 @@ def calc_offset(lines, target, invert_search=False):
         ... 'Error line',
         ... '    data 1 line',
         ... '    data 2 line']
-        >>> target = ['data']
+        >>> target = ['data', '2', 'line']
         >>> calc_offset(lines, target)
         3
         >>> target = ['#', 'Warning', 'Error']
         >>> calc_offset(lines, target, invert_search=True)
         3
+        >>> target = ['data', '2', 'line']
+        >>> calc_offset(lines, target, require_all=True)
+        4
+        >>> target = ['Warning', 'line']
+        >>> calc_offset(lines, target, invert_search=True, require_all=True)
+        2
     """
     if target and target[0] is not None:
+        target = [t.strip() for t in target]
         for offset, line in enumerate(l.strip() for l in lines):
             # strip `target` string along with `line` value
-            found_any = any([line.startswith(t.strip()) for t in target])
+            found_any = any([line.startswith(t) for t in target])
             if not invert_search and found_any:
-                return offset
+                if require_all:
+                    if all(t in line for t in target):
+                        return offset
+                else:
+                    return offset
             elif invert_search and not(line == '' or found_any):
                 return offset
 
