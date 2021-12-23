@@ -10,10 +10,8 @@ SatelliteComputeResources - command ``psql -d foreman -c 'select name, type from
 -----------------------------------------------------------------------------------------------------------
 SatelliteSCAStatus - command ``psql -d candlepin -c "select displayname, content_access_mode from cp_owner" --csv``
 -------------------------------------------------------------------------------------------------------------------
-
 SatelliteKatelloEmptyURLRepositories - command ``psql -d foreman -c 'select id, name from katello_root_repositories where url is NULL;' --csv``
 -----------------------------------------------------------------------------------------------------------------------------------------------
-
 SatelliteCoreTaskReservedResourceCount - command ``psql -d pulpcore -c 'select count(*) from core_taskreservedresource' --csv``
 -------------------------------------------------------------------------------------------------------------------------------
 """
@@ -25,12 +23,13 @@ from csv import DictReader
 from insights import parser, CommandParser
 from insights.specs import Specs
 from insights.parsers import SkipException, ParseException
-from insights.parsers import keyword_search
+from insights.parsers import keyword_search, calc_offset
 
 
 class SatellitePostgreSQLQuery(CommandParser, list):
     """
-    Parent class of satellite postgresql table queries.
+    Parent class of satellite postgresql table queries. It can not be used
+    directly, A child class with overriding headers attribute is required.
     It saves the rows data into a list. Each row is saved into a dict.
     The key is the column name, the value is the value of the column.
 
@@ -55,37 +54,20 @@ class SatellitePostgreSQLQuery(CommandParser, list):
         abc,,test
         def,http://xx.com,
 
-
-    Examples:
-        >>> type(query)
-        <class 'insights.parsers.satellite_postgresql_query.SatellitePostgreSQLQuery'>
-        >>> rows = query.search(name='abc')
-        >>> len(rows)
-        1
-        >>> rows[0]['value']
-        'test'
-        >>> columns=query.get_columns()
-        >>> 'url' in columns
-        True
-        >>> 'name' in columns
-        True
-
     Raises:
         SkipException: when there isn't data in the table
         ParseException: when the output isn't in good csv format or the subclass doesn't define headers
     """
+
+    # child class should override the headers with its own column names
     headers = []
 
     def parse_content(self, content):
-        if self.__class__.__name__ != 'SatellitePostgreSQLQuery' and not self.headers:
-            raise ParseException("Please define the headers attribute which contains the column names.")
-        start_index = None
-        for index, line in enumerate(content):
-            if ','.join(self.headers) in line:
-                start_index = index
-                break
+        if not self.headers:
+            raise ParseException("Please override the headers attribute with the column names.")
+        start_index = calc_offset(content, self.headers)
         valid_lines = content[start_index:]
-        if start_index is None or len(valid_lines) <= 1:
+        if len(valid_lines) <= 1:
             raise SkipException('There is no data in the table')
         try:
             # keep the line break for yaml parse in some table
@@ -110,17 +92,6 @@ class SatellitePostgreSQLQuery(CommandParser, list):
         Returns:
             list: A list of dictionaries of rows that match the given
             search criteria.
-
-        Examples:
-            >>> query.search(name__startswith='abc') == [
-            ... {'name': 'abc', 'url': '', 'value': 'test'},
-            ... {'name': 'abcdef', 'url': '', 'value': 'test2'}
-            ... ]
-            True
-            >>> query.search(name__startswith='abc', value='test') == [
-            ... {'name': 'abc', 'url': '', 'value': 'test'}
-            ... ]
-            True
         """
 
         return keyword_search(self, **kwargs)
