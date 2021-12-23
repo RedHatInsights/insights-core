@@ -269,9 +269,9 @@ def calc_offset(lines, target, invert_search=False, require_all=False):
         >>> target = ['data', '2', 'line']
         >>> calc_offset(lines, target, require_all=True)
         4
-        >>> target = ['Warning', 'line']
-        >>> calc_offset(lines, target, invert_search=True, require_all=True)
-        2
+        >>> target = ['#', 'Warning', 'Error']
+        >>> calc_offset(lines, target, invert_search=True, require_all=True)  # `require_all` doesn't work when `invert_search=True`
+        3
     """
     if target and target[0] is not None:
         target = [t.strip() for t in target]
