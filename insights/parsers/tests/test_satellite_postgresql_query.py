@@ -26,28 +26,6 @@ SATELLITE_POSTGRESQL_WRONG_5 = '''
 name,default,value
 '''.strip()
 
-test_data_1 = '''
-name
-fix_db_cache
-foreman_tasks_sync_task_timeout
-dynflow_enable_console
-dynflow_console_require_auth
-foreman_tasks_proxy_action_retry_count
-'''
-
-test_data_2 = '''
-id,name,created_at,updated_at
-1,project-receptor.satellite_receptor_installer,2021-01-30 01:14:22.848735,2021-01-30 01:14:22.848735
-2,theforeman.foreman_scap_client,2021-01-30 01:14:22.916142,2021-01-30 01:14:22.91614
-'''
-
-test_data_3 = '''
-name,url,value
-abc,,test
-abcdef,,test2
-def,http://xx.com,
-'''
-
 SATELLITE_SETTINGS_1 = '''
 name,value,default
 unregister_delete_host,"--- true
@@ -189,8 +167,13 @@ def test_HTL_doc_examples():
         'katello_root_repositories': repositories,
         'tasks': tasks
     }
-    failed, tested = doctest.testmod(satellite_postgresql_query, globs=globs)
+    failed, _ = doctest.testmod(satellite_postgresql_query, globs=globs)
     assert failed == 0
+
+
+def test_no_headers():
+    with pytest.raises(NotImplementedError):
+        satellite_postgresql_query.SatellitePostgreSQLQuery(context_wrap(SATELLITE_POSTGRESQL_WRONG_4))
 
 
 def test_basic_output_with_satellite_admin_setting():

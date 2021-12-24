@@ -68,18 +68,11 @@ class SatellitePostgreSQLQuery(CommandParser, list):
             raise NotImplementedError("Please override the columns attribute.")
         start_index = calc_offset(content, self.columns, require_all=True)
         valid_lines = content[start_index:]
-        try:
-            # keep the line break for yaml parse in some table
-            reader = DictReader(os.linesep.join(valid_lines).splitlines(True))
-        except Exception:
-            raise ParseException("The content isn't in csv format")
+        reader = DictReader(os.linesep.join(valid_lines).splitlines(True))
         for row in reader:
             self.append(row)
         if not self:
             raise SkipException("There is no data in the table.")
-
-    def get_columns(self):
-        return list(self[0].keys())
 
     def search(self, **kwargs):
         """
