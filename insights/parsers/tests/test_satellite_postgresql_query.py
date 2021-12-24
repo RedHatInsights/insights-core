@@ -24,7 +24,7 @@ SATELLITE_POSTGRESQL_WRONG_4 = '''
 
 SATELLITE_POSTGRESQL_WRONG_5 = '''
 name,default,value
-'''
+'''.strip()
 
 test_data_1 = '''
 name
@@ -234,7 +234,7 @@ def test_satellite_admin_settings():
 
 
 def test_satellite_admin_settings_exception():
-    with pytest.raises(SkipException):
+    with pytest.raises(ValueError):
         satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_SETTINGS_BAD_1))
     with pytest.raises(ParseException):
         satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_SETTINGS_BAD_2))

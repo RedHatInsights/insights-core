@@ -29,7 +29,7 @@ from insights.parsers import keyword_search, calc_offset
 class SatellitePostgreSQLQuery(CommandParser, list):
     """
     Parent class of satellite postgresql table queries. It can not be used
-    directly, A child class with overriding headers attribute is required.
+    directly, A child class with overriding columns attribute is required.
     It saves the rows data into a list. Each row is saved into a dict.
     The key is the column name, the value is the value of the column.
 
@@ -56,19 +56,18 @@ class SatellitePostgreSQLQuery(CommandParser, list):
 
     Raises:
         SkipException: when there isn't data in the table
-        ParseException: when the output isn't in good csv format or the subclass doesn't define headers
+        ParseException: when the output isn't in good csv format.
+        NotImplementedError: when the subclass doesn't override the columns attribute.
     """
 
-    # child class should override the headers with its own column names
-    headers = []
+    # child class should override the columns attribute with its own column names
+    columns = []
 
     def parse_content(self, content):
-        if not self.headers:
-            raise ParseException("Please override the headers attribute with the column names.")
-        start_index = calc_offset(content, self.headers)
+        if not self.columns:
+            raise NotImplementedError("Please override the columns attribute.")
+        start_index = calc_offset(content, self.columns, require_all=True)
         valid_lines = content[start_index:]
-        if len(valid_lines) <= 1:
-            raise SkipException('There is no data in the table')
         try:
             # keep the line break for yaml parse in some table
             reader = DictReader(os.linesep.join(valid_lines).splitlines(True))
@@ -76,6 +75,8 @@ class SatellitePostgreSQLQuery(CommandParser, list):
             raise ParseException("The content isn't in csv format")
         for row in reader:
             self.append(row)
+        if not self:
+            raise SkipException("There is no data in the table.")
 
     def get_columns(self):
         return list(self[0].keys())
@@ -119,7 +120,7 @@ class SatelliteAdminSettings(SatellitePostgreSQLQuery):
         >>> table.get_setting('destroy_vm_on_host_delete')
         True
     """
-    headers = ['name', 'value', 'default']
+    columns = ['name', 'value', 'default']
 
     def _parse_yaml(self, value):
         if value:
@@ -142,8 +143,6 @@ class SatelliteAdminSettings(SatellitePostgreSQLQuery):
             ParseException: when the value or default in bad yaml format.
         """
         super(SatelliteAdminSettings, self).parse_content(content)
-        if not all(item in self.get_columns() for item in ['default', 'value']):
-            raise SkipException('No default, value columns in the table.')
         for row in self:
             row['default'] = self._parse_yaml(row['default'])
             row['value'] = self._parse_yaml(row['value'])
@@ -172,10 +171,6 @@ class SatelliteComputeResources(SatellitePostgreSQLQuery):
     """
     Parse the output of the command ``psql -d foreman -c 'select name, type from compute_resources' --csv``.
 
-    .. note::
-        Please refer to its super-class :class:`insights.parsers.satellite_postgresql_query.SatellitePostgreSQLQuery` for more
-        details.
-
     Sample output::
 
         name,type
@@ -191,7 +186,7 @@ class SatelliteComputeResources(SatellitePostgreSQLQuery):
         >>> rows[0]['name']
         'test_compute_resource1'
     """
-    headers = ['name', 'type']
+    columns = ['name', 'type']
 
 
 @parser(Specs.satellite_katello_empty_url_repositories)
@@ -213,7 +208,7 @@ class SatelliteKatelloEmptyURLRepositories(SatellitePostgreSQLQuery):
         >>> katello_root_repositories[0]['name']
         'testa'
     """
-    headers = ['id', 'name']
+    columns = ['id', 'name']
 
 
 @parser(Specs.satellite_core_taskreservedresource_count)
@@ -232,17 +227,13 @@ class SatelliteCoreTaskReservedResourceCount(SatellitePostgreSQLQuery):
         >>> tasks[0]['count']
         '0'
     """
-    headers = ['count']
+    columns = ['count']
 
 
 @parser(Specs.satellite_sca_status)
 class SatelliteSCAStatus(SatellitePostgreSQLQuery):
     """
     Parse the output of the command ``psql -d candlepin -c "select displayname, content_access_mode from cp_owner" --csv``.
-
-    .. note::
-        Please refer to its super-class :class:`insights.parsers.satellite_postgresql_query.SatellitePostgreSQLQuery` for more
-        details.
 
     Sample output::
 
@@ -257,7 +248,7 @@ class SatelliteSCAStatus(SatellitePostgreSQLQuery):
         True
     """
 
-    headers = ['displayname', 'content_access_mode']
+    columns = ['displayname', 'content_access_mode']
 
     @property
     def sca_enabled(self):
