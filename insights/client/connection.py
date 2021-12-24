@@ -812,7 +812,7 @@ class InsightsConnection(object):
         archive_filesize = size_in_mb(
             os.stat(archive_file).st_size)
         logger.info("Archive is {fsize} MB which is larger than the maximum allowed size of {flimit} MB.".format(
-            fsize=archive_filesize, flimit="100"))
+            fsize=archive_filesize, flimit=constants.archive_filesize_max))
 
         if not self.config.core_collect:
             logger.error("Cannot estimate the spec with largest filesize because core collection is not enabled. "
@@ -822,7 +822,7 @@ class InsightsConnection(object):
         biggest_file = largest_spec_in_archive(archive_file)
         if biggest_file is not None:
             logger.info("The largest file in the archive is %s at %s MB.", biggest_file[0], size_in_mb(biggest_file[1]))
-            logger.info("Please add this spec:\n\n\t%s\n\nto your denylist configuration according to the documentation, and try the upload again.", biggest_file[2])
+            logger.info("Please add this spec:\n\n\t%s\n\nto your denylist configuration according to the documentation, and try the upload again. \nSee the documentation: https://access.redhat.com/articles/4511681 ", biggest_file[2])
 
     # -LEGACY-
     def _legacy_upload_archive(self, data_collected, duration):

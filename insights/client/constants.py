@@ -85,5 +85,5 @@ class InsightsConstants(object):
     core_collect_rpm_version = '3.1.0'
     rhsm_facts_dir = os.path.join(os.sep, 'etc', 'rhsm', 'facts')
     rhsm_facts_file = os.path.join(os.sep, 'etc', 'rhsm', 'facts', 'insights-client.facts')
-    #In MB
+    # In MB
     archive_filesize_max = 100

@@ -13,11 +13,9 @@ import re
 import sys
 import threading
 import time
-import shutil
-import atexit
 import json
+import tarfile
 from subprocess import Popen, PIPE, STDOUT
-from tempfile import mkdtemp
 
 import yaml
 try:
@@ -452,52 +450,37 @@ def os_release_info():
 
 
 def largest_spec_in_archive(archive_file):
-    '''
-    Using insights-core metadata, determine the largest file in the archive
-    and the spec it's associated with.
-    '''
     logger.info("Checking for large files...")
-    tmpdir = mkdtemp()
-    atexit.register(shutil.rmtree, tmpdir)
-    untar_cmd = ["/usr/bin/tar", "-C", tmpdir, "-xf", archive_file]
-    proc = Popen(untar_cmd,
-             stdout=PIPE, stderr=STDOUT)
-    stdout, stderr = proc.communicate()
-    if proc.returncode != 0:
-        logger.error("Error opening archive for inspection.")
-        return None
-
-    tmpdir_top = os.listdir(tmpdir)
-    # archive contents are within a dir extracted inside the temp dir
-    archive_top = os.path.join(tmpdir, tmpdir_top[0])
-    # this will only work with a core collection archive
-    data_top = os.path.join(archive_top, "data")
-    metadata_top = os.path.join(archive_top, "meta_data")
-
+    tar_file = tarfile.open(archive_file, 'r')
     largest_fsize = 0
-    largest_fname = ""
-    largest_spec = ""
+    # get the name of the archive
+    for elems in archive_file.split("/"):
+        if "tar" in elems:
+            name = elems.split(".", 1)
+    name[0]
 
-    for m in os.listdir(metadata_top):
-        with open(os.path.join(metadata_top, m), "r") as meta:
-            spec_metadata = json.load(meta)
-            results = spec_metadata.get("results", [])
+    # get the archives from inside meta_data directory
+    metadata_top = os.path.join(name[0], "meta_data")
+    data_top = os.path.join(name[0], "data")
+    for file in tar_file.getmembers():
+        if metadata_top in file.name:
+            file_extract = tar_file.extractfile(file.name)
+            specs_metadata = json.load(file_extract)
+            results = specs_metadata.get("results", [])
             if not results:
-                # results is None
                 continue
             if type(results) != list:
-                # specs with only one resulting file are not in list form
                 results = [results]
             for result in results:
-                # get the path of the spec result and check its filesize
                 fname = result.get("object", {}).get("relative_path")
-                abs_fname = os.path.join(data_top, fname)
-                fsize = os.stat(abs_fname).st_size
-                if fsize > largest_fsize:
-                    largest_fsize = fsize
-                    largest_fname = fname
-                    largest_spec = spec_metadata["name"]
-    return (largest_fname, largest_fsize, largest_spec)
+                abs_fname = os.path.join('.', data_top, fname)
+                # get the archives from inside data directory
+                data_file = tar_file.getmember(abs_fname)
+                if(data_file.size > largest_fsize):
+                    largest_fsize = data_file.size
+                    largest_file_name = fname
+                    largest_spec = specs_metadata["name"]
+    return (largest_file_name, largest_fsize, largest_spec)
 
 
 def size_in_mb(num_bytes):
