@@ -166,6 +166,21 @@ def test_calc_offset():
                        target=['Trailing', 'Blank', 'Another ', 'Yet'],
                        invert_search=True) == 6
 
+    assert calc_offset(OFFSET_CONTENT_2.splitlines(),
+                       target=['data', '2']) == 3
+    assert calc_offset(OFFSET_CONTENT_2.splitlines(),
+                       target=['data', '2'],
+                       require_all=True) == 4
+    assert calc_offset(
+            reversed(OFFSET_CONTENT_2.splitlines()),
+            target=['Trailing', 'Blank', 'Another ', 'Yet'],
+            invert_search=True) == 6
+    assert calc_offset(
+            reversed(OFFSET_CONTENT_2.splitlines()),
+            target=['Trailing', 'Blank', 'Another ', 'Yet'],
+            invert_search=True,
+            require_all=True) == 6
+
 
 FIXED_CONTENT_1 = """
 Column1    Column2    Column3
