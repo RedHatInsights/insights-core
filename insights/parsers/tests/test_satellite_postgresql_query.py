@@ -24,29 +24,7 @@ SATELLITE_POSTGRESQL_WRONG_4 = '''
 
 SATELLITE_POSTGRESQL_WRONG_5 = '''
 name,default,value
-'''
-
-test_data_1 = '''
-name
-fix_db_cache
-foreman_tasks_sync_task_timeout
-dynflow_enable_console
-dynflow_console_require_auth
-foreman_tasks_proxy_action_retry_count
-'''
-
-test_data_2 = '''
-id,name,created_at,updated_at
-1,project-receptor.satellite_receptor_installer,2021-01-30 01:14:22.848735,2021-01-30 01:14:22.848735
-2,theforeman.foreman_scap_client,2021-01-30 01:14:22.916142,2021-01-30 01:14:22.91614
-'''
-
-test_data_3 = '''
-name,url,value
-abc,,test
-abcdef,,test2
-def,http://xx.com,
-'''
+'''.strip()
 
 SATELLITE_SETTINGS_1 = '''
 name,value,default
@@ -157,56 +135,58 @@ count
 0
 """
 
+SATELLITE_QUERY_DATA1 = """
+logname: no login name
+/etc/profile.d/hkuser.sh: line 40: HISTFILE: readonly variable
+id,name
+1,Puppet_Base
+""".strip()
 
-def test_satellite_postgesql_query_exception():
-    with pytest.raises(ContentException):
-        satellite_postgresql_query.SatellitePostgreSQLQuery(context_wrap(SATELLITE_POSTGRESQL_WRONG_1))
-    with pytest.raises(SkipException):
-        satellite_postgresql_query.SatellitePostgreSQLQuery(context_wrap(SATELLITE_POSTGRESQL_WRONG_2))
-    with pytest.raises(SkipException):
-        satellite_postgresql_query.SatellitePostgreSQLQuery(context_wrap(SATELLITE_POSTGRESQL_WRONG_3))
-    with pytest.raises(SkipException):
-        satellite_postgresql_query.SatellitePostgreSQLQuery(context_wrap(SATELLITE_POSTGRESQL_WRONG_4))
-    with pytest.raises(SkipException):
-        satellite_postgresql_query.SatellitePostgreSQLQuery(context_wrap(SATELLITE_POSTGRESQL_WRONG_5))
+SATELLITE_QUERY_DATA2 = """
+logname: no login name
+/etc/profile.d/hkuser.sh: line 40: HISTFILE: readonly variable
+id,name
+""".strip()
 
-
-def test_satellite_postgesql_query():
-    table = satellite_postgresql_query.SatellitePostgreSQLQuery(context_wrap(test_data_1))
-    assert len(table) == 5
-    assert table.get_columns() == ['name']
-    rows = table.search(name='fix_db_cache')
-    assert len(rows) == 1
-    assert rows[0]['name'] == 'fix_db_cache'
-    rows = table.search(name__startswith='dynflow')
-    assert len(rows) == 2
-    assert rows[0]['name'] == 'dynflow_enable_console'
-    assert rows[1]['name'] == 'dynflow_console_require_auth'
-
-    table = satellite_postgresql_query.SatellitePostgreSQLQuery(context_wrap(test_data_2))
-    assert len(table) == 2
-    rows = table.search(id='1')
-    assert len(rows) == 1
-    assert rows[0]['name'] == 'project-receptor.satellite_receptor_installer'
+SATELLITE_QUERY_DATA3 = """
+logname: no login name
+/etc/profile.d/hkuser.sh: line 40: HISTFILE: readonly variable
+""".strip()
 
 
 def test_HTL_doc_examples():
-    query = satellite_postgresql_query.SatellitePostgreSQLQuery(context_wrap(test_data_3))
     settings = satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_SETTINGS_1))
     resources_table = satellite_postgresql_query.SatelliteComputeResources(context_wrap(SATELLITE_COMPUTE_RESOURCE_1))
     sat_sca_info = satellite_postgresql_query.SatelliteSCAStatus(context_wrap(SATELLITE_SCA_INFO_1))
     repositories = satellite_postgresql_query.SatelliteKatelloEmptyURLRepositories(context_wrap(SATELLITE_KATELLO_ROOT_REPOSITORIES))
     tasks = satellite_postgresql_query.SatelliteCoreTaskReservedResourceCount(context_wrap(SATELLITE_TASK_RESERVERDRESOURCE_CONTENT))
     globs = {
-        'query': query,
         'table': settings,
         'resources_table': resources_table,
         'sat_sca_info': sat_sca_info,
         'katello_root_repositories': repositories,
         'tasks': tasks
     }
-    failed, tested = doctest.testmod(satellite_postgresql_query, globs=globs)
+    failed, _ = doctest.testmod(satellite_postgresql_query, globs=globs)
     assert failed == 0
+
+
+def test_no_headers():
+    with pytest.raises(NotImplementedError):
+        satellite_postgresql_query.SatellitePostgreSQLQuery(context_wrap(SATELLITE_POSTGRESQL_WRONG_4))
+
+
+def test_basic_output_with_satellite_admin_setting():
+    with pytest.raises(ContentException):
+        satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_POSTGRESQL_WRONG_1))
+    with pytest.raises(ValueError):
+        satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_POSTGRESQL_WRONG_2))
+    with pytest.raises(ValueError):
+        satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_POSTGRESQL_WRONG_3))
+    with pytest.raises(ValueError):
+        satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_POSTGRESQL_WRONG_4))
+    with pytest.raises(SkipException):
+        satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_POSTGRESQL_WRONG_5))
 
 
 def test_satellite_admin_settings():
@@ -237,7 +217,7 @@ def test_satellite_admin_settings():
 
 
 def test_satellite_admin_settings_exception():
-    with pytest.raises(SkipException):
+    with pytest.raises(ValueError):
         satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_SETTINGS_BAD_1))
     with pytest.raises(ParseException):
         satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_SETTINGS_BAD_2))
@@ -259,6 +239,17 @@ def test_satellite_sca():
 def test_satellite_katello_empty_url_repositories():
     repositories = satellite_postgresql_query.SatelliteKatelloEmptyURLRepositories(context_wrap(SATELLITE_KATELLO_ROOT_REPOSITORIES))
     assert repositories[1]['name'] == 'testb'
+
+    table = satellite_postgresql_query.SatelliteKatelloEmptyURLRepositories(context_wrap(SATELLITE_QUERY_DATA1))
+    assert len(table) == 1
+    assert table[0]['id'] == '1'
+    assert table[0]['name'] == 'Puppet_Base'
+
+    with pytest.raises(SkipException):
+        satellite_postgresql_query.SatelliteKatelloEmptyURLRepositories(context_wrap(SATELLITE_QUERY_DATA2))
+
+    with pytest.raises(ValueError):
+        satellite_postgresql_query.SatelliteKatelloEmptyURLRepositories(context_wrap(SATELLITE_QUERY_DATA3))
 
 
 def test_satellite_taskreservedresource():
