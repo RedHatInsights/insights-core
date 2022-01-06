@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.256](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.256) (2022-01-06)
+
+- Fix: Enhance parser "SatellitePostgreSQLQuery" ([PR 3314](https://github.com/RedHatInsights/insights-core/pull/3314))
+- feat: enhance calc_offset to support check all target in line ([PR 3316](https://github.com/RedHatInsights/insights-core/pull/3316))
+- Test IP obfuscation ([PR 3315](https://github.com/RedHatInsights/insights-core/pull/3315))
+
 ## [insights-core-3.0.255](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.255) (2021-12-16)
 
 - Add spec "foreman_production_log" back. ([PR 3308](https://github.com/RedHatInsights/insights-core/pull/3308))
