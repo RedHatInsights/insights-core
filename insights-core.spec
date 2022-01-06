@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.255
+Version:        3.0.256
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,10 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jan 06 2022 Sachin Patil <psachin@redhat.com> 3.0.256-1
+- Fix: Enhance parser "SatellitePostgreSQLQuery" (#3314) (44796653+huali027@users.noreply.github.com)
+- feat: enhance calc_offset to support check all target in line (#3316) (xiangceliu@redhat.com)
+- Test IP obfuscation (#3315) (stomsa@redhat.com)
 * Thu Dec 16 2021 Xiangce Liu <xiangceliu@redhat.com> 3.0.255-1
 - Add spec "foreman_production_log" back. (#3308)
   (44796653+huali027@users.noreply.github.com)
