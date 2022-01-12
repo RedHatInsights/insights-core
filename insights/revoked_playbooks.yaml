@@ -1,0 +1,33 @@
+# This file contains a list of revoked playbook signatures
+- name: revocation list
+  timestamp: 1632510092
+  vars:
+    insights_signature_exclude: /vars/insights_signature
+    insights_signature: !!binary |
+      TFMwdExTMUNSVWRKVGlCUVIxQWdVMGxIVGtGVVZWSkZMUzB0TFMwS1ZtVnljMmx2YmpvZ1IyNTFV
+      RWNnZGpFS0NtbFJTVlpCZDFWQldXSnhNWG80ZG5jMU9FUXJhalZ3VGtGUmFreExRa0ZCWjFsSlF5
+      dHVkbVZxZFZobWNIUlBXbW8wYTJwQ1FuaHRhM0VyYzBrdmFTOEtaRmhyU0dkSFUwOHZaVWhxUm1O
+      ek1Tc3pUMXBPUVV4M2JXUkpkVVJ2V0N0WmQzcFJTRWxyV25GNmMwTnFOMjlXY1docFVXUkhUR1JP
+      YmpSd1lXbHJjQW8yYmxkdlEzTkZVMUJrWjFkaWJEQXliR3dyVVZoMEx6TTFTWEJMVXpRd0t5OURP
+      SFZGZGpoSldqTnFRVzV1Y0hwTVRsQm1hbGgwY1RSSU4waHpWR1Z4Q214bFZDdDZVemhEVG13d05t
+      cG1VVGs0ZEZJd2RHMU1SRlE0ZWtVMWREVjZRVlY2Y1hWbmFtWndhbGt3ZUdwQ09HaDFZVXhKY25w
+      WFdqRTRXSEUzUnpNS05HZFpWamx2VlRjcldFTnVZMjVEWVdSdU0xSXllRUZTVVdoc2RucFJVV3ho
+      WWtSYVJtaDRkbHBIV21oRWNWWjNjU3Q0YlZnM1praHBTVWRrWmt4QmVRcFZUVFptT0haNWVtOXBU
+      bWhVYlM5MlNVdGxlVmcyUnlzMVZtcENSVlJsT1RoSU1qZFllRk5qVmtFMWVrSlpSbGR5YTFsa1VX
+      OTZSbEI1U1daTk4ySlpDbEYzUkVWV1EyWnRaM1U1YVRGd2JGZFFOV2t2VTA5NVNYUkNhMHBvZUM5
+      TGQyMXdlbWwyUjNSSGVHeFpVRmh4VEZwWFdUWllRMng0YkVsRWNsRkpWazRLTWxOWE0zUjNUbWRQ
+      TlhaVVVWQlNUbWcxVFZOMlVUZExTemhUZFdFeWRtRlVUVzkzY214aU1YQnllbU5YUlhkTE5VTnRX
+      blpzYTNkMlIyNURURWg1YUFwSmJVbHVXRlZ3VWxGSFFXdDJjMmd6TmpFck5IUlBiM2xvVlhFMWVp
+      dFdMMW8wVmpoeFlrcGxURTFIUms5bk5XOVZZMWM0WWxGbVZIcGFTekZRWVVockNrVXlXVFZ2V1RK
+      V2FHeHFaRGx3UkZkRU5uSXZialZWTHpOSWJFeHRNbUY2VlhBNWIxcFlSWFJIYldOVVluVm5XazQ1
+      Tm10dk5rZ3hiRUZvTDJVMFptUUtkRGxWVDFNNFQydHdhMHRYTkhkaEwyVnZlakZRVmpoRVJIZEJT
+      R3MzVDJsck9WaE5URmx2UTJ3d2JrWTFiakZqZVU1UEwwTnlSVGRFTXpaTmNHdHVNZ292YkRoYVlY
+      Qm5hMXB1YXowS1BXSk9aWGNLTFMwdExTMUZUa1FnVUVkUUlGTkpSMDVCVkZWU1JTMHRMUzB0Q2c9
+      PQ==
+
+  revoked_playbooks:
+    - name: template_playbook_dispatcher_ostree_upgrade_payload.yml bb3cb30e
+      hash: 8ddc7c9fb264aa24d7b3536ecf00272ca143c2ddb14a499cdefab045f3403e9b
+
+    - name: template_playbook_dispatcher_ostree_upgrade_payload.yml d6af8d54
+      hash: 40a6e9af448208759bc4ef59b6c678227aae9b3f6291c74a4a8767eefc0a401f
