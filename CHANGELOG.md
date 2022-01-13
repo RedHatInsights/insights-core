@@ -2,6 +2,14 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.257](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.257) (2022-01-13)
+
+- Fix parsing problem in cloud_cfg datasource ([PR 3318](https://github.com/RedHatInsights/insights-core/pull/3318))
+- Fix: Update the unitfiles parser for RHEL9 output ([PR 3319](https://github.com/RedHatInsights/insights-core/pull/3319))
+- feat: Add spec and parser for systemctl_status_-all ([PR 3317](https://github.com/RedHatInsights/insights-core/pull/3317))
+- feat: Switch IniConfigFile from RawConfigParser to parsr's iniparser ([PR 3310](https://github.com/RedHatInsights/insights-core/pull/3310))
+- Playbook revocation list ([PR 3311](https://github.com/RedHatInsights/insights-core/pull/3311))
+
 ## [insights-core-3.0.256](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.256) (2022-01-06)
 
 - Fix: Enhance parser "SatellitePostgreSQLQuery" ([PR 3314](https://github.com/RedHatInsights/insights-core/pull/3314))
