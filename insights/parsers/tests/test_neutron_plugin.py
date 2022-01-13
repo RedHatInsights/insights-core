@@ -1,4 +1,6 @@
-from insights.parsers.neutron_plugin import NeutronPlugin
+import doctest
+
+from insights.parsers import neutron_plugin
 from insights.tests import context_wrap
 
 neutron_plugin_content = """
@@ -134,8 +136,16 @@ enable_security_group = True
 """
 
 
+def test_doc_examples():
+    failed_count, tests = doctest.testmod(
+        neutron_plugin,
+        globs={'conf': neutron_plugin.NeutronPlugin(context_wrap(neutron_plugin_content))}
+    )
+    assert failed_count == 0
+
+
 def test_neutron_ini():
-    result = NeutronPlugin(context_wrap(neutron_plugin_content))
+    result = neutron_plugin.NeutronPlugin(context_wrap(neutron_plugin_content))
     assert result.get("ml2_type_flat", "flat_networks") == "*"
     assert result.get("securitygroup", "enable_security_group") == "True"
     assert result.get("ml2_type_gre", "tunnel_id_ranges") == "20:100"

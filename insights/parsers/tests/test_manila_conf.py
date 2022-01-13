@@ -1,8 +1,10 @@
+import doctest
+
 from insights.core.context import OSP
-from insights.parsers.manila_conf import ManilaConf
+from insights.parsers import manila_conf
 from insights.tests import context_wrap
 
-manila_content = """
+MANILA_CONTENT = """
 [DEFAULT]
 
 #
@@ -1900,12 +1902,41 @@ allow_credentials = true
 #policy_dirs = policy.d
 """
 
+MANILA_DOC = """
+[DEFAULT]
+osapi_max_limit = 1000
+osapi_share_base_URL = <None>
+use_forwarded_for = false
+api_paste_config = api-paste.ini
+state_path = /var/lib/manila
+scheduler_topic = manila-scheduler
+share_topic = manila-share
+share_driver = manila.share.drivers.generic.GenericShareDriver
+enable_v1_api = false
+enable_v2_api = false
+
+[cors]
+allowed_origin = <None>
+allow_credentials = true
+expose_headers = Content-Type,Cache-Control,Content-Language,Expires,Last-Modified,Pragma
+allow_methods = GET,POST,PUT,DELETE,OPTIONS
+allow_headers = Content-Type,Cache-Control,Content-Language,Expires,Last-Modified,Pragma
+""".strip()
+
 osp = OSP()
 osp.role = "Controller"
 
 
+def test_doc_examples():
+    failed_count, tests = doctest.testmod(
+        manila_conf,
+        globs={'conf': manila_conf.ManilaConf(context_wrap(MANILA_DOC))}
+    )
+    assert failed_count == 0
+
+
 def test_match():
-    result = ManilaConf(context_wrap(manila_content, osp=osp))
+    result = manila_conf.ManilaConf(context_wrap(MANILA_CONTENT, osp=osp))
     assert result.data.get("DEFAULT", "share_topic") == "manila-share"
     assert result.data.get("DEFAULT", "scheduler_topic") == "manila-scheduler"
     assert result.data.get("DEFAULT", "enable_v2_api") == "false"

@@ -6,7 +6,36 @@ from insights.parsr import (EOF, HangingString, InSet, LeftBracket, Lift,
 from insights.parsr.query import Directive, Entry, eq, Section
 
 
-def parse_doc(content, ctx):
+class Error(Exception):
+    """Base class for iniparser exceptions."""
+    def __init__(self, msg=''):
+        self.message = msg
+        Exception.__init__(self, msg)
+
+    def __repr__(self):
+        return self.message
+
+    __str__ = __repr__
+
+
+class NoOptionError(Error):
+    """A requested option was not found."""
+    def __init__(self, section, option):
+        Error.__init__(self, "No option {0!r} in section: {1!r}".format(option, section))
+        self.option = option
+        self.section = section
+        self.args = (option, section)
+
+
+class NoSectionError(Error):
+    """Raised when no section matches a requested option."""
+    def __init__(self, section):
+        Error.__init__(self, 'No section: {0!r}'.format(section))
+        self.section = section
+        self.args = section
+
+
+def parse_doc(content, ctx, return_defaults=False, return_booleans=True):
     def to_directive(x):
         name, rest = x
         rest = [rest] if rest is not None else []
@@ -15,7 +44,7 @@ def parse_doc(content, ctx):
     def to_section(name, rest):
         return Section(name=name.value.strip(), children=rest, lineno=name.lineno, src=ctx)
 
-    def apply_defaults(cfg):
+    def apply_defaults(cfg, include_defaults):
         if "DEFAULT" not in cfg:
             return cfg
 
@@ -26,7 +55,8 @@ def parse_doc(content, ctx):
                 if d.name not in c:
                     c.children.append(d)
 
-        cfg.children = list(not_defaults)
+        if not include_defaults:
+            cfg.children = list(not_defaults)
         return cfg
 
     header_chars = (set(string.printable) - set(string.whitespace) - set("[]")) | set(" ")
@@ -38,14 +68,20 @@ def parse_doc(content, ctx):
     No = Literal("no", False, ignore_case=True)
     Tru = Literal("true", True, ignore_case=True)
     Fals = Literal("false", False, ignore_case=True)
-    Boolean = ((Yes | No | Tru | Fals) & (WSChar | LineEnd)) % "Boolean"
+    if return_booleans:
+        Boolean = ((Yes | No | Tru | Fals) & (WSChar | LineEnd)) % "Boolean"
 
     LeftEnd = (WS + LeftBracket + WS)
     RightEnd = (WS + RightBracket + WS)
     Header = (LeftEnd >> PosMarker(String(header_chars)) << RightEnd) % "Header"
     Key = WS >> PosMarker(String(key_chars)) << WS
     Sep = InSet(sep_chars, "Sep")
-    Value = WS >> (Boolean | HangingString(value_chars))
+
+    if return_booleans:
+        Value = WS >> (Boolean | HangingString(value_chars))
+    else:
+        Value = WS >> (HangingString(value_chars))
+
     KVPair = WithIndent(Key + Opt(Sep >> Value)) % "KVPair"
     Comment = (WS >> (OneLineComment("#") | OneLineComment(";")).map(lambda x: None))
 
@@ -55,4 +91,4 @@ def parse_doc(content, ctx):
     Top = Doc << WS << EOF
 
     res = Entry(children=Top(content), src=ctx)
-    return apply_defaults(res)
+    return apply_defaults(res, return_defaults)
