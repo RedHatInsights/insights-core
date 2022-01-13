@@ -89,9 +89,15 @@ class UnitFiles(Parser):
         on_states = set(['enabled', 'enabled-runtime', 'static', 'indirect', 'generated', 'transient'])
 
         for line in get_active_lines(content):
-            parts = line.split(None)  # AWK like split, strips whitespaces
-            if len(parts) == 2 and any(part in valid_states for part in parts):
+            service = state = None
+            parts = line.split()
+            if len(parts) == 2:
                 service, state = parts
+            elif len(parts) == 3:
+                # rhel 9 has an extra vendor preset column
+                service, state, vender_preset = parts
+
+            if service and state and state in valid_states:
                 enabled = state in on_states
                 self.services[service] = enabled
                 self.parsed_lines[service] = line
