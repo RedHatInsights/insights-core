@@ -17,6 +17,16 @@ UNIT FILE                                   STATE
 kdump.service                               enabled
 """.strip()
 
+KDUMP_DISABLED_RHEL9 = """
+UNIT FILE                                   STATE           VENDOR PRESET
+kdump.service                               disabled        disabled
+""".strip()
+
+KDUMP_ENABLED_RHEL9 = """
+UNIT FILE                                   STATE           VENDOR PRESET
+kdump.service                               enabled         enabled
+""".strip()
+
 KDUMP_ENABLED_FOOTER_RHEL7 = """
 UNIT FILE                                   STATE
 kdump.service                               enabled
@@ -55,7 +65,13 @@ def test_unitfiles():
     assert len(unitfiles.services) == 1
     assert len(unitfiles.parsed_lines) == 1
 
-    context = context_wrap(KDUMP_ENABLED_RHEL7)
+    context = context_wrap(KDUMP_DISABLED_RHEL9)
+    unitfiles = UnitFiles(context)
+    assert not unitfiles.is_on('kdump.service')
+    assert len(unitfiles.services) == 1
+    assert len(unitfiles.parsed_lines) == 1
+
+    context = context_wrap(KDUMP_ENABLED_RHEL9)
     unitfiles = UnitFiles(context)
     assert unitfiles.is_on('kdump.service')
     assert len(unitfiles.services) == 1
