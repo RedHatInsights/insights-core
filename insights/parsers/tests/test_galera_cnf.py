@@ -1,4 +1,6 @@
-from insights.parsers.galera_cnf import GaleraCnf
+import doctest
+
+from insights.parsers import galera_cnf
 from insights.tests import context_wrap
 
 GALERA_CNF = """
@@ -7,7 +9,7 @@ port = 3306
 socket = /var/lib/mysql/mysql.sock
 
 [isamchk]
-key_buffer_size = 16M
+key_buffer_size = 16M # inline comment test
 
 [mysqld]
 basedir = /usr
@@ -37,8 +39,16 @@ quote-names
 """
 
 
+def test_doc_examples():
+    env = {
+        'galera_conf': galera_cnf.GaleraCnf(context_wrap(GALERA_CNF))
+    }
+    failed, total = doctest.testmod(galera_cnf, globs=env)
+    assert failed == 0
+
+
 def test_galera_cnf():
-    cnf = GaleraCnf(context_wrap(GALERA_CNF))
+    cnf = galera_cnf.GaleraCnf(context_wrap(GALERA_CNF))
     assert cnf is not None
     assert cnf.get('client', 'port') == '3306'
     assert cnf.get('isamchk', 'key_buffer_size') == '16M'

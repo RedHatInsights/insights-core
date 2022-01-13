@@ -3,7 +3,8 @@ TunedConfIni - file ``/etc/tuned.conf``
 =======================================
 """
 
-from insights import IniConfigFile, parser, get_active_lines
+from insights.core import IniConfigFile
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 
@@ -41,7 +42,5 @@ class TunedConfIni(IniConfigFile):
         >>> sorted(tuned_obj.sections())==sorted(['CPUMonitor', 'NetTuning'])
         True
     """
-
     def parse_content(self, content, allow_no_value=True):
-        content = get_active_lines(content)
         super(TunedConfIni, self).parse_content(content, allow_no_value)

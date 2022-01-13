@@ -1,14 +1,10 @@
 """
 checkin.conf - Files ``/etc/splice/checkin.conf``
 =================================================
-
-Parser for checkin.conf configuration file.
-
 """
-
+from insights.core import IniConfigFile
+from insights.core.plugins import parser
 from insights.specs import Specs
-
-from .. import IniConfigFile, parser
 
 
 @parser(Specs.checkin_conf)
@@ -54,9 +50,15 @@ class CheckinConf(IniConfigFile):
         #flatten_orgs = False
 
     Examples:
-        >>> list(checkin_conf.sections())
-        [u'logging', u'spacewalk', u'katello']
+        >>> type(checkin_conf)
+        <class 'insights.parsers.checkin_conf.CheckinConf'>
+        >>> checkin_conf.sections()
+        ['logging', 'spacewalk', 'katello']
         >>> checkin_conf.get('spacewalk', 'host')
-        u''
+        ''
+        >>> checkin_conf.get('katello', 'hostname')
+        'localhost'
+        >>> checkin_conf.getint('katello', 'port')
+        443
     """
     pass

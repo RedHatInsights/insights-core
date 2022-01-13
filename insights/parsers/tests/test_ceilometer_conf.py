@@ -1,7 +1,9 @@
-from insights.parsers.ceilometer_conf import CeilometerConf
+import doctest
+
+from insights.parsers import ceilometer_conf
 from insights.tests import context_wrap
 
-ceilometer_content = """
+CEILOMETER_CONTENT = """
 [DEFAULT]
 #
 # From ceilometer
@@ -559,9 +561,43 @@ time_to_live=-1
 #zaqar_control_exchange = zaqar
 """
 
+CEILOMETER_DOC_TEST = """
+[DEFAULT]
+#
+# From ceilometer
+http_timeout = 600
+debug = False
+verbose = False
+log_dir = /var/log/ceilometer
+meter_dispatcher=database
+event_dispatcher=database
+[alarm]
+evaluation_interval = 60
+evaluation_service=ceilometer.alarm.service.SingletonAlarmService
+partition_rpc_topic=alarm_partition_coordination
+[api]
+port = 8777
+host = 192.0.2.10
+[central]
+[collector]
+udp_address = 0.0.0.0
+udp_port = 4952
+[compute]
+[coordination]
+backend_url = redis://:chDWmHdH8dyjsmpCWfCEpJR87@192.0.2.7:6379/
+""".strip()
+
+
+def test_doc_examples():
+    env = {
+        'config': ceilometer_conf.CeilometerConf(context_wrap(CEILOMETER_DOC_TEST))
+    }
+    failed, total = doctest.testmod(ceilometer_conf, globs=env)
+    assert failed == 0
+
 
 def test_match():
-    result = CeilometerConf(context_wrap(ceilometer_content))
+    result = ceilometer_conf.CeilometerConf(context_wrap(CEILOMETER_CONTENT))
     assert result.data.get("DEFAULT", "http_timeout") == "600"
     assert result.data.get("DEFAULT", "log_dir") == "/var/log/ceilometer"
     assert result.data.get("api", "host") == "192.0.2.10"

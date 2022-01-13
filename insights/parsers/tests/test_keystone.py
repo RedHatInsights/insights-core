@@ -1,4 +1,6 @@
-from insights.parsers.keystone import KeystoneConf
+import doctest
+
+from insights.parsers import keystone
 from insights.tests import context_wrap
 
 KEYSTONE_CONF = """
@@ -25,8 +27,16 @@ generator = keystone.identity.id_generators.sha256.Generator
 """.strip()
 
 
+def test_doc_examples():
+    failed_count, tests = doctest.testmod(
+        keystone,
+        globs={'conf': keystone.KeystoneConf(context_wrap(KEYSTONE_CONF))}
+    )
+    assert failed_count == 0
+
+
 def test_keystone():
-    kconf = KeystoneConf(context_wrap(KEYSTONE_CONF))
+    kconf = keystone.KeystoneConf(context_wrap(KEYSTONE_CONF))
     assert kconf is not None
     assert kconf.defaults() == {'admin_token': 'ADMIN',
                                 'compute_port': '8774'}
