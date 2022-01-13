@@ -106,9 +106,8 @@ def cloud_cfg(broker):
                 content.pop('system_info', None)
                 # apply filters
                 for item in filters:
-                    val = content.get(item, None)
-                    if val:
-                        result[item] = val
+                    if item in content:
+                        result[item] = content[item]
 
                 if result:
                     result = dict(sorted(result.items(), key=lambda x: x[0]))
