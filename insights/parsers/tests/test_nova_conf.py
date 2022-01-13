@@ -1,4 +1,5 @@
-from __future__ import print_function
+import doctest
+
 from insights.core.context import OSP
 from insights.parsers import nova_conf
 from insights.tests import context_wrap
@@ -75,6 +76,14 @@ heartbeat_rate=2
 
 osp = OSP()
 osp.role = "Compute"
+
+
+def test_doc_examples():
+    failed_count, tests = doctest.testmod(
+        nova_conf,
+        globs={'conf': nova_conf.NovaConf(context_wrap(nova_content))}
+    )
+    assert failed_count == 0
 
 
 def test_nova_conf():

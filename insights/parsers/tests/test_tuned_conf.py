@@ -1,9 +1,10 @@
 import doctest
 import pytest
+
 from insights.parsers import tuned_conf
 from insights.parsers.tuned_conf import TunedConfIni
 from insights.tests import context_wrap
-from insights.contrib.ConfigParser import NoSectionError, NoOptionError
+from insights.parsr.iniparser import NoSectionError, NoOptionError
 
 TUNED_CONF = """
 #
@@ -93,7 +94,8 @@ def test_documentation():
 
 def test_tuned_conf():
     result = tuned_conf.TunedConfIni(context_wrap(TUNED_CONF))
-    assert sorted(result.sections()) == sorted(['CPUMonitor', 'CPUTuning', 'DiskMonitor', 'DiskTuning', 'NetMonitor', 'NetTuning', 'main'])
+    assert sorted(result.sections()) == sorted(['CPUMonitor', 'CPUTuning', 'DiskMonitor', 'DiskTuning',
+                                                'NetMonitor', 'NetTuning', 'main'])
 
     with pytest.raises(NoSectionError) as exc:
         tuned_obj = TunedConfIni(context_wrap(TUNED_CONF))
@@ -103,7 +105,7 @@ def test_tuned_conf():
     with pytest.raises(NoOptionError) as exc:
         tuned_obj = TunedConfIni(context_wrap(TUNED_CONF))
         assert not tuned_obj.get('NetTuning', 'Abc')
-    assert "No option 'Abc' in section: 'NetTuning'" in str(exc)
+    assert "No option 'abc' in section: 'NetTuning'" in str(exc)
 
     with pytest.raises(ValueError) as exc:
         tuned_obj = TunedConfIni(context_wrap(TUNED_CONF))

@@ -1,8 +1,10 @@
-from insights.parsers.pluginconf_d import PluginConfD, PluginConfDIni
+import doctest
+
+from insights.parsers import pluginconf_d
 from insights.tests import context_wrap
 
 
-PLUGIN = '''
+PLUGIN = """
 [main]
 enabled = 0
 gpgcheck = 1
@@ -19,13 +21,13 @@ timeout = 120
 [test]
 test_multiline_config = http://example.com/repos/test/
                         http://mirror_example.com/repos/test/
-'''
+""".strip()
 
 PLUGINPATH = '/etc/yum/plugincon.d/rhnplugin.conf'
 
 
 def test_pluginconf_d():
-    plugin_info = PluginConfD(context_wrap(PLUGIN, path=PLUGINPATH))
+    plugin_info = pluginconf_d.PluginConfD(context_wrap(PLUGIN, path=PLUGINPATH))
 
     assert plugin_info.data['main'] == {'enabled': '0',
                                         'gpgcheck': '1',
@@ -43,8 +45,16 @@ def test_pluginconf_d():
 
 
 def test_pluginconf_d_ini():
-    plugin_info = PluginConfDIni(context_wrap(PLUGIN, path=PLUGINPATH))
+    plugin_info = pluginconf_d.PluginConfDIni(context_wrap(PLUGIN, path=PLUGINPATH))
 
     assert sorted(plugin_info.sections()) == sorted(['main', 'test'])
     assert 'main' in plugin_info
     assert plugin_info.get('main', 'gpgcheck') == '1'
+
+
+def test_doc_examples():
+    failed_count, tests = doctest.testmod(
+        pluginconf_d,
+        globs={'conf': pluginconf_d.PluginConfDIni(context_wrap(PLUGIN))}
+    )
+    assert failed_count == 0

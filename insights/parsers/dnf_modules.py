@@ -1,10 +1,9 @@
 """
 DnfModules - files under in the ``/etc/dnf/modules.d/`` directory
 =================================================================
-
-Modularity configuration
 """
-from insights import IniConfigFile, parser
+from insights.core import IniConfigFile
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 
@@ -15,6 +14,8 @@ class DnfModules(IniConfigFile):
     which is located in the /etc/dnf/modules.d/ directory
 
     Examples:
+        >>> type(dnf_modules)
+        <class 'insights.parsers.dnf_modules.DnfModules'>
         >>> len(dnf_modules.sections())
         3
         >>> str(dnf_modules.get("postgresql", "stream"))
