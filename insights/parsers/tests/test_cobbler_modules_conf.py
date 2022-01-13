@@ -1,5 +1,7 @@
+import doctest
+
+from insights.parsers import cobbler_modules_conf
 from insights.tests import context_wrap
-from insights.parsers.cobbler_modules_conf import CobblerModulesConf
 
 conf_content = """
 # cobbler module configuration file
@@ -77,7 +79,15 @@ module = manage_isc
 """.strip()
 
 
+def test_doc_examples():
+    failed_count, tests = doctest.testmod(
+        cobbler_modules_conf,
+        globs={'conf': cobbler_modules_conf.CobblerModulesConf(context_wrap(conf_content))}
+    )
+    assert failed_count == 0
+
+
 def test_cobbler_modules_conf():
-    result = CobblerModulesConf(context_wrap(conf_content))
+    result = cobbler_modules_conf.CobblerModulesConf(context_wrap(conf_content))
     assert result.get('authentication', 'module') == 'authn_spacewalk'
     assert result.get('dhcp', 'module') == 'manage_isc'

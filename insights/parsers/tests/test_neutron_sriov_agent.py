@@ -1,4 +1,6 @@
-from insights.parsers.neutron_sriov_agent import NeutronSriovAgent
+import doctest
+
+from insights.parsers import neutron_sriov_agent
 from insights.tests import context_wrap
 
 NEUTRON_SRIOV_AGENT_CONF = """
@@ -20,8 +22,16 @@ report_interval = 60
 """
 
 
+def test_doc_examples():
+    failed_count, tests = doctest.testmod(
+        neutron_sriov_agent,
+        globs={'conf': neutron_sriov_agent.NeutronSriovAgent(context_wrap(NEUTRON_SRIOV_AGENT_CONF))}
+    )
+    assert failed_count == 0
+
+
 def test_neutron_sriov_agent():
-    n_sriov_agent = NeutronSriovAgent(context_wrap(NEUTRON_SRIOV_AGENT_CONF))
+    n_sriov_agent = neutron_sriov_agent.NeutronSriovAgent(context_wrap(NEUTRON_SRIOV_AGENT_CONF))
     assert n_sriov_agent is not None
     assert list(n_sriov_agent.sections()) == [
         'sriov_nic', 'agent', 'securitygroup', 'keystone_authtoken']

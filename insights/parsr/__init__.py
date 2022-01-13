@@ -1151,7 +1151,8 @@ class HangingString(Parser):
             try:
                 if ctx.col(pos) > ctx.indents[-1]:
                     pos, res = self.children[0].process(pos, data, ctx)
-                    results.append(res.rstrip(" \\"))
+                    # Remove any inline comments.
+                    results.append(res.split("#", 1)[0].rstrip(" \\"))
                 else:
                     pos = old
                     break

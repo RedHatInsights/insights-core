@@ -1,5 +1,7 @@
+import doctest
+
+from insights.parsers import sssd_conf
 from insights.tests import context_wrap
-from insights.parsers.sssd_conf import SSSD_Config
 
 sssd_conf_cnt = """
 
@@ -60,7 +62,7 @@ domains =
 
 
 def test_sssd_conf():
-    result = SSSD_Config(context_wrap(sssd_conf_cnt))
+    result = sssd_conf.SSSD_Config(context_wrap(sssd_conf_cnt))
     assert 'sssd' in result
     assert 'domain/example.com' in result
 
@@ -78,8 +80,16 @@ def test_sssd_conf():
 
 
 def test_sssd_conf_empty_domains():
-    conf = SSSD_Config(context_wrap(sssd_conf_no_domains))
+    conf = sssd_conf.SSSD_Config(context_wrap(sssd_conf_no_domains))
     assert conf.domains == []
 
-    conf = SSSD_Config(context_wrap(sssd_conf_blank_domains))
+    conf = sssd_conf.SSSD_Config(context_wrap(sssd_conf_blank_domains))
     assert conf.domains == []
+
+
+def test_doc_examples():
+    failed_count, tests = doctest.testmod(
+        sssd_conf,
+        globs={'conf': sssd_conf.SSSD_Config(context_wrap(sssd_conf_cnt))}
+    )
+    assert failed_count == 0
