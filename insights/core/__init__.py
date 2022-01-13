@@ -1,24 +1,24 @@
 import datetime
-import io
 import json
 import logging
 import operator
 import os
 import re
 import shlex
-import yaml
 import six
+import sys
+import yaml
+
+from collections import OrderedDict
 from fnmatch import fnmatch
 
-from insights.parsr import iniparser
-from insights.parsr.query import (Directive, Entry, Result, Section,
-                                  compile_queries)
-from insights.contrib.ConfigParser import RawConfigParser
-
-from insights.parsers import ParseException, SkipException
+from insights.contrib.ConfigParser import NoOptionError, NoSectionError
+from insights.core import ls_parser
 from insights.core.plugins import ContentException
 from insights.core.serde import deserializer, serializer
-from . import ls_parser
+from insights.parsers import ParseException, SkipException
+from insights.parsr import iniparser
+from insights.parsr.query import Directive, Entry, Result, Section, compile_queries
 from insights.util import deprecated
 
 try:
@@ -26,7 +26,6 @@ try:
 except ImportError:
     from yaml import SafeLoader
 
-import sys
 # Since XPath expression is not supported by the ElementTree in Python 2.6,
 # import insights.contrib.ElementTree when running python is prior to 2.6 for compatibility.
 # Script insights.contrib.ElementTree is the same with xml.etree.ElementTree in Python 2.7.14
@@ -1402,10 +1401,6 @@ class IniConfigFile(ConfigParser):
            # to enable keys with no values
            key_with_no_value
 
-    References:
-        See Python ``RawConfigParser`` documentation for more information
-        https://docs.python.org/2/library/configparser.html#rawconfigparser-objects
-
     Examples:
         >>> class MyConfig(IniConfigFile):
         ...     pass
@@ -1439,67 +1434,164 @@ class IniConfigFile(ConfigParser):
         >>> my_config.has_option('logging', 'log')
         True
     """
+    def parse_doc(self, content):
+        return iniparser.parse_doc("\n".join(content), self, return_defaults=True, return_booleans=False)
 
     def parse_content(self, content, allow_no_value=False):
-        """Parses content of the config file.
-
-        In child class overload and call super to set flag
-        ``allow_no_values`` and allow keys with no value in
-        config file::
-
-            def parse_content(self, content):
-                super(YourClass, self).parse_content(content,
-                                                     allow_no_values=True)
-        """
         super(IniConfigFile, self).parse_content(content)
-        config = RawConfigParser(allow_no_value=allow_no_value)
-        fp = io.StringIO(u"\n".join(content))
-        config.readfp(fp, filename=self.file_name)
-        self.data = config
+        self._dict = OrderedDict()
 
-    def parse_doc(self, content):
-        return iniparser.parse_doc("\n".join(content), self)
+        for section in self.doc:
+            section_dict = dict()
+            for opt in section:
+                options = []
+                for o in section[opt.name]:
+                    if o.value is not None:
+                        options.append(str(o.value))
+                    else:
+                        if not allow_no_value:
+                            continue
+                        options.append(o.value)
 
-    def sections(self):
-        """list: Return a list of section names."""
-        return self.data.sections()
+                if not options:
+                    continue
+
+                section_dict[opt.name.lower()] = options[-1]
+
+            if section.name in self._dict:
+                self._dict[section.name].update(section_dict)
+            else:
+                self._dict[section.name] = section_dict
+
+    @property
+    def data(self):
+        """
+        Returns:
+            obj: self, it's for backward compatibility.
+        """
+        return self
 
     def defaults(self):
-        """list: Return a dict of key/value pairs in the ``[default]`` section."""
-        return self.data.defaults()
+        """
+        Returns:
+            dict: Returns any options under the DEFAULT section.
+        """
+        if "DEFAULT" not in self._dict:
+            return {}
+        return self._dict["DEFAULT"]
+
+    def get(self, section, option):
+        """
+        Args:
+            section (str): The section str to search for.
+            option (str): The option str to search for.
+
+        Returns:
+            str: Returns the value of the option in the specified section.
+        """
+        # ConfigParser apparently searched literals so if the header was [ example ]
+        # you had to do get(" example ", "test"). Where iniparser strips the spaces,
+        # so strip spaces here also.
+        _section = section.strip()
+        _option = option.lower()
+        if _section not in self._dict.keys():
+            raise NoSectionError(_section)
+
+        header = self._dict.get(_section)
+        if _option not in header.keys():
+            raise NoOptionError(_section, _option)
+
+        return header.get(_option)
+
+    def getboolean(self, section, option):
+        """
+        Returns:
+            bool: Returns boolean form based on the data from get.
+        """
+        val = self.get(section, option)
+        boolean_states = {
+            '1': True,
+            '0': False,
+            'yes': True,
+            'no': False,
+            'true': True,
+            'false': False,
+            'on': True,
+            'off': False
+        }
+
+        if val.lower() not in boolean_states:
+            raise ValueError('Not a boolean: %s' % val)
+
+        return boolean_states[val.lower()]
+
+    def getfloat(self, section, option):
+        """
+        Returns:
+            float: Returns the float value off the data from get.
+        """
+        return float(self.get(section, option))
+
+    def getint(self, section, option):
+        """
+        Returns:
+            int: Returns the int value off the data from get.
+        """
+        return int(self.get(section, option))
+
+    def has_option(self, section, option):
+        """
+        Args:
+            section (str): The section str to search for.
+            option (str): The option str to search for.
+
+        Returns:
+            bool: Returns weather the option in the section exist.
+        """
+        _section = section.strip()
+        if _section not in self._dict.keys():
+            return False
+
+        return option.lower() in self._dict.get(_section)
 
     def items(self, section):
-        """dict: Return a dictionary of key/value pairs for ``section``."""
-        return dict(self.data.items(section))
+        """
+        Args:
+            section (str): The section str to search for.
 
-    def get(self, section, key):
-        """value: Get value for ``section`` and ``key``."""
-        return self.data.get(section, key)
+        Returns:
+            dict: Returns all of the options in the specified section.
+        """
+        _section = section.strip()
+        if _section not in self._dict.keys():
+            raise NoSectionError(_section)
 
-    def getint(self, section, key):
-        """int: Get int value for ``section`` and ``key``."""
-        return self.data.getint(section, key)
+        return dict(self._dict.get(_section).items())
 
-    def getfloat(self, section, key):
-        """float: Get float value for ``section`` and ``key``."""
-        return self.data.getfloat(section, key)
+    def sections(self):
+        """
+        Returns:
+            list: Returns all of the parsed sections excluding DEFAULT.
+        """
+        return list(sec for sec in self._dict.keys() if "DEFAULT" not in sec)
 
-    def getboolean(self, section, key):
-        """boolean: Get boolean value for ``section`` and ``key``."""
-        return self.data.getboolean(section, key)
+    def set(self, section, option, value=None):
+        """
+        Sets the value of the specified section option.
 
-    def has_option(self, section, key):
-        """boolean: Returns ``True`` of ``section`` is present and has option
-        ``key``."""
-        return self.data.has_option(section, key)
+        Args:
+            section (str): The section str to set for.
+            option (str): The option str to set for.
+            value (str): The value to set.
+        """
+        self._dict[section.strip()][option.strip().lower()] = value
 
     def __contains__(self, section):
-        return section in self.data.sections()
+        return section.strip() in self._dict.keys()
 
     def __repr__(self):
-        return "INI file '{filename}' - sections:{sections}".\
-            format(filename=self.file_name,
-                   sections=self.data.sections())
+        return "INI file '{filename}' - sections:{sections}".format(
+            filename=self.file_name, sections=self.sections())
 
 
 class FileListing(Parser):

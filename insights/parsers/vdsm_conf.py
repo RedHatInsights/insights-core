@@ -6,8 +6,8 @@ VDSMConfIni - file ``/etc/vdsm/vdsm.conf``
 VDSMLoggerConf - file ``/etc/vdsm/logger.conf``
 -----------------------------------------------
 """
-
-from .. import IniConfigFile, parser
+from insights.core import IniConfigFile
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 
@@ -26,7 +26,6 @@ class VDSMConfIni(IniConfigFile):
         management_port = 54321
         qq = 345
 
-
     Examples:
         >>> 'vars' in conf
         True
@@ -36,7 +35,6 @@ class VDSMConfIni(IniConfigFile):
         True
         >>> conf.getint('addresses', 'management_port')
         54321
-
     """
     pass
 
@@ -88,6 +86,5 @@ class VDSMLoggerConf(IniConfigFile):
         True
         >>> vdsm_logger_conf.get('formatter_sysform', 'datefmt') == ''
         True
-
     """
     pass

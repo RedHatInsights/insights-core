@@ -1,3 +1,5 @@
+import doctest
+
 from insights.parsers import rhsm_conf
 from insights.tests import context_wrap
 
@@ -74,15 +76,19 @@ autoAttachInterval = 1440
 
 """.strip()
 
-RETURN_VALUE = """
-{'rhsmcertd': {'certCheckInterval': '240', 'autoAttachInterval': '1440'}, 'rhsm': {'pluginConfDir': '/etc/rhsm/pluginconf.d', 'full_refresh_on_yum': '0', 'manage_repos': '1', 'baseurl': 'https://cdn.redhat.com', 'productCertDir': '/etc/pki/product', 'ca_cert_dir': '/etc/rhsm/ca/', 'entitlementCertDir': '/etc/pki/entitlement', 'report_package_profile': '1', 'consumerCertDir': '/etc/pki/consumer', 'pluginDir': '/usr/share/rhsm-plugins', 'repo_ca_cert': '%(ca_cert_dir)sredhat-uep.pem'}, 'server': {'proxy_hostname': '', 'proxy_user': '', 'insecure': '0', 'hostname': 'subscription.rhn.redhat.com', 'ssl_verify_depth': '3', 'proxy_password': '', 'proxy_port': '', 'prefix': '/subscription', 'port': '443'}}
-""".strip()
+
+def test_doc_examples():
+    failed_count, tests = doctest.testmod(
+        rhsm_conf,
+        globs={'conf': rhsm_conf.RHSMConf(context_wrap(CONFIG))}
+    )
+    assert failed_count == 0
 
 
 def test_rhsm_conf():
-    resault = rhsm_conf.RHSMConf(context_wrap(CONFIG))
+    result = rhsm_conf.RHSMConf(context_wrap(CONFIG))
 
-    assert resault.get('rhsm', 'pluginConfDir') == '/etc/rhsm/pluginconf.d'
-    assert resault.get('rhsm', 'full_refresh_on_yum') == '0'
-    assert resault.get('rhsm', 'consumerCertDir') == '/etc/pki/consumer'
-    assert resault.get('rhsm', 'repo_ca_cert') == '%(ca_cert_dir)sredhat-uep.pem'
+    assert result.get('rhsm', 'pluginConfDir') == '/etc/rhsm/pluginconf.d'
+    assert result.get('rhsm', 'full_refresh_on_yum') == '0'
+    assert result.get('rhsm', 'consumerCertDir') == '/etc/pki/consumer'
+    assert result.get('rhsm', 'repo_ca_cert') == '%(ca_cert_dir)sredhat-uep.pem'

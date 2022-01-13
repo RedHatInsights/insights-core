@@ -1,4 +1,6 @@
-from insights.parsers.virt_who_conf import VirtWhoConf
+import doctest
+
+from insights.parsers import virt_who_conf
 from insights.parsers import SkipException
 from insights.tests import context_wrap
 import pytest
@@ -33,13 +35,21 @@ hypervisor_id=ID1
 """
 
 
+def test_doc_examples():
+    failed_count, tests = doctest.testmod(
+        virt_who_conf,
+        globs={'conf': virt_who_conf.VirtWhoConf(context_wrap(VWHO_CONF))}
+    )
+    assert failed_count == 0
+
+
 def test_virt_who_conf_empty():
     with pytest.raises(SkipException):
-        assert VirtWhoConf(context_wrap('')) is None
+        assert virt_who_conf.VirtWhoConf(context_wrap('')) is None
 
 
 def test_virt_who_conf():
-    vwho_conf = VirtWhoConf(context_wrap(VWHO_CONF))
+    vwho_conf = virt_who_conf.VirtWhoConf(context_wrap(VWHO_CONF))
     assert vwho_conf.has_option('global', 'debug')
     assert vwho_conf.get('global', 'oneshot') == "False"
     assert vwho_conf.getboolean('global', 'oneshot') is False

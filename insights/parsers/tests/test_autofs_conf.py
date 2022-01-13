@@ -1,3 +1,5 @@
+import doctest
+
 from insights.parsers import autofs_conf
 from insights.tests import context_wrap
 
@@ -42,16 +44,23 @@ dismount_interval = 300
 """
 
 
-class TestAutoFSConf():
-    def test_standard_autofs_conf(self):
-        cfg = autofs_conf.AutoFSConf(context_wrap(AUTOFS_CONF))
+def test_doc_examples():
+    env = {
+        'config': autofs_conf.AutoFSConf(context_wrap(AUTOFS_CONF))
+    }
+    failed, total = doctest.testmod(autofs_conf, globs=env)
+    assert failed == 0
 
-        assert cfg.get(" autofs ", "timeout") == '300'
-        assert cfg.get(" autofs ", "browse_mode") == 'no'
-        assert cfg.get(" autofs ", "mount_nfs_default_protocol") == '4'
-        assert cfg.get(" amd ", "dismount_interval") == '300'
 
-        # Check that things set in comments do not appear
-        assert not cfg.has_option(" amd ", "map_type")
-        # Check that nonexistent sections do not appear
-        assert "nfs" not in cfg
+def test_standard_autofs_conf():
+    cfg = autofs_conf.AutoFSConf(context_wrap(AUTOFS_CONF))
+
+    assert cfg.get(" autofs ", "timeout") == '300'
+    assert cfg.get(" autofs ", "browse_mode") == 'no'
+    assert cfg.get(" autofs ", "mount_nfs_default_protocol") == '4'
+    assert cfg.get(" amd ", "dismount_interval") == '300'
+
+    # Check that things set in comments do not appear
+    assert not cfg.has_option(" amd ", "map_type")
+    # Check that nonexistent sections do not appear
+    assert "nfs" not in cfg

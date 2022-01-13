@@ -1,4 +1,6 @@
-from insights.parsers.designate_conf import DesignateConf
+import doctest
+
+from insights.parsers import designate_conf
 from insights.tests import context_wrap
 
 DESIGNATE_CONF = """
@@ -17,8 +19,16 @@ driver=messagingv2
 """
 
 
+def test_doc_examples():
+    failed_count, tests = doctest.testmod(
+        designate_conf,
+        globs={'conf': designate_conf.DesignateConf(context_wrap(DESIGNATE_CONF))}
+    )
+    assert failed_count == 0
+
+
 def test_designate_conf():
-    dconf = DesignateConf(context_wrap(DESIGNATE_CONF))
+    dconf = designate_conf.DesignateConf(context_wrap(DESIGNATE_CONF))
     assert dconf is not None
     assert list(dconf.sections()) == ['keystone_authtoken', 'oslo_messaging_notifications']
     assert dconf.defaults() == {

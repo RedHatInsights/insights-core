@@ -1,4 +1,6 @@
-from insights.parsers.odbc import ODBCIni, ODBCinstIni
+import doctest
+
+from insights.parsers import odbc
 from insights.tests import context_wrap
 
 ODBC_INI = """
@@ -20,7 +22,7 @@ SERVER=localhost
 
 
 def test_odbc_ini():
-    res = ODBCIni(context_wrap(ODBC_INI))
+    res = odbc.ODBCIni(context_wrap(ODBC_INI))
     assert res.data.get("mysqlDSN", "Driver") == "/usr/lib64/libmyodbc5.so"
     assert res.data.get("mysqlDSN", "SERVER") == "localhost"
     assert not res.has_option("mysqlDSN", 'NO_SSPS')
@@ -62,8 +64,17 @@ FileUsage	= 1
 
 
 def test_odbcinst_ini():
-    res = ODBCinstIni(context_wrap(ODBCINST_INI))
+    res = odbc.ODBCinstIni(context_wrap(ODBCINST_INI))
     assert 'PostgreSQL' in res
     assert 'MySQL' in res
     assert 'XXSQL' not in res
     assert res.data.get("MySQL", "Driver64") == "/usr/lib64/libmyodbc5.so"
+
+
+def test_doc_examples():
+    failed_count, tests = doctest.testmod(
+        odbc,
+        globs={'odbcini': odbc.ODBCIni(context_wrap(ODBC_INI)),
+               'odbcinstinit': odbc.ODBCinstIni(context_wrap(ODBCINST_INI))}
+    )
+    assert failed_count == 0

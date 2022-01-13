@@ -1,6 +1,29 @@
-from insights.parsers.yum_conf import YumConf
+import doctest
+
+from insights.parsers import yum_conf
 from insights.tests import context_wrap
 
+
+YUM_CONF_DOC_TEST = """
+[main]
+cachedir=/var/cache/yum/$basearch/$releasever
+keepcache=0
+debuglevel=2
+logfile=/var/log/yum.log
+exactarch=1
+obsoletes=1
+gpgcheck=1
+plugins=1
+installonly_limit=3
+
+[rhel-7-server-rpms]
+metadata_expire = 86400
+baseurl = https://cdn.redhat.com/content/rhel/server/7/$basearch
+name = Red Hat Enterprise Linux 7 Server (RPMs)
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+enabled = 1
+gpgcheck = 1
+""".strip()
 
 YUM_CONF = """
 [main]
@@ -48,10 +71,18 @@ gpgkey =
 CONF_PATH = '/etc/yum.conf'
 
 
-def test_get_yum_conf():
-    yum_conf = YumConf(context_wrap(YUM_CONF, path=CONF_PATH))
+def test_doc_examples():
+    env = {
+        'yconf': yum_conf.YumConf(context_wrap(YUM_CONF_DOC_TEST))
+    }
+    failed, total = doctest.testmod(yum_conf, globs=env)
+    assert failed == 0
 
-    assert yum_conf.items('main') == {
+
+def test_get_yum_conf():
+    results = yum_conf.YumConf(context_wrap(YUM_CONF, path=CONF_PATH))
+
+    assert results.items('main') == {
         'plugins': '1',
         'keepcache': '0',
         'cachedir': '/var/cache/yum/$basearch/$releasever',
@@ -63,7 +94,7 @@ def test_get_yum_conf():
         'logfile': '/var/log/yum.log'
     }
 
-    assert yum_conf.items('rhel-7-server-rhn-tools-beta-debug-rpms') == {
+    assert results.items('rhel-7-server-rhn-tools-beta-debug-rpms') == {
         u'ui_repoid_vars': u'basearch',
         u'sslverify': u'1',
         u'name': u'RHN Tools for Red Hat Enterprise Linux 7 Server Beta (Debug RPMs)',
@@ -78,5 +109,5 @@ def test_get_yum_conf():
         u'metadata_expire': u'86400'
     }
 
-    assert yum_conf.file_name == 'yum.conf'
-    assert yum_conf.file_path == '/etc/yum.conf'
+    assert results.file_name == 'yum.conf'
+    assert results.file_path == '/etc/yum.conf'
