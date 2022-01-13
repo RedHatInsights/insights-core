@@ -1,5 +1,7 @@
+import doctest
+
 from insights.core.context import OSP
-from insights.parsers.cinder_conf import CinderConf
+from insights.parsers import cinder_conf
 from insights.tests import context_wrap
 
 cinder_content = """
@@ -1146,8 +1148,16 @@ osp = OSP()
 osp.role = "Controller"
 
 
+def test_doc_examples():
+    failed_count, tests = doctest.testmod(
+        cinder_conf,
+        globs={'conf': cinder_conf.CinderConf(context_wrap(cinder_content))}
+    )
+    assert failed_count == 0
+
+
 def test_match():
-    result = CinderConf(context_wrap(cinder_content, osp=osp))
+    result = cinder_conf.CinderConf(context_wrap(cinder_content, osp=osp))
     assert result.data.get("DEFAULT", "enabled_backends") == "tripleo_ceph"
     assert result.data.get("DEFAULT", "glance_api_ssl_compression") == "False"
     assert result.data.get("DEFAULT", "eqlx_use_chap") == "false"
