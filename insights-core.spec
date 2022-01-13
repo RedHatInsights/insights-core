@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.256
+Version:        3.0.257
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,17 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jan 13 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.257-1
+- Fix parsing problem in cloud_cfg datasource (#3318)
+  (41325380+jobselko@users.noreply.github.com)
+- Fix: Update the unitfiles parser for RHEL9 output (#3319)
+  (rblakley@redhat.com)
+- feat: Add spec and parser for systemctl_status_-all (#3317)
+  (39508521+shlao@users.noreply.github.com)
+- feat: Switch IniConfigFile from RawConfigParser to parsr's iniparser (#3310)
+  (rblakley@redhat.com)
+- Playbook revocation list (#3311) (rex.white@gmail.com)
+
 * Thu Jan 06 2022 Sachin Patil <psachin@redhat.com> 3.0.256-1
 - Fix: Enhance parser "SatellitePostgreSQLQuery" (#3314) (44796653+huali027@users.noreply.github.com)
 - feat: enhance calc_offset to support check all target in line (#3316) (xiangceliu@redhat.com)
