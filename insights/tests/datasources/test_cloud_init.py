@@ -17,7 +17,7 @@ users:
       - key_two
     passwd: $6$j212wezy$7H/1LT4f9/N3wpgNunhsIqtMj62OKiS3nyNwuizouQc3u7MbYCarYeAHWYPYb2FT.lbioDm2RrkJPb9BZMN1O/
 
-ssh_deletekeys: 1
+ssh_deletekeys: {value}
 
 network:
   version: 1
@@ -102,21 +102,26 @@ def teardown_function(func):
         del filters.FILTERS[Specs.cloud_cfg]
 
 
-def test_cloud_cfg():
+@pytest.mark.parametrize("ssh_deletekeys", [0, 1])
+def test_cloud_cfg(ssh_deletekeys):
+    cloud_cfg_string = CLOUD_CFG.format(value=ssh_deletekeys)
+    cloud_cfg_dict = CLOUD_CFG_JSON.copy()
+    cloud_cfg_dict["ssh_deletekeys"] = ssh_deletekeys
+
     cloud_init_file = Mock()
-    cloud_init_file.content = CLOUD_CFG.splitlines()
+    cloud_init_file.content = cloud_cfg_string.splitlines()
     broker = {LocalSpecs.cloud_cfg_input: cloud_init_file}
     result = cloud_cfg(broker)
     assert result is not None
     assert isinstance(result, DatasourceProvider)
-    expected = DatasourceProvider(content=json.dumps(CLOUD_CFG_JSON), relative_path=RELATIVE_PATH)
+    expected = DatasourceProvider(content=json.dumps(cloud_cfg_dict), relative_path=RELATIVE_PATH)
     assert result.content == expected.content
     assert result.relative_path == expected.relative_path
 
 
 def test_cloud_cfg_no_filter():
     cloud_init_file = Mock()
-    cloud_init_file.content = CLOUD_CFG.splitlines()
+    cloud_init_file.content = CLOUD_CFG.format(value=1).splitlines()
     broker = {LocalSpecs.cloud_cfg_input: cloud_init_file}
     with pytest.raises(SkipComponent) as e:
         cloud_cfg(broker)
