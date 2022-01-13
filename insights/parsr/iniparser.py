@@ -1,6 +1,6 @@
 import string
 
-from insights.parsr import (EOF, HangingString, InSet, LeftBracket, Lift,
+from insights.parsr import (Comma, EOF, EOL, DoubleQuotedString, HangingString, InSet, LeftBracket, Lift,
         LineEnd, Literal, Many, OneLineComment, Opt, PosMarker, RightBracket,
         skip_none, String, WithIndent, WS, WSChar)
 from insights.parsr.query import Directive, Entry, eq, Section
@@ -71,16 +71,21 @@ def parse_doc(content, ctx, return_defaults=False, return_booleans=True):
     if return_booleans:
         Boolean = ((Yes | No | Tru | Fals) & (WSChar | LineEnd)) % "Boolean"
 
-    LeftEnd = (WS + LeftBracket + WS)
-    RightEnd = (WS + RightBracket + WS)
+    LeftEnd = (WS + LeftBracket + Many(WSChar))
+    RightEnd = (Many(WSChar) + RightBracket + WS)
+    NestedValuesStart = WS >> (LeftBracket + EOL) % "NestedValuesStart"
+    NestedValuesEnd = (RightBracket + WS) % "NestedValuesEnd"
+
     Header = (LeftEnd >> PosMarker(String(header_chars)) << RightEnd) % "Header"
     Key = WS >> PosMarker(String(key_chars)) << WS
     Sep = InSet(sep_chars, "Sep")
-
     if return_booleans:
-        Value = WS >> (Boolean | HangingString(value_chars))
+        NormalValue = WS >> (Boolean | HangingString(value_chars))
     else:
-        Value = WS >> (HangingString(value_chars))
+        NormalValue = WS >> (HangingString(value_chars))
+    NestedItem = WS >> (DoubleQuotedString + Comma + EOL) % "NestedItem"
+    NestedValues = (NestedValuesStart + Many(NestedItem) + Many(EOL) + NestedValuesEnd) % "NestedValues"
+    Value = (NestedValues | NormalValue)
 
     KVPair = WithIndent(Key + Opt(Sep >> Value)) % "KVPair"
     Comment = (WS >> (OneLineComment("#") | OneLineComment(";")).map(lambda x: None))
