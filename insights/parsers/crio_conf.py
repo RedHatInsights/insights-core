@@ -1,6 +1,6 @@
 """
-CrioConf - file ``/etc/crio/crio.conf``
-=======================================
+CrioConf - files ``/etc/crio/crio.conf`` and ``/etc/crio/crio.conf.d/*-conmon.conf``
+====================================================================================
 """
 
 from insights.core import IniConfigFile
@@ -11,13 +11,14 @@ from insights.specs import Specs
 @parser(Specs.crio_conf)
 class CrioConf(IniConfigFile):
     """
-    The ``CrioConf`` class parses the information in the file
-    ``/etc/crio/crio.conf``. See the ``IniConfigFile`` class for more
-    information on attributes and methods.
+    The ``CrioConf`` class parses the information in the files
+    ``/etc/crio/crio.conf`` and ``/etc/crio/crio.conf.d/*-conmon.conf``.
+    See the ``IniConfigFile`` class for more information on attributes and methods.
 
     Sample input data looks like::
 
         [crio]
+        storage_option=[ "overlay.imagestore=/mnt/overlay", ]
 
         [crio.runtime]
         selinux = true

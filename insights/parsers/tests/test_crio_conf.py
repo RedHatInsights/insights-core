@@ -6,6 +6,7 @@ from insights.tests import context_wrap
 
 CRIO_CONF_DATA = """
 [crio]
+storage_option=[ "overlay.imagestore=/mnt/overlay", ]
 
 [crio.runtime]
 selinux = true
@@ -27,6 +28,7 @@ def test_crio_conf():
     confs = CrioConf(context_wrap(CRIO_CONF_DATA, path=CONF_PATH))
     assert 'crio' in confs.sections()
     assert confs.file_name == 'crio.conf'
+    assert confs.has_option('crio', 'storage_option')
     assert confs.get('crio.metrics', 'metrics_port') == '9537'
 
 
