@@ -822,7 +822,16 @@ class InsightsConnection(object):
         biggest_file = largest_spec_in_archive(archive_file)
         if biggest_file is not None:
             logger.info("The largest file in the archive is %s at %s MB.", biggest_file[0], size_in_mb(biggest_file[1]))
-            logger.info("Please add this spec:\n\n\t%s\n\nto your denylist configuration according to the documentation, and try the upload again. \nSee the documentation: https://access.redhat.com/articles/4511681 ", biggest_file[2])
+            logger.info("Please add the following spec to /etc/insights-client/file-redaction.yaml."
+            "According to the documentation https://access.redhat.com/articles/4511681\n\n"
+            "****  /etc/insights-client/file-redaction.yaml ****\n"
+            "# file-redaction.yaml\n"
+            "# Omit entire output of files\n"
+            "# Files can be specified either by full filename or\n"
+            "#   by the 'symbolic_name' listed in .cache.json\n"
+            "files:\n"
+            "- %s \n**** ****", biggest_file[2])
+
 
     # -LEGACY-
     def _legacy_upload_archive(self, data_collected, duration):
