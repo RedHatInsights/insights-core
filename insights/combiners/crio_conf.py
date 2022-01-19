@@ -15,8 +15,12 @@ class AllCrioConf(object):
     Combiner for accessing all the crio configuration files. There may be multi
     files for crio configuration, and the main config file is crio.conf. In the
     situation that the same section is both in crio.conf and other configuration
-    files, the item in crio.conf has the lowest precedence. This combiner will
-    parse all the CrioConf objects and return a dictionary containing all valid data.
+    files, the item in crio.conf has the lowest precedence. Files in the
+    directory,'/etc/crio/crio.conf.d/', are sorted by name in lexical order and
+    applied in that order. If multiple configuration files specify the same
+    configuration option the setting specified in the file sorted last takes
+    precedence over any other value. This combiner will parse all the CrioConf
+    objects and return a dictionary containing all valid data.
 
     Sample files::
 
@@ -42,9 +46,11 @@ class AllCrioConf(object):
             [crio]
             internal_wipe = true
             storage_driver = "device mapper"
-            storage_option = [
-                "overlay.override_kernel_check=1",
-            ]
+
+        /etc/crio/crio.conf.d/99-conmon.conf
+
+            [crio]
+            storage_driver = "overlay2"
 
             [crio.api]
             stream_address = ""
@@ -66,9 +72,10 @@ class AllCrioConf(object):
         >>> all_crio_conf.options('crio.api')
         ['stream_address', 'stream_port']
         >>> all_crio_conf.files
-        ['/etc/crio/crio.conf', '/etc/crio/crio.conf.d/00-conmon.conf']
+        ['/etc/crio/crio.conf', '/etc/crio/crio.conf.d/00-conmon.conf',
+         '/etc/crio/crio.conf.d/99-conmon.conf']
         >>> all_crio_conf.get('crio', 'storage_driver')
-        '"device mapper"'
+        '"overlay2"'
 
     Attributes:
         files (list): The list of configuration file names.
@@ -76,7 +83,6 @@ class AllCrioConf(object):
     def __init__(self, crio_confs):
         self.data = {}
         self.files = []
-        main_data = None
         conf_d_data = []
 
         def dict_merge(dest, src):
@@ -93,11 +99,11 @@ class AllCrioConf(object):
         for crio_conf in crio_confs:
             self.files.append(crio_conf.file_path)
             if crio_conf.file_path == "/etc/crio/crio.conf":
-                main_data = crio_conf
+                dict_merge(self.data, crio_conf)
             else:
                 conf_d_data.append(crio_conf)
 
-        dict_merge(self.data, main_data)
+        conf_d_data.sort(key=lambda e: e.file_name)
         for crio_conf in conf_d_data:
             dict_merge(self.data, crio_conf)
 

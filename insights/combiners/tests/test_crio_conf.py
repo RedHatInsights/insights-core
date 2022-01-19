@@ -20,13 +20,15 @@ plugin_dirs = [
 [crio.metrics]
 """.strip()
 
-CRIO_CONMON_CONF = """
+CRIO_CONMON_00_CONF = """
 [crio]
 internal_wipe = true
 storage_driver = "device mapper"
-storage_option = [
-    "overlay.override_kernel_check=1",
-]
+""".strip()
+
+CRIO_CONMON_99_CONF = """
+[crio]
+storage_driver = "overlay2"
 
 [crio.api]
 stream_address = ""
@@ -46,15 +48,17 @@ cgroup_manager = "systemd"
 
 def test_active_crio_conf_nest():
     crio_conf1 = CrioConf(context_wrap(CRIO_CONFIG, path='/etc/crio/crio.conf'))
-    crio_conf2 = CrioConf(context_wrap(CRIO_CONMON_CONF, path='/etc/crio/crio.conf.d/00-conmon.conf'))
-    result = AllCrioConf([crio_conf1, crio_conf2])
+    crio_conf2 = CrioConf(context_wrap(CRIO_CONMON_00_CONF, path='/etc/crio/crio.conf.d/00-conmon.conf'))
+    crio_conf3 = CrioConf(context_wrap(CRIO_CONMON_99_CONF, path='/etc/crio/crio.conf.d/99-conmon.conf'))
+    result = AllCrioConf([crio_conf1, crio_conf2, crio_conf3])
     assert result.has_option("crio", "internal_wipe")
     assert result.has_option("crio.runtime", "default_env")
     assert result.get("crio.api", "stream_port") == "\"10010\""
-    assert result.get('crio', 'storage_driver') == "\"device mapper\""
+    assert result.get('crio', 'storage_driver') == "\"overlay2\""
     assert "crio.network" in result.sections()
     assert "realmstest" not in result.sections()
     assert result.has_section("crio.metrics")
     assert not result.has_option("crio.metrics", "nosuchoption")
     assert not result.options("realmsno")
-    assert result.files == ['/etc/crio/crio.conf', '/etc/crio/crio.conf.d/00-conmon.conf']
+    assert result.files == ['/etc/crio/crio.conf', '/etc/crio/crio.conf.d/00-conmon.conf',
+                            '/etc/crio/crio.conf.d/99-conmon.conf']
