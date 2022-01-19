@@ -1,6 +1,6 @@
 """
-CrioConf - files ``/etc/crio/crio.conf`` and ``/etc/crio/crio.conf.d/*-conmon.conf``
-====================================================================================
+CrioConf - files ``/etc/crio/crio.conf`` and ``/etc/crio/crio.conf.d/*.conf``
+=============================================================================
 """
 
 from insights.core import IniConfigFile
@@ -12,7 +12,7 @@ from insights.specs import Specs
 class CrioConf(IniConfigFile):
     """
     The ``CrioConf`` class parses the information in the files
-    ``/etc/crio/crio.conf`` and ``/etc/crio/crio.conf.d/*-conmon.conf``.
+    ``/etc/crio/crio.conf`` and ``/etc/crio/crio.conf.d/*.conf``.
     See the ``IniConfigFile`` class for more information on attributes and methods.
 
     Sample input data looks like::

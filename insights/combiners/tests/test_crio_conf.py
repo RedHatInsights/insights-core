@@ -23,7 +23,7 @@ plugin_dirs = [
 CRIO_CONMON_CONF = """
 [crio]
 internal_wipe = true
-storage_driver = "overlay"
+storage_driver = "device mapper"
 storage_option = [
     "overlay.override_kernel_check=1",
 ]
@@ -51,6 +51,7 @@ def test_active_crio_conf_nest():
     assert result.has_option("crio", "internal_wipe")
     assert result.has_option("crio.runtime", "default_env")
     assert result.get("crio.api", "stream_port") == "\"10010\""
+    assert result.get('crio', 'storage_driver') == "\"device mapper\""
     assert "crio.network" in result.sections()
     assert "realmstest" not in result.sections()
     assert result.has_section("crio.metrics")

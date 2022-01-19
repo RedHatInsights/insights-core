@@ -1,8 +1,9 @@
 import string
 
-from insights.parsr import (Comma, EOF, EOL, DoubleQuotedString, HangingString, InSet, LeftBracket, Lift,
-        LineEnd, Literal, Many, OneLineComment, Opt, PosMarker, RightBracket,
-        skip_none, String, WithIndent, WS, WSChar)
+from insights.parsr import (Comma, EOF, EOL, DoubleQuotedString,
+        HangingString, InSet, LeftBracket, Lift, LineEnd, Literal, Many,
+        OneLineComment, Opt, PosMarker, RightBracket, skip_none, String,
+        WithIndent, WS, WSChar)
 from insights.parsr.query import Directive, Entry, eq, Section
 
 

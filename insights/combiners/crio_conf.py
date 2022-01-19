@@ -15,7 +15,7 @@ class AllCrioConf(object):
     Combiner for accessing all the crio configuration files. There may be multi
     files for crio configuration, and the main config file is crio.conf. In the
     situation that the same section is both in crio.conf and other configuration
-    files, the item in crio.conf has the highest precedence. This combiner will
+    files, the item in crio.conf has the lowest precedence. This combiner will
     parse all the CrioConf objects and return a dictionary containing all valid data.
 
     Sample files::
@@ -41,7 +41,7 @@ class AllCrioConf(object):
 
             [crio]
             internal_wipe = true
-            storage_driver = "overlay"
+            storage_driver = "device mapper"
             storage_option = [
                 "overlay.override_kernel_check=1",
             ]
@@ -67,14 +67,17 @@ class AllCrioConf(object):
         ['stream_address', 'stream_port']
         >>> all_crio_conf.files
         ['/etc/crio/crio.conf', '/etc/crio/crio.conf.d/00-conmon.conf']
+        >>> all_crio_conf.get('crio', 'storage_driver')
+        '"device mapper"'
 
     Attributes:
         files (list): The list of configuration file names.
     """
     def __init__(self, crio_confs):
-        main_data = None
         self.data = {}
         self.files = []
+        main_data = None
+        conf_d_data = []
 
         def dict_merge(dest, src):
             if not src:
@@ -89,12 +92,15 @@ class AllCrioConf(object):
 
         for crio_conf in crio_confs:
             self.files.append(crio_conf.file_path)
-            if crio_conf.file_name == "crio.conf":
+            if crio_conf.file_path == "/etc/crio/crio.conf":
                 main_data = crio_conf
             else:
-                dict_merge(self.data, crio_conf)
+                conf_d_data.append(crio_conf)
 
         dict_merge(self.data, main_data)
+        for crio_conf in conf_d_data:
+            dict_merge(self.data, crio_conf)
+
         super(AllCrioConf, self).__init__()
 
     def get(self, section, option):
@@ -106,11 +112,11 @@ class AllCrioConf(object):
         Returns:
             str: Returns the value of the option in the specified section.
         """
-        if section not in self.data.keys():
+        if section not in self.data:
             raise NoSectionError(section)
 
         header = self.data.get(section)
-        if option not in header.keys():
+        if option not in header:
             raise NoOptionError(section, option)
 
         return header.get(option)
@@ -119,7 +125,7 @@ class AllCrioConf(object):
         """
         Return a list of section names.
         """
-        return self.data.keys()
+        return list(self.data.keys())
 
     def has_section(self, section):
         """
@@ -132,7 +138,7 @@ class AllCrioConf(object):
         """
         Return a list of option names for the given section name.
         """
-        return self.data[section].keys() if self.has_section(section) else []
+        return list(self.data[section].keys()) if self.has_section(section) else []
 
     def has_option(self, section, option):
         """
