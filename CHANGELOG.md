@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.258](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.258) (2022-01-20)
+
+- Enhance spec ls_l ([PR 3324](https://github.com/RedHatInsights/insights-core/pull/3324))
+- Separate scan_only and scan_exclude options for filesystem and processes ([PR 3312](https://github.com/RedHatInsights/insights-core/pull/3312))
+- Fix: Update lscpu parser to support RHEL9 output ([PR 3320](https://github.com/RedHatInsights/insights-core/pull/3320))
+
 ## [insights-core-3.0.257](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.257) (2022-01-13)
 
 - Fix parsing problem in cloud_cfg datasource ([PR 3318](https://github.com/RedHatInsights/insights-core/pull/3318))
