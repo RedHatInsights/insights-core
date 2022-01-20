@@ -84,12 +84,13 @@ def parse_doc(content, ctx, return_defaults=False, return_booleans=True):
         NormalValue = WS >> (Boolean | HangingString(value_chars))
     else:
         NormalValue = WS >> (HangingString(value_chars))
-    NestedItem = WS >> (DoubleQuotedString + Comma + EOL) % "NestedItem"
-    NestedValues = (NestedValuesStart + Many(NestedItem) + Many(EOL) + NestedValuesEnd) % "NestedValues"
+    Comment = (WS >> (OneLineComment("#") | OneLineComment(";")).map(lambda x: None))
+
+    NestedItem = WS >> (Comment | DoubleQuotedString + EOL | DoubleQuotedString + Comma + EOL) % "NestedItem"
+    NestedValues = (NestedValuesStart + Many(NestedItem) + Many(WSChar) + Many(EOL) + NestedValuesEnd) % "NestedValues"
     Value = (NestedValues | NormalValue)
 
     KVPair = WithIndent(Key + Opt(Sep >> Value)) % "KVPair"
-    Comment = (WS >> (OneLineComment("#") | OneLineComment(";")).map(lambda x: None))
 
     Line = Comment | KVPair.map(to_directive)
     Sect = Lift(to_section) * Header * Many(Line).map(skip_none)
