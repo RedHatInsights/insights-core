@@ -255,9 +255,9 @@ class DefaultSpecs(Specs):
     greenboot_status = simple_command("/usr/libexec/greenboot/greenboot-status")
     grubenv = first_file(["/boot/grub2/grubenv", "/boot/efi/EFI/redhat/grubenv"])
     grub_conf = simple_file("/boot/grub/grub.conf")
-    grub_config_perms = simple_command("/bin/ls -lH /boot/grub2/grub.cfg") # only RHEL7 and updwards
+    grub_config_perms = simple_command("/bin/ls -lH /boot/grub2/grub.cfg")  # only RHEL7 and updwards
     grub_efi_conf = simple_file("/boot/efi/EFI/redhat/grub.conf")
-    grub1_config_perms = simple_command("/bin/ls -lH /boot/grub/grub.conf") # RHEL6
+    grub1_config_perms = simple_command("/bin/ls -lH /boot/grub/grub.conf")  # RHEL6
     grub2_cfg = simple_file("/boot/grub2/grub.cfg")
     grub2_efi_cfg = simple_file("boot/efi/EFI/redhat/grub.cfg")
     grubby_default_index = simple_command("/usr/sbin/grubby --default-index")  # only RHEL7 and updwards
