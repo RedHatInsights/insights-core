@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.259](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.259) (2022-01-20)
+
+- Update spec ls_l first_file ([PR 3326](https://github.com/RedHatInsights/insights-core/pull/3326))
+- Update the ChangeLog to include insights-core-3.0.258 ([PR 3325](https://github.com/RedHatInsights/insights-core/pull/3325))
+
 ## [insights-core-3.0.258](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.258) (2022-01-20)
 
 - Enhance spec ls_l ([PR 3324](https://github.com/RedHatInsights/insights-core/pull/3324))
