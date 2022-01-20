@@ -13,6 +13,7 @@ import re
 import sys
 import threading
 import time
+import json
 from subprocess import Popen, PIPE, STDOUT
 
 import yaml
@@ -249,20 +250,17 @@ def get_version_info():
     return version_info
 
 
-def print_egg_versions():
+def all_egg_versions():
     '''
-    Log all available eggs' versions
+    Get the versions of all installed eggs
     '''
-    versions = get_version_info()
-    logger.debug('Client version: %s', versions['client_version'])
-    logger.debug('Core version: %s', versions['core_version'])
-    logger.debug('All egg versions:')
     eggs = [
         os.getenv('EGG'),
         '/var/lib/insights/newest.egg',
         '/var/lib/insights/last_stable.egg',
         '/etc/insights-client/rpm.egg',
     ]
+    egg_versions = {}
     if not sys.executable:
         logger.debug('Python executable not found.')
         return
@@ -275,15 +273,39 @@ def print_egg_versions():
             logger.debug('%s not found.', egg)
             continue
         try:
+            # force the egg to the front of sys.path so it gets loaded first
             proc = Popen([sys.executable, '-c',
-                         'from insights import package_info; print(\'%s-%s\' % (package_info[\'VERSION\'], package_info[\'RELEASE\']))'],
-                         env={'PYTHONPATH': egg, 'PATH': os.getenv('PATH')}, stdout=PIPE, stderr=STDOUT)
+                         'import json, sys; \
+                          sys.path.insert(0, \"' + egg + '\"); \
+                          from insights.client.utilities import get_version_info; \
+                          print(json.dumps(get_version_info()))'],
+                         stdout=PIPE, stderr=STDOUT)
         except OSError:
             logger.debug('Could not start python.')
             return
         stdout, stderr = proc.communicate()
         version = stdout.decode('utf-8', 'ignore').strip()
-        logger.debug('%s: %s', egg, version)
+        try:
+            egg_versions[egg] = json.loads(version)
+        except ValueError as e:
+            logger.debug('Could not parse version: %s', e)
+            egg_versions[egg] = {'client_version': 'unknown', 'core_version': 'unknown'}
+    return egg_versions
+
+
+def print_egg_versions():
+    '''
+    Log all available eggs' versions
+    '''
+    versions = get_version_info()
+    logger.debug('Client version: %s', versions['client_version'])
+    logger.debug('Core version in use: %s', versions['core_version'])
+    # TODO: include runner version once client is separated
+    logger.debug('All egg versions:')
+    egg_versions = all_egg_versions()
+    for e in egg_versions:
+        logger.debug('%s: %s', e, egg_versions[e]['core_version'])
+        # TODO: include runner version once client is separated
 
 
 def read_pidfile():

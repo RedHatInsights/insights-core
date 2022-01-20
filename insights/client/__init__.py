@@ -10,7 +10,6 @@ import atexit
 from subprocess import Popen, PIPE
 from requests import ConnectionError
 
-from .. import package_info
 from . import client
 from .constants import InsightsConstants as constants
 from .config import InsightsConfig
@@ -23,7 +22,8 @@ from .utilities import (delete_registered_file,
                         get_tags,
                         write_tags,
                         migrate_tags,
-                        get_parent_process)
+                        get_parent_process,
+                        all_egg_versions)
 
 NETWORK = constants.custom_network_log_level
 logger = logging.getLogger(__name__)
@@ -80,7 +80,14 @@ class InsightsClient(object):
         return client.set_up_logging(self.config)
 
     def version(self):
-        return "%s-%s" % (package_info["VERSION"], package_info["RELEASE"])
+        '''
+        Returns a formatted list of all egg versions available on the system
+        '''
+        eggs = all_egg_versions()
+        eggs = [k + ': ' + v['core_version'] for (k, v) in eggs.items()]
+        # happily, the eggs should sort nicely in reverse alphabetical with descending versions,
+        #   i.e., latest will be at the top
+        return '\t' + '\n\t'.join(sorted(eggs, reverse=True))
 
     @_net
     def test_connection(self):

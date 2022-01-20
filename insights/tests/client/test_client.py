@@ -6,7 +6,6 @@ import time
 from insights.client import InsightsClient
 from insights.client.archive import InsightsArchive
 from insights.client.config import InsightsConfig
-from insights import package_info
 from insights.client.constants import InsightsConstants as constants
 from insights.client.utilities import generate_machine_id
 from mock.mock import patch, Mock, call
@@ -48,7 +47,8 @@ class FakeConnection(object):
 
 # @TODO DRY the args hack.
 
-def test_version():
+@patch('insights.client.all_egg_versions', return_value={'/var/lib/insights/newest.egg': {'core_version': '3.0.2'}, '/var/lib/insights/last_stable.egg': {'core_version': '3.0.1'}, '/etc/insights-client/rpm.egg': {'core_version': '3.0.0'}})
+def test_version(all_egg_versions):
 
     # Hack to prevent client from parsing args to py.test
     tmp = sys.argv
@@ -58,7 +58,7 @@ def test_version():
         config = InsightsConfig(logging_file='/tmp/insights.log')
         client = InsightsClient(config)
         result = client.version()
-        assert result == "%s-%s" % (package_info["VERSION"], package_info["RELEASE"])
+        assert result == '\t' + '\n\t'.join(sorted(['/var/lib/insights/newest.egg: 3.0.2', '/var/lib/insights/last_stable.egg: 3.0.1', '/etc/insights-client/rpm.egg: 3.0.0'], reverse=True))
     finally:
         sys.argv = tmp
 
