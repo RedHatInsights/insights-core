@@ -255,15 +255,9 @@ class DefaultSpecs(Specs):
     greenboot_status = simple_command("/usr/libexec/greenboot/greenboot-status")
     grubenv = first_file(["/boot/grub2/grubenv", "/boot/efi/EFI/redhat/grubenv"])
     grub_conf = simple_file("/boot/grub/grub.conf")
-    grub_config_perms = first_file([
-        simple_command("/bin/ls -lH /boot/grub2/grub.cfg"),
-        simple_command("/bin/ls -l /boot/grub2/grub.cfg")
-    ]) # only RHEL7 and updwards
+    grub_config_perms = simple_command("/bin/ls -lH /boot/grub2/grub.cfg") # only RHEL7 and updwards
     grub_efi_conf = simple_file("/boot/efi/EFI/redhat/grub.conf")
-    grub1_config_perms = first_file([
-        simple_command("/bin/ls -lH /boot/grub/grub.conf"),
-        simple_command("/bin/ls -l /boot/grub/grub.conf")
-    ])  # RHEL6
+    grub1_config_perms = simple_command("/bin/ls -lH /boot/grub/grub.conf") # RHEL6
     grub2_cfg = simple_file("/boot/grub2/grub.cfg")
     grub2_efi_cfg = simple_file("boot/efi/EFI/redhat/grub.cfg")
     grubby_default_index = simple_command("/usr/sbin/grubby --default-index")  # only RHEL7 and updwards
@@ -646,10 +640,7 @@ class DefaultSpecs(Specs):
     ssh_config_d = glob_file(r"/etc/ssh/ssh_config.d/*.conf")
     ssh_foreman_proxy_config = simple_file("/usr/share/foreman-proxy/.ssh/ssh_config")
     sshd_config = simple_file("/etc/ssh/sshd_config")
-    sshd_config_perms = first_file([
-        simple_command("/bin/ls -lH /etc/ssh/sshd_config"),
-        simple_command("/bin/ls -l /etc/ssh/sshd_config")
-    ])
+    sshd_config_perms = simple_command("/bin/ls -lH /etc/ssh/sshd_config")
     sssd_config = simple_file("/etc/sssd/sssd.conf")
     subscription_manager_id = simple_command("/usr/sbin/subscription-manager identity")  # use "/usr/sbin" here, BZ#1690529
     subscription_manager_installed_product_ids = simple_command("/usr/bin/find /etc/pki/product-default/ /etc/pki/product/ -name '*pem' -exec rct cat-cert --no-content '{}' \;")
