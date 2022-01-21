@@ -672,7 +672,7 @@ class Specs(SpecSet):
     systemctl_qpidd = RegistryPoint()
     systemctl_qdrouterd = RegistryPoint()
     systemctl_show_all_services = RegistryPoint()
-    systemctl_show_all_services_with_cpuaccounting = RegistryPoint()
+    systemctl_show_all_services_with_limited_properties = RegistryPoint()
     systemctl_show_target = RegistryPoint()
     systemctl_smartpdc = RegistryPoint()
     systemctl_status_all = RegistryPoint(filterable=True)

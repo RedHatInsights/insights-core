@@ -1,9 +1,8 @@
 import doctest
-from insights.core.dr import SkipComponent
 import pytest
 from insights.parsers import systemctl_show, SkipException, ParseException
 from insights.parsers.systemctl_show import (
-    SystemctlShowServiceAll, SystemctlShowTarget, SystemctlShowAllServiceWithCPUAccounting
+    SystemctlShowServiceAll, SystemctlShowTarget, SystemctlShowAllServiceWithLimitedProperties
 )
 from insights.tests import context_wrap
 # TODO: Remove the following `import`s when removing the deprecated parsers
@@ -445,32 +444,29 @@ def test_systemctl_show_service_all_ab():
 
 
 def test_systemctl_show_service_with_cpuaccouting_enabled():
-    services = SystemctlShowAllServiceWithCPUAccounting(context_wrap(SYSTEM_SHOW_ALL_SERVICES_WITH_CPUACCOUTING_INFO))
+    services = SystemctlShowAllServiceWithLimitedProperties(context_wrap(SYSTEM_SHOW_ALL_SERVICES_WITH_CPUACCOUTING_INFO))
     assert 'test1.service' in services
     assert 'test3.service' not in services
     assert services.get('test1.service').get('CPUAccounting') == 'no'
-    assert 'test2.service' in services.services_with_cpuaccouting_enabled
-    assert 'test1.service' not in services.services_with_cpuaccouting_enabled
+    assert 'test2.service' in services.get_services_with_cpuaccouting_enabled()
+    assert 'test1.service' not in services.get_services_with_cpuaccouting_enabled()
 
-    services = SystemctlShowAllServiceWithCPUAccounting(context_wrap(SYSTEM_SHOW_ALL_SERVICES_WITH_CPUACCOUTING_INFO2))
-    assert 'test3.service' in services.services_with_cpuaccouting_enabled
+    services = SystemctlShowAllServiceWithLimitedProperties(context_wrap(SYSTEM_SHOW_ALL_SERVICES_WITH_CPUACCOUTING_INFO2))
+    assert 'test3.service' in services.get_services_with_cpuaccouting_enabled()
 
-    services = SystemctlShowAllServiceWithCPUAccounting(context_wrap(SYSTEM_SHOW_ALL_SERVICES_WITH_CPUACCOUTING_INFO3))
-    assert 'test2.service' in services.services_with_cpuaccouting_enabled
-    assert 'test3.service' in services.services_with_cpuaccouting_enabled
+    services = SystemctlShowAllServiceWithLimitedProperties(context_wrap(SYSTEM_SHOW_ALL_SERVICES_WITH_CPUACCOUTING_INFO3))
+    assert 'test2.service' in services.get_services_with_cpuaccouting_enabled()
+    assert 'test3.service' in services.get_services_with_cpuaccouting_enabled()
 
-    services = SystemctlShowAllServiceWithCPUAccounting(context_wrap(SYSTEM_SHOW_ALL_SERVICES_WITH_CPUACCOUTING_INFO4))
-    assert 'insights-client.service' in services.services_with_cpuaccouting_enabled
-
-    with pytest.raises(SkipComponent):
-        SystemctlShowAllServiceWithCPUAccounting(context_wrap(SYSTEM_SHOW_ALL_SERVICES_WITH_CPUACCOUTING_INFO5))
+    services = SystemctlShowAllServiceWithLimitedProperties(context_wrap(SYSTEM_SHOW_ALL_SERVICES_WITH_CPUACCOUTING_INFO4))
+    assert 'insights-client.service' in services.get_services_with_cpuaccouting_enabled()
 
 
 def test_systemctl_show_doc_examples():
     env = {
         'systemctl_show_all': SystemctlShowServiceAll(context_wrap(SYSTEMCTL_SHOW_ALL_EXAMPLES)),
         'systemctl_show_target': SystemctlShowTarget(context_wrap(SYSTEMCTL_SHOW_TARGET)),
-        'all_services_with_cpuaccouting_info': SystemctlShowAllServiceWithCPUAccounting(context_wrap(SYSTEM_SHOW_ALL_SERVICES_WITH_CPUACCOUTING_INFO)),
+        'all_services_with_limited_info': SystemctlShowAllServiceWithLimitedProperties(context_wrap(SYSTEM_SHOW_ALL_SERVICES_WITH_CPUACCOUTING_INFO)),
         # TODO: Remove the following test when removing the deprecated parsers.
         'systemctl_show_cinder_volume': SystemctlShowCinderVolume(context_wrap(SYSTEMCTL_SHOW_EXAMPLES)),
         'systemctl_show_mariadb': SystemctlShowMariaDB(context_wrap(SYSTEMCTL_SHOW_EXAMPLES)),

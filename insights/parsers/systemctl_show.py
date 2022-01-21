@@ -8,11 +8,10 @@ SystemctlShowServiceAll - command ``systemctl show *.service``
 --------------------------------------------------------------
 SystemctlShowTarget - command ``systemctl show *.target``
 ---------------------------------------------------------
-SystemctlShowAllServiceWithCPUAccounting - command ``systemctl show *.service --all --property=Names,CPUAccounting,CPUQuotaPerSecUSec,CPUShares,StartupCPUShares,UnitFileState,SubState``
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SystemctlShowAllServiceWithLimitedProperties - command ``systemctl show *.service --all --property=Names,CPUAccounting,CPUQuotaPerSecUSec,CPUShares,StartupCPUShares,UnitFileState,SubState``
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 """
 from insights import parser, CommandParser
-from insights.core.dr import SkipComponent
 from insights.parsers import split_kv_pairs, SkipException, ParseException
 from insights.specs import Specs
 from insights.util import deprecated
@@ -247,8 +246,8 @@ class SystemctlShowCinderVolume(SystemctlShow):
     pass
 
 
-@parser(Specs.systemctl_show_all_services_with_cpuaccounting)
-class SystemctlShowAllServiceWithCPUAccounting(SystemctlShowServiceAll):
+@parser(Specs.systemctl_show_all_services_with_limited_properties)
+class SystemctlShowAllServiceWithLimitedProperties(SystemctlShowServiceAll):
     """
     Class for parsing the output of command ``systemctl show *.service --all --property=Names,CPUAccounting,CPUQuotaPerSecUSec,CPUShares,StartupCPUShares,UnitFileState,SubState``.
 
@@ -292,24 +291,18 @@ class SystemctlShowAllServiceWithCPUAccounting(SystemctlShowServiceAll):
             }
         }
 
-    Attributes:
-        services_with_cpuaccouting_enabled (list): A list of service names which enabled CPUAccouting.
-
-    Raises:
-        SkipComponent: If there is no service enabled CPUAccouting.
-
     Examples:
-        >>> 'test1.service' in all_services_with_cpuaccouting_info
+        >>> 'test1.service' in all_services_with_limited_info
         True
-        >>> all_services_with_cpuaccouting_info.get('test1.service').get('CPUAccounting', None)
+        >>> all_services_with_limited_info.get('test1.service').get('CPUAccounting', None)
         'no'
-        >>> 'test2.service' in all_services_with_cpuaccouting_info.services_with_cpuaccouting_enabled
+        >>> 'test2.service' in all_services_with_limited_info.get_services_with_cpuaccouting_enabled()
         True
     """
 
-    def parse_content(self, content):
-        super(SystemctlShowAllServiceWithCPUAccounting, self).parse_content(content)
-        self.services_with_cpuaccouting_enabled = []
+    def get_services_with_cpuaccouting_enabled(self):
+        """Return a list of service names which enables the CPUAccounting."""
+        services_with_cpuaccouting_enabled = []
         for service_name, service_info in self.items():
             service_enabled_or_stared = False
             cpuaccounting_enabled = False
@@ -326,9 +319,8 @@ class SystemctlShowAllServiceWithCPUAccounting(SystemctlShowServiceAll):
                     if value.isdigit() and 2 <= int(value) <= 262144:
                         cpuaccounting_enabled = True
             if service_enabled_or_stared and cpuaccounting_enabled:
-                self.services_with_cpuaccouting_enabled.append(service_name)
-        if not self.services_with_cpuaccouting_enabled:
-            raise SkipComponent
+                services_with_cpuaccouting_enabled.append(service_name)
+        return services_with_cpuaccouting_enabled
 
 
 @parser(Specs.systemctl_mariadb)
