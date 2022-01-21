@@ -248,6 +248,7 @@ class InsightsArchiveSpecs(Specs):
     systemctl_qpidd = simple_file("insights_commands/systemctl_show_qpidd")
     systemctl_qdrouterd = simple_file("insights_commands/systemctl_show_qdrouterd")
     systemctl_show_all_services = simple_file("insights_commands/systemctl_show_.service")
+    systemctl_show_all_services_with_cpuaccounting = simple_file("insights_commands/systemctl_show_.service_--all_--property_Names_CPUAccounting_CPUQuotaPerSecUSec_CPUShares_StartupCPUShares_UnitFileState_SubState")
     systemctl_show_target = simple_file("insights_commands/systemctl_show_.target")
     systemctl_smartpdc = simple_file("insights_commands/systemctl_show_smart_proxy_dynflow_core")
     systemd_analyze_blame = simple_file("insights_commands/systemd-analyze_blame")

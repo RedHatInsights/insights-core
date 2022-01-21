@@ -1,7 +1,10 @@
 import doctest
+from insights.core.dr import SkipComponent
 import pytest
 from insights.parsers import systemctl_show, SkipException, ParseException
-from insights.parsers.systemctl_show import SystemctlShowServiceAll, SystemctlShowTarget
+from insights.parsers.systemctl_show import (
+    SystemctlShowServiceAll, SystemctlShowTarget, SystemctlShowAllServiceWithCPUAccounting
+)
 from insights.tests import context_wrap
 # TODO: Remove the following `import`s when removing the deprecated parsers
 from insights.parsers.systemctl_show import SystemctlShowCinderVolume
@@ -296,6 +299,112 @@ ActiveExitTimestamp=Tue 2020-02-25 10:39:34 GMT
 ActiveExitTimestampMonotonic=3427060
 """.strip()
 
+SYSTEM_SHOW_ALL_SERVICES_WITH_CPUACCOUTING_INFO = """
+CPUAccounting=no
+CPUShares=18446744073709551615
+StartupCPUShares=18446744073709551615
+CPUQuotaPerSecUSec=infinity
+Names=test1.service
+SubState=dead
+UnitFileState=static
+
+CPUAccounting=yes
+CPUShares=18446744073709551615
+StartupCPUShares=18446744073709551615
+CPUQuotaPerSecUSec=infinity
+Names=test2.service
+SubState=dead
+UnitFileState=enabled
+""".strip()
+
+SYSTEM_SHOW_ALL_SERVICES_WITH_CPUACCOUTING_INFO2 = """
+CPUAccounting=no
+CPUShares=18446744073709551615
+StartupCPUShares=18446744073709551615
+CPUQuotaPerSecUSec=infinity
+Names=test1.service
+SubState=dead
+UnitFileState=static
+
+CPUAccounting=no
+CPUShares=18446744073709551615
+StartupCPUShares=18446744073709551615
+CPUQuotaPerSecUSec=300ms
+Names=test3.service
+SubState=running
+UnitFileState=enabled
+""".strip()
+
+SYSTEM_SHOW_ALL_SERVICES_WITH_CPUACCOUTING_INFO3 = """
+CPUAccounting=no
+CPUShares=18446744073709551615
+StartupCPUShares=18446744073709551615
+CPUQuotaPerSecUSec=infinity
+Names=test1.service
+SubState=dead
+UnitFileState=static
+
+CPUAccounting=no
+CPUShares=184
+StartupCPUShares=18446744073709551615
+CPUQuotaPerSecUSec=infinity
+Names=test2.service
+SubState=failed
+UnitFileState=enabled
+
+CPUAccounting=no
+CPUShares=18446744073709551615
+StartupCPUShares=184
+CPUQuotaPerSecUSec=infinity
+Names=test3.service
+SubState=exited
+UnitFileState=enabled
+""".strip()
+
+SYSTEM_SHOW_ALL_SERVICES_WITH_CPUACCOUTING_INFO4 = """
+CPUAccounting=no
+CPUShares=18446744073709551615
+StartupCPUShares=18446744073709551615
+CPUQuotaPerSecUSec=infinity
+Names=test1.service
+SubState=dead
+UnitFileState=static
+
+CPUAccounting=no
+CPUShares=[not set]
+StartupCPUShares=[not set]
+CPUQuotaPerSecUSec=300ms
+Names=insights-client.service
+SubState=dead
+UnitFileState=static
+""".strip()
+
+SYSTEM_SHOW_ALL_SERVICES_WITH_CPUACCOUTING_INFO5 = """
+CPUAccounting=no
+CPUShares=18446744073709551615
+StartupCPUShares=18446744073709551615
+CPUQuotaPerSecUSec=infinity
+Names=test1.service
+SubState=dead
+UnitFileState=static
+
+CPUAccounting=no
+CPUShares=18446744073709551615
+StartupCPUShares=18446744073709551615
+CPUQuotaPerSecUSec=infinity
+Names=test2.service
+SubState=failed
+UnitFileState=enabled
+
+CPUAccounting=no
+CPUShares=18446744073709551615
+StartupCPUShares=18446744073709551615
+CPUQuotaPerSecUSec=infinity
+Names=test3.service
+SubState=exited
+UnitFileState=enabled
+""".strip()
+
 
 def test_systemctl_show_service_all():
     svc_all = SystemctlShowServiceAll(context_wrap(SYSTEMCTL_SHOW_ALL_EXAMPLES))
@@ -335,10 +444,33 @@ def test_systemctl_show_service_all_ab():
         SystemctlShowServiceAll(context_wrap(SYSTEMCTL_SHOW_ALL_EXP))
 
 
+def test_systemctl_show_service_with_cpuaccouting_enabled():
+    services = SystemctlShowAllServiceWithCPUAccounting(context_wrap(SYSTEM_SHOW_ALL_SERVICES_WITH_CPUACCOUTING_INFO))
+    assert 'test1.service' in services
+    assert 'test3.service' not in services
+    assert services.get('test1.service').get('CPUAccounting') == 'no'
+    assert 'test2.service' in services.services_with_cpuaccouting_enabled
+    assert 'test1.service' not in services.services_with_cpuaccouting_enabled
+
+    services = SystemctlShowAllServiceWithCPUAccounting(context_wrap(SYSTEM_SHOW_ALL_SERVICES_WITH_CPUACCOUTING_INFO2))
+    assert 'test3.service' in services.services_with_cpuaccouting_enabled
+
+    services = SystemctlShowAllServiceWithCPUAccounting(context_wrap(SYSTEM_SHOW_ALL_SERVICES_WITH_CPUACCOUTING_INFO3))
+    assert 'test2.service' in services.services_with_cpuaccouting_enabled
+    assert 'test3.service' in services.services_with_cpuaccouting_enabled
+
+    services = SystemctlShowAllServiceWithCPUAccounting(context_wrap(SYSTEM_SHOW_ALL_SERVICES_WITH_CPUACCOUTING_INFO4))
+    assert 'insights-client.service' in services.services_with_cpuaccouting_enabled
+
+    with pytest.raises(SkipComponent):
+        SystemctlShowAllServiceWithCPUAccounting(context_wrap(SYSTEM_SHOW_ALL_SERVICES_WITH_CPUACCOUTING_INFO5))
+
+
 def test_systemctl_show_doc_examples():
     env = {
         'systemctl_show_all': SystemctlShowServiceAll(context_wrap(SYSTEMCTL_SHOW_ALL_EXAMPLES)),
         'systemctl_show_target': SystemctlShowTarget(context_wrap(SYSTEMCTL_SHOW_TARGET)),
+        'all_services_with_cpuaccouting_info': SystemctlShowAllServiceWithCPUAccounting(context_wrap(SYSTEM_SHOW_ALL_SERVICES_WITH_CPUACCOUTING_INFO)),
         # TODO: Remove the following test when removing the deprecated parsers.
         'systemctl_show_cinder_volume': SystemctlShowCinderVolume(context_wrap(SYSTEMCTL_SHOW_EXAMPLES)),
         'systemctl_show_mariadb': SystemctlShowMariaDB(context_wrap(SYSTEMCTL_SHOW_EXAMPLES)),

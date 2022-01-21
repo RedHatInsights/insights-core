@@ -7,9 +7,12 @@ Parsers included in this module are:
 SystemctlShowServiceAll - command ``systemctl show *.service``
 --------------------------------------------------------------
 SystemctlShowTarget - command ``systemctl show *.target``
--------------------------------------------------------------------
+---------------------------------------------------------
+SystemctlShowAllServiceWithCPUAccounting - command ``systemctl show *.service --all --property=Names,CPUAccounting,CPUQuotaPerSecUSec,CPUShares,StartupCPUShares,UnitFileState,SubState``
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 """
 from insights import parser, CommandParser
+from insights.core.dr import SkipComponent
 from insights.parsers import split_kv_pairs, SkipException, ParseException
 from insights.specs import Specs
 from insights.util import deprecated
@@ -242,6 +245,90 @@ class SystemctlShowCinderVolume(SystemctlShow):
 
     """
     pass
+
+
+@parser(Specs.systemctl_show_all_services_with_cpuaccounting)
+class SystemctlShowAllServiceWithCPUAccounting(SystemctlShowServiceAll):
+    """
+    Class for parsing the output of command ``systemctl show *.service --all --property=Names,CPUAccounting,CPUQuotaPerSecUSec,CPUShares,StartupCPUShares,UnitFileState,SubState``.
+
+    Sample Input::
+
+        CPUAccounting=no
+        CPUShares=18446744073709551615
+        StartupCPUShares=18446744073709551615
+        CPUQuotaPerSecUSec=infinity
+        Names=test1.service
+        SubState=dead
+        UnitFileState=static
+
+        CPUAccounting=yes
+        CPUShares=18446744073709551615
+        StartupCPUShares=18446744073709551615
+        CPUQuotaPerSecUSec=infinity
+        Names=test2.service
+        SubState=dead
+        UnitFileState=enabled
+
+    Sample Output::
+
+        {'test1.service': {
+            'Names': 'test1.service',
+            'SubState': 'dead',
+            'UnitFileState': 'static',
+            'CPUQuotaPerSecUSec': 'infinity',
+            'CPUShares': '18446744073709551615',
+            'StartupCPUShares': '18446744073709551615',
+            'CPUAccounting': 'no'
+            },
+        'test2.service': {
+            'Names': 'test2.service',
+            'SubState': 'dead',
+            'UnitFileState': 'enabled',
+            'CPUQuotaPerSecUSec': 'infinity',
+            'CPUShares': '18446744073709551615',
+            'StartupCPUShares': '18446744073709551615',
+            'CPUAccounting': 'yes'
+            }
+        }
+
+    Attributes:
+        services_with_cpuaccouting_enabled (list): A list of service names which enabled CPUAccouting.
+
+    Raises:
+        SkipComponent: If there is no service enabled CPUAccouting.
+
+    Examples:
+        >>> 'test1.service' in all_services_with_cpuaccouting_info
+        True
+        >>> all_services_with_cpuaccouting_info.get('test1.service').get('CPUAccounting', None)
+        'no'
+        >>> 'test2.service' in all_services_with_cpuaccouting_info.services_with_cpuaccouting_enabled
+        True
+    """
+
+    def parse_content(self, content):
+        super(SystemctlShowAllServiceWithCPUAccounting, self).parse_content(content)
+        self.services_with_cpuaccouting_enabled = []
+        for service_name, service_info in self.items():
+            service_enabled_or_stared = False
+            cpuaccounting_enabled = False
+            for key, value in service_info.items():
+                if ((key == 'UnitFileState' and value in ['static', 'enabled']) or
+                        (key == 'SubState' and value in ['running', 'failed', 'dead', 'exited'])):
+                    service_enabled_or_stared = True
+                if key == 'CPUAccounting' and value.lower() == 'yes':
+                    cpuaccounting_enabled = True
+                if key == 'CPUQuotaPerSecUSec' and value.lower() != 'infinity':
+                    cpuaccounting_enabled = True
+                if 'CPUShares' in key or 'CPUWeight' in key:
+                    # the value of CPUShares is the range 2 and 262144
+                    if value.isdigit() and 2 <= int(value) <= 262144:
+                        cpuaccounting_enabled = True
+            if service_enabled_or_stared and cpuaccounting_enabled:
+                self.services_with_cpuaccouting_enabled.append(service_name)
+        if not self.services_with_cpuaccouting_enabled:
+            raise SkipComponent
 
 
 @parser(Specs.systemctl_mariadb)
