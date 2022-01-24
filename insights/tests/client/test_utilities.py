@@ -329,7 +329,7 @@ def test_migrate_tags(path_exists, os_rename):
 
 
 def mock_open(name, mode, files=[["meta_data/insights.spec-small", 1], ["meta_data/insights.spec-big", 1], ["data/insights/small", 1], ["data/insights/big", 100]]):
-    base_path= "./insights-client"
+    base_path = "./insights-client"
     with tempfile.TemporaryFile(suffix='.tar.gz') as f:
         tarball = tar_open(fileobj=f, mode='w:gz')
         for file in files:
@@ -360,7 +360,6 @@ def mock_json_load(filename):
 @patch('insights.client.utilities.json.load', mock_json_load)
 @patch('insights.client.utilities.tarfile.TarFile.extractfile', mock_extract_file)
 def test_largest_spec_in_archive():
-    
     largest_file = util.largest_spec_in_archive("/tmp/insights-client.tar.gz")
     assert largest_file[0] == "insights/big"
     assert largest_file[1] == 100

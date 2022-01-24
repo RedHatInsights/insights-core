@@ -832,7 +832,6 @@ class InsightsConnection(object):
             "files:\n"
             "- %s \n**** ****", biggest_file[2])
 
-
     # -LEGACY-
     def _legacy_upload_archive(self, data_collected, duration):
         '''
