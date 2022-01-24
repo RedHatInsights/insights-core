@@ -484,4 +484,4 @@ def largest_spec_in_archive(archive_file):
 
 
 def size_in_mb(num_bytes):
-    return num_bytes / (1024 * 1024)
+    return float(num_bytes) / (1024 * 1024)
