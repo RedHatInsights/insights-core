@@ -8,8 +8,8 @@ SystemctlShowServiceAll - command ``systemctl show *.service``
 --------------------------------------------------------------
 SystemctlShowTarget - command ``systemctl show *.target``
 ---------------------------------------------------------
-SystemctlShowAllServiceWithLimitedProperties - command ``systemctl show *.service --all --property=Names,CPUAccounting,CPUQuotaPerSecUSec,CPUShares,StartupCPUShares,UnitFileState,SubState``
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SystemctlShowAllServiceWithLimitedProperties - command ``systemctl show *.service --all --property=<...>``
+----------------------------------------------------------------------------------------------------------
 """
 from insights import parser, CommandParser
 from insights.parsers import split_kv_pairs, SkipException, ParseException
@@ -249,7 +249,7 @@ class SystemctlShowCinderVolume(SystemctlShow):
 @parser(Specs.systemctl_show_all_services_with_limited_properties)
 class SystemctlShowAllServiceWithLimitedProperties(SystemctlShowServiceAll):
     """
-    Class for parsing the output of command ``systemctl show *.service --all --property=Names,CPUAccounting,CPUQuotaPerSecUSec,CPUShares,StartupCPUShares,UnitFileState,SubState``.
+    Class for parsing the output of command ``systemctl show *.service --all --property=<...>``.
 
     Sample Input::
 
