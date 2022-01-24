@@ -328,25 +328,18 @@ def test_migrate_tags(path_exists, os_rename):
     os_rename.reset_mock()
 
 
-def _open(name, mode):
+def mock_open(name, mode, files=[["meta_data/insights.spec-small", 1], ["meta_data/insights.spec-big", 1], ["data/insights/small", 1], ["data/insights/big", 100]]):
+    base_path= "./insights-client"
     with tempfile.TemporaryFile(suffix='.tar.gz') as f:
         tarball = tar_open(fileobj=f, mode='w:gz')
-        members_small = tarfile.TarInfo(name="./insights-client/meta_data/insights.spec-small")
-        members_small.size = 1
-        members_big = tarfile.TarInfo(name="./insights-client/meta_data/insights.spec-big")
-        members_big.size = 1
-        members_small_data = tarfile.TarInfo(name="./insights-client/data/insights/small")
-        members_small_data.size = 10
-        members_big_data = tarfile.TarInfo(name="./insights-client/data/insights/big")
-        members_big_data.size = 100
-        tarball.addfile(members_small, None)
-        tarball.addfile(members_big, None)
-        tarball.addfile(members_big_data, None)
-        tarball.addfile(members_small_data, None)
+        for file in files:
+            member = tarfile.TarInfo(name=os.path.join(base_path, file[0]))
+            member.size = file[1]
+            tarball.addfile(member, None)
         return tarball
 
 
-def _extract_file(self, filename):
+def mock_extract_file(self, filename):
     if "small" in filename:
         f = "small"
     else:
@@ -354,7 +347,7 @@ def _extract_file(self, filename):
     return f
 
 
-def _json_load(filename):
+def mock_json_load(filename):
     if "small" in filename:
         content = json_load('{"name": "insights.spec-small", "results": {"type": "insights.core.spec_factory.CommandOutputProvider", "object": { "relative_path": "insights/small"}}}')
     else:
@@ -362,10 +355,12 @@ def _json_load(filename):
     return content
 
 
-@patch('insights.client.utilities.tarfile.open', _open)
-@patch('insights.client.utilities.json.load', _json_load)
-@patch('insights.client.utilities.tarfile.TarFile.extractfile', _extract_file)
+# TODO: try to pass files as mock_open parameter
+@patch('insights.client.utilities.tarfile.open', mock_open)
+@patch('insights.client.utilities.json.load', mock_json_load)
+@patch('insights.client.utilities.tarfile.TarFile.extractfile', mock_extract_file)
 def test_largest_spec_in_archive():
+    
     largest_file = util.largest_spec_in_archive("/tmp/insights-client.tar.gz")
     assert largest_file[0] == "insights/big"
     assert largest_file[1] == 100
