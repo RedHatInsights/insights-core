@@ -304,20 +304,17 @@ class SystemctlShowAllServiceWithLimitedProperties(SystemctlShowServiceAll):
         """Return a list of service names which enables the CPUAccounting."""
         services_with_cpuaccouting_enabled = []
         for service_name, service_info in self.items():
-            service_enabled_or_stared = False
-            cpuaccounting_enabled = False
-            for key, value in service_info.items():
-                if ((key == 'UnitFileState' and value in ['static', 'enabled']) or
-                        (key == 'SubState' and value in ['running', 'failed', 'dead', 'exited'])):
-                    service_enabled_or_stared = True
-                if key == 'CPUAccounting' and value.lower() == 'yes':
-                    cpuaccounting_enabled = True
-                if key == 'CPUQuotaPerSecUSec' and value.lower() != 'infinity':
-                    cpuaccounting_enabled = True
-                if 'CPUShares' in key or 'CPUWeight' in key:
-                    # the value of CPUShares is the range 2 and 262144
-                    if value.isdigit() and 2 <= int(value) <= 262144:
-                        cpuaccounting_enabled = True
+            service_enabled_or_stared = (
+                service_info.get('UnitFileState') in ['static', 'enabled'] or
+                service_info.get('SubState') in ['running', 'failed', 'dead', 'exited'])
+            cpuaccounting_enabled = (
+                service_info.get('CPUAccounting', '').lower() == 'yes' or
+                service_info.get('CPUQuotaPerSecUSec', '').lower() != 'infinity')
+            val1 = service_info.get('CPUShares')
+            val2 = service_info.get('StartupCPUShares')
+            # From the man page of systemctl, the value of CPUShares is the range 2 and 262144
+            if any(v.isdigit() and 2 <= int(v) <= 262144 for v in (val1, val2)):
+                cpuaccounting_enabled = True
             if service_enabled_or_stared and cpuaccounting_enabled:
                 services_with_cpuaccouting_enabled.append(service_name)
         return services_with_cpuaccouting_enabled
