@@ -13,6 +13,7 @@ import re
 import sys
 import threading
 import time
+from pkgutil import get_data
 from subprocess import Popen, PIPE, STDOUT
 
 import yaml
@@ -184,6 +185,10 @@ def validate_remove_file(config):
     Validate the remove file and tags file
     """
     return InsightsUploadConf(config).validate()
+
+
+def get_pkg_data(filepath):
+    return get_data("insights", filepath)
 
 
 def write_data_to_file(data, filepath):

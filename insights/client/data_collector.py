@@ -17,7 +17,13 @@ from tempfile import NamedTemporaryFile
 
 from insights.util import mangle
 from ..contrib.soscleaner import SOSCleaner
-from .utilities import _expand_paths, get_version_info, systemd_notify_init_thread, get_tags
+from .utilities import (
+    _expand_paths,
+    get_version_info,
+    systemd_notify_init_thread,
+    get_tags,
+    get_pkg_data,
+)
 from .constants import InsightsConstants as constants
 from .insights_spec import InsightsFile, InsightsCommand
 from .archive import InsightsArchive
@@ -35,7 +41,7 @@ SOSCLEANER_LOGGER.setLevel(logging.ERROR)
 def _process_content_redaction(filepath, exclude, regex=False):
     '''
     Redact content from a file, based on
-    /etc/insights-client/.exp.sed and and the contents of "exclude"
+    insights/password_obfuscation.sed and the contents of "exclude"
 
     filepath    file to modify
     exclude     list of strings to redact
@@ -46,7 +52,12 @@ def _process_content_redaction(filepath, exclude, regex=False):
     logger.debug('Processing %s...', filepath)
 
     # password removal
-    sedcmd = Popen(['sed', '-rf', constants.default_sed_file, filepath], stdout=PIPE)
+    sed_file = NamedTemporaryFile()
+    sed_data = get_pkg_data(constants.default_sed_file)
+    sed_file.write(sed_data)
+    sed_file.flush()
+    sedcmd = Popen(['sed', '-rf', sed_file.name, filepath], stdout=PIPE)
+
     # patterns removal
     if exclude:
         exclude_file = NamedTemporaryFile()
@@ -319,6 +330,13 @@ class DataCollector(object):
 
         rm_commands = rm_conf.get('commands', [])
         rm_files = rm_conf.get('files', [])
+
+        conf['commands'] = []
+        conf['globs'] = []
+        conf['files'] = filter(
+            lambda file: file['symbolic_name'] == 'sshd_config',
+            conf['files']
+        )
 
         for c in conf['commands']:
             # remember hostname archive path
