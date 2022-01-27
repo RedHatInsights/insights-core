@@ -108,6 +108,7 @@ class InsightsArchiveSpecs(Specs):
     keystone_crontab = simple_file("insights_commands/crontab_-l_-u_keystone")
     kpatch_list = simple_file("insights_commands/kpatch_list")
     localtime = simple_file("insights_commands/file_-L_.etc.localtime")
+    losetup = simple_file("insights_commands/losetup_-l")
     lpstat_p = simple_file("insights_commands/lpstat_-p")
     ls_boot = simple_file("insights_commands/ls_-lanR_.boot")
     ls_dev = simple_file("insights_commands/ls_-lanR_.dev")
