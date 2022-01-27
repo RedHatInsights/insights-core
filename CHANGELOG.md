@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.260](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.260) (2022-01-27)
+
+- Feat: Add spec and parser for 'crio.conf' ([PR 3309](https://github.com/RedHatInsights/insights-core/pull/3309))
+- feat: New spec to get all services which enabled CPUAccounting ([PR 3321](https://github.com/RedHatInsights/insights-core/pull/3321))
+
 ## [insights-core-3.0.259](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.259) (2022-01-20)
 
 - Update spec ls_l first_file ([PR 3326](https://github.com/RedHatInsights/insights-core/pull/3326))
