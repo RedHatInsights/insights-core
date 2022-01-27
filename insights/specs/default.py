@@ -668,6 +668,7 @@ class DefaultSpecs(Specs):
     systemctl_qpidd = simple_command("/bin/systemctl show qpidd")
     systemctl_qdrouterd = simple_command("/bin/systemctl show qdrouterd")
     systemctl_show_all_services = simple_command("/bin/systemctl show *.service")
+    systemctl_show_all_services_with_limited_properties = simple_command("systemctl show *.service --all --property=Names,CPUAccounting,CPUQuotaPerSecUSec,CPUShares,StartupCPUShares,UnitFileState,SubState")
     systemctl_show_target = simple_command("/bin/systemctl show *.target")
     systemctl_smartpdc = simple_command("/bin/systemctl show smart_proxy_dynflow_core")
     systemd_analyze_blame = simple_command("/bin/systemd-analyze blame")
