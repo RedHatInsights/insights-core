@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.259
+Version:        3.0.260
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,12 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jan 27 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.260-1
+- Feat: Add spec and parser for 'crio.conf' (#3309)
+  (39508521+shlao@users.noreply.github.com)
+- feat: New spec to get all services which enabled CPUAccounting (#3321)
+  (44796653+huali027@users.noreply.github.com)
+
 * Thu Jan 20 2022 Sachin Patil <psachin@redhat.com> 3.0.259-1
 - Update spec ls_l first_file (#3326) (jiazhang@redhat.com)
 - Update the ChangeLog to include insights-core-3.0.258 (#3325) (psachin@redhat.com)
