@@ -453,15 +453,13 @@ def largest_spec_in_archive(archive_file):
     logger.info("Checking for large files...")
     tar_file = tarfile.open(archive_file, 'r')
     largest_fsize = 0
+    largest_file_name = ""
+    largest_spec = ""
     # get the name of the archive
-    for elems in archive_file.split("/"):
-        if "tar" in elems:
-            name = elems.split(".", 1)
-    name[0]
-
+    name = os.path.basename(archive_file).split(".tar.gz")[0]
     # get the archives from inside meta_data directory
-    metadata_top = os.path.join(name[0], "meta_data")
-    data_top = os.path.join(name[0], "data")
+    metadata_top = os.path.join(name, "meta_data/")
+    data_top = os.path.join(name, "data")
     for file in tar_file.getmembers():
         if metadata_top in file.name:
             file_extract = tar_file.extractfile(file.name)
@@ -469,9 +467,11 @@ def largest_spec_in_archive(archive_file):
             results = specs_metadata.get("results", [])
             if not results:
                 continue
-            if type(results) != list:
+            if not isinstance(results, list):
+                # specs with only one resulting file are not in list form
                 results = [results]
             for result in results:
+                # get the path of the spec result and check its filesize
                 fname = result.get("object", {}).get("relative_path")
                 abs_fname = os.path.join('.', data_top, fname)
                 # get the archives from inside data directory
