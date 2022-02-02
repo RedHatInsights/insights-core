@@ -27,7 +27,9 @@ from .utilities import (determine_hostname,
                         generate_machine_id,
                         write_unregistered_file,
                         write_registered_file,
-                        os_release_info)
+                        os_release_info,
+                        largest_spec_in_archive,
+                        size_in_mb)
 from .cert_auth import rhsmCertificate
 from .constants import InsightsConstants as constants
 from .url_cache import URLCache
@@ -803,6 +805,32 @@ class InsightsConnection(object):
         else:
             return (message, client_hostname, "None", "")
 
+    def _archive_too_big(self, archive_file):
+        '''
+        Some helpful messaging for when the archive is too large for ingress
+        '''
+        archive_filesize = size_in_mb(
+            os.stat(archive_file).st_size)
+        logger.info("Archive is {fsize} MB which is larger than the maximum allowed size of {flimit} MB.".format(
+            fsize=archive_filesize, flimit=constants.archive_filesize_max))
+
+        if not self.config.core_collect:
+            logger.error("Cannot estimate the spec with largest filesize because core collection is not enabled. "
+                    "Enable core collection by setting core_collect=True in %s, and attempt the upload again.", self.config.conf)
+            return
+
+        biggest_file = largest_spec_in_archive(archive_file)
+        logger.info("The largest file in the archive is %s at %s MB.", biggest_file[0], size_in_mb(biggest_file[1]))
+        logger.info("Please add the following spec to /etc/insights-client/file-redaction.yaml."
+        "According to the documentation https://access.redhat.com/articles/4511681\n\n"
+        "****  /etc/insights-client/file-redaction.yaml ****\n"
+        "# file-redaction.yaml\n"
+        "# Omit entire output of files\n"
+        "# Files can be specified either by full filename or\n"
+        "#   by the 'symbolic_name' listed in .cache.json\n"
+        "files:\n"
+        "- %s \n**** ****", biggest_file[2])
+
     # -LEGACY-
     def _legacy_upload_archive(self, data_collected, duration):
         '''
@@ -834,6 +862,9 @@ class InsightsConnection(object):
             the_json = json.loads(upload.text)
         else:
             logger.error("Upload archive failed with status code  %s", upload.status_code)
+            if upload.status_code == 413:
+                # let the user know what file is bloating the archive
+                self._archive_too_big(data_collected)
             return upload
         try:
             self.config.account_number = the_json["upload"]["account_number"]
@@ -893,6 +924,9 @@ class InsightsConnection(object):
             logger.debug(
                 "Upload archive failed with status code %s",
                 upload.status_code)
+            if upload.status_code == 413:
+                # let the user know what file is bloating the archive
+                self._archive_too_big(data_collected)
             return upload
         logger.debug("Upload duration: %s", upload.elapsed)
         return upload
