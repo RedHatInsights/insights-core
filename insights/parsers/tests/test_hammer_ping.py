@@ -24,7 +24,7 @@ candlepin_auth:
     Status:          ok
 """
 
-HAMMERPING_OK_2 = """
+HAMMERPING_ERR_3 = """
 database:
    Status:          ok
    Server Response: Duration: 0ms
@@ -160,7 +160,7 @@ def test_hammer_ping_err_3():
 
 
 def test_hammer_ping_err_4():
-    status = HammerPing(context_wrap(HAMMERPING_OK_2))
+    status = HammerPing(context_wrap(HAMMERPING_ERR_3))
     assert not status.are_all_ok
     assert status.errors != []
 
