@@ -25,24 +25,36 @@ candlepin_auth:
 """
 
 HAMMERPING_OK_2 = """
+database:
+   Status:          ok
+   Server Response: Duration: 0ms
+katello_agent:
+   Status:          ok
+   message:         0 Processed, 0 Failed
+   Server Response: Duration: 0ms
 candlepin:
-    Status:          ok
-    Server Response: Duration: 61ms
+   Status:          ok
+   Server Response: Duration: 45ms
 candlepin_auth:
-    Status:          ok
-    Server Response: Duration: 61ms
-pulp:
-    Status:          ok
-    Server Response: Duration: 61ms
-pulp_auth:
-    Status:          ok
-    Server Response: Duration: 61ms
-elasticsearch:
-    Status:          ok
-    Server Response: Duration: 35ms
+   Status:          ok
+   Server Response: Duration: 45ms
+candlepin_events:
+   Status:          ok
+   message:         0 Processed, 0 Failed
+   Server Response: Duration: 0ms
+katello_events:
+   Status:          ok
+   message:         0 Processed, 0 Failed
+   Server Response: Duration: 0ms
+pulp3:
+   Status:          ok
+   Server Response: Duration: 294ms
+pulp3_content:
+   Status:          ok
+   Server Response: Duration: 58ms
 foreman_tasks:
-    Status:          ok
-    server Response: Duration: 1ms
+   Status:          ok
+   Server Response: Duration: 3ms
 
 2 more service(s) failed, but not shown:
 pulp, pulp_auth
@@ -149,8 +161,8 @@ def test_hammer_ping_err_3():
 
 def test_hammer_ping_err_4():
     status = HammerPing(context_wrap(HAMMERPING_OK_2))
-    assert status.are_all_ok
-    assert status.errors == []
+    assert not status.are_all_ok
+    assert status.errors != []
 
 
 def test_hammer_ping_ok():

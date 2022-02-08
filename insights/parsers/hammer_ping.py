@@ -93,8 +93,6 @@ class HammerPing(CommandParser, dict):
                     if items[0] == 'Server Response':
                         self.response_of_service[service_name] = items[1]
                     continue
-                elif not items[1] and len(items[0].split()) != 1 and not items[0][0].isspace():
-                    break
 
             self.errors.append(line)
         self._is_normal = (not self.errors and all([self[item]['Status'] == 'ok' for item in self]))
