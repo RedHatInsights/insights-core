@@ -24,6 +24,30 @@ candlepin_auth:
     Status:          ok
 """
 
+HAMMERPING_OK_2 = """
+candlepin:
+    Status:          ok
+    Server Response: Duration: 61ms
+candlepin_auth:
+    Status:          ok
+    Server Response: Duration: 61ms
+pulp:
+    Status:          ok
+    Server Response: Duration: 61ms
+pulp_auth:
+    Status:          ok
+    Server Response: Duration: 61ms
+elasticsearch:
+    Status:          ok
+    Server Response: Duration: 35ms
+foreman_tasks:
+    Status:          ok
+    server Response: Duration: 1ms
+
+2 more service(s) failed, but not shown:
+pulp, pulp_auth
+"""
+
 HAMMERPING_OK = """
 candlepin:
     Status:          ok
@@ -119,6 +143,12 @@ def test_hammer_ping_err_2():
 
 def test_hammer_ping_err_3():
     status = HammerPing(context_wrap(HAMMERPING_OK_1))
+    assert status.are_all_ok
+    assert status.errors == []
+
+
+def test_hammer_ping_err_4():
+    status = HammerPing(context_wrap(HAMMERPING_OK_2))
     assert status.are_all_ok
     assert status.errors == []
 
