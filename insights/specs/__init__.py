@@ -303,6 +303,7 @@ class Specs(SpecSet):
     locale = RegistryPoint()
     localtime = RegistryPoint()
     logrotate_conf = RegistryPoint(multi_output=True)
+    losetup = RegistryPoint()
     lpfc_max_luns = RegistryPoint()
     lpstat_p = RegistryPoint()
     lpstat_protocol_printers = RegistryPoint()
