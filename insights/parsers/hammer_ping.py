@@ -35,6 +35,7 @@ Examples:
 """
 from insights import parser, CommandParser
 from insights.specs import Specs
+from insights.parsers import SkipException
 
 
 @parser(Specs.hammer_ping)
@@ -71,6 +72,9 @@ class HammerPing(CommandParser, dict):
         return self._is_normal
 
     def parse_content(self, content):
+        if not content:
+            raise SkipException("Empty output.")
+
         self.status_of_service = {}
         self.response_of_service = {}
         self.errors = []

@@ -1,6 +1,6 @@
 from insights.parsers.hammer_ping import HammerPing
 from insights.tests import context_wrap
-from insights.parsers import hammer_ping
+from insights.parsers import SkipException, hammer_ping
 import doctest
 import pytest
 
@@ -155,6 +155,8 @@ foreman_tasks:
     Server Response: Duration: 1ms
 """.strip()
 
+HAMMERPING_EMPTY = ""
+
 
 def test_hammer_ping_err_1():
     status = HammerPing(context_wrap(HAMMERPING_ERR_1))
@@ -251,6 +253,11 @@ def test_raw_content():
     status = HammerPing(context_wrap(HAMMERPING_COMMAND))
     for line in HAMMERPING_COMMAND.splitlines():
         assert line in status.raw_content
+
+
+def test_content_empty():
+    with pytest.raises(SkipException):
+        HammerPing(context_wrap(HAMMERPING_EMPTY))
 
 
 def test_losetup_doc_examples():
