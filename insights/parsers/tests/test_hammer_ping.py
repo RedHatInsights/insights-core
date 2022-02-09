@@ -155,7 +155,10 @@ foreman_tasks:
     Server Response: Duration: 1ms
 """.strip()
 
-HAMMERPING_EMPTY = ""
+HAMMERPING_EMPTY = """
+COMMAND> hammer ping
+
+""".strip()
 
 
 def test_hammer_ping_err_1():

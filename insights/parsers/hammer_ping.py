@@ -72,16 +72,16 @@ class HammerPing(CommandParser, dict):
         return self._is_normal
 
     def parse_content(self, content):
-        if not content:
-            raise SkipException("Empty output.")
-
         self.status_of_service = {}
         self.response_of_service = {}
         self.errors = []
         self.raw_content = content
         comment_char = "COMMAND>"
-        content = list(filter(None, (line.split(comment_char, 1)[0].rstrip() for line in content)))
         service_name = None
+        content = list(filter(None, (line.split(comment_char, 1)[0].rstrip() for line in content)))
+        if not content:
+            raise SkipException("Empty output.")
+
         for line in content:
             items = [item for item in line.split(':', 1)]
             if len(items) == 2 and items[0]:
