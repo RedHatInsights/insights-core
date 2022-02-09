@@ -9,28 +9,38 @@ service info.
 Sample output of ``hammer ping``::
 
     candlepin:
-        Status:          FAIL
-        Server Response: Message: 404 Resource Not Found
+        Status:          ok
+        Server Response: Duration: 61ms
+    candlepin_auth:
+        Status:          ok
+        Server Response: Duration: 61ms
+    pulp:
+        Status:          ok
+        Server Response: Duration: 61ms
+    pulp_auth:
+        Status:          ok
+        Server Response: Duration: 61ms
     elasticsearch:
         Status:          ok
         Server Response: Duration: 35ms
     foreman_tasks:
         Status:          ok
-        Server Response: Duration: 1ms
+        server Response: Duration: 1ms
 
 Examples:
 
-    >>> hammer = shared[HammerPing]
-    >>> 'unknown_service' in hammer.service_list
+    >>> type(hammer_ping)
+    <class 'insights.parsers.hammer_ping.HammerPing'>
+    >>> 'unknown_service' in hammer_ping.service_list
     False
-    >>> hammer['candlepin']['Status']
-    'FAIL'
-    >>> hammer['candlepin']['Server Response']
-    'Message: 404 Resource Not Found'
-    >>> hammer.are_all_ok
-    False
-    >>> hammer.services_of_status('OK')
-    ['elasticsearch', 'foreman_tasks']
+    >>> hammer_ping['candlepin']['Status']
+    'ok'
+    >>> hammer_ping['candlepin']['Server Response']
+    'Duration: 61ms'
+    >>> hammer_ping.are_all_ok
+    True
+    >>> hammer_ping.services_of_status('OK')
+    ['candlepin', 'candlepin_auth', 'elasticsearch', 'foreman_tasks', 'pulp', 'pulp_auth']
 """
 from insights import parser, CommandParser
 from insights.specs import Specs
@@ -81,7 +91,7 @@ class HammerPing(CommandParser, dict):
             items = [item for item in line.split(':', 1)]
             if len(items) == 2 and items[0]:
                 if not items[1] and len(items[0].split()) == 1 and not items[0][0].isspace():
-                    service_name = items[0]
+                    service_name = items[0].strip()
                     self[service_name] = {}
                     continue
                 elif service_name is not None and items[0][0].isspace():
@@ -93,6 +103,6 @@ class HammerPing(CommandParser, dict):
                     if items[0] == 'Server Response':
                         self.response_of_service[service_name] = items[1]
                     continue
-
+            line = line.strip()
             self.errors.append(line)
         self._is_normal = (not self.errors and all([self[item]['Status'] == 'ok' for item in self]))

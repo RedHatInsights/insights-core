@@ -1,5 +1,8 @@
 from insights.parsers.hammer_ping import HammerPing
 from insights.tests import context_wrap
+from insights.parsers import hammer_ping
+import doctest
+import pytest
 
 HAMMERPING_ERR_1 = """
 Error: Connection refused - connect(2) for "localhost" port 443
@@ -236,3 +239,9 @@ def test_raw_content():
     status = HammerPing(context_wrap(HAMMERPING_COMMAND))
     for line in HAMMERPING_COMMAND.splitlines():
         assert line in status.raw_content
+
+
+def test_losetup_doc_examples():
+    env = {'hammer_ping': HammerPing(context_wrap(HAMMERPING_OK))}
+    failed, total = doctest.testmod(hammer_ping, globs=env)
+    assert failed == 0
