@@ -32,6 +32,7 @@ import logging
 import tarfile
 import six
 import hashlib
+import json
 
 from insights.util import content_type
 
@@ -77,6 +78,10 @@ class SOSCleaner:
         self.keywords = None
         self.kw_db = dict() #keyword database
         self.kw_count = 0
+
+        # Doing so here to avoid cyclic imports.
+        from insights.client.constants import InsightsConstants as constants
+        self.excluded_specs = constants.obfuscation_excluded_specs
 
     def _skip_file(self, d, files):
         '''
@@ -716,6 +721,21 @@ class SOSCleaner:
             self.logger.exception(e)
             raise Exception("CleanFilesOnlyError: unable to process")
 
+    def _excluded_files(self):
+        '''Collect data files excluded from IP address obfuscation.
+        Their paths are part of the meta_data JSONs.
+        '''
+        excluded_files = []
+        meta_data_path = os.path.join(self.dir_path, "meta_data")
+        for dir_name, file_names in self._walk_report(meta_data_path).items():
+            for file_name in file_names:
+                file_path = os.path.join(dir_name, file_name)
+                with open(file_path) as file:
+                    meta_data = json.load(file)
+                if meta_data["name"] in self.excluded_specs:
+                    excluded_files.append(meta_data["results"]["object"]["relative_path"])
+        return excluded_files
+
     def clean_report(self, options, sosreport): # pragma: no cover
         '''this is the primary function, to put everything together and analyze an sosreport'''
 
@@ -758,15 +778,23 @@ class SOSCleaner:
             self._process_hosts_file(options)  # we'll take a dig through the hosts file and make sure it is as scrubbed as possible
 
         self._domains2db()
-        if options.core_collect:
-            # operate on the "data" directory when doing core collection
-            files = self._file_list(os.path.join(self.dir_path, 'data'))
-        else:
-            files = self._file_list(self.dir_path)
+
+        data_path = os.path.join(self.dir_path, 'data') if options.core_collect else self.dir_path
+        files = self._file_list(data_path)
+
+        excluded_files = []
+        for f in self._excluded_files():
+            f_path = os.path.join(data_path, f)
+            excluded_files.append(f_path)
+
         self.logger.con_out("IP Obfuscation Start Address - %s", self.start_ip)
         self.logger.con_out("*** SOSCleaner Processing ***")
         self.logger.info("Working Directory - %s", self.dir_path)
         for f in files:
+            if f in excluded_files:
+                self.logger.debug("File %s excluded from IP obfuscation.", f)
+                continue
+
             if options.core_collect:
                 # set a relative path of $ARCHIVEROOT/data for core collection
                 relative_path = os.path.relpath(f, start=os.path.join(self.dir_path, 'data'))
