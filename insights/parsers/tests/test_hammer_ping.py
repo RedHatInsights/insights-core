@@ -143,6 +143,18 @@ foreman_tasks:
     Server Response: Duration: 28ms
 """.strip()
 
+HAMMERPING_EXAMPLE = """
+candlepin:
+    Status:          FAIL
+    Server Response: Message: 404 Resource Not Found
+elasticsearch:
+    Status:          ok
+    Server Response: Duration: 35ms
+foreman_tasks:
+    Status:          ok
+    Server Response: Duration: 1ms
+""".strip()
+
 
 def test_hammer_ping_err_1():
     status = HammerPing(context_wrap(HAMMERPING_ERR_1))
@@ -242,6 +254,6 @@ def test_raw_content():
 
 
 def test_losetup_doc_examples():
-    env = {'hammer_ping': HammerPing(context_wrap(HAMMERPING_OK))}
+    env = {'hammer_ping': HammerPing(context_wrap(HAMMERPING_EXAMPLE))}
     failed, total = doctest.testmod(hammer_ping, globs=env)
     assert failed == 0
