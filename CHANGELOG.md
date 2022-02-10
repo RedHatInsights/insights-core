@@ -2,6 +2,13 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.261](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.261) (2022-02-10)
+
+- fix: Enhance hammer_ping parser ([PR 3330](https://github.com/RedHatInsights/insights-core/pull/3330))
+- feat: New spec and parser for losetup -l ([PR 3328](https://github.com/RedHatInsights/insights-core/pull/3328))
+- Extended yum updates datasource to work on dnf based systems ([PR 3329](https://github.com/RedHatInsights/insights-core/pull/3329))
+- feat: tell the user the largest file in the archive if the upload is too big ([PR 3059](https://github.com/RedHatInsights/insights-core/pull/3059))
+
 ## [insights-core-3.0.260](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.260) (2022-01-27)
 
 - Feat: Add spec and parser for 'crio.conf' ([PR 3309](https://github.com/RedHatInsights/insights-core/pull/3309))
