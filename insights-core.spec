@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.260
+Version:        3.0.261
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,12 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+
+* Thu Feb 10 2022 Sachin Patil <psachin@redhat.com> 3.0.261-1
+- fix: Enhance hammer_ping parser (#3330) (986222045@qq.com)
+- feat: New spec and parser for losetup -l (#3328) (takayuki-nagata@users.noreply.github.com)
+- Extended yum updates datasource to work on dnf based systems (#3329) (michael.mraka@redhat.com)
+- feat: tell the user the largest file in the archive if the upload is too big (#3059) (gravitypriest@users.noreply.github.com)
 * Thu Jan 27 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.260-1
 - Feat: Add spec and parser for 'crio.conf' (#3309)
   (39508521+shlao@users.noreply.github.com)
