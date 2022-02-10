@@ -20,21 +20,22 @@ Sample output of ``hammer ping``::
 
 Examples:
 
-    >>> hammer = shared[HammerPing]
-    >>> 'unknown_service' in hammer.service_list
+    >>> type(hammer_ping)
+    <class 'insights.parsers.hammer_ping.HammerPing'>
+    >>> 'unknown_service' in hammer_ping.service_list
     False
-    >>> hammer['candlepin']['Status']
+    >>> hammer_ping['candlepin']['Status']
     'FAIL'
-    >>> hammer['candlepin']['Server Response']
+    >>> hammer_ping['candlepin']['Server Response']
     'Message: 404 Resource Not Found'
-    >>> hammer.are_all_ok
+    >>> hammer_ping.are_all_ok
     False
-    >>> hammer.services_of_status('OK')
+    >>> hammer_ping.services_of_status('OK')
     ['elasticsearch', 'foreman_tasks']
 """
 from insights import parser, CommandParser
-from insights.parsers import get_active_lines
 from insights.specs import Specs
+from insights.parsers import SkipException
 
 
 @parser(Specs.hammer_ping)
@@ -75,21 +76,28 @@ class HammerPing(CommandParser, dict):
         self.response_of_service = {}
         self.errors = []
         self.raw_content = content
-        content = get_active_lines(content, comment_char="COMMAND>")
+        comment_char = "COMMAND>"
         service_name = None
+        content = list(filter(None, (line.split(comment_char, 1)[0].rstrip() for line in content)))
+        if not content:
+            raise SkipException("Empty output.")
+
         for line in content:
-            items = [item.strip() for item in line.split(':', 1)]
+            items = [item for item in line.split(':', 1)]
             if len(items) == 2 and items[0]:
-                if not items[1] and items[0] not in ['Status', 'Server Response']:
-                    service_name = items[0]
+                if not items[1] and len(items[0].split()) == 1 and not items[0][0].isspace():
+                    service_name = items[0].strip()
                     self[service_name] = {}
                     continue
-                elif service_name is not None:
+                elif service_name is not None and items[0][0].isspace():
+                    items[0] = items[0].strip()
+                    items[1] = items[1].strip()
                     self[service_name][items[0]] = items[1]
                     if items[0] == 'Status':
                         self.status_of_service[service_name] = items[1].lower()
                     if items[0] == 'Server Response':
                         self.response_of_service[service_name] = items[1]
                     continue
-            self.errors.append(line)
+
+            self.errors.append(line.strip())
         self._is_normal = (not self.errors and all([self[item]['Status'] == 'ok' for item in self]))
