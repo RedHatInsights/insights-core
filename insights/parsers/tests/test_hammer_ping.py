@@ -1,5 +1,8 @@
 from insights.parsers.hammer_ping import HammerPing
 from insights.tests import context_wrap
+from insights.parsers import SkipException, hammer_ping
+import doctest
+import pytest
 
 HAMMERPING_ERR_1 = """
 Error: Connection refused - connect(2) for "localhost" port 443
@@ -22,6 +25,42 @@ candlepin:
     Server Response: Duration: 61ms
 candlepin_auth:
     Status:          ok
+"""
+
+HAMMERPING_ERR_3 = """
+database:
+   Status:          ok
+   Server Response: Duration: 0ms
+katello_agent:
+   Status:          ok
+   message:         0 Processed, 0 Failed
+   Server Response: Duration: 0ms
+candlepin:
+   Status:          ok
+   Server Response: Duration: 45ms
+candlepin_auth:
+   Status:          ok
+   Server Response: Duration: 45ms
+candlepin_events:
+   Status:          ok
+   message:         0 Processed, 0 Failed
+   Server Response: Duration: 0ms
+katello_events:
+   Status:          ok
+   message:         0 Processed, 0 Failed
+   Server Response: Duration: 0ms
+pulp3:
+   Status:          ok
+   Server Response: Duration: 294ms
+pulp3_content:
+   Status:          ok
+   Server Response: Duration: 58ms
+foreman_tasks:
+   Status:          ok
+   Server Response: Duration: 3ms
+
+2 more service(s) failed, but not shown:
+pulp, pulp_auth
 """
 
 HAMMERPING_OK = """
@@ -104,6 +143,23 @@ foreman_tasks:
     Server Response: Duration: 28ms
 """.strip()
 
+HAMMERPING_EXAMPLE = """
+candlepin:
+    Status:          FAIL
+    Server Response: Message: 404 Resource Not Found
+elasticsearch:
+    Status:          ok
+    Server Response: Duration: 35ms
+foreman_tasks:
+    Status:          ok
+    Server Response: Duration: 1ms
+""".strip()
+
+HAMMERPING_EMPTY = """
+COMMAND> hammer ping
+
+""".strip()
+
 
 def test_hammer_ping_err_1():
     status = HammerPing(context_wrap(HAMMERPING_ERR_1))
@@ -121,6 +177,12 @@ def test_hammer_ping_err_3():
     status = HammerPing(context_wrap(HAMMERPING_OK_1))
     assert status.are_all_ok
     assert status.errors == []
+
+
+def test_hammer_ping_err_4():
+    status = HammerPing(context_wrap(HAMMERPING_ERR_3))
+    assert not status.are_all_ok
+    assert status.errors != []
 
 
 def test_hammer_ping_ok():
@@ -194,3 +256,14 @@ def test_raw_content():
     status = HammerPing(context_wrap(HAMMERPING_COMMAND))
     for line in HAMMERPING_COMMAND.splitlines():
         assert line in status.raw_content
+
+
+def test_content_empty():
+    with pytest.raises(SkipException):
+        HammerPing(context_wrap(HAMMERPING_EMPTY))
+
+
+def test_losetup_doc_examples():
+    env = {'hammer_ping': HammerPing(context_wrap(HAMMERPING_EXAMPLE))}
+    failed, total = doctest.testmod(hammer_ping, globs=env)
+    assert failed == 0
