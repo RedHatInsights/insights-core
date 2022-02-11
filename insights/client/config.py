@@ -201,7 +201,7 @@ DEFAULT_OPTS = {
     'group': {
         'default': None,
         'opt': ['--group'],
-        'help': 'Group to add this system to during registration',
+        'help': 'Group to add to this system',
         'action': 'store',
     },
     'http_timeout': {
