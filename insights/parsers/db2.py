@@ -24,18 +24,18 @@ class Db2ls(CommandParser, list):
         /opt/ibm/db2/V11.5_01:11.5.7.0:0 ::Fri Feb 11 10:34:51 2022 CST :0
 
     Examples:
-    >>> type(db2ls)
-    <class 'insights.parsers.db2.Db2ls'>
-    >>> len(db2ls)
-    2
-    >>> db2ls[0]['PATH']
-    '/opt/ibm/db2/V11.5'
-    >>> db2ls[1]['PATH']
-    '/opt/ibm/db2/V11.5_01'
-    >>> db2ls[1]['VRMF']
-    '11.5.7.0'
-    >>> db2ls[1]['INSTALLERUID']
-    '0'
+        >>> type(db2ls)
+        <class 'insights.parsers.db2.Db2ls'>
+        >>> len(db2ls)
+        2
+        >>> db2ls[0]['PATH']
+        '/opt/ibm/db2/V11.5'
+        >>> db2ls[1]['PATH']
+        '/opt/ibm/db2/V11.5_01'
+        >>> db2ls[1]['VRMF']
+        '11.5.7.0'
+        >>> db2ls[1]['INSTALLERUID']
+        '0'
     """
 
     def parse_content(self, content):
@@ -43,7 +43,7 @@ class Db2ls(CommandParser, list):
             raise SkipException("Empty.")
         keys = []
         for line in content:
-            if not keys and "#PATH" in line:
+            if not keys and line.startswith('#PATH'):
                 keys = [i.strip('#') for i in line.split(':')]
                 continue
             line_splits = [i.strip() for i in line.split(':', 4)]
