@@ -472,3 +472,63 @@ def test_ps_eo_cmd_stripped():
     p = ps.PsEo(context_wrap(PS_EO_CMD_NORMAL, strip=True))
     assert p is not None
     assert len(p.running_pids()) == 7
+
+
+PS_AUXWWWM = """
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root        1503  0.0  0.0  11932  6152 ?        -    05:22   0:00 /usr/sbin/smartd -n -q never --capabilities
+root           -  0.0    -      -     - -        Ss   05:22   0:00 -
+root        1514  0.0  0.0 405308 15564 ?        -    05:22   0:02 /usr/libexec/udisks2/udisksd
+root           -  0.0    -      -     - -        Ssl  05:22   0:00 -
+root           -  0.0    -      -     - -        Ssl  05:22   0:00 -
+root           -  0.0    -      -     - -        Ssl  05:22   0:00 -
+root           -  0.0    -      -     - -        Ssl  05:22   0:00 -
+root           -  0.0    -      -     - -        Ssl  05:22   0:00 -
+chrony      1535  0.0  0.0  94012  3812 ?        -    05:22   0:00 /usr/sbin/chronyd
+chrony         -  0.0    -      -     - -        S    05:22   0:00 -
+root        1541  0.0  0.0 489260 16276 ?        -    05:22   0:00 /usr/sbin/abrtd -d -s
+root           -  0.0    -      -     - -        Ssl  05:22   0:00 -
+root           -  0.0    -      -     - -        Ssl  05:22   0:00 -
+root           -  0.0    -      -     - -        Ssl  05:22   0:00 -
+polkitd     1610  0.0  0.0 2939964 24740 ?       -    05:22   0:01 /usr/lib/polkit-1/polkitd --no-debug
+polkitd        -  0.0    -      -     - -        Ssl  05:22   0:00 -
+polkitd        -  0.0    -      -     - -        Ssl  05:22   0:00 -
+polkitd        -  0.0    -      -     - -        Ssl  05:22   0:01 -
+polkitd        -  0.0    -      -     - -        Ssl  05:22   0:00 -
+polkitd        -  0.0    -      -     - -        Ssl  05:22   0:00 -
+polkitd        -  0.0    -      -     - -        Ssl  05:22   0:00 -
+polkitd        -  0.0    -      -     - -        Ssl  05:22   0:00 -
+polkitd        -  0.0    -      -     - -        Ssl  05:22   0:00 -
+polkitd        -  0.0    -      -     - -        Ssl  05:22   0:00 -
+polkitd        -  0.0    -      -     - -        Ssl  05:22   0:00 -
+polkitd        -  0.0    -      -     - -        Ssl  05:22   0:00 -
+polkitd        -  0.0    -      -     - -        Ssl  05:22   0:00 -
+root        1621  0.0  0.0 924768 30620 ?        -    05:22   0:00 /usr/bin/abrt-dump-journal-core -D -T -f -e
+root           -  0.0    -      -     - -        Ss   05:22   0:00 -
+""".strip()
+
+
+def test_ps_auxcww_from_auxwwwm():
+    p = ps.PsAuxcww(context_wrap(PS_AUXWWWM))
+    d = p.data
+
+    assert all('COMMAND' in row for row in d)
+    assert keys_in([
+        "USER", "PID", "%CPU", "%MEM", "VSZ", "RSS", "TTY", "STAT", "START",
+        "TIME", "COMMAND"
+    ], d[0])
+    assert d[0] == {
+        'USER': 'root', 'PID': '1503', '%CPU': '0.0', '%MEM': '0.0', 'VSZ': '11932', 'RSS': '6152', 'TTY': '?',
+        'STAT': 'Ss', 'START': '05:22', 'TIME': '0:00', 'COMMAND': '/usr/sbin/smartd -n -q never --capabilities',
+        'COMMAND_NAME': 'smartd', 'ARGS': '-n -q never --capabilities', 'threads': 1,
+    }
+    assert '/usr/sbin/chronyd' in p
+    assert 'sshd' not in p
+    assert 'kthread' not in p
+    assert not p.fuzzy_match("sshd")
+    assert p.number_occurences("abrtd") == 1
+    assert p.number_occurences("sshd") != 2
+    assert p.fuzzy_match('chronyd')
+
+    assert p.pid_info["1514"]['threads'] == 5
+    assert p.pid_info["1621"]['threads'] == 1
