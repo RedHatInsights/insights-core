@@ -90,8 +90,29 @@ class Ps(CommandParser):
                 self.services.append((cmd_name, proc[self.user_name], proc[raw_line_key]))
                 del proc[raw_line_key]
 
+            pid = None
+            stat = None
+            threads = 0
             for row in self.data:
-                self.pid_info[row['PID']] = row
+                _pid = row['PID']
+                if _pid.isdigit():
+                    if threads:
+                        # Set the number of threads for the previous entry, and
+                        # set the entry's stat to the stat of the last thread.
+                        self.pid_info[pid].update({"STAT": stat, "threads": threads})
+
+                    pid = _pid
+                    self.pid_info[_pid] = row
+
+                    stat = None
+                    threads = 0
+                else:
+                    stat = row['STAT']
+                    threads += 1
+            else:
+                # Check if there was a thread as the last row.
+                if threads:
+                    self.pid_info[pid].update({"STAT": stat, "threads": threads})
 
         else:
             raise ParseException(
