@@ -42,6 +42,7 @@ class InsightsArchiveSpecs(Specs):
     cpupower_frequency_info = simple_file("insights_commands/cpupower_-c_all_frequency-info")
     date = simple_file("insights_commands/date")
     date_utc = simple_file("insights_commands/date_--utc")
+    db2ls_a_c = simple_file("insights_commands/usr.local.bin.db2ls_-a_-c")
     df__al = first_file(["insights_commands/df_-al_-x_autofs", "insights_commands/df_-al"])
     df__alP = first_file(["insights_commands/df_-alP_-x_autofs", "insights_commands/df_-alP"])
     df__li = first_file(["insights_commands/df_-li_-x_autofs", "insights_commands/df_-li"])

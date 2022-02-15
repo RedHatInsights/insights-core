@@ -183,6 +183,7 @@ class DefaultSpecs(Specs):
     current_clocksource = simple_file("/sys/devices/system/clocksource/clocksource0/current_clocksource")
     date = simple_command("/bin/date")
     date_utc = simple_command("/bin/date --utc")
+    db2ls_a_c = simple_command("/usr/local/bin/db2ls -a -c")
     designate_conf = first_file(["/var/lib/config-data/puppet-generated/designate/etc/designate/designate.conf",
                                  "/etc/designate/designate.conf"])
     df__al = simple_command("/bin/df -al -x autofs")
