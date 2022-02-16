@@ -371,6 +371,7 @@ class DefaultSpecs(Specs):
         "/etc/pki/ovirt-vmconsole", "/etc/nova/migration", "/etc/sysconfig",
         "/etc/cloud/cloud.cfg.d", "/etc/rc.d/init.d"])
     ls_etc = simple_command("/bin/ls -lan {0}".format(' '.join(etc_and_sub_dirs)), keep_rc=True)
+    ls_etc_systemd = simple_command("/bin/ls -lanRL /etc/systemd")
     ls_ipa_idoverride_memberof = simple_command("/bin/ls -lan /usr/share/ipa/ui/js/plugins/idoverride-memberof")
     ls_lib_firmware = simple_command("/bin/ls -lanR /lib/firmware")
     ls_ocp_cni_openshift_sdn = simple_command("/bin/ls -l /var/lib/cni/networks/openshift-sdn")
@@ -382,6 +383,7 @@ class DefaultSpecs(Specs):
     ls_tmp = simple_command("/bin/ls -la /tmp")
     ls_usr_bin = simple_command("/bin/ls -lan /usr/bin")
     ls_usr_lib64 = simple_command("/bin/ls -lan /usr/lib64")
+    ls_usr_lib_systemd = simple_command("/bin/ls -lanRL /usr/lib/systemd")
     ls_var_cache_pulp = simple_command("/bin/ls -lan /var/cache/pulp")
     ls_var_lib_mongodb = simple_command("/bin/ls -la /var/lib/mongodb")
     ls_var_lib_nova_instances = simple_command("/bin/ls -laRZ /var/lib/nova/instances")
