@@ -2,6 +2,13 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.262](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.262) (2022-02-17)
+
+- fix: Enhance combiner "SatelliteVersion" and "CapsuleVersion" ([PR 3336](https://github.com/RedHatInsights/insights-core/pull/3336))
+- feat: Add thread counts to ps's pid_info dict ([PR 3334](https://github.com/RedHatInsights/insights-core/pull/3334))
+- New parser for Db2ls ([PR 3332](https://github.com/RedHatInsights/insights-core/pull/3332))
+- new message for --group in client ([PR 3333](https://github.com/RedHatInsights/insights-core/pull/3333))
+
 ## [insights-core-3.0.261](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.261) (2022-02-10)
 
 - fix: Enhance hammer_ping parser ([PR 3330](https://github.com/RedHatInsights/insights-core/pull/3330))
