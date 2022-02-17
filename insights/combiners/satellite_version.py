@@ -20,6 +20,8 @@ from insights import combiner, SkipComponent
 from insights.parsers.satellite_version import Satellite6Version as Sat6Ver
 from insights.parsers.installed_rpms import InstalledRpms
 from insights.parsers.rhsm_conf import RHSMConf
+from insights.combiners.hostname import Hostname
+from insights.parsers.ssl_certificate import RhsmKatelloDefaultCACert
 
 
 # NOTE:
@@ -57,7 +59,7 @@ def _parse_sat_version(version):
     return [major, minor]
 
 
-@combiner(InstalledRpms, optional=[Sat6Ver, RHSMConf])
+@combiner(InstalledRpms, optional=[Sat6Ver, RHSMConf, Hostname, RhsmKatelloDefaultCACert])
 class SatelliteVersion(object):
     """
     Check the parsers
@@ -125,7 +127,7 @@ class SatelliteVersion(object):
         >>> sat_ver.release
         '1.el7sat'
     """
-    def __init__(self, rpms, sat6_ver, rhsm_conf):
+    def __init__(self, rpms, sat6_ver, rhsm_conf, hostname, ca_cert):
         self.full = None
         self.version = None
         self.release = None
@@ -143,8 +145,16 @@ class SatelliteVersion(object):
             # For Satellite 6.2 and newer, check the satellite package directly
             sat62_pkg = rpms.get_max('satellite')
             if sat62_pkg:
-                if rhsm_conf and rhsm_conf.get('server', 'hostname') not in CND_HOSTNAMES:
-                    raise SkipComponent("Not a Satellite server host.")
+                if rhsm_conf:
+                    if not rhsm_conf.has_option('server', 'hostname'):
+                        raise SkipComponent("Not a Satellite server host.")
+                    if rhsm_conf.get('server', 'hostname') not in CND_HOSTNAMES:
+                        # check if satellite register to itself
+                        if not hostname or not (
+                            (hostname.hostname in rhsm_conf.get('server', 'hostname')) or
+                            (ca_cert and 'issuer' in ca_cert and hostname.fqdn in ca_cert['issuer'])
+                        ):
+                            raise SkipComponent("Not a Satellite server host.")
                 self.full = sat62_pkg.package
                 self.version = sat62_pkg.version
                 self.release = sat62_pkg.release
