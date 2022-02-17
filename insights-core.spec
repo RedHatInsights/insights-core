@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.262
+Version:        3.0.263
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,8 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Feb 17 2022 Sachin Patil <psachin@redhat.com> 3.0.263-1
+- fix: Enhance combiner "SatelliteVersion" (#3340) (44796653+huali027@users.noreply.github.com)
 * Thu Feb 17 2022 Sachin Patil <psachin@redhat.com> 3.0.262-1
 - fix: Enhance combiner "SatelliteVersion" and "CapsuleVersion" (#3336) (44796653+huali027@users.noreply.github.com)
 - feat: Add thread counts to ps's pid_info dict (#3334) (rblakley@redhat.com)
