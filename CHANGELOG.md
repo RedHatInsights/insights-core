@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.263](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.263) (2022-02-17)
+
+- fix: Enhance combiner "SatelliteVersion" ([PR 3340](https://github.com/RedHatInsights/insights-core/pull/3340))
+
 ## [insights-core-3.0.262](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.262) (2022-02-17)
 
 - fix: Enhance combiner "SatelliteVersion" and "CapsuleVersion" ([PR 3336](https://github.com/RedHatInsights/insights-core/pull/3336))
