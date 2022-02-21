@@ -1,5 +1,5 @@
-from insights.parsers.systemd_perms import EtcSystemdPermsParser, UsrLibSystemdPermsParser
-from insights.parsers import systemd_perms
+from insights.parsers.ls_systemd import LsEtcSystemdPermsParser, LsUsrLibSystemdPermsParser
+from insights.parsers import ls_systemd
 from insights.tests import context_wrap
 import doctest
 
@@ -95,7 +95,7 @@ drwxr-xr-x   4 501  20  128 Feb 23  2021 ..
 
 
 def test_etc_systemd():
-    etc_systemd_perm = EtcSystemdPermsParser(context_wrap(ETC_SYSTEMD))
+    etc_systemd_perm = LsEtcSystemdPermsParser(context_wrap(ETC_SYSTEMD))
     assert '/etc/systemd' in etc_systemd_perm
     assert '/etc/systemd/system' in etc_systemd_perm
     assert '/etc/systemd/system/basic.target.wants' in etc_systemd_perm
@@ -112,7 +112,7 @@ def test_etc_systemd():
 
 
 def test_usr_lib_systemd():
-    usr_lib_systemd_perm = UsrLibSystemdPermsParser(context_wrap(USR_LIB_SYSTEMD))
+    usr_lib_systemd_perm = LsUsrLibSystemdPermsParser(context_wrap(USR_LIB_SYSTEMD))
     assert '/usr/lib/systemd' in usr_lib_systemd_perm
     assert '/usr/lib/systemd/user' in usr_lib_systemd_perm
     assert usr_lib_systemd_perm.dirs_of('/usr/lib/systemd') == ['.', '..', 'system', 'user']
@@ -127,8 +127,8 @@ def test_usr_lib_systemd():
 
 def test_systemd_examples():
     env = {
-        'etc_systemd': EtcSystemdPermsParser(context_wrap(ETC_SYSTEMD_EXAMPLE)),
-        'usr_lib_systemd': UsrLibSystemdPermsParser(context_wrap(USR_LIB_SYSTEMD))
+        'etc_systemd': LsEtcSystemdPermsParser(context_wrap(ETC_SYSTEMD_EXAMPLE)),
+        'usr_lib_systemd': LsUsrLibSystemdPermsParser(context_wrap(USR_LIB_SYSTEMD))
     }
-    failed, total = doctest.testmod(systemd_perms, globs=env)
+    failed, total = doctest.testmod(ls_systemd, globs=env)
     assert failed == 0

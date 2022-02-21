@@ -18,7 +18,7 @@ from insights.specs import Specs
 
 
 @parser(Specs.ls_etc_systemd)
-class EtcSystemdPermsParser(CommandParser, FileListing):
+class LsEtcSystemdPermsParser(CommandParser, FileListing):
     """
     Class for parsing ``ls -lanRL /etc/systemd`` command.
 
@@ -45,7 +45,7 @@ class EtcSystemdPermsParser(CommandParser, FileListing):
     Examples:
 
     >>> type(etc_systemd)
-    <class 'insights.parsers.systemd_perms.EtcSystemdPermsParser'>
+    <class 'insights.parsers.ls_systemd.LsEtcSystemdPermsParser'>
     >>> '/etc/systemd' in etc_systemd
     True
     >>> '/etc/systemd/system' in etc_systemd
@@ -66,7 +66,7 @@ class EtcSystemdPermsParser(CommandParser, FileListing):
 
 
 @parser(Specs.ls_usr_lib_systemd)
-class UsrLibSystemdPermsParser(CommandParser, FileListing):
+class LsUsrLibSystemdPermsParser(CommandParser, FileListing):
     """
     Class for parsing ``ls -lanRL /usr/lib/systemd`` command.
 
@@ -104,7 +104,7 @@ class UsrLibSystemdPermsParser(CommandParser, FileListing):
     Examples:
 
     >>> type(usr_lib_systemd)
-    <class 'insights.parsers.systemd_perms.UsrLibSystemdPermsParser'>
+    <class 'insights.parsers.ls_systemd.LsUsrLibSystemdPermsParser'>
     >>> '/usr/lib/systemd' in usr_lib_systemd
     True
     >>> '/usr/lib/systemd/system' in usr_lib_systemd
