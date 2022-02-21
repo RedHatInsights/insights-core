@@ -83,6 +83,20 @@ katello-2.3.0.19-1.el7.noarch                               Wed May 18 14:16:25 
 scl-utils-20120927-27.el6_6.x86_64                          Wed May 18 14:18:16 2016
 """
 
+BOTH_CAPSULE_AND_FOREMAN_PKGS_INSTALLED = """
+scl-utils-20120927-27.el7_6.x86_64                          Wed May 18 14:18:16 2016
+SDL-1.2.14-6.el7.x86_64                                     Wed May 18 14:16:25 2016
+satellite-capsule-6.9.0.11-1.el7sat.noarch                  Wed May 18 14:16:25 2016
+foreman-1.24.1-1.el7sat.noarch                              Wed May 18 14:16:25 2016
+"""
+
+BOTH_CAPSULE_AND_SATELLITE_PKGS_INSTALLED = """
+scl-utils-20120927-27.el7_6.x86_64                          Wed May 18 14:18:16 2016
+SDL-1.2.14-6.el7.x86_64                                     Wed May 18 14:16:25 2016
+satellite-capsule-6.9.0.11-1.el7sat.noarch                  Wed May 18 14:16:25 2016
+satellite-6.9.0.11-1.el7sat.noarch                          Wed May 18 14:16:25 2016
+"""
+
 
 def test_get_sat5_version():
     rpms = InstalledRpms(context_wrap(installed_rpms_5))
@@ -173,7 +187,7 @@ def test_get_sat62_capsule_version():
     rpms = InstalledRpms(context_wrap(installed_rpms_62_cap))
     expected = ('satellite-capsule-6.2.0.11-1.el7sat',
                 '6.2.0.11', '1.el7sat', 6, 2)
-    result = CapsuleVersion(rpms)
+    result = CapsuleVersion(rpms, None)
     assert result.major == expected[-2]
     assert result.minor == expected[-1]
     assert result.full == expected[0]
@@ -193,12 +207,27 @@ def test_no_sat_installed():
     assert "unable to determine Satellite version" in str(sc)
 
 
+def test_both_pkgs():
+    rpms = InstalledRpms(context_wrap(BOTH_CAPSULE_AND_FOREMAN_PKGS_INSTALLED))
+    capsule = CapsuleVersion(rpms, None)
+    assert capsule is not None
+    assert capsule.version == '6.9.0.11'
+
+    both_satellite_and_capsule_rpms = InstalledRpms(context_wrap(BOTH_CAPSULE_AND_SATELLITE_PKGS_INSTALLED))
+    satellite = SatelliteVersion(both_satellite_and_capsule_rpms, None)
+    assert satellite is not None
+    assert satellite.version == '6.9.0.11'
+
+    with pytest.raises(SkipComponent):
+        CapsuleVersion(both_satellite_and_capsule_rpms, satellite)
+
+
 def test_doc_examples():
     sat_rpms = InstalledRpms(context_wrap(installed_rpms_62))
     cap_rpms = InstalledRpms(context_wrap(installed_rpms_62_cap))
     env = {
             'sat_ver': SatelliteVersion(sat_rpms, None),
-            'cap_ver': CapsuleVersion(cap_rpms),
+            'cap_ver': CapsuleVersion(cap_rpms, None),
           }
     failed, total = doctest.testmod(satellite_version, globs=env)
     assert failed == 0
