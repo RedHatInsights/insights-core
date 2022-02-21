@@ -21,6 +21,7 @@ drwxr-xr-x    2 501  20    64 Jan 16  2021 user
 total 104
 drwxr-xr-x  39 501  20  1248 Oct 14 04:49 .
 drwxr-xr-x  10 501  20   320 Feb 23  2021 ..
+drwxr-xr-x   5 501  20   160 Jun 19  2018 basic.target.wants
 -rw-r--r--   1 501  20   657 Apr 16  2021 dbus-org.fedoraproject.FirewallD1.service
 -rw-r--r--   1 501  20  1445 Sep 30  2020 dbus-org.freedesktop.NetworkManager.service
 -rw-r--r--   1 501  20   353 Sep 30  2020 dbus-org.freedesktop.nm-dispatcher.service
@@ -34,7 +35,6 @@ drwxr-xr-x  10 501  20   320 Feb 23  2021 ..
 -r--r--r--   1 501  20   861 Oct 13 03:02 pulpcore-worker@.service
 -rw-r--r--   1 501  20   164 May 13  2020 receptor@.service
 -rw-r--r--   1 501  20   602 Jan 16  2020 rh-mongodb34-mongod.service
-drwxr-xr-x   3 501  20    96 Dec 17  2020 timers.target.wants
 
 /etc/systemd/system/basic.target.wants:
 total 24
