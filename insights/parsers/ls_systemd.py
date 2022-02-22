@@ -4,10 +4,10 @@ Systemd File Permissions parsers
 
 Parsers included in this module are:
 
-SystemdPerms - command ``/bin/ls -lanRL /etc/systemd``
+LsEtcSystemd - command ``/bin/ls -lanRL /etc/systemd``
 --------------------------------------------------------------
 
-UsrLibSystemdPerms - command ``/bin/ls -lanRL /usr/lib/systemd``
+LsUsrLibSystemd - command ``/bin/ls -lanRL /usr/lib/systemd``
 ---------------------------------------------------------------
 
 
@@ -18,7 +18,7 @@ from insights.specs import Specs
 
 
 @parser(Specs.ls_etc_systemd)
-class LsEtcSystemdPermsParser(CommandParser, FileListing):
+class LsEtcSystemd(CommandParser, FileListing):
     """
     Class for parsing ``ls -lanRL /etc/systemd`` command.
 
@@ -45,7 +45,7 @@ class LsEtcSystemdPermsParser(CommandParser, FileListing):
     Examples:
 
     >>> type(etc_systemd)
-    <class 'insights.parsers.ls_systemd.LsEtcSystemdPermsParser'>
+    <class 'insights.parsers.ls_systemd.LsEtcSystemd'>
     >>> '/etc/systemd' in etc_systemd
     True
     >>> '/etc/systemd/system' in etc_systemd
@@ -66,7 +66,7 @@ class LsEtcSystemdPermsParser(CommandParser, FileListing):
 
 
 @parser(Specs.ls_usr_lib_systemd)
-class LsUsrLibSystemdPermsParser(CommandParser, FileListing):
+class LsUsrLibSystemd(CommandParser, FileListing):
     """
     Class for parsing ``ls -lanRL /usr/lib/systemd`` command.
 
@@ -104,7 +104,7 @@ class LsUsrLibSystemdPermsParser(CommandParser, FileListing):
     Examples:
 
     >>> type(usr_lib_systemd)
-    <class 'insights.parsers.ls_systemd.LsUsrLibSystemdPermsParser'>
+    <class 'insights.parsers.ls_systemd.LsUsrLibSystemd'>
     >>> '/usr/lib/systemd' in usr_lib_systemd
     True
     >>> '/usr/lib/systemd/system' in usr_lib_systemd
