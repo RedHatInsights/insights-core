@@ -19,9 +19,6 @@ Combiner to get Satellite Capsule version information. ONLY Satellite Capsule
 from insights import combiner, SkipComponent
 from insights.parsers.satellite_version import Satellite6Version as Sat6Ver
 from insights.parsers.installed_rpms import InstalledRpms
-from insights.parsers.rhsm_conf import RHSMConf
-from insights.combiners.hostname import Hostname
-from insights.parsers.ssl_certificate import RhsmKatelloDefaultCACert
 
 
 # NOTE:
@@ -49,8 +46,6 @@ sat6_ver_map = {
         '6.1.12': ('1.7.2.63', '0.9.49.23', '2.2.0.19'),
 }
 
-CND_HOSTNAMES = ['subscription.rhn.redhat.com', 'subscription.rhsm.redhat.com', 'subscription.rhsm.stage.redhat.com']
-
 
 def _parse_sat_version(version):
     ver_sp = version.split(".") if version else []
@@ -59,7 +54,7 @@ def _parse_sat_version(version):
     return [major, minor]
 
 
-@combiner(InstalledRpms, optional=[Sat6Ver, RHSMConf, Hostname, RhsmKatelloDefaultCACert])
+@combiner(InstalledRpms, optional=[Sat6Ver])
 class SatelliteVersion(object):
     """
     Check the parsers
@@ -127,7 +122,7 @@ class SatelliteVersion(object):
         >>> sat_ver.release
         '1.el7sat'
     """
-    def __init__(self, rpms, sat6_ver, rhsm_conf, hostname, ca_cert):
+    def __init__(self, rpms, sat6_ver):
         self.full = None
         self.version = None
         self.release = None
@@ -145,16 +140,6 @@ class SatelliteVersion(object):
             # For Satellite 6.2 and newer, check the satellite package directly
             sat62_pkg = rpms.get_max('satellite')
             if sat62_pkg:
-                if rhsm_conf:
-                    if not rhsm_conf.has_option('server', 'hostname'):
-                        raise SkipComponent("Not a Satellite server host.")
-                    if rhsm_conf.get('server', 'hostname') not in CND_HOSTNAMES:
-                        # check if satellite register to itself
-                        if not hostname or not (
-                            (hostname.hostname in rhsm_conf.get('server', 'hostname')) or
-                            (ca_cert and 'issuer' in ca_cert and hostname.fqdn in ca_cert['issuer'])
-                        ):
-                            raise SkipComponent("Not a Satellite server host.")
                 self.full = sat62_pkg.package
                 self.version = sat62_pkg.version
                 self.release = sat62_pkg.release
@@ -183,7 +168,7 @@ class SatelliteVersion(object):
             raise SkipComponent("Not a Satellite machine or unable to determine Satellite version")
 
 
-@combiner(InstalledRpms, optional=[RHSMConf])
+@combiner(InstalledRpms, optional=[SatelliteVersion])
 class CapsuleVersion(object):
     """
     Check the parser
@@ -225,18 +210,18 @@ class CapsuleVersion(object):
         >>> cap_ver.release
         '1.el7sat'
     """
-    def __init__(self, rpms, rhsm_conf):
+    def __init__(self, rpms, sat_server):
         self.full = None
         self.version = None
         self.release = None
         self.major = None
         self.minor = None
 
+        if sat_server:
+            raise SkipComponent('Not a Satellite Capsule machine')
         # For Capsule, ONLY 6.2 and newer are supported
         sat62_pkg = rpms.get_max('satellite-capsule')
         if sat62_pkg:
-            if rhsm_conf and rhsm_conf.get('server', 'hostname') in CND_HOSTNAMES:
-                raise SkipComponent("Not a Satellite Capsule host.")
             self.full = sat62_pkg.package
             self.version = sat62_pkg.version
             self.release = sat62_pkg.release
