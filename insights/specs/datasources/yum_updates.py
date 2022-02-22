@@ -7,6 +7,7 @@ import time
 from insights import datasource, HostContext, SkipComponent
 from insights.components.rhel_version import IsRhel7, IsRhel8, IsRhel9
 from insights.core.spec_factory import DatasourceProvider
+from distutils.version import LooseVersion as version
 
 try:
     from functools import cmp_to_key
@@ -53,14 +54,15 @@ class DnfManager:
         self.base.conf.read()
         self.base.conf.cacheonly = True
         self.base.read_all_repos()
-        try:
-            # do not use standard self.base.fill_sack() it does not respect cacheonly
-            self.base.fill_sack_from_repos_in_cache(load_system_repo=True)
-            self.packages = self.base.sack.query()
-        except (dnf.exceptions.RepoError, AttributeError):
-            # RepoError is raised when cache is empty
-            # AttributeError is raised in dnf < 4.4 which can't handle cacheonly correctly
-            self.packages = hawkey.Query(hawkey.Sack())
+        self.packages = hawkey.Query(hawkey.Sack())
+        if version(dnf.VERSION) >= version("4.7.0"):
+            try:
+                # do not use standard self.base.fill_sack() it does not respect cacheonly
+                self.base.fill_sack_from_repos_in_cache(load_system_repo=True)
+                self.packages = self.base.sack.query()
+            except dnf.exceptions.RepoError:
+                # RepoError is raised when cache is empty
+                pass
         self.repos = self.base.repos
 
     def installed_packages(self):

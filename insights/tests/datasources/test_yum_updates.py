@@ -29,6 +29,7 @@ def test_yum_updates_runs_correctly():
     with patch("insights.specs.datasources.yum_updates.UpdatesManager", yum_updates.DnfManager):
         yum_updates.dnf = MagicMock()
         yum_updates.hawkey = MagicMock()
+        yum_updates.dnf.VERSION = "4.7.0"
         yum_updates.dnf.rpm.detect_releasever.return_value = "8"
         yum_updates.dnf.rpm.basearch.return_value = "x86_64"
         repo = MagicMock()
