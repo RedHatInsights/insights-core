@@ -4,10 +4,10 @@ Systemd File Permissions parsers
 
 Parsers included in this module are:
 
-LsEtcSystemd - command ``/bin/ls -lanRL /etc/systemd``
+LsEtcSystemd - command ``ls -lanRL /etc/systemd``
 --------------------------------------------------------------
 
-LsUsrLibSystemd - command ``/bin/ls -lanRL /usr/lib/systemd``
+LsUsrLibSystemd - command ``ls -lanRL /usr/lib/systemd``
 ---------------------------------------------------------------
 
 
