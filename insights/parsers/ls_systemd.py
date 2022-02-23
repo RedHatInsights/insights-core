@@ -5,11 +5,10 @@ Systemd File Permissions parsers
 Parsers included in this module are:
 
 LsEtcSystemd - command ``ls -lanRL /etc/systemd``
---------------------------------------------------------------
+-------------------------------------------------
 
 LsUsrLibSystemd - command ``ls -lanRL /usr/lib/systemd``
----------------------------------------------------------------
-
+--------------------------------------------------------
 
 """
 from insights.core import CommandParser, FileListing
