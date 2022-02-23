@@ -32,7 +32,8 @@ runtime = set([
     'cachecontrol[filecache]',
     'defusedxml',
     'lockfile',
-    'jinja2<=2.11.3',
+    'jinja2<=2.11.3; python_version <= "2.7"',
+    'jinja2; python_version > "2.7"',
     'pyyaml>=3.10,<=3.13; python_version < "2.7"',
     'pyyaml; python_version >= "2.7"',
 ])
@@ -66,7 +67,6 @@ docs = set([
     'sphinx_rtd_theme',
     'ipython',
     'colorama',
-    'jinja2<=2.11.3',
     'Pygments',
     'jedi<0.18.0',    # Open issue with jedi 0.18.0 and iPython <= 7.19
                       # https://github.com/davidhalter/jedi/issues/1714
