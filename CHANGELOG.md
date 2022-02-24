@@ -2,6 +2,14 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.264](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.264) (2022-02-24)
+
+- New parameters checked when offline is active ([PR 3338](https://github.com/RedHatInsights/insights-core/pull/3338))
+- Fix issue with Markupsafe and Jinja2 versions ([PR 3344](https://github.com/RedHatInsights/insights-core/pull/3344))
+- SPM-1379: skip code on RHEL8.4 because of caching bug ([PR 3341](https://github.com/RedHatInsights/insights-core/pull/3341))
+- Support downloading malware-detection rules via Satellite ([PR 3337](https://github.com/RedHatInsights/insights-core/pull/3337))
+- Revert satellite version enhancement and Enhance "CapsuleVersion" only ([PR 3342](https://github.com/RedHatInsights/insights-core/pull/3342))
+
 ## [insights-core-3.0.263](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.263) (2022-02-17)
 
 - fix: Enhance combiner "SatelliteVersion" ([PR 3340](https://github.com/RedHatInsights/insights-core/pull/3340))

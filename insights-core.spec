@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.263
+Version:        3.0.264
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,18 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Feb 24 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.264-1
+- New parameters checked when offline is active (#3338)
+  (93577878+ahitacat@users.noreply.github.com)
+- Fix issue with Markupsafe and Jinja2 versions (#3344)
+  (20520336+bfahr@users.noreply.github.com)
+- SPM-1379: skip code on RHEL8.4 because of caching bug (#3341)
+  (michael.mraka@redhat.com)
+- Support downloading malware-detection rules via Satellite (#3337)
+  (mhuth@redhat.com)
+- Revert satellite version enhancement and Enhance "CapsuleVersion" only
+  (#3342) (44796653+huali027@users.noreply.github.com)
+
 * Thu Feb 17 2022 Sachin Patil <psachin@redhat.com> 3.0.263-1
 - fix: Enhance combiner "SatelliteVersion" (#3340) (44796653+huali027@users.noreply.github.com)
 * Thu Feb 17 2022 Sachin Patil <psachin@redhat.com> 3.0.262-1
