@@ -90,6 +90,7 @@ class Specs(SpecSet):
     cpuinfo = RegistryPoint()
     cpupower_frequency_info = RegistryPoint()
     cpuset_cpus = RegistryPoint()
+    crictl_logs = RegistryPoint(multi_output=True, filterable=True)
     crio_conf = RegistryPoint(multi_output=True)
     cron_daily_rhsmd = RegistryPoint(filterable=True)
     crypto_policies_config = RegistryPoint()
