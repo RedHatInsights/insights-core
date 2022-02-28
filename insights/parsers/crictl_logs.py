@@ -1,6 +1,6 @@
 """
-CrictlLogs - command ``/usr/bin/crictl logs -t <container's_ID>``
-=================================================================
+CrictlLogs - commands `crictl logs -t <container's_ID>``
+========================================================
 """
 
 from insights.core import LogFileOutput
@@ -11,7 +11,7 @@ from insights.specs import Specs
 @parser(Specs.crictl_logs)
 class CrictlLogs(LogFileOutput):
     """
-    Class for parsing the output of command ``/usr/bin/crictl logs -t <container's_ID>``.
+    Class for parsing the output of commands ``crictl logs -t <container's_ID>``.
 
     Sample input data looks like::
 
