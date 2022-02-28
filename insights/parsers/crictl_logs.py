@@ -1,5 +1,5 @@
 """
-CrictlLogs - files ``/usr/bin/crictl logs -t <list_of_containers'_id>``
+CrictlLogs - files ``/usr/bin/crictl logs -t <list_of_containers'_IDs>``
 =======================================================================
 """
 
@@ -11,7 +11,7 @@ from insights.specs import Specs
 @parser(Specs.crictl_logs)
 class CrictlLogs(LogFileOutput):
     """
-    Class for parsing ``/usr/bin/crictl logs -t <list_of_containers'_id>`` files.
+    Class for parsing ``/usr/bin/crictl logs -t <list_of_containers'_IDs>`` files.
 
     Sample input data looks like::
 
