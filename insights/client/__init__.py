@@ -202,10 +202,10 @@ class InsightsClient(object):
             if current_etag and not force:
                 logger.debug('Requesting new file with etag %s', current_etag)
                 etag_headers = {'If-None-Match': current_etag}
-                response = self.connection.get(url, headers=etag_headers)
+                response = self.connection.get(url, headers=etag_headers, log_response_text=False)
             else:
                 logger.debug('Found no etag or forcing fetch')
-                response = self.connection.get(url)
+                response = self.connection.get(url, log_response_text=False)
         except ConnectionError as e:
             logger.error(e)
             logger.error('The Insights API could not be reached.')
