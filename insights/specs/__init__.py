@@ -250,6 +250,7 @@ class Specs(SpecSet):
     initscript = RegistryPoint(multi_output=True)
     init_process_cgroup = RegistryPoint()
     insights_client_conf = RegistryPoint(filterable=True)
+    insights_client_tags = RegistryPoint()
     installed_rpms = RegistryPoint()
     interrupts = RegistryPoint()
     ip6tables_permanent = RegistryPoint()
