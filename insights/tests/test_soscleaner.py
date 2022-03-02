@@ -19,9 +19,9 @@ def _soscleaner():
             "  broadcast 10.0.2.255"
         ),
         (
-            "        inet 10.230.230.1"
-            "  netmask 10.230.230.2"
-            "  broadcast 10.230.230.3"
+            "        inet 10.230.230.3"
+            "  netmask 10.230.230.1"
+            "  broadcast 10.230.230.2"
         ),
     ),
     (
@@ -33,6 +33,43 @@ def test_sub_ip_match(line, expected):
     soscleaner = _soscleaner()
     actual = soscleaner._sub_ip(line)
     assert actual == expected
+
+
+@mark.parametrize(("line", "expected"), [
+    (
+        (
+            "        inet 10.0.2.155"
+            "  netmask 10.0.2.1"
+            "  broadcast 10.0.2.15"
+        ),
+        (
+            "        inet 10.230.230.1"
+            "  netmask 10.230.230.3"
+            "  broadcast 10.230.230.2"
+        ),
+    ),
+])
+def test_sub_ip_match_IP_overlap(line, expected):
+    soscleaner = _soscleaner()
+    actual = soscleaner._sub_ip(line)
+    assert actual == expected
+
+
+@mark.parametrize(("line", "expected"), [
+    (
+        "tcp6       0      0 10.0.0.1:23           10.0.0.110:63564   ESTABLISHED 0",
+        "tcp6       0      0 10.230.230.2:23       10.230.230.1:63564 ESTABLISHED 0"
+    ),
+    (
+        "tcp6  10.0.0.11    0 10.0.0.1:23       10.0.0.111:63564    ESTABLISHED 0",
+        "tcp6  10.230.230.2 0 10.230.230.3:23   10.230.230.1:63564  ESTABLISHED 0"
+    ),
+])
+def test_sub_ip_match_IP_overlap_netstat(line, expected):
+    soscleaner = _soscleaner()
+    actual = soscleaner._sub_ip_netstat(line)
+    assert actual == expected
+
 
 
 @mark.xfail
