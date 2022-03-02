@@ -71,7 +71,6 @@ def test_sub_ip_match_IP_overlap_netstat(line, expected):
     assert actual == expected
 
 
-
 @mark.xfail
 @mark.parametrize(("line",), [
     (
