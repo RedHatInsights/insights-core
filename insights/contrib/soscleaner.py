@@ -202,7 +202,7 @@ class SOSCleaner:
             pattern = r"(((\b25[0-5]|\b2[0-4][0-9]|\b1[0-9][0-9]|\b[1-9][0-9]|\b[1-9]))(\.(\b25[0-5]|\b2[0-4][0-9]|\b1[0-9][0-9]|\b[1-9][0-9]|\b[0-9])){3})"
             ips = [each[0] for each in re.findall(pattern, line)]
             if len(ips) > 0:
-                for ip in ips:
+                for ip in sorted(ips, key=len, reverse=True):
                     # skip loopback (https://github.com/RedHatInsights/insights-core/issues/3230#issuecomment-924859845)
                     if ip != "127.0.0.1" and ip in line:
                         new_ip = self._ip2db(ip)
@@ -221,7 +221,7 @@ class SOSCleaner:
             pattern = r"(((\b25[0-5]|\b2[0-4][0-9]|\b1[0-9][0-9]|\b[1-9][0-9]|\b[1-9]))(\.(\b25[0-5]|\b2[0-4][0-9]|\b1[0-9][0-9]|\b[1-9][0-9]|\b[0-9])){3})"
             ips = [each[0] for each in re.findall(pattern, line)]
             if len(ips) > 0:
-                for ip in ips:
+                for ip in sorted(key=len, reverse=True):
                     # skip loopback (https://github.com/RedHatInsights/insights-core/issues/3230#issuecomment-924859845)
                     if ip != "127.0.0.1" and ip in line:
                         ip_len = len(ip)
