@@ -35,6 +35,7 @@ drwxr-xr-x   5 501  20   160 Jun 19  2018 basic.target.wants
 -r--r--r--   1 501  20   861 Oct 13 03:02 pulpcore-worker@.service
 -rw-r--r--   1 501  20   164 May 13  2020 receptor@.service
 -rw-r--r--   1 501  20   602 Jan 16  2020 rh-mongodb34-mongod.service
+crw-rw-rw-   1  0   0 1,   3 Mar  2 06:03 systemd-timedated.service
 
 /etc/systemd/system/basic.target.wants:
 total 24
@@ -106,6 +107,7 @@ def test_etc_systemd():
     assert 'firewalld.service' in basic_target_wants
     assert 'microcode.service' in basic_target_wants
     assert 'rhel-dmesg.service' in basic_target_wants
+    assert 'systemd-timedated.service' not in basic_target_wants
     assert len(basic_target_wants) == 3
 
     assert etc_systemd_perm.listing_of('/etc/systemd')['user.conf'] == {'type': '-', 'perms': 'rw-r--r--', 'links': 1, 'owner': '501', 'group': '20', 'size': 1127, 'date': 'Jan 16  2021', 'name': 'user.conf', 'raw_entry': '-rw-r--r--    1 501  20  1127 Jan 16  2021 user.conf', 'dir': '/etc/systemd'}
