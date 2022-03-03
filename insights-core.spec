@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.264
+Version:        3.0.265
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,10 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Mar 03 2022 Sachin Patil <psachin@redhat.com> 3.0.265-1
+- fix: Fix the regression bug of soscleaner IP obsfuscating (#3347) (xiangceliu@redhat.com)
+- Don't log the insights-core egg in verbose mode (BZ 2045995) (#3348) (mhuth@redhat.com)
+- Feat: Add spec and parser for 'crictl_logs' (#3345) (39508521+shlao@users.noreply.github.com)
 * Thu Feb 24 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.264-1
 - New parameters checked when offline is active (#3338)
   (93577878+ahitacat@users.noreply.github.com)
