@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.265](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.265) (2022-03-03)
+
+- fix: Fix the regression bug of soscleaner IP obsfuscating ([PR 3347](https://github.com/RedHatInsights/insights-core/pull/3347))
+- Don't log the insights-core egg in verbose mode (BZ 2045995) ([PR 3348](https://github.com/RedHatInsights/insights-core/pull/3348))
+- Feat: Add spec and parser for 'crictl_logs' ([PR 3345](https://github.com/RedHatInsights/insights-core/pull/3345))
+
 ## [insights-core-3.0.264](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.264) (2022-02-24)
 
 - New parameters checked when offline is active ([PR 3338](https://github.com/RedHatInsights/insights-core/pull/3338))
