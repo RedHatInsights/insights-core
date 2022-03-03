@@ -545,6 +545,34 @@ class PuppetserverSysconfig(SysconfigOptions):
     pass
 
 
+@parser(Specs.sysconfig_pacemaker)
+class PacemakerSysconfig(SysconfigOptions):
+    """
+    Parse the ``/etc/sysconfig/pacemaker`` configuration file
+
+    Typical content example::
+
+        # Set as for PCMK_debug above to run some or all daemons under valgrind with
+        # the callgrind tool enabled.
+        # PCMK_callgrind_enabled=no
+
+        # Set the options to pass to valgrind, when valgrind is enabled. See
+        # valgrind(1) man page for details. "--vgdb=no" is specified because
+        # pacemaker-execd can lower privileges when executing commands, which would
+        # otherwise leave a bunch of unremovable files in /tmp.
+        VALGRIND_OPTS="--leak-check=full --trace-children=no --vgdb=no --num-callers=25 --log-file=/var/lib/pacemaker/valgrind-%p --suppressions=/usr/share/pacemaker/tests/valgrind-pcmk.suppressions --gen-suppressions=all"
+
+    Examples:
+        >>> 'PCMK_callgrind_enabled' in pcmk_syscfg
+        False
+        >>> 'VALGRIND_OPTS' in pcmk_syscfg
+        True
+        >>> pcmk_syscfg['VALGRIND_OPTS']
+        '--leak-check=full --trace-children=no --vgdb=no --num-callers=25 --log-file=/var/lib/pacemaker/valgrind-%p --suppressions=/usr/share/pacemaker/tests/valgrind-pcmk.suppressions --gen-suppressions=all'
+    """
+    pass
+
+
 @parser(Specs.up2date)
 class Up2DateSysconfig(SysconfigOptions):
     """

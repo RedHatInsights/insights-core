@@ -14,6 +14,7 @@ from insights.parsers.sysconfig import IfCFGStaticRoute
 from insights.parsers.sysconfig import NetworkSysconfig
 from insights.parsers.sysconfig import GrubSysconfig
 from insights.parsers.sysconfig import OracleasmSysconfig
+from insights.parsers.sysconfig import PacemakerSysconfig
 import doctest
 
 
@@ -191,6 +192,18 @@ ORACLEASM_SCANORDER="dm"
 ORACLEASM_SCANEXCLUDE="sd"
 """.strip()
 
+PACEMAKER_SYSCONFIG = """
+# Set as for PCMK_debug above to run some or all daemons under valgrind with
+# the callgrind tool enabled.
+# PCMK_callgrind_enabled=no
+
+# Set the options to pass to valgrind, when valgrind is enabled. See
+# valgrind(1) man page for details. "--vgdb=no" is specified because
+# pacemaker-execd can lower privileges when executing commands, which would
+# otherwise leave a bunch of unremovable files in /tmp.
+VALGRIND_OPTS="--leak-check=full --trace-children=no --vgdb=no --num-callers=25 --log-file=/var/lib/pacemaker/valgrind-%p --suppressions=/usr/share/pacemaker/tests/valgrind-pcmk.suppressions --gen-suppressions=all"
+""".strip()
+
 
 def test_sysconfig_doc():
     env = {
@@ -216,7 +229,8 @@ def test_sysconfig_doc():
             'conn_info': IfCFGStaticRoute(context_wrap(STATIC_ROUTE_1, CONTEXT_PATH_DEVICE_1)),
             'net_syscfg': NetworkSysconfig(context_wrap(NETWORK_SYSCONFIG)),
             'grub_syscfg': GrubSysconfig(context_wrap(GRUB_SYSCONFIG)),
-            'oracleasm_syscfg': OracleasmSysconfig(context_wrap(ORACLEASM_SYSCONFIG))
+            'oracleasm_syscfg': OracleasmSysconfig(context_wrap(ORACLEASM_SYSCONFIG)),
+            'pcmk_syscfg': PacemakerSysconfig(context_wrap(PACEMAKER_SYSCONFIG))
           }
     failed, total = doctest.testmod(sysconfig, globs=env)
     assert failed == 0

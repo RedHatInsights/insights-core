@@ -286,6 +286,7 @@ class SosSpecs(Specs):
     sysconfig_irqbalance = simple_file("etc/sysconfig/irqbalance")
     sysconfig_memcached = first_file(["/var/lib/config-data/puppet-generated/memcached/etc/sysconfig/memcached", "/etc/sysconfig/memcached"])
     sysconfig_mongod = glob_file(["etc/sysconfig/mongod", "etc/opt/rh/rh-mongodb26/sysconfig/mongod"])
+    sysconfig_pacemaker = simple_file("/etc/sysconfig/pacemaker")
     sysctl = simple_file("sos_commands/kernel/sysctl_-a")
     systemctl_list_unit_files = simple_file("sos_commands/systemd/systemctl_list-unit-files")
     systemctl_list_units = first_file(["sos_commands/systemd/systemctl_list-units", "sos_commands/systemd/systemctl_list-units_--all"])
