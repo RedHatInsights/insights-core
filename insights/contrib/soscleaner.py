@@ -202,9 +202,9 @@ class SOSCleaner:
             pattern = r"(((\b25[0-5]|\b2[0-4][0-9]|\b1[0-9][0-9]|\b[1-9][0-9]|\b[1-9]))(\.(\b25[0-5]|\b2[0-4][0-9]|\b1[0-9][0-9]|\b[1-9][0-9]|\b[0-9])){3})"
             ips = [each[0] for each in re.findall(pattern, line)]
             if len(ips) > 0:
-                for ip in ips:
+                for ip in sorted(ips, key=len, reverse=True):
                     # skip loopback (https://github.com/RedHatInsights/insights-core/issues/3230#issuecomment-924859845)
-                    if ip != "127.0.0.1":
+                    if ip != "127.0.0.1" and ip in line:
                         new_ip = self._ip2db(ip)
                         self.logger.debug("Obfuscating IP - %s > %s", ip, new_ip)
                         line = line.replace(ip, new_ip)
@@ -221,9 +221,9 @@ class SOSCleaner:
             pattern = r"(((\b25[0-5]|\b2[0-4][0-9]|\b1[0-9][0-9]|\b[1-9][0-9]|\b[1-9]))(\.(\b25[0-5]|\b2[0-4][0-9]|\b1[0-9][0-9]|\b[1-9][0-9]|\b[0-9])){3})"
             ips = [each[0] for each in re.findall(pattern, line)]
             if len(ips) > 0:
-                for ip in ips:
+                for ip in sorted(ips, key=len, reverse=True):
                     # skip loopback (https://github.com/RedHatInsights/insights-core/issues/3230#issuecomment-924859845)
-                    if ip != "127.0.0.1":
+                    if ip != "127.0.0.1" and ip in line:
                         ip_len = len(ip)
                         new_ip = self._ip2db(ip)
                         new_ip_len = len(new_ip)
@@ -236,7 +236,7 @@ class SOSCleaner:
                             line = line.replace(ip, new_ip)
 
                             # shift past port specification to add spaces
-                            idx = line.index(new_ip) + len(new_ip)
+                            idx = line.index(new_ip) + new_ip_len
                             c = line[idx]
                             while c != " ":
                                 idx += 1
@@ -248,7 +248,7 @@ class SOSCleaner:
                             line = line.replace(ip, new_ip)
 
                             # shift past port specification to skip spaces
-                            idx = line.index(new_ip) + len(new_ip)
+                            idx = line.index(new_ip) + new_ip_len
                             c = line[idx]
                             while c != " ":
                                 idx += 1
