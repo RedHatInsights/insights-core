@@ -1,6 +1,6 @@
 """
 InsightsClientTags - file ``/etc/insights-client/tags.yaml``
-=======================================================================
+============================================================
 """
 
 from insights import parser
@@ -20,7 +20,7 @@ class InsightsClientTags(YAMLParser):
     as defined by the `--group` option.
     Other tags are added manually by the user.
 
-    Sample input data:
+    Sample input data::
 
         group: eastern-sap
         location: Boston
