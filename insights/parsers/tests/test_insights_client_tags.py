@@ -39,7 +39,7 @@ def test_insights_client_tags():
     name = ".".join([cls.__module__, cls.__name__])
     with pytest.raises(ParseException) as e:
         InsightsClientTags(context_wrap(TAGS_UNPARSABLE))
-    assert f"{name} couldn't parse yaml." in str(e.value)
+    assert "{0} couldn't parse yaml.".format(name) in str(e.value)
 
     tags = InsightsClientTags(context_wrap(TAGS_WITHOUT_GROUP))
     assert tags.group is None
