@@ -584,6 +584,10 @@ class DefaultSpecs(Specs):
     saphostexec_status = simple_command("/usr/sap/hostctrl/exe/saphostexec -status")
     saphostexec_version = simple_command("/usr/sap/hostctrl/exe/saphostexec -version")
     sat5_insights_properties = simple_file("/etc/redhat-access/redhat-access-insights.properties")
+    satellite_capsule_with_background_downloadpolicy = simple_command(
+        "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c \"select name from smart_proxies where download_policy = 'background'\" --csv",
+        deps=[SatelliteVersion]
+    )
     satellite_compute_resources = simple_command(
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c 'select name, type from compute_resources' --csv",
         deps=[SatelliteVersion]
@@ -609,6 +613,10 @@ class DefaultSpecs(Specs):
     satellite_non_yum_type_repos = simple_command(
         "/usr/bin/mongo pulp_database --eval 'db.repo_importers.find({\"importer_type_id\": { $ne: \"yum_importer\"}}).count()'",
         deps=[[SatelliteVersion, CapsuleVersion]]
+    )
+    satellite_repos_with_background_downloadpolicy = simple_command(
+        "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c \"select name from katello_root_repositories where download_policy = 'background'\" --csv",
+        deps=[SatelliteVersion]
     )
     satellite_sca_status = simple_command(
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d candlepin -c \"select displayname,content_access_mode from cp_owner\" --csv",

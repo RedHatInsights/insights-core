@@ -153,6 +153,18 @@ logname: no login name
 /etc/profile.d/hkuser.sh: line 40: HISTFILE: readonly variable
 """.strip()
 
+SATELLITE_CAPSULES_WITH_BACKGROUND_DOWNLOADPOLICY = """
+name
+capsule1.test.com
+capsule2.test.com
+"""
+
+SATELLITE_REPOS_WITH_BACKGROUND_DOWNLOADPOLICY = """
+name
+Red Hat Satellite Tools 6.8 for RHEL 7 Server RPMs x86_64
+Red Hat Enterprise Linux 8 for x86_64 - BaseOS RPMs 8
+"""
+
 
 def test_HTL_doc_examples():
     settings = satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_SETTINGS_1))
@@ -160,12 +172,16 @@ def test_HTL_doc_examples():
     sat_sca_info = satellite_postgresql_query.SatelliteSCAStatus(context_wrap(SATELLITE_SCA_INFO_1))
     repositories = satellite_postgresql_query.SatelliteKatelloEmptyURLRepositories(context_wrap(SATELLITE_KATELLO_ROOT_REPOSITORIES))
     tasks = satellite_postgresql_query.SatelliteCoreTaskReservedResourceCount(context_wrap(SATELLITE_TASK_RESERVERDRESOURCE_CONTENT))
+    capsules = satellite_postgresql_query.SatelliteCapsulesWithBackgroundDownloadPolity(context_wrap(SATELLITE_CAPSULES_WITH_BACKGROUND_DOWNLOADPOLICY))
+    repos = satellite_postgresql_query.SatelliteReposWithBackgroundDownloadPolity(context_wrap(SATELLITE_REPOS_WITH_BACKGROUND_DOWNLOADPOLICY))
     globs = {
         'table': settings,
         'resources_table': resources_table,
         'sat_sca_info': sat_sca_info,
         'katello_root_repositories': repositories,
-        'tasks': tasks
+        'tasks': tasks,
+        'capsules': capsules,
+        'repos': repos
     }
     failed, _ = doctest.testmod(satellite_postgresql_query, globs=globs)
     assert failed == 0
@@ -255,3 +271,15 @@ def test_satellite_katello_empty_url_repositories():
 def test_satellite_taskreservedresource():
     tasks = satellite_postgresql_query.SatelliteCoreTaskReservedResourceCount(context_wrap(SATELLITE_TASK_RESERVERDRESOURCE_CONTENT))
     assert tasks[0]['count'] == '0'
+
+
+def test_satellite_capsule_with_background_download_policy():
+    capsules = satellite_postgresql_query.SatelliteCapsulesWithBackgroundDownloadPolity(context_wrap(SATELLITE_CAPSULES_WITH_BACKGROUND_DOWNLOADPOLICY))
+    assert len(capsules) == 2
+    assert capsules[0]['name'] == 'capsule1.test.com'
+
+
+def test_satellite_repos_with_background_download_policy():
+    repos = satellite_postgresql_query.SatelliteReposWithBackgroundDownloadPolity(context_wrap(SATELLITE_REPOS_WITH_BACKGROUND_DOWNLOADPOLICY))
+    assert len(repos) == 2
+    assert repos[0]['name'] == 'Red Hat Satellite Tools 6.8 for RHEL 7 Server RPMs x86_64'

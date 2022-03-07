@@ -6,14 +6,18 @@ This module contains the following parsers:
 
 SatelliteAdminSettings - command ``psql -d foreman -c 'select name, value, "default" from settings where name in (\'destroy_vm_on_host_delete\', \'unregister_delete_host\') --csv'``
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SatelliteCapsulesWithBackgroundDownloadPolity - command ``psql -d foreman -c "select name from smart_proxies where download_policy = 'background'" --csv``
+----------------------------------------------------------------------------------------------------------------------------------------------------------
 SatelliteComputeResources - command ``psql -d foreman -c 'select name, type from compute_resources' --csv``
 -----------------------------------------------------------------------------------------------------------
-SatelliteSCAStatus - command ``psql -d candlepin -c "select displayname, content_access_mode from cp_owner" --csv``
--------------------------------------------------------------------------------------------------------------------
-SatelliteKatelloEmptyURLRepositories - command ``psql -d foreman -c 'select id, name from katello_root_repositories where url is NULL;' --csv``
------------------------------------------------------------------------------------------------------------------------------------------------
 SatelliteCoreTaskReservedResourceCount - command ``psql -d pulpcore -c 'select count(*) from core_taskreservedresource' --csv``
 -------------------------------------------------------------------------------------------------------------------------------
+SatelliteKatelloEmptyURLRepositories - command ``psql -d foreman -c 'select id, name from katello_root_repositories where url is NULL;' --csv``
+-----------------------------------------------------------------------------------------------------------------------------------------------
+SatelliteReposWithBackgroundDownloadPolity - command ``psql -d foreman -c "select name from katello_root_repositories where download_policy = 'background'" --csv``
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SatelliteSCAStatus - command ``psql -d candlepin -c "select displayname, content_access_mode from cp_owner" --csv``
+-------------------------------------------------------------------------------------------------------------------
 """
 
 import os
@@ -159,6 +163,28 @@ class SatelliteAdminSettings(SatellitePostgreSQLQuery):
             return rows[0].get('default') if value == '' else value
 
 
+@parser(Specs.satellite_capsule_with_background_downloadpolicy)
+class SatelliteCapsulesWithBackgroundDownloadPolity(SatellitePostgreSQLQuery):
+    """
+    Parse the output of the command ``psql -d foreman -c "select name from smart_proxies where download_policy = 'background'" --csv``.
+
+    Sample output::
+
+        name
+        capsule1.test.com
+        capsule2.test.com
+
+    Examples:
+        >>> type(capsules)
+        <class 'insights.parsers.satellite_postgresql_query.SatelliteCapsulesWithBackgroundDownloadPolity'>
+        >>> len(capsules)
+        2
+        >>> capsules[0]['name']
+        'capsule1.test.com'
+    """
+    columns = ['name']
+
+
 @parser(Specs.satellite_compute_resources)
 class SatelliteComputeResources(SatellitePostgreSQLQuery):
     """
@@ -180,6 +206,25 @@ class SatelliteComputeResources(SatellitePostgreSQLQuery):
         'test_compute_resource1'
     """
     columns = ['name', 'type']
+
+
+@parser(Specs.satellite_core_taskreservedresource_count)
+class SatelliteCoreTaskReservedResourceCount(SatellitePostgreSQLQuery):
+    """
+    Parse the output of the command ``psql -d pulpcore -c 'select count(*) from core_taskreservedresource' --csv``.
+
+    Sample output::
+
+        count
+        0
+
+    Examples:
+        >>> type(tasks)
+        <class 'insights.parsers.satellite_postgresql_query.SatelliteCoreTaskReservedResourceCount'>
+        >>> tasks[0]['count']
+        '0'
+    """
+    columns = ['count']
 
 
 @parser(Specs.satellite_katello_empty_url_repositories)
@@ -204,23 +249,26 @@ class SatelliteKatelloEmptyURLRepositories(SatellitePostgreSQLQuery):
     columns = ['id', 'name']
 
 
-@parser(Specs.satellite_core_taskreservedresource_count)
-class SatelliteCoreTaskReservedResourceCount(SatellitePostgreSQLQuery):
+@parser(Specs.satellite_repos_with_background_downloadpolicy)
+class SatelliteReposWithBackgroundDownloadPolity(SatellitePostgreSQLQuery):
     """
-    Parse the output of the command ``psql -d pulpcore -c 'select count(*) from core_taskreservedresource' --csv``.
+    Parse the output of the command ``psql -d foreman -c "select name from katello_root_repositories where download_policy = 'background'" --csv``.
 
     Sample output::
 
-        count
-        0
+        name
+        Red Hat Satellite Tools 6.8 for RHEL 7 Server RPMs x86_64
+        Red Hat Enterprise Linux 8 for x86_64 - BaseOS RPMs 8
 
     Examples:
-        >>> type(tasks)
-        <class 'insights.parsers.satellite_postgresql_query.SatelliteCoreTaskReservedResourceCount'>
-        >>> tasks[0]['count']
-        '0'
+        >>> type(repos)
+        <class 'insights.parsers.satellite_postgresql_query.SatelliteReposWithBackgroundDownloadPolity'>
+        >>> len(repos)
+        2
+        >>> repos[0]['name']
+        'Red Hat Satellite Tools 6.8 for RHEL 7 Server RPMs x86_64'
     """
-    columns = ['count']
+    columns = ['name']
 
 
 @parser(Specs.satellite_sca_status)
