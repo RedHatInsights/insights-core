@@ -28,6 +28,7 @@ from insights import parser, CommandParser
 from insights.specs import Specs
 from insights.parsers import SkipException, ParseException
 from insights.parsers import keyword_search, calc_offset
+from insights.util import deprecated
 
 
 class SatellitePostgreSQLQuery(CommandParser, list):
@@ -229,6 +230,10 @@ class SatelliteKatelloEmptyURLRepositories(SatellitePostgreSQLQuery):
         'testa'
     """
     columns = ['id', 'name']
+
+    def __init__(self, *args, **kwargs):
+        deprecated(SatelliteKatelloEmptyURLRepositories, 'Please use the SatelliteQualifiedKatelloRepos parser in the current module.')
+        super(SatelliteKatelloEmptyURLRepositories, self).__init__(*args, **kwargs)
 
 
 @parser(Specs.satellite_qualified_katello_repos)
