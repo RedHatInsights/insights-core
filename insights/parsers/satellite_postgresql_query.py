@@ -6,16 +6,16 @@ This module contains the following parsers:
 
 SatelliteAdminSettings - command ``psql -d foreman -c 'select name, value, "default" from settings where name in (\'destroy_vm_on_host_delete\', \'unregister_delete_host\') --csv'``
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-SatelliteCapsulesWithBackgroundDownloadPolity - command ``psql -d foreman -c "select name from smart_proxies where download_policy = 'background'" --csv``
-----------------------------------------------------------------------------------------------------------------------------------------------------------
 SatelliteComputeResources - command ``psql -d foreman -c 'select name, type from compute_resources' --csv``
 -----------------------------------------------------------------------------------------------------------
 SatelliteCoreTaskReservedResourceCount - command ``psql -d pulpcore -c 'select count(*) from core_taskreservedresource' --csv``
 -------------------------------------------------------------------------------------------------------------------------------
 SatelliteKatelloEmptyURLRepositories - command ``psql -d foreman -c 'select id, name from katello_root_repositories where url is NULL;' --csv``
 -----------------------------------------------------------------------------------------------------------------------------------------------
-SatelliteReposWithBackgroundDownloadPolity - command ``psql -d foreman -c "select name from katello_root_repositories where download_policy = 'background'" --csv``
--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SatelliteQualifiedCapsules - command ``psql -d foreman -c "select name from smart_proxies where download_policy = 'background'" --csv``
+---------------------------------------------------------------------------------------------------------------------------------------
+SatelliteQualifiedKatelloRepos - command ``psql -d foreman -c "select id, name, url, download_policy from katello_root_repositories where download_policy = 'background' or url is NULL" --csv``
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 SatelliteSCAStatus - command ``psql -d candlepin -c "select displayname, content_access_mode from cp_owner" --csv``
 -------------------------------------------------------------------------------------------------------------------
 """
@@ -163,28 +163,6 @@ class SatelliteAdminSettings(SatellitePostgreSQLQuery):
             return rows[0].get('default') if value == '' else value
 
 
-@parser(Specs.satellite_capsule_with_background_downloadpolicy)
-class SatelliteCapsulesWithBackgroundDownloadPolity(SatellitePostgreSQLQuery):
-    """
-    Parse the output of the command ``psql -d foreman -c "select name from smart_proxies where download_policy = 'background'" --csv``.
-
-    Sample output::
-
-        name
-        capsule1.test.com
-        capsule2.test.com
-
-    Examples:
-        >>> type(capsules)
-        <class 'insights.parsers.satellite_postgresql_query.SatelliteCapsulesWithBackgroundDownloadPolity'>
-        >>> len(capsules)
-        2
-        >>> capsules[0]['name']
-        'capsule1.test.com'
-    """
-    columns = ['name']
-
-
 @parser(Specs.satellite_compute_resources)
 class SatelliteComputeResources(SatellitePostgreSQLQuery):
     """
@@ -230,6 +208,10 @@ class SatelliteCoreTaskReservedResourceCount(SatellitePostgreSQLQuery):
 @parser(Specs.satellite_katello_empty_url_repositories)
 class SatelliteKatelloEmptyURLRepositories(SatellitePostgreSQLQuery):
     """
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.satellite_postgresql_query.SatelliteQualifiedKatelloRepos` instead.
+
     Parse the output of the command ``psql -d foreman -c 'select id, name from katello_root_repositories where url is NULL;' --csv``.
 
     Sample output::
@@ -249,24 +231,47 @@ class SatelliteKatelloEmptyURLRepositories(SatellitePostgreSQLQuery):
     columns = ['id', 'name']
 
 
-@parser(Specs.satellite_repos_with_background_downloadpolicy)
-class SatelliteReposWithBackgroundDownloadPolity(SatellitePostgreSQLQuery):
+@parser(Specs.satellite_qualified_katello_repos)
+class SatelliteQualifiedKatelloRepos(SatellitePostgreSQLQuery):
     """
-    Parse the output of the command ``psql -d foreman -c "select name from katello_root_repositories where download_policy = 'background'" --csv``.
+    Parse the output of the command ``psql -d foreman -c "select id, name, url, download_policy from katello_root_repositories where download_policy = 'background' or url is NULL" --csv``.
+
+    Sample output::
+
+        id,name,url,download_policy
+        2,Red Hat Satellite Tools 6.8 for RHEL 7 Server RPMs x86_64,,on_demand
+        3,Red Hat Enterprise Linux 8 for x86_64 - AppStream RPMs 8,https://cdn.redhat.com/content/dist/rhel8/8/x86_64/appstream/os,background
+        4,Red Hat Enterprise Linux 7 Server RPMs x86_64 7Server,https://cdn.redhat.com/content/dist/rhel/server/7/7Server/x86_64/os,background
+
+    Examples:
+        >>> type(repos)
+        <class 'insights.parsers.satellite_postgresql_query.SatelliteQualifiedKatelloRepos'>
+        >>> len(repos)
+        3
+        >>> repos[0]['name']
+        'Red Hat Satellite Tools 6.8 for RHEL 7 Server RPMs x86_64'
+    """
+    columns = ['id', 'name', 'url', 'download_policy']
+
+
+@parser(Specs.satellite_qualified_capsules)
+class SatelliteQualifiedCapsules(SatellitePostgreSQLQuery):
+    """
+    Parse the output of the command ``psql -d foreman -c "select name from smart_proxies where download_policy = 'background'" --csv``.
 
     Sample output::
 
         name
-        Red Hat Satellite Tools 6.8 for RHEL 7 Server RPMs x86_64
-        Red Hat Enterprise Linux 8 for x86_64 - BaseOS RPMs 8
+        capsule1.test.com
+        capsule2.test.com
 
     Examples:
-        >>> type(repos)
-        <class 'insights.parsers.satellite_postgresql_query.SatelliteReposWithBackgroundDownloadPolity'>
-        >>> len(repos)
+        >>> type(capsules)
+        <class 'insights.parsers.satellite_postgresql_query.SatelliteQualifiedCapsules'>
+        >>> len(capsules)
         2
-        >>> repos[0]['name']
-        'Red Hat Satellite Tools 6.8 for RHEL 7 Server RPMs x86_64'
+        >>> capsules[0]['name']
+        'capsule1.test.com'
     """
     columns = ['name']
 
