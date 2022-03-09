@@ -221,6 +221,7 @@ class Specs(SpecSet):
     heat_crontab = RegistryPoint()
     heat_crontab_container = RegistryPoint()
     heat_engine_log = RegistryPoint(filterable=True)
+    hexdump = RegistryPoint()
     hostname = RegistryPoint()
     hostname_default = RegistryPoint()
     hostname_short = RegistryPoint()

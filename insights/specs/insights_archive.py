@@ -87,6 +87,7 @@ class InsightsArchiveSpecs(Specs):
     gluster_v_info = simple_file("insights_commands/gluster_volume_info")
     hammer_task_list = simple_file("insights_commands/hammer_--config_.root..hammer.cli.modules.d.foreman.yml_--output_csv_task_list_--search_state_running_AND_label_Actions_Candlepin_ListenOnCandlepinEvents_OR_label_Actions_Katello_EventQueue_Monitor")
     installed_rpms = head(all_installed_rpms)
+    hexdump = simple_file("insights_commands/hexdump_-C_dev_cpu_dma_latency")
     hostname = simple_file("insights_commands/hostname_-f")
     hostname_default = simple_file("insights_commands/hostname")
     hostname_short = simple_file("insights_commands/hostname_-s")

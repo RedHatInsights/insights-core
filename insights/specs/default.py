@@ -268,6 +268,7 @@ class DefaultSpecs(Specs):
     haproxy_cfg_scl = simple_file("/etc/opt/rh/rh-haproxy18/haproxy/haproxy.cfg")
     heat_api_log = first_file(["/var/log/containers/heat/heat_api.log", "/var/log/heat/heat-api.log", "/var/log/heat/heat_api.log"])
     heat_conf = first_file(["/var/lib/config-data/puppet-generated/heat/etc/heat/heat.conf", "/etc/heat/heat.conf"])
+    hexdump = simple_command("/usr/bin/hexdump -C /dev/cpu_dma_latency")
     hostname = simple_command("/bin/hostname -f")
     hostname_default = simple_command("/bin/hostname")
     hostname_short = simple_command("/bin/hostname -s")
