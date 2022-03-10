@@ -8,12 +8,14 @@ SatelliteAdminSettings - command ``psql -d foreman -c 'select name, value, "defa
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 SatelliteComputeResources - command ``psql -d foreman -c 'select name, type from compute_resources' --csv``
 -----------------------------------------------------------------------------------------------------------
-SatelliteSCAStatus - command ``psql -d candlepin -c "select displayname, content_access_mode from cp_owner" --csv``
--------------------------------------------------------------------------------------------------------------------
-SatelliteKatelloEmptyURLRepositories - command ``psql -d foreman -c 'select id, name from katello_root_repositories where url is NULL;' --csv``
------------------------------------------------------------------------------------------------------------------------------------------------
 SatelliteCoreTaskReservedResourceCount - command ``psql -d pulpcore -c 'select count(*) from core_taskreservedresource' --csv``
 -------------------------------------------------------------------------------------------------------------------------------
+SatelliteQualifiedCapsules - command ``psql -d foreman -c "select name from smart_proxies where download_policy = 'background'" --csv``
+---------------------------------------------------------------------------------------------------------------------------------------
+SatelliteQualifiedKatelloRepos - command ``psql -d foreman -c "select id, name, url, download_policy from katello_root_repositories where download_policy = 'background' or url is NULL" --csv``
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SatelliteSCAStatus - command ``psql -d candlepin -c "select displayname, content_access_mode from cp_owner" --csv``
+-------------------------------------------------------------------------------------------------------------------
 """
 
 import os
@@ -24,6 +26,7 @@ from insights import parser, CommandParser
 from insights.specs import Specs
 from insights.parsers import SkipException, ParseException
 from insights.parsers import keyword_search, calc_offset
+from insights.util import deprecated
 
 
 class SatellitePostgreSQLQuery(CommandParser, list):
@@ -182,9 +185,32 @@ class SatelliteComputeResources(SatellitePostgreSQLQuery):
     columns = ['name', 'type']
 
 
+@parser(Specs.satellite_core_taskreservedresource_count)
+class SatelliteCoreTaskReservedResourceCount(SatellitePostgreSQLQuery):
+    """
+    Parse the output of the command ``psql -d pulpcore -c 'select count(*) from core_taskreservedresource' --csv``.
+
+    Sample output::
+
+        count
+        0
+
+    Examples:
+        >>> type(tasks)
+        <class 'insights.parsers.satellite_postgresql_query.SatelliteCoreTaskReservedResourceCount'>
+        >>> tasks[0]['count']
+        '0'
+    """
+    columns = ['count']
+
+
 @parser(Specs.satellite_katello_empty_url_repositories)
 class SatelliteKatelloEmptyURLRepositories(SatellitePostgreSQLQuery):
     """
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.satellite_postgresql_query.SatelliteQualifiedKatelloRepos` instead.
+
     Parse the output of the command ``psql -d foreman -c 'select id, name from katello_root_repositories where url is NULL;' --csv``.
 
     Sample output::
@@ -203,24 +229,54 @@ class SatelliteKatelloEmptyURLRepositories(SatellitePostgreSQLQuery):
     """
     columns = ['id', 'name']
 
+    def __init__(self, *args, **kwargs):
+        deprecated(SatelliteKatelloEmptyURLRepositories, 'Please use the SatelliteQualifiedKatelloRepos parser in the current module.')
+        super(SatelliteKatelloEmptyURLRepositories, self).__init__(*args, **kwargs)
 
-@parser(Specs.satellite_core_taskreservedresource_count)
-class SatelliteCoreTaskReservedResourceCount(SatellitePostgreSQLQuery):
+
+@parser(Specs.satellite_qualified_katello_repos)
+class SatelliteQualifiedKatelloRepos(SatellitePostgreSQLQuery):
     """
-    Parse the output of the command ``psql -d pulpcore -c 'select count(*) from core_taskreservedresource' --csv``.
+    Parse the output of the command ``psql -d foreman -c "select id, name, url, download_policy from katello_root_repositories where download_policy = 'background' or url is NULL" --csv``.
 
     Sample output::
 
-        count
-        0
+        id,name,url,download_policy
+        2,Red Hat Satellite Tools 6.8 for RHEL 7 Server RPMs x86_64,,on_demand
+        3,Red Hat Enterprise Linux 8 for x86_64 - AppStream RPMs 8,https://cdn.redhat.com/content/dist/rhel8/8/x86_64/appstream/os,background
+        4,Red Hat Enterprise Linux 7 Server RPMs x86_64 7Server,https://cdn.redhat.com/content/dist/rhel/server/7/7Server/x86_64/os,background
 
     Examples:
-        >>> type(tasks)
-        <class 'insights.parsers.satellite_postgresql_query.SatelliteCoreTaskReservedResourceCount'>
-        >>> tasks[0]['count']
-        '0'
+        >>> type(repos)
+        <class 'insights.parsers.satellite_postgresql_query.SatelliteQualifiedKatelloRepos'>
+        >>> len(repos)
+        3
+        >>> repos[0]['name']
+        'Red Hat Satellite Tools 6.8 for RHEL 7 Server RPMs x86_64'
     """
-    columns = ['count']
+    columns = ['id', 'name', 'url', 'download_policy']
+
+
+@parser(Specs.satellite_qualified_capsules)
+class SatelliteQualifiedCapsules(SatellitePostgreSQLQuery):
+    """
+    Parse the output of the command ``psql -d foreman -c "select name from smart_proxies where download_policy = 'background'" --csv``.
+
+    Sample output::
+
+        name
+        capsule1.test.com
+        capsule2.test.com
+
+    Examples:
+        >>> type(capsules)
+        <class 'insights.parsers.satellite_postgresql_query.SatelliteQualifiedCapsules'>
+        >>> len(capsules)
+        2
+        >>> capsules[0]['name']
+        'capsule1.test.com'
+    """
+    columns = ['name']
 
 
 @parser(Specs.satellite_sca_status)
