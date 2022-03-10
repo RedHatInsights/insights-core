@@ -599,6 +599,8 @@ class Specs(SpecSet):
     satellite_katello_empty_url_repositories = RegistryPoint()
     satellite_mongodb_storage_engine = RegistryPoint()
     satellite_non_yum_type_repos = RegistryPoint()
+    satellite_qualified_capsules = RegistryPoint()
+    satellite_qualified_katello_repos = RegistryPoint()
     satellite_sca_status = RegistryPoint()
     satellite_settings = RegistryPoint()
     satellite_version_rb = RegistryPoint()
