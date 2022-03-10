@@ -212,7 +212,6 @@ def yum_updates(_broker):
     Raises:
         SkipComponent: Raised when neither dnf nor yum is found
     """
-
     if UpdatesManager is None:
         raise SkipComponent()
 
@@ -225,28 +224,30 @@ def yum_updates(_broker):
             "update_list": {},
         }
 
-        data = {'package_list': umgr.installed_packages()}
-        updates = {}
-        for pkg in data["package_list"]:
-            (nevra, updates_list) = umgr.updates(pkg)
-            updates[nevra] = updates_list
-            for (nevra, update_list) in updates.items():
-                if update_list:
-                    out_list = []
-                    for pkg in umgr.sorted_pkgs(update_list):
-                        pkg_dict = {
-                            "package": umgr.pkg_nevra(pkg),
-                            "repository": umgr.pkg_repo(pkg),
-                            "basearch": response["basearch"],
-                            "releasever": response["releasever"],
-                        }
-                        erratum = umgr.advisory(pkg)
-                        if erratum:
-                            pkg_dict["erratum"] = erratum
-                        out_list.append(pkg_dict)
-                    response["update_list"][nevra] = {"available_updates": out_list}
+        for pkg in umgr.installed_packages():
+            nevra, updates_list = umgr.updates(pkg)
+            if updates_list:
+                out_list = []
+                update_list = umgr.sorted_pkgs(updates_list)
+
+                for p in update_list:
+                    pkg_dict = {
+                        "package": umgr.pkg_nevra(p),
+                        "repository": umgr.pkg_repo(p),
+                        "basearch": response["basearch"],
+                        "releasever": response["releasever"],
+                    }
+
+                    erratum = umgr.advisory(p)
+                    if erratum:
+                        pkg_dict["erratum"] = erratum
+
+                    out_list.append(pkg_dict)
+
+                response["update_list"][nevra] = {"available_updates": out_list}
 
         ts = umgr.last_update()
         if ts:
             response["metadata_time"] = time.strftime("%FT%TZ", time.gmtime(ts))
+
     return DatasourceProvider(content=json.dumps(response), relative_path='insights_commands/yum_updates_list')
