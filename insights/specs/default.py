@@ -600,15 +600,19 @@ class DefaultSpecs(Specs):
         '/usr/bin/awk \'BEGIN { pipe="openssl x509 -noout -subject -enddate"} /^-+BEGIN CERT/,/^-+END CERT/ { print | pipe } /^-+END CERT/ { close(pipe); printf("\\n")}\' /etc/pki/katello/certs/katello-server-ca.crt',
     )
     satellite_custom_hiera = simple_file("/etc/foreman-installer/custom-hiera.yaml")
-    satellite_katello_empty_url_repositories = simple_command(
-        "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c 'select id, name from katello_root_repositories where url is NULL;' --csv",
-        deps=[SatelliteVersion]
-    )
     satellite_missed_pulp_agent_queues = satellite_missed_queues.satellite_missed_pulp_agent_queues
     satellite_mongodb_storage_engine = simple_command("/usr/bin/mongo pulp_database --eval 'db.serverStatus().storageEngine'")
     satellite_non_yum_type_repos = simple_command(
         "/usr/bin/mongo pulp_database --eval 'db.repo_importers.find({\"importer_type_id\": { $ne: \"yum_importer\"}}).count()'",
         deps=[[SatelliteVersion, CapsuleVersion]]
+    )
+    satellite_qualified_capsules = simple_command(
+        "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c \"select name from smart_proxies where download_policy = 'background'\" --csv",
+        deps=[SatelliteVersion]
+    )
+    satellite_qualified_katello_repos = simple_command(
+        "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c \"select id, name, url, download_policy from katello_root_repositories where download_policy = 'background' or url is NULL\" --csv",
+        deps=[SatelliteVersion]
     )
     satellite_sca_status = simple_command(
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d candlepin -c \"select displayname,content_access_mode from cp_owner\" --csv",
