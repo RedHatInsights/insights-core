@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.266](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.266) (2022-03-10)
+
+- Fix slowness on RHEL 8 by simplifying looping over pkgs ([PR 3354](https://github.com/RedHatInsights/insights-core/pull/3354))
+- feat: New spec and parser to get capsules and repos with conditions ([PR 3352](https://github.com/RedHatInsights/insights-core/pull/3352))
+- feat: New parser for systemd_perms ([PR 3339](https://github.com/RedHatInsights/insights-core/pull/3339))
+
 ## [insights-core-3.0.265](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.265) (2022-03-03)
 
 - fix: Fix the regression bug of soscleaner IP obsfuscating ([PR 3347](https://github.com/RedHatInsights/insights-core/pull/3347))
