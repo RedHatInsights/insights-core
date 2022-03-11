@@ -95,15 +95,37 @@ def deserialize(data, root=None):
 
 
 def marshal(v, root=None, pool=None):
+    data = {
+        'errors': [],
+        'results': None
+    }
+
+    def call_serializer(func, value):
+        result = error = None
+        try:
+            result = func(value)
+        except Exception:
+            error = traceback.format_exc()
+        if result:
+            if isinstance(data['results'], list):
+                data['results'].append(result)
+            else:
+                data['results'] = result
+        if error:
+            data['errors'].append(error)
+
     if v is None:
-        return
+        return data
     f = partial(serialize, root=root)
     if isinstance(v, list):
+        data['results'] = []
         if pool:
-            return list(pool.map(f, v))
+            list(pool.map(call_serializer, [f] * len(v), v))
         else:
-            return [f(t) for t in v]
-    return f(v)
+            list(map(call_serializer, [f] * len(v), v))
+    else:
+        call_serializer(f, v)
+    return data
 
 
 def unmarshal(data, root=None):
@@ -189,15 +211,12 @@ class Hydration(object):
                 "exec_time": broker.exec_times.get(c),
                 "errors": errors
             }
-
-            try:
-                start = time.time()
-                doc["results"] = marshal(value, root=self.data, pool=self.pool)
-            except Exception:
-                errors.append(traceback.format_exc())
-                doc["results"] = None
-            finally:
-                doc["ser_time"] = time.time() - start
+            start = time.time()
+            return_data = marshal(value, root=self.data, pool=self.pool)
+            doc["results"] = return_data['results'] if return_data['results'] else None
+            if return_data['errors']:
+                errors.extend(return_data['errors'])
+            doc["ser_time"] = time.time() - start
         except Exception as ex:
             log.exception(ex)
         else:
