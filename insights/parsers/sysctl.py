@@ -12,18 +12,25 @@ Sysctl - command ``sysctl -a``
 SysctlConf - file ``/etc/sysctl.conf``
 --------------------------------------
 
+SysctlDConfEtc - file ``/etc/sysctl.d/*.conf``
+----------------------------------------------
+
+SysctlDConfUsr - file ``/usr/lib/sysctl.d/*.conf``
+--------------------------------------------------
+
 SysctlConfInitramfs - command ``lsinitrd``
 ------------------------------------------
-
 """
-from .. import Parser, LogFileOutput, parser, LegacyItemAccess, CommandParser
-from ..parsers import split_kv_pairs
+from collections import OrderedDict
+from insights.core import CommandParser, LogFileOutput, Parser
+from insights.core.plugins import parser
+from insights.parsers import split_kv_pairs
 from insights.specs import Specs
 
 
-@parser(Specs.sysctl_conf)
-class SysctlConf(Parser):
-    """Parse `/etc/sysctl.conf` file
+class SysctlBase(Parser, dict):
+    """
+    Parse sysctl conf files, and sysctl command output.
 
     Sample input::
 
@@ -40,43 +47,68 @@ class SysctlConf(Parser):
             appear in the lines.
 
     Examples:
-        >>> type(sysctl_conf)
-        <class 'insights.parsers.sysctl.SysctlConf'>
         >>> sysctl_conf.data['kernel.domainname']
         'example.com'
         >>> sysctl_conf.data['kernel.modprobe']
         '/sbin/mod probe'
     """
-
     def parse_content(self, content):
         # Valid comments are both # and ; so remove one locally,
-        # other comments and blank lines are removed by split fxn.
+        # other comments and blank lines are removed by split_kv_pairs.
         lines = [l for l in content if not l.strip().startswith(';')]
-        self.data = split_kv_pairs(lines, ordered=True)
+        self.update(split_kv_pairs(lines, ordered=True))
+
+    @property
+    def data(self):
+        return OrderedDict(self)
+
+
+@parser(Specs.sysctl_conf)
+class SysctlConf(SysctlBase):
+    """
+    Parse `/etc/sysctl.conf` file.
+
+    .. note::
+        Please refer to its base class :class:`SysctlBase`
+        for the sample data and examples.
+    """
+    pass
+
+
+@parser(Specs.sysctl_d_conf_etc)
+class SysctlDConfEtc(SysctlBase):
+    """
+    Parse `/etc/sysctl.d/*.conf` files.
+
+    .. note::
+        Please refer to its base class :class:`SysctlBase`
+        for the sample data and examples.
+    """
+    pass
+
+
+@parser(Specs.sysctl_d_conf_usr)
+class SysctlDConfUsr(SysctlBase):
+    """
+    Parse `/usr/lib/sysctl.d/*.conf` files.
+
+    .. note::
+        Please refer to its base class :class:`SysctlBase`
+        for the sample data and examples.
+    """
+    pass
 
 
 @parser(Specs.sysctl)
-class Sysctl(LegacyItemAccess, CommandParser):
-    """Parse the output of `sysctl -a` command.
-
-    Sample input::
-
-        kernel.domainname = example.com
-        kernel.modprobe = /sbin/modprobe
-
-    Examples:
-        >>> type(sysctl)
-        <class 'insights.parsers.sysctl.Sysctl'>
-        >>> sysctl['kernel.domainname']
-        'example.com'
-        >>> sysctl.get('kernel.modprobe')
-        '/sbin/modprobe'
-        >>> 'kernel.modules_disabled' in sysctl
-        False
+class Sysctl(SysctlBase):
     """
+    Parse the output of `sysctl -a` command.
 
-    def parse_content(self, content):
-        self.data = split_kv_pairs(content)
+    .. note::
+        Please refer to its base class :class:`SysctlBase`
+        for the sample data and examples.
+    """
+    pass
 
 
 @parser(Specs.sysctl_conf_initramfs)
@@ -122,7 +154,6 @@ class SysctlConfInitramfs(CommandParser, LogFileOutput):
         <class 'insights.parsers.sysctl.SysctlConfInitramfs'>
         >>> sysctl_initramfs.get('max_user_watches')
         [{'raw_message': 'fs.inotify.max_user_watches=524288'}]
-
     """
     def parse_content(self, content):
         # Remove all blank lines and comment lines prior to parsing

@@ -666,6 +666,8 @@ class DefaultSpecs(Specs):
     sysconfig_virt_who = simple_file("/etc/sysconfig/virt-who")
     sysctl = simple_command("/sbin/sysctl -a")
     sysctl_conf = simple_file("/etc/sysctl.conf")
+    sysctl_d_conf_etc = glob_file("/etc/sysctl.d/*.conf")
+    sysctl_d_conf_usr = glob_file("/usr/lib/sysctl.d/*.conf")
     systemctl_cat_dnsmasq_service = simple_command("/bin/systemctl cat dnsmasq.service")
     systemctl_cat_rpcbind_socket = simple_command("/bin/systemctl cat rpcbind.socket")
     systemctl_cinder_volume = simple_command("/bin/systemctl show openstack-cinder-volume")
