@@ -345,7 +345,7 @@ class DefaultSpecs(Specs):
     kdump_conf = simple_file("/etc/kdump.conf")
     kernel_config = glob_file("/boot/config-*")
     kexec_crash_size = simple_file("/sys/kernel/kexec_crash_size")
-    keystone_crontab = simple_command("/usr/bin/crontab -l -u keystone")
+    keystone_crontab = simple_file("/var/spool/cron/keystone")
     kpatch_list = simple_command("/usr/sbin/kpatch list")
     krb5 = glob_file([r"etc/krb5.conf", r"etc/krb5.conf.d/*"])
     ksmstate = simple_file("/sys/kernel/mm/ksm/run")
@@ -490,7 +490,7 @@ class DefaultSpecs(Specs):
                            "/var/lib/config-data/puppet-generated/nova_libvirt/etc/nova/nova.conf",
                            "/etc/nova/nova.conf"
                            ])
-    nova_crontab = simple_command("/usr/bin/crontab -l -u nova")
+    nova_crontab = simple_file("/var/spool/cron/nova")
     nova_uid = simple_command("/usr/bin/id -u nova")
     nscd_conf = simple_file("/etc/nscd.conf")
     nss_rhel7 = simple_file("/etc/pki/nss-legacy/nss-rhel7.config")
