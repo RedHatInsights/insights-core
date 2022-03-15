@@ -97,8 +97,7 @@ def deserialize(data, root=None):
 def marshal(v, root=None, pool=None):
     def call_serializer(func, value):
         try:
-            result = func(value)
-            return result, None
+            return func(value), None
         except Exception:
             return None, traceback.format_exc()
 
@@ -200,13 +199,9 @@ class Hydration(object):
                 "errors": errors
             }
             start = time.time()
-            resulsts, ms_errors = marshal(value, root=self.data, pool=self.pool)
-            doc["results"] = resulsts if resulsts else None
-            if ms_errors:
-                if isinstance(ms_errors, list):
-                    errors.extend(ms_errors)
-                else:
-                    errors.append(ms_errors)
+            results, ms_errors = marshal(value, root=self.data, pool=self.pool)
+            doc["results"] = results if results else None
+            errors.extend(ms_errors if isinstance(ms_errors, list) else [ms_errors]) if ms_errors else None
             doc["ser_time"] = time.time() - start
         except Exception as ex:
             log.exception(ex)
