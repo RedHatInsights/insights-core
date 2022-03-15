@@ -293,6 +293,7 @@ class Specs(SpecSet):
     kpatch_list = RegistryPoint()
     krb5 = RegistryPoint(multi_output=True)
     ksmstate = RegistryPoint()
+    ktimer_lockless = RegistryPoint()
     kubepods_cpu_quota = RegistryPoint(multi_output=True)
     lastupload = RegistryPoint(multi_output=True)
     ld_library_path_of_user = RegistryPoint()
