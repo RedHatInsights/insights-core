@@ -95,37 +95,25 @@ def deserialize(data, root=None):
 
 
 def marshal(v, root=None, pool=None):
-    data = {
-        'errors': [],
-        'results': None
-    }
-
     def call_serializer(func, value):
-        result = error = None
         try:
             result = func(value)
+            return result, None
         except Exception:
-            error = traceback.format_exc()
-        if result:
-            if isinstance(data['results'], list):
-                data['results'].append(result)
-            else:
-                data['results'] = result
-        if error:
-            data['errors'].append(error)
+            return None, traceback.format_exc()
 
     if v is None:
-        return data
+        return None, None
     f = partial(serialize, root=root)
     if isinstance(v, list):
-        data['results'] = []
         if pool:
-            list(pool.map(call_serializer, [f] * len(v), v))
+            data = list(pool.map(call_serializer, [f] * len(v), v))
         else:
-            list(map(call_serializer, [f] * len(v), v))
-    else:
-        call_serializer(f, v)
-    return data
+            data = list(map(call_serializer, [f] * len(v), v))
+        results = [i[0] for i in data if i[0]]
+        errors = [i[1] for i in data if i[1]]
+        return results, errors
+    return call_serializer(f, v)
 
 
 def unmarshal(data, root=None):
@@ -212,10 +200,13 @@ class Hydration(object):
                 "errors": errors
             }
             start = time.time()
-            return_data = marshal(value, root=self.data, pool=self.pool)
-            doc["results"] = return_data['results'] if return_data['results'] else None
-            if return_data['errors']:
-                errors.extend(return_data['errors'])
+            resulsts, ms_errors = marshal(value, root=self.data, pool=self.pool)
+            doc["results"] = resulsts if resulsts else None
+            if ms_errors:
+                if isinstance(ms_errors, list):
+                    errors.extend(ms_errors)
+                else:
+                    errors.append(ms_errors)
             doc["ser_time"] = time.time() - start
         except Exception as ex:
             log.exception(ex)
