@@ -601,6 +601,10 @@ class DefaultSpecs(Specs):
         '/usr/bin/awk \'BEGIN { pipe="openssl x509 -noout -subject -enddate"} /^-+BEGIN CERT/,/^-+END CERT/ { print | pipe } /^-+END CERT/ { close(pipe); printf("\\n")}\' /etc/pki/katello/certs/katello-server-ca.crt',
     )
     satellite_custom_hiera = simple_file("/etc/foreman-installer/custom-hiera.yaml")
+    satellite_katello_repos_with_muliple_ref = simple_command(
+        '/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c "select repository_href, count(*) from katello_repository_references group by repository_href having count(*) > 1;" --csv',
+        deps=[SatelliteVersion]
+    )
     satellite_missed_pulp_agent_queues = satellite_missed_queues.satellite_missed_pulp_agent_queues
     satellite_mongodb_storage_engine = simple_command("/usr/bin/mongo pulp_database --eval 'db.serverStatus().storageEngine'")
     satellite_non_yum_type_repos = simple_command(

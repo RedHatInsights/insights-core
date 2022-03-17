@@ -166,6 +166,12 @@ id,name,url,download_policy
 4,Red Hat Enterprise Linux 7 Server RPMs x86_64 7Server,https://xx.xx.com/server/7/7Server/x86_64/os,background
 """
 
+SATELLITE_KATELLO_REPOS_WITH_MULTI_REF = """
+repository_href,count
+/pulp/api/v3/repositories/rpm/rpm/64e1ddf8-025e-45f2-b2f0-04b874674671/,3
+/pulp/api/v3/repositories/rpm/rpm/sfwrsrw45sfse-45f2-b2f0-04b874675688/,2
+""".strip()
+
 
 def test_HTL_doc_examples():
     settings = satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_SETTINGS_1))
@@ -175,6 +181,7 @@ def test_HTL_doc_examples():
     tasks = satellite_postgresql_query.SatelliteCoreTaskReservedResourceCount(context_wrap(SATELLITE_TASK_RESERVERDRESOURCE_CONTENT))
     capsules = satellite_postgresql_query.SatelliteQualifiedCapsules(context_wrap(SATELLITE_CAPSULES_WITH_BACKGROUND_DOWNLOADPOLICY))
     repos = satellite_postgresql_query.SatelliteQualifiedKatelloRepos(context_wrap(SATELLITE_REPOS_INFO))
+    multi_ref_katello_repos = satellite_postgresql_query.SatelliteKatellloReposWithMultipleRef(context_wrap(SATELLITE_KATELLO_REPOS_WITH_MULTI_REF))
     globs = {
         'table': settings,
         'resources_table': resources_table,
@@ -182,7 +189,8 @@ def test_HTL_doc_examples():
         'katello_root_repositories': repositories,
         'tasks': tasks,
         'capsules': capsules,
-        'repos': repos
+        'repos': repos,
+        'multi_ref_katello_repos': multi_ref_katello_repos
     }
     failed, _ = doctest.testmod(satellite_postgresql_query, globs=globs)
     assert failed == 0
@@ -287,3 +295,9 @@ def test_satellite_qulified_repos():
     background_repos = repos.search(download_policy='background')
     assert len(background_repos) == 2
     assert background_repos[0]['name'] == 'Red Hat Enterprise Linux 8 for x86_64 - AppStream RPMs 8'
+
+
+def test_satellite_repos_with_multiptle_ref():
+    repos = satellite_postgresql_query.SatelliteKatellloReposWithMultipleRef(context_wrap(SATELLITE_KATELLO_REPOS_WITH_MULTI_REF))
+    assert len(repos) == 2
+    assert repos[0]['repository_href'] == '/pulp/api/v3/repositories/rpm/rpm/64e1ddf8-025e-45f2-b2f0-04b874674671/'
