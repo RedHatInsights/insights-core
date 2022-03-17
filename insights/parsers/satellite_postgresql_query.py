@@ -10,6 +10,8 @@ SatelliteComputeResources - command ``psql -d foreman -c 'select name, type from
 -----------------------------------------------------------------------------------------------------------
 SatelliteCoreTaskReservedResourceCount - command ``psql -d pulpcore -c 'select count(*) from core_taskreservedresource' --csv``
 -------------------------------------------------------------------------------------------------------------------------------
+SatelliteKatellloReposWithMultipleRef - command ``psql -d foreman -c "select repository_href, count(*) from katello_repository_references group by repository_href having count(*) > 1;" --csv``
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 SatelliteQualifiedCapsules - command ``psql -d foreman -c "select name from smart_proxies where download_policy = 'background'" --csv``
 ---------------------------------------------------------------------------------------------------------------------------------------
 SatelliteQualifiedKatelloRepos - command ``psql -d foreman -c "select id, name, url, download_policy from katello_root_repositories where download_policy = 'background' or url is NULL" --csv``
@@ -232,6 +234,28 @@ class SatelliteKatelloEmptyURLRepositories(SatellitePostgreSQLQuery):
     def __init__(self, *args, **kwargs):
         deprecated(SatelliteKatelloEmptyURLRepositories, 'Please use the SatelliteQualifiedKatelloRepos parser in the current module.')
         super(SatelliteKatelloEmptyURLRepositories, self).__init__(*args, **kwargs)
+
+
+@parser(Specs.satellite_katello_repos_with_muliple_ref)
+class SatelliteKatellloReposWithMultipleRef(SatellitePostgreSQLQuery):
+    """
+    Parse the output of the command ``psql -d foreman -c "select repository_href, count(*) from katello_repository_references group by repository_href having count(*) > 1;" --csv``.
+
+    Sample output::
+
+        repository_href,count
+        /pulp/api/v3/repositories/rpm/rpm/64e1ddf8-025e-45f2-b2f0-04b874674671/,3
+        /pulp/api/v3/repositories/rpm/rpm/sfwrsrw45sfse-45f2-b2f0-04b874675688/,2
+
+    Examples:
+        >>> type(multi_ref_katello_repos)
+        <class 'insights.parsers.satellite_postgresql_query.SatelliteKatellloReposWithMultipleRef'>
+        >>> len(multi_ref_katello_repos)
+        2
+        >>> multi_ref_katello_repos[0]['repository_href']
+        '/pulp/api/v3/repositories/rpm/rpm/64e1ddf8-025e-45f2-b2f0-04b874674671/'
+    """
+    columns = ['repository_href', 'count']
 
 
 @parser(Specs.satellite_qualified_katello_repos)
