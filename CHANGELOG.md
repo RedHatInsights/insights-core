@@ -2,6 +2,14 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.267](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.267) (2022-03-17)
+
+- feat: New parser for /usr/bin/od -An -t d /dev/cpu_dma_latency ([PR 3353](https://github.com/RedHatInsights/insights-core/pull/3353))
+- feat: New parsers for IBM proc files ([PR 3361](https://github.com/RedHatInsights/insights-core/pull/3361))
+- feat: New spec to get satellite repos with multiple reference ([PR 3362](https://github.com/RedHatInsights/insights-core/pull/3362))
+- feat: Add systctl.d spec, parser, and combiner ([PR 3358](https://github.com/RedHatInsights/insights-core/pull/3358))
+- New parser ktimer_lockless ([PR 3355](https://github.com/RedHatInsights/insights-core/pull/3355))
+
 ## [insights-core-3.0.266](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.266) (2022-03-10)
 
 - Fix slowness on RHEL 8 by simplifying looping over pkgs ([PR 3354](https://github.com/RedHatInsights/insights-core/pull/3354))

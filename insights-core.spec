@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.266
+Version:        3.0.267
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,12 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Mar 17 2022 Sachin Patil <psachin@redhat.com> 3.0.267-1
+- feat: New parser for /usr/bin/od -An -t d /dev/cpu_dma_latency (#3353) (aghodake@redhat.com)
+- feat: New parsers for IBM proc files (#3361) (xiangceliu@redhat.com)
+- feat: New spec to get satellite repos with multiple reference (#3362) (44796653+huali027@users.noreply.github.com)
+- feat: Add systctl.d spec, parser, and combiner (#3358) (rblakley@redhat.com)
+- New parser ktimer_lockless (#3355) (44598880+rasrivas-redhat@users.noreply.github.com)
 * Thu Mar 10 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.266-1
 - Fix slowness on RHEL 8 by simplifying looping over pkgs (#3354)
   (rblakley@redhat.com)
