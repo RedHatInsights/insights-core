@@ -62,8 +62,6 @@ class CachedRemoteResource(RemoteResource):
 
     """
 
-    expire_after = 180
-    """ float: Amount of time in seconds that the cache will expire """
     backend = "DictCache"
     """ str: Type of storage for cache `DictCache1`, `FileCache` or `RedisCache` """
     redis_port = 6379
@@ -75,7 +73,7 @@ class CachedRemoteResource(RemoteResource):
     file_cache_path = '.web_cache'
     """ str: Path to where file cache will be stored if `FileCache` backend is specified """
 
-    def __init__(self):
+    def __init__(self, expire_after=180):
 
         session = requests.Session()
 
@@ -89,7 +87,7 @@ class CachedRemoteResource(RemoteResource):
             else:
                 self.__class__._cache = DictCache()
 
-        session = CacheControl(session, heuristic=DefaultHeuristic(self.expire_after), cache=self.__class__._cache)
+        session = CacheControl(session, heuristic=DefaultHeuristic(expire_after), cache=self.__class__._cache)
 
         super(CachedRemoteResource, self).__init__(session)
 
