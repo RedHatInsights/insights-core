@@ -318,6 +318,8 @@ class DefaultSpecs(Specs):
     httpd_M = foreach_execute(httpd_cmd, "%s -M")
     httpd_ssl_cert_enddate = foreach_execute(ssl_certificate.httpd_ssl_certificate_files, "/usr/bin/openssl x509 -in %s -enddate -noout")
     httpd_V = foreach_execute(httpd_cmd, "%s -V")
+    ibm_fw_vernum_encoded = simple_file("/proc/device-tree/openprom/ibm,fw-vernum_encoded")
+    ibm_lparcfg = simple_file("/proc/powerpc/lparcfg")
     ifcfg = glob_file("/etc/sysconfig/network-scripts/ifcfg-*")
     ifcfg_static_route = glob_file("/etc/sysconfig/network-scripts/route-*")
     imagemagick_policy = glob_file(["/etc/ImageMagick/policy.xml", "/usr/lib*/ImageMagick-6.5.4/config/policy.xml"])
