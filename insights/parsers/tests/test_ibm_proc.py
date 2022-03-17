@@ -1,10 +1,11 @@
 import pytest
 import doctest
 from insights.tests import context_wrap
-from insights.parsers import ibm_proc
+from insights.parsers import ibm_proc, SkipException
 from insights.parsers.ibm_proc import IBMPpcLparCfg, IBMFirmwareLevel
 
-PROC_PPC_LPARCFG= """
+
+PROC_PPC_LPARCFG = """
 serial_number=IBM,123456789
 system_type=IBM,8247-22L
 """.strip()
@@ -24,17 +25,17 @@ def test_ibm_proc():
 
 
 def test_ibm_proc_empty():
-    with pytest.raises(ParseException) as e:
+    with pytest.raises(SkipException):
         IBMPpcLparCfg(context_wrap(''))
 
-    with pytest.raises(ParseException) as e:
+    with pytest.raises(SkipException):
         IBMFirmwareLevel(context_wrap(''))
 
 
 def test_ibm_proc_doc_examples():
     env = {
-        ibm_mtm = IBMPpcLparCfg(context_wrap(PROC_PPC_LPARCFG)),
-        ibm_fwl = IBMFirmwareLevel(context_wrap(PROC_IBM_FWL))
+        "ibm_mtm": IBMPpcLparCfg(context_wrap(PROC_PPC_LPARCFG)),
+        "ibm_fwl": IBMFirmwareLevel(context_wrap(PROC_IBM_FWL))
     }
     failed, total = doctest.testmod(ibm_proc, globs=env)
     assert failed == 0
