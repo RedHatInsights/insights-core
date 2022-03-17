@@ -66,6 +66,20 @@ def test_sysctl_conf():
     assert 'kernel.domainname.invalid' not in r.data
 
 
+def test_sysctl_d_conf():
+    r = sysctl.SysctlDConfEtc(context_wrap(SYSCTL_CONF_TEST))
+    assert keys_in(['kernel.domainname', 'kernel.modprobe'], r)
+    assert r['kernel.domainname'] == 'example.com'
+    assert r['kernel.modprobe'] == '/sbin/mod probe'
+    assert 'kernel.domainname.invalid' not in r
+
+    r = sysctl.SysctlDConfUsr(context_wrap(SYSCTL_CONF_TEST))
+    assert keys_in(['kernel.domainname', 'kernel.modprobe'], r)
+    assert r['kernel.domainname'] == 'example.com'
+    assert r['kernel.modprobe'] == '/sbin/mod probe'
+    assert 'kernel.domainname.invalid' not in r
+
+
 def test_sysctl_conf_initramfs():
     r = sysctl.SysctlConfInitramfs(context_wrap(SYSCTL_CONF_INITRAMFS_TEST))
     assert r is not None
@@ -79,6 +93,8 @@ def test_docs():
     env = {
         'sysctl': sysctl.Sysctl(context_wrap(SYSCTL_DOC_TEST)),
         'sysctl_conf': sysctl.SysctlConf(context_wrap(SYSCTL_CONF_TEST)),
+        'sysctl_d_conf_etc': sysctl.SysctlDConfEtc(context_wrap(SYSCTL_CONF_TEST)),
+        'sysctl_d_conf_usr': sysctl.SysctlDConfUsr(context_wrap(SYSCTL_CONF_TEST)),
         'sysctl_initramfs': sysctl.SysctlConfInitramfs(context_wrap(SYSCTL_CONF_INITRAMFS_TEST))
     }
     failed, total = doctest.testmod(sysctl, globs=env)
