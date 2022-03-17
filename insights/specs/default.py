@@ -507,6 +507,7 @@ class DefaultSpecs(Specs):
     nvme_core_io_timeout = simple_file("/sys/module/nvme_core/parameters/io_timeout")
     oc_get_clusterrole_with_config = simple_command("/usr/bin/oc get clusterrole --config /etc/origin/master/admin.kubeconfig")
     oc_get_clusterrolebinding_with_config = simple_command("/usr/bin/oc get clusterrolebinding --config /etc/origin/master/admin.kubeconfig")
+    od_cpu_dma_latency = simple_command("/usr/bin/od -An -t d /dev/cpu_dma_latency")
     odbc_ini = simple_file("/etc/odbc.ini")
     odbcinst_ini = simple_file("/etc/odbcinst.ini")
     open_vm_tools_stat_raw_text_session = simple_command("/usr/bin/vmware-toolbox-cmd stat raw text session")
