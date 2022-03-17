@@ -465,6 +465,7 @@ class Specs(SpecSet):
     oc_get_service = RegistryPoint()
     oc_get_configmap = RegistryPoint()
     octavia_conf = RegistryPoint(filterable=True)
+    od_cpu_dma_latency = RegistryPoint()
     odbc_ini = RegistryPoint(filterable=True)
     odbcinst_ini = RegistryPoint()
     open_vm_tools_stat_raw_text_session = RegistryPoint()
