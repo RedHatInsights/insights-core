@@ -46,6 +46,18 @@ class TestRemoteResource(TestMockServer):
         cont_2 = rtn.content
         assert cont_1 == cont_2
 
+    # Test CachedRemoteResource returns cached response with specified expire_after
+    @pytest.mark.skipif(sys.version_info < (2, 7), reason="CacheControl requires python 2.7 or higher")
+    def test_get_cached_remote_resource_cached_1_min(self):
+        crr = CachedRemoteResource(3600)
+
+        url = 'http://localhost:{port}/mock/'.format(port=self.server_port)
+        rtn = crr.get(url)
+        cont_1 = rtn.content
+        rtn = crr.get(url)
+        cont_2 = rtn.content
+        assert cont_1 == cont_2
+
     # Test CachedRemoteResource not found
     def test_get_cached_remote_resource_not_found(self):
         crr = CachedRemoteResource()
