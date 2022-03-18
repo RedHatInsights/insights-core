@@ -336,6 +336,17 @@ def get_pool(parallel, kwargs):
         yield None
 
 
+class IgnoreInfoFilter(logging.Filter):
+    """
+    Logging filter to remove all INFO messages from log. All other
+    messages will be kept
+    """
+    def filter(self, record):
+        if (record.levelno != logging.INFO):
+            return True
+        return False
+
+
 def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=None, client_timeout=None):
     """
     This is the collection entry point. It accepts a manifest, a temporary
@@ -407,6 +418,19 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
     fs.ensure_path(output_path)
     fs.touch(os.path.join(output_path, "insights_archive.txt"))
 
+    # Capture all logging for core modules in a separate file in the archive
+    LOG_FORMAT = ("%(asctime)s %(levelname)8s %(name)s %(message)s")
+    log_file = os.path.join(output_path, 'collection.log')
+    file_handler = logging.FileHandler(log_file)
+    file_handler.setFormatter(logging.Formatter(LOG_FORMAT))
+    info_filter = IgnoreInfoFilter()
+    file_handler.addFilter(info_filter)
+    dr_logger = logging.getLogger(dr.__name__)
+    dr_logger_level = dr_logger.getEffectiveLevel()
+    dr_logger.setLevel(logging.DEBUG)
+    dr_logger.addHandler(file_handler)
+    dr_logger.propagate = False
+
     broker = dr.Broker()
     ctx = create_context(client.get("context", {}))
     broker[ctx.__class__] = ctx
@@ -417,6 +441,12 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
         h = Hydration(output_path, pool=pool)
         broker.add_observer(h.make_persister(to_persist))
         dr.run_all(broker=broker, pool=pool)
+
+    # Restore logging state and close log  before completing
+    dr_logger.removeHandler(file_handler)
+    dr_logger.setLevel(dr_logger_level)
+    dr_logger.propagate = True
+    file_handler.close()
 
     if compress:
         return create_archive(output_path)
