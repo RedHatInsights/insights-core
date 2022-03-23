@@ -95,15 +95,24 @@ def deserialize(data, root=None):
 
 
 def marshal(v, root=None, pool=None):
+    def call_serializer(func, value):
+        try:
+            return func(value), None
+        except Exception:
+            return None, traceback.format_exc()
+
     if v is None:
-        return
+        return None, None
     f = partial(serialize, root=root)
     if isinstance(v, list):
         if pool:
-            return list(pool.map(f, v))
+            data = list(pool.map(call_serializer, [f] * len(v), v))
         else:
-            return [f(t) for t in v]
-    return f(v)
+            data = list(map(call_serializer, [f] * len(v), v))
+        results = [i[0] for i in data if i[0]]
+        errors = [i[1] for i in data if i[1]]
+        return results, errors
+    return call_serializer(f, v)
 
 
 def unmarshal(data, root=None):
@@ -189,15 +198,11 @@ class Hydration(object):
                 "exec_time": broker.exec_times.get(c),
                 "errors": errors
             }
-
-            try:
-                start = time.time()
-                doc["results"] = marshal(value, root=self.data, pool=self.pool)
-            except Exception:
-                errors.append(traceback.format_exc())
-                doc["results"] = None
-            finally:
-                doc["ser_time"] = time.time() - start
+            start = time.time()
+            results, ms_errors = marshal(value, root=self.data, pool=self.pool)
+            doc["results"] = results if results else None
+            errors.extend(ms_errors if isinstance(ms_errors, list) else [ms_errors]) if ms_errors else None
+            doc["ser_time"] = time.time() - start
         except Exception as ex:
             log.exception(ex)
         else:
