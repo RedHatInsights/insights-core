@@ -17,6 +17,16 @@ class Foo(object):
         self.b = 2
 
 
+class Doo(object):
+    def __init__(self, c):
+        if c > 5:
+            self.a = 1
+            self.b = 2
+        else:
+            self.a = c
+            self.b = 2
+
+
 @component()
 def thing():
     return Foo()
@@ -24,6 +34,13 @@ def thing():
 
 @serializer(Foo)
 def serialize_foo(obj, root=None):
+    return {"a": obj.a, "b": obj.b}
+
+
+@serializer(Doo)
+def serialize_doo(obj, root=None):
+    if obj.a > 1:
+        raise Exception('errors' + str(obj.a))
     return {"a": obj.a, "b": obj.b}
 
 
@@ -37,11 +54,84 @@ def deserialize_foo(_type, data, root=None):
 
 def test_marshal():
     foo = Foo()
-    data = marshal(foo)
-    assert data is not None
+    data, errors = marshal(foo)
+    assert data
+    assert not errors
     d = data["object"]
     assert d["a"] == 1
     assert d["b"] == 2
+
+
+def test_marshal_with_errors():
+    doo = Doo(2)
+    data, errors = marshal(doo)
+    assert not data
+    assert isinstance(errors, str)
+
+    # one raises error, one has result
+    objs = [Doo(4), Doo(6)]
+    data, errors = marshal(objs)
+    assert data
+    assert errors
+    assert len(data) == 1
+    assert len(errors) == 1
+    d = data[0]["object"]
+    assert d["a"] == 1
+    assert d["b"] == 2
+
+    # all raises error, no results
+    objs = [Doo(4), Doo(3)]
+    data, errors = marshal(objs)
+    assert not data
+    assert errors
+    assert len(errors) == 2
+
+    # all have resutls, no errors
+    objs = [Doo(8), Doo(6)]
+    data, errors = marshal(objs)
+    assert data
+    assert not errors
+    assert len(data) == 2
+    for item in data:
+        d = item["object"]
+        assert d["a"] == 1
+        assert d["b"] == 2
+
+
+def test_marshal_with_errors_with_pool():
+    try:
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(thread_name_prefix="insights-collector-pool", max_workers=5) as pool:
+            # one raises error, one has result
+            objs = [Doo(4), Doo(6)]
+            data, errors = marshal(objs, None, pool)
+            assert data
+            assert errors
+            assert len(data) == 1
+            assert len(errors) == 1
+            d = data[0]["object"]
+            assert d["a"] == 1
+            assert d["b"] == 2
+
+            # all raises error, no results
+            objs = [Doo(4), Doo(3)]
+            data, errors = marshal(objs, None, pool)
+            assert not data
+            assert errors
+            assert len(errors) == 2
+
+            # all have resutls, no errors
+            objs = [Doo(8), Doo(6)]
+            data, errors = marshal(objs, None, pool)
+            assert data
+            assert not errors
+            assert len(data) == 2
+            for item in data:
+                d = item["object"]
+                assert d["a"] == 1
+                assert d["b"] == 2
+    except ImportError:
+        pass
 
 
 def test_unmarshal():
