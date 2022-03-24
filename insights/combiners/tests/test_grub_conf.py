@@ -1,8 +1,7 @@
 from insights.combiners.grub_conf import GrubConf, BootLoaderEntries
 from insights.combiners.redhat_release import RedHatRelease
 from insights.parsers.redhat_release import RedhatRelease
-from insights.parsers.grub_conf import (Grub1Config, Grub2Config, Grub2EFIConfig, Grub1EFIConfig,
-                                        BootLoaderEntries as BLE)
+from insights.parsers.grub_conf import (Grub1Config, Grub2Config, Grub2EFIConfig, Grub1EFIConfig, BootLoaderEntries as BLE)
 from insights.parsers.grubenv import GrubEnv
 from insights.parsers.ls_sys_firmware import LsSysFirmware
 from insights.parsers.installed_rpms import InstalledRpms
@@ -232,6 +231,17 @@ CMDLINE_V2 = """
 BOOT_IMAGE=/vmlinuz-3.10.0-514.10.2.el7.x86_64 root=/dev/mapper/vg_system-lv_root ro crashkernel=auto rd.lvm.lv=vg_system/lv_root rd.lvm.lv=vg_system/lv_swap rhgb quiet LANG=en_US.UTF-8
 """.strip()  # noqa
 
+GRUBENV_WITH_TUNED_PARAMS = """
+# GRUB Environment Block
+saved_entry=295e1ba1696e4fad9e062f096f92d147-4.18.0-305.el8.x86_64
+kernelopts=root=/dev/mapper/root_vg-lv_root ro crashkernel=auto resume=/dev/mapper/root_vg-lv_swap rd.lvm.lv=root_vg/lv_root rd.lvm.lv=root_vg/lv_swap console=tty0 console=ttyS0,115200 noapic
+boot_success=0
+boot_indeterminate=2
+tuned_params=transparent_hugepages=never
+tuned_initrd=
+###############################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################
+""".strip()  # noqa
+
 BOOT_LOADER_ENTRIES_1 = """
 title Red Hat Enterprise Linux (4.18.0-80.1.2.el8_0.x86_64) 8.0 (Ootpa)
 version 4.18.0-80.1.2.el8_0.x86_64
@@ -249,7 +259,7 @@ title Red Hat Enterprise Linux (4.18.0-32.el8.x86_64) 8.0 (Ootpa)
 version 4.18.0-32.el8.x86_64
 linux /vmlinuz-4.18.0-32.el8.x86_64
 initrd /initramfs-4.18.0-32.el8.x86_64.img
-options root=/dev/mapper/rhel_rhel8-root ro elevator=noop no_timer_check crashkernel=auto resume=/dev/mapper/rhel_rhel8-swap rd.lvm.lv=rhel_rhel8/root rd.lvm.lv=rhel_rhel8/swap biosdevname=0 net.ifnames=0 rhgb
+options root=/dev/mapper/rhel_rhel8-root ro elevator=noop no_timer_check crashkernel=auto intel_iommu=on resume=/dev/mapper/rhel_rhel8-swap rd.lvm.lv=rhel_rhel8/root rd.lvm.lv=rhel_rhel8/swap biosdevname=0 net.ifnames=0 rhgb
 id rhel-20181027203430-4.18.0-32.el8.x86_64
 grub_users $grub_users
 grub_arg --unrestricted
@@ -268,22 +278,11 @@ grub_arg --unrestricted
 grub_class kernel
 """.strip()
 
-GRUBENV_WITH_TUNED_PARAMS = """
-# GRUB Environment Block
-saved_entry=295e1ba1696e4fad9e062f096f92d147-4.18.0-305.el8.x86_64
-kernelopts=root=/dev/mapper/root_vg-lv_root ro crashkernel=auto resume=/dev/mapper/root_vg-lv_swap rd.lvm.lv=root_vg/lv_root rd.lvm.lv=root_vg/lv_swap console=tty0 console=ttyS0,115200 noapic
-boot_success=0
-boot_indeterminate=2
-tuned_params=transparent_hugepages=never
-tuned_initrd=
-###############################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################################
-""".strip()  # noqa
-
 
 def test_grub1_only1():
     grub1 = Grub1Config(context_wrap(GRUB1_TEMPLATE))
     cmdline = CmdLine(context_wrap(CMDLINE_V1))
-    result = GrubConf(grub1, None, None, None, None, None, cmdline, None, None)
+    result = GrubConf(grub1, None, None, None, None, cmdline, None, None)
     assert result.kernel_initrds['grub_kernels'][0] == 'vmlinuz-2.6.32-642.el6.x86_64'
     assert result.kernel_initrds['grub_initrds'][0] == 'initramfs-2.6.32-642.el6.x86_64.img'
     assert result.is_kdump_iommu_enabled is True
@@ -300,7 +299,7 @@ def test_grub1_cmdline():
     grub2e = Grub2EFIConfig(context_wrap(GRUB2_EFI_CFG))
     cmdline = CmdLine(context_wrap(CMDLINE_V1))
     sys_firmware = LsSysFirmware(context_wrap(SYS_FIRMWARE_DIR_NOEFI))
-    result = GrubConf(grub1, grub2, grub1e, grub2e, None, None, cmdline, sys_firmware, None)
+    result = GrubConf(grub1, grub2, grub1e, grub2e, None, cmdline, sys_firmware, None)
     assert result.kernel_initrds['grub_kernels'][0] == 'vmlinuz-2.6.32-642.el6.x86_64'
     assert result.kernel_initrds['grub_initrds'][0] == 'initramfs-2.6.32-642.el6.x86_64.img'
     assert result.is_kdump_iommu_enabled is True
@@ -317,7 +316,7 @@ def test_grub1_efi_cmdline():
     grub2e = Grub2EFIConfig(context_wrap(GRUB2_EFI_CFG))
     cmdline = CmdLine(context_wrap(CMDLINE_V1))
     sys_firmware = LsSysFirmware(context_wrap(SYS_FIRMWARE_DIR_EFI))
-    result = GrubConf(grub1, grub2, grub1e, grub2e, None, None, cmdline, sys_firmware, None)
+    result = GrubConf(grub1, grub2, grub1e, grub2e, None, cmdline, sys_firmware, None)
     assert result.kernel_initrds['grub_kernels'][0] == 'vmlinuz-2.6.32-71.el6.x86_64'
     assert result.kernel_initrds['grub_initrds'][0] == 'initramfs-2.6.32-71.el6.x86_64.img'
     assert result.is_kdump_iommu_enabled is False
@@ -334,7 +333,7 @@ def test_grub1_rpms():
     rpms = InstalledRpms(context_wrap(INSTALLED_RPMS_V1))
     cmdline = CmdLine(context_wrap(CMDLINE_V2))
     sys_firmware = LsSysFirmware(context_wrap(SYS_FIRMWARE_DIR_NOEFI))
-    result = GrubConf(grub1, grub2, grub1e, grub2e, None, rpms, cmdline, sys_firmware, None)
+    result = GrubConf(grub1, grub2, grub1e, grub2e, rpms, cmdline, sys_firmware, None)
     assert result.kernel_initrds['grub_kernels'][0] == 'vmlinuz-2.6.32-642.el6.x86_64'
     assert result.kernel_initrds['grub_initrds'][0] == 'initramfs-2.6.32-642.el6.x86_64.img'
     assert result.is_kdump_iommu_enabled is True
@@ -352,7 +351,7 @@ def test_grub1_efi_rpms():
     rpms = InstalledRpms(context_wrap(INSTALLED_RPMS_V1))
     cmdline = CmdLine(context_wrap(CMDLINE_V2))
     sys_firmware = LsSysFirmware(context_wrap(SYS_FIRMWARE_DIR_EFI))
-    result = GrubConf(grub1, grub2, grub1e, grub2e, None, rpms, cmdline, sys_firmware, None)
+    result = GrubConf(grub1, grub2, grub1e, grub2e, rpms, cmdline, sys_firmware, None)
     assert result.kernel_initrds['grub_kernels'][0] == 'vmlinuz-2.6.32-71.el6.x86_64'
     assert result.kernel_initrds['grub_initrds'][0] == 'initramfs-2.6.32-71.el6.x86_64.img'
     assert result.is_kdump_iommu_enabled is False
@@ -369,7 +368,7 @@ def test_grub2_cmdline():
     grub2e = Grub2EFIConfig(context_wrap(GRUB2_EFI_CFG))
     cmdline = CmdLine(context_wrap(CMDLINE_V2))
     sys_firmware = LsSysFirmware(context_wrap(SYS_FIRMWARE_DIR_NOEFI))
-    result = GrubConf(grub1, grub2, grub1e, grub2e, None, None, cmdline, sys_firmware, None)
+    result = GrubConf(grub1, grub2, grub1e, grub2e, None, cmdline, sys_firmware, None)
     assert result.kernel_initrds['grub_kernels'][0] == 'vmlinuz-3.10.0-327.el7.x86_64'
     assert result.kernel_initrds['grub_initrds'][0] == 'initramfs-3.10.0-327.el7.x86_64.img'
     assert result.is_kdump_iommu_enabled is False
@@ -388,7 +387,7 @@ def test_grub2_efi_cmdline():
     grub2e = Grub2EFIConfig(context_wrap(GRUB2_EFI_CFG))
     cmdline = CmdLine(context_wrap(CMDLINE_V2))
     sys_firmware = LsSysFirmware(context_wrap(SYS_FIRMWARE_DIR_EFI))
-    result = GrubConf(grub1, grub2, grub1e, grub2e, None, None, cmdline, sys_firmware, None)
+    result = GrubConf(grub1, grub2, grub1e, grub2e, None, cmdline, sys_firmware, None)
     assert result.get_grub_cmdlines() == result.get_grub_cmdlines('/vmlinuz')
     assert result.get_grub_cmdlines('rescue')[0].name.startswith("'Red Hat Enterprise Linux Server (0-rescue")
     assert len(result.get_grub_cmdlines()) == 4
@@ -403,7 +402,7 @@ def test_grub2_rpms():
     grub2e = Grub2EFIConfig(context_wrap(GRUB2_EFI_CFG))
     rpms = InstalledRpms(context_wrap(INSTALLED_RPMS_V2))
     cmdline = CmdLine(context_wrap(CMDLINE_V1))
-    result = GrubConf(grub1, grub2, grub1e, grub2e, None, rpms, cmdline, None, None)
+    result = GrubConf(grub1, grub2, grub1e, grub2e, rpms, cmdline, None, None)
     assert result.kernel_initrds['grub_kernels'][0] == 'vmlinuz-3.10.0-327.el7.x86_64'
     assert result.kernel_initrds['grub_initrds'][0] == 'initramfs-3.10.0-327.el7.x86_64.img'
     assert result.is_kdump_iommu_enabled is False
@@ -423,7 +422,7 @@ def test_grub2_efi_rpms():
     rpms = InstalledRpms(context_wrap(INSTALLED_RPMS_V2))
     cmdline = CmdLine(context_wrap(CMDLINE_V1))
     sys_firmware = LsSysFirmware(context_wrap(SYS_FIRMWARE_DIR_EFI))
-    result = GrubConf(grub1, grub2, grub1e, grub2e, None, rpms, cmdline, sys_firmware, None)
+    result = GrubConf(grub1, grub2, grub1e, grub2e, rpms, cmdline, sys_firmware, None)
     assert result.kernel_initrds['grub_initrds'][0] == 'initramfs-3.10.0-514.16.1.el7.x86_64.img'
     assert result.get_grub_cmdlines() == result.get_grub_cmdlines('/vmlinuz')
     assert result.get_grub_cmdlines('rescue')[0].name.startswith("'Red Hat Enterprise Linux Server (0-rescue")
@@ -438,32 +437,29 @@ def test_get_grub_cmdlines_none():
     cmdline = CmdLine(context_wrap(CMDLINE_V2))
     sys_firmware = LsSysFirmware(context_wrap(SYS_FIRMWARE_DIR_EFI))
     with pytest.raises(Exception) as pe:
-        GrubConf(grub1, grub2, None, None, None, None, cmdline, sys_firmware, None)
+        GrubConf(grub1, grub2, None, None, None, cmdline, sys_firmware, None)
     assert "No valid grub configuration is found." in str(pe.value)
 
     grub1e = Grub1EFIConfig(context_wrap(GRUB1_TEMPLATE))
     grub2e = Grub2EFIConfig(context_wrap(GRUB2_TEMPLATE))
     rpms = InstalledRpms(context_wrap(INSTALLED_RPMS_V2))
     with pytest.raises(Exception) as pe:
-        GrubConf(None, None, grub1e, grub2e, None, rpms, None, None, None)
+        GrubConf(None, None, grub1e, grub2e, rpms, None, None, None)
     assert "No valid grub configuration is found." in str(pe.value)
 
     grub2e = Grub2EFIConfig(context_wrap(GRUB2_EFI_CFG))
     with pytest.raises(Exception) as pe:
-        GrubConf(grub1, None, grub1e, grub2e, None, rpms, None, None, None)
+        GrubConf(grub1, None, grub1e, grub2e, rpms, None, None, None)
     assert "No valid grub configuration is found." in str(pe.value)
 
 
 def test_grub2_grubenv():
     grub2 = Grub2Config(context_wrap(GRUB2_TEMPLATE))
-    grub_ble1 = BLE(context_wrap(BOOT_LOADER_ENTRIES_1))
-    grub_ble2 = BLE(context_wrap(BOOT_LOADER_ENTRIES_2))
-    grub_bles = BootLoaderEntries([grub_ble1, grub_ble2], None, None)
     rhel8 = RedhatRelease(context_wrap(RHEL8))
     rhel = RedHatRelease(None, rhel8)
     rpms = InstalledRpms(context_wrap(INSTALLED_RPMS_V2))
     sys_firmware = LsSysFirmware(context_wrap(SYS_FIRMWARE_DIR_NOEFI))
-    result = GrubConf(None, grub2, None, None, grub_bles, rpms, None, sys_firmware, rhel)
+    result = GrubConf(None, grub2, None, None, rpms, None, sys_firmware, rhel)
     assert len(result.get_grub_cmdlines()) == 2
     assert 'noapic' not in result.get_grub_cmdlines()[1]['cmdline']
     assert 'transparent_hugepages' not in result.get_grub_cmdlines()[0]['cmdline']
@@ -473,14 +469,12 @@ def test_grub2_grubenv():
 
 def test_grub2_grubenv_with_kernelopts():
     grub2 = Grub2Config(context_wrap(GRUB2_TEMPLATE))
-    grub_ble3 = BLE(context_wrap(BOOT_LOADER_ENTRIES_3))
-    grub_bles = BootLoaderEntries([grub_ble3], None, None)
     rhel8 = RedhatRelease(context_wrap(RHEL8))
     rhel = RedHatRelease(None, rhel8)
     rpms = InstalledRpms(context_wrap(INSTALLED_RPMS_V2))
     sys_firmware = LsSysFirmware(context_wrap(SYS_FIRMWARE_DIR_NOEFI))
-    result = GrubConf(None, grub2, None, None, grub_bles, rpms, None, sys_firmware, rhel)
-    assert len(result.get_grub_cmdlines()) == 1
+    result = GrubConf(None, grub2, None, None, rpms, None, sys_firmware, rhel)
+    assert len(result.get_grub_cmdlines()) == 2
     assert 'noapic' not in result.get_grub_cmdlines()[0]['cmdline']
     assert 'transparent_hugepages' not in result.get_grub_cmdlines()[0]['cmdline']
     assert result.version == 2
@@ -488,36 +482,27 @@ def test_grub2_grubenv_with_kernelopts():
 
 
 def test_grub2_boot_loader_entries():
-    grub2 = Grub2Config(context_wrap(GRUB2_TEMPLATE))
     grub_ble1 = BLE(context_wrap(BOOT_LOADER_ENTRIES_1))
     grub_ble2 = BLE(context_wrap(BOOT_LOADER_ENTRIES_2))
-    grub_bles = BootLoaderEntries([grub_ble1, grub_ble2], None, None)
-    rhel8 = RedhatRelease(context_wrap(RHEL8))
-    rhel = RedHatRelease(None, rhel8)
-    rpms = InstalledRpms(context_wrap(INSTALLED_RPMS_V2))
-    sys_firmware = LsSysFirmware(context_wrap(SYS_FIRMWARE_DIR_EFI))
-    result = GrubConf(None, grub2, None, None, grub_bles, rpms, None, sys_firmware, rhel)
-    assert len(result.get_grub_cmdlines()) == 2
-    assert 'noapic' in result.get_grub_cmdlines()[0]['cmdline']
-    assert result.version == 2
-    assert result.is_efi
+    grub_ble3 = BLE(context_wrap(BOOT_LOADER_ENTRIES_3))
+    grub_bles = BootLoaderEntries([grub_ble1, grub_ble2, grub_ble3], None, None)
+    assert grub_bles.version == 2
+    assert not grub_bles.is_efi
+    assert len(grub_bles.entries) == 3
+    assert len(grub_bles.boot_entries) == 3
+    assert "transparent_hugepages=never" not in grub_bles.boot_entries[0]['cmdline']
+    assert grub_bles.is_kdump_iommu_enabled
 
 
 def test_grub2_boot_loader_entries_with_grubenv():
     grubenv = GrubEnv(context_wrap(GRUBENV_WITH_TUNED_PARAMS))
-    grub2 = Grub2Config(context_wrap(GRUB2_TEMPLATE))
     grub_ble1 = BLE(context_wrap(BOOT_LOADER_ENTRIES_1))
+    grub_ble2 = BLE(context_wrap(BOOT_LOADER_ENTRIES_2))
     grub_ble3 = BLE(context_wrap(BOOT_LOADER_ENTRIES_3))
-    grub_bles = BootLoaderEntries([grub_ble1, grub_ble3], grubenv, None)
-    rhel8 = RedhatRelease(context_wrap(RHEL8))
-    rhel = RedHatRelease(None, rhel8)
-    rpms = InstalledRpms(context_wrap(INSTALLED_RPMS_V2))
-    sys_firmware = LsSysFirmware(context_wrap(SYS_FIRMWARE_DIR_EFI))
-    result = GrubConf(None, grub2, None, None, grub_bles, rpms, None, sys_firmware, rhel)
-    assert len(result.get_grub_cmdlines()) == 2
-    assert 'noapic' in result.get_grub_cmdlines()[0]['cmdline']
-    assert 'transparent_hugepages' in result.get_grub_cmdlines()[0]['cmdline']
-    assert 'noapic' in result.get_grub_cmdlines()[1]['cmdline']
-    assert 'transparent_hugepages' in result.get_grub_cmdlines()[1]['cmdline']
-    assert result.version == 2
-    assert result.is_efi
+    grub_bles = BootLoaderEntries([grub_ble1, grub_ble2, grub_ble3], grubenv, None)
+    assert grub_bles.version == 2
+    assert not grub_bles.is_efi
+    assert len(grub_bles.entries) == 3
+    assert len(grub_bles.boot_entries) == 3
+    assert "transparent_hugepages=never" in grub_bles.boot_entries[0]['cmdline']
+    assert grub_bles.is_kdump_iommu_enabled
