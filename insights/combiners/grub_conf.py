@@ -92,11 +92,11 @@ class BootLoaderEntries(object):
             raise SkipComponent()
 
 
-@combiner([Grub1Config, Grub2Config, Grub1EFIConfig, Grub2EFIConfig, BootLoaderEntries],
+@combiner([Grub1Config, Grub2Config, Grub1EFIConfig, Grub2EFIConfig],
           optional=[InstalledRpms, CmdLine, LsSysFirmware, RedHatRelease])
 class GrubConf(object):
     """
-    Process Grub configuration v1, v2, and BLS based on which type is passed in.
+    Process Grub configuration v1, v2 based on which type is passed in.
 
     Attributes:
         version (int): returns 1 or 2, version of the GRUB configuration
@@ -124,37 +124,34 @@ class GrubConf(object):
         >>> grub_conf.get_grub_cmdlines('')
         []
     """
-    def __init__(self, grub1, grub2, grub1_efi, grub2_efi, grub_bles,
+    def __init__(self, grub1, grub2, grub1_efi, grub2_efi,
                  rpms, cmdline, sys_firmware, rh_rel):
         self.version = self.is_kdump_iommu_enabled = None
         self.grub = self.kernel_initrds = None
         self.is_efi = '/sys/firmware/efi' in sys_firmware if sys_firmware else False
-        _grubs = list(filter(None, [grub1, grub2, grub1_efi, grub2_efi, grub_bles]))
+        _grubs = list(filter(None, [grub1, grub2, grub1_efi, grub2_efi]))
 
         if len(_grubs) == 1:
             self.grub = _grubs[0]
             self.is_efi = self.is_efi if sys_firmware else self.grub._efi
         else:
             _grub1, _grub2 = (grub1_efi, grub2_efi) if self.is_efi else (grub1, grub2)
-            if rh_rel and rh_rel.rhel8:
-                self.grub = grub_bles
             # Check grub version via installed-rpms
-            else:
-                if rpms:
-                    # grub1
-                    if 'grub2' not in rpms and 'grub' in rpms and _grub1 is not None:
-                        self.grub = _grub1
-                    # grub2
-                    if 'grub' not in rpms and 'grub2' in rpms and _grub2 is not None:
-                        self.grub = _grub2
-                # Check grub version via the booted CmdLine
-                if self.grub is None and cmdline:
-                    # grub1
-                    if "BOOT_IMAGE" not in cmdline or 'rd_LVM_LV' in cmdline:
-                        self.grub = _grub1
-                    # grub2
-                    if "BOOT_IMAGE" in cmdline or 'rd.lvm.lv' in cmdline:
-                        self.grub = _grub2
+            if rpms:
+                # grub1
+                if 'grub2' not in rpms and 'grub' in rpms and _grub1 is not None:
+                    self.grub = _grub1
+                # grub2
+                if 'grub' not in rpms and 'grub2' in rpms and _grub2 is not None:
+                    self.grub = _grub2
+            # Check grub version via the booted CmdLine
+            if self.grub is None and cmdline:
+                # grub1
+                if "BOOT_IMAGE" not in cmdline or 'rd_LVM_LV' in cmdline:
+                    self.grub = _grub1
+                # grub2
+                if "BOOT_IMAGE" in cmdline or 'rd.lvm.lv' in cmdline:
+                    self.grub = _grub2
 
         if self.grub:
             self.version = self.grub._version
