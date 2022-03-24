@@ -2,6 +2,13 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.268](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.268) (2022-03-24)
+
+fix: Enhance parser Grub2Config ([PR 3360](https://github.com/RedHatInsights/insights-core/pull/3360))
+fix: Switch to reading crontab file rather than run the command ([PR 3359](https://github.com/RedHatInsights/insights-core/pull/3359))
+status terminated with ok signal when wheter it is registered or not ([PR 3364](https://github.com/RedHatInsights/insights-core/pull/3364))
+fix: Keep the results once one of them is good ([PR 3357](https://github.com/RedHatInsights/insights-core/pull/3357))
+
 ## [insights-core-3.0.267](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.267) (2022-03-17)
 
 - feat: New parser for /usr/bin/od -An -t d /dev/cpu_dma_latency ([PR 3353](https://github.com/RedHatInsights/insights-core/pull/3353))
