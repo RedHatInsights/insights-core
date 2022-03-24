@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.267
+Version:        3.0.268
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,15 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Mar 24 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.268-1
+- fix: Enhance parser Grub2Config (#3360) (jiazhang@redhat.com)
+- fix: Switch to reading crontab file rather than run the command (#3359)
+  (rblakley@redhat.com)
+- status terminated with ok signal when wheter it is registered or not (#3364)
+  (93577878+ahitacat@users.noreply.github.com)
+- fix: Keep the results once one of them is good (#3357)
+  (44796653+huali027@users.noreply.github.com)
+
 * Thu Mar 17 2022 Sachin Patil <psachin@redhat.com> 3.0.267-1
 - feat: New parser for /usr/bin/od -An -t d /dev/cpu_dma_latency (#3353) (aghodake@redhat.com)
 - feat: New parsers for IBM proc files (#3361) (xiangceliu@redhat.com)
