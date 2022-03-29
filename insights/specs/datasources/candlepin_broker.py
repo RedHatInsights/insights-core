@@ -56,7 +56,7 @@ def candlepin_broker(broker):
         if content:
             root = ET.fromstring('\n'.join(content))
             # remove namespace before save to avoid urgly search
-            for node in root.getiterator():
+            for node in list(root.iter()):
                 prefix, has_namespace, postfix = node.tag.rpartition('}')
                 if has_namespace:
                     node.tag = postfix
