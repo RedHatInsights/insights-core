@@ -6,6 +6,7 @@ from insights.parsers import bond
 from insights.tests import context_wrap
 
 CONTEXT_PATH = "proc/net/bonding/bond0"
+CONTEXT_PATH_1 = "proc/net/bonding/test0"
 
 BONDINFO_1 = """
 Ethernet Channel Bonding Driver: v3.7.1 (April 27, 2011)
@@ -324,3 +325,16 @@ def test_bond_class():
         bond_obj = Bond(context_wrap(BONDINFO_UNKNOWN_BOND_MODE, CONTEXT_PATH))
         assert not bond_obj.bond_mode
     assert 'Unrecognised bonding mode' in str(exc)
+
+
+def test_bond_class_different_file_name():
+    bond_obj = Bond(context_wrap(BONDINFO_1, CONTEXT_PATH_1))
+    assert bond_obj.file_name == 'test0'
+    assert not bond_obj.partner_mac_address
+    assert bond_obj.bond_mode == '0'
+    assert bond_obj.slave_interface == ['eno1', 'eno2']
+    assert bond_obj.up_delay == '0'
+    assert bond_obj.down_delay == '0'
+    assert bond_obj.data['eno1']['speed'] == '1000 Mbps'
+    assert bond_obj.data['eno1']['mii_status'] == 'up'
+    assert bond_obj.data['eno2']['mii_status'] == 'up'
