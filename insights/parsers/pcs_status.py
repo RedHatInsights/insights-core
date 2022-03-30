@@ -74,8 +74,6 @@ Examples:
     >>> len(pcsstatus_info.get("Full list of resources"))
     3
 """
-import itertools
-
 from insights import parser, CommandParser
 from insights.specs import Specs
 
@@ -120,21 +118,25 @@ class PCSStatus(CommandParser, dict):
         # according this file  https://github.com/ClusterLabs/pacemaker/blob/d078ca4a9ac72fc96073a215da2eed48939536f5/tools/crm_mon.c
         key_oneline = (
             "Cluster name", "Stack", "Current DC", "Online", "RemoteOnline", "OFFLINE", "RemoteOFFLINE", "GuestOnline")
-
+        key_nextline_titles = (
+            "Full list of resources",
+            "Full List of Resources",
+            "Failed Actions",
+            "Failed Resource Actions",
+            "Failed Fencing Actions",
+            "PCSD Status",
+            "Daemon Status",
+            "Migration Summary",
+            "Fencing History",
+            "Node List",
+            "Node Attributes",
+            "Tickets"
+        )
         # pacemaker changes some prefix after version 1.0 and 2.0
-        key_nextline_titles = {
-            "Full list of resources": ["Full list of resources", "Full List of Resources"],
-            "Failed Actions": ["Failed Actions", "Failed Resource Actions"],  # "Failed Actions" was renamed to "Failed Resource Actions" at https://github.com/ClusterLabs/pacemaker/pull/1521
-            "Failed Fencing Actions": ["Failed Fencing Actions"],
-            "PCSD Status": ["PCSD Status"],
-            "Daemon Status": ["Daemon Status"],
-            "Migration Summary": ["Migration Summary"],
-            "Fencing History": ["Fencing History"],
-            "Node List": ["Node List"],
-            "Node Attributes": ["Node Attributes"],
-            "Tickets": ["Tickets"]
+        key_nextline_alias = {
+            "Full List of Resources": "Full list of resources",
+            "Failed Resource Actions": "Failed Actions",  # "Failed Actions" was renamed to "Failed Resource Actions" at https://github.com/ClusterLabs/pacemaker/pull/1521
         }
-        key_nextline_values = tuple(itertools.chain(*key_nextline_titles.values()))
         key_nextline_start = 0
         multiple_lines = []
         for line in content:
@@ -150,11 +152,11 @@ class PCSStatus(CommandParser, dict):
                 bad_node['name'] = linesplit[1][0:-1]
                 bad_node['status'] = line.split(':')[1][1:]
                 self.bad_nodes.append(bad_node)
-            if line.startswith(key_nextline_values):
+            if line.startswith(key_nextline_titles):
                 key_nextline_start = 1
                 multiple_lines = []
-                attr_name = [key for key, values in key_nextline_titles.items() for value in values if value == line.split(":")[0].strip()][0]
-                self[attr_name] = multiple_lines
+                attr_name = line.split(":")[0].strip()
+                self[key_nextline_alias.get(attr_name, attr_name)] = multiple_lines
                 continue
             if key_nextline_start == 0:
                 linesplit = line.strip('* ').split()
