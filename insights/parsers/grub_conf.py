@@ -287,7 +287,7 @@ class Grub1EFIConfig(Grub1Config):
         self._efi = True
 
 
-@parser(Specs.grub2_cfg, [IsRhel6, IsRhel7, IsRhel8])
+@parser(Specs.grub2_cfg, [IsRhel6, IsRhel7])
 class Grub2Config(GrubConfig):
     """
     Parser for configuration for GRUB version 2.
