@@ -6,31 +6,30 @@ This module provides the classs ``PCSStatus`` which processes
 ``/usr/sbin/pcs status`` command output. Typical output of the ``pcs status``
 command looks like::
 
-        Cluster name: mycluster
-        Last updated: Thu Dec  1 02:33:50 2016		Last change: Wed Aug  3 03:47:11 2016 by root via cibadmin on nodea.example.com
-        Stack: corosync
-        Current DC: nodea.example.com (version 1.1.13-10.el7-44eb2dd) - partition WITHOUT quorum
-        3 nodes and 3 resources configured
+    Cluster name: mycluster
+    Last updated: Thu Dec  1 02:33:50 2016		Last change: Wed Aug  3 03:47:11 2016 by root via cibadmin on nodea.example.com
+    Stack: corosync
+    Current DC: nodea.example.com (version 1.1.13-10.el7-44eb2dd) - partition WITHOUT quorum
+    3 nodes and 3 resources configured
 
-        Online: [ nodea.example.com ]
-        OFFLINE: [ nodeb.example.com nodec.example.com ]
+    Online: [ nodea.example.com ]
+    OFFLINE: [ nodeb.example.com nodec.example.com ]
 
-        Full list of resources:
-         myfence	(stonith:fence_xvm):	Stopped
-         Resource Group: myweb
-             webVIP	(ocf::heartbeat:IPaddr2):	Stopped
-             webserver	(ocf::heartbeat:apache):	Stopped
-        PCSD Status:
-          nodea.example.com: Online
-          nodeb.example.com: Offline
-          nodec.example.com: Offline
-        Daemon Status:
-          corosync: active/enabled
-          pacemaker: active/enabled
-          pcsd: active/enabled
+    Full list of resources:
+        myfence	(stonith:fence_xvm):	Stopped
+        Resource Group: myweb
+            webVIP	(ocf::heartbeat:IPaddr2):	Stopped
+            webserver	(ocf::heartbeat:apache):	Stopped
+    PCSD Status:
+        nodea.example.com: Online
+        nodeb.example.com: Offline
+        nodec.example.com: Offline
+    Daemon Status:
+        corosync: active/enabled
+        pacemaker: active/enabled
+        pcsd: active/enabled
 
-The class ``PCSStatus`` has one attribute ``data`` which is a dict containing
-the whole the output and one attribute ``nodes`` is a list containing all
+The class ``PCSStatus`` has one attribute ``nodes`` whick is a list containing all
 node names that from ``PCSD Status`` section.
 
 
@@ -75,94 +74,114 @@ Examples:
     >>> len(pcsstatus_info.get("Full list of resources"))
     3
 """
-from .. import parser, CommandParser
+import itertools
+
+from insights import parser, CommandParser
 from insights.specs import Specs
 
 
 @parser(Specs.pcs_status)
-class PCSStatus(CommandParser):
+class PCSStatus(CommandParser, dict):
     """Class to process the output of ``pcs status`` command.
+
+    Sample Output::
+
+        {
+            "Resources configured": "143",
+            "PCSD Status": [
+                "myhost15: Online",
+                "myhost17: Online",
+                "myhost16: Online"
+            ],
+            "Current DC": "myhost15 (1) - partition with quorum",
+            "Full list of resources": [
+                "stonith-ipmilan-10.24.221.172\t(stonith:fence_ipmilan):\tStarted myhost15",
+                "stonith-ipmilan-10.24.221.171\t(stonith:fence_ipmilan):\tStarted myhost16",
+                "stonith-ipmilan-10.24.221.173\t(stonith:fence_ipmilan):\tStarted myhost15",
+            ],
+            "Daemon Status": [
+                "corosync: active/enabled",
+                "pacemaker: active/enabled",
+                "pcsd: active/enabled"
+            ],
+            "Nodes configured": "3",
+            "Online": "[ myhost15 myhost16 myhost17 ]",
+            "Cluster name": "openstack",
+            "Stack": "corosync"
+        }
 
     Attributes:
         nodes (list): A list containing all node names according "PCSD Status" section
-        data (dict): A dict containing key, value for each line of the output in
-            the form::
-
-             {
-                "Resources configured": "143",
-                "PCSD Status": [
-                    "myhost15: Online",
-                    "myhost17: Online",
-                    "myhost16: Online"
-                ],
-                "Current DC": "myhost15 (1) - partition with quorum",
-                "Full list of resources": [
-                    "stonith-ipmilan-10.24.221.172\t(stonith:fence_ipmilan):\tStarted myhost15",
-                    "stonith-ipmilan-10.24.221.171\t(stonith:fence_ipmilan):\tStarted myhost16",
-                    "stonith-ipmilan-10.24.221.173\t(stonith:fence_ipmilan):\tStarted myhost15",
-                ],
-                "Daemon Status": [
-                    "corosync: active/enabled",
-                    "pacemaker: active/enabled",
-                    "pcsd: active/enabled"
-                ],
-                "Nodes configured": "3",
-                "Online": "[ myhost15 myhost16 myhost17 ]",
-                "Cluster name": "openstack",
-                "Stack": "corosync"
-             }
     """
 
     def parse_content(self, content):
         self.nodes = []
-        self.data = {}
         self.bad_nodes = []
         # according this file  https://github.com/ClusterLabs/pacemaker/blob/d078ca4a9ac72fc96073a215da2eed48939536f5/tools/crm_mon.c
         key_oneline = (
             "Cluster name", "Stack", "Current DC", "Online", "RemoteOnline", "OFFLINE", "RemoteOFFLINE", "GuestOnline")
-        key_nextline = ("Full list of resources", "Failed Actions", "PCSD Status", "Daemon Status")
+
+        # pacemaker changes some prefix after version 1.0 and 2.0
+        key_nextline_titles = {
+            "Full list of resources": ["Full list of resources", "Full List of Resources"],
+            "Failed Actions": ["Failed Actions", "Failed Resource Actions"],  # "Failed Actions" was renamed to "Failed Resource Actions" at https://github.com/ClusterLabs/pacemaker/pull/1521
+            "Failed Fencing Actions": ["Failed Fencing Actions"],
+            "PCSD Status": ["PCSD Status"],
+            "Daemon Status": ["Daemon Status"],
+            "Migration Summary": ["Migration Summary"],
+            "Fencing History": ["Fencing History"],
+            "Node List": ["Node List"],
+            "Node Attributes": ["Node Attributes"],
+            "Tickets": ["Tickets"]
+        }
+        key_nextline_values = tuple(itertools.chain(*key_nextline_titles.values()))
         key_nextline_start = 0
         multiple_lines = []
         for line in content:
             if line.startswith("WARNING:"):
-                if "WARNING" in self.data:
-                    self.data["WARNING"].append(line.strip())
+                if "WARNING" in self:
+                    self["WARNING"].append(line.strip())
                 else:
-                    self.data["WARNING"] = [line.strip()]
+                    self["WARNING"] = [line.strip()]
                 continue
-            if (line.startswith("RemoteNode") or line.startswith("GuestNode") or line.startswith("Node")):
+            if (line.startswith("RemoteNode") or line.startswith("GuestNode") or (line.startswith("Node") and not line.startswith('Node List'))):
                 linesplit = line.split()
                 bad_node = {}
                 bad_node['name'] = linesplit[1][0:-1]
                 bad_node['status'] = line.split(':')[1][1:]
                 self.bad_nodes.append(bad_node)
-            if line.startswith(key_nextline):
+            if line.startswith(key_nextline_values):
                 key_nextline_start = 1
                 multiple_lines = []
-                self.data[line.split(":")[0]] = multiple_lines
+                attr_name = [key for key, values in key_nextline_titles.items() for value in values if value == line.split(":")[0].strip()][0]
+                self[attr_name] = multiple_lines
                 continue
             if key_nextline_start == 0:
-                linesplit = line.split()
+                linesplit = line.strip('* ').split()
                 if line.startswith(key_oneline):
                     key, value = line.split(":", 1)
-                    self.data[key.strip()] = value.strip()
-                elif "Nodes configured" in line:
-                    self.data["Nodes configured"] = linesplit[0]
-                elif "Resources configured" in line:
-                    self.data["Resources configured"] = linesplit[0]
-                elif "resources configured" in line:
+                    self[key.strip()] = value.strip()
+                elif "nodes configured" in line.lower():
+                    self["Nodes configured"] = linesplit[0]
+                elif any(item in line.lower() for item in ["resources configured", "resource instance configured", "resource instances configured"]):
                     if "and" in line:  # 3 nodes and 3 resources configured
-                        self.data['Nodes configured'] = linesplit[0]
-                        self.data["Resources configured"] = linesplit[3]
+                        self['Nodes configured'] = linesplit[0]
+                        self["Resources configured"] = linesplit[3]
+                    else:
+                        self["Resources configured"] = linesplit[0]
             else:  # key_nextline_start > 0
                 if line.strip():
                     multiple_lines.append(line.strip())
-        pcsd_status = self.data.get("PCSD Status")
+        pcsd_status = self.get("PCSD Status")
         if pcsd_status:
             # According "PCSD Status" to get node list
             for line in pcsd_status:
-                self.nodes.append(line.split(":")[0].strip())
+                if line.count(':') > 1:
+                    self.nodes.extend([item.split(':')[0] for item in line.split() if ':' in item])
+                else:
+                    self.nodes.append(line.split(":")[0].strip())
 
-    def get(self, i_key):
-        """str/list: Returns the data associated with ``i_key`` or ``None`` if ``i_key`` is not present"""
-        return self.data.get(i_key)
+    @property
+    def data(self):
+        # to keep compatibility with old usage, please use itselt directly.
+        return self
