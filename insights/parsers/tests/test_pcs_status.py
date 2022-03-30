@@ -334,6 +334,8 @@ def test_pcs_nodes_and_resources():
 
 def test_pcs_output1():
     pcs = PCSStatus(context_wrap(CLUSTER_OUTPUT_PACEMAKER_VERSION2))
+    assert pcs.get('Current DC') == 'host2 (2) (version 2.1.0-8.el8-7c3f660707) - partition with quorum'
+    assert pcs.get('Cluster name') == 'cluster1'
     assert pcs.nodes == ['host1', 'host2']
     assert pcs['Nodes configured'] == '2'
     assert pcs['Resources configured'] == '6'

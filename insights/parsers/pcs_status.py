@@ -159,7 +159,8 @@ class PCSStatus(CommandParser, dict):
                 self[key_nextline_alias.get(attr_name, attr_name)] = multiple_lines
                 continue
             if key_nextline_start == 0:
-                linesplit = line.strip('* ').split()
+                line = line.strip('* ')
+                linesplit = line.split()
                 if line.startswith(key_oneline):
                     key, value = line.split(":", 1)
                     self[key.strip()] = value.strip()
