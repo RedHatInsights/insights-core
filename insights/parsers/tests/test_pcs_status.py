@@ -186,6 +186,106 @@ Daemon Status:
   pcsd: active/enabled
 """
 
+CLUSTER_OUTPUT_PACEMAKER_VERSION2 = """
+Cluster name: cluster1
+Cluster Summary:
+  * Stack: corosync
+  * Current DC: host2 (2) (version 2.1.0-8.el8-7c3f660707) - partition with quorum
+  * Last updated: Wed Feb 23 15:35:41 2022
+  * Last change:  Fri Feb 11 09:09:23 2022 by root via cibadmin on host2
+  * 2 nodes configured
+  * 6 resource instances configured
+
+Node List:
+  * Online: [ host1 (1) host2 (2) ]
+
+Full List of Resources:
+  * Resource Group: TEST-HA-DB:
+    * TEST-HA-IP (ocf::heartbeat:IPaddr2):    Started host2
+    * TEST-HA-VG (ocf::heartbeat:LVM-activate):   Started host2
+    * TEST-HA-FS (ocf::heartbeat:Filesystem):     Started host2
+    * TEST-HA-BKP-FS (ocf::heartbeat:Filesystem):     Started host2
+    * TEST-HA-DB-START   (systemd:postgresql-12):     Started host2
+  * vmfence (stonith:fence_vmware_soap):     Started host1
+
+Migration Summary:
+
+Failed Fencing Actions:
+  * reboot of r40 failed: delegate=, client=pacemaker-fenced.160287, origin=r11, completed='2022-03-06 23:27:35 +08:00'
+  * reboot of r40 failed: delegate=, client=pacemaker-fenced.160287, origin=r11, completed='2022-03-06 23:26:13 +08:00'
+  * reboot of r40 failed: delegate=, client=pacemaker-fenced.160287, origin=r11, completed='2022-03-06 23:19:10 +08:00'
+  * reboot of r40 failed: delegate=, client=stonith_admin.630429, origin=r11, completed='2022-03-06 23:17:19 +08:00'
+  * reboot of r40 failed: delegate=, client=pacemaker-controld.2976, origin=r11, completed='2022-02-27 23:49:15 +08:00'
+  * reboot of r40 failed: delegate=, client=pacemaker-controld.2901, origin=r11, completed='2022-02-27 00:05:59 +08:00'
+
+Fencing History:
+  * reboot of r40 successful: delegate=r11, client=pacemaker-controld.160291, origin=r11, completed='2022-03-13 23:26:20 +08:00'
+  * reboot of r40 successful: delegate=r11, client=pacemaker-controld.160291, origin=r11, completed='2022-03-13 23:08:10 +08:00'
+  * reboot of r40 successful: delegate=r11, client=pacemaker-controld.160291, origin=r11, completed='2022-03-13 23:00:05 +08:00'
+  * reboot of r40 successful: delegate=r11, client=stonith_admin.1155499, origin=r40, completed='2022-03-06 23:34:03 +08:00'
+  * reboot of r40 successful: delegate=r11, client=pacemaker-controld.160291, origin=r11, completed='2022-03-06 23:34:03 +08:00'
+
+Tickets:
+
+PCSD Status:
+  host1: Online host2: Online
+
+Daemon Status:
+  corosync: active/disabled
+  pacemaker: active/enabled
+  pcsd: active/enabled
+"""
+
+CLUSTER_OUTPUT_PACEMAKER_VERSION_1 = """
+Cluster name: test0304
+Stack: corosync
+Current DC: test-host1 (1) (version 1.1.23-1.el7_9.1-9acf116022) - partition with quorum
+Last updated: Thu Feb 17 16:43:01 2022
+Last change: Thu Feb 17 16:31:17 2022 by root via cibadmin on test-host1
+
+2 nodes configured
+1 resource instance configured
+
+Online: [ test-host1 (1) test-host2 (2) ]
+
+Full list of resources:
+
+ clusterfence	(stonith:fence_aws):	Stopped
+
+Node Attributes:
+* Node test-host1 (1):
+* Node test-host2 (2):
+
+Migration Summary:
+* Node test-host1 (1):
+   clusterfence: migration-threshold=1000000 fail-count=1000000 last-failure='Thu Feb 17 16:35:17 2022'
+* Node test-host2 (2):
+   clusterfence: migration-threshold=1000000 fail-count=1000000 last-failure='Thu Feb 17 16:39:17 2022'
+
+Failed Resource Actions:
+* clusterfence_start_0 on test-host1 'unknown error' (1): call=78, status=Timed Out, exitreason='',
+    last-rc-change='Thu Feb 17 16:31:17 2022', queued=0ms, exec=240006ms
+* clusterfence_start_0 on test-host2 'unknown error' (1): call=24, status=Timed Out, exitreason='',
+    last-rc-change='Thu Feb 17 16:35:17 2022', queued=0ms, exec=240005ms
+
+Failed Fencing Actions:
+* reboot of test-HOST2 failed: delegate=, client=stonith_admin.26944, origin=test-host1,
+    completed='Thu Feb 17 16:40:23 2022'
+* reboot of test-host2 failed: delegate=, client=stonith_admin.26937, origin=test-host1,
+    completed='Thu Feb 17 16:40:19 2022'
+
+Fencing History:
+
+PCSD Status:
+  test-host2: Online  test-host1: Online
+
+
+Daemon Status:
+  corosync: active/disabled
+  pacemaker: active/disabled
+  pcsd: active/enabled
+"""
+
 CLUSTER_NOT_RUNNING = """
 Error: cluster is not currently running on this node
 """
@@ -230,6 +330,39 @@ def test_pcs_nodes_and_resources():
         'pacemaker: active/enabled',
         'pcsd: active/enabled',
     ]
+
+
+def test_pcs_output1():
+    pcs = PCSStatus(context_wrap(CLUSTER_OUTPUT_PACEMAKER_VERSION2))
+    assert pcs.get('Current DC') == 'host2 (2) (version 2.1.0-8.el8-7c3f660707) - partition with quorum'
+    assert pcs.get('Cluster name') == 'cluster1'
+    assert pcs.nodes == ['host1', 'host2']
+    assert pcs['Nodes configured'] == '2'
+    assert pcs['Resources configured'] == '6'
+    assert len(pcs['Full list of resources']) == 7
+    assert 'Tickets' in pcs
+    assert not pcs['Tickets']
+    assert len(pcs['Failed Fencing Actions']) == 6
+    assert len(pcs['Fencing History']) == 5
+    assert 'Migration Summary' in pcs
+    assert not pcs['Migration Summary']
+    assert len(pcs['Node List']) == 1
+
+
+def test_pcs_output2():
+    pcs = PCSStatus(context_wrap(CLUSTER_OUTPUT_PACEMAKER_VERSION_1))
+    assert pcs['Nodes configured'] == '2'
+    assert pcs['Resources configured'] == '1'
+    assert len(pcs['Full list of resources']) == 1
+    assert 'clusterfence	(stonith:fence_aws):	Stopped' in pcs['Full list of resources']
+    assert 'Failed Actions' in pcs
+    assert len(pcs['Failed Actions']) == 4
+    assert "* clusterfence_start_0 on test-host1 'unknown error' (1): call=78, status=Timed Out, exitreason=''," in pcs.data['Failed Actions']
+    assert 'Migration Summary' in pcs
+    assert len(pcs['Migration Summary']) == 4
+    assert "clusterfence: migration-threshold=1000000 fail-count=1000000 last-failure='Thu Feb 17 16:35:17 2022'" in pcs.data['Migration Summary']
+    assert len(pcs['Node Attributes']) == 2
+    assert '* Node test-host1 (1):' in pcs['Node Attributes']
 
 
 def test_cluster_not_running():
