@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.268
+Version:        3.0.269
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,11 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Mar 31 2022 Sachin Patil <psachin@redhat.com> 3.0.269-1
+- fix: Enhance "PCSStatus" to make it compatible with new output format (#3373) (44796653+huali027@users.noreply.github.com)
+- Revert "fix: Enhance parser Grub2Config (#3360)" (#3367) (rblakley@redhat.com)
+- fix: Fix deprecation warning for using ET.getiterator (#3371) (rblakley@redhat.com)
+- Add the line starter for the last release in the CHANGELOG.md file (xiangceliu@redhat.com)
 * Thu Mar 24 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.268-1
 - fix: Enhance parser Grub2Config (#3360) (jiazhang@redhat.com)
 - fix: Switch to reading crontab file rather than run the command (#3359)
