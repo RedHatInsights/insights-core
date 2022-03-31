@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.269](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.269) (2022-03-31)
+
+- fix: Enhance "PCSStatus" to make it compatible with new output format ([PR 3373](https://github.com/RedHatInsights/insights-core/pull/3373))
+- Revert "fix: Enhance parser Grub2Config (#3360)" ([PR 3367](https://github.com/RedHatInsights/insights-core/pull/3367))
+- fix: Fix deprecation warning for using ET.getiterator ([PR 3371](https://github.com/RedHatInsights/insights-core/pull/3371))
+
 ## [insights-core-3.0.268](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.268) (2022-03-24)
 
 - fix: Enhance parser Grub2Config ([PR 3360](https://github.com/RedHatInsights/insights-core/pull/3360))
