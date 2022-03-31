@@ -204,8 +204,6 @@ menuentry 'Red Hat Enterprise Linux Server (0-rescue-9f20b35c9faa49aebe171f62a11
 }
 """.strip()  # noqa
 
-
-
 GRUB2_EFI_CFG = """
 ### BEGIN /etc/grub.d/10_linux ###
 menuentry 'Red Hat Enterprise Linux Server (3.10.0-514.16.1.el7.x86_64) 7.3 (Maipo)' --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option 'gnulinux-3.10.0-514.el7.x86_64-advanced-9727cab4-12c2-41a8-9527-9644df34e586' {
