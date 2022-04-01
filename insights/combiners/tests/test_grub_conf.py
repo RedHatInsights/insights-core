@@ -119,36 +119,10 @@ blscfg
 if [ -s $prefix/grubenv ]; then
   load_env
 fi
-### BEGIN /etc/grub.d/10_linux ###
-menuentry 'Red Hat Enterprise Linux Server (4.18.0-240.el8.x86_64) 8.3 (Maipo)' --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option 'gnulinux-3.10.0-327.el7.x86_64-advanced-4f80b3d4-90ba-4545-869c-febdecc586ce' {
-        load_video
-        set gfxpayload=keep
-        insmod gzio
-        insmod part_msdos
-        insmod xfs
-        set root='hd0,msdos1'
-        if [ x$feature_platform_search_hint = xy ]; then
-          search --no-floppy --fs-uuid --set=root --hint-bios=hd0,msdos1 --hint-efi=hd0,msdos1 --hint-baremetal=ahci0,msdos1 --hint='hd0,msdos1'  860a7b56-dbdd-498a-b085-53dc93e4650b
-        else
-          search --no-floppy --fs-uuid --set=root 860a7b56-dbdd-498a-b085-53dc93e4650b
-        fi
-        linux16 /vmlinuz-4.18.0-240.el8.x86_64 %s root=/dev/mapper/rhel-root ro crashkernel=auto rd.lvm.lv=rhel/root rd.lvm.lv=rhel/swap rhgb quiet LANG=en_US.UTF-8
-        initrd16 /initramfs-4.18.0-240.el8.x86_64.img
-}
-menuentry 'Red Hat Enterprise Linux Server (0-rescue-9f20b35c9faa49aebe171f62a11b236f) 8.3 (Maipo)' --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option 'gnulinux-0-rescue-9f20b35c9faa49aebe171f62a11b236f-advanced-4f80b3d4-90ba-4545-869c-febdecc586ce' {
-        load_video
-        insmod gzio
-        insmod part_msdos
-        insmod xfs
-        set root='hd0,msdos1'
-        if [ x$feature_platform_search_hint = xy ]; then
-          search --no-floppy --fs-uuid --set=root --hint-bios=hd0,msdos1 --hint-efi=hd0,msdos1 --hint-baremetal=ahci0,msdos1 --hint='hd0,msdos1'  860a7b56-dbdd-498a-b085-53dc93e4650b
-        else
-          search --no-floppy --fs-uuid --set=root 860a7b56-dbdd-498a-b085-53dc93e4650b
-        fi
-        linux16 /vmlinuz-0-rescue-9f20b35c9faa49aebe171f62a11b236f %s root=/dev/mapper/rhel-root ro crashkernel=auto rd.lvm.lv=rhel/root rd.lvm.lv=rhel/swap rhgb quiet
-        initrd16 /initramfs-0-rescue-9f20b35c9faa49aebe171f62a11b236f.img
-}
+
+if [ -z "${kernelopts}" ]; then
+  set kernelopts="root=/dev/mapper/rhel-root ro crashkernel=auto resume=/dev/mapper/rhel-swap rd.lvm.lv=rhel/root rd.lvm.lv=rhel/swap rhgb quiet transparent_hugepage=never "
+fi
 """.strip()  # noqa
 
 GRUB2_TEMPLATE_NO_BLSCFG = """
@@ -566,10 +540,11 @@ def test_get_grub_cmdlines_none():
 
 
 def test_grub2_grubenv():
+    grubenv = GrubEnv(context_wrap(GRUBENV_WITH_TUNED_PARAMS))
     grub2 = Grub2Config(context_wrap(GRUB2_TEMPLATE))
     grub_ble1 = BLE(context_wrap(BOOT_LOADER_ENTRIES_1))
     grub_ble2 = BLE(context_wrap(BOOT_LOADER_ENTRIES_2))
-    grub_bles = BootLoaderEntries([grub_ble1, grub_ble2], None, None)
+    grub_bles = BootLoaderEntries([grub_ble1, grub_ble2], grubenv, None)
     rhel8 = RedhatRelease(context_wrap(RHEL8))
     rhel = RedHatRelease(None, rhel8)
     rpms = InstalledRpms(context_wrap(INSTALLED_RPMS_V2))
@@ -583,18 +558,20 @@ def test_grub2_grubenv():
 
 
 def test_grub2_grubenv_with_kernelopts():
-    grub2 = Grub2Config(context_wrap(GRUB2_TEMPLATE_NO_BLSCFG))
+    grubenv = GrubEnv(context_wrap(GRUBENV_WITH_TUNED_PARAMS))
+    grub2 = Grub2Config(context_wrap(GRUB2_TEMPLATE_BLSCFG))
     grub_ble1 = BLE(context_wrap(BOOT_LOADER_ENTRIES_1))
     grub_ble2 = BLE(context_wrap(BOOT_LOADER_ENTRIES_2))
-    grub_bles = BootLoaderEntries([grub_ble1, grub_ble2], None, None)
+    grub_ble3 = BLE(context_wrap(BOOT_LOADER_ENTRIES_3))
+    grub_bles = BootLoaderEntries([grub_ble1, grub_ble2, grub_ble3], grubenv, None)
     rhel8 = RedhatRelease(context_wrap(RHEL8))
     rhel = RedHatRelease(None, rhel8)
     rpms = InstalledRpms(context_wrap(INSTALLED_RPMS_V2))
     sys_firmware = LsSysFirmware(context_wrap(SYS_FIRMWARE_DIR_NOEFI))
     result = GrubConf(None, grub2, None, None, grub_bles, rpms, None, sys_firmware, rhel)
-    assert len(result.get_grub_cmdlines()) == 2
-    assert 'noapic' not in result.get_grub_cmdlines()[0]['cmdline']
-    assert 'transparent_hugepages' not in result.get_grub_cmdlines()[0]['cmdline']
+    assert len(result.get_grub_cmdlines()) == 3
+    assert 'noapic' in result.get_grub_cmdlines()[2]['cmdline']
+    assert 'transparent_hugepages' in result.get_grub_cmdlines()[2]['cmdline']
     assert result.version == 2
     assert not result.is_efi
 

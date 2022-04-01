@@ -136,16 +136,16 @@ class GrubConf(object):
             self.is_efi = self.is_efi if sys_firmware else self.grub._efi
         else:
             _grub1, _grub2 = (grub1_efi, grub2_efi) if self.is_efi else (grub1, grub2)
-            if rh_rel and rh_rel.rhel8 and _grub2 is not None and 'blscfg' in _grub2.get('configs', ""):
+            if grub_bles and _grub2 and 'blscfg' in _grub2.get('configs', ''):
                 self.grub = grub_bles
             # Check grub version via installed-rpms
             else:
                 if rpms:
                     # grub1
-                    if 'grub2' not in rpms and 'grub' in rpms and _grub1 is not None:
+                    if 'grub2' not in rpms and 'grub' in rpms and _grub1:
                         self.grub = _grub1
                     # grub2
-                    if 'grub' not in rpms and 'grub2' in rpms and _grub2 is not None:
+                    if 'grub' not in rpms and 'grub2' in rpms and _grub2:
                         self.grub = _grub2
                 # Check grub version via the booted CmdLine
                 if self.grub is None and cmdline:
