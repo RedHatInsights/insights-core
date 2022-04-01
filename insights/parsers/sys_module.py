@@ -18,6 +18,8 @@ SCSIModUseBlkMq - file ``/sys/module/scsi_mod/parameters/use_blk_mq``
 ---------------------------------------------------------------------
 VHostNetZeroCopyTx - file ``/sys/module/vhost_net/parameters/experimental_zcopytx``
 -----------------------------------------------------------------------------------
+Ql2xMaxLUN - file ``/sys/module/qla2xxx/parameters/ql2xmqsupport``
+------------------------------------------------------------------
 """
 from insights import parser, Parser
 from insights.parsers import SkipException
@@ -171,5 +173,23 @@ class SCSIModMaxReportLUNs(MaxLUNs):
 
         >>> scsi_mod_max_report_luns.val
         512
+    """
+    pass
+
+
+@parser(Specs.ql2xmqsupport)
+class Ql2xmqSupport(XModUseBlkMq):
+    """
+    This file `/sys/module/qla2xxx/parameters/ql2xmqsupport` shows if ql2xmqsupport
+    parameter is on.
+
+    Examples::
+
+        >>> type(qla2xxx_ql2xmqsupport)
+        <class 'insights.parsers.sys_module.Ql2xmqSupport'>
+        >>> qla2xxx_ql2xmqsupport.val
+        '1'
+        >>> qla2xxx_ql2xmqsupport.is_on
+        True
     """
     pass
