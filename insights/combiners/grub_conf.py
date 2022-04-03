@@ -16,12 +16,10 @@ parsers/combiners:
 :class:`insights.parsers.installed_rpms.InstalledRpms`,
 :class:`insights.parsers.cmdline.CmdLine`,
 :class:`insights.parsers.ls_sys_firmware.LsSysFirmware`, and
-:class:`insights.combiners.redhat_release.RedHatRelease`.
 """
 import re
 
 from insights import SkipComponent
-from insights.combiners.redhat_release import RedHatRelease
 from insights.core.plugins import combiner
 from insights.parsers.cmdline import CmdLine
 from insights.parsers.grub_conf import (get_kernel_initrds, BootEntry, Grub1Config, Grub1EFIConfig, Grub2Config,
@@ -93,7 +91,7 @@ class BootLoaderEntries(object):
 
 
 @combiner([Grub1Config, Grub2Config, Grub1EFIConfig, Grub2EFIConfig, BootLoaderEntries],
-          optional=[InstalledRpms, CmdLine, LsSysFirmware, RedHatRelease])
+          optional=[InstalledRpms, CmdLine, LsSysFirmware])
 class GrubConf(object):
     """
     Process Grub configuration v1, v2, and BLS based on which type is passed in.
@@ -125,7 +123,7 @@ class GrubConf(object):
         []
     """
     def __init__(self, grub1, grub2, grub1_efi, grub2_efi, grub_bles,
-                 rpms, cmdline, sys_firmware, rh_rel):
+                 rpms, cmdline, sys_firmware):
         self.version = self.is_kdump_iommu_enabled = None
         self.grub = self.kernel_initrds = None
         self.is_efi = '/sys/firmware/efi' in sys_firmware if sys_firmware else False
