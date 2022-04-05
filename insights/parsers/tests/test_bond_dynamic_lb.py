@@ -9,6 +9,7 @@ from insights.tests import context_wrap
 CONTEXT_PATH = "/sys/class/net/bond0/bonding/tlb_dynamic_lb"
 CONTEXT_PATH_1 = "/sys/class/net/bond1/bonding/tlb_dynamic_lb"
 CONTEXT_PATH_2 = "/sys/class/net/bond2/bonding/tlb_dynamic_lb"
+CONTEXT_PATH_3 = "/sys/class/net/test3/bonding/tlb_dynamic_lb"
 
 BOND_LD_BALANCE = """
 0
@@ -43,6 +44,10 @@ def test_bond_dynamic_lb_class():
 
     tlb_bond = BondDynamicLB(context_wrap(BOND_LD_BALANCE_1, CONTEXT_PATH_1))
     assert tlb_bond.bond_name == 'bond1'
+    assert tlb_bond.dynamic_lb_status == 1
+
+    tlb_bond = BondDynamicLB(context_wrap(BOND_LD_BALANCE_1, CONTEXT_PATH_3))
+    assert tlb_bond.bond_name == 'test3'
     assert tlb_bond.dynamic_lb_status == 1
 
     with pytest.raises(ParseException) as exc:
