@@ -240,6 +240,9 @@ class SOSCleaner:
                             c = line[idx]
                             while c != " ":
                                 idx += 1
+                                if idx == len(line):
+                                    idx = len(line) - 1
+                                    break
                                 c = line[idx]
                             line = line[0:idx] + numspaces * " " + line[idx:]
 
@@ -252,6 +255,8 @@ class SOSCleaner:
                             c = line[idx]
                             while c != " ":
                                 idx += 1
+                                if idx == len(line):
+                                    break
                                 c = line[idx]
                             line = line[0:idx] + line[(idx+numspaces):]
 
