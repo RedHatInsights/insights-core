@@ -12,7 +12,6 @@ from mock.mock import patch
 from pytest import mark
 
 from insights.client.config import InsightsConfig
-from insights.client.constants import InsightsConstants as constants
 from insights.client.data_collector import CleanOptions
 from insights.contrib.soscleaner import SOSCleaner
 
