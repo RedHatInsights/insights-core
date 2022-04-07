@@ -560,6 +560,7 @@ class DefaultSpecs(Specs):
     qemu_conf = simple_file("/etc/libvirt/qemu.conf")
     qemu_xml = glob_file(r"/etc/libvirt/qemu/*.xml")
     ql2xmaxlun = simple_file("/sys/module/qla2xxx/parameters/ql2xmaxlun")
+    ql2xmqsupport = simple_file("/sys/module/qla2xxx/parameters/ql2xmqsupport")
     qpidd_conf = simple_file("/etc/qpid/qpidd.conf")
     rabbitmq_env = simple_file("/etc/rabbitmq/rabbitmq-env.conf")
     rabbitmq_report = simple_command("/usr/sbin/rabbitmqctl report")
