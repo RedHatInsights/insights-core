@@ -79,9 +79,7 @@ class SOSCleaner:
         self.kw_db = dict() #keyword database
         self.kw_count = 0
 
-        # Doing so here to avoid cyclic imports.
-        from insights.client.constants import InsightsConstants as constants
-        self.excluded_specs = constants.obfuscation_excluded_specs
+        self.excluded_specs = ("insights.specs.Specs.installed_rpms",)
 
     def _skip_file(self, d, files):
         '''

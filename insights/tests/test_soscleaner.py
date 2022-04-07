@@ -194,7 +194,7 @@ def test_excluded_files():
     expected = [
         report_item.relative_path
         for report_item in report_items
-        if report_item.name in constants.obfuscation_excluded_specs
+        if report_item.name in soscleaner.excluded_specs
     ]
     assert actual == expected
 
