@@ -27,13 +27,14 @@ def semid(broker):
     Returns:
         list: A list of the semid of all the inter-processes.
     """
+    allowed_owners = ['root', 'apache', 'oracle']
     content = broker[Specs.ipcs_s].content
     results = set()
     for s in content:
         s_splits = s.split()
         # key        semid      owner      perms      nsems
         # 0x00000000 65536      apache     600        1
-        if len(s_splits) == 5 and s_splits[1].isdigit():
+        if len(s_splits) == 5 and s_splits[1].isdigit() and s_splits[2] in allowed_owners:
             results.add(s_splits[1])
     if results:
         return list(results)
