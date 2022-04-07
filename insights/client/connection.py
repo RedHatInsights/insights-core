@@ -113,7 +113,7 @@ class InsightsConnection(object):
                 self.base_url = protocol + constants.base_url
         else:
             self.base_url = protocol + self.config.base_url
-        # end hack. in the future, make cloud.redhat.com the default
+        # end hack. in the future, make console.redhat.com the default
 
         self.upload_url = self.config.upload_url
         if self.upload_url is None:
