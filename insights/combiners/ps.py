@@ -225,9 +225,9 @@ class Ps(object):
     def __update_data(self, ps_parser, mapping=None):
         """
         Updates internal dictionary with the processes data from the parser.
-        New PIDs will be add added to the dictionary and existing ones
-        will be updated. ``mapping`` needs to specify attribute mapping
-        metadata for proper consolidation of data.
+        New PIDs will be added to the dictionary and existing ones will be
+        updated. ``mapping`` needs to specify attribute mapping metadata
+        for proper consolidation of data.
 
         Args:
             ps_parser (insights.parsers.ps.Ps): Ps parser implementation instance.
@@ -243,8 +243,7 @@ class Ps(object):
             temp_row = self.__map_row(pid, input_row, mapping)
             pid_row.update(temp_row)
 
-        [update_row(row, mapping)
-        for row in ps_parser.data]
+        [update_row(row, mapping) for row in ps_parser.data if row['PID'].isdigit()]
 
     def __convert_data_types(self):
         """
@@ -260,9 +259,9 @@ class Ps(object):
                 row[attr_name] = type_ctor(row[attr_name])
 
         [convert_attr(attr_name, row)
-        for attr_name in self.__CONVERSION_MAP
-        for row in self._pid_data.values()
-        if attr_name in row]
+         for attr_name in self.__CONVERSION_MAP
+         for row in self._pid_data.values()
+         if attr_name in row]
 
     def __map_row(self, pid, row, mapping):
         """
