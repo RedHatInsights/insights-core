@@ -73,6 +73,18 @@ F   UID   PID  PPID PRI  NI    VSZ   RSS WCHAN  STAT TTY        TIME COMMAND
 1     0     9     2  20   0      0     0 rcu_gp S    ?          0:00 [rcu_bh]
 """
 
+PS_AUXWWWM_LINES = """
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root           1  1.8  0.8  24228 15660 ?        -    09:56   0:00 /usr/lib/systemd/systemd rhgb --switched-root --system --deserialize 31
+root           -  1.8    -      -     - -        Ss   09:56   0:00 -
+root           2  0.0  0.0      0     0 ?        -    09:56   0:00 [kthreadd]
+root           -  0.0    -      -     - -        S    09:56   0:00 -
+root           3  0.0  0.0      0     0 ?        -    09:56   0:00 [rcu_gp]
+root           -  0.0    -      -     - -        I<   09:56   0:00 -
+root           4  0.0  0.0      0     0 ?        -    09:56   0:00 [rcu_par_gp]
+root           -  0.0    -      -     - -        I<   09:56   0:00 -
+"""
+
 
 def test_pseo_parser():
     ps_eo = PsEo(context_wrap(PS_EO_LINES, strip=False))
@@ -165,6 +177,41 @@ def test_psalxwww_and_psauxww_and_psaux_parsers():
     assert ps['PRI'] == 20
     assert ps['NI'] == '0'
     assert ps['WCHAN'] == 'ep_pol'
+
+
+def test_psauxwwwm_parser():
+    ps_auxwwwm = PsAuxww(context_wrap(PS_AUXWWWM_LINES))
+    ps = Ps(None, ps_auxwwwm, None, None, None, None, None)
+
+    assert len(ps.processes) == 4
+
+    ps_1 = ps[1]
+    assert ps_1['PID'] == 1
+    assert ps_1['USER'] == 'root'
+    assert ps_1['%CPU'] == 1.8
+    assert ps_1['%MEM'] == 0.8
+    assert ps_1['VSZ'] == 24228.0
+    assert ps_1['RSS'] == 15660.0
+    assert ps_1['STAT'] == 'Ss'
+    assert ps_1['TTY'] == '?'
+    assert ps_1['START'] == '09:56'
+    assert ps_1['TIME'] == '0:00'
+    assert ps_1['COMMAND'] == '/usr/lib/systemd/systemd rhgb --switched-root --system --deserialize 31'
+    assert ps_1['COMMAND_NAME'] == 'systemd'
+
+    ps_4 = ps[4]
+    assert ps_4['PID'] == 4
+    assert ps_4['USER'] == 'root'
+    assert ps_4['%CPU'] == 0.0
+    assert ps_4['%MEM'] == 0.0
+    assert ps_4['VSZ'] == 0.0
+    assert ps_4['RSS'] == 0.0
+    assert ps_4['STAT'] == 'I<'
+    assert ps_4['TTY'] == '?'
+    assert ps_4['START'] == '09:56'
+    assert ps_4['TIME'] == '0:00'
+    assert ps_4['COMMAND'] == '[rcu_par_gp]'
+    assert ps_4['COMMAND_NAME'] == '[rcu_par_gp]'
 
 
 def test_psalxwww_and_psauxww_and_psaux_and_psef_and_psauxcww_and_ps_eo_parsers():
