@@ -2,6 +2,16 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.270](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.270) (2022-04-07)
+
+- Replace <E2><80><9C>cloud.redhat.com<E2><80><9D> with <E2><80><9C>console.redhat.com<E2><80><9D> ([PR 3365](https://github.com/RedHatInsights/insights-core/pull/3365))
+- New parser Ql2xmqSupport ([PR 3374](https://github.com/RedHatInsights/insights-core/pull/3374))
+- Fix BZ#2071058 ([PR 3375](https://github.com/RedHatInsights/insights-core/pull/3375))
+- fix: correctly obfuscate IP addresses at EOL ([PR 3376](https://github.com/RedHatInsights/insights-core/pull/3376))
+- feat: Add new sos ps spec and fix ValueError caused by it ([PR 3377](https://github.com/RedHatInsights/insights-core/pull/3377))
+- Enhance combiner grub_conf_blscfg ([PR 3370](https://github.com/RedHatInsights/insights-core/pull/3370))
+- fix: Update bond and bond_dynamic_lb spec ([PR 3372](https://github.com/RedHatInsights/insights-core/pull/3372))
+
 ## [insights-core-3.0.269](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.269) (2022-03-31)
 
 - fix: Enhance "PCSStatus" to make it compatible with new output format ([PR 3373](https://github.com/RedHatInsights/insights-core/pull/3373))
