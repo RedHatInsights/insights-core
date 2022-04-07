@@ -575,9 +575,9 @@ class InsightsClient(object):
             if len(system) == 1:
                 try:
                     id = system[0]["id"]
-                    logger.info("View details about this system on cloud.redhat.com:")
+                    logger.info("View details about this system on console.redhat.com:")
                     logger.info(
-                        "https://cloud.redhat.com/insights/inventory/{0}".format(id)
+                        "https://console.redhat.com/insights/inventory/{0}".format(id)
                     )
                 except Exception as e:
                     logger.error(
