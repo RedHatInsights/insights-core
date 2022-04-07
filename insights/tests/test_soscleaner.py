@@ -166,9 +166,11 @@ def test_sub_ip_no_match(line):
     assert actual == line
 
 
-def test_obfuscation_excluded_specs():
+def test_excluded_specs():
     soscleaner = SOSCleaner()
-    assert soscleaner.excluded_specs == constants.obfuscation_excluded_specs
+    assert len(soscleaner.excluded_specs) > 0
+    for spec in soscleaner.excluded_specs:
+        assert spec.find("insights.specs.Specs.") == 0
 
 
 def test_excluded_files():
