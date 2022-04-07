@@ -79,13 +79,13 @@ class SOSCleaner:
         self.kw_db = dict() #keyword database
         self.kw_count = 0
 
-        self.excluded_specs = (
+        self.excluded_specs = [
             "insights.specs.Specs.installed_rpms",
             "insights.specs.Specs.dnf_modules",
             "insights.specs.Specs.yum_list_available",
             "insights.specs.Specs.yum_updateinfo",
             "insights.specs.Specs.yum_updates"
-        )
+        ]
 
     def _skip_file(self, d, files):
         '''
