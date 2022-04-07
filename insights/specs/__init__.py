@@ -540,6 +540,7 @@ class Specs(SpecSet):
     qemu_conf = RegistryPoint()
     qemu_xml = RegistryPoint(multi_output=True)
     ql2xmaxlun = RegistryPoint()
+    ql2xmqsupport = RegistryPoint()
     qpid_stat_g = RegistryPoint()
     qpid_stat_q = RegistryPoint()
     qpid_stat_u = RegistryPoint()
