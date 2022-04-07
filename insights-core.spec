@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.269
+Version:        3.0.270
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,18 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Apr 07 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.270-1
+- Replace "cloud.redhat.com" with "console.redhat.com" (#3365)
+  (strider@users.noreply.github.com)
+- New parser Ql2xmqSupport (#3374) (986222045@qq.com)
+- Fix BZ#2071058 (#3375) (psachin@redhat.com)
+- fix: correctly obfuscate IP addresses at EOL (#3376)
+  (subpop@users.noreply.github.com)
+- feat: Add new sos ps spec and fix ValueError caused by it (#3377)
+  (rblakley@redhat.com)
+- Enhance combiner grub_conf_blscfg (#3370) (jiazhang@redhat.com)
+- fix: Update bond and bond_dynamic_lb spec (#3372) (rblakley@redhat.com)
+
 * Thu Mar 31 2022 Sachin Patil <psachin@redhat.com> 3.0.269-1
 - fix: Enhance "PCSStatus" to make it compatible with new output format (#3373) (44796653+huali027@users.noreply.github.com)
 - Revert "fix: Enhance parser Grub2Config (#3360)" (#3367) (rblakley@redhat.com)
