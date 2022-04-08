@@ -55,7 +55,7 @@ class IBMFirmwareLevel(Parser):
 
     Typical content looks like::
 
-        FW950.30 (VL950_092)
+        FW950.30 (VL950_092)\x00
 
     Attributes:
         firmware_level (str): The firmware level required by FLRT.
@@ -77,4 +77,4 @@ class IBMFirmwareLevel(Parser):
         if not fwl:
             raise SkipException("Nothing to parse.")
 
-        self.firmware_level = fwl.strip('()')
+        self.firmware_level = fwl.strip('()\x00')

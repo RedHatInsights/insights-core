@@ -11,7 +11,7 @@ system_type=IBM,8247-22L
 """.strip()
 
 PROC_IBM_FWL = """
-FW950.30 (VL950_092)
+FW950.30 (VL950_092)\x00
 """.strip()
 
 
