@@ -2,12 +2,14 @@ from insights.client.archive import InsightsArchive
 from mock.mock import patch, Mock, call
 from unittest import TestCase
 
+
 test_timestamp = '000000'
 test_hostname = 'testhostname'
 test_archive_name = 'insights-testhostname-000000'
 test_archive_dir = '/var/tmp/test/insights-testhostname-000000'
 test_obfuscated_archive_dir = '/var/tmp/test/insights-localhost-000000'
 test_cmd_dir = '/var/tmp/test/insights-testhostname-000000/insights_commands'
+test_tmp_dir = '/var/tmp/insights-archive-000000'
 
 
 @patch('insights.client.archive.time.strftime', Mock(return_value=test_timestamp))
@@ -15,8 +17,8 @@ test_cmd_dir = '/var/tmp/test/insights-testhostname-000000/insights_commands'
 @patch('insights.client.archive.tempfile.mkdtemp')
 @patch('insights.client.archive.atexit.register')
 class TestInsightsArchive(TestCase):
-
-    def test_init_archive(self, register, mkdtemp):
+    @patch('insights.client.archive.InsightsArchive.cleanup_previous_archive')
+    def test_init_archive(self, cleanup, register, mkdtemp):
         '''
         Verify archive is created with default parameters
         '''
@@ -32,8 +34,9 @@ class TestInsightsArchive(TestCase):
         assert archive.compressor == config.compressor
         assert archive.archive_name == test_archive_name
 
-        mkdtemp.assert_has_calls([call(prefix='/var/tmp/'),
-                                  call(prefix='/var/tmp/')])
+        cleanup.assert_called_once()
+        mkdtemp.assert_has_calls([call(dir='/var/tmp/', prefix='insights-archive-'),
+                                  call(dir='/var/tmp/', prefix='insights-archive-')])
         register.assert_called_once()
 
     @patch('insights.client.archive.os.makedirs')
@@ -55,6 +58,20 @@ class TestInsightsArchive(TestCase):
         assert archive.archive_dir == test_archive_dir
         # ensure the retval and attr are the same
         assert result == archive.archive_dir
+
+    @patch('insights.client.archive.glob.glob', return_value=[])
+    @patch('insights.client.archive.shutil.rmtree')
+    def test_tmp_directory_no_cleanup(self, rmtree, glob, _, __):
+        InsightsArchive(Mock())
+        glob.assert_called_with('/var/tmp/insights-archive-*')
+        rmtree.assert_not_called()
+
+    @patch('insights.client.archive.glob.glob', return_value=[test_tmp_dir])
+    @patch('insights.client.archive.shutil.rmtree')
+    def test_tmp_directory_cleanup(self, rmtree, glob, _, __):
+        InsightsArchive(Mock())
+        glob.assert_called_with('/var/tmp/insights-archive-*')
+        rmtree.assert_called_with(test_tmp_dir, True)
 
     @patch('insights.client.archive.os.makedirs')
     @patch('insights.client.archive.os.path.exists', Mock(return_value=False))

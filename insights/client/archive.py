@@ -2,6 +2,9 @@
 Handle adding files and preparing the archive for upload
 """
 from __future__ import absolute_import
+import glob
+from signal import SIGTERM, signal
+import sys
 import time
 import os
 import shutil
@@ -38,11 +41,13 @@ class InsightsArchive(object):
         Initialize the Insights Archive
         """
         self.config = config
+        # TODO: clean temporary directory from previous runs
+        self.cleanup_previous_archive()
         # input this to core collector as `tmp_path`
-        self.tmp_dir = tempfile.mkdtemp(prefix='/var/tmp/')
+        self.tmp_dir = tempfile.mkdtemp(dir='/var/tmp/', prefix='insights-archive-')
 
         # we don't really need this anymore...
-        self.archive_tmp_dir = tempfile.mkdtemp(prefix='/var/tmp/')
+        self.archive_tmp_dir = tempfile.mkdtemp(dir='/var/tmp/', prefix='insights-archive-')
 
         # We should not hint the hostname in the archive if it has to be obfuscated
         if config.obfuscate_hostname:
@@ -64,6 +69,7 @@ class InsightsArchive(object):
         self.compressor = config.compressor
         self.tar_file = None
         atexit.register(self.cleanup_tmp)
+        signal(SIGTERM, self.sigterm_handler)
 
     def create_archive_dir(self):
         """
@@ -238,3 +244,15 @@ class InsightsArchive(object):
         else:
             self.delete_archive_file()
         self.delete_tmp_dir()
+
+    def sigterm_handler(_signo, _stack_frame, _context):
+        sys.exit(1)
+
+    def cleanup_previous_archive(self):
+        '''
+        Used at the start, this will clean the temporary directory of previous killed runs
+        '''
+        for file in glob.glob('/var/tmp/insights-archive-*'):
+            os.path.join('', file)
+            logger.debug("Deleting previous archive %s", file)
+            shutil.rmtree(file, True)
