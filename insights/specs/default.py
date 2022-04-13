@@ -25,6 +25,7 @@ from insights.core.spec_factory import simple_file, simple_command, glob_file
 from insights.core.spec_factory import first_of, command_with_args
 from insights.core.spec_factory import foreach_collect, foreach_execute
 from insights.core.spec_factory import first_file, listdir
+from insights.core.filters import get_filters
 from insights.combiners.ps import Ps
 from insights.components.rhel_version import IsRhel7, IsRhel8, IsRhel9
 from insights.components.cloud_provider import IsAWS, IsAzure, IsGCP
@@ -214,7 +215,8 @@ class DefaultSpecs(Specs):
     @datasource(HostContext)
     def du_dirs_list(broker):
         """ Provide a list of directorys for the ``du_dirs`` spec to scan """
-        return ['/var/lib/candlepin/activemq-artemis']
+        filters = get_filters(Specs.du_dirs)
+        return list(filters)
     du_dirs = foreach_execute(du_dirs_list, "/bin/du -s -k %s")
     engine_db_query_vdsm_version = simple_command('engine-db-query --statement "SELECT vs.vds_name, rpm_version FROM vds_dynamic vd, vds_static vs WHERE vd.vds_id = vs.vds_id" --json')
     engine_log = simple_file("/var/log/ovirt-engine/engine.log")
