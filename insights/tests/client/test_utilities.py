@@ -61,6 +61,17 @@ def test_generate_machine_id():
     os.remove('/tmp/testmachineid')
 
 
+def test_generate_machine_id_with_non_hyphen_id():
+    content = '86f6f5fad8284730b708a2e44ba5c14a'
+    filename = '/tmp/testmachineid'
+    util.write_to_disk(filename, content=content)
+
+    returned_uuid = str(uuid.UUID(content, version=4))
+
+    assert util.generate_machine_id(destination_file=filename) == returned_uuid
+    os.remove(filename)
+
+
 def test_bad_machine_id():
     with mock.patch.object(util.sys, "exit") as mock_exit:
         with open('/tmp/testmachineid', 'w') as _file:

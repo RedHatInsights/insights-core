@@ -149,11 +149,8 @@ def generate_machine_id(new=False,
         logger.debug("Creating %s", destination_file)
         write_to_disk(destination_file, content=machine_id)
 
-    machine_id = str(machine_id).strip()
-
     try:
-        uuid.UUID(machine_id, version=4)
-        return machine_id
+        return str(uuid.UUID(str(machine_id).strip(), version=4))
     except ValueError as e:
         logger.error("Invalid machine ID: %s", machine_id)
         logger.error("Error details: %s", str(e))
