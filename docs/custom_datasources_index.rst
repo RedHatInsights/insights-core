@@ -35,6 +35,14 @@ insights.specs.datasources.ethernet
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.get_dirs
+-----------------------------------
+
+.. automodule:: insights.specs.datasources.get_dirs
+    :members: du_dirs_list
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.ipcs
 -------------------------------
 

@@ -25,7 +25,6 @@ from insights.core.spec_factory import simple_file, simple_command, glob_file
 from insights.core.spec_factory import first_of, command_with_args
 from insights.core.spec_factory import foreach_collect, foreach_execute
 from insights.core.spec_factory import first_file, listdir
-from insights.core.filters import get_filters
 from insights.combiners.ps import Ps
 from insights.components.rhel_version import IsRhel7, IsRhel8, IsRhel9
 from insights.components.cloud_provider import IsAWS, IsAzure, IsGCP
@@ -33,8 +32,9 @@ from insights.components.ceph import IsCephMonitor
 from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersion
 from insights.specs import Specs
 from insights.specs.datasources import (
-    awx_manage, cloud_init, candlepin_broker, ethernet, get_running_commands, ipcs, lpstat, package_provides,
-    ps as ps_datasource, sap, satellite_missed_queues, ssl_certificate, yum_updates)
+    awx_manage, cloud_init, candlepin_broker, ethernet, get_dirs,
+    get_running_commands, ipcs, lpstat, package_provides, ps as ps_datasource,
+    sap, satellite_missed_queues, ssl_certificate, yum_updates)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 from insights.specs.datasources.pcp import pcp_enabled, pmlog_summary_args
 
@@ -211,13 +211,7 @@ class DefaultSpecs(Specs):
     docker_sysconfig = simple_file("/etc/sysconfig/docker")
     dotnet_version = simple_command("/usr/bin/dotnet --version")
     dracut_kdump_capture_service = simple_file("/usr/lib/dracut/modules.d/99kdumpbase/kdump-capture.service")
-
-    @datasource(HostContext)
-    def du_dirs_list(broker):
-        """ Provide a list of directorys for the ``du_dirs`` spec to scan """
-        filters = get_filters(Specs.du_dirs)
-        return list(filters)
-    du_dirs = foreach_execute(du_dirs_list, "/bin/du -s -k %s")
+    du_dirs = foreach_execute(get_dirs.du_dirs_list, "/bin/du -s -k %s")
     engine_db_query_vdsm_version = simple_command('engine-db-query --statement "SELECT vs.vds_name, rpm_version FROM vds_dynamic vd, vds_static vs WHERE vd.vds_id = vs.vds_id" --json')
     engine_log = simple_file("/var/log/ovirt-engine/engine.log")
     etc_journald_conf = simple_file(r"etc/systemd/journald.conf")
