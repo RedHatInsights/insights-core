@@ -1,6 +1,9 @@
+import pytest
+
 from insights.specs import Specs
 from insights.core import filters
-from insights.specs.datasources.get_dirs import du_dirs_list
+from insights.specs.datasources.dir_list import du_dir_list
+from insights.core.dr import SkipComponent
 
 
 def setup_function(func):
@@ -17,7 +20,7 @@ def setup_function(func):
 
 def test_du_dirs_list():
     broker = {}
-    result = du_dirs_list(broker)
+    result = du_dir_list(broker)
     assert len(result) == 2
     assert '/var/lib/pulp' in result
     assert '/etc/httpd' in result
@@ -25,5 +28,5 @@ def test_du_dirs_list():
 
 def test_du_dirs_list_no_filter():
     broker = {}
-    result = du_dirs_list(broker)
-    assert not result
+    with pytest.raises(SkipComponent):
+        du_dir_list(broker)

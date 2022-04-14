@@ -27,19 +27,19 @@ insights.specs.datasources.cloud_init
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.dir_list
+-----------------------------------
+
+.. automodule:: insights.specs.datasources.dir_list
+    :members: du_dir_list
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.ethernet
 -------------------------------------
 
 .. automodule:: insights.specs.datasources.ethernet
     :members: interfaces, LocalSpecs
-    :show-inheritance:
-    :undoc-members:
-
-insights.specs.datasources.get_dirs
------------------------------------
-
-.. automodule:: insights.specs.datasources.get_dirs
-    :members: du_dirs_list
     :show-inheritance:
     :undoc-members:
 
