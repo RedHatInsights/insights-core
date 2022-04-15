@@ -286,6 +286,7 @@ class Specs(SpecSet):
     kdump_conf = RegistryPoint()
     kerberos_kdc_log = RegistryPoint(filterable=True)
     kernel_config = RegistryPoint(multi_output=True, filterable=True)
+    kernel_crash_kexec_post_notifiers = RegistryPoint()
     kexec_crash_loaded = RegistryPoint()
     kexec_crash_size = RegistryPoint()
     keystone_conf = RegistryPoint()

@@ -20,6 +20,8 @@ VHostNetZeroCopyTx - file ``/sys/module/vhost_net/parameters/experimental_zcopyt
 -----------------------------------------------------------------------------------
 Ql2xMaxLUN - file ``/sys/module/qla2xxx/parameters/ql2xmqsupport``
 ------------------------------------------------------------------
+KernelCrashKexecPostNotifiers - file ``/sys/module/kernel/parameters/crash_kexec_post_notifiers``
+------------------------------------------------------------------------------
 """
 from insights import parser, Parser
 from insights.parsers import SkipException
@@ -190,6 +192,24 @@ class Ql2xmqSupport(XModUseBlkMq):
         >>> qla2xxx_ql2xmqsupport.val
         '1'
         >>> qla2xxx_ql2xmqsupport.is_on
+        True
+    """
+    pass
+
+
+@parser(Specs.kernel_crash_kexec_post_notifiers)
+class KernelCrashKexecPostNotifiers(XModUseBlkMq):
+    """
+    This file `/sys/module/kernel/parameters/crash_kexec_post_notifiers` shows if crash_kexec_post_notifiers
+    parameter is on.
+
+    Examples::
+
+        >>> type(crash_kexec_post_notifiers)
+        <class 'insights.parsers.sys_module.KernelCrashKexecPostNotifiers'>
+        >>> crash_kexec_post_notifiers.val
+        'Y'
+        >>> crash_kexec_post_notifiers.is_on
         True
     """
     pass
