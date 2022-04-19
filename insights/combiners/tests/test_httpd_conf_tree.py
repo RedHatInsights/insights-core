@@ -1,14 +1,13 @@
 # coding=utf-8
-from insights.combiners.httpd_conf import (_HttpdConf, HttpdConfTree, _HttpdConfSclHttpd24,
-    HttpdConfSclHttpd24Tree, _HttpdConfSclJbcsHttpd24, HttpdConfSclJbcsHttpd24Tree)
-from insights.tests import context_wrap
-from insights.parsers import SkipException
 import pytest
+
+from insights.combiners.httpd_conf import HttpdConfTree, HttpdConfSclHttpd24Tree, HttpdConfSclJbcsHttpd24Tree
+from insights.parsers import ParseException, SkipException, httpd_conf
+from insights.tests import context_wrap
 
 HTTPD_CONF_MIXED_NAME = '''
 H2Push on
 '''
-
 
 HTTPD_CONF_MIXED = '''
 JustFotTest_NoSec "/var/www/cgi"
@@ -190,7 +189,7 @@ IndexOptions FancyIndexing HTMLTable VersionSort
 #
 Alias /icons/ "/usr/share/httpd/icons/"
 
-<Directory "/usr/share/httpd/icons">
+<Directory "/usr/share/httpd/icons"> 
     Options Indexes MultiViews FollowSymlinks
     AllowOverride None
     Require all granted
@@ -261,7 +260,7 @@ HeaderName HEADER.html
 #
 IndexIgnore .??* *~ *# HEADER* README* RCS CVS *,v *,t
 
-'''.lstrip()
+'''.lstrip()  # noqa W291
 
 
 HTTPD_CONF_NEST_1 = """
@@ -497,23 +496,48 @@ HTTPD_EMPTY_ATTR = """
 </VirtualHost>
 """.strip()
 
+HTTPD_MULTILINE_QUOTE = r"""
+#LoadModule ldap_module modules/mod_ldap.so
+#LoadModule auth_ldap_module modules/mod_auth_ldap.so
+
+LDAPVerifyServerCert Off
+#LogLevel debug
+
+Listen 81
+<VirtualHost *:81>
+    SetEnv GIT_PROJECT_ROOT /var/www/git
+    SetEnv GIT_HTTP_EXPORT_ALL
+    DocumentRoot /var/www
+#    ScriptAlias /git/ /usr/libexec/git-core/git-http-backend/
+    ScriptAliasMatch \
+        "(?x)^/git/(.*/(HEAD | \
+        info/refs | \
+        objects/(info/[^/]+ | \
+        [0-9a-f]{2}/[0-9a-f]{38} | \
+        pack/pack-[0-9a-f]{40}\.(pack|idx)) | \
+        git-(upload|receive)-pack))$" \
+        "/usr/libexec/git-core/git-http-backend/$1"
+
+</VirtualHost>
+"""
+
 
 def test_mixed_case_tags():
-    httpd = _HttpdConf(context_wrap(HTTPD_CONF_MIXED, path='/etc/httpd/conf/httpd.conf'))
+    httpd = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_MIXED, path='/etc/httpd/conf/httpd.conf'))
     assert httpd.find("ServerLimit").value == 256
 
 
 def test_line_continuation():
-    httpd = _HttpdConf(context_wrap(HTTPD_CONF_CONTINUATION, path='/etc/httpd/conf/httpd.conf'))
+    httpd = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_CONTINUATION, path='/etc/httpd/conf/httpd.conf'))
     val = httpd.find("CustomLog")[0].attrs
     assert val == [r'logs/ssl_request_log', r'%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x "%r" %b'], val
 
 
 def test_nopath():
     # no path
-    httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_2))
+    httpd2 = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_2))
     try:
-        result = HttpdConfTree([httpd2])
+        HttpdConfTree([httpd2])
         # assert result['IfModule', 'prefork.c']['ServerLimit'][-1].value == 1024
         exception_happened = False
     except:
@@ -521,49 +545,49 @@ def test_nopath():
     assert exception_happened
 
     # no httpd.conf
-    httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_2, path='/etc/httpd/conf.d/00-z.conf'))
+    httpd2 = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_2, path='/etc/httpd/conf.d/00-z.conf'))
     try:
-        result = HttpdConfTree([httpd2])
+        HttpdConfTree([httpd2])
         # assert result['IfModule', 'prefork.c']['ServerLimit'][-1].value == 1024
         exception_happened = False
     except:
         exception_happened = True
     assert exception_happened
 
-    httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_2, path='/etc/httpd/conf/httpd.conf'))
+    httpd2 = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_2, path='/etc/httpd/conf/httpd.conf'))
     result = HttpdConfTree([httpd2])
     assert result['IfModule', 'prefork.c']['ServerLimit'][-1].value == 1024
 
-    httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_2, path='/laaalalalala/blablabla/httpd.conf'))
+    httpd2 = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_2, path='/laaalalalala/blablabla/httpd.conf'))
     result = HttpdConfTree([httpd2])
     assert result['IfModule', 'prefork.c']['ServerLimit'][-1].value == 1024
 
     # no include in httpd.conf
-    httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_2, path='/etc/httpd/conf/httpd.conf'))
-    httpd3 = _HttpdConf(context_wrap(HTTPD_CONF_3, path='/etc/httpd/conf.d/z-z.conf'))
+    httpd2 = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_2, path='/etc/httpd/conf/httpd.conf'))
+    httpd3 = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_3, path='/etc/httpd/conf.d/z-z.conf'))
     result = HttpdConfTree([httpd2, httpd3])
     assert result['IfModule', 'prefork.c']['ServerLimit'][-1].value == 1024
 
     # no include in httpd.conf
-    httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_2, path='/etc/httpd/conf/httpd.conf'))
-    httpd3 = _HttpdConf(context_wrap(HTTPD_CONF_3, path='/etc/httpd/conf.d/aaa.conf'))
+    httpd2 = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_2, path='/etc/httpd/conf/httpd.conf'))
+    httpd3 = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_3, path='/etc/httpd/conf.d/aaa.conf'))
     result = HttpdConfTree([httpd3, httpd2])
     assert len(result['IfModule', 'prefork.c']['ServerLimit']) == 1
     assert result['IfModule', 'prefork.c']['ServerLimit'][0].value == 1024
     assert result['IfModule', 'prefork.c']['ServerLimit'][-1].value == 1024
 
     # with an include
-    httpd1 = _HttpdConf(context_wrap(HTTPD_CONF_1, path='/etc/httpd/conf/httpd.conf'))
-    httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_2, path='/etc/httpd/conf.d/00-z.conf'))
+    httpd1 = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_1, path='/etc/httpd/conf/httpd.conf'))
+    httpd2 = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_2, path='/etc/httpd/conf.d/00-z.conf'))
     result = HttpdConfTree([httpd1, httpd2])
     assert len(result['IfModule', 'prefork.c']['ServerLimit']) == 2
     assert result['IfModule', 'prefork.c']['ServerLimit'][0].value == 256
     assert result['IfModule', 'prefork.c']['ServerLimit'][-1].value == 1024
 
     # colliding filenames
-    httpd1 = _HttpdConf(context_wrap(HTTPD_CONF_1, path='/etc/httpd/conf/httpd.conf'))
-    httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_2, path='/etc/httpd/conf.d/00-z.conf'))
-    httpd3 = _HttpdConf(context_wrap(HTTPD_CONF_3, path='/etc/httpd/conf.d/00-z.conf'))
+    httpd1 = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_1, path='/etc/httpd/conf/httpd.conf'))
+    httpd2 = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_2, path='/etc/httpd/conf.d/00-z.conf'))
+    httpd3 = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_3, path='/etc/httpd/conf.d/00-z.conf'))
     result = HttpdConfTree([httpd1, httpd2, httpd3])
     assert len(result['IfModule', 'prefork.c']['ServerLimit']) == 3
     assert result['IfModule', 'prefork.c']['ServerLimit'][0].value == 256  # httpd1
@@ -581,9 +605,9 @@ def test_nopath():
 
 
 def test_active_httpd():
-    httpd1 = _HttpdConf(context_wrap(HTTPD_CONF_1, path='/etc/httpd/conf/httpd.conf'))
-    httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_2, path='/etc/httpd/conf.d/00-z.conf'))
-    httpd3 = _HttpdConf(context_wrap(HTTPD_CONF_3, path='/etc/httpd/conf.d/z-z.conf'))
+    httpd1 = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_1, path='/etc/httpd/conf/httpd.conf'))
+    httpd2 = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_2, path='/etc/httpd/conf.d/00-z.conf'))
+    httpd3 = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_3, path='/etc/httpd/conf.d/z-z.conf'))
     result = HttpdConfTree([httpd1, httpd2, httpd3])
 
     assert result['IfModule', 'prefork.c']['MaxClients'][-1].value == 512
@@ -595,9 +619,9 @@ def test_active_httpd():
 
 
 def test_shadowing():
-    httpd1 = _HttpdConf(context_wrap(HTTPD_CONF_SHADOWTEST_1, path='/etc/httpd/conf/httpd.conf'))
-    httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_SHADOWTEST_2, path='/etc/httpd/conf.d/00-z.conf'))
-    httpd3 = _HttpdConf(context_wrap(HTTPD_CONF_SHADOWTEST_3, path='/etc/httpd/conf.d/z-z.conf'))
+    httpd1 = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_SHADOWTEST_1, path='/etc/httpd/conf/httpd.conf'))
+    httpd2 = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_SHADOWTEST_2, path='/etc/httpd/conf.d/00-z.conf'))
+    httpd3 = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_SHADOWTEST_3, path='/etc/httpd/conf.d/z-z.conf'))
     result = HttpdConfTree([httpd1, httpd2, httpd3])
 
     assert len(result["Foo"]) == 9
@@ -614,9 +638,9 @@ def test_shadowing():
 
 
 def test_splits():
-    httpd1 = _HttpdConf(context_wrap(HTTPD_CONF_MAIN_1, path='/etc/httpd/conf/httpd.conf'))
-    httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_FILE_1, path='/etc/httpd/conf.d/00-a.conf'))
-    httpd3 = _HttpdConf(context_wrap(HTTPD_CONF_FILE_2, path='/etc/httpd/conf.d/01-b.conf'))
+    httpd1 = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_MAIN_1, path='/etc/httpd/conf/httpd.conf'))
+    httpd2 = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_FILE_1, path='/etc/httpd/conf.d/00-a.conf'))
+    httpd3 = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_FILE_2, path='/etc/httpd/conf.d/01-b.conf'))
     result = HttpdConfTree([httpd1, httpd2, httpd3])
 
     server_root = result['ServerRoot'][-1]
@@ -634,9 +658,9 @@ def test_splits():
     ssl_proto = result['SSLProtocol'][-1]
     assert ssl_proto.attrs == ["-ALL", "+TLSv1.2", "#", "SSLv3"]
 
-    httpd1 = _HttpdConf(context_wrap(HTTPD_CONF_MAIN_2, path='/etc/httpd/conf/httpd.conf'))
-    httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_FILE_1, path='/etc/httpd/conf.d/00-a.conf'))
-    httpd3 = _HttpdConf(context_wrap(HTTPD_CONF_FILE_2, path='/etc/httpd/conf.d/01-b.conf'))
+    httpd1 = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_MAIN_2, path='/etc/httpd/conf/httpd.conf'))
+    httpd2 = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_FILE_1, path='/etc/httpd/conf.d/00-a.conf'))
+    httpd3 = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_FILE_2, path='/etc/httpd/conf.d/01-b.conf'))
     result = HttpdConfTree([httpd1, httpd2, httpd3])
 
     server_root = result['ServerRoot'][-1]
@@ -651,9 +675,9 @@ def test_splits():
     assert listen.file_name == 'httpd.conf'
     assert listen.file_path == '/etc/httpd/conf/httpd.conf'
 
-    httpd1 = _HttpdConf(context_wrap(HTTPD_CONF_MAIN_3, path='/etc/httpd/conf/httpd.conf'))
-    httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_FILE_1, path='/etc/httpd/conf.d/00-a.conf'))
-    httpd3 = _HttpdConf(context_wrap(HTTPD_CONF_FILE_2, path='/etc/httpd/conf.d/01-b.conf'))
+    httpd1 = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_MAIN_3, path='/etc/httpd/conf/httpd.conf'))
+    httpd2 = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_FILE_1, path='/etc/httpd/conf.d/00-a.conf'))
+    httpd3 = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_FILE_2, path='/etc/httpd/conf.d/01-b.conf'))
     result = HttpdConfTree([httpd1, httpd2, httpd3])
 
     server_root = result['ServerRoot'][-1]
@@ -668,7 +692,7 @@ def test_splits():
 
 
 def test_httpd_one_file_overwrites():
-    httpd = _HttpdConf(context_wrap(HTTPD_CONF_MORE, path='/etc/httpd/conf/httpd.conf'))
+    httpd = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_MORE, path='/etc/httpd/conf/httpd.conf'))
     result = HttpdConfTree([httpd])
 
     active_setting = result['UserDir'][-1]
@@ -693,13 +717,13 @@ def test_httpd_one_file_overwrites():
 
 def test_httpd_conf_empty():
     with pytest.raises(SkipException):
-        assert _HttpdConf(context_wrap('', path='/etc/httpd/httpd.conf')) is None
+        assert httpd_conf.HttpdConf(context_wrap('', path='/etc/httpd/httpd.conf')) is None
 
 
 def test_httpd_conf_tree_with_load_modules():
-    httpd1 = _HttpdConfSclHttpd24(context_wrap(HTTPD_CONF_MAIN_4, path='/etc/httpd/conf/httpd.conf'))
-    httpd2 = _HttpdConfSclHttpd24(context_wrap(HTTPD_CONF_MORE, path='/etc/httpd/conf.d/01-b.conf'))
-    httpd3 = _HttpdConfSclHttpd24(context_wrap(HTTPD_CONF_FILE_3, path='/etc/httpd/conf.modules.d/02-c.conf'))
+    httpd1 = httpd_conf.HttpdConfSclHttpd24(context_wrap(HTTPD_CONF_MAIN_4, path='/etc/httpd/conf/httpd.conf'))
+    httpd2 = httpd_conf.HttpdConfSclHttpd24(context_wrap(HTTPD_CONF_MORE, path='/etc/httpd/conf.d/01-b.conf'))
+    httpd3 = httpd_conf.HttpdConfSclHttpd24(context_wrap(HTTPD_CONF_FILE_3, path='/etc/httpd/conf.modules.d/02-c.conf'))
     result = HttpdConfTree([httpd1, httpd2, httpd3])
     userdirs = result['UserDir']
     assert len(userdirs) == 2
@@ -711,9 +735,15 @@ def test_httpd_conf_tree_with_load_modules():
 
 
 def test_httpd_conf_scl_httpd24_tree():
-    httpd1 = _HttpdConfSclHttpd24(context_wrap(HTTPD_CONF_MAIN_4, path='/opt/rh/httpd24/root/etc/httpd/conf/httpd.conf'))
-    httpd2 = _HttpdConfSclHttpd24(context_wrap(HTTPD_CONF_MORE, path='/opt/rh/httpd24/root/etc/httpd/conf.d/01-b.conf'))
-    httpd3 = _HttpdConfSclHttpd24(context_wrap(HTTPD_CONF_FILE_3, path='/opt/rh/httpd24/root/etc/httpd/conf.modules.d/02-c.conf'))
+    httpd1 = httpd_conf.HttpdConfSclHttpd24(
+        context_wrap(HTTPD_CONF_MAIN_4, path='/opt/rh/httpd24/root/etc/httpd/conf/httpd.conf')
+    )
+    httpd2 = httpd_conf.HttpdConfSclHttpd24(
+        context_wrap(HTTPD_CONF_MORE, path='/opt/rh/httpd24/root/etc/httpd/conf.d/01-b.conf')
+    )
+    httpd3 = httpd_conf.HttpdConfSclHttpd24(
+        context_wrap(HTTPD_CONF_FILE_3, path='/opt/rh/httpd24/root/etc/httpd/conf.modules.d/02-c.conf')
+    )
     result = HttpdConfSclHttpd24Tree([httpd1, httpd2, httpd3])
     userdirs = result['UserDir']
     assert len(userdirs) == 2
@@ -725,9 +755,15 @@ def test_httpd_conf_scl_httpd24_tree():
 
 
 def test_httpd_conf_jbcs_httpd24_tree():
-    httpd1 = _HttpdConfSclJbcsHttpd24(context_wrap(HTTPD_CONF_MAIN_4, path='/opt/rh/jbcs-httpd24/root/etc/httpd/conf/httpd.conf'))
-    httpd2 = _HttpdConfSclJbcsHttpd24(context_wrap(HTTPD_CONF_MORE, path='/opt/rh/jbcs-httpd24/root/etc/httpd/conf.d/01-b.conf'))
-    httpd3 = _HttpdConfSclJbcsHttpd24(context_wrap(HTTPD_CONF_FILE_3, path='/opt/rh/jbcs-httpd24/root/etc/httpd/conf.modules.d/02-c.conf'))
+    httpd1 = httpd_conf.HttpdConfSclJbcsHttpd24(
+        context_wrap(HTTPD_CONF_MAIN_4, path='/opt/rh/jbcs-httpd24/root/etc/httpd/conf/httpd.conf')
+    )
+    httpd2 = httpd_conf.HttpdConfSclJbcsHttpd24(
+        context_wrap(HTTPD_CONF_MORE, path='/opt/rh/jbcs-httpd24/root/etc/httpd/conf.d/01-b.conf')
+    )
+    httpd3 = httpd_conf.HttpdConfSclJbcsHttpd24(
+        context_wrap(HTTPD_CONF_FILE_3, path='/opt/rh/jbcs-httpd24/root/etc/httpd/conf.modules.d/02-c.conf')
+    )
     result = HttpdConfSclJbcsHttpd24Tree([httpd1, httpd2, httpd3])
     userdirs = result['UserDir']
     assert len(userdirs) == 2
@@ -739,9 +775,9 @@ def test_httpd_conf_jbcs_httpd24_tree():
 
 
 def test_httpd_nested_conf_file():
-    httpd1 = _HttpdConf(context_wrap(HTTPD_CONF_MAIN_3, path='/etc/httpd/conf/httpd.conf'))
-    httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_FILE_1, path='/etc/httpd/conf.d/00-a.conf'))
-    httpd3 = _HttpdConf(context_wrap(HTTPD_CONF_FILE_2, path='/etc/httpd/conf.d/d1/hello.conf'))
+    httpd1 = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_MAIN_3, path='/etc/httpd/conf/httpd.conf'))
+    httpd2 = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_FILE_1, path='/etc/httpd/conf.d/00-a.conf'))
+    httpd3 = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_FILE_2, path='/etc/httpd/conf.d/d1/hello.conf'))
     result = HttpdConfTree([httpd1, httpd2, httpd3])
 
     server_root = result['ServerRoot'][-1]
@@ -752,7 +788,7 @@ def test_httpd_nested_conf_file():
 
 
 def test_empty_last_line():
-    httpd = _HttpdConf(context_wrap(HTTPD_EMPTY_LAST, path='/etc/httpd/conf/httpd.conf'))
+    httpd = httpd_conf.HttpdConf(context_wrap(HTTPD_EMPTY_LAST, path='/etc/httpd/conf/httpd.conf'))
     result = HttpdConfTree([httpd])
 
     index_options = result['IndexOptions'][-1]
@@ -760,7 +796,7 @@ def test_empty_last_line():
 
 
 def test_indented_lines_and_comments():
-    httpd = _HttpdConf(context_wrap(HTTPD_EMBEDDED_QUOTES, path='/etc/httpd/conf/httpd.conf'))
+    httpd = httpd_conf.HttpdConf(context_wrap(HTTPD_EMBEDDED_QUOTES, path='/etc/httpd/conf/httpd.conf'))
     result = HttpdConfTree([httpd])
 
     request_headers = result['RequestHeader']
@@ -768,7 +804,7 @@ def test_indented_lines_and_comments():
 
 
 def test_regex_and_op_attrs():
-    httpd = _HttpdConf(context_wrap(HTTPD_REGEX_AND_OP_ATTRS, path='/etc/httpd/conf/httpd.conf'))
+    httpd = httpd_conf.HttpdConf(context_wrap(HTTPD_REGEX_AND_OP_ATTRS, path='/etc/httpd/conf/httpd.conf'))
     result = HttpdConfTree([httpd])
 
     rewrite_cond = result["RewriteCond"]
@@ -776,10 +812,11 @@ def test_regex_and_op_attrs():
 
     if_version = result["IfVersion"]
     assert len(if_version) == 1
+    assert if_version.value == "< 2.4"
 
 
 def test_unicode_comments():
-    httpd = _HttpdConf(context_wrap(UNICODE_COMMENTS, path='/etc/httpd/conf/httpd.conf'))
+    httpd = httpd_conf.HttpdConf(context_wrap(UNICODE_COMMENTS, path='/etc/httpd/conf/httpd.conf'))
     result = HttpdConfTree([httpd])
 
     rewrite_cond = result["DNSSDEnable"]
@@ -787,28 +824,47 @@ def test_unicode_comments():
 
 
 def test_multiple_includes():
-    httpd1 = _HttpdConf(context_wrap(MULTIPLE_INCLUDES, path='/etc/httpd/conf/httpd.conf'))
-    httpd2 = _HttpdConf(context_wrap(UNICODE_COMMENTS, path='/etc/httpd/conf.d/05-foreman.d/hello.conf'))
+    httpd1 = httpd_conf.HttpdConf(context_wrap(MULTIPLE_INCLUDES, path='/etc/httpd/conf/httpd.conf'))
+    httpd2 = httpd_conf.HttpdConf(context_wrap(UNICODE_COMMENTS, path='/etc/httpd/conf.d/05-foreman.d/hello.conf'))
     result = HttpdConfTree([httpd1, httpd2])
     assert len(result["IfVersion"]["DNSSDEnable"]) == 2
 
 
 def test_recursive_includes():
     with pytest.raises(Exception):
-        httpd1 = _HttpdConf(context_wrap(MULTIPLE_INCLUDES, path='/etc/httpd/conf/httpd.conf'))
-        httpd2 = _HttpdConf(context_wrap(MULTIPLE_INCLUDES, path='/etc/httpd/conf.d/05-foreman.d/hello.conf'))
+        httpd1 = httpd_conf.HttpdConf(
+            context_wrap(MULTIPLE_INCLUDES, path='/etc/httpd/conf/httpd.conf')
+        )
+        httpd2 = httpd_conf.HttpdConf(
+            context_wrap(MULTIPLE_INCLUDES, path='/etc/httpd/conf.d/05-foreman.d/hello.conf')
+        )
         HttpdConfTree([httpd1, httpd2])
 
 
 def test_mixed_name():
-    httpd1 = _HttpdConf(context_wrap(HTTPD_CONF_MIXED_NAME, path='/etc/httpd/conf/httpd.conf'))
+    httpd1 = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_MIXED_NAME, path='/etc/httpd/conf/httpd.conf'))
     result = HttpdConfTree([httpd1])
     assert len(result.doc["H2Push"]) == 1
 
 
 def test_empty_attr():
-    httpd1 = _HttpdConf(context_wrap(HTTPD_EMPTY_ATTR, path='/etc/httpd/conf/httpd.conf'))
+    httpd1 = httpd_conf.HttpdConf(context_wrap(HTTPD_EMPTY_ATTR, path='/etc/httpd/conf/httpd.conf'))
     result = HttpdConfTree([httpd1])
     assert len(result['VirtualHost']['RequestHeader']) == 4
     assert result['VirtualHost']['RequestHeader'][0].value == 'set X_FORWARDED_PROTO http'
     assert result['VirtualHost']['RequestHeader'][-1].value == 'set SSL_CLIENT_VERIFY ""'
+
+
+def test_multiline_quote():
+    with pytest.raises(ParseException):
+        httpd_conf.HttpdConf(context_wrap(HTTPD_MULTILINE_QUOTE, path='/etc/httpd/conf/error.conf'))
+
+    httpd = httpd_conf.HttpdConf(context_wrap(HTTPD_REGEX_AND_OP_ATTRS, path='/etc/httpd/conf/httpd.conf'))
+    result = HttpdConfTree([httpd])
+
+    rewrite_cond = result["RewriteCond"]
+    assert len(rewrite_cond) == 3
+
+    if_version = result["IfVersion"]
+    assert len(if_version) == 1
+    assert if_version.value == "< 2.4"
