@@ -58,7 +58,7 @@ class IBMFirmwareLevel(Parser):
         FW950.30 (VL950_092)\x00
 
     Attributes:
-        raw (str): The RAW value of the `ibm,fw-vernum_encoded` file.
+        raw (str): The RAW content of the `ibm,fw-vernum_encoded` file.
         firmware_level (str): The firmware level required by FLRT.
 
     Examples:
@@ -78,4 +78,4 @@ class IBMFirmwareLevel(Parser):
         if "(" not in self.raw or ")" not in self.raw:
             raise SkipException("Nothing to parse.")
 
-        self.firmware_level = self.raw[self.raw.index('(')+1:self.raw.index(')')]
+        self.firmware_level = self.raw[self.raw.index('(') + 1:self.raw.index(')')]
