@@ -1,8 +1,9 @@
 # coding=utf-8
 import pytest
 
+from insights.combiners.logrotate_conf import LogRotateConfTree
+from insights.parsers import logrotate_conf
 from insights.parsr.query import first
-from insights.combiners.logrotate_conf import _LogRotateConf, LogRotateConfTree
 from insights.tests import context_wrap
 
 
@@ -85,7 +86,7 @@ LOGROTATE_MISSING_ENDSCRIPT = """
 
 
 def test_logrotate_tree():
-    p = _LogRotateConf(context_wrap(CONF, path="/etc/logrotate.conf"))
+    p = logrotate_conf.LogRotateConfPEG(context_wrap(CONF, path="/etc/logrotate.conf"))
     conf = LogRotateConfTree([p])
     assert len(conf["weekly"]) == 1
     assert len(conf["/var/log/wtmp"]["missingok"]) == 1
@@ -97,12 +98,11 @@ def test_logrotate_tree():
 
 
 def test_junk_space():
-    p = _LogRotateConf(context_wrap(JUNK_SPACE, path="/etc/logrotate.conf"))
+    p = logrotate_conf.LogRotateConfPEG(context_wrap(JUNK_SPACE, path="/etc/logrotate.conf"))
     conf = LogRotateConfTree([p])
     assert "compress" in conf["/var/log/spooler"]
 
 
 def test_logrotate_conf_combiner_missing_endscript():
     with pytest.raises(Exception):
-        p = _LogRotateConf(context_wrap(LOGROTATE_MISSING_ENDSCRIPT, path='/etc/logrotate.conf')),
-        print(p)
+        logrotate_conf.LogRotateConfPEG(context_wrap(LOGROTATE_MISSING_ENDSCRIPT, path='/etc/logrotate.conf')),
