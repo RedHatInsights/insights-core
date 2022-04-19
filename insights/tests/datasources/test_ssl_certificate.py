@@ -2,8 +2,9 @@ import pytest
 
 from insights.core.dr import SkipComponent
 from insights.tests import context_wrap
-from insights.combiners.httpd_conf import _HttpdConf, HttpdConfTree
+from insights.combiners.httpd_conf import HttpdConfTree
 from insights.combiners.nginx_conf import _NginxConf, NginxConfTree
+from insights.parsers.httpd_conf import HttpdConf
 from insights.parsers.mssql_conf import MsSQLConf
 from insights.specs.datasources.ssl_certificate import (
     httpd_ssl_certificate_files, nginx_ssl_certificate_files,
@@ -185,8 +186,8 @@ NSSNickname testcert
 
 
 def test_httpd_certificate():
-    conf1 = _HttpdConf(context_wrap(HTTPD_CONF, path='/etc/httpd/conf/httpd.conf'))
-    conf2 = _HttpdConf(context_wrap(HTTPD_SSL_CONF, path='/etc/httpd/conf.d/ssl.conf'))
+    conf1 = HttpdConf(context_wrap(HTTPD_CONF, path='/etc/httpd/conf/httpd.conf'))
+    conf2 = HttpdConf(context_wrap(HTTPD_SSL_CONF, path='/etc/httpd/conf.d/ssl.conf'))
     conf_tree = HttpdConfTree([conf1, conf2])
 
     broker = {
@@ -195,8 +196,8 @@ def test_httpd_certificate():
     result = httpd_ssl_certificate_files(broker)
     assert result == ['/etc/pki/katello/certs/katello-apache.crt']
 
-    conf1 = _HttpdConf(context_wrap(HTTPD_CONF, path='/etc/httpd/conf/httpd.conf'))
-    conf2 = _HttpdConf(context_wrap(HTTPD_SSL_CONF_2, path='/etc/httpd/conf.d/ssl.conf'))
+    conf1 = HttpdConf(context_wrap(HTTPD_CONF, path='/etc/httpd/conf/httpd.conf'))
+    conf2 = HttpdConf(context_wrap(HTTPD_SSL_CONF_2, path='/etc/httpd/conf.d/ssl.conf'))
     conf_tree = HttpdConfTree([conf1, conf2])
 
     broker = {
@@ -230,14 +231,14 @@ def test_nginx_certificate():
 
 
 def test_httpd_ssl_cert_exception():
-    conf1 = _HttpdConf(context_wrap(HTTPD_CONF, path='/etc/httpd/conf/httpd.conf'))
-    conf2 = _HttpdConf(context_wrap(HTTPD_CONF_WITHOUT_SSL, path='/etc/httpd/conf.d/no_ssl.conf'))
+    conf1 = HttpdConf(context_wrap(HTTPD_CONF, path='/etc/httpd/conf/httpd.conf'))
+    conf2 = HttpdConf(context_wrap(HTTPD_CONF_WITHOUT_SSL, path='/etc/httpd/conf.d/no_ssl.conf'))
     conf_tree = HttpdConfTree([conf1, conf2])
     broker1 = {
         HttpdConfTree: conf_tree
     }
-    conf1 = _HttpdConf(context_wrap(HTTPD_CONF, path='/etc/httpd/conf/httpd.conf'))
-    conf2 = _HttpdConf(context_wrap(HTTPD_SSL_CONF_NO_VALUE, path='/etc/httpd/conf.d/no_ssl.conf'))
+    conf1 = HttpdConf(context_wrap(HTTPD_CONF, path='/etc/httpd/conf/httpd.conf'))
+    conf2 = HttpdConf(context_wrap(HTTPD_SSL_CONF_NO_VALUE, path='/etc/httpd/conf.d/no_ssl.conf'))
     conf_tree = HttpdConfTree([conf1, conf2])
     broker2 = {
         HttpdConfTree: conf_tree
@@ -277,8 +278,8 @@ def test_mssql_tls_no_cert_exception():
 
 
 def test_httpd_certificate_info_in_nss():
-    conf1 = _HttpdConf(context_wrap(HTTPD_CONF, path='/etc/httpd/conf/httpd.conf'))
-    conf2 = _HttpdConf(context_wrap(HTTPD_WITH_NSS, path='/etc/httpd/conf.d/nss.conf'))
+    conf1 = HttpdConf(context_wrap(HTTPD_CONF, path='/etc/httpd/conf/httpd.conf'))
+    conf2 = HttpdConf(context_wrap(HTTPD_WITH_NSS, path='/etc/httpd/conf.d/nss.conf'))
     conf_tree = HttpdConfTree([conf1, conf2])
     broker = {
         HttpdConfTree: conf_tree
@@ -288,8 +289,8 @@ def test_httpd_certificate_info_in_nss():
 
 
 def test_httpd_certificate_info_in_nss_exception():
-    conf1 = _HttpdConf(context_wrap(HTTPD_CONF, path='/etc/httpd/conf/httpd.conf'))
-    conf2 = _HttpdConf(context_wrap(HTTPD_WITH_NSS_OFF, path='/etc/httpd/conf.d/nss.conf'))
+    conf1 = HttpdConf(context_wrap(HTTPD_CONF, path='/etc/httpd/conf/httpd.conf'))
+    conf2 = HttpdConf(context_wrap(HTTPD_WITH_NSS_OFF, path='/etc/httpd/conf.d/nss.conf'))
     conf_tree = HttpdConfTree([conf1, conf2])
     broker = {
         HttpdConfTree: conf_tree
