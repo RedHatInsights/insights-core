@@ -17,5 +17,15 @@ def test_tags_json():
     assert result.data['group'] == "app-db-01"
 
 
+def test_tags_json_bytes():
+    ctx = context_wrap(bytes(tags_json_content, 'utf-8'))
+    ctx.content = bytes(tags_json_content, 'utf-8')
+    result = Tags(ctx)
+    assert result.data['zone'] == "east"
+    assert result.data['owner'] == "test"
+    assert result.data['exclude'] == "true"
+    assert result.data['group'] == "app-db-01"
+
+
 def test_tags_empty():
     assert 'Empty output.' in skip_exception_check(Tags)
