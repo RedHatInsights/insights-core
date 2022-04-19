@@ -1204,6 +1204,17 @@ class EndTagName(Wrapper):
         return pos, res
 
 
+class EmptyQuotedString(Parser):
+    def __init__(self, chars):
+        super(EmptyQuotedString, self).__init__()
+        single = Char("'") >> String(set(chars) - set("'"), "'", 0) << Char("'")
+        double = Char('"') >> String(set(chars) - set('"'), '"', 0) << Char('"')
+        self.add_child(single | double)
+
+    def process(self, pos, data, ctx):
+        return self.children[0].process(pos, data, ctx)
+
+
 def _make_number(sign, int_part, frac_part):
     tmp = sign + int_part + ("".join(frac_part) if frac_part else "")
     return float(tmp) if "." in tmp else int(tmp)
