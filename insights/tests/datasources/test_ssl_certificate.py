@@ -1,15 +1,16 @@
 import pytest
 
 from insights.core.dr import SkipComponent
-from insights.tests import context_wrap
 from insights.combiners.httpd_conf import HttpdConfTree
-from insights.combiners.nginx_conf import _NginxConf, NginxConfTree
+from insights.combiners.nginx_conf import NginxConfTree
 from insights.parsers.httpd_conf import HttpdConf
 from insights.parsers.mssql_conf import MsSQLConf
+from insights.parsers.nginx_conf import NginxConfPEG
 from insights.specs.datasources.ssl_certificate import (
     httpd_ssl_certificate_files, nginx_ssl_certificate_files,
     mssql_tls_cert_file, httpd_certificate_info_in_nss
 )
+from insights.tests import context_wrap
 
 
 HTTPD_CONF = """
@@ -209,8 +210,8 @@ def test_httpd_certificate():
 
 
 def test_nginx_certificate():
-    conf1 = _NginxConf(context_wrap(NGINX_CONF, path='/etc/nginx/nginx.conf'))
-    conf2 = _NginxConf(context_wrap(NGINX_SSL_CONF, path='/etc/nginx/conf.d/ssl.conf'))
+    conf1 = NginxConfPEG(context_wrap(NGINX_CONF, path='/etc/nginx/nginx.conf'))
+    conf2 = NginxConfPEG(context_wrap(NGINX_SSL_CONF, path='/etc/nginx/conf.d/ssl.conf'))
     conf_tree = NginxConfTree([conf1, conf2])
 
     broker = {
@@ -219,8 +220,8 @@ def test_nginx_certificate():
     result = nginx_ssl_certificate_files(broker)
     assert result == ['/a/b/c.rsa.crt', '/a/b/c.cecdsa.crt']
 
-    conf1 = _NginxConf(context_wrap(NGINX_CONF, path='/etc/nginx/nginx.conf'))
-    conf2 = _NginxConf(context_wrap(NGINX_SSL_CONF_MULTIPLE_SERVERS, path='/etc/nginx/conf.d/ssl.conf'))
+    conf1 = NginxConfPEG(context_wrap(NGINX_CONF, path='/etc/nginx/nginx.conf'))
+    conf2 = NginxConfPEG(context_wrap(NGINX_SSL_CONF_MULTIPLE_SERVERS, path='/etc/nginx/conf.d/ssl.conf'))
     conf_tree = NginxConfTree([conf1, conf2])
 
     broker = {
@@ -249,8 +250,8 @@ def test_httpd_ssl_cert_exception():
 
 
 def test_nginx_ssl_cert_exception():
-    conf1 = _NginxConf(context_wrap(NGINX_CONF, path='/etc/nginx/nginx.conf'))
-    conf2 = _NginxConf(context_wrap(NGINX_CONF_WITHOUT_SSL, path='/etc/nginx/conf.d/no_ssl.conf'))
+    conf1 = NginxConfPEG(context_wrap(NGINX_CONF, path='/etc/nginx/nginx.conf'))
+    conf2 = NginxConfPEG(context_wrap(NGINX_CONF_WITHOUT_SSL, path='/etc/nginx/conf.d/no_ssl.conf'))
     conf_tree = NginxConfTree([conf1, conf2])
     broker1 = {
         NginxConfTree: conf_tree
