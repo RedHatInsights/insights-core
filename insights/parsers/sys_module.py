@@ -28,10 +28,10 @@ from insights.parsers import SkipException
 from insights.specs import Specs
 
 
-class XModUseBlkMq(Parser):
+class SysModuleParameters(Parser):
     """
-    Parse for file `/sys/module/{dm_mod,scsi_mod}/parameters/use_blk_mq`.
-    File content shows if use_blk_mq parameter is on.
+    Parse for file `/sys/module/*/parameters/*`.
+    File content shows if config file parameter is on.
 
     Sample Content::
 
@@ -90,7 +90,7 @@ class MaxLUNs(Parser):
 
 
 @parser(Specs.dm_mod_use_blk_mq)
-class DMModUseBlkMq(XModUseBlkMq):
+class DMModUseBlkMq(SysModuleParameters):
     """
     This file `/sys/module/dm_mod/parameters/use_blk_mq` shows if use_blk_mq
     parameter is on.
@@ -106,7 +106,7 @@ class DMModUseBlkMq(XModUseBlkMq):
 
 
 @parser(Specs.scsi_mod_use_blk_mq)
-class SCSIModUseBlkMq(XModUseBlkMq):
+class SCSIModUseBlkMq(SysModuleParameters):
     """
     This file `/sys/module/scsi_mod/parameters/use_blk_mq` shows if use_blk_mq
     parameter is on.
@@ -122,7 +122,7 @@ class SCSIModUseBlkMq(XModUseBlkMq):
 
 
 @parser(Specs.vhost_net_zero_copy_tx)
-class VHostNetZeroCopyTx(XModUseBlkMq):
+class VHostNetZeroCopyTx(SysModuleParameters):
     """This file `/sys/module/vhost_net/parameters/experimental_zcopytx` shows if
     vhost_net's zero-copy tx parameter is enabled or not.
 
@@ -180,7 +180,7 @@ class SCSIModMaxReportLUNs(MaxLUNs):
 
 
 @parser(Specs.ql2xmqsupport)
-class Ql2xmqSupport(XModUseBlkMq):
+class Ql2xmqSupport(SysModuleParameters):
     """
     This file `/sys/module/qla2xxx/parameters/ql2xmqsupport` shows if ql2xmqsupport
     parameter is on.
@@ -198,7 +198,7 @@ class Ql2xmqSupport(XModUseBlkMq):
 
 
 @parser(Specs.kernel_crash_kexec_post_notifiers)
-class KernelCrashKexecPostNotifiers(XModUseBlkMq):
+class KernelCrashKexecPostNotifiers(SysModuleParameters):
     """
     This file `/sys/module/kernel/parameters/crash_kexec_post_notifiers` shows if crash_kexec_post_notifiers
     parameter is on.
