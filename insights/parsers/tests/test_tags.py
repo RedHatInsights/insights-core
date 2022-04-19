@@ -18,8 +18,9 @@ def test_tags_json():
 
 
 def test_tags_json_bytes():
-    ctx = context_wrap(bytes(tags_json_content, 'utf-8'))
-    ctx.content = bytes(tags_json_content, 'utf-8')
+    bytes_content = bytes(str(tags_json_content).encode("utf-8"))
+    ctx = context_wrap(bytes_content)
+    ctx.content = bytes_content
     result = Tags(ctx)
     assert result.data['zone'] == "east"
     assert result.data['owner'] == "test"
