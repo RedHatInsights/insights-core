@@ -11,7 +11,11 @@ system_type=IBM,8247-22L
 """.strip()
 
 PROC_IBM_FWL = """
-FW950.30 (VL950_092)
+FW950.30 (VL950_092)\x00
+""".strip()
+
+PROC_IBM_FWL_NG = """
+FW950.30 VL950_092\x00
 """.strip()
 
 
@@ -30,6 +34,9 @@ def test_ibm_proc_empty():
 
     with pytest.raises(SkipException):
         IBMFirmwareLevel(context_wrap(''))
+
+    with pytest.raises(SkipException):
+        IBMFirmwareLevel(context_wrap(PROC_IBM_FWL_NG))
 
 
 def test_ibm_proc_doc_examples():
