@@ -4,11 +4,10 @@ krb5 configuration
 The krb5 files are normally available to rules as a list of
 Krb5Configuration objects.
 """
-
-from .. import LegacyItemAccess
+from copy import deepcopy
+from insights.core import LegacyItemAccess
 from insights.core.plugins import combiner
 from insights.parsers.krb5 import Krb5Configuration
-from insights.parsers.httpd_conf import dict_deep_merge
 
 
 @combiner(Krb5Configuration)
@@ -125,3 +124,25 @@ class AllKrb5Conf(LegacyItemAccess):
         if section not in self.data:
             return False
         return option in self.data[section]
+
+
+def dict_deep_merge(tgt, src):
+    """
+    Utility function to merge the source dictionary `src` to the target
+    dictionary recursively
+
+    Note:
+        The type of the values in the dictionary can only be `dict` or `list`
+
+    Parameters:
+        tgt (dict): The target dictionary
+        src (dict): The source dictionary
+    """
+    for k, v in src.items():
+        if k in tgt:
+            if isinstance(tgt[k], dict) and isinstance(v, dict):
+                dict_deep_merge(tgt[k], v)
+            else:
+                tgt[k].extend(deepcopy(v))
+        else:
+            tgt[k] = deepcopy(v)

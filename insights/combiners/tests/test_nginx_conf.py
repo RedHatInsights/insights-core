@@ -1,9 +1,10 @@
 import pytest
 
-from insights.parsr.query import startswith
-from insights.combiners.nginx_conf import _NginxConf, NginxConfTree
-from insights.tests import context_wrap
+from insights.combiners.nginx_conf import NginxConfTree
 from insights.parsers import SkipException
+from insights.parsers.nginx_conf import NginxConfPEG
+from insights.parsr.query import startswith
+from insights.tests import context_wrap
 
 # test files extended from
 # https://www.nginx.com/resources/wiki/start/topics/examples/full/
@@ -178,10 +179,10 @@ def test_nginx_includes():
     fastcgi_conf = context_wrap(FASTCGI_CONF, path="/etc/nginx/fastcgi.conf")
 
     # individual parsers
-    main = _NginxConf(nginx_conf)
-    mime_types = _NginxConf(mime_types_conf)
-    proxy = _NginxConf(proxy_conf)
-    fastcgi = _NginxConf(fastcgi_conf)
+    main = NginxConfPEG(nginx_conf)
+    mime_types = NginxConfPEG(mime_types_conf)
+    proxy = NginxConfPEG(proxy_conf)
+    fastcgi = NginxConfPEG(fastcgi_conf)
 
     # combine them
     nginx = NginxConfTree([main, mime_types, proxy, fastcgi])
@@ -209,8 +210,8 @@ def test_nginx_recursive_includes():
     nginx_conf = context_wrap(NGINX_CONF, path="/etc/nginx/nginx.conf")
     mime_types_conf = context_wrap(NGINX_CONF, path="/etc/nginx/conf/mime.types")
 
-    main = _NginxConf(nginx_conf)
-    mime_types = _NginxConf(mime_types_conf)
+    main = NginxConfPEG(nginx_conf)
+    mime_types = NginxConfPEG(mime_types_conf)
 
     with pytest.raises(Exception):
         NginxConfTree([main, mime_types])
@@ -219,4 +220,4 @@ def test_nginx_recursive_includes():
 def test_nginx_empty():
     nginx_conf = context_wrap('', path="/etc/nginx/nginx.conf")
     with pytest.raises(SkipException):
-        assert _NginxConf(nginx_conf) is None
+        assert NginxConfPEG(nginx_conf) is None

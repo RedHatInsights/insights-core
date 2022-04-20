@@ -124,8 +124,9 @@ LOGROTATE_CONF_4 = """
 
 def test_web_xml_doc_examples():
     env = {
-            'log_rt': LogrotateConf(context_wrap(LOGROTATE_MAN_PAGE_DOC, path='/etc/logrotate.conf')),
-          }
+        'log_rt': logrotate_conf.LogrotateConf(context_wrap(LOGROTATE_MAN_PAGE_DOC, path='/etc/logrotate.conf')),
+        'log_rt_peg': logrotate_conf.LogRotateConfPEG(context_wrap(LOGROTATE_MAN_PAGE_DOC, path='/etc/logrotate.conf')),
+    }
     failed, total = doctest.testmod(logrotate_conf, globs=env)
     assert failed == 0
 

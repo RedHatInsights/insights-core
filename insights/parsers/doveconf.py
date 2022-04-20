@@ -5,10 +5,8 @@ Doveconf - command ``doveconf``
 import string
 
 from insights import parser, add_filter
-from insights.combiners.nginx_conf import EmptyQuotedString
 from insights.core import ConfigParser
-from insights.parsr import (EOF, InSet,
-                            Lift, Many, OneLineComment, PosMarker,
+from insights.parsr import (EOF, EmptyQuotedString, InSet, Lift, Many, OneLineComment, PosMarker,
                             QuotedString, skip_none, String, WS, WSChar, LeftCurly, RightCurly, Forward,
                             EOL)
 from insights.parsr.query import Directive, Entry, Section
