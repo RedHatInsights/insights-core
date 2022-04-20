@@ -509,6 +509,8 @@ Listen 81
     SetEnv GIT_HTTP_EXPORT_ALL
     DocumentRoot /var/www
 #    ScriptAlias /git/ /usr/libexec/git-core/git-http-backend/
+    ProxyPass "http://backend.example.com/a-long-path-to-demonstrate" \
+        connectiontimeout=1 retry=0
     ScriptAliasMatch \
         "(?x)^/git/(.*/(HEAD | \
         info/refs | \
@@ -520,6 +522,10 @@ Listen 81
 
 </VirtualHost>
 """
+
+INVALID_CONF = """
+<<<>>>><>KDLKJLDSF><SDNF<KNSD><FN
+""".strip()
 
 
 def test_mixed_case_tags():
@@ -857,14 +863,32 @@ def test_empty_attr():
 
 def test_multiline_quote():
     with pytest.raises(ParseException):
-        httpd_conf.HttpdConf(context_wrap(HTTPD_MULTILINE_QUOTE, path='/etc/httpd/conf/error.conf'))
+        httpd_conf.HttpdConf(context_wrap(INVALID_CONF, path='/etc/httpd/conf/error.conf'))
 
-    httpd = httpd_conf.HttpdConf(context_wrap(HTTPD_REGEX_AND_OP_ATTRS, path='/etc/httpd/conf/httpd.conf'))
-    result = HttpdConfTree([httpd])
+    ml_quote = httpd_conf.HttpdConf(context_wrap(HTTPD_MULTILINE_QUOTE, path='/etc/httpd/conf.d/multiline-quote.conf'))
+    httpd = httpd_conf.HttpdConf(context_wrap(HTTPD_CONF_1, path='/etc/httpd/conf/httpd.conf'))
+    result = HttpdConfTree([httpd, ml_quote])
 
-    rewrite_cond = result["RewriteCond"]
-    assert len(rewrite_cond) == 3
+    assert result['JustFotTest_NoSec'].value == "/var/www/cgi"
+    assert result['IfModule']['ServerLimit'].value == 256
+    assert result['Listen'].value == 81
 
-    if_version = result["IfVersion"]
-    assert len(if_version) == 1
-    assert if_version.value == "< 2.4"
+    # For the below tests, check the string value, then check the actual
+    # attrs since quotes from quoted text are removed. The attrs store the
+    # actual parsed attrs in a list form.
+    assert result['VirtualHost']['SetEnv'].values == ['GIT_PROJECT_ROOT /var/www/git', 'GIT_HTTP_EXPORT_ALL']
+    assert result['VirtualHost']['SetEnv'].children[0].attrs == ['GIT_PROJECT_ROOT', '/var/www/git']
+    assert result['VirtualHost']['SetEnv'].children[1].attrs == ['GIT_HTTP_EXPORT_ALL']
+
+    assert result['VirtualHost']['ProxyPass'].value == "http://backend.example.com/a-long-path-to-demonstrate connectiontimeout=1 retry=0"  # noqa
+    assert result['VirtualHost']['ProxyPass'].children[-1].attrs == [
+        'http://backend.example.com/a-long-path-to-demonstrate',
+        'connectiontimeout=1',
+        'retry=0'
+    ]
+
+    assert result['VirtualHost']['ScriptAliasMatch'].value == r"(?x)^/git/(.*/(HEAD | info/refs | objects/(info/[^/]+ | [0-9a-f]{2}/[0-9a-f]{38} | pack/pack-[0-9a-f]{40}\.(pack|idx)) | git-(upload|receive)-pack))$ /usr/libexec/git-core/git-http-backend/$1"  # noqa
+    assert result['VirtualHost']['ScriptAliasMatch'].children[-1].attrs == [
+        r'(?x)^/git/(.*/(HEAD | info/refs | objects/(info/[^/]+ | [0-9a-f]{2}/[0-9a-f]{38} | pack/pack-[0-9a-f]{40}\.(pack|idx)) | git-(upload|receive)-pack))$',  # noqa
+        '/usr/libexec/git-core/git-http-backend/$1'
+    ]
