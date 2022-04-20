@@ -22,23 +22,24 @@ class DocParser(object):
         Complex = Forward()
         Comment = (WS >> OneLineComment("#")).map(lambda x: None)
 
+        Cont = Char("\\") + EOL
         First = InSet(string.ascii_letters + "_/")
         Rest = String(string.ascii_letters + "_/" + string.digits)
-        Name = (First + Rest).map("".join)
+        FirstRest = (First + Rest).map("".join)
+        Name = (FirstRest << (Many(WSChar) + Cont)) | FirstRest
 
         Num = Number & (WSChar | LineEnd)
 
         StartName = WS >> PosMarker(StartTagName(Letters)) << WS
         EndName = WS >> EndTagName(Letters, ignore_case=True) << WS
 
-        Cont = Char("\\") + EOL
         AttrStart = Many(WSChar)
         AttrEnd = (Many(WSChar) + Cont) | Many(WSChar)
 
         BareAttr = String(set(string.printable) - (set(string.whitespace) | set("<>'\"")))
         OpAttr = (Literal("!=") | Literal("<=") | Literal(">=") | InSet("<>")) & WSChar + BareAttr
         EmptyAttr = String('"\'', min_length=2)
-        Attr = AttrStart >> (Num | QuotedString | OpAttr | BareAttr | EmptyAttr) << AttrEnd
+        Attr = AttrStart >> (Num | QuotedString.map(self.remove_cont) | OpAttr | BareAttr | EmptyAttr) << AttrEnd
         Attrs = Many(Attr)
 
         StartTag = (WS + LT) >> (StartName + Attrs) << (GT + WS)
@@ -50,6 +51,9 @@ class DocParser(object):
         Doc = Many(Stanza).map(skip_none)
 
         self.Top = Doc + EOF
+
+    def remove_cont(self, val):
+        return "".join([x.strip().strip("\\") for x in val.split("\n")])
 
     def typed(self, val):
         try:
@@ -77,7 +81,7 @@ class DocParser(object):
         try:
             return self.Top(content)
         except Exception:
-            raise ParseException("There was an exception when parsing the config file.")
+            raise ParseException("There was an exception when parsing one of the httpd config files.")
 
 
 class HttpdConfBase(ConfigParser):
