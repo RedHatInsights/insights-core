@@ -1,7 +1,7 @@
 import doctest
 import pytest
 from insights.parsers import sys_module, SkipException
-from insights.parsers.sys_module import DMModUseBlkMq, SCSIModUseBlkMq, VHostNetZeroCopyTx, MaxLUNs, LpfcMaxLUNs, Ql2xMaxLUN, SCSIModMaxReportLUNs, Ql2xmqSupport
+from insights.parsers.sys_module import DMModUseBlkMq, SCSIModUseBlkMq, VHostNetZeroCopyTx, MaxLUNs, LpfcMaxLUNs, Ql2xMaxLUN, SCSIModMaxReportLUNs, Ql2xmqSupport, KernelCrashKexecPostNotifiers
 from insights.tests import context_wrap
 
 
@@ -41,7 +41,8 @@ def test_doc_examples():
         'lpfc_max_luns': LpfcMaxLUNs(context_wrap(MAX_LUNS)),
         'ql2xmaxlun': Ql2xMaxLUN(context_wrap(MAX_LUNS)),
         'scsi_mod_max_report_luns': SCSIModMaxReportLUNs(context_wrap(MAX_LUNS)),
-        'qla2xxx_ql2xmqsupport': Ql2xmqSupport(context_wrap(QLA2XXX_QL2XMQSUPPORT))
+        'qla2xxx_ql2xmqsupport': Ql2xmqSupport(context_wrap(QLA2XXX_QL2XMQSUPPORT)),
+        'crash_kexec_post_notifiers': KernelCrashKexecPostNotifiers(context_wrap(SCSI_DM_MOD_USE_BLK_MQ_Y))
     }
     failed, total = doctest.testmod(sys_module, globs=env)
     assert failed == 0
@@ -74,6 +75,14 @@ def test_XModUseBlkMq():
     ql2xmqsuppor_copy_1 = Ql2xmqSupport(context_wrap(QLA2XXX_QL2XMQSUPPORT))
     assert ql2xmqsuppor_copy_1.is_on is True
     assert ql2xmqsuppor_copy_1.val == '1'
+
+    crash_kexec_post_notifiers_0 = KernelCrashKexecPostNotifiers(context_wrap(SCSI_DM_MOD_USE_BLK_MQ_N))
+    assert crash_kexec_post_notifiers_0.is_on is False
+    assert crash_kexec_post_notifiers_0.val == 'N'
+
+    crash_kexec_post_notifiers_1 = KernelCrashKexecPostNotifiers(context_wrap(SCSI_DM_MOD_USE_BLK_MQ_Y))
+    assert crash_kexec_post_notifiers_1.is_on is True
+    assert crash_kexec_post_notifiers_1.val == 'Y'
 
 
 def test_MaxLUNs():
@@ -116,4 +125,9 @@ def test_class_exceptions():
     with pytest.raises(ValueError) as e:
         ql2xmqsuppor_unknow = Ql2xmqSupport(context_wrap(SCSI_DM_MOD_USE_BLK_MQ_UNKNOW_CASE))
         ql2xmqsuppor_unknow.is_on
+    assert "Unexpected value unknow_case, please get raw data from attribute 'val' and tell is_on by yourself." in str(e)
+
+    with pytest.raises(ValueError) as e:
+        crash_kexec_post_notifiers_unknow = KernelCrashKexecPostNotifiers(context_wrap(SCSI_DM_MOD_USE_BLK_MQ_UNKNOW_CASE))
+        crash_kexec_post_notifiers_unknow.is_on
     assert "Unexpected value unknow_case, please get raw data from attribute 'val' and tell is_on by yourself." in str(e)

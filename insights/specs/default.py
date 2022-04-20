@@ -342,6 +342,7 @@ class DefaultSpecs(Specs):
     iscsiadm_m_session = simple_command("/usr/sbin/iscsiadm -m session")
     kdump_conf = simple_file("/etc/kdump.conf")
     kernel_config = glob_file("/boot/config-*")
+    kernel_crash_kexec_post_notifiers = simple_file("/sys/module/kernel/parameters/crash_kexec_post_notifiers")
     kexec_crash_size = simple_file("/sys/kernel/kexec_crash_size")
     keystone_crontab = simple_file("/var/spool/cron/keystone")
     kpatch_list = simple_command("/usr/sbin/kpatch list")
