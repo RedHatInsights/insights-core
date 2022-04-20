@@ -748,7 +748,12 @@ class JSONParser(Parser, LegacyItemAccess):
     """
     def parse_content(self, content):
         try:
-            self.data = json.loads(''.join(content))
+            if isinstance(content, list):
+                self.data = json.loads('\n'.join(content))
+            else:
+                self.data = json.loads(content)
+            if self.data is None:
+                raise SkipException("There is no data")
         except:
             # If content is empty then raise a skip exception instead of a parse exception.
             if not content:
