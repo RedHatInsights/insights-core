@@ -21,6 +21,7 @@ class Specs(SpecSet):
     awx_manage_print_settings = RegistryPoint()
     azure_instance_type = RegistryPoint()
     azure_instance_plan = RegistryPoint()
+    bdi_read_ahead_kb = RegistryPoint(multi_output=True)
     bios_uuid = RegistryPoint()
     blkid = RegistryPoint()
     bond = RegistryPoint(multi_output=True)
