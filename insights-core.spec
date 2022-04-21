@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.270
+Version:        3.0.271
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,19 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Apr 21 2022 Sachin Patil <psachin@redhat.com> 3.0.271-1
+- fix: Multiline quote parsing of httpd conf files (#3392) (rblakley@redhat.com)
+- feat: Add new crash_kexec_post_notifiers parser (#3387) (986222045@qq.com)
+- fix: make sure JSONParser is compatible with RawFileProvider (#3390) (xiangceliu@redhat.com)
+- fix: Move _LogRotateConf parser out of combiner (#3389) (rblakley@redhat.com)
+- fix: Move the _NginxConf parser out of the combiner (#3386) (rblakley@redhat.com)
+- fix: Httpd tracebacks displaying when the client is ran (#3379) (rblakley@redhat.com)
+- fix: strip the '\x00' from the ibm_fw_vernum_encoded before parsing (#3378) (xiangceliu@redhat.com)
+- Fix spec for YumUpdates parser (#3388) (20520336+bfahr@users.noreply.github.com)
+- Only collect "*.conf" for nginx (#3380) (44796653+huali027@users.noreply.github.com)
+- fix: Update the spec "du_dirs" to filterable (#3384) (44796653+huali027@users.noreply.github.com)
+- fix(client): Return valid machine-id UUID4 object (#3385) (strider@users.noreply.github.com)
+- Exclude some Specs from IP address obfuscation (#3331) (stomsa@redhat.com)
 * Thu Apr 07 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.270-1
 - Replace "cloud.redhat.com" with "console.redhat.com" (#3365)
   (strider@users.noreply.github.com)

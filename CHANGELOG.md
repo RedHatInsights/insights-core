@@ -2,6 +2,21 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.271](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.271) (2022-04-21)
+
+- fix: Multiline quote parsing of httpd conf files ([PR 3392](https://github.com/RedHatInsights/insights-core/pull/3392))
+- feat: Add new crash_kexec_post_notifiers parser ([PR 3387](https://github.com/RedHatInsights/insights-core/pull/3387))
+- fix: make sure JSONParser is compatible with RawFileProvider ([PR 3390](https://github.com/RedHatInsights/insights-core/pull/3390))
+- fix: Move _LogRotateConf parser out of combiner ([PR 3389](https://github.com/RedHatInsights/insights-core/pull/3389))
+- fix: Move the _NginxConf parser out of the combiner ([PR 3386](https://github.com/RedHatInsights/insights-core/pull/3386))
+- fix: Httpd tracebacks displaying when the client is ran ([PR 3379](https://github.com/RedHatInsights/insights-core/pull/3379))
+- fix: strip the '\x00' from the ibm_fw_vernum_encoded before parsing ([PR 3378](https://github.com/RedHatInsights/insights-core/pull/3378))
+- Fix spec for YumUpdates parser ([PR 3388](https://github.com/RedHatInsights/insights-core/pull/3388))
+- Only collect "*.conf" for nginx ([PR 3380](https://github.com/RedHatInsights/insights-core/pull/3380))
+- fix: Update the spec "du_dirs" to filterable ([PR 3384](https://github.com/RedHatInsights/insights-core/pull/3384))
+- fix(client): Return valid machine-id UUID4 object ([PR 3385](https://github.com/RedHatInsights/insights-core/pull/3385))
+- Exclude some Specs from IP address obfuscation ([PR 3331](https://github.com/RedHatInsights/insights-core/pull/3331))
+
 ## [insights-core-3.0.270](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.270) (2022-04-07)
 
 - Replace <E2><80><9C>cloud.redhat.com<E2><80><9D> with <E2><80><9C>console.redhat.com<E2><80><9D> ([PR 3365](https://github.com/RedHatInsights/insights-core/pull/3365))
