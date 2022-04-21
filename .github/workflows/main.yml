@@ -20,6 +20,10 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-versions }}
+    - name: apt-install python-rpm
+      run: |
+        sudo apt-get update
+        sudo apt-get install python-rpm
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
