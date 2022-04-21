@@ -19,7 +19,7 @@ class BDIReadAheadKB(Parser):
         read_ahead_kb (int): value of read_ahead_kb.
 
     Raises:
-        ParseException: When contents are empty
+        ParseException: When content is empty or unparseable
 
     A typical sample of the content of this file looks like::
 
@@ -35,7 +35,10 @@ class BDIReadAheadKB(Parser):
     def parse_content(self, content):
         if len(content) != 1:
             raise ParseException("Error: ", content[0] if content else 'empty file')
-        self._read_ahead_kb = int(content[0].strip())
+        try:
+            self._read_ahead_kb = int(content[0].strip())
+        except ValueError:
+            raise ParseException("Error: unparseable content: ", content[0])
 
     @property
     def read_ahead_kb(self):

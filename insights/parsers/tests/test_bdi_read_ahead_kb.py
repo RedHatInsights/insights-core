@@ -20,7 +20,7 @@ def test_bdi_read_ahead_kb():
 def test_invalid_bdi_read_ahead_kb():
     with pytest.raises(ParseException) as e:
         bdi_read_ahead_kb.BDIReadAheadKB(context_wrap(BDI_READ_AHEAD_KB_INVALID))
-    assert "invalid" in str(e)
+    assert "Error: " in str(e)
 
 
 def test_bdi_read_ahead_kb_doc_examples():
