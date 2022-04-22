@@ -55,7 +55,5 @@ class ContainersPolicy(JSONParser):
     Examples:
         >>> len(containers_policy["default"])
         1
-        >>> containers_policy["default"][0]["type"]
-        'insecureAcceptAnything'
     """
     pass
