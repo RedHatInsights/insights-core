@@ -75,6 +75,35 @@ sysfs /sys sysfs rw,relatime 0 0
 devtmpfs /dev devtmpfs rw,relatime,size=8155456k,nr_inodes=2038864,mode=755 0 0
 """.strip()
 
+MOUNTINFO_DATA = """
+18 21 0:5 / /dev rw,relatime - devtmpfs devtmpfs rw,size=66002212k,nr_inodes=16500553,mode=755
+19 18 0:11 / /dev/pts rw,relatime - devpts devpts rw,gid=5,mode=620,ptmxmode=000
+20 18 0:16 / /dev/shm rw,nosuid,nodev,noexec,relatime - tmpfs tmpfs rw
+21 1 253:1 / / rw,relatime - ext4 /dev/mapper/vgsys-root rw,barrier=1,stripe=64,data=ordered
+23 21 8:1 / /boot rw,relatime - ext4 /dev/sda1 rw,barrier=1,stripe=64,data=ordered
+25 21 253:32 / /diskdump rw,relatime - ext4 /dev/mapper/vgsys-diskdump rw,barrier=1,stripe=64,data=ordered
+26 21 253:17 / /opt/CA rw,relatime - ext4 /dev/mapper/vgcore-opt_CA rw,barrier=1,stripe=64,data=ordered
+36 21 253:34 / /var rw,relatime - ext4 /dev/mapper/vgsys-var rw,barrier=1,stripe=64,data=ordered
+37 36 253:36 / /var/log rw,relatime - ext4 /dev/mapper/vgsys-var_log rw,barrier=1,stripe=64,data=ordered
+38 36 253:22 / /var/opt/OV rw,relatime - ext4 /dev/mapper/vgcore-var_opt_OV rw,barrier=1,stripe=64,data=ordered
+52 16 0:17 / /proc/sys/fs/binfmt_misc rw,relatime - binfmt_misc none rw
+53 36 0:18 / /var/lib/nfs/rpc_pipefs rw,relatime - rpc_pipefs sunrpc rw
+55 21 0:20 / /shared/dir1 rw,nosuid,relatime - nfs4 hostname1:/shared_dir1/ rw,sync,vers=4,rsize=32768,wsize=32768,namlen=255,hard,proto=tcp,port=0,timeo=600,ret
+56 21 0:19 / /shared/dir2 rw,nosuid,relatime - nfs hostname2:/shared/some/dir2 rw,sync,vers=3,rsize=32768,wsize=32
+57 21 0:21 / /misc rw,relatime - autofs /etc/auto.misc rw,fd=7,pgrp=4826,timeout=300,minproto=5,maxproto=5,indirect
+58 21 0:22 / /autofshost rw,relatime - autofs -hosts rw,fd=13,pgrp=4826,timeout=300,minproto=5,maxproto=5,indirect
+""".strip()
+
+MOUNTINFO_ERR_DATA = """
+18 21 0:5 / /dev rw,relatime - devtmpfs devtmpfs rw,size=66002212k,nr_inodes=16500553,mode=755
+20 18 0:16 / /dev/shm rw,nosuid,nodev,noexec,relatime - tmpfs tmpfs rw
+21 1 253:1 / / rw,relatime  ext4 /dev/mapper/vgsys-root rw,barrier=1,stripe=64,data=ordered
+23 21 8:1 / /boot rw,relatime - ext4 /dev/sda1 rw,barrier=1,stripe=64,data=ordered
+""".strip()
+
+MOUNTINFO_EXCEPTION = """
+""".strip()
+
 MOUNT_DOC = """
 /dev/mapper/rootvg-rootlv on / type ext4 (rw,relatime,barrier=1,data=ordered)
 proc on /proc type proc (rw,nosuid,nodev,noexec,relatime)
@@ -87,6 +116,14 @@ PROC_MOUNT_DOC = """
 proc /proc proc rw,nosuid,nodev,noexec,relatime 0 0
 /dev/mapper/HostVG-Config /etc/shadow ext4 rw,noatime,seclabel,stripe=256,data=ordered 0 0
 dev/sr0 /run/media/root/VMware\040Tools iso9660 ro,nosuid,nodev,relatime,uid=0,gid=0,iocharset=utf8,mode=0400,dmode=0500,uhelper=udisks2 0 0
+""".strip()
+
+MOUNTINFO_DOC = """
+39 0 253:0 / / rw,relatime shared:1 - xfs /dev/mapper/rootvg-lvlocroot rw,attr2,inode64,noquota
+47 39 8:1 / /boot rw,relatime shared:30 - xfs /dev/sda1 rw,attr2,inode64,noquota
+65 39 253:19 / /data rw,relatime shared:44 - ext4 /dev/mapper/vgdata-lvdata rw,data=ordered
+58 39 253:15 / /opt rw,relatime shared:45 - xfs /dev/mapper/rootvg-lvlocopt rw,attr2,inode64,noquota
+61 39 253:17 / /home rw,nosuid,relatime shared:46 - xfs /dev/mapper/rootvg-lvlochome rw,attr2,inode64,noquotao
 """.strip()
 
 MOUNT_DATA_WITH_SPECIAL_MNT_POINT = """
@@ -250,10 +287,73 @@ def test_proc_mount_exception3():
     assert 'Unable to parse' in str(pe.value)
 
 
+def test_mount():
+    results = Mount(context_wrap(MOUNTINFO_DATA))
+    assert results is not None
+    print(results)
+    assert len(results) == 16
+    boot = results.search(mount_point='/boot')[0]
+    print(boot)
+
+    shared_dir1 = results.search(mount_source='/shared/dir1')[0]
+    print(shared_dir1)
+    # assert sr0 is not None
+    # assert sr0['mount_point'] == '/run/media/root/VMware Tools'
+    # # test get method
+    # assert sr0.get('mount_point') == '/run/media/root/VMware Tools'
+    # assert sr0.get('does not exist', 'failure') == 'failure'
+    # assert sr0['mount_type'] == 'iso9660'
+    # assert 'ro' in sr0['mount_options']
+    # assert sr0.mount_options.ro
+    # assert 'relatime' in sr0['mount_options']
+    # assert sr0['mount_options']['uhelper'] == 'udisks2'
+    # assert sr0['mount_label'] == '[VMware Tools]'
+    # assert sda1 is not None
+    # assert sda1['mount_point'] == '/boot'
+    # assert sda1['mount_type'] == 'ext4'
+    # assert 'rw' in sda1['mount_options']
+    # assert 'seclabel' in sda1['mount_options']
+    # assert sda1['mount_options']['data'] == 'ordered'
+    # assert sda1.mount_options.data == 'ordered'
+    # assert 'mount_label' not in sda1
+
+    # Test iteration
+    for mnt in results:
+        assert hasattr(mnt, 'mount_source')
+        assert hasattr(mnt, 'mount_point')
+        assert hasattr(mnt, 'mount_type')
+        assert hasattr(mnt, 'mount_options')
+
+    # Test getitem
+    assert results[5] == boot
+    assert results['/shared/dir1'] == results[12]
+    # Index only by string or number
+    with pytest.raises(TypeError) as exc:
+        assert results[set([1, 2, 3])] is None
+    assert "Mounts can only be indexed by mount string or line number" in str(exc)
+
+    # Test mounts dictionary
+    assert results.mounts['/boot'] == boot
+
+    # Test get_dir
+    print(results.get_dir('/var/log'))
+    print(results.get_dir('/etc'))
+    #assert results.get_dir('/var/log') == results.search(filesystem='sunrpc')[0]
+    #assert results.get_dir('/etc') == results['/']
+
+    # Test search
+    assert results.search(mount_type='nfs') == [results.rows[13]]
+    assert results.search(mount_options__contains='mode') == [
+        results.rows[n] for n in (0, 1)
+    ]
+
+
+
 def test_doc_examples():
     env = {
             'mnt_info': Mount(context_wrap(MOUNT_DOC)),
             'proc_mnt_info': ProcMounts(context_wrap(PROC_MOUNT_DOC)),
+            'proc_mountinfo': ProcMounts(context_wrap(MOUNTINFO_DOC)),
             'mounts': Mount(context_wrap(MOUNT_DOC))
 
           }

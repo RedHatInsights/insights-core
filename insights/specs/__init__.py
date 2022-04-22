@@ -388,6 +388,7 @@ class Specs(SpecSet):
     mokutil_sbstate = RegistryPoint()
     mongod_conf = RegistryPoint(multi_output=True, filterable=True)
     mount = RegistryPoint()
+    mountinfo = RegistryPoint()
     mounts = RegistryPoint()
     mssql_conf = RegistryPoint()
     mssql_api_assessment = RegistryPoint()
