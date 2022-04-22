@@ -1,6 +1,7 @@
 from insights.client.archive import InsightsArchive
 from mock.mock import patch, Mock, call
 from unittest import TestCase
+from pytest import raises
 
 
 test_timestamp = '000000'
@@ -28,15 +29,13 @@ class TestInsightsArchive(TestCase):
 
         assert archive.config == config
         assert archive.tmp_dir
-        assert archive.archive_tmp_dir
         assert archive.archive_dir is None
         assert archive.cmd_dir is None
         assert archive.compressor == config.compressor
         assert archive.archive_name == test_archive_name
 
         cleanup.assert_called_once()
-        mkdtemp.assert_has_calls([call(dir='/var/tmp/', prefix='insights-archive-'),
-                                  call(dir='/var/tmp/', prefix='insights-archive-')])
+        mkdtemp.assert_has_calls([call(dir='/var/tmp/', prefix='insights-archive-')])
         register.assert_called_once()
 
     @patch('insights.client.archive.os.makedirs')
@@ -200,3 +199,39 @@ class TestInsightsArchive(TestCase):
         archive = InsightsArchive(Mock())
         archive.copy_dir('test')
         create_archive_dir.assert_called_once()
+
+    @patch('insights.client.archive.shutil.copyfile')
+    @patch('insights.client.archive.os.path.join', side_effect=['/var/tmp/test-archive/insights-archive-test.tar.gz'])
+    @patch('insights.client.archive.os.path.isdir', Mock())
+    def test_keep_archive(self, os_, copyfile, _, __):
+        archive = InsightsArchive(Mock())
+        archive.tar_file = '/var/tmp/insights-archive-test.tar.gz'
+        archive.keep_archive_dir = '/var/tmp/test-archive'
+        archive.storing_archive()
+        copyfile.assert_called_once_with(archive.tar_file, '/var/tmp/test-archive/insights-archive-test.tar.gz')
+
+    @patch('insights.client.archive.shutil.copyfile', side_effect=OSError)
+    @patch('insights.client.archive.os.path.join', Mock())
+    @patch('insights.client.archive.os.path.isdir', Mock())
+    @patch('insights.client.archive.os.path.basename', Mock())
+    @patch('insights.client.archive.logger')
+    def test_keep_archive_err_during_copy(self, logger, copyfile, _, __):
+        archive = InsightsArchive(Mock())
+        archive.archive_stored = '/var/tmp/test-archive/test-store-archive'
+        archive.keep_archive_dir = '/var/tmp/test-archive'
+        with raises(Exception):
+            archive.storing_archive()
+        logger.error.assert_called_once_with('ERROR: Could not stored archive to %s', archive.archive_stored)
+
+    @patch('insights.client.archive.os.makedirs', side_effect=OSError)
+    @patch('insights.client.archive.os.path.exists', return_value=False)
+    @patch('insights.client.archive.os.path.join', Mock())
+    @patch('insights.client.archive.os.path.isdir', Mock())
+    @patch('insights.client.archive.os.path.basename', Mock())
+    @patch('insights.client.archive.logger')
+    def test_keep_arhive_err_creating_directory(self, logger, path_exists, mkdir, _, __):
+        archive = InsightsArchive(Mock())
+        archive.keep_archive_dir = '/var/tmp/test-archive'
+        with raises(Exception):
+            archive.storing_archive()
+        logger.error.assert_called_once_with('ERROR: Could not create %s', archive.keep_archive_dir)

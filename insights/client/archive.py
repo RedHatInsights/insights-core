@@ -41,7 +41,6 @@ class InsightsArchive(object):
         Initialize the Insights Archive
         """
         self.config = config
-        # TODO: clean temporary directory from previous runs
         self.cleanup_previous_archive()
         # input this to core collector as `tmp_path`
         self.tmp_dir = tempfile.mkdtemp(dir='/var/tmp/', prefix='insights-archive-')
@@ -67,7 +66,9 @@ class InsightsArchive(object):
         self.cmd_dir = None
 
         self.compressor = config.compressor
+        self.archive_stored = None
         self.tar_file = None
+        self.keep_archive_dir = '/var/cache/insights-client'
         atexit.register(self.cleanup_tmp)
         signal(SIGTERM, self.sigterm_handler)
 
@@ -161,7 +162,7 @@ class InsightsArchive(object):
         """
         Create tar file to be compressed
         """
-        if not self.archive_tmp_dir:
+        if not self.tmp_dir:
             # we should never get here but bail out if we do
             raise RuntimeError('Archive temporary directory not defined.')
         tar_file_name = os.path.join(self.archive_tmp_dir, self.archive_name)
@@ -235,14 +236,11 @@ class InsightsArchive(object):
             and tar_file exists.
         '''
         if self.config.keep_archive and self.tar_file:
+            self.storing_archive()
             if self.config.no_upload:
-                logger.info('Archive saved at %s', self.tar_file)
+                logger.info('Archive saved at %s', self.archive_stored)
             else:
-                logger.info('Insights archive retained in %s', self.tar_file)
-            if self.config.obfuscate:
-                return  # return before deleting tmp_dir
-        else:
-            self.delete_archive_file()
+                logger.info('Insights archive retained in %s', self.archive_stored)
         self.delete_tmp_dir()
 
     def sigterm_handler(_signo, _stack_frame, _context):
@@ -256,3 +254,21 @@ class InsightsArchive(object):
             os.path.join('', file)
             logger.debug("Deleting previous archive %s", file)
             shutil.rmtree(file, True)
+
+    def storing_archive(self):
+        if not os.path.exists(self.keep_archive_dir):
+            try:
+                os.makedirs(self.keep_archive_dir)
+            except OSError:
+                logger.error('ERROR: Could not create %s', self.keep_archive_dir)
+                raise
+
+        archive_name = os.path.basename(self.tar_file)
+        self.archive_stored = os.path.join(self.keep_archive_dir, archive_name)
+        logger.info('Copying archive from %s to %s', self.tar_file, self.archive_stored)
+        try:
+            shutil.copyfile(self.tar_file, self.archive_stored)
+        except OSError:
+            # file exists already
+            logger.error('ERROR: Could not stored archive to %s', self.archive_stored)
+            raise
