@@ -379,22 +379,23 @@ class MountInfo(MountedFileSystems):
             mount = {}
             mount['mount_clause'] = line
             line_own_sp = _customized_split(line, line, sep=' - ')
-            line_left_sp = _customized_split(line, line_own_sp[0], num=7)
+            line_left_sp = _customized_split(line, line_own_sp[0], num=6)
             mount['mount_point'] = line_left_sp[4]
             line_right_sp = _customized_split(line, line_own_sp[1], num=3)
             mount['mount_type'] = line_right_sp[0]
             mount['mount_source'] = line_right_sp[1]
             mount['filesystem'] = mount['mount_source']  # compatible for deprecation
-            unioned_options = ','.join(line_left_sp[5], line_right_sp[2])
+            optional_fields = line_left_sp[5].split()[1] if ' ' in line_left_sp[5] else ''
+            mntopt = line_left_sp[5].split()[0] if ' ' in line_left_sp[5] else line_left_sp[5]
+            unioned_options = ','.join([mntopt, line_right_sp[2]])
             mount['mount_options'] = MountOpts(optlist_to_dict(unioned_options))
             mount['mount_addtlinfo'] = MountAddtlInfo({
                     'mount_id': line_left_sp[0],
                     'parent_id': line_left_sp[1],
                     'major_minor': line_left_sp[2],
                     'root': line_left_sp[3],
-                    'optional_fields': line_left_sp[6],
+                    'optional_fields': optional_fields,
             })
-            mount['mount_label'] = ''  # compatible for MountEntry init
             entry = MountEntry(mount)
             rows.append(entry)
         self.rows = rows

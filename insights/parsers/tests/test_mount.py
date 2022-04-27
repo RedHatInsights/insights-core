@@ -4,7 +4,7 @@ test mount
 """
 from insights.parsers import ParseException, SkipException
 from insights.parsers import mount
-from insights.parsers.mount import Mount, ProcMounts
+from insights.parsers.mount import Mount, ProcMounts, MountInfo
 from insights.tests import context_wrap
 import pytest
 import doctest
@@ -88,7 +88,7 @@ MOUNTINFO_DATA = """
 38 36 253:22 / /var/opt/OV rw,relatime - ext4 /dev/mapper/vgcore-var_opt_OV rw,barrier=1,stripe=64,data=ordered
 52 16 0:17 / /proc/sys/fs/binfmt_misc rw,relatime - binfmt_misc none rw
 53 36 0:18 / /var/lib/nfs/rpc_pipefs rw,relatime - rpc_pipefs sunrpc rw
-55 21 0:20 / /shared/dir1 rw,nosuid,relatime - nfs4 hostname1:/shared_dir1/ rw,sync,vers=4,rsize=32768,wsize=32768,namlen=255,hard,proto=tcp,port=0,timeo=600,ret
+55 21 0:20 / /shared/dir1 rw,nosuid,relatime - nfs4 hostname1:/shared_dir1 rw,sync,vers=4,rsize=32768,wsize=32768,namlen=255,hard,proto=tcp,port=0,timeo=600,ret
 56 21 0:19 / /shared/dir2 rw,nosuid,relatime - nfs hostname2:/shared/some/dir2 rw,sync,vers=3,rsize=32768,wsize=32
 57 21 0:21 / /misc rw,relatime - autofs /etc/auto.misc rw,fd=7,pgrp=4826,timeout=300,minproto=5,maxproto=5,indirect
 58 21 0:22 / /autofshost rw,relatime - autofs -hosts rw,fd=13,pgrp=4826,timeout=300,minproto=5,maxproto=5,indirect
@@ -287,35 +287,30 @@ def test_proc_mount_exception3():
     assert 'Unable to parse' in str(pe.value)
 
 
-def test_mount():
-    results = Mount(context_wrap(MOUNTINFO_DATA))
+def test_mountinfo():
+    results = MountInfo(context_wrap(MOUNTINFO_DATA))
     assert results is not None
-    print(results)
     assert len(results) == 16
-    boot = results.search(mount_point='/boot')[0]
-    print(boot)
 
-    shared_dir1 = results.search(mount_source='/shared/dir1')[0]
-    print(shared_dir1)
-    # assert sr0 is not None
-    # assert sr0['mount_point'] == '/run/media/root/VMware Tools'
-    # # test get method
-    # assert sr0.get('mount_point') == '/run/media/root/VMware Tools'
-    # assert sr0.get('does not exist', 'failure') == 'failure'
-    # assert sr0['mount_type'] == 'iso9660'
-    # assert 'ro' in sr0['mount_options']
-    # assert sr0.mount_options.ro
-    # assert 'relatime' in sr0['mount_options']
-    # assert sr0['mount_options']['uhelper'] == 'udisks2'
-    # assert sr0['mount_label'] == '[VMware Tools]'
-    # assert sda1 is not None
-    # assert sda1['mount_point'] == '/boot'
-    # assert sda1['mount_type'] == 'ext4'
-    # assert 'rw' in sda1['mount_options']
-    # assert 'seclabel' in sda1['mount_options']
-    # assert sda1['mount_options']['data'] == 'ordered'
-    # assert sda1.mount_options.data == 'ordered'
-    # assert 'mount_label' not in sda1
+    sda1 = results.search(mount_source='/dev/sda1')[0]
+    assert sda1 is not None
+    assert sda1['mount_point'] == '/boot'
+    # test get method
+    assert sda1.get('mount_point') == '/boot'
+    assert sda1.get('does_not_exist', 'failure') == 'failure'
+    assert sda1['mount_type'] == 'ext4'
+    assert 'rw' in sda1['mount_options']
+    assert sda1.mount_options.rw
+    assert 'data' in sda1['mount_options']
+    assert sda1['mount_options']['data'] == 'ordered'
+    assert 'mount_label' not in sda1
+    assert sda1 is not None
+
+    dir1 = results.search(mount_point='/shared/dir1')[0]
+    assert dir1['mount_source'] == 'hostname1:/shared_dir1'
+    assert dir1['mount_type'] == 'nfs4'
+    assert 'vers' in dir1['mount_options']
+    assert dir1['mount_options']['vers'] == '4'
 
     # Test iteration
     for mnt in results:
@@ -325,7 +320,7 @@ def test_mount():
         assert hasattr(mnt, 'mount_options')
 
     # Test getitem
-    assert results[5] == boot
+    assert results[4] == sda1
     assert results['/shared/dir1'] == results[12]
     # Index only by string or number
     with pytest.raises(TypeError) as exc:
@@ -333,13 +328,11 @@ def test_mount():
     assert "Mounts can only be indexed by mount string or line number" in str(exc)
 
     # Test mounts dictionary
-    assert results.mounts['/boot'] == boot
+    assert results.mounts['/boot'] == sda1
 
     # Test get_dir
-    print(results.get_dir('/var/log'))
-    print(results.get_dir('/etc'))
-    #assert results.get_dir('/var/log') == results.search(filesystem='sunrpc')[0]
-    #assert results.get_dir('/etc') == results['/']
+    assert results.get_dir('/var/log/some_dir') == results.search(mount_point='/var/log')[0]
+    assert results.get_dir('/etc') == results['/']
 
     # Test search
     assert results.search(mount_type='nfs') == [results.rows[13]]
@@ -348,12 +341,11 @@ def test_mount():
     ]
 
 
-
 def test_doc_examples():
     env = {
             'mnt_info': Mount(context_wrap(MOUNT_DOC)),
             'proc_mnt_info': ProcMounts(context_wrap(PROC_MOUNT_DOC)),
-            'proc_mountinfo': ProcMounts(context_wrap(MOUNTINFO_DOC)),
+            'proc_mountinfo': MountInfo(context_wrap(MOUNTINFO_DOC)),
             'mounts': Mount(context_wrap(MOUNT_DOC))
 
           }
