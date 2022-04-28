@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.272](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.272) (2022-04-28)
+
+- Feat: Add spec and parser for 'containers_policy' ([PR 3394](https://github.com/RedHatInsights/insights-core/pull/3394))
+- Skip malware-detection tests on RHEL6/python2.6 (not supported) ([PR 3382](https://github.com/RedHatInsights/insights-core/pull/3382))
+
 ## [insights-core-3.0.271](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.271) (2022-04-21)
 
 - fix: Multiline quote parsing of httpd conf files ([PR 3392](https://github.com/RedHatInsights/insights-core/pull/3392))

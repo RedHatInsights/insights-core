@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.271
+Version:        3.0.272
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,12 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Apr 28 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.272-1
+- Feat: Add spec and parser for 'containers_policy' (#3394)
+  (39508521+shlao@users.noreply.github.com)
+- Skip malware-detection tests on RHEL6/python2.6 (not supported) (#3382)
+  (mhuth@redhat.com)
+
 * Thu Apr 21 2022 Sachin Patil <psachin@redhat.com> 3.0.271-1
 - fix: Multiline quote parsing of httpd conf files (#3392) (rblakley@redhat.com)
 - feat: Add new crash_kexec_post_notifiers parser (#3387) (986222045@qq.com)
