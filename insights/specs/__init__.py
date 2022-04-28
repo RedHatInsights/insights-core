@@ -73,6 +73,7 @@ class Specs(SpecSet):
     cni_podman_bridge_conf = RegistryPoint()
     cobbler_modules_conf = RegistryPoint()
     cobbler_settings = RegistryPoint()
+    containers_policy = RegistryPoint()
     corosync = RegistryPoint()
     corosync_cmapctl = RegistryPoint(multi_output=True)
     corosync_conf = RegistryPoint()
