@@ -15,9 +15,6 @@ class BDIReadAheadKB(Parser):
     """
     Class ``BDIReadAheadKB`` parses the content of the ``/sys/class/bdi/*/read_ahead_kb``.
 
-    Attributes:
-        read_ahead_kb (int): value of read_ahead_kb.
-
     Raises:
         ParseException: When content is empty or unparseable
 
@@ -34,15 +31,13 @@ class BDIReadAheadKB(Parser):
 
     def parse_content(self, content):
         if len(content) != 1:
-            raise ParseException("Error: ", content[0] if content else 'empty file')
+            raise ParseException('Error: {0}'.format(content if content else 'empty file'))
         try:
             self._read_ahead_kb = int(content[0].strip())
         except ValueError:
-            raise ParseException("Error: unparseable content: ", content[0])
+            raise ParseException("Error: unparseable content: {0}".format(content[0]))
 
     @property
     def read_ahead_kb(self):
-        """
-        Returns (int): 'read_ahead_kb' value.
-        """
+        """ int: Value of ``read_ahead_kb``."""
         return self._read_ahead_kb
