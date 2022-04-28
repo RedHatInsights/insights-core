@@ -43,6 +43,7 @@ class SosSpecs(Specs):
     cni_podman_bridge_conf = simple_file("/etc/cni/net.d/87-podman-bridge.conflist")
     cobbler_settings = first_file(["/etc/cobbler/settings", "/conf/cobbler/settings"])
     cobbler_modules_conf = first_file(["/etc/cobbler/modules.conf", "/conf/cobbler/modules.conf"])
+    containers_policy = simple_file("/etc/containers/policy.json")
     corosync_cmapctl = glob_file("sos_commands/corosync/corosync-cmapctl*")
     cpe = simple_file("/etc/system-release-cpe")
     cpu_smt_control = simple_file("sys/devices/system/cpu/smt/control")
