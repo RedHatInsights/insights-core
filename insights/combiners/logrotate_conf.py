@@ -105,10 +105,14 @@ class LogrotateConfAll(object):
             return self.data[item]
         return self.data.get(self._get_match_logfile(item))
 
-    def _get_match_logfile(self, log_file, file_list=[]):
-        file_list = self.log_files if not file_list else file_list
+    def _get_match_logfile(self, *args):
+        file_list = []
+        if len(args) == 1:
+            file_list = self.log_files
+        if len(args) == 2:
+            file_list = args[1]
         for f in file_list:
-            if fnmatch(log_file, f):
+            if fnmatch(args[0], f):
                 return f
 
     def options_of_logfile(self, log_file):
