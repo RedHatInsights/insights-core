@@ -3,6 +3,10 @@ NginxErrorLog - file ``/var/log/nginx/error.log``
 =================================================
 
 Module for parsing log file of nginx web server.
+
+.. note::
+    Please refer to the super-class :py:class:`insights.core.LogFileOutput`
+    for more usage information.
 """
 
 from .. import LogFileOutput, parser
@@ -23,17 +27,22 @@ class NginxErrorLog(LogFileOutput):
         2022/04/02 17:59:29 [warn] 1594#1594: *711881 an upstream response is buffered to a temporary file /var/lib/nginx/tmp/uwsgi/6/25/0000003256 while reading upstream, client: 10.245.136.148, server: _, request: "GET /api/v2/labels/?page_size=200 HTTP/1.1", upstream: "uwsgi://unix:/var/run/tower/uwsgi.sock:", host: "towergtd.desjardins.com", referrer: "https://towergtd.desjardins.com/"
         2022/04/03 00:02:28 [warn] 1591#1591: *719136 an upstream response is buffered to a temporary file /var/lib/nginx/tmp/uwsgi/7/25/0000003257 while reading upstream, client: 10.245.136.148, server: _, request: "GET /api/v2/organizations/?page_size=999 HTTP/1.1", upstream: "uwsgi://unix:/var/run/tower/uwsgi.sock:", host: "towergtd.desjardins.com"
 
-    Each line is parsed into a dictionary with the following keys:
+    The ``get`` method breaks up log lines into the following field:
 
-        * **raw_message(str)** - complete log line
-        * **message(str)** - the body of the log
-        * **timestamp(datetime)** - date and time of log as datetime object
+    * **raw_message(str)** - the complete log line without processing the line into components
+
+    Each line of the resultant list is a dictionary with this field.
 
     Examples:
+
         >>> len(nginx_error_log.lines)
         6
         >>> nginx_error_log.lines[0]
         '2022/04/02 04:07:59 [warn] 1591#1591: *697425 an upstream response is buffered to a temporary file /var/lib/nginx/tmp/uwsgi/2/25/0000003252 while reading upstream, client: 10.245.136.148, server: _, request: "GET /api/v2/hosts/?not__name=localhost&page_size=400&page=46 HTTP/1.1", upstream: "uwsgi://unix:/var/run/tower/uwsgi.sock:", host: "towergtd.desjardins.com"'
+        >>> '711881' in nginx_error_log
+        True
+        >>> nginx_error_log.get('711881')
+        [{'raw_message': '2022/04/02 17:59:29 [warn] 1594#1594: *711881 an upstream response is buffered to a temporary file /var/lib/nginx/tmp/uwsgi/6/25/0000003256 while reading upstream, client: 10.245.136.148, server: _, request: "GET /api/v2/labels/?page_size=200 HTTP/1.1", upstream: "uwsgi://unix:/var/run/tower/uwsgi.sock:", host: "towergtd.desjardins.com", referrer: "https://towergtd.desjardins.com/"'}]
         >>> from datetime import datetime
         >>> list(nginx_error_log.get_after(datetime(2022, 4, 2, 17, 0, 0)))[0]['raw_message']
         '2022/04/02 17:59:29 [warn] 1594#1594: *711881 an upstream response is buffered to a temporary file /var/lib/nginx/tmp/uwsgi/6/25/0000003256 while reading upstream, client: 10.245.136.148, server: _, request: "GET /api/v2/labels/?page_size=200 HTTP/1.1", upstream: "uwsgi://unix:/var/run/tower/uwsgi.sock:", host: "towergtd.desjardins.com", referrer: "https://towergtd.desjardins.com/"'
