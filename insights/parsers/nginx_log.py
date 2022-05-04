@@ -29,7 +29,7 @@ class NginxErrorLog(LogFileOutput):
 
     The ``get`` method breaks up log lines into the following field:
 
-    * **raw_message(str)** - the complete log line without processing the line into components
+    * **raw_message(str)** - the original unparsed line
 
     Each line of the resultant list is a dictionary with this field.
 
