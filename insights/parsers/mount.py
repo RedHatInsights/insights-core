@@ -85,7 +85,7 @@ class MountAddtlInfo(AttributeAsDict):
         mount_id (str): Unique identifier of the mount
         parent_id (str): Unique identifier of the mount
         major_minor (str): Value of st_dev for files on filesystem
-        root（str): Root of the mount within the filesystem
+        root (str): Root of the mount within the filesystem
         optional_fields (str): Zero or more fields of the form "tag[:value]"
         # super_options (str): Per super block options
 
