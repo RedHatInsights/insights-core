@@ -45,21 +45,20 @@ from insights.specs import Specs
 from insights.parsers import optlist_to_dict, keyword_search, ParseException, SkipException
 from insights import parser, get_active_lines, CommandParser
 
-
 MOUNTADDTLINFO_FIELD_NAMES = [
-    "mount_id",  # (str): Unique identifier of the mount
-    "parent_id",  # (str): Unique identifier of the mount
-    "major_minor",  # (str): Value of st_dev for files on filesystem
-    "root",  # (str): Root of the mount within the filesystem
-    "optional_fields",  # (str): Zero or more fields of the form "tag[:value]"
+    "mount_id",
+    "parent_id",
+    "major_minor",
+    "root",
+    "optional_fields",
 ]
 MountAddtlInfo = namedtuple("MountAddtlInfo", field_names=MOUNTADDTLINFO_FIELD_NAMES)
 """
-An namedtuple object representing the additional information for an mount entry.
+A namedtuple object representing the additional infomation for a mount entry.
 
-Attributes
+Attributes:
     mount_id (str): Unique identifier of the mount
-    parent_id (str): Unique identifier of the mount
+    parent_id (str): Unique identifier of the parent mount
     major_minor (str): Value of st_dev for files on filesystem
     root (str): Root of the mount within the filesystem
     optional_fields (str): Zero or more fields of the form "tag[:value]"

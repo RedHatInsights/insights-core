@@ -31,38 +31,54 @@ from insights.parsers import keyword_search
 from insights.parsers.mount import Mount, ProcMounts, MountInfo
 
 MOUNTADDTLINFO_FIELD_NAMES = [
-    "mount_label",  # (str): Optional label of this mount entry, an empty string by default
-    "fs_freq",  # (str): Optional label of this mount entry, an empty string by default
-    "fs_passno",  # (str): Optional label of this mount entry, an empty string by default
-    "mount_id",  # (str): Unique identifier of the mount
-    "parent_id",  # (str): Unique identifier of the mount
-    "major_minor",  # (str): Value of st_dev for files on filesystem
-    "root",  # (str): Root of the mount within the filesystem
-    "optional_fields",  # (str): Zero or more fields of the form "tag[:value]"
-    "mount_clause_binmount",   # (str): Full raw string from /bin/mount command output
-    "mount_clause_procmounts",   # (str): Full raw string from /proc/mounts
-    "mount_clause_mountinfo",   # (str): Full raw string from /proc/self/mountinfo
+    "mount_label",
+    "fs_freq",
+    "fs_passno",
+    "mount_id",
+    "parent_id",
+    "major_minor",
+    "root",
+    "optional_fields",
+    "mount_clause_binmount",
+    "mount_clause_procmounts",
+    "mount_clause_mountinfo",
 ]
 MountAddtlInfo = namedtuple("MountAddtlInfo", field_names=MOUNTADDTLINFO_FIELD_NAMES)
+"""
+A namedtuple object representing the additional infomation for a mount entry.
+For a missing field, default to an empty string
+
+Attributes:
+    mount_label (str): Label of this mount entry from command ``/bin/mount``
+    fs_freq (str): fs_freq of this mount entry from file ``/proc/mounts``
+    fs_passno (str): fs_passno of this mount entry from file ``/proc/mounts``
+    mount_id (str): Unique identifier of the mount
+    parent_id (str): Unique identifier of the parent mount
+    major_minor (str): Value of st_dev for files on filesystem
+    root (str): Root of the mount within the filesystem
+    optional_fields (str): Zero or more fields of the form "tag[:value]"
+    mount_clause_binmount (str): Full raw string from command ``/bin/mount``
+    mount_clause_procmounts (str): Full raw string from file ``/proc/mounts``
+    mount_clause_mountinfo (str): Full raw string from file ``/proc/self/mountinfo``
+"""
 
 MOUNTENTRY_FIELD_NAMES = [
-    "mount_source", # (str): Name of filesystem of mounted device
-    "mount_point",  # (str): Name of mount point for filesystem
-    "mount_type",   # (str): Name of filesystem type
-    "mount_options",  # (dict): Mount options
-    "mount_addtlinfo", # (MountAddtlInfo): Additional mount information as namedtuple `MountAddtlInfo`
+    "mount_source",
+    "mount_point",
+    "mount_type",
+    "mount_options",
+    "mount_addtlinfo",
 ]
 MountEntry = namedtuple("MountEntry", field_names=MOUNTENTRY_FIELD_NAMES)
 """
-    An object representing an mount entry of ``mount`` command or
-    ``/proc/mounts`` file.  Each entry contains below fixed attributes:
+A namedtuple object representing a mount entry.
 
-    Attributes:
-        mount_source(str): Name of filesystem of mounted device
-        mount_point (str): Name of mount point for filesystem
-        mount_type (str): Name of filesystem type
-        mount_options (MountOpts): Mount options as :class:`MountOpts`
-        mount_addtlinfo (MountAddtlInfo): Additional mount information as :class:`MountAddtlInfo`
+Attributes:
+    mount_source (str): Name of mounted device for filesystem
+    mount_point (str): Name of mount point for filesystem
+    mount_type (str): Name of filesystem type
+    mount_options (dict): Mount options
+    mount_addtlinfo (MountAddtlInfo): Additional mount information as namedtuple `MountAddtlInfo`
 """
 
 
