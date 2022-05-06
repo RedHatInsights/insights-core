@@ -18,8 +18,8 @@ Examples:
     True
     >>> mounts['/boot'].mount_source
     '/dev/sda1'
-    >>> mounts['/boot'].mount_options
-    {'rw': True, 'relatime': True, 'barrier': '1', 'stripe': '64', 'data': 'ordered'}
+    >>> mounts['/boot'].mount_options.get('data')
+    'ordered'
     >>> mounts['/boot'].mount_addtlinfo.major_minor
     '8:1'
 """
