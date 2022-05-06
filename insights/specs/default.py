@@ -491,6 +491,7 @@ class DefaultSpecs(Specs):
                            "/var/lib/config-data/puppet-generated/nova_libvirt/etc/nova/nova.conf",
                            "/etc/nova/nova.conf"
                            ])
+    nginx_error_log = simple_file("/var/log/nginx/error.log")
     nova_crontab = simple_file("/var/spool/cron/nova")
     nova_uid = simple_command("/usr/bin/id -u nova")
     nscd_conf = simple_file("/etc/nscd.conf")
