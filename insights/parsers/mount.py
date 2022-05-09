@@ -40,29 +40,9 @@ mount point.
 """
 
 import os
-from collections import namedtuple
 from insights.specs import Specs
 from insights.parsers import optlist_to_dict, keyword_search, ParseException, SkipException
 from insights import parser, get_active_lines, CommandParser
-
-MOUNTADDTLINFO_FIELD_NAMES = [
-    "mount_id",
-    "parent_id",
-    "major_minor",
-    "root",
-    "optional_fields",
-]
-MountAddtlInfo = namedtuple("MountAddtlInfo", field_names=MOUNTADDTLINFO_FIELD_NAMES)
-"""
-A namedtuple object representing the additional infomation for a mount entry.
-
-Attributes:
-    mount_id (str): Unique identifier of the mount
-    parent_id (str): Unique identifier of the parent mount
-    major_minor (str): Value of st_dev for files on filesystem
-    root (str): Root of the mount within the filesystem
-    optional_fields (str): Zero or more fields of the form "tag[:value]"
-"""
 
 
 class AttributeAsDict(object):
@@ -89,6 +69,30 @@ class MountOpts(AttributeAsDict):
     with the value "0500".
 
     The ``in`` operator may be used to determine if an option is present.
+    """
+    def __init__(self, data=None):
+        data = {} if data is None else data
+        for k, v in data.items():
+            setattr(self, k, v)
+
+
+class MountAddtlInfo(AttributeAsDict):
+    """
+    An object representing the additional information for an mount entry as
+    attributes accessible via the attribute name.
+
+    Attributes
+        mount_id (str): Unique identifier of the mount
+        parent_id (str): Unique identifier of the parent mount
+        major_minor (str): Value of st_dev for files on filesystem
+        root (str): Root of the mount within the filesystem
+        optional_fields (str): Zero or more fields of the form "tag[:value]"
+        # super_options (str): Per super block options
+
+    For instance, the major:minor number ``253:4`` could be accessed as
+    ``mnt_row_info.major_minor`` with the value ``253:4``.
+
+    The ``in`` operator could be used to determine if an option is present before direct accessing.
     """
     def __init__(self, data=None):
         data = {} if data is None else data
@@ -361,6 +365,8 @@ class MountInfo(MountedFileSystems):
         'ordered'
         >>> 'major_minor' in proc_mountinfo[4]
         False
+        >>> 'major_minor' in proc_mountinfo[4].mount_addtlinfo
+        True
         >>> proc_mountinfo[4].mount_addtlinfo.major_minor
         '253:17'
         >>> proc_mountinfo['/boot'].mount_source
@@ -383,7 +389,7 @@ class MountInfo(MountedFileSystems):
             mntopt = line_left_sp[5].split()[0] if ' ' in line_left_sp[5] else line_left_sp[5]
             unioned_options = ','.join([mntopt, line_right_sp[2]])
             mount['mount_options'] = MountOpts(optlist_to_dict(unioned_options))
-            mount['mount_addtlinfo'] = MountAddtlInfo(**{
+            mount['mount_addtlinfo'] = MountAddtlInfo({
                     'mount_id': line_left_sp[0],
                     'parent_id': line_left_sp[1],
                     'major_minor': line_left_sp[2],

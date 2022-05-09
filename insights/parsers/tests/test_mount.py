@@ -313,7 +313,6 @@ def test_mountinfo():
     assert dir1['mount_options']['vers'] == '4'
     assert dir1['mount_addtlinfo'].major_minor == '0:20'
     assert dir1.mount_addtlinfo.mount_id == '55'
-    assert len(dir1['mount_addtlinfo']) == 5
 
     # Test iteration
     for mnt in results:
