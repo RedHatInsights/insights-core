@@ -87,7 +87,7 @@ class Mounts(object):
     def mount_points(self):
         """
         Returns:
-            list: list of :str:`mount_point` for each mount entry
+            (list): list of `mount_point` for each mount entry
         """
         return list(self._mounts.keys())
 
