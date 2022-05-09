@@ -10,7 +10,23 @@ import tempfile
 from insights.util.subproc import call
 import os
 import os.path
+import pkgutil
 import six
+import sys
+import yaml
+
+# Since XPath expression is not supported by the ElementTree in Python 2.6,
+# import insights.contrib.ElementTree when running python is prior to 2.6 for compatibility.
+# Script insights.contrib.ElementTree is the same with xml.etree.ElementTree in Python 2.7.14
+# Otherwise, import defusedxml.ElementTree to avoid XML vulnerabilities,
+# if dependency not installed import xml.etree.ElementTree instead.
+if sys.version_info[0] == 2 and sys.version_info[1] <= 6:
+    import insights.contrib.ElementTree as ET
+else:
+    try:
+        import defusedxml.ElementTree as ET
+    except:
+        import xml.etree.ElementTree as ET
 
 NONCOMPLIANT_STATUS = 2
 COMPLIANCE_CONTENT_TYPE = 'application/vnd.redhat.compliance.something+tgz'
@@ -54,6 +70,17 @@ class ComplianceClient:
                 results_file,
                 tailoring_file_path=tailoring_file
             )
+            if self.config.obfuscate:
+                tree = ET.parse(results_file)
+                # Retrieve the list of xpaths that need to be obfuscated
+                xpaths = yaml.load(pkgutil.get_data('insights', 'compliance_obfuscations.yaml'), Loader=yaml.SafeLoader)
+                # Obfuscate IP addresses in the XCCDF report
+                self.obfuscate(tree, xpaths['obfuscate'])
+                if self.config.obfuscate_hostname:
+                    # Obfuscate the hostname in the XCCDF report
+                    self.obfuscate(tree, xpaths['obfuscate_hostname'])
+                # Overwrite the results file with the obfuscations
+                tree.write(results_file)
             if results_need_repair:
                 self.repair_results(results_file)
             if tailoring_file:
@@ -180,6 +207,13 @@ class ComplianceClient:
 
         logger.info('System uses SSG version %s', ssg_version)
         return ssg_version
+
+    # Helper function that traverses through the XCCDF report and replaces the content of each
+    # matching xpath with an empty string
+    def obfuscate(self, tree, xpaths):
+        for xpath in xpaths:
+            for node in tree.findall(xpath):
+                node.text = ''
 
     def results_need_repair(self):
         return self.ssg_version in VERSIONS_FOR_REPAIR

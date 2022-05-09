@@ -6,6 +6,7 @@ test_timestamp = '000000'
 test_hostname = 'testhostname'
 test_archive_name = 'insights-testhostname-000000'
 test_archive_dir = '/var/tmp/test/insights-testhostname-000000'
+test_obfuscated_archive_dir = '/var/tmp/test/insights-localhost-000000'
 test_cmd_dir = '/var/tmp/test/insights-testhostname-000000/insights_commands'
 
 
@@ -20,6 +21,7 @@ class TestInsightsArchive(TestCase):
         Verify archive is created with default parameters
         '''
         config = Mock()
+        config.obfuscate_hostname = False
         archive = InsightsArchive(config)
 
         assert archive.config == config
@@ -40,7 +42,9 @@ class TestInsightsArchive(TestCase):
         '''
         Verify archive_dir is created when it does not already exist
         '''
-        archive = InsightsArchive(Mock())
+        config = Mock()
+        config.obfuscate_hostname = False
+        archive = InsightsArchive(config)
         # give this a discrete value so we can check the results
         archive.tmp_dir = '/var/tmp/test'
         result = archive.create_archive_dir()
@@ -53,13 +57,35 @@ class TestInsightsArchive(TestCase):
         assert result == archive.archive_dir
 
     @patch('insights.client.archive.os.makedirs')
+    @patch('insights.client.archive.os.path.exists', Mock(return_value=False))
+    def test_create_archive_dir_obfuscated(self, makedirs, _, __):
+        '''
+        Verify archive_dir is created when it does not already exist
+        '''
+        config = Mock()
+        config.obfuscate_hostname = True
+        archive = InsightsArchive(config)
+        # give this a discrete value so we can check the results
+        archive.tmp_dir = '/var/tmp/test'
+        result = archive.create_archive_dir()
+        makedirs.assert_called_once_with(test_obfuscated_archive_dir, 0o700)
+        # ensure the archive_dir is returned from the function
+        assert result == test_obfuscated_archive_dir
+        # ensure the class attr is set
+        assert archive.archive_dir == test_obfuscated_archive_dir
+        # ensure the retval and attr are the same
+        assert result == archive.archive_dir
+
+    @patch('insights.client.archive.os.makedirs')
     @patch('insights.client.archive.os.path.exists', return_value=False)
     def test_create_archive_dir_defined_path_DNE(self, exists, makedirs, _, __):
         '''
         Verify archive_dir is created when the attr is defined but
         the path does not exist
         '''
-        archive = InsightsArchive(Mock())
+        config = Mock()
+        config.obfuscate_hostname = False
+        archive = InsightsArchive(config)
         # give this a discrete value so we can check the results
         archive.tmp_dir = '/var/tmp/test'
         archive.archive_dir = test_archive_dir
@@ -81,7 +107,9 @@ class TestInsightsArchive(TestCase):
         Verify archive_dir is not re-created when the attr is undefined but
         the path exists
         '''
-        archive = InsightsArchive(Mock())
+        config = Mock()
+        config.obfuscate_hostname = False
+        archive = InsightsArchive(config)
         # give this a discrete value so we can check the results
         archive.tmp_dir = '/var/tmp/test'
         result = archive.create_archive_dir()
