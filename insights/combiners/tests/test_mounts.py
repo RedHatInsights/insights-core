@@ -1,6 +1,7 @@
 import doctest
 from insights.parsers.mount import Mount, ProcMounts, MountInfo
-from insights.combiners.mounts import Mounts, MountAddtlInfo
+from insights.parsers.mount import MountOpts, MountAddtlInfo
+from insights.combiners.mounts import Mounts
 from insights.combiners import mounts as module_mounts
 from insights.tests import context_wrap
 
@@ -79,14 +80,18 @@ def test_combiner_mounts_all():
     assert '/' in mounts
     root_entry = mounts['/']
     assert root_entry.mount_type == 'ext4'
-    assert root_entry.mount_options == {'rw': True, 'relatime': True, 'barrier': '1', 'stripe': '64', 'data': 'ordered'}
-    root_entry_addtlinfo = MountAddtlInfo(mount_label='', fs_freq='0', fs_passno='0',
+    assert len(root_entry.mount_options) == 5
+    assert root_entry.mount_options.data == 'ordered'
+    root_entry_opts = MountOpts({'rw': True, 'relatime': True, 'barrier': '1', 'stripe': '64', 'data': 'ordered'})
+    for k, v in root_entry_opts.items():
+        assert root_entry.mount_options[k] == v
+    root_entry_addtlinfo = MountAddtlInfo(dict(fs_freq='0', fs_passno='0',
                 mount_id='21', parent_id='1', major_minor='253:1', root='/', optional_fields='',
                 mount_clause_binmount='/dev/mapper/vgsys-root on / type ext4 (rw)',
                 mount_clause_procmounts='/dev/mapper/vgsys-root / ext4 rw,relatime,barrier=1,stripe=64,data=ordered 0 0',
-                mount_clause_mountinfo='21 1 253:1 / / rw,relatime - ext4 /dev/mapper/vgsys-root rw,barrier=1,stripe=64,data=ordered')
-    for idx in range(len(root_entry_addtlinfo)):
-        assert root_entry.mount_addtlinfo[idx] == root_entry_addtlinfo[idx]
+                mount_clause_mountinfo='21 1 253:1 / / rw,relatime - ext4 /dev/mapper/vgsys-root rw,barrier=1,stripe=64,data=ordered'))
+    for k, v in root_entry_addtlinfo.items():
+        assert root_entry.mount_addtlinfo[k] == v
 
     assert mounts.search(mount_source="/dev/mapper/vgsys-root")[0]['mount_point'] == '/'
 
@@ -106,14 +111,14 @@ def test_combiner_wo_mountinfo():
     assert '/' in mounts
     root_entry = mounts['/']
     assert root_entry.mount_type == 'ext4'
-    assert root_entry.mount_options == {'rw': True, 'relatime': True, 'barrier': '1', 'stripe': '64', 'data': 'ordered'}
-    root_entry_addtlinfo = MountAddtlInfo(mount_label='', fs_freq='0', fs_passno='0',
-                mount_id='', parent_id='', major_minor='', root='', optional_fields='',
+    root_entry_opts = MountOpts({'rw': True, 'relatime': True, 'barrier': '1', 'stripe': '64', 'data': 'ordered'})
+    for k, v in root_entry_opts.items():
+        assert root_entry.mount_options[k] == v
+    root_entry_addtlinfo = MountAddtlInfo(dict(fs_freq='0', fs_passno='0',
                 mount_clause_binmount='/dev/mapper/vgsys-root on / type ext4 (rw)',
-                mount_clause_procmounts='/dev/mapper/vgsys-root / ext4 rw,relatime,barrier=1,stripe=64,data=ordered 0 0',
-                mount_clause_mountinfo='')
-    for idx in range(len(root_entry_addtlinfo)):
-        assert root_entry.mount_addtlinfo[idx] == root_entry_addtlinfo[idx]
+                mount_clause_procmounts='/dev/mapper/vgsys-root / ext4 rw,relatime,barrier=1,stripe=64,data=ordered 0 0'))
+    for k, v in root_entry_addtlinfo.items():
+        assert root_entry.mount_addtlinfo[k] == v
 
     assert mounts.search(mount_source="/dev/mapper/vgsys-root")[0]['mount_point'] == '/'
     assert mounts.rows[0] == mounts['/']
@@ -128,14 +133,15 @@ def test_combiner_wo_binmount():
     assert '/' in mounts
     root_entry = mounts['/']
     assert root_entry.mount_type == 'ext4'
-    assert root_entry.mount_options == {'rw': True, 'relatime': True, 'barrier': '1', 'stripe': '64', 'data': 'ordered'}
-    root_entry_addtlinfo = MountAddtlInfo(mount_label='', fs_freq='0', fs_passno='0',
+    root_entry_opts = MountOpts({'rw': True, 'relatime': True, 'barrier': '1', 'stripe': '64', 'data': 'ordered'})
+    for k, v in root_entry_opts.items():
+        assert root_entry.mount_options[k] == v
+    root_entry_addtlinfo = MountAddtlInfo(dict(fs_freq='0', fs_passno='0',
                 mount_id='21', parent_id='1', major_minor='253:1', root='/', optional_fields='',
-                mount_clause_binmount='',
                 mount_clause_procmounts='/dev/mapper/vgsys-root / ext4 rw,relatime,barrier=1,stripe=64,data=ordered 0 0',
-                mount_clause_mountinfo='21 1 253:1 / / rw,relatime - ext4 /dev/mapper/vgsys-root rw,barrier=1,stripe=64,data=ordered')
-    for idx in range(len(root_entry_addtlinfo)):
-        assert root_entry.mount_addtlinfo[idx] == root_entry_addtlinfo[idx]
+                mount_clause_mountinfo='21 1 253:1 / / rw,relatime - ext4 /dev/mapper/vgsys-root rw,barrier=1,stripe=64,data=ordered'))
+    for k, v in root_entry_addtlinfo.items():
+        assert root_entry.mount_addtlinfo[k] == v
 
     assert mounts.search(mount_source="/dev/mapper/vgsys-root")[0]['mount_point'] == '/'
     assert mounts.rows[0] == mounts['/proc']
@@ -150,14 +156,15 @@ def test_combiner_wo_procmount():
     assert '/' in mounts
     root_entry = mounts['/']
     assert root_entry.mount_type == 'ext4'
-    assert root_entry.mount_options == {'rw': True, 'relatime': True, 'barrier': '1', 'stripe': '64', 'data': 'ordered'}
-    root_entry_addtlinfo = MountAddtlInfo(mount_label='', fs_freq='', fs_passno='',
+    root_entry_opts = MountOpts({'rw': True, 'relatime': True, 'barrier': '1', 'stripe': '64', 'data': 'ordered'})
+    for k, v in root_entry_opts.items():
+        assert root_entry.mount_options[k] == v
+    root_entry_addtlinfo = MountAddtlInfo(dict(
                 mount_id='21', parent_id='1', major_minor='253:1', root='/', optional_fields='',
                 mount_clause_binmount='/dev/mapper/vgsys-root on / type ext4 (rw)',
-                mount_clause_procmounts='',
-                mount_clause_mountinfo='21 1 253:1 / / rw,relatime - ext4 /dev/mapper/vgsys-root rw,barrier=1,stripe=64,data=ordered')
-    for idx in range(len(root_entry_addtlinfo)):
-        assert root_entry.mount_addtlinfo[idx] == root_entry_addtlinfo[idx]
+                mount_clause_mountinfo='21 1 253:1 / / rw,relatime - ext4 /dev/mapper/vgsys-root rw,barrier=1,stripe=64,data=ordered'))
+    for k, v in root_entry_addtlinfo.items():
+        assert root_entry.mount_addtlinfo[k] == v
 
     assert mounts.search(mount_source="/dev/mapper/vgsys-root")[0]['mount_point'] == '/'
     assert mounts.rows[0] == mounts['/proc']
@@ -171,14 +178,13 @@ def test_combiner_only_binmount():
     assert '/' in mounts
     root_entry = mounts['/']
     assert root_entry.mount_type == 'ext4'
-    assert root_entry.mount_options == {'rw': True}
-    root_entry_addtlinfo = MountAddtlInfo(mount_label='', fs_freq='', fs_passno='',
-                mount_id='', parent_id='', major_minor='', root='', optional_fields='',
-                mount_clause_binmount='/dev/mapper/vgsys-root on / type ext4 (rw)',
-                mount_clause_procmounts='',
-                mount_clause_mountinfo='')
-    for idx in range(len(root_entry_addtlinfo)):
-        assert root_entry.mount_addtlinfo[idx] == root_entry_addtlinfo[idx]
+    root_entry_opts = MountOpts({'rw': True})
+    for k, v in root_entry_opts.items():
+        assert root_entry.mount_options[k] == v
+    root_entry_addtlinfo = MountAddtlInfo(dict(
+                mount_clause_binmount='/dev/mapper/vgsys-root on / type ext4 (rw)'))
+    for k, v in root_entry_addtlinfo.items():
+        assert root_entry.mount_addtlinfo[k] == v
 
     assert mounts.search(mount_source="/dev/mapper/vgsys-root")[0]['mount_point'] == '/'
     assert mounts.rows[0] == mounts['/']

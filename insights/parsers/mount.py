@@ -48,6 +48,9 @@ from insights import parser, get_active_lines, CommandParser
 class AttributeAsDict(object):
     """
     Set the given key, value pair data as attribute of object.
+
+    The ``in`` operator could be used to determine if an attribute exists before
+    direct accessing.
     """
 
     def __init__(self, data=None):
@@ -60,6 +63,9 @@ class AttributeAsDict(object):
 
     def __getitem__(self, item):
         return self.__dict__[item]
+
+    def __len__(self):
+        return len(self.__dict__)
 
     def get(self, item, default=None):
         return self.__dict__.get(item, default)
@@ -76,8 +82,6 @@ class MountOpts(AttributeAsDict):
     output.  For instance, the options ``(rw,dmode=0500)`` may be accessed as
     ``mnt_row_info.rw`` with the value ``True`` and ``mnt_row_info.dmode``
     with the value "0500".
-
-    The ``in`` operator may be used to determine if an option is present.
     """
     pass
 
@@ -86,26 +90,32 @@ class MountAddtlInfo(AttributeAsDict):
     """
     An object representing the additional information for an mount entry as
     attributes accessible via the attribute name.
+    Object will provides different set of attributes according to different data
+    sources.
 
-    Attributes
-        mount_id (str): Unique identifier of the mount
-        parent_id (str): Unique identifier of the parent mount
-        major_minor (str): Value of st_dev for files on filesystem
-        root (str): Root of the mount within the filesystem
-        optional_fields (str): Zero or more fields of the form "tag[:value]"
+    Attributes:
+        mount_label (str): Label of this mount entry from command ``/bin/mount``
+        fs_freq (str): fs_freq of this mount entry from file ``/proc/mounts``
+        fs_passno (str): fs_passno of this mount entry from file ``/proc/mounts``
+        mount_id (str): Unique identifier of the mount from file ``/proc/self/mountinfo``
+        parent_id (str): Unique identifier of the parent mount from file ``/proc/self/mountinfo``
+        major_minor (str): Value of st_dev for files on filesystem from file ``/proc/self/mountinfo``
+        root (str): Root of the mount within the filesystem from file ``/proc/self/mountinfo``
+        optional_fields (str): Zero or more fields of the form "tag[:value]" from file ``/proc/self/mountinfo``
+        mount_clause_binmount (str): Full raw string from command ``/bin/mount``
+        mount_clause_procmounts (str): Full raw string from file ``/proc/mounts``
+        mount_clause_mountinfo (str): Full raw string from file ``/proc/self/mountinfo``
 
     For instance, the major:minor number ``253:4`` could be accessed as
     ``mnt_row_info.major_minor`` with the value ``253:4``.
-
-    The ``in`` operator could be used to determine if an option is present before direct accessing.
     """
     pass
 
 
 class MountEntry(AttributeAsDict):
     """
-    An object representing an mount entry of ``mount`` command or
-    ``/proc/mounts`` file.  Each entry contains below fixed attributes:
+    An object representing an mount entry of ``mount`` command, ``/proc/mounts``
+    or ``/proc/self/mountinfo`` file. Each entry contains below attributes:
 
     Attributes:
         mount_source(str): Name of filesystem of mounted device
@@ -115,18 +125,15 @@ class MountEntry(AttributeAsDict):
         mount_label (str): Optional label of this mount entry, an empty string by default
         mount_addtlinfo (MountAddtlInfo): Additional mount information as :class:`MountAddtlInfo`
         mount_clause (str): Full raw string from command output
-        filesystem (str): Name of filesystem of mounted device (Deprecated)
+        filesystem (str): Name of filesystem of mounted device (Deprecated, use
+                `mount_source` instead)
     """
-
-    def __init__(self, data=None):
-        data = {} if data is None else data
-        for k, v in data.items():
-            setattr(self, k, v)
+    pass
 
 
 class MountedFileSystems(CommandParser):
     """
-    Base Class for :class:`Mount` and :class:`ProcMounts`.
+    Base Class for :class:`Mount`, :class:`ProcMounts` and :class:`MountInfo`.
 
     Attributes:
         rows (list): List of :class:`MountEntry` objects for each row of the
@@ -250,7 +257,8 @@ class Mount(MountedFileSystems):
             mount['mount_clause'] = line
             # Get the mounted filesystem by checking the ' on '
             line_sp = _customized_split(line, line, sep=' on ')
-            mount['filesystem'] = line_sp[0]
+            mount['mount_source'] = line_sp[0]
+            mount['filesystem'] = mount['mount_source']  # compatible for deprecation
             # Get the mounted point by checking the last ' type ' before the last '('
             mnt_pt_sp = _customized_split(raw=line, l=line_sp[1], sep=' (', reverse=True)
             line_sp = _customized_split(raw=line, l=mnt_pt_sp[0], sep=' type ', reverse=True)
