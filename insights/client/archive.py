@@ -44,8 +44,14 @@ class InsightsArchive(object):
         # we don't really need this anymore...
         self.archive_tmp_dir = tempfile.mkdtemp(prefix='/var/tmp/')
 
+        # We should not hint the hostname in the archive if it has to be obfuscated
+        if config.obfuscate_hostname:
+            hostname = "localhost"
+        else:
+            hostname = determine_hostname()
+
         self.archive_name = ("insights-%s-%s" %
-                             (determine_hostname(),
+                             (hostname,
                               time.strftime("%Y%m%d%H%M%S")))
 
         # lazy create these, only if needed when certain
