@@ -10,7 +10,7 @@ PATH = '/usr/share/xml/scap/ref_id.xml'
 
 
 @patch("insights.client.apps.compliance.ComplianceClient._assert_oscap_rpms_exist")
-@patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None, compressor='gz')
+@patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None, compressor='gz', obfuscate=False)
 def test_oscap_scan(config, assert_rpms):
     compliance_client = ComplianceClient(config)
     compliance_client._get_inventory_id = lambda: ''
@@ -23,6 +23,134 @@ def test_oscap_scan(config, assert_rpms):
     archive, content_type = compliance_client.oscap_scan()
     assert archive == '/tmp/insights-compliance-test.tar.gz'
     assert content_type == COMPLIANCE_CONTENT_TYPE
+
+
+@patch("insights.client.apps.compliance.ComplianceClient._assert_oscap_rpms_exist")
+@patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None, compressor='gz', obfuscate=True)
+def test_oscap_scan_with_obfuscation(config, assert_rpms, tmpdir):
+    results_file = tmpdir.mkdir('results').join('result.xml')
+    results_file.write("""
+<xml>
+    <TestResult xmlns="http://checklists.nist.gov/xccdf/1.2">
+      <target-address>obfuscate</target-address>
+      <target-facts>
+        <fact name="urn:xccdf:fact:asset:identifier:ipv4" type="string">obfuscate</fact>
+        <fact name="urn:xccdf:fact:asset:identifier:ipv6" type="string">obfuscate</fact>
+      </target-facts>
+    </TestResult>
+    <arf xmlns="http://scap.nist.gov/schema/asset-identification/1.1">
+      <ip-address>
+        <ip-v4>obfuscate</ip-v4>
+      </ip-address>
+      <ip-address>
+        <ip-v6>obfuscate</ip-v6>
+      </ip-address>
+      <mac-address>obfuscate</mac-address>
+    </arf>
+    <oval xmlns="http://oval.mitre.org/XMLSchema/oval-system-characteristics-5">
+      <system-info>
+        <interfaces>
+          <interface>
+            <ip_address>obfuscate</ip_address>
+            <mac_address>obfuscate</mac_address>
+          </interface>
+        </interfaces>
+      </system-info>
+    </oval>
+</xml>
+    """)
+
+    compliance_client = ComplianceClient(config)
+    compliance_client._get_inventory_id = lambda: ''
+    compliance_client.get_initial_profiles = lambda: [{'attributes': {'ref_id': 'foo', 'tailored': False}}]
+    compliance_client.get_profiles_matching_os = lambda: []
+    compliance_client.find_scap_policy = lambda ref_id: '/usr/share/xml/scap/foo.xml'
+    compliance_client._results_file = lambda archive_dir, profile: str(results_file)
+    compliance_client.run_scan = lambda ref_id, policy_xml, output_path, tailoring_file_path: None
+    compliance_client.archive.archive_tmp_dir = '/tmp'
+    compliance_client.archive.archive_name = 'insights-compliance-test'
+    archive, content_type = compliance_client.oscap_scan()
+    assert archive == '/tmp/insights-compliance-test.tar.gz'
+    assert content_type == COMPLIANCE_CONTENT_TYPE
+    obfuscated_results = open(str(results_file)).read()
+    assert '<target-address>obfuscate</target-address>' not in obfuscated_results
+    assert '<fact name="urn:xccdf:fact:asset:identifier:ipv4" type="string">obfuscate</fact>' not in obfuscated_results
+    assert '<fact name="urn:xccdf:fact:asset:identifier:ipv6" type="string">obfuscate</fact>' not in obfuscated_results
+    assert '<ip-v4>obfuscate</ip-v4>' not in obfuscated_results
+    assert '<ip-v6>obfuscate</ip-v6>' not in obfuscated_results
+    assert '<mac-address>obfuscate</mac-address>' not in obfuscated_results
+    assert '<ip_address>obfuscate</ip_address>' not in obfuscated_results
+    assert '<mac_address>obfuscate</mac_address>' not in obfuscated_results
+
+
+@patch("insights.client.apps.compliance.ComplianceClient._assert_oscap_rpms_exist")
+@patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None, compressor='gz', obfuscate=True, obfuscate_hostname=True)
+def test_oscap_scan_with_hostname_obfuscation(config, assert_rpms, tmpdir):
+    results_file = tmpdir.mkdir('results').join('result.xml')
+    results_file.write("""
+<xml>
+    <TestResult xmlns="http://checklists.nist.gov/xccdf/1.2">
+      <target>obfuscate</target>
+      <target-address>obfuscate</target-address>
+      <target-facts>
+        <fact name="urn:xccdf:fact:asset:identifier:fqdn" type="string">obfuscate</fact>
+        <fact name="urn:xccdf:fact:asset:identifier:host_name" type="string">obfuscate</fact>
+      </target-facts>
+    </TestResult>
+    <arf xmlns="http://scap.nist.gov/schema/asset-identification/1.1">
+      <ip-address>
+        <ip-v4>obfuscate</ip-v4>
+      </ip-address>
+      <ip-address>
+        <ip-v6>obfuscate</ip-v6>
+      </ip-address>
+      <mac-address>obfuscate</mac-address>
+    </arf>
+    <oval xmlns="http://oval.mitre.org/XMLSchema/oval-system-characteristics-5">
+      <system_info>
+        <interfaces>
+          <interface>
+            <ip_address>obfuscate</ip_address>
+            <mac_address>obfuscate</mac_address>
+          </interface>
+        </interfaces>
+        <primary_host_name>obfuscate</primary_host_name>
+        <node_name>obfuscate</node_name>
+      </system_info>
+    </oval>
+    <ai xmlns="http://scap.nist.gov/schema/asset-identification/1.1">
+      <hostname>obfuscate</hostname>
+    </ai>
+</xml>
+    """)
+
+    compliance_client = ComplianceClient(config)
+    compliance_client._get_inventory_id = lambda: ''
+    compliance_client.get_initial_profiles = lambda: [{'attributes': {'ref_id': 'foo', 'tailored': False}}]
+    compliance_client.get_profiles_matching_os = lambda: []
+    compliance_client.find_scap_policy = lambda ref_id: '/usr/share/xml/scap/foo.xml'
+    compliance_client._results_file = lambda archive_dir, profile: str(results_file)
+    compliance_client.run_scan = lambda ref_id, policy_xml, output_path, tailoring_file_path: None
+    compliance_client.archive.archive_tmp_dir = '/tmp'
+    compliance_client.archive.archive_name = 'insights-compliance-test'
+    archive, content_type = compliance_client.oscap_scan()
+    assert archive == '/tmp/insights-compliance-test.tar.gz'
+    assert content_type == COMPLIANCE_CONTENT_TYPE
+
+    obfuscated_results = open(str(results_file)).read()
+    assert '<target-address>obfuscate</target-address>' not in obfuscated_results
+    assert '<fact name="urn:xccdf:fact:asset:identifier:fqdn" type="string">obfuscate</fact>' not in obfuscated_results
+    assert '<fact name="urn:xccdf:fact:asset:identifier:host_name" type="string">obfuscate</fact>' not in obfuscated_results
+    assert '<ip-v4>obfuscate</ip-v4>' not in obfuscated_results
+    assert '<ip-v6>obfuscate</ip-v6>' not in obfuscated_results
+    assert '<mac-address>obfuscate</mac-address>' not in obfuscated_results
+    assert '<ip_address>obfuscate</ip_address>' not in obfuscated_results
+    assert '<mac_address>obfuscate</mac_address>' not in obfuscated_results
+    assert '<fqdn>obfuscate</fqdn>' not in obfuscated_results
+    assert '<hostname>obfuscate</hostname>' not in obfuscated_results
+    assert '<target>obfuscate</target>' not in obfuscated_results
+    assert '<primary_host_name>obfuscate</primary_host_name>' not in obfuscated_results
+    assert '<node_name>obfuscate</node_name>' not in obfuscated_results
 
 
 @patch("insights.client.apps.compliance.ComplianceClient._assert_oscap_rpms_exist")
