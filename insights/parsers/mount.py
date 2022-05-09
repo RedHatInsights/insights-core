@@ -46,6 +46,15 @@ from insights import parser, get_active_lines, CommandParser
 
 
 class AttributeAsDict(object):
+    """
+    Set the given key, value pair data as attribute of object.
+    """
+
+    def __init__(self, data=None):
+        data = {} if data is None else data
+        for k, v in data.items():
+            setattr(self, k, v)
+
     def __contains__(self, item):
         return item in self.__dict__
 
@@ -70,10 +79,7 @@ class MountOpts(AttributeAsDict):
 
     The ``in`` operator may be used to determine if an option is present.
     """
-    def __init__(self, data=None):
-        data = {} if data is None else data
-        for k, v in data.items():
-            setattr(self, k, v)
+    pass
 
 
 class MountAddtlInfo(AttributeAsDict):
@@ -87,17 +93,13 @@ class MountAddtlInfo(AttributeAsDict):
         major_minor (str): Value of st_dev for files on filesystem
         root (str): Root of the mount within the filesystem
         optional_fields (str): Zero or more fields of the form "tag[:value]"
-        # super_options (str): Per super block options
 
     For instance, the major:minor number ``253:4`` could be accessed as
     ``mnt_row_info.major_minor`` with the value ``253:4``.
 
     The ``in`` operator could be used to determine if an option is present before direct accessing.
     """
-    def __init__(self, data=None):
-        data = {} if data is None else data
-        for k, v in data.items():
-            setattr(self, k, v)
+    pass
 
 
 class MountEntry(AttributeAsDict):
