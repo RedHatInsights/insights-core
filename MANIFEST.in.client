@@ -1,5 +1,6 @@
 include insights/defaults.yaml
 include insights/revoked_playbooks.yaml
+include insights/compliance_obfuscations.yaml
 include insights/NAME
 include insights/VERSION
 include insights/COMMIT
