@@ -159,6 +159,11 @@ capsule1.test.com
 capsule2.test.com
 """
 
+SATELLITE_CAPSULES_WITH_BACKGROUND_DOWNLOADPOLICY_2 = """
+name
+Last login: Sun May  8 01:51:06 EDT 2022
+"""
+
 SATELLITE_REPOS_INFO = """
 id,name,url,download_policy
 2,Red Hat Satellite Tools 6.8 for RHEL 7 Server RPMs x86_64,,on_demand
@@ -286,6 +291,9 @@ def test_satellite_qulified_capsules():
     capsules = satellite_postgresql_query.SatelliteQualifiedCapsules(context_wrap(SATELLITE_CAPSULES_WITH_BACKGROUND_DOWNLOADPOLICY))
     assert len(capsules) == 2
     assert capsules[0]['name'] == 'capsule1.test.com'
+
+    with pytest.raises(SkipException):
+        satellite_postgresql_query.SatelliteQualifiedCapsules(context_wrap(SATELLITE_CAPSULES_WITH_BACKGROUND_DOWNLOADPOLICY_2))
 
 
 def test_satellite_qulified_repos():
