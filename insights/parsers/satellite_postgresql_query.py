@@ -72,7 +72,10 @@ class SatellitePostgreSQLQuery(CommandParser, list):
         if not self.columns:
             raise NotImplementedError("Please override the columns attribute.")
         start_index = calc_offset(content, self.columns, require_all=True)
-        valid_lines = content[start_index:]
+        if 'Last login:' in content[-1]:
+            valid_lines = content[start_index:-1]
+        else:
+            valid_lines = content[start_index:]
         reader = DictReader(os.linesep.join(valid_lines).splitlines(True))
         for row in reader:
             self.append(row)
