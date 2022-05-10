@@ -168,6 +168,14 @@ No such file or directory
 adsf
 """
 
+SSSD_LISTINGS = """
+/var/log:
+total 20
+-rw-r--r--.  1 root   domain users@CR.LOCAL        36548 Jan 13 10:43 Xorg.1.log
+-rw-r--r--.  1 root   domain users@CR.LOCAL        28245 Jan 13 10:38 Xorg.1.log.old
+-rw-------.  1 root   root                         52756 Jun 28 10:26 X.log
+"""
+
 
 def test_parse_selinux():
     results = parse(SELINUX_DIRECTORY.splitlines(), "/boot")
@@ -312,3 +320,10 @@ def test_rhel8_selinux():
     assert res["date"] == "Apr  8 16:41"
     assert res["name"] == "abcd-efgh-ijkl-mnop"
     assert res["dir"] == "/var/lib/nova/instances"
+
+
+def test_sssd_listing():
+    results = parse(SSSD_LISTINGS.splitlines(), "/var/log")
+    assert len(results) == 1
+    assert results["/var/log"]["entries"]['Xorg.1.log']['group'] == "domain users@CR.LOCAL"
+    assert len(results["/var/log"]["entries"]) == 3

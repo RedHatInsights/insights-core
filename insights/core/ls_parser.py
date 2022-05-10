@@ -139,6 +139,21 @@ def parse_rhel8_selinux(parts):
     return result
 
 
+def parse_sssd(parts):
+    links, owner, group1, group2, last = parts
+    size, rest = last.split(None, 1)
+    result = {
+        "links": int(links),
+        "owner": owner,
+        "group": group1 + " " + group2,
+        "size": int(size),
+        "date": rest[:12],
+        "name": rest[13:]
+    }
+
+    return result
+
+
 PASS_KEYS = set(["name", "total"])
 DELAYED_KEYS = ["entries", "files", "dirs", "specials"]
 
@@ -195,6 +210,9 @@ class Directory(dict):
                 # always have at least two pieces separated by ':'.
                 if ":" in line.split()[4]:
                     rest = parse_rhel8_selinux(parts[1:])
+                elif "@" in line.split()[4]:
+                    parts = line.split(None, 5)
+                    rest = parse_sssd(parts[1:])
                 else:
                     rest = parse_non_selinux(parts[1:])
             else:
