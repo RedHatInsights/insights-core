@@ -62,18 +62,21 @@ __version__ = "2.1.4"
 __versionTime__ = "13 May 2016 18:25 UTC"
 __author__ = "Paul McGuire <ptmcg@users.sourceforge.net>"
 
-import string
-from weakref import ref as wkref
 import copy
-import sys
-import warnings
+import pprint
 import re
 import sre_constants
-import collections
-import pprint
-import functools
-import itertools
+import string
+import sys
 import traceback
+import warnings
+
+from weakref import ref as wkref
+
+try:
+    from six.moves import collections_abc
+except ImportError:
+    import collections as collections_abc
 
 #~ sys.stderr.write( "testing pyparsing module, version %s, %s\n" % (__version__,__versionTime__ ) )
 
@@ -711,7 +714,7 @@ class ParseResults(object):
     def __dir__(self):
         return (dir(type(self)) + list(self.keys()))
 
-collections.MutableMapping.register(ParseResults)
+collections_abc.MutableMapping.register(ParseResults)
 
 def col (loc,strg):
     """Returns current column within a string, counting newlines as line separators.
@@ -2403,7 +2406,7 @@ class ParseExpression(ParserElement):
 
         if isinstance( exprs, basestring ):
             self.exprs = [ Literal( exprs ) ]
-        elif isinstance( exprs, collections.Sequence ):
+        elif isinstance(exprs, collections_abc.Sequence):
             # if sequence of strings provided, wrap with Literal
             if all(isinstance(expr, basestring) for expr in exprs):
                 exprs = map(Literal, exprs)
@@ -3437,7 +3440,7 @@ def oneOf( strs, caseless=False, useRegex=True ):
     symbols = []
     if isinstance(strs,basestring):
         symbols = strs.split()
-    elif isinstance(strs, collections.Sequence):
+    elif isinstance(strs, collections_abc.Sequence):
         symbols = list(strs[:])
     elif isinstance(strs, _generatorType):
         symbols = list(strs)
