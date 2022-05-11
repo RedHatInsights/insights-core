@@ -437,6 +437,7 @@ class DefaultSpecs(Specs):
         "/etc/opt/rh/rh-mongodb34/mongod.conf"
     ])
     mount = simple_command("/bin/mount")
+    mountinfo = simple_file("/proc/self/mountinfo")
     mounts = simple_file("/proc/mounts")
     mssql_api_assessment = simple_file("/var/opt/mssql/log/assessments/assessment-latest")
     mssql_conf = simple_file("/var/opt/mssql/mssql.conf")

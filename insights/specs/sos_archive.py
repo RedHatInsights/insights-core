@@ -159,6 +159,7 @@ class SosSpecs(Specs):
     modinfo_all = glob_file("sos_commands/kernel/modinfo_*")
     mokutil_sbstate = simple_file("sos_commands/boot/mokutil_--sb-state")
     mount = simple_file("sos_commands/filesys/mount_-l")
+    mountinfo = simple_file("proc/self/mountinfo")
     mounts = simple_file("/proc/mounts")
     mlx4_port = glob_file("/sys/bus/pci/devices/*/mlx4_port[0-9]")
     multipath__v4__ll = first_file(["sos_commands/multipath/multipath_-v4_-ll", "sos_commands/devicemapper/multipath_-v4_-ll"])
