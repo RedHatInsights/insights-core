@@ -20,7 +20,7 @@ See the nox documentation for more info:
     https://nox.thea.codes/en/stable/index.html
 
 If you need to install multiple Python versions and don't
-want to install via RPM, check out Pyvenv:
+want to install via RPM, check out Pyenv:
 
     https://github.com/pyenv/pyenv
 """
