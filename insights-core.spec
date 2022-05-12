@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.272
+Version:        3.0.273
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,21 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu May 12 2022 Sachin Patil <psachin@redhat.com> 3.0.273-1
+- feat: RHEL 8.6 is GA (#3409) (xiangceliu@redhat.com)
+- Add parser for /proc/self/mountinfo and new combiner mounts (#3398)
+  (xiaoxwan@redhat.com)
+- fix: Deprecation warnings and removal of collections (#3407)
+  (rblakley@redhat.com)
+- fixes: the last login time is considered as DB query result (#3404)
+  (44796653+huali027@users.noreply.github.com)
+- feat: RHICOMPL-2450 implemented OpenSCAP result obfuscation (#3349)
+  (skateman@users.noreply.github.com)
+- Feat: Add spec and parser for 'nginx_log' (#3402) (rahulxsh@gmail.com)
+- Add parser bdi_read_ahead_kb for '/sys/class/bdi/*/read_ahead_kb' files
+  (#3391) (xiaoxwan@redhat.com)
+- Fix failing malware-detection tests (#3400) (mhuth@redhat.com)
+
 * Thu Apr 28 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.272-1
 - Feat: Add spec and parser for 'containers_policy' (#3394)
   (39508521+shlao@users.noreply.github.com)
