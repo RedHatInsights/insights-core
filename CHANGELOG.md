@@ -2,6 +2,17 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.273](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.273) (2022-05-12)
+
+- feat: RHEL 8.6 is GA ([PR 3409](https://github.com/RedHatInsights/insights-core/pull/3409))
+- Add parser for /proc/self/mountinfo and new combiner mounts ([PR 3398](https://github.com/RedHatInsights/insights-core/pull/3398))
+- fix: Deprecation warnings and removal of collections ([PR 3407](https://github.com/RedHatInsights/insights-core/pull/3407))
+- fixes: the last login time is considered as DB query result ([PR 3404](https://github.com/RedHatInsights/insights-core/pull/3404))
+- feat: RHICOMPL-2450 implemented OpenSCAP result obfuscation ([PR 3349](https://github.com/RedHatInsights/insights-core/pull/3349))
+- Feat: Add spec and parser for 'nginx_log' ([PR 3402](https://github.com/RedHatInsights/insights-core/pull/3402))
+- Add parser bdi_read_ahead_kb for '/sys/class/bdi/*/read_ahead_kb' files ([PR 3391](https://github.com/RedHatInsights/insights-core/pull/3391))
+- Fix failing malware-detection tests ([PR 3400](https://github.com/RedHatInsights/insights-core/pull/3400))
+
 ## [insights-core-3.0.272](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.272) (2022-04-28)
 
 - Feat: Add spec and parser for 'containers_policy' ([PR 3394](https://github.com/RedHatInsights/insights-core/pull/3394))
