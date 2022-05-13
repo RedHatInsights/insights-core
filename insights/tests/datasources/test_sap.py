@@ -7,7 +7,7 @@ from insights.parsers.hostname import Hostname as HostnameParser
 from insights.parsers.saphostctrl import SAPHostCtrlInstances
 from insights.combiners.sap import Sap
 from insights.combiners.hostname import Hostname
-from insights.combiners.tests.test_sap import (
+from insights.tests.combiners.test_sap import (
         SAPHOSTCTRL_HOSTINSTANCES_R_CASE,
         SAPHOSTCTRL_HOSTINSTANCES_GOOD, HOSTNAME1)
 from insights.specs.datasources.sap import (
