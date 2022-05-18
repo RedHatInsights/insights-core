@@ -11,6 +11,7 @@ UNAME1 = "Linux foo.example.com 2.6.32-504.el6.x86_64 #1 SMP Tue Sep 16 01:56:35
 UNAME2 = "Linux rhel7box 3.10.0-229.el7.x86_64 #1 SMP Mon Mar 3 13:32:45 EST 2014 x86_64 x86_64 x86_64 GNU/Linux"
 UNAME3 = "Linux map1a 2.6.18-53.el5PAE #1 SMP Wed Oct 10 16:48:18 EDT 2007 i686 i686 i386 GNU/Linux"
 UNAME4 = "Linux cvlvtsmsrv01 3.10.0-229.el7.x86_64 #1 SMP Thu Jan 29 18:37:38 EST 2015 x86_64 x86_64 x86_64 GNU/Linux"
+UNAME_ALT = "Linux cvlvtsmsrv01 4.11.0-44.el7.x86_64 #1 SMP Thu Jan 29 18:37:38 EST 2015 x86_64 x86_64 x86_64 GNU/Linux"
 UNAME4_DEBUG = "Linux cvlvtsmsrv01 3.10.0-229.el7.x86_64.debug #1 SMP Thu Jan 29 18:37:38 EST 2015 x86_64 x86_64 x86_64 GNU/Linux"
 UNAME5 = "Linux cvlvtsmsrv01 2.6.32-504.8.2.bgq.el6.x86_64 #1 SMP Thu Jan 29 18:37:38 EST 2015 x86_64 x86_64 x86_64 GNU/Linux"
 UNAME_RT_1 = "Linux localhost.localdomain 2.6.24.7-101.el5rt.x86_64 #1 SMP PREEMPT RT Thu Oct 29 21:54:23 EDT 2015 x86_64 x86_64 x86_64 GNU/Linux"
@@ -55,6 +56,7 @@ def test_uname():
     uname3 = uname.Uname(context_wrap(UNAME3))
     uname4 = uname.Uname(context_wrap(UNAME4))
     uname4_debug = uname.Uname(context_wrap(UNAME4_DEBUG))
+    uname_alt = uname.Uname(context_wrap(UNAME_ALT))
     uname5 = uname.Uname(context_wrap(UNAME5))
     uname6 = uname.Uname(context_wrap(UNAME_BLANK_LINE))
     uname7 = uname.Uname(context_wrap(UNAME_FOREMAN_DEBUG))
@@ -85,6 +87,9 @@ def test_uname():
 
     # Test that the debug kernel returns True
     assert uname4_debug.debug_kernel is True
+
+    # Test kernel-alt pkgs
+    assert uname_alt.release_tuple == (7, 4, "alt")
 
     # Test the equality and inequality operators
     assert uname1 != uname2
