@@ -44,6 +44,13 @@ Configuration setting "activation/thin_check_executable" unknown.
 Configuration setting "activation/thin_check_options" unknown.
 """.strip()
 
+CONTENT_WITH_EXTRA_LOCK_TIPS = """
+WARNING: locking_type (0) is deprecated, using --nolocking.
+WARNING: File locking is disabled.
+Reading VG shared_vg1 without a lock.
+LVM2_VG_FMT='lvm2'|LVM2_VG_UUID='V1AMDw-e9x6-AdCq-p3Hr-6cYn-otra-ducLAc'|LVM2_VG_NAME='rhel'|LVM2_VG_ATTR='wz--n-'|LVM2_VG_PERMISSIONS='writeable'|LVM2_VG_EXTENDABLE='extendable'|LVM2_VG_EXPORTED=''|LVM2_VG_AUTOACTIVATION='enabled'|LVM2_VG_PARTIAL=''|LVM2_VG_ALLOCATION_POLICY='normal'|LVM2_VG_CLUSTERED=''|LVM2_VG_SHARED=''|LVM2_VG_SIZE='<29.00g'|LVM2_VG_FREE='0 '|LVM2_VG_SYSID=''|LVM2_VG_SYSTEMID=''|LVM2_VG_LOCK_TYPE=''|LVM2_VG_LOCK_ARGS=''|LVM2_VG_EXTENT_SIZE='4.00m'|LVM2_VG_EXTENT_COUNT='7423'|LVM2_VG_FREE_COUNT='0'|LVM2_MAX_LV='0'|LVM2_MAX_PV='0'|LVM2_PV_COUNT='1'|LVM2_VG_MISSING_PV_COUNT='0'|LVM2_LV_COUNT='2'|LVM2_SNAP_COUNT='0'|LVM2_VG_SEQNO='3'|LVM2_VG_TAGS=''|LVM2_VG_PROFILE=''|LVM2_VG_MDA_COUNT='1'|LVM2_VG_MDA_USED_COUNT='1'|LVM2_VG_MDA_FREE='507.50k'|LVM2_VG_MDA_SIZE='1020.00k'|LVM2_VG_MDA_COPIES='unmanaged'
+"""
+
 
 def test_find_warnings():
     data = [l for l in lvm.find_warnings(WARNINGS_CONTENT.splitlines())]
@@ -79,3 +86,11 @@ def test_vgsheading_warnings():
     assert len(result.warnings) == 6
     assert 'Configuration setting "activation/thin_check_executable" unknown.' in result.warnings
     assert 'WARNING: Locking disabled. Be careful! This could corrupt your metadata.' in result.warnings
+
+
+def test_vgs_with_extra_tips():
+    result = lvm.Vgs(context_wrap(CONTENT_WITH_EXTRA_LOCK_TIPS))
+    assert result is not None
+    assert len(result.data.get('warnings')) == 3
+    assert 'Reading VG shared_vg1 without a lock.' in result.data.get('warnings')
+    assert len(result.data.get('content')) == 1
