@@ -145,7 +145,7 @@ class ComplianceClient:
         return version
 
     def os_major_version(self):
-        return findall("^[6-8]", self.os_release())[0]
+        return findall("^[6-9]", self.os_release())[0]
 
     def os_minor_version(self):
         return findall("\d+$", self.os_release())[0]
