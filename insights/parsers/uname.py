@@ -555,7 +555,14 @@ class Uname(CommandParser):
 
     @property
     def release_tuple(self):
-        return tuple(map(int, self.data["rhel_release"]))
+        rel = []
+        for v in self.data['rhel_release']:
+            try:
+                rel.append(int(v))
+            except ValueError:
+                rel.append(v)
+
+        return tuple(rel)
 
     @property
     def redhat_release(self):
