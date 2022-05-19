@@ -22,7 +22,9 @@ import pkgutil
 import os
 import sys
 import yaml
+
 from collections import defaultdict
+from contextlib import contextmanager
 
 from .core import Scannable, LogFileOutput, Parser, IniConfigFile  # noqa: F401
 from .core import FileListing, LegacyItemAccess, SysconfigOptions  # noqa: F401
@@ -65,6 +67,24 @@ def get_nvr():
                                 package_info["RELEASE"])
 
 
+@contextmanager
+def get_pool(parallel, prefix, kwargs):
+    """
+    Yields:
+        a ThreadPoolExecutor if parallel is True and `concurrent.futures` exists.
+        `None` otherwise.
+    """
+    if parallel:
+        try:
+            from concurrent.futures import ThreadPoolExecutor
+            with ThreadPoolExecutor(thread_name_prefix=prefix, **kwargs) as pool:
+                yield pool
+        except ImportError:
+            yield None
+    else:
+        yield None
+
+
 RULES_STATUS = {}
 """
 Mapping of dictionaries containing nvr and commitid for each rule repo included
@@ -85,7 +105,7 @@ def add_status(name, nvr, commit=None):
 add_status(package_info["NAME"], get_nvr(), package_info["COMMIT"])
 
 
-def process_dir(broker, root, graph, context, inventory=None):
+def process_dir(broker, root, graph, context, inventory=None, parallel=False):
     ctx, broker = initialize_broker(root, context=context, broker=broker)
     log.debug("Processing %s with %s" % (root, ctx))
 
@@ -95,40 +115,53 @@ def process_dir(broker, root, graph, context, inventory=None):
         return process_cluster(graph, archives, broker=broker, inventory=inventory)
 
     graph = dict((k, v) for k, v in graph.items() if k in dr.COMPONENTS[dr.GROUPS.single])
-    broker = dr.run(graph, broker=broker)
+    if parallel:
+        with get_pool(parallel, "insights-run-pool", {"max_workers": None}) as pool:
+            broker = dr.run_all(graph, broker, pool)
+    else:
+        broker = dr.run(graph, broker=broker)
     return broker
 
 
-def _run(broker, graph=None, root=None, context=None, inventory=None):
+def _run(broker, graph=None, root=None, context=None, inventory=None, parallel=False):
     """
-    run is a general interface that is meant for stand alone scripts to use
+    run is a general interface that is meant for stand-alone scripts to use
     when executing insights components.
 
     Args:
-        root (str): None will causes a host collection in which command and
+        broker (Broker): Optionally pass a broker to use for evaluation. One is
+            created by default, but it's often useful to seed a broker with an
+            initial dependency.
+        graph (function or class): The component to execute. Will only execute
+            the component and its dependency graph. If None, all components with
+            met dependencies will execute.
+        root (str): None will cause a host collection in which command and
             file specs are run. A directory or archive path will cause
             collection from the directory or archive, and only file type specs
             or those that depend on `insights.core.context.HostArchiveContext`
             will execute.
-        component (function or class): The component to execute. Will only execute
-            the component and its dependency graph. If None, all components with
-            met dependencies will execute.
+        context (obj): The execution context that's set.
+        inventory (str): Path to inventory file.
+        parallel (bool): Boolean as to weather to use parallel execution or not.
 
     Returns:
         broker: object containing the result of the evaluation.
     """
-
     if not root:
         context = context or HostContext
         broker[context] = context()
         graph = dict((k, v) for k, v in graph.items() if k in dr.COMPONENTS[dr.GROUPS.single])
-        return dr.run(graph, broker=broker)
+        if parallel:
+            with get_pool(parallel, "insights-run-pool", {"max_workers": None}) as pool:
+                dr.run_all(graph, broker, pool)
+        else:
+            return dr.run(graph, broker=broker)
 
     if os.path.isdir(root):
-        return process_dir(broker, root, graph, context, inventory=inventory)
+        return process_dir(broker, root, graph, context, inventory=inventory, parallel=parallel)
     else:
         with extract(root) as ex:
-            return process_dir(broker, ex.tmp_dir, graph, context, inventory=inventory)
+            return process_dir(broker, ex.tmp_dir, graph, context, inventory=inventory, parallel=parallel)
 
 
 def load_default_plugins():
@@ -244,7 +277,6 @@ def run(component=None, root=None, print_summary=False,
     load_default_plugins()
 
     args = None
-    formatter = None
     formatters = None
     if print_summary:
         import argparse
@@ -267,6 +299,7 @@ def run(component=None, root=None, print_summary=False,
         p.add_argument("--context", help="Execution Context. Defaults to HostContext if an archive isn't passed.")
         p.add_argument("--color", default="auto", choices=["always", "auto", "never"], metavar="[=WHEN]",
                        help="Choose if and how the color encoding is outputted. When is 'always', 'auto', or 'never'.")
+        p.add_argument("--parallel", help="Execute rules in parallel.", action="store_true")
 
         class Args(object):
             pass
@@ -366,23 +399,32 @@ def run(component=None, root=None, print_summary=False,
             for formatter in formatters:
                 formatter.preprocess(broker)
 
-            if args and args.bare:
-                broker = dr.run(graph, broker=broker)
+            if args:
+                if args.bare:
+                    broker = dr.run(graph, broker=broker)
+                else:
+                    broker = _run(broker, graph, root, context=context, inventory=inventory, parallel=args.parallel)
             else:
                 broker = _run(broker, graph, root, context=context, inventory=inventory)
 
             for formatter in formatters:
                 formatter.postprocess(broker)
         elif print_component:
-            if args and args.bare:
-                broker = dr.run(graph, broker=broker)
+            if args:
+                if args.bare:
+                    broker = dr.run(graph, broker=broker)
+                else:
+                    broker = _run(broker, graph, root, context=context, inventory=inventory, parallel=args.parallel)
             else:
                 broker = _run(broker, graph, root, context=context, inventory=inventory)
 
             broker.print_component(print_component)
         else:
-            if args and args.bare:
-                broker = dr.run(graph, broker=broker)
+            if args:
+                if args.bare:
+                    broker = dr.run(graph, broker=broker)
+                else:
+                    broker = _run(broker, graph, root, context=context, inventory=inventory, parallel=args.parallel)
             else:
                 broker = _run(broker, graph, root, context=context, inventory=inventory)
 

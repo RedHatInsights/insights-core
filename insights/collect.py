@@ -8,7 +8,6 @@ runs all datasources in ``insights.specs.Specs`` and
 ``insights.specs.Specs``.
 """
 from __future__ import print_function
-from contextlib import contextmanager
 import argparse
 import logging
 import os
@@ -17,7 +16,7 @@ import yaml
 
 from datetime import datetime
 
-from insights import apply_configs, apply_default_enabled, dr
+from insights import apply_configs, apply_default_enabled, dr, get_pool
 from insights.core import blacklist, filters
 from insights.core.serde import Hydration
 from insights.util import fs
@@ -317,25 +316,6 @@ def create_archive(path, remove_path=True):
     return archive_path
 
 
-@contextmanager
-def get_pool(parallel, kwargs):
-    """
-    Yields:
-        a ThreadPoolExecutor if parallel is True and `concurrent.futures` exists.
-        `None` otherwise.
-    """
-
-    if parallel:
-        try:
-            from concurrent.futures import ThreadPoolExecutor
-            with ThreadPoolExecutor(thread_name_prefix="insights-collector-pool", **kwargs) as pool:
-                yield pool
-        except ImportError:
-            yield None
-    else:
-        yield None
-
-
 def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=None, client_timeout=None):
     """
     This is the collection entry point. It accepts a manifest, a temporary
@@ -413,7 +393,7 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
 
     parallel = run_strategy.get("name") == "parallel"
     pool_args = run_strategy.get("args", {})
-    with get_pool(parallel, pool_args) as pool:
+    with get_pool(parallel, "insights-collector-pool", pool_args) as pool:
         h = Hydration(output_path, pool=pool)
         broker.add_observer(h.make_persister(to_persist))
         dr.run_all(broker=broker, pool=pool)
