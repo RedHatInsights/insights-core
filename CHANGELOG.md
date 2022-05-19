@@ -2,6 +2,15 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.274](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.274) (2022-05-19)
+
+- Handle the value in kernel-alt pkg ([PR 3415](https://github.com/RedHatInsights/insights-core/pull/3415))
+- feat: RHEL 9.0 is GA ([PR 3416](https://github.com/RedHatInsights/insights-core/pull/3416))
+- fixes: exception with "Reading VG shared_vg1 without a lock" ([PR 3412](https://github.com/RedHatInsights/insights-core/pull/3412))
+- Add os major version 9 for Compliance ([PR 3413](https://github.com/RedHatInsights/insights-core/pull/3413))
+- Update CI/CD to include Python 3.9 ([PR 3410](https://github.com/RedHatInsights/insights-core/pull/3410))
+- Move tests in code directories to tests dir ([PR 3261](https://github.com/RedHatInsights/insights-core/pull/3261))
+
 ## [insights-core-3.0.273](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.273) (2022-05-12)
 
 - feat: RHEL 8.6 is GA ([PR 3409](https://github.com/RedHatInsights/insights-core/pull/3409))
