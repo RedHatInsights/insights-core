@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.273
+Version:        3.0.274
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,18 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu May 19 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.274-1
+- Handle the value in kernel-alt pkg (#3415) (psachin@redhat.com)
+- feat: RHEL 9.0 is GA (#3416) (xiangceliu@redhat.com)
+- fixes: exception with "Reading VG shared_vg1 without a lock" (#3412)
+  (44796653+huali027@users.noreply.github.com)
+- Add os major version 9 for Compliance (#3413)
+  (87209745+marleystipich2@users.noreply.github.com)
+- Update CI/CD to include Python 3.9 (#3410)
+  (20520336+bfahr@users.noreply.github.com)
+- Move tests in code directories to tests dir (#3261)
+  (20520336+bfahr@users.noreply.github.com)
+
 * Thu May 12 2022 Sachin Patil <psachin@redhat.com> 3.0.273-1
 - feat: RHEL 8.6 is GA (#3409) (xiangceliu@redhat.com)
 - Add parser for /proc/self/mountinfo and new combiner mounts (#3398)
