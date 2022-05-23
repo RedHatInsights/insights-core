@@ -16,6 +16,10 @@ PROC_KEYS = """
 3ce56aea I--Q---   5 perm 3f030000  1000  1000 keyring  _ses: 1
 """.strip()
 
+PROC_KEYS_INVALID = """
+unknow_case
+""".strip()
+
 PROC_KEYS_EMPTY = """
 """.strip()
 
@@ -40,6 +44,10 @@ def test_empty():
     with pytest.raises(SkipException) as e:
         ProcKeys(context_wrap(PROC_KEYS_EMPTY))
     assert 'No Contents' in str(e)
+
+    with pytest.raises(SkipException) as e:
+        ProcKeys(context_wrap(PROC_KEYS_INVALID))
+    assert "Invalid Contents: unknow_case" in str(e)
 
 
 def test_systemd_examples():
