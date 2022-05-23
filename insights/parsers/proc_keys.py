@@ -18,27 +18,28 @@ class ProcKeys(Parser, list):
 
     This file exposes a list of the keys for which the reading thread has view
     permission, providing various information about each key. The fields shown
-    in each line of this file contains below attributes:
+    in each line of this file contains below attributes::
 
-    ID (string): The ID of the key, expressed in hexadecimal.
-    Flags (string):         A set of flags describing the state of the key
-    Usage (string):         The count of the number of kernel credential structures
-                            that are pinning the key.
-    Timeout (string):       The amount of time until the key will expire (weeks, days,
-                            hours, minutes, and seconds). The string perm here means
-                            that the key is permanent (no timeout). The string expd
-                            means that the key has already expired, but has not yet
-                            been garbage collected.
-    Permissions (string):   The key permissions, expressed as four hexadecimal bytes
-                            containing, from left to right, the possessor, user, group,
-                            and other permissions.
-    UID (string):           The user ID of the key owner.
-    GID (string):           The group ID of the key.
-    Type (string) :         The key type.
-    Description (string)    The key description (name). For most key types, it has the
-                            form name[: extra-info]. (The name subfield is the key's
-                            description (name). The optional extra-info field provides
-                            some further information about the key.)
+        ID (string):            The ID of the key, expressed in hexadecimal.
+        Flags (string):         A set of flags describing the state of the key
+        Usage (string):         The count of the number of kernel credential structures
+                                that are pinning the key.
+        Timeout (string):       The amount of time until the key will expire (weeks, days,
+                                hours, minutes, and seconds). The string perm here means
+                                that the key is permanent (no timeout). The string expd
+                                means that the key has already expired, but has not yet
+                                been garbage collected.
+        Permissions (string):   The key permissions, expressed as four hexadecimal bytes
+                                containing, from left to right, the possessor, user, group,
+                                and other permissions.
+        UID (string):           The user ID of the key owner.
+        GID (string):           The group ID of the key.
+        Type (string) :         The key type.
+        Description (string)    The key description (name). For most key types, it has the
+                                form name[: extra-info]. (The name subfield is the key's
+                                description (name). The optional extra-info field provides
+                                some further information about the key.)
+
 
     Sample content of '/proc/keys' file looks like::
 
