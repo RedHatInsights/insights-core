@@ -1,7 +1,8 @@
 from insights.parsers.proc_keys import ProcKeys
-from insights.parsers import proc_keys
+from insights.parsers import proc_keys, SkipException
 from insights.tests import context_wrap
 import doctest
+import pytest
 
 PROC_KEYS = """
 009a2028 I--Q---   1 perm 3f010000  1000  1000 user     krb_ccache:primary: 12
@@ -15,18 +16,30 @@ PROC_KEYS = """
 3ce56aea I--Q---   5 perm 3f030000  1000  1000 keyring  _ses: 1
 """.strip()
 
+PROC_KEYS_EMPTY = """
+""".strip()
+
 
 def test_etc_systemd():
     proc_keys_content = ProcKeys(context_wrap(PROC_KEYS))
-    assert proc_keys_content.data[1]['id'] == '1806c4ba'
-    assert proc_keys_content.data[1]['flags'] == 'I--Q---'
-    assert proc_keys_content.data[1]['usage'] == '1'
-    assert proc_keys_content.data[1]['timeout'] == 'perm'
-    assert proc_keys_content.data[2]['permissions'] == '1f3f0000'
-    assert proc_keys_content.data[2]['uid'] == '1000'
-    assert proc_keys_content.data[2]['gid'] == '65534'
-    assert proc_keys_content.data[2]['type'] == 'keyring'
-    assert proc_keys_content.data[2]['description'] == '_uid_ses.1000: 1'
+    assert proc_keys_content[1]['id'] == '1806c4ba'
+    assert proc_keys_content[1]['flags'] == 'I--Q---'
+    assert proc_keys_content[1]['usage'] == '1'
+    assert proc_keys_content[1]['timeout'] == 'perm'
+    assert proc_keys_content[2]['permissions'] == '1f3f0000'
+    assert proc_keys_content[2]['uid'] == '1000'
+    assert proc_keys_content[2]['gid'] == '65534'
+    assert proc_keys_content[2]['type'] == 'keyring'
+    assert proc_keys_content[2]['description'] == '_uid_ses.1000: 1'
+
+    assert proc_keys_content.search(timeout='perm')[0] == proc_keys_content[0]
+    assert proc_keys_content.search(description__contains='pid')[0] == proc_keys_content[1]
+
+
+def test_empty():
+    with pytest.raises(SkipException) as e:
+        ProcKeys(context_wrap(PROC_KEYS_EMPTY))
+    assert 'No Contents' in str(e)
 
 
 def test_systemd_examples():

@@ -7,12 +7,12 @@ This parser reads the content of ``/proc/keys``.
 """
 
 from insights import Parser, parser
-from insights.parsers import SkipException, get_active_lines
+from insights.parsers import SkipException, keyword_search
 from insights.specs import Specs
 
 
 @parser(Specs.proc_keys)
-class ProcKeys(Parser):
+class ProcKeys(Parser, list):
     """
     Class ``ProcKeys`` parses the content of the ``/proc/keys``.
 
@@ -53,39 +53,56 @@ class ProcKeys(Parser):
     Examples:
         >>> type(proc_keys)
         <class 'insights.parsers.proc_keys.ProcKeys'>
-        >>> proc_keys.data[0]['id']
+        >>> proc_keys[0]['id']
         '009a2028'
-        >>> proc_keys.data[0]['flags']
+        >>> proc_keys[0]['flags']
         'I--Q---'
-        >>> proc_keys.data[0]['usage']
+        >>> proc_keys[0]['usage']
         '1'
-        >>> proc_keys.data[0]['timeout']
+        >>> proc_keys[0]['timeout']
         'perm'
-        >>> proc_keys.data[0]['permissions']
+        >>> proc_keys[0]['permissions']
         '3f010000'
-        >>> proc_keys.data[0]['uid']
+        >>> proc_keys[0]['uid']
         '1000'
-        >>> proc_keys.data[0]['gid']
+        >>> proc_keys[0]['gid']
         '1000'
-        >>> proc_keys.data[0]['type']
+        >>> proc_keys[0]['type']
         'user'
-        >>> proc_keys.data[0]['description']
+        >>> proc_keys[0]['description']
         'krb_ccache:primary: 12'
     """
 
     def parse_content(self, content):
-        content = get_active_lines(content, comment_char="COMMAND>")
 
         if not content:
             raise SkipException("No Contents")
 
-        self.data = []
         column = ['id', 'flags', 'usage', 'timeout', 'permissions', 'uid', 'gid', 'type', 'description']
 
         for line in content:
             line = line.split(None, 8)
             row = [obj for obj in line]
             if column and row and len(column) == len(row):
-                self.data.append(dict(zip(column, row)))
+                self.append(dict(zip(column, row)))
             else:
                 raise SkipException("Invalid Contents")
+
+    def search(self, **kwargs):
+        """
+        Get the sublist containing the keywords by searching the '/proc/keys' list.
+
+        This uses the :py:func:`insights.parsers.keyword_search` function for searching,
+        see its documentation for usage details. If no search parameters are given or does
+        match the search, then nothing will be returned.
+
+        Returns:
+            list: A list of dictionaries of the '/proc/keys' content that match the given search criteria.
+
+        Examples:
+            >>> proc_keys.search(timeout='perm')[0] == proc_keys[0]
+            True
+            >>> proc_keys.search(description__contains='uid')[0] == proc_keys[2]
+            True
+        """
+        return keyword_search(self, **kwargs)
