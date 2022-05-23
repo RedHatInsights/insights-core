@@ -41,7 +41,7 @@ class ProcKeys(Parser, list):
                                 some further information about the key.)
 
 
-    Sample content of '/proc/keys' file looks like::
+    Sample output::
 
         009a2028 I--Q---   1 perm 3f010000  1000  1000 user     krb_ccache:primary: 12
         1806c4ba I--Q---   1 perm 3f010000  1000  1000 keyring  _pid: 2
@@ -93,14 +93,14 @@ class ProcKeys(Parser, list):
 
     def search(self, **kwargs):
         """
-        Get the sublist containing the keywords by searching the '/proc/keys' list.
+        Get the sublist containing the keywords by searching the ``/proc/keys`` list.
 
         This uses the :py:func:`insights.parsers.keyword_search` function for searching,
         see its documentation for usage details. If no search parameters are given or does
         match the search, then nothing will be returned.
 
         Returns:
-            list: A list of dictionaries of the '/proc/keys' content that match the given search criteria.
+            list: A list of dictionaries of the ``/proc/keys`` content that match the given search criteria.
 
         Examples:
             >>> proc_keys.search(timeout='perm')[0] == proc_keys[0]
