@@ -52,7 +52,7 @@ NetworkSysconfig -file ``/etc/sysconfig/network``
 -------------------------------------------------
 
 NfsSysconfig - file ``/etc/sysconfig/nfs``
---------------------------------------------
+------------------------------------------
 
 NtpdSysconfig - file ``/etc/sysconfig/ntpd``
 --------------------------------------------
