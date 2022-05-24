@@ -109,6 +109,9 @@ class ContentProvider(object):
 
     @property
     def path(self):
+        if not isinstance(self.root, str):
+            log.warning("WARNING: root is not a string %s", "root=" + str(self.root))
+            raise dr.SkipComponent()
         return os.path.join(self.root, self.relative_path)
 
     @property
