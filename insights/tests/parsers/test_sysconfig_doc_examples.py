@@ -14,6 +14,7 @@ from insights.parsers.sysconfig import IfCFGStaticRoute
 from insights.parsers.sysconfig import NetworkSysconfig
 from insights.parsers.sysconfig import GrubSysconfig
 from insights.parsers.sysconfig import OracleasmSysconfig
+from insights.parsers.sysconfig import NfsSysconfig
 import doctest
 
 
@@ -191,6 +192,20 @@ ORACLEASM_SCANORDER="dm"
 ORACLEASM_SCANEXCLUDE="sd"
 """.strip()
 
+NFS_SYSCONFIG = """
+# Optional arguments passed to rpc.nfsd. See rpc.nfsd(8)
+RPCNFSDARGS="--rdma=20049"
+# Port rpc.statd should listen on.
+#STATD_PORT=662
+# Enable usage of gssproxy. See gssproxy-mech(8).
+GSS_USE_PROXY="yes"
+# Optional arguments passed to rpc.svcgssd. See rpc.svcgssd(8)
+RPCSVCGSSDARGS=""
+# Optional arguments passed to blkmapd. See blkmapd(8)
+BLKMAPDARGS=""
+RPCNFSDCOUNT=256
+""".strip()
+
 
 def test_sysconfig_doc():
     env = {
@@ -215,6 +230,7 @@ def test_sysconfig_doc():
             'cs_syscfg': CorosyncSysconfig(context_wrap(COROSYNCSYSCONFIG)),
             'conn_info': IfCFGStaticRoute(context_wrap(STATIC_ROUTE_1, CONTEXT_PATH_DEVICE_1)),
             'net_syscfg': NetworkSysconfig(context_wrap(NETWORK_SYSCONFIG)),
+            'nfs_syscfg': NfsSysconfig(context_wrap(NFS_SYSCONFIG)),
             'grub_syscfg': GrubSysconfig(context_wrap(GRUB_SYSCONFIG)),
             'oracleasm_syscfg': OracleasmSysconfig(context_wrap(ORACLEASM_SYSCONFIG))
           }
