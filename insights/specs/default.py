@@ -667,6 +667,7 @@ class DefaultSpecs(Specs):
     sysconfig_kdump = simple_file("etc/sysconfig/kdump")
     sysconfig_libvirt_guests = simple_file("etc/sysconfig/libvirt-guests")
     sysconfig_network = simple_file("etc/sysconfig/network")
+    sysconfig_nfs = simple_file("/etc/sysconfig/nfs")
     sysconfig_ntpd = simple_file("/etc/sysconfig/ntpd")
     sysconfig_oracleasm = simple_file("/etc/sysconfig/oracleasm")
     sysconfig_prelink = simple_file("/etc/sysconfig/prelink")
