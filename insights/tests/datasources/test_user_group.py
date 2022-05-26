@@ -21,9 +21,7 @@ def setup_function(func):
 def test_group_info_list():
     broker = {}
     result = groups(broker)
-    assert len(result) == 2
-    assert 'wheel' in result
-    assert 'mem' in result
+    assert 'wheel mem' in result
 
 
 def test_group_info_no_filter():
