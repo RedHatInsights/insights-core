@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.275](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.275) (2022-05-26)
+
+- feat: New parser ProcKeys for '/proc/keys' file ([PR 3417](https://github.com/RedHatInsights/insights-core/pull/3417))
+- feat: New ceph version and enhance ([PR 3422](https://github.com/RedHatInsights/insights-core/pull/3422))
+- feat: Add spec and parser for file '/etc/sysconfig/nfs' ([PR 3419](https://github.com/RedHatInsights/insights-core/pull/3419))
+
 ## [insights-core-3.0.274](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.274) (2022-05-19)
 
 - Handle the value in kernel-alt pkg ([PR 3415](https://github.com/RedHatInsights/insights-core/pull/3415))
