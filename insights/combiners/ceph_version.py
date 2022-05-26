@@ -9,10 +9,10 @@ The order from most preferred to least preferred is `CephVersion``, ``CephInsigh
 """
 
 from insights import combiner
-from insights.parsers.ceph_version import CephVersion as CephV
+from insights.parsers.ceph_version import (CephVersion as CephV,
+        get_community_version, get_ceph_version)
 from insights.parsers.ceph_insights import CephInsights
 from insights.parsers.ceph_cmd_json_parsing import CephReport
-from insights.core.context import Context
 
 
 @combiner([CephV, CephInsights, CephReport])
@@ -62,20 +62,19 @@ class CephVersion(object):
             self.downstream_release = cv.downstream_release
             self.upstream_version = cv.upstream_version
         elif ci:
-            context = Context(content=ci.data["version"]["full"].strip().splitlines())
-            cv = CephV(context)
-            self.version = cv.version
-            self.major = cv.major
-            self.minor = cv.minor
-            self.is_els = cv.is_els
-            self.downstream_release = cv.downstream_release
-            self.upstream_version = cv.upstream_version
+            community_full = get_community_version(ci.data["version"]["full"].strip())
+            cv = get_ceph_version(community_full)
+            self.version = cv.get('version')
+            self.major = cv.get('major')
+            self.minor = cv.get('minor')
+            self.is_els = cv.get('els', False)
+            self.downstream_release = cv.get('downstream_release')
+            self.upstream_version = cv.get('upstream_version')
         else:
-            context = Context(content=cr["version"].strip().splitlines())
-            cv = CephV(context)
-            self.version = cv.version
-            self.major = cv.major
-            self.minor = cv.minor
-            self.is_els = cv.is_els
-            self.downstream_release = cv.downstream_release
-            self.upstream_version = cv.upstream_version
+            cv = get_ceph_version(cr["version"].strip())
+            self.version = cv.get('version')
+            self.major = cv.get('major')
+            self.minor = cv.get('minor')
+            self.is_els = cv.get('els', False)
+            self.downstream_release = cv.get('downstream_release')
+            self.upstream_version = cv.get('upstream_version')
