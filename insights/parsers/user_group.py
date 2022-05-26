@@ -26,6 +26,7 @@ class GroupInfo(CommandParser, list):
         mem:x:8:
 
     Examples:
+
     >>> type(grp)
     <class 'insights.parsers.user_group.GroupInfo'>
     >>> grp[0]['id']
@@ -66,9 +67,10 @@ class GroupInfo(CommandParser, list):
                   content that match the given search criteria.
 
         Examples:
-            >>> grp.search(name='mem')[0] == grp[1]
-            True
-            >>> grp.search(user_list__contains='admin')[0] == grp[0]
-            True
+
+        >>> grp.search(name='mem')[0] == grp[1]
+        True
+        >>> grp.search(user_list__contains='admin')[0] == grp[0]
+        True
         """
         return keyword_search(self, **kwargs)
