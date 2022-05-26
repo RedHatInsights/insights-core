@@ -669,6 +669,7 @@ class Specs(SpecSet):
     sysconfig_memcached = RegistryPoint()
     sysconfig_mongod = RegistryPoint(multi_output=True)
     sysconfig_network = RegistryPoint()
+    sysconfig_nfs = RegistryPoint()
     sysconfig_ntpd = RegistryPoint()
     sysconfig_oracleasm = RegistryPoint()
     sysconfig_prelink = RegistryPoint()
