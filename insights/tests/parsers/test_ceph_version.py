@@ -94,3 +94,6 @@ def test_ceph_version():
     assert ceph_version_els.minor == "5"
     assert ceph_version_els.is_els
     assert ceph_version_els.downstream_release == "5"
+    assert ceph_version_els.upstream_version['release'] == 10
+    assert ceph_version_els.upstream_version['major'] == 2
+    assert ceph_version_els.upstream_version['minor'] == 10
