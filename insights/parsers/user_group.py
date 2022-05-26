@@ -1,6 +1,6 @@
 """
-Parsers for ``user`` and ``group``
-==================================
+User and Group
+==============
 
 Module for processing the ``user`` and ``group`` of Linux.
 
