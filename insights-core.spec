@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.274
+Version:        3.0.275
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,11 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu May 26 2022 Sachin Patil <psachin@redhat.com> 3.0.275-1
+- feat: New parser ProcKeys for '/proc/keys' file (#3417) (986222045@qq.com)
+- feat: New ceph version and enhance (#3422) (xiangceliu@redhat.com)
+- feat: Add spec and parser for file '/etc/sysconfig/nfs' (#3419) (xiaoxwan@redhat.com)
+
 * Thu May 19 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.274-1
 - Handle the value in kernel-alt pkg (#3415) (psachin@redhat.com)
 - feat: RHEL 9.0 is GA (#3416) (xiangceliu@redhat.com)
