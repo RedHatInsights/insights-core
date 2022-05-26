@@ -11,11 +11,10 @@ documented in https://access.redhat.com/solutions/2045583
 
 """
 
-import re
 from insights import parser, CommandParser
 from insights.parsers import SkipException
 from insights.specs import Specs
-from insights.util import deprecated
+from insights.util import rsplit
 
 # TODO: the following metrics need update timely per:
 # - https://access.redhat.com/solutions/2045583
@@ -70,6 +69,8 @@ community_to_release_map = {
     "12.2.12-115": {'version': "3.3.5", 'major': '3', 'minor': '3', 'downstream_release': '0'},
     "12.2.12-124": {'version': "3.3.6", 'major': '3', 'minor': '3', 'downstream_release': '0'},
     "12.2.12-127": {'version': "3.3.6", 'major': '3', 'minor': '3', 'downstream_release': '0'},
+    "12.2.12-139": {'version': "3.3.7", 'major': '3', 'minor': '3', 'downstream_release': '0', 'els': True},
+    "12.2.12-141": {'version': "3.3.8", 'major': '3', 'minor': '3', 'downstream_release': '0', 'els': True},
     "14.2.4-125": {'version': "4.0", 'major': '4', 'minor': '0', 'downstream_release': '0'},
     "14.2.4-51": {'version': "4.0", 'major': '4', 'minor': '0', 'downstream_release': '0'},
     "14.2.8-50": {'version': "4.1", 'major': '4', 'minor': '1', 'downstream_release': '0'},
@@ -79,6 +80,20 @@ community_to_release_map = {
     "14.2.8-91": {'version': "4.1.1", 'major': '4', 'minor': '1', 'downstream_release': 'async 2'},
     "14.2.8-111": {'version': "4.1.2", 'major': '4', 'minor': '1', 'downstream_release': '0'},
     "14.2.8-115": {'version': "4.1.3", 'major': '4', 'minor': '1', 'downstream_release': '0'},
+    "14.2.11-95": {'version': "4.2", 'major': '4', 'minor': '2', 'downstream_release': '0'},
+    "14.2.11-139": {'version': "4.2", 'major': '4', 'minor': '2', 'downstream_release': 'async'},
+    "14.2.11-147": {'version': "4.2.1", 'major': '4', 'minor': '2', 'downstream_release': '0'},
+    "14.2.11-181": {'version': "4.2.2", 'major': '4', 'minor': '2', 'downstream_release': '0'},
+    "14.2.11-184": {'version': "4.2.2", 'major': '4', 'minor': '2', 'downstream_release': 'async'},
+    "14.2.11-199": {'version': "4.2.3", 'major': '4', 'minor': '2', 'downstream_release': '0'},
+    "14.2.11-208": {'version': "4.2.4", 'major': '4', 'minor': '2', 'downstream_release': '0'},
+    "14.2.22-110": {'version': "4.3", 'major': '4', 'minor': '3', 'downstream_release': '0'},
+    "16.2.0-117": {'version': "5.0", 'major': '5', 'minor': '0', 'downstream_release': '0'},
+    "16.2.0-143": {'version': "5.0.1", 'major': '5', 'minor': '0', 'downstream_release': '0'},
+    "16.2.0-146": {'version': "5.0.3", 'major': '5', 'minor': '0', 'downstream_release': '0'},
+    "16.2.0-152": {'version': "5.0.4", 'major': '5', 'minor': '0', 'downstream_release': '0'},
+    "16.2.7-98": {'version': "5.1", 'major': '5', 'minor': '1', 'downstream_release': '0'},
+    "16.2.7-112": {'version': "5.1.1", 'major': '5', 'minor': '1', 'downstream_release': '0'},
 }
 
 
@@ -113,39 +128,41 @@ class CephVersion(CommandParser):
 
     def parse_content(self, content):
         # Parse Ceph Version Content and get Release, Major, Minor number
-        if not content:
+        if not content or len(content) != 1:
             raise SkipException("Empty Ceph Version Line", content)
-
-        ceph_version_line = content[-1]
-        # re search pattern
-        pattern_community = r'((\d{1,2})\.(\d{1,2})\.((\d{1,2})|x))((\-(\d+)))'
-        community_version_mo = re.search(pattern_community, str(ceph_version_line), 0)
-        if not community_version_mo:
-            raise SkipException("Wrong Format Ceph Version", content)
-
-        community_version = community_version_mo.group(0)
-        release_data = community_to_release_map.get(community_version, None)
-        if not release_data:
-            raise SkipException("No Mapping Release Version. Ceph Release Number is Null", content)
+        community_version = get_community_version(content[0])
+        release_data = get_ceph_version(community_version)
 
         self.version = release_data['version']
         self.major = release_data['major']
         self.minor = release_data['minor']
         self.is_els = release_data.get('els', False)
         self.downstream_release = release_data['downstream_release']
-        self.upstream_version = {
-            "release": int(community_version_mo.group(2)),
-            "major": int(community_version_mo.group(3)),
-            "minor": int(community_version_mo.group(4))
-        }
+        self.upstream_version = release_data['upstream_version']
 
 
-class CephVersionError(Exception):
+def get_community_version(version_full):
     """
-    .. note::
-        This class is deprecated, please use :py:class:`insights.parsers.SkipException` instead.
+    Returns the community version part from the output of ``ceph -v``
     """
+    if any(item not in version_full for item in ['ceph version', '.', '-']):
+        raise SkipException("Wrong Format Ceph Version", version_full)
 
-    def __init__(self, *args, **kwargs):
-        deprecated(CephVersionError, "Use SkipException instead.")
-        super(CephVersionError, self).__init__(*args, **kwargs)
+    return version_full.split()[2]
+
+
+def get_ceph_version(community_full):
+    """
+    Get the release version from the mapping metrics and generate the
+    `upstream_version`.
+    """
+    community_version, _ = rsplit(community_full, '.')
+    release_data = community_to_release_map.get(community_version, None)
+    if not release_data:
+        raise SkipException("No Mapping Release Version", community_version)
+    release_data['upstream_version'] = dict(
+        zip(
+            ['release', 'major', 'minor'],
+            [int(_i) for _i in community_version.split('-')[0].split('.')])
+    )
+    return release_data
