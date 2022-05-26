@@ -31,6 +31,7 @@ else:
 NONCOMPLIANT_STATUS = 2
 COMPLIANCE_CONTENT_TYPE = 'application/vnd.redhat.compliance.something+tgz'
 POLICY_FILE_LOCATION = '/usr/share/xml/scap/ssg/content/'
+SCAP_DATASTREAMS_PATH = '/usr/share/xml/scap/'
 SSG_PACKAGE = 'scap-security-guide'
 REQUIRED_PACKAGES = [SSG_PACKAGE, 'openscap-scanner', 'openscap']
 
@@ -154,14 +155,14 @@ class ComplianceClient:
         return glob("{0}*rhel{1}*.xml".format(POLICY_FILE_LOCATION, self.os_major_version()))
 
     def find_scap_policy(self, profile_ref_id):
-        grepcmd = 'grep ' + profile_ref_id + ' ' + ' '.join(self.profile_files())
+        grepcmd = 'grep -H ' + profile_ref_id + ' ' + ' '.join(self.profile_files())
         if not six.PY3:
             grepcmd = grepcmd.encode()
         rc, grep = call(grepcmd, keep_rc=True)
         if rc:
             logger.error('XML profile file not found matching ref_id {0}\n{1}\n'.format(profile_ref_id, grep))
             return None
-        filenames = findall('/usr/share/xml/scap/.+xml', grep)
+        filenames = findall(SCAP_DATASTREAMS_PATH + '.+xml', grep)
         if not filenames:
             logger.error('No XML profile files found matching ref_id {0}\n{1}\n'.format(profile_ref_id, ' '.join(filenames)))
             exit(constants.sig_kill_bad)
