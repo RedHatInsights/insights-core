@@ -106,6 +106,7 @@ class DefaultSpecs(Specs):
     candlepin_broker = candlepin_broker.candlepin_broker
     candlepin_log = simple_file("/var/log/candlepin/candlepin.log")
     cgroups = simple_file("/proc/cgroups")
+    proc_keys = simple_file("/proc/keys")
     ps_alxwww = simple_command("/bin/ps alxwww")
     ps_aux = simple_command("/bin/ps aux")
     ps_auxcww = simple_command("/bin/ps auxcww")
