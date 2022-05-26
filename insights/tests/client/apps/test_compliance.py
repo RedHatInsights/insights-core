@@ -305,6 +305,39 @@ def test_find_scap_policy(config, call):
     assert compliance_client.find_scap_policy('ref_id') == PATH
 
 
+@patch("insights.client.config.InsightsConfig")
+def test_find_scap_policy_with_one_datastream_file(config, tmpdir):
+    compliance_client = ComplianceClient(config)
+    dir1 = tmpdir.mkdir('scap')
+    file = dir1.join('test_file.xml')
+    file.write("""
+    <xccdf-1.2:Profile id="xccdf_org.ssgproject.content_profile_anssi_bp28_high">
+    </xccdf-1.2:Profile>
+        """)
+    compliance_client.profile_files = lambda: [str(file)]
+    with patch("insights.client.apps.compliance.SCAP_DATASTREAMS_PATH", str(dir1) + "/"):
+        assert compliance_client.find_scap_policy('content_profile_anssi_bp28_high') == file
+
+
+@patch("insights.client.config.InsightsConfig")
+def test_find_scap_policy_with_two_datastream_file(config, tmpdir):
+    compliance_client = ComplianceClient(config)
+    dir1 = tmpdir.mkdir('scap')
+    file1 = dir1.join('test_file1.xml')
+    file1.write("""
+    <xccdf-1.2:Profile id="xccdf_org.ssgproject.content_profile_anssi_bp28_high">
+    </xccdf-1.2:Profile>
+        """)
+    file2 = dir1.join('test_file2.xml')
+    file2.write("""
+    <xccdf-1.2:Profile id="xccdf_org.ssgproject.content_profile_anssi_bp28_high">
+    </xccdf-1.2:Profile>
+        """)
+    compliance_client.profile_files = lambda: [str(file1), str(file2)]
+    with patch("insights.client.apps.compliance.SCAP_DATASTREAMS_PATH", str(dir1) + "/"):
+        assert compliance_client.find_scap_policy('content_profile_anssi_bp28_high') == file1
+
+
 @patch("insights.client.apps.compliance.call", return_value=(1, 'bad things happened'.encode('utf-8')))
 @patch("insights.client.config.InsightsConfig")
 def test_find_scap_policy_not_found(config, call):
