@@ -16,5 +16,5 @@ def groups(broker):
     """
     groups = list(get_filters(Specs.group_info))
     if groups:
-        return ' '.join(groups)
+        return ' '.join(sorted(groups))
     raise SkipComponent
