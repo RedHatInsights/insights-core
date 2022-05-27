@@ -18,7 +18,8 @@ from insights.specs import Specs
 @parser(Specs.group_info)
 class GroupInfo(CommandParser, list):
     """
-    Class to parse the output of ``getent group <groupname>``
+    Class to parse the output of ``getent group <groupname>``. The list of
+    `groupname` is getting from the spec filters specified in rules.
 
     Typical output of the ``getent group <groupname>`` command is::
 
