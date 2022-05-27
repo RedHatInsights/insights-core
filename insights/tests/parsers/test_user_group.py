@@ -33,7 +33,7 @@ def test_ab():
         GroupInfo(context_wrap(GRP_NG))
 
 
-def test_systemd_examples():
+def test_doc_examples():
     env = {
         'grp': GroupInfo(context_wrap(GRP))
     }
