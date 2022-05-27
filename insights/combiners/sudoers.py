@@ -31,8 +31,14 @@ class Sudoers(object):
     """
     def __init__(self, sudoers):
         self.lines = []
+        first = False
         for sdr in sorted(sudoers, key=lambda x: x.file_path):
             self.lines.extend(sdr.lines)
+            if not first:
+                first = True
+                include = sdr.last('#includedir')
+                if not include or '/etc/sudoers.d' not in include.split()[-1]:
+                    break
 
     def get(self, s, check=all):
         """
