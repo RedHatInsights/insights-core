@@ -1,5 +1,9 @@
 """
 Custom datasources for user and group related specs
+
+.. note::
+    It should be noted that the specs in this module might contains sensitive
+    information, please avoid collecting any of them.
 """
 from insights.specs import Specs
 from insights.core.context import HostContext
