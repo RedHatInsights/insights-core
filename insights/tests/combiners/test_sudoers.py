@@ -50,6 +50,8 @@ def test_sudoers():
     with pytest.raises(TypeError):
         sudo.get({})
 
+
+def test_sudoers_no_includedir():
     sudo1 = EtcSudoers(context_wrap(SUDOERS_NO_INCLUDE, path=SUDOERS_PATH1))
     sudo2 = EtcSudoers(context_wrap(SUDOERS_FM, path=SUDOERS_PATH2))
     sudo3 = EtcSudoers(context_wrap(SUDOERS_WH, path=SUDOERS_PATH3))
