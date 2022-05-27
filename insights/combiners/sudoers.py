@@ -17,9 +17,13 @@ class Sudoers(object):
 
     Attributes:
         lines(list): The list of RAW lines of all the ``/etc/sudoers`` and
-            ``/etc/sudoers.d/*``files. The order of lines keeps their original
-            order them in files. And the files are read with "filename"
+            ``/etc/sudoers.d/*`` files. The order of lines keeps their original
+            order them in files. And the files are read with `"filename`"
             alphabetical order.
+
+    .. note::
+        If there is not `"#includedir /etc/sudoers.d"` line in the entry file
+        ``/etc/sudoers``, the ``/etc/sudoers.d/*`` files will be skipped.
 
     Examples:
         >>> type(sudo)
