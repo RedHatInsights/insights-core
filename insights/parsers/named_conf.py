@@ -17,7 +17,7 @@ class NamedConf(NamedCheckconf):
     """
     Class for parsing the file ``/etc/named.conf```, We use class ``NamedCheckConf`` to parse most
     of the named.conf configurations and class ``NamedConf`` to parse the `include` directives and
-    the `allow-recursion` value from the `options` section.
+    the `allow-recursion` values.
 
     .. note::
         Please refer to the super-class :py:class:`insights.parsers.named_checkconf:NamedCheckConf`
