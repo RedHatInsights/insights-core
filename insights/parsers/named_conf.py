@@ -24,8 +24,8 @@ class NamedConf(NamedCheckconf):
         for more usage information.
 
     Attributes:
-        includes (list): List of files in 'include'
-        allow_recursion_address (list): List of the 'allow-recursion' values
+        includes (list): List of files in 'include' section.
+        allow_recursion_address (list): List of address in 'allow-recursion' section.
 
     Raises:
         SkipException: When content is empty or cannot be parsed.
