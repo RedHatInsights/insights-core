@@ -24,7 +24,8 @@ class NamedConf(NamedCheckconf):
         for more usage information.
 
     Attributes:
-        includes (list): List of files in 'include' and 'allow-recursion' value from the 'options' section.
+        includes (list): List of files in 'include'.
+        allow_recursion_address (list: ): List of 'allow-recursion' value from the 'options' section
 
     Raises:
         SkipException: When content is empty or cannot be parsed.
@@ -39,18 +40,15 @@ class NamedConf(NamedCheckconf):
     def parse_content(self, content):
         includes = []
         allow_recursion_address = []
-        options_flag = False
         super(NamedConf, self).parse_content(content)
 
         try:
             for line in content:
-                if line.strip().startswith('include ') and ';' in line:
+                line = line.strip()
+                if line.startswith('include ') and ';' in line:
                     includes.append(line.split(';')[0].replace('"', '').split()[1])
-                if line.strip().startswith('options ') and ';' not in line:
-                    options_flag = True
-                if options_flag and line.strip().startswith('allow-recursion ') and line.endswith(';'):
-                    for addr in line.strip().split('allow-recursion', 1)[1].split('{', 1)[1].split('}', 1)[0].split():
-                        allow_recursion_address.append(addr.split(';', 1)[0])
+                if line.startswith('allow-recursion ') and line.endswith(';'):
+                    allow_recursion_address.extend(i.strip(';') for i in line.split(None, 1)[1].strip('{}; ').split())
 
         except IndexError:
             raise SkipException("Syntax error of include directive")
