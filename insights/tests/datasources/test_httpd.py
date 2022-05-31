@@ -6,8 +6,9 @@ from insights.specs.datasources.httpd import httpd_cmds
 from insights.combiners.ps import Ps
 
 
-# The ``get_running_commands`` is tested in:
+# The ``get_running_commands()`` is tested in:
 # - insights/tests/datasources/test_get_running_commands.py
+# Here, we do not test it
 @patch('insights.specs.datasources.httpd.get_running_commands')
 def test_httpd_cmds(run_cmds):
     broker = {Ps: None, HostContext: None}

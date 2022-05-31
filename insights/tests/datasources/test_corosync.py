@@ -4,7 +4,6 @@ from insights.core.dr import SkipComponent
 from insights.specs.datasources.corosync import corosync_cmapctl_cmds
 from insights.components.rhel_version import IsRhel6, IsRhel7, IsRhel8, IsRhel9
 
-
 COROSYNC_CMD_RHEL7 = [
     "/usr/sbin/corosync-cmapctl",
     "/usr/sbin/corosync-cmapctl -d runtime.schedmiss.timestamp",
