@@ -49,6 +49,10 @@ CENTOS_7 = """
 CentOS Linux release 7.6.1810 (Core)
 """.strip()
 
+REDHAT_RELEASE_ALPHA = """
+Red Hat Enterprise Linux release 9.0 Alpha (Plow)
+""".strip()
+
 
 def test_rhe6():
     release = RedhatRelease(context_wrap(REDHAT_RELEASE1))
@@ -131,6 +135,19 @@ def test_rhel8():
     assert release.product == "Red Hat Enterprise Linux"
 
 
+def test_rhel_alpha():
+    release = RedhatRelease(context_wrap(REDHAT_RELEASE_ALPHA))
+    assert release.raw == REDHAT_RELEASE_ALPHA
+    assert release.major == 9
+    assert release.minor == 0
+    assert release.version == "9.0"
+    assert release.is_rhel
+    assert release.is_alpha
+    assert not release.is_beta
+    assert release.parsed['code_name'] == 'Plow'
+    assert release.product == "Red Hat Enterprise Linux"
+
+
 def test_rhel_beta():
     release = RedhatRelease(context_wrap(REDHAT_RELEASE_BETA))
     assert release.raw == REDHAT_RELEASE_BETA
@@ -139,6 +156,7 @@ def test_rhel_beta():
     assert release.version == "8.5"
     assert release.is_rhel
     assert release.is_beta
+    assert not release.is_alpha
     assert release.parsed['code_name'] == 'Ootpa'
     assert release.product == "Red Hat Enterprise Linux Server"
 
