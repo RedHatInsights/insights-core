@@ -35,14 +35,6 @@ insights.specs.datasources.corosync
     :show-inheritance:
     :undoc-members:
 
-insights.specs.datasources.cloud_init
--------------------------------------
-
-.. automodule:: insights.specs.datasources.cloud_init
-    :members: cloud_cfg, LocalSpecs
-    :show-inheritance:
-    :undoc-members:
-
 insights.specs.datasources.dir_list
 -----------------------------------
 
