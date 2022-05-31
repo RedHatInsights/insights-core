@@ -24,6 +24,7 @@ options {
     };
     managed-keys-directory "/var/named/dynamic";
     memstatistics-file "/var/named/data/named_mem_stats.txt";
+    allow-recursion { localnets; localhost; 192.168.10.1/24; };
     pid-file "/run/named/named.pid";
     recursing-file "/var/named/data/named.recursing";
     secroots-file "/var/named/data/named.secroots";
@@ -108,6 +109,7 @@ options {
     };
     managed-keys-directory "/var/named/dynamic";
     memstatistics-file "/var/named/data/named_mem_stats.txt";
+    allow-recursion { localnets; localhost; 192.168.10.1/24; };
     pid-file "/run/named/named.pid";
     recursing-file "/var/named/data/named.recursing";
     secroots-file "/var/named/data/named.secroots";
@@ -210,6 +212,7 @@ def test_config_include_sections():
     assert include_sections.includes[2] == '/etc/crypto-policies/back-ends/bind.config-c'
     assert include_sections.includes[3] == '/etc/crypto-policies/back-ends/bind.config-c-plus'
     assert include_sections.includes[4] == '/etc/crypto-policies/back-ends/bind.config'
+    assert include_sections.allow_recursion_address == ['localnets', 'localhost', '192.168.10.1/24']
 
 
 def test_doc_examples():
