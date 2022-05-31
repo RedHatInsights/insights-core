@@ -12,10 +12,6 @@ import logging
 import os
 import signal
 
-from grp import getgrgid
-from os import stat
-from pwd import getpwuid
-
 from insights.components.virtualization import IsBareMetal
 from insights.core.context import HostContext
 from insights.core.dr import SkipComponent
@@ -40,14 +36,6 @@ from insights.specs.datasources.pcp import pcp_enabled, pmlog_summary_args
 
 
 logger = logging.getLogger(__name__)
-
-
-def get_owner(filename):
-    """ tuple: Return tuple containing uid and gid of file filename """
-    st = stat(filename)
-    name = getpwuid(st.st_uid).pw_name
-    group = getgrgid(st.st_gid).gr_name
-    return (name, group)
 
 
 def _make_rpm_formatter(fmt=None):
