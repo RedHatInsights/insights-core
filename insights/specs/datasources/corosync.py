@@ -1,5 +1,5 @@
 """
-Custom datasources for ``corosync``
+Custom datasources related to ``corosync``
 """
 import os
 from insights.core.context import HostContext

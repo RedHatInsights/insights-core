@@ -1,5 +1,5 @@
 """
-Custom datasources for ``corosync``
+Custom datasources related to ``httpd``
 """
 from insights.core.context import HostContext
 from insights.core.dr import SkipComponent

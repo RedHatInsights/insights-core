@@ -1,5 +1,5 @@
 """
-Custom datasources for ``md5``
+Custom datasources related to ``md5``
 """
 from insights.core.context import HostContext
 from insights.core.plugins import datasource
