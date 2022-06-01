@@ -35,6 +35,7 @@ def test_etc_systemd():
     assert proc_keys_content[2]['gid'] == '65534'
     assert proc_keys_content[2]['type'] == 'keyring'
     assert proc_keys_content[2]['description'] == '_uid_ses.1000: 1'
+    assert proc_keys_content[2]['raw'] == '25d3a08f I--Q---   1 perm 1f3f0000  1000 65534 keyring  _uid_ses.1000: 1'
 
     assert proc_keys_content.search(timeout='perm')[0] == proc_keys_content[0]
     assert proc_keys_content.search(description__contains='pid')[0] == proc_keys_content[1]

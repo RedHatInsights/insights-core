@@ -82,10 +82,11 @@ class ProcKeys(Parser, list):
         if not content:
             raise SkipException("No Contents")
 
-        column = ['id', 'flags', 'usage', 'timeout', 'permissions', 'uid', 'gid', 'type', 'description']
+        column = ['id', 'flags', 'usage', 'timeout', 'permissions', 'uid', 'gid', 'type', 'description', 'raw']
 
         for line in content:
             row = line.split(None, 8)
+            row.append(line)
             if row and len(column) == len(row):
                 self.append(dict(zip(column, row)))
             else:
