@@ -13,12 +13,12 @@ from insights.core.filters import get_filters
 
 
 @datasource(HostContext)
-def group_filter_list(broker):
+def group_filters(broker):
     """
-    Return the list of groups getting from the spec filter that are allowed to
-    collect.
+    Return a string contains the list of groups getting from the spec filter,
+    separated with space.
     """
     grp_list = sorted(get_filters(Specs.group_info))
     if grp_list:
-        return grp_list
+        return ' '.join(grp_list)
     raise SkipComponent
