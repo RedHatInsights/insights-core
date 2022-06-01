@@ -27,6 +27,14 @@ insights.specs.datasources.cloud_init
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.corosync
+-----------------------------------
+
+.. automodule:: insights.specs.datasources.corosync
+    :members:  corosync_cmapctl_cmds
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.dir_list
 -----------------------------------
 
@@ -36,10 +44,18 @@ insights.specs.datasources.dir_list
     :undoc-members:
 
 insights.specs.datasources.ethernet
--------------------------------------
+-----------------------------------
 
 .. automodule:: insights.specs.datasources.ethernet
     :members: interfaces, LocalSpecs
+    :show-inheritance:
+    :undoc-members:
+
+insights.specs.datasources.httpd
+--------------------------------
+
+.. automodule:: insights.specs.datasources.httpd
+    :members: httpd_cmds
     :show-inheritance:
     :undoc-members:
 
@@ -48,6 +64,14 @@ insights.specs.datasources.ipcs
 
 .. automodule:: insights.specs.datasources.ipcs
     :members: semid
+    :show-inheritance:
+    :undoc-members:
+
+insights.specs.datasources.md5chk
+---------------------------------
+
+.. automodule:: insights.specs.datasources.md5chk
+    :members: files
     :show-inheritance:
     :undoc-members:
 
