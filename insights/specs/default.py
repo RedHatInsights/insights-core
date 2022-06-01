@@ -11,10 +11,6 @@ data sources that standard Insights `Parsers` resolve against.
 import logging
 import signal
 
-from grp import getgrgid
-from os import stat
-from pwd import getpwuid
-
 from insights.core.context import HostContext
 from insights.core.spec_factory import RawFileProvider
 from insights.core.spec_factory import simple_file, simple_command, glob_file
@@ -36,14 +32,6 @@ from insights.specs.datasources.pcp import pcp_enabled, pmlog_summary_args
 
 
 logger = logging.getLogger(__name__)
-
-
-def get_owner(filename):
-    """ tuple: Return tuple containing uid and gid of file filename """
-    st = stat(filename)
-    name = getpwuid(st.st_uid).pw_name
-    group = getgrgid(st.st_gid).gr_name
-    return (name, group)
 
 
 def _make_rpm_formatter(fmt=None):
