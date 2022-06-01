@@ -127,7 +127,7 @@ insights.specs.datasources.user_group
 -------------------------------------
 
 .. automodule:: insights.specs.datasources.user_group
-    :members: groups
+    :members: group_filter_list
     :show-inheritance:
     :undoc-members:
 
