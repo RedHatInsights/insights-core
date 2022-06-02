@@ -1,6 +1,6 @@
 """
-Sudoers - files ``/etc/sudoers`` or ``/etc/sudoers.d/*``
-========================================================
+Sudoers - files ``/etc/sudoers`` and ``/etc/sudoers.d/*``
+=========================================================
 
 Module for processing each of the ``/etc/sudoers`` and ``/etc/sudoers.d/*`` files.
 
@@ -94,6 +94,11 @@ class EtcSudoers(Parser, SudoersBase):
 
     Attributes:
         lines(list): The list of RAW lines of the file.
+
+    .. note::
+        The super-class :class:`SudoersBase` providers two helper functions:
+        :func:`SudoersBase.get()` and :func:`SudoersBase.last()`.
+
 
     Examples:
         >>> type(sudo)

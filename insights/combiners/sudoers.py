@@ -4,7 +4,6 @@ Sudoers - files ``/etc/sudoers`` or ``/etc/sudoers.d/*``
 
 Module for combining the parsing results of ``/etc/sudoers`` and
 ``/etc/sudoers.d/*`` files.
-
 """
 from insights import combiner
 from insights.parsers.sudoers import SudoersBase, EtcSudoers
@@ -22,12 +21,15 @@ class Sudoers(SudoersBase):
             alphabetical order.
 
     .. note::
-        If there is not `"#includedir /etc/sudoers.d"` line in the entry file
-        ``/etc/sudoers``, the ``/etc/sudoers.d/*`` files will be skipped.
+        1. If there is not `"#includedir /etc/sudoers.d"` line in the entry
+           file ``/etc/sudoers``, the ``/etc/sudoers.d/*`` files will be
+           skipped.
 
-        This Combiner also provides 2 helper functions ``get`` and ``last`` to
-        quickly get the specified lines. For details, see its super-class:
-        :class:`insights.parsers.sudoers.SudoersBase`.
+        2. Two helper functions :func:`insights.parsers.sudoers.SudoersBase.get()`
+           and :func:`insights.parsers.sudoers.SudoersBase.last()` are also
+           provided to quickly get the specified line(s).
+           For details, see the super-class:
+           :class:`insights.parsers.sudoers.SudoersBase`.
 
     Examples:
         >>> type(sudo)
