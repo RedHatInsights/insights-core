@@ -295,6 +295,7 @@ class SosSpecs(Specs):
     systemctl_show_all_services = simple_file("sos_commands/systemd/systemctl_show_service_--all")
     systemctl_status_all = simple_file("sos_commands/systemd/systemctl_status_--all")
     systemd_system_origin_accounting = simple_file("/etc/systemd/system.conf.d/origin-accounting.conf")
+    systemd_analyze_blame = simple_file("sos_commands/systemd/systemd-analyze_blame")
     teamdctl_config_dump = glob_file("sos_commands/teamd/teamdctl_*_config_dump")
     teamdctl_state_dump = glob_file("sos_commands/teamd/teamdctl_*_state_dump")
     testparm_s = simple_file("sos_commands/samba/testparm_s")
