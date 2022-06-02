@@ -123,6 +123,14 @@ insights.specs.datasources.ssl_certificate
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.user_group
+-------------------------------------
+
+.. automodule:: insights.specs.datasources.user_group
+    :members: group_filters
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.yum_updates
 --------------------------------------
 
