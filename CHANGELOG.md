@@ -2,6 +2,20 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.276](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.276) (2022-06-02)
+
+- feat: New specs for systemd ls output and modification of existing parser ([PR 3424](https://github.com/RedHatInsights/insights-core/pull/3424))
+- Updating sos_archive to parse file for GSS rule ([PR 3432](https://github.com/RedHatInsights/insights-core/pull/3432))
+- feat: Add --parallel arg for insights-run ([PR 3418](https://github.com/RedHatInsights/insights-core/pull/3418))
+- feat: new spec and parser for /etc/sudoers ([PR 3425](https://github.com/RedHatInsights/insights-core/pull/3425))
+- feat: New spec and parser for group_info ([PR 3423](https://github.com/RedHatInsights/insights-core/pull/3423))
+- malware-detection feature: handle different yara versions ([PR 3428](https://github.com/RedHatInsights/insights-core/pull/3428))
+- refactor: move the rest of datasource to the datasources dir ([PR 3430](https://github.com/RedHatInsights/insights-core/pull/3430))
+- chore: remove the unused get_owner from specs.default ([PR 3429](https://github.com/RedHatInsights/insights-core/pull/3429))
+- Add Alpha to redhat release detection ([PR 3431](https://github.com/RedHatInsights/insights-core/pull/3431))
+- feat: Updated the parser to also return  allow-recursion content ([PR 3427](https://github.com/RedHatInsights/insights-core/pull/3427))
+- fix(Compliance): Find policy correctly when there is one datasteam file ([PR 3420](https://github.com/RedHatInsights/insights-core/pull/3420))
+
 ## [insights-core-3.0.275](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.275) (2022-05-26)
 
 - feat: New parser ProcKeys for '/proc/keys' file ([PR 3417](https://github.com/RedHatInsights/insights-core/pull/3417))

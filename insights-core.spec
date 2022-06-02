@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.275
+Version:        3.0.276
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,27 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jun 02 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.276-1
+- feat: New specs for systemd ls output and modification of existing parser
+  (#3424) (41325380+jobselko@users.noreply.github.com)
+- Updating sos_archive to parse file for GSS rule (#3432)
+  (87797511+mohitkumarrh@users.noreply.github.com)
+- feat: Add --parallel arg for insights-run (#3418) (rblakley@redhat.com)
+- feat: new spec and parser for /etc/sudoers (#3425) (xiangceliu@redhat.com)
+- feat: New spec and parser for group_info (#3423) (xiangceliu@redhat.com)
+- malware-detection feature: handle different yara versions (#3428)
+  (mhuth@redhat.com)
+- refactor: move the rest of datasource to the datasources dir (#3430)
+  (xiangceliu@redhat.com)
+- chore: remove the unused get_owner from specs.default (#3429)
+  (xiangceliu@redhat.com)
+- Add Alpha to redhat release detection (#3431)
+  (20520336+bfahr@users.noreply.github.com)
+- feat: Updated the parser to also return  allow-recursion content (#3427)
+  (44598880+rasrivas-redhat@users.noreply.github.com)
+- fix(Compliance): Find policy correctly when there is one datasteam file
+  (#3420) (87209745+marleystipich2@users.noreply.github.com)
+
 * Thu May 26 2022 Sachin Patil <psachin@redhat.com> 3.0.275-1
 - feat: New parser ProcKeys for '/proc/keys' file (#3417) (986222045@qq.com)
 - feat: New ceph version and enhance (#3422) (xiangceliu@redhat.com)
