@@ -51,6 +51,9 @@ NetconsoleSysconfig -file ``/etc/sysconfig/netconsole``
 NetworkSysconfig -file ``/etc/sysconfig/network``
 -------------------------------------------------
 
+NfsSysconfig - file ``/etc/sysconfig/nfs``
+------------------------------------------
+
 NtpdSysconfig - file ``/etc/sysconfig/ntpd``
 --------------------------------------------
 
@@ -438,6 +441,27 @@ class NetworkSysconfig(SysconfigOptions):
         True
         >>> net_syscfg['GATEWAY']
         '172.31.0.1'
+    """
+    pass
+
+
+@parser(Specs.sysconfig_nfs)
+class NfsSysconfig(SysconfigOptions):
+    """
+    A parser for analyzing the ``/etc/sysconfig/nfs`` configuration file.
+
+    Sample Input::
+
+      RPCNFSDARGS="--rdma=20049"
+      #STATD_PORT=662
+
+    Examples:
+        >>> 'RPCNFSDARGS' in nfs_syscfg
+        True
+        >>> nfs_syscfg['RPCNFSDARGS']
+        '--rdma=20049'
+        >>> 'STATD_PORT' in nfs_syscfg
+        False
     """
     pass
 

@@ -9,45 +9,29 @@ data sources that standard Insights `Parsers` resolve against.
 """
 
 import logging
-import os
 import signal
 
-from grp import getgrgid
-from os import stat
-from pwd import getpwuid
-
-from insights.components.virtualization import IsBareMetal
 from insights.core.context import HostContext
-from insights.core.dr import SkipComponent
-from insights.core.plugins import datasource
 from insights.core.spec_factory import RawFileProvider
 from insights.core.spec_factory import simple_file, simple_command, glob_file
 from insights.core.spec_factory import first_of, command_with_args
 from insights.core.spec_factory import foreach_collect, foreach_execute
 from insights.core.spec_factory import first_file, listdir
-from insights.combiners.ps import Ps
-from insights.components.rhel_version import IsRhel7, IsRhel8, IsRhel9
 from insights.components.cloud_provider import IsAWS, IsAzure, IsGCP
 from insights.components.ceph import IsCephMonitor
+from insights.components.virtualization import IsBareMetal
 from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersion
 from insights.specs import Specs
 from insights.specs.datasources import (
-    awx_manage, cloud_init, candlepin_broker, dir_list, ethernet,
-    get_running_commands, ipcs, lpstat, package_provides, ps as ps_datasource,
-    sap, satellite_missed_queues, ssl_certificate, yum_updates)
+    awx_manage, cloud_init, candlepin_broker, corosync as corosync_ds,
+    dir_list, ethernet, httpd, ipcs, lpstat, md5chk, package_provides,
+    ps as ps_datasource, sap, satellite_missed_queues, ssl_certificate,
+    user_group, yum_updates)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 from insights.specs.datasources.pcp import pcp_enabled, pmlog_summary_args
 
 
 logger = logging.getLogger(__name__)
-
-
-def get_owner(filename):
-    """ tuple: Return tuple containing uid and gid of file filename """
-    st = stat(filename)
-    name = getpwuid(st.st_uid).pw_name
-    group = getgrgid(st.st_gid).gr_name
-    return (name, group)
 
 
 def _make_rpm_formatter(fmt=None):
@@ -106,6 +90,7 @@ class DefaultSpecs(Specs):
     candlepin_broker = candlepin_broker.candlepin_broker
     candlepin_log = simple_file("/var/log/candlepin/candlepin.log")
     cgroups = simple_file("/proc/cgroups")
+    proc_keys = simple_file("/proc/keys")
     ps_alxwww = simple_command("/bin/ps alxwww")
     ps_aux = simple_command("/bin/ps aux")
     ps_auxcww = simple_command("/bin/ps auxcww")
@@ -143,31 +128,7 @@ class DefaultSpecs(Specs):
     cluster_conf = simple_file("/etc/cluster/cluster.conf")
     cmdline = simple_file("/proc/cmdline")
     corosync = simple_file("/etc/sysconfig/corosync")
-
-    @datasource(HostContext, [IsRhel7, IsRhel8, IsRhel9])
-    def corosync_cmapctl_cmd_list(broker):
-        """
-        corosync-cmapctl add different arguments on RHEL7 and RHEL8.
-
-        Returns:
-            list: A list of related corosync-cmapctl commands based the RHEL version.
-        """
-        corosync_cmd = '/usr/sbin/corosync-cmapctl'
-        if os.path.exists(corosync_cmd):
-            if broker.get(IsRhel7):
-                return [
-                    corosync_cmd,
-                    ' '.join([corosync_cmd, '-d runtime.schedmiss.timestamp']),
-                    ' '.join([corosync_cmd, '-d runtime.schedmiss.delay'])]
-            if broker.get(IsRhel8) or broker.get(IsRhel9):
-                return [
-                    corosync_cmd,
-                    ' '.join([corosync_cmd, '-m stats']),
-                    ' '.join([corosync_cmd, '-C schedmiss'])]
-
-        raise SkipComponent()
-
-    corosync_cmapctl = foreach_execute(corosync_cmapctl_cmd_list, "%s")
+    corosync_cmapctl = foreach_execute(corosync_ds.corosync_cmapctl_cmds, "%s")
     corosync_conf = simple_file("/etc/corosync/corosync.conf")
     cpu_cores = glob_file("sys/devices/system/cpu/cpu[0-9]*/online")
     cpu_siblings = glob_file("sys/devices/system/cpu/cpu[0-9]*/topology/thread_siblings_list")
@@ -251,6 +212,7 @@ class DefaultSpecs(Specs):
     gcp_instance_type = simple_command("/usr/bin/curl -s -H 'Metadata-Flavor: Google' http://metadata.google.internal/computeMetadata/v1/instance/machine-type --connect-timeout 5", deps=[IsGCP])
     gcp_license_codes = simple_command("/usr/bin/curl -s -H 'Metadata-Flavor: Google' http://metadata.google.internal/computeMetadata/v1/instance/licenses/?recursive=True --connect-timeout 5", deps=[IsGCP])
     greenboot_status = simple_command("/usr/libexec/greenboot/greenboot-status")
+    group_info = command_with_args("/usr/bin/getent group %s", user_group.group_filters)
     grubenv = first_file(["/boot/grub2/grubenv", "/boot/efi/EFI/redhat/grubenv"])
     grub_conf = simple_file("/boot/grub/grub.conf")
     grub_config_perms = simple_command("/bin/ls -lH /boot/grub2/grub.cfg")  # only RHEL7 and updwards
@@ -298,23 +260,11 @@ class DefaultSpecs(Specs):
     httpd24_httpd_error_log = simple_file("/opt/rh/httpd24/root/etc/httpd/logs/error_log")
     jbcs_httpd24_httpd_error_log = simple_file("/opt/rh/jbcs-httpd24/root/etc/httpd/logs/error_log")
     virt_uuid_facts = simple_file("/etc/rhsm/facts/virt_uuid.facts")
-
-    @datasource(Ps, HostContext)
-    def httpd_cmd(broker):
-        """
-        Function to search the output of ``ps auxcww`` to find all running Apache
-        webserver processes and extract the binary path.
-
-        Returns:
-            list: List of the binary paths to each running process
-        """
-        return get_running_commands(broker[Ps], broker[HostContext], ['httpd', ])
-
     httpd_pid = simple_command("/usr/bin/pgrep -o httpd")
     httpd_limits = foreach_collect(httpd_pid, "/proc/%s/limits")
-    httpd_M = foreach_execute(httpd_cmd, "%s -M")
+    httpd_M = foreach_execute(httpd.httpd_cmds, "%s -M")
     httpd_ssl_cert_enddate = foreach_execute(ssl_certificate.httpd_ssl_certificate_files, "/usr/bin/openssl x509 -in %s -enddate -noout")
-    httpd_V = foreach_execute(httpd_cmd, "%s -V")
+    httpd_V = foreach_execute(httpd.httpd_cmds, "%s -V")
     ibm_fw_vernum_encoded = simple_file("/proc/device-tree/openprom/ibm,fw-vernum_encoded")
     ibm_lparcfg = simple_file("/proc/powerpc/lparcfg")
     ifcfg = glob_file("/etc/sysconfig/network-scripts/ifcfg-*")
@@ -415,14 +365,8 @@ class DefaultSpecs(Specs):
     machine_id = first_file(["etc/insights-client/machine-id", "etc/redhat-access-insights/machine-id", "etc/redhat_access_proactive/machine-id"])
     mariadb_log = simple_file("/var/log/mariadb/mariadb.log")
     max_uid = simple_command("/bin/awk -F':' '{ if($3 > max) max = $3 } END { print max }' /etc/passwd")
-
-    @datasource(HostContext)
-    def md5chk_file_list(broker):
-        """ Provide a list of files to be processed by the ``md5chk_files`` spec """
-        return ["/etc/pki/product/69.pem", "/etc/pki/product-default/69.pem", "/usr/lib/libsoftokn3.so", "/usr/lib64/libsoftokn3.so", "/usr/lib/libfreeblpriv3.so", "/usr/lib64/libfreeblpriv3.so"]
-    md5chk_files = foreach_execute(md5chk_file_list, "/usr/bin/md5sum %s", keep_rc=True)
+    md5chk_files = foreach_execute(md5chk.files, "/usr/bin/md5sum %s", keep_rc=True)
     mdstat = simple_file("/proc/mdstat")
-
     meminfo = first_file(["/proc/meminfo", "/meminfo"])
     messages = simple_file("/var/log/messages")
     modinfo_i40e = simple_command("/sbin/modinfo i40e")
@@ -661,12 +605,14 @@ class DefaultSpecs(Specs):
     sssd_config = simple_file("/etc/sssd/sssd.conf")
     subscription_manager_id = simple_command("/usr/sbin/subscription-manager identity")  # use "/usr/sbin" here, BZ#1690529
     subscription_manager_installed_product_ids = simple_command("/usr/bin/find /etc/pki/product-default/ /etc/pki/product/ -name '*pem' -exec rct cat-cert --no-content '{}' \;")
+    sudoers = glob_file(["/etc/sudoers", "/etc/sudoers.d/*"])
     swift_object_expirer_conf = first_file(["/var/lib/config-data/puppet-generated/swift/etc/swift/object-expirer.conf", "/etc/swift/object-expirer.conf"])
     swift_proxy_server_conf = first_file(["/var/lib/config-data/puppet-generated/swift/etc/swift/proxy-server.conf", "/etc/swift/proxy-server.conf"])
     sysconfig_grub = simple_file("/etc/default/grub")  # This is the file where the "/etc/sysconfig/grub" point to
     sysconfig_kdump = simple_file("etc/sysconfig/kdump")
     sysconfig_libvirt_guests = simple_file("etc/sysconfig/libvirt-guests")
     sysconfig_network = simple_file("etc/sysconfig/network")
+    sysconfig_nfs = simple_file("/etc/sysconfig/nfs")
     sysconfig_ntpd = simple_file("/etc/sysconfig/ntpd")
     sysconfig_oracleasm = simple_file("/etc/sysconfig/oracleasm")
     sysconfig_prelink = simple_file("/etc/sysconfig/prelink")
