@@ -25,6 +25,10 @@ class Sudoers(SudoersBase):
         If there is not `"#includedir /etc/sudoers.d"` line in the entry file
         ``/etc/sudoers``, the ``/etc/sudoers.d/*`` files will be skipped.
 
+        This Combiner also provides 2 helper functions ``get`` and ``last`` to
+        quickly get the specified lines. For details, see its super-class:
+        :class:`insights.parsers.sudoers.SudoersBase`.
+
     Examples:
         >>> type(sudo)
         <class 'insights.combiners.sudoers.Sudoers'>
