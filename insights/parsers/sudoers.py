@@ -21,37 +21,11 @@ add_filter(Specs.sudoers, "#includedir")
 """The "#includedir" is the line that should be always collected. """
 
 
-@parser(Specs.sudoers)
-class EtcSudoers(Parser):
+class SudoersBase(object):
     """
-    Class to parse the files ``/etc/sudoers`` or ``/etc/sudoers.d/*``
-
-    Typical content of the  ``/etc/sudoers`` and ``/etc/sudoers.d/*`` is::
-
-        ## Allows people in group wheel to run all commands
-        %wheel  ALL=(ALL)       ALL
-        ## Read drop-in files from /etc/sudoers.d (the # here does not mean a comment)
-        #includedir /etc/sudoers.d
-
-    Attributes:
-        lines(list): The list of RAW lines of the file.
-
-    Examples:
-        >>> type(sudo)
-        <class 'insights.parsers.sudoers.EtcSudoers'>
-        >>> len(sudo.lines)
-        2
-        >>> sudo.get(['wheel', 'ALL=(ALL)', 'ALL'])
-        ['%wheel  ALL=(ALL)       ALL']
-        >>> sudo.last("#includedir")
-        '#includedir /etc/sudoers.d'
+    Base class for parsing the files ``/etc/sudoers`` or ``/etc/sudoers.d/*``,
+    it provides the following two helper functions ``get`` and ``last``.
     """
-    def parse_content(self, content):
-        self.lines = get_active_lines(content, comment_char="##")
-
-        if not self.lines:
-            raise SkipException
-
     def get(self, s, check=all):
         """
         Returns all lines that contain `s` anywhere and return the list of RAW
@@ -69,6 +43,7 @@ class EtcSudoers(Parser):
             TypeError: When `s` is not a string or a list of strings, or `num`
                 is not an integer.
         """
+
         def _valid_search(s, check=all):
             if isinstance(s, str):
                 return lambda l: s in l
@@ -103,3 +78,35 @@ class EtcSudoers(Parser):
         """
         ret = self.get(s, check)
         return ret[-1] if ret else None
+
+
+@parser(Specs.sudoers)
+class EtcSudoers(Parser, SudoersBase):
+    """
+    Class to parse the files ``/etc/sudoers`` or ``/etc/sudoers.d/*``
+
+    Typical content of the  ``/etc/sudoers`` and ``/etc/sudoers.d/*`` is::
+
+        ## Allows people in group wheel to run all commands
+        %wheel  ALL=(ALL)       ALL
+        ## Read drop-in files from /etc/sudoers.d (the # here does not mean a comment)
+        #includedir /etc/sudoers.d
+
+    Attributes:
+        lines(list): The list of RAW lines of the file.
+
+    Examples:
+        >>> type(sudo)
+        <class 'insights.parsers.sudoers.EtcSudoers'>
+        >>> len(sudo.lines)
+        2
+        >>> sudo.get(['wheel', 'ALL=(ALL)', 'ALL'])
+        ['%wheel  ALL=(ALL)       ALL']
+        >>> sudo.last("#includedir")
+        '#includedir /etc/sudoers.d'
+    """
+    def parse_content(self, content):
+        self.lines = get_active_lines(content, comment_char="##")
+
+        if not self.lines:
+            raise SkipException
