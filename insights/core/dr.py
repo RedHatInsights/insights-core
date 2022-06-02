@@ -988,10 +988,8 @@ def run(components=None, broker=None):
 def generate_incremental(components=None, broker=None):
     components = components or COMPONENTS[GROUPS.single]
     components = _determine_components(components)
-    seed_broker = broker or Broker()
     for graph in get_subgraphs(components):
-        broker = Broker(seed_broker)
-        yield (graph, broker)
+        yield graph, broker or Broker()
 
 
 def run_incremental(components=None, broker=None):
