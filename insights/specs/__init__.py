@@ -657,6 +657,7 @@ class Specs(SpecSet):
     subscription_manager_list_installed = RegistryPoint()
     subscription_manager_installed_product_ids = RegistryPoint(filterable=True)
     subscription_manager_release_show = RegistryPoint()
+    sudoers = RegistryPoint(multi_output=True, filterable=True)
     swift_conf = RegistryPoint()
     swift_log = RegistryPoint(filterable=True)
     swift_object_expirer_conf = RegistryPoint()
