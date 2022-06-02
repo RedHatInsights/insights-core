@@ -122,7 +122,7 @@ class InsightsArchiveSpecs(Specs):
     ls_ocp_cni_openshift_sdn = simple_file("insights_commands/ls_-l_.var.lib.cni.networks.openshift-sdn")
     ls_origin_local_volumes_pods = simple_file("insights_commands/ls_-l_.var.lib.origin.openshift.local.volumes.pods")
     ls_osroot = simple_file("insights_commands/ls_-lan")
-    ls_run_systemd_generator = simple_file("insights_commands/ls_-lan_.run.systemd.generator")
+    ls_run_systemd = simple_file("insights_commands/ls_-lanRL_.run.systemd")
     ls_R_var_lib_nova_instances = simple_file("insights_commands/ls_-laR_.var.lib.nova.instances")
     ls_sys_firmware = simple_file("insights_commands/ls_-lanR_.sys.firmware")
     ls_tmp = simple_file("insights_commands/ls_-la_.tmp")
