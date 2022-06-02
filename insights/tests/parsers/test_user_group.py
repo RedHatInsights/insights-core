@@ -18,11 +18,11 @@ def test_grp():
     grp = GroupInfo(context_wrap(GRP))
     assert grp[0]['id'] == 10
     assert grp[0]['name'] == 'wheel'
-    assert grp[0]['user_list'] == ['admin', 'tester']
+    assert grp[0]['users'] == ['admin', 'tester']
     assert grp[1]['id'] == 8
     assert grp[1]['name'] == 'mem'
-    assert grp[1]['user_list'] == []
-    assert grp.search(user_list__contains='tester')[0] == grp[0]
+    assert grp[1]['users'] == []
+    assert grp.search(users__contains='tester')[0] == grp[0]
 
 
 def test_ab():

@@ -34,7 +34,7 @@ class GroupInfo(CommandParser, list):
     10
     >>> grp[0]['name']
     'wheel'
-    >>> grp[0]['user_list']
+    >>> grp[0]['users']
     ['admin', 'tester']
     """
     def parse_content(self, content):
@@ -48,7 +48,7 @@ class GroupInfo(CommandParser, list):
                     dict(
                         name=row[0],
                         id=int(row[2]),
-                        user_list=row[-1].split(',') if row[-1] else []
+                        users=row[-1].split(',') if row[-1] else []
                     )
                 )
             except Exception as ex:
@@ -71,7 +71,7 @@ class GroupInfo(CommandParser, list):
 
         >>> grp.search(name='mem')[0] == grp[1]
         True
-        >>> grp.search(user_list__contains='admin')[0] == grp[0]
+        >>> grp.search(users__contains='admin')[0] == grp[0]
         True
         """
         return keyword_search(self, **kwargs)
