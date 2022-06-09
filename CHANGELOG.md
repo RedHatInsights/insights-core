@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.277](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.277) (2022-06-09)
+
+- feat: Add --no-load-default arg to the insights-run command ([PR 3434](https://github.com/RedHatInsights/insights-core/pull/3434))
+- feat: Support parallelly running for insights-engine ([PR 3436](https://github.com/RedHatInsights/insights-core/pull/3436))
+
 ## [insights-core-3.0.276](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.276) (2022-06-02)
 
 - feat: New specs for systemd ls output and modification of existing parser ([PR 3424](https://github.com/RedHatInsights/insights-core/pull/3424))

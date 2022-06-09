@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.276
+Version:        3.0.277
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,12 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jun 09 2022 Sachin Patil <psachin@redhat.com> 3.0.277-1
+- feat: Add --no-load-default arg to the insights-run command (#3434)
+  (rblakley@redhat.com)
+- feat: Support parallelly running for insights-engine (#3436)
+  (xiangceliu@redhat.com)
+
 * Thu Jun 02 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.276-1
 - feat: New specs for systemd ls output and modification of existing parser
   (#3424) (41325380+jobselko@users.noreply.github.com)
