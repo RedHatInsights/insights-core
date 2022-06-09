@@ -274,32 +274,31 @@ def _load_context(path):
 def run(component=None, root=None, print_summary=False,
         context=None, inventory=None, print_component=None):
 
-    load_default_plugins()
-
     args = None
     formatters = None
+
     if print_summary:
         import argparse
         import logging
         p = argparse.ArgumentParser(add_help=False)
         p.add_argument("archive", nargs="?", help="Archive or directory to analyze.")
-        p.add_argument("-p", "--plugins", default="",
-                       help="Comma-separated list without spaces of package(s) or module(s) containing plugins.")
         p.add_argument("-b", "--bare",
-                       help='Specify "spec=filename[,spec=filename,...]" to use the bare file for the spec',
-                       default="")
+                       help='Specify "spec=filename[,spec=filename,...]" to use the bare file for the spec', default="")
         p.add_argument("-c", "--config", help="Configure components.")
+        p.add_argument("-f", "--format", help="Output format.", default="insights.formats.text")
         p.add_argument("-i", "--inventory", help="Ansible inventory file for cluster analysis.")
         p.add_argument("-k", "--pkg-query", help="Expression to select rules by package.")
-        p.add_argument("-v", "--verbose", help="Verbose output.", action="store_true")
-        p.add_argument("-f", "--format", help="Output format.", default="insights.formats.text")
+        p.add_argument("-p", "--plugins", default="",
+                       help="Comma-separated list without spaces of package(s) or module(s) containing plugins.")
         p.add_argument("-s", "--syslog", help="Log results to syslog.", action="store_true")
-        p.add_argument("--tags", help="Expression to select rules by tag.")
+        p.add_argument("-v", "--verbose", help="Verbose output.", action="store_true")
         p.add_argument("-D", "--debug", help="Verbose debug output.", action="store_true")
-        p.add_argument("--context", help="Execution Context. Defaults to HostContext if an archive isn't passed.")
         p.add_argument("--color", default="auto", choices=["always", "auto", "never"], metavar="[=WHEN]",
                        help="Choose if and how the color encoding is outputted. When is 'always', 'auto', or 'never'.")
+        p.add_argument("--context", help="Execution Context. Defaults to HostContext if an archive isn't passed.")
+        p.add_argument("--no-load-default", help="Don't load the default plugins.", action="store_true")
         p.add_argument("--parallel", help="Execute rules in parallel.", action="store_true")
+        p.add_argument("--tags", help="Expression to select rules by tag.")
 
         class Args(object):
             pass
@@ -307,16 +306,23 @@ def run(component=None, root=None, print_summary=False,
         formatters = []
         args = Args()
         p.parse_known_args(namespace=args)
+        p = argparse.ArgumentParser(parents=[p])
+
+        if not args.no_load_default:
+            load_default_plugins()
+
         global _COLOR
         _COLOR = args.color
-        p = argparse.ArgumentParser(parents=[p])
+
         args.format = "insights.formats._json" if args.format == "json" else args.format
         args.format = "insights.formats._yaml" if args.format == "yaml" else args.format
         fmt = args.format if "." in args.format else "insights.formats." + args.format
+
         Formatter = dr.get_component(fmt)
         if not Formatter or not isinstance(Formatter, FormatterClass):
             dr.load_components(fmt, continue_on_error=False)
             Formatter = get_formatter(fmt)
+
         Formatter.configure(p)
         p.parse_args(namespace=args)
         formatter = Formatter(args)
