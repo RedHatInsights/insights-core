@@ -422,6 +422,7 @@ class DefaultSpecs(Specs):
     neutron_ovs_agent_log = first_file(["/var/log/containers/neutron/openvswitch-agent.log", "/var/log/neutron/openvswitch-agent.log"])
     neutron_plugin_ini = first_file(["/var/lib/config-data/puppet-generated/neutron/etc/neutron/plugin.ini", "/etc/neutron/plugin.ini"])
     nfnetlink_queue = simple_file("/proc/net/netfilter/nfnetlink_queue")
+    nfs_conf = simple_file("/etc/nfs.conf")
     nfs_exports = simple_file("/etc/exports")
     nfs_exports_d = glob_file("/etc/exports.d/*.exports")
     nginx_conf = glob_file([
