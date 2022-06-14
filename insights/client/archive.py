@@ -2,6 +2,9 @@
 Handle adding files and preparing the archive for upload
 """
 from __future__ import absolute_import
+import glob
+from signal import SIGTERM, signal
+import sys
 import time
 import os
 import shutil
@@ -38,11 +41,12 @@ class InsightsArchive(object):
         Initialize the Insights Archive
         """
         self.config = config
+        self.cleanup_previous_archive()
         # input this to core collector as `tmp_path`
-        self.tmp_dir = tempfile.mkdtemp(prefix='/var/tmp/')
+        self.tmp_dir = tempfile.mkdtemp(dir='/var/tmp/', prefix='insights-archive-')
 
         # we don't really need this anymore...
-        self.archive_tmp_dir = tempfile.mkdtemp(prefix='/var/tmp/')
+        self.archive_tmp_dir = tempfile.mkdtemp(dir='/var/tmp/', prefix='insights-archive-')
 
         # We should not hint the hostname in the archive if it has to be obfuscated
         if config.obfuscate_hostname:
@@ -62,8 +66,11 @@ class InsightsArchive(object):
         self.cmd_dir = None
 
         self.compressor = config.compressor
+        self.archive_stored = None
         self.tar_file = None
+        self.keep_archive_dir = '/var/cache/insights-client'
         atexit.register(self.cleanup_tmp)
+        signal(SIGTERM, self.sigterm_handler)
 
     def create_archive_dir(self):
         """
@@ -155,7 +162,7 @@ class InsightsArchive(object):
         """
         Create tar file to be compressed
         """
-        if not self.archive_tmp_dir:
+        if not self.tmp_dir:
             # we should never get here but bail out if we do
             raise RuntimeError('Archive temporary directory not defined.')
         tar_file_name = os.path.join(self.archive_tmp_dir, self.archive_name)
@@ -229,12 +236,39 @@ class InsightsArchive(object):
             and tar_file exists.
         '''
         if self.config.keep_archive and self.tar_file:
+            self.storing_archive()
             if self.config.no_upload:
-                logger.info('Archive saved at %s', self.tar_file)
+                logger.info('Archive saved at %s', self.archive_stored)
             else:
-                logger.info('Insights archive retained in %s', self.tar_file)
-            if self.config.obfuscate:
-                return  # return before deleting tmp_dir
-        else:
-            self.delete_archive_file()
+                logger.info('Insights archive retained in %s', self.archive_stored)
         self.delete_tmp_dir()
+
+    def sigterm_handler(_signo, _stack_frame, _context):
+        sys.exit(1)
+
+    def cleanup_previous_archive(self):
+        '''
+        Used at the start, this will clean the temporary directory of previous killed runs
+        '''
+        for file in glob.glob('/var/tmp/insights-archive-*'):
+            os.path.join('', file)
+            logger.debug("Deleting previous archive %s", file)
+            shutil.rmtree(file, True)
+
+    def storing_archive(self):
+        if not os.path.exists(self.keep_archive_dir):
+            try:
+                os.makedirs(self.keep_archive_dir)
+            except OSError:
+                logger.error('ERROR: Could not create %s', self.keep_archive_dir)
+                raise
+
+        archive_name = os.path.basename(self.tar_file)
+        self.archive_stored = os.path.join(self.keep_archive_dir, archive_name)
+        logger.info('Copying archive from %s to %s', self.tar_file, self.archive_stored)
+        try:
+            shutil.copyfile(self.tar_file, self.archive_stored)
+        except OSError:
+            # file exists already
+            logger.error('ERROR: Could not stored archive to %s', self.archive_stored)
+            raise

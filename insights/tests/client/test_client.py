@@ -341,18 +341,34 @@ def test_upload_412_write_unregistered_file(_, upload_archive, write_unregistere
         sys.argv = tmp
 
 
-def test_cleanup_tmp():
-    config = InsightsConfig(keep_archive=True)
+@patch('insights.client.archive.InsightsArchive.storing_archive')
+def test_cleanup_tmp(storing_archive):
+    config = InsightsConfig(keep_archive=False)
     arch = InsightsArchive(config)
-    arch.tar_file = os.path.join(arch.archive_tmp_dir, 'test.tar.gz')
+    arch.tar_file = os.path.join(arch.tmp_dir, 'test.tar.gz')
     arch.cleanup_tmp()
     assert not os.path.exists(arch.tmp_dir)
-    assert os.path.exists(arch.archive_tmp_dir)
+    storing_archive.assert_not_called()
 
-    config.keep_archive = False
+    config.keep_archive = True
     arch.cleanup_tmp()
     assert not os.path.exists(arch.tmp_dir)
-    assert not os.path.exists(arch.archive_tmp_dir)
+    storing_archive.assert_called_once()
+
+
+@patch('insights.client.archive.InsightsArchive.storing_archive')
+def test_cleanup_tmp_obfuscation(storing_archive):
+    config = InsightsConfig(keep_archive=False, obfuscate=True)
+    arch = InsightsArchive(config)
+    arch.tar_file = os.path.join(arch.tmp_dir, 'test.tar.gz')
+    arch.cleanup_tmp()
+    assert not os.path.exists(arch.tmp_dir)
+    storing_archive.assert_not_called()
+
+    config.keep_archive = True
+    arch.cleanup_tmp()
+    assert not os.path.exists(arch.tmp_dir)
+    storing_archive.assert_called_once()
 
 
 @patch('insights.client.client._legacy_handle_registration')
