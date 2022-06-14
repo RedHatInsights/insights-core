@@ -22,6 +22,17 @@ class NFSCONF(IniConfigFile):
     Class parses the ``/etc/nfs.conf`` file using the ``IniConfigFile`` base
     parser.
 
+    .. note::
+        In some RHEL version, both the file ``/etc/nfs.conf`` and file
+        ``/etc/sysconfig/nfs`` exist, and take effect at the same time for NFS
+        services on the host. And it's possible that there are overlaps between
+        the two configuration files.
+        A combiner for the two configuration files was considered.
+        Since the two files' coverage are different, and it is quite complicate
+        to enumerate all the configuration options and combine them properly,
+        and also, ``/etc/sysconfig/nfs`` is deprecated in lately RHEL releases.
+        We deselect it as a consequence.
+
     Sample configuration file::
 
         [general]
