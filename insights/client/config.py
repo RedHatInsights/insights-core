@@ -211,7 +211,7 @@ DEFAULT_OPTS = {
     'keep_archive': {
         'default': False,
         'opt': ['--keep-archive'],
-        'help': 'Do not delete archive after upload',
+        'help': 'Store archive in /var/cache/insights-client/ after upload',
         'action': 'store_true',
         'group': 'debug'
     },
