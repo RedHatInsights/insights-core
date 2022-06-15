@@ -70,6 +70,46 @@ def test_collect_and_output_payload_off(insights_config, insights_client):
 
 @patch("insights.client.phase.v1.InsightsClient")
 @patch_insights_config
+def test_collect_and_output_payload_on_default(insights_config, insights_client):
+    insights_config.return_value.load_all.return_value.content_type = 'bz2'
+    insights_config.return_value.load_all.return_value.payload = 'testct.bz2'
+    try:
+        collect_and_output()
+    except SystemExit:
+        pass
+    insights_client.return_value.collect.assert_not_called()
+    insights_client.return_value.upload.assert_called_with(payload='testct.bz2', content_type='application/vnd.redhat.advisor.collection+bz2')
+    insights_client.return_value.delete_cached_branch_info.assert_called_once()
+
+
+@patch("insights.client.phase.v1.InsightsClient")
+@patch_insights_config
+def test_collect_and_output_different_payload_type(insights_config, insights_client):
+    insights_config.return_value.load_all.return_value.content_type = 'bz2'
+    insights_config.return_value.load_all.return_value.payload = 'testct.tgz'
+    try:
+        collect_and_output()
+    except SystemExit:
+        pass
+    insights_client.return_value.collect.assert_not_called()
+    insights_client.return_value.upload.assert_not_called()
+
+
+@patch("insights.client.phase.v1.InsightsClient")
+@patch_insights_config
+def test_collect_and_output_none_payload_type(insights_config, insights_client):
+    insights_config.return_value.load_all.return_value.payload = 'testct'
+    try:
+        collect_and_output()
+    except SystemExit:
+        pass
+    insights_client.return_value.collect.assert_not_called()
+    insights_client.return_value.upload.assert_called_with(payload='testct', content_type=None)
+    insights_client.return_value.delete_cached_branch_info.assert_called_once()
+
+
+@patch("insights.client.phase.v1.InsightsClient")
+@patch_insights_config
 # @patch("insights.client.phase.v1.InsightsClient")
 def test_exit_ok(insights_config, insights_client):
     """
