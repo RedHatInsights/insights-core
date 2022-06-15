@@ -329,8 +329,16 @@ def collect_and_output(client, config):
             # no archive to upload, something went wrong
             sys.exit(constants.sig_kill_bad)
         resp = None
+        content_type = None
+        if config.content_type in ['gz', 'bz2', 'xz']:
+            content_type = 'application/vnd.redhat.advisor.collection+' + config.content_type
+            extension = os.path.splitext(insights_archive)[1][1:]
+            compression_type = content_type.split('+')[1]
+            if extension not in compression_type:
+                logger.error("Content type different from compression")
+                sys.exit(constants.sig_kill_bad)
         try:
-            resp = client.upload(payload=insights_archive, content_type=config.content_type)
+            resp = client.upload(payload=insights_archive, content_type=(content_type if content_type else config.content_type))
         except (IOError, ValueError, RuntimeError) as e:
             logger.error(str(e))
             sys.exit(constants.sig_kill_bad)
