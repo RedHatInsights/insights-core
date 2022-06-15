@@ -201,9 +201,9 @@ class TestInsightsArchive(TestCase):
         create_archive_dir.assert_called_once()
 
     @patch('insights.client.archive.shutil.copyfile')
-    @patch('insights.client.archive.os.path.join', side_effect=['/var/tmp/test-archive/insights-archive-test.tar.gz'])
     @patch('insights.client.archive.os.path.isdir', Mock())
-    def test_keep_archive(self, os_, copyfile, _, __):
+    @patch('insights.client.archive.os.path.exists', return_value=True)
+    def test_keep_archive(self, path_exists, copyfile, _, __):
         archive = InsightsArchive(Mock())
         archive.tar_file = '/var/tmp/insights-archive-test.tar.gz'
         archive.keep_archive_dir = '/var/tmp/test-archive'
@@ -215,7 +215,8 @@ class TestInsightsArchive(TestCase):
     @patch('insights.client.archive.os.path.isdir', Mock())
     @patch('insights.client.archive.os.path.basename', Mock())
     @patch('insights.client.archive.logger')
-    def test_keep_archive_err_during_copy(self, logger, copyfile, _, __):
+    @patch('insights.client.archive.os.path.exists', return_value=True)
+    def test_keep_archive_err_during_copy(self, path_exists, logger, copyfile, _, __):
         archive = InsightsArchive(Mock())
         archive.archive_stored = '/var/tmp/test-archive/test-store-archive'
         archive.keep_archive_dir = '/var/tmp/test-archive'
