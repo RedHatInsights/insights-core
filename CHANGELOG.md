@@ -5,10 +5,10 @@
 ## [insights-core-3.0.278](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.278) (2022-06-16)
 
 - Add new parser for /etc/nfs.conf ([PR 3438](https://github.com/RedHatInsights/insights-core/pull/3438))
-- Mock test creating files in protected directories ([PR 3440](https://github.com/RedHatInsights/insights-core/pull/3440)))
-- Append compression type to content-type of MIME. Compare file compression with content_type. ([PR 3435](https://github.com/RedHatInsights/insights-core/pull/3435)))
-- malware-detection: implement yara version handling differently ([PR 3437](https://github.com/RedHatInsights/insights-core/pull/3437)))
-- When insights client is killed the directories in /var/tmp are not removed rhbz#2009773 ([PR 3396](https://github.com/RedHatInsights/insights-core/pull/3396)))
+- Mock test creating files in protected directories ([PR 3440](https://github.com/RedHatInsights/insights-core/pull/3440))
+- Append compression type to content-type of MIME. Compare file compression with content_type. ([PR 3435](https://github.com/RedHatInsights/insights-core/pull/3435))
+- malware-detection: implement yara version handling differently ([PR 3437](https://github.com/RedHatInsights/insights-core/pull/3437))
+- When insights client is killed the directories in /var/tmp are not removed rhbz#2009773 ([PR 3396](https://github.com/RedHatInsights/insights-core/pull/3396))
 
 ## [insights-core-3.0.277](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.277) (2022-06-09)
 
