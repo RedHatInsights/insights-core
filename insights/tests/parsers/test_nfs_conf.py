@@ -1,5 +1,5 @@
 from insights.parsers import nfs_conf as nfs_conf_parser
-from insights.parsers.nfs_conf import NFSCONF
+from insights.parsers.nfs_conf import NFSConf
 from insights.tests import context_wrap
 from doctest import testmod
 
@@ -136,7 +136,7 @@ rdma-port=20049
 
 
 def test_nfs_conf():
-    conf = NFSCONF(context_wrap(NFS_CONF_1))
+    conf = NFSConf(context_wrap(NFS_CONF_1))
     assert conf
 
     assert conf.get('gssd', 'use-gss-proxy') == '1'
@@ -144,12 +144,12 @@ def test_nfs_conf():
 
 
 def test_nfs_exports_empty():
-    conf = NFSCONF(context_wrap(NFS_CONF_2))
+    conf = NFSConf(context_wrap(NFS_CONF_2))
     assert sorted(conf.sections()) == ['exportfs', 'general', 'gssd']
 
 
 def test_module_documentation():
     failed, total = testmod(nfs_conf_parser, globs={
-        "nfs_conf": NFSCONF(context_wrap(NFS_CONF_MODDOC))
+        "nfs_conf": NFSConf(context_wrap(NFS_CONF_MODDOC))
     })
     assert failed == 0

@@ -6,7 +6,7 @@ This file contains site-specific configuration for various NFS daemons and
 other processes. In particular, this encourages consistent configuration
 across different processes.
 
-NFSCONF - file ``/etc/nfs.conf``
+NFSConf - file ``/etc/nfs.conf``
 --------------------------------
 
 """
@@ -17,7 +17,7 @@ from insights.specs import Specs
 
 
 @parser(Specs.nfs_conf)
-class NFSCONF(IniConfigFile):
+class NFSConf(IniConfigFile):
     """
     Class parses the ``/etc/nfs.conf`` file using the ``IniConfigFile`` base
     parser.
