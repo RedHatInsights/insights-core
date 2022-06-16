@@ -23,7 +23,7 @@ from insights.components.virtualization import IsBareMetal
 from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersion
 from insights.specs import Specs
 from insights.specs.datasources import (
-    awx_manage, cloud_init, candlepin_broker, corosync as corosync_ds,
+    awx_manage, container, cloud_init, candlepin_broker, corosync as corosync_ds,
     dir_list, ethernet, httpd, ipcs, lpstat, md5chk, package_provides,
     ps as ps_datasource, sap, satellite_missed_queues, ssl_certificate,
     user_group, yum_updates)
@@ -430,6 +430,7 @@ class DefaultSpecs(Specs):
                            "/etc/opt/rh/rh-nginx*/nginx/*.conf", "/etc/opt/rh/rh-nginx*/nginx/conf.d/*.conf", "/etc/opt/rh/rh-nginx*/nginx/default.d/*.conf"
                            ])
     nginx_ssl_cert_enddate = foreach_execute(ssl_certificate.nginx_ssl_certificate_files, "/usr/bin/openssl x509 -in %s -enddate -noout")
+    nginx_docker_confs = foreach_execute(container.docker_running_container_nginx_conf, "/usr/bin/docker exec %s cat %s")
     nmcli_conn_show = simple_command("/usr/bin/nmcli conn show")
     nmcli_dev_show = simple_command("/usr/bin/nmcli dev show")
     nova_api_log = first_file(["/var/log/containers/nova/nova-api.log", "/var/log/nova/nova-api.log"])
