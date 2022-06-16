@@ -141,8 +141,7 @@ def test_sub_ip_match_IP_overlap_netstat(line, expected):
     assert actual == expected
 
 
-@mark.xfail
-@mark.parametrize(("line",), [
+@mark.parametrize(("original", "expected"), [
     (
         "{\"name\":\"shadow-utils\","
         "\"epoch\":\"2\","
@@ -157,12 +156,27 @@ def test_sub_ip_match_IP_overlap_netstat(line, expected):
         "\"RSA/8, "
         "Tue 08 Mar 2016 11:15:08 AM CET, "
         "Key ID 199e2f91fd431d51\"}",
+
+        "{\"name\":\"shadow-utils\","
+        "\"epoch\":\"2\","
+        "\"version\":\"10.230.230.1\","
+        "\"release\":\"5.el6\","
+        "\"arch\":\"x86_64\","
+        "\"installtime\":\"Wed 13 Jan 2021 10:04:18 AM CET\","
+        "\"buildtime\":\"1455012203\","
+        "\"vendor\":\"Red Hat, Inc.\","
+        "\"buildhost\":\"x86-027.build.eng.bos.redhat.com\","
+        "\"sigpgp\":"
+        "\"RSA/8, "
+        "Tue 08 Mar 2016 11:15:08 AM CET, "
+        "Key ID 199e2f91fd431d51\"}",
     )
 ])
-def test_sub_ip_no_match(line):
+@patch("insights.contrib.soscleaner.SOSCleaner._ip2db", return_value="10.230.230.1")
+def test_sub_ip_false_positive(_ip2db, original, expected):
     soscleaner = _soscleaner()
-    actual = soscleaner._sub_ip(line)
-    assert actual == line
+    actual = soscleaner._sub_ip(original)
+    assert actual == expected
 
 
 def test_excluded_specs():
