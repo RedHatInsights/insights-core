@@ -429,6 +429,7 @@ class Specs(SpecSet):
     neutron_plugin_ini = RegistryPoint()
     neutron_server_log = RegistryPoint(filterable=True)
     nfnetlink_queue = RegistryPoint()
+    nfs_conf = RegistryPoint()
     nfs_exports_d = RegistryPoint(multi_output=True)
     nfs_exports = RegistryPoint()
     nginx_conf = RegistryPoint(multi_output=True)
