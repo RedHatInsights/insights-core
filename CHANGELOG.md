@@ -2,7 +2,7 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
-## [insights-core-3.0.278(https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.278) (2022-06-16)
+## [insights-core-3.0.278](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.278) (2022-06-16)
 
 - Add new parser for /etc/nfs.conf ([PR 3438](https://github.com/RedHatInsights/insights-core/pull/3438))
 - Mock test creating files in protected directories ([PR 3440](https://github.com/RedHatInsights/insights-core/pull/3440)))
