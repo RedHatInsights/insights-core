@@ -17,21 +17,6 @@ from insights.contrib.soscleaner import SOSCleaner
 
 ReportItem = namedtuple("ReportItem", ("name", "relative_path"))
 
-RPM_OUTPUT_SHADOW_UTILS =\
-    "{\"name\":\"shadow-utils\","\
-    "\"epoch\":\"2\","\
-    "\"version\":\"4.1.5.1\","\
-    "\"release\":\"5.el6\","\
-    "\"arch\":\"x86_64\","\
-    "\"installtime\":\"Wed 13 Jan 2021 10:04:18 AM CET\","\
-    "\"buildtime\":\"1455012203\","\
-    "\"vendor\":\"Red Hat, Inc.\","\
-    "\"buildhost\":\"x86-027.build.eng.bos.redhat.com\","\
-    "\"sigpgp\":"\
-    "\"RSA/8, "\
-    "Tue 08 Mar 2016 11:15:08 AM CET, "\
-    "Key ID 199e2f91fd431d51\"}"
-
 
 def _soscleaner():
     soscleaner = SOSCleaner()
