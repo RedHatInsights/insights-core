@@ -3,7 +3,6 @@ from mock.mock import patch, Mock, call
 from unittest import TestCase
 from pytest import raises
 
-
 test_timestamp = '000000'
 test_hostname = 'testhostname'
 test_archive_name = 'insights-testhostname-000000'
