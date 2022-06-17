@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.278
+Version:        3.0.279
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,14 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Fri Jun 17 2022 Bob Fahr <20520336+bfahr@users.noreply.github.com> 3.0.279-1
+- Update canonical_facts to load needed components (#3444)
+  (20520336+bfahr@users.noreply.github.com)
+- Fix tests that removing temp archives (#3445)
+  (93577878+ahitacat@users.noreply.github.com)
+- Remove the excess bracket from CHANGELOG (xiangceliu@redhat.com)
+- Fix the url typo in CHANGELOG (xiangceliu@redhat.com)
+
 * Thu Jun 16 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.278-1
 - Add new parser for /etc/nfs.conf (#3438) (xiaoxwan@redhat.com)
 - Mock test creating files in protected directories (#3440)

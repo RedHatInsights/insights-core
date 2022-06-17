@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.279](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.279) (2022-06-17)
+
+- Update canonical_facts to load needed components ([PR 3444](https://github.com/RedHatInsights/insights-core/pull/3444))
+- Fix tests that removing temp archives ([PR 3445](https://github.com/RedHatInsights/insights-core/pull/3445))
+
 ## [insights-core-3.0.278](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.278) (2022-06-16)
 
 - Add new parser for /etc/nfs.conf ([PR 3438](https://github.com/RedHatInsights/insights-core/pull/3438))
