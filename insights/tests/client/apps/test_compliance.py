@@ -11,6 +11,7 @@ PATH = '/usr/share/xml/scap/ref_id.xml'
 
 @patch("insights.client.apps.compliance.ComplianceClient._assert_oscap_rpms_exist")
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None, compressor='gz', obfuscate=False)
+@patch("insights.client.archive.atexit", Mock())
 def test_oscap_scan(config, assert_rpms):
     compliance_client = ComplianceClient(config)
     compliance_client._get_inventory_id = lambda: ''
@@ -27,6 +28,7 @@ def test_oscap_scan(config, assert_rpms):
 
 @patch("insights.client.apps.compliance.ComplianceClient._assert_oscap_rpms_exist")
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None, compressor='gz', obfuscate=True)
+@patch("insights.client.archive.atexit", Mock())
 def test_oscap_scan_with_obfuscation(config, assert_rpms, tmpdir):
     results_file = tmpdir.mkdir('results').join('result.xml')
     results_file.write("""
@@ -85,6 +87,7 @@ def test_oscap_scan_with_obfuscation(config, assert_rpms, tmpdir):
 
 @patch("insights.client.apps.compliance.ComplianceClient._assert_oscap_rpms_exist")
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None, compressor='gz', obfuscate=True, obfuscate_hostname=True)
+@patch("insights.client.archive.atexit", Mock())
 def test_oscap_scan_with_hostname_obfuscation(config, assert_rpms, tmpdir):
     results_file = tmpdir.mkdir('results').join('result.xml')
     results_file.write("""
@@ -155,6 +158,7 @@ def test_oscap_scan_with_hostname_obfuscation(config, assert_rpms, tmpdir):
 
 @patch("insights.client.apps.compliance.ComplianceClient._assert_oscap_rpms_exist")
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None, compressor='gz')
+@patch("insights.client.archive.atexit", Mock())
 def test_oscap_scan_with_results_repaired(config, assert_rpms, tmpdir):
     results_file = tmpdir.mkdir('results').join('result.xml')
     results_file.write("""
