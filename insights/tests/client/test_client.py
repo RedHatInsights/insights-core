@@ -343,8 +343,9 @@ def test_upload_412_write_unregistered_file(_, upload_archive, write_unregistere
 
 @patch('insights.client.archive.InsightsArchive.storing_archive')
 @patch('insights.client.archive.tempfile.mkdtemp', Mock())
+@patch('insights.client.archive.os.makedirs', Mock())
+@patch('insights.client.archive.atexit', Mock())
 def test_cleanup_tmp(storing_archive):
-
     config = InsightsConfig(keep_archive=False)
     arch = InsightsArchive(config)
     arch.tmp_dir = "/test"
@@ -362,17 +363,19 @@ def test_cleanup_tmp(storing_archive):
 
 @patch('insights.client.archive.InsightsArchive.storing_archive')
 @patch('insights.client.archive.tempfile.mkdtemp', Mock())
+@patch('insights.client.archive.os.makedirs', Mock())
+@patch('insights.client.archive.atexit', Mock())
 def test_cleanup_tmp_obfuscation(storing_archive):
     config = InsightsConfig(keep_archive=False, obfuscate=True)
     arch = InsightsArchive(config)
-    arch.tmp_dir = "/test"
-    arch.tar_file = "/test/test.tar.gz"
-    arch.keep_archive_dir = "/test-keep-archive"
+    arch.tmp_dir = '/var/tmp/insights-archive-000000'
+    arch.tar_file = '/var/tmp/insights-archive-test.tar.gz'
+    arch.keep_archive_dir = '/var/tmp/test-archive'
     arch.cleanup_tmp()
     assert not os.path.exists(arch.tmp_dir)
     storing_archive.assert_not_called()
 
-    config.keep_archive = True
+    arch.config.keep_archive = True
     arch.cleanup_tmp()
     assert not os.path.exists(arch.tmp_dir)
     storing_archive.assert_called_once()
