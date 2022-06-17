@@ -22,7 +22,7 @@ def docker_running_container_ids(broker):
 
 
 class LocalSpecs(Specs):
-    docker_find_etc = foreach_execute(docker_running_container_ids, "/usr/bin/docker exec %s find /etc /opt -name *.conf*")
+    docker_find_etc = foreach_execute(docker_running_container_ids, "/usr/bin/docker exec %s find /etc /opt -name *.conf")
 
 
 @datasource(LocalSpecs.docker_find_etc, HostContext)
@@ -32,7 +32,7 @@ def docker_running_container_nginx_conf(broker):
         content = item.content
         container_id = item.file_path.split("_")[3].strip()
         for line in content:
-            if line.startswith("/etc/nginx") and line.endswith(".conf"):
+            if line.startswith("/etc/nginx"):
                 result_pairs.append((container_id, line.strip()))
     if result_pairs:
         return result_pairs

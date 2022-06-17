@@ -1,6 +1,4 @@
-import pytest
 from mock.mock import Mock
-from insights.core.dr import SkipComponent
 from insights.parsers.docker_list import DockerListContainers
 from insights.specs.datasources.container import (
     docker_running_container_ids, docker_running_container_nginx_conf, LocalSpecs
@@ -88,8 +86,6 @@ DOCKER_FIND = """
 /etc/gcrypt/random.conf
 /etc/nginx/nginx.conf
 /etc/nginx/fastcgi.conf
-/etc/nginx/fastcgi.conf.default
-/etc/nginx/nginx.conf.default
 /etc/man_db.conf
 """.strip()
 
