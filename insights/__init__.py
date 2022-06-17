@@ -364,6 +364,8 @@ def run(component=None, root=None, print_summary=False,
             for c in dr.DELEGATES:
                 if c.__module__.startswith(plugins):
                     component.append(c)
+    else:
+        load_default_plugins()
 
     if component:
         if not isinstance(component, (list, set)):
