@@ -9,7 +9,7 @@ from insights import rule, make_metadata, run
 from insights.specs import Specs
 from insights.core import Parser
 from insights.core.plugins import parser
-from insights.core.dr import set_enabled
+from insights.core.dr import set_enabled, load_components
 import uuid
 
 
@@ -135,6 +135,8 @@ def canonical_facts(
 
 
 def get_canonical_facts(path=None):
+    load_components("insights.specs.default")
+
     set_enabled(canonical_facts, True)
     set_enabled(SubscriptionManagerID, True)
     set_enabled(IPs, True)
@@ -146,7 +148,8 @@ def get_canonical_facts(path=None):
 
 if __name__ == "__main__":
     import json
-    from insights import dr
-    dr.load_components("insights.specs.default", "insights.specs.insights_archive")
+
+    # Load both default and archive to support host and archive collection
+    load_components("insights.specs.default", "insights.specs.insights_archive")
 
     print(json.dumps(get_canonical_facts()))
