@@ -4,25 +4,35 @@ Custom datasources for information from containers
 from insights.core.context import HostContext
 from insights.core.dr import SkipComponent
 from insights.core.plugins import datasource
-from insights.parsers.docker_list import DockerListContainers
 from insights.core.spec_factory import foreach_execute
+from insights.parsers import SkipException, parse_fixed_table
 from insights.specs import Specs
 
 
-@datasource(DockerListContainers, HostContext)
+@datasource(Specs.docker_list_containers, HostContext)
 def docker_running_container_ids(broker):
-    containers = broker[DockerListContainers]
+    print ("20202002")
+    containers = broker[Specs.docker_list_containers].content
+
+    if any(l for l in containers if l.startswith("Usage: ")):
+        raise SkipException('No data only help output.')
+
+    rows = parse_fixed_table(containers, heading_ignore=['CONTAINER'], header_substitute=[("CONTAINER ID", "CONTAINER_ID")])
+
+    if not rows:
+        raise SkipException('No data.')
+
     container_ids = []
-    for container in containers.rows:
+    for container in rows:
         if container["STATUS"].startswith("Up"):
-            container_ids.append(container["CONTAINER ID"])
+            container_ids.append(container["CONTAINER_ID"])
     if container_ids:
         return container_ids
     raise SkipComponent
 
 
 class LocalSpecs(Specs):
-    docker_find_etc = foreach_execute(docker_running_container_ids, "/usr/bin/docker exec %s find /etc /opt -name '*.conf'")
+    docker_find_etc = foreach_execute(docker_running_container_ids, "/usr/local/bin/docker exec %s find /etc /opt -name '*.conf'")
 
 
 @datasource(LocalSpecs.docker_find_etc, HostContext)
