@@ -430,7 +430,8 @@ class DefaultSpecs(Specs):
                            "/etc/opt/rh/rh-nginx*/nginx/*.conf", "/etc/opt/rh/rh-nginx*/nginx/conf.d/*.conf", "/etc/opt/rh/rh-nginx*/nginx/default.d/*.conf"
                            ])
     nginx_ssl_cert_enddate = foreach_execute(ssl_certificate.nginx_ssl_certificate_files, "/usr/bin/openssl x509 -in %s -enddate -noout")
-    nginx_docker_confs = foreach_execute(container.docker_running_container_nginx_conf, "/usr/bin/docker exec %s cat %s")
+    docker_nginx_confs = foreach_execute(container.docker_running_container_nginx_conf, "/usr/bin/docker exec %s cat %s")
+    docker_nginx_error_log = foreach_execute(container.docker_running_container_ids, "/usr/bin/docker exec %s cat /var/log/nginx/error.log")
     nmcli_conn_show = simple_command("/usr/bin/nmcli conn show")
     nmcli_dev_show = simple_command("/usr/bin/nmcli dev show")
     nova_api_log = first_file(["/var/log/containers/nova/nova-api.log", "/var/log/nova/nova-api.log"])
@@ -700,3 +701,5 @@ class DefaultSpecs(Specs):
     zipl_conf = simple_file("/etc/zipl.conf")
     rpm_format = format_rpm()
     installed_rpms = simple_command("/bin/rpm -qa --qf '%s'" % rpm_format, context=HostContext, signum=signal.SIGTERM)
+    docker_rpm = foreach_execute(container.docker_running_container_ids, "/usr/bin/docker exec %s /bin/rpm -qa --qf '%s'" % rpm_format)
+    docker_redhat_release = foreach_execute(container.docker_running_container_ids, "/usr/bin/docker exec %s /usr/bin/cat /etc/redhat-release")

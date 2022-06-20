@@ -329,3 +329,8 @@ class NginxConfPEG(ConfigParser):
             return Entry(children=self.Top("\n".join(content))[0], src=self)
         except Exception:
             raise ParseException("There was an exception when parsing the config file.")
+
+
+@parser(Specs.docker_nginx_confs)
+class DockerNginxConfPEG(NginxConfPEG):
+    pass

@@ -104,3 +104,8 @@ class RedhatRelease(Parser):
     def code_name(self):
         """string: code name of this OS or None."""
         return self.parsed["code_name"]
+
+
+@parser(Specs.docker_redhat_release)
+class DockerRedhatRelease(RedhatRelease):
+    pass

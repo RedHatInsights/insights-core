@@ -48,3 +48,8 @@ class NginxErrorLog(LogFileOutput):
         '2022/04/02 17:59:29 [warn] 1594#1594: *711881 an upstream response is buffered to a temporary file /var/lib/nginx/tmp/uwsgi/6/25/0000003256 while reading upstream, client: 10.245.136.148, server: _, request: "GET /api/v2/labels/?page_size=200 HTTP/1.1", upstream: "uwsgi://unix:/var/run/tower/uwsgi.sock:", host: "towergtd.desjardins.com", referrer: "https://towergtd.desjardins.com/"'
     """
     time_format = '%Y/%m/%d %H:%M:%S'
+
+
+@parser(Specs.docker_nginx_error_log)
+class DockerNginxErrorLog(NginxErrorLog):
+    pass
