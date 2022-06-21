@@ -387,7 +387,7 @@ class Specs(SpecSet):
     modinfo_ixgbe = RegistryPoint()
     modinfo_veth = RegistryPoint()
     modinfo_vmxnet3 = RegistryPoint()
-    modinfo = RegistryPoint(multi_output=True)
+    modinfo = RegistryPoint(filterable=True)
     modinfo_all = RegistryPoint()
     modprobe = RegistryPoint(multi_output=True)
     mokutil_sbstate = RegistryPoint()

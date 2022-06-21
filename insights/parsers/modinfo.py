@@ -1,36 +1,12 @@
 """
-ModInfo - Commands ``modinfo <module_name>``
-============================================
-Parsers to parse the output of ``modinfo <module_name>`` commands.
-
-ModInfoI40e - Command ``modinfo i40e``
---------------------------------------
-
-ModInfoVmxnet3 - Command ``modinfo vmxnet3``
---------------------------------------------
-
-ModInfoIgb - Command ``modinfo igb``
-------------------------------------
-
-ModInfoIxgbe - Command ``modinfo ixgbe``
-----------------------------------------
-
-ModInfoVeth - Command ``modinfo veth``
---------------------------------------
-
-ModInfoEach - Command ``modinfo *``
------------------------------------
-for any module listed by ``lsmod``
-
-ModInfoAll - Command ``modinfo *(all modules)``
------------------------------------------------
-for all modules listed by ``lsmod``
-
+ModInfoAll - Command ``modinfo *(filtered modules)``
+----------------------------------------------------
 """
 
 from insights import parser, CommandParser
 from insights.parsers import SkipException
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 class ModInfo(dict):
@@ -241,6 +217,10 @@ class ModInfoAll(CommandParser, dict):
 @parser(Specs.modinfo)
 class ModInfoEach(CommandParser, ModInfo):
     """
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.modinfo.ModInfoAll` instead.
+
     Parses the output of ``modinfo %s`` command, where %s is any of the loaded modules.
 
     Sample output::
@@ -285,6 +265,14 @@ class ModInfoEach(CommandParser, ModInfo):
         >>> sorted(modinfo_obj.module_parm)
         ['debug:Debug level (0=none,...,16=all), Debug mask (0x8XXXXXXX) (uint)', 'int_mode: Force interrupt mode other than MSI-X (1 INT#x; 2 MSI) (int)']
     """
+
+    def __init__(self, *args, **kwargs):
+        deprecated(
+            ModInfoEach,
+            'Please use the :class:`insights.parsers.modinfo.ModInfoAll` instead.'
+        )
+        super(ModInfoEach, self).__init__(*args, **kwargs)
+
     def parse_content(self, content):
         self.update(ModInfo.from_content(content))
 
@@ -299,6 +287,10 @@ class ModInfoEach(CommandParser, ModInfo):
 @parser(Specs.modinfo_i40e)
 class ModInfoI40e(ModInfoEach):
     """
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.modinfo.ModInfoAll` instead.
+
     Parses output of ``modinfo i40e`` command.
     Sample ``modinfo i40e`` output::
 
@@ -341,12 +333,22 @@ class ModInfoI40e(ModInfoEach):
         >>> sorted(modinfo_i40e.module_parm) == sorted(['debug:Debug level (0=none,...,16=all), Debug mask (0x8XXXXXXX) (uint)', 'int_mode: Force interrupt mode other than MSI-X (1 INT#x; 2 MSI) (int)'])
         True
     """
-    pass
+
+    def __init__(self, *args, **kwargs):
+        deprecated(
+            ModInfoI40e,
+            'Please use the :class:`insights.parsers.modinfo.ModInfoAll` instead.'
+        )
+        super(ModInfoI40e, self).__init__(*args, **kwargs)
 
 
 @parser(Specs.modinfo_vmxnet3)
 class ModInfoVmxnet3(ModInfoEach):
     """
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.modinfo.ModInfoAll` instead.
+
     Parses output of ``modinfo vmxnet3`` command.
     Sample ``modinfo vmxnet3`` output::
 
@@ -378,12 +380,22 @@ class ModInfoVmxnet3(ModInfoEach):
         >>> modinfo_drv.module_alias
         'pci:v000015ADd000007B0sv*sd*bc*sc*i*'
     """
-    pass
+
+    def __init__(self, *args, **kwargs):
+        deprecated(
+            ModInfoVmxnet3,
+            'Please use the :class:`insights.parsers.modinfo.ModInfoAll` instead.'
+        )
+        super(ModInfoVmxnet3, self).__init__(*args, **kwargs)
 
 
 @parser(Specs.modinfo_igb)
 class ModInfoIgb(ModInfoEach):
     """
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.modinfo.ModInfoAll` instead.
+
     Parses output of ``modinfo igb`` command.
     Sample ``modinfo igb`` output::
 
@@ -416,12 +428,22 @@ class ModInfoIgb(ModInfoEach):
         >>> modinfo_igb.module_alias
         'pci:v00008086d000010D6sv*sd*bc*sc*i*'
     """
-    pass
+
+    def __init__(self, *args, **kwargs):
+        deprecated(
+            ModInfoIgb,
+            'Please use the :class:`insights.parsers.modinfo.ModInfoAll` instead.'
+        )
+        super(ModInfoIgb, self).__init__(*args, **kwargs)
 
 
 @parser(Specs.modinfo_ixgbe)
 class ModInfoIxgbe(ModInfoEach):
     """
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.modinfo.ModInfoAll` instead.
+
     Parses output of ``modinfo ixgbe`` command.
     Sample ``modinfo ixgbe`` output::
 
@@ -454,12 +476,22 @@ class ModInfoIxgbe(ModInfoEach):
         >>> modinfo_ixgbe.module_alias
         'pci:v00008086d000015CEsv*sd*bc*sc*i*'
     """
-    pass
+
+    def __init__(self, *args, **kwargs):
+        deprecated(
+            ModInfoIxgbe,
+            'Please use the :class:`insights.parsers.modinfo.ModInfoAll` instead.'
+        )
+        super(ModInfoIxgbe, self).__init__(*args, **kwargs)
 
 
 @parser(Specs.modinfo_veth)
 class ModInfoVeth(ModInfoEach):
     """
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.modinfo.ModInfoAll` instead.
+
     Parses output of ``modinfo veth`` command.
     Sample ``modinfo veth`` output::
 
@@ -484,4 +516,10 @@ class ModInfoVeth(ModInfoEach):
         >>> modinfo_veth.module_signer
         'Red Hat Enterprise Linux kernel signing key'
     """
-    pass
+
+    def __init__(self, *args, **kwargs):
+        deprecated(
+            ModInfoVeth,
+            'Please use the :class:`insights.parsers.modinfo.ModInfoAll` instead.'
+        )
+        super(ModInfoVeth, self).__init__(*args, **kwargs)

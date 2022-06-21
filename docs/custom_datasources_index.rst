@@ -67,6 +67,14 @@ insights.specs.datasources.ipcs
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.kernel_module_list
+---------------------------------------------
+
+.. automodule:: insights.specs.datasources.kernel_module_list
+    :members: kernel_module_filters
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.md5chk
 ---------------------------------
 
