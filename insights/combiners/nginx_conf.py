@@ -9,7 +9,7 @@ from insights.parsr.query import eq
 import operator
 from fnmatch import fnmatch
 from os.path import dirname
-from insights.parsr.query import Directive, Entry, Result, Section, compile_queries
+from insights.parsr.query import Entry
 
 
 @combiner(NginxConfPEG)
@@ -47,8 +47,6 @@ class DockerNginxConfTree(ConfigCombiner):
                 all_containers[container_id].append(conf)
             else:
                 all_containers[container_id] = [conf]
-        # print ("9090909090")
-        # print (all_containers)
 
         for id, confs in all_containers.items():
             main = self.find_main(confs, "nginx.conf")
@@ -58,12 +56,7 @@ class DockerNginxConfTree(ConfigCombiner):
                     includes = self.find_matches(confs, pattern)
                     for inc in includes:
                         node.children.extend(inc.doc.children)
-                        # print ("222222222222222")
-                        # print (node)
             self.doc[id] = Entry(children=flatten(main.doc.children, eq("include")))
-            # print ("505050505050")
-            # print (self.doc)
-
 
     def find_matches(self, confs, pattern):
         results = [c for c in confs if fnmatch(c.file_name.split("cat_")[-1], pattern)]
@@ -73,6 +66,3 @@ class DockerNginxConfTree(ConfigCombiner):
         for c in confs:
             if c.file_name.endswith(name):
                 return c
-
-
-

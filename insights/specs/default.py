@@ -701,5 +701,5 @@ class DefaultSpecs(Specs):
     zipl_conf = simple_file("/etc/zipl.conf")
     rpm_format = format_rpm()
     installed_rpms = simple_command("/bin/rpm -qa --qf '%s'" % rpm_format, context=HostContext, signum=signal.SIGTERM)
-    docker_rpm = foreach_execute(container.docker_running_container_ids, "/usr/bin/docker exec %s /bin/rpm -qa --qf '%s'" % rpm_format)
+    docker_rpm = foreach_execute(container.docker_running_container_ids, "/usr/bin/docker exec %s /bin/rpm -qa")
     docker_redhat_release = foreach_execute(container.docker_running_container_ids, "/usr/bin/docker exec %s /usr/bin/cat /etc/redhat-release")

@@ -436,7 +436,7 @@ class Specs(SpecSet):
     nginx_error_log = RegistryPoint(filterable=True)
     nginx_ssl_cert_enddate = RegistryPoint(multi_output=True)
     docker_nginx_confs = RegistryPoint(multi_output=True)
-    docker_nginx_error_log = RegistryPoint(multi_output=True)
+    docker_nginx_error_log = RegistryPoint(multi_output=True, filterable=True)
     docker_redhat_release = RegistryPoint(multi_output=True)
     docker_rpm = RegistryPoint(multi_output=True)
     nmcli_conn_show = RegistryPoint()
