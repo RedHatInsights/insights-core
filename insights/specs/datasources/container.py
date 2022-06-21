@@ -11,7 +11,6 @@ from insights.specs import Specs
 
 @datasource(Specs.docker_list_containers, HostContext)
 def docker_running_container_ids(broker):
-    print ("20202002")
     containers = broker[Specs.docker_list_containers].content
 
     if any(l for l in containers if l.startswith("Usage: ")):
@@ -32,7 +31,7 @@ def docker_running_container_ids(broker):
 
 
 class LocalSpecs(Specs):
-    docker_find_etc = foreach_execute(docker_running_container_ids, "/usr/local/bin/docker exec %s find /etc /opt -name '*.conf'")
+    docker_find_etc = foreach_execute(docker_running_container_ids, "/usr/bin/docker exec %s find /etc /opt -name '*.conf'")
 
 
 @datasource(LocalSpecs.docker_find_etc, HostContext)
