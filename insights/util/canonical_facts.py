@@ -135,7 +135,7 @@ def canonical_facts(
 
 
 def get_canonical_facts(path=None):
-    load_components("insights.specs.default")
+    load_components("insights.specs.default", "insights.specs.insights_archive")
 
     set_enabled(canonical_facts, True)
     set_enabled(SubscriptionManagerID, True)
@@ -148,8 +148,5 @@ def get_canonical_facts(path=None):
 
 if __name__ == "__main__":
     import json
-
-    # Load both default and archive to support host and archive collection
-    load_components("insights.specs.default", "insights.specs.insights_archive")
 
     print(json.dumps(get_canonical_facts()))
