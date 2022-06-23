@@ -337,8 +337,6 @@ class DefaultSpecs(Specs):
     ls_usr_lib64 = simple_command("/bin/ls -lan /usr/lib64")
     ls_usr_lib_systemd = simple_command("/bin/ls -lanRL /usr/lib/systemd")
     ls_usr_local_lib_systemd = simple_command("/bin/ls -lanRL /usr/local/lib/systemd")
-    ls_usr_local_share_systemd = simple_command("/bin/ls -lanRL /usr/local/share/systemd")
-    ls_usr_share_systemd = simple_command("/bin/ls -lanRL /usr/share/systemd")
     ls_var_cache_pulp = simple_command("/bin/ls -lan /var/cache/pulp")
     ls_var_lib_mongodb = simple_command("/bin/ls -la /var/lib/mongodb")
     ls_var_lib_nova_instances = simple_command("/bin/ls -laRZ /var/lib/nova/instances")
