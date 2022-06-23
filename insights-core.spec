@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.279
+Version:        3.0.280
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,11 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jun 23 2022 Sachin Patil <psachin@redhat.com> 3.0.280-1
+- Update canonical_facts to load needed components (#3448) (20520336+bfahr@users.noreply.github.com)
+- Remove RPM_OUTPUT_SHADOW_UTILS (#3442) (stomsa@redhat.com)
+- Replace xfail with positive test (#3443) (stomsa@redhat.com)
+
 * Fri Jun 17 2022 Bob Fahr <20520336+bfahr@users.noreply.github.com> 3.0.279-1
 - Update canonical_facts to load needed components (#3444)
   (20520336+bfahr@users.noreply.github.com)
