@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.280](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.280) (2022-06-23)
+
+- Update canonical_facts to load needed components ([PR 3448](https://github.com/RedHatInsights/insights-core/pull/3448))
+- Remove RPM_OUTPUT_SHADOW_UTILS ([PR 3442](https://github.com/RedHatInsights/insights-core/pull/3442))
+- Replace xfail with positive test ([PR 3443](https://github.com/RedHatInsights/insights-core/pull/3443))
+
 ## [insights-core-3.0.279](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.279) (2022-06-17)
 
 - Update canonical_facts to load needed components ([PR 3444](https://github.com/RedHatInsights/insights-core/pull/3444))
