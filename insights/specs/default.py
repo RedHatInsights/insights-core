@@ -372,7 +372,7 @@ class DefaultSpecs(Specs):
     mdstat = simple_file("/proc/mdstat")
     meminfo = first_file(["/proc/meminfo", "/meminfo"])
     messages = simple_file("/var/log/messages")
-    modinfo_all = command_with_args('modinfo %s', kernel_module_list.kernel_module_filters)
+    modinfo_filtered_modules = command_with_args('modinfo %s', kernel_module_list.kernel_module_filters)
     modprobe = glob_file(["/etc/modprobe.conf", "/etc/modprobe.d/*.conf"])
     mokutil_sbstate = simple_command("/bin/mokutil --sb-state")
     mongod_conf = glob_file([

@@ -17,8 +17,8 @@ from insights.util import deprecated
 class ModInfo(dict):
     """
     .. warning::
-        This parser is deprecated, please use
-        :py:class:`insights.parsers.modinfo.ModInfoAll` instead.
+        This combiner is deprecated, please use
+        :py:class:`insights.parsers.modinfo.KernelModulesInfo` instead.
 
     Combiner for accessing all the modinfo outputs.
 
@@ -54,7 +54,7 @@ class ModInfo(dict):
     def __init__(self, mi_all, mi_each):
         deprecated(
             ModInfo,
-            'Please use the :class:`insights.parsers.modinfo.ModInfoAll` instead.'
+            'Please use the :class:`insights.parsers.modinfo.KernelModulesInfo` instead.'
         )
         self.retpoline_y = set()
         self.retpoline_n = set()

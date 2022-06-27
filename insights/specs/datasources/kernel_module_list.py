@@ -15,7 +15,7 @@ def kernel_module_filters(broker):
     Return a string of a list of modules from the spec filter,
     separated with space.
     """
-    filters = sorted((get_filters(Specs.modinfo)))
+    filters = sorted((get_filters(Specs.modinfo_modules)))
     if filters:
         return ' '.join(filters)
     raise SkipComponent
