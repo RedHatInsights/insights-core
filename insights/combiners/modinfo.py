@@ -10,11 +10,16 @@ indexed by the module name.
 from insights.core.plugins import combiner
 from insights.parsers.modinfo import ModInfoEach, ModInfoAll
 from insights import SkipComponent
+from insights.util import deprecated
 
 
 @combiner([ModInfoAll, ModInfoEach])
 class ModInfo(dict):
     """
+    .. warning::
+        This combiner is deprecated, please use
+        :py:class:`insights.parsers.modinfo.KernelModulesInfo` instead.
+
     Combiner for accessing all the modinfo outputs.
 
     Examples:
@@ -47,6 +52,10 @@ class ModInfo(dict):
         retpoline_n (set): A set of names of the modules with the attribute "retpoline: N".
     """
     def __init__(self, mi_all, mi_each):
+        deprecated(
+            ModInfo,
+            'Please use the :class:`insights.parsers.modinfo.KernelModulesInfo` instead.'
+        )
         self.retpoline_y = set()
         self.retpoline_n = set()
         if mi_all:
