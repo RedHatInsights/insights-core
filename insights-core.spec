@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.280
+Version:        3.0.281
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,14 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jun 30 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.281-1
+- feat: add "modinfo_filtered_modules" to collect the filtered modules
+  information (#3447) (44796653+huali027@users.noreply.github.com)
+- feat: Parser for "ls systemd units" (#3451)
+  (41325380+jobselko@users.noreply.github.com)
+- Handle downloading malware-detection rules from stage environment (#3452)
+  (mhuth@redhat.com)
+
 * Thu Jun 23 2022 Sachin Patil <psachin@redhat.com> 3.0.280-1
 - Update canonical_facts to load needed components (#3448) (20520336+bfahr@users.noreply.github.com)
 - Remove RPM_OUTPUT_SHADOW_UTILS (#3442) (stomsa@redhat.com)

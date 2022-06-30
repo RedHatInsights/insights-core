@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.281](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.281) (2022-06-30)
+
+- feat: add "modinfo_filtered_modules" to collect the filtered modules information ([PR 3447](https://github.com/RedHatInsights/insights-core/pull/3447))
+- feat: Parser for "ls systemd units" ([PR 3451](https://github.com/RedHatInsights/insights-core/pull/3451))
+- Handle downloading malware-detection rules from stage environment ([PR 3452](https://github.com/RedHatInsights/insights-core/pull/3452))
+
 ## [insights-core-3.0.280](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.280) (2022-06-23)
 
 - Update canonical_facts to load needed components ([PR 3448](https://github.com/RedHatInsights/insights-core/pull/3448))
