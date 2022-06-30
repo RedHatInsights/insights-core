@@ -24,9 +24,9 @@ from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersio
 from insights.specs import Specs
 from insights.specs.datasources import (
     awx_manage, cloud_init, candlepin_broker, corosync as corosync_ds,
-    dir_list, ethernet, httpd, ipcs, lpstat, md5chk, package_provides,
-    ps as ps_datasource, sap, satellite_missed_queues, ssl_certificate,
-    user_group, yum_updates)
+    dir_list, ethernet, httpd, ipcs, kernel_module_list, lpstat, md5chk,
+    package_provides, ps as ps_datasource, sap, satellite_missed_queues,
+    ssl_certificate, user_group, yum_updates)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 from insights.specs.datasources.pcp import pcp_enabled, pmlog_summary_args
 
@@ -369,11 +369,7 @@ class DefaultSpecs(Specs):
     mdstat = simple_file("/proc/mdstat")
     meminfo = first_file(["/proc/meminfo", "/meminfo"])
     messages = simple_file("/var/log/messages")
-    modinfo_i40e = simple_command("/sbin/modinfo i40e")
-    modinfo_igb = simple_command("/sbin/modinfo igb")
-    modinfo_ixgbe = simple_command("/sbin/modinfo ixgbe")
-    modinfo_veth = simple_command("/sbin/modinfo veth")
-    modinfo_vmxnet3 = simple_command("/sbin/modinfo vmxnet3")
+    modinfo_filtered_modules = command_with_args('modinfo %s', kernel_module_list.kernel_module_filters)
     modprobe = glob_file(["/etc/modprobe.conf", "/etc/modprobe.d/*.conf"])
     mokutil_sbstate = simple_command("/bin/mokutil --sb-state")
     mongod_conf = glob_file([
