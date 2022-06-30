@@ -190,7 +190,7 @@ class DefaultSpecs(Specs):
     ethtool_c = foreach_execute(ethernet.interfaces, "/sbin/ethtool -c %s")
     ethtool_g = foreach_execute(ethernet.interfaces, "/sbin/ethtool -g %s")
     ethtool_i = foreach_execute(ethernet.interfaces, "/sbin/ethtool -i %s")
-    ethtool_k = foreach_execute(ethernet.interfaces, "/bin/ethtool -k %s")
+    ethtool_k = foreach_execute(ethernet.interfaces, "/sbin/ethtool -k %s")
     fc_match = simple_command("/bin/fc-match -sv 'sans:regular:roman' family fontformat")
     fcoeadm_i = simple_command("/usr/sbin/fcoeadm -i")
     findmnt_lo_propagation = simple_command("/bin/findmnt -lo+PROPAGATION")
