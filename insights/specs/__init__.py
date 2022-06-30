@@ -384,6 +384,8 @@ class Specs(SpecSet):
     modinfo_vmxnet3 = RegistryPoint()
     modinfo = RegistryPoint(multi_output=True)
     modinfo_all = RegistryPoint()
+    modinfo_filtered_modules = RegistryPoint()
+    modinfo_modules = RegistryPoint(filterable=True)
     modprobe = RegistryPoint(multi_output=True)
     mokutil_sbstate = RegistryPoint()
     mongod_conf = RegistryPoint(multi_output=True, filterable=True)
