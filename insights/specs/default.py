@@ -24,9 +24,9 @@ from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersio
 from insights.specs import Specs
 from insights.specs.datasources import (
     awx_manage, cloud_init, candlepin_broker, corosync as corosync_ds,
-    dir_list, ethernet, httpd, ipcs, lpstat, md5chk, package_provides,
-    ps as ps_datasource, sap, satellite_missed_queues, ssl_certificate,
-    user_group, yum_updates)
+    dir_list, ethernet, httpd, ipcs, kernel_module_list, lpstat, md5chk,
+    package_provides, ps as ps_datasource, sap, satellite_missed_queues,
+    ssl_certificate, user_group, yum_updates)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 from insights.specs.datasources.pcp import pcp_enabled, pmlog_summary_args
 
@@ -323,22 +323,19 @@ class DefaultSpecs(Specs):
         "/etc/pki/ovirt-vmconsole", "/etc/nova/migration", "/etc/sysconfig",
         "/etc/cloud/cloud.cfg.d", "/etc/rc.d/init.d"])
     ls_etc = simple_command("/bin/ls -lan {0}".format(' '.join(etc_and_sub_dirs)), keep_rc=True)
-    ls_etc_systemd = simple_command("/bin/ls -lanRL /etc/systemd")
     ls_ipa_idoverride_memberof = simple_command("/bin/ls -lan /usr/share/ipa/ui/js/plugins/idoverride-memberof")
     ls_lib_firmware = simple_command("/bin/ls -lanR /lib/firmware")
     ls_ocp_cni_openshift_sdn = simple_command("/bin/ls -l /var/lib/cni/networks/openshift-sdn")
     ls_origin_local_volumes_pods = simple_command("/bin/ls -l /var/lib/origin/openshift.local.volumes/pods")
     ls_osroot = simple_command("/bin/ls -lan /")
-    ls_run_systemd = simple_command("/bin/ls -lanRL /run/systemd")
     ls_R_var_lib_nova_instances = simple_command("/bin/ls -laR /var/lib/nova/instances")
     ls_sys_firmware = simple_command("/bin/ls -lanR /sys/firmware")
+    ls_systemd_units = simple_command(
+        "/bin/ls -lanRL /etc/systemd /run/systemd /usr/lib/systemd /usr/local/lib/systemd", keep_rc=True
+    )
     ls_tmp = simple_command("/bin/ls -la /tmp")
     ls_usr_bin = simple_command("/bin/ls -lan /usr/bin")
     ls_usr_lib64 = simple_command("/bin/ls -lan /usr/lib64")
-    ls_usr_lib_systemd = simple_command("/bin/ls -lanRL /usr/lib/systemd")
-    ls_usr_local_lib_systemd = simple_command("/bin/ls -lanRL /usr/local/lib/systemd")
-    ls_usr_local_share_systemd = simple_command("/bin/ls -lanRL /usr/local/share/systemd")
-    ls_usr_share_systemd = simple_command("/bin/ls -lanRL /usr/share/systemd")
     ls_var_cache_pulp = simple_command("/bin/ls -lan /var/cache/pulp")
     ls_var_lib_mongodb = simple_command("/bin/ls -la /var/lib/mongodb")
     ls_var_lib_nova_instances = simple_command("/bin/ls -laRZ /var/lib/nova/instances")
@@ -375,6 +372,7 @@ class DefaultSpecs(Specs):
     modinfo_i40e = simple_command("/sbin/modinfo i40e")
     modinfo_igb = simple_command("/sbin/modinfo igb")
     modinfo_ixgbe = simple_command("/sbin/modinfo ixgbe")
+    modinfo_filtered_modules = command_with_args('modinfo %s', kernel_module_list.kernel_module_filters)
     modinfo_veth = simple_command("/sbin/modinfo veth")
     modinfo_vmxnet3 = simple_command("/sbin/modinfo vmxnet3")
     modprobe = glob_file(["/etc/modprobe.conf", "/etc/modprobe.d/*.conf"])
