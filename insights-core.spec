@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.281
+Version:        3.0.282
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,10 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Fri Jul 01 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.282-1
+- fixes: Recover "modinfo_xxx" specs (#3456)
+  (44796653+huali027@users.noreply.github.com)
+
 * Thu Jun 30 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.281-1
 - feat: add "modinfo_filtered_modules" to collect the filtered modules
   information (#3447) (44796653+huali027@users.noreply.github.com)
