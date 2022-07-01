@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.282](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.282) (2022-07-01)
+
+- fixes: Recover "modinfo_xxx" specs ([PR 3456](https://github.com/RedHatInsights/insights-core/pull/3456))
+
 ## [insights-core-3.0.281](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.281) (2022-06-30)
 
 - feat: add "modinfo_filtered_modules" to collect the filtered modules information ([PR 3447](https://github.com/RedHatInsights/insights-core/pull/3447))
