@@ -369,7 +369,12 @@ class DefaultSpecs(Specs):
     mdstat = simple_file("/proc/mdstat")
     meminfo = first_file(["/proc/meminfo", "/meminfo"])
     messages = simple_file("/var/log/messages")
+    modinfo_i40e = simple_command("/sbin/modinfo i40e")
+    modinfo_igb = simple_command("/sbin/modinfo igb")
+    modinfo_ixgbe = simple_command("/sbin/modinfo ixgbe")
     modinfo_filtered_modules = command_with_args('modinfo %s', kernel_module_list.kernel_module_filters)
+    modinfo_veth = simple_command("/sbin/modinfo veth")
+    modinfo_vmxnet3 = simple_command("/sbin/modinfo vmxnet3")
     modprobe = glob_file(["/etc/modprobe.conf", "/etc/modprobe.d/*.conf"])
     mokutil_sbstate = simple_command("/bin/mokutil --sb-state")
     mongod_conf = glob_file([
