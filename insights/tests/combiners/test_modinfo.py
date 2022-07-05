@@ -1,5 +1,9 @@
-from insights.parsers.modinfo import ModInfoEach, ModInfoAll
-from insights.combiners.modinfo import ModInfo
+from insights.parsers.modinfo import (
+    ModInfoEach, ModInfoAll, KernelModulesInfo,
+    ModInfoI40e, ModInfoIgb, ModInfoIxgbe, ModInfoVeth,
+    ModInfoVmxnet3
+)
+from insights.combiners.modinfo import ModInfo, ModulesInfo
 from insights.tests.parsers.test_modinfo import (
         MODINFO_I40E, MODINFO_INTEL,
         MODINFO_BNX2X, MODINFO_IGB, MODINFO_IXGBE,
@@ -210,6 +214,45 @@ def test_modinfo_doc_examples():
                 modinfo_vmxnet3,
                 modinfo_veth]
     )
-    env = {'modinfo_obj': comb}
+    modinfo_i40e = ModInfoI40e(context_wrap(MODINFO_I40E))
+    modinfo_igb = ModInfoIgb(context_wrap(MODINFO_IGB))
+    modinfo_ixgbe = ModInfoIxgbe(context_wrap(MODINFO_IXGBE))
+    modinfo_vmxnet3 = ModInfoVmxnet3(context_wrap(MODINFO_VMXNET3))
+    modinfo_veth = ModInfoVeth(context_wrap(MODINFO_VETH))
+    filter_modules = KernelModulesInfo(context_wrap(
+        '{0}\n{1}\n{2}'.format(
+            MODINFO_I40E,
+            MODINFO_INTEL,
+            MODINFO_BNX2X)
+    ))
+    combiner_obj = ModulesInfo(
+        filter_modules, modinfo_i40e, modinfo_igb, modinfo_ixgbe, modinfo_vmxnet3, modinfo_veth
+    )
+    env = {
+        'modinfo_obj': comb,
+        'modules_obj': combiner_obj
+    }
     failed, total = doctest.testmod(modinfo, globs=env)
     assert failed == 0
+
+
+def test_modules_info():
+    modinfo_i40e = ModInfoI40e(context_wrap(MODINFO_I40E))
+    modinfo_igb = ModInfoIgb(context_wrap(MODINFO_IGB))
+    modinfo_ixgbe = ModInfoIxgbe(context_wrap(MODINFO_IXGBE))
+    modinfo_vmxnet3 = ModInfoVmxnet3(context_wrap(MODINFO_VMXNET3))
+    modinfo_veth = ModInfoVeth(context_wrap(MODINFO_VETH))
+    filter_modules = KernelModulesInfo(context_wrap(
+        '{0}\n{1}\n{2}'.format(
+            MODINFO_I40E,
+            MODINFO_INTEL,
+            MODINFO_BNX2X)
+    ))
+    combiner_obj = ModulesInfo(
+        filter_modules, modinfo_i40e, modinfo_igb, modinfo_ixgbe, modinfo_vmxnet3, modinfo_veth
+    )
+    assert 'i40e' in combiner_obj
+    assert combiner_obj['i40e']['signer'] == 'Red Hat Enterprise Linux kernel signing key'
+    assert len(combiner_obj) == 7
+    assert 'abc' not in combiner_obj
+    assert 'i40e' in combiner_obj.retpoline_y
