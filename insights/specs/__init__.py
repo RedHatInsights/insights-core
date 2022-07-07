@@ -359,6 +359,7 @@ class Specs(SpecSet):
     lsvmbus = RegistryPoint()
     lvdisplay = RegistryPoint()
     lvm_conf = RegistryPoint(filterable=True)
+    lvm_system_devices = RegistryPoint()
     lvmconfig = RegistryPoint()
     lvs_noheadings = RegistryPoint()
     lvs_noheadings_all = RegistryPoint()
