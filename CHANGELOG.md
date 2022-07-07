@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.283](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.283) (2022-07-07)
+
+- feat: New spec "/etc/lvm/devices/system.devices" and parser ([PR 3457](https://github.com/RedHatInsights/insights-core/pull/3457))
+
 ## [insights-core-3.0.282](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.282) (2022-07-01)
 
 - fixes: Recover "modinfo_xxx" specs ([PR 3456](https://github.com/RedHatInsights/insights-core/pull/3456))
