@@ -88,3 +88,13 @@ jobs:
         pip install docutils==0.17
         pip install -e .[docs]
         sphinx-build -W -b html -qa -E docs docs/_build/html
+
+  specs-cross-check:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Trigger Specs Cross Check Job
+      uses: actions/checkout@v2
+      with:
+        url: "https://gitlab.cee.redhat.com/"
+        token: GITHUB_CI_TOKEN
+        project_id: 61604
