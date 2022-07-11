@@ -98,5 +98,5 @@ jobs:
       uses: appleboy/gitlab-ci-action@master
       with:
         url: "https://gitlab.cee.redhat.com/"
-        token: $GITHUB_CI_TOKEN
+        token: ${{ secrets.GITLAB_CI_TOKEN }}
         project_id: 61609
