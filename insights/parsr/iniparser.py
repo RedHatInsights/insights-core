@@ -1,10 +1,11 @@
 import string
 
 from insights.parsr import (Comma, EOF, EOL, DoubleQuotedString,
-        HangingString, InSet, LeftBracket, Lift, LineEnd, Literal, Many,
-        OneLineComment, Opt, PosMarker, RightBracket, skip_none, String,
-        WithIndent, WS, WSChar)
+                            HangingString, InSet, LeftBracket, Lift, LineEnd, Literal, Many,
+                            OneLineComment, Opt, PosMarker, RightBracket, skip_none, String,
+                            WithIndent, WS, WSChar)
 from insights.parsr.query import Directive, Entry, eq, Section
+from six import PY2
 
 
 class Error(Exception):
@@ -96,6 +97,16 @@ def parse_doc(content, ctx, return_defaults=False, return_booleans=True):
     Sect = Lift(to_section) * Header * Many(Line).map(skip_none)
     Doc = Many(Comment | Sect).map(skip_none)
     Top = Doc << WS << EOF
+
+    if PY2:
+        # For py2 sub all non ascii chars for question marks,
+        # since it doesn't support unicode encoding/decoding well.
+        from re import sub
+        content = sub(r"[^\x00-\x7F]", "?", content)
+    else:
+        # Encode and replace unicode characters,
+        # then decode again before processing content.
+        content = content.encode('ascii', 'replace').decode()
 
     res = Entry(children=Top(content), src=ctx)
     return apply_defaults(res, return_defaults)
