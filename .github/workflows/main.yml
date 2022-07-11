@@ -94,6 +94,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - uses: actions/checkout@v2
     - name: Trigger Specs Cross Check Job
       uses: appleboy/gitlab-ci-action@master
       with:
