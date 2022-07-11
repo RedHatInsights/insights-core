@@ -1,7 +1,14 @@
 """
-ModulesInfo
-===========
+Combiners for the parsers which parse the output of ``modinfo <module_name>``
+=============================================================================
 
+ModInfo
+-------
+The ModInfo combiner gathers all the ModInfoEach parsers into a dictionary
+indexed by the module name.
+
+ModulesInfo
+-----------
 The ModulesInfo combines the collected modules info.
 It combines the result of ``KernelModulesInfo``, ``ModInfoI40e``,
 ``ModInfoIgb``, ``ModInfoIxgbe``, ``ModInfoVeth``, ``ModInfoVmxnet3``

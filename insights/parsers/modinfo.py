@@ -1,4 +1,30 @@
 """
+Parsers to parse the output of ``modinfo <module_name>``
+========================================================
+
+ModInfoI40e - Command ``modinfo i40e``
+--------------------------------------
+
+ModInfoVmxnet3 - Command ``modinfo vmxnet3``
+--------------------------------------------
+
+ModInfoIgb - Command ``modinfo igb``
+------------------------------------
+
+ModInfoIxgbe - Command ``modinfo ixgbe``
+----------------------------------------
+
+ModInfoVeth - Command ``modinfo veth``
+--------------------------------------
+
+ModInfoEach - Command ``modinfo *``
+-----------------------------------
+for any module listed by ``lsmod``
+
+ModInfoAll - Command ``modinfo *(all modules)``
+-----------------------------------------------
+for all modules listed by ``lsmod``
+
 KernelModulesInfo - Command ``modinfo filtered_modules``
 --------------------------------------------------------
 """
