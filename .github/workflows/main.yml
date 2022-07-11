@@ -93,8 +93,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Trigger Specs Cross Check Job
-      uses: actions/checkout@v2
+      uses: appleboy/gitlab-ci-action@master
       with:
         url: "https://gitlab.cee.redhat.com/"
-        token: GITHUB_CI_TOKEN
-        project_id: 61604
+        token: $GITHUB_CI_TOKEN
+        project_id: 61609
