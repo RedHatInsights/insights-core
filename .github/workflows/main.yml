@@ -90,8 +90,9 @@ jobs:
         sphinx-build -W -b html -qa -E docs docs/_build/html
 
   specs-cross-check:
-    - uses: actions/checkout@v2
+
     runs-on: ubuntu-latest
+
     steps:
     - name: Trigger Specs Cross Check Job
       uses: appleboy/gitlab-ci-action@master
