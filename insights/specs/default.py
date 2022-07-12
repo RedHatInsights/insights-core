@@ -26,7 +26,7 @@ from insights.specs.datasources import (
     awx_manage, cloud_init, candlepin_broker, corosync as corosync_ds,
     dir_list, ethernet, httpd, ipcs, kernel_module_list, lpstat, md5chk,
     package_provides, ps as ps_datasource, sap, satellite_missed_queues,
-    team, ssl_certificate, user_group, yum_updates)
+    ssl_certificate, user_group, yum_updates)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 from insights.specs.datasources.pcp import pcp_enabled, pmlog_summary_args
 
@@ -654,7 +654,7 @@ class DefaultSpecs(Specs):
     ])
     sys_vmbus_device_id = glob_file('/sys/bus/vmbus/devices/*/device_id')
     sys_vmbus_class_id = glob_file('/sys/bus/vmbus/devices/*/class_id')
-    teamdctl_state_dump = foreach_execute(team.team_filter, "/usr/bin/teamdctl %s state dump")
+    teamdctl_state_dump = foreach_execute(ethernet.team_device, "/usr/bin/teamdctl %s state dump")
     testparm_s = simple_command("/usr/bin/testparm -s")
     testparm_v_s = simple_command("/usr/bin/testparm -v -s")
     tags = simple_file("/tags.json", kind=RawFileProvider)
