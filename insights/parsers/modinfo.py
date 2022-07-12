@@ -1,4 +1,30 @@
 """
+Parsers to parse the output of ``modinfo <module_name>``
+========================================================
+
+ModInfoI40e - Command ``modinfo i40e``
+--------------------------------------
+
+ModInfoVmxnet3 - Command ``modinfo vmxnet3``
+--------------------------------------------
+
+ModInfoIgb - Command ``modinfo igb``
+------------------------------------
+
+ModInfoIxgbe - Command ``modinfo ixgbe``
+----------------------------------------
+
+ModInfoVeth - Command ``modinfo veth``
+--------------------------------------
+
+ModInfoEach - Command ``modinfo *``
+-----------------------------------
+for any module listed by ``lsmod``
+
+ModInfoAll - Command ``modinfo *(all modules)``
+-----------------------------------------------
+for all modules listed by ``lsmod``
+
 KernelModulesInfo - Command ``modinfo filtered_modules``
 --------------------------------------------------------
 """
@@ -224,7 +250,7 @@ class ModInfoAll(KernelModulesInfo):
     """
     .. warning::
         This parser is deprecated, please use
-        :py:class:`insights.parsers.modinfo.KernelModulesInfo` instead.
+        :py:class:`insights.combiners.modinfo.ModulesInfo` instead.
 
     Class to parse the information about all kernel modules, the module
     info will be stored in dictionary format.
@@ -297,7 +323,7 @@ class ModInfoAll(KernelModulesInfo):
     def __init__(self, *args, **kwargs):
         deprecated(
             ModInfoAll,
-            'Please use the :class:`insights.parsers.modinfo.KernelModulesInfo` instead.'
+            'Please use the :class:`insights.combiners.modinfo.ModulesInfo` instead.'
         )
         super(ModInfoAll, self).__init__(*args, **kwargs)
 
@@ -307,7 +333,7 @@ class ModInfoEach(CommandParser, ModInfo):
     """
     .. warning::
         This parser is deprecated, please use
-        :py:class:`insights.parsers.modinfo.KernelModulesInfo` instead.
+        :py:class:`insights.combiners.modinfo.ModulesInfo` instead.
 
     Parses the output of ``modinfo %s`` command, where %s is any of the loaded modules.
 
@@ -357,7 +383,7 @@ class ModInfoEach(CommandParser, ModInfo):
     def __init__(self, *args, **kwargs):
         deprecated(
             ModInfoEach,
-            'Please use the :class:`insights.parsers.modinfo.KernelModulesInfo` instead.'
+            'Please use the :class:`insights.combiners.modinfo.ModulesInfo` instead.'
         )
         super(ModInfoEach, self).__init__(*args, **kwargs)
 
@@ -377,7 +403,7 @@ class ModInfoI40e(ModInfoEach):
     """
     .. warning::
         This parser is deprecated, please use
-        :py:class:`insights.parsers.modinfo.KernelModulesInfo` instead.
+        :py:class:`insights.combiners.modinfo.ModulesInfo` instead.
 
     Parses output of ``modinfo i40e`` command.
     Sample ``modinfo i40e`` output::
@@ -425,7 +451,7 @@ class ModInfoI40e(ModInfoEach):
     def __init__(self, *args, **kwargs):
         deprecated(
             ModInfoI40e,
-            'Please use the :class:`insights.parsers.modinfo.KernelModulesInfo` instead.'
+            'Please use the :class:`insights.combiners.modinfo.ModulesInfo` instead.'
         )
         super(ModInfoI40e, self).__init__(*args, **kwargs)
 
@@ -435,7 +461,7 @@ class ModInfoVmxnet3(ModInfoEach):
     """
     .. warning::
         This parser is deprecated, please use
-        :py:class:`insights.parsers.modinfo.KernelModulesInfo` instead.
+        :py:class:`insights.combiners.modinfo.ModulesInfo` instead.
 
     Parses output of ``modinfo vmxnet3`` command.
     Sample ``modinfo vmxnet3`` output::
@@ -472,7 +498,7 @@ class ModInfoVmxnet3(ModInfoEach):
     def __init__(self, *args, **kwargs):
         deprecated(
             ModInfoVmxnet3,
-            'Please use the :class:`insights.parsers.modinfo.KernelModulesInfo` instead.'
+            'Please use the :class:`insights.combiners.modinfo.ModulesInfo` instead.'
         )
         super(ModInfoVmxnet3, self).__init__(*args, **kwargs)
 
@@ -482,7 +508,7 @@ class ModInfoIgb(ModInfoEach):
     """
     .. warning::
         This parser is deprecated, please use
-        :py:class:`insights.parsers.modinfo.KernelModulesInfo` instead.
+        :py:class:`insights.combiners.modinfo.ModulesInfo` instead.
 
     Parses output of ``modinfo igb`` command.
     Sample ``modinfo igb`` output::
@@ -520,7 +546,7 @@ class ModInfoIgb(ModInfoEach):
     def __init__(self, *args, **kwargs):
         deprecated(
             ModInfoIgb,
-            'Please use the :class:`insights.parsers.modinfo.KernelModulesInfo` instead.'
+            'Please use the :class:`insights.combiners.modinfo.ModulesInfo` instead.'
         )
         super(ModInfoIgb, self).__init__(*args, **kwargs)
 
@@ -530,7 +556,7 @@ class ModInfoIxgbe(ModInfoEach):
     """
     .. warning::
         This parser is deprecated, please use
-        :py:class:`insights.parsers.modinfo.KernelModulesInfo` instead.
+        :py:class:`insights.combiners.modinfo.ModulesInfo` instead.
 
     Parses output of ``modinfo ixgbe`` command.
     Sample ``modinfo ixgbe`` output::
@@ -568,7 +594,7 @@ class ModInfoIxgbe(ModInfoEach):
     def __init__(self, *args, **kwargs):
         deprecated(
             ModInfoIxgbe,
-            'Please use the :class:`insights.parsers.modinfo.KernelModulesInfo` instead.'
+            'Please use the :class:`insights.combiners.modinfo.ModulesInfo` instead.'
         )
         super(ModInfoIxgbe, self).__init__(*args, **kwargs)
 
@@ -578,7 +604,7 @@ class ModInfoVeth(ModInfoEach):
     """
     .. warning::
         This parser is deprecated, please use
-        :py:class:`insights.parsers.modinfo.KernelModulesInfo` instead.
+        :py:class:`insights.combiners.modinfo.ModulesInfo` instead.
 
     Parses output of ``modinfo veth`` command.
     Sample ``modinfo veth`` output::
@@ -608,6 +634,6 @@ class ModInfoVeth(ModInfoEach):
     def __init__(self, *args, **kwargs):
         deprecated(
             ModInfoVeth,
-            'Please use the :class:`insights.parsers.modinfo.KernelModulesInfo` instead.'
+            'Please use the :class:`insights.combiners.modinfo.ModulesInfo` instead.'
         )
         super(ModInfoVeth, self).__init__(*args, **kwargs)
