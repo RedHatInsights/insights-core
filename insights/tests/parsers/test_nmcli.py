@@ -96,6 +96,15 @@ enp0s8         00cb8299-feb9-55b6-a378-3fdc720e0bc6  802-3-ethernet  --
 enp0s3         bfb4760c-96ce-4a29-9f2e-7427051da943  802-3-ethernet  enp0s3"
 """.strip()
 
+STATIC_CONNECTION_SHOW_4 = """
+Warning: nmcli (1.0.0) and NetworkManager (1.0.6) versions don't match. Use --nocheck to suppress the warning.
+NAME                UUID                                  TYPE      DEVICE
+System eth0         5fb06bd0-0bb0-7ffb-45f1-d6edd65f3e03  ethernet  eth0
+Wired connection 1  ba12c52b-cd0e-39a0-a95b-643a0859664e  ethernet  eth1
+Wired connection 2  fa8d308c-2e00-336c-9dee-2def12e240c7  ethernet  eth2
+team0               bf000427-d9f1-432f-819d-257edb86c6fb  team      team0
+""".strip()
+
 NMCLI_DEV_SHOW = """
 TextFileProvider("'/tmp/insights-fcct09p0/insights-rhel7-box-20191016082653/insights_commands/nmcli_dev_show'")
 GENERAL.DEVICE:                         br0
@@ -214,6 +223,12 @@ def test_static_connection_test_2():
 def test_static_connection_test_3():
     static_conn = NmcliConnShow(context_wrap(STATIC_CONNECTION_SHOW_3))
     assert static_conn.disconnected_connection == ["enp0s8"]
+
+
+def test_static_connection_test_4():
+    static_conn = NmcliConnShow(context_wrap(STATIC_CONNECTION_SHOW_4))
+    assert static_conn.data[1] == {'NAME': 'Wired connection 1', 'UUID': 'ba12c52b-cd0e-39a0-a95b-643a0859664e', 'TYPE': 'ethernet', 'DEVICE': 'eth1'}
+    assert static_conn.data[3] == {'NAME': 'team0', 'UUID': 'bf000427-d9f1-432f-819d-257edb86c6fb', 'TYPE': 'team', 'DEVICE': 'team0'}
 
 
 def test_nmcli_dev_show_ab():
