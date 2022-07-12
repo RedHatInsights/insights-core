@@ -17,7 +17,7 @@ NmcliConnShow - command ``/usr/bin/nmcli conn show``
 import re
 from insights import parser, get_active_lines, CommandParser
 from insights.specs import Specs
-from insights.parsers import SkipException
+from insights.parsers import SkipException, parse_fixed_table
 
 
 @parser(Specs.nmcli_dev_show)
@@ -177,23 +177,10 @@ class NmcliConnShow(CommandParser):
 
     """
     def parse_content(self, content):
-        self.data = []
-        if content:
-            headings = ["NAME", "UUID", "TYPE", "DEVICE"]
-            content_flag = False
-            for line in content:
-                line_split = line.strip().split()
-                if line_split == headings and not content_flag:
-                    content_flag = True
-                elif content_flag:
-                    dict_temp = dict(zip(headings[-3:], line_split[-3:]))
-                    name_temp = ' '.join(line_split[:-3])
-                    dict_temp["NAME"] = name_temp
-                    self.data.append(dict_temp)
-            if not content_flag:
-                raise SkipException("Invalid Contents!")
-        else:
-            raise SkipException("Contents Empty")
+        try:
+            self.data = parse_fixed_table(content, heading_ignore=["NAME", "UUID", "TYPE", "DEVICE"])
+        except:
+            raise SkipException("Invalid Contents!")
         self._disconnected_connection = []
         for all_connection in self.data:
             if all_connection['DEVICE'] == "--":
