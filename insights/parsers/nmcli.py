@@ -17,7 +17,7 @@ NmcliConnShow - command ``/usr/bin/nmcli conn show``
 import re
 from insights import parser, get_active_lines, CommandParser
 from insights.specs import Specs
-from insights.parsers import parse_delimited_table, SkipException
+from insights.parsers import SkipException
 
 
 @parser(Specs.nmcli_dev_show)
