@@ -74,11 +74,6 @@ def test_podman_list_images_no_data():
     assert 'No data.' in str(ex)
 
 
-def test_podman_undefined_key_field():
-    with pytest.raises(NotImplementedError):
-        assert podman_list.PodmanList(context_wrap(PODMAN_LIST_CONTAINERS))
-
-
 def test_podman_documentation():
     failed_count, tests = doctest.testmod(
         podman_list,
