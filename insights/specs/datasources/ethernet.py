@@ -71,7 +71,7 @@ def team_interfaces(broker):
         list: List of the team device.
 
     Raises:
-        SkipComponent: When there is not any team ifaces.
+        SkipComponent: When there is not any team interfaces.
     """
 
     content = broker[NmcliConnShow].data
