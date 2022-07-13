@@ -241,6 +241,13 @@ plugins:
         - name: insights.parsers.ros_config.RosConfig
           enabled: true
 
+    # needed for the 'container' specs
+        - name: insights.parsers.podman_list.PodmanListContainers
+          enabled: true
+
+        - name: insights.parsers.docker_list.DockerListContainers
+          enabled: true
+
     # needed because some specs aren't given names before they're used in DefaultSpecs
         - name: insights.core.spec_factory
           enabled: true

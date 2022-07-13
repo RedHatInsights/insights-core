@@ -787,3 +787,5 @@ class Specs(SpecSet):
     zipl_conf = RegistryPoint()
     sendq_socket_buffer = RegistryPoint()
     recvq_socket_buffer = RegistryPoint()
+    # container_specs
+    container_redhat_release = RegistryPoint(multi_output=True)

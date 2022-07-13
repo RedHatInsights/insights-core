@@ -71,6 +71,7 @@ class DockerList(CommandParser):
                                       heading_ignore=self.heading_ignore,
                                       header_substitute=self.substitutions)
 
+        print(self.rows)
         if not self.rows:
             raise SkipException('No data.')
 
@@ -131,6 +132,7 @@ class DockerListContainers(DockerList):
     Attributes:
         rows (list): List of row dictionaries.
         containers(dict): Dictionary keyed on the value of the "NAMES" field
+        running_containers(list): List of NAMEs of the running containers.
 
     Examples:
         >>> containers.rows[0]['STATUS']
@@ -142,6 +144,14 @@ class DockerListContainers(DockerList):
     heading_ignore = ['CONTAINER']
     attr_name = 'containers'
     substitutions = [("CONTAINER ID", "CONTAINER_ID")]
+
+    def __init__(self, *args, **kwargs):
+        super(DockerListContainers, self).__init__(*args, **kwargs)
+
+        self.running_containers = []
+        for name, info in self.containers.items():
+            if info.get('STATUS', '').startswith('Up ') or True:
+                self.running_containers.append(name)
 
     @property
     def data(self):
