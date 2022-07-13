@@ -59,7 +59,7 @@ def interfaces(broker):
 
 
 @datasource(NmcliConnShow, HostContext)
-def team_device(broker):
+def team_interfaces(broker):
     """
     This datasource provides a list of the team device.
 
@@ -71,17 +71,17 @@ def team_device(broker):
         list: List of the team device.
 
     Raises:
-        SkipComponent: When there is not any content.
+        SkipComponent: When there is not any team ifaces.
     """
 
     content = broker[NmcliConnShow].data
     if content:
-        team_device_list = []
+        team_ifaces = []
         for x in content:
-            if 'team' in x['TYPE']:
-                team_device_list.append(x['DEVICE'])
+            if 'team' in x['TYPE'] and x['DEVICE'] != '--':
+                team_ifaces.append(x['DEVICE'])
 
-        if team_device_list:
-            return sorted(team_device_list)
+        if team_ifaces:
+            return sorted(team_ifaces)
 
     raise SkipComponent

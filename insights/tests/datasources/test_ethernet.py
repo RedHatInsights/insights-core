@@ -1,7 +1,7 @@
 import pytest
 
 from insights.core.dr import SkipComponent
-from insights.specs.datasources.ethernet import interfaces, LocalSpecs, team_device
+from insights.specs.datasources.ethernet import interfaces, LocalSpecs, team_interfaces
 from insights.parsers.nmcli import NmcliConnShow
 from mock.mock import Mock
 from insights.tests import context_wrap
@@ -34,6 +34,11 @@ NAME      UUID                                  TYPE      DEVICE
 enp0s3    320d4923-c410-4b22-b7e9-afc5f794eecc  ethernet  enp0s3
 """
 
+NMCLI_C_SHOW_OUTPUT_3 = """
+NAME      UUID                                  TYPE      DEVICE
+team0     bf000427-d9f1-432f-819d-257edb86c6fb  team      --
+"""
+
 NMCLI_C_SHOW_EMPTY = ""
 
 EXPECTED = ['enp1s0', 'enp8s0', 'enp1s0.2']
@@ -63,7 +68,7 @@ def test_team_device_1():
     broker = {
         NmcliConnShow: mmcli_c_show
     }
-    result = team_device(broker)
+    result = team_interfaces(broker)
     assert result is not None
     assert isinstance(result, list)
     assert result == sorted(['team0', 'team1'])
@@ -76,7 +81,17 @@ def test_team_device_2():
         NmcliConnShow: mmcli_c_show
     }
     with pytest.raises(SkipComponent):
-        team_device(broker)
+        team_interfaces(broker)
+
+
+def test_team_device_3():
+    mmcli_c_show = NmcliConnShow(context_wrap(NMCLI_C_SHOW_OUTPUT_3))
+
+    broker = {
+        NmcliConnShow: mmcli_c_show
+    }
+    with pytest.raises(SkipComponent):
+        team_interfaces(broker)
 
 
 def test_team_device_bad():
@@ -86,4 +101,4 @@ def test_team_device_bad():
         NmcliConnShow: mmcli_c_show
     }
     with pytest.raises(SkipComponent):
-        team_device(broker)
+        team_interfaces(broker)
