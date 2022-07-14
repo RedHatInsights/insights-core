@@ -4,15 +4,15 @@
 
 ## [insights-core-3.0.284](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.284) (2022-07-14)
 
-- Unregister option removes machine-id (#3449[PR 3449](https://github.com/RedHatInsights/insights-core/pull/3449))
-- Add spec and parser for 'wc_-l_.proc.1.mountinfo' (#3459[PR 3459](https://github.com/RedHatInsights/insights-core/pull/3459))
-- feat: revert and refine the padman list specs and parsers (#3466[PR 3466](https://github.com/RedHatInsights/insights-core/pull/3466))
-- Fix: test error of nmcli in the datasource ethernet (#3468[PR 3468](https://github.com/RedHatInsights/insights-core/pull/3468))
-- fix: Enhance nmcli (#3465[PR 3465](https://github.com/RedHatInsights/insights-core/pull/3465))
-- Feat: Add teamdctl_state_dump spec to insights_archive (#3455[PR 3455](https://github.com/RedHatInsights/insights-core/pull/3455))
-- fix: Catch any exceptions when scanning for files (#3463[PR 3463](https://github.com/RedHatInsights/insights-core/pull/3463))
-- fix: Replace non ascii characters with question marks (#3464[PR 3464](https://github.com/RedHatInsights/insights-core/pull/3464))
-- feat: Add combiner "ModulesInfo" (#3458[PR 3458](https://github.com/RedHatInsights/insights-core/pull/3458))
+- Unregister option removes machine-id ([PR 3449](https://github.com/RedHatInsights/insights-core/pull/3449))
+- Add spec and parser for 'wc_-l_.proc.1.mountinfo' ([PR 3459](https://github.com/RedHatInsights/insights-core/pull/3459))
+- feat: revert and refine the padman list specs and parsers ([PR 3466](https://github.com/RedHatInsights/insights-core/pull/3466))
+- Fix: test error of nmcli in the datasource ethernet ([PR 3468](https://github.com/RedHatInsights/insights-core/pull/3468))
+- fix: Enhance nmcli ([PR 3465](https://github.com/RedHatInsights/insights-core/pull/3465))
+- Feat: Add teamdctl_state_dump spec to insights_archive ([PR 3455](https://github.com/RedHatInsights/insights-core/pull/3455))
+- fix: Catch any exceptions when scanning for files ([PR 3463](https://github.com/RedHatInsights/insights-core/pull/3463))
+- fix: Replace non ascii characters with question marks ([PR 3464](https://github.com/RedHatInsights/insights-core/pull/3464))
+- feat: Add combiner "ModulesInfo" ([PR 3458](https://github.com/RedHatInsights/insights-core/pull/3458))
 
 ## [insights-core-3.0.283](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.283) (2022-07-07)
 
