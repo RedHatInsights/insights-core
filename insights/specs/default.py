@@ -482,6 +482,8 @@ class DefaultSpecs(Specs):
     pluginconf_d = glob_file("/etc/yum/pluginconf.d/*.conf")
     pmlog_summary = command_with_args("/usr/bin/pmlogsummary %s", pmlog_summary_args)
     pmrep_metrics = simple_command("/usr/bin/pmrep -t 1s -T 1s network.interface.out.packets network.interface.collisions swap.pagesout mssql.memory_manager.stolen_server_memory mssql.memory_manager.total_server_memory -o csv")
+    podman_list_containers = simple_command("/usr/bin/podman ps --all --no-trunc")
+    podman_list_images = simple_command("/usr/bin/podman images --all --no-trunc --digests")
     postconf_builtin = simple_command("/usr/sbin/postconf -C builtin")
     postconf = simple_command("/usr/sbin/postconf")
     postgresql_conf = first_file([
