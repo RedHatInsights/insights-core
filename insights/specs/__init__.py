@@ -757,6 +757,7 @@ class Specs(SpecSet):
     vmware_tools_conf = RegistryPoint()
     vsftpd_conf = RegistryPoint(filterable=True)
     vsftpd = RegistryPoint()
+    wc_proc_1_mountinfo = RegistryPoint()
     x86_pti_enabled = RegistryPoint()
     x86_ibpb_enabled = RegistryPoint()
     x86_ibrs_enabled = RegistryPoint()
