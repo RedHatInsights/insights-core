@@ -6,6 +6,7 @@ Parser for parsing the output of command ``/usr/bin/wc -l /proc/1/mountinfo``.
 """
 
 from insights import Parser, parser
+from insights.core.dr import SkipComponent
 from insights.parsers import ParseException
 from insights.specs import Specs
 
@@ -37,7 +38,7 @@ class WcProc1Mountinfo(Parser):
 
     def parse_content(self, content):
         if len(content) == 0 or 'No such file or directory' in content[0]:
-            raise ParseException("Error: ", content[0] if content else 'empty file')
+            raise SkipComponent("Error: ", content[0] if content else 'empty file')
         count_str = content[0].split()[0]
         if not count_str.isdigit():
             raise ParseException("Error: unparsable output from command wc: ", content[0])

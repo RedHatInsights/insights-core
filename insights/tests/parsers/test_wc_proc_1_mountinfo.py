@@ -1,6 +1,7 @@
 from insights.parsers.wc_proc_1_mountinfo import WcProc1Mountinfo
 from insights.parsers import wc_proc_1_mountinfo
 from insights.tests import context_wrap
+from insights.core.dr import SkipComponent
 from insights.parsers import ParseException
 import pytest
 import doctest
@@ -28,11 +29,11 @@ def test_wc_proc_1_mountinfo():
 
 
 def test_wc_proc_1_mountinfo_errors():
-    with pytest.raises(ParseException) as pe:
+    with pytest.raises(SkipComponent) as pe:
         WcProc1Mountinfo(context_wrap(WC_PROC_1_MOUNTINFO_ERR1))
         assert WC_PROC_1_MOUNTINFO_ERR1 in str(pe)
 
-    with pytest.raises(ParseException) as pe:
+    with pytest.raises(SkipComponent) as pe:
         WcProc1Mountinfo(context_wrap(WC_PROC_1_MOUNTINFO_ERR2))
         assert WC_PROC_1_MOUNTINFO_ERR2 in str(pe)
 
