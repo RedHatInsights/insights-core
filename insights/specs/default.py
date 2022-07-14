@@ -625,6 +625,7 @@ class DefaultSpecs(Specs):
     sysctl_conf = simple_file("/etc/sysctl.conf")
     sysctl_d_conf_etc = glob_file("/etc/sysctl.d/*.conf")
     sysctl_d_conf_usr = glob_file("/usr/lib/sysctl.d/*.conf")
+    sys_fs_cgroup_memory_tasks_number = simple_command("/usr/bin/find /sys/fs/cgroup/memory -name 'tasks' | wc -l")
     systemctl_cat_dnsmasq_service = simple_command("/bin/systemctl cat dnsmasq.service")
     systemctl_cat_rpcbind_socket = simple_command("/bin/systemctl cat rpcbind.socket")
     systemctl_cinder_volume = simple_command("/bin/systemctl show openstack-cinder-volume")
