@@ -209,6 +209,7 @@ def _legacy_handle_unregistration(config, pconn):
         write_unregistered_file()
         get_scheduler(config).remove_scheduling()
         delete_cache_files()
+        write_to_disk(constants.machine_id_file, delete=True)
 
     check = get_registration_status(config, pconn)
 
@@ -230,6 +231,7 @@ def _legacy_handle_unregistration(config, pconn):
     if unreg:
         # only set if unreg was successful
         __cleanup_local_files()
+        logger.debug('Legacy unregistration')
     return unreg
 
 
@@ -248,6 +250,8 @@ def handle_unregistration(config, pconn):
         # only set if unreg was successful or --force was set
         write_unregistered_file()
         delete_cache_files()
+        write_to_disk(constants.machine_id_file, delete=True)
+        logger.debug('Unregistered and removed machine-id')
     return unreg
 
 
