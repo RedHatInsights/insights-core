@@ -39,7 +39,9 @@ NAME      UUID                                  TYPE      DEVICE
 team0     bf000427-d9f1-432f-819d-257edb86c6fb  team      --
 """
 
-NMCLI_C_SHOW_EMPTY = ""
+NMCLI_C_SHOW_EMPTY = """
+NAME      UUID                                  TYPE      DEVICE
+"""
 
 EXPECTED = ['enp1s0', 'enp8s0', 'enp1s0.2']
 
