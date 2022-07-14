@@ -25,7 +25,7 @@ WC_PROC_1_MOUNTINFO = """
 
 def test_wc_proc_1_mountinfo():
     results = WcProc1Mountinfo(context_wrap(WC_PROC_1_MOUNTINFO))
-    assert results.count == 37
+    assert results.line_count == 37
 
 
 def test_wc_proc_1_mountinfo_errors():

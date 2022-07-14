@@ -14,12 +14,11 @@ from insights.specs import Specs
 @parser(Specs.wc_proc_1_mountinfo)
 class WcProc1Mountinfo(Parser):
     """
-    Provides the newline counts of file ``/proc/1/mountinfo`` by parsing the
+    Provides the line counts of file ``/proc/1/mountinfo`` by parsing the
     output of command ``/usr/bin/wc -l /proc/1/mountinfo``.
 
     Attributes:
-        count(int): the newline counts of file ``/proc/1/mountinfo``, default
-            to -1 for unparsable content
+        line_count(int): the line counts of file ``/proc/1/mountinfo``
 
     Typical content looks like::
 
@@ -28,12 +27,13 @@ class WcProc1Mountinfo(Parser):
     Examples:
         >>> type(wc_info)
         <class 'insights.parsers.wc_proc_1_mountinfo.WcProc1Mountinfo'>
-        >>> wc_info.count
+        >>> wc_info.line_count
         37
 
     Raises:
-        insights.parsers.ParseException: if the command output is empty or
-        unparsable.
+        insights.parsers.SkipComponent: if the command output is empty or
+        missing file.
+        insights.parsers.ParseException: if the command output is unparsable.
     """
 
     def parse_content(self, content):
@@ -42,4 +42,4 @@ class WcProc1Mountinfo(Parser):
         count_str = content[0].split()[0]
         if not count_str.isdigit():
             raise ParseException("Error: unparsable output from command wc: ", content[0])
-        self.count = int(count_str)
+        self.line_count = int(count_str)
