@@ -686,6 +686,7 @@ class DefaultSpecs(Specs):
     vmware_tools_conf = simple_file("/etc/vmware-tools/tools.conf")
     vsftpd = simple_file("/etc/pam.d/vsftpd")
     vsftpd_conf = simple_file("/etc/vsftpd/vsftpd.conf")
+    wc_proc_1_mountinfo = simple_command("/usr/bin/wc -l /proc/1/mountinfo")
     x86_pti_enabled = simple_file("sys/kernel/debug/x86/pti_enabled")
     x86_ibpb_enabled = simple_file("sys/kernel/debug/x86/ibpb_enabled")
     x86_ibrs_enabled = simple_file("sys/kernel/debug/x86/ibrs_enabled")
