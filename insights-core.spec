@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.283
+Version:        3.0.284
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,25 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jul 14 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.284-1
+- Unregister option removes machine-id (#3449)
+  (93577878+ahitacat@users.noreply.github.com)
+- Add spec and parser for 'wc_-l_.proc.1.mountinfo' (#3459)
+  (xiaoxwan@redhat.com)
+- feat: revert and refine the padman list specs and parsers (#3466)
+  (xiangceliu@redhat.com)
+- Fix: test error of nmcli in the datasource ethernet (#3468)
+  (986222045@qq.com)
+- fix: Enhance nmcli (#3465) (986222045@qq.com)
+- Feat: Add teamdctl_state_dump spec to insights_archive (#3455)
+  (986222045@qq.com)
+- fix: Catch any exceptions when scanning for files (#3463)
+  (rblakley@redhat.com)
+- fix: Replace non ascii characters with question marks (#3464)
+  (rblakley@redhat.com)
+- feat: Add combiner "ModulesInfo" (#3458)
+  (44796653+huali027@users.noreply.github.com)
+
 * Thu Jul 07 2022 Sachin Patil <psachin@redhat.com> 3.0.283-1
 - feat: New spec "/etc/lvm/devices/system.devices" and parser (#3457)
   (44796653+huali027@users.noreply.github.com)
