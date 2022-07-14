@@ -275,6 +275,7 @@ class InsightsArchiveSpecs(Specs):
     vgs_noheadings = simple_file("insights_commands/vgs_--nameprefixes_--noheadings_--separator_-a_-o_vg_all_--config_global_locking_type_0")
     virsh_list_all = simple_file("insights_commands/virsh_--readonly_list_--all")
     virt_what = simple_file("insights_commands/virt-what")
+    wc_proc_1_mountinfo = simple_file("insights_commands/wc_-l_.proc.1.mountinfo")
     yum_list_available = simple_file("insights_commands/yum_-C_--noplugins_list_available")
     yum_repolist = first_file(["insights_commands/yum_-C_--noplugins_repolist", "insights_commands/yum_-C_repolist"])
     yum_updateinfo = simple_file("insights_commands/yum_-C_updateinfo_list")
