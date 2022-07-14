@@ -5,6 +5,7 @@ from insights.core.context import HostContext
 from insights.core.dr import SkipComponent
 from insights.core.plugins import datasource
 from insights.core.spec_factory import simple_command
+from insights.parsers.nmcli import NmcliConnShow
 from insights.specs import Specs
 
 
@@ -53,5 +54,34 @@ def interfaces(broker):
 
         if ifaces:
             return sorted(ifaces)
+
+    raise SkipComponent
+
+
+@datasource(NmcliConnShow, HostContext)
+def team_interfaces(broker):
+    """
+    This datasource provides a list of the team device.
+
+    Sample data returned::
+
+        ['team0', 'team1']
+
+    Returns:
+        list: List of the team device.
+
+    Raises:
+        SkipComponent: When there is not any team interfaces.
+    """
+
+    content = broker[NmcliConnShow].data
+    if content:
+        team_ifaces = []
+        for x in content:
+            if 'team' in x['TYPE'] and x['DEVICE'] != '--':
+                team_ifaces.append(x['DEVICE'])
+
+        if team_ifaces:
+            return sorted(team_ifaces)
 
     raise SkipComponent
