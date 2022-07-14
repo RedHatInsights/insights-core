@@ -31,9 +31,8 @@ class WcProc1Mountinfo(Parser):
         37
 
     Raises:
-        insights.parsers.SkipComponent: if the command output is empty or
-        missing file.
-        insights.parsers.ParseException: if the command output is unparsable.
+        SkipComponent: if the command output is empty or missing file
+        ParseException: if the command output is unparsable
     """
 
     def parse_content(self, content):
