@@ -14,11 +14,15 @@ if hasattr(os, "scandir"):
     def get_all_files(path):
         with os.scandir(path) as it:
             for ent in it:
-                if ent.is_dir(follow_symlinks=False):
-                    for pth in get_all_files(ent.path):
-                        yield pth
-                elif ent.is_file(follow_symlinks=False):
-                    yield ent.path
+                try:
+                    if ent.is_dir(follow_symlinks=False):
+                        for pth in get_all_files(ent.path):
+                            yield pth
+                    elif ent.is_file(follow_symlinks=False):
+                        yield ent.path
+                except OSError as ex:
+                    log.exception(ex)
+
 
 else:
     def get_all_files(path):
