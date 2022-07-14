@@ -200,6 +200,8 @@ class InsightsArchiveSpecs(Specs):
     pcs_quorum_status = simple_file("insights_commands/pcs_quorum_status")
     pcs_status = simple_file("insights_commands/pcs_status")
     pmrep_metrics = first_file(["insights_commands/pmrep_-t_1s_-T_1s_network.interface.out.packets_network.interface.collisions_swap.pagesout_mssql.memory_manager.stolen_server_memory_mssql.memory_manager.total_server_memory_-o_csv", "insights_commands/pmrep_-t_1s_-T_1s_network.interface.out.packets_network.interface.collisions_swap.pagesout_-o_csv"])
+    podman_list_containers = simple_file("insights_commands/podman_ps_--all_--no-trunc")
+    podman_list_images = simple_file("insights_commands/podman_images_--all_--no-trunc_--digests")
     postconf_builtin = simple_file("insights_commands/postconf_-C_builtin")
     postconf = simple_file("insights_commands/postconf")
     ps_alxwww = simple_file("insights_commands/ps_alxwww")
