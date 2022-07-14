@@ -17,7 +17,7 @@ NmcliConnShow - command ``/usr/bin/nmcli conn show``
 import re
 from insights import parser, get_active_lines, CommandParser
 from insights.specs import Specs
-from insights.parsers import parse_delimited_table, SkipException
+from insights.parsers import SkipException, parse_fixed_table
 
 
 @parser(Specs.nmcli_dev_show)
@@ -178,7 +178,7 @@ class NmcliConnShow(CommandParser):
     """
     def parse_content(self, content):
         try:
-            self.data = parse_delimited_table(content, heading_ignore=["NAME", "UUID", "TYPE", "DEVICE"])
+            self.data = parse_fixed_table(content, heading_ignore=["NAME", "UUID", "TYPE", "DEVICE"])
         except:
             raise SkipException("Invalid Contents!")
         self._disconnected_connection = []
