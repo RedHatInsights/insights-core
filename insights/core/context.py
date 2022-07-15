@@ -1,8 +1,10 @@
 import logging
-import os
 import six
+
 from contextlib import contextmanager
-from insights.util import streams, subproc
+from insights.util import fs, streams, subproc
+from os import environ
+from os.path import dirname, exists, expandvars, join, sep
 
 log = logging.getLogger(__name__)
 GLOBAL_PRODUCTS = []
@@ -101,6 +103,7 @@ class Context(object):
         self.metadata = kwargs.pop("metadata", {})
         self.loaded = True
         self.cmd = None
+
         optional_attrs = [
             "content", "path", "hostname", "release",
             "machine_id", "target", "last_client_run", "relative_path",
@@ -149,49 +152,137 @@ class ExecutionContextMeta(type):
 
 
 class ExecutionContext(six.with_metaclass(ExecutionContextMeta)):
+    # A marker is a file path to search for in the archive, or host filesystem.
+    # This should be the default path to search for, any additional paths should
+    # be defined in extra_markers.
     marker = None
+    # Markers is a list of additional file paths to search the archive or host filesystem.
+    extra_markers = []
+    # Roots is a list of root file paths based on a found marker defined in extra_markers.
+    roots = []
 
     def __init__(self, root="/", timeout=None, all_files=None):
         self.root = root
         self.timeout = timeout
         self.all_files = all_files or []
 
-    @classmethod
-    def handles(cls, files):
-        if cls.marker is None or not files:
-            return (None, None)
+    @staticmethod
+    def _find_marker_roots(m, files):
+        """
+        Find all the root directories in files that contain the marker file.
 
-        sep = os.path.sep
-        m = sep + cls.marker.lstrip(sep)
-        marker_root = set()
+        Args:
+            m (str): Marker string to search files for.
+            files (lst): List of files from an archive or host
+                to search for the marker in.
+
+        Returns:
+            lst: List of all file paths with the marker found in them.
+        """
+        marker_roots = set()
         for f in files:
             if m in f:
                 i = f.find(m)
+
                 if f.endswith(m) or f[i + len(m)] == sep:
-                    root = os.path.dirname(f[:i + 1])
-                    marker_root.add(root)
-        if len(marker_root) == 1:
-            return (marker_root.pop(), cls)
-        if len(marker_root) > 1:
-            # when more marker found, return the one which is closest to root
-            closest_root = marker_root.pop()
-            for left_one in marker_root:
-                if len(left_one) < len(closest_root):
-                    closest_root = left_one
-            return (closest_root, cls)
-        return (None, None)
+                    root = dirname(f[: i + 1])
+                    marker_roots.add(root)
+
+        return marker_roots
+
+    def get_root(self, path):
+        """
+        If self.roots is defined, loop through them and determine if the path exists in the root,
+        if it does return that root. If none are found in the roots list return self.root.
+
+        Args:
+            path (str): Path to check if it exists in the list of roots.
+
+        Returns:
+            str: Path to use as the root.
+        """
+        if self.roots:
+            for r in self.roots:
+                # When processing patterns like globs, the full path of the root
+                # will be in the path, so remove the root from the path.
+                if r in path:
+                    path = path.split(r)[-1]
+
+                if exists(join(r, path.lstrip('/'))):
+                    return r
+
+        return self.root
+
+    @classmethod
+    def handles(cls, files):
+        """
+        This method determines the root(s) to set based on the marker(s)
+        defined and the files passed in.
+
+        Args:
+            files (lst): List of files from an archive or host
+                to search for the marker in.
+
+        Returns:
+            tuple: Returns the determined root and the cls itself, or None, None.
+        """
+        if cls.marker is None or not files:
+            return None, None
+
+        def _find_closest_root(marker):
+            m = sep + marker.lstrip(sep)
+            marker_root = cls._find_marker_roots(m, files)
+
+            if len(marker_root) == 1:
+                return marker_root.pop()
+
+            if len(marker_root) > 1:
+                # When more than one marker is found, return the one which is closest to root.
+                root = marker_root.pop()
+                for left_one in marker_root:
+                    if len(left_one) < len(root):
+                        root = left_one
+
+                return root
+
+        # If extra_markers are defined loop through them and determine
+        # if any roots exists based on the extra_markers and add them to roots.
+        if cls.extra_markers:
+            for mark in cls.extra_markers:
+                closest_root = _find_closest_root(mark)
+                if closest_root:
+                    cls.roots.append(closest_root)
+
+        closest_root = _find_closest_root(cls.marker)
+        if closest_root:
+            return closest_root, cls
+        else:
+            if cls.roots:
+                return cls.roots[0], cls
+
+        return None, None
 
     def check_output(self, cmd, timeout=None, keep_rc=False, env=None, signum=None):
-        """ Subclasses can override to provide special
-            environment setup, command prefixes, etc.
-        """
-        return subproc.call(cmd, timeout=timeout or self.timeout, signum=signum,
-                keep_rc=keep_rc, env=env)
+        """Subclasses can override to provide special environment setup, command prefixes, etc."""
+        return subproc.call(cmd, timeout=timeout or self.timeout, signum=signum, keep_rc=keep_rc, env=env)
 
     def shell_out(self, cmd, split=True, timeout=None, keep_rc=False, env=None, signum=None):
-        env = env or os.environ
+        """
+        Execute the command and return the output.
+
+        Args:
+            cmd (lst): The command with args.
+            split (bool): Weather to split the output or not.
+            timeout (int): Number of seconds to wait before killing the command.
+            keep_rc (bool): Keep the return code or not.
+            env (dict): Environment in which to execute commands.
+            signum (int): Signal to send the command on timeout.
+
+        Returns:
+            A tuple of the rc and output, or just the output depending on keep_rc.
+        """
         rc = None
-        raw = self.check_output(cmd, timeout=timeout, keep_rc=keep_rc, env=env, signum=signum)
+        raw = self.check_output(cmd, timeout=timeout, keep_rc=keep_rc, env=env or environ, signum=signum)
         if keep_rc:
             rc, output = raw
         else:
@@ -213,7 +304,36 @@ class ExecutionContext(six.with_metaclass(ExecutionContextMeta)):
             yield s
 
     def locate_path(self, path):
-        return os.path.expandvars(path)
+        """
+        Expand the path if it has any environmental variables in it.
+
+        Args:
+            path (str): Path to expand variables in.
+
+        Returns:
+            str: The path with the variables expanded.
+        """
+        return expandvars(path)
+
+    def write(self, cmd, dst, env, keep_rc, signum, timeout):
+        """
+        Write the command output provided to a file.
+
+        Args:
+            cmd (lst): The command with args.
+            dst (str): The file path to write the command output to.
+            env (dict): Environment in which to execute commands.
+            keep_rc (bool): Keep the return code or not.
+            signum (int): Signal to send the command on timeout.
+            timeout (int): Number of seconds to wait before killing the command.
+
+        Returns:
+            The final output of the pipeline.
+        """
+        fs.ensure_path(dirname(dst))
+        if cmd:
+            p = subproc.Pipeline(*cmd, timeout=timeout or self.timeout, signum=signum, env=env)
+            return p.write(dst, keep_rc=keep_rc)
 
     def __repr__(self):
         msg = "<%s('%s', %s)>"
@@ -275,6 +395,11 @@ class InsightsOperatorContext(ExecutionContext):
 class MustGatherContext(ExecutionContext):
     """Recognizes must-gather archives"""
     marker = "namespaces"
+    extra_markers = [
+        "ceph/namespaces/openshift-storage",
+        "cluster-logging/clo/cr",
+        "cluster-scoped-resources"
+    ]
 
 
 class OpenStackContext(ExecutionContext):
