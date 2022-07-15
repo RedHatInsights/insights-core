@@ -1,75 +1,106 @@
 """
-Custom datasource for checking non-root owned packaged directories
+Custom datasource for CVE-2021-35937, CVE-2021-35938, and CVE-2021-35939.
 
-Author: Florian Festi <ffesti@redhat.com>
+Authors: ffesti@redhat.com, jobselko@redhat.com
 """
-import grp
-import json
-import pwd
-import stat
 
-from insights import datasource
+import grp
+import pwd
+
+from insights.core.context import HostContext
 from insights.core.dr import SkipComponent
-from insights.core.spec_factory import DatasourceProvider
+from insights.core.plugins import datasource
+from insights.core.spec_factory import DatasourceProvider, simple_command
+from insights.specs import Specs
+
+
+class LocalSpecs(Specs):
+    """
+    Local spec used only by the system_user_dirs datasource
+    """
+    rpm_args = simple_command(
+        'rpm -qa --qf="[%{=NAME}; %{FILEMODES:perms}; %{FILEUSERNAME}; %{FILEGROUPNAME}\n]"'
+    )
 
 
 def get_shells():
-    with open('/etc/shells') as f:
-        return set((line.strip() for line in f))
+    """
+    Returns all full pathnames of valid login shells without nologins.
+    """
+    with open("/etc/shells") as file:
+        return [line.strip() for line in file if "nologin" not in line]
 
 
 def get_users():
+    """
+    Returns all users with shell specified in get_shells() except for root.
+    """
     shells = get_shells()
-    users = set()
+    users = []
 
     for user in pwd.getpwall():
-        shell = user[6].strip()
-        if shell not in shells or shell in ('/sbin/nologin', '/bin/nologin'):
+        name = user[0]
+        shell = user[6]
+
+        if name == "root" or (shell not in shells):
             continue
-        users.add(user[0])
-    users.discard("root")
+        users.append(name)
     return users
 
 
 def get_groups(users):
-    groups = set()
+    """
+    Returns all groups for users specified in get_users().
+    Every user has at least one group with its name.
+    """
+    groups = []
 
     for group in grp.getgrall():
-        name = group[0]
-        if name in users:
-            groups.add(name)  # group for an user of interest
-        for u in group[3]:
-            u = u.strip()
-            if u in users:
-                groups.add(name)  # add groups containing a user
+        group_name = group[0]
+        user_list = group[3]
+
+        if group_name in users:
+            groups.append(group_name)  # group for an user of interest
+        for user in user_list:
+            if user.strip() in users:
+                groups.append(group_name)  # add groups containing a user
     return groups
 
 
-@datasource()
-def system_user_dirs(_broker):
-    try:
-        import rpm
-    except ImportError:
-        raise SkipComponent
+@datasource(LocalSpecs.rpm_args, HostContext)
+def system_user_dirs(broker):
+    r"""
+    Custom datasource for CVE-2021-35937, CVE-2021-35938, and CVE-2021-35939.
 
+    It collects package names from the ``rpm -qa --qf="[%{=NAME}; %{FILEMODES:perms};
+    %{FILEUSERNAME}; %{FILEGROUPNAME}\n]" command``, if the package has
+    at least one directory which is writable by a specific user/group or the others.
+
+    Raises:
+        SkipComponent: Raised if no data is available
+
+    Returns:
+        List[str]: Sorted list of package names
+    """
     users = get_users()
     groups = get_groups(users)
+    packages = set()
+    content = broker[LocalSpecs.rpm_args].content
 
-    ts = rpm.TransactionSet()
+    if not content or "command not found" in content[0]:
+        raise SkipComponent
 
-    directories = {}
-    for hdr in ts.dbMatch(rpm.RPMTAG_NAME):
-        for f in rpm.files(hdr):
-            if stat.S_ISDIR(f.mode):
-                if ((f.user in users) and (f.mode & stat.S_IWUSR) or
-                        (f.group in groups) and (f.mode & stat.S_IWGRP) or
-                        (f.mode & stat.S_IWOTH)):
-                    directories[f.name] = (hdr.NEVRA,)
+    for line in content:
+        name, perms, user, group = line.split("; ")
+        if perms[0] == "d":
+            user_w = user in users and perms[2] == "w"
+            group_w = group in groups and perms[5] == "w"
+            others_w = perms[8] == "w"
 
-    packages = {}
-    for dirname, data in directories.items():
-        mi = ts.dbMatch(rpm.RPMTAG_DIRNAMES, dirname + '/')
-        for hdr in mi:
-            packages.setdefault(hdr.NEVRA, []).append(dirname)
+            if user_w or group_w or others_w:
+                packages.add(name)
 
-    return DatasourceProvider(content=json.dumps(packages), relative_path='insights_commands/system_user_dirs')
+    if packages:
+        return DatasourceProvider(
+            content=sorted(packages), relative_path="insights_commands/system_user_dirs"
+        )
