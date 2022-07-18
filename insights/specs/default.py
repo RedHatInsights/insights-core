@@ -127,6 +127,7 @@ class DefaultSpecs(Specs):
     cloud_init_log = simple_file("/var/log/cloud-init.log")
     cluster_conf = simple_file("/etc/cluster/cluster.conf")
     cmdline = simple_file("/proc/cmdline")
+    cni_podman_bridge_conf = simple_file("/etc/cni/net.d/87-podman-bridge.conflist")
     corosync = simple_file("/etc/sysconfig/corosync")
     corosync_cmapctl = foreach_execute(corosync_ds.corosync_cmapctl_cmds, "%s")
     corosync_conf = simple_file("/etc/corosync/corosync.conf")
