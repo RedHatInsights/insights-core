@@ -16,7 +16,7 @@ from insights.core.spec_factory import RawFileProvider
 from insights.core.spec_factory import simple_file, simple_command, glob_file
 from insights.core.spec_factory import first_of, command_with_args
 from insights.core.spec_factory import foreach_collect, foreach_execute
-from insights.core.spec_factory import container_collect, container_execute
+from insights.core.spec_factory import container_collect  # , container_execute
 from insights.core.spec_factory import first_file, listdir
 from insights.components.cloud_provider import IsAzure, IsGCP
 from insights.components.ceph import IsCephMonitor
@@ -30,7 +30,7 @@ from insights.specs.datasources import (
     ssl_certificate, sys_fs_cgroup_memory_tasks_number, system_user_dirs, user_group, yum_updates, luks_devices)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 from insights.specs.datasources.pcp import pcp_enabled, pmlog_summary_args
-from insights.specs.datasources.container import running_containers, ls_containers
+from insights.specs.datasources.container import running_containers  # , ls_containers
 
 
 logger = logging.getLogger(__name__)

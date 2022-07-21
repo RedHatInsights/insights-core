@@ -71,7 +71,6 @@ class DockerList(CommandParser):
                                       heading_ignore=self.heading_ignore,
                                       header_substitute=self.substitutions)
 
-        print(self.rows)
         if not self.rows:
             raise SkipException('No data.')
 

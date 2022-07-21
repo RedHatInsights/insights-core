@@ -1044,7 +1044,7 @@ class container_collect(foreach_execute):
         function: A datasource that returns a list of file contents created by
             substituting each element of provider into the path template.
     """
-    def __init__(self, provider, path, context=ExecutionContext, deps=[], split=True, keep_rc=False, timeout=None, inherit_env=[], signum=None, **kwargs):
+    def __init__(self, provider, path, context=HostContext, deps=[], split=True, keep_rc=False, timeout=None, inherit_env=[], signum=None, **kwargs):
         super(container_collect, self).__init__(provider, path, context, deps, split, keep_rc, timeout, inherit_env, signum, **kwargs)
 
     def __call__(self, broker):

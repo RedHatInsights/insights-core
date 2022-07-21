@@ -39,10 +39,7 @@ class PodmanListImages(DockerListImages):
         >>> images.images['rhel6_vsftpd']['CREATED']
         '37 minutes ago'
     """
-    key_field = 'REPOSITORY'
-    heading_ignore = [key_field]
-    attr_name = 'images'
-    substitutions = [("IMAGE ID", "IMAGE_ID"), ("VIRTUAL SIZE", "VIRTUAL_SIZE")]
+    pass
 
 
 @parser(Specs.podman_list_containers)
@@ -70,7 +67,4 @@ class PodmanListContainers(DockerListContainers):
         >>> containers.containers['tender_rosalind']['STATUS']
         'Exited (137) 18 hours ago'
     """
-    key_field = 'NAMES'
-    heading_ignore = ['CONTAINER']
-    attr_name = 'containers'
-    substitutions = [("CONTAINER ID", "CONTAINER_ID")]
+    pass
