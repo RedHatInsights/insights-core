@@ -29,16 +29,16 @@ def running_containers(broker):
     raise SkipComponent
 
 
-@datasource(running_containers, HostContext)
-def ls_containers(broker):
-    """
-    """
-    podman_c = broker[running_containers]
-    ret = []
-    for p in podman_c:
-        _p = list(p)
-        _p.append('/etc')
-        ret.append(tuple(_p))
-    return ret
+# @datasource(running_containers, HostContext)
+# def ls_containers(broker):
+#     """
+#     """
+#     podman_c = broker[running_containers]
+#     ret = []
+#     for p in podman_c:
+#         _p = list(p)
+#         _p.append('/etc')
+#         ret.append(tuple(_p))
+#     return ret
 
-    raise SkipComponent
+#     raise SkipComponent

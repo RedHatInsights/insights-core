@@ -149,7 +149,7 @@ class DockerListContainers(DockerList):
 
         self.running_containers = []
         for name, info in self.containers.items():
-            if info.get('STATUS', '').startswith('Up ') or True:
+            if info.get('STATUS', '').startswith('Up '):
                 self.running_containers.append(name)
 
     @property
