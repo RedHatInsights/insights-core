@@ -699,6 +699,8 @@ def _lvm_render(o):
     if isinstance(o, dict):
         parts = ['"%s": %s' % (k, _lvm_render(v)) for k, v in o.items()]
         return "{%s}" % ",".join(parts)
+    if isinstance(o, str) and o.isdigit():
+        return '"%s"' % o
     return "%s" % o
 
 
