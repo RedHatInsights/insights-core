@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.284
+Version:        3.0.285
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,13 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jul 21 2022 Sachin Patil <psachin@redhat.com> 3.0.285-1
+- fix: Add spec "lvmconfig" back (#3474) (44796653+huali027@users.noreply.github.com)
+- Fix: Add pre-check for teamdctl_state_dump (#3470) (986222045@qq.com)
+- Fix: Restore the spec cni_podman_bridge_conf (#3471) (39508521+shlao@users.noreply.github.com)
+
+
+
 * Thu Jul 14 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.284-1
 - Unregister option removes machine-id (#3449)
   (93577878+ahitacat@users.noreply.github.com)
