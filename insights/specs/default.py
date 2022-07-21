@@ -361,6 +361,10 @@ class DefaultSpecs(Specs):
     lsscsi = simple_command("/usr/bin/lsscsi")
     lsvmbus = simple_command("/usr/sbin/lsvmbus -vv")
     lvm_conf = simple_file("/etc/lvm/lvm.conf")
+    lvmconfig = first_of([
+        simple_command("/usr/sbin/lvmconfig --type full"),
+        simple_command("/usr/sbin/lvm dumpconfig --type full"),
+    ])
     lvm_system_devices = simple_file("/etc/lvm/devices/system.devices")
     lvs_noheadings = simple_command("/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,lv_size,lv_attr,mirror_log,vg_name,devices,region_size,data_percent,metadata_percent,segtype,seg_monitor,lv_kernel_major,lv_kernel_minor --config=\"global{locking_type=0}\"")
     mac_addresses = glob_file("/sys/class/net/*/address")
