@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.285](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.285) (2022-07-21)
+
+- fix: Add spec "lvmconfig" back ([PR 3474](https://github.com/RedHatInsights/insights-core/pull/3474))
+- Fix: Add pre-check for teamdctl_state_dump ([PR 3470](https://github.com/RedHatInsights/insights-core/pull/3470))
+- Fix: Restore the spec cni_podman_bridge_conf ([PR 3471](https://github.com/RedHatInsights/insights-core/pull/3471))
+
 ## [insights-core-3.0.284](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.284) (2022-07-14)
 
 - Unregister option removes machine-id ([PR 3449](https://github.com/RedHatInsights/insights-core/pull/3449))
