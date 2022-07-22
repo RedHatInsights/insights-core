@@ -699,7 +699,8 @@ def _lvm_render(o):
     if isinstance(o, dict):
         parts = ['"%s": %s' % (k, _lvm_render(v)) for k, v in o.items()]
         return "{%s}" % ",".join(parts)
-    if isinstance(o, str) and o.isdigit():
+    # for umask=077, it can not be parsed by json directly, transfer it to string first
+    if isinstance(o, str) and o.isdigit() and o.startswith('0') and len(o) > 1:
         return '"%s"' % o
     return "%s" % o
 
