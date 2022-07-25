@@ -220,6 +220,7 @@ class DefaultSpecs(Specs):
     grub_efi_conf = simple_file("/boot/efi/EFI/redhat/grub.conf")
     grub1_config_perms = simple_command("/bin/ls -lH /boot/grub/grub.conf")  # RHEL6
     grub2_cfg = simple_file("/boot/grub2/grub.cfg")
+    grub2_editenv_list = simple_command("/usr/bin/grub2-editenv list")
     grub2_efi_cfg = simple_file("boot/efi/EFI/redhat/grub.cfg")
     grubby_default_index = simple_command("/usr/sbin/grubby --default-index")  # only RHEL7 and updwards
     grubby_default_kernel = simple_command("/sbin/grubby --default-kernel")
