@@ -23,9 +23,9 @@ class SystemUserDirs(Parser):
 
         >>> type(system_user_dirs)
         <class 'insights.parsers.system_user_dirs.SystemUserDirs'>
-        >>> system_user_dirs.data
+        >>> system_user_dirs.packages
         ['ca-certificates', 'kmod', 'sssd-ldap']
     """
 
     def parse_content(self, content):
-        self.data = content
+        self.packages = content
