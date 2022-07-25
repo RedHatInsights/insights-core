@@ -51,7 +51,7 @@ class Grub2EditenvList(GrubEnv):
     """
 
     def __init__(self, context):
-        super().__init__(context)
+        super(Grub2EditenvList, self).__init__(context)
 
     def parse_content(self, content):
         if not content:
