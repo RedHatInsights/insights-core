@@ -29,13 +29,15 @@ class Grub2EditenvList(GrubEnv):
         tuned_params=transparent_hugepages=never
         tuned_initrd=
 
-    Attributes:
+    Attributes::
+
         has_kernelopts (bool): Returns True/False depending on if kernelopts key is in the dict.
         kernelopts (bool): Returns the string of kernelopts from the dict.
         has_tuned_params (str): Returns True/False depending of if the tuned_params key is in the dict.
         tuned_params (str): Returns the string of tuned_params from the dict.
 
     Examples:
+
         >>> type(grub2_editenv_list)
         <class 'insights.parsers.grub2_editenv_list.Grub2EditenvList'>
         >>> grub2_editenv_list.has_kernelopts
