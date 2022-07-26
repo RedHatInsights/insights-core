@@ -695,20 +695,10 @@ class LvmConf(LegacyItemAccess, Parser):
         self.data = lvm_conf_dict
 
 
-def _lvm_render(o):
-    if isinstance(o, dict):
-        parts = ['"%s": %s' % (k, _lvm_render(v)) for k, v in o.items()]
-        return "{%s}" % ",".join(parts)
-    # for umask=077, it can not be parsed by json directly, transfer it to string first
-    if isinstance(o, str) and o.isdigit() and o.startswith('0') and len(o) > 1:
-        return '"%s"' % o
-    return "%s" % o
-
-
 @parser(Specs.lvmconfig)
 class LvmConfig(CommandParser):
     def parse_content(self, content):
-        dd = defaultdict(dict)
+        self.data = defaultdict(dict)
         key = None
         for line in content:
             line = line.rstrip()
@@ -721,10 +711,16 @@ class LvmConfig(CommandParser):
                 key = None
             elif line[0] == "\t":
                 k, v = line.strip().split("=", 1)
-                dd[key][k] = v
+                # umask=077 will raise exception, and also no need to
+                # transfer it, just keep it as string
+                if k != 'umask':
+                    try:
+                        v = json.loads(v)
+                    except Exception:
+                        raise SkipException("Failed to parse line %s." % line)
+                self.data[key][k] = v
             else:
                 pass  # inferring this a stderr, so skipping
-        self.data = json.loads(_lvm_render(dict(dd)))
 
 
 @parser(Specs.lvm_system_devices)
