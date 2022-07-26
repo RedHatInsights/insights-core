@@ -17,7 +17,15 @@ from insights.client.data_collector import CleanOptions
 from insights.contrib.soscleaner import SOSCleaner
 
 
-class ReportItem(namedtuple("ReportItem", ("name", "relative_paths"))):
+class ReportItem(namedtuple("_ReportItem", ("name", "relative_paths"))):
+    @staticmethod
+    def _result(relative_path):
+        return {
+            "object": {
+                "relative_path": relative_path
+            }
+        }
+
     @property
     def file_name(self):
         return "%s.json" % self.name
@@ -37,11 +45,13 @@ class ReportItem(namedtuple("ReportItem", ("name", "relative_paths"))):
 class ReportItemSimpleFile(ReportItem):
     @property
     def results(self):
-        return {
-            "object": {
-                "relative_path": self.relative_paths[0]
-            }
-        }
+        return self._result(self.relative_paths[0])
+
+
+class ReportItemGlobFile(ReportItem):
+    @property
+    def results(self):
+        return [self._result(relative_path) for relative_path in self.relative_paths]
 
 
 def _soscleaner():
@@ -198,6 +208,30 @@ def test_excluded_files_simple_file():
                 "installtime_INSTALLTIME_date_buildtime_BUILDTIME_"
                 "vendor_VENDOR_buildhost_BUILDHOST_sigpgp_SIGPGP_pgpsig"
             ]
+        ),
+        ReportItemSimpleFile(
+            "insights.specs.Specs.ip_addr",
+            ["insights_commands/ip_addr"]
+        )
+    ]
+
+    soscleaner = _soscleaner()
+    with _mock_report_dir(report_items) as tmpdir:
+        soscleaner.dir_path = tmpdir
+        actual = soscleaner._excluded_files()
+
+    expected = []
+    for report_item in report_items:
+        if report_item.name in soscleaner.excluded_specs:
+            expected.extend(report_item.relative_paths)
+    assert actual == expected
+
+
+def test_excluded_files_glob_file():
+    report_items = [
+        ReportItemGlobFile(
+            "insights.specs.Specs.dnf_modules",
+            ["etc/dnf/modules.d/ruby.module"]
         ),
         ReportItemSimpleFile(
             "insights.specs.Specs.ip_addr",
