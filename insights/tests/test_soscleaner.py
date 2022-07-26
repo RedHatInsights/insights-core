@@ -1,5 +1,6 @@
 from collections import namedtuple
 from contextlib import contextmanager
+from itertools import chain
 from json import dump
 from os import mkdir
 from os.path import join
@@ -16,12 +17,29 @@ from insights.client.data_collector import CleanOptions
 from insights.contrib.soscleaner import SOSCleaner
 
 
-class ReportItem(namedtuple("ReportItem", ("name", "relative_path"))):
+class ReportItem(namedtuple("ReportItem", ("name", "relative_paths"))):
+    @property
+    def file_name(self):
+        return "%s.json" % self.name
+
+    @property
+    def contents(self):
+        return {
+            "name": self.name,
+            "results": self.results,
+        }
+
+    @property
+    def results(self):
+        raise NotImplementedError()
+
+
+class ReportItemSimpleFile(ReportItem):
     @property
     def results(self):
         return {
             "object": {
-                "relative_path": self.relative_path
+                "relative_path": self.relative_paths[0]
             }
         }
 
@@ -46,14 +64,9 @@ def _mock_report_dir(report_items):
             mkdir(path)
 
         for report_item in report_items:
-            json_path = join(
-                meta_data_path, "%s.json" % report_item.name
-            )
+            json_path = join(meta_data_path, report_item.file_name)
             with open(json_path, "w") as json_file:
-                meta_data_obj = {
-                    "name": report_item.name,
-                    "results": report_item.results,
-                }
+                meta_data_obj = report_item.contents
                 dump(meta_data_obj, json_file)
 
         yield tmpdir
@@ -175,18 +188,20 @@ def test_excluded_specs():
         assert spec.find("insights.specs.Specs.") == 0
 
 
-def test_excluded_files():
+def test_excluded_files_simple_file():
     report_items = [
-        ReportItem(
+        ReportItemSimpleFile(
             "insights.specs.Specs.installed_rpms",
-            "insights_commands/rpm_-qa_--qf_name_NAME_epoch_EPOCH_"
-            "version_VERSION_release_RELEASE_arch_ARCH_"
-            "installtime_INSTALLTIME_date_buildtime_BUILDTIME_"
-            "vendor_VENDOR_buildhost_BUILDHOST_sigpgp_SIGPGP_pgpsig"
+            [
+                "insights_commands/rpm_-qa_--qf_name_NAME_epoch_EPOCH_"
+                "version_VERSION_release_RELEASE_arch_ARCH_"
+                "installtime_INSTALLTIME_date_buildtime_BUILDTIME_"
+                "vendor_VENDOR_buildhost_BUILDHOST_sigpgp_SIGPGP_pgpsig"
+            ]
         ),
-        ReportItem(
+        ReportItemSimpleFile(
             "insights.specs.Specs.ip_addr",
-            "insights_commands/ip_addr"
+            ["insights_commands/ip_addr"]
         )
     ]
 
@@ -195,11 +210,10 @@ def test_excluded_files():
         soscleaner.dir_path = tmpdir
         actual = soscleaner._excluded_files()
 
-    expected = [
-        report_item.relative_path
-        for report_item in report_items
-        if report_item.name in soscleaner.excluded_specs
-    ]
+    expected = []
+    for report_item in report_items:
+        if report_item.name in soscleaner.excluded_specs:
+            expected.extend(report_item.relative_paths)
     assert actual == expected
 
 
