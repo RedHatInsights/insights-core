@@ -45,7 +45,6 @@ class SOSCleaner:
     reporting - will post progress and overall statistics to STDOUT. defaults to yes
     '''
     def __init__(self, quiet=False):
-
         self.name = 'soscleaner'
         self.version = '0.2.2'
         self.loglevel = 'INFO' #this can be overridden by the command-line app
@@ -736,6 +735,8 @@ class SOSCleaner:
                 file_path = os.path.join(dir_name, file_name)
                 with open(file_path) as file:
                     meta_data = json.load(file)
+                from pprint import pformat
+                self.logger.debug("Meta data: %s %s" % (file_name, pformat(meta_data)))
                 if meta_data["name"] in self.excluded_specs:
                     excluded_files.append(meta_data["results"]["object"]["relative_path"])
         return excluded_files

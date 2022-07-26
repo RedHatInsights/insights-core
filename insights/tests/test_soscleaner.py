@@ -15,7 +15,15 @@ from insights.client.config import InsightsConfig
 from insights.client.data_collector import CleanOptions
 from insights.contrib.soscleaner import SOSCleaner
 
-ReportItem = namedtuple("ReportItem", ("name", "relative_path"))
+
+class ReportItem(namedtuple("ReportItem", ("name", "relative_path"))):
+    @property
+    def results(self):
+        return {
+            "object": {
+                "relative_path": self.relative_path
+            }
+        }
 
 
 def _soscleaner():
@@ -44,11 +52,7 @@ def _mock_report_dir(report_items):
             with open(json_path, "w") as json_file:
                 meta_data_obj = {
                     "name": report_item.name,
-                    "results": {
-                        "object": {
-                            "relative_path": report_item.relative_path
-                        }
-                    }
+                    "results": report_item.results,
                 }
                 dump(meta_data_obj, json_file)
 
