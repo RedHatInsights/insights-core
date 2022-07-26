@@ -62,7 +62,7 @@ develop = set([
 
 docs = set([
     'docutils',
-    'Sphinx',
+    'Sphinx<=5.0.2',
     'nbsphinx',
     'sphinx_rtd_theme',
     'ipython',
