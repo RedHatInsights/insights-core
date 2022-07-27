@@ -12,10 +12,11 @@ from insights.specs import Specs
 
 @parser(Specs.cloud_cfg_filtered)
 class CloudCfg(YAMLParser):
-    """This parser parses the ``/etc/cloud/cloud.cfg`` which is filtered per
+    """
+    This parser parses the ``/etc/cloud/cloud.cfg`` which is filtered per
     the filters of `:class:insights.specs.Specs.cloud_cfg` into a dictionary.
 
-    The typical content of this file after filtering is in Yaml format:
+    The typical content of this file after filtering is still in Yaml format::
 
         debug:
           output: /var/log/cloud-init-debug.log
