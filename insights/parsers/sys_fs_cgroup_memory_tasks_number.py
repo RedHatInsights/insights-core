@@ -1,8 +1,8 @@
 """
-SysFsCgroupMemoryTasksNumber - Command ``/usr/bin/find /sys/fs/cgroup/memory -name 'tasks' | wc -l``
-====================================================================================================
+SysFsCgroupMemoryTasksNumber - Command ``/usr/bin/find /sys/fs/cgroup/memory -name 'tasks'``
+============================================================================================
 
-This parser reads the output of ``/usr/bin/find /sys/fs/cgroup/memory -name 'tasks' | wc -l``.
+This parser reads the file number from the output of ``/usr/bin/find /sys/fs/cgroup/memory -name 'tasks'``.
 
 """
 
@@ -14,17 +14,15 @@ from insights.specs import Specs
 @parser(Specs.sys_fs_cgroup_memory_tasks_number)
 class SysFsCgroupMemoryTasksNumber(Parser, list):
     """
-    Class ``SysFsCgroupMemoryTasksNumber`` parses the content of the
-    ``/usr/bin/find /sys/fs/cgroup/memory -name 'tasks' | wc -l`` file.
+    Class ``SysFsCgroupMemoryTasksNumber`` parses the file number from the output of the
+    ``/usr/bin/find /sys/fs/cgroup/memory -name 'tasks'`` command.
 
-    This command is used to check the number of `tasks` files under /usr/bin/find /sys/fs/cgroup/memory::
+    The typical output of this command is::
+       260
 
-        number (string):    The number of `tasks` under /usr/bin/find /sys/fs/cgroup/memory.
+    Attributes:
 
-    Sample output::
-
-        260
-
+        number (int):    The number of `tasks` files under /usr/bin/find /sys/fs/cgroup/memory.
 
     Examples:
         >>> type(sys_fs_cgroup_memory_tasks_number)
@@ -36,8 +34,5 @@ class SysFsCgroupMemoryTasksNumber(Parser, list):
     def parse_content(self, content):
         if not content:
             raise SkipException("No output")
-
-        if not content[0].strip().isdigit():
-            raise SkipException("Output is invalid")
 
         self.number = int(content[0].strip())
