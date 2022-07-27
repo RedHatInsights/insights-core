@@ -26,7 +26,7 @@ from insights.specs.datasources import (
     awx_manage, cloud_init, candlepin_broker, corosync as corosync_ds,
     dir_list, ethernet, httpd, ipcs, kernel_module_list, lpstat, md5chk,
     package_provides, ps as ps_datasource, sap, satellite_missed_queues,
-    ssl_certificate, user_group, yum_updates)
+    ssl_certificate, sys_fs_cgroup_memory_tasks_number, user_group, yum_updates)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 from insights.specs.datasources.pcp import pcp_enabled, pmlog_summary_args
 
@@ -625,7 +625,7 @@ class DefaultSpecs(Specs):
     sysctl_conf = simple_file("/etc/sysctl.conf")
     sysctl_d_conf_etc = glob_file("/etc/sysctl.d/*.conf")
     sysctl_d_conf_usr = glob_file("/usr/lib/sysctl.d/*.conf")
-    sys_fs_cgroup_memory_tasks_number = simple_command("/usr/bin/find /sys/fs/cgroup/memory -name 'tasks' | wc -l")
+    sys_fs_cgroup_memory_tasks_number = sys_fs_cgroup_memory_tasks_number.sys_fs_cgroup_memory_tasks_number_data_datasource
     systemctl_cat_dnsmasq_service = simple_command("/bin/systemctl cat dnsmasq.service")
     systemctl_cat_rpcbind_socket = simple_command("/bin/systemctl cat rpcbind.socket")
     systemctl_cinder_volume = simple_command("/bin/systemctl show openstack-cinder-volume")
