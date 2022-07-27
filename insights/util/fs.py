@@ -69,7 +69,7 @@ def remove(path, chmod=False):
     subproc.call(cmd)
 
 
-def ensure_path(path, mode=0o777):
+def ensure_path(path, mode=0o755):
     """Ensure that path exists in a multiprocessing safe way.
 
     If the path does not exist, recursively create it and its parent
@@ -94,11 +94,12 @@ def ensure_path(path, mode=0o777):
     """
 
     if path:
+        umask = os.umask(0o022)
         try:
-            umask = os.umask(000)
             os.makedirs(path, mode)
             os.umask(umask)
         except OSError as e:
+            os.umask(umask)
             if e.errno != errno.EEXIST:
                 raise
 
