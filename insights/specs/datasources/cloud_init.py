@@ -70,7 +70,7 @@ def cloud_cfg(broker):
             if isinstance(content, dict):
                 # apply filters after ignoring sensitive data
                 for item in filters:
-                    if item not in {'users', 'system_info'} and item in content:
+                    if item not in ('users', 'system_info') and item in content:
                         result[item] = content[item]
 
                 if result:
