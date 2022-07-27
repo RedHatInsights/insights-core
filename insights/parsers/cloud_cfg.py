@@ -34,9 +34,9 @@ class CloudCfg(YAMLParser):
         data(dict): Cloud-init network configuration.
 
     Examples:
-        >>> cloud_cfg.['network']['version'] == 1
+        >>> cloud_cfg['network']['version'] == 1
         True
-        >>> cloud_cfg.['network']['config'] == [{"type": "physical", "name": "eth0", "subnets": [{"type": "dhcp"}, {"type": "dhcp6"}]}]
+        >>> cloud_cfg['network']['config'] == [{"type": "physical", "name": "eth0", "subnets": [{"type": "dhcp"}, {"type": "dhcp6"}]}]
         True
     """
     pass
