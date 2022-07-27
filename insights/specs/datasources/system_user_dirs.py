@@ -1,7 +1,5 @@
 """
 Custom datasource for CVE-2021-35937, CVE-2021-35938, and CVE-2021-35939.
-
-Authors: ffesti@redhat.com, jobselko@redhat.com
 """
 
 import grp
