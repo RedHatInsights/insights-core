@@ -235,3 +235,15 @@ global {
 	fallback_to_lvm1=0
 }
 """.strip()
+
+LVMCONFIG3 = """
+global {
+	test=077
+	test=0
+	units="r"
+	si_unit_consistency=1
+	suffix=1
+	activation=1
+	fallback_to_lvm1=0
+}
+""".strip()

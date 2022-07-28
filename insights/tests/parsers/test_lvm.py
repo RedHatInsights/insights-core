@@ -2,10 +2,10 @@ from __future__ import print_function
 import pytest
 import doctest
 
-from insights.parsers import SkipException
+from insights.parsers import ParseException, SkipException
 from insights.parsers import lvm
 from insights.tests import context_wrap
-from .lvm_test_data import LVMCONFIG, LVMCONFIG2
+from .lvm_test_data import LVMCONFIG, LVMCONFIG2, LVMCONFIG3
 
 WARNINGS_CONTENT = """
 WARNING
@@ -192,6 +192,11 @@ def test_lvmconfig():
 def test_lvmconfig_2():
     p = lvm.LvmConfig(context_wrap(LVMCONFIG2))
     assert p.data['global']['umask'] == '077'
+
+
+def test_lvmconfig_exception():
+    with pytest.raises(ParseException):
+        lvm.LvmConfig(context_wrap(LVMCONFIG3))
 
 
 def test_vgsheading_warnings():
