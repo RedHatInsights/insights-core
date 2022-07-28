@@ -121,7 +121,7 @@ def test_grub2_editenv_list_with_tuned_params():
 def test_grub2_editenv_list_with_error():
     results = grubenv.Grub2EditenvList(context_wrap(GRUBEDITENVLIST_ERROR))
     assert results is not None
-    assert results.error == ["grub2-editenv: error: invalid environment block."]
+    assert results.errors == ["grub2-editenv: error: invalid environment block."]
 
 
 def test_grub2_editenv_list_without_tuned_params():

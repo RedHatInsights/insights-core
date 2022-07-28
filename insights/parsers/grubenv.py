@@ -41,11 +41,11 @@ class GrubenvBase(Parser, dict):
         if not content:
             raise SkipException("Empty output.")
 
-        self._error = []
+        self._errors = []
         data = dict()
         for line in get_active_lines(content):
             if "=" not in line:
-                self._error.append(line)
+                self._errors.append(line)
                 continue
 
             key, value = line.split("=", 1)
@@ -54,7 +54,7 @@ class GrubenvBase(Parser, dict):
 
             data[key] = value
 
-        if (not data) and (not self._error):
+        if (not data) and (not self._errors):
             raise SkipException("No parsed data.")
 
         self.update(data)
@@ -142,6 +142,9 @@ class Grub2EditenvList(GrubenvBase):
         '295e1ba1696e4fad9e062f096f92d147-4.18.0-305.el8.x86_64'
     """
 
+    # For 'GrubEnv' parser, it processes the content in '/boot/grub2/grubenv' file.
+    # The file saves environment variables for boot time, and will never contain error messages.
+    # The errors attribute only needed for Grub2EditenvList parser
     @property
-    def error(self):
-        return self._error
+    def errors(self):
+        return self._errors
