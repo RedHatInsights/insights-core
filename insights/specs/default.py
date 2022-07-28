@@ -661,6 +661,7 @@ class DefaultSpecs(Specs):
     ])
     sys_vmbus_device_id = glob_file('/sys/bus/vmbus/devices/*/device_id')
     sys_vmbus_class_id = glob_file('/sys/bus/vmbus/devices/*/class_id')
+    teamdctl_config_dump = foreach_execute(ethernet.team_interfaces, "/usr/bin/teamdctl %s config dump")
     teamdctl_state_dump = foreach_execute(ethernet.team_interfaces, "/usr/bin/teamdctl %s state dump")
     testparm_s = simple_command("/usr/bin/testparm -s")
     testparm_v_s = simple_command("/usr/bin/testparm -v -s")
