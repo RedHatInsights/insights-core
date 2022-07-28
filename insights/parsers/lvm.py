@@ -36,7 +36,6 @@ LvmSystemDevices - file ``/etc/lvm/devices/system.devices``
 from __future__ import print_function
 
 import json
-from collections import defaultdict
 
 from insights.parsers import ParseException, optlist_to_dict, SkipException
 from insights.specs import Specs
@@ -698,7 +697,7 @@ class LvmConf(LegacyItemAccess, Parser):
 @parser(Specs.lvmconfig)
 class LvmConfig(CommandParser):
     def parse_content(self, content):
-        self.data = defaultdict(dict)
+        self.data = dict()
         key = None
         for line in content:
             line = line.rstrip()
@@ -717,8 +716,8 @@ class LvmConfig(CommandParser):
                     try:
                         v = json.loads(v)
                     except Exception:
-                        raise SkipException("Failed to parse line %s." % line)
-                self.data[key][k] = v
+                        raise ParseException("Failed to parse line %s." % line)
+                self.data.setdefault(key, {}).update({k: v})
             else:
                 pass  # inferring this a stderr, so skipping
 
