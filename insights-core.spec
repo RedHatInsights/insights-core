@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.285
+Version:        3.0.286
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,15 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jul 28 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.286-1
+- fix: the parser "LvmConfig" raises exception (#3476)
+  (44796653+huali027@users.noreply.github.com)
+- feat: Add spec for teamdctl_config_dump parser (#3472) (986222045@qq.com)
+- Fix error with umask not being restored when dir exists (#3480)
+  (20520336+bfahr@users.noreply.github.com)
+- fix: Restrict Sphinx's version since it breaks docs build (#3483)
+  (rblakley@redhat.com)
+
 * Thu Jul 21 2022 Sachin Patil <psachin@redhat.com> 3.0.285-1
 - fix: Add spec "lvmconfig" back (#3474) (44796653+huali027@users.noreply.github.com)
 - Fix: Add pre-check for teamdctl_state_dump (#3470) (986222045@qq.com)

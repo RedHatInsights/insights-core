@@ -2,6 +2,13 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.286](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.286) (2022-07-28)
+
+- fix: the parser "LvmConfig" raises exception ([PR 3476](https://github.com/RedHatInsights/insights-core/pull/3476))
+- feat: Add spec for teamdctl_config_dump parser ([PR 3472](https://github.com/RedHatInsights/insights-core/pull/3472))
+- Fix error with umask not being restored when dir exists ([PR 3480](https://github.com/RedHatInsights/insights-core/pull/3480))
+- fix: Restrict Sphinx's version since it breaks docs build ([PR 3483](https://github.com/RedHatInsights/insights-core/pull/3483))
+
 ## [insights-core-3.0.285](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.285) (2022-07-21)
 
 - fix: Add spec "lvmconfig" back ([PR 3474](https://github.com/RedHatInsights/insights-core/pull/3474))
