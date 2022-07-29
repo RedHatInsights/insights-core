@@ -11,6 +11,14 @@ insights.specs.datasources
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.awx_manage
+-------------------------------------
+
+.. automodule:: insights.specs.datasources.awx_manage
+    :members: awx_manage_check_license_data_datasource, LocalSpecs
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.candlepin_broker
 -------------------------------------------
 
@@ -72,6 +80,21 @@ insights.specs.datasources.kernel_module_list
 
 .. automodule:: insights.specs.datasources.kernel_module_list
     :members: kernel_module_filters
+    :show-inheritance:
+    :undoc-members:
+
+insights.specs.datasources.lpstat
+---------------------------------
+
+.. automodule:: insights.specs.datasources.lpstat
+    :members: lpstat_protocol_printers_info, LocalSpecs
+    :show-inheritance:
+    :undoc-members:
+
+insights.specs.datasources.malware_detection
+--------------------------------------------
+
+.. automodule:: insights.specs.datasources.malware_detection
     :show-inheritance:
     :undoc-members:
 
