@@ -20,11 +20,11 @@ def test_aws_imdsv2_token_exp():
     input_spec.content = []
     broker = {LocalSpecs.aws_imdsv2_token: input_spec}
     with pytest.raises(Exception) as ex:
-        _ = aws_imdsv2_token(broker)
+        aws_imdsv2_token(broker)
     assert "Unexpected" in str(ex)
 
     input_spec = Mock()
     input_spec.content = ["  ", ]
     broker = {LocalSpecs.aws_imdsv2_token: input_spec}
     with pytest.raises(SkipComponent) as ex:
-        _ = aws_imdsv2_token(broker)
+        aws_imdsv2_token(broker)
