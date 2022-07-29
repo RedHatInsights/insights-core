@@ -131,6 +131,14 @@ insights.specs.datasources.ssl_certificate
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.system_user_dirs
+-------------------------------------------
+
+.. automodule:: insights.specs.datasources.system_user_dirs
+    :members: system_user_dirs
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.user_group
 -------------------------------------
 
