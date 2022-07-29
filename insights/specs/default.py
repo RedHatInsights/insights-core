@@ -30,7 +30,9 @@ from insights.specs.datasources import (
     ssl_certificate, sys_fs_cgroup_memory_tasks_number, system_user_dirs, user_group, yum_updates, luks_devices)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 from insights.specs.datasources.pcp import pcp_enabled, pmlog_summary_args
-from insights.specs.datasources.container import running_containers  # , ls_containers
+from insights.specs.datasources.container import running_rhel_containers
+from insights.specs.datasources.container.nginx_conf import nginx_conf as container_nginx_conf_ds
+# from insights.specs.datasources.container.nginx_conf import httpd_conf as container_httpd_conf_ds
 
 
 logger = logging.getLogger(__name__)
@@ -734,5 +736,9 @@ class DefaultSpecs(Specs):
     installed_rpms = simple_command("/bin/rpm -qa --qf '%s'" % rpm_format, context=HostContext, signum=signal.SIGTERM)
 
     # container_specs
-    container_redhat_release = container_collect(running_containers, "/etc/redhat-release")  # must be collected
-    # container_ls_root = container_execute(ls_containers, "ls -l %s")
+    container_redhat_release = container_collect(running_rhel_containers, "/etc/redhat-release")
+    container_nginx_conf = container_collect(container_nginx_conf_ds)
+    # container_test_1 = container_collect(running_rhel_containers, "/etc/hosts")
+    # container_test_2 = container_collect(running_rhel_containers, "/etc/hostname")
+    # container_httpd_conf = container_collect(container_httpd_conf_ds)
+    # container_ls_disk = container_execute(running_rhel_containers, '/bin/ls -lanR /dev/disk')

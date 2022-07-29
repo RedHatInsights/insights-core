@@ -303,11 +303,11 @@ class CommandOutputProvider(ContentProvider):
     """
     Class used in datasources to return output from commands.
     """
-    def __init__(self, cmd, ctx, args=None, split=True, keep_rc=False, ds=None, timeout=None, inherit_env=None, signum=None):
+
+    def __init__(self, cmd, ctx, root="insights_commands", args=None, split=True, keep_rc=False, ds=None, timeout=None, inherit_env=None, signum=None):
         super(CommandOutputProvider, self).__init__()
         self.cmd = cmd
-        self.root = "insights_commands"
-        self.relative_path = os.path.join("insights_commands", mangle_command(cmd))
+        self.root = root
         self.ctx = ctx
         self.args = args  # already interpolated into cmd - stored here for context.
         self.split = split
@@ -316,11 +316,15 @@ class CommandOutputProvider(ContentProvider):
         self.timeout = timeout
         self.inherit_env = inherit_env or []
         self.signum = signum or signal.SIGKILL
+        self.additional_settings()
 
         self._content = None
         self.rc = None
 
         self.validate()
+
+    def additional_settings(self):
+        self.relative_path = mangle_command(self.cmd)
 
     def validate(self):
         if not blacklist.allow_command(self.cmd):
@@ -400,41 +404,26 @@ class CommandOutputProvider(ContentProvider):
 
 
 class ContainerProvider(CommandOutputProvider):
-    def __init__(self, ctx, args=None, split=True, keep_rc=False, ds=None, timeout=None, inherit_env=None, signum=None):
-        self.root = "insights_containers"
-        self.ctx = ctx
-        self.args = args  # already interpolated into cmd - stored here for context.
-        self.split = split
-        self.keep_rc = keep_rc
-        self.ds = ds
-        self.timeout = timeout
-        self.inherit_env = inherit_env or []
-        self.signum = signum or signal.SIGKILL
-        self._content = None
-        self.rc = None
-        self.validate()
+    def __init__(self, cmd_path, ctx, args=None, split=True, keep_rc=False, ds=None, timeout=None, inherit_env=None, signum=None):
+        # cmd  = "<podman|docker> exec container_id command"
+        # path = "<podman|docker> exec container_id cat path"
+        super(ContainerProvider, self).__init__(cmd_path, ctx, "insights_containers", args, split, keep_rc, ds, timeout, inherit_env, signum)
 
 
 class ContainerFileProvider(ContainerProvider):
-    def __init__(self, path, ctx, args=None, split=True, keep_rc=False, ds=None, timeout=None, inherit_env=None, signum=None):
-        # path = "<podman|docker> exec container_id cat path"
-        self.cmd = path
-        _, _, container_id, _, path = path.split(None, 4)
-        # relative_path = insights_containers/$container_id/$path
-        self.container_id = container_id[:12]
-        self.relative_path = os.path.join(self.container_id, path.lstrip('/'))
-        super(ContainerFileProvider, self).__init__(ctx, args, split, keep_rc, ds, timeout, inherit_env, signum)
+    def additional_settings(self):
+        engine, _, container_id, _, path = self.cmd.split(None, 4)
+        self.engine = os.path.basename(engine)
+        self.container_id = container_id
+        self.relative_path = os.path.join(container_id, path.lstrip('/'))
 
 
 class ContainerCommandProvider(ContainerProvider):
-    def __init__(self, cmd, ctx, args=None, split=True, keep_rc=False, ds=None, timeout=None, inherit_env=None, signum=None):
-        # cmd = "<podman|docker> exec container_id command"
-        self.cmd = cmd
-        _, _, container_id, command = cmd.split(None, 3)
-        # relative_path = insights_containers/$container_id/_commands/command
-        self.container_id = container_id[:12]
-        self.relative_path = os.path.join(self.container_id, "_commands", mangle_command(command))
-        super(ContainerCommandProvider, self).__init__(ctx, args, split, keep_rc, ds, timeout, inherit_env, signum)
+    def additional_settings(self):
+        engine, _, container_id, cmd = self.cmd.split(None, 3)
+        self.engine = os.path.basename(engine)
+        self.container_id = container_id
+        self.relative_path = os.path.join(container_id, "insights_commands", mangle_command(cmd))
 
 
 class RegistryPoint(object):
@@ -1044,7 +1033,7 @@ class container_collect(foreach_execute):
         function: A datasource that returns a list of file contents created by
             substituting each element of provider into the path template.
     """
-    def __init__(self, provider, path, context=HostContext, deps=[], split=True, keep_rc=False, timeout=None, inherit_env=[], signum=None, **kwargs):
+    def __init__(self, provider, path=None, context=HostContext, deps=[], split=True, keep_rc=False, timeout=None, inherit_env=[], signum=None, **kwargs):
         super(container_collect, self).__init__(provider, path, context, deps, split, keep_rc, timeout, inherit_env, signum, **kwargs)
 
     def __call__(self, broker):
@@ -1057,10 +1046,12 @@ class container_collect(foreach_execute):
             source = [source]
         for e in source:
             try:
-                # e       = (<podman|docker>, container_id)
+                # e       = (<podman|docker>, container_id, <path>)
+                # elems   = (<podman|docker>, container_id, path)
+                elems = e if self.cmd is None else e + (self.cmd,)
                 # the_cmd = <podman|docker> exec container_id cat path
-                the_cmd = ("/usr/bin/%s exec %s cat " + self.cmd) % e
-                cfp = ContainerFileProvider(the_cmd, ctx, args=e,
+                the_cmd = "/usr/bin/%s exec %s cat %s" % elems
+                cfp = ContainerFileProvider(the_cmd, ctx, args=None,
                         split=self.split, keep_rc=self.keep_rc, ds=self,
                         timeout=self.timeout, inherit_env=self.inherit_env, signum=self.signum)
                 result.append(cfp)

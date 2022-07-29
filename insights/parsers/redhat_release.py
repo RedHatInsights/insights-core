@@ -1,6 +1,6 @@
 """
-redhat-release - File ``/etc/redhat-release``
-=============================================
+RedhatRelease - File ``/etc/redhat-release``
+============================================
 
 This module provides plugins access to file ``/etc/redhat-release``
 
@@ -27,8 +27,8 @@ Examples:
     >>> rh_release.product
     'Red Hat Enterprise Linux Server'
 """
-from .. import Parser, parser
-from ..specs import Specs
+from insights import Parser, parser
+from insights.specs import Specs
 
 
 @parser(Specs.redhat_release)
@@ -104,3 +104,12 @@ class RedhatRelease(Parser):
     def code_name(self):
         """string: code name of this OS or None."""
         return self.parsed["code_name"]
+
+
+@parser(Specs.container_redhat_release)
+class ContainerRedhatRelease(RedhatRelease):
+    """
+    Parses the content of file ``/etc/redhat-release`` of the running
+    containers.
+    """
+    pass
