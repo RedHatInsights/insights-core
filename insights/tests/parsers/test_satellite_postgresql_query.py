@@ -221,12 +221,12 @@ def test_basic_output_with_satellite_admin_setting():
 
 def test_satellite_admin_settings():
     settings = satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_SETTINGS_2))
-    assert(len(settings)) == 2
+    assert (len(settings)) == 2
     assert not settings.get_setting('unregister_delete_host')
     assert settings.get_setting('destroy_vm_on_host_delete')
 
     settings = satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_SETTINGS_3))
-    assert(len(settings)) == 2
+    assert (len(settings)) == 2
     assert not settings.get_setting('unregister_delete_host')
     assert not settings.get_setting('destroy_vm_on_host_delete')
     assert settings.get_setting('non_exist_column') is None
