@@ -473,7 +473,7 @@ def largest_spec_in_archive(archive_file):
                 abs_fname = os.path.join('.', data_top, fname)
                 # get the archives from inside data directory
                 data_file = tar_file.getmember(abs_fname)
-                if(data_file.size > largest_fsize):
+                if (data_file.size > largest_fsize):
                     largest_fsize = data_file.size
                     largest_file_name = fname
                     largest_spec = specs_metadata["name"]
