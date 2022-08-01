@@ -445,7 +445,7 @@ class Uname(CommandParser):
 
         See the `__eq__` operator for a detailed description.
         """
-        return not(self == other)
+        return not (self == other)
 
     def __lt__(self, other):
         """
