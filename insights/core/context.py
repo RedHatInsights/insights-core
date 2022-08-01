@@ -274,7 +274,7 @@ class InsightsOperatorContext(ExecutionContext):
 @fs_root
 class MustGatherContext(ExecutionContext):
     """Recognizes must-gather archives"""
-    marker = "namespaces"
+    marker = "cluster-scoped-resources"
 
 
 class OpenStackContext(ExecutionContext):
