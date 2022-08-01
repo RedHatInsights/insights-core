@@ -12,7 +12,7 @@ from insights.specs import Specs
 class LocalSpecs(Specs):
     """ Local specs used only by aws datasources """
     aws_imdsv2_token = simple_command(
-        '/usr/bin/curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600" --connect-timeout 5',
+        '/usr/bin/curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 60" --connect-timeout 5',
         deps=[IsAWS]
     )
 
