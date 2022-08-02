@@ -9,7 +9,6 @@ This datasource is used to count the number of lines from output of the command
 """
 
 from insights import Parser, parser
-from insights.parsers import SkipException
 from insights.specs import Specs
 
 
@@ -34,7 +33,4 @@ class SysFsCgroupMemoryTasksNumber(Parser):
     """
 
     def parse_content(self, content):
-        if not content:
-            raise SkipException("No output")
-
         self.number = int(content[0].strip())
