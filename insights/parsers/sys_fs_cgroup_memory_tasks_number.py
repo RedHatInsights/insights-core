@@ -1,8 +1,10 @@
 """
-SysFsCgroupMemoryTasksNumber - Command ``/usr/bin/find /sys/fs/cgroup/memory -name 'tasks'``
-============================================================================================
+SysFsCgroupMemoryTasksNumber - Datasource ``sys_fs_cgroup_memory_tasks_number``
+===============================================================================
 
-This parser reads the file number from the output of ``/usr/bin/find /sys/fs/cgroup/memory -name 'tasks'``.
+This parser parse the output of the datasource ``sys_fs_cgroup_memory_tasks_number``.
+This datasource is used to count the number of lines from output of the command
+``/usr/bin/find /sys/fs/cgroup/memory -name 'tasks'``
 
 """
 
@@ -12,10 +14,10 @@ from insights.specs import Specs
 
 
 @parser(Specs.sys_fs_cgroup_memory_tasks_number)
-class SysFsCgroupMemoryTasksNumber(Parser, list):
+class SysFsCgroupMemoryTasksNumber(Parser):
     """
-    Class ``SysFsCgroupMemoryTasksNumber`` parses the file number from the output of the
-    ``/usr/bin/find /sys/fs/cgroup/memory -name 'tasks'`` command.
+    Class ``SysFsCgroupMemoryTasksNumber`` parses the the output of the datasource``sys_fs_cgroup_memory_tasks_number``.
+    This datasource is used to count the number of lines from output of the command ``/usr/bin/find /sys/fs/cgroup/memory -name 'tasks'``
 
     The typical output of this command is::
        260

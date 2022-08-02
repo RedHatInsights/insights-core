@@ -21,7 +21,7 @@ def sys_fs_cgroup_memory_tasks_number_data_datasource(broker):
     This datasource provides the numeber of "tasks" file collected
     from ``/usr/bin/find /sys/fs/cgroup/memory -name 'tasks'``.
 
-    Typical content of ``/usr/bin/find /sys/fs/cgroup/memory -name 'tasks'`` file is::
+    Typical content of ``/usr/bin/find /sys/fs/cgroup/memory -name 'tasks'`` command is::
 
         /sys/fs/cgroup/memory/user.slice/tasks
         /sys/fs/cgroup/memory/system.slice/rh-nginx120-nginx.service/tasks
@@ -34,11 +34,8 @@ def sys_fs_cgroup_memory_tasks_number_data_datasource(broker):
     Raises:
         SkipComponent: When any exception occurs.
     """
-    exception = ["/usr/bin/find: '/sys/fs/cgroup/memory': No such file or directory", "-bash: /usr/bin/find: No such file or directory"]
-    try:
-        content = broker[LocalSpecs.sys_fs_cgroup_memory_tasks_raw].content
-        if len(content) == 0 or content[0] not in exception:
-            return DatasourceProvider(content=str(len(content)), relative_path='insights_commands/sys_fs_cgroup_memory_tasks_number')
-    except Exception as e:
-        raise SkipComponent("Unexpected exception:{e}".format(e=str(e)))
+    exceptions = ['no such file or directory', ]
+    content = broker[LocalSpecs.sys_fs_cgroup_memory_tasks_raw].content
+    if len(content) == 0 or not any(ex in content[0].lower() for ex in exceptions):
+        return DatasourceProvider(content=str(len(content)), relative_path='insights_commands/sys_fs_cgroup_memory_tasks_number')
     raise SkipComponent
