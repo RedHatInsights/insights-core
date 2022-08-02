@@ -135,7 +135,7 @@ insights.specs.datasources.sys_fs_cgroup_memory_tasks_number
 ------------------------------------------------------------
 
 .. automodule:: insights.specs.datasources.sys_fs_cgroup_memory_tasks_number
-    :members: sys_fs_cgroup_memory_tasks_number_data_datasource
+    :members: sys_fs_cgroup_memory_tasks_number_data_datasource, LocalSpecs
     :show-inheritance:
     :undoc-members:
 
