@@ -3,78 +3,22 @@ PodmanList - command ``/usr/bin/podman (images|ps)``
 ====================================================
 
 Parse the output of command "podman_list_images" and "podman_list_containers",
-which have very similar formats.
+which have very similar formats with the "docker_list_images" and
+"docker_list_containers",
 
-The header line is parsed and used as the names for the remaining columns.
-All fields in both header and data are assumed to be separated by at least
-three spaces. This allows single spaces in values and headers, so headers
-such as 'IMAGE ID' are captured as is.
-
-If the header line and at least one data line are not found, no data is
-stored.
-
-Each row is stored as a dictionary, keyed on the header fields. The data is
-available in two formats:
-
-* The old format is a list of row dictionaries.
-* The new format stores each dictionary in a dictionary keyed on the value of
-  a given field, given by the subclass.
-
+For more details, please refer to the
+`:class:insights.parsers.docker_list.DockerList`.
 """
-from insights import CommandParser, parser
-from insights.parsers import SkipException, parse_fixed_table
+from insights import parser
 from insights.specs import Specs
-
-
-class PodmanList(CommandParser):
-    """
-    A general class for parsing tabular podman list information.  Parsing
-    rules are:
-
-    * The first line is the header line.
-    * The other lines are data lines.
-    * All fields line up vertically.
-    * Fields are separated from each other by at least three spaces.
-    * Some fields can contain nothing, and this is shown as spaces, so we
-      need to catch that and turn it into None.
-
-    Why not just use hard-coded fields and columns?  So that we can adapt to
-    different output lists.
-
-    Raises:
-        NotImplementedError: If `key_field` or `attr_name` is not defined
-        SkipException: If no data to parse
-    """
-    key_field = ''
-    heading_ignore = []
-    attr_name = ''
-    substitutions = []
-
-    def parse_content(self, content):
-        if not (self.key_field and self.attr_name):
-            raise NotImplementedError("'key_field' or 'attr_name' is not defined")
-
-        self.rows = parse_fixed_table(content,
-                                      heading_ignore=self.heading_ignore,
-                                      header_substitute=self.substitutions)
-
-        if not self.rows:
-            raise SkipException('No data.')
-
-        data = {}
-        for row in self.rows:
-            k = row.get(self.key_field)
-            for sub in self.substitutions:
-                row[sub[0]] = row.pop(sub[1])
-            if k is not None and k != '<none>':
-                data[k] = row
-        setattr(self, self.attr_name, data)
+from insights.parsers.docker_list import DockerListContainers, DockerListImages
 
 
 @parser(Specs.podman_list_images)
-class PodmanListImages(PodmanList):
+class PodmanListImages(DockerListImages):
     """
-    Handle the list of podman images using the PodmanList parser class.
+    Handle the list of podman images using the
+    `class:insights.parsers.docker_list.DockerListImages` parser class.
 
     Sample output of command ``podman images --all --no-trunc --digests``::
 
@@ -95,16 +39,14 @@ class PodmanListImages(PodmanList):
         >>> images.images['rhel6_vsftpd']['CREATED']
         '37 minutes ago'
     """
-    key_field = 'REPOSITORY'
-    heading_ignore = [key_field]
-    attr_name = 'images'
-    substitutions = [("IMAGE ID", "IMAGE_ID")]
+    pass
 
 
 @parser(Specs.podman_list_containers)
-class PodmanListContainers(PodmanList):
+class PodmanListContainers(DockerListContainers):
     """
-    Handle the list of podman containers using the PodmanList parser class.
+    Handle the list of podman containers using the
+    `class:insights.parsers.docker_list.DockerListContainers` parser class.
 
 
     Sample output of command ``podman ps --all --no-trunc --size``::
@@ -125,7 +67,4 @@ class PodmanListContainers(PodmanList):
         >>> containers.containers['tender_rosalind']['STATUS']
         'Exited (137) 18 hours ago'
     """
-    key_field = 'NAMES'
-    heading_ignore = ['CONTAINER']
-    attr_name = 'containers'
-    substitutions = [("CONTAINER ID", "CONTAINER_ID")]
+    pass

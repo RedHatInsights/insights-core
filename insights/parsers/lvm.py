@@ -36,7 +36,6 @@ LvmSystemDevices - file ``/etc/lvm/devices/system.devices``
 from __future__ import print_function
 
 import json
-from collections import defaultdict
 
 from insights.parsers import ParseException, optlist_to_dict, SkipException
 from insights.specs import Specs
@@ -695,17 +694,10 @@ class LvmConf(LegacyItemAccess, Parser):
         self.data = lvm_conf_dict
 
 
-def _lvm_render(o):
-    if isinstance(o, dict):
-        parts = ['"%s": %s' % (k, _lvm_render(v)) for k, v in o.items()]
-        return "{%s}" % ",".join(parts)
-    return "%s" % o
-
-
 @parser(Specs.lvmconfig)
 class LvmConfig(CommandParser):
     def parse_content(self, content):
-        dd = defaultdict(dict)
+        self.data = dict()
         key = None
         for line in content:
             line = line.rstrip()
@@ -718,10 +710,16 @@ class LvmConfig(CommandParser):
                 key = None
             elif line[0] == "\t":
                 k, v = line.strip().split("=", 1)
-                dd[key][k] = v
+                # umask=077 will raise exception, and also no need to
+                # transfer it, just keep it as string
+                if k != 'umask':
+                    try:
+                        v = json.loads(v)
+                    except Exception:
+                        raise ParseException("Failed to parse line %s." % line)
+                self.data.setdefault(key, {}).update({k: v})
             else:
                 pass  # inferring this a stderr, so skipping
-        self.data = json.loads(_lvm_render(dict(dd)))
 
 
 @parser(Specs.lvm_system_devices)

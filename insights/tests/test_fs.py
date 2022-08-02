@@ -45,21 +45,28 @@ def test_exists_ensure_path_exists():
     assert os.path.exists(path)
 
 
-@pytest.fixture(params=['644', '775', '777'])
+@pytest.fixture(params=[('644', '644'), ('775', '755'), ('777', '755')])
 def mode(request):
     yield request.param
 
 
 @pytest.fixture
 def mode_dir(mode):
-    path = os.path.join('/tmp/insights-test-{mode}'.format(mode=mode))
+    path = os.path.join('/tmp/insights-test-{mode}'.format(mode=mode[0]))
     yield path
     fs.remove(path)
 
 
 def test_ensure_path_mode(mode, mode_dir):
-    fs.ensure_path(mode_dir, int(mode, 8))
-    assert oct(os.stat(mode_dir).st_mode)[-3:] == mode
+    fs.ensure_path(mode_dir, int(mode[0], 8))
+    assert oct(os.stat(mode_dir).st_mode)[-3:] == mode[1]
+
+
+def test_ensure_path_mode_default():
+    path = os.path.join('/tmp/insights-test-default')
+    fs.ensure_path(path)
+    assert oct(os.stat(path).st_mode)[-3:] == '755'
+    fs.remove(path)
 
 
 def test_touch_times():
