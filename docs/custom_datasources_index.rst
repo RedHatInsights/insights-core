@@ -11,6 +11,14 @@ insights.specs.datasources
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.aws
+------------------------------
+
+.. automodule:: insights.specs.datasources.aws
+    :members: aws_imdsv2_token, LocalSpecs
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.awx_manage
 -------------------------------------
 
