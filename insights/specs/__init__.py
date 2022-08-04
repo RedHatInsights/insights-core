@@ -685,6 +685,7 @@ class Specs(SpecSet):
     sysctl_conf_initramfs = RegistryPoint(multi_output=True)
     sysctl_d_conf_etc = RegistryPoint(multi_output=True)
     sysctl_d_conf_usr = RegistryPoint(multi_output=True)
+    sys_fs_cgroup_memory_tasks_number = RegistryPoint()
     system_user_dirs = RegistryPoint()
     systemctl_cat_dnsmasq_service = RegistryPoint()
     systemctl_cat_rpcbind_socket = RegistryPoint()
