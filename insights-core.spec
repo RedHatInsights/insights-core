@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.286
+Version:        3.0.287
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,14 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Aug 04 2022 Sachin Patil <psachin@redhat.com> 3.0.287-1
+- Feat: Add new parser sys_fs_cgroup_memory_tasks_number (#3467) (jiazhang@redhat.com)
+- fix: Update aws specs to use IMDSv2 (#3486) (20520336+bfahr@users.noreply.github.com)
+- New version of flake8 found some errors (#3488) (20520336+bfahr@users.noreply.github.com)
+- Add missing datasource docs to build (#3487) (20520336+bfahr@users.noreply.github.com)
+- Update the marker for MustGatherContext (#3479) (shzhou@redhat.com)
+- Add new system_user_dirs datasource and parser (#3381) (41325380+jobselko@users.noreply.github.com)
+
 * Thu Jul 28 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.286-1
 - fix: the parser "LvmConfig" raises exception (#3476)
   (44796653+huali027@users.noreply.github.com)
