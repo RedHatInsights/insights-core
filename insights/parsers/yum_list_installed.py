@@ -20,7 +20,7 @@ class YumInstalledRpm(InstalledRpm):
     with an additional ``.repo`` attribute.
     """
     def __init__(self, data):
-        deprecated(YumInstalledRpm, "Import YumListRpm from insights.parsers.yum_list instead")
+        deprecated(YumInstalledRpm, "Import YumListRpm from insights.parsers.yum_list instead.", "3.0.300")
         self.repo = None
         """str: yum / dnf repository name, if available."""
 
@@ -38,7 +38,7 @@ class YumListInstalled(CommandParser, RpmList):
     """
 
     def __init__(self, context):
-        deprecated(YumListInstalled, "Import YumListBase from insights.parsers.yum_list instead")
+        deprecated(YumListInstalled, "Import YumListBase from insights.parsers.yum_list instead.", "3.0.300")
         self.expired_cache = False
         """bool: Indicates if the yum repo cache is expired."""
 

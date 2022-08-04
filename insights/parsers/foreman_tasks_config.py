@@ -57,7 +57,11 @@ class ForemanTasksConfig(Parser, LegacyItemAccess):
         False
     """
     def __init__(self, *args, **kwargs):
-        deprecated(ForemanTasksConfig, "Import ForemanTasksSysconfig from insights.parsers.sysconfig instead")
+        deprecated(
+            ForemanTasksConfig,
+            "Import ForemanTasksSysconfig from insights.parsers.sysconfig instead",
+            "3.0.300"
+        )
         super(ForemanTasksConfig, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
