@@ -27,7 +27,7 @@ No existing configuration detected.
 def test_authselect_current():
     asc = AuthSelectCurrent(context_wrap(AUTHSELECT_CURRENT_1))
     assert asc.profile_id == 'sssd'
-    assert asc.enabled_features == ['with-sueo', 'with-mkhomedir', 'with-smartcard']
+    assert asc.enabled_features == ['with-sudo', 'with-mkhomedir', 'with-smartcard']
 
     asc = AuthSelectCurrent(context_wrap(AUTHSELECT_CURRENT_2))
     assert asc.profile_id == 'custom/password-policy'
