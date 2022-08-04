@@ -2,6 +2,15 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.287](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.287) (2022-08-04)
+
+- Feat: Add new parser sys_fs_cgroup_memory_tasks_number ([PR 3467](https://github.com/RedHatInsights/insights-core/pull/3467))
+- fix: Update aws specs to use IMDSv2 ([PR 3486](https://github.com/RedHatInsights/insights-core/pull/3486))
+- New version of flake8 found some errors ([PR 3488](https://github.com/RedHatInsights/insights-core/pull/3488))
+- Add missing datasource docs to build ([PR 3487](https://github.com/RedHatInsights/insights-core/pull/3487))
+- Update the marker for MustGatherContext ([PR 3479](https://github.com/RedHatInsights/insights-core/pull/3479))
+- Add new system_user_dirs datasource and parser ([PR 3381](https://github.com/RedHatInsights/insights-core/pull/3381))
+
 ## [insights-core-3.0.286](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.286) (2022-07-28)
 
 - fix: the parser "LvmConfig" raises exception ([PR 3476](https://github.com/RedHatInsights/insights-core/pull/3476))
