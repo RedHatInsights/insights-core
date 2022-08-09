@@ -45,9 +45,6 @@ class InsightsArchive(object):
         # input this to core collector as `tmp_path`
         self.tmp_dir = tempfile.mkdtemp(dir='/var/tmp/', prefix='insights-archive-')
 
-        # we don't really need this anymore...
-        self.archive_tmp_dir = tempfile.mkdtemp(dir='/var/tmp/', prefix='insights-archive-')
-
         # We should not hint the hostname in the archive if it has to be obfuscated
         if config.obfuscate_hostname:
             hostname = "localhost"
@@ -196,14 +193,6 @@ class InsightsArchive(object):
         if self.archive_dir:
             logger.debug("Deleting: " + self.archive_dir)
             shutil.rmtree(self.archive_dir, True)
-
-    def delete_archive_file(self):
-        """
-        Delete the directory containing the constructed archive
-        """
-        if self.archive_tmp_dir:
-            logger.debug("Deleting %s", self.archive_tmp_dir)
-            shutil.rmtree(self.archive_tmp_dir, True)
 
     def add_to_archive(self, spec):
         '''
