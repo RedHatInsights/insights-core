@@ -66,7 +66,7 @@ class LsvmBus(CommandParser):
 
     """
     def __init__(self, *args, **kwargs):
-        deprecated(LsvmBus, "Use the SysVmBusDeviceInfo combiner instead")
+        deprecated(LsvmBus, "Use the SysVmBusDeviceInfo combiner instead.", "3.0.300")
         super(LsvmBus, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):

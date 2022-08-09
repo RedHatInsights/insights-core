@@ -133,7 +133,7 @@ class NginxConf(Parser, LegacyItemAccess):
         '127.0.0.1:1025'
     """
     def __init__(self, *args, **kwargs):
-        deprecated(NginxConf, "Import NginxConfTree from insights.combiners.nginx_conf instead")
+        deprecated(NginxConf, "Import NginxConfTree from insights.combiners.nginx_conf instead.", "3.0.300")
         super(NginxConf, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):

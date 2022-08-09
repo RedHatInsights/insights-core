@@ -235,7 +235,11 @@ class SatelliteKatelloEmptyURLRepositories(SatellitePostgreSQLQuery):
     columns = ['id', 'name']
 
     def __init__(self, *args, **kwargs):
-        deprecated(SatelliteKatelloEmptyURLRepositories, 'Please use the SatelliteQualifiedKatelloRepos parser in the current module.')
+        deprecated(
+            SatelliteKatelloEmptyURLRepositories,
+            "Please use the SatelliteQualifiedKatelloRepos parser in the current module.",
+            "3.1.25"
+        )
         super(SatelliteKatelloEmptyURLRepositories, self).__init__(*args, **kwargs)
 
 

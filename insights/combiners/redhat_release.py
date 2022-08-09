@@ -65,7 +65,7 @@ def redhat_release(rh_release, un):
 
     """
 
-    deprecated(redhat_release, "Use the `RedHatRelease` class instead.")
+    deprecated(redhat_release, "Use the `RedHatRelease` class instead.", "3.0.300")
 
     if un and un.release_tuple[0] != -1:
         return Release(*un.release_tuple)
