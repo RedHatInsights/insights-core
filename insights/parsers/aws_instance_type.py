@@ -44,7 +44,7 @@ class AWSInstanceType(CommandParser):
     """
 
     def __init__(self, *args, **kwargs):
-        deprecated(AWSInstanceType, "Use AWSInstanceIdDoc in insights.insights.aws_instance_id instead.")
+        deprecated(AWSInstanceType, "Use AWSInstanceIdDoc in insights.insights.aws_instance_id instead.", "3.0.300")
         super(AWSInstanceType, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
