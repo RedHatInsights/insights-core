@@ -42,7 +42,7 @@ class DirsrvSysconfig(SysconfigOptions):
     Parse the `dirsrv` service's start-up configuration.
     """
     def __init__(self, *args, **kwargs):
-        deprecated(DirsrvSysconfig, "Import DirsrvSysconfig from insights.parsers.sysconfig instead")
+        deprecated(DirsrvSysconfig, "Import DirsrvSysconfig from insights.parsers.sysconfig instead.", "3.0.300")
         super(DirsrvSysconfig, self).__init__(*args, **kwargs)
 
     set_properties = True

@@ -67,7 +67,8 @@ class ModInfo(dict):
     def __init__(self, mi_all, mi_each):
         deprecated(
             ModInfo,
-            'Please use the :class:`insights.parsers.modinfo.KernelModulesInfo` instead.'
+            "Please use the :class:`insights.parsers.modinfo.KernelModulesInfo` instead.",
+            "3.1.25"
         )
         self.retpoline_y = set()
         self.retpoline_n = set()
