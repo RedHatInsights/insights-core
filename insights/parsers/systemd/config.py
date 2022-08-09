@@ -244,7 +244,7 @@ class MultiOrderedDict(dict):
     """
 
     def __init__(self, *args, **kwargs):
-        deprecated(MultiOrderedDict, "This class is deprecated")
+        deprecated(MultiOrderedDict, "This class is deprecated.", "3.0.300")
         super(MultiOrderedDict, self).__init__(*args, **kwargs)
 
     def __setitem__(self, key, value):

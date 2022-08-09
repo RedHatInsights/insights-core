@@ -41,5 +41,5 @@ class NetConsole(SysconfigOptions, LegacyItemAccess):
     ``SysconfigOptions`` shared parser class.
     '''
     def __init__(self, *args, **kwargs):
-        deprecated(NetConsole, "Import NetconsoleSysconfig from insights.parsers.sysconfig instead")
+        deprecated(NetConsole, "Import NetconsoleSysconfig from insights.parsers.sysconfig instead.", "3.0.300")
         super(NetConsole, self).__init__(*args, **kwargs)
