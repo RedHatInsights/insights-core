@@ -44,7 +44,7 @@ class PluginConfD(LegacyItemAccess, Parser):
         #gpgcheck = 0
     """
     def parse_content(self, content):
-        deprecated(PluginConfD, "Deprecated. Use 'PluginConfDIni' instead.")
+        deprecated(PluginConfD, "Deprecated. Use 'PluginConfDIni' instead.", "3.0.300")
         plugin_dict = {}
         section_dict = {}
         key = None

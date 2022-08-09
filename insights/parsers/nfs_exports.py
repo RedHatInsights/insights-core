@@ -160,7 +160,8 @@ class NFSExportsBase(Parser):
         """
         deprecated(
             NFSExportsBase.reconstitute,
-            'Please use the `raw_lines` dictionary property of the parser instance'
+            "Please use the `raw_lines` dictionary property of the parser instance.",
+            "3.0.300"
         )
         return "  ".join([path] + ["%s(%s)" % (host, ",".join(options))
                          for host, options in d.items()])
