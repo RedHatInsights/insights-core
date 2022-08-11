@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.288](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.288) (2022-08-11)
+
+- feat: Add version to deprecated function ([PR 3491](https://github.com/RedHatInsights/insights-core/pull/3491))
+
 ## [insights-core-3.0.287](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.287) (2022-08-04)
 
 - Feat: Add new parser sys_fs_cgroup_memory_tasks_number ([PR 3467](https://github.com/RedHatInsights/insights-core/pull/3467))
