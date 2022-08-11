@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.287
+Version:        3.0.288
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,9 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Aug 11 2022 Sachin Patil <psachin@redhat.com> 3.0.288-1
+- feat: Add version to deprecated function (#3491) (rblakley@redhat.com)
+
 * Thu Aug 04 2022 Sachin Patil <psachin@redhat.com> 3.0.287-1
 - Feat: Add new parser sys_fs_cgroup_memory_tasks_number (#3467) (jiazhang@redhat.com)
 - fix: Update aws specs to use IMDSv2 (#3486) (20520336+bfahr@users.noreply.github.com)
