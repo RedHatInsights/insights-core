@@ -211,7 +211,6 @@ class Specs(SpecSet):
     grub_efi_conf = RegistryPoint()
     grub1_config_perms = RegistryPoint()
     grub2_cfg = RegistryPoint()
-    grub2_editenv_list = RegistryPoint()
     grub2_efi_cfg = RegistryPoint()
     grubby_default_index = RegistryPoint()
     grubby_default_kernel = RegistryPoint()
