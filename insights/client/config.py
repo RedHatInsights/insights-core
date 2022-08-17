@@ -786,6 +786,7 @@ class InsightsConfig(object):
             self.content_type = content_types.get(self.app)
             self.core_collect = True
             self.legacy_upload = False
+            self._set_app_config()
         if self.output_dir:
             # get full path
             self.output_dir = os.path.abspath(self.output_dir)
@@ -825,6 +826,15 @@ class InsightsConfig(object):
             #   Therefore, only force legacy_upload to False when attempting
             #   to change Ansible hostname from the CLI, when not registering.
             self.legacy_upload = False
+
+    def _set_app_config(self):
+        '''
+        Set App specific insights config values that differ from the default values
+        Config values may have been set manually however, so need to take that into consideration
+        '''
+        if self.app == 'malware-detection':
+            if self.retries < 5:
+                self.retries = 5
 
     def _determine_filename_and_extension(self):
         '''
