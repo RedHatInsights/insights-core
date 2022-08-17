@@ -1,5 +1,5 @@
 """
-Datasources to collect the nginx configuration files
+Datasources to collect the nginx configuration files from containers
 """
 from insights.core.dr import SkipComponent
 from insights.core.plugins import datasource
@@ -11,9 +11,7 @@ from insights.specs.datasources.container import running_rhel_containers
 
 class LocalSpecs(Specs):
     """ Local specs used only by nginx container datasources """
-
     container_find_etc_opt_conf = container_execute(running_rhel_containers, "find /etc /opt -name '*.conf'")
-    # container_find_opt_conf = container_execute(running_rhel_containers, "find /opt -name '*.conf'")
 
 
 @datasource(LocalSpecs.container_find_etc_opt_conf, HostContext)
@@ -24,27 +22,11 @@ def nginx_conf(broker):
     find_list = broker[LocalSpecs.container_find_etc_opt_conf]
     ret = []
     for conf_list in find_list:
-        for conf in conf_list.content:
-            # FIXME: filter should be refined
-            if 'nginx' in conf:
-                ret.append((conf_list.engine, conf_list.container_id, conf))
+        for conf_path in conf_list.content:
+            # FIXME: refine the path filter
+            if 'etc/nginx' in conf_path or 'rh-nginx' in conf_path:
+                ret.append((conf_list.engine, conf_list.container_id, conf_path))
     if ret:
         return ret
 
     raise SkipComponent
-
-
-# @datasource(LocalSpecs.container_find_etc_opt_conf, HostContext)
-# def httpd_conf(broker):
-#     """
-#     """
-#     find_list = broker[LocalSpecs.container_find_etc_opt_conf]
-#     ret = []
-#     for conf_list in find_list:
-#         for conf in conf_list.content:
-#             if 'yum' in conf:
-#                 ret.append((conf_list.engine, conf_list.container_id, conf))
-#     if ret:
-#         return ret
-
-#     raise SkipComponent

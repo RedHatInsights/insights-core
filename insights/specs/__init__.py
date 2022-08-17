@@ -791,7 +791,3 @@ class Specs(SpecSet):
     # container_specs
     container_redhat_release = RegistryPoint(multi_output=True)
     container_nginx_conf = RegistryPoint(multi_output=True)
-    # container_test_1 = RegistryPoint(multi_output=True)
-    # container_test_2 = RegistryPoint(multi_output=True)
-    # container_httpd_conf = RegistryPoint(multi_output=True)
-    # container_ls_disk = RegistryPoint(multi_output=True)
