@@ -285,6 +285,7 @@ class Specs(SpecSet):
     jboss_version = RegistryPoint(multi_output=True)
     journal_all = RegistryPoint(filterable=True)
     journal_since_boot = RegistryPoint(filterable=True)
+    journalctl_header = RegistryPoint()
     katello_service_status = RegistryPoint(filterable=True)
     kdump_conf = RegistryPoint()
     kerberos_kdc_log = RegistryPoint(filterable=True)
