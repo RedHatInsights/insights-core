@@ -1,6 +1,6 @@
 """
-JournalctlHeader - command ``"/usr/bin/journalctl --header"``
-=============================================================
+JournalctlHeader - command ``/usr/bin/journalctl --header``
+===========================================================
 
 This command shows internal header information of the journal fields accessed.
 
@@ -45,9 +45,10 @@ Examples:
 
 Attributes:
     data (dict): Dictionary containing each of the key:value pairs from the command output.
+    errors (list): Containing error messages
 
 Raises:
-    ParseException: raised if data is not parsable.
+    SkipException: raised if data is invalid.
 """
 
 from insights.core.plugins import parser
