@@ -17,7 +17,7 @@ class LocalSpecs(Specs):
 @datasource(LocalSpecs.container_find_etc_opt_conf, HostContext)
 def nginx_conf(broker):
     """
-    Returns a list of tuple of (<podman|docker>, container_id, conf_path)
+    Returns a list of tuple of (<podman|docker>, container_id, conf_path, image)
     """
     find_list = broker[LocalSpecs.container_find_etc_opt_conf]
     ret = []
@@ -25,7 +25,7 @@ def nginx_conf(broker):
         for conf_path in conf_list.content:
             # FIXME: refine the path filter
             if 'etc/nginx' in conf_path or 'rh-nginx' in conf_path:
-                ret.append((conf_list.engine, conf_list.container_id, conf_path))
+                ret.append((conf_list.engine, conf_list.container_id, conf_path, conf_list.image))
     if ret:
         return ret
 

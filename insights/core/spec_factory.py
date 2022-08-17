@@ -404,9 +404,10 @@ class CommandOutputProvider(ContentProvider):
 
 
 class ContainerProvider(CommandOutputProvider):
-    def __init__(self, cmd_path, ctx, args=None, split=True, keep_rc=False, ds=None, timeout=None, inherit_env=None, signum=None):
+    def __init__(self, cmd_path, ctx, image=None, args=None, split=True, keep_rc=False, ds=None, timeout=None, inherit_env=None, signum=None):
         # cmd  = "<podman|docker> exec container_id command"
         # path = "<podman|docker> exec container_id cat path"
+        self.image = image
         super(ContainerProvider, self).__init__(cmd_path, ctx, "insights_containers", args, split, keep_rc, ds, timeout, inherit_env, signum)
 
 
@@ -417,6 +418,9 @@ class ContainerFileProvider(ContainerProvider):
         self.container_id = container_id
         self.relative_path = os.path.join(container_id, path.lstrip('/'))
 
+    def __repr__(self):
+        return 'ContainerFileProvider("%r")' % self.cmd
+
 
 class ContainerCommandProvider(ContainerProvider):
     def _misc_settings(self):
@@ -424,6 +428,9 @@ class ContainerCommandProvider(ContainerProvider):
         self.engine = os.path.basename(engine)
         self.container_id = container_id
         self.relative_path = os.path.join(container_id, "insights_commands", mangle_command(cmd))
+
+    def __repr__(self):
+        return 'ContainerCommandProvider("%r")' % self.cmd
 
 
 class RegistryPoint(object):
@@ -997,10 +1004,12 @@ class container_execute(foreach_execute):
             source = [source]
         for e in source:
             try:
+                # e       = (<podman|docker>, container_id, <...>, path)
+                image, e = e[-1], e[:-1]
                 # e       = (<podman|docker>, container_id, <...>)
                 # the_cmd = <podman|docker> exec container_id cmd
                 the_cmd = ("/usr/bin/%s exec %s " + self.cmd) % e
-                ccp = ContainerCommandProvider(the_cmd, ctx, args=e,
+                ccp = ContainerCommandProvider(the_cmd, ctx, image=image, args=e,
                         split=self.split, keep_rc=self.keep_rc, ds=self,
                         timeout=self.timeout, inherit_env=self.inherit_env, signum=self.signum)
                 result.append(ccp)
@@ -1047,13 +1056,15 @@ class container_collect(foreach_execute):
             source = [source]
         for e in source:
             try:
+                # e        = (<podman|docker>, container_id, <path>, image)
+                image, e = e[-1], e[:-1]
                 # self.cmd = path
                 # e        = (<podman|docker>, container_id, <path>)
                 # elems    = (<podman|docker>, container_id, path)
                 elems = e if self.cmd is None else e + (self.cmd,)
                 # the_cmd = <podman|docker> exec container_id cat path
                 the_cmd = "/usr/bin/%s exec %s cat %s" % elems
-                cfp = ContainerFileProvider(the_cmd, ctx, args=None,
+                cfp = ContainerFileProvider(the_cmd, ctx, image=image, args=None,
                         split=self.split, keep_rc=self.keep_rc, ds=self,
                         timeout=self.timeout, inherit_env=self.inherit_env, signum=self.signum)
                 result.append(cfp)
@@ -1231,6 +1242,9 @@ def serialize_container_file_output(obj, root):
     return {
         "relative_path": rel,
         "rc": rc,
+        "image": obj.image,
+        "engine": obj.engine,
+        "container_id": obj.container_id,
     }
 
 
@@ -1239,6 +1253,9 @@ def deserialize_container_file(_type, data, root):
     rel = data["relative_path"]
     res = SerializedOutputProvider(rel, root)
     res.rc = data["rc"]
+    res.image = data["image"]
+    res.engine = data["engine"]
+    res.container_id = data["container_id"]
     return res
 
 
@@ -1251,7 +1268,10 @@ def serialize_container_command(obj, root):
         "rc": rc,
         "cmd": obj.cmd,
         "args": obj.args,
-        "relative_path": rel
+        "relative_path": rel,
+        "image": obj.image,
+        "engine": obj.engine,
+        "container_id": obj.container_id,
     }
 
 
@@ -1262,4 +1282,7 @@ def deserialize_container_command(_type, data, root):
     res.rc = data["rc"]
     res.cmd = data["cmd"]
     res.args = data["args"]
+    res.image = data["image"]
+    res.engine = data["engine"]
+    res.container_id = data["container_id"]
     return res

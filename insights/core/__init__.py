@@ -101,9 +101,8 @@ class Parser(object):
 
 class ContainerParser(Parser):
     """
-    A class specifically for container parser, which specified the "image"
-    name, the engine provider and the ID of the target container on the basis
-    of ``Parser``.
+    A class specifically for container parser, with the "image" name, the
+    engine provider and the container ID on the basis of ``Parser``.
     """
     def __init__(self, context):
         self.image = context.image
