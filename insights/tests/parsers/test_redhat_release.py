@@ -199,7 +199,8 @@ def test_container_rhe8():
             REDHAT_RELEASE_8_CONTAINER,
             engine='podman',
             image='quay.io/rhel8',
-            container_id='xxxx'
+            container_id='xxxx',
+            path='insights_containers/xxxx/etc/redhat-release'
         )
     )
     assert release.raw == REDHAT_RELEASE_8_CONTAINER
@@ -211,3 +212,4 @@ def test_container_rhe8():
     assert release.image == "quay.io/rhel8"
     assert release.engine == "podman"
     assert release.container_id == "xxxx"
+    assert release.file_path == "/insights_containers/xxxx/etc/redhat-release"

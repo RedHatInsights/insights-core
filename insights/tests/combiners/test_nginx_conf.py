@@ -307,6 +307,8 @@ def test_nginx_includes_container():
     assert actual == expected
 
     # conf_path
+    assert nginx[0].conf_path == '/etc/nginx'
+    assert nginx[1].conf_path == '/etc/nginx'
 
     # container info
     assert nginx[0].image == 'quay.io/rhel84'
