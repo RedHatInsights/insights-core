@@ -99,6 +99,22 @@ class Parser(object):
         raise NotImplementedError(msg)
 
 
+class ContainerParser(Parser):
+    """
+    A class specifically for container parser, which specified the "image"
+    name, the engine provider and the ID of the target container on the basis
+    of ``Parser``.
+    """
+    def __init__(self, context):
+        self.image = context.image
+        """str: The image of the container."""
+        self.engine = context.engine
+        """str: The enginer provider of the container."""
+        self.container_id = context.container_id
+        """str: The ID of the container."""
+        super(ContainerParser, self).__init__(context)
+
+
 class StreamParser(Parser):
     """
     Parsers that don't have to store lines or look back in the data stream

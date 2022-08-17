@@ -18,6 +18,14 @@ FEDORA = """
 Fedora release 23 (Twenty Three)
 """.strip()
 
+REDHAT_RELEASE_8_CONTAINER_1 = """
+Red Hat Enterprise Linux Server release 8.4 (Ootpa)
+""".strip()
+
+REDHAT_RELEASE_8_CONTAINER_2 = """
+Red Hat Enterprise Linux Server release 8.6 (Ootpa)
+""".strip()
+
 
 def test_uname():
     un = Uname(context_wrap(UNAME))

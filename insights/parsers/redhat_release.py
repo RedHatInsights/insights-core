@@ -27,7 +27,7 @@ Examples:
     >>> rh_release.product
     'Red Hat Enterprise Linux Server'
 """
-from insights import Parser, parser
+from insights import Parser, parser, ContainerParser
 from insights.specs import Specs
 
 
@@ -96,6 +96,11 @@ class RedhatRelease(Parser):
         return self.parsed["version"]
 
     @property
+    def rhel(self):
+        """string: alias of ``self.version``"""
+        return self.version
+
+    @property
     def product(self):
         """string: product of this OS."""
         return self.parsed["product"]
@@ -107,7 +112,7 @@ class RedhatRelease(Parser):
 
 
 @parser(Specs.container_redhat_release)
-class ContainerRedhatRelease(RedhatRelease):
+class ContainerRedhatRelease(ContainerParser, RedhatRelease):
     """
     Parses the content of file ``/etc/redhat-release`` of the running
     containers.
