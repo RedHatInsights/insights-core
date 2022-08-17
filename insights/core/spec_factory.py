@@ -303,7 +303,6 @@ class CommandOutputProvider(ContentProvider):
     """
     Class used in datasources to return output from commands.
     """
-
     def __init__(self, cmd, ctx, root="insights_commands", args=None, split=True, keep_rc=False, ds=None, timeout=None, inherit_env=None, signum=None):
         super(CommandOutputProvider, self).__init__()
         self.cmd = cmd
@@ -316,14 +315,15 @@ class CommandOutputProvider(ContentProvider):
         self.timeout = timeout
         self.inherit_env = inherit_env or []
         self.signum = signum or signal.SIGKILL
-        self.additional_settings()
+        self._misc_settings()
 
         self._content = None
         self.rc = None
 
         self.validate()
 
-    def additional_settings(self):
+    def _misc_settings(self):
+        """Re-implement it according to the actual case of the sub-class"""
         self.relative_path = mangle_command(self.cmd)
 
     def validate(self):
@@ -411,7 +411,7 @@ class ContainerProvider(CommandOutputProvider):
 
 
 class ContainerFileProvider(ContainerProvider):
-    def additional_settings(self):
+    def _misc_settings(self):
         engine, _, container_id, _, path = self.cmd.split(None, 4)
         self.engine = os.path.basename(engine)
         self.container_id = container_id
@@ -419,7 +419,7 @@ class ContainerFileProvider(ContainerProvider):
 
 
 class ContainerCommandProvider(ContainerProvider):
-    def additional_settings(self):
+    def _misc_settings(self):
         engine, _, container_id, cmd = self.cmd.split(None, 3)
         self.engine = os.path.basename(engine)
         self.container_id = container_id
@@ -987,7 +987,6 @@ class container_execute(foreach_execute):
         function: A datasource that returns a list of outputs for each command
             created by substituting each element of provider into the cmd template.
     """
-
     def __call__(self, broker):
         result = []
         source = broker[self.provider]
@@ -1018,7 +1017,9 @@ class container_collect(foreach_execute):
 
     Args:
         provider (list): a list of tuples.
-        path (str): the file path template with substitution parameters.
+        path (str): the file path template with substitution parameters.  The
+            path can also be passed via the provider when it's variable per
+            cases, in that case, the `path` should be None.
         context (ExecutionContext): the context under which the datasource
             should run.
         keep_rc (bool): whether to return the error code returned by the
@@ -1046,8 +1047,9 @@ class container_collect(foreach_execute):
             source = [source]
         for e in source:
             try:
-                # e       = (<podman|docker>, container_id, <path>)
-                # elems   = (<podman|docker>, container_id, path)
+                # self.cmd = path
+                # e        = (<podman|docker>, container_id, <path>)
+                # elems    = (<podman|docker>, container_id, path)
                 elems = e if self.cmd is None else e + (self.cmd,)
                 # the_cmd = <podman|docker> exec container_id cat path
                 the_cmd = "/usr/bin/%s exec %s cat %s" % elems
