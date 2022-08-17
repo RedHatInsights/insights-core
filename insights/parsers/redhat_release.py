@@ -96,11 +96,6 @@ class RedhatRelease(Parser):
         return self.parsed["version"]
 
     @property
-    def rhel(self):
-        """string: alias of ``self.version``"""
-        return self.version
-
-    @property
     def product(self):
         """string: product of this OS."""
         return self.parsed["product"]
@@ -115,6 +110,9 @@ class RedhatRelease(Parser):
 class ContainerRedhatRelease(ContainerParser, RedhatRelease):
     """
     Parses the content of file ``/etc/redhat-release`` of the running
-    containers.
+    containers which are based on RHEL images.
     """
-    pass
+    @property
+    def rhel(self):
+        """string: alias of ``self.version``"""
+        return self.version

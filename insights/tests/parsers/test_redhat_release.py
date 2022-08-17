@@ -199,15 +199,15 @@ def test_container_rhe8():
             REDHAT_RELEASE_8_CONTAINER,
             engine='podman',
             image='quay.io/rhel8',
-            container_id='xxx'
+            container_id='xxxx'
         )
     )
     assert release.raw == REDHAT_RELEASE_8_CONTAINER
     assert release.major == 8
     assert release.minor == 6
-    assert release.version == "8.6"
+    assert release.rhel == "8.6"
     assert release.is_rhel is True
     assert release.product == "Red Hat Enterprise Linux Server"
     assert release.image == "quay.io/rhel8"
     assert release.engine == "podman"
-    assert release.container_id == "xxx"
+    assert release.container_id == "xxxx"

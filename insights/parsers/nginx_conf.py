@@ -1,14 +1,22 @@
 """
+Nginx Configurations
+====================
+
+This module includes the following parsers:
+
 NginxConf - file ``/etc/nginx/nginx.conf`` and other Nginx configuration files
-==============================================================================
+------------------------------------------------------------------------------
 
 NginxConfPEG - file ``/etc/nginx/nginx.conf`` and other Nginx configuration files
-=================================================================================
+---------------------------------------------------------------------------------
+
+ContainerNginxConfPEG - file ``/etc/nginx/nginx.conf`` and other Nginx configuration files of running containers
+----------------------------------------------------------------------------------------------------------------
 """
 import string
 
 from insights.contrib.nginxparser import create_parser, UnspacedList
-from insights.core import ConfigParser, LegacyItemAccess, Parser
+from insights.core import ConfigParser, LegacyItemAccess, Parser, ContainerParser
 from insights.core.plugins import parser
 from insights.parsers import ParseException, get_active_lines
 from insights.parsr import (EOF, EmptyQuotedString, Forward, LeftCurly, Lift, LineEnd, RightCurly,
@@ -329,3 +337,11 @@ class NginxConfPEG(ConfigParser):
             return Entry(children=self.Top("\n".join(content))[0], src=self)
         except Exception:
             raise ParseException("There was an exception when parsing the config file.")
+
+
+@parser(Specs.container_nginx_conf)
+class ContainerNginxConfPEG(ContainerParser, NginxConfPEG):
+    """
+    Parser for the Nginx configuration files of running container.
+    """
+    pass
