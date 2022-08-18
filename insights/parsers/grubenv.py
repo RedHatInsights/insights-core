@@ -35,14 +35,6 @@ class GrubEnv(Parser, dict):
     being the default. There were several variables added that are referenced in
     the ``/boot/loader/entries/*.conf`` files.
 
-    Attributes::
-
-        has_kernelopts (bool): Returns True/False depending on if kernelopts key is in the dict.
-        kernelopts (bool): Returns the string of kernelopts from the dict.
-        has_tuned_params (str): Returns True/False depending of if the tuned_params key is in the dict.
-        tuned_params (str): Returns the string of tuned_params from the dict.
-        errors (str): Returns the string of error message.
-
     Sample output of the command::
 
         saved_entry=295e1ba1696e4fad9e062f096f92d147-4.18.0-305.el8.x86_64
@@ -52,8 +44,7 @@ class GrubEnv(Parser, dict):
         tuned_params=transparent_hugepages=never
         tuned_initrd=
 
-    Examples::
-
+    Examples:
         >>> type(grubenv)
         <class 'insights.parsers.grubenv.GrubEnv'>
         >>> grubenv.has_kernelopts
@@ -95,20 +86,25 @@ class GrubEnv(Parser, dict):
 
     @property
     def has_kernelopts(self):
+        """ bool: Returns True/False depending on if kernelopts key is in the dict. """
         return "kernelopts" in self
 
     @property
     def kernelopts(self):
+        """ bool: Returns the string of kernelopts from the dict. """
         return self.get("kernelopts", "")
 
     @property
     def has_tuned_params(self):
+        """ bool: Returns True/False depending of if the tuned_params key is in the dict. """
         return "tuned_params" in self
 
     @property
     def tuned_params(self):
+        """ str: Returns the string of tuned_params from the dict."""
         return self.get("tuned_params", "")
 
     @property
     def errors(self):
+        """ list: Returns the list of error message. """
         return self._errors
