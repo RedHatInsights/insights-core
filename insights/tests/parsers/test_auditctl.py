@@ -11,6 +11,10 @@ NORMAL_AUDS_RHEL6 = """
 AUDIT_STATUS: enabled=1 flag=1 pid=1483 rate_limit=0 backlog_limit=8192 lost=3 backlog=0
 """.strip()
 
+BAD_AUDS_RHEL6 = """
+AUDIT_STATUS: enabled=1 flag=1 pid=1483 rate_limit=0 backlog_limit=8192 lost=3 backlog=0 test=test
+""".strip()
+
 NORMAL_AUDS_RHEL7 = """
 enabled 1
 failure 1
@@ -19,6 +23,18 @@ rate_limit 0
 backlog_limit 320
 lost 0
 backlog 0
+loginuid_immutable 1 locked
+""".strip()
+
+BAD_AUDS_RHEL7 = """
+enabled 1
+failure 1
+pid 947
+rate_limit 0
+backlog_limit 320
+lost 0
+backlog 0
+test test
 loginuid_immutable 1 locked
 """.strip()
 
@@ -73,19 +89,18 @@ def test_normal_auds_rhel7():
 
 def test_auds_blank_input():
     ctx = context_wrap(BLANK_INPUT_SAMPLE)
-    with pytest.raises(ParseException) as sc:
+    with pytest.raises(SkipException) as sc:
         AuditdStatus(ctx)
     assert "Input content is empty." in str(sc)
+    with pytest.raises(SkipException):
+        AuditdStatus(context_wrap(BAD_INPUT_SAMPLE))
 
 
-def test_auds_bad_input():
-    auds = AuditdStatus(context_wrap(BAD_INPUT_SAMPLE))
-    assert auds.data == {}
-
-
-def test_auds_bad_input_mix():
-    auds = AuditdStatus(context_wrap(BAD_INPUT_MIX))
-    assert "enabled" in auds
+def test_parse_exception():
+    with pytest.raises(ParseException):
+        AuditdStatus(context_wrap(BAD_AUDS_RHEL7))
+    with pytest.raises(ParseException):
+        AuditdStatus(context_wrap(BAD_AUDS_RHEL6))
 
 
 def test_audit_rules():

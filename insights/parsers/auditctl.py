@@ -1,6 +1,6 @@
 """
-Parsers related with the command "auditctl"
-===========================================
+AuditCtl - command ``auditctl xxx``
+===================================
 
 This module contains the following parsers:
 
@@ -10,13 +10,13 @@ AuditRules - command ``auditctl -l``
 ------------------------------------
 """
 
-from insights import parser, CommandParser, LegacyItemAccess
+from insights import parser, CommandParser
 from insights.parsers import ParseException, SkipException
 from insights.specs import Specs
 
 
 @parser(Specs.auditctl_status)
-class AuditdStatus(LegacyItemAccess, CommandParser):
+class AuditdStatus(CommandParser, dict):
     """
     Module for parsing the output of the ``auditctl -s`` command.
 
@@ -24,7 +24,7 @@ class AuditdStatus(LegacyItemAccess, CommandParser):
 
         AUDIT_STATUS: enabled=1 flag=1 pid=1483 rate_limit=0 backlog_limit=8192 lost=3 backlog=0
 
-    , while on RHEL7 the output changes to::
+    , while on RHEL7 and later, the output changes to::
 
         enabled 1
         failure 1
@@ -45,28 +45,29 @@ class AuditdStatus(LegacyItemAccess, CommandParser):
     """
     def parse_content(self, content):
         if not content:
-            raise ParseException("Input content is empty.")
-        self.data = {}
+            raise SkipException("Input content is empty.")
         if len(content) > 1:
             for line in content:
                 k, v = line.split(None, 1)
                 # Mind the 'loginuid_immutable' on RHEL7
                 if k.strip() == "loginuid_immutable":
-                    self.data[k.strip()] = v.strip()
+                    self[k.strip()] = v.strip()
                 else:
                     try:
-                        self.data[k.strip()] = int(v.strip())
+                        self[k.strip()] = int(v.strip())
                     except ValueError:
-                        continue
+                        raise ParseException('Unexpected type in line %s' % line)
         if len(content) == 1:
             line = list(content)[0].strip()
             if line.startswith("AUDIT_STATUS:"):
                 for item in line.split(None)[1:]:
                     try:
                         k, v = item.split('=')
-                        self.data[k.strip()] = int(v.strip())
+                        self[k.strip()] = int(v.strip())
                     except ValueError:
-                        continue
+                        raise ParseException('Unexpected type in line %s ' % line)
+        if not self:
+            raise SkipException('There is no content in the status output.')
 
 
 @parser(Specs.auditctl_rules)
