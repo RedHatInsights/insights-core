@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.289](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.289) (2022-08-18)
+
+- feat: New spec and parser for "auditctl -l" ([PR 3496](https://github.com/RedHatInsights/insights-core/pull/3496))
+- Feat: New grub2_editenv_list parser ([PR 3481](https://github.com/RedHatInsights/insights-core/pull/3481))
+- Automatically retry malware-detection downloads & uploads ([PR 3493](https://github.com/RedHatInsights/insights-core/pull/3493))
+
 ## [insights-core-3.0.288](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.288) (2022-08-11)
 
 - feat: Add version to deprecated function ([PR 3491](https://github.com/RedHatInsights/insights-core/pull/3491))
