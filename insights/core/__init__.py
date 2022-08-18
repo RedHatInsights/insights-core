@@ -1796,6 +1796,6 @@ class AttributeDict(dict):
     """
 
     def __init__(self, *args, **kwargs):
-        deprecated(AttributeDict, "Please set attributes explicitly.")
+        deprecated(AttributeDict, "Please set attributes explicitly.", "3.0.300")
         super(AttributeDict, self).__init__(*args, **kwargs)
         self.__dict__ = self

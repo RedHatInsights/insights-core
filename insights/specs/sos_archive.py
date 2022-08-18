@@ -10,6 +10,7 @@ simple_file = partial(simple_file, context=SosArchiveContext)
 
 class SosSpecs(Specs):
     alternatives_display_python = simple_file("sos_commands/alternatives/alternatives_--display_python")
+    auditctl_rules = simple_file("sos_commands/auditd/auditctl_-l")
     auditctl_status = simple_file("sos_commands/auditd/auditctl_-s")
     auditd_conf = simple_file("/etc/audit/auditd.conf")
     autofs_conf = simple_file("/etc/autofs.conf")
@@ -102,6 +103,7 @@ class SosSpecs(Specs):
     gluster_v_info = simple_file("sos_commands/gluster/gluster_volume_info")
     gluster_v_status = simple_file("sos_commands/gluster/gluster_volume_status")
     gluster_peer_status = simple_file("sos_commands/gluster/gluster_peer_status")
+    grubenv = first_file(["/boot/grub2/grubenv", "/boot/efi/EFI/redhat/grubenv"])
     heat_engine_log = first_file(["/var/log/containers/heat/heat-engine.log", "/var/log/heat/heat-engine.log"])
     hostname = first_file(["sos_commands/general/hostname_-f", "sos_commands/host/hostname_-f"])
     hostname_default = first_file(["sos_commands/general/hostname", "sos_commands/host/hostname", "/etc/hostname", "hostname"])

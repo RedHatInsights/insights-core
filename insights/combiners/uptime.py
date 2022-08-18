@@ -44,7 +44,7 @@ def uptime(ut):
     Raises:
         SkipComponent: If no data is available or if ``loadavg`` is not available.
     """
-    deprecated(uptime, "Use the `Uptime` parser instead.")
+    deprecated(uptime, "Use the `Uptime` parser instead.", "3.0.300")
 
     if ut.loadavg:
         return Uptime(ut.currtime, ut.updays, ut.uphhmm,

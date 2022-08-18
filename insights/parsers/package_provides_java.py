@@ -71,7 +71,8 @@ class PackageProvidesJava(CommandParser):
     def parse_content(self, content):
         deprecated(
             PackageProvidesJava,
-            'Please use the :class:`insights.parsers.package_provides.PackageProvidesCommand` instead.'
+            "Please use the :class:`insights.parsers.package_provides.PackageProvidesCommand` instead.",
+            "3.0.300"
         )
         if len(content) == 0:
             raise ParseException("Error: ", 'there is not java application running')

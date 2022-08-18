@@ -200,7 +200,7 @@ class SystemctlShow(CommandParser, dict):
     In CMD's output, empty properties are suppressed by default.
     """
     def __init__(self, *args, **kwargs):
-        deprecated(SystemctlShow, "Deprecated. Use 'SystemctlShowServiceAll' instead.")
+        deprecated(SystemctlShow, "Deprecated. Use 'SystemctlShowServiceAll' instead.", "3.0.300")
         super(SystemctlShow, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
