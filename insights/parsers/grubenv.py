@@ -91,7 +91,7 @@ class GrubEnv(Parser, dict):
 
     @property
     def kernelopts(self):
-        """ bool: Returns the string of kernelopts from the dict. """
+        """ str: Returns the string of kernelopts from the dict. """
         return self.get("kernelopts", "")
 
     @property
