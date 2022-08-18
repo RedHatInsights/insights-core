@@ -25,8 +25,10 @@ def nginx_conf(broker):
         for conf_path in conf_list.content:
             # FIXME: refine the path filter
             if 'etc/nginx' in conf_path or 'rh-nginx' in conf_path:
-                ret.append((conf_list.engine, conf_list.container_id, conf_path, conf_list.image))
+                ret.append((conf_list.image, conf_list.engine, conf_list.container_id, conf_path))
     if ret:
+        # Return list of tuple:
+        # - (image, <podman|docker>, container_id, conf_path)
         return ret
 
     raise SkipComponent
