@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.290](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.290) (2022-08-18)
+
+- New location for temp directory and tests ([PR 3489](https://github.com/RedHatInsights/insights-core/pull/3489))
+
 ## [insights-core-3.0.289](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.289) (2022-08-18)
 
 - feat: New spec and parser for "auditctl -l" ([PR 3496](https://github.com/RedHatInsights/insights-core/pull/3496))
