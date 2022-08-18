@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.288
+Version:        3.0.289
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,13 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Aug 18 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.289-1
+- feat: New spec and parser for "auditctl -l" (#3496)
+  (44796653+huali027@users.noreply.github.com)
+- Feat: New grub2_editenv_list parser (#3481) (986222045@qq.com)
+- Automatically retry malware-detection downloads & uploads (#3493)
+  (mhuth@redhat.com)
+
 * Thu Aug 11 2022 Sachin Patil <psachin@redhat.com> 3.0.288-1
 - feat: Add version to deprecated function (#3491) (rblakley@redhat.com)
 
