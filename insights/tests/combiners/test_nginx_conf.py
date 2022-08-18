@@ -311,9 +311,6 @@ def test_nginx_includes_container():
     assert nginx[1].conf_path == '/etc/nginx'
 
     # container info
-    assert nginx[0].image == 'quay.io/rhel84'
-    assert nginx[0].engine == 'podman'
-    assert nginx[0].container_id == 'xxxx'
-    assert nginx[1].image == 'quay.io/rhel86'
-    assert nginx[1].engine == 'docker'
-    assert nginx[1].container_id == 'yyyy'
+    assert sorted([nginx[0].image, nginx[1].image]) == ['quay.io/rhel84', 'quay.io/rhel86']
+    assert sorted([nginx[0].engine, nginx[1].engine]) == ['docker', 'podman']
+    assert sorted([nginx[0].container_id, nginx[1].container_id]) == ['xxxx', 'yyyy']

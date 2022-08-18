@@ -33,13 +33,11 @@ class NginxConfTree(ConfigCombiner):
 @combiner(ContainerNginxConfPEG)
 class ContainerNginxConfTree(list):
     """
-    This module models nginx configuration as a tree. It correctly handles include
-    directives by splicing individual document trees into their parents until one
-    document tree is left.
-
-    A DSL is provided to query the tree through a select function or brackets [].
-    The brackets allow a more conventional lookup feel but aren't quite as powerful
-    as using select directly.
+    This module models the nginx configuration of the same running containers
+    as a tree and wrap the `tree` of containers into a list.
+    Within the tree, It correctly handles include directives by splicing
+    individual document trees into their parents until one document tree is
+    left.
 
     See the :py:class:`insights.core.ConfigComponent` class for example usage.
     """
