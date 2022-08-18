@@ -1004,8 +1004,8 @@ class container_execute(foreach_execute):
             source = [source]
         for e in source:
             try:
-                # e       = (<podman|docker>, container_id, <...>, path)
-                image, e = e[-1], e[:-1]
+                # e       = (image, <podman|docker>, container_id, <...>)
+                image, e = e[0], e[1:]
                 # e       = (<podman|docker>, container_id, <...>)
                 # the_cmd = <podman|docker> exec container_id cmd
                 the_cmd = ("/usr/bin/%s exec %s " + self.cmd) % e
@@ -1056,10 +1056,10 @@ class container_collect(foreach_execute):
             source = [source]
         for e in source:
             try:
-                # e        = (<podman|docker>, container_id, <path>, image)
-                image, e = e[-1], e[:-1]
-                # self.cmd = path
+                # e        = (image, <podman|docker>, container_id, <path>)
+                image, e = e[0], e[1:]
                 # e        = (<podman|docker>, container_id, <path>)
+                # self.cmd = path or None
                 # elems    = (<podman|docker>, container_id, path)
                 elems = e if self.cmd is None else e + (self.cmd,)
                 # the_cmd = <podman|docker> exec container_id cat path

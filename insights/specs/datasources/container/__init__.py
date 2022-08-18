@@ -12,7 +12,7 @@ from insights.parsers.docker_list import DockerListContainers
 @datasource([PodmanListContainers, DockerListContainers], HostContext)
 def running_rhel_containers(broker):
     """
-    Returns a list of tuple of (<podman|docker>, container_id, image) of the running
+    Returns a list of tuple of (image, <podman|docker>, container_id) of the running
     containers.
     """
     def _is_rhel_image(ctx, c_info):
@@ -27,14 +27,15 @@ def running_rhel_containers(broker):
         podman_c = broker[PodmanListContainers]
         for name in podman_c.running_containers:
             c_info = ('podman', podman_c.containers[name]['CONTAINER ID'][:12])
-            cs.append(c_info + (podman_c.containers[name]['IMAGE'],)) if _is_rhel_image(broker[HostContext], c_info) else None
+            cs.append((podman_c.containers[name]['IMAGE'],) + c_info) if _is_rhel_image(broker[HostContext], c_info) else None
     if (DockerListContainers in broker):
         docker_c = broker[DockerListContainers]
         for name in docker_c.running_containers:
             c_info = ('docker', docker_c.containers[name]['CONTAINER ID'][:12])
-            cs.append(c_info + (docker_c.containers[name]['IMAGE'],)) if _is_rhel_image(broker[HostContext], c_info) else None
+            cs.append((docker_c.containers[name]['IMAGE'],) + c_info) if _is_rhel_image(broker[HostContext], c_info) else None
     if cs:
-        # (<podman|docker>, container_id, image)
+        # Return list of tuple:
+        # - (image, <podman|docker>, container_id)
         return cs
 
     raise SkipComponent
