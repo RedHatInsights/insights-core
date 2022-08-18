@@ -7,6 +7,7 @@ class Specs(SpecSet):
     alternatives_display_python = RegistryPoint()
     amq_broker = RegistryPoint(multi_output=True)
     ansible_host = RegistryPoint()
+    auditctl_rules = RegistryPoint()
     auditctl_status = RegistryPoint()
     auditd_conf = RegistryPoint()
     audit_log = RegistryPoint(filterable=True)
