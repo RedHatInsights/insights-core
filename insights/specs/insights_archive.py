@@ -80,6 +80,7 @@ class InsightsArchiveSpecs(Specs):
     getconf_page_size = simple_file("insights_commands/getconf_PAGE_SIZE")
     getenforce = simple_file("insights_commands/getenforce")
     getsebool = simple_file("insights_commands/getsebool_-a")
+    grubenv = first_file(["insights_commands/grub2-editenv_list", "/boot/grub2/grubenv", "/boot/efi/EFI/redhat/grubenv"])
     grub1_config_perms = first_file(["insights_commands/ls_-lH_.boot.grub.grub.conf", "insights_commands/ls_-l_.boot.grub.grub.conf"])
     grub_config_perms = first_file(["insights_commands/ls_-lH_.boot.grub2.grub.cfg", "insights_commands/ls_-l_.boot.grub2.grub.cfg"])
     grubby_default_index = simple_file("insights_commands/grubby_--default-index")
