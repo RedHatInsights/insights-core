@@ -3,7 +3,7 @@ import doctest
 
 from insights.tests import context_wrap
 from insights.parsers import auditctl
-from insights.parsers.auditctl import AuditdStatus, AuditRules
+from insights.parsers.auditctl import AuditStatus, AuditRules
 from insights.parsers import ParseException, SkipException
 
 
@@ -73,14 +73,14 @@ AUDIT_RULES_OUTPUT3 = """
 
 
 def test_normal_auds_rhel6():
-    auds = AuditdStatus(context_wrap(NORMAL_AUDS_RHEL6))
+    auds = AuditStatus(context_wrap(NORMAL_AUDS_RHEL6))
     assert "enabled" in auds
     assert "loginuid_immutable" not in auds
     assert auds['pid'] == 1483
 
 
 def test_normal_auds_rhel7():
-    auds = AuditdStatus(context_wrap(NORMAL_AUDS_RHEL7))
+    auds = AuditStatus(context_wrap(NORMAL_AUDS_RHEL7))
     assert "loginuid_immutable" in auds
     assert auds['loginuid_immutable'] == "1 locked"
     assert auds['failure'] == 1
@@ -90,17 +90,17 @@ def test_normal_auds_rhel7():
 def test_auds_blank_input():
     ctx = context_wrap(BLANK_INPUT_SAMPLE)
     with pytest.raises(SkipException) as sc:
-        AuditdStatus(ctx)
+        AuditStatus(ctx)
     assert "Input content is empty." in str(sc)
     with pytest.raises(SkipException):
-        AuditdStatus(context_wrap(BAD_INPUT_SAMPLE))
+        AuditStatus(context_wrap(BAD_INPUT_SAMPLE))
 
 
 def test_parse_exception():
     with pytest.raises(ParseException):
-        AuditdStatus(context_wrap(BAD_AUDS_RHEL7))
+        AuditStatus(context_wrap(BAD_AUDS_RHEL7))
     with pytest.raises(ParseException):
-        AuditdStatus(context_wrap(BAD_AUDS_RHEL6))
+        AuditStatus(context_wrap(BAD_AUDS_RHEL6))
 
 
 def test_audit_rules():
@@ -119,7 +119,7 @@ def test_audit_rules_exception():
 def test_doc_examples():
     env = {
         'audit_rules': AuditRules(context_wrap(AUDIT_RULES_OUTPUT2)),
-        'auds': AuditdStatus(context_wrap(NORMAL_AUDS_RHEL7))
+        'auds': AuditStatus(context_wrap(NORMAL_AUDS_RHEL7))
     }
     failed, total = doctest.testmod(auditctl, globs=env)
     assert failed == 0

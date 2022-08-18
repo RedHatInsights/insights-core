@@ -4,70 +4,16 @@ AuditCtl - command ``auditctl xxx``
 
 This module contains the following parsers:
 
-AuditdStatus - command ``auditctl -s``
---------------------------------------
 AuditRules - command ``auditctl -l``
 ------------------------------------
+AuditStatus - command ``auditctl -s``
+-------------------------------------
+
 """
 
 from insights import parser, CommandParser
 from insights.parsers import ParseException, SkipException
 from insights.specs import Specs
-
-
-@parser(Specs.auditctl_status)
-class AuditdStatus(CommandParser, dict):
-    """
-    Module for parsing the output of the ``auditctl -s`` command.
-
-    Typical output on RHEL6 looks like::
-
-        AUDIT_STATUS: enabled=1 flag=1 pid=1483 rate_limit=0 backlog_limit=8192 lost=3 backlog=0
-
-    , while on RHEL7 and later, the output changes to::
-
-        enabled 1
-        failure 1
-        pid 947
-        rate_limit 0
-        backlog_limit 320
-        lost 0
-        backlog 0
-        loginuid_immutable 0 unlocked
-
-    Example:
-        >>> type(auds)
-        <class 'insights.parsers.auditctl.AuditdStatus'>
-        >>> "enabled" in auds
-        True
-        >>> auds['enabled']
-        1
-    """
-    def parse_content(self, content):
-        if not content:
-            raise SkipException("Input content is empty.")
-        if len(content) > 1:
-            for line in content:
-                k, v = line.split(None, 1)
-                # Mind the 'loginuid_immutable' on RHEL7
-                if k.strip() == "loginuid_immutable":
-                    self[k.strip()] = v.strip()
-                else:
-                    try:
-                        self[k.strip()] = int(v.strip())
-                    except ValueError:
-                        raise ParseException('Unexpected type in line %s' % line)
-        if len(content) == 1:
-            line = list(content)[0].strip()
-            if line.startswith("AUDIT_STATUS:"):
-                for item in line.split(None)[1:]:
-                    try:
-                        k, v = item.split('=')
-                        self[k.strip()] = int(v.strip())
-                    except ValueError:
-                        raise ParseException('Unexpected type in line %s ' % line)
-        if not self:
-            raise SkipException('There is no content in the status output.')
 
 
 @parser(Specs.auditctl_rules)
@@ -108,3 +54,58 @@ class AuditRules(CommandParser, list):
                 self.append(line.strip())
         if not self:
             raise SkipException('No rules found')
+
+
+@parser(Specs.auditctl_status)
+class AuditStatus(CommandParser, dict):
+    """
+    Module for parsing the output of the ``auditctl -s`` command.
+
+    Typical output on RHEL6 looks like::
+
+        AUDIT_STATUS: enabled=1 flag=1 pid=1483 rate_limit=0 backlog_limit=8192 lost=3 backlog=0
+
+    , while on RHEL7 and later, the output changes to::
+
+        enabled 1
+        failure 1
+        pid 947
+        rate_limit 0
+        backlog_limit 320
+        lost 0
+        backlog 0
+        loginuid_immutable 0 unlocked
+
+    Example:
+        >>> type(auds)
+        <class 'insights.parsers.auditctl.AuditStatus'>
+        >>> "enabled" in auds
+        True
+        >>> auds['enabled']
+        1
+    """
+    def parse_content(self, content):
+        if not content:
+            raise SkipException("Input content is empty.")
+        if len(content) > 1:
+            for line in content:
+                k, v = line.split(None, 1)
+                # Mind the 'loginuid_immutable' on RHEL7
+                if k.strip() == "loginuid_immutable":
+                    self[k.strip()] = v.strip()
+                else:
+                    try:
+                        self[k.strip()] = int(v.strip())
+                    except ValueError:
+                        raise ParseException('Unexpected type in line %s' % line)
+        if len(content) == 1:
+            line = list(content)[0].strip()
+            if line.startswith("AUDIT_STATUS:"):
+                for item in line.split(None)[1:]:
+                    try:
+                        k, v = item.split('=')
+                        self[k.strip()] = int(v.strip())
+                    except ValueError:
+                        raise ParseException('Unexpected type in line %s ' % line)
+        if not self:
+            raise SkipException('There is no content in the status output.')
