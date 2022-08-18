@@ -17,6 +17,7 @@ import atexit
 
 from .utilities import determine_hostname, _expand_paths, write_data_to_file
 from .insights_spec import InsightsFile, InsightsCommand
+from .constants import InsightsConstants as constants
 
 logger = logging.getLogger(__name__)
 
@@ -42,11 +43,13 @@ class InsightsArchive(object):
         """
         self.config = config
         self.cleanup_previous_archive()
+        if not os.path.exists(constants.insights_tmp_path):
+            os.mkdir(constants.insights_tmp_path, 0o700)
         # input this to core collector as `tmp_path`
-        self.tmp_dir = tempfile.mkdtemp(dir='/var/tmp/', prefix='insights-archive-')
+        self.tmp_dir = tempfile.mkdtemp(dir=constants.insights_tmp_path, prefix='insights-archive-')
 
         # we don't really need this anymore...
-        self.archive_tmp_dir = tempfile.mkdtemp(dir='/var/tmp/', prefix='insights-archive-')
+        self.archive_tmp_dir = tempfile.mkdtemp(dir=constants.insights_tmp_path, prefix='insights-archive-')
 
         # We should not hint the hostname in the archive if it has to be obfuscated
         if config.obfuscate_hostname:
@@ -250,7 +253,8 @@ class InsightsArchive(object):
         '''
         Used at the start, this will clean the temporary directory of previous killed runs
         '''
-        for file in glob.glob('/var/tmp/insights-archive-*'):
+        archive_glob = os.path.join(constants.insights_tmp_path, 'insights-archive-*')
+        for file in glob.glob(archive_glob):
             os.path.join('', file)
             logger.debug("Deleting previous archive %s", file)
             shutil.rmtree(file, True)
