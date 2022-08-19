@@ -570,6 +570,10 @@ class DefaultSpecs(Specs):
         "/usr/bin/mongo pulp_database --eval 'db.repo_importers.find({\"importer_type_id\": { $ne: \"yum_importer\"}}).count()'",
         deps=[[SatelliteVersion, CapsuleVersion]]
     )
+    satellite_provision_param_settings = simple_command(
+        "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c \"select name, value from parameters where name='package_upgrade' and reference_id in (select id from operatingsystems where name='RedHat' and major='9')\" --csv",
+        deps=[SatelliteVersion]
+    )
     satellite_qualified_capsules = simple_command(
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c \"select name from smart_proxies where download_policy = 'background'\" --csv",
         deps=[SatelliteVersion]
