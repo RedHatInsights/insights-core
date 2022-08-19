@@ -24,7 +24,7 @@ from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersio
 from insights.specs import Specs
 from insights.specs.datasources import (
     aws, awx_manage, cloud_init, candlepin_broker, corosync as corosync_ds,
-    dir_list, ethernet, httpd, ipcs, kernel_module_list, lpstat, md5chk,
+    dir_list, ethernet, httpd, ipcs, journalctl_header, kernel_module_list, lpstat, md5chk,
     package_provides, ps as ps_datasource, sap, satellite_missed_queues,
     ssl_certificate, sys_fs_cgroup_memory_tasks_number, system_user_dirs, user_group, yum_updates)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
@@ -292,7 +292,7 @@ class DefaultSpecs(Specs):
     ipv6_neigh = simple_command("/sbin/ip -6 neighbor show nud all")
     ironic_inspector_log = first_file(["/var/log/containers/ironic-inspector/ironic-inspector.log", "/var/log/ironic-inspector/ironic-inspector.log"])
     iscsiadm_m_session = simple_command("/usr/sbin/iscsiadm -m session")
-    journalctl_header = simple_command("/usr/bin/journalctl --header")
+    journalctl_header = journalctl_header.journalctl_header_number
     kdump_conf = simple_file("/etc/kdump.conf")
     kernel_config = glob_file("/boot/config-*")
     kernel_crash_kexec_post_notifiers = simple_file("/sys/module/kernel/parameters/crash_kexec_post_notifiers")
