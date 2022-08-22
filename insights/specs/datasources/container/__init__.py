@@ -18,7 +18,7 @@ def running_rhel_containers(broker):
     def _is_rhel_image(ctx, c_info):
         """Only collect the containers based from RHEL images"""
         ret = ctx.shell_out("/usr/bin/%s exec %s cat /etc/redhat-release" % c_info, timeout=DEFAULT_SHELL_TIMEOUT)
-        if ret and "red hat enterprise linux" in ret[0].lower() or True:
+        if ret and "red hat enterprise linux" in ret[0].lower():
             return True
         return False
 
