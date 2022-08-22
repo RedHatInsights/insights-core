@@ -210,6 +210,10 @@ plugins:
         - name: insights.combiners.satellite_version.CapsuleVersion
           enabled: true
 
+    # needed for the 'pre-check' of the 'satellite_provision_param_settings' spec
+        - name: insights.components.satellite_version.IsSatellite611
+          enabled: true
+
     # needed for the 'pre-check' of the 'corosync_cmapctl_cmd_list' spec
         - name: insights.combiners.redhat_release.RedHatRelease
           enabled: true

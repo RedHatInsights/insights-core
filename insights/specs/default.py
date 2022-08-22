@@ -20,6 +20,7 @@ from insights.core.spec_factory import first_file, listdir
 from insights.components.cloud_provider import IsAzure, IsGCP
 from insights.components.ceph import IsCephMonitor
 from insights.components.virtualization import IsBareMetal
+from insights.components.satellite_version import IsSatellite611
 from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersion
 from insights.specs import Specs
 from insights.specs.datasources import (
@@ -572,7 +573,7 @@ class DefaultSpecs(Specs):
     )
     satellite_provision_param_settings = simple_command(
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c \"select name, value from parameters where name='package_upgrade' and reference_id in (select id from operatingsystems where name='RedHat' and major='9')\" --csv",
-        deps=[SatelliteVersion]
+        deps=[IsSatellite611]
     )
     satellite_qualified_capsules = simple_command(
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c \"select name from smart_proxies where download_policy = 'background'\" --csv",
