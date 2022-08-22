@@ -114,4 +114,3 @@ class LsEtcSsh(CommandParser, FileListing):
         'rw-r-----.'
     """
     pass
-
