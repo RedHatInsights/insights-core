@@ -21,7 +21,13 @@ class LocalSpecs(Specs):
 @datasource(LocalSpecs.cloud_cfg_input, HostContext)
 def cloud_cfg(broker):
     """
-    This datasource provides configuration collected from ``/etc/cloud/cloud.cfg``.
+    This datasource provides configuration of ``/etc/cloud/cloud.cfg`` file.
+
+    .. note::
+        Since this file may contain sensitive information, it should be
+        filtered before the Insights collecting it.  The filters will be added
+        via the :mod:`insights.specs.Specs.cloud_cfg` Spec.  If nothing is
+        added to the filter, nothing will be collected.
 
     Typical content of ``/etc/cloud/cloud.cfg`` file is::
 
@@ -31,7 +37,7 @@ def cloud_cfg(broker):
             ssh-authorized-keys:
               - key_one
               - key_two
-            passwd: $6$j212wezy$7H/1LT4f9/N3wpgNunhsIqtMj62OKiS3nyNwuizouQc3u7MbYCarYeAHWYPYb2FT.lbioDm2RrkJPb9BZMN1O/
+            passwd: $6$j212wezy$7H/1LT4f9/N3wpgNunhsIqtMj62OKiS3nyNwuizouQc3u7
 
         ssh_deletekeys: 1
 
@@ -58,7 +64,8 @@ def cloud_cfg(broker):
         str: YAML string after removing the sensitive information.
 
     Raises:
-        SkipComponent: When the path does not exist or any exception occurs.
+        SkipComponent: When the path does not exist, nothing is collected,
+                       or any exception occurs.
     """
     relative_path = '/etc/cloud/cloud.cfg'
     try:
