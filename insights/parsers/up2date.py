@@ -22,7 +22,7 @@ class Up2Date(LegacyItemAccess, Parser):
         serverURL=https://rhnproxy.glb.tech.markit.partners/XMLRPC
     """
     def __init__(self, *args, **kwargs):
-        deprecated(Up2Date, "Import Up2DateSysconfig from insights.parsers.sysconfig instead")
+        deprecated(Up2Date, "Import Up2DateSysconfig from insights.parsers.sysconfig instead.", "3.0.300")
         super(Up2Date, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):

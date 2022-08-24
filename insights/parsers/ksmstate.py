@@ -22,7 +22,7 @@ def is_running(context):
     Check if Kernel Samepage Merging is enabled. 'True' if KSM is
     on (i.e. ``/sys/kernel/mm/ksm/run`` is '1') or 'False' if not.
     """
-    deprecated(is_running, "Use the `KSMState` class instead.")
+    deprecated(is_running, "Use the `KSMState` class instead.", "3.0.300")
     ksminfo = {}
     ksminfo['running'] = (context.content[0].split()[0] == '1')
     return ksminfo

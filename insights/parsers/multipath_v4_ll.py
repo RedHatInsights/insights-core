@@ -282,5 +282,5 @@ def get_multipath_v4_ll(context):
     .. warning::
         Deprecated parser, please use :class:`MultipathDevices` instead.
     """
-    deprecated(get_multipath_v4_ll, "Use the `MultipathDevices` class instead.")
+    deprecated(get_multipath_v4_ll, "Use the `MultipathDevices` class instead.", "3.0.300")
     return MultipathDevices(context).devices

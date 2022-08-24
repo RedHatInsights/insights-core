@@ -323,7 +323,8 @@ class ModInfoAll(KernelModulesInfo):
     def __init__(self, *args, **kwargs):
         deprecated(
             ModInfoAll,
-            'Please use the :class:`insights.combiners.modinfo.ModulesInfo` instead.'
+            "Please use the :class:`insights.combiners.modinfo.ModulesInfo` instead.",
+            "3.0.300"
         )
         super(ModInfoAll, self).__init__(*args, **kwargs)
 
@@ -383,7 +384,8 @@ class ModInfoEach(CommandParser, ModInfo):
     def __init__(self, *args, **kwargs):
         deprecated(
             ModInfoEach,
-            'Please use the :class:`insights.combiners.modinfo.ModulesInfo` instead.'
+            "Please use the :class:`insights.combiners.modinfo.ModulesInfo` instead.",
+            "3.0.300"
         )
         super(ModInfoEach, self).__init__(*args, **kwargs)
 
@@ -451,7 +453,8 @@ class ModInfoI40e(ModInfoEach):
     def __init__(self, *args, **kwargs):
         deprecated(
             ModInfoI40e,
-            'Please use the :class:`insights.combiners.modinfo.ModulesInfo` instead.'
+            "Please use the :class:`insights.combiners.modinfo.ModulesInfo` instead.",
+            "3.0.300"
         )
         super(ModInfoI40e, self).__init__(*args, **kwargs)
 
@@ -498,7 +501,8 @@ class ModInfoVmxnet3(ModInfoEach):
     def __init__(self, *args, **kwargs):
         deprecated(
             ModInfoVmxnet3,
-            'Please use the :class:`insights.combiners.modinfo.ModulesInfo` instead.'
+            "Please use the :class:`insights.combiners.modinfo.ModulesInfo` instead.",
+            "3.0.300"
         )
         super(ModInfoVmxnet3, self).__init__(*args, **kwargs)
 
@@ -546,7 +550,8 @@ class ModInfoIgb(ModInfoEach):
     def __init__(self, *args, **kwargs):
         deprecated(
             ModInfoIgb,
-            'Please use the :class:`insights.combiners.modinfo.ModulesInfo` instead.'
+            "Please use the :class:`insights.combiners.modinfo.ModulesInfo` instead.",
+            "3.0.300"
         )
         super(ModInfoIgb, self).__init__(*args, **kwargs)
 
@@ -594,7 +599,8 @@ class ModInfoIxgbe(ModInfoEach):
     def __init__(self, *args, **kwargs):
         deprecated(
             ModInfoIxgbe,
-            'Please use the :class:`insights.combiners.modinfo.ModulesInfo` instead.'
+            "Please use the :class:`insights.combiners.modinfo.ModulesInfo` instead.",
+            "3.0.300"
         )
         super(ModInfoIxgbe, self).__init__(*args, **kwargs)
 
@@ -634,6 +640,7 @@ class ModInfoVeth(ModInfoEach):
     def __init__(self, *args, **kwargs):
         deprecated(
             ModInfoVeth,
-            'Please use the :class:`insights.combiners.modinfo.ModulesInfo` instead.'
+            "Please use the :class:`insights.combiners.modinfo.ModulesInfo` instead.",
+            "3.0.300"
         )
         super(ModInfoVeth, self).__init__(*args, **kwargs)

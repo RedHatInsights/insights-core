@@ -17,16 +17,16 @@ from insights.core.spec_factory import simple_file, simple_command, glob_file
 from insights.core.spec_factory import first_of, command_with_args
 from insights.core.spec_factory import foreach_collect, foreach_execute
 from insights.core.spec_factory import first_file, listdir
-from insights.components.cloud_provider import IsAWS, IsAzure, IsGCP
+from insights.components.cloud_provider import IsAzure, IsGCP
 from insights.components.ceph import IsCephMonitor
 from insights.components.virtualization import IsBareMetal
 from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersion
 from insights.specs import Specs
 from insights.specs.datasources import (
-    awx_manage, cloud_init, candlepin_broker, corosync as corosync_ds,
+    aws, awx_manage, cloud_init, candlepin_broker, corosync as corosync_ds,
     dir_list, ethernet, httpd, ipcs, kernel_module_list, lpstat, md5chk,
     package_provides, ps as ps_datasource, sap, satellite_missed_queues,
-    ssl_certificate, user_group, yum_updates)
+    ssl_certificate, sys_fs_cgroup_memory_tasks_number, system_user_dirs, user_group, yum_updates)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 from insights.specs.datasources.pcp import pcp_enabled, pmlog_summary_args
 
@@ -67,13 +67,14 @@ class DefaultSpecs(Specs):
     alternatives_display_python = simple_command("/usr/sbin/alternatives --display python")
     amq_broker = glob_file("/var/opt/amq-broker/*/etc/broker.xml")
     dse_ldif = glob_file("/etc/dirsrv/*/dse.ldif")
+    auditctl_rules = simple_command("/sbin/auditctl -l")
     auditctl_status = simple_command("/sbin/auditctl -s")
     auditd_conf = simple_file("/etc/audit/auditd.conf")
     audit_log = simple_file("/var/log/audit/audit.log")
     avc_hash_stats = simple_file("/sys/fs/selinux/avc/hash_stats")
     avc_cache_threshold = simple_file("/sys/fs/selinux/avc/cache_threshold")
-    aws_instance_id_doc = simple_command("/usr/bin/curl -s http://169.254.169.254/latest/dynamic/instance-identity/document --connect-timeout 5", deps=[IsAWS])
-    aws_instance_id_pkcs7 = simple_command("/usr/bin/curl -s http://169.254.169.254/latest/dynamic/instance-identity/pkcs7 --connect-timeout 5", deps=[IsAWS])
+    aws_instance_id_doc = command_with_args('/usr/bin/curl -s -H "X-aws-ec2-metadata-token: %s" http://169.254.169.254/latest/dynamic/instance-identity/document --connect-timeout 5', aws.aws_imdsv2_token, deps=[aws.aws_imdsv2_token])
+    aws_instance_id_pkcs7 = command_with_args('/usr/bin/curl -s -H "X-aws-ec2-metadata-token: %s" http://169.254.169.254/latest/dynamic/instance-identity/pkcs7 --connect-timeout 5', aws.aws_imdsv2_token, deps=[aws.aws_imdsv2_token])
     awx_manage_check_license = simple_command("/usr/bin/awx-manage check_license")
     awx_manage_check_license_data = awx_manage.awx_manage_check_license_data_datasource
     awx_manage_print_settings = simple_command("/usr/bin/awx-manage print_settings INSIGHTS_TRACKING_STATE SYSTEM_UUID INSTALL_UUID TOWER_URL_BASE AWX_CLEANUP_PATHS AWX_PROOT_BASE_PATH LOG_AGGREGATOR_ENABLED LOG_AGGREGATOR_LEVEL --format json")
@@ -214,7 +215,7 @@ class DefaultSpecs(Specs):
     gcp_license_codes = simple_command("/usr/bin/curl -s -H 'Metadata-Flavor: Google' http://metadata.google.internal/computeMetadata/v1/instance/licenses/?recursive=True --connect-timeout 5", deps=[IsGCP])
     greenboot_status = simple_command("/usr/libexec/greenboot/greenboot-status")
     group_info = command_with_args("/usr/bin/getent group %s", user_group.group_filters)
-    grubenv = first_file(["/boot/grub2/grubenv", "/boot/efi/EFI/redhat/grubenv"])
+    grubenv = simple_command("/usr/bin/grub2-editenv list")
     grub_conf = simple_file("/boot/grub/grub.conf")
     grub_config_perms = simple_command("/bin/ls -lH /boot/grub2/grub.cfg")  # only RHEL7 and updwards
     grub_efi_conf = simple_file("/boot/efi/EFI/redhat/grub.conf")
@@ -632,6 +633,8 @@ class DefaultSpecs(Specs):
     sysctl_conf = simple_file("/etc/sysctl.conf")
     sysctl_d_conf_etc = glob_file("/etc/sysctl.d/*.conf")
     sysctl_d_conf_usr = glob_file("/usr/lib/sysctl.d/*.conf")
+    sys_fs_cgroup_memory_tasks_number = sys_fs_cgroup_memory_tasks_number.sys_fs_cgroup_memory_tasks_number_data_datasource
+    system_user_dirs = system_user_dirs.system_user_dirs
     systemctl_cat_dnsmasq_service = simple_command("/bin/systemctl cat dnsmasq.service")
     systemctl_cat_rpcbind_socket = simple_command("/bin/systemctl cat rpcbind.socket")
     systemctl_cinder_volume = simple_command("/bin/systemctl show openstack-cinder-volume")
@@ -661,6 +664,7 @@ class DefaultSpecs(Specs):
     ])
     sys_vmbus_device_id = glob_file('/sys/bus/vmbus/devices/*/device_id')
     sys_vmbus_class_id = glob_file('/sys/bus/vmbus/devices/*/class_id')
+    teamdctl_config_dump = foreach_execute(ethernet.team_interfaces, "/usr/bin/teamdctl %s config dump")
     teamdctl_state_dump = foreach_execute(ethernet.team_interfaces, "/usr/bin/teamdctl %s state dump")
     testparm_s = simple_command("/usr/bin/testparm -s")
     testparm_v_s = simple_command("/usr/bin/testparm -v -s")

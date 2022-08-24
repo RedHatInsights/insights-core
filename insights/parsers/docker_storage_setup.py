@@ -44,5 +44,9 @@ class DockerStorageSetup(SysconfigOptions):
     A parser for accessing /etc/sysconfig/docker-storage-setup.
     """
     def __init__(self, *args, **kwargs):
-        deprecated(DockerStorageSetup, "Import DockerStorageSetupSysconfig from insights.parsers.sysconfig instead")
+        deprecated(
+            DockerStorageSetup,
+            "Import DockerStorageSetupSysconfig from insights.parsers.sysconfig instead.",
+            "3.0.300"
+        )
         super(DockerStorageSetup, self).__init__(*args, **kwargs)

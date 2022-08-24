@@ -84,7 +84,7 @@ class PassengerStatus(CommandParser, dict):
                         group_list['p_list'].append(p_dict)
                     l = line.lstrip('* ')
                     # parse each key: value pair
-                    while(':' in l and l.index(':') != l.rindex(':')):
+                    while (':' in l and l.index(':') != l.rindex(':')):
                         k, l = [i.strip() for i in l.split(':', 1)]
                         v, l = [i.strip() for i in l.split(None, 1)]
                         p_dict[k] = v

@@ -143,7 +143,7 @@ def logging_level(logger, level):
     return _f
 
 
-def deprecated(func, solution):
+def deprecated(func, solution, version=None):
     """
     Mark a parser or combiner as deprecated, and give a message of how to fix
     this.  This will emit a warning in the logs when the function is used.
@@ -156,8 +156,9 @@ def deprecated(func, solution):
             function that replaces the thing being deprecated.  For example,
             "use the `fnord()` function" or "use the `search()` method with
             the parameter `name='(value)'`".
+        version (str): The last version of insights-core that the function
+            will be available before it is removed.
     """
-
     def get_name_line(src):
         for line in src:
             if "@" not in line:
@@ -166,9 +167,14 @@ def deprecated(func, solution):
     path = inspect.getsourcefile(func)
     src, line_no = inspect.getsourcelines(func)
     name = get_name_line(src) or "Unknown"
-    the_msg = "<{c}> at {p}:{l} is deprecated: {s}".format(
-        c=name, p=path, l=line_no, s=solution
-    )
+    if version:
+        the_msg = "<{c}> at {p}:{l} is deprecated: {s} This function will be removed after version: {v}.".format(
+            c=name, p=path, l=line_no, s=solution, v=version
+        )
+    else:
+        the_msg = "<{c}> at {p}:{l} is deprecated: {s}".format(
+            c=name, p=path, l=line_no, s=solution
+        )
 
     warnings.warn(the_msg, DeprecationWarning)
 

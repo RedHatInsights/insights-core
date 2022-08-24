@@ -284,7 +284,7 @@ def calc_offset(lines, target, invert_search=False, require_all=False):
                         return offset
                 else:
                     return offset
-            elif invert_search and not(line == '' or found_any):
+            elif invert_search and not (line == '' or found_any):
                 return offset
 
         # If we get here then we didn't find any of the targets

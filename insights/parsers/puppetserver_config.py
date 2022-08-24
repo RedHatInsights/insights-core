@@ -55,7 +55,11 @@ class PuppetserverConfig(Parser, LegacyItemAccess):
         False
     """
     def __init__(self, *args, **kwargs):
-        deprecated(PuppetserverConfig, "Import PuppetserverSysconfig from insights.parsers.sysconfig instead")
+        deprecated(
+            PuppetserverConfig,
+            "Import PuppetserverSysconfig from insights.parsers.sysconfig instead.",
+            "3.0.300"
+        )
         super(PuppetserverConfig, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):

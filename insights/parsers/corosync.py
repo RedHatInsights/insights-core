@@ -56,7 +56,7 @@ class CoroSyncConfig(SysconfigOptions):
         ''
     """
     def __init__(self, *args, **kwargs):
-        deprecated(CoroSyncConfig, "Import CorosyncSysconfig from insights.parsers.sysconfig instead")
+        deprecated(CoroSyncConfig, "Import CorosyncSysconfig from insights.parsers.sysconfig instead.", "3.0.300")
         super(CoroSyncConfig, self).__init__(*args, **kwargs)
 
     @property

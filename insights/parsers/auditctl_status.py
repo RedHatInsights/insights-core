@@ -6,11 +6,16 @@ AuditctlStatus - Report auditd status
 from .. import parser, CommandParser, LegacyItemAccess
 from ..parsers import ParseException
 from ..specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.auditctl_status)
 class AuditctlStatus(LegacyItemAccess, CommandParser):
     """
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.auditctl.AuditdStatus` instead.
+
     Module for parsing the output of the ``auditctl -s`` command.
 
     Typical output on RHEL6 looks like::
@@ -36,6 +41,14 @@ class AuditctlStatus(LegacyItemAccess, CommandParser):
         >>> auds['enabled']
         1
     """
+    def __init__(self, context):
+        deprecated(
+            AuditctlStatus,
+            "Please use the :class:`insights.parsers.auditctl.AuditdStatus` instead.",
+            "3.1.25"
+        )
+        super(AuditctlStatus, self).__init__(context)
+
     def parse_content(self, content):
         if not content:
             raise ParseException("Input content is empty.")

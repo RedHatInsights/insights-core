@@ -29,7 +29,7 @@ class Report(object):
         lines = self.lines[:]
         for index in range(len(self.lines) - 1, -1, -1):
             if lines[index] == '':
-                del(lines[index])
+                del (lines[index])
             else:
                 break
         return lines

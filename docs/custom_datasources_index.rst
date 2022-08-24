@@ -11,6 +11,22 @@ insights.specs.datasources
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.aws
+------------------------------
+
+.. automodule:: insights.specs.datasources.aws
+    :members: aws_imdsv2_token, LocalSpecs
+    :show-inheritance:
+    :undoc-members:
+
+insights.specs.datasources.awx_manage
+-------------------------------------
+
+.. automodule:: insights.specs.datasources.awx_manage
+    :members: awx_manage_check_license_data_datasource, LocalSpecs
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.candlepin_broker
 -------------------------------------------
 
@@ -75,6 +91,21 @@ insights.specs.datasources.kernel_module_list
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.lpstat
+---------------------------------
+
+.. automodule:: insights.specs.datasources.lpstat
+    :members: lpstat_protocol_printers_info, LocalSpecs
+    :show-inheritance:
+    :undoc-members:
+
+insights.specs.datasources.malware_detection
+--------------------------------------------
+
+.. automodule:: insights.specs.datasources.malware_detection
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.md5chk
 ---------------------------------
 
@@ -128,6 +159,22 @@ insights.specs.datasources.ssl_certificate
 
 .. automodule:: insights.specs.datasources.ssl_certificate
     :members: httpd_certificate_info_in_nss, httpd_ssl_certificate_files, nginx_ssl_certificate_files, mssql_tls_cert_file
+    :show-inheritance:
+    :undoc-members:
+
+insights.specs.datasources.sys_fs_cgroup_memory_tasks_number
+------------------------------------------------------------
+
+.. automodule:: insights.specs.datasources.sys_fs_cgroup_memory_tasks_number
+    :members: sys_fs_cgroup_memory_tasks_number_data_datasource, LocalSpecs
+    :show-inheritance:
+    :undoc-members:
+
+insights.specs.datasources.system_user_dirs
+-------------------------------------------
+
+.. automodule:: insights.specs.datasources.system_user_dirs
+    :members: system_user_dirs
     :show-inheritance:
     :undoc-members:
 

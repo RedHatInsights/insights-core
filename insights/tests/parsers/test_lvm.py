@@ -2,10 +2,10 @@ from __future__ import print_function
 import pytest
 import doctest
 
-from insights.parsers import SkipException
+from insights.parsers import ParseException, SkipException
 from insights.parsers import lvm
 from insights.tests import context_wrap
-from .lvm_test_data import LVMCONFIG
+from .lvm_test_data import LVMCONFIG, LVMCONFIG2, LVMCONFIG3
 
 WARNINGS_CONTENT = """
 WARNING
@@ -187,6 +187,16 @@ def test_lvmconfig():
     p = lvm.LvmConfig(context_wrap(LVMCONFIG))
     assert p.data["dmeventd"]["raid_library"] == "libdevmapper-event-lvm2raid.so"
     assert p.data["global"]["thin_check_options"] == ["-q", "--clear-needs-check-flag"]
+
+
+def test_lvmconfig_2():
+    p = lvm.LvmConfig(context_wrap(LVMCONFIG2))
+    assert p.data['global']['umask'] == '077'
+
+
+def test_lvmconfig_exception():
+    with pytest.raises(ParseException):
+        lvm.LvmConfig(context_wrap(LVMCONFIG3))
 
 
 def test_vgsheading_warnings():
