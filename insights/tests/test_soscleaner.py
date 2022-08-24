@@ -17,9 +17,12 @@ from insights.client.data_collector import CleanOptions
 from insights.contrib.soscleaner import SOSCleaner
 
 
-class ReportItem(namedtuple("_ReportItem", ("name", "relative_paths"))):
+class ReportFile:
+    def __init__(self, report_item):
+        self.report_item = report_item
+
     @staticmethod
-    def _result(relative_path):
+    def result(relative_path):
         return {
             "object": {
                 "relative_path": relative_path
@@ -28,30 +31,30 @@ class ReportItem(namedtuple("_ReportItem", ("name", "relative_paths"))):
 
     @property
     def file_name(self):
-        return "%s.json" % self.name
+        return "%s.json" % self.report_item.name
 
     @property
     def contents(self):
         return {
-            "name": self.name,
-            "results": self.results,
+            "name": self.report_item.name,
+            "results": self.report_item.results,
         }
 
+
+class ReportItemSimpleFile(namedtuple("ReportItemSimpleFile", ("name", "relative_path"))):
     @property
     def results(self):
-        raise NotImplementedError()
+        return ReportFile.result(self.relative_path)
+
+    @property
+    def relative_paths(self):
+        return [self.relative_path]
 
 
-class ReportItemSimpleFile(ReportItem):
+class ReportItemGlobFile(namedtuple("ReportItemGlobFile", ("name", "relative_paths"))):
     @property
     def results(self):
-        return self._result(self.relative_paths[0])
-
-
-class ReportItemGlobFile(ReportItem):
-    @property
-    def results(self):
-        return [self._result(relative_path) for relative_path in self.relative_paths]
+        return [ReportFile.result(relative_path) for relative_path in self.relative_paths]
 
 
 def _soscleaner():
@@ -74,9 +77,10 @@ def _mock_report_dir(report_items):
             mkdir(path)
 
         for report_item in report_items:
-            json_path = join(meta_data_path, report_item.file_name)
+            report_file = ReportFile(report_item)
+            json_path = join(meta_data_path, report_file.file_name)
             with open(json_path, "w") as json_file:
-                meta_data_obj = report_item.contents
+                meta_data_obj = report_file.contents
                 dump(meta_data_obj, json_file)
 
         yield tmpdir
@@ -202,16 +206,14 @@ def test_excluded_files_simple_file():
     report_items = [
         ReportItemSimpleFile(
             "insights.specs.Specs.installed_rpms",
-            [
-                "insights_commands/rpm_-qa_--qf_name_NAME_epoch_EPOCH_"
-                "version_VERSION_release_RELEASE_arch_ARCH_"
-                "installtime_INSTALLTIME_date_buildtime_BUILDTIME_"
-                "vendor_VENDOR_buildhost_BUILDHOST_sigpgp_SIGPGP_pgpsig"
-            ]
+            "insights_commands/rpm_-qa_--qf_name_NAME_epoch_EPOCH_"
+            "version_VERSION_release_RELEASE_arch_ARCH_"
+            "installtime_INSTALLTIME_date_buildtime_BUILDTIME_"
+            "vendor_VENDOR_buildhost_BUILDHOST_sigpgp_SIGPGP_pgpsig"
         ),
         ReportItemSimpleFile(
             "insights.specs.Specs.ip_addr",
-            ["insights_commands/ip_addr"]
+            "insights_commands/ip_addr"
         )
     ]
 
@@ -220,10 +222,7 @@ def test_excluded_files_simple_file():
         soscleaner.dir_path = tmpdir
         actual = soscleaner._excluded_files()
 
-    expected = []
-    for report_item in report_items:
-        if report_item.name in soscleaner.excluded_specs:
-            expected.extend(report_item.relative_paths)
+    expected = report_items[0].relative_paths
     assert actual == expected
 
 
@@ -233,9 +232,9 @@ def test_excluded_files_glob_file():
             "insights.specs.Specs.dnf_modules",
             ["etc/dnf/modules.d/ruby.module"]
         ),
-        ReportItemSimpleFile(
-            "insights.specs.Specs.ip_addr",
-            ["insights_commands/ip_addr"]
+        ReportItemGlobFile(
+            "insights.specs.Specs.dnsmasq_config",
+            ["etc/dnsmasq.conf"]
         )
     ]
 
@@ -244,11 +243,7 @@ def test_excluded_files_glob_file():
         soscleaner.dir_path = tmpdir
         actual = soscleaner._excluded_files()
 
-    expected = []
-    for report_item in report_items:
-        if report_item.name in soscleaner.excluded_specs:
-            expected.extend(report_item.relative_paths)
-    assert actual == expected
+    assert actual == report_items[0].relative_paths
 
 
 @patch("insights.contrib.soscleaner.SOSCleaner._clean_file")
