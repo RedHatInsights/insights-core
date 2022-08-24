@@ -40,7 +40,11 @@ class CloudCfg(YAMLParser):
         data(dict): Cloud-init network configuration.
 
     Examples:
+        >>> from insights.core.filters import add_filter
+        >>> from insights.specs import Specs
         >>> add_filter(Specs.cloud_cfg, ['network', 'debug', 'ssh_deletekeys'])
+        >>> 'users' not in cloud_cfg
+        True
         >>> cloud_cfg['network']['version'] == 1
         True
         >>> cloud_cfg['network']['config'] == [{"type": "physical", "name": "eth0", "subnets": [{"type": "dhcp"}, {"type": "dhcp6"}]}]
