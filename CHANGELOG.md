@@ -2,6 +2,14 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.291](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.291) (2022-08-25)
+
+- Feat: New journal_header ([PR 3498](https://github.com/RedHatInsights/insights-core/pull/3498))
+- feat: New spec and parser to get the satellite provision params ([PR 3501](https://github.com/RedHatInsights/insights-core/pull/3501))
+- Feat: New parser for 'ls -lanL /etc/ssh' command ([PR 3499](https://github.com/RedHatInsights/insights-core/pull/3499))
+- feat: New spec and parser for `authselect current` ([PR 3490](https://github.com/RedHatInsights/insights-core/pull/3490))
+- Add release timeline ([PR 3500](https://github.com/RedHatInsights/insights-core/pull/3500))
+
 ## [insights-core-3.0.290](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.290) (2022-08-18)
 
 - New location for temp directory and tests ([PR 3489](https://github.com/RedHatInsights/insights-core/pull/3489))
