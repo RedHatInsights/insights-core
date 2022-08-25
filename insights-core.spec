@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.290
+Version:        3.0.291
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,13 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Aug 25 2022 Sachin Patil <psachin@redhat.com> 3.0.291-1
+- Feat: New journal_header (#3498) (986222045@qq.com)
+- feat: New spec and parser to get the satellite provision params (#3501) (44796653+huali027@users.noreply.github.com)
+- Feat: New parser for 'ls -lanL /etc/ssh' command (#3499) (986222045@qq.com)
+- feat: New spec and parser for `authselect current` (#3490) (xiangceliu@redhat.com)
+- Add release timeline (#3500) (psachin@redhat.com)
+
 * Thu Aug 18 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.290-1
 - New location for temp directory and tests (#3489)
   (93577878+ahitacat@users.noreply.github.com)
