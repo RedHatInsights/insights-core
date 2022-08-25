@@ -58,3 +58,5 @@ class JournalSinceBoot(Syslog):
             "3.1.25"
         )
         super(JournalSinceBoot, self).__init__(context)
+
+    pass
