@@ -16,7 +16,7 @@ JournalSinceBoot - command ``/sos_commands/logs/journalctl_--no-pager_--boot``
 
 from insights.core.plugins import parser
 from insights.specs import Specs
-from .. import Syslog
+from insights.core import Syslog
 
 
 @parser(Specs.journal_all)
