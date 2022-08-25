@@ -5,11 +5,19 @@ JournalSinceBoot file ``/sos_commands/logs/journalctl_--no-pager_--boot``
 
 from .. import Syslog, parser
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.journal_since_boot)
 class JournalSinceBoot(Syslog):
     """
+
+    .. warning::
+
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.journalctl.JournalSinceBoot` instead.
+
+
     Read the ``/sos_commands/logs/journalctl_--no-pager_--boot`` file.  Uses
     the ``Syslog`` class parser functionality - see the base class for more
     details.
@@ -42,4 +50,13 @@ class JournalSinceBoot(Syslog):
         >>> msgs.daemon_start # Token set if matching lines present in logs
         True
     """
+
+    def __init__(self, context):
+        deprecated(
+            JournalSinceBoot,
+            "Please use the :class:`insights.parsers.journalctl.JournalSinceBoot` instead.",
+            "3.1.25"
+        )
+        super(JournalSinceBoot, self).__init__(context)
+
     pass
