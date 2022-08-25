@@ -464,7 +464,7 @@ Functions
     from insights.util import deprecated
 
     def old_feature(arguments):
-        deprecated(old_feature, "Use the new_feature() function instead")
+        deprecated(old_feature, "Use the new_feature() function instead", "3.1.25")
         ...
 
 Class methods
@@ -478,7 +478,7 @@ Class methods
         ...
 
         def old_method(self, *args, **kwargs):
-            deprecated(self.old_method, "Use the new_method() method instead")
+            deprecated(self.old_method, "Use the new_method() method instead", "3.1.25")
             self.new_method(*args, **kwargs)
         ...
 
@@ -491,7 +491,7 @@ Class
 
     class ThingParser(Parser):
         def __init__(self, *args, **kwargs):
-            deprecated(ThingParser, "Use the new_feature() function instead")
+            deprecated(ThingParser, "Use the new_feature() function instead", "3.1.25")
             super(ThingParser, self).__init__(*args, **kwargs)
         ...
 
@@ -508,3 +508,30 @@ The :py:func:`insights.util.deprecated` function takes three arguments:
       ``new_parser`` module."
     - For a specific method being replaced by a general mechanism: "Please
       use the ``search`` method with the arguments ``state="LISTEN"``."
+- The last ``version`` of insights-core that the functions will be available
+  before it is removed. For example:
+
+    - For version 3.1.0 the last revision will be 3.1.25. If the deprecation
+      message indicate that the last version is 3.1.25, the function will be
+      removed in 3.2.0.
+
+
+Insights-core release timeline
+------------------------------
+
+.. table::
+   :widths: auto
+
+   =======  =====================
+   Version  Expected release date
+   =======  =====================
+   3.0.300  December 2022 (Initial release)
+   3.1.0    December 2022
+   3.2.0    June 2023
+   3.3.0    December 2023
+   3.4.0    June 2024
+   =======  =====================
+
+.. note::
+   - We bump the insights-core revision every week. Please refer the `CHANGELOG.md file <https://github.com/RedHatInsights/insights-core/blob/3.0/CHANGELOG.md>`_ for more info.
+   - The minor version will be bumped after every 25 revisions. For example, after 3.1.25, we would move to 3.2.0 except for 3.0.300 which marks the first planned release. After 3.0.300, we bump the minor version to 3.1.0.
