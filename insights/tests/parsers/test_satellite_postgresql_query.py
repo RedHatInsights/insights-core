@@ -177,6 +177,17 @@ repository_href,count
 /pulp/api/v3/repositories/rpm/rpm/sfwrsrw45sfse-45f2-b2f0-04b874675688/,2
 """.strip()
 
+SATELLITE_PROVISION_PARAMETERS_HIT_1 = """
+name,value
+package_upgrade,"--- false
+...
+"
+"""
+
+SATELLITE_PROVISION_PARAMETERS_HIT_2 = """
+name,value
+"""
+
 
 def test_HTL_doc_examples():
     settings = satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_SETTINGS_1))
@@ -187,6 +198,7 @@ def test_HTL_doc_examples():
     capsules = satellite_postgresql_query.SatelliteQualifiedCapsules(context_wrap(SATELLITE_CAPSULES_WITH_BACKGROUND_DOWNLOADPOLICY))
     repos = satellite_postgresql_query.SatelliteQualifiedKatelloRepos(context_wrap(SATELLITE_REPOS_INFO))
     multi_ref_katello_repos = satellite_postgresql_query.SatelliteKatellloReposWithMultipleRef(context_wrap(SATELLITE_KATELLO_REPOS_WITH_MULTI_REF))
+    param_settings = satellite_postgresql_query.SatelliteProvisionParamSettings(context_wrap(SATELLITE_PROVISION_PARAMETERS_HIT_1))
     globs = {
         'table': settings,
         'resources_table': resources_table,
@@ -195,7 +207,8 @@ def test_HTL_doc_examples():
         'tasks': tasks,
         'capsules': capsules,
         'repos': repos,
-        'multi_ref_katello_repos': multi_ref_katello_repos
+        'multi_ref_katello_repos': multi_ref_katello_repos,
+        'param_settings': param_settings
     }
     failed, _ = doctest.testmod(satellite_postgresql_query, globs=globs)
     assert failed == 0
@@ -309,3 +322,14 @@ def test_satellite_repos_with_multiptle_ref():
     repos = satellite_postgresql_query.SatelliteKatellloReposWithMultipleRef(context_wrap(SATELLITE_KATELLO_REPOS_WITH_MULTI_REF))
     assert len(repos) == 2
     assert repos[0]['repository_href'] == '/pulp/api/v3/repositories/rpm/rpm/64e1ddf8-025e-45f2-b2f0-04b874674671/'
+
+
+def test_satellite_provision_params():
+    param_settings = satellite_postgresql_query.SatelliteProvisionParamSettings(context_wrap(SATELLITE_PROVISION_PARAMETERS_HIT_1))
+    assert len(param_settings) == 1
+    assert not param_settings[0]['value']
+
+
+def test_satellite_provision_params_excep():
+    with pytest.raises(SkipException):
+        satellite_postgresql_query.SatelliteProvisionParamSettings(context_wrap(SATELLITE_PROVISION_PARAMETERS_HIT_2))

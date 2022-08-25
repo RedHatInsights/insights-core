@@ -6,7 +6,7 @@ from insights.core.dr import SkipComponent
 from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider, simple_file
 from insights.specs import Specs
-from insights.specs.default import SatelliteVersion
+from insights.components.satellite import IsSatellite
 from insights.core import ET
 
 
@@ -17,7 +17,7 @@ class LocalSpecs(Specs):
     """ Returns the contents of the file ``/etc/candlepin/broker.xml`` """
 
 
-@datasource(LocalSpecs.candlepin_broker_input, HostContext, SatelliteVersion)
+@datasource(LocalSpecs.candlepin_broker_input, HostContext, IsSatellite)
 def candlepin_broker(broker):
     """
     This datasource provides the candlepn broker configuration information

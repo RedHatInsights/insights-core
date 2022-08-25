@@ -20,7 +20,7 @@ from insights.core.spec_factory import first_file, listdir
 from insights.components.cloud_provider import IsAzure, IsGCP
 from insights.components.ceph import IsCephMonitor
 from insights.components.virtualization import IsBareMetal
-from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersion
+from insights.components.satellite import IsCapsule, IsSatellite611, IsSatellite
 from insights.specs import Specs
 from insights.specs.datasources import (
     aws, awx_manage, cloud_init, candlepin_broker, corosync as corosync_ds,
@@ -548,15 +548,15 @@ class DefaultSpecs(Specs):
     sat5_insights_properties = simple_file("/etc/redhat-access/redhat-access-insights.properties")
     satellite_compute_resources = simple_command(
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c 'select name, type from compute_resources' --csv",
-        deps=[SatelliteVersion]
+        deps=[IsSatellite]
     )
     satellite_content_hosts_count = simple_command(
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c 'select count(*) from hosts'",
-        deps=[SatelliteVersion]
+        deps=[IsSatellite]
     )
     satellite_core_taskreservedresource_count = simple_command(
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d pulpcore -c 'select count(*) from core_taskreservedresource' --csv",
-        deps=[SatelliteVersion]
+        deps=[IsSatellite]
     )
     satellite_custom_ca_chain = simple_command(
         '/usr/bin/awk \'BEGIN { pipe="openssl x509 -noout -subject -enddate"} /^-+BEGIN CERT/,/^-+END CERT/ { print | pipe } /^-+END CERT/ { close(pipe); printf("\\n")}\' /etc/pki/katello/certs/katello-server-ca.crt',
@@ -564,29 +564,33 @@ class DefaultSpecs(Specs):
     satellite_custom_hiera = simple_file("/etc/foreman-installer/custom-hiera.yaml")
     satellite_katello_repos_with_muliple_ref = simple_command(
         '/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c "select repository_href, count(*) from katello_repository_references group by repository_href having count(*) > 1;" --csv',
-        deps=[SatelliteVersion]
+        deps=[IsSatellite]
     )
     satellite_missed_pulp_agent_queues = satellite_missed_queues.satellite_missed_pulp_agent_queues
     satellite_mongodb_storage_engine = simple_command("/usr/bin/mongo pulp_database --eval 'db.serverStatus().storageEngine'")
     satellite_non_yum_type_repos = simple_command(
         "/usr/bin/mongo pulp_database --eval 'db.repo_importers.find({\"importer_type_id\": { $ne: \"yum_importer\"}}).count()'",
-        deps=[[SatelliteVersion, CapsuleVersion]]
+        deps=[[IsSatellite, IsCapsule]]
+    )
+    satellite_provision_param_settings = simple_command(
+        "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c \"select name, value from parameters where name='package_upgrade' and reference_id in (select id from operatingsystems where name='RedHat' and major='9')\" --csv",
+        deps=[IsSatellite611]
     )
     satellite_qualified_capsules = simple_command(
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c \"select name from smart_proxies where download_policy = 'background'\" --csv",
-        deps=[SatelliteVersion]
+        deps=[IsSatellite]
     )
     satellite_qualified_katello_repos = simple_command(
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c \"select id, name, url, download_policy from katello_root_repositories where download_policy = 'background' or url is NULL\" --csv",
-        deps=[SatelliteVersion]
+        deps=[IsSatellite]
     )
     satellite_sca_status = simple_command(
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d candlepin -c \"select displayname,content_access_mode from cp_owner\" --csv",
-        deps=[SatelliteVersion]
+        deps=[IsSatellite]
     )
     satellite_settings = simple_command(
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c \"select name, value, \\\"default\\\" from settings where name in ('destroy_vm_on_host_delete', 'unregister_delete_host')\" --csv",
-        deps=[SatelliteVersion]
+        deps=[IsSatellite]
     )
     satellite_version_rb = simple_file("/usr/share/foreman/lib/satellite/version.rb")
     satellite_yaml = simple_file("/etc/foreman-installer/scenarios.d/satellite.yaml")
