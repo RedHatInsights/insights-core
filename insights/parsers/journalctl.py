@@ -47,8 +47,8 @@ class JournalAll(Syslog):
         >>> len(JournalAll.lines)
         10
         >>> bona_list = JournalAll.get('(root) LIST (root)')
-        >>> bona_list[0]
-        {'raw_message': 'Apr 22 10:37:32 boy-bona crontab[28951]: (root) LIST (root)', 'message': '(root) LIST (root)', 'timestamp': 'Apr 22 10:37:32', 'hostname': 'boy-bona', 'procname': 'crontab[28951]'}
+        >>> bona_list[0].get('message')
+        '(root) LIST (root)'
     """
     pass
 
@@ -148,7 +148,7 @@ class JournalSinceBoot(Syslog):
         >>> len(JournalSinceBoot.lines)
         10
         >>> bona_list = JournalSinceBoot.get('(root) LIST (root)')
-        >>> bona_list[0]
-        {'raw_message': 'Apr 22 10:37:32 boy-bona crontab[28951]: (root) LIST (root)', 'message': '(root) LIST (root)', 'timestamp': 'Apr 22 10:37:32', 'hostname': 'boy-bona', 'procname': 'crontab[28951]'}
+        >>> bona_list[0].get('message')
+        '(root) LIST (root)'
     """
     pass
