@@ -1,9 +1,34 @@
+from insights.parsers.journalctl import JournalAll, JournalSinceBoot, JournalctlHeader
+from insights.tests import context_wrap
+from insights.parsers import SkipException, journalctl
 import pytest
-from mock.mock import Mock
-from insights.specs.datasources.journalctl_header import journalctl_header_number, LocalSpecs
-from insights.core.dr import SkipComponent
-from insights.core.spec_factory import DatasourceProvider
+import doctest
 
+JOURNAL_ALL_MSGINFO = """
+-- Logs begin at Wed 2017-02-08 15:18:00 CET, end at Tue 2017-09-19 09:12:59 CEST. --
+May 18 15:13:34 lxc-rhel68-sat56 jabberd/sm[11057]: session started: jid=rhn-dispatcher-sat@lxc-rhel6-sat56.redhat.com/superclient
+May 18 15:13:36 lxc-rhel68-sat56 wrapper[11375]: --> Wrapper Started as Daemon
+May 18 15:13:36 lxc-rhel68-sat56 wrapper[11375]: Launching a JVM...
+May 18 15:24:28 lxc-rhel68-sat56 yum[11597]: Installed: lynx-2.8.6-27.el6.x86_64
+May 18 15:36:19 lxc-rhel68-sat56 yum[11954]: Updated: sos-3.2-40.el6.noarch
+Apr 22 10:35:01 boy-bona CROND[27921]: (root) CMD (/usr/lib64/sa/sa1 -S DISK 1 1)
+Apr 22 10:37:32 boy-bona crontab[28951]: (root) LIST (root)
+Apr 22 10:40:01 boy-bona CROND[30677]: (root) CMD (/usr/lib64/sa/sa1 -S DISK 1 1)
+Apr 22 10:41:13 boy-bona crontab[32515]: (root) LIST (root)
+""".strip()
+
+JOURNAL_SINCE_BOOT_MSGINFO = """
+-- Logs begin at Wed 2017-02-08 15:18:00 CET, end at Tue 2017-09-19 09:12:59 CEST. --
+May 18 15:13:34 lxc-rhel68-sat56 jabberd/sm[11057]: session started: jid=rhn-dispatcher-sat@lxc-rhel6-sat56.redhat.com/superclient
+May 18 15:13:36 lxc-rhel68-sat56 wrapper[11375]: --> Wrapper Started as Daemon
+May 18 15:13:36 lxc-rhel68-sat56 wrapper[11375]: Launching a JVM...
+May 18 15:24:28 lxc-rhel68-sat56 yum[11597]: Installed: lynx-2.8.6-27.el6.x86_64
+May 18 15:36:19 lxc-rhel68-sat56 yum[11954]: Updated: sos-3.2-40.el6.noarch
+Apr 22 10:35:01 boy-bona CROND[27921]: (root) CMD (/usr/lib64/sa/sa1 -S DISK 1 1)
+Apr 22 10:37:32 boy-bona crontab[28951]: (root) LIST (root)
+Apr 22 10:40:01 boy-bona CROND[30677]: (root) CMD (/usr/lib64/sa/sa1 -S DISK 1 1)
+Apr 22 10:41:13 boy-bona crontab[32515]: (root) LIST (root)
+""".strip()
 
 JOURNALCTL_HEADER_VALID = """
 File Path: /run/log/journal/6bdaf92aa0754b53acbb1dbff7127e2b/system.journal
@@ -33,7 +58,6 @@ Field Hash Table Fill: 15.6%
 Tag Objects: 0
 Entry Array Objects: 2462
 Disk usage: 8.0M
-
 File Path: /run/log/journal/6bdaf92aa0754b53acbb1dbff7127e2b/system@435b0e30f47a46d8a2a2f9a42eae0aaf-000000000000f7d9-0005e5c6d743ca16.journal
 File ID: 3aa38e09ef8540fdb55715e1739d44ef
 Machine ID: 6bdaf92aa0754b53acbb1dbff7127e2b
@@ -61,7 +85,6 @@ Field Hash Table Fill: 22.8%
 Tag Objects: 0
 Entry Array Objects: 3188
 Disk usage: 10.9M
-
 File Path: /run/log/journal/6bdaf92aa0754b53acbb1dbff7127e2b/system@435b0e30f47a46d8a2a2f9a42eae0aaf-000000000000cd85-0005e53f0e6e2342.journal
 File ID: ab8fc76ad15b4c61bdc172533fe2e623
 Machine ID: 6bdaf92aa0754b53acbb1dbff7127e2b
@@ -89,7 +112,6 @@ Field Hash Table Fill: 15.0%
 Tag Objects: 0
 Entry Array Objects: 3235
 Disk usage: 10.9M
-
 File Path: /run/log/journal/6bdaf92aa0754b53acbb1dbff7127e2b/system@435b0e30f47a46d8a2a2f9a42eae0aaf-000000000000a315-0005e4ba61aa5231.journal
 File ID: 428429bbac0c4051b0ece56a05ad2444
 Machine ID: 6bdaf92aa0754b53acbb1dbff7127e2b
@@ -117,7 +139,6 @@ Field Hash Table Fill: 14.7%
 Tag Objects: 0
 Entry Array Objects: 3174
 Disk usage: 10.9M
-
 File Path: /run/log/journal/6bdaf92aa0754b53acbb1dbff7127e2b/system@435b0e30f47a46d8a2a2f9a42eae0aaf-000000000000785e-0005e437ff062b37.journal
 File ID: d003176b94844c9bbada85c404d79c32
 Machine ID: 6bdaf92aa0754b53acbb1dbff7127e2b
@@ -145,7 +166,6 @@ Field Hash Table Fill: 14.7%
 Tag Objects: 0
 Entry Array Objects: 3178
 Disk usage: 10.9M
-
 File Path: /run/log/journal/6bdaf92aa0754b53acbb1dbff7127e2b/system@435b0e30f47a46d8a2a2f9a42eae0aaf-0000000000004ebd-0005e3aaad8b8fe3.journal
 File ID: 9f5a3dbdf74343d88f78e4eb90864c01
 Machine ID: 6bdaf92aa0754b53acbb1dbff7127e2b
@@ -173,7 +193,6 @@ Field Hash Table Fill: 15.3%
 Tag Objects: 0
 Entry Array Objects: 3143
 Disk usage: 10.9M
-
 File Path: /run/log/journal/6bdaf92aa0754b53acbb1dbff7127e2b/system@435b0e30f47a46d8a2a2f9a42eae0aaf-0000000000002512-0005e333648ba707.journal
 File ID: 9e1a381cedfa4a12a980872d6db84533
 Machine ID: 6bdaf92aa0754b53acbb1dbff7127e2b
@@ -201,7 +220,6 @@ Field Hash Table Fill: 15.6%
 Tag Objects: 0
 Entry Array Objects: 3427
 Disk usage: 10.9M
-
 File Path: /run/log/journal/6bdaf92aa0754b53acbb1dbff7127e2b/system@435b0e30f47a46d8a2a2f9a42eae0aaf-0000000000000001-0005e2a7308e8200.journal
 File ID: 435b0e30f47a46d8a2a2f9a42eae0aaf
 Machine ID: 6bdaf92aa0754b53acbb1dbff7127e2b
@@ -231,43 +249,96 @@ Entry Array Objects: 3518
 Disk usage: 10.9M
 """.strip()
 
-OUTPUT_INVALID = """
-Failed to write header:
+JOURNALCTL_HEADER_EMPTY = " "
+
+JOURNALCTL_HEADER_VALID_EXAMPLE = """
+File Path: /run/log/journal/6bdaf92aa0754b53acbb1dbff7127e2b/system.journal
+File ID: b1390ea69aa747e9ac5c597835c3c562
+Machine ID: 6bdaf92aa0754b53acbb1dbff7127e2b
+Boot ID: 082ada53f8184c4896c73101ad793eb5
+Sequential Number ID: 435b0e30f47a46d8a2a2f9a42eae0aaf
+State: ONLINE
+Compatible Flags:
+Incompatible Flags: COMPRESSED-LZ4
+Header size: 240
+Arena size: 8388368
+Data Hash Table Size: 19904
+Field Hash Table Size: 333
+Rotate Suggested: no
+Head Sequential Number: 74388 (12294)
+Tail Sequential Number: 81647 (13eef)
+Head Realtime Timestamp: Mon 2022-08-15 12:01:10 CST (5e63fae9e6e58)
+Tail Realtime Timestamp: Wed 2022-08-17 18:38:48 CST (5e66d7852bb3e)
+Tail Monotonic Timestamp: 1month 2w 3d 14h 19min 3.733s (3c647d7ce0f)
+Objects: 19073
+Entry Objects: 7260
+Data Objects: 9297
+Data Hash Table Fill: 46.7%
+Field Objects: 52
+Field Hash Table Fill: 15.6%
+Tag Objects: 0
+Entry Array Objects: 2462
+Disk usage: 8.0M
 """.strip()
 
-OUTPUT_EMPTY = " "
 
-JOURNALCTL_HEADER_RESULT = """
-8
-""".strip()
+def test_journal_all_messages():
+    msg_info = JournalAll(context_wrap(JOURNAL_ALL_MSGINFO))
+    bona_list = msg_info.get('(root) LIST (root)')
+    assert 2 == len(bona_list)
+    assert bona_list[0].get('timestamp') == "Apr 22 10:37:32"
+    assert bona_list[1].get('timestamp') == "Apr 22 10:41:13"
+    crond = msg_info.get('CROND')
+    assert 2 == len(crond)
+    assert crond[0].get('procname') == "CROND[27921]"
+    assert msg_info.get('jabberd/sm[11057]')[0].get('hostname') == "lxc-rhel68-sat56"
+    assert msg_info.get('Wrapper')[0].get('message') == "--> Wrapper Started as Daemon"
+    assert msg_info.get('Launching')[0].get('raw_message') == "May 18 15:13:36 lxc-rhel68-sat56 wrapper[11375]: Launching a JVM..."
+    assert 2 == len(msg_info.get('yum'))
 
-RELATIVE_PATH = "insights_commands/journalctl_--header"
+
+def test_journal_since_boot_messages():
+    msg_info = JournalSinceBoot(context_wrap(JOURNAL_SINCE_BOOT_MSGINFO))
+    bona_list = msg_info.get('(root) LIST (root)')
+    assert 2 == len(bona_list)
+    assert bona_list[0].get('timestamp') == "Apr 22 10:37:32"
+    assert bona_list[1].get('timestamp') == "Apr 22 10:41:13"
+    crond = msg_info.get('CROND')
+    assert 2 == len(crond)
+    assert crond[0].get('procname') == "CROND[27921]"
+    assert msg_info.get('jabberd/sm[11057]')[0].get('hostname') == "lxc-rhel68-sat56"
+    assert msg_info.get('Wrapper')[0].get('message') == "--> Wrapper Started as Daemon"
+    assert msg_info.get('Launching')[0].get('raw_message') == "May 18 15:13:36 lxc-rhel68-sat56 wrapper[11375]: Launching a JVM..."
+    assert 2 == len(msg_info.get('yum'))
 
 
 def test_journalctl_header_valid():
-    journalctl_header_data = Mock()
-    journalctl_header_data.content = JOURNALCTL_HEADER_VALID.splitlines()
-    broker = {LocalSpecs.journalctl_header: journalctl_header_data}
-    result = journalctl_header_number(broker)
-    assert isinstance(result, DatasourceProvider)
-    expected = DatasourceProvider(content=JOURNALCTL_HEADER_RESULT, relative_path=RELATIVE_PATH)
-    assert result.content == expected.content
-    assert result.relative_path == expected.relative_path
+    parser_result = JournalctlHeader(context_wrap(JOURNALCTL_HEADER_VALID))
+    assert parser_result is not None
+    assert len(parser_result.data) == 8
+    assert parser_result.data[0]['File Path'] == '/run/log/journal/6bdaf92aa0754b53acbb1dbff7127e2b/system.journal'
+    assert parser_result.data[0]['File ID'] == 'b1390ea69aa747e9ac5c597835c3c562'
+    assert parser_result.data[0]['Machine ID'] == '6bdaf92aa0754b53acbb1dbff7127e2b'
+    assert parser_result.data[0]['Boot ID'] == '082ada53f8184c4896c73101ad793eb5'
+    assert parser_result.data[0]['Header size'] == '240'
+    assert parser_result.data[0]['Disk usage'] == '8.0M'
 
-
-def test_journalctl_header_invalid():
-    journalctl_header_data = Mock()
-    journalctl_header_data.content = OUTPUT_INVALID.splitlines()
-    broker = {LocalSpecs.journalctl_header: journalctl_header_data}
-    with pytest.raises(SkipComponent) as e:
-        journalctl_header_number(broker)
-    assert 'SkipComponent' in str(e)
+    assert parser_result.data[1]['File Path'] == '/run/log/journal/6bdaf92aa0754b53acbb1dbff7127e2b/system@435b0e30f47a46d8a2a2f9a42eae0aaf-000000000000f7d9-0005e5c6d743ca16.journal'
+    assert parser_result.data[1]['File ID'] == '3aa38e09ef8540fdb55715e1739d44ef'
+    assert parser_result.data[1]['Disk usage'] == '10.9M'
+    assert parser_result.data[7]['File Path'] == '/run/log/journal/6bdaf92aa0754b53acbb1dbff7127e2b/system@435b0e30f47a46d8a2a2f9a42eae0aaf-0000000000000001-0005e2a7308e8200.journal'
+    assert parser_result.data[7]['File ID'] == '435b0e30f47a46d8a2a2f9a42eae0aaf'
+    assert parser_result.data[7]['Disk usage'] == '10.9M'
 
 
 def test_content_empty():
-    journalctl_header_data = Mock()
-    journalctl_header_data.content = OUTPUT_EMPTY.splitlines()
-    broker = {LocalSpecs.journalctl_header: journalctl_header_data}
-    with pytest.raises(SkipComponent) as e:
-        journalctl_header_number(broker)
-    assert 'SkipComponent' in str(e)
+    with pytest.raises(SkipException):
+        JournalctlHeader(context_wrap(JOURNALCTL_HEADER_EMPTY))
+
+
+def test_losetup_doc_examples():
+    env = {'journalctl_header': JournalctlHeader(context_wrap(JOURNALCTL_HEADER_VALID_EXAMPLE)),
+           'JournalAll': JournalAll(context_wrap(JOURNAL_ALL_MSGINFO)),
+           'JournalSinceBoot': JournalSinceBoot(context_wrap(JOURNAL_SINCE_BOOT_MSGINFO))}
+    failed, total = doctest.testmod(journalctl, globs=env)
+    assert failed == 0
