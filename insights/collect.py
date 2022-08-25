@@ -205,9 +205,17 @@ plugins:
     # needed for the 'pre-check' of the 'is_satellite_server' spec
         - name: insights.combiners.satellite_version.SatelliteVersion
           enabled: true
+        - name: insights.components.satellite.IsSatellite
+          enabled: true
 
     # needed for the 'pre-check' of the 'is_satellite_capsule' spec
         - name: insights.combiners.satellite_version.CapsuleVersion
+          enabled: true
+        - name: insights.components.satellite.IsCapsule
+          enabled: true
+
+    # needed for the 'pre-check' of the 'satellite_provision_param_settings' spec
+        - name: insights.components.satellite.IsSatellite611
           enabled: true
 
     # needed for the 'pre-check' of the 'corosync_cmapctl_cmd_list' spec

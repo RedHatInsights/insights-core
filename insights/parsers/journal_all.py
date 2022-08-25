@@ -5,11 +5,19 @@ JournalAll file ``/sos_commands/logs/journalctl_--no-pager``
 
 from .. import Syslog, parser
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.journal_all)
 class JournalAll(Syslog):
     """
+
+    .. warning::
+
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.journalctl.JournalAll` instead.
+
+
     Read the ``/sos_commands/logs/journalctl_--no-pager`` file.  Uses the
     ``Syslog`` class parser functionality - see the base class for more details.
 
@@ -41,4 +49,13 @@ class JournalAll(Syslog):
         >>> msgs.daemon_start # Token set if matching lines present in logs
         True
     """
+
+    def __init__(self, context):
+        deprecated(
+            JournalAll,
+            "Please use the :class:`insights.parsers.journalctl.JournalAll` instead.",
+            "3.1.25"
+        )
+        super(JournalAll, self).__init__(context)
+
     pass
