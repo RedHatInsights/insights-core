@@ -12,6 +12,8 @@ SatelliteCoreTaskReservedResourceCount - command ``psql -d pulpcore -c 'select c
 -------------------------------------------------------------------------------------------------------------------------------
 SatelliteKatellloReposWithMultipleRef - command ``psql -d foreman -c "select repository_href, count(*) from katello_repository_references group by repository_href having count(*) > 1;" --csv``
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SatelliteProvisionParamSettings - command ``psql -d foreman -c "select name, value from parameters where name='package_upgrade' and reference_id in (select id from operatingsystems where name='RedHat' and major='9')" --csv``
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 SatelliteQualifiedCapsules - command ``psql -d foreman -c "select name from smart_proxies where download_policy = 'background'" --csv``
 ---------------------------------------------------------------------------------------------------------------------------------------
 SatelliteQualifiedKatelloRepos - command ``psql -d foreman -c "select id, name, url, download_policy from katello_root_repositories where download_policy = 'background' or url is NULL" --csv``
@@ -61,12 +63,23 @@ class SatellitePostgreSQLQuery(CommandParser, list):
 
     Raises:
         SkipException: when there isn't data in the table
-        ParseException: when the output isn't in good csv format.
+        ParseException: when the output isn't in good csv format or the yaml values aren't in good yaml format
         NotImplementedError: when the subclass doesn't override the columns attribute.
     """
 
     # child class should override the columns attribute with its own column names
     columns = []
+    # child class should define the columns_in_yaml when some columns value are in yaml format,
+    # which should be transfered to python object
+    columns_in_yaml = []
+
+    def _parse_yaml(self, value):
+        if value:
+            try:
+                return yaml.safe_load(value)
+            except Exception:
+                raise ParseException("Bad format value: %s" % value)
+        return value
 
     def parse_content(self, content):
         if not self.columns:
@@ -78,6 +91,8 @@ class SatellitePostgreSQLQuery(CommandParser, list):
             valid_lines = content[start_index:]
         reader = DictReader(os.linesep.join(valid_lines).splitlines(True))
         for row in reader:
+            for name in self.columns_in_yaml:
+                row[name] = self._parse_yaml(row[name])
             self.append(row)
         if not self:
             raise SkipException("There is no data in the table.")
@@ -122,31 +137,7 @@ class SatelliteAdminSettings(SatellitePostgreSQLQuery):
         True
     """
     columns = ['name', 'value', 'default']
-
-    def _parse_yaml(self, value):
-        if value:
-            try:
-                return yaml.safe_load(value)
-            except Exception:
-                raise ParseException("Bad format value: %s" % value)
-        return value
-
-    def parse_content(self, content):
-        """
-        The "default" and "value" columns must be selected, or else the
-        settings value can't be determined.
-        The "default" and "value" column are in yaml format, it is transfer to
-        python object.
-
-        Raises:
-            SkipException: when value or default column isn't found in the
-                            table.
-            ParseException: when the value or default in bad yaml format.
-        """
-        super(SatelliteAdminSettings, self).parse_content(content)
-        for row in self:
-            row['default'] = self._parse_yaml(row['default'])
-            row['value'] = self._parse_yaml(row['value'])
+    columns_in_yaml = ['value', 'default']
 
     def get_setting(self, setting_name):
         """
@@ -241,6 +232,30 @@ class SatelliteKatelloEmptyURLRepositories(SatellitePostgreSQLQuery):
             "3.1.25"
         )
         super(SatelliteKatelloEmptyURLRepositories, self).__init__(*args, **kwargs)
+
+
+@parser(Specs.satellite_provision_param_settings)
+class SatelliteProvisionParamSettings(SatellitePostgreSQLQuery):
+    """
+    Parse the output of the command ``psql -d foreman -c "select name, value from parameters where name='package_upgrade' and reference_id in (select id from operatingsystems where name='RedHat' and major='9')" --csv``.
+
+    Sample output::
+
+        name,value
+        package_upgrade,"--- false
+        ...
+        "
+
+    Examples:
+        >>> type(param_settings)
+        <class 'insights.parsers.satellite_postgresql_query.SatelliteProvisionParamSettings'>
+        >>> len(param_settings)
+        1
+        >>> param_settings[0]['value']
+        False
+    """
+    columns = ['name', 'value']
+    columns_in_yaml = ['value']
 
 
 @parser(Specs.satellite_katello_repos_with_muliple_ref)
