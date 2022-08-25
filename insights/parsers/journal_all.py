@@ -57,3 +57,5 @@ class JournalAll(Syslog):
             "3.1.25"
         )
         super(JournalAll, self).__init__(context)
+
+    pass
