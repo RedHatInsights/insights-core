@@ -54,7 +54,7 @@ class JournalSinceBoot(Syslog):
     def __init__(self, context):
         deprecated(
             JournalSinceBoot,
-            "Please use the :class:`insights.parsers.auditctl.AuditdStatus` instead.",
+            "Please use the :class:`insights.parsers.journalctl.JournalSinceBoot` instead.",
             "3.1.25"
         )
         super(JournalSinceBoot, self).__init__(context)

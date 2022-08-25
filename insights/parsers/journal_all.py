@@ -15,7 +15,7 @@ class JournalAll(Syslog):
     .. warning::
 
         This parser is deprecated, please use
-        :py:class:`insights.parsers.journalctl.JournalSinceBoot` instead.
+        :py:class:`insights.parsers.journalctl.JournalAll` instead.
 
 
     Read the ``/sos_commands/logs/journalctl_--no-pager`` file.  Uses the
@@ -53,7 +53,7 @@ class JournalAll(Syslog):
     def __init__(self, context):
         deprecated(
             JournalAll,
-            "Please use the :class:`insights.parsers.auditctl.AuditdStatus` instead.",
+            "Please use the :class:`insights.parsers.journalctl.JournalAll` instead.",
             "3.1.25"
         )
         super(JournalAll, self).__init__(context)
