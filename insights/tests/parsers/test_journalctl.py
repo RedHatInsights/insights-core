@@ -1,7 +1,6 @@
-from insights.parsers.journalctl import JournalAll, JournalSinceBoot, JournalctlHeader
+from insights.parsers.journalctl import JournalAll, JournalSinceBoot, JournalHeader
 from insights.tests import context_wrap
-from insights.parsers import SkipException, journalctl
-import pytest
+from insights.parsers import journalctl
 import doctest
 
 JOURNAL_ALL_MSGINFO = """
@@ -249,8 +248,6 @@ Entry Array Objects: 3518
 Disk usage: 10.9M
 """.strip()
 
-JOURNALCTL_HEADER_EMPTY = " "
-
 JOURNALCTL_HEADER_VALID_EXAMPLE = """
 File Path: /run/log/journal/6bdaf92aa0754b53acbb1dbff7127e2b/system.journal
 File ID: b1390ea69aa747e9ac5c597835c3c562
@@ -313,31 +310,15 @@ def test_journal_since_boot_messages():
 
 
 def test_journalctl_header_valid():
-    parser_result = JournalctlHeader(context_wrap(JOURNALCTL_HEADER_VALID))
+    parser_result = JournalHeader(context_wrap(JOURNALCTL_HEADER_VALID))
     assert parser_result is not None
-    assert len(parser_result.data) == 8
-    assert parser_result.data[0]['File Path'] == '/run/log/journal/6bdaf92aa0754b53acbb1dbff7127e2b/system.journal'
-    assert parser_result.data[0]['File ID'] == 'b1390ea69aa747e9ac5c597835c3c562'
-    assert parser_result.data[0]['Machine ID'] == '6bdaf92aa0754b53acbb1dbff7127e2b'
-    assert parser_result.data[0]['Boot ID'] == '082ada53f8184c4896c73101ad793eb5'
-    assert parser_result.data[0]['Header size'] == '240'
-    assert parser_result.data[0]['Disk usage'] == '8.0M'
-
-    assert parser_result.data[1]['File Path'] == '/run/log/journal/6bdaf92aa0754b53acbb1dbff7127e2b/system@435b0e30f47a46d8a2a2f9a42eae0aaf-000000000000f7d9-0005e5c6d743ca16.journal'
-    assert parser_result.data[1]['File ID'] == '3aa38e09ef8540fdb55715e1739d44ef'
-    assert parser_result.data[1]['Disk usage'] == '10.9M'
-    assert parser_result.data[7]['File Path'] == '/run/log/journal/6bdaf92aa0754b53acbb1dbff7127e2b/system@435b0e30f47a46d8a2a2f9a42eae0aaf-0000000000000001-0005e2a7308e8200.journal'
-    assert parser_result.data[7]['File ID'] == '435b0e30f47a46d8a2a2f9a42eae0aaf'
-    assert parser_result.data[7]['Disk usage'] == '10.9M'
-
-
-def test_content_empty():
-    with pytest.raises(SkipException):
-        JournalctlHeader(context_wrap(JOURNALCTL_HEADER_EMPTY))
+    result_list = parser_result.get('File Path')
+    assert len(result_list) == 8
+    assert result_list[0].get('raw_message') == 'File Path: /run/log/journal/6bdaf92aa0754b53acbb1dbff7127e2b/system.journal'
 
 
 def test_losetup_doc_examples():
-    env = {'journalctl_header': JournalctlHeader(context_wrap(JOURNALCTL_HEADER_VALID_EXAMPLE)),
+    env = {'journal_header': JournalHeader(context_wrap(JOURNALCTL_HEADER_VALID_EXAMPLE)),
            'JournalAll': JournalAll(context_wrap(JOURNAL_ALL_MSGINFO)),
            'JournalSinceBoot': JournalSinceBoot(context_wrap(JOURNAL_SINCE_BOOT_MSGINFO))}
     failed, total = doctest.testmod(journalctl, globs=env)

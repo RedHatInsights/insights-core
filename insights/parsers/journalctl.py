@@ -4,19 +4,17 @@ JournalCtl - command ``journalctl xxx``
 
 This module contains the following parsers:
 
-JournalAll - file ``/sos_commands/logs/journalctl_--no-pager``
---------------------------------------------------------------
-JournalctlHeader - command ``/usr/bin/journalctl --header``
------------------------------------------------------------
-JournalSinceBoot - file ``/sos_commands/logs/journalctl_--no-pager_--boot``
----------------------------------------------------------------------------
+JournalAll - command ``/sos_commands/logs/journalctl_--no-pager``
+-----------------------------------------------------------------
+JournalHeader - command ``/usr/bin/journalctl --header``
+--------------------------------------------------------
+JournalSinceBoot - command ``/sos_commands/logs/journalctl_--no-pager_--boot``
+------------------------------------------------------------------------------
 
 """
 
 
 from insights.core.plugins import parser
-from insights.core import CommandParser, LegacyItemAccess
-from insights.parsers import SkipException, get_active_lines
 from insights.specs import Specs
 from .. import Syslog
 
@@ -53,8 +51,8 @@ class JournalAll(Syslog):
     pass
 
 
-@parser(Specs.journalctl_header)
-class JournalctlHeader(LegacyItemAccess, CommandParser):
+@parser(Specs.journal_header)
+class JournalHeader(Syslog):
     """
     This command shows internal header information of the journal fields accessed.
 
@@ -89,12 +87,13 @@ class JournalctlHeader(LegacyItemAccess, CommandParser):
         Disk usage: 8.0M
 
     Examples:
-        >>> type(journalctl_header)
-        <class 'insights.parsers.journalctl.JournalctlHeader'>
-        >>> journalctl_header.data[0]['File Path']
-        '/run/log/journal/6bdaf92aa0754b53acbb1dbff7127e2b/system.journal'
-        >>> journalctl_header.data[0]['File ID']
-        'b1390ea69aa747e9ac5c597835c3c562'
+        >>> type(journal_header)
+        <class 'insights.parsers.journalctl.JournalHeader'>
+        >>> result_list = journal_header.get('File Path')
+        >>> len(result_list)
+        1
+        >>> result_list[0].get('raw_message')
+        'File Path: /run/log/journal/6bdaf92aa0754b53acbb1dbff7127e2b/system.journal'
 
     Attributes:
         data (list): List of Dictionary, which containing each of the key:value pairs from the command output.
@@ -103,22 +102,7 @@ class JournalctlHeader(LegacyItemAccess, CommandParser):
         SkipException: raised if data is invalid.
     """
 
-    def parse_content(self, content):
-        body = {}
-        self.data = []
-
-        for line in get_active_lines(content):
-            if ':' in line:
-                key, value = [item.strip() for item in line.split(":", 1)]
-                if key in body:
-                    self.data.append(body)
-                    body = {}
-                body[key] = value
-
-        if body:
-            self.data.append(body)
-        else:
-            raise SkipException("Unrecognised Output")
+    pass
 
 
 @parser(Specs.journal_since_boot)
