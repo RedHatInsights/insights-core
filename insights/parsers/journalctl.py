@@ -4,12 +4,12 @@ JournalCtl - command ``journalctl xxx``
 
 This module contains the following parsers:
 
-JournalAll - command ``/sos_commands/logs/journalctl_--no-pager``
------------------------------------------------------------------
-JournalHeader - command ``/usr/bin/journalctl --header``
---------------------------------------------------------
-JournalSinceBoot - command ``/sos_commands/logs/journalctl_--no-pager_--boot``
-------------------------------------------------------------------------------
+JournalAll - command ``journalctl --no-pager``
+----------------------------------------------
+JournalHeader - command ``journalctl --no-pager --header``
+----------------------------------------------------------
+JournalSinceBoot - command ``journalctl --no-pager --boot``
+-----------------------------------------------------------
 
 """
 
@@ -22,8 +22,8 @@ from insights.core import Syslog
 @parser(Specs.journal_all)
 class JournalAll(Syslog):
     """
-    Read the ``/sos_commands/logs/journalctl_--no-pager`` file.  Uses the
-    ``Syslog`` class parser functionality - see the base class for more details.
+    Handle the output of ``journalctl --no-pager`` command.  Uses the ``Syslog`` class
+    parser functionality - see the base class for more details.
 
     Sample log lines::
 
@@ -54,7 +54,9 @@ class JournalAll(Syslog):
 @parser(Specs.journal_header)
 class JournalHeader(Syslog):
     """
-    This command shows internal header information of the journal fields accessed.
+    Parses the output of command "journalctl --no-pager --header", this command shows
+    internal header information of the journal fields accessed. Although its output is
+    not kind of Logs, we used the `Syslog` as the base class to parser it.
 
     Sample Output::
 
@@ -94,12 +96,6 @@ class JournalHeader(Syslog):
         1
         >>> result_list[0].get('raw_message')
         'File Path: /run/log/journal/6bdaf92aa0754b53acbb1dbff7127e2b/system.journal'
-
-    Attributes:
-        data (list): List of Dictionary, which containing each of the key:value pairs from the command output.
-
-    Raises:
-        SkipException: raised if data is invalid.
     """
 
     pass
@@ -108,7 +104,7 @@ class JournalHeader(Syslog):
 @parser(Specs.journal_since_boot)
 class JournalSinceBoot(Syslog):
     """
-    Read the ``/sos_commands/logs/journalctl_--no-pager_--boot`` file.  Uses
+    Handle the output of ``journalctl --no-pager --boot`` command.  Uses
     the ``Syslog`` class parser functionality - see the base class for more
     details.
 
