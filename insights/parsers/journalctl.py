@@ -46,9 +46,9 @@ class JournalAll(Syslog):
         <class 'insights.parsers.journalctl.JournalAll'>
         >>> len(JournalAll.lines)
         10
-        >>> bona_list = JournalAll.get('wrapper')
+        >>> bona_list = JournalAll.get('(root) LIST (root)')
         >>> bona_list[0]
-        {'raw_message': 'May 18 15:13:36 lxc-rhel68-sat56 wrapper[11375]: --> Wrapper Started as Daemon', 'message': '--> Wrapper Started as Daemon', 'timestamp': 'May 18 15:13:36', 'hostname': 'lxc-rhel68-sat56', 'procname': 'wrapper[11375]'}
+        {'raw_message': 'Apr 22 10:37:32 boy-bona crontab[28951]: (root) LIST (root)', 'message': '(root) LIST (root)', 'timestamp': 'Apr 22 10:37:32', 'hostname': 'boy-bona', 'procname': 'crontab[28951]'}
     """
     pass
 
@@ -147,8 +147,8 @@ class JournalSinceBoot(Syslog):
         <class 'insights.parsers.journalctl.JournalSinceBoot'>
         >>> len(JournalSinceBoot.lines)
         10
-        >>> bona_list = JournalSinceBoot.get('wrapper')
+        >>> bona_list = JournalSinceBoot.get('(root) LIST (root)')
         >>> bona_list[0]
-        {'raw_message': 'May 18 15:13:36 lxc-rhel68-sat56 wrapper[11375]: --> Wrapper Started as Daemon', 'message': '--> Wrapper Started as Daemon', 'timestamp': 'May 18 15:13:36', 'hostname': 'lxc-rhel68-sat56', 'procname': 'wrapper[11375]'}
+        {'raw_message': 'Apr 22 10:37:32 boy-bona crontab[28951]: (root) LIST (root)', 'message': '(root) LIST (root)', 'timestamp': 'Apr 22 10:37:32', 'hostname': 'boy-bona', 'procname': 'crontab[28951]'}
     """
     pass
