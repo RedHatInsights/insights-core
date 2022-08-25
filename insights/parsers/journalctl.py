@@ -1,6 +1,6 @@
 """
 JournalCtl - command ``journalctl xxx``
-===================================
+=======================================
 
 This module contains the following parsers:
 
