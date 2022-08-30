@@ -260,6 +260,7 @@ class DefaultSpecs(Specs):
     )
     httpd_cert_info_in_nss = foreach_execute(ssl_certificate.httpd_certificate_info_in_nss, '/usr/bin/certutil -d %s -L -n %s')
     httpd_error_log = simple_file("var/log/httpd/error_log")
+    httpd_on_nfs = httpd.httpd_on_nfs
     httpd24_httpd_error_log = simple_file("/opt/rh/httpd24/root/etc/httpd/logs/error_log")
     jbcs_httpd24_httpd_error_log = simple_file("/opt/rh/jbcs-httpd24/root/etc/httpd/logs/error_log")
     virt_uuid_facts = simple_file("/etc/rhsm/facts/virt_uuid.facts")
