@@ -57,4 +57,6 @@ def test_httpd_cmds(run_cmds):
 def test_httpd_on_nfs(run_cmds):
     broker = {ProcMounts: ProcMounts(context_wrap(MOUNT_DATA)), HostContext: FakeContext()}
     result = httpd_on_nfs(broker)
-    assert result.content == ['{"http_ids": ["666", "777"], "nfs_mounts": ["/httpd1", "/httpd2"], "open_nfs_files": 5}']
+    assert '"http_ids": ["666", "777"]' in result.content[0]
+    assert '"open_nfs_files": 5' in result.content[0]
+    assert '"nfs_mounts": ["/httpd1", "/httpd2"]' in result.content[0]
