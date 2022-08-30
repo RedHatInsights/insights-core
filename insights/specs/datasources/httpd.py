@@ -37,7 +37,7 @@ def httpd_on_nfs(broker):
     mnt = broker[ProcMounts]
     mps = mnt.search(mount_type='nfs4')
     # get nfs 4.0 mount points
-    nfs_mounts = [m.mount_point for m in mps if m.mount_options.vers.startswith("4")]
+    nfs_mounts = [m.mount_point for m in mps if 'vers' in m.mount_options and m.mount_options.vers.startswith("4")]
     if nfs_mounts:
         # get all httpd ps
         httpd_pids = broker[HostContext].shell_out("pgrep httpd")
