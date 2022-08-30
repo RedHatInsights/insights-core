@@ -5,8 +5,8 @@ import json
 from insights.core.context import HostContext
 from insights.core.dr import SkipComponent
 from insights.core.plugins import datasource
+from insights.parsers.mount import ProcMounts
 from insights.combiners.ps import Ps
-from insights.combiners.mounts import Mounts
 from insights.specs.datasources import get_running_commands
 from insights.core.spec_factory import DatasourceProvider
 
@@ -26,7 +26,7 @@ def httpd_cmds(broker):
     raise SkipComponent
 
 
-@datasource(Mounts, HostContext)
+@datasource(ProcMounts, HostContext)
 def httpd_on_nfs(broker):
     """
     Function to get the count of httpd opened file on nfs v4
@@ -34,7 +34,7 @@ def httpd_on_nfs(broker):
     Returns:
         str: JSON string with keys: "httpd_ids", "nfs_mounts", "open_nfs_files"
     """
-    mnt = broker[Mounts]
+    mnt = broker[ProcMounts]
     mps = mnt.search(mount_type='nfs4')
     # get nfs 4.0 mount points
     nfs_mounts = [m.mount_point for m in mps if m.mount_options.vers.startswith("4")]

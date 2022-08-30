@@ -3,18 +3,15 @@ from mock.mock import patch
 from insights.core.dr import SkipComponent
 from insights.core.context import HostContext
 from insights.specs.datasources.httpd import httpd_cmds, httpd_on_nfs
+from insights.parsers.mount import ProcMounts
 from insights.combiners.ps import Ps
-from insights.combiners.mounts import Mounts
-from insights.parsers.mount import Mount
 from insights.tests import context_wrap
 
 
 MOUNT_DATA = """
-tmpfs on /tmp type tmpfs (rw,seclabel)
-/dev/httpd on /httpd1 type nfs4 (rw,relatime,vers=4)
-/dev/mapper/httpd on /httpd2 type nfs4 (rw,relatime,vers=4)
-/dev/mapper/home on /home type ext4 (rw,relatime,seclabel,data=ordered)
-/dev/mapper/root on / type ext4 (rw,relatime,seclabel,data=ordered)
+/dev/mapper/root / ext4 rw,relatime,barrier=1,data=ordered 0 0
+/dev/mapper/httpd1 /httpd1 nfs4 rw,relatime,vers=4,barrier=1,data=ordered 0 0
+/dev/mapper/httpd2 /httpd2 nfs4 rw,relatime,vers=4,barrier=1,data=ordered 0 0
 """.strip()
 NFS_LSOF_666 = """
 zsh     3520 httpd    3r   REG  253,0   6940392    648646 /httpd1
@@ -58,6 +55,6 @@ def test_httpd_cmds(run_cmds):
 
 @patch('insights.specs.datasources.httpd.get_running_commands')
 def test_httpd_on_nfs(run_cmds):
-    broker = {Mounts: Mounts(Mount(context_wrap(MOUNT_DATA)), None, None), HostContext: FakeContext()}
+    broker = {ProcMounts: ProcMounts(context_wrap(MOUNT_DATA)), HostContext: FakeContext()}
     result = httpd_on_nfs(broker)
     assert result.content == ['{"http_ids": ["666", "777"], "nfs_mounts": ["/httpd1", "/httpd2"], "open_nfs_files": 5}']
