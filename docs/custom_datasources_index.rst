@@ -71,7 +71,7 @@ insights.specs.datasources.httpd
 --------------------------------
 
 .. automodule:: insights.specs.datasources.httpd
-    :members: httpd_cmds
+    :members: httpd_cmds, httpd_on_nfs
     :show-inheritance:
     :undoc-members:
 
