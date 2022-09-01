@@ -1,4 +1,4 @@
-import json
+import yaml
 import pytest
 from mock.mock import Mock
 
@@ -59,26 +59,17 @@ users
 """.strip()
 
 
-CLOUD_CFG_JSON = {
-    "network": {
-        "version": 1,
-        "config": [
-            {
-                "type": "physical",
-                "name": "eth0",
-                "subnets": [
-                    {
-                        "type": "dhcp"
-                    },
-                    {
-                        "type": "dhcp6"
-                    }
-                ]
-            }
-        ]
-    },
-    "ssh_deletekeys": 1,
-}
+CLOUD_CFG_FILTERED = """
+network:
+  config:
+  - name: eth0
+    subnets:
+    - type: dhcp
+    - type: dhcp6
+    type: physical
+  version: 1
+ssh_deletekeys: 1
+"""
 
 RELATIVE_PATH = '/etc/cloud/cloud.cfg'
 
@@ -105,7 +96,7 @@ def teardown_function(func):
 @pytest.mark.parametrize("ssh_deletekeys", [0, 1])
 def test_cloud_cfg(ssh_deletekeys):
     cloud_cfg_string = CLOUD_CFG.format(value=ssh_deletekeys)
-    cloud_cfg_dict = CLOUD_CFG_JSON.copy()
+    cloud_cfg_dict = yaml.safe_load(CLOUD_CFG_FILTERED)
     cloud_cfg_dict["ssh_deletekeys"] = ssh_deletekeys
 
     cloud_init_file = Mock()
@@ -114,7 +105,7 @@ def test_cloud_cfg(ssh_deletekeys):
     result = cloud_cfg(broker)
     assert result is not None
     assert isinstance(result, DatasourceProvider)
-    expected = DatasourceProvider(content=json.dumps(cloud_cfg_dict), relative_path=RELATIVE_PATH)
+    expected = DatasourceProvider(content=yaml.dump(cloud_cfg_dict), relative_path=RELATIVE_PATH)
     assert result.content == expected.content
     assert result.relative_path == expected.relative_path
 
