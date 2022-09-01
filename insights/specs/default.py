@@ -20,7 +20,7 @@ from insights.core.spec_factory import first_file, listdir
 from insights.components.cloud_provider import IsAzure, IsGCP
 from insights.components.ceph import IsCephMonitor
 from insights.components.virtualization import IsBareMetal
-from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersion
+from insights.components.satellite import IsCapsule, IsSatellite611, IsSatellite
 from insights.specs import Specs
 from insights.specs.datasources import (
     aws, awx_manage, cloud_init, candlepin_broker, corosync as corosync_ds,
@@ -66,6 +66,7 @@ class DefaultSpecs(Specs):
     abrt_status_bare = simple_command("/usr/bin/abrt status --bare=True")
     alternatives_display_python = simple_command("/usr/sbin/alternatives --display python")
     amq_broker = glob_file("/var/opt/amq-broker/*/etc/broker.xml")
+    authselect_current = simple_command("/usr/bin/authselect current")
     dse_ldif = glob_file("/etc/dirsrv/*/dse.ldif")
     auditctl_rules = simple_command("/sbin/auditctl -l")
     auditctl_status = simple_command("/sbin/auditctl -s")
@@ -259,6 +260,7 @@ class DefaultSpecs(Specs):
     )
     httpd_cert_info_in_nss = foreach_execute(ssl_certificate.httpd_certificate_info_in_nss, '/usr/bin/certutil -d %s -L -n %s')
     httpd_error_log = simple_file("var/log/httpd/error_log")
+    httpd_on_nfs = httpd.httpd_on_nfs
     httpd24_httpd_error_log = simple_file("/opt/rh/httpd24/root/etc/httpd/logs/error_log")
     jbcs_httpd24_httpd_error_log = simple_file("/opt/rh/jbcs-httpd24/root/etc/httpd/logs/error_log")
     virt_uuid_facts = simple_file("/etc/rhsm/facts/virt_uuid.facts")
@@ -293,6 +295,7 @@ class DefaultSpecs(Specs):
     ipv6_neigh = simple_command("/sbin/ip -6 neighbor show nud all")
     ironic_inspector_log = first_file(["/var/log/containers/ironic-inspector/ironic-inspector.log", "/var/log/ironic-inspector/ironic-inspector.log"])
     iscsiadm_m_session = simple_command("/usr/sbin/iscsiadm -m session")
+    journal_header = simple_command("/usr/bin/journalctl --no-pager --header")
     kdump_conf = simple_file("/etc/kdump.conf")
     kernel_config = glob_file("/boot/config-*")
     kernel_crash_kexec_post_notifiers = simple_file("/sys/module/kernel/parameters/crash_kexec_post_notifiers")
@@ -325,6 +328,7 @@ class DefaultSpecs(Specs):
         "/etc/pki/ovirt-vmconsole", "/etc/nova/migration", "/etc/sysconfig",
         "/etc/cloud/cloud.cfg.d", "/etc/rc.d/init.d"])
     ls_etc = simple_command("/bin/ls -lan {0}".format(' '.join(etc_and_sub_dirs)), keep_rc=True)
+    ls_etc_ssh = simple_command("/bin/ls -lanL /etc/ssh")
     ls_ipa_idoverride_memberof = simple_command("/bin/ls -lan /usr/share/ipa/ui/js/plugins/idoverride-memberof")
     ls_lib_firmware = simple_command("/bin/ls -lanR /lib/firmware")
     ls_ocp_cni_openshift_sdn = simple_command("/bin/ls -l /var/lib/cni/networks/openshift-sdn")
@@ -546,15 +550,15 @@ class DefaultSpecs(Specs):
     sat5_insights_properties = simple_file("/etc/redhat-access/redhat-access-insights.properties")
     satellite_compute_resources = simple_command(
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c 'select name, type from compute_resources' --csv",
-        deps=[SatelliteVersion]
+        deps=[IsSatellite]
     )
     satellite_content_hosts_count = simple_command(
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c 'select count(*) from hosts'",
-        deps=[SatelliteVersion]
+        deps=[IsSatellite]
     )
     satellite_core_taskreservedresource_count = simple_command(
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d pulpcore -c 'select count(*) from core_taskreservedresource' --csv",
-        deps=[SatelliteVersion]
+        deps=[IsSatellite]
     )
     satellite_custom_ca_chain = simple_command(
         '/usr/bin/awk \'BEGIN { pipe="openssl x509 -noout -subject -enddate"} /^-+BEGIN CERT/,/^-+END CERT/ { print | pipe } /^-+END CERT/ { close(pipe); printf("\\n")}\' /etc/pki/katello/certs/katello-server-ca.crt',
@@ -562,29 +566,33 @@ class DefaultSpecs(Specs):
     satellite_custom_hiera = simple_file("/etc/foreman-installer/custom-hiera.yaml")
     satellite_katello_repos_with_muliple_ref = simple_command(
         '/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c "select repository_href, count(*) from katello_repository_references group by repository_href having count(*) > 1;" --csv',
-        deps=[SatelliteVersion]
+        deps=[IsSatellite]
     )
     satellite_missed_pulp_agent_queues = satellite_missed_queues.satellite_missed_pulp_agent_queues
     satellite_mongodb_storage_engine = simple_command("/usr/bin/mongo pulp_database --eval 'db.serverStatus().storageEngine'")
     satellite_non_yum_type_repos = simple_command(
         "/usr/bin/mongo pulp_database --eval 'db.repo_importers.find({\"importer_type_id\": { $ne: \"yum_importer\"}}).count()'",
-        deps=[[SatelliteVersion, CapsuleVersion]]
+        deps=[[IsSatellite, IsCapsule]]
+    )
+    satellite_provision_param_settings = simple_command(
+        "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c \"select name, value from parameters where name='package_upgrade' and reference_id in (select id from operatingsystems where name='RedHat' and major='9')\" --csv",
+        deps=[IsSatellite611]
     )
     satellite_qualified_capsules = simple_command(
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c \"select name from smart_proxies where download_policy = 'background'\" --csv",
-        deps=[SatelliteVersion]
+        deps=[IsSatellite]
     )
     satellite_qualified_katello_repos = simple_command(
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c \"select id, name, url, download_policy from katello_root_repositories where download_policy = 'background' or url is NULL\" --csv",
-        deps=[SatelliteVersion]
+        deps=[IsSatellite]
     )
     satellite_sca_status = simple_command(
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d candlepin -c \"select displayname,content_access_mode from cp_owner\" --csv",
-        deps=[SatelliteVersion]
+        deps=[IsSatellite]
     )
     satellite_settings = simple_command(
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c \"select name, value, \\\"default\\\" from settings where name in ('destroy_vm_on_host_delete', 'unregister_delete_host')\" --csv",
-        deps=[SatelliteVersion]
+        deps=[IsSatellite]
     )
     satellite_version_rb = simple_file("/usr/share/foreman/lib/satellite/version.rb")
     satellite_yaml = simple_file("/etc/foreman-installer/scenarios.d/satellite.yaml")

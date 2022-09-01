@@ -11,6 +11,7 @@ from __future__ import print_function
 import argparse
 import logging
 import os
+import sys
 import tempfile
 import yaml
 
@@ -164,6 +165,10 @@ plugins:
         - name: insights.combiners.httpd_conf._HttpdConf
           enabled: true
 
+    # needed for httpd_on_nfs
+        - name: insights.parsers.mount.ProcMounts
+          enabled: true
+
     # needed for nginx_ssl_cert_enddate
         - name: insights.combiners.nginx_conf.NginxConfTree
           enabled: true
@@ -205,9 +210,17 @@ plugins:
     # needed for the 'pre-check' of the 'is_satellite_server' spec
         - name: insights.combiners.satellite_version.SatelliteVersion
           enabled: true
+        - name: insights.components.satellite.IsSatellite
+          enabled: true
 
     # needed for the 'pre-check' of the 'is_satellite_capsule' spec
         - name: insights.combiners.satellite_version.CapsuleVersion
+          enabled: true
+        - name: insights.components.satellite.IsCapsule
+          enabled: true
+
+    # needed for the 'pre-check' of the 'satellite_provision_param_settings' spec
+        - name: insights.components.satellite.IsSatellite611
           enabled: true
 
     # needed for the 'pre-check' of the 'corosync_cmapctl_cmd_list' spec
@@ -408,6 +421,12 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
 
 
 def main():
+    # Remove command line args so that they are not parsed by any called modules
+    # The main fxn is only invoked as a cli, if calling from another cli then
+    # use the collect function instead
+    collect_args = [arg for arg in sys.argv[1:]] if len(sys.argv) > 1 else []
+    sys.argv = [sys.argv[0], ] if sys.argv else sys.argv
+
     p = argparse.ArgumentParser()
     p.add_argument("-m", "--manifest", help="Manifest yaml.")
     p.add_argument("-o", "--out_path", help="Path to write output data.")
@@ -415,7 +434,7 @@ def main():
     p.add_argument("-v", "--verbose", help="Verbose output.", action="store_true")
     p.add_argument("-d", "--debug", help="Debug output.", action="store_true")
     p.add_argument("-c", "--compress", help="Compress", action="store_true")
-    args = p.parse_args()
+    args = p.parse_args(args=collect_args)
 
     level = logging.WARNING
     if args.verbose:
