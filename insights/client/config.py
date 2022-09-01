@@ -243,6 +243,10 @@ DEFAULT_OPTS = {
         # non-CLI
         'default': False,  # legacy
     },
+    'no_proxy': {
+        # non-CLI
+        'default': None
+    },
     'no_upload': {
         'default': False,
         'opt': ['--no-upload'],
