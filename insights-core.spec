@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.291
+Version:        3.0.292
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,17 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Sep 01 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.292-1
+- Added no_proxy autoconfiguration from rhsm conf and tests (#3507)
+  (93577878+ahitacat@users.noreply.github.com)
+- Fix: grubenv cannot be collected when error shown in output (#3511)
+  (986222045@qq.com)
+- fix: change cloud_cfg to Yaml and modify the source spec (#3484)
+  (xiangceliu@redhat.com)
+- fix: Revert the httpd_on_nfs datasource spec (#3509) (xiangceliu@redhat.com)
+- fix: Issue calling collect from cli (#3506)
+  (20520336+bfahr@users.noreply.github.com)
+
 * Thu Aug 25 2022 Sachin Patil <psachin@redhat.com> 3.0.291-1
 - Feat: New journal_header (#3498) (986222045@qq.com)
 - feat: New spec and parser to get the satellite provision params (#3501) (44796653+huali027@users.noreply.github.com)
