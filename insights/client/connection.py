@@ -257,6 +257,45 @@ class InsightsConnection(object):
 
         return ua
 
+    def get_proxy(self, proxy_info, no_proxy_info, environment):
+        proxies = None
+        proxy_auth = None
+        if '@' in proxy_info:
+            scheme = proxy_info.split(':')[0] + '://'
+            logger.debug("Proxy Scheme: %s", scheme)
+            location = proxy_info.split('@')[1]
+            logger.debug("Proxy Location: %s", location)
+            username = proxy_info.split(
+                '@')[0].split(':')[1].replace('/', '')
+            logger.debug("Proxy User: %s", username)
+            password = proxy_info.split('@')[0].split(':')[2]
+            proxy_auth = requests.auth._basic_auth_str(username, password)
+            proxy_info = scheme + location
+        logger.debug("%s Proxy: %s", environment, proxy_info)
+        proxies = {"https": proxy_info}
+        if no_proxy_info:
+            insights_service_host = urlparse(self.base_url).hostname
+            logger.debug('Found NO_PROXY set. Checking NO_PROXY %s against base URL %s.', no_proxy_info, insights_service_host)
+            for no_proxy_host in no_proxy_info.split(', '):
+                logger.debug('Checking %s against %s', no_proxy_host, insights_service_host)
+                if no_proxy_host == '*':
+                    proxies = None
+                    proxy_auth = None
+                    logger.debug('Found NO_PROXY asterisk(*) wildcard, disabling all proxies.')
+                    break
+                elif no_proxy_host.startswith('.') or no_proxy_host.startswith('*'):
+                    if insights_service_host.endswith(no_proxy_host.replace('*', '')):
+                        proxies = None
+                        proxy_auth = None
+                        logger.debug('Found NO_PROXY range %s matching %s', no_proxy_host, insights_service_host)
+                        break
+                elif no_proxy_host == insights_service_host:
+                    proxies = None
+                    proxy_auth = None
+                    logger.debug('Found NO_PROXY %s exactly matching %s', no_proxy_host, insights_service_host)
+                    break
+        return proxies, proxy_auth
+
     def get_proxies(self):
         """
         Determine proxy configuration
@@ -264,72 +303,26 @@ class InsightsConnection(object):
         # Get proxy from ENV or Config
         proxies = None
         proxy_auth = None
-        no_proxy = os.environ.get('NO_PROXY')
-        logger.debug("NO PROXY: %s", no_proxy)
 
         # CONF PROXY TAKES PRECEDENCE OVER ENV PROXY
         conf_proxy = self.config.proxy
-        if ((conf_proxy is not None and
-             conf_proxy.lower() != 'None'.lower() and
-             conf_proxy != "")):
-            if '@' in conf_proxy:
-                scheme = conf_proxy.split(':')[0] + '://'
-                logger.debug("Proxy Scheme: %s", scheme)
-                location = conf_proxy.split('@')[1]
-                logger.debug("Proxy Location: %s", location)
-                username = conf_proxy.split(
-                    '@')[0].split(':')[1].replace('/', '')
-                logger.debug("Proxy User: %s", username)
-                password = conf_proxy.split('@')[0].split(':')[2]
-                proxy_auth = requests.auth._basic_auth_str(username, password)
-                conf_proxy = scheme + location
-            logger.debug("CONF Proxy: %s", conf_proxy)
-            proxies = {"https": conf_proxy}
+        conf_no_proxy = self.config.no_proxy
+
+        if conf_proxy:
+            proxies, proxy_auth = self.get_proxy(conf_proxy, conf_no_proxy, "CONF")
 
         # HANDLE NO PROXY CONF PROXY EXCEPTION VERBIAGE
+        no_proxy = os.environ.get('NO_PROXY')
         if no_proxy and conf_proxy:
             logger.debug("You have environment variable NO_PROXY set "
                          "as well as 'proxy' set in your configuration file. "
                          "NO_PROXY environment variable will be ignored.")
 
-        # IF NO CONF PROXY, GET ENV PROXY AND NO PROXY
-        if proxies is None:
+        # IF NO CONF PROXY and NO_PROX none in conf, GET ENV PROXY AND NO PROXY
+        if proxies is None and conf_no_proxy is None:
             env_proxy = os.environ.get('HTTPS_PROXY')
             if env_proxy:
-                if '@' in env_proxy:
-                    scheme = env_proxy.split(':')[0] + '://'
-                    logger.debug("Proxy Scheme: %s", scheme)
-                    location = env_proxy.split('@')[1]
-                    logger.debug("Proxy Location: %s", location)
-                    username = env_proxy.split('@')[0].split(':')[1].replace('/', '')
-                    logger.debug("Proxy User: %s", username)
-                    password = env_proxy.split('@')[0].split(':')[2]
-                    proxy_auth = requests.auth._basic_auth_str(username, password)
-                    env_proxy = scheme + location
-                logger.debug("ENV Proxy: %s", env_proxy)
-                proxies = {"https": env_proxy}
-            if no_proxy:
-                insights_service_host = urlparse(self.base_url).hostname
-                logger.debug('Found NO_PROXY set. Checking NO_PROXY %s against base URL %s.', no_proxy, insights_service_host)
-                for no_proxy_host in no_proxy.split(','):
-                    logger.debug('Checking %s against %s', no_proxy_host, insights_service_host)
-                    if no_proxy_host == '*':
-                        proxies = None
-                        proxy_auth = None
-                        logger.debug('Found NO_PROXY asterisk(*) wildcard, disabling all proxies.')
-                        break
-                    elif no_proxy_host.startswith('.') or no_proxy_host.startswith('*'):
-                        if insights_service_host.endswith(no_proxy_host.replace('*', '')):
-                            proxies = None
-                            proxy_auth = None
-                            logger.debug('Found NO_PROXY range %s matching %s', no_proxy_host, insights_service_host)
-                            break
-                    elif no_proxy_host == insights_service_host:
-                        proxies = None
-                        proxy_auth = None
-                        logger.debug('Found NO_PROXY %s exactly matching %s', no_proxy_host, insights_service_host)
-                        break
-
+                proxies, proxy_auth = self.get_proxy(env_proxy, no_proxy, "ENV")
         self.proxies = proxies
         self.proxy_auth = proxy_auth
 
