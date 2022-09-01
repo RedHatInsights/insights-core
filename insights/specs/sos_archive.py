@@ -41,6 +41,7 @@ class SosSpecs(Specs):
             )
         ]
     )
+    cloud_cfg_filtered = simple_file('/etc/cloud/cloud.cfg')
     cni_podman_bridge_conf = simple_file("/etc/cni/net.d/87-podman-bridge.conflist")
     cobbler_settings = first_file(["/etc/cobbler/settings", "/conf/cobbler/settings"])
     cobbler_modules_conf = first_file(["/etc/cobbler/modules.conf", "/conf/cobbler/modules.conf"])
