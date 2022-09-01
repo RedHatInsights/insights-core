@@ -165,6 +165,10 @@ plugins:
         - name: insights.combiners.httpd_conf._HttpdConf
           enabled: true
 
+    # needed for httpd_on_nfs
+        - name: insights.parsers.mount.ProcMounts
+          enabled: true
+
     # needed for nginx_ssl_cert_enddate
         - name: insights.combiners.nginx_conf.NginxConfTree
           enabled: true
