@@ -2,6 +2,14 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.292](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.292) (2022-09-01)
+
+- Added no_proxy autoconfiguration from rhsm conf and tests ([PR 3507](https://github.com/RedHatInsights/insights-core/pull/3507))
+- Fix: grubenv cannot be collected when error shown in output ([PR 3511](https://github.com/RedHatInsights/insights-core/pull/3511))
+- fix: change cloud_cfg to Yaml and modify the source spec ([PR 3484](https://github.com/RedHatInsights/insights-core/pull/3484))
+- fix: Revert the httpd_on_nfs datasource spec ([PR 3509](https://github.com/RedHatInsights/insights-core/pull/3509))
+- fix: Issue calling collect from cli ([PR 3506](https://github.com/RedHatInsights/insights-core/pull/3506))
+
 ## [insights-core-3.0.291](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.291) (2022-08-25)
 
 - Feat: New journal_header ([PR 3498](https://github.com/RedHatInsights/insights-core/pull/3498))
