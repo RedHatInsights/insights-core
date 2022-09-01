@@ -216,7 +216,7 @@ class DefaultSpecs(Specs):
     gcp_license_codes = simple_command("/usr/bin/curl -s -H 'Metadata-Flavor: Google' http://metadata.google.internal/computeMetadata/v1/instance/licenses/?recursive=True --connect-timeout 5", deps=[IsGCP])
     greenboot_status = simple_command("/usr/libexec/greenboot/greenboot-status")
     group_info = command_with_args("/usr/bin/getent group %s", user_group.group_filters)
-    grubenv = simple_command("/usr/bin/grub2-editenv list")
+    grubenv = simple_command("/usr/bin/grub2-editenv list", keep_rc=True)
     grub_conf = simple_file("/boot/grub/grub.conf")
     grub_config_perms = simple_command("/bin/ls -lH /boot/grub2/grub.cfg")  # only RHEL7 and updwards
     grub_efi_conf = simple_file("/boot/efi/EFI/redhat/grub.conf")
