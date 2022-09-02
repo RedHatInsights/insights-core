@@ -20,10 +20,10 @@ SAPInstances = namedtuple("SAPInstances",
         field_names=["name", "hostname", "sid", "type", "full_type", "number", "fqdn", "version"])
 """namedtuple: Type for storing the SAP instance."""
 
-FUNC_TYPES = {
-    'SMDA': 'Solution Manager Diagnostic Agent',
-    'SMA': 'Solution Manager Diagnostic Agent',  # BZ-1969572
-}
+FUNC_FULL_TYPES = [
+    'Solution Manager Diagnostic Agent',
+    'Diagnostic Agent'
+]
 NETW_TYPES = ('D', 'ASCS', 'DVEBMGS', 'J', 'SCS', 'ERS', 'W', 'G', 'JC')
 """
 D      :    NetWeaver (ABAP Dialog Instance)
@@ -125,10 +125,9 @@ class Sap(dict):
         self.update(data)
 
         for i in self.values():
-            if i.type in FUNC_TYPES or i.full_type in FUNC_TYPES.values():
-                self.function_instances.append(i.name)
-            else:
-                self.business_instances.append(i.name)
+            (self.function_instances
+                if i.full_type in FUNC_FULL_TYPES else
+                    self.business_instances).append(i.name)
 
     def version(self, instance):
         """str: Returns the version of the ``instance``."""
