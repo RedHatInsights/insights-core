@@ -144,7 +144,7 @@ class Sap(dict):
 
     def full_type(self, instance):
         """str: Returns the full type code of the ``instance``."""
-        return self[instance].type if instance in self else None
+        return self[instance].full_type if instance in self else None
 
     def hostname(self, instance):
         """str: Returns the hostname of the ``instance``."""
