@@ -109,10 +109,10 @@ class SAPHostCtrlInstances(CommandParser, list):
             if fields[0] == 'InstanceName':
                 self.instances.append(fields[2])
                 _types.add(fields[2].strip('0123456789'))
-            _sids.add(inst['SID']) if fields[0] == 'SID' else None
+            _sids.add(fields[2]) if fields[0] == 'SID' else None
 
         if len(self) < 1:
-            raise SkipException("Nothing need to parser")
+            raise SkipException("Nothing need to parse")
 
         self.sids = list(_sids)
         self.types = list(_types)
@@ -123,4 +123,4 @@ class SAPHostCtrlInstances(CommandParser, list):
         (list): List of dicts where keys are the lead name of each line and
             values are the string value.
         """
-        return list(self)
+        return self
