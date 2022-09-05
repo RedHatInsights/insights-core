@@ -55,7 +55,7 @@ def verify_connectivity(config):
         return False
 
 
-def set_auto_configuration(config, hostname, ca_cert, proxy, is_satellite, is_stage):
+def set_auto_configuration(config, hostname, ca_cert, proxy, is_satellite, is_stage, rhsm_no_proxy=None):
     """
     Set config based on discovered data
     """
@@ -63,6 +63,7 @@ def set_auto_configuration(config, hostname, ca_cert, proxy, is_satellite, is_st
     logger.debug("Attempting to auto configure hostname: %s", hostname)
     logger.debug("Attempting to auto configure CA cert: %s", ca_cert)
     logger.debug("Attempting to auto configure proxy: %s", proxy)
+    logger.debug("Attempting to auto configure no_proxy: %s", rhsm_no_proxy)
     saved_base_url = config.base_url
     if ca_cert is not None:
         saved_cert_verify = config.cert_verify
@@ -70,6 +71,8 @@ def set_auto_configuration(config, hostname, ca_cert, proxy, is_satellite, is_st
     if proxy is not None:
         saved_proxy = config.proxy
         config.proxy = proxy
+    if rhsm_no_proxy and rhsm_no_proxy != '':
+        config.no_proxy = rhsm_no_proxy
     if is_satellite:
         # satellite
         config.base_url = hostname + '/r/insights'
@@ -128,6 +131,9 @@ def _try_satellite6_configuration(config):
         rhsm_proxy_port = rhsm_config.get('server', 'proxy_port').strip()
         rhsm_proxy_user = rhsm_config.get('server', 'proxy_user').strip()
         rhsm_proxy_pass = rhsm_config.get('server', 'proxy_password').strip()
+        rhsm_no_proxy = rhsm_config.get('server', 'no_proxy').strip()
+        if rhsm_no_proxy.lower() == 'none' or rhsm_no_proxy == '':
+            rhsm_no_proxy = None
 
         proxy = None
 
@@ -170,7 +176,7 @@ def _try_satellite6_configuration(config):
             is_satellite = True
 
         logger.debug("Trying to set auto_configuration")
-        set_auto_configuration(config, rhsm_hostname, rhsm_ca, proxy, is_satellite, is_stage)
+        set_auto_configuration(config, rhsm_hostname, rhsm_ca, proxy, is_satellite, is_stage, rhsm_no_proxy=rhsm_no_proxy)
         return True
     except Exception as e:
         logger.debug(e)

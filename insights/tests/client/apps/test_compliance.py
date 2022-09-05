@@ -274,27 +274,27 @@ def test_get_profiles_matching_os(config, os_release_info_mock):
 
 
 @patch("insights.client.apps.compliance.os_release_info", return_value=(None, '6.5'))
-@patch("insights.client.config.InsightsConfig")
+@patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
 def test_os_release(config, os_release_info_mock):
     compliance_client = ComplianceClient(config)
     assert compliance_client.os_release() == '6.5'
 
 
 @patch("insights.client.apps.compliance.os_release_info", return_value=(None, '6.5'))
-@patch("insights.client.config.InsightsConfig")
+@patch("insights.client.config.InsightsConfig", base_url='localhost.com/tests')
 def test_os_minor_version(config, os_release_info_mock):
     compliance_client = ComplianceClient(config)
     assert compliance_client.os_minor_version() == '5'
 
 
 @patch("insights.client.apps.compliance.os_release_info", return_value=(None, '6.5'))
-@patch("insights.client.config.InsightsConfig")
+@patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
 def test_os_major_version(config, os_release_info_mock):
     compliance_client = ComplianceClient(config)
     assert compliance_client.os_major_version() == '6'
 
 
-@patch("insights.client.config.InsightsConfig")
+@patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
 def test_profile_files(config):
     compliance_client = ComplianceClient(config)
     compliance_client.os_release = lambda: '7'
@@ -302,14 +302,14 @@ def test_profile_files(config):
 
 
 @patch("insights.client.apps.compliance.call", return_value=(0, PATH))
-@patch("insights.client.config.InsightsConfig")
+@patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
 def test_find_scap_policy(config, call):
     compliance_client = ComplianceClient(config)
     compliance_client.profile_files = lambda: ['/something']
     assert compliance_client.find_scap_policy('ref_id') == PATH
 
 
-@patch("insights.client.config.InsightsConfig")
+@patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
 def test_find_scap_policy_with_one_datastream_file(config, tmpdir):
     compliance_client = ComplianceClient(config)
     dir1 = tmpdir.mkdir('scap')
@@ -323,7 +323,7 @@ def test_find_scap_policy_with_one_datastream_file(config, tmpdir):
         assert compliance_client.find_scap_policy('content_profile_anssi_bp28_high') == file
 
 
-@patch("insights.client.config.InsightsConfig")
+@patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
 def test_find_scap_policy_with_two_datastream_file(config, tmpdir):
     compliance_client = ComplianceClient(config)
     dir1 = tmpdir.mkdir('scap')
@@ -343,7 +343,7 @@ def test_find_scap_policy_with_two_datastream_file(config, tmpdir):
 
 
 @patch("insights.client.apps.compliance.call", return_value=(1, 'bad things happened'.encode('utf-8')))
-@patch("insights.client.config.InsightsConfig")
+@patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
 def test_find_scap_policy_not_found(config, call):
     compliance_client = ComplianceClient(config)
     compliance_client.profile_files = lambda: ['/something']
@@ -351,7 +351,7 @@ def test_find_scap_policy_not_found(config, call):
 
 
 @patch("insights.client.apps.compliance.call", return_value=(0, ''.encode('utf-8')))
-@patch("insights.client.config.InsightsConfig")
+@patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
 def test_run_scan(config, call):
     compliance_client = ComplianceClient(config)
     output_path = '/tmp/oscap_results-ref_id.xml'
@@ -365,7 +365,7 @@ def test_run_scan(config, call):
 
 
 @patch("insights.client.apps.compliance.call", return_value=(1, 'bad things happened'.encode('utf-8')))
-@patch("insights.client.config.InsightsConfig")
+@patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
 def test_run_scan_fail(config, call):
     compliance_client = ComplianceClient(config)
     output_path = '/tmp/oscap_results-ref_id.xml'
@@ -380,7 +380,7 @@ def test_run_scan_fail(config, call):
 
 
 @patch("insights.client.apps.compliance.call", return_value=(0, ''.encode('utf-8')))
-@patch("insights.client.config.InsightsConfig")
+@patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
 def test_run_scan_missing_profile(config, call):
     compliance_client = ComplianceClient(config)
     output_path = '/tmp/oscap_results-ref_id.xml'
@@ -390,20 +390,20 @@ def test_run_scan_missing_profile(config, call):
     call.assert_not_called()
 
 
-@patch("insights.client.config.InsightsConfig")
+@patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
 def test_tailored_file_is_not_downloaded_if_not_needed(config):
     compliance_client = ComplianceClient(config)
     assert compliance_client.download_tailoring_file({'attributes': {'tailored': False}}) is None
 
 
-@patch("insights.client.config.InsightsConfig")
+@patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
 def test_tailored_file_is_not_downloaded_if_tailored_is_missing(config):
     compliance_client = ComplianceClient(config)
     assert compliance_client.download_tailoring_file({'id': 'foo', 'attributes': {'ref_id': 'aaaaa'}}) is None
 
 
 @patch("insights.client.apps.compliance.open", new_callable=mock_open)
-@patch("insights.client.config.InsightsConfig")
+@patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
 def test_tailored_file_is_downloaded_from_initial_profile_if_os_minor_version_is_missing(config, call):
     compliance_client = ComplianceClient(config)
     compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, json=Mock(return_value={'data': [{'attributes': 'data'}]})))
@@ -412,7 +412,7 @@ def test_tailored_file_is_downloaded_from_initial_profile_if_os_minor_version_is
 
 
 @patch("insights.client.apps.compliance.os_release_info", return_value=(None, '6.5'))
-@patch("insights.client.config.InsightsConfig")
+@patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
 def test_tailored_file_is_not_downloaded_if_os_minor_version_mismatches(config, os_release_info_mock):
     compliance_client = ComplianceClient(config)
     compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, json=Mock(return_value={'data': [{'attributes': 'data'}]})))
@@ -422,7 +422,7 @@ def test_tailored_file_is_not_downloaded_if_os_minor_version_mismatches(config, 
 
 @patch("insights.client.apps.compliance.os_release_info", return_value=(None, '6.5'))
 @patch("insights.client.apps.compliance.open", new_callable=mock_open)
-@patch("insights.client.config.InsightsConfig")
+@patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
 def test_tailored_file_is_downloaded_if_needed(config, call, os_release_info_mock):
     compliance_client = ComplianceClient(config)
     compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, json=Mock(return_value={'data': [{'attributes': 'data'}]})))
@@ -430,21 +430,21 @@ def test_tailored_file_is_downloaded_if_needed(config, call, os_release_info_moc
     assert compliance_client.download_tailoring_file({'id': 'foo', 'attributes': {'tailored': False, 'ref_id': 'aaaaa', 'os_minor_version': '5'}}) is None
 
 
-@patch("insights.client.config.InsightsConfig")
+@patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
 def test_build_oscap_command_does_not_append_tailoring_path(config):
     compliance_client = ComplianceClient(config)
     expected_command = 'oscap xccdf eval --profile aaaaa --results output_path xml_sample'
     assert expected_command == compliance_client.build_oscap_command('aaaaa', 'xml_sample', 'output_path', None)
 
 
-@patch("insights.client.config.InsightsConfig")
+@patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
 def test_build_oscap_command_append_tailoring_path(config):
     compliance_client = ComplianceClient(config)
     expected_command = 'oscap xccdf eval --profile aaaaa --tailoring-file tailoring_path --results output_path xml_sample'
     assert expected_command == compliance_client.build_oscap_command('aaaaa', 'xml_sample', 'output_path', 'tailoring_path')
 
 
-@patch("insights.client.config.InsightsConfig")
+@patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
 def test__get_inventory_id(config):
     compliance_client = ComplianceClient(config)
     compliance_client.conn._fetch_system_by_machine_id = lambda: []

@@ -23,7 +23,7 @@ def test_cloud_cfg():
 
 
 def test_cloud_cfg_empty():
-    assert 'Empty output.' in skip_exception_check(cloud_cfg.CloudCfg)
+    assert 'There is no data' in skip_exception_check(cloud_cfg.CloudCfg)
 
 
 def test_doc_examples():

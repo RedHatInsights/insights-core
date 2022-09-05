@@ -10,10 +10,10 @@ def test_rhsm_legacy_url(set_auto_configuration, initConfig):
     '''
     Ensure the correct host URL is selected for auto_config on a legacy RHSM upload
     '''
-    initConfig().get.side_effect = ['subscription.rhsm.redhat.com', '443', '', '', '', '', '']
+    initConfig().get.side_effect = ['subscription.rhsm.redhat.com', '443', '', '', '', '', '', '']
     config = Mock(base_url=None, upload_url=None, legacy_upload=True)
     _try_satellite6_configuration(config)
-    set_auto_configuration.assert_called_with(config, 'cert-api.access.redhat.com', None, None, False, False)
+    set_auto_configuration.assert_called_with(config, 'cert-api.access.redhat.com', None, None, False, False, rhsm_no_proxy=None)
 
 
 @patch("insights.client.auto_config.rhsmCertificate", Mock())
@@ -24,11 +24,11 @@ def test_rhsm_platform_url(set_auto_configuration, initConfig):
     '''
     Ensure the correct host URL is selected for auto_config on a platform RHSM upload
     '''
-    initConfig().get.side_effect = ['subscription.rhsm.redhat.com', '443', '', '', '', '', '']
+    initConfig().get.side_effect = ['subscription.rhsm.redhat.com', '443', '', '', '', '', '', '']
     config = Mock(base_url=None, upload_url=None, legacy_upload=False)
     _try_satellite6_configuration(config)
     # set_auto_configuration.assert_called_with(config, 'console.redhat.com', None, None, False)
-    set_auto_configuration.assert_called_with(config, 'cert-api.access.redhat.com', None, None, False, False)
+    set_auto_configuration.assert_called_with(config, 'cert-api.access.redhat.com', None, None, False, False, rhsm_no_proxy=None)
 
 
 @patch("insights.client.auto_config.rhsmCertificate", Mock())
@@ -43,12 +43,12 @@ def test_rhsm_stage_legacy_url(set_auto_configuration, initConfig):
     so the result is the same as platform upload.
 
     '''
-    initConfig().get.side_effect = ['subscription.rhsm.stage.redhat.com', '443', '', '', '', '', '']
+    initConfig().get.side_effect = ['subscription.rhsm.stage.redhat.com', '443', '', '', '', '', '', '']
     config = Mock(base_url=None, upload_url=None, legacy_upload=True)
     _try_satellite6_configuration(config)
     # config.legacy_upload is modified in the function
     config.legacy_upload = False
-    set_auto_configuration.assert_called_with(config, 'cert.cloud.stage.redhat.com', None, None, False, True)
+    set_auto_configuration.assert_called_with(config, 'cert.cloud.stage.redhat.com', None, None, False, True, rhsm_no_proxy=None)
 
 
 @patch("insights.client.auto_config.rhsmCertificate", Mock())
@@ -59,10 +59,10 @@ def test_rhsm_stage_platform_url(set_auto_configuration, initConfig):
     '''
     Ensure the correct host URL is selected for auto_config on a platform staging RHSM upload
     '''
-    initConfig().get.side_effect = ['subscription.rhsm.stage.redhat.com', '443', '', '', '', '', '']
+    initConfig().get.side_effect = ['subscription.rhsm.stage.redhat.com', '443', '', '', '', '', '', '']
     config = Mock(base_url=None, upload_url=None, legacy_upload=False)
     _try_satellite6_configuration(config)
-    set_auto_configuration.assert_called_with(config, 'cert.cloud.stage.redhat.com', None, None, False, True)
+    set_auto_configuration.assert_called_with(config, 'cert.cloud.stage.redhat.com', None, None, False, True, rhsm_no_proxy=None)
 
 
 @patch("insights.client.auto_config.rhsmCertificate", Mock())
@@ -73,10 +73,10 @@ def test_sat_legacy_url(set_auto_configuration, initConfig):
     '''
     Ensure the correct host URL is selected for auto_config on a legacy Sat upload
     '''
-    initConfig().get.side_effect = ['test.satellite.com', '443', '', '', '', '', 'test_cert']
+    initConfig().get.side_effect = ['test.satellite.com', '443', '', '', '', '', '', 'test_cert']
     config = Mock(base_url=None, upload_url=None, legacy_upload=True)
     _try_satellite6_configuration(config)
-    set_auto_configuration.assert_called_with(config, 'test.satellite.com:443/redhat_access', 'test_cert', None, True, False)
+    set_auto_configuration.assert_called_with(config, 'test.satellite.com:443/redhat_access', 'test_cert', None, True, False, rhsm_no_proxy=None)
 
 
 @patch("insights.client.auto_config.rhsmCertificate", Mock())
@@ -87,10 +87,10 @@ def test_sat_platform_url(set_auto_configuration, initConfig):
     '''
     Ensure the correct host URL is selected for auto_config on a platform Sat upload
     '''
-    initConfig().get.side_effect = ['test.satellite.com', '443', '', '', '', '', 'test_cert']
+    initConfig().get.side_effect = ['test.satellite.com', '443', '', '', '', '', '', 'test_cert']
     config = Mock(base_url=None, upload_url=None, legacy_upload=False)
     _try_satellite6_configuration(config)
-    set_auto_configuration.assert_called_with(config, 'test.satellite.com:443/redhat_access', 'test_cert', None, True, False)
+    set_auto_configuration.assert_called_with(config, 'test.satellite.com:443/redhat_access', 'test_cert', None, True, False, rhsm_no_proxy=None)
 
 
 @patch("insights.client.auto_config.verify_connectivity", Mock())

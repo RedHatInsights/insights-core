@@ -1,7 +1,6 @@
 """
 Custom datasources for cloud initialization information
 """
-import json
 import yaml
 
 from insights.core.context import HostContext
@@ -22,7 +21,13 @@ class LocalSpecs(Specs):
 @datasource(LocalSpecs.cloud_cfg_input, HostContext)
 def cloud_cfg(broker):
     """
-    This datasource provides configuration collected from ``/etc/cloud/cloud.cfg``.
+    This datasource provides configuration of ``/etc/cloud/cloud.cfg`` file.
+
+    .. note::
+        Since this file may contain sensitive information, it should be
+        filtered before the Insights collecting it.  The filters will be added
+        via the :mod:`insights.specs.Specs.cloud_cfg` Spec.  If nothing is
+        added to the filter, nothing will be collected.
 
     Typical content of ``/etc/cloud/cloud.cfg`` file is::
 
@@ -32,14 +37,14 @@ def cloud_cfg(broker):
             ssh-authorized-keys:
               - key_one
               - key_two
-            passwd: $6$j212wezy$7H/1LT4f9/N3wpgNunhsIqtMj62OKiS3nyNwuizouQc3u7MbYCarYeAHWYPYb2FT.lbioDm2RrkJPb9BZMN1O/
+            passwd: $6$j212wezy$7H/1LT4f9/N3wpgNunhsIqtMj62OKiS3nyNwuizouQc3u7
 
         ssh_deletekeys: 1
 
         network:
             version: 1
             config:
-            - type: physical
+              - type: physical
                 name: eth0
                 subnets:
                   - type: dhcp
@@ -55,43 +60,12 @@ def cloud_cfg(broker):
             output: /var/log/cloud-init-debug.log
             verbose: true
 
-    Note:
-        This datasource may be executed using the following command:
-
-        ``insights cat --no-header cloud_cfg``
-
-    Sample output in JSON format::
-
-        {
-          "ssh_deletekeys": 1,
-          "network": {
-            "version": 1,
-            "config": [
-              {
-                "type": "physical",
-                "name": "eth0",
-                "subnets": [
-                  {
-                    "type": "dhcp"
-                  },
-                  {
-                    "type": "dhcp6"
-                  }
-                ]
-              }
-            ]
-          },
-          "debug": {
-            "output": "/var/log/cloud-init-debug.log",
-            "verbose": true
-          }
-        }
-
     Returns:
-        str: JSON string after removing the sensitive information.
+        str: YAML string after removing the sensitive information.
 
     Raises:
-        SkipComponent: When the path does not exist or any exception occurs.
+        SkipComponent: When the path does not exist, nothing is collected,
+                       or any exception occurs.
     """
     relative_path = '/etc/cloud/cloud.cfg'
     try:
@@ -101,17 +75,13 @@ def cloud_cfg(broker):
             result = dict()
             content = yaml.load('\n'.join(content), Loader=yaml.SafeLoader)
             if isinstance(content, dict):
-                # remove sensitive data
-                content.pop('users', None)
-                content.pop('system_info', None)
-                # apply filters
+                # apply filters after ignoring sensitive data
                 for item in filters:
-                    if item in content:
+                    if item not in ('users', 'system_info') and item in content:
                         result[item] = content[item]
 
                 if result:
-                    result = dict(sorted(result.items(), key=lambda x: x[0]))
-                    return DatasourceProvider(content=json.dumps(result), relative_path=relative_path)
+                    return DatasourceProvider(content=yaml.dump(result), relative_path=relative_path)
             raise SkipComponent("Invalid YAML format")
     except Exception as e:
         raise SkipComponent("Unexpected exception:{e}".format(e=str(e)))
