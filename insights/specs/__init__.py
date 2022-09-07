@@ -610,6 +610,7 @@ class Specs(SpecSet):
     saphostexec_status = RegistryPoint()
     saphostexec_version = RegistryPoint()
     sat5_insights_properties = RegistryPoint()
+    satellite_capsule_features = RegistryPoint()
     satellite_compute_resources = RegistryPoint()
     satellite_content_hosts_count = RegistryPoint()
     satellite_core_taskreservedresource_count = RegistryPoint()

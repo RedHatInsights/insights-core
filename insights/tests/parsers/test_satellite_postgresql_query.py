@@ -188,6 +188,15 @@ SATELLITE_PROVISION_PARAMETERS_HIT_2 = """
 name,value
 """
 
+SATELLITE_CAPSULE_FEATURE_LIST = """
+proxy_name,feature_name
+a.test.com,Discovery
+a.test.com,Dynflow
+v.test.com,Dynflow
+v.test.com,SSH
+v.test.com,TFTP
+""".strip()
+
 
 def test_HTL_doc_examples():
     settings = satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_SETTINGS_1))
@@ -199,6 +208,7 @@ def test_HTL_doc_examples():
     repos = satellite_postgresql_query.SatelliteQualifiedKatelloRepos(context_wrap(SATELLITE_REPOS_INFO))
     multi_ref_katello_repos = satellite_postgresql_query.SatelliteKatellloReposWithMultipleRef(context_wrap(SATELLITE_KATELLO_REPOS_WITH_MULTI_REF))
     param_settings = satellite_postgresql_query.SatelliteProvisionParamSettings(context_wrap(SATELLITE_PROVISION_PARAMETERS_HIT_1))
+    smart_proxies = satellite_postgresql_query.SatelliteCapsuleFeatures(context_wrap(SATELLITE_CAPSULE_FEATURE_LIST))
     globs = {
         'table': settings,
         'resources_table': resources_table,
@@ -208,7 +218,8 @@ def test_HTL_doc_examples():
         'capsules': capsules,
         'repos': repos,
         'multi_ref_katello_repos': multi_ref_katello_repos,
-        'param_settings': param_settings
+        'param_settings': param_settings,
+        'smart_proxies': smart_proxies
     }
     failed, _ = doctest.testmod(satellite_postgresql_query, globs=globs)
     assert failed == 0
@@ -333,3 +344,15 @@ def test_satellite_provision_params():
 def test_satellite_provision_params_excep():
     with pytest.raises(SkipException):
         satellite_postgresql_query.SatelliteProvisionParamSettings(context_wrap(SATELLITE_PROVISION_PARAMETERS_HIT_2))
+
+
+def test_satellite_capsule_features():
+    proxies = satellite_postgresql_query.SatelliteCapsuleFeatures(context_wrap(SATELLITE_CAPSULE_FEATURE_LIST))
+    smart_proxies = list(set([row['proxy_name'] for row in proxies]))
+    assert len(smart_proxies) == 2
+    assert 'a.test.com' in smart_proxies
+    assert 'v.test.com' in smart_proxies
+    a_features = [row['feature_name'] for row in proxies if row['proxy_name'] == 'a.test.com']
+    assert len(a_features) == 2
+    assert 'Discovery' in a_features
+    assert 'Dynflow' in a_features

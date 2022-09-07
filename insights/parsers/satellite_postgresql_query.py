@@ -6,6 +6,8 @@ This module contains the following parsers:
 
 SatelliteAdminSettings - command ``psql -d foreman -c 'select name, value, "default" from settings where name in (\'destroy_vm_on_host_delete\', \'unregister_delete_host\') --csv'``
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SatelliteCapsuleFeatures - command `psql -d foreman -c 'select proxy.name proxy_name, features.name feature_name from smart_proxies as proxy, features, smart_proxy_features where proxy.id=smart_proxy_features.smart_proxy_id and features.id=smart_proxy_features.feature_id' --csv`
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 SatelliteComputeResources - command ``psql -d foreman -c 'select name, type from compute_resources' --csv``
 -----------------------------------------------------------------------------------------------------------
 SatelliteCoreTaskReservedResourceCount - command ``psql -d pulpcore -c 'select count(*) from core_taskreservedresource' --csv``
@@ -156,6 +158,40 @@ class SatelliteAdminSettings(SatellitePostgreSQLQuery):
         if rows:
             value = rows[0].get('value')
             return rows[0].get('default') if value == '' else value
+
+
+@parser(Specs.satellite_capsule_features)
+class SatelliteCapsuleFeatures(SatellitePostgreSQLQuery):
+    """
+    Parse the output of the command ``psql -d foreman -c 'select proxy.name proxy_name, features.name feature_name from smart_proxies as proxy, features, smart_proxy_features where proxy.id=smart_proxy_features.smart_proxy_id and features.id=smart_proxy_features.feature_id' --csv``.
+
+    Sample output::
+
+        proxy_name,feature_name
+        a.test.com,Discovery
+        a.test.com,Dynflow
+        a.test.com,Ansible
+        a.test.com,Openscap
+        a.test.com,SSH
+        a.test.com,TFTP
+        a.test.com,Logs
+        v.test.com,Dynflow
+        v.test.com,SSH
+        v.test.com,TFTP
+        v.test.com,Logs
+        v.test.com,Templates
+
+    Examples:
+        >>> type(smart_proxies)
+        <class 'insights.parsers.satellite_postgresql_query.SatelliteCapsuleFeatures'>
+        >>> capsules = list(set([row['proxy_name'] for row in smart_proxies]))
+        >>> 'a.test.com' in capsules
+        True
+        >>> 'v.test.com' in capsules
+        True
+
+    """
+    columns = ['proxy_name', 'feature_name']
 
 
 @parser(Specs.satellite_compute_resources)

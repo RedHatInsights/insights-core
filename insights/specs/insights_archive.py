@@ -230,6 +230,7 @@ class InsightsArchiveSpecs(Specs):
     saphostctl_getcimobject_sapinstance = simple_file("insights_commands/usr.sap.hostctrl.exe.saphostctrl_-function_GetCIMObject_-enuminstances_SAPInstance")
     saphostexec_status = simple_file("insights_commands/usr.sap.hostctrl.exe.saphostexec_-status")
     saphostexec_version = simple_file("insights_commands/usr.sap.hostctrl.exe.saphostexec_-version")
+    satellite_capsule_features = simple_file("insights_commands/sudo_-iu_postgres_.usr.bin.psql_-d_foreman_-c_select_proxy.name_proxy_name_features.name_feature_name_from_smart_proxies_as_proxy_features_smart_proxy_features_where_proxy.id_smart_proxy_features.smart_proxy_id_and_features.id_smart_proxy_features.feature")
     satellite_content_hosts_count = first_file([
         "insights_commands/sudo_-iu_postgres_.usr.bin.psql_-d_foreman_-c_select_count_from_hosts",
         "insights_commands/sudo_-iu_postgres_psql_-d_foreman_-c_select_count_from_hosts"

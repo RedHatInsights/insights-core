@@ -548,6 +548,10 @@ class DefaultSpecs(Specs):
     saphostexec_status = simple_command("/usr/sap/hostctrl/exe/saphostexec -status")
     saphostexec_version = simple_command("/usr/sap/hostctrl/exe/saphostexec -version")
     sat5_insights_properties = simple_file("/etc/redhat-access/redhat-access-insights.properties")
+    satellite_capsule_features = simple_command(
+        "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c 'select proxy.name proxy_name, features.name feature_name from smart_proxies as proxy, features, smart_proxy_features where proxy.id=smart_proxy_features.smart_proxy_id and features.id=smart_proxy_features.feature_id' --csv",
+        deps=[IsSatellite]
+    )
     satellite_compute_resources = simple_command(
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c 'select name, type from compute_resources' --csv",
         deps=[IsSatellite]
