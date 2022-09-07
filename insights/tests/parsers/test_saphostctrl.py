@@ -144,6 +144,7 @@ def test_saphostctrl_docs():
 def test_saphostctrl():
     sap = SAPHostCtrlInstances(context_wrap(SAPHOSTCTRL_HOSTINSTANCES_GOOD))
     assert len(sap) == 11
+    assert sap.data[-3]['SapVersionInfo'] == '749, patch 401, changelist 1806777'
     assert sap[-3]['SapVersionInfo'] == '749, patch 401, changelist 1806777'
     assert sorted(sap.instances) == sorted([
         'HDB88', 'HDB90', 'ERS08', 'ASCS07', 'DVEBMGS09', 'SCS10', 'HDB62',
