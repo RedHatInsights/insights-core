@@ -69,9 +69,10 @@ class SAPHostCtrlInstances(CommandParser, list):
         ['D89', 'D90']
 
     Attributes:
+        instances (list): The list of instances found in the cluster output.
         sids (list): The list of SID found in the cluster output.
         types (list): The list of short instance types.  The short instance
-            type is set as the characthers of the `InstanceName` before the
+            type is set as the characters of the `InstanceName` before the
             `SystemNumber`.
 
     Raises:
