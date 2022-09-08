@@ -235,6 +235,7 @@ class InsightsArchiveSpecs(Specs):
         "insights_commands/sudo_-iu_postgres_psql_-d_foreman_-c_select_count_from_hosts"
     ])
     satellite_custom_ca_chain = simple_file("insights_commands/awk_BEGIN_pipe_openssl_x509_-noout_-subject_-enddate_._-_BEGIN_CERT._._-_END_CERT._print_pipe_._-_END_CERT._close_pipe_printf_n_.etc.pki.katello.certs.katello-server-ca.crt")
+    satellite_enabled_features = simple_file("insights_commands/curl_-sk_https_..localhost_9090.features_--connect-timeout_5")
     satellite_mongodb_storage_engine = simple_file("insights_commands/mongo_pulp_database_--eval_db.serverStatus_.storageEngine")
     satellite_katello_repos_with_muliple_ref = simple_file('insights_commands/sudo_-iu_postgres_.usr.bin.psql_-d_foreman_-c_select_repository_href_count_from_katello_repository_references_group_by_repository_href_having_count_1_--csv')
     satellite_provision_param_settings = simple_file('insights_commands/sudo_-iu_postgres_.usr.bin.psql_-d_foreman_-c_select_name_value_from_parameters_where_name_package_upgrade_and_reference_id_in_select_id_from_operatingsystems_where_name_RedHat_and_major_9_--csv')
