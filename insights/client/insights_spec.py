@@ -8,7 +8,7 @@ import time
 import sys
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
-from insights.util import mangle
+from insights.util import mangle, which
 
 from .constants import InsightsConstants as constants
 from .utilities import determine_hostname
@@ -61,13 +61,15 @@ class InsightsCommand(InsightsSpec):
         else:
             signal = 'KILL'
 
-        timeout_command = 'timeout -s %s %s %s' % (
-            signal, self.config.cmd_timeout, self.command)
-
         # ensure consistent locale for collected command output
         cmd_env = {'LC_ALL': 'C',
                    'PATH': '/sbin:/bin:/usr/sbin:/usr/bin',
                    'PYTHONPATH': os.getenv('PYTHONPATH')}
+
+        timeout = which('timeout', env=cmd_env)
+        timeout_command = '%s -s %s %s %s' % (
+            timeout, signal, self.config.cmd_timeout, self.command)
+
         args = shlex.split(timeout_command)
 
         # never execute this stuff
