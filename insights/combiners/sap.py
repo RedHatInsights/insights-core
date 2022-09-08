@@ -4,8 +4,8 @@ Sap
 This combiner combines the result of
 insights.parsers.saphostctrl.SAPHostCtrlInstances` and
 `:class:`insights.parsers.lssap.Lssap` to get the available SAP instances.
-Prefer the ``SAPHostCtrlInstances`` to ``Lssap``.
 
+Prefer the ``SAPHostCtrlInstances`` to ``Lssap``.
 """
 
 from collections import namedtuple
@@ -17,18 +17,18 @@ from insights.parsers.saphostctrl import SAPHostCtrlInstances
 
 
 SAPInstances = namedtuple("SAPInstances",
-        field_names=["name", "hostname", "sid", "type", "number", "fqdn", "version"])
+        field_names=["name", "hostname", "sid", "type", "full_type", "number", "fqdn", "version"])
 """namedtuple: Type for storing the SAP instance."""
 
-FUNC_TYPES = ('SMDA',)
-"""
-SMDA   :    Solution Manager Diagnostics Agents
-"""
+FUNC_FULL_TYPES = [
+    'Solution Manager Diagnostic Agent',
+    'Diagnostic Agent'
+]
 NETW_TYPES = ('D', 'ASCS', 'DVEBMGS', 'J', 'SCS', 'ERS', 'W', 'G', 'JC')
 """
 D      :    NetWeaver (ABAP Dialog Instance)
 ASCS   :    NetWeaver (ABAP Central Services)
-DVEBMGS:    NetWeaver (Primary Application server
+DVEBMGS:    NetWeaver (Primary Application server)
 J      :    NetWeaver (Java App Server Instance)
 SCS    :    NetWeaver (Java Central Services)
 ERS    :    NetWeaver (Enqueue Replication Server)
@@ -90,7 +90,7 @@ class Sap(dict):
         if insts:
             self._types = insts.types
             self.all_instances = insts.instances
-            for inst in insts.data:
+            for inst in insts:
                 k = inst['InstanceName']
                 if (hn == inst['Hostname'].split('.')[0] or
                         fqdn == inst['FullQualifiedHostname'] or
@@ -99,6 +99,7 @@ class Sap(dict):
                 data[k] = SAPInstances(k,
                                        inst['Hostname'],
                                        inst['SID'],
+                                       inst['InstanceName'].strip('1234567890'),
                                        inst['InstanceType'],
                                        inst['SystemNumber'],
                                        inst['FullQualifiedHostname'],
@@ -114,6 +115,7 @@ class Sap(dict):
                                        inst['SAPLOCALHOST'],
                                        inst['SID'],
                                        t,
+                                       t,  # Use short
                                        inst['Nr'],
                                        None,
                                        inst['Version'])
@@ -122,8 +124,10 @@ class Sap(dict):
 
         self.update(data)
 
-        for i in self.all_instances:
-            (self.function_instances if i.startswith(FUNC_TYPES) else self.business_instances).append(i)
+        for i in self.values():
+            (self.function_instances
+                if i.full_type in FUNC_FULL_TYPES else
+                    self.business_instances).append(i.name)
 
     def version(self, instance):
         """str: Returns the version of the ``instance``."""
@@ -134,8 +138,12 @@ class Sap(dict):
         return self[instance].sid if instance in self else None
 
     def type(self, instance):
-        """str: Returns the type code of the ``instance``."""
+        """str: Returns the short type code of the ``instance``."""
         return self[instance].type if instance in self else None
+
+    def full_type(self, instance):
+        """str: Returns the full type code of the ``instance``."""
+        return self[instance].full_type if instance in self else None
 
     def hostname(self, instance):
         """str: Returns the hostname of the ``instance``."""
