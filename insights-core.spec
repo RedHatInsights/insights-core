@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.292
+Version:        3.0.293
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,12 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Sep 08 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.293-1
+- fix: support InstanceType in saphostctrl (#3512) (xiangceliu@redhat.com)
+- Feat: add secure spec to default.py (#3513) (986222045@qq.com)
+- Ensure full path when using timeout command (#3508)
+  (20520336+bfahr@users.noreply.github.com)
+
 * Thu Sep 01 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.292-1
 - Added no_proxy autoconfiguration from rhsm conf and tests (#3507)
   (93577878+ahitacat@users.noreply.github.com)
