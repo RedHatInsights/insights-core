@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.293](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.293) (2022-09-08)
+
+- fix: support InstanceType in saphostctrl ([PR 3512](https://github.com/RedHatInsights/insights-core/pull/3512))
+- Feat: add secure spec to default.py ([PR 3513](https://github.com/RedHatInsights/insights-core/pull/3513))
+- Ensure full path when using timeout command ([PR 3508](https://github.com/RedHatInsights/insights-core/pull/3508))
+
 ## [insights-core-3.0.292](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.292) (2022-09-01)
 
 - Added no_proxy autoconfiguration from rhsm conf and tests ([PR 3507](https://github.com/RedHatInsights/insights-core/pull/3507))
