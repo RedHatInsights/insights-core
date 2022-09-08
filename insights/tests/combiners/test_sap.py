@@ -1,3 +1,6 @@
+import pytest
+import doctest
+
 from insights.parsers.hostname import Hostname as HnF
 from insights import SkipComponent
 from insights.parsers.lssap import Lssap
@@ -6,8 +9,7 @@ from insights.combiners import sap
 from insights.combiners.sap import Sap
 from insights.combiners.hostname import Hostname
 from insights.tests import context_wrap
-import pytest
-import doctest
+from insights.tests.parsers.test_saphostctrl import SAPHOSTCTRL_HOSTINSTANCES_DOCS, SAPHOSTCTRL_HOSTINSTANCES_GOOD
 
 Lssap_nw_TEST = """
  - lssap version 1.0 -
@@ -61,167 +63,44 @@ Lssap_doc_TEST = """
 HOSTNAME = 'lu0417.example.com'
 HOSTNAME1 = 'li-ld-1810.example.com'
 
-SAPHOSTCTRL_HOSTINSTANCES = '''
-*********************************************************
- CreationClassName , String , SAPInstance
- SID , String , D89
- SystemNumber , String , 88
- InstanceName , String , HDB88
- Hostname , String , lu0417
- FullQualifiedHostname , String , lu0417.example.com
- IPAddress , String , 10.0.0.88
- SapVersionInfo , String , 749, patch 211, changelist 1754007
-*********************************************************
- CreationClassName , String , SAPInstance
- SID , String , D90
- SystemNumber , String , 90
- InstanceName , String , HDB90
- Hostname , String , lu0418
- FullQualifiedHostname , String , lu0418.example.com
- IPAddress , String , 10.0.0.90
- SapVersionInfo , String , 749, patch 211, changelist 1754007
-'''
-
-SAPHOSTCTRL_HOSTINSTANCES_GOOD = '''
-*********************************************************
- CreationClassName , String , SAPInstance
- SID , String , D89
- SystemNumber , String , 88
- InstanceName , String , HDB88
- Hostname , String , li-ld-1810
- FullQualifiedHostname , String , li-ld-1810.example.com
- IPAddress , String , 10.0.0.1
- SapVersionInfo , String , 749, patch 211, changelist 1754007
-*********************************************************
- CreationClassName , String , SAPInstance
- SID , String , D90
- SystemNumber , String , 90
- InstanceName , String , HDB90
- Hostname , String , li-ld-1810
- FullQualifiedHostname , String , li-ld-1810.example.com
- IPAddress , String , 10.0.0.1
- SapVersionInfo , String , 749, patch 211, changelist 1754007
-*********************************************************
- CreationClassName , String , SAPInstance
- SID , String , D79
- SystemNumber , String , 08
- InstanceName , String , ERS08
- Hostname , String , d79ers
- FullQualifiedHostname , String , d79ers.example.com
- IPAddress , String , 10.0.0.15
- SapVersionInfo , String , 749, patch 301, changelist 1779613
-*********************************************************
- CreationClassName , String , SAPInstance
- SID , String , D79
- SystemNumber , String , 07
- InstanceName , String , ASCS07
- Hostname , String , d79ascs
- FullQualifiedHostname , String , d79ascs.example.com
- IPAddress , String , 10.0.0.14
- SapVersionInfo , String , 749, patch 301, changelist 1779613
-*********************************************************
- CreationClassName , String , SAPInstance
- SID , String , D79
- SystemNumber , String , 09
- InstanceName , String , DVEBMGS09
- Hostname , String , d79pas
- FullQualifiedHostname , String , d79pas.example.com
- IPAddress , String , 10.0.0.16
- SapVersionInfo , String , 749, patch 301, changelist 1779613
-*********************************************************
- CreationClassName , String , SAPInstance
- SID , String , D80
- SystemNumber , String , 10
- InstanceName , String , SCS10
- Hostname , String , d80scs
- FullQualifiedHostname , String , d80scs.example.com
- IPAddress , String , 10.0.0.17
- SapVersionInfo , String , 749, patch 301, changelist 1779613
-*********************************************************
- CreationClassName , String , SAPInstance
- SID , String , D62
- SystemNumber , String , 62
- InstanceName , String , HDB62
- Hostname , String , d62dbsrv
- FullQualifiedHostname , String , li-ld-1810.example.com
- IPAddress , String , 10.0.1.12
- SapVersionInfo , String , 749, patch 211, changelist 1754007
-*********************************************************
- CreationClassName , String , SAPInstance
- SID , String , D52
- SystemNumber , String , 52
- InstanceName , String , ASCS52
- Hostname , String , d52ascs
- FullQualifiedHostname , String , d52ascs.example.com
- IPAddress , String , 10.0.0.20
- SapVersionInfo , String , 749, patch 401, changelist 1806777
-*********************************************************
- CreationClassName , String , SAPInstance
- SID , String , D52
- SystemNumber , String , 54
- InstanceName , String , D54
- Hostname , String , d52pas
- FullQualifiedHostname , String , d52pas.example.com
- IPAddress , String , 10.0.0.22
- SapVersionInfo , String , 749, patch 401, changelist 1806777
-*********************************************************
- CreationClassName , String , SAPInstance
- SID , String , SMA
- SystemNumber , String , 91
- InstanceName , String , SMDA91
- Hostname , String , li-ld-1810
- FullQualifiedHostname , String , li-ld-1810.example.com
- IPAddress , String , 10.0.0.1
- SapVersionInfo , String , 749, patch 200, changelist 1746260
-*********************************************************
- CreationClassName , String , SAPInstance
- SID , String , B15
- SystemNumber , String , 00
- InstanceName , String , HDB00
- Hostname , String , sapb15hdba1
- FullQualifiedHostname , String , li-ld-1810.example.com
- SapVersionInfo , String , 749, patch 418, changelist 1816226
-*********************************************************
-'''
-
 SAPHOSTCTRL_HOSTINSTANCES_R_CASE = '''
 *********************************************************
- CreationClassName , String , SAPInstance
  SID , String , R4D
  SystemNumber , String , 12
  InstanceName , String , DVEBMGS12
+ InstanceType , String , Primary Application Server
  Hostname , String , r4d00
  FullQualifiedHostname , String , r4d00.example.corp
  SapVersionInfo , String , 753, patch 501, changelist 1967207
 *********************************************************
- CreationClassName , String , SAPInstance
  SID , String , R4D
  SystemNumber , String , 10
  InstanceName , String , ASCS10
+ InstanceType , String , ABAP Central Services
  Hostname , String , r4d01
  FullQualifiedHostname , String , r4d01.example.corp
  SapVersionInfo , String , 753, patch 501, changelist 1967207
 *********************************************************
- CreationClassName , String , SAPInstance
  SID , String , WDX
  SystemNumber , String , 20
  InstanceName , String , W20
+ InstanceType , String , WebDispatcher
  Hostname , String , r4d02
  FullQualifiedHostname , String , host_97.example.corp
  SapVersionInfo , String , 773, patch 121, changelist 1917131
 *********************************************************
- CreationClassName , String , SAPInstance
  SID , String , SMD
  SystemNumber , String , 98
  InstanceName , String , SMDA98
+ InstanceType , String , Solution Manager Diagnostic Agent
  Hostname , String , r4d01
  FullQualifiedHostname , String , host_97.example.corp
  SapVersionInfo , String , 745, patch 400, changelist 1734487
 *********************************************************
- CreationClassName , String , SAPInstance
  SID , String , SMD
  SystemNumber , String , 97
  InstanceName , String , SMDA97
+ InstanceType , String , Solution Manager Diagnostic Agent
  Hostname , String , r4d00
  FullQualifiedHostname , String , host_97.example.corp
  SapVersionInfo , String , 745, patch 400, changelist 1734487
@@ -245,7 +124,7 @@ def test_lssap_netweaver():
 
 def test_saphostcrtl_hana():
     lssap = Lssap(context_wrap(Lssap_nw_TEST))
-    inst = SAPHostCtrlInstances(context_wrap(SAPHOSTCTRL_HOSTINSTANCES))
+    inst = SAPHostCtrlInstances(context_wrap(SAPHOSTCTRL_HOSTINSTANCES_DOCS))
     hn = Hostname(HnF(context_wrap(HOSTNAME)), None, None, None)
     sap = Sap(hn, inst, lssap)
     assert 'D50' not in sap
@@ -282,6 +161,7 @@ def test_saphostcrtl_hana_2():
     assert sap.version('HDB90') == '749, patch 211, changelist 1754007'
     assert sap.hostname('HDB62') == 'd62dbsrv'
     assert sap.type('SCS10') == 'SCS'
+    assert sap.full_type('SCS10') == 'Java Central Services'
     assert sap.is_netweaver is True
     assert sap.is_hana is True
     assert sap.is_ascs is True
