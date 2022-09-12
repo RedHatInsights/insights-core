@@ -9,20 +9,14 @@ There may be multiple logrotate configuration, and the main configuration file i
 options, and all other options (if there are) will be discarded.
 
 """
-
 import operator
 import os
-import string
+
 from fnmatch import fnmatch
-from insights.core import ConfigCombiner, ConfigParser
-from insights.core.plugins import combiner, parser
-from insights.parsers.logrotate_conf import LogrotateConf
+from insights.core import ConfigCombiner
+from insights.core.plugins import combiner
+from insights.parsers.logrotate_conf import LogrotateConf, LogRotateConfPEG
 from insights.parsr.query import eq
-from insights.specs import Specs
-from insights.parsr import (AnyChar, Choice, EOF, EOL, Forward, LeftCurly,
-        LineEnd, Literal, Many, Number, OneLineComment, Opt, PosMarker,
-        QuotedString, RightCurly, skip_none, String, WS, WSChar)
-from insights.parsr.query import Directive, Entry, Section
 
 
 @combiner(LogrotateConf)
@@ -146,65 +140,7 @@ class LogrotateConfAll(object):
                 return f
 
 
-class DocParser(object):
-    def __init__(self, ctx):
-        self.ctx = ctx
-
-        scripts = set("postrotate prerotate firstaction lastaction preremove".split())
-        Stanza = Forward()
-        Spaces = Many(WSChar)
-        Bare = String(set(string.printable) - (set(string.whitespace) | set("#{}'\"")))
-        Num = Number & (WSChar | LineEnd)
-        Comment = OneLineComment("#").map(lambda x: None)
-        ScriptStart = WS >> PosMarker(Choice([Literal(s) for s in scripts])) << WS
-        ScriptEnd = Literal("endscript")
-        Line = (WS >> AnyChar.until(EOL) << WS).map(lambda x: "".join(x))
-        Lines = Line.until(ScriptEnd | EOF).map(lambda x: "\n".join(x))
-        Script = ScriptStart + Lines << Opt(ScriptEnd)
-        Script = Script.map(lambda x: [x[0], [x[1]], None])
-        BeginBlock = WS >> LeftCurly << WS
-        EndBlock = WS >> RightCurly
-        First = PosMarker((Bare | QuotedString)) << Spaces
-        Attr = Spaces >> (Num | Bare | QuotedString) << Spaces
-        Rest = Many(Attr)
-        Block = BeginBlock >> Many(Stanza).map(skip_none).map(self.to_entries) << EndBlock
-        Stmt = WS >> (Script | (First + Rest + Opt(Block))) << WS
-        Stanza <= WS >> (Stmt | Comment) << WS
-        Doc = Many(Stanza).map(skip_none).map(self.to_entries)
-
-        self.Top = Doc << EOF
-
-    def to_entries(self, x):
-        ret = []
-        for i in x:
-            name, attrs, body = i
-            if body:
-                for n in [name.value] + attrs:
-                    ret.append(Section(name=n, children=body, lineno=name.lineno))
-            else:
-                ret.append(Directive(name=name.value, attrs=attrs, lineno=name.lineno))
-        return ret
-
-    def __call__(self, content):
-        return self.Top(content)
-
-
-def parse_doc(content, ctx=None):
-    """ Parse a configuration document into a tree that can be queried. """
-    if isinstance(content, list):
-        content = "\n".join(content)
-    parse = DocParser(ctx)
-    result = parse(content)
-    return Entry(children=result, src=ctx)
-
-
-@parser(Specs.logrotate_conf, continue_on_error=False)
-class _LogRotateConf(ConfigParser):
-    def parse_doc(self, content):
-        return parse_doc("\n".join(content), ctx=self)
-
-
-@combiner(_LogRotateConf)
+@combiner(LogRotateConfPEG)
 class LogRotateConfTree(ConfigCombiner):
     """
     Exposes logrotate configuration through the parsr query interface.
@@ -228,12 +164,3 @@ class LogRotateConfTree(ConfigCombiner):
             elif fnmatch(c.file_path, pattern):
                 results.append(c)
         return sorted(results, key=operator.attrgetter("file_name"))
-
-
-def get_tree(root=None):
-    """
-    This is a helper function to get a logrotate configuration component for
-    your local machine or an archive. It's for use in interactive sessions.
-    """
-    from insights import run
-    return run(LogRotateConfTree, root=root).get(LogRotateConfTree)

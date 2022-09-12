@@ -8,16 +8,16 @@ runs all datasources in ``insights.specs.Specs`` and
 ``insights.specs.Specs``.
 """
 from __future__ import print_function
-from contextlib import contextmanager
 import argparse
 import logging
 import os
+import sys
 import tempfile
 import yaml
 
 from datetime import datetime
 
-from insights import apply_configs, apply_default_enabled, dr
+from insights import apply_configs, apply_default_enabled, dr, get_pool
 from insights.core import blacklist, filters
 from insights.core.serde import Hydration
 from insights.util import fs
@@ -144,6 +144,10 @@ plugins:
         - name: insights.combiners.services
           enabled: true
 
+    # needed for the 'teamdctl_state_dump' spec
+        - name: insights.parsers.nmcli.NmcliConnShow
+          enabled: true
+
     # needed for multiple Datasouce specs
         - name: insights.parsers.ps.PsAuxcww
           enabled: true
@@ -159,6 +163,10 @@ plugins:
           enabled: true
 
         - name: insights.combiners.httpd_conf._HttpdConf
+          enabled: true
+
+    # needed for httpd_on_nfs
+        - name: insights.parsers.mount.ProcMounts
           enabled: true
 
     # needed for nginx_ssl_cert_enddate
@@ -202,9 +210,17 @@ plugins:
     # needed for the 'pre-check' of the 'is_satellite_server' spec
         - name: insights.combiners.satellite_version.SatelliteVersion
           enabled: true
+        - name: insights.components.satellite.IsSatellite
+          enabled: true
 
     # needed for the 'pre-check' of the 'is_satellite_capsule' spec
         - name: insights.combiners.satellite_version.CapsuleVersion
+          enabled: true
+        - name: insights.components.satellite.IsCapsule
+          enabled: true
+
+    # needed for the 'pre-check' of the 'satellite_provision_param_settings' spec
+        - name: insights.components.satellite.IsSatellite611
           enabled: true
 
     # needed for the 'pre-check' of the 'corosync_cmapctl_cmd_list' spec
@@ -317,25 +333,6 @@ def create_archive(path, remove_path=True):
     return archive_path
 
 
-@contextmanager
-def get_pool(parallel, kwargs):
-    """
-    Yields:
-        a ThreadPoolExecutor if parallel is True and `concurrent.futures` exists.
-        `None` otherwise.
-    """
-
-    if parallel:
-        try:
-            from concurrent.futures import ThreadPoolExecutor
-            with ThreadPoolExecutor(thread_name_prefix="insights-collector-pool", **kwargs) as pool:
-                yield pool
-        except ImportError:
-            yield None
-    else:
-        yield None
-
-
 def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=None, client_timeout=None):
     """
     This is the collection entry point. It accepts a manifest, a temporary
@@ -413,7 +410,7 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
 
     parallel = run_strategy.get("name") == "parallel"
     pool_args = run_strategy.get("args", {})
-    with get_pool(parallel, pool_args) as pool:
+    with get_pool(parallel, "insights-collector-pool", pool_args) as pool:
         h = Hydration(output_path, pool=pool)
         broker.add_observer(h.make_persister(to_persist))
         dr.run_all(broker=broker, pool=pool)
@@ -424,6 +421,12 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
 
 
 def main():
+    # Remove command line args so that they are not parsed by any called modules
+    # The main fxn is only invoked as a cli, if calling from another cli then
+    # use the collect function instead
+    collect_args = [arg for arg in sys.argv[1:]] if len(sys.argv) > 1 else []
+    sys.argv = [sys.argv[0], ] if sys.argv else sys.argv
+
     p = argparse.ArgumentParser()
     p.add_argument("-m", "--manifest", help="Manifest yaml.")
     p.add_argument("-o", "--out_path", help="Path to write output data.")
@@ -431,7 +434,7 @@ def main():
     p.add_argument("-v", "--verbose", help="Verbose output.", action="store_true")
     p.add_argument("-d", "--debug", help="Debug output.", action="store_true")
     p.add_argument("-c", "--compress", help="Compress", action="store_true")
-    args = p.parse_args()
+    args = p.parse_args(args=collect_args)
 
     level = logging.WARNING
     if args.verbose:

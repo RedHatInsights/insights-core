@@ -1,5 +1,7 @@
 import os
 import sys
+from tarfile import open as tar_open
+import tarfile
 import tempfile
 import uuid
 import insights.client.utilities as util
@@ -9,6 +11,7 @@ import mock
 import six
 import pytest
 from mock.mock import patch
+from json import loads as json_load
 
 
 machine_id = str(uuid.uuid4())
@@ -56,6 +59,17 @@ def test_generate_machine_id():
         machine_id = _file.read()
     assert util.generate_machine_id(destination_file='/tmp/testmachineid') == machine_id
     os.remove('/tmp/testmachineid')
+
+
+def test_generate_machine_id_with_non_hyphen_id():
+    content = '86f6f5fad8284730b708a2e44ba5c14a'
+    filename = '/tmp/testmachineid'
+    util.write_to_disk(filename, content=content)
+
+    returned_uuid = str(uuid.UUID(content, version=4))
+
+    assert util.generate_machine_id(destination_file=filename) == returned_uuid
+    os.remove(filename)
 
 
 def test_bad_machine_id():
@@ -323,3 +337,41 @@ def test_migrate_tags(path_exists, os_rename):
     util.migrate_tags()
     os_rename.assert_not_called()
     os_rename.reset_mock()
+
+
+def mock_open(name, mode, files=[["meta_data/insights.spec-small", 1], ["meta_data/insights.spec-big", 1], ["data/insights/small", 1], ["data/insights/big", 100]]):
+    base_path = "./insights-client"
+    with tempfile.TemporaryFile(suffix='.tar.gz') as f:
+        tarball = tar_open(fileobj=f, mode='w:gz')
+        for file in files:
+            member = tarfile.TarInfo(name=os.path.join(base_path, file[0]))
+            member.size = file[1]
+            tarball.addfile(member, None)
+        return tarball
+
+
+def mock_extract_file(self, filename):
+    if "small" in filename:
+        f = "small"
+    else:
+        f = "big"
+    return f
+
+
+def mock_json_load(filename):
+    if "small" in filename:
+        content = json_load('{"name": "insights.spec-small", "results": {"type": "insights.core.spec_factory.CommandOutputProvider", "object": { "relative_path": "insights/small"}}}')
+    else:
+        content = json_load('{"name": "insights.spec-big", "results": {"type": "insights.core.spec_factory.CommandOutputProvider", "object": { "relative_path": "insights/big"}}}')
+    return content
+
+
+# TODO: try to pass files as mock_open parameter
+@patch('insights.client.utilities.tarfile.open', mock_open)
+@patch('insights.client.utilities.json.load', mock_json_load)
+@patch('insights.client.utilities.tarfile.TarFile.extractfile', mock_extract_file)
+def test_largest_spec_in_archive():
+    largest_file = util.largest_spec_in_archive("/tmp/insights-client.tar.gz")
+    assert largest_file[0] == "insights/big"
+    assert largest_file[1] == 100
+    assert largest_file[2] == "insights.spec-big"

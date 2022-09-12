@@ -13,9 +13,9 @@ SwiftProxyServerConf - file ``/etc/swift/proxy-server.conf``
 SwiftConf - file ``/etc/swift/swift.conf``
 ------------------------------------------------------------
 """
-
-from .. import IniConfigFile, parser
-from ..specs import Specs
+from insights.core import IniConfigFile
+from insights.core.plugins import parser
+from insights.specs import Specs
 
 
 @parser(Specs.swift_proxy_server_conf)
@@ -47,7 +47,7 @@ class SwiftProxyServerConf(IniConfigFile):
     Examples:
         >>> 'app:proxy-server' in proxy_server_conf
         True
-        >>> proxy_server_conf.get('filter:catch_errors', 'use') == 'egg:swift#catch_errors'
+        >>> proxy_server_conf.get('filter:catch_errors', 'use') == 'egg:swift'
         True
         >>> proxy_server_conf.getint('DEFAULT', 'bind_port')
         8080

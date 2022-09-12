@@ -12,9 +12,10 @@ GnocchiMetricdLog - file ``gnocchi-metricd.log`` or ``metricd.log``
 -------------------------------------------------------------------
 """
 
-from .. import parser, IniConfigFile, LogFileOutput
-from insights.specs import Specs
+from insights.core import IniConfigFile, LogFileOutput
 from insights.core.filters import add_filter
+from insights.core.plugins import parser
+from insights.specs import Specs
 
 
 add_filter(Specs.gnocchi_conf, "[")
@@ -65,7 +66,8 @@ class GnocchiConf(IniConfigFile):
 
 
     Examples:
-
+        >>> type(conf)
+        <class 'insights.parsers.gnocchi.GnocchiConf'>
         >>> sorted(conf.sections()) == sorted([u'api', u'archive_policy', u'indexer', u'metricd', u'oslo_middleware', u'oslo_policy', u'statsd', u'storage', u'keystone_authtoken'])
         True
         >>> 'storage' in conf
@@ -76,7 +78,6 @@ class GnocchiConf(IniConfigFile):
         True
         >>> conf.getint("statsd", "flush_delay")
         10
-
     """
     pass
 

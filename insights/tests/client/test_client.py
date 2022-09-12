@@ -1,3 +1,5 @@
+from contextlib import contextmanager
+from shutil import rmtree
 import sys
 import os
 import pytest
@@ -12,6 +14,10 @@ from insights.client.utilities import generate_machine_id
 from mock.mock import patch, Mock, call
 from pytest import mark
 from pytest import raises
+
+# Temporary directory to mock registration files
+TEMP_TEST_REG_DIR = "/tmp/insights-client-register"
+TEMP_TEST_REG_DIR2 = "/tmp/redhat-access-insights-register"
 
 
 @pytest.fixture(autouse=True)
@@ -84,25 +90,57 @@ def test_register():
         assert os.path.isfile(u) is False
 
 
-@pytest.mark.skip(reason="Mocked paths not working in QE jenkins")
+@contextmanager
+def _mock_registered_files():
+    # mock a directory with the registered files
+    if not os.path.exists(TEMP_TEST_REG_DIR):
+        os.mkdir(TEMP_TEST_REG_DIR)
+    if not os.path.exists(TEMP_TEST_REG_DIR2):
+        os.mkdir(TEMP_TEST_REG_DIR2)
+    try:
+        registered_path = os.path.join(TEMP_TEST_REG_DIR, ".registered")
+        with open(registered_path, "w") as registered_file:
+            registered_file.write("date")
+        machine_id_path = os.path.join(TEMP_TEST_REG_DIR, "machine-id")
+        with open(machine_id_path, "w") as machine_id_file:
+            machine_id_file.write("id")
+        registered_path2 = os.path.join(TEMP_TEST_REG_DIR2, ".registered")
+        with open(registered_path2, "w") as registered_file:
+            registered_file.write("date")
+
+        yield
+    finally:
+        rmtree(TEMP_TEST_REG_DIR)
+        rmtree(TEMP_TEST_REG_DIR2)
+
+
+@patch('insights.client.utilities.write_unregistered_file', Mock())
+@patch('insights.client.utilities.delete_cache_files', Mock())
+@patch('insights.client.utilities.write_to_disk')
+@patch('insights.client.client.write_to_disk')
+@patch('insights.client.utilities.get_time', return_value='now')
 @patch('insights.client.utilities.constants.registered_files',
-       ['/tmp/insights-client.registered',
-        '/tmp/redhat-access-insights.registered'])
+       [TEMP_TEST_REG_DIR + '/.registered',
+        TEMP_TEST_REG_DIR2 + '/.registered'])
 @patch('insights.client.utilities.constants.unregistered_files',
-       ['/tmp/insights-client.unregistered',
-        '/tmp/redhat-access-insights.unregistered'])
+       [TEMP_TEST_REG_DIR + '/.unregistered',
+        TEMP_TEST_REG_DIR2 + '/.unregistered'])
 @patch('insights.client.utilities.constants.machine_id_file',
-       '/tmp/machine-id')
-def test_unregister():
-    config = InsightsConfig(unregister=True)
+       TEMP_TEST_REG_DIR + '/machine-id')
+def test_new_unregister(date, write_to_disk, write):
+    config = InsightsConfig(unregister=True, legacy_upload=False)
     client = InsightsClient(config)
     client.connection = FakeConnection(registered=True)
     client.session = True
-    assert client.unregister() is True
-    for r in constants.registered_files:
-        assert os.path.isfile(r) is False
-    for u in constants.unregistered_files:
-        assert os.path.isfile(u) is True
+    with _mock_registered_files():
+        assert client.unregister() is True
+    write_to_disk.assert_called_once_with(constants.machine_id_file, delete=True)
+    write.assert_has_calls((
+        call(constants.registered_files[0], delete=True),
+        call(constants.registered_files[1], delete=True),
+        call(constants.unregistered_files[0], content=date.return_value),
+        call(constants.unregistered_files[1], content=date.return_value)
+    ))
 
 
 @pytest.mark.skip(reason="Mocked paths not working in QE jenkins")
@@ -341,18 +379,44 @@ def test_upload_412_write_unregistered_file(_, upload_archive, write_unregistere
         sys.argv = tmp
 
 
-def test_cleanup_tmp():
-    config = InsightsConfig(keep_archive=True)
+@patch('insights.client.archive.InsightsArchive.storing_archive')
+@patch('insights.client.archive.tempfile.mkdtemp', Mock())
+@patch('insights.client.archive.os.makedirs', Mock())
+@patch('insights.client.archive.atexit', Mock())
+def test_cleanup_tmp(storing_archive):
+    config = InsightsConfig(keep_archive=False)
     arch = InsightsArchive(config)
-    arch.tar_file = os.path.join(arch.archive_tmp_dir, 'test.tar.gz')
+    arch.tmp_dir = "/test"
+    arch.tar_file = "/test/test.tar.gz"
+    arch.keep_archive_dir = "/test-keep-archive"
     arch.cleanup_tmp()
     assert not os.path.exists(arch.tmp_dir)
-    assert os.path.exists(arch.archive_tmp_dir)
+    storing_archive.assert_not_called()
 
-    config.keep_archive = False
+    config.keep_archive = True
     arch.cleanup_tmp()
     assert not os.path.exists(arch.tmp_dir)
-    assert not os.path.exists(arch.archive_tmp_dir)
+    storing_archive.assert_called_once()
+
+
+@patch('insights.client.archive.InsightsArchive.storing_archive')
+@patch('insights.client.archive.tempfile.mkdtemp', Mock())
+@patch('insights.client.archive.os.makedirs', Mock())
+@patch('insights.client.archive.atexit', Mock())
+def test_cleanup_tmp_obfuscation(storing_archive):
+    config = InsightsConfig(keep_archive=False, obfuscate=True)
+    arch = InsightsArchive(config)
+    arch.tmp_dir = '/var/tmp/insights-archive-000000'
+    arch.tar_file = '/var/tmp/insights-archive-test.tar.gz'
+    arch.keep_archive_dir = '/var/tmp/test-archive'
+    arch.cleanup_tmp()
+    assert not os.path.exists(arch.tmp_dir)
+    storing_archive.assert_not_called()
+
+    arch.config.keep_archive = True
+    arch.cleanup_tmp()
+    assert not os.path.exists(arch.tmp_dir)
+    storing_archive.assert_called_once()
 
 
 @patch('insights.client.client._legacy_handle_registration')

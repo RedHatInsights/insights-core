@@ -201,7 +201,7 @@ DEFAULT_OPTS = {
     'group': {
         'default': None,
         'opt': ['--group'],
-        'help': 'Group to add this system to during registration',
+        'help': 'Group to add to this system',
         'action': 'store',
     },
     'http_timeout': {
@@ -211,7 +211,7 @@ DEFAULT_OPTS = {
     'keep_archive': {
         'default': False,
         'opt': ['--keep-archive'],
-        'help': 'Do not delete archive after upload',
+        'help': 'Store archive in /var/cache/insights-client/ after upload',
         'action': 'store_true',
         'group': 'debug'
     },
@@ -242,6 +242,10 @@ DEFAULT_OPTS = {
     'no_gpg': {
         # non-CLI
         'default': False,  # legacy
+    },
+    'no_proxy': {
+        # non-CLI
+        'default': None
     },
     'no_upload': {
         'default': False,
@@ -701,9 +705,13 @@ class InsightsConfig(object):
             if self.test_connection:
                 raise ValueError('Cannot run connection test in offline mode.')
             if self.checkin:
-                raise ValueError('Cannot check in in offline mode.')
+                raise ValueError('Cannot check-in in offline mode.')
             if self.unregister:
                 raise ValueError('Cannot unregister in offline mode.')
+            if self.check_results:
+                raise ValueError('Cannot check results in offline mode')
+            if self.diagnosis:
+                raise ValueError('Cannot diagnosis in offline mode')
         if self.output_dir and self.output_file:
             raise ValueError('Specify only one: --output-dir or --output-file.')
         if self.output_dir == '':
@@ -782,6 +790,7 @@ class InsightsConfig(object):
             self.content_type = content_types.get(self.app)
             self.core_collect = True
             self.legacy_upload = False
+            self._set_app_config()
         if self.output_dir:
             # get full path
             self.output_dir = os.path.abspath(self.output_dir)
@@ -821,6 +830,15 @@ class InsightsConfig(object):
             #   Therefore, only force legacy_upload to False when attempting
             #   to change Ansible hostname from the CLI, when not registering.
             self.legacy_upload = False
+
+    def _set_app_config(self):
+        '''
+        Set App specific insights config values that differ from the default values
+        Config values may have been set manually however, so need to take that into consideration
+        '''
+        if self.app == 'malware-detection':
+            if self.retries < 5:
+                self.retries = 5
 
     def _determine_filename_and_extension(self):
         '''

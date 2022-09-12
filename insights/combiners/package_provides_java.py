@@ -53,7 +53,8 @@ class PackageProvidesJavaAll(LegacyItemAccess):
     def __init__(self, package_provides_java):
         deprecated(
             PackageProvidesJavaAll,
-            'Please use the :class:`insights.parsers.package_provides.PackageProvidesCommand` instead.'
+            "Please use the :class:`insights.parsers.package_provides.PackageProvidesCommand` instead.",
+            "3.0.300"
         )
         self.data = {}
         for pkg in package_provides_java:

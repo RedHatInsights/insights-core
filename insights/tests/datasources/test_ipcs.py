@@ -12,6 +12,8 @@ IPCS_OUTPUT1 = """
 key        semid      owner      perms      nsems
 0x00000000 65570      apache     600        1
 0x00000000 98353      apache     600        1
+0x00000000 28         fxadmin    0          1
+0x0052e2c1 89998      oracle     600        26
 0x00000000 98354      apache     600        1
 0x00000000 98355      apache     600        1
 0x00000000 98356      apache     600        1
@@ -34,7 +36,9 @@ def test_semid():
     assert isinstance(result, list)
     assert '65570' in result
     assert '98357' in result
-    assert len(result) == 6
+    assert '89998' in result
+    assert '28' not in result
+    assert len(result) == 7
 
 
 def test_exception():

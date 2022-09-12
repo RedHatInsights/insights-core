@@ -49,5 +49,5 @@ class UdevRules40Redhat(LogFileOutput):
         True
     """
     def __init__(self, *args, **kwargs):
-        deprecated(UdevRules40Redhat, "Import UdevRules40Redhat from insights.parsers.udev_rules instread.")
+        deprecated(UdevRules40Redhat, "Import UdevRules40Redhat from insights.parsers.udev_rules instread.", "3.0.300")
         super(UdevRules40Redhat, self).__init__(*args, **kwargs)

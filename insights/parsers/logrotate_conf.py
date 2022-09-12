@@ -7,11 +7,16 @@ Class to parse logrotate confuration files:
 - ``/etc/logrotate.d/*``
 
 See: http://www.linuxmanpages.org/8/logrotate
-
 """
+import string
 
-
-from .. import parser, Parser, get_active_lines, LegacyItemAccess
+from insights.core import ConfigParser, LegacyItemAccess, Parser
+from insights.core.plugins import parser
+from insights.parsers import ParseException, get_active_lines
+from insights.parsr import (AnyChar, Choice, EOF, EOL, Forward, LeftCurly, LineEnd,
+                            Literal, Many, Number, OneLineComment, Opt, PosMarker,
+                            QuotedString, RightCurly, skip_none, String, WS, WSChar)
+from insights.parsr.query import Directive, Entry, Section
 from insights.specs import Specs
 
 PAIRED_OPTS = (
@@ -143,3 +148,110 @@ class LogrotateConf(Parser, LegacyItemAccess):
                     # common options in log_file section
                     key, val = _parse_opts(line)
                     log_opts[key] = val
+
+
+class DocParser(object):
+    def __init__(self, ctx):
+        self.ctx = ctx
+
+        scripts = set("postrotate prerotate firstaction lastaction preremove".split())
+        Stanza = Forward()
+        Spaces = Many(WSChar)
+        Bare = String(set(string.printable) - (set(string.whitespace) | set("#{}'\"")))
+        Num = Number & (WSChar | LineEnd)
+        Comment = OneLineComment("#").map(lambda x: None)
+        ScriptStart = WS >> PosMarker(Choice([Literal(s) for s in scripts])) << WS
+        ScriptEnd = Literal("endscript")
+        Line = (WS >> AnyChar.until(EOL) << WS).map(lambda x: "".join(x))
+        Lines = Line.until(ScriptEnd | EOF).map(lambda x: "\n".join(x))
+        Script = ScriptStart + Lines << Opt(ScriptEnd)
+        Script = Script.map(lambda x: [x[0], [x[1]], None])
+        BeginBlock = WS >> LeftCurly << WS
+        EndBlock = WS >> RightCurly
+        First = PosMarker((Bare | QuotedString)) << Spaces
+        Attr = Spaces >> (Num | Bare | QuotedString) << Spaces
+        Rest = Many(Attr)
+        Block = BeginBlock >> Many(Stanza).map(skip_none).map(self.to_entries) << EndBlock
+        Stmt = WS >> (Script | (First + Rest + Opt(Block))) << WS
+        Stanza <= WS >> (Stmt | Comment) << WS
+        Doc = Many(Stanza).map(skip_none).map(self.to_entries)
+
+        self.Top = Doc << EOF
+
+    def to_entries(self, x):
+        ret = []
+        for i in x:
+            name, attrs, body = i
+            if body:
+                for n in [name.value] + attrs:
+                    ret.append(Section(name=n, children=body, lineno=name.lineno))
+            else:
+                ret.append(Directive(name=name.value, attrs=attrs, lineno=name.lineno))
+        return ret
+
+    def __call__(self, content):
+        try:
+            return self.Top(content)
+        except Exception:
+            raise ParseException("There was an exception when parsing the logrotate config file.")
+
+
+def parse_doc(content, ctx=None):
+    """ Parse a configuration document into a tree that can be queried. """
+    if isinstance(content, list):
+        content = "\n".join(content)
+    parse = DocParser(ctx)
+    result = parse(content)
+    return Entry(children=result, src=ctx)
+
+
+@parser(Specs.logrotate_conf)
+class LogRotateConfPEG(ConfigParser):
+    """
+    Sample logrotate configuration file::
+
+        # sample file
+        compress
+
+        /var/log/messages {
+            rotate 5
+            weekly
+            postrotate
+                        /sbin/killall -HUP syslogd
+            endscript
+        }
+
+        "/var/log/httpd/access.log" /var/log/httpd/error.log {
+            rotate 5
+            mail www@my.org
+            size=100k
+            sharedscripts
+            postrotate
+                        /sbin/killall -HUP httpd
+            endscript
+        }
+
+        /var/log/news/news.crit
+        /var/log/news/olds.crit  {
+            monthly
+            rotate 2
+            olddir /var/log/news/old
+            missingok
+            postrotate
+                        kill -HUP `cat /var/run/inn.pid`
+            endscript
+            nocompress
+        }
+
+    Examples:
+        >>> type(log_rt_peg)
+        <class 'insights.parsers.logrotate_conf.LogRotateConfPEG'>
+        >>> 'compress' in log_rt_peg
+        True
+        >>> 'weekly' in log_rt['/var/log/messages']
+        True
+        >>> log_rt_peg['/var/log/messages']['postrotate'][-1].value
+        '/sbin/killall -HUP syslogd'
+    """
+    def parse_doc(self, content):
+        return parse_doc("\n".join(content), ctx=self)

@@ -10,6 +10,9 @@ Mount - command ``/bin/mount``
 ProcMounts - file ``/proc/mounts``
 ----------------------------------
 
+MountInfo - file ``/proc/self/mountinfo``
+-----------------------------------------
+
 The ``Mount`` class implements parsing for the ``mount`` command output which looks like::
 
     /dev/mapper/rootvg-rootlv on / type ext4 (rw,relatime,barrier=1,data=ordered)
@@ -21,18 +24,16 @@ The information is stored as a list of :class:`MountEntry` objects.  Each
 :class:`MountEntry` object contains attributes for the following information that
 are listed in the same order as in the command output:
 
- * ``filesystem`` - Name of filesystem or the mounted device
+ * ``mount_source`` - Name of filesystem or the mounted device
  * ``mount_point`` - Name of mount point for filesystem
  * ``mount_type`` - Name of filesystem type
  * ``mount_options`` -  Mount options as ``MountOpts`` object
  * ``mount_label`` - Optional label of this mount entry, empty string by default
+ * ``mount_addtlinfo`` - Additional mount information as ``MountAddtlInfo`` object
  * ``mount_clause`` - Full raw string from command output
+ * ``filesystem`` - Name of filesystem or the mounted device (Deprecated)
 
-The :class:`MountOpts` class contains the mount options as attributes accessible
-via the attribute name as it appears in the command output.  For instance the
-options ``(rw,dmode=0500)`` may be accessed as ''mnt_row_info.rw`` with the
-value ``True`` and ``mnt_row_info.dmode`` with the value "0500".  The ``in``
-operator may be used to determine if an option is present.
+``ProcMounts`` and ``MountInfo`` classes have the similar style as ``mount``.
 
 MountEntry lines are also available in a ``mounts`` property, keyed on the
 mount point.
@@ -45,11 +46,26 @@ from insights import parser, get_active_lines, CommandParser
 
 
 class AttributeAsDict(object):
+    """
+    Set the given key, value pair data as attribute of object.
+
+    The ``in`` operator could be used to determine if an attribute exists before
+    direct accessing.
+    """
+
+    def __init__(self, data=None):
+        data = {} if data is None else data
+        for k, v in data.items():
+            setattr(self, k, v)
+
     def __contains__(self, item):
         return item in self.__dict__
 
     def __getitem__(self, item):
         return self.__dict__[item]
+
+    def __len__(self):
+        return len(self.__dict__)
 
     def get(self, item, default=None):
         return self.__dict__.get(item, default)
@@ -66,38 +82,58 @@ class MountOpts(AttributeAsDict):
     output.  For instance, the options ``(rw,dmode=0500)`` may be accessed as
     ``mnt_row_info.rw`` with the value ``True`` and ``mnt_row_info.dmode``
     with the value "0500".
-
-    The ``in`` operator may be used to determine if an option is present.
     """
-    def __init__(self, data=None):
-        data = {} if data is None else data
-        for k, v in data.items():
-            setattr(self, k, v)
+    pass
+
+
+class MountAddtlInfo(AttributeAsDict):
+    """
+    An object representing the additional information for an mount entry as
+    attributes accessible via the attribute name.
+    Object will provides different set of attributes according to different data
+    sources.
+
+    Attributes:
+        mount_label (str): Label of this mount entry from command ``/bin/mount``
+        fs_freq (str): fs_freq of this mount entry from file ``/proc/mounts``
+        fs_passno (str): fs_passno of this mount entry from file ``/proc/mounts``
+        mount_id (str): Unique identifier of the mount from file ``/proc/self/mountinfo``
+        parent_id (str): Unique identifier of the parent mount from file ``/proc/self/mountinfo``
+        major_minor (str): Value of st_dev for files on filesystem from file ``/proc/self/mountinfo``
+        root (str): Root of the mount within the filesystem from file ``/proc/self/mountinfo``
+        optional_fields (str): Zero or more fields of the form "tag[:value]" from file ``/proc/self/mountinfo``
+        mount_clause_binmount (str): Full raw string from command ``/bin/mount``
+        mount_clause_procmounts (str): Full raw string from file ``/proc/mounts``
+        mount_clause_mountinfo (str): Full raw string from file ``/proc/self/mountinfo``
+
+    For instance, the major:minor number ``253:4`` could be accessed as
+    ``mnt_row_info.major_minor`` with the value ``253:4``.
+    """
+    pass
 
 
 class MountEntry(AttributeAsDict):
     """
-    An object representing an mount entry of ``mount`` command or
-    ``/proc/mounts`` file.  Each entry contains below fixed attributes:
+    An object representing an mount entry of ``mount`` command, ``/proc/mounts``
+    or ``/proc/self/mountinfo`` file. Each entry contains below attributes:
 
     Attributes:
-        filesystem (str): Name of filesystem of mounted device
+        mount_source(str): Name of filesystem of mounted device
         mount_point (str): Name of mount point for filesystem
         mount_type (str): Name of filesystem type
         mount_options (MountOpts): Mount options as :class:`MountOpts`
         mount_label (str): Optional label of this mount entry, an empty string by default
+        mount_addtlinfo (MountAddtlInfo): Additional mount information as :class:`MountAddtlInfo`
         mount_clause (str): Full raw string from command output
+        filesystem (str): Name of filesystem of mounted device (Deprecated, use
+                `mount_source` instead)
     """
-
-    def __init__(self, data=None):
-        data = {} if data is None else data
-        for k, v in data.items():
-            setattr(self, k, v)
+    pass
 
 
 class MountedFileSystems(CommandParser):
     """
-    Base Class for :class:`Mount` and :class:`ProcMounts`.
+    Base Class for :class:`Mount`, :class:`ProcMounts` and :class:`MountInfo`.
 
     Attributes:
         rows (list): List of :class:`MountEntry` objects for each row of the
@@ -221,7 +257,8 @@ class Mount(MountedFileSystems):
             mount['mount_clause'] = line
             # Get the mounted filesystem by checking the ' on '
             line_sp = _customized_split(line, line, sep=' on ')
-            mount['filesystem'] = line_sp[0]
+            mount['mount_source'] = line_sp[0]
+            mount['filesystem'] = mount['mount_source']  # compatible for deprecation
             # Get the mounted point by checking the last ' type ' before the last '('
             mnt_pt_sp = _customized_split(raw=line, l=line_sp[1], sep=' (', reverse=True)
             line_sp = _customized_split(raw=line, l=mnt_pt_sp[0], sep=' type ', reverse=True)
@@ -302,6 +339,77 @@ class ProcMounts(MountedFileSystems):
             entry = MountEntry(mount)
             self.rows.append(entry)
             self.mounts[mount['mount_point']] = entry
+
+
+@parser(Specs.mountinfo)
+class MountInfo(MountedFileSystems):
+    """
+    Class to parse the content of ``/proc/self/mountinfo`` file.
+
+    .. note::
+        Please refer to its super-class :class:`MountedFileSystems` for more details.
+
+    The typical content of ``/proc/self/mountinfo`` file looks like::
+
+        39 0 253:0 / / rw,relatime shared:1 - xfs /dev/mapper/rootvg-lvlocroot rw,attr2,inode64,noquota
+        47 39 8:1 / /boot rw,relatime shared:30 - xfs /dev/sda1 rw,attr2,inode64,noquota
+        65 39 253:19 / /data rw,relatime shared:44 - ext4 /dev/mapper/vgdata-lvdata rw,data=ordered
+        58 39 253:15 / /opt rw,relatime shared:45 - xfs /dev/mapper/rootvg-lvlocopt rw,attr2,inode64,noquota
+        61 39 253:17 / /home rw,nosuid,relatime shared:46 - xfs /dev/mapper/rootvg-lvlochome rw,attr2,inode64,noquotao
+
+    Examples:
+
+        >>> type(proc_mountinfo)
+        <class 'insights.parsers.mount.MountInfo'>
+        >>> len(proc_mountinfo)
+        5
+        >>> proc_mountinfo[2].mount_source
+        '/dev/mapper/vgdata-lvdata'
+        >>> proc_mountinfo[2].mount_type
+        'ext4'
+        >>> proc_mountinfo[2].mount_point
+        '/data'
+        >>> 'data' in proc_mountinfo[2].mount_options
+        True
+        >>> proc_mountinfo[2].mount_options.data
+        'ordered'
+        >>> 'major_minor' in proc_mountinfo[4]
+        False
+        >>> 'major_minor' in proc_mountinfo[4].mount_addtlinfo
+        True
+        >>> proc_mountinfo[4].mount_addtlinfo.major_minor
+        '253:17'
+        >>> proc_mountinfo['/boot'].mount_source
+        '/dev/sda1'
+    """
+
+    def _parse_mounts(self, content):
+        rows = []
+        for line in get_active_lines(content):
+            mount = {}
+            mount['mount_clause'] = line
+            line_own_sp = _customized_split(line, line, sep=' - ')
+            line_left_sp = _customized_split(line, line_own_sp[0], num=6)
+            mount['mount_point'] = line_left_sp[4]
+            line_right_sp = _customized_split(line, line_own_sp[1], num=3)
+            mount['mount_type'] = line_right_sp[0]
+            mount['mount_source'] = line_right_sp[1]
+            mount['filesystem'] = mount['mount_source']  # compatible for deprecation
+            optional_fields = line_left_sp[5].split()[1] if ' ' in line_left_sp[5] else ''
+            mntopt = line_left_sp[5].split()[0] if ' ' in line_left_sp[5] else line_left_sp[5]
+            unioned_options = ','.join([mntopt, line_right_sp[2]])
+            mount['mount_options'] = MountOpts(optlist_to_dict(unioned_options))
+            mount['mount_addtlinfo'] = MountAddtlInfo({
+                    'mount_id': line_left_sp[0],
+                    'parent_id': line_left_sp[1],
+                    'major_minor': line_left_sp[2],
+                    'root': line_left_sp[3],
+                    'optional_fields': optional_fields,
+            })
+            entry = MountEntry(mount)
+            rows.append(entry)
+        self.rows = rows
+        self.mounts = dict([mnt['mount_point'], rows[idx]] for idx, mnt in enumerate(rows))
 
 
 def _customized_split(raw, l, sep=None, num=2, reverse=False, check=True):

@@ -4,8 +4,6 @@ omit = insights/contrib/*
        insights/*/__main__.py
        # Exclude test files from coverage.
        insights/tests/*
-       insights/parsers/tests/*
-       insights/combiners/tests/*
 branch = True
 
 [report]

@@ -5,7 +5,8 @@ Logical Volume Management configuration and status
 Parsers for lvm data based on output of various commands and file contents.
 
 This module contains the classes that parse the output of the commands `lvs`,
-`pvs`, and `vgs`, and the contents of the file `/etc/lvm/lvm.conf`.
+`pvs`, and `vgs`, and the content of the files `/etc/lvm/lvm.conf`,
+`/etc/lvm/devices/system.devices`.
 
 Pvs - command ``/sbin/pvs --nameprefixes --noheadings --separator='|' -a -o pv_all``
 ------------------------------------------------------------------------------------
@@ -28,13 +29,15 @@ LvsHeadings - command ``/sbin/lvs -a -o +lv_tags,devices --config="global{lockin
 LvmConf - file ``/etc/lvm/lvm.conf``
 ------------------------------------
 
+LvmSystemDevices - file ``/etc/lvm/devices/system.devices``
+-----------------------------------------------------------
+
 """
 from __future__ import print_function
 
 import json
-from collections import defaultdict
 
-from insights.parsers import ParseException
+from insights.parsers import ParseException, optlist_to_dict, SkipException
 from insights.specs import Specs
 
 from .. import (
@@ -100,6 +103,7 @@ def find_warnings(content):
             "Attempt to close device",
             "Ignoring supplied major",
             "not match metadata",
+            "Reading VG"
         ]
     ]
     for l in content:
@@ -290,13 +294,10 @@ class PvsHeadings(LvmHeadings):
             warning strings.
 
     Examples:
-        >>> pvs_data = shared[PvsHeadings]
-        >>> pvs_data[0]
-        {'PV': '/dev/fedora/home', 'VG': '', 'Fmt': '', 'Attr': '---', 'PSize': '0',
-         'PFree': '0', 'DevSize': '418.75g', 'PV_UUID': '', 'PMdaFree': '0',
-         'PMdaSize': '0', '#PMda': '0', '#PMdaUse': '0', 'PE': '0', 'PV_KEY': '/dev/fedora/home+no_uuid'}
         >>> pvs_data[0]['PV']
         '/dev/fedora/home'
+        >>> pvs_data[0]['PMdaSize']
+        '0'
 
     """
 
@@ -427,11 +428,10 @@ class VgsHeadings(LvmHeadings):
             warning strings.
 
     Examples:
-        >>> vgs_info = shared[VgsHeadings]
-        >>> vgs_info.data[0]
-        {}
-        >>> vgs_info.data[2]['LSize']
-        '2.00g'
+        >>> vgs_info.data[0]['VG']
+        'DATA_OTM_VG'
+        >>> vgs_info.data[0]['VG_UUID']
+        'xK6HXk-xl2O-cqW5-2izb-LI9M-4fV0-dAzfcc'
     """
 
     PRIMARY_KEY = Vgs.PRIMARY_KEY
@@ -620,12 +620,9 @@ class LvsHeadings(LvmHeadings):
             warning strings.
 
     Examples:
-        >>> lvs_info = shared[LvsHeadings]
-        >>> lvs_info.data[0]
-        {'LV': 'lv_app', 'VG': 'vg_root', 'Attr': '-wi-ao----', 'LSize': '71.63',
-         'Pool': '', 'Origin': '', 'Data%': '', 'Meta%': '', 'Move': '', 'Log': '',
-         'Cpy%Sync': '', 'Convert': '', 'LV_Tags': '', 'Devices': '/dev/sda2(7136)'}
-        >>> lvs_info.data[2]['LSize']
+        >>> lvs_info.data[0]['Devices']
+        '/dev/sda2(7136)'
+        >>> lvs_info.data[1]['LSize']
         '2.00g'
     """
 
@@ -673,10 +670,8 @@ class LvmConf(LegacyItemAccess, Parser):
         }
 
     Examples:
-        >>> lvm_conf_data = shared[LvmConf]
-        >>> lvm_conf_data.data
-        {"locking_type": 1, "volume_list": ["vg1", "vg2/lvol1", "@tag1", "@*"],
-         "filter": ["a/sda[0-9]*$/", "r/sd.*/"], "history_size": 100}
+        >>> 'vg2' in lvm_conf_data.data.get('volume_list')
+        True
         >>> lvm_conf_data.get("locking_type")
         1
     """
@@ -699,17 +694,10 @@ class LvmConf(LegacyItemAccess, Parser):
         self.data = lvm_conf_dict
 
 
-def _lvm_render(o):
-    if isinstance(o, dict):
-        parts = ['"%s": %s' % (k, _lvm_render(v)) for k, v in o.items()]
-        return "{%s}" % ",".join(parts)
-    return "%s" % o
-
-
 @parser(Specs.lvmconfig)
 class LvmConfig(CommandParser):
     def parse_content(self, content):
-        dd = defaultdict(dict)
+        self.data = dict()
         key = None
         for line in content:
             line = line.rstrip()
@@ -722,10 +710,60 @@ class LvmConfig(CommandParser):
                 key = None
             elif line[0] == "\t":
                 k, v = line.strip().split("=", 1)
-                dd[key][k] = v
+                # umask=077 will raise exception, and also no need to
+                # transfer it, just keep it as string
+                if k != 'umask':
+                    try:
+                        v = json.loads(v)
+                    except Exception:
+                        raise ParseException("Failed to parse line %s." % line)
+                self.data.setdefault(key, {}).update({k: v})
             else:
                 pass  # inferring this a stderr, so skipping
-        self.data = json.loads(_lvm_render(dict(dd)))
+
+
+@parser(Specs.lvm_system_devices)
+class LvmSystemDevices(Parser, dict):
+    """
+    Parse the content of the ``/etc/lvm/devices/system.devices`` file.
+    It returns a dict. The key is the device id, the value is a dict of
+    other info.
+
+    Sample input::
+
+        VERSION=1.1.2
+        IDTYPE=devname IDNAME=/dev/vda2 DEVNAME=/dev/vda2 PVID=phl0clFbAokp9UXqbIgI5YYQxuTIJVkD PART=2
+
+    Sample output::
+
+        {
+            '/dev/vda2': {
+                'IDTYPE': 'devname',
+                'DEVNAME': '/dev/vda2',
+                'PVID': 'phl0clFbAokp9UXqbIgI5YYQxuTIJVkD',
+                'PART': '2'
+            }
+        }
+
+    Example:
+        >>> type(devices)
+        <class 'insights.parsers.lvm.LvmSystemDevices'>
+        >>> devices['/dev/vda2']['IDTYPE']
+        'devname'
+        >>> devices['/dev/vda2']['PVID']
+        'phl0clFbAokp9UXqbIgI5YYQxuTIJVkD'
+
+    Raises:
+        SkipException: when there is no device info.
+    """
+
+    def parse_content(self, content):
+        for line in content:
+            if 'IDNAME' in line:
+                dict_info = optlist_to_dict(line, opt_sep=None)
+                self[dict_info.pop('IDNAME')] = dict_info
+        if not self:
+            raise SkipException("No valid content.")
 
 
 if __name__ == "__main__":

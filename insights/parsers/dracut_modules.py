@@ -8,7 +8,8 @@ DracutModuleKdumpCaptureService - file ``/usr/lib/dracut/modules.d/99kdumpbase/k
 ------------------------------------------------------------------------------------------------------
 """
 
-from insights import parser, IniConfigFile
+from insights.core import IniConfigFile
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 
@@ -35,6 +36,8 @@ class DracutModuleKdumpCaptureService(IniConfigFile):
         StandardOutput=syslog
 
     Examples:
+        >>> type(config)
+        <class 'insights.parsers.dracut_modules.DracutModuleKdumpCaptureService'>
         >>> 'Service' in config.sections()
         True
         >>> config.has_option('Service', 'Type')

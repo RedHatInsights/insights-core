@@ -10,10 +10,10 @@ ODBCIni - file ``/etc/odbc.ini``
 
 ODBCinstIni - file ``/etc/odbcinst.ini``
 ----------------------------------------
-
 """
-
-from .. import parser, IniConfigFile, add_filter
+from insights.core import IniConfigFile
+from insights.core.filters import add_filter
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 # Since the key values in file odbc.ini is case insensitive,
@@ -42,19 +42,23 @@ class ODBCIni(IniConfigFile):
         SERVER       = localhost
         NO_SSPS     = 1
 
+        [mysqlDSN]
+        Driver      = /usr/lib64/libmyodbc5.so
+        SERVER      = localhost
+
         [myodbc]
         Driver=MySQL
         SERVER=localhost
         #NO_SSPS=1
 
     Example:
-        >>> config.sections()
-        ['myodbc5w', 'myodbc']
-        >>> config.has_option('myodbc5w', 'Driver')
+        >>> odbcini.sections()
+        ['myodbc5w', 'mysqlDSN', 'myodbc']
+        >>> odbcini.has_option('myodbc5w', 'Driver')
         True
-        >>> config.get('myodbc5w', 'Driver')
+        >>> odbcini.get('myodbc5w', 'Driver')
         '/usr/lib64/libmyodbc5w.so'
-        >>> config.getint('myodbc5w', 'NO_SSPS')
+        >>> odbcini.getint('myodbc5w', 'NO_SSPS')
         1
     """
     pass
@@ -78,14 +82,24 @@ class ODBCinstIni(IniConfigFile):
         Setup64         = /usr/lib64/libodbcpsqlS.so
         FileUsage       = 1
 
+        # Driver from the mysql-connector-odbc package
+        # Setup from the unixODBC package
+        [MySQL]
+        Description	= ODBC for MySQL
+        Driver		= /usr/lib/libmyodbc5.so
+        Setup		= /usr/lib/libodbcmyS.so
+        Driver64	= /usr/lib64/libmyodbc5.so
+        Setup64		= /usr/lib64/libodbcmyS.so
+        FileUsage	= 1
+
     Example:
-        >>> config.sections()
-        ['PostgreSQL']
-        >>> config.has_option('PostgreSQL', 'Driver')
+        >>> odbcinstinit.sections()
+        ['PostgreSQL', 'MySQL']
+        >>> odbcinstinit.has_option('PostgreSQL', 'Driver')
         True
-        >>> config.get('PostgreSQL', 'Driver')
+        >>> odbcinstinit.get('PostgreSQL', 'Driver')
         '/usr/lib/psqlodbcw.so'
-        >>> config.getint('PostgreSQL', 'FileUsage')
+        >>> odbcinstinit.getint('PostgreSQL', 'FileUsage')
         1
     """
     pass

@@ -51,3 +51,6 @@ share/
 .pytest_cache
 .vscode
 insights/filters.yaml
+.nox/
+.venv/
+

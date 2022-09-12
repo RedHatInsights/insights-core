@@ -47,25 +47,24 @@ def test_ini_config_file_parser():
     assert dict(ini.items('global')) == \
         {'keynospace': 'valuenospaces',
          'key with spaces': 'value with spaces',
-         'key with continued value': "value1\nvalue2"}
+         'key with continued value': "value1 value2"}
     assert dict(ini.items('comment tricks')) == \
         {'comment # in key': 'value still found',
-         'comment in value': 'value includes # sign'}
+         'comment in value': 'value includes'}
     assert dict(ini.items('value overwriting')) == \
         {'key': 'this one should be picked'}
 
     # get() tests on global section
     assert ini.get('global', 'keynospace') == 'valuenospaces'
     assert ini.get('global', 'key with spaces') == 'value with spaces'
-    assert ini.get('global', 'key with continued value') == "value1\nvalue2"
+    assert ini.get('global', 'key with continued value') == "value1 value2"
     # keys should not appear in other sections, raise NoOptionError
     with pytest.raises(NoOptionError):
         assert ini.get('global', 'key') is None
 
     # Other comment tricks
     assert ini.get('comment tricks', 'comment # in key') == 'value still found'
-    assert ini.get('comment tricks', 'comment in value') == \
-        'value includes # sign'
+    assert ini.get('comment tricks', 'comment in value') == 'value includes'
 
     # Multiple lines giving the same key - last value overwrites.
     assert ini.get('value overwriting', 'key') == 'this one should be picked'

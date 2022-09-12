@@ -55,7 +55,7 @@ class IpcsS(CommandParser):
         {'owner': 'postgres', 'perms': '600', 'nsems': '1', 'key': '0x00000000'}
     """
     def __init__(self, *args, **kwargs):
-        deprecated(IpcsS, "Import IpcsS from insights.parsers.ipcs instead")
+        deprecated(IpcsS, "Import IpcsS from insights.parsers.ipcs instead.", "3.0.300")
         super(IpcsS, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
@@ -132,7 +132,7 @@ class IpcsSI(CommandParser):
 
     """
     def __init__(self, *args, **kwargs):
-        deprecated(IpcsSI, "Import IpcsSI from insights.parsers.ipcs instead")
+        deprecated(IpcsSI, "Import IpcsSI from insights.parsers.ipcs instead.", "3.0.300")
         super(IpcsSI, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):

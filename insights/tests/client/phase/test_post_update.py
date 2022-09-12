@@ -103,13 +103,13 @@ def test_post_update_check_status_registered(insights_config, insights_client):
 def test_post_update_check_status_unregistered(insights_config, insights_client):
     """
     Just check status.
-        If unregistered, exit with 101 exit code (kill parent)
+        If unregistered, exit with 100 exit code (kill parent)
     """
     insights_config.return_value.load_all.return_value.status = True
     insights_client.return_value.get_registration_status = MagicMock(return_value=False)
     with raises(SystemExit) as exc_info:
         post_update()
-    assert exc_info.value.code == 101
+    assert exc_info.value.code == 100
     insights_client.return_value.get_machine_id.assert_called_once()
     insights_client.return_value.get_registration_status.assert_called_once()
     insights_client.return_value.clear_local_registration.assert_not_called()

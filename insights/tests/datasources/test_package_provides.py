@@ -72,7 +72,6 @@ def test_get_package():
     ctx = FakeContext()
 
     result = get_package(ctx, '/usr/bin/java')
-    print('result:', result)
     assert result == 'java-1.8.0-openjdk-headless-1.8.0.292.b10-1.el7_9.x86_64'
 
     result = get_package(ctx, '/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.292.b10-1.el7_9.x86_64/jre/bin/java')

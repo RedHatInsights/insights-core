@@ -7,7 +7,7 @@ from insights.parsers.hostname import Hostname as HostnameParser
 from insights.parsers.saphostctrl import SAPHostCtrlInstances
 from insights.combiners.sap import Sap
 from insights.combiners.hostname import Hostname
-from insights.combiners.tests.test_sap import (
+from insights.tests.combiners.test_sap import (
         SAPHOSTCTRL_HOSTINSTANCES_R_CASE,
         SAPHOSTCTRL_HOSTINSTANCES_GOOD, HOSTNAME1)
 from insights.specs.datasources.sap import (
@@ -16,46 +16,46 @@ from insights.specs.datasources.sap import (
 
 SAPHOSTCTRL_HOSTINSTANCES = '''
 *********************************************************
- CreationClassName , String , SAPInstance
  SID , String , RH1
  SystemNumber , String , 01
  InstanceName , String , ASCS01
+ InstanceType , String , ABAP Central Services
  Hostname , String , vm37-39
  FullQualifiedHostname , String , vm37-39.pek2.com
  IPAddress , String , 10.72.37.39
  SapVersionInfo , String , 745, patch 100, changelist 1652052
 *********************************************************
- CreationClassName , String , SAPInstance
  SID , String , RH1
  SystemNumber , String , 00
  InstanceName , String , D00
+ InstanceType , String , ABAP Dialog Instance
  Hostname , String , vm37-39
  FullQualifiedHostname , String , vm37-39.pek2.com
  IPAddress , String , 10.72.37.39
  SapVersionInfo , String , 745, patch 100, changelist 1652052
 *********************************************************
- CreationClassName , String , SAPInstance
  SID , String , SR1
  SystemNumber , String , 02
  InstanceName , String , HDB02
+ InstanceType , String , HANA
  Hostname , String , vm37-39
  FullQualifiedHostname , String , vm37-39.pek2.com
  IPAddress , String , 10.72.37.39
  SapVersionInfo , String , 749, patch 418, changelist 1816226
 *********************************************************
- CreationClassName , String , SAPInstance
  SID , String , RH2
  SystemNumber , String , 04
  InstanceName , String , ASCS04
+ InstanceType , String , ABAP Central Services
  Hostname , String , vm37-39
  FullQualifiedHostname , String , vm37-39.pek2.com
  IPAddress , String , 10.72.37.39
  SapVersionInfo , String , 745, patch 100, changelist 1652052
 *********************************************************
- CreationClassName , String , SAPInstance
  SID , String , RH2
  SystemNumber , String , 03
  InstanceName , String , D03
+ InstanceType , String , ABAP Dialog Instance
  Hostname , String , vm37-39
  FullQualifiedHostname , String , vm37-39.pek2.com
  IPAddress , String , 10.72.37.39

@@ -82,7 +82,7 @@ def hostname(hf, hd, hs, sid):
     Raises:
         Exception: If no hostname can be found in any of the source parsers.
     """
-    deprecated(hostname, "Use the `Hostname` class instead.")
+    deprecated(hostname, "Use the `Hostname` class instead.", "3.0.300")
     return Hostname(hf, hd, hs, sid)
 
 
