@@ -6,6 +6,8 @@ Parsers included in this module are:
 
 CpuSMTActive - file ``/sys/devices/system/cpu/smt/active``
 ----------------------------------------------------------
+CpuSMTControl - file ``/sys/devices/system/cpu/smt/control``
+------------------------------------------------------------
 CpuCoreOnline - files matching ``/sys/devices/system/cpu/cpu[0-9]*/online``
 ---------------------------------------------------------------------------
 CpuSiblings - files matching ``/sys/devices/system/cpu/cpu[0-9]*/topology/thread_siblings_list``
@@ -40,6 +42,52 @@ class CpuSMTActive(Parser):
         if not content:
             raise SkipException("No content.")
         self.on = bool(int(content[0]))
+
+
+@parser(Specs.cpu_smt_control)
+class CpuSMTControl(Parser):
+    """
+    Class for parsing ``/sys/devices/system/cpu/smt/control`` file.
+    Reports whether SMT is user-controllable.
+
+    Four settings are possible::
+
+        on: SMT enabled
+        off: SMT disabled
+        forceoff: SMT disabled, cannot change at runtime
+        notsupported: CPU does not support SMT
+
+    Typical output of this command is::
+
+        off
+
+    Raises:
+        SkipException: When content is empty or cannot be parsed.
+
+    Examples:
+        >>> cpu_smt_control.on
+        False
+        >>> cpu_smt_control.modifiable
+        True
+        >>> cpu_smt_control.supported
+        True
+    """
+    SMT_CONTROL = {
+        "on": [True, True, True],
+        "off": [False, True, True],
+        "forceoff": [False, False, True],
+        "notsupported": [False, False, False]
+    }
+
+    def parse_content(self, content):
+        if not content:
+            raise SkipException("No content.")
+
+        values = self.SMT_CONTROL[content[0]]
+
+        self.on = values[0]
+        self.modifiable = values[1]
+        self.supported = values[2]
 
 
 @parser(Specs.cpu_cores)

@@ -2,7 +2,7 @@ import doctest
 import pytest
 
 from insights.parsers import smt, SkipException
-from insights.parsers.smt import CpuSMTActive, CpuCoreOnline, CpuSiblings
+from insights.parsers.smt import CpuSMTActive, CpuSMTControl, CpuCoreOnline, CpuSiblings
 from insights.tests import context_wrap
 
 
@@ -14,6 +14,19 @@ def test_cpu_smt_active():
     assert p.on
     p = CpuSMTActive(context_wrap("0"))
     assert not p.on
+
+
+@pytest.mark.parametrize("setting, on, modifiable, supported", [
+    ("on", True, True, True),
+    ("off", False, True, True),
+    ("forceoff", False, False, True),
+    ("notsupported", False, False, False)
+])
+def test_cpu_smt_control(setting, on, modifiable, supported):
+    p = CpuSMTControl(context_wrap(setting))
+    assert p.on == on
+    assert p.modifiable == modifiable
+    assert p.supported == supported
 
 
 def test_cpu_core_online():
@@ -56,6 +69,7 @@ def test_doc_examples():
 
     env = {
         "cpu_smt": CpuSMTActive(context_wrap("1")),
+        "cpu_smt_control": CpuSMTControl(context_wrap("off")),
         "cpu_core": CpuCoreOnline(context_wrap("1", path=path_cpu_core_online)),
         "cpu_siblings": CpuSiblings(context_wrap("0,2", path=path_cpu_siblings))
     }
