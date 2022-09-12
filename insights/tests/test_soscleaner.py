@@ -1,6 +1,5 @@
 from collections import namedtuple
 from contextlib import contextmanager
-from itertools import chain
 from json import dump
 from os import mkdir
 from os.path import join
