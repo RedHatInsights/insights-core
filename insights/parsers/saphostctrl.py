@@ -15,10 +15,10 @@ from insights.specs import Specs
 
 SAP_INST_FILTERS = [
         '******',
-        'CreationClassName',
         'SID',
         'SystemNumber',
         'InstanceName',
+        'InstanceType',
         'Hostname',
         'SapVersionInfo',
         'FullQualifiedHostname'
@@ -27,7 +27,7 @@ add_filter(Specs.saphostctl_getcimobject_sapinstance, SAP_INST_FILTERS)
 
 
 @parser(Specs.saphostctl_getcimobject_sapinstance)
-class SAPHostCtrlInstances(CommandParser):
+class SAPHostCtrlInstances(CommandParser, list):
     """
     This class provides processing for the output of the
     ``/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance``
@@ -36,19 +36,19 @@ class SAPHostCtrlInstances(CommandParser):
     Sample output of the command::
 
         *********************************************************
-         CreationClassName , String , SAPInstance
          SID , String , D89
          SystemNumber , String , 88
          InstanceName , String , HDB88
+         InstanceType , String , HANA Test
          Hostname , String , hdb88
          FullQualifiedHostname , String , hdb88.example.com
          IPAddress , String , 10.0.0.88
          SapVersionInfo , String , 749, patch 211, changelist 1754007
         *********************************************************
-         CreationClassName , String , SAPInstance
          SID , String , D90
          SystemNumber , String , 90
          InstanceName , String , HDB90
+         InstanceType , String , HANA Test
          Hostname , String , hdb90
          FullQualifiedHostname , String , hdb90.example.com
          IPAddress , String , 10.0.0.90
@@ -57,86 +57,71 @@ class SAPHostCtrlInstances(CommandParser):
     Examples:
         >>> type(sap_inst)
         <class 'insights.parsers.saphostctrl.SAPHostCtrlInstances'>
-        >>> sap_inst.data[-1]['CreationClassName']
-        'SAPInstance'
-        >>> sap_inst.data[-1]['SID']
+        >>> sap_inst[1]['SID']
         'D90'
-        >>> sap_inst.data[-1]['SapVersionInfo']  # Note: captured as one string
+        >>> sap_inst[0]['SapVersionInfo']
         '749, patch 211, changelist 1754007'
-        >>> sap_inst.data[0]['InstanceType']  # Inferred code from InstanceName
-        'HDB'
+        >>> sap_inst[1]['InstanceType']
+        'HANA Test'
+        >>> sap_inst.types
+        ['HDB']
+        >>> sorted(sap_inst.sids)
+        ['D89', 'D90']
 
     Attributes:
-        data (list): List of dicts where keys are the lead name of each line and
-            values are the string value.
         instances (list): The list of instances found in the cluster output.
         sids (list): The list of SID found in the cluster output.
-        types (list): The list of instance types found in the cluster output.
+        types (list): The list of short instance types.  The short instance
+            type is set as the characters of the `InstanceName` before the
+            `SystemNumber`.
+
     Raises:
         SkipException: When input is empty.
         ParseException: When input cannot be parsed.
     """
     REQUIRED_DIRECTIVES = (
-        'CreationClassName',
         'SID',
         'SystemNumber',
         'InstanceName',
+        'InstanceType',
         'Hostname',
         'SapVersionInfo',
         'FullQualifiedHostname'
     )
 
     def parse_content(self, content):
-        if not content:
-            raise SkipException("Empty content")
-        if len(content) == 1:
-            raise ParseException("Incorrect content: '{0}'".format(content))
-
-        self.data = []
         self.instances = []
-        _current_instance = {}
         _sids = set()
         _types = set()
 
-        def _update_instance(inst):
-            for _dir in self.REQUIRED_DIRECTIVES:
-                if _dir not in inst:
-                    raise ParseException('Missing: "{0}"'.format(_dir))
-
-            if not inst['InstanceName'].endswith(inst['SystemNumber']):
-                raise ParseException(
-                    'InstanceName: "{0}" missing match with SystemNumber: "{1}"'.format(inst['InstanceName'], inst['SystemNumber']))
-            # InstanceType = The chars in InstanceName before the SystemNumber
-            # subtract len(sysnumber) characters from instance name
-            inst['InstanceType'] = inst['InstanceName'][0:-len(inst['SystemNumber'])]
-
-        _current_instance = {}
+        inst = {}
         for line in (l.strip() for l in content):
             if line.startswith('******'):
-                # Skip separator lines but save and reset current instance
-                if _current_instance:
-                    _update_instance(_current_instance)
-                    self.instances.append(_current_instance['InstanceName'])
-                    self.data.append(_current_instance)
-                    _types.add(_current_instance['InstanceType'])
-                    _sids.add(_current_instance['SID'])
-                _current_instance = {}
+                inst = {}
+                self.append(inst)
                 continue
+
             fields = [i.strip() for i in line.split(',', 2)]
             if len(fields) < 3:
                 raise ParseException("Incorrect line: '{0}'".format(line))
-            # TODO: if we see something other than 'String' in the second
-            # field, we could maybe change its type, say to an integer?
-            _current_instance[fields[0]] = fields[2]
-        # the last instance
-        if _current_instance:
-            _update_instance(_current_instance)
-            self.instances.append(_current_instance['InstanceName'])
-            self.data.append(_current_instance)
-            _types.add(_current_instance['InstanceType'])
-            _sids.add(_current_instance['SID'])
+
+            inst[fields[0]] = fields[2]
+
+            if fields[0] == 'InstanceName':
+                self.instances.append(fields[2])
+                _types.add(fields[2].strip('0123456789'))
+            _sids.add(fields[2]) if fields[0] == 'SID' else None
+
+        if len(self) < 1:
+            raise SkipException("Nothing need to parse")
+
         self.sids = list(_sids)
         self.types = list(_types)
 
-    def __len__(self):
-        return len(self.data)
+    @property
+    def data(self):
+        """
+        (list): List of dicts where keys are the lead name of each line and
+            values are the string value.
+        """
+        return self
