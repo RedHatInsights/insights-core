@@ -35,7 +35,7 @@ class CpuSMTActive(Parser):
         SkipException: When content is empty or cannot be parsed.
 
     Examples:
-        >>> cpu_smt.on
+        >>> cpu_smt_active.on
         True
     """
     def parse_content(self, content):
@@ -93,8 +93,8 @@ class CpuSMTControl(Parser):
 @parser(Specs.cpu_cores)
 class CpuCoreOnline(Parser):
     """
-    Class for parsing ``/sys/devices/system/cpu/cpu[0-9]*/online`` matching files.
-    Reports whether a CPU core is online. Cpu0 is always online, so it does not have the "online" file.
+    Class for parsing ``/sys/devices/system/cpu/cpu[0-9]*/online`` matching files. Reports whether
+    a CPU core is online. Cpu0 is always online, so it does not have the "online" file.
 
     Typical output of this command is::
 
@@ -106,9 +106,9 @@ class CpuCoreOnline(Parser):
         SkipException: When content is empty or cannot be parsed
 
     Examples:
-        >>> cpu_core.core_id
+        >>> cpu_core_online.core_id
         0
-        >>> cpu_core.on
+        >>> cpu_core_online.on
         True
     """
     cpu_core_path = r'/sys/devices/system/cpu/cpu(\d+)/online'
@@ -126,8 +126,8 @@ class CpuCoreOnline(Parser):
 @parser(Specs.cpu_siblings)
 class CpuSiblings(Parser):
     """
-    Class for parsing ``/sys/devices/system/cpu/cpu[0-9]*/topology/thread_siblings_list`` matching files.
-    Reports CPU core siblings.
+    Class for parsing ``/sys/devices/system/cpu/cpu[0-9]*/topology/thread_siblings_list``
+    matching files. Reports CPU core siblings.
 
     Typical output of this command is::
 
@@ -151,7 +151,8 @@ class CpuSiblings(Parser):
         if not content:
             raise SkipException("No content.")
 
-        # The separator in the sibling list may be either in the format 0-1 or 0,2 depending on the CPU model
+        # The separator in the sibling list may be either in the format 0-1 or 0,2 depending on
+        # the CPU model
         if "-" in content[0]:
             cpu_range = [int(x) for x in content[0].split("-")]
             self.siblings = [x for x in range(cpu_range[0], cpu_range[1] + 1)]

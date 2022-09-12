@@ -6,14 +6,13 @@ from insights.parsers.smt import CpuSMTActive, CpuSMTControl, CpuCoreOnline, Cpu
 from insights.tests import context_wrap
 
 
-def test_cpu_smt_active():
-    with pytest.raises(SkipException):
-        CpuSMTActive(context_wrap(""))
-
-    p = CpuSMTActive(context_wrap("1"))
-    assert p.on
-    p = CpuSMTActive(context_wrap("0"))
-    assert not p.on
+@pytest.mark.parametrize("setting, on", [
+    ("0", False),
+    ("1", True)
+])
+def test_cpu_smt_active(setting, on):
+    p = CpuSMTActive(context_wrap(setting))
+    assert p.on == on
 
 
 @pytest.mark.parametrize("setting, on, modifiable, supported", [
@@ -29,38 +28,42 @@ def test_cpu_smt_control(setting, on, modifiable, supported):
     assert p.supported == supported
 
 
-def test_cpu_core_online():
-    with pytest.raises(SkipException):
-        CpuCoreOnline(context_wrap(""))
-
+@pytest.mark.parametrize("setting, on, status", [
+    (0, False, "Offline"),
+    (1, True, "Online")
+])
+def test_cpu_core_online(setting, on, status):
     path = "/sys/devices/system/cpu/cpu{0}/online"
-    p = CpuCoreOnline(context_wrap("0", path=path.format(0)))
-    assert p.core_id == 0
-    assert not p.on
-    assert repr(p) == "[Core 0: Offline]"
-    p = CpuCoreOnline(context_wrap("1", path=path.format(1)))
-    assert p.core_id == 1
-    assert p.on
-    assert repr(p) == "[Core 1: Online]"
+
+    p = CpuCoreOnline(context_wrap(str(setting), path=path.format(setting)))
+    assert p.core_id == setting
+    assert p.on == on
+    assert repr(p) == "[Core {0}: {1}]".format(setting, status)
 
 
-def test_cpu_siblings():
-    with pytest.raises(SkipException):
-        CpuSiblings(context_wrap(""))
-
+@pytest.mark.parametrize("setting, core_id, siblings", [
+    ("0,2", 0, [0, 2]),
+    ("1-3", 3, [1, 2, 3]),
+    ("1", 1, [1])
+])
+def test_cpu_siblings(setting, core_id, siblings):
     path = "/sys/devices/system/cpu/cpu{0}/topology/thread_siblings_list"
-    p = CpuSiblings(context_wrap("0,2", path=path.format(0)))
-    assert p.core_id == 0
-    assert p.siblings == [0, 2]
-    assert repr(p) == "[Core 0 Siblings: [0, 2]]"
-    p = CpuSiblings(context_wrap("1-3", path=path.format(3)))
-    assert p.core_id == 3
-    assert p.siblings == [1, 2, 3]
-    assert repr(p) == "[Core 3 Siblings: [1, 2, 3]]"
-    p = CpuSiblings(context_wrap("1", path=path.format(1)))
-    assert p.core_id == 1
-    assert p.siblings == [1]
-    assert repr(p) == "[Core 1 Siblings: [1]]"
+
+    p = CpuSiblings(context_wrap(setting, path=path.format(core_id)))
+    assert p.core_id == core_id
+    assert p.siblings == siblings
+    assert repr(p) == "[Core {0} Siblings: {1}]".format(core_id, siblings)
+
+
+@pytest.mark.parametrize("parser", [
+    CpuSMTActive,
+    CpuSMTControl,
+    CpuCoreOnline,
+    CpuSiblings
+])
+def test_exceptions(parser):
+    with pytest.raises(SkipException):
+        parser(context_wrap(""))
 
 
 def test_doc_examples():
@@ -68,10 +71,10 @@ def test_doc_examples():
     path_cpu_siblings = "/sys/devices/system/cpu/cpu0/topology/thread_siblings_list"
 
     env = {
-        "cpu_smt": CpuSMTActive(context_wrap("1")),
+        "cpu_smt_active": CpuSMTActive(context_wrap("1")),
         "cpu_smt_control": CpuSMTControl(context_wrap("off")),
-        "cpu_core": CpuCoreOnline(context_wrap("1", path=path_cpu_core_online)),
-        "cpu_siblings": CpuSiblings(context_wrap("0,2", path=path_cpu_siblings))
+        "cpu_core_online": CpuCoreOnline(context_wrap("1", path=path_cpu_core_online)),
+        "cpu_siblings": CpuSiblings(context_wrap("0,2", path=path_cpu_siblings)),
     }
     failed, total = doctest.testmod(smt, globs=env)
     assert failed == 0
