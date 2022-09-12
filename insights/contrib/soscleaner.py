@@ -45,6 +45,7 @@ class SOSCleaner:
     reporting - will post progress and overall statistics to STDOUT. defaults to yes
     '''
     def __init__(self, quiet=False):
+
         self.name = 'soscleaner'
         self.version = '0.2.2'
         self.loglevel = 'INFO' #this can be overridden by the command-line app
