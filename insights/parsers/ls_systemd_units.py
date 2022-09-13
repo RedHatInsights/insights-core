@@ -1,12 +1,10 @@
 """
-LsSystemdUnits - command ``/bin/ls -lanRL /etc/systemd /run/systemd /usr/lib/systemd /usr/local/lib/systemd``
-=============================================================================================================
+LsSystemdUnits - command ``/bin/ls -lanRL /etc/systemd /run/systemd /usr/lib/systemd /usr/local/lib/systemd /usr/local/share/systemd /usr/share/systemd``
+=========================================================================================================================================================
 
-This parser provides file listing for Systemd Units gathered from
-the ``/bin/ls -lanRL /etc/systemd /run/systemd /usr/lib/systemd /usr/local/lib/systemd`` command.
-
-The paths ``/usr/local/share/systemd`` and ``/usr/share/systemd`` were also checked,
-but no results were found for them.
+This parser provides file listing for Systemd Units gathered from the ``/bin/ls -lanRL /etc/systemd
+/run/systemd /usr/lib/systemd /usr/local/lib/systemd /usr/local/share/systemd /usr/share/systemd``
+command.
 
 
 The shortened sample output of the command is::
@@ -79,7 +77,9 @@ from insights.specs import Specs
 @parser(Specs.ls_systemd_units)
 class LsSystemdUnits(CommandParser, FileListing):
     """
-    Class for parsing the ``/bin/ls -lanRL /etc/systemd /run/systemd /usr/lib/systemd /usr/local/lib/systemd`` command.
+    Class for parsing the ``/bin/ls -lanRL /etc/systemd /run/systemd /usr/lib/systemd
+    /usr/local/lib/systemd /usr/local/share/systemd /usr/share/systemd`` command.
+
     For more information, see the ``FileListing`` class.
     """
     pass
