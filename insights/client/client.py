@@ -23,7 +23,6 @@ from .connection import InsightsConnection
 from .archive import InsightsArchive
 from .support import registration_check
 from .constants import InsightsConstants as constants
-from .schedule import get_scheduler
 
 NETWORK = constants.custom_network_log_level
 LOG_FORMAT = ("%(asctime)s %(levelname)8s %(name)s %(message)s")
@@ -200,16 +199,18 @@ def get_registration_status(config, pconn):
     return registration_check(pconn)
 
 
+def __cleanup_local_files():
+    write_unregistered_file()
+    delete_cache_files()
+    write_to_disk(constants.machine_id_file, delete=True)
+    logger.debug('Unregistered and removed machine-id')
+
+
 # -LEGACY-
 def _legacy_handle_unregistration(config, pconn):
     """
         returns (bool): True success, False failure
     """
-    def __cleanup_local_files():
-        write_unregistered_file()
-        get_scheduler(config).remove_scheduling()
-        delete_cache_files()
-        write_to_disk(constants.machine_id_file, delete=True)
 
     check = get_registration_status(config, pconn)
 
@@ -248,10 +249,7 @@ def handle_unregistration(config, pconn):
     unreg = pconn.unregister()
     if unreg or config.force:
         # only set if unreg was successful or --force was set
-        write_unregistered_file()
-        delete_cache_files()
-        write_to_disk(constants.machine_id_file, delete=True)
-        logger.debug('Unregistered and removed machine-id')
+        __cleanup_local_files()
     return unreg
 
 
