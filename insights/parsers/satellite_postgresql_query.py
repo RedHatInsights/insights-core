@@ -12,8 +12,8 @@ SatelliteCoreTaskReservedResourceCount - command ``psql -d pulpcore -c 'select c
 -------------------------------------------------------------------------------------------------------------------------------
 SatelliteKatellloReposWithMultipleRef - command ``psql -d foreman -c "select repository_href, count(*) from katello_repository_references group by repository_href having count(*) > 1;" --csv``
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-SatelliteLogsTableSize - command ``psql -d foreman -c "select pg_size_pretty(pg_total_relation_size('logs')) as logs_size" --csv``
-----------------------------------------------------------------------------------------------------------------------------------
+SatelliteLogsTableSize - command ``psql -d foreman -c "select pg_total_relation_size('logs') as logs_size" --csv``
+------------------------------------------------------------------------------------------------------------------
 SatelliteProvisionParamSettings - command ``psql -d foreman -c "select name, value from parameters where name='package_upgrade' and reference_id in (select id from operatingsystems where name='RedHat' and major='9')" --csv``
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 SatelliteQualifiedCapsules - command ``psql -d foreman -c "select name from smart_proxies where download_policy = 'background'" --csv``
@@ -239,36 +239,30 @@ class SatelliteKatelloEmptyURLRepositories(SatellitePostgreSQLQuery):
 @parser(Specs.satellite_logs_table_size)
 class SatelliteLogsTableSize(SatellitePostgreSQLQuery):
     """
-    Parse the output of the command ``psql -d foreman -c "select pg_size_pretty(pg_total_relation_size('logs')) as logs_size" --csv``.
+    Parse the output of the command ``psql -d foreman -c "select pg_total_relation_size('logs') as logs_size" --csv``.
 
     Sample output::
 
         logs_size
-        552 kB
+        565248
 
     Examples:
         >>> type(logs_table)
         <class 'insights.parsers.satellite_postgresql_query.SatelliteLogsTableSize'>
         >>> logs_table[0]['logs_size']
         565248
+
+    Raises:
+        ParseException: when the size is not in integer type
     """
     columns = ['logs_size']
-
-    units = {
-        'bytes': 1,
-        'kB': 1024,
-        'MB': 1024 * 1024,
-        'GB': 1024 * 1024 * 1024,
-        'TB': 1024 * 1024 * 1024 * 1024
-    }
 
     def parse_content(self, content):
         super(SatelliteLogsTableSize, self).parse_content(content)
         for row in self:
-            num, unit = row['logs_size'].split()
-            if unit not in self.units:
-                raise ParseException('Unexpected unit %s for logs table.' % unit)
-            row['logs_size'] = int(num) * self.units[unit]
+            if not row['logs_size'].isdigit():
+                raise ParseException('Not expected logs size %s.' % row['logs_size'])
+            row['logs_size'] = int(row['logs_size'])
 
 
 @parser(Specs.satellite_provision_param_settings)

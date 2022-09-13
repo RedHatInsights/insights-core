@@ -190,17 +190,17 @@ name,value
 
 SATELLITE_LOGS_TABLE_SIZE1 = """
 logs_size
-552 kB
+565248
 """.strip()
 
 SATELLITE_LOGS_TABLE_SIZE2 = """
 logs_size
-552 MB
+578813952
 """.strip()
 
 SATELLITE_LOGS_TABLE_SIZE3 = """
 logs_size
-552 LB
+abc
 """.strip()
 
 
