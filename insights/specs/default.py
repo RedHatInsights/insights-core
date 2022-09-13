@@ -337,7 +337,8 @@ class DefaultSpecs(Specs):
     ls_R_var_lib_nova_instances = simple_command("/bin/ls -laR /var/lib/nova/instances")
     ls_sys_firmware = simple_command("/bin/ls -lanR /sys/firmware")
     ls_systemd_units = simple_command(
-        "/bin/ls -lanRL /etc/systemd /run/systemd /usr/lib/systemd /usr/local/lib/systemd", keep_rc=True
+        "/bin/ls -lanRL /etc/systemd /run/systemd /usr/lib/systemd /usr/local/lib/systemd /usr/local/share/systemd /usr/share/systemd",
+        keep_rc=True
     )
     ls_tmp = simple_command("/bin/ls -la /tmp")
     ls_usr_bin = simple_command("/bin/ls -lan /usr/bin")
