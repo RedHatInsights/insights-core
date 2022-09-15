@@ -4,6 +4,7 @@ Custom datasource for CVE-2021-35937, CVE-2021-35938, and CVE-2021-35939.
 
 import grp
 import pwd
+import signal
 
 from insights.core.context import HostContext
 from insights.core.dr import SkipComponent
@@ -17,7 +18,8 @@ class LocalSpecs(Specs):
     Local spec used only by the system_user_dirs datasource
     """
     rpm_args = simple_command(
-        'rpm -qa --qf="[%{=NAME}; %{FILEMODES:perms}; %{FILEUSERNAME}; %{FILEGROUPNAME}\n]"'
+        'rpm -qa --qf="[%{=NAME}; %{FILEMODES:perms}; %{FILEUSERNAME}; %{FILEGROUPNAME}\n]"',
+        signum=signal.SIGTERM
     )
 
 
