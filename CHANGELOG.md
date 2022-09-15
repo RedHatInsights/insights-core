@@ -2,6 +2,15 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.294](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.294) (2022-09-15)
+
+- feat: New spec to get satellite logs table size and its parser ([PR 3516](https://github.com/RedHatInsights/insights-core/pull/3516))
+- New parser for CpuSMTControl and tests update ([PR 3521](https://github.com/RedHatInsights/insights-core/pull/3521))
+- Feat: Add spec and parser for cryptsetup luksDump ([PR 3504](https://github.com/RedHatInsights/insights-core/pull/3504))
+- feat: Add spec "satellite_enabled_features" back ([PR 3517](https://github.com/RedHatInsights/insights-core/pull/3517))
+- Refractor cleanup local files for unregistration processes ([PR 3520](https://github.com/RedHatInsights/insights-core/pull/3520))
+- feat: Update ls_systemd_units parser ([PR 3518](https://github.com/RedHatInsights/insights-core/pull/3518))
+
 ## [insights-core-3.0.293](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.293) (2022-09-08)
 
 - fix: support InstanceType in saphostctrl ([PR 3512](https://github.com/RedHatInsights/insights-core/pull/3512))
