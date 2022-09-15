@@ -565,6 +565,7 @@ class DefaultSpecs(Specs):
         '/usr/bin/awk \'BEGIN { pipe="openssl x509 -noout -subject -enddate"} /^-+BEGIN CERT/,/^-+END CERT/ { print | pipe } /^-+END CERT/ { close(pipe); printf("\\n")}\' /etc/pki/katello/certs/katello-server-ca.crt',
     )
     satellite_custom_hiera = simple_file("/etc/foreman-installer/custom-hiera.yaml")
+    satellite_enabled_features = simple_command("/usr/bin/curl -sk https://localhost:9090/features --connect-timeout 5", deps=[IsSatellite])
     satellite_katello_repos_with_muliple_ref = simple_command(
         '/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c "select repository_href, count(*) from katello_repository_references group by repository_href having count(*) > 1;" --csv',
         deps=[IsSatellite]
