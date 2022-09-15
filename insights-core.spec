@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.293
+Version:        3.0.294
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,14 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Sep 15 2022 Sachin Patil <psachin@redhat.com> 3.0.294-1
+- feat: New spec to get satellite logs table size and its parser (#3516) (44796653+huali027@users.noreply.github.com)
+- New parser for CpuSMTControl and tests update (#3521) (41325380+jobselko@users.noreply.github.com)
+- Feat: Add spec and parser for cryptsetup luksDump (#3504) (daniel.zatovic@gmail.com)
+- feat: Add spec "satellite_enabled_features" back (#3517) (44796653+huali027@users.noreply.github.com)
+- Refractor cleanup local files for unregistration processes (#3520) (93577878+ahitacat@users.noreply.github.com)
+- feat: Update ls_systemd_units parser (#3518) (41325380+jobselko@users.noreply.github.com)
+
 * Thu Sep 08 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.293-1
 - fix: support InstanceType in saphostctrl (#3512) (xiangceliu@redhat.com)
 - Feat: add secure spec to default.py (#3513) (986222045@qq.com)
