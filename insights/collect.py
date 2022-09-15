@@ -244,6 +244,13 @@ plugins:
     # needed because some specs aren't given names before they're used in DefaultSpecs
         - name: insights.core.spec_factory
           enabled: true
+
+    # needed by the 'luks_data_sources' spec
+        - name: insights.parsers.blkid.BlockIDInfo
+          enabled: true
+
+        - name: insights.components.cryptsetup
+          enabled: true
 """.strip()
 
 
