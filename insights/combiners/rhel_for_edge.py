@@ -57,3 +57,14 @@ class RhelForEdge(list):
             self.is_edge = True
             if units.is_running("rhcd.service"):
                 self.is_automated = True
+
+    def gen_edge_return_data(self, update_target_packages, install_target_packages, target_repos):
+        edge_data = dict()
+        if update_target_packages:
+            edge_data["update_target_packages"] = update_target_packages
+        if install_target_packages:
+            edge_data["install_target_packages"] = install_target_packages
+        if target_repos:
+            edge_data["target_repos"] = target_repos
+        edge_data["is_automated"] = self.is_automated
+        return edge_data

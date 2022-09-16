@@ -5,8 +5,6 @@ from insights.parsers.redhat_release import RedhatRelease
 from insights.combiners.rhel_for_edge import RhelForEdge
 from insights.combiners import rhel_for_edge
 from insights.tests import context_wrap
-from insights.parsers import SkipComponent
-import pytest
 import doctest
 
 CONTENT_REDHAT_RELEASE_RHEL = """
@@ -54,6 +52,11 @@ def test_rhel_for_edge_true_1():
     assert result.is_edge is True
     assert result.is_automated is False
 
+    edge_dage = result.gen_edge_return_data(None, ['tuned-profiles-spectrumscale'], ['https://cdn.redhat.com/content/dist/layered/rhel8/x86_64/fast-datapath/os'])
+    assert edge_dage['install_target_packages'] == ['tuned-profiles-spectrumscale']
+    assert edge_dage['target_repos'] == ['https://cdn.redhat.com/content/dist/layered/rhel8/x86_64/fast-datapath/os']
+    assert edge_dage['is_automated'] is False
+
 
 def test_rhel_for_edge_true_2():
     install_rpms = InstalledRpms(context_wrap(CONTENT_INSTALLED_RPMS_EDGE))
@@ -64,6 +67,10 @@ def test_rhel_for_edge_true_2():
     result = RhelForEdge(install_rpms, cmdline, list_units, redhat_release)
     assert result.is_edge is True
     assert result.is_automated is True
+
+    edge_dage = result.gen_edge_return_data(['kernel'], None, None)
+    assert edge_dage['update_target_packages'] == ['kernel']
+    assert edge_dage['is_automated'] is True
 
 
 def test_rhel_for_edge_false_1():
@@ -97,15 +104,6 @@ def test_rhel_for_edge_false_3():
     result = RhelForEdge(install_rpms, cmdline, list_units, redhat_release)
     assert result.is_edge is False
     assert result.is_automated is False
-
-
-def test_raise():
-    install_rpms = InstalledRpms(context_wrap(CONTENT_INSTALLED_RPMS_EDGE))
-    cmdline = CmdLine(context_wrap(CMDLINE_EDGE))
-    list_units = ListUnits(context_wrap(CONTENT_SYSTEMCTL_LIST_UNITS_AUTOMATED))
-    with pytest.raises(SkipComponent):
-        RhelForEdge(install_rpms, cmdline, list_units, None)
-
 
 
 def test_doc_examples():
