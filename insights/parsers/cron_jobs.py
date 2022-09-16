@@ -32,13 +32,27 @@ class CronForeman(Scannable):
         # Send out recurring notifications
         0 7 * * *       foreman    /usr/sbin/foreman-rake reports:daily 2>&1 | gawk '{ print strftime("[\%Y-\%m-\%d \%H:\%M:\%S]"), $0 }' >>/var/log/foreman/cron.log
         30 7 * * *      foreman    /usr/sbin/foreman-rake reports:expire 2>&1 | gawk '{ print strftime("[\%Y-\%m-\%d \%H:\%M:\%S]"), $0 }' >>/var/log/foreman/cron.log
+        30 7 * * *      foreman    /usr/sbin/foreman-rake reports:expire days=3 report_type=ForemanOpenscap::ArfReport 2>&1 | gawk '{ print strftime("[\%Y-\%m-\%d \%H:\%M:\%S]"), $0 }' >>/var/log/foreman/cron.log
 
     Examples:
-
+        >>> # get all the lines containing "foreman-rake reports:expire" with "collect" method
         >>> # CronForeman.collect('test_reports_expire', lambda n: n if "foreman-rake reports:expire" in n else "")
-        >>> len(foreman_cron.test_reports_expire) == 1
+        >>> isinstance(foreman_cron.test_reports_expire, list)
         True
-        >>> '/var/log/foreman/cron.log' in foreman_cron.test_reports_expire[0]
+        >>> len(foreman_cron.test_reports_expire) == 2
         True
+        >>> 'days' in foreman_cron.test_reports_expire[0]
+        False
+        >>> 'days' in foreman_cron.test_reports_expire[1]
+        True
+        >>> items = foreman_cron.test_reports_expire[1].split()
+        >>> items[8]
+        'days=3'
+        >>> # get the first line containing "foreman-rake reports:expire" with "any" method
+        >>> # CronForeman.any('test_reports_expire_2', lambda n: n if "foreman-rake reports:expire" in n else "")
+        >>> isinstance(foreman_cron.test_reports_expire_2, str)
+        True
+        >>> 'days' in foreman_cron.test_reports_expire_2
+        False
     """
     pass
