@@ -188,6 +188,21 @@ SATELLITE_PROVISION_PARAMETERS_HIT_2 = """
 name,value
 """
 
+SATELLITE_LOGS_TABLE_SIZE1 = """
+logs_size
+565248
+""".strip()
+
+SATELLITE_LOGS_TABLE_SIZE2 = """
+logs_size
+578813952
+""".strip()
+
+SATELLITE_LOGS_TABLE_SIZE3 = """
+logs_size
+abc
+""".strip()
+
 
 def test_HTL_doc_examples():
     settings = satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_SETTINGS_1))
@@ -199,6 +214,7 @@ def test_HTL_doc_examples():
     repos = satellite_postgresql_query.SatelliteQualifiedKatelloRepos(context_wrap(SATELLITE_REPOS_INFO))
     multi_ref_katello_repos = satellite_postgresql_query.SatelliteKatellloReposWithMultipleRef(context_wrap(SATELLITE_KATELLO_REPOS_WITH_MULTI_REF))
     param_settings = satellite_postgresql_query.SatelliteProvisionParamSettings(context_wrap(SATELLITE_PROVISION_PARAMETERS_HIT_1))
+    logs_table = satellite_postgresql_query.SatelliteLogsTableSize(context_wrap(SATELLITE_LOGS_TABLE_SIZE1))
     globs = {
         'table': settings,
         'resources_table': resources_table,
@@ -208,7 +224,8 @@ def test_HTL_doc_examples():
         'capsules': capsules,
         'repos': repos,
         'multi_ref_katello_repos': multi_ref_katello_repos,
-        'param_settings': param_settings
+        'param_settings': param_settings,
+        'logs_table': logs_table
     }
     failed, _ = doctest.testmod(satellite_postgresql_query, globs=globs)
     assert failed == 0
@@ -333,3 +350,14 @@ def test_satellite_provision_params():
 def test_satellite_provision_params_excep():
     with pytest.raises(SkipException):
         satellite_postgresql_query.SatelliteProvisionParamSettings(context_wrap(SATELLITE_PROVISION_PARAMETERS_HIT_2))
+
+
+def test_satellite_logs_table_size():
+    logs_table = satellite_postgresql_query.SatelliteLogsTableSize(context_wrap(SATELLITE_LOGS_TABLE_SIZE2))
+    assert len(logs_table) == 1
+    assert logs_table[0]['logs_size'] == 552 * 1024 * 1024
+
+
+def test_satellite_logs_table_size_except():
+    with pytest.raises(ParseException):
+        satellite_postgresql_query.SatelliteLogsTableSize(context_wrap(SATELLITE_LOGS_TABLE_SIZE3))

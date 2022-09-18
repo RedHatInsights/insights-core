@@ -99,6 +99,15 @@ insights.specs.datasources.lpstat
     :show-inheritance:
     :undoc-members:
 
+
+insights.specs.datasources.luks_devices
+---------------------------------------
+
+.. automodule:: insights.specs.datasources.luks_devices
+    :members: luks_block_devices, luks_data_sources, LocalSpecs
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.malware_detection
 --------------------------------------------
 

@@ -26,7 +26,7 @@ from insights.specs.datasources import (
     aws, awx_manage, cloud_init, candlepin_broker, corosync as corosync_ds,
     dir_list, ethernet, httpd, ipcs, kernel_module_list, lpstat, md5chk,
     package_provides, ps as ps_datasource, sap, satellite_missed_queues,
-    ssl_certificate, sys_fs_cgroup_memory_tasks_number, system_user_dirs, user_group, yum_updates)
+    ssl_certificate, sys_fs_cgroup_memory_tasks_number, system_user_dirs, user_group, yum_updates, luks_devices)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 from insights.specs.datasources.pcp import pcp_enabled, pmlog_summary_args
 
@@ -136,6 +136,7 @@ class DefaultSpecs(Specs):
     cpu_cores = glob_file("sys/devices/system/cpu/cpu[0-9]*/online")
     cpu_siblings = glob_file("sys/devices/system/cpu/cpu[0-9]*/topology/thread_siblings_list")
     cpu_smt_active = simple_file("sys/devices/system/cpu/smt/active")
+    cpu_smt_control = simple_file("sys/devices/system/cpu/smt/control")
     cpu_vulns = glob_file("sys/devices/system/cpu/vulnerabilities/*")
     cpuinfo = simple_file("/proc/cpuinfo")
     cpupower_frequency_info = simple_command("/usr/bin/cpupower -c all frequency-info")
@@ -145,6 +146,7 @@ class DefaultSpecs(Specs):
     crypto_policies_state_current = simple_file("/etc/crypto-policies/state/current")
     crypto_policies_opensshserver = simple_file("/etc/crypto-policies/back-ends/opensshserver.config")
     crypto_policies_bind = simple_file("/etc/crypto-policies/back-ends/bind.config")
+    cryptsetup_luksDump = luks_devices.luks_data_sources
     cups_ppd = glob_file("etc/cups/ppd/*")
     current_clocksource = simple_file("/sys/devices/system/clocksource/clocksource0/current_clocksource")
     date = simple_command("/bin/date")
@@ -337,7 +339,8 @@ class DefaultSpecs(Specs):
     ls_R_var_lib_nova_instances = simple_command("/bin/ls -laR /var/lib/nova/instances")
     ls_sys_firmware = simple_command("/bin/ls -lanR /sys/firmware")
     ls_systemd_units = simple_command(
-        "/bin/ls -lanRL /etc/systemd /run/systemd /usr/lib/systemd /usr/local/lib/systemd", keep_rc=True
+        "/bin/ls -lanRL /etc/systemd /run/systemd /usr/lib/systemd /usr/local/lib/systemd /usr/local/share/systemd /usr/share/systemd",
+        keep_rc=True
     )
     ls_tmp = simple_command("/bin/ls -la /tmp")
     ls_usr_bin = simple_command("/bin/ls -lan /usr/bin")
@@ -564,8 +567,13 @@ class DefaultSpecs(Specs):
         '/usr/bin/awk \'BEGIN { pipe="openssl x509 -noout -subject -enddate"} /^-+BEGIN CERT/,/^-+END CERT/ { print | pipe } /^-+END CERT/ { close(pipe); printf("\\n")}\' /etc/pki/katello/certs/katello-server-ca.crt',
     )
     satellite_custom_hiera = simple_file("/etc/foreman-installer/custom-hiera.yaml")
+    satellite_enabled_features = simple_command("/usr/bin/curl -sk https://localhost:9090/features --connect-timeout 5", deps=[IsSatellite])
     satellite_katello_repos_with_muliple_ref = simple_command(
         '/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c "select repository_href, count(*) from katello_repository_references group by repository_href having count(*) > 1;" --csv',
+        deps=[IsSatellite]
+    )
+    satellite_logs_table_size = simple_command(
+        "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c \"select pg_total_relation_size('logs') as logs_size\" --csv",
         deps=[IsSatellite]
     )
     satellite_missed_pulp_agent_queues = satellite_missed_queues.satellite_missed_pulp_agent_queues
