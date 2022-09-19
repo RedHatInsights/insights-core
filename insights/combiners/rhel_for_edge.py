@@ -9,14 +9,15 @@ This combiner uses the following parsers to determine if the system is an edge c
 * :py:class:`insights.parsers.redhat_release.RedhatRelease`
 """
 from insights.core.plugins import combiner
-from insights.parsers.installed_rpms import InstalledRpms
 from insights.parsers.cmdline import CmdLine
+from insights.parsers.installed_rpms import InstalledRpms
 from insights.parsers.systemd.unitfiles import ListUnits
 from insights.parsers.redhat_release import RedhatRelease
+from insights import SkipComponent
 
 
 @combiner(InstalledRpms, CmdLine, ListUnits, RedhatRelease)
-class RhelForEdge(list):
+class RhelForEdge(object):
     """
     Combiner for checking if the system is an edge computing systems.
     Edge computing system packages are managed via rpm-ostree.
@@ -39,32 +40,18 @@ class RhelForEdge(list):
     Examples:
         >>> type(rhel_for_edge_obj)
         <class 'insights.combiners.rhel_for_edge.RhelForEdge'>
-        >>> rhel_for_edge_obj.is_edge
-        True
         >>> rhel_for_edge_obj.is_automated
         True
 
     Attributes:
-        is_edge (bool): True when it is an edge computing system
         is_automated (bool): True when the the edge computing system is configured to use automated management
     """
 
     def __init__(self, rpms, cmdline, units, redhatrelease):
-        self.is_edge = False
-        self.is_automated = False
-
         if 'rpm-ostree' in rpms and 'yum' not in rpms and 'ostree' in cmdline and "red hat enterprise linux release" in redhatrelease.raw.lower():
-            self.is_edge = True
             if units.is_running("rhcd.service"):
                 self.is_automated = True
-
-    def gen_edge_return_data(self, update_target_packages, install_target_packages, target_repos):
-        edge_data = dict()
-        if update_target_packages:
-            edge_data["update_target_packages"] = update_target_packages
-        if install_target_packages:
-            edge_data["install_target_packages"] = install_target_packages
-        if target_repos:
-            edge_data["target_repos"] = target_repos
-        edge_data["is_automated"] = self.is_automated
-        return edge_data
+            else:
+                self.is_automated = False
+        else:
+            raise SkipComponent("This is not an edge computing system")
