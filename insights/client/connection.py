@@ -276,7 +276,10 @@ class InsightsConnection(object):
         if no_proxy_info:
             insights_service_host = urlparse(self.base_url).hostname
             logger.debug('Found NO_PROXY set. Checking NO_PROXY %s against base URL %s.', no_proxy_info, insights_service_host)
-            for no_proxy_host in no_proxy_info.split(', '):
+            # Split the no_proxy entries on ',', then strip any leading and trailing whitespace.  Create a clean list for the
+            # for loop.
+            no_proxy_info = [host.strip() for host in no_proxy_info.split(',')]
+            for no_proxy_host in no_proxy_info:
                 logger.debug('Checking %s against %s', no_proxy_host, insights_service_host)
                 if no_proxy_host == '*':
                     proxies = None
