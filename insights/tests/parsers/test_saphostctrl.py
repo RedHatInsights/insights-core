@@ -181,7 +181,7 @@ def test_saphostctrl():
 
 def test_saphostctrl_old():
     sap = SAPHostCtrlInstances(context_wrap(SAPHOSTCTRL_HOSTINSTANCES_DOCS_OLD))
-    assert sorted(sap.types) == sorted(['HANA Test', 'HDB'])
+    assert sap.types == ['HDB']  # short types only
     assert sap[0]['InstanceType'] == 'HANA Test'
     assert sap[1]['InstanceType'] == 'HDB'
 
