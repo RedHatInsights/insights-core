@@ -12,13 +12,26 @@ def test_call():
     assert result == 'hello'
 
 
-def test_call_SAFE_ENV():
+@pytest.mark.skipif(sys.version_info < (3, 6), reason="No need encode() for python3+.")
+def test_call_SAFE_ENV_py3():
     # Test non-alphanumeric character
-    result = subproc.call(u'echo -n "\xae"', env=SAFE_ENV)
+    result = subproc.call(u"echo -n '\xae'", env=SAFE_ENV)
     assert result == u'®'
     assert result == u'\xae'
 
-    result = subproc.call(u'echo -n "®"', env=SAFE_ENV)
+    result = subproc.call(u"echo -n '®'", env=SAFE_ENV)
+    assert result == u'®'
+    assert result == u'\xae'
+
+
+@pytest.mark.skipif(sys.version_info >= (3, 6), reason="Need encode() for python2.")
+def test_call_SAFE_ENV_py2():
+    # Test non-alphanumeric character
+    result = subproc.call(u"echo -n '\xae'".encode('utf-8'), env=SAFE_ENV)
+    assert result == u'®'
+    assert result == u'\xae'
+
+    result = subproc.call(u"echo -n '®'".encode('utf-8'), env=SAFE_ENV)
     assert result == u'®'
     assert result == u'\xae'
 
