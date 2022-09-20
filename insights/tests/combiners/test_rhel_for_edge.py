@@ -6,7 +6,6 @@ from insights.combiners.rhel_for_edge import RhelForEdge
 from insights.combiners import rhel_for_edge
 from insights.tests import context_wrap
 import doctest
-import pytest
 
 CONTENT_REDHAT_RELEASE_RHEL = """
 Red Hat Enterprise Linux release 8.4 (Ootpa)
@@ -50,6 +49,7 @@ def test_rhel_for_edge_true_1():
     redhat_release = RedhatRelease(context_wrap(CONTENT_REDHAT_RELEASE_RHEL))
 
     result = RhelForEdge(install_rpms, cmdline, list_units, redhat_release)
+    assert result.is_edge is True
     assert result.is_automated is False
 
 
@@ -60,6 +60,7 @@ def test_rhel_for_edge_true_2():
     redhat_release = RedhatRelease(context_wrap(CONTENT_REDHAT_RELEASE_RHEL))
 
     result = RhelForEdge(install_rpms, cmdline, list_units, redhat_release)
+    assert result.is_edge is True
     assert result.is_automated is True
 
 
@@ -68,9 +69,10 @@ def test_rhel_for_edge_false_1():
     cmdline = CmdLine(context_wrap(CMDLINE_EDGE))
     list_units = ListUnits(context_wrap(CONTENT_SYSTEMCTL_LIST_UNITS_AUTOMATED))
     redhat_release = RedhatRelease(context_wrap(CONTENT_REDHAT_RELEASE_RHEL))
-    with pytest.raises(Exception) as pe:
-        RhelForEdge(install_rpms, cmdline, list_units, redhat_release)
-    assert "This is not an edge computing system" in str(pe.value)
+
+    result = RhelForEdge(install_rpms, cmdline, list_units, redhat_release)
+    assert result.is_edge is False
+    assert result.is_automated is False
 
 
 def test_rhel_for_edge_false_2():
@@ -79,9 +81,9 @@ def test_rhel_for_edge_false_2():
     list_units = ListUnits(context_wrap(CONTENT_SYSTEMCTL_LIST_UNITS_AUTOMATED))
     redhat_release = RedhatRelease(context_wrap(CONTENT_REDHAT_RELEASE_RHEL))
 
-    with pytest.raises(Exception) as pe:
-        RhelForEdge(install_rpms, cmdline, list_units, redhat_release)
-    assert "This is not an edge computing system" in str(pe.value)
+    result = RhelForEdge(install_rpms, cmdline, list_units, redhat_release)
+    assert result.is_edge is False
+    assert result.is_automated is False
 
 
 def test_rhel_for_edge_false_3():
@@ -90,9 +92,9 @@ def test_rhel_for_edge_false_3():
     list_units = ListUnits(context_wrap(CONTENT_SYSTEMCTL_LIST_UNITS_AUTOMATED))
     redhat_release = RedhatRelease(context_wrap(CONTENT_REDHAT_RELEASE_COREOS))
 
-    with pytest.raises(Exception) as pe:
-        RhelForEdge(install_rpms, cmdline, list_units, redhat_release)
-    assert "This is not an edge computing system" in str(pe.value)
+    result = RhelForEdge(install_rpms, cmdline, list_units, redhat_release)
+    assert result.is_edge is False
+    assert result.is_automated is False
 
 
 def test_doc_examples():
