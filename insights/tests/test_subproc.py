@@ -12,15 +12,15 @@ def test_call():
     assert result == 'hello'
 
 
-def test_callkSAFE_ENV():
+def test_call_SAFE_ENV():
     # Test non-alphanumeric character
-    result = subproc.call('echo -n "\xae"', env=SAFE_ENV)
-    assert result == '®'
-    assert result == '\xae'
+    result = subproc.call(u'echo -n "\xae"', env=SAFE_ENV)
+    assert result == u'®'
+    assert result == u'\xae'
 
-    result = subproc.call('echo -n "®"', env=SAFE_ENV)
-    assert result == '®'
-    assert result == '\xae'
+    result = subproc.call(u'echo -n "®"', env=SAFE_ENV)
+    assert result == u'®'
+    assert result == u'\xae'
 
 
 def test_call_list_of_lists():
