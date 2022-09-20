@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*- 
 import sys
 import pytest
 import shlex
@@ -11,7 +12,7 @@ def test_call():
     assert result == 'hello'
 
 
-def test_call_SAFE_ENV():
+def test_callkSAFE_ENV():
     # Test non-alphanumeric character
     result = subproc.call('echo -n "\xae"', env=SAFE_ENV)
     assert result == '®'
