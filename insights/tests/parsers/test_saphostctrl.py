@@ -25,6 +25,28 @@ SAPHOSTCTRL_HOSTINSTANCES_DOCS = '''
  SapVersionInfo , String , 749, patch 211, changelist 1754007
 '''
 
+SAPHOSTCTRL_HOSTINSTANCES_DOCS_OLD = '''
+*********************************************************
+ CreationClassName , String , SAPInstance
+ SID , String , D89
+ SystemNumber , String , 88
+ InstanceName , String , HDB88
+ InstanceType , String , HANA Test
+ Hostname , String , lu0417
+ FullQualifiedHostname , String , lu0417.example.com
+ IPAddress , String , 10.0.0.88
+ SapVersionInfo , String , 749, patch 211, changelist 1754007
+*********************************************************
+ CreationClassName , String , SAPInstance
+ SID , String , D90
+ SystemNumber , String , 90
+ InstanceName , String , HDB90
+ Hostname , String , lu0418
+ FullQualifiedHostname , String , lu0418.example.com
+ IPAddress , String , 10.0.0.90
+ SapVersionInfo , String , 749, patch 211, changelist 1754007
+'''
+
 SAPHOSTCTRL_HOSTINSTANCES_GOOD = '''
 *********************************************************
  SID , String , D89
@@ -155,6 +177,13 @@ def test_saphostctrl():
     assert sorted(sap.types) == sorted([
         'HDB', 'ERS', 'ASCS', 'DVEBMGS', 'SCS', 'D', 'SMDA'
     ])
+
+
+def test_saphostctrl_old():
+    sap = SAPHostCtrlInstances(context_wrap(SAPHOSTCTRL_HOSTINSTANCES_DOCS_OLD))
+    assert sorted(sap.types) == sorted(['HANA Test', 'HDB'])
+    assert sap[0]['InstanceType'] == 'HANA Test'
+    assert sap[1]['InstanceType'] == 'HDB'
 
 
 def test_saphostctrl_bad():
