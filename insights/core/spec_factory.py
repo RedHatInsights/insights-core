@@ -31,7 +31,7 @@ SAFE_ENV = {
         "/usr/sbin",
         "/usr/share/Modules/bin",
     ]),
-    "LC_ALL": "C",
+    "LC_ALL": "C.UTF-8",
 }
 """
 A minimal set of environment variables for use in subprocess calls
