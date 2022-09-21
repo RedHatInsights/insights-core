@@ -21,20 +21,21 @@ class RhelForEdge(object):
     Combiner for checking if the system is an edge computing systems.
     Edge computing system packages are managed via rpm-ostree.
     Red Hat CoreOS is also managed via rpm-ostree, use the string "Red Hat Enterprise Linux release"
-    from "/etc/redhat-release" to determine if it is an edge computing system as it is "Red Hat Enterprise Linux CoreOS release"
-    on RedHat CoreOs.
+    from "/etc/redhat-release" to determine if it is an edge computing system as it is
+    "Red Hat Enterprise Linux CoreOS release" on RedHat CoreOs.
 
-    When an edge computing system created from online console edge image is configured to use automated management,
-    the output of "rhc status" is the following:
+    When an edge computing system created from online console edge image is configured to use
+    automated management, the output of "rhc status" is the following::
 
             Connection status for test.localhost:
             - Connected to Red Hat Subscription Management
             - The Red Hat connector daemon is active
 
-    If a system can upload insights archive, it must be connected to Red Hat Subscription Management, rhcd service running
-    means an edge computing system is configured to use automated management. Note: it is also able to run rhcd service on the
-    edge systems created from cockpit edge image, "is_automated" is only for front-end resolution surface, it is used when
-    customers determine that the image is from online console.
+    If a system can upload insights archive, it must be connected to Red Hat Subscription Management,
+    rhcd service running means an edge computing system is configured to use automated management.
+    Note: it is also able to run rhcd service on the edge systems created from cockpit edge image,
+    "is_automated" is only for front-end resolution surface, it is used when customers determine that
+    the image is from online console.
 
     Examples:
         >>> type(rhel_for_edge_obj)
