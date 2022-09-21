@@ -33,9 +33,15 @@ class RhelForEdge(object):
 
     If a system can upload insights archive, it must be connected to Red Hat Subscription Management,
     rhcd service running means an edge computing system is configured to use automated management.
-    Note: it is also able to run rhcd service on the edge systems created from cockpit edge image,
-    "is_automated" is only for front-end resolution surface, it is used when customers determine that
-    the image is from online console.
+
+    Attributes:
+        is_edge (bool): True when it is an edge computing system
+        is_automated (bool): True when the the edge computing system is configured to use automated management
+
+    .. note::
+        It is also able to run rhcd service on the edge systems created from cockpit edge image,
+        "is_automated" is only for front-end resolution surface, it is used when customers determine that
+        the image is from online console.
 
     Examples:
         >>> type(rhel_for_edge_obj)
@@ -44,10 +50,6 @@ class RhelForEdge(object):
         True
         >>> rhel_for_edge_obj.is_automated
         True
-
-    Attributes:
-        is_edge (bool): True when it is an edge computing system
-        is_automated (bool): True when the the edge computing system is configured to use automated management
     """
 
     def __init__(self, rpms, cmdline, units, redhatrelease):
