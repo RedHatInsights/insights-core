@@ -24,6 +24,9 @@ class RhelForEdge(object):
     from "/etc/redhat-release" to determine if it is an edge computing system as it is
     "Red Hat Enterprise Linux CoreOS release" on RedHat CoreOs.
 
+    .. note::
+        RHEL for EDGE is available and supported since RHEL 8.3.
+
     When an edge computing system created from online console edge image is configured to use
     automated management, the output of "rhc status" is the following::
 
