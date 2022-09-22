@@ -33,6 +33,7 @@ class Specs(SpecSet):
     brctl_show = RegistryPoint()
     candlepin_broker = RegistryPoint()
     candlepin_error_log = RegistryPoint(filterable=True)
+    candlepin_events_psql_count = RegistryPoint()
     candlepin_log = RegistryPoint(filterable=True)
     cdc_wdm = RegistryPoint()
     checkin_conf = RegistryPoint()
