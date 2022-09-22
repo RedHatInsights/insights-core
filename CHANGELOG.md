@@ -2,6 +2,14 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.295](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.295) (2022-09-22)
+
+- feat: New spec "/etc/cron.d/foreman" and parser ([PR 3514](https://github.com/RedHatInsights/insights-core/pull/3514))
+- feat: Add combiner rhel for edge ([PR 3526](https://github.com/RedHatInsights/insights-core/pull/3526))
+- fix: bz-2126966: use SIGTERM for rpm instead of SIGKILL ([PR 3524](https://github.com/RedHatInsights/insights-core/pull/3524))
+- fix: Soscleaner fix ([PR 3502](https://github.com/RedHatInsights/insights-core/pull/3502))
+- fix: Removing extraneous space inserted in commit 894484a ([PR 3516](https://github.com/RedHatInsights/insights-core/pull/3523))
+
 ## [insights-core-3.0.294](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.294) (2022-09-15)
 
 - feat: New spec to get satellite logs table size and its parser ([PR 3516](https://github.com/RedHatInsights/insights-core/pull/3516))
