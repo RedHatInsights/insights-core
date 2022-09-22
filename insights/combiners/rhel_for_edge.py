@@ -58,7 +58,12 @@ class RhelForEdge(object):
     def __init__(self, rpms, cmdline, units, redhatrelease):
         self.is_edge = False
         self.is_automated = False
-        if 'rpm-ostree' in rpms and 'yum' not in rpms and 'ostree' in cmdline and "red hat enterprise linux release" in redhatrelease.raw.lower():
+
+        edge_rpm = 'rpm-ostree' in rpms and 'yum' not in rpms
+        edge_cmdline = 'ostree' in cmdline
+        edge_rhel = 'red hat enterprise linux release' in redhatrelease.raw.lower()
+
+        if edge_rpm and edge_cmdline and edge_rhel:
             self.is_edge = True
             if units.is_running("rhcd.service"):
                 self.is_automated = True
