@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.294
+Version:        3.0.295
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,13 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Sep 22 2022 Sachin Patil <psachin@redhat.com> 3.0.295-1
+- feat: New spec "/etc/cron.d/foreman" and parser (#3514) (44796653+huali027@users.noreply.github.com)
+- feat: Add combiner rhel for edge (#3526) (jiazhang@redhat.com)
+- fix: bz-2126966: use SIGTERM for rpm instead of SIGKILL (#3524) (xiangceliu@redhat.com)
+- fix: Soscleaner fix (#3502) (stomsa@redhat.com)
+- fix: Removing extraneous space inserted in commit 894484a (#3523) (80352581+mike-kingsbury@users.noreply.github.com)
+
 * Thu Sep 15 2022 Sachin Patil <psachin@redhat.com> 3.0.294-1
 - feat: New spec to get satellite logs table size and its parser (#3516) (44796653+huali027@users.noreply.github.com)
 - New parser for CpuSMTControl and tests update (#3521) (41325380+jobselko@users.noreply.github.com)
