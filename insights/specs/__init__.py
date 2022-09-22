@@ -98,6 +98,7 @@ class Specs(SpecSet):
     crictl_logs = RegistryPoint(multi_output=True, filterable=True)
     crio_conf = RegistryPoint(multi_output=True)
     cron_daily_rhsmd = RegistryPoint(filterable=True)
+    cron_foreman = RegistryPoint(filterable=True)
     crypto_policies_config = RegistryPoint()
     crypto_policies_state_current = RegistryPoint()
     crypto_policies_opensshserver = RegistryPoint()
