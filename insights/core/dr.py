@@ -413,7 +413,7 @@ def get_dependency_specs(component):
                 ssreq = get_requires(cmp)
                 ssalo = get_at_least_one(cmp)
                 if ssreq and ssalo:
-                    salo.append([*ssreq, *ssalo])
+                    salo.append([ss for ss in ssreq + ssalo])
                 elif ssreq:
                     salo.extend(ssreq)
                 else:
