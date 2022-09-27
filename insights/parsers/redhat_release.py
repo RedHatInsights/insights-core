@@ -27,7 +27,7 @@ Examples:
     >>> rh_release.product
     'Red Hat Enterprise Linux Server'
 """
-from insights import Parser, parser, ContainerParser
+from insights import Parser, ContainerParser, parser
 from insights.specs import Specs
 
 
