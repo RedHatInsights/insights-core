@@ -414,7 +414,7 @@ def get_dependency_specs(component):
                     salo.append([*ssreq, *ssalo])
                 elif ssreq:
                     salo.extend(ssreq)
-                elif ssalo:
+                else:
                     salo.extend(ssalo)
             alo.append(tuple(salo))
         return alo
