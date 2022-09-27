@@ -371,25 +371,27 @@ def get_dependency_specs(component):
             already be loaded.
 
     Returns:
-        list: The `requires` and `at_least_one` spec sets of the `component`
-            with format::
-                [
-                    requires_1,
-                    requires_2,
-                    (at_least_one_11, at_least_one_12),
-                    (at_least_one_21, [req_alo22, (alo_23, alo_24)]),
-                ]
+        list: The `requires` and `at_least_one` spec sets of the `component`.
 
-                Note:
-                    - The 'requires_1' and 'requires_2' are `requires` specs.
-                      Each of them are required.
-                    - The 'at_least_one_11' and 'at_least_one_12' are `at_least_one`
-                      specs in the same at least one set.
-                      At least one of them is required
-                    - The 'alo_23' and 'alo_24' are `at_least_one` specs and
-                      together with the 'req_alo22' are `requires` for the
-                      sub-set. This sub-set specs and the 'at_least_one_21' are
-                      `at_least_one` specs in the same at least one set.
+    The return list is in the following format::
+
+         [
+             requires_1,
+             requires_2,
+             (at_least_one_11, at_least_one_12),
+             (at_least_one_21, [req_alo22, (alo_23, alo_24)]),
+         ]
+
+    .. info::
+         - The 'requires_1' and 'requires_2' are `requires` specs.
+           Each of them are required.
+         - The 'at_least_one_11' and 'at_least_one_12' are `at_least_one`
+           specs in the same at least one set.
+           At least one of them is required
+         - The 'alo_23' and 'alo_24' are `at_least_one` specs and
+           together with the 'req_alo22' are `requires` for the
+           sub-set. This sub-set specs and the 'at_least_one_21' are
+           `at_least_one` specs in the same at least one set.
     """
     def get_requires(comp):
         comp_delegate = get_delegate(comp)
