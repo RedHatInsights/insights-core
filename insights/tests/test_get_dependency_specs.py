@@ -97,7 +97,7 @@ def test_get_dependency_specs():
             t = m
         else:
             t = n
-        assert all(i in m for i in ('ls_etc', 'ls_boot'))
+        assert all(i in t for i in ('ls_etc', 'ls_boot'))
 
     specs = get_dependency_specs(report)
     # [
