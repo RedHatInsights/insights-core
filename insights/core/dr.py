@@ -382,7 +382,7 @@ def get_dependency_specs(component):
              (at_least_one_21, [req_alo22, (alo_23, alo_24)]),
          ]
 
-    .. info::
+        Note:
          - The 'requires_1' and 'requires_2' are `requires` specs.
            Each of them are required.
          - The 'at_least_one_11' and 'at_least_one_12' are `at_least_one`
