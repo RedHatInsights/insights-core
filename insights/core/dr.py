@@ -364,7 +364,8 @@ def get_dependency_graph(component):
 def get_dependency_specs(component):
     """
     Get the dependency specs of the specified `component`. Only `requires` and
-    `at_least_one` specs will be returned.
+    `at_least_one` specs will be returned. The `optional` specs is not
+    considered in this function.
 
     Arguments:
         component (callable): The component to check. The component must
