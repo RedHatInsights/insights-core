@@ -17,34 +17,36 @@ from insights.parsers.redhat_release import RedhatRelease
 
 @combiner(InstalledRpms, CmdLine, ListUnits, RedhatRelease)
 class RhelForEdge(object):
-    """
-    Combiner for checking if the system is an edge computing systems.
-    Edge computing system packages are managed via rpm-ostree.
-    Red Hat CoreOS is also managed via rpm-ostree, use the string "Red Hat Enterprise Linux release"
-    from "/etc/redhat-release" to determine if it is an edge computing system as it is
-    "Red Hat Enterprise Linux CoreOS release" on RedHat CoreOs.
+    """Combiner for checking if the system is an edge computing system. Edge
+    computing as well as the Red Hat CoreOS packages are managed via rpm-ostree.
+    Use the string "Red Hat Enterprise Linux release" from
+    ``/etc/redhat-release`` to determine an edge computing system. The Red Hat
+    CoreOS system will have "Red Hat Enterprise Linux CoreOS release" as the
+    string.
 
     .. note::
         RHEL for EDGE is available and supported since RHEL 8.3.
 
-    When an edge computing system created from online console edge image is configured to use
-    automated management, the output of "rhc status" is the following::
+    When an edge computing system (created from online console edge image) is
+    configured to use the automated management, the output of ``rhc status`` is
+    as below::
 
-            Connection status for test.localhost:
+            Connection status for <HOST>:
             - Connected to Red Hat Subscription Management
             - The Red Hat connector daemon is active
 
-    If a system can upload insights archive, it must be connected to Red Hat Subscription Management,
-    rhcd service running means an edge computing system is configured to use automated management.
+    The ``rhcd.service`` running on an edge computing system signifies that it
+    is configured to use the automated management.
 
     Attributes:
         is_edge (bool): True when it is an edge computing system
         is_automated (bool): True when the the edge computing system is configured to use automated management
 
     .. note::
-        It is also able to run rhcd service on the edge systems created from cockpit edge image,
-        "is_automated" is only for front-end resolution surface, it is used when customers determine that
-        the image is from online console.
+        It is possible to run ``rhcd.service`` on the edge systems created
+        from the cockpit edge image. The **is_automated** attribute is only for
+        front-end resolution surface. It is used when the edge image is from
+        the online console.
 
     Examples:
         >>> type(rhel_for_edge_obj)
@@ -53,6 +55,7 @@ class RhelForEdge(object):
         True
         >>> rhel_for_edge_obj.is_automated
         True
+
     """
 
     def __init__(self, rpms, cmdline, units, redhatrelease):
