@@ -19,6 +19,7 @@ class CronFile(Parser):
     It parses the file at ``/etc/cron.d/*```.
 
     Each row of the file is converted into a dictionary with keys for each field.
+    And also the whole line is saved for use to the "raw" key.
     For example one row would look like::
 
         {
@@ -28,7 +29,8 @@ class CronFile(Parser):
           'month': '*',
           'day_of_week': '*',
           'username': 'test',
-          'command': '/usr/bin/keystone-manage token_flush > /dev/null 2>&1'
+          'command': '/usr/bin/keystone-manage token_flush > /dev/null 2>&1',
+          'raw': '* * * * * * test /usr/bin/keystone-manage token_flush > /dev/null 2>&1'
         }
 
     It parses the line in the same way that cron(1) does.  Lines that
@@ -111,7 +113,7 @@ class CronFile(Parser):
                 # Reboot is 'special':
                 if line.startswith('@reboot'):
                     parts = line.split(None, 2)
-                    self.jobs.append({'time': '@reboot', 'username': parts[1], 'command': parts[2]})
+                    self.jobs.append({'time': '@reboot', 'username': parts[1], 'command': parts[2], 'raw': line})
                     continue
                 else:
                     parts = line.split(None, 2)
@@ -131,7 +133,8 @@ class CronFile(Parser):
                     'month': items[3],
                     'day_of_week': items[4],
                     'username': items[5],
-                    'command': items[6]
+                    'command': items[6],
+                    'raw': line
                 })
             else:
                 parts = line.split('=')

@@ -98,6 +98,7 @@ def test_cron_file():
     assert len(user1_jobs) == 5
     assert user1_jobs[-1].get('time') == '@reboot'
     assert user1_jobs[-1].get('command') == '/usr/sbin/somefive'
+    assert user1_jobs[-1].get('raw') == '@reboot     user1    /usr/sbin/somefive'
     test_jobs = cron_obj.search(command__contains='test')
     assert len(test_jobs) == 3
     assert test_jobs[1].get('minute') == '0'
