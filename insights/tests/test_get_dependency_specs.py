@@ -80,7 +80,17 @@ def DEF(*args):
     return True
 
 
-def test_get_dependency_specs():
+@condition(LsPci, LsBoot, LsDisk)
+def XYZ(*args):
+    return True
+
+
+def test_get_dependency_specs_1_level_requires_only():
+    specs = get_dependency_specs(XYZ)
+    assert sorted(specs) == ['ls_boot', 'ls_disk', 'lspci']
+
+
+def test_get_dependency_specs_2_level():
     specs = get_dependency_specs(DEF)
     # [
     #     ('lspci', [('ls_etc', 'ls_boot'), 'ls_var_log'])
@@ -99,6 +109,8 @@ def test_get_dependency_specs():
             t = n
         assert all(i in t for i in ('ls_etc', 'ls_boot'))
 
+
+def test_get_dependency_specs_complex():
     specs = get_dependency_specs(report)
     # [
     #     'installed_rpms',

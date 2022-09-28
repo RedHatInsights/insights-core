@@ -399,7 +399,7 @@ def get_dependency_specs(component):
         req = list()
         for cmp in comp_delegate.requires:
             if get_name(cmp).startswith("insights.specs."):
-                return [get_simple_name(cmp)]
+                req.append(get_simple_name(cmp))
             else:
                 req.extend(get_requires(cmp) + get_at_least_one(cmp))
         return req
