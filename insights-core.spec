@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.295
+Version:        3.0.296
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,15 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Sep 29 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.296-1
+- fix: make SAPHostCtrlInstances compatible with old archives (#3528)
+  (xiangceliu@redhat.com)
+- refactor: Keep the raw line for rule use (#3533)
+  (44796653+huali027@users.noreply.github.com)
+- feat: [PoC] Support Container Specs (#3477) (xiangceliu@redhat.com)
+- fix: bz-2130242, remove the print statement (#3535) (xiangceliu@redhat.com)
+- Update docstring to make it more readable (#3531) (psachin@redhat.com)
+
 * Thu Sep 22 2022 Sachin Patil <psachin@redhat.com> 3.0.295-1
 - feat: New spec "/etc/cron.d/foreman" and parser (#3514) (44796653+huali027@users.noreply.github.com)
 - feat: Add combiner rhel for edge (#3526) (jiazhang@redhat.com)
