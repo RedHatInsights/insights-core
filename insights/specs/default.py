@@ -16,6 +16,7 @@ from insights.core.spec_factory import RawFileProvider
 from insights.core.spec_factory import simple_file, simple_command, glob_file
 from insights.core.spec_factory import first_of, command_with_args
 from insights.core.spec_factory import foreach_collect, foreach_execute
+from insights.core.spec_factory import container_collect
 from insights.core.spec_factory import first_file, listdir
 from insights.components.cloud_provider import IsAzure, IsGCP
 from insights.components.ceph import IsCephMonitor
@@ -29,6 +30,8 @@ from insights.specs.datasources import (
     ssl_certificate, sys_fs_cgroup_memory_tasks_number, system_user_dirs, user_group, yum_updates, luks_devices)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 from insights.specs.datasources.pcp import pcp_enabled, pmlog_summary_args
+from insights.specs.datasources.container import running_rhel_containers
+from insights.specs.datasources.container.nginx_conf import nginx_conf as container_nginx_conf_ds
 
 
 logger = logging.getLogger(__name__)
@@ -730,3 +733,7 @@ class DefaultSpecs(Specs):
     zipl_conf = simple_file("/etc/zipl.conf")
     rpm_format = format_rpm()
     installed_rpms = simple_command("/bin/rpm -qa --qf '%s'" % rpm_format, context=HostContext, signum=signal.SIGTERM)
+
+    # container_specs
+    container_redhat_release = container_collect(running_rhel_containers, "/etc/redhat-release")
+    container_nginx_conf = container_collect(container_nginx_conf_ds)
