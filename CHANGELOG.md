@@ -2,6 +2,14 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.296](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.296) (2022-09-29)
+
+- fix: make SAPHostCtrlInstances compatible with old archives ([PR 3528](https://github.com/RedHatInsights/insights-core/pull/3528))
+- refactor: Keep the raw line for rule use ([PR 3533](https://github.com/RedHatInsights/insights-core/pull/3533))
+- feat: [PoC] Support Container Specs ([PR 3477](https://github.com/RedHatInsights/insights-core/pull/3477))
+- fix: bz-2130242, remove the print statement ([PR 3535](https://github.com/RedHatInsights/insights-core/pull/3535))
+- Update docstring to make it more readable ([PR 3531](https://github.com/RedHatInsights/insights-core/pull/3531))
+
 ## [insights-core-3.0.295](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.295) (2022-09-22)
 
 - feat: New spec "/etc/cron.d/foreman" and parser ([PR 3514](https://github.com/RedHatInsights/insights-core/pull/3514))
