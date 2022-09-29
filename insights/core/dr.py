@@ -395,9 +395,8 @@ def get_dependency_specs(component):
            `at_least_one` specs in the same at least one set.
     """
     def get_requires(comp):
-        comp_delegate = get_delegate(comp)
         req = list()
-        for cmp in comp_delegate.requires:
+        for cmp in get_delegate(comp).requires:
             if get_name(cmp).startswith("insights.specs."):
                 req.append(get_simple_name(cmp))
             else:
@@ -405,19 +404,18 @@ def get_dependency_specs(component):
         return req
 
     def get_at_least_one(comp):
-        comp_delegate = get_delegate(comp)
         alo = list()
-        for cmps in comp_delegate.at_least_one:
+        for cmps in get_delegate(comp).at_least_one:
             salo = list()
             for cmp in cmps:
                 ssreq = get_requires(cmp)
                 ssalo = get_at_least_one(cmp)
                 if ssreq and ssalo:
+                    # they are mixed and in the same `requires` level
                     salo.append([ss for ss in ssreq + ssalo])
-                elif ssreq:
-                    salo.extend(ssreq)
                 else:
-                    salo.extend(ssalo)
+                    # no mixed, just add them one by one
+                    salo.extend(ssreq or ssalo)
             alo.append(tuple(salo))
         return alo
 
