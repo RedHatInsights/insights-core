@@ -108,8 +108,12 @@ class SAPHostCtrlInstances(CommandParser, list):
             inst[fields[0]] = fields[2]
 
             if fields[0] == 'InstanceName':
+                short_type = fields[2].strip('0123456789')
+                # Back forward compatible: a short InstanceType was from the InstanceName
+                if 'InstanceType' not in inst:
+                    inst.update(dict(InstanceType=short_type))
                 self.instances.append(fields[2])
-                _types.add(fields[2].strip('0123456789'))
+                _types.add(short_type)
             _sids.add(fields[2]) if fields[0] == 'SID' else None
 
         if len(self) < 1:
