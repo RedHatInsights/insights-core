@@ -18,7 +18,6 @@ def corosync_cmapctl_cmds(broker):
     """
     corosync_cmd = '/usr/sbin/corosync-cmapctl'
     if os.path.exists(corosync_cmd):
-        print(broker, broker.get(IsRhel7))
         # RHEL 7
         if broker.get(IsRhel7):
             return [
