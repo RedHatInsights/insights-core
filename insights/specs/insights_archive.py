@@ -196,6 +196,7 @@ class InsightsArchiveSpecs(Specs):
     od_cpu_dma_latency = simple_file("insights_commands/od_-An_-t_d_.dev.cpu_dma_latency")
     open_vm_tools_stat_raw_text_session = simple_file("insights_commands/vmware-toolbox-cmd_stat_raw_text_session")
     openvswitch_other_config = simple_file("insights_commands/ovs-vsctl_-t_5_get_Open_vSwitch_._other_config")
+    ovs_appctl_fdb_show_bridge = glob_file("insights_commands/ovs-appctl_fdb.show_*")
     ovs_vsctl_list_bridge = simple_file("insights_commands/ovs-vsctl_list_bridge")
     ovs_vsctl_show = simple_file("insights_commands/ovs-vsctl_show")
     package_provides_command = glob_file("insights_commands/echo_*java*")
