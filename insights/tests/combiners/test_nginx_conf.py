@@ -1,8 +1,8 @@
 import pytest
 
-from insights.combiners.nginx_conf import NginxConfTree
 from insights.parsers import SkipException
-from insights.parsers.nginx_conf import NginxConfPEG
+from insights.parsers.nginx_conf import NginxConfPEG, ContainerNginxConfPEG
+from insights.combiners.nginx_conf import NginxConfTree, ContainerNginxConfTree
 from insights.parsr.query import startswith
 from insights.tests import context_wrap
 
@@ -221,3 +221,96 @@ def test_nginx_empty():
     nginx_conf = context_wrap('', path="/etc/nginx/nginx.conf")
     with pytest.raises(SkipException):
         assert NginxConfPEG(nginx_conf) is None
+
+
+def test_nginx_includes_container():
+    ctn1_nginx_conf = context_wrap(
+        NGINX_CONF,
+        path="/etc/nginx/nginx.conf",
+        engine='podman',
+        image='quay.io/rhel84',
+        container_id='xxxx')
+    ctn1_mime_types_conf = context_wrap(
+        MIME_TYPES,
+        path="/etc/nginx/conf/mime.types",
+        engine='podman',
+        image='quay.io/rhel84',
+        container_id='xxxx')
+    ctn1_proxy_conf = context_wrap(
+        PROXY_CONF,
+        path="/etc/nginx/proxy.conf",
+        engine='podman',
+        image='quay.io/rhel84',
+        container_id='xxxx')
+    ctn1_fastcgi_conf = context_wrap(
+        FASTCGI_CONF,
+        path="/etc/nginx/fastcgi.conf",
+        engine='podman',
+        image='quay.io/rhel84',
+        container_id='xxxx')
+
+    ctn2_nginx_conf = context_wrap(
+        NGINX_CONF,
+        path="/etc/nginx/nginx.conf",
+        engine='docker',
+        image='quay.io/rhel86',
+        container_id='yyyy')
+    ctn2_mime_types_conf = context_wrap(
+        MIME_TYPES,
+        path="/etc/nginx/conf/mime.types",
+        engine='docker',
+        image='quay.io/rhel86',
+        container_id='yyyy')
+    ctn2_proxy_conf = context_wrap(
+        PROXY_CONF,
+        path="/etc/nginx/proxy.conf",
+        engine='docker',
+        image='quay.io/rhel86',
+        container_id='yyyy')
+    ctn2_fastcgi_conf = context_wrap(
+        FASTCGI_CONF,
+        path="/etc/nginx/fastcgi.conf",
+        engine='docker',
+        image='quay.io/rhel86',
+        container_id='yyyy')
+
+    # individual parsers
+    ctn1_main = ContainerNginxConfPEG(ctn1_nginx_conf)
+    ctn1_mime_types = ContainerNginxConfPEG(ctn1_mime_types_conf)
+    ctn1_proxy = ContainerNginxConfPEG(ctn1_proxy_conf)
+    ctn1_fastcgi = ContainerNginxConfPEG(ctn1_fastcgi_conf)
+    ctn2_main = ContainerNginxConfPEG(ctn2_nginx_conf)
+    ctn2_mime_types = ContainerNginxConfPEG(ctn2_mime_types_conf)
+    ctn2_proxy = ContainerNginxConfPEG(ctn2_proxy_conf)
+    ctn2_fastcgi = ContainerNginxConfPEG(ctn2_fastcgi_conf)
+
+    # combine them
+    nginx = ContainerNginxConfTree(
+            [ctn1_main, ctn2_proxy, ctn2_main, ctn1_mime_types,
+             ctn1_fastcgi, ctn2_mime_types, ctn1_proxy, ctn2_fastcgi])
+
+    # test /etc/nginx/nginx.conf
+    assert nginx[0]["events"]["worker_connections"][0].value == 4096
+    assert nginx[0]["http"]["server"]["ssl_certificate"][0].value == "/etc/pki/nginx/server.crt"
+
+    # test inclusion of conf/mime.types (note relative path)
+    text = nginx[0]["http"]["types"][startswith("text/")]
+    assert len(text) == 6
+
+    # test inclusion of /etc/nginx/proxy.conf
+    assert nginx[1].find("proxy_send_timeout").value == 90
+
+    # test inclusion of /etc/nginx/fastcgi.conf
+    assert nginx[1].find("fastcgi_pass").value == "127.0.0.1:1025"
+    actual = nginx[1].find(("fastcgi_param", "GATEWAY_INTERFACE"))[0].attrs
+    expected = ["GATEWAY_INTERFACE", "CGI/1.1"]
+    assert actual == expected
+
+    # conf_path
+    assert nginx[0].conf_path == '/etc/nginx'
+    assert nginx[1].conf_path == '/etc/nginx'
+
+    # container info
+    assert sorted([nginx[0].image, nginx[1].image]) == ['quay.io/rhel84', 'quay.io/rhel86']
+    assert sorted([nginx[0].engine, nginx[1].engine]) == ['docker', 'podman']
+    assert sorted([nginx[0].container_id, nginx[1].container_id]) == ['xxxx', 'yyyy']

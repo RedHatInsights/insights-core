@@ -139,6 +139,38 @@ def test_nginxconfpeg():
     assert nginxconf['http']['server'][-1] == nginxconf['http']['server'][2]
 
 
+def test_nginxconfpeg_container():
+    nginxconf = nginx_conf.ContainerNginxConfPEG(
+        context_wrap(
+            NGINXCONF,
+            engine='podman',
+            image='quay.io/rhel8',
+            container_id='xxxx'
+        )
+    )
+    assert nginxconf['user'][-1].value == 'root'
+    assert nginxconf['events'][-1]['worker_connections'][-1].value == 4096
+    assert nginxconf['mail'][-1]['server'][0]['listen'][-1].value == 143
+    assert nginxconf['http'][-1]['access_log'][-1].value == 'logs/access.log main'
+    assert nginxconf['http'][-1]['server'][0]['location'][0]['fastcgi_pass'][-1].value == '127.0.0.1:1025'
+    assert nginxconf['http'][-1]['server'][1]['location'][-1].value == '/'
+    assert nginxconf['http'][-1]['upstream'][1].value == 'big_server_com'
+    assert nginxconf["http"][-1]["include"][0].value == 'conf/mime.types'
+    assert nginxconf['http'][-1]['upstream'][1]['server'][0].value == '127.0.0.3:8000 weight=5'
+    assert nginxconf['http'][-1]['log_format'][
+               -1].value == 'main $remote_addr - $remote_user [$time_local] "$request"  $status $body_bytes_sent "$http_referer"  "$http_user_agent" "$http_x_forwarded_for"'
+    assert nginxconf['http'][-1]['server'][2]['location'][0]['location'][0]['limit_except'][-1]['allow'][
+               -1].value == '192.168.2.0/32'
+    assert nginxconf['http']['server']['location']['location']['limit_except']['allow'][-1].value == '192.168.2.0/32'
+    assert nginxconf['http']['server'][0]['location'][-1].value == r'~ \.php$'
+    assert nginxconf['http']['server'][1]['location'][0].value == '~ ^/(images|javascript|js|css|flash|media|static)/'
+    assert nginxconf['http']['server'][1]['location'][-1].value == '/'
+    assert nginxconf['http']['server'][-1] == nginxconf['http']['server'][2]
+    assert nginxconf.engine == 'podman'
+    assert nginxconf.image == 'quay.io/rhel8'
+    assert nginxconf.container_id == 'xxxx'
+
+
 def test_doc():
     env = {
         'nginxconf': nginx_conf.NginxConf(context_wrap(NGINXCONF)),
