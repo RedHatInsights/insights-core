@@ -303,11 +303,10 @@ class CommandOutputProvider(ContentProvider):
     """
     Class used in datasources to return output from commands.
     """
-    def __init__(self, cmd, ctx, args=None, split=True, keep_rc=False, ds=None, timeout=None, inherit_env=None, signum=None):
+    def __init__(self, cmd, ctx, root="insights_commands", args=None, split=True, keep_rc=False, ds=None, timeout=None, inherit_env=None, signum=None):
         super(CommandOutputProvider, self).__init__()
         self.cmd = cmd
-        self.root = "insights_commands"
-        self.relative_path = os.path.join("insights_commands", mangle_command(cmd))
+        self.root = root
         self.ctx = ctx
         self.args = args  # already interpolated into cmd - stored here for context.
         self.split = split
@@ -316,11 +315,16 @@ class CommandOutputProvider(ContentProvider):
         self.timeout = timeout
         self.inherit_env = inherit_env or []
         self.signum = signum or signal.SIGKILL
+        self._misc_settings()
 
         self._content = None
         self.rc = None
 
         self.validate()
+
+    def _misc_settings(self):
+        """Re-implement it according to the actual case of the sub-class"""
+        self.relative_path = mangle_command(self.cmd)
 
     def validate(self):
         if not blacklist.allow_command(self.cmd):
@@ -397,6 +401,36 @@ class CommandOutputProvider(ContentProvider):
 
     def __repr__(self):
         return 'CommandOutputProvider("%r")' % self.cmd
+
+
+class ContainerProvider(CommandOutputProvider):
+    def __init__(self, cmd_path, ctx, image=None, args=None, split=True, keep_rc=False, ds=None, timeout=None, inherit_env=None, signum=None):
+        # cmd  = "<podman|docker> exec container_id command"
+        # path = "<podman|docker> exec container_id cat path"
+        self.image = image
+        super(ContainerProvider, self).__init__(cmd_path, ctx, "insights_containers", args, split, keep_rc, ds, timeout, inherit_env, signum)
+
+
+class ContainerFileProvider(ContainerProvider):
+    def _misc_settings(self):
+        engine, _, container_id, _, path = self.cmd.split(None, 4)
+        self.engine = os.path.basename(engine)
+        self.container_id = container_id
+        self.relative_path = os.path.join(container_id, path.lstrip('/'))
+
+    def __repr__(self):
+        return 'ContainerFileProvider("%r")' % self.cmd
+
+
+class ContainerCommandProvider(ContainerProvider):
+    def _misc_settings(self):
+        engine, _, container_id, cmd = self.cmd.split(None, 3)
+        self.engine = os.path.basename(engine)
+        self.container_id = container_id
+        self.relative_path = os.path.join(container_id, "insights_commands", mangle_command(cmd))
+
+    def __repr__(self):
+        return 'ContainerCommandProvider("%r")' % self.cmd
 
 
 class RegistryPoint(object):
@@ -925,6 +959,122 @@ class foreach_collect(object):
         raise ContentException("No results found for [%s]" % self.path)
 
 
+class container_execute(foreach_execute):
+    """
+    Execute a command for each element in provider in container. Provider is
+    the output of a different datasource that returns a list of tuples. In each
+    tuple, the container engine provider ("podman" or "docker") and the
+    container_id are two required elements, the rest elements if there are, are
+    the arguments being passed to the command.
+
+    Args:
+        provider (list): a list of tuples, in each tuple, the container engine
+            provider ("podman" or "docker") and the container_id are two
+            required elements, the rest elements if there are, are the
+            arguments being passed to the `cmd`.
+        cmd (str): a command with substitution parameters. Breaking
+            apart a command string that might contain multiple commands
+            separated by a pipe, getting them ready for subproc operations.
+            IE. A command with filters applied
+        context (ExecutionContext): the context under which the datasource
+            should run.
+        split (bool): whether the output of the command should be split into a
+            list of lines
+        keep_rc (bool): whether to return the error code returned by the
+            process executing the command. If False, any return code other than
+            zero with raise a CalledProcessError. If True, the return code and
+            output are always returned.
+        timeout (int): Number of seconds to wait for the command to complete.
+            If the timeout is reached before the command returns, a
+            CalledProcessError is raised. If None, timeout is infinite.
+        inherit_env (list): The list of environment variables to inherit from the
+            calling process when the command is invoked.
+
+    Returns:
+        function: A datasource that returns a list of outputs for each command
+            created by substituting each element of provider into the cmd template.
+    """
+    def __call__(self, broker):
+        result = []
+        source = broker[self.provider]
+        ctx = broker[self.context]
+        if isinstance(source, ContentProvider):
+            source = source.content
+        if not isinstance(source, (list, set)):
+            source = [source]
+        for e in source:
+            try:
+                # e       = (image, <podman|docker>, container_id, <...>)
+                image, e = e[0], e[1:]
+                # e       = (<podman|docker>, container_id, <...>)
+                # the_cmd = <podman|docker> exec container_id cmd
+                the_cmd = ("/usr/bin/%s exec %s " + self.cmd) % e
+                ccp = ContainerCommandProvider(the_cmd, ctx, image=image, args=e,
+                        split=self.split, keep_rc=self.keep_rc, ds=self,
+                        timeout=self.timeout, inherit_env=self.inherit_env, signum=self.signum)
+                result.append(ccp)
+            except:
+                log.debug(traceback.format_exc())
+        if result:
+            return result
+        raise ContentException("No results found for [%s]" % self.cmd)
+
+
+class container_collect(foreach_execute):
+    """
+    Collects the files at the resulting path in running containers.
+
+    Args:
+        provider (list): a list of tuples.
+        path (str): the file path template with substitution parameters.  The
+            path can also be passed via the provider when it's variable per
+            cases, in that case, the `path` should be None.
+        context (ExecutionContext): the context under which the datasource
+            should run.
+        keep_rc (bool): whether to return the error code returned by the
+            process executing the command. If False, any return code other than
+            zero with raise a CalledProcessError. If True, the return code and
+            output are always returned.
+        timeout (int): Number of seconds to wait for the command to complete.
+            If the timeout is reached before the command returns, a
+            CalledProcessError is raised. If None, timeout is infinite.
+
+    Returns:
+        function: A datasource that returns a list of file contents created by
+            substituting each element of provider into the path template.
+    """
+    def __init__(self, provider, path=None, context=HostContext, deps=[], split=True, keep_rc=False, timeout=None, inherit_env=[], signum=None, **kwargs):
+        super(container_collect, self).__init__(provider, path, context, deps, split, keep_rc, timeout, inherit_env, signum, **kwargs)
+
+    def __call__(self, broker):
+        result = []
+        source = broker[self.provider]
+        ctx = broker[self.context]
+        if isinstance(source, ContentProvider):
+            source = source.content
+        if not isinstance(source, (list, set)):
+            source = [source]
+        for e in source:
+            try:
+                # e        = (image, <podman|docker>, container_id, <path>)
+                image, e = e[0], e[1:]
+                # e        = (<podman|docker>, container_id, <path>)
+                # self.cmd = path or None
+                # elems    = (<podman|docker>, container_id, path)
+                elems = e if self.cmd is None else e + (self.cmd,)
+                # the_cmd = <podman|docker> exec container_id cat path
+                the_cmd = "/usr/bin/%s exec %s cat %s" % elems
+                cfp = ContainerFileProvider(the_cmd, ctx, image=image, args=None,
+                        split=self.split, keep_rc=self.keep_rc, ds=self,
+                        timeout=self.timeout, inherit_env=self.inherit_env, signum=self.signum)
+                result.append(cfp)
+            except:
+                log.debug(traceback.format_exc())
+        if result:
+            return result
+        raise ContentException("No results found for [%s]" % self.cmd)
+
+
 class first_of(object):
     """ Given a list of dependencies, returns the first of the list
         that exists in the broker. At least one must be present, or this
@@ -1082,3 +1232,57 @@ def serialize_datasource_provider(obj, root):
 @deserializer(DatasourceProvider)
 def deserialize_datasource_provider(_type, data, root):
     return SerializedOutputProvider(data["relative_path"], root)
+
+
+@serializer(ContainerFileProvider)
+def serialize_container_file_output(obj, root):
+    rel = os.path.join("insights_containers", obj.relative_path)
+    dst = os.path.join(root, rel)
+    rc = obj.write(dst)
+    return {
+        "relative_path": rel,
+        "rc": rc,
+        "image": obj.image,
+        "engine": obj.engine,
+        "container_id": obj.container_id,
+    }
+
+
+@deserializer(ContainerFileProvider)
+def deserialize_container_file(_type, data, root):
+    rel = data["relative_path"]
+    res = SerializedOutputProvider(rel, root)
+    res.rc = data["rc"]
+    res.image = data["image"]
+    res.engine = data["engine"]
+    res.container_id = data["container_id"]
+    return res
+
+
+@serializer(ContainerCommandProvider)
+def serialize_container_command(obj, root):
+    rel = os.path.join("insights_containers", obj.relative_path)
+    dst = os.path.join(root, rel)
+    rc = obj.write(dst)
+    return {
+        "rc": rc,
+        "cmd": obj.cmd,
+        "args": obj.args,
+        "relative_path": rel,
+        "image": obj.image,
+        "engine": obj.engine,
+        "container_id": obj.container_id,
+    }
+
+
+@deserializer(ContainerCommandProvider)
+def deserialize_container_command(_type, data, root):
+    rel = data["relative_path"]
+    res = SerializedOutputProvider(rel, root)
+    res.rc = data["rc"]
+    res.cmd = data["cmd"]
+    res.args = data["args"]
+    res.image = data["image"]
+    res.engine = data["engine"]
+    res.container_id = data["container_id"]
+    return res
