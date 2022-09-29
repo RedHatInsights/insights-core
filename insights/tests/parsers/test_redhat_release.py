@@ -1,7 +1,7 @@
 import doctest
 
 from insights.parsers import redhat_release
-from insights.parsers.redhat_release import RedhatRelease
+from insights.parsers.redhat_release import RedhatRelease, ContainerRedhatRelease
 from insights.tests import context_wrap
 
 
@@ -51,6 +51,10 @@ CentOS Linux release 7.6.1810 (Core)
 
 REDHAT_RELEASE_ALPHA = """
 Red Hat Enterprise Linux release 9.0 Alpha (Plow)
+""".strip()
+
+REDHAT_RELEASE_8_CONTAINER = """
+Red Hat Enterprise Linux Server release 8.6 (Ootpa)
 """.strip()
 
 
@@ -187,3 +191,25 @@ def test_examples():
     }
     failed, tested = doctest.testmod(redhat_release, globs=globs)
     assert failed == 0
+
+
+def test_container_rhe8():
+    release = ContainerRedhatRelease(
+        context_wrap(
+            REDHAT_RELEASE_8_CONTAINER,
+            engine='podman',
+            image='quay.io/rhel8',
+            container_id='xxxx',
+            path='insights_containers/xxxx/etc/redhat-release'
+        )
+    )
+    assert release.raw == REDHAT_RELEASE_8_CONTAINER
+    assert release.major == 8
+    assert release.minor == 6
+    assert release.rhel == "8.6"
+    assert release.is_rhel is True
+    assert release.product == "Red Hat Enterprise Linux Server"
+    assert release.image == "quay.io/rhel8"
+    assert release.engine == "podman"
+    assert release.container_id == "xxxx"
+    assert release.file_path == "/insights_containers/xxxx/etc/redhat-release"
