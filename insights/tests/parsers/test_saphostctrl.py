@@ -30,8 +30,8 @@ SAPHOSTCTRL_HOSTINSTANCES_DOCS_OLD = '''
  CreationClassName , String , SAPInstance
  SID , String , D89
  SystemNumber , String , 88
- InstanceName , String , HDB88
  InstanceType , String , HANA Test
+ InstanceName , String , HDB88
  Hostname , String , lu0417
  FullQualifiedHostname , String , lu0417.example.com
  IPAddress , String , 10.0.0.88
