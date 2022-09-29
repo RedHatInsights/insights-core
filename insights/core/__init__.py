@@ -99,6 +99,21 @@ class Parser(object):
         raise NotImplementedError(msg)
 
 
+class ContainerParser(Parser):
+    """
+    A class specifically for container parser, with the "image" name, the
+    engine provider and the container ID on the basis of ``Parser``.
+    """
+    def __init__(self, context):
+        self.image = context.image
+        """str: The image of the container."""
+        self.engine = context.engine
+        """str: The engine provider of the container."""
+        self.container_id = context.container_id
+        """str: The ID of the container."""
+        super(ContainerParser, self).__init__(context)
+
+
 class StreamParser(Parser):
     """
     Parsers that don't have to store lines or look back in the data stream
@@ -390,6 +405,26 @@ class ConfigCombiner(ConfigComponent):
                 return c
 
         raise SkipException("The main conf {main_conf} doesn't exist.".format(main_conf=name))
+
+
+class ContainerConfigCombiner(ConfigCombiner):
+    """
+    Base Insights component class for Combiners of container configuration
+    files with include directives for supplementary configuration files.
+    httpd and nginx are examples.
+    """
+    def __init__(self, confs, main_file, include_finder, engine, image, container_id):
+        self.image = image
+        """str: The image of the container."""
+        self.engine = engine
+        """str: The engine provider of the container."""
+        self.container_id = container_id
+        """str: The ID of the container."""
+        super(ContainerConfigCombiner, self).__init__(confs, main_file, include_finder)
+
+    @property
+    def conf_path(self):
+        return os.path.dirname(self.main.file_path)
 
 
 class LegacyItemAccess(object):

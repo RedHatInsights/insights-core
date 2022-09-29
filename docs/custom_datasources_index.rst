@@ -43,6 +43,22 @@ insights.specs.datasources.cloud_init
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.container
+------------------------------------
+
+.. automodule:: insights.specs.datasources.container
+    :members: running_rhel_containers
+    :show-inheritance:
+    :undoc-members:
+
+insights.specs.datasources.container.nginx_conf
+-----------------------------------------------
+
+.. automodule:: insights.specs.datasources.container.nginx_conf
+    :members: nginx_conf, LocalSpecs
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.corosync
 -----------------------------------
 
