@@ -737,7 +737,12 @@ class SOSCleaner:
                 with open(file_path) as file:
                     meta_data = json.load(file)
                 if meta_data["name"] in self.excluded_specs:
-                    excluded_files.append(meta_data["results"]["object"]["relative_path"])
+                    if isinstance(meta_data["results"], list):
+                        results = meta_data["results"]
+                    else:
+                        results = [meta_data["results"]]
+                    relative_paths = [result["object"]["relative_path"] for result in results]
+                    excluded_files.extend(relative_paths)
         return excluded_files
 
     def clean_report(self, options, sosreport): # pragma: no cover

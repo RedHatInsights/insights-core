@@ -83,6 +83,14 @@ def test_get_no_proxy_env():
         connection.get_proxies()
     assert connection.proxies is None
 
+    with patch.dict(os_environ, {"HTTPS_PROXY": "env.proxy.example.com", "NO_PROXY": "redhat.com,example.com"}, clear=True):
+        connection.get_proxies()
+    assert connection.proxies is None
+
+    with patch.dict(os_environ, {"HTTPS_PROXY": "env.proxy.example.com", "NO_PROXY": "url.com,example.com"}, clear=True):
+        connection.get_proxies()
+    assert connection.proxies == {'https': 'env.proxy.example.com'}
+
     with patch.dict(os_environ, {"HTTPS_PROXY": "env.proxy.example.com", "NO_PROXY": "url.com"}, clear=True):
         connection.get_proxies()
     assert connection.proxies == {'https': 'env.proxy.example.com'}
@@ -110,6 +118,38 @@ def test_get_no_proxy_rhsm():
     config.no_proxy = "url.com"
     connection.get_proxies()
     assert connection.proxies == {"https": config.proxy}
+
+    config.no_proxy = "example.com,url.com"
+    connection.get_proxies()
+    assert connection.proxies == {"https": config.proxy}
+
+    config.no_proxy = "example.com, url.com"
+    connection.get_proxies()
+    assert connection.proxies == {"https": config.proxy}
+
+    config.no_proxy = "example.com , url.com"
+    connection.get_proxies()
+    assert connection.proxies == {"https": config.proxy}
+
+    config.no_proxy = "redhat.com, example.com"
+    connection.get_proxies()
+    assert connection.proxies is None
+
+    config.no_proxy = "example.com, redhat.com"
+    connection.get_proxies()
+    assert connection.proxies is None
+
+    config.no_proxy = "redhat.com,example.com"
+    connection.get_proxies()
+    assert connection.proxies is None
+
+    config.no_proxy = "example.com,redhat.com"
+    connection.get_proxies()
+    assert connection.proxies is None
+
+    config.no_proxy = "example.com , redhat.com"
+    connection.get_proxies()
+    assert connection.proxies is None
 
 
 @patch("insights.client.connection.logger.debug")
