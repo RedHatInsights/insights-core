@@ -94,25 +94,35 @@ def deserialize(data, root=None):
     return from_dict(_type, data["object"], root=root)
 
 
-def marshal(v, root=None, pool=None):
-    def call_serializer(func, value):
+def marshal(comp, broker, root=None, pool=None):
+    def call_serializer(func, value, exception_func):
         try:
             return func(value), None
-        except Exception:
-            return None, traceback.format_exc()
+        except Exception as ex:
+            ex_tb = traceback.format_exc()
+            exception_func(ex, ex_tb)
+            return None, ex_tb
 
+    def add_broker_exception(comp, broker, ex, ex_tb):
+        broker.add_exception(comp, ex, ex_tb)
+
+    v = broker.get(comp)
     if v is None:
         return None, None
-    f = partial(serialize, root=root)
+
+    ser_func = partial(serialize, root=root)
+    exc_func = partial(add_broker_exception, comp, broker)
+
     if isinstance(v, list):
+        repeat = len(v)
         if pool:
-            data = list(pool.map(call_serializer, [f] * len(v), v))
+            data = list(pool.map(call_serializer, [ser_func] * repeat, v, [exc_func] * repeat))
         else:
-            data = list(map(call_serializer, [f] * len(v), v))
+            data = list(map(call_serializer, [ser_func] * repeat, v, [exc_func] * repeat))
         results = [i[0] for i in data if i[0]]
         errors = [i[1] for i in data if i[1]]
         return results, errors
-    return call_serializer(f, v)
+    return call_serializer(ser_func, v, exc_func)
 
 
 def unmarshal(data, root=None):
@@ -190,7 +200,6 @@ class Hydration(object):
         doc = None
         try:
             name = dr.get_name(c)
-            value = broker.get(c)
             errors = [t for e in broker.exceptions.get(c, [])
                         for t in broker.tracebacks[e]]
             doc = {
@@ -199,7 +208,7 @@ class Hydration(object):
                 "errors": errors
             }
             start = time.time()
-            results, ms_errors = marshal(value, root=self.data, pool=self.pool)
+            results, ms_errors = marshal(comp, broker, root=self.data, pool=self.pool)
             doc["results"] = results if results else None
             errors.extend(ms_errors if isinstance(ms_errors, list) else [ms_errors]) if ms_errors else None
             doc["ser_time"] = time.time() - start
