@@ -41,6 +41,10 @@ class _mock_InsightsConnection(object):
         # True = registered
         # None = unregistered
         # False = unreachable
+        # Legacy code:
+        # True = system exists in inventory
+        # False = Error connection or parsing response
+        # None = Machine is not register
         return self.registered
 
     def register(self):
@@ -249,7 +253,7 @@ def test_reg_check_unregistered():
     # unregister the machine first
     config = InsightsConfig()
     client = InsightsClient(config)
-    client.connection = _mock_InsightsConnection(registered='unregistered')
+    client.connection = _mock_InsightsConnection(registered=False)
     client.connection.config = config
     client.session = True
 
@@ -270,9 +274,58 @@ def test_reg_check_unregistered():
         TEMP_TEST_REG_DIR2 + '/.unregistered'])
 @patch('insights.client.utilities.constants.machine_id_file',
        TEMP_TEST_REG_DIR + '/machine-id')
-def test_reg_check_registered_unreachable():
-    # register the machine first
-    config = InsightsConfig(register=True)
+def test_reg_check_registered_res_unreg_legacy():
+    # system is registered but receives the unregistration status
+    config = InsightsConfig(legacy_upload=True)
+    client = InsightsClient(config)
+    client.connection = _mock_InsightsConnection(registered=None)
+    client.connection.config = config
+    client.session = True
+
+    # test function and integration in .register()
+    with _mock_registered_files():
+        assert client.get_registration_status()['status'] is False
+        for r in constants.registered_files:
+            assert os.path.isfile(r) is False
+        for u in constants.unregistered_files:
+            assert os.path.isfile(u) is True
+
+
+@patch('insights.client.utilities.constants.registered_files',
+       [TEMP_TEST_REG_DIR + '/.registered',
+        TEMP_TEST_REG_DIR2 + '/.registered'])
+@patch('insights.client.utilities.constants.unregistered_files',
+       [TEMP_TEST_REG_DIR + '/.unregistered',
+        TEMP_TEST_REG_DIR2 + '/.unregistered'])
+@patch('insights.client.utilities.constants.machine_id_file',
+       TEMP_TEST_REG_DIR + '/machine-id')
+def test_reg_check_registered_res_unreg():
+    # system is registered but receives the unregistration status
+    config = InsightsConfig(legacy_upload=False)
+    client = InsightsClient(config)
+    client.connection = _mock_InsightsConnection(registered=False)
+    client.connection.config = config
+    client.session = True
+
+    # test function and integration in .register()
+    with _mock_registered_files():
+        assert client.get_registration_status() is False
+        for r in constants.registered_files:
+            assert os.path.isfile(r) is False
+        for u in constants.unregistered_files:
+            assert os.path.isfile(u) is True
+
+
+@patch('insights.client.utilities.constants.registered_files',
+       [TEMP_TEST_REG_DIR + '/.registered',
+        TEMP_TEST_REG_DIR2 + '/.registered'])
+@patch('insights.client.utilities.constants.unregistered_files',
+       [TEMP_TEST_REG_DIR + '/.unregistered',
+        TEMP_TEST_REG_DIR2 + '/.unregistered'])
+@patch('insights.client.utilities.constants.machine_id_file',
+       TEMP_TEST_REG_DIR + '/machine-id')
+def test_reg_check_registered_unreachable_legacy():
+    config = InsightsConfig(legacy_upload=True)
     client = InsightsClient(config)
     client.connection = _mock_InsightsConnection(registered=False)
     client.connection.config = config
@@ -294,8 +347,55 @@ def test_reg_check_registered_unreachable():
         TEMP_TEST_REG_DIR2 + '/.unregistered'])
 @patch('insights.client.utilities.constants.machine_id_file',
        TEMP_TEST_REG_DIR + '/machine-id')
+def test_reg_check_registered_unreachable():
+    # If it is unreachable do nothing
+    config = InsightsConfig(legacy_upload=False)
+    client = InsightsClient(config)
+    client.connection = _mock_InsightsConnection(registered=None)
+    client.connection.config = config
+    client.session = True
+
+    with _mock_registered_files():
+        assert client.get_registration_status() is None
+        for r in constants.registered_files:
+            assert os.path.isfile(r) is True
+        for u in constants.unregistered_files:
+            assert os.path.isfile(u) is False
+
+
+@patch('insights.client.utilities.constants.registered_files',
+       [TEMP_TEST_REG_DIR + '/.registered',
+        TEMP_TEST_REG_DIR2 + '/.registered'])
+@patch('insights.client.utilities.constants.unregistered_files',
+       [TEMP_TEST_REG_DIR + '/.unregistered',
+        TEMP_TEST_REG_DIR2 + '/.unregistered'])
+@patch('insights.client.utilities.constants.machine_id_file',
+       TEMP_TEST_REG_DIR + '/machine-id')
 def test_reg_check_unregistered_unreachable():
-    config = InsightsConfig(unregister=True)
+    config = InsightsConfig(legacy_upload=False)
+    client = InsightsClient(config)
+    client.connection = _mock_InsightsConnection(registered=False)
+    client.connection.config = config
+    client.session = True
+
+    with _mock_no_register_files():
+        assert client.get_registration_status() is False
+        for r in constants.registered_files:
+            assert os.path.isfile(r) is False
+        for u in constants.unregistered_files:
+            assert os.path.isfile(u) is True
+
+
+@patch('insights.client.utilities.constants.registered_files',
+       [TEMP_TEST_REG_DIR + '/.registered',
+        TEMP_TEST_REG_DIR2 + '/.registered'])
+@patch('insights.client.utilities.constants.unregistered_files',
+       [TEMP_TEST_REG_DIR + '/.unregistered',
+        TEMP_TEST_REG_DIR2 + '/.unregistered'])
+@patch('insights.client.utilities.constants.machine_id_file',
+       TEMP_TEST_REG_DIR + '/machine-id')
+def test_reg_check_unregistered_unreachable_legacy():
+    config = InsightsConfig(legacy_upload=True)
     client = InsightsClient(config)
     client.connection = _mock_InsightsConnection(registered=False)
     client.connection.config = config

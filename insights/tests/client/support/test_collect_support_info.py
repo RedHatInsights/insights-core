@@ -5,6 +5,9 @@ from insights.client.connection import InsightsConnection
 from insights.client.support import InsightsSupport, registration_check
 from mock.mock import Mock, patch
 
+TEMP_TEST_REG_DIR = "/tmp/insights-client-registration"
+TEMP_TEST_REG_DIR2 = "/tmp/redhat-access-insights-registration"
+
 
 @patch("insights.client.support.subprocess")
 @patch("insights.client.support.InsightsSupport._support_diag_dump")
@@ -64,7 +67,8 @@ def test_support_diag_dump_offline(test_connection, registration_check, Insights
 @patch("insights.client.connection.InsightsConnection.get_proxies")
 @patch('insights.client.support.write_registered_file')
 @patch('insights.client.support.write_unregistered_file')
-def test_registration_check_unregistered(write_unregistered_file, write_registered_file, _, __):
+@patch('insights.client.support.write_to_disk')
+def test_registration_check_unregistered(write_to_disk, write_unregistered_file, write_registered_file, _, __):
     '''
     Ensure that connection function is called and files are written.
     '''
@@ -96,37 +100,87 @@ def test_registration_check_registered(write_unregistered_file, write_registered
 
 @patch("insights.client.connection.InsightsConnection._init_session")
 @patch("insights.client.connection.InsightsConnection.get_proxies")
-def test_registration_check_legacy_unregistered(_, __):
+def test_registration_check_registered_unreach(_, __):
+    '''
+    Ensure that connection function is called and files are written.
+    '''
+    config = Mock(base_url=None, legacy_upload=False)
+    conn = InsightsConnection(config)
+    conn.api_registration_check = Mock(return_value=None)
+    assert registration_check(conn) is None
+    conn.api_registration_check.assert_called_once()
+
+
+@patch('insights.client.utilities.constants.registered_files',
+       [TEMP_TEST_REG_DIR + '/.registered',
+        TEMP_TEST_REG_DIR2 + '/.registered'])
+@patch('insights.client.utilities.constants.unregistered_files',
+       [TEMP_TEST_REG_DIR + '/.unregistered',
+        TEMP_TEST_REG_DIR2 + '/.unregistered'])
+@patch('insights.client.utilities.constants.machine_id_file',
+       TEMP_TEST_REG_DIR + '/machine-id')
+@patch("insights.client.connection.InsightsConnection._init_session")
+@patch("insights.client.connection.InsightsConnection.get_proxies")
+@patch('insights.client.support.write_registered_file')
+@patch('insights.client.support.write_unregistered_file')
+@patch('insights.client.support.write_to_disk')
+def test_registration_check_legacy_unregistered(write_to_disk, write_unregistered_file, write_registered_file, _, __):
     '''
     Ensure that connection function is called and data processed.
     '''
     config = Mock(base_url=None, legacy_upload=True)
     conn = InsightsConnection(config)
     conn.api_registration_check = Mock(return_value=None)
-    assert isinstance(registration_check(conn), dict)
     check = registration_check(conn)
     assert isinstance(check, dict)
     assert check['status'] is False
+    conn.api_registration_check.assert_called_once()
+    write_registered_file.assert_not_called()
+    write_unregistered_file.assert_called_once()
+    write_to_disk.assert_called_once()
 
 
+@patch('insights.client.utilities.constants.registered_files',
+       [TEMP_TEST_REG_DIR + '/.registered',
+        TEMP_TEST_REG_DIR2 + '/.registered'])
+@patch('insights.client.utilities.constants.unregistered_files',
+       [TEMP_TEST_REG_DIR + '/.unregistered',
+        TEMP_TEST_REG_DIR2 + '/.unregistered'])
+@patch('insights.client.utilities.constants.machine_id_file',
+       TEMP_TEST_REG_DIR + '/machine-id')
 @patch("insights.client.connection.InsightsConnection._init_session")
 @patch("insights.client.connection.InsightsConnection.get_proxies")
-def test_registration_check_legacy_registered_then_unregistered(_, __):
+@patch('insights.client.support.write_registered_file')
+@patch('insights.client.support.write_unregistered_file')
+@patch('insights.client.support.write_to_disk')
+def test_registration_check_legacy_registered_then_unregistered(write_to_disk, write_unregistered_file, write_registered_file, _, __):
     '''
     Ensure that connection function is called and data processed.
     '''
     config = Mock(base_url=None, legacy_upload=True)
     conn = InsightsConnection(config)
     conn.api_registration_check = Mock(return_value='datestring')
-    assert isinstance(registration_check(conn), dict)
     check = registration_check(conn)
     assert isinstance(check, dict)
     assert check['status'] is False
+    conn.api_registration_check.assert_called_once()
+    write_registered_file.assert_not_called()
+    write_unregistered_file.assert_called_once()
 
 
+@patch('insights.client.utilities.constants.registered_files',
+       [TEMP_TEST_REG_DIR + '/.registered',
+        TEMP_TEST_REG_DIR2 + '/.registered'])
+@patch('insights.client.utilities.constants.unregistered_files',
+       [TEMP_TEST_REG_DIR + '/.unregistered',
+        TEMP_TEST_REG_DIR2 + '/.unregistered'])
+@patch('insights.client.utilities.constants.machine_id_file',
+       TEMP_TEST_REG_DIR + '/machine-id')
 @patch("insights.client.connection.InsightsConnection._init_session")
 @patch("insights.client.connection.InsightsConnection.get_proxies")
-def test_registration_check_legacy_registered(_, __):
+@patch('insights.client.support.write_registered_file')
+@patch('insights.client.support.write_unregistered_file')
+def test_registration_check_legacy_registered(write_unregistered_file, write_registered_file, _, __):
     '''
     Ensure that connection function is called and data processed.
     '''
@@ -136,3 +190,6 @@ def test_registration_check_legacy_registered(_, __):
     check = registration_check(conn)
     assert isinstance(check, dict)
     assert check['status'] is True
+    conn.api_registration_check.assert_called_once()
+    write_registered_file.assert_called_once()
+    write_unregistered_file.assert_not_called()
