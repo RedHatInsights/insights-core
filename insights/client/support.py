@@ -15,13 +15,13 @@ from subprocess import Popen, PIPE, STDOUT
 
 from .constants import InsightsConstants as constants
 from .connection import InsightsConnection
-from .utilities import write_registered_file, write_unregistered_file
+from .utilities import write_registered_file, write_unregistered_file, write_to_disk
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
 
 
-def _legacy_registration_check(pconn):
+def _legacy_registration_check(api_reg_status):
     # check local registration record
     unreg_date = None
     unreachable = False
@@ -35,7 +35,6 @@ def _legacy_registration_check(pconn):
         with open(constants.unregistered_files[0]) as reg_file:
             local_record += ' Unregistered at ' + reg_file.readline()
 
-    api_reg_status = pconn.api_registration_check()
     logger.debug('Registration status: %s', api_reg_status)
     if type(api_reg_status) is bool:
         if api_reg_status:
@@ -58,13 +57,25 @@ def _legacy_registration_check(pconn):
 
 
 def registration_check(pconn):
-    if pconn.config.legacy_upload:
-        return _legacy_registration_check(pconn)
     status = pconn.api_registration_check()
-    if status:
-        write_registered_file()
+    # Legacy code
+    if pconn.config.legacy_upload:
+        status = _legacy_registration_check(status)
+    if isinstance(status, dict):
+        reg_status = status['status']
+        if status['unreachable'] is True:
+            reg_status = None
+    # --- end legacy ---
     else:
+        reg_status = status
+    if reg_status:
+        write_registered_file()
+    elif reg_status is False:
         write_unregistered_file()
+        write_to_disk(constants.machine_id_file, delete=True)
+        if pconn.config.legacy_upload:
+            status['messages'].append("System unregistered locally via .unregistered file")
+
     return status
 
 
