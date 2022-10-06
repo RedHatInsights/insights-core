@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.296
+Version:        3.0.297
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,10 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Oct 06 2022 Sachin Patil <psachin@redhat.com> 3.0.297-1
+- feat: add helper function: get_dependency_specs and test  (#3534) (xiangceliu@redhat.com)
+- Fix registration tests (#3519) (93577878+ahitacat@users.noreply.github.com)
+
 * Thu Sep 29 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.296-1
 - fix: make SAPHostCtrlInstances compatible with old archives (#3528)
   (xiangceliu@redhat.com)

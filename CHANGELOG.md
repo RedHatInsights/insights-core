@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.297](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.297) (2022-10-06)
+
+- feat: add helper function: get_dependency_specs and test ([PR 3534](https://github.com/RedHatInsights/insights-core/pull/3534))
+- Fix registration tests ([PR 3519](https://github.com/RedHatInsights/insights-core/pull/3519))
+
 ## [insights-core-3.0.296](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.296) (2022-09-29)
 
 - fix: make SAPHostCtrlInstances compatible with old archives ([PR 3528](https://github.com/RedHatInsights/insights-core/pull/3528))
