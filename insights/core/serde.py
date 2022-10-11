@@ -184,6 +184,79 @@ class Hydration(object):
                 log.warning(ex)
         return broker
 
+    def _hydrate_sos_one(self, tag, file_paths):
+        """
+        This function checks for tags that start with insights_,
+        then confirms it's a valid component and generates a valid
+        results to return to be added to the broker.
+
+        Args:
+            tag (str): The sos tag used to match with the spec.
+            file_paths (list): List of files with the tag.
+
+        Returns:
+            tuple: The component, and the formatted results.
+        """
+        comp = dr.get_component_by_name("insights.specs.Specs.{0}".format(tag))
+        if comp is None:
+            return None, None
+
+        if len(file_paths) > 1:
+            if comp.multi_output:
+                results = []
+                for f in file_paths:
+                    results.append({
+                        "type": "insights.core.spec_factory.TextFileProvider",
+                        "object": {
+                            "relative_path": f,
+                            "rc": None
+                        }
+                    })
+            else:
+                results = {
+                    "type": "insights.core.spec_factory.TextFileProvider",
+                    "object": {
+                        "relative_path": file_paths[0],
+                        "rc": None
+                    }
+                }
+        elif len(file_paths) == 1:
+            results = {
+                "type": "insights.core.spec_factory.TextFileProvider",
+                "object": {
+                    "relative_path": file_paths[0],
+                    "rc": None
+                }
+            }
+        else:
+            return None, None
+
+        return comp, results
+
+    def hydrate_sos(self, broker=None):
+        """
+        Loads a Broker from a previously saved one. A Broker is created if one
+        isn't provided. Then the results from a sos manifest are loaded into the
+        broker for loading of the spec files.
+        """
+        broker = broker or dr.Broker()
+        with open(self.meta_data) as f:
+            manifest = ser.load(f)
+
+        for tag, file_paths in manifest['components']['report']['tag_summary'].items():
+            comp, results = self._hydrate_sos_one(tag, file_paths)
+            if comp is not None:
+                if not broker.get(comp):
+                    if comp.multi_output:
+                        broker[comp] = [unmarshal(results, root=self.root)]
+                    else:
+                        broker[comp] = unmarshal(results, root=self.root)
+                else:
+                    if comp.multi_output:
+                        broker[comp].append(unmarshal(results, root=self.root))
+
+        return broker
+
     def dehydrate(self, comp, broker):
         """
         Saves a component in the given broker to the file system.

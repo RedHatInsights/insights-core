@@ -195,6 +195,20 @@ def test_hydrate_one():
     assert ser_time == 0.05
 
 
+def test_sos_hydrate_one():
+    h = Hydration()
+    comp, result = h._hydrate_sos_one("abrt_status_bare",
+                                      ["sos_commands/abrt/abrt-cli_status"])
+    assert comp == dr.get_component_by_name("insights.specs.Specs.abrt_status_bare")
+    assert result == {
+        "type": "insights.core.spec_factory.TextFileProvider",
+        "object": {
+            "relative_path": "sos_commands/abrt/abrt-cli_status",
+            "rc": None
+        }
+    }
+
+
 def test_hydrate_one_multiple_results():
     raw = {
         "name": dr.get_name(thing),

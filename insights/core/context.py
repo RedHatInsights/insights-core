@@ -1,7 +1,9 @@
 import logging
 import os
 import six
+
 from contextlib import contextmanager
+
 from insights.util import streams, subproc
 
 log = logging.getLogger(__name__)
@@ -239,6 +241,47 @@ class SerializedArchiveContext(ExecutionContext):
 @fs_root
 class SosArchiveContext(ExecutionContext):
     marker = "sos_commands"
+
+
+@fs_root
+class SerializedSosArchiveContext(ExecutionContext):
+    marker = "sos_reports/manifest.json"
+
+    @classmethod
+    def handles(cls, files):
+        if cls.marker is None or not files:
+            return None, None
+
+        sep = os.path.sep
+        m = sep + cls.marker.lstrip(sep)
+        marker_root = set()
+        for f in files:
+            if m in f:
+                i = f.find(m)
+                if f.endswith(m) or f[i + len(m)] == sep:
+                    import json
+                    root = os.path.dirname(f[:i + 1])
+                    with open(os.path.join(root, cls.marker)) as fobj:
+                        try:
+                            from packaging.version import parse as v_parse
+                        except ImportError:
+                            from distutils.version import LooseVersiof as v_parse
+
+                        manifest = json.load(fobj)
+                        if v_parse(manifest['version']) > v_parse("4.4"):
+                            marker_root.add(root)
+                        else:
+                            return None, None
+        if len(marker_root) == 1:
+            return marker_root.pop(), cls
+        if len(marker_root) > 1:
+            # when more marker found, return the one which is closest to root
+            closest_root = marker_root.pop()
+            for left_one in marker_root:
+                if len(left_one) < len(closest_root):
+                    closest_root = left_one
+            return closest_root, cls
+        return None, None
 
 
 @fs_root
