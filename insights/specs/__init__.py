@@ -642,6 +642,7 @@ class Specs(SpecSet):
     sealert = RegistryPoint()
     secure = RegistryPoint(filterable=True)
     selinux_config = RegistryPoint()
+    semanage_login_list = RegistryPoint()
     sestatus = RegistryPoint()
     setup_named_chroot = RegistryPoint(filterable=True)
     smartctl = RegistryPoint(multi_output=True)

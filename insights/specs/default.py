@@ -620,6 +620,7 @@ class DefaultSpecs(Specs):
     sealert = simple_command('/usr/bin/sealert -l "*"')
     secure = simple_file("/var/log/secure")
     selinux_config = simple_file("/etc/selinux/config")
+    semanage_login_list = simple_command("/sbin/semanage login -l")
     sestatus = simple_command("/usr/sbin/sestatus -b")
     setup_named_chroot = simple_file("/usr/libexec/setup-named-chroot.sh")
     smbstatus_p = simple_command("/usr/bin/smbstatus -p")
