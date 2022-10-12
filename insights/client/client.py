@@ -314,6 +314,7 @@ def _legacy_upload(config, pconn, tar_file, content_type, collection_duration=No
     logger.info('Uploading Insights data.')
     api_response = None
     for tries in range(config.retries):
+        logger.debug("Upload attempt %d of %d ...", tries + 1, config.retries)
         upload = pconn.upload_archive(tar_file, '', collection_duration)
 
         if upload.status_code in (200, 201):
@@ -363,6 +364,7 @@ def upload(config, pconn, tar_file, content_type, collection_duration=None):
         return _legacy_upload(config, pconn, tar_file, content_type, collection_duration)
     logger.info('Uploading Insights data.')
     for tries in range(config.retries):
+        logger.debug("Upload attempt %d of %d ...", tries + 1, config.retries)
         upload = pconn.upload_archive(tar_file, content_type, collection_duration)
 
         if upload.status_code in (200, 202):

@@ -188,7 +188,23 @@ class InsightsConnection(object):
             HTTP response object
         '''
         logger.log(NETWORK, "%s %s", method, url)
-        res = self.session.request(url=url, method=method, timeout=self.config.http_timeout, **kwargs)
+        try:
+            res = self.session.request(url=url, method=method, timeout=self.config.http_timeout, **kwargs)
+        except Exception as e:
+            # The _http_request method is often used without exception handing higher up the call stack
+            # Instead of handing exceptions, callers just check the status_code to determine if an error has occurred
+            # So rather than re-raising any exceptions, create a mock Response object with a generic error code/reason
+            # 'Bad Gateway' seems most appropriate if a network connection failure raises an exception
+            # Headers are added to the mock Response object to satisfy various logging statements up the stack
+            from mock.mock import Mock
+            status_code = 502
+            reason = 'Bad Gateway'
+            if 'timeout' in str(e).lower():
+                status_code = 504
+                reason = 'Gateway Timeout'
+            res = Mock(status_code=status_code, reason=reason, text="%s: %s" % (reason, str(e)),
+                       headers={}, request=Mock(headers={}))
+
         logger.log(NETWORK, "HTTP Status: %d %s", res.status_code, res.reason)
         if log_response_text or res.status_code != 200:
             logger.log(NETWORK, "HTTP Response Text: %s", res.text)
