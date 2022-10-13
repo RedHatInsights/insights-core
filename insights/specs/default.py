@@ -69,7 +69,6 @@ class DefaultSpecs(Specs):
     abrt_status_bare = simple_command("/usr/bin/abrt status --bare=True")
     alternatives_display_python = simple_command("/usr/sbin/alternatives --display python")
     amq_broker = glob_file("/var/opt/amq-broker/*/etc/broker.xml")
-    authselect_current = simple_command("/usr/bin/authselect current")
     dse_ldif = glob_file("/etc/dirsrv/*/dse.ldif")
     auditctl_rules = simple_command("/sbin/auditctl -l")
     auditctl_status = simple_command("/sbin/auditctl -s")
