@@ -37,7 +37,7 @@ def test_redact_called_classic(redact):
 @patch('insights.client.core_collector.CoreCollector._write_version_info', Mock())
 @patch('insights.client.core_collector.CoreCollector._write_tags', Mock())
 @patch('insights.client.core_collector.CoreCollector._write_blacklist_report', Mock())
-@patch('insights.client.core_collector.collect.collect', Mock(return_value='/var/tmp/testarchive/insights-test'))
+@patch('insights.client.core_collector.collect.collect', Mock(return_value=('/var/tmp/testarchive/insights-test', {})))
 @patch('insights.client.core_collector.CoreCollector.redact')
 def test_redact_called_core(redact):
     '''
