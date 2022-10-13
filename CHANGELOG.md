@@ -2,6 +2,17 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.298](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.298) (2022-10-13)
+
+- fix: Add ability to return exceptions during insights collect ([PR 3539](https://github.com/RedHatInsights/insights-core/pull/3539))
+- refactor: remove duplicated specs from get_dependency_specs ([PR 3549](https://github.com/RedHatInsights/insights-core/pull/3549))
+- Remove authselect_current from core collection ([PR 3552](https://github.com/RedHatInsights/insights-core/pull/3552))
+- Feat: New parser for the "ls -lan /var/lib/sss/pubconf/krb5.include.d" command ([PR 3545](https://github.com/RedHatInsights/insights-core/pull/3545))
+- Deprecate insights.core.scannable & engine_log parser ([PR 3541](https://github.com/RedHatInsights/insights-core/pull/3541))
+- chore: remove the unused specs ([PR 3537](https://github.com/RedHatInsights/insights-core/pull/3537))
+- fix: Restore the spec ovs_appctl_fdb_show_bridge ([PR 3538](https://github.com/RedHatInsights/insights-core/pull/3538))
+- Add spec and parser for luksmeta command ([PR 3525](https://github.com/RedHatInsights/insights-core/pull/3525))
+
 ## [insights-core-3.0.297](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.297) (2022-10-06)
 
 - feat: add helper function: get_dependency_specs and test ([PR 3534](https://github.com/RedHatInsights/insights-core/pull/3534))
