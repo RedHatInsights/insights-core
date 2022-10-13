@@ -53,8 +53,10 @@ def deserialize_foo(_type, data, root=None):
 
 
 def test_marshal():
+    broker = dr.Broker()
     foo = Foo()
-    data, errors = marshal(foo)
+    broker[thing] = foo
+    data, errors = marshal(thing, broker)
     assert data
     assert not errors
     d = data["object"]
@@ -63,14 +65,18 @@ def test_marshal():
 
 
 def test_marshal_with_errors():
+    broker = dr.Broker()
     doo = Doo(2)
-    data, errors = marshal(doo)
+    broker[thing] = doo
+    data, errors = marshal(thing, broker)
     assert not data
     assert isinstance(errors, str)
 
     # one raises error, one has result
+    broker = dr.Broker()
     objs = [Doo(4), Doo(6)]
-    data, errors = marshal(objs)
+    broker[thing] = objs
+    data, errors = marshal(thing, broker)
     assert data
     assert errors
     assert len(data) == 1
@@ -80,15 +86,19 @@ def test_marshal_with_errors():
     assert d["b"] == 2
 
     # all raises error, no results
+    broker = dr.Broker()
     objs = [Doo(4), Doo(3)]
-    data, errors = marshal(objs)
+    broker[thing] = objs
+    data, errors = marshal(thing, broker)
     assert not data
     assert errors
     assert len(errors) == 2
 
     # all have resutls, no errors
+    broker = dr.Broker()
     objs = [Doo(8), Doo(6)]
-    data, errors = marshal(objs)
+    broker[thing] = objs
+    data, errors = marshal(thing, broker)
     assert data
     assert not errors
     assert len(data) == 2
@@ -103,8 +113,10 @@ def test_marshal_with_errors_with_pool():
         from concurrent.futures import ThreadPoolExecutor
         with ThreadPoolExecutor(thread_name_prefix="insights-collector-pool", max_workers=5) as pool:
             # one raises error, one has result
+            broker = dr.Broker()
             objs = [Doo(4), Doo(6)]
-            data, errors = marshal(objs, None, pool)
+            broker[thing] = objs
+            data, errors = marshal(thing, broker, pool=pool)
             assert data
             assert errors
             assert len(data) == 1
@@ -114,15 +126,19 @@ def test_marshal_with_errors_with_pool():
             assert d["b"] == 2
 
             # all raises error, no results
+            broker = dr.Broker()
             objs = [Doo(4), Doo(3)]
-            data, errors = marshal(objs, None, pool)
+            broker[thing] = objs
+            data, errors = marshal(thing, broker, pool=pool)
             assert not data
             assert errors
             assert len(errors) == 2
 
             # all have resutls, no errors
+            broker = dr.Broker()
             objs = [Doo(8), Doo(6)]
-            data, errors = marshal(objs, None, pool)
+            broker[thing] = objs
+            data, errors = marshal(thing, broker, pool=pool)
             assert data
             assert not errors
             assert len(data) == 2
