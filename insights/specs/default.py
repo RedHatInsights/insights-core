@@ -486,6 +486,8 @@ class DefaultSpecs(Specs):
     ose_node_config = simple_file("/etc/origin/node/node-config.yaml")
     ovirt_engine_server_log = simple_file("/var/log/ovirt-engine/server.log")
     ovirt_engine_ui_log = simple_file("/var/log/ovirt-engine/ui.log")
+    ovs_vsctl_list_br = simple_command("/usr/bin/ovs-vsctl list-br")
+    ovs_appctl_fdb_show_bridge = foreach_execute(ovs_vsctl_list_br, "/usr/bin/ovs-appctl fdb/show %s")
     ovs_vsctl_list_bridge = simple_command("/usr/bin/ovs-vsctl list bridge")
     ovs_vsctl_show = simple_command("/usr/bin/ovs-vsctl show")
     package_provides_command = package_provides.cmd_and_pkg
