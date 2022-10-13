@@ -363,6 +363,7 @@ class Specs(SpecSet):
     lssap = RegistryPoint()
     lsscsi = RegistryPoint()
     lsvmbus = RegistryPoint()
+    luksmeta = RegistryPoint(multi_output=True)
     lvdisplay = RegistryPoint()
     lvm_conf = RegistryPoint(filterable=True)
     lvm_system_devices = RegistryPoint()
