@@ -31,79 +31,80 @@ from insights.core.dr import get_dependency_specs
 
 
 @condition(InstalledRpms, [Up2Date, PsAuxcww], optional=[Messages])
-def condition_1(*args):
+def condition_01(*args):
     return True
 
 
 @condition(VirtWhat, Tags, RedHatRelease, optional=[Date, Uptime])
-def condition_2(*args):
+def condition_02(*args):
     return True
 
 
 @condition(LsVarLog, [LsBoot, LsEtc])
-def condition_3(*args):
+def condition_03(*args):
     return True
 
 
 @condition(LsVarWwwPerms, [LsDev, LsDisk], optional=[LsVarRun])
-def condition_4(*args):
+def condition_04(*args):
     return True
 
 
 @condition([LsPci, LsPciVmmkn])
-def condition_5(*args):
+def condition_05(*args):
     return True
 
 
 @condition([LvmConf, LvmConfig])
-def condition_6(*args):
+def condition_06(*args):
     return True
 
 
 @condition(Mount, [LsTmp, LsVarTmp], optional=[LsUsrBin])
-def condition_7(*args):
+def condition_07(*args):
     return True
 
 
-@rule(Lsof, condition_1, condition_2,
-      [LsCPU, condition_3], [condition_4, LsSCSI], [condition_5, condition_6],
-      optional=[LSBlock, condition_7])
-def report(*args):
+@rule(Lsof, condition_01, condition_02,
+      [LsCPU, condition_03], [condition_04, LsSCSI],
+      [condition_05, condition_06],
+      optional=[LSBlock, condition_07])
+def report_01(*args):
     return make_fail("HIT")
 
 
 @condition(LsVarLog, [LsBoot, LsEtc])
-def ABC(*args):
+def condition_11(*args):
     return True
 
 
-@condition([LsPci, ABC])
-def DEF(*args):
+@condition([LsPci, condition_11])
+def condition_12(*args):
     return True
 
 
 @condition(LsPci, LsBoot, LsDisk)
-def XYZ(*args):
+def report_11(*args):
     return True
 
 
-@condition(PsAuxcww, LsVarLog, [Uname, RedhatRelease], [LsPci, ABC])
-def OPQ(*args):
+@condition(PsAuxcww, LsVarLog, [Uname, RedhatRelease], [LsPci, condition_11])
+def condition_21(*args):
     return True
 
 
-@condition(RedHatRelease, LsVarLog, DEF, OPQ)
-def RST(*args):
+@condition(RedHatRelease, LsVarLog, condition_12, condition_21)
+def report_21(*args):
     return True
 
 
 def test_get_dependency_specs_1_level_requires_only():
-    specs = get_dependency_specs(XYZ)
+    specs = get_dependency_specs(report_11)
     assert sorted(specs) == ['ls_boot', 'ls_disk', 'lspci']
 
 
 def test_get_dependency_specs_2_level():
-    specs = get_dependency_specs(DEF)
+    specs = get_dependency_specs(condition_12)
     # [
     #     ('lspci', [('ls_etc', 'ls_boot'), 'ls_var_log'])
     # ]
@@ -123,7 +124,7 @@ def test_get_dependency_specs_2_level():
 
 
 def test_get_dependency_specs_complex():
-    specs = get_dependency_specs(report)
+    specs = get_dependency_specs(report_01)
     # [
     #     'installed_rpms',
     #     'tags',
@@ -144,7 +145,7 @@ def test_get_dependency_specs_complex():
 
 
 def test_get_dependency_specs_duplicate():
-    specs = get_dependency_specs(RST)
+    specs = get_dependency_specs(report_21)
     # [
     #     ('uname', 'redhat_release'),
     #     'ps_auxcww',
