@@ -4,71 +4,32 @@ SELinux Policy Management tool
 
 This module contains the following parsers:
 
-SemanageLoginList - command ``semanage login -l``
--------------------------------------------------
+UsersCountMapStaffuSelinuxUser - datasource ``users_count_map_staff_u_selinux_user``
+------------------------------------------------------------------------------------
 """
 
+from insights.core.dr import SkipComponent
 from insights.specs import Specs
 from insights import Parser, parser
-from insights.parsers import parse_fixed_table, keyword_search
 
 
-@parser(Specs.semanage_login_list)
-class SemanageLoginList(Parser, list):
+@parser(Specs.users_count_map_staff_u_selinux_user)
+class UsersCountMapStaffuSelinuxUser(Parser):
     """
-    Parse the output of the command ``semanage login -l``.
-    It returns a list of dict like::
+    Parse the output of the datasource ``users_count_map_staff_u_selinux_user``.
+    It returns the linux user count who map to a staff_u selinux user.
 
-        [
-            {
-                'login_name': '__default__',
-                'selinux_user': 'unconfined_u',
-                'mls_mcs_range': 's0-s0:c0.c1023',
-                'service': '*',
-            },
-            {
-                'login_name': 'root',
-                'selinux_user': 'unconfined_u',
-                'mls_mcs_range': 's0-s0:c0.c1023',
-                'service': '*',
-            },
+    Attributes:
+        count (int): the linux user count who map to a staff_u selinux user
 
-        ]
-
-    Sample output::
-
-        Login Name           SELinux User         MLS/MCS Range        Service
-
-        __default__          unconfined_u         s0-s0:c0.c1023       *
-        root                 unconfined_u         s0-s0:c0.c1023       *
-        system_u             system_u             s0-s0:c0.c1023       *
+    Raises:
+        SkipComponent: The content is emtpy, has many lines or the content is not in int format.
 
     Examples:
-        >>> unconfined_users = users.search(selinux_user='unconfined_u')
-        >>> len(unconfined_users)
+        >>> users.count
         2
-        >>> unconfined_users[0]['login_name']
-        '__default__'
     """
     def parse_content(self, content):
-        data = parse_fixed_table(
-            content,
-            heading_ignore=['Login Name'],
-            header_substitute=[
-                ('Login Name', 'login_name'),
-                ('SELinux User', 'selinux_user'),
-                ('MLS/MCS Range', 'mls_mcs_range'),
-                ('Service', 'service'),
-            ]
-        )
-        self.extend(data)
-
-    def search(self, **kwargs):
-        """
-        Return a list of selinux users by searching the rows with kwargs.
-
-        This uses the :py:func:`insights.parsers.keyword_search` function for
-        searching; see its documentation for usage details. If no search
-        parameters are given, no rows are returned.
-        """
-        return keyword_search(self, **kwargs)
+        if len(content) != 1 or not (content[0].isdigit()):
+            raise SkipComponent
+        self.count = int(content[0])
