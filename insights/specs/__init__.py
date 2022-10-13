@@ -325,6 +325,7 @@ class Specs(SpecSet):
     ls_etc = RegistryPoint()
     ls_etc_ssh = RegistryPoint()
     ls_ipa_idoverride_memberof = RegistryPoint()
+    ls_krb5_sssd = RegistryPoint()
     ls_lib_firmware = RegistryPoint()
     ls_ocp_cni_openshift_sdn = RegistryPoint()
     ls_origin_local_volumes_pods = RegistryPoint()
