@@ -37,11 +37,10 @@ def luks_block_devices(broker):
     raise SkipComponent
 
 
-@datasource(luks_block_devices)
 class LocalSpecs(Specs):
     """ Local specs used only by LUKS_data_sources datasource. """
-    cryptsetup_luks_dump_token_commands = foreach_execute(luks_block_devices, "cryptsetup luksDump --disable-external-tokens %s", deps=[HasCryptsetupWithTokens])
-    cryptsetup_luks_dump_commands = foreach_execute(luks_block_devices, "cryptsetup luksDump %s", deps=[HasCryptsetupWithoutTokens])
+    cryptsetup_luks_dump_token_commands = foreach_execute(luks_block_devices, "/usr/sbin/cryptsetup luksDump --disable-external-tokens %s", deps=[luks_block_devices, HasCryptsetupWithTokens])
+    cryptsetup_luks_dump_commands = foreach_execute(luks_block_devices, "/usr/sbin/cryptsetup luksDump %s", deps=[luks_block_devices, HasCryptsetupWithoutTokens])
 
 
 def line_indentation(line):
