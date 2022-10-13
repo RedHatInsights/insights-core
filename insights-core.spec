@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.297
+Version:        3.0.298
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,21 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Oct 13 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.298-1
+- fix: Add ability to return exceptions during insights collect (#3539)
+  (vdymna@redhat.com)
+- refactor: remove duplicated specs from get_dependency_specs (#3549)
+  (xiangceliu@redhat.com)
+- Remove authselect_current from core collection (#3552)
+  (xiangceliu@redhat.com)
+- Feat: New parser for the "ls -lan /var/lib/sss/pubconf/krb5.include.d"
+  command (#3545) (44598880+rasrivas-redhat@users.noreply.github.com)
+- Deprecate insights.core.scannable & engine_log parser (#3541)
+  (psachin@redhat.com)
+- chore: remove the unused specs (#3537) (xiangceliu@redhat.com)
+- fix: Restore the spec ovs_appctl_fdb_show_bridge (#3538) (psachin@redhat.com)
+- Add spec and parser for luksmeta command (#3525) (daniel.zatovic@gmail.com)
+
 * Thu Oct 06 2022 Sachin Patil <psachin@redhat.com> 3.0.297-1
 - feat: add helper function: get_dependency_specs and test  (#3534) (xiangceliu@redhat.com)
 - Fix registration tests (#3519) (93577878+ahitacat@users.noreply.github.com)
