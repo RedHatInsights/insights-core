@@ -372,6 +372,8 @@ class DefaultSpecs(Specs):
     lspci_vmmkn = simple_command("/sbin/lspci -vmmkn")
     lsscsi = simple_command("/usr/bin/lsscsi")
     lsvmbus = simple_command("/usr/sbin/lsvmbus -vv")
+    block_devices_by_uuid = listdir("/dev/disk/by-uuid/", context=HostContext)
+    luksmeta = foreach_execute(block_devices_by_uuid, "/usr/bin/luksmeta show -d /dev/disk/by-uuid/%s", keep_rc=True)
     lvm_conf = simple_file("/etc/lvm/lvm.conf")
     lvmconfig = first_of([
         simple_command("/usr/sbin/lvmconfig --type full"),
