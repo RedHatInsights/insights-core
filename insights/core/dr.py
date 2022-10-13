@@ -398,9 +398,11 @@ def get_dependency_specs(component):
         req = list()
         for cmp in get_delegate(comp).requires:
             if get_name(cmp).startswith("insights.specs."):
-                req.append(get_simple_name(cmp))
+                cmpn = get_simple_name(cmp)
+                req.append(cmpn) if cmpn not in req else None
             else:
-                req.extend(get_requires(cmp) + get_at_least_one(cmp))
+                union = get_requires(cmp) + get_at_least_one(cmp)
+                req.extend([ss for ss in union if ss not in req])
         return req
 
     def get_at_least_one(comp):
@@ -412,10 +414,10 @@ def get_dependency_specs(component):
                 ssalo = get_at_least_one(cmp)
                 if ssreq and ssalo:
                     # they are mixed and in the same `requires` level
-                    salo.append([ss for ss in ssreq + ssalo])
+                    salo.append([ss for ss in ssreq + ssalo if ss not in salo])
                 else:
                     # no mixed, just add them one by one
-                    salo.extend(ssreq or ssalo)
+                    salo.extend([ss for ss in ssreq or ssalo if ss not in salo])
             alo.append(tuple(salo))
         return alo
 

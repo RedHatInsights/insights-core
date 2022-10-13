@@ -1,6 +1,8 @@
 from insights import condition, rule, make_fail
 from insights.parsers.installed_rpms import InstalledRpms
 from insights.parsers.up2date import Up2Date
+from insights.parsers.uname import Uname
+from insights.parsers.redhat_release import RedhatRelease
 from insights.parsers.messages import Messages
 from insights.parsers.ps import PsAuxcww
 from insights.parsers.virt_what import VirtWhat
@@ -85,6 +87,16 @@ def XYZ(*args):
     return True
 
 
+@condition(PsAuxcww, LsVarLog, [Uname, RedhatRelease], [LsPci, ABC])
+def OPQ(*args):
+    return True
+
+
+@condition(RedHatRelease, LsVarLog, DEF, OPQ)
+def RST(*args):
+    return True
+
+
 def test_get_dependency_specs_1_level_requires_only():
     specs = get_dependency_specs(XYZ)
     assert sorted(specs) == ['ls_boot', 'ls_disk', 'lspci']
@@ -129,3 +141,21 @@ def test_get_dependency_specs_complex():
     # order due to python versions.  Here we just check the number of the
     # `at_least_one` specs
     assert len([alo for alo in specs if isinstance(alo, tuple)]) == 5
+
+
+def test_get_dependency_specs_duplicate():
+    specs = get_dependency_specs(RST)
+    # [
+    #     ('uname', 'redhat_release'),
+    #     'ps_auxcww',
+    #     'ls_var_log',
+    #     ('ls_pci', ['ls_var_log', ('ls_boot', 'ls_etc')])
+    # ]
+    # There is only one such item in the result
+    assert ('uname', 'redhat_release') in specs
+    specs.remove(('uname', 'redhat_release'))
+    assert ('uname', 'redhat_release') not in specs
+
+    assert 'ls_var_log' in specs
+    specs.remove('ls_var_log')
+    assert 'ls_var_log' not in specs
