@@ -260,6 +260,11 @@ plugins:
           enabled: true
 """.strip()
 
+EXCEPTIONS_TO_REPORT = set([
+    OSError
+])
+"""Exception types that should be reported on after core collection."""
+
 
 def load_manifest(data):
     """ Helper for loading a manifest yaml doc. """
@@ -366,7 +371,10 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
             into the manifest blacklist.
         client_timeout (int): Client-provided command timeout value
     Returns:
-        The full path to the created tar.gz or workspace.
+        (str, dict): The full path to the created tar.gz or workspace.
+        And a dictionary with relevant exceptions captured by the broker during
+        core collection, this dictionary has the following structure:
+        ``{ exception_type: [ (exception_obj, component), (exception_obj, component) ]}``.
     """
 
     manifest = load_manifest(manifest)
@@ -429,9 +437,39 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
         broker.add_observer(h.make_persister(to_persist))
         dr.run_all(broker=broker, pool=pool)
 
+    collect_errors = _parse_broker_exceptions(broker, EXCEPTIONS_TO_REPORT)
+
     if compress:
-        return create_archive(output_path)
-    return output_path
+        return create_archive(output_path), collect_errors
+    return output_path, collect_errors
+
+
+def _parse_broker_exceptions(broker, exceptions_to_report):
+    """
+    Parse the exceptions captured in the broker during core collection
+    and keep only exception types configured in the ``exceptions_to_report``.
+
+    Args:
+        broker (Broker): Broker object used for core collection.
+        exceptions_to_report (set): Exception types to retrieve from the broker.
+
+    Returns:
+        (dict): A dictionary with relevant exceptions captured by the broker.
+    """
+    errors = {}
+    try:
+        if broker.exceptions:
+            for component, exceptions in broker.exceptions.items():
+                for ex in exceptions:
+                    ex_type = type(ex)
+                    if ex_type in exceptions_to_report:
+                        if ex_type in errors.keys():
+                            errors[ex_type].append((ex, component))
+                        else:
+                            errors[ex_type] = [(ex, component)]
+    except Exception as e:
+        log.warning("Could not parse exceptions from the broker.: %s", str(e))
+    return errors
 
 
 def main():
@@ -467,7 +505,7 @@ def main():
         manifest = default_manifest
 
     out_path = args.out_path or tempfile.gettempdir()
-    archive = collect(manifest, out_path, compress=args.compress)
+    archive, errors = collect(manifest, out_path, compress=args.compress)
     print(archive)
 
 
