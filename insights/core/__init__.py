@@ -866,6 +866,9 @@ class Scannable(six.with_metaclass(ScanMeta, Parser)):
     strings or False).
 
     """
+    def __init__(self, *args, **kwargs):
+        deprecated(Scannable, "Please use the :class:`insights.core.Parser` instead", "3.2.25")
+        super(Scannable, self).__init__(*args, **kwargs)
 
     @classmethod
     def _scan(cls, result_key, scanner):
