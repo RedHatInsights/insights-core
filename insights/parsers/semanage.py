@@ -4,32 +4,36 @@ SELinux Policy Management tool
 
 This module contains the following parsers:
 
-UsersCountMapStaffuSelinuxUser - datasource ``users_count_map_staff_u_selinux_user``
-------------------------------------------------------------------------------------
+LinuxUserCountMapSelinuxUser - datasource ``users_count_map_selinux_user``
+--------------------------------------------------------------------------
 """
 
-from insights.core.dr import SkipComponent
 from insights.specs import Specs
-from insights import Parser, parser
+from insights import JSONParser, parser
 
 
-@parser(Specs.users_count_map_staff_u_selinux_user)
-class UsersCountMapStaffuSelinuxUser(Parser):
+@parser(Specs.users_count_map_selinux_user)
+class LinuxUserCountMapSelinuxUser(JSONParser):
     """
-    Parse the output of the datasource ``users_count_map_staff_u_selinux_user``.
-    It returns the linux user count who map to a staff_u selinux user.
+    Parse the output of the datasource ``users_count_map_selinux_user``.
+    It returns a dict by transforming the json format.
 
-    Attributes:
-        count (int): the linux user count who map to a staff_u selinux user
+    Sample Input::
 
-    Raises:
-        SkipComponent: The content is emtpy, has many lines or the content is not in int format.
+        {
+            "staff_u": 2,
+            "guest_u": 4
+        }
 
     Examples:
-        >>> users.count
+        >>> from insights.core.filters import add_filter
+        >>> from insights.specs import Specs
+        >>> add_filter(Specs.selinux_users, 'staff_u')
+        >>> add_filter(Specs.selinux_users, 'guest_u')
+        >>> type(users)
+        <class 'insights.parsers.semanage.LinuxUserCountMapSelinuxUser'>
+        >>> 'staff_u' in users
+        True
+        >>> users['staff_u']
         2
     """
-    def parse_content(self, content):
-        if len(content) != 1 or not (content[0].isdigit()):
-            raise SkipComponent
-        self.count = int(content[0])

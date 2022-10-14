@@ -700,7 +700,7 @@ class DefaultSpecs(Specs):
     up2date = simple_file("/etc/sysconfig/rhn/up2date")
     up2date_log = simple_file("/var/log/up2date")
     uptime = simple_command("/usr/bin/uptime")
-    users_count_map_staff_u_selinux_user = semanage.users_count_map_staff_u_selinux_user
+    users_count_map_selinux_user = semanage.users_count_map_selinux_user
     usr_journald_conf_d = glob_file(r"usr/lib/systemd/journald.conf.d/*.conf")  # note that etc_journald.conf.d also exists
     vdo_status = simple_command("/usr/bin/vdo status")
     version_info = simple_file("/version_info")

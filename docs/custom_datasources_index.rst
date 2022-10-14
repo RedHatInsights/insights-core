@@ -183,7 +183,7 @@ insights.specs.datasources.semanage
 -----------------------------------
 
 .. automodule:: insights.specs.datasources.semanage
-    :members: users_count_map_staff_u_selinux_user, LocalSpecs
+    :members: users_count_map_selinux_user, LocalSpecs
     :show-inheritance:
     :undoc-members:
 
