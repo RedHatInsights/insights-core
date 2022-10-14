@@ -23,10 +23,10 @@ class LocalSpecs(Specs):
 def users_count_map_selinux_user(broker):
     """
     Get linux users count who map to the selinux user. It returns a dict with
-    the selinux user type as the key, and the the linux users count as the value.
+    the selinux user type as the key, and the linux users count as the value.
 
     Raises:
-        SkipComponent: Raised when there is no users map the filtered selinux user.
+        SkipComponent: Raised when there are no users map the filtered selinux user.
     """
     user_mapping_lines = broker[LocalSpecs.selinux_user_mapping].content
     data = parse_fixed_table(
