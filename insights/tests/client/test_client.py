@@ -91,6 +91,29 @@ def _mock_no_register_files():
         rmtree(TEMP_TEST_REG_DIR2)
 
 
+@contextmanager
+def _mock_no_register_files_machineid_present():
+    # mock a directory with the fresh install files
+    if not os.path.exists(TEMP_TEST_REG_DIR):
+        os.mkdir(TEMP_TEST_REG_DIR)
+    if not os.path.exists(TEMP_TEST_REG_DIR2):
+        os.mkdir(TEMP_TEST_REG_DIR2)
+    try:
+        unregistered_path = os.path.join(TEMP_TEST_REG_DIR, ".unregistered")
+        with open(unregistered_path, "w") as unregistered_file:
+            unregistered_file.write("date")
+        unregistered_path2 = os.path.join(TEMP_TEST_REG_DIR2, ".unregistered")
+        with open(unregistered_path2, "w") as unregistered_file:
+            unregistered_file.write("date")
+        machine_id_path = os.path.join(TEMP_TEST_REG_DIR, "machine-id")
+        with open(machine_id_path, "w") as machine_id_file:
+            machine_id_file.write("id")
+        yield
+    finally:
+        rmtree(TEMP_TEST_REG_DIR)
+        rmtree(TEMP_TEST_REG_DIR2)
+
+
 @patch('insights.client.client.generate_machine_id')
 @patch('insights.client.utilities.delete_unregistered_file')
 @patch('insights.client.utilities.write_to_disk')
@@ -116,6 +139,30 @@ def test_register_legacy(utilities_write, delete_unregistered_file, generate_mac
         call(constants.registered_files[0]),
         call(constants.registered_files[1])
     ))
+
+
+@patch('insights.client.client.generate_machine_id')
+@patch('insights.client.utilities.delete_unregistered_file')
+@patch('insights.client.utilities.write_to_disk')
+@patch('insights.client.utilities.constants.registered_files',
+       [TEMP_TEST_REG_DIR + '/.registered',
+        TEMP_TEST_REG_DIR2 + '/.registered'])
+@patch('insights.client.utilities.constants.unregistered_files',
+       [TEMP_TEST_REG_DIR + '/.unregistered',
+        TEMP_TEST_REG_DIR2 + '/.unregistered'])
+@patch('insights.client.utilities.constants.machine_id_file',
+       TEMP_TEST_REG_DIR + '/machine-id')
+def test_register_legacy_error_machineid(utilities_write, delete_unregistered_file, generate_machine_id):
+    config = InsightsConfig(register=True, legacy_upload=True)
+    client = InsightsClient(config)
+    client.connection = _mock_InsightsConnection(registered=False)
+    client.connection.config = config
+    client.session = True
+    # this should return False
+    with _mock_no_register_files_machineid_present():
+        client.register() is False
+    delete_unregistered_file.assert_not_called()
+    generate_machine_id.assert_not_called()
 
 
 @contextmanager
