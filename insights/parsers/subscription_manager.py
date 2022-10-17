@@ -8,8 +8,12 @@ SubscriptionManagerFacts - command ``subscription-manager facts``
 -----------------------------------------------------------------
 """
 from insights import parser, CommandParser
+from insights.core.filters import add_filter
 from insights.specs import Specs
 from insights.parsers import SkipException, ParseException
+
+
+add_filter(Specs.subscription_manager_facts, ['instance_id'])
 
 
 @parser(Specs.subscription_manager_facts)
