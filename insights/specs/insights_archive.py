@@ -249,6 +249,7 @@ class InsightsArchiveSpecs(Specs):
     spamassassin_channels = simple_file('insights_commands/grep_-r_s_CHANNELURL_.etc.mail.spamassassin.channel.d')
     ss = simple_file("insights_commands/ss_-tupna")
     sshd_config_perms = first_file(["insights_commands/ls_-lH_.etc.ssh.sshd_config", "insights_commands/ls_-l_.etc.ssh.sshd_config"])
+    subscription_manager_facts = simple_file("insights_commands/subscription-manager_facts")
     subscription_manager_id = simple_file("insights_commands/subscription-manager_identity")
     subscription_manager_installed_product_ids = simple_file("insights_commands/find_.etc.pki.product-default._.etc.pki.product._-name_pem_-exec_rct_cat-cert_--no-content")
     sysctl = simple_file("insights_commands/sysctl_-a")

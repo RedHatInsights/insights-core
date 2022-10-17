@@ -595,6 +595,7 @@ class DefaultSpecs(Specs):
     sshd_config = simple_file("/etc/ssh/sshd_config")
     sshd_config_perms = simple_command("/bin/ls -lH /etc/ssh/sshd_config")
     sssd_config = simple_file("/etc/sssd/sssd.conf")
+    subscription_manager_facts = simple_command("/usr/sbin/subscription-manager facts")
     subscription_manager_id = simple_command("/usr/sbin/subscription-manager identity")  # use "/usr/sbin" here, BZ#1690529
     subscription_manager_installed_product_ids = simple_command("/usr/bin/find /etc/pki/product-default/ /etc/pki/product/ -name '*pem' -exec rct cat-cert --no-content '{}' \;")
     sudoers = glob_file(["/etc/sudoers", "/etc/sudoers.d/*"])
