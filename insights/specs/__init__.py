@@ -397,6 +397,7 @@ class Specs(SpecSet):
     mount = RegistryPoint()
     mountinfo = RegistryPoint()
     mounts = RegistryPoint()
+    mpirun_version = RegistryPoint()
     mssql_conf = RegistryPoint()
     mssql_api_assessment = RegistryPoint()
     mssql_tls_cert_enddate = RegistryPoint()
