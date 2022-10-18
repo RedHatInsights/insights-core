@@ -173,6 +173,7 @@ class InsightsArchiveSpecs(Specs):
     modinfo_veth = simple_file("insights_commands/modinfo_veth")
     modinfo_vmxnet3 = simple_file("insights_commands/modinfo_vmxnet3")
     mokutil_sbstate = simple_file("insights_commands/mokutil_--sb-state")
+    mpirun_version = simple_file("insights_commands/usr.local.bin.mpirun_--version")
     multicast_querier = simple_file("insights_commands/find_.sys.devices.virtual.net._-name_multicast_querier_-print_-exec_cat")
     multipath_conf_initramfs = simple_file("insights_commands/lsinitrd_-f_.etc.multipath.conf")
     multipath__v4__ll = simple_file("insights_commands/multipath_-v4_-ll")
