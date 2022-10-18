@@ -222,7 +222,6 @@ def test_log_long_key(logger_warning):
     map_rm_conf_to_components(rm_conf, uploader_json)
     logger_warning.assert_any_call("- /usr/bin/find /etc/origin/node                   => certificates_enddate\n  /etc/origin/master /etc/pki /etc/ipa\n  /etc/tower/tower.cert -type f -exec\n  /usr/bin/openssl x509 -noout -enddate -in '{}'\n  \\; -exec echo 'FileName= {}' \\;")
     logger_warning.assert_any_call("- /usr/bin/md5sum /etc/pki/product/69.pem          => md5chk_files")
-    logger_warning.assert_any_call("- /etc/sysconfig/virt-who                          => sysconfig_virt_who")
     logger_warning.assert_any_call("- krb5_conf_d                                      => krb5")
 
 
