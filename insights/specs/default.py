@@ -383,6 +383,7 @@ class DefaultSpecs(Specs):
     mount = simple_command("/bin/mount")
     mountinfo = simple_file("/proc/self/mountinfo")
     mounts = simple_file("/proc/mounts")
+    mpirun_version = simple_command("/usr/local/bin/mpirun --version")
     mssql_api_assessment = simple_file("/var/opt/mssql/log/assessments/assessment-latest")
     mssql_conf = simple_file("/var/opt/mssql/mssql.conf")
     mssql_tls_cert_enddate = command_with_args("/usr/bin/openssl x509 -in %s -enddate -noout", ssl_certificate.mssql_tls_cert_file)
