@@ -792,3 +792,4 @@ class Specs(SpecSet):
     # container_specs
     container_redhat_release = RegistryPoint(multi_output=True)
     container_nginx_conf = RegistryPoint(multi_output=True)
+    container_installed_rpms = RegistryPoint(multi_output=True)

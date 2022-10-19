@@ -1,5 +1,5 @@
 import pytest
-from insights.parsers.installed_rpms import InstalledRpms, InstalledRpm, pad_version
+from insights.parsers.installed_rpms import InstalledRpms, InstalledRpm, pad_version, ContainerInstalledRpms
 from insights.tests import context_wrap
 
 
@@ -539,3 +539,14 @@ def test_vmaas():
     assert isinstance(rpm, InstalledRpm)
     assert rpm.version == "5.2.2"
     assert rpm.release == "1.el7"
+
+
+def test_container_installed_rpms():
+    rpms = ContainerInstalledRpms(context_wrap(RPMS_PACKAGE))
+    assert rpms.get_min('openldap').package == 'openldap-2.4.23-31.el6'
+    pkg_rpm = rpms.packages['openssh-server'][0]
+    rpm = InstalledRpm.from_package(pkg_rpm.package)
+    assert rpm.package == 'openssh-server-5.3p1-104.el6'
+    assert pkg_rpm.package == 'openssh-server-5.3p1-104.el6'
+    assert rpm == pkg_rpm
+    assert rpm.epoch == '0'
