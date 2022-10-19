@@ -1060,7 +1060,7 @@ class container_collect(foreach_execute):
                 image, engine, cid = e[0], e[1], e[2]
                 # self.cmd = path or None
                 # the_cmd  = <podman|docker> exec container_id cat path
-                path = e[3:] if (len(e) > 3 and self.cmd is None) else self.cmd
+                path = e[3] if (len(e) > 3 and self.cmd is None) else self.cmd
                 the_cmd = "/usr/bin/%s exec %s cat %s" % (engine, cid, path)
                 cfp = ContainerFileProvider(the_cmd, ctx, image=image, args=None,
                         split=self.split, keep_rc=self.keep_rc, ds=self,
