@@ -637,4 +637,3 @@ class ContainerInstalledRpms(ContainerParser, InstalledRpms):
     Parses the data for list of installed rpms of the running
     containers which are based on RHEL images.
     """
-
