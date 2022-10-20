@@ -37,3 +37,4 @@ class LinuxUserCountMapSelinuxUser(JSONParser):
         >>> users['staff_u']
         2
     """
+    pass
