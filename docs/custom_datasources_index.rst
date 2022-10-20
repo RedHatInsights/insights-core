@@ -179,6 +179,14 @@ insights.specs.datasources.satellite_missed_queues
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.semanage
+-----------------------------------
+
+.. automodule:: insights.specs.datasources.semanage
+    :members: users_count_map_selinux_user, LocalSpecs
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.ssl_certificate
 ------------------------------------------
 
