@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.298
+Version:        3.0.299
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,11 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Oct 20 2022 Sachin Patil <psachin@redhat.com> 3.0.299-1
+- feat: New spec "semanage login -l" and parser (#3548) (44796653+huali027@users.noreply.github.com)
+- [New-parser] parser_mpirun_version (#3542) (87797511+mohitkumarrh@users.noreply.github.com)
+- Removed assert of virt-who, it is not in uploader.json (#3556) (93577878+ahitacat@users.noreply.github.com)
+
 * Thu Oct 13 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.298-1
 - fix: Add ability to return exceptions during insights collect (#3539)
   (vdymna@redhat.com)
