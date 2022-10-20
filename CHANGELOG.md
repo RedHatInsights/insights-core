@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.299](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.299) (2022-10-20)
+
+- feat: New spec "semanage login -l" and parser ([PR 3548](https://github.com/RedHatInsights/insights-core/pull/3548))
+- [New-parser] parser_mpirun_version ([PR 3542](https://github.com/RedHatInsights/insights-core/pull/3542))
+- Removed assert of virt-who, it is not in uploader.json ([PR 3556](https://github.com/RedHatInsights/insights-core/pull/3556))
+
 ## [insights-core-3.0.298](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.298) (2022-10-13)
 
 - fix: Add ability to return exceptions during insights collect ([PR 3539](https://github.com/RedHatInsights/insights-core/pull/3539))
