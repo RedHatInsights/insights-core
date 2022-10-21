@@ -64,7 +64,7 @@ def test_softnet_stat():
     assert stats.per_cpu_nstat('cpu_collision') == [32, 16]
     assert stats.per_cpu_nstat('received_rps') == [0, 0]
     assert stats.per_cpu_nstat('flow_limit_count') == [0, 0]
-    assert stats.per_cpu_nstat('softnet_backlog_len') == [0 ,0]
+    assert stats.per_cpu_nstat('softnet_backlog_len') == [0, 0]
     assert stats.per_cpu_nstat('packet_dr') == []
     assert not stats.is_packet_drops
 
@@ -75,8 +75,8 @@ def test_softnet_stat():
     assert stats.per_cpu_nstat('packet_drops') == [25219, 1094, 19399, 32302, 187284]
     assert stats.per_cpu_nstat('cpu_collision') == [0, 0, 0, 0, 0]
     assert stats.per_cpu_nstat('received_rps') == [546300, 9366426, 36865171, 36179273, 9365818]
-    assert stats.per_cpu_nstat('flow_limit_count') == [0, 0, 0 ,0 ,0]
-    assert stats.per_cpu_nstat('softnet_backlog_len') == [0, 0, 0 ,0 ,0]
+    assert stats.per_cpu_nstat('flow_limit_count') == [0, 0, 0, 0, 0]
+    assert stats.per_cpu_nstat('softnet_backlog_len') == [0, 0, 0, 0, 0]
     assert stats.per_cpu_nstat('packet_dr') == []
     assert stats.is_packet_drops
 
