@@ -68,7 +68,6 @@ def test_get_running_rhel_containers_empty():
         DockerListContainers: d_ctn,
         HostContext: ctx}
 
-
     with pytest.raises(SkipComponent):
         ret = running_rhel_containers(broker)
         assert len(ret) == 0
