@@ -21,6 +21,8 @@ GLOB_FILE_TYPE = 'glob_file'
 """ str: Literal constant for a simple_file Spec object """
 FOREACH_EXECUTE_TYPE = 'foreach_execute'
 """ str: Literal constant for a foreach_execute Spec object """
+CONTAINER_EXECUTE_TYPE = 'container_execute'
+""" str: Literal constant for a container_execute Spec object """
 LISTDIR_TYPE = 'listdir'
 """ str: Literal constant for a listdir Spec object """
 LIST_TYPE = 'list'
@@ -35,6 +37,8 @@ FIRST_FILE_TYPE = 'first_file'
 """ str: Literal constant for a first_file Spec object """
 FOREACH_COLLECT_TYPE = 'foreach_collect'
 """ str: Literal constant for a foreach_collect Spec object """
+CONTAINER_COLLECT_TYPE = 'container_collect'
+""" str: Literal constant for a container_collect Spec object """
 FIRST_OF_TYPE = 'first_of'
 """ str: Literal constant for a first_of Spec object """
 COMMAND_WITH_ARGS_TYPE = 'command_with_args'
@@ -67,6 +71,11 @@ def is_foreach_execute(m_obj):
     return isinstance(m_obj, insights.core.spec_factory.foreach_execute)
 
 
+def is_container_execute(m_obj):
+    """ bool: True if broker object is a is_container_execute object """
+    return isinstance(m_obj, insights.core.spec_factory.container_execute)
+
+
 def is_first_file(m_obj):
     """ bool: True if broker object is a first_file object """
     return isinstance(m_obj, insights.core.spec_factory.first_file)
@@ -80,6 +89,11 @@ def is_first_of(m_obj):
 def is_foreach_collect(m_obj):
     """ bool: True if broker object is a is_foreach_collect object """
     return isinstance(m_obj, insights.core.spec_factory.foreach_collect)
+
+
+def is_container_collect(m_obj):
+    """ bool: True if broker object is a is_container_collect object """
+    return isinstance(m_obj, insights.core.spec_factory.container_collect)
 
 
 def is_listdir(m_obj):
@@ -212,6 +226,22 @@ class Spec(dict):
 
             m_spec['repr'] = 'foreach_execute("{cmd}", provider={provider})'
 
+        elif is_container_execute(m_type):
+            m_spec['cmd'] = next((v for k, v in m_members if k == "cmd"), None)
+            m_spec['type_name'] = CONTAINER_EXECUTE_TYPE
+            provider = next((v for k, v in m_members if k == "provider"), None)
+            if provider:
+                m_spec['provider'] = cls.from_object(provider)
+
+            else:
+                m_spec['provider'] = Spec(
+                    name=ANONYMOUS_SPEC_NAME,
+                    type=None,
+                    type_name=NONE_TYPE,
+                    repr='NONE PROVIDER')
+
+            m_spec['repr'] = 'container_execute("{cmd}", provider={provider})'
+
         elif is_first_of(m_type):
             m_spec['type_name'] = FIRST_OF_TYPE
             deps = next((v for k, v in m_members if k == "deps"), None)
@@ -234,6 +264,15 @@ class Spec(dict):
             if provider:
                 m_spec['provider'] = cls.from_object(provider)
             m_spec['repr'] = 'foreach_collect("{path}", provider={provider})'
+
+        elif is_container_collect(m_type):
+            m_spec['type_name'] = CONTAINER_COLLECT_TYPE
+            # container_collect is based on foreach_execute, it used obj.cmd as the path
+            m_spec['path'] = next((v for k, v in m_members if k == 'cmd'), None)
+            provider = next((v for k, v in m_members if k == "provider"), None)
+            if provider:
+                m_spec['provider'] = cls.from_object(provider)
+            m_spec['repr'] = 'container_collect("{path}", provider={provider})'
 
         elif is_head(m_type):
             m_spec['type_name'] = HEAD_TYPE
