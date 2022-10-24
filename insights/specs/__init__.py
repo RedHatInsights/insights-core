@@ -132,7 +132,7 @@ class Specs(SpecSet):
     dnf_module_list = RegistryPoint()
     dnf_modules = RegistryPoint()
     dnsmasq_config = RegistryPoint(multi_output=True)
-    docker_container_inspect = RegistryPoint(multi_output=True)
+    docker_container_inspect = RegistryPoint(multi_output=True, filterable=True)
     docker_host_machine_id = RegistryPoint()
     docker_image_inspect = RegistryPoint(multi_output=True)
     docker_info = RegistryPoint()
