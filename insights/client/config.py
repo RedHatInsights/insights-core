@@ -837,8 +837,10 @@ class InsightsConfig(object):
         Config values may have been set manually however, so need to take that into consideration
         '''
         if self.app == 'malware-detection':
-            if self.retries < 5:
-                self.retries = 5
+            # Add extra retries for malware, mainly because it could take a long time to run
+            # and the results archive shouldn't be discarded after a single failed upload attempt
+            if self.retries < 3:
+                self.retries = 3
 
     def _determine_filename_and_extension(self):
         '''
