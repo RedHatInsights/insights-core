@@ -550,3 +550,8 @@ def test_container_installed_rpms():
     assert pkg_rpm.package == 'openssh-server-5.3p1-104.el6'
     assert rpm == pkg_rpm
     assert rpm.epoch == '0'
+
+    rpms_json = InstalledRpms(context_wrap(RPMS_JSON))
+    assert isinstance(rpms_json.get_max("log4j").source, InstalledRpm)
+    assert rpms_json.get_max("libteam").source.name == "libteam"
+    assert rpms_json.get_max("libteam").source.version == "1.17"

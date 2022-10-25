@@ -678,4 +678,4 @@ class DefaultSpecs(Specs):
     # container_specs
     container_redhat_release = container_collect(running_rhel_containers, "/etc/redhat-release")
     container_nginx_conf = container_collect(container_nginx_conf_ds)
-    container_installed_rpms = container_execute(running_rhel_containers, "rpm -qa", context=HostContext, signum=signal.SIGTERM)
+    container_installed_rpms = container_execute(running_rhel_containers, "rpm -qa --qf '%s'" % rpm_format, context=HostContext, signum=signal.SIGTERM)
