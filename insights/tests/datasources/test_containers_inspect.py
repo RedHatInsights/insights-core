@@ -745,9 +745,9 @@ def test_containers_inspect_datasource():
     containers_inspect_data_1 = Mock()
     containers_inspect_data_2 = Mock()
     containers_inspect_data_1.content = DOCKER_INSPECT_1.splitlines()
-    containers_inspect_data_1.file_name = "/usr/bin/docker inspect aeaea3ead527"
+    containers_inspect_data_1.cmd = "/usr/bin/docker inspect aeaea3ead527"
     containers_inspect_data_2.content = DOCKER_INSPECT_2.splitlines()
-    containers_inspect_data_2.file_name = "/usr/bin/podman inspect 28fb57be8bb2"
+    containers_inspect_data_2.cmd = "/usr/bin/podman inspect 28fb57be8bb2"
     broker = {LocalSpecs.containers_inspect_data_raw: [containers_inspect_data_1, containers_inspect_data_2]}
     result = containers_inspect_data_datasource(broker)
     assert result is not None
@@ -760,9 +760,9 @@ def test_containers_inspect_datasource_no_filter():
     containers_inspect_data_1 = Mock()
     containers_inspect_data_2 = Mock()
     containers_inspect_data_1.content = DOCKER_INSPECT_1.splitlines()
-    containers_inspect_data_1.file_name = "/usr/bin/docker inspect aeaea3ead527"
+    containers_inspect_data_1.cmd = "/usr/bin/docker inspect aeaea3ead527"
     containers_inspect_data_2.content = DOCKER_INSPECT_2.splitlines()
-    containers_inspect_data_2.file_name = "/usr/bin/podman inspect 28fb57be8bb2"
+    containers_inspect_data_2.cmd = "/usr/bin/podman inspect 28fb57be8bb2"
     broker = {LocalSpecs.containers_inspect_data_raw: [containers_inspect_data_1, containers_inspect_data_2]}
     with pytest.raises(SkipComponent) as e:
         containers_inspect_data_datasource(broker)
@@ -772,7 +772,7 @@ def test_containers_inspect_datasource_no_filter():
 def test_containers_inspect_datasource_NG_output_1():
     containers_inspect_data_3 = Mock()
     containers_inspect_data_3.content = DOCKER_INSPECT_3.splitlines()
-    containers_inspect_data_3.file_name = "/usr/bin/podman inspect 28fb57be8bb2"
+    containers_inspect_data_3.cmd = "/usr/bin/podman inspect 28fb57be8bb2"
     broker = {LocalSpecs.containers_inspect_data_raw: [containers_inspect_data_3]}
     with pytest.raises(SkipComponent) as e:
         containers_inspect_data_datasource(broker)
@@ -782,7 +782,7 @@ def test_containers_inspect_datasource_NG_output_1():
 def test_containers_inspect_datasource_NG_output_2():
     containers_inspect_data_4 = Mock()
     containers_inspect_data_4.content = DOCKER_INSPECT_4.splitlines()
-    containers_inspect_data_4.file_name = "/usr/bin/docker inspect aeaea3ead527"
+    containers_inspect_data_4.cmd = "/usr/bin/docker inspect aeaea3ead527"
     broker = {LocalSpecs.containers_inspect_data_raw: [containers_inspect_data_4]}
     with pytest.raises(SkipComponent) as e:
         containers_inspect_data_datasource(broker)

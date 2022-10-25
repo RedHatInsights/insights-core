@@ -78,7 +78,7 @@ def containers_inspect_data_datasource(broker):
         filters = get_filters(Specs.containers_inspect_vars)
         contents = []
         for item in broker[LocalSpecs.containers_inspect_data_raw]:
-            engine = item.file_name.split()[0].split("bin/")[-1]
+            engine = item.cmd.split()[0].split("bin/")[-1]
             contents.append((item.content, engine))
         if contents and filters:
             total_results = []
