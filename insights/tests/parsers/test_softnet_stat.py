@@ -45,7 +45,7 @@ def test_softnet_stat():
     assert stats is not None
 
     assert stats.per_cpu_nstat('packet_drops') == [18, 255, 0, 1]
-    assert stats.per_cpu_nstat('time_squeeze') ==  [1, 2, 3, 4]
+    assert stats.per_cpu_nstat('time_squeeze') == [1, 2, 3, 4]
     assert stats.per_cpu_nstat('cpu_collision') == [117, 196, 73, 33]
     assert stats.per_cpu_nstat('received_rps') == [5, 6, 7, 8]
     assert stats.per_cpu_nstat('flow_limit_count') == [None, None, None, None]
