@@ -8,52 +8,48 @@ from insights.core.spec_factory import DatasourceProvider, foreach_execute
 from insights.core.filters import get_filters
 from insights.specs import Specs
 import json
-from insights.specs.datasources import DEFAULT_SHELL_TIMEOUT
-# from insights.parsers.podman_list import PodmanListContainers
-from insights.parsers.docker_list import DockerListContainers
+from insights.specs.datasources.container import running_rhel_containers
 
 
-@datasource(DockerListContainers, HostContext)
-def running_docker_rhel_containers(broker):
+@datasource(running_rhel_containers, HostContext)
+def running_rhel_containers_id(broker):
     """
     Returns a list of container_id of the running containers.
     """
-    def _is_rhel_image(ctx, c_info):
-        """Only collect the containers based from RHEL images"""
-        try:
-            ret = ctx.shell_out("/usr/bin/docker exec %s cat /etc/redhat-release" % c_info, timeout=DEFAULT_SHELL_TIMEOUT)
-            if ret and "red hat enterprise linux" in ret[0].lower():
-                return True
-        except Exception:
-            # return False when there is no such file "/etc/redhat-releas"
-            pass
-        return False
+    containers_info = []
+    docker_containers = []
+    podman_containers = []
+    for container in broker[running_rhel_containers]:
+        if container[1] == "podman":
+            podman_containers.append(container[2])
+        else:
+            docker_containers.append(container[2])
 
-    cs = []
-    if (DockerListContainers in broker):
-        docker_c = broker[DockerListContainers]
-        for name in docker_c.running_containers:
-            c_info = docker_c.containers[name]['CONTAINER ID'][:12]
-            cs.append(c_info) if _is_rhel_image(broker[HostContext], c_info) else None
-    if cs:
-        return cs
+    common_ids = list(set(podman_containers).intersection(docker_containers))
+    new_dcoker_containers = [item for item in docker_containers if item not in common_ids]
+    for item in podman_containers:
+        containers_info.append(("podman", item))
+    for item in new_dcoker_containers:
+        containers_info.append(("docker", item))
+    if containers_info:
+        return containers_info
     raise SkipComponent
 
 
 class LocalSpecs(Specs):
-    """ Local specs used only by docker_inspect datasources """
+    """ Local specs used only by docker|podman_inspect datasources """
 
-    docker_container_inspect_data_raw = foreach_execute(running_docker_rhel_containers, "/usr/bin/docker inspect %s")
-    """ Returns the output of command ``/usr/bin/docker inspect <container ID>`` """
+    containers_inspect_data_raw = foreach_execute(running_rhel_containers_id, "/usr/bin/%s inspect %s")
+    """ Returns the output of command ``/usr/bin/docker|podman inspect <container ID>`` """
 
 
-@datasource(LocalSpecs.docker_container_inspect_data_raw, HostContext)
-def docker_container_inspect_data_datasource(broker):
+@datasource(LocalSpecs.containers_inspect_data_raw, HostContext)
+def containers_inspect_data_datasource(broker):
     """
     This datasource provides the filtered information collected
-    from ``/usr/bin/docker inspect <container ID>``.
+    from ``/usr/bin/docker|podman inspect <container ID>``.
 
-    Typical content of ``/usr/bin/docker inspect <container ID>`` file is::
+    Typical content of ``/usr/bin/docker|podman inspect <container ID>`` file is::
 
         [
             {
@@ -79,19 +75,21 @@ def docker_container_inspect_data_datasource(broker):
                     yield i
 
     try:
-        filters = get_filters(Specs.docker_container_inspect)
+        filters = get_filters(Specs.containers_inspect_vars)
         contents = []
-        for item in broker[LocalSpecs.docker_container_inspect_data_raw]:
-            contents.append(item.content)
+        for item in broker[LocalSpecs.containers_inspect_data_raw]:
+            engine = item.file_name.split()[0].split("bin/")[-1]
+            contents.append((item.content, engine))
         if contents and filters:
             total_results = []
             for content in contents:
-                content = "".join(content)
-                raw_data = json.loads(content)[0]
+                content_raw = "".join(content[0])
+                raw_data = json.loads(content_raw)[0]
                 filter_result = {}
                 filter_result['Id'] = raw_data['Id']
                 filter_result['Image'] = raw_data['Image']
                 filter_result['ImageName'] = raw_data['ImageName']
+                filter_result['engine'] = content[1]
                 for item in filters:
                     path = []
                     for val in _find(raw_data, item, path):
@@ -101,7 +99,7 @@ def docker_container_inspect_data_datasource(broker):
                         filter_result.update(mid_data)
                 total_results.append(filter_result)
             if total_results:
-                return DatasourceProvider(content=json.dumps(total_results), relative_path='insights_commands/docker_inspect')
+                return DatasourceProvider(content=json.dumps(total_results), relative_path='insights_commands/containers_inspect')
     except Exception as e:
         raise SkipComponent("Unexpected exception:{e}".format(e=str(e)))
     raise SkipComponent

@@ -2,9 +2,12 @@ import pytest
 from mock.mock import Mock
 from insights.core.dr import SkipComponent
 from insights.core.spec_factory import DatasourceProvider
-from insights.specs.datasources.container_inspect import docker_container_inspect_data_datasource, LocalSpecs
+from insights.specs.datasources.containers_inspect import containers_inspect_data_datasource, LocalSpecs, running_rhel_containers_id
+from insights.specs.datasources.container import running_rhel_containers
 from insights.specs import Specs
 from insights.core import filters
+from insights import dr
+
 
 DOCKER_INSPECT_1 = """
 [
@@ -696,62 +699,91 @@ Error: error inspecting object: no such object: "testnoid"
 
 
 EXPECTED_RESULT = """
-[{"Id": "aeaea3ead52724bb525bb2b5c619d67836250756920f0cb9884431ba53b476d8", "Image": "538460c14d75dee1504e56ad8ddb7fe039093b1530ef8f90442a454b9aa3dc8b", "ImageName": "registry.access.redhat.com/rhel:latest", "Config": {"Annotations": {"io.podman.annotations.privileged": "FALSE"}}}, {"Id": "28fb57be8bb204e652c472a406e0d99956c8d35d6e88abfc13253d101a00911e", "Image": "538460c14d75dee1504e56ad8ddb7fe039093b1530ef8f90442a454b9aa3dc8b", "ImageName": "registry.access.redhat.com/rhel:latest", "Config": {"Annotations": {"io.podman.annotations.privileged": "TRUE"}}}]
+[{"Id": "aeaea3ead52724bb525bb2b5c619d67836250756920f0cb9884431ba53b476d8", "Image": "538460c14d75dee1504e56ad8ddb7fe039093b1530ef8f90442a454b9aa3dc8b", "ImageName": "registry.access.redhat.com/rhel:latest", "engine": "docker", "Config": {"Annotations": {"io.podman.annotations.privileged": "FALSE"}}}, {"Id": "28fb57be8bb204e652c472a406e0d99956c8d35d6e88abfc13253d101a00911e", "Image": "538460c14d75dee1504e56ad8ddb7fe039093b1530ef8f90442a454b9aa3dc8b", "ImageName": "registry.access.redhat.com/rhel:latest", "engine": "podman", "Config": {"Annotations": {"io.podman.annotations.privileged": "TRUE"}}}]
 """.strip()
 
 
-RELATIVE_PATH = 'insights_commands/docker_inspect'
+RELATIVE_PATH = 'insights_commands/containers_inspect'
+
+CONTAINERS_ID_EXPECTED_RESULT = [
+    ('podman', 'aeaea3ead52724bb525bb2b5c619d67836250756920f0cb9884431ba53b476d8'),
+    ('podman', '28fb57be8bb204e652c472a406e0d99956c8d35d6e88abfc13253d101a00911e'),
+    ('podman', '528890e93bf71736e00a87c7a1fa33e5bb03a9a196e5b10faaa9e545e749aa54'),
+    ('docker', '38fb57be8bb204e652c472a406e0d99956c8d35d6e88abfc13253d101a00911e'),
+    ('docker', '538890e93bf71736e00a87c7a1fa33e5bb03a9a196e5b10faaa9e545e749aa54')
+]
 
 
 def setup_function(func):
-    if Specs.docker_container_inspect in filters._CACHE:
-        del filters._CACHE[Specs.docker_container_inspect]
-    if Specs.docker_container_inspect in filters.FILTERS:
-        del filters.FILTERS[Specs.docker_container_inspect]
+    if Specs.containers_inspect_vars in filters._CACHE:
+        del filters._CACHE[Specs.containers_inspect_vars]
+    if Specs.containers_inspect_vars in filters.FILTERS:
+        del filters.FILTERS[Specs.containers_inspect_vars]
 
-    if func is test_docker_inspect_datasource or func is test_docker_inspect_datasource_NG_output_1 or func is test_docker_inspect_datasource_NG_output_2:
-        filters.add_filter(Specs.docker_container_inspect, ["io.podman.annotations.privileged"])
-    if func is test_docker_inspect_datasource_no_filter:
-        filters.add_filter(Specs.docker_container_inspect, [])
+    if func is test_containers_inspect_datasource or func is test_containers_inspect_datasource_NG_output_1 or func is test_containers_inspect_datasource_NG_output_2:
+        filters.add_filter(Specs.containers_inspect_vars, ["io.podman.annotations.privileged"])
+    if func is test_containers_inspect_datasource_no_filter:
+        filters.add_filter(Specs.containers_inspect_vars, [])
 
 
-def test_docker_inspect_datasource():
-    docker_inspect_data_1 = Mock()
-    docker_inspect_data_2 = Mock()
-    docker_inspect_data_1.content = DOCKER_INSPECT_1.splitlines()
-    docker_inspect_data_2.content = DOCKER_INSPECT_2.splitlines()
-    broker = {LocalSpecs.docker_container_inspect_data_raw: [docker_inspect_data_1, docker_inspect_data_2]}
-    result = docker_container_inspect_data_datasource(broker)
+def test_running_rhel_containers_id():
+    broker = dr.Broker()
+    containers_info = [
+        ("registry.access.redhat.com/rhel", "podman", "aeaea3ead52724bb525bb2b5c619d67836250756920f0cb9884431ba53b476d8"),
+        ("registry.access.redhat.com/rhel", "podman", "28fb57be8bb204e652c472a406e0d99956c8d35d6e88abfc13253d101a00911e"),
+        ("registry.access.redhat.com/rhel", "podman", "528890e93bf71736e00a87c7a1fa33e5bb03a9a196e5b10faaa9e545e749aa54"),
+        ("registry.access.redhat.com/rhel", "docker", "aeaea3ead52724bb525bb2b5c619d67836250756920f0cb9884431ba53b476d8"),
+        ("registry.access.redhat.com/rhel", "docker", "38fb57be8bb204e652c472a406e0d99956c8d35d6e88abfc13253d101a00911e"),
+        ("registry.access.redhat.com/rhel", "docker", "538890e93bf71736e00a87c7a1fa33e5bb03a9a196e5b10faaa9e545e749aa54")
+    ]
+    broker[running_rhel_containers] = containers_info
+    result = running_rhel_containers_id(broker)
+    assert result == CONTAINERS_ID_EXPECTED_RESULT
+
+
+def test_containers_inspect_datasource():
+    containers_inspect_data_1 = Mock()
+    containers_inspect_data_2 = Mock()
+    containers_inspect_data_1.content = DOCKER_INSPECT_1.splitlines()
+    containers_inspect_data_1.file_name = "/usr/bin/docker inspect aeaea3ead527"
+    containers_inspect_data_2.content = DOCKER_INSPECT_2.splitlines()
+    containers_inspect_data_2.file_name = "/usr/bin/podman inspect 28fb57be8bb2"
+    broker = {LocalSpecs.containers_inspect_data_raw: [containers_inspect_data_1, containers_inspect_data_2]}
+    result = containers_inspect_data_datasource(broker)
     assert result is not None
     assert isinstance(result, DatasourceProvider)
     assert result.content[0] == EXPECTED_RESULT
     assert result.relative_path == RELATIVE_PATH
 
 
-def test_docker_inspect_datasource_no_filter():
-    docker_inspect_data_1 = Mock()
-    docker_inspect_data_2 = Mock()
-    docker_inspect_data_1.content = DOCKER_INSPECT_1.splitlines()
-    docker_inspect_data_2.content = DOCKER_INSPECT_2.splitlines()
-    broker = {LocalSpecs.docker_container_inspect_data_raw: [docker_inspect_data_1, docker_inspect_data_2]}
+def test_containers_inspect_datasource_no_filter():
+    containers_inspect_data_1 = Mock()
+    containers_inspect_data_2 = Mock()
+    containers_inspect_data_1.content = DOCKER_INSPECT_1.splitlines()
+    containers_inspect_data_1.file_name = "/usr/bin/docker inspect aeaea3ead527"
+    containers_inspect_data_2.content = DOCKER_INSPECT_2.splitlines()
+    containers_inspect_data_2.file_name = "/usr/bin/podman inspect 28fb57be8bb2"
+    broker = {LocalSpecs.containers_inspect_data_raw: [containers_inspect_data_1, containers_inspect_data_2]}
     with pytest.raises(SkipComponent) as e:
-        docker_container_inspect_data_datasource(broker)
+        containers_inspect_data_datasource(broker)
     assert 'SkipComponent' in str(e)
 
 
-def test_docker_inspect_datasource_NG_output_1():
-    docker_inspect_data_3 = Mock()
-    docker_inspect_data_3.content = DOCKER_INSPECT_3.splitlines()
-    broker = {LocalSpecs.docker_container_inspect_data_raw: [docker_inspect_data_3]}
+def test_containers_inspect_datasource_NG_output_1():
+    containers_inspect_data_3 = Mock()
+    containers_inspect_data_3.content = DOCKER_INSPECT_3.splitlines()
+    containers_inspect_data_3.file_name = "/usr/bin/podman inspect 28fb57be8bb2"
+    broker = {LocalSpecs.containers_inspect_data_raw: [containers_inspect_data_3]}
     with pytest.raises(SkipComponent) as e:
-        docker_container_inspect_data_datasource(broker)
+        containers_inspect_data_datasource(broker)
     assert 'SkipComponent' in str(e)
 
 
-def test_docker_inspect_datasource_NG_output_2():
-    docker_inspect_data_4 = Mock()
-    docker_inspect_data_4.content = DOCKER_INSPECT_4.splitlines()
-    broker = {LocalSpecs.docker_container_inspect_data_raw: [docker_inspect_data_4]}
+def test_containers_inspect_datasource_NG_output_2():
+    containers_inspect_data_4 = Mock()
+    containers_inspect_data_4.content = DOCKER_INSPECT_4.splitlines()
+    containers_inspect_data_4.file_name = "/usr/bin/docker inspect aeaea3ead527"
+    broker = {LocalSpecs.containers_inspect_data_raw: [containers_inspect_data_4]}
     with pytest.raises(SkipComponent) as e:
-        docker_container_inspect_data_datasource(broker)
+        containers_inspect_data_datasource(broker)
     assert 'Unexpected exception' in str(e)

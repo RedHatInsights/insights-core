@@ -24,7 +24,7 @@ from insights.components.virtualization import IsBareMetal
 from insights.components.satellite import IsCapsule, IsSatellite611, IsSatellite
 from insights.specs import Specs
 from insights.specs.datasources import (
-    aws, awx_manage, container_inspect, cloud_init, candlepin_broker, corosync as corosync_ds,
+    aws, awx_manage, containers_inspect, cloud_init, candlepin_broker, corosync as corosync_ds,
     dir_list, ethernet, httpd, ipcs, kernel_module_list, lpstat, md5chk,
     package_provides, ps as ps_datasource, sap, satellite_missed_queues,
     semanage, ssl_certificate, sys_fs_cgroup_memory_tasks_number, system_user_dirs, user_group, yum_updates, luks_devices)
@@ -129,6 +129,7 @@ class DefaultSpecs(Specs):
     corosync = simple_file("/etc/sysconfig/corosync")
     corosync_cmapctl = foreach_execute(corosync_ds.corosync_cmapctl_cmds, "%s")
     corosync_conf = simple_file("/etc/corosync/corosync.conf")
+    containers_inspect = containers_inspect.containers_inspect_data_datasource
     cpu_cores = glob_file("sys/devices/system/cpu/cpu[0-9]*/online")
     cpu_siblings = glob_file("sys/devices/system/cpu/cpu[0-9]*/topology/thread_siblings_list")
     cpu_smt_active = simple_file("sys/devices/system/cpu/smt/active")
@@ -167,7 +168,6 @@ class DefaultSpecs(Specs):
     dnf_conf = simple_file("/etc/dnf/dnf.conf")
     dnf_modules = glob_file("/etc/dnf/modules.d/*.module")
     docker_info = simple_command("/usr/bin/docker info")
-    docker_container_inspect = container_inspect.docker_container_inspect_data_datasource
     docker_list_containers = simple_command("/usr/bin/docker ps --all --no-trunc")
     docker_list_images = simple_command("/usr/bin/docker images --all --no-trunc --digests")
     docker_storage_setup = simple_file("/etc/sysconfig/docker-storage-setup")
