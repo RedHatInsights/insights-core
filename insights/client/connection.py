@@ -188,26 +188,44 @@ class InsightsConnection(object):
             HTTP response object
         '''
         logger.log(NETWORK, "%s %s", method, url)
-        res = self.session.request(url=url, method=method, timeout=self.config.http_timeout, **kwargs)
+        try:
+            res = self.session.request(url=url, method=method, timeout=self.config.http_timeout, **kwargs)
+        except Exception:
+            raise
         logger.log(NETWORK, "HTTP Status: %d %s", res.status_code, res.reason)
         if log_response_text or res.status_code != 200:
             logger.log(NETWORK, "HTTP Response Text: %s", res.text)
         return res
 
     def get(self, url, **kwargs):
-        return self._http_request(url, 'GET', **kwargs)
+        try:
+            return self._http_request(url, 'GET', **kwargs)
+        except Exception:
+            raise
 
     def post(self, url, **kwargs):
-        return self._http_request(url, 'POST', **kwargs)
+        try:
+            return self._http_request(url, 'POST', **kwargs)
+        except Exception:
+            raise
 
     def put(self, url, **kwargs):
-        return self._http_request(url, 'PUT', **kwargs)
+        try:
+            return self._http_request(url, 'PUT', **kwargs)
+        except Exception:
+            raise
 
     def patch(self, url, **kwargs):
-        return self._http_request(url, 'PATCH', **kwargs)
+        try:
+            return self._http_request(url, 'PATCH', **kwargs)
+        except Exception:
+            raise
 
     def delete(self, url, **kwargs):
-        return self._http_request(url, 'DELETE', **kwargs)
+        try:
+            return self._http_request(url, 'DELETE', **kwargs)
+        except Exception:
+            raise
 
     @property
     def user_agent(self):
@@ -852,7 +870,10 @@ class InsightsConnection(object):
         logger.debug("Uploading %s to %s", data_collected, upload_url)
 
         headers = {'x-rh-collection-time': str(duration)}
-        upload = self.post(upload_url, files=files, headers=headers)
+        try:
+            upload = self.post(upload_url, files=files, headers=headers)
+        except Exception:
+            raise
 
         if upload.status_code in (200, 201):
             the_json = json.loads(upload.text)
@@ -901,7 +922,10 @@ class InsightsConnection(object):
         }
         logger.debug('content-type: %s', content_type)
         logger.debug("Uploading %s to %s", data_collected, upload_url)
-        upload = self.post(upload_url, files=files, headers={})
+        try:
+            upload = self.post(upload_url, files=files, headers={})
+        except Exception:
+            raise
 
         logger.debug('Request ID: %s', upload.headers.get('x-rh-insights-request-id', None))
         if upload.status_code in (200, 202):
