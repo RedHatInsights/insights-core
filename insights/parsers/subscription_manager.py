@@ -38,9 +38,9 @@ class SubscriptionManagerFacts(CommandParser, dict):
     """
     def parse_content(self, content):
         for line in content:
-            if ':' not in line:
+            if ': ' not in line:
                 raise ParseException('Incorrect line: {0}'.format(line))
-            key, val = [_l.strip() for _l in line.split(':', 1)]
+            key, val = [_l.strip() for _l in line.split(': ', 1)]
             self[key] = val
 
         if len(self) == 0:
