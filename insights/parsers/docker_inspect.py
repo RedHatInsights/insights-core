@@ -12,6 +12,7 @@ from insights import parser, CommandParser
 from insights.core.marshalling import unmarshal
 from insights.parsers import SkipException
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 class DockerInspect(CommandParser, dict):
@@ -70,6 +71,10 @@ class DockerInspectImage(DockerInspect):
 @parser(Specs.docker_container_inspect)
 class DockerInspectContainer(DockerInspect):
     """
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.containers_inspect.ContainersInspect` instead.
+
     Parse docker container inspect output using the DockerInspect parser class.
 
     Sample input::
@@ -98,4 +103,10 @@ class DockerInspectContainer(DockerInspect):
         False
 
     """
-    pass
+    def __init__(self, *args, **kwargs):
+        deprecated(
+            DockerInspectContainer,
+            "Please use the :class:`insights.parsers.containers_inspect.ContainersInspect` instead.",
+            "3.0.300"
+        )
+        super(DockerInspectContainer, self).__init__(*args, **kwargs)
