@@ -1,5 +1,5 @@
 """
-Custom datasources for awx_manage information
+Custom datasources for containers inspect information
 """
 from insights.core.context import HostContext
 from insights.core.dr import SkipComponent
@@ -24,7 +24,7 @@ def running_rhel_containers_id(broker):
             podman_containers.append(container[2])
         else:
             docker_containers.append(container[2])
-
+    # If there are same items from "podman ps" and "docker ps", add the items into "podman" list, and ignore "docker".
     common_ids = list(set(podman_containers).intersection(docker_containers))
     new_dcoker_containers = [item for item in docker_containers if item not in common_ids]
     for item in podman_containers:
@@ -56,15 +56,18 @@ def containers_inspect_data_datasource(broker):
                 "Id": "aeaea3ead52724bb525bb2b5c619d67836250756920f0cb9884431ba53b476d8",
                 "Created": "2022-10-21T23:47:24.506159696-04:00",
                 "Path": "sleep"
+                ...
             }
             ...
         ]
+
     Returns:
         list: item is JSON string containing filtered information.
 
     Raises:
         SkipComponent: When the filter/path does not exist or any exception occurs.
     """
+
     def _find(d, tag, path):
         if tag in d:
             yield d[tag]
@@ -73,7 +76,6 @@ def containers_inspect_data_datasource(broker):
                 for i in _find(v, tag, path):
                     path.append(k)
                     yield i
-
     try:
         filters = get_filters(Specs.containers_inspect_vars)
         contents = []

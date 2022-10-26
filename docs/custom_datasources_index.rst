@@ -44,7 +44,7 @@ insights.specs.datasources.cloud_init
     :undoc-members:
 
 insights.specs.datasources.containers_inspect
-------------------------------------
+---------------------------------------------
 
 .. automodule:: insights.specs.datasources.containers_inspect
     :members: running_rhel_containers_id, containers_inspect_data_datasource
