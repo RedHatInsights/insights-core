@@ -79,6 +79,7 @@ from ..util import rsplit
 from .. import parser, get_active_lines, CommandParser
 from .rpm_vercmp import rpm_version_compare
 from insights.specs import Specs
+from insights import ContainerParser
 
 # This list of architectures is taken from PDC (Product Definition Center):
 # https://pdc.fedoraproject.org/rest_api/v1/arches/
@@ -628,3 +629,12 @@ class InstalledRpm(object):
 from_package = InstalledRpm.from_package
 Rpm = InstalledRpm
 Installed = InstalledRpms
+
+
+@parser(Specs.container_installed_rpms)
+class ContainerInstalledRpms(ContainerParser, InstalledRpms):
+    """
+    Parses the data for list of installed rpms of the running
+    containers which are based on RHEL images.
+    """
+    pass
