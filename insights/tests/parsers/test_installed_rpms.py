@@ -1,5 +1,5 @@
 import pytest
-from insights.parsers.installed_rpms import InstalledRpms, InstalledRpm, pad_version
+from insights.parsers.installed_rpms import InstalledRpms, InstalledRpm, pad_version, ContainerInstalledRpms
 from insights.tests import context_wrap
 
 
@@ -539,3 +539,41 @@ def test_vmaas():
     assert isinstance(rpm, InstalledRpm)
     assert rpm.version == "5.2.2"
     assert rpm.release == "1.el7"
+
+
+def test_container_installed_rpms():
+    rpms = ContainerInstalledRpms(
+        context_wrap(
+            RPMS_PACKAGE,
+            container_id='39310f3ccc12',
+            image='registry.access.redhat.com/rhel9',
+            engine='podman',
+            path='insights_containers/39310f3ccc12/insights_commands/rpm_-qa_--qf_name_NAME_epoch_EPOCH_version_VERSION_release_RELEASE_arch_ARCH_installtime_INSTALLTIME_date_buildtime_BUILDTIME_vendor_VENDOR_buildhost_BUILDHOST_sigpgp_SIGPGP_pgpsig'
+        )
+    )
+    assert rpms.image == "registry.access.redhat.com/rhel9"
+    assert rpms.engine == "podman"
+    assert rpms.container_id == "39310f3ccc12"
+    assert rpms.get_min('openldap').package == 'openldap-2.4.23-31.el6'
+    pkg_rpm = rpms.packages['openssh-server'][0]
+    rpm = InstalledRpm.from_package(pkg_rpm.package)
+    assert rpm.package == 'openssh-server-5.3p1-104.el6'
+    assert pkg_rpm.package == 'openssh-server-5.3p1-104.el6'
+    assert rpm == pkg_rpm
+    assert rpm.epoch == '0'
+
+    rpms_json = ContainerInstalledRpms(
+        context_wrap(
+            RPMS_JSON,
+            container_id='cc2883a1a369',
+            image='quay.io/rhel8',
+            engine='podman',
+            path='insights_containers/cc2883a1a369/insights_commands/rpm_-qa_--qf_name_NAME_epoch_EPOCH_version_VERSION_release_RELEASE_arch_ARCH_installtime_INSTALLTIME_date_buildtime_BUILDTIME_vendor_VENDOR_buildhost_BUILDHOST_sigpgp_SIGPGP_pgpsig'
+        )
+    )
+    assert rpms_json.image == "quay.io/rhel8"
+    assert rpms_json.engine == "podman"
+    assert rpms_json.container_id == "cc2883a1a369"
+    assert isinstance(rpms_json.get_max("log4j").source, InstalledRpm)
+    assert rpms_json.get_max("libteam").source.name == "libteam"
+    assert rpms_json.get_max("libteam").source.version == "1.17"

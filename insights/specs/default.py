@@ -16,7 +16,7 @@ from insights.core.spec_factory import RawFileProvider
 from insights.core.spec_factory import simple_file, simple_command, glob_file
 from insights.core.spec_factory import first_of, command_with_args
 from insights.core.spec_factory import foreach_collect, foreach_execute
-from insights.core.spec_factory import container_collect
+from insights.core.spec_factory import container_collect, container_execute
 from insights.core.spec_factory import first_file, listdir
 from insights.components.cloud_provider import IsAzure, IsGCP
 from insights.components.ceph import IsCephMonitor
@@ -678,3 +678,4 @@ class DefaultSpecs(Specs):
     # container_specs
     container_redhat_release = container_collect(running_rhel_containers, "/etc/redhat-release")
     container_nginx_conf = container_collect(container_nginx_conf_ds)
+    container_installed_rpms = container_execute(running_rhel_containers, "rpm -qa --qf '%s'" % rpm_format, context=HostContext, signum=signal.SIGTERM)
