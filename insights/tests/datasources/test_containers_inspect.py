@@ -908,7 +908,7 @@ CONTAINERS_ID_EXPECTED_RESULT = [
     ('docker', '538890e93bf71736e00a87c7a1fa33e5bb03a9a196e5b10faaa9e545e749aa54')
 ]
 
-EXPECTED_RESULT = [{'Id': 'aeaea3ead52724bb525bb2b5c619d67836250756920f0cb9884431ba53b476d8', 'Image': '538460c14d75dee1504e56ad8ddb7fe039093b1530ef8f90442a454b9aa3dc8b', 'engine': 'podman', 'HostConfig': {'Privileged': False}, 'Config': {'Annotations': {'io.podman.annotations.privileged': 'FALSE'}}}, {'Id': '28fb57be8bb204e652c472a406e0d99956c8d35d6e88abfc13253d101a00911e', 'Image': '538460c14d75dee1504e56ad8ddb7fe039093b1530ef8f90442a454b9aa3dc8b', 'engine': 'podman', 'HostConfig': {'Privileged': True}, 'Config': {'Annotations': {'io.podman.annotations.privileged': 'TRUE'}}}, {'Id': 'c7efee959ea8910d68eaa5038d3ebf62ae593bfe96757b456c06f16281394921', 'Image': 'sha256:acf3e09a39c95d354539b6591298be0b0814f5d74e95e722863241192b9a079b', 'engine': 'docker', 'HostConfig': {'Privileged': True}}]
+EXPECTED_RESULT = [{'Id': 'aeaea3ead52724bb525bb2b5c619d67836250756920f0cb9884431ba53b476d8', 'Image': '538460c14d75dee1504e56ad8ddb7fe039093b1530ef8f90442a454b9aa3dc8b', 'engine': 'podman', 'HostConfig': {'Privileged': False}}, {'Id': '28fb57be8bb204e652c472a406e0d99956c8d35d6e88abfc13253d101a00911e', 'Image': '538460c14d75dee1504e56ad8ddb7fe039093b1530ef8f90442a454b9aa3dc8b', 'engine': 'podman', 'HostConfig': {'Privileged': True}}, {'Id': 'c7efee959ea8910d68eaa5038d3ebf62ae593bfe96757b456c06f16281394921', 'Image': 'sha256:acf3e09a39c95d354539b6591298be0b0814f5d74e95e722863241192b9a079b', 'engine': 'docker', 'HostConfig': {'Privileged': True}}]
 
 
 def setup_function(func):
@@ -918,7 +918,7 @@ def setup_function(func):
         del filters.FILTERS[Specs.containers_inspect_vars]
 
     if func is test_containers_inspect_datasource or func is test_containers_inspect_datasource_NG_output_1 or func is test_containers_inspect_datasource_NG_output_2:
-        filters.add_filter(Specs.containers_inspect_vars, ["io.podman.annotations.privileged", "Privileged"])
+        filters.add_filter(Specs.containers_inspect_vars, ["Privileged"])
     if func is test_containers_inspect_datasource_no_filter:
         filters.add_filter(Specs.containers_inspect_vars, [])
 
