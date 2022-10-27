@@ -2,6 +2,16 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.300](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.300) (2022-10-27)
+
+- Avoid test to write in disk if machine-id is not found ([PR 3543](https://github.com/RedHatInsights/insights-core/pull/3543))
+- enhance and fix for softnet_data parser ([PR 3561](https://github.com/RedHatInsights/insights-core/pull/3561))
+- test: add test for existing container specs ([PR 3563](https://github.com/RedHatInsights/insights-core/pull/3563))
+- Order specs by alphabetical order ([PR 3564](https://github.com/RedHatInsights/insights-core/pull/3564))
+- feat: New Parser for container_installed_rpms ([PR 3560](https://github.com/RedHatInsights/insights-core/pull/3560))
+- Handle upload exceptions allowing --retries to work properly ([PR 3558](https://github.com/RedHatInsights/insights-core/pull/3558))
+- fix: let container_execute to support rpm_format of installed_rpms ([PR 3559](https://github.com/RedHatInsights/insights-core/pull/3559))
+
 ## [insights-core-3.0.299](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.299) (2022-10-20)
 
 - feat: New spec "semanage login -l" and parser ([PR 3548](https://github.com/RedHatInsights/insights-core/pull/3548))
