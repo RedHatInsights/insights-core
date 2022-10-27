@@ -17,20 +17,8 @@ def running_rhel_containers_id(broker):
     Returns a list of container_id of the running containers.
     """
     containers_info = []
-    docker_containers = []
-    podman_containers = []
     for container in broker[running_rhel_containers]:
-        if container[1] == "podman":
-            podman_containers.append(container[2])
-        else:
-            docker_containers.append(container[2])
-    # If there are same items from "podman ps" and "docker ps", add the items into "podman" list, and ignore "docker".
-    common_ids = list(set(podman_containers).intersection(docker_containers))
-    new_dcoker_containers = [item for item in docker_containers if item not in common_ids]
-    for item in podman_containers:
-        containers_info.append(("podman", item))
-    for item in new_dcoker_containers:
-        containers_info.append(("docker", item))
+        containers_info.append((container[1], container[2]))
     if containers_info:
         return containers_info
     raise SkipComponent

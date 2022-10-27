@@ -7,6 +7,7 @@ from insights.specs.datasources.container import running_rhel_containers
 from insights.specs import Specs
 from insights.core import filters
 from insights import dr
+import json
 
 
 DOCKER_INSPECT_1 = """
@@ -697,12 +698,6 @@ DOCKER_INSPECT_4 = """
 Error: error inspecting object: no such object: "testnoid"
 """.strip()
 
-
-EXPECTED_RESULT = """
-[{"Id": "aeaea3ead52724bb525bb2b5c619d67836250756920f0cb9884431ba53b476d8", "Image": "538460c14d75dee1504e56ad8ddb7fe039093b1530ef8f90442a454b9aa3dc8b", "ImageName": "registry.access.redhat.com/rhel:latest", "engine": "docker", "Config": {"Annotations": {"io.podman.annotations.privileged": "FALSE"}}}, {"Id": "28fb57be8bb204e652c472a406e0d99956c8d35d6e88abfc13253d101a00911e", "Image": "538460c14d75dee1504e56ad8ddb7fe039093b1530ef8f90442a454b9aa3dc8b", "ImageName": "registry.access.redhat.com/rhel:latest", "engine": "podman", "Config": {"Annotations": {"io.podman.annotations.privileged": "TRUE"}}}]
-""".strip()
-
-
 RELATIVE_PATH = 'insights_commands/containers_inspect'
 
 CONTAINERS_ID_EXPECTED_RESULT = [
@@ -712,6 +707,8 @@ CONTAINERS_ID_EXPECTED_RESULT = [
     ('docker', '38fb57be8bb204e652c472a406e0d99956c8d35d6e88abfc13253d101a00911e'),
     ('docker', '538890e93bf71736e00a87c7a1fa33e5bb03a9a196e5b10faaa9e545e749aa54')
 ]
+
+EXPECTED_RESULT = [{'Id': 'aeaea3ead52724bb525bb2b5c619d67836250756920f0cb9884431ba53b476d8', 'Image': '538460c14d75dee1504e56ad8ddb7fe039093b1530ef8f90442a454b9aa3dc8b', 'ImageName': 'registry.access.redhat.com/rhel:latest', 'engine': 'docker', 'Config': {'Annotations': {'io.podman.annotations.privileged': 'FALSE'}}}, {'Id': '28fb57be8bb204e652c472a406e0d99956c8d35d6e88abfc13253d101a00911e', 'Image': '538460c14d75dee1504e56ad8ddb7fe039093b1530ef8f90442a454b9aa3dc8b', 'ImageName': 'registry.access.redhat.com/rhel:latest', 'engine': 'podman', 'Config': {'Annotations': {'io.podman.annotations.privileged': 'TRUE'}}}]
 
 
 def setup_function(func):
@@ -732,7 +729,6 @@ def test_running_rhel_containers_id():
         ("registry.access.redhat.com/rhel", "podman", "aeaea3ead52724bb525bb2b5c619d67836250756920f0cb9884431ba53b476d8"),
         ("registry.access.redhat.com/rhel", "podman", "28fb57be8bb204e652c472a406e0d99956c8d35d6e88abfc13253d101a00911e"),
         ("registry.access.redhat.com/rhel", "podman", "528890e93bf71736e00a87c7a1fa33e5bb03a9a196e5b10faaa9e545e749aa54"),
-        ("registry.access.redhat.com/rhel", "docker", "aeaea3ead52724bb525bb2b5c619d67836250756920f0cb9884431ba53b476d8"),
         ("registry.access.redhat.com/rhel", "docker", "38fb57be8bb204e652c472a406e0d99956c8d35d6e88abfc13253d101a00911e"),
         ("registry.access.redhat.com/rhel", "docker", "538890e93bf71736e00a87c7a1fa33e5bb03a9a196e5b10faaa9e545e749aa54")
     ]
@@ -752,11 +748,9 @@ def test_containers_inspect_datasource():
     result = containers_inspect_data_datasource(broker)
     assert result is not None
     assert isinstance(result, DatasourceProvider)
-    print("505050505")
-    print(result.content[0])
-    print(EXPECTED_RESULT)
-    assert result.content[0] == EXPECTED_RESULT
-    assert result.relative_path == RELATIVE_PATH
+    expected = DatasourceProvider(content=json.dumps(EXPECTED_RESULT), relative_path=RELATIVE_PATH)
+    assert result.content[0] == expected.content[0]
+    assert result.relative_path == expected.relative_path
 
 
 def test_containers_inspect_datasource_no_filter():

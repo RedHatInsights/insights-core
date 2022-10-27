@@ -34,12 +34,12 @@ class ContainersInspect(CommandParser):
         data (list): A list containing the parsed information
 
     Examples:
-        >>> inspect_containers.data[0]["Id"]
-        u'aeaea3ead52724bb525bb2b5c619d67836250756920f0cb9884431ba53b476d8'
-        >>> inspect_containers.data[0]["engine"]
-        u'podman'
-        >>> inspect_containers.data[0]["Config"]["Annotations"]["io.podman.annotations.privileged"]
-        u'FALSE'
+        >>> str(inspect_containers.data[0]["Id"])
+        'aeaea3ead52724bb525bb2b5c619d67836250756920f0cb9884431ba53b476d8'
+        >>> str(inspect_containers.data[0]["engine"])
+        'podman'
+        >>> str(inspect_containers.data[0]["Config"]["Annotations"]["io.podman.annotations.privileged"])
+        'FALSE'
     """
 
     def parse_content(self, content):
