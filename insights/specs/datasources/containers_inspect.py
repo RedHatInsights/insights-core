@@ -78,7 +78,6 @@ def containers_inspect_data_datasource(broker):
                 filter_result = {}
                 filter_result['Id'] = raw_data['Id']
                 filter_result['Image'] = raw_data['Image']
-                filter_result['ImageName'] = raw_data['ImageName']
                 filter_result['engine'] = content[1]
                 for item in filters:
                     path = []

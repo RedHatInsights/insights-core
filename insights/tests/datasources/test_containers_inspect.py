@@ -10,7 +10,7 @@ from insights import dr
 import json
 
 
-DOCKER_INSPECT_1 = """
+INSPECT_1 = """
 [
     {
         "Id": "aeaea3ead52724bb525bb2b5c619d67836250756920f0cb9884431ba53b476d8",
@@ -321,7 +321,7 @@ DOCKER_INSPECT_1 = """
 ]
 """.strip()
 
-DOCKER_INSPECT_2 = """
+INSPECT_2 = """
 [
     {
         "Id": "28fb57be8bb204e652c472a406e0d99956c8d35d6e88abfc13253d101a00911e",
@@ -686,7 +686,207 @@ DOCKER_INSPECT_2 = """
 ]
 """.strip()
 
-DOCKER_INSPECT_3 = """
+INSPECT_3 = """
+[
+    {
+        "Id": "c7efee959ea8910d68eaa5038d3ebf62ae593bfe96757b456c06f16281394921",
+        "Created": "2022-10-27T02:53:02.989997608Z",
+        "Path": "sleep",
+        "Args": [
+            "1000000"
+        ],
+        "State": {
+            "Status": "running",
+            "Running": true,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 32688,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2022-10-27T02:53:03.380640461Z",
+            "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "Image": "sha256:acf3e09a39c95d354539b6591298be0b0814f5d74e95e722863241192b9a079b",
+        "ResolvConfPath": "/var/lib/docker/containers/c7efee959ea8910d68eaa5038d3ebf62ae593bfe96757b456c06f16281394921/resolv.conf",
+        "HostnamePath": "/var/lib/docker/containers/c7efee959ea8910d68eaa5038d3ebf62ae593bfe96757b456c06f16281394921/hostname",
+        "HostsPath": "/var/lib/docker/containers/c7efee959ea8910d68eaa5038d3ebf62ae593bfe96757b456c06f16281394921/hosts",
+        "LogPath": "",
+        "Name": "/quizzical_yalow",
+        "RestartCount": 0,
+        "Driver": "overlay2",
+        "MountLabel": "",
+        "ProcessLabel": "",
+        "AppArmorProfile": "",
+        "ExecIDs": null,
+        "HostConfig": {
+            "Binds": null,
+            "ContainerIDFile": "",
+            "LogConfig": {
+                "Type": "journald",
+                "Config": {}
+            },
+            "NetworkMode": "default",
+            "PortBindings": {},
+            "RestartPolicy": {
+                "Name": "no",
+                "MaximumRetryCount": 0
+            },
+            "AutoRemove": false,
+            "VolumeDriver": "",
+            "VolumesFrom": null,
+            "CapAdd": null,
+            "CapDrop": null,
+            "Dns": [],
+            "DnsOptions": [],
+            "DnsSearch": [],
+            "ExtraHosts": null,
+            "GroupAdd": null,
+            "IpcMode": "",
+            "Cgroup": "",
+            "Links": null,
+            "OomScoreAdj": 0,
+            "PidMode": "",
+            "Privileged": true,
+            "PublishAllPorts": false,
+            "ReadonlyRootfs": false,
+            "SecurityOpt": [
+                "label=disable"
+            ],
+            "UTSMode": "",
+            "UsernsMode": "",
+            "ShmSize": 67108864,
+            "Runtime": "docker-runc",
+            "ConsoleSize": [
+                0,
+                0
+            ],
+            "Isolation": "",
+            "CpuShares": 0,
+            "Memory": 0,
+            "NanoCpus": 0,
+            "CgroupParent": "",
+            "BlkioWeight": 0,
+            "BlkioWeightDevice": null,
+            "BlkioDeviceReadBps": null,
+            "BlkioDeviceWriteBps": null,
+            "BlkioDeviceReadIOps": null,
+            "BlkioDeviceWriteIOps": null,
+            "CpuPeriod": 0,
+            "CpuQuota": 0,
+            "CpuRealtimePeriod": 0,
+            "CpuRealtimeRuntime": 0,
+            "CpusetCpus": "",
+            "CpusetMems": "",
+            "Devices": [],
+            "DiskQuota": 0,
+            "KernelMemory": 0,
+            "MemoryReservation": 0,
+            "MemorySwap": 0,
+            "MemorySwappiness": -1,
+            "OomKillDisable": false,
+            "PidsLimit": 0,
+            "Ulimits": null,
+            "CpuCount": 0,
+            "CpuPercent": 0,
+            "IOMaximumIOps": 0,
+            "IOMaximumBandwidth": 0
+        },
+        "GraphDriver": {
+            "Name": "overlay2",
+            "Data": {
+                "LowerDir": "/var/lib/docker/overlay2/07b7d0c623c8ffe8951295328e3532f20f08e00922b77c7532c8e7afe0f05dc9-init/diff:/var/lib/docker/overlay2/64c2a13b1b7f27b198c9bb72cd61d766803d2d110646b536068e0021927f0682/diff:/var/lib/docker/overlay2/86b61c65ca8a7f18a48f15ee80e9d032adaee38835a0b0aceca8d02d50d78dd6/diff",
+                "MergedDir": "/var/lib/docker/overlay2/07b7d0c623c8ffe8951295328e3532f20f08e00922b77c7532c8e7afe0f05dc9/merged",
+                "UpperDir": "/var/lib/docker/overlay2/07b7d0c623c8ffe8951295328e3532f20f08e00922b77c7532c8e7afe0f05dc9/diff",
+                "WorkDir": "/var/lib/docker/overlay2/07b7d0c623c8ffe8951295328e3532f20f08e00922b77c7532c8e7afe0f05dc9/work"
+            }
+        },
+        "Mounts": [],
+        "Config": {
+            "Hostname": "c7efee959ea8",
+            "Domainname": "",
+            "User": "",
+            "AttachStdin": false,
+            "AttachStdout": true,
+            "AttachStderr": true,
+            "Tty": false,
+            "OpenStdin": false,
+            "StdinOnce": false,
+            "Env": [
+                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                "container=oci"
+            ],
+            "Cmd": [
+                "sleep",
+                "1000000"
+            ],
+            "Image": "acf3e09a39c9",
+            "Volumes": null,
+            "WorkingDir": "",
+            "Entrypoint": null,
+            "OnBuild": null,
+            "Labels": {
+                "architecture": "x86_64",
+                "build-date": "2022-05-12T23:59:24.895710",
+                "com.redhat.build-host": "cpt-1003.osbs.prod.upshift.rdu2.redhat.com",
+                "com.redhat.component": "rhel-server-container",
+                "com.redhat.license_terms": "https://www.redhat.com/agreements",
+                "description": "The Red Hat Enterprise Linux Base image is designed to be a fully supported foundation for your containerized applications. This base image provides your operations and application teams with the packages, language runtimes and tools necessary to run, maintain, and troubleshoot all of your applications. This image is maintained by Red Hat and updated regularly. It is designed and engineered to be the base layer for all of your containerized applications, middleware and utilities. When used as the source for all of your containers, only one copy will ever be downloaded and cached in your production environment. Use this image just like you would a regular Red Hat Enterprise Linux distribution. Tools like yum, gzip, and bash are provided by default. For further information on how this image was built look at the /root/anacanda-ks.cfg file.",
+                "distribution-scope": "public",
+                "io.k8s.description": "The Red Hat Enterprise Linux Base image is designed to be a fully supported foundation for your containerized applications. This base image provides your operations and application teams with the packages, language runtimes and tools necessary to run, maintain, and troubleshoot all of your applications. This image is maintained by Red Hat and updated regularly. It is designed and engineered to be the base layer for all of your containerized applications, middleware and utilities. When used as the source for all of your containers, only one copy will ever be downloaded and cached in your production environment. Use this image just like you would a regular Red Hat Enterprise Linux distribution. Tools like yum, gzip, and bash are provided by default. For further information on how this image was built look at the /root/anacanda-ks.cfg file.",
+                "io.k8s.display-name": "Red Hat Enterprise Linux 7",
+                "io.openshift.tags": "base rhel7",
+                "name": "rhel7",
+                "release": "702",
+                "summary": "Provides the latest release of Red Hat Enterprise Linux 7 in a fully featured and supported base image.",
+                "url": "https://access.redhat.com/containers/#/registry.access.redhat.com/rhel7/images/7.9-702",
+                "vcs-ref": "a4d1f0b8a9b923ca309da182943d17fe639d8c95",
+                "vcs-type": "git",
+                "vendor": "Red Hat, Inc.",
+                "version": "7.9"
+            }
+        },
+        "NetworkSettings": {
+            "Bridge": "",
+            "SandboxID": "0a9908c68f05eac23b6ed79dce9843b6dda2469e1021671d58d882938bffc7b6",
+            "HairpinMode": false,
+            "LinkLocalIPv6Address": "",
+            "LinkLocalIPv6PrefixLen": 0,
+            "Ports": {},
+            "SandboxKey": "/var/run/docker/netns/0a9908c68f05",
+            "SecondaryIPAddresses": null,
+            "SecondaryIPv6Addresses": null,
+            "EndpointID": "49f752615a815c97996215e72378d7e049036eef44149e96ae26e9049641d4c1",
+            "Gateway": "172.17.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "IPAddress": "172.17.0.3",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "MacAddress": "02:42:ac:11:00:03",
+            "Networks": {
+                "bridge": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": null,
+                    "NetworkID": "3c2f5c9a9a9c21994ddaee6252842b8a9fb45c24d6dabf00ee36ffb12b70f0b7",
+                    "EndpointID": "49f752615a815c97996215e72378d7e049036eef44149e96ae26e9049641d4c1",
+                    "Gateway": "172.17.0.1",
+                    "IPAddress": "172.17.0.3",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "MacAddress": "02:42:ac:11:00:03"
+                }
+            }
+        }
+    }
+]
+""".strip()
+
+INSPECT_4 = """
 [
     {
         "Id": "aeaea3ead52724bb525bb2b5c619d67836250756920f0cb9884431ba53b476d8"
@@ -694,7 +894,7 @@ DOCKER_INSPECT_3 = """
 ]
 """.strip()
 
-DOCKER_INSPECT_4 = """
+INSPECT_5 = """
 Error: error inspecting object: no such object: "testnoid"
 """.strip()
 
@@ -708,7 +908,7 @@ CONTAINERS_ID_EXPECTED_RESULT = [
     ('docker', '538890e93bf71736e00a87c7a1fa33e5bb03a9a196e5b10faaa9e545e749aa54')
 ]
 
-EXPECTED_RESULT = [{'Id': 'aeaea3ead52724bb525bb2b5c619d67836250756920f0cb9884431ba53b476d8', 'Image': '538460c14d75dee1504e56ad8ddb7fe039093b1530ef8f90442a454b9aa3dc8b', 'ImageName': 'registry.access.redhat.com/rhel:latest', 'engine': 'docker', 'Config': {'Annotations': {'io.podman.annotations.privileged': 'FALSE'}}}, {'Id': '28fb57be8bb204e652c472a406e0d99956c8d35d6e88abfc13253d101a00911e', 'Image': '538460c14d75dee1504e56ad8ddb7fe039093b1530ef8f90442a454b9aa3dc8b', 'ImageName': 'registry.access.redhat.com/rhel:latest', 'engine': 'podman', 'Config': {'Annotations': {'io.podman.annotations.privileged': 'TRUE'}}}]
+EXPECTED_RESULT = [{'Id': 'aeaea3ead52724bb525bb2b5c619d67836250756920f0cb9884431ba53b476d8', 'Image': '538460c14d75dee1504e56ad8ddb7fe039093b1530ef8f90442a454b9aa3dc8b', 'engine': 'podman', 'HostConfig': {'Privileged': False}, 'Config': {'Annotations': {'io.podman.annotations.privileged': 'FALSE'}}}, {'Id': '28fb57be8bb204e652c472a406e0d99956c8d35d6e88abfc13253d101a00911e', 'Image': '538460c14d75dee1504e56ad8ddb7fe039093b1530ef8f90442a454b9aa3dc8b', 'engine': 'podman', 'HostConfig': {'Privileged': True}, 'Config': {'Annotations': {'io.podman.annotations.privileged': 'TRUE'}}}, {'Id': 'c7efee959ea8910d68eaa5038d3ebf62ae593bfe96757b456c06f16281394921', 'Image': 'sha256:acf3e09a39c95d354539b6591298be0b0814f5d74e95e722863241192b9a079b', 'engine': 'docker', 'HostConfig': {'Privileged': True}}]
 
 
 def setup_function(func):
@@ -718,7 +918,7 @@ def setup_function(func):
         del filters.FILTERS[Specs.containers_inspect_vars]
 
     if func is test_containers_inspect_datasource or func is test_containers_inspect_datasource_NG_output_1 or func is test_containers_inspect_datasource_NG_output_2:
-        filters.add_filter(Specs.containers_inspect_vars, ["io.podman.annotations.privileged"])
+        filters.add_filter(Specs.containers_inspect_vars, ["io.podman.annotations.privileged", "Privileged"])
     if func is test_containers_inspect_datasource_no_filter:
         filters.add_filter(Specs.containers_inspect_vars, [])
 
@@ -740,11 +940,14 @@ def test_running_rhel_containers_id():
 def test_containers_inspect_datasource():
     containers_inspect_data_1 = Mock()
     containers_inspect_data_2 = Mock()
-    containers_inspect_data_1.content = DOCKER_INSPECT_1.splitlines()
-    containers_inspect_data_1.cmd = "/usr/bin/docker inspect aeaea3ead527"
-    containers_inspect_data_2.content = DOCKER_INSPECT_2.splitlines()
+    containers_inspect_data_3 = Mock()
+    containers_inspect_data_1.content = INSPECT_1.splitlines()
+    containers_inspect_data_1.cmd = "/usr/bin/podman inspect aeaea3ead527"
+    containers_inspect_data_2.content = INSPECT_2.splitlines()
     containers_inspect_data_2.cmd = "/usr/bin/podman inspect 28fb57be8bb2"
-    broker = {LocalSpecs.containers_inspect_data_raw: [containers_inspect_data_1, containers_inspect_data_2]}
+    containers_inspect_data_3.content = INSPECT_3.splitlines()
+    containers_inspect_data_3.cmd = "/usr/bin/docker inspect c7efee959ea8"
+    broker = {LocalSpecs.containers_inspect_data_raw: [containers_inspect_data_1, containers_inspect_data_2, containers_inspect_data_3]}
     result = containers_inspect_data_datasource(broker)
     assert result is not None
     assert isinstance(result, DatasourceProvider)
@@ -756,9 +959,9 @@ def test_containers_inspect_datasource():
 def test_containers_inspect_datasource_no_filter():
     containers_inspect_data_1 = Mock()
     containers_inspect_data_2 = Mock()
-    containers_inspect_data_1.content = DOCKER_INSPECT_1.splitlines()
+    containers_inspect_data_1.content = INSPECT_1.splitlines()
     containers_inspect_data_1.cmd = "/usr/bin/docker inspect aeaea3ead527"
-    containers_inspect_data_2.content = DOCKER_INSPECT_2.splitlines()
+    containers_inspect_data_2.content = INSPECT_2.splitlines()
     containers_inspect_data_2.cmd = "/usr/bin/podman inspect 28fb57be8bb2"
     broker = {LocalSpecs.containers_inspect_data_raw: [containers_inspect_data_1, containers_inspect_data_2]}
     with pytest.raises(SkipComponent) as e:
@@ -768,7 +971,7 @@ def test_containers_inspect_datasource_no_filter():
 
 def test_containers_inspect_datasource_NG_output_1():
     containers_inspect_data_3 = Mock()
-    containers_inspect_data_3.content = DOCKER_INSPECT_3.splitlines()
+    containers_inspect_data_3.content = INSPECT_4.splitlines()
     containers_inspect_data_3.cmd = "/usr/bin/podman inspect 28fb57be8bb2"
     broker = {LocalSpecs.containers_inspect_data_raw: [containers_inspect_data_3]}
     with pytest.raises(SkipComponent) as e:
@@ -778,7 +981,7 @@ def test_containers_inspect_datasource_NG_output_1():
 
 def test_containers_inspect_datasource_NG_output_2():
     containers_inspect_data_4 = Mock()
-    containers_inspect_data_4.content = DOCKER_INSPECT_4.splitlines()
+    containers_inspect_data_4.content = INSPECT_5.splitlines()
     containers_inspect_data_4.cmd = "/usr/bin/docker inspect aeaea3ead527"
     broker = {LocalSpecs.containers_inspect_data_raw: [containers_inspect_data_4]}
     with pytest.raises(SkipComponent) as e:
