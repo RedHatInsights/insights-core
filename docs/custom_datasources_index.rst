@@ -99,6 +99,14 @@ insights.specs.datasources.ipcs
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.kdump_initramfs_image
+-------------------------------
+
+.. automodule:: insights.specs.datasources.kdump_initramfs_image
+    :members: kdump_image
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.kernel_module_list
 ---------------------------------------------
 
