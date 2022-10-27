@@ -100,7 +100,7 @@ insights.specs.datasources.ipcs
     :undoc-members:
 
 insights.specs.datasources.kdump_initramfs_image
--------------------------------
+------------------------------------------------
 
 .. automodule:: insights.specs.datasources.kdump_initramfs_image
     :members: kdump_image
