@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.299
+Version:        3.0.300
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,18 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Oct 27 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.300-1
+- Avoid test to write in disk if machine-id is not found (#3543)
+  (93577878+ahitacat@users.noreply.github.com)
+- enhance and fix for softnet_data parser (#3561) (remijouannet@gmail.com)
+- test: add test for existing container specs (#3563) (xiangceliu@redhat.com)
+- Order specs by alphabetical order (#3564) (rblakley@redhat.com)
+- feat: New Parser for container_installed_rpms (#3560) (986222045@qq.com)
+- Handle upload exceptions allowing --retries to work properly (#3558)
+  (mhuth@redhat.com)
+- fix: let container_execute to support rpm_format of installed_rpms (#3559)
+  (xiangceliu@redhat.com)
+
 * Thu Oct 20 2022 Sachin Patil <psachin@redhat.com> 3.0.299-1
 - feat: New spec "semanage login -l" and parser (#3548) (44796653+huali027@users.noreply.github.com)
 - [New-parser] parser_mpirun_version (#3542) (87797511+mohitkumarrh@users.noreply.github.com)
