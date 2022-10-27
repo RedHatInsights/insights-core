@@ -24,9 +24,8 @@ class ContainersInspect(CommandParser):
             {
                 "Id": "aeaea3ead52724bb525bb2b5c619d67836250756920f0cb9884431ba53b476d8",
                 "Image": "538460c14d75dee1504e56ad8ddb7fe039093b1530ef8f90442a454b9aa3dc8b",
-                "ImageName": "registry.access.redhat.com/rhel:latest",
                 "engine": "podman",
-                "Config": {"Annotations": {"io.podman.annotations.privileged": "FALSE"}}
+                "HostConfig": {"Privileged": false}}
             }
         ]
 
@@ -38,8 +37,8 @@ class ContainersInspect(CommandParser):
         'aeaea3ead52724bb525bb2b5c619d67836250756920f0cb9884431ba53b476d8'
         >>> str(inspect_containers.data[0]["engine"])
         'podman'
-        >>> str(inspect_containers.data[0]["Config"]["Annotations"]["io.podman.annotations.privileged"])
-        'FALSE'
+        >>> inspect_containers.data[0]["HostConfig"]["Privileged"]
+        False
     """
 
     def parse_content(self, content):
