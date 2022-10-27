@@ -35,11 +35,11 @@ class ContainersInspect(CommandParser):
 
     Examples:
         >>> inspect_containers.data[0]["Id"]
-        'aeaea3ead52724bb525bb2b5c619d67836250756920f0cb9884431ba53b476d8'
+        u'aeaea3ead52724bb525bb2b5c619d67836250756920f0cb9884431ba53b476d8'
         >>> inspect_containers.data[0]["engine"]
-        'podman'
+        u'podman'
         >>> inspect_containers.data[0]["Config"]["Annotations"]["io.podman.annotations.privileged"]
-        'FALSE'
+        u'FALSE'
     """
 
     def parse_content(self, content):

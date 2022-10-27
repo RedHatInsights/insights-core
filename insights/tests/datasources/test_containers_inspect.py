@@ -752,6 +752,9 @@ def test_containers_inspect_datasource():
     result = containers_inspect_data_datasource(broker)
     assert result is not None
     assert isinstance(result, DatasourceProvider)
+    print("505050505")
+    print(result.content[0])
+    print(EXPECTED_RESULT)
     assert result.content[0] == EXPECTED_RESULT
     assert result.relative_path == RELATIVE_PATH
 
