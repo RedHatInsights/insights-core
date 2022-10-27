@@ -77,7 +77,7 @@ def containers_inspect_data_datasource(broker):
                 raw_data = json.loads(content_raw)[0]
                 filter_result = {}
                 filter_result['Id'] = raw_data['Id']
-                filter_result['Image'] = raw_data['Image']
+                filter_result['Image'] = raw_data['Image'].split("sha256:")[-1]
                 filter_result['engine'] = content[1]
                 for item in filters:
                     path = []
