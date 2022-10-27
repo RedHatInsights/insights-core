@@ -147,7 +147,7 @@ plugins:
     # needed for the 'teamdctl_state_dump' spec
         - name: insights.parsers.nmcli.NmcliConnShow
           enabled: true
-    
+
     # needed for the 'lsinitrd_kdump_image' spec
         - name: insights.parsers.ls_boot.LsBoot
           enabled: true
