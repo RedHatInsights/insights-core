@@ -232,4 +232,3 @@ def test_lsinitrd_docs():
                'lsinitrd_kdump_image': LsinitrdKdumpImage(context_wrap(LSINITRD_KDUMP_IMAGE_VALID_EXAMPLE))}
     )
     assert failed_count == 0
-
