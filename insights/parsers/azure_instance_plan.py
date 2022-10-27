@@ -14,11 +14,16 @@ import json
 from insights.parsers import SkipException, ParseException
 from insights import parser, CommandParser
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.azure_instance_plan)
 class AzureInstancePlan(CommandParser):
     """
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.azure_instance.AzureInstancePlan` instead.
+
     Class for parsing the Azure Instance Plan returned by command
     ``curl -s -H Metadata:true http://169.254.169.254/metadata/instance/compute/plan?api-version=2018-10-01&format=json``,
 
@@ -48,6 +53,9 @@ class AzureInstancePlan(CommandParser):
         >>> azure_plan.publisher == 'planPublisher'
         True
     """
+    def __init__(self, *args, **kwargs):
+        deprecated(AzureInstancePlan, "Import AzureInstancePlan from insights.parsers.azure_instance instead", "3.2.25")
+        super(AzureInstancePlan, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
         if not content or 'curl: ' in content[0]:
