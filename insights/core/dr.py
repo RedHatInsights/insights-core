@@ -85,7 +85,7 @@ HIDDEN = set()
 IGNORE = defaultdict(set)
 ENABLED = defaultdict(lambda: True)
 
-DEFAULT_TIMEOUT = 120
+DEFAULT_DS_TIMEOUT = 120
 
 
 def set_enabled(component, enabled=True):

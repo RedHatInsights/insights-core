@@ -5,10 +5,8 @@ Custom datasources to get a list of directories to check disk size.
 from insights.core.context import HostContext
 from insights.core.dr import SkipComponent
 from insights.core.plugins import datasource
-from insights.core.filters import get_filters, add_filter
+from insights.core.filters import get_filters
 from insights.specs import Specs
-
-add_filter(Specs.du_dirs, ['/', '/opt', '/home/liuxc'])
 
 
 @datasource(HostContext, timeout=2)
