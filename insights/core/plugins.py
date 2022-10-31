@@ -106,7 +106,7 @@ class datasource(PluginType):
             return queue.full() and not queue.empty()
 
         try:
-            sec = getattr(self, 'timeout', dr.DEFAULT_TIMEOUT)
+            sec = getattr(self, 'timeout', dr.DEFAULT_DS_TIMEOUT)
             if sec:
                 queue = multiprocessing.Queue(1)
                 process = multiprocessing.Process(target=_target,
