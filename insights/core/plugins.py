@@ -26,8 +26,11 @@ may return:
 """
 from __future__ import print_function
 
+import sys
+import time
 import logging
 import traceback
+import multiprocessing
 
 from pprint import pformat
 from six import StringIO
@@ -86,8 +89,48 @@ class datasource(PluginType):
     filterable = False
 
     def invoke(self, broker):
+        def _target(queue, function, broker):
+            try:
+                queue.put((True, function(broker)))
+            except:
+                queue.put((False, sys.exc_info()[1]))
+
+        def _cancel(process, msg):
+            if process.is_alive():
+                process.terminate()
+            raise dr.TimeoutException(msg)
+
+        def _ready(timeout, queue, process, msg):
+            if timeout < time.time():
+                _cancel(process, msg)
+            return queue.full() and not queue.empty()
+
         try:
+            sec = getattr(self, 'timeout', dr.DEFAULT_TIMEOUT)
+            if sec:
+                queue = multiprocessing.Queue(1)
+                process = multiprocessing.Process(target=_target,
+                                                  args=(queue, self.component, broker))
+
+                process.daemon = True
+                process.start()
+                timeout = sec + time.time()
+                msg = getattr(self, 'message', None)
+
+                while not _ready(timeout, queue, process, msg):
+                    time.sleep(0.01)
+
+                if _ready(timeout, queue, process, msg) is True:
+                    flag, load = queue.get()
+                    if flag:
+                        return load
+                    raise load
             return self.component(broker)
+
+        except dr.TimeoutException as te:
+            log.debug(te)
+            broker.add_exception(self.component, te, traceback.format_exc())
+            raise dr.SkipComponent()
         except ContentException as ce:
             log.debug(ce)
             broker.add_exception(self.component, ce, traceback.format_exc())
