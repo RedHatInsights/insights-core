@@ -11,6 +11,7 @@ from insights.core.plugins import datasource
 from insights.parsers.ros_config import RosConfig
 from insights.combiners.ps import Ps
 from insights.combiners.services import Services
+from insights.specs.datasources import DEFAULT_DS_TIMEOUT
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +30,7 @@ def pcp_enabled(broker):
     return True
 
 
-@datasource(Ps, RosConfig, HostContext)
+@datasource(Ps, RosConfig, HostContext, timeout=DEFAULT_DS_TIMEOUT)
 def pmlog_summary_args(broker):
     """
     Determines the pmlogger file and the metrics to collect via `pmlog_summary`

@@ -9,6 +9,7 @@ from insights.core.plugins import datasource
 from insights.core.filters import get_filters
 from insights.core.spec_factory import DatasourceProvider, simple_file
 from insights.specs import Specs
+from insights.specs.datasources import DEFAULT_DS_TIMEOUT
 
 
 class LocalSpecs(Specs):
@@ -18,7 +19,7 @@ class LocalSpecs(Specs):
     """ Returns the contents of the file ``/etc/cloud/cloud.cfg`` """
 
 
-@datasource(LocalSpecs.cloud_cfg_input, HostContext)
+@datasource(LocalSpecs.cloud_cfg_input, HostContext, timeout=DEFAULT_DS_TIMEOUT)
 def cloud_cfg(broker):
     """
     This datasource provides configuration of ``/etc/cloud/cloud.cfg`` file.

@@ -4,11 +4,12 @@ Custom datasources to get the semid of all the inter-processes.
 
 from insights.core.context import HostContext
 from insights.core.plugins import datasource
-from insights.specs import Specs
 from insights.core.dr import SkipComponent
+from insights.specs import Specs
+from insights.specs.datasources import DEFAULT_DS_TIMEOUT
 
 
-@datasource(Specs.ipcs_s, HostContext)
+@datasource(Specs.ipcs_s, HostContext, timeout=DEFAULT_DS_TIMEOUT)
 def semid(broker):
     """
     This datasource provides a list of the semid of all the inter-processes.

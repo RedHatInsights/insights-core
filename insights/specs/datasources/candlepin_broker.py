@@ -1,13 +1,14 @@
 """
 Custom datasources for candlepin broker.xml
 """
+from insights.core import ET
 from insights.core.context import HostContext
 from insights.core.dr import SkipComponent
 from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider, simple_file
 from insights.specs import Specs
+from insights.specs.datasources import DEFAULT_DS_TIMEOUT
 from insights.components.satellite import IsSatellite
-from insights.core import ET
 
 
 class LocalSpecs(Specs):
@@ -17,7 +18,8 @@ class LocalSpecs(Specs):
     """ Returns the contents of the file ``/etc/candlepin/broker.xml`` """
 
 
-@datasource(LocalSpecs.candlepin_broker_input, HostContext, IsSatellite)
+@datasource(LocalSpecs.candlepin_broker_input, HostContext, IsSatellite,
+            timeout=DEFAULT_DS_TIMEOUT)
 def candlepin_broker(broker):
     """
     This datasource provides the candlepn broker configuration information

@@ -6,6 +6,7 @@ from insights.core.dr import SkipComponent
 from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider, simple_command
 from insights.specs import Specs
+from insights.specs.datasources import DEFAULT_DS_TIMEOUT
 
 
 class LocalSpecs(Specs):
@@ -15,7 +16,8 @@ class LocalSpecs(Specs):
     """ Returns the output of command ``/usr/bin/find /sys/fs/cgroup/memory -name 'tasks'`` """
 
 
-@datasource(LocalSpecs.sys_fs_cgroup_memory_tasks_raw, HostContext)
+@datasource(LocalSpecs.sys_fs_cgroup_memory_tasks_raw, HostContext,
+            timeout=DEFAULT_DS_TIMEOUT)
 def sys_fs_cgroup_memory_tasks_number_data_datasource(broker):
     """
     This datasource provides the numeber of "tasks" file collected

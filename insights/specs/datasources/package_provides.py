@@ -11,8 +11,9 @@ from insights.core.filters import get_filters
 from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider
 from insights.specs import Specs
-
-from . import get_running_commands, DEFAULT_SHELL_TIMEOUT
+from insights.specs.datasources import (DEFAULT_DS_TIMEOUT,
+                                        DEFAULT_SHELL_TIMEOUT,
+                                        get_running_commands)
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +46,7 @@ def get_package(ctx, file_path):
             return pkg[0]
 
 
-@datasource(Ps, HostContext)
+@datasource(Ps, HostContext, timeout=DEFAULT_DS_TIMEOUT)
 def cmd_and_pkg(broker):
     """
     Collect a list of running commands and the associated RPM package providing those commands.

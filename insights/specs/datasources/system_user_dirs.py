@@ -11,6 +11,7 @@ from insights.core.dr import SkipComponent
 from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider, simple_command
 from insights.specs import Specs
+from insights.specs.datasources import DEFAULT_DS_TIMEOUT
 
 
 class LocalSpecs(Specs):
@@ -67,7 +68,7 @@ def get_groups(users):
     return groups
 
 
-@datasource(LocalSpecs.rpm_args, HostContext)
+@datasource(LocalSpecs.rpm_args, HostContext, timeout=DEFAULT_DS_TIMEOUT)
 def system_user_dirs(broker):
     r"""
     Custom datasource for CVE-2021-35937, CVE-2021-35938, and CVE-2021-35939.

@@ -8,9 +8,10 @@ from insights.core.context import HostContext
 from insights.core.dr import SkipComponent
 from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider, simple_command
+from insights.core.filters import get_filters
 from insights.specs import Specs
 from insights.parsers import parse_fixed_table
-from insights.core.filters import get_filters
+from insights.specs.datasources import DEFAULT_DS_TIMEOUT
 
 
 class LocalSpecs(Specs):
@@ -19,7 +20,7 @@ class LocalSpecs(Specs):
     selinux_user_mapping = simple_command("/sbin/semanage login -l")
 
 
-@datasource(LocalSpecs.selinux_user_mapping, HostContext)
+@datasource(LocalSpecs.selinux_user_mapping, HostContext, timeout=DEFAULT_DS_TIMEOUT)
 def users_count_map_selinux_user(broker):
     """
     Get linux users count who map to the selinux user. It returns a dict with

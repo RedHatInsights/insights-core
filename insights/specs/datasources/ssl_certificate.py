@@ -8,9 +8,10 @@ from insights.parsers.mssql_conf import MsSQLConf
 from insights.core.context import HostContext
 from insights.core.dr import SkipComponent
 from insights.core.plugins import datasource
+from insights.specs.datasources import DEFAULT_DS_TIMEOUT
 
 
-@datasource(HttpdConfTree, HostContext)
+@datasource(HttpdConfTree, HostContext, timeout=DEFAULT_DS_TIMEOUT)
 def httpd_certificate_info_in_nss(broker):
     """
     Get the certificate info configured in nss database

@@ -7,7 +7,7 @@ from insights.core.dr import SkipComponent
 from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider
 from insights.combiners.sap import Sap
-from insights.specs.datasources import DEFAULT_SHELL_TIMEOUT
+from insights.specs.datasources import DEFAULT_SHELL_TIMEOUT, DEFAULT_DS_TIMEOUT
 
 
 class LocalSpecs(Specs):
@@ -33,7 +33,7 @@ class LocalSpecs(Specs):
         raise SkipComponent()
 
 
-@datasource(LocalSpecs.sap_instance, HostContext)
+@datasource(LocalSpecs.sap_instance, HostContext, timeout=DEFAULT_DS_TIMEOUT)
 def sap_sid(broker):
     """
     list: List of the SID of all the SAP Instances.
@@ -42,7 +42,7 @@ def sap_sid(broker):
     return sorted(set(h.sid.lower() for h in sap))
 
 
-@datasource(LocalSpecs.sap_hana_instance, HostContext)
+@datasource(LocalSpecs.sap_hana_instance, HostContext, timeout=DEFAULT_DS_TIMEOUT)
 def sap_hana_sid(broker):
     """
     list: List of the SID of SAP HANA Instances.  """
@@ -53,7 +53,7 @@ def sap_hana_sid(broker):
     raise SkipComponent()
 
 
-@datasource(LocalSpecs.sap_hana_instance, HostContext)
+@datasource(LocalSpecs.sap_hana_instance, HostContext, timeout=DEFAULT_DS_TIMEOUT)
 def sap_hana_sid_SID_nr(broker):
     """
     list: List of tuples (sid, SID, Nr) of SAP HANA Instances.
@@ -65,7 +65,7 @@ def sap_hana_sid_SID_nr(broker):
     raise SkipComponent()
 
 
-@datasource(sap_sid, HostContext)
+@datasource(sap_sid, HostContext, timeout=DEFAULT_DS_TIMEOUT)
 def ld_library_path_of_user(broker):
     """
     list: The list of "Username LD_LIBRARY_PATH", e.g.::

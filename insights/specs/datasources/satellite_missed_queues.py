@@ -4,9 +4,10 @@ from insights.core.context import HostContext
 from insights.core.dr import SkipComponent
 from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider, simple_command
+from insights.core.filters import add_filter
 from insights.combiners.satellite_version import SatelliteVersion
 from insights.specs import Specs
-from insights.core.filters import add_filter
+from insights.specs.datasources import DEFAULT_DS_TIMEOUT
 
 
 NODE_NOT_FOUND_ERROR = 'error Error on attach: Node not found'
@@ -26,7 +27,12 @@ class LocalSpecs(Specs):
     )
 
 
-@datasource(LocalSpecs.content_host_uuids, LocalSpecs.qpid_queues, Specs.messages, HostContext, SatelliteVersion)
+@datasource(LocalSpecs.content_host_uuids,
+            LocalSpecs.qpid_queues,
+            Specs.messages,
+            HostContext,
+            SatelliteVersion,
+            timeout=DEFAULT_DS_TIMEOUT)
 def satellite_missed_pulp_agent_queues(broker):
     """
     This datasource provides the missed pulp agent queues information on satellite server.

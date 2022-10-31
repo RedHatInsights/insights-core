@@ -4,10 +4,11 @@ Custom datasource for collecting yum updates
 import json
 import time
 
+from distutils.version import LooseVersion as version
 from insights import datasource, HostContext, SkipComponent
 from insights.components.rhel_version import IsRhel7, IsRhel8, IsRhel9
 from insights.core.spec_factory import DatasourceProvider
-from distutils.version import LooseVersion as version
+from insights.specs.datasources import DEFAULT_DS_TIMEOUT
 
 try:
     from functools import cmp_to_key
@@ -179,7 +180,7 @@ except ImportError:
         UpdatesManager = None
 
 
-@datasource(HostContext, [IsRhel7, IsRhel8, IsRhel9])
+@datasource(HostContext, [IsRhel7, IsRhel8, IsRhel9], timeout=DEFAULT_DS_TIMEOUT)
 def yum_updates(_broker):
     """
     This datasource provides a list of available updates on the system.

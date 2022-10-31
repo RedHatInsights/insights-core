@@ -1,14 +1,15 @@
 """
 Custom datasources for awx_manage information
 """
+import json
+import collections
 from insights.core.context import HostContext
 from insights.core.dr import SkipComponent
 from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider, simple_command
 from insights.core.filters import get_filters
 from insights.specs import Specs
-import json
-import collections
+from insights.specs.datasources import DEFAULT_DS_TIMEOUT
 
 
 class LocalSpecs(Specs):
@@ -18,7 +19,8 @@ class LocalSpecs(Specs):
     """ Returns the output of command ``/usr/bin/awx-manage check_license --data`` """
 
 
-@datasource(LocalSpecs.awx_manage_check_license_data_raw, HostContext)
+@datasource(LocalSpecs.awx_manage_check_license_data_raw, HostContext,
+            timeout=DEFAULT_DS_TIMEOUT)
 def awx_manage_check_license_data_datasource(broker):
     """
     This datasource provides the not-sensitive information collected

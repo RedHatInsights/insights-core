@@ -6,6 +6,7 @@ from insights.core.dr import SkipComponent
 from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider, simple_command
 from insights.specs import Specs
+from insights.specs.datasources import DEFAULT_DS_TIMEOUT
 
 
 class LocalSpecs(Specs):
@@ -15,7 +16,7 @@ class LocalSpecs(Specs):
     """ Returns ps output including pid and full args """
 
 
-@datasource(LocalSpecs.ps_eo_args, HostContext)
+@datasource(LocalSpecs.ps_eo_args, HostContext, timeout=DEFAULT_DS_TIMEOUT)
 def ps_eo_cmd(broker):
     """
     Custom datasource to collect the full paths to all running commands on the system

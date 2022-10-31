@@ -1,17 +1,18 @@
 """
 Custom datasource for gathering a list of encrypted LUKS block devices and their properties.
 """
-from insights.components.cryptsetup import HasCryptsetupWithTokens, HasCryptsetupWithoutTokens
+import re
 from insights.core.context import HostContext
 from insights.core.dr import SkipComponent
 from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider, foreach_execute
+from insights.components.cryptsetup import HasCryptsetupWithTokens, HasCryptsetupWithoutTokens
 from insights.parsers.blkid import BlockIDInfo
 from insights.specs import Specs
-import re
+from insights.specs.datasources import DEFAULT_DS_TIMEOUT
 
 
-@datasource(BlockIDInfo, HostContext)
+@datasource(BlockIDInfo, HostContext, timeout=DEFAULT_DS_TIMEOUT)
 def luks_block_devices(broker):
     """
     This datasource provides a list of LUKS encrypted device.
@@ -86,7 +87,12 @@ def filter_token_lines(lines):
     return [i for j, i in enumerate(lines) if j not in remove_indices]
 
 
-@datasource(HostContext, [LocalSpecs.cryptsetup_luks_dump_token_commands, LocalSpecs.cryptsetup_luks_dump_commands])
+@datasource(HostContext,
+            [
+                LocalSpecs.cryptsetup_luks_dump_token_commands,
+                LocalSpecs.cryptsetup_luks_dump_commands
+            ],
+            timeout=DEFAULT_DS_TIMEOUT)
 def luks_data_sources(broker):
     """
     This datasource provides the output of 'cryptsetup luksDump' command for

@@ -5,13 +5,13 @@ import json
 from insights.core.context import HostContext
 from insights.core.dr import SkipComponent
 from insights.core.plugins import datasource
+from insights.core.spec_factory import DatasourceProvider
 from insights.parsers.mount import ProcMounts
 from insights.combiners.ps import Ps
-from insights.specs.datasources import get_running_commands
-from insights.core.spec_factory import DatasourceProvider
+from insights.specs.datasources import get_running_commands, DEFAULT_DS_TIMEOUT
 
 
-@datasource(Ps, HostContext)
+@datasource(Ps, HostContext, timeout=DEFAULT_DS_TIMEOUT)
 def httpd_cmds(broker):
     """
     Function to search the output of ``ps auxcww`` to find all running Apache
@@ -26,7 +26,7 @@ def httpd_cmds(broker):
     raise SkipComponent
 
 
-@datasource(ProcMounts, HostContext)
+@datasource(ProcMounts, HostContext, timeout=DEFAULT_DS_TIMEOUT)
 def httpd_on_nfs(broker):
     """
     Function to get the count of httpd opened file on nfs v4

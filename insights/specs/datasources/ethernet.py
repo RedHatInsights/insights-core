@@ -7,6 +7,7 @@ from insights.core.plugins import datasource
 from insights.core.spec_factory import simple_command
 from insights.parsers.nmcli import NmcliConnShow
 from insights.specs import Specs
+from insights.specs.datasources import DEFAULT_DS_TIMEOUT
 
 
 class LocalSpecs(Specs):
@@ -14,7 +15,7 @@ class LocalSpecs(Specs):
     ip_link = simple_command("/sbin/ip -o link")
 
 
-@datasource(LocalSpecs.ip_link, HostContext)
+@datasource(LocalSpecs.ip_link, HostContext, timeout=DEFAULT_DS_TIMEOUT)
 def interfaces(broker):
     """
     This datasource provides a list of the ethernet interfaces available.
@@ -58,7 +59,7 @@ def interfaces(broker):
     raise SkipComponent
 
 
-@datasource(NmcliConnShow, HostContext)
+@datasource(NmcliConnShow, HostContext, timeout=DEFAULT_DS_TIMEOUT)
 def team_interfaces(broker):
     """
     This datasource provides a list of the team device.
