@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.301](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.301) (2022-10-31)
+
+- fix: missing call to a RPM format generation function ([PR 3572](https://github.com/RedHatInsights/insights-core/pull/3572))
+- fix: remove duplicated containers from running_rhel_containers ([PR 35](https://github.com/RedHatInsights/insights-core/pull/3571))
+
 ## [insights-core-3.0.300](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.300) (2022-10-27)
 
 - Avoid test to write in disk if machine-id is not found ([PR 3543](https://github.com/RedHatInsights/insights-core/pull/3543))
