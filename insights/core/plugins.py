@@ -106,7 +106,7 @@ class datasource(PluginType):
             return queue.full() and not queue.empty()
 
         try:
-            sec = getattr(self, 'timeout', dr.DEFAULT_DS_TIMEOUT)
+            sec = getattr(self, 'timeout', None)
             if sec:
                 queue = multiprocessing.Queue(1)
                 process = multiprocessing.Process(target=_target,
@@ -118,13 +118,13 @@ class datasource(PluginType):
                 msg = getattr(self, 'message', None)
 
                 while not _ready(timeout, queue, process, msg):
-                    time.sleep(0.01)
+                    time.sleep(0.5)
 
                 if _ready(timeout, queue, process, msg) is True:
-                    flag, load = queue.get()
-                    if flag:
-                        return load
-                    raise load
+                    exc, ret = queue.get()
+                    if exc:
+                        return ret
+                    raise ret
             return self.component(broker)
 
         except dr.TimeoutException as te:

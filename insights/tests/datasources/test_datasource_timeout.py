@@ -9,6 +9,7 @@ class Specs(SpecSet):
     ds_2_timeout_1_with_customized_msg = RegistryPoint()
     ds_2_timeout_1_with_default_msg = RegistryPoint()
     ds_1_timeout_2 = RegistryPoint()
+    ds_1_timeout_default = RegistryPoint()
 
 
 class TestSpecs(Specs):
@@ -22,25 +23,30 @@ class TestSpecs(Specs):
         time.sleep(2)
         return DatasourceProvider('foo', "test_ds_2")
 
-    @datasource(timeout=2)
+    @datasource(timeout=3)
     def ds_1_timeout_2(broker):
         time.sleep(1)
         return DatasourceProvider('foo', "test_ds_1")
 
+    @datasource()
+    def ds_1_timeout_default(broker):
+        time.sleep(1)
+        return DatasourceProvider('foo', "test_ds_0")
 
-@rule(Specs.ds_1_timeout_2)
-def timeout_datasource_no_timeout(ds_12):
-    return make_info('INFO')
+
+@rule(Specs.ds_1_timeout_2, Specs.ds_1_timeout_default)
+def timeout_datasource_no_timeout(ds_12, ds_1_def):
+    return make_info('INFO_1')
 
 
 @rule(Specs.ds_2_timeout_1_with_default_msg)
 def timeout_datasource_hit_with_def_msg(ds_21_def):
-    return make_info('INFO')
+    return make_info('INFO_2')
 
 
 @rule(Specs.ds_2_timeout_1_with_customized_msg)
 def timeout_datasource_hit_with_cus_msg(ds_21_cus):
-    return make_info('INFO')
+    return make_info('INFO_3')
 
 
 def test_timeout_datasource_no_hit():

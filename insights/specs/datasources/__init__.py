@@ -10,6 +10,8 @@ template to ensure it is loaded.
 """
 DEFAULT_SHELL_TIMEOUT = 10
 """ int: Default timeout in seconds for ctx.shell_out() commands, must be provided as an arg """
+DEFAULT_DS_TIMEOUT = 120
+""" int: Default timeout in seconds for datasource specs """
 
 
 def get_running_commands(ps, ctx, commands):
