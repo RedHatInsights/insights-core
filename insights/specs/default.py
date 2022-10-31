@@ -61,6 +61,9 @@ def _make_rpm_formatter(fmt=None):
     return inner
 
 
+format_rpm = _make_rpm_formatter()
+
+
 class DefaultSpecs(Specs):
     # Dep specs that aren't in the registry
     block_devices_by_uuid = listdir("/dev/disk/by-uuid/", context=HostContext)
@@ -265,7 +268,7 @@ class DefaultSpecs(Specs):
     init_process_cgroup = simple_file("/proc/1/cgroup")
     initctl_lst = simple_command("/sbin/initctl --system list")
     insights_client_conf = simple_file('/etc/insights-client/insights-client.conf')
-    installed_rpms = simple_command("/bin/rpm -qa --qf '%s'" % _make_rpm_formatter(), context=HostContext, signum=signal.SIGTERM)
+    installed_rpms = simple_command("/bin/rpm -qa --qf '%s'" % format_rpm(), context=HostContext, signum=signal.SIGTERM)
     interrupts = simple_file("/proc/interrupts")
     ip6tables = simple_command("/sbin/ip6tables-save")
     ip_addr = simple_command("/sbin/ip addr")
@@ -673,6 +676,6 @@ class DefaultSpecs(Specs):
     zipl_conf = simple_file("/etc/zipl.conf")
 
     # Container collection specs
-    container_installed_rpms = container_execute(running_rhel_containers, "rpm -qa --qf '%s'" % _make_rpm_formatter(), context=HostContext, signum=signal.SIGTERM)
+    container_installed_rpms = container_execute(running_rhel_containers, "rpm -qa --qf '%s'" % format_rpm(), context=HostContext, signum=signal.SIGTERM)
     container_nginx_conf = container_collect(container_nginx_conf_ds)
     container_redhat_release = container_collect(running_rhel_containers, "/etc/redhat-release")
