@@ -9,12 +9,9 @@ from insights.core.filters import get_filters
 from insights.specs import Specs
 
 
-@datasource(HostContext, timeout=2)
+@datasource(HostContext)
 def du_dir_list(broker):
     """ Return a list of directories from the spec filter """
-    print('run du_dir_list')
-    import time
-    time.sleet(5)
     filters = list(get_filters(Specs.du_dirs))
     if filters:
         return filters
