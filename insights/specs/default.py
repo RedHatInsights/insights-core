@@ -56,7 +56,7 @@ def _make_rpm_formatter(fmt=None):
 
 
 class DefaultSpecs(Specs):
-    # Required functions
+    # Variables that need to be pre-loaded
     rpm_format = _make_rpm_formatter()
 
     # Dep specs that aren't in the registry
