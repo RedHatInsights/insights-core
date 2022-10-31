@@ -1,7 +1,7 @@
 import time
 
-from insights.core.dr import TimeoutException, run
-from insights.core.plugins import datasource, rule, make_info
+from insights.core.dr import run
+from insights.core.plugins import datasource, rule, make_info, TimeoutException
 from insights.core.spec_factory import DatasourceProvider, RegistryPoint, SpecSet
 
 

@@ -238,14 +238,6 @@ class SkipComponent(Exception):
     pass
 
 
-class TimeoutException(Exception):
-    """
-    Thrown when a timeout occurs in the `timeout` context manager.
-    """
-    def __init__(self, msg=None):
-        super(TimeoutException, self).__init__(msg or "Timed Out")
-
-
 def get_name(component):
     """
     Attempt to get the string name of component, including module and class if
@@ -1043,11 +1035,6 @@ def run(components=None, broker=None):
                 reqs = stringify_requirements(mr.requirements)
                 log.debug("%s missing requirements %s" % (name, reqs))
             broker.add_exception(component, mr)
-        except TimeoutException as te:
-            if log.isEnabledFor(logging.DEBUG):
-                name = get_name(component)
-                log.debug("%s failed due to %s" % (name, str(te)))
-            broker.add_exception(component, te)
         except SkipComponent:
             pass
         except Exception as ex:

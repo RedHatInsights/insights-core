@@ -47,6 +47,14 @@ class ContentException(dr.SkipComponent):
     pass
 
 
+class TimeoutException(Exception):
+    """
+    Thrown when a timeout occurs in the `timeout` context manager.
+    """
+    def __init__(self, msg=None):
+        super(TimeoutException, self).__init__(msg or "Timed Out")
+
+
 class PluginType(dr.ComponentType):
     """
     PluginType is the base class of plugin types like datasource, rule, etc.
@@ -98,7 +106,7 @@ class datasource(PluginType):
         def _cancel(process, msg):
             if process.is_alive():
                 process.terminate()
-            raise dr.TimeoutException(msg)
+            raise TimeoutException(msg)
 
         def _ready(timeout, queue, process, msg):
             if timeout < time.time():
@@ -126,9 +134,9 @@ class datasource(PluginType):
                         return ret
                     raise ret
             return self.component(broker)
-
-        except dr.TimeoutException as te:
-            log.debug(te)
+        except TimeoutException as te:
+            name = dr.get_name(component)
+            log.debug("%s failed due to %s" % (name, str(te)))
             broker.add_exception(self.component, te, traceback.format_exc())
             raise dr.SkipComponent()
         except ContentException as ce:
