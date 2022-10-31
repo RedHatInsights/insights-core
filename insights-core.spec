@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.300
+Version:        3.0.301
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,12 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Mon Oct 31 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.301-1
+- fix: missing call to a RPM format generation function (#3572)
+  (daniel.zatovic@gmail.com)
+- fix: remove duplicated containers from running_rhel_containers (#3571)
+  (xiangceliu@redhat.com)
+
 * Thu Oct 27 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.300-1
 - Avoid test to write in disk if machine-id is not found (#3543)
   (93577878+ahitacat@users.noreply.github.com)
