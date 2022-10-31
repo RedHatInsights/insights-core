@@ -24,13 +24,13 @@ from insights.components.virtualization import IsBareMetal
 from insights.components.satellite import IsCapsule, IsSatellite611, IsSatellite
 from insights.specs import Specs
 from insights.specs.datasources import (
-    aws, awx_manage, containers_inspect, cloud_init, candlepin_broker, corosync as corosync_ds,
+    aws, awx_manage, cloud_init, candlepin_broker, corosync as corosync_ds,
     dir_list, ethernet, httpd, ipcs, kernel_module_list, lpstat, md5chk,
     package_provides, ps as ps_datasource, sap, satellite_missed_queues,
     semanage, ssl_certificate, sys_fs_cgroup_memory_tasks_number, system_user_dirs, user_group, yum_updates, luks_devices)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 from insights.specs.datasources.pcp import pcp_enabled, pmlog_summary_args
-from insights.specs.datasources.container import running_rhel_containers
+from insights.specs.datasources.container import running_rhel_containers, containers_inspect
 from insights.specs.datasources.container.nginx_conf import nginx_conf as container_nginx_conf_ds
 
 
@@ -129,7 +129,6 @@ class DefaultSpecs(Specs):
     corosync = simple_file("/etc/sysconfig/corosync")
     corosync_cmapctl = foreach_execute(corosync_ds.corosync_cmapctl_cmds, "%s")
     corosync_conf = simple_file("/etc/corosync/corosync.conf")
-    containers_inspect = containers_inspect.containers_inspect_data_datasource
     cpu_cores = glob_file("sys/devices/system/cpu/cpu[0-9]*/online")
     cpu_siblings = glob_file("sys/devices/system/cpu/cpu[0-9]*/topology/thread_siblings_list")
     cpu_smt_active = simple_file("sys/devices/system/cpu/smt/active")
@@ -680,3 +679,5 @@ class DefaultSpecs(Specs):
     container_installed_rpms = container_execute(running_rhel_containers, "rpm -qa --qf '%s'" % format_rpm(), context=HostContext, signum=signal.SIGTERM)
     container_nginx_conf = container_collect(container_nginx_conf_ds)
     container_redhat_release = container_collect(running_rhel_containers, "/etc/redhat-release")
+    containers_inspect = containers_inspect.containers_inspect_data_datasource
+

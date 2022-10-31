@@ -1,13 +1,14 @@
 """
 Custom datasources for containers inspect information
 """
+import json
+import os
 from insights.core.context import HostContext
 from insights.core.dr import SkipComponent
-from insights.core.plugins import datasource
-from insights.core.spec_factory import DatasourceProvider, foreach_execute
 from insights.core.filters import get_filters
+from insights.core.plugins import datasource, ContentException
+from insights.core.spec_factory import DatasourceProvider, foreach_execute
 from insights.specs import Specs
-import json
 from insights.specs.datasources.container import running_rhel_containers
 
 
@@ -19,9 +20,7 @@ def running_rhel_containers_id(broker):
     containers_info = []
     for container in broker[running_rhel_containers]:
         containers_info.append((container[1], container[2]))
-    if containers_info:
-        return containers_info
-    raise SkipComponent
+    return containers_info
 
 
 class LocalSpecs(Specs):
@@ -36,6 +35,12 @@ def containers_inspect_data_datasource(broker):
     """
     This datasource provides the filtered information collected
     from ``/usr/bin/docker|podman inspect <container ID>``.
+
+    .. note::
+        The path of the target key is like raw_data[key1][key2][target_key],
+        then the filter pattern is like "key1|key2|target_key".
+        If the value type of raw_data[key1][key2] is list, although the target_key is in the list,
+        the filter pattern must be "key1|key2", this datasource returns the whole value of the list.
 
     Typical content of ``/usr/bin/docker|podman inspect <container ID>`` file is::
 
@@ -55,40 +60,31 @@ def containers_inspect_data_datasource(broker):
     Raises:
         SkipComponent: When the filter/path does not exist or any exception occurs.
     """
-
-    def _find(d, tag, path):
-        if tag in d:
-            yield d[tag]
-        for k, v in d.items():
-            if isinstance(v, dict):
-                for i in _find(v, tag, path):
-                    path.append(k)
-                    yield i
     try:
-        filters = get_filters(Specs.containers_inspect_vars)
-        contents = []
-        for item in broker[LocalSpecs.containers_inspect_data_raw]:
-            engine = item.cmd.split()[0].split("bin/")[-1]
-            contents.append((item.content, engine))
-        if contents and filters:
+        filters = list(get_filters(Specs.container_inspect_keys))
+        if filters:
+            filters.sort()
             total_results = []
-            for content in contents:
-                content_raw = "".join(content[0])
-                raw_data = json.loads(content_raw)[0]
-                filter_result = {}
-                filter_result['Id'] = raw_data['Id']
-                filter_result['Image'] = raw_data['Image'].split("sha256:")[-1]
-                filter_result['engine'] = content[1]
+            for item in broker[LocalSpecs.containers_inspect_data_raw]:
+                raw_data = json.loads(''.join(item.content))[0]
+                engine, _, container_id = item.cmd.split(None)
+                filter_result = dict(Id=container_id, engine=os.path.basename(engine))
+                if 'Image' in raw_data:
+                    filter_result['Image'] = raw_data['Image'].split("sha256:")[-1]
                 for item in filters:
-                    path = []
-                    for val in _find(raw_data, item, path):
-                        mid_data = {item: val}
-                        for path_item in path:
-                            mid_data = {path_item: mid_data}
-                        filter_result.update(mid_data)
+                    val = raw_data
+                    for key in item.split("|"):
+                        if key in val:
+                            val = val[key]
+                        else:
+                            break
+                    # If the filtered key does not exist, skip it
+                    if val == raw_data:
+                        continue
+                    filter_result[item.split("|")[-1]] = val
                 total_results.append(filter_result)
             if total_results:
-                return DatasourceProvider(content=json.dumps(total_results), relative_path='insights_commands/containers_inspect')
+                return DatasourceProvider(content=json.dumps(total_results), relative_path='insights_commands/insights_containers/containers_inspect')
     except Exception as e:
-        raise SkipComponent("Unexpected exception:{e}".format(e=str(e)))
+        raise ContentException("Unexpected content exception:{e}".format(e=str(e)))
     raise SkipComponent

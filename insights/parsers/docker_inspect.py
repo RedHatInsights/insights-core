@@ -107,6 +107,6 @@ class DockerInspectContainer(DockerInspect):
         deprecated(
             DockerInspectContainer,
             "Please use the :class:`insights.parsers.containers_inspect.ContainersInspect` instead.",
-            "3.0.300"
+            "3.2.25"
         )
         super(DockerInspectContainer, self).__init__(*args, **kwargs)

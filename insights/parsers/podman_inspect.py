@@ -12,6 +12,7 @@ from insights import parser, CommandParser
 from insights.core.marshalling import unmarshal
 from insights.parsers import SkipException
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 class PodmanInspect(CommandParser, dict):
@@ -66,6 +67,10 @@ class PodmanInspectImage(PodmanInspect):
 @parser(Specs.podman_container_inspect)
 class PodmanInspectContainer(PodmanInspect):
     """
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.containers_inspect.ContainersInspect` instead.
+
     Parse podman container inspect output using the PodmanInspect parser class.
 
     Sample input::
@@ -91,4 +96,10 @@ class PodmanInspectContainer(PodmanInspect):
         >>> container.get('State').get('Paused') is False
         True
     """
-    pass
+    def __init__(self, *args, **kwargs):
+        deprecated(
+            PodmanInspectContainer,
+            "Please use the :class:`insights.parsers.containers_inspect.ContainersInspect` instead.",
+            "3.2.25"
+        )
+        super(PodmanInspectContainer, self).__init__(*args, **kwargs)

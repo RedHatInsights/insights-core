@@ -1,13 +1,13 @@
 import pytest
+import json
 from mock.mock import Mock
+from insights import dr
+from insights.core import filters
 from insights.core.dr import SkipComponent
 from insights.core.spec_factory import DatasourceProvider
-from insights.specs.datasources.containers_inspect import containers_inspect_data_datasource, LocalSpecs, running_rhel_containers_id
-from insights.specs.datasources.container import running_rhel_containers
 from insights.specs import Specs
-from insights.core import filters
-from insights import dr
-import json
+from insights.specs.datasources.container.containers_inspect import containers_inspect_data_datasource, LocalSpecs, running_rhel_containers_id
+from insights.specs.datasources.container import running_rhel_containers
 
 
 INSPECT_1 = """
@@ -898,7 +898,7 @@ INSPECT_5 = """
 Error: error inspecting object: no such object: "testnoid"
 """.strip()
 
-RELATIVE_PATH = 'insights_commands/containers_inspect'
+RELATIVE_PATH = 'insights_commands/insights_containers/containers_inspect'
 
 CONTAINERS_ID_EXPECTED_RESULT = [
     ('podman', 'aeaea3ead52724bb525bb2b5c619d67836250756920f0cb9884431ba53b476d8'),
@@ -908,19 +908,21 @@ CONTAINERS_ID_EXPECTED_RESULT = [
     ('docker', '538890e93bf71736e00a87c7a1fa33e5bb03a9a196e5b10faaa9e545e749aa54')
 ]
 
-EXPECTED_RESULT = [{'Id': 'aeaea3ead52724bb525bb2b5c619d67836250756920f0cb9884431ba53b476d8', 'Image': '538460c14d75dee1504e56ad8ddb7fe039093b1530ef8f90442a454b9aa3dc8b', 'engine': 'podman', 'HostConfig': {'Privileged': False}}, {'Id': '28fb57be8bb204e652c472a406e0d99956c8d35d6e88abfc13253d101a00911e', 'Image': '538460c14d75dee1504e56ad8ddb7fe039093b1530ef8f90442a454b9aa3dc8b', 'engine': 'podman', 'HostConfig': {'Privileged': True}}, {'Id': 'c7efee959ea8910d68eaa5038d3ebf62ae593bfe96757b456c06f16281394921', 'Image': 'acf3e09a39c95d354539b6591298be0b0814f5d74e95e722863241192b9a079b', 'engine': 'docker', 'HostConfig': {'Privileged': True}}]
+EXPECTED_RESULT = [{'Id': 'aeaea3ead527', 'engine': 'podman', 'Image': '538460c14d75dee1504e56ad8ddb7fe039093b1530ef8f90442a454b9aa3dc8b', "Cmd": ["sleep", "1000000"], 'Privileged': False}, {'Id': '28fb57be8bb2', 'engine': 'podman', 'Image': '538460c14d75dee1504e56ad8ddb7fe039093b1530ef8f90442a454b9aa3dc8b', "Cmd": ["sleep", "1000000"], 'Privileged': True}, {'Id': 'c7efee959ea8', 'engine': 'docker', 'Image': 'acf3e09a39c95d354539b6591298be0b0814f5d74e95e722863241192b9a079b', "Cmd": ["sleep", "1000000"], 'Privileged': True}]
+
+EXPECTED_RESULT_NG = [{'Id': '28fb57be8bb2', 'engine': 'podman'}]
 
 
 def setup_function(func):
-    if Specs.containers_inspect_vars in filters._CACHE:
-        del filters._CACHE[Specs.containers_inspect_vars]
-    if Specs.containers_inspect_vars in filters.FILTERS:
-        del filters.FILTERS[Specs.containers_inspect_vars]
+    if Specs.container_inspect_keys in filters._CACHE:
+        del filters._CACHE[Specs.container_inspect_keys]
+    if Specs.container_inspect_keys in filters.FILTERS:
+        del filters.FILTERS[Specs.container_inspect_keys]
 
     if func is test_containers_inspect_datasource or func is test_containers_inspect_datasource_NG_output_1 or func is test_containers_inspect_datasource_NG_output_2:
-        filters.add_filter(Specs.containers_inspect_vars, ["Privileged"])
+        filters.add_filter(Specs.container_inspect_keys, ["HostConfig|Privileged", "NoSuchKey|Privileged", "Config|Cmd"])
     if func is test_containers_inspect_datasource_no_filter:
-        filters.add_filter(Specs.containers_inspect_vars, [])
+        filters.add_filter(Specs.container_inspect_keys, [])
 
 
 def test_running_rhel_containers_id():
@@ -974,9 +976,12 @@ def test_containers_inspect_datasource_NG_output_1():
     containers_inspect_data_3.content = INSPECT_4.splitlines()
     containers_inspect_data_3.cmd = "/usr/bin/podman inspect 28fb57be8bb2"
     broker = {LocalSpecs.containers_inspect_data_raw: [containers_inspect_data_3]}
-    with pytest.raises(SkipComponent) as e:
-        containers_inspect_data_datasource(broker)
-    assert 'SkipComponent' in str(e)
+    result = containers_inspect_data_datasource(broker)
+    assert result is not None
+    assert isinstance(result, DatasourceProvider)
+    expected = DatasourceProvider(content=json.dumps(EXPECTED_RESULT_NG), relative_path=RELATIVE_PATH)
+    assert result.content[0] == expected.content[0]
+    assert result.relative_path == expected.relative_path
 
 
 def test_containers_inspect_datasource_NG_output_2():
@@ -986,4 +991,4 @@ def test_containers_inspect_datasource_NG_output_2():
     broker = {LocalSpecs.containers_inspect_data_raw: [containers_inspect_data_4]}
     with pytest.raises(SkipComponent) as e:
         containers_inspect_data_datasource(broker)
-    assert 'Unexpected exception' in str(e)
+    assert 'Unexpected content exception' in str(e)
