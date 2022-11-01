@@ -64,6 +64,8 @@ client:
     persist:
         - name: insights.specs.Specs
           enabled: true
+        - name: insights.specs.datasources
+          enabled: true
 
     run_strategy:
         name: serial

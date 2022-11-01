@@ -200,8 +200,8 @@ class Hydration(object):
         doc = None
         try:
             name = dr.get_name(c)
-            errors = [t for e in broker.exceptions.get(c, [])
-                        for t in broker.tracebacks[e]]
+            # broker.trackbacks is a dict in which the values are strings
+            errors = [broker.tracebacks[e] for e in broker.exceptions.get(c, [])]
             doc = {
                 "name": name,
                 "exec_time": broker.exec_times.get(c),
