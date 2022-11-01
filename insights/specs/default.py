@@ -56,9 +56,6 @@ def _make_rpm_formatter(fmt=None):
 
 
 class DefaultSpecs(Specs):
-    # Variables that need to be pre-loaded
-    rpm_format = _make_rpm_formatter()
-
     # Dep specs that aren't in the registry
     block_devices_by_uuid = listdir("/dev/disk/by-uuid/", context=HostContext)
     etc_and_sub_dirs = sorted(["/etc", "/etc/pki/tls/private", "/etc/pki/tls/certs",
@@ -67,6 +64,7 @@ class DefaultSpecs(Specs):
     httpd_pid = simple_command("/usr/bin/pgrep -o httpd")
     openshift_router_pid = simple_command("/usr/bin/pgrep -n openshift-route")
     ovs_vsctl_list_br = simple_command("/usr/bin/ovs-vsctl list-br")
+    rpm_format = _make_rpm_formatter()
 
     # Regular collection specs
     abrt_ccpp_conf = simple_file("/etc/abrt/plugins/CCpp.conf")
