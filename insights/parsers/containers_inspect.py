@@ -20,11 +20,11 @@ class ContainersInspect(JSONParser):
 
         [
             {
-                "Id": "aeaea3ead52724bb525bb2b5c619d67836250756920f0cb9884431ba53b476d8",
+                "Id": "aeaea3ead527",
                 "Image": "538460c14d75dee1504e56ad8ddb7fe039093b1530ef8f90442a454b9aa3dc8b",
                 "engine": "podman",
-                "Privileged": false,
-                "Cmd": ["sleep", "1000000"]
+                "HostConfig|Privileged": false,
+                "Config|Cmd": ["sleep", "1000000"]
             }
         ]
 
@@ -32,11 +32,14 @@ class ContainersInspect(JSONParser):
         data (list): A list containing the parsed information
 
     Examples:
+        >>> from insights.core.filters import add_filter
+        >>> from insights.specs import Specs
+        >>> add_filter(Specs.container_inspect_keys, ['HostConfig|Privileged'])
         >>> str(inspect_containers.data[0]["Id"])
         'aeaea3ead527'
         >>> str(inspect_containers.data[0]["engine"])
         'podman'
-        >>> inspect_containers.data[0]["Privileged"]
+        >>> inspect_containers.data[0]["HostConfig|Privileged"]
         False
     """
 

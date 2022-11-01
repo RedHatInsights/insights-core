@@ -81,10 +81,10 @@ def containers_inspect_data_datasource(broker):
                     # If the filtered key does not exist, skip it
                     if val == raw_data:
                         continue
-                    filter_result[item.split("|")[-1]] = val
+                    filter_result[item] = val
                 total_results.append(filter_result)
             if total_results:
-                return DatasourceProvider(content=json.dumps(total_results), relative_path='insights_commands/insights_containers/containers_inspect')
+                return DatasourceProvider(content=json.dumps(total_results), relative_path='insights_containers/containers_inspect')
     except Exception as e:
         raise ContentException("Unexpected content exception:{e}".format(e=str(e)))
     raise SkipComponent
