@@ -135,7 +135,7 @@ class datasource(PluginType):
                     raise ret
             return self.component(broker)
         except TimeoutException as te:
-            name = dr.get_name(component)
+            name = dr.get_name(self.component)
             log.debug("%s failed due to %s" % (name, str(te)))
             broker.add_exception(self.component, te, traceback.format_exc())
             raise dr.SkipComponent()
