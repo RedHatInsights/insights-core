@@ -4,16 +4,29 @@ OVSvsctlListBridge - command ``/usr/bin/ovs-vsctl list bridge``
 
 This module provides class ``OVSvsctlListBridge`` for parsing the
 output of command ``ovs-vsctl list bridge``.
+
+.. note::
+    Please refer to its super-class :class:`insights.parsers.ovs_vsctl_list.OVSvsctlList`
+    for more details.
+
+.. warning::
+    This parser `OVSvsctlListBridge` is deprecated, please use
+    :py:class:`insights.ovs_vsctl.OVSvsctlListBridge` instead.
 """
 
-from insights import CommandParser, get_active_lines, parser
-from insights.parsers import SkipException, optlist_to_dict
+from insights import parser
+from insights.parsers.ovs_vsctl import OVSvsctlList
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.ovs_vsctl_list_bridge)
-class OVSvsctlListBridge(CommandParser):
+class OVSvsctlListBridge(OVSvsctlList):
     """
+    .. warning::
+        This parser `OVSvsctlListBridge` is deprecated, please use
+        :py:class:`insights.ovs_vsctl.OVSvsctlListBridge` instead.
+
     Class to parse output of command ``ovs-vsctl list bridge``.
     Generally, the data is in key:value format with values having
     data types as string, numbers, list or dictionary.
@@ -46,47 +59,10 @@ class OVSvsctlListBridge(CommandParser):
     Raises:
         SkipException: When file is empty.
     """
-
-    bridge_keys = ("_uuid", "auto_attach", "controller", "datapath_id",
-            "datapath_type", "datapath_version", "external_ids", "fail_mode",
-            "flood_vlans", "flow_tables", "ipfix", "mcast_snooping_enable:",
-            "mirrors", "name", "netflow", "other_config", "ports", "protocols",
-            "rstp_enable", "rstp_status", "sflow", "status", "stp_enable")
-
-    def parse_content(self, content):
-        """
-           Details of all the bridges are extracted and stored in a list as dictionary
-           elements. Each dictionary element contains the information of a specific
-           bridge.
-        """
-        # No content found or file is empty
-        if not content:
-            raise SkipException("Empty file")
-
-        self.data = []
-        bridge_details = {}
-        for line in get_active_lines(content):
-            key, value = [i.strip() for i in line.split(":", 1)]
-            parsed_value = value.strip('"')
-            if value.startswith("{") and value.endswith("}"):
-                parsed_value = {}
-                value = value.strip("{}")
-                if value:
-                    parsed_value = optlist_to_dict(value, opt_sep=", ", strip_quotes=True)
-            elif value.startswith("[") and value.endswith("]"):
-                parsed_value = []
-                value = value.strip("[]")
-                if value:
-                    parsed_value = [i.strip(' \t\"\'') for i in value.split(",")]
-
-            if key not in bridge_details:
-                bridge_details[key] = parsed_value
-            else:
-                # A new bridge comes
-                self.data.append(bridge_details)
-                bridge_details = {key: parsed_value}
-        # Add the last bridge
-        self.data.append(bridge_details)
-
-    def __getitem__(self, line):
-        return self.data[line]
+    def __init__(self, *args, **kwargs):
+        deprecated(
+            OVSvsctlListBridge,
+            "Please use the :class:`insights.ovs_vsctl.OVSvsctlListBridge` instead.",
+            "3.2.25"
+        )
+        super(OVSvsctlListBridge, self).__init__(*args, **kwargs)
