@@ -17,6 +17,7 @@ output of command ``ovs-vsctl list bridge``.
 from insights import parser
 from insights.parsers.ovs_vsctl import OVSvsctlList
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.ovs_vsctl_list_bridge)
@@ -58,4 +59,10 @@ class OVSvsctlListBridge(OVSvsctlList):
     Raises:
         SkipException: When file is empty.
     """
-    pass
+    def __init__(self, *args, **kwargs):
+        deprecated(
+            OVSvsctlListBridge,
+            "Please use the :class:`insights.ovs_vsctl.OVSvsctlListBridge` instead.",
+            "3.2.25"
+        )
+        super(OVSvsctlListBridge, self).__init__(*args, **kwargs)
