@@ -62,8 +62,8 @@ def containers_inspect_data_datasource(broker):
         SkipComponent: When the filter/path does not exist or any exception occurs.
     """
     try:
-        NO_FILTERS = {'Id', 'Image'}
-        filters = sorted(set(get_filters(Specs.container_inspect_keys)) - NO_FILTERS)
+        no_filters = ['Id', 'Image']
+        filters = sorted(set(get_filters(Specs.container_inspect_keys)) - set(no_filters))
         if filters:
             total_results = []
             for item in broker[LocalSpecs.containers_inspect_data_raw]:
