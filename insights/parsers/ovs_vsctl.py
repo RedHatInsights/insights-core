@@ -1,9 +1,16 @@
 """
-OVSvsctlList - command ``/usr/bin/ovs-vsctl list TBL [REC]``
-============================================================
+Open vSwitch ``ovs-vsctl`` - utility for querying ovs-vswitchd
+==============================================================
 
-This module provides class ``OVSvsctlList`` for parsing the
-output of command ``ovs-vsctl list TBL [REC]``.
+Classes in this module are:
+
+OVSvsctlList - command ``/usr/bin/ovs-vsctl list TBL [REC]``
+------------------------------------------------------------
+
+Parsers in this module are:
+
+OVSvsctlListBridge - command ``/usr/bin/ovs-vsctl list bridge``
+---------------------------------------------------------------
 """
 
 from insights import CommandParser, get_active_lines, parser
@@ -11,34 +18,11 @@ from insights.parsers import SkipException, optlist_to_dict
 from insights.specs import Specs
 
 
-@parser(Specs.ovs_vsctl_list_bridge)
-class OVSvsctlList(CommandParser):
+class OVSvsctlList(CommandParser, list):
     """
     Class to parse output of command ``ovs-vsctl list TBL [REC]``.
-    Generally, the data is in key:value format with values having
+    Generally, the data is in ``key:value`` format with values having
     data types as string, numbers, list or dictionary.
-    The class provides attribute ``data`` as list with lines parsed
-    line by line based on keys for each bridge.
-
-    Sample command output::
-
-        name                : br-int
-        other_config        : {disable-in-band="true", mac-table-size="2048"}
-        name                : br-tun
-
-    Examples:
-        >>> bridge_lists[0]["name"]
-        'br-int'
-        >>> bridge_lists[0]["other_config"]["mac-table-size"]
-        '2048'
-        >>> bridge_lists[0]["other_config"]["disable-in-band"]
-        'true'
-        >>> bridge_lists[1].get("name")
-        'br-tun'
-
-    Attributes:
-        data (list): A list containing dictionary elements where each
-                     element contains the details of a bridge.
 
     Raises:
         SkipException: When file is empty.
@@ -52,7 +36,6 @@ class OVSvsctlList(CommandParser):
         if not content:
             raise SkipException("Empty file")
 
-        self.data = []
         record = {}
         for line in get_active_lines(content):
             key, value = [i.strip() for i in line.split(":", 1)]
@@ -70,13 +53,44 @@ class OVSvsctlList(CommandParser):
 
             if key in record:
                 # A new record comes
-                self.data.append(record)
+                self.append(record)
                 record = {}
 
             record[key] = parsed_value
 
         # Add the last record
-        self.data.append(record)
+        self.append(record)
 
-    def __getitem__(self, line):
-        return self.data[line]
+    @property
+    def data(self):
+        """
+        Set data as property to keep compatibility
+        """
+        return self
+
+
+@parser(Specs.ovs_vsctl_list_bridge)
+class OVSvsctlListBridge(OVSvsctlList):
+    """
+    Class to parse output of command ``ovs-vsctl list bridge``.
+
+    Sample command output::
+
+        name                : br-int
+        other_config        : {disable-in-band="true", mac-table-size="2048"}
+        name                : br-tun
+        other_config        : {}
+
+    Examples:
+        >>> bridge_lists[0]["name"]
+        'br-int'
+        >>> bridge_lists[0]["other_config"]["mac-table-size"]
+        '2048'
+        >>> bridge_lists[0]["other_config"]["disable-in-band"]
+        'true'
+        >>> bridge_lists[1].get("name")
+        'br-tun'
+        >>> len(bridge_lists[1]["other_config"]) == 0
+        True
+    """
+    pass

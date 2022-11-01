@@ -8,16 +8,24 @@ output of command ``ovs-vsctl list bridge``.
 .. note::
     Please refer to its super-class :class:`insights.parsers.ovs_vsctl_list.OVSvsctlList`
     for more details.
+
+.. warning::
+    This parser `OVSvsctlListBridge` is deprecated, please use
+    :py:class:`insights.ovs_vsctl.OVSvsctlListBridge` instead.
 """
 
 from insights import parser
-from insights.parsers.ovs_vsctl_list import OVSvsctlList
+from insights.parsers.ovs_vsctl import OVSvsctlList
 from insights.specs import Specs
 
 
 @parser(Specs.ovs_vsctl_list_bridge)
 class OVSvsctlListBridge(OVSvsctlList):
     """
+    .. warning::
+        This parser `OVSvsctlListBridge` is deprecated, please use
+        :py:class:`insights.ovs_vsctl.OVSvsctlListBridge` instead.
+
     Class to parse output of command ``ovs-vsctl list bridge``.
     Generally, the data is in key:value format with values having
     data types as string, numbers, list or dictionary.

@@ -1,6 +1,6 @@
 from insights.parsers import SkipException
-from insights.parsers import ovs_vsctl_list
-from insights.parsers.ovs_vsctl_list import OVSvsctlList
+from insights.parsers import ovs_vsctl
+from insights.parsers.ovs_vsctl import OVSvsctlListBridge
 from insights.tests import context_wrap
 import doctest
 import pytest
@@ -79,38 +79,38 @@ EXCEPTION1 = """
 """.strip()
 
 
-def test_ovs_vsctl_list_documentation():
+def test_ovs_vsctl_documentation():
     env = {
-        "bridge_lists": OVSvsctlList(context_wrap(OVS_VSCTL_LIST_BRIDGES_FILTERED1)),
+        "bridge_lists": OVSvsctlListBridge(context_wrap(OVS_VSCTL_LIST_BRIDGES_FILTERED1)),
     }
-    failed, total = doctest.testmod(ovs_vsctl_list, globs=env)
+    failed, total = doctest.testmod(ovs_vsctl, globs=env)
     assert failed == 0
 
 
-def test_ovs_vsctl_list_all():
-    data = OVSvsctlList(context_wrap(OVS_VSCTL_LIST_BRIDGES_ALL))
-    assert data[0]["name"] == "br-int"
-    assert data[0]["external_ids"] == {"a": "0"}
-    assert data[0]["flow_tables"] == {"1": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"}
-    assert data[0].get("flood_vlans") == ["1000"]
-    assert data[0]["protocols"][-1] == "OpenFlow13"
-    assert data[0]["other_config"]["mac-table-size"] == "2048"
-    assert data[0]["rstp_status"]["rstp_root_path_cost"] == "0"
-    assert data[1]["name"] == "br-tun"
-    assert data[1]["mirrors"] == []
-    assert data[1]["datapath_type"] == ""
-    assert data[1]["status"] == {}
-    assert data[1].get("stp_enable") == "false"
+def test_ovs_vsctl_all():
+    bridges = OVSvsctlListBridge(context_wrap(OVS_VSCTL_LIST_BRIDGES_ALL))
+    assert bridges[0]["name"] == "br-int"
+    assert bridges[0]["external_ids"] == {"a": "0"}
+    assert bridges[0]["flow_tables"] == {"1": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"}
+    assert bridges[0].get("flood_vlans") == ["1000"]
+    assert bridges[0]["protocols"][-1] == "OpenFlow13"
+    assert bridges[0]["other_config"]["mac-table-size"] == "2048"
+    assert bridges[0]["rstp_status"]["rstp_root_path_cost"] == "0"
+    assert bridges[1]["name"] == "br-tun"
+    assert bridges[1]["mirrors"] == []
+    assert bridges[1]["datapath_type"] == ""
+    assert bridges[1]["status"] == {}
+    assert bridges[1].get("stp_enable") == "false"
 
 
-def test_ovs_vsctl_list():
-    data = OVSvsctlList(context_wrap(OVS_VSCTL_LIST_BRIDGES_FILTERED2))
-    assert data[0].get("name") == "br-int"
-    assert data[0]["other_config"]["mac-table-size"] == "2048"
-    assert data[1]["name"] == "br-tun"
+def test_ovs_vsctl():
+    bridges = OVSvsctlListBridge(context_wrap(OVS_VSCTL_LIST_BRIDGES_FILTERED2))
+    assert bridges[0].get("name") == "br-int"
+    assert bridges[0]["other_config"]["mac-table-size"] == "2048"
+    assert bridges[1]["name"] == "br-tun"
 
 
-def test_ovs_vsctl_list_exception1():
+def test_ovs_vsctl_exception1():
     with pytest.raises(SkipException) as e:
-        OVSvsctlList(context_wrap(EXCEPTION1))
+        OVSvsctlListBridge(context_wrap(EXCEPTION1))
     assert "Empty file" in str(e)
