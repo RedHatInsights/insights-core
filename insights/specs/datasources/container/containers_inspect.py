@@ -41,6 +41,7 @@ def containers_inspect_data_datasource(broker):
         then the filter pattern is like "key1|key2|target_key".
         If the value type of raw_data[key1][key2] is list, although the target_key is in the list,
         the filter pattern must be "key1|key2", this datasource returns the whole value of the list.
+        The value of "Id" and "Image" are checked from raw data directly, no need filter these items.
 
     Typical content of ``/usr/bin/docker|podman inspect <container ID>`` file is::
 
@@ -60,9 +61,13 @@ def containers_inspect_data_datasource(broker):
     Raises:
         SkipComponent: When the filter/path does not exist or any exception occurs.
     """
+    NO_FILTERS = ["Id", "Image"]
     try:
         filters = list(get_filters(Specs.container_inspect_keys))
         if filters:
+            for item in NO_FILTERS:
+                if item in filters:
+                    filters.remove(item)
             filters.sort()
             total_results = []
             for item in broker[LocalSpecs.containers_inspect_data_raw]:

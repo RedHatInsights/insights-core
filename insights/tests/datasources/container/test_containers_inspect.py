@@ -920,7 +920,7 @@ def setup_function(func):
         del filters.FILTERS[Specs.container_inspect_keys]
 
     if func is test_containers_inspect_datasource or func is test_containers_inspect_datasource_NG_output_1 or func is test_containers_inspect_datasource_NG_output_2:
-        filters.add_filter(Specs.container_inspect_keys, ["HostConfig|Privileged", "NoSuchKey|Privileged", "Config|Cmd"])
+        filters.add_filter(Specs.container_inspect_keys, ["HostConfig|Privileged", "NoSuchKey|Privileged", "Config|Cmd", "Id", "Image"])
     if func is test_containers_inspect_datasource_no_filter:
         filters.add_filter(Specs.container_inspect_keys, [])
 
