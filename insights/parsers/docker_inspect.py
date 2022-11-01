@@ -17,6 +17,10 @@ from insights.util import deprecated
 
 class DockerInspect(CommandParser, dict):
     """
+    .. warning::
+        This class is deprecated, please use
+        :py:class:`insights.parsers.containers_inspect.ContainersInspect` instead.
+
     Parse the output of command "docker inspect --type=image" and "docker
     inspect --type=container".  The output of these two commands is formatted
     as JSON, so "json.loads" is an option to parse the output in the future.
@@ -24,6 +28,13 @@ class DockerInspect(CommandParser, dict):
     Raises:
         SkipException: If content is not provided
     """
+    def __init__(self, *args, **kwargs):
+        deprecated(
+            DockerInspect,
+            "Please use the :class:`insights.parsers.containers_inspect.ContainersInspect` instead.",
+            "3.2.25"
+        )
+        super(DockerInspect, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
         if not content:
