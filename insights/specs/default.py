@@ -55,16 +55,20 @@ def _make_rpm_formatter(fmt=None):
     return "\{" + ",".join(fmt) + "\}\n"
 
 
+_etc_and_sub_dirs = sorted(["/etc", "/etc/pki/tls/private", "/etc/pki/tls/certs",
+                           "/etc/pki/ovirt-vmconsole", "/etc/nova/migration", "/etc/sysconfig",
+                           "/etc/cloud/cloud.cfg.d", "/etc/rc.d/init.d"])
+""" List of directories for spec `ls_etc` """
+_rpm_format = _make_rpm_formatter()
+""" Query format for specs `installed_rpms` and `container_installed_rpms` """
+
+
 class DefaultSpecs(Specs):
     # Dep specs that aren't in the registry
     block_devices_by_uuid = listdir("/dev/disk/by-uuid/", context=HostContext)
-    etc_and_sub_dirs = sorted(["/etc", "/etc/pki/tls/private", "/etc/pki/tls/certs",
-                               "/etc/pki/ovirt-vmconsole", "/etc/nova/migration", "/etc/sysconfig",
-                               "/etc/cloud/cloud.cfg.d", "/etc/rc.d/init.d"])
     httpd_pid = simple_command("/usr/bin/pgrep -o httpd")
     openshift_router_pid = simple_command("/usr/bin/pgrep -n openshift-route")
     ovs_vsctl_list_br = simple_command("/usr/bin/ovs-vsctl list-br")
-    rpm_format = _make_rpm_formatter()
 
     # Regular collection specs
     abrt_ccpp_conf = simple_file("/etc/abrt/plugins/CCpp.conf")
