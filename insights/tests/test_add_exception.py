@@ -27,4 +27,5 @@ def test_add_exception_tracebacks():
     assert len(exs) == 1
     tb = broker.tracebacks[exs[0]]
     assert type(tb) is str
+    assert "Traceback" in tb
     assert "Fake Datasource" in tb
