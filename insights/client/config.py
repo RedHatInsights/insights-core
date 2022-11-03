@@ -127,6 +127,14 @@ DEFAULT_OPTS = {
         'group': 'actions',
         'dest': 'app'
     },
+    'manifest': {
+        'default': None,
+        'opt': ['--manifest'],
+        'help': 'Collect using the provided manifest',
+        'action': 'store',
+        'group': 'actions',
+        'dest': 'manifest'
+    },
     'compliance': {
         'default': False,
         'opt': ['--compliance'],
@@ -468,6 +476,7 @@ class InsightsConfig(object):
     '''
     Insights client configuration
     '''
+
     def __init__(self, *args, **kwargs):
         # this is only used to print configuration errors upon initial load
         self._print_errors = False
