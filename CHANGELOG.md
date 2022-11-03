@@ -2,6 +2,17 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.302](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.302) (2022-11-03)
+
+- feat: new spec and parser for 'azure_instance_id' ([PR 3568](https://github.com/RedHatInsights/insights-core/pull/3568))
+- feat: Add parser container_inspect ([PR 3562](https://github.com/RedHatInsights/insights-core/pull/3562))
+- fix: remove the inner functions of the _make_rpm_formatter ([PR 3574](https://github.com/RedHatInsights/insights-core/pull/3574))
+- chore: remove the unused 'ethernet_interfaces' spec ([PR 3577](https://github.com/RedHatInsights/insights-core/pull/3577))
+- fix: check list range to avoid exception ([PR 3576](https://github.com/RedHatInsights/insights-core/pull/3576))
+- fix: LuksDump not parsing multiple data segments ([PR 3569](https://github.com/RedHatInsights/insights-core/pull/3569))
+- feat: new spec and parser for 'subscription-manage facts' ([PR 3555](https://github.com/RedHatInsights/insights-core/pull/3555))
+- enhance: add base class 'OVSvsctlList' ([PR 3575](https://github.com/RedHatInsights/insights-core/pull/3575))
+
 ## [insights-core-3.0.301](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.301) (2022-10-31)
 
 - fix: missing call to a RPM format generation function ([PR 3572](https://github.com/RedHatInsights/insights-core/pull/3572))
