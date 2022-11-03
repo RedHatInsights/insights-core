@@ -264,7 +264,7 @@ class DefaultSpecs(Specs):
     init_process_cgroup = simple_file("/proc/1/cgroup")
     initctl_lst = simple_command("/sbin/initctl --system list")
     insights_client_conf = simple_file('/etc/insights-client/insights-client.conf')
-    installed_rpms = simple_command("/bin/rpm -qa --qf '%s'" % rpm_format, context=HostContext, signum=signal.SIGTERM)
+    installed_rpms = simple_command("/bin/rpm -qa --qf '%s'" % _rpm_format, context=HostContext, signum=signal.SIGTERM)
     interrupts = simple_file("/proc/interrupts")
     ip6tables = simple_command("/sbin/ip6tables-save")
     ip_addr = simple_command("/sbin/ip addr")
@@ -311,7 +311,7 @@ class DefaultSpecs(Specs):
     ls_dev = simple_command("/bin/ls -lanR /dev")
     ls_disk = simple_command("/bin/ls -lanR /dev/disk")
     ls_edac_mc = simple_command("/bin/ls -lan /sys/devices/system/edac/mc")
-    ls_etc = simple_command("/bin/ls -lan {0}".format(' '.join(etc_and_sub_dirs)), keep_rc=True)
+    ls_etc = simple_command("/bin/ls -lan {0}".format(' '.join(_etc_and_sub_dirs)), keep_rc=True)
     ls_etc_ssh = simple_command("/bin/ls -lanL /etc/ssh")
     ls_ipa_idoverride_memberof = simple_command("/bin/ls -lan /usr/share/ipa/ui/js/plugins/idoverride-memberof")
     ls_krb5_sssd = simple_command("/bin/ls -lan /var/lib/sss/pubconf/krb5.include.d")
@@ -672,6 +672,6 @@ class DefaultSpecs(Specs):
     zipl_conf = simple_file("/etc/zipl.conf")
 
     # Container collection specs
-    container_installed_rpms = container_execute(running_rhel_containers, "rpm -qa --qf '%s'" % rpm_format, context=HostContext, signum=signal.SIGTERM)
+    container_installed_rpms = container_execute(running_rhel_containers, "rpm -qa --qf '%s'" % _rpm_format, context=HostContext, signum=signal.SIGTERM)
     container_nginx_conf = container_collect(container_nginx_conf_ds)
     container_redhat_release = container_collect(running_rhel_containers, "/etc/redhat-release")
