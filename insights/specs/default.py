@@ -184,7 +184,6 @@ class DefaultSpecs(Specs):
                                        "/usr/lib/udev/rules.d/40-redhat.rules", "/usr/local/lib/udev/rules.d/40-redhat.rules"])
     etc_udev_oracle_asm_rules = glob_file(r"/etc/udev/rules.d/*asm*.rules")
     etcd_conf = simple_file("/etc/etcd/etcd.conf")
-    ethernet_interfaces = listdir("/sys/class/net", context=HostContext)
     ethtool = foreach_execute(ethernet.interfaces, "/sbin/ethtool %s")
     ethtool_S = foreach_execute(ethernet.interfaces, "/sbin/ethtool -S %s")
     ethtool_T = foreach_execute(ethernet.interfaces, "/sbin/ethtool -T %s")

@@ -10,7 +10,7 @@ from insights.specs import Specs
 
 
 class LocalSpecs(Specs):
-    """ Local specs used only by ethernet_interfaces datasource. """
+    """ Local specs used only by ethernet.interfaces datasource. """
     ip_link = simple_command("/sbin/ip -o link")
 
 
@@ -30,7 +30,7 @@ def interfaces(broker):
     Note:
         This datasource may be executed using the following command:
 
-        ``insights cat --no-header ethernet_interfaces``
+        ``insights cat --no-header ethernet.interfaces``
 
     Sample data returned::
 
