@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.301
+Version:        3.0.302
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,16 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Nov 03 2022 Sachin Patil <psachin@redhat.com> 3.0.302-1
+- feat: new spec and parser for 'azure_instance_id' (#3568) (xiangceliu@redhat.com)
+- feat: Add parser container_inspect (#3562) (jiazhang@redhat.com)
+- fix: remove the inner functions of the _make_rpm_formatter (#3574) (xiangceliu@redhat.com)
+- chore: remove the unused 'ethernet_interfaces' spec (#3577) (xiangceliu@redhat.com)
+- fix: check list range to avoid exception (#3576) (10719925+takayuki-nagata@users.noreply.github.com)
+- fix: LuksDump not parsing multiple data segments (#3569) (daniel.zatovic@gmail.com)
+- feat: new spec and parser for 'subscription-manage facts' (#3555) (xiangceliu@redhat.com)
+- enhance: add base class 'OVSvsctlList' (#3575) (39508521+shlao@users.noreply.github.com)
+
 * Mon Oct 31 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.301-1
 - fix: missing call to a RPM format generation function (#3572)
   (daniel.zatovic@gmail.com)
