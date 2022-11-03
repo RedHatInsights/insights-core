@@ -30,7 +30,7 @@ from insights.specs.datasources import (
     semanage, ssl_certificate, sys_fs_cgroup_memory_tasks_number, system_user_dirs, user_group, yum_updates, luks_devices)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 from insights.specs.datasources.pcp import pcp_enabled, pmlog_summary_args
-from insights.specs.datasources.container import running_rhel_containers
+from insights.specs.datasources.container import running_rhel_containers, containers_inspect
 from insights.specs.datasources.container.nginx_conf import nginx_conf as container_nginx_conf_ds
 
 
@@ -675,3 +675,4 @@ class DefaultSpecs(Specs):
     container_installed_rpms = container_execute(running_rhel_containers, "rpm -qa --qf '%s'" % _rpm_format, context=HostContext, signum=signal.SIGTERM)
     container_nginx_conf = container_collect(container_nginx_conf_ds)
     container_redhat_release = container_collect(running_rhel_containers, "/etc/redhat-release")
+    containers_inspect = containers_inspect.containers_inspect_data_datasource
