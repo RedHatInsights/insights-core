@@ -43,6 +43,14 @@ insights.specs.datasources.cloud_init
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.container.containers_inspect
+-------------------------------------------------------
+
+.. automodule:: insights.specs.datasources.container.containers_inspect
+    :members: running_rhel_containers_id, containers_inspect_data_datasource
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.container
 ------------------------------------
 

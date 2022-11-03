@@ -12,10 +12,15 @@ from insights import parser, CommandParser
 from insights.core.marshalling import unmarshal
 from insights.parsers import SkipException
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 class DockerInspect(CommandParser, dict):
     """
+    .. warning::
+        This class is deprecated, please use
+        :py:class:`insights.parsers.containers_inspect.ContainersInspect` instead.
+
     Parse the output of command "docker inspect --type=image" and "docker
     inspect --type=container".  The output of these two commands is formatted
     as JSON, so "json.loads" is an option to parse the output in the future.
@@ -23,6 +28,13 @@ class DockerInspect(CommandParser, dict):
     Raises:
         SkipException: If content is not provided
     """
+    def __init__(self, *args, **kwargs):
+        deprecated(
+            DockerInspect,
+            "Please use the :class:`insights.parsers.containers_inspect.ContainersInspect` instead.",
+            "3.2.25"
+        )
+        super(DockerInspect, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
         if not content:
@@ -70,6 +82,10 @@ class DockerInspectImage(DockerInspect):
 @parser(Specs.docker_container_inspect)
 class DockerInspectContainer(DockerInspect):
     """
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.containers_inspect.ContainersInspect` instead.
+
     Parse docker container inspect output using the DockerInspect parser class.
 
     Sample input::
@@ -98,4 +114,10 @@ class DockerInspectContainer(DockerInspect):
         False
 
     """
-    pass
+    def __init__(self, *args, **kwargs):
+        deprecated(
+            DockerInspectContainer,
+            "Please use the :class:`insights.parsers.containers_inspect.ContainersInspect` instead.",
+            "3.2.25"
+        )
+        super(DockerInspectContainer, self).__init__(*args, **kwargs)
