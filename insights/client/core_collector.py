@@ -51,7 +51,11 @@ class CoreCollector(DataCollector):
 
         manifest = collect.default_manifest
         if hasattr(self.config, 'manifest') and self.config.manifest:
-            manifest = self.config.manifest
+            if self.config.app is None:
+                with open(self.config.manifest, 'r') as f:
+                    manifest = f.read()
+            else:
+                manifest = self.config.manifest
         collected_data_path, exceptions = collect.collect(
             manifest=manifest,
             tmp_path=self.archive.tmp_dir,
