@@ -6,7 +6,6 @@ from insights.parsers.nmcli import NmcliConnShow
 from mock.mock import Mock
 from insights.tests import context_wrap
 
-RELATIVE_PATH = "insights_commands/ethernet_interfaces"
 
 IP_LINK = """
 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000\\    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00

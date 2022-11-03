@@ -157,7 +157,6 @@ class Specs(SpecSet):
     etc_udev_40_redhat_rules = RegistryPoint(filterable=True)
     etc_udev_oracle_asm_rules = RegistryPoint(multi_output=True, filterable=True)
     etcd_conf = RegistryPoint(filterable=True)
-    ethernet_interfaces = RegistryPoint()
     ethtool = RegistryPoint(multi_output=True)
     ethtool_S = RegistryPoint(multi_output=True)
     ethtool_T = RegistryPoint(multi_output=True)
