@@ -66,6 +66,53 @@ Cluster Properties:
  stonith-enabled: false
 """.strip()
 
+PCS_CONFIG_ON_REMOTE = """
+Cluster Name: test_cluster
+Corosync Nodes:
+Pacemaker Nodes:
+ node1 node2 node3
+
+Resources:
+ Resource: dummy1 (class=ocf provider=heartbeat type=Dummy)
+  Operations: migrate_from interval=0s timeout=20s (dummy1-migrate_from-interval-0s)
+              migrate_to interval=0s timeout=20s (dummy1-migrate_to-interval-0s)
+              monitor interval=10s timeout=20s (dummy1-monitor-interval-10s)
+              reload interval=0s timeout=20s (dummy1-reload-interval-0s)
+              start interval=0s timeout=20s (dummy1-start-interval-0s)
+              stop interval=0s timeout=20s (dummy1-stop-interval-0s)
+ Resource: remote1 (class=ocf provider=pacemaker type=remote)
+  Attributes: server=remote1
+  Operations: migrate_from interval=0s timeout=60s (remote1-migrate_from-interval-0s)
+              migrate_to interval=0s timeout=60s (remote1-migrate_to-interval-0s)
+              monitor interval=60s timeout=30s (remote1-monitor-interval-60s)
+              reload interval=0s timeout=60s (remote1-reload-interval-0s)
+              start interval=0s timeout=60s (remote1-start-interval-0s)
+              stop interval=0s timeout=60s (remote1-stop-interval-0s)
+
+Stonith Devices:
+Fencing Levels:
+
+Location Constraints:
+Ordering Constraints:
+Colocation Constraints:
+Ticket Constraints:
+
+Alerts:
+ No alerts defined
+
+Resources Defaults:
+ No defaults set
+Operations Defaults:
+ No defaults set
+
+Cluster Properties:
+ cluster-infrastructure: corosync
+ cluster-name: my_cluster
+ dc-version: 2.0.3-5.el8-4b1f869f0f
+ have-watchdog: false
+ last-lrm-refresh: 1667289123
+""".strip()
+
 
 def test_pcs_config_basic():
     pcs = PCSConfig(context_wrap(NORMAL_PCS_CONFIG))
@@ -83,6 +130,11 @@ def test_pcs_config_normal():
     assert "cluster-infrastructure" in pcs.cluster_properties
     assert "have-watchdog" in pcs.cluster_properties
     assert pcs.cluster_properties.get("have-watchdog") == "false"
+
+
+def test_pcs_config_on_remote():
+    pcs = PCSConfig(context_wrap(PCS_CONFIG_ON_REMOTE))
+    assert pcs.get("Corosync Nodes") == []
 
 
 def test_pcs_config_documentation():

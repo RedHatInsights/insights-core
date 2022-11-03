@@ -141,7 +141,7 @@ class PCSConfig(CommandParser):
         if not dc_key == "" and dc_key not in self.data.keys():
             self.data[dc_key] = list_data
         for in_line in in_line_tuple:
-            if isinstance(self.data.get(in_line), list):
+            if isinstance(self.data.get(in_line), list) and self.data[in_line]:
                 self.data[in_line] = self.data[in_line][0].split()
 
     def get(self, key):
