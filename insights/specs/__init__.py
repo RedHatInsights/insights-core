@@ -21,6 +21,7 @@ class Specs(SpecSet):
     awx_manage_check_license = RegistryPoint()
     awx_manage_check_license_data = RegistryPoint(filterable=True)
     awx_manage_print_settings = RegistryPoint()
+    azure_instance_id = RegistryPoint()
     azure_instance_plan = RegistryPoint()
     azure_instance_type = RegistryPoint()
     bdi_read_ahead_kb = RegistryPoint(multi_output=True)
