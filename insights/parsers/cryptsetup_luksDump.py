@@ -34,7 +34,7 @@ class DocParser(object):
 
         ZeroLevelKVPair = Key + Value1
         FirstLevelKVPair = FirstIndent >> Key + Value1
-        SecondLevelKVPair = SecondIndent >> WithIndent(Key + Value)
+        SecondLevelKVPair = SecondIndent >> WithIndent(Key + Value) << Opt(Many(Char("\n")))
 
         Luks2SectionName = Key << Char("\n")
         Luks2SectionEntry = (FirstLevelKVPair + Many(SecondLevelKVPair).map(dict)).map(self.convert_type)
