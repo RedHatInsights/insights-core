@@ -84,6 +84,9 @@ def containers_inspect_data_datasource(broker):
                         continue
                     filter_result[item] = val
                 total_results.append(filter_result)
+            # Generally the False branch of this condition will never reach, since the required component
+            # LocalSpecs.containers_inspect_data_raw can guarantee total_results is not null. However, it's worth
+            # leaving this condition as an explicit assertion to avoid unexpected situation.
             if total_results:
                 return DatasourceProvider(content=json.dumps(total_results), relative_path='insights_containers/containers_inspect')
     except Exception as e:
