@@ -73,6 +73,7 @@ def test_azure_instance_id_ab_empty():
 def test_azure_instance_id():
     azure = AzureInstanceID(context_wrap(AZURE_ID))
     assert azure.id == "f904ece8-c6c1-4b5c-881f-309b50f25e50"
+    assert repr(azure) == "<instance_id: {0}>".format(azure.id)
 
 
 # Test AzureInstanceType
@@ -105,6 +106,8 @@ def test_azure_instance_type():
     assert azure.size == "L32s"
     assert azure.version is None
     assert azure.raw == "Standard_L32s"
+    assert repr(azure) == "<azure_type: {t}, size: {s}, version: {v},  raw: {r}>".format(
+                t=azure.type, s=azure.size, v=azure.version, r=azure.raw)
 
     azure = AzureInstanceType(context_wrap(AZURE_TYPE_2))
     assert azure.type == "Standard"
@@ -146,6 +149,8 @@ def test_azure_instance_plan():
     assert azure.product == "rhel"
     assert azure.publisher == "Red Hat"
     assert azure.raw == '{"name": "rhel7", "product": "rhel", "publisher": "Red Hat"}'
+    assert repr(azure) == "<azure_plan_name: {n}, product: {pr}, publisher: {pu}, raw: {r}".format(
+            n=azure.name, pr=azure.product, pu=azure.publisher, r=azure.raw)
 
     azure = AzureInstancePlan(context_wrap(AZURE_PLAN_2))
     assert azure.name is None
