@@ -256,6 +256,9 @@ def test_round_trip():
 
 def test_dehydrate():
     broker = dr.run(report)
+    exc = next(iter(broker.tracebacks))
+    tb = broker.tracebacks[exc]
+
     tmp_path = mkdtemp()
     spec_the_data = TestSpecs.the_data
     try:
@@ -266,8 +269,6 @@ def test_dehydrate():
         assert os.path.exists(meta_data_json)
         with open(meta_data_json, 'r') as fp:
             ret = json.load(fp)
-            exc = next(iter(broker.tracebacks))
-            tb = broker.tracebacks[exc]
             assert "errors" in ret
             assert ret["errors"][0] == tb
             assert "Traceback" in tb
