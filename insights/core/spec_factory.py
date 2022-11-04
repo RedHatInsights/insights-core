@@ -1004,11 +1004,12 @@ class container_execute(foreach_execute):
             source = [source]
         for e in source:
             try:
-                # e       = (image, <podman|docker>, container_id, <...>)
-                image, e = e[0], e[1:]
-                # e       = (<podman|docker>, container_id, <...>)
+                # e       = (image, <podman|docker>, container_id, <args>)
+                image, engine, cid, args = e[0], e[1], e[2], e[3:]
+                # handle command with args
+                cmd = self.cmd % args if args else self.cmd
                 # the_cmd = <podman|docker> exec container_id cmd
-                the_cmd = ("/usr/bin/%s exec %s " + self.cmd) % e
+                the_cmd = "/usr/bin/%s exec %s %s" % (engine, cid, cmd)
                 ccp = ContainerCommandProvider(the_cmd, ctx, image=image, args=e,
                         split=self.split, keep_rc=self.keep_rc, ds=self,
                         timeout=self.timeout, inherit_env=self.inherit_env, signum=self.signum)
@@ -1056,14 +1057,17 @@ class container_collect(foreach_execute):
             source = [source]
         for e in source:
             try:
-                # e        = (image, <podman|docker>, container_id, <path>)
+                # e       = (image, <podman|docker>, container_id, <path>)
                 image, e = e[0], e[1:]
-                # e        = (<podman|docker>, container_id, <path>)
-                # self.cmd = path or None
-                # elems    = (<podman|docker>, container_id, path)
-                elems = e if self.cmd is None else e + (self.cmd,)
+                if self.cmd is None or self.cmd == '%s':
+                    # path is provided by `provider`
+                    e, path = e[:-1], e[-1]
+                else:
+                    # path is provided by self.cmd
+                    e, path = e, self.cmd
+                # e       = (<podman|docker>, container_id)
                 # the_cmd = <podman|docker> exec container_id cat path
-                the_cmd = "/usr/bin/%s exec %s cat %s" % elems
+                the_cmd = ("/usr/bin/%s exec %s cat " % e) + path
                 cfp = ContainerFileProvider(the_cmd, ctx, image=image, args=None,
                         split=self.split, keep_rc=self.keep_rc, ds=self,
                         timeout=self.timeout, inherit_env=self.inherit_env, signum=self.signum)

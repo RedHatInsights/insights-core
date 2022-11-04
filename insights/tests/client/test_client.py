@@ -9,7 +9,7 @@ from insights.client.archive import InsightsArchive
 from insights.client.config import InsightsConfig
 from insights import package_info
 from insights.client.constants import InsightsConstants as constants
-from mock.mock import patch, Mock, call
+from mock.mock import patch, Mock, call, ANY
 from pytest import mark
 from pytest import raises
 
@@ -413,7 +413,8 @@ def test_reg_check_unregistered_unreachable_legacy():
 @patch('insights.client.client.InsightsConnection.upload_archive',
        return_value=Mock(status_code=500))
 @patch('insights.client.os.path.exists', return_value=True)
-def test_upload_500_retry(_, upload_archive):
+@patch("insights.client.client.logger")
+def test_upload_500_retry(logger, _, upload_archive):
 
     # Hack to prevent client from parsing args to py.test
     tmp = sys.argv
@@ -429,8 +430,50 @@ def test_upload_500_retry(_, upload_archive):
 
         upload_archive.assert_called()
         assert upload_archive.call_count == retries
+        logger.error.assert_any_call("Upload attempt %d of %d failed! Reason: %s", 1, config.retries, ANY)
+        logger.error.assert_called_with("All attempts to upload have failed!")
     finally:
         sys.argv = tmp
+
+
+@patch('insights.client.client.constants.sleep_time', 0)
+@patch('insights.client.client.InsightsConnection.upload_archive')
+@patch("insights.client.client.logger")
+def test_upload_exception_retry(logger, upload_archive):
+    from requests.exceptions import ConnectionError, ProxyError, Timeout, HTTPError, SSLError
+    upload_archive.side_effect = [ConnectionError("Connection Error"),
+                                  ProxyError("Proxy Error"),
+                                  Timeout("Timeout Error")]
+    retries = 3
+
+    config = InsightsConfig(legacy_upload=False, logging_file='/tmp/insights.log', retries=retries)
+    client = InsightsClient(config)
+    with patch('insights.client.os.path.exists', return_value=True):
+        with pytest.raises(RuntimeError):
+            client.upload('/tmp/insights.tar.gz')
+    assert upload_archive.call_count == retries
+    logger.debug.assert_any_call("Upload attempt %d of %d ...", 1, config.retries)
+    logger.error.assert_any_call("Upload attempt %d of %d failed! Reason: %s", 1, config.retries, "Connection Error")
+    logger.error.assert_any_call("Upload attempt %d of %d failed! Reason: %s", 2, config.retries, "Proxy Error")
+    logger.error.assert_any_call("Upload attempt %d of %d failed! Reason: %s", 3, config.retries, "Timeout Error")
+    logger.error.assert_called_with("All attempts to upload have failed!")
+
+    # Test legacy uploads
+    logger.reset_mock()
+    upload_archive.reset_mock()
+    upload_archive.side_effect = [HTTPError("HTTP Error"),
+                                  SSLError("SSL Error")]
+    retries = 2
+    config = InsightsConfig(legacy_upload=True, logging_file='/tmp/insights.log', retries=retries)
+    client = InsightsClient(config)
+    with patch('insights.client.os.path.exists', return_value=True):
+        with pytest.raises(RuntimeError):
+            client.upload('/tmp/insights.tar.gz')
+    assert upload_archive.call_count == retries
+    logger.debug.assert_any_call("Legacy upload attempt %d of %d ...", 1, config.retries)
+    logger.error.assert_any_call("Upload attempt %d of %d failed! Reason: %s", 1, config.retries, "HTTP Error")
+    logger.error.assert_any_call("Upload attempt %d of %d failed! Reason: %s", 2, config.retries, "SSL Error")
+    logger.error.assert_called_with("All attempts to upload have failed!")
 
 
 @patch('insights.client.client.InsightsConnection.handle_fail_rcs')

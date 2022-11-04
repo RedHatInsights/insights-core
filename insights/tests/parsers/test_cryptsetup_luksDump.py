@@ -65,6 +65,20 @@ Data segments:
 	cipher: aes-xts-plain64
 	sector: 4096 [bytes]
 
+  1: crypt
+	offset: 16777216 [bytes]
+	length: (whole device)
+	cipher: aes-xts-plain64
+	sector: 4096 [bytes]
+	flags : backup-previous
+
+  2: crypt
+	offset: 16777216 [bytes]
+	length: (whole device)
+	cipher: aes-xts-plain64
+	sector: 4096 [bytes]
+	flags : backup-final
+
 Keyslots:
   0: luks2
 	Key:        512 bits
@@ -146,7 +160,7 @@ def test_cryptsetup_luks_dump_luks2():
     assert luks2_parsed.dump["header"]["Version"] == "2"
     assert len(luks2_parsed.dump["Keyslots"].keys()) == 3
     assert luks2_parsed.dump["Keyslots"]["0"]["type"] == "luks2"
-    assert len(luks2_parsed.dump["Data segments"].keys()) == 1
+    assert len(luks2_parsed.dump["Data segments"].keys()) == 3
     assert len(luks2_parsed.dump["Tokens"].keys()) == 1
     assert len(luks2_parsed.dump["Digests"].keys()) == 1
 
