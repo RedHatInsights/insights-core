@@ -202,7 +202,7 @@ class YumRepoList(CommandParser):
 @parser(Specs.container_yum_repolist)
 class ContainerYumRepoList(ContainerParser, YumRepoList):
     """
-    Parses the data for list of installed rpms of the running
+    Parses the output for `yum -C --noplugins repolist` command of the running
     containers which are based on RHEL images.
     """
     pass
