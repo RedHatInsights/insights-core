@@ -11,7 +11,8 @@ from insights.specs import Specs
 _green = "Boot Status is GREEN"
 _red = "Boot Status is RED"
 _fallback = "FALLBACK BOOT DETECTED"
-add_filter(Specs.greenboot_status, [_green, _red, _fallback])
+_nologs = "WARNING: No greenboot logs were found!"
+add_filter(Specs.greenboot_status, [_green, _red, _fallback, _nologs])
 
 
 @parser(Specs.greenboot_status)
@@ -33,3 +34,4 @@ class GreenbootStatus(LogFileOutput):
 GreenbootStatus.token_scan("green", _green)
 GreenbootStatus.token_scan("red", _red)
 GreenbootStatus.token_scan("fallback", _fallback)
+GreenbootStatus.token_scan("nologs", _nologs)
