@@ -1,5 +1,5 @@
 from insights.parsers import yum
-from insights.parsers.yum import YumRepoList
+from insights.parsers.yum import YumRepoList, ContainerYumRepoList
 from insights.parsers import SkipException, ParseException
 from insights.tests import context_wrap
 import doctest
@@ -256,3 +256,63 @@ def test_repolist_missing_header():
     with pytest.raises(ParseException) as se:
         YumRepoList(context_wrap(YUM_REPOLIST_MISSING_HEADER))
     assert 'Failed to parser yum repolist' in str(se)
+
+
+def test_container_yum_repolist():
+    repo_list = ContainerYumRepoList(
+        context_wrap(
+            YUM_REPOLIST_CONTENT,
+            container_id='cc2883a1a369',
+            image='quay.io/rhel8',
+            engine='podman',
+            path='insights_containers/cc2883a1a369/insights_commands/rpm_-qa_--qf_name_NAME_epoch_EPOCH_version_VERSION_release_RELEASE_arch_ARCH_installtime_INSTALLTIME_date_buildtime_BUILDTIME_vendor_VENDOR_buildhost_BUILDHOST_sigpgp_SIGPGP_pgpsig'
+        )
+    )
+    assert repo_list.image == "quay.io/rhel8"
+    assert repo_list.engine == "podman"
+    assert repo_list.container_id == "cc2883a1a369"
+    assert len(repo_list) == 4
+    assert repo_list[0] == {"id": "rhel-7-server-rpms/7Server/x86_64",
+                            "name": "Red Hat Enterprise Linux",
+                            "status": "10415"}
+    assert 'rhel-7-server-rpms/7Server/x86_64' in repo_list
+    assert repo_list['rhel-7-server-rpms/7Server/x86_64'] == repo_list[0]
+    assert repo_list.eus == []
+
+
+def test_container_repolist_error():
+    with pytest.raises(SkipException) as se:
+        ContainerYumRepoList(
+            context_wrap(
+                YUM_REPOLIST_ZERO,
+                container_id='cc2883a1a369',
+                image='quay.io/rhel8',
+                engine='podman',
+                path='insights_containers/cc2883a1a369/insights_commands/rpm_-qa_--qf_name_NAME_epoch_EPOCH_version_VERSION_release_RELEASE_arch_ARCH_installtime_INSTALLTIME_date_buildtime_BUILDTIME_vendor_VENDOR_buildhost_BUILDHOST_sigpgp_SIGPGP_pgpsig'
+            )
+        )
+    assert 'No repolist.' in str(se)
+
+    with pytest.raises(SkipException) as se:
+        ContainerYumRepoList(
+            context_wrap(
+                '',
+                container_id='cc2883a1a369',
+                image='quay.io/rhel8',
+                engine='podman',
+                path='insights_containers/cc2883a1a369/insights_commands/rpm_-qa_--qf_name_NAME_epoch_EPOCH_version_VERSION_release_RELEASE_arch_ARCH_installtime_INSTALLTIME_date_buildtime_BUILDTIME_vendor_VENDOR_buildhost_BUILDHOST_sigpgp_SIGPGP_pgpsig'
+            )
+        )
+    assert 'No repolist.' in str(se)
+
+    with pytest.raises(SkipException) as se:
+        YumRepoList(
+            context_wrap(
+                YUM_REPOLIST_CONTENT_EMPTY,
+                container_id='cc2883a1a369',
+                image='quay.io/rhel8',
+                engine='podman',
+                path='insights_containers/cc2883a1a369/insights_commands/rpm_-qa_--qf_name_NAME_epoch_EPOCH_version_VERSION_release_RELEASE_arch_ARCH_installtime_INSTALLTIME_date_buildtime_BUILDTIME_vendor_VENDOR_buildhost_BUILDHOST_sigpgp_SIGPGP_pgpsig'
+            )
+        )
+    assert 'No repolist.' in str(se)

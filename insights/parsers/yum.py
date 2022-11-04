@@ -8,11 +8,14 @@ This module contains the classes that parse the output of the commands
 
 YumRepoList - command ``yum -C --noplugins repolist``
 -----------------------------------------------------
+ContainerYumRepoList - command ``yum -C --noplugins repolist``
+--------------------------------------------------------------
 """
 
 from insights import parser, CommandParser
 from insights.parsers import SkipException, parse_fixed_table, ParseException
 from insights.specs import Specs
+from insights import ContainerParser
 
 eus = [
     '5.0.z',
@@ -194,3 +197,12 @@ class YumRepoList(CommandParser):
         return [i.split('/')[0]
                 for i in self.repos
                 if i.startswith('rhel-') or '-rhel-' in i]
+
+
+@parser(Specs.container_yum_repolist)
+class ContainerYumRepoList(ContainerParser, YumRepoList):
+    """
+    Parses the data for list of installed rpms of the running
+    containers which are based on RHEL images.
+    """
+    pass

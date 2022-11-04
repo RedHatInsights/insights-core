@@ -795,3 +795,4 @@ class Specs(SpecSet):
     container_installed_rpms = RegistryPoint(multi_output=True)
     container_inspect_keys = RegistryPoint(filterable=True)
     containers_inspect = RegistryPoint()
+    container_yum_repolist = RegistryPoint(filterable=True)
