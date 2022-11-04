@@ -2,13 +2,20 @@
 DotNet- Comand ``/usr/bin/dotnet``
 ==================================
 
-The parser for ``/usr/bin/dotnet --version`` is included in this module..
+The parsers related ``/usr/bin/dotnet --version`` is included in this module.
+
+DotNetVersion - command ``dotnet --version``
+--------------------------------------------
+
+ContainerInstalledRpms - command ``dotnet --version``
+-----------------------------------------------------
 
 """
 
 from insights import parser, CommandParser
 from insights.parsers import SkipException, ParseException
 from insights.specs import Specs
+from insights import ContainerParser
 
 
 @parser(Specs.dotnet_version)
@@ -44,3 +51,27 @@ class DotNetVersion(CommandParser):
 
         if self.major is None:
             raise ParseException("Unrecognized version: {0}", self.raw)
+
+
+@parser(Specs.container_dotnet_version)
+class ContainerInstalledRpms(ContainerParser, DotNetVersion):
+    """
+    Parses the output of the ``/usr/bin/dotnet --version`` command of the running
+    containers which are based on RHEL images.
+
+    Sample output::
+
+        3.1.108
+
+    Examples:
+        >>> type(con_dotnet_ver)
+        <class 'insights.parsers.dotnet.ContainerInstalledRpms'>
+        >>> con_dotnet_ver.major
+        3
+        >>> con_dotnet_ver.minor
+        1
+        >>> con_dotnet_ver.raw
+        '3.1.108'
+    """
+
+    pass
