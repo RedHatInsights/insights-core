@@ -61,6 +61,10 @@ Feb 22 22:50:26 example greenboot-status[905]: FALLBACK BOOT DETECTED! Default r
 Feb 22 22:50:26 example systemd[1]: Started greenboot MotD Generator.
 """
 
+NOLOGS = """
+WARNING: No greenboot logs were found!
+"""
+
 
 def test_greenboot_status_green():
     green = context_wrap(GREEN)
@@ -81,3 +85,11 @@ def test_greenboot_status_fallback():
     p = GreenbootStatus(fb)
     assert p.green
     assert p.fallback
+
+
+def test_greenboot_status_nolog():
+    fb = context_wrap(NOLOGS)
+    p = GreenbootStatus(fb)
+    assert p.nologs
+    assert not p.green
+    assert not p.red
