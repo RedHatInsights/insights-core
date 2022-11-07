@@ -15,7 +15,7 @@ from insights.specs import Specs
 
 class LocalSpecs(Specs):
     """
-    Local spec used only by the system_user_dirs datasource
+    Local spec used only by the system_user_dirs datasource.
     """
     rpm_args = simple_command(
         'rpm -qa --qf="[%{=NAME}; %{FILEMODES:perms}; %{FILEUSERNAME}; %{FILEGROUPNAME}\n]"',
@@ -28,7 +28,7 @@ def get_shells():
     Returns all full pathnames of valid login shells without nologins.
     """
     with open("/etc/shells") as file:
-        return [line.strip() for line in file if "nologin" not in line]
+        return set(line.strip() for line in file if "nologin" not in line)
 
 
 def get_users():
@@ -36,7 +36,7 @@ def get_users():
     Returns all users with shell specified in get_shells() except for root.
     """
     shells = get_shells()
-    users = []
+    users = set()
 
     for user in pwd.getpwall():
         name = user[0]
@@ -44,7 +44,7 @@ def get_users():
 
         if name == "root" or (shell not in shells):
             continue
-        users.append(name)
+        users.add(name)
     return users
 
 
@@ -53,17 +53,19 @@ def get_groups(users):
     Returns all groups for users specified in get_users().
     Every user has at least one group with its name.
     """
-    groups = []
+    groups = set()
 
     for group in grp.getgrall():
         group_name = group[0]
         user_list = group[3]
 
         if group_name in users:
-            groups.append(group_name)  # group for an user of interest
-        for user in user_list:
-            if user.strip() in users:
-                groups.append(group_name)  # add groups containing a user
+            groups.add(group_name)
+        else:
+            for user in user_list:
+                if user.strip() in users:
+                    groups.add(group_name)
+                    break
     return groups
 
 
@@ -82,13 +84,15 @@ def system_user_dirs(broker):
     Returns:
         List[str]: Sorted list of package names
     """
-    users = get_users()
-    groups = get_groups(users)
-    packages = set()
     content = broker[LocalSpecs.rpm_args].content
 
     if not content or "command not found" in content[0]:
         raise SkipComponent
+
+    users = get_users()
+    groups = get_groups(users)
+
+    packages = set()
 
     for line in content:
         name, perms, user, group = line.split("; ")
