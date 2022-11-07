@@ -265,7 +265,6 @@ def test_container_yum_repolist():
             container_id='cc2883a1a369',
             image='quay.io/rhel8',
             engine='podman',
-            path='insights_containers/cc2883a1a369/insights_commands/rpm_-qa_--qf_name_NAME_epoch_EPOCH_version_VERSION_release_RELEASE_arch_ARCH_installtime_INSTALLTIME_date_buildtime_BUILDTIME_vendor_VENDOR_buildhost_BUILDHOST_sigpgp_SIGPGP_pgpsig'
         )
     )
     assert repo_list.image == "quay.io/rhel8"

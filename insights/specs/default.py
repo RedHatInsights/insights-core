@@ -677,4 +677,4 @@ class DefaultSpecs(Specs):
     container_nginx_conf = container_collect(container_nginx_conf_ds)
     container_redhat_release = container_collect(running_rhel_containers, "/etc/redhat-release")
     containers_inspect = containers_inspect.containers_inspect_data_datasource
-    container_yum_repolist = container_execute(running_rhel_containers, "yum -C --noplugins repolist")
+    container_yum_repolist = container_execute(running_rhel_containers, "/usr/bin/yum -C --noplugins repolist")
