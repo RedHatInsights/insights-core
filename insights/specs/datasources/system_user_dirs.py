@@ -18,7 +18,7 @@ class LocalSpecs(Specs):
     Local spec used only by the system_user_dirs datasource.
     """
     rpm_args = simple_command(
-        'rpm -qa --qf="[%{=NAME}; %{FILEMODES:perms}; %{FILEUSERNAME}; %{FILEGROUPNAME}\n]"',
+        'rpm -qa --nosignature --qf="[%{=NAME}; %{FILENAMES}; %{FILEMODES:perms}; %{FILEUSERNAME}; %{FILEGROUPNAME}\n]"',
         signum=signal.SIGTERM
     )
 
@@ -74,9 +74,11 @@ def system_user_dirs(broker):
     r"""
     Custom datasource for CVE-2021-35937, CVE-2021-35938, and CVE-2021-35939.
 
-    It collects package names from the ``rpm -qa --qf="[%{=NAME}; %{FILEMODES:perms};
-    %{FILEUSERNAME}; %{FILEGROUPNAME}\n]" command``, if the package has
-    at least one directory which is writable by a specific user/group or the others.
+    It collects package names from the ``rpm -qa --nosignature --qf="[%{=NAME}; %{FILENAMES};
+    %{FILEMODES:perms}; %{FILEUSERNAME}; %{FILEGROUPNAME}\n]" command``.
+
+    The output is a sorted list of all packages, which have at least one directory with files
+    inside, and this directory is writable by a specific user/group or the others.
 
     Raises:
         SkipComponent: Raised if no data is available
@@ -92,17 +94,28 @@ def system_user_dirs(broker):
     users = get_users()
     groups = get_groups(users)
 
+    dirs = {}
     packages = set()
 
+    # Stores a writeable directory with its package
     for line in content:
-        name, perms, user, group = line.split("; ")
+        pkg_name, path_name, perms, user, group = line.split("; ")
         if perms[0] == "d":
             user_w = user in users and perms[2] == "w"
             group_w = group in groups and perms[5] == "w"
             others_w = perms[8] == "w"
 
             if user_w or group_w or others_w:
-                packages.add(name)
+                dirs[path_name] = pkg_name
+
+    # Stores a package if its associated file is in a writable directory
+    for line in content:
+        _, path_name, perms, _, _ = line.split("; ")
+        if perms[0] != "d":
+            dir_name = path_name.rsplit('/', 1)[0]
+
+            if dir_name in dirs:
+                packages.add(dirs[dir_name])
 
     if packages:
         return DatasourceProvider(
