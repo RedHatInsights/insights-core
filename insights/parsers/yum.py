@@ -223,7 +223,9 @@ class ContainerYumRepoList(ContainerParser, YumRepoList):
         'podman'
         >>> len(con_yum_repolist)
         4
-        >>> con_yum_repolist[0]
-        {'id': 'rhel-7-server-rpms/7Server/x86_64', 'name': 'Red Hat Enterprise Linux', 'status': '10415'}
+        >>> con_yum_repolist[0]['id']
+        'rhel-7-server-rpms/7Server/x86_64'
+        >>> con_yum_repolist[0]['name']
+        'Red Hat Enterprise Linux'
     """
     pass
