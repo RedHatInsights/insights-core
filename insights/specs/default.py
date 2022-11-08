@@ -676,5 +676,5 @@ class DefaultSpecs(Specs):
     container_installed_rpms = container_execute(running_rhel_containers, "rpm -qa --qf '%s'" % _rpm_format, context=HostContext, signum=signal.SIGTERM)
     container_nginx_conf = container_collect(container_nginx_conf_ds)
     container_redhat_release = container_collect(running_rhel_containers, "/etc/redhat-release")
-    containers_inspect = containers_inspect.containers_inspect_data_datasource
     container_yum_repolist = container_execute(running_rhel_containers, "/usr/bin/yum -C --noplugins repolist")
+    containers_inspect = containers_inspect.containers_inspect_data_datasource

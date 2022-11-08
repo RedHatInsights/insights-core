@@ -1,8 +1,9 @@
 """
-Parsers for Yum Commands
-========================
-
-This module contains two parsers:
+Yum - Commands
+==============
+Parsers for ``yum`` commands.
+This module contains the classes that parse the output of the commands
+`yum -C --noplugins repolist`.
 
 YumRepoList - command ``yum -C --noplugins repolist``
 -----------------------------------------------------
@@ -202,5 +203,27 @@ class ContainerYumRepoList(ContainerParser, YumRepoList):
     """
     Parses the output for `yum -C --noplugins repolist` command of the running
     containers which are based on RHEL images.
+
+    Sample output::
+
+        Loaded plugins: product-id, search-disabled-repos, subscription-manager
+        repo id                                         repo name                status
+        rhel-7-server-rpms/7Server/x86_64               Red Hat Enterprise Linux 10415
+        rhel-7-server-satellite-6.1-rpms/x86_64         Red Hat Satellite 6.1 (f   660
+        rhel-7-server-satellite-capsule-6.1-rpms/x86_64 Red Hat Satellite Capsul   265
+        rhel-server-rhscl-7-rpms/7Server/x86_64         Red Hat Software Collect  4571
+        repolist: 15911
+
+    Examples:
+        >>> type(con_yum_repolist)
+        <class 'insights.parsers.yum.ContainerYumRepoList'>
+        >>> con_yum_repolist.container_id
+        'cc2883a1a369'
+        >>> con_yum_repolist.engine
+        'podman'
+        >>> len(con_yum_repolist)
+        4
+        >>> con_yum_repolist[0]
+        {'id': 'rhel-7-server-rpms/7Server/x86_64', 'name': 'Red Hat Enterprise Linux', 'status': '10415'}
     """
     pass

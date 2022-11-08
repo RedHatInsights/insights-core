@@ -229,6 +229,14 @@ def test_doc_examples():
     env = {
             'repolist': YumRepoList(context_wrap(YUM_REPOLIST_DOC)),
             'repolist_no_reponame': YumRepoList(context_wrap(YUM_REPOLIST_DOC_NO_REPONAME)),
+            'con_yum_repolist': ContainerYumRepoList(
+                context_wrap(
+                    YUM_REPOLIST_CONTENT,
+                    container_id='cc2883a1a369',
+                    image='quay.io/rhel8',
+                    engine='podman'
+                )
+            )
           }
     failed, total = doctest.testmod(yum, globs=env)
     assert failed == 0
@@ -264,7 +272,7 @@ def test_container_yum_repolist():
             YUM_REPOLIST_CONTENT,
             container_id='cc2883a1a369',
             image='quay.io/rhel8',
-            engine='podman',
+            engine='podman'
         )
     )
     assert repo_list.image == "quay.io/rhel8"
@@ -286,7 +294,7 @@ def test_container_repolist_error():
                 YUM_REPOLIST_ZERO,
                 container_id='cc2883a1a369',
                 image='quay.io/rhel8',
-                engine='podman',
+                engine='podman'
             )
         )
     assert 'No repolist.' in str(se)
@@ -297,7 +305,7 @@ def test_container_repolist_error():
                 '',
                 container_id='cc2883a1a369',
                 image='quay.io/rhel8',
-                engine='podman',
+                engine='podman'
             )
         )
     assert 'No repolist.' in str(se)
@@ -308,7 +316,7 @@ def test_container_repolist_error():
                 YUM_REPOLIST_CONTENT_EMPTY,
                 container_id='cc2883a1a369',
                 image='quay.io/rhel8',
-                engine='podman',
+                engine='podman'
             )
         )
     assert 'No repolist.' in str(se)
