@@ -62,12 +62,12 @@ class CloudInstance(object):
     Examples:
         >>> ci.provider
         'aws'
-        >>> ci.id
-        'i-1234567890abcdef0'
-        >>> ci.type
-        't2.micro'
-        >>> ci.size
-        't2.micro'
+        >>> ci.id == 'i-1234567890abcdef0'
+        True
+        >>> ci.type == 't2.micro'
+        True
+        >>> ci.size == 't2.micro'
+        True
     """
     def __init__(self, cp, aws=None, azure_id=None, azure_type=None,
                  gcp=None, facts=None):
