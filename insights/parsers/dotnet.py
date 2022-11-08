@@ -9,7 +9,6 @@ DotNetVersion - command ``dotnet --version``
 
 ContainerDotNetVersion - command ``dotnet --version`` for containers
 --------------------------------------------------------------------
-
 """
 
 from insights import parser, CommandParser
@@ -66,6 +65,12 @@ class ContainerDotNetVersion(ContainerParser, DotNetVersion):
     Examples:
         >>> type(con_dotnet_ver)
         <class 'insights.parsers.dotnet.ContainerDotNetVersion'>
+        >>> con_dotnet_ver.container_id
+        'cc2883a1a369'
+        >>> con_dotnet_ver.image
+        'quay.io/rhel8'
+        >>> con_dotnet_ver.engine
+        'podman'
         >>> con_dotnet_ver.major
         3
         >>> con_dotnet_ver.minor

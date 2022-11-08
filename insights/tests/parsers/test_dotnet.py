@@ -78,7 +78,14 @@ def test_container_dotnet_version_error():
 def test_doc_examples():
     env = {
         'dotnet_ver': DotNetVersion(context_wrap(dotnet_version_1)),
-        'con_dotnet_ver': ContainerDotNetVersion(context_wrap(dotnet_version_1))
+        'con_dotnet_ver': ContainerDotNetVersion(
+            context_wrap(
+                dotnet_version_1,
+                container_id='cc2883a1a369',
+                image='quay.io/rhel8',
+                engine='podman'
+            )
+        )
     }
     failed, total = doctest.testmod(dotnet, globs=env)
     assert failed == 0
