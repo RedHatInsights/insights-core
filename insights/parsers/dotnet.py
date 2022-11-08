@@ -54,7 +54,7 @@ class DotNetVersion(CommandParser):
 
 
 @parser(Specs.container_dotnet_version)
-class ContainerInstalledRpms(ContainerParser, DotNetVersion):
+class ContainerDotNetVersion(ContainerParser, DotNetVersion):
     """
     Parses the output of the ``/usr/bin/dotnet --version`` command of the running
     containers which are based on RHEL images.
@@ -65,7 +65,7 @@ class ContainerInstalledRpms(ContainerParser, DotNetVersion):
 
     Examples:
         >>> type(con_dotnet_ver)
-        <class 'insights.parsers.dotnet.ContainerInstalledRpms'>
+        <class 'insights.parsers.dotnet.ContainerDotNetVersion'>
         >>> con_dotnet_ver.major
         3
         >>> con_dotnet_ver.minor
