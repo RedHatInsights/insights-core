@@ -1,15 +1,13 @@
 """
-Yum - Commands
-==============
-Parsers for ``yum`` commands.
+Parsers for Yum Commands
+========================
 
-This module contains the classes that parse the output of the commands
-`yum -C --noplugins repolist`.
+This module contains two parsers:
 
 YumRepoList - command ``yum -C --noplugins repolist``
 -----------------------------------------------------
-ContainerYumRepoList - command ``yum -C --noplugins repolist``
---------------------------------------------------------------
+ContainerYumRepoList - command ``yum -C --noplugins repolist`` for containers
+-----------------------------------------------------------------------------
 """
 
 from insights import parser, CommandParser
