@@ -7,7 +7,7 @@ The parsers related ``/usr/bin/dotnet --version`` is included in this module.
 DotNetVersion - command ``dotnet --version``
 --------------------------------------------
 
-ContainerInstalledRpms - command ``dotnet --version`` for containers
+ContainerDotNetVersion - command ``dotnet --version`` for containers
 --------------------------------------------------------------------
 
 """
