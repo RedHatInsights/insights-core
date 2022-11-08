@@ -1,14 +1,20 @@
 import os
+import json
 
 from tempfile import mkdtemp
 from insights import dr
-from insights.core.plugins import component
+from insights.core.plugins import (component,
+                                   datasource,
+                                   rule,
+                                   make_info,
+                                   ContentException)
 from insights.core.serde import (serializer,
                                  deserializer,
                                  Hydration,
                                  marshal,
                                  unmarshal)
 from insights.util import fs
+from insights.core.spec_factory import RegistryPoint, SpecSet
 
 
 class Foo(object):
@@ -50,6 +56,21 @@ def deserialize_foo(_type, data, root=None):
     foo.a = data.get("a")
     foo.b = data.get("b")
     return foo
+
+
+class Specs(SpecSet):
+    the_data = RegistryPoint()
+
+
+class TestSpecs(Specs):
+    @datasource()
+    def the_data(broker):
+        raise ContentException('Fake Datasource')
+
+
+@rule(Specs.the_data)
+def report(dt):
+    return make_info('INFO_1')
 
 
 def test_marshal():
@@ -231,3 +252,26 @@ def test_round_trip():
         pass
         if os.path.exists(tmp_path):
             fs.remove(tmp_path)
+
+
+def test_dehydrate():
+    broker = dr.run(report)
+    exc = next(iter(broker.tracebacks))
+    tb = broker.tracebacks[exc]
+
+    tmp_path = mkdtemp()
+    spec_the_data = TestSpecs.the_data
+    try:
+        h = Hydration(tmp_path)
+        h.dehydrate(spec_the_data, broker)
+        fn = ".".join([dr.get_name(spec_the_data), h.ser_name])
+        meta_data_json = os.path.join(h.meta_data, fn)
+        assert os.path.exists(meta_data_json)
+        with open(meta_data_json, 'r') as fp:
+            ret = json.load(fp)
+            assert "errors" in ret
+            assert ret["errors"][0] == tb
+            assert "Traceback" in tb
+            assert "Fake Datasource" in tb
+    finally:
+        fs.remove(tmp_path)
