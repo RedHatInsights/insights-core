@@ -168,6 +168,7 @@ class Specs(SpecSet):
     ethtool_k = RegistryPoint(multi_output=True)
     exim_conf = RegistryPoint()
     facter = RegistryPoint()
+    fapolicyd_rules = RegistryPoint(multi_output=True, filterable=True)
     fc_match = RegistryPoint()
     fcoeadm_i = RegistryPoint()
     fdisk_l = RegistryPoint()

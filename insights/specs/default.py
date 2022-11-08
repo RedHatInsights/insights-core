@@ -188,6 +188,7 @@ class DefaultSpecs(Specs):
     ethtool_g = foreach_execute(ethernet.interfaces, "/sbin/ethtool -g %s")
     ethtool_i = foreach_execute(ethernet.interfaces, "/sbin/ethtool -i %s")
     ethtool_k = foreach_execute(ethernet.interfaces, "/sbin/ethtool -k %s")
+    fapolicyd_rules = glob_file(r"/etc/fapolicyd/rules.d/*.rules")
     fcoeadm_i = simple_command("/usr/sbin/fcoeadm -i")
     findmnt_lo_propagation = simple_command("/bin/findmnt -lo+PROPAGATION")
     firewall_cmd_list_all_zones = simple_command("/usr/bin/firewall-cmd --list-all-zones")
