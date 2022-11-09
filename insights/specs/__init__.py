@@ -791,6 +791,7 @@ class Specs(SpecSet):
     zipl_conf = RegistryPoint()
 
     # container_specs
+    container_dotnet_version = RegistryPoint(multi_output=True)
     container_redhat_release = RegistryPoint(multi_output=True)
     container_nginx_conf = RegistryPoint(multi_output=True)
     container_installed_rpms = RegistryPoint(multi_output=True)
