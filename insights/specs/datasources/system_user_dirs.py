@@ -94,28 +94,24 @@ def system_user_dirs(broker):
     users = get_users()
     groups = get_groups(users)
 
-    dirs = {}
-    packages = set()
+    dir_package = {}
+    dirs = set()
 
-    # Stores a writeable directory with its package
     for line in content:
         pkg_name, path_name, perms, user, group = line.split("; ")
         if perms[0] == "d":
             user_w = user in users and perms[2] == "w"
             group_w = group in groups and perms[5] == "w"
             others_w = perms[8] == "w"
-
             if user_w or group_w or others_w:
-                dirs[path_name] = pkg_name
+                # Stores a writeable directory with its package
+                dir_package[path_name] = pkg_name
+        else:
+            # Stores a file directory for all files
+            dirs.add(path_name.rsplit('/', 1)[0])
 
     # Stores a package if its associated file is in a writable directory
-    for line in content:
-        _, path_name, perms, _, _ = line.split("; ")
-        if perms[0] != "d":
-            dir_name = path_name.rsplit('/', 1)[0]
-
-            if dir_name in dirs:
-                packages.add(dirs[dir_name])
+    packages = set(dir_package[dir] for dir in dirs if dir in dir_package)
 
     if packages:
         return DatasourceProvider(
