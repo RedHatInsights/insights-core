@@ -674,6 +674,7 @@ class DefaultSpecs(Specs):
     zipl_conf = simple_file("/etc/zipl.conf")
 
     # Container collection specs
+    container_dotnet_version = container_execute(running_rhel_containers, "/usr/bin/dotnet --version")
     container_installed_rpms = container_execute(running_rhel_containers, "rpm -qa --qf '%s'" % _rpm_format, context=HostContext, signum=signal.SIGTERM)
     container_nginx_conf = container_collect(container_nginx_conf_ds)
     container_redhat_release = container_collect(running_rhel_containers, "/etc/redhat-release")
