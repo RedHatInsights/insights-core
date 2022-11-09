@@ -105,11 +105,14 @@ class InsightsClient(object):
             url = self.connection.base_url + '/platform' + constants.module_router_path
         else:
             url = self.connection.base_url + constants.module_router_path
-        response = self.connection.get(url)
-        if response.status_code == 200:
-            return response.json()["url"]
-        else:
-            logger.warning("Unable to fetch egg url. Defaulting to /release")
+        try:
+            response = self.connection.get(url)
+            if response.status_code == 200:
+                return response.json()["url"]
+            else:
+                raise ConnectionError("%s: %s" % (response.status_code, response.reason))
+        except ConnectionError as e:
+            logger.warning("Unable to fetch egg url %s: %s. Defaulting to /release", url, str(e))
             return '/release'
 
     def fetch(self, force=False):
