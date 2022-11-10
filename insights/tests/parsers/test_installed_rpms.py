@@ -600,7 +600,7 @@ def test_doc_examples():
         'rpms': InstalledRpms(context_wrap(RPMS_DOCTEST_EXAMPLE)),
         'container_rpms': ContainerInstalledRpms(
             context_wrap(
-                RPMS_JSON,
+                RPMS_PACKAGE,
                 container_id='cc2883a1a369',
                 image='quay.io/rhel8',
                 engine='podman'

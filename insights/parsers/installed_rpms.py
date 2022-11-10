@@ -645,7 +645,9 @@ class ContainerInstalledRpms(ContainerParser, InstalledRpms):
     containers which are based on RHEL images.
 
     Sample output::
+
         3.1.108
+
     Examples:
         >>> type(container_rpms)
         <class 'insights.parsers.installed_rpms.ContainerInstalledRpms'>
@@ -655,11 +657,11 @@ class ContainerInstalledRpms(ContainerParser, InstalledRpms):
         'quay.io/rhel8'
         >>> container_rpms.engine
         'podman'
-        >>> container_rpms.get_min('libteam').package
-        'libteam-1.17-6.el7_2'
-        >>> container_rpms.get_max("libteam").name
-        'libteam'
-        >>> container_rpms.get_max("libteam").version
-        '1.17'
+        >>> container_rpms.get_min('openldap').package
+        'openldap-2.4.23-31.el6'
+        >>> container_rpms.get_max("openldap").name
+        'openldap'
+        >>> container_rpms.get_max("openldap").version
+        '2.4.23'
     """
     pass
