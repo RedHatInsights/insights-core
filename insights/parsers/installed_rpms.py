@@ -207,10 +207,10 @@ class InstalledRpms(CommandParser, RpmList):
         0:kernel-3.10.0-327.36.3.el7
         >>> type(rpm)
         <class 'insights.parsers.installed_rpms.InstalledRpm'>
-        >>> rpm.package
-        'kernel-3.10.0-327.36.3.el7'
-        >>> rpm.nvr
-        'kernel-3.10.0-327.36.3.el7'
+        >>> rpm.package == 'kernel-3.10.0-327.36.3.el7'
+        True
+        >>> rpm.nvr == 'kernel-3.10.0-327.36.3.el7'
+        True
         >>> rpm.source
         >>> rpm.name
         'kernel'
@@ -657,8 +657,8 @@ class ContainerInstalledRpms(ContainerParser, InstalledRpms):
         'quay.io/rhel8'
         >>> container_rpms.engine
         'podman'
-        >>> container_rpms.get_min('openldap').package
-        'openldap-2.4.23-31.el6'
+        >>> container_rpms.get_min('openldap').package == 'openldap-2.4.23-31.el6'
+        True
         >>> container_rpms.get_max("openldap").name
         'openldap'
         >>> container_rpms.get_max("openldap").version
