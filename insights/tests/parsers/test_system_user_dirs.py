@@ -4,7 +4,7 @@ from insights.parsers import system_user_dirs
 from insights.parsers.system_user_dirs import SystemUserDirs
 from insights.tests import context_wrap
 
-PACKAGES = ["ca-certificates", "kmod", "sssd-ldap"]
+PACKAGES = ["httpd-core"]
 
 
 def test_system_user_dirs():
