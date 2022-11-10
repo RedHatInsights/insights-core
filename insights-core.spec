@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.302
+Version:        3.0.303
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,26 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Nov 10 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.303-1
+- Registration check unregisters when it is not connected (#3540)
+  (93577878+ahitacat@users.noreply.github.com)
+- Update system_user_dirs datasource (#3586)
+  (41325380+jobselko@users.noreply.github.com)
+- Handle network exceptions when accessing egg URL (#3588) (mhuth@redhat.com)
+- Feat: New Parser for 'dotnet --version' Command for Containers (#3581)
+  (986222045@qq.com)
+- feat: New Combiner CloudInstance (#3585) (xiangceliu@redhat.com)
+- feat: New spec "/etc/fapolicyd/rules.d/*.rules" and parser (#3587)
+  (44796653+huali027@users.noreply.github.com)
+- fix: values of broker.tracebacks should be string (#3579)
+  (xiangceliu@redhat.com)
+- Update github actions to use latest version (#3583)
+  (20520336+bfahr@users.noreply.github.com)
+- fix(parsers): add support for missing logs (#3582)
+  (subpop@users.noreply.github.com)
+- feat(client): add --manifest argument (#3547)
+  (subpop@users.noreply.github.com)
+
 * Thu Nov 03 2022 Sachin Patil <psachin@redhat.com> 3.0.302-1
 - feat: new spec and parser for 'azure_instance_id' (#3568) (xiangceliu@redhat.com)
 - feat: Add parser container_inspect (#3562) (jiazhang@redhat.com)
