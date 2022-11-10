@@ -2,6 +2,19 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.303](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.303) (2022-11-10)
+
+- Registration check unregisters when it is not connected ([PR 3540](https://github.com/RedHatInsights/insights-core/pull/3540))
+- Update system_user_dirs datasource ([PR 3586](https://github.com/RedHatInsights/insights-core/pull/3586))
+- Handle network exceptions when accessing egg URL ([PR 3588](https://github.com/RedHatInsights/insights-core/pull/3588))
+- Feat: New Parser for 'dotnet --version' Command for Containers ([PR 3581](https://github.com/RedHatInsights/insights-core/pull/3581))
+- feat: New Combiner CloudInstance ([PR 3585](https://github.com/RedHatInsights/insights-core/pull/3585))
+- feat: New spec "/etc/fapolicyd/rules.d/*.rules" and parser ([PR 3587](https://github.com/RedHatInsights/insights-core/pull/3587))
+- fix: values of broker.tracebacks should be string ([PR 3579](https://github.com/RedHatInsights/insights-core/pull/3579))
+- Update github actions to use latest version ([PR 3583](https://github.com/RedHatInsights/insights-core/pull/3583))
+- fix(parsers): add support for missing logs ([PR 3582](https://github.com/RedHatInsights/insights-core/pull/3582))
+- feat(client): add --manifest argument ([PR 3547](https://github.com/RedHatInsights/insights-core/pull/3547))
+
 ## [insights-core-3.0.302](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.302) (2022-11-03)
 
 - feat: new spec and parser for 'azure_instance_id' ([PR 3568](https://github.com/RedHatInsights/insights-core/pull/3568))
