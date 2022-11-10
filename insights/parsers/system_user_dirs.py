@@ -17,14 +17,14 @@ class SystemUserDirs(Parser):
 
     Sample output of this datasource is::
 
-        ["ca-certificates", "kmod", "sssd-ldap"]
+        ["httpd-core"]
 
     Examples:
 
         >>> type(system_user_dirs)
         <class 'insights.parsers.system_user_dirs.SystemUserDirs'>
         >>> system_user_dirs.packages
-        ['ca-certificates', 'kmod', 'sssd-ldap']
+        ['httpd-core']
     """
 
     def parse_content(self, content):
