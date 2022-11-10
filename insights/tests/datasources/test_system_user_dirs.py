@@ -8,17 +8,14 @@ from insights.core.spec_factory import DatasourceProvider
 from insights.specs.datasources.system_user_dirs import LocalSpecs, system_user_dirs
 
 RPM_CMD = """
-sssd-ldap; drwxr-xr-x; apache; root
-ca-certificates; drwxrwxr-x; root; apache
-kmod; drwxr-xrwx; root; root
-libbsd; dr-xr-xr-x; apache; root
-libbsd; drwxr-xr-x; root; apache
-libbsd; drwxrwxr-x; root; root
-libbsd; -rwxr-xr-x; apache; root
-libbsd; lrwxrwxrwx; apache; apache
+httpd-core; /usr/share/doc/httpd-core; drwxr-xr-x; apache; root
+httpd-core; /usr/share/doc/httpd-core/CHANGES; -rw-r--r--; root; root
+postgresql-server; /var/lib/pgsql; drwx------; postgres; postgres
+polkit; /usr/lib/polkit-1; drwxrwxr-x; polkitd; polkitd
+polkit; /usr/lib/polkit-1/polkitd; -rwxr-xr-x; root; root
 """.strip()
 
-RPM_EXPECTED = ["ca-certificates", "kmod", "sssd-ldap"]
+RPM_EXPECTED = ["httpd-core"]
 
 RPM_BAD_CMD = "bash: rpm: command not found..."
 
@@ -28,11 +25,11 @@ RELATIVE_PATH = "insights_commands/system_user_dirs"
 
 
 def get_users():
-    return ["apache"]
+    return ["apache", "postgres"]
 
 
 def get_groups(users):
-    return ["apache"]
+    return ["apache", "postgres"]
 
 
 @mock.patch("insights.specs.datasources.system_user_dirs.get_users", get_users)
