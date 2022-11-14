@@ -646,7 +646,17 @@ class ContainerInstalledRpms(ContainerParser, InstalledRpms):
 
     Sample output::
 
-        3.1.108
+        a52dec-0.7.4-18.el7.nux.x86_64                  Tue 14 Jul 2015 09:25:38 AEST   1398536494
+        aalib-libs-1.4.0-0.22.rc5.el7.x86_64            Tue 14 Jul 2015 09:25:40 AEST   1390535634
+        abrt-2.1.11-35.el7.x86_64                       Wed 09 Nov 2016 14:52:01 AEDT   1446193355
+        kernel-3.10.0-267.el7.x86_64                    Sat 24 Oct 2015 09:56:17 AEDT   1434466402
+        kernel-3.10.0-327.36.3.el7.x86_64               Wed 09 Nov 2016 14:53:25 AEDT   1476954923
+        kernel-headers-3.10.0-327.36.3.el7.x86_64       Wed 09 Nov 2016 14:20:59 AEDT   1476954923
+        kernel-tools-3.10.0-327.36.3.el7.x86_64         Wed 09 Nov 2016 15:09:42 AEDT   1476954923
+        kernel-tools-libs-3.10.0-327.36.3.el7.x86_64    Wed 09 Nov 2016 14:52:13 AEDT   1476954923
+        kexec-tools-2.0.7-38.el7_2.1.x86_64             Wed 09 Nov 2016 14:48:21 AEDT   1452845178
+        zlib-1.2.7-15.el7.x86_64                        Wed 09 Nov 2016 14:21:19 AEDT   1431443476
+        zsh-5.0.2-14.el7_2.2.x86_64                     Wed 09 Nov 2016 15:13:19 AEDT   1464185248
 
     Examples:
         >>> type(container_rpms)
@@ -657,11 +667,11 @@ class ContainerInstalledRpms(ContainerParser, InstalledRpms):
         'quay.io/rhel8'
         >>> container_rpms.engine
         'podman'
-        >>> container_rpms.get_min('openldap').package == 'openldap-2.4.23-31.el6'
+        >>> container_rpms.get_min('kernel').package == 'kernel-3.10.0-267.el7'
         True
-        >>> container_rpms.get_max("openldap").name
-        'openldap'
-        >>> container_rpms.get_max("openldap").version
-        '2.4.23'
+        >>> container_rpms.get_max("kernel").name
+        'kernel'
+        >>> container_rpms.get_max("kernel").version
+        '3.10.0'
     """
     pass
