@@ -733,6 +733,7 @@ class Specs(SpecSet):
     testparm_v_s = RegistryPoint(filterable=True)
     thp_enabled = RegistryPoint()
     thp_use_zero_page = RegistryPoint()
+    timedatectl = RegistryPoint()
     tmpfilesd = RegistryPoint(multi_output=True)
     tomcat_server_xml = RegistryPoint(multi_output=True)
     tomcat_vdc_fallback = RegistryPoint()
