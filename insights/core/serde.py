@@ -115,13 +115,21 @@ def marshal(comp, broker, root=None, pool=None):
 
     if isinstance(v, list):
         repeat = len(v)
+
+        # Some datasources return a list of strings, not a list of objects.
+        # So check if the first list entry doesn't have a serializer.
+        if repeat and not get_serializer(v[0]):
+            return None, None
+
         if pool:
             data = list(pool.map(call_serializer, [ser_func] * repeat, v, [exc_func] * repeat))
         else:
             data = list(map(call_serializer, [ser_func] * repeat, v, [exc_func] * repeat))
+
         results = [i[0] for i in data if i[0]]
         errors = [i[1] for i in data if i[1]]
         return results, errors
+
     return call_serializer(ser_func, v, exc_func)
 
 
@@ -196,27 +204,32 @@ class Hydration(object):
                 fs.ensure_path(self.data, mode=0o770)
             self.created = True
 
-        c = comp
-        doc = None
         try:
-            name = dr.get_name(c)
-            # The `broker.trackbacks` is a dict in which the values are string
-            # but not list of strings
-            errors = [broker.tracebacks[e] for e in broker.exceptions.get(c, [])]
-            doc = {
-                "name": name,
-                "exec_time": broker.exec_times.get(c),
-                "errors": errors
-            }
+            name = dr.get_name(comp)
+
+            # The `broker.tracebacks` is a dict in which the values are string
+            # but not list of strings. For datasource timeouts the key is the
+            # name of the component instead of the component itself. So if no
+            # exceptions are found with the component itself as the key, check
+            # if they're any with the name as the key.
+            errors = [broker.tracebacks[e] for e in broker.exceptions.get(comp, broker.exceptions.get(dr.get_spec_name(comp), []))]
+
             start = time.time()
             results, ms_errors = marshal(comp, broker, root=self.data, pool=self.pool)
-            doc["results"] = results if results else None
             errors.extend(ms_errors if isinstance(ms_errors, list) else [ms_errors]) if ms_errors else None
-            doc["ser_time"] = time.time() - start
+
+            doc = {
+                "name": name,
+                "exec_time": broker.exec_times.get(comp),
+                "errors": errors,
+                "results": results if results else None,
+                "ser_time": time.time() - start
+            }
         except Exception as ex:
             log.exception(ex)
         else:
             if doc is not None and (doc["results"] or doc["errors"]):
+                path = None
                 try:
                     path = os.path.join(self.meta_data, name + "." + self.ser_name)
                     with open(path, "w") as f:
