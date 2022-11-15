@@ -21,8 +21,8 @@ def report(dt):
 def test_broker_add_exception():
     broker = dr.run(report)
     assert report in broker
-    assert TestSpecs.the_data in broker.exceptions
-    spec_exs = broker.exceptions[TestSpecs.the_data]
+    assert "insights.tests.test_add_exception.Specs.the_data" in broker.exceptions
+    spec_exs = broker.exceptions["insights.tests.test_add_exception.Specs.the_data"]
     exs = [ex for ex in spec_exs if isinstance(ex, ContentException) and str(ex) == "Fake Datasource"]
     assert len(exs) == 1
     tb = broker.tracebacks[exs[0]]
