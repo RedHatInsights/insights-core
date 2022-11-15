@@ -429,6 +429,10 @@ def get_spec_name(c):
     Query the actual registry point spec name, by looping through the
     dependent components and if ".Specs" is in the name and return it.
     """
+    name = get_name(c)
+    if ".Specs" in name:
+        return name
+
     for cmp in get_dependents(c):
         name = get_name(cmp)
         if ".Specs" in name:
