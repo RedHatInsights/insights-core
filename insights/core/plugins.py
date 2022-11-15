@@ -27,7 +27,6 @@ may return:
 from __future__ import print_function
 
 import logging
-import signal
 import traceback
 
 from pprint import pformat
@@ -42,11 +41,6 @@ log = logging.getLogger(__name__)
 
 class ContentException(dr.SkipComponent):
     """ Raised whenever a :class:`datasource` fails to get data. """
-    pass
-
-
-class TimeoutException(Exception):
-    """ Raised whenever a :class:`datasource` hits the set timeout value. """
     pass
 
 
@@ -87,36 +81,21 @@ class datasource(PluginType):
     Decorates a component that one or more :class:`insights.core.Parser`
     subclasses will consume.
     """
-    filterable = False
     multi_output = False
     raw = False
-
-    def _handle_timeout(self, signum, frame):
-        raise TimeoutException("Datasource spec {ds_name} timed out after {secs} seconds!".format(
-            ds_name=dr.get_name(self.component), secs=self.timeout))
+    filterable = False
 
     def invoke(self, broker):
-        # Grab the timeout from the decorator, or use the default of 120.
-        self.timeout = getattr(self, "timeout", 120)
-
-        signal.signal(signal.SIGALRM, self._handle_timeout)
-        signal.alarm(self.timeout)
         try:
             return self.component(broker)
         except ContentException as ce:
             log.debug(ce)
-            broker.add_exception(dr.get_spec_name(self.component), ce, traceback.format_exc())
+            broker.add_exception(self.component, ce, traceback.format_exc())
             raise dr.SkipComponent()
         except CalledProcessError as cpe:
             log.debug(cpe)
-            broker.add_exception(dr.get_spec_name(self.component), cpe, traceback.format_exc())
+            broker.add_exception(self.component, cpe, traceback.format_exc())
             raise dr.SkipComponent()
-        except TimeoutException as te:
-            log.debug(te)
-            broker.add_exception(dr.get_spec_name(self.component), te, traceback.format_exc())
-            raise dr.SkipComponent()
-        finally:
-            signal.alarm(0)
 
 
 class parser(PluginType):

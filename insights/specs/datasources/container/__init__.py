@@ -9,7 +9,7 @@ from insights.parsers.podman_list import PodmanListContainers
 from insights.parsers.docker_list import DockerListContainers
 
 
-@datasource([PodmanListContainers, DockerListContainers], HostContext, timeout=240)
+@datasource([PodmanListContainers, DockerListContainers], HostContext)
 def running_rhel_containers(broker):
     """
     Returns a list of tuple of (image, <podman|docker>, container_id) of the running
