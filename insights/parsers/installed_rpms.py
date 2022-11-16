@@ -2,72 +2,13 @@
 InstalledRpms - Command ``rpm -qa``
 ===================================
 
-The ``InstalledRpms`` class parses the output of the ``rpm -qa`` command.
-Each line is parsed and stored in an ``InstalledRpm`` object.  The ``rpm -qa``
-command may output data in different formats and each format can be
-handled by the parsing routines of this class. The basic format of command is
-the package and is shown in the Examples.
 
-Sample input data::
-
-    a52dec-0.7.4-18.el7.nux.x86_64  Tue 14 Jul 2015 09:25:38 AEST   1398536494
-    aalib-libs-1.4.0-0.22.rc5.el7.x86_64    Tue 14 Jul 2015 09:25:40 AEST   1390535634
-    abrt-2.1.11-35.el7.x86_64       Wed 09 Nov 2016 14:52:01 AEDT   1446193355
-    ...
-    kernel-3.10.0-230.el7synaptics.1186112.1186106.2.x86_64 Wed 20 May 2015 11:24:00 AEST   1425955944
-    kernel-3.10.0-267.el7.x86_64    Sat 24 Oct 2015 09:56:17 AEDT   1434466402
-    kernel-3.10.0-327.36.3.el7.x86_64       Wed 09 Nov 2016 14:53:25 AEDT   1476954923
-    kernel-headers-3.10.0-327.36.3.el7.x86_64       Wed 09 Nov 2016 14:20:59 AEDT   1476954923
-    kernel-tools-3.10.0-327.36.3.el7.x86_64 Wed 09 Nov 2016 15:09:42 AEDT   1476954923
-    kernel-tools-libs-3.10.0-327.36.3.el7.x86_64    Wed 09 Nov 2016 14:52:13 AEDT   1476954923
-    kexec-tools-2.0.7-38.el7_2.1.x86_64     Wed 09 Nov 2016 14:48:21 AEDT   1452845178
-    ...
-    zlib-1.2.7-15.el7.x86_64        Wed 09 Nov 2016 14:21:19 AEDT   1431443476
-    zsh-5.0.2-14.el7_2.2.x86_64     Wed 09 Nov 2016 15:13:19 AEDT   1464185248
-
-
-Examples:
-    >>> type(rpms)
-    <class 'insights.parsers.installed_rpms.InstalledRpms'>
-    >>> 'openjpeg-libs' in rpms
-    True
-    >>> rpms.corrupt
-    False
-    >>> rpms.get_max('openjpeg-libs')
-    0:openjpeg-libs-1.3-9.el6_3
-    >>> type(rpms.get_max('openjpeg-libs'))
-    <class 'insights.parsers.installed_rpms.InstalledRpm'>
-    >>> rpms.get_min('openjpeg-libs')
-    0:openjpeg-libs-1.3-9.el6_3
-    >>> rpm = rpms.get_max('openssh-server')
-    >>> rpm
-    0:openssh-server-5.3p1-104.el6
-    >>> type(rpm)
-    <class 'insights.parsers.installed_rpms.InstalledRpm'>
-    >>> rpm.package
-    'openssh-server-5.3p1-104.el6'
-    >>> rpm.nvr
-    'openssh-server-5.3p1-104.el6'
-    >>> rpm.source
-    >>> rpm.name
-    'openssh-server'
-    >>> rpm.version
-    '5.3p1'
-    >>> rpm.release
-    '104.el6'
-    >>> rpm.arch
-    'x86_64'
-    >>> rpm.epoch
-    '0'
-    >>> from insights.parsers.installed_rpms import InstalledRpm
-    >>> rpm2 = InstalledRpm.from_package('openssh-server-6.0-100.el6.x86_64')
-    >>> rpm == rpm2
-    False
-    >>> rpm > rpm2
-    False
-    >>> rpm < rpm2
-    True
+InstalledRpms - command ``rpm -qa``
+-----------------------------------
+ContainerInstalledRpms - command ``rpm -qa`` for containers
+-----------------------------------------------------------
 """
+
 import json
 import re
 from collections import defaultdict
@@ -159,8 +100,8 @@ class RpmList(object):
             When doing exclusion check, make sure the ``packages`` is NOT
             empty, e.g.::
 
-                >>> if rpms.packages and "pkg_name" not in rpms:
-                >>>     pass
+                if rpms.packages and "pkg_name" not in rpms:
+                    pass
 
         Args:
             package_name (str): RPM package name such as 'bash'
@@ -222,8 +163,74 @@ class RpmList(object):
 @parser(Specs.installed_rpms)
 class InstalledRpms(CommandParser, RpmList):
     """
-    A parser for working with data containing a list of installed RPM files on the system and
-    related information.
+    The ``InstalledRpms`` class parses the output of the ``rpm -qa`` command.
+    Each line is parsed and stored in an ``InstalledRpm`` object.  The ``rpm -qa``
+    command may output data in different formats and each format can be
+    handled by the parsing routines of this class. The basic format of command is
+    the package and is shown in the Examples.
+
+    A parser for working with data containing a list of installed RPM files on the system
+    and related information.
+
+    Sample input data::
+
+        a52dec-0.7.4-18.el7.nux.x86_64  Tue 14 Jul 2015 09:25:38 AEST   1398536494
+        aalib-libs-1.4.0-0.22.rc5.el7.x86_64    Tue 14 Jul 2015 09:25:40 AEST   1390535634
+        abrt-2.1.11-35.el7.x86_64       Wed 09 Nov 2016 14:52:01 AEDT   1446193355
+        ...
+        kernel-3.10.0-267.el7.x86_64    Sat 24 Oct 2015 09:56:17 AEDT   1434466402
+        kernel-3.10.0-327.36.3.el7.x86_64       Wed 09 Nov 2016 14:53:25 AEDT   1476954923
+        kernel-headers-3.10.0-327.36.3.el7.x86_64       Wed 09 Nov 2016 14:20:59 AEDT   1476954923
+        kernel-tools-3.10.0-327.36.3.el7.x86_64 Wed 09 Nov 2016 15:09:42 AEDT   1476954923
+        kernel-tools-libs-3.10.0-327.36.3.el7.x86_64    Wed 09 Nov 2016 14:52:13 AEDT   1476954923
+        kexec-tools-2.0.7-38.el7_2.1.x86_64     Wed 09 Nov 2016 14:48:21 AEDT   1452845178
+        ...
+        zlib-1.2.7-15.el7.x86_64        Wed 09 Nov 2016 14:21:19 AEDT   1431443476
+        zsh-5.0.2-14.el7_2.2.x86_64     Wed 09 Nov 2016 15:13:19 AEDT   1464185248
+
+
+    Examples:
+        >>> type(rpms)
+        <class 'insights.parsers.installed_rpms.InstalledRpms'>
+        >>> 'kernel' in rpms
+        True
+        >>> rpms.corrupt
+        False
+        >>> rpms.get_max('kernel')
+        0:kernel-3.10.0-327.36.3.el7
+        >>> type(rpms.get_max('kernel'))
+        <class 'insights.parsers.installed_rpms.InstalledRpm'>
+        >>> rpms.get_min('kernel')
+        0:kernel-3.10.0-267.el7
+        >>> rpm = rpms.get_max('kernel')
+        >>> rpm
+        0:kernel-3.10.0-327.36.3.el7
+        >>> type(rpm)
+        <class 'insights.parsers.installed_rpms.InstalledRpm'>
+        >>> rpm.package == 'kernel-3.10.0-327.36.3.el7'
+        True
+        >>> rpm.nvr == 'kernel-3.10.0-327.36.3.el7'
+        True
+        >>> rpm.source
+        >>> rpm.name
+        'kernel'
+        >>> rpm.version
+        '3.10.0'
+        >>> rpm.release
+        '327.36.3.el7'
+        >>> rpm.arch
+        'x86_64'
+        >>> rpm.epoch
+        '0'
+        >>> from insights.parsers.installed_rpms import InstalledRpm
+        >>> rpm2 = InstalledRpm.from_package('kernel-3.10.0-267.el7')
+        >>> rpm == rpm2
+        False
+        >>> rpm > rpm2
+        True
+        >>> rpm < rpm2
+        False
+
     """
     def __init__(self, *args, **kwargs):
         self.errors = list()
@@ -636,5 +643,35 @@ class ContainerInstalledRpms(ContainerParser, InstalledRpms):
     """
     Parses the data for list of installed rpms of the running
     containers which are based on RHEL images.
+
+    Sample output::
+
+        a52dec-0.7.4-18.el7.nux.x86_64                  Tue 14 Jul 2015 09:25:38 AEST   1398536494
+        aalib-libs-1.4.0-0.22.rc5.el7.x86_64            Tue 14 Jul 2015 09:25:40 AEST   1390535634
+        abrt-2.1.11-35.el7.x86_64                       Wed 09 Nov 2016 14:52:01 AEDT   1446193355
+        kernel-3.10.0-267.el7.x86_64                    Sat 24 Oct 2015 09:56:17 AEDT   1434466402
+        kernel-3.10.0-327.36.3.el7.x86_64               Wed 09 Nov 2016 14:53:25 AEDT   1476954923
+        kernel-headers-3.10.0-327.36.3.el7.x86_64       Wed 09 Nov 2016 14:20:59 AEDT   1476954923
+        kernel-tools-3.10.0-327.36.3.el7.x86_64         Wed 09 Nov 2016 15:09:42 AEDT   1476954923
+        kernel-tools-libs-3.10.0-327.36.3.el7.x86_64    Wed 09 Nov 2016 14:52:13 AEDT   1476954923
+        kexec-tools-2.0.7-38.el7_2.1.x86_64             Wed 09 Nov 2016 14:48:21 AEDT   1452845178
+        zlib-1.2.7-15.el7.x86_64                        Wed 09 Nov 2016 14:21:19 AEDT   1431443476
+        zsh-5.0.2-14.el7_2.2.x86_64                     Wed 09 Nov 2016 15:13:19 AEDT   1464185248
+
+    Examples:
+        >>> type(container_rpms)
+        <class 'insights.parsers.installed_rpms.ContainerInstalledRpms'>
+        >>> container_rpms.container_id
+        'cc2883a1a369'
+        >>> container_rpms.image
+        'quay.io/rhel8'
+        >>> container_rpms.engine
+        'podman'
+        >>> container_rpms.get_min('kernel').package == 'kernel-3.10.0-267.el7'
+        True
+        >>> container_rpms.get_max("kernel").name
+        'kernel'
+        >>> container_rpms.get_max("kernel").version
+        '3.10.0'
     """
     pass
