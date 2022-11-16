@@ -1,5 +1,7 @@
+import doctest
 import pytest
 from insights.parsers.installed_rpms import InstalledRpms, InstalledRpm, pad_version, ContainerInstalledRpms
+from insights.parsers import installed_rpms
 from insights.tests import context_wrap
 
 
@@ -164,6 +166,20 @@ xz-5.2.2-1.el7
 xz-libs-5.1.2-12alpha.el7
 xz-libs-5.2.2-1.el7
 '''.strip()
+
+RPMS_DOCTEST_EXAMPLE = """
+a52dec-0.7.4-18.el7.nux.x86_64  Tue 14 Jul 2015 09:25:38 AEST   1398536494
+aalib-libs-1.4.0-0.22.rc5.el7.x86_64    Tue 14 Jul 2015 09:25:40 AEST   1390535634
+abrt-2.1.11-35.el7.x86_64       Wed 09 Nov 2016 14:52:01 AEDT   1446193355
+kernel-3.10.0-267.el7.x86_64    Sat 24 Oct 2015 09:56:17 AEDT   1434466402
+kernel-3.10.0-327.36.3.el7.x86_64       Wed 09 Nov 2016 14:53:25 AEDT   1476954923
+kernel-headers-3.10.0-327.36.3.el7.x86_64       Wed 09 Nov 2016 14:20:59 AEDT   1476954923
+kernel-tools-3.10.0-327.36.3.el7.x86_64 Wed 09 Nov 2016 15:09:42 AEDT   1476954923
+kernel-tools-libs-3.10.0-327.36.3.el7.x86_64    Wed 09 Nov 2016 14:52:13 AEDT   1476954923
+kexec-tools-2.0.7-38.el7_2.1.x86_64     Wed 09 Nov 2016 14:48:21 AEDT   1452845178
+zlib-1.2.7-15.el7.x86_64        Wed 09 Nov 2016 14:21:19 AEDT   1431443476
+zsh-5.0.2-14.el7_2.2.x86_64     Wed 09 Nov 2016 15:13:19 AEDT   1464185248
+""".strip()
 
 
 def test_from_package():
@@ -577,3 +593,19 @@ def test_container_installed_rpms():
     assert isinstance(rpms_json.get_max("log4j").source, InstalledRpm)
     assert rpms_json.get_max("libteam").source.name == "libteam"
     assert rpms_json.get_max("libteam").source.version == "1.17"
+
+
+def test_doc_examples():
+    env = {
+        'rpms': InstalledRpms(context_wrap(RPMS_DOCTEST_EXAMPLE)),
+        'container_rpms': ContainerInstalledRpms(
+            context_wrap(
+                RPMS_DOCTEST_EXAMPLE,
+                container_id='cc2883a1a369',
+                image='quay.io/rhel8',
+                engine='podman'
+            )
+        )
+    }
+    failed, total = doctest.testmod(installed_rpms, globs=env)
+    assert failed == 0
