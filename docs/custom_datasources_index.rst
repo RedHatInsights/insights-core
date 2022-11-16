@@ -215,7 +215,7 @@ insights.specs.datasources.system_user_pkgs
 -------------------------------------------
 
 .. automodule:: insights.specs.datasources.system_user_pkgs
-    :members: system_user_pkgs
+    :members: pkgs_with_writable_dirs
     :show-inheritance:
     :undoc-members:
 

@@ -70,7 +70,7 @@ def get_groups(users):
 
 
 @datasource(LocalSpecs.rpm_args, HostContext)
-def system_user_pkgs(broker):
+def pkgs_with_writable_dirs(broker):
     r"""
     Custom datasource for CVE-2021-35937, CVE-2021-35938, and CVE-2021-35939.
 

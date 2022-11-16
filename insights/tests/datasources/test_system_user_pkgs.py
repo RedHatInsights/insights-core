@@ -5,7 +5,7 @@ from mock.mock import Mock
 
 from insights.core.dr import SkipComponent
 from insights.core.spec_factory import DatasourceProvider
-from insights.specs.datasources.system_user_pkgs import LocalSpecs, system_user_pkgs
+from insights.specs.datasources.system_user_pkgs import LocalSpecs, pkgs_with_writable_dirs
 
 RPM_CMD = """
 httpd-core; /usr/share/doc/httpd-core; drwxr-xr-x; apache; root
@@ -39,7 +39,7 @@ def test_rpm():
     rpm_args.content = RPM_CMD.splitlines()
     broker = {LocalSpecs.rpm_args: rpm_args}
 
-    result = system_user_pkgs(broker)
+    result = pkgs_with_writable_dirs(broker)
     expected = DatasourceProvider(content=RPM_EXPECTED, relative_path=RELATIVE_PATH)
     assert result
     assert isinstance(result, DatasourceProvider)
@@ -54,4 +54,4 @@ def test_no_rpm(no_rpm):
     broker = {LocalSpecs.rpm_args: rpm_args}
 
     with pytest.raises(SkipComponent):
-        system_user_pkgs(broker)
+        pkgs_with_writable_dirs(broker)
