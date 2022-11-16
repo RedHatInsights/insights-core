@@ -5,7 +5,7 @@ from mock.mock import Mock
 
 from insights.core.dr import SkipComponent
 from insights.core.spec_factory import DatasourceProvider
-from insights.specs.datasources.system_user_pkgs import LocalSpecs, pkgs_with_writable_dirs
+from insights.specs.datasources.rpm_pkgs import LocalSpecs, pkgs_with_writable_dirs
 
 RPM_CMD = """
 httpd-core; /usr/share/doc/httpd-core; drwxr-xr-x; apache; root
@@ -21,7 +21,7 @@ RPM_BAD_CMD = "bash: rpm: command not found..."
 
 RPM_EMPTY_CMD = ""
 
-RELATIVE_PATH = "insights_commands/system_user_pkgs"
+RELATIVE_PATH = "insights_commands/rpm_pkgs"
 
 
 def get_users():
@@ -32,8 +32,8 @@ def get_groups(users):
     return ["apache", "postgres"]
 
 
-@mock.patch("insights.specs.datasources.system_user_pkgs.get_users", get_users)
-@mock.patch("insights.specs.datasources.system_user_pkgs.get_groups", get_groups)
+@mock.patch("insights.specs.datasources.rpm_pkgs.get_users", get_users)
+@mock.patch("insights.specs.datasources.rpm_pkgs.get_groups", get_groups)
 def test_rpm():
     rpm_args = Mock()
     rpm_args.content = RPM_CMD.splitlines()

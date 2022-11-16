@@ -15,7 +15,7 @@ from insights.specs import Specs
 
 class LocalSpecs(Specs):
     """
-    Local spec used only by the system_user_pkgs datasource.
+    Local spec used only by the rpm_pkgs datasource.
     """
     rpm_args = simple_command(
         'rpm -qa --nosignature --qf="[%{=NAME}; %{FILENAMES}; %{FILEMODES:perms}; %{FILEUSERNAME}; %{FILEGROUPNAME}\n]"',
@@ -115,5 +115,5 @@ def pkgs_with_writable_dirs(broker):
 
     if packages:
         return DatasourceProvider(
-            content=sorted(packages), relative_path="insights_commands/system_user_pkgs"
+            content=sorted(packages), relative_path="insights_commands/rpm_pkgs"
         )
