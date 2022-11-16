@@ -44,7 +44,6 @@ import re
 import shlex
 from insights import parser, CommandParser
 from insights.specs import Specs
-from insights.util import deprecated
 
 
 @parser(Specs.multipath__v4__ll)
@@ -274,13 +273,3 @@ class MultipathDevices(CommandParser):
         Fetch a device by index in devices list
         """
         return self.devices[idx]
-
-
-@parser(Specs.multipath__v4__ll)
-def get_multipath_v4_ll(context):
-    """
-    .. warning::
-        Deprecated parser, please use :class:`MultipathDevices` instead.
-    """
-    deprecated(get_multipath_v4_ll, "Use the `MultipathDevices` class instead.", "3.0.300")
-    return MultipathDevices(context).devices

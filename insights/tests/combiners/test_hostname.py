@@ -2,8 +2,8 @@ import pytest
 import doctest
 from insights.parsers.hostname import Hostname as HnF, HostnameShort as HnS, HostnameDefault as HnD
 from insights.parsers.systemid import SystemID
+from insights.combiners.hostname import Hostname
 from insights.combiners import hostname
-from insights.combiners.hostname import Hostname, hostname as hn_func
 from insights.tests import context_wrap
 
 HOSTNAME_FULL = "rhel7.example.com"
@@ -95,19 +95,6 @@ def test_get_all_hostname():
     assert result.domain == expected[2]
 
 
-def test_hostname_function():
-    # can be removed once the function being removed
-    hnf = HnF(context_wrap(HOSTNAME_FULL))
-    hns = HnS(context_wrap(HOSTNAME_SHORT))
-    hnd = HnD(context_wrap(HOSTNAME_DEF))
-    sid = SystemID(context_wrap(SYSTEMID_PROFILE_NAME))
-    expected = (HOSTNAME_FULL, HOSTNAME_SHORT, 'example.com')
-    result = hn_func(hnf, hnd, hns, sid)
-    assert result.fqdn == expected[0]
-    assert result.hostname == expected[1]
-    assert result.domain == expected[2]
-
-
 def test_hostname_raise():
     with pytest.raises(Exception):
         sid = SystemID(context_wrap(SYSTEMID_NO_PROFILE_NAME))
@@ -120,8 +107,7 @@ def test_hostname_doc():
     hnd = HnD(context_wrap(HOSTNAME_DEF))
     sid = SystemID(context_wrap(SYSTEMID_PROFILE_NAME))
     env = {
-            'hostname': Hostname(hnf, hnd, hns, sid),
-            'hn': hn_func(hnf, hnd, hns, sid)
-          }
+        'hostname': Hostname(hnf, hnd, hns, sid),
+    }
     failed, total = doctest.testmod(hostname, globs=env)
     assert failed == 0

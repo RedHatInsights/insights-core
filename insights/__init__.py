@@ -30,7 +30,6 @@ from .core import Scannable, LogFileOutput, IniConfigFile  # noqa: F401
 from .core import FileListing, LegacyItemAccess, SysconfigOptions  # noqa: F401
 from .core import Parser, ContainerParser  # noqa: F401
 from .core import YAMLParser, JSONParser, XMLParser, CommandParser  # noqa: F401
-from .core import AttributeDict  # noqa: F401
 from .core import Syslog  # noqa: F401
 from .core import taglang
 from .core.archives import COMPRESSION_TYPES, extract, InvalidArchive, InvalidContentType  # noqa: F401
