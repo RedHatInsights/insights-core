@@ -2,48 +2,14 @@
 Date parsers
 ============
 
-This module provides processing for the output of the ``date`` command in
-various formats.
+This module contains the following parsers:
 
 Date - command ``date``
 -----------------------
-
-Class ``Date`` parses the output of the ``date`` command.  Sample output of
-this command looks like::
-
-    Fri Jun 24 09:13:34 CST 2016
-
 DateUTC - command ``date --utc``
 --------------------------------
-
-Class ``DateUTC`` parses the output of the ``date --utc`` command.  Output is
-similar to the ``date`` command except that the `Timezone` column uses UTC.
-
-All classes utilize the same base class ``DateParser`` so the following
-examples apply to all classes in this module.
-
-Examples:
-    >>> from insights.parsers.date import Date, DateUTC
-    >>> from insights.tests import context_wrap
-    >>> date_content = "Mon May 30 10:49:14 CST 2016"
-    >>> shared = {Date: Date(context_wrap(date_content))}
-    >>> date_info = shared[Date]
-    >>> date_info.data
-    'Mon May 30 10:49:14 CST 2016'
-    >>> date_info.datetime is not None
-    True
-    >>> date_info.timezone
-    'CST'
-
-    >>> date_content = "Mon May 30 10:49:14 UTC 2016"
-    >>> shared = {DateUTC: DateUTC(context_wrap(date_content))}
-    >>> date_info = shared[DateUTC]
-    >>> date_info.data
-    'Mon May 30 10:49:14 UTC 2016'
-    >>> date_info.datetime
-    datetime.datetime(2016, 5, 30, 10, 49, 14)
-    >>> date_info.timezone
-    'UTC'
+TimeDateCtlStatusParser - command ``timedatectl status``
+--------------------------------------------------------
 """
 
 from insights.parsers import ParseException
@@ -98,7 +64,22 @@ class Date(DateParser):
     """
     Class to parse ``date`` command output.
 
-    Sample: Fri Jun 24 09:13:34 CST 2016
+    Sample in::
+
+        Fri Jun 24 09:13:34 CST 2016
+
+    Examples:
+        >>> from insights.parsers.date import Date
+        >>> from insights.tests import context_wrap
+        >>> date_content = "Mon May 30 10:49:14 CST 2016"
+        >>> shared = {Date: Date(context_wrap(date_content))}
+        >>> date_info = shared[Date]
+        >>> date_info.data
+        'Mon May 30 10:49:14 CST 2016'
+        >>> date_info.datetime is not None
+        True
+        >>> date_info.timezone
+        'CST'
     """
     pass
 
@@ -108,20 +89,36 @@ class DateUTC(DateParser):
     """
     Class to parse ``date --utc`` command output.
 
-    Sample: Fri Jun 24 09:13:34 UTC 2016
+    Sample in::
+
+        Fri Jun 24 09:13:34 UTC 2016
+
+    Examples:
+        >>> from insights.parsers.date import DateUTC
+        >>> from insights.tests import context_wrap
+        >>> date_content = "Mon May 30 10:49:14 UTC 2016"
+        >>> shared = {DateUTC: DateUTC(context_wrap(date_content))}
+        >>> date_info = shared[DateUTC]
+        >>> date_info.data
+        'Mon May 30 10:49:14 UTC 2016'
+        >>> date_info.datetime
+        datetime.datetime(2016, 5, 30, 10, 49, 14)
+        >>> date_info.timezone
+        'UTC'
     """
     pass
 
 
-@parser(Specs.timedatectl)
-class TimeDateCtlParser(CommandParser, dict):
+@parser(Specs.timedatectl_status)
+class TimeDateCtlStatusParser(CommandParser, dict):
     """
-    Class to parse the ``timedatectl`` command output. It saves the infomartion
-    in each line into a dict. Since the colon in all the lines except warning
-    is aligned, every line is splited by the same colon index. The key is
-    the lowercase of the first part joined by underscore after splitting it
-    by colon, and the value is the left part after the colon. If the next line
-    is continue line, then append it to the previous key. And also it converts
+    Class to parse the ``timedatectl status`` command output.
+    It saves the infomartion in each line into a dict.
+    Since the colon in all the lines except warning is aligned, every line
+    is splited by the same colon index. The key is the lowercase of the first
+    part joined by underscore after splitting it by colon, and the value is
+    the left part after the colon. If the next line is continue line,
+    then append it to the previous key. And also it converts
     the value to datetime format for "Local time", "Universal time" and "RTC time".
 
     Sample in::
@@ -162,6 +159,11 @@ class TimeDateCtlParser(CommandParser, dict):
     """
     date_format = '%a %Y-%m-%d %H:%M:%S'
 
+    # unify the different names in rhel7 and rhel8
+    key_mapping = {
+        'ntp_synchronized': 'system_clock_synchronized'
+    }
+
     def parse_content(self, content):
         colon_index = -1
         dict_key = None
@@ -185,7 +187,10 @@ class TimeDateCtlParser(CommandParser, dict):
                     except Exception:
                         six.reraise(DateParseException, DateParseException(value), sys.exc_info()[2])
                 else:
-                    self[dict_key] = value
+                    if dict_key in self.key_mapping:
+                        self[self.key_mapping[dict_key]] = value
+                    else:
+                        self[dict_key] = value
             elif not line[:colon_index].strip():
                 # this line is also the content of the previous key
                 self[dict_key] += ' ' + line.strip()
