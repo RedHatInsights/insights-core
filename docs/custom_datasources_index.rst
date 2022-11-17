@@ -212,7 +212,7 @@ insights.specs.datasources.sys_fs_cgroup_memory_tasks_number
     :undoc-members:
 
 insights.specs.datasources.rpm_pkgs
--------------------------------------------
+-----------------------------------
 
 .. automodule:: insights.specs.datasources.rpm_pkgs
     :members: pkgs_with_writable_dirs
