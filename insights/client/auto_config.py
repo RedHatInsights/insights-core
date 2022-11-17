@@ -164,8 +164,6 @@ def _try_satellite6_configuration(config):
         elif _is_staging_rhsm(rhsm_hostname):
             logger.debug('Connected to staging RHSM, using cert.cloud.stage.redhat.com')
             rhsm_hostname = 'cert.cloud.stage.redhat.com'
-            # never use legacy upload for staging
-            config.legacy_upload = False
             config.cert_verify = True
             is_stage = True
             rhsm_ca = None
