@@ -211,11 +211,11 @@ insights.specs.datasources.sys_fs_cgroup_memory_tasks_number
     :show-inheritance:
     :undoc-members:
 
-insights.specs.datasources.system_user_dirs
--------------------------------------------
+insights.specs.datasources.rpm_pkgs
+-----------------------------------
 
-.. automodule:: insights.specs.datasources.system_user_dirs
-    :members: system_user_dirs
+.. automodule:: insights.specs.datasources.rpm_pkgs
+    :members: pkgs_with_writable_dirs
     :show-inheritance:
     :undoc-members:
 
