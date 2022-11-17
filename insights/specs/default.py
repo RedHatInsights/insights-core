@@ -487,6 +487,7 @@ class DefaultSpecs(Specs):
     ps_ef = simple_command("/bin/ps -ef")
     ps_eo = simple_command("/usr/bin/ps -eo pid,ppid,comm")
     ps_eo_cmd = ps_datasource.ps_eo_cmd
+    jboss_runtime_versions = ps_datasource.jboss_runtime_versions
     pulp_worker_defaults = simple_file("etc/default/pulp_workers")
     puppet_ca_cert_expire_date = simple_command("/usr/bin/openssl x509 -in /etc/puppetlabs/puppet/ssl/ca/ca_crt.pem -enddate -noout")
     pvs_noheadings = simple_command("/sbin/pvs --nameprefixes --noheadings --separator='|' -a -o pv_all,vg_name --config=\"global{locking_type=0}\"")

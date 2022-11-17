@@ -543,6 +543,7 @@ class Specs(SpecSet):
     ps_ef = RegistryPoint(filterable=True)
     ps_eo = RegistryPoint()
     ps_eo_cmd = RegistryPoint()
+    jboss_runtime_versions = RegistryPoint()
     pulp_worker_defaults = RegistryPoint()
     puppet_ca_cert_expire_date = RegistryPoint()
     puppet_ssl_cert_ca_pem = RegistryPoint()

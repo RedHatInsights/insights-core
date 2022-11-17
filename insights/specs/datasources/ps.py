@@ -1,6 +1,8 @@
 """
 Custom datasources for ps information
 """
+import os.path
+import json
 from insights.core.context import HostContext
 from insights.core.dr import SkipComponent
 from insights.core.plugins import datasource
@@ -11,7 +13,7 @@ from insights.specs import Specs
 class LocalSpecs(Specs):
     """ Local specs used only by ps datasources """
 
-    ps_eo_args = simple_command("/bin/ps -eo pid,args")
+    ps_eo_args = simple_command("/bin/ps -ewwo pid,args")
     """ Returns ps output including pid and full args """
 
 
@@ -75,4 +77,63 @@ def ps_eo_cmd(broker):
     if len(data) > 1:
         return DatasourceProvider('\n'.join(data), relative_path='insights_commands/ps_eo_cmd')
 
+    raise SkipComponent()
+
+
+@datasource(LocalSpecs.ps_eo_args, HostContext)
+def jboss_runtime_versions(broker):
+    """
+     Custom datasource to collect the <JBOSS_HOME>/version.txt.
+
+     Sample output from the ``ps -ewwo pid, args`` command::
+
+         PID COMMAND
+           1 /usr/lib/systemd/systemd --switched-root --system --deserialize 31
+           2 [kthreadd]
+           3 [rcu_gp]
+           4 [rcu_par_gp]
+           6 [kworker/0:0H-events_highpri]
+           8686 java -D[Standalone] -server -verbose:gc -Xms64m -Xmx512m -Djboss.home.dir=/opt/jboss-datagrid-7.3.0-server -Djboss.server.base.dir=/opt/jboss-datagrid-7.3.0-server/standalone
+
+
+     Get the Jboss home directory and read the version.txt::
+
+         -Djboss.home.dir=/opt/jboss-datagrid-7.3.0-server
+         /opt/jboss-datagrid-7.3.0-server/version.txt
+
+     Returns:
+         str: string of dict {<jboss_home>: <content of version.txt>}
+
+     Raises:
+         SkipComponent: Raised if no data is available
+     """
+    content = broker[LocalSpecs.ps_eo_args].content
+    jboss_home_dirs = set()
+    data = {}
+    for l in content:
+        if 'java ' in l:
+            if '-jboss-home ' in l:
+                jboss_home_str = l.split('-jboss-home ')[1]
+                if jboss_home_str.startswith('/'):
+                    jboss_home_dirs.add(jboss_home_str.split()[0])
+            elif '-Djboss.home.dir=' in l:
+                jboss_home_str = l.split('-Djboss.home.dir=')[1]
+                if jboss_home_str.startswith('/'):
+                    jboss_home_dirs.add(jboss_home_str.split()[0])
+            elif '-Dcatalina.home=' in l:
+                jboss_home_str = l.split('-Dcatalina.home=')[1]
+                if jboss_home_str.startswith('/'):
+                    jboss_home_dirs.add(jboss_home_str.split()[0])
+            elif '-Dinfinispan.server.home.path=' in l:
+                jboss_home_str = l.split('-Dinfinispan.server.home.path=')[1]
+                if jboss_home_str.startswith('/'):
+                    jboss_home_dirs.add(jboss_home_str.split()[0])
+    if jboss_home_dirs:
+        jboss_version_path_list = [one_jboss_home_dir + '/version.txt' for one_jboss_home_dir in jboss_home_dirs]
+        for jboss_v in jboss_version_path_list:
+            if os.path.exists(jboss_v):
+                with open(jboss_v, 'r') as version_file:
+                    data[jboss_v.replace('/version.txt', '')] = version_file.read()
+    if len(data) > 1:
+        return DatasourceProvider(json.dumps(data), relative_path='insights_commands/jboss_versions')
     raise SkipComponent()
