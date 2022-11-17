@@ -2,6 +2,14 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.304](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.304) (2022-11-17)
+
+- [New Specs] ls_var_lib_pcp ([PR 3590](https://github.com/RedHatInsights/insights-core/pull/3590))
+- Fix: Update container_installed_rpms spec ([PR 3589](https://github.com/RedHatInsights/insights-core/pull/3589))
+- Revert "feat: Add timeout to datasources (#3573)" ([PR 3594](https://github.com/RedHatInsights/insights-core/pull/3594))
+- feat: Add timeout to datasources ([PR 3573](https://github.com/RedHatInsights/insights-core/pull/3573))
+- Add rhel 8.7 into uname.py ([PR 3591](https://github.com/RedHatInsights/insights-core/pull/3591))
+
 ## [insights-core-3.0.303](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.303) (2022-11-10)
 
 - Registration check unregisters when it is not connected ([PR 3540](https://github.com/RedHatInsights/insights-core/pull/3540))
