@@ -55,6 +55,40 @@ NTP synchronized: yes
                   Sun 2023-03-12 03:00:00 EDT
 """
 
+TIMEDATECTL_CONTENT_WRONG_DATE_FORMAT = """
+      Local time: Mon 2022-11-14 02:33:36 EST
+  Universal time: Mon 2022-11-14 07:33:36 UTC
+        RTC time: 2022-11-14 07:33:34
+       Time zone: America/New_York (EST, -0500)
+     NTP enabled: yes
+NTP synchronized: yes
+ RTC in local TZ: no
+      DST active: no
+ Last DST change: DST ended at
+                  Sun 2022-11-06 01:59:59 EDT
+                  Sun 2022-11-06 01:00:00 EST
+ Next DST change: DST begins (the clock jumps one hour forward) at
+                  Sun 2023-03-12 01:59:59 EST
+                  Sun 2023-03-12 03:00:00 EDT
+"""
+
+TIMEDATECTL_CONTENT_NOT_COLON_ALIGNED = """
+      Local time: Mon 2022-11-14 02:33:36 EST
+  Universal time  : Mon 2022-11-14 07:33:36 UTC
+        RTC time: 2022-11-14 07:33:34
+       Time zone: America/New_York (EST, -0500)
+     NTP enabled: yes
+NTP synchronized: yes
+ RTC in local TZ: no
+      DST active: no
+ Last DST change: DST ended at
+                  Sun 2022-11-06 01:59:59 EDT
+                  Sun 2022-11-06 01:00:00 EST
+ Next DST change: DST begins (the clock jumps one hour forward) at
+                  Sun 2023-03-12 01:59:59 EST
+                  Sun 2023-03-12 03:00:00 EDT
+"""
+
 TIMEDATECTL_CONTENT4_WITHOUT_INFO = """"""
 
 TIMEDATECTL_CONTENT4_WITHOUT_COLON_OUTPUT = """
@@ -130,6 +164,10 @@ def test_timedatectl_except():
         TimeDateCtlStatus(context_wrap(TIMEDATECTL_CONTENT4_WITHOUT_INFO, strip=False))
     with pytest.raises(ParseException):
         TimeDateCtlStatus(context_wrap(TIMEDATECTL_CONTENT4_WITHOUT_COLON_OUTPUT, strip=False))
+    with pytest.raises(DateParseException):
+        TimeDateCtlStatus(context_wrap(TIMEDATECTL_CONTENT_WRONG_DATE_FORMAT, strip=False))
+    with pytest.raises(ParseException):
+        TimeDateCtlStatus(context_wrap(TIMEDATECTL_CONTENT_NOT_COLON_ALIGNED, strip=False))
 
 
 def test_doc():

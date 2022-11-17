@@ -165,7 +165,7 @@ class TimeDateCtlStatus(CommandParser, dict):
 
     def parse_content(self, content):
         dict_key = None
-        warning_start = True
+        warning_start = False
         non_blank_line = None
         for line in content:
             if line.strip():
@@ -209,5 +209,3 @@ class TimeDateCtlStatus(CommandParser, dict):
                     self['warning'] += ' ' + line.strip()
                 else:
                     raise ParseException('Unexpected format of line %s.' % line)
-        if not self:
-            raise SkipException('No data in the output.')
