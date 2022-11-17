@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.304
+Version:        3.0.305
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,9 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Nov 17 2022 Sachin Patil <psachin@redhat.com> 3.0.305-1
+- Rename system_user_dirs to rpm_pkgs (#3597) (41325380+jobselko@users.noreply.github.com)
+
 * Thu Nov 17 2022 Sachin Patil <psachin@redhat.com> 3.0.304-1
 - [New Specs] ls_var_lib_pcp (#3590) (87797511+mohitkumarrh@users.noreply.github.com)
 - Fix: Update container_installed_rpms spec (#3589) (986222045@qq.com)
