@@ -8,11 +8,11 @@ Date - command ``date``
 -----------------------
 DateUTC - command ``date --utc``
 --------------------------------
-TimeDateCtlStatusParser - command ``timedatectl status``
---------------------------------------------------------
+TimeDateCtlStatus - command ``timedatectl status``
+--------------------------------------------------
 """
 
-from insights.parsers import ParseException
+from insights.parsers import ParseException, SkipException
 import six
 import sys
 from datetime import datetime
@@ -110,7 +110,7 @@ class DateUTC(DateParser):
 
 
 @parser(Specs.timedatectl_status)
-class TimeDateCtlStatusParser(CommandParser, dict):
+class TimeDateCtlStatus(CommandParser, dict):
     """
     Class to parse the ``timedatectl status`` command output.
     It saves the infomartion in each line into a dict.
@@ -165,14 +165,22 @@ class TimeDateCtlStatusParser(CommandParser, dict):
     }
 
     def parse_content(self, content):
-        colon_index = -1
         dict_key = None
         warning_start = True
+        non_blank_line = None
+        for line in content:
+            if line.strip():
+                non_blank_line = line
+                break
+        if non_blank_line is None:
+            raise SkipException('No data in the output.')
+        try:
+            colon_index = non_blank_line.index(':')
+        except ValueError:
+            raise ParseException('No colon found, the line %s is not in expected format.' % line)
         for line in content:
             if not line.strip():
                 continue
-            if colon_index == -1:
-                colon_index = line.index(':')
             if line[colon_index] == ':':
                 key = line[:colon_index].strip()
                 value = line[colon_index + 1:].strip()
@@ -202,3 +210,5 @@ class TimeDateCtlStatusParser(CommandParser, dict):
                     self['warning'] += ' ' + line.strip()
                 else:
                     raise ParseException('Unexpected format of line %s.' % line)
+        if not self:
+            raise SkipException('No data in the output.')
