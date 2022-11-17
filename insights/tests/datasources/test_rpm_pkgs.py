@@ -5,7 +5,7 @@ from mock.mock import Mock
 
 from insights.core.dr import SkipComponent
 from insights.core.spec_factory import DatasourceProvider
-from insights.specs.datasources.system_user_dirs import LocalSpecs, system_user_dirs
+from insights.specs.datasources.rpm_pkgs import LocalSpecs, pkgs_with_writable_dirs
 
 RPM_CMD = """
 httpd-core; /usr/share/doc/httpd-core; drwxr-xr-x; apache; root
@@ -21,7 +21,7 @@ RPM_BAD_CMD = "bash: rpm: command not found..."
 
 RPM_EMPTY_CMD = ""
 
-RELATIVE_PATH = "insights_commands/system_user_dirs"
+RELATIVE_PATH = "insights_commands/rpm_pkgs"
 
 
 def get_users():
@@ -32,14 +32,14 @@ def get_groups(users):
     return ["apache", "postgres"]
 
 
-@mock.patch("insights.specs.datasources.system_user_dirs.get_users", get_users)
-@mock.patch("insights.specs.datasources.system_user_dirs.get_groups", get_groups)
+@mock.patch("insights.specs.datasources.rpm_pkgs.get_users", get_users)
+@mock.patch("insights.specs.datasources.rpm_pkgs.get_groups", get_groups)
 def test_rpm():
     rpm_args = Mock()
     rpm_args.content = RPM_CMD.splitlines()
     broker = {LocalSpecs.rpm_args: rpm_args}
 
-    result = system_user_dirs(broker)
+    result = pkgs_with_writable_dirs(broker)
     expected = DatasourceProvider(content=RPM_EXPECTED, relative_path=RELATIVE_PATH)
     assert result
     assert isinstance(result, DatasourceProvider)
@@ -54,4 +54,4 @@ def test_no_rpm(no_rpm):
     broker = {LocalSpecs.rpm_args: rpm_args}
 
     with pytest.raises(SkipComponent):
-        system_user_dirs(broker)
+        pkgs_with_writable_dirs(broker)
