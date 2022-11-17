@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.0.305](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.305) (2022-11-17)
+
+ - Rename system_user_dirs to rpm_pkgs ([PR 3597](https://github.com/RedHatInsights/insights-core/pull/3597))
+
 ## [insights-core-3.0.304](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.304) (2022-11-17)
 
 - [New Specs] ls_var_lib_pcp ([PR 3590](https://github.com/RedHatInsights/insights-core/pull/3590))
