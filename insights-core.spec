@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.303
+Version:        3.0.304
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,13 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Nov 17 2022 Sachin Patil <psachin@redhat.com> 3.0.304-1
+- [New Specs] ls_var_lib_pcp (#3590) (87797511+mohitkumarrh@users.noreply.github.com)
+- Fix: Update container_installed_rpms spec (#3589) (986222045@qq.com)
+- Revert "feat: Add timeout to datasources (#3573)" (#3594) (rblakley@redhat.com)
+- feat: Add timeout to datasources (#3573) (rblakley@redhat.com)
+- Add rhel 8.7 into uname.py (#3591) (lichen@redhat.com)
+
 * Thu Nov 10 2022 Xiangce Liu <xiangceliu@redhat.com> 3.0.303-1
 - Registration check unregisters when it is not connected (#3540)
   (93577878+ahitacat@users.noreply.github.com)
