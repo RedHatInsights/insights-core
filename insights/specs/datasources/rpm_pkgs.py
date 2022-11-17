@@ -15,7 +15,7 @@ from insights.specs import Specs
 
 class LocalSpecs(Specs):
     """
-    Local spec used only by the system_user_dirs datasource.
+    Local spec used only by the rpm_pkgs datasource.
     """
     rpm_args = simple_command(
         'rpm -qa --nosignature --qf="[%{=NAME}; %{FILENAMES}; %{FILEMODES:perms}; %{FILEUSERNAME}; %{FILEGROUPNAME}\n]"',
@@ -70,7 +70,7 @@ def get_groups(users):
 
 
 @datasource(LocalSpecs.rpm_args, HostContext)
-def system_user_dirs(broker):
+def pkgs_with_writable_dirs(broker):
     r"""
     Custom datasource for CVE-2021-35937, CVE-2021-35938, and CVE-2021-35939.
 
@@ -115,5 +115,5 @@ def system_user_dirs(broker):
 
     if packages:
         return DatasourceProvider(
-            content=sorted(packages), relative_path="insights_commands/system_user_dirs"
+            content=sorted(packages), relative_path="insights_commands/rpm_pkgs"
         )
