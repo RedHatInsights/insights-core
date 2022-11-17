@@ -11,13 +11,12 @@ DateUTC - command ``date --utc``
 TimeDateCtlStatus - command ``timedatectl status``
 --------------------------------------------------
 """
-
-from insights.parsers import ParseException, SkipException
 import six
 import sys
 from datetime import datetime
 
-from .. import parser, get_active_lines, CommandParser
+from insights.parsers import ParseException, SkipException
+from insights import parser, get_active_lines, CommandParser
 from insights.specs import Specs
 
 
