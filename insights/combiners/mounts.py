@@ -43,11 +43,14 @@ class Mounts(object):
 
     def __init__(self, binmount, procmounts, mountinfo):
         self._mounts = {}
+        all_mount_points = set()
+        if binmount:
+            all_mount_points = set(binmount.mounts.keys())
+        elif procmounts:
+            all_mount_points = set(procmounts.mounts.keys())
+        else:
+            all_mount_points = set(mountinfo.mounts.keys())
 
-        all_mount_points = set().union(
-                    binmount.mounts.keys() if binmount else [],
-                    procmounts.mounts.keys() if procmounts else [],
-                    mountinfo.mounts.keys() if mountinfo else [])
         for mount_point in all_mount_points:
             this_binmount = binmount.get_dir(mount_point) if binmount else None
             this_procmounts = procmounts.get_dir(mount_point) if procmounts else None
@@ -70,7 +73,7 @@ class Mounts(object):
 
             # create MountEntry
             source_mount = this_mountinfo if this_mountinfo else (
-                            this_procmounts if this_procmounts else this_binmount)
+                this_procmounts if this_procmounts else this_binmount)
             basicinfo = {}
             basicinfo['mount_point'] = mount_point
             basicinfo['mount_source'] = source_mount.get('mount_source') or source_mount.get('filesystem')
@@ -81,7 +84,7 @@ class Mounts(object):
 
             self._mounts[mount_point] = entry_info
             self.rows = sorted(self._mounts.values(), key=lambda r:
-                        (r.mount_addtlinfo.get('mount_id', '-1'), r.mount_point))
+            (r.mount_addtlinfo.get('mount_id', '-1'), r.mount_point))
 
     @property
     def mount_points(self):
