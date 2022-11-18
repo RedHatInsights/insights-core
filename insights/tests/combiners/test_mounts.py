@@ -75,7 +75,7 @@ def test_combiner_mounts_all():
     procmounts = ProcMounts(context_wrap(PROCMOUNTS_DATA))
     mountinfo = MountInfo(context_wrap(MOUNTINFO_DATA))
     mounts = Mounts(mount, procmounts, mountinfo)
-    assert len(mounts) == 19
+    assert len(mounts) == 15
 
     assert '/' in mounts
     root_entry = mounts['/']
@@ -96,8 +96,8 @@ def test_combiner_mounts_all():
     assert mounts.search(mount_source="/dev/mapper/vgsys-root")[0]['mount_point'] == '/'
 
     assert mounts.rows[0] == mounts['/proc']
-    assert len([row for row in mounts]) == 19
-    assert len(mounts.mount_points) == 19
+    assert len([row for row in mounts]) == 15
+    assert len(mounts.mount_points) == 15
     assert mounts.get_dir('/var/somedir') == mounts['/var']
     assert mounts.get_dir('not/absolute/path') is None
 
@@ -106,7 +106,7 @@ def test_combiner_wo_mountinfo():
     mount = Mount(context_wrap(MOUNT_DATA))
     procmounts = ProcMounts(context_wrap(PROCMOUNTS_DATA))
     mounts = Mounts(mount, procmounts, None)
-    assert len(mounts) == 19
+    assert len(mounts) == 15
 
     assert '/' in mounts
     root_entry = mounts['/']
@@ -151,7 +151,7 @@ def test_combiner_wo_procmount():
     mount = Mount(context_wrap(MOUNT_DATA))
     mountinfo = MountInfo(context_wrap(MOUNTINFO_DATA))
     mounts = Mounts(mount, None, mountinfo)
-    assert len(mounts) == 19
+    assert len(mounts) == 15
 
     assert '/' in mounts
     root_entry = mounts['/']

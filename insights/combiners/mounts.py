@@ -13,7 +13,7 @@ Examples:
     >>> type(mounts)
     <class 'insights.combiners.mounts.Mounts'>
     >>> len(mounts)
-    19
+    15
     >>> '/boot' in mounts
     True
     >>> mounts['/boot'].mount_source
