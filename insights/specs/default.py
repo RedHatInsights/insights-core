@@ -285,6 +285,7 @@ class DefaultSpecs(Specs):
     ironic_inspector_log = first_file(["/var/log/containers/ironic-inspector/ironic-inspector.log", "/var/log/ironic-inspector/ironic-inspector.log"])
     iscsiadm_m_session = simple_command("/usr/sbin/iscsiadm -m session")
     jbcs_httpd24_httpd_error_log = simple_file("/opt/rh/jbcs-httpd24/root/etc/httpd/logs/error_log")
+    jboss_runtime_versions = ps_datasource.jboss_runtime_versions
     journal_header = simple_command("/usr/bin/journalctl --no-pager --header")
     kdump_conf = simple_file("/etc/kdump.conf")
     kernel_config = glob_file("/boot/config-*")
@@ -487,7 +488,6 @@ class DefaultSpecs(Specs):
     ps_ef = simple_command("/bin/ps -ef")
     ps_eo = simple_command("/usr/bin/ps -eo pid,ppid,comm")
     ps_eo_cmd = ps_datasource.ps_eo_cmd
-    jboss_runtime_versions = ps_datasource.jboss_runtime_versions
     pulp_worker_defaults = simple_file("etc/default/pulp_workers")
     puppet_ca_cert_expire_date = simple_command("/usr/bin/openssl x509 -in /etc/puppetlabs/puppet/ssl/ca/ca_crt.pem -enddate -noout")
     pvs_noheadings = simple_command("/sbin/pvs --nameprefixes --noheadings --separator='|' -a -o pv_all,vg_name --config=\"global{locking_type=0}\"")

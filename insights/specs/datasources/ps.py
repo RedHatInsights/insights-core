@@ -1,8 +1,9 @@
 """
 Custom datasources for ps information
 """
-import os.path
 import json
+import os.path
+
 from insights.core.context import HostContext
 from insights.core.dr import SkipComponent
 from insights.core.plugins import datasource
