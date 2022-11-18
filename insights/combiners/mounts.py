@@ -48,7 +48,7 @@ class Mounts(object):
             all_mount_points = set(binmount.mounts.keys())
         elif procmounts:
             all_mount_points = set(procmounts.mounts.keys())
-        else:
+        elif mountinfo:
             all_mount_points = set(mountinfo.mounts.keys())
 
         for mount_point in all_mount_points:
