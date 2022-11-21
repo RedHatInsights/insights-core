@@ -43,13 +43,13 @@ class Mounts(object):
 
     def __init__(self, binmount, procmounts, mountinfo):
         self._mounts = {}
-        all_mount_points = set()
+        all_mount_points = []
         if binmount:
-            all_mount_points = set(binmount.mounts.keys())
+            all_mount_points = binmount.mounts.keys()
         elif procmounts:
-            all_mount_points = set(procmounts.mounts.keys())
+            all_mount_points = procmounts.mounts.keys()
         elif mountinfo:
-            all_mount_points = set(mountinfo.mounts.keys())
+            all_mount_points = mountinfo.mounts.keys()
 
         for mount_point in all_mount_points:
             this_binmount = binmount.get_dir(mount_point) if binmount else None
