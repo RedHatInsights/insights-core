@@ -22,10 +22,10 @@ class LocalSpecs(Specs):
 def ps_eo_cmd(broker):
     """
     Custom datasource to collect the full paths to all running commands on the system
-    provided by the ``ps -eo pid,args`` command.  After collecting the data, all of the
+    provided by the ``ps -ewwo pid,args`` command.  After collecting the data, all of the
     args are trimmed to leave only the command including full path.
 
-    Sample output from the ``ps -eo pid, args`` command::
+    Sample output from the ``ps -ewwo pid, args`` command::
 
         PID COMMAND
           1 /usr/lib/systemd/systemd --switched-root --system --deserialize 31
@@ -113,28 +113,19 @@ def jboss_runtime_versions(broker):
     data = {}
     for l in content:
         if 'java ' in l:
-            if '-jboss-home ' in l:
-                jboss_home_str = l.split('-jboss-home ')[1]
-                if jboss_home_str.startswith('/'):
-                    jboss_home_dirs.add(jboss_home_str.split()[0])
-            elif '-Djboss.home.dir=' in l:
-                jboss_home_str = l.split('-Djboss.home.dir=')[1]
-                if jboss_home_str.startswith('/'):
-                    jboss_home_dirs.add(jboss_home_str.split()[0])
-            elif '-Dcatalina.home=' in l:
-                jboss_home_str = l.split('-Dcatalina.home=')[1]
-                if jboss_home_str.startswith('/'):
-                    jboss_home_dirs.add(jboss_home_str.split()[0])
-            elif '-Dinfinispan.server.home.path=' in l:
-                jboss_home_str = l.split('-Dinfinispan.server.home.path=')[1]
-                if jboss_home_str.startswith('/'):
-                    jboss_home_dirs.add(jboss_home_str.split()[0])
+            jboss_home_labels = ['-jboss-home ', '-Djboss.home.dir=', '-Dcatalina.home=',
+                                 '-Dinfinispan.server.home.path=']
+            for jhl in jboss_home_labels:
+                if jhl in l:
+                    jboss_home_str = l.split(jhl)[1]
+                    if jboss_home_str.startswith('/'):
+                        jboss_home_dirs.add(jboss_home_str.split()[0])
     if jboss_home_dirs:
-        jboss_version_path_list = [one_jboss_home_dir + '/version.txt' for one_jboss_home_dir in jboss_home_dirs]
-        for jboss_v in jboss_version_path_list:
-            if os.path.exists(jboss_v):
-                with open(jboss_v, 'r') as version_file:
-                    data[jboss_v.replace('/version.txt', '')] = version_file.read()
-    if len(data) > 1:
+        for one_jboss_home_dir in jboss_home_dirs:
+            jboss_v_file = os.path.join(one_jboss_home_dir, 'version.txt')
+            if os.path.exists(jboss_v_file):
+                with open(jboss_v_file, 'r') as version_file:
+                    data[one_jboss_home_dir] = version_file.read()
+    if len(data) > 0:
         return DatasourceProvider(json.dumps(data), relative_path='insights_commands/jboss_versions')
     raise SkipComponent()

@@ -1,6 +1,7 @@
-import pytest
 import json
 import tempfile
+import pytest
+import shutil
 from mock.mock import Mock
 
 from insights.core.dr import SkipComponent
@@ -101,3 +102,5 @@ def test_jboss_versions():
     result_dict = json.loads(result.content[0])
     assert result_dict == expected_content
     assert result.relative_path == expected.relative_path
+    shutil.rmtree(jboss_home_1)
+    shutil.rmtree(jboss_home_2)
