@@ -501,9 +501,10 @@ class CoalescingInfo(CommandParser):
         for line in content[2:]:
             if line.strip():
                 (key, value) = [s.strip() for s in line.split(":", 1)]
-                value = int(value)
-                self.data[key] = value
-                setattr(self, key.replace("-", "_"), value)
+                if 'n/a' not in value:
+                    value = int(value)
+                    self.data[key] = value
+                    setattr(self, key.replace("-", "_"), value)
 
 
 @parser(Specs.ethtool_g)
@@ -600,7 +601,8 @@ class Ring(CommandParser):
             elif ':' in line:
                 # key: value, store in section data for now
                 key, value = (s.strip() for s in line.split(":", 1))
-                section_data[key.replace(" ", "_").lower()] = int(value)
+                if 'n/a' not in value:
+                    section_data[key.replace(" ", "_").lower()] = int(value)
 
         # Handle last found section, if any
         set_section(section, section_data)
@@ -756,6 +758,7 @@ class TimeStamp(CommandParser):
         >>> eno1.data['Hardware Receive Filter Modes']['all']
         'HWTSTAMP_FILTER_ALL'
     """
+
     @property
     def ifname(self):
         """(str): the interface name"""
@@ -767,6 +770,7 @@ class TimeStamp(CommandParser):
 
         group = None
         for line in content[1:]:
+            line = line.strip()
             if ":" in line:
                 key, val = [i.strip() for i in line.split(':', 1)]
                 group = {}
@@ -775,7 +779,7 @@ class TimeStamp(CommandParser):
                 key, val = [i.strip() for i in line.split(None, 1)]
                 group[key] = val.strip('()')
             elif line:
-                raise ParseException('bad line: {0}'.format(line))
+                group[line] = None
 
 
 @parser(Specs.ethtool)
@@ -853,6 +857,7 @@ class Ethtool(CommandParser):
         >>> ethinfo.supported_ports  # This is converted to a list of strings
         ['TP', 'MII']
     """
+
     @property
     def ifname(self):
         """str: Return the name of network interface in content."""

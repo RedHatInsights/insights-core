@@ -67,7 +67,15 @@ RX negotiated:  off
 TX negotiated:  off
 """.strip()
 
-
+ETHTOOL_T_NO_CAP_VALUE = """
+Time stamping parameters for ens192:
+Capabilities:
+	software-receive
+	software-system-clock
+PTP Hardware Clock: none
+Hardware Transmit Timestamp Modes: none
+Hardware Receive Filter Modes: none
+"""
 def test_ethtool_a():
     context = context_wrap(SUCCESS_ETHTOOL_A, path=SUCCESS_ETHTOOL_A_PATH)
     result = ethtool.Pause(context)
@@ -657,6 +665,15 @@ Hardware Receive Filter Modes:
     all                   (HWTSTAMP_FILTER_ALL)
 '''
 
+ETHTOOL_T_NO_CAP_VALUE = """
+Time stamping parameters for ens192:
+Capabilities:
+	software-receive
+	software-system-clock
+PTP Hardware Clock: none
+Hardware Transmit Timestamp Modes: none
+Hardware Receive Filter Modes: none
+"""
 
 def test_ethtool_timestamp():
     timestamp = ethtool.TimeStamp(context_wrap(TEST_ETHTOOL_TIMESTAMP, path="sbin/ethtool_-T_eno1"))
@@ -666,10 +683,13 @@ def test_ethtool_timestamp():
     assert timestamp.data['PTP Hardware Clock'] == '0'
     assert timestamp.data['Hardware Transmit Timestamp Modes']['off'] == 'HWTSTAMP_TX_OFF'
     assert timestamp.data['Hardware Receive Filter Modes']['all'] == 'HWTSTAMP_FILTER_ALL'
-    with pytest.raises(ParseException) as pe:
-        ethtool.TimeStamp(context_wrap(TEST_ETHTOOL_TIMESTAMP_AB, path="sbin/ethtool_-T_eno1"))
-        assert 'bad line:' in str(pe)
 
+def test_ethtool_timestamp_no_cap_value():
+    timestamp = ethtool.TimeStamp(context_wrap(ETHTOOL_T_NO_CAP_VALUE, path="sbin/ethtool_-T_ens192"))
+    assert timestamp.ifname == 'ens192'
+    print(timestamp.data)
+    assert timestamp.data['Capabilities']['software-receive'] == None
+    assert timestamp.data['Hardware Transmit Timestamp Modes'] == 'none'
 
 TEST_EXTRACT_FROM_PATH_1 = """
     ethtool_-a_eth0
