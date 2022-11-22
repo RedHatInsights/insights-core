@@ -318,7 +318,9 @@ class ModInfoEach(CommandParser, ModInfo):
     .. warning::
         This parser is deprecated, please use
         :py:class:`insights.combiners.modinfo.ModulesInfo` instead.
+
     Parses the output of ``modinfo %s`` command, where %s is any of the loaded modules.
+
     Sample output::
         filename:       /lib/modules/3.10.0-993.el7.x86_64/kernel/drivers/net/ethernet/intel/i40e/i40e.ko.xz
         firmware:       i40e/i40e-e2-7.13.1.0.fw
@@ -340,8 +342,10 @@ class ModInfoEach(CommandParser, ModInfo):
         sig_hashalgo:   sha256
         parm:           debug:Debug level (0=none,...,16=all), Debug mask (0x8XXXXXXX) (uint)
         parm:           int_mode: Force interrupt mode other than MSI-X (1 INT#x; 2 MSI) (int)
+
     Raises:
         SkipException: When nothing is need to parse
+
     Examples:
         >>> type(modinfo_obj)
         <class 'insights.parsers.modinfo.ModInfoEach'>
