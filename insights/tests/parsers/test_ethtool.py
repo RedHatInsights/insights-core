@@ -690,7 +690,6 @@ def test_ethtool_timestamp():
 def test_ethtool_timestamp_no_cap_value():
     timestamp = ethtool.TimeStamp(context_wrap(ETHTOOL_T_NO_CAP_VALUE, path="sbin/ethtool_-T_ens192"))
     assert timestamp.ifname == 'ens192'
-    print(timestamp.data)
     assert timestamp.data['Capabilities']['software-receive'] is None
     assert timestamp.data['Hardware Transmit Timestamp Modes'] == 'none'
 
