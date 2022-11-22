@@ -1,8 +1,7 @@
 import doctest
 import pytest
 from insights.parsers import modinfo, SkipException
-# from insights.parsers.modinfo import ModInfoI40e, ModInfoVmxnet3, ModInfoIgb, ModInfoIxgbe, ModInfoVeth
-from insights.parsers.modinfo import KernelModulesInfo
+from insights.parsers.modinfo import ModInfoEach, ModInfoAll, KernelModulesInfo
 from insights.tests import context_wrap
 
 MODINFO_I40E = """
@@ -216,6 +215,8 @@ def test_kernel_modules_info():
 
 def test_modinfo_doc_examples():
     env = {
+            'modinfo_obj': ModInfoEach(context_wrap(MODINFO_I40E)),
+            'modinfo_all': ModInfoAll(context_wrap("{0}\n{1}".format(MODINFO_VMXNET3, MODINFO_I40E))),
             'mods_info': KernelModulesInfo(context_wrap("{0}\n{1}".format(MODINFO_VMXNET3, MODINFO_I40E)))
     }
     failed, total = doctest.testmod(modinfo, globs=env)
