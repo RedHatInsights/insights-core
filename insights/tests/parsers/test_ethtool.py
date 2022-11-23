@@ -151,7 +151,7 @@ tx-usecs-irq: 0
 tx-frame-low: 25
 
 tx-usecs-high: 0
-tx-frame-high: 0
+tx-frame-high: n/a
 
 """.strip()
 
@@ -177,7 +177,7 @@ def test_get_ethtool_c():
     context.path = TEST_ETHTOOL_C_PATH
     result = ethtool.CoalescingInfo(context)
     assert keys_in(["adaptive-rx", "adaptive-tx", "pkt-rate-high",
-                    "tx-usecs-irq", "tx-frame-low", "tx-usecs-high", "tx-frame-high"], result.data)
+                    "tx-usecs-irq", "tx-frame-low", "tx-usecs-high"], result.data)
     assert result.ifname == "eth2"
     assert not result.adaptive_rx
     assert not result.adaptive_tx
@@ -185,7 +185,7 @@ def test_get_ethtool_c():
     assert result.tx_usecs_irq == 0
     assert result.tx_frame_low == 25
     assert result.tx_usecs_high == 0
-    assert result.tx_frame_high == 0
+    assert 'tx_frame_high' not in result.data
 
 
 def test_get_ethtool_c_cannot_get():
