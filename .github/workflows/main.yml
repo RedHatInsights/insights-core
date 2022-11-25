@@ -9,7 +9,7 @@ on:
 jobs:
   code-test:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         python-versions: [2.7, 3.6, 3.9]
@@ -71,7 +71,7 @@ jobs:
 
   docs-test:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
     - uses: actions/checkout@v3
