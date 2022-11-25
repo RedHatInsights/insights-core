@@ -799,4 +799,5 @@ class Specs(SpecSet):
     container_nginx_conf = RegistryPoint(multi_output=True)
     container_installed_rpms = RegistryPoint(multi_output=True)
     container_inspect_keys = RegistryPoint(filterable=True)
+    container_cpu_online = RegistryPoint(multi_output=True)
     containers_inspect = RegistryPoint()

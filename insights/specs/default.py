@@ -681,4 +681,5 @@ class DefaultSpecs(Specs):
     container_installed_rpms = container_execute(running_rhel_containers, "/usr/bin/rpm -qa --qf '%s'" % _rpm_format, context=HostContext, signum=signal.SIGTERM)
     container_nginx_conf = container_collect(container_nginx_conf_ds)
     container_redhat_release = container_collect(running_rhel_containers, "/etc/redhat-release")
+    container_cpuset_cpus = container_collect(running_rhel_containers, "/sys/fs/cgroup/cpuset/cpuset.cpus")
     containers_inspect = containers_inspect.containers_inspect_data_datasource
