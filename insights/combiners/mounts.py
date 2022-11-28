@@ -29,6 +29,7 @@ from insights.core.plugins import combiner
 from insights.parsers import keyword_search
 from insights.parsers.mount import Mount, ProcMounts, MountInfo
 from insights.parsers.mount import MountEntry, MountAddtlInfo
+from insights.util import deprecated
 
 
 @combiner([Mount, ProcMounts, MountInfo])
@@ -42,6 +43,7 @@ class Mounts(object):
     """
 
     def __init__(self, binmount, procmounts, mountinfo):
+        deprecated(Mounts, "Use the parsers in insights.mount module instead", "3.1.0")
         self._mounts = {}
 
         all_mount_points = set().union(
