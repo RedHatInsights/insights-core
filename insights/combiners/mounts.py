@@ -43,7 +43,7 @@ class Mounts(object):
     """
 
     def __init__(self, binmount, procmounts, mountinfo):
-        deprecated(Mounts, "Use the parsers in insights.mount module instead", "3.1.0")
+        deprecated(Mounts, "Use the parsers in insights.mount module instead", "3.1.25")
         self._mounts = {}
 
         all_mount_points = set().union(
