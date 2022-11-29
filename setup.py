@@ -62,14 +62,14 @@ develop = set([
 
 docs = set([
     'docutils',
-    'Sphinx<=5.0.2',
+    'Sphinx',
     'nbsphinx',
     'sphinx_rtd_theme',
-    'ipython',
+    'ipython==8.6.0',
+    'MarkupSafe==2.0.1',
     'colorama',
     'Pygments',
-    'jedi<0.18.0',    # Open issue with jedi 0.18.0 and iPython <= 7.19
-                      # https://github.com/davidhalter/jedi/issues/1714
+    'jedi'
 ])
 
 # python 2.6 requires setuptools~=36.8.0 to support this syntax
