@@ -279,6 +279,7 @@ class Specs(SpecSet):
     iscsiadm_m_session = RegistryPoint()
     jbcs_httpd24_httpd_error_log = RegistryPoint(filterable=True)
     jboss_domain_server_log = RegistryPoint(multi_output=True, filterable=True)
+    jboss_runtime_versions = RegistryPoint()
     jboss_standalone_main_config = RegistryPoint(multi_output=True)
     jboss_standalone_server_log = RegistryPoint(multi_output=True, filterable=True)
     jboss_version = RegistryPoint(multi_output=True)
