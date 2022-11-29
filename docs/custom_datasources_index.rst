@@ -167,7 +167,7 @@ insights.specs.datasources.ps
 -----------------------------
 
 .. automodule:: insights.specs.datasources.ps
-    :members: ps_eo_cmd, LocalSpecs
+    :members: jboss_runtime_versions, ps_eo_cmd, LocalSpecs
     :show-inheritance:
     :undoc-members:
 

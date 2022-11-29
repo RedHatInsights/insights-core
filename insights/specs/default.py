@@ -285,6 +285,7 @@ class DefaultSpecs(Specs):
     ironic_inspector_log = first_file(["/var/log/containers/ironic-inspector/ironic-inspector.log", "/var/log/ironic-inspector/ironic-inspector.log"])
     iscsiadm_m_session = simple_command("/usr/sbin/iscsiadm -m session")
     jbcs_httpd24_httpd_error_log = simple_file("/opt/rh/jbcs-httpd24/root/etc/httpd/logs/error_log")
+    jboss_runtime_versions = ps_datasource.jboss_runtime_versions
     journal_header = simple_command("/usr/bin/journalctl --no-pager --header")
     kdump_conf = simple_file("/etc/kdump.conf")
     kernel_config = glob_file("/boot/config-*")
