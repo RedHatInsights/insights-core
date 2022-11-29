@@ -1,6 +1,5 @@
 from insights import condition, rule, make_fail
 from insights.parsers.installed_rpms import InstalledRpms
-from insights.parsers.up2date import Up2Date
 from insights.parsers.uname import Uname
 from insights.parsers.redhat_release import RedhatRelease
 from insights.parsers.messages import Messages
@@ -30,7 +29,7 @@ from insights.combiners.redhat_release import RedHatRelease
 from insights.core.dr import get_dependency_specs
 
 
-@condition(InstalledRpms, [Up2Date, PsAuxcww], optional=[Messages])
+@condition(InstalledRpms, [PsAuxcww], optional=[Messages])
 def condition_01(*args):
     return True
 

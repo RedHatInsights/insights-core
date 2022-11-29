@@ -17,7 +17,6 @@ from insights.parsers.redhat_release import RedhatRelease as rht_release
 from insights.parsers.uname import Uname
 from insights.core.serde import serializer, deserializer
 from insights.parsers import SkipComponent
-from insights.util import deprecated
 
 
 Release = namedtuple("Release", field_names=["major", "minor"])
@@ -32,48 +31,6 @@ def serialize(obj, root=None):
 @deserializer(Release)
 def deserialize(_type, obj, root=None):
     return Release(**obj)
-
-
-@combiner([rht_release, Uname])
-def redhat_release(rh_release, un):
-    """
-    .. warning::
-        This combiner methode is deprecated, please use
-        :py:class:`insights.combiners.redhat_release.RedHatRelease` instead.
-
-    Combiner method to check uname and redhat-release for rhel major/minor
-    version.
-
-    Prefer uname to redhat-release.
-
-    Returns:
-        Release: A named tuple with the following items:
-            - major: integer
-            - minor: integer
-
-    Raises:
-        SkipComponent: If the version can't be determined even though a Uname
-            or RedhatRelease was provided.
-
-    Examples:
-        >>> rh_release.major
-        7
-        >>> rh_release.minor
-        2
-        >>> rh_release
-        Release(major=7, minor=2)
-
-    """
-
-    deprecated(redhat_release, "Use the `RedHatRelease` class instead.", "3.0.300")
-
-    if un and un.release_tuple[0] != -1:
-        return Release(*un.release_tuple)
-
-    if rh_release:
-        return Release(rh_release.major, rh_release.minor)
-
-    raise SkipComponent("Unabled to determine release.")
 
 
 @combiner([Uname, rht_release])
