@@ -66,15 +66,6 @@ totem {
 """.strip()
 
 
-def test_corosync_1():
-    result = corosync.CoroSyncConfig(context_wrap(corosync_content))
-    assert result.data['COROSYNC_OPTIONS'] == ""
-    assert result.data['COROSYNC_INIT_TIMEOUT'] == "60"
-
-    assert result.options == ''
-    assert result.unparsed_lines == []
-
-
 def test_corosync_conf():
     conf = corosync.CorosyncConf(context_wrap(COROSYNC_CONF))
     assert conf['totem']['token'][first].value == 10000
@@ -93,7 +84,8 @@ def test_corosync_conf_empty():
 def test_doc_examples():
     failed, total = doctest.testmod(
         corosync,
-        globs={'csconfig': corosync.CoroSyncConfig(context_wrap(corosync_content)),
-               'corosync_conf': corosync.CorosyncConf(context_wrap(COROSYNC_CONF))}
+        globs={
+            'corosync_conf': corosync.CorosyncConf(context_wrap(COROSYNC_CONF))
+        }
     )
     assert failed == 0

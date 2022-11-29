@@ -58,7 +58,6 @@ from itertools import chain
 from .. import Parser, parser
 from . import get_active_lines
 from insights.specs import Specs
-from insights.util import deprecated
 
 
 class NFSExportsBase(Parser):
@@ -137,34 +136,6 @@ class NFSExportsBase(Parser):
 
     def __iter__(self):
         return iter(self.data.items())
-
-    @staticmethod
-    def reconstitute(path, d):
-        """
-        .. warning::
-            This function is deprecated.  Please use the `raw_lines` dictionary
-            property of the parser instance instead, as this contains the actual
-            lines from the exports file.
-
-        'Reconstitute' a line from its parsed value.  The original lines are
-        not used for this.  The hosts in d are listed in alphabetical order,
-        and the options are listed in the order originally given.
-
-        Arguments:
-            path (str): The exported path
-            d (dict): The hosts definition of the exported path
-
-        Returns:
-            str: A line simulating the definition of that exported path to
-            those hosts.
-        """
-        deprecated(
-            NFSExportsBase.reconstitute,
-            "Please use the `raw_lines` dictionary property of the parser instance.",
-            "3.0.300"
-        )
-        return "  ".join([path] + ["%s(%s)" % (host, ",".join(options))
-                         for host, options in d.items()])
 
 
 @parser(Specs.nfs_exports)
