@@ -1802,38 +1802,3 @@ class FileListing(Parser):
         if name not in self.listings[directory]['entries']:
             return None
         return self.listings[directory]['entries'][name]
-
-
-class AttributeDict(dict):
-    """
-    Class to convert the access to each item in a dict as attribute.
-
-    .. warning::
-        Deprecated class, please set attributes explicitly.
-
-    Examples:
-        >>> data = {
-        ... "fact1":"fact 1"
-        ... "fact2":"fact 2"
-        ... "fact3":"fact 3"
-        ... }
-        >>> d_obj = AttributeDict(data)
-        {'fact1': 'fact 1', 'fact2': 'fact 2', 'fact3': 'fact 3'}
-        >>> d_obj['fact1']
-        'fact 1'
-        >>> d_obj.get('fact1')
-        'fact 1'
-        >>> d_obj.fact1
-        'fact 1'
-        >>> 'fact2' in d_obj
-        True
-        >>> d_obj.get('fact3', default='no fact')
-        'fact 3'
-        >>> d_obj.get('fact4', default='no fact')
-        'no fact'
-    """
-
-    def __init__(self, *args, **kwargs):
-        deprecated(AttributeDict, "Please set attributes explicitly.", "3.0.300")
-        super(AttributeDict, self).__init__(*args, **kwargs)
-        self.__dict__ = self

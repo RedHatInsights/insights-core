@@ -9,23 +9,6 @@ Parser to get the kernel samepage merging state by reading the file
 from insights import parser, Parser
 from insights.parsers import SkipException, ParseException
 from insights.specs import Specs
-from insights.util import deprecated
-
-
-@parser(Specs.ksmstate)
-def is_running(context):
-    """
-    .. warning::
-        This function parser is deprecated, please use :py:class:`KSMState`
-        instead.
-
-    Check if Kernel Samepage Merging is enabled. 'True' if KSM is
-    on (i.e. ``/sys/kernel/mm/ksm/run`` is '1') or 'False' if not.
-    """
-    deprecated(is_running, "Use the `KSMState` class instead.", "3.0.300")
-    ksminfo = {}
-    ksminfo['running'] = (context.content[0].split()[0] == '1')
-    return ksminfo
 
 
 @parser(Specs.ksmstate)
