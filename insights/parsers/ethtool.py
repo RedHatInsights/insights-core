@@ -501,7 +501,7 @@ class CoalescingInfo(CommandParser):
         for line in content[2:]:
             if line.strip():
                 (key, value) = [s.strip() for s in line.split(":", 1)]
-                if 'n/a' not in value:
+                if value.isnumeric():
                     value = int(value)
                     self.data[key] = value
                     setattr(self, key.replace("-", "_"), value)
@@ -601,7 +601,7 @@ class Ring(CommandParser):
             elif ':' in line:
                 # key: value, store in section data for now
                 key, value = (s.strip() for s in line.split(":", 1))
-                if 'n/a' not in value:
+                if value.isnumeric():
                     section_data[key.replace(" ", "_").lower()] = int(value)
 
         # Handle last found section, if any
