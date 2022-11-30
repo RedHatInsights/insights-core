@@ -13,7 +13,7 @@ import signal
 
 from insights.core.context import HostContext
 from insights.core.spec_factory import RawFileProvider
-from insights.core.spec_factory import simple_file, simple_command, glob_file
+from insights.core.spec_factory import simple_file, simple_command, glob_file, head
 from insights.core.spec_factory import first_of, command_with_args
 from insights.core.spec_factory import foreach_collect, foreach_execute
 from insights.core.spec_factory import container_collect, container_execute
@@ -412,7 +412,13 @@ class DefaultSpecs(Specs):
                            "/opt/rh/nginx*/root/etc/nginx/*.conf", "/opt/rh/nginx*/root/etc/nginx/conf.d/*.conf", "/opt/rh/nginx*/root/etc/nginx/default.d/*.conf",
                            "/etc/opt/rh/rh-nginx*/nginx/*.conf", "/etc/opt/rh/rh-nginx*/nginx/conf.d/*.conf", "/etc/opt/rh/rh-nginx*/nginx/default.d/*.conf"
                            ])
-    nginx_error_log = simple_file("/var/log/nginx/error.log")
+
+    nginx_error_log = first_of(
+        [
+            simple_file("/var/log/nginx/error.log"),
+            head(glob_file("/var/opt/rh/rh-nginx*/log/nginx/error.log")),
+        ]
+    )
     nginx_ssl_cert_enddate = foreach_execute(ssl_certificate.nginx_ssl_certificate_files, "/usr/bin/openssl x509 -in %s -enddate -noout")
     nmcli_conn_show = simple_command("/usr/bin/nmcli conn show")
     nmcli_dev_show = simple_command("/usr/bin/nmcli dev show")
