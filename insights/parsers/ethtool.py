@@ -52,6 +52,7 @@ if sys.version_info.major == 3:
     # Python 3
     unicode = str
 
+
 def extract_iface_name_from_path(path, name):
     """
     Extract the 'real' interface name from the path name.  Basically this
