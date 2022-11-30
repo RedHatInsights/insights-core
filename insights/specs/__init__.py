@@ -351,7 +351,7 @@ class Specs(SpecSet):
     lsblk_pairs = RegistryPoint()
     lscpu = RegistryPoint()
     lsinitrd = RegistryPoint(filterable=True)
-    lsinitrd_kdump_image = RegistryPoint(filterable=True)
+    lsinitrd_kdump_image = RegistryPoint(filterable=True, multi_output=True)
     lsinitrd_lvm_conf = RegistryPoint()
     lsmod = RegistryPoint()
     lsof = RegistryPoint(filterable=True)
