@@ -7,9 +7,9 @@ This file shows the default cgroup cpuset.cpu of system. The format
 of the content is string including comma.
 """
 
-from .. import parser, CommandParser
-from insights.specs import Specs
 from insights import ContainerParser
+from insights import parser, CommandParser
+from insights.specs import Specs
 
 
 @parser(Specs.cpuset_cpus)
