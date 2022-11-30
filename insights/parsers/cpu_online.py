@@ -7,15 +7,15 @@ This file shows the number of online cpu. The format of the content
 is string including comma.
 """
 
-from .. import parser, CommandParser
-from insights.specs import Specs
 from insights import ContainerParser
+from insights import parser, CommandParser
+from insights.specs import Specs
 
 
-@parser(Specs.container_cpuset_cpus)
+@parser(Specs.container_cpu_online)
 class ContainerCpuOnline(ContainerParser, CommandParser):
     """
-    Class ``ContainerCpuOnline`` parses the content of the ``/sys/fs/cgroup/cpuset/cpuset.cpus`` from containers.
+    Class ``ContainerCpuOnline`` parses the content of the ``/sys/devices/system/cpu/online`` from containers.
 
     Attributes:
         cpu_online_set (list): It is used to show the list of online cpu.
