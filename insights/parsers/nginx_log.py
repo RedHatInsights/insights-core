@@ -9,9 +9,9 @@ Module for parsing log file of nginx web server.
     for more usage information.
 """
 
-from .. import LogFileOutput, parser
-from insights.specs import Specs
 from insights import ContainerParser
+from insights import LogFileOutput, parser
+from insights.specs import Specs
 
 
 @parser(Specs.nginx_error_log)
