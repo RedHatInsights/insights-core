@@ -42,11 +42,15 @@ TimeStamp - command ``/sbin/ethtool -T {interface}``
 
 import os
 import re
+import sys
 from collections import namedtuple
 from ..parsers import ParseException
 from .. import parser, LegacyItemAccess, CommandParser
 from insights.specs import Specs
 
+if sys.version_info.major == 3:
+    # Python 3
+    unicode = str
 
 def extract_iface_name_from_path(path, name):
     """
@@ -501,7 +505,7 @@ class CoalescingInfo(CommandParser):
         for line in content[2:]:
             if line.strip():
                 (key, value) = [s.strip() for s in line.split(":", 1)]
-                if value.isnumeric():
+                if unicode(value).isnumeric():
                     value = int(value)
                     self.data[key] = value
                     setattr(self, key.replace("-", "_"), value)
@@ -601,7 +605,7 @@ class Ring(CommandParser):
             elif ':' in line:
                 # key: value, store in section data for now
                 key, value = (s.strip() for s in line.split(":", 1))
-                if value.isnumeric():
+                if unicode(value).isnumeric():
                     section_data[key.replace(" ", "_").lower()] = int(value)
 
         # Handle last found section, if any
