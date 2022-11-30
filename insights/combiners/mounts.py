@@ -38,12 +38,16 @@ class Mounts(object):
     ``Mounts`` combiner consolidates data from the parsers in
     ``insights.parsers.mounts`` module.
 
+    Note:
+        This class is deprecated now and will be removed in version 3.2.0.
+        Use insights.parsers.mount directly.
+
     Attributes:
         rows (list): list of :class:`MountEntry` objects for each mount entry
     """
 
     def __init__(self, binmount, procmounts, mountinfo):
-        deprecated(Mounts, "Use the parsers in insights.mount module instead", "3.1.25")
+        deprecated(Mounts, "Use the parsers in insights.parsers.mount module instead", "3.1.25")
         self._mounts = {}
 
         all_mount_points = set().union(
