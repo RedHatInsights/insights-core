@@ -196,27 +196,29 @@ class Hydration(object):
                 fs.ensure_path(self.data, mode=0o770)
             self.created = True
 
-        c = comp
-        doc = None
         try:
-            name = dr.get_name(c)
-            # The `broker.trackbacks` is a dict in which the values are string
-            # but not list of strings
-            errors = [broker.tracebacks[e] for e in broker.exceptions.get(c, [])]
-            doc = {
-                "name": name,
-                "exec_time": broker.exec_times.get(c),
-                "errors": errors
-            }
+            name = dr.get_name(comp)
+
+            # The `broker.tracebacks` is a dict in which the values are string
+            # but not list of strings.
+            errors = [broker.tracebacks[e] for e in broker.exceptions.get(comp, [])]
+
             start = time.time()
             results, ms_errors = marshal(comp, broker, root=self.data, pool=self.pool)
-            doc["results"] = results if results else None
             errors.extend(ms_errors if isinstance(ms_errors, list) else [ms_errors]) if ms_errors else None
-            doc["ser_time"] = time.time() - start
+
+            doc = {
+                "name": name,
+                "exec_time": broker.exec_times.get(comp),
+                "errors": errors,
+                "results": results if results else None,
+                "ser_time": time.time() - start
+            }
         except Exception as ex:
             log.exception(ex)
         else:
             if doc is not None and (doc["results"] or doc["errors"]):
+                path = None
                 try:
                     path = os.path.join(self.meta_data, name + "." + self.ser_name)
                     with open(path, "w") as f:

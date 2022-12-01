@@ -260,7 +260,7 @@ def test_dehydrate():
     tb = broker.tracebacks[exc]
 
     tmp_path = mkdtemp()
-    spec_the_data = TestSpecs.the_data
+    spec_the_data = Specs.the_data
     try:
         h = Hydration(tmp_path)
         h.dehydrate(spec_the_data, broker)
