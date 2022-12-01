@@ -2,9 +2,26 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.1.0](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.0) (2022-12-01)
+
+- Keep the code to delete previously-named malware rules file ([PR 3619](https://github.com/RedHatInsights/insights-core/pull/3619))
+- fix: add deprecated warning message in insights.combiners.mounts ([PR 3613](https://github.com/RedHatInsights/insights-core/pull/3613))
+- feat: Add timeout to datasources ([PR 3598](https://github.com/RedHatInsights/insights-core/pull/3598))
+- Display message when malware scan_timeout aborts scan ([PR 3617](https://github.com/RedHatInsights/insights-core/pull/3617))
+- Add nginx error log which is installed from RHSCL ([PR 3616](https://github.com/RedHatInsights/insights-core/pull/3616))
+- fix: Update the pinned doc modules ([PR 3615](https://github.com/RedHatInsights/insights-core/pull/3615))
+- Add datasource to get jboss versions ([PR 3600](https://github.com/RedHatInsights/insights-core/pull/3600))
+- [insights-core-3.0.300] Remove deprecated features ([PR 3595](https://github.com/RedHatInsights/insights-core/pull/3595))
+- Don't look for yara installed in /usr/local/bin ([PR 3614](https://github.com/RedHatInsights/insights-core/pull/3614))
+- test: use ubuntu 20.04 instead of latest as the issue in latest ([PR 3608](https://github.com/RedHatInsights/insights-core/pull/3608))
+- Rename downloaded temp malware rules file ([PR 3602](https://github.com/RedHatInsights/insights-core/pull/3602))
+- New specs var_log_pcp_openmetrics_log ([PR 3596](https://github.com/RedHatInsights/insights-core/pull/3596))
+- feat: RHEL 9.1 is GA ([PR 3599](https://github.com/RedHatInsights/insights-core/pull/3599))
+- feat: New spec "timedatectl" and the parser ([PR 3592](https://github.com/RedHatInsights/insights-core/pull/3592))
+
 ## [insights-core-3.0.305](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.305) (2022-11-17)
 
- - Rename system_user_dirs to rpm_pkgs ([PR 3597](https://github.com/RedHatInsights/insights-core/pull/3597))
+- Rename system_user_dirs to rpm_pkgs ([PR 3597](https://github.com/RedHatInsights/insights-core/pull/3597))
 
 ## [insights-core-3.0.304](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.0.304) (2022-11-17)
 
