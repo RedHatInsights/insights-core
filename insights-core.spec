@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.0.305
+Version:        3.1.0
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,30 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Dec 01 2022 Xiangce Liu <xiangceliu@redhat.com> 3.1.0-1
+- Keep the code to delete previously-named malware rules file (#3619)
+  (mhuth@redhat.com)
+- fix: add deprecated warning message in insights.combiners.mounts (#3613)
+  (lichen@redhat.com)
+- feat: Add timeout to datasources (#3598) (rblakley@redhat.com)
+- Display message when malware scan_timeout aborts scan (#3617)
+  (mhuth@redhat.com)
+- Add nginx error log which is installed from RHSCL (#3616)
+  (44796653+huali027@users.noreply.github.com)
+- fix: Update the pinned doc modules (#3615) (rblakley@redhat.com)
+- Add datasource to get jboss versions (#3600) (lichen@redhat.com)
+- [insights-core-3.0.300] Remove deprecated features (#3595)
+  (psachin@redhat.com)
+- Don't look for yara installed in /usr/local/bin (#3614) (mhuth@redhat.com)
+- test: use ubuntu 20.04 instead of latest as the issue in latest (#3608)
+  (lichen@redhat.com)
+- Rename downloaded temp malware rules file (#3602) (mhuth@redhat.com)
+- New specs var_log_pcp_openmetrics_log (#3596)
+  (87797511+mohitkumarrh@users.noreply.github.com)
+- feat: RHEL 9.1 is GA (#3599) (xiangceliu@redhat.com)
+- feat: New spec "timedatectl" and the parser (#3592)
+  (44796653+huali027@users.noreply.github.com)
+
 * Thu Nov 17 2022 Sachin Patil <psachin@redhat.com> 3.0.305-1
 - Rename system_user_dirs to rpm_pkgs (#3597) (41325380+jobselko@users.noreply.github.com)
 
