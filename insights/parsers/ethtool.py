@@ -48,7 +48,7 @@ from ..parsers import ParseException
 from .. import parser, LegacyItemAccess, CommandParser
 from insights.specs import Specs
 
-if sys.version_info.major == 3:
+if sys.version_info[0] == 3:
     # Python 3
     unicode = str
 
