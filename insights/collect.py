@@ -148,10 +148,6 @@ plugins:
         - name: insights.parsers.nmcli.NmcliConnShow
           enabled: true
 
-    # needed for the 'lsinitrd_kdump_image' spec
-        - name: insights.parsers.ls_boot.LsBoot
-          enabled: true
-
     # needed for multiple Datasouce specs
         - name: insights.parsers.ps.PsAuxcww
           enabled: true
