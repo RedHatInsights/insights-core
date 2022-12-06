@@ -4,8 +4,9 @@ LsVarLibRsyslog - command ``ls -lZ  /var/lib/rsyslog``
 """
 
 
+from insights.core import CommandParser, FileListing
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights import CommandParser, parser, FileListing
 
 
 @parser(Specs.ls_var_lib_rsyslog)
