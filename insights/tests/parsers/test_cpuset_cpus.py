@@ -1,6 +1,7 @@
+import doctest
 from insights.parsers import cpuset_cpus
 from insights.tests import context_wrap
-import doctest
+
 
 CPUSET_CPU = """
 0,2-4,7
