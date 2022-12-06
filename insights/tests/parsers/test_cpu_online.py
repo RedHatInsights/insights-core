@@ -1,6 +1,7 @@
+import doctest
 from insights.parsers import cpu_online
 from insights.tests import context_wrap
-import doctest
+
 
 CPU_ONLINE = """
 0,2-4,7
