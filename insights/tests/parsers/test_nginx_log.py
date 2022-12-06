@@ -1,8 +1,8 @@
-from insights.tests import context_wrap
-from insights.parsers import nginx_log
-from insights.parsers.nginx_log import NginxErrorLog, ContainerNginxErrorLog
-from datetime import datetime
 import doctest
+from datetime import datetime
+from insights.parsers import nginx_log
+from insights.parsers.nginx_log import ContainerNginxErrorLog, NginxErrorLog
+from insights.tests import context_wrap
 
 
 NGINX_ERROR_LOG = """
