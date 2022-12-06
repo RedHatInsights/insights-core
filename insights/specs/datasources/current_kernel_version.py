@@ -11,10 +11,14 @@ from insights.parsers.uname import Uname
 def kernel_version(broker):
     """
     This datasource provides the current booting kernel version.
+
     Sample data returned::
+
         '4.18.0-240.el8.x86_64'
+
     Returns:
         String: The current kernel version.
+
     Raises:
         UnameError: When there is a problem occurs with uname data.
     """
