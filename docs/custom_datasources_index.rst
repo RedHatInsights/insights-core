@@ -68,7 +68,7 @@ insights.specs.datasources.corosync
     :undoc-members:
 
 insights.specs.datasources.current_kernel_version
------------------------------------
+-------------------------------------------------
 
 .. automodule:: insights.specs.datasources.current_kernel_version
     :members:  kernel_version
