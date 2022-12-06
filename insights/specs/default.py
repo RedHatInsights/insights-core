@@ -24,7 +24,7 @@ from insights.components.virtualization import IsBareMetal
 from insights.components.satellite import IsCapsule, IsSatellite611, IsSatellite
 from insights.specs import Specs
 from insights.specs.datasources import (
-    aws, awx_manage, cloud_init, candlepin_broker, corosync as corosync_ds,
+    aws, awx_manage, cloud_init, candlepin_broker, corosync as corosync_ds, current_kernel_version,
     dir_list, ethernet, httpd, ipcs, kernel_module_list, lpstat, md5chk,
     package_provides, ps as ps_datasource, sap, satellite_missed_queues,
     semanage, ssl_certificate, sys_fs_cgroup_memory_tasks_number, system_user_dirs, user_group, yum_updates, luks_devices)
@@ -339,7 +339,7 @@ class DefaultSpecs(Specs):
     lsblk = simple_command("/bin/lsblk")
     lsblk_pairs = simple_command("/bin/lsblk -P -o NAME,KNAME,MAJ:MIN,FSTYPE,MOUNTPOINT,LABEL,UUID,RA,RO,RM,MODEL,SIZE,STATE,OWNER,GROUP,MODE,ALIGNMENT,MIN-IO,OPT-IO,PHY-SEC,LOG-SEC,ROTA,SCHED,RQ-SIZE,TYPE,DISC-ALN,DISC-GRAN,DISC-MAX,DISC-ZERO")
     lscpu = simple_command("/usr/bin/lscpu")
-    lsinitrd_kdump_image = foreach_execute(listdir("/boot/*kdump.img"), "/usr/bin/lsinitrd /boot/%s")
+    lsinitrd_kdump_image = command_with_args("/usr/bin/lsinitrd -k %skdump", current_kernel_version.kernel_version)
     lsmod = simple_command("/sbin/lsmod")
     lsof = first_of([
         simple_command("/usr/bin/lsof"),
