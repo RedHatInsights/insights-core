@@ -7,8 +7,8 @@ This file shows the number of online cpu. The format of the content
 is string including comma.
 """
 
-from insights import ContainerParser
-from insights import parser, CommandParser
+from insights.core import CommandParser, ContainerParser
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 
