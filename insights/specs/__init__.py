@@ -318,6 +318,7 @@ class Specs(SpecSet):
     lpstat_p = RegistryPoint()
     lpstat_protocol_printers = RegistryPoint()
     ls_R_var_lib_nova_instances = RegistryPoint()
+    ls_bin = RegistryPoint()
     ls_boot = RegistryPoint()
     ls_dev = RegistryPoint()
     ls_disk = RegistryPoint()

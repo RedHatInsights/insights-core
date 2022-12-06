@@ -114,6 +114,7 @@ class InsightsArchiveSpecs(Specs):
     localtime = simple_file("insights_commands/file_-L_.etc.localtime")
     losetup = simple_file("insights_commands/losetup_-l")
     lpstat_p = simple_file("insights_commands/lpstat_-p")
+    ls_bin = simple_file("insights_commands/ls_-lan_.bin")
     ls_boot = simple_file("insights_commands/ls_-lanR_.boot")
     ls_dev = simple_file("insights_commands/ls_-lanR_.dev")
     ls_disk = simple_file("insights_commands/ls_-lanR_.dev.disk")
