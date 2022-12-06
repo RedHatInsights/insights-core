@@ -1,6 +1,8 @@
 import doctest
 import pytest
-from insights.parsers import modinfo, SkipException
+
+from insights.core.exceptions import SkipException
+from insights.parsers import modinfo
 from insights.parsers.modinfo import ModInfoEach, ModInfoAll, KernelModulesInfo
 from insights.tests import context_wrap
 

@@ -1,6 +1,8 @@
 import doctest
 import pytest
-from insights.parsers import max_uid, ParseException, SkipException
+
+from insights.core.exceptions import ParseException, SkipException
+from insights.parsers import max_uid
 from insights.parsers.max_uid import MaxUID
 from insights.tests import context_wrap
 

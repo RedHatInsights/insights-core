@@ -6,9 +6,9 @@ Parser for parsing the ``environ`` file under ``/proc/<PID>``
 directory.
 
 """
-
-from insights import Parser, parser, LegacyItemAccess
-from insights.parsers import SkipException, ParseException
+from insights.core import LegacyItemAccess, Parser
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 
@@ -29,8 +29,8 @@ class ProcEnviron(Parser, LegacyItemAccess):
         True
 
     Raises:
-        insights.parsers.SkipException: if the ``environ`` file is empty or doesn't exist.
-        insights.parsers.ParseException: if the ``environ`` file content is incorrect.
+        insights.core.exceptions.SkipException: if the ``environ`` file is empty or doesn't exist.
+        insights.core.exceptions.ParseException: if the ``environ`` file content is incorrect.
 
     """
 

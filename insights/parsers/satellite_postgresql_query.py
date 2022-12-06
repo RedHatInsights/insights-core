@@ -23,15 +23,16 @@ SatelliteQualifiedKatelloRepos - command ``psql -d foreman -c "select id, name, 
 SatelliteSCAStatus - command ``psql -d candlepin -c "select displayname, content_access_mode from cp_owner" --csv``
 -------------------------------------------------------------------------------------------------------------------
 """
-
 import os
 import yaml
+
 from csv import DictReader
 
-from insights import parser, CommandParser
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import parser
+from insights.parsers import calc_offset, keyword_search
 from insights.specs import Specs
-from insights.parsers import SkipException, ParseException
-from insights.parsers import keyword_search, calc_offset
 from insights.util import deprecated
 
 

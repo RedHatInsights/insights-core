@@ -20,8 +20,9 @@ DiskFree_AL - command ``df -al``
 
 """
 from collections import namedtuple
-from insights import parser, CommandParser
-from insights.parsers import ParseException
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 Record = namedtuple("Record", ['filesystem', 'total', 'used', 'available', 'capacity', 'mounted_on'])

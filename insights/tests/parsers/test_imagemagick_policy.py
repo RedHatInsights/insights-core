@@ -1,7 +1,8 @@
 import doctest
 import pytest
 
-from insights.parsers import imagemagick_policy, SkipException
+from insights.core.exceptions import SkipException
+from insights.parsers import imagemagick_policy
 from insights.parsers.imagemagick_policy import ImageMagickPolicy
 from insights.tests import context_wrap
 

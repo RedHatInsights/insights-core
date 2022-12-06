@@ -3,8 +3,9 @@ Custom datasources for containers inspect information
 """
 import json
 import os
+
 from insights.core.context import HostContext
-from insights.core.dr import SkipComponent
+from insights.core.exceptions import SkipComponent
 from insights.core.filters import get_filters
 from insights.core.plugins import datasource, ContentException
 from insights.core.spec_factory import DatasourceProvider, foreach_execute

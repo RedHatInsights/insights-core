@@ -1,6 +1,8 @@
 import pytest
+
 from mock.mock import Mock
-from insights.core.dr import SkipComponent
+
+from insights.core.exceptions import SkipComponent
 from insights.core.spec_factory import DatasourceProvider
 from insights.specs.datasources.lpstat import LocalSpecs, lpstat_protocol_printers_info
 

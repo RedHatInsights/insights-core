@@ -11,11 +11,10 @@ GrubbyDefaultIndex - command ``grubby --default-index``
 GrubbyDefaultKernel - command ``grubby --default-kernel``
 ---------------------------------------------------------
 """
-
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.parsers import SkipException, ParseException
-from insights import CommandParser
-from insights import parser
 
 
 @parser(Specs.grubby_default_index)

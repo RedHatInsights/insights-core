@@ -1,8 +1,10 @@
-from insights.parsers.ld_library_path import UserLdLibraryPath
-from insights.tests import context_wrap
-from insights.parsers import ld_library_path, SkipException
 import doctest
 import pytest
+
+from insights.core.exceptions import SkipException
+from insights.parsers import ld_library_path
+from insights.parsers.ld_library_path import UserLdLibraryPath
+from insights.tests import context_wrap
 
 LD_LIBRARY_PATH_EMPTY = """
 """.strip()

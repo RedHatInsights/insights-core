@@ -1,11 +1,10 @@
 """
 Custom datasources to get the semid of all the inter-processes.
 """
-
 from insights.core.context import HostContext
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import datasource
 from insights.specs import Specs
-from insights.core.dr import SkipComponent
 
 
 @datasource(Specs.ipcs_s, HostContext)

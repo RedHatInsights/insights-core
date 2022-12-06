@@ -1,8 +1,9 @@
 import doctest
 import pytest
 
+from insights.core.exceptions import SkipException
 from insights.parsers import lpstat
-from insights.parsers.lpstat import LpstatPrinters, LpstatProtocol, SkipException
+from insights.parsers.lpstat import LpstatPrinters, LpstatProtocol
 from insights.tests import context_wrap
 
 

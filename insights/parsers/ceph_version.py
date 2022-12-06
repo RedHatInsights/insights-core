@@ -10,9 +10,9 @@ The Red Hat Ceph Storage releases and corresponding Ceph package releases are
 documented in https://access.redhat.com/solutions/2045583
 
 """
-
-from insights import parser, CommandParser
-from insights.parsers import SkipException
+from insights.core import CommandParser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
 from insights.util import rsplit
 

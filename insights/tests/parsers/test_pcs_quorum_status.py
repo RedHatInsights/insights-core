@@ -1,6 +1,8 @@
 import doctest
 import pytest
-from insights.parsers import pcs_quorum_status, ParseException, SkipException
+
+from insights.core.exceptions import ParseException, SkipException
+from insights.parsers import pcs_quorum_status
 from insights.parsers.pcs_quorum_status import PcsQuorumStatus
 from insights.tests import context_wrap
 

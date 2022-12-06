@@ -7,7 +7,7 @@ The ``IsBareMetal`` component in this module is valid if the
 the host is bare metal.
 """
 from insights.combiners.virt_what import VirtWhat
-from insights.core.dr import SkipComponent
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import component
 
 

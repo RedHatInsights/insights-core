@@ -5,11 +5,10 @@ NamedConf parser - file ``/etc/named.conf``
 NamedConf parser the file named configuration file.
 Named is a name server used by BIND.
 """
-
-from insights.specs import Specs
+from insights.core.exceptions import SkipException
 from insights.core.plugins import parser
-from insights.parsers import SkipException
 from insights.parsers.named_checkconf import NamedCheckconf
+from insights.specs import Specs
 
 
 @parser(Specs.named_conf)

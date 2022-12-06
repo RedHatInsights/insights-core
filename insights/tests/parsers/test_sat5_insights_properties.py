@@ -1,8 +1,10 @@
-import pytest
 import doctest
-from insights.tests import context_wrap
-from insights.parsers import sat5_insights_properties, SkipException
+import pytest
+
+from insights.core.exceptions import SkipException
+from insights.parsers import sat5_insights_properties
 from insights.parsers.sat5_insights_properties import Sat5InsightsProperties
+from insights.tests import context_wrap
 
 INSIGHTS_PROPERTIES = """
 portalurl = https://cert-api.access.redhat.com/r/insights

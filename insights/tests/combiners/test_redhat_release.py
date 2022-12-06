@@ -1,11 +1,12 @@
-from insights.parsers.uname import Uname
-from insights.parsers.redhat_release import RedhatRelease
-from insights.combiners.redhat_release import RedHatRelease
-from insights.combiners import redhat_release as rr
-from insights.tests import context_wrap
-from insights.parsers import SkipComponent
-import pytest
 import doctest
+import pytest
+
+from insights.combiners import redhat_release as rr
+from insights.combiners.redhat_release import RedHatRelease
+from insights.core.exceptions import SkipComponent
+from insights.parsers.redhat_release import RedhatRelease
+from insights.parsers.uname import Uname
+from insights.tests import context_wrap
 
 UNAME = "Linux localhost.localdomain 3.10.0-327.rt56.204.el7.x86_64 #1 SMP PREEMPT RT Thu Oct 29 21:54:23 EDT 2015 x86_64 x86_64 x86_64 GNU/Linux"
 BAD_UNAME = "Linux localhost.localdomain 2.6.24.7-101.el5rt.x86_64 #1 SMP PREEMPT RT Thu Oct 29 21:54:23 EDT 2015 x86_64 x86_64 x86_64 GNU/Linux"

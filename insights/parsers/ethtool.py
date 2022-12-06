@@ -39,13 +39,14 @@ TimeStamp - command ``/sbin/ethtool -T {interface}``
 ----------------------------------------------------
 
 """
-
 import os
 import re
 import sys
+
 from collections import namedtuple
-from ..parsers import ParseException
-from .. import parser, LegacyItemAccess, CommandParser
+from insights.core import CommandParser, LegacyItemAccess
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 if sys.version_info[0] == 3:

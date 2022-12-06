@@ -1,8 +1,9 @@
-import pytest
 import doctest
+import pytest
 
+from insights.core.exceptions import SkipException
+from insights.parsers import readlink_openshift_certs
 from insights.tests import context_wrap
-from insights.parsers import readlink_openshift_certs, SkipException
 
 CLIENT_REAL_FILE_PATH = '''
 /etc/origin/node/certificates/kubelet-client-2019-10-18-23-17-35.pem

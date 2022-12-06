@@ -1,9 +1,10 @@
-import pytest
 import doctest
-from insights.tests import context_wrap
-from insights.parsers import SkipException
+import pytest
+
+from insights.core.exceptions import SkipException
 from insights.parsers import pmrep
 from insights.parsers.pmrep import PMREPMetrics
+from insights.tests import context_wrap
 
 PMREPMETRIC_DATA = """
 Time,"network.interface.out.packets-lo","network.interface.out.packets-eth0","network.interface.collisions-lo","network.interface.collisions-eth0","swap.pagesout","mssql.memory_manager.stolen_server_memory","mssql.memory_manager.total_server_memory"

@@ -40,10 +40,10 @@ Examples::
      ['    <Resources className="org.apache.naming.resources.VirtualDirContext"'],
      }
 """
-
-from .. import parser, CommandParser
-from ..specs import Specs
-from . import SkipException
+from insights.core import CommandParser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
+from insights.specs import Specs
 
 
 class TomcatVirtualDirContextBase(CommandParser):

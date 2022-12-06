@@ -2,12 +2,11 @@
 SMARTctl - command ``/sbin/smartctl -a {device}``
 =================================================
 """
+import re
 
 from insights.core import CommandParser
+from insights.core.exceptions import ParseException
 from insights.core.plugins import parser
-from insights.parsers import ParseException
-
-import re
 from insights.specs import Specs
 
 

@@ -1,7 +1,9 @@
-import pytest
 import doctest
+import pytest
+
+from insights.core.exceptions import SkipException
+from insights.parsers import authselect
 from insights.parsers.authselect import AuthSelectCurrent
-from insights.parsers import SkipException, authselect
 from insights.tests import context_wrap
 
 AUTHSELECT_CURRENT_1 = """

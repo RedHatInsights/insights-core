@@ -3,10 +3,10 @@ CertList - command ``getcert list``
 ====================================
 
 """
-
 from insights.core import CommandParser
-from insights.parsers import ParseException, keyword_search
+from insights.core.exceptions import ParseException
 from insights.core.plugins import parser
+from insights.parsers import keyword_search
 from insights.specs import Specs
 
 

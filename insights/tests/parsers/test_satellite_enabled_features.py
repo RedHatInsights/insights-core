@@ -1,7 +1,8 @@
 import doctest
 import pytest
 
-from insights.parsers import satellite_enabled_features, SkipException
+from insights.core.exceptions import SkipException
+from insights.parsers import satellite_enabled_features
 from insights.tests import context_wrap
 
 

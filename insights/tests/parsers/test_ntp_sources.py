@@ -1,8 +1,9 @@
-import pytest
 import doctest
-from insights.core.dr import SkipComponent
+import pytest
+
+from insights.core.exceptions import SkipComponent
 from insights.parsers import ntp_sources
-from insights.parsers.ntp_sources import ChronycSources, NtpqPn, NtpqLeap
+from insights.parsers.ntp_sources import ChronycSources, NtpqLeap, NtpqPn
 from insights.tests import context_wrap
 
 chrony_output = """

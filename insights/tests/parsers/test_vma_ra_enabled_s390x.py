@@ -1,9 +1,10 @@
-from insights.parsers import SkipException
-from insights.tests import context_wrap
+import doctest
+import pytest
+
+from insights.core.exceptions import SkipException
 from insights.parsers import vma_ra_enabled_s390x
 from insights.parsers.vma_ra_enabled_s390x import VmaRaEnabledS390x
-import pytest
-import doctest
+from insights.tests import context_wrap
 
 INPUT_VMA_1 = """
 True

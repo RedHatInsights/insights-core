@@ -1,9 +1,10 @@
-import pytest
 import doctest
+import pytest
+
+from insights.core.exceptions import ParseException, SkipException
 from insights.parsers import gcp_instance_type
 from insights.parsers.gcp_instance_type import GCPInstanceType
 from insights.tests import context_wrap
-from insights.parsers import SkipException, ParseException
 
 GOOGLE_TYPE_1 = "projects/123456789/machineTypes/n2-highcpu-16"
 GOOGLE_TYPE_2 = "projects/123456789/machineTypes/e2-medium"

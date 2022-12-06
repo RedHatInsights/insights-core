@@ -7,10 +7,10 @@ the ``core.marshalling.unmarshal`` function to parse the JSON output from the
 commands.  The parsed data can be accessed a dictionary via the object itself.
 
 """
-
-from insights import parser, CommandParser
+from insights.core import CommandParser
+from insights.core.exceptions import SkipException
 from insights.core.marshalling import unmarshal
-from insights.parsers import SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
 from insights.util import deprecated
 

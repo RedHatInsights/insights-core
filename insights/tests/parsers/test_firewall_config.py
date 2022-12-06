@@ -1,9 +1,10 @@
 import doctest
 import pytest
+
+from insights.core.exceptions import SkipException
 from insights.parsers import firewall_config
 from insights.parsers.firewall_config import FirewallDConf
 from insights.tests import context_wrap
-from insights.parsers import SkipException
 
 FIREWALLD_CONFIG = """
 # firewalld config file

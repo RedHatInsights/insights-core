@@ -4,10 +4,9 @@ MaxUID - command ``/bin/awk -F':' '{ if($3 > max) max = $3 } END { print max }' 
 
 This module provides the MaxUID value gathered from the ``/etc/passwd`` file.
 """
-
 from insights.core import Parser
+from insights.core.exceptions import ParseException, SkipException
 from insights.core.plugins import parser
-from insights.parsers import ParseException, SkipException
 from insights.specs import Specs
 
 

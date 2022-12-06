@@ -8,8 +8,10 @@ Parsers included are:
 GrubEnv - command ``grub2-editenv list``
 ----------------------------------------
 """
-from insights import get_active_lines, parser, Parser
-from insights.parsers import SkipException
+from insights.core import Parser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines
 from insights.specs import Specs
 
 

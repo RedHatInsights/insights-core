@@ -7,9 +7,9 @@ This module contains the following parsers:
 FirewallCmdListALLZones - command ``/usr/bin/firewall-cmd --list-all-zones``
 ----------------------------------------------------------------------------
 """
-
-from insights import parser, CommandParser
-from insights.parsers import ParseException
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 

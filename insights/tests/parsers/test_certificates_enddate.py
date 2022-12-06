@@ -1,10 +1,11 @@
-import pytest
 import doctest
+import pytest
+
 from datetime import datetime
+
+from insights.core.exceptions import SkipException
 from insights.parsers import certificates_enddate
 from insights.tests import context_wrap
-from insights.parsers import SkipException
-
 
 CRT1 = """
 /usr/bin/find: '/etc/origin/node': No such file or directory

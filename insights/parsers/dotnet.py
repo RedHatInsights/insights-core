@@ -10,11 +10,10 @@ DotNetVersion - command ``dotnet --version``
 ContainerDotNetVersion - command ``dotnet --version`` for containers
 --------------------------------------------------------------------
 """
-
-from insights import parser, CommandParser
-from insights.parsers import SkipException, ParseException
+from insights.core import CommandParser, ContainerParser
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights import ContainerParser
 
 
 @parser(Specs.dotnet_version)

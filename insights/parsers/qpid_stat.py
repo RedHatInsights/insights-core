@@ -17,9 +17,10 @@ QpidStatG - command ``/usr/bin/qpid-stat -g --ssl-certificate=/etc/pki/katello/q
 ----------------------------------------------------------------------------------------------------------------------------------
 
 """
-
-from insights import CommandParser, get_active_lines, parser
-from insights.parsers import ParseException, keyword_search, parse_fixed_table
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines, keyword_search, parse_fixed_table
 from insights.specs import Specs
 
 

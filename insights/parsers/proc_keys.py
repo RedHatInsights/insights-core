@@ -5,9 +5,10 @@ ProcKeys - File ``/proc/keys``
 This parser reads the content of ``/proc/keys``.
 
 """
-
-from insights import Parser, parser
-from insights.parsers import SkipException, keyword_search
+from insights.core import Parser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
+from insights.parsers import keyword_search
 from insights.specs import Specs
 
 

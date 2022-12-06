@@ -4,9 +4,9 @@ PciRportTargetDiskPath
 
 Module for parsing the output of command ``find /sys/devices/ -maxdepth 10 -mindepth 9 -name stat -type f``.
 """
-
-from insights.parsers import ParseException, SkipException
-from insights import parser, CommandParser
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 

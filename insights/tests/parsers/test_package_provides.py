@@ -1,10 +1,10 @@
-import pytest
 import doctest
+import pytest
 
-from insights.tests import context_wrap
-from insights.parsers import SkipException, ParseException
+from insights.core.exceptions import ParseException, SkipException
 from insights.parsers import package_provides
 from insights.parsers.package_provides import PackageProvidesCommand
+from insights.tests import context_wrap
 
 PACKAGE_COMMAND = """
 /usr/bin/java java-11-openjdk-11.0.9.11-2.el8_3.x86_64

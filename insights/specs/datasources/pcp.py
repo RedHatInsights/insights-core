@@ -1,16 +1,16 @@
 """
 Custom datasource related PCP (Performance Co-Pilot)
 """
-import logging
 import datetime
+import logging
 import os
 
-from insights.core.dr import SkipComponent
-from insights.core.context import HostContext
-from insights.core.plugins import datasource
-from insights.parsers.ros_config import RosConfig
 from insights.combiners.ps import Ps
 from insights.combiners.services import Services
+from insights.core.context import HostContext
+from insights.core.exceptions import SkipComponent
+from insights.core.plugins import datasource
+from insights.parsers.ros_config import RosConfig
 
 logger = logging.getLogger(__name__)
 

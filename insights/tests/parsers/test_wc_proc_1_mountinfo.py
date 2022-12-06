@@ -1,10 +1,10 @@
-from insights.parsers.wc_proc_1_mountinfo import WcProc1Mountinfo
-from insights.parsers import wc_proc_1_mountinfo
-from insights.tests import context_wrap
-from insights.core.dr import SkipComponent
-from insights.parsers import ParseException
-import pytest
 import doctest
+import pytest
+
+from insights.core.exceptions import ParseException, SkipComponent
+from insights.parsers import wc_proc_1_mountinfo
+from insights.parsers.wc_proc_1_mountinfo import WcProc1Mountinfo
+from insights.tests import context_wrap
 
 WC_PROC_1_MOUNTINFO_ERR1 = """
 -bash: /usr/bin/wcq: No such file or directory

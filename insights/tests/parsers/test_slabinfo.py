@@ -1,7 +1,8 @@
 import doctest
-
 import pytest
-from insights.parsers import slabinfo, SkipException
+
+from insights.core.exceptions import SkipException
+from insights.parsers import slabinfo
 from insights.parsers.slabinfo import SlabInfo
 from insights.tests import context_wrap
 

@@ -50,10 +50,11 @@ Grub2EFIConfig - file ``/boot/efi/EFI/redhat/grub.cfg``
 BootLoaderEntries - file ``/boot/loader/entries/*.conf``
 --------------------------------------------------------
 """
-
-from insights import Parser, parser, get_active_lines
-from insights.parsers import ParseException, SkipException
 from insights.components.rhel_version import IsRhel6, IsRhel7, IsRhel8, IsRhel9
+from insights.core import Parser
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines
 from insights.specs import Specs
 
 

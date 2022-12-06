@@ -1,12 +1,14 @@
-import json
 import collections
+import json
 import pytest
+
 from mock.mock import Mock
-from insights.core.dr import SkipComponent
-from insights.core.spec_factory import DatasourceProvider
-from insights.specs.datasources.awx_manage import awx_manage_check_license_data_datasource, LocalSpecs
-from insights.specs import Specs
+
 from insights.core import filters
+from insights.core.exceptions import SkipComponent
+from insights.core.spec_factory import DatasourceProvider
+from insights.specs import Specs
+from insights.specs.datasources.awx_manage import LocalSpecs, awx_manage_check_license_data_datasource
 
 
 AWX_MANAGE_LICENSE = """

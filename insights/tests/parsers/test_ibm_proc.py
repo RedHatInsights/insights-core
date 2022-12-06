@@ -1,8 +1,10 @@
-import pytest
 import doctest
-from insights.tests import context_wrap
-from insights.parsers import ibm_proc, SkipException
+import pytest
+
+from insights.core.exceptions import SkipException
+from insights.parsers import ibm_proc
 from insights.parsers.ibm_proc import IBMPpcLparCfg, IBMFirmwareLevel
+from insights.tests import context_wrap
 
 
 PROC_PPC_LPARCFG = """

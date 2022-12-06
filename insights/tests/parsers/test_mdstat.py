@@ -1,9 +1,10 @@
 import doctest
 import pytest
 
-from insights.parsers import mdstat, ParseException
-from insights.tests.parsers import skip_exception_check
+from insights.core.exceptions import ParseException
+from insights.parsers import mdstat
 from insights.tests import context_wrap
+from insights.tests.parsers import skip_exception_check
 
 MDSTAT_TEST_1 = """
 Personalities : [raid1] [raid6] [raid5] [raid4]

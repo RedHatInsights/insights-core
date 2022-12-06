@@ -1,8 +1,10 @@
-from insights.tests import context_wrap
-from insights.parsers import cups_ppd
-from insights.parsers.cups_ppd import CupsPpd, SkipException
 import doctest
 import pytest
+
+from insights.core.exceptions import SkipException
+from insights.parsers import cups_ppd
+from insights.parsers.cups_ppd import CupsPpd
+from insights.tests import context_wrap
 
 
 CUPS_PPD = """
