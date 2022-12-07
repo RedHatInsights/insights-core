@@ -20,7 +20,6 @@ def patch_insights_config(old_function):
                        "return_value.load_all.return_value.register": False,
                        "return_value.load_all.return_value.legacy_upload": False,
                        "return_value.load_all.return_value.diagnosis": None,
-                       "return_value.load_all.return_value.reregister": False,
                        "return_value.load_all.return_value.payload": None,
                        "return_value.load_all.return_value.list_specs": False,
                        "return_value.load_all.return_value.show_results": False,
@@ -254,51 +253,6 @@ def test_post_update_unregister_unregistered(insights_config, insights_client, g
     get_scheduler.return_value.remove_scheduling.assert_not_called()
 
 
-@patch("insights.client.phase.v1.isfile", side_effect=[True, False])
-@patch("insights.client.phase.v1.get_scheduler")
-@patch("insights.client.phase.v1.InsightsClient")
-@patch_insights_config
-def test_post_update_force_register_registered(insights_config, insights_client, get_scheduler, _isfile):
-    """
-    Client run with --force-reregister.
-        If registered, exit with 0 exit code (don't kill parent)
-        Also enable scheduling.
-    """
-    insights_config.return_value.load_all.return_value.register = True
-    insights_config.return_value.load_all.return_value.reregister = True
-    insights_client.return_value.get_registration_status = MagicMock(return_value=True)
-    with raises(SystemExit) as exc_info:
-        post_update()
-    assert exc_info.value.code == 0
-    insights_client.return_value.get_machine_id.assert_called_once()
-    insights_client.return_value.get_registration_status.assert_called_once()
-    insights_client.return_value.clear_local_registration.assert_called_once()
-    insights_client.return_value.set_display_name.assert_not_called()
-    get_scheduler.return_value.schedule.assert_called_once()
-
-
-@patch("insights.client.phase.v1.isfile", side_effect=[False, False])
-@patch("insights.client.phase.v1.get_scheduler")
-@patch("insights.client.phase.v1.InsightsClient")
-@patch_insights_config
-def test_post_update_force_register_unregistered(insights_config, insights_client, get_scheduler, _isfile):
-    """
-    Client run with --force-reregister.
-        If registered, exit with 0 exit code (don't kill parent)
-        Also enable scheduling.
-    """
-    insights_config.return_value.load_all.return_value.register = True
-    insights_config.return_value.load_all.return_value.reregister = True
-    insights_client.return_value.get_registration_status = MagicMock(return_value=False)
-    with raises(SystemExit) as exc_info:
-        post_update()
-    assert exc_info.value.code == 0
-    insights_client.return_value.get_machine_id.assert_called_once()
-    insights_client.return_value.clear_local_registration.assert_called_once()
-    insights_client.return_value.set_display_name.assert_not_called()
-    get_scheduler.return_value.schedule.assert_called_once()  # ASK
-
-
 @patch("insights.client.phase.v1.isfile", side_effect=[False])
 @patch("insights.client.phase.v1.get_scheduler")
 @patch("insights.client.phase.v1.InsightsClient")
@@ -349,13 +303,11 @@ def test_post_update_set_display_name_cli_register(insights_config, insights_cli
         Display name is not explicitly set here
     """
     insights_config.return_value.load_all.return_value.register = True
-    insights_config.return_value.load_all.return_value.reregister = True
     insights_client.return_value.get_registration_status = MagicMock(return_value=True)
     with raises(SystemExit) as exc_info:
         post_update()
     assert exc_info.value.code == 0
     insights_client.return_value.get_machine_id.assert_called_once()
-    insights_client.return_value.clear_local_registration.assert_called_once()
     insights_client.return_value.set_display_name.assert_not_called()
     get_scheduler.return_value.schedule.assert_called_once()
 
