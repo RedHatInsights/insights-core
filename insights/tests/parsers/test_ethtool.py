@@ -7,7 +7,6 @@ from insights.util import keys_in
 
 import doctest
 
-
 TEST_ETHTOOL_A_DOCS = '''
 Pause parameters for eth0:
 Autonegotiate:  on
@@ -66,6 +65,16 @@ TX:             off
 RX negotiated:  off
 TX negotiated:  off
 """.strip()
+
+ETHTOOL_T_NO_CAP_VALUE = """
+Time stamping parameters for ens192:
+Capabilities:
+    software-receive
+    software-system-clock
+PTP Hardware Clock: none
+Hardware Transmit Timestamp Modes: none
+Hardware Receive Filter Modes: none
+"""
 
 
 def test_ethtool_a():
@@ -142,7 +151,7 @@ tx-usecs-irq: 0
 tx-frame-low: 25
 
 tx-usecs-high: 0
-tx-frame-high: 0
+tx-frame-high: n/a
 
 """.strip()
 
@@ -168,7 +177,7 @@ def test_get_ethtool_c():
     context.path = TEST_ETHTOOL_C_PATH
     result = ethtool.CoalescingInfo(context)
     assert keys_in(["adaptive-rx", "adaptive-tx", "pkt-rate-high",
-                    "tx-usecs-irq", "tx-frame-low", "tx-usecs-high", "tx-frame-high"], result.data)
+                    "tx-usecs-irq", "tx-frame-low", "tx-usecs-high"], result.data)
     assert result.ifname == "eth2"
     assert not result.adaptive_rx
     assert not result.adaptive_tx
@@ -176,7 +185,7 @@ def test_get_ethtool_c():
     assert result.tx_usecs_irq == 0
     assert result.tx_frame_low == 25
     assert result.tx_usecs_high == 0
-    assert result.tx_frame_high == 0
+    assert 'tx_frame_high' not in result.data
 
 
 def test_get_ethtool_c_cannot_get():
@@ -657,6 +666,16 @@ Hardware Receive Filter Modes:
     all                   (HWTSTAMP_FILTER_ALL)
 '''
 
+ETHTOOL_T_NO_CAP_VALUE = """
+Time stamping parameters for ens192:
+Capabilities:
+    software-receive
+    software-system-clock
+PTP Hardware Clock: none
+Hardware Transmit Timestamp Modes: none
+Hardware Receive Filter Modes: none
+"""
+
 
 def test_ethtool_timestamp():
     timestamp = ethtool.TimeStamp(context_wrap(TEST_ETHTOOL_TIMESTAMP, path="sbin/ethtool_-T_eno1"))
@@ -666,9 +685,13 @@ def test_ethtool_timestamp():
     assert timestamp.data['PTP Hardware Clock'] == '0'
     assert timestamp.data['Hardware Transmit Timestamp Modes']['off'] == 'HWTSTAMP_TX_OFF'
     assert timestamp.data['Hardware Receive Filter Modes']['all'] == 'HWTSTAMP_FILTER_ALL'
-    with pytest.raises(ParseException) as pe:
-        ethtool.TimeStamp(context_wrap(TEST_ETHTOOL_TIMESTAMP_AB, path="sbin/ethtool_-T_eno1"))
-        assert 'bad line:' in str(pe)
+
+
+def test_ethtool_timestamp_no_cap_value():
+    timestamp = ethtool.TimeStamp(context_wrap(ETHTOOL_T_NO_CAP_VALUE, path="sbin/ethtool_-T_ens192"))
+    assert timestamp.ifname == 'ens192'
+    assert timestamp.data['Capabilities']['software-receive'] is None
+    assert timestamp.data['Hardware Transmit Timestamp Modes'] == 'none'
 
 
 TEST_EXTRACT_FROM_PATH_1 = """

@@ -13,7 +13,7 @@ import signal
 
 from insights.core.context import HostContext
 from insights.core.spec_factory import RawFileProvider
-from insights.core.spec_factory import simple_file, simple_command, glob_file
+from insights.core.spec_factory import simple_file, simple_command, glob_file, head
 from insights.core.spec_factory import first_of, command_with_args
 from insights.core.spec_factory import foreach_collect, foreach_execute
 from insights.core.spec_factory import container_collect, container_execute
@@ -285,6 +285,7 @@ class DefaultSpecs(Specs):
     ironic_inspector_log = first_file(["/var/log/containers/ironic-inspector/ironic-inspector.log", "/var/log/ironic-inspector/ironic-inspector.log"])
     iscsiadm_m_session = simple_command("/usr/sbin/iscsiadm -m session")
     jbcs_httpd24_httpd_error_log = simple_file("/opt/rh/jbcs-httpd24/root/etc/httpd/logs/error_log")
+    jboss_runtime_versions = ps_datasource.jboss_runtime_versions
     journal_header = simple_command("/usr/bin/journalctl --no-pager --header")
     kdump_conf = simple_file("/etc/kdump.conf")
     kernel_config = glob_file("/boot/config-*")
@@ -330,6 +331,7 @@ class DefaultSpecs(Specs):
     ls_var_lib_mongodb = simple_command("/bin/ls -la /var/lib/mongodb")
     ls_var_lib_nova_instances = simple_command("/bin/ls -laRZ /var/lib/nova/instances")
     ls_var_lib_pcp = simple_command("/bin/ls -la /var/lib/pcp")
+    ls_var_lib_rsyslog = simple_command("/bin/ls -lZ /var/lib/rsyslog")
     ls_var_log = simple_command("/bin/ls -la /var/log /var/log/audit")
     ls_var_opt_mssql = simple_command("/bin/ls -ld /var/opt/mssql")
     ls_var_opt_mssql_log = simple_command("/bin/ls -la /var/opt/mssql/log")
@@ -364,11 +366,6 @@ class DefaultSpecs(Specs):
     meminfo = first_file(["/proc/meminfo", "/meminfo"])
     messages = simple_file("/var/log/messages")
     modinfo_filtered_modules = command_with_args('modinfo %s', kernel_module_list.kernel_module_filters)
-    modinfo_i40e = simple_command("/sbin/modinfo i40e")
-    modinfo_igb = simple_command("/sbin/modinfo igb")
-    modinfo_ixgbe = simple_command("/sbin/modinfo ixgbe")
-    modinfo_veth = simple_command("/sbin/modinfo veth")
-    modinfo_vmxnet3 = simple_command("/sbin/modinfo vmxnet3")
     modprobe = glob_file(["/etc/modprobe.conf", "/etc/modprobe.d/*.conf"])
     mokutil_sbstate = simple_command("/bin/mokutil --sb-state")
     mongod_conf = glob_file([
@@ -416,7 +413,13 @@ class DefaultSpecs(Specs):
                            "/opt/rh/nginx*/root/etc/nginx/*.conf", "/opt/rh/nginx*/root/etc/nginx/conf.d/*.conf", "/opt/rh/nginx*/root/etc/nginx/default.d/*.conf",
                            "/etc/opt/rh/rh-nginx*/nginx/*.conf", "/etc/opt/rh/rh-nginx*/nginx/conf.d/*.conf", "/etc/opt/rh/rh-nginx*/nginx/default.d/*.conf"
                            ])
-    nginx_error_log = simple_file("/var/log/nginx/error.log")
+
+    nginx_error_log = first_of(
+        [
+            simple_file("/var/log/nginx/error.log"),
+            head(glob_file("/var/opt/rh/rh-nginx*/log/nginx/error.log")),
+        ]
+    )
     nginx_ssl_cert_enddate = foreach_execute(ssl_certificate.nginx_ssl_certificate_files, "/usr/bin/openssl x509 -in %s -enddate -noout")
     nmcli_conn_show = simple_command("/usr/bin/nmcli conn show")
     nmcli_dev_show = simple_command("/usr/bin/nmcli dev show")
@@ -618,10 +621,8 @@ class DefaultSpecs(Specs):
     sysctl_d_conf_etc = glob_file("/etc/sysctl.d/*.conf")
     sysctl_d_conf_usr = glob_file("/usr/lib/sysctl.d/*.conf")
     systemctl_cat_rpcbind_socket = simple_command("/bin/systemctl cat rpcbind.socket")
-    systemctl_httpd = simple_command("/bin/systemctl show httpd")
     systemctl_list_unit_files = simple_command("/bin/systemctl list-unit-files")
     systemctl_list_units = simple_command("/bin/systemctl list-units")
-    systemctl_mariadb = simple_command("/bin/systemctl show mariadb")
     systemctl_show_all_services = simple_command("/bin/systemctl show *.service")
     systemctl_show_target = simple_command("/bin/systemctl show *.target")
     systemd_analyze_blame = simple_command("/bin/systemd-analyze blame")
@@ -677,9 +678,11 @@ class DefaultSpecs(Specs):
     zipl_conf = simple_file("/etc/zipl.conf")
 
     # Container collection specs
+    container_cpu_online = container_collect(running_rhel_containers, "/sys/devices/system/cpu/online")
     container_cpuset_cpus = container_collect(running_rhel_containers, "/sys/fs/cgroup/cpuset/cpuset.cpus")
     container_dotnet_version = container_execute(running_rhel_containers, "/usr/bin/dotnet --version")
     container_installed_rpms = container_execute(running_rhel_containers, "/usr/bin/rpm -qa --qf '%s'" % _rpm_format, context=HostContext, signum=signal.SIGTERM)
     container_nginx_conf = container_collect(container_nginx_conf_ds)
+    container_nginx_error_log = container_collect(running_rhel_containers, "/var/log/nginx/error.log")
     container_redhat_release = container_collect(running_rhel_containers, "/etc/redhat-release")
     containers_inspect = containers_inspect.containers_inspect_data_datasource

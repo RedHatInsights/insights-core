@@ -27,6 +27,7 @@ may return:
 from __future__ import print_function
 
 import logging
+import signal
 import traceback
 
 from pprint import pformat
@@ -41,6 +42,11 @@ log = logging.getLogger(__name__)
 
 class ContentException(dr.SkipComponent):
     """ Raised whenever a :class:`datasource` fails to get data. """
+    pass
+
+
+class TimeoutException(Exception):
+    """ Raised whenever a :class:`datasource` hits the set timeout value. """
     pass
 
 
@@ -81,21 +87,42 @@ class datasource(PluginType):
     Decorates a component that one or more :class:`insights.core.Parser`
     subclasses will consume.
     """
+    filterable = False
     multi_output = False
     raw = False
-    filterable = False
+
+    def _handle_timeout(self, signum, frame):
+        raise TimeoutException("Datasource spec {ds_name} timed out after {secs} seconds!".format(
+            ds_name=dr.get_name(self.component), secs=self.timeout))
 
     def invoke(self, broker):
+        # Grab the timeout from the decorator, or use the default of 120.
+        self.timeout = getattr(self, "timeout", 120)
+
+        signal.signal(signal.SIGALRM, self._handle_timeout)
+        signal.alarm(self.timeout)
         try:
             return self.component(broker)
         except ContentException as ce:
             log.debug(ce)
-            broker.add_exception(self.component, ce, traceback.format_exc())
+            ce_tb = traceback.format_exc()
+            for reg_spec in dr.get_registry_points(self.component):
+                broker.add_exception(reg_spec, ce, ce_tb)
             raise dr.SkipComponent()
         except CalledProcessError as cpe:
             log.debug(cpe)
-            broker.add_exception(self.component, cpe, traceback.format_exc())
+            cpe_tb = traceback.format_exc()
+            for reg_spec in dr.get_registry_points(self.component):
+                broker.add_exception(reg_spec, cpe, cpe_tb)
             raise dr.SkipComponent()
+        except TimeoutException as te:
+            log.debug(te)
+            te_tb = traceback.format_exc()
+            for reg_spec in dr.get_registry_points(self.component):
+                broker.add_exception(reg_spec, te, te_tb)
+            raise dr.SkipComponent()
+        finally:
+            signal.alarm(0)
 
 
 class parser(PluginType):

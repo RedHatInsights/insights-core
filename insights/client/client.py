@@ -1,5 +1,6 @@
 from __future__ import print_function
 from __future__ import absolute_import
+from os.path import isfile
 import sys
 import json
 import logging
@@ -126,10 +127,17 @@ def _legacy_handle_registration(config, pconn):
         write_to_disk(constants.machine_id_file, delete=True)
         logger.debug('Re-register set, forcing registration.')
 
-    logger.debug('Machine-id: %s', generate_machine_id(new=config.reregister))
+    machine_id_present = isfile(constants.machine_id_file)
 
     # check registration with API
     check = get_registration_status(config, pconn)
+
+    if machine_id_present and check['status'] is False:
+        logger.info("Machine-id found, insights-client can not be registered."
+                    " Please, unregister insights-client first: `insights-client --unregister`")
+        return False
+
+    logger.debug('Machine-id: %s', generate_machine_id(new=config.reregister))
 
     for m in check['messages']:
         logger.debug(m)
