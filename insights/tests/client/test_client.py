@@ -134,7 +134,7 @@ def test_register_legacy(utilities_write, delete_unregistered_file, generate_mac
     with _mock_no_register_files():
         client.register() is True
     delete_unregistered_file.assert_called_once()
-    generate_machine_id.assert_called_once_with(new=False)
+    generate_machine_id.assert_called_once_with()
     utilities_write.assert_has_calls((
         call(constants.registered_files[0]),
         call(constants.registered_files[1])
@@ -219,36 +219,6 @@ def test_unregister_legacy(date, client_write, utilities_write, _delete_cache_fi
     ))
 
 
-@patch('insights.client.utilities.delete_unregistered_file')
-@patch('insights.client.utilities.write_to_disk')
-@patch('insights.client.client.generate_machine_id')
-@patch('insights.client.utilities.constants.registered_files',
-       [TEMP_TEST_REG_DIR + '/.registered',
-        TEMP_TEST_REG_DIR2 + '/.registered'])
-@patch('insights.client.utilities.constants.unregistered_files',
-       [TEMP_TEST_REG_DIR + '/.unregistered',
-        TEMP_TEST_REG_DIR2 + '/.unregistered'])
-@patch('insights.client.utilities.constants.machine_id_file',
-       TEMP_TEST_REG_DIR + '/machine-id')
-def test_force_reregister_legacy(generate_machine_id, utilities_write, delete_unregistered_file):
-    config = InsightsConfig(reregister=True, legacy_upload=True)
-    client = InsightsClient(config)
-    client.connection = _mock_InsightsConnection(registered=None)
-    client.connection.config = config
-    client.session = True
-
-    with _mock_registered_files():
-        assert client.register() is True
-    delete_unregistered_file.assert_called_once()
-    generate_machine_id.assert_called_once_with(new=True)
-    utilities_write.assert_has_calls((
-        call(constants.registered_files[0], delete=True),
-        call(constants.registered_files[1], delete=True),
-        call(constants.unregistered_files[0], delete=True),
-        call(constants.unregistered_files[1], delete=True)
-    ))
-
-
 def test_register_container():
     with pytest.raises(ValueError):
         InsightsConfig(register=True, analyze_container=True)
@@ -259,11 +229,7 @@ def test_unregister_container():
         InsightsConfig(unregister=True, analyze_container=True)
 
 
-def test_force_reregister_container():
-    with pytest.raises(ValueError):
-        InsightsConfig(reregister=True, analyze_container=True)
-
-
+@pytest.mark.skip(reason="Mocked paths not working in QE jenkins")
 @patch('insights.client.utilities.constants.registered_files',
        [TEMP_TEST_REG_DIR + '/.registered',
         TEMP_TEST_REG_DIR2 + '/.registered'])
