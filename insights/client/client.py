@@ -13,8 +13,6 @@ from .utilities import (generate_machine_id,
                         write_to_disk,
                         write_registered_file,
                         write_unregistered_file,
-                        delete_registered_file,
-                        delete_unregistered_file,
                         delete_cache_files,
                         determine_hostname)
 from .collection_rules import InsightsUploadConf
@@ -119,25 +117,17 @@ def _legacy_handle_registration(config, pconn):
         None - could not reach the API
     '''
     logger.debug('Trying registration.')
-    # force-reregister -- remove machine-id files and registration files
-    # before trying to register again
-    if config.reregister:
-        delete_registered_file()
-        delete_unregistered_file()
-        write_to_disk(constants.machine_id_file, delete=True)
-        logger.debug('Re-register set, forcing registration.')
-
-    machine_id_present = isfile(constants.machine_id_file)
 
     # check registration with API
     check = get_registration_status(config, pconn)
+    machine_id_present = isfile(constants.machine_id_file)
 
     if machine_id_present and check['status'] is False:
         logger.info("Machine-id found, insights-client can not be registered."
                     " Please, unregister insights-client first: `insights-client --unregister`")
         return False
 
-    logger.debug('Machine-id: %s', generate_machine_id(new=config.reregister))
+    logger.debug('Machine-id: %s', generate_machine_id())
 
     for m in check['messages']:
         logger.debug(m)

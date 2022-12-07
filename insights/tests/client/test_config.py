@@ -318,3 +318,15 @@ def test_command_line_parse_twice():
     assert c.status
     c._load_command_line()
     assert c.status
+
+
+@patch('insights.client.config.sys.argv', [sys.argv[0], "--force-reregister"])
+def test_deprecated_reregister():
+    """
+    Verify that --force-reregistration is deprecated
+    """
+    insights_config = InsightsConfig()
+    with pytest.raises(ValueError) as error:
+        insights_config.load_all()
+
+    assert "deprecated" in str(error.value)

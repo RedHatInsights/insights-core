@@ -260,11 +260,6 @@ def post_update(client, config):
                     'Use --register to register this host.')
         sys.exit(constants.sig_kill_bad)
 
-    # --force-reregister, clear machine-id
-    if config.reregister:
-        reg_check = False
-        client.clear_local_registration()
-
     # --register was called
     if config.register:
         # don't actually need to make a call to register() since
