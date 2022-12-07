@@ -8,7 +8,7 @@ from insights.parsers.uname import Uname
 
 
 @datasource(Uname, HostContext)
-def kernel_version(broker):
+def current_version(broker):
     """
     This datasource provides the current booting kernel version.
 
@@ -23,6 +23,4 @@ def kernel_version(broker):
         UnameError: When there is a problem occurs with uname data.
     """
 
-    content = broker[Uname].kernel
-    if content:
-        return content
+    return broker[Uname].kernel

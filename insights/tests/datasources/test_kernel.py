@@ -1,5 +1,5 @@
 import pytest
-from insights.specs.datasources.current_kernel_version import kernel_version
+from insights.specs.datasources.kernel import current_version
 from insights.parsers.uname import Uname
 from insights.parsers import uname
 from insights.tests import context_wrap
@@ -11,18 +11,18 @@ Linux vm37-130.gsslab.pek2.redhat.com 5.14.0-160.el9.x86_64 #1 SMP PREEMPT_DYNAM
 UNAME_ERROR_BLANK = ""
 
 
-def test_kdump_initramfs_image():
+def test_current_kernel_version():
     uname = Uname(context_wrap(UNAME))
 
     broker = {
         Uname: uname
     }
-    result = kernel_version(broker)
+    result = current_version(broker)
     assert result is not None
     assert result == '5.14.0-160.el9.x86_64'
 
 
-def test_without_kdump_initramfs_image():
+def test_current_kernel_version_without_uname():
     with pytest.raises(uname.UnameError) as e_info:
-        kernel_version({Uname: uname.Uname(context_wrap(UNAME_ERROR_BLANK))})
+        current_version({Uname: uname.Uname(context_wrap(UNAME_ERROR_BLANK))})
     assert 'Empty uname line' in str(e_info.value)

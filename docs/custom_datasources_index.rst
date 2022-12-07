@@ -67,14 +67,6 @@ insights.specs.datasources.corosync
     :show-inheritance:
     :undoc-members:
 
-insights.specs.datasources.current_kernel_version
--------------------------------------------------
-
-.. automodule:: insights.specs.datasources.current_kernel_version
-    :members:  kernel_version
-    :show-inheritance:
-    :undoc-members:
-
 insights.specs.datasources.dir_list
 -----------------------------------
 
@@ -104,6 +96,14 @@ insights.specs.datasources.ipcs
 
 .. automodule:: insights.specs.datasources.ipcs
     :members: semid
+    :show-inheritance:
+    :undoc-members:
+
+insights.specs.datasources.kernel
+-------------------------------------------------
+
+.. automodule:: insights.specs.datasources.kernel
+    :members:  current_version
     :show-inheritance:
     :undoc-members:
 
