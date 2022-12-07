@@ -679,6 +679,7 @@ class DefaultSpecs(Specs):
 
     # Container collection specs
     container_cpu_online = container_collect(running_rhel_containers, "/sys/devices/system/cpu/online")
+    container_cpuset_cpus = container_collect(running_rhel_containers, "/sys/fs/cgroup/cpuset/cpuset.cpus")
     container_dotnet_version = container_execute(running_rhel_containers, "/usr/bin/dotnet --version")
     container_installed_rpms = container_execute(running_rhel_containers, "/usr/bin/rpm -qa --qf '%s'" % _rpm_format, context=HostContext, signum=signal.SIGTERM)
     container_nginx_conf = container_collect(container_nginx_conf_ds)
