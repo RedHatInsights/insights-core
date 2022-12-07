@@ -100,7 +100,7 @@ insights.specs.datasources.ipcs
     :undoc-members:
 
 insights.specs.datasources.kernel
--------------------------------------------------
+---------------------------------
 
 .. automodule:: insights.specs.datasources.kernel
     :members:  current_version
