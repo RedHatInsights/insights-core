@@ -334,7 +334,9 @@ DEFAULT_OPTS = {
     'reregister': {
         'default': False,
         'opt': ['--force-reregister'],
-        'help': 'Forcefully reregister this machine to Red Hat. Use only as directed.',
+        'help': ('This flag is deprecated and it will be removed in a future release.'
+                 'Forcefully reregister this machine to Red Hat.'
+                 'Please use `insights-client --unregister && insights-client --register `instead'),
         'action': 'store_true',
         'group': 'debug',
         'dest': 'reregister'
@@ -691,6 +693,11 @@ class InsightsConfig(object):
         if self.analyze_container:
             raise ValueError(
                 '--analyze-container is no longer supported.')
+        if self.reregister:
+            raise ValueError(
+                "`force-reregistration` has been deprecated. Please use `insights-client "
+                "--unregister && insights-client --register` instead",
+            )
         if self.use_atomic:
             raise ValueError(
                 '--use-atomic is no longer supported.')
@@ -772,7 +779,7 @@ class InsightsConfig(object):
            self.analyze_image_id):
             self.analyze_container = True
         self.to_json = self.to_json or self.analyze_container
-        self.register = (self.register or self.reregister) and not self.offline
+        self.register = self.register and not self.offline
         self.keep_archive = self.keep_archive or self.no_upload
         if self.to_json and self.quiet:
             self.diagnosis = True
