@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.1.0
+Version:        3.1.1
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,20 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Dec 08 2022 Xiangce Liu <xiangceliu@redhat.com> 3.1.1-1
+- fix: fix CI issue when preparing py26 env (#3624) (xiangceliu@redhat.com)
+- Feat: Add Parser LsinitrdKdumpImage  (#3567) (986222045@qq.com)
+- Remove usage of reregistration and deprecate cli-option (#3522)
+  (93577878+ahitacat@users.noreply.github.com)
+- feat: Add spec sys_cpuset_cpus (#3611) (jiazhang@redhat.com)
+- fix: fix errors in ethtool (#3605) (lichen@redhat.com)
+- feat: Add spec container_nginx_error_log (#3607) (jiazhang@redhat.com)
+- feat: Add container spec sys_cpu_online (#3612) (jiazhang@redhat.com)
+- feat: New spec "ls -lZ /var/lib/rsyslog" and the parser (#3618)
+  (44796653+huali027@users.noreply.github.com)
+- Feat register no machine-id (#3554)
+  (93577878+ahitacat@users.noreply.github.com)
+
 * Thu Dec 01 2022 Xiangce Liu <xiangceliu@redhat.com> 3.1.0-1
 - Keep the code to delete previously-named malware rules file (#3619)
   (mhuth@redhat.com)
