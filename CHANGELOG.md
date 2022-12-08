@@ -2,6 +2,18 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.1.1](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.1) (2022-12-08)
+
+- fix: fix CI issue when preparing py26 env ([PR 3624](https://github.com/RedHatInsights/insights-core/pull/3624))
+- Feat: Add Parser LsinitrdKdumpImage  ([PR 3567](https://github.com/RedHatInsights/insights-core/pull/3567))
+- Remove usage of reregistration and deprecate cli-option ([PR 3522](https://github.com/RedHatInsights/insights-core/pull/3522))
+- feat: Add spec sys_cpuset_cpus ([PR 3611](https://github.com/RedHatInsights/insights-core/pull/3611))
+- fix: fix errors in ethtool ([PR 3605](https://github.com/RedHatInsights/insights-core/pull/3605))
+- feat: Add spec container_nginx_error_log ([PR 3607](https://github.com/RedHatInsights/insights-core/pull/3607))
+- feat: Add container spec sys_cpu_online ([PR 3612](https://github.com/RedHatInsights/insights-core/pull/3612))
+- feat: New spec "ls -lZ /var/lib/rsyslog" and the parser ([PR 3618](https://github.com/RedHatInsights/insights-core/pull/3618))
+- Feat register no machine-id ([PR 3554](https://github.com/RedHatInsights/insights-core/pull/3554))
+
 ## [insights-core-3.1.0](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.0) (2022-12-01)
 
 - Keep the code to delete previously-named malware rules file ([PR 3619](https://github.com/RedHatInsights/insights-core/pull/3619))
