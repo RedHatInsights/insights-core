@@ -40,7 +40,7 @@ jobs:
     - uses: actions/checkout@v3
     - name: apt-install python26
       run: |
-        sudo add-apt-repository ppa:deadsnakes/ppa
+        sudo add-apt-repository 'ppa:deadsnakes/ppa'
         sudo apt-get update
         sudo apt-get install python2.6
         sudo update-alternatives --install /usr/bin/python python /usr/bin/python2.6 1
