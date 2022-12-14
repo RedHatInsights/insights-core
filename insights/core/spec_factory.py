@@ -331,8 +331,9 @@ class CommandOutputProvider(ContentProvider):
             log.warning("WARNING: Skipping command %s", self.cmd)
             raise dr.SkipComponent()
 
-        if not which(shlex.split(self.cmd)[0], env=self.create_env()):
-            raise ContentException("Couldn't execute: %s" % self.cmd)
+        cmd = shlex.split(self.cmd)[0]
+        if not which(cmd, env=self.create_env()):
+            raise ContentException("Command not found: %s" % cmd)
 
     def create_args(self):
         command = [shlex.split(self.cmd)]
@@ -835,7 +836,9 @@ class command_with_args(object):
             self.cmd = self.cmd % source
             return CommandOutputProvider(self.cmd, ctx, split=self.split,
                     keep_rc=self.keep_rc, ds=self, timeout=self.timeout, inherit_env=self.inherit_env, signum=self.signum)
-        except:
+        except ContentException as ce:
+            log.debug(ce)
+        except Exception:
             log.debug(traceback.format_exc())
         raise ContentException("No results found for [%s]" % self.cmd)
 
@@ -901,7 +904,9 @@ class foreach_execute(object):
                         split=self.split, keep_rc=self.keep_rc, ds=self,
                         timeout=self.timeout, inherit_env=self.inherit_env, signum=self.signum)
                 result.append(cop)
-            except:
+            except ContentException as ce:
+                log.debug(ce)
+            except Exception:
                 log.debug(traceback.format_exc())
         if result:
             return result
