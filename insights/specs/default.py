@@ -25,7 +25,7 @@ from insights.components.satellite import IsCapsule, IsSatellite611, IsSatellite
 from insights.specs import Specs
 from insights.specs.datasources import (
     aws, awx_manage, cloud_init, candlepin_broker, corosync as corosync_ds,
-    dir_list, ethernet, httpd, ipcs, kernel_module_list, lpstat, md5chk,
+    dir_list, ethernet, httpd, ipcs, kernel, kernel_module_list, lpstat, md5chk,
     package_provides, ps as ps_datasource, sap, satellite_missed_queues,
     semanage, ssl_certificate, sys_fs_cgroup_memory_tasks_number, rpm_pkgs, user_group, yum_updates, luks_devices)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
@@ -342,6 +342,7 @@ class DefaultSpecs(Specs):
     lsblk = simple_command("/bin/lsblk")
     lsblk_pairs = simple_command("/bin/lsblk -P -o NAME,KNAME,MAJ:MIN,FSTYPE,MOUNTPOINT,LABEL,UUID,RA,RO,RM,MODEL,SIZE,STATE,OWNER,GROUP,MODE,ALIGNMENT,MIN-IO,OPT-IO,PHY-SEC,LOG-SEC,ROTA,SCHED,RQ-SIZE,TYPE,DISC-ALN,DISC-GRAN,DISC-MAX,DISC-ZERO")
     lscpu = simple_command("/usr/bin/lscpu")
+    lsinitrd_kdump_image = command_with_args("/usr/bin/lsinitrd -k %skdump", kernel.current_version)
     lsmod = simple_command("/sbin/lsmod")
     lsof = first_of([
         simple_command("/usr/bin/lsof"),
@@ -678,8 +679,11 @@ class DefaultSpecs(Specs):
     zipl_conf = simple_file("/etc/zipl.conf")
 
     # Container collection specs
+    container_cpu_online = container_collect(running_rhel_containers, "/sys/devices/system/cpu/online")
+    container_cpuset_cpus = container_collect(running_rhel_containers, "/sys/fs/cgroup/cpuset/cpuset.cpus")
     container_dotnet_version = container_execute(running_rhel_containers, "/usr/bin/dotnet --version")
     container_installed_rpms = container_execute(running_rhel_containers, "/usr/bin/rpm -qa --qf '%s'" % _rpm_format, context=HostContext, signum=signal.SIGTERM)
     container_nginx_conf = container_collect(container_nginx_conf_ds)
+    container_nginx_error_log = container_collect(running_rhel_containers, "/var/log/nginx/error.log")
     container_redhat_release = container_collect(running_rhel_containers, "/etc/redhat-release")
     containers_inspect = containers_inspect.containers_inspect_data_datasource

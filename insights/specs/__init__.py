@@ -341,6 +341,7 @@ class Specs(SpecSet):
     ls_var_lib_mongodb = RegistryPoint()
     ls_var_lib_nova_instances = RegistryPoint()
     ls_var_lib_pcp = RegistryPoint()
+    ls_var_lib_rsyslog = RegistryPoint()
     ls_var_log = RegistryPoint()
     ls_var_opt_mssql = RegistryPoint()
     ls_var_opt_mssql_log = RegistryPoint()
@@ -353,6 +354,7 @@ class Specs(SpecSet):
     lsblk_pairs = RegistryPoint()
     lscpu = RegistryPoint()
     lsinitrd = RegistryPoint(filterable=True)
+    lsinitrd_kdump_image = RegistryPoint(filterable=True)
     lsinitrd_lvm_conf = RegistryPoint()
     lsmod = RegistryPoint()
     lsof = RegistryPoint(filterable=True)
@@ -776,9 +778,12 @@ class Specs(SpecSet):
     zipl_conf = RegistryPoint()
 
     # container_specs
+    container_cpu_online = RegistryPoint(multi_output=True)
+    container_cpuset_cpus = RegistryPoint(multi_output=True)
     container_dotnet_version = RegistryPoint(multi_output=True)
     container_redhat_release = RegistryPoint(multi_output=True)
     container_nginx_conf = RegistryPoint(multi_output=True)
+    container_nginx_error_log = RegistryPoint(multi_output=True, filterable=True)
     container_installed_rpms = RegistryPoint(multi_output=True)
     container_inspect_keys = RegistryPoint(filterable=True)
     containers_inspect = RegistryPoint()

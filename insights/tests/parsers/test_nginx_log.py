@@ -1,8 +1,8 @@
-from insights.tests import context_wrap
-from insights.parsers import nginx_log
-from insights.parsers.nginx_log import NginxErrorLog
-from datetime import datetime
 import doctest
+from datetime import datetime
+from insights.parsers import nginx_log
+from insights.parsers.nginx_log import ContainerNginxErrorLog, NginxErrorLog
+from insights.tests import context_wrap
 
 
 NGINX_ERROR_LOG = """
@@ -23,9 +23,36 @@ def test_nginx_error_log():
     assert len(list(error_log.get_after(datetime(2022, 4, 2, 5, 0, 0)))) == 3
 
 
+def test_container_nginx_error_log():
+    container_error_log = ContainerNginxErrorLog(
+        context_wrap(
+            NGINX_ERROR_LOG,
+            container_id='2869b4e2541c',
+            image='registry.access.redhat.com/ubi8/nginx-120',
+            engine='podman',
+            path='insights_containers/2869b4e2541c/var/log/nginx/error.log'
+        )
+    )
+    assert container_error_log.image == "registry.access.redhat.com/ubi8/nginx-120"
+    assert container_error_log.engine == "podman"
+    assert container_error_log.container_id == "2869b4e2541c"
+    assert len(container_error_log.lines) == 6
+    assert "1591#1591: *698917" in container_error_log
+    assert container_error_log.lines[0] == '2022/04/02 04:07:59 [warn] 1591#1591: *697425 an upstream response is buffered to a temporary file /var/lib/nginx/tmp/uwsgi/2/25/0000003252 while reading upstream, client: 10.245.136.148, server: _, request: "GET /api/v2/hosts/?not__name=localhost&page_size=400&page=46 HTTP/1.1", upstream: "uwsgi://unix:/var/run/tower/uwsgi.sock:", host: "towergtd.desjardins.com"'
+    assert len(list(container_error_log.get_after(datetime(2022, 4, 2, 5, 0, 0)))) == 3
+
+
 def test_doc():
     env = {
         "nginx_error_log": NginxErrorLog(context_wrap(NGINX_ERROR_LOG)),
+        "container_nginx_error_log": ContainerNginxErrorLog(
+            context_wrap(
+                NGINX_ERROR_LOG,
+                container_id='2869b4e2541c',
+                image='registry.access.redhat.com/ubi8/nginx-120',
+                engine='podman'
+            )
+        )
     }
     failed_count, total = doctest.testmod(nginx_log, globs=env)
     assert failed_count == 0

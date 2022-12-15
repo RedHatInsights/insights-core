@@ -107,6 +107,14 @@ insights.specs.datasources.ipcs
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.kernel
+---------------------------------
+
+.. automodule:: insights.specs.datasources.kernel
+    :members:  current_version
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.kernel_module_list
 ---------------------------------------------
 
