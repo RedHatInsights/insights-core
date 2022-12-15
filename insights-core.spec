@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.1.1
+Version:        3.1.2
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,16 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Dec 15 2022 Xiangce Liu <xiangceliu@redhat.com> 3.1.2-1
+- Fix: fix GrubbyDefaultKernel cannot handle specific invalid content (#3632)
+  (986222045@qq.com)
+- Improve old Python compatibility by not requiring ipython 8.6.0. (#3630)
+  (jsvoboda@redhat.com)
+- fix: Log brief msg instead of Traceback when cmd not found (#3628)
+  (xiangceliu@redhat.com)
+- Delete old malware rules files from /var/tmp as well (#3625)
+  (mhuth@redhat.com)
+
 * Thu Dec 08 2022 Xiangce Liu <xiangceliu@redhat.com> 3.1.1-1
 - fix: fix CI issue when preparing py26 env (#3624) (xiangceliu@redhat.com)
 - Feat: Add Parser LsinitrdKdumpImage  (#3567) (986222045@qq.com)
