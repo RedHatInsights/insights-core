@@ -16,6 +16,7 @@ DEFAULT_KERNEL_AB = """
 /boot/vmlinuz-2.6.32-573.el6.x86_64"
 /boot/vmlinuz-2.6.32-573.el6.x86_64"
 """.strip()
+DEFAULT_KERNEL_INVALID = 'rpm-sort: Invalid input'
 
 
 def test_grubby_default_index():
@@ -43,6 +44,10 @@ def test_grubby_default_kernel_ab():
 
     with pytest.raises(ParseException) as excinfo:
         GrubbyDefaultKernel(context_wrap(DEFAULT_KERNEL_AB))
+    assert 'Invalid output:' in str(excinfo.value)
+
+    with pytest.raises(ParseException) as excinfo:
+        GrubbyDefaultKernel(context_wrap(DEFAULT_KERNEL_INVALID))
     assert 'Invalid output:' in str(excinfo.value)
 
 
