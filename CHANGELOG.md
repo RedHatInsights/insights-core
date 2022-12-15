@@ -2,6 +2,13 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.1.2](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.2) (2022-12-15)
+
+- Fix: fix GrubbyDefaultKernel cannot handle specific invalid content ([PR 3632](https://github.com/RedHatInsights/insights-core/pull/3632))
+- Improve old Python compatibility by not requiring ipython 8.6.0. ([PR 3630](https://github.com/RedHatInsights/insights-core/pull/3630))
+- fix: Log brief msg instead of Traceback when cmd not found ([PR 3628](https://github.com/RedHatInsights/insights-core/pull/3628))
+- Delete old malware rules files from /var/tmp as well ([PR 3625](https://github.com/RedHatInsights/insights-core/pull/3625))
+
 ## [insights-core-3.1.1](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.1) (2022-12-08)
 
 - fix: fix CI issue when preparing py26 env ([PR 3624](https://github.com/RedHatInsights/insights-core/pull/3624))
