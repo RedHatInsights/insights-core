@@ -1206,10 +1206,10 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
                 ``raw_message`` as a key.
 
         Raises:
-            ParseException: If the format conversion string contains a
-                format that we don't recognise.  In particular, no attempt is
-                made to recognise or parse the time zone or other obscure
-                values like day of year or week of year.
+            insights.parsers.ParseException: If the format conversion string
+                contains a format that we don't recognise.  In particular,
+                no attempt is made to recognise or parse the time zone or
+                other obscure values like day of year or week of year.
         """
         time_format = self.time_format
 
