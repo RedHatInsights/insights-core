@@ -70,6 +70,6 @@ class GrubbyDefaultKernel(CommandParser):
     def parse_content(self, content):
         if not content:
             raise SkipException('Empty output')
-        if len(content) != 1:
+        if len(content) != 1 or len(content[0].split()) > 1:
             raise ParseException('Invalid output: {0}', content)
         self.default_kernel = content[0].strip()
