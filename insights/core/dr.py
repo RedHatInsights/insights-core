@@ -241,7 +241,7 @@ class SkipComponent(Exception):
     pass
 
 
-class ParseException(Exception):
+class ParseExceptionOrig(Exception):
     """
     Exception that should be thrown from parsers that encounter
     exceptions they recognize while parsing. When this exception
@@ -1072,7 +1072,7 @@ def run_components(ordered_components, components, broker):
                 reqs = stringify_requirements(mr.requirements)
                 log.debug("%s missing requirements %s" % (name, reqs))
             broker.add_exception(component, mr)
-        except ParseException as pe:
+        except ParseExceptionOrig as pe:
             log.warning(pe)
             broker.add_exception(component, pe, traceback.format_exc())
         except SkipComponent:
