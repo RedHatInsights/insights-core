@@ -62,10 +62,13 @@ class RhelForEdge(object):
     def __init__(self, units, rpmostreestatus, rpms, cmdline, redhatrelease):
         self.is_edge = False
         self.is_automated = False
-        if rpmostreestatus and rpmostreestatus.query.deployments.where("osname", "rhel"):
-            self.is_edge = True
-            if units.is_running("rhcd.service"):
-                self.is_automated = True
+        if rpmostreestatus:
+            origin = rpmostreestatus.query.deployments.origin
+            origin_check = [item.value.endswith("edge") for item in origin]
+            if origin_check and all(origin_check):
+                self.is_edge = True
+                if units.is_running("rhcd.service"):
+                    self.is_automated = True
         elif rpms and cmdline and redhatrelease:
             if ('rpm-ostree' in rpms and 'yum' not in rpms) and \
                     ('ostree' in cmdline) and \
