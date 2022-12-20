@@ -4,8 +4,8 @@ Red Hat Release
 
 Combiner for Red Hat Release information. It uses the results of
 the ``Uname`` parser and the ``RedhatRelease`` parser to determine the release
-major and minor version.  ``Uname`` is the preferred source of data.
-The Red Hat Release is in obtained from the system in the form major.minor.
+major and minor version. Use ``OsRelease`` to judge the system is RHEL or Non-RHEL.
+``Uname`` is the preferred source of data. The Red Hat Release is in obtained from the system in the form major.minor.
 For example, for a Red Hat Enterprise Linux 7.2 system, the release would be
 major = 7, minor = 2 and rhel = '7.2'.
 
@@ -13,11 +13,11 @@ major = 7, minor = 2 and rhel = '7.2'.
 
 from collections import namedtuple
 from insights.core.plugins import combiner
+from insights.parsers.os_release import OsRelease
 from insights.parsers.redhat_release import RedhatRelease as rht_release
 from insights.parsers.uname import Uname
 from insights.core.serde import serializer, deserializer
 from insights.parsers import SkipComponent
-
 
 Release = namedtuple("Release", field_names=["major", "minor"])
 """namedtuple: Type for storing the release information."""
@@ -33,11 +33,11 @@ def deserialize(_type, obj, root=None):
     return Release(**obj)
 
 
-@combiner([Uname, rht_release])
+@combiner([Uname, rht_release, OsRelease])
 class RedHatRelease(object):
     """
     Combiner class to check uname and redhat-release for RHEL major/minor
-    version.
+    version. OsRelease is to check the system is RHEL or Non-RHEL.
     Prefer uname to redhat-release.
 
     Attributes:
@@ -67,9 +67,13 @@ class RedHatRelease(object):
         >>> rh_rel.rhel8 is None
         True
     """
-    def __init__(self, uname, rh_rel):
+
+    def __init__(self, uname, rh_rel, os_rel):
         self.major = self.minor = self.rhel = None
-        if uname and uname.redhat_release.major != -1:
+        if os_rel and (os_rel.data['ID'] != "rhel" or 'Red Hat' not in os_rel.data['NAME']):
+            # this is not rhel linux according /etc/os-release
+            raise SkipComponent("Unable to determine release: {0} ".format(os_rel.data['NAME']))
+        elif uname and uname.redhat_release.major != -1:
             self.major = uname.redhat_release.major
             self.minor = uname.redhat_release.minor
             self.rhel = '{0}.{1}'.format(self.major, self.minor)
@@ -90,13 +94,13 @@ class RedHatRelease(object):
 @serializer(RedHatRelease)
 def serialize_RedHatRelease(obj, root=None):
     return {
-            "major": obj.major,
-            "minor": obj.minor,
-            "rhel": obj.rhel,
-            "rhel6": obj.rhel6,
-            "rhel7": obj.rhel7,
-            "rhel8": obj.rhel8,
-            "rhel9": obj.rhel9,
+        "major": obj.major,
+        "minor": obj.minor,
+        "rhel": obj.rhel,
+        "rhel6": obj.rhel6,
+        "rhel7": obj.rhel7,
+        "rhel8": obj.rhel8,
+        "rhel9": obj.rhel9,
     }
 
 
