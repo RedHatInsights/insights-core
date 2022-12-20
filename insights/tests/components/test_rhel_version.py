@@ -33,14 +33,14 @@ Red Hat Enterprise Linux release 9.0 (Plow)
 # RHEL6 Tests
 def test_is_rhel6():
     rr = RedhatRelease(context_wrap(REDHAT_RELEASE1))
-    rel = RR(None, rr)
+    rel = RR(None, rr, None)
     result = IsRhel6(rel)
     assert isinstance(result, IsRhel6)
 
 
 def test_not_rhel6():
     rr = RedhatRelease(context_wrap(REDHAT_RELEASE2))
-    rel = RR(None, rr)
+    rel = RR(None, rr, None)
     with pytest.raises(SkipComponent) as e:
         IsRhel6(rel)
     assert "Not RHEL6" in str(e)
@@ -49,14 +49,14 @@ def test_not_rhel6():
 # RHEL7 Server Tests
 def test_is_rhel7s():
     rr = RedhatRelease(context_wrap(REDHAT_RELEASE2))
-    rel = RR(None, rr)
+    rel = RR(None, rr, None)
     result = IsRhel7(rel)
     assert isinstance(result, IsRhel7)
 
 
 def test_not_rhel7s():
     rr = RedhatRelease(context_wrap(REDHAT_RELEASE1))
-    rel = RR(None, rr)
+    rel = RR(None, rr, None)
     with pytest.raises(SkipComponent) as e:
         IsRhel7(rel)
     assert "Not RHEL7" in str(e)
@@ -66,21 +66,21 @@ def test_not_rhel7s():
 def test_uname_is_rhel7():
     uname = Uname(context_wrap(UNAME))
     rr = RedhatRelease(context_wrap(REDHAT_RELEASE3))
-    rel = RR(uname, rr)
+    rel = RR(uname, rr, None)
     result = IsRhel7(rel)
     assert isinstance(result, IsRhel7)
 
 
 def test_is_rhel7():
     rr = RedhatRelease(context_wrap(REDHAT_RELEASE3))
-    rel = RR(None, rr)
+    rel = RR(None, rr, None)
     result = IsRhel7(rel)
     assert isinstance(result, IsRhel7)
 
 
 def test_not_rhel7():
     rr = RedhatRelease(context_wrap(REDHAT_RELEASE1))
-    rel = RR(None, rr)
+    rel = RR(None, rr, None)
     with pytest.raises(SkipComponent) as e:
         IsRhel7(rel)
     assert "Not RHEL7" in str(e)
@@ -89,14 +89,14 @@ def test_not_rhel7():
 # RHEL8 Tests
 def test_is_rhel8():
     rr = RedhatRelease(context_wrap(REDHAT_RELEASE4))
-    rel = RR(None, rr)
+    rel = RR(None, rr, None)
     result = IsRhel8(rel)
     assert isinstance(result, IsRhel8)
 
 
 def test_not_rhel8():
     rr = RedhatRelease(context_wrap(REDHAT_RELEASE2))
-    rel = RR(None, rr)
+    rel = RR(None, rr, None)
     with pytest.raises(SkipComponent) as e:
         IsRhel8(rel)
     assert "Not RHEL8" in str(e)
@@ -105,14 +105,14 @@ def test_not_rhel8():
 # RHEL9 Tests
 def test_is_rhel9():
     rr = RedhatRelease(context_wrap(REDHAT_RELEASE5))
-    rel = RR(None, rr)
+    rel = RR(None, rr, None)
     result = IsRhel9(rel)
     assert isinstance(result, IsRhel9)
 
 
 def test_not_rhel9():
     rr = RedhatRelease(context_wrap(REDHAT_RELEASE2))
-    rel = RR(None, rr)
+    rel = RR(None, rr, None)
     with pytest.raises(SkipComponent) as e:
         IsRhel9(rel)
     assert "Not RHEL9" in str(e)
