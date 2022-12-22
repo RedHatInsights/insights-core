@@ -241,6 +241,10 @@ plugins:
         - name: insights.parsers.ros_config.RosConfig
           enabled: true
 
+    # needed for the 'RHEL' component
+        - name: insights.parsers.subscription_manager.SubscriptionManagerID
+          enabled: true
+
     # needed for the 'container' specs
         - name: insights.parsers.podman_list.PodmanListContainers
           enabled: true
