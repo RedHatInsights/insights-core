@@ -4,13 +4,14 @@ from __future__ import print_function
 
 import re
 import socket
+import uuid
 
 from insights import rule, make_metadata, run
-from insights.specs import Specs
 from insights.core import Parser
 from insights.core.plugins import parser
 from insights.core.dr import set_enabled, load_components
-import uuid
+from insights.parsers.subscription_manager import SubscriptionManagerID
+from insights.specs import Specs
 
 
 def valid_uuid_or_None(s):
@@ -72,26 +73,6 @@ class IPs(Parser):
     """
     def parse_content(self, content):
         self.data = list(filter(None, [valid_ipv4_address_or_None(addr) for addr in content[0].rstrip().split()]))
-
-
-@parser(Specs.subscription_manager_id)
-class SubscriptionManagerID(Parser):
-    """
-    Reads the output of subscription-manager identity and retrieves the UUID
-
-    Example output::
-        system identity: 6655c27c-f561-4c99-a23f-f53e5a1ef311
-        name: rhel7.localdomain
-        org name: 1234567
-        org ID: 1234567
-
-    Resultant data::
-
-        6655c27c-f561-4c99-a23f-f53e5a1ef311
-    """
-
-    def parse_content(self, content):
-        self.data = content[0].split(":")[-1].strip()
 
 
 def _safe_parse(ds):
