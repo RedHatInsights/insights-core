@@ -14,6 +14,7 @@ from insights.parsers.installed_rpms import InstalledRpms
 from insights.parsers.systemd.unitfiles import ListUnits
 from insights.parsers.redhat_release import RedhatRelease
 from insights.parsers.rpm_ostree_status import RpmOstreeStatus
+from insights.parsers import SkipComponent
 
 
 @combiner(ListUnits, optional=[RpmOstreeStatus, InstalledRpms, CmdLine, RedhatRelease])
@@ -76,3 +77,5 @@ class RhelForEdge(object):
                 self.is_edge = True
                 if units.is_running("rhcd.service"):
                     self.is_automated = True
+        else:
+            raise SkipComponent("Unable to determine if this system is created from an edge image.")

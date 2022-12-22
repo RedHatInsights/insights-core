@@ -1,3 +1,5 @@
+import pytest
+from insights.core.dr import SkipComponent
 from insights.parsers.installed_rpms import InstalledRpms
 from insights.parsers.cmdline import CmdLine
 from insights.parsers.systemd.unitfiles import ListUnits
@@ -585,6 +587,16 @@ def test_rhel_for_edge_false_5():
     result = RhelForEdge(list_units, rpm_ostree_status, install_rpms, cmdline, redhat_release)
     assert result.is_edge is False
     assert result.is_automated is False
+
+
+def test_rhel_for_edge_false_6():
+    install_rpms = InstalledRpms(context_wrap(CONTENT_INSTALLED_RPMS_EDGE))
+    cmdline = CmdLine(context_wrap(CMDLINE_EDGE))
+    list_units = ListUnits(context_wrap(CONTENT_SYSTEMCTL_LIST_UNITS_AUTOMATED))
+
+    with pytest.raises(SkipComponent) as e:
+        RhelForEdge(list_units, None, install_rpms, cmdline, None)
+    assert "SkipComponent('Unable to determine if this system is created from an edge image.')" in str(e)
 
 
 def test_doc_examples():
