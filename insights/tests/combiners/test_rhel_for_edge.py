@@ -596,7 +596,7 @@ def test_rhel_for_edge_false_6():
 
     with pytest.raises(SkipComponent) as e:
         RhelForEdge(list_units, None, install_rpms, cmdline, None)
-    assert "SkipComponent('Unable to determine if this system is created from an edge image.')" in str(e)
+    assert "SkipComponent" in str(e)
 
 
 def test_doc_examples():
