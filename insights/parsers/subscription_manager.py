@@ -31,6 +31,9 @@ class SubscriptionManagerID(CommandParser):
         org name: 1234567
         org ID: 1234567
 
+    Attributes:
+        id (str): The system identity assigned by RHSM.
+
     Examples:
         >>> type(rhsm_id)
         <class 'insights.parsers.subscription_manager.SubscriptionManagerID'>

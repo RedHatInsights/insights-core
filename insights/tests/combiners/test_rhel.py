@@ -1,4 +1,4 @@
-from insights.components.rhel import RHEL
+from insights.combiners.rhel import RHEL
 from insights.parsers.installed_rpms import InstalledRpms
 from insights.parsers.os_release import OsRelease
 from insights.parsers.redhat_release import RedhatRelease

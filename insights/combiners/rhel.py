@@ -2,7 +2,7 @@
 RHEL
 ====
 
-The ``RHEL`` component provides an attribute `is_rhel` that indicates if the
+The ``RHEL`` combiner provides an attribute `is_rhel` that indicates if the
 host is an "Red Hat Enterprise Linux" or not.
 """
 from insights.core.plugins import component
