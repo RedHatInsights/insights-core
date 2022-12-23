@@ -133,5 +133,6 @@ def test_not_rhel():
     result = RHEL(uname, rhr, osr, None, rpms)
     assert result.is_rhel is False
 
-    # Is it possible, that RHEL is registered but run a unsigned kernel?
+    # Q: Is it possible/common that RHEL is registered but run with unsigned kernel?
+    # A: Yes, can be identified as RHEL but not supported
     pass
