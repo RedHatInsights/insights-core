@@ -46,7 +46,7 @@ class RHEL(object):
             # 1. the booted 'kernel' and 'systemd' are signed by Red Hat;
             # 2. the '/etc/rehdat-release and /etc/os-release are for RHEL
             self.is_rhel = True  # kernel and systemd are must-exist packages
-            boot_kn = InstalledRpm.from_package('kernel-{}'.format(uname.kernel))
+            boot_kn = InstalledRpm.from_package('kernel-{0}'.format(uname.kernel))
             for pkg in rpms.packages['kernel']:
                 if pkg == boot_kn:
                     # booted kernel
