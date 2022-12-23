@@ -44,8 +44,8 @@ class RHEL(object):
         if rpms:
             # If system is NOT registered via RHSM, need to check:
             # 1. the booted 'kernel' and 'systemd' are signed by Red Hat;
-            # 2. the '/etc/rehdat-release and /etc/os-release
-            self.is_rhel = True
+            # 2. the '/etc/rehdat-release and /etc/os-release are for RHEL
+            self.is_rhel = True  # kernel and systemd are must-exist packages
             boot_kn = InstalledRpm.from_package('kernel-{}'.format(uname.kernel))
             for pkg in rpms.packages['kernel']:
                 if pkg == boot_kn:
@@ -56,7 +56,6 @@ class RHEL(object):
                         self.is_rhel = False
                         return
                     break
-            # 2. 'systemd'
             pkg = rpms.newest('systemd')
             if pkg and not (pkg.redhat_signed and pkg.vendor and
                             "Red Hat" in pkg.vendor):
@@ -70,5 +69,5 @@ class RHEL(object):
             if (osr and
                     not (osr.get('ID') == "rhel" and
                          osr.get('NAME', '').startswith('Red Hat Enterprise Linux'))):
-                # NON-RHEL:/etc/os-release doesn't contain "Red Hat Enterprise Linux"
+                # NON-RHEL: /etc/os-release doesn't contain "Red Hat Enterprise Linux"
                 self.is_rhel = False
