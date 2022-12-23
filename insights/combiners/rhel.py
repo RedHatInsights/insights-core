@@ -17,7 +17,7 @@ from insights.parsers.uname import Uname
                      InstalledRpms])
 class RHEL(object):
     """
-    This component can be used to identify if the host an RHEL host by
+    This combiner can be used to identify if the host an RHEL host by
     checking the following parsers:
 
         - :py:class:`insights.parsers.uname.Uname`
@@ -33,27 +33,42 @@ class RHEL(object):
     """
     def __init__(self, uname, rhr, osr, rhsm_id, rpms):
         self.is_rhel = False
-        if rhr and rhr.is_rhel is False:
-            # /etc/redhat-release does not contain "Red Hat Enterprise Linux"
-            return
-        if (osr and
-                not (osr.get('ID') == "rhel" and
-                     osr.get('NAME', '').startswith('Red Hat Enterprise Linux'))):
-            # /etc/os-release does not contain "Red Hat Enterprise Linux"
-            return
         if uname and uname.redhat_release.major == -1:
-            # Failed to check the booting kernel version:
+            # NON-RHEL: Failed to check the booting kernel version:
             # - https://access.redhat.com/articles/3078
             return
         if rhsm_id:
-            # It is registered with RHSM
+            # RHEL: System is registered via RHSM
             self.is_rhel = True
             return
         if rpms:
-            # Its booting kernel is signed by Red Hat
+            # If system is NOT registered via RHSM, need to check:
+            # 1. the booted 'kernel' and 'systemd' are signed by Red Hat;
+            # 2. the '/etc/rehdat-release and /etc/os-release
+            self.is_rhel = True
             boot_kn = InstalledRpm.from_package('kernel-{}'.format(uname.kernel))
             for pkg in rpms.packages['kernel']:
-                if (pkg == boot_kn and
-                        pkg.redhat_signed and
-                        pkg.vendor and "Red Hat" in pkg.vendor):
-                    self.is_rhel = True
+                if pkg == boot_kn:
+                    # booted kernel
+                    if not (pkg.redhat_signed and pkg.vendor and
+                            "Red Hat" in pkg.vendor):
+                        # NON-RHEL: unsigned kernel
+                        self.is_rhel = False
+                        return
+                    break
+            # 2. 'systemd'
+            pkg = rpms.newest('systemd')
+            if pkg and not (pkg.redhat_signed and pkg.vendor and
+                            "Red Hat" in pkg.vendor):
+                # NON-RHEL: unsigned systemd
+                self.is_rhel = False
+                return
+            if rhr and rhr.is_rhel is False:
+                # NON-RHEL: /etc/redhat-release doesn't contain "Red Hat Enterprise Linux"
+                self.is_rhel = False
+                return
+            if (osr and
+                    not (osr.get('ID') == "rhel" and
+                         osr.get('NAME', '').startswith('Red Hat Enterprise Linux'))):
+                # NON-RHEL:/etc/os-release doesn't contain "Red Hat Enterprise Linux"
+                self.is_rhel = False
