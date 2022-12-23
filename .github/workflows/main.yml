@@ -42,7 +42,7 @@ jobs:
       run: |
         sudo add-apt-repository 'ppa:deadsnakes/ppa'
         sudo apt-get update
-        sudo apt-get install python2.6
+        sudo apt-get install python2.6  python2.6-dev
         sudo update-alternatives --install /usr/bin/python python /usr/bin/python2.6 1
         sudo update-alternatives --set python /usr/bin/python2.6
     - name: get depenencies
