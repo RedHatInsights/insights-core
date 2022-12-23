@@ -36,7 +36,7 @@ def aws_imdsv2_token(broker):
     try:
         token = broker[LocalSpecs.aws_imdsv2_token].content[0].strip()
         if token:
-            return token
+            return str(token)
     except Exception as e:
         raise SkipComponent("Unexpected exception:{e}".format(e=str(e)))
     raise SkipComponent
