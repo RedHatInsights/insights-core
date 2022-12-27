@@ -330,7 +330,7 @@ class DefaultSpecs(Specs):
     ls_var_cache_pulp = simple_command("/bin/ls -lan /var/cache/pulp")
     ls_var_lib_mongodb = simple_command("/bin/ls -la /var/lib/mongodb")
     ls_var_lib_nova_instances = simple_command("/bin/ls -laRZ /var/lib/nova/instances")
-    ls_var_lib_pcp = simple_command("/bin/ls -la /var/lib/pcp")
+    ls_var_lib_pcp = simple_command("/bin/ls -la /var/lib/pcp/pmdas/openmetrics/config.d")
     ls_var_lib_rsyslog = simple_command("/bin/ls -lZ /var/lib/rsyslog")
     ls_var_log = simple_command("/bin/ls -la /var/log /var/log/audit")
     ls_var_opt_mssql = simple_command("/bin/ls -ld /var/opt/mssql")
