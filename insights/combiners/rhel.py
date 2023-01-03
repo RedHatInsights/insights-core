@@ -5,7 +5,7 @@ RHEL
 The ``RHEL`` combiner provides an attribute `is_rhel` that indicates if the
 host is an "Red Hat Enterprise Linux" or not.
 """
-from insights.core.plugins import component
+from insights.core.plugins import combiner
 from insights.parsers.installed_rpms import InstalledRpm, InstalledRpms
 from insights.parsers.os_release import OsRelease
 from insights.parsers.redhat_release import RedhatRelease
@@ -13,8 +13,8 @@ from insights.parsers.subscription_manager import SubscriptionManagerID
 from insights.parsers.uname import Uname
 
 
-@component(optional=[Uname, RedhatRelease, OsRelease, SubscriptionManagerID,
-                     InstalledRpms])
+@combiner(optional=[Uname, RedhatRelease, OsRelease, SubscriptionManagerID,
+                    InstalledRpms])
 class RHEL(object):
     """
     This combiner can be used to identify if the host an RHEL host by
