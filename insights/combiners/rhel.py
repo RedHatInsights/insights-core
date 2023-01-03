@@ -42,7 +42,7 @@ class RHEL(object):
                         return
                     break
                 elif not boot_kn:
-                    # check the all the installed kernel when Uname is unavailable
+                    # check all installed kernel when Uname is unavailable
                     if not (pkg.redhat_signed and pkg.vendor and
                             "Red Hat" in pkg.vendor):
                         # NON-RHEL: Uname is unknown and unsigned kernel is installed
@@ -53,6 +53,7 @@ class RHEL(object):
                 # NON-RHEL: unsigned systemd
                 return
             # It's RHEL
+            # - even with modified /etc/redhat-release or /etc/os-release
             self.is_rhel = True
         elif uname:
             # If `Uname` is available, but InstalledRpms is unavailable:
