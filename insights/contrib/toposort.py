@@ -33,9 +33,75 @@
 #
 ########################################################################
 
+from collections import defaultdict
 from functools import reduce as _reduce
 
 __all__ = ['toposort', 'toposort_flatten']
+
+
+def toposort_ancestor(data):
+    """
+    Dependencies are expressed as a dictionary whose keys are items
+    and whose values are a set of dependent items. Output is a list of
+    sets in topological order - i.e. first those items with no dependencies,
+    then those with only dependencies in the previous set, and so on.
+
+    The algorithm here is the 'inverse' of the (previous, standard) topological
+    sort - it works by compiling the dictionary of ancestor sets and a count
+    of dependents for each ancestor.  The 'ancestor' dictionary is the inverse
+    of the 'dependency' dictionary - if 'a' depends on 'b', then 'b' is the
+    ancestor of 'a'.  So if data = {'foo': {'bar', 'baz'}}, then ancestors =
+    {'bar': {'foo'}, 'baz': {'foo}} and dependent_counts = {'foo': 2}.  At
+    the start we also need to remember the set of 'terminators' - items that
+    depend on other things, but on which nothing depends.
+
+    The algorithm then works by iteratively finding the set of ancestors that
+    do not have a dependent count, which are the ancestors which have no
+    dependents.  That set is yielded, and then for each of those 'free'
+    ancestors each of their dependents' counts is decremented (removing any
+    ancestor whose dependent count reaches zero) and the ancestor is then
+    removed from the ancestors dictionary.  This then iterates, with a
+    smaller set of ancestors and dependent counts.  We exit when the set of
+    'free' dependents is zero, either because we have traversed the graph
+    completely, or we have found circular dependencies.  At this point we
+    yield the 'terminators' set, because all other dependencies have been
+    yielded already.
+    """
+    if not data:
+        return list()  # caller expects something to iterate over
+
+    ancestors = defaultdict(set)
+    dependent_counts = defaultdict(int)
+    for item, dependencies in data.items():
+        for dep in dependencies:
+            ancestors[dep].add(item)
+            dependent_counts[item] += 1
+    # It's quicker to remember the keys in the data that aren't required by
+    # any other dependency, to emit last, than to add them into the ancestors
+    # with empty sets.
+    terminators = data.keys() - ancestors.keys()
+    # Iterate:
+    while True:
+        # The things that currently have no dependencies are ancestors that
+        # are not mentioned in the set of dependents.
+        have_no_dependents = ancestors.keys() - dependent_counts.keys()
+        # Exit when finished or there are circular dependencies
+        if not have_no_dependents:
+            break
+        yield have_no_dependents
+        # Remove those from the ancestors
+        for free_ancestor in have_no_dependents:
+            for dep in ancestors[free_ancestor]:
+                dependent_counts[dep] -= 1
+                if dependent_counts[dep] == 0:
+                    del(dependent_counts[dep])
+            del(ancestors[free_ancestor])
+    if ancestors:
+        raise ValueError('Cyclic dependencies exist among these items: {}'.format(', '.join(
+            repr(k) + ' has ' + repr(ancestors[k]) + ' depending on it'
+            for k in ancestors.keys()
+        )))
+    yield terminators
 
 
 def toposort(data):
@@ -61,23 +127,39 @@ items in the preceeding sets.
     # Add empty dependences where needed.
     data.update(dict((item, set()) for item in extra_items_in_deps))
     while True:
-        ordered = set(item for item, dep in data.items() if len(dep) == 0)
-        if not ordered:
+        # find the next things with no (remaining) dependencies
+        have_no_dependencies = set(item for item, dep in data.items() if len(dep) == 0)
+        if not have_no_dependencies:
             break
-        yield ordered
-        data = dict((item, (dep - ordered))
+        # Yield that set in one go
+        yield have_no_dependencies
+        # Create a new dependency graph that removes the items that have no
+        # dependencies
+        data = dict((item, (dep - have_no_dependencies))
                     for item, dep in data.items()
-                    if item not in ordered)
+                    if item not in have_no_dependencies)
     if len(data) != 0:
         raise ValueError('Cyclic dependencies exist among these items: {}'.format(', '.join(repr(x) for x in data.items())))
 
 
-def toposort_flatten(data, sort=True):
-    """Returns a single list of dependencies. For any set returned by
-toposort(), those items are sorted and appended to the result (just to
-make the results deterministic)."""
+def toposort_flatten_old(data, sort=True):
+    """
+    Returns a single list of dependencies. For any set returned by
+    toposort(), those items are sorted and appended to the result (just to
+    make the results deterministic).
+    """
 
     result = []
-    for d in toposort(data):
+    for d in toposort_ancestor(data):
         result.extend((sorted if sort else list)(d))
     return result
+
+
+def toposort_flatten(data, sort=True):
+    """
+    Flatten the 'list of sets' of topologically sorted dependencies using a
+    generator, optionally sorting each set of equivalent dependencies.
+    """
+    for dependency_group in toposort_ancestor(data):
+        for dep in (sorted if sort else list)(dependency_group):
+            yield dep
