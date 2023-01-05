@@ -37,6 +37,11 @@ from collections import defaultdict
 from functools import reduce as _reduce
 from sys import version_info
 
+if isinstance(version_info, tuple):
+    python_version = version_info[1]
+else:
+    python_version = version_info.major
+
 __all__ = ['toposort', 'toposort_flatten']
 
 
@@ -81,7 +86,7 @@ def toposort_ancestor(data):
     # It's quicker to remember the keys in the data that aren't required by
     # any other dependency, to emit last, than to add them into the ancestors
     # with empty sets.
-    if version_info.major == 2:
+    if python_version == 2:
         terminators = set(data.keys()) - set(ancestors.keys())
     else:
         terminators = data.keys() - ancestors.keys()
@@ -90,7 +95,7 @@ def toposort_ancestor(data):
     while True:
         # The things that currently have no dependencies are ancestors that
         # are not mentioned in the set of dependents.
-        if version_info.major == 2:
+        if python_version == 2:
             have_no_dependents = set(ancestors.keys()) - set(dependent_counts.keys())
         else:
             have_no_dependents = ancestors.keys() - dependent_counts.keys()
