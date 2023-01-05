@@ -68,7 +68,8 @@ def toposort_ancestor(data):
     yielded already.
     """
     if not data:
-        return list()  # caller expects something to iterate over
+        yield set()
+        raise StopIteration
 
     ancestors = defaultdict(set)
     dependent_counts = defaultdict(int)
@@ -114,7 +115,8 @@ items in the preceeding sets.
 
     # Special case empty input.
     if len(data) == 0:
-        return
+        yield set()
+        raise StopIteration
 
     # Copy the input so as to leave it unmodified.
     data = data.copy()
