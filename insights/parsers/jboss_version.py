@@ -130,5 +130,7 @@ class JbossRuntimeVersions(Parser):
     def __next__(self):
         return next(self._iterVersions)
 
+    next = __next__   # For Python 2
+
     def __getitem__(self, item):
         return self._versions[item]
