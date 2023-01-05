@@ -30,44 +30,34 @@ class RHEL(object):
     """
     def __init__(self, uname, rpms, rhr, osr):
         self.is_rhel = False
+        if all(arg is None for arg in [uname, rpms, rhr, osr]):
+            return
         if rpms:
-            # If `InstalledRpms` is available:
             boot_kn = InstalledRpm.from_package('kernel-{0}'.format(uname.kernel)) if uname else None
+            flag = False
             for pkg in rpms.packages['kernel']:
                 if pkg == boot_kn:
-                    # check the booting kernel only when Uname is available
+                    # check the booting kernel when Uname is available
                     if not (pkg.redhat_signed and pkg.vendor and
                             "Red Hat" in pkg.vendor):
-                        # NON-RHEL: unsigned kernel
-                        return
+                        flag = True
                     break
-                elif not boot_kn:
-                    # check all installed kernel when Uname is unavailable
-                    if not (pkg.redhat_signed and pkg.vendor and
-                            "Red Hat" in pkg.vendor):
-                        # NON-RHEL: Uname is unknown and unsigned kernel is installed
-                        return
             pkg = rpms.newest('systemd')
-            if pkg and not (pkg.redhat_signed and pkg.vendor and
-                            "Red Hat" in pkg.vendor):
-                # NON-RHEL: unsigned systemd
+            if flag and pkg and not (pkg.redhat_signed and pkg.vendor and
+                                     "Red Hat" in pkg.vendor):
+                # NON-RHEL: BOTH booting kernel and systemd are NOT siged by Red Hat
                 return
-            # It's RHEL
-            # - even with modified /etc/redhat-release or /etc/os-release
-            self.is_rhel = True
-        elif uname:
-            # If `Uname` is available, but InstalledRpms is unavailable:
-            if uname.redhat_release.major == -1:
-                # NON-RHEL: unknown uname
-                # - https://access.redhat.com/articles/3078
-                return
-            if rhr and rhr.is_rhel is False:
-                # NON-RHEL: /etc/redhat-release doesn't contain "Red Hat Enterprise Linux"
-                return
-            if (osr and
-                    not (osr.get('ID') == "rhel" and
-                         osr.get('NAME', '').startswith('Red Hat Enterprise Linux'))):
-                # NON-RHEL: /etc/os-release doesn't contain "Red Hat Enterprise Linux"
-                return
-            # It's RHEL
-            self.is_rhel = True
+        if uname and uname.redhat_release.major == -1:
+            # NON-RHEL: unknown uname
+            # - https://access.redhat.com/articles/3078
+            return
+        if rhr and rhr.is_rhel is False:
+            # NON-RHEL: /etc/redhat-release doesn't contain "Red Hat Enterprise Linux"
+            return
+        if (osr and
+                not (osr.get('ID') == "rhel" and
+                     osr.get('NAME', '').startswith('Red Hat Enterprise Linux'))):
+            # NON-RHEL: /etc/os-release doesn't contain "Red Hat Enterprise Linux"
+            return
+        # It's RHEL
+        self.is_rhel = True

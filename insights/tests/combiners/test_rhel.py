@@ -12,15 +12,23 @@ UNAME_91 = "Linux vm-123 5.14.0-162.6.1.el9_1.x86_64 #1 SMP PREEMPT_DYNAMIC Fri 
 UNAME_NG = "Linux vm-123 5.14.0-10.1.el9.x86_64 #1 SMP PREEMPT RT Thu Oct 29 21:54:23 EDT 2015 x86_64 x86_64 x86_64 GNU/Linux"
 
 RPMS_JSON_91 = '''
-{"name":"kernel", "epoch":"(none)", "version":"5.14.0", "release":"70.13.1.el9_0", "arch":"x86_64", "vendor":"RH, Inc.", "sigpgp":"RSA/SHA256, Mon 05 Sep 2022 09:55:09 PM CST, Key ID 199e2f91fd431d51"}
 {"name":"kernel", "epoch":"(none)", "version":"5.14.0", "release":"162.6.1.el9_1", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Mon 03 Oct 2022 04:18:36 PM CST, Key ID 199e2f91fd431d51"}
 {"name":"systemd", "epoch":"(none)", "version":"250", "release":"12.el9_1", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Thu 29 Sep 2022 05:02:47 PM CST, Key ID 199e2f91fd431d51"}
 '''.strip()
 
-RPMS_JSON_9_ALL = '''
-{"name":"kernel", "epoch":"(none)", "version":"5.14.0", "release":"70.13.1.el9_0", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Mon 05 Sep 2022 09:55:09 PM CST, Key ID 199e2f91fd431d51"}
-{"name":"kernel", "epoch":"(none)", "version":"5.14.0", "release":"162.6.1.el9_1", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Mon 03 Oct 2022 04:18:36 PM CST, Key ID 199e2f91fd431d51"}
+RPMS_JSON_91_UNSIGNED_KERNEL = '''
+{"name":"kernel", "epoch":"(none)", "version":"5.14.0", "release":"162.6.1.el9_1", "arch":"x86_64", "vendor":"RH, Inc.", "sigpgp":"RSA/SHA256, Mon 03 Oct 2022 04:18:36 PM CST, Key ID 199e2f91fd431d51"}
 {"name":"systemd", "epoch":"(none)", "version":"250", "release":"12.el9_1", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Thu 29 Sep 2022 05:02:47 PM CST, Key ID 199e2f91fd431d51"}
+'''.strip()
+
+RPMS_JSON_91_UNSIGNED_SYSTEMD = '''
+{"name":"kernel", "epoch":"(none)", "version":"5.14.0", "release":"162.6.1.el9_1", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Mon 03 Oct 2022 04:18:36 PM CST, Key ID 199e2f91fd431d51"}
+{"name":"systemd", "epoch":"(none)", "version":"250", "release":"12.el9_1", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Thu 29 Sep 2022 05:02:47 PM CST, Key ID 99e2f91fd431d51"}
+'''.strip()
+
+RPMS_JSON_91_UNSIGNED_BOTH = '''
+{"name":"kernel", "epoch":"(none)", "version":"5.14.0", "release":"162.6.1.el9_1", "arch":"x86_64", "vendor":"RH, Inc.", "sigpgp":"RSA/SHA256, Mon 03 Oct 2022 04:18:36 PM CST, Key ID 199e2f91fd431d51"}
+{"name":"systemd", "epoch":"(none)", "version":"250", "release":"12.el9_1", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Thu 29 Sep 2022 05:02:47 PM CST, Key ID 99e2f91fd431d51"}
 '''.strip()
 
 
@@ -28,17 +36,6 @@ RPMS_JSON_8 = '''
 {"name":"kernel", "epoch":"(none)", "version":"4.18.0", "release":"425.3.1.el8", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Tue Nov  8 18:10:54 2022, Key ID 199e2f91fd431d51"}
 {"name":"kernel", "epoch":"(none)", "version":"4.18.0", "release":"305.19.1.el8_4", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Wed Sep 15 17:11:22 2021, Key ID 199e2f91fd431d51"}
 {"name":"systemd", "epoch":"(none)", "version":"239", "release":"68.0.1.el8", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Wed Nov  9 06:47:49 2022, Key ID 199e2f91fd431d51"}
-'''.strip()
-
-RPMS_JSON_KERNEL_NG = '''
-{"name":"kernel", "epoch":"(none)", "version":"5.14.0", "release":"70.26.1.el9_0", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Mon 05 Sep 2022 09:55:09 PM CST, Key ID 99e2f91fd431d51"}
-{"name":"kernel", "epoch":"(none)", "version":"5.14.0", "release":"162.6.1.el9_1", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Mon 03 Oct 2022 04:18:36 PM CST, Key ID 99e2f91fd431d51"}
-'''.strip()
-
-RPMS_JSON_SYSTEMD_NG = '''
-{"name":"kernel", "epoch":"(none)", "version":"5.14.0", "release":"70.26.1.el9_0", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Mon 05 Sep 2022 09:55:09 PM CST, Key ID 199e2f91fd431d51"}
-{"name":"kernel", "epoch":"(none)", "version":"5.14.0", "release":"162.6.1.el9_1", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Mon 03 Oct 2022 04:18:36 PM CST, Key ID 199e2f91fd431d51"}
-{"name":"systemd", "epoch":"(none)", "version":"250", "release":"12.el9_1", "arch":"x86_64", "vendor":"RH, Inc.", "sigpgp":"RSA/SHA256, Thu 29 Sep 2022 05:02:47 PM CST, Key ID 199e2f91fd431d51"}
 '''.strip()
 
 RPMS_JSON_OLE_NG = '''
@@ -111,38 +108,24 @@ def test_is_rhel():
     result = RHEL(uname, rpms, None, None)
     assert result.is_rhel is True
 
-    # RHEL 9, rpms only
-    rpms = InstalledRpms(context_wrap(RPMS_JSON_9_ALL))
+    # RHEL 9, rpms only signed (kernel and systemd)
+    rpms = InstalledRpms(context_wrap(RPMS_JSON_91))
     result = RHEL(None, rpms, None, None)
     assert result.is_rhel is True
 
-    # RHEL 9: signed kernel and systemd, UNKNOWN Uname
-    uname = Uname(context_wrap(UNAME_NG))
-    rpms = InstalledRpms(context_wrap(RPMS_JSON_91))
-    result = RHEL(uname, rpms, None, None)
-    assert result.is_rhel is True
-
-    # RHEL 9: signed kernel and systemd, BAD redhat-release
-    rhr = RedhatRelease(context_wrap(REDHAT_RELEASE_FEDORA))
+    # RHEL 9: unsigned kernel, good os/redhat-release
+    rhr = RedhatRelease(context_wrap(REDHAT_RELEASE_91))
     osr = OsRelease(context_wrap(OS_RELEASE_RH))
     uname = Uname(context_wrap(UNAME_91))
-    rpms = InstalledRpms(context_wrap(RPMS_JSON_91))
+    rpms = InstalledRpms(context_wrap(RPMS_JSON_91_UNSIGNED_KERNEL))
     result = RHEL(uname, rpms, rhr, osr)
     assert result.is_rhel is True
 
-    # RHEL 9: signed kernel and systemd, BAD os-release
-    rhr = RedhatRelease(context_wrap(REDHAT_RELEASE_86))
-    osr = OsRelease(context_wrap(OS_RELEASE_OL))
+    # RHEL 9: unsigned systemd, good os/redhat-release
+    rhr = RedhatRelease(context_wrap(REDHAT_RELEASE_91))
+    osr = OsRelease(context_wrap(OS_RELEASE_RH))
     uname = Uname(context_wrap(UNAME_91))
-    rpms = InstalledRpms(context_wrap(RPMS_JSON_91))
-    result = RHEL(uname, rpms, rhr, osr)
-    assert result.is_rhel is True
-
-    # OLE with signed kernel and systemd, identify as RHEL
-    rhr = RedhatRelease(context_wrap(REDHAT_RELEASE_OL))
-    osr = OsRelease(context_wrap(OS_RELEASE_OL))
-    uname = Uname(context_wrap(UNAME_86))
-    rpms = InstalledRpms(context_wrap(RPMS_JSON_8))
+    rpms = InstalledRpms(context_wrap(RPMS_JSON_91_UNSIGNED_SYSTEMD))
     result = RHEL(uname, rpms, rhr, osr)
     assert result.is_rhel is True
 
@@ -169,7 +152,7 @@ def test_not_rhel():
     result = RHEL(uname, None, None, osr)
     assert result.is_rhel is False
 
-    # OLE with unsigned kernel and systemd
+    # OLE with unsigned (kernel and systemd)
     rhr = RedhatRelease(context_wrap(REDHAT_RELEASE_OL))
     osr = OsRelease(context_wrap(OS_RELEASE_OL))
     uname = Uname(context_wrap(UNAME_86))
@@ -177,23 +160,38 @@ def test_not_rhel():
     result = RHEL(uname, rpms, rhr, osr)
     assert result.is_rhel is False
 
-    # RHEL 9, rpms only, but contain unsigned kernel
-    rpms = InstalledRpms(context_wrap(RPMS_JSON_91))
-    result = RHEL(None, rpms, None, None)
+    # RHEL 9, unsigned kernel and unsigned systemd
+    uname = Uname(context_wrap(UNAME_91))
+    rpms = InstalledRpms(context_wrap(RPMS_JSON_91_UNSIGNED_BOTH))
+    result = RHEL(uname, rpms, None, None)
     assert result.is_rhel is False
 
-    # RHEL 9: unsigned kernel, good os/redhat-release
-    rhr = RedhatRelease(context_wrap(REDHAT_RELEASE_91))
+    # RHEL 9: signed (kernel and systemd), UNKNOWN Uname
+    uname = Uname(context_wrap(UNAME_NG))
+    rpms = InstalledRpms(context_wrap(RPMS_JSON_91))
+    result = RHEL(uname, rpms, None, None)
+    assert result.is_rhel is False
+
+    # RHEL 9: signed kernel and systemd, BAD redhat-release
+    rhr = RedhatRelease(context_wrap(REDHAT_RELEASE_FEDORA))
     osr = OsRelease(context_wrap(OS_RELEASE_RH))
     uname = Uname(context_wrap(UNAME_91))
-    rpms = InstalledRpms(context_wrap(RPMS_JSON_KERNEL_NG))
+    rpms = InstalledRpms(context_wrap(RPMS_JSON_91))
     result = RHEL(uname, rpms, rhr, osr)
     assert result.is_rhel is False
 
-    # RHEL 9: unsigned systemd, good os/redhat-release
-    rhr = RedhatRelease(context_wrap(REDHAT_RELEASE_91))
-    osr = OsRelease(context_wrap(OS_RELEASE_RH))
+    # RHEL 9: signed kernel and systemd, BAD os-release
+    rhr = RedhatRelease(context_wrap(REDHAT_RELEASE_86))
+    osr = OsRelease(context_wrap(OS_RELEASE_OL))
     uname = Uname(context_wrap(UNAME_91))
-    rpms = InstalledRpms(context_wrap(RPMS_JSON_SYSTEMD_NG))
+    rpms = InstalledRpms(context_wrap(RPMS_JSON_91))
+    result = RHEL(uname, rpms, rhr, osr)
+    assert result.is_rhel is False
+
+    # OLE with signed kernel and systemd
+    rhr = RedhatRelease(context_wrap(REDHAT_RELEASE_OL))
+    osr = OsRelease(context_wrap(OS_RELEASE_OL))
+    uname = Uname(context_wrap(UNAME_86))
+    rpms = InstalledRpms(context_wrap(RPMS_JSON_8))
     result = RHEL(uname, rpms, rhr, osr)
     assert result.is_rhel is False
