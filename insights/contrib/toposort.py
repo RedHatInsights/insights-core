@@ -38,7 +38,7 @@ from functools import reduce as _reduce
 from sys import version_info
 
 if isinstance(version_info, tuple):
-    python_version = version_info[1]
+    python_version = version_info[0]
 else:
     python_version = version_info.major
 
