@@ -48,25 +48,27 @@ WEB_SERVER_RUNTIME = """
 
 def test_JbossRuntimeVersions():
     jboss_runtimes = JbossRuntimeVersions(context_wrap(SINGLE_JBOSS))
-    jboss_v = jboss_runtimes.versions[0]
+    jboss_v = jboss_runtimes[0]
     assert jboss_v.file_path == "/opt/jboss-datagrid-7.3.0-server"
-    assert jboss_v.parsed['product'] == "Red Hat Data Grid"
+    assert jboss_v.product == "Red Hat Data Grid"
     assert jboss_v.version == "7.3.0"
     assert jboss_v.major == 7
     assert jboss_v.minor == 3
     assert jboss_v.release == 0
     jboss_runtimes = JbossRuntimeVersions(context_wrap(MULTI_JBOSS))
-    jboss_v = jboss_runtimes.versions[0]
+    for j in jboss_runtimes:
+        assert 'Red Hat' in j.product or 'Keycloak' in j.product
+    jboss_v = jboss_runtimes[0]
     assert jboss_v.file_path == "/opt/jboss"
     assert jboss_v.version == "7.3.0"
     assert jboss_v.code_name == "GA"
-    jboss_v = jboss_runtimes.versions[2]
+    jboss_v = jboss_runtimes[2]
     assert jboss_v.file_path == "/opt/jboss-keycloak"
     assert jboss_v.version == "3.4.3"
     assert jboss_v.code_name == "Final"
     jboss_runtimes = JbossRuntimeVersions(context_wrap(WEB_SERVER_RUNTIME))
-    jboss_v = jboss_runtimes.versions[0]
-    assert jboss_v.parsed['product'] == "Red Hat JBoss Web Server"
+    jboss_v = jboss_runtimes[0]
+    assert jboss_v.product == "Red Hat JBoss Web Server"
     assert jboss_v.file_path == "/opt/jboss-web-server"
     assert jboss_v.code_name == "GA"
     assert jboss_v.version == "5.6"
@@ -77,10 +79,8 @@ def test_JbossRuntimeVersions():
 
 def test_jboss_version_doc_examples():
     env = {
-        'JbossVersion': JbossVersion,
         'jboss_version': JbossVersion(context_wrap(JBOSS_6,
                                                    path='/home/test/jboss/jboss-eap-6.4/version.txt')),
-        'JbossRuntimeVersions': JbossRuntimeVersions,
         'all_jboss_versions': JbossRuntimeVersions(context_wrap(SINGLE_JBOSS,
                                                                 path='/home/test/jboss/jboss_versions'))
     }
