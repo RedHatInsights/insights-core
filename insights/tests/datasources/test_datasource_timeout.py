@@ -97,6 +97,7 @@ def test_not_hostcontext_timeout_datasource_hit_def():
     exs = broker.exceptions[Specs.spec_ds_timeout_1]
     assert not [ex for ex in exs if isinstance(ex, TimeoutException) and str(ex) != "Datasource spec insights.tests.datasources.test_datasource_timeout.TestSpecs.spec_ds_timeout_1 timed out after 1 seconds!"]
 
+
 def test_not_hostcontext_timeout_foreach_datasource_hit_def():
     broker = dr.Broker()
     broker[SosArchiveContext] = SosArchiveContext
