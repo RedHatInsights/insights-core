@@ -1013,7 +1013,7 @@ def run_order(graph):
     return toposort_flatten(graph, sort=False)
 
 
-def _determine_components(components):
+def determine_components(components):
     if isinstance(components, dict):
         return components
 
@@ -1033,27 +1033,17 @@ def _determine_components(components):
         return COMPONENTS[components]
 
 
-def run(components=None, broker=None):
-    """
-    Executes components in an order that satisfies their dependency
-    relationships.
+_determine_components = determine_components
 
-    Keyword Args:
-        components: Can be one of a dependency graph, a single component, a
-            component group, or a component type. If it's anything other than a
-            dependency graph, the appropriate graph is built for you and before
-            evaluation.
-        broker (Broker): Optionally pass a broker to use for evaluation. One is
-            created by default, but it's often useful to seed a broker with an
-            initial dependency.
-    Returns:
-        Broker: The broker after evaluation.
-    """
-    components = components or COMPONENTS[GROUPS.single]
-    components = _determine_components(components)
-    broker = broker or Broker()
 
-    for component in run_order(components):
+def run_components(ordered_components, components, broker):
+    """
+    Runs a list of preordered components using the provided broker.
+
+    This function allows callers to order components themselves and cache the
+    result so they don't incur the toposort overhead on every run.
+    """
+    for component in ordered_components:
         start = time.time()
         try:
             if (component not in broker and component in components and
@@ -1081,9 +1071,31 @@ def run(components=None, broker=None):
     return broker
 
 
+def run(components=None, broker=None):
+    """
+    Executes components in an order that satisfies their dependency
+    relationships.
+
+    Keyword Args:
+        components: Can be one of a dependency graph, a single component, a
+            component group, or a component type. If it's anything other than a
+            dependency graph, the appropriate graph is built for you and before
+            evaluation.
+        broker (Broker): Optionally pass a broker to use for evaluation. One is
+            created by default, but it's often useful to seed a broker with an
+            initial dependency.
+    Returns:
+        Broker: The broker after evaluation.
+    """
+    components = components or COMPONENTS[GROUPS.single]
+    components = determine_components(components)
+    broker = broker or Broker()
+    return run_components(run_order(components), components, broker)
+
+
 def generate_incremental(components=None, broker=None):
     components = components or COMPONENTS[GROUPS.single]
-    components = _determine_components(components)
+    components = determine_components(components)
     for graph in get_subgraphs(components):
         yield graph, broker or Broker()
 
