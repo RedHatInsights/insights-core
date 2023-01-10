@@ -48,6 +48,7 @@ from insights.util import parse_bool
 
 _CACHE = {}
 FILTERS = defaultdict(set)
+DENY_FILTERS = defaultdict(set)
 ENABLED = parse_bool(os.environ.get("INSIGHTS_FILTERS_ENABLED"), default=True)
 
 
@@ -106,6 +107,54 @@ def add_filter(component, patterns):
 _add_filter = add_filter
 
 
+def add_deny_filter(component, patterns):
+    """
+    Add a filter or list of filters to a component. When the component is
+    a datasource, the filter will be directly added to that datasouce.
+    In cases when the component is a parser or combiner, the filter will be
+    added to underlying filterable datasources by traversing dependency graph.
+    A filter is a simple string, and it matches if it is contained anywhere
+    within a line.
+
+    Args:
+       component (component): The component to filter, can be datasource,
+            parser or combiner.
+       patterns (str, [str]): A string, list of strings, or set of strings to
+            add to the datasource's filters.
+    """
+    def inner(component, patterns):
+        if component in _CACHE:
+            del _CACHE[component]
+        if isinstance(patterns, six.string_types):
+            DENY_FILTERS[component].add(patterns)
+        elif isinstance(patterns, list):
+            DENY_FILTERS[component] |= set(patterns)
+        elif isinstance(patterns, set):
+            DENY_FILTERS[component] |= patterns
+        else:
+            raise TypeError("patterns must be string, list, or set.")
+
+    if not plugins.is_datasource(component):
+        for dep in dr.run_order(dr.get_dependency_graph(component)):
+            if plugins.is_datasource(dep):
+                d = dr.get_delegate(dep)
+                if d.filterable:
+                    inner(dep, patterns)
+    else:
+        delegate = dr.get_delegate(component)
+
+        if delegate.raw:
+            raise Exception("Filters aren't applicable to raw datasources.")
+
+        if not delegate.filterable:
+            raise Exception("Filters aren't applicable to %s." % dr.get_name(component))
+
+        inner(component, patterns)
+
+
+_add_deny_filter = add_deny_filter
+
+
 def get_filters(component):
     """
     Get the set of filters for the given datasource.
@@ -127,7 +176,7 @@ def get_filters(component):
         set: The set of filters defined for the datasource
     """
     def inner(c, filters=None):
-        filters = filters or set()
+        filters = filters or (set(), set())
         if not ENABLED:
             return filters
 
@@ -135,10 +184,21 @@ def get_filters(component):
             return filters
 
         if c in FILTERS:
-            filters |= FILTERS[c]
+            allow_filters, deny_filters = filters
+            allow_filters |= FILTERS[c]
+            filters = (allow_filters, deny_filters)
+
+        if c in DENY_FILTERS:
+            allow_filters, deny_filters = filters
+            deny_filters |= DENY_FILTERS[c]
+            filters = (allow_filters, deny_filters)
 
         for d in dr.get_dependents(c):
-            filters |= inner(d, filters)
+            allow_filters, deny_filters = filters
+            dep_accept_filters, dep_deny_filters = inner(d, filters)
+            allow_filters |= dep_accept_filters
+            deny_filters |= dep_deny_filters
+            filters = (allow_filters, deny_filters)
         return filters
 
     if component not in _CACHE:
@@ -152,10 +212,17 @@ def apply_filters(target, lines):
     integration tests. Filters are applied in an equivalent but more performant
     way at run time.
     """
-    filters = get_filters(target)
-    if filters:
+    allow_filters, deny_filters = get_filters(target)
+    if deny_filters:
         for l in lines:
-            if any(f in l for f in filters):
+            if not any(f in l for f in deny_filters):
+                yield l
+    # TODO: should we use allow filters if there are deny filters or are they mutually exclusive
+    # TODO: If we allow both types we need to make sure deny controls, so deny first then allow
+    # TODO: As written, deny is exclusive and takes priority
+    elif allow_filters:
+        for l in lines:
+            if any(f in l for f in allow_filters):
                 yield l
     else:
         for l in lines:
@@ -171,7 +238,9 @@ def loads(string):
     """Loads the filters dictionary given a string."""
     d = _loads(string)
     for k, v in d.items():
-        FILTERS[dr.get_component(k) or k] = set(v)
+        # TODO: For specs with deny filters, this will always create an empty allow filter list
+        FILTERS[dr.get_component(k) or k] = set(v.get('allow', []))
+        DENY_FILTERS[dr.get_component(k) or k] = set(v.get('deny', []))
 
 
 def load(stream=None):
@@ -191,7 +260,10 @@ def dumps():
     """Returns a string representation of the FILTERS dictionary."""
     d = {}
     for k, v in FILTERS.items():
-        d[dr.get_name(k)] = list(v)
+        d[dr.get_name(k)] = {'allow': list(v)}
+    # TODO: Deny filters overwrite any allow filters, so file output is mutually exclusive
+    for k, v in DENY_FILTERS.items():
+        d[dr.get_name(k)] = {'deny': list(v)}
     return _dumps(d)
 
 

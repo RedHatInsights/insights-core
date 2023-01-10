@@ -12,7 +12,7 @@ from insights.specs import Specs
 @datasource(HostContext)
 def du_dir_list(broker):
     """ Return a list of directories from the spec filter """
-    filters = list(get_filters(Specs.du_dirs))
+    filters, _ = list(get_filters(Specs.du_dirs))
     if filters:
         return filters
     raise SkipComponent

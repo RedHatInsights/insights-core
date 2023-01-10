@@ -69,7 +69,7 @@ def cloud_cfg(broker):
     """
     relative_path = '/etc/cloud/cloud.cfg'
     try:
-        filters = get_filters(Specs.cloud_cfg)
+        filters, _ = get_filters(Specs.cloud_cfg)
         content = broker[LocalSpecs.cloud_cfg_input].content
         if content and filters:
             result = dict()

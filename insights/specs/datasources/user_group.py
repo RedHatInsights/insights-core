@@ -18,7 +18,8 @@ def group_filters(broker):
     Return a string contains the list of groups getting from the spec filter,
     separated with space.
     """
-    grp_list = sorted(get_filters(Specs.group_info))
+    filters, _ = get_filters(Specs.group_info)
+    grp_list = sorted(filters)
     if grp_list:
         return ' '.join(grp_list)
     raise SkipComponent

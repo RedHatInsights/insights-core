@@ -35,7 +35,7 @@ def awx_manage_check_license_data_datasource(broker):
         SkipComponent: When the filter/path does not exist or any exception occurs.
     """
     try:
-        filters = get_filters(Specs.awx_manage_check_license_data)
+        filters, _ = get_filters(Specs.awx_manage_check_license_data)
         content = broker[LocalSpecs.awx_manage_check_license_data_raw].content
         if content and filters:
             json_data = json.loads(content[0])

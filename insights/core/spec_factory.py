@@ -218,11 +218,13 @@ class TextFileProvider(FileProvider):
 
     def create_args(self):
         args = []
-        filters = "\n".join(get_filters(self.ds)) if self.ds else None
+        allow_filters, deny_filters = get_filters(self.ds) if self.ds else (None, set())
+        filters = "\n".join(allow_filters) if allow_filters else None
         if filters:
             args.append(["grep", "-F", filters, self.path])
-
-        patterns = "\n".join(blacklist.get_disallowed_patterns())
+        patterns = blacklist.get_disallowed_patterns()
+        patterns |= deny_filters
+        patterns = "\n".join(patterns)
         if patterns:
             grep = ["grep", "-v", "-F", patterns]
             if not args:
@@ -342,11 +344,14 @@ class CommandOutputProvider(ContentProvider):
         command = [shlex.split(self.cmd)]
 
         if self.split:
-            filters = "\n".join(get_filters(self.ds))
+            allow_filters, deny_filters = get_filters(self.ds)
+            filters = "\n".join(allow_filters)
             if filters:
                 command.append(["grep", "-F", filters])
 
-            patterns = "\n".join(blacklist.get_disallowed_patterns())
+            patterns = blacklist.get_disallowed_patterns()
+            patterns |= deny_filters
+            patterns = "\n".join(patterns)
             if patterns:
                 command.append(["grep", "-v", "-F", patterns])
 

@@ -66,7 +66,7 @@ def cmd_and_pkg(broker):
     Raises:
         SkipComponent: Raised if no data is collected
     """
-    commands = get_filters(Specs.package_provides_command)
+    commands, _ = get_filters(Specs.package_provides_command)
     """ list: List of commands to search for, added as filters for the spec """
 
     if commands:

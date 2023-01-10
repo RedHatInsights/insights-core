@@ -8,16 +8,6 @@ from insights.parsers.dse_ldif_simple import DseLdifSimple
 from insights.specs import Specs
 from insights.tests import context_wrap
 
-add_filter(
-    Specs.dse_ldif, [
-        "nsslapd-security",
-        "sslVersionMin",
-        "sslVersionMax",
-        "nsSSL3",
-        "cn: config",  # Note that this can serve as a canary for knowing whether the spec is collected.
-    ]
-)
-
 DSE_LDIF_REAL_EXAMPLE = """
 
 dn: cn=config
@@ -175,6 +165,16 @@ def test_dse_ldif_coverage():
 
 
 def test_dse_ldif_filtered():
+    add_filter(
+        Specs.dse_ldif, [
+            "nsslapd-security",
+            "sslVersionMin",
+            "sslVersionMax",
+            "nsSSL3",
+            "cn: config",  # Note that this can serve as a canary for knowing whether the spec is collected.
+        ]
+    )
+
     dse_ldif_simple = DseLdifSimple(context_wrap(DSE_LDIF_REAL_EXAMPLE, filtered_spec=Specs.dse_ldif))
     assert dse_ldif_simple["nsslapd-security"] == "on"
     assert len(dse_ldif_simple) == 6
