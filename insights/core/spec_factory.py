@@ -303,7 +303,8 @@ class CommandOutputProvider(ContentProvider):
     """
     Class used in datasources to return output from commands.
     """
-    def __init__(self, cmd, ctx, root="insights_commands", args=None, split=True, keep_rc=False, ds=None, timeout=None, inherit_env=None, signum=None):
+    def __init__(self, cmd, ctx, root="insights_commands", args=None, split=True, keep_rc=False, ds=None, timeout=None,
+                 inherit_env=None, override_env=None, signum=None):
         super(CommandOutputProvider, self).__init__()
         self.cmd = cmd
         self.root = root
@@ -313,11 +314,13 @@ class CommandOutputProvider(ContentProvider):
         self.keep_rc = keep_rc
         self.ds = ds
         self.timeout = timeout
-        self.inherit_env = inherit_env or []
+        self.inherit_env = inherit_env if inherit_env is not None else []
+        self.override_env = override_env if override_env is not None else dict()
         self.signum = signum or signal.SIGKILL
         self._misc_settings()
 
         self._content = None
+        self._env = self.create_env()
         self.rc = None
 
         self.validate()
@@ -332,7 +335,7 @@ class CommandOutputProvider(ContentProvider):
             raise dr.SkipComponent()
 
         cmd = shlex.split(self.cmd)[0]
-        if not which(cmd, env=self.create_env()):
+        if not which(cmd, env=self._env):
             raise ContentException("Command not found: %s" % cmd)
 
     def create_args(self):
@@ -357,16 +360,21 @@ class CommandOutputProvider(ContentProvider):
 
     def create_env(self):
         env = dict(SAFE_ENV)
+
         for e in self.inherit_env:
             if e in os.environ:
                 env[e] = os.environ[e]
+
+        for k, v in self.override_env.items():
+            env[k] = v
+
         return env
 
     def load(self):
         command = self.create_args()
 
-        raw = self.ctx.shell_out(command, split=self.split, keep_rc=self.keep_rc,
-                timeout=self.timeout, env=self.create_env(), signum=self.signum)
+        raw = self.ctx.shell_out(command, split=self.split, keep_rc=self.keep_rc, timeout=self.timeout,
+                                 env=self._env, signum=self.signum)
         if self.keep_rc:
             self.rc, output = raw
         else:
@@ -384,7 +392,7 @@ class CommandOutputProvider(ContentProvider):
                 yield self._content
             else:
                 args = self.create_args()
-                with self.ctx.connect(*args, env=self.create_env(), timeout=self.timeout) as s:
+                with self.ctx.connect(*args, env=self._env, timeout=self.timeout) as s:
                     yield s
         except StopIteration:
             raise
@@ -397,7 +405,7 @@ class CommandOutputProvider(ContentProvider):
         fs.ensure_path(os.path.dirname(dst))
         if args:
             timeout = self.timeout or self.ctx.timeout
-            p = Pipeline(*args, timeout=timeout, signum=self.signum, env=self.create_env())
+            p = Pipeline(*args, timeout=timeout, signum=self.signum, env=self._env)
             return p.write(dst, keep_rc=self.keep_rc)
 
     def __repr__(self):
@@ -405,11 +413,13 @@ class CommandOutputProvider(ContentProvider):
 
 
 class ContainerProvider(CommandOutputProvider):
-    def __init__(self, cmd_path, ctx, image=None, args=None, split=True, keep_rc=False, ds=None, timeout=None, inherit_env=None, signum=None):
+    def __init__(self, cmd_path, ctx, image=None, args=None, split=True, keep_rc=False, ds=None, timeout=None,
+                 inherit_env=None, override_env=None, signum=None):
         # cmd  = "<podman|docker> exec container_id command"
         # path = "<podman|docker> exec container_id cat path"
         self.image = image
-        super(ContainerProvider, self).__init__(cmd_path, ctx, "insights_containers", args, split, keep_rc, ds, timeout, inherit_env, signum)
+        super(ContainerProvider, self).__init__(cmd_path, ctx, "insights_containers", args, split, keep_rc, ds, timeout,
+                                                inherit_env, override_env, signum)
 
 
 class ContainerFileProvider(ContainerProvider):
@@ -762,28 +772,33 @@ class simple_command(object):
             CalledProcessError is raised. If None, timeout is infinite.
         inherit_env (list): The list of environment variables to inherit from the
             calling process when the command is invoked.
+        override_env (dict): A dict of environment variables to override from the
+            calling process when the command is invoked.
 
     Returns:
         function: A datasource that returns the output of a command that takes
             no arguments
     """
-
-    def __init__(self, cmd, context=HostContext, deps=[], split=True, keep_rc=False, timeout=None, inherit_env=[], signum=None, **kwargs):
+    def __init__(self, cmd, context=HostContext, deps=None, split=True, keep_rc=False, timeout=None, inherit_env=None,
+                 override_env=None, signum=None, **kwargs):
+        deps = deps if deps is not None else []
         self.cmd = cmd
         self.context = context
         self.split = split
         self.raw = not split
         self.keep_rc = keep_rc
         self.timeout = timeout
-        self.inherit_env = inherit_env
+        self.inherit_env = inherit_env if inherit_env is not None else []
+        self.override_env = override_env if override_env is not None else dict()
         self.signum = signum
         self.__name__ = self.__class__.__name__
         datasource(self.context, *deps, raw=self.raw, **kwargs)(self)
 
     def __call__(self, broker):
         ctx = broker[self.context]
-        return CommandOutputProvider(self.cmd, ctx, split=self.split,
-                keep_rc=self.keep_rc, ds=self, timeout=self.timeout, inherit_env=self.inherit_env, signum=self.signum)
+        return CommandOutputProvider(self.cmd, ctx, split=self.split, keep_rc=self.keep_rc, ds=self,
+                                     timeout=self.timeout, inherit_env=self.inherit_env, override_env=self.override_env,
+                                     signum=self.signum)
 
 
 class command_with_args(object):
@@ -807,13 +822,15 @@ class command_with_args(object):
             CalledProcessError is raised. If None, timeout is infinite.
         inherit_env (list): The list of environment variables to inherit from the
             calling process when the command is invoked.
+        override_env (dict): A dict of environment variables to override from the
+            calling process when the command is invoked.
 
     Returns:
         function: A datasource that returns the output of a command that takes
             specified arguments passed by the provider.
     """
-
-    def __init__(self, cmd, provider, context=HostContext, deps=None, split=True, keep_rc=False, timeout=None, inherit_env=None, signum=None, **kwargs):
+    def __init__(self, cmd, provider, context=HostContext, deps=None, split=True, keep_rc=False, timeout=None,
+                 inherit_env=None, override_env=None, signum=None, **kwargs):
         deps = deps if deps is not None else []
         self.cmd = cmd
         self.provider = provider
@@ -823,6 +840,7 @@ class command_with_args(object):
         self.keep_rc = keep_rc
         self.timeout = timeout
         self.inherit_env = inherit_env if inherit_env is not None else []
+        self.override_env = override_env if override_env is not None else dict()
         self.signum = signum
         self.__name__ = self.__class__.__name__
         datasource(self.provider, self.context, *deps, raw=self.raw, **kwargs)(self)
@@ -831,11 +849,13 @@ class command_with_args(object):
         source = broker[self.provider]
         ctx = broker[self.context]
         if not isinstance(source, (str, tuple)):
-            raise ContentException("The provider can only be a single string or a tuple of strings, but got '%s'." % source)
+            raise ContentException("The provider can only be a single string or a tuple of strings, but got '%s'." %
+                                   source)
         try:
             self.cmd = self.cmd % source
-            return CommandOutputProvider(self.cmd, ctx, split=self.split,
-                    keep_rc=self.keep_rc, ds=self, timeout=self.timeout, inherit_env=self.inherit_env, signum=self.signum)
+            return CommandOutputProvider(self.cmd, ctx, split=self.split, keep_rc=self.keep_rc, ds=self,
+                                         timeout=self.timeout, inherit_env=self.inherit_env,
+                                         override_env=self.override_env, signum=self.signum)
         except ContentException as ce:
             log.debug(ce)
         except Exception:
@@ -869,14 +889,16 @@ class foreach_execute(object):
             CalledProcessError is raised. If None, timeout is infinite.
         inherit_env (list): The list of environment variables to inherit from the
             calling process when the command is invoked.
-
+        override_env (dict): A dict of environment variables to override from the
+            calling process when the command is invoked.
 
     Returns:
         function: A datasource that returns a list of outputs for each command
             created by substituting each element of provider into the cmd template.
     """
-
-    def __init__(self, provider, cmd, context=HostContext, deps=[], split=True, keep_rc=False, timeout=None, inherit_env=[], signum=None, **kwargs):
+    def __init__(self, provider, cmd, context=HostContext, deps=None, split=True, keep_rc=False, timeout=None,
+                 inherit_env=None, override_env=None, signum=None, **kwargs):
+        deps = deps if deps is not None else []
         self.provider = provider
         self.cmd = cmd
         self.context = context
@@ -884,7 +906,8 @@ class foreach_execute(object):
         self.raw = not split
         self.keep_rc = keep_rc
         self.timeout = timeout
-        self.inherit_env = inherit_env
+        self.inherit_env = inherit_env if inherit_env is not None else []
+        self.override_env = override_env if override_env is not None else dict()
         self.signum = signum
         self.__name__ = self.__class__.__name__
         datasource(self.provider, self.context, *deps, multi_output=True, raw=self.raw, **kwargs)(self)
@@ -900,9 +923,9 @@ class foreach_execute(object):
         for e in source:
             try:
                 the_cmd = self.cmd % e
-                cop = CommandOutputProvider(the_cmd, ctx, args=e,
-                        split=self.split, keep_rc=self.keep_rc, ds=self,
-                        timeout=self.timeout, inherit_env=self.inherit_env, signum=self.signum)
+                cop = CommandOutputProvider(the_cmd, ctx, args=e, split=self.split, keep_rc=self.keep_rc, ds=self,
+                                            timeout=self.timeout, inherit_env=self.inherit_env,
+                                            override_env=self.override_env, signum=self.signum)
                 result.append(cop)
             except ContentException as ce:
                 log.debug(ce)
@@ -1015,9 +1038,10 @@ class container_execute(foreach_execute):
                 cmd = self.cmd % args if args else self.cmd
                 # the_cmd = <podman|docker> exec container_id cmd
                 the_cmd = "/usr/bin/%s exec %s %s" % (engine, cid, cmd)
-                ccp = ContainerCommandProvider(the_cmd, ctx, image=image, args=e,
-                        split=self.split, keep_rc=self.keep_rc, ds=self,
-                        timeout=self.timeout, inherit_env=self.inherit_env, signum=self.signum)
+                ccp = ContainerCommandProvider(the_cmd, ctx, image=image, args=e, split=self.split,
+                                               keep_rc=self.keep_rc, ds=self, timeout=self.timeout,
+                                               inherit_env=self.inherit_env, override_env=self.override_env,
+                                               signum=self.signum)
                 result.append(ccp)
             except:
                 log.debug(traceback.format_exc())
@@ -1049,8 +1073,10 @@ class container_collect(foreach_execute):
         function: A datasource that returns a list of file contents created by
             substituting each element of provider into the path template.
     """
-    def __init__(self, provider, path=None, context=HostContext, deps=[], split=True, keep_rc=False, timeout=None, inherit_env=[], signum=None, **kwargs):
-        super(container_collect, self).__init__(provider, path, context, deps, split, keep_rc, timeout, inherit_env, signum, **kwargs)
+    def __init__(self, provider, path=None, context=HostContext, deps=None, split=True, keep_rc=False, timeout=None,
+                 inherit_env=None, override_env=None, signum=None, **kwargs):
+        super(container_collect, self).__init__(provider, path, context, deps, split, keep_rc, timeout, inherit_env,
+                                                override_env, signum, **kwargs)
 
     def __call__(self, broker):
         result = []
@@ -1073,9 +1099,10 @@ class container_collect(foreach_execute):
                 # e       = (<podman|docker>, container_id)
                 # the_cmd = <podman|docker> exec container_id cat path
                 the_cmd = ("/usr/bin/%s exec %s cat " % e) + path
-                cfp = ContainerFileProvider(the_cmd, ctx, image=image, args=None,
-                        split=self.split, keep_rc=self.keep_rc, ds=self,
-                        timeout=self.timeout, inherit_env=self.inherit_env, signum=self.signum)
+                cfp = ContainerFileProvider(the_cmd, ctx, image=image, args=None, split=self.split,
+                                            keep_rc=self.keep_rc, ds=self, timeout=self.timeout,
+                                            inherit_env=self.inherit_env, override_env=self.override_env,
+                                            signum=self.signum)
                 result.append(cfp)
             except:
                 log.debug(traceback.format_exc())
