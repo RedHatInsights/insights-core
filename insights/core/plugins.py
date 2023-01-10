@@ -34,6 +34,7 @@ from pprint import pformat
 from six import StringIO
 
 from insights.core import dr
+from insights.core.context import HostContext
 from insights.util.subproc import CalledProcessError
 from insights import settings
 
@@ -97,10 +98,11 @@ class datasource(PluginType):
 
     def invoke(self, broker):
         # Grab the timeout from the decorator, or use the default of 120.
-        self.timeout = getattr(self, "timeout", 120)
 
-        signal.signal(signal.SIGALRM, self._handle_timeout)
-        signal.alarm(self.timeout)
+        if HostContext in broker:
+            self.timeout = getattr(self, "timeout", 120)
+            signal.signal(signal.SIGALRM, self._handle_timeout)
+            signal.alarm(self.timeout)
         try:
             return self.component(broker)
         except ContentException as ce:
@@ -122,7 +124,8 @@ class datasource(PluginType):
                 broker.add_exception(reg_spec, te, te_tb)
             raise dr.SkipComponent()
         finally:
-            signal.alarm(0)
+            if HostContext in broker:
+                signal.alarm(0)
 
 
 class parser(PluginType):

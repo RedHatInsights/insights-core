@@ -1,6 +1,8 @@
 import time
 
+from insights.core import dr
 from insights.core.dr import run
+from insights.core.context import HostContext, SosArchiveContext
 from insights.core.plugins import TimeoutException, datasource, make_info, rule
 from insights.core.spec_factory import DatasourceProvider, RegistryPoint, SpecSet, foreach_execute
 
@@ -59,13 +61,17 @@ def timeout_foreach_datasource_hit(foreach_ds_to_1):
 
 
 def test_timeout_datasource_no_hit():
-    broker = run(timeout_datasource_no_timeout)
+    broker = dr.Broker()
+    broker[HostContext] = HostContext
+    broker = run(timeout_datasource_no_timeout, broker=broker)
     assert timeout_datasource_no_timeout in broker
     assert Specs.spec_ds_timeout_2 not in broker.exceptions
 
 
 def test_timeout_datasource_hit_def():
-    broker = run(timeout_datasource_hit)
+    broker = dr.Broker()
+    broker[HostContext] = HostContext
+    broker = run(timeout_datasource_hit, broker=broker)
     assert timeout_datasource_hit in broker
     assert Specs.spec_ds_timeout_1 in broker.exceptions
     exs = broker.exceptions[Specs.spec_ds_timeout_1]
@@ -73,8 +79,30 @@ def test_timeout_datasource_hit_def():
 
 
 def test_timeout_foreach_datasource_hit_def():
-    broker = run(timeout_foreach_datasource_hit)
+    broker = dr.Broker()
+    broker[HostContext] = HostContext
+    broker = run(timeout_foreach_datasource_hit, broker=broker)
     assert timeout_foreach_datasource_hit in broker
     assert Specs.spec_foreach_ds_timeout_1 in broker.exceptions
     exs = broker.exceptions[Specs.spec_foreach_ds_timeout_1]
     assert [ex for ex in exs if isinstance(ex, TimeoutException) and str(ex) == "Datasource spec insights.tests.datasources.test_datasource_timeout.foreach_ds_timeout_1 timed out after 1 seconds!"]
+
+
+def test_not_hostcontext_timeout_datasource_hit_def():
+    broker = dr.Broker()
+    broker[SosArchiveContext] = SosArchiveContext
+    broker = run(timeout_datasource_hit, broker=broker)
+    assert timeout_datasource_hit in broker
+    assert Specs.spec_ds_timeout_1 not in broker.exceptions
+    exs = broker.exceptions[Specs.spec_ds_timeout_1]
+    assert not [ex for ex in exs if isinstance(ex, TimeoutException) and str(ex) != "Datasource spec insights.tests.datasources.test_datasource_timeout.TestSpecs.spec_ds_timeout_1 timed out after 1 seconds!"]
+
+
+def test_not_hostcontext_timeout_foreach_datasource_hit_def():
+    broker = dr.Broker()
+    broker[SosArchiveContext] = SosArchiveContext
+    broker = run(timeout_foreach_datasource_hit, broker=broker)
+    assert timeout_foreach_datasource_hit in broker
+    assert Specs.spec_foreach_ds_timeout_1 not in broker.exceptions
+    exs = broker.exceptions[Specs.spec_foreach_ds_timeout_1]
+    assert not [ex for ex in exs if isinstance(ex, TimeoutException) and str(ex) != "Datasource spec insights.tests.datasources.test_datasource_timeout.foreach_ds_timeout_1 timed out after 1 seconds!"]
