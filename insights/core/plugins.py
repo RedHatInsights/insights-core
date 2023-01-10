@@ -98,9 +98,9 @@ class datasource(PluginType):
 
     def invoke(self, broker):
         # Grab the timeout from the decorator, or use the default of 120.
-        self.timeout = getattr(self, "timeout", 120)
 
         if HostContext in broker:
+            self.timeout = getattr(self, "timeout", 120)
             signal.signal(signal.SIGALRM, self._handle_timeout)
             signal.alarm(self.timeout)
         try:
