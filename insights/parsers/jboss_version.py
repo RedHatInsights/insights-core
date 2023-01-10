@@ -3,10 +3,12 @@ JBoss version
 =============
 Provide information about the versions of all running Jboss on a system.
 """
-from .. import Parser, parser
-from ..specs import Specs
+
 import json
-from insights.tests import context_wrap
+
+from insights import Parser, parser
+from insights.specs import Specs
+from insights.core.context import Context
 
 
 @parser(Specs.jboss_version)
@@ -118,7 +120,9 @@ class JbossRuntimeVersions(Parser):
         self._versions = []
         jboss_version_dict = json.loads(' '.join(content))
         for j_path, version_content in jboss_version_dict.items():
-            self._versions.append(JbossVersion(context_wrap(version_content, path=j_path)))
+            lines = version_content.strip().splitlines()
+            new_context = Context(content=lines, path=j_path)
+            self._versions.append(JbossVersion(new_context))
         self._iterVersions = iter(self._versions)
 
     def __len__(self):
