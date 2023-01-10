@@ -673,7 +673,8 @@ class DefaultSpecs(Specs):
     yum_conf = simple_file("/etc/yum.conf")
     yum_list_available = simple_command("yum -C --noplugins list available", signum=signal.SIGTERM)
     yum_log = simple_file("/var/log/yum.log")
-    yum_repolist = simple_command("/usr/bin/yum -C --noplugins repolist", signum=signal.SIGTERM)
+    yum_repolist = simple_command("/usr/bin/yum -C --noplugins repolist", override_env={"LC_ALL": ""},
+                                  signum=signal.SIGTERM)
     yum_repos_d = glob_file("/etc/yum.repos.d/*.repo")
     yum_updates = yum_updates.yum_updates
     zipl_conf = simple_file("/etc/zipl.conf")
