@@ -1,9 +1,10 @@
-import pytest
 import doctest
+import pytest
+
+from insights.core.exceptions import ParseException, SkipException
 from insights.parsers import aws_instance_id
 from insights.parsers.aws_instance_id import AWSInstanceIdDoc, AWSInstanceIdPkcs7
 from insights.tests import context_wrap
-from insights.parsers import SkipException, ParseException
 
 AWS_CURL_ERROR = """
 curl: (7) couldn't connect to host

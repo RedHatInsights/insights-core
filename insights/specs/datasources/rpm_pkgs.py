@@ -1,13 +1,12 @@
 """
 Custom datasource for CVE-2021-35937, CVE-2021-35938, and CVE-2021-35939.
 """
-
 import grp
 import pwd
 import signal
 
 from insights.core.context import HostContext
-from insights.core.dr import SkipComponent
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider, simple_command
 from insights.specs import Specs

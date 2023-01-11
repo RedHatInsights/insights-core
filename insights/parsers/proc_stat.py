@@ -4,10 +4,10 @@ ProcStat - File ``/proc/stat``
 
 This parser reads the content of ``/proc/stat``.
 """
-
-from .. import parser, CommandParser, LegacyItemAccess
-
-from ..parsers import get_active_lines, ParseException
+from insights.core import CommandParser, LegacyItemAccess
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines
 from insights.specs import Specs
 
 

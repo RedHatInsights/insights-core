@@ -1,9 +1,10 @@
+import doctest
+import pytest
+
+from insights.core.exceptions import ParseException, SkipException
 from insights.parsers import smbstatus
 from insights.parsers.smbstatus import SmbstatusS, Smbstatusp, Statuslist
 from insights.tests import context_wrap
-from insights.parsers import ParseException, SkipException
-import pytest
-import doctest
 
 SMBSTATUSS = """
 

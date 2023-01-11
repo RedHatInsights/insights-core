@@ -1,6 +1,8 @@
 import doctest
 import pytest
-from insights.parsers import kernel_config, SkipException
+
+from insights.core.exceptions import SkipException
+from insights.parsers import kernel_config
 from insights.parsers.kernel_config import KernelConf
 from insights.tests import context_wrap
 

@@ -1,9 +1,10 @@
-from insights.parsers import SkipException
+import doctest
+import pytest
+
+from insights.core.exceptions import SkipException
 from insights.parsers import passenger_status
 from insights.parsers.passenger_status import PassengerStatus
 from insights.tests import context_wrap
-import pytest
-import doctest
 
 
 PASS_STATUS = """

@@ -2,10 +2,10 @@
 KTimerLockless - file ``/sys/kernel/ktimer_lockless_check``
 ===========================================================
 """
-
-from insights import parser, Parser
+from insights.core import Parser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.parsers import SkipException
 
 
 @parser(Specs.ktimer_lockless)

@@ -6,8 +6,10 @@ This parser reads the ``/proc/partitions`` file, which contains
 partition block allocation information.
 
 """
-from insights import Parser, parser
-from insights.parsers import SkipException, parse_delimited_table
+from insights.core import Parser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
+from insights.parsers import parse_delimited_table
 from insights.specs import Specs
 
 

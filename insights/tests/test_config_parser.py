@@ -1,8 +1,9 @@
-from insights.core import IniConfigFile, ConfigParser
-from insights.tests import context_wrap
-from insights.contrib.ConfigParser import NoOptionError
-from insights.parsers import SkipException
 import pytest
+
+from insights.contrib.ConfigParser import NoOptionError
+from insights.core import ConfigParser, IniConfigFile
+from insights.core.exceptions import SkipException
+from insights.tests import context_wrap
 
 # An example config file with a few tricks and traps for the parser
 CONFIG_FILE = """

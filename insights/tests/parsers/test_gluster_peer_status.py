@@ -1,6 +1,8 @@
 import doctest
 import pytest
-from insights.parsers import gluster_peer_status, SkipException
+
+from insights.core.exceptions import SkipException
+from insights.parsers import gluster_peer_status
 from insights.tests import context_wrap
 
 OUTPUT = """

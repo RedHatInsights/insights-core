@@ -1,10 +1,11 @@
 import json
-import tempfile
 import pytest
 import shutil
+import tempfile
+
 from mock.mock import Mock
 
-from insights.core.dr import SkipComponent
+from insights.core.exceptions import SkipComponent
 from insights.core.spec_factory import DatasourceProvider
 from insights.specs.datasources.ps import ps_eo_cmd, LocalSpecs, jboss_runtime_versions
 

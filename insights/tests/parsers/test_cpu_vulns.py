@@ -1,9 +1,10 @@
-from insights.parsers import SkipException
-from insights.tests import context_wrap
+import doctest
+import pytest
+
+from insights.core.exceptions import SkipException
 from insights.parsers import cpu_vulns
 from insights.parsers.cpu_vulns import CpuVulns
-import pytest
-import doctest
+from insights.tests import context_wrap
 
 INPUT_MELTDOWN = """
 Mitigation: PTI

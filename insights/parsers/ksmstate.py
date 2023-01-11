@@ -5,9 +5,9 @@ KSMState - file ``/sys/kernel/mm/ksm/run``
 Parser to get the kernel samepage merging state by reading the file
 ``/sys/kernel/mm/ksm/run``.
 """
-
-from insights import parser, Parser
-from insights.parsers import SkipException, ParseException
+from insights.core import Parser
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 

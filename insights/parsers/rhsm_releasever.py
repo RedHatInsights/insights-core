@@ -4,8 +4,9 @@ RHSM Release Version - ``file /var/lib/rhsm/cache/releasever.json``
 Parser Red Hat Subscription manager release info.
 
 """
-from .. import JSONParser, parser
-from insights.parsers import SkipException
+from insights.core import JSONParser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 

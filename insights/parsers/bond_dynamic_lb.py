@@ -26,10 +26,10 @@ Examples:
     'bond0'
 
 """
-
-from insights import Parser, parser
+from insights.core import Parser
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.parsers import ParseException, SkipException
 
 
 @parser(Specs.bond_dynamic_lb)

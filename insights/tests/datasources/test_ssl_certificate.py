@@ -1,8 +1,8 @@
 import pytest
 
-from insights.core.dr import SkipComponent
 from insights.combiners.httpd_conf import HttpdConfTree
 from insights.combiners.nginx_conf import NginxConfTree
+from insights.core.exceptions import SkipComponent
 from insights.parsers.httpd_conf import HttpdConf
 from insights.parsers.mssql_conf import MsSQLConf
 from insights.parsers.nginx_conf import NginxConfPEG

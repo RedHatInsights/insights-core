@@ -39,7 +39,7 @@ def ic_testmod(m, name=None, globs=None, verbose=None,
 
 
 def skip_exception_check(parser_obj, output_str=""):
-    from insights.parsers import SkipException
+    from insights.core.exceptions import SkipException
     from insights.tests import context_wrap
 
     with pytest.raises(SkipException) as ex:

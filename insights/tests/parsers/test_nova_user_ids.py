@@ -1,9 +1,9 @@
-from insights.parsers import nova_user_ids
-from insights.parsers import ParseException, SkipException
-from insights.tests import context_wrap
-
 import doctest
 import pytest
+
+from insights.core.exceptions import ParseException, SkipException
+from insights.parsers import nova_user_ids
+from insights.tests import context_wrap
 
 
 NOVA_UID = '''

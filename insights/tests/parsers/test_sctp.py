@@ -1,11 +1,9 @@
 import doctest
-
 import pytest
-from insights.parsers import ParseException, SkipException
+
+from insights.core.exceptions import ParseException, SkipException
 from insights.parsers import sctp
-from insights.parsers.sctp import SCTPEps
-from insights.parsers.sctp import SCTPAsc, SCTPAsc7
-from insights.parsers.sctp import SCTPSnmp
+from insights.parsers.sctp import SCTPAsc, SCTPAsc7, SCTPEps, SCTPSnmp
 from insights.tests import context_wrap
 
 SCTP_EPS_DETAILS = """

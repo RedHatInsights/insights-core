@@ -1,5 +1,7 @@
 import pytest
-from insights.parsers import getsebool, SkipException
+
+from insights.core.exceptions import SkipException
+from insights.parsers import getsebool
 from insights.tests import context_wrap
 
 

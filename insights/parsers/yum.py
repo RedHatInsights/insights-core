@@ -9,9 +9,10 @@ This module contains the classes that parse the output of the commands
 YumRepoList - command ``yum -C --noplugins repolist``
 -----------------------------------------------------
 """
-
-from insights import parser, CommandParser
-from insights.parsers import SkipException, parse_fixed_table, ParseException
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import parser
+from insights.parsers import parse_fixed_table
 from insights.specs import Specs
 
 eus = [

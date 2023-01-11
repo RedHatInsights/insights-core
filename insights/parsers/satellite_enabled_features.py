@@ -18,9 +18,9 @@ Examples:
     >>> 'dns' in satellite_features
     False
 """
-
-from insights import parser, CommandParser
-from insights.parsers import SkipException
+from insights.core import CommandParser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 

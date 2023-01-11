@@ -1,9 +1,10 @@
+import doctest
+import pytest
+
+from insights.core.exceptions import ParseException, SkipException
 from insights.parsers import fcoeadm_i
-from insights.parsers import SkipException, ParseException
 from insights.parsers.fcoeadm_i import FcoeadmI
 from insights.tests import context_wrap
-import pytest
-import doctest
 
 FCOEADM_I_57810 = """
         Description:      NetXtreme II BCM57810 10 Gigabit Ethernet

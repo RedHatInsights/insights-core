@@ -1,9 +1,10 @@
-from insights.parsers import SkipException
+import doctest
+import pytest
+
+from insights.core.exceptions import SkipException
 from insights.parsers import ovs_appctl_fdb_show_bridge
 from insights.parsers.ovs_appctl_fdb_show_bridge import OVSappctlFdbShowBridge
 from insights.tests import context_wrap
-import doctest
-import pytest
 
 
 FDB_SHOW_BR_INT = """

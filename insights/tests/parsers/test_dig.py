@@ -1,7 +1,8 @@
 import doctest
 import pytest
 
-from insights.parsers import dig, SkipException
+from insights.core.exceptions import SkipException
+from insights.parsers import dig
 from insights.parsers.dig import Dig, DigDnssec, DigEdns, DigNoedns
 from insights.tests import context_wrap
 

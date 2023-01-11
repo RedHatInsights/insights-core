@@ -1,8 +1,10 @@
-from insights.parsers import ParseException, SkipException, subscription_manager
+import doctest
+import pytest
+
+from insights.core.exceptions import ParseException, SkipException
+from insights.parsers import subscription_manager
 from insights.parsers.subscription_manager import SubscriptionManagerFacts
 from insights.tests import context_wrap
-import pytest
-import doctest
 
 INPUT_NORMAL_1 = """
 aws_instance_id: 567890567890

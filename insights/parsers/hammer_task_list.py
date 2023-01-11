@@ -50,11 +50,13 @@ Examples:
     >>> error_tasks[-1]['Task errors']
     '500 Internal Server Error'
 """
-
-from insights import parser, CommandParser
-from insights.parsers import keyword_search, SkipException
-from insights.specs import Specs
 import csv
+
+from insights.core import CommandParser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
+from insights.parsers import keyword_search
+from insights.specs import Specs
 
 
 @parser(Specs.hammer_task_list)

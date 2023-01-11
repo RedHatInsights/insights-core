@@ -1,6 +1,7 @@
 import pytest
+
+from insights.core.exceptions import ParseException
 from insights.parsers.yumlog import YumLog
-from insights.parsers import ParseException
 from insights.tests import context_wrap
 
 OKAY = """

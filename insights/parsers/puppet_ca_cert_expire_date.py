@@ -17,11 +17,10 @@ Examples::
     datetime.datetime(2035, 12, 4, 7, 4, 5)
 
 """
-
-from insights import parser
-from insights.specs import Specs
-from insights.parsers import SkipException
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
 from insights.parsers.ssl_certificate import CertificateInfo
+from insights.specs import Specs
 
 
 @parser(Specs.puppet_ca_cert_expire_date)

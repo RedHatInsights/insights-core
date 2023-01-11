@@ -1,9 +1,10 @@
 import doctest
 import pytest
 
-from insights.tests import context_wrap
-from insights.parsers import libssh_config, SkipException
+from insights.core.exceptions import SkipException
+from insights.parsers import libssh_config
 from insights.parsers.libssh_config import LibsshConfig
+from insights.tests import context_wrap
 
 CLIENT_CONFIG = """
 # Parse system-wide crypto configuration file

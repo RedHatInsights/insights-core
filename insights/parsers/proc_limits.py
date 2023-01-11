@@ -6,9 +6,10 @@ Parser for parsing the the ``limits`` file under special ``/proc/<PID>``
 directory.
 
 """
-
-from .. import Parser, parser, LegacyItemAccess
-from ..parsers import parse_fixed_table, ParseException
+from insights.core import LegacyItemAccess, Parser
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
+from insights.parsers import parse_fixed_table
 from insights.specs import Specs
 
 HEADER_SUBSTITUTE = [('Soft Limit', 'Soft_Limit'), ('Hard Limit', 'Hard_Limit')]
@@ -94,7 +95,7 @@ class ProcLimits(Parser):
         'seconds'
 
     Raises:
-        insights.parsers.ParseException: if the ``limits`` file is empty or
+        insights.core.exceptions.ParseException: if the ``limits`` file is empty or
             doesn't exist.
     """
 

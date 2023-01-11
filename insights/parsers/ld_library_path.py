@@ -5,10 +5,11 @@ LdLibraryPath - LD_LIBRARY_PATH of Users
 Parser for parsing the environment variable LD_LIBRARY_PATH of each user
 
 """
-
 from collections import namedtuple
-from insights import parser, Parser
-from insights.parsers import SkipException
+
+from insights.core import Parser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 LdLibraryPath = namedtuple('LdLibraryPath', ('user', 'path', 'raw'))

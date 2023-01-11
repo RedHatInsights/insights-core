@@ -5,10 +5,11 @@ SetupNamedChroot - file ``/usr/libexec/setup-named-chroot.sh``
 This module provides class ``SetupNamedChroot`` for parsing the output of file
 ``/usr/libexec/setup-named-chroot.sh``.
 """
-
-from insights import Parser, get_active_lines, parser
+from insights.core import Parser
+from insights.core.exceptions import SkipException
 from insights.core.filters import add_filter
-from insights.parsers import SkipException
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines
 from insights.specs import Specs
 
 add_filter(Specs.setup_named_chroot, ["ROOTDIR_MOUNT", "/"])

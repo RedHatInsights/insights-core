@@ -6,13 +6,13 @@ IpsecConf parser the file /etc/ipsec.conf about
 the configuration and control information
 for the Libreswan IPsec subsystem.
 """
-
 from collections import defaultdict
 
-from insights.specs import Specs
 from insights.core import CommandParser
-from .. import parser, get_active_lines
-from insights.parsers import SkipException
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines
+from insights.specs import Specs
 
 
 @parser(Specs.ipsec_conf)

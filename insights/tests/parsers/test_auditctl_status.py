@@ -1,7 +1,8 @@
-from insights.tests import context_wrap
-from insights.parsers.auditctl_status import AuditctlStatus
-from insights.parsers import ParseException
 import pytest
+
+from insights.core.exceptions import ParseException
+from insights.parsers.auditctl_status import AuditctlStatus
+from insights.tests import context_wrap
 
 NORMAL_AUDS_RHEL6 = """
 AUDIT_STATUS: enabled=1 flag=1 pid=1483 rate_limit=0 backlog_limit=8192 lost=3 backlog=0

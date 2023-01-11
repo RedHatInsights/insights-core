@@ -53,9 +53,10 @@ Examples:
     >>> zipl_info['global']['defaultauto']
     None
 """
-
-from .. import parser, Parser, get_active_lines, LegacyItemAccess
-from insights.parsers import ParseException
+from insights.core import LegacyItemAccess, Parser
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines
 from insights.specs import Specs
 
 
