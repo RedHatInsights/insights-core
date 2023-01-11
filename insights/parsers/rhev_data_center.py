@@ -3,9 +3,12 @@ rhev_data_center - datasource ``rhev_data_center``
 ==================================================
 """
 import json
+
 from re import compile as re_compile
-from insights import CommandParser, parser
-from insights.parsers import SkipException
+
+from insights.core import CommandParser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 

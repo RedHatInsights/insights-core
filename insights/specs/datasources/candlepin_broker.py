@@ -1,13 +1,13 @@
 """
 Custom datasources for candlepin broker.xml
 """
+from insights.components.satellite import IsSatellite
+from insights.core import ET
 from insights.core.context import HostContext
-from insights.core.dr import SkipComponent
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider, simple_file
 from insights.specs import Specs
-from insights.components.satellite import IsSatellite
-from insights.core import ET
 
 
 class LocalSpecs(Specs):

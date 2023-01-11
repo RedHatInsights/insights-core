@@ -1,7 +1,10 @@
 import doctest
 import pytest
-from insights.parsers import sys_module, SkipException
-from insights.parsers.sys_module import DMModUseBlkMq, SCSIModUseBlkMq, VHostNetZeroCopyTx, MaxLUNs, LpfcMaxLUNs, Ql2xMaxLUN, SCSIModMaxReportLUNs, Ql2xmqSupport, KernelCrashKexecPostNotifiers
+
+from insights.core.exceptions import SkipException
+from insights.parsers import sys_module
+from insights.parsers.sys_module import (DMModUseBlkMq, KernelCrashKexecPostNotifiers, LpfcMaxLUNs, MaxLUNs, Ql2xMaxLUN,
+                                         Ql2xmqSupport, SCSIModMaxReportLUNs, SCSIModUseBlkMq, VHostNetZeroCopyTx)
 from insights.tests import context_wrap
 
 

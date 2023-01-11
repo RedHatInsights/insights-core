@@ -17,8 +17,10 @@ IpcsSI - command ``ipcs -s -i {semaphore ID}``
 ----------------------------------------------
 
 """
-from insights import parser, get_active_lines, CommandParser
-from insights.parsers import parse_delimited_table, ParseException, SkipException
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines, parse_delimited_table
 from insights.specs import Specs
 
 

@@ -1,9 +1,9 @@
 import pytest
 
-from insights.specs import Specs
 from insights.core import filters
+from insights.core.exceptions import SkipComponent
+from insights.specs import Specs
 from insights.specs.datasources.kernel_module_list import kernel_module_filters
-from insights.core.dr import SkipComponent
 
 
 def setup_function(func):

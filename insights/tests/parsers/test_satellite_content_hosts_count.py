@@ -1,9 +1,9 @@
 import doctest
 import pytest
 
-from insights.parsers import (
-    satellite_content_hosts_count, SkipException, ParseException)
+from insights.core.exceptions import ParseException, SkipException
 from insights.core.plugins import ContentException
+from insights.parsers import satellite_content_hosts_count
 from insights.tests import context_wrap
 
 

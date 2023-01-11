@@ -1,10 +1,12 @@
 import pytest
+
 from mock.mock import patch
-from insights.core.dr import SkipComponent
-from insights.core.context import HostContext
-from insights.specs.datasources.httpd import httpd_cmds, httpd_on_nfs
-from insights.parsers.mount import ProcMounts
+
 from insights.combiners.ps import Ps
+from insights.core.context import HostContext
+from insights.core.exceptions import SkipComponent
+from insights.parsers.mount import ProcMounts
+from insights.specs.datasources.httpd import httpd_cmds, httpd_on_nfs
 from insights.tests import context_wrap
 
 

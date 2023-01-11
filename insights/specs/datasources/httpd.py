@@ -2,13 +2,14 @@
 Custom datasources related to ``httpd``
 """
 import json
-from insights.core.context import HostContext
-from insights.core.dr import SkipComponent
-from insights.core.plugins import datasource
-from insights.parsers.mount import ProcMounts
+
 from insights.combiners.ps import Ps
-from insights.specs.datasources import get_running_commands
+from insights.core.context import HostContext
+from insights.core.exceptions import SkipComponent
+from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider
+from insights.parsers.mount import ProcMounts
+from insights.specs.datasources import get_running_commands
 
 
 @datasource(Ps, HostContext)

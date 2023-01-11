@@ -21,10 +21,10 @@ Examples:
     >>> numa_cpus_obj.total_numa_node_cpus
     14
 """
-
-from insights import Parser, parser, LegacyItemAccess
+from insights.core import LegacyItemAccess, Parser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.parsers import SkipException
 
 
 @parser(Specs.numa_cpus)

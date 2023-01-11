@@ -1,8 +1,10 @@
-from insights.parsers import ipcs, ParseException, SkipException
+import doctest
+import pytest
+
+from insights.core.exceptions import ParseException, SkipException
+from insights.parsers import ipcs
 from insights.parsers.ipcs import IpcsS, IpcsSI, IpcsM, IpcsMP
 from insights.tests import context_wrap
-import pytest
-import doctest
 
 IPCS_S = """
 ------ Semaphore Arrays --------

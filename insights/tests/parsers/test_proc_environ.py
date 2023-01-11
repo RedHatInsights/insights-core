@@ -1,8 +1,10 @@
-from insights.parsers.proc_environ import ProcEnviron, OpenshiftFluentdEnviron, OpenshiftRouterEnviron
-from insights.tests import context_wrap
-from insights.parsers import proc_environ, ParseException, SkipException
 import doctest
 import pytest
+
+from insights.core.exceptions import ParseException, SkipException
+from insights.parsers import proc_environ
+from insights.parsers.proc_environ import ProcEnviron, OpenshiftFluentdEnviron, OpenshiftRouterEnviron
+from insights.tests import context_wrap
 
 PROC_ENVIRON_EMPTY = """
 """.strip()

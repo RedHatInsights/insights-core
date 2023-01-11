@@ -1,9 +1,9 @@
 import doctest
-
-from insights.parsers import virt_who_conf
-from insights.parsers import SkipException
-from insights.tests import context_wrap
 import pytest
+
+from insights.core.exceptions import SkipException
+from insights.parsers import virt_who_conf
+from insights.tests import context_wrap
 
 VWHO_CONF = """
 ## This is a template for virt-who global configuration files. Please see

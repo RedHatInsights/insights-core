@@ -1,9 +1,10 @@
-from insights.tests import context_wrap
-from insights.parsers.nmcli import NmcliDevShow, NmcliDevShowSos
-from insights.parsers.nmcli import NmcliConnShow
-from insights.parsers import nmcli, SkipException
 import doctest
 import pytest
+
+from insights.core.exceptions import SkipException
+from insights.parsers import nmcli
+from insights.parsers.nmcli import NmcliConnShow, NmcliDevShow, NmcliDevShowSos
+from insights.tests import context_wrap
 
 NMCLI_SHOW = """
 GENERAL.DEVICE:                         em3

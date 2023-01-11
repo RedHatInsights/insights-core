@@ -2,8 +2,10 @@
 PcsQuorumStatus - Commands ``pcs quorum status``
 ================================================
 """
-from insights import parser, CommandParser
-from insights.parsers import SkipException, ParseException, parse_fixed_table
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import parser
+from insights.parsers import parse_fixed_table
 from insights.specs import Specs
 
 

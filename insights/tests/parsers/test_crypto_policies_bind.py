@@ -1,7 +1,8 @@
-from insights.tests import context_wrap
-from insights.parsers.crypto_policies import CryptoPoliciesBind
-from insights.parsers import SkipException
 import pytest
+
+from insights.core.exceptions import SkipException
+from insights.parsers.crypto_policies import CryptoPoliciesBind
+from insights.tests import context_wrap
 
 CONFIG = """
 disable-algorithms "." {

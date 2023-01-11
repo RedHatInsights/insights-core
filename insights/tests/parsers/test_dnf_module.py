@@ -1,6 +1,8 @@
 import doctest
 import pytest
-from insights.parsers import dnf_module, SkipException
+
+from insights.core.exceptions import SkipException
+from insights.parsers import dnf_module
 from insights.parsers.dnf_module import DnfModuleList, DnfModuleInfo
 from insights.tests import context_wrap
 

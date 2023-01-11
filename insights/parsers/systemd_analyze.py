@@ -4,9 +4,10 @@ SystemdAnalyzeBlame - command ``systemd-analyze blame``
 
 This module parses the output of command ``systemd-analyze blame``.
 """
+from insights.core import CommandParser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights import CommandParser, parser
-from insights.parsers import SkipException
 
 
 @parser(Specs.systemd_analyze_blame)

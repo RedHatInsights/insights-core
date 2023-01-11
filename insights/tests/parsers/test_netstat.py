@@ -1,7 +1,8 @@
 import doctest
-
 import pytest
-from insights.parsers import netstat, SkipException, ParseException
+
+from insights.core.exceptions import ParseException, SkipException
+from insights.parsers import netstat
 from insights.parsers.netstat import Netstat, NetstatAGN, NetstatS, Netstat_I, SsTULPN, SsTUPNA, ProcNsat
 from insights.tests import context_wrap
 

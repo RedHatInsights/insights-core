@@ -36,8 +36,10 @@ All these parsers are based on a shared class which processes the JSON
 information into a dictionary.
 """
 import json
-from insights import JSONParser, parser, CommandParser, LegacyItemAccess
-from insights.parsers import ParseException, SkipException
+
+from insights.core import CommandParser, JSONParser, LegacyItemAccess
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 

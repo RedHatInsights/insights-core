@@ -33,10 +33,9 @@ Examples:
     >>> kconfig.kconf_file
     'config-3.10.0-327.28.3.rt56.235.el7.x86_64'
 """
-
-
-from insights import Parser, parser
-from insights.parsers import SkipException
+from insights.core import Parser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
 from insights.parsers import split_kv_pairs
 from insights.specs import Specs
 

@@ -1,9 +1,9 @@
 import doctest
 import pytest
 
-from insights.parsers import (
-    satellite_postgresql_query, ParseException, SkipException)
+from insights.core.exceptions import ParseException, SkipException
 from insights.core.plugins import ContentException
+from insights.parsers import satellite_postgresql_query
 from insights.tests import context_wrap
 
 

@@ -6,8 +6,10 @@ Shared parsers for parsing output of the ``sapcontrol [option]`` commands.
 SAPControlSystemUpdateList- command ``sapcontrol -nr <NR> -function GetSystemUpdateList``
 -----------------------------------------------------------------------------------------
 """
-from insights import parser, CommandParser
-from insights.parsers import SkipException, ParseException, parse_delimited_table
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import parser
+from insights.parsers import parse_delimited_table
 from insights.specs import Specs
 
 

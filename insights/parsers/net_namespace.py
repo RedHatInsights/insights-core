@@ -20,9 +20,10 @@ Examples:
     >>> len(netns_obj.netns_list)
     3
 """
-
-from insights import Parser, parser, get_active_lines
-from insights.parsers import SkipException
+from insights.core import Parser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines
 from insights.specs import Specs
 
 

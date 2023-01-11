@@ -1,6 +1,8 @@
 import doctest
 import pytest
-from insights.parsers import ssh_client_config as scc, SkipException
+
+from insights.core.exceptions import SkipException
+from insights.parsers import ssh_client_config as scc
 from insights.tests import context_wrap
 
 SSH_CONFIG_INPUT = """

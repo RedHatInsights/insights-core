@@ -1,7 +1,8 @@
 import datetime
 import pytest
 
-from insights.core import YAMLParser, ParseException, SkipException
+from insights.core import YAMLParser
+from insights.core.exceptions import ParseException, SkipException
 from insights.tests import context_wrap
 
 

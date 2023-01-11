@@ -1,9 +1,11 @@
-import pytest
 import doctest
+import pytest
 
 from datetime import datetime
+
+from insights.core.exceptions import SkipException
+from insights.parsers import zdump_v
 from insights.tests import context_wrap
-from insights.parsers import zdump_v, SkipException
 
 NORMAL_OUTPUT = '''
 /etc/localtime  -9223372036854689408 = NULL

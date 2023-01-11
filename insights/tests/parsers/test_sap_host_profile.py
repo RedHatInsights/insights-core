@@ -1,8 +1,10 @@
-from insights.parsers import sap_host_profile, SkipException
-from insights.parsers.sap_host_profile import SAPHostProfile
-from insights.tests import context_wrap
 import doctest
 import pytest
+
+from insights.core.exceptions import SkipException
+from insights.parsers import sap_host_profile
+from insights.parsers.sap_host_profile import SAPHostProfile
+from insights.tests import context_wrap
 
 HOST_PROFILE_DOC = """
 SAPSYSTEMNAME = SAP

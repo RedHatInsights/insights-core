@@ -21,8 +21,10 @@ available in two formats:
   a given field, given by the subclass.
 
 """
-from insights import CommandParser, parser
-from insights.parsers import SkipException, parse_fixed_table
+from insights.core import CommandParser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
+from insights.parsers import parse_fixed_table
 from insights.specs import Specs
 
 

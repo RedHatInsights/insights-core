@@ -3,8 +3,10 @@ UpdateInfo - command ``yum updateinfo list -C``
 ===============================================
 Provides a list of available advisories
 """
-from insights import CommandParser, parser
-from insights.parsers import parse_delimited_table, SkipException
+from insights.core import CommandParser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
+from insights.parsers import parse_delimited_table
 from insights.specs import Specs
 
 

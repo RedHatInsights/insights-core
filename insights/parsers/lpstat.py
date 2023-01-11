@@ -8,10 +8,10 @@ LpstatPrinters - command ``/usr/bin/lpstat -p``
 
 LpstatProtocol - command ``/usr/bin/lpstat -v``
 """
-
-from .. import parser, CommandParser
+from insights.core import CommandParser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.parsers import SkipException
 
 # Printer states
 PRINTER_STATUS_IDLE = 'IDLE'

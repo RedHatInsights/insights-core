@@ -1,7 +1,8 @@
+import pytest
+
+from insights.core.exceptions import ParseException
 from insights.parsers.proc_limits import HttpdLimits, MysqldLimits, OvsVswitchdLimits
 from insights.tests import context_wrap
-from insights.parsers import ParseException
-import pytest
 
 PROC_LIMITS_ERR = """
 cat: /proc/1100/limits: No such file or directory

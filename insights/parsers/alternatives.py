@@ -4,7 +4,7 @@ Alternatives - command ``/usr/bin/alternatives`` output
 """
 
 from insights import parser, CommandParser
-from insights.core import ParseException
+from insights.core.exceptions import ParseException
 from insights.specs import Specs
 
 

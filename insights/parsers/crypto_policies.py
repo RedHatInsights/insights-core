@@ -18,10 +18,11 @@ CryptoPoliciesOpensshserver - file ``/etc/crypto-policies/back-ends/opensshserve
 CryptoPoliciesBind - file ``/etc/crypto-policies/back-ends/bind.config``
 ------------------------------------------------------------------------
 """
-
-from insights import Parser, parser, SysconfigOptions
+from insights.core import Parser, SysconfigOptions
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines
 from insights.specs import Specs
-from insights.parsers import SkipException, get_active_lines
 
 
 @parser(Specs.crypto_policies_config)

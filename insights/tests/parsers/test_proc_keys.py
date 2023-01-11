@@ -1,8 +1,10 @@
-from insights.parsers.proc_keys import ProcKeys
-from insights.parsers import proc_keys, SkipException
-from insights.tests import context_wrap
 import doctest
 import pytest
+
+from insights.core.exceptions import SkipException
+from insights.parsers import proc_keys
+from insights.parsers.proc_keys import ProcKeys
+from insights.tests import context_wrap
 
 PROC_KEYS = """
 009a2028 I--Q---   1 perm 3f010000  1000  1000 user     krb_ccache:primary: 12

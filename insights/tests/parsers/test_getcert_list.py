@@ -1,8 +1,8 @@
-from insights.tests import context_wrap
-from insights.parsers.getcert_list import CertList
-from insights.parsers import ParseException
-
 import pytest
+
+from insights.core.exceptions import ParseException
+from insights.parsers.getcert_list import CertList
+from insights.tests import context_wrap
 
 CERT_LIST_1 = """
 Number of certificates and requests being tracked: 8.

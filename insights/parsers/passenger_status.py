@@ -4,9 +4,10 @@ passenger-status command
 This module provides processing for the ``passenger-status`` command using the
 following parsers:
 """
-from insights.parsers import SkipException
+from insights.core import CommandParser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights import CommandParser, parser
 
 
 @parser(Specs.passenger_status)

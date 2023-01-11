@@ -1,7 +1,6 @@
-from insights.core.dr import SkipComponent
-from insights import rule
+from insights.core.exceptions import SkipComponent
+from insights.core.plugins import make_none, rule
 from insights.parsers.redhat_release import RedhatRelease
-from insights.core.plugins import make_none
 
 
 @rule(RedhatRelease)

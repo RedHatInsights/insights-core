@@ -4,7 +4,7 @@ AuthSelectCurrent - command ``authselect current``
 """
 from insights import parser
 from insights.core import CommandParser
-from insights.parsers import SkipException
+from insights.core.exceptions import SkipException
 from insights.specs import Specs
 
 

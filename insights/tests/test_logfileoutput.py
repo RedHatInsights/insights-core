@@ -1,10 +1,11 @@
 # -*- coding: UTF-8 -*-
-from insights.core import LogFileOutput
-from insights.parsers import ParseException
-from insights.tests import context_wrap
+import pytest
 
 from datetime import datetime
-import pytest
+
+from insights.core import LogFileOutput
+from insights.core.exceptions import ParseException
+from insights.tests import context_wrap
 
 
 class FakeMessagesClass(LogFileOutput):

@@ -16,10 +16,11 @@ SCTPAsc7 - file ``/proc/net/sctp/assocs`` on RHEL-7
 SCTPSnmp - file ``/proc/net/sctp/snmp``
 ---------------------------------------
 """
-
-from insights import Parser, parser
 from insights.components.rhel_version import IsRhel6, IsRhel7
-from insights.parsers import keyword_search, SkipException, ParseException
+from insights.core import Parser
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import parser
+from insights.parsers import keyword_search
 from insights.specs import Specs
 
 

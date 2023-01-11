@@ -1,8 +1,10 @@
-from insights.parsers import SkipException, subscription_manager_release
+import doctest
+import pytest
+
+from insights.core.exceptions import SkipException
+from insights.parsers import subscription_manager_release
 from insights.parsers.subscription_manager_release import SubscriptionManagerReleaseShow
 from insights.tests import context_wrap
-import pytest
-import doctest
 
 INPUT_NORMAL_1 = """
 Release: 7.2

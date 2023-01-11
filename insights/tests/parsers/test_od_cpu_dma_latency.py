@@ -1,10 +1,10 @@
 import doctest
 import pytest
+
+from insights.core.exceptions import SkipException
 from insights.parsers import od_cpu_dma_latency
 from insights.parsers.od_cpu_dma_latency import OdCpuDmaLatency
 from insights.tests import context_wrap
-from insights.parsers import SkipException
-
 
 CONTENT_OD_CPU_DMA_LATENCY = """
   2000000000
