@@ -1,8 +1,11 @@
 """
-SysFsCgroupMemory - Datasource ``sys_fs_cgroup_memory``
-=======================================================
+Memory controller information of cgroup - ``/sys/fs/cgroup/memeory``
+====================================================================
 
-This module provides processing for the ``sys_fs_cgroup_memory`` datasources.
+Parser included in this module is:
+
+SysFsCgroupUniqMemorySwappiness - Datasource ``sys_fs_cgroup_uniq_memory_swappiness``
+-------------------------------------------------------------------------------------
 """
 from collections import namedtuple
 
@@ -27,19 +30,22 @@ class SysFsCgroupUniqMemorySwappiness(Parser):
     Examples:
         >>> type(sys_fs_cgroup_uniq_memory_swappiness)
         <class 'insights.parsers.sys_fs_cgroup_memory_swappiness.SysFsCgroupUniqMemorySwappiness'>
-        >>> sys_fs_cgroup_uniq_memory_swappiness.data[0]
+        >>> sys_fs_cgroup_uniq_memory_swappiness.stats[0]
         MemorySwappiness(count=1, value=10)
-        >>> sys_fs_cgroup_uniq_memory_swappiness.data[0].count
+        >>> sys_fs_cgroup_uniq_memory_swappiness.stats[0].count
         1
-        >>> sys_fs_cgroup_uniq_memory_swappiness.data[1].value
+        >>> sys_fs_cgroup_uniq_memory_swappiness.stats[1].value
         60
+
+    Attributes:
+        stats (int): a list of ``MemorySwappiness`` objects
     """
 
     MemorySwappiness = namedtuple('MemorySwappiness', ['value', 'count'])
     """namedtuple: Structure to hold a line of ``sys_fs_cgroup_uniq_memory_swappiness`` datasource."""
 
     def parse_content(self, content):
-        self.data = []
+        self.stats = []
         for line in content:
             parts = line.split()
-            self.data.append(self.MemorySwappiness(int(parts[0]), int(parts[1])))
+            self.stats.append(self.MemorySwappiness(int(parts[0]), int(parts[1])))

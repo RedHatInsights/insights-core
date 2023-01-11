@@ -20,7 +20,7 @@ def sys_fs_cgroup_uniq_memory_swappiness(broker):
         60   66
 
     Returns:
-        str: Returns a multiline string in the format as ``value  count``.
+        str: Returns a multiline string in the format as ``value   count``.
 
     Raises:
         SkipComponent: When any exception occurs.

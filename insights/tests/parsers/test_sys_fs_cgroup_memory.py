@@ -10,8 +10,8 @@ UNIQ_MEMORY_SWAPPINESS = """
 def test_sys_fs_cgroup_uniq_memory_swappiness():
     items = SysFsCgroupUniqMemorySwappiness(context_wrap(UNIQ_MEMORY_SWAPPINESS))
     assert items is not None
-    assert len(items.data) == 2
-    assert items.data[0] == SysFsCgroupUniqMemorySwappiness.MemorySwappiness(
+    assert len(items.stats) == 2
+    assert items.stats[0] == SysFsCgroupUniqMemorySwappiness.MemorySwappiness(
         count=1,
         value=10)
-    assert items.data[1].value == 60
+    assert items.stats[1].value == 60
