@@ -119,7 +119,6 @@ class OSRelease(object):
             self._is_rhel = True
             self._product = RHEL_STR
         # else: Unknown OS Product
-        pass
 
     @property
     def is_rhel(self):

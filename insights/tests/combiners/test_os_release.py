@@ -42,14 +42,14 @@ RPMS_JSON_8_NG = '''
 {"name":"libacl", "epoch":"(none)", "version":"2.2.53", "release":"1.el8", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Sat 15 Dec 2018 05:44:36 AM CST, Key ID 199e2f91fd431d51"}
 {"name":"glibc", "epoch":"(none)", "version":"2.28", "release":"211.el8", "arch":"i686", "vendor":"RH, Inc.", "sigpgp":"RSA/SHA256, Mon 29 Aug 2022 04:12:26 PM CST, Key ID 199e2f91fd431d51"}
 {"name":"libgcc", "epoch":"(none)", "version":"8.5.0", "release":"15.el8", "arch":"i686", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Thu 21 Jul 2022 05:36:01 PM CST, Key ID 199e2f91fd431d51"}
-{"name":"bash", "epoch":"(none)", "version":"4.4.20", "release":"4.el8_6", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Mon 20 Jun 2022 09:20:51 PM CST, Key ID 199e2f91fd431d51"}
+{"name":"bash", "epoch":"(none)", "version":"4.4.20", "release":"4.el8_6", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Mon 20 Jun 2022 09:20:51 PM CST, Key ID 99e2f91fd431d51"}
 {"name":"libselinux", "epoch":"(none)", "version":"2.9", "release":"6.el8", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Mon 15 Aug 2022 08:55:11 PM CST, Key ID 09e2f91fd431d51"}
 {"name":"coreutils", "epoch":"(none)", "version":"8.30", "release":"13.el8", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Thu 16 Jun 2022 12:18:02 PM CST, Key ID 09e2f91fd431d51"}
 {"name":"firewalld", "epoch":"(none)", "version":"0.9.3", "release":"13.el8", "arch":"noarch", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Fri 25 Feb 2022 09:40:17 PM CST, Key ID 09e2f91fd431d51"}
 {"name":"filesystem", "epoch":"(none)", "version":"3.8", "release":"6.el8", "arch":"x86_64", "vendor":"RH, Inc.", "sigpgp":"RSA/SHA256, Mon 21 Jun 2021 07:17:43 PM CST, Key ID 199e2f91fd431d51"}
 {"name":"gmp", "epoch":"1", "version":"6.1.2", "release":"10.el8", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Fri 14 Jun 2019 04:58:39 PM CST, Key ID 199e2f91fd431d51"}
 {"name":"basesystem", "epoch":"(none)", "version":"11", "release":"5.el8", "arch":"noarch", "vendor":"RH, Inc.", "sigpgp":"RSA/SHA256, Sat 15 Dec 2018 05:49:21 AM CST, Key ID 09e2f91fd431d51"}
-{"name":"dmidecode", "epoch":"1", "version":"3.3", "release":"4.el8", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Mon 14 Mar 2022 02:13:06 PM CST, Key ID 199e2f91fd431d51"}
+{"name":"dmidecode", "epoch":"1", "version":"3.3", "release":"4.el8", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Mon 14 Mar 2022 02:13:06 PM CST, Key ID 99e2f91fd431d51"}
 '''.strip()
 
 REDHAT_RELEASE_86 = """
@@ -72,6 +72,16 @@ ID="rhel"
 OS_RELEASE_OL = """
 NAME="Oracle Linux Server"
 ID="ol"
+""".strip()
+
+REDHAT_RELEASE_UNKNOWN = """
+Test OS
+""".strip()
+
+OS_RELEASE_UNKNOWN = """
+NAME="Test OS"
+ID="test"
+PRETTY_NAME="Test OS"
 """.strip()
 
 
@@ -156,5 +166,12 @@ def test_not_rhel():
     osr = OsRelease(context_wrap(OS_RELEASE_RH))
     uname = Uname(context_wrap(UNAME_86))
     result = OSRelease(rpms, rhr, osr, uname)
+    assert result.is_rhel is False
+    assert result.product == "Unknown"
+
+    # NON-RHEL: NO rpms, both os-release  and redhat-release are NG
+    rhr = RedhatRelease(context_wrap(REDHAT_RELEASE_UNKNOWN))
+    osr = OsRelease(context_wrap(OS_RELEASE_UNKNOWN))
+    result = OSRelease(None, rhr, osr, None)
     assert result.is_rhel is False
     assert result.product == "Unknown"
