@@ -5,9 +5,11 @@ FindmntPropagation - command ``findmnt -lo+PROPAGATION``
 This module provides status of propagation flag of filesystems using the output
 of command ``findmnt -lo+PROPAGATION``.
 """
+from insights.core import CommandParser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
+from insights.parsers import keyword_search, parse_fixed_table
 from insights.specs import Specs
-from insights import CommandParser, parser
-from insights.parsers import keyword_search, parse_fixed_table, SkipException
 
 
 @parser(Specs.findmnt_lo_propagation)

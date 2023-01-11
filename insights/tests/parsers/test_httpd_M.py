@@ -1,9 +1,10 @@
+import doctest
+import pytest
+
+from insights.core.exceptions import ParseException
 from insights.parsers import httpd_M
 from insights.parsers.httpd_M import HttpdM
 from insights.tests import context_wrap
-from insights.parsers import ParseException
-import pytest
-import doctest
 
 HTTPD_M_RHEL6 = """
 httpd.event: apr_sockaddr_info_get() failed for liuxc-rhel6-apache

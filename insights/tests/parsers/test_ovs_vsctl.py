@@ -1,9 +1,10 @@
-from insights.parsers import SkipException
+import doctest
+import pytest
+
+from insights.core.exceptions import SkipException
 from insights.parsers import ovs_vsctl
 from insights.parsers.ovs_vsctl import OVSvsctlListBridge
 from insights.tests import context_wrap
-import doctest
-import pytest
 
 OVS_VSCTL_LIST_BRIDGES_ALL = """
 _uuid               : xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx

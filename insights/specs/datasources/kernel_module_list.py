@@ -1,11 +1,10 @@
 """
 Custom datasources to get a list of modules to check the detailed module info.
 """
-
 from insights.core.context import HostContext
-from insights.core.dr import SkipComponent
-from insights.core.plugins import datasource
+from insights.core.exceptions import SkipComponent
 from insights.core.filters import get_filters
+from insights.core.plugins import datasource
 from insights.specs import Specs
 
 

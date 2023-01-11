@@ -1,8 +1,10 @@
-from insights.parsers import SkipException, sap_hdb_version
+import doctest
+import pytest
+
+from insights.core.exceptions import SkipException
+from insights.parsers import sap_hdb_version
 from insights.parsers.sap_hdb_version import HDBVersion
 from insights.tests import context_wrap
-import pytest
-import doctest
 
 HDB_VER_1 = """
 HDB version info:

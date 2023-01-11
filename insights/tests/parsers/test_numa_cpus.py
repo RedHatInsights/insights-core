@@ -1,6 +1,7 @@
 import doctest
 import pytest
-from insights.parsers import SkipException
+
+from insights.core.exceptions import SkipException
 from insights.parsers import numa_cpus
 from insights.parsers.numa_cpus import NUMACpus
 from insights.tests import context_wrap

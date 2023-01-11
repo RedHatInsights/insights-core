@@ -1,9 +1,10 @@
-from insights.parsers import SkipException
+import doctest
+import pytest
+
+from insights.core.exceptions import SkipException
 from insights.parsers import ovs_ofctl_dump_flows
 from insights.parsers.ovs_ofctl_dump_flows import OVSofctlDumpFlows
 from insights.tests import context_wrap
-import doctest
-import pytest
 
 
 OVS_FLOW_DUMPS = """

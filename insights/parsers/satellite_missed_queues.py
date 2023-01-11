@@ -2,9 +2,10 @@
 SatelliteMissedQueues - datasource ``satellite_missed_pulp_agent_queues``
 =========================================================================
 """
-from insights import parser, Parser
+from insights.core import Parser
+from insights.core.exceptions import SkipComponent
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights import SkipComponent
 
 
 @parser(Specs.satellite_missed_pulp_agent_queues)

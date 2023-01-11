@@ -33,8 +33,9 @@ Examples:
     None
 
 """
-from insights import parser, Parser
-from insights.parsers import ParseException
+from insights.core import Parser
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 

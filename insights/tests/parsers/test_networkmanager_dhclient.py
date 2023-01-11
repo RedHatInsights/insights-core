@@ -1,7 +1,8 @@
 import doctest
 import pytest
 
-from insights.parsers import networkmanager_dhclient, SkipException
+from insights.core.exceptions import SkipException
+from insights.parsers import networkmanager_dhclient
 from insights.parsers.networkmanager_dhclient import NetworkManagerDhclient
 from insights.tests import context_wrap
 

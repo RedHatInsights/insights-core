@@ -8,9 +8,9 @@ SysVmbusDeviceID - file ``/sys/bus/vmbus/devices/*/device_id``
 SysVmbusClassID - file ``/sys/bus/vmbus/devices/*/class_id``
 ------------------------------------------------------------
 """
-
-from insights import parser, Parser
-from insights.parsers import SkipException
+from insights.core import Parser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 # Please refer to

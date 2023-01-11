@@ -33,15 +33,16 @@ import traceback
 from pprint import pformat
 from six import StringIO
 
+from insights import settings
 from insights.core import dr
 from insights.core.context import HostContext
+from insights.core.exceptions import SkipComponent
 from insights.util.subproc import CalledProcessError
-from insights import settings
 
 log = logging.getLogger(__name__)
 
 
-class ContentException(dr.SkipComponent):
+class ContentException(SkipComponent):
     """ Raised whenever a :class:`datasource` fails to get data. """
     pass
 
@@ -72,11 +73,11 @@ class PluginType(dr.ComponentType):
         except ContentException as ce:
             log.debug(ce)
             broker.add_exception(self.component, ce, traceback.format_exc())
-            raise dr.SkipComponent()
+            raise SkipComponent()
         except CalledProcessError as cpe:
             log.debug(cpe)
             broker.add_exception(self.component, cpe, traceback.format_exc())
-            raise dr.SkipComponent()
+            raise SkipComponent()
 
 
 class component(PluginType):
@@ -110,19 +111,19 @@ class datasource(PluginType):
             ce_tb = traceback.format_exc()
             for reg_spec in dr.get_registry_points(self.component):
                 broker.add_exception(reg_spec, ce, ce_tb)
-            raise dr.SkipComponent()
+            raise SkipComponent()
         except CalledProcessError as cpe:
             log.debug(cpe)
             cpe_tb = traceback.format_exc()
             for reg_spec in dr.get_registry_points(self.component):
                 broker.add_exception(reg_spec, cpe, cpe_tb)
-            raise dr.SkipComponent()
+            raise SkipComponent()
         except TimeoutException as te:
             log.debug(te)
             te_tb = traceback.format_exc()
             for reg_spec in dr.get_registry_points(self.component):
                 broker.add_exception(reg_spec, te, te_tb)
-            raise dr.SkipComponent()
+            raise SkipComponent()
         finally:
             if HostContext in broker:
                 signal.alarm(0)
@@ -168,7 +169,7 @@ class parser(PluginType):
                 exception = True
 
         if exception:
-            raise dr.SkipComponent()
+            raise SkipComponent()
 
         results = []
         for d in dep_value:
@@ -176,7 +177,7 @@ class parser(PluginType):
                 r = self.component(d)
                 if r is not None:
                     results.append(r)
-            except dr.SkipComponent:
+            except SkipComponent:
                 pass
             except ContentException as ce:
                 log.debug(ce)
@@ -199,11 +200,11 @@ class parser(PluginType):
                     break
 
         if exception:
-            raise dr.SkipComponent()
+            raise SkipComponent()
 
         if not results:
             log.debug("All failed: %s" % dr.get_name(self.component))
-            raise dr.SkipComponent()
+            raise SkipComponent()
 
         return results
 
@@ -326,7 +327,7 @@ class rule(PluginType):
         Ensures dependencies have been met before delegating to `self.invoke`.
         """
         if any(i in broker for i in dr.IGNORE.get(self.component, [])):
-            raise dr.SkipComponent()
+            raise SkipComponent()
         missing = self.get_missing_dependencies(broker)
         if missing:
             return _make_skip(dr.get_name(self.component), missing)

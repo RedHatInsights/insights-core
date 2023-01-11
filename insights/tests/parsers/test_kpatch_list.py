@@ -1,8 +1,9 @@
-import pytest
 import doctest
+import pytest
 
+from insights.core.exceptions import SkipException
+from insights.parsers import kpatch_list
 from insights.tests import context_wrap
-from insights.parsers import kpatch_list, SkipException
 
 NORMAL_OUTPUT = '''
 Loaded patch modules:

@@ -1,9 +1,10 @@
 import doctest
+import pytest
+
+from insights.core.exceptions import SkipException
 from insights.parsers import net_namespace
 from insights.parsers.net_namespace import NetworkNamespace
 from insights.tests import context_wrap
-from insights.parsers import SkipException
-import pytest
 
 LIST_NAMESPACE = """
 temp_netns  temp_netns_2  temp_netns_3

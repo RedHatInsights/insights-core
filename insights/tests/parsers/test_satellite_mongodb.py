@@ -1,8 +1,9 @@
-import pytest
 import doctest
-from insights.tests import context_wrap
-from insights.parsers import SkipException, ParseException
+import pytest
+
+from insights.core.exceptions import ParseException, SkipException
 from insights.parsers import satellite_mongodb
+from insights.tests import context_wrap
 
 
 MONGO_PULP_STORAGE_ENGINE_OUTPUT1 = '''

@@ -64,6 +64,7 @@ from functools import reduce as _reduce
 
 from insights.contrib import importlib
 from insights.contrib.toposort import toposort_flatten
+from insights.core.exceptions import SkipComponent
 from insights.util import defaults, enum, KeyPassingDefaultDict
 
 log = logging.getLogger(__name__)
@@ -228,14 +229,6 @@ class MissingRequirements(Exception):
     def __init__(self, requirements):
         self.requirements = requirements
         super(MissingRequirements, self).__init__(requirements)
-
-
-class SkipComponent(Exception):
-    """
-    This class should be raised by components that want to be taken out of
-    dependency resolution.
-    """
-    pass
 
 
 def get_name(component):

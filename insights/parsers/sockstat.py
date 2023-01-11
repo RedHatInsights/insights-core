@@ -4,10 +4,9 @@ SockStats - file ``/proc/net/sockstat``
 The ``TcpIpStats`` class implements the parsing of ``/proc/net/sockstat``
 file, which contains TCP/IP stats of individual layer.
 """
-
-
-from insights import Parser, parser
-from insights.parsers import SkipException
+from insights.core import Parser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 

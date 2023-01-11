@@ -1,9 +1,10 @@
-import pytest
 import doctest
+import pytest
+
+from insights.core.exceptions import ParseException, SkipException
 from insights.parsers import grubby
 from insights.parsers.grubby import GrubbyDefaultIndex, GrubbyDefaultKernel
 from insights.tests import context_wrap
-from insights.parsers import SkipException, ParseException
 
 DEFAULT_INDEX_1 = '0'
 DEFAULT_INDEX_2 = '1'

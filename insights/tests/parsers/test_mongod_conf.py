@@ -1,8 +1,8 @@
 import pytest
 
-from insights.tests import context_wrap
-from insights.parsers import ParseException
+from insights.core.exceptions import ParseException
 from insights.parsers.mongod_conf import MongodbConf
+from insights.tests import context_wrap
 
 
 NORMAL_CONF = """

@@ -1,7 +1,8 @@
-import pytest
 import doctest
+import pytest
 
-from insights.parsers import SkipException, sap_hana_python_script
+from insights.core.exceptions import SkipException
+from insights.parsers import sap_hana_python_script
 from insights.parsers.sap_hana_python_script import HanaLandscape
 from insights.tests import context_wrap
 

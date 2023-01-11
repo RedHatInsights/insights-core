@@ -1,6 +1,8 @@
 import doctest
 import pytest
-from insights.parsers import rndc_status, ParseException, SkipException
+
+from insights.core.exceptions import ParseException, SkipException
+from insights.parsers import rndc_status
 from insights.parsers.rndc_status import RndcStatus
 from insights.tests import context_wrap
 

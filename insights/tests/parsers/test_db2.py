@@ -1,8 +1,10 @@
-import pytest
 import doctest
-from insights.tests import context_wrap
-from insights.parsers import SkipException, db2
+import pytest
+
+from insights.core.exceptions import SkipException
+from insights.parsers import db2
 from insights.parsers.db2 import Db2ls
+from insights.tests import context_wrap
 
 DB2LS_A_C = """
 #PATH:VRMF:FIXPACK:SPECIAL:INSTALLTIME:INSTALLERUID

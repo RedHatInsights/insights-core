@@ -1,9 +1,10 @@
 import doctest
 import pytest
 
-from insights.parsers import engine_db_query, ParseException
-from insights.tests.parsers import skip_exception_check
+from insights.core.exceptions import ParseException
+from insights.parsers import engine_db_query
 from insights.tests import context_wrap
+from insights.tests.parsers import skip_exception_check
 
 
 OUTPUT = """

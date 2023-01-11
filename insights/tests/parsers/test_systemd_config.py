@@ -1,9 +1,10 @@
-from insights.parsers.systemd import config
-from insights.parsers import SkipException
-from insights.tests import context_wrap
-from insights.core.plugins import ContentException
 import doctest
 import pytest
+
+from insights.core.exceptions import SkipException
+from insights.core.plugins import ContentException
+from insights.parsers.systemd import config
+from insights.tests import context_wrap
 
 
 SYSTEMD_DOCKER = """

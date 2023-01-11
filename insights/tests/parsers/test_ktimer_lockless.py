@@ -1,9 +1,10 @@
+import doctest
+import pytest
+
+from insights.core.exceptions import SkipException
 from insights.parsers import ktimer_lockless
 from insights.parsers.ktimer_lockless import KTimerLockless
-from insights.parsers import SkipException
 from insights.tests import context_wrap
-import pytest
-import doctest
 
 KTIMER_LOCKLESS_OUTPUT = "0"
 

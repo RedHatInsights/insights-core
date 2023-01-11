@@ -1,5 +1,7 @@
 import pytest
-from insights.parsers import xfs_info, ParseException
+
+from insights.core.exceptions import ParseException
+from insights.parsers import xfs_info
 from insights.tests import context_wrap
 
 

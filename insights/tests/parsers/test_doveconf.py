@@ -1,7 +1,7 @@
 import doctest
-
 import pytest
-from insights.parsers import SkipException
+
+from insights.core.exceptions import SkipException
 from insights.parsers import doveconf
 from insights.parsers.doveconf import Doveconf
 from insights.tests import context_wrap

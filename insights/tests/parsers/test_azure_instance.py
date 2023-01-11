@@ -1,12 +1,11 @@
-import pytest
 import doctest
-from insights.parsers import azure_instance
-from insights.parsers.azure_instance import (AzureInstanceID,
-                                             AzureInstanceType,
-                                             AzureInstancePlan)
-from insights.tests import context_wrap
-from insights.parsers import SkipException, ParseException
+import pytest
+
+from insights.core.exceptions import ParseException, SkipException
 from insights.core.plugins import ContentException
+from insights.parsers import azure_instance
+from insights.parsers.azure_instance import AzureInstanceID, AzureInstancePlan, AzureInstanceType
+from insights.tests import context_wrap
 
 # For AzureInstanceID
 AZURE_ID = "f904ece8-c6c1-4b5c-881f-309b50f25e50"

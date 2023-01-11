@@ -1,7 +1,9 @@
 import pytest
+
 from mock.mock import Mock
-from insights.core.dr import SkipComponent
-from insights.specs.datasources.aws import aws_imdsv2_token, LocalSpecs
+
+from insights.core.exceptions import SkipComponent
+from insights.specs.datasources.aws import LocalSpecs, aws_imdsv2_token
 
 
 TOKEN = "1234567890\n"

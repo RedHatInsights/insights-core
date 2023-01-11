@@ -1,24 +1,25 @@
+import codecs
 import itertools
 import logging
 import os
 import re
+import shlex
 import signal
 import six
 import traceback
-import codecs
 
 from collections import defaultdict
 from glob import glob
 from subprocess import call
 
 from insights.core import blacklist, dr
-from insights.core.filters import _add_filter, get_filters
 from insights.core.context import ExecutionContext, FSRoots, HostContext
-from insights.core.plugins import component, datasource, ContentException, is_datasource
+from insights.core.exceptions import SkipComponent
+from insights.core.filters import _add_filter, get_filters
+from insights.core.plugins import ContentException, component, datasource, is_datasource
+from insights.core.serde import deserializer, serializer
 from insights.util import fs, streams, which
 from insights.util.subproc import Pipeline
-from insights.core.serde import deserializer, serializer
-import shlex
 
 log = logging.getLogger(__name__)
 
@@ -177,7 +178,7 @@ class FileProvider(ContentProvider):
     def validate(self):
         if not blacklist.allow_file("/" + self.relative_path):
             log.warning("WARNING: Skipping file %s", "/" + self.relative_path)
-            raise dr.SkipComponent()
+            raise SkipComponent()
 
         if not os.path.exists(self.path):
             raise ContentException("%s does not exist." % self.path)
@@ -332,7 +333,7 @@ class CommandOutputProvider(ContentProvider):
     def validate(self):
         if not blacklist.allow_command(self.cmd):
             log.warning("WARNING: Skipping command %s", self.cmd)
-            raise dr.SkipComponent()
+            raise SkipComponent()
 
         cmd = shlex.split(self.cmd)[0]
         if not which(cmd, env=self._env):
@@ -464,7 +465,7 @@ class RegistryPoint(object):
         for c in reversed(dr.get_delegate(self).deps):
             if c in broker:
                 return broker[c]
-        raise dr.SkipComponent()
+        raise SkipComponent()
 
     def __repr__(self):
         return dr.get_name(self)
@@ -677,7 +678,7 @@ class head(object):
         c = lst[self.dep]
         if lst:
             return c[0]
-        raise dr.SkipComponent()
+        raise SkipComponent()
 
 
 class first_file(object):
@@ -1152,7 +1153,7 @@ class find(object):
         are included.
 
     Raises:
-        dr.SkipComponent if no paths have matching lines.
+        SkipComponent: if no paths have matching lines.
     """
 
     def __init__(self, spec, pattern):
@@ -1192,7 +1193,7 @@ class find(object):
             if lines:
                 results[origin] = lines
         if not results:
-            raise dr.SkipComponent()
+            raise SkipComponent()
         return dict(results)
 
 

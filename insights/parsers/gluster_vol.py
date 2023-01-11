@@ -5,9 +5,10 @@ Gluster vol info - command  to retrive information of gluster volumes
 The parsers here provide information about the time sources used by
 ``glusterd``.
 """
-from insights.core.plugins import parser
 from insights.core import CommandParser, LegacyItemAccess
-from insights.parsers import ParseException, get_active_lines, parse_fixed_table
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines, parse_fixed_table
 from insights.specs import Specs
 
 

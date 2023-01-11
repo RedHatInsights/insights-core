@@ -1,6 +1,8 @@
 import doctest
 import pytest
-from insights.parsers import sys_vmbus, SkipException
+
+from insights.core.exceptions import SkipException
+from insights.parsers import sys_vmbus
 from insights.tests import context_wrap
 
 

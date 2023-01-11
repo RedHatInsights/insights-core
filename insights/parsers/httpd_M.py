@@ -4,10 +4,10 @@ HttpdM - command ``httpd -M``
 
 Module for parsing the output of command ``httpd -M``.
 """
-
-from .. import parser, LegacyItemAccess, CommandParser
+from insights.core import CommandParser, LegacyItemAccess
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.parsers import ParseException
 
 
 @parser(Specs.httpd_M)

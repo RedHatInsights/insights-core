@@ -10,10 +10,11 @@ SAPHostExecStatus - command ``saphostexec -status``
 SAPHostExecVersion - command ``saphostexec -version``
 -----------------------------------------------------
 """
-from insights import parser, CommandParser
-from insights.parsers import SkipException, ParseException
-from insights.specs import Specs
 from collections import namedtuple
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import parser
+from insights.specs import Specs
 
 
 @parser(Specs.saphostexec_status)

@@ -1,8 +1,9 @@
 import doctest
 import pytest
-from insights.tests import context_wrap
+
+from insights.core.exceptions import ParseException
 from insights.parsers import md5check
-from insights.parsers import ParseException
+from insights.tests import context_wrap
 
 NORMAL_MD5_SAMPLE = """
 7d4855248419b8a3ce6616bbc0e58301  /etc/localtime

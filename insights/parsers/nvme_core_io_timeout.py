@@ -4,10 +4,10 @@ NVMeCoreIOTimeout - The timeout for I/O operations submitted to NVMe devices
 
 This parser reads the content of ``/sys/module/nvme_core/parameters/io_timeout``.
 """
-
-from insights import Parser, parser
+from insights.core import Parser
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
-from ..parsers import SkipException, ParseException
 
 
 @parser(Specs.nvme_core_io_timeout)

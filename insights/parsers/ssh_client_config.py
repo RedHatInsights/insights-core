@@ -20,9 +20,11 @@ ForemanProxySshConfig - file ``/usr/share/foreman-proxy/.ssh/ssh_config``
 
 """
 from collections import namedtuple
-from insights import Parser, get_active_lines, parser
+from insights.core import Parser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines
 from insights.specs import Specs
-from insights.parsers import SkipException
 
 
 class SshClientConfig(Parser):

@@ -11,12 +11,11 @@ DigEdns - command ``/usr/bin/dig +edns=0 . SOA``
 DigNoedns - command ``/usr/bin/dig +noedns . SOA``
 --------------------------------------------------
 """
-
 import re
 
 from insights.core import CommandParser
+from insights.core.exceptions import SkipException
 from insights.core.plugins import parser
-from insights.parsers import SkipException
 from insights.specs import Specs
 
 

@@ -1,8 +1,8 @@
 import pytest
 
-from insights.parsers import SkipException
-from insights.parsers.nginx_conf import NginxConfPEG, ContainerNginxConfPEG
 from insights.combiners.nginx_conf import NginxConfTree, ContainerNginxConfTree
+from insights.core.exceptions import SkipException
+from insights.parsers.nginx_conf import NginxConfPEG, ContainerNginxConfPEG
 from insights.parsr.query import startswith
 from insights.tests import context_wrap
 

@@ -1,6 +1,8 @@
 import doctest
 import pytest
-from insights.parsers import lscpu, SkipException
+
+from insights.core.exceptions import SkipException
+from insights.parsers import lscpu
 from insights.tests import context_wrap
 
 
