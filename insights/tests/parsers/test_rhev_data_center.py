@@ -1,6 +1,7 @@
 import doctest
 import pytest
-from insights.parsers import SkipException
+
+from insights.core.exceptions import SkipException
 from insights.parsers import rhev_data_center as ls_dc
 from insights.tests import context_wrap
 

@@ -12,12 +12,13 @@ NmcliDevShow - command ``/usr/bin/nmcli dev show``
 NmcliConnShow - command ``/usr/bin/nmcli conn show``
 ----------------------------------------------------
 """
-
-
 import re
-from insights import parser, get_active_lines, CommandParser
+
+from insights.core import CommandParser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines, parse_fixed_table
 from insights.specs import Specs
-from insights.parsers import SkipException, parse_fixed_table
 
 
 @parser(Specs.nmcli_dev_show)

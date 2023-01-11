@@ -6,9 +6,9 @@ This parser reads the ``/proc/cmdline`` file, which contains the arguments
 given to the currently running kernel on boot.
 
 """
-
-from insights import Parser, parser, LegacyItemAccess
-from insights.parsers import SkipException, ParseException
+from insights.core import LegacyItemAccess, Parser
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 

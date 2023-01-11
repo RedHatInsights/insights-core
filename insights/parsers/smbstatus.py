@@ -11,10 +11,10 @@ SmbstatusS - command ``/usr/bin/smbstatus -S``
 Smbstatusp - command ``/usr/bin/smbstatus -p``
 ----------------------------------------------
 """
-
-from .. import parser, get_active_lines, CommandParser
-from insights.parsers import ParseException, SkipException
-from . import parse_fixed_table
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines, parse_fixed_table
 from insights.specs import Specs
 
 

@@ -27,11 +27,12 @@ Examples:
     >>> dst.get('gmtoff')
     -18000
 """
-
 from datetime import datetime
+
+from insights.core import CommandParser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.parsers import SkipException
-from insights import parser, CommandParser
 
 
 def str2datetime(timestamp, tz=False):

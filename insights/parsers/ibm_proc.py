@@ -10,9 +10,9 @@ IBMPpcLparCfg - file ``/proc/powerpc/lparcfg``
 IBMFirmwareLevel - file ``/proc/device-tree/openprom/ibm,fw-vernum_encoded``
 ----------------------------------------------------------------------------
 """
-
-from insights import Parser, parser
-from insights.parsers import SkipException
+from insights.core import Parser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 

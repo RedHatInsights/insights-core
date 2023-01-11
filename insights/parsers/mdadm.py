@@ -2,12 +2,10 @@
 MDAdm - command ``/usr/sbin/mdadm -E {device}``
 ===============================================
 """
-
 from insights.core import CommandParser
+from insights.core.exceptions import SkipException
 from insights.core.plugins import parser
 from insights.parsers import split_kv_pairs
-from insights.parsers import SkipException
-
 from insights.specs import Specs
 
 

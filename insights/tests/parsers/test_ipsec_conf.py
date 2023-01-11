@@ -1,7 +1,8 @@
 import doctest
 import pytest
 
-from insights.parsers import ipsec_conf, SkipException
+from insights.core.exceptions import SkipException
+from insights.parsers import ipsec_conf
 from insights.parsers.ipsec_conf import IpsecConf
 from insights.tests import context_wrap
 

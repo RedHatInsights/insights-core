@@ -59,9 +59,10 @@ Examples:
     'abrt-watc'
 
 """
-
-from insights.core.dr import SkipComponent
-from .. import add_filter, Scannable, parser, CommandParser
+from insights.core import CommandParser, Scannable
+from insights.core.exceptions import SkipComponent
+from insights.core.filters import add_filter
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 add_filter(Specs.lsof, ['COMMAND'])

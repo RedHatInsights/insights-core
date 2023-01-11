@@ -2,8 +2,8 @@ import doctest
 import pytest
 
 from insights.combiners import ssl_certificate
+from insights.core.exceptions import SkipComponent
 from insights.parsers.ssl_certificate import CertificateInfo
-from insights.core.dr import SkipComponent
 from insights.tests import context_wrap
 
 

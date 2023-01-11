@@ -22,9 +22,9 @@ Examples:
     >>> getsebool['ssh_keysign']
     'off'
 """
-
-from .. import parser, LegacyItemAccess, CommandParser
-from . import SkipException
+from insights.core import CommandParser, LegacyItemAccess
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 

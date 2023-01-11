@@ -2,9 +2,9 @@
 PmLogSummary - Command ``pmlogsummary``
 =======================================
 """
-
-from insights import parser, CommandParser
-from insights.parsers import SkipComponent
+from insights.core import CommandParser
+from insights.core.exceptions import SkipComponent
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 

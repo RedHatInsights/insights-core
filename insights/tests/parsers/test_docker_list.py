@@ -1,7 +1,8 @@
 import doctest
 import pytest
+
+from insights.core.exceptions import SkipException
 from insights.parsers import docker_list
-from insights.parsers import SkipException
 from insights.tests import context_wrap
 
 

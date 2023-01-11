@@ -33,9 +33,10 @@ Examples:
     >>> hammer_ping.services_of_status('OK')
     ['elasticsearch', 'foreman_tasks']
 """
-from insights import parser, CommandParser
+from insights.core import CommandParser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.parsers import SkipException
 
 
 @parser(Specs.hammer_ping)

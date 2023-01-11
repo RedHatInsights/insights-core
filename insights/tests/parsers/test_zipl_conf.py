@@ -1,7 +1,8 @@
+import pytest
+
+from insights.core.exceptions import ParseException
 from insights.parsers.zipl_conf import ZiplConf
 from insights.tests import context_wrap
-from insights.parsers import ParseException
-import pytest
 
 ZIPL_CONF = """
 [defaultboot]

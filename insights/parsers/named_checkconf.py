@@ -9,8 +9,8 @@ Named is a name server used by BIND.
 import re
 
 from insights.core import CommandParser
+from insights.core.exceptions import SkipException
 from insights.core.plugins import parser
-from insights.parsers import SkipException
 from insights.specs import Specs
 
 # regex for matching 'dnssec-enable no'

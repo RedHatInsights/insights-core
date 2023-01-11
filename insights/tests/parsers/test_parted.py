@@ -1,10 +1,6 @@
-"""
-``test parted``
-===============
-"""
 import pytest
 
-from insights.parsers import ParseException
+from insights.core.exceptions import ParseException
 from insights.parsers.parted import PartedL
 from insights.tests import context_wrap
 

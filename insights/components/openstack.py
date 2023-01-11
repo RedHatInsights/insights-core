@@ -8,9 +8,9 @@ OpenStack Compute node. It checks if 'nova-compute' process exist, if not raises
 a dependency of a parser so that the parser only fires if the
 ``IsIsOpenStackCompute`` dependency is met.
 """
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import component
 from insights.parsers.ps import PsAuxcww
-from insights.core.dr import SkipComponent
 
 
 @component(PsAuxcww)

@@ -31,11 +31,10 @@ Examples:
     >>> hosts.lines[2]['names']
     ['fte.example.com']
 
-
 """
-
-from insights import Parser, parser
-from insights.parsers import SkipException
+from insights.core import Parser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 

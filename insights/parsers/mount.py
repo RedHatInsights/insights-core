@@ -38,11 +38,13 @@ are listed in the same order as in the command output:
 MountEntry lines are also available in a ``mounts`` property, keyed on the
 mount point.
 """
-
 import os
+
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines, keyword_search, optlist_to_dict
 from insights.specs import Specs
-from insights.parsers import optlist_to_dict, keyword_search, ParseException, SkipException
-from insights import parser, get_active_lines, CommandParser
 
 
 class AttributeAsDict(object):

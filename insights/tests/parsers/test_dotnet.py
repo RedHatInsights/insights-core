@@ -1,8 +1,9 @@
 import doctest
 import pytest
-from insights.parsers import dotnet
+
+from insights.core.exceptions import ParseException, SkipException
 from insights.core.plugins import ContentException
-from insights.parsers import SkipException, ParseException
+from insights.parsers import dotnet
 from insights.parsers.dotnet import DotNetVersion, ContainerDotNetVersion
 from insights.tests import context_wrap
 

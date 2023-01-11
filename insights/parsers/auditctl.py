@@ -12,7 +12,7 @@ AuditStatus - command ``auditctl -s``
 """
 
 from insights import parser, CommandParser
-from insights.parsers import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipException
 from insights.specs import Specs
 
 

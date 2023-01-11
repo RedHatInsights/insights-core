@@ -2,7 +2,8 @@
 ``test lsblk``
 ================
 """
-from insights.parsers import lsblk, ParseException
+from insights.core.exceptions import ParseException
+from insights.parsers import lsblk
 from insights.tests import context_wrap
 
 import pytest

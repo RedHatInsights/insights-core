@@ -1,8 +1,10 @@
-from insights.parsers import sapcontrol, SkipException, ParseException
+import doctest
+import pytest
+
+from insights.core.exceptions import ParseException, SkipException
+from insights.parsers import sapcontrol
 from insights.parsers.sapcontrol import SAPControlSystemUpdateList
 from insights.tests import context_wrap
-import pytest
-import doctest
 
 RKS_STATUS = """
 29.01.2019 01:20:36

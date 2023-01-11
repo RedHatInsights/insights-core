@@ -2,11 +2,13 @@
 ChkConfig - command ``chkconfig``
 =================================
 """
-from collections import namedtuple
-from .. import parser, CommandParser
-from insights.specs import Specs
-from insights.parsers import SkipException
 import re
+
+from collections import namedtuple
+from insights.core import CommandParser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
+from insights.specs import Specs
 
 
 @parser(Specs.chkconfig)

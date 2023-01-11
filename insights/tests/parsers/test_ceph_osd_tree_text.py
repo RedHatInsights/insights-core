@@ -1,8 +1,10 @@
-from insights.parsers import ceph_osd_tree_text, ParseException, SkipException
+import doctest
+import pytest
+
+from insights.core.exceptions import ParseException, SkipException
+from insights.parsers import ceph_osd_tree_text
 from insights.parsers.ceph_osd_tree_text import CephOsdTreeText
 from insights.tests import context_wrap
-import pytest
-import doctest
 
 OSD_TREE_CEPH_V3 = """
 ID CLASS WEIGHT  TYPE NAME       STATUS REWEIGHT PRI-AFF

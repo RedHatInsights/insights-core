@@ -6,8 +6,9 @@ Shared parser for parsing output of the ``sudo -iu <SID>adm HDB version``
 commands.
 
 """
-from insights import parser, CommandParser
-from insights.parsers import SkipException
+from insights.core import CommandParser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 

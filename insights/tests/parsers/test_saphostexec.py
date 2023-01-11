@@ -1,8 +1,10 @@
-from insights.parsers import saphostexec, SkipException, ParseException
+import doctest
+import pytest
+
+from insights.core.exceptions import ParseException, SkipException
+from insights.parsers import saphostexec
 from insights.parsers.saphostexec import SAPHostExecStatus, SAPHostExecVersion
 from insights.tests import context_wrap
-import pytest
-import doctest
 
 STATUS_DOC = """
 saphostexec running (pid = 9159)

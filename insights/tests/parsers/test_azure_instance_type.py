@@ -1,10 +1,11 @@
-import pytest
 import doctest
+import pytest
+
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import ContentException
 from insights.parsers import azure_instance_type
 from insights.parsers.azure_instance_type import AzureInstanceType
 from insights.tests import context_wrap
-from insights.parsers import SkipException, ParseException
-from insights.core.plugins import ContentException
 
 AZURE_TYPE_1 = "Standard_L32s"
 AZURE_TYPE_2 = "Standard_NV48s_v3"

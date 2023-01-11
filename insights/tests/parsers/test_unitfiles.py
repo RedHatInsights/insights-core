@@ -2,10 +2,11 @@
 # Per PEP 263
 import doctest
 import pytest
-from insights.tests import context_wrap
-from insights.parsers import SkipException
+
+from insights.core.exceptions import SkipException
 from insights.parsers.systemd import unitfiles
-from insights.parsers.systemd.unitfiles import UnitFiles, ListUnits
+from insights.parsers.systemd.unitfiles import ListUnits, UnitFiles
+from insights.tests import context_wrap
 
 KDUMP_DISABLED_RHEL7 = """
 UNIT FILE                                   STATE

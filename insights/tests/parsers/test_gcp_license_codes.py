@@ -1,10 +1,10 @@
-import pytest
 import doctest
+import pytest
 
+from insights.core.exceptions import ParseException, SkipException
 from insights.parsers import gcp_license_codes
 from insights.parsers.gcp_license_codes import GCPLicenseCodes
 from insights.tests import context_wrap
-from insights.parsers import SkipException, ParseException
 
 GCP_LICENSE_CODES_1 = '[{"id": "123451234512345"}]'
 GCP_LICENSE_CODES_2 = '[{"id": "123451234512345"}, {"id": "238949287234"}]'

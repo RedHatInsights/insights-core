@@ -1,11 +1,12 @@
 import doctest
 import pytest
 
-from insights.core import ContentException, ParseException
-from insights.parsers import awx_manage, SkipException
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import ContentException
+from insights.parsers import awx_manage
 from insights.parsers.awx_manage import AnsibleTowerLicenseType, AnsibleTowerLicense, AwxManagePrintSettings
-from insights.tests.parsers import skip_exception_check
 from insights.tests import context_wrap
+from insights.tests.parsers import skip_exception_check
 
 GOOD_LICENSE = """
 enterprise

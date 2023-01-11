@@ -1,6 +1,8 @@
 import doctest
 import pytest
-from insights.parsers import upstart, SkipException
+
+from insights.core.exceptions import SkipException
+from insights.parsers import upstart
 from insights.parsers.upstart import UpstartInitctlList
 from insights.tests import context_wrap
 

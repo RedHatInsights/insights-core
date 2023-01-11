@@ -4,9 +4,9 @@ nmcli_dev_show command
 As there are three different file paths in different sos packages,
 create this combiner to fix this issue.
 """
-
+from insights.core.exceptions import SkipException
 from insights.core.plugins import combiner
-from insights.parsers.nmcli import NmcliDevShow, NmcliDevShowSos, SkipException
+from insights.parsers.nmcli import NmcliDevShow, NmcliDevShowSos
 
 
 @combiner([NmcliDevShow, NmcliDevShowSos])

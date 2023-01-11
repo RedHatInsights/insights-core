@@ -1,5 +1,6 @@
 import pytest
-from insights.parsers import SkipException
+
+from insights.core.exceptions import SkipException
 from insights.parsers import multipath_conf
 from insights.parsr.query import first, last
 from insights.tests import context_wrap

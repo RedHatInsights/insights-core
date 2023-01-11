@@ -1,12 +1,10 @@
-from insights.parsers import SkipException
-from insights.parsers import x86_debug
-from insights.parsers.x86_debug import X86IBPBEnabled
-from insights.parsers.x86_debug import X86PTIEnabled
-from insights.parsers.x86_debug import X86IBRSEnabled
-from insights.parsers.x86_debug import X86RETPEnabled
-from insights.tests import context_wrap
-import pytest
 import doctest
+import pytest
+
+from insights.core.exceptions import SkipException
+from insights.parsers import x86_debug
+from insights.parsers.x86_debug import X86IBPBEnabled, X86IBRSEnabled, X86PTIEnabled, X86RETPEnabled
+from insights.tests import context_wrap
 
 
 def test_x86_ibpb_enabled():

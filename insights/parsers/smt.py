@@ -13,12 +13,12 @@ CpuCoreOnline - files matching ``/sys/devices/system/cpu/cpu[0-9]*/online``
 CpuSiblings - files matching ``/sys/devices/system/cpu/cpu[0-9]*/topology/thread_siblings_list``
 ------------------------------------------------------------------------------------------------
 """
+import re
 
 from insights.core import Parser
+from insights.core.exceptions import SkipException
 from insights.core.plugins import parser
-from insights.parsers import SkipException
 from insights.specs import Specs
-import re
 
 
 @parser(Specs.cpu_smt_active)

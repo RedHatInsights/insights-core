@@ -1,8 +1,10 @@
 import doctest
 import pytest
-from insights.tests import context_wrap
-from insights.parsers import ldif_config, SkipException
+
+from insights.core.exceptions import SkipException
+from insights.parsers import ldif_config
 from insights.parsers.ldif_config import LDIFParser
+from insights.tests import context_wrap
 
 LDIF_CONFIG = """
 dn:

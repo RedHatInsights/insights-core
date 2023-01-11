@@ -1,9 +1,10 @@
 import doctest
 import pytest
 
-from insights.tests import context_wrap
-from insights.parsers import corosync_cmapctl, ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipException
 from insights.core.plugins import ContentException
+from insights.parsers import corosync_cmapctl
+from insights.tests import context_wrap
 
 
 COROSYNC_CONTENT_1 = """

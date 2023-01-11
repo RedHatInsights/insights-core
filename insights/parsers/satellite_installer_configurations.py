@@ -9,10 +9,10 @@ CustomHiera - file ``/etc/foreman-installer/custom-hiera.yaml``
 Parsers the file `/etc/foreman-installer/custom-hiera.yaml`
 
 """
-
-from insights import parser, YAMLParser
+from insights.core import YAMLParser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.parsers import SkipException
 
 
 @parser(Specs.satellite_custom_hiera)

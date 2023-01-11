@@ -1,5 +1,7 @@
 import pytest
-from insights.parsers import kdump, ParseException
+
+from insights.core.exceptions import ParseException
+from insights.parsers import kdump
 from insights.tests import context_wrap
 
 KDUMP_WITH_NORMAL_COMMENTS = """

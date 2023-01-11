@@ -1,7 +1,8 @@
 import doctest
 import pytest
 
-from insights.parsers import podman_list, SkipException
+from insights.core.exceptions import SkipException
+from insights.parsers import podman_list
 from insights.tests import context_wrap
 
 

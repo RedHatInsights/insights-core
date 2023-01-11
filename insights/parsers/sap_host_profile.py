@@ -5,8 +5,11 @@ SAPHostProfile - File ``/usr/sap/hostctrl/exe/host_profile``
 Shared parser for parsing the ``/usr/sap/hostctrl/exe/host_profile`` file.
 
 """
-from .. import Parser, parser, LegacyItemAccess, get_active_lines, add_filter
-from insights.parsers import SkipException
+from insights.core import LegacyItemAccess, Parser
+from insights.core.exceptions import SkipException
+from insights.core.filters import add_filter
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines
 from insights.specs import Specs
 
 filter_list = [

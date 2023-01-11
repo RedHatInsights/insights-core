@@ -1,7 +1,8 @@
 import doctest
 import pytest
 
-from insights.parsers import lspci, SkipException
+from insights.core.exceptions import SkipException
+from insights.parsers import lspci
 from insights.parsers.lspci import LsPci, LsPciVmmkn
 from insights.tests import context_wrap
 

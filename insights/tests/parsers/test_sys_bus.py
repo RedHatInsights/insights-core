@@ -1,6 +1,8 @@
 import doctest
 import pytest
-from insights.parsers import sys_bus, ParseException
+
+from insights.core.exceptions import ParseException
+from insights.parsers import sys_bus
 from insights.parsers.sys_bus import CdcWDM
 from insights.tests import context_wrap
 

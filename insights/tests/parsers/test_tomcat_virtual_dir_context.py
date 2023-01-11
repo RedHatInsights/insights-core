@@ -1,8 +1,8 @@
 import pytest
 
+from insights.core.exceptions import SkipException
 from insights.parsers.tomcat_virtual_dir_context import TomcatVirtualDirContextFallback, TomcatVirtualDirContextTargeted
 from insights.tests import context_wrap
-from insights.parsers import SkipException
 
 FOUND_1 = """
 /usr/share/tomcat/conf/server.xml:    <Resources className="org.apache.naming.resources.VirtualDirContext"

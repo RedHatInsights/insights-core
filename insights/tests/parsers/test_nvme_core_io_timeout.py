@@ -1,9 +1,10 @@
-import pytest
 import doctest
+import pytest
+
+from insights.core.exceptions import ParseException, SkipException
 from insights.parsers import nvme_core_io_timeout
 from insights.parsers.nvme_core_io_timeout import NVMeCoreIOTimeout
 from insights.tests import context_wrap
-from insights.parsers import SkipException, ParseException
 
 NVME_CORE_IO_TIMEOUT = "4294967295"
 

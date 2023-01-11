@@ -17,14 +17,13 @@ MssqlTLSCertExpireDate - command ``openssl x509 -in mssql_tls_cert_file -enddate
 HttpdCertInfoInNSS - command ``certutil -L -d xxx -n xxx``
 ==========================================================
 """
-
-
-from insights import parser, CommandParser
 from datetime import datetime
-from insights.core.dr import SkipComponent
-from insights.parsers import ParseException, SkipException
-from insights.specs import Specs
+
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipComponent, SkipException
+from insights.core.plugins import parser
 from insights.parsers.certificates_enddate import CertificatesEnddate
+from insights.specs import Specs
 
 
 def parse_openssl_output(content):
