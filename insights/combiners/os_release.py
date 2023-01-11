@@ -70,7 +70,6 @@ class OSRelease(object):
     def __init__(self, rpms, rhr, osr, uname):
         self._is_rhel = False
         self._product = "Unknown"
-        """Count of Packages that is from Red Hat."""
         if osr:
             names = list(filter(None,
                                 [osr.get('ID'), osr.get('NAME'),
@@ -109,8 +108,8 @@ class OSRelease(object):
                     if (pkg.redhat_signed and
                             pkg.vendor and pkg.vendor == 'Red Hat, Inc.'):
                         self._points += 1
-            # If more than THRESHOLD installed packages are from Red Hat
             if self._points >= round(THRESHOLD * self._installed_packages):
+                # RHEL: more than THRESHOLD packages are from Red Hat
                 self._is_rhel = True
                 self._product = RHEL_STR
         elif ((rhr and rhr.is_rhel) or
