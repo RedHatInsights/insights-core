@@ -1,7 +1,8 @@
-from insights.tests import context_wrap
-from insights.parsers.satellite_version import Satellite6Version
-from insights.parsers import ParseException
 import pytest
+
+from insights.core.exceptions import ParseException
+from insights.parsers.satellite_version import Satellite6Version
+from insights.tests import context_wrap
 
 satellite_version = """
 COMMAND> cat /usr/share/foreman/lib/satellite/version.rb

@@ -12,11 +12,12 @@ major = 7, minor = 2 and rhel = '7.2'.
 """
 
 from collections import namedtuple
+
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import combiner
+from insights.core.serde import deserializer, serializer
 from insights.parsers.redhat_release import RedhatRelease as rht_release
 from insights.parsers.uname import Uname
-from insights.core.serde import serializer, deserializer
-from insights.parsers import SkipComponent
 
 
 Release = namedtuple("Release", field_names=["major", "minor"])

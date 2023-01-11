@@ -10,10 +10,10 @@ compilation options is the value after the equals sign, if one is present,
 or the value in brackets after the compilation option, or 'True' if only the
 compilation option is present.
 """
-
-from .. import parser, LegacyItemAccess, CommandParser
+from insights.core import CommandParser, LegacyItemAccess
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.parsers import SkipException
 
 
 @parser(Specs.httpd_V)

@@ -13,8 +13,8 @@ ContainerNginxConfPEG - file ``/etc/nginx/nginx.conf`` and other Nginx configura
 import string
 
 from insights.core import ConfigParser, ContainerParser
+from insights.core.exceptions import ParseException
 from insights.core.plugins import parser
-from insights.parsers import ParseException
 from insights.parsr import (EOF, EmptyQuotedString, Forward, LeftCurly, Lift, LineEnd, RightCurly,
                             Many, Number, OneLineComment, PosMarker, SemiColon, QuotedString,
                             skip_none, String, WS, WSChar)

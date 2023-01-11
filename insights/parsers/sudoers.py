@@ -12,9 +12,11 @@ Module for processing each of the ``/etc/sudoers`` and ``/etc/sudoers.d/*`` file
     checking.
 
 """
-from insights import parser, Parser
+from insights.core import Parser
+from insights.core.exceptions import SkipException
 from insights.core.filters import add_filter
-from insights.parsers import SkipException, get_active_lines
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines
 from insights.specs import Specs
 
 add_filter(Specs.sudoers, "#includedir")

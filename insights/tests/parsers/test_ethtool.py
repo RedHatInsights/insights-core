@@ -1,8 +1,9 @@
 import pytest
 import re
 
+from insights.core.exceptions import ParseException
+from insights.parsers import ethtool
 from insights.tests import context_wrap
-from insights.parsers import ethtool, ParseException
 from insights.util import keys_in
 
 import doctest

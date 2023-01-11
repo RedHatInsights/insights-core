@@ -1,11 +1,10 @@
 import doctest
 import pytest
 
-from insights.tests import context_wrap
+from insights.core.exceptions import ParseException
 from insights.parsers import alternatives
-from insights.parsers.alternatives import AlternativesOutput, JavaAlternatives
-from insights.parsers.alternatives import PythonAlternatives
-from insights.core import ParseException
+from insights.parsers.alternatives import AlternativesOutput, JavaAlternatives, PythonAlternatives
+from insights.tests import context_wrap
 
 ALT_MTA = """
 mta - status is auto.

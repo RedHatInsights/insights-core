@@ -37,19 +37,13 @@ from __future__ import print_function
 
 import json
 
-from insights.parsers import ParseException, optlist_to_dict, SkipException
+from insights.core import CommandParser, LegacyItemAccess, Parser
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.filters import add_filter
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines, optlist_to_dict, parse_fixed_table
 from insights.specs import Specs
-
-from .. import (
-    CommandParser,
-    LegacyItemAccess,
-    Parser,
-    add_filter,
-    get_active_lines,
-    parser,
-)
-from ..util import parse_keypair_lines
-from . import parse_fixed_table
+from insights.util import parse_keypair_lines
 
 
 def map_keys(pvs, keys):

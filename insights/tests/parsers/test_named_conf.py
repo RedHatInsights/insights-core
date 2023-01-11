@@ -1,7 +1,8 @@
 import doctest
 import pytest
 
-from insights.parsers import named_conf, SkipException
+from insights.core.exceptions import SkipException
+from insights.parsers import named_conf
 from insights.parsers.named_conf import NamedConf
 from insights.tests import context_wrap
 

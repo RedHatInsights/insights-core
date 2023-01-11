@@ -7,11 +7,13 @@ This module provides class ``IpNetnsExecNamespaceLsofI`` for parsing the output 
 Filters have been added so that sensitive information can be filtered out.
 This results in the modification of the original structure of data.
 """
-
 from collections import namedtuple
-from insights import CommandParser, parser
+
+from insights.core import CommandParser
+from insights.core.exceptions import SkipException
 from insights.core.filters import add_filter
-from insights.parsers import SkipException, keyword_search, parse_fixed_table
+from insights.core.plugins import parser
+from insights.parsers import keyword_search, parse_fixed_table
 from insights.specs import Specs
 
 add_filter(Specs.ip_netns_exec_namespace_lsof, "COMMAND")

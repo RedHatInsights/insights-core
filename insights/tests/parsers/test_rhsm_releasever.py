@@ -1,10 +1,11 @@
 import doctest
 import pytest
 
-from insights.parsers import rhsm_releasever as rhsm_releasever_module, SkipException
+from insights.core.exceptions import SkipException
+from insights.parsers import rhsm_releasever as rhsm_releasever_module
 from insights.parsers.rhsm_releasever import RhsmReleaseVer
-from insights.tests.parsers import skip_exception_check
 from insights.tests import context_wrap
+from insights.tests.parsers import skip_exception_check
 
 RHEL_MAJ_MIN = '{"releaseVer": "6.10"}'
 RHEL_MAJ_1 = '{"releaseVer": "7Server"}'

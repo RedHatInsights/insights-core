@@ -1,7 +1,9 @@
-import pytest
 import doctest
+import pytest
+
+from insights.core.exceptions import ParseException, SkipException
+from insights.parsers import user_group
 from insights.parsers.user_group import GroupInfo
-from insights.parsers import user_group, SkipException, ParseException
 from insights.tests import context_wrap
 
 GRP = """

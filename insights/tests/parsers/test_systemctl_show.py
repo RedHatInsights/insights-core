@@ -1,6 +1,8 @@
 import doctest
 import pytest
-from insights.parsers import systemctl_show, SkipException, ParseException
+
+from insights.core.exceptions import ParseException, SkipException
+from insights.parsers import systemctl_show
 from insights.parsers.systemctl_show import (
     SystemctlShowServiceAll, SystemctlShowTarget, SystemctlShowAllServiceWithLimitedProperties
 )

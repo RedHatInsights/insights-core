@@ -51,16 +51,17 @@ Example:
     134217728
 """
 import string
-from insights import parser
+
 from insights.core import ConfigParser
 from insights.core.filters import add_filter
-from insights.parsr.query import eq
-from insights.parsr import (Char, EOF, HangingString, InSet,
-        LeftBracket, Lift, LineEnd, Literal, RightBracket,
-        Many, Number, OneLineComment, Opt, PosMarker,
-        QuotedString, skip_none, String, WithIndent, WS, WSChar)
-from insights.parsr.query import Directive, Entry, Section
-from insights.parsers import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import parser
+from insights.parsr import (Char, EOF, HangingString, InSet, LeftBracket,
+                            Lift, LineEnd, Literal, Many, Number,
+                            OneLineComment, Opt, PosMarker, QuotedString,
+                            RightBracket, String, WithIndent, WS, WSChar,
+                            skip_none)
+from insights.parsr.query import Directive, Entry, Section, eq
 from insights.specs import Specs
 
 

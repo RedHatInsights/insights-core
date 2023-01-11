@@ -1,6 +1,8 @@
 import doctest
 import pytest
-from insights.parsers import cpupower_frequency_info, ParseException, SkipException
+
+from insights.core.exceptions import ParseException, SkipException
+from insights.parsers import cpupower_frequency_info
 from insights.parsers.cpupower_frequency_info import CpupowerFrequencyInfo
 from insights.tests import context_wrap
 

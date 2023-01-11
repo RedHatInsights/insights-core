@@ -2,10 +2,10 @@
 CephOsdTreeText - command ``ceph osd tree``
 ===========================================
 """
-
+from insights.core import CommandParser, LegacyItemAccess
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights import parser, CommandParser, LegacyItemAccess
-from insights.parsers import ParseException, SkipException
 
 text_to_json_header_map = {
     "ID": "id",

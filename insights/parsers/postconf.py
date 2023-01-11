@@ -5,11 +5,10 @@ Postconf - command ``postconf``
 PostconfBuiltin - command ``postconf -C builtin``
 =================================================
 """
-
 from insights.core import CommandParser
+from insights.core.exceptions import SkipException
 from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.parsers import SkipException
 
 
 class _Postconf(CommandParser, dict):

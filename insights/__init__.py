@@ -17,37 +17,32 @@ for gathering data in myriad ways and providing a reliable object model for it.
     True
 """
 from __future__ import print_function
+
 import logging
-import pkgutil
 import os
+import pkgutil
 import sys
 import yaml
 
 from collections import defaultdict
 from contextlib import contextmanager
 
-from .core import Scannable, LogFileOutput, IniConfigFile  # noqa: F401
-from .core import FileListing, LegacyItemAccess, SysconfigOptions  # noqa: F401
-from .core import Parser, ContainerParser  # noqa: F401
-from .core import YAMLParser, JSONParser, XMLParser, CommandParser  # noqa: F401
-from .core import Syslog  # noqa: F401
-from .core import taglang
-from .core.archives import COMPRESSION_TYPES, extract, InvalidArchive, InvalidContentType  # noqa: F401
-from .core import dr  # noqa: F401
-from .core.context import ClusterArchiveContext, HostContext, HostArchiveContext, SerializedArchiveContext, ExecutionContext  # noqa: F401
-from .core.dr import SkipComponent  # noqa: F401
-from .core.hydration import create_context, initialize_broker  # noqa: F401
-from .core.plugins import combiner, fact, metadata, parser, rule  # noqa: F401
-from .core.plugins import datasource, condition, incident  # noqa: F401
-from .core.plugins import make_response, make_metadata, make_fingerprint  # noqa: F401
-from .core.plugins import make_pass, make_fail, make_info, make_none  # noqa: F401
-from .core.filters import add_filter, apply_filters, get_filters  # noqa: F401
-from .formats import get_formatter
-from .parsers import get_active_lines  # noqa: F401
-from .util import defaults  # noqa: F401
-from .formats import Formatter as FormatterClass
-
-from .core.spec_factory import RawFileProvider, TextFileProvider
+from insights.core import (CommandParser, ContainerParser, FileListing, IniConfigFile, JSONParser, LegacyItemAccess,  # noqa: F401
+                           LogFileOutput, Parser, Scannable, SysconfigOptions, Syslog, XMLParser, YAMLParser, dr,  # noqa: F401
+                           taglang)
+from insights.core.archives import COMPRESSION_TYPES, InvalidArchive, InvalidContentType, extract
+from insights.core.context import (ClusterArchiveContext, ExecutionContext, HostContext,  # noqa: F401
+                                   HostArchiveContext, SerializedArchiveContext)
+from insights.core.exceptions import SkipComponent  # noqa: F401
+from insights.core.filters import add_filter, apply_filters, get_filters  # noqa: F401
+from insights.core.hydration import create_context, initialize_broker  # noqa: F401
+from insights.core.plugins import (combiner, condition, datasource, fact, incident, make_fail, make_fingerprint,  # noqa: F401
+                                   make_info, make_metadata, make_none, make_pass, make_response, metadata,
+                                   parser, rule)
+from insights.core.spec_factory import RawFileProvider, TextFileProvider
+from insights.formats import Formatter as FormatterClass, get_formatter
+from insights.parsers import get_active_lines  # noqa: F401
+from insights.util import defaults  # noqa: F401
 
 log = logging.getLogger(__name__)
 

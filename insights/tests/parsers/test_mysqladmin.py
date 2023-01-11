@@ -1,6 +1,8 @@
 import pytest
 import doctest
-from insights.parsers import ParseException, SkipException, mysqladmin
+
+from insights.core.exceptions import ParseException, SkipException
+from insights.parsers import mysqladmin
 from insights.parsers.mysqladmin import MysqladminVars, MysqladminStatus
 from insights.tests import context_wrap
 

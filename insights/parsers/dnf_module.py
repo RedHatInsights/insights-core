@@ -10,9 +10,10 @@ DnfModuleList - command ``dnf module list``
 DnfModuleInfo - command ``dnf module info *``
 ---------------------------------------------
 """
-from insights import parser
 from insights.core import CommandParser
-from insights.parsers import parse_fixed_table, SkipException
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
+from insights.parsers import parse_fixed_table
 from insights.specs import Specs
 
 

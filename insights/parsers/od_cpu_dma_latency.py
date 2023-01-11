@@ -5,9 +5,10 @@ OdCpuDmaLatency - command ``/usr/bin/od -An -t d /dev/cpu_dma_latency``
 This module provides the class ``OdCpuDmaLatency`` which processes
 ``/usr/bin/od -An -t d /dev/cpu_dma_latency`` command output.
 """
-from insights import parser, CommandParser
+from insights.core import CommandParser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.parsers import SkipException
 
 
 @parser(Specs.od_cpu_dma_latency)

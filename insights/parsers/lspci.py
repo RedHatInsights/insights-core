@@ -14,8 +14,10 @@ LsPciVmmkn - Command ``lspci -vmmkn``
 """
 import re
 
-from insights import LogFileOutput, parser, CommandParser, get_active_lines
-from insights.parsers import SkipException
+from insights.core import CommandParser, LogFileOutput
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines
 from insights.specs import Specs
 
 

@@ -5,8 +5,8 @@ LsCPU - command ``lscpu``
 This module provides the information about the CPU architecture using the output of the command ``lscpu``.
 """
 from insights.core import CommandParser
+from insights.core.exceptions import SkipException
 from insights.core.plugins import parser
-from insights.parsers import SkipException
 from insights.specs import Specs
 
 

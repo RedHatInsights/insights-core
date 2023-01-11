@@ -2,10 +2,11 @@
 RdmaConfig - file ``/etc/rdma/rdma.conf``
 =========================================
 """
-from .. import get_active_lines, Parser, parser, LegacyItemAccess
-from insights.parsers import split_kv_pairs
+from insights.core import LegacyItemAccess, Parser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines, split_kv_pairs
 from insights.specs import Specs
-from insights.parsers import SkipException
 
 
 @parser(Specs.rdma_conf)

@@ -5,11 +5,11 @@ Custom datasources for user and group related specs
     It should be noted that the specs in this module might contains sensitive
     information, please avoid collecting any of them.
 """
-from insights.specs import Specs
 from insights.core.context import HostContext
-from insights.core.dr import SkipComponent
-from insights.core.plugins import datasource
+from insights.core.exceptions import SkipComponent
 from insights.core.filters import get_filters
+from insights.core.plugins import datasource
+from insights.specs import Specs
 
 
 @datasource(HostContext)

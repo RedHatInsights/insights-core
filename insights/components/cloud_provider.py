@@ -5,13 +5,13 @@ Components identify Cloud Provider
 The ``Is*`` component in this module is valid if the
 :py:class:`insights.combiners.cloud_provider.CloudProvider` combiner indicates
 the host is from the specific Cloud Provider.  Otherwise, it raises a
-:py:class:`insights.core.dr.SkipComponent` to prevent dependent components from
+:py:class:`insights.core.exceptions.SkipComponent` to prevent dependent components from
 executing.
 
 """
-from insights.core.dr import SkipComponent
-from insights.core.plugins import component
 from insights.combiners.cloud_provider import CloudProvider
+from insights.core.exceptions import SkipComponent
+from insights.core.plugins import component
 
 
 @component(CloudProvider)

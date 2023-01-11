@@ -10,9 +10,10 @@ SapDevDisp - Files ``/usr/sap/SID/SNAME/work/dev_disp``
 SapDevRd - Files ``/usr/sap/SID/SNAME/work/dev_rd``
 ---------------------------------------------------
 """
-from insights import parser, LogFileOutput
+from insights.core import LogFileOutput
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.parsers import ParseException
 
 
 class SapDevTraceFile(LogFileOutput):

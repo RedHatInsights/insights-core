@@ -2,10 +2,11 @@
 LDIF Configuration - file ``/etc/dirsrv/slapd-*/dse.ldif``
 ==========================================================
 """
-
-from insights import Parser, parser
+from insights.core import Parser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
+from insights.parsers import keyword_search
 from insights.specs import Specs
-from insights.parsers import SkipException, keyword_search
 
 
 @parser(Specs.ldif_config)

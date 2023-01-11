@@ -1,6 +1,7 @@
 import pytest
 
-from insights.core import JSONParser, ParseException
+from insights.core import JSONParser
+from insights.core.exceptions import ParseException
 from insights.tests import context_wrap
 
 

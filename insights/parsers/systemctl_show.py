@@ -11,8 +11,10 @@ SystemctlShowTarget - command ``systemctl show *.target``
 SystemctlShowAllServiceWithLimitedProperties - command ``systemctl show *.service --all --property=<...>``
 ----------------------------------------------------------------------------------------------------------
 """
-from insights import parser, CommandParser
-from insights.parsers import split_kv_pairs, SkipException, ParseException
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import parser
+from insights.parsers import split_kv_pairs
 from insights.specs import Specs
 
 

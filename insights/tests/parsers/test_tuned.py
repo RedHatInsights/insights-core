@@ -1,7 +1,8 @@
-import pytest
 import doctest
+import pytest
 
-from insights.parsers import SkipException, tuned
+from insights.core.exceptions import SkipException
+from insights.parsers import tuned
 from insights.parsers.tuned import Tuned
 from insights.tests import context_wrap
 

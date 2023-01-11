@@ -11,8 +11,9 @@ AnsibleTowerLicense - command ``/usr/bin/awx-manage check_license --data``
 AwxManagePrintSettings - command ``/usr/bin/awx-manage print_settings``
 """
 
-from insights import JSONParser, parser, CommandParser
-from insights.parsers import SkipException, ParseException
+from insights.core import CommandParser, JSONParser
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 

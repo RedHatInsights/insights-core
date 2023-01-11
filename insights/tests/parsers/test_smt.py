@@ -1,7 +1,8 @@
 import doctest
 import pytest
 
-from insights.parsers import smt, SkipException
+from insights.core.exceptions import SkipException
+from insights.parsers import smt
 from insights.parsers.smt import CpuSMTActive, CpuSMTControl, CpuCoreOnline, CpuSiblings
 from insights.tests import context_wrap
 

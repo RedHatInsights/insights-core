@@ -11,10 +11,10 @@ Lines beginning with 'Symbolic Name', 'OS Device Name', 'Node Name', 'Port Name'
 'State' are kept in a sub-dictionary keyed under each these names. All the
 sub-dictionaries are kept in a list keyed in 'Interfaces'.
 """
-
-from insights import parser, CommandParser
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.parsers import ParseException, SkipException
 
 
 @parser(Specs.fcoeadm_i)

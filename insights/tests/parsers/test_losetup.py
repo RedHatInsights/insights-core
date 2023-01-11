@@ -1,6 +1,8 @@
-import pytest
 import doctest
-from insights.parsers import SkipException, losetup
+import pytest
+
+from insights.core.exceptions import SkipException
+from insights.parsers import losetup
 from insights.parsers.losetup import LoSetup
 from insights.tests import context_wrap
 

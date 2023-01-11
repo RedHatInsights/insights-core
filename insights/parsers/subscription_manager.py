@@ -7,11 +7,11 @@ Parsers for parsing output of the ``subscription-manager`` commands.
 SubscriptionManagerFacts - command ``subscription-manager facts``
 -----------------------------------------------------------------
 """
-from insights import parser, CommandParser
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipException
 from insights.core.filters import add_filter
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.parsers import SkipException, ParseException
-
 
 add_filter(Specs.subscription_manager_facts, ['instance_id'])
 

@@ -1,6 +1,8 @@
-import pytest
 import doctest
-from insights.parsers import open_vm_tools, SkipException
+import pytest
+
+from insights.core.exceptions import SkipException
+from insights.parsers import open_vm_tools
 from insights.parsers.open_vm_tools import OpenVmToolsStatRawTextSession
 from insights.tests import context_wrap
 

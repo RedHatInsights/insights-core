@@ -5,7 +5,7 @@ import json
 import os.path
 
 from insights.core.context import HostContext
-from insights.core.dr import SkipComponent
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider, simple_command
 from insights.specs import Specs

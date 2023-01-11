@@ -36,11 +36,11 @@ Examples:
     >>> cert_enddate.expiration_date('/etc/origin/node/cert.pem').str
     'May 25 16:39:40 2019'
 """
-
-from datetime import datetime
 from collections import namedtuple
-from insights import parser, CommandParser
-from insights.parsers import SkipException
+from datetime import datetime
+from insights import CommandParser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 

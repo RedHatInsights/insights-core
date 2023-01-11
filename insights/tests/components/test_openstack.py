@@ -1,9 +1,9 @@
 import pytest
+
 from insights.components.openstack import IsOpenStackCompute
+from insights.core.exceptions import SkipComponent
 from insights.parsers.ps import PsAuxcww
 from insights.tests import context_wrap
-from insights.core.dr import SkipComponent
-
 
 PS_MULTIPATHD = """
 USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START    TIME  COMMAND

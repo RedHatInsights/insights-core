@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.parsers import SkipException
+from insights.core.exceptions import SkipException
 from insights.parsers import partitions
 from insights.parsers.partitions import Partitions
 from insights.tests import context_wrap

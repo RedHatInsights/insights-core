@@ -1,9 +1,10 @@
-from insights.parsers import ParseException
+import doctest
+import pytest
+
+from insights.core.exceptions import ParseException
 from insights.parsers import vdo_status
 from insights.parsers.vdo_status import VDOStatus
 from insights.tests import context_wrap
-import pytest
-import doctest
 
 
 INPUT_EXP = """
