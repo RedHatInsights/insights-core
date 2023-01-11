@@ -7,6 +7,7 @@ current host is installed with a "Red Hat Enterprise Linux" system.
     - :py:class:`insights.parsers.os_release.OsRelease`
     - :py:class:`insights.parsers.redhat_release.RedhatRelease`
     - :py:class:`insights.parsers.installed_rpms.InstalledRpms`
+
 It provides an attribute `is_rhel` that indicates if the host is "RHEL" or not.
 It also provides an attribute `product` which returns the estimated OS name of
 the system, "Unknown" will be returned by default when cannot identify the OS.
