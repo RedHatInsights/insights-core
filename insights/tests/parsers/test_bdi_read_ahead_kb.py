@@ -1,6 +1,8 @@
 import doctest
 import pytest
-from insights.parsers import bdi_read_ahead_kb, ParseException
+
+from insights.core.exceptions import ParseException
+from insights.parsers import bdi_read_ahead_kb
 from insights.tests import context_wrap
 
 BDI_READ_AHEAD_KB = """

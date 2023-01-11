@@ -4,10 +4,10 @@ GFS2FileSystemBlockSize - command ``stat -fc %s <mount_point_path>``
 
 The parser parse the output of ``stat -fc %s <mount_point_path>``
 """
-
-from insights import parser, CommandParser
+from insights.core import CommandParser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.parsers import SkipException
 
 
 @parser(Specs.gfs2_file_system_block_size)

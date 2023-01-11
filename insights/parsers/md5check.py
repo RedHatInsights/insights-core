@@ -6,10 +6,10 @@ Module for processing output of the ``md5sum`` command.
 
 The name and md5 checksums of the specified file are stored as attributes.
 """
-
-from .. import parser, CommandParser
-from ..parsers import ParseException
-from ..specs import Specs
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
+from insights.specs import Specs
 
 
 @parser(Specs.md5chk_files)

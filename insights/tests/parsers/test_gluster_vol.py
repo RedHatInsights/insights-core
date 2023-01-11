@@ -1,8 +1,10 @@
-import pytest
 import doctest
-from insights.parsers import ParseException, gluster_vol
-from insights.tests import context_wrap
+import pytest
+
+from insights.core.exceptions import ParseException
+from insights.parsers import gluster_vol
 from insights.parsers.gluster_vol import GlusterVolInfo, GlusterVolStatus
+from insights.tests import context_wrap
 
 
 # ---------------------------Gluster Vol Info Tests-----------------------------

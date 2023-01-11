@@ -4,10 +4,10 @@ KubepodsCpuQuota - CPU quota for each Kubernetes pod
 
 This parser reads the content of ``/sys/fs/cgroup/cpu/kubepods.slice/kubepods-burstable.slice/*.slice/cpu.cfs_quota_us``.
 """
-
-from insights import Parser, parser
+from insights.core import Parser
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
 from insights.specs import Specs
-from ..parsers import ParseException
 
 
 @parser(Specs.kubepods_cpu_quota)

@@ -1,8 +1,10 @@
 import pytest
 
 from collections import OrderedDict
+
+from insights.core.exceptions import ParseException, SkipException
 from insights.parsers import (calc_offset, keyword_search, optlist_to_dict, parse_delimited_table, parse_fixed_table,
-                              split_kv_pairs, unsplit_lines, ParseException, SkipException)
+                              split_kv_pairs, unsplit_lines)
 
 SPLIT_TEST_1 = """
 # Comment line

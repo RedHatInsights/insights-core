@@ -1,11 +1,11 @@
-import pytest
 import doctest
+import pytest
 
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import ContentException
 from insights.parsers import du
 from insights.parsers.du import DiskUsage
 from insights.tests import context_wrap
-from insights.parsers import ParseException, SkipException
-from insights.core.plugins import ContentException
 
 # du -s /var/lib/pgsql
 DU_VAR_LIB = """

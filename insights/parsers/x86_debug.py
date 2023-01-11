@@ -17,11 +17,10 @@ X86RETPEnabled - file ``/sys/kernel/debug/x86/retp_enabled``
 ------------------------------------------------------------
 
 """
-
-from insights import parser
-from insights import Parser
+from insights.core import Parser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.parsers import SkipException
 
 
 class X86DebugEnabled(Parser):

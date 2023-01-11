@@ -14,11 +14,11 @@ Examples:
     >>> firewalld['DefaultZone']
     'public'
 """
-
-from insights.specs import Specs
-from insights import Parser, parser
+from insights.core import Parser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
 from insights.parsers import split_kv_pairs
-from insights.parsers import SkipException
+from insights.specs import Specs
 
 
 @parser(Specs.firewalld_conf)

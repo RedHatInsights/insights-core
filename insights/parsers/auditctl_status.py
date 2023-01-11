@@ -3,9 +3,10 @@ AuditctlStatus - Report auditd status
 =====================================
 """
 
-from .. import parser, CommandParser, LegacyItemAccess
-from ..parsers import ParseException
-from ..specs import Specs
+from insights.core import CommandParser, LegacyItemAccess
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
+from insights.specs import Specs
 from insights.util import deprecated
 
 

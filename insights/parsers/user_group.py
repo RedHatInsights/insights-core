@@ -10,8 +10,10 @@ GroupInfo - command ``getent group <groupname>``
 ------------------------------------------------
 
 """
-from insights import parser, CommandParser
-from insights.parsers import ParseException, SkipException, keyword_search
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import parser
+from insights.parsers import keyword_search
 from insights.specs import Specs
 
 

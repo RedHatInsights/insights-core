@@ -23,8 +23,9 @@ Ql2xMaxLUN - file ``/sys/module/qla2xxx/parameters/ql2xmqsupport``
 KernelCrashKexecPostNotifiers - file ``/sys/module/kernel/parameters/crash_kexec_post_notifiers``
 -------------------------------------------------------------------------------------------------
 """
-from insights import parser, Parser
-from insights.parsers import SkipException
+from insights.core import Parser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 

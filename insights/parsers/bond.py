@@ -61,11 +61,11 @@ Examples:
     >>> bond_info.slave_speed
     ['1000 Mbps', '1000 Mbps']
 """
-
-from insights import Parser, parser, get_active_lines
+from insights.core import Parser
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines
 from insights.specs import Specs
-from insights.parsers import ParseException
-
 
 """dict: bonding mode parameter string linked to bond type index."""
 BOND_PREFIX_MAP = {

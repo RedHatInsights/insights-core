@@ -14,13 +14,16 @@ MysqladminVars - command ``/bin/mysqladmin variables``
 """
 
 import re
+
+from insights.core import CommandParser, LegacyItemAccess
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import parser
+from insights.specs import Specs
+
 try:
     from itertools import zip_longest
 except ImportError:
     from itertools import izip_longest as zip_longest
-from insights import CommandParser, parser, LegacyItemAccess
-from insights.parsers import ParseException, SkipException
-from insights.specs import Specs
 
 
 @parser(Specs.mysqladmin_status)

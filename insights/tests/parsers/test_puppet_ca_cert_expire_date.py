@@ -1,9 +1,9 @@
 import doctest
 import pytest
 
+from insights.core.exceptions import ParseException, SkipException
 from insights.core.plugins import ContentException
-from insights.parsers import (
-    puppet_ca_cert_expire_date, SkipException, ParseException)
+from insights.parsers import puppet_ca_cert_expire_date
 from insights.tests import context_wrap
 
 

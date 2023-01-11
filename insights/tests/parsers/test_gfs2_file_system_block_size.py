@@ -1,8 +1,9 @@
+import doctest
+import pytest
+
+from insights.core.exceptions import SkipException
 from insights.parsers import gfs2_file_system_block_size
 from insights.tests import context_wrap
-from insights.parsers import SkipException
-import pytest
-import doctest
 
 BLOCK_SIZE_OUTPUT = """
 4096

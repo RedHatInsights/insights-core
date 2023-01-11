@@ -16,11 +16,10 @@ EarliestHttpdCertInNSSExpireDate - The earliest expire date in a lot of httpd ce
 -----------------------------------------------------------------------------------------------------------------
 Combiner to get the earliest expire date in a lot of httpd certificates stored in nss database.
 """
-
-from insights.core.dr import SkipComponent
-from insights.parsers.ssl_certificate import HttpdCertInfoInNSS, NginxSSLCertExpireDate, HttpdSSLCertExpireDate
-from insights.parsers.certificates_enddate import CertificatesEnddate
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import combiner
+from insights.parsers.certificates_enddate import CertificatesEnddate
+from insights.parsers.ssl_certificate import HttpdCertInfoInNSS, NginxSSLCertExpireDate, HttpdSSLCertExpireDate
 
 
 class EarliestSSLCertExpireDate(object):

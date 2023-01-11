@@ -1,9 +1,10 @@
+import doctest
+import pytest
+
+from insights.core.exceptions import SkipException
 from insights.parsers import httpd_V
-from insights.parsers import SkipException
 from insights.parsers.httpd_V import HttpdV
 from insights.tests import context_wrap
-import pytest
-import doctest
 
 HTTPD_V_22 = """
 Server version: Apache/2.2.15 (Unix)

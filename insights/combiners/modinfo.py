@@ -12,11 +12,9 @@ ModulesInfo
 The ModulesInfo combines the collected modules info from the result of
 ``KernelModulesInfo``.
 """
-
+from insights.core.exceptions import SkipComponent, SkipException
 from insights.core.plugins import combiner
-from insights.parsers import SkipException
 from insights.parsers.modinfo import (KernelModulesInfo, ModInfoEach, ModInfoAll)
-from insights import SkipComponent
 from insights.util import deprecated
 
 

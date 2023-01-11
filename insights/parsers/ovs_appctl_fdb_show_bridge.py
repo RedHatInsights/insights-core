@@ -11,9 +11,9 @@ Sample command output::
     6       1 MAC1 118
     3       0 MAC2 24
 """
-
-from insights import CommandParser, LegacyItemAccess, parser
-from insights.parsers import SkipException
+from insights.core import CommandParser, LegacyItemAccess
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 

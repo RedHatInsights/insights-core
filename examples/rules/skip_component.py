@@ -19,13 +19,14 @@ or from the examples/rules directory::
 from __future__ import print_function
 from collections import namedtuple
 
-from insights import get_active_lines, parser, Parser
-from insights import make_fail, make_pass, rule, run
-from insights.core.spec_factory import SpecSet, simple_file
+from insights import run
 from insights.combiners.redhat_release import RedHatRelease
-from insights.core.plugins import component
-from insights.core.dr import SkipComponent
 from insights.components.rhel_version import IsRhel6, IsRhel7
+from insights.core import Parser
+from insights.core.exceptions import SkipComponent
+from insights.core.plugins import component, make_fail, make_pass, parser, rule
+from insights.core.spec_factory import SpecSet, simple_file
+from insights.parsers import get_active_lines
 
 # Error key used in make_fail
 ERROR_KEY = "TOO_MANY_HOSTS"

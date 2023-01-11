@@ -11,10 +11,11 @@ UnitFiles - command ``/bin/systemctl list-unit-files``
 ------------------------------------------------------
 
 """
-from .. import get_active_lines
-from ... import Parser, parser
+from insights.core import Parser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines
 from insights.specs import Specs
-from insights.parsers import SkipException
 
 
 @parser(Specs.systemctl_list_unit_files)

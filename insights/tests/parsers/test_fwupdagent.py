@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-
 import doctest
-
 import pytest
 
-from insights.parsers import fwupdagent, ParseException
+from insights.core.exceptions import ParseException
+from insights.parsers import fwupdagent
 from insights.parsers.fwupdagent import FwupdagentDevices, FwupdagentSecurity
 from insights.tests import context_wrap
 

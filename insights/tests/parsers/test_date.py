@@ -1,7 +1,10 @@
-import pytest
 import doctest
+import pytest
+
 from datetime import datetime
-from insights.parsers import ParseException, SkipException, date
+
+from insights.core.exceptions import ParseException, SkipException
+from insights.parsers import date
 from insights.parsers.date import Date, DateUTC, DateParseException, TimeDateCtlStatus
 from insights.tests import context_wrap
 

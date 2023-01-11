@@ -10,10 +10,10 @@ SystoolSCSIBus - command ``/bin/systool -b scsi -v``
 ----------------------------------------------------
 
 """
-
-from . import ParseException
-from .. import LegacyItemAccess, CommandParser, parser
-from ..specs import Specs
+from insights.core import CommandParser, LegacyItemAccess
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
+from insights.specs import Specs
 
 
 @parser(Specs.systool_b_scsi_v)

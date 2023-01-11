@@ -1,9 +1,10 @@
-from insights.parsers import SkipException
+import doctest
+import pytest
+
+from insights.core.exceptions import SkipException
 from insights.parsers import ip_netns_exec_namespace_lsof
 from insights.parsers.ip_netns_exec_namespace_lsof import IpNetnsExecNamespaceLsofI
 from insights.tests import context_wrap
-import doctest
-import pytest
 
 
 IP_NETNS_EXEC_NAMESPACE_LSOF_I = """

@@ -1,10 +1,11 @@
 import doctest
 import pytest
+
+from insights.core.exceptions import ParseException
+from insights.core.plugins import ContentException
 from insights.parsers import firewall_cmd
 from insights.parsers.firewall_cmd import FirewallCmdListALLZones
 from insights.tests import context_wrap
-from insights.parsers import ParseException
-from insights.core.plugins import ContentException
 
 FIREWALL_LIST_ZONES_1 = """
 FirewallD is not running

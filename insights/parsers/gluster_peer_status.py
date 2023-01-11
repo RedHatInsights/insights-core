@@ -3,8 +3,9 @@ GlusterPeerStatus - command ``gluster peer status``
 ===================================================
 """
 from insights.core import CommandParser
+from insights.core.exceptions import SkipException
 from insights.core.plugins import parser
-from insights.parsers import split_kv_pairs, SkipException
+from insights.parsers import split_kv_pairs
 from insights.specs import Specs
 
 try:

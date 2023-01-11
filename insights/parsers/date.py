@@ -13,10 +13,13 @@ TimeDateCtlStatus - command ``timedatectl status``
 """
 import six
 import sys
+
 from datetime import datetime
 
-from insights.parsers import ParseException, SkipException
-from insights import parser, get_active_lines, CommandParser
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines
 from insights.specs import Specs
 
 

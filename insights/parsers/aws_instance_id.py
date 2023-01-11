@@ -11,8 +11,9 @@ from AWS instances.
 from __future__ import print_function
 import json
 
-from insights.parsers import SkipException, ParseException
-from insights import parser, CommandParser
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 

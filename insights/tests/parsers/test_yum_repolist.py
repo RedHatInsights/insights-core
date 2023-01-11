@@ -1,9 +1,10 @@
-from insights.parsers import yum
-from insights.parsers.yum import YumRepoList
-from insights.parsers import SkipException, ParseException
-from insights.tests import context_wrap
 import doctest
 import pytest
+
+from insights.core.exceptions import ParseException, SkipException
+from insights.parsers import yum
+from insights.parsers.yum import YumRepoList
+from insights.tests import context_wrap
 
 YUM_REPOLIST_CONTENT = """
 Loaded plugins: product-id, search-disabled-repos, subscription-manager

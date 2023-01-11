@@ -1,6 +1,8 @@
 import doctest
 import pytest
-from insights.parsers import ceph_conf, SkipException
+
+from insights.core.exceptions import SkipException
+from insights.parsers import ceph_conf
 from insights.tests import context_wrap
 
 

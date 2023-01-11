@@ -1,6 +1,8 @@
 import doctest
 import pytest
-from insights.parsers import findmnt, SkipException
+
+from insights.core.exceptions import SkipException
+from insights.parsers import findmnt
 from insights.tests import context_wrap
 
 FINDMNT_NETNS_SHARED_1 = """

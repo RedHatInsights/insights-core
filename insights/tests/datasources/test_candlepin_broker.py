@@ -1,9 +1,10 @@
 import pytest
+
 from mock.mock import Mock
 
 from insights.core import ET
+from insights.core.exceptions import SkipComponent
 from insights.core.spec_factory import DatasourceProvider
-from insights.core.dr import SkipComponent
 from insights.specs.default import candlepin_broker
 
 

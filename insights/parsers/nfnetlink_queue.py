@@ -2,8 +2,9 @@
 NfnetLinkQueue - file ``/proc/net/netfilter/nfnetlink_queue``
 =============================================================
 """
-from insights import parser, Parser
-from insights.parsers import ParseException, SkipException
+from insights.core import Parser
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 

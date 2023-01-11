@@ -1,9 +1,10 @@
 import doctest
 import pytest
+
+from insights.core.exceptions import SkipException
 from insights.parsers import abrt_ccpp
 from insights.parsers.abrt_ccpp import AbrtCCppConf
 from insights.tests import context_wrap
-from insights.parsers import SkipException
 
 ABRT_CONF_CONTENT = """
 # Configuration file for CCpp hook

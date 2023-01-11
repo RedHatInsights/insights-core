@@ -21,11 +21,13 @@ Examples:
     >>> pmrep_doc_obj[7]
     {'name': 'swap.pagesout', 'value': '5.000'}
 """
-
 from csv import DictReader
-from insights import parser, CommandParser
+
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import parser
+from insights.parsers import keyword_search
 from insights.specs import Specs
-from insights.parsers import SkipException, ParseException, keyword_search
 
 
 @parser(Specs.pmrep_metrics)
