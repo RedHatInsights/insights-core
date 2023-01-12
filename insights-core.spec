@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.1.2
+Version:        3.1.3
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,26 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jan 12 2023 Xiangce Liu <xiangceliu@redhat.com> 3.1.3-1
+- Revert "Fix: Add condition to check the output of "rpm-ostree status" firstly
+  (#3634)" (#3652) (xiangceliu@redhat.com)
+- feat: new combiner OSRelease to identify RHEL (#3640) (xiangceliu@redhat.com)
+- feat: New datasource "sys_fs_cgroup_uniq_memory_swappiness" and its parser
+  (#3645) (30404410+qinpingli@users.noreply.github.com)
+- fix: Do not log Parsers' Traceback during collection (#3633)
+  (xiangceliu@redhat.com)
+- Fix: Add condition to check the output of "rpm-ostree status" firstly (#3634)
+  (jiazhang@redhat.com)
+- Move exceptions to their own module file (#3622) (rblakley@redhat.com)
+- Allow callers to order components for execution. (#3649)
+  (csams@users.noreply.github.com)
+- Create timeout signal for hostcontext only (#3647)
+  (lhuett@users.noreply.github.com)
+- feat: Add env override to CommandOutputProvider (#3636) (rblakley@redhat.com)
+- fix: Convert aws_token to string since sometimes it's unicode (#3643)
+  (44796653+huali027@users.noreply.github.com)
+- fix: py26 CI not found 'Python.h' (#3642) (xiangceliu@redhat.com)
+
 * Thu Dec 15 2022 Xiangce Liu <xiangceliu@redhat.com> 3.1.2-1
 - Fix: fix GrubbyDefaultKernel cannot handle specific invalid content (#3632)
   (986222045@qq.com)

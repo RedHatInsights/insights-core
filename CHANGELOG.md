@@ -2,6 +2,20 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.1.3](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.3) (2023-01-12)
+
+- Revert "Fix: Add condition to check the output of "rpm-ostree status" firstly (3634)" ([PR 3652](https://github.com/RedHatInsights/insights-core/pull/3652))
+- feat: new combiner OSRelease to identify RHEL ([PR 3640](https://github.com/RedHatInsights/insights-core/pull/3640))
+- feat: New datasource "sys_fs_cgroup_uniq_memory_swappiness" and its parser ([PR 3645](https://github.com/RedHatInsights/insights-core/pull/3645))
+- fix: Do not log Parsers' Traceback during collection ([PR 3633](https://github.com/RedHatInsights/insights-core/pull/3633))
+- Fix: Add condition to check the output of "rpm-ostree status" firstly ([PR 3634](https://github.com/RedHatInsights/insights-core/pull/3634))
+- Move exceptions to their own module file ([PR 3622](https://github.com/RedHatInsights/insights-core/pull/3622))
+- Allow callers to order components for execution. ([PR 3649](https://github.com/RedHatInsights/insights-core/pull/3649))
+- Create timeout signal for hostcontext only ([PR 3647](https://github.com/RedHatInsights/insights-core/pull/3647))
+- feat: Add env override to CommandOutputProvider ([PR 3636](https://github.com/RedHatInsights/insights-core/pull/3636))
+- fix: Convert aws_token to string since sometimes it's unicode ([PR 3643](https://github.com/RedHatInsights/insights-core/pull/3643))
+- fix: py26 CI not found 'Python.h' ([PR 3642](https://github.com/RedHatInsights/insights-core/pull/3642))
+
 ## [insights-core-3.1.2](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.2) (2022-12-15)
 
 - Fix: fix GrubbyDefaultKernel cannot handle specific invalid content ([PR 3632](https://github.com/RedHatInsights/insights-core/pull/3632))
