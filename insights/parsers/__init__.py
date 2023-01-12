@@ -1,4 +1,5 @@
 import pkgutil
+
 from collections import OrderedDict
 
 from insights.core.exceptions import ParseException, SkipComponent, SkipException  # noqa: F401
