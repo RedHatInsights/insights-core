@@ -38,7 +38,7 @@ class SysFsCgroupUniqMemorySwappiness(Parser):
         60
 
     Attributes:
-        stats (int): a list of ``MemorySwappiness`` objects
+        stats (list): a list of ``MemorySwappiness`` objects
     """
 
     MemorySwappiness = namedtuple('MemorySwappiness', ['value', 'count'])
