@@ -84,7 +84,7 @@ class OSRelease(object):
             # NON-RHEL Assertion 2: NG /etc/redhat-release
             return
         if rpms and rpms.packages:
-            self._points = 0
+            points = 0
             self._installed_packages = 1  # kernel is must-installed
             # check the booting 'kernel' first
             boot_kn = InstalledRpm.from_package(
@@ -95,7 +95,7 @@ class OSRelease(object):
                     if pkg == boot_kn:
                         if (pkg.redhat_signed and
                                 pkg.vendor and pkg.vendor == 'Red Hat, Inc.'):
-                            self._points += 1
+                            points += 1
                         break
             # check other packages
             for pkg_name in MIN_RHEL_PKGS:
@@ -107,8 +107,8 @@ class OSRelease(object):
                     self._installed_packages += 1
                     if (pkg.redhat_signed and
                             pkg.vendor and pkg.vendor == 'Red Hat, Inc.'):
-                        self._points += 1
-            if self._points >= round(THRESHOLD * self._installed_packages):
+                        points += 1
+            if points >= round(THRESHOLD * self._installed_packages):
                 # RHEL: more than THRESHOLD packages are from Red Hat
                 self._is_rhel = True
                 self._product = RHEL_STR
