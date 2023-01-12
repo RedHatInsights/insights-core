@@ -113,7 +113,8 @@ class OSRelease(object):
                 self._is_rhel = True
                 self._product = RHEL_STR
         elif ((rhr and rhr.is_rhel) or
-                (osr and any(k in v.lower() for k in RHEL_KEYS for v in names))):
+                (osr and names and
+                 any(k in v.lower() for k in RHEL_KEYS for v in names))):
             # backup plan when "rpm" command is corrupt or blocked
             # RHEL: when `os-release` *OR* `redhat-release` are for RHEL
             self._is_rhel = True
