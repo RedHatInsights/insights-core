@@ -27,7 +27,8 @@ from insights.specs.datasources import (
     aws, awx_manage, cloud_init, candlepin_broker, corosync as corosync_ds,
     dir_list, ethernet, httpd, ipcs, kernel, kernel_module_list, lpstat, md5chk,
     package_provides, ps as ps_datasource, sap, satellite_missed_queues,
-    semanage, ssl_certificate, sys_fs_cgroup_memory_tasks_number, rpm_pkgs, user_group, yum_updates, luks_devices)
+    semanage, ssl_certificate, sys_fs_cgroup_memory, sys_fs_cgroup_memory_tasks_number,
+    rpm_pkgs, user_group, yum_updates, luks_devices)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 from insights.specs.datasources.pcp import pcp_enabled, pmlog_summary_args
 from insights.specs.datasources.container import running_rhel_containers, containers_inspect
@@ -606,6 +607,7 @@ class DefaultSpecs(Specs):
     swift_object_expirer_conf = first_file(["/var/lib/config-data/puppet-generated/swift/etc/swift/object-expirer.conf", "/etc/swift/object-expirer.conf"])
     swift_proxy_server_conf = first_file(["/var/lib/config-data/puppet-generated/swift/etc/swift/proxy-server.conf", "/etc/swift/proxy-server.conf"])
     sys_fs_cgroup_memory_tasks_number = sys_fs_cgroup_memory_tasks_number.sys_fs_cgroup_memory_tasks_number_data_datasource
+    sys_fs_cgroup_uniq_memory_swappiness = sys_fs_cgroup_memory.sys_fs_cgroup_uniq_memory_swappiness
     sys_vmbus_class_id = glob_file('/sys/bus/vmbus/devices/*/class_id')
     sys_vmbus_device_id = glob_file('/sys/bus/vmbus/devices/*/device_id')
     sysconfig_grub = simple_file("/etc/default/grub")  # This is the file where the "/etc/sysconfig/grub" point to
