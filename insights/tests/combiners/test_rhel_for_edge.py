@@ -1,7 +1,10 @@
+import pytest
+from insights.core.exceptions import SkipComponent
 from insights.parsers.installed_rpms import InstalledRpms
 from insights.parsers.cmdline import CmdLine
 from insights.parsers.systemd.unitfiles import ListUnits
 from insights.parsers.redhat_release import RedhatRelease
+from insights.parsers.rpm_ostree_status import RpmOstreeStatus
 from insights.combiners.rhel_for_edge import RhelForEdge
 from insights.combiners import rhel_for_edge
 from insights.tests import context_wrap
@@ -41,14 +44,479 @@ kernel-4.18.0-305.19.1.el8_4.x86_64
 rpm-ostree-2021.5-2.el8.x86_64
 """.strip()
 
+RPM_OSTREE_STATUE_EDGE = """
+{
+  "deployments" : [
+    {
+      "base-commit-meta" : {
+        "rpmostree.inputhash" : "156ae2e3ad99777a0b7e48d169ee2f4fa618fd76a4ffc5ba8af8fad8c46ea75d"
+      },
+      "requested-local-packages" : [
+      ],
+      "base-removals" : [
+      ],
+      "unlocked" : "none",
+      "booted" : true,
+      "initramfs-etc" : [
+      ],
+      "id" : "rhel-7c25253d45a30b05222fba1365fce35263987262c490ad547e66d8541f05293a.0",
+      "layered-commit-meta" : {
+        "rpmostree.packages" : [
+          "glibc-langpack-en",
+          "ksh",
+          "wget",
+          "rhc"
+        ],
+        "rpmostree.state-sha512" : "c81ae53960de1009a1bace2d89fe58d42790147ba8018e1799ea22bf6f74e754af57530e04d092ed2975bcfaf7861d20c7133268ad02b8644973710727a1d311",
+        "rpmostree.removed-base-packages" : [
+        ],
+        "ostree.linux" : "4.18.0-348.el8.x86_64",
+        "rpmostree.rpmmd-repos" : [
+          {
+            "id" : "rhel-8-for-x86_64-baseos-rpms",
+            "timestamp" : 1665041964
+          },
+          {
+            "id" : "rhel-8-for-x86_64-appstream-rpms",
+            "timestamp" : 1665042074
+          }
+        ],
+        "rpmostree.modules" : [
+        ],
+        "rpmostree.clientlayer_version" : 5,
+        "ostree.bootable" : true,
+        "rpmostree.clientlayer" : true,
+        "rpmostree.replaced-base-packages" : [
+        ]
+      },
+      "osname": "rhel",
+      "origin" : "edge:rhel/8/x86_64/edge",
+      "pinned" : false,
+      "regenerate-initramfs" : false,
+      "base-timestamp" : 1665394938,
+      "base-local-replacements" : [
+      ],
+      "checksum" : "7c25253d45a30b05222fba1365fce35263987262c490ad547e66d8541f05293a",
+      "requested-base-local-replacements" : [
+      ],
+      "timestamp" : 1665398315,
+      "requested-packages" : [
+        "glibc-langpack-en",
+        "ksh",
+        "wget",
+        "rhc"
+      ],
+      "serial" : 0,
+      "packages" : [
+        "glibc-langpack-en",
+        "ksh",
+        "wget",
+        "rhc"
+      ],
+      "base-checksum" : "a35ac0ae55eb10f2f29e3f01cc760ae3ad5341d44a285129704749f24233d004",
+      "gpg-enabled" : false,
+      "requested-base-removals" : [
+      ]
+    },
+    {
+      "base-commit-meta" : {
+        "rpmostree.inputhash" : "f2ff223ab7b3cc45ca20fadc0a138808cc084a20bc5ce9f22b451a802c652c26",
+        "ostree.linux" : "4.18.0-372.9.1.el8.x86_64",
+        "ostree.bootable" : true
+      },
+      "requested-local-packages" : [
+      ],
+      "base-removals" : [
+      ],
+      "unlocked" : "none",
+      "booted" : false,
+      "initramfs-etc" : [
+      ],
+      "id" : "rhel-e2707b5fc7d4b168d7746678bc228b734dbf6f9f64b8ad97f5c87f7b9e7dfea7.0",
+      "layered-commit-meta" : {
+        "rpmostree.packages" : [
+          "glibc-langpack-en",
+          "ksh",
+          "wget",
+          "rhc"
+        ],
+        "rpmostree.state-sha512" : "a750200ccd47616f629c5c3c3937b51f561c1f1f7fee7dd94295997e0bf16e756b0eb8517f37e1f78f06bf281c6d831745e82765ffe23dd3248038511ae96df1",
+        "rpmostree.removed-base-packages" : [
+        ],
+        "ostree.linux" : "4.18.0-372.9.1.el8.x86_64",
+        "rpmostree.rpmmd-repos" : [
+          {
+            "id" : "rhel-8-for-x86_64-appstream-rpms",
+            "timestamp" : 1663855048
+          },
+          {
+            "id" : "rhel-8-for-x86_64-baseos-rpms",
+            "timestamp" : 1663584426
+          }
+        ],
+        "rpmostree.modules" : [
+        ],
+        "rpmostree.clientlayer_version" : 5,
+        "ostree.bootable" : true,
+        "rpmostree.clientlayer" : true,
+        "rpmostree.replaced-base-packages" : [
+        ]
+      },
+      "osname": "rhel",
+      "pending-base-checksum" : "a35ac0ae55eb10f2f29e3f01cc760ae3ad5341d44a285129704749f24233d004",
+      "origin" : "edge:rhel/8/x86_64/edge",
+      "regenerate-initramfs" : false,
+      "pending-base-timestamp" : 1665394938,
+      "base-timestamp" : 1652270522,
+      "base-local-replacements" : [
+      ],
+      "checksum" : "e2707b5fc7d4b168d7746678bc228b734dbf6f9f64b8ad97f5c87f7b9e7dfea7",
+      "requested-base-local-replacements" : [
+      ],
+      "timestamp" : 1663923873,
+      "requested-packages" : [
+        "glibc-langpack-en",
+        "ksh",
+        "wget",
+        "rhc"
+      ],
+      "serial" : 0,
+      "packages" : [
+        "glibc-langpack-en",
+        "ksh",
+        "wget",
+        "rhc"
+      ],
+      "pinned" : false,
+      "base-checksum" : "d82856c783ddb1c6ad9f728e60bec2b39626eef12984860c4a92fea04b1d396e",
+      "gpg-enabled" : false,
+      "requested-base-removals" : [
+      ]
+    }
+  ],
+  "transaction" : null,
+  "cached-update" : null
+}
+""".strip()
+
+RPM_OSTREE_STATUE_RHCOS = """
+{
+  "deployments" : [
+    {
+      "base-commit-meta" : {
+        "rpmostree.inputhash" : "156ae2e3ad99777a0b7e48d169ee2f4fa618fd76a4ffc5ba8af8fad8c46ea75d"
+      },
+      "requested-local-packages" : [
+      ],
+      "base-removals" : [
+      ],
+      "unlocked" : "none",
+      "booted" : true,
+      "initramfs-etc" : [
+      ],
+      "id" : "rhel-7c25253d45a30b05222fba1365fce35263987262c490ad547e66d8541f05293a.0",
+      "layered-commit-meta" : {
+        "rpmostree.packages" : [
+          "glibc-langpack-en",
+          "ksh",
+          "wget",
+          "rhc"
+        ],
+        "rpmostree.state-sha512" : "c81ae53960de1009a1bace2d89fe58d42790147ba8018e1799ea22bf6f74e754af57530e04d092ed2975bcfaf7861d20c7133268ad02b8644973710727a1d311",
+        "rpmostree.removed-base-packages" : [
+        ],
+        "ostree.linux" : "4.18.0-348.el8.x86_64",
+        "rpmostree.rpmmd-repos" : [
+          {
+            "id" : "rhel-8-for-x86_64-baseos-rpms",
+            "timestamp" : 1665041964
+          },
+          {
+            "id" : "rhel-8-for-x86_64-appstream-rpms",
+            "timestamp" : 1665042074
+          }
+        ],
+        "rpmostree.modules" : [
+        ],
+        "rpmostree.clientlayer_version" : 5,
+        "ostree.bootable" : true,
+        "rpmostree.clientlayer" : true,
+        "rpmostree.replaced-base-packages" : [
+        ]
+      },
+      "osname" : "rhcos",
+      "pinned" : false,
+      "regenerate-initramfs" : false,
+      "base-timestamp" : 1665394938,
+      "base-local-replacements" : [
+      ],
+      "checksum" : "7c25253d45a30b05222fba1365fce35263987262c490ad547e66d8541f05293a",
+      "requested-base-local-replacements" : [
+      ],
+      "timestamp" : 1665398315,
+      "requested-packages" : [
+        "glibc-langpack-en",
+        "ksh",
+        "wget",
+        "rhc"
+      ],
+      "serial" : 0,
+      "packages" : [
+        "glibc-langpack-en",
+        "ksh",
+        "wget",
+        "rhc"
+      ],
+      "base-checksum" : "a35ac0ae55eb10f2f29e3f01cc760ae3ad5341d44a285129704749f24233d004",
+      "gpg-enabled" : false,
+      "requested-base-removals" : [
+      ]
+    },
+    {
+      "base-commit-meta" : {
+        "rpmostree.inputhash" : "f2ff223ab7b3cc45ca20fadc0a138808cc084a20bc5ce9f22b451a802c652c26",
+        "ostree.linux" : "4.18.0-372.9.1.el8.x86_64",
+        "ostree.bootable" : true
+      },
+      "requested-local-packages" : [
+      ],
+      "base-removals" : [
+      ],
+      "unlocked" : "none",
+      "booted" : false,
+      "initramfs-etc" : [
+      ],
+      "id" : "rhel-e2707b5fc7d4b168d7746678bc228b734dbf6f9f64b8ad97f5c87f7b9e7dfea7.0",
+      "layered-commit-meta" : {
+        "rpmostree.packages" : [
+          "glibc-langpack-en",
+          "ksh",
+          "wget",
+          "rhc"
+        ],
+        "rpmostree.state-sha512" : "a750200ccd47616f629c5c3c3937b51f561c1f1f7fee7dd94295997e0bf16e756b0eb8517f37e1f78f06bf281c6d831745e82765ffe23dd3248038511ae96df1",
+        "rpmostree.removed-base-packages" : [
+        ],
+        "ostree.linux" : "4.18.0-372.9.1.el8.x86_64",
+        "rpmostree.rpmmd-repos" : [
+          {
+            "id" : "rhel-8-for-x86_64-appstream-rpms",
+            "timestamp" : 1663855048
+          },
+          {
+            "id" : "rhel-8-for-x86_64-baseos-rpms",
+            "timestamp" : 1663584426
+          }
+        ],
+        "rpmostree.modules" : [
+        ],
+        "rpmostree.clientlayer_version" : 5,
+        "ostree.bootable" : true,
+        "rpmostree.clientlayer" : true,
+        "rpmostree.replaced-base-packages" : [
+        ]
+      },
+      "osname" : "rhcos",
+      "pending-base-checksum" : "a35ac0ae55eb10f2f29e3f01cc760ae3ad5341d44a285129704749f24233d004",
+      "regenerate-initramfs" : false,
+      "pending-base-timestamp" : 1665394938,
+      "base-timestamp" : 1652270522,
+      "base-local-replacements" : [
+      ],
+      "checksum" : "e2707b5fc7d4b168d7746678bc228b734dbf6f9f64b8ad97f5c87f7b9e7dfea7",
+      "requested-base-local-replacements" : [
+      ],
+      "timestamp" : 1663923873,
+      "requested-packages" : [
+        "glibc-langpack-en",
+        "ksh",
+        "wget",
+        "rhc"
+      ],
+      "serial" : 0,
+      "packages" : [
+        "glibc-langpack-en",
+        "ksh",
+        "wget",
+        "rhc"
+      ],
+      "pinned" : false,
+      "base-checksum" : "d82856c783ddb1c6ad9f728e60bec2b39626eef12984860c4a92fea04b1d396e",
+      "gpg-enabled" : false,
+      "requested-base-removals" : [
+      ]
+    }
+  ],
+  "transaction" : null,
+  "cached-update" : null
+}
+""".strip()
+
+
+RPM_OSTREE_STATUE_EDGE_FALSE = """
+{
+  "deployments" : [
+    {
+      "base-commit-meta" : {
+        "rpmostree.inputhash" : "156ae2e3ad99777a0b7e48d169ee2f4fa618fd76a4ffc5ba8af8fad8c46ea75d"
+      },
+      "requested-local-packages" : [
+      ],
+      "base-removals" : [
+      ],
+      "unlocked" : "none",
+      "booted" : true,
+      "initramfs-etc" : [
+      ],
+      "id" : "rhel-7c25253d45a30b05222fba1365fce35263987262c490ad547e66d8541f05293a.0",
+      "layered-commit-meta" : {
+        "rpmostree.packages" : [
+          "glibc-langpack-en",
+          "ksh",
+          "wget",
+          "rhc"
+        ],
+        "rpmostree.state-sha512" : "c81ae53960de1009a1bace2d89fe58d42790147ba8018e1799ea22bf6f74e754af57530e04d092ed2975bcfaf7861d20c7133268ad02b8644973710727a1d311",
+        "rpmostree.removed-base-packages" : [
+        ],
+        "ostree.linux" : "4.18.0-348.el8.x86_64",
+        "rpmostree.rpmmd-repos" : [
+          {
+            "id" : "rhel-8-for-x86_64-baseos-rpms",
+            "timestamp" : 1665041964
+          },
+          {
+            "id" : "rhel-8-for-x86_64-appstream-rpms",
+            "timestamp" : 1665042074
+          }
+        ],
+        "rpmostree.modules" : [
+        ],
+        "rpmostree.clientlayer_version" : 5,
+        "ostree.bootable" : true,
+        "rpmostree.clientlayer" : true,
+        "rpmostree.replaced-base-packages" : [
+        ]
+      },
+      "osname": "rhel",
+      "origin" : "edge:rhel/8/x86_64/falsetest",
+      "pinned" : false,
+      "regenerate-initramfs" : false,
+      "base-timestamp" : 1665394938,
+      "base-local-replacements" : [
+      ],
+      "checksum" : "7c25253d45a30b05222fba1365fce35263987262c490ad547e66d8541f05293a",
+      "requested-base-local-replacements" : [
+      ],
+      "timestamp" : 1665398315,
+      "requested-packages" : [
+        "glibc-langpack-en",
+        "ksh",
+        "wget",
+        "rhc"
+      ],
+      "serial" : 0,
+      "packages" : [
+        "glibc-langpack-en",
+        "ksh",
+        "wget",
+        "rhc"
+      ],
+      "base-checksum" : "a35ac0ae55eb10f2f29e3f01cc760ae3ad5341d44a285129704749f24233d004",
+      "gpg-enabled" : false,
+      "requested-base-removals" : [
+      ]
+    },
+    {
+      "base-commit-meta" : {
+        "rpmostree.inputhash" : "f2ff223ab7b3cc45ca20fadc0a138808cc084a20bc5ce9f22b451a802c652c26",
+        "ostree.linux" : "4.18.0-372.9.1.el8.x86_64",
+        "ostree.bootable" : true
+      },
+      "requested-local-packages" : [
+      ],
+      "base-removals" : [
+      ],
+      "unlocked" : "none",
+      "booted" : false,
+      "initramfs-etc" : [
+      ],
+      "id" : "rhel-e2707b5fc7d4b168d7746678bc228b734dbf6f9f64b8ad97f5c87f7b9e7dfea7.0",
+      "layered-commit-meta" : {
+        "rpmostree.packages" : [
+          "glibc-langpack-en",
+          "ksh",
+          "wget",
+          "rhc"
+        ],
+        "rpmostree.state-sha512" : "a750200ccd47616f629c5c3c3937b51f561c1f1f7fee7dd94295997e0bf16e756b0eb8517f37e1f78f06bf281c6d831745e82765ffe23dd3248038511ae96df1",
+        "rpmostree.removed-base-packages" : [
+        ],
+        "ostree.linux" : "4.18.0-372.9.1.el8.x86_64",
+        "rpmostree.rpmmd-repos" : [
+          {
+            "id" : "rhel-8-for-x86_64-appstream-rpms",
+            "timestamp" : 1663855048
+          },
+          {
+            "id" : "rhel-8-for-x86_64-baseos-rpms",
+            "timestamp" : 1663584426
+          }
+        ],
+        "rpmostree.modules" : [
+        ],
+        "rpmostree.clientlayer_version" : 5,
+        "ostree.bootable" : true,
+        "rpmostree.clientlayer" : true,
+        "rpmostree.replaced-base-packages" : [
+        ]
+      },
+      "osname": "rhel",
+      "pending-base-checksum" : "a35ac0ae55eb10f2f29e3f01cc760ae3ad5341d44a285129704749f24233d004",
+      "origin" : "edge:rhel/8/x86_64/falsetest",
+      "regenerate-initramfs" : false,
+      "pending-base-timestamp" : 1665394938,
+      "base-timestamp" : 1652270522,
+      "base-local-replacements" : [
+      ],
+      "checksum" : "e2707b5fc7d4b168d7746678bc228b734dbf6f9f64b8ad97f5c87f7b9e7dfea7",
+      "requested-base-local-replacements" : [
+      ],
+      "timestamp" : 1663923873,
+      "requested-packages" : [
+        "glibc-langpack-en",
+        "ksh",
+        "wget",
+        "rhc"
+      ],
+      "serial" : 0,
+      "packages" : [
+        "glibc-langpack-en",
+        "ksh",
+        "wget",
+        "rhc"
+      ],
+      "pinned" : false,
+      "base-checksum" : "d82856c783ddb1c6ad9f728e60bec2b39626eef12984860c4a92fea04b1d396e",
+      "gpg-enabled" : false,
+      "requested-base-removals" : [
+      ]
+    }
+  ],
+  "transaction" : null,
+  "cached-update" : null
+}
+""".strip()
+
 
 def test_rhel_for_edge_true_1():
     install_rpms = InstalledRpms(context_wrap(CONTENT_INSTALLED_RPMS_EDGE))
     cmdline = CmdLine(context_wrap(CMDLINE_EDGE))
     list_units = ListUnits(context_wrap(CONTENT_SYSTEMCTL_LIST_UNITS_NO_AUTOMATED))
     redhat_release = RedhatRelease(context_wrap(CONTENT_REDHAT_RELEASE_RHEL))
+    rpm_ostree_status = RpmOstreeStatus(context_wrap(RPM_OSTREE_STATUE_EDGE))
 
-    result = RhelForEdge(install_rpms, cmdline, list_units, redhat_release)
+    result = RhelForEdge(list_units, rpm_ostree_status, install_rpms, cmdline, redhat_release)
     assert result.is_edge is True
     assert result.is_automated is False
 
@@ -59,7 +527,7 @@ def test_rhel_for_edge_true_2():
     list_units = ListUnits(context_wrap(CONTENT_SYSTEMCTL_LIST_UNITS_AUTOMATED))
     redhat_release = RedhatRelease(context_wrap(CONTENT_REDHAT_RELEASE_RHEL))
 
-    result = RhelForEdge(install_rpms, cmdline, list_units, redhat_release)
+    result = RhelForEdge(list_units, None, install_rpms, cmdline, redhat_release)
     assert result.is_edge is True
     assert result.is_automated is True
 
@@ -70,7 +538,7 @@ def test_rhel_for_edge_false_1():
     list_units = ListUnits(context_wrap(CONTENT_SYSTEMCTL_LIST_UNITS_AUTOMATED))
     redhat_release = RedhatRelease(context_wrap(CONTENT_REDHAT_RELEASE_RHEL))
 
-    result = RhelForEdge(install_rpms, cmdline, list_units, redhat_release)
+    result = RhelForEdge(list_units, None, install_rpms, cmdline, redhat_release)
     assert result.is_edge is False
     assert result.is_automated is False
 
@@ -81,7 +549,7 @@ def test_rhel_for_edge_false_2():
     list_units = ListUnits(context_wrap(CONTENT_SYSTEMCTL_LIST_UNITS_AUTOMATED))
     redhat_release = RedhatRelease(context_wrap(CONTENT_REDHAT_RELEASE_RHEL))
 
-    result = RhelForEdge(install_rpms, cmdline, list_units, redhat_release)
+    result = RhelForEdge(list_units, None, install_rpms, cmdline, redhat_release)
     assert result.is_edge is False
     assert result.is_automated is False
 
@@ -92,9 +560,43 @@ def test_rhel_for_edge_false_3():
     list_units = ListUnits(context_wrap(CONTENT_SYSTEMCTL_LIST_UNITS_AUTOMATED))
     redhat_release = RedhatRelease(context_wrap(CONTENT_REDHAT_RELEASE_COREOS))
 
-    result = RhelForEdge(install_rpms, cmdline, list_units, redhat_release)
+    result = RhelForEdge(list_units, None, install_rpms, cmdline, redhat_release)
     assert result.is_edge is False
     assert result.is_automated is False
+
+
+def test_rhel_for_edge_false_4():
+    install_rpms = InstalledRpms(context_wrap(CONTENT_INSTALLED_RPMS_EDGE))
+    cmdline = CmdLine(context_wrap(CMDLINE_EDGE))
+    list_units = ListUnits(context_wrap(CONTENT_SYSTEMCTL_LIST_UNITS_AUTOMATED))
+    redhat_release = RedhatRelease(context_wrap(CONTENT_REDHAT_RELEASE_COREOS))
+    rpm_ostree_status = RpmOstreeStatus(context_wrap(RPM_OSTREE_STATUE_RHCOS))
+
+    result = RhelForEdge(list_units, rpm_ostree_status, install_rpms, cmdline, redhat_release)
+    assert result.is_edge is False
+    assert result.is_automated is False
+
+
+def test_rhel_for_edge_false_5():
+    install_rpms = InstalledRpms(context_wrap(CONTENT_INSTALLED_RPMS_EDGE))
+    cmdline = CmdLine(context_wrap(CMDLINE_EDGE))
+    list_units = ListUnits(context_wrap(CONTENT_SYSTEMCTL_LIST_UNITS_AUTOMATED))
+    redhat_release = RedhatRelease(context_wrap(CONTENT_REDHAT_RELEASE_COREOS))
+    rpm_ostree_status = RpmOstreeStatus(context_wrap(RPM_OSTREE_STATUE_EDGE_FALSE))
+
+    result = RhelForEdge(list_units, rpm_ostree_status, install_rpms, cmdline, redhat_release)
+    assert result.is_edge is False
+    assert result.is_automated is False
+
+
+def test_rhel_for_edge_false_6():
+    install_rpms = InstalledRpms(context_wrap(CONTENT_INSTALLED_RPMS_EDGE))
+    cmdline = CmdLine(context_wrap(CMDLINE_EDGE))
+    list_units = ListUnits(context_wrap(CONTENT_SYSTEMCTL_LIST_UNITS_AUTOMATED))
+
+    with pytest.raises(SkipComponent) as e:
+        RhelForEdge(list_units, None, install_rpms, cmdline, None)
+    assert "Unable to determine if this system is created from an edge image" in str(e)
 
 
 def test_doc_examples():
@@ -104,7 +606,7 @@ def test_doc_examples():
     redhat_release = RedhatRelease(context_wrap(CONTENT_REDHAT_RELEASE_RHEL))
 
     env = {
-            'rhel_for_edge_obj': RhelForEdge(install_rpms, cmdline, list_units, redhat_release)
+            'rhel_for_edge_obj': RhelForEdge(list_units, None, install_rpms, cmdline, redhat_release)
           }
     failed, total = doctest.testmod(rhel_for_edge, globs=env)
     assert failed == 0
