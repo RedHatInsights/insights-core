@@ -253,24 +253,21 @@ class InstalledRpms(CommandParser, RpmList):
 
     def parse_content(self, content):
         packages = defaultdict(list)
-        for line in get_active_lines(content, comment_char='COMMAND>'):
-            if line.startswith('error:') or line.startswith('warning:'):
-                self.errors.append(line)
+        all_active_lines = get_active_lines(content, comment_char='COMMAND>')
+        if all_active_lines:
+            if '{"name":' in all_active_lines[0]:
+                rpm_init_method = InstalledRpm.from_json
             else:
-                try:
-                    # Try to parse from JSON input
-                    rpm = InstalledRpm.from_json(line)
-                    packages[rpm.name].append(rpm)
-                except Exception:
-                    # If that fails, try to parse from line input
-                    if line.strip():
-                        try:
-                            rpm = InstalledRpm.from_line(line)
-                            packages[rpm.name].append(rpm)
-                        except Exception:
-                            # Both ways failed
-                            self.unparsed.append(line)
-        # Don't want defaultdict's behavior after parsing is complete
+                rpm_init_method = InstalledRpm.from_line
+            for line in all_active_lines:
+                if line.startswith('error:') or line.startswith('warning:'):
+                    self.errors.append(line)
+                else:
+                    try:
+                        rpm = rpm_init_method(line)
+                        packages[rpm.name].append(rpm)
+                    except Exception:
+                        self.unparsed.append(line)
         self.packages = dict(packages)
 
     @property
