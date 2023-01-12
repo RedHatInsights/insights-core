@@ -211,6 +211,14 @@ insights.specs.datasources.ssl_certificate
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.sys_fs_cgroup_memory
+-----------------------------------------------
+
+.. automodule:: insights.specs.datasources.sys_fs_cgroup_memory
+    :members: sys_fs_cgroup_uniq_memory_swappiness
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.sys_fs_cgroup_memory_tasks_number
 ------------------------------------------------------------
 
