@@ -9,18 +9,18 @@ ContainerInstalledRpms - command ``rpm -qa`` for containers
 -----------------------------------------------------------
 """
 
+from collections import defaultdict
 import json
 import re
-from collections import defaultdict
-
 import six
 import warnings
 
-from ..util import rsplit
-from .. import parser, CommandParser
-from .rpm_vercmp import rpm_version_compare
+from insights import ContainerParser, parser, CommandParser
+from insights.core.exceptions import SkipComponent
+from insights.parsers.rpm_vercmp import rpm_version_compare
 from insights.specs import Specs
-from insights import ContainerParser
+from insights.util import rsplit
+
 
 # This list of architectures is taken from PDC (Product Definition Center):
 # https://pdc.fedoraproject.org/rest_api/v1/arches/
@@ -255,6 +255,8 @@ class InstalledRpms(CommandParser, RpmList):
         packages = defaultdict(list)
         if content and "COMMAND>" in content[0]:
             content = content[1:]
+        if not content:
+            raise SkipComponent("The content of rpm command is empty!")
         if '{"name":' in content[0]:
             rpm_init_method = InstalledRpm.from_json
         else:
