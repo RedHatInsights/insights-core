@@ -64,7 +64,7 @@ from functools import reduce as _reduce
 
 from insights.contrib import importlib
 from insights.contrib.toposort import toposort_flatten
-from insights.core.exceptions import SkipComponent
+from insights.core.exceptions import SkipComponent, ParseException
 from insights.util import defaults, enum, KeyPassingDefaultDict
 
 log = logging.getLogger(__name__)
@@ -231,27 +231,6 @@ class MissingRequirements(Exception):
         super(MissingRequirements, self).__init__(requirements)
 
 
-<<<<<<< HEAD
-=======
-class SkipComponent(Exception):
-    """
-    This class should be raised by components that want to be taken out of
-    dependency resolution.
-    """
-    pass
-
-
-class ParseExceptionOrig(Exception):
-    """
-    Exception that should be thrown from parsers that encounter
-    exceptions they recognize while parsing. When this exception
-    is thrown, the exception message and data are logged and no
-    parser output data is saved.
-    """
-    pass
-
-
->>>>>>> a74f9cd7 (fix: Do not log Parsers' Traceback during collection)
 def get_name(component):
     """
     Attempt to get the string name of component, including module and class if
@@ -1072,7 +1051,7 @@ def run_components(ordered_components, components, broker):
                 reqs = stringify_requirements(mr.requirements)
                 log.debug("%s missing requirements %s" % (name, reqs))
             broker.add_exception(component, mr)
-        except ParseExceptionOrig as pe:
+        except ParseException as pe:
             log.warning(pe)
             broker.add_exception(component, pe, traceback.format_exc())
         except SkipComponent:
