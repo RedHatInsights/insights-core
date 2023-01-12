@@ -17,7 +17,7 @@ import six
 import warnings
 
 from ..util import rsplit
-from .. import parser, get_active_lines, CommandParser
+from .. import parser, CommandParser
 from .rpm_vercmp import rpm_version_compare
 from insights.specs import Specs
 from insights import ContainerParser
@@ -253,21 +253,21 @@ class InstalledRpms(CommandParser, RpmList):
 
     def parse_content(self, content):
         packages = defaultdict(list)
-        all_active_lines = get_active_lines(content, comment_char='COMMAND>')
-        if all_active_lines:
-            if '{"name":' in all_active_lines[0]:
-                rpm_init_method = InstalledRpm.from_json
+        if content and "COMMAND>" in content[0]:
+            content = content[1:]
+        if '{"name":' in content[0]:
+            rpm_init_method = InstalledRpm.from_json
+        else:
+            rpm_init_method = InstalledRpm.from_line
+        for line in content:
+            if line.startswith('error:') or line.startswith('warning:'):
+                self.errors.append(line)
             else:
-                rpm_init_method = InstalledRpm.from_line
-            for line in all_active_lines:
-                if line.startswith('error:') or line.startswith('warning:'):
-                    self.errors.append(line)
-                else:
-                    try:
-                        rpm = rpm_init_method(line)
-                        packages[rpm.name].append(rpm)
-                    except Exception:
-                        self.unparsed.append(line)
+                try:
+                    rpm = rpm_init_method(line)
+                    packages[rpm.name].append(rpm)
+                except Exception:
+                    self.unparsed.append(line)
         self.packages = dict(packages)
 
     @property
