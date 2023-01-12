@@ -8,13 +8,13 @@ This combiner uses the following parsers to determine if the system is an edge c
 * :py:class:`insights.parsers.systemd.unitfiles.ListUnits`
 * :py:class:`insights.parsers.redhat_release.RedhatRelease`
 """
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import combiner
 from insights.parsers.cmdline import CmdLine
 from insights.parsers.installed_rpms import InstalledRpms
 from insights.parsers.systemd.unitfiles import ListUnits
 from insights.parsers.redhat_release import RedhatRelease
 from insights.parsers.rpm_ostree_status import RpmOstreeStatus
-from insights.parsers import SkipComponent
 
 
 @combiner(ListUnits, optional=[RpmOstreeStatus, InstalledRpms, CmdLine, RedhatRelease])

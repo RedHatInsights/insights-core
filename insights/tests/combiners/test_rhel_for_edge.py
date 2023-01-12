@@ -1,5 +1,5 @@
 import pytest
-from insights.core.dr import SkipComponent
+from insights.core.exceptions import SkipComponent
 from insights.parsers.installed_rpms import InstalledRpms
 from insights.parsers.cmdline import CmdLine
 from insights.parsers.systemd.unitfiles import ListUnits
