@@ -253,6 +253,7 @@ class InstalledRpms(CommandParser, RpmList):
 
     def parse_content(self, content):
         packages = defaultdict(list)
+        content = [line for line in content if line.strip()]  # in testing file, there are empty line
         if content and "COMMAND>" in content[0]:
             content = content[1:]
         if not content:
