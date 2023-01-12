@@ -30,6 +30,7 @@ MIN_RHEL_PKGS = [
     'coreutils',
     'dbus',
     'dmidecode',
+    'dnf',
     'dracut',
     'filesystem',
     'firewalld',
@@ -42,10 +43,11 @@ MIN_RHEL_PKGS = [
     'NetworkManager',
     'openssl-libs',
     'passwd',
-    'systemd',
+    'redhat-release',
+    'redhat-release-server',  # RHEL 6/7
+    'systemd',  # RHEL 7+
     'util-linux',
-    ('dnf', 'yum'),
-    ('redhat-release', 'redhat-release-server'),
+    'yum',  # RHEL 6/7
 ]
 """Must-install packages for minimum installed RHEL system."""
 THRESHOLD = 0.7
@@ -99,9 +101,6 @@ class OSRelease(object):
                         break
             # check other packages
             for pkg_name in MIN_RHEL_PKGS:
-                if type(pkg_name) is not str:
-                    pkgs = [_p for _p in pkg_name if _p in rpms]
-                    pkg_name = pkgs[0] if pkgs else None
                 pkg = rpms.newest(pkg_name)
                 if pkg:
                     installed_packages += 1
