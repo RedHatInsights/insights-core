@@ -64,7 +64,7 @@ from functools import reduce as _reduce
 
 from insights.contrib import importlib
 from insights.contrib.toposort import toposort_flatten
-from insights.core.exceptions import SkipComponent
+from insights.core.exceptions import SkipComponent, ParseException
 from insights.util import defaults, enum, KeyPassingDefaultDict
 
 log = logging.getLogger(__name__)
@@ -1051,6 +1051,9 @@ def run_components(ordered_components, components, broker):
                 reqs = stringify_requirements(mr.requirements)
                 log.debug("%s missing requirements %s" % (name, reqs))
             broker.add_exception(component, mr)
+        except ParseException as pe:
+            log.warning(pe)
+            broker.add_exception(component, pe, traceback.format_exc())
         except SkipComponent:
             pass
         except Exception as ex:
