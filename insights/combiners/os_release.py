@@ -30,7 +30,7 @@ MIN_RHEL_PKGS = [
     'coreutils',
     'dbus',
     'dmidecode',
-    'dnf',
+    'dnf',  # RHEL 8+
     'dracut',
     'filesystem',
     'firewalld',
