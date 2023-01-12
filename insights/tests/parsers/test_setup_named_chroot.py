@@ -1,8 +1,10 @@
-from insights.parsers import setup_named_chroot, SkipException
-from insights.parsers.setup_named_chroot import SetupNamedChroot
-from insights.tests import context_wrap
 import doctest
 import pytest
+
+from insights.core.exceptions import SkipException
+from insights.parsers import setup_named_chroot
+from insights.parsers.setup_named_chroot import SetupNamedChroot
+from insights.tests import context_wrap
 
 CHROOT_CONTENT_FILTERED = """
 #!/bin/bash

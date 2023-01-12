@@ -64,6 +64,7 @@ from functools import reduce as _reduce
 
 from insights.contrib import importlib
 from insights.contrib.toposort import toposort_flatten
+from insights.core.exceptions import SkipComponent, ParseException
 from insights.util import defaults, enum, KeyPassingDefaultDict
 
 log = logging.getLogger(__name__)
@@ -228,14 +229,6 @@ class MissingRequirements(Exception):
     def __init__(self, requirements):
         self.requirements = requirements
         super(MissingRequirements, self).__init__(requirements)
-
-
-class SkipComponent(Exception):
-    """
-    This class should be raised by components that want to be taken out of
-    dependency resolution.
-    """
-    pass
 
 
 def get_name(component):
@@ -1013,7 +1006,7 @@ def run_order(graph):
     return toposort_flatten(graph, sort=False)
 
 
-def _determine_components(components):
+def determine_components(components):
     if isinstance(components, dict):
         return components
 
@@ -1033,6 +1026,47 @@ def _determine_components(components):
         return COMPONENTS[components]
 
 
+_determine_components = determine_components
+
+
+def run_components(ordered_components, components, broker):
+    """
+    Runs a list of preordered components using the provided broker.
+
+    This function allows callers to order components themselves and cache the
+    result so they don't incur the toposort overhead on every run.
+    """
+    for component in ordered_components:
+        start = time.time()
+        try:
+            if (component not in broker and component in components and
+               component in DELEGATES and
+               is_enabled(component)):
+                log.info("Trying %s" % get_name(component))
+                result = DELEGATES[component].process(broker)
+                broker[component] = result
+        except MissingRequirements as mr:
+            if log.isEnabledFor(logging.DEBUG):
+                name = get_name(component)
+                reqs = stringify_requirements(mr.requirements)
+                log.debug("%s missing requirements %s" % (name, reqs))
+            broker.add_exception(component, mr)
+        except ParseException as pe:
+            log.warning(pe)
+            broker.add_exception(component, pe, traceback.format_exc())
+        except SkipComponent:
+            pass
+        except Exception as ex:
+            tb = traceback.format_exc()
+            log.warning(tb)
+            broker.add_exception(component, ex, tb)
+        finally:
+            broker.exec_times[component] = time.time() - start
+            broker.fire_observers(component)
+
+    return broker
+
+
 def run(components=None, broker=None):
     """
     Executes components in an order that satisfies their dependency
@@ -1050,40 +1084,14 @@ def run(components=None, broker=None):
         Broker: The broker after evaluation.
     """
     components = components or COMPONENTS[GROUPS.single]
-    components = _determine_components(components)
+    components = determine_components(components)
     broker = broker or Broker()
-
-    for component in run_order(components):
-        start = time.time()
-        try:
-            if (component not in broker and component in components and
-               component in DELEGATES and
-               is_enabled(component)):
-                log.info("Trying %s" % get_name(component))
-                result = DELEGATES[component].process(broker)
-                broker[component] = result
-        except MissingRequirements as mr:
-            if log.isEnabledFor(logging.DEBUG):
-                name = get_name(component)
-                reqs = stringify_requirements(mr.requirements)
-                log.debug("%s missing requirements %s" % (name, reqs))
-            broker.add_exception(component, mr)
-        except SkipComponent:
-            pass
-        except Exception as ex:
-            tb = traceback.format_exc()
-            log.warning(tb)
-            broker.add_exception(component, ex, tb)
-        finally:
-            broker.exec_times[component] = time.time() - start
-            broker.fire_observers(component)
-
-    return broker
+    return run_components(run_order(components), components, broker)
 
 
 def generate_incremental(components=None, broker=None):
     components = components or COMPONENTS[GROUPS.single]
-    components = _determine_components(components)
+    components = determine_components(components)
     for graph in get_subgraphs(components):
         yield graph, broker or Broker()
 

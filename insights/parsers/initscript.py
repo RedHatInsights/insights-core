@@ -17,10 +17,11 @@ Examples:
     Name: rhnsd
 
 """
-
-from . import ParseException
-from .. import Parser, parser
 import re
+
+from insights.core import Parser
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 CHKCONFIG_REGEX = re.compile(r"^#\s+chkconfig:\s+.*$")

@@ -1,7 +1,8 @@
+import pytest
+
+from insights.core.exceptions import SkipException
 from insights.parsers.ceph_version import CephVersion
 from insights.tests import context_wrap
-from insights.parsers import SkipException
-import pytest
 
 CV1 = "ceph version 0.94.9-9.el7cp (b83334e01379f267fb2f9ce729d74a0a8fa1e92c)"
 CV2 = ""

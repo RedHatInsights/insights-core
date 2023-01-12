@@ -12,9 +12,10 @@ Parsers in this module are:
 OVSvsctlListBridge - command ``/usr/bin/ovs-vsctl list bridge``
 ---------------------------------------------------------------
 """
-
-from insights import CommandParser, get_active_lines, parser
-from insights.parsers import SkipException, optlist_to_dict
+from insights.core import CommandParser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines, optlist_to_dict
 from insights.specs import Specs
 
 

@@ -14,17 +14,17 @@ KexecCrashSize - file ``/sys/kernel/kexec_crash_size``
 ------------------------------------------------------
 
 """
-
 import re
+
+from insights.core import LegacyItemAccess, Parser
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
+from insights.specs import Specs
 
 try:
     from urlparse import urlparse
 except ImportError:
     from urllib.parse import urlparse
-
-from insights import Parser, parser, LegacyItemAccess
-from insights.parsers import ParseException
-from insights.specs import Specs
 
 
 @parser(Specs.kdump_conf)

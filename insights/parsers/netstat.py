@@ -26,13 +26,13 @@ SsTUPNA - command ``ss -tupna``
 ProcNsat - File ``/proc/net/netstat``
 -------------------------------------
 """
-
 from collections import defaultdict
-from insights.parsers import keyword_search
+
+from insights.core import CommandParser, LegacyItemAccess, Parser
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import parser
+from insights.parsers import keyword_search, parse_delimited_table
 from insights.specs import Specs
-from insights import Parser
-from insights.parsers import SkipException, ParseException, parse_delimited_table
-from insights import parser, LegacyItemAccess, CommandParser
 
 
 ACTIVE_INTERNET_CONNECTIONS = 'Active Internet connections (servers and established)'

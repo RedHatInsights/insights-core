@@ -7,9 +7,10 @@ Parsers included in this module are:
 SAPHostCtrlInstances - Command ``saphostctrl -function GetCIMObject -enuminstances SAPInstance``
 ------------------------------------------------------------------------------------------------
 """
-from insights import parser, CommandParser
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipException
 from insights.core.filters import add_filter
-from insights.parsers import ParseException, SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 

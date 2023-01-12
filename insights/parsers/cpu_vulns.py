@@ -4,11 +4,10 @@ CpuVulns - files ``/sys/devices/system/cpu/vulnerabilities/*``
 
 Parser to parse the output of files ``/sys/devices/system/cpu/vulnerabilities/*``
 """
-
-from insights import Parser
-from insights import parser
+from insights.core import Parser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.parsers import SkipException
 
 
 @parser(Specs.cpu_vulns)

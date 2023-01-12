@@ -4,10 +4,12 @@ Ps - command ``ps auxww`` and others
 
 This module provides processing for the various outputs of the ``ps`` command.
 """
-from .. import parser, CommandParser
-from . import ParseException, parse_delimited_table, keyword_search
-from insights.specs import Specs
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException
 from insights.core.filters import add_filter
+from insights.core.plugins import parser
+from insights.parsers import keyword_search, parse_delimited_table
+from insights.specs import Specs
 
 
 def are_present(tags, line):

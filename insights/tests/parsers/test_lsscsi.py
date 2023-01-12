@@ -1,7 +1,8 @@
 import doctest
 import pytest
 
-from insights.parsers import lsscsi, ParseException
+from insights.core.exceptions import ParseException
+from insights.parsers import lsscsi
 from insights.tests import context_wrap
 
 

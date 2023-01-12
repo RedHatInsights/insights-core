@@ -1,6 +1,8 @@
-import pytest
 import doctest
-from insights.parsers import docker_inspect, SkipException
+import pytest
+
+from insights.core.exceptions import SkipException
+from insights.parsers import docker_inspect
 from insights.tests import context_wrap
 
 DOCKER_CONTAINER_INSPECT = """

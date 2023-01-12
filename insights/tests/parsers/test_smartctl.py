@@ -1,8 +1,8 @@
-from insights.parsers.smartctl import SMARTctl
-from insights.parsers import ParseException
-from insights.tests import context_wrap
-
 import pytest
+
+from insights.core.exceptions import ParseException
+from insights.parsers.smartctl import SMARTctl
+from insights.tests import context_wrap
 
 STANDARD_DRIVE = """
 smartctl 6.2 2013-07-26 r3841 [x86_64-linux-3.10.0-267.el7.x86_64] (local build)

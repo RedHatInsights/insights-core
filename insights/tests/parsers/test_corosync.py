@@ -1,7 +1,8 @@
 import doctest
 import pytest
-from insights.parsers import corosync, SkipException
 
+from insights.core.exceptions import SkipException
+from insights.parsers import corosync
 from insights.parsr.query import first, last
 from insights.tests import context_wrap
 

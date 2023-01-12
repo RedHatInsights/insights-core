@@ -78,7 +78,7 @@ Example:
 from insights.specs import Specs
 from insights import Parser, parser
 from insights.parsers import split_kv_pairs
-from insights.parsers import SkipException
+from insights.core.exceptions import SkipException
 
 
 @parser(Specs.abrt_ccpp_conf)

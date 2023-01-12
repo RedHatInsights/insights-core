@@ -1,12 +1,12 @@
 import re
 
+from insights.combiners.satellite_version import SatelliteVersion
 from insights.core.context import HostContext
-from insights.core.dr import SkipComponent
+from insights.core.exceptions import SkipComponent
+from insights.core.filters import add_filter
 from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider, simple_command
-from insights.combiners.satellite_version import SatelliteVersion
 from insights.specs import Specs
-from insights.core.filters import add_filter
 
 
 NODE_NOT_FOUND_ERROR = 'error Error on attach: Node not found'

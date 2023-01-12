@@ -12,11 +12,11 @@ LibsshClientConfig - file ``/etc/libssh/libssh_client.config``
 LibsshServerConfig - file ``/etc/libssh/libssh_server.config``
 --------------------------------------------------------------
 """
-
-from insights.specs import Specs
 from insights.core import CommandParser
-from .. import parser, get_active_lines
-from insights.parsers import SkipException
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines
+from insights.specs import Specs
 
 
 class LibsshConfig(CommandParser, dict):

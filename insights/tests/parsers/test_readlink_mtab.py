@@ -1,8 +1,9 @@
-import pytest
 import doctest
+import pytest
 
+from insights.core.exceptions import SkipException
+from insights.parsers import readlink_e_mtab
 from insights.tests import context_wrap
-from insights.parsers import readlink_e_mtab, SkipException
 
 REAL_FILE_PATH = '''
 /proc/4578/mounts

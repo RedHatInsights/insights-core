@@ -1,13 +1,10 @@
-""""
-test mount
-==========
-"""
-from insights.parsers import ParseException, SkipException
+import doctest
+import pytest
+
+from insights.core.exceptions import ParseException, SkipException
 from insights.parsers import mount
 from insights.parsers.mount import Mount, ProcMounts, MountInfo
 from insights.tests import context_wrap
-import pytest
-import doctest
 
 MOUNT_DATA = """
 tmpfs on /tmp type tmpfs (rw,seclabel)

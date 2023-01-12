@@ -1,8 +1,10 @@
-from insights.parsers import lssap, ParseException, SkipException
-from insights.tests import context_wrap
-from insights.util import keys_in
 import doctest
 import pytest
+
+from insights.core.exceptions import ParseException, SkipException
+from insights.parsers import lssap
+from insights.tests import context_wrap
+from insights.util import keys_in
 
 Lssap_BAD = """
  - lssap version 1.0 -

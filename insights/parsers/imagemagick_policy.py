@@ -2,10 +2,9 @@
 ImageMagickPolicy - files ``/etc/ImageMagick/policy.xml`` and ``/usr/lib*/ImageMagick-6.5.4/config/policy.xml``
 ===============================================================================================================
 """
-
 from insights.core import XMLParser
+from insights.core.exceptions import SkipException
 from insights.core.plugins import parser
-from insights.parsers import SkipException
 from insights.specs import Specs
 
 

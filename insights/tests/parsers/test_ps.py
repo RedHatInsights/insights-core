@@ -1,9 +1,10 @@
 import doctest
 import pytest
 
-from insights.parsers import ps, ParseException
-from insights.tests import context_wrap
+from insights.core.exceptions import ParseException
+from insights.parsers import ps
 from insights.util import keys_in
+from insights.tests import context_wrap
 
 PsAuxww_TEST_DOC = """
  USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND

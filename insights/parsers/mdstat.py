@@ -4,8 +4,9 @@ Mdstat - file ``/proc/mdstat``
 """
 import re
 
-from insights import parser, CommandParser
-from insights.parsers import ParseException, SkipException
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 

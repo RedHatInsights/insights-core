@@ -14,9 +14,11 @@ DmsetupStatus - command ``dmsetup status``
 
 """
 from collections import namedtuple
-from insights import parser, CommandParser
+
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
 from insights.parsers import parse_delimited_table
-from insights.parsers import ParseException
 from insights.specs import Specs
 
 

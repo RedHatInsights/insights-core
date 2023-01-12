@@ -19,10 +19,10 @@ Examples::
     >>> clients.count
     13
 """
-
-from insights import parser, CommandParser
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.parsers import SkipException, ParseException
 
 
 @parser(Specs.satellite_content_hosts_count)

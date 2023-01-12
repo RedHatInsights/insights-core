@@ -5,14 +5,14 @@ IsRhel6, IsRhel7, IsRhel8, and IsRhel9
 An ``IsRhel*`` component is valid if the
 :py:class:`insights.combiners.redhat_release.RedHatRelease` combiner indicates
 the major RHEL version represented by the component. Otherwise, it raises a
-:py:class:`insights.core.dr.SkipComponent` to prevent dependent components from
+:py:class:`insights.core.exceptions.SkipComponent` to prevent dependent components from
 executing.
 
 In particular, an ``IsRhel*`` component can be added as a dependency of a
 parser to limit it to a given version.
 """
 from insights.combiners.redhat_release import RedHatRelease
-from insights.core.dr import SkipComponent
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import component
 
 

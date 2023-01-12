@@ -74,8 +74,10 @@ Examples:
     >>> parted_info.partitions[0].flags
     'bios_grub'
 """
-from .. import parser, CommandParser
-from ..parsers import ParseException, parse_fixed_table
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
+from insights.parsers import parse_fixed_table
 from insights.specs import Specs
 
 

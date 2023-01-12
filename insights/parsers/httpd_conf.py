@@ -5,12 +5,12 @@ HttpdConf - files ``/etc/httpd/conf/httpd.conf`` and ``/etc/httpd/conf.d/*``
 import string
 
 from insights.core import ConfigParser
+from insights.core.exceptions import ParseException
 from insights.core.plugins import parser
-from insights.parsers import ParseException
 from insights.parsr import (Char, EOF, EOL, EndTagName, Forward, FS, GT, InSet, Literal,
                             LT, Letters, Lift, LineEnd, Many, Number, OneLineComment,
-                            PosMarker, QuotedString, skip_none, StartTagName, String, WS,
-                            WSChar)
+                            PosMarker, QuotedString, StartTagName, String, WS, WSChar,
+                            skip_none)
 from insights.parsr.query import Directive, Entry, Section
 from insights.specs import Specs
 

@@ -5,10 +5,10 @@ OVSofctlDumpFlows - command ``/usr/bin/ovs-ofctl dump-flows <bridge-name>``
 This module provides class ``OVSofctlDumpFlows`` to parse the
 output of command ``/usr/bin/ovs-ofctl dump-flows <bridge-name>``.
 """
-
-
-from insights import CommandParser, parser
-from insights.parsers import SkipException, split_kv_pairs
+from insights.core import CommandParser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
+from insights.parsers import split_kv_pairs
 from insights.specs import Specs
 
 

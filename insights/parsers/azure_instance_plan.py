@@ -11,8 +11,9 @@ For more details, See: https://docs.microsoft.com/en-us/rest/api/compute/virtual
 """
 import json
 
-from insights.parsers import SkipException, ParseException
-from insights import parser, CommandParser
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
 from insights.util import deprecated
 

@@ -1,10 +1,11 @@
 import pytest
+
 from mock.mock import patch, PropertyMock
 
-from insights.core.dr import SkipComponent
 from insights.core.context import HostContext
+from insights.core.exceptions import SkipComponent
 from insights.core.spec_factory import ContainerCommandProvider
-from insights.specs.datasources.container.nginx_conf import nginx_conf, LocalSpecs
+from insights.specs.datasources.container.nginx_conf import LocalSpecs, nginx_conf
 
 
 find_list = [

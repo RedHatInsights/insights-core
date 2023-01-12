@@ -20,9 +20,9 @@ NtpqPn - command ``/usr/sbin/ntpq -pn``
 NtpqLeap - command ``/usr/sbin/ntpq -c 'rv 0 leap'``
 ----------------------------------------------------
 """
-
-from insights import parser, CommandParser
-from insights.core.dr import SkipComponent
+from insights.core import CommandParser
+from insights.core.exceptions import SkipComponent
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 

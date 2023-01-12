@@ -13,15 +13,15 @@ MultipathConfInitramfs - command ``lsinitrd -f /etc/multipath.conf``
 --------------------------------------------------------------------
 
 """
-
 import string
+
 from insights.contrib import pyparsing as p
-from insights import parser, Parser, LegacyItemAccess
-from insights.core import ConfigParser
-from insights.parsers import SkipException
-from insights.parsr import (EOF, Forward, LeftCurly, Lift, Literal, LineEnd,
-        RightCurly, Many, Number, OneLineComment, PosMarker, skip_none, String,
-        QuotedString, WS, WSChar)
+from insights.core import ConfigParser, LegacyItemAccess, Parser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
+from insights.parsr import (EOF, Forward, LeftCurly, Lift, LineEnd, Literal,
+                            Many, Number, OneLineComment, PosMarker, QuotedString,
+                            RightCurly, String, WS, WSChar, skip_none)
 from insights.parsr.query import Entry
 from insights.specs import Specs
 

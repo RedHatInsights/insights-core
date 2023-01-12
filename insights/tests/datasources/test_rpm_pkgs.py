@@ -3,7 +3,7 @@ import pytest
 
 from mock.mock import Mock
 
-from insights.core.dr import SkipComponent
+from insights.core.exceptions import SkipComponent
 from insights.core.spec_factory import DatasourceProvider
 from insights.specs.datasources.rpm_pkgs import LocalSpecs, pkgs_with_writable_dirs
 

@@ -1,7 +1,9 @@
-import pytest
 import doctest
+import pytest
+
+from insights.core.exceptions import SkipException
+from insights.parsers import sudoers
 from insights.parsers.sudoers import EtcSudoers
-from insights.parsers import sudoers, SkipException
 from insights.tests import context_wrap
 
 SUDOERS = """

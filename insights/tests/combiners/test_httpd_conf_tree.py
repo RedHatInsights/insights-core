@@ -2,7 +2,8 @@
 import pytest
 
 from insights.combiners.httpd_conf import HttpdConfTree, HttpdConfSclHttpd24Tree, HttpdConfSclJbcsHttpd24Tree
-from insights.parsers import ParseException, SkipException, httpd_conf
+from insights.core.exceptions import ParseException, SkipException
+from insights.parsers import httpd_conf
 from insights.tests import context_wrap
 
 HTTPD_CONF_MIXED_NAME = '''

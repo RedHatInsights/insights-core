@@ -2,8 +2,10 @@
 Sat5InsightsProperties - File ``redhat-access-insights.properties``
 ===================================================================
 """
-from insights import Parser, LegacyItemAccess, parser, get_active_lines
-from insights.parsers import SkipException
+from insights.core import LegacyItemAccess, Parser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines
 from insights.specs import Specs
 
 

@@ -5,10 +5,10 @@ Slab allocator's details.
 SlabInfo - File ``/proc/slabinfo``
 ----------------------------------
 """
-
+from insights.core import Parser
+from insights.core.exceptions import SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights import Parser, parser
-from insights.parsers import SkipException
 
 
 @parser(Specs.proc_slabinfo)

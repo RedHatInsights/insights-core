@@ -1,10 +1,11 @@
-from insights.components.rhel_version import IsRhel6, IsRhel7, IsRhel8, IsRhel9
-from insights.combiners.redhat_release import RedHatRelease as RR
-from insights.parsers.uname import Uname
-from insights.parsers.redhat_release import RedhatRelease
-from insights.tests import context_wrap
-from insights.core.dr import SkipComponent
 import pytest
+
+from insights.combiners.redhat_release import RedHatRelease as RR
+from insights.components.rhel_version import IsRhel6, IsRhel7, IsRhel8, IsRhel9
+from insights.core.exceptions import SkipComponent
+from insights.parsers.redhat_release import RedhatRelease
+from insights.parsers.uname import Uname
+from insights.tests import context_wrap
 
 
 UNAME = "Linux localhost.localdomain 3.10.0-327.rt56.204.el7.x86_64 #1 SMP PREEMPT RT Thu Oct 29 21:54:23 EDT 2015 x86_64 x86_64 x86_64 GNU/Linux"

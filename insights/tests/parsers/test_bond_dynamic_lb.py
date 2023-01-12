@@ -1,8 +1,9 @@
 import doctest
 import pytest
-from insights.parsers import ParseException, SkipException
-from insights.parsers.bond_dynamic_lb import BondDynamicLB
+
+from insights.core.exceptions import ParseException, SkipException
 from insights.parsers import bond_dynamic_lb
+from insights.parsers.bond_dynamic_lb import BondDynamicLB
 from insights.tests import context_wrap
 
 

@@ -1,11 +1,12 @@
 import doctest
 import pytest
 
-from insights.parsers import ceph_cmd_json_parsing, ParseException
-from insights.parsers.ceph_cmd_json_parsing import CephOsdDump, CephOsdDf, CephS, CephECProfileGet, CephCfgInfo, \
-    CephHealthDetail, CephDfDetail, CephOsdTree, CephReport
-from insights.tests.parsers import skip_exception_check
+from insights.core.exceptions import ParseException
+from insights.parsers import ceph_cmd_json_parsing
+from insights.parsers.ceph_cmd_json_parsing import (CephCfgInfo, CephDfDetail, CephECProfileGet, CephHealthDetail,
+                                                    CephOsdDf, CephOsdDump, CephOsdTree, CephReport, CephS)
 from insights.tests import context_wrap
+from insights.tests.parsers import skip_exception_check
 
 CEPH_OSD_DUMP_INFO = """
 {
