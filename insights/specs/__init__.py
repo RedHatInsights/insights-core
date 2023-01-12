@@ -673,6 +673,7 @@ class Specs(SpecSet):
     swift_object_expirer_conf = RegistryPoint()
     swift_proxy_server_conf = RegistryPoint()
     sys_fs_cgroup_memory_tasks_number = RegistryPoint()
+    sys_fs_cgroup_uniq_memory_swappiness = RegistryPoint()
     sys_kernel_sched_features = RegistryPoint()
     sys_vmbus_class_id = RegistryPoint(multi_output=True)
     sys_vmbus_device_id = RegistryPoint(multi_output=True)
