@@ -85,7 +85,7 @@ class OSRelease(object):
             return
         if rpms and rpms.packages:
             points = 0
-            self._installed_packages = 1  # kernel is must-installed
+            installed_packages = 1  # kernel is must-installed
             # check the booting 'kernel' first
             boot_kn = InstalledRpm.from_package(
                     'kernel-{0}'.format(uname.kernel)) if uname else None
@@ -104,11 +104,11 @@ class OSRelease(object):
                     pkg_name = pkgs[0] if pkgs else None
                 pkg = rpms.newest(pkg_name)
                 if pkg:
-                    self._installed_packages += 1
+                    installed_packages += 1
                     if (pkg.redhat_signed and
                             pkg.vendor and pkg.vendor == 'Red Hat, Inc.'):
                         points += 1
-            if points >= round(THRESHOLD * self._installed_packages):
+            if points >= round(THRESHOLD * installed_packages):
                 # RHEL: more than THRESHOLD packages are from Red Hat
                 self._is_rhel = True
                 self._product = RHEL_STR
