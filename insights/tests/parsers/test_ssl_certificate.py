@@ -1,8 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import ParseException, SkipComponent, SkipException
-from insights.core.plugins import ContentException
+from insights.core.exceptions import ContentException, ParseException, SkipComponent, SkipException
 from insights.parsers import ssl_certificate
 from insights.tests import context_wrap
 

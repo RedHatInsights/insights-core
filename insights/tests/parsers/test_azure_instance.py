@@ -1,8 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import ParseException, SkipException
-from insights.core.plugins import ContentException
+from insights.core.exceptions import ContentException, ParseException, SkipException
 from insights.parsers import azure_instance
 from insights.parsers.azure_instance import AzureInstanceID, AzureInstancePlan, AzureInstanceType
 from insights.tests import context_wrap

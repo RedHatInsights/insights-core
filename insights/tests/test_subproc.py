@@ -1,7 +1,8 @@
-import sys
 import pytest
 import shlex
+import sys
 
+from insights.core.exceptions import CalledProcessError
 from insights.util import subproc
 
 
@@ -20,5 +21,5 @@ def test_call_list_of_lists():
 def test_call_timeout():
     # Timeouts don't work on OS X
     if sys.platform != "darwin":
-        with pytest.raises(subproc.CalledProcessError):
+        with pytest.raises(CalledProcessError):
             subproc.call('sleep 3', timeout=1)

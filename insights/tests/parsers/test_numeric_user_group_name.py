@@ -1,5 +1,4 @@
-from insights.core.exceptions import ParseException
-from insights.core.plugins import ContentException
+from insights.core.exceptions import ContentException, ParseException
 from insights.parsers.numeric_user_group_name import NumericUserGroupName
 from insights.tests import context_wrap
 
