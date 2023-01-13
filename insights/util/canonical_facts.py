@@ -4,13 +4,15 @@ from __future__ import print_function
 
 import re
 import socket
-
-from insights import rule, make_metadata, run
-from insights.specs import Specs
-from insights.core import Parser
-from insights.core.plugins import parser
-from insights.core.dr import set_enabled, load_components
 import uuid
+
+from insights import rule, make_metadata, run, parsers
+from insights.core import Parser
+from insights.core.dr import set_enabled, load_components
+from insights.core.plugins import parser
+from insights.combiners.cloud_instance import CloudInstance
+from insights.combiners.os_release import OSRelease
+from insights.specs import Specs
 
 
 def valid_uuid_or_None(s):
@@ -115,10 +117,13 @@ def _filter_falsy(dict_):
         IPs,
         Specs.hostname,
         Specs.mac_addresses,
+        CloudInstance,
+        OSRelease,
     ]
 )
 def canonical_facts(
-    insights_id, machine_id, bios_uuid, submanid, ips, fqdn, mac_addresses
+    insights_id, machine_id, bios_uuid, submanid, ips, fqdn, mac_addresses,
+    cloud_instance, os_release,
 ):
 
     facts = dict(
@@ -129,6 +134,9 @@ def canonical_facts(
         ip_addresses=ips.data if ips else [],
         mac_addresses=valid_mac_addresses(mac_addresses) if mac_addresses else [],
         fqdn=_safe_parse(fqdn),
+        provider_id=cloud_instance.id,
+        provider_type=cloud_instance.type,
+        is_rhel=os_release.is_rhel,
     )
 
     return make_metadata(**_filter_falsy(facts))
@@ -137,9 +145,28 @@ def canonical_facts(
 def get_canonical_facts(path=None):
     load_components("insights.specs.default", "insights.specs.insights_archive")
 
-    set_enabled(canonical_facts, True)
-    set_enabled(SubscriptionManagerID, True)
-    set_enabled(IPs, True)
+    required_components = [
+        IPs,
+        SubscriptionManagerID,
+        parsers.aws_instance_id,
+        parsers.azure_instance.AzureInstanceID,
+        parsers.azure_instance.AzureInstanceType,
+        parsers.dmidecode.DMIDecode,
+        parsers.gcp_instance_type.GCPInstanceType,
+        parsers.installed_rpms.InstalledRpms,
+        parsers.os_release.OsRelease,
+        parsers.redhat_release.RedhatRelease,
+        parsers.rhsm_conf.RHSMConf,
+        parsers.subscription_manager.SubscriptionManagerFacts,
+        parsers.uname.Uname,
+        parsers.yum.YumRepoList,
+        CloudInstance,
+        OSRelease,
+        canonical_facts,
+    ]
+    for comp in required_components:
+        set_enabled(comp, True)
+
     br = run(canonical_facts, root=path)
     d = br[canonical_facts]
     del d["type"]
