@@ -10,7 +10,7 @@ This results in the modification of the original structure of data.
 from collections import namedtuple
 
 from insights.core import CommandParser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.filters import add_filter
 from insights.core.plugins import parser
 from insights.parsers import keyword_search, parse_fixed_table
@@ -43,7 +43,7 @@ class IpNetnsExecNamespaceLsofI(CommandParser):
            data (list): List of key value pair derived from the command.
 
        Raises:
-           SkipException: When the file is empty or data is useless.
+           SkipComponent: When the file is empty or data is useless.
     """
     keyvalue = namedtuple("KeyValue",
                           ["command", "pid", "user", "fd", "type", "device", "size_off", "node", "name"])
@@ -52,7 +52,7 @@ class IpNetnsExecNamespaceLsofI(CommandParser):
         self.fields = []
         self.data = []
         if not content:
-            raise SkipException("Empty file")
+            raise SkipComponent("Empty file")
 
         self.data = parse_fixed_table(content,
                                       heading_ignore=["COMMAND", "PID", "USER", "FD", "TYPE", "DEVICE", "SIZE/OFF", "NODE", "NAME"],
@@ -60,7 +60,7 @@ class IpNetnsExecNamespaceLsofI(CommandParser):
                                                          ("TYPE", "type"), ("DEVICE", "device"), ("SIZE/OFF", "size_off"),
                                                          ("NODE", "node"), ("NAME", "name")])
         if not self.data:
-            raise SkipException("Useless data")
+            raise SkipComponent("Useless data")
 
         for item in self.data:
             self.fields.append(self.keyvalue(item["command"], item["pid"], item["user"], item["fd"], item["type"], item["device"],

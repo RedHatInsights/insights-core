@@ -1,8 +1,8 @@
 import doctest
 
 from insights.parsers import cloud_cfg
-from insights.tests.parsers import skip_exception_check
 from insights.tests import context_wrap
+from insights.tests.parsers import skip_component_check
 
 
 CONFIG_1 = """
@@ -23,7 +23,7 @@ def test_cloud_cfg():
 
 
 def test_cloud_cfg_empty():
-    assert 'There is no data' in skip_exception_check(cloud_cfg.CloudCfg)
+    assert 'There is no data' in skip_component_check(cloud_cfg.CloudCfg)
 
 
 def test_doc_examples():

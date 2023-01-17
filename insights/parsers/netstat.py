@@ -29,7 +29,7 @@ ProcNsat - File ``/proc/net/netstat``
 from collections import defaultdict
 
 from insights.core import CommandParser, LegacyItemAccess, Parser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import keyword_search, parse_delimited_table
 from insights.specs import Specs
@@ -777,7 +777,7 @@ class ProcNsat(Parser):
     def parse_content(self, content):
         self.data = {}
         if not content:
-            raise SkipException("No Contents")
+            raise SkipComponent("No Contents")
         tcp_hdr = content[0].split()[1:]
         tcp_hdr_len = len(tcp_hdr)
         tcp_stat = content[1].split()[1:]

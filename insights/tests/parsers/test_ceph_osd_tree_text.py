@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import ceph_osd_tree_text
 from insights.parsers.ceph_osd_tree_text import CephOsdTreeText
 from insights.tests import context_wrap
@@ -60,7 +60,7 @@ def test_ceph_osd_tree_text_v2():
 
 
 def test_skip_content():
-    with pytest.raises(SkipException) as e:
+    with pytest.raises(SkipComponent) as e:
         CephOsdTreeText(context_wrap(OSD_TREE_EMPTY))
     assert "Empty content." in str(e)
 

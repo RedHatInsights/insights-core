@@ -11,7 +11,7 @@ DnfModuleInfo - command ``dnf module info *``
 ---------------------------------------------
 """
 from insights.core import CommandParser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import parse_fixed_table
 from insights.specs import Specs
@@ -92,7 +92,7 @@ class DnfModuleList(CommandParser, dict):
                         heading_ignore=['Name '],
                         trailing_ignore=['Hint:', 'Error:'])
         if not data:
-            raise SkipException('Nothing need to parse.')
+            raise SkipComponent('Nothing need to parse.')
         for m in data:
             self.update({m['Name']: DnfModuleBrief(m)})
 
@@ -258,7 +258,7 @@ class DnfModuleInfo(CommandParser, dict):
             _update_value(mod_info.name, mod_info)
 
         if self.__len__() == 0:
-            raise SkipException('Nothing need to parse.')
+            raise SkipComponent('Nothing need to parse.')
 
     @property
     def modules(self):

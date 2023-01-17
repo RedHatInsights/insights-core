@@ -5,7 +5,7 @@ LsCPU - command ``lscpu``
 This module provides the information about the CPU architecture using the output of the command ``lscpu``.
 """
 from insights.core import CommandParser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -61,7 +61,7 @@ class LsCPU(CommandParser):
     """
     def parse_content(self, content):
         if not content:
-            raise SkipException("No data.")
+            raise SkipComponent("No data.")
         self.info = {}
         split_on = ":"
         for line in content:

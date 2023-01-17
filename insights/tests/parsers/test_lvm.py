@@ -2,7 +2,7 @@ from __future__ import print_function
 import doctest
 import pytest
 
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import lvm
 from insights.tests import context_wrap
 from insights.tests.parsers.lvm_test_data import LVMCONFIG, LVMCONFIG2, LVMCONFIG3
@@ -224,7 +224,7 @@ def test_system_devices():
 
 
 def test_system_devices_exception():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         lvm.LvmSystemDevices(context_wrap(SYSTEM_DEVICES3))
 
 

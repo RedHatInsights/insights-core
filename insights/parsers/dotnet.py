@@ -11,7 +11,7 @@ ContainerDotNetVersion - command ``dotnet --version`` for containers
 --------------------------------------------------------------------
 """
 from insights.core import CommandParser, ContainerParser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -36,7 +36,7 @@ class DotNetVersion(CommandParser):
 
     def parse_content(self, content):
         if not content or len(content) > 1:
-            raise SkipException
+            raise SkipComponent
 
         self.major = self.minor = None
         self.raw = content[0].strip()

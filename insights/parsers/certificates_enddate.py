@@ -38,8 +38,9 @@ Examples:
 """
 from collections import namedtuple
 from datetime import datetime
-from insights import CommandParser
-from insights.core.exceptions import SkipException
+
+from insights.core import CommandParser
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -63,7 +64,7 @@ class CertificatesEnddate(CommandParser, dict):
             else:
                 datestamp = None
         if not self:
-            raise SkipException("No certification files found.")
+            raise SkipComponent("No certification files found.")
 
     @property
     def data(self):

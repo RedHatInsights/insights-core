@@ -18,7 +18,7 @@ SCTPSnmp - file ``/proc/net/sctp/snmp``
 """
 from insights.components.rhel_version import IsRhel6, IsRhel7
 from insights.core import Parser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import keyword_search
 from insights.specs import Specs
@@ -72,7 +72,7 @@ class SCTPEps(Parser):
 
     def parse_content(self, content):
         if (not content) or (not self.file_path):
-            raise SkipException("No Contents")
+            raise SkipComponent("No Contents")
 
         line = content[0].strip().split()
         keys_cnt = len(self.COLUMN_IDX)
@@ -148,7 +148,7 @@ class SCTPAscBase(Parser):
         self._sctp_local_ips = set()
         self._sctp_remote_ips = set()
         if (not content) or (not self.file_path):
-            raise SkipException("No Contents")
+            raise SkipComponent("No Contents")
 
         line = content[0].strip().split()
         keys_cnt = len(self.COLUMN_IDX)
@@ -379,13 +379,13 @@ class SCTPSnmp(Parser, dict):
         }
 
     Raises:
-        SkipException: When contents are empty.
+        SkipComponent: When contents are empty.
         ParseException: When file contents are not in expected format.
     """
 
     def parse_content(self, content):
         if (not content) or (not self.file_path):
-            raise SkipException("No Contents")
+            raise SkipComponent("No Contents")
 
         for line in content:
             line_strip = line.split()

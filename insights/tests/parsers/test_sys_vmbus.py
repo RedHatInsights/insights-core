@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import sys_vmbus
 from insights.tests import context_wrap
 
@@ -55,11 +55,11 @@ def test_class_id():
 
 
 def test_blank_output():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         output = sys_vmbus.SysVmbusDeviceID(context_wrap(BLANK, path='/sys/bus/vmbus/devices/47505500-0001-0000-3130-444531444234/device_id'))
         assert output is None
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         output = sys_vmbus.SysVmbusClassID(context_wrap(BLANK, path='/sys/bus/vmbus/devices/47505500-0001-0000-3130-444531444234/class_id'))
         assert output is None
 
