@@ -4,11 +4,34 @@ JBoss version
 Provide information about the versions of all running Jboss on a system.
 """
 
+from collections import namedtuple
 import json
 
 from insights import Parser, parser
 from insights.specs import Specs
-from insights.core.context import Context
+
+# define nametuple to store the property of version
+_VersionNameTuple = namedtuple("_VersionNameTuple", ["file_path", "product", "version", "code_name", "major", "minor", "release"])
+
+
+def _get_version_tuple(version_line, i_file_path):
+    """
+    Perform the version line parsing, returning a nametuple of the values of one jboss version
+    """
+    product, _, version_name = [v.strip() for v in version_line.partition("- Version")]
+    if " GA" in version_name:
+        # handle Red Hat JBoss Web Server - Version 5.6 GA
+        version = version_name.split(' GA')[0]
+        code_name = "GA"
+        updated_version = version + ".0"
+        major, minor, release = updated_version.split('.')[0:3]
+    else:
+        # add empty code name for Red Hat Data Grid - Version 7.3.0
+        version_name = version_name.strip() + "."
+        major, minor, release, code_name = version_name.split(".")[0:4]
+        version = '.'.join([major, minor, release])
+
+    return _VersionNameTuple(i_file_path, product, version, code_name, int(major), int(minor), int(release))
 
 
 @parser(Specs.jboss_version)
@@ -42,60 +65,41 @@ class JbossVersion(Parser):
 
     def parse_content(self, content):
         self.raw = content[0]
-        product, _, version_name = [v.strip() for v in content[0].partition("- Version")]
-        if " GA" in version_name:
-            # handle Red Hat JBoss Web Server - Version 5.6 GA
-            version = version_name.split(' GA')[0]
-            code_name = "GA"
-            updated_version = version + ".0"
-            major, minor, release = updated_version.split('.')[0:3]
-        else:
-            # add empty code name for Red Hat Data Grid - Version 7.3.0
-            version_name = version_name.strip() + "."
-            major, minor, release, code_name = version_name.split(".")[0:4]
-            version = '.'.join([major, minor, release])
-        self._parsed = {
-            "product": product,
-            "version": version,
-            "code_name": code_name,
-            "major": int(major),
-            "minor": int(minor),
-            "release": int(release)
-        }
+        self._parsed = _get_version_tuple(content[0], self.file_path)
 
     @property
     def product(self):
         """string: the version of this running JBoss progress."""
-        return self._parsed["product"]
+        return self._parsed.product
 
     @property
     def version(self):
         """string: the version of this running JBoss progress."""
-        return self._parsed["version"]
+        return self._parsed.version
 
     @property
     def major(self):
         """int: the major version of this running JBoss progress."""
-        return self._parsed["major"]
+        return self._parsed.major
 
     @property
     def minor(self):
         """int: the minor version of this running JBoss progress."""
-        return self._parsed["minor"]
+        return self._parsed.minor
 
     @property
     def release(self):
         """int: release of this running JBoss progress."""
-        return self._parsed["release"]
+        return self._parsed.release
 
     @property
     def code_name(self):
         """string: code name of this running JBoss progress."""
-        return self._parsed["code_name"]
+        return self._parsed.code_name
 
 
 @parser(Specs.jboss_runtime_versions)
-class JbossRuntimeVersions(Parser):
+class JbossRuntimeVersions(Parser, list):
     """
      This class is to access to file ``data/insights_commands/jboss_versions``
 
@@ -103,7 +107,7 @@ class JbossRuntimeVersions(Parser):
 
          {"/opt/jboss-datagrid-7.3.0-server": "Red Hat Data Grid - Version 7.3.0"}
 
-     This class parses the file content and stores data in the dict ``self.versions``.
+     This class parses the file content and stores data in the list.
 
      Examples:
          >>> len(all_jboss_versions)
@@ -117,24 +121,7 @@ class JbossRuntimeVersions(Parser):
      """
 
     def parse_content(self, content):
-        self._versions = []
         jboss_version_dict = json.loads(' '.join(content))
         for j_path, version_content in jboss_version_dict.items():
             lines = version_content.strip().splitlines()
-            new_context = Context(content=lines, path=j_path)
-            self._versions.append(JbossVersion(new_context))
-        self._iterVersions = iter(self._versions)
-
-    def __len__(self):
-        return len(self._versions)
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        return next(self._iterVersions)
-
-    next = __next__   # For Python 2
-
-    def __getitem__(self, item):
-        return self._versions[item]
+            self.append(_get_version_tuple(lines[0], j_path))
