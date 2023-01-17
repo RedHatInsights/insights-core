@@ -253,16 +253,17 @@ class InstalledRpms(CommandParser, RpmList):
 
     def parse_content(self, content):
         packages = defaultdict(list)
-        content = [line for line in content if line.strip()]  # in testing file, there are empty line
-        if content and "COMMAND>" in content[0]:
+        if content and (not content[0].strip() or "COMMAND>" in content[0]):
             content = content[1:]
         if not content:
             raise SkipComponent("The content of rpm command is empty!")
-        if '{"name":' in content[0]:
+        if content and '"name":' in content[0]:
             rpm_init_method = InstalledRpm.from_json
         else:
             rpm_init_method = InstalledRpm.from_line
         for line in content:
+            if not line.strip():
+                continue
             if line.startswith('error:') or line.startswith('warning:'):
                 self.errors.append(line)
             else:
