@@ -44,7 +44,7 @@ kernel-4.18.0-305.19.1.el8_4.x86_64
 rpm-ostree-2021.5-2.el8.x86_64
 """.strip()
 
-RPM_OSTREE_STATUE_EDGE = """
+RPM_OSTREE_STATUS_EDGE = """
 {
   "deployments" : [
     {
@@ -78,7 +78,7 @@ RPM_OSTREE_STATUE_EDGE = """
 }
 """.strip()
 
-RPM_OSTREE_STATUE_RHCOS = """
+RPM_OSTREE_STATUS_RHCOS = """
 {
   "deployments" : [
     {
@@ -132,7 +132,7 @@ RPM_OSTREE_STATUE_RHCOS = """
 }
 """.strip()
 
-RPM_OSTREE_STATUE_EDGE_FALSE = """
+RPM_OSTREE_STATUS_EDGE_FALSE = """
 {
   "deployments" : [
     {
@@ -293,7 +293,7 @@ def test_rhel_for_edge_true_1():
     cmdline = CmdLine(context_wrap(CMDLINE_EDGE))
     list_units = ListUnits(context_wrap(CONTENT_SYSTEMCTL_LIST_UNITS_NO_AUTOMATED))
     redhat_release = RedhatRelease(context_wrap(CONTENT_REDHAT_RELEASE_RHEL))
-    rpm_ostree_status = RpmOstreeStatus(context_wrap(RPM_OSTREE_STATUE_EDGE))
+    rpm_ostree_status = RpmOstreeStatus(context_wrap(RPM_OSTREE_STATUS_EDGE))
 
     result = RhelForEdge(list_units, rpm_ostree_status, install_rpms, cmdline, redhat_release)
     assert result.is_edge is True
@@ -349,7 +349,7 @@ def test_rhel_for_edge_false_4():
     cmdline = CmdLine(context_wrap(CMDLINE_EDGE))
     list_units = ListUnits(context_wrap(CONTENT_SYSTEMCTL_LIST_UNITS_AUTOMATED))
     redhat_release = RedhatRelease(context_wrap(CONTENT_REDHAT_RELEASE_COREOS))
-    rpm_ostree_status = RpmOstreeStatus(context_wrap(RPM_OSTREE_STATUE_RHCOS))
+    rpm_ostree_status = RpmOstreeStatus(context_wrap(RPM_OSTREE_STATUS_RHCOS))
 
     result = RhelForEdge(list_units, rpm_ostree_status, install_rpms, cmdline, redhat_release)
     assert result.is_edge is False
@@ -361,7 +361,7 @@ def test_rhel_for_edge_false_5():
     cmdline = CmdLine(context_wrap(CMDLINE_EDGE))
     list_units = ListUnits(context_wrap(CONTENT_SYSTEMCTL_LIST_UNITS_AUTOMATED))
     redhat_release = RedhatRelease(context_wrap(CONTENT_REDHAT_RELEASE_COREOS))
-    rpm_ostree_status = RpmOstreeStatus(context_wrap(RPM_OSTREE_STATUE_EDGE_FALSE))
+    rpm_ostree_status = RpmOstreeStatus(context_wrap(RPM_OSTREE_STATUS_EDGE_FALSE))
 
     result = RhelForEdge(list_units, rpm_ostree_status, install_rpms, cmdline, redhat_release)
     assert result.is_edge is False
