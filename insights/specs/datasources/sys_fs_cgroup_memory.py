@@ -41,4 +41,5 @@ def sys_fs_cgroup_uniq_memory_swappiness(broker):
     data_list = []
     for value, count in data.items():
         data_list.append("{0}   {1}".format(value, count))
-        return DatasourceProvider(content="\n".join(data_list), relative_path='insights_commands/sys_fs_cgroup_uniq_memory_swappiness')
+
+    return DatasourceProvider(content="\n".join(data_list), relative_path='insights_commands/sys_fs_cgroup_uniq_memory_swappiness')
