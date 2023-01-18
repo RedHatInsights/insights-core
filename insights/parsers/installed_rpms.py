@@ -9,18 +9,18 @@ ContainerInstalledRpms - command ``rpm -qa`` for containers
 -----------------------------------------------------------
 """
 
+from collections import defaultdict
 import json
 import re
-from collections import defaultdict
-
 import six
 import warnings
 
-from ..util import rsplit
-from .. import parser, get_active_lines, CommandParser
-from .rpm_vercmp import rpm_version_compare
+from insights import ContainerParser, parser, CommandParser
+from insights.core.exceptions import SkipComponent
+from insights.parsers.rpm_vercmp import rpm_version_compare
 from insights.specs import Specs
-from insights import ContainerParser
+from insights.util import rsplit
+
 
 # This list of architectures is taken from PDC (Product Definition Center):
 # https://pdc.fedoraproject.org/rest_api/v1/arches/
@@ -253,24 +253,25 @@ class InstalledRpms(CommandParser, RpmList):
 
     def parse_content(self, content):
         packages = defaultdict(list)
-        for line in get_active_lines(content, comment_char='COMMAND>'):
+        if content and (not content[0].strip() or "COMMAND>" in content[0]):
+            content = content[1:]
+        if not content:
+            raise SkipComponent("The content of rpm command is empty!")
+        if content and '"name":' in content[0]:
+            rpm_init_method = InstalledRpm.from_json
+        else:
+            rpm_init_method = InstalledRpm.from_line
+        for line in content:
+            if not line.strip():
+                continue
             if line.startswith('error:') or line.startswith('warning:'):
                 self.errors.append(line)
             else:
                 try:
-                    # Try to parse from JSON input
-                    rpm = InstalledRpm.from_json(line)
+                    rpm = rpm_init_method(line)
                     packages[rpm.name].append(rpm)
                 except Exception:
-                    # If that fails, try to parse from line input
-                    if line.strip():
-                        try:
-                            rpm = InstalledRpm.from_line(line)
-                            packages[rpm.name].append(rpm)
-                        except Exception:
-                            # Both ways failed
-                            self.unparsed.append(line)
-        # Don't want defaultdict's behavior after parsing is complete
+                    self.unparsed.append(line)
         self.packages = dict(packages)
 
     @property
