@@ -8,14 +8,16 @@ This combiner uses the following parsers to determine if the system is an edge c
 * :py:class:`insights.parsers.systemd.unitfiles.ListUnits`
 * :py:class:`insights.parsers.redhat_release.RedhatRelease`
 """
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import combiner
 from insights.parsers.cmdline import CmdLine
 from insights.parsers.installed_rpms import InstalledRpms
 from insights.parsers.systemd.unitfiles import ListUnits
 from insights.parsers.redhat_release import RedhatRelease
+from insights.parsers.rpm_ostree_status import RpmOstreeStatus
 
 
-@combiner(InstalledRpms, CmdLine, ListUnits, RedhatRelease)
+@combiner(ListUnits, optional=[RpmOstreeStatus, InstalledRpms, CmdLine, RedhatRelease])
 class RhelForEdge(object):
     """Combiner for checking if the system is an edge computing system. Edge
     computing as well as the Red Hat CoreOS packages are managed via rpm-ostree.
@@ -58,13 +60,22 @@ class RhelForEdge(object):
 
     """
 
-    def __init__(self, rpms, cmdline, units, redhatrelease):
+    def __init__(self, units, rpmostreestatus, rpms, cmdline, redhatrelease):
         self.is_edge = False
         self.is_automated = False
-
-        if ('rpm-ostree' in rpms and 'yum' not in rpms) and \
-                ('ostree' in cmdline) and \
-                ("red hat enterprise linux release" in redhatrelease.raw.lower()):
-            self.is_edge = True
-            if units.is_running("rhcd.service"):
-                self.is_automated = True
+        if rpmostreestatus:
+            origin = rpmostreestatus.query.deployments.origin
+            origin_check = [item.value.endswith("edge") for item in origin]
+            if origin_check and all(origin_check):
+                self.is_edge = True
+                if units.is_running("rhcd.service"):
+                    self.is_automated = True
+        elif rpms and cmdline and redhatrelease:
+            if ('rpm-ostree' in rpms and 'yum' not in rpms) and \
+                    ('ostree' in cmdline) and \
+                    ("red hat enterprise linux release" in redhatrelease.raw.lower()):
+                self.is_edge = True
+                if units.is_running("rhcd.service"):
+                    self.is_automated = True
+        else:
+            raise SkipComponent("Unable to determine if this system is created from an edge image.")
