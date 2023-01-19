@@ -1,8 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import ParseException
-from insights.core.plugins import ContentException
+from insights.core.exceptions import ContentException, ParseException
 from insights.parsers import firewall_cmd
 from insights.parsers.firewall_cmd import FirewallCmdListALLZones
 from insights.tests import context_wrap

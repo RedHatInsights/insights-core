@@ -1,5 +1,6 @@
 from insights.core import dr
-from insights.core.plugins import datasource, rule, make_info, ContentException
+from insights.core.exceptions import ContentException
+from insights.core.plugins import datasource, rule, make_info
 from insights.core.spec_factory import RegistryPoint, SpecSet
 
 

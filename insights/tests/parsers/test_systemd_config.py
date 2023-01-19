@@ -1,8 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
-from insights.core.plugins import ContentException
+from insights.core.exceptions import ContentException, SkipException
 from insights.parsers.systemd import config
 from insights.tests import context_wrap
 
