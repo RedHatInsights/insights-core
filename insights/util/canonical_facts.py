@@ -149,7 +149,7 @@ def get_canonical_facts(path=None):
     required_components = [
         IPs,
         SubscriptionManagerID,
-        parsers.aws_instance_id,
+        parsers.aws_instance_id.AWSInstanceIdDoc,
         parsers.azure_instance.AzureInstanceID,
         parsers.azure_instance.AzureInstanceType,
         parsers.dmidecode.DMIDecode,
