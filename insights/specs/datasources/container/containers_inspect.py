@@ -5,9 +5,9 @@ import json
 import os
 
 from insights.core.context import HostContext
-from insights.core.exceptions import SkipComponent
+from insights.core.exceptions import ContentException, SkipComponent
 from insights.core.filters import get_filters
-from insights.core.plugins import datasource, ContentException
+from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider, foreach_execute
 from insights.specs import Specs
 from insights.specs.datasources.container import running_rhel_containers

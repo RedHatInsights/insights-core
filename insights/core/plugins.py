@@ -36,20 +36,10 @@ from six import StringIO
 from insights import settings
 from insights.core import dr
 from insights.core.context import HostContext
-from insights.core.exceptions import SkipComponent
-from insights.util.subproc import CalledProcessError
+from insights.core.exceptions import (CalledProcessError, ContentException, SkipComponent, TimeoutException,
+                                      ValidationException)
 
 log = logging.getLogger(__name__)
-
-
-class ContentException(SkipComponent):
-    """ Raised whenever a :class:`datasource` fails to get data. """
-    pass
-
-
-class TimeoutException(Exception):
-    """ Raised whenever a :class:`datasource` hits the set timeout value. """
-    pass
 
 
 class PluginType(dr.ComponentType):
@@ -391,13 +381,6 @@ def is_rule(component):
 
 def is_component(obj):
     return bool(dr.get_component_type(obj))
-
-
-class ValidationException(Exception):
-    def __init__(self, msg, r=None):
-        if r:
-            msg = "%s: %s" % (msg, r)
-        super(ValidationException, self).__init__(msg)
 
 
 class Response(dict):
