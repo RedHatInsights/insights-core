@@ -137,7 +137,7 @@ def canonical_facts(
     )
     facts.update(
         provider_id=cloud_instance.id,
-        provider_type=cloud_instance.type) if cloud_instance else None
+        provider_type=cloud_instance.provider) if cloud_instance else None
     facts.update(is_rhel=os_release.is_rhel) if os_release else None
 
     return make_metadata(**_filter_falsy(facts))
