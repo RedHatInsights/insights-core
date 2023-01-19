@@ -14,8 +14,7 @@ from fnmatch import fnmatch
 
 from insights.contrib.ConfigParser import NoOptionError, NoSectionError
 from insights.core import ls_parser
-from insights.core.exceptions import ParseException, SkipException
-from insights.core.plugins import ContentException
+from insights.core.exceptions import ContentException, ParseException, SkipException
 from insights.core.serde import deserializer, serializer
 from insights.parsr import iniparser
 from insights.parsr.query import Directive, Entry, Result, Section, compile_queries

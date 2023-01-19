@@ -3,7 +3,8 @@ import time
 from insights.core import dr
 from insights.core.dr import run
 from insights.core.context import HostContext, SosArchiveContext
-from insights.core.plugins import TimeoutException, datasource, make_info, rule
+from insights.core.exceptions import TimeoutException
+from insights.core.plugins import datasource, make_info, rule
 from insights.core.spec_factory import DatasourceProvider, RegistryPoint, SpecSet, foreach_execute
 
 
