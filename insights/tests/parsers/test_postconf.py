@@ -1,8 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
-from insights.core.plugins import ContentException
+from insights.core.exceptions import ContentException, SkipException
 from insights.parsers import postconf
 from insights.parsers.postconf import PostconfBuiltin, Postconf, _Postconf
 from insights.tests import context_wrap

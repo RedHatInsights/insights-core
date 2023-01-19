@@ -30,6 +30,14 @@ insights.core.dr
     :members:
     :exclude-members: requires, optional, metadata, group, tags
 
+insights.core.exceptions
+------------------------
+
+.. automodule:: insights.core.exceptions
+    :members:
+    :show-inheritance:
+    :undoc-members:
+
 insights.core.filters
 ---------------------
 
@@ -74,8 +82,8 @@ insights.parsers
 ----------------
 
 .. automodule:: insights.parsers
-    :members: ParseException, SkipException, calc_offset, get_active_lines,
-              keyword_search, optlist_to_dict, parse_delimited_table,
+    :members: calc_offset, get_active_lines, keyword_search,
+              optlist_to_dict, parse_delimited_table,
               parse_fixed_table, split_kv_pairs, unsplit_lines
     :show-inheritance:
     :undoc-members:

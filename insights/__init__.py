@@ -30,10 +30,10 @@ from contextlib import contextmanager
 from insights.core import (CommandParser, ContainerParser, FileListing, IniConfigFile, JSONParser, LegacyItemAccess,  # noqa: F401
                            LogFileOutput, Parser, Scannable, SysconfigOptions, Syslog, XMLParser, YAMLParser, dr,  # noqa: F401
                            taglang)
-from insights.core.archives import COMPRESSION_TYPES, InvalidArchive, InvalidContentType, extract
+from insights.core.archives import COMPRESSION_TYPES, extract
 from insights.core.context import (ClusterArchiveContext, ExecutionContext, HostContext,  # noqa: F401
                                    HostArchiveContext, SerializedArchiveContext)
-from insights.core.exceptions import SkipComponent  # noqa: F401
+from insights.core.exceptions import InvalidArchive, InvalidContentType, SkipComponent  # noqa: F401
 from insights.core.filters import add_filter, apply_filters, get_filters  # noqa: F401
 from insights.core.hydration import create_context, initialize_broker  # noqa: F401
 from insights.core.plugins import (combiner, condition, datasource, fact, incident, make_fail, make_fingerprint,  # noqa: F401

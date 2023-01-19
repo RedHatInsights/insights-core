@@ -11,10 +11,12 @@ import logging
 import os
 import time
 import traceback
+
 from glob import glob
 from functools import partial
 
 from insights.core import dr
+from insights.core.exceptions import ContentException
 from insights.util import fs
 
 log = logging.getLogger(__name__)
@@ -165,7 +167,6 @@ class Hydration(object):
         Loads a Broker from a previously saved one. A Broker is created if one
         isn't provided.
         """
-        from insights.core.spec_factory import ContentException
 
         broker = broker or dr.Broker()
         for path in glob(os.path.join(self.meta_data, "*")):

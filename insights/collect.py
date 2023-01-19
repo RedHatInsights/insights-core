@@ -17,11 +17,12 @@ import yaml
 
 from datetime import datetime
 
-from insights import apply_configs, apply_default_enabled, dr, get_pool
-from insights.core import blacklist, filters
+from insights import apply_configs, apply_default_enabled, get_pool
+from insights.core import blacklist, dr, filters
+from insights.core.exceptions import CalledProcessError
 from insights.core.serde import Hydration
 from insights.util import fs
-from insights.util.subproc import call, CalledProcessError
+from insights.util.subproc import call
 
 SAFE_ENV = {
     "PATH": os.path.pathsep.join([
