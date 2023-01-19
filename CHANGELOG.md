@@ -2,6 +2,16 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.1.4](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.4) (2023-01-19)
+
+- fix: add '-d 2' to yum_repolist spec ([PR 3660](https://github.com/RedHatInsights/insights-core/pull/3660))
+- feat: add JbossRuntimeVersions parser ([PR 3639](https://github.com/RedHatInsights/insights-core/pull/3639))
+- Move remaining exceptions to the new exceptions module ([PR 3656](https://github.com/RedHatInsights/insights-core/pull/3656))
+- Fix: Add condition to check the output of "rpm-ostree status" firstly into combiner rhel_for_edge ([PR 3657](https://github.com/RedHatInsights/insights-core/pull/3657))
+- fix: check the content first in class InstalledRpms ([PR 3651](https://github.com/RedHatInsights/insights-core/pull/3651))
+- Fix: write all getting data to sys_fs_cgroup_uniq_memory_swappiness ([PR 3658](https://github.com/RedHatInsights/insights-core/pull/3658))
+- add specs (datasource via insights-cat) required by CloudInstance ([PR 3655](https://github.com/RedHatInsights/insights-core/pull/3655)
+
 ## [insights-core-3.1.3](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.3) (2023-01-12)
 
 - Revert "Fix: Add condition to check the output of "rpm-ostree status" firstly (3634)" ([PR 3652](https://github.com/RedHatInsights/insights-core/pull/3652))
