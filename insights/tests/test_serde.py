@@ -1,20 +1,14 @@
-import os
 import json
+import os
 
 from tempfile import mkdtemp
-from insights import dr
-from insights.core.plugins import (component,
-                                   datasource,
-                                   rule,
-                                   make_info,
-                                   ContentException)
-from insights.core.serde import (serializer,
-                                 deserializer,
-                                 Hydration,
-                                 marshal,
-                                 unmarshal)
-from insights.util import fs
+
+from insights.core import dr
+from insights.core.exceptions import ContentException
+from insights.core.plugins import component, datasource, make_info, rule
+from insights.core.serde import Hydration, deserializer, marshal, serializer, unmarshal
 from insights.core.spec_factory import RegistryPoint, SpecSet
+from insights.util import fs
 
 
 class Foo(object):

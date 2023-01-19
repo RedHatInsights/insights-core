@@ -1,15 +1,14 @@
-import os
-
-from insights import add_filter, dr
-from insights.core import Parser
-from insights.core.context import HostContext
-from insights.core.plugins import ContentException
-from insights.core.spec_factory import (SpecSet, DatasourceProvider,
-                                        RegistryPoint, simple_file,
-                                        simple_command, glob_file)
-import tempfile
-import pytest
 import glob
+import os
+import pytest
+import tempfile
+
+from insights.core import Parser, dr
+from insights.core.context import HostContext
+from insights.core.exceptions import ContentException
+from insights.core.filters import add_filter
+from insights.core.spec_factory import (DatasourceProvider, RegistryPoint, SpecSet, glob_file, simple_command,
+                                        simple_file)
 
 here = os.path.abspath(os.path.dirname(__file__))
 

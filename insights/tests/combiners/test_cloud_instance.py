@@ -1,21 +1,21 @@
-import pytest
 import doctest
-from insights import SkipComponent
-from insights.core.plugins import ContentException
-from insights.parsers.installed_rpms import InstalledRpms
-from insights.parsers.gcp_instance_type import GCPInstanceType
-from insights.parsers.aws_instance_id import AWSInstanceIdDoc
-from insights.parsers.azure_instance import AzureInstanceID, AzureInstanceType
-from insights.parsers.subscription_manager import SubscriptionManagerFacts
+import pytest
+
 from insights.combiners import cloud_instance
 from insights.combiners.cloud_provider import CloudProvider
 from insights.combiners.cloud_instance import CloudInstance
+from insights.core.exceptions import ContentException, SkipComponent
+from insights.parsers.aws_instance_id import AWSInstanceIdDoc
+from insights.parsers.azure_instance import AzureInstanceID, AzureInstanceType
+from insights.parsers.gcp_instance_type import GCPInstanceType
+from insights.parsers.installed_rpms import InstalledRpms
+from insights.parsers.subscription_manager import SubscriptionManagerFacts
 from insights.tests import context_wrap
-from insights.tests.parsers.test_gcp_instance_type import GOOGLE_TYPE_1
+from insights.tests.combiners.test_cloud_provider import RPMS_AWS, RPMS_GOOGLE, RPMS_AZURE
 from insights.tests.parsers.test_aws_instance_id import AWS_ID_DOC
 from insights.tests.parsers.test_azure_instance import AZURE_ID, AZURE_TYPE_2
+from insights.tests.parsers.test_gcp_instance_type import GOOGLE_TYPE_1
 from insights.tests.parsers.test_subscription_manager import INPUT_NORMAL_1
-from insights.tests.combiners.test_cloud_provider import RPMS_AWS, RPMS_GOOGLE, RPMS_AZURE
 
 GOOGLE_RHSM_FACTS = """
 gcp_instance_id: 567890567890
