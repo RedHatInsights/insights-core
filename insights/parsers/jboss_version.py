@@ -3,14 +3,13 @@ JBoss version
 =============
 Provide information about the versions of all running Jboss on a system.
 """
-
-from collections import namedtuple
 import json
 
+from collections import namedtuple
 from insights import Parser, parser
 from insights.specs import Specs
 
-# define nametuple to store the property of version
+# define namedtuple to store the property of version
 _VersionNameTuple = namedtuple("_VersionNameTuple", ["file_path", "product", "version", "code_name", "major", "minor", "release"])
 
 
