@@ -113,7 +113,7 @@ def test_canonical_facts_providers():
     ci = CloudInstance(cp, _id, None, None, None, None)
     ret = canonical_facts(None, None, None, None, None, None, None, ci, None)
     assert ret.get('provider_id') == 'i-1234567890abcdef0'
-    assert ret.get('provider_type') == 't2.micro'
+    assert ret.get('provider_type') == 'aws'
 
 
 def test_canonical_facts_is_rhel():
