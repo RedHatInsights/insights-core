@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.1.3
+Version:        3.1.4
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,20 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jan 19 2023 Xiangce Liu <xiangceliu@redhat.com> 3.1.4-1
+- fix: add '-d 2' to yum_repolist spec (#3660) (xiangceliu@redhat.com)
+- feat: add JbossRuntimeVersions parser (#3639) (lichen@redhat.com)
+- Move remaining exceptions to the new exceptions module (#3656)
+  (rblakley@redhat.com)
+- Fix: Add condition to check the output of "rpm-ostree status" firstly into
+  combiner rhel_for_edge (#3657) (jiazhang@redhat.com)
+- fix: check the content first in class InstalledRpms (#3651)
+  (lichen@redhat.com)
+- Fix: write all getting data to sys_fs_cgroup_uniq_memory_swappiness (#3658)
+  (30404410+qinpingli@users.noreply.github.com)
+- add specs (datasource via insights-cat) required by CloudInstance (#3655)
+  (xiangceliu@redhat.com)
+
 * Thu Jan 12 2023 Xiangce Liu <xiangceliu@redhat.com> 3.1.3-1
 - Revert "Fix: Add condition to check the output of "rpm-ostree status" firstly
   (#3634)" (#3652) (xiangceliu@redhat.com)
