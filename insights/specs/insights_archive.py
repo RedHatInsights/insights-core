@@ -279,7 +279,7 @@ class InsightsArchiveSpecs(Specs):
     wc_proc_1_mountinfo = simple_file("insights_commands/wc_-l_.proc.1.mountinfo")
     yum_list_available = simple_file("insights_commands/yum_-C_--noplugins_list_available")
     yum_repolist = first_file([
-        "insights_commands/yum_-d_0_-C_--noplugins_repolist",
+        "insights_commands/yum_-d_2_-C_--noplugins_repolist",
         "insights_commands/yum_-C_--noplugins_repolist",
         "insights_commands/yum_-C_repolist"])
     yum_updateinfo = simple_file("insights_commands/yum_-C_updateinfo_list")
