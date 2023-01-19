@@ -6,12 +6,20 @@ import re
 import socket
 import uuid
 
-from insights import rule, make_metadata, run, parsers
+from insights import rule, run, make_metadata
+from insights.combiners.cloud_instance import CloudInstance
+from insights.combiners.cloud_provider import CloudProvider
 from insights.core import Parser
 from insights.core.dr import set_enabled, load_components
 from insights.core.plugins import parser
-from insights.combiners.cloud_instance import CloudInstance
-from insights.combiners.os_release import OSRelease
+from insights.parsers.aws_instance_id import AWSInstanceIdDoc
+from insights.parsers.azure_instance import AzureInstanceID, AzureInstanceType
+from insights.parsers.dmidecode import DMIDecode
+from insights.parsers.gcp_instance_type import GCPInstanceType
+from insights.parsers.installed_rpms import InstalledRpms
+from insights.parsers.rhsm_conf import RHSMConf
+from insights.parsers.subscription_manager import SubscriptionManagerFacts
+from insights.parsers.yum import YumRepoList
 from insights.specs import Specs
 
 
@@ -118,12 +126,11 @@ def _filter_falsy(dict_):
         Specs.hostname,
         Specs.mac_addresses,
         CloudInstance,
-        OSRelease,
     ]
 )
 def canonical_facts(
     insights_id, machine_id, bios_uuid, submanid, ips, fqdn, mac_addresses,
-    cloud_instance, os_release,
+    cloud_instance,
 ):
 
     facts = dict(
@@ -136,7 +143,6 @@ def canonical_facts(
         fqdn=_safe_parse(fqdn),
         provider_id=cloud_instance.id if cloud_instance else None,
         provider_type=cloud_instance.provider if cloud_instance else None,
-        is_rhel=os_release.is_rhel if os_release else None,
     )
 
     return make_metadata(**_filter_falsy(facts))
@@ -146,22 +152,19 @@ def get_canonical_facts(path=None):
     load_components("insights.specs.default", "insights.specs.insights_archive")
 
     required_components = [
+        AWSInstanceIdDoc,
+        AzureInstanceID,
+        AzureInstanceType,
+        DMIDecode,
+        GCPInstanceType,
         IPs,
+        InstalledRpms,
+        RHSMConf,
+        SubscriptionManagerFacts,
         SubscriptionManagerID,
-        parsers.aws_instance_id.AWSInstanceIdDoc,
-        parsers.azure_instance.AzureInstanceID,
-        parsers.azure_instance.AzureInstanceType,
-        parsers.dmidecode.DMIDecode,
-        parsers.gcp_instance_type.GCPInstanceType,
-        parsers.installed_rpms.InstalledRpms,
-        parsers.os_release.OsRelease,
-        parsers.redhat_release.RedhatRelease,
-        parsers.rhsm_conf.RHSMConf,
-        parsers.subscription_manager.SubscriptionManagerFacts,
-        parsers.uname.Uname,
-        parsers.yum.YumRepoList,
+        YumRepoList,
+        CloudProvider,
         CloudInstance,
-        OSRelease,
         canonical_facts,
     ]
     for comp in required_components:
