@@ -13,13 +13,13 @@ results of the following combiners and parsers:
 * :py:class:`insights.parsers.subscription_manager.SubscriptionManagerFacts`
 
 """
-from insights import SkipComponent
-from insights.core.plugins import combiner, ContentException
+from insights.combiners.cloud_provider import CloudProvider
+from insights.core.exceptions import ContentException, SkipComponent
+from insights.core.plugins import combiner
 from insights.parsers.aws_instance_id import AWSInstanceIdDoc
 from insights.parsers.azure_instance import AzureInstanceID, AzureInstanceType
 from insights.parsers.gcp_instance_type import GCPInstanceType
 from insights.parsers.subscription_manager import SubscriptionManagerFacts
-from insights.combiners.cloud_provider import CloudProvider
 
 
 # "google" is used in class:`insights.combiners.cloud_provider.CloudProvider`.

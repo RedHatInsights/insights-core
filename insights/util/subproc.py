@@ -4,47 +4,13 @@ import shlex
 import signal
 import six
 import sys
+
 from subprocess import Popen, PIPE, STDOUT
 
+from insights.core.exceptions import CalledProcessError
 from insights.util import which
 
 log = logging.getLogger(__name__)
-
-
-class CalledProcessError(Exception):
-    """Raised if call fails.
-
-    Parameters
-    ----------
-    returncode : int
-        The return code of the process executing the command.
-    cmd : str
-        The command that was executed.
-    output : str
-        Any output the command produced.
-
-    Attributes
-    ----------
-    returncode : int
-        The return code of the process executing the command.
-    cmd : str
-        The command that was executed.
-    output : str
-        Any output the command produced.
-     """
-
-    def __init__(self, returncode, cmd, output=None):
-        self.returncode = returncode
-        self.cmd = cmd
-        self.output = output
-        super(CalledProcessError, self).__init__(returncode, cmd, output)
-
-    def __unicode__(self):
-        name = self.__class__.__name__
-        rc = self.returncode
-        cmd = self.cmd
-        output = self.output
-        return '<{}({}, {!r}, {!r})>'.format(name, rc, cmd, output)
 
 
 class Pipeline(object):

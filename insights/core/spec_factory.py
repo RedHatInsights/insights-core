@@ -14,9 +14,9 @@ from subprocess import call
 
 from insights.core import blacklist, dr
 from insights.core.context import ExecutionContext, FSRoots, HostContext
-from insights.core.exceptions import SkipComponent
+from insights.core.exceptions import ContentException, SkipComponent
 from insights.core.filters import _add_filter, get_filters
-from insights.core.plugins import ContentException, component, datasource, is_datasource
+from insights.core.plugins import component, datasource, is_datasource
 from insights.core.serde import deserializer, serializer
 from insights.util import fs, streams, which
 from insights.util.subproc import Pipeline

@@ -64,7 +64,7 @@ from functools import reduce as _reduce
 
 from insights.contrib import importlib
 from insights.contrib.toposort import toposort_flatten
-from insights.core.exceptions import SkipComponent, ParseException
+from insights.core.exceptions import MissingRequirements, ParseException, SkipComponent
 from insights.util import defaults, enum, KeyPassingDefaultDict
 
 log = logging.getLogger(__name__)
@@ -220,15 +220,6 @@ def get_dependencies(component):
 
 def add_dependency(component, dep):
     get_delegate(component).add_dependency(dep)
-
-
-class MissingRequirements(Exception):
-    """
-    Raised during evaluation if a component's dependencies aren't met.
-    """
-    def __init__(self, requirements):
-        self.requirements = requirements
-        super(MissingRequirements, self).__init__(requirements)
 
 
 def get_name(component):
