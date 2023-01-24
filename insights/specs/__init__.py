@@ -25,6 +25,7 @@ class Specs(SpecSet):
     azure_instance_type = RegistryPoint()
     bdi_read_ahead_kb = RegistryPoint(multi_output=True)
     bios_uuid = RegistryPoint()
+    blacklisted_specs = RegistryPoint()
     blkid = RegistryPoint()
     bond = RegistryPoint(multi_output=True)
     bond_dynamic_lb = RegistryPoint(multi_output=True)

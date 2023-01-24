@@ -64,7 +64,8 @@ from functools import reduce as _reduce
 
 from insights.contrib import importlib
 from insights.contrib.toposort import toposort_flatten
-from insights.core.exceptions import MissingRequirements, ParseException, SkipComponent
+from insights.core.blacklist import BLACKLISTED_SPECS
+from insights.core.exceptions import BlacklistedSpec, MissingRequirements, ParseException, SkipComponent
 from insights.util import defaults, enum, KeyPassingDefaultDict
 
 log = logging.getLogger(__name__)
@@ -1038,6 +1039,10 @@ def run_components(ordered_components, components, broker):
                 log.info("Trying %s" % get_name(component))
                 result = DELEGATES[component].process(broker)
                 broker[component] = result
+        except BlacklistedSpec as bs:
+            for x in get_registry_points(component):
+                BLACKLISTED_SPECS.append(str(x).split('.')[-1])
+            broker.add_exception(component, bs, traceback.format_exc())
         except MissingRequirements as mr:
             if log.isEnabledFor(logging.DEBUG):
                 name = get_name(component)
