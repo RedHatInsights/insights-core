@@ -2,6 +2,7 @@ import doctest
 import pytest
 
 from insights.core.exceptions import ParseException
+from insights.core.plugins import ContentException
 from insights.parsers import vdo_status
 from insights.parsers.vdo_status import VDOStatus
 from insights.tests import context_wrap
@@ -552,6 +553,10 @@ VDOs:
         write policy: sync
 """.strip()
 
+VDO_STATUS_NO_COMMAND = """
+-bash: /usr/bin/vdo: No such file or directory
+""".strip()
+
 
 def test_vdo_status2():
     vdo = VDOStatus(context_wrap(INPUT_STATUS_2))
@@ -668,3 +673,12 @@ def test_vdo_status_exp3():
         vdo = VDOStatus(context_wrap(INPUT_STATUS_SIMPLE))
         vdo.get_physical_blocks_of_vol('vdo3')
     assert "No key(s) named" in str(sc1)
+
+
+def test_vdo_status_exp4():
+    """
+    Test for ContentException
+    """
+    with pytest.raises(ContentException) as ce:
+        VDOStatus(context_wrap(VDO_STATUS_NO_COMMAND))
+    assert "No such file or directory" in str(ce.value)
