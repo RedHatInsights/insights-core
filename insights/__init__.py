@@ -266,9 +266,8 @@ def _load_context(path):
     return dr.get_component(path)
 
 
-def run(component=None, root=None, print_summary=False,
-        context=None, inventory=None, print_component=None):
-
+def run(component=None, root=None, print_summary=False, context=None, inventory=None, print_component=None,
+        store_skips=False):
     args = None
     formatters = None
 
@@ -293,6 +292,8 @@ def run(component=None, root=None, print_summary=False,
         p.add_argument("--context", help="Execution Context. Defaults to HostContext if an archive isn't passed.")
         p.add_argument("--no-load-default", help="Don't load the default plugins.", action="store_true")
         p.add_argument("--parallel", help="Execute rules in parallel.", action="store_true")
+        p.add_argument("--show-skips", help="Capture skips in the broker for troubleshooting.", action="store_true",
+                       default=False)
         p.add_argument("--tags", help="Expression to select rules by tag.")
 
         class Args(object):
@@ -385,6 +386,10 @@ def run(component=None, root=None, print_summary=False,
         graph = dr.COMPONENTS[dr.GROUPS.single]
 
     broker = dr.Broker()
+    if args:
+        broker.store_skips = args.show_skips
+    else:
+        broker.store_skips = store_skips
 
     if args and args.bare:
         ctx = ExecutionContext()  # dummy context that no spec depend on. needed for filters to work
