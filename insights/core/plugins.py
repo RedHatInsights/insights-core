@@ -167,14 +167,18 @@ class parser(PluginType):
                 r = self.component(d)
                 if r is not None:
                     results.append(r)
-            except SkipComponent:
-                pass
             except ContentException as ce:
                 log.debug(ce)
                 broker.add_exception(self.component, ce, traceback.format_exc())
                 if not self.continue_on_error:
                     exception = True
                     break
+            except SkipComponent as sc:
+                if broker.store_skips:
+                    log.warning(sc)
+                    broker.add_exception(component, sc, traceback.format_exc())
+                else:
+                    pass
             except CalledProcessError as cpe:
                 log.debug(cpe)
                 broker.add_exception(self.component, cpe, traceback.format_exc())
@@ -183,7 +187,7 @@ class parser(PluginType):
                     break
             except Exception as ex:
                 tb = traceback.format_exc()
-                log.warn(tb)
+                log.warning(tb)
                 broker.add_exception(self.component, ex, tb)
                 if not self.continue_on_error:
                     exception = True

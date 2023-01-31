@@ -809,6 +809,7 @@ class Broker(object):
             :func:`time.time`. For components that produce multiple instances,
             the execution time here is the sum of their individual execution
             times.
+        store_skips (bool): Weather to store skips in the broker or not.
     """
     def __init__(self, seed_broker=None):
         self.instances = dict(seed_broker.instances) if seed_broker else {}
@@ -816,6 +817,7 @@ class Broker(object):
         self.exceptions = defaultdict(list)
         self.tracebacks = {}
         self.exec_times = {}
+        self.store_skips = False
 
         self.observers = defaultdict(set)
         if seed_broker is not None:
@@ -1045,8 +1047,12 @@ def run_components(ordered_components, components, broker):
         except ParseException as pe:
             log.warning(pe)
             broker.add_exception(component, pe, traceback.format_exc())
-        except SkipComponent:
-            pass
+        except SkipComponent as sc:
+            if broker.store_skips:
+                log.warning(sc)
+                broker.add_exception(component, sc, traceback.format_exc())
+            else:
+                pass
         except Exception as ex:
             tb = traceback.format_exc()
             log.warning(tb)
