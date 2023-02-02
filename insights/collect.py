@@ -204,8 +204,8 @@ plugins:
         - name: insights.components.virtualization.IsBareMetal
           enabled: true
 
-    # needed for the 'pre-check' of the 'ss' spec
-        - name: insights.parsers.lsmod
+    # needed for the 'pre-check' of the 'ss' spec and the 'modinfo_filtered_modules' spec
+        - name: insights.parsers.lsmod.LsMod
           enabled: true
 
     # needed for the 'pre-check' of the 'is_satellite_server' spec
