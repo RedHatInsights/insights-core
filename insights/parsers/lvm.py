@@ -38,7 +38,7 @@ from __future__ import print_function
 import json
 
 from insights.core import CommandParser, LegacyItemAccess, Parser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.filters import add_filter
 from insights.core.plugins import parser
 from insights.parsers import get_active_lines, optlist_to_dict, parse_fixed_table
@@ -748,7 +748,7 @@ class LvmSystemDevices(Parser, dict):
         'phl0clFbAokp9UXqbIgI5YYQxuTIJVkD'
 
     Raises:
-        SkipException: when there is no device info.
+        SkipComponent: when there is no device info.
     """
 
     def parse_content(self, content):
@@ -757,7 +757,7 @@ class LvmSystemDevices(Parser, dict):
                 dict_info = optlist_to_dict(line, opt_sep=None)
                 self[dict_info.pop('IDNAME')] = dict_info
         if not self:
-            raise SkipException("No valid content.")
+            raise SkipComponent("No valid content.")
 
 
 if __name__ == "__main__":

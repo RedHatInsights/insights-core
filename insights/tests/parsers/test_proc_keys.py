@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import proc_keys
 from insights.parsers.proc_keys import ProcKeys
 from insights.tests import context_wrap
@@ -43,11 +43,11 @@ def test_etc_systemd():
 
 
 def test_empty():
-    with pytest.raises(SkipException) as e:
+    with pytest.raises(SkipComponent) as e:
         ProcKeys(context_wrap(PROC_KEYS_EMPTY))
     assert 'No Contents' in str(e)
 
-    with pytest.raises(SkipException) as e:
+    with pytest.raises(SkipComponent) as e:
         ProcKeys(context_wrap(PROC_KEYS_INVALID))
     assert "Invalid Contents: unknow_case" in str(e)
 

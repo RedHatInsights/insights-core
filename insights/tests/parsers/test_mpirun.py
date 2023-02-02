@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import mpirun
 from insights.parsers.mpirun import MPIrunVersion
 from insights.tests import context_wrap
@@ -34,11 +34,11 @@ def test_mpirun_version():
 
 
 def test_mpirun_version_ab():
-    with pytest.raises(SkipException) as e_skip:
+    with pytest.raises(SkipComponent) as e_skip:
         MPIrunVersion(context_wrap(MPIRUN_VERSION_4))
     assert "Empty content" in str(e_skip.value)
 
-    with pytest.raises(SkipException) as e_skip:
+    with pytest.raises(SkipComponent) as e_skip:
         MPIrunVersion(context_wrap(MPIRUN_VERSION_3))
     assert "Content not parsable" in str(e_skip.value)
 

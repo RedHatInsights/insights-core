@@ -15,7 +15,7 @@ NovaMigrationUID - command ``id -u nova_migration``
 ---------------------------------------------------
 """
 from insights.core import CommandParser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -39,15 +39,15 @@ class NovaUID(CommandParser):
         data: ``int`` if 'nova' user exist.
 
     Raises:
-        SkipException: If 'nova' user not found or output is empty.
+        SkipComponent: If 'nova' user not found or output is empty.
         ParseException: For any other output which is not a number or multi-line.
             Outputs of such kind are not yet expected from the command `id`.
     '''
     def parse_content(self, content):
         if not content:
-            raise SkipException("Empty output.")
+            raise SkipComponent("Empty output.")
         if "no such user" in content[0].lower():
-            raise SkipException("No such user.")
+            raise SkipComponent("No such user.")
         if len(content) > 1 or not content[0].isdigit():
             raise ParseException("Unable to parse user ID: {0}".format(content))
         self.data = int(content[0])
@@ -72,7 +72,7 @@ class NovaMigrationUID(NovaUID):
         data: ``int`` if 'nova_migration' user exist.
 
     Raises:
-        SkipException: If 'nova_migration' user not found or output is empty.
+        SkipComponent: If 'nova_migration' user not found or output is empty.
         ParseException: For any other output which is not a number or multi-line.
             Output of such kind are not yet expected from the command `id`.
     '''

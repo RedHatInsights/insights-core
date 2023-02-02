@@ -6,7 +6,7 @@ The parser for ``mpirun --version`` is included in this module.
 
 """
 from insights.core import CommandParser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -29,9 +29,9 @@ class MPIrunVersion(CommandParser):
     """
     def parse_content(self, content):
         if not content:
-            raise SkipException("Empty content.")
+            raise SkipComponent("Empty content.")
         if len(content) != 2:
-            raise SkipException("Content not parsable.")
+            raise SkipComponent("Content not parsable.")
 
         self.year = content[0].split('Version ')[1].split(" ")[0]
         self.version = content[0].split(', ')[-1]

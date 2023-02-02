@@ -12,7 +12,7 @@ UnitFiles - command ``/bin/systemctl list-unit-files``
 
 """
 from insights.core import Parser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import get_active_lines
 from insights.specs import Specs
@@ -35,7 +35,7 @@ class UnitFiles(Parser):
         runlevel2.target                              enabled
 
     Raises:
-        SkipException: When nothing is parsed.
+        SkipComponent: When nothing is parsed.
 
     Example:
 
@@ -105,7 +105,7 @@ class UnitFiles(Parser):
                 self.service_list.append(service)
 
         if not self.services:
-            raise SkipException
+            raise SkipComponent
 
     def is_on(self, service_name):
         """
@@ -159,7 +159,7 @@ class ListUnits(Parser):
         To show all installed unit files use 'systemctl list-unit-files'.
 
     Raises:
-        SkipException: When nothing is parsed.
+        SkipComponent: When nothing is parsed.
 
     Example:
 
@@ -226,7 +226,7 @@ class ListUnits(Parser):
                 self.unit_list[parts[first_part]] = service_details
 
         if not self.unit_list:
-            raise SkipException
+            raise SkipComponent
 
     def get_service_details(self, service_name):
         """

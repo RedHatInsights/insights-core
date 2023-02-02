@@ -3,7 +3,7 @@ KTimerLockless - file ``/sys/kernel/ktimer_lockless_check``
 ===========================================================
 """
 from insights.core import Parser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -22,10 +22,10 @@ class KTimerLockless(Parser):
         0
 
     Raises:
-        SkipException: when input is empty.
+        SkipComponent: when input is empty.
     """
     def parse_content(self, content):
         if len(content) == 1 and content[0].isdigit():
             self.ktimer_lockless_val = int(content[0])
         else:
-            raise SkipException('The file is empty')
+            raise SkipComponent('The file is empty')

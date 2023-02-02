@@ -82,7 +82,7 @@ any exceptions in the data (“dirty parser”). This allows rules that don’t 
 exceptions to rely on only the first parser, and those rules will not run if valid data
 is not present.  If the dirty parser identifies errors in the data then it will save
 information regarding the errors for use by rules.  If no errors are found in the data
-then the dirty parser will raise :py:class:`insights.core.exceptions.SkipException`
+then the dirty parser will raise :py:class:`insights.core.exceptions.SkipComponent`
 to indicate to the engine that it should be removed from the dependency hierarchy.
 
 Other Exceptions from Parsers
@@ -99,15 +99,13 @@ types aren’t important and such checks may limit expressiveness and flexibilit
 Parsers should not use the assert statement in place of error handling code.
 Asserts are for debugging purposes only.
 
-SkipComponent and SkipException
-===============================
+SkipComponent
+=============
 
 Any component may raise `SkipComponent` to signal to the engine that
 nothing is wrong but that the component should be taken out of dependency
 resolution. This is useful if a component's dependencies are met but it's
 still unable to produce a meaningful result.
-:py:class:`insights.core.exceptions.SkipException` is a specialization of this for the
-dirty parser use case above, but it's treated the same as `SkipComponent`.
 
 Exception Recognition by the Insights Engine
 ============================================

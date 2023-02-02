@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import ld_library_path
 from insights.parsers.ld_library_path import UserLdLibraryPath
 from insights.tests import context_wrap
@@ -45,7 +45,7 @@ def test_ld_library_path():
 
 
 def test_empty_and_invalid():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         UserLdLibraryPath(context_wrap(LD_LIBRARY_PATH_EMPTY))
 
 

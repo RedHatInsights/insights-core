@@ -2,9 +2,8 @@
 Sealert - command ``/usr/bin/sealert -l "*"``
 =============================================
 """
-
-from insights import CommandParser
-from insights import parser
+from insights.core import CommandParser
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 
@@ -98,7 +97,7 @@ class Sealert(CommandParser):
         reports (list[Report]): Sealert reports
 
     Raises:
-        SkipException: When output is empty
+        SkipComponent: When output is empty
     """
     SELINUX_DISABLED_MESSAGE = "unable to establish connection to setroubleshoot daemon!"
 
