@@ -5,7 +5,7 @@ The ``TcpIpStats`` class implements the parsing of ``/proc/net/sockstat``
 file, which contains TCP/IP stats of individual layer.
 """
 from insights.core import Parser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -80,13 +80,13 @@ class SockStats(Parser, dict):
         }
 
     Raises:
-        SkipException: When contents are empty
+        SkipComponent: When contents are empty
     """
 
     def parse_content(self, content):
 
         if not content:
-            raise SkipException("No Contents")
+            raise SkipComponent("No Contents")
 
         for line in content:
             line_split = line.split(':')

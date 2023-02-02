@@ -8,7 +8,7 @@ commands.  The data is stored as a dictionary.
 
 """
 from insights.core import CommandParser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.marshalling import unmarshal
 from insights.core.plugins import parser
 from insights.specs import Specs
@@ -26,7 +26,7 @@ class PodmanInspect(CommandParser, dict):
     as JSON, so "json.loads" is an option to parse the output in the future.
 
     Raises:
-        SkipException: If content is not provided
+        SkipComponent: If content is not provided
     """
     def __init__(self, *args, **kwargs):
         deprecated(
@@ -38,7 +38,7 @@ class PodmanInspect(CommandParser, dict):
 
     def parse_content(self, content):
         if not content:
-            raise SkipException
+            raise SkipComponent
 
         content = "\n".join(list(content))
 
@@ -46,7 +46,7 @@ class PodmanInspect(CommandParser, dict):
             inspect_data = unmarshal(content)
             self.update(inspect_data[0])
         except:
-            raise SkipException
+            raise SkipComponent
 
 
 @parser(Specs.podman_image_inspect)

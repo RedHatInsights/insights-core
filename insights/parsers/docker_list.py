@@ -22,7 +22,7 @@ available in two formats:
 
 """
 from insights.core import CommandParser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import parse_fixed_table
 from insights.specs import Specs
@@ -45,7 +45,7 @@ class DockerList(CommandParser):
 
     Raises:
         NotImplementedError: If `key_field` or `attr_name` is not defined
-        SkipException: If no data to parse
+        SkipComponent: If no data to parse
     """
     key_field = None
     heading_ignore = []
@@ -67,14 +67,14 @@ class DockerList(CommandParser):
         # will output help when the spec is run due to incorrect arguments. So check
         # the content for any lines starting with Usage: so it can be skipped.
         if any(l for l in content if l.startswith("Usage: ")):
-            raise SkipException('No data only help output.')
+            raise SkipComponent('No data only help output.')
 
         self.rows = parse_fixed_table(content,
                                       heading_ignore=self.heading_ignore,
                                       header_substitute=self.substitutions)
 
         if not self.rows:
-            raise SkipException('No data.')
+            raise SkipComponent('No data.')
 
         data = {}
         for row in self.rows:

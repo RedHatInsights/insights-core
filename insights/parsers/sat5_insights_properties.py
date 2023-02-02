@@ -3,7 +3,7 @@ Sat5InsightsProperties - File ``redhat-access-insights.properties``
 ===================================================================
 """
 from insights.core import LegacyItemAccess, Parser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import get_active_lines
 from insights.specs import Specs
@@ -36,11 +36,11 @@ class Sat5InsightsProperties(LegacyItemAccess, Parser):
                         Otherwise, False
 
     Raises:
-        SkipException: When file content is empty.
+        SkipComponent: When file content is empty.
     """
     def parse_content(self, content):
         if not content:
-            raise SkipException('Empty content.')
+            raise SkipComponent('Empty content.')
 
         self.data = {}
         for line in get_active_lines(content):

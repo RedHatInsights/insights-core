@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import gcp_license_codes
 from insights.parsers.gcp_license_codes import GCPLicenseCodes
 from insights.tests import context_wrap
@@ -32,16 +32,16 @@ curl: (28) connect() timed out!
 
 
 def test_azure_instance_place_ab_other():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         GCPLicenseCodes(context_wrap(GCP_LICENSE_CODES_AB_1))
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         GCPLicenseCodes(context_wrap(GCP_LICENSE_CODES_AB_2))
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         GCPLicenseCodes(context_wrap(GCP_LICENSE_CODES_AB_3))
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         GCPLicenseCodes(context_wrap(''))
 
     with pytest.raises(ParseException):

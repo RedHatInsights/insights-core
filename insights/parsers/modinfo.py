@@ -14,7 +14,7 @@ KernelModulesInfo - Command ``modinfo filtered_modules``
 --------------------------------------------------------
 """
 from insights.core import CommandParser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 from insights.util import deprecated
@@ -35,10 +35,10 @@ class ModInfo(dict):
         well per the `content`.
 
         Raises:
-            SkipException: When nothing need to check to a dict.
+            SkipComponent: When nothing need to check to a dict.
         """
         if not content:
-            raise SkipException("No Contents")
+            raise SkipComponent("No Contents")
 
         data = {}
         for line in content:
@@ -53,7 +53,7 @@ class ModInfo(dict):
                     data[key].append(value)
 
         if not data:
-            raise SkipException("No Parsed Contents")
+            raise SkipComponent("No Parsed Contents")
 
         data['module_deps'] = list(data.get('depends', '').split(','))
         data['module_name'] = data.get('filename', '').rsplit('/')[-1].split('.')[0]
@@ -175,7 +175,7 @@ class KernelModulesInfo(CommandParser, dict):
         parm:           int_mode: Force interrupt mode other than MSI-X (1 INT#x; 2 MSI) (int)
 
     Raises:
-        SkipException: When nothing need to parse.
+        SkipComponent: When nothing need to parse.
 
     Examples:
         >>> from insights.core.filters import add_filter
@@ -205,7 +205,7 @@ class KernelModulesInfo(CommandParser, dict):
     """
     def parse_content(self, content):
         if (not content) or (not self.file_path):
-            raise SkipException("No Contents")
+            raise SkipComponent("No Contents")
 
         self.retpoline_y = set()
         self.retpoline_n = set()
@@ -227,7 +227,7 @@ class KernelModulesInfo(CommandParser, dict):
             self.retpoline_n.add(name) if m.get('retpoline') == 'N' else None
 
         if len(self) == 0:
-            raise SkipException("No Parsed Contents")
+            raise SkipComponent("No Parsed Contents")
 
 
 @parser(Specs.modinfo_all)
@@ -278,7 +278,7 @@ class ModInfoAll(KernelModulesInfo):
         parm:           int_mode: Force interrupt mode other than MSI-X (1 INT#x; 2 MSI) (int)
 
     Raises:
-        SkipException: When nothing need to parse.
+        SkipComponent: When nothing need to parse.
 
     Examples:
         >>> type(modinfo_all)
@@ -344,7 +344,7 @@ class ModInfoEach(CommandParser, ModInfo):
         parm:           int_mode: Force interrupt mode other than MSI-X (1 INT#x; 2 MSI) (int)
 
     Raises:
-        SkipException: When nothing is need to parse
+        SkipComponent: When nothing is need to parse
 
     Examples:
         >>> type(modinfo_obj)

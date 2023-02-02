@@ -49,7 +49,7 @@ Examples:
     512
 """
 from insights.core import CommandParser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import parse_delimited_table
 from insights.specs import Specs
@@ -63,7 +63,7 @@ class LoSetup(CommandParser, list):
 
     def parse_content(self, content):
         if not content:
-            raise SkipException("Empty output.")
+            raise SkipComponent("Empty output.")
 
         self.extend(parse_delimited_table(content))
         for entry in self:

@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import satellite_enabled_features
 from insights.tests import context_wrap
 
@@ -30,5 +30,5 @@ def test_features_on_satellite():
 
 
 def test_empty_features():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         satellite_enabled_features.SatelliteEnabledFeatures(context_wrap(empty_enabled_features))

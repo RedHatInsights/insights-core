@@ -4,7 +4,7 @@ import pytest
 from insights.core.exceptions import ParseException
 from insights.parsers import nfnetlink_queue
 from insights.tests import context_wrap
-from insights.tests.parsers import skip_exception_check
+from insights.tests.parsers import skip_component_check
 
 
 NFNETLINK_QUEUE = """
@@ -82,4 +82,4 @@ def test_wrong_type():
 
 
 def test_empty_content():
-    skip_exception_check(nfnetlink_queue.NfnetLinkQueue)
+    skip_component_check(nfnetlink_queue.NfnetLinkQueue)

@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import etcd_conf
 from insights.parsers.etcd_conf import EtcdConf
 from insights.tests import context_wrap
@@ -23,7 +23,7 @@ ETCD_AUTH_TOKEN=simple
 
 
 def test_etcd_conf_empty():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         assert etcd_conf.EtcdConf(context_wrap('')) is None
 
 

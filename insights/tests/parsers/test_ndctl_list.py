@@ -2,7 +2,7 @@ import doctest
 
 from insights.parsers import ndctl_list
 from insights.parsers.ndctl_list import NdctlListNi
-from insights.tests.parsers import skip_exception_check
+from insights.tests.parsers import skip_component_check
 from insights.tests import context_wrap
 
 NDCTL_OUTPUT = """
@@ -54,4 +54,4 @@ def test_get_dev_attr():
 
 
 def test_empty():
-    assert 'Empty output.' in skip_exception_check(NdctlListNi)
+    assert 'Empty output.' in skip_component_check(NdctlListNi)

@@ -12,7 +12,7 @@ Lines beginning with 'Symbolic Name', 'OS Device Name', 'Node Name', 'Port Name'
 sub-dictionaries are kept in a list keyed in 'Interfaces'.
 """
 from insights.core import CommandParser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -87,7 +87,7 @@ class FcoeadmI(CommandParser, dict):
         stat_list (list): FCoE interface(s) status
 
     Raises:
-        SkipException: When input content is empty
+        SkipComponent: When input content is empty
         ParseException: When input content is not available to parse
     """
 
@@ -96,7 +96,7 @@ class FcoeadmI(CommandParser, dict):
         BADWD = "No useful data parsed in content: '{0}'".format(content)
 
         if not content:
-            raise SkipException(EMPTY)
+            raise SkipComponent(EMPTY)
 
         if len(content) < 6 and len(content) > 0:
             raise ParseException(BADWD)

@@ -5,7 +5,7 @@ CorosyncCmapctl - Command ``corosync-cmapctl [params]``
 This module parses the output of the ``corosync-cmapctl [params]`` command.
 """
 from insights.core import CommandParser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -37,7 +37,7 @@ class CorosyncCmapctl(CommandParser, dict):
         'corosync_cmap'
 
     Raises:
-        SkipException: When there is no content
+        SkipComponent: When there is no content
         ParseException: When there is no "=" in the content
     """
 
@@ -46,7 +46,7 @@ class CorosyncCmapctl(CommandParser, dict):
 
     def parse_content(self, content):
         if not content:
-            raise SkipException
+            raise SkipComponent
         for line in content:
             if '=' not in line:
                 raise ParseException("Can not parse line %s" % line)

@@ -1,6 +1,6 @@
 from insights.parsers.teamdctl_state_dump import TeamdctlStateDump
-from insights.tests.parsers import skip_exception_check
 from insights.tests import context_wrap
+from insights.tests.parsers import skip_component_check
 
 TEAMDCTL_STATE_DUMP_INFO = """
 {
@@ -114,4 +114,4 @@ def test_teamdctl_state_dump_none():
 
 
 def test_teamdctl_state_dump_empty():
-    assert 'Empty output.' in skip_exception_check(TeamdctlStateDump)
+    assert 'Empty output.' in skip_component_check(TeamdctlStateDump)

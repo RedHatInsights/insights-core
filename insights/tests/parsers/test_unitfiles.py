@@ -3,7 +3,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers.systemd import unitfiles
 from insights.parsers.systemd.unitfiles import ListUnits, UnitFiles
 from insights.tests import context_wrap
@@ -445,8 +445,8 @@ Failed to list units
 
 
 def test_unitfile_NG():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         UnitFiles(context_wrap(UNITFILES_NG))
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         ListUnits(context_wrap(LISTUNITS_NG))
