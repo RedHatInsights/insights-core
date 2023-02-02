@@ -1,8 +1,14 @@
 import uuid
+from insights.combiners.cloud_instance import CloudInstance
+from insights.combiners.cloud_provider import CloudProvider
+from insights.parsers.aws_instance_id import AWSInstanceIdDoc
+from insights.parsers.installed_rpms import InstalledRpms
 from insights.tests import context_wrap
+from insights.tests.combiners.test_cloud_provider import RPMS_AWS
+from insights.tests.parsers.test_aws_instance_id import AWS_ID_DOC
 from insights.util.canonical_facts import (
-    _filter_falsy, _safe_parse, IPs, valid_ipv4_address_or_None, valid_mac_addresses,
-    valid_uuid_or_None)
+    _filter_falsy, _safe_parse, canonical_facts, IPs, valid_ipv4_address_or_None,
+    valid_mac_addresses, valid_uuid_or_None)
 
 
 def test_identity():
@@ -95,3 +101,13 @@ def test_safe_parse():
     assert result is None
     result = _safe_parse(None)
     assert result is None
+
+
+def test_canonical_facts_providers():
+    rpms = InstalledRpms(context_wrap(RPMS_AWS))
+    _id = AWSInstanceIdDoc(context_wrap(AWS_ID_DOC))
+    cp = CloudProvider(rpms, None, None, None)
+    ci = CloudInstance(cp, _id, None, None, None, None)
+    ret = canonical_facts(None, None, None, None, None, None, None, ci)
+    assert ret.get('provider_id') == 'i-1234567890abcdef0'
+    assert ret.get('provider_type') == 'aws'
