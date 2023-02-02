@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import lscpu
 from insights.tests import context_wrap
 
@@ -139,7 +139,7 @@ def test_lscpu_output():
 
 
 def test_lscpu_blank_output():
-    with pytest.raises(SkipException) as e:
+    with pytest.raises(SkipComponent) as e:
         lscpu.LsCPU(context_wrap(BLANK))
     assert "No data." in str(e)
 

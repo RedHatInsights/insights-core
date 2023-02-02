@@ -3,7 +3,7 @@ NfnetLinkQueue - file ``/proc/net/netfilter/nfnetlink_queue``
 =============================================================
 """
 from insights.core import Parser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -49,7 +49,7 @@ class NfnetLinkQueue(Parser, list):
 
     def parse_content(self, content):
         if not content:
-            raise SkipException("Empty output.")
+            raise SkipComponent("Empty output.")
 
         data = []
         fields = ['queue_number', 'peer_portid', 'queue_total', 'copy_mode',
@@ -64,7 +64,7 @@ class NfnetLinkQueue(Parser, list):
             data.append(dict(zip(fields, parts)))
 
         if not data:
-            raise SkipException("No parsed data.")
+            raise SkipComponent("No parsed data.")
 
         self.extend(data)
 

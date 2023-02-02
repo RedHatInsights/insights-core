@@ -73,12 +73,11 @@ Example:
     'yes'
 
 """
-
-
-from insights.specs import Specs
-from insights import Parser, parser
+from insights.core import Parser
+from insights.core.exceptions import SkipComponent
+from insights.core.plugins import parser
 from insights.parsers import split_kv_pairs
-from insights.core.exceptions import SkipException
+from insights.specs import Specs
 
 
 @parser(Specs.abrt_ccpp_conf)
@@ -89,4 +88,4 @@ class AbrtCCppConf(Parser, dict):
     def parse_content(self, content):
         self.update(split_kv_pairs(content, use_partition=False))
         if not self:
-            raise SkipException("empty content")
+            raise SkipComponent("empty content")

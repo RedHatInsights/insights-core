@@ -6,7 +6,7 @@ PostconfBuiltin - command ``postconf -C builtin``
 =================================================
 """
 from insights.core import CommandParser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -36,7 +36,7 @@ class _Postconf(CommandParser, dict):
 
     def parse_content(self, content):
         if not content:
-            raise SkipException
+            raise SkipComponent
 
         data = dict()
         for line in content:
@@ -45,7 +45,7 @@ class _Postconf(CommandParser, dict):
                 data[key] = value
 
         if not data:
-            raise SkipException
+            raise SkipComponent
 
         self.update(data)
 

@@ -43,7 +43,7 @@ Examples:
     True
 """
 from insights.core import CommandParser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -54,7 +54,7 @@ class Tuned(CommandParser, dict):
     Parse output from the ``/usr/sbin/tuned-adm list`` command.
 
     Raises:
-        SkipException: When noting needs to parse
+        SkipComponent: When noting needs to parse
     """
 
     def parse_content(self, content):
@@ -69,7 +69,7 @@ class Tuned(CommandParser, dict):
                 data['preset'] = line.split(': ')[1].strip()
             # Ignore everything else for now
         if not data:
-            raise SkipException
+            raise SkipComponent
         self.update(data)
 
     @property

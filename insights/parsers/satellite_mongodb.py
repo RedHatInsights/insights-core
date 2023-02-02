@@ -11,7 +11,7 @@ MongoDBNonYumTypeRepos - command ``mongo pulp_database --eval 'db.repo_importers
 
 """
 from insights.core import CommandParser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -43,7 +43,7 @@ class MongoDBStorageEngine(CommandParser, dict):
 
     Raises::
 
-        SkipException: When there is no attribute in the output
+        SkipComponent: When there is no attribute in the output
         ParseException: When the storage engine attributes aren't in expected format
     """
 
@@ -63,7 +63,7 @@ class MongoDBStorageEngine(CommandParser, dict):
                 except Exception:
                     raise ParseException("Unable to parse the line: {0}".format(line))
         if not self:
-            raise SkipException("Cannot get storage engine from Satellite MongoDB")
+            raise SkipComponent("Cannot get storage engine from Satellite MongoDB")
 
 
 @parser(Specs.satellite_non_yum_type_repos)
@@ -92,10 +92,10 @@ class MongoDBNonYumTypeRepos(CommandParser):
 
     Raises::
 
-        SkipException: When the output isn't in exptected format
+        SkipComponent: When the output isn't in exptected format
     """
 
     def parse_content(self, content):
         if len(content) != 4 or not content[3].isdigit():
-            raise SkipException("Unexpected output for MongoDBNonYumTypeRepos")
+            raise SkipComponent("Unexpected output for MongoDBNonYumTypeRepos")
         self.count = int(content[3])
