@@ -17,9 +17,11 @@ def kernel_module_filters(broker):
     """
     filters = sorted((get_filters(Specs.modinfo_modules)))
     if filters:
-        new_modules = []
+        loaded_modules = []
         for item in filters:
             if item in broker[LsMod]:
-                new_modules.append(item)
-        return ' '.join(new_modules)
+                loaded_modules.append(item)
+        if loaded_modules:
+            return ' '.join(loaded_modules)
+        raise SkipComponent
     raise SkipComponent

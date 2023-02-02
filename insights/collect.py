@@ -259,6 +259,10 @@ plugins:
 
         - name: insights.components.cryptsetup
           enabled: true
+
+    # needed for the 'modinfo_filtered_modules' spec
+        - name: insights.parsers.lsmod.LsMod
+          enabled: true
 """.strip()
 
 EXCEPTIONS_TO_REPORT = set([

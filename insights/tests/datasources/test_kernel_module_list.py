@@ -20,6 +20,11 @@ binfmt_misc            69632  0
 udp_diag               18632  0
 """.strip()
 
+LSMOD_NO_LOADED = """
+Module                  Size  Used by
+tcp_diag               16384  0
+""".strip()
+
 
 def setup_function(func):
     if Specs.modinfo_modules in filters._CACHE:
@@ -28,6 +33,8 @@ def setup_function(func):
         del filters.FILTERS[Specs.modinfo_modules]
 
     if func is test_module_filters:
+        filters.add_filter(Specs.modinfo_modules, ["udp_diag", "binfmt_misc", "wireguard"])
+    if func is test_module_no_loaded_modules:
         filters.add_filter(Specs.modinfo_modules, ["udp_diag", "binfmt_misc", "wireguard"])
     if func is test_module_filters_empty:
         filters.add_filter(Specs.modinfo_modules, [])
@@ -42,6 +49,13 @@ def test_module_filters():
 
 def test_module_filters_empty():
     lsmod_info = LsMod(context_wrap(LSMOD))
+    broker = {LsMod: lsmod_info}
+    with pytest.raises(SkipComponent):
+        kernel_module_filters(broker)
+
+
+def test_module_no_loaded_modules():
+    lsmod_info = LsMod(context_wrap(LSMOD_NO_LOADED))
     broker = {LsMod: lsmod_info}
     with pytest.raises(SkipComponent):
         kernel_module_filters(broker)
