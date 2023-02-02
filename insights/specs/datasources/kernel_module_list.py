@@ -5,10 +5,11 @@ from insights.core.context import HostContext
 from insights.core.exceptions import SkipComponent
 from insights.core.filters import get_filters
 from insights.core.plugins import datasource
+from insights.parsers.lsmod import LsMod
 from insights.specs import Specs
 
 
-@datasource(HostContext)
+@datasource(LsMod, HostContext)
 def kernel_module_filters(broker):
     """
     Return a string of a list of modules from the spec filter,
@@ -16,5 +17,11 @@ def kernel_module_filters(broker):
     """
     filters = sorted((get_filters(Specs.modinfo_modules)))
     if filters:
-        return ' '.join(filters)
+        loaded_modules = []
+        for item in filters:
+            if item in broker[LsMod]:
+                loaded_modules.append(item)
+        if loaded_modules:
+            return ' '.join(loaded_modules)
+        raise SkipComponent
     raise SkipComponent
