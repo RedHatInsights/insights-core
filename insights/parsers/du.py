@@ -11,7 +11,7 @@ DiskUsageDir - command ``du -s -k {directory}``
 
 """
 from insights.core import CommandParser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -53,7 +53,7 @@ class DiskUsage(CommandParser, dict):
         182
 
     Raises:
-        SkipException: When no data could be parsed.
+        SkipComponent: When no data could be parsed.
         ParseException: Raised when any problem parsing the command output.
     """
 
@@ -84,7 +84,7 @@ class DiskUsage(CommandParser, dict):
                 raise ParseException("Could not parse line: '{0}'".
                                      format(line))
         if len(self) == 0:
-            raise SkipException('No data parsed')
+            raise SkipComponent('No data parsed')
 
 
 @parser(Specs.du_dirs)

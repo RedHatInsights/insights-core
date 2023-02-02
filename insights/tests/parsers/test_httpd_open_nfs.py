@@ -2,8 +2,8 @@ import doctest
 
 from insights.parsers import httpd_open_nfs
 from insights.parsers.httpd_open_nfs import HttpdOnNFSFilesCount
-from insights.tests.parsers import skip_exception_check
 from insights.tests import context_wrap
+from insights.tests.parsers import skip_component_check
 
 http_nfs = """
 {"http_ids": [1787, 2399], "nfs_mounts": ["/data", "/www"], "open_nfs_files": 1000}
@@ -19,7 +19,7 @@ def test_http_nfs():
 
 
 def test_empty():
-    assert 'Empty output.' in skip_exception_check(HttpdOnNFSFilesCount)
+    assert 'Empty output.' in skip_component_check(HttpdOnNFSFilesCount)
 
 
 def test_http_nfs_documentation():

@@ -34,7 +34,7 @@ Examples:
     'config-3.10.0-327.28.3.rt56.235.el7.x86_64'
 """
 from insights.core import Parser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import split_kv_pairs
 from insights.specs import Specs
@@ -51,7 +51,7 @@ class KernelConf(Parser, dict):
 
     def parse_content(self, content):
         if (not content) or (not self.file_path):
-            raise SkipException("No Contents")
+            raise SkipComponent("No Contents")
 
         self._config_name = self.file_path.rsplit("/")[-1]
         lines = [l for l in content if not l.strip().startswith('#')]

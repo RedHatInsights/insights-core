@@ -2,8 +2,8 @@ import doctest
 
 from insights.parsers import containers_policy
 from insights.parsers.containers_policy import ContainersPolicy
-from insights.tests.parsers import skip_exception_check
 from insights.tests import context_wrap
+from insights.tests.parsers import skip_component_check
 
 CONTAINERS_POLICY_FILE = '''
 {
@@ -61,4 +61,4 @@ def test_containers_policy():
 
 
 def test_containers_policy_empty():
-    assert 'Empty output.' in skip_exception_check(ContainersPolicy)
+    assert 'Empty output.' in skip_component_check(ContainersPolicy)

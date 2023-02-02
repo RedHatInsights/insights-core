@@ -3,7 +3,7 @@ import pytest
 
 from datetime import datetime
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import certificates_enddate
 from insights.tests import context_wrap
 
@@ -121,5 +121,5 @@ def test_doc():
 
 
 def test_exception():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         certificates_enddate.CertificatesEnddate(context_wrap(CRT7))

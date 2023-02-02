@@ -2,8 +2,8 @@ import doctest
 
 from insights.parsers import teamdctl_config_dump
 from insights.parsers.teamdctl_config_dump import TeamdctlConfigDump
-from insights.tests.parsers import skip_exception_check
 from insights.tests import context_wrap
+from insights.tests.parsers import skip_component_check
 
 TEAMDCTL_CONFIG_DUMP_INFO = """
 {
@@ -41,7 +41,7 @@ def test_teamdctl_state_dump():
 
 
 def test_teamdctl_state_dump_empty():
-    assert 'Empty output.' in skip_exception_check(TeamdctlConfigDump)
+    assert 'Empty output.' in skip_component_check(TeamdctlConfigDump)
 
 
 def test_nmcli_doc_examples():

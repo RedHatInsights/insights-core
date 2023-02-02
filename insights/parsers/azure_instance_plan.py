@@ -12,7 +12,7 @@ For more details, See: https://docs.microsoft.com/en-us/rest/api/compute/virtual
 import json
 
 from insights.core import CommandParser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 from insights.util import deprecated
@@ -38,7 +38,7 @@ class AzureInstancePlan(CommandParser):
         },
 
     Raises:
-        SkipException: When content is empty or no parse-able content.
+        SkipComponent: When content is empty or no parse-able content.
 
     Attributes:
         name (str): The name of the plan for the VM Instance in Azure, e.g: rhel7
@@ -60,7 +60,7 @@ class AzureInstancePlan(CommandParser):
 
     def parse_content(self, content):
         if not content or 'curl: ' in content[0]:
-            raise SkipException()
+            raise SkipComponent()
         try:
             plan = json.loads(content[0])
         except:

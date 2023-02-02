@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import lspci
 from insights.parsers.lspci import LsPci, LsPciVmmkn
 from insights.tests import context_wrap
@@ -315,10 +315,10 @@ def test_lspci_vmmkn():
 
 
 def test_lspci_vmmkn_ab():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         LsPciVmmkn(context_wrap(''))
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         LsPciVmmkn(context_wrap(' \n '.splitlines()))
 
 

@@ -5,7 +5,7 @@ VmaRaEnabledS390x - file ``/sys/kernel/mm/swap/vma_ra_enabled``
 Parser to parse the output of file ``/sys/kernel/mm/swap/vma_ra_enabled``
 """
 from insights.core import Parser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -30,13 +30,13 @@ class VmaRaEnabledS390x(Parser):
         ra_enabled (bool): The result parsed
 
     Raises:
-        SkipException: When file content is empty
+        SkipComponent: When file content is empty
 
     """
 
     def parse_content(self, content):
         if not content:
-            raise SkipException("Input content is empty")
+            raise SkipComponent("Input content is empty")
 
         if content[0] == 'True':
             self.ra_enabled = True

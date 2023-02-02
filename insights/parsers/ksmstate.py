@@ -6,7 +6,7 @@ Parser to get the kernel samepage merging state by reading the file
 ``/sys/kernel/mm/ksm/run``.
 """
 from insights.core import Parser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -35,12 +35,12 @@ class KSMState(Parser):
         False
 
     Raises:
-        SkipException: when input is empty.
+        SkipComponent: when input is empty.
         ParseException: when the content is not expected.
     """
     def parse_content(self, content):
         if not content:
-            raise SkipException
+            raise SkipComponent
         if len(content) != 1 or content[0] not in ('0', '1', '2'):
             raise ParseException("Incorrect content: '{0}'".format(content))
 

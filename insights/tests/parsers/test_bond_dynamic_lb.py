@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import bond_dynamic_lb
 from insights.parsers.bond_dynamic_lb import BondDynamicLB
 from insights.tests import context_wrap
@@ -56,7 +56,7 @@ def test_bond_dynamic_lb_class():
         assert not bond_obj.bond_name
     assert 'Unrecognised Values' in str(exc)
 
-    with pytest.raises(SkipException) as exc:
+    with pytest.raises(SkipComponent) as exc:
         bond_obj = BondDynamicLB(context_wrap(BOND_LD_BALANCE_NO, CONTEXT_PATH))
         assert not bond_obj.bond_name
     assert 'No Contents' in str(exc)

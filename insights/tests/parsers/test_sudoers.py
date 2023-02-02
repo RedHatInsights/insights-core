@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import sudoers
 from insights.parsers.sudoers import EtcSudoers
 from insights.tests import context_wrap
@@ -26,7 +26,7 @@ def test_etc_sudoers():
 
 
 def test_ab():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         EtcSudoers(context_wrap(SUDOERS_EMPTY))
 
     sudo = EtcSudoers(context_wrap(SUDOERS))

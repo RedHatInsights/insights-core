@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import ssh_client_config as scc
 from insights.tests import context_wrap
 
@@ -82,7 +82,7 @@ def test_ssh_client_config():
 
 
 def test_ssh_config_AB():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         scc.ForemanProxySshConfig(context_wrap(SSH_CONFIG_INPUT_EMPTY))
 
 

@@ -7,7 +7,7 @@ partition block allocation information.
 
 """
 from insights.core import Parser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import parse_delimited_table
 from insights.specs import Specs
@@ -38,12 +38,12 @@ class Partitions(Parser, dict):
        [('blocks', '19531250'), ('major', '3'), ('minor', '0'), ('name', 'hda')]
 
     Raises:
-        SkipException: When input is empty.
+        SkipComponent: When input is empty.
 
     """
     def parse_content(self, content):
         if not content:
-            raise SkipException('Empty content')
+            raise SkipComponent('Empty content')
 
         self.update(dict(
             (row['name'], row)

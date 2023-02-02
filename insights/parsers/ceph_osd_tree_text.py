@@ -3,7 +3,7 @@ CephOsdTreeText - command ``ceph osd tree``
 ===========================================
 """
 from insights.core import CommandParser, LegacyItemAccess
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -62,7 +62,7 @@ class CephOsdTreeText(CommandParser, LegacyItemAccess):
             return idx
 
         if not content:
-            raise SkipException("Empty content.")
+            raise SkipComponent("Empty content.")
         if len(content) == 1 or "TYPE NAME" not in content[0]:
             raise ParseException("Wrong content in table: '{0}'.".format(content))
 

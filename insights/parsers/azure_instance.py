@@ -16,14 +16,14 @@ AzureInstancePlan - 'plan' of Azure Instance
 import json
 
 from insights.core import CommandParser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
 
 def validate_content(content):
     if not content or 'curl: ' in content[0]:
-        raise SkipException()
+        raise SkipComponent()
 
 
 @parser(Specs.azure_instance_id)
@@ -38,7 +38,7 @@ class AzureInstanceID(CommandParser):
         f904ece8-c6c1-4b5c-881f-309b50f25e50
 
     Raises:
-        SkipException: When content is empty or no parse-able content.
+        SkipComponent: When content is empty or no parse-able content.
 
     Attributes:
         id (str): The instance ID of the VM instance in Azure.
@@ -69,7 +69,7 @@ class AzureInstanceType(CommandParser):
         Standard_L64s_v2
 
     Raises:
-        SkipException: When content is empty or no parse-able content.
+        SkipComponent: When content is empty or no parse-able content.
         ParseException: When type cannot be recognized.
 
     Attributes:
@@ -126,7 +126,7 @@ class AzureInstancePlan(CommandParser):
         },
 
     Raises:
-        SkipException: When content is empty or no parse-able content.
+        SkipComponent: When content is empty or no parse-able content.
 
     Attributes:
         name (str): The name of the plan for the VM Instance in Azure, e.g: rhel7
