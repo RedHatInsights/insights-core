@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import ovs_appctl_fdb_show_bridge
 from insights.parsers.ovs_appctl_fdb_show_bridge import OVSappctlFdbShowBridge
 from insights.tests import context_wrap
@@ -49,12 +49,12 @@ def test_ovs_appctl_fdb_show_bridge_documentation():
 
 
 def test_ovs_appctl_fdb_show_bridge_exception1():
-    with pytest.raises(SkipException) as e:
+    with pytest.raises(SkipComponent) as e:
         OVSappctlFdbShowBridge(context_wrap(EXCEPTION1, path=PATH_BR_INT))
     assert "Empty file" in str(e)
 
 
 def test_ovs_appctl_fdb_show_bridge_exception2():
-    with pytest.raises(SkipException) as e:
+    with pytest.raises(SkipComponent) as e:
         OVSappctlFdbShowBridge(context_wrap(EXCEPTION2, path=PATH_BR_TUN))
     assert "No data present for br_tun" in str(e)

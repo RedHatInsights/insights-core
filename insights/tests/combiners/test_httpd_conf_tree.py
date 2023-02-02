@@ -2,7 +2,7 @@
 import pytest
 
 from insights.combiners.httpd_conf import HttpdConfTree, HttpdConfSclHttpd24Tree, HttpdConfSclJbcsHttpd24Tree
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import httpd_conf
 from insights.tests import context_wrap
 
@@ -723,7 +723,7 @@ def test_httpd_one_file_overwrites():
 
 
 def test_httpd_conf_empty():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         assert httpd_conf.HttpdConf(context_wrap('', path='/etc/httpd/httpd.conf')) is None
 
 

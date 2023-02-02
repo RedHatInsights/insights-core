@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import subscription_manager_release
 from insights.parsers.subscription_manager_release import SubscriptionManagerReleaseShow
 from insights.tests import context_wrap
@@ -65,19 +65,19 @@ def test_subscription_manager_release_show_not_set():
 
 
 def test_subscription_manager_release_show_ng():
-    with pytest.raises(SkipException) as e_info:
+    with pytest.raises(SkipComponent) as e_info:
         SubscriptionManagerReleaseShow(context_wrap(INPUT_NG_1))
     assert "Content takes at most 1 line (2 given)." in str(e_info.value)
 
-    with pytest.raises(SkipException) as e_info:
+    with pytest.raises(SkipComponent) as e_info:
         SubscriptionManagerReleaseShow(context_wrap(INPUT_NG_2))
     assert "Incorrect content: Release: 7.x" in str(e_info.value)
 
-    with pytest.raises(SkipException) as e_info:
+    with pytest.raises(SkipComponent) as e_info:
         SubscriptionManagerReleaseShow(context_wrap(INPUT_NG_3))
     assert "Incorrect content: Release: 7.x DUMMY" in str(e_info.value)
 
-    with pytest.raises(SkipException) as e_info:
+    with pytest.raises(SkipComponent) as e_info:
         SubscriptionManagerReleaseShow(context_wrap(INPUT_NG_4))
     assert "Incorrect content: Release: 7x" in str(e_info.value)
 

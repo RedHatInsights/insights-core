@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import ldif_config
 from insights.parsers.ldif_config import LDIFParser
 from insights.tests import context_wrap
@@ -214,7 +214,7 @@ def test_ldif_parser():
 
 
 def test_empty():
-    with pytest.raises(SkipException) as e:
+    with pytest.raises(SkipComponent) as e:
         LDIFParser(context_wrap(LDIF_CONFIG_EMPTY))
     assert 'The file is empty' in str(e)
 

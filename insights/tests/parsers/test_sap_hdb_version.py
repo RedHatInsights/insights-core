@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import sap_hdb_version
 from insights.parsers.sap_hdb_version import HDBVersion
 from insights.tests import context_wrap
@@ -59,11 +59,11 @@ def test_HDBVersion_doc():
 
 
 def test_HDBVersion_ng():
-    with pytest.raises(SkipException) as e_info:
+    with pytest.raises(SkipComponent) as e_info:
         HDBVersion(context_wrap(HDB_VER_NG_1))
     assert "Incorrect content." in str(e_info.value)
 
-    with pytest.raises(SkipException) as e_info:
+    with pytest.raises(SkipComponent) as e_info:
         HDBVersion(context_wrap(HDB_VER_NG_2))
     assert "Incorrect HDB version: 2.00.020.1500920972" in str(e_info.value)
 

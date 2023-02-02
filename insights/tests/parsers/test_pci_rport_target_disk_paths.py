@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import pci_rport_target_disk_paths
 from insights.parsers.pci_rport_target_disk_paths import PciRportTargetDiskPaths as PCIPaths
 from insights.tests import context_wrap
@@ -65,7 +65,7 @@ def test_status_exp():
     """
     Here test the examples cause expections
     """
-    with pytest.raises(SkipException) as sc1:
+    with pytest.raises(SkipComponent) as sc1:
         PCIPaths(context_wrap(''))
     assert "Input content is empty" in str(sc1)
 

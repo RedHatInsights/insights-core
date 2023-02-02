@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import subscription_manager
 from insights.parsers.subscription_manager import SubscriptionManagerFacts
 from insights.tests import context_wrap
@@ -34,7 +34,7 @@ def test_subscription_manager_release_show_ng():
     with pytest.raises(ParseException):
         SubscriptionManagerFacts(context_wrap(INPUT_NG_1))
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         SubscriptionManagerFacts(context_wrap(INPUT_NG_2))
 
 

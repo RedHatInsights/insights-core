@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import nmcli
 from insights.parsers.nmcli import NmcliConnShow, NmcliDevShow, NmcliDevShowSos
 from insights.tests import context_wrap
@@ -233,13 +233,13 @@ def test_static_connection_test_4():
 
 
 def test_nmcli_dev_show_ab():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         NmcliDevShow(context_wrap(''))
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         NmcliDevShow(context_wrap('GENERAL.TYPE: ethernet'))
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         NmcliDevShow(context_wrap('Error'))
 
 
@@ -254,7 +254,7 @@ def test_nmcli_doc_examples():
 
 
 def test_nmcli_exceptions():
-    with pytest.raises(SkipException) as exc:
+    with pytest.raises(SkipComponent) as exc:
         nmcli_obj = NmcliConnShow(context_wrap(NMCLI_SHOW_ERROR))
         nmcli_obj = NmcliConnShow(context_wrap(NMCLI_SHOW_ERROR_2))
         assert nmcli_obj is None

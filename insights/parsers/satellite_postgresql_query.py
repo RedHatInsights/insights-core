@@ -29,7 +29,7 @@ import yaml
 from csv import DictReader
 
 from insights.core import CommandParser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import calc_offset, keyword_search
 from insights.specs import Specs
@@ -65,7 +65,7 @@ class SatellitePostgreSQLQuery(CommandParser, list):
         def,http://xx.com,
 
     Raises:
-        SkipException: when there isn't data in the table
+        SkipComponent: when there isn't data in the table
         ParseException: when the output isn't in good csv format or the yaml values aren't in good yaml format
         NotImplementedError: when the subclass doesn't override the columns attribute.
     """
@@ -98,7 +98,7 @@ class SatellitePostgreSQLQuery(CommandParser, list):
                 row[name] = self._parse_yaml(row[name])
             self.append(row)
         if not self:
-            raise SkipException("There is no data in the table.")
+            raise SkipComponent("There is no data in the table.")
 
     def search(self, **kwargs):
         """

@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import pcs_quorum_status
 from insights.parsers.pcs_quorum_status import PcsQuorumStatus
 from insights.tests import context_wrap
@@ -79,7 +79,7 @@ def test_invalid():
 
 
 def test_empty():
-    with pytest.raises(SkipException) as e:
+    with pytest.raises(SkipComponent) as e:
         PcsQuorumStatus(context_wrap(PCS_QUORUM_STATUS_EMPTY))
     assert "Empty content" in str(e)
 

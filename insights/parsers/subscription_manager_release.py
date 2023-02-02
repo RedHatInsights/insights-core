@@ -10,7 +10,7 @@ SubscriptionManagerReleaseShow - command ``subscription-manager release --show``
 
 """
 from insights.core import CommandParser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -44,7 +44,7 @@ class SubscriptionManagerReleaseShow(CommandParser):
         self.set = self.major = self.minor = None
         l = len(content)
         if l != 1:
-            raise SkipException("Content takes at most 1 line ({0} given).".format(l))
+            raise SkipComponent("Content takes at most 1 line ({0} given).".format(l))
         line = content[0].strip()
         if line != 'Release not set':
             line_splits = line.split()
@@ -72,5 +72,5 @@ class SubscriptionManagerReleaseShow(CommandParser):
                     # leave self.minor as None
                     return
 
-            raise SkipException("Incorrect content: {0}".format(line))
+            raise SkipComponent("Incorrect content: {0}".format(line))
         # Release not set

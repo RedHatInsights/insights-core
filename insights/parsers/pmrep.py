@@ -24,7 +24,7 @@ Examples:
 from csv import DictReader
 
 from insights.core import CommandParser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import keyword_search
 from insights.specs import Specs
@@ -35,7 +35,7 @@ class PMREPMetrics(CommandParser, list):
     """Parses output of ``pmrep -t 1s -T 1s <metrics> -o csv`` command."""
     def parse_content(self, content):
         if not content or len(content) == 1:
-            raise SkipException("There is no data in the table")
+            raise SkipComponent("There is no data in the table")
         try:
             reader = DictReader(content)
         except Exception:

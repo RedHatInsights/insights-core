@@ -12,7 +12,7 @@ SystemctlShowAllServiceWithLimitedProperties - command ``systemctl show *.servic
 ----------------------------------------------------------------------------------------------------------
 """
 from insights.core import CommandParser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import split_kv_pairs
 from insights.specs import Specs
@@ -75,13 +75,13 @@ class SystemctlShowServiceAll(CommandParser, dict):
         '0'
 
     Raises:
-        SkipException: When nothing needs to parse
+        SkipComponent: When nothing needs to parse
         ParseException: When something cannot be parsed
     """
 
     def parse_content(self, content):
         if not content:
-            raise SkipException
+            raise SkipComponent
 
         sidx = 0
         idx_list = []
@@ -98,7 +98,7 @@ class SystemctlShowServiceAll(CommandParser, dict):
             self[name] = dict((k, v) for k, v in data.items() if v)
 
         if len(self) == 0:
-            raise SkipException
+            raise SkipComponent
 
 
 @parser(Specs.systemctl_show_target)
@@ -171,7 +171,7 @@ class SystemctlShowTarget(SystemctlShowServiceAll):
         >>> systemctl_show_target.get('network.target').get('RequiredBy', None)
 
     Raises:
-        SkipException: When nothing needs to parse
+        SkipComponent: When nothing needs to parse
         ParseException: When something cannot be parsed
     """
     pass

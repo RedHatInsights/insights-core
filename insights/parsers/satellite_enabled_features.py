@@ -19,7 +19,7 @@ Examples:
     False
 """
 from insights.core import CommandParser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -36,4 +36,4 @@ class SatelliteEnabledFeatures(CommandParser, list):
             features = line.strip('[]')
             self.extend([feature.strip('"') for feature in features.split(',') if feature])
         if len(self) == 0:
-            raise SkipException
+            raise SkipComponent

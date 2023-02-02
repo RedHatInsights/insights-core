@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import podman_list
 from insights.tests import context_wrap
 
@@ -70,7 +70,7 @@ def test_podman_list_containers():
 
 
 def test_podman_list_images_no_data():
-    with pytest.raises(SkipException) as ex:
+    with pytest.raises(SkipComponent) as ex:
         podman_list.PodmanListImages(context_wrap(PODMAN_LIST_IMAGES_NO_DATA))
     assert 'No data.' in str(ex)
 

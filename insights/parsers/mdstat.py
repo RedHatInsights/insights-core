@@ -5,7 +5,7 @@ Mdstat - file ``/proc/mdstat``
 import re
 
 from insights.core import CommandParser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -97,7 +97,7 @@ class Mdstat(CommandParser):
     """
     def parse_content(self, content):
         if not content:
-            raise SkipException("Empty output.")
+            raise SkipComponent("Empty output.")
 
         self.mds = {}
         self.components = []
@@ -111,7 +111,7 @@ class Mdstat(CommandParser):
             if line.startswith('Personalities'):
                 # If the line doesn't have any raid types then md raid isn't active.
                 if line == "Personalities :":
-                    raise SkipException("No parseable md devices present.")
+                    raise SkipComponent("No parseable md devices present.")
 
                 in_component = False
                 self.personalities = parse_personalities(line)

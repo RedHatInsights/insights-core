@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import systemctl_show
 from insights.parsers.systemctl_show import (
     SystemctlShowServiceAll, SystemctlShowTarget, SystemctlShowAllServiceWithLimitedProperties
@@ -340,7 +340,7 @@ def test_systemctl_show_target():
 
 
 def test_systemctl_show_service_all_ab():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         SystemctlShowServiceAll(context_wrap(''))
 
     with pytest.raises(ParseException):

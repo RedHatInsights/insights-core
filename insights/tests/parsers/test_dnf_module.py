@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import dnf_module
 from insights.parsers.dnf_module import DnfModuleList, DnfModuleInfo
 from insights.tests import context_wrap
@@ -191,7 +191,7 @@ def test_dnf_module_list_exp():
     with pytest.raises(ValueError):
         DnfModuleList(context_wrap(DNF_MODULE_LIST_EXP1))
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         DnfModuleList(context_wrap(DNF_MODULE_LIST_EXP2))
 
 
@@ -210,7 +210,7 @@ def test_dnf_module_info():
 
 
 def test_dnf_module_info_exp():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         DnfModuleInfo(context_wrap(DNF_MODULE_INFO_EXP))
 
 

@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import corosync
 from insights.parsr.query import first, last
 from insights.tests import context_wrap
@@ -78,7 +78,7 @@ def test_corosync_conf():
 
 
 def test_corosync_conf_empty():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         assert corosync.CorosyncConf(context_wrap('')) is None
 
 

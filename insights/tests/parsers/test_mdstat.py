@@ -4,7 +4,7 @@ import pytest
 from insights.core.exceptions import ParseException
 from insights.parsers import mdstat
 from insights.tests import context_wrap
-from insights.tests.parsers import skip_exception_check
+from insights.tests.parsers import skip_component_check
 
 MDSTAT_TEST_1 = """
 Personalities : [raid1] [raid6] [raid5] [raid4]
@@ -244,5 +244,5 @@ def test_mdstat_construction():
 
 
 def test_skip():
-    skip_exception_check(mdstat.Mdstat, output_str=NO_MD_DEVICES)
-    skip_exception_check(mdstat.Mdstat)
+    skip_component_check(mdstat.Mdstat, output_str=NO_MD_DEVICES)
+    skip_component_check(mdstat.Mdstat)

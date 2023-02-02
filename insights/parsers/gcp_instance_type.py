@@ -12,7 +12,7 @@ For more details, See:
 
 """
 from insights.core import CommandParser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -30,7 +30,7 @@ class GCPInstanceType(CommandParser):
 
 
     Raises:
-        SkipException: When content is empty or no parse-able content.
+        SkipComponent: When content is empty or no parse-able content.
         ParseException: When type cannot be recognized.
 
     Attributes:
@@ -50,7 +50,7 @@ class GCPInstanceType(CommandParser):
 
     def parse_content(self, content):
         if not content or 'curl: ' in content[0]:
-            raise SkipException()
+            raise SkipComponent()
 
         self.raw_line = self.raw = self.type = self.size = None
         # Ignore any curl stats that may be present in data

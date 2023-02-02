@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import yum
 from insights.parsers.yum import YumRepoList
 from insights.tests import context_wrap
@@ -196,11 +196,11 @@ def test_rhel_repos_missing_status():
 
 
 def test_rhel_repos_empty():
-    with pytest.raises(SkipException) as se:
+    with pytest.raises(SkipComponent) as se:
         YumRepoList(context_wrap(''))
     assert 'No repolist.' in str(se)
 
-    with pytest.raises(SkipException) as se:
+    with pytest.raises(SkipComponent) as se:
         YumRepoList(context_wrap(YUM_REPOLIST_CONTENT_EMPTY))
     assert 'No repolist.' in str(se)
 
@@ -248,7 +248,7 @@ def test_repos_without_ends():
 
 
 def test_repolist_zero():
-    with pytest.raises(SkipException) as se:
+    with pytest.raises(SkipComponent) as se:
         YumRepoList(context_wrap(YUM_REPOLIST_ZERO))
     assert 'No repolist.' in str(se)
 

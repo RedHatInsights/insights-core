@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import kpatch_list
 from insights.tests import context_wrap
 
@@ -63,6 +63,6 @@ def test_kpatch_list():
 
 
 def test_fail():
-    with pytest.raises(SkipException) as e:
+    with pytest.raises(SkipComponent) as e:
         kpatch_list.KpatchList(context_wrap(BAD_OUTPUT1))
     assert "No Data from command: /usr/sbin/kpatch list" in str(e)

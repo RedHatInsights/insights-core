@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import ip_netns_exec_namespace_lsof
 from insights.parsers.ip_netns_exec_namespace_lsof import IpNetnsExecNamespaceLsofI
 from insights.tests import context_wrap
@@ -39,12 +39,12 @@ def test_ip_netns_exec_namespace_lsof_documentation():
 
 
 def test_ip_netns_exec_namespace_lsof_exception1():
-    with pytest.raises(SkipException) as e:
+    with pytest.raises(SkipComponent) as e:
         IpNetnsExecNamespaceLsofI(context_wrap(EXCEPTION1))
     assert "Empty file" in str(e)
 
 
 def test_ip_netns_exec_namespace_lsof_exception2():
-    with pytest.raises(SkipException) as e:
+    with pytest.raises(SkipComponent) as e:
         IpNetnsExecNamespaceLsofI(context_wrap(EXCEPTION2))
     assert "Useless data" in str(e)

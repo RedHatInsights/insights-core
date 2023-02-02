@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import lpstat
 from insights.parsers.lpstat import LpstatPrinters, LpstatProtocol
 from insights.tests import context_wrap
@@ -89,11 +89,11 @@ def test_lpstat_protocol():
 
 
 def test_lpstat_protocol_invalid_state():
-    with pytest.raises(SkipException) as exc:
+    with pytest.raises(SkipComponent) as exc:
         LpstatProtocol(context_wrap(LPSTAT_V_OUTPUT_INVALID_1))
     assert 'No Valid Output' in str(exc)
 
-    with pytest.raises(SkipException) as exc:
+    with pytest.raises(SkipComponent) as exc:
         LpstatProtocol(context_wrap(LPSTAT_V_OUTPUT_INVALID_2))
     assert 'No Valid Output' in str(exc)
 

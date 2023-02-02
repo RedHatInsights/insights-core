@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import ContentException, ParseException, SkipException
+from insights.core.exceptions import ContentException, ParseException, SkipComponent
 from insights.parsers import puppet_ca_cert_expire_date
 from insights.tests import context_wrap
 
@@ -52,5 +52,5 @@ def test_wrong_output():
         puppet_ca_cert_expire_date.PuppetCertExpireDate(context_wrap(WRONG_PUPPET_CERT_INFO_3))
     with pytest.raises(ParseException):
         puppet_ca_cert_expire_date.PuppetCertExpireDate(context_wrap(WRONG_PUPPET_CERT_INFO_2))
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         puppet_ca_cert_expire_date.PuppetCertExpireDate(context_wrap(WRONG_PUPPET_CERT_INFO_4))

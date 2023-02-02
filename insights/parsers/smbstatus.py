@@ -12,7 +12,7 @@ Smbstatusp - command ``/usr/bin/smbstatus -p``
 ----------------------------------------------
 """
 from insights.core import CommandParser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import get_active_lines, parse_fixed_table
 from insights.specs import Specs
@@ -31,7 +31,7 @@ class Statuslist(CommandParser):
     def parse_content(self, content):
         new_content = get_active_lines(content, '-----------')
         if not content:
-            raise SkipException("Empty content.")
+            raise SkipComponent("Empty content.")
         if len(content) == 1:
             raise ParseException("There is no useful parsed data in the content: '{0}'".format(content))
         return new_content

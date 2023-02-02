@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import smt
 from insights.parsers.smt import CpuSMTActive, CpuSMTControl, CpuCoreOnline, CpuSiblings
 from insights.tests import context_wrap
@@ -63,7 +63,7 @@ def test_cpu_siblings(setting, core_id, siblings):
     CpuSiblings
 ])
 def test_exceptions(parser):
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         parser(context_wrap(""))
 
 

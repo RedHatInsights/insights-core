@@ -1,6 +1,6 @@
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import multipath_conf
 from insights.parsr.query import first, last
 from insights.tests import context_wrap
@@ -94,16 +94,16 @@ def test_multipath_conf_trees():
 
 
 def test_empty_multipath_conf_tree():
-    with pytest.raises(SkipException) as e_info:
+    with pytest.raises(SkipComponent) as e_info:
         multipath_conf.MultipathConfTree(context_wrap(INPUT_EMPTY))
     assert "Empty content." in str(e_info.value)
 
-    with pytest.raises(SkipException) as e_info:
+    with pytest.raises(SkipComponent) as e_info:
         multipath_conf.MultipathConfTreeInitramfs(context_wrap(INPUT_EMPTY))
     assert "Empty content." in str(e_info.value)
 
 
 def test_empty_multipath_conf():
-    with pytest.raises(SkipException) as e_info:
+    with pytest.raises(SkipComponent) as e_info:
         multipath_conf.MultipathConfParser(context_wrap(INPUT_EMPTY))
     assert "Empty content." in str(e_info.value)

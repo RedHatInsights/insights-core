@@ -12,7 +12,7 @@ Sample command output::
     3       0 MAC2 24
 """
 from insights.core import CommandParser, LegacyItemAccess
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -46,7 +46,7 @@ class OVSappctlFdbShowBridge(CommandParser, LegacyItemAccess):
                         value.
 
        Raises:
-           SkipException: When the file is empty or data is not present for a bridge.
+           SkipComponent: When the file is empty or data is not present for a bridge.
 
        Examples:
 
@@ -60,7 +60,7 @@ class OVSappctlFdbShowBridge(CommandParser, LegacyItemAccess):
 
     def parse_content(self, content):
         if len(content) == 0:
-            raise SkipException("Empty file")
+            raise SkipComponent("Empty file")
 
         self.data = {}
         # Extract the bridge name
@@ -69,4 +69,4 @@ class OVSappctlFdbShowBridge(CommandParser, LegacyItemAccess):
         header = content[0].split()
         self.data[bridge_name] = [dict(zip(header, entry.split(None, len(header)))) for entry in content[1:]]
         if not self.data[bridge_name]:
-            raise SkipException("No data present for {0}".format(bridge_name))
+            raise SkipComponent("No data present for {0}".format(bridge_name))

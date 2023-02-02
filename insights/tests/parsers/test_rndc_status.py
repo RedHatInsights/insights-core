@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import rndc_status
 from insights.parsers.rndc_status import RndcStatus
 from insights.tests import context_wrap
@@ -49,7 +49,7 @@ def test_invalid():
 
 
 def test_empty():
-    with pytest.raises(SkipException) as e:
+    with pytest.raises(SkipComponent) as e:
         RndcStatus(context_wrap(RNDC_STATUS_EMPTY))
     assert "Empty content" in str(e)
 

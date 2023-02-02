@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import gluster_peer_status
 from insights.tests import context_wrap
 
@@ -41,7 +41,7 @@ def test_output():
 
 
 def test_blank_output():
-    with pytest.raises(SkipException) as e:
+    with pytest.raises(SkipComponent) as e:
         gluster_peer_status.GlusterPeerStatus(context_wrap(""))
     assert "No data." in str(e)
 

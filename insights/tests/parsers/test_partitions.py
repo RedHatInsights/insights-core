@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import partitions
 from insights.parsers.partitions import Partitions
 from insights.tests import context_wrap
@@ -96,7 +96,7 @@ def test_partitions_invalid_data():
 
 
 def test_empty_content():
-    with pytest.raises(SkipException) as exc:
+    with pytest.raises(SkipComponent) as exc:
         Partitions(context_wrap(EMPTY_CONTENT))
     assert 'Empty content' in str(exc)
 

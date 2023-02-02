@@ -1,9 +1,9 @@
 import doctest
 
 from insights.parsers import virt_uuid_facts
-from insights.tests.parsers import skip_exception_check
 from insights.parsers.virt_uuid_facts import VirtUuidFacts
 from insights.tests import context_wrap
+from insights.tests.parsers import skip_component_check
 
 
 VIRT_UUID_FACTS = """
@@ -22,7 +22,7 @@ def test_virt_uuid_facts():
 
 
 def test_virt_uuid_facts_empty():
-    assert 'Empty output.' in skip_exception_check(VirtUuidFacts)
+    assert 'Empty output.' in skip_component_check(VirtUuidFacts)
 
 
 def test_virt_uuid_facts_doc_examples():

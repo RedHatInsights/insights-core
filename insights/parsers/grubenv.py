@@ -9,7 +9,7 @@ GrubEnv - command ``grub2-editenv list``
 ----------------------------------------
 """
 from insights.core import Parser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import get_active_lines
 from insights.specs import Specs
@@ -66,7 +66,7 @@ class GrubEnv(Parser, dict):
 
     def parse_content(self, content):
         if not content:
-            raise SkipException("Empty output.")
+            raise SkipComponent("Empty output.")
 
         self._errors = []
         data = dict()
@@ -82,7 +82,7 @@ class GrubEnv(Parser, dict):
             data[key] = value
 
         if (not data) and (not self._errors):
-            raise SkipException("No parsed data.")
+            raise SkipComponent("No parsed data.")
 
         self.update(data)
 

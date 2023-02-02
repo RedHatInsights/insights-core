@@ -8,7 +8,7 @@ SAPHostCtrlInstances - Command ``saphostctrl -function GetCIMObject -enuminstanc
 ------------------------------------------------------------------------------------------------
 """
 from insights.core import CommandParser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.filters import add_filter
 from insights.core.plugins import parser
 from insights.specs import Specs
@@ -77,7 +77,7 @@ class SAPHostCtrlInstances(CommandParser, list):
             `SystemNumber`.
 
     Raises:
-        SkipException: When input is empty.
+        SkipComponent: When input is empty.
         ParseException: When input cannot be parsed.
     """
     REQUIRED_DIRECTIVES = (
@@ -118,7 +118,7 @@ class SAPHostCtrlInstances(CommandParser, list):
             _sids.add(fields[2]) if fields[0] == 'SID' else None
 
         if len(self) < 1:
-            raise SkipException("Nothing need to parse")
+            raise SkipComponent("Nothing need to parse")
 
         self.sids = list(_sids)
         self.types = list(_types)

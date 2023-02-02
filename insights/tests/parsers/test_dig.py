@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import dig
 from insights.parsers.dig import Dig, DigDnssec, DigEdns, DigNoedns
 from insights.tests import context_wrap
@@ -146,7 +146,7 @@ nstld.verisign-grs.com. 1508851057 1800 900 604800 86400
 
 
 def test_dig_no_data():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         Dig(context_wrap(""), "")
 
 

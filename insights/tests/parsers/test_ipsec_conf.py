@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import ipsec_conf
 from insights.parsers.ipsec_conf import IpsecConf
 from insights.tests import context_wrap
@@ -32,7 +32,7 @@ include /etc/ipsec.d/*.conf
 
 
 def test_config_no_data():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         IpsecConf(context_wrap(""))
 
 

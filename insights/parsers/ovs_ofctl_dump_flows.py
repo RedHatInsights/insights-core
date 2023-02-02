@@ -6,7 +6,7 @@ This module provides class ``OVSofctlDumpFlows`` to parse the
 output of command ``/usr/bin/ovs-ofctl dump-flows <bridge-name>``.
 """
 from insights.core import CommandParser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import split_kv_pairs
 from insights.specs import Specs
@@ -41,7 +41,7 @@ class OVSofctlDumpFlows(CommandParser):
 
     def parse_content(self, content):
         if not content:
-            raise SkipException("Empty Content!")
+            raise SkipComponent("Empty Content!")
 
         self._bridges = []
 
@@ -49,7 +49,7 @@ class OVSofctlDumpFlows(CommandParser):
         try:
             self._bridge_name = self.file_path.split("ovs-ofctl_dump-flows_")[1]
         except:
-            raise SkipException("Invalid Path!")
+            raise SkipComponent("Invalid Path!")
 
         for line in content:
             line = line.split(',')
@@ -57,7 +57,7 @@ class OVSofctlDumpFlows(CommandParser):
             if flow_list:
                 self._bridges.append(flow_list)
         if not self._bridges:
-            raise SkipException("Invalid Content!")
+            raise SkipComponent("Invalid Content!")
 
     @property
     def bridge_name(self):

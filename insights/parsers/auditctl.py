@@ -10,9 +10,9 @@ AuditStatus - command ``auditctl -s``
 -------------------------------------
 
 """
-
-from insights import parser, CommandParser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipComponent
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 
@@ -43,17 +43,17 @@ class AuditRules(CommandParser, list):
         True
 
     Raises:
-        SkipException: When there are not rules.
+        SkipComponent: When there are not rules.
     """
 
     def parse_content(self, content):
         if len(content) == 1 and content[0].lower().strip() == 'no rules':
-            raise SkipException
+            raise SkipComponent
         for line in content:
             if line.strip():
                 self.append(line.strip())
         if not self:
-            raise SkipException('No rules found')
+            raise SkipComponent('No rules found')
 
 
 @parser(Specs.auditctl_status)
@@ -86,7 +86,7 @@ class AuditStatus(CommandParser, dict):
     """
     def parse_content(self, content):
         if not content:
-            raise SkipException("Input content is empty.")
+            raise SkipComponent("Input content is empty.")
         if len(content) > 1:
             for line in content:
                 k, v = line.split(None, 1)
@@ -108,4 +108,4 @@ class AuditStatus(CommandParser, dict):
                     except ValueError:
                         raise ParseException('Unexpected type in line %s ' % line)
         if not self:
-            raise SkipException('There is no content in the status output.')
+            raise SkipComponent('There is no content in the status output.')

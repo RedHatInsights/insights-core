@@ -54,7 +54,7 @@ import string
 
 from insights.core import ConfigParser
 from insights.core.filters import add_filter
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.parsr import (Char, EOF, HangingString, InSet, LeftBracket,
                             Lift, LineEnd, Literal, Many, Number,
@@ -141,7 +141,7 @@ class PHPConf(ConfigParser):
             res = Entry(children=Top(content), src=self)
             return apply_defaults(res)
 
-        except SkipException:
+        except SkipComponent:
             raise
         except:
             raise ParseException(ParseException("Could not parse content: '{0}'".

@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import open_vm_tools
 from insights.parsers.open_vm_tools import OpenVmToolsStatRawTextSession
 from insights.tests import context_wrap
@@ -24,10 +24,10 @@ uuid.bios = 00 00 00 00 00 00 66 8e-00 00 00 00 51 1e 23 f3
 
 
 def test_OpenVmToolsStatRawTextSession():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         OpenVmToolsStatRawTextSession(context_wrap(V_OUT1))
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         OpenVmToolsStatRawTextSession(context_wrap(V_OUT2))
 
     o1 = OpenVmToolsStatRawTextSession(context_wrap(V_OUT3))

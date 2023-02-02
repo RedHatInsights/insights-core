@@ -4,13 +4,23 @@ from __future__ import print_function
 
 import re
 import socket
-
-from insights import rule, make_metadata, run
-from insights.specs import Specs
-from insights.core import Parser
-from insights.core.plugins import parser
-from insights.core.dr import set_enabled, load_components
 import uuid
+
+from insights import rule, run, make_metadata
+from insights.combiners.cloud_instance import CloudInstance
+from insights.combiners.cloud_provider import CloudProvider
+from insights.core import Parser
+from insights.core.dr import set_enabled, load_components
+from insights.core.plugins import parser
+from insights.parsers.aws_instance_id import AWSInstanceIdDoc
+from insights.parsers.azure_instance import AzureInstanceID, AzureInstanceType
+from insights.parsers.dmidecode import DMIDecode
+from insights.parsers.gcp_instance_type import GCPInstanceType
+from insights.parsers.installed_rpms import InstalledRpms
+from insights.parsers.rhsm_conf import RHSMConf
+from insights.parsers.subscription_manager import SubscriptionManagerFacts
+from insights.parsers.yum import YumRepoList
+from insights.specs import Specs
 
 
 def valid_uuid_or_None(s):
@@ -115,10 +125,12 @@ def _filter_falsy(dict_):
         IPs,
         Specs.hostname,
         Specs.mac_addresses,
+        CloudInstance,
     ]
 )
 def canonical_facts(
-    insights_id, machine_id, bios_uuid, submanid, ips, fqdn, mac_addresses
+    insights_id, machine_id, bios_uuid, submanid, ips, fqdn, mac_addresses,
+    cloud_instance,
 ):
 
     facts = dict(
@@ -129,6 +141,8 @@ def canonical_facts(
         ip_addresses=ips.data if ips else [],
         mac_addresses=valid_mac_addresses(mac_addresses) if mac_addresses else [],
         fqdn=_safe_parse(fqdn),
+        provider_id=cloud_instance.id if cloud_instance else None,
+        provider_type=cloud_instance.provider if cloud_instance else None,
     )
 
     return make_metadata(**_filter_falsy(facts))
@@ -137,9 +151,25 @@ def canonical_facts(
 def get_canonical_facts(path=None):
     load_components("insights.specs.default", "insights.specs.insights_archive")
 
-    set_enabled(canonical_facts, True)
-    set_enabled(SubscriptionManagerID, True)
-    set_enabled(IPs, True)
+    required_components = [
+        AWSInstanceIdDoc,
+        AzureInstanceID,
+        AzureInstanceType,
+        DMIDecode,
+        GCPInstanceType,
+        IPs,
+        InstalledRpms,
+        RHSMConf,
+        SubscriptionManagerFacts,
+        SubscriptionManagerID,
+        YumRepoList,
+        CloudProvider,
+        CloudInstance,
+        canonical_facts,
+    ]
+    for comp in required_components:
+        set_enabled(comp, True)
+
     br = run(canonical_facts, root=path)
     d = br[canonical_facts]
     del d["type"]

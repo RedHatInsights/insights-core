@@ -1,3 +1,6 @@
+from insights.util import deprecated
+
+
 class CalledProcessError(Exception):
     """
     Raised if call fails.
@@ -81,10 +84,20 @@ class InvalidContentType(InvalidArchive):
 
 class SkipException(SkipComponent):
     """
+    .. warning::
+        This class is deprecated, please use
+        :py:class:`insights.core.exceptions.SkipComponent` instead.
+
     Exception that should be thrown from parsers that are explicitly
     written to look for errors in input data.  If the expected error
     is not found then the parser should throw this exception to
     signal to the infrastructure that the parser's output should not be
     retained.
     """
-    pass
+    def __init__(self, msg):
+        deprecated(
+            SkipException,
+            "Please use the :class:`insights.core.exceptions.SkipComponent` instead.",
+            "3.2.25"
+        )
+        super(SkipException, self).__init__(msg)

@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import sctp
 from insights.parsers.sctp import SCTPAsc, SCTPAsc7, SCTPEps, SCTPSnmp
 from insights.tests import context_wrap
@@ -151,7 +151,7 @@ def test_sctp_eps_exceptions():
         assert sctp_obj is None   # Just added to remove flake8 warnings
     assert 'The following line is not compatible with this parser' in str(exc)
 
-    with pytest.raises(SkipException) as exc:
+    with pytest.raises(SkipComponent) as exc:
         sctp_obj = SCTPEps(context_wrap(SCTP_EPS_DETAILS_NO_2))
         assert sctp_obj is None   # Just added to remove flake8 warnings
     assert 'No Contents' in str(exc)
@@ -162,7 +162,7 @@ def test_sctp_asc_exceptions():
         sctp_asc = SCTPAsc(context_wrap(SCTP_ASSOC_NO_2))
         assert sctp_asc is None
     assert 'The following line is not compatible with this parser' in str(exc)
-    with pytest.raises(SkipException) as exc:
+    with pytest.raises(SkipComponent) as exc:
         sctp_asc = SCTPAsc(context_wrap(SCTP_ASSOC_NO))
         assert sctp_asc is None
     assert 'No Contents' in str(exc)
@@ -190,7 +190,7 @@ def test_sctp_snmp():
 
 
 def test_sctp_snmp_exceptions():
-    with pytest.raises(SkipException) as exc:
+    with pytest.raises(SkipComponent) as exc:
         sctp_snmp = SCTPSnmp(context_wrap(SCTP_SNMP_NO_1))
         assert sctp_snmp is None
 

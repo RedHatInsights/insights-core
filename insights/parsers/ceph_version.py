@@ -11,7 +11,7 @@ documented in https://access.redhat.com/solutions/2045583
 
 """
 from insights.core import CommandParser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 from insights.util import rsplit
@@ -129,7 +129,7 @@ class CephVersion(CommandParser):
     def parse_content(self, content):
         # Parse Ceph Version Content and get Release, Major, Minor number
         if not content or len(content) != 1:
-            raise SkipException("Empty Ceph Version Line", content)
+            raise SkipComponent("Empty Ceph Version Line", content)
         community_version = get_community_version(content[0])
         release_data = get_ceph_version(community_version)
 
@@ -146,7 +146,7 @@ def get_community_version(version_full):
     Returns the community version part from the output of ``ceph -v``
     """
     if any(item not in version_full for item in ['ceph version', '.', '-']):
-        raise SkipException("Wrong Format Ceph Version", version_full)
+        raise SkipComponent("Wrong Format Ceph Version", version_full)
 
     return version_full.split()[2]
 
@@ -159,7 +159,7 @@ def get_ceph_version(community_full):
     community_version, _ = rsplit(community_full, '.')
     release_data = community_to_release_map.get(community_version, None)
     if not release_data:
-        raise SkipException("No Mapping Release Version", community_version)
+        raise SkipComponent("No Mapping Release Version", community_version)
     release_data['upstream_version'] = dict(
         zip(
             ['release', 'major', 'minor'],

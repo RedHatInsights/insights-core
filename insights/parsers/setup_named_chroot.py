@@ -6,7 +6,7 @@ This module provides class ``SetupNamedChroot`` for parsing the output of file
 ``/usr/libexec/setup-named-chroot.sh``.
 """
 from insights.core import Parser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.filters import add_filter
 from insights.core.plugins import parser
 from insights.parsers import get_active_lines
@@ -35,7 +35,7 @@ class SetupNamedChroot(Parser, dict):
         raw (list): A list of all the active lines present
 
     Raises:
-        SkipException: When the file is empty or when the input content is not
+        SkipComponent: When the file is empty or when the input content is not
                        empty but there is no useful parsed data
 
     Examples:
@@ -48,7 +48,7 @@ class SetupNamedChroot(Parser, dict):
     def parse_content(self, content):
         # No content found or file is empty
         if not content:
-            raise SkipException("Empty file")
+            raise SkipComponent("Empty file")
 
         data = {}
         self.raw = []
@@ -65,6 +65,6 @@ class SetupNamedChroot(Parser, dict):
 
         # No useful parsed data
         if not data:
-            raise SkipException("Input content is not empty but there is no useful parsed data.")
+            raise SkipComponent("Input content is not empty but there is no useful parsed data.")
 
         self.update(data)

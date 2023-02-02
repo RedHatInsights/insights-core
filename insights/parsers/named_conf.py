@@ -5,7 +5,7 @@ NamedConf parser - file ``/etc/named.conf``
 NamedConf parser the file named configuration file.
 Named is a name server used by BIND.
 """
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.parsers.named_checkconf import NamedCheckconf
 from insights.specs import Specs
@@ -27,7 +27,7 @@ class NamedConf(NamedCheckconf):
         allow_recursion_address (list): List of address in 'allow-recursion' section.
 
     Raises:
-        SkipException: When content is empty or cannot be parsed.
+        SkipComponent: When content is empty or cannot be parsed.
 
     Examples:
         >>> named_conf.includes
@@ -50,7 +50,7 @@ class NamedConf(NamedCheckconf):
                     allow_recursion_address.extend(i.strip(';') for i in line.split(None, 1)[1].strip('{}; ').split())
 
         except IndexError:
-            raise SkipException("Syntax error of include directive")
+            raise SkipComponent("Syntax error of include directive")
 
         self.includes = includes
         self.allow_recursion_address = allow_recursion_address

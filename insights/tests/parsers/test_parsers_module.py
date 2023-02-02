@@ -2,7 +2,7 @@ import pytest
 
 from collections import OrderedDict
 
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import (calc_offset, keyword_search, optlist_to_dict, parse_delimited_table, parse_fixed_table,
                               split_kv_pairs, unsplit_lines)
 
@@ -664,6 +664,6 @@ def test_parse_exception():
 
 
 def test_skip_exception():
-    with pytest.raises(SkipException) as e_info:
-        raise SkipException('This is a skip exception')
+    with pytest.raises(SkipComponent) as e_info:
+        raise SkipComponent('This is a skip exception')
     assert 'This is a skip exception' == str(e_info.value)

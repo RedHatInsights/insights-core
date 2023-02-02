@@ -22,7 +22,7 @@ Examples:
     14
 """
 from insights.core import LegacyItemAccess, Parser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -36,7 +36,7 @@ class NUMACpus(LegacyItemAccess, Parser):
 
     def parse_content(self, content):
         if (not content) or (not self.file_path):
-            raise SkipException("No Contents")
+            raise SkipComponent("No Contents")
 
         self.data = {}
         self._cpu_ranges = []

@@ -4,7 +4,7 @@ UpdateInfo - command ``yum updateinfo list -C``
 Provides a list of available advisories
 """
 from insights.core import CommandParser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import parse_delimited_table
 from insights.specs import Specs
@@ -34,7 +34,7 @@ class YumUpdateinfo(CommandParser):
         with_header = ['advisory type package'] + content
         table = parse_delimited_table(with_header)
         if not table:
-            raise SkipException('No data.')
+            raise SkipComponent('No data.')
         self._items = table
 
     @property

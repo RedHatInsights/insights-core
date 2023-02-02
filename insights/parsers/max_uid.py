@@ -5,7 +5,7 @@ MaxUID - command ``/bin/awk -F':' '{ if($3 > max) max = $3 } END { print max }' 
 This module provides the MaxUID value gathered from the ``/etc/passwd`` file.
 """
 from insights.core import Parser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -35,7 +35,7 @@ class MaxUID(Parser):
         65534
 
     Raises:
-        SkipException: When content is empty or cannot be parsed.
+        SkipComponent: When content is empty or cannot be parsed.
         ParseException: When type cannot be recognized.
 
     Examples:
@@ -45,7 +45,7 @@ class MaxUID(Parser):
 
     def parse_content(self, content):
         if not content:
-            raise SkipException("No content.")
+            raise SkipComponent("No content.")
 
         for line in content:
             try:

@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import doveconf
 from insights.parsers.doveconf import Doveconf
 from insights.tests import context_wrap
@@ -189,7 +189,7 @@ def test_doveconf():
 
 
 def test_empty():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         Doveconf(context_wrap(EMPTY))
 
 

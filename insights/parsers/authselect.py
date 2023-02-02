@@ -2,9 +2,9 @@
 AuthSelectCurrent - command ``authselect current``
 ==================================================
 """
-from insights import parser
 from insights.core import CommandParser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 
@@ -39,7 +39,7 @@ class AuthSelectCurrent(CommandParser):
         self.enabled_features = []
         for line in content:
             if 'No existing configuration detected.' in line:
-                raise SkipException
+                raise SkipComponent
             line_sp = line.split()
             if line.startswith('Profile ID:'):
                 self.profile_id = line_sp[-1]
@@ -55,4 +55,4 @@ class AuthSelectCurrent(CommandParser):
             elif line.startswith('-') and feature_flag:
                 self.enabled_features.append(line_sp[-1])
         if self.profile_id is None:
-            raise SkipException
+            raise SkipComponent

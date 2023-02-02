@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import mount
 from insights.parsers.mount import Mount, ProcMounts, MountInfo
 from insights.tests import context_wrap
@@ -267,7 +267,7 @@ def test_proc_mount():
 
 
 def test_proc_mount_exception1():
-    with pytest.raises(SkipException) as e:
+    with pytest.raises(SkipComponent) as e:
         ProcMounts(context_wrap(PROC_EXCEPTION1))
     assert 'Empty content' in str(e)
 

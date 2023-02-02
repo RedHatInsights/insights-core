@@ -6,7 +6,7 @@ SlabInfo - File ``/proc/slabinfo``
 ----------------------------------
 """
 from insights.core import Parser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -60,18 +60,18 @@ class SlabInfo(Parser):
         column = []
         row = []
         if not content:
-            raise SkipException("No Contents")
+            raise SkipComponent("No Contents")
 
         if 'slabinfo - version' in content[0]:
             self.__slab_version = content[0].split()[-1]
         else:
-            raise SkipException("Invalid Contents")
+            raise SkipComponent("Invalid Contents")
 
         if "active_objs" in content[1]:
             line = content[1].split()
             column = [obj.replace('<', '').replace('>', '') for obj in line if obj not in ['#', ':', 'tunables', 'slabdata']]
         else:
-            raise SkipException("Invalid Contents")
+            raise SkipComponent("Invalid Contents")
 
         for line in content[2:]:
             line = line.split()
@@ -80,7 +80,7 @@ class SlabInfo(Parser):
                 self.data[row[0]] = dict(zip(column, row))
                 row = []
             else:
-                raise SkipException("Invalid Contents")
+                raise SkipComponent("Invalid Contents")
 
     @property
     def slab_version(self):

@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import satellite_mongodb
 from insights.tests import context_wrap
 
@@ -81,16 +81,16 @@ def test_satellite():
 
 
 def test_no_storage_engine():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         satellite_mongodb.MongoDBStorageEngine(context_wrap(MONGO_PULP_STORAGE_ENGINE_OUTPUT2))
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         satellite_mongodb.MongoDBStorageEngine(context_wrap(MONGO_PULP_STORAGE_ENGINE_OUTPUT3))
     with pytest.raises(ParseException):
         satellite_mongodb.MongoDBStorageEngine(context_wrap(MONGO_PULP_STORAGE_ENGINE_OUTPUT4))
 
 
 def test_bad_yum_repos_output():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         satellite_mongodb.MongoDBNonYumTypeRepos(context_wrap(MONGO_PULP_NON_YUM_TYPE_REPOS_OUTPUT1))
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         satellite_mongodb.MongoDBNonYumTypeRepos(context_wrap(MONGO_PULP_NON_YUM_TYPE_REPOS_OUTPUT3))

@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import ContentException, ParseException, SkipException
+from insights.core.exceptions import ContentException, ParseException, SkipComponent
 from insights.parsers import satellite_content_hosts_count
 from insights.tests import context_wrap
 
@@ -47,9 +47,9 @@ def test_HTL_doc_examples():
 def test_wrong_output():
     with pytest.raises(ContentException):
         satellite_content_hosts_count.SatelliteContentHostsCount(context_wrap(SATELLITE_CONTENT_HOSTS_COUNT_WRONG_1))
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         satellite_content_hosts_count.SatelliteContentHostsCount(context_wrap(SATELLITE_CONTENT_HOSTS_COUNT_WRONG_2))
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         satellite_content_hosts_count.SatelliteContentHostsCount(context_wrap(SATELLITE_CONTENT_HOSTS_COUNT_WRONG_3))
     with pytest.raises(ParseException):
         satellite_content_hosts_count.SatelliteContentHostsCount(context_wrap(SATELLITE_CONTENT_HOSTS_COUNT_WRONG_4))

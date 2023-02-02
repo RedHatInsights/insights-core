@@ -53,7 +53,7 @@ Examples:
 import csv
 
 from insights.core import CommandParser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import keyword_search
 from insights.specs import Specs
@@ -65,7 +65,7 @@ class HammerTaskList(CommandParser, list):
     Parse the CSV output from the ``hammer --output csv task list`` command.
 
     Raises:
-        SkipException: When nothing is parsed.
+        SkipComponent: When nothing is parsed.
 
     Attributes:
         can_authenticate (bool): Whether we have valid data; if False it's
@@ -81,7 +81,7 @@ class HammerTaskList(CommandParser, list):
                 strip_line = [item.strip() for item in line]
                 self.append(dict(zip(headings, strip_line)))
         if len(self) <= 0:
-            raise SkipException()
+            raise SkipComponent()
         self._running_tasks = [t for t in self if t.get('State', t.get('state')) == 'running']
 
     @property

@@ -41,7 +41,7 @@ mount point.
 import os
 
 from insights.core import CommandParser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import get_active_lines, keyword_search, optlist_to_dict
 from insights.specs import Specs
@@ -144,7 +144,7 @@ class MountedFileSystems(CommandParser):
             :class:`MountEntry` objects as the value.
 
     Raises:
-        SkipException: When the file is empty.
+        SkipComponent: When the file is empty.
         ParseException: Raised when any problem parsing the command output.
     """
     def __len__(self):
@@ -165,7 +165,7 @@ class MountedFileSystems(CommandParser):
     def parse_content(self, content):
         # No content found or file is empty
         if not content:
-            raise SkipException('Empty content')
+            raise SkipComponent('Empty content')
 
         self._parse_mounts(content)
 

@@ -10,7 +10,7 @@ ReadLinkEKubeletServerCurrent - command ``/usr/bin/readlink -e /etc/origin/node/
 -------------------------------------------------------------------------------------------------------------------------
 """
 from insights.core import CommandParser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -29,11 +29,11 @@ class ReadLinkEKubeletClientCurrent(CommandParser):
         '/etc/origin/node/certificates/kubelet-client-2019-10-18-23-17-35.pem'
 
     Raises:
-        SkipException: When input content is empty
+        SkipComponent: When input content is empty
     """
     def parse_content(self, content):
         if content is None or len(content) == 0:
-            raise SkipException("No Data from command: /usr/bin/readlink -e /etc/origin/node/certificates/kubelet-client-current.pem")
+            raise SkipComponent("No Data from command: /usr/bin/readlink -e /etc/origin/node/certificates/kubelet-client-current.pem")
 
         self._path = content[-1]
 
@@ -57,11 +57,11 @@ class ReadLinkEKubeletServerCurrent(CommandParser):
         '/etc/origin/node/certificates/kubelet-server-2018-10-18-23-29-14.pem'
 
     Raises:
-        SkipException: When input content is empty
+        SkipComponent: When input content is empty
     """
     def parse_content(self, content):
         if content is None or len(content) == 0:
-            raise SkipException("No Data from command: /usr/bin/readlink -e /etc/origin/node/certificates/kubelet-server-current.pem")
+            raise SkipComponent("No Data from command: /usr/bin/readlink -e /etc/origin/node/certificates/kubelet-server-current.pem")
 
         self._path = content[-1]
 

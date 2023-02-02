@@ -1,9 +1,12 @@
 import doctest
-from doctest import (DebugRunner, DocTestFinder, DocTestRunner,
-                     OutputChecker)
 import pytest
 import re
 import sys
+
+from doctest import (DebugRunner, DocTestFinder, DocTestRunner,
+                     OutputChecker)
+
+from insights.util import deprecated
 
 
 class Py23DocChecker(OutputChecker):
@@ -39,9 +42,29 @@ def ic_testmod(m, name=None, globs=None, verbose=None,
 
 
 def skip_exception_check(parser_obj, output_str=""):
+    """
+    .. warning::
+        This class is deprecated, please use
+        :py:class:`skip_component_check` instead.
+    """
+    deprecated(
+        skip_component_check,
+        "Please use the :method:`skip_component_check` instead.",
+        "3.2.25"
+    )
+
     from insights.core.exceptions import SkipException
     from insights.tests import context_wrap
 
     with pytest.raises(SkipException) as ex:
+        parser_obj(context_wrap(output_str))
+    return str(ex)
+
+
+def skip_component_check(parser_obj, output_str=""):
+    from insights.core.exceptions import SkipComponent
+    from insights.tests import context_wrap
+
+    with pytest.raises(SkipComponent) as ex:
         parser_obj(context_wrap(output_str))
     return str(ex)

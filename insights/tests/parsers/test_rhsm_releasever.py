@@ -1,11 +1,11 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import rhsm_releasever as rhsm_releasever_module
 from insights.parsers.rhsm_releasever import RhsmReleaseVer
 from insights.tests import context_wrap
-from insights.tests.parsers import skip_exception_check
+from insights.tests.parsers import skip_component_check
 
 RHEL_MAJ_MIN = '{"releaseVer": "6.10"}'
 RHEL_MAJ_1 = '{"releaseVer": "7Server"}'
@@ -46,13 +46,13 @@ def test_rhsm_releasever():
     assert relver.major is None
     assert relver.minor is None
 
-    with pytest.raises(SkipException) as e_info:
+    with pytest.raises(SkipComponent) as e_info:
         RhsmReleaseVer(context_wrap(RHEL_EMPTY))
     assert "releaseVer is not in data" in str(e_info.value)
 
 
 def test_empty():
-    assert 'Empty output.' in skip_exception_check(RhsmReleaseVer)
+    assert 'Empty output.' in skip_component_check(RhsmReleaseVer)
 
 
 def test_doc_examples():

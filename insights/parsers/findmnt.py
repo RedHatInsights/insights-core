@@ -6,7 +6,7 @@ This module provides status of propagation flag of filesystems using the output
 of command ``findmnt -lo+PROPAGATION``.
 """
 from insights.core import CommandParser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import keyword_search, parse_fixed_table
 from insights.specs import Specs
@@ -48,7 +48,7 @@ class FindmntPropagation(CommandParser):
         self.cols = []
         self.keywords = []
         if not content:
-            raise SkipException("No data.")
+            raise SkipComponent("No data.")
 
         self.cols = parse_fixed_table(content,
                                       header_substitute=[

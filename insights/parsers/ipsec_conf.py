@@ -9,7 +9,7 @@ for the Libreswan IPsec subsystem.
 from collections import defaultdict
 
 from insights.core import CommandParser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import get_active_lines
 from insights.specs import Specs
@@ -22,7 +22,7 @@ class IpsecConf(CommandParser, dict):
     and control information for the Libreswan IPsec subsystem
 
     Raises:
-        SkipException: When content is empty or cannot be parsed.
+        SkipComponent: When content is empty or cannot be parsed.
 
     Sample output of this command is::
 
@@ -56,7 +56,7 @@ class IpsecConf(CommandParser, dict):
 
     def parse_content(self, content):
         if not content:
-            raise SkipException('No content.')
+            raise SkipComponent('No content.')
 
         ipsec_type, ipsec_name = "", ""
         ipsec_sections = {}
@@ -84,4 +84,4 @@ class IpsecConf(CommandParser, dict):
                 self[ipsec_type] = ipsec_sections
 
         except ValueError:
-            raise SkipException('Syntax error')
+            raise SkipComponent('Syntax error')

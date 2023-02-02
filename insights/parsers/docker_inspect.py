@@ -8,7 +8,7 @@ commands.  The parsed data can be accessed a dictionary via the object itself.
 
 """
 from insights.core import CommandParser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.marshalling import unmarshal
 from insights.core.plugins import parser
 from insights.specs import Specs
@@ -26,7 +26,7 @@ class DockerInspect(CommandParser, dict):
     as JSON, so "json.loads" is an option to parse the output in the future.
 
     Raises:
-        SkipException: If content is not provided
+        SkipComponent: If content is not provided
     """
     def __init__(self, *args, **kwargs):
         deprecated(
@@ -38,14 +38,14 @@ class DockerInspect(CommandParser, dict):
 
     def parse_content(self, content):
         if not content:
-            raise SkipException
+            raise SkipComponent
 
         content = "\n".join(list(content))
         try:
             inspect_data = unmarshal(content)
             self.update(inspect_data[0])
         except:
-            raise SkipException
+            raise SkipComponent
 
     @property
     def data(self):

@@ -7,7 +7,7 @@ directory.
 
 """
 from insights.core import LegacyItemAccess, Parser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -29,14 +29,14 @@ class ProcEnviron(Parser, LegacyItemAccess):
         True
 
     Raises:
-        insights.core.exceptions.SkipException: if the ``environ`` file is empty or doesn't exist.
+        insights.core.exceptions.SkipComponent: if the ``environ`` file is empty or doesn't exist.
         insights.core.exceptions.ParseException: if the ``environ`` file content is incorrect.
 
     """
 
     def parse_content(self, content):
         if not content:
-            raise SkipException("Empty output.")
+            raise SkipComponent("Empty output.")
         if len(content) != 1:
             raise ParseException("Incorrect content: '{0}'".format(content[-1]))
 

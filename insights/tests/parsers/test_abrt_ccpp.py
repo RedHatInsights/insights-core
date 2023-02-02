@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import abrt_ccpp
 from insights.parsers.abrt_ccpp import AbrtCCppConf
 from insights.tests import context_wrap
@@ -70,7 +70,7 @@ ABRT_CONF_CONTENT_NO = """
 
 
 def test_empty_content():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         AbrtCCppConf(context_wrap(ABRT_CONF_CONTENT_NO))
 
 

@@ -3,7 +3,7 @@ LDIF Configuration - file ``/etc/dirsrv/slapd-*/dse.ldif``
 ==========================================================
 """
 from insights.core import Parser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import keyword_search
 from insights.specs import Specs
@@ -78,7 +78,7 @@ class LDIFParser(Parser, list):
     """
     def parse_content(self, content):
         if not content:
-            raise SkipException('The file is empty')
+            raise SkipComponent('The file is empty')
 
         attr_kval = {}
         for line in content:

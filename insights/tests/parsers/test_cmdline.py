@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import cmdline
 from insights.parsers.cmdline import CmdLine
 from insights.tests import context_wrap
@@ -44,7 +44,7 @@ def test_cmdline_v2():
 
 
 def test_cmdline_ab():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         CmdLine(context_wrap(CMDLINE_GRUB2_EMPTY))
 
     with pytest.raises(ParseException) as ex:

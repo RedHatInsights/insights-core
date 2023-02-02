@@ -29,7 +29,7 @@ Examples:
     'D51'
 """
 from insights.core import CommandParser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import parse_delimited_table
 from insights.specs import Specs
@@ -40,7 +40,7 @@ class Lssap(CommandParser):
     """Class to parse ``lssap`` command output.
 
     Raises:
-        SkipException: Nothing needs to be parsed.
+        SkipComponent: Nothing needs to be parsed.
         ParseException: Raised if any error occurs parsing the content.
 
     Attributes:
@@ -52,7 +52,7 @@ class Lssap(CommandParser):
     """
     def parse_content(self, content):
         if not content:
-            raise SkipException()
+            raise SkipComponent()
 
         self.data = []
         # remove lssap version and bar text from content

@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import rhev_data_center as ls_dc
 from insights.tests import context_wrap
 
@@ -21,7 +21,7 @@ def test_rhev_data_center():
 
 
 def test_no_data():
-    with pytest.raises(SkipException) as ex:
+    with pytest.raises(SkipComponent) as ex:
         ls_dc.RhevDataCenter(context_wrap(''))
     assert 'No files found with incorrect ownership.' in str(ex)
 

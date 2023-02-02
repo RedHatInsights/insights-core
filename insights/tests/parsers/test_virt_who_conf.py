@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import virt_who_conf
 from insights.tests import context_wrap
 
@@ -44,7 +44,7 @@ def test_doc_examples():
 
 
 def test_virt_who_conf_empty():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         assert virt_who_conf.VirtWhoConf(context_wrap('')) is None
 
 

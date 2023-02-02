@@ -5,7 +5,7 @@ Parser Red Hat Subscription manager release info.
 
 """
 from insights.core import JSONParser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -27,7 +27,7 @@ class RhsmReleaseVer(JSONParser):
         {"releaseVer": "6.10"}
 
     Raises:
-       SkipException: When the json content of the file is empty.(i.e release version is empty. eg. {})
+       SkipComponent: When the json content of the file is empty.(i.e release version is empty. eg. {})
 
     Examples:
         >>> type(rhsm_releasever)
@@ -49,7 +49,7 @@ class RhsmReleaseVer(JSONParser):
         super(RhsmReleaseVer, self).parse_content(content)
         self.set = self.major = self.minor = None
         if 'releaseVer' not in self.data:
-            raise SkipException('releaseVer is not in data')
+            raise SkipComponent('releaseVer is not in data')
         rel = self.data.get('releaseVer') or ''
         rel_splits = rel.split('.')
         # Release: 6.7

@@ -6,7 +6,7 @@ This module provides the class ``OdCpuDmaLatency`` which processes
 ``/usr/bin/od -An -t d /dev/cpu_dma_latency`` command output.
 """
 from insights.core import CommandParser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -34,4 +34,4 @@ class OdCpuDmaLatency(CommandParser):
         if content and content[0].isdigit():
             self.force_latency = int(content[0])
         else:
-            raise SkipException('Nothing to parse.')
+            raise SkipComponent('Nothing to parse.')

@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import libssh_config
 from insights.parsers.libssh_config import LibsshConfig
 from insights.tests import context_wrap
@@ -22,7 +22,7 @@ Include /etc/ssh/sshd_config
 
 
 def test_config_no_data():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         LibsshConfig(context_wrap(""))
 
 

@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import grubby
 from insights.parsers.grubby import GrubbyDefaultIndex, GrubbyDefaultKernel
 from insights.tests import context_wrap
@@ -29,7 +29,7 @@ def test_grubby_default_index():
 
 
 def test_grubby_default_index_ab():
-    with pytest.raises(SkipException) as excinfo:
+    with pytest.raises(SkipComponent) as excinfo:
         GrubbyDefaultIndex(context_wrap(ABDEFAULT_INDEX_EMPTY))
     assert 'Empty output' in str(excinfo.value)
 
@@ -39,7 +39,7 @@ def test_grubby_default_index_ab():
 
 
 def test_grubby_default_kernel_ab():
-    with pytest.raises(SkipException) as excinfo:
+    with pytest.raises(SkipComponent) as excinfo:
         GrubbyDefaultKernel(context_wrap(DEFAULT_KERNEL_EMPTY))
     assert 'Empty output' in str(excinfo.value)
 

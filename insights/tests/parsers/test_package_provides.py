@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import package_provides
 from insights.parsers.package_provides import PackageProvidesCommand
 from insights.tests import context_wrap
@@ -33,7 +33,7 @@ def test_package_provides_command():
 
 
 def test_package_provides_command_AB():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         PackageProvidesCommand(context_wrap(PACKAGE_COMMAND_EMPTY))
 
     with pytest.raises(ParseException):

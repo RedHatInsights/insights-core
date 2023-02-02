@@ -1,6 +1,6 @@
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers.ceph_version import CephVersion
 from insights.tests import context_wrap
 
@@ -20,16 +20,16 @@ CV_els = "ceph version 10.2.10-51.el7cp (030358773c5213a14c1444a5147258672b2dc15
 
 
 def test_ceph_version():
-    with pytest.raises(SkipException) as error_context2:
+    with pytest.raises(SkipComponent) as error_context2:
         CephVersion(context_wrap(CV2))
     assert 'Empty Ceph Version Line' in str(error_context2)
-    with pytest.raises(SkipException) as error_context3:
+    with pytest.raises(SkipComponent) as error_context3:
         CephVersion(context_wrap(CV3))
     assert 'Wrong Format Ceph Version' in str(error_context3)
-    with pytest.raises(SkipException) as error_context5:
+    with pytest.raises(SkipComponent) as error_context5:
         CephVersion(context_wrap(CV5))
     assert 'Wrong Format Ceph Version' in str(error_context5)
-    with pytest.raises(SkipException) as error_context6:
+    with pytest.raises(SkipComponent) as error_context6:
         CephVersion(context_wrap(CV6))
     assert 'No Mapping Release Version' in str(error_context6)
 

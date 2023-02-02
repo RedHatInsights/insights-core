@@ -38,7 +38,7 @@ information into a dictionary.
 import json
 
 from insights.core import CommandParser, JSONParser, LegacyItemAccess
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -181,7 +181,7 @@ class CephReport(CommandParser, LegacyItemAccess):
     """
     def parse_content(self, content):
         if not content:
-            raise SkipException("Empty output.")
+            raise SkipComponent("Empty output.")
         if not content[0].startswith('report ') or len(content) < 10:
             raise ParseException("Invalid Content: ", content[0])
 

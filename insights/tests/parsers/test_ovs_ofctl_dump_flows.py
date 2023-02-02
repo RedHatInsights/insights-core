@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import ovs_ofctl_dump_flows
 from insights.parsers.ovs_ofctl_dump_flows import OVSofctlDumpFlows
 from insights.tests import context_wrap
@@ -60,15 +60,15 @@ def test_ovs_appctl_fdb_show_bridge():
     assert ovs_dump.flow_dumps == sorted([{'cookie': '0x0', 'duration': '4.602s', 'table': '0', 'n_packets': '2', 'n_bytes': '196', 'idle_timeout': '60', 'priority': '65535', 'in_port': '"s1-eth1"', 'vlan_tci': '0x0000', 'dl_src': 'd6:fc:9c:e7:a2:f9', 'dl_dst': 'a2:72:e7:06:75:2e', 'nw_src': '10.0.0.1', 'nw_dst': '10.0.0.3', 'nw_tos': '0', 'icmp_type': '0', 'icmp_code': '0 actions=output:"s1-eth3"'}])
     assert ovs_dump._bridges == [{'cookie': '0x0', 'duration': '4.602s', 'table': '0', 'n_packets': '2', 'n_bytes': '196', 'idle_timeout': '60', 'priority': '65535', 'in_port': '"s1-eth1"', 'vlan_tci': '0x0000', 'dl_src': 'd6:fc:9c:e7:a2:f9', 'dl_dst': 'a2:72:e7:06:75:2e', 'nw_src': '10.0.0.1', 'nw_dst': '10.0.0.3', 'nw_tos': '0', 'icmp_type': '0', 'icmp_code': '0 actions=output:"s1-eth3"'}]
 
-    with pytest.raises(SkipException) as exc:
+    with pytest.raises(SkipComponent) as exc:
         ovs_obj = OVSofctlDumpFlows(context_wrap(OVS_FLOW_DUMPS_NO, path=PATH_BR0))
     assert 'Empty Content!' in str(exc)
 
-    with pytest.raises(SkipException) as exc:
+    with pytest.raises(SkipComponent) as exc:
         ovs_obj = OVSofctlDumpFlows(context_wrap(OVS_FLOW_DUMPS, path=OVS_PATH_NO))
     assert 'Invalid Path!' in str(exc)
 
-    with pytest.raises(SkipException) as exc:
+    with pytest.raises(SkipComponent) as exc:
         ovs_obj = OVSofctlDumpFlows(context_wrap(OVS_FLOW_DUMPS_NO_2, path=PATH_BR_INT))
         assert ovs_obj is None
     assert 'Invalid Content!' in str(exc)

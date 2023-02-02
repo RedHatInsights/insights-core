@@ -1,8 +1,8 @@
 import doctest
 
 from insights.parsers import grubenv
-from insights.tests.parsers import skip_exception_check
 from insights.tests import context_wrap
+from insights.tests.parsers import skip_component_check
 
 
 GRUBENV_WITH_TUNED_PARAMS = """
@@ -73,8 +73,8 @@ def test_r7():
 
 
 def test_skip():
-    skip_exception_check(grubenv.GrubEnv, output_str="# test")
-    skip_exception_check(grubenv.GrubEnv)
+    skip_component_check(grubenv.GrubEnv, output_str="# test")
+    skip_component_check(grubenv.GrubEnv)
 
 
 def test_error():

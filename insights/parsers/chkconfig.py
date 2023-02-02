@@ -5,8 +5,9 @@ ChkConfig - command ``chkconfig``
 import re
 
 from collections import namedtuple
+
 from insights.core import CommandParser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -19,7 +20,7 @@ class ChkConfig(CommandParser):
     Sample input data is shown as `content` in the examples below.
 
     Raises:
-        SkipException: When nothing is parsed.
+        SkipComponent: When nothing is parsed.
 
     Examples:
         >>> content = '''
@@ -126,7 +127,7 @@ class ChkConfig(CommandParser):
                 self.level_states[service] = states
 
         if not self.services:
-            raise SkipException
+            raise SkipComponent
 
     def is_on(self, service_name):
         """

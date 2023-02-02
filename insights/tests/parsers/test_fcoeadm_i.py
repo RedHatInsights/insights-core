@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import fcoeadm_i
 from insights.parsers.fcoeadm_i import FcoeadmI
 from insights.tests import context_wrap
@@ -84,7 +84,7 @@ def test_fcoeadm_i_exp():
     Here test the examples cause expections
     """
 
-    with pytest.raises(SkipException) as sc:
+    with pytest.raises(SkipComponent) as sc:
         FcoeadmI(context_wrap(""))
     assert "Input content is empty" in str(sc)
 

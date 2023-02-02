@@ -6,7 +6,7 @@ This parser reads the content of ``/proc/keys``.
 
 """
 from insights.core import Parser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import keyword_search
 from insights.specs import Specs
@@ -81,7 +81,7 @@ class ProcKeys(Parser, list):
     def parse_content(self, content):
 
         if not content:
-            raise SkipException("No Contents")
+            raise SkipComponent("No Contents")
 
         column = ['id', 'flags', 'usage', 'timeout', 'permissions', 'uid', 'gid', 'type', 'description']
 
@@ -90,7 +90,7 @@ class ProcKeys(Parser, list):
             if row and len(column) == len(row):
                 self.append(dict(zip(column, row)))
             else:
-                raise SkipException("Invalid Contents: {0}".format(line))
+                raise SkipComponent("Invalid Contents: {0}".format(line))
 
     def search(self, **kwargs):
         """

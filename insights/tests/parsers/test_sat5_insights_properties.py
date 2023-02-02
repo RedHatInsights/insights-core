@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import sat5_insights_properties
 from insights.parsers.sat5_insights_properties import Sat5InsightsProperties
 from insights.tests import context_wrap
@@ -32,5 +32,5 @@ def test_doc():
 
 
 def test_AB():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         Sat5InsightsProperties(context_wrap(''))

@@ -16,7 +16,7 @@ MysqladminVars - command ``/bin/mysqladmin variables``
 import re
 
 from insights.core import CommandParser, LegacyItemAccess
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -52,7 +52,7 @@ class MysqladminStatus(CommandParser):
 
     def parse_content(self, content):
         if not content:
-            raise SkipException("Content is empty.")
+            raise SkipComponent("Content is empty.")
 
         self.status = {}
         if self.pattern.search(content[0]):
@@ -89,7 +89,7 @@ class MysqladminVars(LegacyItemAccess, CommandParser):
         """
         bad_lines = []
         if not content:
-            raise SkipException("Empty content.")
+            raise SkipComponent("Empty content.")
         if len(content) < 5:
             raise ParseException("Wrong content in table: '{0}'.".format(content))
 

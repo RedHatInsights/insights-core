@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import kernel_config
 from insights.parsers.kernel_config import KernelConf
 from insights.tests import context_wrap
@@ -61,7 +61,7 @@ def test_kernel_config():
     r = KernelConf(context_wrap(KERNEL_CONFIG_2, KCONFIG_FILE_PATH))
     assert len(r) == 7
 
-    with pytest.raises(SkipException) as exc:
+    with pytest.raises(SkipComponent) as exc:
         r = KernelConf(context_wrap(KERNEL_CONFIG_NO, KCONFIG_FILE_PATH))
     assert 'No Contents' in str(exc)
 

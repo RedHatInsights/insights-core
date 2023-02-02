@@ -17,7 +17,7 @@ import sys
 from datetime import datetime
 
 from insights.core import CommandParser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import get_active_lines
 from insights.specs import Specs
@@ -175,7 +175,7 @@ class TimeDateCtlStatus(CommandParser, dict):
                 non_blank_line = line
                 break
         if non_blank_line is None:
-            raise SkipException('No data in the output.')
+            raise SkipComponent('No data in the output.')
         try:
             colon_index = non_blank_line.index(':')
         except ValueError:

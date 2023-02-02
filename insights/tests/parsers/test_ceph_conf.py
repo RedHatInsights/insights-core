@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import ceph_conf
 from insights.tests import context_wrap
 
@@ -45,7 +45,7 @@ rgw_swift_account_in_url = true
 
 
 def test_ceph_conf_empty():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         assert ceph_conf.CephConf(context_wrap('')) is None
 
 

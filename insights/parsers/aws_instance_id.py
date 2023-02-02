@@ -12,7 +12,7 @@ from __future__ import print_function
 import json
 
 from insights.core import CommandParser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -45,7 +45,7 @@ class AWSInstanceIdDoc(CommandParser, dict):
         }
 
     Raises:
-        SkipException: When content is empty or cannot be parsed.
+        SkipComponent: When content is empty or cannot be parsed.
         ParseException: When type cannot be recognized.
 
     Attributes:
@@ -64,7 +64,7 @@ class AWSInstanceIdDoc(CommandParser, dict):
     def parse_content(self, content):
         """Parse output of command."""
         if not content or 'curl: ' in content[0]:
-            raise SkipException()
+            raise SkipComponent()
 
         # Just in case curl stats are present in data
         startline = 0
@@ -107,7 +107,7 @@ class AWSInstanceIdPkcs7(CommandParser):
         NYiytVbZPQUQ5Yaxu2jXnimvw3rrszlaEXAMPLE
 
     Raises:
-        SkipException: When content is empty or cannot be parsed.
+        SkipComponent: When content is empty or cannot be parsed.
 
     Attributes:
         signature (str): PKCS7 signature string including header and footer.
@@ -121,7 +121,7 @@ class AWSInstanceIdPkcs7(CommandParser):
     def parse_content(self, content):
         """Parse output of command."""
         if not content or 'curl: ' in content[0]:
-            raise SkipException()
+            raise SkipComponent()
 
         # Just in case curl stats are present in data
         startline = 0

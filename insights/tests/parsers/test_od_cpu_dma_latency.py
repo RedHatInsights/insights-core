@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import od_cpu_dma_latency
 from insights.parsers.od_cpu_dma_latency import OdCpuDmaLatency
 from insights.tests import context_wrap
@@ -23,5 +23,5 @@ def test_OdCpuDmaLatency():
     d = OdCpuDmaLatency(context_wrap(CONTENT_OD_CPU_DMA_LATENCY))
     assert d.force_latency == 2000000000
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         OdCpuDmaLatency(context_wrap(CONTENT_OD_CPU_DMA_LATENCY_EMPTY))

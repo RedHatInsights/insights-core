@@ -3,7 +3,7 @@ ImageMagickPolicy - files ``/etc/ImageMagick/policy.xml`` and ``/usr/lib*/ImageM
 ===============================================================================================================
 """
 from insights.core import XMLParser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -18,7 +18,7 @@ class ImageMagickPolicy(XMLParser):
         policies (list): list of Element objects with a 'policy' tag
 
     Raises:
-        SkipException: When content is empty or cannot be parsed.
+        SkipComponent: When content is empty or cannot be parsed.
 
     Sample output of this file is::
 
@@ -62,7 +62,7 @@ class ImageMagickPolicy(XMLParser):
 
     def parse_content(self, content):
         if not content:
-            raise SkipException("No content.")
+            raise SkipComponent("No content.")
 
         try:
             super(ImageMagickPolicy, self).parse_content(content)

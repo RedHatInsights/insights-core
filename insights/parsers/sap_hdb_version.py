@@ -7,7 +7,7 @@ commands.
 
 """
 from insights.core import CommandParser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -66,7 +66,7 @@ class HDBVersion(CommandParser, dict):
             'does not exist',
         ]
         if len(content) <= 1:
-            raise SkipException("Incorrect content.")
+            raise SkipComponent("Incorrect content.")
         data = {}
         self.sid = self.version = self.revision = None
         self.major = self.minor = self.patchlevel = None
@@ -83,13 +83,13 @@ class HDBVersion(CommandParser, dict):
                 self.version = val
                 val_splits = val.split('.')
                 if len(val_splits) != 5:
-                    raise SkipException("Incorrect HDB version: {0}.".format(val))
+                    raise SkipComponent("Incorrect HDB version: {0}.".format(val))
                 self.major = val_splits[0]
                 self.minor = val_splits[1]
                 self.revision = val_splits[2]
                 self.patchlevel = val_splits[3]
         if not self.version:
-            raise SkipException("Incorrect content.")
+            raise SkipComponent("Incorrect content.")
 
         self.update(data)
 

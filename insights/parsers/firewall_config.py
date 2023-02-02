@@ -15,7 +15,7 @@ Examples:
     'public'
 """
 from insights.core import Parser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import split_kv_pairs
 from insights.specs import Specs
@@ -30,4 +30,4 @@ class FirewallDConf(Parser, dict):
     def parse_content(self, content):
         self.update(split_kv_pairs(content, use_partition=False))
         if not self:
-            raise SkipException("empty content")
+            raise SkipComponent("empty content")

@@ -3,7 +3,7 @@ PackageProvidesCommand - Command ``/bin/echo {command_package}``
 ================================================================
 """
 from insights.core import CommandParser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -30,7 +30,7 @@ class PackageProvidesCommand(CommandParser, dict):
         /opt/rh/httpd24/root/usr/sbin/httpd httpd24-httpd-2.4.34-7.el7.x86_64
 
     Raises:
-        SkipException: When no such command detected running on this host.
+        SkipComponent: When no such command detected running on this host.
         ParseException: When there is un-parseble line.
 
     Example:
@@ -57,7 +57,7 @@ class PackageProvidesCommand(CommandParser, dict):
             data[l_sp[0]] = l_sp[1]
 
         if len(data) == 0:
-            raise SkipException()
+            raise SkipComponent()
 
         self.update(data)
 

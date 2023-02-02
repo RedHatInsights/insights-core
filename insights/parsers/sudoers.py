@@ -13,7 +13,7 @@ Module for processing each of the ``/etc/sudoers`` and ``/etc/sudoers.d/*`` file
 
 """
 from insights.core import Parser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.filters import add_filter
 from insights.core.plugins import parser
 from insights.parsers import get_active_lines
@@ -116,4 +116,4 @@ class EtcSudoers(Parser, SudoersBase):
         self.lines = get_active_lines(content, comment_char="##")
 
         if not self.lines:
-            raise SkipException
+            raise SkipComponent

@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import gcp_instance_type
 from insights.parsers.gcp_instance_type import GCPInstanceType
 from insights.tests import context_wrap
@@ -31,13 +31,13 @@ GOOGLE_TYPE_AB_4 = """
 
 
 def test_gcp_instance_type_ab_other():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         GCPInstanceType(context_wrap(GOOGLE_TYPE_AB_1))
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         GCPInstanceType(context_wrap(GOOGLE_TYPE_AB_2))
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         GCPInstanceType(context_wrap(GOOGLE_TYPE_AB_3))
 
     with pytest.raises(ParseException) as pe:
@@ -46,7 +46,7 @@ def test_gcp_instance_type_ab_other():
 
 
 def test_gcp_instance_type_ab_empty():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         GCPInstanceType(context_wrap(''))
 
 

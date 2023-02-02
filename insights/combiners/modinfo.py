@@ -12,7 +12,7 @@ ModulesInfo
 The ModulesInfo combines the collected modules info from the result of
 ``KernelModulesInfo``.
 """
-from insights.core.exceptions import SkipComponent, SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import combiner
 from insights.parsers.modinfo import (KernelModulesInfo, ModInfoEach, ModInfoAll)
 from insights.util import deprecated
@@ -102,7 +102,7 @@ class ModulesInfo(dict):
         False
 
     Raises:
-        SkipException: When content is empty.
+        SkipComponent: When content is empty.
 
     Attributes:
         retpoline_y (set): A set of names of the modules with the attribute "retpoline: Y".
@@ -116,4 +116,4 @@ class ModulesInfo(dict):
             self.retpoline_n = filtered_modules_info.retpoline_n
             self.retpoline_y = filtered_modules_info.retpoline_y
         if not self:
-            raise SkipException
+            raise SkipComponent

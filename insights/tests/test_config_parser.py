@@ -2,7 +2,7 @@ import pytest
 
 from insights.contrib.ConfigParser import NoOptionError
 from insights.core import ConfigParser, IniConfigFile
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.tests import context_wrap
 
 # An example config file with a few tricks and traps for the parser
@@ -99,8 +99,8 @@ def test_ini_config_file_parser():
 
 
 def test_config_parser_empty():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         assert ConfigParser(context_wrap('')) is None
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         assert IniConfigFile(context_wrap('')) is None

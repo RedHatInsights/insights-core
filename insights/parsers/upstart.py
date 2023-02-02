@@ -6,7 +6,7 @@ Parser to parse the output of ``initctl --system list`` command.
 
 """
 from insights.core import CommandParser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -50,7 +50,7 @@ class UpstartInitctlList(CommandParser):
         serial stop/waiting
 
     Raises:
-        SkipException: When nothing need to parse.
+        SkipComponent: When nothing need to parse.
 
     Attributes:
         data(list): Daemon details are stored as list of str.
@@ -83,7 +83,7 @@ class UpstartInitctlList(CommandParser):
         self.tty = {}
         self.daemon_proc = {}
         if (not content):
-            raise SkipException("No Contents")
+            raise SkipComponent("No Contents")
         for line in content:
             self.data.append(line)
             if 'dev/tty' in line:

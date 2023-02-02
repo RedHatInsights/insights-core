@@ -3,7 +3,7 @@ RdmaConfig - file ``/etc/rdma/rdma.conf``
 =========================================
 """
 from insights.core import LegacyItemAccess, Parser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import get_active_lines, split_kv_pairs
 from insights.specs import Specs
@@ -60,6 +60,6 @@ class RdmaConfig(Parser, LegacyItemAccess):
     def parse_content(self, content):
         _content = get_active_lines(content)
         if not _content:
-            raise SkipException("Empty content.")
+            raise SkipComponent("Empty content.")
 
         self.data = split_kv_pairs(_content)

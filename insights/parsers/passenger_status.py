@@ -5,7 +5,7 @@ This module provides processing for the ``passenger-status`` command using the
 following parsers:
 """
 from insights.core import CommandParser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -58,12 +58,12 @@ class PassengerStatus(CommandParser, dict):
         3
 
     Raises:
-        SkipException: When input content is empty or there is no useful data.
+        SkipComponent: When input content is empty or there is no useful data.
     """
 
     def parse_content(self, content):
         if len(content) <= 1:
-            raise SkipException("Empty content")
+            raise SkipComponent("Empty content")
 
         group = ''
         data = {}
@@ -98,7 +98,7 @@ class PassengerStatus(CommandParser, dict):
                     group_list[key] = val
 
         if not data:
-            raise SkipException("No useful data")
+            raise SkipComponent("No useful data")
         self.update(data)
 
     @property

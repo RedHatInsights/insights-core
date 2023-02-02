@@ -1,6 +1,6 @@
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers.crypto_policies import CryptoPoliciesStateCurrent
 from insights.tests import context_wrap
 
@@ -15,5 +15,5 @@ def test_crypto_policies_state_current():
 
 
 def test_crypto_policies_state_current_empty():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         CryptoPoliciesStateCurrent(context_wrap(""))

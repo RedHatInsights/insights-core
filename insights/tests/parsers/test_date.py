@@ -3,7 +3,7 @@ import pytest
 
 from datetime import datetime
 
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import date
 from insights.parsers.date import Date, DateUTC, DateParseException, TimeDateCtlStatus
 from insights.tests import context_wrap
@@ -163,7 +163,7 @@ def test_timedatectl():
 
 
 def test_timedatectl_except():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         TimeDateCtlStatus(context_wrap(TIMEDATECTL_CONTENT4_WITHOUT_INFO, strip=False))
     with pytest.raises(ParseException):
         TimeDateCtlStatus(context_wrap(TIMEDATECTL_CONTENT4_WITHOUT_COLON_OUTPUT, strip=False))

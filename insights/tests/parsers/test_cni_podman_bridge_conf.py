@@ -2,8 +2,8 @@ import doctest
 
 from insights.parsers import cni_podman_bridge_conf
 from insights.parsers.cni_podman_bridge_conf import CNIPodmanBridgeConf
-from insights.tests.parsers import skip_exception_check
 from insights.tests import context_wrap
+from insights.tests.parsers import skip_component_check
 
 PODMAN_CNI_FILE = '''
 {
@@ -65,4 +65,4 @@ def test_cni_podman_bridge_conf():
 
 
 def test_cni_podman_bridge_conf_empty():
-    assert 'Empty output.' in skip_exception_check(CNIPodmanBridgeConf)
+    assert 'Empty output.' in skip_component_check(CNIPodmanBridgeConf)

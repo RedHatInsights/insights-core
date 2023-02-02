@@ -8,7 +8,7 @@ SubscriptionManagerFacts - command ``subscription-manager facts``
 -----------------------------------------------------------------
 """
 from insights.core import CommandParser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.filters import add_filter
 from insights.core.plugins import parser
 from insights.specs import Specs
@@ -44,4 +44,4 @@ class SubscriptionManagerFacts(CommandParser, dict):
             self[key] = val
 
         if len(self) == 0:
-            raise SkipException
+            raise SkipComponent

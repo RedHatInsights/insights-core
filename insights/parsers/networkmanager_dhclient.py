@@ -5,7 +5,7 @@ NetworkManagerDhclient - file ``/etc/NetworkManager/dispatcher.d/*-dhclient``
 import re
 
 from insights.core import Parser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -44,7 +44,7 @@ class NetworkManagerDhclient(Parser):
         has_vulnerable_block (bool): True, if the vulnerable block is present, False otherwise.
 
     Raises:
-        SkipException: When content is empty or cannot be parsed.
+        SkipComponent: When content is empty or cannot be parsed.
 
     Sample output of this command is::
 
@@ -98,7 +98,7 @@ class NetworkManagerDhclient(Parser):
     """
     def parse_content(self, content):
         if not content:
-            raise SkipException("No content.")
+            raise SkipComponent("No content.")
 
         result = "\n".join(content)
         match_rhel_6 = VULNERABLE_BLOCK_RHEL_6.search(result)

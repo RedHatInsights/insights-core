@@ -1,6 +1,6 @@
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers.tomcat_virtual_dir_context import TomcatVirtualDirContextFallback, TomcatVirtualDirContextTargeted
 from insights.tests import context_wrap
 
@@ -55,13 +55,13 @@ def test_tomcat_virtual_dir_context_found():
 
 def test_tomcat_virtual_dir_context_not_found():
     for parser in [TomcatVirtualDirContextFallback, TomcatVirtualDirContextTargeted]:
-        with pytest.raises(SkipException) as excinfo:
+        with pytest.raises(SkipComponent) as excinfo:
             parser(context_wrap(NOT_FOUND))
             assert 'VirtualDirContext not used.' in str(excinfo.value)
 
 
 def test_tomcat_virtual_dir_context_exceptions():
     for parser in [TomcatVirtualDirContextFallback, TomcatVirtualDirContextTargeted]:
-        with pytest.raises(SkipException) as excinfo:
+        with pytest.raises(SkipComponent) as excinfo:
             parser(context_wrap(ERRORS_2))
             assert 'VirtualDirContext not used.' in str(excinfo.value)

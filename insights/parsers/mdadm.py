@@ -3,7 +3,7 @@ MDAdm - command ``/usr/sbin/mdadm -E {device}``
 ===============================================
 """
 from insights.core import CommandParser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import split_kv_pairs
 from insights.specs import Specs
@@ -58,7 +58,7 @@ class MDAdmMetadata(CommandParser, dict):
         if mdadm_dev in self.file_path:
             self.device = '/dev/' + self.file_path.split(mdadm_dev)[1].strip()
         else:
-            raise SkipException('Cannot parse device name from path {p}'.format(p=self.file_path))
+            raise SkipComponent('Cannot parse device name from path {p}'.format(p=self.file_path))
 
         for key, val in split_kv_pairs(content, split_on=':').items():
             if val.isdigit():

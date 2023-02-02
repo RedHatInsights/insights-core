@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import readlink_openshift_certs
 from insights.tests import context_wrap
 
@@ -38,10 +38,10 @@ def test_readlink_openshift_certs():
 
 
 def test_fail():
-    with pytest.raises(SkipException) as e:
+    with pytest.raises(SkipComponent) as e:
         readlink_openshift_certs.ReadLinkEKubeletClientCurrent(context_wrap(BAD_FILE_PATH))
     assert "No Data from command: /usr/bin/readlink -e /etc/origin/node/certificates/kubelet-client-current.pem" in str(e)
 
-    with pytest.raises(SkipException) as e:
+    with pytest.raises(SkipComponent) as e:
         readlink_openshift_certs.ReadLinkEKubeletServerCurrent(context_wrap(BAD_FILE_PATH))
     assert "No Data from command: /usr/bin/readlink -e /etc/origin/node/certificates/kubelet-server-current.pem" in str(e)
