@@ -2,6 +2,18 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.1.5](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.5) (2023-02-02)
+
+- fix: Enhance datasource kernel_module_filters to check the loaded modules ([PR 3670](https://github.com/RedHatInsights/insights-core/pull/3670))
+- fix: use LC_ALL=C.UTF-8 for subscription-manager ([PR 3669](https://github.com/RedHatInsights/insights-core/pull/3669))
+- feat: add CloudInstance to canonical_facts ([PR 3654](https://github.com/RedHatInsights/insights-core/pull/3654))
+- Deprecate SkipException to help avoid confusion ([PR 3662](https://github.com/RedHatInsights/insights-core/pull/3662))
+- feat: Add arg to capture skips in the broker ([PR 3663](https://github.com/RedHatInsights/insights-core/pull/3663))
+- fix: Resolve VDOStatus excessive ParseException ([PR 3668](https://github.com/RedHatInsights/insights-core/pull/3668))
+- Disable datasource timeout alarm for the malware-detection app ([PR 3666](https://github.com/RedHatInsights/insights-core/pull/3666))
+- Make malware-detection app more resilient to unexpected errors ([PR 3661](https://github.com/RedHatInsights/insights-core/pull/3661))
+- Exclude malware-detection rules files in /var/tmp (and other locations) ([PR 3665](https://github.com/RedHatInsights/insights-core/pull/3665))
+
 ## [insights-core-3.1.4](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.4) (2023-01-19)
 
 - fix: add '-d 2' to yum_repolist spec ([PR 3660](https://github.com/RedHatInsights/insights-core/pull/3660))
