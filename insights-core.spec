@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.1.4
+Version:        3.1.5
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,22 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Feb 02 2023 Lizhong Chen <lichen@redhat.com> 3.1.5-1
+- fix: Enhance datasource kernel_module_filters to check the loaded modules
+  (#3670) (jiazhang@redhat.com)
+- fix: use LC_ALL=C.UTF-8 for subscription-manager (#3669)
+  (ptoscano@redhat.com)
+- feat: add CloudInstance to canonical_facts (#3654) (xiangceliu@redhat.com)
+- Deprecate SkipException to help avoid confusion (#3662) (rblakley@redhat.com)
+- feat: Add arg to capture skips in the broker (#3663) (rblakley@redhat.com)
+- fix: Resolve VDOStatus excessive ParseException (#3668) (xiaoxwan@redhat.com)
+- Disable datasource timeout alarm for the malware-detection app (#3666)
+  (mhuth@redhat.com)
+- Make malware-detection app more resilient to unexpected errors (#3661)
+  (mhuth@redhat.com)
+- Exclude malware-detection rules files in /var/tmp (and other locations)
+  (#3665) (mhuth@redhat.com)
+
 * Thu Jan 19 2023 Xiangce Liu <xiangceliu@redhat.com> 3.1.4-1
 - fix: add '-d 2' to yum_repolist spec (#3660) (xiangceliu@redhat.com)
 - feat: add JbossRuntimeVersions parser (#3639) (lichen@redhat.com)
