@@ -20,8 +20,9 @@ ForemanProxySshConfig - file ``/usr/share/foreman-proxy/.ssh/ssh_config``
 
 """
 from collections import namedtuple
+
 from insights.core import Parser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import get_active_lines
 from insights.specs import Specs
@@ -77,7 +78,7 @@ class SshClientConfig(Parser):
         '192.168.122.2'
 
     Raises:
-        SkipException: When input content is empty. Not found any parse results.
+        SkipComponent: When input content is empty. Not found any parse results.
     """
 
     KeyValue = namedtuple('KeyValue', ['keyword', 'value', 'line'])
@@ -88,7 +89,7 @@ class SshClientConfig(Parser):
 
         _content = get_active_lines(content)
         if not _content:
-            raise SkipException("Empty content.")
+            raise SkipComponent("Empty content.")
 
         index_list = [i for i, l in enumerate(_content) if l.startswith('Host ')]
         index = index_list[0] if index_list else len(_content)
@@ -109,7 +110,7 @@ class SshClientConfig(Parser):
                 self.host_lines[hostbit].append(self.KeyValue(kw, val, line))
 
         if not (self.host_lines or self.global_lines):
-            raise SkipException("Nothing parsed.")
+            raise SkipComponent("Nothing parsed.")
 
 
 @parser(Specs.ssh_config)

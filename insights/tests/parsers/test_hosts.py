@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import hosts
 from insights.parsers.hosts import Hosts
 from insights.tests import context_wrap
@@ -108,7 +108,7 @@ def test_ip_of():
 
 
 def test_exception():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         Hosts(context_wrap(""))
 
 

@@ -1,14 +1,14 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import max_uid
 from insights.parsers.max_uid import MaxUID
 from insights.tests import context_wrap
 
 
 def test_max_uid():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         MaxUID(context_wrap(""))
 
     with pytest.raises(ParseException):

@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import sockstat
 from insights.parsers.sockstat import SockStats
 from insights.tests import context_wrap
@@ -43,7 +43,7 @@ def test_sockstat():
     assert stats.seg_element_details(None, None) is None
     assert stats.seg_element_details('tcp', 'abc') is None
     assert len(stats.sock_stats)
-    with pytest.raises(SkipException) as exc:
+    with pytest.raises(SkipComponent) as exc:
         sock_obj = SockStats(context_wrap(SOCK_STATS_NO))
         assert sock_obj is not None
     assert 'No Contents' in str(exc)

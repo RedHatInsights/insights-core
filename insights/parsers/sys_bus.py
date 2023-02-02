@@ -40,7 +40,7 @@ class CdcWDM(Parser):
         True
 
     Raises:
-        SkipException: When contents are empty
+        SkipComponent: When contents are empty
         ParseException: When contents are invalid
     """
 

@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import systemd_analyze
 from insights.tests import context_wrap
 
@@ -36,7 +36,7 @@ def test_output():
     assert output.get('dev-sdd.device', 0) == 291450.859
     assert output.get('dev-sdy.device', 0) == 35921033.782
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         assert systemd_analyze.SystemdAnalyzeBlame(context_wrap("")) is None
 
 

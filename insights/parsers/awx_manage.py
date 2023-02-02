@@ -12,7 +12,7 @@ AwxManagePrintSettings - command ``/usr/bin/awx-manage print_settings``
 """
 
 from insights.core import CommandParser, JSONParser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -37,7 +37,7 @@ class AnsibleTowerLicenseType(CommandParser, JSONParser):
     """
     def parse_content(self, content):
         if not content:
-            raise SkipException
+            raise SkipComponent
         if len(content) != 1:
             raise ParseException("Invalid output: {0}".format(content))
         self.type = content[0].strip()

@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import db2
 from insights.parsers.db2 import Db2ls
 from insights.tests import context_wrap
@@ -32,9 +32,9 @@ def test_db2ls():
     assert db2ls[1]['INSTALLTIME'] == 'Fri Feb 11 10:34:51 2022 CST'
     assert db2ls[1]['INSTALLERUID'] == '0'
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         Db2ls(context_wrap(DB2LS_A_C_EMPTY1))
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         Db2ls(context_wrap(DB2LS_A_C_EMPTY2))
 
 

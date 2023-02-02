@@ -1,6 +1,6 @@
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers.chkconfig import ChkConfig
 from insights.tests import context_wrap
 
@@ -103,5 +103,5 @@ def test_rhel_73():
 
 
 def test_chkconfig_ng():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         ChkConfig(context_wrap(SERVICES_NG))

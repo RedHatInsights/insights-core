@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import sap_hana_python_script
 from insights.parsers.sap_hana_python_script import HanaLandscape
 from insights.tests import context_wrap
@@ -50,7 +50,7 @@ def test_doc_examples():
 
 
 def test_HanaLandscape_ab():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         HanaLandscape(context_wrap(LANDSCAPE_SCALE_UP_AB_1))
 
 

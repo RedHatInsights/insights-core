@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import net_namespace
 from insights.parsers.net_namespace import NetworkNamespace
 from insights.tests import context_wrap
@@ -58,10 +58,10 @@ def test_bond_class():
 
 
 def test_abnormal():
-    with pytest.raises(SkipException) as pe:
+    with pytest.raises(SkipComponent) as pe:
         NetworkNamespace(context_wrap(LIST_NAMESPACE_3))
     assert "Nothing to parse." in str(pe)
 
-    with pytest.raises(SkipException) as pe:
+    with pytest.raises(SkipComponent) as pe:
         NetworkNamespace(context_wrap(CMD_LIST_NAMESPACE_3))
     assert "Nothing to parse." in str(pe)
