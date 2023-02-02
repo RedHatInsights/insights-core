@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import ovs_vsctl
 from insights.parsers.ovs_vsctl import OVSvsctlListBridge
 from insights.tests import context_wrap
@@ -112,6 +112,6 @@ def test_ovs_vsctl():
 
 
 def test_ovs_vsctl_exception1():
-    with pytest.raises(SkipException) as e:
+    with pytest.raises(SkipComponent) as e:
         OVSvsctlListBridge(context_wrap(EXCEPTION1))
     assert "Empty file" in str(e)

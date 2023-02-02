@@ -3,7 +3,7 @@ RndcStatus - Command ``rndc status``
 =====================================
 """
 from insights.core import CommandParser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -34,7 +34,7 @@ class RndcStatus(CommandParser, dict):
         server is up and running
 
     Raises:
-        SkipException: When input is empty.
+        SkipComponent: When input is empty.
         ParseException: When input cannot be parsed.
 
     Examples:
@@ -48,7 +48,7 @@ class RndcStatus(CommandParser, dict):
 
     def parse_content(self, content):
         if not content:
-            raise SkipException("Empty content")
+            raise SkipComponent("Empty content")
         for line in content:
             if ':' in line:
                 k, v = line.split(':', 1)

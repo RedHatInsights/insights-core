@@ -2,7 +2,7 @@ import datetime
 import pytest
 
 from insights.core import YAMLParser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.tests import context_wrap
 
 
@@ -71,7 +71,7 @@ def test_settings_yml_list():
 
 def test_empty_content():
     ctx = context_wrap(empty_yaml_content)
-    with pytest.raises(SkipException) as ex:
+    with pytest.raises(SkipComponent) as ex:
         FakeYamlParser(ctx)
 
     assert "There is no data" in ex.value.args[0]

@@ -5,7 +5,7 @@ PciRportTargetDiskPath
 Module for parsing the output of command ``find /sys/devices/ -maxdepth 10 -mindepth 9 -name stat -type f``.
 """
 from insights.core import CommandParser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -66,7 +66,7 @@ class PciRportTargetDiskPaths(CommandParser):
 
     Raises:
         ParseException: Input content is not available to parse
-        SkipException: Input content is empty
+        SkipComponent: Input content is empty
 
     Attributes:
         path_list (list): the result parsed
@@ -147,7 +147,7 @@ class PciRportTargetDiskPaths(CommandParser):
         ]
 
         if not content:
-            raise SkipException(EMPTY)
+            raise SkipComponent(EMPTY)
 
         pci = []
         self.__host_attributes = set()

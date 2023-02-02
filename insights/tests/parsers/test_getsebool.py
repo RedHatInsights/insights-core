@@ -1,6 +1,6 @@
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import getsebool
 from insights.tests import context_wrap
 
@@ -40,6 +40,6 @@ def test_getsebool():
 
 
 def test_getsebool_disabled():
-    with pytest.raises(SkipException) as excinfo:
+    with pytest.raises(SkipComponent) as excinfo:
         getsebool.Getsebool(context_wrap(SELINUX_DISABLED))
     assert 'SELinux is disabled' in str(excinfo.value)

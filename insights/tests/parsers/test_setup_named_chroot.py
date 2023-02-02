@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import setup_named_chroot
 from insights.parsers.setup_named_chroot import SetupNamedChroot
 from insights.tests import context_wrap
@@ -147,12 +147,12 @@ def test_doc_examples():
 
 
 def test_setup_named_chroot_exception1():
-    with pytest.raises(SkipException) as e:
+    with pytest.raises(SkipComponent) as e:
         SetupNamedChroot(context_wrap(EXCEPTION1))
     assert "Empty file" in str(e)
 
 
 def test_setup_named_chroot_exception2():
-    with pytest.raises(SkipException) as e:
+    with pytest.raises(SkipComponent) as e:
         SetupNamedChroot(context_wrap(EXCEPTION2))
     assert "Input content is not empty but there is no useful parsed data." in str(e)

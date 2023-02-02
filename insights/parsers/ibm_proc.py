@@ -11,7 +11,7 @@ IBMFirmwareLevel - file ``/proc/device-tree/openprom/ibm,fw-vernum_encoded``
 ----------------------------------------------------------------------------
 """
 from insights.core import Parser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -31,12 +31,12 @@ class IBMPpcLparCfg(Parser, dict):
         '8247-22L'
 
     Raises:
-        SkipException: If nothing need to parse
+        SkipComponent: If nothing need to parse
     """
 
     def parse_content(self, content):
         if not content:
-            raise SkipException("Empty output.")
+            raise SkipComponent("Empty output.")
 
         for line in content:
             key, value = [l.strip() for l in line.split('=', 1)]
@@ -44,7 +44,7 @@ class IBMPpcLparCfg(Parser, dict):
             self[key] = value.strip()
 
         if len(self) == 0:
-            raise SkipException("Nothing to parse.")
+            raise SkipComponent("Nothing to parse.")
 
 
 @parser(Specs.ibm_fw_vernum_encoded)
@@ -66,16 +66,16 @@ class IBMFirmwareLevel(Parser):
         'VL950_092'
 
     Raises:
-        SkipException: If nothing need to parse
+        SkipComponent: If nothing need to parse
     """
 
     def parse_content(self, content):
         if not content:
-            raise SkipException("Empty output.")
+            raise SkipComponent("Empty output.")
 
         self.raw = content[0]
 
         if "(" not in self.raw or ")" not in self.raw:
-            raise SkipException("Nothing to parse.")
+            raise SkipComponent("Nothing to parse.")
 
         self.firmware_level = self.raw[self.raw.index('(') + 1:self.raw.index(')')]

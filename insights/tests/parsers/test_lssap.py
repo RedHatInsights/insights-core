@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import lssap
 from insights.tests import context_wrap
 from insights.util import keys_in
@@ -162,7 +162,7 @@ def test_fail():
         lssap.Lssap(context_wrap(Lssap_BAD1))
     assert "Lssap: Unable to parse 1 line(s) of content: (['HA2|  16|       D16|         lu0417'])" in str(excinfo)
 
-    with pytest.raises(SkipException) as excinfo:
+    with pytest.raises(SkipComponent) as excinfo:
         lssap.Lssap(context_wrap(Lssap_BAD2))
 
     with pytest.raises(ParseException) as excinfo:

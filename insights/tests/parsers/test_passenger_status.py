@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import passenger_status
 from insights.parsers.passenger_status import PassengerStatus
 from insights.tests import context_wrap
@@ -101,7 +101,7 @@ def test_passenger_status_2():
 
 
 def test_passenger_status_ex():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         PassengerStatus(context_wrap(PASS_STATUS_EXP1))
 
 

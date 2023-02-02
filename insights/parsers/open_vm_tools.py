@@ -10,7 +10,7 @@ OpenVmToolsStatRawTextSession - Command ``vmware-toolbox-cmd stat raw text sessi
 
 """
 from insights.core import CommandParser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -37,7 +37,7 @@ class OpenVmToolsStatRawTextSession(CommandParser, dict):
 
     def parse_content(self, content):
         if not content or 'must be run inside a virtual machine' in content[0]:
-            raise SkipException
+            raise SkipComponent
 
         data = dict()
         for line in content:
@@ -46,6 +46,6 @@ class OpenVmToolsStatRawTextSession(CommandParser, dict):
                 data[key] = value
 
         if not data:
-            raise SkipException
+            raise SkipComponent
 
         self.update(data)

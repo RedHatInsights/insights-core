@@ -9,7 +9,7 @@ Named is a name server used by BIND.
 import re
 
 from insights.core import CommandParser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -37,7 +37,7 @@ class NamedCheckconf(CommandParser):
                                    the value is a list of all digests associated with it.
 
     Raises:
-        SkipException: When content is empty or cannot be parsed.
+        SkipComponent: When content is empty or cannot be parsed.
 
     Sample output of this command is::
 
@@ -155,7 +155,7 @@ class NamedCheckconf(CommandParser):
 
     def parse_content(self, content):
         if not content:
-            raise SkipException('No content.')
+            raise SkipComponent('No content.')
 
         full_result = '\n'.join(content)
 

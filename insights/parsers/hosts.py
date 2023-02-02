@@ -33,7 +33,7 @@ Examples:
 
 """
 from insights.core import Parser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -66,7 +66,7 @@ class Hosts(Parser):
                 self._data[ip].extend(names)
 
         if not self._data:
-            raise SkipException("No useful data")
+            raise SkipComponent("No useful data")
 
     @property
     def data(self):

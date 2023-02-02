@@ -12,7 +12,7 @@ GrubbyDefaultKernel - command ``grubby --default-kernel``
 ---------------------------------------------------------
 """
 from insights.core import CommandParser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -31,7 +31,7 @@ class GrubbyDefaultIndex(CommandParser):
         0
 
     Raises:
-        SkipException: When output is empty
+        SkipComponent: When output is empty
         ParseException: When output is invalid
 
     Attributes:
@@ -39,7 +39,7 @@ class GrubbyDefaultIndex(CommandParser):
     """
     def parse_content(self, content):
         if not content:
-            raise SkipException('Empty output')
+            raise SkipComponent('Empty output')
         if len(content) != 1 or not content[0].isdigit():
             raise ParseException('Invalid output: {0}', content)
         self.default_index = int(content[0])
@@ -60,7 +60,7 @@ class GrubbyDefaultKernel(CommandParser):
         '/boot/vmlinuz-2.6.32-573.el6.x86_64'
 
     Raises:
-        SkipException: When output is empty
+        SkipComponent: When output is empty
         ParseException: When output is invalid
 
     Attributes:
@@ -68,7 +68,7 @@ class GrubbyDefaultKernel(CommandParser):
     """
     def parse_content(self, content):
         if not content:
-            raise SkipException('Empty output')
+            raise SkipComponent('Empty output')
         if len(content) != 1 or len(content[0].split()) > 1:
             raise ParseException('Invalid output: {0}', content)
         self.default_kernel = content[0].strip()

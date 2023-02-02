@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import azure_instance_plan
 from insights.parsers.azure_instance_plan import AzureInstancePlan
 from insights.tests import context_wrap
@@ -32,16 +32,16 @@ curl: (28) connect() timed out!
 
 
 def test_azure_instance_place_ab_other():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         AzureInstancePlan(context_wrap(AZURE_PLAN_AB_1))
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         AzureInstancePlan(context_wrap(AZURE_PLAN_AB_2))
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         AzureInstancePlan(context_wrap(AZURE_PLAN_AB_3))
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         AzureInstancePlan(context_wrap(''))
 
     with pytest.raises(ParseException):

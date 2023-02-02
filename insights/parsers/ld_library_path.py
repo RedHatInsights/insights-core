@@ -8,7 +8,7 @@ Parser for parsing the environment variable LD_LIBRARY_PATH of each user
 from collections import namedtuple
 
 from insights.core import Parser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -48,7 +48,7 @@ class UserLdLibraryPath(Parser, list):
         True
 
     Raises:
-        SkipException: When the output is empty or nothing needs to parse.
+        SkipComponent: When the output is empty or nothing needs to parse.
     """
 
     def parse_content(self, content):
@@ -61,6 +61,6 @@ class UserLdLibraryPath(Parser, list):
             llds.append(LdLibraryPath(user, paths.split(':'), raw))
 
         if not llds:
-            raise SkipException("LD_LIBRARY_PATH not set.")
+            raise SkipComponent("LD_LIBRARY_PATH not set.")
 
         self.extend(llds)

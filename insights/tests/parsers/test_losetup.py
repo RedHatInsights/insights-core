@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import losetup
 from insights.parsers.losetup import LoSetup
 from insights.tests import context_wrap
@@ -56,7 +56,7 @@ def test_losetup():
     assert 'DIO' not in losetup[0]
     assert 'LOG-SEC' not in losetup[0]
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         LoSetup(context_wrap(LOSETUP_EMPTY))
 
 

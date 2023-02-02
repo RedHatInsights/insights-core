@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import sys_module
 from insights.parsers.sys_module import (DMModUseBlkMq, KernelCrashKexecPostNotifiers, LpfcMaxLUNs, MaxLUNs, Ql2xMaxLUN,
                                          Ql2xmqSupport, SCSIModMaxReportLUNs, SCSIModUseBlkMq, VHostNetZeroCopyTx)
@@ -103,7 +103,7 @@ def test_MaxLUNs():
 
 
 def test_class_exceptions():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         dm_mod = DMModUseBlkMq(context_wrap(SCSI_DM_MOD_USE_BLK_MQ_EMPTY))
         assert dm_mod is None
 
@@ -112,7 +112,7 @@ def test_class_exceptions():
         dm_mod_unknow.is_on
     assert "Unexpected value unknow_case, please get raw data from attribute 'val' and tell is_on by yourself." in str(e)
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         max_luns = MaxLUNs(context_wrap(SCSI_DM_MOD_USE_BLK_MQ_EMPTY))
         assert max_luns is None
 
@@ -121,7 +121,7 @@ def test_class_exceptions():
         max_luns_not_digit.val
     assert "Unexpected content: unknow_case" in str(e)
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         ql2xmqsuppor_empty = Ql2xmqSupport(context_wrap(SCSI_DM_MOD_USE_BLK_MQ_EMPTY))
         assert ql2xmqsuppor_empty is None
 
