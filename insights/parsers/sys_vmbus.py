@@ -9,7 +9,7 @@ SysVmbusClassID - file ``/sys/bus/vmbus/devices/*/class_id``
 ------------------------------------------------------------
 """
 from insights.core import Parser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -31,7 +31,7 @@ class SysVmbusDeviceID(Parser):
         {47505500-0001-0000-3130-444531444234}
 
     Raises:
-        SkipException: When nothing need to parse.
+        SkipComponent: When nothing need to parse.
 
     Attributes:
         id(str): Device ID
@@ -43,7 +43,7 @@ class SysVmbusDeviceID(Parser):
     """
     def parse_content(self, content):
         if not content or len(content) != 1:
-            raise SkipException()
+            raise SkipComponent()
         self.id = content[0].strip('{}\n')
 
 
@@ -56,7 +56,7 @@ class SysVmbusClassID(Parser):
         {44c4f61d-4444-4400-9d52-802e27ede19f}
 
     Raises:
-        SkipException: When nothing need to parse.
+        SkipComponent: When nothing need to parse.
 
     Attributes:
         id(str): Class ID
@@ -71,6 +71,6 @@ class SysVmbusClassID(Parser):
     """
     def parse_content(self, content):
         if not content or len(content) != 1:
-            raise SkipException()
+            raise SkipComponent()
         self.id = content[0].strip('{}\n')
         self.desc = VMBUS_DEV_DICT.get(self.id, 'Unknown')

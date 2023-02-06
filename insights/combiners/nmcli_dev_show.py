@@ -4,7 +4,7 @@ nmcli_dev_show command
 As there are three different file paths in different sos packages,
 create this combiner to fix this issue.
 """
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import combiner
 from insights.parsers.nmcli import NmcliDevShow, NmcliDevShowSos
 
@@ -34,7 +34,7 @@ class AllNmcliDevShow(dict):
                 self._con_dev.extend(item.connected_devices)
 
         if not data:
-            raise SkipException()
+            raise SkipComponent()
 
         super(AllNmcliDevShow, self).__init__()
         self.update(data)

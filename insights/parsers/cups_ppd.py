@@ -5,7 +5,7 @@ CupsPpd - files ``/etc/cups/ppd/*``
 Parser to parse the content of files ``/etc/cups/ppd/*``
 """
 from insights.core import Parser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -43,7 +43,7 @@ class CupsPpd(Parser, dict):
     """
     def parse_content(self, content):
         if not content:
-            raise SkipException("No Valid Configuration")
+            raise SkipComponent("No Valid Configuration")
         data = {}
         for line in content:
             if line.startswith("*") and ":" in line and not line.startswith("*%"):
@@ -57,5 +57,5 @@ class CupsPpd(Parser, dict):
                 else:
                     data[key] = value
         if not data:
-            raise SkipException("No Valid Configuration")
+            raise SkipComponent("No Valid Configuration")
         self.update(data)

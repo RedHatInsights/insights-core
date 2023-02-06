@@ -11,7 +11,7 @@ GroupInfo - command ``getent group <groupname>``
 
 """
 from insights.core import CommandParser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import keyword_search
 from insights.specs import Specs
@@ -41,7 +41,7 @@ class GroupInfo(CommandParser, list):
     """
     def parse_content(self, content):
         if not content:
-            raise SkipException
+            raise SkipComponent
 
         for line in content:
             try:

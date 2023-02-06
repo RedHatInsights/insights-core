@@ -27,7 +27,7 @@ Examples:
 
 """
 from insights.core import Parser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -42,13 +42,13 @@ class BondDynamicLB(Parser):
     1 - Load based load balancing.
 
     Raises:
-        SkipException: When contents are empty
+        SkipComponent: When contents are empty
         ParseException: When contents are invalid
     """
 
     def parse_content(self, content):
         if not content:
-            raise SkipException("No Contents")
+            raise SkipComponent("No Contents")
         line = content[0].strip()
         self._dynamic_lb_status = None
         self._bond_name = self.file_path.rsplit("/")[-3]

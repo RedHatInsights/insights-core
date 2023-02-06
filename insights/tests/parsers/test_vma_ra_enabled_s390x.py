@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import vma_ra_enabled_s390x
 from insights.parsers.vma_ra_enabled_s390x import VmaRaEnabledS390x
 from insights.tests import context_wrap
@@ -26,7 +26,7 @@ def test_vma_ra_enabled_s390x_exp():
     """
     Here test the examples cause expections
     """
-    with pytest.raises(SkipException) as sc1:
+    with pytest.raises(SkipComponent) as sc1:
         VmaRaEnabledS390x(context_wrap(''))
     assert "Input content is empty" in str(sc1)
 

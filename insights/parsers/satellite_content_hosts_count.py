@@ -20,7 +20,7 @@ Examples::
     13
 """
 from insights.core import CommandParser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -43,4 +43,4 @@ class SatelliteContentHostsCount(CommandParser):
             except ValueError:
                 raise ParseException("Unknow satelite content hosts count")
         if self.count is None:
-            raise SkipException("Cannot get the count of satellite content hosts")
+            raise SkipComponent("Cannot get the count of satellite content hosts")

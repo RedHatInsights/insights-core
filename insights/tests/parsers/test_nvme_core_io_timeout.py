@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import nvme_core_io_timeout
 from insights.parsers.nvme_core_io_timeout import NVMeCoreIOTimeout
 from insights.tests import context_wrap
@@ -17,10 +17,10 @@ NVME_CORE_IO_TIMEOUT_INVALID_2 = "FF"
 
 
 def test_nvme_core_io_timeout_se():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         NVMeCoreIOTimeout(context_wrap(''))
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         NVMeCoreIOTimeout(context_wrap(NVME_CORE_IO_TIMEOUT_INVALID_1))
 
 

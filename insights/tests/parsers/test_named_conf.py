@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import named_conf
 from insights.parsers.named_conf import NamedConf
 from insights.tests import context_wrap
@@ -196,12 +196,12 @@ include "/etc/crypto-policies/back-ends/bind.config"; // the sname line
 
 
 def test_config_no_data():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         NamedConf(context_wrap(""))
 
 
 def test_config_invalid_data():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         NamedConf(context_wrap(CONFIG_INVALID_SECTIONS))
 
 

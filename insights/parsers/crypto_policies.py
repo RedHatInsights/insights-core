@@ -19,7 +19,7 @@ CryptoPoliciesBind - file ``/etc/crypto-policies/back-ends/bind.config``
 ------------------------------------------------------------------------
 """
 from insights.core import Parser, SysconfigOptions
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import get_active_lines
 from insights.specs import Specs
@@ -42,7 +42,7 @@ class CryptoPoliciesConfig(Parser):
     """
     def parse_content(self, content):
         if not content:
-            raise SkipException("/etc/crypto-policies/config is empty")
+            raise SkipComponent("/etc/crypto-policies/config is empty")
         self.value = get_active_lines(content)[0]
 
 
@@ -63,7 +63,7 @@ class CryptoPoliciesStateCurrent(Parser):
     """
     def parse_content(self, content):
         if not content:
-            raise SkipException("/etc/crypto-policies/state/current is empty")
+            raise SkipComponent("/etc/crypto-policies/state/current is empty")
         self.value = get_active_lines(content)[0]
 
 
@@ -116,7 +116,7 @@ class CryptoPoliciesBind(Parser):
     """
     def parse_content(self, content):
         if not content:
-            raise SkipException("/etc/crypto-policies/back-ends/bind.config is empty")
+            raise SkipComponent("/etc/crypto-policies/back-ends/bind.config is empty")
         self.value = content
         in_da = False
         in_ddd = False

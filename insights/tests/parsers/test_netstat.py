@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import netstat
 from insights.parsers.netstat import Netstat, NetstatAGN, NetstatS, Netstat_I, SsTULPN, SsTUPNA, ProcNsat
 from insights.tests import context_wrap
@@ -774,7 +774,7 @@ def test_proc_netstat():
     assert len(pnstat.data) == 131
     assert pnstat.get_stats('TCPWqueueTooBig') == 10
 
-    with pytest.raises(SkipException) as exc:
+    with pytest.raises(SkipComponent) as exc:
         pnstat = ProcNsat(context_wrap(PROC_NETSTAT_3))
     assert 'No Contents' in str(exc)
     with pytest.raises(ParseException) as exc:

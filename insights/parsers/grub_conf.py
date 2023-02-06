@@ -52,7 +52,7 @@ BootLoaderEntries - file ``/boot/loader/entries/*.conf``
 """
 from insights.components.rhel_version import IsRhel6, IsRhel7, IsRhel8, IsRhel9
 from insights.core import Parser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import get_active_lines
 from insights.specs import Specs
@@ -367,14 +367,14 @@ class BootLoaderEntries(Parser, dict):
         cmdline(str): the cmdline of the saved boot entry
 
     Raises:
-        SkipException: when input content is empty or no useful data.
+        SkipComponent: when input content is empty or no useful data.
     """
     def parse_content(self, content):
         """
         Parses the ``/boot/loader/entries/*.conf`` files.
         """
         if not content:
-            raise SkipException()
+            raise SkipComponent()
 
         self.entry = {}
         self.title = ''
@@ -386,7 +386,7 @@ class BootLoaderEntries(Parser, dict):
                 self.cmdline = value
 
         if not self.entry:
-            raise SkipException()
+            raise SkipComponent()
 
         self.update(self.entry)
         self.title = self.entry.get('title')

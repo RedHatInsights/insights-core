@@ -1,6 +1,6 @@
 from insights.parsers.tags import Tags
-from insights.tests.parsers import skip_exception_check
 from insights.tests import context_wrap
+from insights.tests.parsers import skip_component_check
 
 tags_json_content = """
 {"zone": "east", "owner": "test", "exclude": "true", "group": "app-db-01"}
@@ -29,4 +29,4 @@ def test_tags_json_bytes():
 
 
 def test_tags_empty():
-    assert 'Empty output.' in skip_exception_check(Tags)
+    assert 'Empty output.' in skip_component_check(Tags)

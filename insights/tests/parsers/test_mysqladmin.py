@@ -1,7 +1,7 @@
-import pytest
 import doctest
+import pytest
 
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import mysqladmin
 from insights.parsers.mysqladmin import MysqladminVars, MysqladminStatus
 from insights.tests import context_wrap
@@ -31,7 +31,7 @@ def test_mysqladmin_status():
 
 
 def test_mysqlstat_blank_input():
-    with pytest.raises(SkipException) as sc:
+    with pytest.raises(SkipComponent) as sc:
         MysqladminStatus(context_wrap(BLANK_SAMPLE))
     assert "Content is empty." in str(sc.value)
 
@@ -106,7 +106,7 @@ INPUT_FORAMT_WRONG = """
 
 
 def test_empty_mysqladmin_var():
-    with pytest.raises(SkipException) as e_info:
+    with pytest.raises(SkipComponent) as e_info:
         MysqladminVars(context_wrap(""))
     assert "Empty content." in str(e_info.value)
 

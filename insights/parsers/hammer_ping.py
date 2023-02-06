@@ -34,7 +34,7 @@ Examples:
     ['elasticsearch', 'foreman_tasks']
 """
 from insights.core import CommandParser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -81,7 +81,7 @@ class HammerPing(CommandParser, dict):
         service_name = None
         content = list(filter(None, (line.split(comment_char, 1)[0].rstrip() for line in content)))
         if not content:
-            raise SkipException("Empty output.")
+            raise SkipComponent("Empty output.")
 
         for line in content:
             items = [item for item in line.split(':', 1)]

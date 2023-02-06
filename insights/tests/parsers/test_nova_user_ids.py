@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import nova_user_ids
 from insights.tests import context_wrap
 
@@ -34,12 +34,12 @@ def test_nova_uid():
     assert nova_uid.data == 162
 
     # 'nova' user not found
-    with pytest.raises(SkipException) as ex:
+    with pytest.raises(SkipComponent) as ex:
         nova_user_ids.NovaUID(context_wrap(NOVA_USER_NOT_FOUND))
     assert '' in str(ex)
 
     # Blank input
-    with pytest.raises(SkipException) as ex:
+    with pytest.raises(SkipComponent) as ex:
         nova_user_ids.NovaUID(context_wrap(''))
     assert '' in str(ex)
 
@@ -54,12 +54,12 @@ def test_nova_migration_uid():
     assert nova_migration_uid.data == 153
 
     # 'nova_migration' user not found
-    with pytest.raises(SkipException) as ex:
+    with pytest.raises(SkipComponent) as ex:
         nova_user_ids.NovaMigrationUID(context_wrap(NOVA_MIGRATION_USER_NOT_FOUND))
     assert '' in str(ex)
 
     # Blank input
-    with pytest.raises(SkipException) as ex:
+    with pytest.raises(SkipComponent) as ex:
         nova_user_ids.NovaMigrationUID(context_wrap(''))
     assert '' in str(ex)
 

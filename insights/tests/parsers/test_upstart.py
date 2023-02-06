@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import upstart
 from insights.parsers.upstart import UpstartInitctlList
 from insights.tests import context_wrap
@@ -68,7 +68,7 @@ def test_upstart():
 
 
 def test_execp_upstart():
-    with pytest.raises(SkipException) as exc:
+    with pytest.raises(SkipComponent) as exc:
         UpstartInitctlList(context_wrap(''))
     assert 'No Contents' in str(exc.value)
 
