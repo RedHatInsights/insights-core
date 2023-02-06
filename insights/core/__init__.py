@@ -14,8 +14,7 @@ from fnmatch import fnmatch
 
 from insights.contrib.ConfigParser import NoOptionError, NoSectionError
 from insights.core import ls_parser
-from insights.core.exceptions import ParseException, SkipException
-from insights.core.plugins import ContentException
+from insights.core.exceptions import ContentException, ParseException, SkipComponent, SkipException  # noqa: F401
 from insights.core.serde import deserializer, serializer
 from insights.parsr import iniparser
 from insights.parsr.query import Directive, Entry, Result, Section, compile_queries
@@ -355,11 +354,11 @@ class ConfigParser(Parser, ConfigComponent):
     Base Insights component class for Parsers of configuration files.
 
     Raises:
-        SkipException: When input content is empty.
+        SkipComponent: When input content is empty.
     """
     def parse_content(self, content):
         if not content:
-            raise SkipException('Empty content.')
+            raise SkipComponent('Empty content.')
         self.content = content
         self.doc = self.parse_doc(content)
 
@@ -404,7 +403,7 @@ class ConfigCombiner(ConfigComponent):
             if c.file_name == name:
                 return c
 
-        raise SkipException("The main conf {main_conf} doesn't exist.".format(main_conf=name))
+        raise SkipComponent("The main conf {main_conf} doesn't exist.".format(main_conf=name))
 
 
 class ContainerConfigCombiner(ConfigCombiner):
@@ -763,12 +762,12 @@ class YAMLParser(Parser, LegacyItemAccess):
             else:
                 self.data = yaml.load(content, Loader=SafeLoader)
             if self.data is None:
-                raise SkipException("There is no data")
+                raise SkipComponent("There is no data")
             if not isinstance(self.data, (dict, list)):
                 raise ParseException("YAML didn't produce a dictionary or list.")
-        except SkipException as se:
+        except SkipComponent as se:
             tb = sys.exc_info()[2]
-            six.reraise(SkipException, SkipException(str(se)), tb)
+            six.reraise(SkipComponent, SkipComponent(str(se)), tb)
         except:
             tb = sys.exc_info()[2]
             cls = self.__class__
@@ -788,11 +787,11 @@ class JSONParser(Parser, LegacyItemAccess):
             else:
                 self.data = json.loads(content)
             if self.data is None:
-                raise SkipException("There is no data")
+                raise SkipComponent("There is no data")
         except:
             # If content is empty then raise a skip exception instead of a parse exception.
             if not content:
-                raise SkipException("Empty output.")
+                raise SkipComponent("Empty output.")
             else:
                 tb = sys.exc_info()[2]
                 cls = self.__class__

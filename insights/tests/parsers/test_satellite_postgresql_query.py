@@ -1,8 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import ParseException, SkipException
-from insights.core.plugins import ContentException
+from insights.core.exceptions import ContentException, ParseException, SkipComponent
 from insights.parsers import satellite_postgresql_query
 from insights.tests import context_wrap
 
@@ -245,7 +244,7 @@ def test_basic_output_with_satellite_admin_setting():
         satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_POSTGRESQL_WRONG_3))
     with pytest.raises(ValueError):
         satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_POSTGRESQL_WRONG_4))
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_POSTGRESQL_WRONG_5))
 
 
@@ -305,7 +304,7 @@ def test_satellite_katello_empty_url_repositories():
     assert table[0]['id'] == '1'
     assert table[0]['name'] == 'Puppet_Base'
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         satellite_postgresql_query.SatelliteKatelloEmptyURLRepositories(context_wrap(SATELLITE_QUERY_DATA2))
 
     with pytest.raises(ValueError):
@@ -322,7 +321,7 @@ def test_satellite_qulified_capsules():
     assert len(capsules) == 2
     assert capsules[0]['name'] == 'capsule1.test.com'
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         satellite_postgresql_query.SatelliteQualifiedCapsules(context_wrap(SATELLITE_CAPSULES_WITH_BACKGROUND_DOWNLOADPOLICY_2))
 
 
@@ -348,7 +347,7 @@ def test_satellite_provision_params():
 
 
 def test_satellite_provision_params_excep():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         satellite_postgresql_query.SatelliteProvisionParamSettings(context_wrap(SATELLITE_PROVISION_PARAMETERS_HIT_2))
 
 

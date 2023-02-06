@@ -1,8 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
-from insights.core.plugins import ContentException
+from insights.core.exceptions import ContentException, SkipComponent
 from insights.parsers import postconf
 from insights.parsers.postconf import PostconfBuiltin, Postconf, _Postconf
 from insights.tests import context_wrap
@@ -23,7 +22,7 @@ command not found
 
 
 def test_PostconfBuiltin():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         PostconfBuiltin(context_wrap(V_OUT1))
 
     with pytest.raises(ContentException):
@@ -37,7 +36,7 @@ def test_PostconfBuiltin():
 
 
 def test_Postconf():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         Postconf(context_wrap(V_OUT1))
 
     with pytest.raises(ContentException):
@@ -51,16 +50,16 @@ def test_Postconf():
 
 
 def test_empty():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         PostconfBuiltin(context_wrap(""))
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         Postconf(context_wrap(""))
 
 
 def test_invalid():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         PostconfBuiltin(context_wrap("asdf"))
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         Postconf(context_wrap("asdf"))
 
 

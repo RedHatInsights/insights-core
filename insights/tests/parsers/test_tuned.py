@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import tuned
 from insights.parsers.tuned import Tuned
 from insights.tests import context_wrap
@@ -94,7 +94,7 @@ def test_tuned_profile():
     assert 'sap-netweaver' in tuned_output.get('available')
     assert 'virtual-guest-vmware' in tuned_output.get('available')
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         Tuned(context_wrap(''))
 
 

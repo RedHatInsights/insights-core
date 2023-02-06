@@ -6,7 +6,7 @@ Shared parser for parsing the ``/usr/sap/hostctrl/exe/host_profile`` file.
 
 """
 from insights.core import LegacyItemAccess, Parser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.filters import add_filter
 from insights.core.plugins import parser
 from insights.parsers import get_active_lines
@@ -48,6 +48,6 @@ class SAPHostProfile(Parser, LegacyItemAccess):
         self.data = {}
         for line in get_active_lines(content):
             if '=' not in line:
-                raise SkipException("Incorrect line: '{0}'".format(line))
+                raise SkipComponent("Incorrect line: '{0}'".format(line))
             key, val = line.split('=', 1)
             self.data[key.strip()] = val.strip()

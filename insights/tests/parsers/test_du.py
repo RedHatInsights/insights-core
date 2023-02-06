@@ -1,8 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import ParseException, SkipException
-from insights.core.plugins import ContentException
+from insights.core.exceptions import ContentException, ParseException, SkipComponent
 from insights.parsers import du
 from insights.parsers.du import DiskUsage
 from insights.tests import context_wrap
@@ -122,7 +121,7 @@ def test_du():
 
 def test_du_bad():
 
-    with pytest.raises(SkipException) as exc:
+    with pytest.raises(SkipComponent) as exc:
         DiskUsage(context_wrap(DU_ACCESS_ERROR))
     assert 'No data parsed' in str(exc)
 

@@ -24,6 +24,7 @@ class InsightsArchiveSpecs(Specs):
     azure_instance_type = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_azure_instance_type")
     azure_instance_plan = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_azure_instance_plan")
     bios_uuid = simple_file("insights_commands/dmidecode_-s_system-uuid")
+    blacklisted_specs = simple_file("blacklisted_specs.txt")
     blkid = simple_file("insights_commands/blkid_-c_.dev.null")
     brctl_show = simple_file("insights_commands/brctl_show")
     ceph_df_detail = first_file(["insights_commands/ceph_df_detail_-f_json-pretty", "insights_commands/ceph_df_detail_-f_json"])
@@ -278,5 +279,8 @@ class InsightsArchiveSpecs(Specs):
     virt_what = simple_file("insights_commands/virt-what")
     wc_proc_1_mountinfo = simple_file("insights_commands/wc_-l_.proc.1.mountinfo")
     yum_list_available = simple_file("insights_commands/yum_-C_--noplugins_list_available")
-    yum_repolist = first_file(["insights_commands/yum_-C_--noplugins_repolist", "insights_commands/yum_-C_repolist"])
+    yum_repolist = first_file([
+        "insights_commands/yum_-d_2_-C_--noplugins_repolist",
+        "insights_commands/yum_-C_--noplugins_repolist",
+        "insights_commands/yum_-C_repolist"])
     yum_updateinfo = simple_file("insights_commands/yum_-C_updateinfo_list")

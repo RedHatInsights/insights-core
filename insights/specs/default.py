@@ -600,8 +600,10 @@ class DefaultSpecs(Specs):
     sshd_config = simple_file("/etc/ssh/sshd_config")
     sshd_config_perms = simple_command("/bin/ls -lH /etc/ssh/sshd_config")
     sssd_config = simple_file("/etc/sssd/sssd.conf")
-    subscription_manager_facts = simple_command("/usr/sbin/subscription-manager facts")
-    subscription_manager_id = simple_command("/usr/sbin/subscription-manager identity")  # use "/usr/sbin" here, BZ#1690529
+    subscription_manager_facts = simple_command("/usr/sbin/subscription-manager facts",
+                                                override_env={"LC_ALL": "C.UTF-8"})
+    subscription_manager_id = simple_command("/usr/sbin/subscription-manager identity",  # use "/usr/sbin" here, BZ#1690529
+                                             override_env={"LC_ALL": "C.UTF-8"})
     subscription_manager_installed_product_ids = simple_command("/usr/bin/find /etc/pki/product-default/ /etc/pki/product/ -name '*pem' -exec rct cat-cert --no-content '{}' \;")
     sudoers = glob_file(["/etc/sudoers", "/etc/sudoers.d/*"])
     swift_object_expirer_conf = first_file(["/var/lib/config-data/puppet-generated/swift/etc/swift/object-expirer.conf", "/etc/swift/object-expirer.conf"])
@@ -675,7 +677,7 @@ class DefaultSpecs(Specs):
     yum_conf = simple_file("/etc/yum.conf")
     yum_list_available = simple_command("yum -C --noplugins list available", signum=signal.SIGTERM)
     yum_log = simple_file("/var/log/yum.log")
-    yum_repolist = simple_command("/usr/bin/yum -C --noplugins repolist", override_env={"LC_ALL": ""},
+    yum_repolist = simple_command("/usr/bin/yum -d 2 -C --noplugins repolist", override_env={"LC_ALL": ""},
                                   signum=signal.SIGTERM)
     yum_repos_d = glob_file("/etc/yum.repos.d/*.repo")
     yum_updates = yum_updates.yum_updates

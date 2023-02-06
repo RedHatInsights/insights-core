@@ -38,7 +38,7 @@ from __future__ import print_function
 import json
 
 from insights.core import CommandParser, LegacyItemAccess, Parser
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.filters import add_filter
 from insights.core.plugins import parser
 from insights.parsers import get_active_lines, optlist_to_dict, parse_fixed_table
@@ -243,7 +243,7 @@ class PvsAll(Pvs):
     pass
 
 
-@parser(Specs.pvs)
+@parser(Specs.pvs_headings)
 class PvsHeadings(LvmHeadings):
     """
     Parses the output of the
@@ -395,7 +395,7 @@ class VgsAll(Vgs):
     pass
 
 
-@parser(Specs.vgs)
+@parser(Specs.vgs_headings)
 class VgsHeadings(LvmHeadings):
     """
     Parses output of the
@@ -588,7 +588,7 @@ class LvsAll(Lvs):
     pass
 
 
-@parser(Specs.lvs)
+@parser(Specs.lvs_headings)
 class LvsHeadings(LvmHeadings):
     """
     Process output of the command `/sbin/lvs -a -o +lv_tags,devices --config="global{locking_type=0}"`.
@@ -748,7 +748,7 @@ class LvmSystemDevices(Parser, dict):
         'phl0clFbAokp9UXqbIgI5YYQxuTIJVkD'
 
     Raises:
-        SkipException: when there is no device info.
+        SkipComponent: when there is no device info.
     """
 
     def parse_content(self, content):
@@ -757,7 +757,7 @@ class LvmSystemDevices(Parser, dict):
                 dict_info = optlist_to_dict(line, opt_sep=None)
                 self[dict_info.pop('IDNAME')] = dict_info
         if not self:
-            raise SkipException("No valid content.")
+            raise SkipComponent("No valid content.")
 
 
 if __name__ == "__main__":

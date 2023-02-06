@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import saphostexec
 from insights.parsers.saphostexec import SAPHostExecStatus, SAPHostExecVersion
 from insights.tests import context_wrap
@@ -56,7 +56,7 @@ def test_saphostexec_status_abnormal():
         SAPHostExecStatus(context_wrap(STATUS_ABNORMAL))
     assert "Incorrect line: 'sapstartsrv'" in str(s)
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         SAPHostExecStatus(context_wrap(''))
 
 
@@ -73,7 +73,7 @@ def test_saphostexec_status():
 
 
 def test_saphostexec_version_abnormal():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         SAPHostExecVersion(context_wrap(''))
 
 

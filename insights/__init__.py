@@ -30,10 +30,10 @@ from contextlib import contextmanager
 from insights.core import (CommandParser, ContainerParser, FileListing, IniConfigFile, JSONParser, LegacyItemAccess,  # noqa: F401
                            LogFileOutput, Parser, Scannable, SysconfigOptions, Syslog, XMLParser, YAMLParser, dr,  # noqa: F401
                            taglang)
-from insights.core.archives import COMPRESSION_TYPES, InvalidArchive, InvalidContentType, extract
+from insights.core.archives import COMPRESSION_TYPES, extract
 from insights.core.context import (ClusterArchiveContext, ExecutionContext, HostContext,  # noqa: F401
                                    HostArchiveContext, SerializedArchiveContext)
-from insights.core.exceptions import SkipComponent  # noqa: F401
+from insights.core.exceptions import InvalidArchive, InvalidContentType, SkipComponent  # noqa: F401
 from insights.core.filters import add_filter, apply_filters, get_filters  # noqa: F401
 from insights.core.hydration import create_context, initialize_broker  # noqa: F401
 from insights.core.plugins import (combiner, condition, datasource, fact, incident, make_fail, make_fingerprint,  # noqa: F401
@@ -266,9 +266,8 @@ def _load_context(path):
     return dr.get_component(path)
 
 
-def run(component=None, root=None, print_summary=False,
-        context=None, inventory=None, print_component=None):
-
+def run(component=None, root=None, print_summary=False, context=None, inventory=None, print_component=None,
+        store_skips=False):
     args = None
     formatters = None
 
@@ -293,6 +292,8 @@ def run(component=None, root=None, print_summary=False,
         p.add_argument("--context", help="Execution Context. Defaults to HostContext if an archive isn't passed.")
         p.add_argument("--no-load-default", help="Don't load the default plugins.", action="store_true")
         p.add_argument("--parallel", help="Execute rules in parallel.", action="store_true")
+        p.add_argument("--show-skips", help="Capture skips in the broker for troubleshooting.", action="store_true",
+                       default=False)
         p.add_argument("--tags", help="Expression to select rules by tag.")
 
         class Args(object):
@@ -385,6 +386,10 @@ def run(component=None, root=None, print_summary=False,
         graph = dr.COMPONENTS[dr.GROUPS.single]
 
     broker = dr.Broker()
+    if args:
+        broker.store_skips = args.show_skips
+    else:
+        broker.store_skips = store_skips
 
     if args and args.bare:
         ctx = ExecutionContext()  # dummy context that no spec depend on. needed for filters to work

@@ -1,6 +1,6 @@
 import pytest
 
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers.php_ini import PHPConf
 from insights.tests import context_wrap
 
@@ -202,7 +202,7 @@ def test_php_conf_default():
 
 
 def test_php_conf_empty():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         PHPConf(context_wrap(INI_EMPTY))
 
 

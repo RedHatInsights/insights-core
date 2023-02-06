@@ -10,7 +10,7 @@ Parsers the file `/etc/foreman-installer/custom-hiera.yaml`
 
 """
 from insights.core import YAMLParser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -29,5 +29,5 @@ class CustomHiera(YAMLParser):
     def parse_content(self, content):
         try:
             super(CustomHiera, self).parse_content(content)
-        except SkipException:
+        except SkipComponent:
             pass

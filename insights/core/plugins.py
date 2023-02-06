@@ -36,20 +36,10 @@ from six import StringIO
 from insights import settings
 from insights.core import dr
 from insights.core.context import HostContext
-from insights.core.exceptions import SkipComponent
-from insights.util.subproc import CalledProcessError
+from insights.core.exceptions import (CalledProcessError, ContentException, SkipComponent, TimeoutException,
+                                      ValidationException)
 
 log = logging.getLogger(__name__)
-
-
-class ContentException(SkipComponent):
-    """ Raised whenever a :class:`datasource` fails to get data. """
-    pass
-
-
-class TimeoutException(Exception):
-    """ Raised whenever a :class:`datasource` hits the set timeout value. """
-    pass
 
 
 class PluginType(dr.ComponentType):
@@ -177,14 +167,18 @@ class parser(PluginType):
                 r = self.component(d)
                 if r is not None:
                     results.append(r)
-            except SkipComponent:
-                pass
             except ContentException as ce:
                 log.debug(ce)
                 broker.add_exception(self.component, ce, traceback.format_exc())
                 if not self.continue_on_error:
                     exception = True
                     break
+            except SkipComponent as sc:
+                if broker.store_skips:
+                    log.warning(sc)
+                    broker.add_exception(component, sc, traceback.format_exc())
+                else:
+                    pass
             except CalledProcessError as cpe:
                 log.debug(cpe)
                 broker.add_exception(self.component, cpe, traceback.format_exc())
@@ -193,7 +187,7 @@ class parser(PluginType):
                     break
             except Exception as ex:
                 tb = traceback.format_exc()
-                log.warn(tb)
+                log.warning(tb)
                 broker.add_exception(self.component, ex, tb)
                 if not self.continue_on_error:
                     exception = True
@@ -391,13 +385,6 @@ def is_rule(component):
 
 def is_component(obj):
     return bool(dr.get_component_type(obj))
-
-
-class ValidationException(Exception):
-    def __init__(self, msg, r=None):
-        if r:
-            msg = "%s: %s" % (msg, r)
-        super(ValidationException, self).__init__(msg)
 
 
 class Response(dict):

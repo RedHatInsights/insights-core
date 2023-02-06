@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import smbstatus
 from insights.parsers.smbstatus import SmbstatusS, Smbstatusp, Statuslist
 from insights.tests import context_wrap
@@ -78,7 +78,7 @@ def test_smbstatusp():
 
 
 def test_statuslist_empty_exp():
-    with pytest.raises(SkipException) as pe:
+    with pytest.raises(SkipComponent) as pe:
         Statuslist(context_wrap(''))
         assert "Empty content." in str(pe)
 
@@ -100,7 +100,7 @@ def test_smbstatusp_exp():
         Smbstatusp(context_wrap(SMBSTATUSP_EXP1))
         assert "Cannot find the header line." in str(pe)
 
-    with pytest.raises(SkipException) as pe:
+    with pytest.raises(SkipComponent) as pe:
         Smbstatusp(context_wrap(SMBSTATUSP_EXP2))
         assert "Empty content." in str(pe)
 

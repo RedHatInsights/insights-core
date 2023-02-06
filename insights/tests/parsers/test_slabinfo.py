@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import slabinfo
 from insights.parsers.slabinfo import SlabInfo
 from insights.tests import context_wrap
@@ -183,22 +183,22 @@ def test_slabinfo_doc_examples():
 
 
 def test_slabinfo_exception():
-    with pytest.raises(SkipException) as exc:
+    with pytest.raises(SkipComponent) as exc:
         pslabinfo = SlabInfo(context_wrap(SLABINFO_DETAILS))
         assert pslabinfo is None
     assert 'No Contents' in str(exc)
 
-    with pytest.raises(SkipException) as exc:
+    with pytest.raises(SkipComponent) as exc:
         pslabinfo_1 = SlabInfo(context_wrap(SLABINFO_DETAILS_2))
         assert pslabinfo_1 is None
     assert 'Invalid Contents' in str(exc)
 
-    with pytest.raises(SkipException) as exc:
+    with pytest.raises(SkipComponent) as exc:
         pslabinfo_2 = SlabInfo(context_wrap(SLABINFO_DETAILS_3))
         assert pslabinfo_2 is None
     assert 'Invalid Contents' in str(exc)
 
-    with pytest.raises(SkipException) as exc_1:
+    with pytest.raises(SkipComponent) as exc_1:
         pslabinfo_3 = SlabInfo(context_wrap(SLABINFO_DETAILS_LEN_MISS_MATCH))
         assert pslabinfo_3 is None
     assert 'Invalid Contents' in str(exc_1)

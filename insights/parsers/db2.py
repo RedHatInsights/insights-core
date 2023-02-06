@@ -8,7 +8,7 @@ Db2ls - command ``db2ls -a -c``
 -------------------------------
 """
 from insights.core import CommandParser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -41,7 +41,7 @@ class Db2ls(CommandParser, list):
 
     def parse_content(self, content):
         if not content:
-            raise SkipException("Empty.")
+            raise SkipComponent("Empty.")
         keys = []
         for line in content:
             if not keys and line.startswith('#PATH'):
@@ -51,4 +51,4 @@ class Db2ls(CommandParser, list):
             line_splits.extend([i.strip(': ') for i in line_splits.pop(-1).rsplit(':', 1)])
             self.append(dict(zip(keys, line_splits)))
         if len(self) == 0:
-            raise SkipException('Nothing to parse.')
+            raise SkipComponent('Nothing to parse.')

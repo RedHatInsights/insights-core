@@ -9,7 +9,7 @@ LpstatPrinters - command ``/usr/bin/lpstat -p``
 LpstatProtocol - command ``/usr/bin/lpstat -v``
 """
 from insights.core import CommandParser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -114,7 +114,7 @@ class LpstatProtocol(CommandParser, dict):
     """
     def parse_content(self, content):
         if not content:
-            raise SkipException("No Valid Output")
+            raise SkipComponent("No Valid Output")
         data = {}
         for line in content:
             if line.startswith("device for "):
@@ -123,5 +123,5 @@ class LpstatProtocol(CommandParser, dict):
                 printer = line_split[0].split()[-1].strip()
                 data[printer] = protocol
         if not data:
-            raise SkipException("No Valid Output")
+            raise SkipComponent("No Valid Output")
         self.update(data)

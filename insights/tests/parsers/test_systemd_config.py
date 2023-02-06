@@ -1,8 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
-from insights.core.plugins import ContentException
+from insights.core.exceptions import ContentException, SkipComponent
 from insights.parsers.systemd import config
 from insights.tests import context_wrap
 
@@ -277,7 +276,7 @@ def test_systemd_dnsmasq_conf():
 
 
 def test_systemd_empty():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         assert config.SystemdLogindConf(context_wrap('')) is None
 
 

@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import modinfo
 from insights.parsers.modinfo import ModInfoEach, ModInfoAll, KernelModulesInfo
 from insights.tests import context_wrap
@@ -206,11 +206,11 @@ def test_kernel_modules_info():
     assert modules_info['igb'].module_name == 'igb'
     assert modules_info['igb'].module_path == '/lib/modules/3.10.0-327.10.1.el7.jump7.x86_64/kernel/drivers/net/ethernet/intel/igb/igb.ko'
 
-    with pytest.raises(SkipException) as exc:
+    with pytest.raises(SkipComponent) as exc:
         KernelModulesInfo(context_wrap(MODINFO_NO_1))
     assert 'No Parsed Contents' in str(exc)
 
-    with pytest.raises(SkipException) as exc:
+    with pytest.raises(SkipComponent) as exc:
         KernelModulesInfo(context_wrap(''))
     assert 'No Contents' in str(exc)
 

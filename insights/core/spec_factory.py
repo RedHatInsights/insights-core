@@ -14,9 +14,9 @@ from subprocess import call
 
 from insights.core import blacklist, dr
 from insights.core.context import ExecutionContext, FSRoots, HostContext
-from insights.core.exceptions import SkipComponent
+from insights.core.exceptions import BlacklistedSpec, ContentException, SkipComponent
 from insights.core.filters import _add_filter, get_filters
-from insights.core.plugins import ContentException, component, datasource, is_datasource
+from insights.core.plugins import component, datasource, is_datasource
 from insights.core.serde import deserializer, serializer
 from insights.util import fs, streams, which
 from insights.util.subproc import Pipeline
@@ -178,7 +178,7 @@ class FileProvider(ContentProvider):
     def validate(self):
         if not blacklist.allow_file("/" + self.relative_path):
             log.warning("WARNING: Skipping file %s", "/" + self.relative_path)
-            raise SkipComponent()
+            raise BlacklistedSpec()
 
         if not os.path.exists(self.path):
             raise ContentException("%s does not exist." % self.path)
@@ -333,7 +333,7 @@ class CommandOutputProvider(ContentProvider):
     def validate(self):
         if not blacklist.allow_command(self.cmd):
             log.warning("WARNING: Skipping command %s", self.cmd)
-            raise SkipComponent()
+            raise BlacklistedSpec()
 
         cmd = shlex.split(self.cmd)[0]
         if not which(cmd, env=self._env):

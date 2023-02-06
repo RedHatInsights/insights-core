@@ -1,8 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import ParseException, SkipException
-from insights.core.plugins import ContentException
+from insights.core.exceptions import ContentException, ParseException, SkipComponent
 from insights.parsers import azure_instance
 from insights.parsers.azure_instance import AzureInstanceID, AzureInstancePlan, AzureInstanceType
 from insights.tests import context_wrap
@@ -65,7 +64,7 @@ curl: (28) connect() timed out!
 
 # Test AzureInstanceID
 def test_azure_instance_id_ab_empty():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         AzureInstanceID(context_wrap(''))
 
 
@@ -77,13 +76,13 @@ def test_azure_instance_id():
 
 # Test AzureInstanceType
 def test_azure_instance_type_ab_other():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         AzureInstanceType(context_wrap(AZURE_TYPE_AB_1))
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         AzureInstanceType(context_wrap(AZURE_TYPE_AB_2))
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         AzureInstanceType(context_wrap(AZURE_TYPE_AB_3))
 
     with pytest.raises(ParseException) as pe:
@@ -95,7 +94,7 @@ def test_azure_instance_type_ab_other():
 
 
 def test_azure_instance_type_ab_empty():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         AzureInstanceType(context_wrap(''))
 
 
@@ -126,16 +125,16 @@ def test_azure_instance_type_stats():
 
 # Test AzureInstancePlan
 def test_azure_instance_plan_ab_other():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         AzureInstancePlan(context_wrap(AZURE_PLAN_AB_1))
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         AzureInstancePlan(context_wrap(AZURE_PLAN_AB_2))
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         AzureInstancePlan(context_wrap(AZURE_PLAN_AB_3))
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         AzureInstancePlan(context_wrap(''))
 
     with pytest.raises(ParseException):
