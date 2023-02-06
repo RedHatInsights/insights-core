@@ -1,6 +1,13 @@
 from insights.util import deprecated
 
 
+class BlacklistedSpec(Exception):
+    """
+    Exception to be thrown when a blacklisted spec is found.
+    """
+    pass
+
+
 class CalledProcessError(Exception):
     """
     Raised if call fails.
