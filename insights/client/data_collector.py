@@ -15,6 +15,7 @@ from itertools import chain
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
 
+from insights.core.blacklist import BLACKLISTED_SPECS
 from insights.util import mangle
 from ..contrib.soscleaner import SOSCleaner
 from .utilities import _expand_paths, get_version_info, systemd_notify_init_thread, get_tags
@@ -131,6 +132,10 @@ class DataCollector(object):
         logger.debug("Writing blacklist report to archive...")
         self.archive.add_metadata_to_archive(
             json.dumps(blacklist_report), '/blacklist_report')
+
+        if BLACKLISTED_SPECS:
+            self.archive.add_metadata_to_archive(
+                json.dumps({"specs": BLACKLISTED_SPECS}), '/blacklisted_specs.txt')
 
     def _write_egg_release(self):
         logger.debug("Writing egg release to archive...")
@@ -327,11 +332,13 @@ class DataCollector(object):
                     'insights_commands', mangle.mangle_command(c['command']))
             if c['command'] in rm_commands or c.get('symbolic_name') in rm_commands:
                 logger.warn("WARNING: Skipping command %s", c['command'])
+                BLACKLISTED_SPECS.append(c['symbolic_name'])
             elif self.mountpoint == "/" or c.get("image"):
                 cmd_specs = self._parse_command_spec(c, conf['pre_commands'])
                 for s in cmd_specs:
                     if s['command'] in rm_commands:
                         logger.warn("WARNING: Skipping command %s", s['command'])
+                        BLACKLISTED_SPECS.append(s['symbolic_name'])
                         continue
                     cmd_spec = InsightsCommand(self.config, s, self.mountpoint)
                     self.archive.add_to_archive(cmd_spec)
@@ -343,12 +350,14 @@ class DataCollector(object):
         for f in conf['files']:
             if f['file'] in rm_files or f.get('symbolic_name') in rm_files:
                 logger.warn("WARNING: Skipping file %s", f['file'])
+                BLACKLISTED_SPECS.append(f['symbolic_name'])
             else:
                 file_specs = self._parse_file_spec(f)
                 for s in file_specs:
                     # filter files post-wildcard parsing
                     if s['file'] in rm_conf.get('files', []):
                         logger.warn("WARNING: Skipping file %s", s['file'])
+                        BLACKLISTED_SPECS.append(s['symbolic_name'])
                     else:
                         file_spec = InsightsFile(s, self.mountpoint)
                         self.archive.add_to_archive(file_spec)
@@ -361,11 +370,13 @@ class DataCollector(object):
                 if g.get('symbolic_name') in rm_files:
                     # ignore glob via symbolic name
                     logger.warn("WARNING: Skipping file %s", g['glob'])
+                    BLACKLISTED_SPECS.append(g['symbolic_name'])
                 else:
                     glob_specs = self._parse_glob_spec(g)
                     for g in glob_specs:
                         if g['file'] in rm_files:
                             logger.warn("WARNING: Skipping file %s", g['file'])
+                            BLACKLISTED_SPECS.append(g['symbolic_name'])
                         else:
                             glob_spec = InsightsFile(g, self.mountpoint)
                             self.archive.add_to_archive(glob_spec)
