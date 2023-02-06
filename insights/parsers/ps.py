@@ -4,7 +4,7 @@ Ps - command ``ps auxww`` and others
 
 This module provides processing for the various outputs of the ``ps`` command.
 """
-from insights.core import CommandParser
+from insights.core import CommandParser, ContainerParser
 from insights.core.exceptions import ParseException
 from insights.core.filters import add_filter
 from insights.core.plugins import parser
@@ -352,9 +352,14 @@ class PsAuxcww(PsAuxww):
 
 add_filter(Specs.ps_aux, "COMMAND")
 
-
 @parser(Specs.ps_aux)
 class PsAux(PsAuxww):
+    pass
+
+
+add_filter(Specs.container_ps_aux, "COMMAND")
+@parser(Specs.container_ps_aux)
+class ContainerPsAux(ContainerParser, PsAuxww):
     pass
 
 

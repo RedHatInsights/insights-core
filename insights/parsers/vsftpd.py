@@ -16,6 +16,7 @@ from .. import Parser, LegacyItemAccess, parser
 from ..parsers.pam import PamDConf
 from ..parsers import split_kv_pairs
 from insights.specs import Specs
+from insights.core import ContainerParser
 
 
 @parser(Specs.vsftpd)
@@ -59,6 +60,39 @@ class VsftpdPamConf(PamDConf):
 class VsftpdConf(Parser, LegacyItemAccess):
     """
     Parsing for `/etc/vsftpd.conf`.  Key=value pairs are stored in a
+    dictionary, made available directly through the object itself thanks to
+    the :py:class:`insights.core.LegacyItemAccess` mixin.
+
+    Reference:
+        https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/3/html/Reference_Guide/s1-ftp-vsftpd-conf.html
+
+    Sample content::
+
+        # No anonymous login
+        anonymous_enable=NO
+        # Let local users login
+        local_enable=YES
+
+        # Write permissions
+        write_enable=YES
+
+    Examples:
+        >>> conf = shared[VsftpdConf]
+        >>> 'anonymous_enable' in conf
+        True
+        >>> 'chmod_enable' in conf
+        False
+        >>> conf['anonymous_enable']
+        'NO'
+    """
+    def parse_content(self, content):
+        self.data = split_kv_pairs(content, ordered=True)
+
+
+@parser(Specs.container_vsftpd_conf)
+class ContainerVsftpdConf(ContainerParser, VsftpdConf):
+    """
+    Parsing for `/etc/vsftpd.conf` from the containers.  Key=value pairs are stored in a
     dictionary, made available directly through the object itself thanks to
     the :py:class:`insights.core.LegacyItemAccess` mixin.
 
