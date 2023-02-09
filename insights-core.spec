@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.1.5
+Version:        3.1.6
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,15 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Feb 09 2023 Xiangce Liu <xiangceliu@redhat.com> 3.1.6-1
+- chore: remove unused spec lsinitrd_kdump_image (#3644) (986222045@qq.com)
+- fix: py26 test: install libssl1.0-dev manually (#3675)
+  (xiangceliu@redhat.com)
+- chore: use the unique mangle_command for specs (#3673)
+  (xiangceliu@redhat.com)
+- feat: Capture blacklisted specs inside archive (#3664) (rblakley@redhat.com)
+- Change sos archive lvm spec names (#3672) (rblakley@redhat.com)
+
 * Thu Feb 02 2023 Lizhong Chen <lichen@redhat.com> 3.1.5-1
 - fix: Enhance datasource kernel_module_filters to check the loaded modules
   (#3670) (jiazhang@redhat.com)
