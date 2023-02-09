@@ -2,6 +2,14 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.1.6](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.6) (2023-02-09)
+
+- chore: remove unused spec lsinitrd_kdump_image ([PR 3644](https://github.com/RedHatInsights/insights-core/pull/3644))
+- fix: py26 test: install libssl1.0-dev manually ([PR 3675](https://github.com/RedHatInsights/insights-core/pull/3675))
+- chore: use the unique mangle_command for specs ([PR 3673](https://github.com/RedHatInsights/insights-core/pull/3673))
+- feat: Capture blacklisted specs inside archive ([PR 3664](https://github.com/RedHatInsights/insights-core/pull/3664))
+- Change sos archive lvm spec names ([PR 3672](https://github.com/RedHatInsights/insights-core/pull/3672))
+
 ## [insights-core-3.1.5](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.5) (2023-02-02)
 
 - fix: Enhance datasource kernel_module_filters to check the loaded modules ([PR 3670](https://github.com/RedHatInsights/insights-core/pull/3670))
