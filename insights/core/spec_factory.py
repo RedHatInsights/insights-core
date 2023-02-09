@@ -19,6 +19,7 @@ from insights.core.filters import _add_filter, get_filters
 from insights.core.plugins import component, datasource, is_datasource
 from insights.core.serde import deserializer, serializer
 from insights.util import fs, streams, which
+from insights.util.mangle import mangle_command
 from insights.util.subproc import Pipeline
 
 log = logging.getLogger(__name__)
@@ -48,39 +49,6 @@ def enc(s):
 
 def escape(s):
     return re.sub(r"([=\(\)|\-_!@*~\"&/\\\^\$\=])", r"\\\1", s)
-
-
-def mangle_command(command, name_max=255):
-    """
-    Mangle a command line string into something suitable for use as the basename of a filename.
-    At minimum this function must remove slashes, but it also does other things to clean
-    the basename: removing directory names from the command name, replacing many non-
-    characters with undersores, in addition to replacing slashes with dots.
-
-    By default, curly braces, '{' and '}', are replaced with underscore, set 'has_variables'
-    to leave curly braces alone.
-
-    This function was copied from the function that insights-client uses to create the name it
-    to capture the output of the command.
-
-    Here, server side, it is used to figure out what file in the archive contains the output
-    a command.  Server side, the command may contain references to variables (names
-    matching curly braces) that will be expanded before the name is actually used as a file name.
-
-    To completly mimic the insights-client behavior, curly braces need to be replaced
-    underscores.  If the command has variable references, the curly braces must be left alone.
-    Set has_variables, to leave curly braces alone.
-
-    This implementation of 'has_variables' assumes that variable names only contain
-    that are not replaced by mangle_command.
-    """
-    pattern = r"[^\w\-\.\/]+"
-
-    mangledname = re.sub(r"^/(usr/|)(bin|sbin)/", "", command)
-    mangledname = re.sub(pattern, "_", mangledname)
-    mangledname = re.sub(r"/", ".", mangledname).strip(" ._-")
-    mangledname = mangledname[:name_max]
-    return mangledname
 
 
 class ContentProvider(object):
