@@ -260,7 +260,7 @@ class PartedL(CommandParser):
             if len(raw_line.strip()) == 0:
                 if is_last_line_empty:
                     # Fount this line as the second blank line
-                    device_tables.append(content[this_start_idx:idx-1])
+                    device_tables.append(content[this_start_idx:idx - 1])
                     this_start_idx = idx + 1
                     is_last_line_empty = False
                 else:

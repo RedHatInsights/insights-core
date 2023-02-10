@@ -79,7 +79,7 @@ Model: Linux device-mapper (linear) (dm)
 Disk /dev/mapper/rhel_home: 191GB
 Sector size (logical/physical): 512B/512B
 Partition Table: loop
-Disk Flags: 
+Disk Flags:
 
 Number  Start  End    Size   File system  Flags
  1      0.00B  191GB  191GB  xfs
@@ -89,7 +89,7 @@ Model: Linux device-mapper (linear) (dm)
 Disk /dev/mapper/rhel_iso: 161GB
 Sector size (logical/physical): 512B/512B
 Partition Table: loop
-Disk Flags: 
+Disk Flags:
 
 Number  Start  End    Size   File system  Flags
  1      0.00B  161GB  161GB  xfs
@@ -99,7 +99,7 @@ Model: Linux device-mapper (linear) (dm)
 Disk /dev/mapper/rhel_vms: 1611GB
 Sector size (logical/physical): 512B/512B
 Partition Table: loop
-Disk Flags: 
+Disk Flags:
 
 Number  Start  End     Size    File system  Flags
  1      0.00B  1611GB  1611GB  xfs
@@ -109,7 +109,7 @@ Model: Linux device-mapper (linear) (dm)
 Disk /dev/mapper/rhel_lvtest: 4194kB
 Sector size (logical/physical): 512B/512B
 Partition Table: loop
-Disk Flags: 
+Disk Flags:
 
 Number  Start  End     Size    File system  Flags
  1      0.00B  4194kB  4194kB  ext4
@@ -119,7 +119,7 @@ Model: Linux device-mapper (linear) (dm)
 Disk /dev/mapper/rhel_root: 107GB
 Sector size (logical/physical): 512B/512B
 Partition Table: loop
-Disk Flags: 
+Disk Flags:
 
 Number  Start  End    Size   File system  Flags
  1      0.00B  107GB  107GB  xfs
@@ -129,7 +129,7 @@ Model: Linux device-mapper (linear) (dm)
 Disk /dev/mapper/rhel_swap: 4295MB
 Sector size (logical/physical): 512B/512B
 Partition Table: loop
-Disk Flags: 
+Disk Flags:
 
 Number  Start  End     Size    File system     Flags
  1      0.00B  4295MB  4295MB  linux-swap(v1)
@@ -140,7 +140,7 @@ Model: VMware Virtual disk (scsi)
 Disk /dev/sda: 94371840s
 Sector size (logical/physical): 512B/512B
 Partition Table: gpt
-Disk Flags: 
+Disk Flags:
 
 Number  Start     End        Size       File system  Name                  Flags
  1      2048s     2099199s   2097152s   fat32        EFI System Partition  boot, esp
@@ -153,14 +153,14 @@ Model: VMware Virtual disk (scsi)
 Disk /dev/sdb: 75497472s
 Sector size (logical/physical): 512B/512B
 Partition Table: unknown
-Disk Flags: 
+Disk Flags:
 
 
 Model: VMware Virtual disk (scsi)
 Disk /dev/sdc: 15032385536s
 Sector size (logical/physical): 512B/512B
 Partition Table: msdos
-Disk Flags: 
+Disk Flags:
 
 Number  Start  End          Size         Type     File system  Flags
  1      2048s  4294967294s  4294965247s  primary  xfs
@@ -170,7 +170,7 @@ Model: VMware Virtual disk (scsi)
 Disk /dev/sdd: 629145600s
 Sector size (logical/physical): 512B/512B
 Partition Table: msdos
-Disk Flags: 
+Disk Flags:
 
 Number  Start  End         Size        Type     File system  Flags
  1      2048s  629145599s  629143552s  primary  xfs
@@ -368,7 +368,6 @@ Number  Start   End     Size    Type     File system  Flags
 def test_doc_examples():
     env = {
         'parted_results': PartedL(context_wrap(PARTED_DOC_TEST)),
-        #'Messages': messages.Messages
     }
     failed, total = doctest.testmod(parted, globs=env)
     assert failed == 0
