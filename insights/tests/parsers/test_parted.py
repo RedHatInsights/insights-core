@@ -197,6 +197,7 @@ Number  Start     End        Size       File system  Name                  Flags
  3      4196352s  83904511s  79708160s                                     lvm
 """.strip()
 
+
 def test_parted_partedl():
     context = context_wrap(PARTED_DATA)
     res = PartedL(context)
