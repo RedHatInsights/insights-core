@@ -41,8 +41,8 @@ Examples:
     >>> [device.disk for device in parted_results]
     ['/dev/sda', '/dev/sdb']
     >>> parted_info = parted_results.get('/dev/sda')
-    >>> parted_info.data
-    {'model': 'ATA TOSHIBA MG04ACA4 (scsi)', 'disk': '/dev/sda', 'size': '4001GB', 'sector_size': '512B/512B', 'partition_table': 'gpt', 'disk_flags': 'pmbr_boot'}
+    >>> sorted(parted_info.data.items())
+    [('disk', '/dev/sda'), ('disk_flags', 'pmbr_boot'), ('model', 'ATA TOSHIBA MG04ACA4 (scsi)'), ('partition_table', 'gpt'), ('sector_size', '512B/512B'), ('size', '4001GB')]
     >>> parted_info.data['model']
     'ATA TOSHIBA MG04ACA4 (scsi)'
     >>> parted_info.disk
@@ -56,8 +56,8 @@ Examples:
     'pmbr_boot'
     >>> len(parted_info.partitions)
     3
-    >>> parted_info.partitions[0].data
-    {'number': '1', 'start': '1049kB', 'end': '2097kB', 'size': '1049kB', 'file_system': '', 'name': '', 'flags': 'bios_grub'}
+    >>> sorted(parted_info.partitions[0].data.items())
+    [('end', '2097kB'), ('file_system', ''), ('flags', 'bios_grub'), ('name', ''), ('number', '1'), ('size', '1049kB'), ('start', '1049kB')]
     >>> parted_info.partitions[0].number
     '1'
     >>> parted_info.partitions[0].start
