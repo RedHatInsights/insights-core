@@ -3,7 +3,7 @@ import doctest
 
 from insights.core.exceptions import ParseException
 from insights.parsers import parted
-from insights.parsers.parted import PartedL, PartedDevice
+from insights.parsers.parted import PartedDevice, PartedL, PartedSos
 from insights.tests import context_wrap
 
 PARTED_DATA = """
@@ -184,8 +184,20 @@ Partition Table: unknown
 Disk Flags:
 """.strip()
 
+PARTED_DATA_6 = """
+Model: VMware Virtual disk (scsi)
+Disk /dev/sda: 94371840s
+Sector size (logical/physical): 512B/512B
+Partition Table: gpt
+Disk Flags:
 
-def test_parted():
+Number  Start     End        Size       File system  Name                  Flags
+ 1      2048s     2099199s   2097152s   fat32        EFI System Partition  boot, esp
+ 2      2099200s  4196351s   2097152s   xfs
+ 3      4196352s  83904511s  79708160s                                     lvm
+""".strip()
+
+def test_parted_partedl():
     context = context_wrap(PARTED_DATA)
     res = PartedL(context)
     results = res.devices_info[0]
@@ -268,6 +280,39 @@ def test_parted():
     assert results.get('disk_flags') is None
 
 
+def test_parted_partedSos():
+    SOS_PATH_VDA = "sos_commands/block/parted_-s_.dev.vda_unit_s_print"
+    SOS_PATH_SDA = "sos_commands/block/parted_-s_.dev.sda_unit_s_print"
+
+    context = context_wrap(PARTED_DATA, path=SOS_PATH_VDA)
+    res = PartedSos(context)
+    results = res.device_info
+    assert results is not None
+    assert results.get('model') == 'Virtio Block Device (virtblk)'
+    assert results.disk == '/dev/vda'
+    assert results.get('partition_table') == 'msdos'
+    assert results.get('disk_flags') is None
+    partitions = results.partitions
+    assert len(partitions) == 2
+    assert partitions[0].number == '1'
+    assert partitions[0].file_system == 'xfs'
+    assert partitions[0].get('name') is None
+    assert partitions[0].type == 'primary'
+    assert partitions[0].flags == 'boot'
+    assert results.boot_partition is not None
+    assert results.boot_partition.number == '1'
+
+    context = context_wrap(PARTED_DATA_6, path=SOS_PATH_SDA)
+    res = PartedSos(context)
+    results = res.device_info
+    assert results is not None
+    assert results.disk == '/dev/sda'
+    assert results.logical_sector_size == '512B'
+    assert results.physical_sector_size == '512B'
+    assert results.get('size') == '94371840s'
+    assert len(results.partitions) == 3
+
+
 PARTED_ERR_DATA = """
 Error: /dev/dm-1: unrecognised disk label
 """
@@ -342,7 +387,7 @@ def test_failure_modes():
     assert 'sector_size' not in part.data
 
 
-PARTED_DOC_TEST = """
+PARTED_DOC_TEST_1 = """
 Model: ATA TOSHIBA MG04ACA4 (scsi)
 Disk /dev/sda: 4001GB
 Sector size (logical/physical): 512B/512B
@@ -353,6 +398,10 @@ Number  Start   End     Size    File system  Name  Flags
  1      1049kB  2097kB  1049kB                     bios_grub
  2      2097kB  526MB   524MB   xfs
  3      526MB   4001GB  4000GB                     lvm
+""".strip()
+
+
+PARTED_DOC_TEST_2 = PARTED_DOC_TEST_1 + """
 
 
 Model: IBM 2107900 (scsi)
@@ -362,12 +411,13 @@ Partition Table: msdos
 
 Number  Start   End     Size    Type     File system  Flags
  1      32.3kB  2580kB  2548kB  primary
-""".strip()
+"""
 
 
 def test_doc_examples():
     env = {
-        'parted_results': PartedL(context_wrap(PARTED_DOC_TEST)),
+        'parted_l_results': PartedL(context_wrap(PARTED_DOC_TEST_2)),
+        'parted_sos_results': PartedSos(context_wrap(PARTED_DOC_TEST_1)),
     }
     failed, total = doctest.testmod(parted, globs=env)
     assert failed == 0
