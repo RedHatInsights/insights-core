@@ -12,11 +12,11 @@ VsftpdConf - file ``/etc/vsftpd.conf``
 
 """
 
-from .. import Parser, LegacyItemAccess, parser
-from ..parsers.pam import PamDConf
-from ..parsers import split_kv_pairs
-from insights.specs import Specs
+from insights import Parser, LegacyItemAccess, parser
 from insights.core import ContainerParser
+from insights.parsers.pam import PamDConf
+from insights.parsers import split_kv_pairs
+from insights.specs import Specs
 
 
 @parser(Specs.vsftpd)
