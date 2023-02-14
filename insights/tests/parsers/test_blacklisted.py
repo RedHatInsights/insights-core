@@ -7,7 +7,7 @@ from insights.parsers.blacklisted import BlacklistedSpecs
 from insights.tests import context_wrap
 
 
-SPECS = '{"specs": ["insights.specs.default.DefaultSpecs.dmesg", "insights.specs.default.DefaultSpecs.fstab"]}'
+SPECS = '{"specs": ["dmesg", "fstab"]}'
 
 
 def test_blacklisted_doc_examples():
@@ -24,6 +24,6 @@ def test_skip():
     assert "Empty output." in str(ex)
 
 
-def test_blacklist_specs():
+def test_blacklisted_specs():
     bs = BlacklistedSpecs(context_wrap(SPECS))
-    assert bs.specs[0] == "insights.specs.default.DefaultSpecs.dmesg"
+    assert bs.specs[0] == "dmesg"
