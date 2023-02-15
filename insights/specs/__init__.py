@@ -504,7 +504,6 @@ class Specs(SpecSet):
     package_provides_command = RegistryPoint(filterable=True)
     pam_conf = RegistryPoint()
     parted__l = RegistryPoint()
-    parted_s_sos = RegistryPoint(multi_output=True)
     partitions = RegistryPoint()
     passenger_status = RegistryPoint()
     password_auth = RegistryPoint()

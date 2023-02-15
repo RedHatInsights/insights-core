@@ -3,7 +3,7 @@ import doctest
 
 from insights.core.exceptions import ParseException
 from insights.parsers import parted
-from insights.parsers.parted import PartedDevice, PartedL, PartedSos
+from insights.parsers.parted import PartedDevice, PartedL
 from insights.tests import context_wrap
 
 PARTED_DATA = """
@@ -281,39 +281,6 @@ def test_parted_partedl():
     assert results.get('disk_flags') is None
 
 
-def test_parted_partedSos():
-    SOS_PATH_VDA = "sos_commands/block/parted_-s_.dev.vda_unit_s_print"
-    SOS_PATH_SDA = "sos_commands/block/parted_-s_.dev.sda_unit_s_print"
-
-    context = context_wrap(PARTED_DATA, path=SOS_PATH_VDA)
-    res = PartedSos(context)
-    results = res.device_info
-    assert results is not None
-    assert results.get('model') == 'Virtio Block Device (virtblk)'
-    assert results.disk == '/dev/vda'
-    assert results.get('partition_table') == 'msdos'
-    assert results.get('disk_flags') is None
-    partitions = results.partitions
-    assert len(partitions) == 2
-    assert partitions[0].number == '1'
-    assert partitions[0].file_system == 'xfs'
-    assert partitions[0].get('name') is None
-    assert partitions[0].type == 'primary'
-    assert partitions[0].flags == 'boot'
-    assert results.boot_partition is not None
-    assert results.boot_partition.number == '1'
-
-    context = context_wrap(PARTED_DATA_6, path=SOS_PATH_SDA)
-    res = PartedSos(context)
-    results = res.device_info
-    assert results is not None
-    assert results.disk == '/dev/sda'
-    assert results.logical_sector_size == '512B'
-    assert results.physical_sector_size == '512B'
-    assert results.get('size') == '94371840s'
-    assert len(results.partitions) == 3
-
-
 PARTED_ERR_DATA = """
 Error: /dev/dm-1: unrecognised disk label
 """
@@ -399,10 +366,6 @@ Number  Start   End     Size    File system  Name  Flags
  1      1049kB  2097kB  1049kB                     bios_grub
  2      2097kB  526MB   524MB   xfs
  3      526MB   4001GB  4000GB                     lvm
-""".strip()
-
-
-PARTED_DOC_TEST_2 = PARTED_DOC_TEST_1 + """
 
 
 Model: IBM 2107900 (scsi)
@@ -417,8 +380,7 @@ Number  Start   End     Size    Type     File system  Flags
 
 def test_doc_examples():
     env = {
-        'parted_l_results': PartedL(context_wrap(PARTED_DOC_TEST_2)),
-        'parted_sos_results': PartedSos(context_wrap(PARTED_DOC_TEST_1)),
+        'parted_l_results': PartedL(context_wrap(PARTED_DOC_TEST_1)),
     }
     failed, total = doctest.testmod(parted, globs=env)
     assert failed == 0

@@ -1,6 +1,6 @@
 """
-Parted parses
-=============
+Parted Parsers
+==============
 
 Classes to parse ``parted`` command information.
 
@@ -8,9 +8,6 @@ Parsers provided by this module include:
 
 PartedL - command ``parted -l -s``
 ----------------------------------
-
-PartedSos - command ``parted -s {dev} unit s print``
-----------------------------------------------------
 
 """
 from insights.core import CommandParser
@@ -81,9 +78,8 @@ class PartedDevice(object):
     The columns of partation table may vary depending upon the type of device.
 
     Attributes:
-        data (dict): Dictionary of information of this device section.
-        partitions (list): The partitions of this device section, as Partition
-            objects.
+        device_info (dict): Dictionary of information of this device.
+        partitions (list): The partitions of this device, as Partition objects.
         boot_partition (Partition): the first partition marked as bootable,
             or ``None`` if one was not found.
 
@@ -94,9 +90,14 @@ class PartedDevice(object):
     """
 
     @property
+    def data(self):
+        """dict: Device information."""
+        return self.device_info
+
+    @property
     def disk(self):
         """str: Disk information."""
-        return self.data['disk']
+        return self.device_info['disk']
 
     @property
     def logical_sector_size(self):
@@ -112,7 +113,7 @@ class PartedDevice(object):
 
     def get(self, item):
         """Returns a value for the specified ``item`` key."""
-        return self.data.get(item)
+        return self.device_info.get(item)
 
     def __init__(self, content):
         # If device was not present output is error message
@@ -163,9 +164,9 @@ class PartedDevice(object):
             if 'flags' in part and 'boot' in part['flags']:
                 self.boot_partition = Partition(part)
                 break
-        self.data = dev_info
-        if 'sector_size' in self.data:
-            self._sector_size = self.data['sector_size'].split('/', 1)
+        self.device_info = dev_info
+        if 'sector_size' in self.device_info:
+            self._sector_size = self.device_info['sector_size'].split('/', 1)
             if len(self._sector_size) != 2:
                 self._sector_size = None
 
@@ -211,9 +212,9 @@ class PartedL(CommandParser):
         >>> [device.disk for device in parted_l_results]
         ['/dev/sda', '/dev/sdb']
         >>> parted_info = parted_l_results.get('/dev/sda')
-        >>> sorted(parted_info.data.items())
+        >>> sorted(parted_info.device_info.items())
         [('disk', '/dev/sda'), ('disk_flags', 'pmbr_boot'), ('model', 'ATA TOSHIBA MG04ACA4 (scsi)'), ('partition_table', 'gpt'), ('sector_size', '512B/512B'), ('size', '4001GB')]
-        >>> parted_info.data['model']
+        >>> parted_info.device_info['model']
         'ATA TOSHIBA MG04ACA4 (scsi)'
         >>> parted_info.disk
         '/dev/sda'
@@ -222,7 +223,7 @@ class PartedL(CommandParser):
         >>> parted_info.physical_sector_size
         '512B'
         >>> parted_info.boot_partition
-        >>> parted_info.data['disk_flags']
+        >>> parted_info.device_info['disk_flags']
         'pmbr_boot'
         >>> len(parted_info.partitions)
         3
@@ -288,69 +289,3 @@ class PartedL(CommandParser):
                 pass
 
         self.devices_info = devices_info
-
-
-@parser(Specs.parted_s_sos)
-class PartedSos(CommandParser):
-    """Class to represent attributes of the ``parted -s {dev} unit s print``
-    command output.
-
-    Attributes:
-        device_info (PartedDevice): The devices found in the output, as PartedDevice
-            objects.
-
-    Typical content of the command output looks like::
-
-        Model: ATA TOSHIBA MG04ACA4 (scsi)
-        Disk /dev/sda: 4001GB
-        Sector size (logical/physical): 512B/512B
-        Partition Table: gpt
-        Disk Flags: pmbr_boot
-
-        Number  Start   End     Size    File system  Name  Flags
-         1      1049kB  2097kB  1049kB                     bios_grub
-         2      2097kB  526MB   524MB   xfs
-         3      526MB   4001GB  4000GB                     lvm
-
-    Examples:
-        >>> parted_info = parted_sos_results.device_info
-        >>> sorted(parted_info.data.items())
-        [('disk', '/dev/sda'), ('disk_flags', 'pmbr_boot'), ('model', 'ATA TOSHIBA MG04ACA4 (scsi)'), ('partition_table', 'gpt'), ('sector_size', '512B/512B'), ('size', '4001GB')]
-        >>> parted_info.data['model']
-        'ATA TOSHIBA MG04ACA4 (scsi)'
-        >>> parted_info.disk
-        '/dev/sda'
-        >>> parted_info.logical_sector_size
-        '512B'
-        >>> parted_info.physical_sector_size
-        '512B'
-        >>> parted_info.boot_partition
-        >>> parted_info.data['disk_flags']
-        'pmbr_boot'
-        >>> len(parted_info.partitions)
-        3
-        >>> sorted(parted_info.partitions[0].data.items())
-        [('end', '2097kB'), ('file_system', ''), ('flags', 'bios_grub'), ('name', ''), ('number', '1'), ('size', '1049kB'), ('start', '1049kB')]
-        >>> parted_info.partitions[0].number
-        '1'
-        >>> parted_info.partitions[0].start
-        '1049kB'
-        >>> parted_info.partitions[0].end
-        '2097kB'
-        >>> parted_info.partitions[0].size
-        '1049kB'
-        >>> parted_info.partitions[0].file_system
-        ''
-        >>> parted_info.partitions[0].type
-        >>> parted_info.partitions[0].flags
-        'bios_grub'
-
-    """
-
-    def parse_content(self, content):
-        device_info = None
-        try:
-            device_info = PartedDevice(content)
-        except ParseException:
-            raise
-        self.device_info = device_info
