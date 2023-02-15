@@ -243,7 +243,7 @@ class PvsAll(Pvs):
     pass
 
 
-@parser(Specs.pvs)
+@parser(Specs.pvs_headings)
 class PvsHeadings(LvmHeadings):
     """
     Parses the output of the
@@ -395,7 +395,7 @@ class VgsAll(Vgs):
     pass
 
 
-@parser(Specs.vgs)
+@parser(Specs.vgs_headings)
 class VgsHeadings(LvmHeadings):
     """
     Parses output of the
@@ -588,7 +588,7 @@ class LvsAll(Lvs):
     pass
 
 
-@parser(Specs.lvs)
+@parser(Specs.lvs_headings)
 class LvsHeadings(LvmHeadings):
     """
     Process output of the command `/sbin/lvs -a -o +lv_tags,devices --config="global{locking_type=0}"`.
