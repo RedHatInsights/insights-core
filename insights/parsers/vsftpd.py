@@ -12,9 +12,10 @@ VsftpdConf - file ``/etc/vsftpd.conf``
 
 """
 
-from .. import Parser, LegacyItemAccess, parser
-from ..parsers.pam import PamDConf
-from ..parsers import split_kv_pairs
+from insights import Parser, LegacyItemAccess, parser
+from insights.core import ContainerParser
+from insights.parsers.pam import PamDConf
+from insights.parsers import split_kv_pairs
 from insights.specs import Specs
 
 
@@ -38,18 +39,15 @@ class VsftpdPamConf(PamDConf):
         session    include      password-auth
 
     Examples:
-        >>> vs_pam = shared[VsftpdPamConf]
-        >>> vs_pam[0]
-        <insights.parsers.pam.PamConfEntry at 0x15c6cd0>
-        >>> vs_pam[0].interface
+        >>> vsftpd_pam_conf[0].interface
         'session'
-        >>> vs_pam[0].control_flags
+        >>> vsftpd_pam_conf[0].control_flags
         [ControlFlag(flag='optional', value=None)]
-        >>> vs_pam[0].control_flags[0].flag
+        >>> vsftpd_pam_conf[0].control_flags[0].flag
         'optional'
-        >>> vs_pam[0].module_name
+        >>> vsftpd_pam_conf[0].module_name
         'pam_keyinit.so'
-        >>> vs_pam[0].module_args
+        >>> vsftpd_pam_conf[0].module_args
         'force revoke'
     """
     pass
@@ -58,7 +56,7 @@ class VsftpdPamConf(PamDConf):
 @parser(Specs.vsftpd_conf)
 class VsftpdConf(Parser, LegacyItemAccess):
     """
-    Parsing for `/etc/vsftpd.conf`.  Key=value pairs are stored in a
+    Parsing for `/etc/vsftpd/vsftpd.conf`.  Key=value pairs are stored in a
     dictionary, made available directly through the object itself thanks to
     the :py:class:`insights.core.LegacyItemAccess` mixin.
 
@@ -76,13 +74,49 @@ class VsftpdConf(Parser, LegacyItemAccess):
         write_enable=YES
 
     Examples:
-        >>> conf = shared[VsftpdConf]
-        >>> 'anonymous_enable' in conf
+        >>> 'anonymous_enable' in vsftpd_conf
         True
-        >>> 'chmod_enable' in conf
+        >>> 'chmod_enable' in vsftpd_conf
         False
-        >>> conf['anonymous_enable']
+        >>> vsftpd_conf['anonymous_enable']
         'NO'
     """
     def parse_content(self, content):
         self.data = split_kv_pairs(content, ordered=True)
+
+
+@parser(Specs.container_vsftpd_conf)
+class ContainerVsftpdConf(ContainerParser, VsftpdConf):
+    """
+    Parsing for `/etc/vsftpd/vsftpd.conf` from the containers.  Key=value pairs are stored in a
+    dictionary, made available directly through the object itself thanks to
+    the :py:class:`insights.core.LegacyItemAccess` mixin.
+
+    Reference:
+        https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/3/html/Reference_Guide/s1-ftp-vsftpd-conf.html
+
+    Sample content::
+
+        # No anonymous login
+        anonymous_enable=NO
+        # Let local users login
+        local_enable=YES
+
+        # Write permissions
+        write_enable=YES
+
+    Examples:
+        >>> type(container_vsftpd_conf)
+        <class 'insights.parsers.vsftpd.ContainerVsftpdConf'>
+        >>> container_vsftpd_conf.container_id
+        '2869b4e2541c'
+        >>> container_vsftpd_conf.image
+        'registry.access.redhat.com/ubi8/nginx-120'
+        >>> 'anonymous_enable' in container_vsftpd_conf
+        True
+        >>> 'chmod_enable' in container_vsftpd_conf
+        False
+        >>> container_vsftpd_conf['anonymous_enable']
+        'NO'
+    """
+    pass
