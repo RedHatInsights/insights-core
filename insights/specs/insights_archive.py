@@ -199,6 +199,7 @@ class InsightsArchiveSpecs(Specs):
     ovs_vsctl_list_bridge = simple_file("insights_commands/ovs-vsctl_list_bridge")
     ovs_vsctl_show = simple_file("insights_commands/ovs-vsctl_show")
     package_provides_command = glob_file("insights_commands/echo_*java*")
+    parted__l = simple_file("insights_commands/parted_-l_-s")
     passenger_status = simple_file("insights_commands/passenger-status")
     pci_rport_target_disk_paths = simple_file("insights_commands/find_.sys.devices._-maxdepth_10_-mindepth_9_-name_stat_-type_f")
     pcp_metrics = simple_file("insights_commands/curl_-s_http_..127.0.0.1_44322.metrics_--connect-timeout_5")
