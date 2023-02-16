@@ -1,4 +1,6 @@
-from insights.parsers.vsftpd import VsftpdConf, VsftpdPamConf
+import doctest
+from insights.parsers import vsftpd
+from insights.parsers.vsftpd import VsftpdConf, VsftpdPamConf, ContainerVsftpdConf
 from insights.tests import context_wrap
 
 VSFTPD_PAM_CONF = """
@@ -47,3 +49,34 @@ def test_vsftpd_conf():
     assert vsftpd_conf.get('local_enable') == 'YES'
     assert vsftpd_conf.get('write_enable') == 'YES'
     assert 'Commented_option' not in vsftpd_conf
+
+
+def test_container_vsftpd_conf():
+    container_vsftpd_conf = ContainerVsftpdConf(context_wrap(
+        VSFTPD_CONF,
+        container_id='2869b4e2541c',
+        image='registry.access.redhat.com/ubi8/nginx-120',
+        engine='podman',
+        path='insights_containers/2869b4e2541c/etc/vsftpd/vsftpd.conf'
+    ))
+    assert container_vsftpd_conf.get('anonymous_enable') == 'NO'
+    assert container_vsftpd_conf.get('local_enable') == 'YES'
+    assert container_vsftpd_conf.get('write_enable') == 'YES'
+    assert 'Commented_option' not in container_vsftpd_conf
+
+
+def test_doc():
+    env = {
+        "vsftpd_pam_conf": VsftpdPamConf(context_wrap(VSFTPD_PAM_CONF)),
+        "vsftpd_conf": VsftpdConf(context_wrap(VSFTPD_CONF)),
+        "container_vsftpd_conf": ContainerVsftpdConf(
+            context_wrap(
+                VSFTPD_CONF,
+                container_id='2869b4e2541c',
+                image='registry.access.redhat.com/ubi8/nginx-120',
+                engine='podman'
+            )
+        )
+    }
+    failed_count, total = doctest.testmod(vsftpd, globs=env)
+    assert failed_count == 0
