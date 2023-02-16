@@ -2,6 +2,13 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+## [insights-core-3.1.7](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.7) (2023-02-16)
+
+- fix: The provider of GCP should be 'gcp' but not 'google' ([PR 3678](https://github.com/RedHatInsights/insights-core/pull/3678))
+- feat: Add spec "parted__l" and enhance its parser ([PR 3676](https://github.com/RedHatInsights/insights-core/pull/3676))
+- feat: Add container spec for vsftpd and ps ([PR 3674](https://github.com/RedHatInsights/insights-core/pull/3674))
+- fix: Correct parser examples and tests ([PR 3677](https://github.com/RedHatInsights/insights-core/pull/3677))
+
 ## [insights-core-3.1.6](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.6) (2023-02-09)
 
 - chore: remove unused spec lsinitrd_kdump_image ([PR 3644](https://github.com/RedHatInsights/insights-core/pull/3644))
