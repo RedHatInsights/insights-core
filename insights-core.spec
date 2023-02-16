@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.1.6
+Version:        3.1.7
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,14 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Feb 16 2023 Lizhong Chen <lichen@redhat.com> 3.1.7-1
+- fix: The provider of GCP should be 'gcp' but not 'google' (#3678)
+  (xiangceliu@redhat.com)
+- feat: Add spec "parted__l" and enhance its parser (#3676)
+  (xiaoxwan@redhat.com)
+- feat: Add container spec for vsftpd and ps (#3674) (jiazhang@redhat.com)
+- fix: Correct parser examples and tests (#3677) (rblakley@redhat.com)
+
 * Thu Feb 09 2023 Xiangce Liu <xiangceliu@redhat.com> 3.1.6-1
 - chore: remove unused spec lsinitrd_kdump_image (#3644) (986222045@qq.com)
 - fix: py26 test: install libssl1.0-dev manually (#3675)
