@@ -598,7 +598,7 @@ def test_rpm_google():
     assert ret.cloud_provider == CloudProvider.GOOGLE
     assert 'google-rhui-client-5.1.100-1.el7' in ret.cp_rpms.get(CloudProvider.GOOGLE)
     assert 'google-rhui-client-5.1.100-1.el6' in ret.cp_rpms.get(CloudProvider.GOOGLE)
-    assert ret.long_name == 'Google Cloud'
+    assert ret.long_name == 'Google Cloud Platform'
 
 
 def test_rpm_aws():
