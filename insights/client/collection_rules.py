@@ -152,7 +152,7 @@ class InsightsUploadConf(object):
         returncode = gpg_validate(path, constants.pub_gpg_path, sig)
         logger.debug("Status: %s", returncode)
 
-        if returncode:
+        if returncode is not 0:
             logger.error("ERROR: Unable to validate GPG signature: %s", path)
             return False
         else:
