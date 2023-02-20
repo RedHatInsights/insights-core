@@ -28,6 +28,16 @@ LOG_FORMAT = ("%(asctime)s %(levelname)8s %(name)s %(message)s")
 logger = logging.getLogger(__name__)
 
 
+class RotatingFileHandlerMaskable(logging.handlers.RotatingFileHandler):
+    """ Subclass of logging.handlers.RotatingFileHandler with ability to set
+        permission mask to log files.
+    """
+    def __init__(self, *args, mask=0o0644, **kwarg):
+        super().__init__(*args, **kwarg)
+        self._mask = mask
+        os.chmod(self.baseFilename, mask)
+
+
 def do_log_rotation():
     handler = get_file_handler()
     return handler.doRollover()
@@ -36,12 +46,16 @@ def do_log_rotation():
 def get_file_handler(config):
     log_file = config.logging_file
     log_dir = os.path.dirname(log_file)
+
     if not log_dir:
         log_dir = os.getcwd()
+
     elif not os.path.exists(log_dir):
         os.makedirs(log_dir, 0o700)
-    file_handler = logging.handlers.RotatingFileHandler(
-        log_file, backupCount=3)
+
+    file_handler = RotatingFileHandlerMaskable(
+        log_file, backupCount=3, mask=0o0700)
+
     file_handler.setFormatter(logging.Formatter(LOG_FORMAT))
     return file_handler
 
