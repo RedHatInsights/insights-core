@@ -10,6 +10,7 @@ import atexit
 from subprocess import Popen, PIPE
 from requests import ConnectionError
 
+
 from .. import package_info
 from . import client
 from .constants import InsightsConstants as constants
@@ -21,6 +22,9 @@ from .utilities import (write_data_to_file,
                         write_tags,
                         migrate_tags,
                         get_parent_process)
+
+from .validation import gpg_validate
+
 
 NETWORK = constants.custom_network_log_level
 logger = logging.getLogger(__name__)
@@ -272,8 +276,6 @@ class InsightsClient(object):
             except with an additional ".asc" extension.
 
             returns (dict): {'gpg': if the egg checks out,
-                             'stderr': error message if present,
-                             'stdout': stdout,
                              'rc': return code}
         """
         # check if the provided files (egg and gpg) actually exist
@@ -281,39 +283,30 @@ class InsightsClient(object):
             the_message = "Provided egg path %s does not exist, cannot verify." % (egg_path)
             logger.debug(the_message)
             return {'gpg': False,
-                    'stderr': the_message,
-                    'stdout': the_message,
                     'rc': 1,
                     'message': the_message}
+
         if self.config.gpg and gpg_key and not os.path.isfile(gpg_key):
             the_message = ("Running in GPG mode but cannot find "
                             "file %s to verify against." % (gpg_key))
             logger.debug(the_message)
+
             return {'gpg': False,
-                    'stderr': the_message,
-                    'stdout': the_message,
                     'rc': 1,
                     'message': the_message}
 
         # if we are running in no_gpg or not gpg mode then return true
         if not self.config.gpg:
+
             return {'gpg': True,
-                    'stderr': None,
-                    'stdout': None,
                     'rc': 0}
 
         # if a valid egg path and gpg were received do the verification
         if egg_path and gpg_key:
-            cmd_template = '/usr/bin/gpg --verify --keyring %s %s %s'
-            cmd = cmd_template % (gpg_key, egg_path + '.asc', egg_path)
-            logger.debug(cmd)
-            process = Popen(shlex.split(cmd), stdout=PIPE, stderr=PIPE)
-            stdout, stderr = process.communicate()
-            rc = process.returncode
+            logger.debug("Verifying " + egg_path + " against " + gpg_key)
+            rc = gpg_validate(egg_path, gpg_key)
             logger.debug("GPG return code: %s" % rc)
             return {'gpg': True if rc == 0 else False,
-                    'stderr': stderr,
-                    'stdout': stdout,
                     'rc': rc}
         else:
             return {'gpg': False,

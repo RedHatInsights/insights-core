@@ -17,6 +17,7 @@ from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
 from .constants import InsightsConstants as constants
 from .map_components import map_rm_conf_to_components
+from .validation import gpg_validate
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
@@ -139,7 +140,9 @@ class InsightsUploadConf(object):
         """
         Validate the collection rules
         """
+
         logger.debug("Verifying GPG signature of Insights configuration")
+
         if sig is None:
             sig = path + ".asc"
         command = ("/usr/bin/gpg --no-default-keyring "
