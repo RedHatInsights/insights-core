@@ -3,11 +3,8 @@ SosConf - file ``/etc/sos.conf`` or ``/etc/sos/sos.conf``
 =========================================================
 """
 from insights.core import IniConfigFile
-from insights.core.filters import add_filter
 from insights.core.plugins import parser
 from insights.specs import Specs
-
-add_filter(Specs.sos_conf, "[")
 
 
 @parser(Specs.sos_conf)
