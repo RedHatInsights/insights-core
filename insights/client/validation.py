@@ -7,13 +7,6 @@ logger = logging.getLogger(__name__)
 
 def gpg_validate(path, gpg_key, sig=None):
 
-    # ENV egg might be None, so check if path defined, then check if it exists
-    if not (path and os.path.exists(path)):
-        return False
-
-    if not os.path.exists(path + ".asc"):
-        return False
-
     # creastes temporary directory for gnu gpg validation
     with tempfile.TemporaryDirectory() as tmpd:
 
