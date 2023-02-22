@@ -306,7 +306,7 @@ class InsightsClient(object):
             logger.debug("Verifying " + egg_path + " against " + gpg_key)
             rc = gpg_validate(egg_path, gpg_key)
             logger.debug("GPG return code: %s" % rc)
-            return {'gpg': True if rc is 0 else False,
+            return {'gpg': True if rc == 0 else False,
                     'rc': rc}
         else:
             return {'gpg': False,

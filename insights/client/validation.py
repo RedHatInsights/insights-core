@@ -26,7 +26,7 @@ def gpg_validate(path, gpg_key, sig=None):
 
             except gpg.errors.BadSignatures:
                 logger.debug("Failed to verify %s" % path)
-                return False
+                return -1
 
     logger.debug("Verified %s" % path)
     return result.signatures[0].status
