@@ -786,8 +786,6 @@ class JSONParser(Parser, LegacyItemAccess):
                 self.data = json.loads('\n'.join(content))
             else:
                 self.data = json.loads(content)
-            if self.data is None:
-                raise SkipComponent("There is no data")
         except:
             # If content is empty then raise a skip exception instead of a parse exception.
             if not content:
@@ -798,6 +796,10 @@ class JSONParser(Parser, LegacyItemAccess):
                 name = ".".join([cls.__module__, cls.__name__])
                 msg = "%s couldn't parse json." % name
                 six.reraise(ParseException, ParseException(msg), tb)
+        # Kept for backwards compatibility;
+        # JSONParser used to raise an exception for valid "null" JSON string
+        if self.data is None:
+            raise SkipComponent("Empty input")
 
 
 class ScanMeta(type):
