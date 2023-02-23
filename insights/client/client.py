@@ -32,9 +32,7 @@ class RotatingFileHandlerMaskable(logging.handlers.RotatingFileHandler):
     """ Subclass of logging.handlers.RotatingFileHandler with ability to set
         permission mask to log files.
     """
-    def __init__(self, *args, mask=None, **kwarg):
-        if mask is None:
-            mask = int("664", 8)
+    def __init__(self, mask, *args, **kwarg):
         super().__init__(*args, **kwarg)
         self._mask = mask
         os.chmod(self.baseFilename, mask)
@@ -55,8 +53,8 @@ def get_file_handler(config):
     elif not os.path.exists(log_dir):
         os.makedirs(log_dir, int("700", 8))
 
-    file_handler = RotatingFileHandlerMaskable(
-        log_file, backupCount=3, mask=int("700", 8))
+    file_handler = RotatingFileHandlerMaskable(int("700", 8),
+        log_file, backupCount=3)
 
     file_handler.setFormatter(logging.Formatter(LOG_FORMAT))
     return file_handler
