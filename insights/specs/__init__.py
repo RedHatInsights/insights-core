@@ -651,6 +651,7 @@ class Specs(SpecSet):
     sockstat = RegistryPoint()
     softnet_stat = RegistryPoint()
     software_collections_list = RegistryPoint()
+    sos_conf = RegistryPoint(filterable=True)
     spamassassin_channels = RegistryPoint()
     spfile_ora = RegistryPoint(multi_output=True)
     ss = RegistryPoint()
