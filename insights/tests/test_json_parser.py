@@ -1,7 +1,7 @@
 import pytest
 
 from insights.core import JSONParser
-from insights.core.exceptions import ParseException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.tests import context_wrap
 
 
@@ -28,3 +28,11 @@ def test_json_parser_failure():
         MyJsonParser(ctx)
 
     assert "MyJsonParser" in ex.value.args[0]
+
+
+def test_json_parser_null_value():
+    ctx = context_wrap("null")
+    with pytest.raises(SkipComponent) as ex:
+        MyJsonParser(ctx)
+
+    assert "Empty input" == ex.value.args[0]
