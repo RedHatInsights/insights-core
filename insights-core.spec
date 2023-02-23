@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.1.8
+Version:        3.1.9
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,10 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Feb 23 2023 Lizhong Chen <lichen@redhat.com> 3.1.9-1
+- Update rpm_pkgs datasource and create new parser RpmPkgsWritable. (#3684)
+  (41325380+jobselko@users.noreply.github.com)
+
 * Thu Feb 23 2023 Lizhong Chen <lichen@redhat.com> 3.1.8-1
 - feat: New spec "/etc/sos.conf" and its parser (#3680)
   (44796653+huali027@users.noreply.github.com)
