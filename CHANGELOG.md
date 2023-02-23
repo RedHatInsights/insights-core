@@ -2,6 +2,15 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.1.9](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.9) (2023-02-23)
+
+- Update rpm_pkgs datasource and create new parser RpmPkgsWritable. ([PR 3684](https://github.com/RedHatInsights/insights-core/pull/3684))
+
+## [insights-core-3.1.8](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.8) (2023-02-23)
+
+- feat: New spec "/etc/sos.conf" and its parser ([PR 3680](https://github.com/RedHatInsights/insights-core/pull/3680))
+- fix: correct parse_content in JSONParser ([PR 3682](https://github.com/RedHatInsights/insights-core/pull/3682))
+
 ## [insights-core-3.1.7](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.7) (2023-02-16)
 
 - fix: The provider of GCP should be 'gcp' but not 'google' ([PR 3678](https://github.com/RedHatInsights/insights-core/pull/3678))
