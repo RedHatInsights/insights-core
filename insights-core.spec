@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.1.7
+Version:        3.1.8
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,12 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Feb 23 2023 Lizhong Chen <lichen@redhat.com> 3.1.8-1
+- feat: New spec "/etc/sos.conf" and its parser (#3680)
+  (44796653+huali027@users.noreply.github.com)
+- fix: correct parse_content in JSONParser (#3682)
+  (91992306+ann0ra@users.noreply.github.com)
+
 * Thu Feb 16 2023 Lizhong Chen <lichen@redhat.com> 3.1.7-1
 - fix: The provider of GCP should be 'gcp' but not 'google' (#3678)
   (xiangceliu@redhat.com)
