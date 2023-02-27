@@ -72,6 +72,7 @@ class OSRelease(object):
     def __init__(self, rpms, rhr, osr, uname):
         self._is_rhel = False
         self._product = "Unknown"
+        self._ng_pkgs = set()
         if osr:
             names = list(filter(None,
                                 [osr.get('ID'), osr.get('NAME'),
@@ -86,7 +87,6 @@ class OSRelease(object):
             # NON-RHEL Assertion 2: NG /etc/redhat-release
             return
         if rpms and rpms.packages:
-            points = 0
             installed_packages = 1  # kernel is must-installed
             # check the booting 'kernel' first
             boot_kn = InstalledRpm.from_package(
@@ -95,20 +95,20 @@ class OSRelease(object):
                 # check the booting kernel only when Uname is available
                 for pkg in rpms.packages.get('kernel', []):
                     if pkg == boot_kn:
-                        if (pkg.redhat_signed and
+                        if not (pkg.redhat_signed and
                                 pkg.vendor and pkg.vendor == 'Red Hat, Inc.'):
-                            points += 1
+                            self._ng_pkgs.add(pkg.nvr)
                         break
             # check other packages
             for pkg_name in MIN_RHEL_PKGS:
                 pkg = rpms.newest(pkg_name)
                 if pkg:
-                    installed_packages += 1
-                    if (pkg.redhat_signed and
+                    installed_packages += 1  # count the package only when it's installed
+                    if not (pkg.redhat_signed and
                             pkg.vendor and pkg.vendor == 'Red Hat, Inc.'):
-                        points += 1
-            if points >= round(THRESHOLD * installed_packages):
-                # RHEL: more than THRESHOLD packages are from Red Hat
+                        self._ng_pkgs.add(pkg.nvr)
+            if len(self._ng_pkgs) < round(THRESHOLD * installed_packages):
+                # RHEL: less than THRESHOLD packages are NOT from Red Hat
                 self._is_rhel = True
                 self._product = RHEL_STR
         elif ((rhr and rhr.is_rhel) or
@@ -133,3 +133,11 @@ class OSRelease(object):
         Returns the estimated product name of this host. "Unknown" by default.
         """
         return self._product
+
+    @property
+    def issued_packages(self):
+        """
+        Returns the list of issued must-install packages that are not signed
+        by Red Hat or not provided by Red Hat.
+        """
+        return sorted(self._ng_pkgs)
