@@ -11,6 +11,7 @@ import os
 import requests
 import yaml
 import stat
+import tempfile
 from six.moves import configparser as ConfigParser
 
 from subprocess import Popen, PIPE, STDOUT
@@ -140,27 +141,28 @@ class InsightsUploadConf(object):
         Validate the collection rules
         """
         logger.debug("Verifying GPG signature of Insights configuration")
-        if sig is None:
-            sig = path + ".asc"
-        command = ("/usr/bin/gpg --no-default-keyring "
-                   "--keyring " + constants.pub_gpg_path +
-                   " --verify " + sig + " " + path)
-        if not six.PY3:
-            command = command.encode('utf-8', 'ignore')
-        args = shlex.split(command)
-        logger.debug("Executing: %s", args)
-        proc = Popen(
-            args, shell=False, stdout=PIPE, stderr=STDOUT, close_fds=True)
-        stdout, stderr = proc.communicate()
-        logger.debug("STDOUT: %s", stdout)
-        logger.debug("STDERR: %s", stderr)
-        logger.debug("Status: %s", proc.returncode)
-        if proc.returncode:
-            logger.error("ERROR: Unable to validate GPG signature: %s", path)
-            return False
-        else:
-            logger.debug("GPG signature verified")
-            return True
+        with tempfile.TemporaryDirectory() as homedir:
+            if sig is None:
+                sig = path + ".asc"
+            command = ("/usr/bin/gpg --no-default-keyring --homedir "+homedir+
+                       " --keyring " + constants.pub_gpg_path +
+                       " --verify " + sig + " " + path)
+            if not six.PY3:
+                command = command.encode('utf-8', 'ignore')
+            args = shlex.split(command)
+            logger.debug("Executing: %s", args)
+            proc = Popen(
+                args, shell=False, stdout=PIPE, stderr=STDOUT, close_fds=True)
+            stdout, stderr = proc.communicate()
+            logger.debug("STDOUT: %s", stdout)
+            logger.debug("STDERR: %s", stderr)
+            logger.debug("Status: %s", proc.returncode)
+            if proc.returncode:
+                logger.error("ERROR: Unable to validate GPG signature: %s", path)
+                return False
+            else:
+                logger.debug("GPG signature verified")
+                return True
 
     def try_disk(self, path, gpg=True):
         """
