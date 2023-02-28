@@ -92,18 +92,21 @@ def test_is_rhel():
     result = OSRelease(None, rhr, None, None)
     assert result.is_rhel is True
     assert result.product == RHEL_STR
+    assert result.issued_packages == []
 
     # RHEL: os-release only
     osr = OsRelease(context_wrap(OS_RELEASE_RH))
     result = OSRelease(None, None, osr, None)
     assert result.is_rhel is True
     assert result.product == RHEL_STR
+    assert result.issued_packages == []
 
     # RHEL 9, rpms only
     rpms = InstalledRpms(context_wrap(RPMS_JSON_91_WO_KERNEL))
     result = OSRelease(rpms, None, None, None)
     assert result.is_rhel is True
     assert result.product == RHEL_STR
+    assert result.issued_packages == []
 
     # RHEL 9, rpms and uname
     rpms = InstalledRpms(context_wrap(RPMS_JSON_91_WO_KERNEL))
@@ -111,11 +114,13 @@ def test_is_rhel():
     result = OSRelease(rpms, None, None, uname)
     assert result.is_rhel is True
     assert result.product == RHEL_STR
+    assert result.issued_packages == []
 
     rpms = InstalledRpms(context_wrap(RPMS_JSON_91_W_KERNEL))
     result = OSRelease(rpms, None, None, uname)
     assert result.is_rhel is True
     assert result.product == RHEL_STR
+    assert result.issued_packages == []
 
 
 def test_not_rhel():
@@ -123,24 +128,28 @@ def test_not_rhel():
     result = OSRelease(None, None, None, None)
     assert result.is_rhel is False
     assert result.product == "Unknown"
+    assert result.issued_packages == []
 
     # NON-RHEL: uname only
     uname = Uname(context_wrap(UNAME_91))
     result = OSRelease(None, None, None, uname)
     assert result.is_rhel is False
     assert result.product == "Unknown"
+    assert result.issued_packages == []
 
     # NON-RHEL: BAD redhat-release
     rhr = RedhatRelease(context_wrap(REDHAT_RELEASE_FEDORA))
     result = OSRelease(None, rhr, None, None)
     assert result.is_rhel is False
     assert result.product == "Fedora"
+    assert result.issued_packages == []
 
     # NON-RHEL: BAD os-release
     osr = OsRelease(context_wrap(OS_RELEASE_OL))
     result = OSRelease(None, None, osr, None)
     assert result.is_rhel is False
     assert result.product == "Oracle Linux Server"
+    assert result.issued_packages == []
 
     # NON-RHEL: BAD redhat-release, Good rpms
     rpms = InstalledRpms(context_wrap(RPMS_JSON_91_W_KERNEL))
@@ -150,6 +159,7 @@ def test_not_rhel():
     result = OSRelease(rpms, rhr, osr, uname)
     assert result.is_rhel is False
     assert result.product == "Fedora"
+    assert result.issued_packages == []
 
     # NON-RHEL: BAD os-release, Good rpms
     rpms = InstalledRpms(context_wrap(RPMS_JSON_91_W_KERNEL))
@@ -159,6 +169,7 @@ def test_not_rhel():
     result = OSRelease(rpms, rhr, osr, uname)
     assert result.is_rhel is False
     assert result.product == "Oracle Linux Server"
+    assert result.issued_packages == []
 
     # NON-RHEL: BAD rpms, Good others
     rpms = InstalledRpms(context_wrap(RPMS_JSON_8_NG))
@@ -168,6 +179,12 @@ def test_not_rhel():
     result = OSRelease(rpms, rhr, osr, uname)
     assert result.is_rhel is False
     assert result.product == "Unknown"
+    assert result.issued_packages == [
+            'basesystem-11-5.el8', 'bash-4.4.20-4.el8_6',
+            'coreutils-8.30-13.el8', 'dmidecode-3.3-4.el8',
+            'filesystem-3.8-6.el8', 'firewalld-0.9.3-13.el8',
+            'glibc-2.28-211.el8', 'kernel-4.18.0-372.19.1.el8_6',
+            'libgcc-8.5.0-15.el8', 'libselinux-2.9-6.el8']
 
     # NON-RHEL: NO rpms, both os-release  and redhat-release are NG
     rhr = RedhatRelease(context_wrap(REDHAT_RELEASE_UNKNOWN))
@@ -175,3 +192,4 @@ def test_not_rhel():
     result = OSRelease(None, rhr, osr, None)
     assert result.is_rhel is False
     assert result.product == "Unknown"
+    assert result.issued_packages == []
