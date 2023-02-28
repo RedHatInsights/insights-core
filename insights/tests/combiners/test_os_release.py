@@ -1,12 +1,17 @@
-from insights.combiners.os_release import OSRelease, RHEL_STR
+import doctest
+
+from insights.combiners import os_release
+from insights.combiners.os_release import OSRelease
+from insights.parsers.dmesg import DmesgLineList
 from insights.parsers.installed_rpms import InstalledRpms
-from insights.parsers.os_release import OsRelease
-from insights.parsers.redhat_release import RedhatRelease
 from insights.parsers.uname import Uname
 from insights.tests import context_wrap
 
 UNAME_86 = "Linux vm-123 4.18.0-372.19.1.el8_6.x86_64 #1 SMP Mon Jul 18 11:14:02 EDT 2022 x86_64 x86_64 x86_64 GNU/Linux"
 UNAME_91 = "Linux vm-123 5.14.0-162.6.1.el9_1.x86_64 #1 SMP PREEMPT_DYNAMIC Fri Sep 30 07:36:03 EDT 2022 x86_64 x86_64 x86_64 GNU/Linux"
+UNAME_ORACLE = "Linux atlnfs4testd 4.18.0-372.19.1.el8_6uek.x86_64 #1 SMP Thu Nov 7 17:01:44 PST 2013 x86_64 x86_64 x86_64 GNU/Linux"
+UNAME_FEDORA = "Linux sironote.home.local 3.17.8-200.fc20.x86_64 #1 SMP Thu Jan 8 23:26:57 UTC 2015 x86_64 x86_64 x86_64 GNU/Linux"
+UNAME_UNKNOWN = "Linux eslinb24.emea.nsn-net.net 2.6.39.4-9.NSN.kiuas #1 SMP Thu Feb 13 08:58:31 EET 2014 x86_64 x86_64 x86_64 GNU/Linux"
 
 RPMS_JSON_91_WO_KERNEL = '''
 {"name":"systemd", "epoch":"(none)", "version":"250", "release":"12.el9_1", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Thu 29 Sep 2022 05:02:47 PM CST, Key ID 199e2f91fd431d51"}
@@ -25,17 +30,16 @@ RPMS_JSON_91_WO_KERNEL = '''
 {"name":"dracut", "epoch":"(none)", "version":"057", "release":"13.git20220816.el9", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Wed Aug 17 08:06:56 2022, Key ID 199e2f91fd431d51"}
 {"name":"firewalld", "epoch":"(none)", "version":"1.1.1", "release":"3.el9", "arch":"noarch", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Mon Aug  8 21:31:26 2022, Key ID 199e2f91fd431d51"}
 '''.strip()
-
 RPMS_JSON_91_W_KERNEL = RPMS_JSON_91_WO_KERNEL + """
 {"name":"kernel", "epoch":"(none)", "version":"5.14.0", "release":"70.13.1.el9_0", "arch":"x86_64", "vendor":"RH, Inc.", "sigpgp":"RSA/SHA256, Mon 05 Sep 2022 09:55:09 PM CST, Key ID 199e2f91fd431d51"}
 {"name":"kernel", "epoch":"(none)", "version":"5.14.0", "release":"162.6.1.el9_1", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Mon 03 Oct 2022 04:18:36 PM CST, Key ID 199e2f91fd431d51"}"""
-
 RPMS_JSON_8_NG = '''
-{"name":"kernel", "epoch":"(none)", "version":"4.18.0", "release":"425.3.1.el8", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Tue Nov  8 18:10:54 2022, Key ID 199e2f91fd431d51"}
-{"name":"kernel", "epoch":"(none)", "version":"4.18.0", "release":"372.19.1.el8_6", "arch":"x86_64", "vendor":"RH, Inc.", "sigpgp":"RSA/SHA256, Wed Sep 15 17:11:22 2021, Key ID 199e2f91fd431d51"}
+{"name":"kernel", "epoch":"(none)", "version":"4.18.0", "release":"425.3.1.el8", "arch":"x86_64", "vendor":"RH, Inc.", "sigpgp":"RSA/SHA256, Tue Nov  8 18:10:54 2022, Key ID 199e2f91fd431d51"}
+{"name":"kernel", "epoch":"(none)", "version":"4.18.0", "release":"372.19.1.el8_6uek", "arch":"x86_64", "vendor":"Oracle America", "sigpgp":"RSA/SHA256, Wed Sep 15 17:11:22 2021, Key ID 199e2f91fd431d51"}
+{"name":"kernel", "epoch":"(none)", "version":"4.18.0", "release":"372.19.1.el8_6", "arch":"x86_64", "vendor":"suse, Inc.", "sigpgp":"RSA/SHA256, Wed Sep 15 17:11:22 2021, Key ID 199e2f91fd431d51"}
 {"name":"libselinux", "epoch":"(none)", "version":"2.9", "release":"6.el8", "arch":"i686", "vendor":"RH, Inc.", "sigpgp":"RSA/SHA256, Mon 15 Aug 2022 08:55:09 PM CST, Key ID 199e2f91fd431d51"}
-{"name":"dbus", "epoch":"1", "version":"1.12.8", "release":"23.el8", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Wed 07 Sep 2022 04:08:12 AM CST, Key ID 199e2f91fd431d51"}
-{"name":"dracut", "epoch":"(none)", "version":"049", "release":"209.git20220815.el8", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Mon 15 Aug 2022 09:56:58 PM CST, Key ID 199e2f91fd431d51"}
+{"name":"dbus", "epoch":"1", "version":"1.12.8", "release":"23.el8", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Wed 07 Sep 2022 04:08:12 AM CST, Key ID 99e2f91fd431d51"}
+{"name":"dracut", "epoch":"(none)", "version":"049", "release":"209.git20220815.el8", "arch":"x86_64", "vendor":"RH, Inc.", "sigpgp":"RSA/SHA256, Mon 15 Aug 2022 09:56:58 PM CST, Key ID 199e2f91fd431d51"}
 {"name":"libgcc", "epoch":"(none)", "version":"8.5.0", "release":"15.el8", "arch":"x86_64", "vendor":"RH, Inc.", "sigpgp":"RSA/SHA256, Thu 21 Jul 2022 05:36:25 PM CST, Key ID 199e2f91fd431d51"}
 {"name":"policycoreutils", "epoch":"(none)", "version":"2.9", "release":"20.el8", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Mon 15 Aug 2022 08:51:06 PM CST, Key ID 199e2f91fd431d51"}
 {"name":"glibc", "epoch":"(none)", "version":"2.28", "release":"211.el8", "arch":"x86_64", "vendor":"RH, Inc.", "sigpgp":"RSA/SHA256, Mon 29 Aug 2022 04:13:20 PM CST, Key ID 199e2f91fd431d51"}
@@ -47,149 +51,233 @@ RPMS_JSON_8_NG = '''
 {"name":"coreutils", "epoch":"(none)", "version":"8.30", "release":"13.el8", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Thu 16 Jun 2022 12:18:02 PM CST, Key ID 09e2f91fd431d51"}
 {"name":"firewalld", "epoch":"(none)", "version":"0.9.3", "release":"13.el8", "arch":"noarch", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Fri 25 Feb 2022 09:40:17 PM CST, Key ID 09e2f91fd431d51"}
 {"name":"filesystem", "epoch":"(none)", "version":"3.8", "release":"6.el8", "arch":"x86_64", "vendor":"RH, Inc.", "sigpgp":"RSA/SHA256, Mon 21 Jun 2021 07:17:43 PM CST, Key ID 199e2f91fd431d51"}
-{"name":"gmp", "epoch":"1", "version":"6.1.2", "release":"10.el8", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Fri 14 Jun 2019 04:58:39 PM CST, Key ID 199e2f91fd431d51"}
+{"name":"gmp", "epoch":"1", "version":"6.1.2", "release":"10.el8", "arch":"x86_64", "vendor":"RH, Inc.", "sigpgp":"RSA/SHA256, Fri 14 Jun 2019 04:58:39 PM CST, Key ID 199e2f91fd431d51"}
 {"name":"basesystem", "epoch":"(none)", "version":"11", "release":"5.el8", "arch":"noarch", "vendor":"RH, Inc.", "sigpgp":"RSA/SHA256, Sat 15 Dec 2018 05:49:21 AM CST, Key ID 09e2f91fd431d51"}
 {"name":"dmidecode", "epoch":"1", "version":"3.3", "release":"4.el8", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Mon 14 Mar 2022 02:13:06 PM CST, Key ID 99e2f91fd431d51"}
 '''.strip()
+RPMS_JSON_ROCKY = '''
+{"name":"rocky-release", "epoch":"1", "version":"3.3", "release":"4.el8", "arch":"x86_64", "vendor":"Red Hat, Inc.", "sigpgp":"RSA/SHA256, Mon 14 Mar 2022 02:13:06 PM CST, Key ID 99e2f91fd431d51"}
+'''.strip()
 
-REDHAT_RELEASE_86 = """
-Red Hat Enterprise Linux release 8.6 (Ootpa)
+DMESG_ORACLE = """
+Linux version kernel-4.18.0-372.19.1.el8_6uek.x86_64 (mockbuild@ca-build56.us.oracle.com) (gcc version 4.1.2 20080704 (Red Hat 4.1.2-54)) #1 SMP Mon Sep 30 16:46:32 PDT 2013
 """.strip()
-
-REDHAT_RELEASE_91 = """
-Red Hat Enterprise Linux release 9.1 (Plow)
+DMESG_CENTOS = """
+[    0.000000] Linux version 4.18.0-240.el8.x86_64 (mockbuild@kbuilder.bsys.centos.org) (gcc version 8.4.1 20200928 (Red Hat 8.4.1-1) (GCC)) #1 SMP Tue Apr 13 16:24:22 UTC 2021
 """.strip()
-
-REDHAT_RELEASE_FEDORA = """
-Fedora release 23 (Twenty Three)
+DMESG_SUSE = """
+Linux version 2.6.32-431.23.3.el6.x86_64 (sandman@ceph01t6) (gcc version 4.4.7 20120313 (Novell 4.4.7-4) (GCC) ) #1 SMP Tue Jul 29 17:05:14 EDT 2014
 """.strip()
-
-OS_RELEASE_RH = """
-NAME="Red Hat Enterprise Linux"
-ID="rhel"
+DMESG_UNKNOWN = """
+Linux version 2.6.32-431.17.1.el6.x86_64 (mockbuild@lxdist01) (gcc version 4.4.7 20120313 (Red Hat 4.4.7-4) (GCC) ) #1 SMP Thu May 8 08:33:50 CEST 2014
 """.strip()
-
-OS_RELEASE_OL = """
-NAME="Oracle Linux Server"
-ID="ol"
+DMESG_NG = """
+Initializing cgroup subsys cpu
+Command line: ro root=/dev/vg00/lvol1
 """.strip()
-
-REDHAT_RELEASE_UNKNOWN = """
-Test OS
-""".strip()
-
-OS_RELEASE_UNKNOWN = """
-NAME="Test OS"
-ID="test"
-PRETTY_NAME="Test OS"
+DMESG_REDHAT = """
+[    0.000000] Linux version 5.14.0-162.6.1.el9_1.x86_64 (mockbuild@x86-vm-07.build.eng.bos.redhat.com) (gcc (GCC) 11.3.1 20220421 (Red Hat 11.3.1-2), GNU ld version 2.35.2-24.el9) #1 SMP PREEMPT_DYNAMIC Tue Dec 20 06:06:30 EST 2022
 """.strip()
 
 
 # RHEL Test
 def test_is_rhel():
-    # RHEL: redhat-release only
-    rhr = RedhatRelease(context_wrap(REDHAT_RELEASE_91))
-    result = OSRelease(None, rhr, None, None)
-    assert result.is_rhel is True
-    assert result.product == RHEL_STR
-    assert result.issued_packages == []
-
-    # RHEL: os-release only
-    osr = OsRelease(context_wrap(OS_RELEASE_RH))
-    result = OSRelease(None, None, osr, None)
-    assert result.is_rhel is True
-    assert result.product == RHEL_STR
-    assert result.issued_packages == []
-
-    # RHEL 9, rpms only
-    rpms = InstalledRpms(context_wrap(RPMS_JSON_91_WO_KERNEL))
-    result = OSRelease(rpms, None, None, None)
-    assert result.is_rhel is True
-    assert result.product == RHEL_STR
-    assert result.issued_packages == []
-
-    # RHEL 9, rpms and uname
-    rpms = InstalledRpms(context_wrap(RPMS_JSON_91_WO_KERNEL))
+    # RHEL, uname only
     uname = Uname(context_wrap(UNAME_91))
-    result = OSRelease(rpms, None, None, uname)
+    result = OSRelease(uname, None, None)
     assert result.is_rhel is True
-    assert result.product == RHEL_STR
-    assert result.issued_packages == []
+    assert result.release == "Red Hat Enterprise Linux"
+    assert result.reasons == {}
+
+    # RHEL, dmesg only
+    dmesg = DmesgLineList(context_wrap(DMESG_REDHAT))
+    result = OSRelease(None, dmesg, None)
+    assert result.is_rhel is True
+    assert result.release == "Red Hat Enterprise Linux"
+    assert result.product == "Red Hat Enterprise Linux"
+    assert result.reasons == {}
+
+    # RHEL, dmesg and uname
+    dmesg = DmesgLineList(context_wrap(DMESG_REDHAT))
+    result = OSRelease(uname, dmesg, None)
+    assert result.is_rhel is True
+    assert result.release == "Red Hat Enterprise Linux"
+    assert result.reasons == {}
+
+    # RHEL, rpms only
+    rpms = InstalledRpms(context_wrap(RPMS_JSON_91_WO_KERNEL))
+    result = OSRelease(None, None, rpms)
+    assert result.is_rhel is True
+    assert result.release == "Red Hat Enterprise Linux"
+    assert result.reasons == {}
+
+    # RHEL, rpms and uname
+    rpms = InstalledRpms(context_wrap(RPMS_JSON_91_WO_KERNEL))
+    result = OSRelease(uname, None, rpms)
+    assert result.is_rhel is True
+    assert result.release == "Red Hat Enterprise Linux"
+    assert result.reasons == {}
 
     rpms = InstalledRpms(context_wrap(RPMS_JSON_91_W_KERNEL))
-    result = OSRelease(rpms, None, None, uname)
+    result = OSRelease(uname, None, rpms)
     assert result.is_rhel is True
-    assert result.product == RHEL_STR
-    assert result.issued_packages == []
+    assert result.release == "Red Hat Enterprise Linux"
+    assert result.reasons == {}
+
+    # RHEL, rpms, dmesg and uname
+    rpms = InstalledRpms(context_wrap(RPMS_JSON_91_W_KERNEL))
+    result = OSRelease(uname, dmesg, rpms)
+    assert result.is_rhel is True
+    assert result.release == "Red Hat Enterprise Linux"
+    assert result.reasons == {}
 
 
 def test_not_rhel():
     # NON-RHEL: Nothing
-    result = OSRelease(None, None, None, None)
+    result = OSRelease(None, None, None)
     assert result.is_rhel is False
-    assert result.product == "Unknown"
-    assert result.issued_packages == []
+    assert result.release == "Unknown"
+    assert result.reasons.get('reason') == "Nothing to check"
 
-    # NON-RHEL: uname only
-    uname = Uname(context_wrap(UNAME_91))
-    result = OSRelease(None, None, None, uname)
+    # NON-RHEL: BAD rpms
+    rpms = InstalledRpms(context_wrap(RPMS_JSON_ROCKY))
+    result = OSRelease(None, None, rpms)
     assert result.is_rhel is False
-    assert result.product == "Unknown"
-    assert result.issued_packages == []
+    assert result.release == "Rocky"
+    assert result.reasons['release'] == 'rocky-release-3.3-4.el8'
 
-    # NON-RHEL: BAD redhat-release
-    rhr = RedhatRelease(context_wrap(REDHAT_RELEASE_FEDORA))
-    result = OSRelease(None, rhr, None, None)
-    assert result.is_rhel is False
-    assert result.product == "Fedora"
-    assert result.issued_packages == []
-
-    # NON-RHEL: BAD os-release
-    osr = OsRelease(context_wrap(OS_RELEASE_OL))
-    result = OSRelease(None, None, osr, None)
-    assert result.is_rhel is False
-    assert result.product == "Oracle Linux Server"
-    assert result.issued_packages == []
-
-    # NON-RHEL: BAD redhat-release, Good rpms
-    rpms = InstalledRpms(context_wrap(RPMS_JSON_91_W_KERNEL))
-    rhr = RedhatRelease(context_wrap(REDHAT_RELEASE_FEDORA))
-    osr = OsRelease(context_wrap(OS_RELEASE_RH))
-    uname = Uname(context_wrap(UNAME_91))
-    result = OSRelease(rpms, rhr, osr, uname)
-    assert result.is_rhel is False
-    assert result.product == "Fedora"
-    assert result.issued_packages == []
-
-    # NON-RHEL: BAD os-release, Good rpms
-    rpms = InstalledRpms(context_wrap(RPMS_JSON_91_W_KERNEL))
-    rhr = RedhatRelease(context_wrap(REDHAT_RELEASE_91))
-    osr = OsRelease(context_wrap(OS_RELEASE_OL))
-    uname = Uname(context_wrap(UNAME_91))
-    result = OSRelease(rpms, rhr, osr, uname)
-    assert result.is_rhel is False
-    assert result.product == "Oracle Linux Server"
-    assert result.issued_packages == []
-
-    # NON-RHEL: BAD rpms, Good others
     rpms = InstalledRpms(context_wrap(RPMS_JSON_8_NG))
-    rhr = RedhatRelease(context_wrap(REDHAT_RELEASE_86))
-    osr = OsRelease(context_wrap(OS_RELEASE_RH))
-    uname = Uname(context_wrap(UNAME_86))
-    result = OSRelease(rpms, rhr, osr, uname)
+    result = OSRelease(None, None, rpms)
     assert result.is_rhel is False
-    assert result.product == "Unknown"
-    assert result.issued_packages == [
-            'basesystem-11-5.el8', 'bash-4.4.20-4.el8_6',
-            'coreutils-8.30-13.el8', 'dmidecode-3.3-4.el8',
-            'filesystem-3.8-6.el8', 'firewalld-0.9.3-13.el8',
-            'glibc-2.28-211.el8', 'kernel-4.18.0-372.19.1.el8_6',
-            'libgcc-8.5.0-15.el8', 'libselinux-2.9-6.el8']
+    assert result.release == "Unknown"
+    assert result.reasons['faulty_packages'] == [
+        'basesystem-11-5.el8', 'bash-4.4.20-4.el8_6',
+        'coreutils-8.30-13.el8', 'dbus-1.12.8-23.el8',
+        'dmidecode-3.3-4.el8', 'dracut-049-209.git20220815.el8',
+        'filesystem-3.8-6.el8', 'firewalld-0.9.3-13.el8',
+        'glibc-2.28-211.el8', 'gmp-6.1.2-10.el8',
+        'libgcc-8.5.0-15.el8', 'libselinux-2.9-6.el8']
 
-    # NON-RHEL: NO rpms, both os-release  and redhat-release are NG
-    rhr = RedhatRelease(context_wrap(REDHAT_RELEASE_UNKNOWN))
-    osr = OsRelease(context_wrap(OS_RELEASE_UNKNOWN))
-    result = OSRelease(None, rhr, osr, None)
+    # NON-RHEL: BAD rpms with uname
+    uname = Uname(context_wrap(UNAME_86))
+    result = OSRelease(uname, None, rpms)
     assert result.is_rhel is False
-    assert result.product == "Unknown"
-    assert result.issued_packages == []
+    assert result.release == "SUSE"
+    assert result.reasons['kernel_vendor'] == 'suse, Inc.'
+    assert result.reasons['faulty_packages'] == [
+        'basesystem-11-5.el8', 'bash-4.4.20-4.el8_6',
+        'coreutils-8.30-13.el8', 'dbus-1.12.8-23.el8',
+        'dmidecode-3.3-4.el8', 'dracut-049-209.git20220815.el8',
+        'filesystem-3.8-6.el8', 'firewalld-0.9.3-13.el8',
+        'glibc-2.28-211.el8', 'gmp-6.1.2-10.el8',
+        'kernel-4.18.0-372.19.1.el8_6', 'libgcc-8.5.0-15.el8',
+        'libselinux-2.9-6.el8']
+
+    # NON-RHEL: BAD dmesg
+    dmesg = DmesgLineList(context_wrap(DMESG_NG))
+    result = OSRelease(None, dmesg, None)
+    assert result.is_rhel is False
+    assert result.release == "Unknown"
+    assert result.reasons.get('reason') == "Nothing to check"
+
+    dmesg = DmesgLineList(context_wrap(DMESG_SUSE))
+    result = OSRelease(None, dmesg, None)
+    assert result.is_rhel is False
+    assert result.release == "SUSE"
+    assert result.reasons['build_info'] == DMESG_SUSE
+
+    dmesg = DmesgLineList(context_wrap(DMESG_CENTOS))
+    result = OSRelease(None, dmesg, None)
+    assert result.is_rhel is False
+    assert result.release == "CentOS"
+    assert result.reasons['build_info'] == DMESG_CENTOS
+
+    dmesg = DmesgLineList(context_wrap(DMESG_UNKNOWN))
+    result = OSRelease(None, dmesg, None)
+    assert result.is_rhel is False
+    assert result.release == "Unknown"
+    assert result.reasons['build_info'] == DMESG_UNKNOWN
+
+    # NON-RHEL: BAD uname
+    uname = Uname(context_wrap(UNAME_ORACLE))
+    result = OSRelease(uname, None, None)
+    assert result.is_rhel is False
+    assert result.release == "Oracle"
+    assert result.reasons.get('kernel') == "4.18.0-372.19.1.el8_6uek.x86_64"
+
+    uname = Uname(context_wrap(UNAME_FEDORA))
+    result = OSRelease(uname, None, None)
+    assert result.is_rhel is False
+    assert result.release == "Fedora"
+    assert result.reasons.get('kernel') == "3.17.8-200.fc20.x86_64"
+
+    uname = Uname(context_wrap(UNAME_UNKNOWN))
+    result = OSRelease(uname, None, None)
+    assert result.is_rhel is False
+    assert result.release == "Unknown"
+    assert result.reasons.get('kernel') == "2.6.39.4-9.NSN.kiuas"
+
+    # NON-RHEL: Bad Uname + Dmesg
+    dmesg = DmesgLineList(context_wrap(DMESG_NG))
+    uname = Uname(context_wrap(UNAME_ORACLE))
+    result = OSRelease(uname, dmesg, None)
+    assert result.is_rhel is False
+    assert result.release == "Oracle"
+    assert result.reasons['kernel'] == "4.18.0-372.19.1.el8_6uek.x86_64"
+
+    dmesg = DmesgLineList(context_wrap(DMESG_ORACLE))
+    result = OSRelease(uname, dmesg, None)
+    assert result.is_rhel is False
+    assert result.release == "Oracle"
+    assert result.reasons['build_info'] == DMESG_ORACLE
+    assert result.reasons['kernel'] == "4.18.0-372.19.1.el8_6uek.x86_64"
+    assert 'kernel_vendor' not in result.reasons  # No RPMs
+
+    # NON-RHEL: Bad Uname + Dmesg + RPMs
+    dmesg = DmesgLineList(context_wrap(DMESG_ORACLE))
+    uname = Uname(context_wrap(UNAME_86))
+    rpms = InstalledRpms(context_wrap(RPMS_JSON_8_NG))
+    result = OSRelease(uname, dmesg, rpms)
+    assert result.is_rhel is False
+    assert result.release == "SUSE"  # from Dmesg first then updated by RPMS
+    assert result.reasons['build_info'] == DMESG_ORACLE  # from Dmesg
+    assert 'kernel' not in result.reasons  # Uname is OK
+    assert result.reasons['kernel_vendor'] == "suse, Inc."
+
+    dmesg = DmesgLineList(context_wrap(DMESG_ORACLE))
+    uname = Uname(context_wrap(UNAME_UNKNOWN))
+    rpms = InstalledRpms(context_wrap(RPMS_JSON_8_NG))
+    result = OSRelease(uname, dmesg, rpms)
+    assert result.is_rhel is False
+    assert result.release == "Oracle"  # from Dmesg
+    assert result.reasons['build_info'] == DMESG_ORACLE  # from Dmesg
+    assert result.reasons.get('kernel') == "2.6.39.4-9.NSN.kiuas"
+    assert 'kernel_vendor' not in result.reasons  # running kernel not in RPMs
+
+    dmesg = DmesgLineList(context_wrap(DMESG_ORACLE))
+    uname = Uname(context_wrap(UNAME_ORACLE))
+    result = OSRelease(uname, dmesg, rpms)
+    assert result.is_rhel is False
+    assert result.release == "Oracle"
+    assert result.reasons['build_info'] == DMESG_ORACLE
+    assert result.reasons['kernel'] == "4.18.0-372.19.1.el8_6uek.x86_64"
+    assert result.reasons['kernel_vendor'] == "Oracle America"
+    assert result.reasons['faulty_packages'] == [
+        'basesystem-11-5.el8', 'bash-4.4.20-4.el8_6',
+        'coreutils-8.30-13.el8', 'dbus-1.12.8-23.el8',
+        'dmidecode-3.3-4.el8', 'dracut-049-209.git20220815.el8',
+        'filesystem-3.8-6.el8', 'firewalld-0.9.3-13.el8',
+        'glibc-2.28-211.el8', 'gmp-6.1.2-10.el8',
+        'kernel-4.18.0-372.19.1.el8_6uek',
+        'libgcc-8.5.0-15.el8', 'libselinux-2.9-6.el8']
+
+
+def test_osr_doc():
+    dmesg = DmesgLineList(context_wrap(DMESG_ORACLE))
+    uname = Uname(context_wrap(UNAME_ORACLE))
+    rpms = InstalledRpms(context_wrap(RPMS_JSON_8_NG))
+    env = {
+        'osr': OSRelease(uname, dmesg, rpms),
+    }
+    failed, total = doctest.testmod(os_release, globs=env)
+    assert failed == 0
