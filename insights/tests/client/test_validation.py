@@ -3,7 +3,7 @@ from insights.client.collection_rules import InsightsUploadConf
 from insights.client.config import InsightsConfig
 
 
-VALID_EGG =   "insights/tests/testing_data/valid_test_rpm.egg"
+VALID_EGG = "insights/tests/testing_data/valid_test_rpm.egg"
 INVALID_EGG = "insights/tests/testing_data/invalid_test_rpm.egg"
 
 
