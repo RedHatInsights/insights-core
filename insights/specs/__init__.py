@@ -663,6 +663,7 @@ class Specs(SpecSet):
     sshd_config_perms = RegistryPoint()
     sssd_config = RegistryPoint()
     sssd_logs = RegistryPoint(multi_output=True, filterable=True)
+    sys_block_queue_stable_writes = RegistryPoint(multi_output=True)
     subscription_manager_facts = RegistryPoint(filterable=True)
     subscription_manager_id = RegistryPoint()
     subscription_manager_installed_product_ids = RegistryPoint(filterable=True)
