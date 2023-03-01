@@ -7,6 +7,7 @@ import json
 import logging
 import six
 import shlex
+import shutil
 import os
 import requests
 import yaml
@@ -141,8 +142,7 @@ class InsightsUploadConf(object):
         Validate the collection rules
         """
         logger.debug("Verifying GPG signature of Insights configuration")
-
-        homedir = tempfile.gettempdir("/tmp")
+        homedir = tempfile.mkdtemp()
         if sig is None:
             sig = path + ".asc"
         command = ("/usr/bin/gpg --no-default-keyring --homedir " + homedir +
@@ -158,6 +158,7 @@ class InsightsUploadConf(object):
         logger.debug("STDOUT: %s", stdout)
         logger.debug("STDERR: %s", stderr)
         logger.debug("Status: %s", proc.returncode)
+        shutil.rmtree(homedir)
         if proc.returncode:
             logger.error("ERROR: Unable to validate GPG signature: %s", path)
             return False

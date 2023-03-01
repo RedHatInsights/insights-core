@@ -304,7 +304,7 @@ class InsightsClient(object):
 
         # if a valid egg path and gpg were received do the verification
         if egg_path and gpg_key:
-            homedir = tempfile.gettempdir("/tmp")
+            homedir = tempfile.mkdtemp()
             cmd_template = '/usr/bin/gpg --homedir %s --verify --keyring %s %s %s '
             cmd = cmd_template % (homedir, gpg_key, egg_path + '.asc', egg_path)
             logger.debug(cmd)
@@ -312,6 +312,7 @@ class InsightsClient(object):
             stdout, stderr = process.communicate()
             rc = process.returncode
             logger.debug("GPG return code: %s" % rc)
+            shutil.rmtree(homedir)
             return {'gpg': True if rc == 0 else False,
                     'stderr': stderr,
                     'stdout': stdout,
