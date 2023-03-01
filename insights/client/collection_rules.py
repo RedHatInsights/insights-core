@@ -144,7 +144,7 @@ class InsightsUploadConf(object):
         with tempfile.TemporaryDirectory() as homedir:
             if sig is None:
                 sig = path + ".asc"
-            command = ("/usr/bin/gpg --no-default-keyring --homedir "+homedir+
+            command = ("/usr/bin/gpg --no-default-keyring --homedir " + homedir +
                        " --keyring " + constants.pub_gpg_path +
                        " --verify " + sig + " " + path)
             if not six.PY3:
