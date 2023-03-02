@@ -786,6 +786,7 @@ class Specs(SpecSet):
     container_dotnet_version = RegistryPoint(multi_output=True)
     container_installed_rpms = RegistryPoint(multi_output=True)
     container_inspect_keys = RegistryPoint(filterable=True)
+    container_mssql_api_assessment = RegistryPoint(multi_output=True)
     container_nginx_conf = RegistryPoint(multi_output=True)
     container_nginx_error_log = RegistryPoint(multi_output=True, filterable=True)
     container_ps_aux = RegistryPoint(multi_output=True, filterable=True)
