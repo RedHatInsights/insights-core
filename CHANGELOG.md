@@ -2,6 +2,13 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.1.10](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.10) (2023-03-02)
+
+- feat: New spec and parser for sys_block_queue_stable_writes ([PR 3688](https://github.com/RedHatInsights/insights-core/pull/3688))
+- feat: Add container spec mssql_api_assessment ([PR 3690](https://github.com/RedHatInsights/insights-core/pull/3690))
+- feat: add OSRelease.issued_packages to return the issued packages ([PR 3686](https://github.com/RedHatInsights/insights-core/pull/3686))
+- Better handle SSL cert verify errors when downloading malware rules ([PR 3685](https://github.com/RedHatInsights/insights-core/pull/3685))
+
 # [insights-core-3.1.9](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.9) (2023-02-23)
 
 - Update rpm_pkgs datasource and create new parser RpmPkgsWritable. ([PR 3684](https://github.com/RedHatInsights/insights-core/pull/3684))
