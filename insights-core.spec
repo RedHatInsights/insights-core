@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.1.9
+Version:        3.1.10
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,15 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Mar 02 2023 Xiangce Liu <xiangceliu@redhat.com> 3.1.10-1
+- feat: New spec and parser for sys_block_queue_stable_writes (#3688)
+  (xiaoxwan@redhat.com)
+- feat: Add container spec mssql_api_assessment (#3690) (jiazhang@redhat.com)
+- feat: add OSRelease.issued_packages to return the issued packages (#3686)
+  (xiangceliu@redhat.com)
+- Better handle SSL cert verify errors when downloading malware rules (#3685)
+  (mhuth@redhat.com)
+
 * Thu Feb 23 2023 Lizhong Chen <lichen@redhat.com> 3.1.9-1
 - Update rpm_pkgs datasource and create new parser RpmPkgsWritable. (#3684)
   (41325380+jobselko@users.noreply.github.com)
