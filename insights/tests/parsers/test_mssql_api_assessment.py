@@ -1,7 +1,7 @@
 import doctest
 
 from insights.parsers import mssql_api_assessment
-from insights.parsers.mssql_api_assessment import MssqlApiAssessment
+from insights.parsers.mssql_api_assessment import MssqlApiAssessment, ContainerMssqlApiAssessment
 from insights.tests import context_wrap
 
 API_OUTPUT = """
@@ -44,9 +44,33 @@ def test_mssql_api_assessment():
     assert ret[0]["Message"] == "Enable trace flag 174 to increase plan cache bucket count"
 
 
+def test_mssql_api_assessment_container():
+    container_ret = ContainerMssqlApiAssessment(
+        context_wrap(
+            API_OUTPUT,
+            container_id='2869b4e2541c',
+            image='registry.access.redhat.com/ubi8/nginx-120',
+            engine='podman',
+        )
+    )
+    assert container_ret.container_id == "2869b4e2541c"
+    assert container_ret[0]["Severity"] == "Information"
+    assert container_ret[0]["TargetName"] == "ceph4-mon"
+    assert container_ret[0]["CheckId"] == "TF174"
+    assert container_ret[0]["Message"] == "Enable trace flag 174 to increase plan cache bucket count"
+
+
 def test_mssql_api_assessment_doc_examples():
     env = {
-        'mssql_api_assessment_output': MssqlApiAssessment(context_wrap(API_OUTPUT))
+        'mssql_api_assessment_output': MssqlApiAssessment(context_wrap(API_OUTPUT)),
+        'container_mssql_api_assessment_output': ContainerMssqlApiAssessment(
+            context_wrap(
+                API_OUTPUT,
+                container_id='2869b4e2541c',
+                image='registry.access.redhat.com/ubi8/nginx-120',
+                engine='podman',
+            )
+        )
     }
     failed, total = doctest.testmod(mssql_api_assessment, globs=env)
     assert failed == 0
