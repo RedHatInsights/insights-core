@@ -609,6 +609,7 @@ class DefaultSpecs(Specs):
     sudoers = glob_file(["/etc/sudoers", "/etc/sudoers.d/*"])
     swift_object_expirer_conf = first_file(["/var/lib/config-data/puppet-generated/swift/etc/swift/object-expirer.conf", "/etc/swift/object-expirer.conf"])
     swift_proxy_server_conf = first_file(["/var/lib/config-data/puppet-generated/swift/etc/swift/proxy-server.conf", "/etc/swift/proxy-server.conf"])
+    sys_block_queue_stable_writes = glob_file("/sys/block/*/queue/stable_writes")
     sys_fs_cgroup_memory_tasks_number = sys_fs_cgroup_memory_tasks_number.sys_fs_cgroup_memory_tasks_number_data_datasource
     sys_fs_cgroup_uniq_memory_swappiness = sys_fs_cgroup_memory.sys_fs_cgroup_uniq_memory_swappiness
     sys_vmbus_class_id = glob_file('/sys/bus/vmbus/devices/*/class_id')
