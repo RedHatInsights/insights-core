@@ -38,7 +38,7 @@ class StableWrites(Parser):
             raise ParseException('Error: {0}'.format(content if content else 'empty file'))
         try:
             self._stable_writes = int(content[0].strip())
-            self._device = self.file_path.split('/')[3]
+            self._device = self.file_path.split('/')[-3]
         except ValueError:
             raise ParseException("Error: unparsable content: {0}".format(content[0]))
 
