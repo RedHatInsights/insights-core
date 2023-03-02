@@ -689,6 +689,7 @@ class DefaultSpecs(Specs):
     container_cpuset_cpus = container_collect(running_rhel_containers, "/sys/fs/cgroup/cpuset/cpuset.cpus")
     container_dotnet_version = container_execute(running_rhel_containers, "/usr/bin/dotnet --version")
     container_installed_rpms = container_execute(running_rhel_containers, "/usr/bin/rpm -qa --qf '%s'" % _rpm_format, context=HostContext, signum=signal.SIGTERM)
+    container_mssql_api_assessment = container_collect(running_rhel_containers, "/var/opt/mssql/log/assessments/assessment-latest")
     container_nginx_conf = container_collect(container_nginx_conf_ds)
     container_nginx_error_log = container_collect(running_rhel_containers, "/var/log/nginx/error.log")
     container_ps_aux = container_execute(running_rhel_containers, "/bin/ps aux")
