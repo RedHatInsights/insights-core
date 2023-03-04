@@ -694,19 +694,30 @@ class listdir(object):
         context (ExecutionContext): the context under which the datasource
             should run.
         ignore (str): regular expression defining paths to ignore.
+        path_format: format of the returned paths; supported values are "baseline" (default, returns
+            only basenames) and "relative" (returns paths relative to the execution context root)
 
     Returns:
         function: A datasource that returns the list of files and directories
             in the directory specified by path
     """
 
-    def __init__(self, path, context=None, ignore=None, deps=[]):
+    def __init__(self, path, context=None, ignore=None, deps=[], path_format="basename"):
         self.path = path
         self.context = context or FSRoots
         self.ignore = ignore
         self.ignore_func = re.compile(ignore).search if ignore else lambda x: False
+        self.transform_func = self._create_transform_func(path_format)
         self.__name__ = self.__class__.__name__
         datasource(self.context, *deps)(self)
+
+    def _create_transform_func(self, path_format):
+        if path_format == "basename":
+            return lambda ctx_root, path: os.path.basename(path)
+        elif path_format == "relative":
+            return lambda ctx_root, path: os.path.relpath(path, start=ctx_root)
+        else:
+            raise ValueError("Unsupported path format: %s" % path_format)
 
     def __call__(self, broker):
         ctx = _get_context(self.context, broker)
@@ -715,7 +726,7 @@ class listdir(object):
         result = sorted(os.listdir(p)) if os.path.isdir(p) else sorted(glob(p))
 
         if result:
-            return [os.path.basename(r) for r in result if not self.ignore_func(r)]
+            return [self.transform_func(ctx.root, r) for r in result if not self.ignore_func(r)]
         raise ContentException("Can't list %s or nothing there." % p)
 
 
