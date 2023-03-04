@@ -720,6 +720,31 @@ class listdir(object):
         return sorted([r for r in result if not self.ignore_func(r)])
 
 
+class listglob(listdir):
+    """
+    List paths matching a glob pattern.
+
+    Args:
+        pattern (str): glob pattern to list.
+        context (ExecutionContext): the context under which the datasource
+            should run.
+        ignore (str): regular expression defining paths to ignore.
+
+    Returns:
+        function: A datasource that returns the list of paths that match
+            the given glob pattern. The list will be empty when nothing matches.
+    """
+    def __call__(self, broker):
+        ctx = _get_context(self.context, broker)
+        p = os.path.join(ctx.root, self.path.lstrip('/'))
+        p = ctx.locate_path(p)
+        result = glob(p)
+        # generator expression; we don't need the full list at this step
+        result = (os.path.relpath(r, start=ctx.root) for r in result)
+        result = sorted([r for r in result if not self.ignore_func(r)])
+        return result
+
+
 class simple_command(object):
     """
     Execute a simple command that has no dynamic arguments
