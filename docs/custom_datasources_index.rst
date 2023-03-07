@@ -144,7 +144,7 @@ insights.specs.datasources.machine_ids
 --------------------------------------
 
 .. automodule:: insights.specs.datasources.machine_ids
-    :members: dup_machine_id
+    :members: dup_machine_id_info
     :show-inheritance:
     :undoc-members:
 
