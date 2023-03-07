@@ -306,6 +306,7 @@ class Specs(SpecSet):
     lastupload = RegistryPoint(multi_output=True)
     ld_library_path_of_user = RegistryPoint()
     ldif_config = RegistryPoint(multi_output=True)
+    leapp_report = RegistryPoint()
     libssh_client_config = RegistryPoint(filterable=True)
     libssh_server_config = RegistryPoint(filterable=True)
     libvirtd_log = RegistryPoint(filterable=True)
