@@ -373,15 +373,24 @@ class InstalledRpm(object):
              'RSA/8, Mon Aug 16 11:14:17 2010, Key ID 199e2f91fd431d51')
     """
     PRODUCT_SIGNING_KEYS = [
-        'F76F66C3D4082792', '199e2f91fd431d51', '5326810137017186',
+        # NOTE: All In lower cases
+        # RELEASE PACKAGE SIGNING
+        '199e2f91fd431d51', '1ac4971355a34a82', '5054e4a45a6340b3',
+        'e1a4bd708a828aad', 'f76f66c3d4082792', '5326810137017186',
         '45689c882fa658e0', '219180cddb42a60e', '7514f77d8366b0d9',
-        'fd372689897da07a', '938a80caf21541eb',
-        '08b871e6a5787476', '1AC4971355A34A82'
-        'E191DDB2C509E861'
+        '08dd962c1c711042',
+        # BETA PACKAGE SIGNING
+        'fd372689897da07a', '938a80caf21541eb'
+        # DEVELOPMENT PACKAGE SIGNING
+        '08b871e6a5787476',
+        # OTHER PRODUCTS
+        'e191ddb2c509e861',
+        # CERTIFICATES
+        '66e8f8a29c65f85c', '680b9144769a9f8f', '8ed29db42a2898c8'
     ]
     """
-    list: List of package-signing keys. Should be updated timely according to
-          https://access.redhat.com/security/team/key/
+    list: List of package-signing keys in all lower cases. Should be updated
+          timely according to https://access.redhat.com/security/team/key/
     """
     SOSREPORT_KEYS = [
         'installtime', 'buildtime', 'vendor', 'buildserver', 'pgpsig', 'pgpsig_short'
@@ -412,7 +421,8 @@ class InstalledRpm(object):
         self.vendor = data['vendor'] if 'vendor' in data else None
         _gpg_key_pos = data.get('sigpgp', data.get('rsaheader', data.get('pgpsig_short', data.get('pgpsig', data.get('vendor', '')))))
         if _gpg_key_pos:
-            self.redhat_signed = any(key in _gpg_key_pos for key in self.PRODUCT_SIGNING_KEYS)
+            self.redhat_signed = any(key in _gpg_key_pos.lower()
+                                     for key in self.PRODUCT_SIGNING_KEYS)
 
     @classmethod
     def from_package(cls, package_string):
