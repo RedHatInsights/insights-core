@@ -114,7 +114,7 @@ def mock_try_autoconfig(config):
 def test_duplicate():
     broker = {Specs.machine_id: context_wrap(lines=['dc194312-8cdd-4e75-8cf1-2094bfsfsdeff'])}
     result = dup_machine_id_info(broker)
-    expected = DatasourceProvider(content=["dc194312-8cdd-4e75-8cf1-2094bfsfsdeff: [hostname1.compute.internal,hostname2.compute.internal]"], relative_path='insights_commands/duplicate_machine_id_info')
+    expected = DatasourceProvider(content=["dc194312-8cdd-4e75-8cf1-2094bfsfsdeff hostname1.compute.internal,hostname2.compute.internal"], relative_path='insights_commands/duplicate_machine_id_info')
     assert expected.content == result.content
     assert expected.relative_path == result.relative_path
 

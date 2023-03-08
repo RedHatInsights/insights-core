@@ -16,7 +16,7 @@ class DuplicateMachine(Parser):
 
     Sample input::
 
-        dc194312-8cdd-4e75-8cf1-2094bf666f45: [hostname1,hostname2]
+        dc194312-8cdd-4e75-8cf1-2094bf666f45 hostname1,hostname2
 
     Attributes:
         duplicate_id (str): the duplicate machine id
@@ -34,9 +34,10 @@ class DuplicateMachine(Parser):
         SkipException: when there is no expected content in the file
     """
     def parse_content(self, content):
-        if len(content) == 1 and ':' in content[0]:
-            insights_id, hostnames = [item.strip() for item in content[0].split(':', 1)]
-            self.duplicate_id = insights_id
-            self.hostnames = hostnames.strip('[]').split(',')
-        else:
+        if len(content) == 1:
+            machine_info = content[0].split(None, 1)
+            if len(machine_info) == 2:
+                self.duplicate_id = machine_info[0].strip()
+                self.hostnames = machine_info[1].strip().split(',')
+        if not hasattr(self, 'duplicate_id'):
             raise SkipException('No expected machine id found.')
