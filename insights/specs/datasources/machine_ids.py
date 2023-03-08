@@ -21,7 +21,7 @@ def dup_machine_id_info(broker):
 
     Sample Output::
 
-        dc194312-8cdd-4e75-8cf1-2094bf666f45: [hostname1,hostname2]
+        dc194312-8cdd-4e75-8cf1-2094bf666f45 hostname1,hostname2
 
     Returns:
         str: a string containing the machine id and the hostnames with the same machine id
