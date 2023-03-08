@@ -63,6 +63,7 @@ class InsightsArchiveSpecs(Specs):
     dotnet_version = simple_file("insights_commands/dotnet_--version")
     doveconf = simple_file("insights_commands/doveconf")
     du_dirs = glob_file("insights_commands/du_-s_-k_*")
+    duplicate_machine_id = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_duplicate_machine_id")
     engine_db_query_vdsm_version = simple_file("insights_commands/engine-db-query_--statement_SELECT_vs.vds_name_rpm_version_FROM_vds_dynamic_vd_vds_static_vs_WHERE_vd.vds_id_vs.vds_id_--json")
     ethtool = glob_file("insights_commands/ethtool_*", ignore="ethtool_-.*")
     ethtool_S = glob_file("insights_commands/ethtool_-S_*")
