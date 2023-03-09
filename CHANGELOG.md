@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.1.11](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.11) (2023-03-09)
+
+- Fix malware SSL error fix - make it more flexible ([PR 3695](https://github.com/RedHatInsights/insights-core/pull/3695))
+- feat: New spec to get the duplicate machine id ([PR 3697](https://github.com/RedHatInsights/insights-core/pull/3697))
+- chore: update the latest package signing keys ([PR 3696](https://github.com/RedHatInsights/insights-core/pull/3696))
+
 # [insights-core-3.1.10](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.10) (2023-03-02)
 
 - feat: New spec and parser for sys_block_queue_stable_writes ([PR 3688](https://github.com/RedHatInsights/insights-core/pull/3688))
