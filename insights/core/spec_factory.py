@@ -690,14 +690,15 @@ class listdir(object):
     path.
 
     Args:
-        path (str): directory or glob pattern to list.
+        path (str): directory to list.
         context (ExecutionContext): the context under which the datasource
             should run.
-        ignore (str): regular expression defining paths to ignore.
+        ignore (str): regular expression defining names to ignore.
 
     Returns:
-        function: A datasource that returns the list of files and directories
-            in the directory specified by path
+        function: A datasource that returns a sorted list of file and directory
+            names in the directory specified by path. The list will be empty when
+            the directory is empty or all names get ignored.
     """
 
     def __init__(self, path, context=None, ignore=None, deps=[]):
@@ -712,11 +713,11 @@ class listdir(object):
         ctx = _get_context(self.context, broker)
         p = os.path.join(ctx.root, self.path.lstrip('/'))
         p = ctx.locate_path(p)
-        result = sorted(os.listdir(p)) if os.path.isdir(p) else sorted(glob(p))
-
-        if result:
-            return [os.path.basename(r) for r in result if not self.ignore_func(r)]
-        raise ContentException("Can't list %s or nothing there." % p)
+        try:
+            result = os.listdir(p)
+        except OSError as e:
+            raise ContentException(str(e))
+        return sorted([r for r in result if not self.ignore_func(r)])
 
 
 class simple_command(object):

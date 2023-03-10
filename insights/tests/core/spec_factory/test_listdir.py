@@ -4,22 +4,25 @@ import tempfile
 
 from insights.core import dr
 from insights.core.context import HostContext
+from insights.core.exceptions import ContentException
 from insights.core.spec_factory import listdir
 
 
 @pytest.fixture
 def sample_directory(scope="module"):
+    def touch(fpath):
+        fd = open(fpath, "w")
+        fd.close()
+
+    # Python2 does not have tempfile.TemporaryDirectory
     tmpdir = tempfile.mkdtemp()
     os.mkdir(tmpdir + "/dir1")
     os.mkdir(tmpdir + "/dir2")
-    for d in ["dir1", "dir2"]:
-        for f in ["file_a", "file_b"]:
-            fd = open(tmpdir + "/" + d + "/" + f, "w")
-            fd.close()
+    touch(tmpdir + "/dir1/file_a")
+    touch(tmpdir + "/dir1/file_b")
     yield tmpdir
-    for d in ["dir1", "dir2"]:
-        for f in ["file_a", "file_b"]:
-            os.remove(tmpdir + "/" + d + "/" + f)
+    os.remove(tmpdir + "/dir1/file_a")
+    os.remove(tmpdir + "/dir1/file_b")
     os.rmdir(tmpdir + "/dir1")
     os.rmdir(tmpdir + "/dir2")
     os.rmdir(tmpdir)
@@ -34,49 +37,43 @@ def run_listdir_test(sample_directory, spec):
     return broker
 
 
-CASES_PATH_TYPE = [
-    # directory
+CASES_RETURNS_LIST = [
+    # directory with files, no filter
     (listdir("dir1/"), ["file_a", "file_b"]),
-    # glob
-    (listdir("*/*"), ["file_a", "file_b", "file_a", "file_b"]),
-]
-
-
-CASES_IGNORE = [
-    # ignore filter works on basenames when listing a directory
+    # empty directory, no filter
+    (listdir("dir2/"), []),
+    # ignore filter works on basenames
     (listdir("dir1", ignore=".*a"), ["file_b"]),
-    # ignore filter works ONLY on basenames paths when listing a directory (nothing is filtered out)
+    # ignore filter works ONLY on basenames (nothing is filtered out here)
     (listdir("dir1", ignore="dir1.*"), ["file_a", "file_b"]),
-    # ignore filter works on relative paths when matching a glob (keeps only files from dir2)
-    (listdir("*/*", ignore="dir1.*"), ["file_a", "file_b"]),
-    # ignore filter does not cause ContentException when listing a directory
+    # empty list is returned when the ignore filter matches all basenames
     (listdir("dir1", ignore="file"), []),
-    # ignore filter does not cause ContentException when matching a glob
-    (listdir("*/*", ignore="dir"), []),
 ]
 
 
 @pytest.mark.parametrize(
-    "spec,result", CASES_PATH_TYPE + CASES_IGNORE
+    "spec,result", CASES_RETURNS_LIST
 )
-def test_non_empty_results(sample_directory, spec, result):
+def test_returns_list(sample_directory, spec, result):
     broker = run_listdir_test(sample_directory, spec)
     assert broker[spec] == result
-
-
-def test_ignore_uses_absolute_path_with_glob(sample_directory):
-    spec = listdir("*/*", ignore=sample_directory)
-    broker = run_listdir_test(sample_directory, spec)
-    assert broker[spec] == []
 
 
 @pytest.mark.parametrize(
     "spec",
     [
+        # directory does not exist
         listdir("nothing/there"),
-        listdir("nothing/there/*"),
+        # path is not a directory
+        listdir("dir1/file_a"),
     ]
 )
-def test_nothing_found(sample_directory, spec):
+def test_raises_content_exception(sample_directory, spec):
     broker = run_listdir_test(sample_directory, spec)
     assert spec not in broker
+    # PluginType masks ContentException as a new SkipComponent even though
+    # ContentException is a SkipComponet instance; it is not possible to test
+    # that a component raises ContentException using the broker even with
+    # broker.store_skips == True
+    with pytest.raises(ContentException):
+        spec(broker)
