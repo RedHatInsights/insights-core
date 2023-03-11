@@ -149,7 +149,6 @@ class Specs(SpecSet):
     dse_ldif = RegistryPoint(multi_output=True, filterable=True)
     du_dirs = RegistryPoint(multi_output=True, filterable=True)
     dumpe2fs_h = RegistryPoint(multi_output=True)
-    duplicate_machine_id = RegistryPoint(filterable=True)
     engine_config_all = RegistryPoint()
     engine_db_query_vdsm_version = RegistryPoint()
     engine_log = RegistryPoint(filterable=True)
