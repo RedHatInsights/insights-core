@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.1.12](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.12) (2023-03-11)
+
+- Revert "feat: New spec to get the duplicate machine id (3697)" ([PR 3703](https://github.com/RedHatInsights/insights-core/pull/3703))
+
 # [insights-core-3.1.11](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.11) (2023-03-09)
 
 - Fix malware SSL error fix - make it more flexible ([PR 3695](https://github.com/RedHatInsights/insights-core/pull/3695))
