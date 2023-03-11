@@ -25,8 +25,8 @@ from insights.components.satellite import IsCapsule, IsSatellite611, IsSatellite
 from insights.specs import Specs
 from insights.specs.datasources import (
     aws, awx_manage, cloud_init, candlepin_broker, corosync as corosync_ds,
-    dir_list, ethernet, httpd, ipcs, kernel_module_list, lpstat, machine_ids,
-    md5chk, package_provides, ps as ps_datasource, sap, satellite_missed_queues,
+    dir_list, ethernet, httpd, ipcs, kernel_module_list, lpstat, md5chk,
+    package_provides, ps as ps_datasource, sap, satellite_missed_queues,
     semanage, ssl_certificate, sys_fs_cgroup_memory, sys_fs_cgroup_memory_tasks_number,
     rpm_pkgs, user_group, yum_updates, luks_devices)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
@@ -174,7 +174,6 @@ class DefaultSpecs(Specs):
     dracut_kdump_capture_service = simple_file("/usr/lib/dracut/modules.d/99kdumpbase/kdump-capture.service")
     dse_ldif = glob_file("/etc/dirsrv/*/dse.ldif")
     du_dirs = foreach_execute(dir_list.du_dir_list, "/bin/du -s -k %s")
-    duplicate_machine_id = machine_ids.dup_machine_id_info
     engine_log = simple_file("/var/log/ovirt-engine/engine.log")
     etc_journald_conf = simple_file(r"etc/systemd/journald.conf")
     etc_journald_conf_d = glob_file(r"etc/systemd/journald.conf.d/*.conf")
