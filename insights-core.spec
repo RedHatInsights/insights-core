@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.1.11
+Version:        3.1.12
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,10 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Sat Mar 11 2023 Xiangce Liu <xiangceliu@redhat.com> 3.1.12-1
+- Revert "feat: New spec to get the duplicate machine id (#3697)" (#3703)
+  (xiangceliu@redhat.com)
+
 * Thu Mar 09 2023 Lizhong Chen <lichen@redhat.com> 3.1.11-1
 - Fix malware SSL error fix - make it more flexible (#3695) (mhuth@redhat.com)
 - feat: New spec to get the duplicate machine id (#3697)
