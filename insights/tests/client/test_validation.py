@@ -1,3 +1,4 @@
+import os
 from insights.client import InsightsClient
 from insights.client.collection_rules import InsightsUploadConf
 from insights.client.config import InsightsConfig
@@ -5,6 +6,18 @@ from insights.client.config import InsightsConfig
 
 VALID_EGG = "insights/tests/testing_data/valid_test_rpm.egg"
 INVALID_EGG = "insights/tests/testing_data/invalid_test_rpm.egg"
+
+
+def test_testing_files_find_valid_pair():
+    """ Test is pytest can find VALID .egg, .asc testing pair. """
+    assert os.path.isfile(VALID_EGG) is True
+    assert os.path.isfile(VALID_EGG + ".asc") is True
+
+
+def test_testing_files_find_invalid_pair():
+    """ Test is pytest can find INVALID .egg, .asc testing pair. """
+    assert os.path.isfile(INVALID_EGG) is True
+    assert os.path.isfile(INVALID_EGG + ".asc") is True
 
 
 def test_InsightsClient_verify_valid():
