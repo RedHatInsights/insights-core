@@ -40,30 +40,30 @@ def test_InsightsClient_verify_invalid():
 def test_InsightsUploadConf_validate_gpg_sig_valid():
     """ Test InsightsUploadConf.validate_gpg_sig() """
     """ on VALID .egg, .asc pair. """
-    upconf = InsightsUploadConf(config=InsightsConfig(), gpg_key=PUB_GPG_PATH)
-    res = upconf.validate_gpg_sig(VALID_EGG)
+    upconf = InsightsUploadConf(config=InsightsConfig())
+    res = upconf.validate_gpg_sig(VALID_EGG, gpg_key=PUB_GPG_PATH)
     assert res is True
 
 
 def test_InsightsUploadConf_validate_gpg_sig_invalid():
     """ Test InsightsUploadConf.validate_gpg_sig() """
     """ on INVALID .egg, .asc pair. """
-    upconf = InsightsUploadConf(config=InsightsConfig(), gpg_key=PUB_GPG_PATH)
-    res = upconf.validate_gpg_sig(INVALID_EGG)
+    upconf = InsightsUploadConf(config=InsightsConfig())
+    res = upconf.validate_gpg_sig(INVALID_EGG, gpg_key=PUB_GPG_PATH)
     assert res is False
 
 
 def test_InsightsUploadConf_validate_gpg_sig_valid_detach():
     """ Test InsightsUploadConf.validate_gpg_sig() """
     """ on VALID .egg and detached .asc file. """
-    upconf = InsightsUploadConf(config=InsightsConfig(), gpg_key=PUB_GPG_PATH)
-    res = upconf.validate_gpg_sig(VALID_EGG, VALID_EGG + ".asc")
+    upconf = InsightsUploadConf(config=InsightsConfig())
+    res = upconf.validate_gpg_sig(VALID_EGG, VALID_EGG + ".asc", gpg_key=PUB_GPG_PATH)
     assert res is True
 
 
 def test_InsightsUploadConf_validate_gpg_sig_invalid_detach():
     """ Test InsightsUploadConf.validate_gpg_sig() """
     """ on INVALID .egg and detached .asc file. """
-    upconf = InsightsUploadConf(config=InsightsConfig(), gpg_key=PUB_GPG_PATH)
-    res = upconf.validate_gpg_sig(INVALID_EGG, INVALID_EGG + ".asc")
+    upconf = InsightsUploadConf(config=InsightsConfig())
+    res = upconf.validate_gpg_sig(INVALID_EGG, INVALID_EGG + ".asc", gpg_key=PUB_GPG_PATH)
     assert res is False
