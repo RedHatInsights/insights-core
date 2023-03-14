@@ -1,0 +1,1366 @@
+{
+  "entries": [
+    {
+      "audience": "sysadmin",
+      "detail": {
+        "remediations": [
+          {
+            "context": "If some of excluded repositories are still required to be used during the upgrade, execute leapp with the --enablerepo option with the repoid of the repository required to be enabled as an argument (the option can be used multiple times).",
+            "type": "hint"
+          }
+        ]
+      },
+      "key": "1b9132cb2362ae7830e48eee7811be9527747de8",
+      "severity": "info",
+      "summary": "The following repositories are not supported by Red Hat and are excluded from the list of repositories used during the upgrade.\n- codeready-builder-beta-for-rhel-9-aarch64-rpms\n- codeready-builder-for-rhel-9-rhui-rpms\n- codeready-builder-for-rhel-9-aarch64-eus-rpms\n- codeready-builder-for-rhel-9-ppc64le-eus-rpms\n- codeready-builder-for-rhel-9-x86_64-rpms\n- codeready-builder-for-rhel-9-s390x-eus-rpms\n- rhui-codeready-builder-for-rhel-9-x86_64-rhui-rpms\n- codeready-builder-for-rhel-9-ppc64le-rpms\n- codeready-builder-beta-for-rhel-9-x86_64-rpms\n- codeready-builder-for-rhel-9-aarch64-rpms\n- codeready-builder-for-rhel-9-s390x-rpms\n- codeready-builder-for-rhel-9-x86_64-eus-rpms\n- codeready-builder-for-rhel-9-x86_64-rhui-rpms\n- codeready-builder-beta-for-rhel-9-s390x-rpms\n- codeready-builder-beta-for-rhel-9-ppc64le-rpms",
+      "title": "Excluded target system repositories",
+      "timeStamp": "2023-03-07T08:50:39.773788Z",
+      "hostname": "vm-10.37.redhat.com",
+      "actor": "repositories_blacklist",
+      "id": "0ef01eb6821321bfeb67491451bebb3479bdc052ae0c003a66308740e653b660",
+      "flags": [
+        "failure"
+      ],
+      "tags": [
+        "repository"
+      ]
+    },
+    {
+      "audience": "sysadmin",
+      "detail": {
+        "related_resources": [
+          {
+            "scheme": "package",
+            "title": "jitterentropy-devel"
+          }
+        ]
+      },
+      "key": "2437e204808f987477c0e9be8e4c95b3a87a9f3e",
+      "severity": "high",
+      "summary": "1 packages will be skipped because they are available only in target system repositories that are intentionally excluded from the list of repositories used during the upgrade. See the report message titled \"Excluded target system repositories\" for details.\nThe list of these packages:\n- jitterentropy-devel (repoid: codeready-builder-for-rhel-9-x86_64-rpms)",
+      "title": "Packages available in excluded repositories will not be installed",
+      "timeStamp": "2023-03-07T08:50:41.495964Z",
+      "hostname": "vm-10.37.redhat.com",
+      "actor": "pes_events_scanner",
+      "id": "33944dca6a74576b7bf3a58543c9667504fca7a1f1dcdb5b4b21bdd4638fe182",
+      "flags": [],
+      "tags": [
+        "repository"
+      ]
+    },
+    {
+      "audience": "sysadmin",
+      "key": "8fb81863f8413bd617c2a55b69b8e10ff03d7c72",
+      "severity": "info",
+      "summary": "SElinux relabeling will be scheduled as the status is permissive/enforcing.",
+      "title": "SElinux relabeling will be scheduled",
+      "timeStamp": "2023-03-07T08:50:41.832172Z",
+      "hostname": "vm-10.37.redhat.com",
+      "actor": "check_se_linux",
+      "id": "f8309c5343c22f9108b1c083e7448d1feb2fcaeca32e763f723136b984d1e3fa",
+      "flags": [],
+      "tags": [
+        "selinux",
+        "security"
+      ]
+    },
+    {
+      "audience": "sysadmin",
+      "detail": {
+        "remediations": [
+          {
+            "context": "Make sure there are no SElinux related warnings after the upgrade and enable SElinux manually afterwards. Notice: You can ignore the \"/root/tmp_leapp_py3\" SElinux warnings.",
+            "type": "hint"
+          }
+        ]
+      },
+      "key": "39d7183dafba798aa4bbb1e70b0ef2bbe5b1772f",
+      "severity": "low",
+      "summary": "SElinux will be set to permissive mode. Current mode: enforcing. This action is required by the upgrade process to make sure the upgraded system can boot without beinig blocked by SElinux rules.",
+      "title": "SElinux will be set to permissive mode",
+      "timeStamp": "2023-03-07T08:50:41.834488Z",
+      "hostname": "vm-10.37.redhat.com",
+      "actor": "check_se_linux",
+      "id": "681e72cd8e2281278da01e4fac2979e41d788fc01ccf1e2912359ebe9411d4c3",
+      "flags": [],
+      "tags": [
+        "selinux",
+        "security"
+      ]
+    },
+    {
+      "audience": "sysadmin",
+      "detail": {
+        "related_resources": [
+          {
+            "scheme": "package",
+            "title": "tzdata"
+          },
+          {
+            "scheme": "package",
+            "title": "kernel-tools-libs"
+          },
+          {
+            "scheme": "package",
+            "title": "xz-libs"
+          },
+          {
+            "scheme": "package",
+            "title": "curl"
+          },
+          {
+            "scheme": "package",
+            "title": "iwl7260-firmware"
+          },
+          {
+            "scheme": "package",
+            "title": "dhcp-client"
+          },
+          {
+            "scheme": "package",
+            "title": "libmaxminddb"
+          },
+          {
+            "scheme": "package",
+            "title": "libmetalink"
+          },
+          {
+            "scheme": "package",
+            "title": "rhc"
+          },
+          {
+            "scheme": "package",
+            "title": "xz-devel"
+          },
+          {
+            "scheme": "package",
+            "title": "python3-perf"
+          },
+          {
+            "scheme": "package",
+            "title": "rpm-plugin-systemd-inhibit"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-Digest"
+          },
+          {
+            "scheme": "package",
+            "title": "nss-sysinit"
+          },
+          {
+            "scheme": "package",
+            "title": "python3-jsonpatch"
+          },
+          {
+            "scheme": "package",
+            "title": "glibc-devel"
+          },
+          {
+            "scheme": "package",
+            "title": "boost-atomic"
+          },
+          {
+            "scheme": "package",
+            "title": "glib2"
+          },
+          {
+            "scheme": "package",
+            "title": "systemd-libs"
+          },
+          {
+            "scheme": "package",
+            "title": "python3-audit"
+          },
+          {
+            "scheme": "package",
+            "title": "libgomp"
+          },
+          {
+            "scheme": "package",
+            "title": "dracut-config-rescue"
+          },
+          {
+            "scheme": "package",
+            "title": "pcre2"
+          },
+          {
+            "scheme": "package",
+            "title": "python3-markupsafe"
+          },
+          {
+            "scheme": "package",
+            "title": "NetworkManager"
+          },
+          {
+            "scheme": "package",
+            "title": "iwl135-firmware"
+          },
+          {
+            "scheme": "package",
+            "title": "python3-jsonpointer"
+          },
+          {
+            "scheme": "package",
+            "title": "sqlite-libs"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-Mozilla-CA"
+          },
+          {
+            "scheme": "package",
+            "title": "openssh"
+          },
+          {
+            "scheme": "package",
+            "title": "cloud-init"
+          },
+          {
+            "scheme": "package",
+            "title": "grub2-tools-extra"
+          },
+          {
+            "scheme": "package",
+            "title": "python3-libs"
+          },
+          {
+            "scheme": "package",
+            "title": "rpm-build-libs"
+          },
+          {
+            "scheme": "package",
+            "title": "glibc-langpack-en"
+          },
+          {
+            "scheme": "package",
+            "title": "gssproxy"
+          },
+          {
+            "scheme": "package",
+            "title": "openssh-clients"
+          },
+          {
+            "scheme": "package",
+            "title": "util-linux"
+          },
+          {
+            "scheme": "package",
+            "title": "zlib-devel"
+          },
+          {
+            "scheme": "package",
+            "title": "gdisk"
+          },
+          {
+            "scheme": "package",
+            "title": "NetworkManager-team"
+          },
+          {
+            "scheme": "package",
+            "title": "nspr"
+          },
+          {
+            "scheme": "package",
+            "title": "dbus-common"
+          },
+          {
+            "scheme": "package",
+            "title": "iwl6000g2a-firmware"
+          },
+          {
+            "scheme": "package",
+            "title": "python3-rpm"
+          },
+          {
+            "scheme": "package",
+            "title": "libzstd-devel"
+          },
+          {
+            "scheme": "package",
+            "title": "policycoreutils-python-utils"
+          },
+          {
+            "scheme": "package",
+            "title": "rpcbind"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-Error"
+          },
+          {
+            "scheme": "package",
+            "title": "glibc-common"
+          },
+          {
+            "scheme": "package",
+            "title": "libgcrypt"
+          },
+          {
+            "scheme": "package",
+            "title": "python3-configobj"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-Pod-Escapes"
+          },
+          {
+            "scheme": "package",
+            "title": "vim-minimal"
+          },
+          {
+            "scheme": "package",
+            "title": "libcurl"
+          },
+          {
+            "scheme": "package",
+            "title": "dhcp-libs"
+          },
+          {
+            "scheme": "package",
+            "title": "expat"
+          },
+          {
+            "scheme": "package",
+            "title": "dbus-libs"
+          },
+          {
+            "scheme": "package",
+            "title": "device-mapper"
+          },
+          {
+            "scheme": "package",
+            "title": "iwl5000-firmware"
+          },
+          {
+            "scheme": "package",
+            "title": "libsss_nss_idmap"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-Net-SSLeay"
+          },
+          {
+            "scheme": "package",
+            "title": "dyninst"
+          },
+          {
+            "scheme": "package",
+            "title": "zip"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-HTTP-Tiny"
+          },
+          {
+            "scheme": "package",
+            "title": "libsss_idmap"
+          },
+          {
+            "scheme": "package",
+            "title": "zlib"
+          },
+          {
+            "scheme": "package",
+            "title": "iproute"
+          },
+          {
+            "scheme": "package",
+            "title": "openssl"
+          },
+          {
+            "scheme": "package",
+            "title": "boost-system"
+          },
+          {
+            "scheme": "package",
+            "title": "python3-cryptography"
+          },
+          {
+            "scheme": "package",
+            "title": "python3-pyserial"
+          },
+          {
+            "scheme": "package",
+            "title": "rpm"
+          },
+          {
+            "scheme": "package",
+            "title": "kernel-headers"
+          },
+          {
+            "scheme": "package",
+            "title": "rsync"
+          },
+          {
+            "scheme": "package",
+            "title": "libfdisk"
+          },
+          {
+            "scheme": "package",
+            "title": "selinux-policy-targeted"
+          },
+          {
+            "scheme": "package",
+            "title": "python3-pytz"
+          },
+          {
+            "scheme": "package",
+            "title": "sudo"
+          },
+          {
+            "scheme": "package",
+            "title": "cloud-utils-growpart"
+          },
+          {
+            "scheme": "package",
+            "title": "nfs-utils"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-threads"
+          },
+          {
+            "scheme": "package",
+            "title": "python3-webencodings"
+          },
+          {
+            "scheme": "package",
+            "title": "keyutils"
+          },
+          {
+            "scheme": "package",
+            "title": "platform-python"
+          },
+          {
+            "scheme": "package",
+            "title": "systemtap-runtime"
+          },
+          {
+            "scheme": "package",
+            "title": "NetworkManager-tui"
+          },
+          {
+            "scheme": "package",
+            "title": "gnupg2-smime"
+          },
+          {
+            "scheme": "package",
+            "title": "dbus-daemon"
+          },
+          {
+            "scheme": "package",
+            "title": "systemtap-devel"
+          },
+          {
+            "scheme": "package",
+            "title": "binutils"
+          },
+          {
+            "scheme": "package",
+            "title": "gnutls"
+          },
+          {
+            "scheme": "package",
+            "title": "iwl6000-firmware"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-Term-Cap"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-Getopt-Long"
+          },
+          {
+            "scheme": "package",
+            "title": "systemd-container"
+          },
+          {
+            "scheme": "package",
+            "title": "quota"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-Pod-Usage"
+          },
+          {
+            "scheme": "package",
+            "title": "python3-libdnf"
+          },
+          {
+            "scheme": "package",
+            "title": "device-mapper-libs"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-Storable"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-Digest-MD5"
+          },
+          {
+            "scheme": "package",
+            "title": "libsss_sudo"
+          },
+          {
+            "scheme": "package",
+            "title": "sssd-nfs-idmap"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-Scalar-List-Utils"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-File-Path"
+          },
+          {
+            "scheme": "package",
+            "title": "gpm-libs"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-MIME-Base64"
+          },
+          {
+            "scheme": "package",
+            "title": "glibc-headers"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-TermReadKey"
+          },
+          {
+            "scheme": "package",
+            "title": "iwl6050-firmware"
+          },
+          {
+            "scheme": "package",
+            "title": "tuned"
+          },
+          {
+            "scheme": "package",
+            "title": "kernel-core"
+          },
+          {
+            "scheme": "package",
+            "title": "boost-filesystem"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-IO-Socket-IP"
+          },
+          {
+            "scheme": "package",
+            "title": "kernel-devel"
+          },
+          {
+            "scheme": "package",
+            "title": "boost-chrono"
+          },
+          {
+            "scheme": "package",
+            "title": "libnfsidmap"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-IO"
+          },
+          {
+            "scheme": "package",
+            "title": "make"
+          },
+          {
+            "scheme": "package",
+            "title": "grub2-common"
+          },
+          {
+            "scheme": "package",
+            "title": "git-core"
+          },
+          {
+            "scheme": "package",
+            "title": "glibc-gconv-extra"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-Term-ANSIColor"
+          },
+          {
+            "scheme": "package",
+            "title": "iwl3160-firmware"
+          },
+          {
+            "scheme": "package",
+            "title": "dracut-squash"
+          },
+          {
+            "scheme": "package",
+            "title": "libsemanage"
+          },
+          {
+            "scheme": "package",
+            "title": "kpartx"
+          },
+          {
+            "scheme": "package",
+            "title": "python3-hawkey"
+          },
+          {
+            "scheme": "package",
+            "title": "nss-softokn-freebl"
+          },
+          {
+            "scheme": "package",
+            "title": "pam"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-Time-Local"
+          },
+          {
+            "scheme": "package",
+            "title": "elfutils-devel"
+          },
+          {
+            "scheme": "package",
+            "title": "nss-softokn"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-parent"
+          },
+          {
+            "scheme": "package",
+            "title": "python3-babel"
+          },
+          {
+            "scheme": "package",
+            "title": "python3-cffi"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-Git"
+          },
+          {
+            "scheme": "package",
+            "title": "python3-setools"
+          },
+          {
+            "scheme": "package",
+            "title": "krb5-libs"
+          },
+          {
+            "scheme": "package",
+            "title": "libsmartcols"
+          },
+          {
+            "scheme": "package",
+            "title": "libsss_autofs"
+          },
+          {
+            "scheme": "package",
+            "title": "grub2-tools-minimal"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-Exporter"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-libs"
+          },
+          {
+            "scheme": "package",
+            "title": "glibc"
+          },
+          {
+            "scheme": "package",
+            "title": "unzip"
+          },
+          {
+            "scheme": "package",
+            "title": "grub2-tools"
+          },
+          {
+            "scheme": "package",
+            "title": "kernel-tools"
+          },
+          {
+            "scheme": "package",
+            "title": "xz"
+          },
+          {
+            "scheme": "package",
+            "title": "iptables-libs"
+          },
+          {
+            "scheme": "package",
+            "title": "python3-libsemanage"
+          },
+          {
+            "scheme": "package",
+            "title": "sssd-common"
+          },
+          {
+            "scheme": "package",
+            "title": "yum-utils"
+          },
+          {
+            "scheme": "package",
+            "title": "iwl105-firmware"
+          },
+          {
+            "scheme": "package",
+            "title": "linux-firmware"
+          },
+          {
+            "scheme": "package",
+            "title": "elfutils-libelf-devel"
+          },
+          {
+            "scheme": "package",
+            "title": "libstdc++"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-libnet"
+          },
+          {
+            "scheme": "package",
+            "title": "python3-netifaces"
+          },
+          {
+            "scheme": "package",
+            "title": "dracut-network"
+          },
+          {
+            "scheme": "package",
+            "title": "python3-ply"
+          },
+          {
+            "scheme": "package",
+            "title": "libblkid"
+          },
+          {
+            "scheme": "package",
+            "title": "iwl2030-firmware"
+          },
+          {
+            "scheme": "package",
+            "title": "kexec-tools"
+          },
+          {
+            "scheme": "package",
+            "title": "grub2-pc"
+          },
+          {
+            "scheme": "package",
+            "title": "libxslt"
+          },
+          {
+            "scheme": "package",
+            "title": "efivar-libs"
+          },
+          {
+            "scheme": "package",
+            "title": "python3-oauthlib"
+          },
+          {
+            "scheme": "package",
+            "title": "vim-enhanced"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-Text-Tabs+Wrap"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-constant"
+          },
+          {
+            "scheme": "package",
+            "title": "python3-lxml"
+          },
+          {
+            "scheme": "package",
+            "title": "git"
+          },
+          {
+            "scheme": "package",
+            "title": "libsss_certmap"
+          },
+          {
+            "scheme": "package",
+            "title": "libtirpc"
+          },
+          {
+            "scheme": "package",
+            "title": "sssd-kcm"
+          },
+          {
+            "scheme": "package",
+            "title": "kernel-modules"
+          },
+          {
+            "scheme": "package",
+            "title": "dbus"
+          },
+          {
+            "scheme": "package",
+            "title": "gnupg2"
+          },
+          {
+            "scheme": "package",
+            "title": "iwl2000-firmware"
+          },
+          {
+            "scheme": "package",
+            "title": "bc"
+          },
+          {
+            "scheme": "package",
+            "title": "insights-client"
+          },
+          {
+            "scheme": "package",
+            "title": "cpp"
+          },
+          {
+            "scheme": "package",
+            "title": "rsyslog"
+          },
+          {
+            "scheme": "package",
+            "title": "systemd-udev"
+          },
+          {
+            "scheme": "package",
+            "title": "bash"
+          },
+          {
+            "scheme": "package",
+            "title": "selinux-policy"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-IO-Socket-SSL"
+          },
+          {
+            "scheme": "package",
+            "title": "vim-common"
+          },
+          {
+            "scheme": "package",
+            "title": "libverto-libevent"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-URI"
+          },
+          {
+            "scheme": "package",
+            "title": "libksba"
+          },
+          {
+            "scheme": "package",
+            "title": "wget"
+          },
+          {
+            "scheme": "package",
+            "title": "systemd-pam"
+          },
+          {
+            "scheme": "package",
+            "title": "microcode_ctl"
+          },
+          {
+            "scheme": "package",
+            "title": "python3-jwt"
+          },
+          {
+            "scheme": "package",
+            "title": "python3-jsonschema"
+          },
+          {
+            "scheme": "package",
+            "title": "ca-certificates"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-Encode"
+          },
+          {
+            "scheme": "package",
+            "title": "NetworkManager-libnm"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-PathTools"
+          },
+          {
+            "scheme": "package",
+            "title": "openssl-libs"
+          },
+          {
+            "scheme": "package",
+            "title": "iptables-ebtables"
+          },
+          {
+            "scheme": "package",
+            "title": "strace"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-Text-ParseWords"
+          },
+          {
+            "scheme": "package",
+            "title": "quota-nls"
+          },
+          {
+            "scheme": "package",
+            "title": "time"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-podlators"
+          },
+          {
+            "scheme": "package",
+            "title": "iptables"
+          },
+          {
+            "scheme": "package",
+            "title": "rpm-plugin-selinux"
+          },
+          {
+            "scheme": "package",
+            "title": "ipcalc"
+          },
+          {
+            "scheme": "package",
+            "title": "iwl5150-firmware"
+          },
+          {
+            "scheme": "package",
+            "title": "emacs-filesystem"
+          },
+          {
+            "scheme": "package",
+            "title": "tbb"
+          },
+          {
+            "scheme": "package",
+            "title": "elfutils-debuginfod-client-devel"
+          },
+          {
+            "scheme": "package",
+            "title": "sssd-client"
+          },
+          {
+            "scheme": "package",
+            "title": "libmpc"
+          },
+          {
+            "scheme": "package",
+            "title": "openssh-server"
+          },
+          {
+            "scheme": "package",
+            "title": "libdnf"
+          },
+          {
+            "scheme": "package",
+            "title": "mokutil"
+          },
+          {
+            "scheme": "package",
+            "title": "vim-filesystem"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-Pod-Perldoc"
+          },
+          {
+            "scheme": "package",
+            "title": "nss"
+          },
+          {
+            "scheme": "package",
+            "title": "dbus-tools"
+          },
+          {
+            "scheme": "package",
+            "title": "python3-libxml2"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-Data-Dumper"
+          },
+          {
+            "scheme": "package",
+            "title": "systemtap-client"
+          },
+          {
+            "scheme": "package",
+            "title": "dhcp-common"
+          },
+          {
+            "scheme": "package",
+            "title": "dracut"
+          },
+          {
+            "scheme": "package",
+            "title": "python3-html5lib"
+          },
+          {
+            "scheme": "package",
+            "title": "gcc"
+          },
+          {
+            "scheme": "package",
+            "title": "python3-policycoreutils"
+          },
+          {
+            "scheme": "package",
+            "title": "boost-date-time"
+          },
+          {
+            "scheme": "package",
+            "title": "git-core-doc"
+          },
+          {
+            "scheme": "package",
+            "title": "gzip"
+          },
+          {
+            "scheme": "package",
+            "title": "libmount"
+          },
+          {
+            "scheme": "package",
+            "title": "grub2-pc-modules"
+          },
+          {
+            "scheme": "package",
+            "title": "libgcc"
+          },
+          {
+            "scheme": "package",
+            "title": "python3-jinja2"
+          },
+          {
+            "scheme": "package",
+            "title": "aspell"
+          },
+          {
+            "scheme": "package",
+            "title": "rpm-libs"
+          },
+          {
+            "scheme": "package",
+            "title": "isl"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-Carp"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-interpreter"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-Socket"
+          },
+          {
+            "scheme": "package",
+            "title": "boost-timer"
+          },
+          {
+            "scheme": "package",
+            "title": "geolite2-city"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-Errno"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-Pod-Simple"
+          },
+          {
+            "scheme": "package",
+            "title": "libuuid"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-File-Temp"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-threads-shared"
+          },
+          {
+            "scheme": "package",
+            "title": "initscripts"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-Unicode-Normalize"
+          },
+          {
+            "scheme": "package",
+            "title": "iwl100-firmware"
+          },
+          {
+            "scheme": "package",
+            "title": "nss-util"
+          },
+          {
+            "scheme": "package",
+            "title": "geolite2-country"
+          },
+          {
+            "scheme": "package",
+            "title": "python3-pycparser"
+          },
+          {
+            "scheme": "package",
+            "title": "rng-tools"
+          },
+          {
+            "scheme": "package",
+            "title": "grub2-tools-efi"
+          },
+          {
+            "scheme": "package",
+            "title": "avahi-libs"
+          },
+          {
+            "scheme": "package",
+            "title": "libxcrypt-devel"
+          },
+          {
+            "scheme": "package",
+            "title": "bind-export-libs"
+          },
+          {
+            "scheme": "package",
+            "title": "libxml2"
+          },
+          {
+            "scheme": "package",
+            "title": "kernel"
+          },
+          {
+            "scheme": "package",
+            "title": "systemd"
+          },
+          {
+            "scheme": "package",
+            "title": "boost-thread"
+          },
+          {
+            "scheme": "package",
+            "title": "systemtap"
+          },
+          {
+            "scheme": "package",
+            "title": "perl-macros"
+          },
+          {
+            "scheme": "package",
+            "title": "checkpolicy"
+          },
+          {
+            "scheme": "package",
+            "title": "qemu-guest-agent"
+          },
+          {
+            "scheme": "package",
+            "title": "iwl1000-firmware"
+          },
+          {
+            "scheme": "package",
+            "title": "python3-prettytable"
+          },
+          {
+            "scheme": "repository",
+            "title": "rhel-AppStream-updates"
+          },
+          {
+            "scheme": "repository",
+            "title": "rhel-AppStream"
+          },
+          {
+            "scheme": "repository",
+            "title": "rhel"
+          },
+          {
+            "scheme": "repository",
+            "title": "rhel-updates"
+          }
+        ],
+        "remediations": [
+          {
+            "context": "You can file a request to add this repository to the scope of in-place upgrades by filing a support ticket",
+            "type": "hint"
+          }
+        ]
+      },
+      "key": "8e89e20c645cea600b240156071d81c64daab7ad",
+      "severity": "low",
+      "summary": "The following repositories with Red Hat-signed packages are unknown to Leapp:\n- rhel-AppStream-updates\n- rhel-AppStream\n- rhel\n- rhel-updates\nAnd the following packages installed from those repositories may not be upgraded:\n- tzdata\n- kernel-tools-libs\n- xz-libs\n- curl\n- iwl7260-firmware\n- dhcp-client\n- libmaxminddb\n- libmetalink\n- rhc\n- xz-devel\n- python3-perf\n- rpm-plugin-systemd-inhibit\n- perl-Digest\n- nss-sysinit\n- python3-jsonpatch\n- glibc-devel\n- boost-atomic\n- glib2\n- systemd-libs\n- python3-audit\n- libgomp\n- dracut-config-rescue\n- pcre2\n- python3-markupsafe\n- NetworkManager\n- iwl135-firmware\n- python3-jsonpointer\n- sqlite-libs\n- perl-Mozilla-CA\n- openssh\n- cloud-init\n- grub2-tools-extra\n- python3-libs\n- rpm-build-libs\n- glibc-langpack-en\n- gssproxy\n- openssh-clients\n- util-linux\n- zlib-devel\n- gdisk\n- NetworkManager-team\n- nspr\n- dbus-common\n- iwl6000g2a-firmware\n- python3-rpm\n- libzstd-devel\n- policycoreutils-python-utils\n- rpcbind\n- perl-Error\n- glibc-common\n- libgcrypt\n- python3-configobj\n- perl-Pod-Escapes\n- vim-minimal\n- libcurl\n- dhcp-libs\n- expat\n- dbus-libs\n- device-mapper\n- iwl5000-firmware\n- libsss_nss_idmap\n- perl-Net-SSLeay\n- dyninst\n- zip\n- perl-HTTP-Tiny\n- libsss_idmap\n- zlib\n- iproute\n- openssl\n- boost-system\n- python3-cryptography\n- python3-pyserial\n- rpm\n- kernel-headers\n- rsync\n- libfdisk\n- selinux-policy-targeted\n- python3-pytz\n- sudo\n- cloud-utils-growpart\n- nfs-utils\n- perl-threads\n- python3-webencodings\n- keyutils\n- platform-python\n- systemtap-runtime\n- NetworkManager-tui\n- gnupg2-smime\n- dbus-daemon\n- systemtap-devel\n- binutils\n- gnutls\n- iwl6000-firmware\n- perl-Term-Cap\n- perl-Getopt-Long\n- systemd-container\n- quota\n- perl-Pod-Usage\n- python3-libdnf\n- device-mapper-libs\n- perl-Storable\n- perl-Digest-MD5\n- libsss_sudo\n- sssd-nfs-idmap\n- perl-Scalar-List-Utils\n- perl-File-Path\n- gpm-libs\n- perl-MIME-Base64\n- glibc-headers\n- perl-TermReadKey\n- iwl6050-firmware\n- tuned\n- kernel-core\n- boost-filesystem\n- perl-IO-Socket-IP\n- kernel-devel\n- boost-chrono\n- libnfsidmap\n- perl-IO\n- make\n- grub2-common\n- git-core\n- glibc-gconv-extra\n- perl-Term-ANSIColor\n- iwl3160-firmware\n- dracut-squash\n- libsemanage\n- kpartx\n- python3-hawkey\n- nss-softokn-freebl\n- pam\n- perl-Time-Local\n- elfutils-devel\n- nss-softokn\n- perl-parent\n- python3-babel\n- python3-cffi\n- perl-Git\n- python3-setools\n- krb5-libs\n- libsmartcols\n- libsss_autofs\n- grub2-tools-minimal\n- perl-Exporter\n- perl-libs\n- glibc\n- unzip\n- grub2-tools\n- kernel-tools\n- xz\n- iptables-libs\n- python3-libsemanage\n- sssd-common\n- yum-utils\n- iwl105-firmware\n- linux-firmware\n- elfutils-libelf-devel\n- libstdc++\n- perl-libnet\n- python3-netifaces\n- dracut-network\n- python3-ply\n- libblkid\n- iwl2030-firmware\n- kexec-tools\n- grub2-pc\n- libxslt\n- efivar-libs\n- python3-oauthlib\n- vim-enhanced\n- perl-Text-Tabs+Wrap\n- perl-constant\n- python3-lxml\n- git\n- libsss_certmap\n- libtirpc\n- sssd-kcm\n- kernel-modules\n- dbus\n- gnupg2\n- iwl2000-firmware\n- bc\n- insights-client\n- cpp\n- rsyslog\n- systemd-udev\n- bash\n- selinux-policy\n- perl-IO-Socket-SSL\n- vim-common\n- libverto-libevent\n- perl-URI\n- libksba\n- wget\n- systemd-pam\n- microcode_ctl\n- python3-jwt\n- python3-jsonschema\n- ca-certificates\n- perl-Encode\n- NetworkManager-libnm\n- perl-PathTools\n- openssl-libs\n- iptables-ebtables\n- strace\n- perl-Text-ParseWords\n- quota-nls\n- time\n- perl-podlators\n- iptables\n- rpm-plugin-selinux\n- ipcalc\n- iwl5150-firmware\n- emacs-filesystem\n- tbb\n- elfutils-debuginfod-client-devel\n- sssd-client\n- libmpc\n- openssh-server\n- libdnf\n- mokutil\n- vim-filesystem\n- perl-Pod-Perldoc\n- nss\n- dbus-tools\n- python3-libxml2\n- perl-Data-Dumper\n- systemtap-client\n- dhcp-common\n- dracut\n- python3-html5lib\n- gcc\n- python3-policycoreutils\n- boost-date-time\n- git-core-doc\n- gzip\n- libmount\n- grub2-pc-modules\n- libgcc\n- python3-jinja2\n- aspell\n- rpm-libs\n- isl\n- perl-Carp\n- perl-interpreter\n- perl-Socket\n- boost-timer\n- geolite2-city\n- perl-Errno\n- perl-Pod-Simple\n- libuuid\n- perl-File-Temp\n- perl-threads-shared\n- initscripts\n- perl-Unicode-Normalize\n- iwl100-firmware\n- nss-util\n- geolite2-country\n- python3-pycparser\n- rng-tools\n- grub2-tools-efi\n- avahi-libs\n- libxcrypt-devel\n- bind-export-libs\n- libxml2\n- kernel\n- systemd\n- boost-thread\n- systemtap\n- perl-macros\n- checkpolicy\n- qemu-guest-agent\n- iwl1000-firmware\n- python3-prettytable",
+      "title": "Some enabled RPM repositories are unknown to Leapp",
+      "timeStamp": "2023-03-07T08:50:42.672353Z",
+      "hostname": "vm-10.37.redhat.com",
+      "actor": "check_skipped_repositories",
+      "id": "a9dcd697d6213d302deb10ae47af7f6db5d6d24476fb73443038871d35c3335d",
+      "flags": [],
+      "tags": [
+        "repository"
+      ]
+    },
+    {
+      "audience": "sysadmin",
+      "detail": {
+        "related_resources": [
+          {
+            "scheme": "file",
+            "title": "/etc/fstab"
+          }
+        ],
+        "remediations": [
+          {
+            "context": "Disable NFS temporarily for the upgrade if possible.",
+            "type": "hint"
+          }
+        ]
+      },
+      "flags": [
+        "inhibitor"
+      ],
+      "key": "9881b25faceeeaa7a6478bcdac29afd7f6baaaed",
+      "severity": "high",
+      "summary": "NFS is currently not supported by the inplace upgrade.\nWe have found NFS usage at the following locations:\n- NFS shares found in /etc/fstab:\n - nfs01b.redhat.com:/devops_engineering_nfs/devarchive/redhat /mnt/redhat\n - nest.test.redhat.com:/mnt/qa /mnt/qa\n - vtap-eng01.redhat.com:/vol/engarchive /mnt/engarchive\n - nest.test.redhat.com:/mnt/tpsdist /mnt/tpsdist\n - nfs01b.redhat.com:/devops_engineering_nfs/devarchive/redhat/brewroot /mnt/brew\n - nfs01b.redhat.com:/devops_brew_scratch_nfs/scratch /mnt/brew_scratch\n- NFS shares currently mounted:\n - nfs01b.redhat.com:/devops_engineering_nfs/devarchive/redhat /mnt/redhat\n - nest.test.redhat.com:/mnt/qa /mnt/qa\n",
+      "title": "Use of NFS detected. Upgrade can't proceed",
+      "timeStamp": "2023-03-07T08:50:43.595079Z",
+      "hostname": "vm-10.37.redhat.com",
+      "actor": "check_nfs",
+      "id": "1a0502cb07f08a7c8b7bfb87c45db72a63e55549731be2e801cbe38649473a68",
+      "tags": [
+        "filesystem",
+        "network"
+      ]
+    },
+    {
+      "audience": "sysadmin",
+      "key": "13f0791ae5f19f50e7d0d606fb6501f91b1efb2c",
+      "severity": "high",
+      "summary": "The following packages have not been signed by Red Hat and may be removed during the upgrade process in case Red Hat-signed packages to be removed during the upgrade depend on them:\n- beakerlib\n- beakerlib-redhat\n- epel-release\n- gpg-pubkey\n- leapp\n- leapp-deps\n- leapp-upgrade-el8toel9\n- leapp-upgrade-el8toel9-deps\n- python3-leapp\n- qa-tools\n- restraint\n- restraint-rhts",
+      "title": "Packages not signed by Red Hat found on the system",
+      "timeStamp": "2023-03-07T08:50:43.672841Z",
+      "hostname": "vm-10.37.redhat.com",
+      "actor": "red_hat_signed_rpm_check",
+      "id": "cedf35b0689d3ac986f25a09f0c4ac19a35c68d888a3c923bda7f88ba51eed5a",
+      "flags": [],
+      "tags": [
+        "sanity"
+      ]
+    },
+    {
+      "audience": "sysadmin",
+      "detail": {
+        "related_resources": [
+          {
+            "scheme": "package",
+            "title": "openssh-server"
+          },
+          {
+            "scheme": "file",
+            "title": "/etc/ssh/sshd_config"
+          }
+        ],
+        "remediations": [
+          {
+            "context": "If you depend on remote root logins using passwords, consider setting up a different user for remote administration or adding a comment into the sshd_config next to the \"PermitRootLogin yes\" directive to prevent rpm replacing it during the upgrade.",
+            "type": "hint"
+          }
+        ]
+      },
+      "flags": [
+        "inhibitor"
+      ],
+      "key": "3d21e8cc9e1c09dc60429de7716165787e99515f",
+      "severity": "high",
+      "summary": "OpenSSH configuration file will get updated to RHEL9 version, no longer allowing root login with password. It is a good practice to use non-root administrative user and non-password authentications, but if you rely on the remote root login, this change can lock you out of this system.",
+      "title": "Possible problems with remote login using root account",
+      "timeStamp": "2023-03-07T08:50:44.580255Z",
+      "hostname": "vm-10.37.redhat.com",
+      "actor": "openssh_permit_root_login",
+      "id": "2d92c6027e1b78dc018ab03ef7317aa39c862a99389b72e9c50920b238fc0c6f",
+      "tags": [
+        "authentication",
+        "security",
+        "network",
+        "services"
+      ]
+    },
+    {
+      "audience": "sysadmin",
+      "detail": {
+        "related_resources": [
+          {
+            "scheme": "package",
+            "title": "openssh-server"
+          },
+          {
+            "scheme": "file",
+            "title": "/etc/ssh/sshd_config"
+          }
+        ],
+        "remediations": [
+          {
+            "context": "If you depend on remote root logins using passwords, consider setting up a different user for remote administration. Otherwise you can ignore this message.",
+            "type": "hint"
+          }
+        ]
+      },
+      "key": "e738f78bc8f3a84411a4210e3b609057139d1855",
+      "severity": "high",
+      "summary": "RHEL9 no longer allows remote root logins, but the server configuration explicitly overrides this default. The configuration file will not be updated and root is still going to be allowed to login with password. This is not recommended and considered as a security risk.",
+      "title": "Remote root logins globally allowed using password",
+      "timeStamp": "2023-03-07T08:50:44.582531Z",
+      "hostname": "vm-10.37.redhat.com",
+      "actor": "openssh_permit_root_login",
+      "id": "53314590cb173c6fb07f56bbae50b3a4bb53db13d968b5acac34dc75763942f2",
+      "flags": [],
+      "tags": [
+        "authentication",
+        "security",
+        "network",
+        "services"
+      ]
+    },
+    {
+      "audience": "sysadmin",
+      "key": "baa75fad370c42fd037481909201cde9495dacf4",
+      "severity": "high",
+      "summary": "On legacy (BIOS) systems, GRUB core (located in the gap between the MBR and the first partition) does not get automatically updated when GRUB is upgraded.",
+      "title": "GRUB core will be updated during upgrade",
+      "timeStamp": "2023-03-07T08:50:45.043127Z",
+      "hostname": "vm-10.37.redhat.com",
+      "actor": "check_grub_core",
+      "id": "aae68bf56ac259f5c3ff251067cefd727711a69e32eb71ce84bbbd1fe227c48b",
+      "flags": [],
+      "tags": [
+        "boot"
+      ]
+    }
+  ],
+  "leapp_run_id": "00000000-1022-4cec-b743-000000000000"
+}

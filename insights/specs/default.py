@@ -25,10 +25,11 @@ from insights.components.satellite import IsCapsule, IsSatellite611, IsSatellite
 from insights.specs import Specs
 from insights.specs.datasources import (
     aws, awx_manage, cloud_init, candlepin_broker, corosync as corosync_ds,
-    dir_list, ethernet, httpd, ipcs, kernel_module_list, lpstat, machine_ids,
-    md5chk, package_provides, ps as ps_datasource, sap, satellite_missed_queues,
-    semanage, ssl_certificate, sys_fs_cgroup_memory, sys_fs_cgroup_memory_tasks_number,
-    rpm_pkgs, user_group, yum_updates, luks_devices)
+    dir_list, ethernet, httpd, ipcs, kernel_module_list, leapp, lpstat,
+    machine_ids, md5chk, package_provides, ps as ps_datasource, sap,
+    satellite_missed_queues, semanage, ssl_certificate, sys_fs_cgroup_memory,
+    sys_fs_cgroup_memory_tasks_number, rpm_pkgs, user_group, yum_updates,
+    luks_devices)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 from insights.specs.datasources.pcp import pcp_enabled, pmlog_summary_args
 from insights.specs.datasources.container import running_rhel_containers, containers_inspect
@@ -298,6 +299,7 @@ class DefaultSpecs(Specs):
     krb5 = glob_file([r"etc/krb5.conf", r"etc/krb5.conf.d/*"])
     ksmstate = simple_file("/sys/kernel/mm/ksm/run")
     lastupload = glob_file(["/etc/redhat-access-insights/.lastupload", "/etc/insights-client/.lastupload"])
+    leapp_report = leapp.leapp_report
     ld_library_path_of_user = sap.ld_library_path_of_user
     ldif_config = glob_file("/etc/dirsrv/slapd-*/dse.ldif")
     libssh_client_config = simple_file("/etc/libssh/libssh_client.config")
