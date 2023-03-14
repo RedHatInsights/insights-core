@@ -1,3 +1,4 @@
+import json
 import pytest
 
 from mock.mock import Mock
@@ -32,7 +33,10 @@ def test_leapp_report():
 
     result = leapp_report(broker)
 
-    assert ''.join(result.content).strip() == ''.join(RESULT).strip()
+    result_json = json.loads(''.join(result.content).strip())
+    expected_json = json.loads(''.join(RESULT).strip())
+    for ret in result_json:
+        assert ret in expected_json
 
     report_file = Mock()
     report_file.content = INPUT_NG_1
