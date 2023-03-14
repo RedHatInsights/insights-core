@@ -3,9 +3,11 @@ from insights.client import InsightsClient
 from insights.client.collection_rules import InsightsUploadConf
 from insights.client.config import InsightsConfig
 
+curr_dir = os.path.dirname(os.path.abspath(__file__))
+test_dir = os.path.dirname(os.path.abspath(os.path.join(curr_dir)))
 
-VALID_EGG = "insights/tests/testing_data/valid_test_rpm.egg"
-INVALID_EGG = "insights/tests/testing_data/invalid_test_rpm.egg"
+VALID_EGG = os.path.join(test_dir, "testing_data/valid_test_rpm.egg")
+INVALID_EGG = os.path.join(test_dir, "testing_data/invalid_test_rpm.egg")
 
 
 def test_testing_files_find_valid_pair():
