@@ -137,7 +137,7 @@ class InsightsUploadConf(object):
                     self.collection_rules_url = conn.base_url.split('/platform')[0] + '/v1/static/uploader.v2.json'
             self.conn = conn
 
-    def validate_gpg_sig(self, path, sig=None):
+    def validate_gpg_sig(self, path, sig=None, gpg_key=constants.pub_gpg_path):
         """
         Validate the collection rules
         """
@@ -146,7 +146,7 @@ class InsightsUploadConf(object):
         if sig is None:
             sig = path + ".asc"
         command = ("/usr/bin/gpg --no-default-keyring --homedir " + homedir +
-                    " --keyring " + constants.pub_gpg_path +
+                    " --keyring " + gpg_key +
                     " --verify " + sig + " " + path)
         if not six.PY3:
             command = command.encode('utf-8', 'ignore')
