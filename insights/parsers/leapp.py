@@ -23,8 +23,8 @@ class LeappReport(Parser, list):
     Examples:
         >>> type(leapp_report)
         <class 'insights.parsers.leapp.LeappReport'>
-        >>> leapp_report[0]['flags']
-        ['inhibitor']
+        >>> 'inhibitor' in leapp_report[0]['flags']
+        True
         >>> "Use of NFS detected. " in leapp_report[0]['title']
         True
     """
