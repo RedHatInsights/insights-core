@@ -22,8 +22,19 @@ $ModLoad imtcp.so
 $ModLoad imjournal
 $InputTCPMaxSessions 10
 $IncludeConfig /etc/rsyslog.d/*.conf
-if ( .ev_index != "") then { if (lookup("es-debug-selector",.ev_index) == "on") then reset  .𝑟𝑎𝑛𝑑𝑜𝑚=𝑟𝑎𝑛𝑑𝑜𝑚(300);𝑖𝑓(.random >= 0 and.𝑟𝑎𝑛𝑑𝑜𝑚<100)𝑡ℎ𝑒𝑛𝑎𝑐𝑡𝑖𝑜𝑛(𝑒𝑟𝑟𝑜𝑟𝑓𝑖𝑙𝑒="/𝑣𝑎𝑟/𝑙𝑜𝑔/𝑟𝑠𝑦𝑠𝑙𝑜𝑔/𝑒𝑠−𝑒𝑟𝑟𝑜𝑟𝑠1.𝑙𝑜𝑔")′,′𝑒𝑙𝑠𝑒𝑖𝑓(.random >= 100 and $.random < 200) then { action( errorfile="/var/log/rsyslog/es-errors2.log" ) }
-else { action( errorfile="/var/log/rsyslog/es-errors3.log" ) }
+if ($.ev_index != "") then {
+    if (lookup("es-debug-selector", $.ev_index) == "on") then
+    reset $.random = random(300);
+    if ($.random >= 0 and $.random < 100) then {
+        action(errorfile="/var/log/rsyslog/es-errors1.log")
+    }
+    else if ($.random >= 100 and $.random < 200) then {
+        action(errorfile="/var/log/rsyslog/es-errors2.log")
+    }
+    else {
+        action(errorfile="/var/log/rsyslog/es-errors3.log")
+    }
+}
 
 # Provides TCP syslog reception
 #$ModLoad imtcp
@@ -77,7 +88,7 @@ def test_rsyslog_errorfiles_1():
     result = errorfiles(broker)
     assert result is not None
     assert isinstance(result, list)
-    assert result == sorted(['/var/log/rsyslog/es-errors2.log', '/var/log/rsyslog/es-errors3.log'])
+    assert result == sorted(['/var/log/rsyslog/es-errors1.log', '/var/log/rsyslog/es-errors2.log', '/var/log/rsyslog/es-errors3.log'])
 
 
 def test_rsyslog_errorfiles_2():
