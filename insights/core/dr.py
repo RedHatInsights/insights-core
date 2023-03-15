@@ -65,7 +65,7 @@ from functools import reduce as _reduce
 from insights.contrib import importlib
 from insights.contrib.toposort import toposort_flatten
 from insights.core.blacklist import BLACKLISTED_SPECS
-from insights.core.exceptions import BlacklistedSpec, MissingRequirements, ParseException, SkipComponent
+from insights.core.exceptions import BlacklistedSpec, MissingRequirements, SkipComponent
 from insights.util import defaults, enum, KeyPassingDefaultDict
 
 log = logging.getLogger(__name__)
@@ -1049,19 +1049,16 @@ def run_components(ordered_components, components, broker):
                 reqs = stringify_requirements(mr.requirements)
                 log.debug("%s missing requirements %s" % (name, reqs))
             broker.add_exception(component, mr)
-        except ParseException as pe:
-            log.warning(pe)
-            broker.add_exception(component, pe, traceback.format_exc())
         except SkipComponent as sc:
             if broker.store_skips:
-                log.warning(sc)
+                log.debug(sc)
                 broker.add_exception(component, sc, traceback.format_exc())
             else:
                 pass
         except Exception as ex:
-            tb = traceback.format_exc()
-            log.warning(tb)
-            broker.add_exception(component, ex, tb)
+            log.debug(ex)
+            for reg_spec in get_registry_points(component):
+                broker.add_exception(reg_spec, ex, traceback.format_exc())
         finally:
             broker.exec_times[component] = time.time() - start
             broker.fire_observers(component)
