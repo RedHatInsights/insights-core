@@ -1,12 +1,26 @@
-from collections import defaultdict
-from insights.core import filters
+import pytest
+import sys
 
+from collections import defaultdict
+
+from insights import datasource
+from insights.core import filters
+from insights.core.spec_factory import DatasourceProvider, RegistryPoint, SpecSet
 from insights.parsers.ps import PsAux, PsAuxcww
 from insights.specs import Specs
 from insights.specs.default import DefaultSpecs
 
-import pytest
-import sys
+
+class MySpecs(SpecSet):
+    no_filters = RegistryPoint(filterable=False)
+    has_filters = RegistryPoint(filterable=True)
+
+
+class LocalSpecs(MySpecs):
+    # The has_filters depends on no_filters
+    @datasource(MySpecs.no_filters)
+    def has_filters(broker):
+        return DatasourceProvider("", "the_data")
 
 
 def setup_function(func):
@@ -115,3 +129,13 @@ def test_add_filter_exception_raw():
 def test_add_filter_exception_empty():
     with pytest.raises(Exception):
         filters.add_filter(Specs.ps_aux, "")
+
+
+def test_get_filters():
+    _filter = 'A filter'
+    filters.add_filter(MySpecs.has_filters, _filter)
+
+    ret_has = filters.get_filters(MySpecs.has_filters)
+    assert _filter in ret_has
+    ret_no = filters.get_filters(MySpecs.no_filters)
+    assert len(ret_no) == 0
