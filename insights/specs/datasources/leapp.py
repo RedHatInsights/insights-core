@@ -41,9 +41,10 @@ def leapp_report(broker):
         if isinstance(report, dict):
             results = []
             for entry in report.get('entries', []):
+                groups = entry.get('groups', entry.get('flags', []))
                 for flag, keys in valid_keys.items():
-                    if flag in entry['flags']:
-                        ret = dict(flags=entry['flags'])
+                    if flag in groups:
+                        ret = dict(flags=groups)
                         for key in keys:
                             if isinstance(key, tuple):
                                 tmp = entry
