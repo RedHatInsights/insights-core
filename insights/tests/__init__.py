@@ -105,13 +105,14 @@ def deep_compare(result, expected):
     assert eq(result, expected), result
 
 
-def run_input_data(component, input_data):
+def run_input_data(component, input_data, store_skips=False):
     broker = dr.Broker()
     for k, v in input_data.data.items():
         broker[k] = v
 
     graph = dr.get_dependency_graph(component)
     broker = dr.run(graph, broker=broker)
+    broker.store_skips = store_skips
     for v in broker.tracebacks.values():
         print(v)
     return broker
