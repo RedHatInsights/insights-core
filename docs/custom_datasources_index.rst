@@ -140,6 +140,14 @@ insights.specs.datasources.luks_devices
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.machine_ids
+--------------------------------------
+
+.. automodule:: insights.specs.datasources.machine_ids
+    :members: dup_machine_id_info
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.malware_detection
 --------------------------------------------
 
