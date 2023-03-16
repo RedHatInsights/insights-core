@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.1.12
+Version:        3.1.13
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,26 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Mar 16 2023 Xiangce Liu <xiangceliu@redhat.com> 3.1.13-1
+- feat: New datasource and parser for leapp-report.json (#3708)
+  (xiangceliu@redhat.com)
+- feat: Add store_skips argument to run_input_data (#3706) (71874510+jholecek-
+  rh@users.noreply.github.com)
+- feat: Split listdir to listdir and listglob spec factories (#3694)
+  (71874510+jholecek-rh@users.noreply.github.com)
+- fix: enhance the error message to reminder customers re-register (#3691)
+  (lichen@redhat.com)
+- feat: New spec to get the duplicate machine id  (#3709)
+  (44796653+huali027@users.noreply.github.com)
+- Fix logs of check registration status for legacy upload (#3710)
+  (93577878+ahitacat@users.noreply.github.com)
+- fix: print short info for all Exceptions (#3707) (xiangceliu@redhat.com)
+- Log malware tracebacks to the log file, not the console (#3701)
+  (mhuth@redhat.com)
+- fix: let 'get_filters' work for filterable=True specs only (#3705)
+  (xiangceliu@redhat.com)
+- fix: update OSRelease.is_rhel more accurate (#3700) (xiangceliu@redhat.com)
+
 * Sat Mar 11 2023 Xiangce Liu <xiangceliu@redhat.com> 3.1.12-1
 - Revert "feat: New spec to get the duplicate machine id (#3697)" (#3703)
   (xiangceliu@redhat.com)
