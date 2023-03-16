@@ -123,6 +123,15 @@ insights.specs.datasources.kernel_module_list
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.leapp
+--------------------------------
+
+.. automodule:: insights.specs.datasources.leapp
+    :members: leapp_report, LocalSpecs
+    :show-inheritance:
+    :undoc-members:
+
+
 insights.specs.datasources.lpstat
 ---------------------------------
 
