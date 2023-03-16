@@ -1101,7 +1101,7 @@ class InsightsConnection(object):
         if host_details["total"] < 1:
             _host_not_found()
         if host_details["total"] > 1:
-            raise Exception("Error: multiple hosts detected (insights_id = %s)" % generate_machine_id())
+            raise Exception("Error: multiple hosts detected (insights_id = %s). To fix this error, run command: insights-client --unregister && insights-client --register" % generate_machine_id())
 
         if not os.path.exists("/var/lib/insights"):
             os.makedirs("/var/lib/insights", mode=0o755)
