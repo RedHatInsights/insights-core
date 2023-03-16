@@ -2,6 +2,19 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.1.13](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.13) (2023-03-16)
+
+- feat: New datasource and parser for leapp-report.json ([PR 3708](https://github.com/RedHatInsights/insights-core/pull/3708))
+- feat: Add store_skips argument to run_input_data ([PR 3706](https://github.com/RedHatInsights/insights-core/pull/3706))
+- feat: Split listdir to listdir and listglob spec factories ([PR 3694](https://github.com/RedHatInsights/insights-core/pull/3694))
+- fix: enhance the error message to reminder customers re-register ([PR 3691](https://github.com/RedHatInsights/insights-core/pull/3691))
+- feat: New spec to get the duplicate machine id  ([PR 3709](https://github.com/RedHatInsights/insights-core/pull/3709))
+- Fix logs of check registration status for legacy upload ([PR 3710](https://github.com/RedHatInsights/insights-core/pull/3710))
+- fix: print short info for all Exceptions ([PR 3707](https://github.com/RedHatInsights/insights-core/pull/3707))
+- Log malware tracebacks to the log file, not the console ([PR 3701](https://github.com/RedHatInsights/insights-core/pull/3701))
+- fix: let 'get_filters' work for filterable=True specs only ([PR 3705](https://github.com/RedHatInsights/insights-core/pull/3705))
+- fix: update OSRelease.is_rhel more accurate ([PR 3700](https://github.com/RedHatInsights/insights-core/pull/3700))
+
 # [insights-core-3.1.12](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.12) (2023-03-11)
 
 - Revert "feat: New spec to get the duplicate machine id (3697)" ([PR 3703](https://github.com/RedHatInsights/insights-core/pull/3703))
