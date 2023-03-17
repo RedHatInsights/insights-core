@@ -259,8 +259,7 @@ class OSRelease(object):
             ret.update(data)
             return ret
 
-        self._is_rhel = True
-        self._release = 'Red Hat Enterprise Linux'
+        self._release = 'RHEL'
         self._reasons = {}
         _dmesg = dmesg.linux_version if dmesg else dmesg
         if not list(filter(None, [uname, _dmesg, rpms])):
@@ -270,12 +269,10 @@ class OSRelease(object):
                 ret = _from_os_release(osr) if osr else dict()
                 ret.update(_from_redhat_release(rhr)) if rhr else None
                 if ret.get('other_linux', 'RHEL') != 'RHEL':
-                    self._is_rhel = False
                     self._release = ret['other_linux']
                     self._reasons = {'reason': 'NON-RHEL: os-release/redhat-release'}
             else:
                 # Nothing means NON-RHEL
-                self._is_rhel = False
                 self._release = 'Unknown'
                 self._reasons = {'reason': 'Nothing available to check'}
         else:
@@ -288,7 +285,6 @@ class OSRelease(object):
                                 result, _from_installed_rpms(rpms, uname)))
             # 'other_linux' means NON-RHEL
             if 'other_linux' in result and result['other_linux'] != 'RHEL':
-                self._is_rhel = False
                 self._release = result.pop('other_linux')
                 self._reasons = result
 
@@ -297,7 +293,7 @@ class OSRelease(object):
         """
         Returns True if it's RHEL, False for NON-RHEL.
         """
-        return self._is_rhel
+        return self._release == 'RHEL'
 
     @property
     def release(self):
