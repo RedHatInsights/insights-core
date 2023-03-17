@@ -111,63 +111,63 @@ def test_is_rhel():
     uname = Uname(context_wrap(UNAME_91))
     result = OSRelease(uname, None, None, None, None)
     assert result.is_rhel is True
-    assert result.release == "Red Hat Enterprise Linux"
+    assert result.release == "RHEL"
     assert result.reasons == {}
 
     # RHEL, dmesg only
     dmesg = DmesgLineList(context_wrap(DMESG_REDHAT))
     result = OSRelease(None, dmesg, None, None, None)
     assert result.is_rhel is True
-    assert result.release == "Red Hat Enterprise Linux"
-    assert result.product == "Red Hat Enterprise Linux"
+    assert result.release == "RHEL"
+    assert result.product == "RHEL"
     assert result.reasons == {}
 
     # RHEL, dmesg and uname
     dmesg = DmesgLineList(context_wrap(DMESG_REDHAT))
     result = OSRelease(uname, dmesg, None, None, None)
     assert result.is_rhel is True
-    assert result.release == "Red Hat Enterprise Linux"
+    assert result.release == "RHEL"
     assert result.reasons == {}
 
     # RHEL, rpms only
     rpms = InstalledRpms(context_wrap(RPMS_JSON_91_WO_KERNEL))
     result = OSRelease(None, None, rpms, None, None)
     assert result.is_rhel is True
-    assert result.release == "Red Hat Enterprise Linux"
+    assert result.release == "RHEL"
     assert result.reasons == {}
 
     rpms = InstalledRpms(context_wrap(RPMS_JSON_91_W_KERNEL))
     result = OSRelease(None, None, rpms, None, None)
     assert result.is_rhel is True
-    assert result.release == "Red Hat Enterprise Linux"
+    assert result.release == "RHEL"
     assert result.reasons == {}
 
     # RHEL, rpms and uname
     rpms = InstalledRpms(context_wrap(RPMS_JSON_91_W_KERNEL))
     result = OSRelease(uname, None, rpms, None, None)
     assert result.is_rhel is True
-    assert result.release == "Red Hat Enterprise Linux"
+    assert result.release == "RHEL"
     assert result.reasons == {}
 
     # RHEL, rpms, dmesg and uname
     rpms = InstalledRpms(context_wrap(RPMS_JSON_91_W_KERNEL))
     result = OSRelease(uname, dmesg, rpms, None, None)
     assert result.is_rhel is True
-    assert result.release == "Red Hat Enterprise Linux"
+    assert result.release == "RHEL"
     assert result.reasons == {}
 
     # RHEL, os-release
     osr = OsRelease(context_wrap(OS_RELEASE_RH))
     result = OSRelease(None, None, None, osr, None)
     assert result.is_rhel is True
-    assert result.release == "Red Hat Enterprise Linux"
+    assert result.release == "RHEL"
     assert result.reasons == {}
 
     # RHEL, redhat-release
     rhr = RedhatRelease(context_wrap(REDHAT_RELEASE_86))
     result = OSRelease(None, None, None, None, rhr)
     assert result.is_rhel is True
-    assert result.release == "Red Hat Enterprise Linux"
+    assert result.release == "RHEL"
     assert result.reasons == {}
 
 
