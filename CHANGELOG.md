@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.1.14](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.14) (2023-03-17)
+
+- chore: use RHEL for os_release.release ([PR 3716](https://github.com/RedHatInsights/insights-core/pull/3716))
+- fix: should not lose the exceptions from components ([PR 3715](https://github.com/RedHatInsights/insights-core/pull/3715))
+
 # [insights-core-3.1.13](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.13) (2023-03-16)
 
 - feat: New datasource and parser for leapp-report.json ([PR 3708](https://github.com/RedHatInsights/insights-core/pull/3708))
