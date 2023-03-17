@@ -1057,8 +1057,10 @@ def run_components(ordered_components, components, broker):
                 pass
         except Exception as ex:
             log.debug(ex)
+            tb = traceback.format_exc()
+            broker.add_exception(component, ex, tb)
             for reg_spec in get_registry_points(component):
-                broker.add_exception(reg_spec, ex, traceback.format_exc())
+                broker.add_exception(reg_spec, ex, tb)
         finally:
             broker.exec_times[component] = time.time() - start
             broker.fire_observers(component)
