@@ -9,8 +9,9 @@ The following parsers are included in this module:
 HanaLandscape - landscapeHostConfiguration.py
 ---------------------------------------------
 """
-from insights import parser, CommandParser
-from insights.parsers import SkipException
+from insights.core import CommandParser
+from insights.core.exceptions import SkipComponent
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 
@@ -22,7 +23,7 @@ class SapHanaPython(CommandParser, list):
         overall_status(bool): The overall host status.
 
     Raises:
-        SkipException: When nothing is parsered.
+        SkipComponent: When nothing is parsered.
     """
 
     def parse_content(self, content):
@@ -46,7 +47,7 @@ class SapHanaPython(CommandParser, list):
                 self.append(dict(zip(keys, lsp)))
 
         if len(self) == 0:
-            raise SkipException
+            raise SkipComponent
 
 
 @parser(Specs.sap_hana_landscape)

@@ -1,6 +1,7 @@
 from collections import deque
-from .. import Parser, parser
-from ..parsers import ParseException
+from insights.core import Parser
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 

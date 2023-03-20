@@ -6,8 +6,10 @@ Shared parsers for parsing output of the ``sapcontrol [option]`` commands.
 SAPControlSystemUpdateList- command ``sapcontrol -nr <NR> -function GetSystemUpdateList``
 -----------------------------------------------------------------------------------------
 """
-from insights import parser, CommandParser
-from insights.parsers import SkipException, ParseException, parse_delimited_table
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipComponent
+from insights.core.plugins import parser
+from insights.parsers import parse_delimited_table
 from insights.specs import Specs
 
 
@@ -47,7 +49,7 @@ class SAPControlSystemUpdateList(CommandParser):
     """
     def parse_content(self, content):
         if not content:
-            raise SkipException("Empty output.")
+            raise SkipComponent("Empty output.")
 
         header = "hostname, instanceNr, status, starttime, endtime, dispstatus"
         if len(content) <= 3 or header not in content:
@@ -62,7 +64,7 @@ class SAPControlSystemUpdateList(CommandParser):
                 heading_ignore=header_sp)
 
         if not self.data:
-            raise SkipException("Empty or useless output.")
+            raise SkipComponent("Empty or useless output.")
 
         self.is_running = all(l['status'] == 'Running' for l in self.data)
         self.is_green = all(l['dispstatus'] == 'GREEN' for l in self.data)

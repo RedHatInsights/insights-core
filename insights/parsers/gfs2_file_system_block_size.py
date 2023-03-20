@@ -4,10 +4,10 @@ GFS2FileSystemBlockSize - command ``stat -fc %s <mount_point_path>``
 
 The parser parse the output of ``stat -fc %s <mount_point_path>``
 """
-
-from insights import parser, CommandParser
+from insights.core import CommandParser
+from insights.core.exceptions import SkipComponent
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.parsers import SkipException
 
 
 @parser(Specs.gfs2_file_system_block_size)
@@ -28,7 +28,7 @@ class GFS2FileSystemBlockSize(CommandParser):
 
     Raise::
 
-        SkipException: When the content isn't in the expected format.
+        SkipComponent: When the content isn't in the expected format.
 
     Attributes::
 
@@ -39,4 +39,4 @@ class GFS2FileSystemBlockSize(CommandParser):
         if len(content) == 1 and content[0].isdigit():
             self.block_size = int(content[0])
         else:
-            raise SkipException('The output is invalid.')
+            raise SkipComponent('The output is invalid.')

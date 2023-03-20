@@ -128,6 +128,10 @@ def get_filters(component):
     """
     def inner(c, filters=None):
         filters = filters or set()
+
+        if hasattr(c, 'filterable') and c.filterable is False:
+            return filters
+
         if not ENABLED:
             return filters
 

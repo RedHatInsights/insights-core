@@ -6,7 +6,7 @@ from pytest import raises
 
 # don't even bother on 2.6
 if sys.version_info >= (2, 7):
-    from insights.client.apps.ansible.playbook_verifier import verify, PlaybookVerificationError  # noqa
+    from insights.client.apps.ansible.playbook_verifier import verify, PlaybookVerificationError, getRevocationList  # noqa
 
 
 @pytest.mark.skipif(sys.version_info < (2, 7), reason='Playbook verifier must be run on python 2.7 or above')
@@ -74,8 +74,9 @@ def test_key_import_error():
 
 
 @pytest.mark.skipif(sys.version_info < (2, 7), reason='Playbook verifier must be run on python 2.7 or above')
-@patch('insights.client.apps.ansible.playbook_verifier.verifyPlaybookSnippet', return_value=[])
-def test_playbook_verification_error(call):
+@patch('insights.client.apps.ansible.playbook_verifier.verifyPlaybookSnippet', return_value=([], []))
+@patch('insights.client.apps.ansible.playbook_verifier.getRevocationList', return_value=[])
+def test_playbook_verification_error(call_1, call_2):
     key_error = 'SIGNATURE NOT VALID: Template [name: test playbook] has invalid signature'
     fake_playbook = [{
         'name': "test playbook",
@@ -104,3 +105,65 @@ def test_playbook_verification_success(mock_method):
 
     result = verify(fake_playbook, skipVerify=False)
     assert result == fake_playbook
+
+
+# getRevocationList can't load list
+@pytest.mark.skipif(sys.version_info < (2, 7), reason='Playbook verifier must be run on python 2.7 or above')
+@patch('insights.client.apps.ansible.playbook_verifier.contrib.ruamel_yaml.ruamel.yaml.YAML.load', side_effect=Exception())
+def test_revocation_list_not_found(mock_method):
+    load_error = 'VERIFICATION FAILED: Error loading revocation list'
+
+    with raises(PlaybookVerificationError) as error:
+        getRevocationList()
+
+    assert load_error in str(error.value)
+
+
+# revocation list signature invalid
+@pytest.mark.skipif(sys.version_info < (2, 7), reason='Playbook verifier must be run on python 2.7 or above')
+@patch('insights.client.apps.ansible.playbook_verifier.verifyPlaybookSnippet', return_value=(None, 0xdeadbeef))
+def test_revocation_list_signature_invalid(mock_method):
+    load_error = 'VERIFICATION FAILED: Revocation list signature invalid'
+
+    with raises(PlaybookVerificationError) as error:
+        getRevocationList()
+
+    assert load_error in str(error.value)
+
+
+# revocation list empty
+@pytest.mark.skipif(sys.version_info < (2, 7), reason='Playbook verifier must be run on python 2.7 or above')
+@patch('insights.client.apps.ansible.playbook_verifier.contrib.ruamel_yaml.ruamel.yaml.YAML.load', return_value=[{}])
+@patch('insights.client.apps.ansible.playbook_verifier.verifyPlaybookSnippet', return_value=(True, 0xdeadbeef))
+def test_revocation_list_empty(call_1, call_2):
+    fake_playbook = [{
+        'name': "test playbook",
+        'vars': {
+            'insights_signature': 'TFMwdExTMUNSVWRKVGlCUVIxQWdVMGxIVGtGVVZWSkZMUzB0TFMwS0N==',
+            'insights_signature_exclude': '/vars/insights_signature'
+        }
+    }]
+
+    result = verify(fake_playbook, skipVerify=False)
+    assert result == fake_playbook
+
+
+# playbook on revoked list
+@pytest.mark.skipif(sys.version_info < (2, 7), reason='Playbook verifier must be run on python 2.7 or above')
+@patch('insights.client.apps.ansible.playbook_verifier.contrib.ruamel_yaml.ruamel.yaml.YAML.load',
+       return_value=[{'revoked_playbooks': [{'name': 'banned book', 'hash': 'deadbeef'}]}])
+@patch('insights.client.apps.ansible.playbook_verifier.verifyPlaybookSnippet', return_value=(True, bytearray.fromhex(u'deadbeef')))
+def test_revoked_playbook(call_1, call_2):
+    revoked_error = 'REVOKED PLAYBOOK: Template is on the revoked list [name: banned book]'
+    fake_playbook = [{
+        'name': "test playbook",
+        'vars': {
+            'insights_signature': 'TFMwdExTMUNSVWRKVGlCUVIxQWdVMGxIVGtGVVZWSkZMUzB0TFMwS0N==',
+            'insights_signature_exclude': '/vars/insights_signature'
+        }
+    }]
+
+    with raises(PlaybookVerificationError) as error:
+        verify(fake_playbook, skipVerify=False)
+
+    assert revoked_error in str(error.value)

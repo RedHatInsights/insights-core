@@ -11,10 +11,10 @@ For more details, See:
 - https://cloud.google.com/compute/docs/storing-retrieving-metadata#api_4
 
 """
-
-from insights import parser, CommandParser
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipComponent
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.parsers import SkipException, ParseException
 
 
 @parser(Specs.gcp_instance_type)
@@ -30,7 +30,7 @@ class GCPInstanceType(CommandParser):
 
 
     Raises:
-        SkipException: When content is empty or no parse-able content.
+        SkipComponent: When content is empty or no parse-able content.
         ParseException: When type cannot be recognized.
 
     Attributes:
@@ -50,7 +50,7 @@ class GCPInstanceType(CommandParser):
 
     def parse_content(self, content):
         if not content or 'curl: ' in content[0]:
-            raise SkipException()
+            raise SkipComponent()
 
         self.raw_line = self.raw = self.type = self.size = None
         # Ignore any curl stats that may be present in data

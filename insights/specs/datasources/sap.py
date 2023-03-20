@@ -1,12 +1,12 @@
 """
 Custom datasources for SAP related specs
 """
-from insights.specs import Specs
+from insights.combiners.sap import Sap
 from insights.core.context import HostContext
-from insights.core.dr import SkipComponent
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider
-from insights.combiners.sap import Sap
+from insights.specs import Specs
 from insights.specs.datasources import DEFAULT_SHELL_TIMEOUT
 
 

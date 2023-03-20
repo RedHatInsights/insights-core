@@ -11,8 +11,9 @@ AnsibleTowerLicense - command ``/usr/bin/awx-manage check_license --data``
 AwxManagePrintSettings - command ``/usr/bin/awx-manage print_settings``
 """
 
-from insights import JSONParser, parser, CommandParser
-from insights.parsers import SkipException, ParseException
+from insights.core import CommandParser, JSONParser
+from insights.core.exceptions import ParseException, SkipComponent
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 
@@ -36,7 +37,7 @@ class AnsibleTowerLicenseType(CommandParser, JSONParser):
     """
     def parse_content(self, content):
         if not content:
-            raise SkipException
+            raise SkipComponent
         if len(content) != 1:
             raise ParseException("Invalid output: {0}".format(content))
         self.type = content[0].strip()
@@ -75,7 +76,10 @@ class AwxManagePrintSettings(CommandParser, JSONParser):
             "INSIGHTS_TRACKING_STATE": true,
             "INSTALL_UUID": "c0d38a6a-4449-4e13-a64b-00e0248ad229",
             "SYSTEM_UUID": "eecfd8dc-5028-46ef-9868-86f7d595da13",
-            "TOWER_URL_BASE": "https://10.72.37.79"
+            "TOWER_URL_BASE": "https://10.72.37.79",
+            "LOG_AGGREGATOR_ENABLED": true,
+            "LOG_AGGREGATOR_LEVEL": "DEBUG"
+
         }
 
     Examples:
@@ -84,6 +88,10 @@ class AwxManagePrintSettings(CommandParser, JSONParser):
         >>> settings['AWX_CLEANUP_PATHS']
         False
         >>> settings['SYSTEM_UUID'] == 'eecfd8dc-5028-46ef-9868-86f7d595da13'
+        True
+        >>> settings['LOG_AGGREGATOR_ENABLED']
+        True
+        >>> settings['LOG_AGGREGATOR_LEVEL'] == 'DEBUG'
         True
     """
     pass

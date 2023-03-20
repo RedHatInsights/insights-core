@@ -19,13 +19,13 @@ RabbitMQQueues - command ``/usr/sbin/rabbitmqctl list_queues name messages consu
 RabbitMQEnv - file ``/etc/rabbitmq/rabbitmq-env.conf``
 ------------------------------------------------------
 """
+from collections import namedtuple
 from re import compile
 
-from collections import namedtuple
 from insights.contrib import pyparsing as p
-from insights.core import SysconfigOptions
-from .. import parser, CommandParser
-from . import ParseException
+from insights.core import CommandParser, SysconfigOptions
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 

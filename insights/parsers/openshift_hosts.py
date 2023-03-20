@@ -7,12 +7,12 @@ records nodes information. While installing openshift cluster
 , this installation process would read this file, and install
 relative rpms on every node according to the configuration.
 """
-
-
-from .. import parser, Parser, get_active_lines, LegacyItemAccess
-from insights.parsers import ParseException
-from insights.specs import Specs
+from insights.core import LegacyItemAccess, Parser
+from insights.core.exceptions import ParseException
 from insights.core.filters import add_filter
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines
+from insights.specs import Specs
 
 add_filter(Specs.openshift_hosts, "[")
 

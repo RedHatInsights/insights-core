@@ -19,10 +19,10 @@ Examples::
     >>> clients.count
     13
 """
-
-from insights import parser, CommandParser
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipComponent
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.parsers import SkipException, ParseException
 
 
 @parser(Specs.satellite_content_hosts_count)
@@ -43,4 +43,4 @@ class SatelliteContentHostsCount(CommandParser):
             except ValueError:
                 raise ParseException("Unknow satelite content hosts count")
         if self.count is None:
-            raise SkipException("Cannot get the count of satellite content hosts")
+            raise SkipComponent("Cannot get the count of satellite content hosts")

@@ -1,17 +1,21 @@
+from contextlib import contextmanager
+from shutil import rmtree
 import sys
 import os
 import pytest
-import time
 
 from insights.client import InsightsClient
 from insights.client.archive import InsightsArchive
 from insights.client.config import InsightsConfig
 from insights import package_info
 from insights.client.constants import InsightsConstants as constants
-from insights.client.utilities import generate_machine_id
-from mock.mock import patch, Mock, call
+from mock.mock import patch, Mock, call, ANY
 from pytest import mark
 from pytest import raises
+
+# Temporary directory to mock registration files
+TEMP_TEST_REG_DIR = "/tmp/insights-client-registration"
+TEMP_TEST_REG_DIR2 = "/tmp/redhat-access-insights-registration"
 
 
 @pytest.fixture(autouse=True)
@@ -26,7 +30,7 @@ def mock_os_umask():
         yield os_umask
 
 
-class FakeConnection(object):
+class _mock_InsightsConnection(object):
     '''
     For stubbing out network calls
     '''
@@ -35,8 +39,12 @@ class FakeConnection(object):
 
     def api_registration_check(self):
         # True = registered
-        # None or string = unregistered
+        # None = unregistered
         # False = unreachable
+        # Legacy code:
+        # True = system exists in inventory
+        # False = Error connection or parsing response
+        # None = Machine is not register
         return self.registered
 
     def register(self):
@@ -63,93 +71,152 @@ def test_version():
         sys.argv = tmp
 
 
-@pytest.mark.skip(reason="Mocked paths not working in QE jenkins")
+@contextmanager
+def _mock_no_register_files():
+    # mock a directory with the fresh install files
+    if not os.path.exists(TEMP_TEST_REG_DIR):
+        os.mkdir(TEMP_TEST_REG_DIR)
+    if not os.path.exists(TEMP_TEST_REG_DIR2):
+        os.mkdir(TEMP_TEST_REG_DIR2)
+    try:
+        unregistered_path = os.path.join(TEMP_TEST_REG_DIR, ".unregistered")
+        with open(unregistered_path, "w") as unregistered_file:
+            unregistered_file.write("date")
+        unregistered_path2 = os.path.join(TEMP_TEST_REG_DIR2, ".unregistered")
+        with open(unregistered_path2, "w") as unregistered_file:
+            unregistered_file.write("date")
+        yield
+    finally:
+        rmtree(TEMP_TEST_REG_DIR)
+        rmtree(TEMP_TEST_REG_DIR2)
+
+
+@contextmanager
+def _mock_no_register_files_machineid_present():
+    # mock a directory with the fresh install files
+    if not os.path.exists(TEMP_TEST_REG_DIR):
+        os.mkdir(TEMP_TEST_REG_DIR)
+    if not os.path.exists(TEMP_TEST_REG_DIR2):
+        os.mkdir(TEMP_TEST_REG_DIR2)
+    try:
+        unregistered_path = os.path.join(TEMP_TEST_REG_DIR, ".unregistered")
+        with open(unregistered_path, "w") as unregistered_file:
+            unregistered_file.write("date")
+        unregistered_path2 = os.path.join(TEMP_TEST_REG_DIR2, ".unregistered")
+        with open(unregistered_path2, "w") as unregistered_file:
+            unregistered_file.write("date")
+        machine_id_path = os.path.join(TEMP_TEST_REG_DIR, "machine-id")
+        with open(machine_id_path, "w") as machine_id_file:
+            machine_id_file.write("id")
+        yield
+    finally:
+        rmtree(TEMP_TEST_REG_DIR)
+        rmtree(TEMP_TEST_REG_DIR2)
+
+
+@patch('insights.client.client.generate_machine_id')
+@patch('insights.client.utilities.delete_unregistered_file')
+@patch('insights.client.utilities.write_to_disk')
 @patch('insights.client.utilities.constants.registered_files',
-       ['/tmp/insights-client.registered',
-        '/tmp/redhat-access-insights.registered'])
+       [TEMP_TEST_REG_DIR + '/.registered',
+        TEMP_TEST_REG_DIR2 + '/.registered'])
 @patch('insights.client.utilities.constants.unregistered_files',
-       ['/tmp/insights-client.unregistered',
-        '/tmp/redhat-access-insights.unregistered'])
+       [TEMP_TEST_REG_DIR + '/.unregistered',
+        TEMP_TEST_REG_DIR2 + '/.unregistered'])
 @patch('insights.client.utilities.constants.machine_id_file',
-       '/tmp/machine-id')
-def test_register():
-    config = InsightsConfig(register=True)
+       TEMP_TEST_REG_DIR + '/machine-id')
+def test_register_legacy(utilities_write, delete_unregistered_file, generate_machine_id):
+    config = InsightsConfig(register=True, legacy_upload=True)
     client = InsightsClient(config)
-    client.connection = FakeConnection()
+    client.connection = _mock_InsightsConnection(registered=None)
+    client.connection.config = config
     client.session = True
-    assert client.register() is True
-    for r in constants.registered_files:
-        assert os.path.isfile(r) is True
-    for u in constants.unregistered_files:
-        assert os.path.isfile(u) is False
+    with _mock_no_register_files():
+        client.register() is True
+    delete_unregistered_file.assert_called_once()
+    generate_machine_id.assert_called_once_with()
+    utilities_write.assert_has_calls((
+        call(constants.registered_files[0]),
+        call(constants.registered_files[1])
+    ))
 
 
-@pytest.mark.skip(reason="Mocked paths not working in QE jenkins")
+@patch('insights.client.client.generate_machine_id')
+@patch('insights.client.utilities.delete_unregistered_file')
+@patch('insights.client.utilities.write_to_disk')
 @patch('insights.client.utilities.constants.registered_files',
-       ['/tmp/insights-client.registered',
-        '/tmp/redhat-access-insights.registered'])
+       [TEMP_TEST_REG_DIR + '/.registered',
+        TEMP_TEST_REG_DIR2 + '/.registered'])
 @patch('insights.client.utilities.constants.unregistered_files',
-       ['/tmp/insights-client.unregistered',
-        '/tmp/redhat-access-insights.unregistered'])
+       [TEMP_TEST_REG_DIR + '/.unregistered',
+        TEMP_TEST_REG_DIR2 + '/.unregistered'])
 @patch('insights.client.utilities.constants.machine_id_file',
-       '/tmp/machine-id')
-def test_unregister():
-    config = InsightsConfig(unregister=True)
+       TEMP_TEST_REG_DIR + '/machine-id')
+def test_register_legacy_error_machineid(utilities_write, delete_unregistered_file, generate_machine_id):
+    config = InsightsConfig(register=True, legacy_upload=True)
     client = InsightsClient(config)
-    client.connection = FakeConnection(registered=True)
+    client.connection = _mock_InsightsConnection(registered=False)
+    client.connection.config = config
     client.session = True
-    assert client.unregister() is True
-    for r in constants.registered_files:
-        assert os.path.isfile(r) is False
-    for u in constants.unregistered_files:
-        assert os.path.isfile(u) is True
+    # this should return False
+    with _mock_no_register_files_machineid_present():
+        client.register() is False
+    delete_unregistered_file.assert_not_called()
+    generate_machine_id.assert_not_called()
 
 
-@pytest.mark.skip(reason="Mocked paths not working in QE jenkins")
+@contextmanager
+def _mock_registered_files():
+    # mock a directory with the registered files
+    if not os.path.exists(TEMP_TEST_REG_DIR):
+        os.mkdir(TEMP_TEST_REG_DIR)
+    if not os.path.exists(TEMP_TEST_REG_DIR2):
+        os.mkdir(TEMP_TEST_REG_DIR2)
+    try:
+        registered_path = os.path.join(TEMP_TEST_REG_DIR, ".registered")
+        with open(registered_path, "w") as registered_file:
+            registered_file.write("date")
+        machine_id_path = os.path.join(TEMP_TEST_REG_DIR, "machine-id")
+        with open(machine_id_path, "w") as machine_id_file:
+            machine_id_file.write("id")
+        registered_path2 = os.path.join(TEMP_TEST_REG_DIR2, ".registered")
+        with open(registered_path2, "w") as registered_file:
+            registered_file.write("date")
+
+        yield
+    finally:
+        rmtree(TEMP_TEST_REG_DIR)
+        rmtree(TEMP_TEST_REG_DIR2)
+
+
+@patch('insights.client.utilities.write_unregistered_file')
+@patch('insights.client.utilities.delete_cache_files')
+@patch('insights.client.utilities.write_to_disk')
+@patch('insights.client.client.write_to_disk')
+@patch('insights.client.utilities.get_time', return_value='now')
 @patch('insights.client.utilities.constants.registered_files',
-       ['/tmp/insights-client.registered',
-        '/tmp/redhat-access-insights.registered'])
+       [TEMP_TEST_REG_DIR + '/.registered',
+        TEMP_TEST_REG_DIR2 + '/.registered'])
 @patch('insights.client.utilities.constants.unregistered_files',
-       ['/tmp/insights-client.unregistered',
-        '/tmp/redhat-access-insights.unregistered'])
+       [TEMP_TEST_REG_DIR + '/.unregistered',
+        TEMP_TEST_REG_DIR2 + '/.unregistered'])
 @patch('insights.client.utilities.constants.machine_id_file',
-       '/tmp/machine-id')
-def test_force_reregister():
-    config = InsightsConfig(reregister=True)
+       TEMP_TEST_REG_DIR + '/machine-id')
+def test_unregister_legacy(date, client_write, utilities_write, _delete_cache_file, _write_unregistered_file):
+    config = InsightsConfig(unregister=True, legacy_upload=True)
     client = InsightsClient(config)
-    client.connection = FakeConnection(registered=None)
+    client.connection = _mock_InsightsConnection(registered=True)
+    client.connection.config = config
     client.session = True
-
-    # initialize comparisons
-    old_machine_id = None
-    new_machine_id = None
-
-    # register first
-    assert client.register() is True
-    for r in constants.registered_files:
-        assert os.path.isfile(r) is True
-
-    # get modified time of .registered to ensure it's regenerated
-    old_reg_file1_ts = os.path.getmtime(constants.registered_files[0])
-    old_reg_file2_ts = os.path.getmtime(constants.registered_files[1])
-
-    old_machine_id = generate_machine_id()
-
-    # wait to allow for timestamp difference
-    time.sleep(3)
-
-    # reregister with new machine-id
-    client.connection = FakeConnection(registered=True)
-    config.reregister = True
-    assert client.register() is True
-
-    new_machine_id = generate_machine_id()
-    new_reg_file1_ts = os.path.getmtime(constants.registered_files[0])
-    new_reg_file2_ts = os.path.getmtime(constants.registered_files[1])
-
-    assert old_machine_id != new_machine_id
-    assert old_reg_file1_ts != new_reg_file1_ts
-    assert old_reg_file2_ts != new_reg_file2_ts
+    with _mock_registered_files():
+        assert client.unregister() is True
+    client_write.assert_called_once_with(constants.machine_id_file, delete=True)
+    utilities_write.assert_has_calls((
+        call(constants.registered_files[0], delete=True),
+        call(constants.registered_files[1], delete=True),
+        call(constants.unregistered_files[0], content=date.return_value),
+        call(constants.unregistered_files[1], content=date.return_value)
+    ))
 
 
 def test_register_container():
@@ -162,122 +229,205 @@ def test_unregister_container():
         InsightsConfig(unregister=True, analyze_container=True)
 
 
-def test_force_reregister_container():
-    with pytest.raises(ValueError):
-        InsightsConfig(reregister=True, analyze_container=True)
-
-
 @pytest.mark.skip(reason="Mocked paths not working in QE jenkins")
 @patch('insights.client.utilities.constants.registered_files',
-       ['/tmp/insights-client.registered',
-        '/tmp/redhat-access-insights.registered'])
+       [TEMP_TEST_REG_DIR + '/.registered',
+        TEMP_TEST_REG_DIR2 + '/.registered'])
 @patch('insights.client.utilities.constants.unregistered_files',
-       ['/tmp/insights-client.unregistered',
-        '/tmp/redhat-access-insights.unregistered'])
+       [TEMP_TEST_REG_DIR + '/.unregistered',
+        TEMP_TEST_REG_DIR2 + '/.unregistered'])
 @patch('insights.client.utilities.constants.machine_id_file',
-       '/tmp/machine-id')
+       TEMP_TEST_REG_DIR + '/machine-id')
 def test_reg_check_registered():
-    # register the machine first
+
     config = InsightsConfig()
     client = InsightsClient(config)
-    client.connection = FakeConnection(registered=True)
+    client.connection = _mock_InsightsConnection(registered=True)
+    client.connection.config = config
     client.session = True
 
-    # test function and integration in .register()
-    assert client.get_registration_status()['status'] is True
-    assert client.register() is True
-    for r in constants.registered_files:
-        assert os.path.isfile(r) is True
-    for u in constants.unregistered_files:
-        assert os.path.isfile(u) is False
+    with _mock_registered_files():
+        assert client.get_registration_status()['status'] is True
+        for r in constants.registered_files:
+            assert os.path.isfile(r) is True
+        for u in constants.unregistered_files:
+            assert os.path.isfile(u) is False
 
 
-@pytest.mark.skip(reason="Mocked paths not working in QE jenkins")
 @patch('insights.client.utilities.constants.registered_files',
-       ['/tmp/insights-client.registered',
-        '/tmp/redhat-access-insights.registered'])
+       [TEMP_TEST_REG_DIR + '/.registered',
+        TEMP_TEST_REG_DIR2 + '/.registered'])
 @patch('insights.client.utilities.constants.unregistered_files',
-       ['/tmp/insights-client.unregistered',
-        '/tmp/redhat-access-insights.unregistered'])
+       [TEMP_TEST_REG_DIR + '/.unregistered',
+        TEMP_TEST_REG_DIR2 + '/.unregistered'])
 @patch('insights.client.utilities.constants.machine_id_file',
-       '/tmp/machine-id')
+       TEMP_TEST_REG_DIR + '/machine-id')
 def test_reg_check_unregistered():
     # unregister the machine first
     config = InsightsConfig()
     client = InsightsClient(config)
-    client.connection = FakeConnection(registered='unregistered')
+    client.connection = _mock_InsightsConnection(registered=False)
+    client.connection.config = config
     client.session = True
 
     # test function and integration in .register()
-    assert client.get_registration_status()['status'] is False
-    assert client.register() is False
-    for r in constants.registered_files:
-        assert os.path.isfile(r) is False
-    for u in constants.unregistered_files:
-        assert os.path.isfile(u) is True
+    with _mock_no_register_files():
+        assert client.get_registration_status()['status'] is False
+        for r in constants.registered_files:
+            assert os.path.isfile(r) is False
+        for u in constants.unregistered_files:
+            assert os.path.isfile(u) is True
 
 
-@pytest.mark.skip(reason="Mocked paths not working in QE jenkins")
 @patch('insights.client.utilities.constants.registered_files',
-       ['/tmp/insights-client.registered',
-        '/tmp/redhat-access-insights.registered'])
+       [TEMP_TEST_REG_DIR + '/.registered',
+        TEMP_TEST_REG_DIR2 + '/.registered'])
 @patch('insights.client.utilities.constants.unregistered_files',
-       ['/tmp/insights-client.unregistered',
-        '/tmp/redhat-access-insights.unregistered'])
+       [TEMP_TEST_REG_DIR + '/.unregistered',
+        TEMP_TEST_REG_DIR2 + '/.unregistered'])
 @patch('insights.client.utilities.constants.machine_id_file',
-       '/tmp/machine-id')
+       TEMP_TEST_REG_DIR + '/machine-id')
+def test_reg_check_registered_res_unreg_legacy():
+    # system is registered but receives the unregistration status
+    config = InsightsConfig(legacy_upload=True)
+    client = InsightsClient(config)
+    client.connection = _mock_InsightsConnection(registered=None)
+    client.connection.config = config
+    client.session = True
+
+    # test function and integration in .register()
+    with _mock_registered_files():
+        assert client.get_registration_status()['status'] is False
+        for r in constants.registered_files:
+            assert os.path.isfile(r) is False
+        for u in constants.unregistered_files:
+            assert os.path.isfile(u) is True
+
+
+@patch('insights.client.utilities.constants.registered_files',
+       [TEMP_TEST_REG_DIR + '/.registered',
+        TEMP_TEST_REG_DIR2 + '/.registered'])
+@patch('insights.client.utilities.constants.unregistered_files',
+       [TEMP_TEST_REG_DIR + '/.unregistered',
+        TEMP_TEST_REG_DIR2 + '/.unregistered'])
+@patch('insights.client.utilities.constants.machine_id_file',
+       TEMP_TEST_REG_DIR + '/machine-id')
+def test_reg_check_registered_res_unreg():
+    # system is registered but receives the unregistration status
+    config = InsightsConfig(legacy_upload=False)
+    client = InsightsClient(config)
+    client.connection = _mock_InsightsConnection(registered=False)
+    client.connection.config = config
+    client.session = True
+
+    # test function and integration in .register()
+    with _mock_registered_files():
+        assert client.get_registration_status() is False
+        for r in constants.registered_files:
+            assert os.path.isfile(r) is False
+        for u in constants.unregistered_files:
+            assert os.path.isfile(u) is True
+
+
+@patch('insights.client.utilities.constants.registered_files',
+       [TEMP_TEST_REG_DIR + '/.registered',
+        TEMP_TEST_REG_DIR2 + '/.registered'])
+@patch('insights.client.utilities.constants.unregistered_files',
+       [TEMP_TEST_REG_DIR + '/.unregistered',
+        TEMP_TEST_REG_DIR2 + '/.unregistered'])
+@patch('insights.client.utilities.constants.machine_id_file',
+       TEMP_TEST_REG_DIR + '/machine-id')
+def test_reg_check_registered_unreachable_legacy():
+    config = InsightsConfig(legacy_upload=True)
+    client = InsightsClient(config)
+    client.connection = _mock_InsightsConnection(registered=False)
+    client.connection.config = config
+    client.session = True
+
+    with _mock_registered_files():
+        assert client.get_registration_status()['unreachable'] is True
+        for r in constants.registered_files:
+            assert os.path.isfile(r) is True
+        for u in constants.unregistered_files:
+            assert os.path.isfile(u) is False
+
+
+@patch('insights.client.utilities.constants.registered_files',
+       [TEMP_TEST_REG_DIR + '/.registered',
+        TEMP_TEST_REG_DIR2 + '/.registered'])
+@patch('insights.client.utilities.constants.unregistered_files',
+       [TEMP_TEST_REG_DIR + '/.unregistered',
+        TEMP_TEST_REG_DIR2 + '/.unregistered'])
+@patch('insights.client.utilities.constants.machine_id_file',
+       TEMP_TEST_REG_DIR + '/machine-id')
 def test_reg_check_registered_unreachable():
-    # register the machine first
-    config = InsightsConfig(register=True)
+    # If it is unreachable do nothing
+    config = InsightsConfig(legacy_upload=False)
     client = InsightsClient(config)
-    client.connection = FakeConnection(registered=None)
+    client.connection = _mock_InsightsConnection(registered=None)
+    client.connection.config = config
     client.session = True
-    assert client.register() is True
 
-    # reset config and try to check registration
-    config.register = False
-    client.connection = FakeConnection(registered=False)
-    assert client.get_registration_status()['unreachable'] is True
-    assert client.register() is None
-    for r in constants.registered_files:
-        assert os.path.isfile(r) is True
-    for u in constants.unregistered_files:
-        assert os.path.isfile(u) is False
+    with _mock_registered_files():
+        assert client.get_registration_status() is None
+        for r in constants.registered_files:
+            assert os.path.isfile(r) is True
+        for u in constants.unregistered_files:
+            assert os.path.isfile(u) is False
 
 
-@pytest.mark.skip(reason="Mocked paths not working in QE jenkins")
 @patch('insights.client.utilities.constants.registered_files',
-       ['/tmp/insights-client.registered',
-        '/tmp/redhat-access-insights.registered'])
+       [TEMP_TEST_REG_DIR + '/.registered',
+        TEMP_TEST_REG_DIR2 + '/.registered'])
 @patch('insights.client.utilities.constants.unregistered_files',
-       ['/tmp/insights-client.unregistered',
-        '/tmp/redhat-access-insights.unregistered'])
+       [TEMP_TEST_REG_DIR + '/.unregistered',
+        TEMP_TEST_REG_DIR2 + '/.unregistered'])
 @patch('insights.client.utilities.constants.machine_id_file',
-       '/tmp/machine-id')
+       TEMP_TEST_REG_DIR + '/machine-id')
 def test_reg_check_unregistered_unreachable():
-    # unregister the machine first
-    config = InsightsConfig(unregister=True)
+    config = InsightsConfig(legacy_upload=False)
     client = InsightsClient(config)
-    client.connection = FakeConnection(registered=True)
+    client.connection = _mock_InsightsConnection(registered=False)
+    client.connection.config = config
     client.session = True
-    assert client.unregister() is True
 
-    # reset config and try to check registration
-    config.unregister = False
-    client.connection = FakeConnection(registered=False)
-    assert client.get_registration_status()['unreachable'] is True
-    assert client.register() is None
-    for r in constants.registered_files:
-        assert os.path.isfile(r) is False
-    for u in constants.unregistered_files:
-        assert os.path.isfile(u) is True
+    with _mock_no_register_files():
+        assert client.get_registration_status() is False
+        for r in constants.registered_files:
+            assert os.path.isfile(r) is False
+        for u in constants.unregistered_files:
+            assert os.path.isfile(u) is True
+
+
+@patch('insights.client.utilities.constants.registered_files',
+       [TEMP_TEST_REG_DIR + '/.registered',
+        TEMP_TEST_REG_DIR2 + '/.registered'])
+@patch('insights.client.utilities.constants.unregistered_files',
+       [TEMP_TEST_REG_DIR + '/.unregistered',
+        TEMP_TEST_REG_DIR2 + '/.unregistered'])
+@patch('insights.client.utilities.constants.machine_id_file',
+       TEMP_TEST_REG_DIR + '/machine-id')
+def test_reg_check_unregistered_unreachable_legacy():
+    config = InsightsConfig(legacy_upload=True)
+    client = InsightsClient(config)
+    client.connection = _mock_InsightsConnection(registered=False)
+    client.connection.config = config
+    client.session = True
+
+    with _mock_no_register_files():
+        assert client.get_registration_status()['unreachable'] is True
+        for r in constants.registered_files:
+            assert os.path.isfile(r) is False
+        for u in constants.unregistered_files:
+            assert os.path.isfile(u) is True
 
 
 @patch('insights.client.client.constants.sleep_time', 0)
 @patch('insights.client.client.InsightsConnection.upload_archive',
        return_value=Mock(status_code=500))
 @patch('insights.client.os.path.exists', return_value=True)
-def test_upload_500_retry(_, upload_archive):
+@patch("insights.client.client.logger")
+def test_upload_500_retry(logger, _, upload_archive):
 
     # Hack to prevent client from parsing args to py.test
     tmp = sys.argv
@@ -293,8 +443,50 @@ def test_upload_500_retry(_, upload_archive):
 
         upload_archive.assert_called()
         assert upload_archive.call_count == retries
+        logger.error.assert_any_call("Upload attempt %d of %d failed! Reason: %s", 1, config.retries, ANY)
+        logger.error.assert_called_with("All attempts to upload have failed!")
     finally:
         sys.argv = tmp
+
+
+@patch('insights.client.client.constants.sleep_time', 0)
+@patch('insights.client.client.InsightsConnection.upload_archive')
+@patch("insights.client.client.logger")
+def test_upload_exception_retry(logger, upload_archive):
+    from requests.exceptions import ConnectionError, ProxyError, Timeout, HTTPError, SSLError
+    upload_archive.side_effect = [ConnectionError("Connection Error"),
+                                  ProxyError("Proxy Error"),
+                                  Timeout("Timeout Error")]
+    retries = 3
+
+    config = InsightsConfig(legacy_upload=False, logging_file='/tmp/insights.log', retries=retries)
+    client = InsightsClient(config)
+    with patch('insights.client.os.path.exists', return_value=True):
+        with pytest.raises(RuntimeError):
+            client.upload('/tmp/insights.tar.gz')
+    assert upload_archive.call_count == retries
+    logger.debug.assert_any_call("Upload attempt %d of %d ...", 1, config.retries)
+    logger.error.assert_any_call("Upload attempt %d of %d failed! Reason: %s", 1, config.retries, "Connection Error")
+    logger.error.assert_any_call("Upload attempt %d of %d failed! Reason: %s", 2, config.retries, "Proxy Error")
+    logger.error.assert_any_call("Upload attempt %d of %d failed! Reason: %s", 3, config.retries, "Timeout Error")
+    logger.error.assert_called_with("All attempts to upload have failed!")
+
+    # Test legacy uploads
+    logger.reset_mock()
+    upload_archive.reset_mock()
+    upload_archive.side_effect = [HTTPError("HTTP Error"),
+                                  SSLError("SSL Error")]
+    retries = 2
+    config = InsightsConfig(legacy_upload=True, logging_file='/tmp/insights.log', retries=retries)
+    client = InsightsClient(config)
+    with patch('insights.client.os.path.exists', return_value=True):
+        with pytest.raises(RuntimeError):
+            client.upload('/tmp/insights.tar.gz')
+    assert upload_archive.call_count == retries
+    logger.debug.assert_any_call("Legacy upload attempt %d of %d ...", 1, config.retries)
+    logger.error.assert_any_call("Upload attempt %d of %d failed! Reason: %s", 1, config.retries, "HTTP Error")
+    logger.error.assert_any_call("Upload attempt %d of %d failed! Reason: %s", 2, config.retries, "SSL Error")
+    logger.error.assert_called_with("All attempts to upload have failed!")
 
 
 @patch('insights.client.client.InsightsConnection.handle_fail_rcs')
@@ -341,18 +533,44 @@ def test_upload_412_write_unregistered_file(_, upload_archive, write_unregistere
         sys.argv = tmp
 
 
-def test_cleanup_tmp():
-    config = InsightsConfig(keep_archive=True)
+@patch('insights.client.archive.InsightsArchive.storing_archive')
+@patch('insights.client.archive.tempfile.mkdtemp', Mock())
+@patch('insights.client.archive.os.makedirs', Mock())
+@patch('insights.client.archive.atexit', Mock())
+def test_cleanup_tmp(storing_archive):
+    config = InsightsConfig(keep_archive=False)
     arch = InsightsArchive(config)
-    arch.tar_file = os.path.join(arch.archive_tmp_dir, 'test.tar.gz')
+    arch.tmp_dir = "/test"
+    arch.tar_file = "/test/test.tar.gz"
+    arch.keep_archive_dir = "/test-keep-archive"
     arch.cleanup_tmp()
     assert not os.path.exists(arch.tmp_dir)
-    assert os.path.exists(arch.archive_tmp_dir)
+    storing_archive.assert_not_called()
 
-    config.keep_archive = False
+    config.keep_archive = True
     arch.cleanup_tmp()
     assert not os.path.exists(arch.tmp_dir)
-    assert not os.path.exists(arch.archive_tmp_dir)
+    storing_archive.assert_called_once()
+
+
+@patch('insights.client.archive.InsightsArchive.storing_archive')
+@patch('insights.client.archive.tempfile.mkdtemp', Mock())
+@patch('insights.client.archive.os.makedirs', Mock())
+@patch('insights.client.archive.atexit', Mock())
+def test_cleanup_tmp_obfuscation(storing_archive):
+    config = InsightsConfig(keep_archive=False, obfuscate=True)
+    arch = InsightsArchive(config)
+    arch.tmp_dir = '/var/tmp/insights-archive-000000'
+    arch.tar_file = '/var/tmp/insights-archive-test.tar.gz'
+    arch.keep_archive_dir = '/var/tmp/test-archive'
+    arch.cleanup_tmp()
+    assert not os.path.exists(arch.tmp_dir)
+    storing_archive.assert_not_called()
+
+    arch.config.keep_archive = True
+    arch.cleanup_tmp()
+    assert not os.path.exists(arch.tmp_dir)
+    storing_archive.assert_called_once()
 
 
 @patch('insights.client.client._legacy_handle_registration')

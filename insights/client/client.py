@@ -1,5 +1,6 @@
 from __future__ import print_function
 from __future__ import absolute_import
+from os.path import isfile
 import sys
 import json
 import logging
@@ -12,8 +13,6 @@ from .utilities import (generate_machine_id,
                         write_to_disk,
                         write_registered_file,
                         write_unregistered_file,
-                        delete_registered_file,
-                        delete_unregistered_file,
                         delete_cache_files,
                         determine_hostname)
 from .collection_rules import InsightsUploadConf
@@ -23,7 +22,6 @@ from .connection import InsightsConnection
 from .archive import InsightsArchive
 from .support import registration_check
 from .constants import InsightsConstants as constants
-from .schedule import get_scheduler
 
 NETWORK = constants.custom_network_log_level
 LOG_FORMAT = ("%(asctime)s %(levelname)8s %(name)s %(message)s")
@@ -114,18 +112,17 @@ def _legacy_handle_registration(config, pconn):
         None - could not reach the API
     '''
     logger.debug('Trying registration.')
-    # force-reregister -- remove machine-id files and registration files
-    # before trying to register again
-    if config.reregister:
-        delete_registered_file()
-        delete_unregistered_file()
-        write_to_disk(constants.machine_id_file, delete=True)
-        logger.debug('Re-register set, forcing registration.')
-
-    logger.debug('Machine-id: %s', generate_machine_id(new=config.reregister))
 
     # check registration with API
     check = get_registration_status(config, pconn)
+    machine_id_present = isfile(constants.machine_id_file)
+
+    if machine_id_present and check['status'] is False:
+        logger.info("Machine-id found, insights-client can not be registered."
+                    " Please, unregister insights-client first: `insights-client --unregister`")
+        return False
+
+    logger.debug('Machine-id: %s', generate_machine_id())
 
     for m in check['messages']:
         logger.debug(m)
@@ -195,15 +192,18 @@ def get_registration_status(config, pconn):
     return registration_check(pconn)
 
 
+def __cleanup_local_files():
+    write_unregistered_file()
+    delete_cache_files()
+    write_to_disk(constants.machine_id_file, delete=True)
+    logger.debug('Unregistered and removed machine-id')
+
+
 # -LEGACY-
 def _legacy_handle_unregistration(config, pconn):
     """
         returns (bool): True success, False failure
     """
-    def __cleanup_local_files():
-        write_unregistered_file()
-        get_scheduler(config).remove_scheduling()
-        delete_cache_files()
 
     check = get_registration_status(config, pconn)
 
@@ -225,6 +225,7 @@ def _legacy_handle_unregistration(config, pconn):
     if unreg:
         # only set if unreg was successful
         __cleanup_local_files()
+        logger.debug('Legacy unregistration')
     return unreg
 
 
@@ -241,8 +242,7 @@ def handle_unregistration(config, pconn):
     unreg = pconn.unregister()
     if unreg or config.force:
         # only set if unreg was successful or --force was set
-        write_unregistered_file()
-        delete_cache_files()
+        __cleanup_local_files()
     return unreg
 
 
@@ -272,13 +272,12 @@ def get_branch_info(config):
     return config.branch_info
 
 
-def collect(config, pconn):
+def collect(config):
     """
     All the heavy lifting done here
     """
     branch_info = get_branch_info(config)
     pc = InsightsUploadConf(config)
-    output = None
 
     rm_conf = pc.get_rm_conf()
     blacklist_report = pc.create_report()
@@ -308,7 +307,12 @@ def _legacy_upload(config, pconn, tar_file, content_type, collection_duration=No
     logger.info('Uploading Insights data.')
     api_response = None
     for tries in range(config.retries):
-        upload = pconn.upload_archive(tar_file, '', collection_duration)
+        logger.debug("Legacy upload attempt %d of %d ...", tries + 1, config.retries)
+        try:
+            upload = pconn.upload_archive(tar_file, '', collection_duration)
+        except Exception as e:
+            display_upload_error_and_retry(config, tries, str(e))
+            continue
 
         if upload.status_code in (200, 201):
             api_response = json.loads(upload.text)
@@ -332,23 +336,14 @@ def _legacy_upload(config, pconn, tar_file, content_type, collection_duration=No
                 logger.info("Successfully uploaded report for %s.", msg_name)
             if config.register:
                 # direct to console after register + upload
-                logger.info('View the Red Hat Insights console at https://cloud.redhat.com/insights/')
+                logger.info('View the Red Hat Insights console at https://console.redhat.com/insights/')
             break
 
         elif upload.status_code in (412, 413):
             pconn.handle_fail_rcs(upload)
             raise RuntimeError('Upload failed.')
         else:
-            logger.error("Upload attempt %d of %d failed! Status Code: %s",
-                         tries + 1, config.retries, upload.status_code)
-            if tries + 1 != config.retries:
-                logger.info("Waiting %d seconds then retrying",
-                            constants.sleep_time)
-                time.sleep(constants.sleep_time)
-            else:
-                logger.error("All attempts to upload have failed!")
-                print("Please see %s for additional information" % config.logging_file)
-                raise RuntimeError('Upload failed.')
+            display_upload_error_and_retry(config, tries, "%s: %s" % (upload.status_code, upload.reason))
     return api_response
 
 
@@ -357,7 +352,12 @@ def upload(config, pconn, tar_file, content_type, collection_duration=None):
         return _legacy_upload(config, pconn, tar_file, content_type, collection_duration)
     logger.info('Uploading Insights data.')
     for tries in range(config.retries):
-        upload = pconn.upload_archive(tar_file, content_type, collection_duration)
+        logger.debug("Upload attempt %d of %d ...", tries + 1, config.retries)
+        try:
+            upload = pconn.upload_archive(tar_file, content_type, collection_duration)
+        except Exception as e:
+            display_upload_error_and_retry(config, tries, str(e))
+            continue
 
         if upload.status_code in (200, 202):
             write_to_disk(constants.lastupload_file)
@@ -366,19 +366,26 @@ def upload(config, pconn, tar_file, content_type, collection_duration=None):
             logger.info("Successfully uploaded report for %s.", msg_name)
             if config.register:
                 # direct to console after register + upload
-                logger.info('View the Red Hat Insights console at https://cloud.redhat.com/insights/')
+                logger.info('View the Red Hat Insights console at https://console.redhat.com/insights/')
             return
         elif upload.status_code in (413, 415):
             pconn.handle_fail_rcs(upload)
             raise RuntimeError('Upload failed.')
         else:
-            logger.error("Upload attempt %d of %d failed! Status code: %s",
-                         tries + 1, config.retries, upload.status_code)
-            if tries + 1 != config.retries:
-                logger.info("Waiting %d seconds then retrying",
-                            constants.sleep_time)
-                time.sleep(constants.sleep_time)
-            else:
-                logger.error("All attempts to upload have failed!")
-                print("Please see %s for additional information" % config.logging_file)
-                raise RuntimeError('Upload failed.')
+            err_msg = "%s" % upload.status_code
+            if hasattr(upload, 'reason'):
+                err_msg += ": %s" % upload.reason
+            display_upload_error_and_retry(config, tries, err_msg)
+
+
+def display_upload_error_and_retry(config, tries, error_message):
+    logger.error("Upload attempt %d of %d failed! Reason: %s",
+                 tries + 1, config.retries, error_message)
+    if tries + 1 < config.retries:
+        logger.info("Waiting %d seconds then retrying",
+                    constants.sleep_time)
+        time.sleep(constants.sleep_time)
+    else:
+        logger.error("All attempts to upload have failed!")
+        print("Please see %s for additional information" % config.logging_file)
+        raise RuntimeError('Upload failed.')

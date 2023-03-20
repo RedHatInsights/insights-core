@@ -54,11 +54,12 @@ Examples:
     >>> indices == range(len(yl))
     True
 """
-
-from .. import Parser, get_active_lines, parser
-from ..parsers import ParseException
-from .installed_rpms import InstalledRpm
 from collections import defaultdict, namedtuple
+from insights.core import Parser
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines
+from insights.parsers.installed_rpms import InstalledRpm
 from insights.specs import Specs
 
 

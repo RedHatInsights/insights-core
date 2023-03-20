@@ -104,7 +104,7 @@ class Context(object):
         optional_attrs = [
             "content", "path", "hostname", "release",
             "machine_id", "target", "last_client_run", "relative_path",
-            "args"
+            "args", "engine", "image", "container_id"
         ]
         for k in optional_attrs:
             setattr(self, k, kwargs.pop(k, None))
@@ -274,7 +274,7 @@ class InsightsOperatorContext(ExecutionContext):
 @fs_root
 class MustGatherContext(ExecutionContext):
     """Recognizes must-gather archives"""
-    marker = "namespaces"
+    marker = "cluster-scoped-resources"
 
 
 class OpenStackContext(ExecutionContext):

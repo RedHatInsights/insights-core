@@ -1,5 +1,4 @@
 import os
-import sys
 from setuptools import setup, find_packages
 
 __here__ = os.path.dirname(os.path.abspath(__file__))
@@ -20,7 +19,6 @@ entry_points = {
         'insights-inspect = insights.tools.insights_inspect:main',
         'insights-info = insights.tools.query:main',
         'insights-ocpshell= insights.ocpshell:main',
-        'client = insights.client:run',
         'mangle = insights.util.mangle:main'
     ]
 }
@@ -34,13 +32,11 @@ runtime = set([
     'cachecontrol[filecache]',
     'defusedxml',
     'lockfile',
-    'jinja2<=2.11.3',
+    'jinja2<=2.11.3; python_version <= "2.7"',
+    'jinja2; python_version > "2.7"',
+    'pyyaml>=3.10,<=3.13; python_version < "2.7"',
+    'pyyaml; python_version >= "2.7"',
 ])
-
-if (sys.version_info < (2, 7)):
-    runtime.add('pyyaml>=3.10,<=3.13')
-else:
-    runtime.add('pyyaml')
 
 
 def maybe_require(pkg):
@@ -69,12 +65,11 @@ docs = set([
     'Sphinx',
     'nbsphinx',
     'sphinx_rtd_theme',
-    'ipython',
+    'ipython<8.7.0',
+    'MarkupSafe==2.0.1',
     'colorama',
-    'jinja2<=2.11.3',
     'Pygments',
-    'jedi<0.18.0',    # Open issue with jedi 0.18.0 and iPython <= 7.19
-                      # https://github.com/davidhalter/jedi/issues/1714
+    'jedi'
 ])
 
 # python 2.6 requires setuptools~=36.8.0 to support this syntax
@@ -150,7 +145,9 @@ if __name__ == "__main__":
             'Programming Language :: Python :: 3.3',
             'Programming Language :: Python :: 3.4',
             'Programming Language :: Python :: 3.5',
-            'Programming Language :: Python :: 3.6'
+            'Programming Language :: Python :: 3.6',
+            'Programming Language :: Python :: 3.8',
+            'Programming Language :: Python :: 3.9',
         ],
         entry_points=entry_points,
         include_package_data=True

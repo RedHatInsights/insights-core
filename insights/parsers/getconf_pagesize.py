@@ -9,8 +9,9 @@ Examples:
     >>> pagesize_parsed.page_size
     4096
 """
-from . import ParseException
-from .. import parser, CommandParser
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 

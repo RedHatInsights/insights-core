@@ -39,27 +39,12 @@ file associated with the insights-core project.
    ``unzip`` to be able to run `pytest` on the ``insights-core`` repo,
    and ``pandoc`` to build Insights Core documentation.
 
-**********************
-Rule Development Setup
-**********************
+***************************
+Insights Development Setup
+***************************
 
-In order to develop rules to run in Red Hat Insights you'll need Insights
-Core (http://github.com/RedHatInsights/insights-core) as well as your own rules code.
-The commands below assume the following sample project directory structure
-containing the insights-core project repo and your directory and files
-for rule development::
-
-    project_dir
-    ├── insights-core
-    └── myrules
-        ├── hostname_rel.py
-        └── bash_version.py
-
-
-.. _insights_dev_setup:
-
-Insights Core Setup
-===================
+Insights Core Development
+=========================
 
 Clone the project::
 
@@ -112,6 +97,40 @@ command.
 
    If you use this method make sure you periodically update insights core in your virtualenv
    with the command `pip install --upgrade insights-core`.
+
+Insights Client Development
+===========================
+
+Clone the project::
+
+    [userone@hostone project_dir]$ git clone git@github.com:RedHatInsights/insights-core.git
+
+Initialize a virtualenv with the ``--system-site-packages`` flag::
+
+    [userone@hostone project_dir/insights-core]$ python3.6 -m venv --sytem-site-packages .
+    
+Next install the insights-core project and its dependencies into your virtualenv::
+
+    (insights-core)[userone@hostone project_dir/insights-core]$ bin/pip install -e .[client-develop]
+
+**********************
+Rule Development Setup
+**********************
+
+In order to develop rules to run in Red Hat Insights you'll need Insights
+Core (http://github.com/RedHatInsights/insights-core) as well as your own rules code.
+The commands below assume the following sample project directory structure
+containing the insights-core project repo and your directory and files
+for rule development::
+
+    project_dir
+    ├── insights-core
+    └── myrules
+        ├── hostname_rel.py
+        └── bash_version.py
+
+
+.. _insights_dev_setup:
 
 Rule Development
 ================

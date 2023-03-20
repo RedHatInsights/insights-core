@@ -33,9 +33,9 @@ Examples:
     >>> shared[NumericUserGroupName].nr_numeric_group
     0
 """
-
-from .. import parser, CommandParser
-from . import ParseException
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 

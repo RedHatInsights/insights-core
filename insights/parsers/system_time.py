@@ -66,7 +66,7 @@ class NTPConfParser(Parser):
     def parse_content(self, content):
         data = {}
         for line in get_active_lines(content):
-            if ' ' in line:
+            if ' ' in line or '\t' in line:
                 k, rest = line.split(None, 1)
                 if k in data:
                     data[k].append(rest)

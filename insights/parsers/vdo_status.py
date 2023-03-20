@@ -6,16 +6,16 @@ Module for parsing the output of command ``vdo status``. The bulk of the
 content is split on the colon and keys are kept as is.
 
 """
-
 from __future__ import division
-from insights import parser
-from insights import YAMLParser
+
+from insights.core import CommandParser, YAMLParser
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.parsers import ParseException
 
 
 @parser(Specs.vdo_status)
-class VDOStatus(YAMLParser):
+class VDOStatus(CommandParser, YAMLParser):
     """
     Class for parsing ``vdo status`` command output.
 

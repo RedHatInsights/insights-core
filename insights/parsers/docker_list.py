@@ -21,8 +21,10 @@ available in two formats:
   a given field, given by the subclass.
 
 """
-from insights import CommandParser, parser
-from insights.parsers import SkipException, parse_fixed_table
+from insights.core import CommandParser
+from insights.core.exceptions import SkipComponent
+from insights.core.plugins import parser
+from insights.parsers import parse_fixed_table
 from insights.specs import Specs
 
 
@@ -43,7 +45,7 @@ class DockerList(CommandParser):
 
     Raises:
         NotImplementedError: If `key_field` or `attr_name` is not defined
-        SkipException: If no data to parse
+        SkipComponent: If no data to parse
     """
     key_field = None
     heading_ignore = []
@@ -65,14 +67,14 @@ class DockerList(CommandParser):
         # will output help when the spec is run due to incorrect arguments. So check
         # the content for any lines starting with Usage: so it can be skipped.
         if any(l for l in content if l.startswith("Usage: ")):
-            raise SkipException('No data only help output.')
+            raise SkipComponent('No data only help output.')
 
         self.rows = parse_fixed_table(content,
                                       heading_ignore=self.heading_ignore,
                                       header_substitute=self.substitutions)
 
         if not self.rows:
-            raise SkipException('No data.')
+            raise SkipComponent('No data.')
 
         data = {}
         for row in self.rows:
@@ -131,6 +133,7 @@ class DockerListContainers(DockerList):
     Attributes:
         rows (list): List of row dictionaries.
         containers(dict): Dictionary keyed on the value of the "NAMES" field
+        running_containers(list): List of NAMEs of the running containers.
 
     Examples:
         >>> containers.rows[0]['STATUS']
@@ -142,6 +145,14 @@ class DockerListContainers(DockerList):
     heading_ignore = ['CONTAINER']
     attr_name = 'containers'
     substitutions = [("CONTAINER ID", "CONTAINER_ID")]
+
+    def __init__(self, *args, **kwargs):
+        super(DockerListContainers, self).__init__(*args, **kwargs)
+
+        self.running_containers = []
+        for name, info in self.containers.items():
+            if info.get('STATUS', '').startswith('Up '):
+                self.running_containers.append(name)
 
     @property
     def data(self):

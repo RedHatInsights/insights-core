@@ -1,0 +1,16 @@
+# This file contains a structure of xpaths for obfuscations in compliance
+obfuscate:
+  - './/{http://checklists.nist.gov/xccdf/1.2}target-address'
+  - './/{http://checklists.nist.gov/xccdf/1.2}target-facts/{http://checklists.nist.gov/xccdf/1.2}fact[@name="urn:xccdf:fact:asset:identifier:ipv4"]'
+  - './/{http://checklists.nist.gov/xccdf/1.2}target-facts/{http://checklists.nist.gov/xccdf/1.2}fact[@name="urn:xccdf:fact:asset:identifier:ipv6"]'
+  - './/{http://scap.nist.gov/schema/asset-identification/1.1}ip-address/{http://scap.nist.gov/schema/asset-identification/1.1}ip-v4'
+  - './/{http://scap.nist.gov/schema/asset-identification/1.1}ip-address/{http://scap.nist.gov/schema/asset-identification/1.1}ip-v6'
+  - './/{http://oval.mitre.org/XMLSchema/oval-system-characteristics-5}system_info/{http://oval.mitre.org/XMLSchema/oval-system-characteristics-5}interfaces/{http://oval.mitre.org/XMLSchema/oval-system-characteristics-5}interface/{http://oval.mitre.org/XMLSchema/oval-system-characteristics-5}ip_address'
+obfuscate_hostname:
+  - './/{http://scap.nist.gov/schema/asset-identification/1.1}fqdn'
+  - './/{http://scap.nist.gov/schema/asset-identification/1.1}hostname'
+  - './/{http://checklists.nist.gov/xccdf/1.2}target'
+  - './/{http://checklists.nist.gov/xccdf/1.2}target-facts/{http://checklists.nist.gov/xccdf/1.2}fact[@name="urn:xccdf:fact:asset:identifier:fqdn"]'
+  - './/{http://checklists.nist.gov/xccdf/1.2}target-facts/{http://checklists.nist.gov/xccdf/1.2}fact[@name="urn:xccdf:fact:asset:identifier:host_name"]'
+  - './/{http://oval.mitre.org/XMLSchema/oval-system-characteristics-5}system_info/{http://oval.mitre.org/XMLSchema/oval-system-characteristics-5}primary_host_name'
+  - './/{http://oval.mitre.org/XMLSchema/oval-system-characteristics-5#unix}uname_item/{http://oval.mitre.org/XMLSchema/oval-system-characteristics-5#unix}node_name'

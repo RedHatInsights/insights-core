@@ -4,11 +4,10 @@ CpuVulns - files ``/sys/devices/system/cpu/vulnerabilities/*``
 
 Parser to parse the output of files ``/sys/devices/system/cpu/vulnerabilities/*``
 """
-
-from insights import Parser
-from insights import parser
+from insights.core import Parser
+from insights.core.exceptions import SkipComponent
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.parsers import SkipException
 
 
 @parser(Specs.cpu_vulns)
@@ -48,11 +47,11 @@ class CpuVulns(Parser):
         value (str): The result parsed
 
     Raises:
-        SkipException: When file content is empty
+        SkipComponent: When file content is empty
 
     """
 
     def parse_content(self, content):
         if not content:
-            raise SkipException("Input content is empty")
+            raise SkipComponent("Input content is empty")
         self.value = content[0]

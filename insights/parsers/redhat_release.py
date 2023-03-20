@@ -1,6 +1,6 @@
 """
-redhat-release - File ``/etc/redhat-release``
-=============================================
+RedhatRelease - File ``/etc/redhat-release``
+============================================
 
 This module provides plugins access to file ``/etc/redhat-release``
 
@@ -27,8 +27,8 @@ Examples:
     >>> rh_release.product
     'Red Hat Enterprise Linux Server'
 """
-from .. import Parser, parser
-from ..specs import Specs
+from insights import Parser, ContainerParser, parser
+from insights.specs import Specs
 
 
 @parser(Specs.redhat_release)
@@ -36,6 +36,7 @@ class RedhatRelease(Parser):
     """Parses the content of file ``/etc/redhat-release``
 
     Attributes:
+        is_alpha(bool): True if this is an Alpha release
         is_beta(bool): True if this is a Beta release
         is_centos(bool): True if this release is CentOS
         is_fedora(bool): True if this release is Fedora
@@ -49,8 +50,13 @@ class RedhatRelease(Parser):
     def parse_content(self, content):
         self.raw = content[0]
         self.is_beta = False
+        self.is_alpha = False
         product, _, version_name = [v.strip() for v in content[0].partition("release")]
-        if 'Beta' in version_name:
+        if 'Alpha' in version_name:
+            # Red Hat Enterprise Linux release 9 Alpha (Plow)
+            version_number, code_name = version_name.split('Alpha', 1)
+            self.is_alpha = True
+        elif 'Beta' in version_name:
             # Red Hat Enterprise Linux release 8.5 Beta (Ootpa)
             version_number, code_name = version_name.split('Beta', 1)
             self.is_beta = True
@@ -98,3 +104,15 @@ class RedhatRelease(Parser):
     def code_name(self):
         """string: code name of this OS or None."""
         return self.parsed["code_name"]
+
+
+@parser(Specs.container_redhat_release)
+class ContainerRedhatRelease(ContainerParser, RedhatRelease):
+    """
+    Parses the content of file ``/etc/redhat-release`` of the running
+    containers which are based on RHEL images.
+    """
+    @property
+    def rhel(self):
+        """string: alias of ``self.version``"""
+        return self.version

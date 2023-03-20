@@ -9,7 +9,7 @@ from insights import JSONParser, parser
 from insights.specs import Specs
 
 
-@parser(Specs.yum_updateinfo)
+@parser(Specs.yum_updates)
 class YumUpdates(JSONParser):
     """
     Expected output of the command is::

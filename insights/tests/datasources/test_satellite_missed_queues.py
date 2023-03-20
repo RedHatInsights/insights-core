@@ -1,7 +1,8 @@
 import pytest
+
 from mock.mock import Mock
 
-from insights.core.dr import SkipComponent
+from insights.core.exceptions import SkipComponent
 from insights.core.spec_factory import DatasourceProvider
 from insights.specs import Specs
 from insights.specs.datasources.satellite_missed_queues import LocalSpecs, satellite_missed_pulp_agent_queues

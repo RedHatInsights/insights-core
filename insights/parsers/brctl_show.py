@@ -55,10 +55,10 @@ Examples:
              'bridge id': '8000.08002731ddfd'}
     }
 """
-
-from .. import parser, CommandParser
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.parsers import ParseException
 
 
 @parser(Specs.brctl_show)

@@ -13,6 +13,8 @@ import re
 import sys
 import threading
 import time
+import json
+import tarfile
 from subprocess import Popen, PIPE, STDOUT
 
 import yaml
@@ -147,11 +149,8 @@ def generate_machine_id(new=False,
         logger.debug("Creating %s", destination_file)
         write_to_disk(destination_file, content=machine_id)
 
-    machine_id = str(machine_id).strip()
-
     try:
-        uuid.UUID(machine_id, version=4)
-        return machine_id
+        return str(uuid.UUID(str(machine_id).strip(), version=4))
     except ValueError as e:
         logger.error("Invalid machine ID: %s", machine_id)
         logger.error("Error details: %s", str(e))
@@ -445,3 +444,41 @@ def os_release_info():
         except Exception as e:
             logger.warning("Failed to detect OS version: %s", e)
     return (os_family, os_release)
+
+
+def largest_spec_in_archive(archive_file):
+    logger.info("Checking for large files...")
+    tar_file = tarfile.open(archive_file, 'r')
+    largest_fsize = 0
+    largest_file_name = ""
+    largest_spec = ""
+    # get the name of the archive
+    name = os.path.basename(archive_file).split(".tar.gz")[0]
+    # get the archives from inside meta_data directory
+    metadata_top = os.path.join(name, "meta_data/")
+    data_top = os.path.join(name, "data")
+    for file in tar_file.getmembers():
+        if metadata_top in file.name:
+            file_extract = tar_file.extractfile(file.name)
+            specs_metadata = json.load(file_extract)
+            results = specs_metadata.get("results", [])
+            if not results:
+                continue
+            if not isinstance(results, list):
+                # specs with only one resulting file are not in list form
+                results = [results]
+            for result in results:
+                # get the path of the spec result and check its filesize
+                fname = result.get("object", {}).get("relative_path")
+                abs_fname = os.path.join('.', data_top, fname)
+                # get the archives from inside data directory
+                data_file = tar_file.getmember(abs_fname)
+                if (data_file.size > largest_fsize):
+                    largest_fsize = data_file.size
+                    largest_file_name = fname
+                    largest_spec = specs_metadata["name"]
+    return (largest_file_name, largest_fsize, largest_spec)
+
+
+def size_in_mb(num_bytes):
+    return float(num_bytes) / (1024 * 1024)

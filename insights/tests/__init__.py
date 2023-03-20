@@ -105,13 +105,14 @@ def deep_compare(result, expected):
     assert eq(result, expected), result
 
 
-def run_input_data(component, input_data):
+def run_input_data(component, input_data, store_skips=False):
     broker = dr.Broker()
     for k, v in input_data.data.items():
         broker[k] = v
 
     graph = dr.get_dependency_graph(component)
     broker = dr.run(graph, broker=broker)
+    broker.store_skips = store_skips
     for v in broker.tracebacks.values():
         print(v)
     return broker
@@ -152,12 +153,16 @@ def context_wrap(lines,
                  machine_id="machine_id",
                  strip=True,
                  split=True,
+                 filtered_spec=None,
                  **kwargs):
     if isinstance(lines, six.string_types):
         if strip:
             lines = lines.strip()
         if split:
             lines = lines.splitlines()
+
+    if filtered_spec is not None and filtered_spec in filters.FILTERS:
+        lines = [l for l in lines if any([f in l for f in filters.FILTERS[filtered_spec]])]
 
     return Context(content=lines,
                    path=path, hostname=hostname,

@@ -36,11 +36,12 @@ Examples:
     >>> cert_enddate.expiration_date('/etc/origin/node/cert.pem').str
     'May 25 16:39:40 2019'
 """
-
-from datetime import datetime
 from collections import namedtuple
-from insights import parser, CommandParser
-from insights.parsers import SkipException
+from datetime import datetime
+
+from insights.core import CommandParser
+from insights.core.exceptions import SkipComponent
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 
@@ -63,7 +64,7 @@ class CertificatesEnddate(CommandParser, dict):
             else:
                 datestamp = None
         if not self:
-            raise SkipException("No certification files found.")
+            raise SkipComponent("No certification files found.")
 
     @property
     def data(self):

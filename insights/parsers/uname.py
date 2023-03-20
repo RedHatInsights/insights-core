@@ -112,6 +112,11 @@ rhel_release_map = {
     "4.18.0-193": "8.2",
     "4.18.0-240": "8.3",
     "4.18.0-305": "8.4",
+    "4.18.0-348": "8.5",
+    "4.18.0-372": "8.6",
+    "4.18.0-425": "8.7",
+    "5.14.0-70": "9.0",
+    "5.14.0-162": "9.1",
 }
 
 release_to_kernel_map = dict((v, k) for k, v in rhel_release_map.items())
@@ -442,7 +447,7 @@ class Uname(CommandParser):
 
         See the `__eq__` operator for a detailed description.
         """
-        return not(self == other)
+        return not (self == other)
 
     def __lt__(self, other):
         """
@@ -552,7 +557,14 @@ class Uname(CommandParser):
 
     @property
     def release_tuple(self):
-        return tuple(map(int, self.data["rhel_release"]))
+        rel = []
+        for v in self.data['rhel_release']:
+            try:
+                rel.append(int(v))
+            except ValueError:
+                rel.append(v)
+
+        return tuple(rel)
 
     @property
     def redhat_release(self):

@@ -57,11 +57,7 @@ class FSTabEntry(AttributeAsDict):
         raw_fs_mntops (str): the mount options as a string
         raw (str): the RAW line which is useful to front-end
     """
-
-    def __init__(self, data=None):
-        data = {} if data is None else data
-        for k, v in data.items():
-            setattr(self, k, v)
+    pass
 
 
 @parser(Specs.fstab)

@@ -9,9 +9,10 @@ SchedRTRuntime - file ``/proc/sys/kernel/sched_rt_runtime_us``
 SchedFeatures - file ``/sys/kernel/debug/sched_features``
 ---------------------------------------------------------
 """
-
-from insights import Parser, parser, get_active_lines
-from insights.parsers import ParseException
+from insights.core import Parser
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines
 from insights.specs import Specs
 
 

@@ -21,10 +21,10 @@ Examples:
     >>> numa_cpus_obj.total_numa_node_cpus
     14
 """
-
-from insights import Parser, parser, LegacyItemAccess
+from insights.core import LegacyItemAccess, Parser
+from insights.core.exceptions import SkipComponent
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.parsers import SkipException
 
 
 @parser(Specs.numa_cpus)
@@ -36,7 +36,7 @@ class NUMACpus(LegacyItemAccess, Parser):
 
     def parse_content(self, content):
         if (not content) or (not self.file_path):
-            raise SkipException("No Contents")
+            raise SkipComponent("No Contents")
 
         self.data = {}
         self._cpu_ranges = []

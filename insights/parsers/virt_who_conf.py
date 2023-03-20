@@ -11,7 +11,9 @@ format.
         sensitive information, like ``password``. It must be filtered.
 """
 
-from .. import parser, LegacyItemAccess, IniConfigFile, add_filter
+from insights.core import IniConfigFile
+from insights.core.filters import add_filter
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 filter_list = [
@@ -30,22 +32,12 @@ add_filter(Specs.virt_who_conf, filter_list)
 
 
 @parser(Specs.virt_who_conf)
-class VirtWhoConf(LegacyItemAccess, IniConfigFile):
+class VirtWhoConf(IniConfigFile):
     """
     Parse the ``virt-who`` configuration files ``/etc/virt-who.conf`` and
     ``/etc/virt-who.d/*.conf``.
 
     Sample configuration file::
-
-        ## This is a template for virt-who global configuration files. Please see
-        ## virt-who-config(5) manual page for detailed information.
-        ##
-        ## virt-who checks /etc/virt-who.conf for sections 'global' and 'defaults'.
-        ## The sections and their values are explained below.
-        ## NOTE: These sections retain their special meaning and function only when present in /etc/virt-who.conf
-        ##
-        ## You can uncomment and fill following template or create new file with
-        ## similar content.
 
         #Terse version of the general config template:
         [global]
@@ -64,21 +56,19 @@ class VirtWhoConf(LegacyItemAccess, IniConfigFile):
         env=Satellite
 
     Examples:
-
-        >>> vwho_conf = shared[VirtWhoConf]
-        >>> 'global' in vwho_conf
+        >>> type(conf)
+        <class 'insights.parsers.virt_who_conf.VirtWhoConf'>
+        >>> 'global' in conf
         True
-        >>> vwho_conf.has_option('global', 'debug')
+        >>> conf.has_option('global', 'debug')
         True
-        >>> vwho_conf.get('global', 'oneshot')
-        "False"
-        >>> vwho_conf.getboolean('global', 'oneshot')
+        >>> conf.get('global', 'oneshot')
+        'False'
+        >>> conf.getboolean('global', 'oneshot')
         False
-        >>> vwho_conf.get('global', 'interval')
-        "3600"
-        >>> vwho_conf.getint('global', 'interval')
+        >>> conf.get('global', 'interval')
+        '3600'
+        >>> conf.getint('global', 'interval')
         3600
-        >>> vwho_conf.items('defaults')
-        {'owner': 'Satellite', 'env': 'Satellite'}
     """
     pass

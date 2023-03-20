@@ -18,23 +18,28 @@ SCSIModUseBlkMq - file ``/sys/module/scsi_mod/parameters/use_blk_mq``
 ---------------------------------------------------------------------
 VHostNetZeroCopyTx - file ``/sys/module/vhost_net/parameters/experimental_zcopytx``
 -----------------------------------------------------------------------------------
+Ql2xMaxLUN - file ``/sys/module/qla2xxx/parameters/ql2xmqsupport``
+------------------------------------------------------------------
+KernelCrashKexecPostNotifiers - file ``/sys/module/kernel/parameters/crash_kexec_post_notifiers``
+-------------------------------------------------------------------------------------------------
 """
-from insights import parser, Parser
-from insights.parsers import SkipException
+from insights.core import Parser
+from insights.core.exceptions import SkipComponent
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 
-class XModUseBlkMq(Parser):
+class SysModuleParameters(Parser):
     """
-    Parse for file `/sys/module/{dm_mod,scsi_mod}/parameters/use_blk_mq`.
-    File content shows if use_blk_mq parameter is on.
+    Parse for file `/sys/module/*/parameters/*`.
+    File content shows if config file parameter is on.
 
     Sample Content::
 
         Y
 
     Raises:
-        SkipException: When nothing need to parse.
+        SkipComponent: When nothing need to parse.
 
     Attributes:
         val(str): Raw data of the content.
@@ -42,7 +47,7 @@ class XModUseBlkMq(Parser):
 
     def parse_content(self, content):
         if not content or len(content) != 1:
-            raise SkipException()
+            raise SkipComponent()
         self.val = content[0].strip()
 
     @property
@@ -71,7 +76,7 @@ class MaxLUNs(Parser):
         512
 
     Raises:
-        SkipException: When content is empty or no parse-able content.
+        SkipComponent: When content is empty or no parse-able content.
 
     Attributes:
         val(int): Convert the raw data of the content to int.
@@ -79,14 +84,14 @@ class MaxLUNs(Parser):
 
     def parse_content(self, content):
         if not content or len(content) != 1:
-            raise SkipException()
+            raise SkipComponent()
         if not content[0].strip('').isdigit():
             raise ValueError("Unexpected content: {0}".format(content[0]))
         self.val = int(content[0].strip())
 
 
 @parser(Specs.dm_mod_use_blk_mq)
-class DMModUseBlkMq(XModUseBlkMq):
+class DMModUseBlkMq(SysModuleParameters):
     """
     This file `/sys/module/dm_mod/parameters/use_blk_mq` shows if use_blk_mq
     parameter is on.
@@ -102,7 +107,7 @@ class DMModUseBlkMq(XModUseBlkMq):
 
 
 @parser(Specs.scsi_mod_use_blk_mq)
-class SCSIModUseBlkMq(XModUseBlkMq):
+class SCSIModUseBlkMq(SysModuleParameters):
     """
     This file `/sys/module/scsi_mod/parameters/use_blk_mq` shows if use_blk_mq
     parameter is on.
@@ -118,7 +123,7 @@ class SCSIModUseBlkMq(XModUseBlkMq):
 
 
 @parser(Specs.vhost_net_zero_copy_tx)
-class VHostNetZeroCopyTx(XModUseBlkMq):
+class VHostNetZeroCopyTx(SysModuleParameters):
     """This file `/sys/module/vhost_net/parameters/experimental_zcopytx` shows if
     vhost_net's zero-copy tx parameter is enabled or not.
 
@@ -171,5 +176,41 @@ class SCSIModMaxReportLUNs(MaxLUNs):
 
         >>> scsi_mod_max_report_luns.val
         512
+    """
+    pass
+
+
+@parser(Specs.ql2xmqsupport)
+class Ql2xmqSupport(SysModuleParameters):
+    """
+    This file `/sys/module/qla2xxx/parameters/ql2xmqsupport` shows if ql2xmqsupport
+    parameter is on.
+
+    Examples::
+
+        >>> type(qla2xxx_ql2xmqsupport)
+        <class 'insights.parsers.sys_module.Ql2xmqSupport'>
+        >>> qla2xxx_ql2xmqsupport.val
+        '1'
+        >>> qla2xxx_ql2xmqsupport.is_on
+        True
+    """
+    pass
+
+
+@parser(Specs.kernel_crash_kexec_post_notifiers)
+class KernelCrashKexecPostNotifiers(SysModuleParameters):
+    """
+    This file `/sys/module/kernel/parameters/crash_kexec_post_notifiers` shows if crash_kexec_post_notifiers
+    parameter is on.
+
+    Examples::
+
+        >>> type(crash_kexec_post_notifiers)
+        <class 'insights.parsers.sys_module.KernelCrashKexecPostNotifiers'>
+        >>> crash_kexec_post_notifiers.val
+        'Y'
+        >>> crash_kexec_post_notifiers.is_on
+        True
     """
     pass

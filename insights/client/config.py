@@ -8,6 +8,7 @@ import sys
 from six.moves import configparser as ConfigParser
 from distutils.version import LooseVersion
 from .utilities import get_version_info
+from insights.client.apps.manifests import manifests, content_types
 
 try:
     from .constants import InsightsConstants as constants
@@ -118,6 +119,22 @@ DEFAULT_OPTS = {
         # non-CLI
         'default': None
     },
+    'app': {
+        'default': None,
+        'opt': ['--collector'],
+        'help': 'Run the specified app and upload its results archive',
+        'action': 'store',
+        'group': 'actions',
+        'dest': 'app'
+    },
+    'manifest': {
+        'default': None,
+        'opt': ['--manifest'],
+        'help': 'Collect using the provided manifest',
+        'action': 'store',
+        'group': 'actions',
+        'dest': 'manifest'
+    },
     'compliance': {
         'default': False,
         'opt': ['--compliance'],
@@ -192,7 +209,7 @@ DEFAULT_OPTS = {
     'group': {
         'default': None,
         'opt': ['--group'],
-        'help': 'Group to add this system to during registration',
+        'help': 'Group to add to this system',
         'action': 'store',
     },
     'http_timeout': {
@@ -202,7 +219,7 @@ DEFAULT_OPTS = {
     'keep_archive': {
         'default': False,
         'opt': ['--keep-archive'],
-        'help': 'Do not delete archive after upload',
+        'help': 'Store archive in /var/cache/insights-client/ after upload',
         'action': 'store_true',
         'group': 'debug'
     },
@@ -233,6 +250,10 @@ DEFAULT_OPTS = {
     'no_gpg': {
         # non-CLI
         'default': False,  # legacy
+    },
+    'no_proxy': {
+        # non-CLI
+        'default': None
     },
     'no_upload': {
         'default': False,
@@ -313,7 +334,9 @@ DEFAULT_OPTS = {
     'reregister': {
         'default': False,
         'opt': ['--force-reregister'],
-        'help': 'Forcefully reregister this machine to Red Hat. Use only as directed.',
+        'help': ('This flag is deprecated and it will be removed in a future release.'
+                 'Forcefully reregister this machine to Red Hat.'
+                 'Please use `insights-client --unregister && insights-client --register `instead'),
         'action': 'store_true',
         'group': 'debug',
         'dest': 'reregister'
@@ -455,6 +478,7 @@ class InsightsConfig(object):
     '''
     Insights client configuration
     '''
+
     def __init__(self, *args, **kwargs):
         # this is only used to print configuration errors upon initial load
         self._print_errors = False
@@ -669,6 +693,11 @@ class InsightsConfig(object):
         if self.analyze_container:
             raise ValueError(
                 '--analyze-container is no longer supported.')
+        if self.reregister:
+            raise ValueError(
+                "`force-reregistration` has been deprecated. Please use `insights-client "
+                "--unregister && insights-client --register` instead",
+            )
         if self.use_atomic:
             raise ValueError(
                 '--use-atomic is no longer supported.')
@@ -692,9 +721,13 @@ class InsightsConfig(object):
             if self.test_connection:
                 raise ValueError('Cannot run connection test in offline mode.')
             if self.checkin:
-                raise ValueError('Cannot check in in offline mode.')
+                raise ValueError('Cannot check-in in offline mode.')
             if self.unregister:
                 raise ValueError('Cannot unregister in offline mode.')
+            if self.check_results:
+                raise ValueError('Cannot check results in offline mode')
+            if self.diagnosis:
+                raise ValueError('Cannot diagnosis in offline mode')
         if self.output_dir and self.output_file:
             raise ValueError('Specify only one: --output-dir or --output-file.')
         if self.output_dir == '':
@@ -730,6 +763,9 @@ class InsightsConfig(object):
                     sys.stdout.write('WARNING: SOSCleaner reports will be created alongside the output archive.\n')
         if self.module and not self.module.startswith('insights.client.apps.'):
             raise ValueError('You can only run modules within the namespace insights.client.apps.*')
+        if self.app and not self.manifest:
+            raise ValueError("Unable to find app: %s\nList of available apps: %s"
+                             % (self.app, ', '.join(sorted(manifests.keys()))))
 
     def _imply_options(self):
         '''
@@ -743,7 +779,7 @@ class InsightsConfig(object):
            self.analyze_image_id):
             self.analyze_container = True
         self.to_json = self.to_json or self.analyze_container
-        self.register = (self.register or self.reregister) and not self.offline
+        self.register = self.register and not self.offline
         self.keep_archive = self.keep_archive or self.no_upload
         if self.to_json and self.quiet:
             self.diagnosis = True
@@ -764,6 +800,13 @@ class InsightsConfig(object):
             if self._print_errors:
                 sys.stdout.write('The compressor {0} is not supported. Using default: gz\n'.format(self.compressor))
             self.compressor = 'gz'
+        if self.app:
+            # Get the manifest for the specified app
+            self.manifest = manifests.get(self.app)
+            self.content_type = content_types.get(self.app)
+            self.core_collect = True
+            self.legacy_upload = False
+            self._set_app_config()
         if self.output_dir:
             # get full path
             self.output_dir = os.path.abspath(self.output_dir)
@@ -803,6 +846,17 @@ class InsightsConfig(object):
             #   Therefore, only force legacy_upload to False when attempting
             #   to change Ansible hostname from the CLI, when not registering.
             self.legacy_upload = False
+
+    def _set_app_config(self):
+        '''
+        Set App specific insights config values that differ from the default values
+        Config values may have been set manually however, so need to take that into consideration
+        '''
+        if self.app == 'malware-detection':
+            # Add extra retries for malware, mainly because it could take a long time to run
+            # and the results archive shouldn't be discarded after a single failed upload attempt
+            if self.retries < 3:
+                self.retries = 3
 
     def _determine_filename_and_extension(self):
         '''

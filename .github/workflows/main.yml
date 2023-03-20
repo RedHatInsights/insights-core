@@ -9,15 +9,15 @@ on:
 jobs:
   code-test:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
-        python-versions: [2.7, 3.6]
+        python-versions: [2.7, 3.6, 3.9]
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-versions }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-versions }}
     - name: Install dependencies
@@ -37,12 +37,13 @@ jobs:
     runs-on: ubuntu-18.04
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: apt-install python26
       run: |
-        sudo add-apt-repository ppa:deadsnakes/ppa
+        sudo add-apt-repository 'ppa:deadsnakes/ppa'
         sudo apt-get update
-        sudo apt-get install python2.6
+        sudo apt-get install -y --no-install-recommends libssl1.0-dev
+        sudo apt-get install python2.6  python2.6-dev
         sudo update-alternatives --install /usr/bin/python python /usr/bin/python2.6 1
         sudo update-alternatives --set python /usr/bin/python2.6
     - name: get depenencies
@@ -71,14 +72,14 @@ jobs:
 
   docs-test:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python 3.6
-      uses: actions/setup-python@v2
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v4
       with:
-        python-version: 3.6
+        python-version: 3.8
     - name: install dependencies
       run: |
         sudo apt-get install pandoc

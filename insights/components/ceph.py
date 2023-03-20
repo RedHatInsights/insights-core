@@ -5,13 +5,13 @@ Component identifies Ceph Monitor
 The ``Is*`` component in this module is valid if the
 :py:class:`insights.combiners.ps.Ps` combiner indicates
 the host is a Ceph monitor.  Otherwise, it raises a
-:py:class:`insights.core.dr.SkipComponent` to prevent dependent components from
+:py:class:`insights.core.exceptions.SkipComponent` to prevent dependent components from
 executing.
 
 """
-from insights.core.dr import SkipComponent
-from insights.core.plugins import component
 from insights.combiners.ps import Ps
+from insights.core.exceptions import SkipComponent
+from insights.core.plugins import component
 
 
 @component(Ps)

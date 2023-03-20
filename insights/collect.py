@@ -8,20 +8,23 @@ runs all datasources in ``insights.specs.Specs`` and
 ``insights.specs.Specs``.
 """
 from __future__ import print_function
-from contextlib import contextmanager
 import argparse
+import json
 import logging
 import os
+import sys
 import tempfile
 import yaml
 
 from datetime import datetime
 
-from insights import apply_configs, apply_default_enabled, dr
-from insights.core import blacklist, filters
+from insights import apply_configs, apply_default_enabled, get_pool
+from insights.core import blacklist, dr, filters
+from insights.core.blacklist import BLACKLISTED_SPECS
+from insights.core.exceptions import CalledProcessError
 from insights.core.serde import Hydration
 from insights.util import fs
-from insights.util.subproc import call, CalledProcessError
+from insights.util.subproc import call
 
 SAFE_ENV = {
     "PATH": os.path.pathsep.join([
@@ -144,6 +147,10 @@ plugins:
         - name: insights.combiners.services
           enabled: true
 
+    # needed for the 'teamdctl_state_dump' spec
+        - name: insights.parsers.nmcli.NmcliConnShow
+          enabled: true
+
     # needed for multiple Datasouce specs
         - name: insights.parsers.ps.PsAuxcww
           enabled: true
@@ -152,6 +159,28 @@ plugins:
           enabled: true
 
         - name: insights.combiners.ps
+          enabled: true
+
+    # needed for httpd_certificate
+        - name: insights.combiners.httpd_conf.HttpdConfTree
+          enabled: true
+
+        - name: insights.combiners.httpd_conf._HttpdConf
+          enabled: true
+
+    # needed for httpd_on_nfs
+        - name: insights.parsers.mount.ProcMounts
+          enabled: true
+
+    # needed for nginx_ssl_cert_enddate
+        - name: insights.combiners.nginx_conf.NginxConfTree
+          enabled: true
+
+        - name: insights.combiners.nginx_conf._NginxConf
+          enabled: true
+
+    # needed for mssql_tls_cert_enddate
+        - name: insights.parsers.mssql_conf.MsSQLConf
           enabled: true
 
     # needed to collect the sap_hdb_version spec that uses the Sap combiner
@@ -164,16 +193,37 @@ plugins:
         - name: insights.combiners.sap
           enabled: true
 
-    # needed for the 'pre-check' of the 'ss' spec
-        - name: insights.parsers.lsmod
+    # needed for fw_devices and fw_security specs
+        - name: insights.parsers.dmidecode.DMIDecode
+          enabled: true
+
+        - name: insights.parsers.virt_what.VirtWhat
+          enabled: true
+
+        - name: insights.combiners.virt_what.VirtWhat
+          enabled: true
+
+        - name: insights.components.virtualization.IsBareMetal
+          enabled: true
+
+    # needed for the 'pre-check' of the 'ss' spec and the 'modinfo_filtered_modules' spec
+        - name: insights.parsers.lsmod.LsMod
           enabled: true
 
     # needed for the 'pre-check' of the 'is_satellite_server' spec
         - name: insights.combiners.satellite_version.SatelliteVersion
           enabled: true
+        - name: insights.components.satellite.IsSatellite
+          enabled: true
 
     # needed for the 'pre-check' of the 'is_satellite_capsule' spec
         - name: insights.combiners.satellite_version.CapsuleVersion
+          enabled: true
+        - name: insights.components.satellite.IsCapsule
+          enabled: true
+
+    # needed for the 'pre-check' of the 'satellite_provision_param_settings' spec
+        - name: insights.components.satellite.IsSatellite611
           enabled: true
 
     # needed for the 'pre-check' of the 'corosync_cmapctl_cmd_list' spec
@@ -187,11 +237,36 @@ plugins:
           enabled: true
         - name: insights.components.rhel_version.IsRhel8
           enabled: true
+        - name: insights.components.rhel_version.IsRhel9
+          enabled: true
+
+    # needed for the 'pmlog_summary' spec
+        - name: insights.parsers.ros_config.RosConfig
+          enabled: true
+
+    # needed for the 'container' specs
+        - name: insights.parsers.podman_list.PodmanListContainers
+          enabled: true
+
+        - name: insights.parsers.docker_list.DockerListContainers
+          enabled: true
 
     # needed because some specs aren't given names before they're used in DefaultSpecs
         - name: insights.core.spec_factory
           enabled: true
+
+    # needed by the 'luks_data_sources' spec
+        - name: insights.parsers.blkid.BlockIDInfo
+          enabled: true
+
+        - name: insights.components.cryptsetup
+          enabled: true
 """.strip()
+
+EXCEPTIONS_TO_REPORT = set([
+    OSError
+])
+"""Exception types that should be reported on after core collection."""
 
 
 def load_manifest(data):
@@ -280,25 +355,6 @@ def create_archive(path, remove_path=True):
     return archive_path
 
 
-@contextmanager
-def get_pool(parallel, kwargs):
-    """
-    Yields:
-        a ThreadPoolExecutor if parallel is True and `concurrent.futures` exists.
-        `None` otherwise.
-    """
-
-    if parallel:
-        try:
-            from concurrent.futures import ThreadPoolExecutor
-            with ThreadPoolExecutor(thread_name_prefix="insights-collector-pool", **kwargs) as pool:
-                yield pool
-        except ImportError:
-            yield None
-    else:
-        yield None
-
-
 def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=None, client_timeout=None):
     """
     This is the collection entry point. It accepts a manifest, a temporary
@@ -318,7 +374,10 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
             into the manifest blacklist.
         client_timeout (int): Client-provided command timeout value
     Returns:
-        The full path to the created tar.gz or workspace.
+        (str, dict): The full path to the created tar.gz or workspace.
+        And a dictionary with relevant exceptions captured by the broker during
+        core collection, this dictionary has the following structure:
+        ``{ exception_type: [ (exception_obj, component), (exception_obj, component) ]}``.
     """
 
     manifest = load_manifest(manifest)
@@ -345,6 +404,7 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
             log.warning('WARNING: Unknown component in blacklist: %s' % component)
         else:
             dr.set_enabled(component, enabled=False)
+            BLACKLISTED_SPECS.append(component.split('.')[-1])
             log.warning('WARNING: Skipping component: %s', component)
 
     to_persist = get_to_persist(client.get("persist", set()))
@@ -376,17 +436,93 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
 
     parallel = run_strategy.get("name") == "parallel"
     pool_args = run_strategy.get("args", {})
-    with get_pool(parallel, pool_args) as pool:
+    with get_pool(parallel, "insights-collector-pool", pool_args) as pool:
         h = Hydration(output_path, pool=pool)
         broker.add_observer(h.make_persister(to_persist))
         dr.run_all(broker=broker, pool=pool)
 
+    if BLACKLISTED_SPECS:
+        _write_out_blacklisted_specs(output_path)
+        # Delete the list so the specs aren't written again by the client.
+        del BLACKLISTED_SPECS[:]
+
+    collect_errors = _parse_broker_exceptions(broker, EXCEPTIONS_TO_REPORT)
+
     if compress:
-        return create_archive(output_path)
-    return output_path
+        return create_archive(output_path), collect_errors
+    return output_path, collect_errors
+
+
+def _parse_broker_exceptions(broker, exceptions_to_report):
+    """
+    Parse the exceptions captured in the broker during core collection
+    and keep only exception types configured in the ``exceptions_to_report``.
+
+    Args:
+        broker (Broker): Broker object used for core collection.
+        exceptions_to_report (set): Exception types to retrieve from the broker.
+
+    Returns:
+        (dict): A dictionary with relevant exceptions captured by the broker.
+    """
+    errors = {}
+    try:
+        if broker.exceptions:
+            for component, exceptions in broker.exceptions.items():
+                for ex in exceptions:
+                    ex_type = type(ex)
+                    if ex_type in exceptions_to_report:
+                        if ex_type in errors.keys():
+                            errors[ex_type].append((ex, component))
+                        else:
+                            errors[ex_type] = [(ex, component)]
+    except Exception as e:
+        log.warning("Could not parse exceptions from the broker.: %s", str(e))
+    return errors
+
+
+def _write_out_blacklisted_specs(output_path):
+    """
+    Write out the blacklisted specs to blacklisted_specs.txt, and create
+    a meta-data file for this file. That way it can be loaded when the
+    archive is processed.
+
+    Args:
+        output_path (str): Path of the output directory.
+    """
+    if os.path.exists(os.path.join(output_path, "meta_data")):
+        output_path_root = os.path.join(output_path, "data")
+    else:
+        output_path_root = output_path
+
+    with open(os.path.join(output_path_root, "blacklisted_specs.txt"), "w") as of:
+        json.dump({"specs": BLACKLISTED_SPECS}, of)
+
+    doc = {
+        "name": "insights.specs.Specs.blacklisted_specs",
+        "exec_time": 0.0,
+        "errors": [],
+        "results": {
+            "type": "insights.core.spec_factory.DatasourceProvider",
+            "object": {
+                "relative_path": "blacklisted_specs.txt"
+            }
+        },
+        "ser_time": 0.0
+    }
+
+    meta_path = os.path.join(os.path.join(output_path, "meta_data"), "insights.specs.Specs.blacklisted_specs")
+    with open(meta_path, "w") as of:
+        json.dump(doc, of)
 
 
 def main():
+    # Remove command line args so that they are not parsed by any called modules
+    # The main fxn is only invoked as a cli, if calling from another cli then
+    # use the collect function instead
+    collect_args = [arg for arg in sys.argv[1:]] if len(sys.argv) > 1 else []
+    sys.argv = [sys.argv[0], ] if sys.argv else sys.argv
+
     p = argparse.ArgumentParser()
     p.add_argument("-m", "--manifest", help="Manifest yaml.")
     p.add_argument("-o", "--out_path", help="Path to write output data.")
@@ -394,7 +530,7 @@ def main():
     p.add_argument("-v", "--verbose", help="Verbose output.", action="store_true")
     p.add_argument("-d", "--debug", help="Debug output.", action="store_true")
     p.add_argument("-c", "--compress", help="Compress", action="store_true")
-    args = p.parse_args()
+    args = p.parse_args(args=collect_args)
 
     level = logging.WARNING
     if args.verbose:
@@ -413,7 +549,7 @@ def main():
         manifest = default_manifest
 
     out_path = args.out_path or tempfile.gettempdir()
-    archive = collect(manifest, out_path, compress=args.compress)
+    archive, errors = collect(manifest, out_path, compress=args.compress)
     print(archive)
 
 

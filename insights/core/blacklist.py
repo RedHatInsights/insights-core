@@ -1,6 +1,7 @@
 import re
 
 
+BLACKLISTED_SPECS = []
 _FILE_FILTERS = set()
 _COMMAND_FILTERS = set()
 _PATTERN_FILTERS = set()

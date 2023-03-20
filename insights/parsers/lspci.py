@@ -14,8 +14,10 @@ LsPciVmmkn - Command ``lspci -vmmkn``
 """
 import re
 
-from insights import LogFileOutput, parser, CommandParser, get_active_lines
-from insights.parsers import SkipException
+from insights.core import CommandParser, LogFileOutput
+from insights.core.exceptions import SkipComponent
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines
 from insights.specs import Specs
 
 
@@ -204,7 +206,7 @@ class LsPciVmmkn(CommandParser, list):
                 dev[key] = val
 
         if len(self) <= 1 and not dev:
-            raise SkipException()
+            raise SkipComponent()
 
     @property
     def pci_dev_list(self):

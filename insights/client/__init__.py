@@ -15,11 +15,8 @@ from . import client
 from .constants import InsightsConstants as constants
 from .config import InsightsConfig
 from .auto_config import try_auto_configuration
-from .utilities import (delete_registered_file,
-                        delete_unregistered_file,
-                        write_data_to_file,
+from .utilities import (write_data_to_file,
                         write_to_disk,
-                        generate_machine_id,
                         get_tags,
                         write_tags,
                         migrate_tags,
@@ -105,11 +102,14 @@ class InsightsClient(object):
             url = self.connection.base_url + '/platform' + constants.module_router_path
         else:
             url = self.connection.base_url + constants.module_router_path
-        response = self.connection.get(url)
-        if response.status_code == 200:
-            return response.json()["url"]
-        else:
-            logger.warning("Unable to fetch egg url. Defaulting to /release")
+        try:
+            response = self.connection.get(url)
+            if response.status_code == 200:
+                return response.json()["url"]
+            else:
+                raise ConnectionError("%s: %s" % (response.status_code, response.reason))
+        except ConnectionError as e:
+            logger.warning("Unable to fetch egg url %s: %s. Defaulting to /release", url, str(e))
             return '/release'
 
     def fetch(self, force=False):
@@ -202,10 +202,10 @@ class InsightsClient(object):
             if current_etag and not force:
                 logger.debug('Requesting new file with etag %s', current_etag)
                 etag_headers = {'If-None-Match': current_etag}
-                response = self.connection.get(url, headers=etag_headers)
+                response = self.connection.get(url, headers=etag_headers, log_response_text=False)
             else:
                 logger.debug('Found no etag or forcing fetch')
-                response = self.connection.get(url)
+                response = self.connection.get(url, log_response_text=False)
         except ConnectionError as e:
             logger.error(e)
             logger.error('The Insights API could not be reached.')
@@ -389,7 +389,7 @@ class InsightsClient(object):
     @_net
     def collect(self):
         # return collection results
-        tar_file = client.collect(self.config, self.connection)
+        tar_file = client.collect(self.config)
 
         # it is important to note that --to-stdout is utilized via the wrapper RPM
         # this file is received and then we invoke shutil.copyfileobj
@@ -536,16 +536,6 @@ class InsightsClient(object):
     def get_machine_id(self):
         return client.get_machine_id()
 
-    def clear_local_registration(self):
-        '''
-        Deletes dotfiles and machine-id for fresh registration
-        '''
-        delete_registered_file()
-        delete_unregistered_file()
-        write_to_disk(constants.machine_id_file, delete=True)
-        logger.debug('Re-register set, forcing registration.')
-        logger.debug('New machine-id: %s', generate_machine_id(new=True))
-
     @_net
     def check_results(self):
         content = self.connection.get_advisor_report()
@@ -575,9 +565,9 @@ class InsightsClient(object):
             if len(system) == 1:
                 try:
                     id = system[0]["id"]
-                    logger.info("View details about this system on cloud.redhat.com:")
+                    logger.info("View details about this system on console.redhat.com:")
                     logger.info(
-                        "https://cloud.redhat.com/insights/inventory/{0}".format(id)
+                        "https://console.redhat.com/insights/inventory/{0}".format(id)
                     )
                 except Exception as e:
                     logger.error(

@@ -71,11 +71,13 @@ Examples:
     'true'
 
 """
-
 import yaml
-from .. import parser, Parser, LegacyItemAccess, get_active_lines
-from ..parsers import ParseException, split_kv_pairs
-from ..specs import Specs
+
+from insights.core import LegacyItemAccess, Parser
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines, split_kv_pairs
+from insights.specs import Specs
 
 
 @parser(Specs.mongod_conf)

@@ -1,11 +1,11 @@
 """
 Custom datasources for cloud initialization information
 """
-import json
 import yaml
 
 from insights.core.context import HostContext
-from insights.core.dr import SkipComponent
+from insights.core.exceptions import SkipComponent
+from insights.core.filters import get_filters
 from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider, simple_file
 from insights.specs import Specs
@@ -21,8 +21,13 @@ class LocalSpecs(Specs):
 @datasource(LocalSpecs.cloud_cfg_input, HostContext)
 def cloud_cfg(broker):
     """
-    This datasource provides the network configuration information collected
-    from ``/etc/cloud/cloud.cfg``.
+    This datasource provides configuration of ``/etc/cloud/cloud.cfg`` file.
+
+    .. note::
+        Since this file may contain sensitive information, it should be
+        filtered before the Insights collecting it.  The filters will be added
+        via the :mod:`insights.specs.Specs.cloud_cfg` Spec.  If nothing is
+        added to the filter, nothing will be collected.
 
     Typical content of ``/etc/cloud/cloud.cfg`` file is::
 
@@ -32,12 +37,14 @@ def cloud_cfg(broker):
             ssh-authorized-keys:
               - key_one
               - key_two
-            passwd: $6$j212wezy$7H/1LT4f9/N3wpgNunhsIqtMj62OKiS3nyNwuizouQc3u7MbYCarYeAHWYPYb2FT.lbioDm2RrkJPb9BZMN1O/
+            passwd: $6$j212wezy$7H/1LT4f9/N3wpgNunhsIqtMj62OKiS3nyNwuizouQc3u7
+
+        ssh_deletekeys: 1
 
         network:
             version: 1
             config:
-            - type: physical
+              - type: physical
                 name: eth0
                 subnets:
                   - type: dhcp
@@ -53,42 +60,29 @@ def cloud_cfg(broker):
             output: /var/log/cloud-init-debug.log
             verbose: true
 
-    Note:
-        This datasource may be executed using the following command:
-
-        ``insights cat --no-header cloud_cfg``
-
-    Sample data returned includes only the ``network`` portion of the input file in JSON format::
-
-        {
-            "version": 1,
-            "config": [
-                {
-                    "type": "physical",
-                    "name": "eth0",
-                    "subnets": [
-                        {"type": "dhcp"},
-                        {"type": "dhcp6"}
-                    ]
-                }
-            ]
-        }
-
     Returns:
-        str: JSON string when the ``network`` parameter includes content, else `None` is returned.
+        str: YAML string after removing the sensitive information.
 
     Raises:
-        SkipComponent: When the path does not exist or any exception occurs.
+        SkipComponent: When the path does not exist, nothing is collected,
+                       or any exception occurs.
     """
     relative_path = '/etc/cloud/cloud.cfg'
     try:
+        filters = get_filters(Specs.cloud_cfg)
         content = broker[LocalSpecs.cloud_cfg_input].content
-        if content:
+        if content and filters:
+            result = dict()
             content = yaml.load('\n'.join(content), Loader=yaml.SafeLoader)
-            network_config = content.get('network', None)
-            if network_config:
-                return DatasourceProvider(content=json.dumps(network_config), relative_path=relative_path)
+            if isinstance(content, dict):
+                # apply filters after ignoring sensitive data
+                for item in filters:
+                    if item not in ('users', 'system_info') and item in content:
+                        result[item] = content[item]
+
+                if result:
+                    return DatasourceProvider(content=yaml.dump(result), relative_path=relative_path)
+            raise SkipComponent("Invalid YAML format")
     except Exception as e:
         raise SkipComponent("Unexpected exception:{e}".format(e=str(e)))
-
-    raise SkipComponent('No network section in yaml')
+    raise SkipComponent

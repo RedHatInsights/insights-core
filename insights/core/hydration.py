@@ -2,11 +2,10 @@ import logging
 import os
 
 from insights.core import archives, dr
-from insights.core.serde import Hydration
-from insights.core.context import (ClusterArchiveContext,
-                                   ExecutionContextMeta,
-                                   HostArchiveContext,
+from insights.core.context import (ClusterArchiveContext, ExecutionContextMeta, HostArchiveContext,
                                    SerializedArchiveContext)
+from insights.core.exceptions import InvalidArchive
+from insights.core.serde import Hydration
 
 log = logging.getLogger(__name__)
 
@@ -14,11 +13,15 @@ if hasattr(os, "scandir"):
     def get_all_files(path):
         with os.scandir(path) as it:
             for ent in it:
-                if ent.is_dir(follow_symlinks=False):
-                    for pth in get_all_files(ent.path):
-                        yield pth
-                elif ent.is_file(follow_symlinks=False):
-                    yield ent.path
+                try:
+                    if ent.is_dir(follow_symlinks=False):
+                        for pth in get_all_files(ent.path):
+                            yield pth
+                    elif ent.is_file(follow_symlinks=False):
+                        yield ent.path
+                except OSError as ex:
+                    log.exception(ex)
+
 
 else:
     def get_all_files(path):
@@ -36,7 +39,7 @@ def identify(files):
 
     common_path = os.path.dirname(os.path.commonprefix(files))
     if not common_path:
-        raise archives.InvalidArchive("Unable to determine common path")
+        raise InvalidArchive("Unable to determine common path")
 
     return common_path, HostArchiveContext
 
@@ -51,7 +54,7 @@ def create_context(path, context=None):
 
     all_files = list(get_all_files(path))
     if not all_files:
-        raise archives.InvalidArchive("No files in archive")
+        raise InvalidArchive("No files in archive")
 
     common_path, ctx = identify(all_files)
     context = context or ctx

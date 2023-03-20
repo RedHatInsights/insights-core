@@ -1151,7 +1151,8 @@ class HangingString(Parser):
             try:
                 if ctx.col(pos) > ctx.indents[-1]:
                     pos, res = self.children[0].process(pos, data, ctx)
-                    results.append(res.rstrip(" \\"))
+                    # Remove any inline comments.
+                    results.append(res.split("#", 1)[0].rstrip(" \\"))
                 else:
                     pos = old
                     break
@@ -1201,6 +1202,17 @@ class EndTagName(Wrapper):
             ctx.set(pos, msg)
             raise Exception(msg)
         return pos, res
+
+
+class EmptyQuotedString(Parser):
+    def __init__(self, chars):
+        super(EmptyQuotedString, self).__init__()
+        single = Char("'") >> String(set(chars) - set("'"), "'", 0) << Char("'")
+        double = Char('"') >> String(set(chars) - set('"'), '"', 0) << Char('"')
+        self.add_child(single | double)
+
+    def process(self, pos, data, ctx):
+        return self.children[0].process(pos, data, ctx)
 
 
 def _make_number(sign, int_part, frac_part):

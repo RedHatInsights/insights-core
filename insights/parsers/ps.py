@@ -4,10 +4,12 @@ Ps - command ``ps auxww`` and others
 
 This module provides processing for the various outputs of the ``ps`` command.
 """
-from .. import parser, CommandParser
-from . import ParseException, parse_delimited_table, keyword_search
-from insights.specs import Specs
+from insights.core import CommandParser, ContainerParser
+from insights.core.exceptions import ParseException
 from insights.core.filters import add_filter
+from insights.core.plugins import parser
+from insights.parsers import keyword_search, parse_delimited_table
+from insights.specs import Specs
 
 
 def are_present(tags, line):
@@ -90,8 +92,29 @@ class Ps(CommandParser):
                 self.services.append((cmd_name, proc[self.user_name], proc[raw_line_key]))
                 del proc[raw_line_key]
 
+            pid = None
+            stat = None
+            threads = 0
             for row in self.data:
-                self.pid_info[row['PID']] = row
+                _pid = row['PID']
+                if _pid.isdigit():
+                    if threads:
+                        # Set the number of threads for the previous entry, and
+                        # set the entry's stat to the stat of the last thread.
+                        self.pid_info[pid].update({"STAT": stat, "threads": threads})
+
+                    pid = _pid
+                    self.pid_info[_pid] = row
+
+                    stat = None
+                    threads = 0
+                else:
+                    stat = row['STAT']
+                    threads += 1
+            else:
+                # Check if there was a thread as the last row.
+                if threads:
+                    self.pid_info[pid].update({"STAT": stat, "threads": threads})
 
         else:
             raise ParseException(
@@ -332,6 +355,38 @@ add_filter(Specs.ps_aux, "COMMAND")
 
 @parser(Specs.ps_aux)
 class PsAux(PsAuxww):
+    pass
+
+
+add_filter(Specs.container_ps_aux, "COMMAND")
+
+
+@parser(Specs.container_ps_aux)
+class ContainerPsAux(ContainerParser, PsAuxww):
+    """
+    Class to parse the command `ps aux` from the containers.
+
+    Sample input data::
+
+        USER       PID %CPU %MEM     VSZ    RSS TTY      STAT START   TIME COMMAND
+        root         1  0.0  0.0   19356   1544 ?        Ss   May31   0:01 /sbin/init
+        root      1821  0.0  0.0       0      0 ?        S    May31   0:25 [kondemand/0]
+        root      1864  0.0  0.0   18244    668 ?        Ss   May31   0:05 irqbalance --pid=/var/run/irqbalance.pid
+        user1    20160  0.0  0.0  108472   1896 pts/3    Ss   10:09   0:00 bash
+        root     20357  0.0  0.0    9120    760 ?        Ss   10:09   0:00 /sbin/dhclient -1 -q -lf /var/lib/dhclient/dhclient-extbr0.leases -pf /var/run/dhclient-extbr0.pid extbr0
+        qemu     22673  0.8 10.2 1618556 805636 ?        Sl   11:38   1:07 /usr/libexec/qemu-kvm -name rhel7 -S -M rhel6.5.0 -enable-kvm -m 1024 -smp 2,sockets=2,cores=1,threads=1 -uuid 13798ffc-bc1e-d437-4f3f-2e0fa6c923ad
+        tomcat    3662  1.0  5.7 2311488  58236 ?        Ssl  07:28   0:01 /usr/lib/jvm/jre/bin/java -classpath /usr/share/tomcat/bin/bootstrap.jar:/usr/share/tomcat/bin/tomcat-juli.jar:/usr/share/java/commons-daemon.jar -Dcatalina.base=/usr/share/tomcat -Dcatalina.home=/usr/share/tomcat -Djava.endorsed.dirs= -Djava.io.tmpdir=/var/cache/tomcat/temp -Djava.util.logging.config.file=/usr/share/tomcat/conf/logging.properties -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager org.apache.catalina.startup.Bootstrap start
+
+    Examples:
+        >>> type(container_ps_aux)
+        <class 'insights.parsers.ps.ContainerPsAux'>
+        >>> container_ps_aux.container_id
+        '2869b4e2541c'
+        >>> container_ps_aux.image
+        'registry.access.redhat.com/ubi8/nginx-120'
+        >>> container_ps_aux.number_occurences("bash")
+        1
+    """
     pass
 
 

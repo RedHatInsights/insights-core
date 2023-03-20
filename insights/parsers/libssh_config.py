@@ -12,11 +12,11 @@ LibsshClientConfig - file ``/etc/libssh/libssh_client.config``
 LibsshServerConfig - file ``/etc/libssh/libssh_server.config``
 --------------------------------------------------------------
 """
-
-from insights.specs import Specs
 from insights.core import CommandParser
-from .. import parser, get_active_lines
-from insights.parsers import SkipException
+from insights.core.exceptions import SkipComponent
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines
+from insights.specs import Specs
 
 
 class LibsshConfig(CommandParser, dict):
@@ -68,12 +68,12 @@ class LibsshConfig(CommandParser, dict):
         ['/etc/crypto-policies/back-ends/libssh.config', '/etc/ssh/sshd_config']
 
     Raises:
-        SkipException: When input content is empty or there is a syntax error.
+        SkipComponent: When input content is empty or there is a syntax error.
     """
 
     def parse_content(self, content):
         if not content:
-            raise SkipException('No content.')
+            raise SkipComponent('No content.')
 
         for line in get_active_lines(content):
             delimiter = None
@@ -94,7 +94,7 @@ class LibsshConfig(CommandParser, dict):
                         _v.append(v)
                         self[k] = _v
             except ValueError:
-                raise SkipException('Syntax error')
+                raise SkipComponent('Syntax error')
 
 
 @parser(Specs.libssh_client_config)
