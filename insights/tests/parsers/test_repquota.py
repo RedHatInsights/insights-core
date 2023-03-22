@@ -14,8 +14,8 @@ Block grace time: 7days; Inode grace time: 7days
                         Block limits                File limits
 User            used    soft    hard  grace    used  soft  hard  grace
 ----------------------------------------------------------------------
-root      --       0       0       0              3     0     0       
-user1     +-   61440   51200  102400  6days       1     0     0       
+root      --       0       0       0              3     0     0
+user1     +-   61440   51200  102400  6days       1     0     0
 
 *** Status for user quotas on device /dev/sdb
 Accounting: ON; Enforcement: ON
@@ -26,8 +26,8 @@ Block grace time: 7days; Inode grace time: 7days
                         Block limits                File limits
 User            used    soft    hard  grace    used  soft  hard  grace
 ----------------------------------------------------------------------
-root      --      20       0       0              2     0     0       
-user2     +-  100000   50000  100000  7days       1     0     0       
+root      --      20       0       0              2     0     0
+user2     +-  100000   50000  100000  7days       1     0     0
 
 Statistics:
 Total blocks: 7
@@ -40,8 +40,8 @@ Block grace time: 7days; Inode grace time: 7days
                         Block limits                File limits
 Group           used    soft    hard  grace    used  soft  hard  grace
 ----------------------------------------------------------------------
-root      --       0       0       0              3     0     0       
-group1    --   61440       0       0              1     0     0       
+root      --       0       0       0              3     0     0
+group1    --   61440       0       0              1     0     0
 
 *** Status for group quotas on device /dev/sdb
 Accounting: ON; Enforcement: OFF
@@ -52,7 +52,7 @@ Block grace time: 7days; Inode grace time: 7days
                         Block limits                File limits
 Group           used    soft    hard  grace    used  soft  hard  grace
 ----------------------------------------------------------------------
-root      --      20       0       0              2     0     0       
+root      --      20       0       0              2     0     0
 group1    --  100000       0       0              3     2     4  6days
 
 Statistics:
