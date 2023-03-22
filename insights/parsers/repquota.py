@@ -74,8 +74,8 @@ class Repquota(Parser):
         <class 'insights.parsers.repquota.Repquota'>
         >>> 'enforcement' in repquota.user_quota['/dev/sdb']
         True
-        >>> repquota.group_quota['/dev/sdb']['quota_info'][0]
-        {'group': 'root', 'flag': '--', 'block_used': '0', 'block_soft': '0', 'block_hard': '0', 'block_grace': '-', 'file_used': '3', 'file_soft': '0', 'file_hard': '0', 'file_grace': '-'}
+        >>> repquota.group_quota['/dev/sdb']['quota_info'][0] == {'group': 'root', 'flag': '--', 'block_used': '0', 'block_soft': '0', 'block_hard': '0', 'block_grace': '-', 'file_used': '3', 'file_soft': '0', 'file_hard': '0', 'file_grace': '-'}
+        True
 
     Raises:
         insights.core.exceptions.ParseException: if the ``repquota -aguv`` command is empty.
