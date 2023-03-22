@@ -323,7 +323,7 @@ class DefaultSpecs(Specs):
     ls_krb5_sssd = simple_command("/bin/ls -lan /var/lib/sss/pubconf/krb5.include.d")
     ls_lib_firmware = simple_command("/bin/ls -lanR /lib/firmware")
     ls_osroot = simple_command("/bin/ls -lan /")
-    ls_rsyslog_errorfile = foreach_execute(rsyslog_errorfile.errorfiles, "/bin/ls -ln %s")
+    ls_rsyslog_errorfile = command_with_args("/bin/ls -ln %s", rsyslog_errorfile.errorfiles, keep_rc=True)
     ls_sys_firmware = simple_command("/bin/ls -lanR /sys/firmware")
     ls_systemd_units = simple_command(
         "/bin/ls -lanRL /etc/systemd /run/systemd /usr/lib/systemd /usr/local/lib/systemd /usr/local/share/systemd /usr/share/systemd",

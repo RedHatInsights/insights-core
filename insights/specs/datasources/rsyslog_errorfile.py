@@ -15,10 +15,10 @@ def errorfiles(broker):
 
     Sample data returned::
 
-        ['/var/log/omelasticsearch.log', '/var/log/oversized.log']
+        '/var/log/omelasticsearch.log /var/log/oversized.log'
 
     Returns:
-        list: List of the errorfile paths.
+        string: string of the errorfile paths that separated by a whitespace.
 
     Raises:
         SkipComponent: When 'errorfile' is not configured.
@@ -35,6 +35,6 @@ def errorfiles(broker):
                         errorfile_path = paths[i].split('"')[1]
                         result_list.append(errorfile_path)
         if result_list:
-            return sorted(result_list)
+            return ' '.join(result_list)
 
     raise SkipComponent

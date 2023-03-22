@@ -87,8 +87,7 @@ def test_rsyslog_errorfiles_1():
     }
     result = errorfiles(broker)
     assert result is not None
-    assert isinstance(result, list)
-    assert result == sorted(['/var/log/rsyslog/es-errors1.log', '/var/log/rsyslog/es-errors2.log', '/var/log/rsyslog/es-errors3.log'])
+    assert result == '/var/log/rsyslog/es-errors1.log /var/log/rsyslog/es-errors2.log /var/log/rsyslog/es-errors3.log'
 
 
 def test_rsyslog_errorfiles_2():

@@ -4,15 +4,18 @@ from insights.parsers.ls_rsyslog_errorfile import LsRsyslogErrorfile
 from insights.tests import context_wrap
 
 LS_RSYSLOG_ERRORFILE = """
--rwxr-xr-x.  1 0  0     2558 Apr 10  2019 /var/log/oversized.log
+/bin/ls: cannot access '/var/log/rsyslog/es-errors2.log': No such file or directory
+/bin/ls: cannot access '/var/log/rsyslog/es-errors3.log': No such file or directory
+-rw-r--r--. 1 0 0   9 Mar 15 17:16 /var/log/omelasticsearch.log
+-rw-r--r--. 1 0 0 176 Mar 22 15:10 /var/log/rsyslog/es-errors1.log
 """
 
 
 def test_ls_rsyslog_errorfile():
     rsyslog_errorfile = LsRsyslogErrorfile(context_wrap(LS_RSYSLOG_ERRORFILE))
-    assert len(rsyslog_errorfile.data) == 1
-    assert rsyslog_errorfile.data.get('/var/log/oversized.log') == {'type': '-', 'perms': 'rwxr-xr-x.', 'links': 1, 'owner': '0', 'group': '0', 'size': 2558, 'date': 'Apr 10  2019', 'name': '/var/log/oversized.log', 'raw_entry': '-rwxr-xr-x.  1 0  0     2558 Apr 10  2019 /var/log/oversized.log', 'dir': ''}
-    assert rsyslog_errorfile.data.get('/var/log/oversized.log').get('size') == 2558
+    assert len(rsyslog_errorfile.entries) == 2
+    assert rsyslog_errorfile.entries.get('/var/log/omelasticsearch.log') == {'type': '-', 'perms': 'rw-r--r--.', 'links': 1, 'owner': '0', 'group': '0', 'size': 9, 'date': 'Mar 15 17:16', 'name': '/var/log/omelasticsearch.log', 'raw_entry': '-rw-r--r--. 1 0 0   9 Mar 15 17:16 /var/log/omelasticsearch.log', 'dir': ''}
+    assert rsyslog_errorfile.entries.get('/var/log/omelasticsearch.log').get('size') == 9
 
 
 def test_ls_rsyslog_errorfile_doc_examples():
