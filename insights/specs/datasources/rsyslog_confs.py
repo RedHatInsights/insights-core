@@ -9,7 +9,7 @@ from insights.core.exceptions import SkipComponent
 
 
 @datasource(RsyslogAllConf, HostContext)
-def errorfiles(broker):
+def rsyslog_errorfile(broker):
     """
     This datasource provides the list of the rsyslog errorfile paths.
 
