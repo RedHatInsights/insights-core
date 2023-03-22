@@ -30,7 +30,7 @@ def test_ls_rsyslog_errorfile():
 def test_ls_rsyslog_errorfile_err():
     with pytest.raises(ParseException) as pe:
         LsRsyslogErrorfile(context_wrap(LS_RSYSLOG_ERRORFILE_ERROR))
-        assert 'No such file or directory' in str(pe)
+        assert 'Error:' in str(pe)
 
 
 def test_ls_rsyslog_errorfile_doc_examples():

@@ -40,6 +40,6 @@ class LsRsyslogErrorfile(Parser):
             if 'No such file or directory' not in line:
                 parsed_content.append(line)
         if not parsed_content:
-            raise ParseException("Error: No such file or directory")
+            raise ParseException('Error: {0}', content)
         ls_data = ls_parser.parse(parsed_content, '').get('')
         self.entries = ls_data.get('entries')

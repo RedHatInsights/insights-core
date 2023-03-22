@@ -197,7 +197,7 @@ insights.specs.datasources.ps
     :undoc-members:
 
 insights.specs.datasources.rsyslog_confs
---------------------------------------------
+----------------------------------------
 
 .. automodule:: insights.specs.datasources.rsyslog_confs
     :members: rsyslog_errorfile
