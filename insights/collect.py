@@ -137,12 +137,6 @@ plugins:
         - name: insights.components.ceph.IsCephMonitor
           enabled: true
 
-    # needed for the 'ls_rsyslog_errorfile' spec
-        - name: insights.combiners.rsyslog_confs.RsyslogAllConf
-          enabled: true
-        - name: insights.parsers.rsyslog_conf.RsyslogConf
-          enabled: true
-
     # needed for the Services combiner
         - name: insights.parsers.chkconfig
           enabled: true
@@ -151,6 +145,12 @@ plugins:
           enabled: true
 
         - name: insights.combiners.services
+          enabled: true
+
+    # needed for the 'ls_rsyslog_errorfile' spec
+        - name: insights.combiners.rsyslog_confs.RsyslogAllConf
+          enabled: true
+        - name: insights.parsers.rsyslog_conf.RsyslogConf
           enabled: true
 
     # needed for the 'teamdctl_state_dump' spec
