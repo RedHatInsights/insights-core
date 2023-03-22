@@ -1,9 +1,9 @@
-import pytest
-import doctest
 from insights.core.exceptions import ParseException
-from insights.parsers.repquota import Repquota
 from insights.parsers import repquota
+from insights.parsers.repquota import Repquota
 from insights.tests import context_wrap
+import doctest
+import pytest
 
 REPQUOTA_ERR = """
 """.strip()
@@ -76,7 +76,7 @@ def test_repquota():
 def test_repquota_err():
     with pytest.raises(ParseException) as pe:
         Repquota(context_wrap(REPQUOTA_ERR))
-        assert 'empty file' in str(pe)
+        assert 'Error: empty output' in str(pe)
 
 
 def test_repquota_doc_examples():

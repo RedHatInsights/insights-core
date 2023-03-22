@@ -78,12 +78,12 @@ class Repquota(Parser):
         True
 
     Raises:
-        insights.core.exceptions.ParseException: if the ``repquota -aguv`` command is empty.
+        insights.core.exceptions.ParseException: if the output of the ``repquota -aguv`` command is empty.
     """
 
     def parse_content(self, content):
         if len(content) == 0:
-            raise ParseException("Error: empty file")
+            raise ParseException("Error: empty output")
         flag = False
         data = {'user': {}, 'group': {}}
         self.raw = []
