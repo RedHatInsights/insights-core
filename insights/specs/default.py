@@ -26,7 +26,7 @@ from insights.specs import Specs
 from insights.specs.datasources import (
     aws, awx_manage, cloud_init, candlepin_broker, corosync as corosync_ds,
     dir_list, ethernet, httpd, ipcs, kernel_module_list, leapp, lpstat,
-    machine_ids, md5chk, package_provides, ps as ps_datasource, sap,
+    machine_ids, md5chk, package_provides, ps as ps_datasource, rsyslog_confs, sap,
     satellite_missed_queues, semanage, ssl_certificate, sys_fs_cgroup_memory,
     sys_fs_cgroup_memory_tasks_number, rpm_pkgs, user_group, yum_updates,
     luks_devices)
@@ -323,6 +323,7 @@ class DefaultSpecs(Specs):
     ls_krb5_sssd = simple_command("/bin/ls -lan /var/lib/sss/pubconf/krb5.include.d")
     ls_lib_firmware = simple_command("/bin/ls -lanR /lib/firmware")
     ls_osroot = simple_command("/bin/ls -lan /")
+    ls_rsyslog_errorfile = command_with_args("/bin/ls -ln %s", rsyslog_confs.rsyslog_errorfile, keep_rc=True)
     ls_sys_firmware = simple_command("/bin/ls -lanR /sys/firmware")
     ls_systemd_units = simple_command(
         "/bin/ls -lanRL /etc/systemd /run/systemd /usr/lib/systemd /usr/local/lib/systemd /usr/local/share/systemd /usr/share/systemd",

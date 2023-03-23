@@ -196,6 +196,14 @@ insights.specs.datasources.ps
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.rsyslog_confs
+----------------------------------------
+
+.. automodule:: insights.specs.datasources.rsyslog_confs
+    :members: rsyslog_errorfile
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.sap
 ------------------------------
 
