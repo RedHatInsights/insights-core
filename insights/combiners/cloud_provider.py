@@ -193,8 +193,8 @@ class GoogleCloudProvider(CloudProviderInstance):
 
     Google CP can be identified by RPM and BIOS vendor/version
     """
-    _NAME = 'google'
-    _LONG_NAME = 'Google Cloud'
+    _NAME = 'gcp'
+    _LONG_NAME = 'Google Cloud Platform'
 
     def __init__(self, *args, **kwargs):
         super(GoogleCloudProvider, self).__init__(*args, **kwargs)

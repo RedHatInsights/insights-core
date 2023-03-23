@@ -13,7 +13,7 @@ class BlacklistedSpecs(JSONParser):
     Parses the blacklisted_specs.txt file generated on archive creation.
 
     Typical output::
-        "{"specs": ["insights.specs.default.DefaultSpecs.dmesg", "insights.specs.default.DefaultSpecs.fstab"]}"
+        "{"specs": ["dmesg", "fstab"]}"
 
     Attributes:
         specs (list): List of blacklisted specs.
@@ -21,7 +21,7 @@ class BlacklistedSpecs(JSONParser):
     Examples:
         >>> type(specs)
         <class 'insights.parsers.blacklisted.BlacklistedSpecs'>
-        >>> result = ['insights.specs.default.DefaultSpecs.dmesg', 'insights.specs.default.DefaultSpecs.fstab']
+        >>> result = ['dmesg', 'fstab']
         >>> specs.specs == result
         True
     """

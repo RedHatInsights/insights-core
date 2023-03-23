@@ -641,6 +641,10 @@ class InsightsConnection(object):
     def _legacy_api_registration_check(self):
         '''
         Check registration status through API
+            True    system exists in inventory
+            False   connection or parsing response error
+            None    system is not yet registered
+            string system is unregistered
         '''
         logger.debug('Checking registration status...')
         machine_id = generate_machine_id()
@@ -658,7 +662,9 @@ class InsightsConnection(object):
         #       True for registered
         #       False for unregistered
         #       None for system 404
-        self.handle_fail_rcs(res)
+        if res.status_code != 200:
+            # Use handle_fail_rcs to log the error response clearly to the user
+            self.handle_fail_rcs(res)
         try:
             # check the 'unregistered_at' key of the response
             unreg_status = json.loads(res.content).get('unregistered_at', 'undefined')
@@ -1095,7 +1101,7 @@ class InsightsConnection(object):
         if host_details["total"] < 1:
             _host_not_found()
         if host_details["total"] > 1:
-            raise Exception("Error: multiple hosts detected (insights_id = %s)" % generate_machine_id())
+            raise Exception("Error: multiple hosts detected (insights_id = %s). To fix this error, run command: insights-client --unregister && insights-client --register" % generate_machine_id())
 
         if not os.path.exists("/var/lib/insights"):
             os.makedirs("/var/lib/insights", mode=0o755)

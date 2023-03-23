@@ -78,7 +78,13 @@ def test_doc_examples():
         'ps_ef': ps.PsEf(context_wrap(PsEf_TEST_DOC)),
         'ps_eo': ps.PsEo(context_wrap(PsEo_TEST_DOC, strip=False)),
         'ps_alxwww': ps.PsAlxwww(context_wrap(PsAlxwww_TEST_DOC)),
-        'ps_eo_cmd': ps.PsEoCmd(context_wrap(PsEoCmd_TEST_DOC))
+        'ps_eo_cmd': ps.PsEoCmd(context_wrap(PsEoCmd_TEST_DOC)),
+        'container_ps_aux': ps.ContainerPsAux(context_wrap(
+            Container_PsAux_TEST,
+            container_id='2869b4e2541c',
+            image='registry.access.redhat.com/ubi8/nginx-120',
+            engine='podman'
+        ))
     }
     failed, total = doctest.testmod(ps, globs=env)
     assert failed == 0
@@ -533,3 +539,52 @@ def test_ps_auxcww_from_auxwwwm():
 
     assert p.pid_info["1514"]['threads'] == 5
     assert p.pid_info["1621"]['threads'] == 1
+
+
+Container_PsAux_TEST = """
+USER       PID %CPU %MEM     VSZ    RSS TTY      STAT START   TIME COMMAND
+root         1  0.0  0.0   19356   1544 ?        Ss   May31   0:01 /sbin/init
+root      1821  0.0  0.0       0      0 ?        S    May31   0:25 [kondemand/0]
+root      1864  0.0  0.0   18244    668 ?        Ss   May31   0:05 irqbalance --pid=/var/run/irqbalance.pid
+user1    20160  0.0  0.0  108472   1896 pts/3    Ss   10:09   0:00 bash
+root     20357  0.0  0.0    9120    760 ?        Ss   10:09   0:00 /sbin/dhclient -1 -q -lf /var/lib/dhclient/dhclient-extbr0.leases -pf /var/run/dhclient-extbr0.pid extbr0
+qemu     22673  0.8 10.2 1618556 805636 ?        Sl   11:38   1:07 /usr/libexec/qemu-kvm -name rhel7 -S -M rhel6.5.0 -enable-kvm -m 1024 -smp 2,sockets=2,cores=1,threads=1 -uuid 13798ffc-bc1e-d437-4f3f-2e0fa6c923ad
+tomcat    3662  1.0  5.7 2311488  58236 ?        Ssl  07:28   0:01 /usr/lib/jvm/jre/bin/java -classpath /usr/share/tomcat/bin/bootstrap.jar:/usr/share/tomcat/bin/tomcat-juli.jar:/usr/share/java/commons-daemon.jar -Dcatalina.base=/usr/share/tomcat -Dcatalina.home=/usr/share/tomcat -Djava.endorsed.dirs= -Djava.io.tmpdir=/var/cache/tomcat/temp -Djava.util.logging.config.file=/usr/share/tomcat/conf/logging.properties -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager org.apache.catalina.startup.Bootstrap start
+""".strip()
+
+
+def test_container_ps_aux():
+    # test with input from `ps aux`
+    p = ps.ContainerPsAux(context_wrap(
+        Container_PsAux_TEST,
+        container_id='2869b4e2541c',
+        image='registry.access.redhat.com/ubi8/nginx-120',
+        engine='podman',
+        path='insights_containers/2869b4e2541c/etc/vsftpd/vsftpd.conf'
+    ))
+    d = p.data
+    assert all('COMMAND' in row for row in d)
+    assert keys_in([
+        "USER", "PID", "%CPU", "%MEM", "VSZ", "RSS", "TTY", "STAT", "START",
+        "TIME", "COMMAND"
+    ], d[0])
+    assert d[0] == {
+        '%MEM': '0.0', 'TTY': '?', 'VSZ': '19356', 'PID': '1', '%CPU': '0.0',
+        'START': 'May31', 'COMMAND': '/sbin/init', 'COMMAND_NAME': 'init', 'USER': 'root',
+        'STAT': 'Ss', 'TIME': '0:01', 'RSS': '1544', 'ARGS': ''
+    }
+    assert p.fuzzy_match('irqbal')
+    assert 'bash' in p
+    assert '/sbin/init' in p
+    assert 'sshd' not in p
+    assert 'kondemand' not in p
+    assert not p.fuzzy_match("sshd")
+    assert p.number_occurences("systemd") != 2
+    assert p.number_occurences("bash") == 1
+    assert p.fuzzy_match('kondemand')
+
+    assert p.search() == []
+    assert p.search(COMMAND__contains='java') == [p.data[6]]
+    assert p.search(USER='root', COMMAND__contains='kondemand') == [p.data[1]]
+    assert p.search(TTY='pts/3') == [p.data[3]]
+    assert p.search(STAT__contains='Z') == []

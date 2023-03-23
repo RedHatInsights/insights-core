@@ -25,10 +25,11 @@ from insights.components.satellite import IsCapsule, IsSatellite611, IsSatellite
 from insights.specs import Specs
 from insights.specs.datasources import (
     aws, awx_manage, cloud_init, candlepin_broker, corosync as corosync_ds,
-    dir_list, ethernet, httpd, ipcs, kernel, kernel_module_list, lpstat, md5chk,
-    package_provides, ps as ps_datasource, sap, satellite_missed_queues,
-    semanage, ssl_certificate, sys_fs_cgroup_memory, sys_fs_cgroup_memory_tasks_number,
-    rpm_pkgs, user_group, yum_updates, luks_devices)
+    dir_list, ethernet, httpd, ipcs, kernel_module_list, leapp, lpstat,
+    machine_ids, md5chk, package_provides, ps as ps_datasource, rsyslog_confs, sap,
+    satellite_missed_queues, semanage, ssl_certificate, sys_fs_cgroup_memory,
+    sys_fs_cgroup_memory_tasks_number, rpm_pkgs, user_group, yum_updates,
+    luks_devices)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 from insights.specs.datasources.pcp import pcp_enabled, pmlog_summary_args
 from insights.specs.datasources.container import running_rhel_containers, containers_inspect
@@ -174,6 +175,7 @@ class DefaultSpecs(Specs):
     dracut_kdump_capture_service = simple_file("/usr/lib/dracut/modules.d/99kdumpbase/kdump-capture.service")
     dse_ldif = glob_file("/etc/dirsrv/*/dse.ldif")
     du_dirs = foreach_execute(dir_list.du_dir_list, "/bin/du -s -k %s")
+    duplicate_machine_id = machine_ids.dup_machine_id_info
     engine_log = simple_file("/var/log/ovirt-engine/engine.log")
     etc_journald_conf = simple_file(r"etc/systemd/journald.conf")
     etc_journald_conf_d = glob_file(r"etc/systemd/journald.conf.d/*.conf")
@@ -297,6 +299,7 @@ class DefaultSpecs(Specs):
     krb5 = glob_file([r"etc/krb5.conf", r"etc/krb5.conf.d/*"])
     ksmstate = simple_file("/sys/kernel/mm/ksm/run")
     lastupload = glob_file(["/etc/redhat-access-insights/.lastupload", "/etc/insights-client/.lastupload"])
+    leapp_report = leapp.leapp_report
     ld_library_path_of_user = sap.ld_library_path_of_user
     ldif_config = glob_file("/etc/dirsrv/slapd-*/dse.ldif")
     libssh_client_config = simple_file("/etc/libssh/libssh_client.config")
@@ -320,6 +323,7 @@ class DefaultSpecs(Specs):
     ls_krb5_sssd = simple_command("/bin/ls -lan /var/lib/sss/pubconf/krb5.include.d")
     ls_lib_firmware = simple_command("/bin/ls -lanR /lib/firmware")
     ls_osroot = simple_command("/bin/ls -lan /")
+    ls_rsyslog_errorfile = command_with_args("/bin/ls -ln %s", rsyslog_confs.rsyslog_errorfile, keep_rc=True)
     ls_sys_firmware = simple_command("/bin/ls -lanR /sys/firmware")
     ls_systemd_units = simple_command(
         "/bin/ls -lanRL /etc/systemd /run/systemd /usr/lib/systemd /usr/local/lib/systemd /usr/local/share/systemd /usr/share/systemd",
@@ -343,7 +347,6 @@ class DefaultSpecs(Specs):
     lsblk = simple_command("/bin/lsblk")
     lsblk_pairs = simple_command("/bin/lsblk -P -o NAME,KNAME,MAJ:MIN,FSTYPE,MOUNTPOINT,LABEL,UUID,RA,RO,RM,MODEL,SIZE,STATE,OWNER,GROUP,MODE,ALIGNMENT,MIN-IO,OPT-IO,PHY-SEC,LOG-SEC,ROTA,SCHED,RQ-SIZE,TYPE,DISC-ALN,DISC-GRAN,DISC-MAX,DISC-ZERO")
     lscpu = simple_command("/usr/bin/lscpu")
-    lsinitrd_kdump_image = command_with_args("/usr/bin/lsinitrd -k %skdump", kernel.current_version)
     lsmod = simple_command("/sbin/lsmod")
     lsof = first_of([
         simple_command("/usr/bin/lsof"),
@@ -456,6 +459,7 @@ class DefaultSpecs(Specs):
     ovs_vsctl_show = simple_command("/usr/bin/ovs-vsctl show")
     pacemaker_log = first_file(["/var/log/pacemaker.log", "/var/log/pacemaker/pacemaker.log"])
     package_provides_command = package_provides.cmd_and_pkg
+    parted__l = simple_command("/sbin/parted -l -s")
     password_auth = simple_file("/etc/pam.d/password-auth")
     pci_rport_target_disk_paths = simple_command("/usr/bin/find /sys/devices/ -maxdepth 10 -mindepth 9 -name stat -type f")
     pcp_metrics = simple_command("/usr/bin/curl -s http://127.0.0.1:44322/metrics --connect-timeout 5", deps=[pcp_enabled])
@@ -593,6 +597,7 @@ class DefaultSpecs(Specs):
     sockstat = simple_file("/proc/net/sockstat")
     softnet_stat = simple_file("proc/net/softnet_stat")
     software_collections_list = simple_command('/usr/bin/scl --list')
+    sos_conf = first_file(["/etc/sos/sos.conf", "/etc/sos.conf"])
     spamassassin_channels = simple_command("/bin/grep -r '^\\s*CHANNELURL=' /etc/mail/spamassassin/channel.d")
     ss = simple_command("/usr/sbin/ss -tupna")
     ssh_config = simple_file("/etc/ssh/ssh_config")
@@ -608,6 +613,7 @@ class DefaultSpecs(Specs):
     sudoers = glob_file(["/etc/sudoers", "/etc/sudoers.d/*"])
     swift_object_expirer_conf = first_file(["/var/lib/config-data/puppet-generated/swift/etc/swift/object-expirer.conf", "/etc/swift/object-expirer.conf"])
     swift_proxy_server_conf = first_file(["/var/lib/config-data/puppet-generated/swift/etc/swift/proxy-server.conf", "/etc/swift/proxy-server.conf"])
+    sys_block_queue_stable_writes = glob_file("/sys/block/*/queue/stable_writes")
     sys_fs_cgroup_memory_tasks_number = sys_fs_cgroup_memory_tasks_number.sys_fs_cgroup_memory_tasks_number_data_datasource
     sys_fs_cgroup_uniq_memory_swappiness = sys_fs_cgroup_memory.sys_fs_cgroup_uniq_memory_swappiness
     sys_vmbus_class_id = glob_file('/sys/bus/vmbus/devices/*/class_id')
@@ -688,7 +694,10 @@ class DefaultSpecs(Specs):
     container_cpuset_cpus = container_collect(running_rhel_containers, "/sys/fs/cgroup/cpuset/cpuset.cpus")
     container_dotnet_version = container_execute(running_rhel_containers, "/usr/bin/dotnet --version")
     container_installed_rpms = container_execute(running_rhel_containers, "/usr/bin/rpm -qa --qf '%s'" % _rpm_format, context=HostContext, signum=signal.SIGTERM)
+    container_mssql_api_assessment = container_collect(running_rhel_containers, "/var/opt/mssql/log/assessments/assessment-latest")
     container_nginx_conf = container_collect(container_nginx_conf_ds)
     container_nginx_error_log = container_collect(running_rhel_containers, "/var/log/nginx/error.log")
+    container_ps_aux = container_execute(running_rhel_containers, "/bin/ps aux")
     container_redhat_release = container_collect(running_rhel_containers, "/etc/redhat-release")
+    container_vsftpd_conf = container_collect(running_rhel_containers, "/etc/vsftpd/vsftpd.conf")
     containers_inspect = containers_inspect.containers_inspect_data_datasource

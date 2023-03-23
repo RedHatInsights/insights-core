@@ -8,14 +8,14 @@ from insights.core.spec_factory import DatasourceProvider
 from insights.specs.datasources.rpm_pkgs import LocalSpecs, pkgs_with_writable_dirs
 
 RPM_CMD = """
-httpd-core; /usr/share/doc/httpd-core; drwxr-xr-x; apache; root
-httpd-core; /usr/share/doc/httpd-core/CHANGES; -rw-r--r--; root; root
-postgresql-server; /var/lib/pgsql; drwx------; postgres; postgres
-polkit; /usr/lib/polkit-1; drwxrwxr-x; polkitd; polkitd
-polkit; /usr/lib/polkit-1/polkitd; -rwxr-xr-x; root; root
+httpd-core; httpd-core-2.4.53-7.el9.x86_64; /usr/share/doc/httpd-core; drwxr-xr-x; apache; root; Red Hat, Inc.
+httpd-core; httpd-core-2.4.53-7.el9.x86_64; /usr/share/doc/httpd-core/CHANGES; -rw-r--r--; root; root; Red Hat, Inc.
+postgresql-server; postgresql-server-13.7-1.el9_0.x86_64; /var/lib/pgsql; drwx------; postgres; postgres; Red Hat, Inc.
+polkit; polkit-0.117-10.el9_0.x86_64; /usr/lib/polkit-1; drwxrwxr-x; polkitd; polkitd; Red Hat, Inc.
+polkit; polkit-0.117-10.el9_0.x86_64; /usr/lib/polkit-1/polkitd; -rwxr-xr-x; root; root; Red Hat, Inc.
 """.strip()
 
-RPM_EXPECTED = ["httpd-core"]
+RPM_EXPECTED = [("httpd-core", "httpd-core-2.4.53-7.el9.x86_64", "Red Hat, Inc.")]
 
 RPM_BAD_CMD = "bash: rpm: command not found..."
 

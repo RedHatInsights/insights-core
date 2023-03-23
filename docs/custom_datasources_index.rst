@@ -123,6 +123,15 @@ insights.specs.datasources.kernel_module_list
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.leapp
+--------------------------------
+
+.. automodule:: insights.specs.datasources.leapp
+    :members: leapp_report, LocalSpecs
+    :show-inheritance:
+    :undoc-members:
+
+
 insights.specs.datasources.lpstat
 ---------------------------------
 
@@ -137,6 +146,14 @@ insights.specs.datasources.luks_devices
 
 .. automodule:: insights.specs.datasources.luks_devices
     :members: luks_block_devices, luks_data_sources, LocalSpecs
+    :show-inheritance:
+    :undoc-members:
+
+insights.specs.datasources.machine_ids
+--------------------------------------
+
+.. automodule:: insights.specs.datasources.machine_ids
+    :members: dup_machine_id_info
     :show-inheritance:
     :undoc-members:
 
@@ -176,6 +193,14 @@ insights.specs.datasources.ps
 
 .. automodule:: insights.specs.datasources.ps
     :members: jboss_runtime_versions, ps_eo_cmd, LocalSpecs
+    :show-inheritance:
+    :undoc-members:
+
+insights.specs.datasources.rsyslog_confs
+----------------------------------------
+
+.. automodule:: insights.specs.datasources.rsyslog_confs
+    :members: rsyslog_errorfile
     :show-inheritance:
     :undoc-members:
 
