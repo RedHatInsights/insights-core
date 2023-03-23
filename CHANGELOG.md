@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.1.15](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.15) (2023-03-18)
+
+- FEAT: Add new parser ls_rsyslog_errorfile ([PR 3719](https://github.com/RedHatInsights/insights-core/pull/3719))
+
 # [insights-core-3.1.14](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.14) (2023-03-17)
 
 - chore: use RHEL for os_release.release ([PR 3716](https://github.com/RedHatInsights/insights-core/pull/3716))
