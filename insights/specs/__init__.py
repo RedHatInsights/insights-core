@@ -572,7 +572,7 @@ class Specs(SpecSet):
     readlink_e_shift_cert_server = RegistryPoint()
     recvq_socket_buffer = RegistryPoint()
     redhat_release = RegistryPoint()
-    repoquota_augv = RegistryPoint()
+    repquota_aguv = RegistryPoint()
     resolv_conf = RegistryPoint()
     rhev_data_center = RegistryPoint()
     rhn_charsets = RegistryPoint()
