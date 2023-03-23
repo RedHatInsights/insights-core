@@ -10,8 +10,8 @@ from insights.core.plugins import parser
 from insights.specs import Specs
 
 
-@parser(Specs.repquota)
-class Repquota(Parser):
+@parser(Specs.repoquota_augv)
+class RepquotaAUGV(Parser):
     """
     `repquota -aguv` prints a summary of the disc usage and quotas information for the specified file systems.
 
@@ -71,7 +71,7 @@ class Repquota(Parser):
 
     Examples:
         >>> type(repquota)
-        <class 'insights.parsers.repquota.Repquota'>
+        <class 'insights.parsers.repquota.RepquotaAUGV'>
         >>> 'enforcement' in repquota.user_quota['/dev/sdb']
         True
         >>> repquota.group_quota['/dev/sdb']['quota_info'][0] == {'group': 'root', 'flag': '--', 'block_used': '0', 'block_soft': '0', 'block_hard': '0', 'block_grace': '-', 'file_used': '3', 'file_soft': '0', 'file_hard': '0', 'file_grace': '-'}

@@ -1,14 +1,14 @@
 from insights.core.exceptions import ParseException
 from insights.parsers import repquota
-from insights.parsers.repquota import Repquota
+from insights.parsers.repquota import RepquotaAUGV
 from insights.tests import context_wrap
 import doctest
 import pytest
 
-REPQUOTA_ERR = """
+REPQUOTAAUGV_ERR = """
 """.strip()
 
-REPQUOTA = """
+REPQUOTAAUGV = """
 *** Report for user quotas on device /dev/sdb
 Block grace time: 7days; Inode grace time: 7days
                         Block limits                File limits
@@ -64,7 +64,7 @@ Used average: 2.000000
 
 
 def test_repquota():
-    results = Repquota(context_wrap(REPQUOTA))
+    results = RepquotaAUGV(context_wrap(REPQUOTAAUGV))
     assert len(results.group_quota.keys()) == 2
     assert len(results.group_quota['/dev/sdb']['quota_info']) == 2
     assert results.group_quota['/dev/sdb']['quota_info'][0] == {'group': 'root', 'flag': '--', 'block_used': '0', 'block_soft': '0', 'block_hard': '0', 'block_grace': '-', 'file_used': '3', 'file_soft': '0', 'file_hard': '0', 'file_grace': '-'}
@@ -75,13 +75,13 @@ def test_repquota():
 
 def test_repquota_err():
     with pytest.raises(ParseException) as pe:
-        Repquota(context_wrap(REPQUOTA_ERR))
+        RepquotaAUGV(context_wrap(REPQUOTAAUGV_ERR))
         assert 'Error: empty output' in str(pe)
 
 
 def test_repquota_doc_examples():
     env = {
-        'repquota': Repquota(context_wrap(REPQUOTA))
+        'repquota': RepquotaAUGV(context_wrap(REPQUOTAAUGV))
     }
     failed, total = doctest.testmod(repquota, globs=env)
     assert failed == 0
