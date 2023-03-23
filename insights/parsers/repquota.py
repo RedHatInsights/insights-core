@@ -4,14 +4,14 @@ Repquota - Command ``repquota -aguv``
 
 Parser for the output of ``repquota -aguv`` command
 """
-from insights.core import Parser
+from insights.core import CommandParser
 from insights.core.exceptions import ParseException
 from insights.core.plugins import parser
 from insights.specs import Specs
 
 
 @parser(Specs.repoquota_augv)
-class RepquotaAUGV(Parser):
+class RepquotaAUGV(CommandParser):
     """
     `repquota -aguv` prints a summary of the disc usage and quotas information for the specified file systems.
 
@@ -89,8 +89,8 @@ class RepquotaAUGV(Parser):
         self.raw = []
         quota_type = None
         quota_device = None
-        hearding = ['flag', 'block_used', 'block_soft', 'block_hard', 'block_grace', 'file_used', 'file_soft', 'file_hard', 'file_grace']
-        All_hearding = None
+        headings = ['flag', 'block_used', 'block_soft', 'block_hard', 'block_grace', 'file_used', 'file_soft', 'file_hard', 'file_grace']
+        All_headings = None
         for line in content:
             if not line:
                 flag = False
@@ -103,7 +103,7 @@ class RepquotaAUGV(Parser):
                     raise ParseException("Error: content invalid")
                 quota_type = split_list[3]
                 quota_device = split_list[7]
-                All_hearding = [quota_type] + hearding
+                All_headings = [quota_type] + headings
                 data[quota_type][quota_device] = {'quota_info': []}
                 continue
 
@@ -116,7 +116,7 @@ class RepquotaAUGV(Parser):
                     split_line.insert(5, '-')
                 if len(split_line) == 9:
                     split_line.insert(9, '-')
-                quota_info = dict(zip(All_hearding, split_line))
+                quota_info = dict(zip(All_headings, split_line))
                 data[quota_type][quota_device]['quota_info'].append(quota_info)
                 continue
 
