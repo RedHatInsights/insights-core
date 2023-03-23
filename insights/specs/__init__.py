@@ -334,6 +334,7 @@ class Specs(SpecSet):
     ls_ocp_cni_openshift_sdn = RegistryPoint()
     ls_origin_local_volumes_pods = RegistryPoint()
     ls_osroot = RegistryPoint()
+    ls_rsyslog_errorfile = RegistryPoint()
     ls_sys_firmware = RegistryPoint()
     ls_systemd_units = RegistryPoint()
     ls_tmp = RegistryPoint(filterable=True)
