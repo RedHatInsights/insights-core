@@ -121,7 +121,7 @@ class InsightsArchiveSpecs(Specs):
     ls_dev = simple_file("insights_commands/ls_-lanR_.dev")
     ls_disk = simple_file("insights_commands/ls_-lanR_.dev.disk")
     ls_edac_mc = simple_file("insights_commands/ls_-lan_.sys.devices.system.edac.mc")
-    ls_etc = simple_file("insights_commands/ls_-lan_.etc_.etc.cloud.cloud.cfg.d_.etc.nova.migration_.etc.pki.ovirt-vmconsole_.etc.pki.tls.certs_.etc.pki.tls.private_.etc.rc.d.init.d_.etc.sysconfig")
+    ls_etc = first_file(["insights_commands/ls_-lan_.etc_.etc.cloud.cloud.cfg.d_.etc.nova.migration_.etc.pki.ovirt-vmconsole_.etc.pki.tls.certs_.etc.pki.tls.private_.etc.rc.d.init.d_.etc.selinux.targeted.policy_.etc.sysconfig", "insights_commands/ls_-lan_.etc_.etc.cloud.cloud.cfg.d_.etc.nova.migration_.etc.pki.ovirt-vmconsole_.etc.pki.tls.certs_.etc.pki.tls.private_.etc.rc.d.init.d_.etc.sysconfig"])
     ls_etc_ssh = simple_file("insights_commands/ls_-lanL_.etc.ssh")
     ls_ipa_idoverride_memberof = simple_file("insights_commands/ls_-lan_.usr.share.ipa.ui.js.plugins.idoverride-memberof")
     ls_krb5_sssd = simple_file("insights_commands/ls_-lan_.var.lib.sss.pubconf.krb5.include.d")
