@@ -156,6 +156,26 @@ class FileProvider(ContentProvider):
         return '%s("%r")' % (self.__class__.__name__, self.path)
 
 
+class MetadataProvider(FileProvider):
+    """
+    Class used for insights-core built-in files.  These files should not
+    be filtered, redacted or blocked.
+    """
+
+    def validate(self):
+        # Do NOT need to validate metadata files, they are newly generated
+        # by the core collection itself
+        pass
+
+    def load(self):
+        # TODO: the metadata files can also be collected via core collection
+        pass
+
+    def write(self, dst):
+        # TODO: the metadata files can also be collected via core collection
+        pass
+
+
 class RawFileProvider(FileProvider):
     """
     Class used in datasources that returns the contents of a file a single
@@ -243,6 +263,10 @@ class TextFileProvider(FileProvider):
             p.write(dst)
         else:
             call([which("cp", env=SAFE_ENV), self.path, dst], env=SAFE_ENV)
+
+
+class SerializedMetadataProvider(MetadataProvider):
+    pass
 
 
 class SerializedOutputProvider(TextFileProvider):
@@ -1249,6 +1273,21 @@ def serialize_datasource_provider(obj, root):
 @deserializer(DatasourceProvider)
 def deserialize_datasource_provider(_type, data, root):
     return SerializedOutputProvider(data["relative_path"], root)
+
+
+@serializer(MetadataProvider)
+def serialize_metadata_provider(obj, root):
+    dst = os.path.join(root, obj.relative_path.lstrip("/"))
+    fs.ensure_path(os.path.dirname(dst))
+    obj.write(dst)
+    return {"relative_path": obj.relative_path}
+
+
+@deserializer(MetadataProvider)
+def deserialize_metadata_provider(_type, data, root):
+    # metadata files are put in the root directory instead of '/data'
+    root = os.path.dirname(root) if os.path.basename(root) == 'data' else root
+    return SerializedMetadataProvider(data["relative_path"], root)
 
 
 @serializer(ContainerFileProvider)

@@ -9,19 +9,15 @@ runs all datasources in ``insights.specs.Specs`` and
 """
 from __future__ import print_function
 import argparse
-import json
 import logging
 import os
 import sys
 import tempfile
 import yaml
 
-from datetime import datetime
-
 from insights import apply_configs, apply_default_enabled, get_pool
 from insights.core import blacklist, dr, filters
 from insights.core.blacklist import BLACKLISTED_SPECS
-from insights.core.exceptions import CalledProcessError
 from insights.core.serde import Hydration
 from insights.util import fs
 from insights.util.subproc import call
@@ -369,9 +365,8 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
     Args:
         manifest (str or dict): json document or dictionary containing the
             collection manifest. See default_manifest for an example.
-        tmp_path (str): The temporary directory that will be used to create a
-            working directory for storing component output as well as the final
-            tar.gz if one is generated.
+        tmp_path (str): The working directory that will be used to store
+            component output as well as the final tar.gz if one is generated.
         compress (boolean): True to create a tar.gz and remove the original
             workspace containing output. False to leave the workspace without
             creating a tar.gz
@@ -424,18 +419,6 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
         # problem parsing the filters
         log.debug("Could not parse filters: %s", str(e))
 
-    try:
-        hostname = call("hostname -f", env=SAFE_ENV).strip()
-    except CalledProcessError:
-        # problem calling hostname -f
-        hostname = call("hostname", env=SAFE_ENV).strip()
-    suffix = datetime.utcnow().strftime("%Y%m%d%H%M%S")
-    relative_path = "insights-%s-%s" % (hostname, suffix)
-    tmp_path = tmp_path or tempfile.gettempdir()
-    output_path = os.path.join(tmp_path, relative_path)
-    fs.ensure_path(output_path)
-    fs.touch(os.path.join(output_path, "insights_archive.txt"))
-
     broker = dr.Broker()
     ctx = create_context(client.get("context", {}))
     broker[ctx.__class__] = ctx
@@ -443,20 +426,15 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
     parallel = run_strategy.get("name") == "parallel"
     pool_args = run_strategy.get("args", {})
     with get_pool(parallel, "insights-collector-pool", pool_args) as pool:
-        h = Hydration(output_path, pool=pool)
+        h = Hydration(tmp_path, pool=pool)
         broker.add_observer(h.make_persister(to_persist))
         dr.run_all(broker=broker, pool=pool)
-
-    if BLACKLISTED_SPECS:
-        _write_out_blacklisted_specs(output_path)
-        # Delete the list so the specs aren't written again by the client.
-        del BLACKLISTED_SPECS[:]
 
     collect_errors = _parse_broker_exceptions(broker, EXCEPTIONS_TO_REPORT)
 
     if compress:
-        return create_archive(output_path), collect_errors
-    return output_path, collect_errors
+        return create_archive(tmp_path), collect_errors
+    return tmp_path, collect_errors
 
 
 def _parse_broker_exceptions(broker, exceptions_to_report):
@@ -485,41 +463,6 @@ def _parse_broker_exceptions(broker, exceptions_to_report):
     except Exception as e:
         log.warning("Could not parse exceptions from the broker.: %s", str(e))
     return errors
-
-
-def _write_out_blacklisted_specs(output_path):
-    """
-    Write out the blacklisted specs to blacklisted_specs.txt, and create
-    a meta-data file for this file. That way it can be loaded when the
-    archive is processed.
-
-    Args:
-        output_path (str): Path of the output directory.
-    """
-    if os.path.exists(os.path.join(output_path, "meta_data")):
-        output_path_root = os.path.join(output_path, "data")
-    else:
-        output_path_root = output_path
-
-    with open(os.path.join(output_path_root, "blacklisted_specs.txt"), "w") as of:
-        json.dump({"specs": BLACKLISTED_SPECS}, of)
-
-    doc = {
-        "name": "insights.specs.Specs.blacklisted_specs",
-        "exec_time": 0.0,
-        "errors": [],
-        "results": {
-            "type": "insights.core.spec_factory.DatasourceProvider",
-            "object": {
-                "relative_path": "blacklisted_specs.txt"
-            }
-        },
-        "ser_time": 0.0
-    }
-
-    meta_path = os.path.join(os.path.join(output_path, "meta_data"), "insights.specs.Specs.blacklisted_specs")
-    with open(meta_path, "w") as of:
-        json.dump(doc, of)
 
 
 def main():

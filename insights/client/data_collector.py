@@ -2,26 +2,31 @@
 Collect all the interesting data for analysis
 """
 from __future__ import absolute_import
-import os
+import copy
 import errno
+import glob
 import json
 import logging
-import copy
-import glob
-import six
-import shlex
+import os
 import re
+import shlex
+import six
+
 from itertools import chain
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
 
+from insights.contrib.soscleaner import SOSCleaner
 from insights.core.blacklist import BLACKLISTED_SPECS
 from insights.util import mangle
-from ..contrib.soscleaner import SOSCleaner
-from .utilities import _expand_paths, get_version_info, systemd_notify_init_thread, get_tags
-from .constants import InsightsConstants as constants
-from .insights_spec import InsightsFile, InsightsCommand
-from .archive import InsightsArchive
+from insights.client.archive import InsightsArchive
+from insights.client.constants import InsightsConstants as constants
+from insights.client.insights_spec import InsightsFile, InsightsCommand
+from insights.client.utilities import (_expand_paths,
+                                       determine_hostname,
+                                       get_version_info,
+                                       systemd_notify_init_thread,
+                                       get_tags)
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
@@ -73,7 +78,8 @@ class DataCollector(object):
     Run commands and collect files
     '''
 
-    def __init__(self, config, archive_=None, mountpoint=None):
+    def __init__(self, config, archive_=None, mountpoint=None, hostname=None):
+        self.hostname = hostname or determine_hostname(config.display_name)
         self.config = config
         self.archive = archive_ if archive_ else InsightsArchive(config)
         self.mountpoint = '/'
@@ -133,9 +139,11 @@ class DataCollector(object):
         self.archive.add_metadata_to_archive(
             json.dumps(blacklist_report), '/blacklist_report')
 
+    def _write_blacklisted_specs(self):
+        logger.debug("Writing blacklisted specs to archive...")
         if BLACKLISTED_SPECS:
             self.archive.add_metadata_to_archive(
-                json.dumps({"specs": BLACKLISTED_SPECS}), '/blacklisted_specs.txt')
+                json.dumps({"specs": BLACKLISTED_SPECS}), '/blacklisted_specs')
 
     def _write_egg_release(self):
         logger.debug("Writing egg release to archive...")
@@ -396,6 +404,7 @@ class DataCollector(object):
         self._write_version_info()
         self._write_tags()
         self._write_blacklist_report(blacklist_report)
+        self._write_blacklisted_specs()
         self._write_egg_release()
         self._write_collection_stats(collection_stats)
         logger.debug('Metadata collection finished.')
