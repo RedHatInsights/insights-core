@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.1.15
+Version:        3.1.16
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,12 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Mar 30 2023 Xiangce Liu <xiangceliu@redhat.com> 3.1.16-1
+- feat(compliance): RHICOMPL-3629 log OOM error when scan fails (#3721)
+  (skateman@users.noreply.github.com)
+- New spec "ls -lan /etc/selinux/targeted/policy" (#3722)
+  (44796653+huali027@users.noreply.github.com)
+
 * Thu Mar 23 2023 Xiangce Liu <xiangceliu@redhat.com> 3.1.15-1
 - FEAT: Add new parser ls_rsyslog_errorfile (#3719) (986222045@qq.com)
 

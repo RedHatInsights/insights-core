@@ -2,7 +2,12 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
-# [insights-core-3.1.15](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.15) (2023-03-18)
+# [insights-core-3.1.16](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.16) (2023-03-30)
+
+- feat(compliance): RHICOMPL-3629 log OOM error when scan fails ([PR 3721](https://github.com/RedHatInsights/insights-core/pull/3721))
+- New spec "ls -lan /etc/selinux/targeted/policy" ([PR 3722](https://github.com/RedHatInsights/insights-core/pull/3722))
+
+# [insights-core-3.1.15](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.15) (2023-03-23)
 
 - FEAT: Add new parser ls_rsyslog_errorfile ([PR 3719](https://github.com/RedHatInsights/insights-core/pull/3719))
 
