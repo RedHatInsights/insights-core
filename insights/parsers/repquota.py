@@ -59,7 +59,7 @@ class RepquotaAGNPUV(CommandParser):
         True
 
     Raises:
-        insights.core.exceptions.ParseException: if the output of the ``repquota -agnpuv`` command is empty.
+        insights.core.exceptions.SkipException: if the output of the ``repquota -agnpuv`` command is empty.
     """
 
     def parse_content(self, content):
