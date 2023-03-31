@@ -291,14 +291,14 @@ def collect(config):
 
     archive = InsightsArchive(config)
 
-    hostname = determine_hostname(config.display_name)
+    msg_name = determine_hostname(config.display_name)
     if config.core_collect:
         collection_rules = None
-        dc = CoreCollector(config, archive, hostname=hostname)
+        dc = CoreCollector(config, archive)
     else:
         collection_rules = pc.get_conf_file()
-        dc = DataCollector(config, archive, hostname=hostname)
-    logger.info('Starting to collect Insights data for %s', hostname)
+        dc = DataCollector(config, archive)
+    logger.info('Starting to collect Insights data for %s', msg_name)
     dc.run_collection(collection_rules, rm_conf, branch_info, blacklist_report)
     output = dc.done(collection_rules, rm_conf)
     return output

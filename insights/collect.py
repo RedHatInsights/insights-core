@@ -9,15 +9,19 @@ runs all datasources in ``insights.specs.Specs`` and
 """
 from __future__ import print_function
 import argparse
+import json
 import logging
 import os
 import sys
 import tempfile
 import yaml
 
+from datetime import datetime
+
 from insights import apply_configs, apply_default_enabled, get_pool
 from insights.core import blacklist, dr, filters
 from insights.core.blacklist import BLACKLISTED_SPECS
+from insights.core.exceptions import CalledProcessError
 from insights.core.serde import Hydration
 from insights.util import fs
 from insights.util.subproc import call
@@ -365,8 +369,9 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
     Args:
         manifest (str or dict): json document or dictionary containing the
             collection manifest. See default_manifest for an example.
-        tmp_path (str): The working directory that will be used to store
-            component output as well as the final tar.gz if one is generated.
+        tmp_path (str): The temporary directory that will be used to create a
+            working directory for storing component output as well as the final
+            tar.gz if one is generated.
         compress (boolean): True to create a tar.gz and remove the original
             workspace containing output. False to leave the workspace without
             creating a tar.gz
@@ -419,6 +424,18 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
         # problem parsing the filters
         log.debug("Could not parse filters: %s", str(e))
 
+    try:
+        hostname = call("hostname -f", env=SAFE_ENV).strip()
+    except CalledProcessError:
+        # problem calling hostname -f
+        hostname = call("hostname", env=SAFE_ENV).strip()
+    suffix = datetime.utcnow().strftime("%Y%m%d%H%M%S")
+    relative_path = "insights-%s-%s" % (hostname, suffix)
+    tmp_path = tmp_path or tempfile.gettempdir()
+    output_path = os.path.join(tmp_path, relative_path)
+    fs.ensure_path(output_path)
+    fs.touch(os.path.join(output_path, "insights_archive.txt"))
+
     broker = dr.Broker()
     ctx = create_context(client.get("context", {}))
     broker[ctx.__class__] = ctx
@@ -426,15 +443,15 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
     parallel = run_strategy.get("name") == "parallel"
     pool_args = run_strategy.get("args", {})
     with get_pool(parallel, "insights-collector-pool", pool_args) as pool:
-        h = Hydration(tmp_path, pool=pool)
+        h = Hydration(output_path, pool=pool)
         broker.add_observer(h.make_persister(to_persist))
         dr.run_all(broker=broker, pool=pool)
 
     collect_errors = _parse_broker_exceptions(broker, EXCEPTIONS_TO_REPORT)
 
     if compress:
-        return create_archive(tmp_path), collect_errors
-    return tmp_path, collect_errors
+        return create_archive(output_path), collect_errors
+    return output_path, collect_errors
 
 
 def _parse_broker_exceptions(broker, exceptions_to_report):

@@ -2,17 +2,14 @@
 Collect all the interesting data for analysis - Core version
 """
 from __future__ import absolute_import
-import logging
 import os
 import six
-
-from datetime import datetime
-
+import logging
 from insights import collect
-from insights.client.constants import InsightsConstants as constants
-from insights.client.data_collector import DataCollector
-from insights.client.utilities import systemd_notify_init_thread
-from insights.util import fs
+
+from .constants import InsightsConstants as constants
+from .data_collector import DataCollector
+from .utilities import systemd_notify_init_thread
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
@@ -59,24 +56,18 @@ class CoreCollector(DataCollector):
                     manifest = f.read()
             else:
                 manifest = self.config.manifest
-
-        suffix = datetime.utcnow().strftime("%Y%m%d%H%M%S")
-        relative_path = "insights-%s-%s" % (self.hostname, suffix)
-        output_path = os.path.join(self.archive.tmp_dir, relative_path)
-        fs.ensure_path(output_path)
-        fs.touch(os.path.join(output_path, "insights_archive.txt"))
-
-        self.archive.archive_dir = output_path
-        self.archive.archive_name = relative_path
-        # collect the metadata at first for dependency-ship
-        self.collect_metadata(branch_info, blacklist_report)
-
-        collect.collect(
+        collected_data_path, exceptions = collect.collect(
             manifest=manifest,
-            tmp_path=self.archive.archive_dir,
+            tmp_path=self.archive.tmp_dir,
             rm_conf=core_blacklist,
             client_timeout=self.config.cmd_timeout
         )
+
+        # update the archive dir with the reported data location from Insights Core
+        if not collected_data_path:
+            raise RuntimeError('Error running collection: no output path defined.')
+        self.archive.archive_dir = collected_data_path
+        self.archive.archive_name = os.path.basename(collected_data_path)
 
         if not six.PY3:
             # collect.py returns a unicode string, and these must be bytestrings
@@ -94,9 +85,7 @@ class CoreCollector(DataCollector):
         logger.debug('Collection finished.')
 
         self.redact(rm_conf)
-        self._write_blacklisted_specs()
 
-    def collect_metadata(self, branch_info, blacklist_report):
         # collect metadata
         logger.debug('Collecting metadata...')
         self._write_branch_info(branch_info)
@@ -105,5 +94,6 @@ class CoreCollector(DataCollector):
         self._write_version_info()
         self._write_tags()
         self._write_blacklist_report(blacklist_report)
+        self._write_blacklisted_specs()
         self._write_egg_release()
         logger.debug('Metadata collection finished.')

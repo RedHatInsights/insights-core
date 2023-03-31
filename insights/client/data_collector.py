@@ -2,31 +2,26 @@
 Collect all the interesting data for analysis
 """
 from __future__ import absolute_import
-import copy
+import os
 import errno
-import glob
 import json
 import logging
-import os
-import re
-import shlex
+import copy
+import glob
 import six
-
+import shlex
+import re
 from itertools import chain
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
 
-from insights.contrib.soscleaner import SOSCleaner
 from insights.core.blacklist import BLACKLISTED_SPECS
 from insights.util import mangle
-from insights.client.archive import InsightsArchive
-from insights.client.constants import InsightsConstants as constants
-from insights.client.insights_spec import InsightsFile, InsightsCommand
-from insights.client.utilities import (_expand_paths,
-                                       determine_hostname,
-                                       get_version_info,
-                                       systemd_notify_init_thread,
-                                       get_tags)
+from ..contrib.soscleaner import SOSCleaner
+from .utilities import _expand_paths, get_version_info, systemd_notify_init_thread, get_tags
+from .constants import InsightsConstants as constants
+from .insights_spec import InsightsFile, InsightsCommand
+from .archive import InsightsArchive
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
@@ -78,8 +73,7 @@ class DataCollector(object):
     Run commands and collect files
     '''
 
-    def __init__(self, config, archive_=None, mountpoint=None, hostname=None):
-        self.hostname = hostname or determine_hostname(config.display_name)
+    def __init__(self, config, archive_=None, mountpoint=None):
         self.config = config
         self.archive = archive_ if archive_ else InsightsArchive(config)
         self.mountpoint = '/'
@@ -141,6 +135,7 @@ class DataCollector(object):
 
     def _write_blacklisted_specs(self):
         logger.debug("Writing blacklisted specs to archive...")
+
         if BLACKLISTED_SPECS:
             self.archive.add_metadata_to_archive(
                 json.dumps({"specs": BLACKLISTED_SPECS}), '/blacklisted_specs')
