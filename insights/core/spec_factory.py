@@ -161,6 +161,24 @@ class MetadataProvider(FileProvider):
     Class used for insights-core built-in files.  These files should not
     be filtered, redacted or blocked.
     """
+    def _stream(self):
+        """
+        Returns a generator of lines instead of a list of lines.
+        """
+        if self._exception:
+            raise self._exception
+        try:
+            if six.PY3:
+                with open(self.path, "r", encoding="utf-8", errors="surrogateescape") as f:
+                    yield f
+            else:
+                with codecs.open(self.path, "r", encoding="utf-8", errors="surrogateescape") as f:
+                    yield f
+        except StopIteration:
+            raise
+        except Exception as ex:
+            self._exception = ex
+            raise ContentException(str(ex))
 
     def validate(self):
         # Do NOT need to validate metadata files, they are newly generated
@@ -168,8 +186,13 @@ class MetadataProvider(FileProvider):
         pass
 
     def load(self):
-        # TODO: the metadata files can also be collected via core collection
-        pass
+        self.loaded = True
+        if six.PY3:
+            with open(self.path, "r", encoding="utf-8", errors="surrogateescape") as f:
+                return [l.rstrip("\n") for l in f]
+        else:
+            with codecs.open(self.path, "r", encoding="utf-8", errors="surrogateescape") as f:
+                return [l.rstrip("\n") for l in f]
 
     def write(self, dst):
         # TODO: the metadata files can also be collected via core collection
