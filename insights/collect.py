@@ -9,7 +9,6 @@ runs all datasources in ``insights.specs.Specs`` and
 """
 from __future__ import print_function
 import argparse
-import json
 import logging
 import os
 import sys

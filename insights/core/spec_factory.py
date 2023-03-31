@@ -288,10 +288,6 @@ class TextFileProvider(FileProvider):
             call([which("cp", env=SAFE_ENV), self.path, dst], env=SAFE_ENV)
 
 
-class SerializedMetadataProvider(MetadataProvider):
-    pass
-
-
 class SerializedOutputProvider(TextFileProvider):
     def create_args(self):
         pass
@@ -1310,7 +1306,7 @@ def serialize_metadata_provider(obj, root):
 def deserialize_metadata_provider(_type, data, root):
     # metadata files are put in the root directory instead of '/data'
     root = os.path.dirname(root) if os.path.basename(root) == 'data' else root
-    return SerializedMetadataProvider(data["relative_path"], root)
+    return SerializedOutputProvider(data["relative_path"], root)
 
 
 @serializer(ContainerFileProvider)
