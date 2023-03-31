@@ -41,14 +41,7 @@ A minimal set of environment variables for use in subprocess calls
 if "LANG" in os.environ:
     SAFE_ENV["LANG"] = os.environ["LANG"]
 
-
-def enc(s):
-    escape_encoding = "string_escape" if six.PY2 else "unicode_escape"
-    return s.encode(escape_encoding)
-
-
-def escape(s):
-    return re.sub(r"([=\(\)|\-_!@*~\"&/\\\^\$\=])", r"\\\1", s)
+safe_open = open if six.PY3 else codecs.open
 
 
 class ContentProvider(object):
@@ -215,12 +208,9 @@ class TextFileProvider(FileProvider):
             rc, out = self.ctx.shell_out(args, keep_rc=True, env=SAFE_ENV)
             self.rc = rc
             return out
-        if six.PY3:
-            with open(self.path, "r", encoding="utf-8", errors="surrogateescape") as f:
-                return [l.rstrip("\n") for l in f]
-        else:
-            with codecs.open(self.path, "r", encoding="utf-8", errors="surrogateescape") as f:
-                return [l.rstrip("\n") for l in f]
+
+        with safe_open(self.path, "r", encoding="utf-8", errors="surrogateescape") as f:
+            return [l.rstrip("\n") for l in f]
 
     def _stream(self):
         """
@@ -237,12 +227,8 @@ class TextFileProvider(FileProvider):
                     with streams.connect(*args, env=SAFE_ENV) as s:
                         yield s
                 else:
-                    if six.PY3:
-                        with open(self.path, "r", encoding="utf-8", errors="surrogateescape") as f:
-                            yield f
-                    else:
-                        with codecs.open(self.path, "r", encoding="utf-8", errors="surrogateescape") as f:
-                            yield f
+                    with safe_open(self.path, "r", encoding="utf-8", errors="surrogateescape") as f:
+                        yield f
         except StopIteration:
             raise
         except Exception as ex:
