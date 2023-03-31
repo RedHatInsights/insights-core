@@ -1,87 +1,63 @@
-from insights.core.exceptions import ParseException
+from insights.core.exceptions import SkipException
 from insights.parsers import repquota
-from insights.parsers.repquota import RepquotaAGUV
+from insights.parsers.repquota import RepquotaAGNPUV
 from insights.tests import context_wrap
 import doctest
 import pytest
 
-REPQUOTAAGUV_ERR = """
+REPQUOTAAGNPUV_ERR = """
 """.strip()
 
-REPQUOTAAGUV = """
+REPQUOTAAGNPUV = """
 *** Report for user quotas on device /dev/sdb
 Block grace time: 7days; Inode grace time: 7days
                         Block limits                File limits
 User            used    soft    hard  grace    used  soft  hard  grace
 ----------------------------------------------------------------------
-root      --       0       0       0              3     0     0
-user1     +-   61440   51200  102400  6days       1     0     0
+#0        --    5120       0       0      0       4     0     0      0
+#1009     +-   61440   51200  102400 1679983770       1     0     0      0
+#1010     --       0   51200  102400      0       0     0     0      0
+#1011     +-  107520   51200  307200 1680640819       2     0     0      0
+#1012     --   51200       0       0      0       1     0     0      0
+#1013     --       0   51200  102400      0       0     0     0      0
 
 *** Status for user quotas on device /dev/sdb
 Accounting: ON; Enforcement: ON
 Inode: #131 (2 blocks, 2 extents)
-
-*** Report for user quotas on device /dev/sdc
-Block grace time: 7days; Inode grace time: 7days
-                        Block limits                File limits
-User            used    soft    hard  grace    used  soft  hard  grace
-----------------------------------------------------------------------
-root      --      20       0       0              2     0     0
-user2     +-  100000   50000  100000  7days       1     0     0
-
-Statistics:
-Total blocks: 7
-Data blocks: 1
-Entries: 2
-Used average: 2.000000
 
 *** Report for group quotas on device /dev/sdb
 Block grace time: 7days; Inode grace time: 7days
                         Block limits                File limits
 Group           used    soft    hard  grace    used  soft  hard  grace
 ----------------------------------------------------------------------
-root      --       0       0       0              3     0     0
-group1    --   61440       0       0              1     0     0
+#0        --    5120       0       0      0       4     0     0      0
+#1004     --   61440       0       0      0       1     0     0      0
+#1005     --   51200  972800 1048576      0       1     0     0      0
+#1011     --  107520       0       0      0       2     0     0      0
 
 *** Status for group quotas on device /dev/sdb
-Accounting: ON; Enforcement: OFF
+Accounting: ON; Enforcement: ON
 Inode: #132 (2 blocks, 2 extents)
-
-*** Report for group quotas on device /dev/sdc
-Block grace time: 7days; Inode grace time: 7days
-                        Block limits                File limits
-Group           used    soft    hard  grace    used  soft  hard  grace
-----------------------------------------------------------------------
-root      --      20       0       0              2     0     0
-group1    --  100000       0       0              3     2     4  6days
-
-Statistics:
-Total blocks: 7
-Data blocks: 1
-Entries: 2
-Used average: 2.000000
 """.strip()
 
 
 def test_repquota():
-    results = RepquotaAGUV(context_wrap(REPQUOTAAGUV))
-    assert len(results.group_quota.keys()) == 2
-    assert len(results.group_quota['/dev/sdb']['quota_info']) == 2
-    assert results.group_quota['/dev/sdb']['quota_info'][0] == {'group': 'root', 'flag': '--', 'block_used': '0', 'block_soft': '0', 'block_hard': '0', 'block_grace': '-', 'file_used': '3', 'file_soft': '0', 'file_hard': '0', 'file_grace': '-'}
-    assert len(results.user_quota['/dev/sdc']['quota_info']) == 2
-    assert 'enforcement' not in results.user_quota['/dev/sdc']
+    results = RepquotaAGNPUV(context_wrap(REPQUOTAAGNPUV))
+    assert len(results.group_quota.keys()) == 1
+    assert len(results.group_quota['/dev/sdb']['quota_info']) == 4
+    assert results.group_quota['/dev/sdb']['quota_info'][1] == {'group': '1004', 'status': '--', 'block_used': '61440', 'block_soft': '0', 'block_hard': '0', 'block_grace': '0', 'file_used': '1', 'file_soft': '0', 'file_hard': '0', 'file_grace': '0'}
+    assert len(results.user_quota['/dev/sdb']['quota_info']) == 6
     assert results.user_quota['/dev/sdb']['enforcement'] is True
 
 
 def test_repquota_err():
-    with pytest.raises(ParseException) as pe:
-        RepquotaAGUV(context_wrap(REPQUOTAAGUV_ERR))
-        assert 'Error: empty output' in str(pe)
+    with pytest.raises(SkipException):
+        repquota.RepquotaAGNPUV(context_wrap(REPQUOTAAGNPUV_ERR))
 
 
 def test_repquota_doc_examples():
     env = {
-        'repquota': RepquotaAGUV(context_wrap(REPQUOTAAGUV))
+        'repquota': RepquotaAGNPUV(context_wrap(REPQUOTAAGNPUV))
     }
     failed, total = doctest.testmod(repquota, globs=env)
     assert failed == 0

@@ -1,19 +1,22 @@
 """
-Repquota - Command ``repquota -aguv``
-=====================================
+Repquota - command ``repquota``
+===============================
 
-Parser for the output of ``repquota -aguv`` command
+Parser contains in this module is:
+
+RepquotaAGNPUV - command ``repquota -agnpuv``
+
 """
 from insights.core import CommandParser
-from insights.core.exceptions import ParseException
+from insights.core.exceptions import SkipException
 from insights.core.plugins import parser
 from insights.specs import Specs
 
 
-@parser(Specs.repquota_aguv)
-class RepquotaAGUV(CommandParser):
+@parser(Specs.repquota_agnpuv)
+class RepquotaAGNPUV(CommandParser):
     """
-    `repquota -aguv` prints a summary of the disc usage and quotas information for the specified file systems.
+    `repquota -agnpuv` prints a summary of the disc usage and quotas information for the specified file systems.
 
     Typical content looks like::
 
@@ -22,106 +25,71 @@ class RepquotaAGUV(CommandParser):
                                 Block limits                File limits
         User            used    soft    hard  grace    used  soft  hard  grace
         ----------------------------------------------------------------------
-        root      --       0       0       0              3     0     0
-        user1     +-   61440   51200  102400  6days       1     0     0
+        #0        --    5120       0       0      0       4     0     0      0
+        #1009     +-   61440   51200  102400 1679983770       1     0     0      0
+        #1010     --       0   51200  102400      0       0     0     0      0
+        #1011     +-  107520   51200  307200 1680640819       2     0     0      0
+        #1012     --   51200       0       0      0       1     0     0      0
+        #1013     --       0   51200  102400      0       0     0     0      0
 
         *** Status for user quotas on device /dev/sdb
         Accounting: ON; Enforcement: ON
         Inode: #131 (2 blocks, 2 extents)
-
-        *** Report for user quotas on device /dev/sdc
-        Block grace time: 7days; Inode grace time: 7days
-                                Block limits                File limits
-        User            used    soft    hard  grace    used  soft  hard  grace
-        ----------------------------------------------------------------------
-        root      --      20       0       0              2     0     0
-        user2     +-  100000   50000  100000  7days       1     0     0
-
-        Statistics:
-        Total blocks: 7
-        Data blocks: 1
-        Entries: 2
-        Used average: 2.000000
 
         *** Report for group quotas on device /dev/sdb
         Block grace time: 7days; Inode grace time: 7days
                                 Block limits                File limits
         Group           used    soft    hard  grace    used  soft  hard  grace
         ----------------------------------------------------------------------
-        root      --       0       0       0              3     0     0
-        group1    --   61440       0       0              1     0     0
+        #0        --    5120       0       0      0       4     0     0      0
+        #1004     --   61440       0       0      0       1     0     0      0
+        #1005     --   51200  972800 1048576      0       1     0     0      0
+        #1011     --  107520       0       0      0       2     0     0      0
 
         *** Status for group quotas on device /dev/sdb
-        Accounting: ON; Enforcement: OFF
+        Accounting: ON; Enforcement: ON
         Inode: #132 (2 blocks, 2 extents)
-
-        *** Report for group quotas on device /dev/sdc
-        Block grace time: 7days; Inode grace time: 7days
-                                Block limits                File limits
-        Group           used    soft    hard  grace    used  soft  hard  grace
-        ----------------------------------------------------------------------
-        root      --      20       0       0              2     0     0
-        group1    --  100000       0       0              3     2     4  6days
-
-        Statistics:
-        Total blocks: 7
-        Data blocks: 1
-        Entries: 2
-        Used average: 2.000000
 
     Examples:
         >>> type(repquota)
-        <class 'insights.parsers.repquota.RepquotaAGUV'>
+        <class 'insights.parsers.repquota.RepquotaAGNPUV'>
         >>> 'enforcement' in repquota.user_quota['/dev/sdb']
         True
-        >>> repquota.group_quota['/dev/sdb']['quota_info'][0] == {'group': 'root', 'flag': '--', 'block_used': '0', 'block_soft': '0', 'block_hard': '0', 'block_grace': '-', 'file_used': '3', 'file_soft': '0', 'file_hard': '0', 'file_grace': '-'}
+        >>> repquota.group_quota['/dev/sdb']['quota_info'][0] == {'group': '0', 'status': '--', 'block_used': '5120', 'block_soft': '0', 'block_hard': '0', 'block_grace': '0', 'file_used': '4', 'file_soft': '0', 'file_hard': '0', 'file_grace': '0'}
         True
 
     Raises:
-        insights.core.exceptions.ParseException: if the output of the ``repquota -aguv`` command is empty.
+        insights.core.exceptions.ParseException: if the output of the ``repquota -agnpuv`` command is empty.
     """
 
     def parse_content(self, content):
-        if len(content) == 0:
-            raise ParseException("Error: empty output")
-        flag = False
-        data = {'user': {}, 'group': {}}
-        self.raw = []
-        quota_type = None
-        quota_device = None
-        headings = ['flag', 'block_used', 'block_soft', 'block_hard', 'block_grace', 'file_used', 'file_soft', 'file_hard', 'file_grace']
-        All_headings = None
+        self.user_quota = {}
+        self.group_quota = {}
+        data = device = heading = quota_list = None
         for line in content:
-            if not line:
-                flag = False
-                continue
-            self.raw.append(line.strip())
-
-            if line.startswith('*** Report'):
-                split_list = line.split()
-                if len(split_list) != 8:
-                    raise ParseException("Error: content invalid")
-                quota_type = split_list[3]
-                quota_device = split_list[7]
-                All_headings = [quota_type] + headings
-                data[quota_type][quota_device] = {'quota_info': []}
+            if not line.strip():
                 continue
 
-            if line.startswith('----------'):
-                flag = True
-                continue
-            if flag:
-                split_line = line.split()
-                if split_line[5].isdigit():
-                    split_line.insert(5, '-')
-                if len(split_line) == 9:
-                    split_line.insert(9, '-')
-                quota_info = dict(zip(All_headings, split_line))
-                data[quota_type][quota_device]['quota_info'].append(quota_info)
+            if line.startswith(('*** Report for', '*** Status for')):
+                quota_list = []
+                device = line.split()[-1]
+                heading = ['group', 'block_used', 'block_soft', 'block_hard', 'block_grace', 'file_used', 'file_soft', 'file_hard', 'file_grace']
+                data = self.group_quota
+                if ' user ' in line:
+                    heading[0] = 'user'
+                    data = self.user_quota
+                data[device] = data.get(device, dict(quota_info=quota_list))
                 continue
 
-            if 'Accounting' in line and 'Enforcement' in line:
-                data[quota_type][quota_device]['enforcement'] = True if line.split('Enforcement:')[1].strip().upper() == 'ON' else False
+            if line.startswith('#'):
+                line_sp = line.strip('#').split()
+                info = dict(status=line_sp.pop(1))
+                info.update(zip(heading, line_sp))
+                quota_list.append(info)
 
-        self.user_quota = data['user']
-        self.group_quota = data['group']
+            if device and 'Accounting' in line and 'Enforcement' in line:
+                data[device].update(enforcement='Enforcement: ON' in line,
+                                    accounting='Accounting: ON' in line)
+
+        if not self.user_quota and not self.group_quota:
+            raise SkipException("Empty result")
