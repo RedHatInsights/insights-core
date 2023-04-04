@@ -5,6 +5,7 @@ Repquota - command ``repquota``
 Parser contains in this module is:
 
 RepquotaAGNPUV - command ``repquota -agnpuv``
+---------------------------------------------
 
 """
 from insights.core import CommandParser
@@ -79,15 +80,14 @@ class RepquotaAGNPUV(CommandParser):
                     heading[0] = 'user'
                     data = self.user_quota
                 data[device] = data.get(device, dict(quota_info=quota_list))
-                continue
 
-            if line.startswith('#'):
+            elif device and line.startswith('#'):
                 line_sp = line.strip('#').split()
                 info = dict(status=line_sp.pop(1))
                 info.update(zip(heading, line_sp))
                 quota_list.append(info)
 
-            if device and 'Accounting' in line and 'Enforcement' in line:
+            elif device and 'Accounting' in line and 'Enforcement' in line:
                 data[device].update(enforcement='Enforcement: ON' in line,
                                     accounting='Accounting: ON' in line)
 
