@@ -9,7 +9,6 @@ runs all datasources in ``insights.specs.Specs`` and
 """
 from __future__ import print_function
 import argparse
-import json
 import logging
 import os
 import sys
@@ -447,11 +446,6 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
         broker.add_observer(h.make_persister(to_persist))
         dr.run_all(broker=broker, pool=pool)
 
-    if BLACKLISTED_SPECS:
-        _write_out_blacklisted_specs(output_path)
-        # Delete the list so the specs aren't written again by the client.
-        del BLACKLISTED_SPECS[:]
-
     collect_errors = _parse_broker_exceptions(broker, EXCEPTIONS_TO_REPORT)
 
     if compress:
@@ -485,41 +479,6 @@ def _parse_broker_exceptions(broker, exceptions_to_report):
     except Exception as e:
         log.warning("Could not parse exceptions from the broker.: %s", str(e))
     return errors
-
-
-def _write_out_blacklisted_specs(output_path):
-    """
-    Write out the blacklisted specs to blacklisted_specs.txt, and create
-    a meta-data file for this file. That way it can be loaded when the
-    archive is processed.
-
-    Args:
-        output_path (str): Path of the output directory.
-    """
-    if os.path.exists(os.path.join(output_path, "meta_data")):
-        output_path_root = os.path.join(output_path, "data")
-    else:
-        output_path_root = output_path
-
-    with open(os.path.join(output_path_root, "blacklisted_specs.txt"), "w") as of:
-        json.dump({"specs": BLACKLISTED_SPECS}, of)
-
-    doc = {
-        "name": "insights.specs.Specs.blacklisted_specs",
-        "exec_time": 0.0,
-        "errors": [],
-        "results": {
-            "type": "insights.core.spec_factory.DatasourceProvider",
-            "object": {
-                "relative_path": "blacklisted_specs.txt"
-            }
-        },
-        "ser_time": 0.0
-    }
-
-    meta_path = os.path.join(os.path.join(output_path, "meta_data"), "insights.specs.Specs.blacklisted_specs")
-    with open(meta_path, "w") as of:
-        json.dump(doc, of)
 
 
 def main():

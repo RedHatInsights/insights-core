@@ -133,9 +133,12 @@ class DataCollector(object):
         self.archive.add_metadata_to_archive(
             json.dumps(blacklist_report), '/blacklist_report')
 
+    def _write_blacklisted_specs(self):
+        logger.debug("Writing blacklisted specs to archive...")
+
         if BLACKLISTED_SPECS:
             self.archive.add_metadata_to_archive(
-                json.dumps({"specs": BLACKLISTED_SPECS}), '/blacklisted_specs.txt')
+                json.dumps({"specs": BLACKLISTED_SPECS}), '/blacklisted_specs')
 
     def _write_egg_release(self):
         logger.debug("Writing egg release to archive...")
@@ -396,6 +399,7 @@ class DataCollector(object):
         self._write_version_info()
         self._write_tags()
         self._write_blacklist_report(blacklist_report)
+        self._write_blacklisted_specs()
         self._write_egg_release()
         self._write_collection_stats(collection_stats)
         logger.debug('Metadata collection finished.')
