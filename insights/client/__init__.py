@@ -305,7 +305,7 @@ class InsightsClient(object):
         # if a valid egg path and gpg were received do the verification
         if egg_path and gpg_key:
             homedir = tempfile.mkdtemp()
-            cmd_template = '/usr/bin/gpg --homedir %s --verify --keyring %s %s %s '
+            cmd_template = '/usr/bin/gpg --homedir %s --verify --keyring %s %s %s'
             cmd = cmd_template % (homedir, gpg_key, egg_path + '.asc', egg_path)
             logger.debug(cmd)
             process = Popen(shlex.split(cmd), stdout=PIPE, stderr=PIPE)
