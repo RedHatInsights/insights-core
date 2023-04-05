@@ -72,14 +72,14 @@ class RepquotaAGNPUV(CommandParser):
                 continue
 
             if line.startswith(('*** Report for', '*** Status for')):
-                quota_list = []
                 device = line.split()[-1]
                 heading = ['group', 'block_used', 'block_soft', 'block_hard', 'block_grace', 'file_used', 'file_soft', 'file_hard', 'file_grace']
                 data = self.group_quota
                 if ' user ' in line:
                     heading[0] = 'user'
                     data = self.user_quota
-                data[device] = data.get(device, dict(quota_info=quota_list))
+                data[device] = data.get(device, dict(quota_info=[]))
+                quota_list = data.get(device).get('quota_info')
 
             elif device and line.startswith('#'):
                 line_sp = line.strip('#').split()
