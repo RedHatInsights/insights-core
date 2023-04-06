@@ -2,6 +2,15 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.1.17](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.17) (2023-04-06)
+
+- Feat: New parser for repquota command ([PR 3717](https://github.com/RedHatInsights/insights-core/pull/3717))
+- chore: update the spec name of BlacklistedSpecs ([PR 3728](https://github.com/RedHatInsights/insights-core/pull/3728))
+- fix: check content before use it ([PR 3727](https://github.com/RedHatInsights/insights-core/pull/3727))
+- fix: support built-in metadata files in core-collection ([PR 3723](https://github.com/RedHatInsights/insights-core/pull/3723))
+- feat: RHICOMPL-3706 add link to KB article about OOM issues ([PR 3724](https://github.com/RedHatInsights/insights-core/pull/3724))
+- chore: tiny simplify and remove unused code in spec_factory.py ([PR 3726](https://github.com/RedHatInsights/insights-core/pull/3726))
+
 # [insights-core-3.1.16](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.16) (2023-03-30)
 
 - feat(compliance): RHICOMPL-3629 log OOM error when scan fails ([PR 3721](https://github.com/RedHatInsights/insights-core/pull/3721))
