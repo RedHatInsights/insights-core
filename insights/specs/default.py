@@ -518,6 +518,7 @@ class DefaultSpecs(Specs):
     readlink_e_shift_cert_client = simple_command("/usr/bin/readlink -e /etc/origin/node/certificates/kubelet-client-current.pem")
     readlink_e_shift_cert_server = simple_command("/usr/bin/readlink -e /etc/origin/node/certificates/kubelet-server-current.pem")
     redhat_release = simple_file("/etc/redhat-release")
+    repquota_agnpuv = simple_command("/usr/sbin/repquota -agnpuv")
     resolv_conf = simple_file("/etc/resolv.conf")
     rhsm_conf = simple_file("/etc/rhsm/rhsm.conf")
     rhsm_releasever = simple_file('/var/lib/rhsm/cache/releasever.json')

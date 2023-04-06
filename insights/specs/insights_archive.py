@@ -221,6 +221,7 @@ class InsightsArchiveSpecs(Specs):
     readlink_e_etc_mtab = simple_file("insights_commands/readlink_-e_.etc.mtab")
     readlink_e_shift_cert_client = simple_file("insights_commands/readlink_-e_.etc.origin.node.certificates.kubelet-client-current.pem")
     readlink_e_shift_cert_server = simple_file("insights_commands/readlink_-e_.etc.origin.node.certificates.kubelet-server-current.pem")
+    repquota_agnpuv = simple_file("insights_commands/repquota_-agnpuv")
     rhev_data_center = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_rhev_data_center")
     rhsm_katello_default_ca_cert = simple_file("insights_commands/openssl_x509_-in_.etc.rhsm.ca.katello-default-ca.pem_-noout_-issuer")
     rndc_status = simple_file("insights_commands/rndc_status")
