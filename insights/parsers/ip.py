@@ -15,6 +15,9 @@ IpNeighParser - command ``ip neigh show nud all``
 
 IpLinkInfo - command ``ip -d -s link``
 --------------------------------------
+
+AWSPublicIPv4 - output of ``curl -s http://169.254.169.254/latest/latest/meta-data/public-ipv4`` on AWS
+-------------------------------------------------------------------------------------------------------
 """
 
 from __future__ import print_function
@@ -732,3 +735,9 @@ class IpLinkInfo(IpAddr):
         TX dropped: 0
     """
     pass
+
+
+@parser(Specs.aws_public_ipv4)
+class AWSPublicIPv4(CommandParser):
+    def parse_content(self, content):
+        self.data = content

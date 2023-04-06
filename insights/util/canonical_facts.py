@@ -17,6 +17,7 @@ from insights.parsers.azure_instance import AzureInstanceID, AzureInstanceType
 from insights.parsers.dmidecode import DMIDecode
 from insights.parsers.gcp_instance_type import GCPInstanceType
 from insights.parsers.installed_rpms import InstalledRpms
+from insights.parsers.ip import AWSPublicIPv4
 from insights.parsers.rhsm_conf import RHSMConf
 from insights.parsers.subscription_manager import SubscriptionManagerFacts
 from insights.parsers.yum import YumRepoList
@@ -123,22 +124,27 @@ def _filter_falsy(dict_):
         Specs.bios_uuid,
         SubscriptionManagerID,
         IPs,
+        AWSPublicIPv4,
         Specs.hostname,
         Specs.mac_addresses,
         CloudInstance,
     ]
 )
 def canonical_facts(
-    insights_id, machine_id, bios_uuid, submanid, ips, fqdn, mac_addresses,
+    insights_id, machine_id, bios_uuid, submanid, ips, aws_ipv4, fqdn, mac_addresses,
     cloud_instance,
 ):
+
+    ips_list = ips.data if ips else []
+    if aws_ipv4:
+        ips_list.append(aws_ipv4.data)
 
     facts = dict(
         insights_id=valid_uuid_or_None(_safe_parse(insights_id)),
         machine_id=valid_uuid_or_None(_safe_parse(machine_id)),
         bios_uuid=valid_uuid_or_None(_safe_parse(bios_uuid)),
         subscription_manager_id=valid_uuid_or_None(submanid.data if submanid else None),
-        ip_addresses=ips.data if ips else [],
+        ip_addresses=ips_list,
         mac_addresses=valid_mac_addresses(mac_addresses) if mac_addresses else [],
         fqdn=_safe_parse(fqdn),
         provider_id=cloud_instance.id if cloud_instance else None,
@@ -158,6 +164,7 @@ def get_canonical_facts(path=None):
         DMIDecode,
         GCPInstanceType,
         IPs,
+        AWSPublicIPv4,
         InstalledRpms,
         RHSMConf,
         SubscriptionManagerFacts,
