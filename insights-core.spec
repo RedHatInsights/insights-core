@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.1.17
+Version:        3.1.18
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,11 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Apr 06 2023 Xiangce Liu <xiangceliu@redhat.com> 3.1.18-1
+- feat: add "vf_enabled" parse for spec ip_s_link (#3729) (xiaoxwan@redhat.com)
+- Fix check registration status to be robust against network failures (#3713)
+  (93577878+ahitacat@users.noreply.github.com)
+
 * Thu Apr 06 2023 Xiangce Liu <xiangceliu@redhat.com> 3.1.17-1
 - Feat: New parser for repquota command (#3717) (986222045@qq.com)
 - chore: update the spec name of BlacklistedSpecs (#3728)

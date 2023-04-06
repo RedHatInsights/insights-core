@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.1.18](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.18) (2023-04-06)
+
+- feat: add "vf_enabled" parse for spec ip_s_link ([PR 3729](https://github.com/RedHatInsights/insights-core/pull/3729))
+- Fix check registration status to be robust against network failures ([PR 3713](https://github.com/RedHatInsights/insights-core/pull/3713))
+
 # [insights-core-3.1.17](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.17) (2023-04-06)
 
 - Feat: New parser for repquota command ([PR 3717](https://github.com/RedHatInsights/insights-core/pull/3717))
