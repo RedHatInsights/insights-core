@@ -108,8 +108,8 @@ def parse_interface(line):
         "vf_enabled": False
     }
     # extract properties
-    for i in range(3, len(split_content), 2):
-        key, value = (split_content[i], split_content[i + 1])
+    for i in range(4, len(split_content), 2):
+        key, value = (split_content[i - 1], split_content[i])
         current[key] = int(value) if key in ["mtu", "qlen"] else value
     return current
 
