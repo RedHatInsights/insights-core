@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.1.16
+Version:        3.1.17
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,18 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Apr 06 2023 Xiangce Liu <xiangceliu@redhat.com> 3.1.17-1
+- Feat: New parser for repquota command (#3717) (986222045@qq.com)
+- chore: update the spec name of BlacklistedSpecs (#3728)
+  (xiangceliu@redhat.com)
+- fix: check content before use it (#3727) (lichen@redhat.com)
+- fix: support built-in metadata files in core-collection (#3723)
+  (xiangceliu@redhat.com)
+- feat: RHICOMPL-3706 add link to KB article about OOM issues (#3724)
+  (skateman@users.noreply.github.com)
+- chore: tiny simplify and remove unused code in spec_factory.py (#3726)
+  (xiangceliu@redhat.com)
+
 * Thu Mar 30 2023 Xiangce Liu <xiangceliu@redhat.com> 3.1.16-1
 - feat(compliance): RHICOMPL-3629 log OOM error when scan fails (#3721)
   (skateman@users.noreply.github.com)
