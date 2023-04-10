@@ -11,6 +11,7 @@ class Specs(SpecSet):
     auditctl_rules = RegistryPoint()
     auditctl_status = RegistryPoint()
     auditd_conf = RegistryPoint()
+    audispd_conf = RegistryPoint()
     authselect_current = RegistryPoint()
     autofs_conf = RegistryPoint()
     avc_cache_threshold = RegistryPoint()
