@@ -184,11 +184,6 @@ class MetadataProvider(FileProvider):
             self._exception = ex
             raise ContentException(str(ex))
 
-    @property
-    def path(self):
-        # Built-in metadata files are in root directory
-        return os.path.join(self.root, self.relative_path)
-
     def validate(self):
         # Validate built-in metedata files only when insights-run
         if not isinstance(self.ctx, HostContext):
