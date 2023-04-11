@@ -62,10 +62,10 @@ import traceback
 from collections import defaultdict
 from functools import reduce as _reduce
 
-from insights.core.context import SerializedArchiveContext
 from insights.contrib import importlib
 from insights.contrib.toposort import toposort_flatten
 from insights.core.blacklist import BLACKLISTED_SPECS
+from insights.core.context import SerializedArchiveContext
 from insights.core.exceptions import BlacklistedSpec, MissingRequirements, SkipComponent
 from insights.util import defaults, enum, KeyPassingDefaultDict
 
@@ -1031,18 +1031,7 @@ def run_components(ordered_components, components, broker):
     This function allows callers to order components themselves and cache the
     result so they don't incur the toposort overhead on every run.
     """
-    # If a SerializedArchiveContext then data found in the archive's
-    # ./meta_data directory are prepopulated in the broker as Specs so
-    # no need to collect them again
-    if broker.get(SerializedArchiveContext) is not None:
-        remove_deps = []
-        for comp, deps in components.items():
-            if comp in broker:
-                remove_deps.extend(deps)
-        for dep in remove_deps:
-            components.pop(dep, None)
-
-    for component in run_order(components):
+    for component in ordered_components:
         start = time.time()
         try:
             if (component not in broker and component in components and
@@ -1099,6 +1088,14 @@ def run(components=None, broker=None):
     components = components or COMPONENTS[GROUPS.single]
     components = determine_components(components)
     broker = broker or Broker()
+    # If a SerializedArchiveContext then data found in the archive's
+    # ./meta_data directory are prepopulated in the broker as Specs so
+    # no need to collect them again
+    if broker.get(SerializedArchiveContext) is not None:
+        for comp in list(components):
+            if comp in broker:
+                for dep in components[comp]:
+                    components.pop(dep, None)
     return run_components(run_order(components), components, broker)
 
 
