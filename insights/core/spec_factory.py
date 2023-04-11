@@ -52,7 +52,6 @@ class ContentProvider(object):
         self.root = None
         self.relative_path = None
         self.loaded = False
-        self.ctx = None
         self._content = None
         self._exception = None
 
@@ -72,9 +71,6 @@ class ContentProvider(object):
 
     @property
     def path(self):
-        # For core-collection (SerializedArchiveContext) archive, data are in `/data`
-        if isinstance(self.ctx, SerializedArchiveContext):
-            return os.path.join(self.root, 'data', self.relative_path)
         return os.path.join(self.root, self.relative_path)
 
     @property
@@ -132,13 +128,21 @@ class DatasourceProvider(ContentProvider):
 class FileProvider(ContentProvider):
     def __init__(self, relative_path, root="/", ds=None, ctx=None):
         super(FileProvider, self).__init__()
-        self.root = root
+        self.ds = ds
+        self.ctx = ctx
+        self._set_root(root)
         self.relative_path = relative_path.lstrip("/")
         self.file_name = os.path.basename(self.path)
 
-        self.ds = ds
-        self.ctx = ctx
         self.validate()
+
+    def _set_root(self, root):
+        if (isinstance(self.ctx, SerializedArchiveContext) and os.path.basename(root) != 'data'):
+            # For core-collection (SerializedArchiveContext) archive, data are
+            # in `/data` directory
+            self.root = os.path.join(root, 'data')
+        else:
+            self.root = root
 
     def validate(self):
         if not blacklist.allow_file("/" + self.relative_path):
@@ -182,7 +186,7 @@ class MetadataProvider(FileProvider):
 
     @property
     def path(self):
-        # built-in metadata files are put in root
+        # Built-in metadata files are in root directory
         return os.path.join(self.root, self.relative_path)
 
     def validate(self):
@@ -1299,7 +1303,7 @@ def deserialize_datasource_provider(_type, data, root):
 
 @serializer(MetadataProvider)
 def serialize_metadata_provider(obj, root):
-    # Built in metadata files are put in the root instead of '/data'
+    # Built-in metadata files are put in the root instead of '/data'
     root = os.path.dirname(root) if os.path.basename(root) == 'data' else root
     dst = os.path.join(root, obj.relative_path.lstrip("/"))
     fs.ensure_path(os.path.dirname(dst))
@@ -1309,7 +1313,7 @@ def serialize_metadata_provider(obj, root):
 
 @deserializer(MetadataProvider)
 def deserialize_metadata_provider(_type, data, root):
-    # Built in metadata files are put in the root instead of '/data'
+    # Built-in metadata files are put in the root instead of '/data'
     root = os.path.dirname(root) if os.path.basename(root) == 'data' else root
     return SerializedOutputProvider(data["relative_path"], root)
 
