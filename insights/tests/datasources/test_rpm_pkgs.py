@@ -15,7 +15,7 @@ polkit; polkit-0.117-10.el9_0.x86_64; /usr/lib/polkit-1; drwxrwxr-x; polkitd; po
 polkit; polkit-0.117-10.el9_0.x86_64; /usr/lib/polkit-1/polkitd; -rwxr-xr-x; root; root; Red Hat, Inc.
 """.strip()
 
-RPM_EXPECTED = [("httpd-core", "httpd-core-2.4.53-7.el9.x86_64", "Red Hat, Inc.")]
+RPM_EXPECTED = ["httpd-core|httpd-core-2.4.53-7.el9.x86_64|Red Hat, Inc."]
 
 RPM_BAD_CMD = "bash: rpm: command not found..."
 

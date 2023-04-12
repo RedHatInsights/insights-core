@@ -5,6 +5,8 @@ import grp
 import pwd
 import signal
 
+from collections import defaultdict
+
 from insights.core.context import HostContext
 from insights.core.exceptions import SkipComponent
 from insights.core.plugins import datasource
@@ -95,7 +97,7 @@ def pkgs_with_writable_dirs(broker):
     users = get_users()
     groups = get_groups(users)
 
-    dir_package = {}
+    dir_package = defaultdict(set)
     dirs = set()
 
     for line in content:
@@ -108,19 +110,16 @@ def pkgs_with_writable_dirs(broker):
 
             if user_w or group_w or others_w:
                 # Stores a writeable directory with its package
-                if path_name not in dir_package:
-                    dir_package[path_name] = [(pkg_name, nevra, vendor)]
-                else:
-                    dir_package[path_name].append((pkg_name, nevra, vendor))
+                dir_package[path_name].add("{0}|{1}|{2}".format(pkg_name, nevra, vendor))
         else:
             # Stores a file directory
             dirs.add(path_name.rsplit('/', 1)[0])
 
     # Stores a package if its directory has files inside
-    packages = []
+    packages = set()
     for dir_path in dir_package:
         if dir_path in dirs:
-            packages.extend(dir_package[dir_path])
+            packages.update(dir_package[dir_path])
 
     if packages:
         return DatasourceProvider(
