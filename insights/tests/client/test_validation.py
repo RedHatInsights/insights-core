@@ -12,13 +12,13 @@ INVALID_EGG = os.path.join(test_dir, "testing_data/invalid_test_rpm.egg")
 
 
 def test_testing_files_find_valid_pair():
-    """ Test is pytest can find VALID .egg, .asc testing pair. """
+    """ Testing if pytest can find VALID .egg, .asc testing pair. """
     assert os.path.isfile(VALID_EGG) is True
     assert os.path.isfile(VALID_EGG + ".asc") is True
 
 
 def test_testing_files_find_invalid_pair():
-    """ Test is pytest can find INVALID .egg, .asc testing pair. """
+    """ Testing if pytest can find INVALID .egg, .asc testing pair. """
     assert os.path.isfile(INVALID_EGG) is True
     assert os.path.isfile(INVALID_EGG + ".asc") is True
 
