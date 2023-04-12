@@ -14,9 +14,9 @@ Block grace time: 2days; Inode grace time: 2days
                         Block limits                File limits
 User            used    soft    hard  grace    used  soft  hard  grace
 ----------------------------------------------------------------------
-#0        --       0       0       0              3     0     0       
-#1001     +-  563200  512000 1024000   none       1     0     0       
-#1002     +-  579520  512000 1024000  44:58       2     0     0       
+#0        --       0       0       0              3     0     0
+#1001     +-  563200  512000 1024000   none       1     0     0
+#1002     +-  579520  512000 1024000  44:58       2     0     0
 
 *** Status for user quotas on device /dev/sdc
 Accounting: ON; Enforcement: ON
@@ -27,9 +27,9 @@ Block grace time: 7days; Inode grace time: 7days
                         Block limits                File limits
 Group           used    soft    hard  grace    used  soft  hard  grace
 ----------------------------------------------------------------------
-#0        --       0       0       0              3     0     0       
-#1001     --  563200       0       0              1     0     0       
-#1002     --  579520       0       0              2     0     0       
+#0        --       0       0       0              3     0     0
+#1001     --  563200       0       0              1     0     0
+#1002     --  579520       0       0              2     0     0
 
 *** Status for group quotas on device /dev/sdc
 Accounting: ON; Enforcement: ON
@@ -43,9 +43,9 @@ Block grace time: 2days; Inode grace time: 2days
                         Block limits                File limits
 User            used    soft    hard  grace    used  soft  hard  grace
 ----------------------------------------------------------------------
-#0        --       0       0       0              3     0     0       
-#1001     +-    none    none    none   none       1     0     0       
-#1002     +-  579520  512000 1024000  44:58       2     0     0       
+#0        --       0       0       0              3     0     0
+#1001     +-    none    none    none   none       1     0     0
+#1002     +-  579520  512000 1024000  44:58       2     0     0
 
 *** Status for user quotas on device /dev/sdc
 Accounting: ON; Enforcement: ON
@@ -56,9 +56,9 @@ Block grace time: 7days; Inode grace time: 7days
                         Block limits                File limits
 Group           used    soft    hard  grace    used  soft  hard  grace
 ----------------------------------------------------------------------
-#0        --       0       0       0              3     0     0       
-#1001     --  563200       0       0              1     0     0       
-#1002     --  579520       0       0              2     0     0       
+#0        --       0       0       0              3     0     0
+#1001     --  563200       0       0              1     0     0
+#1002     --  579520       0       0              2     0     0
 
 *** Status for group quotas on device /dev/sdc
 Accounting: ON; Enforcement: ON
