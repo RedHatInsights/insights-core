@@ -1,6 +1,6 @@
 """
-BlacklistedSpecs - File ``blacklisted_specs.txt``
-=================================================
+BlacklistedSpecs - File ``blacklisted_specs``
+=============================================
 """
 from insights.core import JSONParser
 from insights.core.plugins import parser
@@ -10,7 +10,8 @@ from insights.specs import Specs
 @parser(Specs.blacklisted_specs)
 class BlacklistedSpecs(JSONParser):
     """
-    Parses the blacklisted_specs.txt file generated on archive creation.
+    Parses the "blacklisted_specs" or "blacklisted_specs.txt" file generated
+    on archive creation.
 
     Typical output::
         "{"specs": ["dmesg", "fstab"]}"

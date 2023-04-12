@@ -663,25 +663,30 @@ class InsightsConnection(object):
         #       False for unregistered
         #       None for system 404
         if res.status_code != 200:
-            # Use handle_fail_rcs to log the error response clearly to the user
             self.handle_fail_rcs(res)
-        try:
-            # check the 'unregistered_at' key of the response
-            unreg_status = json.loads(res.content).get('unregistered_at', 'undefined')
-            # set the global account number
-            self.config.account_number = json.loads(res.content).get('account_number', 'undefined')
-        except ValueError:
-            # bad response, no json object
+        if res.status_code not in (200, 404):
+            # Network error returns False
             return False
-        if unreg_status == 'undefined':
-            # key not found, machine not yet registered
-            return None
-        elif unreg_status is None:
-            # unregistered_at = null, means this machine IS registered
-            return True
         else:
-            # machine has been unregistered, this is a timestamp
-            return unreg_status
+            try:
+                # check the 'unregistered_at' key of the response
+                unreg_status = json.loads(res.content).get('unregistered_at', 'undefined')
+                # set the global account number
+                self.config.account_number = json.loads(res.content).get('account_number', 'undefined')
+            except ValueError:
+                # bad response, no json object
+                return False
+            if unreg_status == 'undefined':
+                # key not found, machine not yet registered
+                return None
+            elif unreg_status is None:
+                # unregistered_at = null, means this machine IS registered
+                return True
+            else:
+                # machine has been unregistered, this is a timestamp
+                # This is done for legacy servers that responded with the timestamp of disconnection
+                # TODO: consider to remove this condition
+                return unreg_status
 
     def _fetch_system_by_machine_id(self):
         '''

@@ -81,10 +81,12 @@ def parse_ip_addr(content):
             current['geneve'] = split_content
         elif line.startswith("inet"):
             parse_inet(line, current)
-        elif line.startswith("RX"):
+        elif line.startswith("RX") and current and "rx_bytes" not in current:
             rx_next_line = True
-        elif line.startswith("TX"):
+        elif line.startswith("TX") and current and "tx_bytes" not in current:
             tx_next_line = True
+        elif line.startswith("vf "):
+            current['vf_enabled'] = True
     for k, v in r.items():
         if_details[k] = NetworkInterface(v)
     return if_details
@@ -102,11 +104,12 @@ def parse_interface(line):
         "physical_name": physical_name if virtual else None,
         "virtual": virtual,
         "flags": split_content[2].strip("<>").split(","),
-        "addr": []
+        "addr": [],
+        "vf_enabled": False
     }
     # extract properties
-    for i in range(3, len(split_content), 2):
-        key, value = (split_content[i], split_content[i + 1])
+    for i in range(4, len(split_content), 2):
+        key, value = (split_content[i - 1], split_content[i])
         current[key] = int(value) if key in ["mtu", "qlen"] else value
     return current
 

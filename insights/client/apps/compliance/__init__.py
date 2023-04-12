@@ -29,11 +29,13 @@ else:
         import xml.etree.ElementTree as ET
 
 NONCOMPLIANT_STATUS = 2
+OUT_OF_MEMORY_STATUS = -9  # 247
 COMPLIANCE_CONTENT_TYPE = 'application/vnd.redhat.compliance.something+tgz'
 POLICY_FILE_LOCATION = '/usr/share/xml/scap/ssg/content/'
 SCAP_DATASTREAMS_PATH = '/usr/share/xml/scap/'
 SSG_PACKAGE = 'scap-security-guide'
 REQUIRED_PACKAGES = [SSG_PACKAGE, 'openscap-scanner', 'openscap']
+OOM_ERROR_LINK = 'https://access.redhat.com/articles/6999111'
 
 # SSG versions that need the <version> in XML repaired
 VERSIONS_FOR_REPAIR = '0.1.18 0.1.19 0.1.21 0.1.25'.split()
@@ -185,8 +187,15 @@ class ComplianceClient:
         if not six.PY3:
             oscap_command = oscap_command.encode()
         rc, oscap = call(oscap_command, keep_rc=True, env=env)
+
+        if rc and rc == OUT_OF_MEMORY_STATUS:
+            logger.error('Scan failed due to insufficient memory')
+            logger.error('More information can be found here: {0}'.format(OOM_ERROR_LINK))
+            exit(constants.sig_kill_bad)
+
         if rc and rc != NONCOMPLIANT_STATUS:
             logger.error('Scan failed')
+            logger.error(rc)
             logger.error(oscap)
             exit(constants.sig_kill_bad)
 

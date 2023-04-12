@@ -12,7 +12,7 @@ import logging
 import signal
 
 from insights.core.context import HostContext
-from insights.core.spec_factory import RawFileProvider
+from insights.core.spec_factory import MetadataProvider
 from insights.core.spec_factory import simple_file, simple_command, glob_file, head
 from insights.core.spec_factory import first_of, command_with_args
 from insights.core.spec_factory import foreach_collect, foreach_execute
@@ -59,7 +59,7 @@ def _make_rpm_formatter(fmt=None):
 
 _etc_and_sub_dirs = sorted(["/etc", "/etc/pki/tls/private", "/etc/pki/tls/certs",
                            "/etc/pki/ovirt-vmconsole", "/etc/nova/migration", "/etc/sysconfig",
-                           "/etc/cloud/cloud.cfg.d", "/etc/rc.d/init.d"])
+                           "/etc/cloud/cloud.cfg.d", "/etc/rc.d/init.d", "/etc/selinux/targeted/policy"])
 """ List of directories for spec `ls_etc` """
 _rpm_format = _make_rpm_formatter()
 """ Query format for specs `installed_rpms` and `container_installed_rpms` """
@@ -71,6 +71,14 @@ class DefaultSpecs(Specs):
     httpd_pid = simple_command("/usr/bin/pgrep -o httpd")
     openshift_router_pid = simple_command("/usr/bin/pgrep -n openshift-route")
     ovs_vsctl_list_br = simple_command("/usr/bin/ovs-vsctl list-br")
+
+    # Archive metadata specs/files
+    ansible_host = simple_file("/ansible_host", kind=MetadataProvider)
+    blacklisted_specs = first_file(["/blacklisted_specs", "/blacklisted_specs.txt"], kind=MetadataProvider)
+    branch_info = simple_file("/branch_info", kind=MetadataProvider)
+    display_name = simple_file("/display_name", kind=MetadataProvider)
+    tags = simple_file("/tags.json", kind=MetadataProvider)
+    version_info = simple_file("/version_info", kind=MetadataProvider)
 
     # Regular collection specs
     abrt_ccpp_conf = simple_file("/etc/abrt/plugins/CCpp.conf")
@@ -95,7 +103,6 @@ class DefaultSpecs(Specs):
     bond = glob_file("/proc/net/bonding/*")
     bond_dynamic_lb = glob_file("/sys/class/net/*/bonding/tlb_dynamic_lb")
     boot_loader_entries = glob_file("/boot/loader/entries/*.conf")
-    branch_info = simple_file("/branch_info", kind=RawFileProvider)
     brctl_show = simple_command("/usr/sbin/brctl show")
     candlepin_broker = candlepin_broker.candlepin_broker
     cciss = glob_file("/proc/driver/cciss/cciss*")
@@ -511,6 +518,7 @@ class DefaultSpecs(Specs):
     readlink_e_shift_cert_client = simple_command("/usr/bin/readlink -e /etc/origin/node/certificates/kubelet-client-current.pem")
     readlink_e_shift_cert_server = simple_command("/usr/bin/readlink -e /etc/origin/node/certificates/kubelet-server-current.pem")
     redhat_release = simple_file("/etc/redhat-release")
+    repquota_agnpuv = simple_command("/usr/sbin/repquota -agnpuv")
     resolv_conf = simple_file("/etc/resolv.conf")
     rhsm_conf = simple_file("/etc/rhsm/rhsm.conf")
     rhsm_releasever = simple_file('/var/lib/rhsm/cache/releasever.json')
@@ -645,7 +653,6 @@ class DefaultSpecs(Specs):
         simple_file("/etc/sysconfig/rhn/systemid"),
         simple_file("/conf/rhn/sysconfig/rhn/systemid")
     ])
-    tags = simple_file("/tags.json", kind=RawFileProvider)
     teamdctl_config_dump = foreach_execute(ethernet.team_interfaces, "/usr/bin/teamdctl %s config dump")
     teamdctl_state_dump = foreach_execute(ethernet.team_interfaces, "/usr/bin/teamdctl %s state dump")
     testparm_s = simple_command("/usr/bin/testparm -s")
@@ -665,7 +672,6 @@ class DefaultSpecs(Specs):
     usr_journald_conf_d = glob_file(r"usr/lib/systemd/journald.conf.d/*.conf")  # note that etc_journald.conf.d also exists
     vdo_status = simple_command("/usr/bin/vdo status")
     vdsm_log = simple_file("var/log/vdsm/vdsm.log")
-    version_info = simple_file("/version_info")
     vgdisplay = simple_command("/sbin/vgdisplay")
     vgs_noheadings = simple_command("/sbin/vgs --nameprefixes --noheadings --separator='|' -a -o vg_all --config=\"global{locking_type=0}\"")
     virsh_list_all = simple_command("/usr/bin/virsh --readonly list --all")
