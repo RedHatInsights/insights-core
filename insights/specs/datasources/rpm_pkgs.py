@@ -85,9 +85,9 @@ def pkgs_with_writable_dirs(broker):
         SkipComponent: Raised if no data is available
 
     Returns:
-        List[tuple[str,str,str]]: Sorted list of tuples, where every tuple contains `name`, `nevra`
-        and `vendor` for a given package.
-        E.g. [("httpd-core", "httpd-core-2.4.53-7.el9.x86_64", "Red Hat, Inc.")]
+        List[str]: Sorted list of strings, where every string contains `name`, `nevra`
+        and `vendor` for a given package, and the pipe is used as a separator.
+        E.g. ["httpd-core|httpd-core-2.4.53-7.el9.x86_64|Red Hat, Inc."]
     """
     content = broker[LocalSpecs.rpm_args].content
 
