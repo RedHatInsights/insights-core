@@ -200,13 +200,22 @@ class InsightsArchive(object):
             logger.debug("Deleting: " + self.archive_dir)
             shutil.rmtree(self.archive_dir, True)
 
-    def delete_archive_file(self):
+    def delete_archive_tmp_dir(self):
         """
         Delete the directory containing the constructed archive
         """
         if self.archive_tmp_dir:
             logger.debug("Deleting %s", self.archive_tmp_dir)
             shutil.rmtree(self.archive_tmp_dir, True)
+
+    def delete_archive_file(self, spec):
+        """
+        Delete the spec file in the archive dir
+        """
+        path = os.path.join(self.archive_dir, spec)
+        if self.archive_dir and os.path.isfile(path):
+            logger.debug("Deleting %s", path)
+            os.unlink(path)
 
     def add_to_archive(self, spec):
         '''
