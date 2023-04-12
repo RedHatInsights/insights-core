@@ -2,26 +2,31 @@
 Collect all the interesting data for analysis
 """
 from __future__ import absolute_import
-import os
+import copy
 import errno
+import glob
 import json
 import logging
-import copy
-import glob
-import six
-import shlex
+import os
 import re
+import shlex
+import six
+
 from itertools import chain
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
 
+from insights.contrib.soscleaner import SOSCleaner
 from insights.core.blacklist import BLACKLISTED_SPECS
 from insights.util import mangle
-from ..contrib.soscleaner import SOSCleaner
-from .utilities import _expand_paths, get_version_info, systemd_notify_init_thread, get_tags
-from .constants import InsightsConstants as constants
-from .insights_spec import InsightsFile, InsightsCommand
-from .archive import InsightsArchive
+from insights.client.archive import InsightsArchive
+from insights.client.constants import InsightsConstants as constants
+from insights.client.insights_spec import InsightsFile, InsightsCommand
+from insights.client.utilities import (_expand_paths,
+                                       determine_hostname,
+                                       get_version_info,
+                                       systemd_notify_init_thread,
+                                       get_tags)
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
@@ -73,12 +78,13 @@ class DataCollector(object):
     Run commands and collect files
     '''
 
-    def __init__(self, config, archive_=None, mountpoint=None):
+    def __init__(self, config, archive_=None, mountpoint=None, hostname=None):
         self.config = config
         self.archive = archive_ if archive_ else InsightsArchive(config)
         self.mountpoint = '/'
         if mountpoint:
             self.mountpoint = mountpoint
+        self.hostname = hostname or determine_hostname(config.display_name)
         self.hostname_path = None
 
     def _write_branch_info(self, branch_info):
@@ -86,17 +92,23 @@ class DataCollector(object):
         self.archive.add_metadata_to_archive(
             json.dumps(branch_info), '/branch_info')
 
-    def _write_display_name(self):
+    def _write_display_name(self, no_persist=None):
         if self.config.display_name:
             logger.debug("Writing display_name to archive...")
             self.archive.add_metadata_to_archive(
                 self.config.display_name, '/display_name')
+        else:
+            if no_persist:
+                no_persist.add('display_name')
 
-    def _write_ansible_host(self):
+    def _write_ansible_host(self, no_persist=None):
         if self.config.ansible_host:
             logger.debug("Writing ansible_host to archive...")
             self.archive.add_metadata_to_archive(
                 self.config.ansible_host, '/ansible_host')
+        else:
+            if no_persist:
+                no_persist.add('ansible_host')
 
     def _write_version_info(self):
         logger.debug("Writing version information to archive...")
@@ -104,8 +116,7 @@ class DataCollector(object):
         self.archive.add_metadata_to_archive(
             json.dumps(version_info), '/version_info')
 
-    def _write_tags(self):
-        logger.debug("Writing tags to archive...")
+    def _write_tags(self, no_persist=None):
         tags = get_tags()
         if tags is not None:
             def f(k, v):
@@ -121,12 +132,16 @@ class DataCollector(object):
                     return list(chain.from_iterable(col))
                 else:
                     return [{"key": k, "value": v, "namespace": constants.app_name}]
+            logger.debug("Writing tags to archive...")
             t = []
             for k, v in tags.items():
                 iv = f(k, v)
                 t.append(iv)
             t = list(chain.from_iterable(t))
             self.archive.add_metadata_to_archive(json.dumps(t), '/tags.json')
+        else:
+            if no_persist:
+                no_persist.add('tags')
 
     def _write_blacklist_report(self, blacklist_report):
         logger.debug("Writing blacklist report to archive...")
@@ -134,11 +149,15 @@ class DataCollector(object):
             json.dumps(blacklist_report), '/blacklist_report')
 
     def _write_blacklisted_specs(self):
-        logger.debug("Writing blacklisted specs to archive...")
-
         if BLACKLISTED_SPECS:
+            logger.debug("Writing blacklisted specs to archive...")
             self.archive.add_metadata_to_archive(
                 json.dumps({"specs": BLACKLISTED_SPECS}), '/blacklisted_specs')
+        else:
+            # TODO: spec name should not be hard-coded
+            # - insights.core.serde.Hydration.ser_name
+            spec = 'meta_data/insights.specs.Specs.blacklisted_specs.json'
+            self.archive.delete_archive_file(spec)
 
     def _write_egg_release(self):
         logger.debug("Writing egg release to archive...")

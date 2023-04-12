@@ -187,7 +187,8 @@ class MetadataProvider(FileProvider):
             return [l.rstrip("\n") for l in f]
 
     def write(self, dst):
-        # TODO: the metadata files can also be collected via core collection
+        # TODO: the built-ine metadata files can also be collected via
+        #       core-collection
         pass
 
 
@@ -1288,6 +1289,8 @@ def deserialize_datasource_provider(_type, data, root):
 
 @serializer(MetadataProvider)
 def serialize_metadata_provider(obj, root):
+    # Built-in metadata files are under root directory, but not '/data'
+    root = os.path.dirname(root) if os.path.basename(root) == 'data' else root
     dst = os.path.join(root, obj.relative_path.lstrip("/"))
     fs.ensure_path(os.path.dirname(dst))
     obj.write(dst)
@@ -1296,7 +1299,7 @@ def serialize_metadata_provider(obj, root):
 
 @deserializer(MetadataProvider)
 def deserialize_metadata_provider(_type, data, root):
-    # metadata files are put in the root directory instead of '/data'
+    # Built-in metadata files are under root directory, but not '/data'
     root = os.path.dirname(root) if os.path.basename(root) == 'data' else root
     return SerializedOutputProvider(data["relative_path"], root)
 

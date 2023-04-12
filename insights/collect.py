@@ -15,12 +15,9 @@ import sys
 import tempfile
 import yaml
 
-from datetime import datetime
-
 from insights import apply_configs, apply_default_enabled, get_pool
 from insights.core import blacklist, dr, filters
 from insights.core.blacklist import BLACKLISTED_SPECS
-from insights.core.exceptions import CalledProcessError
 from insights.core.serde import Hydration
 from insights.util import fs
 from insights.util.subproc import call
@@ -317,7 +314,7 @@ def create_context(ctx):
     return ctx_cls(**ctx_args)
 
 
-def get_to_persist(persisters):
+def get_to_persist(persisters, no_persisters=None):
     """
     Given a specification of what to persist, generates the corresponding set
     of components.
@@ -328,14 +325,14 @@ def get_to_persist(persisters):
                 yield p["name"], p.get("enabled", True)
             else:
                 yield p, True
-
+    no_persisters = tuple(no_persisters) if no_persisters else tuple()
     components = sorted(dr.DELEGATES, key=dr.get_name)
     names = dict((c, dr.get_name(c)) for c in components)
 
     results = set()
     for p, e in specs():
         for c in components:
-            if names[c].startswith(p):
+            if names[c].startswith(p) and not names[c].endswith(no_persisters):
                 if e:
                     results.add(c)
                 elif c in results:
@@ -360,7 +357,8 @@ def create_archive(path, remove_path=True):
     return archive_path
 
 
-def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=None, client_timeout=None):
+def collect(manifest=default_manifest, tmp_path=None, compress=False,
+            rm_conf=None, client_timeout=None, no_persist=None):
     """
     This is the collection entry point. It accepts a manifest, a temporary
     directory in which to store output, and a boolean for optional compression.
@@ -378,6 +376,7 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
             "commands", "files", and "keywords", to be injected
             into the manifest blacklist.
         client_timeout (int): Client-provided command timeout value
+        no_persist (list): Specs that no need to persist
     Returns:
         (str, dict): The full path to the created tar.gz or workspace.
         And a dictionary with relevant exceptions captured by the broker during
@@ -412,7 +411,7 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
             BLACKLISTED_SPECS.append(component.split('.')[-1])
             log.warning('WARNING: Skipping component: %s', component)
 
-    to_persist = get_to_persist(client.get("persist", set()))
+    to_persist = get_to_persist(client.get("persist", set()), no_persisters=no_persist)
 
     try:
         filters.load()
@@ -423,18 +422,6 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
         # problem parsing the filters
         log.debug("Could not parse filters: %s", str(e))
 
-    try:
-        hostname = call("hostname -f", env=SAFE_ENV).strip()
-    except CalledProcessError:
-        # problem calling hostname -f
-        hostname = call("hostname", env=SAFE_ENV).strip()
-    suffix = datetime.utcnow().strftime("%Y%m%d%H%M%S")
-    relative_path = "insights-%s-%s" % (hostname, suffix)
-    tmp_path = tmp_path or tempfile.gettempdir()
-    output_path = os.path.join(tmp_path, relative_path)
-    fs.ensure_path(output_path)
-    fs.touch(os.path.join(output_path, "insights_archive.txt"))
-
     broker = dr.Broker()
     ctx = create_context(client.get("context", {}))
     broker[ctx.__class__] = ctx
@@ -442,15 +429,15 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
     parallel = run_strategy.get("name") == "parallel"
     pool_args = run_strategy.get("args", {})
     with get_pool(parallel, "insights-collector-pool", pool_args) as pool:
-        h = Hydration(output_path, pool=pool)
+        h = Hydration(tmp_path, pool=pool)
         broker.add_observer(h.make_persister(to_persist))
         dr.run_all(broker=broker, pool=pool)
 
     collect_errors = _parse_broker_exceptions(broker, EXCEPTIONS_TO_REPORT)
 
     if compress:
-        return create_archive(output_path), collect_errors
-    return output_path, collect_errors
+        return create_archive(tmp_path), collect_errors
+    return tmp_path, collect_errors
 
 
 def _parse_broker_exceptions(broker, exceptions_to_report):
