@@ -72,10 +72,13 @@ class CoreCollector(DataCollector):
         logger.debug('Collecting metadata...')
         no_persist = set()
         self._write_branch_info(branch_info)
-        self._write_display_name(no_persist)
-        self._write_ansible_host(no_persist)
+        if self._write_display_name() is False:
+            no_persist.add('display_name')
+        if self._write_ansible_host() is False:
+            no_persist.add('ansible_host')
         self._write_version_info()
-        self._write_tags(no_persist)
+        if self._write_tags() is False:
+            no_persist.add('tags')
         self._write_blacklist_report(blacklist_report)
         self._write_egg_release()
         logger.debug('Metadata collection finished.')

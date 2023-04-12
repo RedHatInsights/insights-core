@@ -92,23 +92,23 @@ class DataCollector(object):
         self.archive.add_metadata_to_archive(
             json.dumps(branch_info), '/branch_info')
 
-    def _write_display_name(self, no_persist=None):
+    def _write_display_name(self):
         if self.config.display_name:
             logger.debug("Writing display_name to archive...")
             self.archive.add_metadata_to_archive(
                 self.config.display_name, '/display_name')
         else:
-            if no_persist:
-                no_persist.add('display_name')
+            # Return False to exclude it from no_persist
+            return False
 
-    def _write_ansible_host(self, no_persist=None):
+    def _write_ansible_host(self):
         if self.config.ansible_host:
             logger.debug("Writing ansible_host to archive...")
             self.archive.add_metadata_to_archive(
                 self.config.ansible_host, '/ansible_host')
         else:
-            if no_persist:
-                no_persist.add('ansible_host')
+            # Return False to exclude it from no_persist
+            return False
 
     def _write_version_info(self):
         logger.debug("Writing version information to archive...")
@@ -116,7 +116,7 @@ class DataCollector(object):
         self.archive.add_metadata_to_archive(
             json.dumps(version_info), '/version_info')
 
-    def _write_tags(self, no_persist=None):
+    def _write_tags(self):
         tags = get_tags()
         if tags is not None:
             def f(k, v):
@@ -140,8 +140,8 @@ class DataCollector(object):
             t = list(chain.from_iterable(t))
             self.archive.add_metadata_to_archive(json.dumps(t), '/tags.json')
         else:
-            if no_persist:
-                no_persist.add('tags')
+            # Return False to exclude it from no_persist
+            return False
 
     def _write_blacklist_report(self, blacklist_report):
         logger.debug("Writing blacklist report to archive...")
