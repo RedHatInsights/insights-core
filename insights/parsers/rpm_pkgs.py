@@ -19,6 +19,10 @@ class RpmPkgs(Parser):
 
     Class for enabling the data from the ``rpm_pkgs`` datasource.
 
+    Sample input of this parser is::
+
+        ["httpd-core|httpd-core-2.4.53-7.el9.x86_64|Red Hat, Inc."]
+
     Sample output of this parser is::
 
         ["httpd-core"]
@@ -32,7 +36,7 @@ class RpmPkgs(Parser):
     """
 
     def parse_content(self, content):
-        self.packages = [pkg[0] for pkg in content]
+        self.packages = [pkg.split('|')[0] for pkg in content]
 
 
 @parser(Specs.rpm_pkgs)
@@ -40,6 +44,10 @@ class RpmPkgsWritable(Parser):
     """
     Class for enabling the data from the ``rpm_pkgs`` datasource.
     It replaces the original RpmPkgs parser.
+
+    Sample input of this parser is::
+
+        ["httpd-core|httpd-core-2.4.53-7.el9.x86_64|Red Hat, Inc."]
 
     Sample output of this parser is::
 
@@ -54,4 +62,4 @@ class RpmPkgsWritable(Parser):
     """
 
     def parse_content(self, content):
-        self.packages = content
+        self.packages = [tuple(pkg.split('|')) for pkg in content]
