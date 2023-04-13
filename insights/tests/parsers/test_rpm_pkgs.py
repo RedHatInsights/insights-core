@@ -6,7 +6,7 @@ from insights.parsers.rpm_pkgs import RpmPkgs, RpmPkgsWritable
 from insights.tests import context_wrap
 
 
-DATASOURCE_OUTPUT = [("httpd-core", "httpd-core-2.4.53-7.el9.x86_64", "Red Hat, Inc.")]
+DATASOURCE_OUTPUT = ["httpd-core|httpd-core-2.4.53-7.el9.x86_64|Red Hat, Inc."]
 
 RPM_PKGS_OUTPUT = ["httpd-core"]
 RPM_PKGS_WRITABLE_OUTPUT = [("httpd-core", "httpd-core-2.4.53-7.el9.x86_64", "Red Hat, Inc.")]
