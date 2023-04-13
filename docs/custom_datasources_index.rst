@@ -111,7 +111,7 @@ insights.specs.datasources.kernel
 ---------------------------------
 
 .. automodule:: insights.specs.datasources.kernel
-    :members:  current_version
+    :members:  current_version, default_version
     :show-inheritance:
     :undoc-members:
 
