@@ -123,7 +123,7 @@ class FSTab(Parser):
         """
         Parse each line in the file ``/etc/fstab``.
         """
-        fstab_output = parse_delimited_table([FS_HEADINGS] + get_active_lines(content))
+        fstab_output = parse_delimited_table([FS_HEADINGS] + get_active_lines(content), raw_line_key='raw')
         self.data = []
         for line in fstab_output:
             line['fs_spec'] = line.get('fs_spec', '')
@@ -138,8 +138,6 @@ class FSTab(Parser):
             line['raw_fs_mntops'] = line.get('raw_fs_mntops', 'defaults')
             # optlist_to_dict converts 'key=value' to key: value and 'key' to key: True
             line['fs_mntops'] = MountOpts(optlist_to_dict(line.get('raw_fs_mntops')))
-            # add `raw` here for displaying convenience on front-end
-            line['raw'] = [l for l in content if l.strip().startswith(line['fs_spec'])][0]
             self.data.append(FSTabEntry(line))
         # assert: all mount points of valid entries are unique by definition
         self.mounted_on = dict((row.fs_file, row) for row in self.data)
