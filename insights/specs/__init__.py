@@ -359,7 +359,7 @@ class Specs(SpecSet):
     lscpu = RegistryPoint()
     lsinitrd = RegistryPoint(filterable=True)
     lsinitrd_kdump_image = RegistryPoint(filterable=True)
-    lsinitrd_lvm_conf = RegistryPoint()
+    lsinitrd_lvm_conf = RegistryPoint(filterable=True)
     lsmod = RegistryPoint()
     lsof = RegistryPoint(filterable=True)
     lspci = RegistryPoint()
