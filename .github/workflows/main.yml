@@ -34,7 +34,7 @@ jobs:
 
   python26-test:
 
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     container: ubuntu:18.04
 
     steps:
@@ -52,7 +52,9 @@ jobs:
         sudo update-alternatives --install /usr/bin/python python /usr/bin/python2.6 1
         sudo update-alternatives --set python /usr/bin/python2.6
     - name: install dependencies
-      run: sudo apt-get install -y --no-install-recommends git curl unzip
+      run: |
+        sudo apt-get install -y --no-install-recommends apt-utils
+        sudo apt-get install -y --no-install-recommends git curl unzip
     - name: get depenencies
       run: |
         export PATH=$PATH:/github/home/.local/bin
@@ -76,6 +78,7 @@ jobs:
     - name: pytest
       run: |
         export PATH=$PATH:/github/home/.local/bin
+        pip install --user --upgrade pip
         pip install --user -e .[testing] -f ./pips/slave26/pip_packages
         export PYTHONPATH=${PYTHONPATH}:./../collections_module
         pytest
