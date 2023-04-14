@@ -17,6 +17,8 @@ class Specs(SpecSet):
     avc_hash_stats = RegistryPoint()
     aws_instance_id_doc = RegistryPoint()
     aws_instance_id_pkcs7 = RegistryPoint()
+    aws_public_ipv4_addresses = RegistryPoint()
+    aws_public_hostnames = RegistryPoint()
     awx_manage_check_license = RegistryPoint()
     awx_manage_check_license_data = RegistryPoint(filterable=True)
     awx_manage_print_settings = RegistryPoint()
