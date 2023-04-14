@@ -2,6 +2,18 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.1.19](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.19) (2023-04-14)
+
+- fix: Wrong raw line bound in parser "FSTab" ([PR 3749](https://github.com/RedHatInsights/insights-core/pull/3749))
+- feat: add spec and parser for /etc/audisp/audispd.conf ([PR 3743](https://github.com/RedHatInsights/insights-core/pull/3743))
+- feat: AWS public IPv4 spec ([PR 3741](https://github.com/RedHatInsights/insights-core/pull/3741))
+- fix: check machine id as some archives are with empty machine-id file ([PR 3747](https://github.com/RedHatInsights/insights-core/pull/3747))
+- fix: soscleaner get relative_path safely ([PR 3744](https://github.com/RedHatInsights/insights-core/pull/3744))
+- feat: Add parser LsinitrdLvmConf ([PR 3740](https://github.com/RedHatInsights/insights-core/pull/3740))
+- fix: correct the initialization of ParserException in PHPConf ([PR 3738](https://github.com/RedHatInsights/insights-core/pull/3738))
+- fix: datasource rpm_pkgs returns list of string but not tuple ([PR 3736](https://github.com/RedHatInsights/insights-core/pull/3736))
+- fix: Add new package findutils into spec rpm_V_packages ([PR 3733](https://github.com/RedHatInsights/insights-core/pull/3733))
+
 # [insights-core-3.1.18](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.18) (2023-04-06)
 
 - feat: add "vf_enabled" parse for spec ip_s_link ([PR 3729](https://github.com/RedHatInsights/insights-core/pull/3729))

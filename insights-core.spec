@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.1.18
+Version:        3.1.19
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,24 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Fri Apr 14 2023 Xiangce Liu <xiangceliu@redhat.com> 3.1.19-1
+- fix: Wrong raw line bound in parser "FSTab" (#3749)
+  (44796653+huali027@users.noreply.github.com)
+- feat: add spec and parser for /etc/audisp/audispd.conf (#3743)
+  (xiaoxwan@redhat.com)
+- feat: AWS public IPv4 spec (#3741) (lukas@zapletalovi.com)
+- fix: check machine id as some archives are with empty machine-id file (#3747)
+  (lichen@redhat.com)
+- fix: soscleaner get relative_path safely (#3744) (xiangceliu@redhat.com)
+- feat: Add parser LsinitrdLvmConf (#3740)
+  (30404410+qinpingli@users.noreply.github.com)
+- fix: correct the initialization of ParserException in PHPConf (#3738)
+  (lichen@redhat.com)
+- fix: datasource rpm_pkgs returns list of string but not tuple (#3736)
+  (xiangceliu@redhat.com)
+- fix: Add new package findutils into spec rpm_V_packages (#3733)
+  (jiazhang@redhat.com)
+
 * Thu Apr 06 2023 Xiangce Liu <xiangceliu@redhat.com> 3.1.18-1
 - feat: add "vf_enabled" parse for spec ip_s_link (#3729) (xiaoxwan@redhat.com)
 - Fix check registration status to be robust against network failures (#3713)
