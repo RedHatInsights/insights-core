@@ -91,6 +91,8 @@ class DefaultSpecs(Specs):
     auditd_conf = simple_file("/etc/audit/auditd.conf")
     aws_instance_id_doc = command_with_args('/usr/bin/curl -s -H "X-aws-ec2-metadata-token: %s" http://169.254.169.254/latest/dynamic/instance-identity/document --connect-timeout 5', aws.aws_imdsv2_token, deps=[aws.aws_imdsv2_token])
     aws_instance_id_pkcs7 = command_with_args('/usr/bin/curl -s -H "X-aws-ec2-metadata-token: %s" http://169.254.169.254/latest/dynamic/instance-identity/pkcs7 --connect-timeout 5', aws.aws_imdsv2_token, deps=[aws.aws_imdsv2_token])
+    aws_public_ipv4_addresses = command_with_args('/usr/bin/curl -s -H "X-aws-ec2-metadata-token: %s" http://169.254.169.254/latest/meta-data/public-ipv4 --connect-timeout 5', aws.aws_imdsv2_token, deps=[aws.aws_imdsv2_token])
+    aws_public_hostnames = command_with_args('/usr/bin/curl -s -H "X-aws-ec2-metadata-token: %s" http://169.254.169.254/latest/meta-data/public-hostname --connect-timeout 5', aws.aws_imdsv2_token, deps=[aws.aws_imdsv2_token])
     awx_manage_check_license = simple_command("/usr/bin/awx-manage check_license")
     awx_manage_check_license_data = awx_manage.awx_manage_check_license_data_datasource
     awx_manage_print_settings = simple_command("/usr/bin/awx-manage print_settings INSIGHTS_TRACKING_STATE SYSTEM_UUID INSTALL_UUID TOWER_URL_BASE AWX_CLEANUP_PATHS AWX_PROOT_BASE_PATH LOG_AGGREGATOR_ENABLED LOG_AGGREGATOR_LEVEL --format json")
