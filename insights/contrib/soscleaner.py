@@ -741,8 +741,8 @@ class SOSCleaner:
                         results = meta_data["results"]
                     else:
                         results = [meta_data["results"]]
-                    relative_paths = [result["object"]["relative_path"] for result in results]
-                    excluded_files.extend(relative_paths)
+                    relative_paths = [result["object"]["relative_path"] for result in results if 'object' in result]
+                    excluded_files.extend(relative_paths) if relative_paths else None
         return excluded_files
 
     def clean_report(self, options, sosreport): # pragma: no cover
