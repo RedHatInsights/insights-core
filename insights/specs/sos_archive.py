@@ -13,6 +13,7 @@ class SosSpecs(Specs):
     auditctl_rules = simple_file("sos_commands/auditd/auditctl_-l")
     auditctl_status = simple_file("sos_commands/auditd/auditctl_-s")
     auditd_conf = simple_file("/etc/audit/auditd.conf")
+    audispd_conf = simple_file("/etc/audisp/audispd.conf")
     autofs_conf = simple_file("/etc/autofs.conf")
 
     blkid = first_file(["sos_commands/block/blkid_-c_.dev.null", "sos_commands/filesys/blkid_-c_.dev.null"])
