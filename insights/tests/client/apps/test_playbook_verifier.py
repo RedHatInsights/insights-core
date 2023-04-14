@@ -6,7 +6,7 @@ from pytest import raises
 
 # don't even bother on 2.6
 if sys.version_info >= (2, 7):
-    from insights.client.apps.ansible.playbook_verifier import verify, PlaybookVerificationError, getRevocationList  # noqa
+    from insights.client.apps.ansible.playbook_verifier import verify, PlaybookVerificationError, getRevocationList, normalizeSnippet, loadPlaybookYaml  # noqa
 
 
 @pytest.mark.skipif(sys.version_info < (2, 7), reason='Playbook verifier must be run on python 2.7 or above')
@@ -167,3 +167,24 @@ def test_revoked_playbook(call_1, call_2):
         verify(fake_playbook, skipVerify=False)
 
     assert revoked_error in str(error.value)
+
+
+@pytest.mark.skipif(sys.version_info.major != 2 and sys.version_info.minor != 7, reason='normalizeSnippet is only run with Python 2.7')
+def test_normalize_snippet():
+    playbook = '''task:
+  when:
+    - '"pam" in ansible_facts.packages'
+    - result_pam_file_present.stat.exists'''
+
+    snippet = loadPlaybookYaml(playbook)
+
+    want = {
+        'task': {
+            'when': [
+                '"pam" in ansible_facts.packages',
+                'result_pam_file_present.stat.exists'
+            ]
+        }
+    }
+
+    assert normalizeSnippet(snippet) == want
