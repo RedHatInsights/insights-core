@@ -741,7 +741,7 @@ class SOSCleaner:
                         results = meta_data["results"]
                     else:
                         results = [meta_data["results"]]
-                    relative_paths = [result["object"]["relative_path"] for result in results if 'object' in result]
+                    relative_paths = [result["object"]["relative_path"] for result in results if result and 'object' in result]
                     excluded_files.extend(relative_paths) if relative_paths else None
         return excluded_files
 
