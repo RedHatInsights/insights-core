@@ -164,43 +164,6 @@ class FileProvider(ContentProvider):
         return '%s("%r")' % (self.__class__.__name__, self.path)
 
 
-class MetadataProvider(FileProvider):
-    """
-    Class used for insights-core built-in files.  These files should not
-    be filtered, redacted or blocked.
-    """
-    def _stream(self):
-        """
-        Returns a generator of lines instead of a list of lines.
-        """
-        if self._exception:
-            raise self._exception
-        try:
-            with safe_open(self.path, "r", encoding="utf-8", errors="surrogateescape") as f:
-                yield f
-        except StopIteration:
-            raise
-        except Exception as ex:
-            self._exception = ex
-            raise ContentException(str(ex))
-
-    def validate(self):
-        # Validate built-in metedata files only when insights-run
-        if not isinstance(self.ctx, HostContext):
-            super(MetadataProvider, self).validate()
-        # But DO NOT validate them when core-collecting
-
-    def load(self):
-        self.loaded = True
-        with safe_open(self.path, "r", encoding="utf-8", errors="surrogateescape") as f:
-            return [l.rstrip("\n") for l in f]
-
-    def write(self, dst):
-        # TODO: the built-ine metadata files can also be collected via
-        #       core-collection
-        pass
-
-
 class RawFileProvider(FileProvider):
     """
     Class used in datasources that returns the contents of a file a single
@@ -1293,23 +1256,6 @@ def serialize_datasource_provider(obj, root):
 
 @deserializer(DatasourceProvider)
 def deserialize_datasource_provider(_type, data, root):
-    return SerializedOutputProvider(data["relative_path"], root)
-
-
-@serializer(MetadataProvider)
-def serialize_metadata_provider(obj, root):
-    # Built-in metadata files are put in the root instead of '/data'
-    root = os.path.dirname(root) if os.path.basename(root) == 'data' else root
-    dst = os.path.join(root, obj.relative_path.lstrip("/"))
-    fs.ensure_path(os.path.dirname(dst))
-    obj.write(dst)
-    return {"relative_path": obj.relative_path}
-
-
-@deserializer(MetadataProvider)
-def deserialize_metadata_provider(_type, data, root):
-    # Built-in metadata files are put in the root instead of '/data'
-    root = os.path.dirname(root) if os.path.basename(root) == 'data' else root
     return SerializedOutputProvider(data["relative_path"], root)
 
 
