@@ -3,7 +3,7 @@ import pytest
 
 from insights.core.exceptions import ContentException, ParseException, SkipComponent
 from insights.parsers import azure_instance
-from insights.parsers.azure_instance import AzureInstanceID, AzureInstancePlan, AzureInstanceType
+from insights.parsers.azure_instance import AzureInstanceID, AzureInstancePlan, AzureInstanceType, AzurePublicIpv4Addresses
 from insights.tests import context_wrap
 
 # For AzureInstanceID
@@ -60,6 +60,33 @@ curl: (7) couldn't connect to host
 AZURE_PLAN_AB_3 = """
 curl: (28) connect() timed out!
 """.strip()
+
+# For AzurePublicIpv4Addresses and AzurePublicHostname
+AZURE_LB_1 = """
+{
+  "loadbalancer": {
+    "publicIpAddresses": [
+      {
+        "frontendIpAddress": "137.116.118.209",
+        "privateIpAddress": "10.0.0.4"
+      }
+    ],
+    "inboundRules": [],
+    "outboundRules": []
+  }
+}
+""".strip()
+
+AZURE_LB_ERR1 = """
+curl: (7) Failed to connect to 169.254.169.254 port 80: Connection timed out
+""".strip()
+AZURE_LB_ERR2 = """
+curl: (7) couldn't connect to host
+""".strip()
+AZURE_LB_ERR3 = """
+curl: (28) connect() timed out!
+""".strip()
+AZURE_LB_ERR4 = "}}}"
 
 
 # Test AzureInstanceID
@@ -171,3 +198,20 @@ def test_doc_examples():
     }
     failed, total = doctest.testmod(azure_instance, globs=env)
     assert failed == 0
+
+
+def test_azure_public_ipv4():
+    with pytest.raises(SkipComponent):
+        AzurePublicIpv4Addresses(context_wrap(AZURE_LB_ERR1))
+
+    with pytest.raises(SkipComponent):
+        AzurePublicIpv4Addresses(context_wrap(AZURE_LB_ERR2))
+
+    with pytest.raises(SkipComponent):
+        AzurePublicIpv4Addresses(context_wrap(AZURE_LB_ERR3))
+
+    with pytest.raises(ParseException):
+        AzurePublicIpv4Addresses(context_wrap(AZURE_LB_ERR4))
+
+    azure = AzurePublicIpv4Addresses(context_wrap(AZURE_LB_1))
+    assert azure[0] == "137.116.118.209"
