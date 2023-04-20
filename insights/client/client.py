@@ -8,13 +8,15 @@ import logging.handlers
 import os
 import time
 import six
+from distutils.version import LooseVersion
 
 from .utilities import (generate_machine_id,
                         write_to_disk,
                         write_registered_file,
                         write_unregistered_file,
                         delete_cache_files,
-                        determine_hostname)
+                        determine_hostname,
+                        get_version_info)
 from .collection_rules import InsightsUploadConf
 from .data_collector import DataCollector
 from .core_collector import CoreCollector
@@ -34,14 +36,24 @@ def do_log_rotation():
 
 
 def get_file_handler(config):
+    '''
+    Sets up the logging file handler.
+    Returns:
+        RotatingFileHandler - client rpm version is 3.1.8 or older.
+        FileHandler - client rpm version is newer than 3.1.8
+    '''
     log_file = config.logging_file
     log_dir = os.path.dirname(log_file)
     if not log_dir:
         log_dir = os.getcwd()
     elif not os.path.exists(log_dir):
         os.makedirs(log_dir, 0o700)
-    file_handler = logging.handlers.RotatingFileHandler(
-        log_file, backupCount=3)
+    # ensure the legacy rotating file handler is only used in older client versions or if there is a problem retrieving the rpm version.
+    rpm_version = get_version_info()['client_version']
+    if not rpm_version or (LooseVersion(rpm_version) <= LooseVersion(constants.rpm_version_before_logrotate)):
+        file_handler = logging.handlers.RotatingFileHandler(log_file, backupCount=3)
+    else:
+        file_handler = logging.FileHandler(log_file)
     file_handler.setFormatter(logging.Formatter(LOG_FORMAT))
     return file_handler
 
