@@ -84,6 +84,8 @@ class InsightsConstants(object):
     valid_compressors = ("gz", "xz", "bz2", "none")
     # RPM version in which core collection was released
     core_collect_rpm_version = '3.1.0'
+    # RPM version in which logrotate was released
+    rpm_version_before_logrotate = '3.2.0'
     rhsm_facts_dir = os.path.join(os.sep, 'etc', 'rhsm', 'facts')
     rhsm_facts_file = os.path.join(os.sep, 'etc', 'rhsm', 'facts', 'insights-client.facts')
     # In MB
