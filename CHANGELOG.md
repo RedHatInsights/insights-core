@@ -2,6 +2,14 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.1.20](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.20) (2023-04-20)
+
+- feat: update logging file handler for logrotate ([PR 3702](https://github.com/RedHatInsights/insights-core/pull/3702))
+- fix: use log instead of print in test.run_input_data([PR 3750](https://github.com/RedHatInsights/insights-core/pull/3750))
+- feat: Azure public IP spec ([PR 3751](https://github.com/RedHatInsights/insights-core/pull/3751))
+- fix: soscleaner get relative_path safely - 2 ([PR 3754](https://github.com/RedHatInsights/insights-core/pull/3754))
+- Make malware more flexible when detecting its running against stage ([PR 3725](https://github.com/RedHatInsights/insights-core/pull/3725))
+
 # [insights-core-3.1.19](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.19) (2023-04-14)
 
 - fix: Wrong raw line bound in parser "FSTab" ([PR 3749](https://github.com/RedHatInsights/insights-core/pull/3749))
