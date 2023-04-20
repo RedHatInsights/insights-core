@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.1.19
+Version:        3.1.20
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,16 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Apr 20 2023 Xiangce Liu <xiangceliu@redhat.com> 3.1.20-1
+- feat: update logging file handler for logrotate (#3702)
+  (jasonjerome16@gmail.com)
+- fix: use log instead of print in test.run_input_data(#3750)
+  (lichen@redhat.com)
+- feat: Azure public IP spec (#3751) (lzap+git@redhat.com)
+- fix: soscleaner get relative_path safely - 2 (#3754) (xiangceliu@redhat.com)
+- Make malware more flexible when detecting its running against stage (#3725)
+  (mhuth@redhat.com)
+
 * Fri Apr 14 2023 Xiangce Liu <xiangceliu@redhat.com> 3.1.19-1
 - fix: Wrong raw line bound in parser "FSTab" (#3749)
   (44796653+huali027@users.noreply.github.com)
