@@ -51,6 +51,7 @@ class InsightsArchiveSpecs(Specs):
     dig_edns = simple_file("insights_commands/dig_edns_0_._SOA")
     dig_noedns = simple_file("insights_commands/dig_noedns_._SOA")
     display_name = simple_file("display_name")
+    dnf_module_list = simple_file("insights_commands/dnf_-C_--noplugins_module_list")
     dmesg = simple_file("insights_commands/dmesg")
     dmidecode = simple_file("insights_commands/dmidecode")
     dmsetup_info = simple_file("insights_commands/dmsetup_info_-C")
