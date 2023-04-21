@@ -47,7 +47,7 @@ jobs:
         add-apt-repository 'ppa:deadsnakes/ppa'
         apt-get update -y
         apt-get install -y --no-install-recommends libssl1.0-dev
-        apt-get install  -y python2.6  python2.6-dev
+        apt-get install -y python2.6  python2.6-dev
         update-alternatives --install /usr/bin/python python /usr/bin/python2.6 1
         update-alternatives --set python /usr/bin/python2.6
     - name: get dependencies
