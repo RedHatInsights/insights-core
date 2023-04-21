@@ -13,7 +13,7 @@ from glob import glob
 from subprocess import call
 
 from insights.core import blacklist, dr
-from insights.core.context import ExecutionContext, FSRoots, HostContext
+from insights.core.context import FSRoots, ExecutionContext, HostContext, SerializedArchiveContext
 from insights.core.exceptions import BlacklistedSpec, ContentException, SkipComponent
 from insights.core.filters import _add_filter, get_filters
 from insights.core.plugins import component, datasource, is_datasource
@@ -128,13 +128,21 @@ class DatasourceProvider(ContentProvider):
 class FileProvider(ContentProvider):
     def __init__(self, relative_path, root="/", ds=None, ctx=None):
         super(FileProvider, self).__init__()
-        self.root = root
+        self.ds = ds
+        self.ctx = ctx
+        self._set_root(root)
         self.relative_path = relative_path.lstrip("/")
         self.file_name = os.path.basename(self.path)
 
-        self.ds = ds
-        self.ctx = ctx
         self.validate()
+
+    def _set_root(self, root):
+        if (isinstance(self.ctx, SerializedArchiveContext) and os.path.basename(root) != 'data'):
+            # For core-collection (SerializedArchiveContext) archive, data are
+            # in `/data` directory
+            self.root = os.path.join(root, 'data')
+        else:
+            self.root = root
 
     def validate(self):
         if not blacklist.allow_file("/" + self.relative_path):
@@ -177,9 +185,10 @@ class MetadataProvider(FileProvider):
             raise ContentException(str(ex))
 
     def validate(self):
-        # Do NOT need to validate metadata files, they are newly generated
-        # by the core collection itself
-        pass
+        # Validate built-in metedata files only when insights-run
+        if not isinstance(self.ctx, HostContext):
+            super(MetadataProvider, self).validate()
+        # But DO NOT validate them when core-collecting
 
     def load(self):
         self.loaded = True
@@ -187,7 +196,8 @@ class MetadataProvider(FileProvider):
             return [l.rstrip("\n") for l in f]
 
     def write(self, dst):
-        # TODO: the metadata files can also be collected via core collection
+        # TODO: the built-ine metadata files can also be collected via
+        #       core-collection
         pass
 
 
@@ -1288,6 +1298,8 @@ def deserialize_datasource_provider(_type, data, root):
 
 @serializer(MetadataProvider)
 def serialize_metadata_provider(obj, root):
+    # Built-in metadata files are put in the root instead of '/data'
+    root = os.path.dirname(root) if os.path.basename(root) == 'data' else root
     dst = os.path.join(root, obj.relative_path.lstrip("/"))
     fs.ensure_path(os.path.dirname(dst))
     obj.write(dst)
@@ -1296,7 +1308,7 @@ def serialize_metadata_provider(obj, root):
 
 @deserializer(MetadataProvider)
 def deserialize_metadata_provider(_type, data, root):
-    # metadata files are put in the root directory instead of '/data'
+    # Built-in metadata files are put in the root instead of '/data'
     root = os.path.dirname(root) if os.path.basename(root) == 'data' else root
     return SerializedOutputProvider(data["relative_path"], root)
 
