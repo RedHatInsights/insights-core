@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.1.20
+Version:        3.1.21
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,12 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Tue Apr 25 2023 Xiangce Liu <xiangceliu@redhat.com> 3.1.21-1
+- Revert "feat: update logging file handler for logrotate (#3702)" (#3760)
+  (xiangceliu@redhat.com)
+- fix: fix processing of SerializedArchiveContext (#3183)
+  (20520336+bfahr@users.noreply.github.com)
+
 * Thu Apr 20 2023 Xiangce Liu <xiangceliu@redhat.com> 3.1.20-1
 - feat: update logging file handler for logrotate (#3702)
   (jasonjerome16@gmail.com)
