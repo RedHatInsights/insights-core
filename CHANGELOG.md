@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.1.25](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.20) (2023-04-25)
+
+- Revert "feat: update logging file handler for logrotate (3702)" ([PR 3760](https://github.com/RedHatInsights/insights-core/pull/3760))
+- fix: fix processing of SerializedArchiveContext ([PR 3183](https://github.com/RedHatInsights/insights-core/pull/3183))
+
 # [insights-core-3.1.20](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.20) (2023-04-20)
 
 - feat: update logging file handler for logrotate ([PR 3702](https://github.com/RedHatInsights/insights-core/pull/3702))
