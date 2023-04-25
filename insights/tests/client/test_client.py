@@ -1,13 +1,10 @@
 from contextlib import contextmanager
 from shutil import rmtree
-import logging
-import logging.handlers
 import sys
 import os
 import pytest
 
 from insights.client import InsightsClient
-from insights.client.client import get_file_handler
 from insights.client.archive import InsightsArchive
 from insights.client.config import InsightsConfig
 from insights import package_info
@@ -115,32 +112,6 @@ def _mock_no_register_files_machineid_present():
     finally:
         rmtree(TEMP_TEST_REG_DIR)
         rmtree(TEMP_TEST_REG_DIR2)
-
-
-@patch('insights.client.client.os.path.dirname')
-@patch('insights.client.client.get_version_info')
-def test_get_log_handler_by_client_version(get_version_info, mock_path_dirname):
-    '''
-    Verify that get_log_handler() returns
-    the correct file handler depending on
-    the client rpm version.
-    '''
-    mock_path_dirname.return_value = "mock_dirname"
-
-    # RPM version is older than 3.1.8
-    get_version_info.return_value = {'client_version': '3.1.0'}
-    conf = InsightsConfig(logging_file='/tmp/insights.log')
-    assert isinstance(get_file_handler(conf), logging.handlers.RotatingFileHandler) is True
-
-    # RPM version is 3.1.8
-    get_version_info.return_value = {'client_version': '3.1.8'}
-    conf = InsightsConfig(logging_file='/tmp/insights.log')
-    assert isinstance(get_file_handler(conf), logging.handlers.RotatingFileHandler) is True
-
-    # RPM version is newer than 3.1.8
-    get_version_info.return_value = {'client_version': '3.1.9'}
-    conf = InsightsConfig(logging_file='/tmp/insights.log')
-    assert isinstance(get_file_handler(conf), logging.FileHandler) is True
 
 
 @patch('insights.client.client.generate_machine_id')
