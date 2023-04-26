@@ -34,20 +34,28 @@ jobs:
 
   python26-test:
 
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
+    container: ubuntu:18.04
 
     steps:
+    - name: Install sudo package
+      run: apt update && apt install sudo
+    - name: Install add-apt-repository
+      run: sudo apt-get install -y --no-install-recommends software-properties-common
     - uses: actions/checkout@v3
     - name: apt-install python26
       run: |
-        sudo add-apt-repository 'ppa:deadsnakes/ppa'
+        sudo add-apt-repository -y 'ppa:deadsnakes/ppa'
         sudo apt-get update
         sudo apt-get install -y --no-install-recommends libssl1.0-dev
-        sudo apt-get install python2.6  python2.6-dev
+        sudo apt-get install -y python2.6  python2.6-dev
         sudo update-alternatives --install /usr/bin/python python /usr/bin/python2.6 1
         sudo update-alternatives --set python /usr/bin/python2.6
+    - name: install dependencies
+      run: sudo apt-get install -y --no-install-recommends git curl unzip file
     - name: get depenencies
       run: |
+        export PATH=$PATH:/github/home/.local/bin
         git clone https://github.com/SteveHNH/jenkins-s2i-example.git pips
         CUR_DIR=$(pwd)
         mkdir ../tools && cd ../tools
@@ -62,10 +70,12 @@ jobs:
         sudo curl -L -o ./../collections_module/collections.py https://raw.githubusercontent.com/RedHatInsights/insights-core/5c8ca0f2fb3de45908e8d931d40758af34a7997a/.collections.py
     - name: flake8
       run: |
+        export PATH=$PATH:/github/home/.local/bin
         pip install --user -e .[linting] -f ./pips/slave26/pip_packages
         flake8 .
     - name: pytest
       run: |
+        export PATH=$PATH:/github/home/.local/bin
         pip install --user -e .[testing] -f ./pips/slave26/pip_packages
         export PYTHONPATH=${PYTHONPATH}:./../collections_module
         pytest

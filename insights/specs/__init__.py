@@ -196,6 +196,7 @@ class Specs(SpecSet):
     galera_cnf = RegistryPoint()
     gcp_instance_type = RegistryPoint()
     gcp_license_codes = RegistryPoint()
+    gcp_network_interfaces = RegistryPoint()
     getcert_list = RegistryPoint()
     getconf_page_size = RegistryPoint()
     getenforce = RegistryPoint()
