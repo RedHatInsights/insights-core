@@ -252,15 +252,13 @@ class InstalledRpms(CommandParser, RpmList):
         super(InstalledRpms, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
-        packages = defaultdict(list)
         if content and (not content[0].strip() or "COMMAND>" in content[0]):
             content = content[1:]
         if not content:
             raise SkipComponent("The content of rpm command is empty!")
-        if content and '"name":' in content[0]:
-            rpm_init_method = InstalledRpm.from_json
-        else:
-            rpm_init_method = InstalledRpm.from_line
+        parse_func = InstalledRpm.from_json if any(
+                '"name":' in _l for _l in content) else InstalledRpm.from_line
+        packages = defaultdict(list)
         for line in content:
             if not line.strip():
                 continue
@@ -268,7 +266,7 @@ class InstalledRpms(CommandParser, RpmList):
                 self.errors.append(line)
             else:
                 try:
-                    rpm = rpm_init_method(line)
+                    rpm = parse_func(line)
                     packages[rpm.name].append(rpm)
                 except Exception:
                     self.unparsed.append(line)
