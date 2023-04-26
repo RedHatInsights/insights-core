@@ -10,12 +10,16 @@ Lsinitrd - command ``lsinitrd``
 LsinitrdKdumpImage - command ``lsinitrd initramfs-<kernel-version>kdump.img``
 -----------------------------------------------------------------------------
 
+LsinitrdLvmConf - command ``/bin/lsinitrd -f /etc/lvm/lvm.conf --kver {default_kernel_version}``
+------------------------------------------------------------------------------------------------
+
 """
 
 from insights import parser, CommandParser
 from insights.core import ls_parser
 from insights.specs import Specs
 from insights.parsers import keyword_search
+from insights.parsers.lvm import LvmConf
 
 
 @parser(Specs.lsinitrd)
@@ -134,5 +138,23 @@ class LsinitrdKdumpImage(Lsinitrd):
         1
         >>> result_list[0].get('raw_entry')
         'crw-r--r--   1 root     root       1,   9 Aug  4  2020 dev/urandom'
+    """
+    pass
+
+
+@parser(Specs.lsinitrd_lvm_conf)
+class LsinitrdLvmConf(LvmConf):
+    """
+    Parses the ``/dev/lvm/lvm.conf`` file get from the default initramfs.
+
+    Sample Input::
+        # volume_list = [ "vg1", "vg2/lvol1", "@tag1", "@*" ]
+        volume_list = [ "vg2", "vg3/lvol3", "@tag2", "@*" ]
+
+    Examples:
+        >>> type(lsinitrd_lvm_conf)
+        <class 'insights.parsers.lsinitrd.LsinitrdLvmConf'>
+        >>> lsinitrd_lvm_conf.get("volume_list")
+        [ "vg2", "vg3/lvol3", "@tag2", "@*" ]
     """
     pass

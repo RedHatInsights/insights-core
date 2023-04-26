@@ -144,8 +144,8 @@ class PHPConf(ConfigParser):
         except SkipComponent:
             raise
         except:
-            raise ParseException(ParseException("Could not parse content: '{0}'".
-                                                format(content)))
+            raise ParseException("Could not parse content: '{0}'".
+                                                format(content))
 
     def parse_content(self, content):
         super(PHPConf, self).parse_content(content)

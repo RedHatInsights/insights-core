@@ -155,7 +155,7 @@ class InsightsEvaluator(SingleEvaluator):
 
     def observer(self, comp, broker):
         super(InsightsEvaluator, self).observer(comp, broker)
-        if self.system_id is None and Specs.machine_id in broker:
+        if self.system_id is None and Specs.machine_id in broker and broker[Specs.machine_id].content:
             self.system_id = broker[Specs.machine_id].content[0].strip()
 
         if self.release is None and Specs.redhat_release in broker and broker[Specs.redhat_release].content:

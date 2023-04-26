@@ -114,7 +114,7 @@ def run_input_data(component, input_data, store_skips=False):
     broker = dr.run(graph, broker=broker)
     broker.store_skips = store_skips
     for v in broker.tracebacks.values():
-        print(v)
+        logger.warning(v)
     return broker
 
 

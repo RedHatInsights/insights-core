@@ -176,6 +176,11 @@ drwxr-xr-x   2 root     root            0 Aug  4  2020 dev
 ========================================================================
 """.strip()
 
+LSINITRD_LVM_CONF = """
+# volume_list = [ "vg1", "vg2/lvol1", "@tag1", "@*" ]
+volume_list = [ "vg2", "vg3/lvol3", "@tag2", "@*" ]
+""".strip()
+
 
 def test_lsinitrd_empty():
     d = lsinitrd.Lsinitrd(context_wrap(LSINITRD_EMPTY))
@@ -226,9 +231,15 @@ def test_lsinitrd_kdump_image_valid():
     assert result_list[0].get('raw_entry') == '-rw-r--r--   1 root     root          126 Aug  4  2020 usr/lib/modules/4.18.0-240.el8.x86_64/modules.devname'
 
 
+def test_lsinitrd_lvm_conf():
+    lvm_conf = lsinitrd.LsinitrdLvmConf(context_wrap(LSINITRD_LVM_CONF))
+    assert lvm_conf["volume_list"] == ["vg2", "vg3/lvol3", "@tag2", "@*"]
+
+
 def test_lsinitrd_docs():
     failed_count, tests = doctest.testmod(
         globs={'ls': lsinitrd.Lsinitrd(context_wrap(LSINITRD_FILTERED)),
-               'lsinitrd_kdump_image': LsinitrdKdumpImage(context_wrap(LSINITRD_KDUMP_IMAGE_VALID_EXAMPLE))}
+               'lsinitrd_kdump_image': LsinitrdKdumpImage(context_wrap(LSINITRD_KDUMP_IMAGE_VALID_EXAMPLE)),
+               'lsinitrd_lvm_conf': lsinitrd.LsinitrdLvmConf(context_wrap(LSINITRD_LVM_CONF))}
     )
     assert failed_count == 0
