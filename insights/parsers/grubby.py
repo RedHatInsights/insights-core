@@ -69,6 +69,25 @@ class GrubbyDefaultKernel(CommandParser):
     def parse_content(self, content):
         if not content:
             raise SkipComponent('Empty output')
-        if len(content) != 1 or len(content[0].split()) > 1:
-            raise ParseException('Invalid output: {0}', content)
-        self.default_kernel = content[0].strip()
+
+        # Skip the error lines to find the real default-kernel line.
+        # Typically, the default-kernel line is the last line in content.
+        default_kernel_str = None
+
+        if len(content) == 1:
+            default_kernel_str = content[0].strip()
+        else:
+            for idx in range(len(content) - 1, -1, -1):
+                line = content[idx]
+                if line.startswith('/boot/') and '/boot/vmlinuz-' in line:
+                    if not default_kernel_str:
+                        default_kernel_str = line.strip()
+                    else:
+                        raise ParseException('Invalid output: duplicate kernel lines: {0}', content)
+
+        if not default_kernel_str:
+            raise ParseException('Invalid output: no kernel line: {0}', content)
+        if len(default_kernel_str.split()) > 1:
+            raise ParseException('Invalid output: unparsable kernel line: {0}', content)
+
+        self.default_kernel = default_kernel_str
