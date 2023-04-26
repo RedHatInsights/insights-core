@@ -138,6 +138,7 @@ class InsightsArchiveSpecs(Specs):
     ls_var_lib_mongodb = simple_file("insights_commands/ls_-la_.var.lib.mongodb")
     ls_var_lib_nova_instances = simple_file("insights_commands/ls_-laRZ_.var.lib.nova.instances")
     ls_var_lib_pcp = simple_file("insights_commands/ls_-la_.var.lib.pcp")
+    ls_var_lib_rpm = simple_file("insights_commands/ls_-lan_.var.lib.rpm")
     ls_var_lib_rsyslog = simple_file("insights_commands/ls_-lZ_.var.lib.rsyslog")
     ls_var_log = simple_file("insights_commands/ls_-la_.var.log_.var.log.audit")
     ls_var_opt_mssql = simple_file("insights_commands/ls_-ld_.var.opt.mssql")
