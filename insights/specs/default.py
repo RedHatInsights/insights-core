@@ -176,6 +176,7 @@ class DefaultSpecs(Specs):
     dmsetup_status = simple_command("/usr/sbin/dmsetup status")
     dnf_conf = simple_file("/etc/dnf/dnf.conf")
     dnf_modules = glob_file("/etc/dnf/modules.d/*.module")
+    dnf_module_list = simple_command("/usr/bin/dnf -C --noplugins module list")
     docker_info = simple_command("/usr/bin/docker info")
     docker_list_containers = simple_command("/usr/bin/docker ps --all --no-trunc")
     docker_list_images = simple_command("/usr/bin/docker images --all --no-trunc --digests")
