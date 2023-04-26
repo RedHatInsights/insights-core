@@ -3,7 +3,8 @@ import pytest
 
 from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import aws_instance_id
-from insights.parsers.aws_instance_id import AWSInstanceIdDoc, AWSInstanceIdPkcs7
+from insights.parsers.aws_instance_id import AWSInstanceIdDoc, AWSInstanceIdPkcs7,\
+        AWSPublicIpv4Addresses, AWSPublicHostnames
 from insights.tests import context_wrap
 
 AWS_CURL_ERROR = """
@@ -206,3 +207,27 @@ def test_doc_examples():
     }
     failed, total = doctest.testmod(aws_instance_id, globs=env)
     assert failed == 0
+
+
+def test_aws_public_ipv4_addresses():
+    with pytest.raises(SkipComponent):
+        AWSPublicIpv4Addresses(context_wrap(AWS_CURL_ERROR))
+
+    with pytest.raises(SkipComponent):
+        AWSPublicIpv4Addresses(context_wrap(""))
+
+    doc = AWSPublicIpv4Addresses(context_wrap("1.2.3.4"))
+    assert doc is not None
+    assert doc == ["1.2.3.4"]
+
+
+def test_aws_public_hostnames():
+    with pytest.raises(SkipComponent):
+        AWSPublicHostnames(context_wrap(AWS_CURL_ERROR))
+
+    with pytest.raises(SkipComponent):
+        AWSPublicHostnames(context_wrap(""))
+
+    doc = AWSPublicHostnames(context_wrap("1.2.3.4"))
+    assert doc is not None
+    assert doc == ["1.2.3.4"]

@@ -1,4 +1,4 @@
-from insights.parsers.auditd_conf import AuditdConf
+from insights.parsers.auditd_conf import AuditdConf, AudispdConf
 from insights.tests import context_wrap
 
 # from RHEL 6.8, 7.2
@@ -58,6 +58,21 @@ option_i = value_i # this must be accessible, even after all these errors
 
 AUDITD_CONF_PATH = "etc/audit/auditd.conf"
 
+AUDISPD_CONF_1 = """
+#
+# This file controls the configuration of the audit event
+# dispatcher daemon, audispd.
+#
+
+q_depth = 150
+overflow_action = SYSLOG
+priority_boost = 4
+max_restarts = 10
+name_format = HOSTNAME
+#name = mydomain
+""".strip()
+AUDISPD_CONF_PATH = "etc/audisp/audispd.conf"
+
 
 def test_constructor():
     context = context_wrap(AUDITD_CONF_1, AUDITD_CONF_PATH)
@@ -116,3 +131,22 @@ def test_get_active_setting_value():
     active_settings = build_active_settings_expected()
     for key, value in active_settings.items():
         assert result.get_active_setting_value(key) == value
+
+
+def test_audispd_conf():
+    context = context_wrap(AUDISPD_CONF_1, AUDISPD_CONF_PATH)
+    result = AudispdConf(context)
+
+    assert "q_depth = 150" in result.active_lines_unparsed
+    assert "150" == result.active_settings["q_depth"]
+    assert "name" not in result.active_settings
+    assert "#name" not in result.active_settings
+    assert "SYSLOG" == result.get_active_setting_value("overflow_action")
+    assert "10" == result.get_active_setting_value("max_restarts")
+
+    context = context_wrap(AUDITD_CONF_2, AUDISPD_CONF_PATH)
+    result = AudispdConf(context)
+
+    assert "comment" not in result.active_settings
+    assert "broken_option_g" not in result.active_settings
+    assert "value_i" == result.get_active_setting_value("option_i")

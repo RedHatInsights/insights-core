@@ -65,6 +65,7 @@ from functools import reduce as _reduce
 from insights.contrib import importlib
 from insights.contrib.toposort import toposort_flatten
 from insights.core.blacklist import BLACKLISTED_SPECS
+from insights.core.context import SerializedArchiveContext
 from insights.core.exceptions import BlacklistedSpec, MissingRequirements, SkipComponent
 from insights.util import defaults, enum, KeyPassingDefaultDict
 
@@ -1087,6 +1088,14 @@ def run(components=None, broker=None):
     components = components or COMPONENTS[GROUPS.single]
     components = determine_components(components)
     broker = broker or Broker()
+    # If a SerializedArchiveContext then data found in the archive's
+    # ./meta_data directory are prepopulated in the broker as Specs so
+    # no need to collect them again
+    if broker.get(SerializedArchiveContext) is not None:
+        for comp in list(components):
+            if comp in broker:
+                for dep in components[comp]:
+                    components.pop(dep, None)
     return run_components(run_order(components), components, broker)
 
 

@@ -42,6 +42,12 @@ UUID=05ce4fc3-04c3-4111-xxxx /boot                   ext4    defaults        1 2
     /dev/vg_data/lv_pg /var/opt/rh/rh-postgresql95/lib/pgsql  xfs rw,noatime        0        0
 """
 
+FSTAB_DUPLICATE_MOUNT = """
+UUID=94ea609a-7ed9-4b3d-a33c-59db91b945df   /       xfs     defaults        0 0
+UUID=05ce4fc3-04c3-4111-xxxx                /boot   ext4    defaults        1 2
+UUID=94ea609a-7ed9-4b3d-a33c-59db91b945df   /lvm2   xfs     defaults,noexec        0 0
+""".strip()
+
 
 def test_fstab():
     context = context_wrap(FS_TAB_DATA)
@@ -150,3 +156,15 @@ def test_fsspec_of_path():
                        }
     for path, dev in path_device_map.items():
         assert dev == fstab_info.fsspec_of_path(path)
+
+
+def test_fstab_with_duplicated_mount():
+    fstab_info = fstab.FSTab(context_wrap(FSTAB_DUPLICATE_MOUNT))
+    for entry in fstab_info:
+        mount_target = entry.fs_file
+        fs_spec = entry.fs_spec
+        if fs_spec == 'UUID=94ea609a-7ed9-4b3d-a33c-59db91b945df':
+            if mount_target == '/':
+                assert 'noexec' not in entry.raw
+            if mount_target == 'lvm2':
+                assert 'noexec' in entry.raw
