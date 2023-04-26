@@ -17,42 +17,90 @@ from insights.parsers import parse_fixed_table
 from insights.specs import Specs
 
 
+class Profile(object):
+    """
+    An object for the dnf module:stream profile
+
+    Attributes:
+        profile (Optional[str]): Profile of the dnf module:stream
+        default (bool): Default flag of the dnf module:stream profile
+        installed (bool): Installed flag of the dnf module:stream profile
+    """
+    def __init__(self, profile):
+        self.profile = profile.split(" ")[0]
+        self.default = "[d]" in profile
+        self.installed = "[i]" in profile
+
+
+class DnfModuleStream(object):
+    """
+    An object for the dnf module:stream
+
+    Attributes:
+        stream (str): Name of the module stream
+        profiles (list): List of profiles of the dnf module:stream
+        summary (str): Summary of the dnf module:stream
+        default (bool): Default flag of the dnf module:stream
+        enabled (bool): Enabled flag of the dnf module:stream
+        disabled (bool): Disabled flag of the dnf module:stream
+        installed (bool): Installed flag of the dnf module:stream
+        active (Optional[bool]): Active flag of the dnf module:stream
+    """
+    def __init__(self, data=None, cmd="list"):
+        data = data or {}
+        self._cmd = cmd
+        self._stream = data.get('Stream', '')
+        self.stream = self._stream.split(" ")[0]
+        self.profiles = [Profile(p.strip()) for p in data.get('Profiles', '').split(',') if p.strip()]
+        self.summary = data.get('Summary', '')
+        self.default = "[d]" in self._stream
+        self.enabled = "[e]" in self._stream
+        self.disabled = "[x]" in self._stream
+        self.installed = "[i]" in self._stream
+        self.active = self.enabled
+        if self._cmd == "info":
+            # only `dnf module info` shows `[a]` flag
+            self.active = "[a]" in self._stream
+
+
 class DnfModuleBrief(object):
     """
     An object for the dnf modules listed by ``dnf module list`` command
 
     Attributes:
         name (str): Name of the dnf module
-        stream (str): Stream of the dnf module
-        profiles (list): List of profiles of the dnf module
-        summary (str): Summary of the dnf module
+        streams (list): List of streams of the dnf module
     """
-    def __init__(self, data=None):
+    def __init__(self, data=None, cmd="list"):
         data = {} if data is None else data
+        stream = DnfModuleStream(data, cmd)
         self.name = data.get('Name', '')
-        self.stream = data.get('Stream', '')
-        self.profiles = list(filter(None, [i.strip() for i in data.get('Profiles', '').split(',')]))
-        self.summary = data.get('Summary', '')
+        self.streams = [stream]
+        self._has_active_stream = stream.active
+
+    def add_stream(self, data):
+        stream = DnfModuleStream(data)
+        if not self._has_active_stream:
+            self._has_active_stream = stream.active
+        self.streams.append(stream)
 
 
-class DnfModuleDetail(DnfModuleBrief):
+class DnfModuleStreamDetail(DnfModuleBrief):
     """
-    An object for the dnf modules listed by ``dnf module info`` command
+    An object for the dnf module:stream
 
     Attributes:
         name (str): Name of the dnf module
-        stream (str): Stream of the dnf module
-        version (str): Version of the dnf module
-        context (str): Context of the dnf module
-        profiles (list): List of profiles of the dnf module
-        default_profiles (str): Default profile of the dnf module
-        repo (str): Repo of the dnf module
-        summary (str): Summary of the dnf module
-        description (str): Description of the dnf module
-        artifacts (list): List of the artifacts of the dnf module
+        streams (list): List of streams of the dnf module
+        version (str): Version of the dnf module:stream
+        context (str): Context of the dnf module:stream
+        default_profiles (str): Default profile of the dnf module:stream
+        repo (str): Repo of the dnf module:stream
+        description (str): Description of the dnf module:stream
+        artifacts (list): List of the artifacts of the dnf module:stream
     """
     def __init__(self, data=None):
-        super(DnfModuleDetail, self).__init__(data)
+        super(DnfModuleStreamDetail, self).__init__(data, "info")
         self.version = data.get('Version', '')
         self.context = data.get('Context', '')
         self.default_profiles = data.get('Default profiles', '')
@@ -71,18 +119,31 @@ class DnfModuleList(CommandParser, dict):
         Name                Stream      Profiles                                  Summary
         389-ds              1.4                                                   389 Directory Server (base)
         ant                 1.10 [d]    common [d]                                Java build tool
+        ant                 1.20        common [d]                                Java build tool
 
         Hint: [d]efault, [e]nabled, [x]disabled, [i]nstalled
 
     Examples:
         >>> len(dnf_module_list)
         2
-        >>> dnf_module_list.get("389-ds").stream
-        '1.4'
-        >>> dnf_module_list.get("389-ds").profiles
+        >>> len(dnf_module_list.get("389-ds").streams)
+        1
+        >>> type(dnf_module_list.get("389-ds").streams[0])
+        <class 'insights.parsers.dnf_module.DnfModuleStream'>
+        >>> dnf_module_list.get("389-ds").streams[0].profiles
         []
-        >>> dnf_module_list.get("ant").stream
-        '1.10 [d]'
+        >>> len(dnf_module_list.get("ant").streams)
+        2
+        >>> dnf_module_list.get("ant").streams[0].stream
+        '1.10'
+        >>> dnf_module_list.get("ant").streams[0].default
+        True
+        >>> dnf_module_list.get("ant").streams[0].active
+        True
+        >>> dnf_module_list.get("ant").streams[1].stream
+        '1.20'
+        >>> dnf_module_list.get("ant").streams[1].active
+        False
     """
     def __init__(self, *args, **kwargs):
         super(DnfModuleList, self).__init__(*args, **kwargs)
@@ -93,8 +154,24 @@ class DnfModuleList(CommandParser, dict):
                         trailing_ignore=['Hint:', 'Error:'])
         if not data:
             raise SkipComponent('Nothing need to parse.')
-        for m in data:
-            self.update({m['Name']: DnfModuleBrief(m)})
+
+        modules_streams = {}
+        for ms in data:
+            if ms['Name'] in modules_streams:
+                modules_streams[ms['Name']].add_stream(ms)
+                continue
+            modules_streams[ms['Name']] = DnfModuleBrief(ms)
+
+        for name, module_brief in modules_streams.items():
+            if not module_brief._has_active_stream:
+                # we have no `active` stream because no stream is `enabled`
+                # mark `default` module as `active`
+                for stream in module_brief.streams:
+                    if stream.default:
+                        stream.active = True
+                        module_brief._has_active_stream = True
+                        break
+            self.update({name: module_brief})
 
     @property
     def modules(self):
@@ -181,7 +258,7 @@ class DnfModuleInfo(CommandParser, dict):
         Hint: [d]efault, [e]nabled, [x]disabled, [i]nstalled, [a]ctive]
 
     The modules information is wrapped in this object like a dictionary, with
-    the module name as the key and the list of the :class:`DnfModuleDetail` as
+    the module name as the key and the list of the :class:`DnfModuleStreamDetail` as
     the value.
 
     Examples:
@@ -196,10 +273,12 @@ class DnfModuleInfo(CommandParser, dict):
         >>> len(dnf_module_info.get("389-ds"))
         2
         >>> type(dnf_module_info.get("389-ds")[0])
-        <class 'insights.parsers.dnf_module.DnfModuleDetail'>
+        <class 'insights.parsers.dnf_module.DnfModuleStreamDetail'>
         >>> dnf_module_info['389-ds'][0].name
         '389-ds'
-        >>> dnf_module_info["389-ds"][0].profiles
+        >>> type(dnf_module_info['389-ds'][0].streams[0])
+        <class 'insights.parsers.dnf_module.DnfModuleStream'>
+        >>> dnf_module_info["389-ds"][0].streams[0].profiles
         []
         >>> dnf_module_info["389-ds"][0].default_profiles
         ''
@@ -212,19 +291,35 @@ class DnfModuleInfo(CommandParser, dict):
         >>> len(dnf_module_info.get("ant"))
         1
         >>> type(dnf_module_info.get("ant")[0])
-        <class 'insights.parsers.dnf_module.DnfModuleDetail'>
+        <class 'insights.parsers.dnf_module.DnfModuleStreamDetail'>
         >>> dnf_module_info['ant'][0].name
         'ant'
         >>> dnf_module_info['ant'][0].context
         '5ea3b708'
         >>> dnf_module_info["ant"][0].version
         '820181213135032'
-        >>> dnf_module_info['ant'][0].profiles
-        ['common [d]']
+        >>> len(dnf_module_info["ant"][0].streams[0].profiles)
+        1
+        >>> type(dnf_module_info["ant"][0].streams[0].profiles[0])
+        <class 'insights.parsers.dnf_module.Profile'>
+        >>> dnf_module_info["ant"][0].streams[0].profiles[0].profile
+        'common'
+        >>> dnf_module_info["ant"][0].streams[0].profiles[0].default
+        True
         >>> dnf_module_info['ant'][0].default_profiles
         'common'
-        >>> dnf_module_info["httpd"][0].profiles
-        ['common [d] [i]', 'devel', 'minimal']
+        >>> len(dnf_module_info["httpd"][0].streams[0].profiles)
+        3
+        >>> dnf_module_info["httpd"][0].streams[0].profiles[0].profile
+        'common'
+        >>> dnf_module_info["httpd"][0].streams[0].profiles[0].default
+        True
+        >>> dnf_module_info["httpd"][0].streams[0].profiles[0].installed
+        True
+        >>> dnf_module_info["httpd"][0].streams[0].profiles[1].profile
+        'devel'
+        >>> dnf_module_info["httpd"][0].streams[0].profiles[2].profile
+        'minimal'
         >>> dnf_module_info["httpd"][0].default_profiles
         'common'
     """
@@ -249,12 +344,12 @@ class DnfModuleInfo(CommandParser, dict):
                     mod_dict[k] = v
                 key_prev = k
             elif not line.strip() and mod_dict:
-                mod_info = DnfModuleDetail(mod_dict)
+                mod_info = DnfModuleStreamDetail(mod_dict)
                 _update_value(mod_info.name, mod_info)
                 mod_dict = {}
 
         if mod_dict:
-            mod_info = DnfModuleDetail(mod_dict)
+            mod_info = DnfModuleStreamDetail(mod_dict)
             _update_value(mod_info.name, mod_info)
 
         if self.__len__() == 0:

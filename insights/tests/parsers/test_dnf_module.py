@@ -31,6 +31,8 @@ python36            3.6 [d][e]  common [d], build                         Python
 redis               5 [d]       common [d]                                Redis persistent key-value database
 rhn-tools           1.0 [d]     common [d]                                Red Hat Satellite 5 tools for RHEL
 ruby                2.5 [d]     common [d]                                An interpreter of object-oriented scripting language
+ruby                2.6 [e]     common [d]                                An interpreter of object-oriented scripting language
+ruby                2.7         common [d]                                An interpreter of object-oriented scripting language
 rust-toolset        rhel8 [d]   common [d]                                Rust
 satellite-5-client  1.0 [d]     common [d], gui                           Red Hat Satellite 5 client packages
 scala               2.10 [d]    common [d]                                A hybrid functional/object-oriented language for the JVM
@@ -48,6 +50,7 @@ Updating Subscription Management repositories.
 Name                Stream      Profiles                                  Summary
 389-ds              1.4                                                   389 Directory Server (base)
 ant                 1.10 [d]    common [d]                                Java build tool
+ant                 1.20        common [d]                                Java build tool
 
 Hint: [d]efault, [e]nabled, [x]disabled, [i]nstalled
 """.strip()
@@ -184,7 +187,30 @@ def test_dnf_module_list():
     module_list = DnfModuleList(context_wrap(DNF_MODULE_LIST))
     assert 'ant' in module_list
     assert module_list['httpd'].name == 'httpd'
-    assert module_list['httpd'].stream == '2.4 [d][e]'
+    assert module_list['httpd'].streams[0].stream == '2.4'
+    assert module_list['httpd'].streams[0].default
+    assert module_list['httpd'].streams[0].enabled
+    assert module_list['httpd'].streams[0].active
+    assert module_list['postgresql'].streams[0].stream == '10'
+    assert not module_list['postgresql'].streams[0].enabled
+    assert module_list['postgresql'].streams[0].active
+    assert module_list['postgresql'].streams[0].default
+    assert module_list['postgresql'].streams[1].stream == '9.6'
+    assert not module_list['postgresql'].streams[1].enabled
+    assert not module_list['postgresql'].streams[1].active
+    assert not module_list['postgresql'].streams[1].default
+    assert module_list['ruby'].streams[0].stream == '2.5'
+    assert module_list['ruby'].streams[0].default
+    assert not module_list['ruby'].streams[0].enabled
+    assert not module_list['ruby'].streams[0].active
+    assert module_list['ruby'].streams[1].stream == '2.6'
+    assert module_list['ruby'].streams[1].enabled
+    assert module_list['ruby'].streams[1].active
+    assert not module_list['ruby'].streams[1].default
+    assert module_list['ruby'].streams[2].stream == '2.7'
+    assert not module_list['ruby'].streams[2].enabled
+    assert not module_list['ruby'].streams[2].active
+    assert not module_list['ruby'].streams[2].default
 
 
 def test_dnf_module_list_exp():
@@ -202,9 +228,9 @@ def test_dnf_module_info():
     assert len(module_infos['httpd']) == 2
     assert module_infos['httpd'][0].name == 'httpd'
     assert module_infos['httpd'][0].version == '8000020190405071959'
-    assert len(module_infos['httpd'][0].profiles) == 3
+    assert len(module_infos['httpd'][0].streams[0].profiles) == 3
     assert module_infos['httpd'][0].default_profiles == 'common'
-    assert module_infos['httpd'][1].summary == 'Apache HTTP Server'
+    assert module_infos['httpd'][1].streams[0].summary == 'Apache HTTP Server'
     assert module_infos['httpd'][1].context == '9edba152'
     assert 'mod_http2-0:1.11.3-1.module+el8+2443+605475b7.x86_64' in module_infos['httpd'][1].artifacts
 
