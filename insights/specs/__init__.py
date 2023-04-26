@@ -350,6 +350,7 @@ class Specs(SpecSet):
     ls_var_lib_mongodb = RegistryPoint()
     ls_var_lib_nova_instances = RegistryPoint()
     ls_var_lib_pcp = RegistryPoint()
+    ls_var_lib_rpm = RegistryPoint()
     ls_var_lib_rsyslog = RegistryPoint()
     ls_var_log = RegistryPoint()
     ls_var_opt_mssql = RegistryPoint()
