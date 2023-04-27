@@ -41,6 +41,7 @@ subversion          1.10 [d]    common [d], server                        Apache
 swig                3.0 [d]     common [d], complete                      Connects C/C++/Objective C to some high-level programming languages
 varnish             6 [d]       common [d]                                Varnish HTTP cache
 virt                rhel [d]    common [d]                                Virtualization module
+default_disabled    1.0 [d][x]                                            Default module which is disabled
 
 Hint: [d]efault, [e]nabled, [x]disabled, [i]nstalled
 """.strip()
@@ -211,6 +212,11 @@ def test_dnf_module_list():
     assert not module_list['ruby'].streams[2].enabled
     assert not module_list['ruby'].streams[2].active
     assert not module_list['ruby'].streams[2].default
+    assert module_list['default_disabled'].streams[0].stream == '1.0'
+    assert module_list['default_disabled'].streams[0].default
+    assert module_list['default_disabled'].streams[0].disabled
+    assert not module_list['default_disabled'].streams[0].enabled
+    assert not module_list['default_disabled'].streams[0].active
 
 
 def test_dnf_module_list_exp():
