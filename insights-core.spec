@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.1.21
+Version:        3.1.22
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,20 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Apr 27 2023 Xiangce Liu <xiangceliu@redhat.com> 3.1.22-1
+- fix: handle the first line is warning in InstalledRpms (#3770)
+  (xiangceliu@redhat.com)
+- fix(playbook_verifier): clarify logic when normalizing snippets (#3752)
+  (subpop@users.noreply.github.com)
+- Feat: Add new parser ls_var_lib_rpm (#3763) (986222045@qq.com)
+- fix: DnfModuleList parser and collect dnf_module_list (#3756)
+  (patriksegedy@gmail.com)
+- feat: enhance GrubbyDefaultKernel to skip warn msgs (#3761)
+  (xiaoxwan@redhat.com)
+- fix: update ubuntu image for 2.6 test (#3766) (christian@python.org)
+- feat: Google Cloud public IP spec (#3762) (lzap+git@redhat.com)
+- fix: the typo version in CHANGELOG (xiangceliu@redhat.com)
+
 * Tue Apr 25 2023 Xiangce Liu <xiangceliu@redhat.com> 3.1.21-1
 - Revert "feat: update logging file handler for logrotate (#3702)" (#3760)
   (xiangceliu@redhat.com)
