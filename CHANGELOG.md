@@ -2,6 +2,16 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.1.22](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.22) (2023-04-27)
+
+- fix: handle the first line is warning in InstalledRpms ([PR 3770](https://github.com/RedHatInsights/insights-core/pull/3770))
+- fix(playbook_verifier): clarify logic when normalizing snippets ([PR 3752](https://github.com/RedHatInsights/insights-core/pull/3752))
+- Feat: Add new parser ls_var_lib_rpm ([PR 3763](https://github.com/RedHatInsights/insights-core/pull/3763))
+- fix: DnfModuleList parser and collect dnf_module_list ([PR 3756](https://github.com/RedHatInsights/insights-core/pull/3756))
+- feat: enhance GrubbyDefaultKernel to skip warn msgs ([PR 3761](https://github.com/RedHatInsights/insights-core/pull/3761))
+- fix: update ubuntu image for 2.6 test ([PR 3766](https://github.com/RedHatInsights/insights-core/pull/3766))
+- feat: Google Cloud public IP spec ([PR 3762](https://github.com/RedHatInsights/insights-core/pull/3762))
+
 # [insights-core-3.1.21](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.21) (2023-04-25)
 
 - Revert "feat: update logging file handler for logrotate (3702)" ([PR 3760](https://github.com/RedHatInsights/insights-core/pull/3760))
