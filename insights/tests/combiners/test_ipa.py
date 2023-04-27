@@ -100,8 +100,12 @@ def test_ipa():
         ipa_conf_client, sssd_conf_client, rpms_client, redhat_release
     )
     assert ipa_client.sssd_conf.domains == [ipa_client.ipa_conf.domain]
+    assert ipa_client._is_client is None
+    assert ipa_client._is_server is None
     assert ipa_client.is_client
+    assert ipa_client._is_client
     assert not ipa_client.is_server
+    assert not ipa_client._is_server
 
     ipa_server = IPA(
         ipa_conf_server, sssd_conf_server, rpms_server, redhat_release

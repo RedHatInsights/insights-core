@@ -29,6 +29,8 @@ class IPA(object):
             self._server_rpm = rpms.get_max("ipa-server")
         if self._client_rpm is None:
             raise SkipComponent("IPA client package is not installed")
+        self._is_client = None
+        self._is_server = None
 
     @property
     def ipa_conf(self):
@@ -48,26 +50,35 @@ class IPA(object):
     @property
     def is_client(self):
         """Is the host an IPA client?"""
-        if not self._client_rpm:
-            return False
-        cfg = self.sssd_domain_config
-        if not cfg.get("id_provider") == "ipa":
-            return False
-        return True
+        # IPAConfig validates that /etc/ipa/default.conf exists and is a
+        # valid IPA config file with all required values present.
+        if self._is_client is None:
+            id_provider = self.sssd_domain_config.get("id_provider")
+            if id_provider == "ipa":
+                self._is_client = True
+            else:
+                self._is_client = False
+
+        return self._is_client
 
     @property
     def is_server(self):
         """Is the host an IPA server?"""
-        if not self.is_client:
-            # all servers are also clients
-            return False
-        if not self._server_rpm:
-            return False
-        if not self._ipa_conf.ldap_uri.startswith("ldapi://"):
-            # only servers use LDAPI (LDAP over Unix socket)
-            return False
-        cfg = self.sssd_domain_config
-        if cfg.get("ipa_server_mode", "false").lower() != "true":
-            # all servers have ipa_server_mode enabled
-            return False
-        return True
+        if self._is_server is None:
+            server_mode = self.sssd_domain_config.get(
+                "ipa_server_mode", "false"
+            )
+            if (
+                self._server_rpm
+                # all servers are also clients
+                and self.is_client
+                # only servers use LDAPI (LDAP over Unix socket)
+                and self._ipa_conf.ldap_uri.startswith("ldapi://")
+                # SSSD domain must be in server mode
+                and server_mode.lower() == "true"
+            ):
+                self._is_server = True
+            else:
+                self._is_server = False
+
+        return self._is_server
