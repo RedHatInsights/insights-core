@@ -69,13 +69,13 @@ class IPA(object):
                 "ipa_server_mode", "false"
             )
             if (
-                self._server_rpm
+                self._server_rpm and
                 # all servers are also clients
-                and self.is_client
+                self.is_client and
                 # only servers use LDAPI (LDAP over Unix socket)
-                and self._ipa_conf.ldap_uri.startswith("ldapi://")
+                self._ipa_conf.ldap_uri.startswith("ldapi://") and
                 # SSSD domain must be in server mode
-                and server_mode.lower() == "true"
+                server_mode.lower() == "true"
             ):
                 self._is_server = True
             else:
