@@ -169,7 +169,7 @@ def test_revoked_playbook(call_1, call_2):
     assert revoked_error in str(error.value)
 
 
-@pytest.mark.skipif(sys.version_info.major != 2 and sys.version_info.minor != 7, reason='normalizeSnippet is only run with Python 2.7')
+@pytest.mark.skipif(sys.version_info[:2] != (2, 7), reason='normalizeSnippet is only run with Python 2.7')
 def test_normalize_snippet():
     playbook = '''task:
   when:
