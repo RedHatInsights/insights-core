@@ -2,6 +2,16 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.1.23](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.23) (2023-05-04)
+
+- feat: new client_metadata module to hold parsers for all client generated files ([PR 3775](https://github.com/RedHatInsights/insights-core/pull/3775))
+- chore: add the missed deprecate warnings ([PR 3774](https://github.com/RedHatInsights/insights-core/pull/3774))
+- feat: new option to show hit result only for insights-run ([PR 3771](https://github.com/RedHatInsights/insights-core/pull/3771))
+- feat: add parser and combiner for IPA ([PR 3767](https://github.com/RedHatInsights/insights-core/pull/3767))
+- Travis is dead. Travis is dead, Baby. ([PR 3777](https://github.com/RedHatInsights/insights-core/pull/3777))
+- fix: default and disabled module cannot be active ([PR 3773](https://github.com/RedHatInsights/insights-core/pull/3773))
+- fix: fix test playbook by using no named tuples ([PR 3772](https://github.com/RedHatInsights/insights-core/pull/3772))
+
 # [insights-core-3.1.22](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.22) (2023-04-27)
 
 - fix: handle the first line is warning in InstalledRpms ([PR 3770](https://github.com/RedHatInsights/insights-core/pull/3770))

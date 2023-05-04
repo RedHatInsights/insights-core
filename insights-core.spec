@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.1.22
+Version:        3.1.23
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,19 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu May 04 2023 Xiangce Liu <xiangceliu@redhat.com> 3.1.23-1
+- feat: new client_metadata module to hold parsers for all client generated
+  files (#3775) (xiangceliu@redhat.com)
+- chore: add the missed deprecate warnings (#3774) (xiangceliu@redhat.com)
+- feat: new option to show hit result only for insights-run (#3771)
+  (xiangceliu@redhat.com)
+- feat: add parser and combiner for IPA (#3767) (cheimes@redhat.com)
+- Travis is dead. Travis is dead, Baby. (#3777) (jhnidek@redhat.com)
+- fix: default and disabled module cannot be active (#3773)
+  (psegedy@redhat.com)
+- fix: fix test playbook by using no named tuples (#3772)
+  (93577878+ahitacat@users.noreply.github.com)
+
 * Thu Apr 27 2023 Xiangce Liu <xiangceliu@redhat.com> 3.1.22-1
 - fix: handle the first line is warning in InstalledRpms (#3770)
   (xiangceliu@redhat.com)
