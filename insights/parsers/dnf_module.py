@@ -167,7 +167,7 @@ class DnfModuleList(CommandParser, dict):
                 # we have no `active` stream because no stream is `enabled`
                 # mark `default` module as `active`
                 for stream in module_brief.streams:
-                    if stream.default:
+                    if stream.default and not stream.disabled:
                         stream.active = True
                         module_brief._has_active_stream = True
                         break
