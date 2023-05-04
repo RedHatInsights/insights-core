@@ -8,6 +8,7 @@ For more information, see the ``rpm_pkgs`` datasource.
 
 from insights import Parser, parser
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.rpm_pkgs)
@@ -34,6 +35,13 @@ class RpmPkgs(Parser):
         >>> rpm_pkgs.packages
         ['httpd-core']
     """
+    def __init__(self, *args, **kwargs):
+        deprecated(
+            RpmPkgs,
+            "Please use the `RpmPkgsWritable` instead.",
+            "3.2.25"
+        )
+        super(RpmPkgs, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
         self.packages = [pkg.split('|')[0] for pkg in content]
