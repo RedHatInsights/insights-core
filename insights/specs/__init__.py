@@ -271,6 +271,7 @@ class Specs(SpecSet):
     ip_netns_exec_namespace_lsof = RegistryPoint(multi_output=True, filterable=True)
     ip_route_show_table_all = RegistryPoint()
     ip_s_link = RegistryPoint()
+    ipa_default_conf = RegistryPoint()
     ipaupgrade_log = RegistryPoint(filterable=True)
     ipcs_m = RegistryPoint()
     ipcs_m_p = RegistryPoint()
