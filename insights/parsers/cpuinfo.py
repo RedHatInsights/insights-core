@@ -68,9 +68,10 @@ Examples:
     >>> cpu_info.microcode
     '1808'
 """
+import warnings
 
 from collections import defaultdict
-from .. import Parser, parser, defaults, get_active_lines, LegacyItemAccess
+from insights import Parser, parser, defaults, get_active_lines, LegacyItemAccess
 from insights.specs import Specs
 
 
@@ -269,10 +270,11 @@ class CpuInfo(LegacyItemAccess, Parser):
         int: Returns the total number of cores for the server if available, else None.
 
         .. warning::
-            This function is deprecated.  Please use the
+            This method is deprecated, and will be removed after 3.2.25. Please use
             :py:class:`insights.parsers.lscpu.LsCPU` class attribute
             ``info['Cores per socket']`` and ``info['Sockets']`` values instead.
         """
+        warnings.warn("`is_hypervisor` is deprecated and will be removed after 3.2.25: Use `virt_what.VirtWhat` which uses the command `virt-what` to check the hypervisor type.", DeprecationWarning)
         if self.data and 'cpu_cores' in self.data:
             # I guess we can't get this fancey on older versions of RHEL
             # return sum({e['sockets']: int(e['cpu_cores']) for e in self}.values())
