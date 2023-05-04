@@ -90,12 +90,14 @@ class HumanReadableFormat(Formatter):
             tracebacks=False,
             dropped=False,
             show_rules=None,
+            no_details=False,
             stream=sys.stdout):
         super(HumanReadableFormat, self).__init__(broker, stream=stream)
         self.missing = missing
         self.tracebacks = tracebacks
         self.dropped = dropped
         self.show_rules = [] if show_rules is None else show_rules
+        self.no_details = no_details
 
     def print_header(self, header, color):
         ln = len(header)
@@ -175,6 +177,8 @@ class HumanReadableFormat(Formatter):
             underline = "-" * len(name)
             name = "%s%s%s" % (resp.color, name, Style.RESET_ALL)
             print(name, file=self.stream)
+            if self.no_details:
+                return
             print(underline, file=self.stream)
             if v.get('type') != 'none':
                 print(render_links(c), file=self.stream)
@@ -230,11 +234,13 @@ class HumanReadableFormatAdapter(FormatterAdapter):
         p.add_argument("-F", "--fail-only",
                        help="Show FAIL results only. Conflict with '-m', will be dropped when using them together. This option is deprecated by '-S fail'",
                        action="store_true")
+        p.add_argument("--no-details", help="Hide the details and show result only, for TEXT format only", action="store_true")
 
     def __init__(self, args=None):
         self.tracebacks = args.tracebacks
         self.dropped = args.dropped
         self.missing = args.missing
+        self.no_details = args.no_details
         fail_only = args.fail_only
         if self.missing and fail_only:
             print(Fore.YELLOW + 'Options conflict: -m and -F, drops -F', file=sys.stderr)
@@ -252,6 +258,7 @@ class HumanReadableFormatAdapter(FormatterAdapter):
             self.tracebacks,
             self.dropped,
             self.show_rules,
+            self.no_details,
         )
         self.formatter.preprocess()
 
