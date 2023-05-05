@@ -29,6 +29,7 @@ jobs:
         flake8 .
     - name: pytest
       run: |
+        pip install 'urllib3<2'
         pip install -e .[testing]
         pytest
 
