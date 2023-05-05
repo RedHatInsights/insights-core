@@ -51,7 +51,7 @@ class GlusterPeerStatus(CommandParser):
         return zip_longest(*args, fillvalue=fillvalue)
 
     def parse_content(self, content):
-        if not content:
+        if not content or "Connection failed" in content[0]:
             raise SkipComponent("No data.")
 
         self.status = {'peers': 0, 'hosts': []}

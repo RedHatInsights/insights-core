@@ -32,7 +32,7 @@ def setup_function(func):
         filters.add_filter(DefaultSpecs.ps_aux, "MEM")
 
     if func is test_filter_dumps_loads:
-        filters.add_filter(Specs.ps_aux, "COMMAND")
+        filters.add_filter(Specs.ps_aux, ["PID", "COMMAND", "TEST"])
 
 
 def teardown_function(func):
@@ -62,7 +62,10 @@ def test_filter_dumps_loads():
     filters.loads(r)
 
     assert Specs.ps_aux in filters.FILTERS
-    assert filters.FILTERS[Specs.ps_aux] == set(["COMMAND"])
+    assert filters.FILTERS[Specs.ps_aux] == set(["PID", "COMMAND", "TEST"])
+
+    r2 = filters.dumps()
+    assert r2 == r  # 'filters' are in the same order in every dumps()
 
 
 def test_get_filter():
