@@ -192,10 +192,10 @@ def load(stream=None):
 
 
 def dumps():
-    """Returns a string representation of the FILTERS dictionary."""
+    """Returns a string representation of the sorted FILTERS dictionary."""
     d = {}
     for k, v in FILTERS.items():
-        d[dr.get_name(k)] = list(v)
+        d[dr.get_name(k)] = sorted(v)
     return _dumps(d)
 
 
