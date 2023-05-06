@@ -154,7 +154,7 @@ class ComplianceClient:
         return findall("\d+$", self.os_release())[0]
 
     def profile_files(self):
-        return glob("{0}*rhel{1}*.xml".format(POLICY_FILE_LOCATION, self.os_major_version()))
+        return glob("{0}*rhel{1}-ds.xml".format(POLICY_FILE_LOCATION, self.os_major_version()))
 
     def find_scap_policy(self, profile_ref_id):
         grepcmd = 'grep -H ' + profile_ref_id + ' ' + ' '.join(self.profile_files())
