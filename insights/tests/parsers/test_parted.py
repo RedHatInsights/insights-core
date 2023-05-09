@@ -197,6 +197,20 @@ Number  Start     End        Size       File system  Name                  Flags
  3      4196352s  83904511s  79708160s                                     lvm
 """.strip()
 
+PARTED_DATA_7 = """
+Model: Virtio Block Device (virtblk)
+Disk /dev/vda: 32.2GB
+Sector size (logical/physical): 512B/512B
+Partition Table: msdos
+Disk Flags:
+
+Number  Start   End     Size    Type     File system  Flags
+ 1      1049kB  525MB   524MB   primary  xfs          boot
+ 2      525MB   26.5GB  25.9GB  primary
+
+
+"""
+
 
 def test_parted_partedl():
     context = context_wrap(PARTED_DATA)
@@ -279,6 +293,14 @@ def test_parted_partedl():
     assert results.get('sector_size') == '512B/512B'
     assert results.get('partition_table') == 'msdos'
     assert results.get('disk_flags') is None
+
+    context = context_wrap(PARTED_DATA_6)
+    res = PartedL(context)
+    assert len([dev_info.disk for dev_info in res]) == 1
+
+    context = context_wrap(PARTED_DATA_7)
+    res = PartedL(context)
+    assert len([dev_info.disk for dev_info in res]) == 1
 
 
 PARTED_ERR_DATA = """
