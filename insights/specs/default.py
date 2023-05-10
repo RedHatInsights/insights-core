@@ -25,7 +25,7 @@ from insights.components.satellite import IsCapsule, IsSatellite611, IsSatellite
 from insights.specs import Specs
 from insights.specs.datasources import (
     aws, awx_manage, cloud_init, candlepin_broker, corosync as corosync_ds,
-    dir_list, ethernet, httpd, ipcs, kernel, kernel_module_list, leapp, lpstat,
+    dir_list, ethernet, httpd, ipcs, kernel_module_list, leapp, lpstat,
     machine_ids, md5chk, package_provides, ps as ps_datasource, rsyslog_confs, sap,
     satellite_missed_queues, semanage, ssl_certificate, sys_fs_cgroup_memory,
     sys_fs_cgroup_memory_tasks_number, rpm_pkgs, user_group, yum_updates,
@@ -326,7 +326,6 @@ class DefaultSpecs(Specs):
     lpfc_max_luns = simple_file("/sys/module/lpfc/parameters/lpfc_max_luns")
     lpstat_p = simple_command("/usr/bin/lpstat -p")
     lpstat_protocol_printers = lpstat.lpstat_protocol_printers_info
-    lsinitrd_lvm_conf = command_with_args("/bin/lsinitrd -f /etc/lvm/lvm.conf --kver %s", kernel.default_version)
     ls_R_var_lib_nova_instances = simple_command("/bin/ls -laR /var/lib/nova/instances")
     ls_boot = simple_command("/bin/ls -lanR /boot")
     ls_dev = simple_command("/bin/ls -lanR /dev")
