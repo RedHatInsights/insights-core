@@ -275,8 +275,9 @@ class PartedL(CommandParser):
             else:
                 is_last_line_empty = False
 
-        # Take left "content" as the last Device Section
-        device_tables.append(content[this_start_idx:])
+        # Take left "content" as the last Device Section, skip the empty case
+        if this_start_idx < len(content) - 1:
+            device_tables.append(content[this_start_idx:])
 
         devices_info = []
         for dev_table in device_tables:
