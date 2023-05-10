@@ -3,7 +3,7 @@ import pytest
 
 from insights.tests import context_wrap
 from insights.parsers import machine_id
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 
 MACHINE_ID_CONTENT = """dc194312-8cdd-4e75-8cf1-2094bf666f45 hostname1,hostname2"""
 
@@ -26,13 +26,13 @@ def test_duplicate_id():
 
 
 def test_exception():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         machine_id.DuplicateMachine(context_wrap(WRONG_CONTENT_1))
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         machine_id.DuplicateMachine(context_wrap(WRONG_CONTENT_2))
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         machine_id.DuplicateMachine(context_wrap(WRONG_CONTENT_3))
 
 

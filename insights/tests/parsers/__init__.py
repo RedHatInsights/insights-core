@@ -53,10 +53,10 @@ def skip_exception_check(parser_obj, output_str=""):
         "3.2.25"
     )
 
-    from insights.core.exceptions import SkipException
+    from insights.core.exceptions import SkipComponent
     from insights.tests import context_wrap
 
-    with pytest.raises(SkipException) as ex:
+    with pytest.raises(SkipComponent) as ex:
         parser_obj(context_wrap(output_str))
     return str(ex)
 
