@@ -106,6 +106,7 @@ class Specs(SpecSet):
     crypto_policies_opensshserver = RegistryPoint()
     crypto_policies_state_current = RegistryPoint()
     cryptsetup_luksDump = RegistryPoint(multi_output=True)
+    cupsd_conf = RegistryPoint()
     cups_ppd = RegistryPoint(multi_output=True)
     current_clocksource = RegistryPoint()
     date = RegistryPoint()
