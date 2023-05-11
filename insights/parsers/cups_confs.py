@@ -6,11 +6,14 @@ Parsers provided by this module are:
 
 CupsdConf - file ``/etc/cups/cupsd.conf``
 -----------------------------------------
+CupsFilesConf - file ``/etc/cups/cups-files.conf``
+--------------------------------------------------
 """
 
-from insights.core import ConfigParser
+from insights.core import Parser, ConfigParser
 from insights.core.plugins import parser
 from insights.specs import Specs
+from insights.parsers import get_active_lines
 from insights.parsers.httpd_conf import DocParser
 from insights.core.exceptions import ParseException
 from insights.parsr.query import Entry
@@ -85,3 +88,44 @@ class CupsdConf(ConfigParser):
             content = "\n".join(content)
         result = self.parse(content)[0]
         return Entry(children=result, src=self)
+
+
+@parser(Specs.cups_files_conf)
+class CupsFilesConf(Parser, dict):
+    """
+    Class for parsing the file ``/etc/cups/cups-files.conf``
+
+    Sample file content::
+
+        FatalErrors config
+        SyncOnClose Yes
+        SystemGroup sys root wheel
+        AccessLog syslog
+        ErrorLog syslog
+        PageLog syslog
+
+    Examples:
+        >>> type(cups_files_conf)
+        <class 'insights.parsers.cups_confs.CupsFilesConf'>
+        >>> cups_files_conf['FatalErrors']
+        'config'
+        >>> cups_files_conf['SyncOnClose']
+        'Yes'
+        >>> 'wheel' in cups_files_conf['SystemGroup']
+        True
+    """
+
+    def parse_content(self, content):
+        if not content:
+            raise ParseException('Empty Content')
+
+        for line in get_active_lines(content):
+            k, v = [i.strip() for i in line.split(None, 1)]
+            if k not in self:
+                self[k] = v if len(v.split()) == 1 else v.split()
+            else:
+                _v = self[k]
+                _v = [_v] if not isinstance(_v, list) else _v
+                if v not in _v:
+                    _v.append(v)
+                    self[k] = _v
