@@ -155,6 +155,7 @@ class DefaultSpecs(Specs):
     crypto_policies_state_current = simple_file("/etc/crypto-policies/state/current")
     cryptsetup_luksDump = luks_devices.luks_data_sources
     cupsd_conf = simple_file("/etc/cups/cupsd.conf")
+    cups_files_conf = simple_file("/etc/cups/cups-files.conf")
     cups_ppd = glob_file("etc/cups/ppd/*")
     current_clocksource = simple_file("/sys/devices/system/clocksource/clocksource0/current_clocksource")
     date = simple_command("/bin/date")

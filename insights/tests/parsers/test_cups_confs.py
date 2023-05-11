@@ -3,7 +3,7 @@ import pytest
 
 from insights.core.exceptions import ParseException
 from insights.parsers import cups_confs
-from insights.parsers.cups_confs import CupsdConf
+from insights.parsers.cups_confs import CupsdConf, CupsFilesConf
 from insights.parsr.query import first, last
 from insights.tests import context_wrap
 
@@ -105,6 +105,27 @@ Order deny,allow
 </Policy>
 """.strip()
 
+CUPS_FILES_CONF = """
+FatalErrors config
+SyncOnClose Yes
+# Default user and group for filters/backends/helper programs; this cannot be
+# any user or group that resolves to ID 0 for security reasons...
+#User lp
+#Group lp
+# Administrator user group, used to match @SYSTEM in cupsd.conf policy rules...
+# This cannot contain the Group value for security reasons...
+SystemGroup sys root
+SystemGroup wheel
+# User that is substituted for unauthenticated (remote) root accesses...
+#RemoteRoot remroot
+AccessLog syslog
+ErrorLog syslog
+PageLog syslog
+""".strip()
+
+CUPS_FILES_CONF_EMPTY = """
+""".strip()
+
 
 def test_cupsd_conf():
     context = context_wrap(CUPSD_CONF)
@@ -122,9 +143,24 @@ def test_cupsd_conf_error():
     assert str(exc.value) == "There was an exception when parsing the cupsd.conf file"
 
 
+def test_cups_files_conf():
+    result = CupsFilesConf(context_wrap(CUPS_FILES_CONF))
+    assert len(result) == 6
+    assert 'SyncOnClose' in result
+    assert result['SystemGroup'] == ['sys', 'root', 'wheel']
+    assert result['AccessLog'] == 'syslog'
+
+
+def test_cups_files_conf_empyt():
+    with pytest.raises(ParseException) as exc:
+        CupsFilesConf(context_wrap(CUPS_FILES_CONF_EMPTY))
+    assert str(exc.value) == "Empty Content"
+
+
 def test_doc():
     env = {
-            'cupsd_conf': CupsdConf(context_wrap(CUPSD_CONF_EXAMPLE)),
-          }
+        'cupsd_conf': CupsdConf(context_wrap(CUPSD_CONF_EXAMPLE)),
+        'cups_files_conf': CupsFilesConf(context_wrap(CUPS_FILES_CONF))
+    }
     failed, total = doctest.testmod(cups_confs, globs=env)
     assert failed == 0
