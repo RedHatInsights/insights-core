@@ -94,13 +94,16 @@ class CupsdConf(ConfigParser):
 class CupsFilesConf(CommandParser, dict):
     """
     Class for parsing the file ``/etc/cups/cups-files.conf``
+
     Sample file content::
+
         FatalErrors config
         SyncOnClose Yes
         SystemGroup sys root wheel
         AccessLog syslog
         ErrorLog syslog
         PageLog syslog
+
     Examples:
         >>> type(cups_files_conf)
         <class 'insights.parsers.cups_confs.CupsFilesConf'>
