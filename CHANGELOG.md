@@ -2,6 +2,19 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.1.24](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.24) (2023-05-11)
+
+- Feat: Add new parser CupsFilesConf ([PR 3782](https://github.com/RedHatInsights/insights-core/pull/3782))
+- Feat: Add new parser CupsdConf ([PR 3781](https://github.com/RedHatInsights/insights-core/pull/3781))
+- feat: uname supports RHEL 9.2 ([PR 3789](https://github.com/RedHatInsights/insights-core/pull/3789))
+- fix: Replace SkipException with SkipComponent ([PR 3786](https://github.com/RedHatInsights/insights-core/pull/3786))
+- fix: fix IndexError in PartedL ([PR 3784](https://github.com/RedHatInsights/insights-core/pull/3784))
+- Remove spec lsinitrd_lvm_conf ([PR 3785](https://github.com/RedHatInsights/insights-core/pull/3785))
+- RHICOMPL-3512: Select correct datastream file for Compliance scan ([PR 3776](https://github.com/RedHatInsights/insights-core/pull/3776))
+- fix: sort the filters in the filters.yaml ([PR 3779](https://github.com/RedHatInsights/insights-core/pull/3779))
+- fix: py3.9 test error: 'HTTPResponse' object has no attribute 'strict' ([PR 3780](https://github.com/RedHatInsights/insights-core/pull/3780))
+- fix: Unhandled 'Connection failed' in 'gluster_peer_status' parser ([PR 3768](https://github.com/RedHatInsights/insights-core/pull/3768))
+
 # [insights-core-3.1.23](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.23) (2023-05-04)
 
 - feat: new client_metadata module to hold parsers for all client generated files ([PR 3775](https://github.com/RedHatInsights/insights-core/pull/3775))
