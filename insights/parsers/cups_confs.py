@@ -10,7 +10,7 @@ CupsFilesConf - file ``/etc/cups/cups-files.conf``
 --------------------------------------------------
 """
 
-from insights.core import CommandParser, ConfigParser
+from insights.core import Parser, ConfigParser
 from insights.core.plugins import parser
 from insights.specs import Specs
 from insights.parsers import get_active_lines
@@ -91,7 +91,7 @@ class CupsdConf(ConfigParser):
 
 
 @parser(Specs.cups_files_conf)
-class CupsFilesConf(CommandParser, dict):
+class CupsFilesConf(Parser, dict):
     """
     Class for parsing the file ``/etc/cups/cups-files.conf``
 
