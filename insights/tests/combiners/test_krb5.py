@@ -51,6 +51,14 @@ KRB5CONFIG2 = """
   kdc = test3.example.com
   admin_server = kerberos.example.com
  }
+ EXAMPLE2.COM = {
+  kdc = kerberos.example2.com
+  admin_server = kerberos.example2.com
+ }
+ EXAMPLE3.COM = {
+  kdc = kerberos.example3.com
+  admin_server = kerberos.example3.com
+ } *
 
 [logging]
  default = FILE:/var/log/krb5libs2.log
@@ -58,18 +66,12 @@ KRB5CONFIG2 = """
  admin_server = FILE:/var/log/kadmind2.log
 
 [libdefaults]
+ default_realm = EXAMPLE2.COM
+ dns_canonicalize_hostname = false
  donotoverwrite2 = true
  dnsdsd = false
  tilnvs = 24h
  default_ccache_name = KEYRING:%{uid}:persistent
- EXAMPLE2.COM = {
-  kdc = kerberos.example2.com
-  admin_server = kerberos.example2.com
- }
- EXAMPLE3.COM = {
-  kdc = kerberos.example3.com
-  admin_server = kerberos.example3.com *
- }
 """.strip()
 
 
@@ -89,9 +91,11 @@ def test_active_krb5_nest():
     assert result.has_option("libdefaults", "donotoverwrite1")
     assert result.has_option("libdefaults", "donotoverwrite2")
     assert result.has_option("libdefaults", "donotoverwrite3")
+    assert result.getboolean("libdefaults", "donotoverwrite3") is True
+    assert result.getboolean("libdefaults", "dnsdsd") is False
     assert result["logging"]["kdc"] == "FILE:/var/log/krb5kdc.log"
     assert result.has_option("logging", "admin_server")
-    assert result["libdefaults"]["EXAMPLE2.COM"]["kdc"] == "kerberos.example2.com"
+    assert result["realms"]["EXAMPLE2.COM"]["kdc"] == "kerberos.example2.com"
     assert result["libdefaults"]["default_ccache_name"] == "KEYRING:%{uid}:persistent"
     assert "realms" in result.sections()
     assert "realmstest" not in result.sections()
@@ -104,3 +108,7 @@ def test_active_krb5_nest():
     assert result.includedir == ["/etc/krb5.conf.d/"]
     assert result.module == ["/etc/krb5test.conf:residual"]
     assert result.files == ['krb5.conf', 'test.conf', 'test2.conf']
+    assert result.dns_lookup_realm is True
+    assert result.dns_lookup_kdc is True
+    assert result.default_realm == "EXAMPLE2.COM"
+    assert result.realms == set(["EXAMPLE.COM", "EXAMPLE2.COM", "EXAMPLE3.COM", "EXAMPLE4.COM"])

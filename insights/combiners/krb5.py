@@ -7,7 +7,7 @@ Krb5Configuration objects.
 from copy import deepcopy
 from insights.core import LegacyItemAccess
 from insights.core.plugins import combiner
-from insights.parsers.krb5 import Krb5Configuration
+from insights.parsers.krb5 import Krb5Configuration, _handle_krb5_bool
 
 
 @combiner(Krb5Configuration)
@@ -68,6 +68,10 @@ class AllKrb5Conf(LegacyItemAccess):
         module (list): The module list that `krb5.conf` specifed via 'module'
             directive
         files (list): The list of configuration file names.
+        dns_lookup_realm (bool): is Kerberos realm DNS lookup enabled?
+        dns_lookup_kdc (bool): is Kerberos KDC DNS lookup enabled?
+        default_realm (str/None): default realm for clients
+        realms (set): realm names from [realms] block
 
     """
     def __init__(self, krb5configs):
@@ -94,6 +98,30 @@ class AllKrb5Conf(LegacyItemAccess):
                 self.data[key].update(value)
             else:
                 self.data[key] = value
+
+        def _getbool(option, default=None):
+            if not self.has_option("libdefaults", option):
+                return default
+            return self.getboolean("libdefaults", option)
+
+        self.dns_lookup_realm = _getbool("dns_lookup_realm", True)
+        self.dns_lookup_kdc = _getbool("dns_lookup_kdc", True)
+        if self.has_option("libdefaults", "default_realm"):
+            self.default_realm = self["libdefaults"]["default_realm"]
+        else:
+            self.default_realm = None
+
+        self.realms = set()
+        if self.has_section("realms"):
+            r = self["realms"]
+            for name, value in r.items():
+                if (
+                    # realm entries must be dicts
+                    isinstance(value, dict) and
+                    # realm names look like "UPPER-CASE.COM"
+                    not any(c.islower() or c == "_" for c in name)
+                ):
+                    self.realms.add(name)
 
         super(AllKrb5Conf, self).__init__()
 
@@ -124,6 +152,14 @@ class AllKrb5Conf(LegacyItemAccess):
         if section not in self.data:
             return False
         return option in self.data[section]
+
+    def getboolean(self, section, option):
+        """Parse option as bool
+
+        Returns None is not a krb5.conf boolean string.
+        """
+        value = self.data[section][option]
+        return _handle_krb5_bool(value)
 
 
 def dict_deep_merge(tgt, src):
