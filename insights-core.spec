@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.1.23
+Version:        3.1.24
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,22 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu May 11 2023 Xiangce Liu <xiangceliu@redhat.com> 3.1.24-1
+- Feat: Add new parser CupsFilesConf (#3782) (986222045@qq.com)
+- Feat: Add new parser CupsdConf (#3781) (986222045@qq.com)
+- feat: uname supports RHEL 9.2 (#3789) (xiangceliu@redhat.com)
+- fix: Replace SkipException with SkipComponent (#3786) (xiangceliu@redhat.com)
+- fix: fix IndexError in PartedL (#3784) (xiaoxwan@redhat.com)
+- Remove spec lsinitrd_lvm_conf (#3785)
+  (30404410+qinpingli@users.noreply.github.com)
+- RHICOMPL-3512: Select correct datastream file for Compliance scan (#3776)
+  (33912805+LightOfHeaven1994@users.noreply.github.com)
+- fix: sort the filters in the filters.yaml (#3779) (xiangceliu@redhat.com)
+- fix: py3.9 test error: 'HTTPResponse' object has no attribute 'strict'
+  (#3780) (xiangceliu@redhat.com)
+- fix: Unhandled 'Connection failed' in 'gluster_peer_status' parser (#3768)
+  (xiangceliu@redhat.com)
+
 * Thu May 04 2023 Xiangce Liu <xiangceliu@redhat.com> 3.1.23-1
 - feat: new client_metadata module to hold parsers for all client generated
   files (#3775) (xiangceliu@redhat.com)
