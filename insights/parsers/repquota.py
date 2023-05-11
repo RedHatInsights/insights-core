@@ -9,7 +9,7 @@ RepquotaAGNPUV - command ``repquota -agnpuv``
 
 """
 from insights.core import CommandParser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -60,7 +60,7 @@ class RepquotaAGNPUV(CommandParser):
         True
 
     Raises:
-        insights.core.exceptions.SkipException: if the output of the ``repquota -agnpuv`` command is empty.
+        insights.core.exceptions.SkipComponent: if the output of the ``repquota -agnpuv`` command is empty.
     """
 
     def parse_content(self, content):
@@ -92,4 +92,4 @@ class RepquotaAGNPUV(CommandParser):
                                     accounting='Accounting: ON' in line)
 
         if not self.user_quota and not self.group_quota:
-            raise SkipException("Empty result")
+            raise SkipComponent("Empty result")

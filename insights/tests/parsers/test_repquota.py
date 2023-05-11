@@ -1,4 +1,4 @@
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.parsers import repquota
 from insights.parsers.repquota import RepquotaAGNPUV
 from insights.tests import context_wrap
@@ -51,7 +51,7 @@ def test_repquota():
 
 
 def test_repquota_err():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         repquota.RepquotaAGNPUV(context_wrap(REPQUOTAAGNPUV_ERR))
 
 

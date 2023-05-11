@@ -5,7 +5,7 @@ DuplicateMachine - file ``insights-commands/duplidate_machine_id``
 
 from insights.core.plugins import parser
 from insights.core import Parser
-from insights.core.exceptions import SkipException
+from insights.core.exceptions import SkipComponent
 from insights.specs import Specs
 
 
@@ -31,7 +31,7 @@ class DuplicateMachine(Parser):
         ['hostname1', 'hostname2']
 
     Raises:
-        SkipException: when there is no expected content in the file
+        SkipComponent: when there is no expected content in the file
     """
     def parse_content(self, content):
         if len(content) == 1:
@@ -40,4 +40,4 @@ class DuplicateMachine(Parser):
                 self.duplicate_id = machine_info[0].strip()
                 self.hostnames = machine_info[1].strip().split(',')
         if not hasattr(self, 'duplicate_id'):
-            raise SkipException('No expected machine id found.')
+            raise SkipComponent('No expected machine id found.')
