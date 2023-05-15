@@ -849,10 +849,10 @@ class LvmFullReport(JSONParser):
         <class 'insights.parsers.lvm.LvmFullReport'>
         >>> len(lvm_fullreport.volume_groups)
         2
-        >>> sorted(lvm_fullreport.volume_groups.keys())
-        ['rhel', 'vg1']
-        >>> lvm_fullreport.volume_groups['vg1']['pv'][0]['pv_name']
-        '/dev/vdb'
+        >>> sorted(lvm_fullreport.volume_groups.keys()) == ['rhel', 'vg1']
+        True
+        >>> lvm_fullreport.volume_groups['vg1']['pv'][0]['pv_name'] == '/dev/vdb'
+        True
 
     Raises:
         SkipComponent: when there is no device info.
