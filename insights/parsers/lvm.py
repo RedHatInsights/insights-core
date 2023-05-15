@@ -812,10 +812,10 @@ class LvmFullReport(JSONParser):
             ]
         }
 
-    Output will be a python object in the same structure as the JSON under the "report" key::
+    Output will be a python object in the same structure as the JSON::
 
         {
-            "vg1":
+            "report": [
                 {
                   "vg": [ {"vg_name": "vg1", ...}, ... ],
                   "pv": [ {"pv_name": "/dev/sdg", ...), ... ],
@@ -823,7 +823,6 @@ class LvmFullReport(JSONParser):
                   "pvseg": [ {"pvseg_start": "0", ...}, ... ],
                   "seg": [ {"segtype": "cache-pool", ...}, ... ]
                 },
-            "rhel":
                 {
                   "vg": [ {"vg_name": "rhel", ...}, ... ],
                   "pv": [ {"pv_name": "/dev/sdd", ...), ... ],
@@ -831,8 +830,9 @@ class LvmFullReport(JSONParser):
                   "pvseg": [ {"pvseg_start": "0", ...}, ... ],
                   "seg": [ {"segtype": "linear", ...}, ... ]
                 },
-            ...
-        ]
+                ...
+            ]
+        }
 
     Attributes:
         volume_groups(dict): Dictionary with vg_name as the key, contains a dictionary including
