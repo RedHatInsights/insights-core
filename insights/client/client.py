@@ -28,11 +28,6 @@ LOG_FORMAT = ("%(asctime)s %(levelname)8s %(name)s %(message)s")
 logger = logging.getLogger(__name__)
 
 
-def do_log_rotation():
-    handler = get_file_handler()
-    return handler.doRollover()
-
-
 def get_file_handler(config):
     log_file = config.logging_file
     log_dir = os.path.dirname(log_file)
