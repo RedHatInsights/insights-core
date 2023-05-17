@@ -237,12 +237,9 @@ class InsightsArchiveSpecs(Specs):
         "insights_commands/sudo_-iu_postgres_psql_-d_foreman_-c_select_count_from_hosts"
     ])
     satellite_custom_ca_chain = simple_file("insights_commands/awk_BEGIN_pipe_openssl_x509_-noout_-subject_-enddate_._-_BEGIN_CERT._._-_END_CERT._print_pipe_._-_END_CERT._close_pipe_printf_n_.etc.pki.katello.certs.katello-server-ca.crt")
-    satellite_mongodb_storage_engine = simple_file("insights_commands/mongo_pulp_database_--eval_db.serverStatus_.storageEngine")
-    satellite_katello_repos_with_muliple_ref = simple_file('insights_commands/sudo_-iu_postgres_.usr.bin.psql_-d_foreman_-c_select_repository_href_count_from_katello_repository_references_group_by_repository_href_having_count_1_--csv')
     satellite_provision_param_settings = simple_file('insights_commands/sudo_-iu_postgres_.usr.bin.psql_-d_foreman_-c_select_name_value_from_parameters_where_name_package_upgrade_and_reference_id_in_select_id_from_operatingsystems_where_name_RedHat_and_major_9_--csv')
     satellite_qualified_capsules = simple_file("insights_commands/sudo_-iu_postgres_.usr.bin.psql_-d_foreman_-c_select_name_from_smart_proxies_where_download_policy_background_--csv")
     satellite_qualified_katello_repos = simple_file("insights_commands/sudo_-iu_postgres_.usr.bin.psql_-d_foreman_-c_select_id_name_url_download_policy_from_katello_root_repositories_where_download_policy_background_or_url_is_NULL_--csv")
-    satellite_sca_status = simple_file("insights_commands/sudo_-iu_postgres_.usr.bin.psql_-d_candlepin_-c_select_displayname_content_access_mode_from_cp_owner_--csv")
     sealert = simple_file('insights_commands/sealert_-l')
     sestatus = simple_file("insights_commands/sestatus_-b")
     smbstatus_p = simple_file("insights_commands/smbstatus_-p")
