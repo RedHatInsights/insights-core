@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.1.24
+Version:        3.1.25
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,16 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu May 18 2023 Xiangce Liu <xiangceliu@redhat.com> 3.1.25-1
+- feat: New spec to get RHV hosts count on satellite and its parser (#3794)
+  (44796653+huali027@users.noreply.github.com)
+- fix: add the lvm_conf back to sos_archive (#3796) (xiangceliu@redhat.com)
+- Remove useless postgresql queries (#3793)
+  (44796653+huali027@users.noreply.github.com)
+- feat: uname supports RHEL 8.8 (#3795) (xiangceliu@redhat.com)
+- fix: Add missing multi_output=True for dnf_modules spec (#3791)
+  (rblakley@redhat.com)
+
 * Thu May 11 2023 Xiangce Liu <xiangceliu@redhat.com> 3.1.24-1
 - Feat: Add new parser CupsFilesConf (#3782) (986222045@qq.com)
 - Feat: Add new parser CupsdConf (#3781) (986222045@qq.com)
