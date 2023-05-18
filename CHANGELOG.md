@@ -2,6 +2,14 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.1.25](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.25) (2023-05-18)
+
+- feat: New spec to get RHV hosts count on satellite and its parser ([PR 3794](https://github.com/RedHatInsights/insights-core/pull/3794))
+- fix: add the lvm_conf back to sos_archive ([PR 3796](https://github.com/RedHatInsights/insights-core/pull/3796))
+- Remove useless postgresql queries ([PR 3793](https://github.com/RedHatInsights/insights-core/pull/3793))
+- feat: uname supports RHEL 8.8 ([PR 3795](https://github.com/RedHatInsights/insights-core/pull/3795))
+- fix: Add missing multi_output=True for dnf_modules spec ([PR 3791](https://github.com/RedHatInsights/insights-core/pull/3791))
+
 # [insights-core-3.1.24](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.24) (2023-05-11)
 
 - Feat: Add new parser CupsFilesConf ([PR 3782](https://github.com/RedHatInsights/insights-core/pull/3782))
