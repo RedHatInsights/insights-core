@@ -20,6 +20,8 @@ SatelliteQualifiedCapsules - command ``psql -d foreman -c "select name from smar
 ---------------------------------------------------------------------------------------------------------------------------------------
 SatelliteQualifiedKatelloRepos - command ``psql -d foreman -c "select id, name, url, download_policy from katello_root_repositories where download_policy = 'background' or url is NULL" --csv``
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SatelliteRHVHostsCount - command ``psql -d foreman -c "select count(*) from hosts where \"compute_resource_id\" in (select id from compute_resources where type='Foreman::Model::Ovirt')" --csv``
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 SatelliteSCAStatus - command ``psql -d candlepin -c "select displayname, content_access_mode from cp_owner" --csv``
 -------------------------------------------------------------------------------------------------------------------
 """
@@ -355,6 +357,25 @@ class SatelliteQualifiedCapsules(SatellitePostgreSQLQuery):
         'capsule1.test.com'
     """
     columns = ['name']
+
+
+@parser(Specs.satellite_rhv_hosts_count)
+class SatelliteRHVHostsCount(SatellitePostgreSQLQuery):
+    """
+    Parse the output of the command ``psql -d pulpcore -c "select count(*) from hosts where \"compute_resource_id\" in (select id from compute_resources where type='Foreman::Model::Ovirt')" --csv``.
+
+    Sample output::
+
+        count
+        2
+
+    Examples:
+        >>> type(rhv_hosts)
+        <class 'insights.parsers.satellite_postgresql_query.SatelliteRHVHostsCount'>
+        >>> rhv_hosts[0]['count']
+        '2'
+    """
+    columns = ['count']
 
 
 @parser(Specs.satellite_sca_status)
