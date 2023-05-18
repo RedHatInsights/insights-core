@@ -146,6 +146,7 @@ class SosSpecs(Specs):
         simple_file("sos_commands/pci/lspci")
     ])
     lsscsi = simple_file("sos_commands/scsi/lsscsi")
+    lvm_conf = simple_file("/etc/lvm/lvm.conf")
     lvs_headings = first_file([
         "sos_commands/lvm2/lvs_-a_-o_lv_tags_devices_lv_kernel_read_ahead_lv_read_ahead_stripes_stripesize_--config_global_metadata_read_only_1_--nolocking_--foreign",
         "sos_commands/lvm2/lvs_-a_-o_lv_tags_devices_lv_kernel_read_ahead_lv_read_ahead_stripes_stripesize_--config_global_locking_type_0_metadata_read_only_1",
