@@ -4,7 +4,7 @@ from insights.parsers import systemctl_status_all
 from insights.parsers.systemctl_status_all import SystemctlStatusAll
 from insights.tests import context_wrap
 
-SYSTEMCTLSTATUSALL_ERROR_LOG = """
+SYSTEMCTLSTATUSALL = """
 * redhat.test.com
     State: degraded
      Jobs: 0 queued
@@ -27,15 +27,17 @@ Sep 23 15:11:07 redhat.test.com systemd[1]: proc-sys-fs-binfmt_misc.automount: G
 """.strip()
 
 
-def test_error_log():
-    log = SystemctlStatusAll(context_wrap(SYSTEMCTLSTATUSALL_ERROR_LOG))
-    assert 19 == len(log.lines)
-    assert "Automount point already active?" in log
+def test_systemctl_status():
+    ret = SystemctlStatusAll(context_wrap(SYSTEMCTLSTATUSALL))
+    assert "Automount point already active?" in ret
+    assert ret.state == 'degraded'
+    assert ret.jobs == '0 queued'
+    assert ret.failed == '2 units'
 
 
-def test_crio_conf_documentation():
+def test_doc_example():
     failed_count, tests = doctest.testmod(
         systemctl_status_all,
-        globs={'log': SystemctlStatusAll(context_wrap(SYSTEMCTLSTATUSALL_ERROR_LOG))}
+        globs={'systemctl_status': SystemctlStatusAll(context_wrap(SYSTEMCTLSTATUSALL))}
     )
     assert failed_count == 0
