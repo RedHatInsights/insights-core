@@ -641,6 +641,7 @@ class DefaultSpecs(Specs):
     systemctl_list_units = simple_command("/bin/systemctl list-units")
     systemctl_show_all_services = simple_command("/bin/systemctl show *.service")
     systemctl_show_target = simple_command("/bin/systemctl show *.target")
+    systemctl_status_all = simple_command("/bin/systemctl status --all")
     systemd_analyze_blame = simple_command("/bin/systemd-analyze blame")
     systemd_docker = simple_command("/usr/bin/systemctl cat docker.service")
     systemd_logind_conf = simple_file("/etc/systemd/logind.conf")
