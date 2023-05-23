@@ -89,10 +89,16 @@ MAKE_NONE_RESULT = make_none()
 def deep_compare(result, expected):
     """
     Deep compare rule reducer results when testing.
+
+    .. note::
+        "[None, XX]" is a special format of the `expected` for this methoed to
+        check the missing dependencies.
     """
     logger.debug("--Comparing-- (%s) %s to (%s) %s", type(result), result, type(expected), expected)
 
-    expected, missing = expected if isinstance(expected, (tuple, list, set)) else (expected, None)
+    missing = None
+    if isinstance(expected, (tuple, list, set)) and len(expected) == 2 and expected[0] is None:
+        expected, missing = expected
 
     # This case ensures that when rules return a make_none() response, all of the older
     # CI tests that are looking for None instead of make_none() will still pass
