@@ -92,6 +92,8 @@ def deep_compare(result, expected):
     """
     logger.debug("--Comparing-- (%s) %s to (%s) %s", type(result), result, type(expected), expected)
 
+    expected, missing = expected if isinstance(expected, (tuple, list, set)) else (expected, None)
+
     # This case ensures that when rules return a make_none() response, all of the older
     # CI tests that are looking for None instead of make_none() will still pass
     if result is None or (isinstance(result, dict) and result.get("type") == "none"):
@@ -99,6 +101,11 @@ def deep_compare(result, expected):
         return
 
     if isinstance(result, dict) and expected is None:
+        # checking the missing component (RHINRULE-283)
+        if missing:
+            assert "MISSING_REQUIREMENTS" == result['reason'], result['reason']
+            for mis in [missing] if isinstance(missing, str) else missing:
+                assert mis in result['details'], '"{0}" not in "{1}"'.format(mis, result['details'])
         assert result["type"] == "skip", result
         return
 
