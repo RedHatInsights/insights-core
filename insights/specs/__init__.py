@@ -539,6 +539,7 @@ class Specs(SpecSet):
     postgresql_log = RegistryPoint(multi_output=True, filterable=True)
     prev_uploader_log = RegistryPoint()
     proc_keys = RegistryPoint()
+    proc_keyusers = RegistryPoint()
     proc_netstat = RegistryPoint()
     proc_slabinfo = RegistryPoint()
     proc_snmp_ipv4 = RegistryPoint()

@@ -204,6 +204,7 @@ class SosSpecs(Specs):
             glob_file("/database/postgresql-*.log")
         ]
     )
+    proc_keyusers = simple_file("/proc/key-users")
     ps_alxwww = simple_file("sos_commands/process/ps_alxwww")
     ps_aux = first_file(["sos_commands/process/ps_aux", "sos_commands/process/ps_auxwww", "sos_commands/process/ps_auxcww"])
     ps_auxcww = first_file(["sos_commands/process/ps_auxcww", "sos_commands/process/ps_auxwww", "sos_commands/process/ps_aux", "sos_commands/process/ps_auxwwwm"])
