@@ -260,6 +260,25 @@ def test_fixed_by_rhel5():
         assert expected == fixed_by
 
 
+def test_from_kernel_partial():
+    u = uname.Uname.from_kernel("5.14.0-284.13.1")
+    assert "284.13.1.0.0" == u._lv_release
+
+    u = uname.Uname.from_kernel("5.14.0-284")
+    assert "284.0.0.0.0" == u._lv_release
+
+    early_rhel9 = uname.Uname.from_uname_str("Linux example 5.14.0-70.22.1.el9_0.x86_64 #1 SMP Wed May 24 08:55:08 UTC 2023 x86_64 x86_64 x86_64 GNU/Linux")
+    later_rhel9_1 = uname.Uname.from_kernel("5.14.0-162.18.1")
+    later_rhel9_2 = uname.Uname.from_kernel("5.14.0-284")
+
+    # Test comparison of full uname with partial kernel version
+    assert early_rhel9 < later_rhel9_1
+
+    # Test comparison of partial kernel versions
+    assert early_rhel9 < later_rhel9_2
+    assert later_rhel9_1 < later_rhel9_2
+
+
 def test_from_release():
     release = ("6", "4")
     from_release = uname.Uname.from_release(release)
