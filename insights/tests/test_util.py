@@ -194,6 +194,25 @@ def test_deep_nest_dict_list():
         deep_compare(a, b)
 
 
+def test_deep_compare_special():
+    """
+    Test the special format of the `expected`
+    """
+    a = {'type': 'skip', 'reason': 'MISSING_REQUIREMENTS', 'details': 'test1'}
+    b1 = (None, 'test1')
+    b2 = [None, ['test1']]
+    deep_compare(a, b1)
+    deep_compare(a, b2)
+
+    with pytest.raises(AssertionError):
+        a = {'type': 'skip', 'reason': 'NO_MISSING', 'details': 'test1'}
+        deep_compare(a, b1)
+
+    with pytest.raises(AssertionError):
+        a = {'type': 'skip', 'reason': 'MISSING_REQUIREMENTS', 'details': 'test0'}
+        deep_compare(a, b1)
+
+
 def test_case_variants():
     filter_list = ['Ciphers', 'MACs', 'UsePAM', 'MaxAuthTries', 'nt pipe support',
                    'A-Dash-SEPARATED-tESt-tEST-tesT-test-ExAMPle']

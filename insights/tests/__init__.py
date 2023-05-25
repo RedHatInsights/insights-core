@@ -89,8 +89,16 @@ MAKE_NONE_RESULT = make_none()
 def deep_compare(result, expected):
     """
     Deep compare rule reducer results when testing.
+
+    .. note::
+        "[None, XX]" is a special format of the `expected` for this methoed to
+        check the missing dependencies.
     """
     logger.debug("--Comparing-- (%s) %s to (%s) %s", type(result), result, type(expected), expected)
+
+    missing = None
+    if isinstance(expected, (tuple, list, set)) and len(expected) == 2 and expected[0] is None:
+        expected, missing = expected
 
     # This case ensures that when rules return a make_none() response, all of the older
     # CI tests that are looking for None instead of make_none() will still pass
@@ -99,6 +107,11 @@ def deep_compare(result, expected):
         return
 
     if isinstance(result, dict) and expected is None:
+        # checking the missing component (RHINRULE-283)
+        if missing:
+            assert "MISSING_REQUIREMENTS" == result['reason'], result['reason']
+            for mis in [missing] if isinstance(missing, str) else missing:
+                assert mis in result['details'], '"{0}" not in "{1}"'.format(mis, result['details'])
         assert result["type"] == "skip", result
         return
 
