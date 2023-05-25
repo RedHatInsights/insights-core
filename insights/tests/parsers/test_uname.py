@@ -220,6 +220,9 @@ def test_pad_release():
     assert "390.0.0.el6" == uname.pad_release("390.el6")
     assert "390.12.0.el6" == uname.pad_release("390.12.el6")
     assert "390.12.0.0.el6" == uname.pad_release("390.12.el6", 5)
+    assert "390.0.0.0" == uname.pad_release("390")
+    assert "390.12.0.0" == uname.pad_release("390.12")
+    assert "1160.71.1.0" == uname.pad_release("1160.71.1")
     with pytest.raises(ValueError):
         uname.pad_release('390.11.12.13.el6')
 
