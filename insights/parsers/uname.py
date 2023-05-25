@@ -579,7 +579,7 @@ def pad_release(release_to_pad, num_sections=4):
     ``LooseVersion`` comparisons will be correct.
 
     Release versions with less than num_sections will
-    be padded in front of the last section with zeros.
+    padded with zeros where missing versions segments are.
 
     For example ::
 
@@ -589,7 +589,11 @@ def pad_release(release_to_pad, num_sections=4):
 
         pad_release("390.11.el6", 4)
 
-    will return ``390.11.0.el6``.
+    will return ``390.11.0.el6``. Finally, if no "el" is specified:
+
+        pad_release("390.11", 4)
+
+    will return ``390.11.0.0``.
 
     If the number of sections of the release to be padded is
     greater than num_sections, a ``ValueError`` will be raised.
@@ -602,4 +606,9 @@ def pad_release(release_to_pad, num_sections=4):
         ))
 
     pad_count = num_sections - len(parts)
-    return ".".join(parts[:-1] + ['0'] * pad_count + parts[-1:])
+    is_el_release = any(letter.isalpha() for letter in parts[-1])
+
+    if len(parts) > 1 and is_el_release:
+        return ".".join(parts[:-1] + ['0'] * pad_count + parts[-1:])
+    else:
+        return ".".join(parts + ['0'] * pad_count)
