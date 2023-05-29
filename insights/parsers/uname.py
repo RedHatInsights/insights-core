@@ -253,7 +253,12 @@ class Uname(CommandParser):
             data['kernel'] = uname_parts[2]
             data['name'] = uname_parts[0]
             data['nodename'] = uname_parts[1]
-        has_arch = "el" not in data['kernel'].split(".")[-1]
+
+        # Check if the last segment of kernel version is the architecture (e.g. x86_64)
+        last_kernel_segment = data['kernel'].split(".")[-1]
+        # If the last segment contains "el" then we assume its the product indicator (e.g. el9_2)
+        # If the last segment contains more than just digits we assume its the architecture (e.g. x86_64)
+        has_arch = "el" not in last_kernel_segment and not last_kernel_segment.isdigit()
         try:
             data = self.parse_nvr(data['kernel'], data, arch=has_arch)
         except UnameError as error:
