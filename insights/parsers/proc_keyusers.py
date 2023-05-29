@@ -85,6 +85,6 @@ class ProcKeyUsers(Parser, list):
             if not (len(field_values) == 7 and all(v.isdigit() for v in field_values)):
                 raise SkipComponent("Unparsable line: {0}".format(line))
 
-            parsed_line = {fields[idx]: int(v) for idx, v in enumerate(field_values)}
+            parsed_line = dict((fields[idx], int(v)) for idx, v in enumerate(field_values))
             parsed_line['uid'] = spl_colon[0]
             self.append(parsed_line)
