@@ -102,57 +102,26 @@ def test_dict():
         deep_compare({"foo": 1, "bar": [1, 2, 3]}, {"foo": 1, "bar": [0, 1, 2]})
 
 
-def test_beautify_deep_compare_diff_py3():
+def test_beautify_deep_compare_diff():
     with pytest.raises(AssertionError) as err:
         deep_compare({"foo": "some foo"}, {"bar": "some bar"})
-    # print(err)
-    # print(dir(err))
-    # print(err.message)
-    # print(err.args)
-    # print(err.value)
-    # print(type(err.value))
-    # print(err.tb)
     einfo = None
-    if hasattr(err, "value"):
+    if hasattr(err, "value"):       # py3
         einfo = err.value
-    elif hasattr(err, "message"):
+    elif hasattr(err, "message"):   # py2
         einfo = err.message
-    # print(einfo)
-    # print(type(einfo))
-    # print(str(einfo))
-    # print(repr(einfo))
     assert 'Missing result key "foo" not in expected;' in str(einfo)
     assert 'Extra expected key "bar" not in result;' in str(einfo)
 
-
-def test_beautify_deep_compare_diff_args():
-    with pytest.raises(AssertionError) as err:
-        deep_compare({"foo": "some foo"}, {"bar": "some bar"})
-    # print(err)
-    # print(dir(err))
-    # print(err.message)
-    # print(err.args)
-    # print(err.value)
-    # print(type(err.value))
-    # print(err.tb)
-    einfo = None
-    if hasattr(err, "value"):
-        einfo = err.value
-    elif hasattr(err, "args"):
-        einfo = err.args[0]
-    # print(einfo)
-    # print(type(einfo))
-    # print(str(einfo))
-    # print(repr(einfo))
-    assert 'Missing result key "foo" not in expected;' in str(einfo)
-    assert 'Extra expected key "bar" not in result;' in str(einfo)
-
-
-def test_beautify_deep_compare_diff_py2():
     with pytest.raises(AssertionError) as err:
         deep_compare({"e": "k", "common": "left"}, {"e": "k", "common": "right"})
-    assert 'Unequal value of "common":' in str(err)
-    assert 'Result: ' in str(err)
+    einfo = None
+    if hasattr(err, "value"):       # py3
+        einfo = err.value
+    elif hasattr(err, "message"):   # py2
+        einfo = err.message
+    assert 'Unequal value of "common":' in str(einfo)
+    assert 'Result: ' in str(einfo)
 
 
 def test_deep_nest():
