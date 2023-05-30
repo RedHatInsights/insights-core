@@ -101,7 +101,7 @@ def _beautify_deep_compare_diff(result, expected):
         diff.append('\tExtra expected key "{0}" not in result;'.format(k))
     for k in common_keys:
         if not eq(result[k], expected[k]):
-            diff.append('\tUnequal value of "{0}":\n\t\tExpected: "{1}"\n\t\tResult: "{2}"'.format(
+            diff.append('\tUnequal value of "{0}":\n\t\tExpected: {1}\n\t\tResult: {2}'.format(
                             k, expected[k], result[k]))
     if not diff:
         diff.append('\tUnrecognized unequal value in result layer one;')
