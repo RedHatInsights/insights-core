@@ -102,6 +102,18 @@ def test_dict():
         deep_compare({"foo": 1, "bar": [1, 2, 3]}, {"foo": 1, "bar": [0, 1, 2]})
 
 
+def test_beautify_deep_compare_diff():
+    with pytest.raises(AssertionError) as err:
+        deep_compare({"foo": "some foo"}, {"bar": "some bar"})
+    assert 'Missing result key "foo" not in expected;' in str(err)
+    assert 'Extra expected key "bar" not in result;' in str(err)
+
+    with pytest.raises(AssertionError) as err:
+        deep_compare({"e": "k", "common": "left"}, {"e": "k", "common": "right"})
+    assert 'Unequal value of "common":' in str(err)
+    assert 'Result: ' in str(err)
+
+
 def test_deep_nest():
     a = {"error_key": "test1", "stuff": {"abba": [{"foo": 2}]}}
     b = {"error_key": "test1", "stuff": {"abba": [{"foo": 2}]}}

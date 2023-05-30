@@ -86,6 +86,30 @@ DEFAULT_HOSTNAME = "hostname.example.com"
 MAKE_NONE_RESULT = make_none()
 
 
+def _beautify_deep_compare_diff(result, expected):
+    if not (isinstance(result, dict) and isinstance(expected, dict)):
+        return result
+
+    expected_keys = set(expected.keys())
+    result_keys = set(result.keys())
+    common_keys = set.intersection(result_keys, expected_keys)
+
+    diff = []
+    for k in result_keys - common_keys:
+        diff.append('\tMissing result key "{0}" not in expected;'.format(k))
+    for k in expected_keys - common_keys:
+        diff.append('\tExtra expected key "{0}" not in result;'.format(k))
+    for k in common_keys:
+        if not eq(result[k], expected[k]):
+            diff.append('\tUnequal value of "{0}":\n\t\tExpected: "{1}"\n\t\tResult: "{2}"'.format(
+                            k, expected[k], result[k]))
+    if not diff:
+        diff.append('\tUnrecognized unequal value in result layer one;')
+
+    diff.append('Result: "{0}"'.format(result))
+    return '\n' + '\n'.join(diff)
+
+
 def deep_compare(result, expected):
     """
     Deep compare rule reducer results when testing.
@@ -115,7 +139,7 @@ def deep_compare(result, expected):
         assert result["type"] == "skip", result
         return
 
-    assert eq(result, expected), result
+    assert eq(result, expected), _beautify_deep_compare_diff(result, expected)
 
 
 def run_input_data(component, input_data, store_skips=False):
