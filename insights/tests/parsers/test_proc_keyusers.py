@@ -1,7 +1,7 @@
 import doctest
 import pytest
 
-from insights.core.exceptions import SkipComponent
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import proc_keyusers
 from insights.parsers.proc_keyusers import ProcKeyUsers
 from insights.tests import context_wrap
@@ -58,15 +58,14 @@ def test_proc_keyusers_valid():
 
 
 def test_proc_keyusers_invalid():
-    with pytest.raises(SkipComponent) as e:
+    with pytest.raises(SkipComponent):
         ProcKeyUsers(context_wrap(PROC_KEYUSERS_EMPTY))
-    assert 'Empty content' in str(e)
 
     for input in [PROC_KEYUSERS_INVALID_1,
                     PROC_KEYUSERS_INVALID_2,
                     PROC_KEYUSERS_INVALID_3,
                     PROC_KEYUSERS_INVALID_4]:
-        with pytest.raises(SkipComponent) as e:
+        with pytest.raises(ParseException) as e:
             ProcKeyUsers(context_wrap(input))
         assert "Unparsable line: " in str(e)
 

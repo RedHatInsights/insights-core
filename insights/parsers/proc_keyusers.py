@@ -6,7 +6,7 @@ This parser reads the content of ``/proc/key-users``.
 
 """
 from insights.core import Parser
-from insights.core.exceptions import SkipComponent
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
@@ -65,9 +65,6 @@ class ProcKeyUsers(Parser, list):
 
     def parse_content(self, content):
 
-        if not content:
-            raise SkipComponent("Empty content")
-
         fields = tuple(["usage", "nkeys", "nikeys", "qnkeys", "maxkeys", "qnbytes", "maxbytes"])
 
         for line in content:
@@ -76,15 +73,19 @@ class ProcKeyUsers(Parser, list):
             value_pairs = spl_colon[-1].split()
 
             if not (len(spl_colon) == 2 and len(value_pairs) == 4 and spl_colon[0].isdigit()):
-                raise SkipComponent("Unparsable line: {0}".format(line))
+                raise ParseException("Unparsable line: {0}".format(line))
 
-            field_values = []
-            for vp in value_pairs:
-                field_values.extend(vp.split('/', 1))
+            try:
+                field_values = [int(v) for vp in value_pairs for v in vp.split('/', 1)]
+            except ValueError:
+                raise ParseException("Unparsable line: not int value: {0}".format(line))
 
-            if not (len(field_values) == 7 and all(v.isdigit() for v in field_values)):
-                raise SkipComponent("Unparsable line: {0}".format(line))
+            if not len(field_values) == 7:
+                raise ParseException("Unparsable line: unexpected value count: {0}".format(line))
 
-            parsed_line = dict((fields[idx], int(v)) for idx, v in enumerate(field_values))
+            parsed_line = dict(zip(fields, field_values))
             parsed_line['uid'] = spl_colon[0]
             self.append(parsed_line)
+
+        if len(self) == 0:
+            raise SkipComponent
