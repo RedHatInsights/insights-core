@@ -108,6 +108,7 @@ KRB5_DCONF_PATH = "etc/krb5.conf.d/test.conf"
 def test_krb5configuration():
     common_conf_info = krb5.Krb5Configuration(context_wrap(KRB5CONFIG, path=KRB5_CONF_PATH))
     assert common_conf_info["libdefaults"]["dnsdsd"] == "false"
+    assert common_conf_info.getboolean("libdefaults", "dnsdsd") is False
     assert "renew_lifetime" not in common_conf_info.data.keys()
     assert common_conf_info["realms"]["EXAMPLE.COM"]["kdc"] == "kerberos.example.com"
     assert common_conf_info["realms"]["default_ccache_name"] == "KEYRING:persistent:%{uid}"
@@ -127,6 +128,8 @@ def test_krb5configuration():
     common_conf_info = krb5.Krb5Configuration(context_wrap(KRB5CONFIG3, path=KRB5_CONF_PATH))
     assert len(common_conf_info.sections()) == 4
     assert common_conf_info.has_section('domain_realm') is True
+    assert common_conf_info.getboolean("libdefaults", "forwardable") is True
+    assert common_conf_info.getboolean("libdefaults", "renew_lifetime") is None
     assert sorted(common_conf_info.options('logging')) == sorted(['default', 'kdc', 'admin_server'])
     assert common_conf_info.has_option('libdefaults', 'dns_lookup_realm') is True
     assert common_conf_info.has_option('domain_realm', 'example.com') is False
@@ -144,3 +147,14 @@ def test_krb5Dconfiguration():
     assert common_conf_info["realms"]["EXAMPLE.COM"]["kdc"] == ['kerberos.example.com', 'test2.example.com', 'test3.example.com']
     assert common_conf_info.has_option("logging", "admin_server")
     assert common_conf_info["logging"]["kdc"] == "FILE:/var/log/krb5kdc.log"
+
+
+def test_handle_krb5_bool():
+    assert krb5._handle_krb5_bool("yes") is True
+    assert krb5._handle_krb5_bool("1") is True
+    assert krb5._handle_krb5_bool("on") is True
+    assert krb5._handle_krb5_bool("no") is False
+    assert krb5._handle_krb5_bool("false") is False
+    assert krb5._handle_krb5_bool("0") is False
+    assert krb5._handle_krb5_bool("unknown") is None
+    assert krb5._handle_krb5_bool("") is None
