@@ -2,6 +2,17 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.1.26](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.26) (2023-06-01)
+
+- feat: add spec and parser for proc_keyusers ([PR 3802](https://github.com/RedHatInsights/insights-core/pull/3802))
+- FEAT: Add new parser EtcMachineId ([PR 3805](https://github.com/RedHatInsights/insights-core/pull/3805))
+- Feat: remove spec ls_rsyslog_errorfile ([PR 3803](https://github.com/RedHatInsights/insights-core/pull/3803))
+- Feat: Add identity domain combiner ([PR 3790](https://github.com/RedHatInsights/insights-core/pull/3790))
+- fix: correctly identify final segment of kernel version in uname ([PR 3801](https://github.com/RedHatInsights/insights-core/pull/3801))
+- feat: enhance test to check the missing components ([PR 3798](https://github.com/RedHatInsights/insights-core/pull/3798))
+- fix: uname pad release without el segment ([PR 3800](https://github.com/RedHatInsights/insights-core/pull/3800))
+- feat: update SystemctlStatusAll and add its spec back ([PR 3797](https://github.com/RedHatInsights/insights-core/pull/3797))
+
 # [insights-core-3.1.25](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.25) (2023-05-18)
 
 - feat: New spec to get RHV hosts count on satellite and its parser ([PR 3794](https://github.com/RedHatInsights/insights-core/pull/3794))
