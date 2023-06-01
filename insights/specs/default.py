@@ -501,6 +501,7 @@ class DefaultSpecs(Specs):
         ]
     )
     proc_keys = simple_file("/proc/keys")
+    proc_keyusers = simple_file("/proc/key-users")
     proc_netstat = simple_file("proc/net/netstat")
     proc_slabinfo = simple_file("proc/slabinfo")
     proc_snmp_ipv4 = simple_file("proc/net/snmp")
