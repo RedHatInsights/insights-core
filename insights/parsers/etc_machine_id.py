@@ -28,6 +28,6 @@ class EtcMachineId(Parser):
 
     def parse_content(self, content):
         content = get_active_lines(content)
-        if not content:
+        if not content or len(content) != 1:
             raise SkipComponent('Empty Content')
         self.machine_id = content[0]
