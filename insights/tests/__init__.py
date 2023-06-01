@@ -90,21 +90,24 @@ def _beautify_deep_compare_diff(result, expected):
     if not (isinstance(result, dict) and isinstance(expected, dict)):
         return result
 
+    if result.get('type') == 'skip':
+        return result
+
     expected_keys = set(expected.keys())
     result_keys = set(result.keys())
     common_keys = set.intersection(result_keys, expected_keys)
 
     diff = []
     for k in result_keys - common_keys:
-        diff.append('\tMissing result key "{0}" not in expected;'.format(k))
+        diff.append('\tkey "{0}" not in Expected;'.format(k))
     for k in expected_keys - common_keys:
-        diff.append('\tExtra expected key "{0}" not in result;'.format(k))
+        diff.append('\tkey "{0}" not in Result;'.format(k))
     for k in common_keys:
         if not eq(result[k], expected[k]):
-            diff.append('\tUnequal value of "{0}":\n\t\tExpected: {1}\n\t\tResult: {2}'.format(
+            diff.append('\tkey "{0}" unequal values:\n\t\tExpected: {1}\n\t\tResult  : {2}'.format(
                             k, expected[k], result[k]))
     if not diff:
-        diff.append('\tUnrecognized unequal value in result layer one;')
+        diff.append('\tUnrecognized unequal values in result layer one;')
 
     diff.append('Result: "{0}"'.format(result))
     return '\n' + '\n'.join(diff)

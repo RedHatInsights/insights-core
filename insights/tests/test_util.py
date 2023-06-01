@@ -110,8 +110,8 @@ def test_beautify_deep_compare_diff():
         einfo = err.value
     elif hasattr(err, "message"):   # py2
         einfo = err.message
-    assert 'Missing result key "foo" not in expected;' in str(einfo)
-    assert 'Extra expected key "bar" not in result;' in str(einfo)
+    assert 'key "foo" not in Expected;' in str(einfo)
+    assert 'key "bar" not in Result;' in str(einfo)
 
     with pytest.raises(AssertionError) as err:
         deep_compare({"e": "k", "common": "left"}, {"e": "k", "common": "right"})
@@ -120,7 +120,7 @@ def test_beautify_deep_compare_diff():
         einfo = err.value
     elif hasattr(err, "message"):   # py2
         einfo = err.message
-    assert 'Unequal value of "common":' in str(einfo)
+    assert 'key "common" unequal values:' in str(einfo)
     assert 'Result: ' in str(einfo)
 
 
