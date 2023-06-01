@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.1.25
+Version:        3.1.26
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,20 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jun 01 2023 Xiangce Liu <xiangceliu@redhat.com> 3.1.26-1
+- feat: add spec and parser for proc_keyusers (#3802) (xiaoxwan@redhat.com)
+- FEAT: Add new parser EtcMachineId (#3805) (986222045@qq.com)
+- Feat: remove spec ls_rsyslog_errorfile (#3803) (986222045@qq.com)
+- Feat: Add identity domain combiner (#3790) (cheimes@redhat.com)
+- fix: correctly identify final segment of kernel version in uname (#3801)
+  (bostrt@users.noreply.github.com)
+- feat: enhance test to check the missing components (#3798)
+  (xiangceliu@redhat.com)
+- fix: uname pad release without el segment (#3800)
+  (bostrt@users.noreply.github.com)
+- feat: update SystemctlStatusAll and add its spec back (#3797)
+  (xiangceliu@redhat.com)
+
 * Thu May 18 2023 Xiangce Liu <xiangceliu@redhat.com> 3.1.25-1
 - feat: New spec to get RHV hosts count on satellite and its parser (#3794)
   (44796653+huali027@users.noreply.github.com)
