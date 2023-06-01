@@ -146,12 +146,6 @@ plugins:
         - name: insights.combiners.services
           enabled: true
 
-    # needed for the 'ls_rsyslog_errorfile' spec
-        - name: insights.combiners.rsyslog_confs.RsyslogAllConf
-          enabled: true
-        - name: insights.parsers.rsyslog_conf.RsyslogConf
-          enabled: true
-
     # needed for the 'teamdctl_state_dump' spec
         - name: insights.parsers.nmcli.NmcliConnShow
           enabled: true
