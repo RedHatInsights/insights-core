@@ -88,7 +88,7 @@ class SSSD_Config(IniConfigFile):
         if self.has_option('sssd', 'domains'):
             domains = self.get('sssd', 'domains')
             if domains:
-                return domains.split(',')
+                return [domain.strip() for domain in domains.split(',')]
 
         # Return a blank list if no domains.
         return []
