@@ -1360,6 +1360,56 @@
       "tags": [
         "boot"
       ]
+    },
+    {
+      "audience": "sysadmin",
+      "detail": {
+        "external": [
+          {
+            "title": "Red Hat Enterprise Linux Technology Capabilities and Limits",
+            "url": "https://access.redhat.com/articles/rhel-limits"
+          }
+        ]
+      },
+      "flags": [
+        "inhibitor"
+      ],
+      "key": "e3066f6fae135718b3158597145554c4f22b9372",
+      "severity": "high",
+      "summary": "Memory detected: 464 MiB, required: 1536 MiB",
+      "title": "Minimum memory requirements for RHEL 9 are not met",
+      "timeStamp": "2023-06-02T08:30:17.221568Z",
+      "hostname": "localhost.localdomain",
+      "actor": "checkmemory",
+      "id": "924bc5f5b2d6b3bc8b98557355520066b05b27e79c0ea682c96da66b1ac97d30",
+      "tags": [
+        "sanity"
+      ]
+    },
+    {
+      "audience": "sysadmin",
+      "detail": {
+        "related_resources": [
+          {
+            "scheme": "file",
+            "title": "/etc/os-release"
+          }
+        ]
+      },
+      "flags": [
+        "inhibitor"
+      ],
+      "key": "1c7a98849a747ec9890f04bf4321de7280970715",
+      "severity": "high",
+      "summary": "The supported OS releases for the upgrade process:\n RHEL 8.6\nRHEL 8.8\nRHEL-SAPHANA 8.6",
+      "title": "The installed OS version is not supported for the in-place upgrade to the target RHEL version",
+      "timeStamp": "2023-06-02T08:30:14.483926Z",
+      "hostname": "localhost.localdomain",
+      "actor": "check_os_release",
+      "id": "8aec443d233db1df446fe453051ae31f7201eb98597e7e11fbb7424bbee1d434",
+      "tags": [
+        "sanity"
+      ]
     }
   ],
   "leapp_run_id": "00000000-1022-4cec-b743-000000000000"

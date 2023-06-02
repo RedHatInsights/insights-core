@@ -1,1 +1,70 @@
-[{"groups": ["inhibitor"], "title": "Use of NFS detected. Upgrade can't proceed", "summary": "NFS is currently not supported by the inplace upgrade.\nWe have found NFS usage at the following locations:\n- NFS shares found in /etc/fstab:\n - nfs01b.redhat.com:/devops_engineering_nfs/devarchive/redhat /mnt/redhat\n - nest.test.redhat.com:/mnt/qa /mnt/qa\n - vtap-eng01.redhat.com:/vol/engarchive /mnt/engarchive\n - nest.test.redhat.com:/mnt/tpsdist /mnt/tpsdist\n - nfs01b.redhat.com:/devops_engineering_nfs/devarchive/redhat/brewroot /mnt/brew\n - nfs01b.redhat.com:/devops_brew_scratch_nfs/scratch /mnt/brew_scratch\n- NFS shares currently mounted:\n - nfs01b.redhat.com:/devops_engineering_nfs/devarchive/redhat /mnt/redhat\n - nest.test.redhat.com:/mnt/qa /mnt/qa\n", "remediations": [{"context": "Disable NFS temporarily for the upgrade if possible.", "type": "hint"}]}, {"groups": ["inhibitor"], "title": "Possible problems with remote login using root account", "summary": "OpenSSH configuration file will get updated to RHEL9 version, no longer allowing root login with password. It is a good practice to use non-root administrative user and non-password authentications, but if you rely on the remote root login, this change can lock you out of this system.", "remediations": [{"context": "If you depend on remote root logins using passwords, consider setting up a different user for remote administration or adding a comment into the sshd_config next to the \"PermitRootLogin yes\" directive to prevent rpm replacing it during the upgrade.", "type": "hint"}]}]
+[
+   {
+      "groups":[
+         "inhibitor"
+      ],
+      "title":"Use of NFS detected. Upgrade can't proceed",
+      "summary":"NFS is currently not supported by the inplace upgrade.\nWe have found NFS usage at the following locations:\n- NFS shares found in /etc/fstab:\n - nfs01b.redhat.com:/devops_engineering_nfs/devarchive/redhat /mnt/redhat\n - nest.test.redhat.com:/mnt/qa /mnt/qa\n - vtap-eng01.redhat.com:/vol/engarchive /mnt/engarchive\n - nest.test.redhat.com:/mnt/tpsdist /mnt/tpsdist\n - nfs01b.redhat.com:/devops_engineering_nfs/devarchive/redhat/brewroot /mnt/brew\n - nfs01b.redhat.com:/devops_brew_scratch_nfs/scratch /mnt/brew_scratch\n- NFS shares currently mounted:\n - nfs01b.redhat.com:/devops_engineering_nfs/devarchive/redhat /mnt/redhat\n - nest.test.redhat.com:/mnt/qa /mnt/qa\n",
+      "related_resources":[
+         {
+            "scheme":"file",
+            "title":"/etc/fstab"
+         }
+      ],
+      "remediations":[
+         {
+            "context":"Disable NFS temporarily for the upgrade if possible.",
+            "type":"hint"
+         }
+      ]
+   },
+   {
+      "groups":[
+         "inhibitor"
+      ],
+      "title":"Possible problems with remote login using root account",
+      "summary":"OpenSSH configuration file will get updated to RHEL9 version, no longer allowing root login with password. It is a good practice to use non-root administrative user and non-password authentications, but if you rely on the remote root login, this change can lock you out of this system.",
+      "related_resources":[
+         {
+            "scheme":"package",
+            "title":"openssh-server"
+         },
+         {
+            "scheme":"file",
+            "title":"/etc/ssh/sshd_config"
+         }
+      ],
+      "remediations":[
+         {
+            "context":"If you depend on remote root logins using passwords, consider setting up a different user for remote administration or adding a comment into the sshd_config next to the \"PermitRootLogin yes\" directive to prevent rpm replacing it during the upgrade.",
+            "type":"hint"
+         }
+      ]
+   },
+   {
+      "groups":[
+         "inhibitor"
+      ],
+      "title":"Minimum memory requirements for RHEL 9 are not met",
+      "summary":"Memory detected: 464 MiB, required: 1536 MiB",
+      "external":[
+         {
+            "title":"Red Hat Enterprise Linux Technology Capabilities and Limits",
+            "url":"https://access.redhat.com/articles/rhel-limits"
+         }
+      ]
+   },
+   {
+      "groups":[
+         "inhibitor"
+      ],
+      "title":"The installed OS version is not supported for the in-place upgrade to the target RHEL version",
+      "summary":"The supported OS releases for the upgrade process:\n RHEL 8.6\nRHEL 8.8\nRHEL-SAPHANA 8.6",
+      "related_resources":[
+         {
+            "scheme":"file",
+            "title":"/etc/os-release"
+         }
+      ]
+   }
+]

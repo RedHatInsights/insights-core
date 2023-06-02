@@ -2,9 +2,10 @@
 Custom datasources for leapp
 """
 import json
+import os
 
 from insights.core.context import HostContext
-from insights.core.exceptions import ContentException
+from insights.core.exceptions import ContentException, SkipComponent
 from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider
 
@@ -22,14 +23,16 @@ def leapp_report(broker):
         str: JSON string after get the required data.
 
     Raises:
-        ContentException: When the path does not exist, nothing is collected,
-                          or any exception occurs.
+        SkipComponent: When the `leapp_report.json` does not exist or nothing need to collect
+        ContentException: When any exception occurs.
     """
     leapp_report_path = "/var/log/leapp/leapp-report.json"
+    if not os.path.isfile(leapp_report_path):
+        raise SkipComponent("No such file")
     try:
         relative_path = 'insights_commands/leapp_report'
         valid_keys = {
-            'inhibitor': ['title', 'summary', ('detail', 'remediations')]
+            'inhibitor': ['title', 'summary', 'detail']
         }
         with open(leapp_report_path, 'r') as fp:
             json_report = json.load(fp)
@@ -41,17 +44,11 @@ def leapp_report(broker):
                         if flag in groups:
                             ret = dict(groups=groups)
                             for key in keys:
-                                if isinstance(key, tuple):
-                                    tmp = entry
-                                    for k in key:
-                                        tmp = tmp[k]
-                                    ret[key[-1]] = tmp
-                                else:
-                                    ret[key] = entry[key]
+                                detail = entry.get(key)
+                                ret.update(detail if isinstance(detail, dict) else {key: detail}) if detail else None
                             results.append(ret)
                 if results:
-                    print('results=', results)
                     return DatasourceProvider(content=json.dumps(results), relative_path=relative_path)
+                raise SkipComponent("Nothing")
     except Exception as e:
         raise ContentException(e)
-    raise ContentException("Invalid JSON format")
