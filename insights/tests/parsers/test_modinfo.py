@@ -3,7 +3,7 @@ import pytest
 
 from insights.core.exceptions import SkipComponent
 from insights.parsers import modinfo
-from insights.parsers.modinfo import ModInfoEach, ModInfoAll, KernelModulesInfo
+from insights.parsers.modinfo import KernelModulesInfo
 from insights.tests import context_wrap
 
 MODINFO_I40E = """
@@ -156,9 +156,6 @@ parm:           max_vfs:Maximum number of virtual functions to allocate per phys
 parm:           debug:Debug level (0=none,...,16=all) (int)
 """.strip()
 
-MODINFO_NO = """
-""".strip()
-
 MODINFO_NO_1 = """
 modinfo ERROR Module i40e not found.
 """.strip()
@@ -217,9 +214,7 @@ def test_kernel_modules_info():
 
 def test_modinfo_doc_examples():
     env = {
-            'modinfo_obj': ModInfoEach(context_wrap(MODINFO_I40E)),
-            'modinfo_all': ModInfoAll(context_wrap("{0}\n{1}".format(MODINFO_VMXNET3, MODINFO_I40E))),
-            'mods_info': KernelModulesInfo(context_wrap("{0}\n{1}".format(MODINFO_VMXNET3, MODINFO_I40E)))
+        'mods_info': KernelModulesInfo(context_wrap("{0}\n{1}".format(MODINFO_VMXNET3, MODINFO_I40E)))
     }
     failed, total = doctest.testmod(modinfo, globs=env)
     assert failed == 0

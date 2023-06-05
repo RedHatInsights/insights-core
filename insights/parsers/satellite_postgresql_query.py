@@ -35,7 +35,6 @@ from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import calc_offset, keyword_search
 from insights.specs import Specs
-from insights.util import deprecated
 
 
 class SatellitePostgreSQLQuery(CommandParser, list):
@@ -203,40 +202,6 @@ class SatelliteCoreTaskReservedResourceCount(SatellitePostgreSQLQuery):
         '0'
     """
     columns = ['count']
-
-
-@parser(Specs.satellite_katello_empty_url_repositories)
-class SatelliteKatelloEmptyURLRepositories(SatellitePostgreSQLQuery):
-    """
-    .. warning::
-        This parser is deprecated, please use
-        :py:class:`insights.parsers.satellite_postgresql_query.SatelliteQualifiedKatelloRepos` instead.
-
-    Parse the output of the command ``psql -d foreman -c 'select id, name from katello_root_repositories where url is NULL;' --csv``.
-
-    Sample output::
-
-        id,name
-        54,testa
-        55,testb
-
-    Examples:
-        >>> type(katello_root_repositories)
-        <class 'insights.parsers.satellite_postgresql_query.SatelliteKatelloEmptyURLRepositories'>
-        >>> len(katello_root_repositories)
-        2
-        >>> katello_root_repositories[0]['name']
-        'testa'
-    """
-    columns = ['id', 'name']
-
-    def __init__(self, *args, **kwargs):
-        deprecated(
-            SatelliteKatelloEmptyURLRepositories,
-            "Please use the SatelliteQualifiedKatelloRepos parser in the current module.",
-            "3.1.25"
-        )
-        super(SatelliteKatelloEmptyURLRepositories, self).__init__(*args, **kwargs)
 
 
 @parser(Specs.satellite_logs_table_size)

@@ -158,7 +158,7 @@ class SosSpecs(Specs):
     mdadm_E = glob_file("sos_commands/md/mdadm_-E_*")
     mistral_executor_log = simple_file("/var/log/mistral/executor.log")
     mlx4_port = glob_file("/sys/bus/pci/devices/*/mlx4_port[0-9]")
-    modinfo_all = glob_file("sos_commands/kernel/modinfo_*")
+    modinfo_filtered_modules = simple_file("sos_commands/kernel/modinfo_ALL_MODULES")
     mokutil_sbstate = simple_file("sos_commands/boot/mokutil_--sb-state")
     mount = simple_file("sos_commands/filesys/mount_-l")
     mountinfo = simple_file("proc/self/mountinfo")
