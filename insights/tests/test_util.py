@@ -102,6 +102,28 @@ def test_dict():
         deep_compare({"foo": 1, "bar": [1, 2, 3]}, {"foo": 1, "bar": [0, 1, 2]})
 
 
+def test_beautify_deep_compare_diff():
+    with pytest.raises(AssertionError) as err:
+        deep_compare({"foo": "some foo"}, {"bar": "some bar"})
+    einfo = None
+    if hasattr(err, "value"):       # py3
+        einfo = err.value
+    elif hasattr(err, "message"):   # py2
+        einfo = err.message
+    assert 'key "foo" not in Expected;' in str(einfo)
+    assert 'key "bar" not in Result;' in str(einfo)
+
+    with pytest.raises(AssertionError) as err:
+        deep_compare({"e": "k", "common": "left"}, {"e": "k", "common": "right"})
+    einfo = None
+    if hasattr(err, "value"):       # py3
+        einfo = err.value
+    elif hasattr(err, "message"):   # py2
+        einfo = err.message
+    assert 'key "common" unequal values:' in str(einfo)
+    assert 'Result: ' in str(einfo)
+
+
 def test_deep_nest():
     a = {"error_key": "test1", "stuff": {"abba": [{"foo": 2}]}}
     b = {"error_key": "test1", "stuff": {"abba": [{"foo": 2}]}}
