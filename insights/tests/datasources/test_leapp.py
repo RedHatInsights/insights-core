@@ -32,10 +32,10 @@ INPUT_NG_1 = json.loads("""
 INPUT_NG_2 = json.loads("{}")
 
 
+@patch("json.load", return_value=INPUT_OK)
 @patch("os.path.isfile", return_value=True)
 @patch(builtin_open)
-@patch("json.load", return_value=INPUT_OK)
-def test_leapp_report_ok(mopen, misfile, mload):
+def test_leapp_report_ok(m_open, m_isfile, m_load):
     result = leapp_report({})
     result_json = json.loads(''.join(result.content).strip())
     expected_json = json.loads(''.join(RESULT).strip())
@@ -43,19 +43,19 @@ def test_leapp_report_ok(mopen, misfile, mload):
         assert ret in expected_json
 
 
+@patch("json.load", return_value=INPUT_NG_1)
 @patch("os.path.isfile", return_value=True)
 @patch(builtin_open)
-@patch("json.load", return_value=INPUT_NG_1)
-def test_leapp_report_nothing(mopen, misfile, mload):
+def test_leapp_report_nothing(m_open, m_isfile, m_load):
     with pytest.raises(SkipComponent) as ce:
         leapp_report({})
     assert "Nothing" in str(ce)
 
 
+@patch("json.load", return_value=INPUT_NG_2)
 @patch("os.path.isfile", return_value=True)
 @patch(builtin_open)
-@patch("json.load", return_value=INPUT_NG_2)
-def test_leapp_report_ng_2(mopen, misfile, mload):
+def test_leapp_report_ng_2(m_open, m_isfile, m_load):
     with pytest.raises(ContentException) as ce:
         leapp_report({})
     assert "Nothing" in str(ce)
