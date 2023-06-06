@@ -207,6 +207,12 @@ count
 2
 """.strip()
 
+SATELLITE_IGNORE_SOURCE_RPMS_REPOS = """
+id,name
+4,Red Hat Enterprise Linux 8 for x86_64 - AppStream RPMs 8
+7,Red Hat Enterprise Linux 8 for x86_64 - BaseOS RPMs 8
+""".strip()
+
 
 def test_HTL_doc_examples():
     settings = satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_SETTINGS_1))
@@ -219,6 +225,7 @@ def test_HTL_doc_examples():
     param_settings = satellite_postgresql_query.SatelliteProvisionParamSettings(context_wrap(SATELLITE_PROVISION_PARAMETERS_HIT_1))
     logs_table = satellite_postgresql_query.SatelliteLogsTableSize(context_wrap(SATELLITE_LOGS_TABLE_SIZE1))
     rhv_hosts = satellite_postgresql_query.SatelliteRHVHostsCount(context_wrap(SATELLITE_RHV_HOSTS_COUNT))
+    ignore_srpm_repos = satellite_postgresql_query.SatelliteIgnoreSourceRpmsRepos(context_wrap(SATELLITE_IGNORE_SOURCE_RPMS_REPOS))
     globs = {
         'table': settings,
         'resources_table': resources_table,
@@ -229,7 +236,8 @@ def test_HTL_doc_examples():
         'multi_ref_katello_repos': multi_ref_katello_repos,
         'param_settings': param_settings,
         'logs_table': logs_table,
-        'rhv_hosts': rhv_hosts
+        'rhv_hosts': rhv_hosts,
+        'i_srpm_repos': ignore_srpm_repos
     }
     failed, _ = doctest.testmod(satellite_postgresql_query, globs=globs)
     assert failed == 0
@@ -355,3 +363,12 @@ def test_satelite_rhv_hosts():
 def test_satellite_logs_table_size_except():
     with pytest.raises(ParseException):
         satellite_postgresql_query.SatelliteLogsTableSize(context_wrap(SATELLITE_LOGS_TABLE_SIZE3))
+
+
+def test_satellite_ignore_srpm_repos():
+    i_srpms_repos = satellite_postgresql_query.SatelliteIgnoreSourceRpmsRepos(context_wrap(SATELLITE_IGNORE_SOURCE_RPMS_REPOS))
+    assert len(i_srpms_repos) == 2
+    assert i_srpms_repos[0]['id'] == '4'
+    assert i_srpms_repos[0]['name'] == 'Red Hat Enterprise Linux 8 for x86_64 - AppStream RPMs 8'
+    assert i_srpms_repos[1]['id'] == '7'
+    assert i_srpms_repos[1]['name'] == 'Red Hat Enterprise Linux 8 for x86_64 - BaseOS RPMs 8'

@@ -561,6 +561,10 @@ class DefaultSpecs(Specs):
     )
     satellite_custom_hiera = simple_file("/etc/foreman-installer/custom-hiera.yaml")
     satellite_enabled_features = simple_command("/usr/bin/curl -sk https://localhost:9090/features --connect-timeout 5", deps=[IsSatellite])
+    satellite_ignore_source_rpms_repos = simple_command(
+        "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c \"select id, name from katello_root_repositories where ignorable_content like '%srpm%' and mirroring_policy='mirror_complete'\" --csv",
+        deps=[IsSatellite]
+    )
     satellite_logs_table_size = simple_command(
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c \"select pg_total_relation_size('logs') as logs_size\" --csv",
         deps=[IsSatellite]

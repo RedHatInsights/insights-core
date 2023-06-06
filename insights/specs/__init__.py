@@ -626,6 +626,7 @@ class Specs(SpecSet):
     satellite_custom_ca_chain = RegistryPoint()
     satellite_custom_hiera = RegistryPoint()
     satellite_enabled_features = RegistryPoint()
+    satellite_ignore_source_rpms_repos = RegistryPoint()
     satellite_katello_repos_with_muliple_ref = RegistryPoint()
     satellite_logs_table_size = RegistryPoint()
     satellite_missed_pulp_agent_queues = RegistryPoint()
