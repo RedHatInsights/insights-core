@@ -212,7 +212,6 @@ def test_HTL_doc_examples():
     settings = satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_SETTINGS_1))
     resources_table = satellite_postgresql_query.SatelliteComputeResources(context_wrap(SATELLITE_COMPUTE_RESOURCE_1))
     sat_sca_info = satellite_postgresql_query.SatelliteSCAStatus(context_wrap(SATELLITE_SCA_INFO_1))
-    repositories = satellite_postgresql_query.SatelliteKatelloEmptyURLRepositories(context_wrap(SATELLITE_KATELLO_ROOT_REPOSITORIES))
     tasks = satellite_postgresql_query.SatelliteCoreTaskReservedResourceCount(context_wrap(SATELLITE_TASK_RESERVERDRESOURCE_CONTENT))
     capsules = satellite_postgresql_query.SatelliteQualifiedCapsules(context_wrap(SATELLITE_CAPSULES_WITH_BACKGROUND_DOWNLOADPOLICY))
     repos = satellite_postgresql_query.SatelliteQualifiedKatelloRepos(context_wrap(SATELLITE_REPOS_INFO))
@@ -224,7 +223,6 @@ def test_HTL_doc_examples():
         'table': settings,
         'resources_table': resources_table,
         'sat_sca_info': sat_sca_info,
-        'katello_root_repositories': repositories,
         'tasks': tasks,
         'capsules': capsules,
         'repos': repos,
@@ -300,22 +298,6 @@ def test_satellite_compute_resources():
 def test_satellite_sca():
     sat_sca_info = satellite_postgresql_query.SatelliteSCAStatus(context_wrap(SATELLITE_SCA_INFO_2))
     assert not sat_sca_info.sca_enabled
-
-
-def test_satellite_katello_empty_url_repositories():
-    repositories = satellite_postgresql_query.SatelliteKatelloEmptyURLRepositories(context_wrap(SATELLITE_KATELLO_ROOT_REPOSITORIES))
-    assert repositories[1]['name'] == 'testb'
-
-    table = satellite_postgresql_query.SatelliteKatelloEmptyURLRepositories(context_wrap(SATELLITE_QUERY_DATA1))
-    assert len(table) == 1
-    assert table[0]['id'] == '1'
-    assert table[0]['name'] == 'Puppet_Base'
-
-    with pytest.raises(SkipComponent):
-        satellite_postgresql_query.SatelliteKatelloEmptyURLRepositories(context_wrap(SATELLITE_QUERY_DATA2))
-
-    with pytest.raises(ValueError):
-        satellite_postgresql_query.SatelliteKatelloEmptyURLRepositories(context_wrap(SATELLITE_QUERY_DATA3))
 
 
 def test_satellite_taskreservedresource():
