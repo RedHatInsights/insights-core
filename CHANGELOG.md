@@ -2,6 +2,13 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.2.0](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.0) (2023-06-08)
+
+- Feat: new spec "ls -lan /etc/watchdog.d/" ([PR 3813](https://github.com/RedHatInsights/insights-core/pull/3813))
+- fix: support inhibitor entries with missing remediations ([PR 3809](https://github.com/RedHatInsights/insights-core/pull/3809))
+- chore: remove the planned deprecated modules from 3.2.0 ([PR 3811](https://github.com/RedHatInsights/insights-core/pull/3811))
+- feat: beautify testcase deep_compare diff details ([PR 3804](https://github.com/RedHatInsights/insights-core/pull/3804))
+
 # [insights-core-3.1.26](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.1.26) (2023-06-01)
 
 - feat: add spec and parser for proc_keyusers ([PR 3802](https://github.com/RedHatInsights/insights-core/pull/3802))
