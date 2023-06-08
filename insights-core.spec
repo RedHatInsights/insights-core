@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.1.26
+Version:        3.2.0
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,16 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jun 08 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.0-1
+- Feat: new spec "ls -lan /etc/watchdog.d/" (#3813)
+  (44796653+huali027@users.noreply.github.com)
+- fix: support inhibitor entries with missing remediations (#3809)
+  (xiangceliu@redhat.com)
+- chore: remove the planned deprecated modules from 3.2.0 (#3811)
+  (xiangceliu@redhat.com)
+- feat: beautify testcase deep_compare diff details (#3804)
+  (xiaoxwan@redhat.com)
+
 * Thu Jun 01 2023 Xiangce Liu <xiangceliu@redhat.com> 3.1.26-1
 - feat: add spec and parser for proc_keyusers (#3802) (xiaoxwan@redhat.com)
 - FEAT: Add new parser EtcMachineId (#3805) (986222045@qq.com)
