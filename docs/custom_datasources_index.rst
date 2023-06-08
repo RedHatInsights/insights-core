@@ -127,7 +127,7 @@ insights.specs.datasources.leapp
 --------------------------------
 
 .. automodule:: insights.specs.datasources.leapp
-    :members: leapp_report, LocalSpecs
+    :members: leapp_report
     :show-inheritance:
     :undoc-members:
 
