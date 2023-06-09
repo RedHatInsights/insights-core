@@ -18,6 +18,8 @@ udp_diag               16384  0
 inet_diag              24576  2 tcp_diag,udp_diag
 binfmt_misc            69632  0
 udp_diag               18632  0
+mfe_aac_100713183      23360   0
+mfe_aac_100712495       3360   0
 """.strip()
 
 LSMOD_NO_LOADED = """
@@ -34,6 +36,8 @@ def setup_function(func):
 
     if func is test_module_filters:
         filters.add_filter(Specs.modinfo_modules, ["udp_diag", "binfmt_misc", "wireguard"])
+    if func is test_module_filters_2:
+        filters.add_filter(Specs.modinfo_modules, ["mfe_aac"])
     if func is test_module_no_loaded_modules:
         filters.add_filter(Specs.modinfo_modules, ["udp_diag", "binfmt_misc", "wireguard"])
     if func is test_module_filters_empty:
@@ -45,6 +49,13 @@ def test_module_filters():
     broker = {LsMod: lsmod_info}
     result = kernel_module_filters(broker)
     assert 'binfmt_misc udp_diag' == result
+
+
+def test_module_filters_2():
+    lsmod_info = LsMod(context_wrap(LSMOD))
+    broker = {LsMod: lsmod_info}
+    result = kernel_module_filters(broker)
+    assert 'mfe_aac_100713183 mfe_aac_100712495' == result
 
 
 def test_module_filters_empty():
