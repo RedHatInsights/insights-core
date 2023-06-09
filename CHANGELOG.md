@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.2.1](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.1) (2023-06-09)
+
+- Enhance datasource kernel_module_list ([PR 3816](https://github.com/RedHatInsights/insights-core/pull/3816))
+
 # [insights-core-3.2.0](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.0) (2023-06-08)
 
 - Feat: new spec "ls -lan /etc/watchdog.d/" ([PR 3813](https://github.com/RedHatInsights/insights-core/pull/3813))
