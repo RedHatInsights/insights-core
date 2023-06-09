@@ -19,8 +19,9 @@ def kernel_module_filters(broker):
     if filters:
         loaded_modules = []
         for item in filters:
-            if item in broker[LsMod]:
-                loaded_modules.append(item)
+            module_list = [module for module in broker[LsMod].data if item in module]
+            if module_list:
+                loaded_modules.extend(module_list)
         if loaded_modules:
             return ' '.join(loaded_modules)
         raise SkipComponent
