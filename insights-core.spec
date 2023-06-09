@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.2.0
+Version:        3.2.1
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,9 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Fri Jun 09 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.1-1
+- Enhance datasource kernel_module_list (#3816) (986222045@qq.com)
+
 * Thu Jun 08 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.0-1
 - Feat: new spec "ls -lan /etc/watchdog.d/" (#3813)
   (44796653+huali027@users.noreply.github.com)
