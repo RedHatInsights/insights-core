@@ -10,6 +10,8 @@ SatelliteComputeResources - command ``psql -d foreman -c 'select name, type from
 -----------------------------------------------------------------------------------------------------------
 SatelliteCoreTaskReservedResourceCount - command ``psql -d pulpcore -c 'select count(*) from core_taskreservedresource' --csv``
 -------------------------------------------------------------------------------------------------------------------------------
+SatelliteIgnoreSourceRpmsRepos - command ``psql -d foreman -c "select id, name from katello_root_repositories where ignorable_content like '%srpm%' and mirroring_policy='mirror_complete'" --csv``
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 SatelliteKatellloReposWithMultipleRef - command ``psql -d foreman -c "select repository_href, count(*) from katello_repository_references group by repository_href having count(*) > 1;" --csv``
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 SatelliteLogsTableSize - command ``psql -d foreman -c "select pg_total_relation_size('logs') as logs_size" --csv``
@@ -204,6 +206,28 @@ class SatelliteCoreTaskReservedResourceCount(SatellitePostgreSQLQuery):
     columns = ['count']
 
 
+@parser(Specs.satellite_ignore_source_rpms_repos)
+class SatelliteIgnoreSourceRpmsRepos(SatellitePostgreSQLQuery):
+    """
+    Parse the output of the command ``psql -d foreman -c "select id, name from katello_root_repositories where ignorable_content like '%srpm%' and mirroring_policy='mirror_complete'" --csv``.
+
+    Sample output::
+
+        id,name
+        4,Red Hat Enterprise Linux 8 for x86_64 - AppStream RPMs 8
+
+    Examples:
+        >>> type(i_srpm_repos)
+        <class 'insights.parsers.satellite_postgresql_query.SatelliteIgnoreSourceRpmsRepos'>
+        >>> i_srpm_repos[0]['id']
+        '4'
+        >>> i_srpm_repos[0]['name']
+        'Red Hat Enterprise Linux 8 for x86_64 - AppStream RPMs 8'
+
+    """
+    columns = ['id', 'name']
+
+
 @parser(Specs.satellite_logs_table_size)
 class SatelliteLogsTableSize(SatellitePostgreSQLQuery):
     """
@@ -327,7 +351,7 @@ class SatelliteQualifiedCapsules(SatellitePostgreSQLQuery):
 @parser(Specs.satellite_rhv_hosts_count)
 class SatelliteRHVHostsCount(SatellitePostgreSQLQuery):
     """
-    Parse the output of the command ``psql -d pulpcore -c "select count(*) from hosts where \"compute_resource_id\" in (select id from compute_resources where type='Foreman::Model::Ovirt')" --csv``.
+    Parse the output of the command ``psql -d foreman -c "select count(*) from hosts where \"compute_resource_id\" in (select id from compute_resources where type='Foreman::Model::Ovirt')" --csv``.
 
     Sample output::
 
