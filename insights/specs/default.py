@@ -640,6 +640,7 @@ class DefaultSpecs(Specs):
     sysconfig_oracleasm = simple_file("/etc/sysconfig/oracleasm")
     sysconfig_prelink = simple_file("/etc/sysconfig/prelink")
     sysconfig_sshd = simple_file("/etc/sysconfig/sshd")
+    sysconfig_stonith = simple_file("/etc/sysconfig/stonith")
     sysctl = simple_command("/sbin/sysctl -a")
     sysctl_conf = simple_file("/etc/sysctl.conf")
     sysctl_d_conf_etc = glob_file("/etc/sysctl.d/*.conf")

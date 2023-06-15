@@ -63,6 +63,9 @@ PrelinkSysconfig - file ``/etc/sysconfig/prelink``
 SshdSysconfig - file ``/etc/sysconfig/sshd``
 --------------------------------------------
 
+StonithSysconfig - file ``/etc/sysconfig/stonith``
+--------------------------------------------------
+
 PuppetserverSysconfig - file ``/etc/sysconfig/puppetserver``
 ------------------------------------------------------------
 
@@ -576,6 +579,26 @@ class PuppetserverSysconfig(SysconfigOptions):
         '300'
         >>> 'AUTO' in pps_syscfg
         False
+    """
+    pass
+
+
+@parser(Specs.sysconfig_stonith)
+class StonithSysconfig(SysconfigOptions):
+    """
+    Class to parse the ``/etc/sysconfig/stonith``
+
+    Sample Input::
+
+        retry=3
+        retry-sleep=2
+        verbose=yes    # optional
+
+    Examples:
+        >>> 'retry' in stonith_syscfg
+        True
+        >>> stonith_syscfg['retry']
+        '3'
     """
     pass
 
