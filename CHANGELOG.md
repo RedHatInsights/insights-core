@@ -2,6 +2,13 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.2.2](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.2) (2023-06-15)
+
+- Feat: new spec "/var/log/watchdog/*" and the parser ([PR 3819](https://github.com/RedHatInsights/insights-core/pull/3819))
+- Feat: new spec "/etc/sysconfig/stonith" and its parser ([PR 3817](https://github.com/RedHatInsights/insights-core/pull/3817))
+- feat: New spec to get repos which ingores source rpms on Satellite ([PR 3812](https://github.com/RedHatInsights/insights-core/pull/3812))
+- feat: update logging file handler for logrotate ([PR 3765](https://github.com/RedHatInsights/insights-core/pull/3765))
+
 # [insights-core-3.2.1](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.1) (2023-06-09)
 
 - Enhance datasource kernel_module_list ([PR 3816](https://github.com/RedHatInsights/insights-core/pull/3816))
