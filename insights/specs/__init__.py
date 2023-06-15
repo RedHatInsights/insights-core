@@ -707,6 +707,7 @@ class Specs(SpecSet):
     sysconfig_oracleasm = RegistryPoint()
     sysconfig_prelink = RegistryPoint()
     sysconfig_sshd = RegistryPoint()
+    sysconfig_stonith = RegistryPoint()
     sysconfig_virt_who = RegistryPoint()
     sysctl = RegistryPoint()
     sysctl_conf = RegistryPoint()
