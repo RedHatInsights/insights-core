@@ -1,6 +1,6 @@
 """
-WatchDogLog - file ``/var/log/watchdog/*``
-==========================================
+WatchDogLog - file ``/var/log/watchdog/*.std*``
+===============================================
 """
 
 from insights import LogFileOutput, parser
@@ -10,7 +10,7 @@ from insights.specs import Specs
 @parser(Specs.watchdog_logs)
 class WatchDogLog(LogFileOutput):
     """
-    Class for parsing ``/var/log/watchdog/*`` files.
+    Class for parsing ``/var/log/watchdog/*.std*`` files.
 
     Sample Input::
 
