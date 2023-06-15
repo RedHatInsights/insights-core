@@ -15,6 +15,7 @@ from insights.parsers.sysconfig import NetworkSysconfig
 from insights.parsers.sysconfig import GrubSysconfig
 from insights.parsers.sysconfig import OracleasmSysconfig
 from insights.parsers.sysconfig import NfsSysconfig
+from insights.parsers.sysconfig import StonithSysconfig
 import doctest
 
 
@@ -206,6 +207,12 @@ BLKMAPDARGS=""
 RPCNFSDCOUNT=256
 """.strip()
 
+STONITH_CONFIG = """
+retry=3
+retry-sleep=2
+verbose=yes    # optional
+""".strip()
+
 
 def test_sysconfig_doc():
     env = {
@@ -232,7 +239,8 @@ def test_sysconfig_doc():
             'net_syscfg': NetworkSysconfig(context_wrap(NETWORK_SYSCONFIG)),
             'nfs_syscfg': NfsSysconfig(context_wrap(NFS_SYSCONFIG)),
             'grub_syscfg': GrubSysconfig(context_wrap(GRUB_SYSCONFIG)),
-            'oracleasm_syscfg': OracleasmSysconfig(context_wrap(ORACLEASM_SYSCONFIG))
+            'oracleasm_syscfg': OracleasmSysconfig(context_wrap(ORACLEASM_SYSCONFIG)),
+            'stonith_syscfg': StonithSysconfig(context_wrap(STONITH_CONFIG))
           }
     failed, total = doctest.testmod(sysconfig, globs=env)
     assert failed == 0
