@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.2.1
+Version:        3.2.2
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,15 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jun 15 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.2-1
+- Feat: new spec "/var/log/watchdog/*" and the parser (#3819)
+  (44796653+huali027@users.noreply.github.com)
+- Feat: new spec "/etc/sysconfig/stonith" and its parser (#3817)
+  (44796653+huali027@users.noreply.github.com)
+- feat: New spec to get repos which ingores source rpms on Satellite (#3812)
+  (44796653+huali027@users.noreply.github.com)
+- feat: update logging file handler for logrotate (#3765) (jajerome@redhat.com)
+
 * Fri Jun 09 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.1-1
 - Enhance datasource kernel_module_list (#3816) (986222045@qq.com)
 
