@@ -1215,7 +1215,7 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
         """
         time_format = self.time_format
         if time_format is None:
-            raise SkipComponent('Not applied when time_format does not exist')
+            raise RuntimeError('Not applied when time_format does not exist')
 
         # Annoyingly, strptime insists that it get the whole time string and
         # nothing but the time string.  However, for most logs we only have a

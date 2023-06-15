@@ -1,4 +1,3 @@
-from insights.core.exceptions import SkipComponent
 import pytest
 
 from insights.parsers.watchdog_logs import WatchDogLog
@@ -26,5 +25,5 @@ def test_watchdog():
 
 def test_exception():
     watch_log = WatchDogLog(context_wrap(WATCHDOG_LOG))
-    with pytest.raises(SkipComponent):
+    with pytest.raises(RuntimeError):
         list(watch_log.get_after('2013-1-1'))
