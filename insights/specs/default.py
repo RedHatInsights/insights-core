@@ -687,6 +687,7 @@ class DefaultSpecs(Specs):
     vma_ra_enabled = simple_file("/sys/kernel/mm/swap/vma_ra_enabled")
     vsftpd = simple_file("/etc/pam.d/vsftpd")
     vsftpd_conf = simple_file("/etc/vsftpd/vsftpd.conf")
+    watchdog_logs = glob_file("/var/log/watchdog/*.std*")
     wc_proc_1_mountinfo = simple_command("/usr/bin/wc -l /proc/1/mountinfo")
     x86_ibpb_enabled = simple_file("sys/kernel/debug/x86/ibpb_enabled")
     x86_ibrs_enabled = simple_file("sys/kernel/debug/x86/ibrs_enabled")

@@ -995,6 +995,7 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
     * A list of `strptime()` strings.
     * A dictionary with each item's value being a `strptime()` string.  This
       allows the item keys to provide some form of documentation.
+    * A None value when there is no timestamp info in the log file
     """
 
     def parse_content(self, content):
@@ -1213,6 +1214,8 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
                 values like day of year or week of year.
         """
         time_format = self.time_format
+        if time_format is None:
+            raise RuntimeError('Not applied when time_format does not exist')
 
         # Annoyingly, strptime insists that it get the whole time string and
         # nothing but the time string.  However, for most logs we only have a
