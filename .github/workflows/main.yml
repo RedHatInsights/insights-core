@@ -39,25 +39,29 @@ jobs:
     container: ubuntu:18.04
 
     steps:
+    - uses: actions/checkout@v3
     - name: Install sudo package
       run: apt update && apt install sudo
-    - name: Install add-apt-repository
-      run: sudo apt-get install -y --no-install-recommends software-properties-common
-    - uses: actions/checkout@v3
-    - name: apt-install python26
-      run: |
-        sudo add-apt-repository -y 'ppa:deadsnakes/ppa'
-        sudo apt-get update
-        sudo apt-get install -y --no-install-recommends libssl1.0-dev
-        sudo apt-get install -y python2.6  python2.6-dev
-        sudo update-alternatives --install /usr/bin/python python /usr/bin/python2.6 1
-        sudo update-alternatives --set python /usr/bin/python2.6
     - name: install dependencies
-      run: sudo apt-get install -y --no-install-recommends git curl unzip file
-    - name: get depenencies
+      run: |
+        sudo apt-get install -y --no-install-recommends software-properties-common
+        sudo apt-get install -y --no-install-recommends libssl1.0-dev zlib1g-dev
+        sudo apt-get install -y build-essential git curl unzip file wget tar
+    - name: build python26
+      run: |
+        CUR_DIR=$(pwd)
+        cd ../
+        wget https://www.python.org/ftp/python/2.6.9/Python-2.6.9.tgz
+        tar zxf ./Python-2.6.9.tgz
+        sed -e "s:'\/usr\/lib64',:'\/usr\/lib64', '\/usr\/lib/x86_64-linux-gnu',:" ./Python-2.6.9/setup.py -i
+        mkdir ./Python-2.6.9/build && cd ./Python-2.6.9/build
+        ../configure --prefix=$HOME/python26 && make && make install
+        sudo update-alternatives --install /usr/bin/python python $HOME/python26/bin/python2.6 1
+        sudo update-alternatives --set python $HOME/python26/bin/python2.6
+        cd ${CUR_DIR}
+    - name: build setuptools and pip
       run: |
         export PATH=$PATH:/github/home/.local/bin
-        git clone https://github.com/SteveHNH/jenkins-s2i-example.git pips
         CUR_DIR=$(pwd)
         mkdir ../tools && cd ../tools
         curl -L -O https://files.pythonhosted.org/packages/b8/04/be569e393006fa9a2c10ef72ea33133c2902baa115dd1d4279dae55c3b3b/setuptools-36.8.0.zip
@@ -65,8 +69,17 @@ jobs:
         python setup.py install --user && cd ..
         curl -L -O https://github.com/pypa/pip/archive/refs/tags/9.0.3.tar.gz
         tar -xvzf 9.0.3.tar.gz && cd pip-9.0.3
-        python setup.py install --user && cd ${CUR_DIR}
-        pip install --user -r ./pips/slave26/ci_requirements.txt -f ./pips/slave26/pip_packages
+        python setup.py install --user
+        cd ${CUR_DIR}
+    - name: get depenencies
+      run: |
+        export PATH=$PATH:/github/home/.local/bin
+        CUR_DIR=$(pwd)
+        cd ../
+        git clone https://github.com/SteveHNH/jenkins-s2i-example.git pips
+        (cd ./pips/slave26/pip_packages && test -f coverage-4.3.4-cp26-cp26mu-manylinux1_x86_64.whl && mv coverage-4.3.4-cp26-cp26mu-manylinux1_x86_64.whl coverage-4.3.4-py2.py3-none-any.whl)
+        pip install --user --no-index -f ./pips/slave26/pip_packages -r ./pips/slave26/ci_requirements.txt
+        cd ${CUR_DIR}
         mkdir ../collections_module
         sudo curl -L -o ./../collections_module/collections.py https://raw.githubusercontent.com/RedHatInsights/insights-core/5c8ca0f2fb3de45908e8d931d40758af34a7997a/.collections.py
     - name: flake8
