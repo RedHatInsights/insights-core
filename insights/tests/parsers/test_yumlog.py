@@ -1,6 +1,8 @@
+import doctest
 import pytest
 
-from insights.core.exceptions import ParseException
+from insights.core.exceptions import ParseException, SkipComponent
+from insights.parsers import yumlog
 from insights.parsers.yumlog import YumLog
 from insights.tests import context_wrap
 
@@ -43,6 +45,17 @@ THROWS_PARSEEXCEPTION = """
 Jan 24 00:24:09 Updated:
 """
 
+DOC = """
+May 23 18:06:24 Installed: wget-1.14-10.el7_0.1.x86_64
+Jan 24 00:24:00 Updated: glibc-2.12-1.149.el6_6.4.x86_64
+Jan 24 00:24:09 Updated: glibc-devel-2.12-1.149.el6_6.4.x86_64
+Jan 24 00:24:10 Updated: nss-softokn-3.14.3-19.el6_6.x86_64
+Jan 24 18:10:05 Updated: 1:openssl-libs-1.0.1e-51.el7_2.5.x86_64
+Jan 24 00:24:11 Updated: glibc-2.12-1.149.el6_6.4.i686
+May 23 16:09:09 Erased: redhat-access-insights-batch
+Jan 24 00:24:11 Updated: glibc-devel-2.12-1.149.el6_6.4.i686
+""".strip()
+
 
 def test_iteration():
     yl = YumLog(context_wrap(OKAY))
@@ -67,6 +80,26 @@ def test_present():
     assert e.pkg.version == '1.0.1e'
 
 
+def test_packages_of():
+    yl = YumLog(context_wrap(OKAY))
+
+    pkgs = yl.packages_of('Installed')
+    assert len(pkgs) == 1
+    pkgs = yl.packages_of('Updated')
+    assert len(pkgs) == 4
+    pkgs = yl.packages_of(['Installed', 'Updated'])
+    assert len(pkgs) == 5
+
+    e = pkgs.get('openssl-libs')
+    assert e.pkg.name == 'openssl-libs'
+    assert e.pkg.version == '1.0.1e'
+
+    pkgs = yl.packages_of(['Erased'])
+    assert len(pkgs) == 2
+    assert "katello-agent" in pkgs
+    assert "redhat-access-insights-batch" in pkgs
+
+
 def test_error():
     yl = YumLog(context_wrap(ERROR))
 
@@ -86,6 +119,14 @@ def test_exception_throwing():
         YumLog(context_wrap(THROWS_PARSEEXCEPTION))
     assert "YumLog could not parse" in str(e_info.value)
 
+    with pytest.raises(SkipComponent):
+        YumLog(context_wrap(""))
+
+    yl = YumLog(context_wrap(OKAY))
+    with pytest.raises(KeyError) as ke:
+        yl.packages_of(['Eras'])
+    assert "Invalid State(s)" in str(ke)
+
 
 def test_erased():
     yl = YumLog(context_wrap(OKAY))
@@ -94,3 +135,9 @@ def test_erased():
 
     yl2 = YumLog(context_wrap(OKAY2))
     assert any(e.pkg.name == "systemd" for e in yl2) is True
+
+
+def test_doc_example():
+    env = {'yl': YumLog(context_wrap(DOC))}
+    failed, total = doctest.testmod(yumlog, globs=env)
+    assert failed == 0
