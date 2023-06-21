@@ -41,7 +41,7 @@ class EAPJSONReports(JSONParser):
     Examples:
         >>> type(eap_json_report)
         <class 'insights.parsers.eap_json_reports.EAPJSONReports'>
-        >>> eap_json_report["version"]
+        >>> str(eap_json_report["version"])
         '1.0.0'
         >>> "idHash" in eap_json_report
         True
