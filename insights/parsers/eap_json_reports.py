@@ -6,13 +6,13 @@ EAP runtime will generate JSON report files under /var/tmp/insights-runtimes/upl
 This module provides processing for the json report files of EAP runtimes.
 """
 
-from insights.core import JSONParser, CommandParser
+from insights.core import JSONParser
 from insights.core.plugins import parser
 from insights.specs import Specs
 
 
 @parser(Specs.eap_json_reports)
-class EAPJSONReports(CommandParser, JSONParser):
+class EAPJSONReports(JSONParser):
     """
     Class to parse the EAP json report files.
 
