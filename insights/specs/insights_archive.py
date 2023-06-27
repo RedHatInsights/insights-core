@@ -109,6 +109,7 @@ class InsightsArchiveSpecs(Specs):
     iptables = simple_file("insights_commands/iptables-save")
     ipv4_neigh = simple_file("insights_commands/ip_-4_neighbor_show_nud_all")
     ipv6_neigh = simple_file("insights_commands/ip_-6_neighbor_show_nud_all")
+    iris_list = simple_file("insights_commands/iris_list")
     iscsiadm_m_session = simple_file("insights_commands/iscsiadm_-m_session")
     journal_header = simple_file("insights_commands/journalctl_--no-pager_--header")
     keystone_crontab = first_file(["insights_commands/crontab_-l_-u_keystone", "var/spool/cron/keystone"])
