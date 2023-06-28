@@ -26,11 +26,18 @@ Examples:
 
 from insights.specs import Specs
 from .. import parser, CommandParser, FileListing
+from insights.util import deprecated
 
 
 @parser(Specs.ls_edac_mc)
 class LsEdacMC(CommandParser, FileListing):
     """
+    .. warning::
+        This class is deprecated and will be removed from 3.5.0.
+        Please use the :class:`insights.parsers.ls.LSlanR` instead.
+
     Parse the /sys/devices/system/edac/mc directory listing using a standard FileListing parser.
     """
-    pass
+    def __init__(self, *args, **kwargs):
+        deprecated(LsEdacMC, "Please use the :class:`insights.parsers.ls.LSlanR` instead.", "3.5.0")
+        super(LsEdacMC, self).__init__(*args, **kwargs)

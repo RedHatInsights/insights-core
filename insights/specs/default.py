@@ -25,7 +25,7 @@ from insights.components.satellite import IsSatellite611, IsSatellite
 from insights.specs import Specs
 from insights.specs.datasources import (
     aws, awx_manage, cloud_init, candlepin_broker, corosync as corosync_ds,
-    dir_list, ethernet, httpd, ipcs, kernel_module_list, leapp, lpstat,
+    dir_list, ethernet, httpd, ipcs, kernel_module_list, leapp, lpstat, ls,
     machine_ids, md5chk, package_provides, ps as ps_datasource, sap,
     satellite_missed_queues, semanage, ssl_certificate, sys_fs_cgroup_memory,
     sys_fs_cgroup_memory_tasks_number, rpm_pkgs, user_group, yum_updates,
@@ -334,6 +334,17 @@ class DefaultSpecs(Specs):
     lpfc_max_luns = simple_file("/sys/module/lpfc/parameters/lpfc_max_luns")
     lpstat_p = simple_command("/usr/bin/lpstat -p")
     lpstat_protocol_printers = lpstat.lpstat_protocol_printers_info
+    # New `ls` Specs
+    ls_la = command_with_args('/bin/ls -la %s', ls.list_with_la, keep_rc=True)
+    ls_la_filtered = command_with_args('/bin/ls -la %s', ls.list_with_la, keep_rc=True)  # Result is filtered
+    ls_lan = command_with_args('/bin/ls -lan %s', ls.list_with_lan, keep_rc=True)
+    ls_lan_filtered = command_with_args('/bin/ls -lan %s', ls.list_with_lan, keep_rc=True)  # Result is filtered
+    ls_lanL = command_with_args('/bin/ls -lanL %s', ls.list_with_lanL, keep_rc=True)
+    ls_lanR = command_with_args('/bin/ls -lanR %s', ls.list_with_lanR, keep_rc=True)
+    ls_lanRL = command_with_args('/bin/ls -lanRl %s', ls.list_with_lanRL, keep_rc=True)
+    ls_lanRZ = command_with_args('/bin/ls -lanRZ %s', ls.list_with_lanRZ, keep_rc=True)
+    ls_lanZ = command_with_args('/bin/ls -lanZ %s', ls.list_with_lanZ, keep_rc=True)
+    # Old `ls` Specs
     ls_R_var_lib_nova_instances = simple_command("/bin/ls -laR /var/lib/nova/instances")
     ls_boot = simple_command("/bin/ls -lanR /boot")
     ls_dev = simple_command("/bin/ls -lanR /dev")

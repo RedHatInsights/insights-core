@@ -5,11 +5,16 @@ LsOriginLocalVolumePods - command ``ls -l /var/lib/origin/openshift.local.volume
 
 from insights.specs import Specs
 from insights import FileListing, parser, CommandParser
+from insights.util import deprecated
 
 
 @parser(Specs.ls_origin_local_volumes_pods)
 class LsOriginLocalVolumePods(CommandParser, FileListing):
     """
+    .. warning::
+        This class is deprecated and will be removed from 3.5.0.
+        Please use the :class:`insights.parsers.ls.LSla` instead.
+
     Class to parse the output of command ``ls -l /var/lib/origin/openshift.local.volumes/pods``.
     See ``FileListing`` class for additional information.
 
@@ -31,6 +36,9 @@ class LsOriginLocalVolumePods(CommandParser, FileListing):
     Attributes:
         pods (List): The list of pods uid under the directory /var/lib/origin/openshift.local.volumes/pods
     """
+    def __init__(self, *args, **kwargs):
+        deprecated(LsOriginLocalVolumePods, "Please use the :class:`insights.parsers.ls.LSla` instead.", "3.5.0")
+        super(LsOriginLocalVolumePods, self).__init__(*args, **kwargs)
 
     @property
     def pods(self):

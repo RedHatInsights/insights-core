@@ -7,11 +7,16 @@ LsVarLibRpm - command ``ls -lan /var/lib/rpm``
 from insights.core import CommandParser, FileListing
 from insights.core.plugins import parser
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.ls_var_lib_rpm)
 class LsVarLibRpm(CommandParser, FileListing):
     """
+    .. warning::
+        This class is deprecated and will be removed from 3.5.0.
+        Please use the :class:`insights.parsers.ls.LSlan` instead.
+
     Parses output of ``ls -lan /var/lib/rpm`` command.
 
     Sample output::
@@ -35,4 +40,6 @@ class LsVarLibRpm(CommandParser, FileListing):
         ['Basenames', 'Conflictname', 'Obsoletename', 'Packages', 'Providename', 'Recommendname']
 
     """
-    pass
+    def __init__(self, *args, **kwargs):
+        deprecated(LsVarLibRpm, "Please use the :class:`insights.parsers.ls.LSlan` instead.", "3.5.0")
+        super(LsVarLibRpm, self).__init__(*args, **kwargs)

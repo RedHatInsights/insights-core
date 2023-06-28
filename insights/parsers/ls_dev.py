@@ -51,9 +51,18 @@ Examples:
 """
 from .. import parser, FileListing, CommandParser
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.ls_dev)
 class LsDev(CommandParser, FileListing):
-    """Parses output of ``ls -lanR /dev`` command."""
-    pass
+    """
+    .. warning::
+        This class is deprecated and will be removed from 3.5.0.
+        Please use the :class:`insights.parsers.ls.LSlanR` instead.
+
+    Parses output of ``ls -lanR /dev`` command.
+    """
+    def __init__(self, *args, **kwargs):
+        deprecated(LsDev, "Please use the :class:`insights.parsers.ls.LSlanR` instead.", "3.5.0")
+        super(LsDev, self).__init__(*args, **kwargs)

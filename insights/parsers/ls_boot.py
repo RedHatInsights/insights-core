@@ -40,11 +40,18 @@ Examples:
 
 from .. import FileListing, parser, CommandParser
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.ls_boot)
 class LsBoot(CommandParser, FileListing):
     """
+    .. warning::
+        This class is deprecated and will be removed from 3.5.0.
+        Please use the :class:`insights.parsers.ls.LSlanR` instead.
+
     Parse the /boot directory listing using a standard FileListing parser.
     """
-    pass
+    def __init__(self, *args, **kwargs):
+        deprecated(LsBoot, "Please use the :class:`insights.parsers.ls.LSlanR` instead.", "3.5.0")
+        super(LsBoot, self).__init__(*args, **kwargs)

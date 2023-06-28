@@ -44,13 +44,21 @@ Examples:
 """
 
 
-from insights.specs import Specs
-
 from .. import FileListing
 from .. import parser, CommandParser
+from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.ls_osroot)
 class LsOsroot(CommandParser, FileListing):
-    """Parses output of ``ls -lan /`` command."""
-    pass
+    """
+    .. warning::
+        This class is deprecated and will be removed from 3.5.0.
+        Please use the :class:`insights.parsers.ls.LSlan` instead.
+
+    Parses output of ``ls -lan /`` command.
+    """
+    def __init__(self, *args, **kwargs):
+        deprecated(LsOsroot, "Please use the :class:`insights.parsers.ls.LSlan` instead.", "3.5.0")
+        super(LsOsroot, self).__init__(*args, **kwargs)

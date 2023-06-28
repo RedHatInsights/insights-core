@@ -132,6 +132,15 @@ insights.specs.datasources.leapp
     :undoc-members:
 
 
+insights.specs.datasources.ls
+-----------------------------
+
+.. automodule:: insights.specs.datasources.ls
+    :members: list_with_la, list_with_la_filtered, list_with_lan, list_with_lan_filtered, list_with_lanL, list_with_lanR, list_with_lanRL, list_with_lanRZ, list_with_lanZ
+    :show-inheritance:
+    :undoc-members:
+
+
 insights.specs.datasources.lpstat
 ---------------------------------
 

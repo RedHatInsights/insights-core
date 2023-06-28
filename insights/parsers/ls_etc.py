@@ -13,11 +13,16 @@ LsEtcSsh - command ``/bin/ls -lanL /etc/ssh``
 from .. import parser, CommandParser
 from .. import FileListing
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.ls_etc)
 class LsEtc(CommandParser, FileListing):
     """
+    .. warning::
+        This class is deprecated and will be removed from 3.5.0.
+        Please use the :class:`insights.parsers.ls.LSlan` instead.
+
     Parses output of ``ls -lan /etc </etc/sub-directories>`` command.
 
     The ``ls -lan /etc </etc/sub-directories>`` command provides information for
@@ -81,12 +86,18 @@ class LsEtc(CommandParser, FileListing):
         >>> ls_etc.dir_entry("/etc/sysconfig", "grub")['link']
         '/etc/default/grub'
     """
-    pass
+    def __init__(self, *args, **kwargs):
+        deprecated(LsEtc, "Please use the :class:`insights.parsers.ls.LSlan` instead.", "3.5.0")
+        super(LsEtc, self).__init__(*args, **kwargs)
 
 
 @parser(Specs.ls_etc_ssh)
 class LsEtcSsh(CommandParser, FileListing):
     """
+    .. warning::
+        This class is deprecated and will be removed from 3.5.0.
+        Please use the :class:`insights.parsers.ls.LSlanL` instead.
+
     Parses output of ``ls -lanL /etc/ssh`` command.
 
     Sample ``ls -lanL /etc/ssh`` output::
@@ -113,4 +124,6 @@ class LsEtcSsh(CommandParser, FileListing):
         >>> ls_etc_ssh.dir_entry('/etc/ssh', 'ssh_host_rsa_key')['perms']
         'rw-r-----.'
     """
-    pass
+    def __init__(self, *args, **kwargs):
+        deprecated(LsEtcSsh, "Please use the :class:`insights.parsers.ls.LSlanL` instead.", "3.5.0")
+        super(LsEtcSsh, self).__init__(*args, **kwargs)

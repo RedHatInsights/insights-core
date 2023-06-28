@@ -29,6 +29,7 @@ Examples:
 
 from insights.specs import Specs
 from insights.core.filters import add_filter
+from insights.util import deprecated
 
 from .. import FileListing
 from .. import parser, CommandParser
@@ -39,5 +40,13 @@ add_filter(Specs.ls_var_tmp, "/var/tmp")
 
 @parser(Specs.ls_var_tmp)
 class LsVarTmp(CommandParser, FileListing):
-    """Parses output of ``ls -ln /var/tmp`` command."""
-    pass
+    """
+    .. warning::
+        This class is deprecated and will be removed from 3.5.0.
+        Please use the :class:`insights.parsers.ls.LSlanFiltered` instead.
+
+    Parses output of ``ls -ln /var/tmp`` command.
+    """
+    def __init__(self, *args, **kwargs):
+        deprecated(LsVarTmp, "Please use the :class:`insights.parsers.ls.LSlanFiltered` instead.", "3.5.0")
+        super(LsVarTmp, self).__init__(*args, **kwargs)

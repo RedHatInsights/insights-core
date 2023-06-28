@@ -8,15 +8,18 @@ LsLibFW - command ``/bin/ls -lanR /lib/firmware``
 ----------------------------------------------------
 
 """
-
-from insights.specs import Specs
-
 from .. import parser, CommandParser, FileListing
+from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.ls_lib_firmware)
 class LsLibFW(CommandParser, FileListing):
     """
+    .. warning::
+        This class is deprecated and will be removed from 3.5.0.
+        Please use the :class:`insights.parsers.ls.LSlanR` instead.
+
     This parser will help to parse the output of command ``/bin/ls -lanR /lib/firmware``
 
     Typical output of the ``/bin/ls -lanR /lib/firmware`` command is::
@@ -59,4 +62,6 @@ class LsLibFW(CommandParser, FileListing):
         >>> lslibfw.total_of("/lib/firmware")
         37592
     """
-    pass
+    def __init__(self, *args, **kwargs):
+        deprecated(LsLibFW, "Please use the :class:`insights.parsers.ls.LSlanR` instead.", "3.5.0")
+        super(LsLibFW, self).__init__(*args, **kwargs)
