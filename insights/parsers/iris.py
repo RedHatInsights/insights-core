@@ -8,11 +8,10 @@ This parser reads the output of ``/usr/bin/iris list``.
 from insights.core import CommandParser
 from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
-from insights.parsers import get_active_lines
 from insights.specs import Specs
 
 
-@parser(Specs.docker_info)
+@parser(Specs.iris_list)
 class IrisList(CommandParser, dict):
     """
     Parse the output of the ``/usr/bin/iris list`` command.
@@ -38,22 +37,19 @@ class IrisList(CommandParser, dict):
     """
 
     def parse_content(self, content):
-        if not content:
-            raise SkipComponent('No content.')
-
-        for line in get_active_lines(content):
-
-            if line.startswith('Configuration'):
-                self['name'] = line.split()[1].replace("'", "")
-
-            if ":" in line:
+        for line in content:
+            if not line.strip():
+                continue
+            if line.strip().startswith('Configuration'):
+                self['name'] = line.split()[1].strip('\'"')
+            elif ":" in line:
                 key, value = line.split(":", 1)
                 self[key.strip()] = value.strip()
+
+        if len(self) == 0:
+            raise SkipComponent("The result is empty")
 
     @property
     def is_running(self):
         """Return True when the iris instance is running, and False when it is down"""
-        if self.get('status', "").startswith('running'):
-            return True
-        else:
-            return False
+        return self.get('status', "").startswith('running')
