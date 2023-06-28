@@ -39,7 +39,7 @@ class RpmPkgs(Parser):
         deprecated(
             RpmPkgs,
             "Please use the `RpmPkgsWritable` instead.",
-            "3.2.25"
+            "3.3.0"
         )
         super(RpmPkgs, self).__init__(*args, **kwargs)
 

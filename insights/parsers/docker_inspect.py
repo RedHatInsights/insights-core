@@ -32,7 +32,7 @@ class DockerInspect(CommandParser, dict):
         deprecated(
             DockerInspect,
             "Please use the :class:`insights.parsers.containers_inspect.ContainersInspect` instead.",
-            "3.2.25"
+            "3.3.0"
         )
         super(DockerInspect, self).__init__(*args, **kwargs)
 
@@ -118,6 +118,6 @@ class DockerInspectContainer(DockerInspect):
         deprecated(
             DockerInspectContainer,
             "Please use the :class:`insights.parsers.containers_inspect.ContainersInspect` instead.",
-            "3.2.25"
+            "3.3.0"
         )
         super(DockerInspectContainer, self).__init__(*args, **kwargs)

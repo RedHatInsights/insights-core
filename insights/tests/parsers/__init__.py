@@ -50,7 +50,7 @@ def skip_exception_check(parser_obj, output_str=""):
     deprecated(
         skip_component_check,
         "Please use the :method:`skip_component_check` instead.",
-        "3.2.25"
+        "3.3.0"
     )
 
     from insights.core.exceptions import SkipComponent

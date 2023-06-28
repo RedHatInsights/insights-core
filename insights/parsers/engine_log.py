@@ -39,5 +39,5 @@ class EngineLog(LogFileOutput):
     Provide access to ovirt engine logs using the LogFileOutput parser class.
     """
     def __init__(self, *args, **kwargs):
-        deprecated(EngineLog, "Import EngineLog from insights.parsers.ovirt_engine_log instead", "3.2.25")
+        deprecated(EngineLog, "Import EngineLog from insights.parsers.ovirt_engine_log instead.", "3.3.0")
         super(EngineLog, self).__init__(*args, **kwargs)

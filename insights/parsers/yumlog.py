@@ -67,23 +67,23 @@ class YumLog(Parser, list):
     """
     ERASED = 'Erased'
     """
-    .. deprecated:: 3.3.0
+    .. deprecated:: 3.2.0
 
-       Use string "Erased" instead.
+       Will be removed from 3.4.0.  Use string "Erased" instead.
     """
 
     INSTALLED = 'Installed'
     """
-    .. deprecated:: 3.3.0
+    .. deprecated:: 3.2.0
 
-       Use string "Installed" instead.
+       Will be removed from 3.4.0.  Use string "Installed" instead.
     """
 
     UPDATED = 'Updated'
     """
-    .. deprecated:: 3.3.0
+    .. deprecated:: 3.2.0
 
-       Use string "Updated" instead.
+       Will be removed from 3.4.0.  Use string "Updated" instead.
     """
 
     STATES = set(["Erased", "Installed", "Updated"])
@@ -145,18 +145,18 @@ class YumLog(Parser, list):
     @property
     def pkgs(self):
         """
-        .. deprecated:: 3.3.0
+        .. deprecated:: 3.2.0
 
-           Just keep backward compatibility
+           Will be removed from 3.4.0.
         """
         return dict(self._pkgs)
 
     @property
     def data(self):
         """
-        .. deprecated:: 3.3.0
+        .. deprecated:: 3.2.0
 
-           Just keep backward compatibility
+           Will be removed from 3.4.0.
         """
         return self
 
