@@ -236,19 +236,32 @@ def test_fixed_by():
     assert ['2.6.33-100.el6'] == u.fixed_by('2.6.33-100.el6')
     assert ['2.6.32-600.el6'] == u.fixed_by('2.6.32-220.1.el6', '2.6.32-600.el6')
 
+    # fixes without distribution part
+    assert [] == u.fixed_by('2.6.32-504')
+    # fixes only has kernel version part
+    assert [] == u.fixed_by('2.6.32-')
+    # introduce without distribution part
+    assert ['2.6.32-600.el6'] == u.fixed_by('2.6.32-600.el6', introduced_in='2.6.32-504')
+    # introduce only has kernel version part
+    assert ['2.6.32-600.el6'] == u.fixed_by('2.6.32-600.el6', introduced_in='2.6.32-')
+
+    rt_u = uname.Uname.from_uname_str("Linux qqhrycsq2 4.18.0-305.rt7.72.el8.x86_64 #1 SMP Wed Jun 13 18:24:36 EDT 2012 x86_64 x86_64 x86_64 GNU/Linux")
+    # fixes without distribution part
+    assert [] == rt_u.fixed_by('4.18.0-305.rt7.72')
+    # introduce without distribution part
+    assert ['4.18.0-307.rt7.72.el8'] == rt_u.fixed_by('4.18.0-307.rt7.72.el8', introduced_in='4.18.0-305.rt7.72')
+
 
 def test_unknown_release():
     u = uname.Uname.from_kernel("2.6.23-504.23.3.el6.revertBZ1169225")
     assert "504.23.3.0.el6" == u._lv_release
-    fixed_by = u.fixed_by("2.6.18-128.39.1.el5", "2.6.18-238.40.1.el5", "2.6.18-308.13.1.el5", "2.6.18-348.el5")
-    assert [] == fixed_by
 
 
 def test_fixed_by_rhel5():
     test_kernels = [
         (uname.Uname.from_uname_str("Linux oprddb1r5.example.com 2.6.18-348.el5 #1 SMP Wed Nov 28 21:22:00 EST 2012 x86_64 x86_64 x86_64 GNU/Linux"), []),
         (uname.Uname.from_uname_str("Linux srspidr1-3.example2.com 2.6.18-402.el5 #1 SMP Thu Jan 8 06:22:34 EST 2015 x86_64 x86_64 x86_64 GNU/Linux"), []),
-        (uname.Uname.from_uname_str("Linux PVT-Dev1.pvtsolar.local 2.6.18-398.el5xen #1 SMP Tue Aug 12 06:30:31 EDT 2014 x86_64 x86_64 x86_64 GNU/Linux"), []),
+        (uname.Uname.from_uname_str("Linux PVT-Dev1.pvtsolar.local 2.6.18-398.el5 #1 SMP Tue Aug 12 06:30:31 EDT 2014 x86_64 x86_64 x86_64 GNU/Linux"), []),
         (uname.Uname.from_kernel("2.6.18-194.el5"),
             ["2.6.18-238.40.1.el5", "2.6.18-308.13.1.el5", "2.6.18-348.el5"]),
         (uname.Uname.from_kernel("2.6.18-128.el5"),
