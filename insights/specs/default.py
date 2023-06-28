@@ -194,6 +194,7 @@ class DefaultSpecs(Specs):
     dse_ldif = glob_file("/etc/dirsrv/*/dse.ldif")
     du_dirs = foreach_execute(dir_list.du_dir_list, "/bin/du -s -k %s")
     duplicate_machine_id = machine_ids.dup_machine_id_info
+    eap_json_reports = glob_file(r"/var/tmp/insights-runtimes/uploads/*.json")
     engine_log = simple_file("/var/log/ovirt-engine/engine.log")
     etc_journald_conf = simple_file(r"etc/systemd/journald.conf")
     etc_journald_conf_d = glob_file(r"etc/systemd/journald.conf.d/*.conf")
