@@ -156,6 +156,7 @@ class Specs(SpecSet):
     du_dirs = RegistryPoint(multi_output=True, filterable=True)
     dumpe2fs_h = RegistryPoint(multi_output=True)
     duplicate_machine_id = RegistryPoint(filterable=True)
+    eap_json_reports = RegistryPoint(multi_output=True)
     engine_config_all = RegistryPoint()
     engine_db_query_vdsm_version = RegistryPoint()
     engine_log = RegistryPoint(filterable=True)
