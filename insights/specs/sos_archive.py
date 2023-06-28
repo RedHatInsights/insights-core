@@ -173,7 +173,10 @@ class SosSpecs(Specs):
     nmcli_dev_show_sos = glob_file(["sos_commands/networking/nmcli_dev_show_*", "sos_commands/networkmanager/nmcli_dev_show_*"])
     ntptime = simple_file("sos_commands/ntp/ntptime")
     octavia_conf = simple_file("/var/lib/config-data/puppet-generated/octavia/etc/octavia/octavia.conf")
-    openvswitch_daemon_log = simple_file('/var/log/openvswitch/ovs-vswitchd.log')
+    openvswitch_daemon_log = first_file([
+        '/var/log/openvswitch/ovs-vswitchd.log',
+        '/host/var/log/openvswitch/ovs-vswitchd.log'
+    ])
     openvswitch_other_config = simple_file("sos_commands/openvswitch/ovs-vsctl_-t_5_get_Open_vSwitch_._other_config")
     openvswitch_server_log = simple_file('/var/log/openvswitch/ovsdb-server.log')
     osa_dispatcher_log = first_file([
@@ -270,7 +273,7 @@ class SosSpecs(Specs):
     sendq_socket_buffer = simple_file("proc/sys/net/ipv4/tcp_wmem")
     sestatus = simple_file("sos_commands/selinux/sestatus_-b")
     ssh_foreman_config = simple_file("/usr/share/foreman/.ssh/ssh_config")
-    sssd_logs = glob_file("var/log/sssd/*.log")
+    sssd_logs = glob_file(["/var/log/sssd/*.log", "/host/var/log/sssd/*.log"])
     subscription_manager_id = simple_file("/sos_commands/subscription_manager/subscription-manager_identity")
     subscription_manager_list_consumed = first_file([
         'sos_commands/yum/subscription-manager_list_--consumed',
