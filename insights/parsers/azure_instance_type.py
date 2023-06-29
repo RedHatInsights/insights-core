@@ -52,7 +52,7 @@ class AzureInstanceType(CommandParser):
         'Standard_L64s_v2'
     """
     def __init__(self, *args, **kwargs):
-        deprecated(AzureInstanceType, "Import AzureInstanceType from insights.parsers.azure_instance instead", "3.2.25")
+        deprecated(AzureInstanceType, "Import AzureInstanceType from insights.parsers.azure_instance instead.", "3.3.0")
         super(AzureInstanceType, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
