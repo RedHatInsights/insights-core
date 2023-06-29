@@ -55,7 +55,7 @@ class AzureInstancePlan(CommandParser):
         True
     """
     def __init__(self, *args, **kwargs):
-        deprecated(AzureInstancePlan, "Import AzureInstancePlan from insights.parsers.azure_instance instead", "3.2.25")
+        deprecated(AzureInstancePlan, "Import AzureInstancePlan from insights.parsers.azure_instance instead.", "3.3.0")
         super(AzureInstancePlan, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
