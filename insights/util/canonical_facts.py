@@ -18,7 +18,7 @@ from insights.parsers.dmidecode import DMIDecode
 from insights.parsers.gcp_instance_type import GCPInstanceType
 from insights.parsers.installed_rpms import InstalledRpms
 from insights.parsers.rhsm_conf import RHSMConf
-from insights.parsers.subscription_manager import SubscriptionManagerFacts
+from insights.parsers.subscription_manager import SubscriptionManagerID, SubscriptionManagerFacts
 from insights.parsers.yum import YumRepoList
 from insights.specs import Specs
 
@@ -84,26 +84,6 @@ class IPs(Parser):
         self.data = list(filter(None, [valid_ipv4_address_or_None(addr) for addr in content[0].rstrip().split()]))
 
 
-@parser(Specs.subscription_manager_id)
-class SubscriptionManagerID(Parser):
-    """
-    Reads the output of subscription-manager identity and retrieves the UUID
-
-    Example output::
-        system identity: 6655c27c-f561-4c99-a23f-f53e5a1ef311
-        name: rhel7.localdomain
-        org name: 1234567
-        org ID: 1234567
-
-    Resultant data::
-
-        6655c27c-f561-4c99-a23f-f53e5a1ef311
-    """
-
-    def parse_content(self, content):
-        self.data = content[0].split(":")[-1].strip()
-
-
 def _safe_parse(ds):
     try:
         return ds.content[0]
@@ -137,7 +117,7 @@ def canonical_facts(
         insights_id=valid_uuid_or_None(_safe_parse(insights_id)),
         machine_id=valid_uuid_or_None(_safe_parse(machine_id)),
         bios_uuid=valid_uuid_or_None(_safe_parse(bios_uuid)),
-        subscription_manager_id=valid_uuid_or_None(submanid.data if submanid else None),
+        subscription_manager_id=valid_uuid_or_None(submanid.identity if submanid else None),
         ip_addresses=ips.data if ips else [],
         mac_addresses=valid_mac_addresses(mac_addresses) if mac_addresses else [],
         fqdn=_safe_parse(fqdn),
