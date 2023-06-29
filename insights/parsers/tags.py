@@ -16,6 +16,6 @@ class Tags(JSONParser):
         deprecated(
             Tags,
             "Please use insights.parsers.client_metadata.Tags instead.",
-            "3.3.25"
+            "3.4.0"
         )
         super(Tags, self).__init__(*args, **kwargs)

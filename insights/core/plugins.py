@@ -535,7 +535,8 @@ class make_response(Response):
                return make_response("BASH_BUG_123", bash=bash)
            return make_pass("BASH", bash=bash)
 
-    .. deprecated::
+    .. deprecated:: 1.x
+
         Use :class:`make_fail` instead.
     """
 
