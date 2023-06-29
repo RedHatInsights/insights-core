@@ -63,6 +63,6 @@ class OVSvsctlListBridge(OVSvsctlList):
         deprecated(
             OVSvsctlListBridge,
             "Please use the :class:`insights.ovs_vsctl.OVSvsctlListBridge` instead.",
-            "3.2.25"
+            "3.3.0"
         )
         super(OVSvsctlListBridge, self).__init__(*args, **kwargs)

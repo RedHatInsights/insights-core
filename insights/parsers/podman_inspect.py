@@ -32,7 +32,7 @@ class PodmanInspect(CommandParser, dict):
         deprecated(
             PodmanInspect,
             "Please use the :class:`insights.parsers.containers_inspect.ContainersInspect` instead.",
-            "3.2.25"
+            "3.3.0"
         )
         super(PodmanInspect, self).__init__(*args, **kwargs)
 
@@ -111,6 +111,6 @@ class PodmanInspectContainer(PodmanInspect):
         deprecated(
             PodmanInspectContainer,
             "Please use the :class:`insights.parsers.containers_inspect.ContainersInspect` instead.",
-            "3.2.25"
+            "3.3.0"
         )
         super(PodmanInspectContainer, self).__init__(*args, **kwargs)

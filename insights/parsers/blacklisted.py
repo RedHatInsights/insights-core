@@ -35,7 +35,7 @@ class BlacklistedSpecs(JSONParser):
         deprecated(
             BlacklistedSpecs,
             "Please use insights.parsers.client_metadata.BlacklistedSpecs instead.",
-            "3.3.25"
+            "3.4.0"
         )
         super(BlacklistedSpecs, self).__init__(*args, **kwargs)
 

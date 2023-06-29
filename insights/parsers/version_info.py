@@ -45,7 +45,7 @@ class VersionInfo(JSONParser):
         deprecated(
             VersionInfo,
             "Please use insights.parsers.client_metadata.VersionInfo instead.",
-            "3.3.25"
+            "3.4.0"
         )
         super(VersionInfo, self).__init__(*args, **kwargs)
 
