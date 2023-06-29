@@ -17,6 +17,6 @@ class BranchInfo(YAMLParser):
         deprecated(
             BranchInfo,
             "Please use insights.parsers.client_metadata.BranchInfo instead.",
-            "3.3.25"
+            "3.4.0"
         )
         super(BranchInfo, self).__init__(*args, **kwargs)

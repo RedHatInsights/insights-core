@@ -105,6 +105,6 @@ class SkipException(SkipComponent):
         deprecated(
             SkipException,
             "Please use the :class:`insights.core.exceptions.SkipComponent` instead.",
-            "3.2.25"
+            "3.3.0"
         )
         super(SkipException, self).__init__(msg)
