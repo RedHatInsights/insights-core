@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.2.2
+Version:        3.2.3
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,24 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jun 29 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.3-1
+- Feat: new spec "/usr/bin/iris list" and its parser  (#3828)
+  (jiazhang@redhat.com)
+- fix: Add /host prefix to a few specs (#3831) (rblakley@redhat.com)
+- RHICOMPL-3862 Adjust insights-client to upload reports in the ARF format
+  (#3829) (hony.com@seznam.cz)
+- chore: uniform the deprecation warnings and docstring (#3830)
+  (xiangceliu@redhat.com)
+- fix: new spec and parser for eap runtime json reports (#3825)
+  (lichen@redhat.com)
+- Use the existing cert_verify value, if set (#3826) (mhuth@redhat.com)
+- fix: Using pip for python2.7 instead of python3x (#3827)
+  (2904206+fellipeh@users.noreply.github.com)
+- Add malware-detection tests that use real yara (#3822) (mhuth@redhat.com)
+- fix: CI test for python27 (#3824) (xiangceliu@redhat.com)
+- feat: update Specs.yumlog to filterable=True (#3810) (xiangceliu@redhat.com)
+- fix: Build python26 instead of install (#3823) (xiangceliu@redhat.com)
+
 * Thu Jun 15 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.2-1
 - Feat: new spec "/var/log/watchdog/*" and the parser (#3819)
   (44796653+huali027@users.noreply.github.com)

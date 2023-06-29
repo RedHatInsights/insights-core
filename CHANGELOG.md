@@ -2,6 +2,20 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.2.3](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.3) (2023-06-29)
+
+- Feat: new spec "/usr/bin/iris list" and its parser  ([PR 3828](https://github.com/RedHatInsights/insights-core/pull/3828))
+- fix: Add /host prefix to a few specs ([PR 3831](https://github.com/RedHatInsights/insights-core/pull/3831))
+- RHICOMPL-3862 Adjust insights-client to upload reports in the ARF format ([PR 3829](https://github.com/RedHatInsights/insights-core/pull/3829))
+- chore: uniform the deprecation warnings and docstring ([PR 3830](https://github.com/RedHatInsights/insights-core/pull/3830))
+- fix: new spec and parser for eap runtime json reports ([PR 3825](https://github.com/RedHatInsights/insights-core/pull/3825))
+- Use the existing cert_verify value, if set ([PR 3826](https://github.com/RedHatInsights/insights-core/pull/3826))
+- fix: Using pip for python2.7 instead of python3x ([PR 3827](https://github.com/RedHatInsights/insights-core/pull/3827))
+- Add malware-detection tests that use real yara ([PR 3822](https://github.com/RedHatInsights/insights-core/pull/3822))
+- fix: CI test for python27 ([PR 3824](https://github.com/RedHatInsights/insights-core/pull/3824))
+- feat: update Specs.yumlog to filterable=True ([PR 3810](https://github.com/RedHatInsights/insights-core/pull/3810))
+- fix: Build python26 instead of install ([PR 3823](https://github.com/RedHatInsights/insights-core/pull/3823))
+
 # [insights-core-3.2.2](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.2) (2023-06-15)
 
 - Feat: new spec "/var/log/watchdog/*" and the parser ([PR 3819](https://github.com/RedHatInsights/insights-core/pull/3819))
