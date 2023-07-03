@@ -362,9 +362,9 @@ def test_run_scan(config, call):
     env.update({'TZ': 'UTC'})
     compliance_client.run_scan('ref_id', '/nonexistent', output_path)
     if six.PY3:
-        call.assert_called_with(("oscap xccdf eval --profile ref_id --results-arf " + output_path + ' /nonexistent'), keep_rc=True, env=env)
+        call.assert_called_with(("oscap xccdf eval --profile ref_id --results " + output_path + ' /nonexistent'), keep_rc=True, env=env)
     else:
-        call.assert_called_with(("oscap xccdf eval --profile ref_id --results-arf " + output_path + ' /nonexistent').encode(), keep_rc=True, env=env)
+        call.assert_called_with(("oscap xccdf eval --profile ref_id --results " + output_path + ' /nonexistent').encode(), keep_rc=True, env=env)
 
 
 @patch("insights.client.apps.compliance.call", return_value=(1, 'bad things happened'.encode('utf-8')))
@@ -377,9 +377,9 @@ def test_run_scan_fail(config, call):
     with raises(SystemExit):
         compliance_client.run_scan('ref_id', '/nonexistent', output_path)
     if six.PY3:
-        call.assert_called_with(("oscap xccdf eval --profile ref_id --results-arf " + output_path + ' /nonexistent'), keep_rc=True, env=env)
+        call.assert_called_with(("oscap xccdf eval --profile ref_id --results " + output_path + ' /nonexistent'), keep_rc=True, env=env)
     else:
-        call.assert_called_with(("oscap xccdf eval --profile ref_id --results-arf " + output_path + ' /nonexistent').encode(), keep_rc=True, env=env)
+        call.assert_called_with(("oscap xccdf eval --profile ref_id --results " + output_path + ' /nonexistent').encode(), keep_rc=True, env=env)
 
 
 @patch("insights.client.apps.compliance.call", return_value=(0, ''.encode('utf-8')))
@@ -436,14 +436,14 @@ def test_tailored_file_is_downloaded_if_needed(config, call, os_release_info_moc
 @patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
 def test_build_oscap_command_does_not_append_tailoring_path(config):
     compliance_client = ComplianceClient(config)
-    expected_command = 'oscap xccdf eval --profile aaaaa --results-arf output_path xml_sample'
+    expected_command = 'oscap xccdf eval --profile aaaaa --results output_path xml_sample'
     assert expected_command == compliance_client.build_oscap_command('aaaaa', 'xml_sample', 'output_path', None)
 
 
 @patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
 def test_build_oscap_command_append_tailoring_path(config):
     compliance_client = ComplianceClient(config)
-    expected_command = 'oscap xccdf eval --profile aaaaa --tailoring-file tailoring_path --results-arf output_path xml_sample'
+    expected_command = 'oscap xccdf eval --profile aaaaa --tailoring-file tailoring_path --results output_path xml_sample'
     assert expected_command == compliance_client.build_oscap_command('aaaaa', 'xml_sample', 'output_path', 'tailoring_path')
 
 

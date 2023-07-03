@@ -174,7 +174,7 @@ class ComplianceClient:
         command = 'oscap xccdf eval --profile ' + profile_ref_id
         if tailoring_file_path:
             command += ' --tailoring-file ' + tailoring_file_path
-        command += ' --results-arf ' + output_path + ' ' + policy_xml
+        command += ' --results ' + output_path + ' ' + policy_xml
         return command
 
     def run_scan(self, profile_ref_id, policy_xml, output_path, tailoring_file_path=None):
