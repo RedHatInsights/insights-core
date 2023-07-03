@@ -15,7 +15,7 @@ from insights.tests.combiners.test_cloud_provider import RPMS_AWS, RPMS_GOOGLE, 
 from insights.tests.parsers.test_aws_instance_id import AWS_ID_DOC
 from insights.tests.parsers.test_azure_instance import AZURE_ID, AZURE_TYPE_2
 from insights.tests.parsers.test_gcp_instance_type import GOOGLE_TYPE_1
-from insights.tests.parsers.test_subscription_manager import INPUT_NORMAL_1
+from insights.tests.parsers.test_subscription_manager import FACTS_NORMAL_1
 
 GOOGLE_RHSM_FACTS = """
 gcp_instance_id: 567890567890
@@ -63,7 +63,7 @@ def test_cloud_instance_ex():
     rpms = InstalledRpms(context_wrap(RPMS_GOOGLE))
     _type = GCPInstanceType(context_wrap(GOOGLE_TYPE_1))
     cp = CloudProvider(rpms, None, None, None)
-    aws_facts = SubscriptionManagerFacts(context_wrap(INPUT_NORMAL_1))
+    aws_facts = SubscriptionManagerFacts(context_wrap(FACTS_NORMAL_1))
 
     with pytest.raises(ContentException) as ce:
         CloudInstance(cp, None, None, None, None, aws_facts)
