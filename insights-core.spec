@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.2.3
+Version:        3.2.4
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,11 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Mon Jul 03 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.4-1
+- Revert "RHICOMPL-3862 Adjust insights-client to upload reports in the ARF
+  format (#3829)" (#3836) (xiangceliu@redhat.com)
+- fix: refactor the SubscriptionManageID parser (#3834) (xiangceliu@redhat.com)
+
 * Thu Jun 29 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.3-1
 - Feat: new spec "/usr/bin/iris list" and its parser  (#3828)
   (jiazhang@redhat.com)

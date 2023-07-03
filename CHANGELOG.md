@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.2.4](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.4) (2023-07-03)
+
+- Revert "RHICOMPL-3862 Adjust insights-client to upload reports in the ARF format (#3829)" ([PR 3836](https://github.com/RedHatInsights/insights-core/pull/3836))
+- fix: refactor the SubscriptionManageID parser ([PR 3834](https://github.com/RedHatInsights/insights-core/pull/3834))
+
 # [insights-core-3.2.3](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.3) (2023-06-29)
 
 - Feat: new spec "/usr/bin/iris list" and its parser  ([PR 3828](https://github.com/RedHatInsights/insights-core/pull/3828))
