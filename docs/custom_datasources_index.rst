@@ -170,6 +170,7 @@ insights.specs.datasources.malware_detection
 --------------------------------------------
 
 .. automodule:: insights.specs.datasources.malware_detection
+    :members: malware_detection_app
     :show-inheritance:
     :undoc-members:
 
