@@ -24,12 +24,13 @@ from insights.components.virtualization import IsBareMetal
 from insights.components.satellite import IsSatellite611, IsSatellite
 from insights.specs import Specs
 from insights.specs.datasources import (
-    aws, awx_manage, cloud_init, candlepin_broker, corosync as corosync_ds,
-    dir_list, ethernet, httpd, ipcs, kernel_module_list, leapp, lpstat, ls,
-    machine_ids, md5chk, package_provides, ps as ps_datasource, sap,
-    satellite_missed_queues, semanage, ssl_certificate, sys_fs_cgroup_memory,
-    sys_fs_cgroup_memory_tasks_number, rpm_pkgs, user_group, yum_updates,
-    luks_devices, kernel)
+        aws, awx_manage, candlepin_broker, cloud_init, corosync as corosync_ds,
+        dir_list, ethernet, httpd, ipcs, kernel, kernel_module_list, leapp,
+        lpstat, ls, luks_devices, machine_ids, malware_detection, md5chk,
+        package_provides, ps as ps_datasource, rpm_pkgs, sap,
+        satellite_missed_queues, semanage, ssl_certificate,
+        sys_fs_cgroup_memory, sys_fs_cgroup_memory_tasks_number,
+        user_group, yum_updates)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 from insights.specs.datasources.pcp import pcp_enabled, pmlog_summary_args
 from insights.specs.datasources.container import running_rhel_containers, containers_inspect
@@ -83,6 +84,9 @@ class DefaultSpecs(Specs):
     display_name = simple_file("/display_name", kind=MetadataProvider)
     tags = simple_file("/tags.json", kind=MetadataProvider)
     version_info = simple_file("/version_info", kind=MetadataProvider)
+
+    # Client App specs
+    malware_detection = malware_detection.malware_detection_app
 
     # Regular collection specs
     abrt_ccpp_conf = simple_file("/etc/abrt/plugins/CCpp.conf")
