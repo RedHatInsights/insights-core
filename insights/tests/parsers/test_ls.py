@@ -285,6 +285,14 @@ def test_ls_lanR():
 
     assert 'link' in ls.listing_of('/dev/virtio-ports')['com.redhat.spice.0']
 
+    assert ls.files_of('non-exist') == []
+    assert ls.dirs_of('non-exist') == []
+    assert ls.specials_of('non-exist') == []
+    assert ls.listing_of('non-exist') == []
+    assert ls.total_of('non-exist') == 0
+    assert ls.dir_contains('non-exist', 'test') is False
+    assert ls.dir_entry('non-exist', 'test') == {}
+
 
 def test_ls_lanRL():
     ls = LSlanRL(context_wrap(LS_LANRL))
