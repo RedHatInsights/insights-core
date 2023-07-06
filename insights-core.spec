@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.2.4
+Version:        3.2.5
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,15 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jul 06 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.5-1
+- feat: add safety check to methods of 'LS' Parsers (#3841)
+  (xiangceliu@redhat.com)
+- Revert "chore: remove unused spec lsinitrd_kdump_image (#3644)" (#3840)
+  (xiaoxwan@redhat.com)
+- feat: new Ls Parsers for 'ls' commands (#3833) (xiangceliu@redhat.com)
+- Use SIGTERM for dnf command (#3837) (gerhard@qux.nl)
+- fix(yum_updates): releasever and basearch (#3835) (vkrizan@redhat.com)
+
 * Mon Jul 03 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.4-1
 - Revert "RHICOMPL-3862 Adjust insights-client to upload reports in the ARF
   format (#3829)" (#3836) (xiangceliu@redhat.com)
