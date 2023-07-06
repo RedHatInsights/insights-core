@@ -59,6 +59,7 @@ Examples:
 
 from insights.core.filters import add_filter
 from insights.specs import Specs
+from insights.util import deprecated
 
 from .. import CommandParser, parser
 from .. import FileListing
@@ -69,5 +70,13 @@ add_filter(Specs.ls_usr_sbin, "total")
 
 @parser(Specs.ls_usr_sbin)
 class LsUsrSbin(CommandParser, FileListing):
-    """Parses output of ``ls -ln /usr/sbin`` command."""
-    pass
+    """
+    .. warning::
+        This class is deprecated and will be removed from 3.5.0.
+        Please use the :class:`insights.parsers.ls.LSlanFiltered` instead.
+
+    Parses output of ``ls -ln /usr/sbin`` command.
+    """
+    def __init__(self, *args, **kwargs):
+        deprecated(LsUsrSbin, "Please use the :class:`insights.parsers.ls.LSlanFiltered` instead.", "3.5.0")
+        super(LsUsrSbin, self).__init__(*args, **kwargs)

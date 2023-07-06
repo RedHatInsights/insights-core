@@ -32,6 +32,7 @@ Examples:
 
 
 from insights.specs import Specs
+from insights.util import deprecated
 
 from .. import FileListing
 from .. import parser
@@ -39,5 +40,13 @@ from .. import parser
 
 @parser(Specs.ls_var_run)
 class LsVarRun(FileListing):
-    """Parses output of ``ls -lnL /var/run`` command."""
-    pass
+    """
+    .. warning::
+        This class is deprecated and will be removed from 3.5.0.
+        Please use the :class:`insights.parsers.ls.LSlanL` instead.
+
+    Parses output of ``ls -lnL /var/run`` command.
+    """
+    def __init__(self, *args, **kwargs):
+        deprecated(LsVarRun, "Please use the :class:`insights.parsers.ls.LSlanL` instead.", "3.5.0")
+        super(LsVarRun, self).__init__(*args, **kwargs)

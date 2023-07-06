@@ -27,11 +27,20 @@ Examples:
 
 
 from insights.specs import Specs
+from insights.util import deprecated
 
 from insights import CommandParser, parser, FileListing
 
 
 @parser(Specs.ls_var_cache_pulp)
 class LsVarCachePulp(CommandParser, FileListing):
-    """Parses output of ``ls -lan /var/cache/pulp`` command."""
-    pass
+    """
+    .. warning::
+        This class is deprecated and will be removed from 3.5.0.
+        Please use the :class:`insights.parsers.ls.LSlan` instead.
+
+    Parses output of ``ls -lan /var/cache/pulp`` command.
+    """
+    def __init__(self, *args, **kwargs):
+        deprecated(LsVarCachePulp, "Please use the :class:`insights.parsers.ls.LSlan` instead.", "3.5.0")
+        super(LsVarCachePulp, self).__init__(*args, **kwargs)

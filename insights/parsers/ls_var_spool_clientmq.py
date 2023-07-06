@@ -26,8 +26,8 @@ Examples:
     '-'
 """
 
-
 from insights.specs import Specs
+from insights.util import deprecated
 
 from .. import CommandParser, parser
 from .. import FileListing
@@ -35,5 +35,13 @@ from .. import FileListing
 
 @parser(Specs.ls_var_spool_clientmq)
 class LsVarSpoolClientmq(CommandParser, FileListing):
-    """Parses output of ``ls -ln /var/spool/clientmqueue`` command."""
-    pass
+    """
+    .. warning::
+        This class is deprecated and will be removed from 3.5.0.
+        Please use the :class:`insights.parsers.ls.LSlan` instead.
+
+    Parses output of ``ls -ln /var/spool/clientmqueue`` command.
+    """
+    def __init__(self, *args, **kwargs):
+        deprecated(LsVarSpoolClientmq, "Please use the :class:`insights.parsers.ls.LSlan` instead.", "3.5.0")
+        super(LsVarSpoolClientmq, self).__init__(*args, **kwargs)
