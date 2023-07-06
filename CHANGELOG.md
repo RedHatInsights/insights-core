@@ -2,6 +2,14 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.2.5](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.5) (2023-07-06)
+
+- feat: add safety check to methods of 'LS' Parsers ([PR 3841](https://github.com/RedHatInsights/insights-core/pull/3841))
+- Revert "chore: remove unused spec lsinitrd_kdump_image (3644)" ([PR 3840](https://github.com/RedHatInsights/insights-core/pull/3840))
+- feat: new Ls Parsers for 'ls' commands ([PR 3833](https://github.com/RedHatInsights/insights-core/pull/3833))
+- Use SIGTERM for dnf command ([PR 3837](https://github.com/RedHatInsights/insights-core/pull/3837))
+- fix(yum_updates): releasever and basearch ([PR 3835](https://github.com/RedHatInsights/insights-core/pull/3835))
+
 # [insights-core-3.2.4](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.4) (2023-07-03)
 
 - Revert "RHICOMPL-3862 Adjust insights-client to upload reports in the ARF format (#3829)" ([PR 3836](https://github.com/RedHatInsights/insights-core/pull/3836))
