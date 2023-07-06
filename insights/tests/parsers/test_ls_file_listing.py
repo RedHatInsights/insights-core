@@ -151,6 +151,9 @@ def test_single_directory():
     assert dirs.files_of('/etc/pki/tls') == ['cert.pem', 'openssl.cnf']
     assert dirs.dirs_of('/etc/pki/tls') == ['.', '..', 'certs', 'misc', 'private']
     assert dirs.total_of('/etc/pki/tls') == 32
+    assert dirs.files_of('non-exist') == []
+    assert dirs.dirs_of('non-exist') == []
+    assert dirs.total_of('non-exist') == 0
 
 
 def test_multiple_directories():
@@ -166,6 +169,13 @@ def test_multiple_directories():
     assert dirs.files_of('/etc/sysconfig') == ['ebtables-config', 'firewalld', 'grub']
     assert dirs.dirs_of('/etc/sysconfig') == ['.', '..', 'cbq', 'console']
     assert dirs.specials_of('/etc/sysconfig') == []
+    assert dirs.files_of('non-exist') == []
+    assert dirs.dirs_of('non-exist') == []
+    assert dirs.specials_of('non-exist') == []
+    assert dirs.listing_of('non-exist') == []
+    assert dirs.total_of('non-exist') == 0
+    assert dirs.dir_contains('non-exist', 'test') is False
+    assert dirs.dir_entry('non-exist', 'test') == {}
 
     # Testing the main features
     listing = dirs.listing_of('/etc/sysconfig')
