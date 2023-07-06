@@ -2,7 +2,6 @@
 This module contains logic for parsing ls output. It attempts to handle
 output when selinux is enabled or disabled and also skip "bad" lines.
 """
-import six
 
 
 def parse_path(path):
@@ -139,45 +138,13 @@ def parse_rhel8_selinux(parts):
     return result
 
 
-PASS_KEYS = set(["name", "total"])
-DELAYED_KEYS = ["entries", "files", "dirs", "specials"]
-
-
 class Directory(dict):
     def __init__(self, name, total, body):
-        data = dict.fromkeys(DELAYED_KEYS)
-        data["name"] = name
-        data["total"] = total
-        self.body = body
-        self.loaded = False
-        super(Directory, self).__init__(data)
-
-    def iteritems(self):
-        if not self.loaded:
-            self._load()
-        return six.iteritems(super(Directory, self))
-
-    def items(self):
-        if not self.loaded:
-            self._load()
-        return super(Directory, self).items()
-
-    def values(self):
-        if not self.loaded:
-            self._load()
-        return super(Directory, self).values()
-
-    def get(self, key, default=None):
-        if not self.loaded:
-            self._load()
-        return super(Directory, self).get(key, default)
-
-    def _load(self):
         dirs = []
         ents = {}
         files = []
         specials = []
-        for line in self.body:
+        for line in body:
             # we can't split(None, 5) here b/c rhel 6/7 selinux lines only have
             # 4 parts before the path, and the path itself could contain
             # spaces. Unfortunately, this means we have to split the line again
@@ -204,7 +171,7 @@ class Directory(dict):
             # based on its type.
             entry.update(rest)
             entry["raw_entry"] = line
-            entry["dir"] = self["name"]
+            entry["dir"] = name
             nm = entry["name"]
             ents[nm] = entry
             if typ not in "bcd":
@@ -214,19 +181,16 @@ class Directory(dict):
             elif typ in "bc":
                 specials.append(nm)
 
-        self.update({"entries": ents,
-                     "files": files,
-                     "dirs": dirs,
-                     "specials": specials})
-
-        self.loaded = True
-        del self.body
-
-    def __getitem__(self, key):
-        if self.loaded or key in PASS_KEYS:
-            return super(Directory, self).__getitem__(key)
-        self._load()
-        return super(Directory, self).__getitem__(key)
+        super(Directory, self).__init__(
+                {
+                    "dirs": dirs,
+                    "entries": ents,
+                    "files": files,
+                    "name": name,
+                    "specials": specials,
+                    "total": total
+                }
+        )
 
 
 def parse(lines, root=None):
@@ -249,7 +213,8 @@ def parse(lines, root=None):
     total = None
     for line in lines:
         line = line.strip()
-        if not line:
+        # Skip empty line and non-exist dir line
+        if not line or ': No such file or directory' in line:
             continue
         if line and line[0] == "/" and line[-1] == ":":
             if name is None:

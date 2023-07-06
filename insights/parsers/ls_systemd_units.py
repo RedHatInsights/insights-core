@@ -72,14 +72,21 @@ Examples:
 from insights.core import CommandParser, FileListing
 from insights.core.plugins import parser
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.ls_systemd_units)
 class LsSystemdUnits(CommandParser, FileListing):
     """
+    .. warning::
+        This class is deprecated and will be removed from 3.5.0.
+        Please use the :class:`insights.parsers.ls.LSlanRL` instead.
+
     Class for parsing the ``/bin/ls -lanRL /etc/systemd /run/systemd /usr/lib/systemd
     /usr/local/lib/systemd /usr/local/share/systemd /usr/share/systemd`` command.
 
     For more information, see the ``FileListing`` class.
     """
-    pass
+    def __init__(self, *args, **kwargs):
+        deprecated(LsSystemdUnits, "Please use the :class:`insights.parsers.ls.LSlanRL` instead.", "3.5.0")
+        super(LsSystemdUnits, self).__init__(*args, **kwargs)

@@ -59,9 +59,18 @@ Examples:
 
 from .. import parser, FileListing, CommandParser
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.ls_disk)
 class LsDisk(CommandParser, FileListing):
-    """Parses output of ``ls -lanR /dev/disk`` command."""
-    pass
+    """
+    .. warning::
+        This Parser is deprecated and will be removed from 3.5.0.
+        Please use the :class:`insights.parsers.ls.LSlanR` instead.
+
+    Parses output of ``ls -lanR /dev/disk`` command.
+    """
+    def __init__(self, *args, **kwargs):
+        deprecated(LsDisk, "Please use the :class:`insights.parsers.ls.LSlanR` instead.", "3.5.0")
+        super(LsDisk, self).__init__(*args, **kwargs)
