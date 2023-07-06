@@ -26,11 +26,18 @@ Examples:
 
 from insights.specs import Specs
 from .. import parser, CommandParser, FileListing
+from insights.util import deprecated
 
 
 @parser(Specs.ls_krb5_sssd)
 class LsKrb5SSSD(CommandParser, FileListing):
     """
+    .. warning::
+        This class is deprecated and will be removed from 3.5.0.
+        Please use the :class:`insights.parsers.ls.LSlan` instead.
+
     Parse the /var/lib/sss/pubconf/krb5.include.d directory listing using a standard FileListing parser.
     """
-    pass
+    def __init__(self, *args, **kwargs):
+        deprecated(LsKrb5SSSD, "Please use the :class:`insights.parsers.ls.LSlan` instead.", "3.5.0")
+        super(LsKrb5SSSD, self).__init__(*args, **kwargs)
