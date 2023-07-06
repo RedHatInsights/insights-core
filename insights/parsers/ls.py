@@ -162,25 +162,33 @@ class FileListing(Parser, dict):
         The list of non-special files (i.e. not block or character files)
         in the given directory.
         """
-        return self[directory]['files']
+        if directory in self:
+            return self[directory]['files']
+        return []
 
     def dirs_of(self, directory):
         """
         The list of subdirectories in the given directory.
         """
-        return self[directory]['dirs']
+        if directory in self:
+            return self[directory]['dirs']
+        return []
 
     def specials_of(self, directory):
         """
         The list of block and character special files in the given directory.
         """
-        return self[directory]['specials']
+        if directory in self:
+            return self[directory]['specials']
+        return []
 
     def total_of(self, directory):
         """
         The total blocks of storage consumed by entries in this directory.
         """
-        return self[directory]['total']
+        if directory in self:
+            return self[directory]['total']
+        return 0
 
     def listing_of(self, directory):
         """
@@ -189,19 +197,25 @@ class FileListing(Parser, dict):
         Entries that can be parsed then have fields as described in the class
         description above.
         """
-        return self[directory]['entries']
+        if directory in self:
+            return self[directory]['entries']
+        return []
 
     def dir_contains(self, directory, name):
         """
         Does this directory contain this entry name?
         """
-        return name in self[directory]['entries']
+        if directory in self:
+            return name in self[directory]['entries']
+        return False
 
     def dir_entry(self, directory, name):
         """
         The parsed data for the given entry name in the given directory.
         """
-        return self[directory]['entries'][name]
+        if directory in self:
+            return self[directory]['entries'][name]
+        return {}
 
     def path_entry(self, path):
         """
@@ -221,12 +235,12 @@ class FileListing(Parser, dict):
             return None
         return self[directory]['entries'][name]
 
-    def permissions_of(self, dir_name, target):
+    def permissions_of(self, directory, target):
         """
         Returns a FilePermissions object, if found.
 
         Parameters:
-            dir_name (string): Full path without trailing slash where to
+            directory(string): Full path without trailing slash where to
                 search.
             target (string): Name of the directory or file to get
                 FilePermissions for.
@@ -234,8 +248,8 @@ class FileListing(Parser, dict):
         Returns:
             FilePermissions: If found or None if not found.
         """
-        if dir_name in self:
-            d = self[dir_name]['entries']
+        if directory in self:
+            d = self[directory]['entries']
             if target in d:
                 return FilePermissions(d[target]['raw_entry'])
 
