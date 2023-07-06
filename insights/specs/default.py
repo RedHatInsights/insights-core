@@ -29,7 +29,7 @@ from insights.specs.datasources import (
     machine_ids, md5chk, package_provides, ps as ps_datasource, sap,
     satellite_missed_queues, semanage, ssl_certificate, sys_fs_cgroup_memory,
     sys_fs_cgroup_memory_tasks_number, rpm_pkgs, user_group, yum_updates,
-    luks_devices)
+    luks_devices, kernel)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 from insights.specs.datasources.pcp import pcp_enabled, pmlog_summary_args
 from insights.specs.datasources.container import running_rhel_containers, containers_inspect
@@ -380,6 +380,7 @@ class DefaultSpecs(Specs):
     lsblk = simple_command("/bin/lsblk")
     lsblk_pairs = simple_command("/bin/lsblk -P -o NAME,KNAME,MAJ:MIN,FSTYPE,MOUNTPOINT,LABEL,UUID,RA,RO,RM,MODEL,SIZE,STATE,OWNER,GROUP,MODE,ALIGNMENT,MIN-IO,OPT-IO,PHY-SEC,LOG-SEC,ROTA,SCHED,RQ-SIZE,TYPE,DISC-ALN,DISC-GRAN,DISC-MAX,DISC-ZERO")
     lscpu = simple_command("/usr/bin/lscpu")
+    lsinitrd_kdump_image = command_with_args("/usr/bin/lsinitrd -k %skdump", kernel.current_version)
     lsmod = simple_command("/sbin/lsmod")
     lsof = first_of([
         simple_command("/usr/bin/lsof"),
