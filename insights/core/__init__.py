@@ -1643,6 +1643,10 @@ class IniConfigFile(ConfigParser):
 
 class FileListing(Parser):
     """
+    .. warning::
+        This class is deprecated and will be removed from 3.5.0.
+        Please use the :class:`insights.parsers.ls.FileListing` instead.
+
     Reads a series of concatenated directory listings and turns them into
     a dictionary of entities by name.  Stores all the information for
     each directory entry for every entry that can be parsed, containing:
@@ -1665,7 +1669,8 @@ class FileListing(Parser):
       directory, in the order found in the listing
     * total blocks allocated to all the entities in this directory
 
-    .. note:: For listings that only contain one directory, ``ls`` does not
+    .. note::
+        For listings that only contain one directory, ``ls`` does not
         output the directory name.  The directory is reverse engineered from
         the path given to the parser by Insights - this assumes the
         translation of spaces to underscores and '/' to '.' in paths.  For
@@ -1718,6 +1723,7 @@ class FileListing(Parser):
         # the directory name in the output).  Obviously if we don't have the
         # '-R' flag we should grab this but it's probably not worth parsing
         # the flags to ls for this.
+        deprecated(FileListing, "Please use the :class:`insights.parsers.ls.FileListing instead.", "3.5.0")
         self.first_path = None
         path_re = re.compile(r'ls_-\w+(?P<path>.*)$')
         match = path_re.search(context.path)

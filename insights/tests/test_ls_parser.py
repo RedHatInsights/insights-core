@@ -14,7 +14,20 @@ drwxr-xr-x.  2 root root  4096 Mar 29  2017 misc
 drwxr-xr-x.  2 root root  4096 Feb  7  2017 private
 """
 
+SINGLE_DIRECTORY_WITH_ENTRY = """
+/etc:
+total 32
+drwxr-xr-x.  5 root root  4096 Jun 28  2017 .
+drwxr-xr-x. 15 root root  4096 Aug 10 09:42 ..
+lrwxrwxrwx.  1 root root    49 Jun 28  2017 cert.pem -> /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem
+drwxr-xr-x.  2 root root  4096 Jun 28  2017 certs
+drwxr-xr-x.  2 root root  4096 Mar 29  2017 misc
+-rw-r--r--.  1 root root 10923 Feb  7  2017 openssl.cnf
+drwxr-xr-x.  2 root root  4096 Feb  7  2017 private
+"""
+
 MULTIPLE_DIRECTORIES = """
+ls: cannot access '_non_existing_': No such file or directory
 /etc/sysconfig:
 total 96
 drwxr-xr-x.  7 0 0 4096 Jul  6 23:41 .
@@ -35,6 +48,7 @@ lrwxrwxrwx.  1 0 0   15 Jul  6 23:32 S97rhnsd -> ../init.d/rhnsd
 """
 
 MULTIPLE_DIRECTORIES_WITH_BREAK = """
+ls: cannot access '_non_existing_': No such file or directory
 /etc:
 total 1652
 drwxr-xr-x. 102   0   0  12288 Nov  6 09:12 .
@@ -68,6 +82,7 @@ lrwxrwxrwx.  1 0 0   15 Jul  6 23:32 S97rhnsd -> ../init.d/rhnsd
 
 
 COMPLICATED_FILES = """
+ls: cannot access '_non_existing_': No such file or directory
 /tmp:
 total 16
 dr-xr-xr-x.  2 0 0     4096 Mar  4 16:19 .
@@ -202,6 +217,21 @@ def test_parse_single_directory():
     assert res["links"] == 1
     assert res["dir"] == "/etc"
 
+    results = parse(SINGLE_DIRECTORY_WITH_ENTRY.splitlines())
+    stanza = results["/etc"]
+    assert stanza["name"] == "/etc"
+    assert stanza["total"] == 32
+    assert len(stanza["entries"]) == 7
+    res = stanza["entries"]["cert.pem"]
+    assert res["type"] == "l"
+    assert res["owner"] == "root"
+    assert res["group"] == "root"
+    assert res["date"] == "Jun 28  2017"
+    assert res["name"] == "cert.pem"
+    assert res["link"] == "/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem"
+    assert res["links"] == 1
+    assert res["dir"] == "/etc"
+
 
 def test_parse_multiple_directories():
     results = parse(MULTIPLE_DIRECTORIES.splitlines(), None)
@@ -232,6 +262,8 @@ def test_parse_multiple_directories_with_break():
     assert results["/etc"]["total"] == 1652
     assert results["/etc/rc.d/rc3.d"]["name"] == "/etc/rc.d/rc3.d"
     assert results["/etc/rc.d/rc3.d"]["total"] == 4
+    assert 'chrony.keys' in results['/etc']['files']
+    assert 'cifs-utils' in results['/etc']['dirs']
 
     res = results["/etc"]["entries"]["chrony.conf.20180210135613"]
     assert res["type"] == "-"

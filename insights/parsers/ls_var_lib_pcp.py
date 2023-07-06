@@ -30,9 +30,18 @@ Examples:
 from insights.specs import Specs
 from insights import CommandParser, parser
 from insights.core import FileListing
+from insights.util import deprecated
 
 
 @parser(Specs.ls_var_lib_pcp)
 class LsVarLibPcp(CommandParser, FileListing):
-    """Parses output of ``ls -la /var/lib/pcp`` command."""
-    pass
+    """
+    .. warning::
+        This class is deprecated and will be removed from 3.5.0.
+        Please use the :class:`insights.parsers.ls.LSla` instead.
+
+    Parses output of ``ls -la /var/lib/pcp`` command.
+    """
+    def __init__(self, *args, **kwargs):
+        deprecated(LsVarLibPcp, "Please use the :class:`insights.parsers.ls.LSla` instead.", "3.5.0")
+        super(LsVarLibPcp, self).__init__(*args, **kwargs)
