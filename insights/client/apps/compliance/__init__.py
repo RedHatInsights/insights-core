@@ -109,8 +109,13 @@ class ComplianceClient:
             "https://{0}/compliance/profiles/{1}/tailoring_file".format(self.config.base_url, profile['id'])
         )
         logger.debug("Response code: {0}".format(response.status_code))
-        if response.content is None:
-            logger.info("Problem downloading tailoring file for {0} to {1}".format(profile['attributes']['ref_id'], tailoring_file_path))
+
+        if not response.ok:
+            logger.info("Something went wrong during downloading the tailoring file of {0}. The expected status code is 200, got {1}".format(profile['attributes']['ref_id'], response.status_code))
+            return None
+
+        if response.content is None or response.headers['Content-Type'] != "application/xml":
+            logger.info("Problem with the content of the downloaded tailoring file of {0}. The expected format is xml, got {1}".format(profile['attributes']['ref_id'], response.headers['Content-Type']))
             return None
 
         with open(tailoring_file_path, mode="w+b") as f:
