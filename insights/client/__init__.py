@@ -105,6 +105,9 @@ class InsightsClient(object):
         try:
             response = self.connection.get(url)
             if response.status_code == 200:
+                if 'application/json' not in response.headers.get('Content-Type', ''):
+                    logger.warning("Module update router response is not valid for %s. Expected json format but got %s. Defaulting to /release", url, response.headers.get('Content-Type', ''))
+                    return '/release'
                 return response.json()["url"]
             else:
                 raise ConnectionError("%s: %s" % (response.status_code, response.reason))
