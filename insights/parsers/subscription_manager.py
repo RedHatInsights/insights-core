@@ -16,7 +16,12 @@ from insights.core.filters import add_filter
 from insights.core.plugins import parser
 from insights.specs import Specs
 
-add_filter(Specs.subscription_manager_facts, ['instance_id'])
+add_filter(
+    Specs.subscription_manager_facts, [
+        'image-builder.osbuild-composer.api-type',
+        'instance_id',
+    ]
+)
 
 
 def _local_kv_split(lines):
