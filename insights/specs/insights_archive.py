@@ -277,6 +277,7 @@ class InsightsArchiveSpecs(Specs):
     virsh_list_all = simple_file("insights_commands/virsh_--readonly_list_--all")
     virt_what = simple_file("insights_commands/virt-what")
     wc_proc_1_mountinfo = simple_file("insights_commands/wc_-l_.proc.1.mountinfo")
+    xfs_quota_state = simple_file("insights_commands/xfs_quota_-x_-c_state_-gu")
     yum_list_available = simple_file("insights_commands/yum_-C_--noplugins_list_available")
     yum_repolist = first_file([
         "insights_commands/yum_-d_2_-C_--noplugins_repolist",

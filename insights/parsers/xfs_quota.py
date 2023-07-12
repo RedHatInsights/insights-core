@@ -4,19 +4,18 @@ xfs_quota Commands
 
 Parser contains in this module is:
 
-XFSQuotaStatue - command ``/sbin/xfs_quota -x -c 'state -gu'``
+XFSQuotaState - command ``/sbin/xfs_quota -x -c 'state -gu'``
 --------------------------------------------------------------
 """
 
-from insights.core import Parser
+from insights.core import CommandParser
 from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
-from insights.parsers import get_active_lines
 from insights.specs import Specs
 
 
-@parser(Specs.xfs_quota_statue)
-class XFSQuotaStatue(Parser):
+@parser(Specs.xfs_quota_state)
+class XFSQuotaState(CommandParser):
     """
     The ``/sbin/xfs_quota -x -c 'state -gu'`` command provides information for the
     xfs quota devices.
@@ -77,7 +76,10 @@ class XFSQuotaStatue(Parser):
         self.user_quota = []
         self.group_quota = []
         data = None
-        for line in get_active_lines(content):
+        for line in content:
+            if not line.strip():
+                continue
+
             if 'quota state on' in line:
                 device = line.split()[-1].lstrip('(').rstrip(')')
                 data = self.group_quota
