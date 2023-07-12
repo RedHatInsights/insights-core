@@ -2,6 +2,10 @@ from insights.core.spec_factory import SpecSet, RegistryPoint
 
 
 class Specs(SpecSet):
+    # Client App specs
+    malware_detection = RegistryPoint()
+
+    # Regular collection specs
     abrt_ccpp_conf = RegistryPoint(filterable=True)
     abrt_status_bare = RegistryPoint()
     alternatives_display_python = RegistryPoint()
