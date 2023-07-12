@@ -354,7 +354,8 @@ def create_archive(path, remove_path=True):
     return archive_path
 
 
-def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=None, client_timeout=None):
+def collect(manifest=default_manifest, tmp_path=None, compress=False,
+            rm_conf=None, client_config=None):
     """
     This is the collection entry point. It accepts a manifest, a temporary
     directory in which to store output, and a boolean for optional compression.
@@ -371,7 +372,7 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
         rm_conf (dict): Client-provided python dict containing keys
             "commands", "files", and "keywords", to be injected
             into the manifest blacklist.
-        client_timeout (int): Client-provided command timeout value
+        client_config (InsightsConfig): Configurations read by the client tool.
     Returns:
         (str, dict): The full path to the created tar.gz or workspace.
         And a dictionary with relevant exceptions captured by the broker during
@@ -391,9 +392,9 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
     apply_blacklist(client.get("blacklist", {}))
 
     # insights-client
-    if client_timeout:
+    if client_config and client_config.cmd_timeout:
         try:
-            client['context']['args']['timeout'] = client_timeout
+            client['context']['args']['timeout'] = client_config.cmd_timeout
         except LookupError:
             log.warning('Could not set timeout option.')
     rm_conf = rm_conf or {}
@@ -432,6 +433,7 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
     broker = dr.Broker()
     ctx = create_context(client.get("context", {}))
     broker[ctx.__class__] = ctx
+    broker['client_config'] = client_config
 
     parallel = run_strategy.get("name") == "parallel"
     pool_args = run_strategy.get("args", {})
