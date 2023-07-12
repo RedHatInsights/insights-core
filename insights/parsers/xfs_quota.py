@@ -69,8 +69,8 @@ class XFSQuotaStatue(Parser):
         <class 'insights.parsers.xfs_quota.XFSQuotaStatue'>
         >>> len(quota_state.user_quota)
         3
-        >>> quota_state.user_quota[0]
-        {'device': '/dev/sdd', 'accounting': 'ON', 'enforcement': 'ON', 'blocks_grace_time': '7 days', 'blocks_max_warnings': '5', 'inodes_grace_time': '7 days', 'inodes_max_warnings': '5', 'realtime_blocks_grace_time': '7 days'}
+        >>> quota_state.user_quota[0] == {'device': '/dev/sdd', 'accounting': 'ON', 'enforcement': 'ON', 'blocks_grace_time': '7 days', 'blocks_max_warnings': '5', 'inodes_grace_time': '7 days', 'inodes_max_warnings': '5', 'realtime_blocks_grace_time': '7 days'}
+        True
     """
 
     def parse_content(self, content):
