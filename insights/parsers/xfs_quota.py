@@ -65,10 +65,10 @@ class XFSQuotaState(CommandParser):
 
     Examples:
         >>> type(quota_state)
-        <class 'insights.parsers.xfs_quota.XFSQuotaStatue'>
+        <class 'insights.parsers.xfs_quota.XFSQuotaState'>
         >>> len(quota_state.user_quota)
         3
-        >>> quota_state.user_quota[0] == {'device': '/dev/sdd', 'accounting': 'ON', 'enforcement': 'ON', 'blocks_grace_time': '7 days', 'blocks_max_warnings': '5', 'inodes_grace_time': '7 days', 'inodes_max_warnings': '5', 'realtime_blocks_grace_time': '7 days'}
+        >>> quota_state.user_quota[0] == {'device': '/dev/sdd', 'accounting': 'ON', 'enforcement': 'ON', 'inode': '#131 (1 blocks, 1 extents)', 'blocks_grace_time': '7 days', 'blocks_max_warnings': '5', 'inodes_grace_time': '7 days', 'inodes_max_warnings': '5', 'realtime_blocks_grace_time': '7 days'}
         True
     """
 

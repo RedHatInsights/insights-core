@@ -1,6 +1,6 @@
 from insights.core.exceptions import SkipComponent
 from insights.parsers import xfs_quota
-from insights.parsers.xfs_quota import XFSQuotaStatue
+from insights.parsers.xfs_quota import XFSQuotaState
 from insights.tests import context_wrap
 import doctest
 import pytest
@@ -67,24 +67,24 @@ Realtime Blocks grace time: [7 days]
 
 
 def test_repquota():
-    results = XFSQuotaStatue(context_wrap(XFSQUOTASTATE))
+    results = XFSQuotaState(context_wrap(XFSQUOTASTATE))
     assert len(results.group_quota) == 3
     assert results.group_quota[0]['device'] == '/dev/sdd'
     assert results.group_quota[0]['accounting'] == 'OFF'
     assert results.group_quota[0]['blocks_grace_time'] is None
     assert len(results.user_quota) == 3
     assert results.group_quota[-1]['accounting'] == 'ON'
-    assert results.user_quota[-1] == {'device': '/dev/sdc', 'accounting': 'ON', 'enforcement': 'ON', 'blocks_grace_time': '7 days', 'blocks_max_warnings': '20', 'inodes_grace_time': '7 days', 'inodes_max_warnings': '5', 'realtime_blocks_grace_time': '7 days'}
+    assert results.user_quota[-1] == {'device': '/dev/sdc', 'accounting': 'ON', 'enforcement': 'ON', 'inode': '#131 (2 blocks, 2 extents)', 'blocks_grace_time': '7 days', 'blocks_max_warnings': '20', 'inodes_grace_time': '7 days', 'inodes_max_warnings': '5', 'realtime_blocks_grace_time': '7 days'}
 
 
 def test_repquota_err():
     with pytest.raises(SkipComponent):
-        XFSQuotaStatue(context_wrap(XFSQUOTASTATE_ERR))
+        XFSQuotaState(context_wrap(XFSQUOTASTATE_ERR))
 
 
 def test_repquota_doc_examples():
     env = {
-        'quota_state': XFSQuotaStatue(context_wrap(XFSQUOTASTATE))
+        'quota_state': XFSQuotaState(context_wrap(XFSQUOTASTATE))
     }
     failed, total = doctest.testmod(xfs_quota, globs=env)
     assert failed == 0
