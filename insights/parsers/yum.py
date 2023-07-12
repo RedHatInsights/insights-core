@@ -12,7 +12,7 @@ YumRepoList - command ``yum -C --noplugins repolist``
 from insights.core import CommandParser
 from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
-from insights.parsers import parse_fixed_table
+from insights.parsers import parse_fixed_table, calc_offset
 from insights.specs import Specs
 
 eus = [
@@ -124,11 +124,21 @@ class YumRepoList(CommandParser):
                 }
 
     """
+
+    _repo_headers = [
+        ("repo id", "repo name"),
+        ("id du dépôt", "nom du dépôt"),
+        ("Paketquellen-ID", "Paketquellen-Name"),
+    ]
+
     def parse_content(self, content):
         if not content:
             raise SkipComponent('No repolist.')
 
         if content[0].startswith('repolist:'):
+            raise SkipComponent('No repolist.')
+
+        if content[0].startswith('No repositories available'):
             raise SkipComponent('No repolist.')
 
         trailing_line_prefix = [
@@ -141,11 +151,23 @@ class YumRepoList(CommandParser):
 
         self.data = []
         self.repos = {}
+
+        # Tell if the table header is in other language, default to english.
+        header_repo_id, header_repo_name = self._repo_headers[0]
+        for repo_id, repo_name in self._repo_headers:
+            try:
+                first_line = calc_offset(content, [repo_id])
+                header_repo_id, header_repo_name = repo_id, repo_name
+                break
+            except ValueError as e:
+                print("meet e:" , e)
+
         try:
             self.data = parse_fixed_table(
                     content,
-                    heading_ignore=['repo id'],
-                    header_substitute=[('repo id', 'id     '), ('repo name', 'name     ')],
+                    heading_ignore=[header_repo_id],
+                    header_substitute=[(header_repo_id, 'id' + ' '*(len(header_repo_id) - 2)),
+                                        (header_repo_name, 'name' + ' '*(len(header_repo_name) - 4))],
                     trailing_ignore=trailing_line_prefix,
                     empty_exception=True)
         except ValueError as e:
