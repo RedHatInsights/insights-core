@@ -49,20 +49,19 @@ Examples:
     >>> ls_dev.listing_of('/dev/rhel')['home']['link']
     '../dm-2'
 """
-from .. import parser, FileListing, CommandParser
+from insights import CommandParser, FileListing, parser
 from insights.specs import Specs
-from insights.util import deprecated
 
 
 @parser(Specs.ls_dev)
 class LsDev(CommandParser, FileListing):
     """
-    .. warning::
-        This class is deprecated and will be removed from 3.5.0.
-        Please use the :class:`insights.parsers.ls.LSlanR` instead.
-
     Parses output of ``ls -lanR /dev`` command.
+
+    .. warning::
+
+        For Insights Advisor Rules, it's recommended to use the
+        :class:`insights.parsers.ls.LSlanR` and add the ``"/dev"`` to
+        the filter list of `Specs.ls_lanR_dirs` instead.
     """
-    def __init__(self, *args, **kwargs):
-        deprecated(LsDev, "Please use the :class:`insights.parsers.ls.LSlanR` instead.", "3.5.0")
-        super(LsDev, self).__init__(*args, **kwargs)
+    pass
