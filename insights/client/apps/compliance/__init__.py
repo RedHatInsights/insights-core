@@ -130,9 +130,9 @@ class ComplianceClient:
         response = self.conn.session.get("https://{0}/compliance/profiles".format(self.config.base_url),
                                          params={'search': search, 'relationships': 'false'})
         logger.debug("Content of the response: {0} - {1}".format(response,
-                                                                 response.json()))
+                                                                 response.content))
         if response.status_code == 200:
-            return (response.json().get('data') or [])
+            return response.json().get('data', [])
         else:
             return []
 
