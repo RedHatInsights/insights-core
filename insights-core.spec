@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.2.5
+Version:        3.2.6
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,20 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jul 13 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.6-1
+- FEAT: Add new parser XFSQuotaState (#3850) (986222045@qq.com)
+- Handle module router request response format (#3838)
+  (33912805+LightOfHeaven1994@users.noreply.github.com)
+- RHINENG-761: Handle Compliance tailoring file request (#3846)
+  (33912805+LightOfHeaven1994@users.noreply.github.com)
+- feat: pass the client_config to the core collection (#3839)
+  (xiangceliu@redhat.com)
+- Add new fact to sub mgr facts filters (#3848)
+  (20520336+bfahr@users.noreply.github.com)
+- fix: Fix wrong filter reference (#3842)
+  (44796653+huali027@users.noreply.github.com)
+- Update CI/CD to include python3.11 (#3847) (xiangceliu@redhat.com)
+
 * Thu Jul 06 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.5-1
 - feat: add safety check to methods of 'LS' Parsers (#3841)
   (xiangceliu@redhat.com)
