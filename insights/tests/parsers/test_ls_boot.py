@@ -1,3 +1,6 @@
+import doctest
+
+from insights.parsers import ls_boot
 from insights.parsers.ls_boot import LsBoot
 from insights.tests import context_wrap
 
@@ -53,3 +56,9 @@ def test_boot_links():
     assert 'initrd' in boot_files
     assert 'vmlinuz' in boot_files
     assert 'vmlinuz-2.6.32-504.el6.x86_64' in boot_files
+
+
+def test_doc_examples():
+    env = {'bootdir': LsBoot(context_wrap(LS_BOOT))}
+    failed, total = doctest.testmod(ls_boot, globs=env)
+    assert failed == 0

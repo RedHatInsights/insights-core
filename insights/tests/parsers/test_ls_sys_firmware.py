@@ -1,3 +1,6 @@
+import doctest
+
+from insights.parsers import ls_sys_firmware
 from insights.parsers.ls_sys_firmware import LsSysFirmware
 from insights.tests import context_wrap
 
@@ -23,8 +26,14 @@ drwxr-xr-x. 3 0 0    0 Dec 22 17:56 tables
 
 
 def test_ls_sys_firmware():
-    ls_sys_firmware = LsSysFirmware(context_wrap(LS_SYS_FIRMWARE))
-    assert "acpi" not in ls_sys_firmware
-    assert "/sys/firmware/acpi" in ls_sys_firmware
-    assert ls_sys_firmware.dirs_of("/sys/firmware") == ['.', '..', 'acpi', 'dmi', 'memmap']
-    assert ls_sys_firmware.files_of("/sys/firmware/acpi") == ['pm_profile']
+    ls = LsSysFirmware(context_wrap(LS_SYS_FIRMWARE))
+    assert "acpi" not in ls
+    assert "/sys/firmware/acpi" in ls
+    assert ls.dirs_of("/sys/firmware") == ['.', '..', 'acpi', 'dmi', 'memmap']
+    assert ls.files_of("/sys/firmware/acpi") == ['pm_profile']
+
+
+def test_doc_examples():
+    env = {'ls_sys_firmware': LsSysFirmware(context_wrap(LS_SYS_FIRMWARE))}
+    failed, total = doctest.testmod(ls_sys_firmware, globs=env)
+    assert failed == 0
