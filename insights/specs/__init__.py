@@ -810,6 +810,7 @@ class Specs(SpecSet):
     x86_pti_enabled = RegistryPoint()
     x86_retp_enabled = RegistryPoint()
     xfs_info = RegistryPoint(multi_output=True)
+    xfs_quota_state = RegistryPoint()
     xinetd_conf = RegistryPoint(multi_output=True)
     yum_conf = RegistryPoint()
     yum_list_available = RegistryPoint()
