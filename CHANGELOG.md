@@ -2,6 +2,16 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.2.6](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.6) (2023-07-13)
+
+- FEAT: Add new parser XFSQuotaState ([PR 3850](https://github.com/RedHatInsights/insights-core/pull/3850))
+- Handle module router request response format ([PR 3838](https://github.com/RedHatInsights/insights-core/pull/3838))
+- RHINENG-761: Handle Compliance tailoring file request ([PR 3846](https://github.com/RedHatInsights/insights-core/pull/3846))
+- feat: pass the client_config to the core collection ([PR 3839](https://github.com/RedHatInsights/insights-core/pull/3839))
+- Add new fact to sub mgr facts filters ([PR 3848](https://github.com/RedHatInsights/insights-core/pull/3848))
+- fix: Fix wrong filter reference ([PR 3842](https://github.com/RedHatInsights/insights-core/pull/3842))
+- Update CI/CD to include python3.11 ([PR 3847](https://github.com/RedHatInsights/insights-core/pull/3847))
+
 # [insights-core-3.2.5](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.5) (2023-07-06)
 
 - feat: add safety check to methods of 'LS' Parsers ([PR 3841](https://github.com/RedHatInsights/insights-core/pull/3841))
