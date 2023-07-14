@@ -88,6 +88,14 @@ class ContentProvider(object):
 
         return self._content
 
+    def write(self, dst):
+        if self.ds and self.cleaner:
+            # Get the actual obfuscate list of the spec
+            obfuscate = set(self.cleaner.obfuscate) - set(self.ds.not_obfuscate)
+            # Clean the specs content for core collection
+            self.cleaner.clean_file(
+                    dst, filters=get_filters(self.ds), obfs=obfuscate)
+
     def __repr__(self):
         msg = "<%s(path=%r, cmd=%r)>"
         return msg % (self.__class__.__name__, self.path or "", self.cmd or "")
@@ -100,13 +108,16 @@ class ContentProvider(object):
 
 
 class DatasourceProvider(ContentProvider):
-    def __init__(self, content, relative_path, root='/', ds=None, ctx=None):
+    def __init__(self, content, relative_path, root='/', ds=None, ctx=None,
+                 cleaner=None, not_obfuscate=None):
         super(DatasourceProvider, self).__init__()
+        self.ds = ds or self
+        self.ctx = ctx
+        self.root = root
+        self.cleaner = cleaner
+        self.not_obfuscate = not_obfuscate or []
         self.relative_path = relative_path
         self._content = content if isinstance(content, list) else content.splitlines()
-        self.root = root
-        self.ds = ds
-        self.ctx = ctx
 
     def _stream(self):
         """
@@ -121,17 +132,20 @@ class DatasourceProvider(ContentProvider):
 
         self.loaded = False
 
+        super(DatasourceProvider, self).write(dst)
+
     def load(self):
         self.loaded = True
         return self.content
 
 
 class FileProvider(ContentProvider):
-    def __init__(self, relative_path, root="/", ds=None, ctx=None):
+    def __init__(self, relative_path, root="/", ds=None, ctx=None, cleaner=None):
         super(FileProvider, self).__init__()
         self.ds = ds
         self.ctx = ctx
         self._set_root(root)
+        self.cleaner = cleaner
         self.relative_path = relative_path.lstrip("/")
         self.file_name = os.path.basename(self.path)
 
@@ -228,6 +242,7 @@ class RawFileProvider(FileProvider):
     def write(self, dst):
         fs.ensure_path(os.path.dirname(dst))
         call([which("cp", env=SAFE_ENV), self.path, dst], env=SAFE_ENV)
+        super(RawFileProvider, self).write(dst)
 
 
 class TextFileProvider(FileProvider):
@@ -302,6 +317,8 @@ class TextFileProvider(FileProvider):
         else:
             call([which("cp", env=SAFE_ENV), self.path, dst], env=SAFE_ENV)
 
+        super(TextFileProvider, self).write(dst)
+
 
 class SerializedOutputProvider(TextFileProvider):
     def create_args(self):
@@ -316,16 +333,19 @@ class CommandOutputProvider(ContentProvider):
     """
     Class used in datasources to return output from commands.
     """
-    def __init__(self, cmd, ctx, root="insights_commands", args=None, split=True, keep_rc=False, ds=None, timeout=None,
-                 inherit_env=None, override_env=None, signum=None):
+    def __init__(self, cmd, ctx, root="insights_commands", args=None,
+                 split=True, keep_rc=False, ds=None, timeout=None,
+                 inherit_env=None, override_env=None, signum=None, cleaner=None):
         super(CommandOutputProvider, self).__init__()
+        self.ds = ds
+        self.rc = None
         self.cmd = cmd
-        self.root = root
         self.ctx = ctx
+        self.root = root
+        self.cleaner = cleaner
         self.args = args  # already interpolated into cmd - stored here for context.
         self.split = split
         self.keep_rc = keep_rc
-        self.ds = ds
         self.timeout = timeout
         self.inherit_env = inherit_env if inherit_env is not None else []
         self.override_env = override_env if override_env is not None else dict()
@@ -334,7 +354,6 @@ class CommandOutputProvider(ContentProvider):
 
         self._content = None
         self._env = self.create_env()
-        self.rc = None
 
         self.validate()
 
@@ -386,7 +405,8 @@ class CommandOutputProvider(ContentProvider):
     def load(self):
         command = self.create_args()
 
-        raw = self.ctx.shell_out(command, split=self.split, keep_rc=self.keep_rc, timeout=self.timeout,
+        raw = self.ctx.shell_out(command, split=self.split,
+                                 keep_rc=self.keep_rc, timeout=self.timeout,
                                  env=self._env, signum=self.signum)
         if self.keep_rc:
             self.rc, output = raw
@@ -419,20 +439,23 @@ class CommandOutputProvider(ContentProvider):
         if args:
             timeout = self.timeout or self.ctx.timeout
             p = Pipeline(*args, timeout=timeout, signum=self.signum, env=self._env)
-            return p.write(dst, keep_rc=self.keep_rc)
+            p.write(dst, keep_rc=self.keep_rc)
+            super(CommandOutputProvider, self).write(dst)
 
     def __repr__(self):
         return 'CommandOutputProvider("%r")' % self.cmd
 
 
 class ContainerProvider(CommandOutputProvider):
-    def __init__(self, cmd_path, ctx, image=None, args=None, split=True, keep_rc=False, ds=None, timeout=None,
-                 inherit_env=None, override_env=None, signum=None):
+    def __init__(self, cmd_path, ctx, image=None, args=None, split=True,
+                 keep_rc=False, ds=None, timeout=None, inherit_env=None,
+                 override_env=None, signum=None, cleaner=None):
         # cmd  = "<podman|docker> exec container_id command"
         # path = "<podman|docker> exec container_id cat path"
         self.image = image
-        super(ContainerProvider, self).__init__(cmd_path, ctx, "insights_containers", args, split, keep_rc, ds, timeout,
-                                                inherit_env, override_env, signum)
+        super(ContainerProvider, self).__init__(
+                cmd_path, ctx, "insights_containers", args, split, keep_rc,
+                ds, timeout, inherit_env, override_env, signum, cleaner=None)
 
 
 class ContainerFileProvider(ContainerProvider):
@@ -464,14 +487,16 @@ class RegistryPoint(object):
     #
     # intentionally not a docstring so this doesn't show up in pydoc.
     def __init__(self, metadata=None, multi_output=False, raw=False,
-            filterable=False):
+                 filterable=False, not_obfuscate=None):
+        not_obfuscate = [] if not_obfuscate is None else not_obfuscate
         self.metadata = metadata
         self.multi_output = multi_output
+        self.not_obfuscate = not_obfuscate
         self.raw = raw
         self.filterable = filterable
         self.__name__ = self.__class__.__name__
         datasource([], metadata=metadata, multi_output=multi_output, raw=raw,
-                filterable=filterable)(self)
+                   filterable=filterable, not_obfuscate=not_obfuscate)(self)
 
     def __call__(self, broker):
         for c in reversed(dr.get_delegate(self).deps):
@@ -557,6 +582,7 @@ def _resolve_registry_points(cls, base, dct):
                 v.filterable = delegate.filterable = point.filterable
                 v.raw = delegate.raw = point.raw
                 v.multi_output = delegate.multi_output = point.multi_output
+                v.not_obfuscate = delegate.not_obfuscate = point.not_obfuscate
 
                 # the RegistryPoint gets the implementation datasource as a
                 # dependency
@@ -614,7 +640,8 @@ class simple_file(object):
     Returns:
         function: A datasource that reads all files matching the glob patterns.
     """
-    def __init__(self, path, context=None, deps=[], kind=TextFileProvider, **kwargs):
+    def __init__(self, path, context=None, deps=None, kind=TextFileProvider, **kwargs):
+        deps = deps if deps is not None else []
         self.path = path
         self.context = context or FSRoots
         self.kind = kind
@@ -624,7 +651,9 @@ class simple_file(object):
 
     def __call__(self, broker):
         ctx = _get_context(self.context, broker)
-        return self.kind(ctx.locate_path(self.path), root=ctx.root, ds=self, ctx=ctx)
+        cleaner = broker.get('cleaner')
+        return self.kind(ctx.locate_path(self.path), root=ctx.root, ds=self,
+                         ctx=ctx, cleaner=cleaner)
 
 
 class glob_file(object):
@@ -643,7 +672,9 @@ class glob_file(object):
     Returns:
         function: A datasource that reads all files matching the glob patterns.
     """
-    def __init__(self, patterns, ignore=None, context=None, deps=[], kind=TextFileProvider, max_files=1000, **kwargs):
+    def __init__(self, patterns, ignore=None, context=None, deps=None,
+                 kind=TextFileProvider, max_files=1000, **kwargs):
+        deps = deps if deps is not None else []
         if not isinstance(patterns, (list, set)):
             patterns = [patterns]
         self.patterns = patterns
@@ -657,6 +688,7 @@ class glob_file(object):
         datasource(self.context, *deps, multi_output=True, raw=self.raw, **kwargs)(self)
 
     def __call__(self, broker):
+        cleaner = broker.get('cleaner')
         ctx = _get_context(self.context, broker)
         root = ctx.root
         results = []
@@ -666,7 +698,8 @@ class glob_file(object):
                 if self.ignore_func(path) or os.path.isdir(path):
                     continue
                 try:
-                    results.append(self.kind(path[len(root):], root=root, ds=self, ctx=ctx))
+                    results.append(self.kind(path[len(root):], root=root,
+                                   ds=self, ctx=ctx, cleaner=cleaner))
                 except:
                     log.debug(traceback.format_exc())
         if results:
@@ -709,7 +742,9 @@ class first_file(object):
             and is readable
     """
 
-    def __init__(self, paths, context=None, deps=[], kind=TextFileProvider, **kwargs):
+    def __init__(self, paths, context=None, deps=None, kind=TextFileProvider,
+                 **kwargs):
+        deps = deps if deps is not None else []
         self.paths = paths
         self.context = context or FSRoots
         self.kind = kind
@@ -718,11 +753,13 @@ class first_file(object):
         datasource(self.context, *deps, raw=self.raw, **kwargs)(self)
 
     def __call__(self, broker):
+        cleaner = broker.get('cleaner')
         ctx = _get_context(self.context, broker)
         root = ctx.root
         for p in self.paths:
             try:
-                return self.kind(ctx.locate_path(p), root=root, ds=self, ctx=ctx)
+                return self.kind(ctx.locate_path(p), root=root, ds=self,
+                                 ctx=ctx, cleaner=cleaner)
             except:
                 pass
         raise ContentException("None of [%s] found." % ', '.join(self.paths))
@@ -745,7 +782,8 @@ class listdir(object):
             the directory is empty or all names get ignored.
     """
 
-    def __init__(self, path, context=None, ignore=None, deps=[]):
+    def __init__(self, path, context=None, ignore=None, deps=None):
+        deps = deps if deps is not None else []
         self.path = path
         self.context = context or FSRoots
         self.ignore = ignore
@@ -818,7 +856,8 @@ class simple_command(object):
         function: A datasource that returns the output of a command that takes
             no arguments
     """
-    def __init__(self, cmd, context=HostContext, deps=None, split=True, keep_rc=False, timeout=None, inherit_env=None,
+    def __init__(self, cmd, context=HostContext, deps=None, split=True,
+                 keep_rc=False, timeout=None, inherit_env=None,
                  override_env=None, signum=None, **kwargs):
         deps = deps if deps is not None else []
         self.cmd = cmd
@@ -834,10 +873,13 @@ class simple_command(object):
         datasource(self.context, *deps, raw=self.raw, **kwargs)(self)
 
     def __call__(self, broker):
+        cleaner = broker.get('cleaner')
         ctx = broker[self.context]
-        return CommandOutputProvider(self.cmd, ctx, split=self.split, keep_rc=self.keep_rc, ds=self,
-                                     timeout=self.timeout, inherit_env=self.inherit_env, override_env=self.override_env,
-                                     signum=self.signum)
+        return CommandOutputProvider(
+                self.cmd, ctx, split=self.split, keep_rc=self.keep_rc,
+                ds=self, timeout=self.timeout, inherit_env=self.inherit_env,
+                override_env=self.override_env, signum=self.signum,
+                cleaner=cleaner)
 
 
 class command_with_args(object):
@@ -868,8 +910,9 @@ class command_with_args(object):
         function: A datasource that returns the output of a command that takes
             specified arguments passed by the provider.
     """
-    def __init__(self, cmd, provider, context=HostContext, deps=None, split=True, keep_rc=False, timeout=None,
-                 inherit_env=None, override_env=None, signum=None, **kwargs):
+    def __init__(self, cmd, provider, context=HostContext, deps=None,
+                 split=True, keep_rc=False, timeout=None, inherit_env=None,
+                 override_env=None, signum=None, **kwargs):
         deps = deps if deps is not None else []
         self.cmd = cmd
         self.provider = provider
@@ -885,6 +928,7 @@ class command_with_args(object):
         datasource(self.provider, self.context, *deps, raw=self.raw, **kwargs)(self)
 
     def __call__(self, broker):
+        cleaner = broker.get('cleaner')
         source = broker[self.provider]
         ctx = broker[self.context]
         if not isinstance(source, (str, tuple)):
@@ -892,9 +936,11 @@ class command_with_args(object):
                                    source)
         try:
             self.cmd = self.cmd % source
-            return CommandOutputProvider(self.cmd, ctx, split=self.split, keep_rc=self.keep_rc, ds=self,
-                                         timeout=self.timeout, inherit_env=self.inherit_env,
-                                         override_env=self.override_env, signum=self.signum)
+            return CommandOutputProvider(
+                    self.cmd, ctx, split=self.split, keep_rc=self.keep_rc,
+                    ds=self, timeout=self.timeout, inherit_env=self.inherit_env,
+                    override_env=self.override_env, signum=self.signum,
+                    cleaner=cleaner)
         except ContentException as ce:
             log.debug(ce)
         except Exception:
@@ -935,8 +981,9 @@ class foreach_execute(object):
         function: A datasource that returns a list of outputs for each command
             created by substituting each element of provider into the cmd template.
     """
-    def __init__(self, provider, cmd, context=HostContext, deps=None, split=True, keep_rc=False, timeout=None,
-                 inherit_env=None, override_env=None, signum=None, **kwargs):
+    def __init__(self, provider, cmd, context=HostContext, deps=None,
+                 split=True, keep_rc=False, timeout=None, inherit_env=None,
+                 override_env=None, signum=None, **kwargs):
         deps = deps if deps is not None else []
         self.provider = provider
         self.cmd = cmd
@@ -949,11 +996,13 @@ class foreach_execute(object):
         self.override_env = override_env if override_env is not None else dict()
         self.signum = signum
         self.__name__ = self.__class__.__name__
-        datasource(self.provider, self.context, *deps, multi_output=True, raw=self.raw, **kwargs)(self)
+        datasource(self.provider, self.context, *deps, multi_output=True,
+                   raw=self.raw, **kwargs)(self)
 
     def __call__(self, broker):
         result = []
         source = broker[self.provider]
+        cleaner = broker.get('cleaner')
         ctx = broker[self.context]
         if isinstance(source, ContentProvider):
             source = source.content
@@ -962,9 +1011,12 @@ class foreach_execute(object):
         for e in source:
             try:
                 the_cmd = self.cmd % e
-                cop = CommandOutputProvider(the_cmd, ctx, args=e, split=self.split, keep_rc=self.keep_rc, ds=self,
-                                            timeout=self.timeout, inherit_env=self.inherit_env,
-                                            override_env=self.override_env, signum=self.signum)
+                cop = CommandOutputProvider(
+                        the_cmd, ctx, args=e, split=self.split,
+                        keep_rc=self.keep_rc, ds=self, timeout=self.timeout,
+                        inherit_env=self.inherit_env,
+                        override_env=self.override_env, signum=self.signum,
+                        cleaner=cleaner)
                 result.append(cop)
             except ContentException as ce:
                 log.debug(ce)
@@ -992,7 +1044,9 @@ class foreach_collect(object):
             substituting each element of provider into the path template.
     """
 
-    def __init__(self, provider, path, ignore=None, context=HostContext, deps=[], kind=TextFileProvider, **kwargs):
+    def __init__(self, provider, path, ignore=None, context=HostContext,
+                 deps=None, kind=TextFileProvider, **kwargs):
+        deps = deps if deps is not None else []
         self.provider = provider
         self.path = path
         self.ignore = ignore
@@ -1001,11 +1055,13 @@ class foreach_collect(object):
         self.kind = kind
         self.raw = kind is RawFileProvider
         self.__name__ = self.__class__.__name__
-        datasource(self.provider, self.context, *deps, multi_output=True, raw=self.raw, **kwargs)(self)
+        datasource(self.provider, self.context, *deps, multi_output=True,
+                   raw=self.raw, **kwargs)(self)
 
     def __call__(self, broker):
         result = []
         source = broker[self.provider]
+        cleaner = broker.get('cleaner')
         ctx = _get_context(self.context, broker)
         root = ctx.root
         if isinstance(source, ContentProvider):
@@ -1018,7 +1074,8 @@ class foreach_collect(object):
                 if self.ignore_func(p) or os.path.isdir(p):
                     continue
                 try:
-                    result.append(self.kind(p[len(root):], root=root, ds=self, ctx=ctx))
+                    result.append(self.kind(p[len(root):], root=root, ds=self,
+                                  ctx=ctx, cleaner=cleaner))
                 except:
                     log.debug(traceback.format_exc())
         if result:
@@ -1064,6 +1121,7 @@ class container_execute(foreach_execute):
     def __call__(self, broker):
         result = []
         source = broker[self.provider]
+        cleaner = broker.get('cleaner')
         ctx = broker[self.context]
         if isinstance(source, ContentProvider):
             source = source.content
@@ -1077,10 +1135,11 @@ class container_execute(foreach_execute):
                 cmd = self.cmd % args if args else self.cmd
                 # the_cmd = <podman|docker> exec container_id cmd
                 the_cmd = "/usr/bin/%s exec %s %s" % (engine, cid, cmd)
-                ccp = ContainerCommandProvider(the_cmd, ctx, image=image, args=e, split=self.split,
-                                               keep_rc=self.keep_rc, ds=self, timeout=self.timeout,
-                                               inherit_env=self.inherit_env, override_env=self.override_env,
-                                               signum=self.signum)
+                ccp = ContainerCommandProvider(
+                        the_cmd, ctx, image=image, args=e, split=self.split,
+                        keep_rc=self.keep_rc, ds=self, timeout=self.timeout,
+                        inherit_env=self.inherit_env, override_env=self.override_env,
+                        signum=self.signum, cleaner=cleaner)
                 result.append(ccp)
             except:
                 log.debug(traceback.format_exc())
@@ -1112,14 +1171,17 @@ class container_collect(foreach_execute):
         function: A datasource that returns a list of file contents created by
             substituting each element of provider into the path template.
     """
-    def __init__(self, provider, path=None, context=HostContext, deps=None, split=True, keep_rc=False, timeout=None,
-                 inherit_env=None, override_env=None, signum=None, **kwargs):
-        super(container_collect, self).__init__(provider, path, context, deps, split, keep_rc, timeout, inherit_env,
-                                                override_env, signum, **kwargs)
+    def __init__(self, provider, path=None, context=HostContext, deps=None,
+                 split=True, keep_rc=False, timeout=None, inherit_env=None,
+                 override_env=None, signum=None, **kwargs):
+        super(container_collect, self).__init__(
+                provider, path, context, deps, split, keep_rc, timeout,
+                inherit_env, override_env, signum, **kwargs)
 
     def __call__(self, broker):
         result = []
         source = broker[self.provider]
+        cleaner = broker.get('cleaner')
         ctx = broker[self.context]
         if isinstance(source, ContentProvider):
             source = source.content
@@ -1138,10 +1200,11 @@ class container_collect(foreach_execute):
                 # e       = (<podman|docker>, container_id)
                 # the_cmd = <podman|docker> exec container_id cat path
                 the_cmd = ("/usr/bin/%s exec %s cat " % e) + path
-                cfp = ContainerFileProvider(the_cmd, ctx, image=image, args=None, split=self.split,
-                                            keep_rc=self.keep_rc, ds=self, timeout=self.timeout,
-                                            inherit_env=self.inherit_env, override_env=self.override_env,
-                                            signum=self.signum)
+                cfp = ContainerFileProvider(
+                        the_cmd, ctx, image=image, args=None, split=self.split,
+                        keep_rc=self.keep_rc, ds=self, timeout=self.timeout,
+                        inherit_env=self.inherit_env, override_env=self.override_env,
+                        signum=self.signum, cleaner=cleaner)
                 result.append(cfp)
             except:
                 log.debug(traceback.format_exc())
