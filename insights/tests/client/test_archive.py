@@ -103,6 +103,7 @@ class TestInsightsArchive(TestCase):
         '''
         config = Mock()
         config.obfuscate_hostname = True
+        config.core_collect = False
         with patch('insights.client.archive.os.path.exists', return_value=True):
             archive = InsightsArchive(config)
         # give this a discrete value so we can check the results

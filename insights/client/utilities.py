@@ -3,7 +3,6 @@ Utility functions
 """
 from __future__ import absolute_import
 import glob
-import socket
 import os
 import logging
 import uuid
@@ -30,6 +29,7 @@ from .collection_rules import InsightsUploadConf, load_yaml
 from insights.core.context import Context
 from insights.parsers.os_release import OsRelease
 from insights.parsers.redhat_release import RedhatRelease
+from insights.util.hostname import determine_hostname  # noqa: F401
 
 try:
     from insights_client.constants import InsightsConstants as wrapper_constants
@@ -37,35 +37,6 @@ except ImportError:
     wrapper_constants = None
 
 logger = logging.getLogger(__name__)
-
-
-def determine_hostname(display_name=None):
-    """
-    Find fqdn if we can
-    """
-    if display_name:
-        # if display_name is provided, just return the given name
-        return display_name
-    else:
-        socket_gethostname = socket.gethostname()
-        socket_fqdn = socket.getfqdn()
-
-        try:
-            socket_ex = socket.gethostbyname_ex(socket_gethostname)[0]
-        except (LookupError, socket.gaierror):
-            socket_ex = ''
-
-        gethostname_len = len(socket_gethostname)
-        fqdn_len = len(socket_fqdn)
-        ex_len = len(socket_ex)
-
-        if fqdn_len > gethostname_len or ex_len > gethostname_len:
-            if "localhost" not in socket_ex and len(socket_ex):
-                return socket_ex
-            if "localhost" not in socket_fqdn:
-                return socket_fqdn
-
-        return socket_gethostname
 
 
 def get_time():

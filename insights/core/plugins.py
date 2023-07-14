@@ -81,6 +81,7 @@ class datasource(PluginType):
     """
     filterable = False
     multi_output = False
+    not_obfuscate = []
     raw = False
 
     def _handle_timeout(self, signum, frame):

@@ -693,9 +693,8 @@ def test_platform_upload_with_no_log_path(_legacy_upload, _, path_exists):
     assert response is not None
 
 
-@patch('insights.client.InsightsClient._copy_soscleaner_files')
 @patch('insights.client.shutil')
-def test_copy_to_output_dir(shutil_, _copy_soscleaner_files):
+def test_copy_to_output_dir(shutil_):
     '''
     Test that shutil is called to copy the collection to
     the specified output dir
@@ -704,29 +703,11 @@ def test_copy_to_output_dir(shutil_, _copy_soscleaner_files):
     client = InsightsClient(config)
     client.copy_to_output_dir('test')
     shutil_.copytree.assert_called_once()
-    _copy_soscleaner_files.assert_not_called()
 
 
-@patch('insights.client.InsightsClient._copy_soscleaner_files')
-@patch('insights.client.shutil')
-def test_copy_to_output_dir_obfuscate_on(shutil_, _copy_soscleaner_files):
-    '''
-    Test that shutil is called to copy the collection to
-    the specified output dir, and soscleaner copy function
-    is called
-    '''
-    # obfuscate off, no soscleaner files
-    config = InsightsConfig(obfuscate=True)
-    client = InsightsClient(config)
-    client.copy_to_output_dir('test')
-    shutil_.copytree.assert_called_once()
-    _copy_soscleaner_files.assert_called_once()
-
-
-@patch('insights.client.InsightsClient._copy_soscleaner_files')
 @patch('insights.client.shutil')
 @patch('insights.client.os')
-def test_copy_to_output_dir_exists_and_empty(os_, shutil_, _copy_soscleaner_files):
+def test_copy_to_output_dir_exists_and_empty(os_, shutil_):
     '''
     Test that writing to an existing but empty directory is
     performed
@@ -766,13 +747,11 @@ def test_copy_to_output_dir_exists_and_empty(os_, shutil_, _copy_soscleaner_file
         call(os.path.join('src', 'c'), os.path.join(config.output_dir, 'c'))])
     shutil_.copyfile.assert_has_calls([
         call(os.path.join('src', 'a'), os.path.join(config.output_dir, 'a'))])
-    _copy_soscleaner_files.assert_not_called()
 
 
-@patch('insights.client.InsightsClient._copy_soscleaner_files')
 @patch('insights.client.shutil')
 @patch('insights.client.os')
-def test_copy_to_output_dir_exists_and_empty_err_during_copy(os_, shutil_, _copy_soscleaner_files):
+def test_copy_to_output_dir_exists_and_empty_err_during_copy(os_, shutil_):
     '''
     Test that when writing to an existing but empty directory,
     if an error occurs, we bail out before finishing.
@@ -812,13 +791,11 @@ def test_copy_to_output_dir_exists_and_empty_err_during_copy(os_, shutil_, _copy
     shutil_.copytree.assert_has_calls([call('src', config.output_dir)])
     shutil_.copyfile.assert_has_calls([
         call(os.path.join('src', 'a'), os.path.join(config.output_dir, 'a'))])
-    _copy_soscleaner_files.assert_not_called()
 
 
-@patch('insights.client.InsightsClient._copy_soscleaner_files')
 @patch('insights.client.shutil')
 @patch('insights.client.os')
-def test_copy_to_output_dir_exists_and_not_empty(os_, shutil_, _copy_soscleaner_files):
+def test_copy_to_output_dir_exists_and_not_empty(os_, shutil_):
     '''
     Test that writing to an existing and non-empty directory is
     NOT performed. Due to the check in config.py this should never happen,
@@ -837,10 +814,9 @@ def test_copy_to_output_dir_exists_and_not_empty(os_, shutil_, _copy_soscleaner_
     shutil_.copyfile.assert_not_called()
 
 
-@patch('insights.client.InsightsClient._copy_soscleaner_files')
 @patch('insights.client.shutil')
 @patch('insights.client.os')
-def test_copy_to_output_dir_other_oserror(os_, shutil_, _copy_soscleaner_files):
+def test_copy_to_output_dir_other_oserror(os_, shutil_):
     '''
     Test that any OSError != 17 is logged and we bail out
     before attempting to copy anything else
@@ -856,9 +832,8 @@ def test_copy_to_output_dir_other_oserror(os_, shutil_, _copy_soscleaner_files):
     shutil_.copyfile.assert_not_called()
 
 
-@patch('insights.client.InsightsClient._copy_soscleaner_files')
 @patch('insights.client.shutil')
-def test_copy_to_output_file(shutil_, _copy_soscleaner_files):
+def test_copy_to_output_file(shutil_):
     '''
     Test that shutil is called to copy the collection to
     the specified output file
@@ -867,12 +842,10 @@ def test_copy_to_output_file(shutil_, _copy_soscleaner_files):
     client = InsightsClient(config)
     client.copy_to_output_file('test')
     shutil_.copyfile.assert_called_once()
-    _copy_soscleaner_files.assert_not_called()
 
 
-@patch('insights.client.InsightsClient._copy_soscleaner_files')
 @patch('insights.client.shutil')
-def test_copy_to_output_file_obfuscate_on(shutil_, _copy_soscleaner_files):
+def test_copy_to_output_file_obfuscate_on(shutil_):
     '''
     Test that shutil is called to copy the collection to
     the specified output file, and soscleaner copy function
@@ -883,7 +856,6 @@ def test_copy_to_output_file_obfuscate_on(shutil_, _copy_soscleaner_files):
     client = InsightsClient(config)
     client.copy_to_output_file('test')
     shutil_.copyfile.assert_called_once()
-    _copy_soscleaner_files.assert_called_once()
 
 
 @mark.parametrize(("expected_result",), ((True,), (None,)))
