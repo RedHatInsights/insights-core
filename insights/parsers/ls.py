@@ -150,12 +150,23 @@ class FileListing(Parser, dict):
         >>> fp.perms_owner
         'rw-'
     """
+    __root_path = None
+    """
+    The root path of the dir when there is only one list target.  It only works
+    for the following specs/parsers that are compatible for sos-archives.
+    - :class:`insights.parsers.ls_boot.LsBoot`
+    - :class:`insights.parsers.ls_dev.LsDev`
+    - :class:`insights.parsers.ls_sys_firmware.LsSysFirmware`
+
+    None by default, for the new ```ls_*``` datasource specs
+    """
+
     def parse_content(self, content):
         """
         Called automatically to process the directory listing(s) contained in
         the content.
         """
-        self.update(ls_parser.parse(content))
+        self.update(ls_parser.parse(content, self.__root_path))
 
     def files_of(self, directory):
         """
