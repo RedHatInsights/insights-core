@@ -1,3 +1,6 @@
+import doctest
+
+from insights.parsers import ls_dev
 from insights.parsers.ls_dev import LsDev
 from insights.tests import context_wrap
 
@@ -32,8 +35,8 @@ lrwxrwxrwx.  1 0 0       7 Jul 25 10:00 rhel-swap -> ../dm-1
 
 
 def test_ls_dev():
-    ls_dev = LsDev(context_wrap(LS_DEV))
-    assert ls_dev.listing_of("/dev/rhel") == {
+    lsdev = LsDev(context_wrap(LS_DEV))
+    assert lsdev.listing_of("/dev/rhel") == {
         'home': {'group': '0', 'name': 'home', 'links': 1, 'perms': 'rwxrwxrwx.',
                  'raw_entry': 'lrwxrwxrwx.  1 0 0    7 Jul 25 10:00 home -> ../dm-2',
                  'owner': '0', 'link': '../dm-2', 'date': 'Jul 25 10:00',
@@ -54,7 +57,13 @@ def test_ls_dev():
               'raw_entry': 'drwxr-xr-x.  2 0 0  100 Jul 25 10:00 .', 'owner': '0',
               'date': 'Jul 25 10:00', 'type': 'd', 'size': 100, 'dir': '/dev/rhel'}}
     expected = ['docker-253:0-1443032-pool', 'rhel-home', 'rhel-root', 'rhel-swap']
-    actual = ls_dev.listings.get("/dev/mapper")['files']
+    actual = lsdev.listings.get("/dev/mapper")['files']
     assert actual == expected
 
-    assert ls_dev.listings.get("/dev/mapper")['entries']['rhel-home']['link'] == "../dm-2"
+    assert lsdev.listings.get("/dev/mapper")['entries']['rhel-home']['link'] == "../dm-2"
+
+
+def test_doc_examples():
+    env = {'ls_dev': LsDev(context_wrap(LS_DEV))}
+    failed, total = doctest.testmod(ls_dev, globs=env)
+    assert failed == 0
