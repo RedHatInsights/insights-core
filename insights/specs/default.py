@@ -22,12 +22,13 @@ from insights.core.spec_factory import (
     simple_command, simple_file)
 from insights.specs import Specs
 from insights.specs.datasources import (
-        aws, awx_manage, candlepin_broker, cloud_init, corosync as corosync_ds,
-        dir_list, ethernet, httpd, intersystems, ipcs, kernel, kernel_module_list, leapp,
-        lpstat, ls, luks_devices, machine_ids, malware_detection, md5chk,
-        mount as mount_ds, package_provides, ps as ps_datasource, rpm_pkgs,
-        sap, satellite_missed_queues, semanage, ssl_certificate,
-        sys_fs_cgroup_memory, sys_fs_cgroup_memory_tasks_number, tags,
+        aws, awx_manage, candlepin_broker, client_metadata, cloud_init,
+        corosync as corosync_ds, dir_list, ethernet, httpd, ipcs, intersystems,
+        kernel, kernel_module_list, leapp, lpstat, ls, luks_devices,
+        machine_ids, malware_detection, md5chk, mount as mount_ds,
+        package_provides, ps as ps_datasource, rpm_pkgs, sap,
+        satellite_missed_queues, semanage, ssl_certificate,
+        sys_fs_cgroup_memory, sys_fs_cgroup_memory_tasks_number,
         user_group, yum_updates)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 from insights.specs.datasources.pcp import pcp_enabled, pmlog_summary_args
@@ -76,12 +77,14 @@ class DefaultSpecs(Specs):
     ovs_vsctl_list_br = simple_command("/usr/bin/ovs-vsctl list-br")
 
     # Client metadata specs/files
-    ansible_host = simple_file("/ansible_host")  # T.B.D
-    blacklisted_specs = first_file(["/blacklisted_specs", "/blacklisted_specs.txt"])  # T.B.D
-    branch_info = simple_file("/branch_info")  # T.B.D
-    display_name = simple_file("/display_name")  # T.B.D
-    tags = tags.tags
-    version_info = simple_file("/version_info")  # T.B.D
+    ansible_host = client_metadata.ansible_host
+    blacklist_report = client_metadata.blacklist_report
+    blacklisted_specs = client_metadata.blacklisted_specs
+    branch_info = client_metadata.branch_info
+    display_name = client_metadata.display_name
+    egg_release = client_metadata.egg_release
+    tags = client_metadata.tags
+    version_info = client_metadata.version_info
 
     # Client App specs
     malware_detection = malware_detection.malware_detection_app
