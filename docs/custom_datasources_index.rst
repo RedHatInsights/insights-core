@@ -174,6 +174,14 @@ insights.specs.datasources.malware_detection
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.mount
+--------------------------------
+
+.. automodule:: insights.specs.datasources.mount
+    :members: xfs_mounts
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.md5chk
 ---------------------------------
 
