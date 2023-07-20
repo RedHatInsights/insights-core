@@ -27,8 +27,8 @@ from insights.specs.datasources import (
         aws, awx_manage, candlepin_broker, cloud_init, corosync as corosync_ds,
         dir_list, ethernet, httpd, ipcs, kernel, kernel_module_list, leapp,
         lpstat, ls, luks_devices, machine_ids, malware_detection, md5chk,
-        package_provides, ps as ps_datasource, rpm_pkgs, sap,
-        satellite_missed_queues, semanage, ssl_certificate,
+        mount as mount_ds, package_provides, ps as ps_datasource, rpm_pkgs,
+        sap, satellite_missed_queues, semanage, ssl_certificate,
         sys_fs_cgroup_memory, sys_fs_cgroup_memory_tasks_number,
         user_group, yum_updates)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
@@ -711,6 +711,7 @@ class DefaultSpecs(Specs):
     x86_ibrs_enabled = simple_file("sys/kernel/debug/x86/ibrs_enabled")
     x86_pti_enabled = simple_file("sys/kernel/debug/x86/pti_enabled")
     x86_retp_enabled = simple_file("sys/kernel/debug/x86/retp_enabled")
+    xfs_info = foreach_execute(mount_ds.xfs_mounts, "/usr/sbin/xfs_info %s")  # INSPEC-409
     xfs_quota_state = simple_command("/sbin/xfs_quota -x -c 'state -gu'")
     xinetd_conf = glob_file(["/etc/xinetd.conf", "/etc/xinetd.d/*"])
     yum_conf = simple_file("/etc/yum.conf")
