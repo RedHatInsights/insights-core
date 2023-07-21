@@ -70,6 +70,7 @@ LOGROTATE_MAN_PAGE_DOC_1 = """
 # sample file
 compress
 rotate 7
+include /etc/logrotate.d
 
 /var/log/messages {
     rotate 5
@@ -104,6 +105,14 @@ LOGROTATE_MAN_PAGE_DOC_3 = """
     endscript
     nocompress
 }
+""".strip()
+
+LOGRT_CONF_NO_INCLUDE = """
+copytruncate
+weekly
+rotate 4
+create
+dateext
 """.strip()
 
 
@@ -150,3 +159,26 @@ def test_logrotate_conf_combiner_no_logfile():
     assert all_lrt.log_files == []
     assert all_lrt.options_of_logfile('/var/log/httpd/access.log') is None
     assert all_lrt.configfile_of_logfile('/var/log/httpd/access.log') is None
+
+
+def test_logrotate_conf_combiner_configfile():
+    all_lrt = LogrotateConfAll(
+            [
+                LogrotateConf(context_wrap(LOGROTATE_CONF_NO_FILE, path='/etc/logrotate.conf')),
+                LogrotateConf(context_wrap(LOGROTATE_CONF_3, path='/etc/logrotate.d/xx'))
+            ])
+    assert '/var/log/btmp' not in all_lrt
+    assert all_lrt.global_options == ['dateext', 'include']
+    assert all_lrt.configfile_of_logfile('/var/log/messages') == '/etc/logrotate.d/xx'
+
+
+def test_logrotate_conf_combiner_no_include():
+    all_lrt = LogrotateConfAll(
+            [
+                LogrotateConf(context_wrap(LOGRT_CONF_NO_INCLUDE, path='/etc/logrotate.conf')),
+                LogrotateConf(context_wrap(LOGROTATE_CONF_2, path='/etc/logrotate.d/candlepin')),
+                LogrotateConf(context_wrap(LOGROTATE_CONF_3, path='/etc/logrotate.d/xx'))
+            ])
+    assert all_lrt.global_options == ['copytruncate', 'weekly', 'rotate', 'create', 'dateext']
+    assert 'include' not in all_lrt.global_options
+    assert '/var/log/messages' not in all_lrt
