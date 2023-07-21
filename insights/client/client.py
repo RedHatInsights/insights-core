@@ -30,6 +30,46 @@ LOG_FORMAT = ("%(asctime)s %(levelname)8s %(name)s %(message)s")
 logger = logging.getLogger(__name__)
 
 
+class RotatingFileHandlerWithUMask(logging.handlers.RotatingFileHandler, object):
+    """ logging.handlers.RotatingFileHandler subclass with a modified
+        file permission mask.
+    """
+    def __init__(self, umask, *args, **kwargs):
+        self._umask = umask
+        super(RotatingFileHandlerWithUMask, self).__init__(*args, **kwargs)
+
+    def _open(self):
+        """
+        Overrides the logging library "_open" method with a custom
+        file permission mask.
+        """
+        default_umask = os.umask(self._umask)
+        try:
+            return super(RotatingFileHandlerWithUMask, self)._open()
+        finally:
+            os.umask(default_umask)
+
+
+class FileHandlerWithUMask(logging.FileHandler, object):
+    """ logging.FileHandler subclass with a modified
+        file permission mask.
+    """
+    def __init__(self, umask, *args, **kwargs):
+        self._umask = umask
+        super(FileHandlerWithUMask, self).__init__(*args, **kwargs)
+
+    def _open(self):
+        """
+        Overrides the logging library "_open" method with a custom
+        file permission mask.
+        """
+        default_umask = os.umask(self._umask)
+        try:
+            return super(FileHandlerWithUMask, self)._open()
+        finally:
+            os.umask(default_umask)
+
+
 def do_log_rotation():
     handler = get_file_handler()
     return handler.doRollover()
@@ -52,9 +92,9 @@ def get_file_handler(config):
     # or if there is a problem retrieving the rpm version.
     rpm_version = get_version_info()['client_version']
     if not rpm_version or (LooseVersion(rpm_version) < LooseVersion(constants.rpm_version_before_logrotate)):
-        file_handler = logging.handlers.RotatingFileHandler(log_file, backupCount=3)
+        file_handler = RotatingFileHandlerWithUMask(0o077, log_file, backupCount=3)
     else:
-        file_handler = logging.FileHandler(log_file)
+        file_handler = FileHandlerWithUMask(0o077, log_file)
     file_handler.setFormatter(logging.Formatter(LOG_FORMAT))
     return file_handler
 
