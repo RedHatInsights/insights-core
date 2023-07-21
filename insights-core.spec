@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.2.6
+Version:        3.2.7
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,17 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Fri Jul 21 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.7-1
+- feat: modifying umask before creating log files (#3820) (jajerome@redhat.com)
+- Fix: Enhance LogrotateConfAll Combiner (#3853) (986222045@qq.com)
+- feat: revert the xfs_info spec (#3857) (xiangceliu@redhat.com)
+- fix: Malware fix to handle cert_verify set in conf file (#3856)
+  (mhuth@redhat.com)
+- chore: discard the deprecation of LsBoot, LsDev and LsSysFirmware (#3849)
+  (xiangceliu@redhat.com)
+- Fix Compliance possible json decoding issue (#3851)
+  (33912805+LightOfHeaven1994@users.noreply.github.com)
+
 * Thu Jul 13 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.6-1
 - FEAT: Add new parser XFSQuotaState (#3850) (986222045@qq.com)
 - Handle module router request response format (#3838)
