@@ -2,6 +2,15 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.2.7](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.7) (2023-07-21)
+
+- feat: modifying umask before creating log files ([PR 3820](https://github.com/RedHatInsights/insights-core/pull/3820))
+- Fix: Enhance LogrotateConfAll Combiner ([PR 3853](https://github.com/RedHatInsights/insights-core/pull/3853))
+- feat: revert the xfs_info spec ([PR 3857](https://github.com/RedHatInsights/insights-core/pull/3857))
+- fix: Malware fix to handle cert_verify set in conf file ([PR 3856](https://github.com/RedHatInsights/insights-core/pull/3856))
+- chore: discard the deprecation of LsBoot, LsDev and LsSysFirmware ([PR 3849](https://github.com/RedHatInsights/insights-core/pull/3849))
+- Fix Compliance possible json decoding issue ([PR 3851](https://github.com/RedHatInsights/insights-core/pull/3851))
+
 # [insights-core-3.2.6](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.6) (2023-07-13)
 
 - FEAT: Add new parser XFSQuotaState ([PR 3850](https://github.com/RedHatInsights/insights-core/pull/3850))
