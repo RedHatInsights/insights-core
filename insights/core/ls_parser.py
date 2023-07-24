@@ -214,7 +214,7 @@ def parse(lines, root=None):
     for line in lines:
         line = line.strip()
         # Skip empty line and non-exist dir line
-        if not line or ': No such file or directory' in line:
+        if not line or ': No such file or directory' in line or '********' in line:
             continue
         if line and line[0] == "/" and line[-1] == ":":
             if name is None:
