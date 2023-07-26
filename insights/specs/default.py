@@ -29,7 +29,7 @@ from insights.specs.datasources import (
         lpstat, ls, luks_devices, machine_ids, malware_detection, md5chk,
         mount as mount_ds, package_provides, ps as ps_datasource, rpm_pkgs,
         sap, satellite_missed_queues, semanage, ssl_certificate,
-        sys_fs_cgroup_memory, sys_fs_cgroup_memory_tasks_number,
+        sys_fs_cgroup_memory, sys_fs_cgroup_memory_tasks_number, intersystems_iris,
         user_group, yum_updates)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 from insights.specs.datasources.pcp import pcp_enabled, pmlog_summary_args
@@ -293,6 +293,8 @@ class DefaultSpecs(Specs):
     initctl_lst = simple_command("/sbin/initctl --system list")
     insights_client_conf = simple_file('/etc/insights-client/insights-client.conf')
     installed_rpms = simple_command("/bin/rpm -qa --qf '%s'" % _rpm_format, context=HostContext, signum=signal.SIGTERM)
+    intersystems_iris_cpf = intersystems_iris.iris_working_configuration
+    intersystems_iris_messages_log = intersystems_iris.iris_working_messages_log
     interrupts = simple_file("/proc/interrupts")
     ip6tables = simple_command("/sbin/ip6tables-save")
     ip_addr = simple_command("/sbin/ip addr")
