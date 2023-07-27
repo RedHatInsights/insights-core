@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.2.7
+Version:        3.2.8
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,10 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Jul 27 2023 Lizhong Chen <lichen@redhat.com> 3.2.8-1
+- feat: New spec "/proc/sys/kernel/random/entropy_avail" (#3860)
+  (44796653+huali027@users.noreply.github.com)
+
 * Fri Jul 21 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.7-1
 - feat: modifying umask before creating log files (#3820) (jajerome@redhat.com)
 - Fix: Enhance LogrotateConfAll Combiner (#3853) (986222045@qq.com)
