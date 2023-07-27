@@ -600,6 +600,7 @@ class Specs(SpecSet):
     rabbitmq_startup_err = RegistryPoint(filterable=True)
     rabbitmq_startup_log = RegistryPoint(filterable=True)
     rabbitmq_users = RegistryPoint()
+    random_entropy_avail = RegistryPoint()
     rc_local = RegistryPoint()
     rdma_conf = RegistryPoint()
     readlink_e_etc_mtab = RegistryPoint()
