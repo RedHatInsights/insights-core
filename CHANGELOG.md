@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.2.8](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.8) (2023-07-27)
+
+- feat: New spec "/proc/sys/kernel/random/entropy_avail" ([PR 3860](https://github.com/RedHatInsights/insights-core/pull/3860)
+
 # [insights-core-3.2.7](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.7) (2023-07-21)
 
 - feat: modifying umask before creating log files ([PR 3820](https://github.com/RedHatInsights/insights-core/pull/3820))
