@@ -545,6 +545,7 @@ class DefaultSpecs(Specs):
     ql2xmqsupport = simple_file("/sys/module/qla2xxx/parameters/ql2xmqsupport")
     rabbitmq_env = simple_file("/etc/rabbitmq/rabbitmq-env.conf")
     rabbitmq_report = simple_command("/usr/sbin/rabbitmqctl report")
+    random_entropy_avail = simple_file("/proc/sys/kernel/random/entropy_avail")
     rc_local = simple_file("/etc/rc.d/rc.local")
     readlink_e_etc_mtab = simple_command("/usr/bin/readlink -e /etc/mtab")
     readlink_e_shift_cert_client = simple_command("/usr/bin/readlink -e /etc/origin/node/certificates/kubelet-client-current.pem")
