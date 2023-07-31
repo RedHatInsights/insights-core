@@ -58,6 +58,9 @@ OTHER_LINUX_KEYS = {
         ['suse', 'sles', 'novell'],
         ['sles-release', 'sles_es-release-server']),
 }
+# TODO:
+# Update the CONVERT2RHEL_SUPPORTED list when necessary
+CONVERT2RHEL_SUPPORTED = ['CentOS']
 # Get "Linux version" from `dmesg`
 DMESG_LINUX_BUILD_INFO = 'Linux version'
 add_filter(DmesgLineList, DMESG_LINUX_BUILD_INFO)
@@ -240,6 +243,10 @@ class OSRelease(object):
         False
         >>> osr.release == "Oracle"
         True
+        >>> osr.name == "Oracle Linux Server"
+        True
+        >>> osr.is_rhel_compatible
+        False
         >>> sorted(osr.reasons.keys())
         ['build_info', 'faulty_packages', 'kernel', 'kernel_vendor']
         >>> 'version kernel-4.18.0-372.19.1.el8_6uek' in osr.reasons['build_info']
@@ -287,6 +294,7 @@ class OSRelease(object):
             if 'other_linux' in result and result['other_linux'] != 'RHEL':
                 self._release = result.pop('other_linux')
                 self._reasons = result
+        self._name = osr.get('NAME', self._release) if osr else self._release
 
     @property
     def is_rhel(self):
@@ -296,11 +304,27 @@ class OSRelease(object):
         return self._release == 'RHEL'
 
     @property
+    def is_rhel_compatible(self):
+        """
+        Returns True if convert2rhel could convert
+        """
+        return self._release in CONVERT2RHEL_SUPPORTED
+
+    @property
     def release(self):
         """
         Returns the estimated release name of the running Linux.
         """
         return self._release
+
+    @property
+    def name(self):
+        """
+        Returns the name of the OS. Generally it's the "NAME" of the
+        '/etc/os-release' file, or it's the same as the `release` when
+        the '/etc/os-release' is not available.
+        """
+        return self._name
 
     @property
     def reasons(self):
