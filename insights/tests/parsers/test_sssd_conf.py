@@ -71,11 +71,11 @@ def test_sssd_conf():
     assert ['example.com'] == result.domains
 
     domain = result.domain_config('example.com')
-    assert type(domain) == dict
+    assert type(domain) is dict
     assert domain['id_provider'] == 'ldap'
 
     absent_domain = result.domain_config('example.org')
-    assert type(absent_domain) == dict
+    assert type(absent_domain) is dict
     assert absent_domain == {}
 
 
