@@ -25,7 +25,7 @@ def test_dumpe2fs():
     dumpe2fs_obj = dumpe2fs_h.DumpE2fs(context_wrap(DUMPE2FS, path=PATH))
     assert dumpe2fs_obj.dev_name == '/dev/mapper/vg_spcdrhellb01-lv_usr'
     assert dumpe2fs_obj is not None
-    assert type(dumpe2fs_obj['Filesystem features']) == list
+    assert type(dumpe2fs_obj['Filesystem features']) is list
     assert set(dumpe2fs_obj.get("Filesystem features")) == set([
         'has_journal', 'ext_attr', 'resize_inode', 'dir_index',
         'filetype', 'needs_recovery', 'extent', 'flex_bg', 'sparse_super',

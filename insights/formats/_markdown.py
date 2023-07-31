@@ -125,7 +125,7 @@ class MarkdownFormat(Formatter):
                 print(file=self.stream)
                 for m in req_any:
                     print('* At Least One Of:', file=self.stream)
-                    if type(m) == list:
+                    if isinstance(m, list):
                         for c in m:
                             print('    * {}'.format(dr.get_name(c)), file=self.stream)
                     else:
