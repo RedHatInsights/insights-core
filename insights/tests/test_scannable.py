@@ -89,7 +89,7 @@ def test_scannable():
     assert hasattr(log, 'panic')
     assert log.panic is False
     assert hasattr(log, 'warnings')
-    assert type(log.warnings) == list
+    assert type(log.warnings) is list
     assert len(log.warnings) == 1
     assert log.warnings[0] == "'/usr/libexec/fcoe/fcoe_edd.sh' specified as full path"
 

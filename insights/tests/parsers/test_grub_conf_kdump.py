@@ -244,7 +244,7 @@ menuentry 'Red Hat Enterprise Linux Workstation (3.10.0-327.36.3.el7.x86_64) 7.2
 def test_mod_internal():
     config = Grub2Config(context_wrap(MODULE_TEST))
     assert config
-    assert type(config.kernel_initrds) == dict
+    assert type(config.kernel_initrds) is dict
     # Why is this two separate lists and not a list of dicts?
     assert 'grub_initrds' in config.kernel_initrds
     assert config.kernel_initrds['grub_initrds'] == ['initramfs-3.10.0-327.36.3.el7.x86_64.img']
@@ -296,7 +296,7 @@ def test_grub1_config():
     assert config['title'][1]['kernel'][-1] == '/vmlinuz-2.6.32-431.11.2.el6.x86_64 crashkernel=128M rhgb quiet'
 
     assert config.is_kdump_iommu_enabled is False
-    assert type(config.kernel_initrds) == dict
+    assert type(config.kernel_initrds) is dict
     # Why is this two separate lists and not a list of dicts?
     # Because this config has been deliberately cut down and is not a
     # real GRUB configuration, it can't find the initrds.
@@ -346,7 +346,7 @@ def test_grub2_config():
     assert config['menuentry'][0]['load_video'] == ['']
     assert config['menuentry'][0]['initrd16'] == ['/initramfs-3.10.0-327.36.3.el7.x86_64.img']
 
-    assert type(config.kernel_initrds) == dict
+    assert type(config.kernel_initrds) is dict
     assert 'grub_initrds' in config.kernel_initrds
     assert config.kernel_initrds['grub_initrds'] == [
         'initramfs-3.10.0-327.36.3.el7.x86_64.img',

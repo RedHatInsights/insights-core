@@ -312,7 +312,7 @@ def pad_version(left, right):
         try:
             a = mx[idx]
             b = mn[idx]
-            if type(a) != type(b):
+            if type(a) is not type(b):
                 mn.insert(idx, 0)
         except IndexError:
             if type(c) is int:
