@@ -260,6 +260,10 @@ plugins:
 
         - name: insights.components.cryptsetup
           enabled: true
+
+    # needed by the 'intersystems_iris_cpf' spec and 'intersystems_iris_messages_log' spec
+        - name: insights.parsers.iris.IrisList
+          enabled: true
 """.strip()
 
 EXCEPTIONS_TO_REPORT = set([
