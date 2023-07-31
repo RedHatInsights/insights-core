@@ -3,8 +3,9 @@ import pytest
 
 from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import aws_instance_id
-from insights.parsers.aws_instance_id import AWSInstanceIdDoc, AWSInstanceIdPkcs7,\
-        AWSPublicIpv4Addresses, AWSPublicHostnames
+from insights.parsers.aws_instance_id import (
+        AWSInstanceIdDoc, AWSInstanceIdPkcs7,
+        AWSPublicIpv4Addresses, AWSPublicHostnames)
 from insights.tests import context_wrap
 
 AWS_CURL_ERROR = """
