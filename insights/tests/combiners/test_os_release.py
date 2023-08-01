@@ -113,6 +113,8 @@ def test_is_rhel():
     assert result.is_rhel is True
     assert result.release == "RHEL"
     assert result.reasons == {}
+    assert result.name == "RHEL"  # the same to self.release when '/etc/os-release' is unavailable
+    assert result.is_rhel_compatible is False
 
     # RHEL, dmesg only
     dmesg = DmesgLineList(context_wrap(DMESG_REDHAT))
@@ -121,6 +123,8 @@ def test_is_rhel():
     assert result.release == "RHEL"
     assert result.product == "RHEL"
     assert result.reasons == {}
+    assert result.name == "RHEL"  # the same to self.release when '/etc/os-release' is unavailable
+    assert result.is_rhel_compatible is False
 
     # RHEL, dmesg and uname
     dmesg = DmesgLineList(context_wrap(DMESG_REDHAT))
@@ -128,6 +132,8 @@ def test_is_rhel():
     assert result.is_rhel is True
     assert result.release == "RHEL"
     assert result.reasons == {}
+    assert result.name == "RHEL"  # the same to self.release when '/etc/os-release' is unavailable
+    assert result.is_rhel_compatible is False
 
     # RHEL, rpms only
     rpms = InstalledRpms(context_wrap(RPMS_JSON_91_WO_KERNEL))
@@ -135,12 +141,16 @@ def test_is_rhel():
     assert result.is_rhel is True
     assert result.release == "RHEL"
     assert result.reasons == {}
+    assert result.name == "RHEL"  # the same to self.release when '/etc/os-release' is unavailable
+    assert result.is_rhel_compatible is False
 
     rpms = InstalledRpms(context_wrap(RPMS_JSON_91_W_KERNEL))
     result = OSRelease(None, None, rpms, None, None)
     assert result.is_rhel is True
     assert result.release == "RHEL"
     assert result.reasons == {}
+    assert result.name == "RHEL"  # the same to self.release when '/etc/os-release' is unavailable
+    assert result.is_rhel_compatible is False
 
     # RHEL, rpms and uname
     rpms = InstalledRpms(context_wrap(RPMS_JSON_91_W_KERNEL))
@@ -148,6 +158,8 @@ def test_is_rhel():
     assert result.is_rhel is True
     assert result.release == "RHEL"
     assert result.reasons == {}
+    assert result.name == "RHEL"  # the same to self.release when '/etc/os-release' is unavailable
+    assert result.is_rhel_compatible is False
 
     # RHEL, rpms, dmesg and uname
     rpms = InstalledRpms(context_wrap(RPMS_JSON_91_W_KERNEL))
@@ -155,6 +167,8 @@ def test_is_rhel():
     assert result.is_rhel is True
     assert result.release == "RHEL"
     assert result.reasons == {}
+    assert result.name == "RHEL"  # the same to self.release when '/etc/os-release' is unavailable
+    assert result.is_rhel_compatible is False
 
     # RHEL, os-release
     osr = OsRelease(context_wrap(OS_RELEASE_RH))
@@ -162,6 +176,8 @@ def test_is_rhel():
     assert result.is_rhel is True
     assert result.release == "RHEL"
     assert result.reasons == {}
+    assert result.name == "Red Hat Enterprise Linux"
+    assert result.is_rhel_compatible is False
 
     # RHEL, redhat-release
     rhr = RedhatRelease(context_wrap(REDHAT_RELEASE_86))
@@ -169,6 +185,8 @@ def test_is_rhel():
     assert result.is_rhel is True
     assert result.release == "RHEL"
     assert result.reasons == {}
+    assert result.name == "RHEL"  # the same to self.release when '/etc/os-release' is unavailable
+    assert result.is_rhel_compatible is False
 
 
 def test_not_rhel():
@@ -177,6 +195,8 @@ def test_not_rhel():
     assert result.is_rhel is False
     assert result.release == "Unknown"
     assert result.reasons.get('reason') == "Nothing available to check"
+    assert result.name == "Unknown"  # the same to self.release when '/etc/os-release' is unavailable
+    assert result.is_rhel_compatible is False
 
     # NON-RHEL: BAD rpms
     rpms = InstalledRpms(context_wrap(RPMS_JSON_ROCKY))
@@ -184,6 +204,8 @@ def test_not_rhel():
     assert result.is_rhel is False
     assert result.release == "Rocky"
     assert result.reasons['release'] == 'rocky-release-3.3-4.el8'
+    assert result.name == "Rocky"  # the same to self.release when '/etc/os-release' is unavailable
+    assert result.is_rhel_compatible is False
 
     # NON-RHEL: BAD rpms, too many faulty pkgs
     rpms = InstalledRpms(context_wrap(RPMS_JSON_8_NG))
@@ -197,6 +219,8 @@ def test_not_rhel():
         'filesystem-3.8-6.el8', 'firewalld-0.9.3-13.el8',
         'glibc-2.28-211.el8', 'gmp-6.1.2-10.el8',
         'libgcc-8.5.0-15.el8', 'libselinux-2.9-6.el8']
+    assert result.name == "Unknown"  # the same to self.release when '/etc/os-release' is unavailable
+    assert result.is_rhel_compatible is False
 
     # NON-RHEL: BAD rpms, too many faulty, but running kernel is from Red Hat
     rpms = InstalledRpms(context_wrap(RPMS_JSON_9_NG_RH_KERNEL))
@@ -211,6 +235,8 @@ def test_not_rhel():
         'filesystem-3.8-6.el8', 'firewalld-0.9.3-13.el8',
         'glibc-2.28-211.el8', 'gmp-6.1.2-10.el8',
         'libgcc-8.5.0-15.el8', 'libselinux-2.9-6.el8']
+    assert result.name == "Unknown"  # the same to self.release when '/etc/os-release' is unavailable
+    assert result.is_rhel_compatible is False
 
     # NON-RHEL: BAD rpms with uname
     uname = Uname(context_wrap(UNAME_86))
@@ -226,6 +252,8 @@ def test_not_rhel():
         'glibc-2.28-211.el8', 'gmp-6.1.2-10.el8',
         'kernel-4.18.0-372.19.1.el8_6', 'libgcc-8.5.0-15.el8',
         'libselinux-2.9-6.el8']
+    assert result.name == "SUSE"  # the same to self.release when '/etc/os-release' is unavailable
+    assert result.is_rhel_compatible is False
 
     # NON-RHEL: BAD dmesg
     dmesg = DmesgLineList(context_wrap(DMESG_NG))
@@ -233,24 +261,32 @@ def test_not_rhel():
     assert result.is_rhel is False
     assert result.release == "Unknown"
     assert result.reasons.get('reason') == "Nothing available to check"
+    assert result.name == "Unknown"  # the same to self.release when '/etc/os-release' is unavailable
+    assert result.is_rhel_compatible is False
 
     dmesg = DmesgLineList(context_wrap(DMESG_SUSE))
     result = OSRelease(None, dmesg, None, None, None)
     assert result.is_rhel is False
     assert result.release == "SUSE"
     assert result.reasons['build_info'] == DMESG_SUSE
+    assert result.name == "SUSE"  # the same to self.release when '/etc/os-release' is unavailable
+    assert result.is_rhel_compatible is False
 
     dmesg = DmesgLineList(context_wrap(DMESG_CENTOS))
     result = OSRelease(None, dmesg, None, None, None)
     assert result.is_rhel is False
     assert result.release == "CentOS"
     assert result.reasons['build_info'] == DMESG_CENTOS
+    assert result.name == "CentOS"  # the same to self.release when '/etc/os-release' is unavailable
+    assert result.is_rhel_compatible is True
 
     dmesg = DmesgLineList(context_wrap(DMESG_UNKNOWN))
     result = OSRelease(None, dmesg, None, None, None)
     assert result.is_rhel is False
     assert result.release == "Unknown"
     assert result.reasons['build_info'] == DMESG_UNKNOWN
+    assert result.name == "Unknown"  # the same to self.release when '/etc/os-release' is unavailable
+    assert result.is_rhel_compatible is False
 
     # NON-RHEL: BAD uname
     uname = Uname(context_wrap(UNAME_ORACLE))
@@ -258,18 +294,24 @@ def test_not_rhel():
     assert result.is_rhel is False
     assert result.release == "Oracle"
     assert result.reasons.get('kernel') == "4.18.0-372.19.1.el8_6uek.x86_64"
+    assert result.name == "Oracle"  # the same to self.release when '/etc/os-release' is unavailable
+    assert result.is_rhel_compatible is False
 
     uname = Uname(context_wrap(UNAME_FEDORA))
     result = OSRelease(uname, None, None, None, None)
     assert result.is_rhel is False
     assert result.release == "Fedora"
     assert result.reasons.get('kernel') == "3.17.8-200.fc20.x86_64"
+    assert result.name == "Fedora"  # the same to self.release when '/etc/os-release' is unavailable
+    assert result.is_rhel_compatible is False
 
     uname = Uname(context_wrap(UNAME_UNKNOWN))
     result = OSRelease(uname, None, None, None, None)
     assert result.is_rhel is False
     assert result.release == "Unknown"
     assert result.reasons.get('kernel') == "2.6.39.4-9.NSN.kiuas"
+    assert result.name == "Unknown"  # the same to self.release when '/etc/os-release' is unavailable
+    assert result.is_rhel_compatible is False
 
     # NON-RHEL: Bad Uname + Dmesg
     dmesg = DmesgLineList(context_wrap(DMESG_NG))
@@ -278,6 +320,8 @@ def test_not_rhel():
     assert result.is_rhel is False
     assert result.release == "Oracle"
     assert result.reasons['kernel'] == "4.18.0-372.19.1.el8_6uek.x86_64"
+    assert result.name == "Oracle"  # the same to self.release when '/etc/os-release' is unavailable
+    assert result.is_rhel_compatible is False
 
     dmesg = DmesgLineList(context_wrap(DMESG_ORACLE))
     result = OSRelease(uname, dmesg, None, None, None)
@@ -286,6 +330,8 @@ def test_not_rhel():
     assert result.reasons['build_info'] == DMESG_ORACLE
     assert result.reasons['kernel'] == "4.18.0-372.19.1.el8_6uek.x86_64"
     assert 'kernel_vendor' not in result.reasons  # No RPMs
+    assert result.name == "Oracle"  # the same to self.release when '/etc/os-release' is unavailable
+    assert result.is_rhel_compatible is False
 
     # NON-RHEL: Bad Dmesg + RPMs
     dmesg = DmesgLineList(context_wrap(DMESG_SUSE))
@@ -296,6 +342,8 @@ def test_not_rhel():
     assert result.reasons['build_info'] == DMESG_SUSE  # from Dmesg
     assert 'kernel' not in result.reasons  # No Uname
     assert 'kernel_vendor' not in result.reasons  # No Uname
+    assert result.name == "SUSE"  # the same to self.release when '/etc/os-release' is unavailable
+    assert result.is_rhel_compatible is False
 
     # NON-RHEL: Bad Uname + Dmesg + RPMs
     dmesg = DmesgLineList(context_wrap(DMESG_ORACLE))
@@ -307,6 +355,8 @@ def test_not_rhel():
     assert result.reasons['build_info'] == DMESG_ORACLE  # from Dmesg
     assert 'kernel' not in result.reasons  # Uname is OK
     assert result.reasons['kernel_vendor'] == "SUSE, Inc."
+    assert result.name == "SUSE"  # the same to self.release when '/etc/os-release' is unavailable
+    assert result.is_rhel_compatible is False
 
     dmesg = DmesgLineList(context_wrap(DMESG_ORACLE))
     uname = Uname(context_wrap(UNAME_UNKNOWN))
@@ -317,6 +367,8 @@ def test_not_rhel():
     assert result.reasons['build_info'] == DMESG_ORACLE  # from Dmesg
     assert result.reasons.get('kernel') == "2.6.39.4-9.NSN.kiuas"
     assert 'kernel_vendor' not in result.reasons  # running kernel not in RPMs
+    assert result.name == "Oracle"  # the same to self.release when '/etc/os-release' is unavailable
+    assert result.is_rhel_compatible is False
 
     dmesg = DmesgLineList(context_wrap(DMESG_ORACLE))
     uname = Uname(context_wrap(UNAME_ORACLE))
@@ -334,6 +386,8 @@ def test_not_rhel():
         'glibc-2.28-211.el8', 'gmp-6.1.2-10.el8',
         'kernel-4.18.0-372.19.1.el8_6uek',
         'libgcc-8.5.0-15.el8', 'libselinux-2.9-6.el8']
+    assert result.name == "Oracle"  # the same to self.release when '/etc/os-release' is unavailable
+    assert result.is_rhel_compatible is False
 
     # RHEL, Bad os-release only
     osr = OsRelease(context_wrap(OS_RELEASE_UNKNOWN))
@@ -341,12 +395,16 @@ def test_not_rhel():
     assert result.is_rhel is False
     assert result.release == "Test OS"
     assert result.reasons == {'reason': 'NON-RHEL: os-release/redhat-release'}
+    assert result.name == "Test OS"
+    assert result.is_rhel_compatible is False
 
     osr = OsRelease(context_wrap(OS_RELEASE_OL))
     result = OSRelease(None, None, None, osr, None)
     assert result.is_rhel is False
     assert result.release == "Oracle Linux Server"
     assert result.reasons == {'reason': 'NON-RHEL: os-release/redhat-release'}
+    assert result.name == "Oracle Linux Server"
+    assert result.is_rhel_compatible is False
 
     # RHEL, redhat-release
     rhr = RedhatRelease(context_wrap(REDHAT_RELEASE_FEDORA))
@@ -354,20 +412,25 @@ def test_not_rhel():
     assert result.is_rhel is False
     assert result.release == "Fedora"
     assert result.reasons == {'reason': 'NON-RHEL: os-release/redhat-release'}
+    assert result.name == "Fedora"
+    assert result.is_rhel_compatible is False
 
     rhr = RedhatRelease(context_wrap(REDHAT_RELEASE_UNKNOWN))
     result = OSRelease(None, None, None, None, rhr)
     assert result.is_rhel is False
     assert result.release == "Test OS"
     assert result.reasons == {'reason': 'NON-RHEL: os-release/redhat-release'}
+    assert result.name == "Test OS"
+    assert result.is_rhel_compatible is False
 
 
 def test_osr_doc():
     dmesg = DmesgLineList(context_wrap(DMESG_ORACLE))
     uname = Uname(context_wrap(UNAME_ORACLE))
     rpms = InstalledRpms(context_wrap(RPMS_JSON_8_NG))
+    osr = OsRelease(context_wrap(OS_RELEASE_OL))
     env = {
-        'osr': OSRelease(uname, dmesg, rpms, None, None),
+        'osr': OSRelease(uname, dmesg, rpms, osr, None),
     }
     failed, total = doctest.testmod(os_release, globs=env)
     assert failed == 0
