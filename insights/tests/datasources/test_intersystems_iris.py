@@ -1,5 +1,4 @@
 import pytest
-from mock.mock import Mock
 
 try:
     from unittest.mock import patch, mock_open
@@ -11,37 +10,65 @@ except Exception:
 from os import path
 from insights.core import filters
 from insights.core.exceptions import SkipComponent
-from insights.parsers.iris import IrisList
+from insights.parsers.iris import IrisList, IrisCpf
 from insights.specs import Specs
 from insights.specs.datasources.intersystems_iris import iris_working_configuration, iris_working_messages_log
 from insights.tests import context_wrap
 
 
-with open(path.join(path.dirname(__file__), 'iris.cpf'), 'r') as conf:
-    CPF_RESULT = conf.read()
-
-with open(path.join(path.dirname(__file__), 'iris_raw_messages.log'), 'r') as conf:
-    LOG_INPUT = conf.read()
-
-with open(path.join(path.dirname(__file__), 'iris_filtered_messages.log'), 'r') as conf:
-    LOG_RESULT = conf.read()
-
-
 IRIR_LIST = """
 
 Configuration 'IRIS'   (default)
-	directory:    {}
-	versionid:    2023.1.0.235.1com
-	datadir:      /intersystems
-	conf file:    iris.cpf  (SuperServer port = 1972, WebServer = 52773)
-	status:       running, since Wed Jul 19 02:37:46 2023
-	state:        ok
-	product:      InterSystems IRIS
+    directory:    /intersystems
+    versionid:    2023.1.0.235.1com
+    datadir:      /intersystems
+    conf file:    iris.cpf  (SuperServer port = 1972, WebServer = 52773)
+    status:       running, since Wed Jul 19 02:37:46 2023
+    state:        ok
+    product:      InterSystems IRIS
 """.strip()
 
 
-CPF_RELATIVE_PATH = 'insights_commands/iris_cpf'
-LOG_RELATIVE_PATH = 'insights_commands/iris_messages_log'
+IRIS_CPF = """
+[ConfigFile]
+Product=IRIS
+Version=2023.1
+
+[Databases]
+IRISSYS=/intersystems/mgr/
+IRISLIB=/intersystems/mgr/irislib/
+IRISTEMP=/intersystems/mgr/iristemp/
+IRISLOCALDATA=/intersystems/mgr/irislocaldata/
+IRISAUDIT=/intersystems/mgr/irisaudit/
+ENSLIB=/intersystems/mgr/enslib/
+USER=/intersystems/mgr/user/
+
+[Namespaces]
+%SYS=IRISSYS
+USER=USER
+""".strip()
+
+
+RAW_MESSAGES = """
+06/26/23-08:02:17:828 (144145) 0 [Generic.Event] Allocated 495MB shared memory
+06/26/23-08:02:17:828 (144145) 0 [Generic.Event] 32MB global buffers, 80MB routine buffers, 64MB journal buffers, 4MB buffer descriptors, 300MB heap, 5MB ECP, 9MB miscellaneous
+06/26/23-08:02:17:831 (144145) 0 [Crypto.IntelSandyBridgeAESNI] Intel Sandy Bridge AES-NI instructions detected.
+06/26/23-08:02:17:831 (144145) 0 [SIMD] SIMD optimization level: DEFAULT X86
+06/26/23-08:02:17:903 (144145) 0 [WriteDaemon.UsingWIJFile] Using WIJ file: /intersystems/mgr/IRIS.WIJ
+06/26/23-08:02:17:903 (144145) 0 [Generic.Event] No journaling info from prior system
+06/26/23-08:02:17:903 (144145) 0 [WriteDaemon.CreatingNewWIJ] Creating a new WIJ file
+06/26/23-08:02:18:104 (144145) 0 [WriteDaemon.CreatedNewWIJ] New WIJ file created
+06/26/23-08:02:18:110 (144145) 0 [Generic.Event]
+""".strip()
+
+
+FILTERED_MESSAGES = """
+06/26/23-08:02:17:828 (144145) 0 [Generic.Event] Allocated 495MB shared memory
+06/26/23-08:02:17:828 (144145) 0 [Generic.Event] 32MB global buffers, 80MB routine buffers, 64MB journal buffers, 4MB buffer descriptors, 300MB heap, 5MB ECP, 9MB miscellaneous
+06/26/23-08:02:17:903 (144145) 0 [Generic.Event] No journaling info from prior system
+06/26/23-08:02:18:110 (144145) 0 [Generic.Event]
+""".strip()
+
 
 def setup_function(func):
     if Specs.intersystems_iris_messages_log_filter in filters._CACHE:
@@ -51,49 +78,65 @@ def setup_function(func):
 
     if func is test_iris_working_messages_log:
         filters.add_filter(Specs.intersystems_iris_messages_log_filter, ["Generic.Event"])
-    # if func is test_iris_working_messages_log_no_match_filter:
-    #     filters.add_filter(Specs.intersystems_iris_messages_log_filter, ["test_no_match_filter"])
-    # if func is test_iris_working_messages_log_no_filter:
-    #     filters.add_filter(Specs.intersystems_iris_messages_log_filter, [])
+    if func is test_iris_working_messages_log_no_match_filter:
+        filters.add_filter(Specs.intersystems_iris_messages_log_filter, ["test_no_match_filter"])
+    if func is test_iris_working_messages_log_no_filter:
+        filters.add_filter(Specs.intersystems_iris_messages_log_filter, [])
 
 
-def test_iris_working_configuration():
-    iris_list_info = IrisList(context_wrap(IRIR_LIST.format(path.dirname(__file__))))
+@patch("insights.specs.datasources.intersystems_iris.open", new_callable=mock_open, read_data=IRIS_CPF)
+@patch("os.path.isfile", return_value=True)
+def test_iris_working_configuration(m_open, m_isfile):
+    iris_list_info = IrisList(context_wrap(IRIR_LIST))
     broker = {IrisList: iris_list_info}
     result = iris_working_configuration(broker)
-    assert result.content == CPF_RESULT.splitlines()
-    assert result.relative_path == CPF_RELATIVE_PATH
+    assert result.content == IRIS_CPF.splitlines()
+    assert result.relative_path == path.join(path.dirname(__file__), '/intersystems/iris.cpf')
 
 
-def test_iris_working_configuration_no_file():
-    iris_list_info = IrisList(context_wrap(IRIR_LIST.format("/intersystems")))
+@patch("insights.specs.datasources.intersystems_iris.open", new_callable=mock_open, read_data=IRIS_CPF)
+def test_iris_working_configuration_no_file(m_open):
+    iris_list_info = IrisList(context_wrap(IRIR_LIST))
     broker = {IrisList: iris_list_info}
     with pytest.raises(SkipComponent) as e:
         iris_working_configuration(broker)
-    assert 'No such file' in str(e)
+    assert 'SkipComponent' in str(e)
 
 
-def mocked_open(self, file, **kwargs):
-    if file=='/intersystems/mgr/messages.log':
-        return LOG_INPUT
-    return open(self, file, **kwargs)
-
-
-def mocked_open2(self, file, **kwargs):
-    if file == "/intersystems/mgr/messages.log":
-        return mock_open(read_data=LOG_INPUT)(self, file, **kwargs)
-    return open(self, file, **kwargs)
-
-
-@patch("insights.specs.datasources.intersystems_iris.open", new=mocked_open2)
+@patch("insights.specs.datasources.intersystems_iris.open", new_callable=mock_open, read_data=RAW_MESSAGES)
 @patch("os.path.isfile", return_value=True)
-def test_iris_working_messages_log(m_isfile):
-    iris_list_info = IrisList(context_wrap(IRIR_LIST.format(path.dirname(__file__))))
-    broker = {IrisList: iris_list_info}
+def test_iris_working_messages_log(m_open, m_isfile):
+    iris_cpf_info = IrisCpf(context_wrap(IRIS_CPF))
+    broker = {IrisCpf: iris_cpf_info}
     result = iris_working_messages_log(broker)
+    assert result.content == FILTERED_MESSAGES.splitlines()
+    assert result.relative_path == path.join(path.dirname(__file__), '/intersystems/mgr/messages.log')
 
 
-# def test_iris_working_messages_log_no_match_filter():
-#
-#
-# def test_iris_working_messages_log_no_filter():
+@patch("insights.specs.datasources.intersystems_iris.open", new_callable=mock_open, read_data=RAW_MESSAGES)
+def test_iris_working_messages_log_no_file(m_open):
+    iris_cpf_info = IrisCpf(context_wrap(IRIS_CPF))
+    broker = {IrisCpf: iris_cpf_info}
+    with pytest.raises(SkipComponent) as e:
+        iris_working_messages_log(broker)
+    assert 'SkipComponent' in str(e)
+
+
+@patch("insights.specs.datasources.intersystems_iris.open", new_callable=mock_open, read_data=RAW_MESSAGES)
+@patch("os.path.isfile", return_value=True)
+def test_iris_working_messages_log_no_match_filter(m_open, m_isfile):
+    iris_cpf_info = IrisCpf(context_wrap(IRIS_CPF))
+    broker = {IrisCpf: iris_cpf_info}
+    result = iris_working_messages_log(broker)
+    assert result.content == []
+    assert result.relative_path == path.join(path.dirname(__file__), '/intersystems/mgr/messages.log')
+
+
+@patch("insights.specs.datasources.intersystems_iris.open", new_callable=mock_open, read_data=RAW_MESSAGES)
+@patch("os.path.isfile", return_value=True)
+def test_iris_working_messages_log_no_filter(m_open, m_isfile):
+    iris_cpf_info = IrisCpf(context_wrap(IRIS_CPF))
+    broker = {IrisCpf: iris_cpf_info}
+    with pytest.raises(SkipComponent) as e:
+        iris_working_messages_log(broker)
+    assert 'SkipComponent' in str(e)
