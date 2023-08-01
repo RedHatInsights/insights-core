@@ -59,7 +59,9 @@ jobs:
   python26-test:
 
     runs-on: ubuntu-latest
-    container: ubuntu:18.04
+    container:
+      image: cronosmobi/python2.6:latest
+
 
     steps:
     - uses: actions/checkout@v3
@@ -68,20 +70,7 @@ jobs:
     - name: install dependencies
       run: |
         sudo apt-get install -y --no-install-recommends software-properties-common
-        sudo apt-get install -y --no-install-recommends libssl1.0-dev zlib1g-dev
-        sudo apt-get install -y build-essential git curl unzip file wget tar
-    - name: build python26
-      run: |
-        CUR_DIR=$(pwd)
-        cd ../
-        wget https://www.python.org/ftp/python/2.6.9/Python-2.6.9.tgz
-        tar zxf ./Python-2.6.9.tgz
-        sed -e "s:'\/usr\/lib64',:'\/usr\/lib64', '\/usr\/lib/x86_64-linux-gnu',:" ./Python-2.6.9/setup.py -i
-        mkdir ./Python-2.6.9/build && cd ./Python-2.6.9/build
-        ../configure --prefix=$HOME/python26 && make && make install
-        sudo update-alternatives --install /usr/bin/python python $HOME/python26/bin/python2.6 1
-        sudo update-alternatives --set python $HOME/python26/bin/python2.6
-        cd ${CUR_DIR}
+        sudo apt-get install -y build-essential git curl unzip file tar
     - name: build setuptools and pip
       run: |
         export PATH=$PATH:/github/home/.local/bin
