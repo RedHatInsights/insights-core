@@ -5,10 +5,10 @@ import os
 
 from insights.core.context import HostContext
 from insights.core.exceptions import ContentException, SkipComponent
-from insights.parsers.iris import IrisList, IrisCpf
 from insights.core.filters import get_filters
 from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider
+from insights.parsers.iris import IrisList, IrisCpf
 from insights.specs import Specs
 
 
@@ -21,7 +21,7 @@ def iris_working_configuration(broker):
         str: the raw content of the ``iris.cpf`` file .
 
     Raises:
-        SkipComponent: When the `iris.cpf` does not exist or nothing need to collect
+        SkipComponent: When the `iris.cpf` does not exist
         ContentException: When any exception occurs.
     """
     configuration_file_path_directory = broker[IrisList]['directory']
@@ -44,13 +44,13 @@ def iris_working_messages_log(broker):
     This datasource get information from ``messages.log`` file.
 
     Returns:
-        str: the raw content of the ``messages.log`` file .
+        str: the filtered content of the ``messages.log`` file .
 
     Raises:
         SkipComponent: When the log file/option/filters do not exist
         ContentException: When any exception occurs.
     """
-    filters = sorted((get_filters(Specs.intersystems_iris_messages_log_filter)))
+    filters = sorted((get_filters(Specs.intersystems_iris_messages_log)))
     iris_cpf = broker[IrisCpf]
 
     if iris_cpf.has_option('Databases', 'IRISSYS'):

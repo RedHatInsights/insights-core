@@ -71,17 +71,17 @@ FILTERED_MESSAGES = """
 
 
 def setup_function(func):
-    if Specs.intersystems_iris_messages_log_filter in filters._CACHE:
-        del filters._CACHE[Specs.intersystems_iris_messages_log_filter]
-    if Specs.intersystems_iris_messages_log_filter in filters.FILTERS:
-        del filters.FILTERS[Specs.intersystems_iris_messages_log_filter]
+    if Specs.intersystems_iris_messages_log in filters._CACHE:
+        del filters._CACHE[Specs.intersystems_iris_messages_log]
+    if Specs.intersystems_iris_messages_log in filters.FILTERS:
+        del filters.FILTERS[Specs.intersystems_iris_messages_log]
 
     if func is test_iris_working_messages_log:
-        filters.add_filter(Specs.intersystems_iris_messages_log_filter, ["Generic.Event"])
+        filters.add_filter(Specs.intersystems_iris_messages_log, ["Generic.Event"])
     if func is test_iris_working_messages_log_no_match_filter:
-        filters.add_filter(Specs.intersystems_iris_messages_log_filter, ["test_no_match_filter"])
+        filters.add_filter(Specs.intersystems_iris_messages_log, ["test_no_match_filter"])
     if func is test_iris_working_messages_log_no_filter:
-        filters.add_filter(Specs.intersystems_iris_messages_log_filter, [])
+        filters.add_filter(Specs.intersystems_iris_messages_log, [])
 
 
 @patch("insights.specs.datasources.intersystems_iris.open", new_callable=mock_open, read_data=IRIS_CPF)
