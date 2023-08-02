@@ -55,7 +55,6 @@ class IrisList(CommandParser, dict):
         return self.get('status', "").startswith('running')
 
 
-
 @parser(Specs.intersystems_iris_cpf)
 class IrisCpf(IniConfigFile):
     """

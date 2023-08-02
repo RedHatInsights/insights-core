@@ -5,8 +5,6 @@ from insights.core.exceptions import SkipComponent
 from insights.parsers import iris
 from insights.tests import context_wrap
 
-from datetime import datetime
-
 
 IRIS_RUNNING = """
 
@@ -304,7 +302,6 @@ def test_iris_cpf():
     assert "Databases" in iris_cpf
     assert iris_cpf.get("Databases", "IRISSYS") == "/intersystems/mgr/"
     assert iris_cpf.get("SqlSysDatatypes", "DEC") == "%Library.Numeric(MAXVAL=999999999999999,MINVAL=-999999999999999,SCALE=0)"
-
 
 
 def test_iris_messages_log():
