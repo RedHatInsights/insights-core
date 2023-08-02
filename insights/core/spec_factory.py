@@ -78,10 +78,9 @@ class ContentProvider(object):
         if self._exception:
             raise self._exception
 
-        if self._content is None:
+        if self._content is None and not self.loaded:
             try:
-                if not self.loaded:
-                    self._content = self.load()
+                self._content = self.load()
             except Exception as ex:
                 self._exception = ex
                 raise
