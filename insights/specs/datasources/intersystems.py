@@ -27,8 +27,7 @@ def iris_working_configuration(broker):
     configuration_file_path_directory = broker[IrisList]['directory']
     configuration_file_path_conf_file = broker[IrisList]['conf file'].split()[0].strip()
 
-    configuration_file_path = configuration_file_path_directory + '/' + configuration_file_path_conf_file
-
+    configuration_file_path = os.path.join(configuration_file_path_directory, configuration_file_path_conf_file)
     if os.path.isfile(configuration_file_path):
         try:
             with open(configuration_file_path, 'r') as conf:
@@ -50,21 +49,18 @@ def iris_working_messages_log(broker):
         SkipComponent: When the log file/option/filters do not exist
         ContentException: When any exception occurs.
     """
-    filters = sorted((get_filters(Specs.intersystems_iris_messages_log)))
+    filters = sorted((get_filters(Specs.iris_messages_log)))
     iris_cpf = broker[IrisCpf]
 
-    if iris_cpf.has_option('Databases', 'IRISSYS'):
+    if filters and iris_cpf.has_option('Databases', 'IRISSYS'):
         log_path = iris_cpf.get("Databases", "IRISSYS")
         log_path = os.path.join(log_path, 'messages.log')
-        if os.path.isfile(log_path) and filters:
+        if os.path.isfile(log_path):
             try:
                 with open(log_path, 'r') as log:
                     filtered_content = []
                     for line in log.readlines():
-                        for filter in filters:
-                            if filter in line:
-                                filtered_content.append(line)
-                                break
+                        filtered_content.append(line) if any(_f in line for _f in filters) else None
                     return DatasourceProvider(content="".join(filtered_content), relative_path=log_path)
             except Exception as e:
                 raise ContentException(e)

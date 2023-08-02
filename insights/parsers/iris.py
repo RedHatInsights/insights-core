@@ -1,13 +1,21 @@
 """
+Iris - InterSystems
+======================
+Parsers included in this module are:
+
 IrisList - Command ``/usr/bin/iris list``
 =========================================
 
-This parser reads the output of ``/usr/bin/iris list``.
+IrisCpf - File ``iris.cpf``
+===========================
+
+IrisMessages - File ``messages.log``
+=========================================
 """
 
-from insights.core import CommandParser, IniConfigFile
+from insights.core import CommandParser, IniConfigFile, LogFileOutput
 from insights.core.exceptions import SkipComponent
-from insights import LogFileOutput, parser
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 
@@ -55,7 +63,7 @@ class IrisList(CommandParser, dict):
         return self.get('status', "").startswith('running')
 
 
-@parser(Specs.intersystems_iris_cpf)
+@parser(Specs.iris_cpf)
 class IrisCpf(IniConfigFile):
     """
     Parse the content of "iris.cpf" file.
@@ -90,7 +98,7 @@ class IrisCpf(IniConfigFile):
     pass
 
 
-@parser(Specs.intersystems_iris_messages_log)
+@parser(Specs.iris_messages_log)
 class IrisMessages(LogFileOutput):
     """
     Parse the content of "messages.log" file.

@@ -50,182 +50,6 @@ USER=/intersystems/mgr/user/
 %SYS=IRISSYS
 USER=USER
 
-[Map.USER]
-Global_EnsDICOM.Dictionary=ENSLIB
-Global_EnsEDI.Description=USER
-Global_EnsEDI.Description("X","X12")=ENSLIB
-Global_IRIS.MsgNames("Workflow")=ENSLIB
-Global_IRIS.MsgNames("tahoma,verdana")=ENSLIB
-Routine_Ens*=ENSLIB
-Package_CSPX.Dashboard=ENSLIB
-Package_Ens=ENSLIB
-Package_EnsLib=ENSLIB
-Package_EnsPortal=ENSLIB
-
-[MirrorMember]
-AgentAddress=
-AsyncMemberGUID=
-AsyncMemberType=0
-AsyncUseSystemPurgeInterval=0
-JoinMirror=0
-SystemName=
-ValidatedMember=0
-VirtualAddressInterface=
-
-[Journal]
-AlternateDirectory=/intersystems/mgr/journal/
-BackupsBeforePurge=2
-CompressFiles=1
-CurrentDirectory=/intersystems/mgr/journal/
-DaysBeforePurge=2
-FileSizeLimit=1024
-FreezeOnError=0
-JournalFilePrefix=
-JournalcspSession=0
-
-[Startup]
-CallinHalt=1
-CallinStart=1
-CliSysName=
-DBSizesAllowed=8192
-WebServerURLPrefix=
-ZSTU=1
-
-[WorkQueues]
-Default=
-SQL=
-
-[Gateways]
-%DotNet Server=.NET,53372,%Gateway_Object,N6.0
-%IntegratedML Server=ML,53572,%Gateway_ML
-%JDBC Server=JDBC,53772,%Gateway_SQL,,,,,,,0
-%Java Server=Java,53272,%Gateway_Object
-%Python Server=Python,53472,%Gateway_Object
-%R Server=R,53872,%Gateway_Object
-%XSLT Server=XSLT,53672,%Gateway_Object,,,,,,,0
-
-[DeviceSubTypes]
-C-ANSI=80^#,$C(27,91,72,27,91,74)^25^$C(8)^W $C(27,91)_(DY+1)_";"_(DX+1)_"H" S $X=DX,$Y=DY^$C(27,91,74)^$C(27,91,75)^$C(27,91,72,27,91,74)^$C(8,32,8)
-C-IRIS Terminal=80^#,$C(27,91,72,27,91,74)^24^$C(8)^W $C(27,91)_(DY+1)_";"_(DX+1)_"H" S $X=DX,$Y=DY^$C(27,91,74)^$C(27,91,75)^$C(27,91,72,27,91,74)^$C(8,32,8)
-C-TV925=80^#,$C(27,44)^24^$C(8)^W $C(27,61,DY+32,DX+32) S $X=DX,$Y=DY^^^$C(27,44)^$C(8,32,8)
-C-VT100=80^#,$C(27,91,72,27,91,74)^24^$C(8)^W $C(27,91)_(DY+1)_";"_(DX+1)_"H" S $X=DX,$Y=DY^$C(27,91,74)^$C(27,91,75)^^
-C-VT101W=132^#,$C(27,91,72,27,91,74)^14^$C(8)^W $C(27,91)_(DY+1)_";"_(DX+1)_"H" S $X=DX,$Y=DY^$C(27,91,74)^$C(27,91,75)^^
-C-VT132=132^#,$C(27,91,72,27,91,74)^24^$C(8)^W $C(27,91)_(DY+1)_";"_(DX+1)_"H" S $X=DX,$Y=DY^$C(27,91,74)^$C(27,91,75)^^
-C-VT220=80^#,$C(27,91,72,27,91,74)^24^$C(8)^W $C(27,91)_(DY+1)_";"_(DX+1)_"H" S $X=DX,$Y=DY^$C(27,91,74)^$C(27,91,75)^$C(27,91,72,27,91,74)^$C(8,32,8)
-C-VT240=80^#,$C(27,91,72,27,91,74)^24^$C(8)^W $C(27,91)_(DY+1)_";"_(DX+1)_"H" S $X=DX,$Y=DY^$C(27,91,74)^$C(27,91,75)^$C(27,91,72,27,91,74)^$C(8,32,8)
-C-VT52=80^#,$C(27,72)^24^$C(8)^W $C(27,89,DY+32,DX+32) S $X=DX,$Y=DY^^^^
-M/UX=255^#^66^$C(8)^^^^^
-MAIL=132^#^11^$C(8)^^^^^
-P-DEC=132^#^66^$C(8)^^^^^
-PK-DEC=150^#^66^$C(8)^^^^^
-PK-QUME=150^#^66^$C(8)^^^^^
-
-[Devices]
-0=0^TRM^C-IRIS Terminal^^^^Principal device^
-2=2^SPL^PK-DEC^^^^Spool LA120^
-47=47^MT^M/UX^^("auv":0:2048)^^Magnetic tape^
-48=48^MT^M/UX^^("avl":0:2048)^^Magnetic tape^
-57=57^BT^M/UX^^("auv":0:2048)^^Magnetic tape^
-58=58^BT^M/UX^^("avl":0:2048)^^Magnetic tape^
-SPOOL=2^SPL^PK-DEC^^^^Spool LA120^
-TERM=0^TRM^C-IRIS Terminal^^^^Windows Console^
-|LAT|=0^TRM^C-VT220^^^^Principal device^
-|PRN|=|PRN|^OTH^P-DEC^^"W"^^Windows Printer^
-|TNT|=0^TRM^C-VT220^^^^Principal device^
-|TRM|=0^TRM^C-IRIS Terminal^^^^Windows Console^
-
-[MagTapes]
-47=/dev/st0
-48=/dev/st1
-49=/dev/st0l
-50=/dev/st1l
-51=/dev/st0a
-52=/dev/st1a
-53=/dev/st0m
-54=/dev/st1m
-55=/dev/nst0
-56=/dev/nst1
-57=/dev/st0
-58=/dev/st1
-59=/dev/st0l
-60=/dev/st1l
-61=/dev/st0a
-62=/dev/st1a
-
-[config]
-LibPath=
-MaxServerConn=1
-MaxServers=2
-Path=
-PythonPath=
-bbsiz=-1
-console=,
-errlog=500
-globals=0,0,600,0,0,0
-gmheap=0
-history=500
-ijcbuff=512
-ijcnum=16
-jrnbufs=64
-locksiz=0
-memlock=0
-netjob=1
-nlstab=50
-overview=Linux/x86-64~UNIX
-pijdir=
-routines=0
-targwijsz=0
-udevtabsiz=24576
-wijdir=
-zfheap=0,0
-
-[Miscellaneous]
-AsyncDisconnectErr=0
-AsynchError=1
-BreakMode=1
-CollectResourceStats=0
-DisconnectErr=0
-ZDateNull=0
-ZaMode=0
-
-[ECP]
-ClientReconnectDuration=1200
-ClientReconnectInterval=5
-ServerTroubleDuration=60
-
-[Cluster]
-CommIPAddress=
-JoinCluster=0
-
-[LicenseServers]
-LOCAL=127.0.0.1,4002
-
-[Monitor]
-SNMPEnabled=0
-
-[IO]
-File=^%X364
-MagTape=^%XMAG
-Other=^%X364
-Terminal=^%X364
-
-[SQL]
-ANSIPrecedence=1
-AdaptiveMode=1
-AllowRowIDUpdate=0
-AutoParallel=1
-DropDelete=1
-ECPSync=0
-ExtrinsicFunctions=0
-FastDistinct=1
-IdKey=1
-IdTrxFrom=~ `!@#$%^&*()_+-=[]\{}|;':",./<>?
-IdTrxTo=
-LockThreshold=1000
-LockTimeout=10
-TODATEDefaultFormat=DD MON YYYY
-TimePrecision=0
-
 [SqlSysDatatypes]
 BIGINT=%Library.BigInt
 BIGINT(%1)=%Library.BigInt
@@ -243,13 +67,6 @@ DECIMAL(%1)=%Library.Numeric(MAXVAL=<|'$$maxval^%apiSQL(%1,0)'|>,MINVAL=<|'$$min
 DECIMAL(%1,%2)=%Library.Numeric(MAXVAL=<|'$$maxval^%apiSQL(%1,%2)'|>,MINVAL=<|'$$minval^%apiSQL(%1,%2)'|>,SCALE=%2)
 DOUBLE=%Library.Double
 DOUBLE PRECISION=%Library.Double
-
-[Telnet]
-DNSLookup=ON
-Port=23
-
-[Conversions]
-LastConvertTime=2023-07-20 08:58:29
 """.strip()
 
 IRIS_MESSAGES_LOG = """
@@ -308,7 +125,6 @@ def test_iris_messages_log():
     log = iris.IrisMessages(context_wrap(IRIS_MESSAGES_LOG))
     assert len(log.get('Generic.Event')) == 4
     assert len(log.get('shared memory')) == 1
-    # assert len(list(log.get_after(datetime(2023, 6, 26, 8, 2, 18)))) == 5
 
 
 def test_doc_examples():

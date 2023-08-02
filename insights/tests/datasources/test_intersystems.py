@@ -12,7 +12,7 @@ from insights.core import filters
 from insights.core.exceptions import SkipComponent
 from insights.parsers.iris import IrisList, IrisCpf
 from insights.specs import Specs
-from insights.specs.datasources.intersystems_iris import iris_working_configuration, iris_working_messages_log
+from insights.specs.datasources.intersystems import iris_working_configuration, iris_working_messages_log
 from insights.tests import context_wrap
 
 
@@ -71,20 +71,20 @@ FILTERED_MESSAGES = """
 
 
 def setup_function(func):
-    if Specs.intersystems_iris_messages_log in filters._CACHE:
-        del filters._CACHE[Specs.intersystems_iris_messages_log]
-    if Specs.intersystems_iris_messages_log in filters.FILTERS:
-        del filters.FILTERS[Specs.intersystems_iris_messages_log]
+    if Specs.iris_messages_log in filters._CACHE:
+        del filters._CACHE[Specs.iris_messages_log]
+    if Specs.iris_messages_log in filters.FILTERS:
+        del filters.FILTERS[Specs.iris_messages_log]
 
     if func is test_iris_working_messages_log:
-        filters.add_filter(Specs.intersystems_iris_messages_log, ["Generic.Event"])
+        filters.add_filter(Specs.iris_messages_log, ["Generic.Event"])
     if func is test_iris_working_messages_log_no_match_filter:
-        filters.add_filter(Specs.intersystems_iris_messages_log, ["test_no_match_filter"])
+        filters.add_filter(Specs.iris_messages_log, ["test_no_match_filter"])
     if func is test_iris_working_messages_log_no_filter:
-        filters.add_filter(Specs.intersystems_iris_messages_log, [])
+        filters.add_filter(Specs.iris_messages_log, [])
 
 
-@patch("insights.specs.datasources.intersystems_iris.open", new_callable=mock_open, read_data=IRIS_CPF)
+@patch("insights.specs.datasources.intersystems.open", new_callable=mock_open, read_data=IRIS_CPF)
 @patch("os.path.isfile", return_value=True)
 def test_iris_working_configuration(m_open, m_isfile):
     iris_list_info = IrisList(context_wrap(IRIR_LIST))
@@ -94,7 +94,7 @@ def test_iris_working_configuration(m_open, m_isfile):
     assert result.relative_path == path.join(path.dirname(__file__), '/intersystems/iris.cpf')
 
 
-@patch("insights.specs.datasources.intersystems_iris.open", new_callable=mock_open, read_data=IRIS_CPF)
+@patch("insights.specs.datasources.intersystems.open", new_callable=mock_open, read_data=IRIS_CPF)
 def test_iris_working_configuration_no_file(m_open):
     iris_list_info = IrisList(context_wrap(IRIR_LIST))
     broker = {IrisList: iris_list_info}
@@ -103,7 +103,7 @@ def test_iris_working_configuration_no_file(m_open):
     assert 'SkipComponent' in str(e)
 
 
-@patch("insights.specs.datasources.intersystems_iris.open", new_callable=mock_open, read_data=RAW_MESSAGES)
+@patch("insights.specs.datasources.intersystems.open", new_callable=mock_open, read_data=RAW_MESSAGES)
 @patch("os.path.isfile", return_value=True)
 def test_iris_working_messages_log(m_open, m_isfile):
     iris_cpf_info = IrisCpf(context_wrap(IRIS_CPF))
@@ -113,7 +113,7 @@ def test_iris_working_messages_log(m_open, m_isfile):
     assert result.relative_path == path.join(path.dirname(__file__), '/intersystems/mgr/messages.log')
 
 
-@patch("insights.specs.datasources.intersystems_iris.open", new_callable=mock_open, read_data=RAW_MESSAGES)
+@patch("insights.specs.datasources.intersystems.open", new_callable=mock_open, read_data=RAW_MESSAGES)
 def test_iris_working_messages_log_no_file(m_open):
     iris_cpf_info = IrisCpf(context_wrap(IRIS_CPF))
     broker = {IrisCpf: iris_cpf_info}
@@ -122,7 +122,7 @@ def test_iris_working_messages_log_no_file(m_open):
     assert 'SkipComponent' in str(e)
 
 
-@patch("insights.specs.datasources.intersystems_iris.open", new_callable=mock_open, read_data=RAW_MESSAGES)
+@patch("insights.specs.datasources.intersystems.open", new_callable=mock_open, read_data=RAW_MESSAGES)
 @patch("os.path.isfile", return_value=True)
 def test_iris_working_messages_log_no_match_filter(m_open, m_isfile):
     iris_cpf_info = IrisCpf(context_wrap(IRIS_CPF))
@@ -132,7 +132,7 @@ def test_iris_working_messages_log_no_match_filter(m_open, m_isfile):
     assert result.relative_path == path.join(path.dirname(__file__), '/intersystems/mgr/messages.log')
 
 
-@patch("insights.specs.datasources.intersystems_iris.open", new_callable=mock_open, read_data=RAW_MESSAGES)
+@patch("insights.specs.datasources.intersystems.open", new_callable=mock_open, read_data=RAW_MESSAGES)
 @patch("os.path.isfile", return_value=True)
 def test_iris_working_messages_log_no_filter(m_open, m_isfile):
     iris_cpf_info = IrisCpf(context_wrap(IRIS_CPF))

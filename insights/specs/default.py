@@ -25,11 +25,11 @@ from insights.components.satellite import IsSatellite611, IsSatellite
 from insights.specs import Specs
 from insights.specs.datasources import (
         aws, awx_manage, candlepin_broker, cloud_init, corosync as corosync_ds,
-        dir_list, ethernet, httpd, ipcs, kernel, kernel_module_list, leapp,
+        dir_list, ethernet, httpd, intersystems, ipcs, kernel, kernel_module_list, leapp,
         lpstat, ls, luks_devices, machine_ids, malware_detection, md5chk,
         mount as mount_ds, package_provides, ps as ps_datasource, rpm_pkgs,
         sap, satellite_missed_queues, semanage, ssl_certificate,
-        sys_fs_cgroup_memory, sys_fs_cgroup_memory_tasks_number, intersystems_iris,
+        sys_fs_cgroup_memory, sys_fs_cgroup_memory_tasks_number,
         user_group, yum_updates)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 from insights.specs.datasources.pcp import pcp_enabled, pmlog_summary_args
@@ -293,8 +293,6 @@ class DefaultSpecs(Specs):
     initctl_lst = simple_command("/sbin/initctl --system list")
     insights_client_conf = simple_file('/etc/insights-client/insights-client.conf')
     installed_rpms = simple_command("/bin/rpm -qa --qf '%s'" % _rpm_format, context=HostContext, signum=signal.SIGTERM)
-    intersystems_iris_cpf = intersystems_iris.iris_working_configuration
-    intersystems_iris_messages_log = intersystems_iris.iris_working_messages_log
     interrupts = simple_file("/proc/interrupts")
     ip6tables = simple_command("/sbin/ip6tables-save")
     ip_addr = simple_command("/sbin/ip addr")
@@ -312,7 +310,9 @@ class DefaultSpecs(Specs):
     iptables_permanent = simple_file("etc/sysconfig/iptables")
     ipv4_neigh = simple_command("/sbin/ip -4 neighbor show nud all")
     ipv6_neigh = simple_command("/sbin/ip -6 neighbor show nud all")
+    iris_cpf = intersystems.iris_working_configuration
     iris_list = simple_command("/usr/bin/iris list")
+    iris_messages_log = intersystems.iris_working_messages_log
     ironic_inspector_log = first_file(["/var/log/containers/ironic-inspector/ironic-inspector.log", "/var/log/ironic-inspector/ironic-inspector.log"])
     iscsiadm_m_session = simple_command("/usr/sbin/iscsiadm -m session")
     jbcs_httpd24_httpd_error_log = simple_file("/opt/rh/jbcs-httpd24/root/etc/httpd/logs/error_log")
