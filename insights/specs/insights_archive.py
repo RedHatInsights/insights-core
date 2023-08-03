@@ -131,7 +131,10 @@ class InsightsArchiveSpecs(Specs):
     ls_osroot = simple_file("insights_commands/ls_-lan")
     ls_R_var_lib_nova_instances = simple_file("insights_commands/ls_-laR_.var.lib.nova.instances")
     ls_sys_firmware = simple_file("insights_commands/ls_-lanR_.sys.firmware")
-    ls_systemd_units = simple_file("insights_commands/ls_-lanRL_.etc.systemd_.run.systemd_.usr.lib.systemd_.usr.local.lib.systemd")
+    ls_systemd_units = first_file([
+        "insights_commands/ls_-lanRL_.etc.systemd_.run.systemd_.usr.lib.systemd_.usr.local.lib.systemd_.usr.local.share.systemd_.usr.share.systemd",
+        "insights_commands/ls_-lanRL_.etc.systemd_.run.systemd_.usr.lib.systemd_.usr.local.lib.systemd"
+    ])
     ls_tmp = simple_file("insights_commands/ls_-la_.tmp")
     ls_usr_bin = simple_file("insights_commands/ls_-lan_.usr.bin")
     ls_usr_lib64 = simple_file("insights_commands/ls_-lan_.usr.lib64")
