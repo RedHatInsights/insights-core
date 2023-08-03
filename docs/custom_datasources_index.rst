@@ -99,6 +99,14 @@ insights.specs.datasources.httpd
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.intersystems
+---------------------------------------
+
+.. automodule:: insights.specs.datasources.intersystems
+    :members: iris_working_configuration, iris_working_messages_log
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.ipcs
 -------------------------------
 
