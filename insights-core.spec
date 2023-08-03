@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.2.8
+Version:        3.2.9
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,18 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Aug 03 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.9-1
+- fix: don't redact ls_systemd_units to avoid issue#3858 (#3870)
+  (xiangceliu@redhat.com)
+- [INSPEC-414] collect .exp.sed for analysis (#3869) (xiangceliu@redhat.com)
+- feat: Add parser intersystems_configuration_log (#3861) (jiazhang@redhat.com)
+- fix: datasource specs cannot be loaded during collection (#3867)
+  (xiangceliu@redhat.com)
+- feat: 2 new properties to OSRelease combiner (#3863) (xiangceliu@redhat.com)
+- fix: use pre-build python26 instead of compiling it (#3865)
+  (xiangceliu@redhat.com)
+- fix: flake8 rule E721 (#3864) (xiangceliu@redhat.com)
+
 * Thu Jul 27 2023 Lizhong Chen <lichen@redhat.com> 3.2.8-1
 - feat: New spec "/proc/sys/kernel/random/entropy_avail" (#3860)
   (44796653+huali027@users.noreply.github.com)
