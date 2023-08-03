@@ -2,6 +2,16 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.2.9](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.9) (2023-08-03)
+
+- fix: don't redact ls_systemd_units to avoid issue#3858 ([PR 3870](https://github.com/RedHatInsights/insights-core/pull/3870))
+- [INSPEC-414] collect .exp.sed for analysis ([PR 3869](https://github.com/RedHatInsights/insights-core/pull/3869))
+- feat: Add parser intersystems_configuration_log ([PR 3861](https://github.com/RedHatInsights/insights-core/pull/3861))
+- fix: datasource specs cannot be loaded during collection ([PR 3867](https://github.com/RedHatInsights/insights-core/pull/3867))
+- feat: 2 new properties to OSRelease combiner ([PR 3863](https://github.com/RedHatInsights/insights-core/pull/3863))
+- fix: use pre-build python26 instead of compiling it ([PR 3865](https://github.com/RedHatInsights/insights-core/pull/3865))
+- fix: flake8 rule E721 ([PR 3864](https://github.com/RedHatInsights/insights-core/pull/3864))
+
 # [insights-core-3.2.8](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.8) (2023-07-27)
 
 - feat: New spec "/proc/sys/kernel/random/entropy_avail" ([PR 3860](https://github.com/RedHatInsights/insights-core/pull/3860)
