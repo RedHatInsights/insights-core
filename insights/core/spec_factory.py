@@ -78,7 +78,7 @@ class ContentProvider(object):
         if self._exception:
             raise self._exception
 
-        if self._content is None:
+        if self._content is None and not self.loaded:
             try:
                 self._content = self.load()
             except Exception as ex:
@@ -119,9 +119,9 @@ class DatasourceProvider(ContentProvider):
             f.write("\n".join(self.content).encode("utf-8"))
 
         self.loaded = False
-        self._content = None
 
     def load(self):
+        self.loaded = True
         return self.content
 
 
