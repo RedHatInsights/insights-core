@@ -453,9 +453,14 @@ class DataCollector(object):
         for dirpath, dirnames, filenames in os.walk(searchpath):
             for f in filenames:
                 fullpath = os.path.join(dirpath, f)
-                if (fullpath.endswith('etc/insights-client/machine-id') or
-                   fullpath.endswith('etc/machine-id') or
-                   fullpath.endswith('insights_commands/subscription-manager_identity')):
+                if (fullpath.endswith(
+                        (
+                            'etc/insights-client/machine-id',
+                            'etc/insights-client/.exp.sed',  # INSPEC-414
+                            'etc/machine-id',
+                            'insights_commands/subscription-manager_identity'
+                        )
+                )):
                     # do not redact the ID files
                     continue
                 redacted_contents = _process_content_redaction(fullpath, exclude, regex)

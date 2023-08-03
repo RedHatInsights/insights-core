@@ -268,6 +268,7 @@ class Specs(SpecSet):
     initctl_lst = RegistryPoint()
     initscript = RegistryPoint(multi_output=True)
     insights_client_conf = RegistryPoint(filterable=True)
+    insights_client_exp_sed = RegistryPoint()  # INSPEC-414
     installed_rpms = RegistryPoint()
     interrupts = RegistryPoint()
     ip6tables = RegistryPoint()
