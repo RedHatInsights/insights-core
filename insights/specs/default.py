@@ -27,9 +27,9 @@ from insights.specs.datasources import (
         aws, awx_manage, candlepin_broker, cloud_init, corosync as corosync_ds,
         dir_list, ethernet, httpd, intersystems, ipcs, kernel, kernel_module_list, leapp,
         lpstat, ls, luks_devices, machine_ids, malware_detection, md5chk,
-        mount as mount_ds, package_provides, ps as ps_datasource, rpm_pkgs,
-        sap, satellite_missed_queues, semanage, ssl_certificate,
-        sys_fs_cgroup_memory, sys_fs_cgroup_memory_tasks_number,
+        mdadm as mdadm_ds, mount as mount_ds, package_provides,
+        ps as ps_datasource, rpm_pkgs, sap, satellite_missed_queues, semanage,
+        ssl_certificate, sys_fs_cgroup_memory, sys_fs_cgroup_memory_tasks_number,
         user_group, yum_updates)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 from insights.specs.datasources.pcp import pcp_enabled, pmlog_summary_args
@@ -408,6 +408,7 @@ class DefaultSpecs(Specs):
     mariadb_log = simple_file("/var/log/mariadb/mariadb.log")
     max_uid = simple_command("/bin/awk -F':' '{ if($3 > max) max = $3 } END { print max }' /etc/passwd")
     md5chk_files = foreach_execute(md5chk.files, "/usr/bin/md5sum %s", keep_rc=True)
+    mdadm_D = foreach_execute(mdadm_ds.md_raid_arrays, "/usr/sbin/mdadm -D /dev/%s")
     mdstat = simple_file("/proc/mdstat")
     meminfo = first_file(["/proc/meminfo", "/meminfo"])
     messages = simple_file("/var/log/messages")

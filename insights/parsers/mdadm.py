@@ -1,11 +1,22 @@
 """
+MDAdm parsers
+=============
+
+Classes to parse ``mdadm`` commands information.
+
+Parsers provided by this module include:
+
 MDAdm - command ``/usr/sbin/mdadm -E {device}``
-===============================================
+-----------------------------------------------
+
+MDAdmDetail - command ``/usr/sbin/mdadm -D {device}``
+-----------------------------------------------------
+
 """
 from insights.core import CommandParser
 from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
-from insights.parsers import split_kv_pairs
+from insights.parsers import split_kv_pairs, parse_fixed_table
 from insights.specs import Specs
 
 
@@ -65,3 +76,95 @@ class MDAdmMetadata(CommandParser, dict):
                 val = int(val)
 
             self[key] = val
+
+
+@parser(Specs.mdadm_D)
+class MDAdmDetail(CommandParser, dict):
+    """
+    Parser for output of ``mdadm -D`` for each MD device in system.
+
+    The md device's properties in <property name> : <property value> format
+    will be stored seprately, and are accessable via <property name>.
+
+    Attributes:
+        device (str):           the name of the device after /dev/ - e.g. md0
+        devices_table (list):   the devices info table
+
+    Sample output::
+
+        /dev/md2:
+                   Version : 1.2
+             Creation Time : Sun Sep  5 23:19:18 2021
+                Raid Level : raid1
+                Array Size : 7501333824 (7153.83 GiB 7681.37 GB)
+             Used Dev Size : 7501333824 (7153.83 GiB 7681.37 GB)
+              Raid Devices : 2
+             Total Devices : 2
+               Persistence : Superblock is persistent
+
+             Intent Bitmap : Internal
+
+               Update Time : Sun Sep 26 22:18:13 2021
+                     State : clean
+            Active Devices : 2
+           Working Devices : 2
+            Failed Devices : 0
+             Spare Devices : 0
+
+        Consistency Policy : bitmap
+
+                      Name : hostname:2  (local to host hostname)
+                      UUID : 245e1231:245e1231:245e1231:245e1231
+                    Events : 1821
+
+            Number   Major   Minor   RaidDevice State
+               0     259        1        0      active sync   /dev/nvme2n1
+               1     259        0        1      active sync   /dev/nvme3n1
+
+    Examples:
+        >>> mdadm_d.device
+        '/dev/md2'
+        >>> mdadm_d["UUID"]
+        '245e1231:245e1231:245e1231:245e1231'
+        >>> mdadm_d.get("Total Devices")
+        2
+        >>> mdadm_d.is_internal_bitmap
+        True
+        >>> len(mdadm_d.devices_table)
+        2
+    """
+    def parse_content(self, content):
+        mdadm_dev = "/mdadm_-D_.dev."
+        if mdadm_dev in self.file_path:
+            self.device = '/dev/' + self.file_path.split(mdadm_dev)[1].strip()
+        else:
+            raise SkipComponent('Cannot parse device name from path {p}'.format(p=self.file_path))
+
+        # Split for the devices info table
+        table_start_index = len(content) - 1
+        while table_start_index > 0:
+            line = content[table_start_index]
+            if "Number   Major   Minor" not in line:
+                table_start_index -= 1
+            else:
+                break
+
+        # Parse the key value pairs part in content
+        if table_start_index > 1 or table_start_index == 0:
+            kv_pairs_end_index = table_start_index if table_start_index else None
+            for key, val in split_kv_pairs(content[1:kv_pairs_end_index], split_on=':').items():
+                self[key] = int(val) if val.isdigit() else val
+
+        # Parse the devices info table part in content
+        self.devices_table = None
+        if table_start_index > 0:
+            self.devices_table = parse_fixed_table(content[table_start_index:])
+
+        # Empty prased data
+        if not (len(self) > 1 or self.devices_table):
+            raise SkipComponent('Empty parsed data: {p}'.format(p=self.file_path))
+
+    @property
+    def is_internal_bitmap(self):
+        """ bool: True if using "Internal" Bitmap."""
+        return self.get("Intent Bitmap") == "Internal"

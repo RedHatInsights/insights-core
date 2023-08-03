@@ -182,6 +182,14 @@ insights.specs.datasources.malware_detection
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.mdadm
+--------------------------------
+
+.. automodule:: insights.specs.datasources.mdadm
+    :members: md_raid_arrays
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.mount
 --------------------------------
 
