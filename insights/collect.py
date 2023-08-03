@@ -261,11 +261,11 @@ plugins:
         - name: insights.components.cryptsetup
           enabled: true
 
-    # needed by the 'intersystems_iris_cpf' spec
+    # needed by the 'iris_cpf' spec
         - name: insights.parsers.iris.IrisList
           enabled: true
 
-    # needed by the 'intersystems_iris_messages_log' spec
+    # needed by the 'iris_messages_log' spec
         - name: insights.parsers.iris.IrisCpf
           enabled: true
 """.strip()

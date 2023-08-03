@@ -1,16 +1,16 @@
 """
 Iris - InterSystems
-======================
+===================
 Parsers included in this module are:
 
 IrisList - Command ``/usr/bin/iris list``
 =========================================
 
 IrisCpf - File ``iris.cpf``
-=========================================
+===========================
 
 IrisMessages - File ``messages.log``
-=========================================
+====================================
 """
 
 from insights.core import CommandParser, IniConfigFile, LogFileOutput
