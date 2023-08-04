@@ -389,7 +389,7 @@ def test_not_rhel():
     assert result.name == "Oracle"  # the same to self.release when '/etc/os-release' is unavailable
     assert result.is_rhel_compatible is False
 
-    # RHEL, Bad os-release only
+    # RHEL, os-release only
     osr = OsRelease(context_wrap(OS_RELEASE_UNKNOWN))
     result = OSRelease(None, None, None, osr, None)
     assert result.is_rhel is False
@@ -406,7 +406,7 @@ def test_not_rhel():
     assert result.name == "Oracle Linux Server"
     assert result.is_rhel_compatible is False
 
-    # RHEL, redhat-release
+    # RHEL, redhat-release only
     rhr = RedhatRelease(context_wrap(REDHAT_RELEASE_FEDORA))
     result = OSRelease(None, None, None, None, rhr)
     assert result.is_rhel is False
@@ -421,6 +421,26 @@ def test_not_rhel():
     assert result.release == "Test OS"
     assert result.reasons == {'reason': 'NON-RHEL: os-release/redhat-release'}
     assert result.name == "Test OS"
+    assert result.is_rhel_compatible is False
+
+    # RHEL, BAD os-release + GOOD redhat-release
+    osr = OsRelease(context_wrap(OS_RELEASE_OL))
+    rhr = RedhatRelease(context_wrap(REDHAT_RELEASE_86))
+    result = OSRelease(None, None, None, osr, rhr)
+    assert result.is_rhel is False
+    assert result.release == "Oracle Linux Server"
+    assert result.reasons == {'reason': 'NON-RHEL: os-release/redhat-release'}
+    assert result.name == "Oracle Linux Server"
+    assert result.is_rhel_compatible is False
+
+    # RHEL, GOOD os-release + BAD redhat-release
+    osr = OsRelease(context_wrap(OS_RELEASE_RH))
+    rhr = RedhatRelease(context_wrap(REDHAT_RELEASE_FEDORA))
+    result = OSRelease(None, None, None, osr, rhr)
+    assert result.is_rhel is False
+    assert result.release == "Fedora"
+    assert result.reasons == {'reason': 'NON-RHEL: os-release/redhat-release'}
+    assert result.name == "Red Hat Enterprise Linux"
     assert result.is_rhel_compatible is False
 
 
