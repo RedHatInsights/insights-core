@@ -274,7 +274,8 @@ class OSRelease(object):
             if osr or rhr:
                 # Use 'os-release' and 'redhat-release
                 ret = _from_os_release(osr) if osr else dict()
-                ret.update(_from_redhat_release(rhr)) if rhr else None
+                if ret.get('other_linux', 'RHEL') == 'RHEL':
+                    ret.update(_from_redhat_release(rhr)) if rhr else None
                 if ret.get('other_linux', 'RHEL') != 'RHEL':
                     self._release = ret['other_linux']
                     self._reasons = {'reason': 'NON-RHEL: os-release/redhat-release'}
