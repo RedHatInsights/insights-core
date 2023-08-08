@@ -27,9 +27,9 @@ from insights.specs.datasources import (
         aws, awx_manage, candlepin_broker, cloud_init, corosync as corosync_ds,
         dir_list, ethernet, httpd, intersystems, ipcs, kernel, kernel_module_list, leapp,
         lpstat, ls, luks_devices, machine_ids, malware_detection, md5chk,
-        mount as mount_ds, package_provides,
-        ps as ps_datasource, rpm_pkgs, sap, satellite_missed_queues, semanage,
-        ssl_certificate, sys_fs_cgroup_memory, sys_fs_cgroup_memory_tasks_number,
+        mount as mount_ds, package_provides, ps as ps_datasource, rpm_pkgs,
+        sap, satellite_missed_queues, semanage, ssl_certificate,
+        sys_fs_cgroup_memory, sys_fs_cgroup_memory_tasks_number,
         user_group, yum_updates)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 from insights.specs.datasources.pcp import pcp_enabled, pmlog_summary_args
