@@ -397,21 +397,30 @@ class Uname(CommandParser):
         else:
             return self._lv_version, other._lv_version
 
-    def _lv_release_without_dist(self, other):
+    def _best_lv_release(self, other):
         """
-        Get the LooseVersion releases without distribution part.
+        When the _lv_release in self and other both or neither have
+        the distribution part, return then directly. Otherwise,
+        removing the distribution part, and raising a warning.
+
+        Notes:: Now, only `.el*` distribution is supported.
         """
+        dist_opts = ('el',)
         s_release_parts = self._lv_release.vstring.split(".")
         o_release_parts = other._lv_release.vstring.split(".")
+        is_s_with_dist = s_release_parts[-1].startswith(dist_opts)
+        is_o_with_dist = o_release_parts[-1].startswith(dist_opts)
+        if not (is_s_with_dist ^ is_o_with_dist):
+            return self._lv_release, other._lv_release
+        import warnings
+        warnings.warn('Comparison of distribution part will be ingored.')
         s_release = (
-            pad_release(".".join(s_release_parts[:-1]), len(s_release_parts))
-            if s_release_parts[-1].startswith("el")
-            else ".".join(s_release_parts)
+            self._lv_release.vstring if not is_s_with_dist
+            else pad_release(".".join(s_release_parts[:-1]), len(s_release_parts))
         )
         o_release = (
-            pad_release(".".join(o_release_parts[:-1]), len(o_release_parts))
-            if o_release_parts[-1].startswith("el")
-            else ".".join(o_release_parts)
+            other._lv_release.vstring if not is_o_with_dist
+            else pad_release(".".join(o_release_parts[:-1]), len(o_release_parts))
         )
         return LooseVersion(s_release), LooseVersion(o_release)
 
@@ -537,7 +546,7 @@ class Uname(CommandParser):
         internal to the class.
         """
         s_version, o_version = self._best_version(other)
-        s_lv_release, o_lv_release = self._lv_release_without_dist(other)
+        s_lv_release, o_lv_release = self._best_lv_release(other)
 
         if s_version == o_version:
             ret = s_lv_release < o_lv_release
@@ -630,7 +639,7 @@ def pad_release(release_to_pad, num_sections=4):
     If the number of sections of the release to be padded is
     greater than num_sections, a ``ValueError`` will be raised.
     '''
-    def is_rt_release(items):
+    def find_rt_release(items):
         for i, s in enumerate(items):
             if s.startswith("rt"):
                 return i
@@ -645,7 +654,7 @@ def pad_release(release_to_pad, num_sections=4):
 
     pad_count = num_sections - len(parts)
     is_el_release = any(letter.isalpha() for letter in parts[-1])
-    rt_release_idx = is_rt_release(parts)
+    rt_release_idx = find_rt_release(parts)
 
     if len(parts) > 1 and rt_release_idx >= 0:
         return ".".join(parts[:rt_release_idx] + ['0'] * pad_count + parts[rt_release_idx:])
