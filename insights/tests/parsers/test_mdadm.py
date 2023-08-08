@@ -164,11 +164,67 @@ Consistency Policy : bitmap
        1     259        0        1      active sync   /dev/nvme3n1
 """.strip()
 
+MDADM_D_CONTENT_MULTI_DEVICES = """
+/dev/md/d1p2:
+           Version : 1.2
+     Creation Time : Thu Jun 17 09:03:18 2021
+        Raid Level : raid1
+        Array Size : 43239552 (41.24 GiB 44.28 GB)
+     Used Dev Size : 43239552 (41.24 GiB 44.28 GB)
+      Raid Devices : 2
+     Total Devices : 2
+       Persistence : Superblock is persistent
+     Intent Bitmap : Internal
+
+       Update Time : Mon Dec  6 14:25:25 2021
+             State : clean
+    Active Devices : 2
+   Working Devices : 2
+    Failed Devices : 0
+     Spare Devices : 0
+
+Consistency Policy : bitmap
+
+              Name : dvrhdbi3s01:3  (local to host dvrhdbi3s01)
+              UUID : 245e1231:245e1231:245e1231:245e1231
+            Events : 251
+
+    Number   Major   Minor   RaidDevice State
+       0      94       33        0      active sync   /dev/dasdi1
+       1      94       53        1      active sync   /dev/dasdn1
+/dev/md21p3:
+           Version : 1.2
+     Creation Time : Sun Jun 27 19:14:00 2021
+        Raid Level : raid1
+        Array Size : 43239552 (41.24 GiB 44.28 GB)
+     Used Dev Size : 43239552 (41.24 GiB 44.28 GB)
+      Raid Devices : 2
+     Total Devices : 2
+       Persistence : Superblock is persistent
+
+       Update Time : Sun Dec  5 01:34:48 2021
+             State : clean
+    Active Devices : 2
+   Working Devices : 2
+    Failed Devices : 0
+     Spare Devices : 0
+
+Consistency Policy : resync
+
+              Name : dvrhdbi3s01:6  (local to host dvrhdbi3s01)
+              UUID : 245e1231:245e1231:245e1231:245e1232
+            Events : 95
+
+    Number   Major   Minor   RaidDevice State
+       0      94       29        0      active sync   /dev/dasdh1
+       1      94       37        1      active sync   /dev/dasdj1
+""".strip()
+
 
 def test_mdadm_d():
-    md = MDAdmDetail(context_wrap(
-        MDADM_D_CONTENT_MD0, path='insights_commands/mdadm_-D_.dev.md0'
-    ))
+    mds = MDAdmDetail(context_wrap(MDADM_D_CONTENT_MD0, path='insights_commands/mdadm_-D_.dev.md'))
+    assert len(mds) == 1
+    md = mds[0]
     assert md.device == '/dev/md0'
     assert md['Update Time'] == 'Sat May 13 07:21:53 2023'
     assert md['Intent Bitmap'] == 'Internal'
@@ -185,12 +241,12 @@ def test_mdadm_d():
                                     'RaidDevice': '-',
                                     'State': 'spare   /dev/sda1'}
 
-    md = MDAdmDetail(context_wrap(
-        MDADM_D_CONTENT_MD1, path='insights_commands/mdadm_-D_.dev.md1'
-    ))
+    mds = MDAdmDetail(context_wrap(MDADM_D_CONTENT_MD1))
+    assert len(mds) == 1
+    md = mds[0]
     assert md.device == '/dev/md1'
     assert md['State'] == 'inactive'
-    assert md['Working Devices'] == 4
+    assert md['Working Devices'] == '4'
     assert md.is_internal_bitmap is False
     assert len(md.devices_table) == 4
     assert md.devices_table[0] == {'Major': '259',
@@ -198,12 +254,12 @@ def test_mdadm_d():
                                     'Number': '-',
                                     'RaidDevice': '-        /dev/nvme0n1p1'}
 
-    md = MDAdmDetail(context_wrap(
-        MDADM_D_CONTENT_MD2, path='insights_commands/mdadm_-D_.dev.md2'
-    ))
+    mds = MDAdmDetail(context_wrap(MDADM_D_CONTENT_MD2))
+    assert len(mds) == 1
+    md = mds[0]
     assert md.device == '/dev/md2'
     assert md['State'] == 'clean'
-    assert md['Working Devices'] == 2
+    assert md['Working Devices'] == '2'
     assert md.is_internal_bitmap is True
     assert len(md.devices_table) == 2
     assert md.devices_table[0] == {'Major': '259',
@@ -212,9 +268,26 @@ def test_mdadm_d():
                                     'RaidDevice': '0',
                                     'State': 'active sync   /dev/nvme2n1'}
 
+    mds = MDAdmDetail(context_wrap(MDADM_D_CONTENT_MULTI_DEVICES))
+    assert len(mds) == 2
+    assert len(mds.unparsable_device_list) == 0
+    md = mds[0]
+    assert md.device == '/dev/md/d1p2'
+    assert len(md) == 19
+    assert md['State'] == 'clean'
+    assert md['Consistency Policy'] == 'bitmap'
+    assert md.is_internal_bitmap is True
+    assert len(md.devices_table) == 2
+    md = mds[1]
+    assert md.device == '/dev/md21p3'
+    assert md['State'] == 'clean'
+    assert md['Consistency Policy'] == 'resync'
+    assert md.is_internal_bitmap is False
+    assert len(md.devices_table) == 2
+
 
 MDADM_D_CONTENT_EMPTY_TABLE = """
-/dev/md0:
+/dev/md123:
            Version : 1.2
      Creation Time : Sun Sep  5 23:19:18 2021
         Raid Level : raid1
@@ -223,7 +296,7 @@ MDADM_D_CONTENT_EMPTY_TABLE = """
 """.strip()
 
 MDADM_D_CONTENT_NO_TABLE = """
-/dev/md0:
+/dev/md124:
            Version : 1.2
      Creation Time : Sun Sep  5 23:19:18 2021
         Raid Level : raid1
@@ -231,7 +304,7 @@ MDADM_D_CONTENT_NO_TABLE = """
 """.strip()
 
 MDADM_D_CONTENT_NO_DETAIL_LIST = """
-/dev/md0:
+/dev/md125:
     Number   Major   Minor   RaidDevice State
        0     259        1        0      active sync   /dev/nvme2n1
        1     259        0        1      active sync   /dev/nvme3n1
@@ -239,58 +312,67 @@ MDADM_D_CONTENT_NO_DETAIL_LIST = """
 """.strip()
 
 MDADM_D_CONTENT_EMPTY_DATA_1 = """
-/dev/md0:
+/dev/md126:
 
     Number   Major   Minor   RaidDevice State
 
 """.strip()
 
 MDADM_D_CONTENT_EMPTY_DATA_2 = """
-/dev/md0:
+/dev/md127:
 
+""".strip()
+
+MDADM_D_CONTENT_NO_MD_DEVICES = """
+mdadm: cannot open /dev/md*: No such file or directory
 """.strip()
 
 
 def test_mdadm_d_special_cases():
-    md = MDAdmDetail(context_wrap(
-        MDADM_D_CONTENT_EMPTY_TABLE, path='insights_commands/mdadm_-D_.dev.md0'
-    ))
-    assert md.device == '/dev/md0'
+    mds = MDAdmDetail(context_wrap('\n'.join([
+                        MDADM_D_CONTENT_EMPTY_TABLE,
+                        MDADM_D_CONTENT_EMPTY_DATA_1,
+                        MDADM_D_CONTENT_NO_TABLE,
+                        MDADM_D_CONTENT_EMPTY_DATA_2,
+                        MDADM_D_CONTENT_NO_DETAIL_LIST])))
+
+    md = mds[0]
+    assert md.device == '/dev/md123'
+    assert len(md) == 3
     assert md['Raid Level'] == 'raid1'
     assert md.devices_table == []
     assert len(md.devices_table) == 0
 
-    md = MDAdmDetail(context_wrap(
-        MDADM_D_CONTENT_NO_TABLE, path='insights_commands/mdadm_-D_.dev.md0'
-    ))
-    assert md.device == '/dev/md0'
+    md = mds[1]
+    assert md.device == '/dev/md124'
+    assert len(md) == 3
     assert md['Raid Level'] == 'raid1'
     assert md.devices_table is None
 
-    md = MDAdmDetail(context_wrap(
-        MDADM_D_CONTENT_NO_DETAIL_LIST, path='insights_commands/mdadm_-D_.dev.md0'
-    ))
-    assert md.device == '/dev/md0'
+    md = mds[2]
+    assert md.device == '/dev/md125'
+    assert len(md) == 0
     assert 'Raid Level' not in md
     assert len(md.devices_table) == 2
+
+    assert len(mds.unparsable_device_list) == 2
+    mds.unparsable_device_list == ['/dev/md126', '/dev/md127']
 
 
 def test_mdadm_d_exceptions():
     with pytest.raises(SkipComponent) as exc:
-        MDAdmDetail(context_wrap(MDADM_D_CONTENT_MD0))
-    assert 'Cannot parse device name from path' in str(exc)
+        MDAdmDetail(context_wrap(""))
+    assert 'Empty content of command output' in str(exc)
 
     with pytest.raises(SkipComponent) as exc:
-        MDAdmDetail(context_wrap(
-            MDADM_D_CONTENT_EMPTY_DATA_1, path='insights_commands/mdadm_-D_.dev.md0'
-        ))
-    assert 'Empty parsed data: ' in str(exc)
+        MDAdmDetail(context_wrap("\n"))
+    assert 'Empty content of command output' in str(exc)
 
     with pytest.raises(SkipComponent) as exc:
-        MDAdmDetail(context_wrap(
-            MDADM_D_CONTENT_EMPTY_DATA_2, path='insights_commands/mdadm_-D_.dev.md0'
-        ))
-    assert 'Empty parsed data: ' in str(exc)
+        MDAdmDetail(context_wrap('\n'.join([
+                      MDADM_D_CONTENT_EMPTY_DATA_1,
+                      MDADM_D_CONTENT_EMPTY_DATA_2])))
+    assert 'Empty parsed device' in str(exc)
 
 
 def test_doc_examples():
@@ -298,9 +380,7 @@ def test_doc_examples():
         'mdadm': MDAdmMetadata(context_wrap(
             MDADM_CONTENT, path='insights_commands/mdadm_-E_.dev.loop0'
         )),
-        'mdadm_d': MDAdmDetail(context_wrap(
-            MDADM_D_CONTENT_MD2, path='insights_commands/mdadm_-D_.dev.md2'
-        ))
+        'mdadm_d': MDAdmDetail(context_wrap('\n'.join([MDADM_D_CONTENT_MD2, MDADM_D_CONTENT_MD1])))
     }
     failed, total = doctest.testmod(mdadm, globs=env)
     assert failed == 0

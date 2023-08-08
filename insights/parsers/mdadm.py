@@ -14,7 +14,7 @@ MDAdmDetail - command ``/usr/sbin/mdadm -D {device}``
 
 """
 from insights.core import CommandParser
-from insights.core.exceptions import SkipComponent
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import split_kv_pairs, parse_fixed_table
 from insights.specs import Specs
@@ -78,10 +78,12 @@ class MDAdmMetadata(CommandParser, dict):
             self[key] = val
 
 
-@parser(Specs.mdadm_D)
-class MDAdmDetail(CommandParser, dict):
+class MDAdmDetailDevice(dict):
     """
-    Parser for output of ``mdadm -D`` for each MD device in system.
+    Parser for single MD device data from ``mdadm -D /dev/md*`` output.
+
+    MD arrry device's full path name will be reside in /dev/ and start with "md",
+    or reside in /dev/md/. For examples: /dev/md0, /dev/md/home .
 
     The md device's properties in <property name> : <property value> format
     will be stored seprately, and are accessable via <property name>.
@@ -89,6 +91,45 @@ class MDAdmDetail(CommandParser, dict):
     Attributes:
         device (str):           the name of the device after /dev/ - e.g. md0
         devices_table (list):   the devices info table
+    """
+    def parse_device(self, content, device_start_index, table_start_index, index):
+
+        self.device = content[device_start_index].split(':')[0]
+
+        has_device_table = bool(table_start_index > device_start_index)
+
+        kv_pairs_end_index = table_start_index if has_device_table else index
+        # Parse the key value pairs part in content
+        if kv_pairs_end_index - device_start_index > 1:
+            # for key, val in .items():
+            #     self[key] = int(val) if val.isdigit() else val
+            self.update(split_kv_pairs(content[device_start_index + 1:kv_pairs_end_index], split_on=':'))
+
+        # Parse the devices info table part in content
+        self.devices_table = parse_fixed_table(content[table_start_index:index]) if has_device_table else None
+
+        # Empty prased data
+        if not (len(self) > 0 or self.devices_table):
+            raise ParseException('Empty parsed data')
+
+    @property
+    def is_internal_bitmap(self):
+        """ bool: True if using "Internal" Bitmap."""
+        return self.get("Intent Bitmap") == "Internal"
+
+
+@parser(Specs.mdadm_D)
+class MDAdmDetail(CommandParser, list):
+    """
+    Parser for output of command ``mdadm -D /dev/md*``.
+
+    Each MD arrry device will be wrapped in :class:``MDAdmDetailDevice``.
+
+    The md device's properties in <property name> : <property value> format
+    will be stored seprately, and are accessable via <property name>.
+
+    Attributes:
+        unparsable_device_list (list):  the name of unparsable devices
 
     Sample output::
 
@@ -120,51 +161,60 @@ class MDAdmDetail(CommandParser, dict):
             Number   Major   Minor   RaidDevice State
                0     259        1        0      active sync   /dev/nvme2n1
                1     259        0        1      active sync   /dev/nvme3n1
+        /dev/md3:
+                   Version : 1.2
+             Creation Time : Sun Sep  5 23:19:18 2021
+                    ...
 
     Examples:
-        >>> mdadm_d.device
+        >>> len(mdadm_d)
+        2
+        >>> mdadm_d[0].device
         '/dev/md2'
-        >>> mdadm_d["UUID"]
+        >>> mdadm_d[0]["UUID"]
         '245e1231:245e1231:245e1231:245e1231'
-        >>> mdadm_d.get("Total Devices")
-        2
-        >>> mdadm_d.is_internal_bitmap
+        >>> mdadm_d[0].is_internal_bitmap
         True
-        >>> len(mdadm_d.devices_table)
+        >>> len(mdadm_d[0].devices_table)
         2
+        >>> mdadm_d[1].get("Version")
+        '1.2'
     """
     def parse_content(self, content):
-        mdadm_dev = "/mdadm_-D_.dev."
-        if mdadm_dev in self.file_path:
-            self.device = '/dev/' + self.file_path.split(mdadm_dev)[1].strip()
-        else:
-            raise SkipComponent('Cannot parse device name from path {p}'.format(p=self.file_path))
 
-        # Split for the devices info table
-        table_start_index = len(content) - 1
-        while table_start_index > 0:
-            line = content[table_start_index]
-            if "Number   Major   Minor" not in line:
-                table_start_index -= 1
-            else:
-                break
+        if len(content) == 0:
+            raise SkipComponent("Empty content of command output")
 
-        # Parse the key value pairs part in content
-        if table_start_index > 1 or table_start_index == 0:
-            kv_pairs_end_index = table_start_index if table_start_index else None
-            for key, val in split_kv_pairs(content[1:kv_pairs_end_index], split_on=':').items():
-                self[key] = int(val) if val.isdigit() else val
+        self.unparsable_device_list = []
 
-        # Parse the devices info table part in content
-        self.devices_table = None
-        if table_start_index > 0:
-            self.devices_table = parse_fixed_table(content[table_start_index:])
+        def _handle_device(device_start_index, table_start_index, index):
+            try:
+                device_detail = MDAdmDetailDevice()
+                device_detail.parse_device(content, device_start_index, table_start_index, index)
+                self.append(device_detail)
+            except ParseException:
+                self.unparsable_device_list.append(content[device_start_index].split(':')[0])
+
+        # Split the devices content
+        device_start_index = 0
+        table_start_index = 0
+        for index, _line in enumerate(content):
+            line = _line.strip()
+            if not line:
+                continue
+
+            if line.startswith("/dev/md") and line.endswith(":"):
+                # handle the last recongnized device
+                if index > device_start_index:
+                    _handle_device(device_start_index, table_start_index, index)
+
+                device_start_index = index
+            elif "Number   Major   Minor" in line:
+                table_start_index = index
+
+        # handle the final device
+        _handle_device(device_start_index, table_start_index, index + 1)
 
         # Empty prased data
-        if not (len(self) > 1 or self.devices_table):
-            raise SkipComponent('Empty parsed data: {p}'.format(p=self.file_path))
-
-    @property
-    def is_internal_bitmap(self):
-        """ bool: True if using "Internal" Bitmap."""
-        return self.get("Intent Bitmap") == "Internal"
+        if len(self) < 1:
+            raise SkipComponent('Empty parsed device')
