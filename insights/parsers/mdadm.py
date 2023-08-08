@@ -9,7 +9,7 @@ Parsers provided by this module include:
 MDAdm - command ``/usr/sbin/mdadm -E {device}``
 -----------------------------------------------
 
-MDAdmDetail - command ``/usr/sbin/mdadm -D {device}``
+MDAdmDetail - command ``/usr/sbin/mdadm -D /dev/md*``
 -----------------------------------------------------
 
 """
@@ -101,8 +101,6 @@ class MDAdmDetailDevice(dict):
         kv_pairs_end_index = table_start_index if has_device_table else index
         # Parse the key value pairs part in content
         if kv_pairs_end_index - device_start_index > 1:
-            # for key, val in .items():
-            #     self[key] = int(val) if val.isdigit() else val
             self.update(split_kv_pairs(content[device_start_index + 1:kv_pairs_end_index], split_on=':'))
 
         # Parse the devices info table part in content
@@ -204,7 +202,7 @@ class MDAdmDetail(CommandParser, list):
                 continue
 
             if line.startswith("/dev/md") and line.endswith(":"):
-                # handle the last recongnized device
+                # Handle the last recongnized device
                 if index > device_start_index:
                     _handle_device(device_start_index, table_start_index, index)
 
@@ -212,7 +210,7 @@ class MDAdmDetail(CommandParser, list):
             elif "Number   Major   Minor" in line:
                 table_start_index = index
 
-        # handle the final device
+        # Handle the final device
         _handle_device(device_start_index, table_start_index, index + 1)
 
         # Empty prased data
