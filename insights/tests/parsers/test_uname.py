@@ -1,4 +1,5 @@
 import pytest
+import warnings
 from insights.parsers import uname
 from insights.tests import context_wrap
 
@@ -223,6 +224,8 @@ def test_pad_release():
     assert "390.0.0.0" == uname.pad_release("390")
     assert "390.12.0.0" == uname.pad_release("390.12")
     assert "1160.71.1.0" == uname.pad_release("1160.71.1")
+    assert "390.12.0.0.rt5.3.el6" == uname.pad_release("390.12.rt5.3.el6", 7)
+    assert "390.12.0.0.0.rt5.3" == uname.pad_release("390.12.rt5.3", 7)
     with pytest.raises(ValueError):
         uname.pad_release('390.11.12.13.el6')
 
@@ -236,14 +239,24 @@ def test_fixed_by():
     assert ['2.6.33-100.el6'] == u.fixed_by('2.6.33-100.el6')
     assert ['2.6.32-600.el6'] == u.fixed_by('2.6.32-220.1.el6', '2.6.32-600.el6')
 
-    # fixes without distribution part
-    assert [] == u.fixed_by('2.6.32-504')
-    # fixes only has kernel version part
-    assert [] == u.fixed_by('2.6.32-')
-    # introduce without distribution part
-    assert ['2.6.32-600.el6'] == u.fixed_by('2.6.32-600.el6', introduced_in='2.6.32-504')
-    # introduce only has kernel version part
-    assert ['2.6.32-600.el6'] == u.fixed_by('2.6.32-600.el6', introduced_in='2.6.32-')
+    # For all remaining tests, cause the warnings to always be caught
+    warnings.simplefilter("always")
+    warning_msg = "Comparison of distribution part will be ingored"
+
+    with warnings.catch_warnings(record=True) as w:
+        # fixes without distribution part
+        assert [] == u.fixed_by('2.6.32-504')
+
+        # fixes only has kernel version part
+        assert [] == u.fixed_by('2.6.32-')
+
+        # introduce without distribution part
+        assert ['2.6.32-600.el6'] == u.fixed_by('2.6.32-600.el6', introduced_in='2.6.32-504')
+
+        # introduce only has kernel version part
+        assert ['2.6.32-600.el6'] == u.fixed_by('2.6.32-600.el6', introduced_in='2.6.32-')
+
+        assert any([warning_msg in str(ww.message) for ww in w])
 
     rt_u = uname.Uname.from_uname_str("Linux qqhrycsq2 4.18.0-305.rt7.72.el8.x86_64 #1 SMP Wed Jun 13 18:24:36 EDT 2012 x86_64 x86_64 x86_64 GNU/Linux")
     # fixes without distribution part
