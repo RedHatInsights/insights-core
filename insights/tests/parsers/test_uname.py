@@ -239,30 +239,46 @@ def test_fixed_by():
     assert ['2.6.33-100.el6'] == u.fixed_by('2.6.33-100.el6')
     assert ['2.6.32-600.el6'] == u.fixed_by('2.6.32-220.1.el6', '2.6.32-600.el6')
 
-    # For all remaining tests, cause the warnings to always be caught
-    warnings.simplefilter("always")
-    warning_msg = "Comparison of distribution part will be ingored"
 
+def test_fixed_by_warning():
+    # For all remaining tests, cause the comparation warnings
+    # to always be caught, and ignore other warnings.
+    warning_msg = "Comparison of distribution part will be ingored"
+    warnings.simplefilter("ignore")
+    warnings.filterwarnings("always", message=warning_msg)
     with warnings.catch_warnings(record=True) as w:
+
+        u = uname.Uname.from_uname_str("Linux qqhrycsq2 2.6.32-504.el6.x86_64 #1 SMP Wed Jun 13 18:24:36 EDT 2012 x86_64 x86_64 x86_64 GNU/Linux")
+        # should be no comparation warning reported
+        assert [] == u.fixed_by('2.6.32-220.1.el6', '2.6.32-504.el6')
+        assert len(w) == 0
+
         # fixes without distribution part
         assert [] == u.fixed_by('2.6.32-504')
+        assert len(w) == 1
 
         # fixes only has kernel version part
         assert [] == u.fixed_by('2.6.32-')
+        assert len(w) == 2
 
         # introduce without distribution part
         assert ['2.6.32-600.el6'] == u.fixed_by('2.6.32-600.el6', introduced_in='2.6.32-504')
+        assert len(w) == 3
 
         # introduce only has kernel version part
         assert ['2.6.32-600.el6'] == u.fixed_by('2.6.32-600.el6', introduced_in='2.6.32-')
+        assert len(w) == 4
 
-        assert any([warning_msg in str(ww.message) for ww in w])
+        rt_u = uname.Uname.from_uname_str("Linux qqhrycsq2 4.18.0-305.rt7.72.el8.x86_64 #1 SMP Wed Jun 13 18:24:36 EDT 2012 x86_64 x86_64 x86_64 GNU/Linux")
+        # fixes without distribution part
+        assert [] == rt_u.fixed_by('4.18.0-305.rt7.72')
+        assert len(w) == 5
 
-    rt_u = uname.Uname.from_uname_str("Linux qqhrycsq2 4.18.0-305.rt7.72.el8.x86_64 #1 SMP Wed Jun 13 18:24:36 EDT 2012 x86_64 x86_64 x86_64 GNU/Linux")
-    # fixes without distribution part
-    assert [] == rt_u.fixed_by('4.18.0-305.rt7.72')
-    # introduce without distribution part
-    assert ['4.18.0-307.rt7.72.el8'] == rt_u.fixed_by('4.18.0-307.rt7.72.el8', introduced_in='4.18.0-305.rt7.72')
+        # introduce without distribution part
+        assert ['4.18.0-307.rt7.72.el8'] == rt_u.fixed_by('4.18.0-307.rt7.72.el8', introduced_in='4.18.0-305.rt7.72')
+        assert len(w) == 6
+
+    warnings.resetwarnings()
 
 
 def test_unknown_release():
