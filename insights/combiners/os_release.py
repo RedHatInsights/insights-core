@@ -4,9 +4,11 @@ OSRelease
 The ``OSRelease`` combiner uses the following parsers to try to identify if the
 current host is installed with a "Red Hat Enterprise Linux" system.
 
+    - :py:class:`insights.parsers.installed_rpms.InstalledRpms`
     - :py:class:`insights.parsers.uname.Uname`
     - :py:class:`insights.parsers.dmesg.DmesgLineList`
-    - :py:class:`insights.parsers.installed_rpms.InstalledRpms`
+    - :py:class:`insights.parsers.os_release.OSRelease`
+    - :py:class:`insights.parsers.redhat_release.RedhatRelease`
 
 It provides an attribute `is_rhel` that indicates if the host is "RHEL" or not.
 It also provides an attribute `release` which returns the estimated OS release
@@ -100,7 +102,7 @@ THRESHOLD = 0.75
 
 def _from_os_release(osr):
     """
-    Internal function to check the `/etc/os-release`.
+    Identify RHEL by checking the `/etc/os-release`.
     """
     def _filter(name):
         """Remove falsy or items contain RHEL info"""
@@ -108,28 +110,28 @@ def _from_os_release(osr):
             return False
         return name
 
-    names = list(filter(_filter, [osr.get('ID'), osr.get('NAME'),
-                                  osr.get('PRETTY_NAME')]))
-    if names:
-        # NON-RHEL: /etc/os-release
-        return dict(other_linux=names[-1])
-    # RHEL
-    return dict(other_linux='RHEL')
+    if osr:
+        names = list(filter(_filter, [osr.get('ID'), osr.get('NAME'),
+                                      osr.get('PRETTY_NAME')]))
+        if names:
+            # NON-RHEL: /etc/os-release
+            return dict(other_linux=names[-1], reason='NON-RHEL: os-release')
+        return dict(other_linux='RHEL')
 
 
 def _from_redhat_release(rhr):
     """
-    Internal function to check the `/etc/redhat-release`.
+    Identify RHEL by checking the `/etc/redhat-release`.
     """
-    if not rhr.is_rhel:
-        return dict(other_linux=rhr.product)
-    # RHEL
-    return dict(other_linux='RHEL')
+    if rhr:
+        if not rhr.is_rhel:
+            return dict(other_linux=rhr.product, reason='NON-RHEL: redhat-release')
+        return dict(other_linux='RHEL')
 
 
 def _from_uname(uname):
     """
-    Internal function to check the `uname -a` output.
+    Identify RHEL by checking the `uname -a`.
 
     1. Oracle kernels may contain 'uek' or 'ol' in the kernel NVR.
     2. Fedora kernels contains 'fc' in the NVR.
@@ -143,46 +145,49 @@ def _from_uname(uname):
         ('Fedora', ['fc']),
         ('RHEL', ['.el']),  # the last item
     ]
-    kernel = uname.kernel
-    release = 'Unknown'
-    for rel, keys in LINUX_UNAME_KEYS:
-        if any(key in kernel for key in keys):
-            release = rel
-            break
-    if 'RHEL' != release:
-        return dict(other_linux=release, kernel=kernel)
-    # Not Sure
-    return dict()
+    if uname:
+        kernel = uname.kernel
+        ret = dict(other_linux='Unknown')
+        for rel, keys in LINUX_UNAME_KEYS:
+            if any(key in kernel for key in keys):
+                ret.update(other_linux=rel)
+                break
+        if ret.get('other_linux') != 'RHEL':
+            ret.update(kernel=kernel)
+        return ret
 
 
 def _from_dmesg(dmesg):
     """
-    Internal function to check the `dmesg` output.
+    Identify RHEL by checking the `dmesg`.
 
     The `dmesg` includes a line containing the kernel build information,
     e.g. the build host and GCC version.
     If this line doesn't contain 'redhat.com' then we can assume the kernel
     wasn't built on a Red Hat machine and this should be flagged.
     """
-    line = dmesg.linux_version[0]['raw_message']
-    low_line = line.lower()
-    if 'redhat.com' not in low_line:
-        release = 'Unknown'
-        for rel, keys in OTHER_LINUX_KEYS.items():
-            if any(kw in low_line for kw in keys[0]):
-                release = rel
-                break
-        return dict(other_linux=release, build_info=line)
-    # Not Sure
-    return dict()
+    if dmesg and dmesg.linux_version:
+        line = dmesg.linux_version[0]['raw_message']
+        low_line = line.lower()
+        if 'redhat.com' not in low_line:
+            release = 'Unknown'
+            for rel, keys in OTHER_LINUX_KEYS.items():
+                if any(kw in low_line for kw in keys[0]):
+                    release = rel
+                    break
+            return dict(other_linux=release, build_info=line)
+        else:
+            return dict(other_linux='RHEL')
 
 
 def _from_installed_rpms(rpms, uname):
     """
-    Internal function to check the `rpm -qa --qf ...` output.
+    Identify RHEL by checking the `installed_rpms`.
 
     Two parts are included, see below:
     """
+    if not rpms:
+        return
     # Part-1: the known non-rhel-release packages exists
     for rel, pkgs in OTHER_LINUX_KEYS.items():
         for pkg_name in pkgs[1]:
@@ -225,7 +230,6 @@ def _from_installed_rpms(rpms, uname):
                 release = vendor.split(sep)[0].strip()
                 ret.update(other_linux=release)
         return ret
-    # RHEL
     return dict(other_linux='RHEL')
 
 
@@ -247,54 +251,51 @@ class OSRelease(object):
         True
         >>> osr.is_rhel_compatible
         False
-        >>> sorted(osr.reasons.keys())
-        ['build_info', 'faulty_packages', 'kernel', 'kernel_vendor']
-        >>> 'version kernel-4.18.0-372.19.1.el8_6uek' in osr.reasons['build_info']
-        True
-        >>> osr.reasons['kernel']
-        '4.18.0-372.19.1.el8_6uek.x86_64'
-        >>> osr.reasons['kernel_vendor'] == 'Oracle America'
+        >>> 'kernel' in osr.reasons.keys()
+        False
+        >>> 'faulty_packages' in osr.reasons.keys()
         True
         >>> 'glibc-2.28-211.el8' in osr.reasons['faulty_packages']
         True
     """
     def __init__(self, uname, dmesg, rpms, osr, rhr):
-        def _update_other_linux(ret, data):
-            if data.get('other_linux') == 'Unknown' and 'other_linux' in ret:
-                # Don't update 'other_linux' to 'Unknown' if identified already
-                data.pop('other_linux')
-            ret.update(data)
-            return ret
 
-        self._release = 'RHEL'
-        self._reasons = {}
-        _dmesg = dmesg.linux_version if dmesg else dmesg
-        if not list(filter(None, [uname, _dmesg, rpms])):
-            # When uname, dmesg, and rpms are all unavailable
-            if osr or rhr:
-                # Use 'os-release' and 'redhat-release
-                ret = _from_os_release(osr) if osr else dict()
-                if ret.get('other_linux', 'RHEL') == 'RHEL':
-                    ret.update(_from_redhat_release(rhr)) if rhr else None
-                if ret.get('other_linux', 'RHEL') != 'RHEL':
-                    self._release = ret['other_linux']
-                    self._reasons = {'reason': 'NON-RHEL: os-release/redhat-release'}
-            else:
-                # Nothing means NON-RHEL
-                self._release = 'Unknown'
-                self._reasons = {'reason': 'Nothing available to check'}
-        else:
-            # Uname -> Dmesg -> RPMs
-            result = _from_uname(uname) if uname else dict()
-            if dmesg and dmesg.linux_version:
-                result.update(_update_other_linux(result, _from_dmesg(dmesg)))
-            if rpms:
-                result.update(_update_other_linux(
-                                result, _from_installed_rpms(rpms, uname)))
-            # 'other_linux' means NON-RHEL
-            if 'other_linux' in result and result['other_linux'] != 'RHEL':
-                self._release = result.pop('other_linux')
-                self._reasons = result
+        def __identify_non_rhel(ret):
+            if ret and 'other_linux' in ret:
+                self._release = ret.pop('other_linux')
+                self._reasons = ret
+                if self._release == 'Unknown':
+                    return None  # Continue to identify when unknown
+                return self._release != 'RHEL'  # see OTHER_LINUX_KEYS
+            return None  # Nothing to check
+
+        self._release = 'Unknown'
+        self._reasons = dict(reason='Nothing available to check')
+
+        # 1. Check `installed_rpms` first.
+        ret = _from_installed_rpms(rpms, uname)
+        #    We trust the check result of `installed_rpms`: RHEL or NON-RHEL,
+        #    expect for "Unknown".
+        #    `None` indicates "Unknown" or `installed_rpms` is not available
+        if __identify_non_rhel(ret) is None:
+            # 2. Only when `installed_rpms` cannot identify it
+            #    a. installed_rpms is not available
+            #    b. identify result is "Unknown"
+            #
+            #    Check below items with order:
+            #    - uname, dmesg, os_release, and redhat_release
+            #    and any `False` which indicates NON-RHEL to stop.
+            check_points_funcs = [
+                (_from_uname, [uname]),
+                (_from_dmesg, [dmesg]),
+                (_from_os_release, [osr]),
+                (_from_redhat_release, [rhr]),
+            ]
+
+            for chk_func, args in check_points_funcs:
+                if __identify_non_rhel(chk_func(*args)):
+                    break
+
         self._name = osr.get('NAME', self._release) if osr else self._release
 
     @property
@@ -346,3 +347,7 @@ class OSRelease(object):
     def product(self):
         """ Alias of `release`. Keep backward compatible """
         return self._release
+
+    def __repr__(self):
+        return "<release: {0}, name: {1}, reasons: {2}>".format(
+                self.release, self.name, self.reasons)
