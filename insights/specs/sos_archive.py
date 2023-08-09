@@ -15,8 +15,8 @@ class SosSpecs(Specs):
     auditd_conf = simple_file("/etc/audit/auditd.conf")
     audispd_conf = simple_file("/etc/audisp/audispd.conf")
     autofs_conf = simple_file("/etc/autofs.conf")
-
     blkid = first_file(["sos_commands/block/blkid_-c_.dev.null", "sos_commands/filesys/blkid_-c_.dev.null"])
+    buddyinfo = simple_file("proc/buddyinfo")
     candlepin_error_log = first_of([
         simple_file("var/log/candlepin/error.log"),
         simple_file(r"sos_commands/foreman/foreman-debug/var/log/candlepin/error.log")

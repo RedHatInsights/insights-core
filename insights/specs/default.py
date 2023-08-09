@@ -115,6 +115,7 @@ class DefaultSpecs(Specs):
     bond = glob_file("/proc/net/bonding/*")
     bond_dynamic_lb = glob_file("/sys/class/net/*/bonding/tlb_dynamic_lb")
     boot_loader_entries = glob_file("/boot/loader/entries/*.conf")
+    buddyinfo = simple_file("/proc/buddyinfo")
     brctl_show = simple_command("/usr/sbin/brctl show")
     candlepin_broker = candlepin_broker.candlepin_broker
     cciss = glob_file("/proc/driver/cciss/cciss*")
