@@ -37,6 +37,7 @@ def test_human_readable():
     data = output.read()
     assert "foo" in data
     assert "bar" in data
+    assert "CONTENT:" in data
     assert "The content of this rule:" in data
     assert "Failed to render the Content above:" in data
     assert "'FakeKey' is undefined" in data

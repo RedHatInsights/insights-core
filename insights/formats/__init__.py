@@ -163,6 +163,8 @@ try:
                 text = Template(content).render(val)
             except jinja2Exceptions.UndefinedError as err:
                 text = '\n'.join([str(val),
+                                "CONTENT:",
+                                "--------",
                                 content,
                                 "Failed to render the Content above:",
                                 "    " + str(err)])
