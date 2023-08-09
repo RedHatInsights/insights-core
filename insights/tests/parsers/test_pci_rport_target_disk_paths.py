@@ -1,10 +1,10 @@
-from insights.parsers import ParseException
-from insights.parsers import SkipException
+import doctest
+import pytest
+
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import pci_rport_target_disk_paths
 from insights.parsers.pci_rport_target_disk_paths import PciRportTargetDiskPaths as PCIPaths
 from insights.tests import context_wrap
-import pytest
-import doctest
 
 
 INPUT_GOOD = """/sys/devices/pci0000:00/0000:00:01.0/0000:04:00.6/host1/rport-1:0-1/target1:0:0/1:0:0:0/block/sdb/stat
@@ -65,7 +65,7 @@ def test_status_exp():
     """
     Here test the examples cause expections
     """
-    with pytest.raises(SkipException) as sc1:
+    with pytest.raises(SkipComponent) as sc1:
         PCIPaths(context_wrap(''))
     assert "Input content is empty" in str(sc1)
 

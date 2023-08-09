@@ -1,8 +1,10 @@
-from insights.parsers import saphostctrl, ParseException, SkipException
-from insights.parsers.saphostctrl import SAPHostCtrlInstances
-from insights.tests import context_wrap
 import doctest
 import pytest
+
+from insights.core.exceptions import ParseException, SkipComponent
+from insights.parsers import saphostctrl
+from insights.parsers.saphostctrl import SAPHostCtrlInstances
+from insights.tests import context_wrap
 
 SAPHOSTCTRL_HOSTINSTANCES_DOCS = '''
 *********************************************************
@@ -187,7 +189,7 @@ def test_saphostctrl_old():
 
 
 def test_saphostctrl_bad():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         SAPHostCtrlInstances(context_wrap(''))
 
     with pytest.raises(ParseException):

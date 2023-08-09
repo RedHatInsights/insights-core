@@ -1,6 +1,8 @@
 import doctest
 import pytest
-from insights.parsers import avc_cache_threshold, ParseException
+
+from insights.core.exceptions import ParseException
+from insights.parsers import avc_cache_threshold
 from insights.parsers.avc_cache_threshold import AvcCacheThreshold
 from insights.tests import context_wrap
 

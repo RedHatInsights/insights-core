@@ -1,8 +1,10 @@
-from insights.parsers.proc_environ import ProcEnviron, OpenshiftFluentdEnviron, OpenshiftRouterEnviron
-from insights.tests import context_wrap
-from insights.parsers import proc_environ, ParseException, SkipException
 import doctest
 import pytest
+
+from insights.core.exceptions import ParseException, SkipComponent
+from insights.parsers import proc_environ
+from insights.parsers.proc_environ import ProcEnviron, OpenshiftFluentdEnviron, OpenshiftRouterEnviron
+from insights.tests import context_wrap
 
 PROC_ENVIRON_EMPTY = """
 """.strip()
@@ -37,7 +39,7 @@ def test_invalid():
 
 
 def test_empty():
-    with pytest.raises(SkipException) as e:
+    with pytest.raises(SkipComponent) as e:
         ProcEnviron(context_wrap(PROC_ENVIRON_EMPTY))
     assert "Empty output." in str(e)
 

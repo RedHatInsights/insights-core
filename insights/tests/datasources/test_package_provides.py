@@ -1,13 +1,13 @@
 import pytest
 
-from insights import dr, HostContext
 from insights.combiners.ps import Ps
-from insights.core import filters
-from insights.core.dr import SkipComponent
+from insights.core import dr, filters
+from insights.core.context import HostContext
+from insights.core.exceptions import SkipComponent
+from insights.core.spec_factory import DatasourceProvider
 from insights.parsers.ps import PsEoCmd
 from insights.specs import Specs
-from insights.specs.datasources.package_provides import get_package, cmd_and_pkg
-from insights.core.spec_factory import DatasourceProvider
+from insights.specs.datasources.package_provides import cmd_and_pkg, get_package
 from insights.tests import context_wrap
 
 JAVA_PATH_1 = '/usr/bin/java'

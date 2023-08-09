@@ -1,9 +1,9 @@
 """
 Datasources to collect the nginx configuration files from containers
 """
-from insights.core.dr import SkipComponent
-from insights.core.plugins import datasource
 from insights.core.context import HostContext
+from insights.core.exceptions import SkipComponent
+from insights.core.plugins import datasource
 from insights.core.spec_factory import container_execute
 from insights.specs import Specs
 from insights.specs.datasources.container import running_rhel_containers

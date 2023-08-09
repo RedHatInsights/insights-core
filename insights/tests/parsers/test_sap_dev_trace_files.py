@@ -1,6 +1,8 @@
-import pytest
 import doctest
-from insights.parsers import sap_dev_trace_files, ParseException
+import pytest
+
+from insights.core.exceptions import ParseException
+from insights.parsers import sap_dev_trace_files
 from insights.parsers.sap_dev_trace_files import SapDevDisp, SapDevRd
 from insights.tests import context_wrap
 

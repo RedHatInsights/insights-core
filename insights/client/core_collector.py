@@ -60,7 +60,7 @@ class CoreCollector(DataCollector):
             manifest=manifest,
             tmp_path=self.archive.tmp_dir,
             rm_conf=core_blacklist,
-            client_timeout=self.config.cmd_timeout
+            client_config=self.config
         )
 
         # update the archive dir with the reported data location from Insights Core
@@ -94,5 +94,6 @@ class CoreCollector(DataCollector):
         self._write_version_info()
         self._write_tags()
         self._write_blacklist_report(blacklist_report)
+        self._write_blacklisted_specs()
         self._write_egg_release()
         logger.debug('Metadata collection finished.')

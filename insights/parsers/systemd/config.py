@@ -33,7 +33,6 @@ from insights.core import ConfigParser, LegacyItemAccess
 from insights.core.plugins import parser
 from insights.parsr import iniparser
 from insights.specs import Specs
-from insights.util import deprecated
 from insights import CommandParser
 
 
@@ -233,22 +232,3 @@ class SystemdDnsmasqServiceConf(SystemdConf):
         'network.target'
     """
     pass
-
-
-class MultiOrderedDict(dict):
-    """
-    .. warning::
-        This class is deprecated.
-
-    Class for condition that duplicate keys exist
-    """
-
-    def __init__(self, *args, **kwargs):
-        deprecated(MultiOrderedDict, "This class is deprecated.", "3.0.300")
-        super(MultiOrderedDict, self).__init__(*args, **kwargs)
-
-    def __setitem__(self, key, value):
-        if isinstance(value, list) and key in self:
-            self[key].extend(value)
-        else:
-            super(MultiOrderedDict, self).__setitem__(key, value)

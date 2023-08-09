@@ -12,9 +12,10 @@ Parsers in this module are:
 OVSvsctlListBridge - command ``/usr/bin/ovs-vsctl list bridge``
 ---------------------------------------------------------------
 """
-
-from insights import CommandParser, get_active_lines, parser
-from insights.parsers import SkipException, optlist_to_dict
+from insights.core import CommandParser
+from insights.core.exceptions import SkipComponent
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines, optlist_to_dict
 from insights.specs import Specs
 
 
@@ -25,7 +26,7 @@ class OVSvsctlList(CommandParser, list):
     data types as string, numbers, list or dictionary.
 
     Raises:
-        SkipException: When file is empty.
+        SkipComponent: When file is empty.
     """
     def parse_content(self, content):
         """
@@ -34,7 +35,7 @@ class OVSvsctlList(CommandParser, list):
         """
         # No content found or file is empty
         if not content:
-            raise SkipException("Empty file")
+            raise SkipComponent("Empty file")
 
         record = {}
         for line in get_active_lines(content):

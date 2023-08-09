@@ -1,9 +1,10 @@
 import pytest
+
 from mock.mock import Mock
 
-from insights.specs.datasources import ipcs
-from insights.core.dr import SkipComponent
+from insights.core.exceptions import SkipComponent
 from insights.specs import Specs
+from insights.specs.datasources import ipcs
 
 
 IPCS_OUTPUT1 = """

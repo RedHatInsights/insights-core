@@ -1,7 +1,9 @@
-import pytest
 import doctest
+import pytest
+
+from insights.core.exceptions import SkipComponent
+from insights.parsers import authselect
 from insights.parsers.authselect import AuthSelectCurrent
-from insights.parsers import SkipException, authselect
 from insights.tests import context_wrap
 
 AUTHSELECT_CURRENT_1 = """
@@ -35,10 +37,10 @@ def test_authselect_current():
 
 
 def test_authselect_current_exp():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         AuthSelectCurrent(context_wrap(AUTHSELECT_CURRENT_EMPTY))
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         AuthSelectCurrent(context_wrap(AUTHSELECT_CURRENT_NG))
 
 

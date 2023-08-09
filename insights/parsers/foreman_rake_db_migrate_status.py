@@ -38,12 +38,14 @@ Examples:
     []
 
 """
-
-from .. import parser, CommandParser
-from insights.parsers import ParseException
-from collections import namedtuple
-from insights.specs import Specs
 import re
+
+from collections import namedtuple
+
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
+from insights.specs import Specs
 
 
 Migration = namedtuple("Migration", ('status', 'id', 'name'))

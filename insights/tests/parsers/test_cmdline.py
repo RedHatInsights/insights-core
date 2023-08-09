@@ -1,9 +1,10 @@
-from insights.parsers import SkipException, ParseException
+import doctest
+import pytest
+
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import cmdline
 from insights.parsers.cmdline import CmdLine
 from insights.tests import context_wrap
-import doctest
-import pytest
 
 CMDLINE_V1 = "ro root=/dev/mapper/vg_rootvg-lv_root rd_LVM_LV=vg_rootvg/lv_root" +\
     " rd_LVM_LV=vg_rootvg/lv_swap rd_NO_LUKS rd_NO_MD rd_NO_DM " +\
@@ -43,7 +44,7 @@ def test_cmdline_v2():
 
 
 def test_cmdline_ab():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         CmdLine(context_wrap(CMDLINE_GRUB2_EMPTY))
 
     with pytest.raises(ParseException) as ex:

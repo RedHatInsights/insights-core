@@ -1,8 +1,10 @@
-from insights.parsers import ipcs, ParseException, SkipException
+import doctest
+import pytest
+
+from insights.core.exceptions import ParseException, SkipComponent
+from insights.parsers import ipcs
 from insights.parsers.ipcs import IpcsS, IpcsSI, IpcsM, IpcsMP
 from insights.tests import context_wrap
-import pytest
-import doctest
 
 IPCS_S = """
 ------ Semaphore Arrays --------
@@ -96,7 +98,7 @@ def test_ipcs_mp():
 
 
 def test_ipcs_abnormal():
-    with pytest.raises(SkipException) as pe:
+    with pytest.raises(SkipComponent) as pe:
         IpcsMP(context_wrap(""))
     assert "Nothing to parse." in str(pe)
 

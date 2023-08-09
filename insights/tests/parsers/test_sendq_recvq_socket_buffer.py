@@ -1,10 +1,10 @@
 import doctest
 import pytest
-from insights.parsers import ParseException
 
-from insights.tests import context_wrap
+from insights.core.exceptions import ParseException
 from insights.parsers import sendq_recvq_socket_buffer
-from insights.parsers.sendq_recvq_socket_buffer import SendQSocketBuffer, RecvQSocketBuffer
+from insights.parsers.sendq_recvq_socket_buffer import RecvQSocketBuffer, SendQSocketBuffer
+from insights.tests import context_wrap
 
 SENDQ_SOCKET_BUFFER = """
 4096	16384	4194304

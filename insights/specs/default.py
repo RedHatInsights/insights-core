@@ -12,8 +12,8 @@ import logging
 import signal
 
 from insights.core.context import HostContext
-from insights.core.spec_factory import RawFileProvider
-from insights.core.spec_factory import simple_file, simple_command, glob_file
+from insights.core.spec_factory import MetadataProvider
+from insights.core.spec_factory import simple_file, simple_command, glob_file, head
 from insights.core.spec_factory import first_of, command_with_args
 from insights.core.spec_factory import foreach_collect, foreach_execute
 from insights.core.spec_factory import container_collect, container_execute
@@ -21,13 +21,16 @@ from insights.core.spec_factory import first_file, listdir
 from insights.components.cloud_provider import IsAzure, IsGCP
 from insights.components.ceph import IsCephMonitor
 from insights.components.virtualization import IsBareMetal
-from insights.components.satellite import IsCapsule, IsSatellite611, IsSatellite
+from insights.components.satellite import IsSatellite611, IsSatellite
 from insights.specs import Specs
 from insights.specs.datasources import (
-    aws, awx_manage, cloud_init, candlepin_broker, corosync as corosync_ds,
-    dir_list, ethernet, httpd, ipcs, kernel_module_list, lpstat, md5chk,
-    package_provides, ps as ps_datasource, sap, satellite_missed_queues,
-    semanage, ssl_certificate, sys_fs_cgroup_memory_tasks_number, rpm_pkgs, user_group, yum_updates, luks_devices)
+        aws, awx_manage, candlepin_broker, cloud_init, corosync as corosync_ds,
+        dir_list, ethernet, httpd, intersystems, ipcs, kernel, kernel_module_list, leapp,
+        lpstat, ls, luks_devices, machine_ids, malware_detection, md5chk,
+        mount as mount_ds, package_provides, ps as ps_datasource, rpm_pkgs,
+        sap, satellite_missed_queues, semanage, ssl_certificate,
+        sys_fs_cgroup_memory, sys_fs_cgroup_memory_tasks_number,
+        user_group, yum_updates)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 from insights.specs.datasources.pcp import pcp_enabled, pmlog_summary_args
 from insights.specs.datasources.container import running_rhel_containers, containers_inspect
@@ -55,9 +58,13 @@ def _make_rpm_formatter(fmt=None):
     return "\{" + ",".join(fmt) + "\}\n"
 
 
-_etc_and_sub_dirs = sorted(["/etc", "/etc/pki/tls/private", "/etc/pki/tls/certs",
-                           "/etc/pki/ovirt-vmconsole", "/etc/nova/migration", "/etc/sysconfig",
-                           "/etc/cloud/cloud.cfg.d", "/etc/rc.d/init.d"])
+_etc_and_sub_dirs = sorted(
+    [
+        "/etc", "/etc/pki/tls/private", "/etc/pki/tls/certs",
+        "/etc/pki/ovirt-vmconsole", "/etc/nova/migration", "/etc/sysconfig",
+        "/etc/cloud/cloud.cfg.d", "/etc/rc.d/init.d", "/etc/selinux/targeted/policy",
+        "/etc/watchdog.d/"
+    ])
 """ List of directories for spec `ls_etc` """
 _rpm_format = _make_rpm_formatter()
 """ Query format for specs `installed_rpms` and `container_installed_rpms` """
@@ -70,6 +77,17 @@ class DefaultSpecs(Specs):
     openshift_router_pid = simple_command("/usr/bin/pgrep -n openshift-route")
     ovs_vsctl_list_br = simple_command("/usr/bin/ovs-vsctl list-br")
 
+    # Archive metadata specs/files
+    ansible_host = simple_file("/ansible_host", kind=MetadataProvider)
+    blacklisted_specs = first_file(["/blacklisted_specs", "/blacklisted_specs.txt"], kind=MetadataProvider)
+    branch_info = simple_file("/branch_info", kind=MetadataProvider)
+    display_name = simple_file("/display_name", kind=MetadataProvider)
+    tags = simple_file("/tags.json", kind=MetadataProvider)
+    version_info = simple_file("/version_info", kind=MetadataProvider)
+
+    # Client App specs
+    malware_detection = malware_detection.malware_detection_app
+
     # Regular collection specs
     abrt_ccpp_conf = simple_file("/etc/abrt/plugins/CCpp.conf")
     abrt_status_bare = simple_command("/usr/bin/abrt status --bare=True")
@@ -79,21 +97,24 @@ class DefaultSpecs(Specs):
     auditctl_rules = simple_command("/sbin/auditctl -l")
     auditctl_status = simple_command("/sbin/auditctl -s")
     auditd_conf = simple_file("/etc/audit/auditd.conf")
+    audispd_conf = simple_file("/etc/audisp/audispd.conf")
     aws_instance_id_doc = command_with_args('/usr/bin/curl -s -H "X-aws-ec2-metadata-token: %s" http://169.254.169.254/latest/dynamic/instance-identity/document --connect-timeout 5', aws.aws_imdsv2_token, deps=[aws.aws_imdsv2_token])
     aws_instance_id_pkcs7 = command_with_args('/usr/bin/curl -s -H "X-aws-ec2-metadata-token: %s" http://169.254.169.254/latest/dynamic/instance-identity/pkcs7 --connect-timeout 5', aws.aws_imdsv2_token, deps=[aws.aws_imdsv2_token])
+    aws_public_ipv4_addresses = command_with_args('/usr/bin/curl -s -H "X-aws-ec2-metadata-token: %s" http://169.254.169.254/latest/meta-data/public-ipv4 --connect-timeout 5', aws.aws_imdsv2_token, deps=[aws.aws_imdsv2_token])
+    aws_public_hostnames = command_with_args('/usr/bin/curl -s -H "X-aws-ec2-metadata-token: %s" http://169.254.169.254/latest/meta-data/public-hostname --connect-timeout 5', aws.aws_imdsv2_token, deps=[aws.aws_imdsv2_token])
     awx_manage_check_license = simple_command("/usr/bin/awx-manage check_license")
     awx_manage_check_license_data = awx_manage.awx_manage_check_license_data_datasource
     awx_manage_print_settings = simple_command("/usr/bin/awx-manage print_settings INSIGHTS_TRACKING_STATE SYSTEM_UUID INSTALL_UUID TOWER_URL_BASE AWX_CLEANUP_PATHS AWX_PROOT_BASE_PATH LOG_AGGREGATOR_ENABLED LOG_AGGREGATOR_LEVEL --format json")
     azure_instance_id = simple_command("/usr/bin/curl -s -H Metadata:true http://169.254.169.254/metadata/instance/compute/vmId?api-version=2021-12-13&format=text --connect-timeout 5", deps=[IsAzure])
     azure_instance_plan = simple_command("/usr/bin/curl -s -H Metadata:true http://169.254.169.254/metadata/instance/compute/plan?api-version=2021-12-13&format=json --connect-timeout 5", deps=[IsAzure])
     azure_instance_type = simple_command("/usr/bin/curl -s -H Metadata:true http://169.254.169.254/metadata/instance/compute/vmSize?api-version=2021-12-13&format=text --connect-timeout 5", deps=[IsAzure])
+    azure_load_balancer = simple_command("/usr/bin/curl -s -H Metadata:true http://169.254.169.254/metadata/loadbalancer?api-version=2021-12-13&format=json --connect-timeout 5", deps=[IsAzure])
     bdi_read_ahead_kb = glob_file("/sys/class/bdi/*/read_ahead_kb")
     bios_uuid = simple_command("/usr/sbin/dmidecode -s system-uuid")
     blkid = simple_command("/sbin/blkid -c /dev/null")
     bond = glob_file("/proc/net/bonding/*")
     bond_dynamic_lb = glob_file("/sys/class/net/*/bonding/tlb_dynamic_lb")
     boot_loader_entries = glob_file("/boot/loader/entries/*.conf")
-    branch_info = simple_file("/branch_info", kind=RawFileProvider)
     brctl_show = simple_command("/usr/sbin/brctl show")
     candlepin_broker = candlepin_broker.candlepin_broker
     cciss = glob_file("/proc/driver/cciss/cciss*")
@@ -141,6 +162,8 @@ class DefaultSpecs(Specs):
     crypto_policies_opensshserver = simple_file("/etc/crypto-policies/back-ends/opensshserver.config")
     crypto_policies_state_current = simple_file("/etc/crypto-policies/state/current")
     cryptsetup_luksDump = luks_devices.luks_data_sources
+    cupsd_conf = simple_file("/etc/cups/cupsd.conf")
+    cups_files_conf = simple_file("/etc/cups/cups-files.conf")
     cups_ppd = glob_file("etc/cups/ppd/*")
     current_clocksource = simple_file("/sys/devices/system/clocksource/clocksource0/current_clocksource")
     date = simple_command("/bin/date")
@@ -163,6 +186,7 @@ class DefaultSpecs(Specs):
     dmsetup_status = simple_command("/usr/sbin/dmsetup status")
     dnf_conf = simple_file("/etc/dnf/dnf.conf")
     dnf_modules = glob_file("/etc/dnf/modules.d/*.module")
+    dnf_module_list = simple_command("/usr/bin/dnf -C --noplugins module list", signum=signal.SIGTERM)
     docker_info = simple_command("/usr/bin/docker info")
     docker_list_containers = simple_command("/usr/bin/docker ps --all --no-trunc")
     docker_list_images = simple_command("/usr/bin/docker images --all --no-trunc --digests")
@@ -173,6 +197,8 @@ class DefaultSpecs(Specs):
     dracut_kdump_capture_service = simple_file("/usr/lib/dracut/modules.d/99kdumpbase/kdump-capture.service")
     dse_ldif = glob_file("/etc/dirsrv/*/dse.ldif")
     du_dirs = foreach_execute(dir_list.du_dir_list, "/bin/du -s -k %s")
+    duplicate_machine_id = machine_ids.dup_machine_id_info
+    eap_json_reports = glob_file(r"/var/tmp/insights-runtimes/uploads/*.json")
     engine_log = simple_file("/var/log/ovirt-engine/engine.log")
     etc_journald_conf = simple_file(r"etc/systemd/journald.conf")
     etc_journald_conf_d = glob_file(r"etc/systemd/journald.conf.d/*.conf")
@@ -198,8 +224,9 @@ class DefaultSpecs(Specs):
     fw_devices = simple_command("/bin/fwupdagent get-devices", deps=[IsBareMetal])
     fw_security = simple_command("/bin/fwupdagent security --force", deps=[IsBareMetal])
     galera_cnf = first_file(["/var/lib/config-data/puppet-generated/mysql/etc/my.cnf.d/galera.cnf", "/etc/my.cnf.d/galera.cnf"])
-    gcp_instance_type = simple_command("/usr/bin/curl -s -H 'Metadata-Flavor: Google' http://metadata.google.internal/computeMetadata/v1/instance/machine-type --connect-timeout 5", deps=[IsGCP])
-    gcp_license_codes = simple_command("/usr/bin/curl -s -H 'Metadata-Flavor: Google' http://metadata.google.internal/computeMetadata/v1/instance/licenses/?recursive=True --connect-timeout 5", deps=[IsGCP])
+    gcp_instance_type = simple_command("/usr/bin/curl -s -H 'Metadata-Flavor: Google' 'http://metadata.google.internal/computeMetadata/v1/instance/machine-type' --connect-timeout 5", deps=[IsGCP])
+    gcp_license_codes = simple_command("/usr/bin/curl -s -H 'Metadata-Flavor: Google' 'http://metadata.google.internal/computeMetadata/v1/instance/licenses/?recursive=True' --connect-timeout 5", deps=[IsGCP])
+    gcp_network_interfaces = simple_command("/usr/bin/curl -s -H 'Metadata-Flavor: Google' 'http://metadata/computeMetadata/v1/instance/network-interfaces/?recursive=true' --connect-timeout 5", deps=[IsGCP])
     getcert_list = simple_command("/usr/bin/getcert list")
     getconf_page_size = simple_command("/usr/bin/getconf PAGE_SIZE")
     getenforce = simple_command("/usr/sbin/getenforce")
@@ -265,6 +292,7 @@ class DefaultSpecs(Specs):
     init_process_cgroup = simple_file("/proc/1/cgroup")
     initctl_lst = simple_command("/sbin/initctl --system list")
     insights_client_conf = simple_file('/etc/insights-client/insights-client.conf')
+    insights_client_exp_sed = simple_file('/etc/insights-client/.exp.sed')  # INSPEC-414
     installed_rpms = simple_command("/bin/rpm -qa --qf '%s'" % _rpm_format, context=HostContext, signum=signal.SIGTERM)
     interrupts = simple_file("/proc/interrupts")
     ip6tables = simple_command("/sbin/ip6tables-save")
@@ -272,6 +300,7 @@ class DefaultSpecs(Specs):
     ip_addresses = simple_command("/bin/hostname -I")
     ip_route_show_table_all = simple_command("/sbin/ip route show table all")
     ip_s_link = simple_command("/sbin/ip -s -d link")
+    ipa_default_conf = simple_file("/etc/ipa/default.conf")
     ipaupgrade_log = simple_file("/var/log/ipaupgrade.log")
     ipcs_m = simple_command("/usr/bin/ipcs -m")
     ipcs_m_p = simple_command("/usr/bin/ipcs -m -p")
@@ -282,9 +311,13 @@ class DefaultSpecs(Specs):
     iptables_permanent = simple_file("etc/sysconfig/iptables")
     ipv4_neigh = simple_command("/sbin/ip -4 neighbor show nud all")
     ipv6_neigh = simple_command("/sbin/ip -6 neighbor show nud all")
+    iris_cpf = intersystems.iris_working_configuration
+    iris_list = simple_command("/usr/bin/iris list")
+    iris_messages_log = intersystems.iris_working_messages_log
     ironic_inspector_log = first_file(["/var/log/containers/ironic-inspector/ironic-inspector.log", "/var/log/ironic-inspector/ironic-inspector.log"])
     iscsiadm_m_session = simple_command("/usr/sbin/iscsiadm -m session")
     jbcs_httpd24_httpd_error_log = simple_file("/opt/rh/jbcs-httpd24/root/etc/httpd/logs/error_log")
+    jboss_runtime_versions = ps_datasource.jboss_runtime_versions
     journal_header = simple_command("/usr/bin/journalctl --no-pager --header")
     kdump_conf = simple_file("/etc/kdump.conf")
     kernel_config = glob_file("/boot/config-*")
@@ -295,6 +328,7 @@ class DefaultSpecs(Specs):
     krb5 = glob_file([r"etc/krb5.conf", r"etc/krb5.conf.d/*"])
     ksmstate = simple_file("/sys/kernel/mm/ksm/run")
     lastupload = glob_file(["/etc/redhat-access-insights/.lastupload", "/etc/insights-client/.lastupload"])
+    leapp_report = leapp.leapp_report
     ld_library_path_of_user = sap.ld_library_path_of_user
     ldif_config = glob_file("/etc/dirsrv/slapd-*/dse.ldif")
     libssh_client_config = simple_file("/etc/libssh/libssh_client.config")
@@ -307,6 +341,17 @@ class DefaultSpecs(Specs):
     lpfc_max_luns = simple_file("/sys/module/lpfc/parameters/lpfc_max_luns")
     lpstat_p = simple_command("/usr/bin/lpstat -p")
     lpstat_protocol_printers = lpstat.lpstat_protocol_printers_info
+    # New `ls` Specs
+    ls_la = command_with_args('/bin/ls -la %s', ls.list_with_la, keep_rc=True)
+    ls_la_filtered = command_with_args('/bin/ls -la %s', ls.list_with_la_filtered, keep_rc=True)  # Result is filtered
+    ls_lan = command_with_args('/bin/ls -lan %s', ls.list_with_lan, keep_rc=True)
+    ls_lan_filtered = command_with_args('/bin/ls -lan %s', ls.list_with_lan_filtered, keep_rc=True)  # Result is filtered
+    ls_lanL = command_with_args('/bin/ls -lanL %s', ls.list_with_lanL, keep_rc=True)
+    ls_lanR = command_with_args('/bin/ls -lanR %s', ls.list_with_lanR, keep_rc=True)
+    ls_lanRL = command_with_args('/bin/ls -lanRl %s', ls.list_with_lanRL, keep_rc=True)
+    ls_lanRZ = command_with_args('/bin/ls -lanRZ %s', ls.list_with_lanRZ, keep_rc=True)
+    ls_lanZ = command_with_args('/bin/ls -lanZ %s', ls.list_with_lanZ, keep_rc=True)
+    # Old `ls` Specs
     ls_R_var_lib_nova_instances = simple_command("/bin/ls -laR /var/lib/nova/instances")
     ls_boot = simple_command("/bin/ls -lanR /boot")
     ls_dev = simple_command("/bin/ls -lanR /dev")
@@ -330,6 +375,8 @@ class DefaultSpecs(Specs):
     ls_var_lib_mongodb = simple_command("/bin/ls -la /var/lib/mongodb")
     ls_var_lib_nova_instances = simple_command("/bin/ls -laRZ /var/lib/nova/instances")
     ls_var_lib_pcp = simple_command("/bin/ls -la /var/lib/pcp")
+    ls_var_lib_rpm = simple_command("/bin/ls -lan /var/lib/rpm")
+    ls_var_lib_rsyslog = simple_command("/bin/ls -lZ /var/lib/rsyslog")
     ls_var_log = simple_command("/bin/ls -la /var/log /var/log/audit")
     ls_var_opt_mssql = simple_command("/bin/ls -ld /var/opt/mssql")
     ls_var_opt_mssql_log = simple_command("/bin/ls -la /var/opt/mssql/log")
@@ -340,6 +387,7 @@ class DefaultSpecs(Specs):
     lsblk = simple_command("/bin/lsblk")
     lsblk_pairs = simple_command("/bin/lsblk -P -o NAME,KNAME,MAJ:MIN,FSTYPE,MOUNTPOINT,LABEL,UUID,RA,RO,RM,MODEL,SIZE,STATE,OWNER,GROUP,MODE,ALIGNMENT,MIN-IO,OPT-IO,PHY-SEC,LOG-SEC,ROTA,SCHED,RQ-SIZE,TYPE,DISC-ALN,DISC-GRAN,DISC-MAX,DISC-ZERO")
     lscpu = simple_command("/usr/bin/lscpu")
+    lsinitrd_kdump_image = command_with_args("/usr/bin/lsinitrd -k %skdump", kernel.current_version)
     lsmod = simple_command("/sbin/lsmod")
     lsof = first_of([
         simple_command("/usr/bin/lsof"),
@@ -364,11 +412,6 @@ class DefaultSpecs(Specs):
     meminfo = first_file(["/proc/meminfo", "/meminfo"])
     messages = simple_file("/var/log/messages")
     modinfo_filtered_modules = command_with_args('modinfo %s', kernel_module_list.kernel_module_filters)
-    modinfo_i40e = simple_command("/sbin/modinfo i40e")
-    modinfo_igb = simple_command("/sbin/modinfo igb")
-    modinfo_ixgbe = simple_command("/sbin/modinfo ixgbe")
-    modinfo_veth = simple_command("/sbin/modinfo veth")
-    modinfo_vmxnet3 = simple_command("/sbin/modinfo vmxnet3")
     modprobe = glob_file(["/etc/modprobe.conf", "/etc/modprobe.d/*.conf"])
     mokutil_sbstate = simple_command("/bin/mokutil --sb-state")
     mongod_conf = glob_file([
@@ -416,7 +459,13 @@ class DefaultSpecs(Specs):
                            "/opt/rh/nginx*/root/etc/nginx/*.conf", "/opt/rh/nginx*/root/etc/nginx/conf.d/*.conf", "/opt/rh/nginx*/root/etc/nginx/default.d/*.conf",
                            "/etc/opt/rh/rh-nginx*/nginx/*.conf", "/etc/opt/rh/rh-nginx*/nginx/conf.d/*.conf", "/etc/opt/rh/rh-nginx*/nginx/default.d/*.conf"
                            ])
-    nginx_error_log = simple_file("/var/log/nginx/error.log")
+
+    nginx_error_log = first_of(
+        [
+            simple_file("/var/log/nginx/error.log"),
+            head(glob_file("/var/opt/rh/rh-nginx*/log/nginx/error.log")),
+        ]
+    )
     nginx_ssl_cert_enddate = foreach_execute(ssl_certificate.nginx_ssl_certificate_files, "/usr/bin/openssl x509 -in %s -enddate -noout")
     nmcli_conn_show = simple_command("/usr/bin/nmcli conn show")
     nmcli_dev_show = simple_command("/usr/bin/nmcli dev show")
@@ -451,6 +500,7 @@ class DefaultSpecs(Specs):
     ovs_vsctl_show = simple_command("/usr/bin/ovs-vsctl show")
     pacemaker_log = first_file(["/var/log/pacemaker.log", "/var/log/pacemaker/pacemaker.log"])
     package_provides_command = package_provides.cmd_and_pkg
+    parted__l = simple_command("/sbin/parted -l -s")
     password_auth = simple_file("/etc/pam.d/password-auth")
     pci_rport_target_disk_paths = simple_command("/usr/bin/find /sys/devices/ -maxdepth 10 -mindepth 9 -name stat -type f")
     pcp_metrics = simple_command("/usr/bin/curl -s http://127.0.0.1:44322/metrics --connect-timeout 5", deps=[pcp_enabled])
@@ -476,6 +526,7 @@ class DefaultSpecs(Specs):
         ]
     )
     proc_keys = simple_file("/proc/keys")
+    proc_keyusers = simple_file("/proc/key-users")
     proc_netstat = simple_file("proc/net/netstat")
     proc_slabinfo = simple_file("proc/slabinfo")
     proc_snmp_ipv4 = simple_file("proc/net/snmp")
@@ -497,17 +548,19 @@ class DefaultSpecs(Specs):
     ql2xmqsupport = simple_file("/sys/module/qla2xxx/parameters/ql2xmqsupport")
     rabbitmq_env = simple_file("/etc/rabbitmq/rabbitmq-env.conf")
     rabbitmq_report = simple_command("/usr/sbin/rabbitmqctl report")
+    random_entropy_avail = simple_file("/proc/sys/kernel/random/entropy_avail")
     rc_local = simple_file("/etc/rc.d/rc.local")
     readlink_e_etc_mtab = simple_command("/usr/bin/readlink -e /etc/mtab")
     readlink_e_shift_cert_client = simple_command("/usr/bin/readlink -e /etc/origin/node/certificates/kubelet-client-current.pem")
     readlink_e_shift_cert_server = simple_command("/usr/bin/readlink -e /etc/origin/node/certificates/kubelet-server-current.pem")
     redhat_release = simple_file("/etc/redhat-release")
+    repquota_agnpuv = simple_command("/usr/sbin/repquota -agnpuv")
     resolv_conf = simple_file("/etc/resolv.conf")
     rhsm_conf = simple_file("/etc/rhsm/rhsm.conf")
     rhsm_releasever = simple_file('/var/lib/rhsm/cache/releasever.json')
     rndc_status = simple_command("/usr/sbin/rndc status")
     ros_config = simple_file("/var/lib/pcp/config/pmlogger/config.ros")
-    rpm_V_packages = simple_command("/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo chrony", keep_rc=True, signum=signal.SIGTERM)
+    rpm_V_packages = simple_command("/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo chrony findutils", keep_rc=True, signum=signal.SIGTERM)
     rpm_ostree_status = simple_command("/usr/bin/rpm-ostree status --json", signum=signal.SIGTERM)
     rpm_pkgs = rpm_pkgs.pkgs_with_writable_dirs
     rsyslog_conf = glob_file(["/etc/rsyslog.conf", "/etc/rsyslog.d/*.conf"])
@@ -525,17 +578,13 @@ class DefaultSpecs(Specs):
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c 'select count(*) from hosts'",
         deps=[IsSatellite]
     )
-    satellite_core_taskreservedresource_count = simple_command(
-        "/usr/bin/sudo -iu postgres /usr/bin/psql -d pulpcore -c 'select count(*) from core_taskreservedresource' --csv",
-        deps=[IsSatellite]
-    )
     satellite_custom_ca_chain = simple_command(
         '/usr/bin/awk \'BEGIN { pipe="openssl x509 -noout -subject -enddate"} /^-+BEGIN CERT/,/^-+END CERT/ { print | pipe } /^-+END CERT/ { close(pipe); printf("\\n")}\' /etc/pki/katello/certs/katello-server-ca.crt',
     )
     satellite_custom_hiera = simple_file("/etc/foreman-installer/custom-hiera.yaml")
     satellite_enabled_features = simple_command("/usr/bin/curl -sk https://localhost:9090/features --connect-timeout 5", deps=[IsSatellite])
-    satellite_katello_repos_with_muliple_ref = simple_command(
-        '/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c "select repository_href, count(*) from katello_repository_references group by repository_href having count(*) > 1;" --csv',
+    satellite_ignore_source_rpms_repos = simple_command(
+        "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c \"select id, name from katello_root_repositories where ignorable_content like '%srpm%' and mirroring_policy='mirror_complete'\" --csv",
         deps=[IsSatellite]
     )
     satellite_logs_table_size = simple_command(
@@ -543,11 +592,6 @@ class DefaultSpecs(Specs):
         deps=[IsSatellite]
     )
     satellite_missed_pulp_agent_queues = satellite_missed_queues.satellite_missed_pulp_agent_queues
-    satellite_mongodb_storage_engine = simple_command("/usr/bin/mongo pulp_database --eval 'db.serverStatus().storageEngine'")
-    satellite_non_yum_type_repos = simple_command(
-        "/usr/bin/mongo pulp_database --eval 'db.repo_importers.find({\"importer_type_id\": { $ne: \"yum_importer\"}}).count()'",
-        deps=[[IsSatellite, IsCapsule]]
-    )
     satellite_provision_param_settings = simple_command(
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c \"select name, value from parameters where name='package_upgrade' and reference_id in (select id from operatingsystems where name='RedHat' and major='9')\" --csv",
         deps=[IsSatellite611]
@@ -560,8 +604,8 @@ class DefaultSpecs(Specs):
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c \"select id, name, url, download_policy from katello_root_repositories where download_policy = 'background' or url is NULL\" --csv",
         deps=[IsSatellite]
     )
-    satellite_sca_status = simple_command(
-        "/usr/bin/sudo -iu postgres /usr/bin/psql -d candlepin -c \"select displayname,content_access_mode from cp_owner\" --csv",
+    satellite_rhv_hosts_count = simple_command(
+        "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c \"select count(*) from hosts where \"compute_resource_id\" in (select id from compute_resources where type='Foreman::Model::Ovirt')\" --csv",
         deps=[IsSatellite]
     )
     satellite_settings = simple_command(
@@ -588,6 +632,7 @@ class DefaultSpecs(Specs):
     sockstat = simple_file("/proc/net/sockstat")
     softnet_stat = simple_file("proc/net/softnet_stat")
     software_collections_list = simple_command('/usr/bin/scl --list')
+    sos_conf = first_file(["/etc/sos/sos.conf", "/etc/sos.conf"])
     spamassassin_channels = simple_command("/bin/grep -r '^\\s*CHANNELURL=' /etc/mail/spamassassin/channel.d")
     ss = simple_command("/usr/sbin/ss -tupna")
     ssh_config = simple_file("/etc/ssh/ssh_config")
@@ -595,13 +640,17 @@ class DefaultSpecs(Specs):
     sshd_config = simple_file("/etc/ssh/sshd_config")
     sshd_config_perms = simple_command("/bin/ls -lH /etc/ssh/sshd_config")
     sssd_config = simple_file("/etc/sssd/sssd.conf")
-    subscription_manager_facts = simple_command("/usr/sbin/subscription-manager facts")
-    subscription_manager_id = simple_command("/usr/sbin/subscription-manager identity")  # use "/usr/sbin" here, BZ#1690529
+    subscription_manager_facts = simple_command("/usr/sbin/subscription-manager facts",
+                                                override_env={"LC_ALL": "C.UTF-8"})
+    subscription_manager_id = simple_command("/usr/sbin/subscription-manager identity",  # use "/usr/sbin" here, BZ#1690529
+                                             override_env={"LC_ALL": "C.UTF-8"})
     subscription_manager_installed_product_ids = simple_command("/usr/bin/find /etc/pki/product-default/ /etc/pki/product/ -name '*pem' -exec rct cat-cert --no-content '{}' \;")
     sudoers = glob_file(["/etc/sudoers", "/etc/sudoers.d/*"])
     swift_object_expirer_conf = first_file(["/var/lib/config-data/puppet-generated/swift/etc/swift/object-expirer.conf", "/etc/swift/object-expirer.conf"])
     swift_proxy_server_conf = first_file(["/var/lib/config-data/puppet-generated/swift/etc/swift/proxy-server.conf", "/etc/swift/proxy-server.conf"])
+    sys_block_queue_stable_writes = glob_file("/sys/block/*/queue/stable_writes")
     sys_fs_cgroup_memory_tasks_number = sys_fs_cgroup_memory_tasks_number.sys_fs_cgroup_memory_tasks_number_data_datasource
+    sys_fs_cgroup_uniq_memory_swappiness = sys_fs_cgroup_memory.sys_fs_cgroup_uniq_memory_swappiness
     sys_vmbus_class_id = glob_file('/sys/bus/vmbus/devices/*/class_id')
     sys_vmbus_device_id = glob_file('/sys/bus/vmbus/devices/*/device_id')
     sysconfig_grub = simple_file("/etc/default/grub")  # This is the file where the "/etc/sysconfig/grub" point to
@@ -613,17 +662,17 @@ class DefaultSpecs(Specs):
     sysconfig_oracleasm = simple_file("/etc/sysconfig/oracleasm")
     sysconfig_prelink = simple_file("/etc/sysconfig/prelink")
     sysconfig_sshd = simple_file("/etc/sysconfig/sshd")
+    sysconfig_stonith = simple_file("/etc/sysconfig/stonith")
     sysctl = simple_command("/sbin/sysctl -a")
     sysctl_conf = simple_file("/etc/sysctl.conf")
     sysctl_d_conf_etc = glob_file("/etc/sysctl.d/*.conf")
     sysctl_d_conf_usr = glob_file("/usr/lib/sysctl.d/*.conf")
     systemctl_cat_rpcbind_socket = simple_command("/bin/systemctl cat rpcbind.socket")
-    systemctl_httpd = simple_command("/bin/systemctl show httpd")
     systemctl_list_unit_files = simple_command("/bin/systemctl list-unit-files")
     systemctl_list_units = simple_command("/bin/systemctl list-units")
-    systemctl_mariadb = simple_command("/bin/systemctl show mariadb")
     systemctl_show_all_services = simple_command("/bin/systemctl show *.service")
     systemctl_show_target = simple_command("/bin/systemctl show *.target")
+    systemctl_status_all = simple_command("/bin/systemctl status --all")
     systemd_analyze_blame = simple_command("/bin/systemd-analyze blame")
     systemd_docker = simple_command("/usr/bin/systemctl cat docker.service")
     systemd_logind_conf = simple_file("/etc/systemd/logind.conf")
@@ -633,7 +682,6 @@ class DefaultSpecs(Specs):
         simple_file("/etc/sysconfig/rhn/systemid"),
         simple_file("/conf/rhn/sysconfig/rhn/systemid")
     ])
-    tags = simple_file("/tags.json", kind=RawFileProvider)
     teamdctl_config_dump = foreach_execute(ethernet.team_interfaces, "/usr/bin/teamdctl %s config dump")
     teamdctl_state_dump = foreach_execute(ethernet.team_interfaces, "/usr/bin/teamdctl %s state dump")
     testparm_s = simple_command("/usr/bin/testparm -s")
@@ -653,7 +701,6 @@ class DefaultSpecs(Specs):
     usr_journald_conf_d = glob_file(r"usr/lib/systemd/journald.conf.d/*.conf")  # note that etc_journald.conf.d also exists
     vdo_status = simple_command("/usr/bin/vdo status")
     vdsm_log = simple_file("var/log/vdsm/vdsm.log")
-    version_info = simple_file("/version_info")
     vgdisplay = simple_command("/sbin/vgdisplay")
     vgs_noheadings = simple_command("/sbin/vgs --nameprefixes --noheadings --separator='|' -a -o vg_all --config=\"global{locking_type=0}\"")
     virsh_list_all = simple_command("/usr/bin/virsh --readonly list --all")
@@ -662,23 +709,33 @@ class DefaultSpecs(Specs):
     vma_ra_enabled = simple_file("/sys/kernel/mm/swap/vma_ra_enabled")
     vsftpd = simple_file("/etc/pam.d/vsftpd")
     vsftpd_conf = simple_file("/etc/vsftpd/vsftpd.conf")
+    watchdog_logs = glob_file("/var/log/watchdog/*.std*")
     wc_proc_1_mountinfo = simple_command("/usr/bin/wc -l /proc/1/mountinfo")
     x86_ibpb_enabled = simple_file("sys/kernel/debug/x86/ibpb_enabled")
     x86_ibrs_enabled = simple_file("sys/kernel/debug/x86/ibrs_enabled")
     x86_pti_enabled = simple_file("sys/kernel/debug/x86/pti_enabled")
     x86_retp_enabled = simple_file("sys/kernel/debug/x86/retp_enabled")
+    xfs_info = foreach_execute(mount_ds.xfs_mounts, "/usr/sbin/xfs_info %s")  # INSPEC-409
+    xfs_quota_state = simple_command("/sbin/xfs_quota -x -c 'state -gu'")
     xinetd_conf = glob_file(["/etc/xinetd.conf", "/etc/xinetd.d/*"])
     yum_conf = simple_file("/etc/yum.conf")
     yum_list_available = simple_command("yum -C --noplugins list available", signum=signal.SIGTERM)
     yum_log = simple_file("/var/log/yum.log")
-    yum_repolist = simple_command("/usr/bin/yum -C --noplugins repolist", signum=signal.SIGTERM)
+    yum_repolist = simple_command("/usr/bin/yum -d 2 -C --noplugins repolist", override_env={"LC_ALL": ""},
+                                  signum=signal.SIGTERM)
     yum_repos_d = glob_file("/etc/yum.repos.d/*.repo")
     yum_updates = yum_updates.yum_updates
     zipl_conf = simple_file("/etc/zipl.conf")
 
     # Container collection specs
+    container_cpu_online = container_collect(running_rhel_containers, "/sys/devices/system/cpu/online")
+    container_cpuset_cpus = container_collect(running_rhel_containers, "/sys/fs/cgroup/cpuset/cpuset.cpus")
     container_dotnet_version = container_execute(running_rhel_containers, "/usr/bin/dotnet --version")
     container_installed_rpms = container_execute(running_rhel_containers, "/usr/bin/rpm -qa --qf '%s'" % _rpm_format, context=HostContext, signum=signal.SIGTERM)
+    container_mssql_api_assessment = container_collect(running_rhel_containers, "/var/opt/mssql/log/assessments/assessment-latest")
     container_nginx_conf = container_collect(container_nginx_conf_ds)
+    container_nginx_error_log = container_collect(running_rhel_containers, "/var/log/nginx/error.log")
+    container_ps_aux = container_execute(running_rhel_containers, "/bin/ps aux")
     container_redhat_release = container_collect(running_rhel_containers, "/etc/redhat-release")
+    container_vsftpd_conf = container_collect(running_rhel_containers, "/etc/vsftpd/vsftpd.conf")
     containers_inspect = containers_inspect.containers_inspect_data_datasource

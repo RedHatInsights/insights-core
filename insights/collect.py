@@ -17,11 +17,13 @@ import yaml
 
 from datetime import datetime
 
-from insights import apply_configs, apply_default_enabled, dr, get_pool
-from insights.core import blacklist, filters
+from insights import apply_configs, apply_default_enabled, get_pool
+from insights.core import blacklist, dr, filters
+from insights.core.blacklist import BLACKLISTED_SPECS
+from insights.core.exceptions import CalledProcessError
 from insights.core.serde import Hydration
 from insights.util import fs
-from insights.util.subproc import call, CalledProcessError
+from insights.util.subproc import call
 
 SAFE_ENV = {
     "PATH": os.path.pathsep.join([
@@ -203,8 +205,8 @@ plugins:
         - name: insights.components.virtualization.IsBareMetal
           enabled: true
 
-    # needed for the 'pre-check' of the 'ss' spec
-        - name: insights.parsers.lsmod
+    # needed for the 'pre-check' of the 'ss' spec and the 'modinfo_filtered_modules' spec
+        - name: insights.parsers.lsmod.LsMod
           enabled: true
 
     # needed for the 'pre-check' of the 'is_satellite_server' spec
@@ -257,6 +259,14 @@ plugins:
           enabled: true
 
         - name: insights.components.cryptsetup
+          enabled: true
+
+    # needed by the 'iris_cpf' spec
+        - name: insights.parsers.iris.IrisList
+          enabled: true
+
+    # needed by the 'iris_messages_log' spec
+        - name: insights.parsers.iris.IrisCpf
           enabled: true
 """.strip()
 
@@ -352,7 +362,8 @@ def create_archive(path, remove_path=True):
     return archive_path
 
 
-def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=None, client_timeout=None):
+def collect(manifest=default_manifest, tmp_path=None, compress=False,
+            rm_conf=None, client_config=None):
     """
     This is the collection entry point. It accepts a manifest, a temporary
     directory in which to store output, and a boolean for optional compression.
@@ -369,7 +380,7 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
         rm_conf (dict): Client-provided python dict containing keys
             "commands", "files", and "keywords", to be injected
             into the manifest blacklist.
-        client_timeout (int): Client-provided command timeout value
+        client_config (InsightsConfig): Configurations read by the client tool.
     Returns:
         (str, dict): The full path to the created tar.gz or workspace.
         And a dictionary with relevant exceptions captured by the broker during
@@ -389,9 +400,9 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
     apply_blacklist(client.get("blacklist", {}))
 
     # insights-client
-    if client_timeout:
+    if client_config and client_config.cmd_timeout:
         try:
-            client['context']['args']['timeout'] = client_timeout
+            client['context']['args']['timeout'] = client_config.cmd_timeout
         except LookupError:
             log.warning('Could not set timeout option.')
     rm_conf = rm_conf or {}
@@ -401,6 +412,7 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
             log.warning('WARNING: Unknown component in blacklist: %s' % component)
         else:
             dr.set_enabled(component, enabled=False)
+            BLACKLISTED_SPECS.append(component.split('.')[-1])
             log.warning('WARNING: Skipping component: %s', component)
 
     to_persist = get_to_persist(client.get("persist", set()))
@@ -429,6 +441,7 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False, rm_conf=No
     broker = dr.Broker()
     ctx = create_context(client.get("context", {}))
     broker[ctx.__class__] = ctx
+    broker['client_config'] = client_config
 
     parallel = run_strategy.get("name") == "parallel"
     pool_args = run_strategy.get("args", {})

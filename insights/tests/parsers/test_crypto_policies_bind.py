@@ -1,7 +1,8 @@
-from insights.tests import context_wrap
-from insights.parsers.crypto_policies import CryptoPoliciesBind
-from insights.parsers import SkipException
 import pytest
+
+from insights.core.exceptions import SkipComponent
+from insights.parsers.crypto_policies import CryptoPoliciesBind
+from insights.tests import context_wrap
 
 CONFIG = """
 disable-algorithms "." {
@@ -30,7 +31,7 @@ def test_crypto_policies_bind():
 
 
 def test_crypto_policies_bind_empty():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         CryptoPoliciesBind(context_wrap(""))
     result = CryptoPoliciesBind(context_wrap(CONFIG_EMPTY_SECTIONS))
     assert [] == result.disable_algorithms

@@ -1,10 +1,10 @@
-from insights.components.satellite import IsCapsule, IsSatellite, IsSatellite611
+import pytest
+
 from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersion
+from insights.components.satellite import IsCapsule, IsSatellite, IsSatellite611
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers.installed_rpms import InstalledRpms
 from insights.tests import context_wrap
-from insights.core.dr import SkipComponent
-from insights.core import ParseException
-import pytest
 
 
 NOT_SATELITE_RPMS = """

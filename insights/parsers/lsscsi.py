@@ -4,9 +4,9 @@ LsSCSI - command ``/usr/bin/lsscsi``
 
 This module provides processing for the output of the ``/usr/bin/lsscsi`` command.
 """
-
-from . import ParseException
-from .. import parser, CommandParser
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 

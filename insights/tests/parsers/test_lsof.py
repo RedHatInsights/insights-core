@@ -1,5 +1,6 @@
 import pytest
-from insights.core.dr import SkipComponent
+
+from insights.core.exceptions import SkipComponent
 from insights.parsers import lsof
 from insights.tests import context_wrap
 

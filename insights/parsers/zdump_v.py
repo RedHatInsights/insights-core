@@ -27,11 +27,12 @@ Examples:
     >>> dst.get('gmtoff')
     -18000
 """
-
 from datetime import datetime
+
+from insights.core import CommandParser
+from insights.core.exceptions import SkipComponent
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.parsers import SkipException
-from insights import parser, CommandParser
 
 
 def str2datetime(timestamp, tz=False):
@@ -75,13 +76,13 @@ class ZdumpV(CommandParser, list):
     and store the 'Daylight Saving Time' information into a list.
 
     Raises:
-        SkipException: When nothing is parsed.
+        SkipComponent: When nothing is parsed.
 
     .. warning:: The value in key `local_time` doesn't include the TimeZone information
     """
     def parse_content(self, content):
         if not content:
-            raise SkipException("No Data from command: /usr/sbin/zdump -v /etc/localtime -c 2019,2039")
+            raise SkipComponent("No Data from command: /usr/sbin/zdump -v /etc/localtime -c 2019,2039")
 
         for line in content:
             dst = {}

@@ -1,9 +1,10 @@
-from insights.parsers import SkipException
-from insights.tests import context_wrap
+import doctest
+import pytest
+
+from insights.core.exceptions import SkipComponent
 from insights.parsers import cpu_vulns
 from insights.parsers.cpu_vulns import CpuVulns
-import pytest
-import doctest
+from insights.tests import context_wrap
 
 INPUT_MELTDOWN = """
 Mitigation: PTI
@@ -78,7 +79,7 @@ def test_cpu_vulns_meltdown_exp1():
     """
     Here test the examples cause expections
     """
-    with pytest.raises(SkipException) as sc1:
+    with pytest.raises(SkipComponent) as sc1:
         CpuVulns(context_wrap('', path='/sys/devices/system/cpu/vulnerabilities/meltdown'))
     assert "Input content is empty" in str(sc1)
 
@@ -106,7 +107,7 @@ def test_cpu_vulns_spec_store_bypass_exp1():
     """
     Here test the examples cause expections
     """
-    with pytest.raises(SkipException) as sc1:
+    with pytest.raises(SkipComponent) as sc1:
         CpuVulns(context_wrap('', path='meltdown'))
     assert "Input content is empty" in str(sc1)
 
@@ -122,7 +123,7 @@ def test_cpu_vulns_spectre_v1_exp1():
     """
     Here test the examples cause expections
     """
-    with pytest.raises(SkipException) as sc1:
+    with pytest.raises(SkipComponent) as sc1:
         CpuVulns(context_wrap(''))
     assert "Input content is empty" in str(sc1)
 
@@ -150,7 +151,7 @@ def test_cpu_vulns_spectre_v2_exp1():
     """
     Here test the examples cause expections
     """
-    with pytest.raises(SkipException) as sc1:
+    with pytest.raises(SkipComponent) as sc1:
         CpuVulns(context_wrap(''))
     assert "Input content is empty" in str(sc1)
 

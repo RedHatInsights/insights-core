@@ -73,6 +73,21 @@ def _handle_key_value(t_dict, key, value):
     return value
 
 
+def _handle_krb5_bool(value):
+    """
+    Convert krb5.conf boolean
+    """
+    # see lib/krb5/krb/libdef_parse.c _krb5_conf_boolean()
+    if value in set(["y", "yes", "true", "t", "1", "on"]):
+        return True
+    elif value in set(["n", "no", "false", "nil", "0", "off"]):
+        return False
+    else:
+        # _krb5_conf_boolean() treats any other value as "False". Return
+        # "None" so caller can identify this case.
+        return None
+
+
 @parser(Specs.krb5)
 class Krb5Configuration(Parser, LegacyItemAccess):
     """
@@ -179,3 +194,11 @@ class Krb5Configuration(Parser, LegacyItemAccess):
         if section not in self.data:
             return False
         return option in self.data[section]
+
+    def getboolean(self, section, option):
+        """Parse option as bool
+
+        Returns None is not a krb5.conf boolean string.
+        """
+        value = self.data[section][option]
+        return _handle_krb5_bool(value)

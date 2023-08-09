@@ -55,6 +55,9 @@ class InsightsCommand(InsightsSpec):
 
         # use TERM for rpm/yum commands, KILL for everything else
         if (self.command.startswith('/bin/rpm') or
+           self.command.startswith('dnf') or
+           self.command.startswith('/bin/dnf') or
+           self.command.startswith('/usr/bin/dnf') or
            self.command.startswith('yum') or
            self.command.startswith('/usr/bin/yum')):
             signal = 'TERM'

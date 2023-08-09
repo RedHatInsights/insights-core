@@ -9,9 +9,10 @@ This module contains the classes that parse the output of the commands
 YumRepoList - command ``yum -C --noplugins repolist``
 -----------------------------------------------------
 """
-
-from insights import parser, CommandParser
-from insights.parsers import SkipException, parse_fixed_table, ParseException
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipComponent
+from insights.core.plugins import parser
+from insights.parsers import parse_fixed_table
 from insights.specs import Specs
 
 eus = [
@@ -125,10 +126,10 @@ class YumRepoList(CommandParser):
     """
     def parse_content(self, content):
         if not content:
-            raise SkipException('No repolist.')
+            raise SkipComponent('No repolist.')
 
         if content[0].startswith('repolist:'):
-            raise SkipException('No repolist.')
+            raise SkipComponent('No repolist.')
 
         trailing_line_prefix = [
                 'repolist:',
@@ -152,7 +153,7 @@ class YumRepoList(CommandParser):
             raise ParseException('Failed to parser yum repolist: {0}'.format(str(e)))
 
         if not self.data:
-            raise SkipException('No repolist.')
+            raise SkipComponent('No repolist.')
 
         self.repos = dict((d['id'].lstrip('!').lstrip('*'), d) for d in self.data)
 

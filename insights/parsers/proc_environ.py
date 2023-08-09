@@ -6,9 +6,9 @@ Parser for parsing the ``environ`` file under ``/proc/<PID>``
 directory.
 
 """
-
-from insights import Parser, parser, LegacyItemAccess
-from insights.parsers import SkipException, ParseException
+from insights.core import LegacyItemAccess, Parser
+from insights.core.exceptions import ParseException, SkipComponent
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 
@@ -29,14 +29,14 @@ class ProcEnviron(Parser, LegacyItemAccess):
         True
 
     Raises:
-        insights.parsers.SkipException: if the ``environ`` file is empty or doesn't exist.
-        insights.parsers.ParseException: if the ``environ`` file content is incorrect.
+        insights.core.exceptions.SkipComponent: if the ``environ`` file is empty or doesn't exist.
+        insights.core.exceptions.ParseException: if the ``environ`` file content is incorrect.
 
     """
 
     def parse_content(self, content):
         if not content:
-            raise SkipException("Empty output.")
+            raise SkipComponent("Empty output.")
         if len(content) != 1:
             raise ParseException("Incorrect content: '{0}'".format(content[-1]))
 

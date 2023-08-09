@@ -29,11 +29,13 @@ else:
         import xml.etree.ElementTree as ET
 
 NONCOMPLIANT_STATUS = 2
+OUT_OF_MEMORY_STATUS = -9  # 247
 COMPLIANCE_CONTENT_TYPE = 'application/vnd.redhat.compliance.something+tgz'
 POLICY_FILE_LOCATION = '/usr/share/xml/scap/ssg/content/'
 SCAP_DATASTREAMS_PATH = '/usr/share/xml/scap/'
 SSG_PACKAGE = 'scap-security-guide'
 REQUIRED_PACKAGES = [SSG_PACKAGE, 'openscap-scanner', 'openscap']
+OOM_ERROR_LINK = 'https://access.redhat.com/articles/6999111'
 
 # SSG versions that need the <version> in XML repaired
 VERSIONS_FOR_REPAIR = '0.1.18 0.1.19 0.1.21 0.1.25'.split()
@@ -107,8 +109,13 @@ class ComplianceClient:
             "https://{0}/compliance/profiles/{1}/tailoring_file".format(self.config.base_url, profile['id'])
         )
         logger.debug("Response code: {0}".format(response.status_code))
-        if response.content is None:
-            logger.info("Problem downloading tailoring file for {0} to {1}".format(profile['attributes']['ref_id'], tailoring_file_path))
+
+        if not response.ok:
+            logger.info("Something went wrong during downloading the tailoring file of {0}. The expected status code is 200, got {1}".format(profile['attributes']['ref_id'], response.status_code))
+            return None
+
+        if response.content is None or response.headers['Content-Type'] != "application/xml":
+            logger.info("Problem with the content of the downloaded tailoring file of {0}. The expected format is xml, got {1}".format(profile['attributes']['ref_id'], response.headers['Content-Type']))
             return None
 
         with open(tailoring_file_path, mode="w+b") as f:
@@ -123,9 +130,9 @@ class ComplianceClient:
         response = self.conn.session.get("https://{0}/compliance/profiles".format(self.config.base_url),
                                          params={'search': search, 'relationships': 'false'})
         logger.debug("Content of the response: {0} - {1}".format(response,
-                                                                 response.json()))
+                                                                 response.content))
         if response.status_code == 200:
-            return (response.json().get('data') or [])
+            return response.json().get('data', [])
         else:
             return []
 
@@ -152,7 +159,7 @@ class ComplianceClient:
         return findall("\d+$", self.os_release())[0]
 
     def profile_files(self):
-        return glob("{0}*rhel{1}*.xml".format(POLICY_FILE_LOCATION, self.os_major_version()))
+        return glob("{0}*rhel{1}-ds.xml".format(POLICY_FILE_LOCATION, self.os_major_version()))
 
     def find_scap_policy(self, profile_ref_id):
         grepcmd = 'grep -H ' + profile_ref_id + ' ' + ' '.join(self.profile_files())
@@ -185,8 +192,15 @@ class ComplianceClient:
         if not six.PY3:
             oscap_command = oscap_command.encode()
         rc, oscap = call(oscap_command, keep_rc=True, env=env)
+
+        if rc and rc == OUT_OF_MEMORY_STATUS:
+            logger.error('Scan failed due to insufficient memory')
+            logger.error('More information can be found here: {0}'.format(OOM_ERROR_LINK))
+            exit(constants.sig_kill_bad)
+
         if rc and rc != NONCOMPLIANT_STATUS:
             logger.error('Scan failed')
+            logger.error(rc)
             logger.error(oscap)
             exit(constants.sig_kill_bad)
 

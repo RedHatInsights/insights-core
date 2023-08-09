@@ -2,7 +2,7 @@ from mock.mock import Mock
 
 from insights.collect import _parse_broker_exceptions
 from insights.core.dr import Broker
-from insights.core.plugins import ContentException
+from insights.core.exceptions import ContentException
 
 
 def test_parse_broker_exceptions_no_errors():

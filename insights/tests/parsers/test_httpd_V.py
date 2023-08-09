@@ -1,9 +1,10 @@
+import doctest
+import pytest
+
+from insights.core.exceptions import SkipComponent
 from insights.parsers import httpd_V
-from insights.parsers import SkipException
 from insights.parsers.httpd_V import HttpdV
 from insights.tests import context_wrap
-import pytest
-import doctest
 
 HTTPD_V_22 = """
 Server version: Apache/2.2.15 (Unix)
@@ -107,11 +108,11 @@ def test_httpd_V():
 
 
 def test_httpd_V_exp():
-    with pytest.raises(SkipException) as sc:
+    with pytest.raises(SkipComponent) as sc:
         HttpdV(context_wrap(""))
     assert "Input content is empty" in str(sc)
 
-    with pytest.raises(SkipException) as sc:
+    with pytest.raises(SkipComponent) as sc:
         HttpdV(context_wrap("TEST"))
     assert "Input content is not empty but there is no useful parsed data." in str(sc)
 

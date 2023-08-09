@@ -12,16 +12,21 @@ AzureInstanceType - 'vmSize' of Azure Instance
 
 AzureInstancePlan - 'plan' of Azure Instance
 --------------------------------------------
+
+AzurePublicIpv4Addresses - list of public IPv4 addresses
+--------------------------------------------------------
 """
 import json
-from insights.parsers import SkipException, ParseException
-from insights import parser, CommandParser
+
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipComponent
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 
 def validate_content(content):
     if not content or 'curl: ' in content[0]:
-        raise SkipException()
+        raise SkipComponent()
 
 
 @parser(Specs.azure_instance_id)
@@ -36,7 +41,7 @@ class AzureInstanceID(CommandParser):
         f904ece8-c6c1-4b5c-881f-309b50f25e50
 
     Raises:
-        SkipException: When content is empty or no parse-able content.
+        SkipComponent: When content is empty or no parse-able content.
 
     Attributes:
         id (str): The instance ID of the VM instance in Azure.
@@ -67,7 +72,7 @@ class AzureInstanceType(CommandParser):
         Standard_L64s_v2
 
     Raises:
-        SkipException: When content is empty or no parse-able content.
+        SkipComponent: When content is empty or no parse-able content.
         ParseException: When type cannot be recognized.
 
     Attributes:
@@ -124,7 +129,7 @@ class AzureInstancePlan(CommandParser):
         },
 
     Raises:
-        SkipException: When content is empty or no parse-able content.
+        SkipComponent: When content is empty or no parse-able content.
 
     Attributes:
         name (str): The name of the plan for the VM Instance in Azure, e.g: rhel7
@@ -157,3 +162,41 @@ class AzureInstancePlan(CommandParser):
         return "<azure_plan_name: {n}, product: {pr}, publisher: {pu}, raw: {r}".format(
             n=self.name, pr=self.product, pu=self.publisher, r=self.raw
         )
+
+
+@parser(Specs.azure_load_balancer)
+class AzurePublicIpv4Addresses(CommandParser, list):
+    """
+    Class for parsing the Azure load balancer JSON data returned by command
+
+        curl -sH "Metadata:true" --connect-timeout 5 \
+            "http://169.254.169.254/metadata/loadbalancer?api-version=2021-12-13&format=json"
+
+    Typical Output of this command is::
+
+        {
+          "loadbalancer": {
+            "publicIpAddresses": [
+              {
+                "frontendIpAddress": "137.116.118.209",
+                "privateIpAddress": "10.0.0.4"
+              }
+            ],
+            "inboundRules": [],
+            "outboundRules": []
+          }
+        }
+
+    Raises:
+        SkipComponent: When content is empty or curl returned an error.
+        ParseException: On JSON parsing error.
+    """
+    def parse_content(self, content):
+        validate_content(content)
+
+        try:
+            plan = json.loads(' '.join(content))
+            for pair in plan["loadbalancer"]["publicIpAddresses"]:
+                self.append(pair["frontendIpAddress"])
+        except:
+            raise ParseException("Unable to parse JSON")

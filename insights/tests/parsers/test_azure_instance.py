@@ -1,12 +1,10 @@
-import pytest
 import doctest
+import pytest
+
+from insights.core.exceptions import ContentException, ParseException, SkipComponent
 from insights.parsers import azure_instance
-from insights.parsers.azure_instance import (AzureInstanceID,
-                                             AzureInstanceType,
-                                             AzureInstancePlan)
+from insights.parsers.azure_instance import AzureInstanceID, AzureInstancePlan, AzureInstanceType, AzurePublicIpv4Addresses
 from insights.tests import context_wrap
-from insights.parsers import SkipException, ParseException
-from insights.core.plugins import ContentException
 
 # For AzureInstanceID
 AZURE_ID = "f904ece8-c6c1-4b5c-881f-309b50f25e50"
@@ -63,10 +61,37 @@ AZURE_PLAN_AB_3 = """
 curl: (28) connect() timed out!
 """.strip()
 
+# For AzurePublicIpv4Addresses and AzurePublicHostname
+AZURE_LB_1 = """
+{
+  "loadbalancer": {
+    "publicIpAddresses": [
+      {
+        "frontendIpAddress": "137.116.118.209",
+        "privateIpAddress": "10.0.0.4"
+      }
+    ],
+    "inboundRules": [],
+    "outboundRules": []
+  }
+}
+""".strip()
+
+AZURE_LB_ERR1 = """
+curl: (7) Failed to connect to 169.254.169.254 port 80: Connection timed out
+""".strip()
+AZURE_LB_ERR2 = """
+curl: (7) couldn't connect to host
+""".strip()
+AZURE_LB_ERR3 = """
+curl: (28) connect() timed out!
+""".strip()
+AZURE_LB_ERR4 = "}}}"
+
 
 # Test AzureInstanceID
 def test_azure_instance_id_ab_empty():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         AzureInstanceID(context_wrap(''))
 
 
@@ -78,13 +103,13 @@ def test_azure_instance_id():
 
 # Test AzureInstanceType
 def test_azure_instance_type_ab_other():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         AzureInstanceType(context_wrap(AZURE_TYPE_AB_1))
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         AzureInstanceType(context_wrap(AZURE_TYPE_AB_2))
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         AzureInstanceType(context_wrap(AZURE_TYPE_AB_3))
 
     with pytest.raises(ParseException) as pe:
@@ -96,7 +121,7 @@ def test_azure_instance_type_ab_other():
 
 
 def test_azure_instance_type_ab_empty():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         AzureInstanceType(context_wrap(''))
 
 
@@ -127,16 +152,16 @@ def test_azure_instance_type_stats():
 
 # Test AzureInstancePlan
 def test_azure_instance_plan_ab_other():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         AzureInstancePlan(context_wrap(AZURE_PLAN_AB_1))
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         AzureInstancePlan(context_wrap(AZURE_PLAN_AB_2))
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         AzureInstancePlan(context_wrap(AZURE_PLAN_AB_3))
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         AzureInstancePlan(context_wrap(''))
 
     with pytest.raises(ParseException):
@@ -173,3 +198,20 @@ def test_doc_examples():
     }
     failed, total = doctest.testmod(azure_instance, globs=env)
     assert failed == 0
+
+
+def test_azure_public_ipv4():
+    with pytest.raises(SkipComponent):
+        AzurePublicIpv4Addresses(context_wrap(AZURE_LB_ERR1))
+
+    with pytest.raises(SkipComponent):
+        AzurePublicIpv4Addresses(context_wrap(AZURE_LB_ERR2))
+
+    with pytest.raises(SkipComponent):
+        AzurePublicIpv4Addresses(context_wrap(AZURE_LB_ERR3))
+
+    with pytest.raises(ParseException):
+        AzurePublicIpv4Addresses(context_wrap(AZURE_LB_ERR4))
+
+    azure = AzurePublicIpv4Addresses(context_wrap(AZURE_LB_1))
+    assert azure[0] == "137.116.118.209"

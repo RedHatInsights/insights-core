@@ -1,11 +1,11 @@
 from __future__ import print_function
-import pytest
 import doctest
+import pytest
 
-from insights.parsers import ParseException, SkipException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import lvm
 from insights.tests import context_wrap
-from .lvm_test_data import LVMCONFIG, LVMCONFIG2, LVMCONFIG3
+from insights.tests.parsers.lvm_test_data import LVMCONFIG, LVMCONFIG2, LVMCONFIG3
 
 WARNINGS_CONTENT = """
 WARNING
@@ -224,7 +224,7 @@ def test_system_devices():
 
 
 def test_system_devices_exception():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         lvm.LvmSystemDevices(context_wrap(SYSTEM_DEVICES3))
 
 

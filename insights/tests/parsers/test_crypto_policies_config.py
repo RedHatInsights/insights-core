@@ -1,7 +1,8 @@
-from insights.tests import context_wrap
-from insights.parsers.crypto_policies import CryptoPoliciesConfig
-from insights.parsers import SkipException
 import pytest
+
+from insights.core.exceptions import SkipComponent
+from insights.parsers.crypto_policies import CryptoPoliciesConfig
+from insights.tests import context_wrap
 
 CONFIG = """
 DEFAULT
@@ -40,5 +41,5 @@ def test_crypto_policies_commented():
 
 
 def test_crypto_policies_config_empty():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         CryptoPoliciesConfig(context_wrap(""))

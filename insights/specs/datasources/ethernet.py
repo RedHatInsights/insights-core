@@ -2,7 +2,7 @@
 Custom datasource for gathering a list of the ethernet interface names.
 """
 from insights.core.context import HostContext
-from insights.core.dr import SkipComponent
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import datasource
 from insights.core.spec_factory import simple_command
 from insights.parsers.nmcli import NmcliConnShow

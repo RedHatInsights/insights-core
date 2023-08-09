@@ -1,6 +1,8 @@
 import doctest
 import pytest
-from insights.parsers import cpupower_frequency_info, ParseException, SkipException
+
+from insights.core.exceptions import ParseException, SkipComponent
+from insights.parsers import cpupower_frequency_info
 from insights.parsers.cpupower_frequency_info import CpupowerFrequencyInfo
 from insights.tests import context_wrap
 
@@ -145,7 +147,7 @@ def test_invalid():
 
 
 def test_empty():
-    with pytest.raises(SkipException) as e:
+    with pytest.raises(SkipComponent) as e:
         CpupowerFrequencyInfo(context_wrap(CPUPOWER_INFO_EMPTY))
     assert "Empty content" in str(e)
 

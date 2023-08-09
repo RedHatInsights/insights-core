@@ -1,7 +1,8 @@
 import doctest
 import pytest
 
-from insights.parsers import networkmanager_dhclient, SkipException
+from insights.core.exceptions import SkipComponent
+from insights.parsers import networkmanager_dhclient
 from insights.parsers.networkmanager_dhclient import NetworkManagerDhclient
 from insights.tests import context_wrap
 
@@ -96,7 +97,7 @@ fi
 
 
 def test_no_data():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         NetworkManagerDhclient(context_wrap(""))
 
 

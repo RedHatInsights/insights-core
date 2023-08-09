@@ -10,9 +10,10 @@ PATH = '/usr/share/xml/scap/ref_id.xml'
 
 
 @patch("insights.client.apps.compliance.ComplianceClient._assert_oscap_rpms_exist")
+@patch("insights.client.apps.compliance.ComplianceClient.get_ssg_version", return_value=None)
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None, compressor='gz', obfuscate=False)
 @patch("insights.client.archive.atexit", Mock())
-def test_oscap_scan(config, assert_rpms):
+def test_oscap_scan(config, ssg_version, assert_rpms):
     compliance_client = ComplianceClient(config)
     compliance_client._get_inventory_id = lambda: ''
     compliance_client.get_initial_profiles = lambda: [{'attributes': {'ref_id': 'foo', 'tailored': False}}]
@@ -27,9 +28,10 @@ def test_oscap_scan(config, assert_rpms):
 
 
 @patch("insights.client.apps.compliance.ComplianceClient._assert_oscap_rpms_exist")
+@patch("insights.client.apps.compliance.ComplianceClient.get_ssg_version", return_value=None)
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None, compressor='gz', obfuscate=True)
 @patch("insights.client.archive.atexit", Mock())
-def test_oscap_scan_with_obfuscation(config, assert_rpms, tmpdir):
+def test_oscap_scan_with_obfuscation(config, ssg_version, assert_rpms, tmpdir):
     results_file = tmpdir.mkdir('results').join('result.xml')
     results_file.write("""
 <xml>
@@ -86,9 +88,10 @@ def test_oscap_scan_with_obfuscation(config, assert_rpms, tmpdir):
 
 
 @patch("insights.client.apps.compliance.ComplianceClient._assert_oscap_rpms_exist")
+@patch("insights.client.apps.compliance.ComplianceClient.get_ssg_version", return_value=None)
 @patch("insights.client.config.InsightsConfig", base_url='localhost/app', systemid='', proxy=None, compressor='gz', obfuscate=True, obfuscate_hostname=True)
 @patch("insights.client.archive.atexit", Mock())
-def test_oscap_scan_with_hostname_obfuscation(config, assert_rpms, tmpdir):
+def test_oscap_scan_with_hostname_obfuscation(config, ssg_version, assert_rpms, tmpdir):
     results_file = tmpdir.mkdir('results').join('result.xml')
     results_file.write("""
 <xml>
@@ -406,7 +409,7 @@ def test_tailored_file_is_not_downloaded_if_tailored_is_missing(config):
 @patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
 def test_tailored_file_is_downloaded_from_initial_profile_if_os_minor_version_is_missing(config, call):
     compliance_client = ComplianceClient(config)
-    compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, json=Mock(return_value={'data': [{'attributes': 'data'}]})))
+    compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, headers={"Content-Type": "application/xml"}, json=Mock(return_value={'data': [{'attributes': 'data'}]})))
     assert 'oscap_tailoring_file-aaaaa' in compliance_client.download_tailoring_file({'id': 'foo', 'attributes': {'tailored': True, 'ref_id': 'aaaaa'}})
     assert compliance_client.download_tailoring_file({'id': 'foo', 'attributes': {'tailored': False, 'ref_id': 'aaaaa'}}) is None
 
@@ -415,7 +418,7 @@ def test_tailored_file_is_downloaded_from_initial_profile_if_os_minor_version_is
 @patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
 def test_tailored_file_is_not_downloaded_if_os_minor_version_mismatches(config, os_release_info_mock):
     compliance_client = ComplianceClient(config)
-    compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, json=Mock(return_value={'data': [{'attributes': 'data'}]})))
+    compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, headers={"Content-Type": "application/xml"}, json=Mock(return_value={'data': [{'attributes': 'data'}]})))
     assert compliance_client.download_tailoring_file({'id': 'foo', 'attributes': {'tailored': True, 'ref_id': 'aaaaa', 'os_minor_version': '2'}}) is None
     assert compliance_client.download_tailoring_file({'id': 'foo', 'attributes': {'tailored': False, 'ref_id': 'aaaaa', 'os_minor_version': '2'}}) is None
 
@@ -425,9 +428,24 @@ def test_tailored_file_is_not_downloaded_if_os_minor_version_mismatches(config, 
 @patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
 def test_tailored_file_is_downloaded_if_needed(config, call, os_release_info_mock):
     compliance_client = ComplianceClient(config)
-    compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, json=Mock(return_value={'data': [{'attributes': 'data'}]})))
+    compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, headers={"Content-Type": "application/xml"}, json=Mock(return_value={'data': [{'attributes': 'data'}]})))
     assert 'oscap_tailoring_file-aaaaa' in compliance_client.download_tailoring_file({'id': 'foo', 'attributes': {'tailored': True, 'ref_id': 'aaaaa', 'os_minor_version': '5'}})
     assert compliance_client.download_tailoring_file({'id': 'foo', 'attributes': {'tailored': False, 'ref_id': 'aaaaa', 'os_minor_version': '5'}}) is None
+
+
+@patch("insights.client.apps.compliance.open", new_callable=mock_open)
+@patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')
+def test_tailored_file_fails_to_download(config, call):
+    compliance_client = ComplianceClient(config)
+
+    compliance_client.conn.session.get = Mock(return_value=Mock(status_code=403, ok=False, headers={"Content-Type": "application/xml"}, json=Mock(return_value={'data': [{'attributes': 'data'}]})))
+    assert compliance_client.download_tailoring_file({'id': 'foo', 'attributes': {'tailored': True, 'ref_id': 'aaaaa'}}) is None
+
+    compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, headers={"Content-Type": "application/json"}, json=Mock(return_value={'data': [{'attributes': 'data'}]})))
+    assert compliance_client.download_tailoring_file({'id': 'foo', 'attributes': {'tailored': True, 'ref_id': 'aaaaa'}}) is None
+
+    compliance_client.conn.session.get = Mock(return_value=Mock(status_code=200, content=None, headers={"Content-Type": "application/xml"}, json=Mock(return_value={'data': [{'attributes': 'data'}]})))
+    assert compliance_client.download_tailoring_file({'id': 'foo', 'attributes': {'tailored': True, 'ref_id': 'aaaaa'}}) is None
 
 
 @patch("insights.client.config.InsightsConfig", base_url='localhost.com/app')

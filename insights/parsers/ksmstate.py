@@ -5,27 +5,10 @@ KSMState - file ``/sys/kernel/mm/ksm/run``
 Parser to get the kernel samepage merging state by reading the file
 ``/sys/kernel/mm/ksm/run``.
 """
-
-from insights import parser, Parser
-from insights.parsers import SkipException, ParseException
+from insights.core import Parser
+from insights.core.exceptions import ParseException, SkipComponent
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.util import deprecated
-
-
-@parser(Specs.ksmstate)
-def is_running(context):
-    """
-    .. warning::
-        This function parser is deprecated, please use :py:class:`KSMState`
-        instead.
-
-    Check if Kernel Samepage Merging is enabled. 'True' if KSM is
-    on (i.e. ``/sys/kernel/mm/ksm/run`` is '1') or 'False' if not.
-    """
-    deprecated(is_running, "Use the `KSMState` class instead.", "3.0.300")
-    ksminfo = {}
-    ksminfo['running'] = (context.content[0].split()[0] == '1')
-    return ksminfo
 
 
 @parser(Specs.ksmstate)
@@ -52,12 +35,12 @@ class KSMState(Parser):
         False
 
     Raises:
-        SkipException: when input is empty.
+        SkipComponent: when input is empty.
         ParseException: when the content is not expected.
     """
     def parse_content(self, content):
         if not content:
-            raise SkipException
+            raise SkipComponent
         if len(content) != 1 or content[0] not in ('0', '1', '2'):
             raise ParseException("Incorrect content: '{0}'".format(content))
 

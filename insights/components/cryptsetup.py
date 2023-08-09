@@ -9,9 +9,9 @@ so that the dependent component will not fire. Can be added as a dependency of
 a parser so that the parser only fires if the ``cryptsetup`` dependency and
 token support is met.
 """
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import component
 from insights.parsers.installed_rpms import InstalledRpms, InstalledRpm
-from insights.core.dr import SkipComponent
 
 
 @component(InstalledRpms)

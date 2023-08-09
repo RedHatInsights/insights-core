@@ -1,9 +1,10 @@
-import pytest
 import doctest
-from insights.tests import context_wrap
-from insights.parsers import SkipException
+import pytest
+
+from insights.core.exceptions import SkipComponent
 from insights.parsers import pmrep
 from insights.parsers.pmrep import PMREPMetrics
+from insights.tests import context_wrap
 
 PMREPMETRIC_DATA = """
 Time,"network.interface.out.packets-lo","network.interface.out.packets-eth0","network.interface.collisions-lo","network.interface.collisions-eth0","swap.pagesout","mssql.memory_manager.stolen_server_memory","mssql.memory_manager.total_server_memory"
@@ -51,13 +52,13 @@ def test_pmrep_info():
 
 
 def test_empty():
-    with pytest.raises(SkipException) as e:
+    with pytest.raises(SkipComponent) as e:
         PMREPMetrics(context_wrap(PMREPMETRIC_EMPTY_DATA))
     assert 'There is no data in the table' in str(e)
 
 
 def test_wrong_data():
-    with pytest.raises(SkipException) as e:
+    with pytest.raises(SkipComponent) as e:
         PMREPMetrics(context_wrap(PMREPMETRIC_WRONG_DATA))
     assert 'There is no data in the table' in str(e)
 

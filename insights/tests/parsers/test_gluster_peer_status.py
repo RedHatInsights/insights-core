@@ -1,6 +1,8 @@
 import doctest
 import pytest
-from insights.parsers import gluster_peer_status, SkipException
+
+from insights.core.exceptions import SkipComponent
+from insights.parsers import gluster_peer_status
 from insights.tests import context_wrap
 
 OUTPUT = """
@@ -27,6 +29,10 @@ Uuid: 4673e3-5e95-4c02-b9bb-2823483e067bb3
 State: Peer in Cluster (Disconnected)
 """.strip()
 
+OUTPUT_NG = """
+Connection failed. Please check if gluster daemon is operational.
+""".strip()
+
 
 def test_output():
     output = gluster_peer_status.GlusterPeerStatus(context_wrap(OUTPUT_1))
@@ -39,8 +45,14 @@ def test_output():
 
 
 def test_blank_output():
-    with pytest.raises(SkipException) as e:
+    with pytest.raises(SkipComponent) as e:
         gluster_peer_status.GlusterPeerStatus(context_wrap(""))
+    assert "No data." in str(e)
+
+
+def test_failed_output():
+    with pytest.raises(SkipComponent) as e:
+        gluster_peer_status.GlusterPeerStatus(context_wrap(OUTPUT_NG))
     assert "No data." in str(e)
 
 

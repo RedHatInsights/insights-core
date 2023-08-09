@@ -1,9 +1,10 @@
 import doctest
 import pytest
 
-from insights.parsers import engine_db_query, ParseException
-from insights.tests.parsers import skip_exception_check
+from insights.core.exceptions import ParseException
+from insights.parsers import engine_db_query
 from insights.tests import context_wrap
+from insights.tests.parsers import skip_component_check
 
 
 OUTPUT = """
@@ -93,7 +94,7 @@ def test_edbq():
     assert output.result == [{'vds_name': 'hosto', 'rpm_version': 'vdsm-4.40.20-33.git1b7dedcf3.fc30'}, {'vds_name': 'hosto2', 'rpm_version': 'vdsm-4.40.13-38.gite9bae3c68.fc30'}]
 
     # No content
-    assert 'Empty output.' in skip_exception_check(engine_db_query.EngineDBQueryVDSMversion)
+    assert 'Empty output.' in skip_component_check(engine_db_query.EngineDBQueryVDSMversion)
 
     # Error
     with pytest.raises(ParseException) as e:

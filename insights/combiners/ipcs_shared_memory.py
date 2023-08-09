@@ -7,9 +7,9 @@ uses the results of the ``IpcsM`` and ``IpcsMP`` parsers to get the size of the
 shared memory of special ``PID``.
 
 """
-
-from insights import combiner, LegacyItemAccess
-from insights.parsers import ParseException
+from insights.core import LegacyItemAccess
+from insights.core.exceptions import ParseException
+from insights.core.plugins import combiner
 from insights.parsers.ipcs import IpcsM, IpcsMP
 
 

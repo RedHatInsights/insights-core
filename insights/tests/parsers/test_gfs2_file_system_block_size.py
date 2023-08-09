@@ -1,8 +1,9 @@
+import doctest
+import pytest
+
+from insights.core.exceptions import SkipComponent
 from insights.parsers import gfs2_file_system_block_size
 from insights.tests import context_wrap
-from insights.parsers import SkipException
-import pytest
-import doctest
 
 BLOCK_SIZE_OUTPUT = """
 4096
@@ -28,11 +29,11 @@ Try 'stat --help' for more information.
 
 
 def test_exp():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         gfs2_file_system_block_size.GFS2FileSystemBlockSize(context_wrap(BLOCK_SIZE_OUTPUT_2))
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         gfs2_file_system_block_size.GFS2FileSystemBlockSize(context_wrap(BLOCK_SIZE_OUTPUT_4))
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         gfs2_file_system_block_size.GFS2FileSystemBlockSize(context_wrap(BLOCK_SIZE_OUTPUT_5))
 
 

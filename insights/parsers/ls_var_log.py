@@ -23,13 +23,21 @@ from .. import FileListing, parser, CommandParser
 
 from insights.util.file_permissions import FilePermissions
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.ls_var_log)
 class LsVarLog(CommandParser, FileListing):
     """
+    .. warning::
+        This class is deprecated and will be removed from 3.5.0.
+        Please use the :class:`insights.parsers.ls.LSla` instead (NOT ``LSlaR``).
+
     A parser for accessing "ls -laR /var/log".
     """
+    def __init__(self, *args, **kwargs):
+        deprecated(LsVarLog, "Please use the :class:`insights.parsers.ls.LSla` instead.", "3.5.0")
+        super(LsVarLog, self).__init__(*args, **kwargs)
 
     def get_filepermissions(self, dir_name_where_to_search, dir_or_file_name_to_get):
         """

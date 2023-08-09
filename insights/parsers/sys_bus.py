@@ -11,10 +11,9 @@ CdcWDM - file ``/sys/bus/usb/drivers/cdc_wdm/module/refcnt``
 ------------------------------------------------------------
 
 """
-
-
-from insights import parser, Parser
-from insights.parsers import ParseException
+from insights.core import Parser
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 
@@ -41,7 +40,7 @@ class CdcWDM(Parser):
         True
 
     Raises:
-        SkipException: When contents are empty
+        SkipComponent: When contents are empty
         ParseException: When contents are invalid
     """
 

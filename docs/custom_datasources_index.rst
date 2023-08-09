@@ -99,11 +99,27 @@ insights.specs.datasources.httpd
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.intersystems
+---------------------------------------
+
+.. automodule:: insights.specs.datasources.intersystems
+    :members: iris_working_configuration, iris_working_messages_log
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.ipcs
 -------------------------------
 
 .. automodule:: insights.specs.datasources.ipcs
     :members: semid
+    :show-inheritance:
+    :undoc-members:
+
+insights.specs.datasources.kernel
+---------------------------------
+
+.. automodule:: insights.specs.datasources.kernel
+    :members:  current_version, default_version
     :show-inheritance:
     :undoc-members:
 
@@ -114,6 +130,24 @@ insights.specs.datasources.kernel_module_list
     :members: kernel_module_filters
     :show-inheritance:
     :undoc-members:
+
+insights.specs.datasources.leapp
+--------------------------------
+
+.. automodule:: insights.specs.datasources.leapp
+    :members: leapp_report
+    :show-inheritance:
+    :undoc-members:
+
+
+insights.specs.datasources.ls
+-----------------------------
+
+.. automodule:: insights.specs.datasources.ls
+    :members: list_with_la, list_with_la_filtered, list_with_lan, list_with_lan_filtered, list_with_lanL, list_with_lanR, list_with_lanRL, list_with_lanRZ, list_with_lanZ
+    :show-inheritance:
+    :undoc-members:
+
 
 insights.specs.datasources.lpstat
 ---------------------------------
@@ -132,10 +166,27 @@ insights.specs.datasources.luks_devices
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.machine_ids
+--------------------------------------
+
+.. automodule:: insights.specs.datasources.machine_ids
+    :members: dup_machine_id_info
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.malware_detection
 --------------------------------------------
 
 .. automodule:: insights.specs.datasources.malware_detection
+    :members: malware_detection_app
+    :show-inheritance:
+    :undoc-members:
+
+insights.specs.datasources.mount
+--------------------------------
+
+.. automodule:: insights.specs.datasources.mount
+    :members: xfs_mounts
     :show-inheritance:
     :undoc-members:
 
@@ -167,7 +218,15 @@ insights.specs.datasources.ps
 -----------------------------
 
 .. automodule:: insights.specs.datasources.ps
-    :members: ps_eo_cmd, LocalSpecs
+    :members: jboss_runtime_versions, ps_eo_cmd, LocalSpecs
+    :show-inheritance:
+    :undoc-members:
+
+insights.specs.datasources.rsyslog_confs
+----------------------------------------
+
+.. automodule:: insights.specs.datasources.rsyslog_confs
+    :members: rsyslog_errorfile
     :show-inheritance:
     :undoc-members:
 
@@ -200,6 +259,14 @@ insights.specs.datasources.ssl_certificate
 
 .. automodule:: insights.specs.datasources.ssl_certificate
     :members: httpd_certificate_info_in_nss, httpd_ssl_certificate_files, nginx_ssl_certificate_files, mssql_tls_cert_file
+    :show-inheritance:
+    :undoc-members:
+
+insights.specs.datasources.sys_fs_cgroup_memory
+-----------------------------------------------
+
+.. automodule:: insights.specs.datasources.sys_fs_cgroup_memory
+    :members: sys_fs_cgroup_uniq_memory_swappiness
     :show-inheritance:
     :undoc-members:
 

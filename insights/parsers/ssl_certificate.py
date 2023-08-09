@@ -17,14 +17,13 @@ MssqlTLSCertExpireDate - command ``openssl x509 -in mssql_tls_cert_file -enddate
 HttpdCertInfoInNSS - command ``certutil -L -d xxx -n xxx``
 ==========================================================
 """
-
-
-from insights import parser, CommandParser
 from datetime import datetime
-from insights.core.dr import SkipComponent
-from insights.parsers import ParseException, SkipException
-from insights.specs import Specs
+
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipComponent
+from insights.core.plugins import parser
 from insights.parsers.certificates_enddate import CertificatesEnddate
+from insights.specs import Specs
 
 
 def parse_openssl_output(content):
@@ -80,7 +79,7 @@ class CertificateInfo(CommandParser, dict):
         'Dec  7 07:02:33 2020'
 
     Raises:
-        SkipException: when the command output is empty.
+        SkipComponent: when the command output is empty.
     """
 
     def __init__(self, context):
@@ -96,7 +95,7 @@ class CertificateInfo(CommandParser, dict):
 
         self.update(parse_openssl_output(content))
         if not self:
-            raise SkipException("There is not any info in the cert.")
+            raise SkipComponent("There is not any info in the cert.")
 
     @property
     def cert_path(self):
@@ -146,7 +145,7 @@ class CertificateChain(CommandParser, list):
                 in the chain.
 
         Raises:
-            SkipException: when the command output is empty.
+            SkipComponent: when the command output is empty.
         """
 
         self.earliest_expiry_date = None
@@ -160,7 +159,7 @@ class CertificateChain(CommandParser, list):
             if index == len(content) - 1:
                 self.append(parse_openssl_output(content=content[start_index:index + 1]))
         if not self:
-            raise SkipException("There is not any info in the ca cert chain.")
+            raise SkipComponent("There is not any info in the ca cert chain.")
         for one_cert in self:
             expire_date = one_cert.get('notAfter')
             if expire_date and (self.earliest_expiry_date is None or expire_date.datetime < self.earliest_expiry_date.datetime):

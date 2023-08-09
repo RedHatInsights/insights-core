@@ -1,7 +1,8 @@
 import pytest
-from insights.tests import context_wrap
+
+from insights.core.exceptions import SkipComponent
 from insights.parsers.chkconfig import ChkConfig
-from insights.parsers import SkipException
+from insights.tests import context_wrap
 
 SERVICES = """
 auditd         	0:off	1:off	2:on	3:on	4:on	5:on	6:off
@@ -102,5 +103,5 @@ def test_rhel_73():
 
 
 def test_chkconfig_ng():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         ChkConfig(context_wrap(SERVICES_NG))

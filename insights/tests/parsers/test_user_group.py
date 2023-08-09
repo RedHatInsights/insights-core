@@ -1,7 +1,9 @@
-import pytest
 import doctest
+import pytest
+
+from insights.core.exceptions import ParseException, SkipComponent
+from insights.parsers import user_group
 from insights.parsers.user_group import GroupInfo
-from insights.parsers import user_group, SkipException, ParseException
 from insights.tests import context_wrap
 
 GRP = """
@@ -26,7 +28,7 @@ def test_grp():
 
 
 def test_ab():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         GroupInfo(context_wrap(GRP_EMPTY))
 
     with pytest.raises(ParseException):

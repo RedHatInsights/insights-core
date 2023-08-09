@@ -5,21 +5,20 @@ Components identify Satellite or Satellite Capsule
 An ``IsSatellite`` component is valid if the
 :py:class:`insights.combiners.satellite_version.SatelliteVersion` combiner
 indicates the host is a Satellite host, and also checks the Satellite major
-or major and minor versions match the specified versions when they exists.
-Otherwise, it raises a :py:class:`insights.core.dr.SkipComponent` to prevent
+or major and minor versions match the specified versions when they exist.
+Otherwise, it raises a :py:class:`insights.core.exceptions.SkipComponent` to prevent
 dependent components from executing.
 
 An ``IsCapsule`` component is valid if the
 :py:class:`insights.combiners.satellite_version.CapsuleVersion` combiner
 indicates the host is a Satellite Capsule host, and also checks the Satellite
 Capsule major or major and minor versions match the specified versions when
-they exists. Otherwise, it raises a :py:class:`insights.core.dr.SkipComponent`
+they exist. Otherwise, it raises a :py:class:`insights.core.exceptions.SkipComponent`
 to prevent dependent components from executing.
 """
 from insights.combiners.satellite_version import SatelliteVersion, CapsuleVersion
-from insights.core.dr import SkipComponent
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import component
-from insights.core import ParseException
 
 
 @component(SatelliteVersion)

@@ -4,10 +4,9 @@ CpuVulnsAll - combiner for CPU vulnerabilities
 
 This combiner provides an interface to CPU vulnerabilities parsers for cpu vulnerabilities
 """
-
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import combiner
 from insights.parsers.cpu_vulns import CpuVulns
-from insights.parsers import SkipComponent
 
 
 @combiner(CpuVulns)

@@ -17,8 +17,10 @@ IpcsSI - command ``ipcs -s -i {semaphore ID}``
 ----------------------------------------------
 
 """
-from insights import parser, get_active_lines, CommandParser
-from insights.parsers import parse_delimited_table, ParseException, SkipException
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipComponent
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines, parse_delimited_table
 from insights.specs import Specs
 
 
@@ -34,7 +36,7 @@ class IPCS(CommandParser):
         ids = ['semid', 'shmid', 'msqid']
         table = parse_delimited_table(content, heading_ignore=['key'] + ids)
         if not table:
-            raise SkipException('Nothing to parse.')
+            raise SkipComponent('Nothing to parse.')
         id_s = [i for i in table[0] if i in ids]
         if not id_s or len(id_s) != 1:
             raise ParseException('Unexpected heading line.')

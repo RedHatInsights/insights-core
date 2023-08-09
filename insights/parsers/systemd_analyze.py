@@ -4,9 +4,10 @@ SystemdAnalyzeBlame - command ``systemd-analyze blame``
 
 This module parses the output of command ``systemd-analyze blame``.
 """
+from insights.core import CommandParser
+from insights.core.exceptions import SkipComponent
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights import CommandParser, parser
-from insights.parsers import SkipException
 
 
 @parser(Specs.systemd_analyze_blame)
@@ -48,11 +49,11 @@ class SystemdAnalyzeBlame(CommandParser, dict):
                      'unbound-anchor.service': 32.423}
 
     Raises:
-        SkipException: If content is not provided.
+        SkipComponent: If content is not provided.
     """
     def parse_content(self, content):
         if not content:
-            raise SkipException
+            raise SkipComponent
 
         for c in content:
             cols = c.split()

@@ -1,8 +1,10 @@
-from insights.parsers.hammer_ping import HammerPing
-from insights.tests import context_wrap
-from insights.parsers import SkipException, hammer_ping
 import doctest
 import pytest
+
+from insights.core.exceptions import SkipComponent
+from insights.parsers import hammer_ping
+from insights.parsers.hammer_ping import HammerPing
+from insights.tests import context_wrap
 
 HAMMERPING_ERR_1 = """
 Error: Connection refused - connect(2) for "localhost" port 443
@@ -259,7 +261,7 @@ def test_raw_content():
 
 
 def test_content_empty():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         HammerPing(context_wrap(HAMMERPING_EMPTY))
 
 

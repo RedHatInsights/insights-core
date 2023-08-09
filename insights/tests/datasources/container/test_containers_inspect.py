@@ -1,13 +1,15 @@
-import pytest
 import json
+import pytest
+
 from mock.mock import Mock
-from insights import dr
-from insights.core import filters
-from insights.core.dr import SkipComponent
+
+from insights.core import dr, filters
+from insights.core.exceptions import SkipComponent
 from insights.core.spec_factory import DatasourceProvider
 from insights.specs import Specs
-from insights.specs.datasources.container.containers_inspect import containers_inspect_data_datasource, LocalSpecs, running_rhel_containers_id
 from insights.specs.datasources.container import running_rhel_containers
+from insights.specs.datasources.container.containers_inspect import (LocalSpecs, containers_inspect_data_datasource,
+                                                                     running_rhel_containers_id)
 
 
 INSPECT_1 = """

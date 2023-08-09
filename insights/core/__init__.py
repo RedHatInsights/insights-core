@@ -14,9 +14,8 @@ from fnmatch import fnmatch
 
 from insights.contrib.ConfigParser import NoOptionError, NoSectionError
 from insights.core import ls_parser
-from insights.core.plugins import ContentException
+from insights.core.exceptions import ContentException, ParseException, SkipComponent, SkipException  # noqa: F401
 from insights.core.serde import deserializer, serializer
-from insights.parsers import ParseException, SkipException
 from insights.parsr import iniparser
 from insights.parsr.query import Directive, Entry, Result, Section, compile_queries
 from insights.util import deprecated
@@ -355,11 +354,11 @@ class ConfigParser(Parser, ConfigComponent):
     Base Insights component class for Parsers of configuration files.
 
     Raises:
-        SkipException: When input content is empty.
+        SkipComponent: When input content is empty.
     """
     def parse_content(self, content):
         if not content:
-            raise SkipException('Empty content.')
+            raise SkipComponent('Empty content.')
         self.content = content
         self.doc = self.parse_doc(content)
 
@@ -404,7 +403,7 @@ class ConfigCombiner(ConfigComponent):
             if c.file_name == name:
                 return c
 
-        raise SkipException("The main conf {main_conf} doesn't exist.".format(main_conf=name))
+        raise SkipComponent("The main conf {main_conf} doesn't exist.".format(main_conf=name))
 
 
 class ContainerConfigCombiner(ConfigCombiner):
@@ -763,12 +762,12 @@ class YAMLParser(Parser, LegacyItemAccess):
             else:
                 self.data = yaml.load(content, Loader=SafeLoader)
             if self.data is None:
-                raise SkipException("There is no data")
+                raise SkipComponent("There is no data")
             if not isinstance(self.data, (dict, list)):
                 raise ParseException("YAML didn't produce a dictionary or list.")
-        except SkipException as se:
+        except SkipComponent as se:
             tb = sys.exc_info()[2]
-            six.reraise(SkipException, SkipException(str(se)), tb)
+            six.reraise(SkipComponent, SkipComponent(str(se)), tb)
         except:
             tb = sys.exc_info()[2]
             cls = self.__class__
@@ -787,18 +786,20 @@ class JSONParser(Parser, LegacyItemAccess):
                 self.data = json.loads('\n'.join(content))
             else:
                 self.data = json.loads(content)
-            if self.data is None:
-                raise SkipException("There is no data")
         except:
             # If content is empty then raise a skip exception instead of a parse exception.
             if not content:
-                raise SkipException("Empty output.")
+                raise SkipComponent("Empty output.")
             else:
                 tb = sys.exc_info()[2]
                 cls = self.__class__
                 name = ".".join([cls.__module__, cls.__name__])
                 msg = "%s couldn't parse json." % name
                 six.reraise(ParseException, ParseException(msg), tb)
+        # Kept for backwards compatibility;
+        # JSONParser used to raise an exception for valid "null" JSON string
+        if self.data is None:
+            raise SkipComponent("Empty input")
 
 
 class ScanMeta(type):
@@ -867,7 +868,7 @@ class Scannable(six.with_metaclass(ScanMeta, Parser)):
 
     """
     def __init__(self, *args, **kwargs):
-        deprecated(Scannable, "Please use the :class:`insights.core.Parser` instead", "3.2.25")
+        deprecated(Scannable, "Please use the :class:`insights.core.Parser` instead.", "3.3.0")
         super(Scannable, self).__init__(*args, **kwargs)
 
     @classmethod
@@ -994,6 +995,7 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
     * A list of `strptime()` strings.
     * A dictionary with each item's value being a `strptime()` string.  This
       allows the item keys to provide some form of documentation.
+    * A None value when there is no timestamp info in the log file
     """
 
     def parse_content(self, content):
@@ -1212,6 +1214,8 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
                 values like day of year or week of year.
         """
         time_format = self.time_format
+        if time_format is None:
+            raise RuntimeError('Not applied when time_format does not exist')
 
         # Annoyingly, strptime insists that it get the whole time string and
         # nothing but the time string.  However, for most logs we only have a
@@ -1639,6 +1643,10 @@ class IniConfigFile(ConfigParser):
 
 class FileListing(Parser):
     """
+    .. warning::
+        This class is deprecated and will be removed from 3.5.0.
+        Please use the :class:`insights.parsers.ls.FileListing` instead.
+
     Reads a series of concatenated directory listings and turns them into
     a dictionary of entities by name.  Stores all the information for
     each directory entry for every entry that can be parsed, containing:
@@ -1661,7 +1669,8 @@ class FileListing(Parser):
       directory, in the order found in the listing
     * total blocks allocated to all the entities in this directory
 
-    .. note:: For listings that only contain one directory, ``ls`` does not
+    .. note::
+        For listings that only contain one directory, ``ls`` does not
         output the directory name.  The directory is reverse engineered from
         the path given to the parser by Insights - this assumes the
         translation of spaces to underscores and '/' to '.' in paths.  For
@@ -1714,6 +1723,7 @@ class FileListing(Parser):
         # the directory name in the output).  Obviously if we don't have the
         # '-R' flag we should grab this but it's probably not worth parsing
         # the flags to ls for this.
+        deprecated(FileListing, "Please use the :class:`insights.parsers.ls.FileListing instead.", "3.5.0")
         self.first_path = None
         path_re = re.compile(r'ls_-\w+(?P<path>.*)$')
         match = path_re.search(context.path)
@@ -1802,38 +1812,3 @@ class FileListing(Parser):
         if name not in self.listings[directory]['entries']:
             return None
         return self.listings[directory]['entries'][name]
-
-
-class AttributeDict(dict):
-    """
-    Class to convert the access to each item in a dict as attribute.
-
-    .. warning::
-        Deprecated class, please set attributes explicitly.
-
-    Examples:
-        >>> data = {
-        ... "fact1":"fact 1"
-        ... "fact2":"fact 2"
-        ... "fact3":"fact 3"
-        ... }
-        >>> d_obj = AttributeDict(data)
-        {'fact1': 'fact 1', 'fact2': 'fact 2', 'fact3': 'fact 3'}
-        >>> d_obj['fact1']
-        'fact 1'
-        >>> d_obj.get('fact1')
-        'fact 1'
-        >>> d_obj.fact1
-        'fact 1'
-        >>> 'fact2' in d_obj
-        True
-        >>> d_obj.get('fact3', default='no fact')
-        'fact 3'
-        >>> d_obj.get('fact4', default='no fact')
-        'no fact'
-    """
-
-    def __init__(self, *args, **kwargs):
-        deprecated(AttributeDict, "Please set attributes explicitly.", "3.0.300")
-        super(AttributeDict, self).__init__(*args, **kwargs)
-        self.__dict__ = self

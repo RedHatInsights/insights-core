@@ -11,16 +11,17 @@ ContainerInstalledRpms - command ``rpm -qa`` for containers
 
 import json
 import re
-from collections import defaultdict
-
 import six
 import warnings
 
-from ..util import rsplit
-from .. import parser, get_active_lines, CommandParser
-from .rpm_vercmp import rpm_version_compare
+from collections import defaultdict
+
+from insights import ContainerParser, parser, CommandParser
+from insights.core.exceptions import SkipComponent
+from insights.parsers.rpm_vercmp import rpm_version_compare
 from insights.specs import Specs
-from insights import ContainerParser
+from insights.util import rsplit
+
 
 # This list of architectures is taken from PDC (Product Definition Center):
 # https://pdc.fedoraproject.org/rest_api/v1/arches/
@@ -145,12 +146,12 @@ class RpmList(object):
     def is_hypervisor(self):
         """
         .. warning::
-           This method is deprecated, please use
+           This method is deprecated, and will be removed from 3.3.0. Please use
            :py:class:`insights.parsers.virt_what.VirtWhat` which uses the command `virt-what` to check the hypervisor type.
 
         bool: True if ".el[6|7]ev" exists in "vdsm".release, else False.
         """
-        warnings.warn("`is_hypervisor` is deprecated: Use `virt_what.VirtWhat` which uses the command `virt-what` to check the hypervisor type.", DeprecationWarning)
+        warnings.warn("`is_hypervisor` is deprecated and will be removed from 3.3.0: Use `virt_what.VirtWhat` which uses the command `virt-what` to check the hypervisor type.", DeprecationWarning)
         rpm = self.get_max("vdsm")
         return (True if rpm and rpm.release.endswith((".el6ev", ".el7ev")) else
                 False)
@@ -252,25 +253,24 @@ class InstalledRpms(CommandParser, RpmList):
         super(InstalledRpms, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
+        if content and (not content[0].strip() or "COMMAND>" in content[0]):
+            content = content[1:]
+        if not content:
+            raise SkipComponent("The content of rpm command is empty!")
+        parse_func = InstalledRpm.from_json if any(
+                '"name":' in _l for _l in content) else InstalledRpm.from_line
         packages = defaultdict(list)
-        for line in get_active_lines(content, comment_char='COMMAND>'):
+        for line in content:
+            if not line.strip():
+                continue
             if line.startswith('error:') or line.startswith('warning:'):
                 self.errors.append(line)
             else:
                 try:
-                    # Try to parse from JSON input
-                    rpm = InstalledRpm.from_json(line)
+                    rpm = parse_func(line)
                     packages[rpm.name].append(rpm)
                 except Exception:
-                    # If that fails, try to parse from line input
-                    if line.strip():
-                        try:
-                            rpm = InstalledRpm.from_line(line)
-                            packages[rpm.name].append(rpm)
-                        except Exception:
-                            # Both ways failed
-                            self.unparsed.append(line)
-        # Don't want defaultdict's behavior after parsing is complete
+                    self.unparsed.append(line)
         self.packages = dict(packages)
 
     @property
@@ -312,7 +312,7 @@ def pad_version(left, right):
         try:
             a = mx[idx]
             b = mn[idx]
-            if type(a) != type(b):
+            if type(a) is not type(b):
                 mn.insert(idx, 0)
         except IndexError:
             if type(c) is int:
@@ -372,15 +372,24 @@ class InstalledRpm(object):
              'RSA/8, Mon Aug 16 11:14:17 2010, Key ID 199e2f91fd431d51')
     """
     PRODUCT_SIGNING_KEYS = [
-        'F76F66C3D4082792', '199e2f91fd431d51', '5326810137017186',
+        # NOTE: All In lower cases
+        # RELEASE PACKAGE SIGNING
+        '199e2f91fd431d51', '1ac4971355a34a82', '5054e4a45a6340b3',
+        'e1a4bd708a828aad', 'f76f66c3d4082792', '5326810137017186',
         '45689c882fa658e0', '219180cddb42a60e', '7514f77d8366b0d9',
-        'fd372689897da07a', '938a80caf21541eb',
-        '08b871e6a5787476', '1AC4971355A34A82'
-        'E191DDB2C509E861'
+        '08dd962c1c711042',
+        # BETA PACKAGE SIGNING
+        'fd372689897da07a', '938a80caf21541eb'
+        # DEVELOPMENT PACKAGE SIGNING
+        '08b871e6a5787476',
+        # OTHER PRODUCTS
+        'e191ddb2c509e861',
+        # CERTIFICATES
+        '66e8f8a29c65f85c', '680b9144769a9f8f', '8ed29db42a2898c8'
     ]
     """
-    list: List of package-signing keys. Should be updated timely according to
-          https://access.redhat.com/security/team/key/
+    list: List of package-signing keys in all lower cases. Should be updated
+          timely according to https://access.redhat.com/security/team/key/
     """
     SOSREPORT_KEYS = [
         'installtime', 'buildtime', 'vendor', 'buildserver', 'pgpsig', 'pgpsig_short'
@@ -411,7 +420,8 @@ class InstalledRpm(object):
         self.vendor = data['vendor'] if 'vendor' in data else None
         _gpg_key_pos = data.get('sigpgp', data.get('rsaheader', data.get('pgpsig_short', data.get('pgpsig', data.get('vendor', '')))))
         if _gpg_key_pos:
-            self.redhat_signed = any(key in _gpg_key_pos for key in self.PRODUCT_SIGNING_KEYS)
+            self.redhat_signed = any(key in _gpg_key_pos.lower()
+                                     for key in self.PRODUCT_SIGNING_KEYS)
 
     @classmethod
     def from_package(cls, package_string):

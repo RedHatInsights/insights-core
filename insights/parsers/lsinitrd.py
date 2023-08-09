@@ -1,20 +1,33 @@
 """
-Lsinitrd - command ``lsinitrd``
+lsinitrd - command ``lsinitrd``
 ===============================
 
-This parser parses the filtered output of command ``lsinitrd`` and provides the
-info of listed files.
+This module contains the following parsers:
+
+Lsinitrd - command ``lsinitrd``
+-------------------------------
+
+LsinitrdKdumpImage - command ``lsinitrd initramfs-<kernel-version>kdump.img``
+-----------------------------------------------------------------------------
+
+LsinitrdLvmConf - command ``/bin/lsinitrd -f /etc/lvm/lvm.conf --kver {default_kernel_version}``
+------------------------------------------------------------------------------------------------
+
 """
 
 from insights import parser, CommandParser
 from insights.core import ls_parser
 from insights.specs import Specs
 from insights.parsers import keyword_search
+from insights.parsers.lvm import LvmConf
 
 
 @parser(Specs.lsinitrd)
 class Lsinitrd(CommandParser):
     """
+    This parser parses the filtered output of command ``lsinitrd`` and provides
+    the info of listed files.
+
     A parser for command "lsinitrd".
 
     Attributes:
@@ -86,3 +99,62 @@ class Lsinitrd(CommandParser):
 
         """
         return keyword_search(self.data.values(), **kwargs)
+
+
+@parser(Specs.lsinitrd_kdump_image)
+class LsinitrdKdumpImage(Lsinitrd):
+    """
+    Parses output of ``lsinitrd initramfs-<kernel-version>kdump.img`` command.
+
+    Sample ``lsinitrd initramfs-<kernel-version>kdump.img`` output::
+
+        Image: initramfs-4.18.0-240.el8.x86_64kdump.img: 19M
+        ========================================================================
+        Version: dracut-049-95.git20200804.el8
+
+        Arguments: --quiet --hostonly --hostonly-cmdline --hostonly-i18n --hostonly-mode 'strict' -o 'plymouth dash resume ifcfg earlykdump' --mount '/dev/mapper/rhel-root /sysroot xfs rw,relatime,seclabel,attr2,inode64,logbufs=8,logbsize=32k,noquota,nofail,x-systemd.before=initrd-fs.target' --no-hostonly-default-device -f
+
+        dracut modules:
+        bash
+        systemd
+        systemd-initrd
+        i18n
+        ========================================================================
+        crw-r--r--   1 root     root       5,   1 Aug  4  2020 dev/console
+        crw-r--r--   1 root     root       1,  11 Aug  4  2020 dev/kmsg
+        crw-r--r--   1 root     root       1,   3 Aug  4  2020 dev/null
+        crw-r--r--   1 root     root       1,   8 Aug  4  2020 dev/random
+        crw-r--r--   1 root     root       1,   9 Aug  4  2020 dev/urandom
+        drwxr-xr-x  14 root     root            0 Aug  4  2020 .
+        lrwxrwxrwx   1 root     root            7 Aug  4  2020 bin -> usr/bin
+        drwxr-xr-x   2 root     root            0 Aug  4  2020 dev
+        ========================================================================
+
+    Examples:
+        >>> type(lsinitrd_kdump_image)
+        <class 'insights.parsers.lsinitrd_kdump_image.LsinitrdKdumpImage'>
+        >>> lsinitrd_kdump_image.search(name__contains='urandom')
+        >>> len(result_list)
+        1
+        >>> result_list[0].get('raw_entry')
+        'crw-r--r--   1 root     root       1,   9 Aug  4  2020 dev/urandom'
+    """
+    pass
+
+
+@parser(Specs.lsinitrd_lvm_conf)
+class LsinitrdLvmConf(LvmConf):
+    """
+    Parses the ``/dev/lvm/lvm.conf`` file get from the default initramfs.
+
+    Sample Input::
+        # volume_list = [ "vg1", "vg2/lvol1", "@tag1", "@*" ]
+        volume_list = [ "vg2", "vg3/lvol3", "@tag2", "@*" ]
+
+    Examples:
+        >>> type(lsinitrd_lvm_conf)
+        <class 'insights.parsers.lsinitrd.LsinitrdLvmConf'>
+        >>> lsinitrd_lvm_conf.get("volume_list")
+        [ "vg2", "vg3/lvol3", "@tag2", "@*" ]
+    """
+    pass

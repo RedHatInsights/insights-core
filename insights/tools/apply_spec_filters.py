@@ -38,7 +38,7 @@ specs = sorted(vars(Specs))
 filters = {}
 for spec in specs:
     s = getattr(Specs, spec)
-    if type(s) == RegistryPoint:
+    if isinstance(s, RegistryPoint):
         f = get_filters(s)
         if f:
             filters[spec] = sorted(f)

@@ -22,10 +22,10 @@ Examples:
     >>> kpatchs.installed.get('kpatch_3_10_0_1062_1_1_1_4')
     '3.10.0-1062.1.1.el7.x86_64'
 """
-
+from insights.core import CommandParser
+from insights.core.exceptions import SkipComponent
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.parsers import SkipException
-from insights import parser, CommandParser
 
 
 @parser(Specs.kpatch_list)
@@ -33,7 +33,7 @@ class KpatchList(CommandParser):
     """Class for command: /usr/sbin/kpatch list"""
     def parse_content(self, content):
         if not content:
-            raise SkipException("No Data from command: /usr/sbin/kpatch list")
+            raise SkipComponent("No Data from command: /usr/sbin/kpatch list")
 
         self._loaded = {}
         self._installed = {}

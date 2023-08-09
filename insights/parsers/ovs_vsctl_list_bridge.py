@@ -57,12 +57,12 @@ class OVSvsctlListBridge(OVSvsctlList):
                      element contains the details of a bridge.
 
     Raises:
-        SkipException: When file is empty.
+        SkipComponent: When file is empty.
     """
     def __init__(self, *args, **kwargs):
         deprecated(
             OVSvsctlListBridge,
             "Please use the :class:`insights.ovs_vsctl.OVSvsctlListBridge` instead.",
-            "3.2.25"
+            "3.3.0"
         )
         super(OVSvsctlListBridge, self).__init__(*args, **kwargs)

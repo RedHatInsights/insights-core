@@ -1,8 +1,10 @@
-from insights.parsers import openshift_get_with_config, ParseException
-from insights.parsers.openshift_get_with_config import OcGetClusterRoleWithConfig, OcGetClusterRoleBindingWithConfig
-from insights.tests import context_wrap
 import doctest
 import pytest
+
+from insights.core.exceptions import ParseException
+from insights.parsers import openshift_get_with_config
+from insights.parsers.openshift_get_with_config import OcGetClusterRoleWithConfig, OcGetClusterRoleBindingWithConfig
+from insights.tests import context_wrap
 
 OC_GET_CLUSTER_ROLE = """
 NAME

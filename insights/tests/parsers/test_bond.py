@@ -1,8 +1,9 @@
 import doctest
 import pytest
-from insights.parsers import ParseException
-from insights.parsers.bond import Bond
+
+from insights.core.exceptions import ParseException
 from insights.parsers import bond
+from insights.parsers.bond import Bond
 from insights.tests import context_wrap
 
 CONTEXT_PATH = "proc/net/bonding/bond0"

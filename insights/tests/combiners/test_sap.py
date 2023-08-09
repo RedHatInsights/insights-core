@@ -160,7 +160,7 @@ def test_saphostcrtl_hana_2():
     assert sap['DVEBMGS09'].version == '749, patch 301, changelist 1779613'
     assert sap.version('HDB90') == '749, patch 211, changelist 1754007'
     assert sap.hostname('HDB62') == 'd62dbsrv'
-    assert sap.type('SCS10') == 'SCS'
+    assert sap.type('SCS10') == 'SCS'  # noqa E721
     assert sap.full_type('SCS10') == 'Java Central Services'
     assert sap.is_netweaver is True
     assert sap.is_hana is True

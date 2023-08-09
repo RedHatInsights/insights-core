@@ -5,6 +5,7 @@ import os
 import pytest
 
 from insights.client import InsightsClient
+from insights.client.client import get_file_handler, RotatingFileHandlerWithUMask, FileHandlerWithUMask
 from insights.client.archive import InsightsArchive
 from insights.client.config import InsightsConfig
 from insights import package_info
@@ -91,6 +92,55 @@ def _mock_no_register_files():
         rmtree(TEMP_TEST_REG_DIR2)
 
 
+@contextmanager
+def _mock_no_register_files_machineid_present():
+    # mock a directory with the fresh install files
+    if not os.path.exists(TEMP_TEST_REG_DIR):
+        os.mkdir(TEMP_TEST_REG_DIR)
+    if not os.path.exists(TEMP_TEST_REG_DIR2):
+        os.mkdir(TEMP_TEST_REG_DIR2)
+    try:
+        unregistered_path = os.path.join(TEMP_TEST_REG_DIR, ".unregistered")
+        with open(unregistered_path, "w") as unregistered_file:
+            unregistered_file.write("date")
+        unregistered_path2 = os.path.join(TEMP_TEST_REG_DIR2, ".unregistered")
+        with open(unregistered_path2, "w") as unregistered_file:
+            unregistered_file.write("date")
+        machine_id_path = os.path.join(TEMP_TEST_REG_DIR, "machine-id")
+        with open(machine_id_path, "w") as machine_id_file:
+            machine_id_file.write("id")
+        yield
+    finally:
+        rmtree(TEMP_TEST_REG_DIR)
+        rmtree(TEMP_TEST_REG_DIR2)
+
+
+@patch('insights.client.client.os.path.dirname')
+@patch('insights.client.client.get_version_info')
+def test_get_log_handler_by_client_version(get_version_info, mock_path_dirname):
+    '''
+    Verify that get_log_handler() returns
+    the correct file handler depending on
+    the client rpm version.
+    '''
+    mock_path_dirname.return_value = "mock_dirname"
+
+    # RPM version is older than 3.2.0
+    get_version_info.return_value = {'client_version': '3.1.8'}
+    conf = InsightsConfig(logging_file='/tmp/insights.log')
+    assert isinstance(get_file_handler(conf), RotatingFileHandlerWithUMask) is True
+
+    # RPM version is 3.2.0
+    get_version_info.return_value = {'client_version': '3.2.0'}
+    conf = InsightsConfig(logging_file='/tmp/insights.log')
+    assert isinstance(get_file_handler(conf), FileHandlerWithUMask) is True
+
+    # RPM version is newer than 3.2.0
+    get_version_info.return_value = {'client_version': '3.2.1'}
+    conf = InsightsConfig(logging_file='/tmp/insights.log')
+    assert isinstance(get_file_handler(conf), FileHandlerWithUMask) is True
+
+
 @patch('insights.client.client.generate_machine_id')
 @patch('insights.client.utilities.delete_unregistered_file')
 @patch('insights.client.utilities.write_to_disk')
@@ -111,11 +161,35 @@ def test_register_legacy(utilities_write, delete_unregistered_file, generate_mac
     with _mock_no_register_files():
         client.register() is True
     delete_unregistered_file.assert_called_once()
-    generate_machine_id.assert_called_once_with(new=False)
+    generate_machine_id.assert_called_once_with()
     utilities_write.assert_has_calls((
         call(constants.registered_files[0]),
         call(constants.registered_files[1])
     ))
+
+
+@patch('insights.client.client.generate_machine_id')
+@patch('insights.client.utilities.delete_unregistered_file')
+@patch('insights.client.utilities.write_to_disk')
+@patch('insights.client.utilities.constants.registered_files',
+       [TEMP_TEST_REG_DIR + '/.registered',
+        TEMP_TEST_REG_DIR2 + '/.registered'])
+@patch('insights.client.utilities.constants.unregistered_files',
+       [TEMP_TEST_REG_DIR + '/.unregistered',
+        TEMP_TEST_REG_DIR2 + '/.unregistered'])
+@patch('insights.client.utilities.constants.machine_id_file',
+       TEMP_TEST_REG_DIR + '/machine-id')
+def test_register_legacy_error_machineid(utilities_write, delete_unregistered_file, generate_machine_id):
+    config = InsightsConfig(register=True, legacy_upload=True)
+    client = InsightsClient(config)
+    client.connection = _mock_InsightsConnection(registered=False)
+    client.connection.config = config
+    client.session = True
+    # this should return False
+    with _mock_no_register_files_machineid_present():
+        client.register() is False
+    delete_unregistered_file.assert_not_called()
+    generate_machine_id.assert_not_called()
 
 
 @contextmanager
@@ -172,36 +246,6 @@ def test_unregister_legacy(date, client_write, utilities_write, _delete_cache_fi
     ))
 
 
-@patch('insights.client.utilities.delete_unregistered_file')
-@patch('insights.client.utilities.write_to_disk')
-@patch('insights.client.client.generate_machine_id')
-@patch('insights.client.utilities.constants.registered_files',
-       [TEMP_TEST_REG_DIR + '/.registered',
-        TEMP_TEST_REG_DIR2 + '/.registered'])
-@patch('insights.client.utilities.constants.unregistered_files',
-       [TEMP_TEST_REG_DIR + '/.unregistered',
-        TEMP_TEST_REG_DIR2 + '/.unregistered'])
-@patch('insights.client.utilities.constants.machine_id_file',
-       TEMP_TEST_REG_DIR + '/machine-id')
-def test_force_reregister_legacy(generate_machine_id, utilities_write, delete_unregistered_file):
-    config = InsightsConfig(reregister=True, legacy_upload=True)
-    client = InsightsClient(config)
-    client.connection = _mock_InsightsConnection(registered=None)
-    client.connection.config = config
-    client.session = True
-
-    with _mock_registered_files():
-        assert client.register() is True
-    delete_unregistered_file.assert_called_once()
-    generate_machine_id.assert_called_once_with(new=True)
-    utilities_write.assert_has_calls((
-        call(constants.registered_files[0], delete=True),
-        call(constants.registered_files[1], delete=True),
-        call(constants.unregistered_files[0], delete=True),
-        call(constants.unregistered_files[1], delete=True)
-    ))
-
-
 def test_register_container():
     with pytest.raises(ValueError):
         InsightsConfig(register=True, analyze_container=True)
@@ -212,11 +256,7 @@ def test_unregister_container():
         InsightsConfig(unregister=True, analyze_container=True)
 
 
-def test_force_reregister_container():
-    with pytest.raises(ValueError):
-        InsightsConfig(reregister=True, analyze_container=True)
-
-
+@pytest.mark.skip(reason="Mocked paths not working in QE jenkins")
 @patch('insights.client.utilities.constants.registered_files',
        [TEMP_TEST_REG_DIR + '/.registered',
         TEMP_TEST_REG_DIR2 + '/.registered'])

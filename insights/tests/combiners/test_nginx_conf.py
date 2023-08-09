@@ -1,8 +1,8 @@
 import pytest
 
-from insights.parsers import SkipException
-from insights.parsers.nginx_conf import NginxConfPEG, ContainerNginxConfPEG
 from insights.combiners.nginx_conf import NginxConfTree, ContainerNginxConfTree
+from insights.core.exceptions import SkipComponent
+from insights.parsers.nginx_conf import NginxConfPEG, ContainerNginxConfPEG
 from insights.parsr.query import startswith
 from insights.tests import context_wrap
 
@@ -219,7 +219,7 @@ def test_nginx_recursive_includes():
 
 def test_nginx_empty():
     nginx_conf = context_wrap('', path="/etc/nginx/nginx.conf")
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         assert NginxConfPEG(nginx_conf) is None
 
 

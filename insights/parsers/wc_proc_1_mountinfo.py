@@ -4,10 +4,9 @@ WcProc1Mountinfo - Command ``/usr/bin/wc -l /proc/1/mountinfo``
 
 Parser for parsing the output of command ``/usr/bin/wc -l /proc/1/mountinfo``.
 """
-
-from insights import Parser, parser
-from insights.core.dr import SkipComponent
-from insights.parsers import ParseException
+from insights.core import Parser
+from insights.core.exceptions import ParseException, SkipComponent
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 

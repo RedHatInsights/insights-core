@@ -1,6 +1,8 @@
-import pytest
 import doctest
-from insights.parsers import podman_inspect, SkipException
+import pytest
+
+from insights.core.exceptions import SkipComponent
+from insights.parsers import podman_inspect
 from insights.tests import context_wrap
 
 
@@ -452,7 +454,7 @@ def test_podman_object_image_inspect():
 
 
 def test_podman_container_inspect_truncated_input():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         podman_inspect.PodmanInspectContainer(context_wrap(PODMAN_CONTAINER_INSPECT_TRUNCATED))
 
 

@@ -223,10 +223,10 @@ def normalizeSnippet(snippet):
             for item in value:
                 if isinstance(item, six.text_type):
                     new_sequence.append(item.encode('ascii', 'ignore'))
-                if not isinstance(item, CommentedMap):
-                    new_sequence.append(item)
-                else:
+                elif isinstance(item, CommentedMap):
                     new_sequence.append(normalizeSnippet(item))
+                else:
+                    new_sequence.append(item)
             new[key] = new_sequence
         elif isinstance(value, six.text_type):
             new[key] = value.encode('ascii', 'ignore')

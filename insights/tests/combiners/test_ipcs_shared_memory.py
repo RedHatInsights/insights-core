@@ -1,10 +1,11 @@
-from insights.parsers import ParseException
-from insights.parsers.ipcs import IpcsM, IpcsMP
-from insights.combiners import ipcs_shared_memory
-from insights.combiners.ipcs_shared_memory import IpcsSharedMemory
-from insights.tests import context_wrap
 import doctest
 import pytest
+
+from insights.combiners import ipcs_shared_memory
+from insights.combiners.ipcs_shared_memory import IpcsSharedMemory
+from insights.core.exceptions import ParseException
+from insights.parsers.ipcs import IpcsM, IpcsMP
+from insights.tests import context_wrap
 
 IPCS_M = """
 ------ Shared Memory Segments --------

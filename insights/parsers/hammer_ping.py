@@ -33,9 +33,10 @@ Examples:
     >>> hammer_ping.services_of_status('OK')
     ['elasticsearch', 'foreman_tasks']
 """
-from insights import parser, CommandParser
+from insights.core import CommandParser
+from insights.core.exceptions import SkipComponent
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.parsers import SkipException
 
 
 @parser(Specs.hammer_ping)
@@ -80,7 +81,7 @@ class HammerPing(CommandParser, dict):
         service_name = None
         content = list(filter(None, (line.split(comment_char, 1)[0].rstrip() for line in content)))
         if not content:
-            raise SkipException("Empty output.")
+            raise SkipComponent("Empty output.")
 
         for line in content:
             items = [item for item in line.split(':', 1)]

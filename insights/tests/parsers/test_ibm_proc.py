@@ -1,8 +1,10 @@
-import pytest
 import doctest
-from insights.tests import context_wrap
-from insights.parsers import ibm_proc, SkipException
+import pytest
+
+from insights.core.exceptions import SkipComponent
+from insights.parsers import ibm_proc
 from insights.parsers.ibm_proc import IBMPpcLparCfg, IBMFirmwareLevel
+from insights.tests import context_wrap
 
 
 PROC_PPC_LPARCFG = """
@@ -29,13 +31,13 @@ def test_ibm_proc():
 
 
 def test_ibm_proc_empty():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         IBMPpcLparCfg(context_wrap(''))
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         IBMFirmwareLevel(context_wrap(''))
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         IBMFirmwareLevel(context_wrap(PROC_IBM_FWL_NG))
 
 

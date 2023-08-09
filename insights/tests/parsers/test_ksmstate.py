@@ -1,8 +1,10 @@
-from insights.parsers import ksmstate, SkipException, ParseException
+import doctest
+import pytest
+
+from insights.core.exceptions import ParseException, SkipComponent
+from insights.parsers import ksmstate
 from insights.parsers.ksmstate import KSMState
 from insights.tests import context_wrap
-import pytest
-import doctest
 
 KSMSTATE0 = "0"
 KSMSTATE1 = "1"
@@ -30,7 +32,7 @@ def test_ksmstate():
 
 
 def test_ksmstate_exp():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         KSMState(context_wrap(KSMSTATE_ab0))
 
     with pytest.raises(ParseException):

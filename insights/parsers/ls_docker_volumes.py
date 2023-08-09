@@ -39,11 +39,18 @@ Examples:
 
 from .. import FileListing, parser, CommandParser
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.ls_docker_volumes)
 class DockerVolumesDir(CommandParser, FileListing):
     """
+    .. warning::
+        This class is deprecated and will be removed from 3.5.0.
+        Please use the :class:`insights.parsers.ls.LSlanR` instead.
+
     Read the directory for the docker volumes.
     """
-    pass
+    def __init__(self, *args, **kwargs):
+        deprecated(DockerVolumesDir, "Please use the :class:`insights.parsers.ls.LSlanR` instead.", "3.5.0")
+        super(DockerVolumesDir, self).__init__(*args, **kwargs)

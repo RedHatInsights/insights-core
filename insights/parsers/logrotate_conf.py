@@ -11,11 +11,12 @@ See: http://www.linuxmanpages.org/8/logrotate
 import string
 
 from insights.core import ConfigParser, LegacyItemAccess, Parser
+from insights.core.exceptions import ParseException
 from insights.core.plugins import parser
-from insights.parsers import ParseException, get_active_lines
+from insights.parsers import get_active_lines
 from insights.parsr import (AnyChar, Choice, EOF, EOL, Forward, LeftCurly, LineEnd,
                             Literal, Many, Number, OneLineComment, Opt, PosMarker,
-                            QuotedString, RightCurly, skip_none, String, WS, WSChar)
+                            QuotedString, RightCurly, String, WS, WSChar, skip_none)
 from insights.parsr.query import Directive, Entry, Section
 from insights.specs import Specs
 

@@ -1,11 +1,10 @@
-import pytest
 import doctest
+import pytest
 
-from insights.tests import context_wrap
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import auditctl
 from insights.parsers.auditctl import AuditStatus, AuditRules
-from insights.parsers import ParseException, SkipException
-
+from insights.tests import context_wrap
 
 NORMAL_AUDS_RHEL6 = """
 AUDIT_STATUS: enabled=1 flag=1 pid=1483 rate_limit=0 backlog_limit=8192 lost=3 backlog=0
@@ -89,10 +88,10 @@ def test_normal_auds_rhel7():
 
 def test_auds_blank_input():
     ctx = context_wrap(BLANK_INPUT_SAMPLE)
-    with pytest.raises(SkipException) as sc:
+    with pytest.raises(SkipComponent) as sc:
         AuditStatus(ctx)
     assert "Input content is empty." in str(sc)
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         AuditStatus(context_wrap(BAD_INPUT_SAMPLE))
 
 
@@ -110,9 +109,9 @@ def test_audit_rules():
 
 
 def test_audit_rules_exception():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         AuditRules(context_wrap(AUDIT_RULES_OUTPUT1))
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         AuditRules(context_wrap(AUDIT_RULES_OUTPUT3))
 
 

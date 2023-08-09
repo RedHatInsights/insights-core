@@ -6,8 +6,8 @@ import re
 
 from insights.core import IniConfigFile
 from insights.core.filters import add_filter
+from insights.core.exceptions import ParseException
 from insights.core.plugins import parser
-from insights.parsers import ParseException
 from insights.parsr import iniparser
 from insights.specs import Specs
 

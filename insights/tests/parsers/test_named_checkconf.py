@@ -1,7 +1,8 @@
 import doctest
 import pytest
 
-from insights.parsers import named_checkconf, SkipException
+from insights.core.exceptions import SkipComponent
+from insights.parsers import named_checkconf
 from insights.parsers.named_checkconf import NamedCheckconf
 from insights.tests import context_wrap
 
@@ -170,7 +171,7 @@ zone "0.in-addr.arpa" IN {
 
 
 def test_config_no_data():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         NamedCheckconf(context_wrap(""))
 
 

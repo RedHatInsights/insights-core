@@ -1,8 +1,10 @@
 import pytest
 
-from insights.parsers import samba, ParseException
-from insights.tests import context_wrap
 from doctest import testmod
+
+from insights.core.exceptions import ParseException
+from insights.parsers import samba
+from insights.tests import context_wrap
 
 SAMBA_CONFIG_DOCUMENTATION = '''
 # This is the main Samba configuration file. You should read the

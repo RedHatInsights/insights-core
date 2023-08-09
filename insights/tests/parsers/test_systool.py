@@ -1,6 +1,7 @@
 import pytest
 
-from insights.parsers.systool import SystoolSCSIBus, ParseException
+from insights.core.exceptions import ParseException
+from insights.parsers.systool import SystoolSCSIBus
 from insights.tests import context_wrap
 
 SYSTOOL_B_SCSI_V_1 = """

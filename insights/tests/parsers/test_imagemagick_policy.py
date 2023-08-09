@@ -1,7 +1,8 @@
 import doctest
 import pytest
 
-from insights.parsers import imagemagick_policy, SkipException
+from insights.core.exceptions import SkipComponent
+from insights.parsers import imagemagick_policy
 from insights.parsers.imagemagick_policy import ImageMagickPolicy
 from insights.tests import context_wrap
 
@@ -92,7 +93,7 @@ TEST_CASES = [
 
 
 def test_no_data():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         ImageMagickPolicy(context_wrap(""))
 
 

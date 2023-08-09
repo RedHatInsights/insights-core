@@ -1,8 +1,10 @@
 import pytest
+
 from mock.mock import Mock
-from insights.core.dr import SkipComponent
+
+from insights.core.exceptions import SkipComponent
 from insights.core.spec_factory import DatasourceProvider
-from insights.specs.datasources.sys_fs_cgroup_memory_tasks_number import sys_fs_cgroup_memory_tasks_number_data_datasource, LocalSpecs
+from insights.specs.datasources.sys_fs_cgroup_memory_tasks_number import LocalSpecs, sys_fs_cgroup_memory_tasks_number_data_datasource
 
 
 SYS_FS_CGROUP_MEMORY_TASKS = """

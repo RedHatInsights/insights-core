@@ -24,9 +24,18 @@ Examples:
 
 from insights.specs import Specs
 from .. import parser, CommandParser, FileListing
+from insights.util import deprecated
 
 
 @parser(Specs.ls_ipa_idoverride_memberof)
 class LsIPAIdoverrideMemberof(CommandParser, FileListing):
-    """Parses output of ``ls -lan /usr/share/ipa/ui/js/plugins/idoverride-memberof`` command."""
-    pass
+    """
+    .. warning::
+        This class is deprecated and will be removed from 3.5.0.
+        Please use the :class:`insights.parsers.ls.LSlan` instead.
+
+    Parses output of ``ls -lan /usr/share/ipa/ui/js/plugins/idoverride-memberof`` command.
+    """
+    def __init__(self, *args, **kwargs):
+        deprecated(LsIPAIdoverrideMemberof, "Please use the :class:`insights.parsers.ls.LSlan` instead.", "3.5.0")
+        super(LsIPAIdoverrideMemberof, self).__init__(*args, **kwargs)

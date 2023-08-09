@@ -27,7 +27,7 @@ want to install via RPM, check out Pyenv:
 import nox
 
 
-@nox.session(python=["2.7", "3.6", "3.8", "3.9", "3.10"])
+@nox.session(python=["2.7", "3.6", "3.8", "3.9", "3.10", "3.11"])
 def testing(session):
     session.install('.[testing]')
     session.run('pytest')

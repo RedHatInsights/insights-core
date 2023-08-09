@@ -1,16 +1,15 @@
 """
 Custom datasource to get the linux users count who map to a selinux user.
 """
-
 import json
 
 from insights.core.context import HostContext
-from insights.core.dr import SkipComponent
+from insights.core.exceptions import SkipComponent
+from insights.core.filters import get_filters
 from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider, simple_command
-from insights.specs import Specs
 from insights.parsers import parse_fixed_table
-from insights.core.filters import get_filters
+from insights.specs import Specs
 
 
 class LocalSpecs(Specs):

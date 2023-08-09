@@ -11,8 +11,9 @@ For more details, See: https://cloud.google.com/compute/docs/reference/rest/v1/i
 """
 import json
 
-from insights.parsers import SkipException, ParseException
-from insights import parser, CommandParser
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipComponent
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 
@@ -28,7 +29,7 @@ class GCPLicenseCodes(CommandParser):
         [{"id": "601259152637613565"}]
 
     Raises:
-        SkipException: When content is empty or no parse-able content.
+        SkipComponent: When content is empty or no parse-able content.
         ParseException: When the json is unable to be parsed
 
     Attributes:
@@ -44,7 +45,7 @@ class GCPLicenseCodes(CommandParser):
 
     def parse_content(self, content):
         if not content or 'curl: ' in content[0]:
-            raise SkipException()
+            raise SkipComponent()
         try:
             license_list = json.loads(content[0])
         except:

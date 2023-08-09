@@ -9,9 +9,9 @@ which is used to check the type of the Azure instance of the host.
 For more details, See: https://docs.microsoft.com/en-us/azure/virtual-machines/linux/sizes
 
 """
-
-from insights.parsers import SkipException, ParseException
-from insights import parser, CommandParser
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipComponent
+from insights.core.plugins import parser
 from insights.specs import Specs
 from insights.util import deprecated
 
@@ -32,7 +32,7 @@ class AzureInstanceType(CommandParser):
         Standard_L64s_v2
 
     Raises:
-        SkipException: When content is empty or no parse-able content.
+        SkipComponent: When content is empty or no parse-able content.
         ParseException: When type cannot be recognized.
 
     Attributes:
@@ -52,12 +52,12 @@ class AzureInstanceType(CommandParser):
         'Standard_L64s_v2'
     """
     def __init__(self, *args, **kwargs):
-        deprecated(AzureInstanceType, "Import AzureInstanceType from insights.parsers.azure_instance instead", "3.2.25")
+        deprecated(AzureInstanceType, "Import AzureInstanceType from insights.parsers.azure_instance instead.", "3.3.0")
         super(AzureInstanceType, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
         if not content or 'curl: ' in content[0]:
-            raise SkipException()
+            raise SkipComponent()
 
         self.raw = self.type = self.size = self.version = None
         # Ignore any curl stats that may be present in data

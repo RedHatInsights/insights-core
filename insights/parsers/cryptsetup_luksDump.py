@@ -4,14 +4,14 @@ LuksDump - command ``cryptsetup luksDump``
 This class provides parsing for the output of cryptsetup luksDump
 <device_name>. Outputs from LUKS1 and LUKS2 are supported.
 """
-
-from insights import parser, Parser, SkipComponent
-from insights.parsers import ParseException
-from insights.parsr import (Literal, AnyChar, Char, Opt, String, WS,
-                            HangingString, WithIndent, Many, EOF, Lift)
-from insights.specs import Specs
-
 import string
+
+from insights.core import Parser
+from insights.core.exceptions import ParseException, SkipComponent
+from insights.core.plugins import parser
+from insights.parsr import (AnyChar, Char, EOF, HangingString, Lift,
+                            Literal, Many, Opt, String, WithIndent, WS)
+from insights.specs import Specs
 
 
 class DocParser(object):

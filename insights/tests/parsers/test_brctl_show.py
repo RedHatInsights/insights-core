@@ -1,8 +1,9 @@
 import pytest
+
+from insights.core.exceptions import ParseException
+from insights.parsers import brctl_show
 from insights.parsers.brctl_show import BrctlShow
 from insights.tests import context_wrap
-from insights.parsers import brctl_show, ParseException
-
 
 BRCTL_SHOW = """
 bridge name     bridge id               STP enabled     interfaces

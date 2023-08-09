@@ -1,7 +1,8 @@
 import doctest
 import pytest
+
+from insights.core.exceptions import SkipComponent
 from insights.parsers import docker_list
-from insights.parsers import SkipException
 from insights.tests import context_wrap
 
 
@@ -78,17 +79,17 @@ def test_docker_list_containers():
 
 
 def test_docker_list_images_no_data():
-    with pytest.raises(SkipException) as ex:
+    with pytest.raises(SkipComponent) as ex:
         docker_list.DockerListImages(context_wrap(DOCKER_LIST_IMAGES_NO_DATA))
     assert 'No data.' in str(ex)
 
 
 def test_docker_list_images_help_output():
-    with pytest.raises(SkipException) as ex:
+    with pytest.raises(SkipComponent) as ex:
         docker_list.DockerListImages(context_wrap(DOCKER_HELP_OUTPUT))
     assert 'No data only help output.' in str(ex)
 
-    with pytest.raises(SkipException) as ex:
+    with pytest.raises(SkipComponent) as ex:
         docker_list.DockerListContainers(context_wrap(DOCKER_HELP_OUTPUT))
     assert 'No data only help output.' in str(ex)
 

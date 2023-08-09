@@ -1,10 +1,11 @@
-from insights.tests import context_wrap
-from insights.parsers.cpu_vulns import CpuVulns
-from insights.combiners import cpu_vulns_all
-from insights.combiners.cpu_vulns_all import CpuVulnsAll
-from insights.parsers import SkipComponent
 import doctest
 import pytest
+
+from insights.combiners import cpu_vulns_all
+from insights.combiners.cpu_vulns_all import CpuVulnsAll
+from insights.core.exceptions import SkipComponent
+from insights.parsers.cpu_vulns import CpuVulns
+from insights.tests import context_wrap
 
 IMPUT_MELTDOWN_EMPTY = """
 """.strip()

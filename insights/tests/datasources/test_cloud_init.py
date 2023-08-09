@@ -1,12 +1,13 @@
-import yaml
 import pytest
+import yaml
+
 from mock.mock import Mock
 
 from insights.core import filters
-from insights.core.dr import SkipComponent
+from insights.core.exceptions import SkipComponent
 from insights.core.spec_factory import DatasourceProvider
 from insights.specs import Specs
-from insights.specs.datasources.cloud_init import cloud_cfg, LocalSpecs
+from insights.specs.datasources.cloud_init import LocalSpecs, cloud_cfg
 
 
 CLOUD_CFG = """

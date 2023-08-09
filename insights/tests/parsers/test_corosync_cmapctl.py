@@ -1,9 +1,9 @@
 import doctest
 import pytest
 
+from insights.core.exceptions import ContentException, ParseException, SkipComponent
+from insights.parsers import corosync_cmapctl
 from insights.tests import context_wrap
-from insights.parsers import corosync_cmapctl, ParseException, SkipException
-from insights.core.plugins import ContentException
 
 
 COROSYNC_CONTENT_1 = """
@@ -97,7 +97,7 @@ def test_state_schemiss():
 
 
 def test_exception():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         corosync_cmapctl.CorosyncCmapctl(context_wrap(COROSYNC_CONTENT_3, path="corosync_cmpctl"))
     with pytest.raises(ContentException):
         corosync_cmapctl.CorosyncCmapctl(context_wrap(COROSYNC_CONTENT_4, path="corosync_cmpctl_-C"))

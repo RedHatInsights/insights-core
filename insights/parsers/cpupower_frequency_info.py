@@ -2,8 +2,9 @@
 CpupowerFrequencyInfo - Commands ``cpupower -c all frequency-info``
 ===================================================================
 """
-from insights import parser, CommandParser
-from insights.parsers import SkipException, ParseException
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipComponent
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 
@@ -50,7 +51,7 @@ class CpupowerFrequencyInfo(CommandParser, dict):
             Active: yes
 
     Raises:
-        SkipException: When input is empty.
+        SkipComponent: When input is empty.
         ParseException: When input cannot be parsed.
 
     Examples:
@@ -71,7 +72,7 @@ class CpupowerFrequencyInfo(CommandParser, dict):
 
     def parse_content(self, content):
         if not content:
-            raise SkipException("Empty content")
+            raise SkipComponent("Empty content")
         if len(content) < 10 or not ('analyzing CPU' in content[0]):
             raise ParseException("Incorrect content: '{0}'".format(content))
 

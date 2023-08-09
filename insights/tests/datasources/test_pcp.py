@@ -1,14 +1,15 @@
-import pytest
 import datetime
+import pytest
+
 from mock.mock import patch
 
-from insights import dr
-from insights.core.dr import SkipComponent
-from insights.parsers.ps import PsAuxcww
-from insights.parsers.systemd.unitfiles import UnitFiles
-from insights.parsers.ros_config import RosConfig
 from insights.combiners.ps import Ps
 from insights.combiners.services import Services
+from insights.core import dr
+from insights.core.exceptions import SkipComponent
+from insights.parsers.ps import PsAuxcww
+from insights.parsers.ros_config import RosConfig
+from insights.parsers.systemd.unitfiles import UnitFiles
 from insights.specs.datasources.pcp import pcp_enabled, pmlog_summary_args
 from insights.tests import context_wrap
 

@@ -1,7 +1,8 @@
 import doctest
 import pytest
 
-from insights.parsers import df, ParseException
+from insights.core.exceptions import ParseException
+from insights.parsers import df
 from insights.tests import context_wrap
 
 DF_LI = """

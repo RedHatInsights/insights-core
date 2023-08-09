@@ -64,6 +64,9 @@ from functools import reduce as _reduce
 
 from insights.contrib import importlib
 from insights.contrib.toposort import toposort_flatten
+from insights.core.blacklist import BLACKLISTED_SPECS
+from insights.core.context import SerializedArchiveContext
+from insights.core.exceptions import BlacklistedSpec, MissingRequirements, SkipComponent
 from insights.util import defaults, enum, KeyPassingDefaultDict
 
 log = logging.getLogger(__name__)
@@ -219,23 +222,6 @@ def get_dependencies(component):
 
 def add_dependency(component, dep):
     get_delegate(component).add_dependency(dep)
-
-
-class MissingRequirements(Exception):
-    """
-    Raised during evaluation if a component's dependencies aren't met.
-    """
-    def __init__(self, requirements):
-        self.requirements = requirements
-        super(MissingRequirements, self).__init__(requirements)
-
-
-class SkipComponent(Exception):
-    """
-    This class should be raised by components that want to be taken out of
-    dependency resolution.
-    """
-    pass
 
 
 def get_name(component):
@@ -422,6 +408,39 @@ def get_dependency_specs(component):
         return alo
 
     return get_requires(component) + get_at_least_one(component)
+
+
+def is_registry_point(component):
+    return type(component).__name__ == "RegistryPoint"
+
+
+def get_registry_points(component):
+    """
+    Loop through the dependency graph to identify the corresponding spec registry
+    points for the component. This is primarily used by datasources and returns a
+    `set`. In most cases only one registry point will be included in the set, but
+    in some cases more than one.
+
+    Args:
+        component (callable): The component object
+
+    Returns:
+        (set): A list of the registry points found.
+    """
+    reg_points = set()
+
+    if is_registry_point(component):
+        reg_points.add(component)
+    else:
+        for dep in get_dependents(component):
+            if is_registry_point(dep):
+                reg_points.add(dep)
+            else:
+                dep_reg_pts = get_registry_points(dep)
+                if dep_reg_pts:
+                    reg_points.update(dep_reg_pts)
+
+    return reg_points
 
 
 def get_subgraphs(graph=None):
@@ -792,6 +811,7 @@ class Broker(object):
             :func:`time.time`. For components that produce multiple instances,
             the execution time here is the sum of their individual execution
             times.
+        store_skips (bool): Weather to store skips in the broker or not.
     """
     def __init__(self, seed_broker=None):
         self.instances = dict(seed_broker.instances) if seed_broker else {}
@@ -799,6 +819,7 @@ class Broker(object):
         self.exceptions = defaultdict(list)
         self.tracebacks = {}
         self.exec_times = {}
+        self.store_skips = False
 
         self.observers = defaultdict(set)
         if seed_broker is not None:
@@ -980,7 +1001,7 @@ def run_order(graph):
     return toposort_flatten(graph, sort=False)
 
 
-def _determine_components(components):
+def determine_components(components):
     if isinstance(components, dict):
         return components
 
@@ -1000,6 +1021,54 @@ def _determine_components(components):
         return COMPONENTS[components]
 
 
+_determine_components = determine_components
+
+
+def run_components(ordered_components, components, broker):
+    """
+    Runs a list of preordered components using the provided broker.
+
+    This function allows callers to order components themselves and cache the
+    result so they don't incur the toposort overhead on every run.
+    """
+    for component in ordered_components:
+        start = time.time()
+        try:
+            if (component not in broker and component in components and
+               component in DELEGATES and
+               is_enabled(component)):
+                log.info("Trying %s" % get_name(component))
+                result = DELEGATES[component].process(broker)
+                broker[component] = result
+        except BlacklistedSpec as bs:
+            for x in get_registry_points(component):
+                BLACKLISTED_SPECS.append(str(x).split('.')[-1])
+            broker.add_exception(component, bs, traceback.format_exc())
+        except MissingRequirements as mr:
+            if log.isEnabledFor(logging.DEBUG):
+                name = get_name(component)
+                reqs = stringify_requirements(mr.requirements)
+                log.debug("%s missing requirements %s" % (name, reqs))
+            broker.add_exception(component, mr)
+        except SkipComponent as sc:
+            if broker.store_skips:
+                log.debug(sc)
+                broker.add_exception(component, sc, traceback.format_exc())
+            else:
+                pass
+        except Exception as ex:
+            log.debug(ex)
+            tb = traceback.format_exc()
+            broker.add_exception(component, ex, tb)
+            for reg_spec in get_registry_points(component):
+                broker.add_exception(reg_spec, ex, tb)
+        finally:
+            broker.exec_times[component] = time.time() - start
+            broker.fire_observers(component)
+
+    return broker
+
+
 def run(components=None, broker=None):
     """
     Executes components in an order that satisfies their dependency
@@ -1017,40 +1086,22 @@ def run(components=None, broker=None):
         Broker: The broker after evaluation.
     """
     components = components or COMPONENTS[GROUPS.single]
-    components = _determine_components(components)
+    components = determine_components(components)
     broker = broker or Broker()
-
-    for component in run_order(components):
-        start = time.time()
-        try:
-            if (component not in broker and component in components and
-               component in DELEGATES and
-               is_enabled(component)):
-                log.info("Trying %s" % get_name(component))
-                result = DELEGATES[component].process(broker)
-                broker[component] = result
-        except MissingRequirements as mr:
-            if log.isEnabledFor(logging.DEBUG):
-                name = get_name(component)
-                reqs = stringify_requirements(mr.requirements)
-                log.debug("%s missing requirements %s" % (name, reqs))
-            broker.add_exception(component, mr)
-        except SkipComponent:
-            pass
-        except Exception as ex:
-            tb = traceback.format_exc()
-            log.warning(tb)
-            broker.add_exception(component, ex, tb)
-        finally:
-            broker.exec_times[component] = time.time() - start
-            broker.fire_observers(component)
-
-    return broker
+    # If a SerializedArchiveContext then data found in the archive's
+    # ./meta_data directory are prepopulated in the broker as Specs so
+    # no need to collect them again
+    if broker.get(SerializedArchiveContext) is not None:
+        for comp in list(components):
+            if comp in broker:
+                for dep in components[comp]:
+                    components.pop(dep, None)
+    return run_components(run_order(components), components, broker)
 
 
 def generate_incremental(components=None, broker=None):
     components = components or COMPONENTS[GROUPS.single]
-    components = _determine_components(components)
+    components = determine_components(components)
     for graph in get_subgraphs(components):
         yield graph, broker or Broker()
 

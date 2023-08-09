@@ -1,9 +1,8 @@
 import doctest
 import pytest
 
-from insights.parsers import (
-    satellite_postgresql_query, ParseException, SkipException)
-from insights.core.plugins import ContentException
+from insights.core.exceptions import ContentException, ParseException, SkipComponent
+from insights.parsers import satellite_postgresql_query
 from insights.tests import context_wrap
 
 
@@ -203,29 +202,42 @@ logs_size
 abc
 """.strip()
 
+SATELLITE_RHV_HOSTS_COUNT = """
+count
+2
+""".strip()
+
+SATELLITE_IGNORE_SOURCE_RPMS_REPOS = """
+id,name
+4,Red Hat Enterprise Linux 8 for x86_64 - AppStream RPMs 8
+7,Red Hat Enterprise Linux 8 for x86_64 - BaseOS RPMs 8
+""".strip()
+
 
 def test_HTL_doc_examples():
     settings = satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_SETTINGS_1))
     resources_table = satellite_postgresql_query.SatelliteComputeResources(context_wrap(SATELLITE_COMPUTE_RESOURCE_1))
     sat_sca_info = satellite_postgresql_query.SatelliteSCAStatus(context_wrap(SATELLITE_SCA_INFO_1))
-    repositories = satellite_postgresql_query.SatelliteKatelloEmptyURLRepositories(context_wrap(SATELLITE_KATELLO_ROOT_REPOSITORIES))
     tasks = satellite_postgresql_query.SatelliteCoreTaskReservedResourceCount(context_wrap(SATELLITE_TASK_RESERVERDRESOURCE_CONTENT))
     capsules = satellite_postgresql_query.SatelliteQualifiedCapsules(context_wrap(SATELLITE_CAPSULES_WITH_BACKGROUND_DOWNLOADPOLICY))
     repos = satellite_postgresql_query.SatelliteQualifiedKatelloRepos(context_wrap(SATELLITE_REPOS_INFO))
     multi_ref_katello_repos = satellite_postgresql_query.SatelliteKatellloReposWithMultipleRef(context_wrap(SATELLITE_KATELLO_REPOS_WITH_MULTI_REF))
     param_settings = satellite_postgresql_query.SatelliteProvisionParamSettings(context_wrap(SATELLITE_PROVISION_PARAMETERS_HIT_1))
     logs_table = satellite_postgresql_query.SatelliteLogsTableSize(context_wrap(SATELLITE_LOGS_TABLE_SIZE1))
+    rhv_hosts = satellite_postgresql_query.SatelliteRHVHostsCount(context_wrap(SATELLITE_RHV_HOSTS_COUNT))
+    ignore_srpm_repos = satellite_postgresql_query.SatelliteIgnoreSourceRpmsRepos(context_wrap(SATELLITE_IGNORE_SOURCE_RPMS_REPOS))
     globs = {
         'table': settings,
         'resources_table': resources_table,
         'sat_sca_info': sat_sca_info,
-        'katello_root_repositories': repositories,
         'tasks': tasks,
         'capsules': capsules,
         'repos': repos,
         'multi_ref_katello_repos': multi_ref_katello_repos,
         'param_settings': param_settings,
-        'logs_table': logs_table
+        'logs_table': logs_table,
+        'rhv_hosts': rhv_hosts,
+        'i_srpm_repos': ignore_srpm_repos
     }
     failed, _ = doctest.testmod(satellite_postgresql_query, globs=globs)
     assert failed == 0
@@ -245,7 +257,7 @@ def test_basic_output_with_satellite_admin_setting():
         satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_POSTGRESQL_WRONG_3))
     with pytest.raises(ValueError):
         satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_POSTGRESQL_WRONG_4))
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_POSTGRESQL_WRONG_5))
 
 
@@ -296,22 +308,6 @@ def test_satellite_sca():
     assert not sat_sca_info.sca_enabled
 
 
-def test_satellite_katello_empty_url_repositories():
-    repositories = satellite_postgresql_query.SatelliteKatelloEmptyURLRepositories(context_wrap(SATELLITE_KATELLO_ROOT_REPOSITORIES))
-    assert repositories[1]['name'] == 'testb'
-
-    table = satellite_postgresql_query.SatelliteKatelloEmptyURLRepositories(context_wrap(SATELLITE_QUERY_DATA1))
-    assert len(table) == 1
-    assert table[0]['id'] == '1'
-    assert table[0]['name'] == 'Puppet_Base'
-
-    with pytest.raises(SkipException):
-        satellite_postgresql_query.SatelliteKatelloEmptyURLRepositories(context_wrap(SATELLITE_QUERY_DATA2))
-
-    with pytest.raises(ValueError):
-        satellite_postgresql_query.SatelliteKatelloEmptyURLRepositories(context_wrap(SATELLITE_QUERY_DATA3))
-
-
 def test_satellite_taskreservedresource():
     tasks = satellite_postgresql_query.SatelliteCoreTaskReservedResourceCount(context_wrap(SATELLITE_TASK_RESERVERDRESOURCE_CONTENT))
     assert tasks[0]['count'] == '0'
@@ -322,7 +318,7 @@ def test_satellite_qulified_capsules():
     assert len(capsules) == 2
     assert capsules[0]['name'] == 'capsule1.test.com'
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         satellite_postgresql_query.SatelliteQualifiedCapsules(context_wrap(SATELLITE_CAPSULES_WITH_BACKGROUND_DOWNLOADPOLICY_2))
 
 
@@ -348,7 +344,7 @@ def test_satellite_provision_params():
 
 
 def test_satellite_provision_params_excep():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         satellite_postgresql_query.SatelliteProvisionParamSettings(context_wrap(SATELLITE_PROVISION_PARAMETERS_HIT_2))
 
 
@@ -358,6 +354,21 @@ def test_satellite_logs_table_size():
     assert logs_table[0]['logs_size'] == 552 * 1024 * 1024
 
 
+def test_satelite_rhv_hosts():
+    rhv_hosts = satellite_postgresql_query.SatelliteRHVHostsCount(context_wrap(SATELLITE_RHV_HOSTS_COUNT))
+    assert len(rhv_hosts) == 1
+    assert int(rhv_hosts[0]['count']) == 2
+
+
 def test_satellite_logs_table_size_except():
     with pytest.raises(ParseException):
         satellite_postgresql_query.SatelliteLogsTableSize(context_wrap(SATELLITE_LOGS_TABLE_SIZE3))
+
+
+def test_satellite_ignore_srpm_repos():
+    i_srpms_repos = satellite_postgresql_query.SatelliteIgnoreSourceRpmsRepos(context_wrap(SATELLITE_IGNORE_SOURCE_RPMS_REPOS))
+    assert len(i_srpms_repos) == 2
+    assert i_srpms_repos[0]['id'] == '4'
+    assert i_srpms_repos[0]['name'] == 'Red Hat Enterprise Linux 8 for x86_64 - AppStream RPMs 8'
+    assert i_srpms_repos[1]['id'] == '7'
+    assert i_srpms_repos[1]['name'] == 'Red Hat Enterprise Linux 8 for x86_64 - BaseOS RPMs 8'

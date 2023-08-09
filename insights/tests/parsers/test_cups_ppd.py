@@ -1,8 +1,10 @@
-from insights.tests import context_wrap
-from insights.parsers import cups_ppd
-from insights.parsers.cups_ppd import CupsPpd, SkipException
 import doctest
 import pytest
+
+from insights.core.exceptions import SkipComponent
+from insights.parsers import cups_ppd
+from insights.parsers.cups_ppd import CupsPpd
+from insights.tests import context_wrap
 
 
 CUPS_PPD = """
@@ -37,11 +39,11 @@ def test_cups_ppd():
     assert cups_ppd_result["cupsFilter2"] == ['"application/vnd.cups-pdf application/pdf 10 -"', '"application/vnd.cups-postscript application/postscript 10 -"']
     assert "test" not in cups_ppd_result
 
-    with pytest.raises(SkipException) as exc:
+    with pytest.raises(SkipComponent) as exc:
         CupsPpd(context_wrap(CUPS_PPD_INVALID1, path='/etc/cups/ppd/test_printer1.ppd'))
     assert 'No Valid Configuration' in str(exc)
 
-    with pytest.raises(SkipException) as exc:
+    with pytest.raises(SkipComponent) as exc:
         CupsPpd(context_wrap(CUPS_PPD_INVALID2, path='/etc/cups/ppd/test_printer1.ppd'))
     assert 'No Valid Configuration' in str(exc)
 

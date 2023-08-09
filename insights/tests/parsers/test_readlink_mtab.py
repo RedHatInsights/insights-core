@@ -1,8 +1,9 @@
-import pytest
 import doctest
+import pytest
 
+from insights.core.exceptions import SkipComponent
+from insights.parsers import readlink_e_mtab
 from insights.tests import context_wrap
-from insights.parsers import readlink_e_mtab, SkipException
 
 REAL_FILE_PATH = '''
 /proc/4578/mounts
@@ -27,6 +28,6 @@ def test_readlink_e_mtab():
 
 
 def test_fail():
-    with pytest.raises(SkipException) as e:
+    with pytest.raises(SkipComponent) as e:
         readlink_e_mtab.ReadLinkEMtab(context_wrap(BAD_FILE_PATH))
     assert "No Data from command: readlink -e /etc/mtab" in str(e)

@@ -1,7 +1,9 @@
-from insights import parser, CommandParser
-from insights.parsers import get_active_lines, ParseException
-
 import re
+
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines
 from insights.specs import Specs
 
 

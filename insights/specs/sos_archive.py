@@ -13,6 +13,7 @@ class SosSpecs(Specs):
     auditctl_rules = simple_file("sos_commands/auditd/auditctl_-l")
     auditctl_status = simple_file("sos_commands/auditd/auditctl_-s")
     auditd_conf = simple_file("/etc/audit/auditd.conf")
+    audispd_conf = simple_file("/etc/audisp/audispd.conf")
     autofs_conf = simple_file("/etc/autofs.conf")
 
     blkid = first_file(["sos_commands/block/blkid_-c_.dev.null", "sos_commands/filesys/blkid_-c_.dev.null"])
@@ -145,7 +146,8 @@ class SosSpecs(Specs):
         simple_file("sos_commands/pci/lspci")
     ])
     lsscsi = simple_file("sos_commands/scsi/lsscsi")
-    lvs = first_file([
+    lvm_conf = simple_file("/etc/lvm/lvm.conf")
+    lvs_headings = first_file([
         "sos_commands/lvm2/lvs_-a_-o_lv_tags_devices_lv_kernel_read_ahead_lv_read_ahead_stripes_stripesize_--config_global_metadata_read_only_1_--nolocking_--foreign",
         "sos_commands/lvm2/lvs_-a_-o_lv_tags_devices_lv_kernel_read_ahead_lv_read_ahead_stripes_stripesize_--config_global_locking_type_0_metadata_read_only_1",
         "sos_commands/lvm2/lvs_-a_-o_lv_tags_devices_--config_global_locking_type_0",
@@ -156,7 +158,7 @@ class SosSpecs(Specs):
     mdadm_E = glob_file("sos_commands/md/mdadm_-E_*")
     mistral_executor_log = simple_file("/var/log/mistral/executor.log")
     mlx4_port = glob_file("/sys/bus/pci/devices/*/mlx4_port[0-9]")
-    modinfo_all = glob_file("sos_commands/kernel/modinfo_*")
+    modinfo_filtered_modules = simple_file("sos_commands/kernel/modinfo_ALL_MODULES")
     mokutil_sbstate = simple_file("sos_commands/boot/mokutil_--sb-state")
     mount = simple_file("sos_commands/filesys/mount_-l")
     mountinfo = simple_file("proc/self/mountinfo")
@@ -171,7 +173,10 @@ class SosSpecs(Specs):
     nmcli_dev_show_sos = glob_file(["sos_commands/networking/nmcli_dev_show_*", "sos_commands/networkmanager/nmcli_dev_show_*"])
     ntptime = simple_file("sos_commands/ntp/ntptime")
     octavia_conf = simple_file("/var/lib/config-data/puppet-generated/octavia/etc/octavia/octavia.conf")
-    openvswitch_daemon_log = simple_file('/var/log/openvswitch/ovs-vswitchd.log')
+    openvswitch_daemon_log = first_file([
+        '/var/log/openvswitch/ovs-vswitchd.log',
+        '/host/var/log/openvswitch/ovs-vswitchd.log'
+    ])
     openvswitch_other_config = simple_file("sos_commands/openvswitch/ovs-vsctl_-t_5_get_Open_vSwitch_._other_config")
     openvswitch_server_log = simple_file('/var/log/openvswitch/ovsdb-server.log')
     osa_dispatcher_log = first_file([
@@ -210,7 +215,7 @@ class SosSpecs(Specs):
         "/etc/puppetlabs/puppet/ssl/certs/ca.pem",
         "sos_commands/foreman/foreman-debug/var/lib/puppet/ssl/certs/ca.pem"
     ])
-    pvs = first_file([
+    pvs_headings = first_file([
         "sos_commands/lvm2/pvs_-a_-v_-o_pv_mda_free_pv_mda_size_pv_mda_count_pv_mda_used_count_pe_start_--config_global_metadata_read_only_1_--nolocking_--foreign",
         "sos_commands/lvm2/pvs_-a_-v_-o_pv_mda_free_pv_mda_size_pv_mda_count_pv_mda_used_count_pe_start_--config_global_locking_type_0_metadata_read_only_1",
         "sos_commands/lvm2/pvs_-a_-v_-o_pv_mda_free_pv_mda_size_pv_mda_count_pv_mda_used_count_pe_start_--config_global_locking_type_0",
@@ -268,7 +273,7 @@ class SosSpecs(Specs):
     sendq_socket_buffer = simple_file("proc/sys/net/ipv4/tcp_wmem")
     sestatus = simple_file("sos_commands/selinux/sestatus_-b")
     ssh_foreman_config = simple_file("/usr/share/foreman/.ssh/ssh_config")
-    sssd_logs = glob_file("var/log/sssd/*.log")
+    sssd_logs = glob_file(["/var/log/sssd/*.log", "/host/var/log/sssd/*.log"])
     subscription_manager_id = simple_file("/sos_commands/subscription_manager/subscription-manager_identity")
     subscription_manager_list_consumed = first_file([
         'sos_commands/yum/subscription-manager_list_--consumed',
@@ -317,7 +322,7 @@ class SosSpecs(Specs):
         "sos_commands/lvm2/vgdisplay_-vv",
         "sos_commands/devicemapper/vgdisplay_-vv"
     ])
-    vgs = first_file([
+    vgs_headings = first_file([
         "sos_commands/lvm2/vgs_-v_-o_vg_mda_count_vg_mda_free_vg_mda_size_vg_mda_used_count_vg_tags_systemid_--config_global_metadata_read_only_1_--nolocking_--foreign",
         "sos_commands/lvm2/vgs_-v_-o_vg_mda_count_vg_mda_free_vg_mda_size_vg_mda_used_count_vg_tags_--config_global_locking_type_0_metadata_read_only_1",
         "sos_commands/lvm2/vgs_-v_-o_vg_mda_count_vg_mda_free_vg_mda_size_vg_mda_used_count_vg_tags_--config_global_locking_type_0",

@@ -1,14 +1,15 @@
 """
 Custom datasources for awx_manage information
 """
+import collections
+import json
+
 from insights.core.context import HostContext
-from insights.core.dr import SkipComponent
+from insights.core.exceptions import SkipComponent
+from insights.core.filters import get_filters
 from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider, simple_command
-from insights.core.filters import get_filters
 from insights.specs import Specs
-import json
-import collections
 
 
 class LocalSpecs(Specs):

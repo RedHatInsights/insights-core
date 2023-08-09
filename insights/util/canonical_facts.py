@@ -4,13 +4,23 @@ from __future__ import print_function
 
 import re
 import socket
-
-from insights import rule, make_metadata, run
-from insights.specs import Specs
-from insights.core import Parser
-from insights.core.plugins import parser
-from insights.core.dr import set_enabled, load_components
 import uuid
+
+from insights import rule, run, make_metadata
+from insights.combiners.cloud_instance import CloudInstance
+from insights.combiners.cloud_provider import CloudProvider
+from insights.core import Parser
+from insights.core.dr import set_enabled, load_components
+from insights.core.plugins import parser
+from insights.parsers.aws_instance_id import AWSInstanceIdDoc
+from insights.parsers.azure_instance import AzureInstanceID, AzureInstanceType
+from insights.parsers.dmidecode import DMIDecode
+from insights.parsers.gcp_instance_type import GCPInstanceType
+from insights.parsers.installed_rpms import InstalledRpms
+from insights.parsers.rhsm_conf import RHSMConf
+from insights.parsers.subscription_manager import SubscriptionManagerID, SubscriptionManagerFacts
+from insights.parsers.yum import YumRepoList
+from insights.specs import Specs
 
 
 def valid_uuid_or_None(s):
@@ -74,26 +84,6 @@ class IPs(Parser):
         self.data = list(filter(None, [valid_ipv4_address_or_None(addr) for addr in content[0].rstrip().split()]))
 
 
-@parser(Specs.subscription_manager_id)
-class SubscriptionManagerID(Parser):
-    """
-    Reads the output of subscription-manager identity and retrieves the UUID
-
-    Example output::
-        system identity: 6655c27c-f561-4c99-a23f-f53e5a1ef311
-        name: rhel7.localdomain
-        org name: 1234567
-        org ID: 1234567
-
-    Resultant data::
-
-        6655c27c-f561-4c99-a23f-f53e5a1ef311
-    """
-
-    def parse_content(self, content):
-        self.data = content[0].split(":")[-1].strip()
-
-
 def _safe_parse(ds):
     try:
         return ds.content[0]
@@ -115,20 +105,24 @@ def _filter_falsy(dict_):
         IPs,
         Specs.hostname,
         Specs.mac_addresses,
+        CloudInstance,
     ]
 )
 def canonical_facts(
-    insights_id, machine_id, bios_uuid, submanid, ips, fqdn, mac_addresses
+    insights_id, machine_id, bios_uuid, submanid, ips, fqdn, mac_addresses,
+    cloud_instance,
 ):
 
     facts = dict(
         insights_id=valid_uuid_or_None(_safe_parse(insights_id)),
         machine_id=valid_uuid_or_None(_safe_parse(machine_id)),
         bios_uuid=valid_uuid_or_None(_safe_parse(bios_uuid)),
-        subscription_manager_id=valid_uuid_or_None(submanid.data if submanid else None),
+        subscription_manager_id=valid_uuid_or_None(submanid.identity if submanid else None),
         ip_addresses=ips.data if ips else [],
         mac_addresses=valid_mac_addresses(mac_addresses) if mac_addresses else [],
         fqdn=_safe_parse(fqdn),
+        provider_id=cloud_instance.id if cloud_instance else None,
+        provider_type=cloud_instance.provider if cloud_instance else None,
     )
 
     return make_metadata(**_filter_falsy(facts))
@@ -137,9 +131,25 @@ def canonical_facts(
 def get_canonical_facts(path=None):
     load_components("insights.specs.default", "insights.specs.insights_archive")
 
-    set_enabled(canonical_facts, True)
-    set_enabled(SubscriptionManagerID, True)
-    set_enabled(IPs, True)
+    required_components = [
+        AWSInstanceIdDoc,
+        AzureInstanceID,
+        AzureInstanceType,
+        DMIDecode,
+        GCPInstanceType,
+        IPs,
+        InstalledRpms,
+        RHSMConf,
+        SubscriptionManagerFacts,
+        SubscriptionManagerID,
+        YumRepoList,
+        CloudProvider,
+        CloudInstance,
+        canonical_facts,
+    ]
+    for comp in required_components:
+        set_enabled(comp, True)
+
     br = run(canonical_facts, root=path)
     d = br[canonical_facts]
     del d["type"]

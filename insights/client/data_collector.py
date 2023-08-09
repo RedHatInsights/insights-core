@@ -15,6 +15,7 @@ from itertools import chain
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
 
+from insights.core.blacklist import BLACKLISTED_SPECS
 from insights.util import mangle
 from ..contrib.soscleaner import SOSCleaner
 from .utilities import _expand_paths, get_version_info, systemd_notify_init_thread, get_tags
@@ -131,6 +132,13 @@ class DataCollector(object):
         logger.debug("Writing blacklist report to archive...")
         self.archive.add_metadata_to_archive(
             json.dumps(blacklist_report), '/blacklist_report')
+
+    def _write_blacklisted_specs(self):
+        logger.debug("Writing blacklisted specs to archive...")
+
+        if BLACKLISTED_SPECS:
+            self.archive.add_metadata_to_archive(
+                json.dumps({"specs": BLACKLISTED_SPECS}), '/blacklisted_specs')
 
     def _write_egg_release(self):
         logger.debug("Writing egg release to archive...")
@@ -327,11 +335,13 @@ class DataCollector(object):
                     'insights_commands', mangle.mangle_command(c['command']))
             if c['command'] in rm_commands or c.get('symbolic_name') in rm_commands:
                 logger.warn("WARNING: Skipping command %s", c['command'])
+                BLACKLISTED_SPECS.append(c['symbolic_name'])
             elif self.mountpoint == "/" or c.get("image"):
                 cmd_specs = self._parse_command_spec(c, conf['pre_commands'])
                 for s in cmd_specs:
                     if s['command'] in rm_commands:
                         logger.warn("WARNING: Skipping command %s", s['command'])
+                        BLACKLISTED_SPECS.append(s['symbolic_name'])
                         continue
                     cmd_spec = InsightsCommand(self.config, s, self.mountpoint)
                     self.archive.add_to_archive(cmd_spec)
@@ -343,12 +353,14 @@ class DataCollector(object):
         for f in conf['files']:
             if f['file'] in rm_files or f.get('symbolic_name') in rm_files:
                 logger.warn("WARNING: Skipping file %s", f['file'])
+                BLACKLISTED_SPECS.append(f['symbolic_name'])
             else:
                 file_specs = self._parse_file_spec(f)
                 for s in file_specs:
                     # filter files post-wildcard parsing
                     if s['file'] in rm_conf.get('files', []):
                         logger.warn("WARNING: Skipping file %s", s['file'])
+                        BLACKLISTED_SPECS.append(s['symbolic_name'])
                     else:
                         file_spec = InsightsFile(s, self.mountpoint)
                         self.archive.add_to_archive(file_spec)
@@ -361,11 +373,13 @@ class DataCollector(object):
                 if g.get('symbolic_name') in rm_files:
                     # ignore glob via symbolic name
                     logger.warn("WARNING: Skipping file %s", g['glob'])
+                    BLACKLISTED_SPECS.append(g['symbolic_name'])
                 else:
                     glob_specs = self._parse_glob_spec(g)
                     for g in glob_specs:
                         if g['file'] in rm_files:
                             logger.warn("WARNING: Skipping file %s", g['file'])
+                            BLACKLISTED_SPECS.append(g['symbolic_name'])
                         else:
                             glob_spec = InsightsFile(g, self.mountpoint)
                             self.archive.add_to_archive(glob_spec)
@@ -385,6 +399,7 @@ class DataCollector(object):
         self._write_version_info()
         self._write_tags()
         self._write_blacklist_report(blacklist_report)
+        self._write_blacklisted_specs()
         self._write_egg_release()
         self._write_collection_stats(collection_stats)
         logger.debug('Metadata collection finished.')
@@ -438,9 +453,15 @@ class DataCollector(object):
         for dirpath, dirnames, filenames in os.walk(searchpath):
             for f in filenames:
                 fullpath = os.path.join(dirpath, f)
-                if (fullpath.endswith('etc/insights-client/machine-id') or
-                   fullpath.endswith('etc/machine-id') or
-                   fullpath.endswith('insights_commands/subscription-manager_identity')):
+                if (fullpath.endswith(
+                        (
+                            'etc/insights-client/machine-id',
+                            'etc/insights-client/.exp.sed',  # INSPEC-414
+                            'etc/machine-id',
+                            'insights_commands/subscription-manager_identity',
+                            'insights_commands/ls_-lanRL_.etc.systemd_.run.systemd_.usr.lib.systemd_.usr.local.lib.systemd_.usr.local.share.systemd_.usr.share.systemd',  # issue #3858
+                        )
+                )):
                     # do not redact the ID files
                     continue
                 redacted_contents = _process_content_redaction(fullpath, exclude, regex)

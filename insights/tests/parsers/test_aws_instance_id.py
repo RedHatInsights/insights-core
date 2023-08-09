@@ -1,9 +1,12 @@
-import pytest
 import doctest
+import pytest
+
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.parsers import aws_instance_id
-from insights.parsers.aws_instance_id import AWSInstanceIdDoc, AWSInstanceIdPkcs7
+from insights.parsers.aws_instance_id import (
+        AWSInstanceIdDoc, AWSInstanceIdPkcs7,
+        AWSPublicIpv4Addresses, AWSPublicHostnames)
 from insights.tests import context_wrap
-from insights.parsers import SkipException, ParseException
 
 AWS_CURL_ERROR = """
 curl: (7) couldn't connect to host
@@ -97,10 +100,10 @@ NYiytVbZPQUQ5Yaxu2jXnimvw3rrszlaEXAMPLE"""
 
 
 def test_aws_instance_id_doc():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         AWSInstanceIdDoc(context_wrap(AWS_CURL_ERROR))
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         AWSInstanceIdDoc(context_wrap(AWS_NO_DOC))
 
     with pytest.raises(ParseException) as pe:
@@ -151,10 +154,10 @@ def test_aws_instance_id_doc():
 
 
 def test_aws_instance_id_pkcs7():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         AWSInstanceIdDoc(context_wrap(AWS_CURL_ERROR))
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         AWSInstanceIdDoc(context_wrap(AWS_NO_DOC))
 
     pkcs7 = AWSInstanceIdPkcs7(context_wrap(AWS_ID_PKCS7))
@@ -205,3 +208,27 @@ def test_doc_examples():
     }
     failed, total = doctest.testmod(aws_instance_id, globs=env)
     assert failed == 0
+
+
+def test_aws_public_ipv4_addresses():
+    with pytest.raises(SkipComponent):
+        AWSPublicIpv4Addresses(context_wrap(AWS_CURL_ERROR))
+
+    with pytest.raises(SkipComponent):
+        AWSPublicIpv4Addresses(context_wrap(""))
+
+    doc = AWSPublicIpv4Addresses(context_wrap("1.2.3.4"))
+    assert doc is not None
+    assert doc == ["1.2.3.4"]
+
+
+def test_aws_public_hostnames():
+    with pytest.raises(SkipComponent):
+        AWSPublicHostnames(context_wrap(AWS_CURL_ERROR))
+
+    with pytest.raises(SkipComponent):
+        AWSPublicHostnames(context_wrap(""))
+
+    doc = AWSPublicHostnames(context_wrap("1.2.3.4"))
+    assert doc is not None
+    assert doc == ["1.2.3.4"]

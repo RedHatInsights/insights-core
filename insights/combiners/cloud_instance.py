@@ -13,20 +13,13 @@ results of the following combiners and parsers:
 * :py:class:`insights.parsers.subscription_manager.SubscriptionManagerFacts`
 
 """
-from insights import SkipComponent
-from insights.core.plugins import combiner, ContentException
+from insights.combiners.cloud_provider import CloudProvider
+from insights.core.exceptions import ContentException, SkipComponent
+from insights.core.plugins import combiner
 from insights.parsers.aws_instance_id import AWSInstanceIdDoc
 from insights.parsers.azure_instance import AzureInstanceID, AzureInstanceType
 from insights.parsers.gcp_instance_type import GCPInstanceType
 from insights.parsers.subscription_manager import SubscriptionManagerFacts
-from insights.combiners.cloud_provider import CloudProvider
-
-
-# "google" is used in class:`insights.combiners.cloud_provider.CloudProvider`.
-# but 'gcp' is outputted in "subscription-manager facts"
-rhsm_type_maps = {
-    "google": 'gcp'
-}
 
 
 @combiner(
@@ -84,8 +77,7 @@ class CloudInstance(object):
             self.type = gcp.raw
         # 2. Check the "subscription-manager facts"
         if self.id is None and facts:
-            cp_name = rhsm_type_maps.get(self.provider, self.provider)
-            key = "{0}_instance_id".format(cp_name)
+            key = "{0}_instance_id".format(self.provider)
             if key not in facts:
                 raise ContentException("Unmatched/unsupported types!")
             self.id = facts[key]

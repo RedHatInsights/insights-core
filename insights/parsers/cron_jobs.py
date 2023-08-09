@@ -7,10 +7,10 @@ This module contains the following parsers:
 CronForeman - file ``/etc/cron.d/foreman``
 ------------------------------------------
 """
-
 from insights.core import Parser
-from insights.parsers import get_active_lines, keyword_search, ParseException
+from insights.core.exceptions import ParseException
 from insights.core.plugins import parser
+from insights.parsers import get_active_lines, keyword_search
 from insights.specs import Specs
 
 

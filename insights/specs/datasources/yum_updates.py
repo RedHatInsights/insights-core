@@ -2,6 +2,7 @@
 Custom datasource for collecting yum updates
 """
 import json
+import logging
 import time
 
 from insights import datasource, HostContext, SkipComponent
@@ -23,6 +24,7 @@ class DnfManager:
     """ Performs package resolution on dnf based systems """
     def __init__(self):
         self.base = dnf.base.Base()
+        # releasever and basearchs are correctly set after calling load()
         self.releasever = dnf.rpm.detect_releasever("/")
         self.basearch = dnf.rpm.basearch(hawkey.detect_arch())
         self.packages = []
@@ -51,7 +53,15 @@ class DnfManager:
         return sorted_cmp([pkg for pkg in pkgs if pkg.reponame != "@System"], self.pkg_cmp)
 
     def load(self):
-        self.base.conf.read()
+        logging.disable(logging.WARNING)
+        cli = dnf.cli.Cli(self.base)
+        cli._read_conf_file()
+        subst = self.base.conf.substitutions
+        if subst.get("releasever"):
+            self.releasever = subst["releasever"]
+        if subst.get("basearch"):
+            self.basearch = subst["basearch"]
+
         self.base.conf.cacheonly = True
         self.base.read_all_repos()
         self.packages = hawkey.Query(hawkey.Sack())
@@ -64,6 +74,7 @@ class DnfManager:
                 # RepoError is raised when cache is empty
                 pass
         self.repos = self.base.repos
+        logging.disable(logging.NOTSET)
 
     def installed_packages(self):
         return self.packages.installed().run()
@@ -168,6 +179,7 @@ class YumManager(DnfManager):
 # Select which manager to use based on the available system libraries.
 try:
     import dnf
+    import dnf.cli
     import hawkey
     import rpm
     UpdatesManager = DnfManager

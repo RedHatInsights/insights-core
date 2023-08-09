@@ -10,10 +10,10 @@ compilation options is the value after the equals sign, if one is present,
 or the value in brackets after the compilation option, or 'True' if only the
 compilation option is present.
 """
-
-from .. import parser, LegacyItemAccess, CommandParser
+from insights.core import CommandParser, LegacyItemAccess
+from insights.core.exceptions import SkipComponent
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.parsers import SkipException
 
 
 @parser(Specs.httpd_V)
@@ -61,12 +61,12 @@ class HttpdV(LegacyItemAccess, CommandParser):
             compilation option is present.
 
     Raises:
-        SkipException: When input content is empty or there is no parsed data.
+        SkipComponent: When input content is empty or there is no parsed data.
     """
 
     def parse_content(self, content):
         if not content:
-            raise SkipException("Input content is empty.")
+            raise SkipComponent("Input content is empty.")
 
         self.data = {}
         compiled_with = {}
@@ -92,7 +92,7 @@ class HttpdV(LegacyItemAccess, CommandParser):
             if compiled_with:
                 self.data['Server compiled with'] = compiled_with
         else:
-            raise SkipException("Input content is not empty but there is no useful parsed data.")
+            raise SkipComponent("Input content is not empty but there is no useful parsed data.")
 
     @property
     def httpd_command(self):

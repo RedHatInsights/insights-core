@@ -1,10 +1,10 @@
-import pytest
 import doctest
+import pytest
+
+from insights.core.exceptions import ContentException, ParseException, SkipComponent
 from insights.parsers import azure_instance_type
 from insights.parsers.azure_instance_type import AzureInstanceType
 from insights.tests import context_wrap
-from insights.parsers import SkipException, ParseException
-from insights.core.plugins import ContentException
 
 AZURE_TYPE_1 = "Standard_L32s"
 AZURE_TYPE_2 = "Standard_NV48s_v3"
@@ -34,13 +34,13 @@ No module named insights.tools
 
 
 def test_azure_instance_type_ab_other():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         AzureInstanceType(context_wrap(AZURE_TYPE_AB_1))
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         AzureInstanceType(context_wrap(AZURE_TYPE_AB_2))
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         AzureInstanceType(context_wrap(AZURE_TYPE_AB_3))
 
     with pytest.raises(ParseException) as pe:
@@ -52,7 +52,7 @@ def test_azure_instance_type_ab_other():
 
 
 def test_azure_instance_type_ab_empty():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         AzureInstanceType(context_wrap(''))
 
 

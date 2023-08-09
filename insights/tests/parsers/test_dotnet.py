@@ -1,8 +1,8 @@
 import doctest
 import pytest
+
+from insights.core.exceptions import ContentException, ParseException, SkipComponent
 from insights.parsers import dotnet
-from insights.core.plugins import ContentException
-from insights.parsers import SkipException, ParseException
 from insights.parsers.dotnet import DotNetVersion, ContainerDotNetVersion
 from insights.tests import context_wrap
 
@@ -40,7 +40,7 @@ def test_dotnet_version_ab():
         assert ret is None
         assert "Unrecognized version" in str(pe)
 
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         ret = DotNetVersion(context_wrap(dotnet_version_5))
         assert ret is None
 

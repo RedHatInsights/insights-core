@@ -1,10 +1,10 @@
-import pytest
 import doctest
+import pytest
 
-from insights.tests import context_wrap
-from insights.parsers import SkipComponent
+from insights.core.exceptions import SkipComponent
 from insights.parsers import pmlog_summary
 from insights.parsers.pmlog_summary import PmLogSummary
+from insights.tests import context_wrap
 
 PMLOG = """
 mem.util.used  3133919.812 Kbyte

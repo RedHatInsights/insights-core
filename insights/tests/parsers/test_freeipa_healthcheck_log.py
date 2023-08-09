@@ -2,7 +2,7 @@ import doctest
 
 from insights.parsers import freeipa_healthcheck_log
 from insights.parsers.freeipa_healthcheck_log import FreeIPAHealthCheckLog
-from insights.tests.parsers import skip_exception_check
+from insights.tests.parsers import skip_component_check
 from insights.tests import context_wrap
 
 LONG_FREEIPA_HEALTHCHECK_LOG_OK = """
@@ -99,7 +99,7 @@ def test_freeipa_healthcheck_get_results_not_ok():
 
 
 def test_freeipa_healthcheck_log_empty():
-    assert 'Empty output.' in skip_exception_check(FreeIPAHealthCheckLog)
+    assert 'Empty output.' in skip_component_check(FreeIPAHealthCheckLog)
 
 
 def test_freeipa_healthcheck_log__documentation():

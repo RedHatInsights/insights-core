@@ -1,15 +1,15 @@
 """
 Basic datasources for container specs
 """
-from insights.core.dr import SkipComponent
-from insights.core.plugins import datasource
 from insights.core.context import HostContext
-from insights.specs.datasources import DEFAULT_SHELL_TIMEOUT
-from insights.parsers.podman_list import PodmanListContainers
+from insights.core.exceptions import SkipComponent
+from insights.core.plugins import datasource
 from insights.parsers.docker_list import DockerListContainers
+from insights.parsers.podman_list import PodmanListContainers
+from insights.specs.datasources import DEFAULT_SHELL_TIMEOUT
 
 
-@datasource([PodmanListContainers, DockerListContainers], HostContext)
+@datasource([PodmanListContainers, DockerListContainers], HostContext, timeout=240)
 def running_rhel_containers(broker):
     """
     Returns a list of tuple of (image, <podman|docker>, container_id) of the running

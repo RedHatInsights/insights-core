@@ -1,9 +1,8 @@
 import doctest
-from insights.core.dr import SkipComponent
 import pytest
 
-from insights.parsers import ssl_certificate, ParseException, SkipException
-from insights.core.plugins import ContentException
+from insights.core.exceptions import ContentException, ParseException, SkipComponent
+from insights.parsers import ssl_certificate
 from insights.tests import context_wrap
 
 
@@ -107,12 +106,12 @@ def test_certificate_info_exception():
         ssl_certificate.CertificateInfo(context_wrap(BAD_OUTPUT2))
     with pytest.raises(ContentException):
         ssl_certificate.CertificateInfo(context_wrap(BAD_OUTPUT3))
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         ssl_certificate.CertificateInfo(context_wrap(BAD_OUTPUT4))
 
 
 def test_certificate_chain_exception():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         ssl_certificate.CertificateChain(context_wrap(BAD_OUTPUT4))
 
 

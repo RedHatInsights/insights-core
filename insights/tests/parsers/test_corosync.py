@@ -1,7 +1,8 @@
 import doctest
 import pytest
-from insights.parsers import corosync, SkipException
 
+from insights.core.exceptions import SkipComponent
+from insights.parsers import corosync
 from insights.parsr.query import first, last
 from insights.tests import context_wrap
 
@@ -66,15 +67,6 @@ totem {
 """.strip()
 
 
-def test_corosync_1():
-    result = corosync.CoroSyncConfig(context_wrap(corosync_content))
-    assert result.data['COROSYNC_OPTIONS'] == ""
-    assert result.data['COROSYNC_INIT_TIMEOUT'] == "60"
-
-    assert result.options == ''
-    assert result.unparsed_lines == []
-
-
 def test_corosync_conf():
     conf = corosync.CorosyncConf(context_wrap(COROSYNC_CONF))
     assert conf['totem']['token'][first].value == 10000
@@ -86,14 +78,15 @@ def test_corosync_conf():
 
 
 def test_corosync_conf_empty():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         assert corosync.CorosyncConf(context_wrap('')) is None
 
 
 def test_doc_examples():
     failed, total = doctest.testmod(
         corosync,
-        globs={'csconfig': corosync.CoroSyncConfig(context_wrap(corosync_content)),
-               'corosync_conf': corosync.CorosyncConf(context_wrap(COROSYNC_CONF))}
+        globs={
+            'corosync_conf': corosync.CorosyncConf(context_wrap(COROSYNC_CONF))
+        }
     )
     assert failed == 0

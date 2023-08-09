@@ -1,5 +1,6 @@
 from __future__ import print_function
 from __future__ import absolute_import
+from os.path import isfile
 import sys
 import json
 import logging
@@ -7,15 +8,15 @@ import logging.handlers
 import os
 import time
 import six
+from distutils.version import LooseVersion
 
 from .utilities import (generate_machine_id,
                         write_to_disk,
                         write_registered_file,
                         write_unregistered_file,
-                        delete_registered_file,
-                        delete_unregistered_file,
                         delete_cache_files,
-                        determine_hostname)
+                        determine_hostname,
+                        get_version_info)
 from .collection_rules import InsightsUploadConf
 from .data_collector import DataCollector
 from .core_collector import CoreCollector
@@ -29,20 +30,71 @@ LOG_FORMAT = ("%(asctime)s %(levelname)8s %(name)s %(message)s")
 logger = logging.getLogger(__name__)
 
 
+class RotatingFileHandlerWithUMask(logging.handlers.RotatingFileHandler, object):
+    """ logging.handlers.RotatingFileHandler subclass with a modified
+        file permission mask.
+    """
+    def __init__(self, umask, *args, **kwargs):
+        self._umask = umask
+        super(RotatingFileHandlerWithUMask, self).__init__(*args, **kwargs)
+
+    def _open(self):
+        """
+        Overrides the logging library "_open" method with a custom
+        file permission mask.
+        """
+        default_umask = os.umask(self._umask)
+        try:
+            return super(RotatingFileHandlerWithUMask, self)._open()
+        finally:
+            os.umask(default_umask)
+
+
+class FileHandlerWithUMask(logging.FileHandler, object):
+    """ logging.FileHandler subclass with a modified
+        file permission mask.
+    """
+    def __init__(self, umask, *args, **kwargs):
+        self._umask = umask
+        super(FileHandlerWithUMask, self).__init__(*args, **kwargs)
+
+    def _open(self):
+        """
+        Overrides the logging library "_open" method with a custom
+        file permission mask.
+        """
+        default_umask = os.umask(self._umask)
+        try:
+            return super(FileHandlerWithUMask, self)._open()
+        finally:
+            os.umask(default_umask)
+
+
 def do_log_rotation():
     handler = get_file_handler()
     return handler.doRollover()
 
 
 def get_file_handler(config):
+    '''
+    Sets up the logging file handler.
+    Returns:
+        RotatingFileHandler - client rpm version is older than 3.2.0.
+        FileHandler - client rpm version is 3.2.0 or newer.
+    '''
     log_file = config.logging_file
     log_dir = os.path.dirname(log_file)
     if not log_dir:
         log_dir = os.getcwd()
     elif not os.path.exists(log_dir):
         os.makedirs(log_dir, 0o700)
-    file_handler = logging.handlers.RotatingFileHandler(
-        log_file, backupCount=3)
+    # ensure the legacy rotating file handler is only used in older client versions
+    # or if there is a problem retrieving the rpm version.
+    rpm_version = get_version_info()['client_version']
+    if not rpm_version or (LooseVersion(rpm_version) < LooseVersion(constants.rpm_version_before_logrotate)):
+        file_handler = RotatingFileHandlerWithUMask(0o077, log_file, backupCount=3)
+    else:
+        file_handler = FileHandlerWithUMask(0o077, log_file)
     file_handler.setFormatter(logging.Formatter(LOG_FORMAT))
     return file_handler
 
@@ -118,18 +170,17 @@ def _legacy_handle_registration(config, pconn):
         None - could not reach the API
     '''
     logger.debug('Trying registration.')
-    # force-reregister -- remove machine-id files and registration files
-    # before trying to register again
-    if config.reregister:
-        delete_registered_file()
-        delete_unregistered_file()
-        write_to_disk(constants.machine_id_file, delete=True)
-        logger.debug('Re-register set, forcing registration.')
-
-    logger.debug('Machine-id: %s', generate_machine_id(new=config.reregister))
 
     # check registration with API
     check = get_registration_status(config, pconn)
+    machine_id_present = isfile(constants.machine_id_file)
+
+    if machine_id_present and check['status'] is False:
+        logger.info("Machine-id found, insights-client can not be registered."
+                    " Please, unregister insights-client first: `insights-client --unregister`")
+        return False
+
+    logger.debug('Machine-id: %s', generate_machine_id())
 
     for m in check['messages']:
         logger.debug(m)

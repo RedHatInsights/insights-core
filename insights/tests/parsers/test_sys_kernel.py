@@ -1,10 +1,10 @@
 import doctest
 import pytest
 
+from insights.core.exceptions import ParseException
 from insights.parsers import sys_kernel
-from insights.parsers.sys_kernel import SchedRTRuntime, SchedFeatures
+from insights.parsers.sys_kernel import SchedFeatures, SchedRTRuntime
 from insights.tests import context_wrap
-from insights.core import ParseException
 
 SYS_KERNEL_RUNTIME_CONTENT_1 = """
 -1

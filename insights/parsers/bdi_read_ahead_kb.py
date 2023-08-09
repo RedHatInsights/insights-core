@@ -4,10 +4,9 @@ BDIReadAheadKB - file ``/sys/class/bdi/*/read_ahead_kb``
 
 This parser reads the content of ``/sys/class/bdi/*/read_ahead_kb``.
 """
-
 from insights import Parser, parser
+from insights.core.exceptions import ParseException
 from insights.specs import Specs
-from insights.parsers import ParseException
 
 
 @parser(Specs.bdi_read_ahead_kb)

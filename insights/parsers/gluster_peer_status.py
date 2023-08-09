@@ -3,8 +3,9 @@ GlusterPeerStatus - command ``gluster peer status``
 ===================================================
 """
 from insights.core import CommandParser
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
-from insights.parsers import split_kv_pairs, SkipException
+from insights.parsers import split_kv_pairs
 from insights.specs import Specs
 
 try:
@@ -50,8 +51,8 @@ class GlusterPeerStatus(CommandParser):
         return zip_longest(*args, fillvalue=fillvalue)
 
     def parse_content(self, content):
-        if not content:
-            raise SkipException("No data.")
+        if not content or "Connection failed" in content[0]:
+            raise SkipComponent("No data.")
 
         self.status = {'peers': 0, 'hosts': []}
         self.status['peers'] = int(content[0].split(':')[-1].strip())

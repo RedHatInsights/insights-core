@@ -21,11 +21,13 @@ Examples:
     >>> pmrep_doc_obj[7]
     {'name': 'swap.pagesout', 'value': '5.000'}
 """
-
 from csv import DictReader
-from insights import parser, CommandParser
+
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipComponent
+from insights.core.plugins import parser
+from insights.parsers import keyword_search
 from insights.specs import Specs
-from insights.parsers import SkipException, ParseException, keyword_search
 
 
 @parser(Specs.pmrep_metrics)
@@ -33,7 +35,7 @@ class PMREPMetrics(CommandParser, list):
     """Parses output of ``pmrep -t 1s -T 1s <metrics> -o csv`` command."""
     def parse_content(self, content):
         if not content or len(content) == 1:
-            raise SkipException("There is no data in the table")
+            raise SkipComponent("There is no data in the table")
         try:
             reader = DictReader(content)
         except Exception:

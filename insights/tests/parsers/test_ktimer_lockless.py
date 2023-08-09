@@ -1,9 +1,10 @@
+import doctest
+import pytest
+
+from insights.core.exceptions import SkipComponent
 from insights.parsers import ktimer_lockless
 from insights.parsers.ktimer_lockless import KTimerLockless
-from insights.parsers import SkipException
 from insights.tests import context_wrap
-import pytest
-import doctest
 
 KTIMER_LOCKLESS_OUTPUT = "0"
 
@@ -16,7 +17,7 @@ def test_ktimer_lockless_parser():
 
 
 def test_empty():
-    with pytest.raises(SkipException) as e:
+    with pytest.raises(SkipComponent) as e:
         KTimerLockless(context_wrap(KTIMER_LOCKLESS_EMPTY))
     assert 'The file is empty' in str(e)
 

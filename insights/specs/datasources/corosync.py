@@ -2,10 +2,11 @@
 Custom datasources related to ``corosync``
 """
 import os
-from insights.core.context import HostContext
-from insights.core.dr import SkipComponent
-from insights.core.plugins import datasource
+
 from insights.components.rhel_version import IsRhel7, IsRhel8, IsRhel9
+from insights.core.context import HostContext
+from insights.core.exceptions import SkipComponent
+from insights.core.plugins import datasource
 
 
 @datasource(HostContext, [IsRhel7, IsRhel8, IsRhel9])

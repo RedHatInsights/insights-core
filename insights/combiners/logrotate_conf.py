@@ -63,7 +63,7 @@ class LogrotateConfAll(object):
 
     Examples:
         >>> all_lrt.global_options
-        ['compress', 'rotate']
+        ['compress', 'rotate', 'include']
         >>> all_lrt['rotate']
         '7'
         >>> '/var/log/httpd/access.log' in all_lrt.log_files
@@ -88,13 +88,22 @@ class LogrotateConfAll(object):
         self.global_options = []
         self.log_files = []
         self._file_map = {}
-
+        self.include = None
         for lrt in lrt_conf:
-            self.data.update(lrt.data)
             if lrt.file_path == "/etc/logrotate.conf":
+                self.data.update(lrt.data)
+                self.log_files.extend(lrt.log_files)
+                self._file_map[lrt.file_path] = lrt.log_files
                 self.global_options = lrt.options
-            self.log_files.extend(lrt.log_files)
-            self._file_map[lrt.file_path] = lrt.log_files
+                if 'include' in lrt.options and lrt.data['include'].startswith('/etc/logrotate.d'):
+                    self.include = lrt.data['include']
+
+        if self.include:
+            for lrt in lrt_conf:
+                if lrt.file_path == self.include or (lrt.file_path.startswith(self.include) and len(lrt.file_path.split(self.include)[-1].lstrip('/').split('/')) == 1) or fnmatch(lrt.file_path, self.include):
+                    self.data.update(lrt.data)
+                    self.log_files.extend(lrt.log_files)
+                    self._file_map[lrt.file_path] = lrt.log_files
 
     def __contains__(self, item):
         return (item in self.global_options or
@@ -136,8 +145,9 @@ class LogrotateConfAll(object):
             such ``log_file``.
         """
         for f, lfs in self._file_map.items():
-            if self._get_match_logfile(log_file, lfs):
-                return f
+            for file in lfs:
+                if fnmatch(log_file, file):
+                    return f
 
 
 @combiner(LogRotateConfPEG)

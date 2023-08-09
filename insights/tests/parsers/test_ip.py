@@ -319,12 +319,79 @@ IP_S_LINK_ALL_3 = """
     536        8        0       0       0       0
 """.strip()
 
+IP_S_LINK_ALL_4 = """
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00 promiscuity 0 minmtu 0 maxmtu 0 addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535
+    RX: bytes  packets  errors  dropped missed  mcast
+    10409771   7627     0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    10409771   7627     0       0       0       0
+3: ens1f0: <BROADCAST,MULTICAST,SLAVE,UP,LOWER_UP> mtu 1500 qdisc mq master bond1 state UP mode DEFAULT group default qlen 1000
+    link/ether b4:96:91:e5:c8:a8 brd ff:ff:ff:ff:ff:ff promiscuity 1 minmtu 68 maxmtu 9702
+    bond_slave state ACTIVE mii_status UP link_failure_count 0 perm_hwaddr b4:96:91:e5:c8:a8 queue_id 0 addrgenmode none numtxqueues 112 numrxqueues 112 gso_max_size 65536 gso_max_segs 65535
+    RX: bytes  packets  errors  dropped missed  mcast
+    3486063351 2629875  0       0       0       3064
+    TX: bytes  packets  errors  dropped carrier collsns
+    259638429  543551   0       0       0       0
+7: ens1f1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP mode DEFAULT group default qlen 1000
+    link/ether b4:96:91:e5:c8:a9 brd ff:ff:ff:ff:ff:ff promiscuity 0 minmtu 68 maxmtu 9702 addrgenmode none numtxqueues 112 n
+umrxqueues 112 gso_max_size 65536 gso_max_segs 65535
+    RX: bytes  packets  errors  dropped missed  mcast
+    17496609   257835   0       67      0       792
+    TX: bytes  packets  errors  dropped carrier collsns
+    33991      231      0       0       0       0
+    vf 0     link/ether 6e:cc:c3:fe:ad:7f brd ff:ff:ff:ff:ff:ff, spoof checking on, link-state auto, trust off
+    RX: bytes  packets  mcast   bcast   dropped
+    14069717   192865   0       192865  192865
+    TX: bytes  packets   dropped
+    0          0        0
+    vf 1     link/ether c6:5b:b6:3c:db:f1 brd ff:ff:ff:ff:ff:ff, spoof checking on, link-state auto, trust off
+    RX: bytes  packets  mcast   bcast   dropped
+    14069717   192865   0       192865  192865
+    TX: bytes  packets   dropped
+    0          0        0
+    vf 2     link/ether f6:a4:d0:2d:a5:a1 brd ff:ff:ff:ff:ff:ff, spoof checking on, link-state auto, trust off
+    RX: bytes  packets  mcast   bcast   dropped
+    14069717   192865   0       192865  192865
+    TX: bytes  packets   dropped
+    0          0        0
+    vf 3     link/ether 92:50:97:c4:9d:f0 brd ff:ff:ff:ff:ff:ff, spoof checking on, link-state auto, trust off
+    RX: bytes  packets  mcast   bcast   dropped
+    14069717   192865   0       192865  192865
+    TX: bytes  packets   dropped
+    0          0        0
+91: ens1f1v64: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+    link/ether 76:47:d1:15:9f:59 brd ff:ff:ff:ff:ff:ff promiscuity 0 minmtu 68 maxmtu 9702 addrgenmode eui64 numtxqueues 16 numrxqueues 16 gso_max_size 65536 gso_max_segs 65535
+    RX: bytes  packets  errors  dropped missed  mcast
+    0          0        0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    0          0        0       0       0       0
+""".strip()
+
+IP_S_LINK_ALL_5 = """
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00 promiscuity 0 minmtu 0 maxmtu 0 addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535
+    RX: bytes  packets  errors  dropped missed  mcast
+    10409771   7627     0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    10409771   7627     0       0       0       0
+2: ens1: <BROADCAST,MULTICAST,SLAVE,UP,LOWER_UP> mtu 1500 qdisc mq master bond1 state UP mode DEFAULT group default qlen 1000 unpaired_attr
+    link/ether b4:96:91:e5:c8:a8 brd ff:ff:ff:ff:ff:ff promiscuity 1 minmtu 68 maxmtu 9702
+    bond_slave state ACTIVE mii_status UP link_failure_count 0 perm_hwaddr b4:96:91:e5:c8:a8 queue_id 0 addrgenmode none numtxqueues 112 numrxqueues 112 gso_max_size 65536 gso_max_segs 65535
+    RX: bytes  packets  errors  dropped missed  mcast
+    3486063351 2629875  0       0       0       3064
+    TX: bytes  packets  errors  dropped carrier collsns
+    259638429  543551   0       0       0       0
+""".strip()
+
 
 def test_ip_data_Link():
     link_info = ip.IpLinkInfo(context_wrap(IP_S_LINK))
     link_info_all = ip.IpLinkInfo(context_wrap(IP_S_LINK_ALL))
     link_info_all_2 = ip.IpLinkInfo(context_wrap(IP_S_LINK_ALL_2))
     link_info_all_3 = ip.IpLinkInfo(context_wrap(IP_S_LINK_ALL_3))
+    link_info_all_4 = ip.IpLinkInfo(context_wrap(IP_S_LINK_ALL_4))
+    link_info_all_5 = ip.IpLinkInfo(context_wrap(IP_S_LINK_ALL_5))
     if_list_all_3 = link_info_all_3.active
     assert sorted(if_list_all_3) == sorted(['lo', 'eth0_1', 'eth0_2', 'vxlan_sys_4789', 'gre1', 'geneve0', 'geneve1'])
     eth0_1 = link_info_all_3["eth0_1"]
@@ -385,6 +452,14 @@ def test_ip_data_Link():
     assert tm0["mtu"] == 1500
     assert tm0['promiscuity'] == '1'
     assert tm0["rx_packets"] == 11784
+
+    ens1f0 = link_info_all_4["ens1f0"]
+    assert ens1f0["vf_enabled"] is False
+    ens1f1 = link_info_all_4["ens1f1"]
+    assert ens1f1["vf_enabled"] is True
+
+    ens1 = link_info_all_5["ens1"]
+    assert ens1["qlen"] == 1000
 
 
 IP_ROUTE_SHOW_TABLE_ALL_TEST = """

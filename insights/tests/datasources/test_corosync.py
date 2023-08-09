@@ -1,8 +1,10 @@
 import pytest
+
 from mock.mock import patch
-from insights.core.dr import SkipComponent
-from insights.specs.datasources.corosync import corosync_cmapctl_cmds
+
 from insights.components.rhel_version import IsRhel6, IsRhel7, IsRhel8, IsRhel9
+from insights.core.exceptions import SkipComponent
+from insights.specs.datasources.corosync import corosync_cmapctl_cmds
 
 COROSYNC_CMD_RHEL7 = [
     "/usr/sbin/corosync-cmapctl",

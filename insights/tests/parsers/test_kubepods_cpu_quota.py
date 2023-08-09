@@ -1,6 +1,8 @@
 import doctest
 import pytest
-from insights.parsers import kubepods_cpu_quota, ParseException
+
+from insights.core.exceptions import ParseException
+from insights.parsers import kubepods_cpu_quota
 from insights.parsers.kubepods_cpu_quota import KubepodsCpuQuota
 from insights.tests import context_wrap
 

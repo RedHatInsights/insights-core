@@ -1,8 +1,10 @@
-from insights.parsers import sapcontrol, SkipException, ParseException
+import doctest
+import pytest
+
+from insights.core.exceptions import ParseException, SkipComponent
+from insights.parsers import sapcontrol
 from insights.parsers.sapcontrol import SAPControlSystemUpdateList
 from insights.tests import context_wrap
-import pytest
-import doctest
 
 RKS_STATUS = """
 29.01.2019 01:20:36
@@ -32,11 +34,11 @@ hostname, instanceNr, status, starttime, endtime, dispstatus
 
 
 def test_sapcontrol_rks_abnormal():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         SAPControlSystemUpdateList(context_wrap(RKS_STATUS_AB1))
     with pytest.raises(ParseException):
         SAPControlSystemUpdateList(context_wrap(RKS_STATUS_AB2))
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         SAPControlSystemUpdateList(context_wrap(RKS_STATUS_AB3))
 
 

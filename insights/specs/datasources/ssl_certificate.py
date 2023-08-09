@@ -1,13 +1,12 @@
 """
 Custom datasource to get ssl certificate file path.
 """
-
 from insights.combiners.httpd_conf import HttpdConfTree
 from insights.combiners.nginx_conf import NginxConfTree
-from insights.parsers.mssql_conf import MsSQLConf
 from insights.core.context import HostContext
-from insights.core.dr import SkipComponent
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import datasource
+from insights.parsers.mssql_conf import MsSQLConf
 
 
 @datasource(HttpdConfTree, HostContext)

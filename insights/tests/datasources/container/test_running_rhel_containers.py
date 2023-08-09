@@ -1,12 +1,13 @@
 import pytest
+
 from mock.mock import patch
 
-from insights.tests import context_wrap
-from insights.specs.datasources.container import running_rhel_containers
-from insights.core.dr import SkipComponent
 from insights.core.context import HostContext
-from insights.parsers.podman_list import PodmanListContainers
+from insights.core.exceptions import SkipComponent
 from insights.parsers.docker_list import DockerListContainers
+from insights.parsers.podman_list import PodmanListContainers
+from insights.specs.datasources.container import running_rhel_containers
+from insights.tests import context_wrap
 
 PODMAN_LIST_CONTAINERS_2_UP = """
 CONTAINER ID                                                       IMAGE         COMMAND                                            CREATED             STATUS                      PORTS                  NAMES               SIZE

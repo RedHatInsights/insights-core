@@ -168,7 +168,7 @@ def deprecated(func, solution, version=None):
     src, line_no = inspect.getsourcelines(func)
     name = get_name_line(src) or "Unknown"
     if version:
-        the_msg = "<{c}> at {p}:{l} is deprecated: {s} This function will be removed after version: {v}.".format(
+        the_msg = "<{c}> at {p}:{l} is deprecated: {s} This function will be removed from version: {v}.".format(
             c=name, p=path, l=line_no, s=solution, v=version
         )
     else:

@@ -1,7 +1,8 @@
-from insights.parsers.php_ini import PHPConf
-from insights.parsers import SkipException, ParseException
-from insights.tests import context_wrap
 import pytest
+
+from insights.core.exceptions import ParseException, SkipComponent
+from insights.parsers.php_ini import PHPConf
+from insights.tests import context_wrap
 
 # Latest production php.ini from php git repository. Comments stripped out.
 # https://git.php.net/?p=php-src.git;a=blob;f=php.ini-production;hb=HEAD
@@ -201,7 +202,7 @@ def test_php_conf_default():
 
 
 def test_php_conf_empty():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         PHPConf(context_wrap(INI_EMPTY))
 
 

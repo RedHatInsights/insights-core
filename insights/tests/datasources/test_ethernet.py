@@ -1,9 +1,10 @@
 import pytest
 
-from insights.core.dr import SkipComponent
-from insights.specs.datasources.ethernet import interfaces, LocalSpecs, team_interfaces
-from insights.parsers.nmcli import NmcliConnShow
 from mock.mock import Mock
+
+from insights.core.exceptions import SkipComponent
+from insights.parsers.nmcli import NmcliConnShow
+from insights.specs.datasources.ethernet import LocalSpecs, interfaces, team_interfaces
 from insights.tests import context_wrap
 
 

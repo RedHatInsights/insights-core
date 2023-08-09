@@ -1,9 +1,9 @@
-from insights.parsers.uptime import Uptime
-from insights.parsers import ParseException
-from insights.tests import context_wrap
 import datetime
-
 import pytest
+
+from insights.core.exceptions import ParseException
+from insights.parsers.uptime import Uptime
+from insights.tests import context_wrap
 
 UPTIME_TEST_DATA = [
     {

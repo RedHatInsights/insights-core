@@ -7,10 +7,10 @@ the ``core.marshalling.unmarshal`` function to parse the JSON output from the
 commands.  The parsed data can be accessed a dictionary via the object itself.
 
 """
-
-from insights import parser, CommandParser
+from insights.core import CommandParser
+from insights.core.exceptions import SkipComponent
 from insights.core.marshalling import unmarshal
-from insights.parsers import SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
 from insights.util import deprecated
 
@@ -26,26 +26,26 @@ class DockerInspect(CommandParser, dict):
     as JSON, so "json.loads" is an option to parse the output in the future.
 
     Raises:
-        SkipException: If content is not provided
+        SkipComponent: If content is not provided
     """
     def __init__(self, *args, **kwargs):
         deprecated(
             DockerInspect,
             "Please use the :class:`insights.parsers.containers_inspect.ContainersInspect` instead.",
-            "3.2.25"
+            "3.3.0"
         )
         super(DockerInspect, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
         if not content:
-            raise SkipException
+            raise SkipComponent
 
         content = "\n".join(list(content))
         try:
             inspect_data = unmarshal(content)
             self.update(inspect_data[0])
         except:
-            raise SkipException
+            raise SkipComponent
 
     @property
     def data(self):
@@ -118,6 +118,6 @@ class DockerInspectContainer(DockerInspect):
         deprecated(
             DockerInspectContainer,
             "Please use the :class:`insights.parsers.containers_inspect.ContainersInspect` instead.",
-            "3.2.25"
+            "3.3.0"
         )
         super(DockerInspectContainer, self).__init__(*args, **kwargs)

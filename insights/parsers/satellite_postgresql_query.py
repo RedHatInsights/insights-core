@@ -10,6 +10,8 @@ SatelliteComputeResources - command ``psql -d foreman -c 'select name, type from
 -----------------------------------------------------------------------------------------------------------
 SatelliteCoreTaskReservedResourceCount - command ``psql -d pulpcore -c 'select count(*) from core_taskreservedresource' --csv``
 -------------------------------------------------------------------------------------------------------------------------------
+SatelliteIgnoreSourceRpmsRepos - command ``psql -d foreman -c "select id, name from katello_root_repositories where ignorable_content like '%srpm%' and mirroring_policy='mirror_complete'" --csv``
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 SatelliteKatellloReposWithMultipleRef - command ``psql -d foreman -c "select repository_href, count(*) from katello_repository_references group by repository_href having count(*) > 1;" --csv``
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 SatelliteLogsTableSize - command ``psql -d foreman -c "select pg_total_relation_size('logs') as logs_size" --csv``
@@ -20,19 +22,21 @@ SatelliteQualifiedCapsules - command ``psql -d foreman -c "select name from smar
 ---------------------------------------------------------------------------------------------------------------------------------------
 SatelliteQualifiedKatelloRepos - command ``psql -d foreman -c "select id, name, url, download_policy from katello_root_repositories where download_policy = 'background' or url is NULL" --csv``
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SatelliteRHVHostsCount - command ``psql -d foreman -c "select count(*) from hosts where \"compute_resource_id\" in (select id from compute_resources where type='Foreman::Model::Ovirt')" --csv``
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 SatelliteSCAStatus - command ``psql -d candlepin -c "select displayname, content_access_mode from cp_owner" --csv``
 -------------------------------------------------------------------------------------------------------------------
 """
-
 import os
 import yaml
+
 from csv import DictReader
 
-from insights import parser, CommandParser
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipComponent
+from insights.core.plugins import parser
+from insights.parsers import calc_offset, keyword_search
 from insights.specs import Specs
-from insights.parsers import SkipException, ParseException
-from insights.parsers import keyword_search, calc_offset
-from insights.util import deprecated
 
 
 class SatellitePostgreSQLQuery(CommandParser, list):
@@ -64,7 +68,7 @@ class SatellitePostgreSQLQuery(CommandParser, list):
         def,http://xx.com,
 
     Raises:
-        SkipException: when there isn't data in the table
+        SkipComponent: when there isn't data in the table
         ParseException: when the output isn't in good csv format or the yaml values aren't in good yaml format
         NotImplementedError: when the subclass doesn't override the columns attribute.
     """
@@ -97,7 +101,7 @@ class SatellitePostgreSQLQuery(CommandParser, list):
                 row[name] = self._parse_yaml(row[name])
             self.append(row)
         if not self:
-            raise SkipException("There is no data in the table.")
+            raise SkipComponent("There is no data in the table.")
 
     def search(self, **kwargs):
         """
@@ -202,38 +206,26 @@ class SatelliteCoreTaskReservedResourceCount(SatellitePostgreSQLQuery):
     columns = ['count']
 
 
-@parser(Specs.satellite_katello_empty_url_repositories)
-class SatelliteKatelloEmptyURLRepositories(SatellitePostgreSQLQuery):
+@parser(Specs.satellite_ignore_source_rpms_repos)
+class SatelliteIgnoreSourceRpmsRepos(SatellitePostgreSQLQuery):
     """
-    .. warning::
-        This parser is deprecated, please use
-        :py:class:`insights.parsers.satellite_postgresql_query.SatelliteQualifiedKatelloRepos` instead.
-
-    Parse the output of the command ``psql -d foreman -c 'select id, name from katello_root_repositories where url is NULL;' --csv``.
+    Parse the output of the command ``psql -d foreman -c "select id, name from katello_root_repositories where ignorable_content like '%srpm%' and mirroring_policy='mirror_complete'" --csv``.
 
     Sample output::
 
         id,name
-        54,testa
-        55,testb
+        4,Red Hat Enterprise Linux 8 for x86_64 - AppStream RPMs 8
 
     Examples:
-        >>> type(katello_root_repositories)
-        <class 'insights.parsers.satellite_postgresql_query.SatelliteKatelloEmptyURLRepositories'>
-        >>> len(katello_root_repositories)
-        2
-        >>> katello_root_repositories[0]['name']
-        'testa'
+        >>> type(i_srpm_repos)
+        <class 'insights.parsers.satellite_postgresql_query.SatelliteIgnoreSourceRpmsRepos'>
+        >>> i_srpm_repos[0]['id']
+        '4'
+        >>> i_srpm_repos[0]['name']
+        'Red Hat Enterprise Linux 8 for x86_64 - AppStream RPMs 8'
+
     """
     columns = ['id', 'name']
-
-    def __init__(self, *args, **kwargs):
-        deprecated(
-            SatelliteKatelloEmptyURLRepositories,
-            "Please use the SatelliteQualifiedKatelloRepos parser in the current module.",
-            "3.1.25"
-        )
-        super(SatelliteKatelloEmptyURLRepositories, self).__init__(*args, **kwargs)
 
 
 @parser(Specs.satellite_logs_table_size)
@@ -354,6 +346,25 @@ class SatelliteQualifiedCapsules(SatellitePostgreSQLQuery):
         'capsule1.test.com'
     """
     columns = ['name']
+
+
+@parser(Specs.satellite_rhv_hosts_count)
+class SatelliteRHVHostsCount(SatellitePostgreSQLQuery):
+    """
+    Parse the output of the command ``psql -d foreman -c "select count(*) from hosts where \"compute_resource_id\" in (select id from compute_resources where type='Foreman::Model::Ovirt')" --csv``.
+
+    Sample output::
+
+        count
+        2
+
+    Examples:
+        >>> type(rhv_hosts)
+        <class 'insights.parsers.satellite_postgresql_query.SatelliteRHVHostsCount'>
+        >>> rhv_hosts[0]['count']
+        '2'
+    """
+    columns = ['count']
 
 
 @parser(Specs.satellite_sca_status)

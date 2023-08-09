@@ -1,7 +1,6 @@
+from insights.core.exceptions import ContentException, ParseException
 from insights.parsers.numeric_user_group_name import NumericUserGroupName
 from insights.tests import context_wrap
-from insights.parsers import ParseException
-from insights.core.plugins import ContentException
 
 ZERO = """
 /etc/passwd:0

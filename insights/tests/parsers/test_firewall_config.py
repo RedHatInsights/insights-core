@@ -1,9 +1,10 @@
 import doctest
 import pytest
+
+from insights.core.exceptions import SkipComponent
 from insights.parsers import firewall_config
 from insights.parsers.firewall_config import FirewallDConf
 from insights.tests import context_wrap
-from insights.parsers import SkipException
 
 FIREWALLD_CONFIG = """
 # firewalld config file
@@ -41,5 +42,5 @@ def test_docs():
 
 
 def test_empty_content():
-    with pytest.raises(SkipException):
+    with pytest.raises(SkipComponent):
         FirewallDConf(context_wrap(FIREWALLD_CONFIG_2))

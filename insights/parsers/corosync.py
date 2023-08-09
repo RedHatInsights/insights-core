@@ -5,64 +5,18 @@ Parsers for the Corosync Cluster Engine configurations
 
 Parsers included in this module are:
 
-CoroSyncConfig - file ``/etc/sysconfig/corosync``
--------------------------------------------------
-
 CorosyncConf - file ``/etc/corosync/corosync.conf``
 ---------------------------------------------------
 """
 import string
-from insights.util import deprecated
 from insights.core import ConfigParser
 from insights.specs import Specs
-from .. import SysconfigOptions, parser
+from insights import parser
 
 from insights.parsr import (EOF, Forward, InSet, LeftCurly, Lift, LineEnd,
         Literal, RightCurly, Many, Number, OneLineComment, PosMarker,
         skip_none, String, QuotedString, WS, WSChar)
 from insights.parsr.query import Directive, Entry, Section
-
-
-@parser(Specs.corosync)
-class CoroSyncConfig(SysconfigOptions):
-    """
-    .. warning::
-        This parser is deprecated, please use
-        :py:class:`insights.parsers.sysconfig.CorosyncSysconfig` instead.
-
-    This parser reads the ``/etc/sysconfig/corosync`` file. It uses
-    the ``SysconfigOptions`` parser class to convert the file into a
-    dictionary of options. It also provides the ``options`` property
-    as a helper to retrieve the ``COROSYNC_OPTIONS`` variable.
-
-    Sample data::
-
-        # Corosync init script configuration file
-
-        # COROSYNC_INIT_TIMEOUT specifies number of seconds to wait for corosync
-        # initialization (default is one minute).
-        COROSYNC_INIT_TIMEOUT=60
-
-        # COROSYNC_OPTIONS specifies options passed to corosync command
-        # (default is no options).
-        # See "man corosync" for detailed descriptions of the options.
-        COROSYNC_OPTIONS=""
-
-    Examples:
-
-        >>> 'COROSYNC_OPTIONS' in csconfig.data
-        True
-        >>> csconfig.options
-        ''
-    """
-    def __init__(self, *args, **kwargs):
-        deprecated(CoroSyncConfig, "Import CorosyncSysconfig from insights.parsers.sysconfig instead.", "3.0.300")
-        super(CoroSyncConfig, self).__init__(*args, **kwargs)
-
-    @property
-    def options(self):
-        """ (str): The value of the ``COROSYNC_OPTIONS`` variable."""
-        return self.data.get('COROSYNC_OPTIONS', '')
 
 
 def parse_doc(f, ctx=None, line_end="\n"):

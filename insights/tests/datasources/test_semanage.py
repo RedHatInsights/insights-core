@@ -1,11 +1,12 @@
-import pytest
 import json
+import pytest
+
 from mock.mock import Mock
 
-from insights.core.dr import SkipComponent
 from insights.core import filters
-from insights.specs import Specs
+from insights.core.exceptions import SkipComponent
 from insights.core.spec_factory import DatasourceProvider
+from insights.specs import Specs
 from insights.specs.datasources.semanage import LocalSpecs, users_count_map_selinux_user
 
 SEMANGE_LOGIN_LIST_OUTPUT1 = """

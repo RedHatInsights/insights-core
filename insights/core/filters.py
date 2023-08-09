@@ -128,6 +128,10 @@ def get_filters(component):
     """
     def inner(c, filters=None):
         filters = filters or set()
+
+        if hasattr(c, 'filterable') and c.filterable is False:
+            return filters
+
         if not ENABLED:
             return filters
 
@@ -188,10 +192,10 @@ def load(stream=None):
 
 
 def dumps():
-    """Returns a string representation of the FILTERS dictionary."""
+    """Returns a string representation of the sorted FILTERS dictionary."""
     d = {}
     for k, v in FILTERS.items():
-        d[dr.get_name(k)] = list(v)
+        d[dr.get_name(k)] = sorted(v)
     return _dumps(d)
 
 

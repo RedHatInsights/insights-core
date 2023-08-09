@@ -27,21 +27,19 @@ may return:
 from __future__ import print_function
 
 import logging
+import signal
 import traceback
 
 from pprint import pformat
 from six import StringIO
 
-from insights.core import dr
-from insights.util.subproc import CalledProcessError
 from insights import settings
+from insights.core import dr
+from insights.core.context import HostContext
+from insights.core.exceptions import (CalledProcessError, ContentException, SkipComponent, TimeoutException,
+                                      ValidationException)
 
 log = logging.getLogger(__name__)
-
-
-class ContentException(dr.SkipComponent):
-    """ Raised whenever a :class:`datasource` fails to get data. """
-    pass
 
 
 class PluginType(dr.ComponentType):
@@ -65,11 +63,11 @@ class PluginType(dr.ComponentType):
         except ContentException as ce:
             log.debug(ce)
             broker.add_exception(self.component, ce, traceback.format_exc())
-            raise dr.SkipComponent()
+            raise SkipComponent()
         except CalledProcessError as cpe:
             log.debug(cpe)
             broker.add_exception(self.component, cpe, traceback.format_exc())
-            raise dr.SkipComponent()
+            raise SkipComponent()
 
 
 class component(PluginType):
@@ -81,21 +79,44 @@ class datasource(PluginType):
     Decorates a component that one or more :class:`insights.core.Parser`
     subclasses will consume.
     """
+    filterable = False
     multi_output = False
     raw = False
-    filterable = False
+
+    def _handle_timeout(self, signum, frame):
+        raise TimeoutException("Datasource spec {ds_name} timed out after {secs} seconds!".format(
+            ds_name=dr.get_name(self.component), secs=self.timeout))
 
     def invoke(self, broker):
+        # Grab the timeout from the decorator, or use the default of 120.
+
+        if HostContext in broker:
+            self.timeout = getattr(self, "timeout", 120)
+            signal.signal(signal.SIGALRM, self._handle_timeout)
+            signal.alarm(self.timeout)
         try:
             return self.component(broker)
         except ContentException as ce:
             log.debug(ce)
-            broker.add_exception(self.component, ce, traceback.format_exc())
-            raise dr.SkipComponent()
+            ce_tb = traceback.format_exc()
+            for reg_spec in dr.get_registry_points(self.component):
+                broker.add_exception(reg_spec, ce, ce_tb)
+            raise SkipComponent()
         except CalledProcessError as cpe:
             log.debug(cpe)
-            broker.add_exception(self.component, cpe, traceback.format_exc())
-            raise dr.SkipComponent()
+            cpe_tb = traceback.format_exc()
+            for reg_spec in dr.get_registry_points(self.component):
+                broker.add_exception(reg_spec, cpe, cpe_tb)
+            raise SkipComponent()
+        except TimeoutException as te:
+            log.debug(te)
+            te_tb = traceback.format_exc()
+            for reg_spec in dr.get_registry_points(self.component):
+                broker.add_exception(reg_spec, te, te_tb)
+            raise SkipComponent()
+        finally:
+            if HostContext in broker:
+                signal.alarm(0)
 
 
 class parser(PluginType):
@@ -138,7 +159,7 @@ class parser(PluginType):
                 exception = True
 
         if exception:
-            raise dr.SkipComponent()
+            raise SkipComponent()
 
         results = []
         for d in dep_value:
@@ -146,14 +167,18 @@ class parser(PluginType):
                 r = self.component(d)
                 if r is not None:
                     results.append(r)
-            except dr.SkipComponent:
-                pass
             except ContentException as ce:
                 log.debug(ce)
                 broker.add_exception(self.component, ce, traceback.format_exc())
                 if not self.continue_on_error:
                     exception = True
                     break
+            except SkipComponent as sc:
+                if broker.store_skips:
+                    log.warning(sc)
+                    broker.add_exception(component, sc, traceback.format_exc())
+                else:
+                    pass
             except CalledProcessError as cpe:
                 log.debug(cpe)
                 broker.add_exception(self.component, cpe, traceback.format_exc())
@@ -162,18 +187,18 @@ class parser(PluginType):
                     break
             except Exception as ex:
                 tb = traceback.format_exc()
-                log.warn(tb)
+                log.warning(tb)
                 broker.add_exception(self.component, ex, tb)
                 if not self.continue_on_error:
                     exception = True
                     break
 
         if exception:
-            raise dr.SkipComponent()
+            raise SkipComponent()
 
         if not results:
             log.debug("All failed: %s" % dr.get_name(self.component))
-            raise dr.SkipComponent()
+            raise SkipComponent()
 
         return results
 
@@ -296,7 +321,7 @@ class rule(PluginType):
         Ensures dependencies have been met before delegating to `self.invoke`.
         """
         if any(i in broker for i in dr.IGNORE.get(self.component, [])):
-            raise dr.SkipComponent()
+            raise SkipComponent()
         missing = self.get_missing_dependencies(broker)
         if missing:
             return _make_skip(dr.get_name(self.component), missing)
@@ -360,13 +385,6 @@ def is_rule(component):
 
 def is_component(obj):
     return bool(dr.get_component_type(obj))
-
-
-class ValidationException(Exception):
-    def __init__(self, msg, r=None):
-        if r:
-            msg = "%s: %s" % (msg, r)
-        super(ValidationException, self).__init__(msg)
 
 
 class Response(dict):
@@ -517,7 +535,8 @@ class make_response(Response):
                return make_response("BASH_BUG_123", bash=bash)
            return make_pass("BASH", bash=bash)
 
-    .. deprecated::
+    .. deprecated:: 1.x
+
         Use :class:`make_fail` instead.
     """
 

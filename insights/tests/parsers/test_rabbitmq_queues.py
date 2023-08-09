@@ -1,5 +1,6 @@
 import pytest
-from insights.parsers import ParseException
+
+from insights.core.exceptions import ParseException
 from insights.parsers.rabbitmq import RabbitMQQueues
 from insights.tests import context_wrap
 

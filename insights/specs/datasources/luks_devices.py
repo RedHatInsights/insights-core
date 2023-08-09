@@ -1,14 +1,15 @@
 """
 Custom datasource for gathering a list of encrypted LUKS block devices and their properties.
 """
+import re
+
 from insights.components.cryptsetup import HasCryptsetupWithTokens, HasCryptsetupWithoutTokens
 from insights.core.context import HostContext
-from insights.core.dr import SkipComponent
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider, foreach_execute
 from insights.parsers.blkid import BlockIDInfo
 from insights.specs import Specs
-import re
 
 
 @datasource(BlockIDInfo, HostContext)

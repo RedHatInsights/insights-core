@@ -1,9 +1,11 @@
-import pytest
 import doctest
+import pytest
 
 from datetime import datetime
+
+from insights.core.exceptions import SkipComponent
+from insights.parsers import zdump_v
 from insights.tests import context_wrap
-from insights.parsers import zdump_v, SkipException
 
 NORMAL_OUTPUT = '''
 /etc/localtime  -9223372036854689408 = NULL
@@ -94,6 +96,6 @@ def test_zdump_v():
 
 
 def test_fail():
-    with pytest.raises(SkipException) as e:
+    with pytest.raises(SkipComponent) as e:
         zdump_v.ZdumpV(context_wrap(BAD_OUTPUT1))
     assert "No Data from command: /usr/sbin/zdump -v /etc/localtime -c 2019,2039" in str(e)

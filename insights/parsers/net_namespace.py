@@ -20,9 +20,10 @@ Examples:
     >>> len(netns_obj.netns_list)
     3
 """
-
-from insights import Parser, parser, get_active_lines
-from insights.parsers import SkipException
+from insights.core import Parser
+from insights.core.exceptions import SkipComponent
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines
 from insights.specs import Specs
 
 
@@ -30,7 +31,7 @@ from insights.specs import Specs
 class NetworkNamespace(Parser):
     def parse_content(self, content):
         if not content:
-            raise SkipException('Nothing to parse.')
+            raise SkipComponent('Nothing to parse.')
 
         self._netns_list = []
         for line in get_active_lines(content):

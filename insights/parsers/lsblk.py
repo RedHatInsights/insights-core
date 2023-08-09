@@ -99,11 +99,13 @@ Examples:
     [{'READ_ONLY': False, 'PARENT_NAMES': ['vda'], 'NAME': 'vda2',
      'REMOVABLE': False, 'MAJ_MIN': '252:2', 'TYPE': 'part', 'SIZE': '8.5G'}]
 """
-
 from __future__ import division
 import re
-from .. import parser, CommandParser
-from . import ParseException, keyword_search
+
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
+from insights.parsers import keyword_search
 from insights.specs import Specs
 
 MAX_GENERATIONS = 20

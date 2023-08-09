@@ -17,11 +17,10 @@ Examples::
     datetime.datetime(2035, 12, 4, 7, 4, 5)
 
 """
-
-from insights import parser
-from insights.specs import Specs
-from insights.parsers import SkipException
+from insights.core.exceptions import SkipComponent
+from insights.core.plugins import parser
 from insights.parsers.ssl_certificate import CertificateInfo
+from insights.specs import Specs
 
 
 @parser(Specs.puppet_ca_cert_expire_date)
@@ -41,11 +40,11 @@ class PuppetCertExpireDate(CertificateInfo):
         expire_date (datetime): The date when the puppet ca cert will be expired
 
     Raises:
-        SkipException: when notAfter isn't in the output
+        SkipComponent: when notAfter isn't in the output
     """
 
     def parse_content(self, content):
         super(PuppetCertExpireDate, self).parse_content(content)
         if 'notAfter' not in self:
-            raise SkipException("Cannot get the puppet ca cert expire info")
+            raise SkipComponent("Cannot get the puppet ca cert expire info")
         self.expire_date = self['notAfter'].datetime

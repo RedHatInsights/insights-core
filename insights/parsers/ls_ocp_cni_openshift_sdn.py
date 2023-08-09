@@ -25,13 +25,21 @@ Examples:
     ['10.130.0.102', '10.130.0.103', '10.130.0.116', '10.130.0.117', '10.130.0.15', '10.130.0.20', 'last_reserved_ip.0']
 """
 
-from insights.specs import Specs
-
 from .. import FileListing
 from .. import parser, CommandParser
+from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.ls_ocp_cni_openshift_sdn)
 class LsOcpCniOpenshiftSdn(CommandParser, FileListing):
-    """Parses output of ``ls -l /var/lib/cni/networks/openshift-sdn`` command."""
-    pass
+    """
+    .. warning::
+        This class is deprecated and will be removed from 3.5.0.
+        Please use the :class:`insights.parsers.ls.LSla` instead.
+
+    Parses output of ``ls -l /var/lib/cni/networks/openshift-sdn`` command.
+    """
+    def __init__(self, *args, **kwargs):
+        deprecated(LsOcpCniOpenshiftSdn, "Please use the :class:`insights.parsers.ls.LSla` instead.", "3.5.0")
+        super(LsOcpCniOpenshiftSdn, self).__init__(*args, **kwargs)

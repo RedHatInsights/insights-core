@@ -4,10 +4,9 @@ AvcCacheThreshold - File ``/sys/fs/selinux/avc/cache_threshold``
 
 This parser reads the content of ``/sys/fs/selinux/avc/cache_threshold``.
 """
-
-from .. import parser, CommandParser
-
-from ..parsers import ParseException
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 

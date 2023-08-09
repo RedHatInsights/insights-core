@@ -1,7 +1,9 @@
-from insights.parsers import foreman_rake_db_migrate_status, ParseException
-from insights.tests import context_wrap
 import doctest
 import pytest
+
+from insights.core.exceptions import ParseException
+from insights.parsers import foreman_rake_db_migrate_status
+from insights.tests import context_wrap
 
 
 foreman_rake_db_migrate_status_doc_example = '''

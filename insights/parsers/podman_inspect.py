@@ -7,10 +7,10 @@ the ``core.marshalling.unmarshal`` function to parse the JSON output from the
 commands.  The data is stored as a dictionary.
 
 """
-
-from insights import parser, CommandParser
+from insights.core import CommandParser
+from insights.core.exceptions import SkipComponent
 from insights.core.marshalling import unmarshal
-from insights.parsers import SkipException
+from insights.core.plugins import parser
 from insights.specs import Specs
 from insights.util import deprecated
 
@@ -26,19 +26,19 @@ class PodmanInspect(CommandParser, dict):
     as JSON, so "json.loads" is an option to parse the output in the future.
 
     Raises:
-        SkipException: If content is not provided
+        SkipComponent: If content is not provided
     """
     def __init__(self, *args, **kwargs):
         deprecated(
             PodmanInspect,
             "Please use the :class:`insights.parsers.containers_inspect.ContainersInspect` instead.",
-            "3.2.25"
+            "3.3.0"
         )
         super(PodmanInspect, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
         if not content:
-            raise SkipException
+            raise SkipComponent
 
         content = "\n".join(list(content))
 
@@ -46,7 +46,7 @@ class PodmanInspect(CommandParser, dict):
             inspect_data = unmarshal(content)
             self.update(inspect_data[0])
         except:
-            raise SkipException
+            raise SkipComponent
 
 
 @parser(Specs.podman_image_inspect)
@@ -111,6 +111,6 @@ class PodmanInspectContainer(PodmanInspect):
         deprecated(
             PodmanInspectContainer,
             "Please use the :class:`insights.parsers.containers_inspect.ContainersInspect` instead.",
-            "3.2.25"
+            "3.3.0"
         )
         super(PodmanInspectContainer, self).__init__(*args, **kwargs)
