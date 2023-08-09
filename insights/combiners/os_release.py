@@ -4,9 +4,11 @@ OSRelease
 The ``OSRelease`` combiner uses the following parsers to try to identify if the
 current host is installed with a "Red Hat Enterprise Linux" system.
 
+    - :py:class:`insights.parsers.installed_rpms.InstalledRpms`
     - :py:class:`insights.parsers.uname.Uname`
     - :py:class:`insights.parsers.dmesg.DmesgLineList`
-    - :py:class:`insights.parsers.installed_rpms.InstalledRpms`
+    - :py:class:`insights.parsers.os_release.OSRelease`
+    - :py:class:`insights.parsers.redhat_release.RedhatRelease`
 
 It provides an attribute `is_rhel` that indicates if the host is "RHEL" or not.
 It also provides an attribute `release` which returns the estimated OS release
@@ -129,7 +131,7 @@ def _from_redhat_release(rhr):
 
 def _from_uname(uname):
     """
-    Identify RHEL by checking the `unam -a`.
+    Identify RHEL by checking the `uname -a`.
 
     1. Oracle kernels may contain 'uek' or 'ol' in the kernel NVR.
     2. Fedora kernels contains 'fc' in the NVR.
@@ -264,18 +266,25 @@ class OSRelease(object):
                 self._reasons = ret
                 if self._release == 'Unknown':
                     return None  # Continue to identify when unknown
-                return self._release != 'RHEL'
+                return self._release != 'RHEL'  # see OTHER_LINUX_KEYS
+            return None  # Nothing to check
 
         self._release = 'Unknown'
         self._reasons = dict(reason='Nothing available to check')
 
-        # Check installed_rpms first
-        # Only when installed_rpms is unavailable, check below specs with order
-        # - uname, dmesg, os_release and redhat_release
+        # 1. Check `installed_rpms` first.
         ret = _from_installed_rpms(rpms, uname)
-
+        #    We trust the check result of `installed_rpms`: RHEL or NON-RHEL,
+        #    expect for "Unknown".
+        #    `None` indicates "Unknown" or `installed_rpms` is not available
         if __identify_non_rhel(ret) is None:
-
+            # 2. Only when `installed_rpms` cannot identify it
+            #    a. installed_rpms is not available
+            #    b. identify result is "Unknown"
+            #
+            #    Check below items with order:
+            #    - uname, dmesg, os_release, and redhat_release
+            #    and any `False` which indicates NON-RHEL to stop.
             check_points_funcs = [
                 (_from_uname, [uname]),
                 (_from_dmesg, [dmesg]),
