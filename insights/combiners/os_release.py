@@ -100,6 +100,14 @@ THRESHOLD = 0.75
 """Threshold of the must-install packages to identify NON-RHEL"""
 
 
+def _get_release(names):
+    names = names if isinstance(names, list) else [names]
+    for rel in OTHER_LINUX_KEYS:
+        if any(rel.lower() in name.lower() for name in names):
+            return rel
+    return names[-1].split()[0]
+
+
 def _from_os_release(osr):
     """
     Identify RHEL by checking the `/etc/os-release`.
@@ -115,7 +123,8 @@ def _from_os_release(osr):
                                       osr.get('PRETTY_NAME')]))
         if names:
             # NON-RHEL: /etc/os-release
-            return dict(other_linux=names[-1], reason='NON-RHEL: os-release')
+            return dict(other_linux=_get_release(names),
+                        reason='NON-RHEL: os-release')
         return dict(other_linux='RHEL')
 
 
@@ -125,7 +134,8 @@ def _from_redhat_release(rhr):
     """
     if rhr:
         if not rhr.is_rhel:
-            return dict(other_linux=rhr.product, reason='NON-RHEL: redhat-release')
+            return dict(other_linux=_get_release(rhr.product),
+                        reason='NON-RHEL: redhat-release')
         return dict(other_linux='RHEL')
 
 
@@ -227,7 +237,7 @@ def _from_installed_rpms(rpms, uname):
             # try to get the release from kernel vendor
             if 'red hat' not in vendor.lower():
                 sep = ',' if ',' in vendor else ' '
-                release = vendor.split(sep)[0].strip()
+                release = _get_release(vendor.split(sep)[0].strip())
                 ret.update(other_linux=release)
         return ret
     return dict(other_linux='RHEL')
@@ -315,7 +325,8 @@ class OSRelease(object):
     @property
     def release(self):
         """
-        Returns the estimated release name of the running Linux.
+        Returns the estimated release name of the running Linux.  It's RHEL or
+        one key of the :const:`OTHER_LINUX_KEYS` when it's NON-RHEL.
         """
         return self._release
 
@@ -349,5 +360,7 @@ class OSRelease(object):
         return self._release
 
     def __repr__(self):
+        if self.is_rhel:
+            return "<release: {0}, name: {1}>".format(self.release, self.name)
         return "<release: {0}, name: {1}, reasons: {2}>".format(
                 self.release, self.name, self.reasons)
