@@ -154,11 +154,22 @@ def get_content(obj, val):
 
 try:
     from jinja2 import Template
+    from jinja2 import exceptions as jinja2Exceptions
 
     def format_rule(comp, val):
         content = get_content(comp, val)
         if content and val.get("type") != "skip":
-            return Template(content).render(val)
+            try:
+                text = Template(content).render(val)
+            except jinja2Exceptions.UndefinedError as err:
+                text = '\n'.join([str(val),
+                                "CONTENT:",
+                                "--------",
+                                content,
+                                "Failed to render the Content above:",
+                                "    " + str(err)])
+            finally:
+                return text
         return str(val)
 
     RENDERERS[rule] = format_rule
