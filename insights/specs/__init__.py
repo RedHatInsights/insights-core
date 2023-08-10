@@ -419,6 +419,7 @@ class Specs(SpecSet):
     mariadb_log = RegistryPoint(filterable=True)
     max_uid = RegistryPoint()
     md5chk_files = RegistryPoint(multi_output=True)
+    mdadm_D = RegistryPoint()
     mdadm_E = RegistryPoint(multi_output=True)
     mdstat = RegistryPoint()
     meminfo = RegistryPoint()
