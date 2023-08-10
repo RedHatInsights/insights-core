@@ -409,6 +409,7 @@ class DefaultSpecs(Specs):
     mariadb_log = simple_file("/var/log/mariadb/mariadb.log")
     max_uid = simple_command("/bin/awk -F':' '{ if($3 > max) max = $3 } END { print max }' /etc/passwd")
     md5chk_files = foreach_execute(md5chk.files, "/usr/bin/md5sum %s", keep_rc=True)
+    mdadm_D = simple_command("/usr/sbin/mdadm -D /dev/md*")
     mdstat = simple_file("/proc/mdstat")
     meminfo = first_file(["/proc/meminfo", "/meminfo"])
     messages = simple_file("/var/log/messages")
