@@ -6,7 +6,7 @@ from insights.parsers import iris
 from insights.tests import context_wrap
 
 
-IRIS_RUNNING = """
+IRIS_RUNNING_1 = """
 
 Configuration 'IRIS'   (default)
     directory:    /intersystems
@@ -16,6 +16,36 @@ Configuration 'IRIS'   (default)
     status:       running, since Tue Jun 27 01:55:25 2023
     state:        ok
     product:      InterSystems IRIS
+
+Configuration 'IRIS2'
+	directory:    /intersystems2
+	versionid:    2023.1.0.235.1com
+	datadir:      /intersystems2
+	conf file:    iris.cpf  (SuperServer port = 51773, WebServer = 52774)
+	status:       running, since Thu Aug 10 02:47:27 2023
+	state:        ok
+	product:      InterSystems IRIS
+""".strip()
+
+IRIS_RUNNING_2 = """
+
+Configuration 'IRIS'   (default)
+    directory:    /intersystems
+    versionid:    2023.1.0.235.1com
+    datadir:      /intersystems
+    conf file:    iris.cpf  (SuperServer port = 1972, WebServer = 52773)
+    status:       running, since Tue Jun 27 01:55:25 2023
+    state:        ok
+    product:      InterSystems IRIS
+
+Configuration 'IRIS2'
+	directory:    /intersystems2
+	versionid:    2023.1.0.235.1com
+	datadir:      /intersystems2
+	conf file:    iris.cpf  (SuperServer port = 51773, WebServer = 52774)
+	status:       down, last used Thu Aug 10 07:21:10 2023
+	state:        ok
+	product:      InterSystems IRIS
 """.strip()
 
 IRIS_DOWN = """
@@ -27,6 +57,15 @@ Configuration 'IRIS'   (default)
     conf file:    iris.cpf  (SuperServer port = 1972, WebServer = 52773)
     status:       down, last used Tue Jun 27 01:50:36 2023
     product:      InterSystems IRIS
+
+Configuration 'IRIS2'
+	directory:    /intersystems2
+	versionid:    2023.1.0.235.1com
+	datadir:      /intersystems2
+	conf file:    iris.cpf  (SuperServer port = 51773, WebServer = 52774)
+	status:       down, last used Thu Aug 10 07:21:10 2023
+	state:        ok
+	product:      InterSystems IRIS
 """.strip()
 
 IRIS_NO_CONTENT = """"""
@@ -95,16 +134,23 @@ Startup of InterSystems IRIS [IRIS for UNIX (Red Hat Enterprise Linux 8 for x86-
 
 
 def test_iris_list():
-    iris_running = iris.IrisList(context_wrap(IRIS_RUNNING))
-    assert iris_running['name'] == "IRIS"
-    assert iris_running['status'] == "running, since Tue Jun 27 01:55:25 2023"
-    assert 'state' in iris_running
+    iris_running = iris.IrisList(context_wrap(IRIS_RUNNING_1))
+    assert list(iris_running.keys()) == ['IRIS', 'IRIS2']
+    assert iris_running['IRIS']['status'] == 'running, since Tue Jun 27 01:55:25 2023'
+    assert 'state' in iris_running['IRIS']
     assert iris_running.is_running
 
+    iris_running2 = iris.IrisList(context_wrap(IRIS_RUNNING_2))
+    assert list(iris_running2.keys()) == ['IRIS', 'IRIS2']
+    assert iris_running2['IRIS']['status'] == 'running, since Tue Jun 27 01:55:25 2023'
+    assert iris_running2['IRIS2']['status'] == 'down, last used Thu Aug 10 07:21:10 2023'
+    assert 'state' in iris_running2['IRIS']
+    assert iris_running2.is_running
+
     iris_down = iris.IrisList(context_wrap(IRIS_DOWN))
-    assert iris_down['name'] == "IRIS"
-    assert iris_down['status'] == "down, last used Tue Jun 27 01:50:36 2023"
-    assert 'state' not in iris_down
+    assert list(iris_down.keys()) == ['IRIS', 'IRIS2']
+    assert iris_down['IRIS']['status'] == 'down, last used Tue Jun 27 01:50:36 2023'
+    assert 'state' not in iris_down['IRIS']
     assert not iris_down.is_running
 
 
@@ -129,7 +175,7 @@ def test_iris_messages_log():
 
 def test_doc_examples():
     env = {
-        'iris_info': iris.IrisList(context_wrap(IRIS_RUNNING)),
+        'iris_info': iris.IrisList(context_wrap(IRIS_RUNNING_1)),
         'iris_cpf': iris.IrisCpf(context_wrap(IRIS_CPF)),
         'iris_log': iris.IrisMessages(context_wrap(IRIS_MESSAGES_LOG)),
     }
