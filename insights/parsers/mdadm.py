@@ -87,14 +87,10 @@ class MDAdmDetailDevice(dict):
 
     The md device's properties in <property name> : <property value> format
     will be stored seprately, and are accessable via <property name>.
-
-    Attributes:
-        device (str):           the name of the device after /dev/ - e.g. md0
-        devices_table (list):   the devices info table
     """
     def parse_device(self, content, device_start_index, table_start_index, index):
 
-        self.device = content[device_start_index].split(':')[0]
+        self['device_name'] = content[device_start_index].split(':')[0]
 
         has_device_table = bool(table_start_index > device_start_index)
 
@@ -104,16 +100,26 @@ class MDAdmDetailDevice(dict):
             self.update(split_kv_pairs(content[device_start_index + 1:kv_pairs_end_index], split_on=':'))
 
         # Parse the devices info table part in content
-        self.devices_table = parse_fixed_table(content[table_start_index:index]) if has_device_table else None
+        self['device_table'] = parse_fixed_table(content[table_start_index:index]) if has_device_table else None
 
         # Empty prased data
-        if not (len(self) > 0 or self.devices_table):
+        if not (len(self) > 2 or self['device_table']):
             raise ParseException('Empty parsed data')
 
     @property
     def is_internal_bitmap(self):
-        """ bool: True if using "Internal" Bitmap."""
+        """ bool: True if using "Internal" for Intent Bitmap """
         return self.get("Intent Bitmap") == "Internal"
+
+    @property
+    def device_name(self):
+        """ str: the name of the device, e.g. /dev/md0 """
+        return self.get("device_name")
+
+    @property
+    def device_table(self):
+        """ list: the devices info table """
+        return self.get("device_table")
 
 
 @parser(Specs.mdadm_D)
@@ -167,13 +173,13 @@ class MDAdmDetail(CommandParser, list):
     Examples:
         >>> len(mdadm_d)
         2
-        >>> mdadm_d[0].device
+        >>> mdadm_d[0].device_name
         '/dev/md2'
         >>> mdadm_d[0]["UUID"]
         '245e1231:245e1231:245e1231:245e1231'
         >>> mdadm_d[0].is_internal_bitmap
         True
-        >>> len(mdadm_d[0].devices_table)
+        >>> len(mdadm_d[0].device_table)
         2
         >>> mdadm_d[1].get("Version")
         '1.2'

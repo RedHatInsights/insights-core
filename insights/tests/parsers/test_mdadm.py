@@ -225,17 +225,18 @@ def test_mdadm_d():
     mds = MDAdmDetail(context_wrap(MDADM_D_CONTENT_MD0, path='insights_commands/mdadm_-D_.dev.md'))
     assert len(mds) == 1
     md = mds[0]
-    assert md.device == '/dev/md0'
+    assert md.device_name == '/dev/md0'
+    assert md['device_name'] == '/dev/md0'
     assert md['Update Time'] == 'Sat May 13 07:21:53 2023'
     assert md['Intent Bitmap'] == 'Internal'
     assert md.is_internal_bitmap is True
-    assert len(md.devices_table) == 22
-    assert md.devices_table[0] == {'Major': '8',
+    assert len(md.device_table) == 22
+    assert md.device_table[0] == {'Major': '8',
                                     'Minor': '225',
                                     'Number': '0',
                                     'RaidDevice': '0',
                                     'State': 'active sync   /dev/sdo1'}
-    assert md.devices_table[-1] == {'Major': '8',
+    assert md.device_table[-1] == {'Major': '8',
                                     'Minor': '1',
                                     'Number': '16',
                                     'RaidDevice': '-',
@@ -244,12 +245,12 @@ def test_mdadm_d():
     mds = MDAdmDetail(context_wrap(MDADM_D_CONTENT_MD1))
     assert len(mds) == 1
     md = mds[0]
-    assert md.device == '/dev/md1'
+    assert md.device_name == '/dev/md1'
     assert md['State'] == 'inactive'
     assert md['Working Devices'] == '4'
     assert md.is_internal_bitmap is False
-    assert len(md.devices_table) == 4
-    assert md.devices_table[0] == {'Major': '259',
+    assert len(md.device_table) == 4
+    assert md.device_table[0] == {'Major': '259',
                                     'Minor': '16',
                                     'Number': '-',
                                     'RaidDevice': '-        /dev/nvme0n1p1'}
@@ -257,12 +258,12 @@ def test_mdadm_d():
     mds = MDAdmDetail(context_wrap(MDADM_D_CONTENT_MD2))
     assert len(mds) == 1
     md = mds[0]
-    assert md.device == '/dev/md2'
+    assert md.device_name == '/dev/md2'
     assert md['State'] == 'clean'
     assert md['Working Devices'] == '2'
     assert md.is_internal_bitmap is True
-    assert len(md.devices_table) == 2
-    assert md.devices_table[0] == {'Major': '259',
+    assert len(md.device_table) == 2
+    assert md.device_table[0] == {'Major': '259',
                                     'Minor': '1',
                                     'Number': '0',
                                     'RaidDevice': '0',
@@ -272,18 +273,18 @@ def test_mdadm_d():
     assert len(mds) == 2
     assert len(mds.unparsable_device_list) == 0
     md = mds[0]
-    assert md.device == '/dev/md/d1p2'
-    assert len(md) == 19
+    assert md.device_name == '/dev/md/d1p2'
+    assert len(md) == 21
     assert md['State'] == 'clean'
     assert md['Consistency Policy'] == 'bitmap'
     assert md.is_internal_bitmap is True
-    assert len(md.devices_table) == 2
+    assert len(md.device_table) == 2
     md = mds[1]
-    assert md.device == '/dev/md21p3'
+    assert md.device_name == '/dev/md21p3'
     assert md['State'] == 'clean'
     assert md['Consistency Policy'] == 'resync'
     assert md.is_internal_bitmap is False
-    assert len(md.devices_table) == 2
+    assert len(md.device_table) == 2
 
 
 MDADM_D_CONTENT_EMPTY_TABLE = """
@@ -337,23 +338,23 @@ def test_mdadm_d_special_cases():
                         MDADM_D_CONTENT_NO_DETAIL_LIST])))
 
     md = mds[0]
-    assert md.device == '/dev/md123'
-    assert len(md) == 3
+    assert md.device_name == '/dev/md123'
+    assert len(md) == 5
     assert md['Raid Level'] == 'raid1'
-    assert md.devices_table == []
-    assert len(md.devices_table) == 0
+    assert md.device_table == []
+    assert len(md.device_table) == 0
 
     md = mds[1]
-    assert md.device == '/dev/md124'
-    assert len(md) == 3
+    assert md.device_name == '/dev/md124'
+    assert len(md) == 5
     assert md['Raid Level'] == 'raid1'
-    assert md.devices_table is None
+    assert md.device_table is None
 
     md = mds[2]
-    assert md.device == '/dev/md125'
-    assert len(md) == 0
+    assert md.device_name == '/dev/md125'
+    assert len(md) == 2
     assert 'Raid Level' not in md
-    assert len(md.devices_table) == 2
+    assert len(md.device_table) == 2
 
     assert len(mds.unparsable_device_list) == 2
     mds.unparsable_device_list == ['/dev/md126', '/dev/md127']
