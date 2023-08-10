@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.2.9
+Version:        3.2.10
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,23 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Aug 10 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.10-1
+- feat: add spec and parser of mdadm_d (#3868) (xiaoxwan@redhat.com)
+- fix: let OSRelease.release returns the prepared OS Name (#3879)
+  (xiangceliu@redhat.com)
+- feat: add spec and parser for /proc/buddyinfo (#3877) (xiaoxwan@redhat.com)
+- feat: add try/except in jinja2 content rendering (#3876)
+  (xiaoxwan@redhat.com)
+- fix: update Uname parser to fix LooseVersion comparision error (#3814)
+  (30404410+qinpingli@users.noreply.github.com)
+- fix: simplify OSRelease: stop when identified NON-RHEL (#3873)
+  (xiangceliu@redhat.com)
+- Handle exception when updating rules (#3570)
+  (93577878+ahitacat@users.noreply.github.com)
+- fix: OSRelease when both os_release and redhat_release available (#3872)
+  (xiangceliu@redhat.com)
+- ESSNTL-5101: disable libdnf info logging (#3871) (michael.mraka@redhat.com)
+
 * Thu Aug 03 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.9-1
 - fix: don't redact ls_systemd_units to avoid issue#3858 (#3870)
   (xiangceliu@redhat.com)
