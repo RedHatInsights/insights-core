@@ -2,6 +2,18 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.2.10](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.10) (2023-08-10)
+
+- feat: add spec and parser of mdadm_d ([PR 3868](https://github.com/RedHatInsights/insights-core/pull/3868))
+- fix: let OSRelease.release returns the prepared OS Name ([PR 3879](https://github.com/RedHatInsights/insights-core/pull/3879))
+- feat: add spec and parser for /proc/buddyinfo ([PR 3877](https://github.com/RedHatInsights/insights-core/pull/3877))
+- feat: add try/except in jinja2 content rendering ([PR 3876](https://github.com/RedHatInsights/insights-core/pull/3876))
+- fix: update Uname parser to fix LooseVersion comparision error ([PR 3814](https://github.com/RedHatInsights/insights-core/pull/3814))
+- fix: simplify OSRelease: stop when identified NON-RHEL ([PR 3873](https://github.com/RedHatInsights/insights-core/pull/3873))
+- Handle exception when updating rules ([PR 3570](https://github.com/RedHatInsights/insights-core/pull/3570))
+- fix: OSRelease when both os_release and redhat_release available ([PR 3872](https://github.com/RedHatInsights/insights-core/pull/3872))
+- ESSNTL-5101: disable libdnf info logging ([PR 3871](https://github.com/RedHatInsights/insights-core/pull/3871))
+
 # [insights-core-3.2.9](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.9) (2023-08-03)
 
 - fix: don't redact ls_systemd_units to avoid issue#3858 ([PR 3870](https://github.com/RedHatInsights/insights-core/pull/3870))
