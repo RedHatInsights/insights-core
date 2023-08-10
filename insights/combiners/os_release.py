@@ -2,7 +2,7 @@
 OSRelease
 =========
 The ``OSRelease`` combiner uses the following parsers to try to identify if the
-current host is installed with a "Red Hat Enterprise Linux" system.
+current host is installed with a "Red Hat Enterprise Linux" (RHEL) system.
 
     - :py:class:`insights.parsers.installed_rpms.InstalledRpms`
     - :py:class:`insights.parsers.uname.Uname`
@@ -10,15 +10,16 @@ current host is installed with a "Red Hat Enterprise Linux" system.
     - :py:class:`insights.parsers.os_release.OSRelease`
     - :py:class:`insights.parsers.redhat_release.RedhatRelease`
 
-It provides an attribute `is_rhel` that indicates if the host is "RHEL" or not.
+It provides an attribute `is_rhel` that indicates if the host is RHEL or not.
 It also provides an attribute `release` which returns the estimated OS release
 name of the system, "Unknown" will be returned by default when cannot identify
 the OS.
 
-* TODO:
-  The lists of keywords to identify NON-RHEL system of each sub-combiners are
-  based on our current knowledge, and maybe not sufficient. It needs to be
-  updated timely according to new found Linux distributions.
+* TODO::
+
+    The lists of keywords to identify NON-RHEL system of each sub-combiners are
+    based on our current knowledge, and may be not sufficient. It needs to be
+    updated timely according to new found Linux Distributions.
 """
 from insights.core.filters import add_filter
 from insights.core.plugins import combiner
@@ -60,6 +61,7 @@ OTHER_LINUX_KEYS = {
         ['suse', 'sles', 'novell'],
         ['sles-release', 'sles_es-release-server']),
 }
+"""Known NON-RHEL Linux Distributions."""
 # TODO:
 # Update the CONVERT2RHEL_SUPPORTED list when necessary
 CONVERT2RHEL_SUPPORTED = ['CentOS']
@@ -69,7 +71,7 @@ add_filter(DmesgLineList, DMESG_LINUX_BUILD_INFO)
 DmesgLineList.keep_scan("linux_version", DMESG_LINUX_BUILD_INFO, num=1)
 # Must-install packages for minimum RHEL system
 MINIMUM_RHEL_PKGS = [
-    # 'kernel' is must-install too, it's checked individually (booting kernel)
+    # 'kernel' is checked individually (booting kernel)
     'audit-libs',
     'basesystem',
     'bash',
@@ -97,7 +99,7 @@ MINIMUM_RHEL_PKGS = [
 ]
 """Must-install packages for minimum installed RHEL system."""
 THRESHOLD = 0.75
-"""Threshold of the must-install packages to identify NON-RHEL"""
+"""Threshold of the must-install packages to identify NON-RHEL."""
 
 
 def _get_release(names):
@@ -318,7 +320,7 @@ class OSRelease(object):
     @property
     def is_rhel_compatible(self):
         """
-        Returns True if convert2rhel could convert
+        Returns True if Convert2RHEL could convert
         """
         return self._release in CONVERT2RHEL_SUPPORTED
 
@@ -333,9 +335,9 @@ class OSRelease(object):
     @property
     def name(self):
         """
-        Returns the name of the OS. Generally it's the "NAME" of the
-        '/etc/os-release' file, or it's the same as the `release` when
-        the '/etc/os-release' is not available.
+        Returns the name of the OS. Generally it's the ``NAME`` of the
+        `/etc/os-release` file, or it's the same as the `release` when
+        the `/etc/os-release` is not available.
         """
         return self._name
 
