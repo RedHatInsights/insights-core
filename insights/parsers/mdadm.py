@@ -100,7 +100,7 @@ class MDAdmDetailDevice(dict):
             self.update(split_kv_pairs(content[device_start_index + 1:kv_pairs_end_index], split_on=':'))
 
         # Parse the devices info table part in content
-        self['device_table'] = parse_fixed_table(content[table_start_index:index]) if has_device_table else None
+        self['device_table'] = parse_fixed_table(content[table_start_index:index]) if has_device_table else []
 
         # Empty prased data
         if not (len(self) > 2 or self['device_table']):

@@ -348,7 +348,7 @@ def test_mdadm_d_special_cases():
     assert md.device_name == '/dev/md124'
     assert len(md) == 5
     assert md['Raid Level'] == 'raid1'
-    assert md.device_table is None
+    assert len(md.device_table) == 0
 
     md = mds[2]
     assert md.device_name == '/dev/md125'
