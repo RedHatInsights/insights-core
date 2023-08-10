@@ -15,6 +15,13 @@ SL_CMD = "Command Line - "
 SL_ARCHIVE = "Real Archive Path - "
 SL_PATH = "/insights/core"
 
+CONTENT = """
+The content of this rule:
+    {% for key, val in FakeKey.items() -%}
+        {{key}}: {{val}}
+    {% endfor %}
+"""
+
 
 @rule()
 def report():
@@ -30,6 +37,10 @@ def test_human_readable():
     data = output.read()
     assert "foo" in data
     assert "bar" in data
+    assert "CONTENT:" in data
+    assert "The content of this rule:" in data
+    assert "Failed to render the Content above:" in data
+    assert "'FakeKey' is undefined" in data
 
 
 def test_json_format():
