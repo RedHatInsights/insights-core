@@ -98,6 +98,11 @@ NAME="Oracle Linux Server"
 ID="ol"
 PRETTY_NAME="Red Hat Enterprise Linux"
 """.strip()
+OS_RELEASE_CENTOS = """
+NAME="CentOS Stream"
+ID="centos"
+PRETTY_NAME="CentOS Stream 9"
+""".strip()
 OS_RELEASE_UNKNOWN = """
 NAME="Test OS"
 ID="test"
@@ -277,7 +282,7 @@ def test_not_rhel():
     assert result.name == "SUSE"  # the same to self.release when '/etc/os-release' is unavailable
     assert result.is_rhel_compatible is False
 
-    # NON-RHEL: SUSE dmesg only
+    # NON-RHEL: CentOS dmesg only
     dmesg = DmesgLineList(context_wrap(DMESG_CENTOS))
     result = OSRelease(None, dmesg, None, None, None)
     assert result.is_rhel is False
@@ -411,15 +416,23 @@ def test_not_rhel():
     osr = OsRelease(context_wrap(OS_RELEASE_UNKNOWN))
     result = OSRelease(None, None, None, osr, None)
     assert result.is_rhel is False
-    assert result.release == "Test OS"
+    assert result.release == "Test"
     assert result.reasons == {'reason': 'NON-RHEL: os-release'}
     assert result.name == "Test OS"
     assert result.is_rhel_compatible is False
 
+    osr = OsRelease(context_wrap(OS_RELEASE_CENTOS))
+    result = OSRelease(None, None, None, osr, None)
+    assert result.is_rhel is False
+    assert result.release == "CentOS"
+    assert result.reasons == {'reason': 'NON-RHEL: os-release'}
+    assert result.name == "CentOS Stream"
+    assert result.is_rhel_compatible is True
+
     osr = OsRelease(context_wrap(OS_RELEASE_OL))
     result = OSRelease(None, None, None, osr, None)
     assert result.is_rhel is False
-    assert result.release == "Oracle Linux Server"
+    assert result.release == "Oracle"
     assert result.reasons == {'reason': 'NON-RHEL: os-release'}
     assert result.name == "Oracle Linux Server"
     assert result.is_rhel_compatible is False
@@ -436,9 +449,9 @@ def test_not_rhel():
     rhr = RedhatRelease(context_wrap(REDHAT_RELEASE_UNKNOWN))
     result = OSRelease(None, None, None, None, rhr)
     assert result.is_rhel is False
-    assert result.release == "Test OS"
+    assert result.release == "Test"
     assert result.reasons == {'reason': 'NON-RHEL: redhat-release'}
-    assert result.name == "Test OS"
+    assert result.name == "Test"
     assert result.is_rhel_compatible is False
 
     # RHEL, Oracle os-release + RHEL redhat-release
@@ -446,7 +459,7 @@ def test_not_rhel():
     rhr = RedhatRelease(context_wrap(REDHAT_RELEASE_86))
     result = OSRelease(None, None, None, osr, rhr)
     assert result.is_rhel is False
-    assert result.release == "Oracle Linux Server"
+    assert result.release == "Oracle"
     assert result.reasons == {'reason': 'NON-RHEL: os-release'}
     assert result.name == "Oracle Linux Server"
     assert result.is_rhel_compatible is False
