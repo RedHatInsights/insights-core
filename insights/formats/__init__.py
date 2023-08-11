@@ -86,6 +86,7 @@ class EvaluatorFormatterAdapter(FormatterAdapter):
     @staticmethod
     def configure(p):
         p.add_argument("-m", "--missing", help="Show missing requirements.", action="store_true")
+        p.add_argument("-r", "--render-content", help="Render rule content in json output.", action="store_true")
         p.add_argument("-S", "--show-rules", nargs="+",
                        choices=["fail", "info", "pass", "none", "metadata", "fingerprint"],
                        metavar="TYPE",
@@ -99,6 +100,7 @@ class EvaluatorFormatterAdapter(FormatterAdapter):
             hn = "insights.combiners.hostname, insights.parsers.branch_info"
             args.plugins = ",".join([args.plugins, hn]) if args.plugins else hn
             self.missing = args.missing
+            self.render_content = args.render_content
             fail_only = args.fail_only
             if args.missing and fail_only:
                 # Drops the '-F' silently when specifying '-m' and '-F' together
@@ -111,7 +113,7 @@ class EvaluatorFormatterAdapter(FormatterAdapter):
                 self.show_rules = [opt.replace('fail', 'rule') for opt in args.show_rules]
 
     def preprocess(self, broker):
-        self.formatter = self.Impl(broker, self.missing, self.show_rules)
+        self.formatter = self.Impl(broker, self.missing, self.render_content, self.show_rules)
         self.formatter.preprocess()
 
     def postprocess(self, broker):
