@@ -97,7 +97,8 @@ def find_warnings(content):
             "Attempt to close device",
             "Ignoring supplied major",
             "not match metadata",
-            "Reading VG"
+            "Reading VG",
+            "Error reading device"
         ]
     ]
     for l in content:
