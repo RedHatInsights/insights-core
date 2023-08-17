@@ -80,3 +80,17 @@ def test_exit_ok(insights_config, insights_client):
     with raises(SystemExit) as exc_info:
         update()
     assert exc_info.value.code == 0
+
+
+@patch("insights.client.phase.v1.InsightsClient")
+@patch("insights.client.phase.v1.InsightsConfig")
+@patch("insights.client.phase.v1.logger")
+def test_exit_error(logger, insights_config, insights_client):
+    from requests.exceptions import ConnectionError
+
+    insights_client.return_value.update.side_effect = ConnectionError("Connection error")
+    with raises(SystemExit) as exc_info:
+        update()
+
+    assert exc_info.value.code == 101
+    logger.error.assert_called_with("Failed to update rules. Error: %s", 'Connection error')

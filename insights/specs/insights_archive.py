@@ -131,7 +131,10 @@ class InsightsArchiveSpecs(Specs):
     ls_osroot = simple_file("insights_commands/ls_-lan")
     ls_R_var_lib_nova_instances = simple_file("insights_commands/ls_-laR_.var.lib.nova.instances")
     ls_sys_firmware = simple_file("insights_commands/ls_-lanR_.sys.firmware")
-    ls_systemd_units = simple_file("insights_commands/ls_-lanRL_.etc.systemd_.run.systemd_.usr.lib.systemd_.usr.local.lib.systemd")
+    ls_systemd_units = first_file([
+        "insights_commands/ls_-lanRL_.etc.systemd_.run.systemd_.usr.lib.systemd_.usr.local.lib.systemd_.usr.local.share.systemd_.usr.share.systemd",
+        "insights_commands/ls_-lanRL_.etc.systemd_.run.systemd_.usr.lib.systemd_.usr.local.lib.systemd"
+    ])
     ls_tmp = simple_file("insights_commands/ls_-la_.tmp")
     ls_usr_bin = simple_file("insights_commands/ls_-lan_.usr.bin")
     ls_usr_lib64 = simple_file("insights_commands/ls_-lan_.usr.lib64")
@@ -170,6 +173,7 @@ class InsightsArchiveSpecs(Specs):
     )
     max_uid = simple_file("insights_commands/awk_-F_if_3_max_max_3_END_print_max_.etc.passwd")
     md5chk_files = glob_file("insights_commands/md5sum_*")
+    mdadm_D = simple_file("insights_commands/mdadm_-D_.dev.md")
     mount = simple_file("insights_commands/mount")
     modinfo = glob_file("insights_commands/modinfo_*")
     mokutil_sbstate = simple_file("insights_commands/mokutil_--sb-state")

@@ -127,7 +127,12 @@ def pre_update(client, config):
 
 @phase
 def update(client, config):
-    client.update()
+    try:
+        client.update()
+    except Exception as e:
+        logger.error("Failed to update rules. Error: %s", str(e))
+        sys.exit(constants.sig_kill_bad)
+
     if config.payload:
         logger.debug('Uploading a payload. Bypassing rules update.')
         return

@@ -2,6 +2,7 @@
 Custom datasource for collecting yum updates
 """
 import json
+import logging
 import time
 
 from insights import datasource, HostContext, SkipComponent
@@ -52,6 +53,7 @@ class DnfManager:
         return sorted_cmp([pkg for pkg in pkgs if pkg.reponame != "@System"], self.pkg_cmp)
 
     def load(self):
+        logging.disable(logging.WARNING)
         cli = dnf.cli.Cli(self.base)
         cli._read_conf_file()
         subst = self.base.conf.substitutions
@@ -72,6 +74,7 @@ class DnfManager:
                 # RepoError is raised when cache is empty
                 pass
         self.repos = self.base.repos
+        logging.disable(logging.NOTSET)
 
     def installed_packages(self):
         return self.packages.installed().run()

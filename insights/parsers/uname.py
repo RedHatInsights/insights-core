@@ -397,6 +397,33 @@ class Uname(CommandParser):
         else:
             return self._lv_version, other._lv_version
 
+    def _best_lv_release(self, other):
+        """
+        When the _lv_release in self and other both or neither have
+        the distribution part, return then directly. Otherwise,
+        removing the distribution part, and raising a warning.
+
+        Notes:: Now, only `.el*` distribution is supported.
+        """
+        dist_opts = ('el',)
+        s_release_parts = self._lv_release.vstring.split(".")
+        o_release_parts = other._lv_release.vstring.split(".")
+        is_s_with_dist = s_release_parts[-1].startswith(dist_opts)
+        is_o_with_dist = o_release_parts[-1].startswith(dist_opts)
+        if not (is_s_with_dist ^ is_o_with_dist):
+            return self._lv_release, other._lv_release
+        import warnings
+        warnings.warn('Comparison of distribution part will be ingored.')
+        s_release = (
+            self._lv_release.vstring if not is_s_with_dist
+            else pad_release(".".join(s_release_parts[:-1]), len(s_release_parts))
+        )
+        o_release = (
+            other._lv_release.vstring if not is_o_with_dist
+            else pad_release(".".join(o_release_parts[:-1]), len(o_release_parts))
+        )
+        return LooseVersion(s_release), LooseVersion(o_release)
+
     def __str__(self):
         return "version: %s; release: %s; rel_maj: %s; lv_release: %s" % (
             self.version, self.release, self._rel_maj, self._lv_release
@@ -519,9 +546,10 @@ class Uname(CommandParser):
         internal to the class.
         """
         s_version, o_version = self._best_version(other)
+        s_lv_release, o_lv_release = self._best_lv_release(other)
 
         if s_version == o_version:
-            ret = self._lv_release < other._lv_release
+            ret = s_lv_release < o_lv_release
         else:
             ret = s_version < o_version
         return ret
@@ -530,6 +558,7 @@ class Uname(CommandParser):
         """
         Determine whether the Uname object is fixed by a range of releases or
         by a specific release.
+        Only RHEL Uname objects and RHEL real time Uname objects are supported.
 
         :Parameters:
             - `fixes`: List of one or more Uname objects to compare to the
@@ -546,6 +575,7 @@ class Uname(CommandParser):
         introduced_in = kwargs.get("introduced_in")
         if introduced_in and self._less_than(self.from_kernel(introduced_in)):
             return []
+
         fix_unames = sorted((self.from_kernel(f) for f in fixes))
         fix_kernels = [f.kernel for f in fix_unames]
 
@@ -594,7 +624,13 @@ def pad_release(release_to_pad, num_sections=4):
 
         pad_release("390.11.el6", 4)
 
-    will return ``390.11.0.el6``. Finally, if no "el" is specified:
+    will return ``390.11.0.el6``.
+
+        pad_release("390.11.rt6.8.el6", 7)
+
+    will return ``390.11.0.0.rt6.8.el6``.
+
+    Finally, if no "el" is specified:
 
         pad_release("390.11", 4)
 
@@ -603,6 +639,12 @@ def pad_release(release_to_pad, num_sections=4):
     If the number of sections of the release to be padded is
     greater than num_sections, a ``ValueError`` will be raised.
     '''
+    def find_rt_release(items):
+        for i, s in enumerate(items):
+            if s.startswith("rt"):
+                return i
+        return -1
+
     parts = release_to_pad.split('.')
 
     if len(parts) > num_sections:
@@ -612,8 +654,11 @@ def pad_release(release_to_pad, num_sections=4):
 
     pad_count = num_sections - len(parts)
     is_el_release = any(letter.isalpha() for letter in parts[-1])
+    rt_release_idx = find_rt_release(parts)
 
-    if len(parts) > 1 and is_el_release:
+    if len(parts) > 1 and rt_release_idx >= 0:
+        return ".".join(parts[:rt_release_idx] + ['0'] * pad_count + parts[rt_release_idx:])
+    elif len(parts) > 1 and is_el_release:
         return ".".join(parts[:-1] + ['0'] * pad_count + parts[-1:])
     else:
         return ".".join(parts + ['0'] * pad_count)
