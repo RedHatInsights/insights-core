@@ -125,6 +125,16 @@ PVS_HEADINGS_6 = {
     'PE': '121970'
 }
 
+PVS_WITH_OTHER_ERROR_BEFORE_CONTENT = """
+File descriptor 3 (/var/log/insights-client/insights-client.log) leaked on pvs invocation. Parent PID 26875: timeout
+File descriptor 4 (/var/log/insights-client/insights-client.log) leaked on pvs invocation. Parent PID 26875: timeout
+  WARNING: Locking disabled. Be careful! This could corrupt your metadata.
+  Error reading device /dev/mapper/mpathbm at 0 length 512.
+  Error reading device /dev/mapper/mpathbm at 0 length 4.
+  Error reading device /dev/mapper/mpathbm at 4096 length 4.
+  LVM2_PV_FMT=''|LVM2_PV_UUID=''|LVM2_DEV_SIZE='514.00g'|LVM2_PV_NAME='/dev/mapper/mpathad'|LVM2_PV_MAJOR='253'|LVM2_PV_MINOR='12'|LVM2_PV_MDA_FREE='0 '|LVM2_PV_MDA_SIZE='0 '|LVM2_PV_EXT_VSN=''|LVM2_PE_START='0 '|LVM2_PV_SIZE='0 '|LVM2_PV_FREE='0 '|LVM2_PV_USED='0 '|LVM2_PV_ATTR='---'|LVM2_PV_ALLOCATABLE=''|LVM2_PV_EXPORTED=''|LVM2_PV_MISSING=''|LVM2_PV_PE_COUNT='0'|LVM2_PV_PE_ALLOC_COUNT='0'|LVM2_PV_TAGS=''|LVM2_PV_MDA_COUNT='0'|LVM2_PV_MDA_USED_COUNT='0'|LVM2_PV_BA_START='0 '|LVM2_PV_BA_SIZE='0 '|LVM2_PV_IN_USE=''|LVM2_PV_DUPLICATE=''|LVM2_VG_NAME=''
+""".strip()
+
 
 def test_pvs():
     def check(pvs_records):
@@ -200,3 +210,10 @@ def test_pvs_headings():
         'PMdaSize': '1020.00k', '#PMda': '1', '#PMdaUse': '1', 'PE': '121970',
         'PV_KEY': '/dev/mapper/luks-7430952e-7101-4716-9b46-786ce4684f8d+FPLCRf-d918-LVL7-6e3d-n3ED-aiZv-EesuzY'
     })
+
+
+def test_pvs_other_error():
+    pvs_records = Pvs(context_wrap(PVS_WITH_OTHER_ERROR_BEFORE_CONTENT))
+    assert len(pvs_records.data['content']) == 1
+    assert 'LVM2_DEV_SIZE' in pvs_records[0]
+    assert pvs_records[0].get('LVM2_DEV_SIZE') == '514.00g'
