@@ -37,8 +37,16 @@ from insights.core.plugins import parser
 from insights.specs import Specs
 from insights.util.file_permissions import FilePermissions
 
+# Required basic filters for `LS` specs that the content needs to be filtered
 add_filter(Specs.ls_la_filtered, ['total '])
 add_filter(Specs.ls_lan_filtered, ['total '])
+
+# Required directories to collect for `LSlanR` specs, to:
+# 1. keep compatible with sosreport archives
+# 2. Ensure that the related applications to work properly:
+#    - archive data extraction  (cee-data-engineering)
+#    - insights-facts  (cee-data-engineering)
+add_filter(Specs.ls_lanR_dirs, ['/boot', '/dev', '/sys/firmware'])
 
 
 class FileListing(Parser, dict):
