@@ -457,6 +457,7 @@ class DataCollector(object):
                         (
                             'etc/insights-client/machine-id',
                             'etc/insights-client/.exp.sed',  # INSPEC-414
+                            'etc/.exp.sed',  # INSPEC-414
                             'etc/machine-id',
                             'insights_commands/subscription-manager_identity',
                             'insights_commands/ls_-lanRL_.etc.systemd_.run.systemd_.usr.lib.systemd_.usr.local.lib.systemd_.usr.local.share.systemd_.usr.share.systemd',  # issue #3858
