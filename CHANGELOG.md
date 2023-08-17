@@ -2,6 +2,14 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.2.11](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.11) (2023-08-17)
+
+- feat: Add rendered content to json output ([PR 3881](https://github.com/RedHatInsights/insights-core/pull/3881))
+- chore: add required dirs to LSlanR spec in parser ([PR 3875](https://github.com/RedHatInsights/insights-core/pull/3875))
+- chore: collect '/etc/.exp.sed' ([PR 3880](https://github.com/RedHatInsights/insights-core/pull/3880))
+- fixes: Add one more warning for LVM output ([PR 3882](https://github.com/RedHatInsights/insights-core/pull/3882))
+- fix: Do not redact mssql_api_assessment ([PR 3886](https://github.com/RedHatInsights/insights-core/pull/3886))
+
 # [insights-core-3.2.10](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.10) (2023-08-10)
 
 - feat: add spec and parser of mdadm_d ([PR 3868](https://github.com/RedHatInsights/insights-core/pull/3868))

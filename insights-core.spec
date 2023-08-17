@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.2.10
+Version:        3.2.11
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,15 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Aug 17 2023 Lizhong Chen <lichen@redhat.com> 3.2.11-1
+- feat: Add rendered content to json output (#3881) (rblakley@redhat.com)
+- chore: add required dirs to LSlanR spec in parser (#3875)
+  (xiangceliu@redhat.com)
+- chore: collect '/etc/.exp.sed' (#3880) (xiangceliu@redhat.com)
+- fixes: Add one more warning for LVM output (#3882)
+  (44796653+huali027@users.noreply.github.com)
+- fix: Do not redact mssql_api_assessment (#3886) (jiazhang@redhat.com)
+
 * Thu Aug 10 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.10-1
 - feat: add spec and parser of mdadm_d (#3868) (xiaoxwan@redhat.com)
 - fix: let OSRelease.release returns the prepared OS Name (#3879)
