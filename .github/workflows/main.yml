@@ -60,17 +60,15 @@ jobs:
 
     runs-on: ubuntu-latest
     container:
-      image: cronosmobi/python2.6:latest
+      image: quay.io/generic/centos6
 
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Install sudo package
-      run: apt update && apt install sudo
+    - uses: actions/checkout@v1
+    - name: install development tools
+      run: sudo yum groupinstall 'Development Tools' -y
     - name: install dependencies
-      run: |
-        sudo apt-get install -y --no-install-recommends software-properties-common
-        sudo apt-get install -y build-essential git curl unzip file tar
+      run: sudo yum install -y git curl unzip file tar
     - name: build setuptools and pip
       run: |
         export PATH=$PATH:/github/home/.local/bin
