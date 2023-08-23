@@ -78,8 +78,9 @@ class InsightsConstants(object):
     sig_kill_bad = 101
     cached_branch_info = os.path.join(default_conf_dir, '.branch_info')
     pidfile = os.path.join(os.sep, 'var', 'run', 'insights-client.pid')
-    insights_tmp_path = os.path.join(os.sep, 'var', 'tmp', 'insights-client')
-    egg_release_file = os.path.join(insights_tmp_path, 'insights-client-egg-release')
+    insights_tmp_path = os.path.join(os.sep, 'var', 'tmp')
+    insights_tmp_prefix = 'insights-client'
+    egg_release_file = os.path.join(os.sep, insights_tmp_path, insights_tmp_prefix, 'insights-client-egg-release')
     ppidfile = os.path.join(os.sep, 'tmp', 'insights-client.ppid')
     valid_compressors = ("gz", "xz", "bz2", "none")
     # RPM version in which core collection was released
