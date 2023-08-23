@@ -7,11 +7,9 @@ from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider
 from insights.core.filters import get_filters
 from insights.core.context import HostContext
-from insights.client.config import InsightsConfig
-from insights.client.connection import InsightsConnection
 from insights.core.exceptions import SkipComponent
+from insights.client.client import get_connection
 from insights.specs import Specs
-from insights.client.auto_config import try_auto_configuration
 
 
 @datasource(HostContext, Specs.machine_id)
@@ -38,12 +36,9 @@ def dup_machine_id_info(broker):
     if len(machine_id_obj.content) == 1:
         machine_id = str(machine_id_obj.content[0].strip())
         if machine_id in filters:
-            config = InsightsConfig()
-            config._load_config_file()
-            config._load_env()
-            try_auto_configuration(config)
-            conn = InsightsConnection(config)
+            config = broker.get('client_config')
             try:
+                conn = get_connection(config)
                 if config.legacy_upload:
                     url = conn.base_url + '/platform/inventory/v1/hosts?insights_id=' + machine_id
                 else:
