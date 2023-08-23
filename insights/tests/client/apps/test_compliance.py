@@ -20,7 +20,7 @@ def test_oscap_scan(config, ssg_version, assert_rpms):
     compliance_client.get_profiles_matching_os = lambda: []
     compliance_client.find_scap_policy = lambda ref_id: '/usr/share/xml/scap/foo.xml'
     compliance_client.run_scan = lambda ref_id, policy_xml, output_path, tailoring_file_path: None
-    compliance_client.archive.archive_tmp_dir = '/tmp'
+    compliance_client.archive.tmp_dir = '/tmp'
     compliance_client.archive.archive_name = 'insights-compliance-test'
     archive, content_type = compliance_client.oscap_scan()
     assert archive == '/tmp/insights-compliance-test.tar.gz'
@@ -71,7 +71,7 @@ def test_oscap_scan_with_obfuscation(config, ssg_version, assert_rpms, tmpdir):
     compliance_client.find_scap_policy = lambda ref_id: '/usr/share/xml/scap/foo.xml'
     compliance_client._results_file = lambda archive_dir, profile: str(results_file)
     compliance_client.run_scan = lambda ref_id, policy_xml, output_path, tailoring_file_path: None
-    compliance_client.archive.archive_tmp_dir = '/tmp'
+    compliance_client.archive.tmp_dir = '/tmp'
     compliance_client.archive.archive_name = 'insights-compliance-test'
     archive, content_type = compliance_client.oscap_scan()
     assert archive == '/tmp/insights-compliance-test.tar.gz'
@@ -137,7 +137,7 @@ def test_oscap_scan_with_hostname_obfuscation(config, ssg_version, assert_rpms, 
     compliance_client.find_scap_policy = lambda ref_id: '/usr/share/xml/scap/foo.xml'
     compliance_client._results_file = lambda archive_dir, profile: str(results_file)
     compliance_client.run_scan = lambda ref_id, policy_xml, output_path, tailoring_file_path: None
-    compliance_client.archive.archive_tmp_dir = '/tmp'
+    compliance_client.archive.tmp_dir = '/tmp'
     compliance_client.archive.archive_name = 'insights-compliance-test'
     archive, content_type = compliance_client.oscap_scan()
     assert archive == '/tmp/insights-compliance-test.tar.gz'
@@ -178,7 +178,7 @@ def test_oscap_scan_with_results_repaired(config, assert_rpms, tmpdir):
     compliance_client.find_scap_policy = lambda ref_id: '/usr/share/xml/scap/foo.xml'
     compliance_client._results_file = lambda archive_dir, profile: str(results_file)
     compliance_client.run_scan = lambda ref_id, policy_xml, output_path, tailoring_file_path: None
-    compliance_client.archive.archive_tmp_dir = '/tmp'
+    compliance_client.archive.tmp_dir = '/tmp'
     compliance_client.archive.archive_name = 'insights-compliance-test'
     archive, content_type = compliance_client.oscap_scan()
     assert archive == '/tmp/insights-compliance-test.tar.gz'
