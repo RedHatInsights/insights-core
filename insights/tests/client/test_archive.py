@@ -1,4 +1,4 @@
-from os.path import join as path_join
+import time
 from insights.client.archive import InsightsArchive
 from mock.mock import patch, Mock, call
 from unittest import TestCase
@@ -8,10 +8,11 @@ from insights.client.constants import InsightsConstants as constants
 test_timestamp = '000000'
 test_hostname = 'testhostname'
 test_archive_name = 'insights-testhostname-000000'
-test_archive_dir = '/var/tmp/test/insights-testhostname-000000'
-test_obfuscated_archive_dir = '/var/tmp/test/insights-localhost-000000'
-test_cmd_dir = '/var/tmp/test/insights-testhostname-000000/insights_commands'
-test_tmp_dir = '/var/tmp/insights-archive-000000'
+test_archive_dir = '/var/tmp/insights-client-000000/insights-testhostname-000000'
+test_obfuscated_archive_dir = '/var/tmp/insights-client-000000/insights-localhost-000000'
+test_cmd_dir = '/var/tmp/insights-client-000000/insights-testhostname-000000/insights_commands'
+test_tmp_dir_path = '/var/tmp/insights-client-000000'
+test_tmp_dir = 'insights-client-000000'
 
 
 @patch('insights.client.archive.time.strftime', Mock(return_value=test_timestamp))
@@ -36,32 +37,23 @@ class TestInsightsArchive(TestCase):
         assert archive.archive_name == test_archive_name
 
         cleanup.assert_called_once()
-        mkdtemp.assert_has_calls([call(dir=constants.insights_tmp_path, prefix='insights-archive-')])
+        mkdtemp.assert_has_calls([call(dir=constants.insights_tmp_path, prefix=constants.insights_tmp_prefix + '-')])
         register.assert_called_once()
 
-    @patch('insights.client.archive.os.mkdir')
     @patch('insights.client.archive.os.path.exists', return_value=False)
-    def test_create_tmp_dir(self, exists, mkdir, _, __):
-        '''
-        Verify temporary directory insights_tmp_path is created if it does not exists
-        '''
-        config = Mock()
-        InsightsArchive(config)
-        mkdir.assert_has_calls([call(constants.insights_tmp_path, 0o700)])
-
     @patch('insights.client.archive.os.makedirs')
-    @patch('insights.client.archive.os.path.exists', Mock(side_effect=[True, False]))
-    def test_create_archive_dir_default(self, makedirs, _, __):
+    @patch('insights.client.archive.InsightsArchive.cleanup_previous_archive')
+    def test_create_archive_dir_default(self, _cleanup, mkdir, _exists, _, __):
         '''
         Verify archive_dir is created when it does not already exist
         '''
         config = Mock()
         config.obfuscate_hostname = False
         archive = InsightsArchive(config)
-        # give this a discrete value so we can check the results
-        archive.tmp_dir = '/var/tmp/test'
+        archive.tmp_dir = test_tmp_dir_path
         result = archive.create_archive_dir()
-        makedirs.assert_called_once_with(test_archive_dir, 0o700)
+
+        mkdir.assert_called_once_with(test_archive_dir, 0o700)
         # ensure the archive_dir is returned from the function
         assert result == test_archive_dir
         # ensure the class attr is set
@@ -69,21 +61,40 @@ class TestInsightsArchive(TestCase):
         # ensure the retval and attr are the same
         assert result == archive.archive_dir
 
-    @patch('insights.client.archive.glob.glob', return_value=[])
+    @patch('insights.client.archive.os.listdir', return_value=[])
     @patch('insights.client.archive.shutil.rmtree')
-    def test_tmp_directory_no_cleanup(self, rmtree, glob, _, __):
+    def test_tmp_dir_no_cleanup(self, rmtree, listdir, _, __):
+        '''
+        Verify cleanup doesn't act with no previous directories
+        '''
         InsightsArchive(Mock())
-        glob_path = path_join(constants.insights_tmp_path, 'insights-archive-*')
-        glob.assert_called_once_with(glob_path)
+        listdir.assert_called_once_with(constants.insights_tmp_path)
         rmtree.assert_not_called()
 
-    @patch('insights.client.archive.glob.glob', return_value=[test_tmp_dir])
+    @patch('insights.client.archive.os.listdir', return_value=[test_tmp_dir])
     @patch('insights.client.archive.shutil.rmtree')
-    def test_tmp_directory_cleanup(self, rmtree, glob, _, __):
+    @patch('insights.client.archive.os.path.isdir', return_value=[True])
+    @patch('insights.client.archive.time.time')
+    def test_tmp_dir_no_cleanup_time(self, _timestamp, _isdir, rmtree, listdir, _, __):
+        '''
+        Verify cleanup doesn't act with previous directories that are not
+        older that 1 day
+        '''
+        _timestamp.return_value = time.time()
         InsightsArchive(Mock())
-        glob_path = path_join(constants.insights_tmp_path, 'insights-archive-*')
-        glob.assert_called_once_with(glob_path)
-        rmtree.assert_called_with(test_tmp_dir, True)
+        listdir.assert_called_once_with(constants.insights_tmp_path)
+        rmtree.assert_not_called()
+
+    @patch('insights.client.archive.os.listdir', return_value=[test_tmp_dir])
+    @patch('insights.client.archive.shutil.rmtree')
+    @patch('insights.client.archive.os.path.isdir', return_value=[True])
+    @patch('insights.client.archive.os.path.getmtime')
+    def test_tmp_dir_cleanup(self, _timestamp, _isdir, rmtree, listdir, _, __):
+        # set the timestamp of the directory as it was create 2 days ago
+        _timestamp.return_value = time.time() - 2 * 24 * 60 * 60
+        InsightsArchive(Mock())
+        listdir.assert_called_once_with(constants.insights_tmp_path)
+        rmtree.assert_called_with(test_tmp_dir_path, True)
 
     @patch('insights.client.archive.os.makedirs')
     def test_create_archive_dir_obfuscated(self, makedirs, _, __):
@@ -95,7 +106,7 @@ class TestInsightsArchive(TestCase):
         with patch('insights.client.archive.os.path.exists', return_value=True):
             archive = InsightsArchive(config)
         # give this a discrete value so we can check the results
-        archive.tmp_dir = '/var/tmp/test'
+        archive.tmp_dir = test_tmp_dir_path
 
         with patch('insights.client.archive.os.path.exists', return_value=False):
             result = archive.create_archive_dir()
@@ -108,7 +119,7 @@ class TestInsightsArchive(TestCase):
         assert result == archive.archive_dir
 
     @patch('insights.client.archive.os.makedirs')
-    @patch('insights.client.archive.os.path.exists', side_effect=[True, False, False])
+    @patch('insights.client.archive.os.path.exists', side_effect=[False, False])
     def test_create_archive_dir_defined_path_DNE(self, exists, makedirs, _, __):
         '''
         Verify archive_dir is created when the attr is defined but
@@ -118,7 +129,7 @@ class TestInsightsArchive(TestCase):
         config.obfuscate_hostname = False
         archive = InsightsArchive(config)
         # give this a discrete value so we can check the results
-        archive.tmp_dir = '/var/tmp/test'
+        archive.tmp_dir = test_tmp_dir_path
         archive.archive_dir = test_archive_dir
         result = archive.create_archive_dir()
         exists.assert_has_calls([call(archive.archive_dir),
@@ -142,7 +153,7 @@ class TestInsightsArchive(TestCase):
         with patch('insights.client.archive.os.path.exists', return_value=True):
             archive = InsightsArchive(config)
         # give this a discrete value so we can check the results
-        archive.tmp_dir = '/var/tmp/test'
+        archive.tmp_dir = test_tmp_dir_path
         with patch('insights.client.archive.os.path.exists', return_value=True) as exists:
             result = archive.create_archive_dir()
         makedirs.assert_not_called()
@@ -178,7 +189,7 @@ class TestInsightsArchive(TestCase):
 
     @patch('insights.client.archive.InsightsArchive.create_archive_dir', return_value=test_archive_dir)
     @patch('insights.client.archive.os.makedirs')
-    @patch('insights.client.archive.os.path.exists', side_effect=[True, False])
+    @patch('insights.client.archive.os.path.exists', side_effect=[False])
     def test_create_command_dir(self, exists, makedirs, create_archive_dir, _, __):
         '''
         Verify insights_commands dir is created
@@ -245,7 +256,7 @@ class TestInsightsArchive(TestCase):
         logger.error.assert_called_once_with('ERROR: Could not stored archive to %s', archive.archive_stored)
 
     @patch('insights.client.archive.os.makedirs', side_effect=OSError)
-    @patch('insights.client.archive.os.path.exists', side_effect=[True, False])
+    @patch('insights.client.archive.os.path.exists', side_effect=[False])
     @patch('insights.client.archive.os.path.join', Mock())
     @patch('insights.client.archive.os.path.isdir', Mock())
     @patch('insights.client.archive.os.path.basename', Mock())
