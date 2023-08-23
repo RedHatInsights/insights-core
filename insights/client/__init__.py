@@ -10,17 +10,17 @@ import atexit
 from subprocess import Popen, PIPE
 from requests import ConnectionError
 
-from .. import package_info
-from . import client
-from .constants import InsightsConstants as constants
-from .config import InsightsConfig
-from .auto_config import try_auto_configuration
-from .utilities import (write_data_to_file,
-                        write_to_disk,
-                        get_tags,
-                        write_tags,
-                        migrate_tags,
-                        get_parent_process)
+from insights import package_info
+from insights.client import client
+from insights.client.constants import InsightsConstants as constants
+from insights.client.config import InsightsConfig
+from insights.client.auto_config import try_auto_configuration
+from insights.client.utilities import (write_data_to_file,
+                                       write_to_disk,
+                                       get_tags,
+                                       write_tags,
+                                       migrate_tags,
+                                       get_parent_process)
 
 NETWORK = constants.custom_network_log_level
 logger = logging.getLogger(__name__)

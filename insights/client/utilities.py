@@ -23,11 +23,9 @@ try:
 except ImportError:
     from yaml import Dumper
 
-from .. import package_info
-from .constants import InsightsConstants as constants
-from .collection_rules import InsightsUploadConf, load_yaml
-
+from insights import package_info
 from insights.core.context import Context
+from insights.client.constants import InsightsConstants as constants
 from insights.parsers.os_release import OsRelease
 from insights.parsers.redhat_release import RedhatRelease
 
@@ -176,13 +174,6 @@ def _expand_paths(path):
         return paths
     else:
         logger.debug("Could not expand %s", path)
-
-
-def validate_remove_file(config):
-    """
-    Validate the remove file and tags file
-    """
-    return InsightsUploadConf(config).validate()
 
 
 def write_data_to_file(data, filepath):
@@ -482,3 +473,21 @@ def largest_spec_in_archive(archive_file):
 
 def size_in_mb(num_bytes):
     return float(num_bytes) / (1024 * 1024)
+
+
+def load_yaml(filename):
+    try:
+        with open(filename) as f:
+            loaded_yaml = yaml.safe_load(f)
+        if loaded_yaml is None:
+            logger.debug('%s is empty.', filename)
+            return {}
+    except (yaml.YAMLError, yaml.parser.ParserError) as e:
+        # can't parse yaml from conf
+        raise RuntimeError('ERROR: Cannot parse %s.\n'
+                           'If using any YAML tokens such as [] in an expression, '
+                           'be sure to wrap the expression in quotation marks.\n\nError details:\n%s\n' % (filename, e))
+    if not isinstance(loaded_yaml, dict):
+        # loaded data should be a dict with at least one key
+        raise RuntimeError('ERROR: Invalid YAML loaded.')
+    return loaded_yaml

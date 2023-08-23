@@ -1,18 +1,20 @@
 import os
 import sys
-from tarfile import open as tar_open
 import tarfile
 import tempfile
 import uuid
-import insights.client.utilities as util
-from insights.client.constants import InsightsConstants as constants
 import re
 import mock
 import six
 import pytest
+
 from mock.mock import patch
 from json import loads as json_load
+from tarfile import open as tar_open
 
+import insights.client.utilities as util
+from insights.client.constants import InsightsConstants as constants
+from insights.client.collection_rules import load_yaml
 
 machine_id = str(uuid.uuid4())
 remove_file_content = """
@@ -20,6 +22,15 @@ remove_file_content = """
 commands=foo
 files=bar
 """.strip().encode("utf-8")
+
+
+def patch_open(filedata):
+    if six.PY3:
+        open_name = 'builtins.open'
+    else:
+        open_name = '__builtin__.open'
+
+    return patch(open_name, mock.mock_open(read_data=filedata), create=True)
 
 
 def test_display_name():
@@ -375,3 +386,51 @@ def test_largest_spec_in_archive():
     assert largest_file[0] == "insights/big"
     assert largest_file[1] == 100
     assert largest_file[2] == "insights.spec-big"
+
+
+def test_load_yaml_ok():
+    '''
+    Verify that proper YAML is parsed correctly
+    '''
+    yaml_data = '---\ncommands:\n- /bin/abc/def\n- /bin/ghi/jkl\nfiles:\n- /etc/abc/def.conf\n'
+    with patch_open(yaml_data):
+        result = load_yaml('test')
+    assert result
+
+
+def test_load_yaml_error():
+    '''
+    Verify that improper YAML raises an error
+    '''
+    yaml_data = '---\ncommands: files:\n- /etc/abc/def.conf\n'
+    with patch_open(yaml_data):
+        with pytest.raises(RuntimeError) as e:
+            result = load_yaml('test')
+            assert not result
+    assert 'Cannot parse' in str(e.value)
+
+
+def test_load_yaml_inline_tokens_in_regex_quotes():
+    '''
+    Verify that, if specifying a regex containing tokens parseable
+    by YAML (such as []), when wrapped in quotation marks,
+    the regex is parsed properly.
+    '''
+    yaml_data = '---\npatterns:\n  regex:\n  - \"[[:digit:]]*\"\n'
+    with patch_open(yaml_data):
+        result = load_yaml('test')
+    assert result
+
+
+def test_load_yaml_inline_tokens_in_regex_noquotes():
+    '''
+    Verify that, if specifying a regex containing tokens parseable
+    by YAML (such as []), when not wrapped in quotation marks,
+    an error is raised.
+    '''
+    yaml_data = '---\npatterns:\n  regex:\n  - [[:digit:]]*\n'
+    with patch_open(yaml_data):
+        with pytest.raises(RuntimeError) as e:
+            result = load_yaml('test')
+            assert not result
+    assert 'Cannot parse' in str(e.value)

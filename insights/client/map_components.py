@@ -1,36 +1,18 @@
 from __future__ import absolute_import
-import six
+
 import logging
 import textwrap
 
-from .constants import InsightsConstants as constants
+from insights.client.constants import InsightsConstants as constants
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
 
 
-def map_rm_conf_to_components(rm_conf, uploader_json):
+def map_rm_conf_to_components(rm_conf):
     '''
-    In order to maximize compatibility between "classic" remove.conf
-    configurations and core collection, do the following mapping
-    strategy:
-    1. If remove.conf entry matches a symbolic name, disable the
-        corresponding core component.
-    2. If remove.conf entry is a raw command or file, do a reverse
-        lookup on the symbolic name based on stored uploader.json data,
-        then continue as in step 1.
-    3. If neither conditions 1 or 2 are matched it is either
-        a) a mistyped command/file, or
-        b) an arbitrary file.
-        For (a), classic remove.conf configs require an exact match to
-            uploader.json. We can carry that condition into our
-            compatibility with core.
-        For (b), classic collection had the ability to skip arbitrary
-            files based on filepaths in uploader.json post-expansion
-            (i.e. a specific repo file in /etc/yum.repos.d).
-            Core checks all files collected against the file
-            blacklist filters, so these files will be omitted
-            just by the nature of core collection.
+    Convert the "files" and "commands" configured in the "classic" remove.conf
+    and file-redaction.yaml to insights components.
     '''
     updated_commands = []
     updated_files = []
@@ -46,21 +28,14 @@ def map_rm_conf_to_components(rm_conf, uploader_json):
     longest_key_len = 0
 
     for section in ['commands', 'files']:
-        if section not in rm_conf:
-            continue
-        for key in rm_conf[section]:
-            if section == 'commands':
-                symbolic_name = _search_uploader_json(uploader_json, ['commands'], key)
-            elif section == 'files':
-                # match both files and globs to rm_conf files
-                symbolic_name = _search_uploader_json(uploader_json, ['files', 'globs'], key)
-
-            component = _get_component_by_symbolic_name(symbolic_name)
-            if component:
-                conversion_map[key] = component
-                if len(key) > longest_key_len:
-                    longest_key_len = len(key)
-                updated_components.append(component)
+        for key in rm_conf.get(section, []):
+            components = _search_specs(key)
+            if components:
+                for comp in components:
+                    conversion_map[key] = comp
+                    if len(key) > longest_key_len:
+                        longest_key_len = len(key)
+                    updated_components.append(comp)
             else:
                 if section == 'commands':
                     updated_commands.append(key)
@@ -85,66 +60,38 @@ def map_rm_conf_to_components(rm_conf, uploader_json):
     return rm_conf
 
 
-def _search_uploader_json(uploader_json, headings, key):
+def _search_specs(key):
     '''
-    Search an uploader.json block for a command/file from "name"
-    and return the symbolic name if it exists
-
-    headings        - list of headings to search inside uploader.json
-    key             - raw command/file or symbolic name to search
-    conversion_map  - list of names to found components for logging
-    longest_key_len - length of longest name for logging
+    Search the `:class:insights.specs.default.DefaultSpecs` for a command/file
+    from "name" and return the full spec module name if it exists
     '''
-    for heading in headings:
-        # keys inside the dicts are the heading, but singular
-        singular = heading.rstrip('s')
+    def _all_patterns(s_mod):
+        patterns = []
+        patterns.append(s_mod.cmd) if hasattr(s_mod, 'cmd') else None
+        patterns.append(s_mod.path) if hasattr(s_mod, 'path') else None
+        patterns.extend(s_mod.paths) if hasattr(s_mod, 'paths') else None
+        patterns.extend(s_mod.patterns) if hasattr(s_mod, 'patterns') else None
+        if hasattr(s_mod, 'dep'):  # head
+            patterns.extend(_all_patterns(s_mod.dep))
+        if hasattr(s_mod, 'deps'):
+            for dp in s_mod.deps:  # first_of
+                patterns.extend(_all_patterns(dp))
+        return patterns
 
-        for spec in uploader_json[heading]:
-            if key == spec['symbolic_name'] or (key == spec[singular] and heading != 'globs'):
-                # matches to a symbolic name or raw command, cache the symbolic name
-                # only match symbolic name for globs
-                sname = spec['symbolic_name']
-                if not six.PY3:
-                    sname = sname.encode('utf-8')
-                return sname
-    # no match
-    return None
-
-
-def _get_component_by_symbolic_name(sname):
-    # match a component to a symbolic name
-    # some symbolic names need to be renamed to fit specs
-    if sname is None:
-        # toss back bad input
-        return None
-
-    spec_prefix = "insights.specs.default.DefaultSpecs."
-    spec_conversion = {
-        'getconf_pagesize': 'getconf_page_size',
-        'netstat__agn': 'netstat_agn',
-        'rpm__V_packages': 'rpm_V_packages',
-
-        'machine_id1': 'machine_id',
-        'machine_id2': 'machine_id',
-        'machine_id3': 'machine_id',
-        'limits_d': 'limits_conf',
-        'modprobe_conf': 'modprobe',
-        'modprobe_d': 'modprobe',
-        'ps_auxwww': 'insights.specs.sos_archive.SosSpecs.ps_auxww',  # special case
-        'rh_mongodb26_conf': 'mongod_conf',
-        'sysconfig_rh_mongodb26': 'sysconfig_mongod',
-        'redhat_access_proactive_log': None,
-
-        'krb5_conf_d': 'krb5'
-    }
-
-    if sname in spec_conversion:
-        if spec_conversion[sname] is None:
-            return None
-        if sname == 'ps_auxwww':
-            return spec_conversion[sname]
-        return spec_prefix + spec_conversion[sname]
-    return spec_prefix + sname
+    specs = []
+    from insights.specs.default import DefaultSpecs
+    for spec in filter(lambda x: not x.startswith('__'), dir(DefaultSpecs)):
+        spec_module = getattr(DefaultSpecs, spec)
+        if not hasattr(spec_module, 'multi_output'):
+            # It's NOT a spec
+            continue
+        spec_mod_name = "insights.specs.default.DefaultSpecs.{0}".format(spec)
+        if key == spec:
+            return [spec_mod_name]
+        patterns = _all_patterns(spec_module)
+        if any(pat == key for pat in patterns if pat):
+            specs.append(spec_mod_name)
+    return specs
 
 
 def _log_conversion_table(conversion_map, longest_key_len):

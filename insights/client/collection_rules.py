@@ -9,14 +9,15 @@ import six
 import shlex
 import os
 import requests
-import yaml
 import stat
-from six.moves import configparser as ConfigParser
 
+from six.moves import configparser as ConfigParser
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
-from .constants import InsightsConstants as constants
-from .map_components import map_rm_conf_to_components
+
+from insights.client.constants import InsightsConstants as constants
+from insights.client.map_components import map_rm_conf_to_components
+from insights.client.utilities import load_yaml
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
@@ -64,24 +65,6 @@ def correct_format(parsed_data, expected_keys, filename):
             if not is_list_of_strings(parsed_data[k]):
                 return True, '%s section must be a list of strings.' % k
     return False, None
-
-
-def load_yaml(filename):
-    try:
-        with open(filename) as f:
-            loaded_yaml = yaml.safe_load(f)
-        if loaded_yaml is None:
-            logger.debug('%s is empty.', filename)
-            return {}
-    except (yaml.YAMLError, yaml.parser.ParserError) as e:
-        # can't parse yaml from conf
-        raise RuntimeError('ERROR: Cannot parse %s.\n'
-                           'If using any YAML tokens such as [] in an expression, '
-                           'be sure to wrap the expression in quotation marks.\n\nError details:\n%s\n' % (filename, e))
-    if not isinstance(loaded_yaml, dict):
-        # loaded data should be a dict with at least one key
-        raise RuntimeError('ERROR: Invalid YAML loaded.')
-    return loaded_yaml
 
 
 def verify_permissions(f):
@@ -410,14 +393,14 @@ class InsightsUploadConf(object):
             #   try to use remove.conf
             self.rm_conf = self.get_rm_conf_old()
             if self.config.core_collect:
-                self.rm_conf = map_rm_conf_to_components(self.rm_conf, self.get_conf_file())
+                self.rm_conf = map_rm_conf_to_components(self.rm_conf)
             return self.rm_conf
 
         # remove Nones, empty strings, and empty lists
         filtered_rm_conf = dict((k, v) for k, v in rm_conf.items() if v)
         self.rm_conf = filtered_rm_conf
         if self.config.core_collect:
-            self.rm_conf = map_rm_conf_to_components(self.rm_conf, self.get_conf_file())
+            self.rm_conf = map_rm_conf_to_components(self.rm_conf)
         return self.rm_conf
 
     def get_tags_conf(self):

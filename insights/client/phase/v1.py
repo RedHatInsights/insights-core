@@ -1,17 +1,18 @@
 from __future__ import print_function
 import functools
-from os.path import isfile
 import json
 import logging
 import os
 import sys
 import runpy
+from os.path import isfile
 
 from insights.client import InsightsClient
+from insights.client.collection_rules import InsightsUploadConf
 from insights.client.config import InsightsConfig
 from insights.client.constants import InsightsConstants as constants
 from insights.client.support import InsightsSupport
-from insights.client.utilities import validate_remove_file, print_egg_versions
+from insights.client.utilities import print_egg_versions
 from insights.client.schedule import get_scheduler
 from insights.client.apps.compliance import ComplianceClient
 
@@ -64,7 +65,7 @@ def pre_update(client, config):
     # validate the remove file
     if config.validate:
         try:
-            validate_remove_file(config)
+            InsightsUploadConf(config).validate()
             sys.exit(constants.sig_kill_ok)
         except RuntimeError as e:
             logger.error(e)
@@ -136,7 +137,9 @@ def update(client, config):
     if config.payload:
         logger.debug('Uploading a payload. Bypassing rules update.')
         return
-    client.update_rules()
+    # Download 'uploader.json' only when "core_collect=False"
+    if not config.core_collect:
+        client.update_rules()
 
 
 @phase

@@ -5,7 +5,7 @@ import mock
 import pytest
 from .helpers import insights_upload_conf
 from mock.mock import patch, Mock
-from insights.client.collection_rules import correct_format, load_yaml, verify_permissions
+from insights.client.collection_rules import correct_format, verify_permissions
 
 
 conf_remove_file = '/tmp/remove.conf'
@@ -135,54 +135,6 @@ def test_correct_format_bad_patterns_regexinvalidtype():
     err, msg = correct_format(parsed_data, expected_keys, conf_file_content_redaction_file)
     assert err
     assert 'regex section under patterns must be a list of strings' in msg
-
-
-def test_load_yaml_ok():
-    '''
-    Verify that proper YAML is parsed correctly
-    '''
-    yaml_data = '---\ncommands:\n- /bin/abc/def\n- /bin/ghi/jkl\nfiles:\n- /etc/abc/def.conf\n'
-    with patch_open(yaml_data):
-        result = load_yaml('test')
-    assert result
-
-
-def test_load_yaml_error():
-    '''
-    Verify that improper YAML raises an error
-    '''
-    yaml_data = '---\ncommands: files:\n- /etc/abc/def.conf\n'
-    with patch_open(yaml_data):
-        with pytest.raises(RuntimeError) as e:
-            result = load_yaml('test')
-            assert not result
-    assert 'Cannot parse' in str(e.value)
-
-
-def test_load_yaml_inline_tokens_in_regex_quotes():
-    '''
-    Verify that, if specifying a regex containing tokens parseable
-    by YAML (such as []), when wrapped in quotation marks,
-    the regex is parsed properly.
-    '''
-    yaml_data = '---\npatterns:\n  regex:\n  - \"[[:digit:]]*\"\n'
-    with patch_open(yaml_data):
-        result = load_yaml('test')
-    assert result
-
-
-def test_load_yaml_inline_tokens_in_regex_noquotes():
-    '''
-    Verify that, if specifying a regex containing tokens parseable
-    by YAML (such as []), when not wrapped in quotation marks,
-    an error is raised.
-    '''
-    yaml_data = '---\npatterns:\n  regex:\n  - [[:digit:]]*\n'
-    with patch_open(yaml_data):
-        with pytest.raises(RuntimeError) as e:
-            result = load_yaml('test')
-            assert not result
-    assert 'Cannot parse' in str(e.value)
 
 
 @patch('insights.client.collection_rules.stat.S_IMODE', return_value=0o600)
@@ -338,12 +290,12 @@ def test_rm_conf_old_load_ok(isfile, verify):
 @patch('insights.client.collection_rules.InsightsUploadConf.get_conf_file')
 def test_rm_conf_loads_uploader_json_core_collect(get_conf_file):
     '''
-    Verify that get_conf_file() is called from
+    Verify that get_conf_file() is NOT called from
     get_rm_conf() when core_collect==True
     '''
     upload_conf = insights_upload_conf(core_collect=True)
     upload_conf.get_rm_conf()
-    get_conf_file.assert_called_once()
+    get_conf_file.assert_not_called()
 
 
 @patch('insights.client.collection_rules.InsightsUploadConf.load_redaction_file', Mock(return_value={"test": "test"}))
