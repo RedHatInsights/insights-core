@@ -23,7 +23,8 @@ def test_yum_updates_runs_correctly():
                     ]
                 }
             },
-            "metadata_time": "2021-01-01T09:39:45Z"
+            "build_pkgcache": False,
+            "metadata_time": "2021-01-01T09:39:45Z",
     })
     # setup dnf mock
     with patch("insights.specs.datasources.yum_updates.UpdatesManager", yum_updates.DnfManager):
