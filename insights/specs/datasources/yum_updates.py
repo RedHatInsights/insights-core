@@ -22,8 +22,9 @@ except ImportError:
 
 class DnfManager:
     """ Performs package resolution on dnf based systems """
-    def __init__(self):
+    def __init__(self, build_pkgcache=False):
         self.base = dnf.base.Base()
+        self.base.conf.cacheonly = not build_pkgcache
         # releasever and basearchs are correctly set after calling load()
         self.releasever = dnf.rpm.detect_releasever("/")
         self.basearch = dnf.rpm.basearch(hawkey.detect_arch())
@@ -62,17 +63,20 @@ class DnfManager:
         if subst.get("basearch"):
             self.basearch = subst["basearch"]
 
-        self.base.conf.cacheonly = True
         self.base.read_all_repos()
+
         self.packages = hawkey.Query(hawkey.Sack())
-        if version(dnf.VERSION) >= version("4.7.0"):
-            try:
-                # do not use standard self.base.fill_sack() it does not respect cacheonly
+        try:
+            if version(dnf.VERSION) >= version("4.7.0") and self.base.conf.cacheonly:
                 self.base.fill_sack_from_repos_in_cache(load_system_repo=True)
                 self.packages = self.base.sack.query()
-            except dnf.exceptions.RepoError:
-                # RepoError is raised when cache is empty
-                pass
+            elif not self.base.conf.cacheonly:
+                self.base.fill_sack()
+                self.packages = self.base.sack.query()
+        except dnf.exceptions.RepoError:
+            # RepoError is raised when cache is empty
+            pass
+
         self.repos = self.base.repos
         logging.disable(logging.NOTSET)
 
@@ -113,9 +117,9 @@ class DnfManager:
 
 class YumManager(DnfManager):
     """ Performs package resolution on yum based systems """
-    def __init__(self):
+    def __init__(self, build_pkgcache=False):
         self.base = yum.YumBase()
-        self.base.doGenericSetup(cache=1)
+        self.base.doGenericSetup(cache=0 if build_pkgcache else 1)
         self.releasever = self.base.conf.yumvar['releasever']
         self.basearch = self.base.conf.yumvar['basearch']
         self.packages = []
@@ -135,9 +139,18 @@ class YumManager(DnfManager):
         return sorted_cmp(pkgs, self.pkg_cmp)
 
     def load(self):
-        self.base.doRepoSetup()
         try:
+            self.base.doRepoSetup()
             self.base.doSackSetup()
+        except yum.Errors.RepoError:
+            # RepoError is raised when cache is empty
+            pass
+        except AttributeError:
+            # backwards compatibility, because yum is removing these setup functions in future
+            # and moving the setups to be getters (https://github.com/rpm-software-management/yum/blob/master/yum/__init__.py#L1099)
+            pass
+
+        try:
             self.packages = self.base.pkgSack.returnPackages()
         except yum.Errors.RepoError:
             # RepoError is raised when cache is empty
@@ -191,8 +204,8 @@ except ImportError:
         UpdatesManager = None
 
 
-@datasource(HostContext, [IsRhel7, IsRhel8, IsRhel9])
-def yum_updates(_broker):
+@datasource(HostContext, [IsRhel7, IsRhel8, IsRhel9], timeout=0)
+def yum_updates(broker):
     """
     This datasource provides a list of available updates on the system.
     It uses the yum python library installed locally, and collects list of
@@ -216,6 +229,7 @@ def yum_updates(_broker):
               ]
             }
           },
+          "build_pkgcache": false,
           "metadata_time": "2021-01-01T09:39:45Z"
         }
 
@@ -227,13 +241,16 @@ def yum_updates(_broker):
     if UpdatesManager is None:
         raise SkipComponent()
 
-    with UpdatesManager() as umgr:
+    build_pkgcache = getattr(broker.get('client_config', object), 'build_packagecache', False)
+
+    with UpdatesManager(build_pkgcache=build_pkgcache) as umgr:
         umgr.load()
 
         response = {
             "releasever": umgr.releasever,
             "basearch": umgr.basearch,
             "update_list": {},
+            "build_pkgcache": build_pkgcache,
         }
 
         for pkg in umgr.installed_packages():
