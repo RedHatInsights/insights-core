@@ -2,6 +2,14 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.2.12](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.12) (2023-08-24)
+
+- fix: revert change in path directory ([PR 3891](https://github.com/RedHatInsights/insights-core/pull/3891))
+- fix: don't initial InsighsConfig in dup_machine_id_info ([PR 3888](https://github.com/RedHatInsights/insights-core/pull/3888))
+- feat: improve temp directories ([PR 3878](https://github.com/RedHatInsights/insights-core/pull/3878))
+- SPM-2113: allow re-generating dnf/yum cache on demand ([PR 3874](https://github.com/RedHatInsights/insights-core/pull/3874))
+- feat: Apply malware disabled rules ([PR 3884](https://github.com/RedHatInsights/insights-core/pull/3884))
+
 # [insights-core-3.2.11](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.11) (2023-08-17)
 
 - feat: Add rendered content to json output ([PR 3881](https://github.com/RedHatInsights/insights-core/pull/3881))
