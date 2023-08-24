@@ -67,7 +67,7 @@ class InsightsArchive(object):
         self.compressor = config.compressor
         self.archive_stored = None
         self.tar_file = None
-        self.keep_archive_dir = os.path.join('var', 'cache', 'insights-client')
+        self.keep_archive_dir = '/var/cache/insights-client'
         atexit.register(self.cleanup_tmp)
         signal(SIGTERM, self.sigterm_handler)
 
