@@ -170,7 +170,7 @@ class InsightsArchive(object):
         logger.debug("Tar File: " + tar_file_name)
         return_code = subprocess.call(shlex.split("tar c%sfS %s -C %s ." % (
             self.get_compression_flag(self.compressor),
-            tar_file_name, self.tmp_dir)),
+            tar_file_name, self.archive_dir)),
             stderr=subprocess.PIPE)
         if (self.compressor in ["bz2", "xz"] and return_code != 0):
             logger.error("ERROR: %s compressor is not installed, cannot compress file", self.compressor)
