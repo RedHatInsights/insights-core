@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.2.11
+Version:        3.2.12
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,17 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Aug 24 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.12-1
+- fix: revert change in path directory (#3891)
+  (93577878+ahitacat@users.noreply.github.com)
+- fix: don't initial InsighsConfig in dup_machine_id_info (#3888)
+  (xiangceliu@redhat.com)
+- feat: improve temp directories (#3878)
+  (93577878+ahitacat@users.noreply.github.com)
+- SPM-2113: allow re-generating dnf/yum cache on demand (#3874)
+  (36317308+yungbender@users.noreply.github.com)
+- feat: Apply malware disabled rules (#3884) (mhuth@redhat.com)
+
 * Thu Aug 17 2023 Lizhong Chen <lichen@redhat.com> 3.2.11-1
 - feat: Add rendered content to json output (#3881) (rblakley@redhat.com)
 - chore: add required dirs to LSlanR spec in parser (#3875)
