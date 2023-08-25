@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.2.13](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.13) (2023-08-25)
+
+- fix: tar command ([PR 3894](https://github.com/RedHatInsights/insights-core/pull/3894))
+
 # [insights-core-3.2.12](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.12) (2023-08-24)
 
 - fix: revert change in path directory ([PR 3891](https://github.com/RedHatInsights/insights-core/pull/3891))
