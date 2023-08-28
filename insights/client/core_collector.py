@@ -30,16 +30,6 @@ class CoreCollector(DataCollector):
         if rm_conf is None:
             rm_conf = {}
 
-        # add tokens to limit regex handling
-        #   core parses blacklist for files and commands as regex
-        if 'files' in rm_conf:
-            for idx, f in enumerate(rm_conf['files']):
-                rm_conf['files'][idx] = '^' + f + '$'
-
-        if 'commands' in rm_conf:
-            for idx, c in enumerate(rm_conf['commands']):
-                rm_conf['commands'][idx] = '^' + c + '$'
-
         logger.debug('Beginning to run collection...')
 
         # only load files, keywords, components into core

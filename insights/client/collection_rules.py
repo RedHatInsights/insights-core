@@ -16,7 +16,6 @@ from six.moves import configparser as ConfigParser
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
 from .constants import InsightsConstants as constants
-from .map_components import map_rm_conf_to_components
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
@@ -400,24 +399,17 @@ class InsightsUploadConf(object):
         redact_conf = self.load_redaction_file(self.redaction_file)
         content_redact_conf = self.load_redaction_file(self.content_redaction_file)
 
-        if redact_conf:
-            rm_conf.update(redact_conf)
-        if content_redact_conf:
-            rm_conf.update(content_redact_conf)
-
         if not redact_conf and not content_redact_conf:
             # no file-redaction.yaml or file-content-redaction.yaml defined,
             #   try to use remove.conf
             self.rm_conf = self.get_rm_conf_old()
-            if self.config.core_collect:
-                self.rm_conf = map_rm_conf_to_components(self.rm_conf, self.get_conf_file())
-            return self.rm_conf
+        else:
+            rm_conf.update(redact_conf or {})
+            rm_conf.update(content_redact_conf or {})
+            # remove Nones, empty strings, and empty lists
+            self.rm_conf = dict((k, v) for k, v in rm_conf.items() if v)
 
-        # remove Nones, empty strings, and empty lists
-        filtered_rm_conf = dict((k, v) for k, v in rm_conf.items() if v)
-        self.rm_conf = filtered_rm_conf
-        if self.config.core_collect:
-            self.rm_conf = map_rm_conf_to_components(self.rm_conf, self.get_conf_file())
+        # return the RAW rm_conf
         return self.rm_conf
 
     def get_tags_conf(self):
