@@ -168,10 +168,12 @@ class InsightsArchive(object):
         ext = "" if self.compressor == "none" else ".%s" % self.compressor
         tar_file_name = tar_file_name + ".tar" + ext
         logger.debug("Tar File: " + tar_file_name)
-        return_code = subprocess.call(shlex.split("tar c%sfS %s -C %s ." % (
+        # change cwd to compress the archive directory inside the temporary directory
+        # with the correct structure
+        return_code = subprocess.call(shlex.split("tar c%sfS %s %s" % (
             self.get_compression_flag(self.compressor),
-            tar_file_name, self.archive_dir)),
-            stderr=subprocess.PIPE)
+            tar_file_name, self.archive_name)),
+            stderr=subprocess.PIPE, cwd=self.tmp_dir)
         if (self.compressor in ["bz2", "xz"] and return_code != 0):
             logger.error("ERROR: %s compressor is not installed, cannot compress file", self.compressor)
             return None
