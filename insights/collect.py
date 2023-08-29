@@ -183,9 +183,6 @@ plugins:
           enabled: true
 
     # needed to collect the sap_hdb_version spec that uses the Sap combiner
-        - name: insights.parsers.lssap
-          enabled: true
-
         - name: insights.parsers.saphostctrl
           enabled: true
 
