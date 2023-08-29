@@ -296,6 +296,7 @@ def apply_blacklist(cfg):
 
     def _check_and_skip_component(name):
         if '/' in name or ' ' in name:
+            # not symbolic name
             return False
         # like a symbolic name
         component = 'insights.specs.default.DefaultSpecs.{0}'.format(name)
@@ -303,8 +304,8 @@ def apply_blacklist(cfg):
             # is a sybmolic name
             _skip_component(component)
             return True
-        else:
-            return False
+        # not symbolic name
+        return False
 
     for b in cfg.get("files", []):
         if not _check_and_skip_component(b):
