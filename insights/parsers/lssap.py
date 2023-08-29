@@ -2,6 +2,10 @@
 Lssap - command ``/usr/sap/hostctrl/exe/lssap``
 ===============================================
 
+.. warning::
+    This class is deprecated and will be removed from 3.3.0.
+    Please use the :class:`insights.combiners.sap.Sap` instead.
+
 This module provides processing for the output of the ``lssap`` command on
 SAP systems. The spec handled by this command inlude::
 
@@ -33,11 +37,17 @@ from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import parse_delimited_table
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.lssap)
 class Lssap(CommandParser):
-    """Class to parse ``lssap`` command output.
+    """
+    .. warning::
+        This class is deprecated and will be removed from 3.3.0.
+        Please use the :class:`insights.combiners.sap.Sap` instead.
+
+    Class to parse ``lssap`` command output.
 
     Raises:
         SkipComponent: Nothing needs to be parsed.
@@ -50,6 +60,10 @@ class Lssap(CommandParser):
         instances (list): List of instances running on the system.
         instance_types (list): List of instance types running on the system.
     """
+    def __init__(self, *args, **kwargs):
+        deprecated(Lssap, "Please use the :class:`insights.combiners.sap.SAP` instead.", "3.3.0")
+        super(Lssap, self).__init__(*args, **kwargs)
+
     def parse_content(self, content):
         if not content:
             raise SkipComponent()
