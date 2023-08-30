@@ -363,6 +363,7 @@ class Vgs(Lvm):
         "LVM2_VG_MDA_USED_COUNT": "#VMdaUse",
         "LVM2_VG_MDA_FREE": "VMdaFree",
         "LVM2_VG_LOCKTYPE": "Lock_Type",
+        "LVM2_VG_LOCK_TYPE": "Lock_Type",
         "LVM2_VG_TAGS": "VG_Tags",
         "LVM2_VG_FMT": "Fmt",
         "LVM2_PV_COUNT": "#PV",
@@ -381,6 +382,7 @@ class Vgs(Lvm):
         "LVM2_VG_PERMISSIONS": "VPerms",
         "LVM2_VG_CLUSTERED": "Clustered",
         "LVM2_VG_LOCKARGS": "Lock Args",
+        "LVM2_VG_LOCK_ARGS": "Lock Args",
         "LVM2_MAX_LV": "MaxLV",
         "LVM2_VG_SIZE": "VSize",
     }
@@ -543,7 +545,7 @@ class Lvs(Lvm):
         "LVM2_VG_NAME": "VG",
         "LVM2_METADATA_LV": "Meta",
         "LVM2_LV_ACTIVE": "Active",
-        "LVM2_CONVERT_LV_UUID": "Convert",
+        "LVM2_CONVERT_LV_UUID": "Convert_UUID",
         "LVM2_LV_MERGE_FAILED": "MergeFailed",
         "LVM2_METADATA_LV_UUID": "Meta_UUID",
         "LVM2_LV_ROLE": "Role",
@@ -764,6 +766,7 @@ class LvmSystemDevices(Parser, dict):
             raise SkipComponent("No valid content.")
 
 
+@parser(Specs.lvm_fullreport)
 class LvmFullReport(JSONParser):
     """
     Parse the output of the command ``/usr/sbin/lvm fullreport -a --reportformat json``.
@@ -808,7 +811,11 @@ class LvmFullReport(JSONParser):
                              { ..., lv_uuid:5552, ... },
                              more segs ]
                 },
-                ...
+                # Orphan volume group (pv's not associated with a vg)
+                {
+                    "pv": [ {...} ],
+                    "pvseg": [ {...} ]
+                }
             ]
         }
 
@@ -831,18 +838,36 @@ class LvmFullReport(JSONParser):
                   "seg": [ {"segtype": "linear", ...}, ... ]
                 },
                 ...
+                {
+                  "pv": [ {...} ],
+                  "pvseg": [ {...} ]
+                }
             ]
         }
 
     Attributes:
+        warnings(list): List of warning lines included at the beginning of input
         volume_groups(dict): Dictionary with vg_name as the key, contains a dictionary including
-            this information for the volume group::
+            all information for the volume group. The vg element is represented as a list but
+            will only have a single item which is that volumn group::
 
-                  "vg": [ {"vg_name": "global", ...}, ... ],
-                  "pv": [ {"pv_name": "/dev/sdd", ...), ... ],
-                  "lv": [ {"lv_name": "[lvm_lock]", ...}, ... ],
-                  "pvseg": [ {"pvseg_start": "0", ...}, ... ],
-                  "seg": [ {"segtype": "linear", ...}, ... ]
+                {
+                    "vg1": {
+                        "vg": [ {"vg_name": "global", ...}, ... ],
+                        "pv": [ {"pv_name": "/dev/sdd", ...), ... ],
+                        "lv": [ {"lv_name": "[lvm_lock]", ...}, ... ],
+                        "pvseg": [ {"pvseg_start": "0", ...}, ... ],
+                        "seg": [ {"segtype": "linear", ...}, ... ]
+                    },
+                    ...
+                }
+
+        orphan_volume_group(dict): Dictionary of pv's and pvseg's not associated with a volume group::
+
+            {
+                "pv": [ {"pv_name": "/dev/sda", ...), ... ],
+                "pvseg": [ {"pvseg_start": "0", ...}, ... ],
+            }
 
     Example:
         >>> type(lvm_fullreport)
@@ -858,11 +883,30 @@ class LvmFullReport(JSONParser):
         SkipComponent: when there is no device info.
     """
     def parse_content(self, content):
-        super(LvmFullReport, self).parse_content(content)
+        self.warnings = []
+        skip_to_line = len(content)
+        for ndx, line in enumerate(content):
+            if line.strip().startswith('{'):
+                skip_to_line = ndx
+                break
+            self.warnings.append(line)
+
+        if skip_to_line >= len(content):
+            raise SkipComponent("No LVM information in fullreport")
+
+        super(LvmFullReport, self).parse_content(content[skip_to_line:])
+
+        if not self.data['report']:
+            raise SkipComponent("No LVM information in fullreport")
+
         vgs = self.data['report']
         self.volume_groups = dict()
-        for vg in vgs:
-            self.volume_groups[vg['vg'][0]['vg_name']] = vg
+        self.orphan_volume_group = dict()
+        for vg_data in vgs:
+            if 'vg' in vg_data:
+                self.volume_groups[vg_data['vg'][0]['vg_name']] = vg_data
+            else:
+                self.orphan_volume_group = vg_data
 
 
 if __name__ == "__main__":
