@@ -185,6 +185,10 @@ def test_sub_ip_match_IP_overlap_netstat(line, expected):
         "\"RSA/8, "
         "Tue 08 Mar 2016 11:15:08 AM CET, "
         "Key ID 199e2f91fd431d51\"}",
+    ),
+    (
+        "Aug 14 09:21:16 Installed: shadow-utils-4.1.5.1-5.el6.x86_64",
+        "Aug 14 09:21:16 Installed: shadow-utils-10.230.230.1-5.el6.x86_64",
     )
 ])
 @patch("insights.contrib.soscleaner.SOSCleaner._ip2db", return_value="10.230.230.1")
