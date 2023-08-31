@@ -11,12 +11,10 @@ SPECIAL_SYMBOLIC_NAME_IN_UPLODER_JSON = {
     'machine_id3': 'machine_id',
     'modprobe_conf': 'modprobe',
     'modprobe_d': 'modprobe',
-    'netstat__agn': 'netstat_agn',
     'ps_auxwww': None,
     'redhat_access_proactive_log': None,
     'rh_mongodb26_conf': 'mongod_conf',
     'rpm__V_packages': 'rpm_V_packages',
-    'sysconfig_rh_mongodb26': 'sysconfig_mongod',
 }
 
 
