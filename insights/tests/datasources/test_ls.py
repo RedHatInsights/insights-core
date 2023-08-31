@@ -75,7 +75,7 @@ def test_lanL():
 
 def test_lanR():
     ret = list_with_lanR({})
-    assert ret == '/'
+    assert '/ ' in ret
 
 
 def test_lanRL():

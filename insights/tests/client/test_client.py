@@ -1,13 +1,11 @@
 from contextlib import contextmanager
 from shutil import rmtree
-import logging
-import logging.handlers
 import sys
 import os
 import pytest
 
 from insights.client import InsightsClient
-from insights.client.client import get_file_handler
+from insights.client.client import get_file_handler, RotatingFileHandlerWithUMask, FileHandlerWithUMask
 from insights.client.archive import InsightsArchive
 from insights.client.config import InsightsConfig
 from insights import package_info
@@ -130,17 +128,17 @@ def test_get_log_handler_by_client_version(get_version_info, mock_path_dirname):
     # RPM version is older than 3.2.0
     get_version_info.return_value = {'client_version': '3.1.8'}
     conf = InsightsConfig(logging_file='/tmp/insights.log')
-    assert isinstance(get_file_handler(conf), logging.handlers.RotatingFileHandler) is True
+    assert isinstance(get_file_handler(conf), RotatingFileHandlerWithUMask) is True
 
     # RPM version is 3.2.0
     get_version_info.return_value = {'client_version': '3.2.0'}
     conf = InsightsConfig(logging_file='/tmp/insights.log')
-    assert isinstance(get_file_handler(conf), logging.FileHandler) is True
+    assert isinstance(get_file_handler(conf), FileHandlerWithUMask) is True
 
     # RPM version is newer than 3.2.0
     get_version_info.return_value = {'client_version': '3.2.1'}
     conf = InsightsConfig(logging_file='/tmp/insights.log')
-    assert isinstance(get_file_handler(conf), logging.FileHandler) is True
+    assert isinstance(get_file_handler(conf), FileHandlerWithUMask) is True
 
 
 @patch('insights.client.client.generate_machine_id')

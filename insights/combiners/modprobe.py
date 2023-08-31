@@ -82,7 +82,7 @@ class AllModProbe(LegacyItemAccess):
                 if section not in self.data:
                     self.data[section] = {}
                 for name, value in sectdict.items():
-                    if name in self.data[section] and type(self.data[section][name][0]) == list:
+                    if name in self.data[section] and isinstance(self.data[section][name][0], list):
                         # append to this module's value - should only
                         # happen for aliases.
                         self.data[section][name][0].append(value)

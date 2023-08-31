@@ -15,8 +15,8 @@ class SosSpecs(Specs):
     auditd_conf = simple_file("/etc/audit/auditd.conf")
     audispd_conf = simple_file("/etc/audisp/audispd.conf")
     autofs_conf = simple_file("/etc/autofs.conf")
-
     blkid = first_file(["sos_commands/block/blkid_-c_.dev.null", "sos_commands/filesys/blkid_-c_.dev.null"])
+    buddyinfo = simple_file("proc/buddyinfo")
     candlepin_error_log = first_of([
         simple_file("var/log/candlepin/error.log"),
         simple_file(r"sos_commands/foreman/foreman-debug/var/log/candlepin/error.log")
@@ -155,6 +155,7 @@ class SosSpecs(Specs):
         "sos_commands/devicemapper/lvs_-a_-o__devices"
     ])
     manila_conf = first_file(["/var/lib/config-data/puppet-generated/manila/etc/manila/manila.conf", "/etc/manila/manila.conf"])
+    mdadm_D = simple_file("sos_commands/md/mdadm_-D_.dev.md")
     mdadm_E = glob_file("sos_commands/md/mdadm_-E_*")
     mistral_executor_log = simple_file("/var/log/mistral/executor.log")
     mlx4_port = glob_file("/sys/bus/pci/devices/*/mlx4_port[0-9]")

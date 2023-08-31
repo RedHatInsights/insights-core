@@ -135,6 +135,13 @@ DEFAULT_OPTS = {
         'group': 'actions',
         'dest': 'manifest'
     },
+    'build_packagecache': {
+        'default': False,
+        'opt': ['--build-packagecache'],
+        'help': 'Refresh the system package manager cache',
+        'action': 'store_true',
+        'group': 'actions'
+    },
     'compliance': {
         'default': False,
         'opt': ['--compliance'],

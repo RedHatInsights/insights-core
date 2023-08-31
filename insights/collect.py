@@ -183,9 +183,6 @@ plugins:
           enabled: true
 
     # needed to collect the sap_hdb_version spec that uses the Sap combiner
-        - name: insights.parsers.lssap
-          enabled: true
-
         - name: insights.parsers.saphostctrl
           enabled: true
 
@@ -259,6 +256,14 @@ plugins:
           enabled: true
 
         - name: insights.components.cryptsetup
+          enabled: true
+
+    # needed by the 'iris_cpf' spec
+        - name: insights.parsers.iris.IrisList
+          enabled: true
+
+    # needed by the 'iris_messages_log' spec
+        - name: insights.parsers.iris.IrisCpf
           enabled: true
 """.strip()
 

@@ -25,7 +25,7 @@ from insights.components.satellite import IsSatellite611, IsSatellite
 from insights.specs import Specs
 from insights.specs.datasources import (
         aws, awx_manage, candlepin_broker, cloud_init, corosync as corosync_ds,
-        dir_list, ethernet, httpd, ipcs, kernel, kernel_module_list, leapp,
+        dir_list, ethernet, httpd, intersystems, ipcs, kernel, kernel_module_list, leapp,
         lpstat, ls, luks_devices, machine_ids, malware_detection, md5chk,
         mount as mount_ds, package_provides, ps as ps_datasource, rpm_pkgs,
         sap, satellite_missed_queues, semanage, ssl_certificate,
@@ -115,6 +115,7 @@ class DefaultSpecs(Specs):
     bond = glob_file("/proc/net/bonding/*")
     bond_dynamic_lb = glob_file("/sys/class/net/*/bonding/tlb_dynamic_lb")
     boot_loader_entries = glob_file("/boot/loader/entries/*.conf")
+    buddyinfo = simple_file("/proc/buddyinfo")
     brctl_show = simple_command("/usr/sbin/brctl show")
     candlepin_broker = candlepin_broker.candlepin_broker
     cciss = glob_file("/proc/driver/cciss/cciss*")
@@ -292,6 +293,7 @@ class DefaultSpecs(Specs):
     init_process_cgroup = simple_file("/proc/1/cgroup")
     initctl_lst = simple_command("/sbin/initctl --system list")
     insights_client_conf = simple_file('/etc/insights-client/insights-client.conf')
+    insights_client_exp_sed = first_file(['/etc/insights-client/.exp.sed', '/etc/.exp.sed'])  # INSPEC-414
     installed_rpms = simple_command("/bin/rpm -qa --qf '%s'" % _rpm_format, context=HostContext, signum=signal.SIGTERM)
     interrupts = simple_file("/proc/interrupts")
     ip6tables = simple_command("/sbin/ip6tables-save")
@@ -310,7 +312,9 @@ class DefaultSpecs(Specs):
     iptables_permanent = simple_file("etc/sysconfig/iptables")
     ipv4_neigh = simple_command("/sbin/ip -4 neighbor show nud all")
     ipv6_neigh = simple_command("/sbin/ip -6 neighbor show nud all")
+    iris_cpf = intersystems.iris_working_configuration
     iris_list = simple_command("/usr/bin/iris list")
+    iris_messages_log = intersystems.iris_working_messages_log
     ironic_inspector_log = first_file(["/var/log/containers/ironic-inspector/ironic-inspector.log", "/var/log/ironic-inspector/ironic-inspector.log"])
     iscsiadm_m_session = simple_command("/usr/sbin/iscsiadm -m session")
     jbcs_httpd24_httpd_error_log = simple_file("/opt/rh/jbcs-httpd24/root/etc/httpd/logs/error_log")
@@ -405,6 +409,7 @@ class DefaultSpecs(Specs):
     mariadb_log = simple_file("/var/log/mariadb/mariadb.log")
     max_uid = simple_command("/bin/awk -F':' '{ if($3 > max) max = $3 } END { print max }' /etc/passwd")
     md5chk_files = foreach_execute(md5chk.files, "/usr/bin/md5sum %s", keep_rc=True)
+    mdadm_D = simple_command("/usr/sbin/mdadm -D /dev/md*")
     mdstat = simple_file("/proc/mdstat")
     meminfo = first_file(["/proc/meminfo", "/meminfo"])
     messages = simple_file("/var/log/messages")
@@ -545,6 +550,7 @@ class DefaultSpecs(Specs):
     ql2xmqsupport = simple_file("/sys/module/qla2xxx/parameters/ql2xmqsupport")
     rabbitmq_env = simple_file("/etc/rabbitmq/rabbitmq-env.conf")
     rabbitmq_report = simple_command("/usr/sbin/rabbitmqctl report")
+    random_entropy_avail = simple_file("/proc/sys/kernel/random/entropy_avail")
     rc_local = simple_file("/etc/rc.d/rc.local")
     readlink_e_etc_mtab = simple_command("/usr/bin/readlink -e /etc/mtab")
     readlink_e_shift_cert_client = simple_command("/usr/bin/readlink -e /etc/origin/node/certificates/kubelet-client-current.pem")

@@ -1,4 +1,5 @@
 import pytest
+import warnings
 from insights.parsers import uname
 from insights.tests import context_wrap
 
@@ -223,6 +224,8 @@ def test_pad_release():
     assert "390.0.0.0" == uname.pad_release("390")
     assert "390.12.0.0" == uname.pad_release("390.12")
     assert "1160.71.1.0" == uname.pad_release("1160.71.1")
+    assert "390.12.0.0.rt5.3.el6" == uname.pad_release("390.12.rt5.3.el6", 7)
+    assert "390.12.0.0.0.rt5.3" == uname.pad_release("390.12.rt5.3", 7)
     with pytest.raises(ValueError):
         uname.pad_release('390.11.12.13.el6')
 
@@ -237,18 +240,57 @@ def test_fixed_by():
     assert ['2.6.32-600.el6'] == u.fixed_by('2.6.32-220.1.el6', '2.6.32-600.el6')
 
 
+def test_fixed_by_warning():
+    # For all remaining tests, cause the comparation warnings
+    # to always be caught, and ignore other warnings.
+    warning_msg = "Comparison of distribution part will be ingored"
+    warnings.simplefilter("ignore")
+    warnings.filterwarnings("always", message=warning_msg)
+    with warnings.catch_warnings(record=True) as w:
+
+        u = uname.Uname.from_uname_str("Linux qqhrycsq2 2.6.32-504.el6.x86_64 #1 SMP Wed Jun 13 18:24:36 EDT 2012 x86_64 x86_64 x86_64 GNU/Linux")
+        # should be no comparation warning reported
+        assert [] == u.fixed_by('2.6.32-220.1.el6', '2.6.32-504.el6')
+        assert len(w) == 0
+
+        # fixes without distribution part
+        assert [] == u.fixed_by('2.6.32-504')
+        assert len(w) == 1
+
+        # fixes only has kernel version part
+        assert [] == u.fixed_by('2.6.32-')
+        assert len(w) == 2
+
+        # introduce without distribution part
+        assert ['2.6.32-600.el6'] == u.fixed_by('2.6.32-600.el6', introduced_in='2.6.32-504')
+        assert len(w) == 3
+
+        # introduce only has kernel version part
+        assert ['2.6.32-600.el6'] == u.fixed_by('2.6.32-600.el6', introduced_in='2.6.32-')
+        assert len(w) == 4
+
+        rt_u = uname.Uname.from_uname_str("Linux qqhrycsq2 4.18.0-305.rt7.72.el8.x86_64 #1 SMP Wed Jun 13 18:24:36 EDT 2012 x86_64 x86_64 x86_64 GNU/Linux")
+        # fixes without distribution part
+        assert [] == rt_u.fixed_by('4.18.0-305.rt7.72')
+        assert len(w) == 5
+
+        # introduce without distribution part
+        assert ['4.18.0-307.rt7.72.el8'] == rt_u.fixed_by('4.18.0-307.rt7.72.el8', introduced_in='4.18.0-305.rt7.72')
+        assert len(w) == 6
+
+    warnings.resetwarnings()
+
+
 def test_unknown_release():
     u = uname.Uname.from_kernel("2.6.23-504.23.3.el6.revertBZ1169225")
     assert "504.23.3.0.el6" == u._lv_release
-    fixed_by = u.fixed_by("2.6.18-128.39.1.el5", "2.6.18-238.40.1.el5", "2.6.18-308.13.1.el5", "2.6.18-348.el5")
-    assert [] == fixed_by
 
 
 def test_fixed_by_rhel5():
     test_kernels = [
         (uname.Uname.from_uname_str("Linux oprddb1r5.example.com 2.6.18-348.el5 #1 SMP Wed Nov 28 21:22:00 EST 2012 x86_64 x86_64 x86_64 GNU/Linux"), []),
         (uname.Uname.from_uname_str("Linux srspidr1-3.example2.com 2.6.18-402.el5 #1 SMP Thu Jan 8 06:22:34 EST 2015 x86_64 x86_64 x86_64 GNU/Linux"), []),
-        (uname.Uname.from_uname_str("Linux PVT-Dev1.pvtsolar.local 2.6.18-398.el5xen #1 SMP Tue Aug 12 06:30:31 EDT 2014 x86_64 x86_64 x86_64 GNU/Linux"), []),
+        (uname.Uname.from_uname_str("Linux PVT-Dev1.pvtsolar.local 2.6.18-398.el5 #1 SMP Tue Aug 12 06:30:31 EDT 2014 x86_64 x86_64 x86_64 GNU/Linux"), []),
         (uname.Uname.from_kernel("2.6.18-194.el5"),
             ["2.6.18-238.40.1.el5", "2.6.18-308.13.1.el5", "2.6.18-348.el5"]),
         (uname.Uname.from_kernel("2.6.18-128.el5"),
