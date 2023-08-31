@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.2.13
+Version:        3.2.14
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,13 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Aug 31 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.14-1
+- refactor(client): remove hacky proxy code (#3730) (stephen.adams@redhat.com)
+- feat: new test for symbolic_name in uploader.json (#3899)
+  (xiangceliu@redhat.com)
+- fix: remove Lssap from Sap combiner (#3895) (xiangceliu@redhat.com)
+- fix: change tar command (#3897) (93577878+ahitacat@users.noreply.github.com)
+
 * Fri Aug 25 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.13-1
 - fix: tar command (#3894) (93577878+ahitacat@users.noreply.github.com)
 

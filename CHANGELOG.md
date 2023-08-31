@@ -2,6 +2,13 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.2.14](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.14) (2023-08-31)
+
+- refactor(client): remove hacky proxy code ([PR 3730](https://github.com/RedHatInsights/insights-core/pull/3730))
+- feat: new test for symbolic_name in uploader.json ([PR 3899](https://github.com/RedHatInsights/insights-core/pull/3899))
+- fix: remove Lssap from Sap combiner ([PR 3895](https://github.com/RedHatInsights/insights-core/pull/3895))
+- fix: change tar command ([PR 3897](https://github.com/RedHatInsights/insights-core/pull/3897))
+
 # [insights-core-3.2.13](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.13) (2023-08-25)
 
 - fix: tar command ([PR 3894](https://github.com/RedHatInsights/insights-core/pull/3894))
