@@ -1,7 +1,7 @@
 import requests
 
 from insights.specs.default import DefaultSpecs
-from insights.util.symbolic_name import special_spec_name_of_symbolic_name
+from insights.util.symbolic_name import get_spec_name_by_symbolic_name
 
 
 def get_uploader_json():
@@ -27,7 +27,6 @@ def test_all_symbolic_name_from_uploader_json():
 
     # commands, files, globs
     for sl in uploader_json['commands'] + uploader_json['files'] + uploader_json['globs']:
-        sym_name = sl['symbolic_name']
-        spec_name = special_spec_name_of_symbolic_name(sym_name)
+        spec_name = get_spec_name_by_symbolic_name(sl['symbolic_name'])
         if spec_name:
             assert hasattr(DefaultSpecs, spec_name)
