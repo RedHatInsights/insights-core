@@ -15,6 +15,7 @@ class PostfixMaster(ConfigParser):
     Class to parses the content of postfix configuration files ``/etc/postfix/master.cf``
 
     Typical content looks like::
+
         # ==========================================================================
         # service type  private unpriv  chroot  wakeup  maxproc command + args
         #               (yes)   (yes)   (no)    (never) (100)
