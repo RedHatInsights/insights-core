@@ -26,6 +26,19 @@ from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
+_aws_curl_invalid_keyworks = [
+    'curl: ',
+    '<?xml ',
+]
+
+
+def _validate_content(content, length=0):
+    if (not content or                                 # Empty content
+            (length > 0 and len(content) > length) or  # Too many lines
+            any(item in content[0]                     # Unexpected keywords
+                for item in _aws_curl_invalid_keyworks)):
+        raise SkipComponent()
+
 
 @parser(Specs.aws_instance_id_doc)
 class AWSInstanceIdDoc(CommandParser, dict):
@@ -72,9 +85,7 @@ class AWSInstanceIdDoc(CommandParser, dict):
     """
 
     def parse_content(self, content):
-        """Parse output of command."""
-        if not content or 'curl: ' in content[0]:
-            raise SkipComponent()
+        _validate_content(content)
 
         # Just in case curl stats are present in data
         startline = 0
@@ -129,9 +140,7 @@ class AWSInstanceIdPkcs7(CommandParser):
         True
     """
     def parse_content(self, content):
-        """Parse output of command."""
-        if not content or 'curl: ' in content[0]:
-            raise SkipComponent()
+        _validate_content(content)
 
         # Just in case curl stats are present in data
         startline = 0
@@ -159,9 +168,7 @@ class AWSPublicIpv4Addresses(CommandParser, list):
     """
 
     def parse_content(self, content):
-        """Parse output of command."""
-        if not content or 'curl: ' in content[0]:
-            raise SkipComponent()
+        _validate_content(content, length=1)
 
         self.append(content[0])
 
@@ -182,8 +189,6 @@ class AWSPublicHostnames(CommandParser, list):
     """
 
     def parse_content(self, content):
-        """Parse output of command."""
-        if not content or 'curl: ' in content[0]:
-            raise SkipComponent()
+        _validate_content(content, length=1)
 
         self.append(content[0])
