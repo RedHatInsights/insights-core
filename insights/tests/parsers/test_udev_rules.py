@@ -97,7 +97,7 @@ GOTO="md_end"
 
 # Required: MD arrays must have a bitmap for transient devices to
 # be added back in the array.
-# mdadm -CR /dev/md0 -l1 -n2 /dev/sd[ab] –bitmap=internal
+# mdadm -CR /dev/md0 -l1 -n2 /dev/sd[ab] -bitmap=internal
 
 # Don't process any events if anaconda is running as anaconda brings up
 # raid devices manually
