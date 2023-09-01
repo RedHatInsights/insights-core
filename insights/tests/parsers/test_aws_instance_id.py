@@ -8,8 +8,35 @@ from insights.parsers.aws_instance_id import (
         AWSPublicIpv4Addresses, AWSPublicHostnames)
 from insights.tests import context_wrap
 
-AWS_CURL_ERROR = """
+AWS_CURL_ERROR_1 = """
 curl: (7) couldn't connect to host
+"""
+
+AWS_CURL_ERROR_2 = """
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+ <head>
+  <title>404 - Not Found</title>
+ </head>
+ <body>
+  <h1>404 - Not Found</h1>
+ </body>
+</html>
+"""
+
+AWS_CURL_ERROR_3 = """
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+ <head>
+  <title>404 - Not Found</title>
+ </head>
+ <body>
+  <h1>404 - Not Found</h1>
+ </body>
+</html>
 """
 
 AWS_ID_DOC = """
@@ -101,7 +128,10 @@ NYiytVbZPQUQ5Yaxu2jXnimvw3rrszlaEXAMPLE"""
 
 def test_aws_instance_id_doc():
     with pytest.raises(SkipComponent):
-        AWSInstanceIdDoc(context_wrap(AWS_CURL_ERROR))
+        AWSInstanceIdDoc(context_wrap(AWS_CURL_ERROR_1))
+
+    with pytest.raises(SkipComponent):
+        AWSInstanceIdDoc(context_wrap(AWS_CURL_ERROR_2))
 
     with pytest.raises(SkipComponent):
         AWSInstanceIdDoc(context_wrap(AWS_NO_DOC))
@@ -155,10 +185,13 @@ def test_aws_instance_id_doc():
 
 def test_aws_instance_id_pkcs7():
     with pytest.raises(SkipComponent):
-        AWSInstanceIdDoc(context_wrap(AWS_CURL_ERROR))
+        AWSInstanceIdPkcs7(context_wrap(AWS_CURL_ERROR_1))
 
     with pytest.raises(SkipComponent):
-        AWSInstanceIdDoc(context_wrap(AWS_NO_DOC))
+        AWSInstanceIdPkcs7(context_wrap(AWS_CURL_ERROR_2))
+
+    with pytest.raises(SkipComponent):
+        AWSInstanceIdPkcs7(context_wrap(AWS_NO_DOC))
 
     pkcs7 = AWSInstanceIdPkcs7(context_wrap(AWS_ID_PKCS7))
     assert pkcs7 is not None
@@ -212,7 +245,13 @@ def test_doc_examples():
 
 def test_aws_public_ipv4_addresses():
     with pytest.raises(SkipComponent):
-        AWSPublicIpv4Addresses(context_wrap(AWS_CURL_ERROR))
+        AWSPublicIpv4Addresses(context_wrap(AWS_CURL_ERROR_1))
+
+    with pytest.raises(SkipComponent):
+        AWSPublicIpv4Addresses(context_wrap(AWS_CURL_ERROR_2))
+
+    with pytest.raises(SkipComponent):
+        AWSPublicIpv4Addresses(context_wrap(AWS_CURL_ERROR_3))
 
     with pytest.raises(SkipComponent):
         AWSPublicIpv4Addresses(context_wrap(""))
@@ -224,7 +263,13 @@ def test_aws_public_ipv4_addresses():
 
 def test_aws_public_hostnames():
     with pytest.raises(SkipComponent):
-        AWSPublicHostnames(context_wrap(AWS_CURL_ERROR))
+        AWSPublicHostnames(context_wrap(AWS_CURL_ERROR_1))
+
+    with pytest.raises(SkipComponent):
+        AWSPublicHostnames(context_wrap(AWS_CURL_ERROR_2))
+
+    with pytest.raises(SkipComponent):
+        AWSPublicHostnames(context_wrap(AWS_CURL_ERROR_3))
 
     with pytest.raises(SkipComponent):
         AWSPublicHostnames(context_wrap(""))
