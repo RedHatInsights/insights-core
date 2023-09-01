@@ -65,12 +65,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Install sudo package
-      run: apt update && apt install sudo
     - name: install dependencies
       run: |
-        sudo apt-get install -y --no-install-recommends software-properties-common
-        sudo apt-get install -y build-essential git curl unzip file tar
+        apt-get install -y --no-install-recommends software-properties-common
+        apt-get install -y build-essential git curl unzip file tar
     - name: build setuptools and pip
       run: |
         export PATH=$PATH:/github/home/.local/bin
@@ -93,7 +91,7 @@ jobs:
         pip install --user --no-index -f ./pips/slave26/pip_packages -r ./pips/slave26/ci_requirements.txt
         cd ${CUR_DIR}
         mkdir ../collections_module
-        sudo curl -L -o ./../collections_module/collections.py https://raw.githubusercontent.com/RedHatInsights/insights-core/5c8ca0f2fb3de45908e8d931d40758af34a7997a/.collections.py
+        curl -L -o ./../collections_module/collections.py https://raw.githubusercontent.com/RedHatInsights/insights-core/5c8ca0f2fb3de45908e8d931d40758af34a7997a/.collections.py
     - name: flake8
       run: |
         export PATH=$PATH:/github/home/.local/bin
