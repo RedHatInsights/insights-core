@@ -777,6 +777,7 @@ class Specs(SpecSet):
     tomcat_web_xml = RegistryPoint(multi_output=True)
     tuned_adm = RegistryPoint()
     tuned_conf = RegistryPoint()
+    udev_66_md_rules = RegistryPoint(filterable=True)
     udev_fc_wwpn_id_rules = RegistryPoint(filterable=True)
     udev_persistent_net_rules = RegistryPoint()
     uname = RegistryPoint()
