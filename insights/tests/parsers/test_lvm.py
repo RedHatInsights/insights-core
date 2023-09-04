@@ -303,7 +303,7 @@ def test_lvm_fullreport():
 
 def test_lvm_fullreport_empty():
     with pytest.raises(SkipComponent):
-        _ = lvm.LvmFullReport(context_wrap(LVM_FULLREPORT_EMPTY))
+        lvm.LvmFullReport(context_wrap(LVM_FULLREPORT_EMPTY))
 
 
 def test_docs():
