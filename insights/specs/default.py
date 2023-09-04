@@ -398,6 +398,7 @@ class DefaultSpecs(Specs):
     lspci_vmmkn = simple_command("/sbin/lspci -vmmkn")
     lsscsi = simple_command("/usr/bin/lsscsi")
     luksmeta = foreach_execute(block_devices_by_uuid, "/usr/bin/luksmeta show -d /dev/disk/by-uuid/%s", keep_rc=True)
+    lvm_fullreport = simple_command("/sbin/lvm fullreport -a --nolocking --reportformat json")
     lvm_system_devices = simple_file("/etc/lvm/devices/system.devices")
     lvmconfig = first_of([
         simple_command("/usr/sbin/lvmconfig --type full"),
