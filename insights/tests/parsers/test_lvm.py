@@ -159,6 +159,56 @@ SYSTEM_DEVICES3 = """
 VERSION=1.1.2
 """.strip()
 
+LVM_FULLREPORT = """
+{
+    "report": [
+        {
+          "vg": [{"vg_fmt":"lvm2", "vg_uuid":"zclHZK-pMKd-fSIC-8TRX-xitj-RxY1-vwCRAw", "vg_name":"rhel", "vg_attr":"wz--n-"}],
+          "pv": [{"pv_fmt":"lvm2", "pv_uuid":"LU7am7-ACyz-cPlb-byCA-j4IM-9FK8-iS1WA4", "dev_size":"<9.00g", "pv_name":"/dev/vda2"}],
+          "lv": [{"lv_uuid":"kG4B7g-Ggar-uwtO-EbEX-gBX0-EGO2-Y0VFfU", "lv_name":"root", "lv_full_name":"rhel/root", "lv_path":"/dev/rhel/root"}],
+          "pvseg": [{"pvseg_start":"0", "pvseg_size":"256", "pv_uuid":"LU7am7-ACyz-cPlb-byCA-j4IM-9FK8-iS1WA4", "lv_uuid":"8p6Tu0-OGa9-rbjg-5V22-D1dX-lNw7-Jed3m7"}],
+          "seg": [{"segtype":"linear", "stripes":"1", "data_stripes":"1", "reshape_len":"", "reshape_len_le":"", "data_copies":"1"}]
+        },
+        {
+          "vg": [{"vg_fmt":"lvm2", "vg_uuid":"1rLhOL-Mqkc-gi9I-Yspd-QZ3W-ZWN6-5viZiT", "vg_name":"vg1", "vg_attr":"wz--n-"}],
+          "pv": [{"pv_fmt":"lvm2", "pv_uuid":"WwYITo-ng46-4Ufw-DqKx-0ZQA-LQeh-Vnga1N", "dev_size":"5.00g", "pv_name":"/dev/vdb"}],
+          "lv": [{"lv_uuid":"tZdwGc-xGEg-VMQU-WIgE-k8kP-Udeo-hgLofA", "lv_name":"lvraid1", "lv_full_name":"vg1/lvraid1", "lv_path":"/dev/vg1/lvraid1"}],
+          "pvseg": [{"pvseg_start":"0", "pvseg_size":"1", "pv_uuid":"D39Poc-PupR-sYD5-bUeJ-2aYO-YWdP-XAInA5", "lv_uuid":"3YHTyV-HXoc-wRRH-D1Jw-NNIs-m2g8-cOvgGS"}],
+          "seg": [{"segtype":"linear", "stripes":"1", "data_stripes":"1", "reshape_len":"", "reshape_len_le":"", "data_copies":"1"}]
+        }
+    ]
+}
+""".strip()
+
+LVM_FULLREPORT_WARNING = """
+WARNING: locking_type(0) is deprecated, using - -nolocking.
+{
+    "report": [
+        {
+          "vg": [{"vg_fmt":"lvm2", "vg_uuid":"zclHZK-pMKd-fSIC-8TRX-xitj-RxY1-vwCRAw", "vg_name":"rhel", "vg_attr":"wz--n-"}],
+          "pv": [{"pv_fmt":"lvm2", "pv_uuid":"LU7am7-ACyz-cPlb-byCA-j4IM-9FK8-iS1WA4", "dev_size":"<9.00g", "pv_name":"/dev/vda2"}],
+          "lv": [{"lv_uuid":"kG4B7g-Ggar-uwtO-EbEX-gBX0-EGO2-Y0VFfU", "lv_name":"root", "lv_full_name":"rhel/root", "lv_path":"/dev/rhel/root"}],
+          "pvseg": [{"pvseg_start":"0", "pvseg_size":"256", "pv_uuid":"LU7am7-ACyz-cPlb-byCA-j4IM-9FK8-iS1WA4", "lv_uuid":"8p6Tu0-OGa9-rbjg-5V22-D1dX-lNw7-Jed3m7"}],
+          "seg": [{"segtype":"linear", "stripes":"1", "data_stripes":"1", "reshape_len":"", "reshape_len_le":"", "data_copies":"1"}]
+        },
+        {
+          "vg": [{"vg_fmt":"lvm2", "vg_uuid":"1rLhOL-Mqkc-gi9I-Yspd-QZ3W-ZWN6-5viZiT", "vg_name":"vg1", "vg_attr":"wz--n-"}],
+          "pv": [{"pv_fmt":"lvm2", "pv_uuid":"WwYITo-ng46-4Ufw-DqKx-0ZQA-LQeh-Vnga1N", "dev_size":"5.00g", "pv_name":"/dev/vdb"}],
+          "lv": [{"lv_uuid":"tZdwGc-xGEg-VMQU-WIgE-k8kP-Udeo-hgLofA", "lv_name":"lvraid1", "lv_full_name":"vg1/lvraid1", "lv_path":"/dev/vg1/lvraid1"}],
+          "pvseg": [{"pvseg_start":"0", "pvseg_size":"1", "pv_uuid":"D39Poc-PupR-sYD5-bUeJ-2aYO-YWdP-XAInA5", "lv_uuid":"3YHTyV-HXoc-wRRH-D1Jw-NNIs-m2g8-cOvgGS"}],
+          "seg": [{"segtype":"linear", "stripes":"1", "data_stripes":"1", "reshape_len":"", "reshape_len_le":"", "data_copies":"1"}]
+        }
+    ]
+}
+""".strip()
+
+LVM_FULLREPORT_EMPTY = """
+{
+    "report": [
+    ]
+}
+""".strip()
+
 
 def test_find_warnings():
     data = [l for l in lvm.find_warnings(WARNINGS_CONTENT.splitlines())]
@@ -228,13 +278,42 @@ def test_system_devices_exception():
         lvm.LvmSystemDevices(context_wrap(SYSTEM_DEVICES3))
 
 
+def test_lvm_fullreport():
+    for data in [LVM_FULLREPORT, LVM_FULLREPORT_WARNING]:
+        report = lvm.LvmFullReport(context_wrap(data))
+        assert report is not None
+        assert len(report.volume_groups) == 2
+        assert 'vg1' in report.volume_groups and 'rhel' in report.volume_groups
+        vg1 = report.volume_groups['vg1']
+        assert set(vg1.keys()) == set(['vg', 'pv', 'lv', 'pvseg', 'seg'])
+        assert vg1['vg'][0]['vg_name'] == 'vg1'
+        assert vg1['pv'][0]['pv_name'] == '/dev/vdb'
+        assert vg1['lv'][0]['lv_name'] == 'lvraid1'
+        assert vg1['pvseg'][0] == {
+            "pvseg_start": "0",
+            "pvseg_size": "1",
+            "pv_uuid": "D39Poc-PupR-sYD5-bUeJ-2aYO-YWdP-XAInA5",
+            "lv_uuid": "3YHTyV-HXoc-wRRH-D1Jw-NNIs-m2g8-cOvgGS"
+        }
+        assert vg1['seg'][0]['data_stripes'] == '1'
+
+        if data == LVM_FULLREPORT_WARNING:
+            assert report.warnings == [LVM_FULLREPORT_WARNING.splitlines()[0], ]
+
+
+def test_lvm_fullreport_empty():
+    with pytest.raises(SkipComponent):
+        _ = lvm.LvmFullReport(context_wrap(LVM_FULLREPORT_EMPTY))
+
+
 def test_docs():
     env = {
         'devices': lvm.LvmSystemDevices(context_wrap(SYSTEM_DEVICES1)),
         'lvm_conf_data': lvm.LvmConf(context_wrap(LVM_CONF)),
         'pvs_data': lvm.PvsHeadings(context_wrap(PVS_HEADINGS_OUTPUT)),
         'vgs_info': lvm.VgsHeadings(context_wrap(VGSHEADING_CONTENT_DOC)),
-        'lvs_info': lvm.LvsHeadings(context_wrap(LVS_HAEADING_OUTUPT))
+        'lvs_info': lvm.LvsHeadings(context_wrap(LVS_HAEADING_OUTUPT)),
+        'lvm_fullreport': lvm.LvmFullReport(context_wrap(LVM_FULLREPORT)),
     }
     failed, total = doctest.testmod(lvm, globs=env)
     assert failed == 0
