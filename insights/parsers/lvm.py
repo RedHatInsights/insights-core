@@ -32,12 +32,15 @@ LvmConf - file ``/etc/lvm/lvm.conf``
 LvmSystemDevices - file ``/etc/lvm/devices/system.devices``
 -----------------------------------------------------------
 
+LvmFullReport - command ``/sbin/lvm fullreport -a --reportformat json``
+-----------------------------------------------------------------------
+
 """
 from __future__ import print_function
 
 import json
 
-from insights.core import CommandParser, LegacyItemAccess, Parser
+from insights.core import CommandParser, JSONParser, LegacyItemAccess, Parser
 from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.filters import add_filter
 from insights.core.plugins import parser
@@ -360,6 +363,7 @@ class Vgs(Lvm):
         "LVM2_VG_MDA_USED_COUNT": "#VMdaUse",
         "LVM2_VG_MDA_FREE": "VMdaFree",
         "LVM2_VG_LOCKTYPE": "Lock_Type",
+        "LVM2_VG_LOCK_TYPE": "Lock_Type",
         "LVM2_VG_TAGS": "VG_Tags",
         "LVM2_VG_FMT": "Fmt",
         "LVM2_PV_COUNT": "#PV",
@@ -378,6 +382,7 @@ class Vgs(Lvm):
         "LVM2_VG_PERMISSIONS": "VPerms",
         "LVM2_VG_CLUSTERED": "Clustered",
         "LVM2_VG_LOCKARGS": "Lock Args",
+        "LVM2_VG_LOCK_ARGS": "Lock Args",
         "LVM2_MAX_LV": "MaxLV",
         "LVM2_VG_SIZE": "VSize",
     }
@@ -540,7 +545,7 @@ class Lvs(Lvm):
         "LVM2_VG_NAME": "VG",
         "LVM2_METADATA_LV": "Meta",
         "LVM2_LV_ACTIVE": "Active",
-        "LVM2_CONVERT_LV_UUID": "Convert",
+        "LVM2_CONVERT_LV_UUID": "Convert_UUID",
         "LVM2_LV_MERGE_FAILED": "MergeFailed",
         "LVM2_METADATA_LV_UUID": "Meta_UUID",
         "LVM2_LV_ROLE": "Role",
@@ -759,6 +764,149 @@ class LvmSystemDevices(Parser, dict):
                 self[dict_info.pop('IDNAME')] = dict_info
         if not self:
             raise SkipComponent("No valid content.")
+
+
+@parser(Specs.lvm_fullreport)
+class LvmFullReport(JSONParser):
+    """
+    Parse the output of the command ``/usr/sbin/lvm fullreport -a --reportformat json``.
+    Output is in JSON format so the JSONParser will be used.
+
+    Sample input (actual input is in JSON format, data has been changed here to show the relationship
+    between volume groups, physical valumes and logical volumes)::
+
+        {
+            "report": [
+                {
+                    "vg": [ { vg_name:vg1, vg_uuid:111, properties of vg1 } ],
+                    "pv": [ { pv_name:/dev/foo, pv_uuid:222, properties of foo },
+                            { pv_name:/dev/bar, pv_uuid:333, properties of bar },
+                            more pvs ],
+                    "lv": [ { lv_name:lv1, lv_uuid:444, properties of lv1 },
+                            { lv_name:lv2, lv_uuid:555, properties of lv2 },
+                            more lvs ],
+                    "pvseg": [ { ..., pv_uuid:222, ... },
+                               { ..., pv_uuid:222, ... },
+                               { ..., pv_uuid:333, ... },
+                               more pvsegs ],
+                    "seg": [ { ..., lv_uuid:444, ... },
+                             { ..., lv_uuid:555, ... },
+                             { ..., lv_uuid:555, ... },
+                             more segs ]
+                },
+                {
+                    "vg": [ { vg_name:rhel, vg_uuid:112, properties of rhel } ],
+                    "pv": [ { pv_name:/dev/foo2, pv_uuid:223, properties of foo2 },
+                            { pv_name:/dev/bar2, pv_uuid:334, properties of bar2 },
+                            more pvs ],
+                    "lv": [ { lv_name:lv12, lv_uuid:442, properties of lv12 },
+                            { lv_name:lv22, lv_uuid:5552, properties of lv22 },
+                            more lvs ],
+                    "pvseg": [ { ..., pv_uuid:223, ... },
+                               { ..., pv_uuid:223, ... },
+                               { ..., pv_uuid:334, ... },
+                               more pvsegs ],
+                    "seg": [ { ..., lv_uuid:442, ... },
+                             { ..., lv_uuid:5552, ... },
+                             { ..., lv_uuid:5552, ... },
+                             more segs ]
+                },
+                # Orphan volume group (pv's not associated with a vg)
+                {
+                    "pv": [ {...} ],
+                    "pvseg": [ {...} ]
+                }
+            ]
+        }
+
+    Output will be a python object in the same structure as the JSON::
+
+        {
+            "report": [
+                {
+                  "vg": [ {"vg_name": "vg1", ...}, ... ],
+                  "pv": [ {"pv_name": "/dev/sdg", ...), ... ],
+                  "lv": [ {"lv_name": "[fast1_cvol]", ...}, ... ],
+                  "pvseg": [ {"pvseg_start": "0", ...}, ... ],
+                  "seg": [ {"segtype": "cache-pool", ...}, ... ]
+                },
+                {
+                  "vg": [ {"vg_name": "rhel", ...}, ... ],
+                  "pv": [ {"pv_name": "/dev/sdd", ...), ... ],
+                  "lv": [ {"lv_name": "[lvm_lock]", ...}, ... ],
+                  "pvseg": [ {"pvseg_start": "0", ...}, ... ],
+                  "seg": [ {"segtype": "linear", ...}, ... ]
+                },
+                ...
+                {
+                  "pv": [ {...} ],
+                  "pvseg": [ {...} ]
+                }
+            ]
+        }
+
+    Attributes:
+        warnings(list): List of warning lines included at the beginning of input
+        volume_groups(dict): Dictionary with vg_name as the key, contains a dictionary including
+            all information for the volume group. The vg element is represented as a list but
+            will only have a single item which is that volumn group::
+
+                {
+                    "vg1": {
+                        "vg": [ {"vg_name": "global", ...}, ... ],
+                        "pv": [ {"pv_name": "/dev/sdd", ...), ... ],
+                        "lv": [ {"lv_name": "[lvm_lock]", ...}, ... ],
+                        "pvseg": [ {"pvseg_start": "0", ...}, ... ],
+                        "seg": [ {"segtype": "linear", ...}, ... ]
+                    },
+                    ...
+                }
+
+        orphan_volume_group(dict): Dictionary of pv's and pvseg's not associated with a volume group::
+
+            {
+                "pv": [ {"pv_name": "/dev/sda", ...), ... ],
+                "pvseg": [ {"pvseg_start": "0", ...}, ... ],
+            }
+
+    Example:
+        >>> type(lvm_fullreport)
+        <class 'insights.parsers.lvm.LvmFullReport'>
+        >>> len(lvm_fullreport.volume_groups)
+        2
+        >>> sorted(lvm_fullreport.volume_groups.keys()) == ['rhel', 'vg1']
+        True
+        >>> lvm_fullreport.volume_groups['vg1']['pv'][0]['pv_name'] == '/dev/vdb'
+        True
+
+    Raises:
+        SkipComponent: when there is no device info.
+    """
+    def parse_content(self, content):
+        self.warnings = []
+        skip_to_line = len(content)
+        for ndx, line in enumerate(content):
+            if line.strip().startswith('{'):
+                skip_to_line = ndx
+                break
+            self.warnings.append(line)
+
+        if skip_to_line >= len(content):
+            raise SkipComponent("No LVM information in fullreport")
+
+        super(LvmFullReport, self).parse_content(content[skip_to_line:])
+
+        if not self.data['report']:
+            raise SkipComponent("No LVM information in fullreport")
+
+        vgs = self.data['report']
+        self.volume_groups = dict()
+        self.orphan_volume_group = dict()
+        for vg_data in vgs:
+            if 'vg' in vg_data:
+                self.volume_groups[vg_data['vg'][0]['vg_name']] = vg_data
+            else:
+                self.orphan_volume_group = vg_data
 
 
 if __name__ == "__main__":

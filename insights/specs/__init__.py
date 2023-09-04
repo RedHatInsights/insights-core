@@ -408,6 +408,7 @@ class Specs(SpecSet):
     luksmeta = RegistryPoint(multi_output=True)
     lvdisplay = RegistryPoint()
     lvm_conf = RegistryPoint(filterable=True)
+    lvm_fullreport = RegistryPoint()
     lvm_system_devices = RegistryPoint()
     lvmconfig = RegistryPoint()
     lvs_headings = RegistryPoint()
