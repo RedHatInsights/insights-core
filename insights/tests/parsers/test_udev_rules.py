@@ -1,6 +1,7 @@
 import doctest
 from insights.parsers import udev_rules
-from insights.parsers.udev_rules import UdevRulesFCWWPN, UdevRules40Redhat, UdevRulesOracleASM
+from insights.parsers.udev_rules import UdevRulesFCWWPN, UdevRules40Redhat
+from insights.parsers.udev_rules import UdevRulesOracleASM, UdevRules66MD
 from insights.tests import context_wrap
 
 UDEV_RULES_FILT_HIT = """
@@ -87,11 +88,55 @@ SYMLINK+="oracleasm/disks/asm_sbe80_7a91", OWNER="oracle", GROUP="dba", MODE="06
 ACTION=="add|change", KERNEL=="sd*", OPTIONS:="nowatch"
 """.strip()
 
+UDEV_66_MD_RULES = """
+#
+# Enable/Disable - default is Disabled
+# to disable this rule, GOTO="md_end" should be the first active command.
+# to enable this rule, Comment out GOTO="md_end".
+GOTO="md_end"
+
+# Required: MD arrays must have a bitmap for transient devices to
+# be added back in the array.
+# mdadm -CR /dev/md0 -l1 -n2 /dev/sd[ab] -bitmap=internal
+
+# Don't process any events if anaconda is running as anaconda brings up
+# raid devices manually
+ENV{ANACONDA}=="?*", GOTO="md_end"
+
+# Also don't process disks that are slated to be a multipath device
+ENV{DM_MULTIPATH_DEVICE_PATH}=="1", GOTO="md_end"
+
+# We process add events on block devices (since they are ready as soon as
+# they are added to the system), but we must process change events as well
+# on any dm devices (like LUKS partitions or LVM logical volumes) and on
+# md devices because both of these first get added, then get brought live
+# and trigger a change event.  The reason we don't process change events
+# on bare hard disks is because if you stop all arrays on a disk, then
+# run fdisk on the disk to change the partitions, when fdisk exits it
+# triggers a change event, and we want to wait until all the fdisks on
+# all member disks are done before we do anything.  Unfortunately, we have
+# no way of knowing that, so we just have to let those arrays be brought
+# up manually after fdisk has been run on all of the disks.
+
+# First, process all add events (md and dm devices will not really do
+# anything here, just regular disks, and this also won't get any imsm
+# array members either)
+
+ACTION!="add", GOTO="md_end"
+ENV{ID_FS_TYPE}!="linux_raid_member", GOTO="md_end"
+SUBSYSTEM=="block", ACTION=="add", RUN{program}+="/sbin/md_raid_auto_readd.sh $devnode"
+
+#
+# Land here to exit cleanly
+LABEL="md_end"
+""".strip()
+
 
 def test_documentation():
     env = {'udev_rules': UdevRulesFCWWPN(context_wrap(UDEV_RULES_FILT_HIT)),
            'udev_40_redhat_rules': UdevRules40Redhat(context_wrap(SAMPLE_40_REDHAT_RULES)),
-           'udev_oracle_asm_rules': UdevRulesOracleASM(context_wrap(ORACLE_ASM_UDEV_RULES))}
+           'udev_oracle_asm_rules': UdevRulesOracleASM(context_wrap(ORACLE_ASM_UDEV_RULES)),
+           'udev_66_md_rules': UdevRules66MD(context_wrap(UDEV_66_MD_RULES))}
     failed_count, tests = doctest.testmod(udev_rules, globs=env)
     assert failed_count == 0
 
@@ -120,3 +165,11 @@ def test_udev_oracle_asm_rules():
     actions = result.get('ACTION')
     assert len(actions) == 1
     assert actions[0]['raw_message'] == 'ACTION=="add|change", KERNEL=="sd*", OPTIONS:="nowatch"'
+
+
+def test_udev_66_md_rules():
+    result = UdevRules66MD(context_wrap(UDEV_66_MD_RULES))
+    for line in ['GOTO="md_end"',
+                 'SUBSYSTEM=="block", ACTION=="add", RUN{program}+="/sbin/md_raid_auto_readd.sh $devnode"',
+                 'LABEL="md_end"']:
+        assert line in result.lines
