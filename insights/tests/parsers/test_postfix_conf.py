@@ -94,12 +94,12 @@ scache    unix  -       -       n       -       1       scache
 
 def test_postfix_master():
     results = PostfixMaster(context_wrap(POSTFIXMASTER))
-    assert len(results.data) == 25
-    assert results.data[0]['service'] == 'smtp'
-    assert results.data[0]['type'] == 'inet'
-    assert results.data[0]['private'] == 'n'
-    assert results.data[0]['command'] == 'smtpd'
-    assert results.data[14]['args'] == ['-o syslog_name=postfix/submission',
+    assert len(results) == 25
+    assert results[0]['service'] == 'smtp'
+    assert results[0]['type'] == 'inet'
+    assert results[0]['private'] == 'n'
+    assert results[0]['command'] == 'smtpd'
+    assert results[14]['args'] == ['-o syslog_name=postfix/submission',
                                         '-o smtpd_tls_security_level=encrypt',
                                         '-o smtpd_sasl_auth_enable=yes',
                                         '-o smtpd_tls_auth_only=yes',
@@ -110,7 +110,7 @@ def test_postfix_master():
                                         '-o smtpd_recipient_restrictions=',
                                         '-o smtpd_relay_restrictions=permit_sasl_authenticated,reject',
                                         '-o milter_macro_daemon_name=ORIGINATING']
-    assert results.data[-1] == {'service': 'mailman', 'type': 'unix', 'private': '-', 'unpriv': 'n', 'chroot': 'n', 'wakeup': '-', 'maxproc': '-', 'command': 'pipe', 'args': ['flags=FRX user=list argv=/usr/lib/mailman/bin/postfix-to-mailman.py', '${nexthop} ${user}']}
+    assert results[-1] == {'service': 'mailman', 'type': 'unix', 'private': '-', 'unpriv': 'n', 'chroot': 'n', 'wakeup': '-', 'maxproc': '-', 'command': 'pipe', 'args': ['flags=FRX user=list argv=/usr/lib/mailman/bin/postfix-to-mailman.py', '${nexthop} ${user}']}
 
 
 def test_postfix_master_err():

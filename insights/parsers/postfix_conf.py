@@ -3,14 +3,14 @@ PostfixMaster - file ``/etc/postfix/master.cf``
 ===============================================
 
 """
-from insights.core import ConfigParser
+from insights.core import Parser
 from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
 
 
 @parser(Specs.postfix_master)
-class PostfixMaster(ConfigParser):
+class PostfixMaster(Parser, list):
     """
     Class to parses the content of postfix configuration files ``/etc/postfix/master.cf``
 
@@ -51,9 +51,9 @@ class PostfixMaster(ConfigParser):
     Examples:
         >>> type(postfix_master)
         <class 'insights.parsers.postfix_conf.PostfixMaster'>
-        >>> len(postfix_master.data)
+        >>> len(postfix_master)
         24
-        >>> postfix_master.data[-1] == {'service': 'scache', 'type': 'unix', 'private': '-', 'unpriv': '-', 'chroot': 'n', 'wakeup': '-', 'maxproc': '1', 'command': 'scache'}
+        >>> postfix_master[-1] == {'service': 'scache', 'type': 'unix', 'private': '-', 'unpriv': '-', 'chroot': 'n', 'wakeup': '-', 'maxproc': '1', 'command': 'scache'}
         True
 
     Raises:
@@ -61,7 +61,6 @@ class PostfixMaster(ConfigParser):
     """
 
     def parse_content(self, content):
-        self.data = []
         service_info = None
         heading = ['service', 'type', 'private', 'unpriv', 'chroot', 'wakeup', 'maxproc', 'command']
         for line in content:
@@ -75,7 +74,7 @@ class PostfixMaster(ConfigParser):
             elif len(line.split()) == 8:
                 line_sp = line.split()
                 service_info = dict(zip(heading, line_sp))
-                self.data.append(service_info)
+                self.append(service_info)
 
-        if not self.data:
+        if not self:
             raise SkipComponent("Empty result")
