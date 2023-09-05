@@ -170,7 +170,7 @@ class MetadataProvider(FileProvider):
     .. warning::
         This Class is deprecated and will be removed from 3.5.0.
         Please collect built-in file by using datasource spec directly, see
-        :module:`insights.specs.datasources.client_metadata`.
+        :mod:`insights.specs.datasources.client_metadata`.
 
     Class used for insights-core built-in files.  These files should not
     be filtered, redacted or blocked.
