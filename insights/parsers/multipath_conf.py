@@ -12,6 +12,11 @@ MultipathConf - file ``/etc/multipath.conf``
 MultipathConfInitramfs - command ``lsinitrd -f /etc/multipath.conf``
 --------------------------------------------------------------------
 
+MultipathConfTree - file ``/etc/multipath.conf``
+------------------------------------------------
+
+MultipathConfTreeInitramfs - command ``lsinitrd -f /etc/multipath.conf``
+------------------------------------------------------------------------
 """
 import string
 
@@ -24,10 +29,15 @@ from insights.parsr import (EOF, Forward, LeftCurly, Lift, LineEnd, Literal,
                             RightCurly, String, WS, WSChar, skip_none)
 from insights.parsr.query import Entry
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 class MultipathConfParser(Parser, LegacyItemAccess):
     """
+    .. warning::
+    This class is deprecated, please use function
+    :py:function:`insights.parsers.multipath_conf.parse_doc` instead.
+
     Shared parser for the file ``/etc/multipath.conf`` and output of
     ``lsinitrd -f /etc/multipath.conf`` applied to
     /boot/initramfs-<kernel-version>.img.
@@ -105,6 +115,10 @@ class MultipathConfParser(Parser, LegacyItemAccess):
         }
     """
 
+    def __init__(self, *args, **kwargs):
+        deprecated(MultipathConfParser, "Please use the :function:`insights.parsers.multipath_conf.parse_doc instead.", "3.3.0")
+        super(MultipathConfParser, self).__init__(*args, **kwargs)
+
     @classmethod
     def _create_parser(cls):
         """
@@ -142,6 +156,10 @@ class MultipathConfParser(Parser, LegacyItemAccess):
 @parser(Specs.multipath_conf)
 class MultipathConf(MultipathConfParser):
     """
+    .. warning::
+    This parser is deprecated, please use
+    :py:class:`insights.parsers.multipath_conf.MultipathConfTree` instead.
+
     Parser for the file ``/etc/multipath.conf``.
 
     Examples:
@@ -155,12 +173,19 @@ class MultipathConf(MultipathConfParser):
         >>> conf['multipaths'][0]['alias']
         'yellow'
     """
-    pass
+
+    def __init__(self, *args, **kwargs):
+        deprecated(MultipathConf, "Import MultipathConfTree from insights.parsers.multipath_conf instead.", "3.3.0")
+        super(MultipathConf, self).__init__(*args, **kwargs)
 
 
 @parser(Specs.multipath_conf_initramfs)
 class MultipathConfInitramfs(MultipathConfParser):
     """
+    .. warning::
+    This parser is deprecated, please use
+    :py:class:`insights.parsers.multipath_conf.MultipathConfTreeInitramfs` instead.
+
     Parser for the output of ``lsinitrd -f /etc/multipath.conf`` applied to
     /boot/initramfs-<kernel-version>.img.
 
@@ -175,7 +200,10 @@ class MultipathConfInitramfs(MultipathConfParser):
         >>> conf['multipaths'][0]['alias']
         'yellow'
     """
-    pass
+
+    def __init__(self, *args, **kwargs):
+        deprecated(MultipathConfInitramfs, "Import MultipathConfTreeInitramfs from insights.parsers.multipath_conf instead.", "3.3.0")
+        super(MultipathConfInitramfs, self).__init__(*args, **kwargs)
 
 
 def parse_doc(content, ctx):

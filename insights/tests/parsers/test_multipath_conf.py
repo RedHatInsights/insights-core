@@ -55,6 +55,53 @@ blacklist {
 
 """.strip()
 
+
+MULTIPATH_CONF_INFO3 = """
+defaults {
+       udev_dir                /dev
+       path_selector           "round-robin 0"
+       user_friendly_names     yes
+}
+
+multipaths {
+       multipath {
+               alias                   yellow
+               path_grouping_policy    multibus
+       }
+       multipath {
+               wwid                    1DEC_____321816758474
+               alias                   red
+       }
+}
+
+devices {
+       device {
+               path_selector           "round-robin 0"
+               no_path_retry           queue
+       }
+       device {
+               vendor                  "COMPAQ  "
+               path_grouping_policy    multibus
+       }
+       device {
+               vendor                  "COMPAQ  "
+               path_grouping_policy    multibus
+       }
+}
+
+blacklist {
+       wwid 26353900f02796769
+       devnode "^hd[a-z]"
+}
+
+""".strip()
+
+
+MULTIPATH_CONF_INFO2 = MULTIPATH_CONF_INFO.replace("user_friendly_names     yes", "user_friendly_names     no").replace("alias                   red", "alias                   blue")
+
+MULTIPATH_CONF_INFO4 = MULTIPATH_CONF_INFO3.replace("user_friendly_names     yes", "user_friendly_names     no").replace("alias                   red", "alias                   blue")
+
+
 INPUT_EMPTY = ''
 
 
@@ -74,6 +121,27 @@ def test_multipath_conf_initramfs():
     assert multipath_conf_initramfs.get('multipaths')[1].get('alias') == 'red'
     assert multipath_conf_initramfs.get('devices')[0].get('no_path_retry') == 'queue'
     assert multipath_conf_initramfs.get('blacklist').get('devnode') == '^hd[a-z]'
+
+
+def test_multipath_conf_tree():
+    multipath_conf_info = multipath_conf.MultipathConfTree(context_wrap(MULTIPATH_CONF_INFO))
+    assert 'defaults' in multipath_conf_info
+    assert 'multipaths' in multipath_conf_info
+    assert 'someunexistkey' not in multipath_conf_info
+    assert multipath_conf_info['defaults']['udev_dir'].value == '/dev'
+    assert multipath_conf_info['defaults']['path_selector'].value == 'round-robin 0'
+    assert multipath_conf_info['multipaths']['multipath'][1]['alias'].value == 'red'
+    assert multipath_conf_info['devices']['device'][0]['no_path_retry'].value == 'queue'
+    assert multipath_conf_info['blacklist']['devnode'].value == '^hd[a-z]'
+
+
+def test_multipath_conf_tree_initramfs():
+    multipath_conf_info = multipath_conf.MultipathConfTreeInitramfs(context_wrap(MULTIPATH_CONF_INFO))
+    assert multipath_conf_info['defaults']['udev_dir'].value == '/dev'
+    assert multipath_conf_info['defaults']['path_selector'].value == 'round-robin 0'
+    assert multipath_conf_info['multipaths']['multipath'][1]['alias'].value == 'red'
+    assert multipath_conf_info['devices']['device'][0]['no_path_retry'].value == 'queue'
+    assert multipath_conf_info['blacklist']['devnode'].value == '^hd[a-z]'
 
 
 def test_multipath_conf_trees():
