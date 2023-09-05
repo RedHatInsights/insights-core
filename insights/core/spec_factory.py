@@ -19,6 +19,7 @@ from insights.core.filters import _add_filter, get_filters
 from insights.core.plugins import component, datasource, is_datasource
 from insights.core.serde import deserializer, serializer
 from insights.util import fs, streams, which
+from insights.util import deprecated
 from insights.util.mangle import mangle_command
 from insights.util.subproc import Pipeline
 
@@ -162,6 +163,52 @@ class FileProvider(ContentProvider):
 
     def __repr__(self):
         return '%s("%r")' % (self.__class__.__name__, self.path)
+
+
+class MetadataProvider(FileProvider):
+    """
+    .. warning::
+        This Class is deprecated and will be removed from 3.5.0.
+        Please collect built-in file by using datasource spec directly, see
+        :module:`insights.specs.datasources.client_metadata`.
+
+    Class used for insights-core built-in files.  These files should not
+    be filtered, redacted or blocked.
+    """
+    def __init__(self, relative_path, root="/", ds=None, ctx=None):
+        deprecated(MetadataProvider, "Please collect the built-in file via datasource spec instead.", "3.5.0")
+        super(MetadataProvider, self).__init__(relative_path, root, ds, ctx)
+
+    def _stream(self):
+        """
+        Returns a generator of lines instead of a list of lines.
+        """
+        if self._exception:
+            raise self._exception
+        try:
+            with safe_open(self.path, "r", encoding="utf-8", errors="surrogateescape") as f:
+                yield f
+        except StopIteration:
+            raise
+        except Exception as ex:
+            self._exception = ex
+            raise ContentException(str(ex))
+
+    def validate(self):
+        # Validate built-in metedata files only when insights-run
+        if not isinstance(self.ctx, HostContext):
+            super(MetadataProvider, self).validate()
+        # But DO NOT validate them when core-collecting
+
+    def load(self):
+        self.loaded = True
+        with safe_open(self.path, "r", encoding="utf-8", errors="surrogateescape") as f:
+            return [l.rstrip("\n") for l in f]
+
+    def write(self, dst):
+        # TODO: the built-ine metadata files can also be collected via
+        #       core-collection
+        pass
 
 
 class RawFileProvider(FileProvider):
@@ -1107,7 +1154,7 @@ class first_of(object):
     """
     def __init__(self, deps):
         self.deps = deps
-        self.raw = deps[0].raw
+        self.raw = getattr(deps[0], 'raw', None)
         self.__name__ = self.__class__.__name__
         datasource(deps)(self)
 
@@ -1256,6 +1303,23 @@ def serialize_datasource_provider(obj, root):
 
 @deserializer(DatasourceProvider)
 def deserialize_datasource_provider(_type, data, root):
+    return SerializedOutputProvider(data["relative_path"], root)
+
+
+@serializer(MetadataProvider)
+def serialize_metadata_provider(obj, root):
+    # Built-in metadata files are put in the root instead of '/data'
+    root = os.path.dirname(root) if os.path.basename(root) == 'data' else root
+    dst = os.path.join(root, obj.relative_path.lstrip("/"))
+    fs.ensure_path(os.path.dirname(dst))
+    obj.write(dst)
+    return {"relative_path": obj.relative_path}
+
+
+@deserializer(MetadataProvider)
+def deserialize_metadata_provider(_type, data, root):
+    # Built-in metadata files are put in the root instead of '/data'
+    root = os.path.dirname(root) if os.path.basename(root) == 'data' else root
     return SerializedOutputProvider(data["relative_path"], root)
 
 
