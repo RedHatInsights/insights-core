@@ -518,6 +518,7 @@ class DefaultSpecs(Specs):
     podman_list_images = simple_command("/usr/bin/podman images --all --no-trunc --digests")
     postconf = simple_command("/usr/sbin/postconf")
     postconf_builtin = simple_command("/usr/sbin/postconf -C builtin")
+    postfix_master = simple_file("/etc/postfix/master.cf")
     postgresql_conf = first_file([
         "/var/opt/rh/rh-postgresql12/lib/pgsql/data/postgresql.conf",
         "/var/lib/pgsql/data/postgresql.conf",
