@@ -565,6 +565,7 @@ class Specs(SpecSet):
     podman_list_images = RegistryPoint()
     postconf = RegistryPoint(filterable=True)
     postconf_builtin = RegistryPoint(filterable=True)
+    postfix_master = RegistryPoint()
     postgresql_conf = RegistryPoint()
     postgresql_log = RegistryPoint(multi_output=True, filterable=True)
     prev_uploader_log = RegistryPoint()
