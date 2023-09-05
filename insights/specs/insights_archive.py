@@ -14,7 +14,7 @@ class InsightsArchiveSpecs(Specs):
     blacklisted_specs = first_file(["/blacklisted_specs", "/blacklisted_specs.txt"])
     branch_info = simple_file('/branch_info')
     display_name = simple_file('/display_name')
-    tags = simple_file('/tags')
+    tags = simple_file('/tags.json')
     version_info = simple_file('/version_info')
 
     # Regular collection specs
