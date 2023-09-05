@@ -90,10 +90,11 @@ def branch_info(broker):
         str: The JSON strings
     """
     insights_config = broker.get('client_config')
-    if insights_config and insights_config.offline:
-        branch_info = constants.default_branch_info
-    else:
-        branch_info = insights_config.branch_info
+    if insights_config:
+        if insights_config.offline:
+            branch_info = constants.default_branch_info
+        else:
+            branch_info = insights_config.branch_info
     return DatasourceProvider(content=json.dumps(branch_info),
                               relative_path='branch_info')
 
