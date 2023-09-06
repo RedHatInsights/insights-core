@@ -398,6 +398,7 @@ class DefaultSpecs(Specs):
     lspci_vmmkn = simple_command("/sbin/lspci -vmmkn")
     lsscsi = simple_command("/usr/bin/lsscsi")
     luksmeta = foreach_execute(block_devices_by_uuid, "/usr/bin/luksmeta show -d /dev/disk/by-uuid/%s", keep_rc=True)
+    lvm_fullreport = simple_command("/sbin/lvm fullreport -a --nolocking --reportformat json")
     lvm_system_devices = simple_file("/etc/lvm/devices/system.devices")
     lvmconfig = first_of([
         simple_command("/usr/sbin/lvmconfig --type full"),
@@ -517,6 +518,7 @@ class DefaultSpecs(Specs):
     podman_list_images = simple_command("/usr/bin/podman images --all --no-trunc --digests")
     postconf = simple_command("/usr/sbin/postconf")
     postconf_builtin = simple_command("/usr/sbin/postconf -C builtin")
+    postfix_master = simple_file("/etc/postfix/master.cf")
     postgresql_conf = first_file([
         "/var/opt/rh/rh-postgresql12/lib/pgsql/data/postgresql.conf",
         "/var/lib/pgsql/data/postgresql.conf",
@@ -694,6 +696,7 @@ class DefaultSpecs(Specs):
     tmpfilesd = glob_file(["/etc/tmpfiles.d/*.conf", "/usr/lib/tmpfiles.d/*.conf", "/run/tmpfiles.d/*.conf"])
     tomcat_vdc_fallback = simple_command("/usr/bin/find /usr/share -maxdepth 1 -name 'tomcat*' -exec /bin/grep -R -s 'VirtualDirContext' --include '*.xml' '{}' +")
     tuned_adm = simple_command("/usr/sbin/tuned-adm list")
+    udev_66_md_rules = first_file(["/etc/udev/rules.d/66-md-auto-re-add.rules", "/usr/lib/udev/rules.d/66-md-auto-re-add.rules"])
     udev_fc_wwpn_id_rules = simple_file("/usr/lib/udev/rules.d/59-fc-wwpn-id.rules")
     uname = simple_command("/usr/bin/uname -a")
     up2date = simple_file("/etc/sysconfig/rhn/up2date")
