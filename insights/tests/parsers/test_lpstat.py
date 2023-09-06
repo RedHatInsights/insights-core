@@ -34,7 +34,7 @@ lpstat: Transport endpoint is not connected
 """.strip()
 
 LPSTAT_O_OUTPUT = """
-4
+3
 """.strip()
 
 
@@ -102,7 +102,7 @@ def test_lpstat_protocol_invalid_state():
 
 def test_lpstat_queued_jobs():
     lpstat_o = LpstatQueuedJobs(context_wrap(LPSTAT_O_OUTPUT))
-    assert lpstat_o.number == 4
+    assert lpstat_o.number == 3
 
 
 def test_lpstat_queued_jobs_err():

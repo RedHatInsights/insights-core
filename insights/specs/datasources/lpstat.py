@@ -13,6 +13,8 @@ class LocalSpecs(Specs):
 
     lpstat_v = simple_command("/usr/bin/lpstat -v")
     """ Returns the output of command ``/usr/bin/lpstat -v`` """
+    lpstat_o = simple_command("/usr/bin/lpstat -o")
+    """ Returns the output of command ``/usr/bin/lpstat -o`` """
 
 
 @datasource(LocalSpecs.lpstat_v, HostContext)
@@ -45,12 +47,7 @@ def lpstat_protocol_printers_info(broker):
     raise SkipComponent
 
 
-class LocalSpecsLpstatO(Specs):
-    """ Local specs used only by ethernet.interfaces datasource. """
-    lpstat_o = simple_command("/usr/bin/lpstat -o")
-
-
-@datasource(LocalSpecsLpstatO.lpstat_o, HostContext)
+@datasource(LocalSpecs.lpstat_o, HostContext)
 def lpstat_queued_jobs_number(broker):
     """
     This datasource provides the number of all queued job.
@@ -60,35 +57,33 @@ def lpstat_queued_jobs_number(broker):
         Cups-PDF-1802           root          265443328   Tue 05 Sep 2023 02:21:19 PM CST
         Cups-PDF-1803           root          265443328   Tue 05 Sep 2023 02:21:21 PM CST
         Cups-PDF-1804           root          265443328   Tue 05 Sep 2023 02:21:22 PM CST
-        Cups-PDF-1805           root          265443328   Tue 05 Sep 2023 02:21:25 PM CST
-        Cups-PDF-1806           root          265443328   Tue 05 Sep 2023 02:21:27 PM CST
-        Cups-PDF-1807           root          265443328   Tue 05 Sep 2023 02:21:29 PM CST
-        Cups-PDF-1808           root          265443328   Tue 05 Sep 2023 02:21:32 PM CST
-        Cups-PDF-1809           root          265443328   Tue 05 Sep 2023 02:21:36 PM CST
-        Cups-PDF-1810           root          265443328   Tue 05 Sep 2023 02:21:46 PM CST
-        Cups-PDF-1811           root          265443328   Tue 05 Sep 2023 02:21:47 PM CST
-        Cups-PDF-1812           root          265443328   Tue 05 Sep 2023 02:21:50 PM CST
-        Cups-PDF-1813           root          265443328   Tue 05 Sep 2023 02:21:53 PM CST
-        Cups-PDF-1814           root          265443328   Tue 05 Sep 2023 02:21:55 PM CST
 
     Sample data returned::
 
-        13
+        3
 
     Returns:
-        int: the number of all queued jobs.
+        DatasourceProvider: Returns the collected content containing the number of all queued jobs.
 
     Raises:
         SkipComponent: When there is not any content.
     """
 
-    content = broker[LocalSpecsLpstatO.lpstat_o].content
+    content = broker[LocalSpecs.lpstat_o].content
     if content:
-        result = []
+        cnt = 0
+        bad_lines = ["no such file or directory",
+                     "not a directory",
+                     "command not found",
+                     "no module named",
+                     "no files found for",
+                     "missing dependencies:",
+                     "Bad file descriptor"]
         for line in content:
-            if all(bad_keywords not in line for bad_keywords in ["no such file or directory", "not a directory", "command not found", "no module named", "no files found for", "missing dependencies:", "Bad file descripto"]):
-                result.append(line)
-        if result:
-            return len(result)
+            if all(bad_keywords not in line for bad_keywords in bad_lines):
+                cnt += 1
+        if cnt:
+            return DatasourceProvider(content="\n".join([str(cnt)]), relative_path='insights_commands/lpstat_-o')
+        raise SkipComponent
 
-    raise SkipComponent
+    return DatasourceProvider(content="\n".join(['0']), relative_path='insights_commands/lpstat_-o')
