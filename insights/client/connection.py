@@ -156,25 +156,6 @@ class InsightsConnection(object):
         session.verify = self.cert_verify
         session.proxies = self.proxies
         session.trust_env = False
-        if self.proxy_auth:
-            # HACKY
-            try:
-                # Need to make a request that will fail to get proxies set up
-                logger.log(NETWORK, "GET %s", self.base_url)
-                session.request(
-                    "GET", self.base_url, timeout=self.config.http_timeout)
-            except requests.ConnectionError:
-                pass
-            # Major hack, requests/urllib3 does not make access to
-            # proxy_headers easy
-            proxy_mgr = session.adapters['https://'].proxy_manager[self.proxies['https']]
-            auth_map = {'Proxy-Authorization': self.proxy_auth}
-            proxy_mgr.proxy_headers = auth_map
-            proxy_mgr.connection_pool_kw['_proxy_headers'] = auth_map
-            conns = proxy_mgr.pools._container
-            for conn in conns:
-                connection = conns[conn]
-                connection.proxy_headers = auth_map
         return session
 
     def _http_request(self, url, method, log_response_text=True, **kwargs):
@@ -277,7 +258,7 @@ class InsightsConnection(object):
 
     def get_proxy(self, proxy_info, no_proxy_info, environment):
         proxies = None
-        proxy_auth = None
+        proxy_url = proxy_info
         if '@' in proxy_info:
             scheme = proxy_info.split(':')[0] + '://'
             logger.debug("Proxy Scheme: %s", scheme)
@@ -286,11 +267,10 @@ class InsightsConnection(object):
             username = proxy_info.split(
                 '@')[0].split(':')[1].replace('/', '')
             logger.debug("Proxy User: %s", username)
-            password = proxy_info.split('@')[0].split(':')[2]
-            proxy_auth = requests.auth._basic_auth_str(username, password)
+            proxy_url = proxy_info
             proxy_info = scheme + location
         logger.debug("%s Proxy: %s", environment, proxy_info)
-        proxies = {"https": proxy_info}
+        proxies = {"https": proxy_url}
         if no_proxy_info:
             insights_service_host = urlparse(self.base_url).hostname
             logger.debug('Found NO_PROXY set. Checking NO_PROXY %s against base URL %s.', no_proxy_info, insights_service_host)
@@ -301,21 +281,18 @@ class InsightsConnection(object):
                 logger.debug('Checking %s against %s', no_proxy_host, insights_service_host)
                 if no_proxy_host == '*':
                     proxies = None
-                    proxy_auth = None
                     logger.debug('Found NO_PROXY asterisk(*) wildcard, disabling all proxies.')
                     break
                 elif no_proxy_host.startswith('.') or no_proxy_host.startswith('*'):
                     if insights_service_host.endswith(no_proxy_host.replace('*', '')):
                         proxies = None
-                        proxy_auth = None
                         logger.debug('Found NO_PROXY range %s matching %s', no_proxy_host, insights_service_host)
                         break
                 elif no_proxy_host == insights_service_host:
                     proxies = None
-                    proxy_auth = None
                     logger.debug('Found NO_PROXY %s exactly matching %s', no_proxy_host, insights_service_host)
                     break
-        return proxies, proxy_auth
+        return proxies
 
     def get_proxies(self):
         """
@@ -323,14 +300,13 @@ class InsightsConnection(object):
         """
         # Get proxy from ENV or Config
         proxies = None
-        proxy_auth = None
 
         # CONF PROXY TAKES PRECEDENCE OVER ENV PROXY
         conf_proxy = self.config.proxy
         conf_no_proxy = self.config.no_proxy
 
         if conf_proxy:
-            proxies, proxy_auth = self.get_proxy(conf_proxy, conf_no_proxy, "CONF")
+            proxies = self.get_proxy(conf_proxy, conf_no_proxy, "CONF")
 
         # HANDLE NO PROXY CONF PROXY EXCEPTION VERBIAGE
         no_proxy = os.environ.get('NO_PROXY')
@@ -343,9 +319,8 @@ class InsightsConnection(object):
         if proxies is None and conf_no_proxy is None:
             env_proxy = os.environ.get('HTTPS_PROXY')
             if env_proxy:
-                proxies, proxy_auth = self.get_proxy(env_proxy, no_proxy, "ENV")
+                proxies = self.get_proxy(env_proxy, no_proxy, "ENV")
         self.proxies = proxies
-        self.proxy_auth = proxy_auth
 
     def _legacy_test_urls(self, url, method):
         """
