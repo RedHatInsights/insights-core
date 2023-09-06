@@ -50,7 +50,7 @@ LPSTAT_O_EMPTY_RESULT = """
 0
 """.strip()
 
-LPSTAT_O_PATH = 'insights_commands/lpstat_-o'
+LPSTAT_O_PATH = 'insights_commands/lpstat_-o_line_count'
 
 
 def test_lpstat_datasource():

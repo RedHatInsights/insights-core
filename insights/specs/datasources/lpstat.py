@@ -80,10 +80,10 @@ def lpstat_queued_jobs_number(broker):
                      "missing dependencies:",
                      "Bad file descriptor"]
         for line in content:
-            if all(bad_keywords not in line for bad_keywords in bad_lines):
+            if not any(key in line for key in bad_lines):
                 cnt += 1
         if cnt:
-            return DatasourceProvider(content="\n".join([str(cnt)]), relative_path='insights_commands/lpstat_-o')
+            return DatasourceProvider(content="\n".join([str(cnt)]), relative_path='insights_commands/lpstat_-o_line_count')
         raise SkipComponent
 
-    return DatasourceProvider(content="\n".join(['0']), relative_path='insights_commands/lpstat_-o')
+    return DatasourceProvider(content="\n".join(['0']), relative_path='insights_commands/lpstat_-o_line_count')
