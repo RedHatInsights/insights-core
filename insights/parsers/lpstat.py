@@ -7,6 +7,8 @@ Parsers contains in this module are:
 LpstatPrinters - command ``/usr/bin/lpstat -p``
 
 LpstatProtocol - command ``/usr/bin/lpstat -v``
+
+LpstatQueuedJobsCount - command ``/usr/bin/lpstat -o``
 """
 from insights.core import CommandParser, Parser
 from insights.core.exceptions import SkipComponent
