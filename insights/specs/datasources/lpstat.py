@@ -83,7 +83,7 @@ def lpstat_queued_jobs_number(broker):
             if not any(key in line for key in bad_lines):
                 cnt += 1
         if cnt:
-            return DatasourceProvider(content="\n".join("{0}".format(cnt)), relative_path='insights_commands/lpstat_-o_line_count')
+            return DatasourceProvider(content="{0}".format(cnt), relative_path='insights_commands/lpstat_-o_line_count')
         raise SkipComponent
 
-    return DatasourceProvider(content="\n".join("0"), relative_path='insights_commands/lpstat_-o_line_count')
+    return DatasourceProvider(content="0", relative_path='insights_commands/lpstat_-o_line_count')
