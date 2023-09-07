@@ -3,7 +3,7 @@ import pytest
 
 from insights.core.exceptions import SkipComponent
 from insights.parsers import lpstat
-from insights.parsers.lpstat import LpstatPrinters, LpstatProtocol, LpstatQueuedJobs
+from insights.parsers.lpstat import LpstatPrinters, LpstatProtocol, LpstatQueuedJobsCount
 from insights.tests import context_wrap
 
 
@@ -93,28 +93,31 @@ def test_lpstat_protocol():
 
 
 def test_lpstat_protocol_invalid_state():
-    with pytest.raises(SkipComponent):
+    with pytest.raises(SkipComponent) as exc:
         LpstatProtocol(context_wrap(LPSTAT_V_OUTPUT_INVALID_1))
+    assert 'No Valid Output' in str(exc)
 
-    with pytest.raises(SkipComponent):
+    with pytest.raises(SkipComponent) as exc:
         LpstatProtocol(context_wrap(LPSTAT_V_OUTPUT_INVALID_2))
+    assert 'No Valid Output' in str(exc)
 
 
 def test_lpstat_queued_jobs():
-    lpstat_o = LpstatQueuedJobs(context_wrap(LPSTAT_O_OUTPUT))
-    assert lpstat_o.number == 3
+    lpstat_o = LpstatQueuedJobsCount(context_wrap(LPSTAT_O_OUTPUT))
+    assert lpstat_o.count == 3
 
 
 def test_lpstat_queued_jobs_err():
-    with pytest.raises(SkipComponent):
-        LpstatQueuedJobs(context_wrap(LPSTAT_V_OUTPUT_INVALID_1))
+    with pytest.raises(SkipComponent) as exc:
+        LpstatQueuedJobsCount(context_wrap(LPSTAT_V_OUTPUT_INVALID_1))
+    assert 'Empty result' in str(exc)
 
 
 def test_lpstat_doc_examples():
     env = {
         'lpstat_printers': LpstatPrinters(context_wrap(LPSTAT_P_OUTPUT)),
         'lpstat_protocol': LpstatProtocol(context_wrap(LPSTAT_V_OUTPUT)),
-        'lpstat_queued_jobs': LpstatQueuedJobs(context_wrap(LPSTAT_O_OUTPUT))
+        'lpstat_queued_jobs_count': LpstatQueuedJobsCount(context_wrap(LPSTAT_O_OUTPUT))
     }
     failed, total = doctest.testmod(lpstat, globs=env)
     assert failed == 0

@@ -4,7 +4,7 @@ from mock.mock import Mock
 
 from insights.core.exceptions import SkipComponent
 from insights.core.spec_factory import DatasourceProvider
-from insights.specs.datasources.lpstat import LocalSpecs, lpstat_protocol_printers_info, lpstat_queued_jobs_number
+from insights.specs.datasources.lpstat import LocalSpecs, lpstat_protocol_printers_info, lpstat_queued_jobs_count
 
 
 LPSTAT_V = """
@@ -50,7 +50,7 @@ LPSTAT_O_EMPTY_RESULT = """
 0
 """.strip()
 
-LPSTAT_O_PATH = 'insights_commands/lpstat_-o_line_count'
+LPSTAT_O_PATH = 'insights_commands/lpstat_-o_jobs_count'
 
 
 def test_lpstat_datasource():
@@ -78,7 +78,7 @@ def test_lpstat_o():
     lpstat_o = Mock()
     lpstat_o.content = LPSTAT_O.splitlines()
     broker = {LocalSpecs.lpstat_o: lpstat_o}
-    result = lpstat_queued_jobs_number(broker)
+    result = lpstat_queued_jobs_count(broker)
     assert isinstance(result, DatasourceProvider)
     expected = DatasourceProvider(content=LPSTAT_O_RESULT, relative_path=LPSTAT_O_PATH)
     assert result.content == expected.content
@@ -89,11 +89,9 @@ def test_lpstat_o_empty():
     lpstat_o = Mock()
     lpstat_o.content = LPSTAT_O_EMPTY.splitlines()
     broker = {LocalSpecs.lpstat_o: lpstat_o}
-    result = lpstat_queued_jobs_number(broker)
-    assert isinstance(result, DatasourceProvider)
-    expected = DatasourceProvider(content=LPSTAT_O_EMPTY_RESULT, relative_path=LPSTAT_O_PATH)
-    assert result.content == expected.content
-    assert result.relative_path == expected.relative_path
+    with pytest.raises(SkipComponent) as e:
+        lpstat_queued_jobs_count(broker)
+    assert 'SkipComponent' in str(e)
 
 
 def test_lpstat_o_invalid():
@@ -101,5 +99,5 @@ def test_lpstat_o_invalid():
     lpstat_o.content = LPSTAT_O_INVALID.splitlines()
     broker = {LocalSpecs.lpstat_o: lpstat_o}
     with pytest.raises(SkipComponent) as e:
-        lpstat_queued_jobs_number(broker)
+        lpstat_queued_jobs_count(broker)
     assert 'SkipComponent' in str(e)

@@ -48,9 +48,9 @@ def lpstat_protocol_printers_info(broker):
 
 
 @datasource(LocalSpecs.lpstat_o, HostContext)
-def lpstat_queued_jobs_number(broker):
+def lpstat_queued_jobs_count(broker):
     """
-    This datasource provides the number of all queued job.
+    This datasource provides the count of all queued job.
 
     Typical content of ``/usr/bin/lpstat -o`` file is::
 
@@ -63,7 +63,7 @@ def lpstat_queued_jobs_number(broker):
         3
 
     Returns:
-        DatasourceProvider: Returns the collected content containing the number of all queued jobs.
+        DatasourceProvider: Returns the collected content containing the count of all queued jobs.
 
     Raises:
         SkipComponent: When there is not any content.
@@ -83,7 +83,5 @@ def lpstat_queued_jobs_number(broker):
             if not any(key in line for key in bad_lines):
                 cnt += 1
         if cnt:
-            return DatasourceProvider(content="{0}".format(cnt), relative_path='insights_commands/lpstat_-o_line_count')
-        raise SkipComponent
-
-    return DatasourceProvider(content="0", relative_path='insights_commands/lpstat_-o_line_count')
+            return DatasourceProvider(content="{0}".format(cnt), relative_path='insights_commands/lpstat_-o_jobs_count')
+    raise SkipComponent

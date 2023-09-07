@@ -127,12 +127,12 @@ class LpstatProtocol(CommandParser, dict):
         self.update(data)
 
 
-@parser(Specs.lpstat_queued_jobs)
-class LpstatQueuedJobs(Parser):
+@parser(Specs.lpstat_queued_jobs_count)
+class LpstatQueuedJobsCount(Parser):
     """
-    Class to parse lpstat_queued_jobs_number datasource result to get the number of queued jobs.
+    Class to parse lpstat_queued_jobs_count datasource result to get the count of queued jobs.
 
-    Currently, this parser only provide one attribute number which returns the number of queued
+    Currently, this parser only provide one attribute count which returns the count of queued
     jobs but no detailed jobs are provided.
 
     Sample output of the ``/usr/bin/lpstat -o`` command::
@@ -142,12 +142,12 @@ class LpstatQueuedJobs(Parser):
         Cups-PDF-1804           root          265443328   Tue 05 Sep 2023 02:21:22 PM CST
 
     Examples:
-        >>> type(lpstat_queued_jobs)
-        <class 'insights.parsers.lpstat.LpstatQueuedJobs'>
-        >>> lpstat_queued_jobs.number
+        >>> type(lpstat_queued_jobs_count)
+        <class 'insights.parsers.lpstat.LpstatQueuedJobsCount'>
+        >>> lpstat_queued_jobs_count.count
         3
     """
     def parse_content(self, content):
         if not content:
             raise SkipComponent("Empty result")
-        self.number = int(content[0])
+        self.count = int(content[0])
