@@ -130,7 +130,7 @@ class LpstatProtocol(CommandParser, dict):
 
 
 @parser(Specs.lpstat_queued_jobs_count)
-class LpstatQueuedJobsCount(Parser):
+class LpstatQueuedJobs(Parser):
     """
     Class to parse lpstat_queued_jobs_count datasource result to get the count of queued jobs.
 
@@ -144,9 +144,9 @@ class LpstatQueuedJobsCount(Parser):
         Cups-PDF-1804           root          265443328   Tue 05 Sep 2023 02:21:22 PM CST
 
     Examples:
-        >>> type(lpstat_queued_jobs_count)
-        <class 'insights.parsers.lpstat.LpstatQueuedJobsCount'>
-        >>> lpstat_queued_jobs_count.count
+        >>> type(lpstat_queued_jobs)
+        <class 'insights.parsers.lpstat.LpstatQueuedJobs'>
+        >>> lpstat_queued_jobs.count
         3
     """
     def parse_content(self, content):
