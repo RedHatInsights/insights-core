@@ -7,8 +7,10 @@ Parsers contains in this module are:
 LpstatPrinters - command ``/usr/bin/lpstat -p``
 
 LpstatProtocol - command ``/usr/bin/lpstat -v``
+
+LpstatQueuedJobs - command ``/usr/bin/lpstat -o``
 """
-from insights.core import CommandParser
+from insights.core import CommandParser, Parser
 from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
@@ -125,3 +127,29 @@ class LpstatProtocol(CommandParser, dict):
         if not data:
             raise SkipComponent("No Valid Output")
         self.update(data)
+
+
+@parser(Specs.lpstat_queued_jobs_count)
+class LpstatQueuedJobs(Parser):
+    """
+    Class to parse lpstat_queued_jobs_count datasource result to get the count of queued jobs.
+
+    Currently, this parser only provide one attribute count which returns the count of queued
+    jobs but no detailed jobs are provided.
+
+    Sample output of the ``/usr/bin/lpstat -o`` command::
+
+        Cups-PDF-1802           root          265443328   Tue 05 Sep 2023 02:21:19 PM CST
+        Cups-PDF-1803           root          265443328   Tue 05 Sep 2023 02:21:21 PM CST
+        Cups-PDF-1804           root          265443328   Tue 05 Sep 2023 02:21:22 PM CST
+
+    Examples:
+        >>> type(lpstat_queued_jobs)
+        <class 'insights.parsers.lpstat.LpstatQueuedJobs'>
+        >>> lpstat_queued_jobs.count
+        3
+    """
+    def parse_content(self, content):
+        if not content:
+            raise SkipComponent("Empty result")
+        self.count = int(content[0])
