@@ -338,6 +338,7 @@ class Specs(SpecSet):
     lpfc_max_luns = RegistryPoint()
     lpstat_p = RegistryPoint()
     lpstat_protocol_printers = RegistryPoint()
+    lpstat_queued_jobs_count = RegistryPoint()
     # New `ls` Specs
     ls_la = RegistryPoint()
     ls_la_dirs = RegistryPoint(filterable=True)
