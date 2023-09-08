@@ -450,11 +450,11 @@ def test_reg_check_unregistered_unreachable_legacy():
 
 
 @patch('insights.client.client.constants.sleep_time', 0)
-@patch('insights.client.client.InsightsConnection.upload_archive',
-       return_value=Mock(status_code=500))
+@patch('insights.client.client.InsightsConnection._init_session', return_value=None)
+@patch('insights.client.client.InsightsConnection.upload_archive', return_value=Mock(status_code=500))
 @patch('insights.client.os.path.exists', return_value=True)
 @patch("insights.client.client.logger")
-def test_upload_500_retry(logger, _, upload_archive):
+def test_upload_500_retry(logger, _, upload_archive, __):
 
     # Hack to prevent client from parsing args to py.test
     tmp = sys.argv
@@ -477,9 +477,10 @@ def test_upload_500_retry(logger, _, upload_archive):
 
 
 @patch('insights.client.client.constants.sleep_time', 0)
+@patch('insights.client.client.InsightsConnection._init_session', return_value=None)
 @patch('insights.client.client.InsightsConnection.upload_archive')
 @patch("insights.client.client.logger")
-def test_upload_exception_retry(logger, upload_archive):
+def test_upload_exception_retry(logger, upload_archive, _):
     from requests.exceptions import ConnectionError, ProxyError, Timeout, HTTPError, SSLError
     upload_archive.side_effect = [ConnectionError("Connection Error"),
                                   ProxyError("Proxy Error"),
@@ -516,11 +517,11 @@ def test_upload_exception_retry(logger, upload_archive):
     logger.error.assert_called_with("All attempts to upload have failed!")
 
 
+@patch('insights.client.client.InsightsConnection._init_session', return_value=None)
 @patch('insights.client.client.InsightsConnection.handle_fail_rcs')
-@patch('insights.client.client.InsightsConnection.upload_archive',
-       return_value=Mock(status_code=412))
+@patch('insights.client.client.InsightsConnection.upload_archive', return_value=Mock(status_code=412))
 @patch('insights.client.os.path.exists', return_value=True)
-def test_upload_412_no_retry(_, upload_archive, handle_fail_rcs):
+def test_upload_412_no_retry(_, upload_archive, handle_fail_rcs, __):
 
     # Hack to prevent client from parsing args to py.test
     tmp = sys.argv
@@ -537,12 +538,13 @@ def test_upload_412_no_retry(_, upload_archive, handle_fail_rcs):
         sys.argv = tmp
 
 
+@patch('insights.client.client.InsightsConnection._init_session', return_value=None)
 @patch('insights.client.connection.write_unregistered_file')
 @patch('insights.client.client.InsightsConnection.upload_archive',
        return_value=Mock(**{"status_code": 412,
                             "json.return_value": {"unregistered_at": "now", "message": "msg"}}))
 @patch('insights.client.os.path.exists', return_value=True)
-def test_upload_412_write_unregistered_file(_, upload_archive, write_unregistered_file):
+def test_upload_412_write_unregistered_file(_, upload_archive, write_unregistered_file, __):
 
     # Hack to prevent client from parsing args to py.test
     tmp = sys.argv
