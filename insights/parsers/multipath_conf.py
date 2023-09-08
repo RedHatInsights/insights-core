@@ -21,7 +21,7 @@ MultipathConfTreeInitramfs - command ``lsinitrd -f /etc/multipath.conf``
 import string
 
 from insights.contrib import pyparsing as p
-from insights.core import ConfigParser, LegacyItemAccess, Parser
+from insights.core import ConfigParser, CommandParser, LegacyItemAccess, Parser
 from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.parsr import (EOF, Forward, LeftCurly, Lift, LineEnd, Literal,
@@ -221,6 +221,8 @@ def parse_doc(content, ctx):
     Bare = String(set(string.printable) - (set(string.whitespace) | set("#{}'\"")))
     Name = WS >> PosMarker(String(string.ascii_letters + "_")) << WS
     Value = WS >> (Num | NULL | QuotedString | Bare) << WS
+    EmptyString = String('"\'', min_length=2)
+    Value = WS >> (Num | NULL | QuotedString | EmptyString | Bare) << WS
     Block = BeginBlock >> Many(Stmt).map(skip_none) << EndBlock
     Stanza = (Lift(to_entry) * Name * (Block | Value)) | Comment
     Stmt <= WS >> Stanza << WS
@@ -251,7 +253,7 @@ def get_tree(root=None):
 
 
 @parser(Specs.multipath_conf_initramfs)
-class MultipathConfTreeInitramfs(ConfigParser):
+class MultipathConfTreeInitramfs(ConfigParser, CommandParser):
     """
     Exposes the multipath configuration from initramfs image through the
     parsr query interface.

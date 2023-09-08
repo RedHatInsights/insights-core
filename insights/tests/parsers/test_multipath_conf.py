@@ -96,13 +96,27 @@ blacklist {
 
 """.strip()
 
-
-MULTIPATH_CONF_INFO2 = MULTIPATH_CONF_INFO.replace("user_friendly_names     yes", "user_friendly_names     no").replace("alias                   red", "alias                   blue")
-
-MULTIPATH_CONF_INFO4 = MULTIPATH_CONF_INFO3.replace("user_friendly_names     yes", "user_friendly_names     no").replace("alias                   red", "alias                   blue")
-
-
 INPUT_EMPTY = ''
+
+MULTIPATH_CONF_INITRAMFS_CMD_ERROR_1 = """
+/usr/bin/timeout: failed to run command `/bin/lsinitrd': No such file or directory
+"""
+MULTIPATH_CONF_INITRAMFS_CMD_ERROR_2 = """
+timeout: failed to run command `/bin/lsinitrd': No such file or directory
+"""
+
+MULTIPATH_CONF_CASE_1 = """
+defaults {
+    enable_foreign "" # line added by Leapp
+    allow_usb_devices yes # line added by Leapp
+    find_multipaths yes
+    user_friendly_names yes
+}
+
+
+blacklist {
+}
+"""
 
 
 def test_multipath_conf():
@@ -144,6 +158,12 @@ def test_multipath_conf_tree_initramfs():
     assert multipath_conf_info['blacklist']['devnode'].value == '^hd[a-z]'
 
 
+def test_multipath_conf_tree_special_handling():
+    multipath_conf_info = multipath_conf.MultipathConfTree(context_wrap(MULTIPATH_CONF_CASE_1))
+    assert multipath_conf_info['defaults']['enable_foreign'].value == '""'
+    assert multipath_conf_info['defaults']['allow_usb_devices'].value == 'yes'
+
+
 def test_multipath_conf_trees():
     for c in (multipath_conf.MultipathConfTree,
               multipath_conf.MultipathConfTreeInitramfs):
@@ -175,3 +195,12 @@ def test_empty_multipath_conf():
     with pytest.raises(SkipComponent) as e_info:
         multipath_conf.MultipathConfParser(context_wrap(INPUT_EMPTY))
     assert "Empty content." in str(e_info.value)
+
+
+def test_multipath_conf_tree_initramfs_errors():
+    with pytest.raises(SkipComponent) as e_info:
+        multipath_conf.MultipathConfTreeInitramfs(context_wrap(MULTIPATH_CONF_INITRAMFS_CMD_ERROR_1))
+    assert "`/bin/lsinitrd': No such file or directory" in str(e_info.value)
+    with pytest.raises(SkipComponent) as e_info:
+        multipath_conf.MultipathConfTreeInitramfs(context_wrap(MULTIPATH_CONF_INITRAMFS_CMD_ERROR_2))
+    assert "`/bin/lsinitrd': No such file or directory" in str(e_info.value)
