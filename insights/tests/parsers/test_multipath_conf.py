@@ -96,15 +96,6 @@ blacklist {
 
 """.strip()
 
-INPUT_EMPTY = ''
-
-MULTIPATH_CONF_INITRAMFS_CMD_ERROR_1 = """
-/usr/bin/timeout: failed to run command `/bin/lsinitrd': No such file or directory
-"""
-MULTIPATH_CONF_INITRAMFS_CMD_ERROR_2 = """
-timeout: failed to run command `/bin/lsinitrd': No such file or directory
-"""
-
 MULTIPATH_CONF_CASE_1 = """
 defaults {
     enable_foreign "" # line added by Leapp
@@ -116,6 +107,33 @@ defaults {
 
 blacklist {
 }
+"""
+
+INPUT_EMPTY = ''
+
+MULTIPATH_CONF_INITRAMFS_CMD_ERROR_1 = """
+/usr/bin/timeout: failed to run command `/bin/lsinitrd': No such file or directory
+"""
+MULTIPATH_CONF_INITRAMFS_CMD_ERROR_2 = """
+timeout: failed to run command `/bin/lsinitrd': No such file or directory
+"""
+MULTIPATH_CONF_INITRAMFS_CMD_ERROR_3 = """
+No <initramfs file> specified and the default image '/boot/initramfs-4.18.0-193.el8.x86_64.img' cannot be accessed!
+
+Usage: lsinitrd [options] [<initramfs file> [<filename> [<filename> [...] ]]]
+Usage: lsinitrd [options] -k <kernel version>
+
+-h, --help                  print a help message and exit.
+-s, --size                  sort the contents of the initramfs by size.
+-m, --mod                   list modules.
+-f, --file <filename>       print the contents of <filename>.
+--unpack                    unpack the initramfs, instead of displaying the contents.
+                            If optional filenames are given, will only unpack specified files,
+                            else the whole image will be unpacked. Won't unpack anything from early cpio part.
+--unpackearly               unpack the early microcode part of the initramfs.
+                            Same as --unpack, but only unpack files from early cpio part.
+-v, --verbose               unpack verbosely.
+-k, --kver <kernel version> inspect the initramfs of <kernel version>.
 """
 
 
@@ -204,3 +222,6 @@ def test_multipath_conf_tree_initramfs_errors():
     with pytest.raises(SkipComponent) as e_info:
         multipath_conf.MultipathConfTreeInitramfs(context_wrap(MULTIPATH_CONF_INITRAMFS_CMD_ERROR_2))
     assert "`/bin/lsinitrd': No such file or directory" in str(e_info.value)
+    with pytest.raises(SkipComponent) as e_info:
+        multipath_conf.MultipathConfTreeInitramfs(context_wrap(MULTIPATH_CONF_INITRAMFS_CMD_ERROR_3))
+    assert "No <initramfs file> specified and the default image" in str(e_info.value)

@@ -260,6 +260,15 @@ class MultipathConfTreeInitramfs(ConfigParser, CommandParser):
 
     See the :py:class:`insights.core.ConfigComponent` class for example usage.
     """
+
+    bad_lines = [
+        'no <initramfs file> specified and the default image'
+    ]
+
+    def __init__(self, context):
+        super(MultipathConfTreeInitramfs, self).__init__(
+                context, extra_bad_lines=self.bad_lines)
+
     def parse_doc(self, content):
         return parse_doc("\n".join(content), ctx=self)
 
