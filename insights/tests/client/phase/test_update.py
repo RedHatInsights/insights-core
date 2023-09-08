@@ -50,9 +50,7 @@ def test_update_core_collect_on(insights_config, insights_client):
     except SystemExit:
         pass
     insights_client.return_value.update.assert_called_once()
-    # we still want to download uploader.json because it's used
-    #   for remove.conf component name resolution
-    insights_client.return_value.update_rules.assert_called_once()
+    insights_client.return_value.update_rules.assert_not_called()
 
 
 @patch("insights.client.phase.v1.InsightsClient")
