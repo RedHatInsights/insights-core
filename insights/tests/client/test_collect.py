@@ -169,12 +169,11 @@ def test_get_conf_file(get_branch_info, get_conf_file, data_collector):
 @patch_get_branch_info()
 def test_get_conf_called_core_collection(get_branch_info, get_conf_file, core_collector):
     """
-    Verify that uploader.json IS loaded when using core collection (from get_rm_conf function)
+    Verify that uploader.json is NOT loaded when using core collection (from get_rm_conf function)
     """
     config = collect_args(core_collect=True)
     collect(config)
-
-    get_conf_file.assert_called_once()
+    get_conf_file.assert_not_called()
 
 
 @patch_data_collector()
