@@ -334,20 +334,18 @@ def test_rm_conf_old_load_ok(isfile, verify):
 
 
 @patch('insights.client.collection_rules.InsightsUploadConf.load_redaction_file', Mock(return_value={"test": "test"}))
-@patch('insights.client.collection_rules.map_rm_conf_to_components', Mock())
 @patch('insights.client.collection_rules.InsightsUploadConf.get_conf_file')
-def test_rm_conf_loads_uploader_json_core_collect(get_conf_file):
+def test_rm_conf_NOT_loads_uploader_json_core_collect(get_conf_file):
     '''
-    Verify that get_conf_file() is called from
+    Verify that get_conf_file() is NOT called from
     get_rm_conf() when core_collect==True
     '''
     upload_conf = insights_upload_conf(core_collect=True)
     upload_conf.get_rm_conf()
-    get_conf_file.assert_called_once()
+    get_conf_file.assert_not_called()
 
 
 @patch('insights.client.collection_rules.InsightsUploadConf.load_redaction_file', Mock(return_value={"test": "test"}))
-@patch('insights.client.collection_rules.map_rm_conf_to_components', Mock())
 @patch('insights.client.collection_rules.InsightsUploadConf.get_conf_file')
 def test_rm_conf_no_load_uploader_json_classic_collect(get_conf_file):
     '''
