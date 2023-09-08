@@ -35,6 +35,14 @@ insights.specs.datasources.candlepin_broker
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.client_metadata
+------------------------------------------
+
+.. automodule:: insights.specs.datasources.client_metadata
+    :members: ansible_host, blacklist_report, blacklisted_specs, branch_info, display_name, egg_release, tags, version_info
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.cloud_init
 -------------------------------------
 
