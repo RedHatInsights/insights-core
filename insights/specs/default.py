@@ -342,6 +342,7 @@ class DefaultSpecs(Specs):
     lpfc_max_luns = simple_file("/sys/module/lpfc/parameters/lpfc_max_luns")
     lpstat_p = simple_command("/usr/bin/lpstat -p")
     lpstat_protocol_printers = lpstat.lpstat_protocol_printers_info
+    lpstat_queued_jobs_count = lpstat.lpstat_queued_jobs_count
     # New `ls` Specs
     ls_la = command_with_args('/bin/ls -la %s', ls.list_with_la, keep_rc=True)
     ls_la_filtered = command_with_args('/bin/ls -la %s', ls.list_with_la_filtered, keep_rc=True)  # Result is filtered
@@ -564,7 +565,7 @@ class DefaultSpecs(Specs):
     rhsm_releasever = simple_file('/var/lib/rhsm/cache/releasever.json')
     rndc_status = simple_command("/usr/sbin/rndc status")
     ros_config = simple_file("/var/lib/pcp/config/pmlogger/config.ros")
-    rpm_V_packages = simple_command("/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo chrony findutils", keep_rc=True, signum=signal.SIGTERM)
+    rpm_V_packages = simple_command("/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo chrony findutils glibc", keep_rc=True, signum=signal.SIGTERM)
     rpm_ostree_status = simple_command("/usr/bin/rpm-ostree status --json", signum=signal.SIGTERM)
     rpm_pkgs = rpm_pkgs.pkgs_with_writable_dirs
     rsyslog_conf = glob_file(["/etc/rsyslog.conf", "/etc/rsyslog.d/*.conf"])
