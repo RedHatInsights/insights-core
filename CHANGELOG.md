@@ -2,7 +2,7 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
-# [insights-core-3.2.15](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.15) (2023-09-81)
+# [insights-core-3.2.15](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.15) (2023-09-08)
 
 - feat: New spec "/etc/mail/sendmail.mc" ([PR 3910](https://github.com/RedHatInsights/insights-core/pull/3910))
 - feat: collect built-in metadata in 'data' via datasource ([PR 3755](https://github.com/RedHatInsights/insights-core/pull/3755))
