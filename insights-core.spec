@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.2.14
+Version:        3.2.15
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,29 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Fri Sep 08 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.15-1
+- feat: New spec "/etc/mail/sendmail.mc" (#3910)
+  (44796653+huali027@users.noreply.github.com)
+- feat: collect built-in metadata in 'data' via datasource (#3755)
+  (xiangceliu@redhat.com)
+- RHINENG-1764: start processing every errata for available package (#3909)
+  (36317308+yungbender@users.noreply.github.com)
+- fix: do not download uploader.json when core_collect=True (#3896)
+  (xiangceliu@redhat.com)
+- FEAT: Add new parser LpstatQueuedJobs (#3906) (986222045@qq.com)
+- fix: improve temporary directory (#3905)
+  (93577878+ahitacat@users.noreply.github.com)
+- feat: Add glibc to rpm_V_packages Spec (#3907) (986222045@qq.com)
+- Feat: Add new parser PostfixMaster (#3898) (986222045@qq.com)
+- fix: flake8 error in py26 test of lvm (#3904) (xiangceliu@redhat.com)
+- feat: Add new spec and parser for lvm fullreport cmd (#3792)
+  (20520336+bfahr@users.noreply.github.com)
+- feat: add spec and parser for udev 66-md-auto-re-add.rules (#3902)
+  (xiaoxwan@redhat.com)
+- fix: skip new known invalid content for AWS parsers (#3903)
+  (xiangceliu@redhat.com)
+- fix: another attempt to fix the py26 CI/CD (#3901) (xiangceliu@redhat.com)
+
 * Thu Aug 31 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.14-1
 - refactor(client): remove hacky proxy code (#3730) (stephen.adams@redhat.com)
 - feat: new test for symbolic_name in uploader.json (#3899)
