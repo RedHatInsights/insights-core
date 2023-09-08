@@ -2,6 +2,22 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.2.15](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.15) (2023-09-81)
+
+- feat: New spec "/etc/mail/sendmail.mc" ([PR 3910](https://github.com/RedHatInsights/insights-core/pull/3910))
+- feat: collect built-in metadata in 'data' via datasource ([PR 3755](https://github.com/RedHatInsights/insights-core/pull/3755))
+- RHINENG-1764: start processing every errata for available package ([PR 3909](https://github.com/RedHatInsights/insights-core/pull/3909))
+- fix: do not download uploader.json when core_collect=True ([PR 3896](https://github.com/RedHatInsights/insights-core/pull/3896))
+- FEAT: Add new parser LpstatQueuedJobs ([PR 3906](https://github.com/RedHatInsights/insights-core/pull/3906))
+- fix: improve temporary directory ([PR 3905](https://github.com/RedHatInsights/insights-core/pull/3905))
+- feat: Add glibc to rpm_V_packages Spec ([PR 3907](https://github.com/RedHatInsights/insights-core/pull/3907))
+- Feat: Add new parser PostfixMaster ([PR 3898](https://github.com/RedHatInsights/insights-core/pull/3898))
+- fix: flake8 error in py26 test of lvm ([PR 3904](https://github.com/RedHatInsights/insights-core/pull/3904))
+- feat: Add new spec and parser for lvm fullreport cmd ([PR 3792](https://github.com/RedHatInsights/insights-core/pull/3792))
+- feat: add spec and parser for udev 66-md-auto-re-add.rules ([PR 3902](https://github.com/RedHatInsights/insights-core/pull/3902))
+- fix: skip new known invalid content for AWS parsers ([PR 3903](https://github.com/RedHatInsights/insights-core/pull/3903))
+- fix: another attempt to fix the py26 CI/CD ([PR 3901](https://github.com/RedHatInsights/insights-core/pull/3901))
+
 # [insights-core-3.2.14](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.14) (2023-08-31)
 
 - refactor(client): remove hacky proxy code ([PR 3730](https://github.com/RedHatInsights/insights-core/pull/3730))
