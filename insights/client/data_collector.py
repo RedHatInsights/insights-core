@@ -105,8 +105,11 @@ class DataCollector(object):
             json.dumps(version_info), '/version_info')
 
     def _write_tags(self):
-        logger.debug("Writing tags to archive...")
         tags = get_tags()
+        # NOTE:
+        # The following code is also used by datasource 'tags'
+        # - insights.specs.datasources.tags
+        # Please keep them consistence before removing this.
         if tags is not None:
             def f(k, v):
                 if type(v) is list:
@@ -121,6 +124,7 @@ class DataCollector(object):
                     return list(chain.from_iterable(col))
                 else:
                     return [{"key": k, "value": v, "namespace": constants.app_name}]
+            logger.debug("Writing tags to archive...")
             t = []
             for k, v in tags.items():
                 iv = f(k, v)

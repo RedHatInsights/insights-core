@@ -11,24 +11,24 @@ data sources that standard Insights `Parsers` resolve against.
 import logging
 import signal
 
-from insights.core.context import HostContext
-from insights.core.spec_factory import MetadataProvider
-from insights.core.spec_factory import simple_file, simple_command, glob_file, head
-from insights.core.spec_factory import first_of, command_with_args
-from insights.core.spec_factory import foreach_collect, foreach_execute
-from insights.core.spec_factory import container_collect, container_execute
-from insights.core.spec_factory import first_file, listdir
-from insights.components.cloud_provider import IsAzure, IsGCP
 from insights.components.ceph import IsCephMonitor
-from insights.components.virtualization import IsBareMetal
+from insights.components.cloud_provider import IsAzure, IsGCP
 from insights.components.satellite import IsSatellite611, IsSatellite
+from insights.components.virtualization import IsBareMetal
+from insights.core.context import HostContext
+from insights.core.spec_factory import (
+    command_with_args, container_collect, container_execute, first_file,
+    first_of, foreach_collect, foreach_execute, glob_file, head, listdir,
+    simple_command, simple_file)
+from insights.core.spec_factory import MetadataProvider  # deprecated
 from insights.specs import Specs
 from insights.specs.datasources import (
-        aws, awx_manage, candlepin_broker, cloud_init, corosync as corosync_ds,
-        dir_list, ethernet, httpd, intersystems, ipcs, kernel, kernel_module_list, leapp,
-        lpstat, ls, luks_devices, machine_ids, malware_detection, md5chk,
-        mount as mount_ds, package_provides, ps as ps_datasource, rpm_pkgs,
-        sap, satellite_missed_queues, semanage, ssl_certificate,
+        aws, awx_manage, candlepin_broker, client_metadata, cloud_init,
+        corosync as corosync_ds, dir_list, ethernet, httpd, ipcs, intersystems,
+        kernel, kernel_module_list, leapp, lpstat, ls, luks_devices,
+        machine_ids, malware_detection, md5chk, mount as mount_ds,
+        package_provides, ps as ps_datasource, rpm_pkgs, sap,
+        satellite_missed_queues, semanage, ssl_certificate,
         sys_fs_cgroup_memory, sys_fs_cgroup_memory_tasks_number,
         user_group, yum_updates)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
@@ -71,19 +71,33 @@ _rpm_format = _make_rpm_formatter()
 
 
 class DefaultSpecs(Specs):
-    # Dep specs that aren't in the registry
+    # Dependent specs that aren't in the registry
     block_devices_by_uuid = listdir("/dev/disk/by-uuid/", context=HostContext)
     httpd_pid = simple_command("/usr/bin/pgrep -o httpd")
     openshift_router_pid = simple_command("/usr/bin/pgrep -n openshift-route")
     ovs_vsctl_list_br = simple_command("/usr/bin/ovs-vsctl list-br")
 
-    # Archive metadata specs/files
-    ansible_host = simple_file("/ansible_host", kind=MetadataProvider)
-    blacklisted_specs = first_file(["/blacklisted_specs", "/blacklisted_specs.txt"], kind=MetadataProvider)
-    branch_info = simple_file("/branch_info", kind=MetadataProvider)
-    display_name = simple_file("/display_name", kind=MetadataProvider)
-    tags = simple_file("/tags.json", kind=MetadataProvider)
-    version_info = simple_file("/version_info", kind=MetadataProvider)
+    # Client metadata specs/files
+    ansible_host = first_of([
+        client_metadata.ansible_host,
+        simple_file("/ansible_host", kind=MetadataProvider)])
+    blacklist_report = client_metadata.blacklist_report  # new, no need first_of
+    blacklisted_specs = first_of([
+        client_metadata.blacklisted_specs,
+        first_file(["/blacklisted_specs", "/blacklisted_specs.txt"], kind=MetadataProvider)])
+    branch_info = first_of([
+        client_metadata.branch_info,
+        simple_file("/branch_info", kind=MetadataProvider)])
+    display_name = first_of([
+        client_metadata.display_name,
+        simple_file("/display_name", kind=MetadataProvider)])
+    egg_release = client_metadata.egg_release  # new, no need first_of
+    tags = first_of([
+        client_metadata.tags,
+        simple_file("/tags.json", kind=MetadataProvider)])
+    version_info = first_of([
+        client_metadata.version_info,
+        simple_file("/version_info", kind=MetadataProvider)])
 
     # Client App specs
     malware_detection = malware_detection.malware_detection_app
