@@ -19,6 +19,7 @@ from insights.core.filters import _add_filter, get_filters
 from insights.core.plugins import component, datasource, is_datasource
 from insights.core.serde import deserializer, serializer
 from insights.util import fs, streams, which
+from insights.util import deprecated
 from insights.util.mangle import mangle_command
 from insights.util.subproc import Pipeline
 
@@ -166,9 +167,18 @@ class FileProvider(ContentProvider):
 
 class MetadataProvider(FileProvider):
     """
+    .. warning::
+        This Class is deprecated and will be removed from 3.5.0.
+        Please collect built-in file by using datasource spec directly, see
+        :mod:`insights.specs.datasources.client_metadata`.
+
     Class used for insights-core built-in files.  These files should not
     be filtered, redacted or blocked.
     """
+    def __init__(self, relative_path, root="/", ds=None, ctx=None):
+        deprecated(MetadataProvider, "Please collect the built-in file via datasource spec instead.", "3.5.0")
+        super(MetadataProvider, self).__init__(relative_path, root, ds, ctx)
+
     def _stream(self):
         """
         Returns a generator of lines instead of a list of lines.
@@ -1144,7 +1154,7 @@ class first_of(object):
     """
     def __init__(self, deps):
         self.deps = deps
-        self.raw = deps[0].raw
+        self.raw = getattr(deps[0], 'raw', None)
         self.__name__ = self.__class__.__name__
         datasource(deps)(self)
 

@@ -19,7 +19,6 @@ from datetime import datetime
 
 from insights import apply_configs, apply_default_enabled, get_pool
 from insights.core import blacklist, dr, filters
-from insights.core.blacklist import BLACKLISTED_SPECS
 from insights.core.exceptions import CalledProcessError
 from insights.core.serde import Hydration
 from insights.util import fs
@@ -289,17 +288,44 @@ def load_packages(pkgs):
 
 
 def apply_blacklist(cfg):
+
+    def _skip_component(component):
+        dr.set_enabled(component, enabled=False)
+        blacklist.BLACKLISTED_SPECS.append(component.split('.')[-1])
+        log.warning('WARNING: Skipping component: %s' % component)
+
+    def _check_and_skip_component(name):
+        if '/' in name or ' ' in name:
+            # not symbolic name
+            return False
+        # like a symbolic name
+        component = 'insights.specs.default.DefaultSpecs.{0}'.format(name)
+        if dr.get_component_by_name(component):
+            # is a sybmolic name
+            _skip_component(component)
+            return True
+        # not symbolic name
+        return False
+
     for b in cfg.get("files", []):
-        blacklist.add_file(b)
+        if not _check_and_skip_component(b):
+            blacklist.add_file('^' + b + '$')
 
     for b in cfg.get("commands", []):
-        blacklist.add_command(b)
+        if not _check_and_skip_component(b):
+            blacklist.add_command('^' + b + '$')
 
     for b in cfg.get("patterns", []):
         blacklist.add_pattern(b)
 
     for b in cfg.get("keywords", []):
         blacklist.add_keyword(b)
+
+    for component in cfg.get('components', []):
+        if not dr.get_component_by_name(component):
+            log.warning('WARNING: Unknown component in blacklist: %s' % component)
+        else:
+            _skip_component(component)
 
 
 def create_context(ctx):
@@ -393,8 +419,10 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False,
     load_packages(plugins.get("packages", []))
     apply_default_enabled(plugins)
     apply_configs(plugins)
-
-    apply_blacklist(client.get("blacklist", {}))
+    # process blacklist
+    black_list = client.get("blacklist", {})
+    black_list.update(rm_conf or {})
+    apply_blacklist(black_list)
 
     # insights-client
     if client_config and client_config.cmd_timeout:
@@ -402,16 +430,6 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False,
             client['context']['args']['timeout'] = client_config.cmd_timeout
         except LookupError:
             log.warning('Could not set timeout option.')
-    rm_conf = rm_conf or {}
-    apply_blacklist(rm_conf)
-    for component in rm_conf.get('components', []):
-        if not dr.get_component_by_name(component):
-            log.warning('WARNING: Unknown component in blacklist: %s' % component)
-        else:
-            dr.set_enabled(component, enabled=False)
-            BLACKLISTED_SPECS.append(component.split('.')[-1])
-            log.warning('WARNING: Skipping component: %s', component)
-
     to_persist = get_to_persist(client.get("persist", set()))
 
     try:

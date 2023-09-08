@@ -102,9 +102,12 @@ class DnfManager:
         return pkg.reponame
 
     @staticmethod
-    def advisory(pkg):
-        errata = pkg.get_advisories(hawkey.EQ)
-        return errata[0].id if len(errata) > 0 else None
+    def sorted_advisories(pkg):
+        advisories = pkg.get_advisories(hawkey.EQ)
+        if advisories:
+            advisories_ids = map(lambda advisory: advisory.id, advisories)
+            return sorted(advisories_ids)
+        return []
 
     def last_update(self):
         last_ts = 0
@@ -122,21 +125,28 @@ class YumManager(DnfManager):
         self.base.doGenericSetup(cache=0 if build_pkgcache else 1)
         self.releasever = self.base.conf.yumvar['releasever']
         self.basearch = self.base.conf.yumvar['basearch']
-        self.packages = []
-        self.repos = []
-        self.updict = {}
+        self.naevr_to_repo = {}
+        self.pkg_tup_to_advisories = {}
 
     @staticmethod
-    def pkg_cmp(a, b):
-        vercmp = a.verCMP(b)
+    def pkg_cmp(a_tup, b_tup):
+        a_n, a_a, a_e, a_v, a_r = a_tup[0]
+        b_n, b_a, b_e, b_v, b_r = b_tup[0]
+        a_repoid = a_tup[1]
+        b_repoid = b_tup[1]
+
+        if a_n != b_n:
+            return -1 if a_n < b_n else 1
+        vercmp = rpmUtils.miscutils.compareEVR((a_e, a_v, a_r,), (b_e, b_v, b_r,))
         if vercmp != 0:
             return vercmp
-        if a.repoid != b.repoid:
-            return -1 if a.repoid < b.repoid else 1
+        if a_repoid != b_repoid:
+            return -1 if a_repoid < b_repoid else 1
         return 0
 
-    def sorted_pkgs(self, pkgs):
-        return sorted_cmp(pkgs, self.pkg_cmp)
+    def sorted_pkgs(self, pkg_tups):
+        # Sorting on top of array of naevr tuple [(n,a,e,v,r), repo_id]
+        return sorted_cmp(pkg_tups, self.pkg_cmp)
 
     def load(self):
         try:
@@ -151,38 +161,44 @@ class YumManager(DnfManager):
             pass
 
         try:
-            self.packages = self.base.pkgSack.returnPackages()
+            pkgs = self.base.pkgSack.returnPackages()
+            for pkg in pkgs:
+                naevr = (pkg.name, pkg.arch, pkg.epoch, pkg.version, pkg.release,)
+                self.naevr_to_repo.setdefault(naevr, set()).add(pkg.repoid)
         except yum.Errors.RepoError:
             # RepoError is raised when cache is empty
             pass
-        self.repos = self.base.repos.repos
-        self._build_updict()
-
-    def _build_updict(self):
-        self.updict = {}
-        for pkg in self.packages:
-            self.updict.setdefault(pkg.na, []).append(pkg)
 
     def installed_packages(self):
         return self.base.rpmdb.returnPackages()
 
     def updates(self, pkg):
-        nevra = pkg.nevra
-        updates_list = []
-        for upg in self.updict.get(pkg.na, []):
-            if upg.verGT(pkg):
-                updates_list.append(upg)
-        return nevra, updates_list
+        updates = self.base.upinfo.get_applicable_notices((pkg.name, pkg.arch, pkg.epoch, pkg.version, pkg.release,))
+        updates_list = set()
+        # updates are returnes in format [((name, arch, epoch, version, release), UpdateNotice)]
+        for naevr, update_notice in updates:
+            for repoid in self.naevr_to_repo[naevr]:
+                # pkg_tup is composed from ((n,a,e,v,r), repoid)
+                pkg_tup = (naevr, repoid,)
+                update_id = update_notice.get_metadata().get("update_id")
+                if update_id:
+                    self.pkg_tup_to_advisories.setdefault(pkg_tup, set()).add(update_id)
+                updates_list.add(pkg_tup)
+        return pkg.nevra, updates_list
 
     @staticmethod
-    def pkg_repo(pkg):
-        return pkg.repoid
+    def pkg_nevra(pkg_tup):
+        # tuple of [(n,a,e,v,r), repo_id] -> nevra
+        naevr = pkg_tup[0]
+        return "{0}-{1}:{2}-{3}.{4}".format(naevr[0], naevr[2], naevr[3], naevr[4], naevr[1])
 
-    def advisory(self, pkg):
-        adv = self.base.upinfo.get_notice(pkg.nvr)
-        if adv:
-            return adv.get_metadata()['update_id']
-        return None
+    @staticmethod
+    def pkg_repo(pkg_tup):
+        return pkg_tup[1]
+
+    def sorted_advisories(self, pkg_tup):
+        advisories = self.pkg_tup_to_advisories.get(pkg_tup, set())
+        return sorted(advisories)
 
     @staticmethod
     def last_update():
@@ -199,6 +215,7 @@ try:
 except ImportError:
     try:
         import yum
+        import rpmUtils.miscutils
         UpdatesManager = YumManager
     except ImportError:
         UpdatesManager = None
@@ -257,21 +274,24 @@ def yum_updates(broker):
             nevra, updates_list = umgr.updates(pkg)
             if updates_list:
                 out_list = []
-                update_list = umgr.sorted_pkgs(updates_list)
+                updates_list = umgr.sorted_pkgs(updates_list)
 
-                for p in update_list:
-                    pkg_dict = {
+                for p in updates_list:
+                    pkg = {
                         "package": umgr.pkg_nevra(p),
                         "repository": umgr.pkg_repo(p),
                         "basearch": response["basearch"],
                         "releasever": response["releasever"],
                     }
 
-                    erratum = umgr.advisory(p)
-                    if erratum:
-                        pkg_dict["erratum"] = erratum
-
-                    out_list.append(pkg_dict)
+                    advisories = umgr.sorted_advisories(p)
+                    if advisories:
+                        for advisory in advisories:
+                            pkg_errata = pkg.copy()
+                            pkg_errata["erratum"] = advisory
+                            out_list.append(pkg_errata)
+                    else:
+                        out_list.append(pkg)
 
                 response["update_list"][nevra] = {"available_updates": out_list}
 
