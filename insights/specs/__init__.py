@@ -695,6 +695,7 @@ class Specs(SpecSet):
     secure = RegistryPoint(filterable=True)
     selinux_config = RegistryPoint()
     selinux_users = RegistryPoint(filterable=True)
+    sendmail_mc = RegistryPoint(filterable=True)
     sendq_socket_buffer = RegistryPoint()
     sestatus = RegistryPoint()
     setup_named_chroot = RegistryPoint(filterable=True)
