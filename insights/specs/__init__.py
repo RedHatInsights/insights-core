@@ -2,6 +2,16 @@ from insights.core.spec_factory import SpecSet, RegistryPoint
 
 
 class Specs(SpecSet):
+    # Client metadata specs/files
+    ansible_host = RegistryPoint()
+    blacklist_report = RegistryPoint()
+    blacklisted_specs = RegistryPoint()
+    branch_info = RegistryPoint()
+    display_name = RegistryPoint()
+    egg_release = RegistryPoint()
+    tags = RegistryPoint()
+    version_info = RegistryPoint()
+
     # Client App specs
     malware_detection = RegistryPoint()
 
@@ -10,7 +20,6 @@ class Specs(SpecSet):
     abrt_status_bare = RegistryPoint()
     alternatives_display_python = RegistryPoint()
     amq_broker = RegistryPoint(multi_output=True)
-    ansible_host = RegistryPoint()
     audit_log = RegistryPoint(filterable=True)
     auditctl_rules = RegistryPoint()
     auditctl_status = RegistryPoint()
@@ -33,12 +42,10 @@ class Specs(SpecSet):
     azure_load_balancer = RegistryPoint()
     bdi_read_ahead_kb = RegistryPoint(multi_output=True)
     bios_uuid = RegistryPoint()
-    blacklisted_specs = RegistryPoint()
     blkid = RegistryPoint()
     bond = RegistryPoint(multi_output=True)
     bond_dynamic_lb = RegistryPoint(multi_output=True)
     boot_loader_entries = RegistryPoint(multi_output=True)
-    branch_info = RegistryPoint(raw=True)
     brctl_show = RegistryPoint()
     buddyinfo = RegistryPoint()
     candlepin_broker = RegistryPoint()
@@ -132,7 +139,6 @@ class Specs(SpecSet):
     dirsrv_access = RegistryPoint(multi_output=True, filterable=True)
     dirsrv_errors = RegistryPoint(multi_output=True, filterable=True)
     display_java = RegistryPoint()
-    display_name = RegistryPoint()
     dm_mod_use_blk_mq = RegistryPoint()
     dmesg = RegistryPoint(filterable=True)
     dmesg_log = RegistryPoint(filterable=True)
@@ -765,7 +771,6 @@ class Specs(SpecSet):
     systemd_system_origin_accounting = RegistryPoint()
     systemid = RegistryPoint()
     systool_b_scsi_v = RegistryPoint()
-    tags = RegistryPoint()
     teamdctl_config_dump = RegistryPoint(multi_output=True)
     teamdctl_state_dump = RegistryPoint(multi_output=True)
     testparm_s = RegistryPoint(filterable=True)
@@ -797,7 +802,6 @@ class Specs(SpecSet):
     vdsm_import_log = RegistryPoint(multi_output=True, filterable=True)
     vdsm_log = RegistryPoint(filterable=True)
     vdsm_logger_conf = RegistryPoint()
-    version_info = RegistryPoint()
     vgdisplay = RegistryPoint()
     vgs_headings = RegistryPoint()
     vgs_noheadings = RegistryPoint()
