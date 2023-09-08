@@ -96,8 +96,8 @@ def create_parser():
 class RabbitMQReport(CommandParser):
     """
     .. warning::
-    This parser is deprecated along pyparsing. Currently, this parser is not
-    used by any component. Thus, no replacement for this deprecation.
+        This parser is deprecated along pyparsing. Currently, this parser is not
+        used by any component. Thus, no replacement for this deprecation.
     """
 
     def __init__(self, *args, **kwargs):
@@ -149,8 +149,8 @@ class RabbitMQReport(CommandParser):
 class RabbitMQReportOfContainers(RabbitMQReport):
     """
     .. warning::
-    This parser is deprecated along pyparsing. Currently, this parser is not
-    used by any component. Thus, no replacement for this deprecation.
+        This parser is deprecated along pyparsing. Currently, this parser is not
+        used by any component. Thus, no replacement for this deprecation.
 
     Parse the `rabbitmqctl report` command of each container running on the host.
     """

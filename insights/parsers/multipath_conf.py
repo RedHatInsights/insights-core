@@ -35,8 +35,8 @@ from insights.util import deprecated
 class MultipathConfParser(Parser, LegacyItemAccess):
     """
     .. warning::
-    This class is deprecated, please use function
-    :py:function:`insights.parsers.multipath_conf.parse_doc` instead.
+        This class is deprecated, please use function
+        :py:function:`insights.parsers.multipath_conf.parse_doc` instead.
 
     Shared parser for the file ``/etc/multipath.conf`` and output of
     ``lsinitrd -f /etc/multipath.conf`` applied to
@@ -157,8 +157,8 @@ class MultipathConfParser(Parser, LegacyItemAccess):
 class MultipathConf(MultipathConfParser):
     """
     .. warning::
-    This parser is deprecated, please use
-    :py:class:`insights.parsers.multipath_conf.MultipathConfTree` instead.
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.multipath_conf.MultipathConfTree` instead.
 
     Parser for the file ``/etc/multipath.conf``.
 
@@ -183,8 +183,8 @@ class MultipathConf(MultipathConfParser):
 class MultipathConfInitramfs(MultipathConfParser):
     """
     .. warning::
-    This parser is deprecated, please use
-    :py:class:`insights.parsers.multipath_conf.MultipathConfTreeInitramfs` instead.
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.multipath_conf.MultipathConfTreeInitramfs` instead.
 
     Parser for the output of ``lsinitrd -f /etc/multipath.conf`` applied to
     /boot/initramfs-<kernel-version>.img.
