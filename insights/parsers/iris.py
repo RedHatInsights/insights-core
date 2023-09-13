@@ -36,42 +36,48 @@ class IrisList(CommandParser, dict):
             product:      InterSystems IRIS
 
     Examples:
-        >>> iris_info['IRIS']['status']
+        >>> iris_info.data[0]['status']
         'running, since Tue Jun 27 01:55:25 2023'
         >>> iris_info.is_running
         True
+        >>> iris_info.default['status']
+        'running, since Tue Jun 27 01:55:25 2023'
     """
 
     def parse_content(self, content):
-        instance_name = ""
+        self.data = []
+        self.default = {}
+        default_instance = False
+        item_instance = {}
         for line in content:
             if not line.strip():
                 continue
             if line.strip().startswith('Configuration'):
+                if item_instance:
+                    self.data.append(item_instance)
+                if default_instance:
+                    self.default = item_instance
                 instance_name = line.split()[1].strip('\'"')
-                self[instance_name] = {}
+                item_instance = {"instance_name": instance_name}
                 if "(default)" in line:
-                    self[instance_name]["default"] = True
+                    default_instance = True
                 else:
-                    self[instance_name]["default"] = False
+                    default_instance = False
             elif ":" in line:
                 key, value = line.split(":", 1)
-                self[instance_name][key.strip()] = value.strip()
+                item_instance[key.strip()] = value.strip()
+        if item_instance:
+            self.data.append(item_instance)
+        if default_instance:
+            self.default = item_instance
 
-        if len(self) == 0:
+        if len(self.data) == 0:
             raise SkipComponent("The result is empty")
 
     @property
     def is_running(self):
         """Return True when the iris instance is running, and False when it is down"""
-        return any(self[item].get('status', "").startswith('running') for item in self)
-
-    @property
-    def default_instance(self):
-        """Return the default instance name"""
-        for item in self:
-            if self[item].get('default', False):
-                return item
+        return any(item.get('status', "").startswith('running') for item in self.data)
 
 
 @parser(Specs.iris_cpf)

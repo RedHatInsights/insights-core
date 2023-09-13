@@ -21,11 +21,11 @@ def iris_working_configuration(broker):
         SkipComponent: there is no `iris.cpf` file
     """
     all_paths = []
-    for key, value in broker[IrisList].items():
-        configuration_file_path_directory = value['directory']
-        configuration_file_path_conf_file = value['conf file'].split()[0].strip()
+    for item in broker[IrisList].data:
+        conf_directory = item['directory']
+        conf_file = item['conf file'].split()[0].strip()
 
-        configuration_file_path = os.path.join(configuration_file_path_directory, configuration_file_path_conf_file)
+        configuration_file_path = os.path.join(conf_directory, conf_file)
         if os.path.isfile(configuration_file_path):
             all_paths.append(configuration_file_path)
     if all_paths:
