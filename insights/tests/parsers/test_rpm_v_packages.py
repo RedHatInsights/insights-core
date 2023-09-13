@@ -1,7 +1,9 @@
 import doctest
+import pytest
 
+from insights.core.exceptions import SkipComponent
 from insights.parsers import rpm_v_packages
-from insights.parsers.rpm_v_packages import RpmVPackages
+from insights.parsers.rpm_v_packages import RpmVPackages, RpmVPackage
 from insights.tests import context_wrap
 
 
@@ -18,6 +20,8 @@ package procps is not installed
 S.5....T.  c /etc/sudoers
 S.5....T.  c /etc/chrony.conf
 """
+
+CONTEXT_PATH_1 = "insights_commands/rpm_-V_coreutils"
 
 
 def test_rpm_empty():
@@ -48,9 +52,40 @@ def test_rpm():
     assert rpm_pkgs_2.packages_list[2].get('file', None) == '/etc/chrony.conf'
 
 
+def test_rpm_pkg():
+    line_1 = {'attributes': None, 'file': None,
+              'line': 'package procps is not installed', 'mark': None}
+    line_2 = {'attributes': '..?......', 'file': '/etc/sudoers',
+              'line': '..?......  c /etc/sudoers', 'mark': 'c'}
+    line_3 = {'attributes': '..?......', 'file': '/usr/bin/sudo',
+              'line': '..?......    /usr/bin/sudo', 'mark': None}
+    line_4 = {'attributes': '..?......', 'file': '/usr/bin/sudoreplay',
+              'line': '..?......    /usr/bin/sudoreplay', 'mark': None}
+    line_5 = {'attributes': None, 'file': None,
+              'line': 'missing     /var/db/sudo/lectured (Permission denied)', 'mark': None}
+
+    rpm_pkg = RpmVPackage(context_wrap(TEST_RPM, CONTEXT_PATH_1))
+    assert rpm_pkg.package_list[0] == line_1
+    assert rpm_pkg.package_list[1] == line_2
+    assert rpm_pkg.package_list[2] == line_3
+    assert rpm_pkg.package_list[3] == line_4
+    assert rpm_pkg.package_list[4] == line_5
+    assert rpm_pkg.package_name == 'coreutils'
+
+    rpm_pkg_2 = RpmVPackage(context_wrap(TEST_RPM_2, CONTEXT_PATH_1))
+    assert rpm_pkg_2.package_list[2].get('file', None) == '/etc/chrony.conf'
+
+
+def test_rpm_pkg_empty():
+    with pytest.raises(SkipComponent) as exc:
+        RpmVPackage(context_wrap([], CONTEXT_PATH_1))
+    assert 'Empty result' in str(exc)
+
+
 def test_doc_examples():
     env = {
-        "rpm_v_packages": RpmVPackages(context_wrap(TEST_RPM))
+        "rpm_v_packages": RpmVPackages(context_wrap(TEST_RPM)),
+        "rpm_v_pkg": RpmVPackage(context_wrap(TEST_RPM, CONTEXT_PATH_1))
     }
     failed, total = doctest.testmod(rpm_v_packages, globs=env)
     assert failed == 0

@@ -27,7 +27,7 @@ from insights.specs.datasources import (
         corosync as corosync_ds, dir_list, ethernet, httpd, ipcs, intersystems,
         kernel, kernel_module_list, leapp, lpstat, ls, luks_devices,
         machine_ids, malware_detection, md5chk, mount as mount_ds,
-        package_provides, ps as ps_datasource, rpm_pkgs, sap,
+        package_provides, ps as ps_datasource, rpm_pkgs, rpm_v_pkgs, sap,
         satellite_missed_queues, semanage, ssl_certificate,
         sys_fs_cgroup_memory, sys_fs_cgroup_memory_tasks_number,
         user_group, yum_updates)
@@ -580,6 +580,7 @@ class DefaultSpecs(Specs):
     rndc_status = simple_command("/usr/sbin/rndc status")
     ros_config = simple_file("/var/lib/pcp/config/pmlogger/config.ros")
     rpm_V_packages = simple_command("/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo chrony findutils glibc", keep_rc=True, signum=signal.SIGTERM)
+    rpm_V_package = foreach_execute(rpm_v_pkgs.list_with_pkgs, "/bin/rpm -V %s", keep_rc=True)
     rpm_ostree_status = simple_command("/usr/bin/rpm-ostree status --json", signum=signal.SIGTERM)
     rpm_pkgs = rpm_pkgs.pkgs_with_writable_dirs
     rsyslog_conf = glob_file(["/etc/rsyslog.conf", "/etc/rsyslog.d/*.conf"])

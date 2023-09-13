@@ -230,6 +230,14 @@ insights.specs.datasources.ps
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.rpm_v_pkgs
+----------------------------------------
+
+.. automodule:: insights.specs.datasources.rpm_v_pkgs
+    :members: list_with_pkgs
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.rsyslog_confs
 ----------------------------------------
 
