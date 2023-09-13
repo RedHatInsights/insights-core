@@ -25,9 +25,9 @@ def iris_working_configuration(broker):
         conf_directory = item['directory']
         conf_file = item['conf file'].split()[0].strip()
 
-        configuration_file_path = os.path.join(conf_directory, conf_file)
-        if os.path.isfile(configuration_file_path):
-            all_paths.append(configuration_file_path)
+        file_path = os.path.join(conf_directory, conf_file)
+        if os.path.isfile(file_path):
+            all_paths.append(file_path)
     if all_paths:
         return all_paths
     raise SkipComponent
