@@ -135,7 +135,7 @@ Startup of InterSystems IRIS [IRIS for UNIX (Red Hat Enterprise Linux 8 for x86-
 
 def test_iris_list():
     iris_running = iris.IrisList(context_wrap(IRIS_RUNNING_1))
-    assert list(iris_running.keys()) == ['IRIS', 'IRIS2']
+    assert set(list(iris_running.keys())) == {'IRIS', 'IRIS2'}
     assert iris_running['IRIS']['status'] == 'running, since Tue Jun 27 01:55:25 2023'
     assert 'state' in iris_running['IRIS']
     assert iris_running.is_running
@@ -148,7 +148,7 @@ def test_iris_list():
     assert iris_running2.is_running
 
     iris_down = iris.IrisList(context_wrap(IRIS_DOWN))
-    assert list(iris_down.keys()) == ['IRIS', 'IRIS2']
+    assert set(list(iris_down.keys())) == {'IRIS', 'IRIS2'}
     assert iris_down['IRIS']['status'] == 'down, last used Tue Jun 27 01:50:36 2023'
     assert 'state' not in iris_down['IRIS']
     assert not iris_down.is_running

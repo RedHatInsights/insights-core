@@ -7,10 +7,10 @@ IrisList - Command ``/usr/bin/iris list``
 =========================================
 
 IrisCpf - Files ``iris.cpf``
-===========================
+============================
 
 IrisMessages - Files ``messages.log``
-====================================
+=====================================
 """
 
 from insights.core import CommandParser, IniConfigFile, LogFileOutput
