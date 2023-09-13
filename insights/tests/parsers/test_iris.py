@@ -18,13 +18,13 @@ Configuration 'IRIS'   (default)
     product:      InterSystems IRIS
 
 Configuration 'IRIS2'
-	directory:    /intersystems2
-	versionid:    2023.1.0.235.1com
-	datadir:      /intersystems2
-	conf file:    iris.cpf  (SuperServer port = 51773, WebServer = 52774)
-	status:       running, since Thu Aug 10 02:47:27 2023
-	state:        ok
-	product:      InterSystems IRIS
+    directory:    /intersystems2
+    versionid:    2023.1.0.235.1com
+    datadir:      /intersystems2
+    conf file:    iris.cpf  (SuperServer port = 51773, WebServer = 52774)
+    status:       running, since Thu Aug 10 02:47:27 2023
+    state:        ok
+    product:      InterSystems IRIS
 """.strip()
 
 IRIS_RUNNING_2 = """
@@ -39,13 +39,13 @@ Configuration 'IRIS'   (default)
     product:      InterSystems IRIS
 
 Configuration 'IRIS2'
-	directory:    /intersystems2
-	versionid:    2023.1.0.235.1com
-	datadir:      /intersystems2
-	conf file:    iris.cpf  (SuperServer port = 51773, WebServer = 52774)
-	status:       down, last used Thu Aug 10 07:21:10 2023
-	state:        ok
-	product:      InterSystems IRIS
+    directory:    /intersystems2
+    versionid:    2023.1.0.235.1com
+    datadir:      /intersystems2
+    conf file:    iris.cpf  (SuperServer port = 51773, WebServer = 52774)
+    status:       down, last used Thu Aug 10 07:21:10 2023
+    state:        ok
+    product:      InterSystems IRIS
 """.strip()
 
 IRIS_DOWN = """
@@ -59,13 +59,13 @@ Configuration 'IRIS'   (default)
     product:      InterSystems IRIS
 
 Configuration 'IRIS2'
-	directory:    /intersystems2
-	versionid:    2023.1.0.235.1com
-	datadir:      /intersystems2
-	conf file:    iris.cpf  (SuperServer port = 51773, WebServer = 52774)
-	status:       down, last used Thu Aug 10 07:21:10 2023
-	state:        ok
-	product:      InterSystems IRIS
+    directory:    /intersystems2
+    versionid:    2023.1.0.235.1com
+    datadir:      /intersystems2
+    conf file:    iris.cpf  (SuperServer port = 51773, WebServer = 52774)
+    status:       down, last used Thu Aug 10 07:21:10 2023
+    state:        ok
+    product:      InterSystems IRIS
 """.strip()
 
 IRIS_NO_CONTENT = """"""

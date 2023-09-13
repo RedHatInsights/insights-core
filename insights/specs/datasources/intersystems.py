@@ -15,11 +15,10 @@ def iris_working_configuration(broker):
     This datasource get information from ``iris.cpf`` file.
 
     Returns:
-        str: the raw content of the ``iris.cpf`` file .
+        list: the file path of the ``iris.cpf`` files
 
     Raises:
-        SkipComponent: When the `iris.cpf` does not exist
-        ContentException: When any exception occurs.
+        SkipComponent: there is no `iris.cpf` file
     """
     all_paths = []
     for key, value in broker[IrisList].items():
@@ -40,11 +39,10 @@ def iris_working_messages_log(broker):
     This datasource get information from ``messages.log`` file.
 
     Returns:
-        str: the filtered content of the ``messages.log`` file .
+        list: the file path of the ``messages.log`` files
 
     Raises:
-        SkipComponent: When the log file/option/filters do not exist
-        ContentException: When any exception occurs.
+        SkipComponent: there is no `messages.log` file
     """
     iris_cpf = broker[IrisCpf]
     all_paths = []
