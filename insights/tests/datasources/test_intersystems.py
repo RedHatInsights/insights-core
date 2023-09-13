@@ -102,7 +102,7 @@ def test_iris_working_configuration(m_isfile):
     iris_list_info = IrisList(context_wrap(IRIR_LIST))
     broker = {IrisList: iris_list_info}
     result = iris_working_configuration(broker)
-    assert set(result) == {"/intersystems/iris.cpf", "/intersystems2/iris.cpf"}
+    assert set(result) == set(["/intersystems/iris.cpf", "/intersystems2/iris.cpf"])
 
 
 def test_iris_working_configuration_no_file():
@@ -119,7 +119,7 @@ def test_iris_working_messages_log(m_isfile):
     iris_cpf_info_2 = IrisCpf(context_wrap(IRIS_CPF_2))
     broker = {IrisCpf: [iris_cpf_info, iris_cpf_info_2]}
     result = iris_working_messages_log(broker)
-    assert set(result) == {'/intersystems/mgr/messages.log', '/intersystems2/mgr/messages.log'}
+    assert set(result) == set(['/intersystems/mgr/messages.log', '/intersystems2/mgr/messages.log'])
 
 
 def test_iris_working_messages_log_no_file():
