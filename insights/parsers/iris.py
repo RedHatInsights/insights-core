@@ -6,10 +6,10 @@ Parsers included in this module are:
 IrisList - Command ``/usr/bin/iris list``
 =========================================
 
-IrisCpf - File ``iris.cpf``
+IrisCpf - Files ``iris.cpf``
 ===========================
 
-IrisMessages - File ``messages.log``
+IrisMessages - Files ``messages.log``
 ====================================
 """
 
@@ -48,7 +48,7 @@ class IrisList(CommandParser, dict):
             if not line.strip():
                 continue
             if line.strip().startswith('Configuration'):
-                instance_name =  line.split()[1].strip('\'"')
+                instance_name = line.split()[1].strip('\'"')
                 self[instance_name] = {}
                 if "(default)" in line:
                     self[instance_name]["default"] = True
