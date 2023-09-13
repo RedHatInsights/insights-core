@@ -20,10 +20,12 @@ from insights.specs import Specs
 
 
 @parser(Specs.iris_list)
-class IrisList(CommandParser, dict):
+class IrisList(CommandParser, list):
     """
     Parse the output of the ``/usr/bin/iris list`` command.
 
+    Attributes:
+        default (dict): the default instance
     Sample Input::
 
         Configuration 'IRIS'   (default)
@@ -36,7 +38,7 @@ class IrisList(CommandParser, dict):
             product:      InterSystems IRIS
 
     Examples:
-        >>> iris_info.data[0]['status']
+        >>> iris_info[0]['status']
         'running, since Tue Jun 27 01:55:25 2023'
         >>> iris_info.is_running
         True
@@ -45,7 +47,6 @@ class IrisList(CommandParser, dict):
     """
 
     def parse_content(self, content):
-        self.data = []
         self.default = {}
         default_instance = False
         item_instance = {}
@@ -54,7 +55,7 @@ class IrisList(CommandParser, dict):
                 continue
             if line.strip().startswith('Configuration'):
                 if item_instance:
-                    self.data.append(item_instance)
+                    self.append(item_instance)
                 if default_instance:
                     self.default = item_instance
                 instance_name = line.split()[1].strip('\'"')
@@ -67,17 +68,17 @@ class IrisList(CommandParser, dict):
                 key, value = line.split(":", 1)
                 item_instance[key.strip()] = value.strip()
         if item_instance:
-            self.data.append(item_instance)
+            self.append(item_instance)
         if default_instance:
             self.default = item_instance
 
-        if len(self.data) == 0:
+        if len(self) == 0:
             raise SkipComponent("The result is empty")
 
     @property
     def is_running(self):
         """Return True when the iris instance is running, and False when it is down"""
-        return any(item.get('status', "").startswith('running') for item in self.data)
+        return any(item.get('status', "").startswith('running') for item in self)
 
 
 @parser(Specs.iris_cpf)

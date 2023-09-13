@@ -135,23 +135,23 @@ Startup of InterSystems IRIS [IRIS for UNIX (Red Hat Enterprise Linux 8 for x86-
 
 def test_iris_list():
     iris_running = iris.IrisList(context_wrap(IRIS_RUNNING_1))
-    assert len(iris_running.data) == 2
-    assert iris_running.data[0]['status'] == 'running, since Tue Jun 27 01:55:25 2023'
+    assert len(iris_running) == 2
+    assert iris_running[0]['status'] == 'running, since Tue Jun 27 01:55:25 2023'
     assert iris_running.default['status'] == 'running, since Tue Jun 27 01:55:25 2023'
-    assert 'state' in iris_running.data[0]
+    assert 'state' in iris_running[0]
     assert iris_running.is_running
 
     iris_running2 = iris.IrisList(context_wrap(IRIS_RUNNING_2))
-    assert len(iris_running2.data) == 2
-    assert iris_running2.data[0]['status'] == 'running, since Tue Jun 27 01:55:25 2023'
-    assert iris_running2.data[1]['status'] == 'down, last used Thu Aug 10 07:21:10 2023'
-    assert 'state' in iris_running2.data[0]
+    assert len(iris_running2) == 2
+    assert iris_running2[0]['status'] == 'running, since Tue Jun 27 01:55:25 2023'
+    assert iris_running2[1]['status'] == 'down, last used Thu Aug 10 07:21:10 2023'
+    assert 'state' in iris_running2[0]
     assert iris_running2.is_running
 
     iris_down = iris.IrisList(context_wrap(IRIS_DOWN))
-    assert len(iris_down.data) == 2
-    assert iris_down.data[0]['status'] == 'down, last used Tue Jun 27 01:50:36 2023'
-    assert 'state' not in iris_down.data[0]
+    assert len(iris_down) == 2
+    assert iris_down[0]['status'] == 'down, last used Tue Jun 27 01:50:36 2023'
+    assert 'state' not in iris_down[0]
     assert not iris_down.is_running
 
 
