@@ -328,6 +328,7 @@ class Specs(SpecSet):
     ktimer_lockless = RegistryPoint()
     kubepods_cpu_quota = RegistryPoint(multi_output=True)
     lastupload = RegistryPoint(multi_output=True)
+    leapp_migration_results = RegistryPoint()
     leapp_report = RegistryPoint()
     ld_library_path_of_user = RegistryPoint()
     ldif_config = RegistryPoint(multi_output=True)
