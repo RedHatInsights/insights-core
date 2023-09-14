@@ -129,7 +129,7 @@ def pkgs_with_writable_dirs(broker):
 
 
 @datasource(HostContext)
-def pkg_list(broker):
+def rpm_v_pkg_list(broker):
     """
     Custom datasources for ``/bin/rpm -V <package>`` commands
 

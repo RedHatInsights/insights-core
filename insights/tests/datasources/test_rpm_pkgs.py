@@ -6,7 +6,7 @@ from mock.mock import Mock
 from insights.core import filters
 from insights.core.exceptions import SkipComponent
 from insights.core.spec_factory import DatasourceProvider
-from insights.specs.datasources.rpm_pkgs import LocalSpecs, pkgs_with_writable_dirs, pkg_list
+from insights.specs.datasources.rpm_pkgs import LocalSpecs, pkgs_with_writable_dirs, rpm_v_pkg_list
 from insights.specs import Specs
 
 RPM_CMD = """
@@ -73,9 +73,9 @@ def teardown_function():
 
 def test_pkgs_list_empty():
     with pytest.raises(SkipComponent):
-        pkg_list({})
+        rpm_v_pkg_list({})
 
 
 def test_rpm_v_pkgs():
-    ret = pkg_list({})
+    ret = rpm_v_pkg_list({})
     assert ret == ['chrony', 'coreutils', 'findutils', 'glibc', 'passwd', 'procps', 'procps-ng', 'shadow-utils', 'sudo']
