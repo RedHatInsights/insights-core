@@ -26,6 +26,7 @@ class IrisList(CommandParser, list):
 
     Attributes:
         default (dict): the default instance
+
     Sample Input::
 
         Configuration 'IRIS'   (default)
@@ -48,29 +49,20 @@ class IrisList(CommandParser, list):
 
     def parse_content(self, content):
         self.default = {}
-        default_instance = False
         item_instance = {}
+
         for line in content:
             if not line.strip():
                 continue
             if line.strip().startswith('Configuration'):
-                if item_instance:
-                    self.append(item_instance)
-                if default_instance:
-                    self.default = item_instance
                 instance_name = line.split()[1].strip('\'"')
                 item_instance = {"instance_name": instance_name}
                 if "(default)" in line:
-                    default_instance = True
-                else:
-                    default_instance = False
-            elif ":" in line:
+                    self.default = item_instance
+                self.append(item_instance)
+            elif ":" in line and item_instance:
                 key, value = line.split(":", 1)
                 item_instance[key.strip()] = value.strip()
-        if item_instance:
-            self.append(item_instance)
-        if default_instance:
-            self.default = item_instance
 
         if len(self) == 0:
             raise SkipComponent("The result is empty")
