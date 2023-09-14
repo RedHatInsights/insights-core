@@ -325,9 +325,9 @@ class DefaultSpecs(Specs):
     iptables_permanent = simple_file("etc/sysconfig/iptables")
     ipv4_neigh = simple_command("/sbin/ip -4 neighbor show nud all")
     ipv6_neigh = simple_command("/sbin/ip -6 neighbor show nud all")
-    iris_cpf = intersystems.iris_working_configuration
+    iris_cpf = foreach_collect(intersystems.iris_working_configuration, "%s")
     iris_list = simple_command("/usr/bin/iris list")
-    iris_messages_log = intersystems.iris_working_messages_log
+    iris_messages_log = foreach_collect(intersystems.iris_working_messages_log, "%s")
     ironic_inspector_log = first_file(["/var/log/containers/ironic-inspector/ironic-inspector.log", "/var/log/ironic-inspector/ironic-inspector.log"])
     iscsiadm_m_session = simple_command("/usr/sbin/iscsiadm -m session")
     jbcs_httpd24_httpd_error_log = simple_file("/opt/rh/jbcs-httpd24/root/etc/httpd/logs/error_log")
