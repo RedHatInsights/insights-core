@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.2.15
+Version:        3.2.16
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,16 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Sep 14 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.16-1
+- FEAT: New rpm_v_package using foreach_execute (#3915) (986222045@qq.com)
+- fix: Refactor iris relevant parsers and datasources (#3914)
+  (jiazhang@redhat.com)
+- feat: New spec and parser for migration-results (#3913)
+  (xiangceliu@redhat.com)
+- chore: stop collecting .exp.sed from Specs (core collection) (#3908)
+  (xiangceliu@redhat.com)
+- fix the typo tag date in CHANGELOG (xiangceliu@redhat.com)
+
 * Fri Sep 08 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.15-1
 - feat: New spec "/etc/mail/sendmail.mc" (#3910)
   (44796653+huali027@users.noreply.github.com)

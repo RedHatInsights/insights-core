@@ -2,6 +2,13 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.2.16](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.16) (2023-09-14)
+
+- FEAT: New rpm_v_package using foreach_execute ([PR 3915](https://github.com/RedHatInsights/insights-core/pull/3915))
+- fix: Refactor iris relevant parsers and datasources ([PR 3914](https://github.com/RedHatInsights/insights-core/pull/3914))
+- feat: New spec and parser for migration-results ([PR 3913](https://github.com/RedHatInsights/insights-core/pull/3913))
+- chore: stop collecting .exp.sed from Specs (core collection) ([PR 3908](https://github.com/RedHatInsights/insights-core/pull/3908))
+
 # [insights-core-3.2.15](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.15) (2023-09-08)
 
 - feat: New spec "/etc/mail/sendmail.mc" ([PR 3910](https://github.com/RedHatInsights/insights-core/pull/3910))
