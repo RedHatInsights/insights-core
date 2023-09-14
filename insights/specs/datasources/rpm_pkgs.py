@@ -1,5 +1,5 @@
 """
-Custom datasource for CVE-2021-35937, CVE-2021-35938, and CVE-2021-35939.
+Custom datasource for RPM command
 """
 import grp
 import pwd
@@ -9,6 +9,7 @@ from collections import defaultdict
 
 from insights.core.context import HostContext
 from insights.core.exceptions import SkipComponent
+from insights.core.filters import get_filters
 from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider, simple_command
 from insights.specs import Specs
@@ -125,3 +126,16 @@ def pkgs_with_writable_dirs(broker):
         return DatasourceProvider(
             content=sorted(packages), relative_path="insights_commands/rpm_pkgs"
         )
+
+
+@datasource(HostContext)
+def rpm_v_pkg_list(broker):
+    """
+    Custom datasources for ``/bin/rpm -V <package>`` commands
+
+    Return a list according to the spec filters.
+    """
+    filters = sorted(get_filters(Specs.rpm_V_package_list))
+    if filters:
+        return filters
+    raise SkipComponent
