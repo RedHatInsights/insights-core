@@ -16,6 +16,7 @@ from insights.core import CommandParser
 from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.rpm_V_packages)
@@ -24,6 +25,7 @@ class RpmVPackages(CommandParser):
     Class for parsing ``/bin/rpm -V <packages>`` command.
 
     .. warning::
+        This class is deprecated and will be removed from 3.5.0.
 
         For Insights Advisor Rules, it's recommended to use the
         :class:`insights.parsers.rpm_v_packages.RpmVPackage` and add the
@@ -52,6 +54,10 @@ class RpmVPackages(CommandParser):
         [('attributes', '..?......'), ('file', '/etc/sudoers'), ('line', '..?......  c /etc/sudoers'), ('mark', 'c')]
 """
 
+    def __init__(self, *args, **kwargs):
+        deprecated(RpmVPackages, "Please use the :class:`insights.parsers.rpm_v_packages.RpmVPackage` instead.", "3.5.0")
+        super(RpmVPackages, self).__init__(*args, **kwargs)
+
     def parse_content(self, content):
         self.packages_list = []
 
@@ -75,11 +81,10 @@ class RpmVPackage(CommandParser):
 
     Attributes:
         package_name (String): The name of package
-        package_list (list of dictionaries): Every dictionary contains information about one entry
+        discrepancies (list of dictionaries): Every dictionary contains information about one entry
 
     Sample output of this command is::
 
-        package procps is not installed
         ..?......  c /etc/sudoers
         ..?......    /usr/bin/sudo
         ..?......    /usr/bin/sudoreplay
@@ -89,25 +94,26 @@ class RpmVPackage(CommandParser):
         >>> type(rpm_v_pkg)
         <class 'insights.parsers.rpm_v_packages.RpmVPackage'>
         >>> rpm_v_pkg.package_name
-        'coreutils'
-        >>> len(rpm_v_pkg.package_list)
-        5
-        >>> sorted(rpm_v_pkg.package_list[0].items())
-        [('attributes', None), ('file', None), ('line', 'package procps is not installed'), ('mark', None)]
-        >>> sorted(rpm_v_pkg.package_list[1].items())
+        'sudo'
+        >>> len(rpm_v_pkg.discrepancies)
+        4
+        >>> sorted(rpm_v_pkg.discrepancies[0].items())
         [('attributes', '..?......'), ('file', '/etc/sudoers'), ('line', '..?......  c /etc/sudoers'), ('mark', 'c')]
 """
 
     def parse_content(self, content):
-        self.package_list = []
-        self.package_name = self.file_path.split("/")[-1].split('_')[-1] if self.file_path else None
+        self.discrepancies = []
+        self.package_name = self.file_name.split('_')[-1] if self.file_name else None
 
         for line in content:
             line_parts = line.split()
             if not line_parts:
                 continue
 
-            if "package" in line_parts[0] or "missing" in line_parts[0]:
+            if "package" in line_parts[0]:
+                raise SkipComponent("Invalid Contents")
+
+            if "missing" in line_parts[0]:
                 entry = {"line": line.strip(), "attributes": None, "mark": None, "file": None}
             elif len(line_parts) == 3:
                 entry = {"line": line.strip(), "attributes": line_parts[0], "mark": line_parts[1],
@@ -115,7 +121,7 @@ class RpmVPackage(CommandParser):
             else:
                 entry = {"line": line.strip(), "attributes": line_parts[0], "mark": None,
                          "file": line_parts[1]}
-            self.package_list.append(entry)
+            self.discrepancies.append(entry)
 
-        if not self.package_list:
+        if not self.discrepancies:
             raise SkipComponent("Empty result")

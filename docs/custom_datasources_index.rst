@@ -230,11 +230,11 @@ insights.specs.datasources.ps
     :show-inheritance:
     :undoc-members:
 
-insights.specs.datasources.rpm_v_pkgs
-----------------------------------------
+insights.specs.datasources.rpm_pkgs
+-----------------------------------
 
-.. automodule:: insights.specs.datasources.rpm_v_pkgs
-    :members: list_with_pkgs
+.. automodule:: insights.specs.datasources.rpm_pkgs
+    :members: pkg_list, pkgs_with_writable_dirs
     :show-inheritance:
     :undoc-members:
 
