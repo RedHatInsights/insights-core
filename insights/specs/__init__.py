@@ -645,6 +645,8 @@ class Specs(SpecSet):
     root_crontab = RegistryPoint()
     ros_config = RegistryPoint()
     route = RegistryPoint()
+    rpm_V_package = RegistryPoint(multi_output=True)
+    rpm_V_package_list = RegistryPoint(filterable=True)
     rpm_V_packages = RegistryPoint()
     rpm_ostree_status = RegistryPoint()
     rpm_pkgs = RegistryPoint()

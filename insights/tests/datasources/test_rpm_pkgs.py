@@ -3,9 +3,11 @@ import pytest
 
 from mock.mock import Mock
 
+from insights.core import filters
 from insights.core.exceptions import SkipComponent
 from insights.core.spec_factory import DatasourceProvider
-from insights.specs.datasources.rpm_pkgs import LocalSpecs, pkgs_with_writable_dirs
+from insights.specs.datasources.rpm_pkgs import LocalSpecs, pkgs_with_writable_dirs, rpm_v_pkg_list
+from insights.specs import Specs
 
 RPM_CMD = """
 httpd-core; httpd-core-2.4.53-7.el9.x86_64; /usr/share/doc/httpd-core; drwxr-xr-x; apache; root; Red Hat, Inc.
@@ -55,3 +57,25 @@ def test_no_rpm(no_rpm):
 
     with pytest.raises(SkipComponent):
         pkgs_with_writable_dirs(broker)
+
+
+def setup_function(func):
+    if func is test_pkgs_list_empty:
+        pass
+    if func is test_rpm_v_pkgs:
+        filters.add_filter(Specs.rpm_V_package_list, ['coreutils', 'procps', 'procps-ng', 'shadow-utils', 'passwd', 'sudo', 'chrony', 'findutils', 'glibc'])
+
+
+def teardown_function():
+    if Specs.rpm_V_package_list in filters._CACHE:
+        del filters._CACHE[Specs.rpm_V_package_list]
+
+
+def test_pkgs_list_empty():
+    with pytest.raises(SkipComponent):
+        rpm_v_pkg_list({})
+
+
+def test_rpm_v_pkgs():
+    ret = rpm_v_pkg_list({})
+    assert ret == ['chrony', 'coreutils', 'findutils', 'glibc', 'passwd', 'procps', 'procps-ng', 'shadow-utils', 'sudo']
