@@ -2,6 +2,10 @@ import json
 import os
 
 from tempfile import mkdtemp
+try:
+    from unittest.mock import patch
+except Exception:
+    from mock import patch
 
 from insights.core import dr
 from insights.core.exceptions import ContentException
@@ -65,6 +69,16 @@ class TestSpecs(Specs):
 @rule(Specs.the_data)
 def report(dt):
     return make_info('INFO_1')
+
+#
+# TEST
+#
+
+
+def patch_get_registry_point(component):
+    if component == TestSpecs.the_data:
+        return set([Specs.the_data])
+    return set()
 
 
 def test_marshal():
@@ -248,7 +262,8 @@ def test_round_trip():
             fs.remove(tmp_path)
 
 
-def test_dehydrate():
+@patch('insights.core.dr.get_registry_points', side_effect=patch_get_registry_point)
+def test_dehydrate(patcher):
     broker = dr.run(report)
     exc = next(iter(broker.tracebacks))
     tb = broker.tracebacks[exc]

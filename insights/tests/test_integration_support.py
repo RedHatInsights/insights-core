@@ -1,6 +1,6 @@
 from insights.plugins.ps_rule_fakes import psaux_no_filter, psauxww_ds_filter, psalxwww_parser_filter
 from insights.specs import Specs
-from . import InputData, run_test
+from insights.tests import InputData, run_test
 
 import pytest
 

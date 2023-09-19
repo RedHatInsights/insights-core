@@ -1,4 +1,5 @@
 from __future__ import print_function
+
 import copy
 import inspect
 import itertools
@@ -6,6 +7,7 @@ import json
 import logging
 import six
 import six.moves
+
 from collections import defaultdict
 from functools import wraps
 from operator import eq
@@ -16,11 +18,11 @@ except ImportError:
     from io import StringIO
 
 import insights
+
 from insights import apply_filters
 from insights.core import dr, filters, spec_factory
 from insights.core.context import Context
 from insights.core.plugins import make_none
-from insights.core.spec_factory import RegistryPoint
 from insights.specs import Specs
 
 
@@ -36,7 +38,7 @@ def _intercept_add_filter(func):
     def inner(component, pattern):
         ret = add_filter(component, pattern)
         calling_module = inspect.stack()[1][0].f_globals.get("__name__")
-        ADDED_FILTERS[calling_module] |= set(r for r in _get_registry_points(component) if r.filterable)
+        ADDED_FILTERS[calling_module] |= set(r for r in dr.get_registry_points(component) if r.filterable)
         return ret
     return inner
 
@@ -55,23 +57,6 @@ filters.add_filter = _intercept_add_filter(filters.add_filter)
 insights.add_filter = _intercept_add_filter(insights.add_filter)
 
 spec_factory.find = _intercept_find(spec_factory.find)
-
-
-def _get_registry_points(component):
-    """
-    Get underlying registry points for a component. The return set
-    will include the passed-in component if it is also a registry point.
-    """
-    results = set()
-    if isinstance(component, RegistryPoint):
-        results.add(component)
-    for c in dr.walk_tree(component):
-        try:
-            if isinstance(c, RegistryPoint):
-                results.add(c)
-        except:
-            pass
-    return results
 
 
 logger = logging.getLogger(__name__)
@@ -162,7 +147,7 @@ def run_test(component, input_data, expected=None, return_make_none=False):
     if filters.ENABLED:
         mod = component.__module__
         sup_mod = '.'.join(mod.split('.')[:-1])
-        rps = _get_registry_points(component)
+        rps = dr.get_registry_points(component)
         filterable = set(d for d in rps if dr.get_delegate(d).filterable)
         missing_filters = filterable - ADDED_FILTERS.get(mod, set()) - ADDED_FILTERS.get(sup_mod, set())
         if missing_filters:

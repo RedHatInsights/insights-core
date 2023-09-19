@@ -1,3 +1,8 @@
+try:
+    from unittest.mock import patch
+except Exception:
+    from mock import patch
+
 from insights.core import dr
 from insights.core import Parser
 from insights.core.exceptions import ParseException, ContentException
@@ -42,8 +47,21 @@ class SomeParser(Parser):
 def report(dt):
     return make_info('INFO_1')
 
+#
+# TEST
+#
 
-def test_broker_spec_exceptions():
+
+def patch_get_registry_point(component):
+    if component == TestSpecs.the_ce_data:
+        return set([Specs.the_ce_data])
+    if component == TestSpecs.the_ex_data:
+        return set([Specs.the_ex_data])
+    return set()
+
+
+@patch('insights.core.dr.get_registry_points', side_effect=patch_get_registry_point)
+def test_broker_spec_exceptions(pather):
     broker = dr.run(report)
     assert report in broker
     assert Specs.the_ce_data in broker.exceptions
@@ -65,7 +83,8 @@ def test_broker_spec_exceptions():
     assert EXPECTED_MSG_2 in tb
 
 
-def test_broker_parse_exception():
+@patch('insights.core.dr.get_registry_points', side_effect=patch_get_registry_point)
+def test_broker_parse_exception(patcher):
     broker = run_input_data(SomeParser, InputData())
     assert SomeParser in broker.exceptions
     exs = broker.exceptions[SomeParser]

@@ -3,6 +3,11 @@ import os
 import pytest
 import tempfile
 
+try:
+    from unittest.mock import patch
+except Exception:
+    from mock import patch
+
 from insights.core import Parser, dr
 from insights.core.context import HostContext
 from insights.core.exceptions import ContentException
@@ -59,6 +64,18 @@ class stage(dr.ComponentType):
     def invoke(self, broker):
         return self.component(broker)
 
+#
+# TEST
+#
+
+
+def patch_get_registry_point(component):
+    if component == Stuff.no_such_file:
+        return set([Specs.no_such_file])
+    if component == Stuff.no_such_cmd:
+        return set([Specs.no_such_cmd])
+    return set()
+
 
 @stage(Stuff.smpl_file, Stuff.many, Stuff.smpl_cmd,
        Stuff.smpl_cmd_list_of_lists,
@@ -72,7 +89,8 @@ def dostuff(broker):
     assert Stuff.no_such_file not in broker
 
 
-def test_spec_factory():
+@patch('insights.core.dr.get_registry_points', side_effect=patch_get_registry_point)
+def test_spec_factory(patcher):
     add_filter(Stuff.smpl_cmd_list_of_lists, " hello ")
     hn = HostContext()
     broker = dr.Broker()
