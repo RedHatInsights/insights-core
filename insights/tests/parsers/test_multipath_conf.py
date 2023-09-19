@@ -166,6 +166,14 @@ def test_multipath_conf_tree():
     assert multipath_conf_info['devices']['device'][0]['no_path_retry'].value == 'queue'
     assert multipath_conf_info['blacklist']['devnode'].value == '^hd[a-z]'
 
+    assert 'path_selector' in multipath_conf_info['defaults']
+    assert 'unexist_in_defaults' not in multipath_conf_info['defaults']
+    assert bool(multipath_conf_info['defaults']['unexist_key']) is False
+    assert multipath_conf_info['defaults']['unexist_key'].value is None
+
+    assert [mp['alias'].value for mp in multipath_conf_info['multipaths']['multipath']] == ['yellow', 'red']
+    assert [mp['wwid'].value for mp in multipath_conf_info['multipaths']['multipath']] == [None, '1DEC_____321816758474']
+
 
 def test_multipath_conf_tree_initramfs():
     multipath_conf_info = multipath_conf.MultipathConfTreeInitramfs(context_wrap(MULTIPATH_CONF_INFO))

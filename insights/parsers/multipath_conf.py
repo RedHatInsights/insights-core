@@ -36,7 +36,7 @@ class MultipathConfParser(Parser, LegacyItemAccess):
     """
     .. warning::
         This class is deprecated, please use function
-        :py:function:`insights.parsers.multipath_conf.parse_doc` instead.
+        `insights.parsers.multipath_conf.parse_doc` instead.
 
     Shared parser for the file ``/etc/multipath.conf`` and output of
     ``lsinitrd -f /etc/multipath.conf`` applied to
