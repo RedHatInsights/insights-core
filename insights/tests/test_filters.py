@@ -4,6 +4,7 @@ import sys
 from collections import defaultdict
 
 from insights import datasource
+from insights.combiners.hostname import Hostname
 from insights.core import filters
 from insights.core.spec_factory import DatasourceProvider, RegistryPoint, SpecSet
 from insights.parsers.ps import PsAux, PsAuxcww
@@ -108,20 +109,19 @@ def test_add_filter_to_parser_patterns_list():
     assert not parser_filters
 
 
-def test_add_filter_to_parser_non_filterable():
-    filter_string = "bash"
-    filters.add_filter(PsAuxcww, filter_string)
-
-    spec_filters = filters.get_filters(Specs.ps_auxcww)
-    assert not spec_filters
-
-    parser_filters = filters.get_filters(PsAuxcww)
-    assert not parser_filters
-
-
 def test_add_filter_exception_not_filterable():
     with pytest.raises(Exception):
         filters.add_filter(Specs.ps_auxcww, "bash")
+
+
+def test_add_filter_exception_parser_non_filterable():
+    with pytest.raises(Exception):
+        filters.add_filter(PsAuxcww, 'bash')
+
+
+def test_add_filter_exception_combiner_non_filterable():
+    with pytest.raises(Exception):
+        filters.add_filter(Hostname, "bash")
 
 
 def test_add_filter_exception_raw():
