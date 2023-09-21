@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.2.16
+Version:        3.2.17
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,11 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Sep 21 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.17-1
+- Download malware rules into /var/lib/insights (#3921) (mhuth@redhat.com)
+- fix: raise Exception when adding filters to non-filterable datasource (#3917)
+  (xiangceliu@redhat.com)
+
 * Thu Sep 14 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.16-1
 - FEAT: New rpm_v_package using foreach_execute (#3915) (986222045@qq.com)
 - fix: Refactor iris relevant parsers and datasources (#3914)
