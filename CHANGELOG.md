@@ -2,6 +2,11 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.2.17](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.17) (2023-09-21)
+
+- Download malware rules into /var/lib/insights ([PR 3921](https://github.com/RedHatInsights/insights-core/pull/3921))
+- fix: raise Exception when adding filters to non-filterable datasource ([PR 3917](https://github.com/RedHatInsights/insights-core/pull/3917))
+
 # [insights-core-3.2.16](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.16) (2023-09-14)
 
 - FEAT: New rpm_v_package using foreach_execute ([PR 3915](https://github.com/RedHatInsights/insights-core/pull/3915))
