@@ -414,7 +414,7 @@ def is_registry_point(component):
     return type(component).__name__ == "RegistryPoint"
 
 
-def get_registry_points(component, module='insights.specs.Specs'):
+def get_registry_points(component, module="insights.specs.Specs"):
     """
     Loop through the dependency graph to identify the corresponding spec registry
     points for the component. This is primarily used by datasources and returns a
@@ -449,7 +449,7 @@ def get_registry_points(component, module='insights.specs.Specs'):
     # Process spec of DefaultSpecs
     spec_name = get_simple_name(component)
     if spec_name:
-        spec_mod = get_component_by_name('{0}.{1}'.format(module, spec_name))
+        spec_mod = get_component_by_name("{0}.{1}".format(module, spec_name))
         reg_points.add(spec_mod) if spec_mod else None
     return reg_points
 
