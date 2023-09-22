@@ -123,13 +123,29 @@ class YumRepoList(CommandParser):
                         'status': '21'
                     }
                 }
-
     """
-
+    _no_repo_available_msg_strs = [
+        "No repositories available",
+        "No hay ningún repositorio disponible",
+        "Keine Paketquellen verfügbar",
+        "Nessun repository disponibile",
+        "Ez dago biltegirik erabilgarri",
+        "Walang repositories na magagamit",
+        "Няма налични хранилища",
+        "Kullanılabilir depo yok",
+    ]
     _repo_headers = [
         ("repo id", "repo name"),
         ("id du dépôt", "nom du dépôt"),
         ("Paketquellen-ID", "Paketquellen-Name"),
+        ("id del repositorio", "nombre del repositorio"),
+        ("id do repo", "nome do repo"),
+        ("id repo", "nome repo"),
+        ("identyfikator repozytorium", "nazwa repozytorium"),
+        ("tároló azonosító", "tároló neve"),
+        ("Paketquellenkennung", "Paketquellenname"),
+        ("仓库 id", "仓库名称"),
+        ("ід. сховища", "назва сховища"),
     ]
 
     def parse_content(self, content):
@@ -139,8 +155,9 @@ class YumRepoList(CommandParser):
         if content[0].startswith('repolist:'):
             raise SkipComponent('No repolist.')
 
-        if content[0].startswith('No repositories available'):
-            raise SkipComponent('No repolist.')
+        for no_repo_available_msg in self._no_repo_available_msg_strs:
+            if content[0].startswith(no_repo_available_msg):
+                raise SkipComponent('No repolist.')
 
         trailing_line_prefix = [
                 'repolist:',
