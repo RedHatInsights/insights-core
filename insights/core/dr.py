@@ -414,7 +414,13 @@ def is_registry_point(component):
     return type(component).__name__ == "RegistryPoint"
 
 
-def get_registry_points(component, module="insights.specs.Specs"):
+def is_datasource(component):
+    comp_type = get_component_type(component)
+    if comp_type:
+        return comp_type.__name__ == "datasource"
+
+
+def get_registry_points(component):
     """
     Loop through the dependency graph to identify the corresponding spec registry
     points for the component. This is primarily used by datasources and returns a
@@ -428,29 +434,27 @@ def get_registry_points(component, module="insights.specs.Specs"):
         (set): A list of the registry points found.
     """
     reg_points = set()
-    # Process RegistryPoint spec of Specs
     if is_registry_point(component):
         reg_points.add(component)
         return reg_points
-    # Process Component
-    dependencies = get_dependencies(component)
-    if dependencies:
-        for dep in dependencies:
+    # Search dependents for datasources
+    if is_datasource(component):
+        for dep in get_dependents(component):
             if is_registry_point(dep):
                 reg_points.add(dep)
             else:
-                dep_reg_pts = get_registry_points(dep, module=module)
+                dep_reg_pts = get_registry_points(dep)
                 if dep_reg_pts:
                     reg_points.update(dep_reg_pts)
-        if reg_points:
-            # Component must have (at least) one RegistryPoint, unless ->
-            return reg_points
-        # it's a spec of DefaultSpecs
-    # Process spec of DefaultSpecs
-    spec_name = get_simple_name(component)
-    if spec_name:
-        spec_mod = get_component_by_name("{0}.{1}".format(module, spec_name))
-        reg_points.add(spec_mod) if spec_mod else None
+        return reg_points
+    # Search dependencies for Parsers/Combiners
+    for dep in get_dependencies(component):
+        if is_registry_point(dep):
+            reg_points.add(dep)
+        else:
+            dep_reg_pts = get_registry_points(dep)
+            if dep_reg_pts:
+                reg_points.update(dep_reg_pts)
     return reg_points
 
 

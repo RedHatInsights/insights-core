@@ -1,8 +1,3 @@
-try:
-    from unittest.mock import patch
-except Exception:
-    from mock import patch
-
 from insights.core import dr
 from insights.core import Parser
 from insights.core.exceptions import ParseException, ContentException
@@ -20,6 +15,12 @@ EXPECTED_MSG_3 = 'Invalid Data 3'
 class Specs(SpecSet):
     the_ce_data = RegistryPoint()
     the_ex_data = RegistryPoint()
+    the_ds_data = RegistryPoint()
+
+
+@datasource()
+def SomeData(broker):
+    return DatasourceProvider("invalid data", "dummy")
 
 
 class TestSpecs(Specs):
@@ -30,14 +31,10 @@ class TestSpecs(Specs):
     @datasource()
     def the_ex_data(broker):
         raise Exception(EXPECTED_MSG_2)
+    the_ds_data = SomeData
 
 
-@datasource()
-def SomeData(broker):
-    return DatasourceProvider("invalid data", "dummy")
-
-
-@parser(SomeData)
+@parser(Specs.the_ds_data)
 class SomeParser(Parser):
     def parse_content(self, content):
         raise ParseException(EXPECTED_MSG_3)
@@ -52,16 +49,7 @@ def report(dt):
 #
 
 
-def patch_get_registry_point(component):
-    if component == TestSpecs.the_ce_data:
-        return set([Specs.the_ce_data])
-    if component == TestSpecs.the_ex_data:
-        return set([Specs.the_ex_data])
-    return set()
-
-
-@patch('insights.core.dr.get_registry_points', side_effect=patch_get_registry_point)
-def test_broker_spec_exceptions(pather):
+def test_broker_spec_exceptions():
     broker = dr.run(report)
     assert report in broker
     assert Specs.the_ce_data in broker.exceptions
@@ -83,8 +71,7 @@ def test_broker_spec_exceptions(pather):
     assert EXPECTED_MSG_2 in tb
 
 
-@patch('insights.core.dr.get_registry_points', side_effect=patch_get_registry_point)
-def test_broker_parse_exception(patcher):
+def test_broker_parse_exception():
     broker = run_input_data(SomeParser, InputData())
     assert SomeParser in broker.exceptions
     exs = broker.exceptions[SomeParser]

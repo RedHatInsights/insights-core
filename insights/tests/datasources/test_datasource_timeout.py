@@ -1,10 +1,5 @@
 import time
 
-try:
-    from unittest.mock import patch
-except Exception:
-    from mock import patch
-
 from insights.core import dr
 from insights.core.context import HostContext, SosArchiveContext
 from insights.core.exceptions import TimeoutException
@@ -54,18 +49,6 @@ class TestSpecs(Specs):
 #
 
 
-def patch_get_registry_point(component):
-    if component == TestSpecs.spec_ds_timeout_1_2:
-        return set([Specs.spec_ds_timeout_1_2])
-    if component == TestSpecs.spec_ds_timeout_3_1:
-        return set([Specs.spec_ds_timeout_3_1])
-    if component == TestSpecs.spec_ds_timeout_default_1:
-        return set([Specs.spec_ds_timeout_default_1])
-    if component == foreach_ds_timeout_1_2:
-        return set([Specs.spec_foreach_ds_timeout_1_2])
-    return set()
-
-
 def test_timeout_datasource_no_hit():
     broker = dr.Broker()
     broker[HostContext] = HostContext()
@@ -80,8 +63,7 @@ def test_timeout_datasource_no_hit():
     assert ds_timeout_default_1 in broker
 
 
-@patch('insights.core.dr.get_registry_points', side_effect=patch_get_registry_point)
-def test_timeout_datasource_hit(patcher):
+def test_timeout_datasource_hit():
     broker = dr.Broker()
     broker[HostContext] = HostContext()
     persist = set([
@@ -100,8 +82,7 @@ def test_timeout_datasource_hit(patcher):
     assert [ex for ex in exs if isinstance(ex, TimeoutException) and str(ex) == "Datasource spec insights.tests.datasources.test_datasource_timeout.TestSpecs.spec_ds_timeout_1_2 timed out after 1 seconds!"]
 
 
-@patch('insights.core.dr.get_registry_points', side_effect=patch_get_registry_point)
-def test_timeout_foreach_datasource_hit(patcher):
+def test_timeout_foreach_datasource_hit():
     broker = dr.Broker()
     broker[HostContext] = HostContext()
     persist = set([
@@ -120,8 +101,7 @@ def test_timeout_foreach_datasource_hit(patcher):
     assert [ex for ex in exs if isinstance(ex, TimeoutException) and str(ex) == "Datasource spec insights.tests.datasources.test_datasource_timeout.foreach_ds_timeout_1_2 timed out after 1 seconds!"]
 
 
-@patch('insights.core.dr.get_registry_points', side_effect=patch_get_registry_point)
-def test_not_hostcontext_timeout_datasource_hit(patcher):
+def test_not_hostcontext_timeout_datasource_hit():
     broker = dr.Broker()
     broker[SosArchiveContext] = SosArchiveContext()
     persist = set([
@@ -138,8 +118,7 @@ def test_not_hostcontext_timeout_datasource_hit(patcher):
     assert Specs.spec_ds_timeout_1_2 not in broker.exceptions
 
 
-@patch('insights.core.dr.get_registry_points', side_effect=patch_get_registry_point)
-def test_not_hostcontext_timeout_foreach_datasource_hit(patcher):
+def test_not_hostcontext_timeout_foreach_datasource_hit():
     broker = dr.Broker()
     broker[SosArchiveContext] = SosArchiveContext()
     persist = set([

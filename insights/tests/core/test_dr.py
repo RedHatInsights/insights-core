@@ -54,11 +54,11 @@ def test_is_registry_point():
 
 
 def test_get_registry_points_simple():
-    specs = dr.get_registry_points(LocalDefaultSpecs.simple_spec, 'test_dr.RegistrySpecs')
+    specs = dr.get_registry_points(LocalDefaultSpecs.simple_spec)
     assert len(specs) == 1
     assert list(specs)[0] == RegistrySpecs.simple_spec
 
-    specs = dr.get_registry_points(LocalDefaultSpecs.first_spec_with_dep, 'test_dr.RegistrySpecs')
+    specs = dr.get_registry_points(LocalDefaultSpecs.first_spec_with_dep)
     assert len(specs) == 1
     assert list(specs)[0] == RegistrySpecs.first_spec_with_dep
 
