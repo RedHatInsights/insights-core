@@ -132,7 +132,6 @@ class YumRepoList(CommandParser):
         "Ez dago biltegirik erabilgarri",
         "Walang repositories na magagamit",
         "Няма налични хранилища",
-        "Kullanılabilir depo yok",
     ]
     _repo_headers = [
         ("repo id", "repo name"),
