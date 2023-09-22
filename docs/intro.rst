@@ -167,7 +167,7 @@ many customization options to optimize each customer's specific needs.
 .. Links:
 
 .. _Red Hat Customer Portal: https://access.redhat.com
-.. _Red Hat Insights Portal: https://access.redhat.com/products/red-hat-insights.
+.. _Red Hat Insights Portal: https://access.redhat.com/products/red-hat-insights
 .. _insights-core Repository: https://github.com/RedHatInsights/insights-core
 .. _Mozilla OpenSSH Security Guidelines: https://wiki.mozilla.org/Security/Guidelines/OpenSSH
 .. _Red Hat Insights Client GitHub Project: http://github.com/redhataccess/insights-client

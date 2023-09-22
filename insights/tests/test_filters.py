@@ -1,12 +1,27 @@
-from collections import defaultdict
-from insights.core import filters
+import pytest
+import sys
 
+from collections import defaultdict
+
+from insights import datasource
+from insights.combiners.hostname import Hostname
+from insights.core import filters
+from insights.core.spec_factory import DatasourceProvider, RegistryPoint, SpecSet
 from insights.parsers.ps import PsAux, PsAuxcww
 from insights.specs import Specs
 from insights.specs.default import DefaultSpecs
 
-import pytest
-import sys
+
+class MySpecs(SpecSet):
+    no_filters = RegistryPoint(filterable=False)
+    has_filters = RegistryPoint(filterable=True)
+
+
+class LocalSpecs(MySpecs):
+    # The has_filters depends on no_filters
+    @datasource(MySpecs.no_filters)
+    def has_filters(broker):
+        return DatasourceProvider("", "the_data")
 
 
 def setup_function(func):
@@ -18,7 +33,7 @@ def setup_function(func):
         filters.add_filter(DefaultSpecs.ps_aux, "MEM")
 
     if func is test_filter_dumps_loads:
-        filters.add_filter(Specs.ps_aux, "COMMAND")
+        filters.add_filter(Specs.ps_aux, ["PID", "COMMAND", "TEST"])
 
 
 def teardown_function(func):
@@ -48,7 +63,10 @@ def test_filter_dumps_loads():
     filters.loads(r)
 
     assert Specs.ps_aux in filters.FILTERS
-    assert filters.FILTERS[Specs.ps_aux] == set(["COMMAND"])
+    assert filters.FILTERS[Specs.ps_aux] == set(["PID", "COMMAND", "TEST"])
+
+    r2 = filters.dumps()
+    assert r2 == r  # 'filters' are in the same order in every dumps()
 
 
 def test_get_filter():
@@ -91,20 +109,19 @@ def test_add_filter_to_parser_patterns_list():
     assert not parser_filters
 
 
-def test_add_filter_to_parser_non_filterable():
-    filter_string = "bash"
-    filters.add_filter(PsAuxcww, filter_string)
-
-    spec_filters = filters.get_filters(Specs.ps_auxcww)
-    assert not spec_filters
-
-    parser_filters = filters.get_filters(PsAuxcww)
-    assert not parser_filters
-
-
 def test_add_filter_exception_not_filterable():
     with pytest.raises(Exception):
         filters.add_filter(Specs.ps_auxcww, "bash")
+
+
+def test_add_filter_exception_parser_non_filterable():
+    with pytest.raises(Exception):
+        filters.add_filter(PsAuxcww, 'bash')
+
+
+def test_add_filter_exception_combiner_non_filterable():
+    with pytest.raises(Exception):
+        filters.add_filter(Hostname, "bash")
 
 
 def test_add_filter_exception_raw():
@@ -115,3 +132,13 @@ def test_add_filter_exception_raw():
 def test_add_filter_exception_empty():
     with pytest.raises(Exception):
         filters.add_filter(Specs.ps_aux, "")
+
+
+def test_get_filters():
+    _filter = 'A filter'
+    filters.add_filter(MySpecs.has_filters, _filter)
+
+    ret_has = filters.get_filters(MySpecs.has_filters)
+    assert _filter in ret_has
+    ret_no = filters.get_filters(MySpecs.no_filters)
+    assert len(ret_no) == 0

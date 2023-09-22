@@ -53,9 +53,13 @@ class Evaluator(Formatter):
     def run_serial(self, graph=None):
         dr.run(graph or dr.COMPONENTS[dr.GROUPS.single], broker=self.broker)
 
-    def run_incremental(self, graph=None):
-        for _ in dr.run_incremental(graph or dr.COMPONENTS[dr.GROUPS.single], broker=self.broker):
-            pass
+    def run_incremental(self, graph=None, parallel=False):
+        components = graph or dr.COMPONENTS[dr.GROUPS.single]
+        if parallel:
+            with insights.get_pool(parallel, "insights-engine-pool", {"max_workers": None}) as pool:
+                dr.run_all(components, self.broker, pool)
+        else:
+            dr.run_all(components, self.broker)
 
     def format_response(self, response):
         """
@@ -70,10 +74,10 @@ class Evaluator(Formatter):
         """
         return result
 
-    def process(self, graph=None):
+    def process(self, graph=None, parallel=False):
         with self:
             if self.incremental:
-                self.run_incremental(graph)
+                self.run_incremental(graph, parallel)
             else:
                 self.run_serial(graph)
         return self.get_response()
@@ -151,10 +155,10 @@ class InsightsEvaluator(SingleEvaluator):
 
     def observer(self, comp, broker):
         super(InsightsEvaluator, self).observer(comp, broker)
-        if self.system_id is None and Specs.machine_id in broker:
+        if self.system_id is None and Specs.machine_id in broker and broker[Specs.machine_id].content:
             self.system_id = broker[Specs.machine_id].content[0].strip()
 
-        if self.release is None and Specs.redhat_release in broker:
+        if self.release is None and Specs.redhat_release in broker and broker[Specs.redhat_release].content:
             self.release = broker[Specs.redhat_release].content[0].strip()
 
         if not self.branch_info and BranchInfo in broker:

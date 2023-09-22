@@ -99,11 +99,13 @@ Examples:
     [{'READ_ONLY': False, 'PARENT_NAMES': ['vda'], 'NAME': 'vda2',
      'REMOVABLE': False, 'MAJ_MIN': '252:2', 'TYPE': 'part', 'SIZE': '8.5G'}]
 """
-
 from __future__ import division
 import re
-from .. import parser, CommandParser
-from . import ParseException, keyword_search
+
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
+from insights.parsers import keyword_search
 from insights.specs import Specs
 
 MAX_GENERATIONS = 20
@@ -224,7 +226,7 @@ class LSBlock(BlockDevices):
         See the discussion of the key ``PARENT_NAMES`` above.
     """
     def parse_content(self, content):
-        r = re.compile(r"([\s\|\`\-]*)(\S+.*) (\d+:\d+)\s+(\d)\s+(\d+(\.\d)?[A-Z])\s+(\d)\s+([a-z]+)(.*)")
+        r = re.compile(r"([\s\|\`\-]*)(\S+.*) (\d+:\d+)\s+(\d)\s+(\d+(\.\d)?[A-Z])\s+(\d)\s+([a-z0-9]+)(.*)")
         device_list = []
         parents = [None] * MAX_GENERATIONS
         for line in content[1:]:

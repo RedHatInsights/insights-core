@@ -17,35 +17,32 @@ for gathering data in myriad ways and providing a reliable object model for it.
     True
 """
 from __future__ import print_function
+
 import logging
-import pkgutil
 import os
+import pkgutil
 import sys
 import yaml
+
 from collections import defaultdict
+from contextlib import contextmanager
 
-from .core import Scannable, LogFileOutput, Parser, IniConfigFile  # noqa: F401
-from .core import FileListing, LegacyItemAccess, SysconfigOptions  # noqa: F401
-from .core import YAMLParser, JSONParser, XMLParser, CommandParser  # noqa: F401
-from .core import AttributeDict  # noqa: F401
-from .core import Syslog  # noqa: F401
-from .core import taglang
-from .core.archives import COMPRESSION_TYPES, extract, InvalidArchive, InvalidContentType  # noqa: F401
-from .core import dr  # noqa: F401
-from .core.context import ClusterArchiveContext, HostContext, HostArchiveContext, SerializedArchiveContext, ExecutionContext  # noqa: F401
-from .core.dr import SkipComponent  # noqa: F401
-from .core.hydration import create_context, initialize_broker  # noqa: F401
-from .core.plugins import combiner, fact, metadata, parser, rule  # noqa: F401
-from .core.plugins import datasource, condition, incident  # noqa: F401
-from .core.plugins import make_response, make_metadata, make_fingerprint  # noqa: F401
-from .core.plugins import make_pass, make_fail, make_info  # noqa: F401
-from .core.filters import add_filter, apply_filters, get_filters  # noqa: F401
-from .formats import get_formatter
-from .parsers import get_active_lines  # noqa: F401
-from .util import defaults  # noqa: F401
-from .formats import Formatter as FormatterClass
-
-from .core.spec_factory import RawFileProvider, TextFileProvider
+from insights.core import (CommandParser, ContainerParser, FileListing, IniConfigFile, JSONParser, LegacyItemAccess,  # noqa: F401
+                           LogFileOutput, Parser, Scannable, SysconfigOptions, Syslog, XMLParser, YAMLParser, dr,  # noqa: F401
+                           taglang)
+from insights.core.archives import COMPRESSION_TYPES, extract
+from insights.core.context import (ClusterArchiveContext, ExecutionContext, HostContext,  # noqa: F401
+                                   HostArchiveContext, SerializedArchiveContext)
+from insights.core.exceptions import InvalidArchive, InvalidContentType, SkipComponent  # noqa: F401
+from insights.core.filters import add_filter, apply_filters, get_filters  # noqa: F401
+from insights.core.hydration import create_context, initialize_broker  # noqa: F401
+from insights.core.plugins import (combiner, condition, datasource, fact, incident, make_fail, make_fingerprint,  # noqa: F401
+                                   make_info, make_metadata, make_none, make_pass, make_response, metadata,
+                                   parser, rule)
+from insights.core.spec_factory import RawFileProvider, TextFileProvider
+from insights.formats import Formatter as FormatterClass, get_formatter
+from insights.parsers import get_active_lines  # noqa: F401
+from insights.util import defaults  # noqa: F401
 
 log = logging.getLogger(__name__)
 
@@ -56,11 +53,31 @@ package_info = dict((k, None) for k in ["RELEASE", "COMMIT", "VERSION", "NAME"])
 for name in package_info:
     package_info[name] = pkgutil.get_data(__name__, name).strip().decode("utf-8")
 
+_COLOR = "auto"
+
 
 def get_nvr():
     return "{0}-{1}-{2}".format(package_info["NAME"],
                                 package_info["VERSION"],
                                 package_info["RELEASE"])
+
+
+@contextmanager
+def get_pool(parallel, prefix, kwargs):
+    """
+    Yields:
+        a ThreadPoolExecutor if parallel is True and `concurrent.futures` exists.
+        `None` otherwise.
+    """
+    if parallel:
+        try:
+            from concurrent.futures import ThreadPoolExecutor
+            with ThreadPoolExecutor(thread_name_prefix=prefix, **kwargs) as pool:
+                yield pool
+        except ImportError:
+            yield None
+    else:
+        yield None
 
 
 RULES_STATUS = {}
@@ -83,7 +100,7 @@ def add_status(name, nvr, commit=None):
 add_status(package_info["NAME"], get_nvr(), package_info["COMMIT"])
 
 
-def process_dir(broker, root, graph, context, inventory=None):
+def process_dir(broker, root, graph, context, inventory=None, parallel=False):
     ctx, broker = initialize_broker(root, context=context, broker=broker)
     log.debug("Processing %s with %s" % (root, ctx))
 
@@ -93,40 +110,53 @@ def process_dir(broker, root, graph, context, inventory=None):
         return process_cluster(graph, archives, broker=broker, inventory=inventory)
 
     graph = dict((k, v) for k, v in graph.items() if k in dr.COMPONENTS[dr.GROUPS.single])
-    broker = dr.run(graph, broker=broker)
+    if parallel:
+        with get_pool(parallel, "insights-run-pool", {"max_workers": None}) as pool:
+            broker = dr.run_all(graph, broker, pool)
+    else:
+        broker = dr.run(graph, broker=broker)
     return broker
 
 
-def _run(broker, graph=None, root=None, context=None, inventory=None):
+def _run(broker, graph=None, root=None, context=None, inventory=None, parallel=False):
     """
-    run is a general interface that is meant for stand alone scripts to use
+    run is a general interface that is meant for stand-alone scripts to use
     when executing insights components.
 
     Args:
-        root (str): None will causes a host collection in which command and
+        broker (Broker): Optionally pass a broker to use for evaluation. One is
+            created by default, but it's often useful to seed a broker with an
+            initial dependency.
+        graph (function or class): The component to execute. Will only execute
+            the component and its dependency graph. If None, all components with
+            met dependencies will execute.
+        root (str): None will cause a host collection in which command and
             file specs are run. A directory or archive path will cause
             collection from the directory or archive, and only file type specs
             or those that depend on `insights.core.context.HostArchiveContext`
             will execute.
-        component (function or class): The component to execute. Will only execute
-            the component and its dependency graph. If None, all components with
-            met dependencies will execute.
+        context (obj): The execution context that's set.
+        inventory (str): Path to inventory file.
+        parallel (bool): Boolean as to weather to use parallel execution or not.
 
     Returns:
         broker: object containing the result of the evaluation.
     """
-
     if not root:
         context = context or HostContext
         broker[context] = context()
         graph = dict((k, v) for k, v in graph.items() if k in dr.COMPONENTS[dr.GROUPS.single])
-        return dr.run(graph, broker=broker)
+        if parallel:
+            with get_pool(parallel, "insights-run-pool", {"max_workers": None}) as pool:
+                dr.run_all(graph, broker, pool)
+        else:
+            return dr.run(graph, broker=broker)
 
     if os.path.isdir(root):
-        return process_dir(broker, root, graph, context, inventory=inventory)
+        return process_dir(broker, root, graph, context, inventory=inventory, parallel=parallel)
     else:
         with extract(root) as ex:
-            return process_dir(broker, ex.tmp_dir, graph, context, inventory=inventory)
+            return process_dir(broker, ex.tmp_dir, graph, context, inventory=inventory, parallel=parallel)
 
 
 def load_default_plugins():
@@ -236,33 +266,35 @@ def _load_context(path):
     return dr.get_component(path)
 
 
-def run(component=None, root=None, print_summary=False,
-        context=None, inventory=None, print_component=None):
-
-    load_default_plugins()
-
+def run(component=None, root=None, print_summary=False, context=None, inventory=None, print_component=None,
+        store_skips=False):
     args = None
-    formatter = None
     formatters = None
+
     if print_summary:
         import argparse
         import logging
         p = argparse.ArgumentParser(add_help=False)
         p.add_argument("archive", nargs="?", help="Archive or directory to analyze.")
-        p.add_argument("-p", "--plugins", default="",
-                       help="Comma-separated list without spaces of package(s) or module(s) containing plugins.")
         p.add_argument("-b", "--bare",
-                       help='Specify "spec=filename[,spec=filename,...]" to use the bare file for the spec',
-                       default="")
+                       help='Specify "spec=filename[,spec=filename,...]" to use the bare file for the spec', default="")
         p.add_argument("-c", "--config", help="Configure components.")
+        p.add_argument("-f", "--format", help="Output format.", default="insights.formats.text")
         p.add_argument("-i", "--inventory", help="Ansible inventory file for cluster analysis.")
         p.add_argument("-k", "--pkg-query", help="Expression to select rules by package.")
-        p.add_argument("-v", "--verbose", help="Verbose output.", action="store_true")
-        p.add_argument("-f", "--format", help="Output format.", default="insights.formats.text")
+        p.add_argument("-p", "--plugins", default="",
+                       help="Comma-separated list without spaces of package(s) or module(s) containing plugins.")
         p.add_argument("-s", "--syslog", help="Log results to syslog.", action="store_true")
-        p.add_argument("--tags", help="Expression to select rules by tag.")
+        p.add_argument("-v", "--verbose", help="Verbose output.", action="store_true")
         p.add_argument("-D", "--debug", help="Verbose debug output.", action="store_true")
+        p.add_argument("--color", default="auto", choices=["always", "auto", "never"], metavar="[=WHEN]",
+                       help="Choose if and how the color encoding is outputted. When is 'always', 'auto', or 'never'.")
         p.add_argument("--context", help="Execution Context. Defaults to HostContext if an archive isn't passed.")
+        p.add_argument("--no-load-default", help="Don't load the default plugins.", action="store_true")
+        p.add_argument("--parallel", help="Execute rules in parallel.", action="store_true")
+        p.add_argument("--show-skips", help="Capture skips in the broker for troubleshooting.", action="store_true",
+                       default=False)
+        p.add_argument("--tags", help="Expression to select rules by tag.")
 
         class Args(object):
             pass
@@ -271,13 +303,22 @@ def run(component=None, root=None, print_summary=False,
         args = Args()
         p.parse_known_args(namespace=args)
         p = argparse.ArgumentParser(parents=[p])
+
+        if not args.no_load_default:
+            load_default_plugins()
+
+        global _COLOR
+        _COLOR = args.color
+
         args.format = "insights.formats._json" if args.format == "json" else args.format
         args.format = "insights.formats._yaml" if args.format == "yaml" else args.format
         fmt = args.format if "." in args.format else "insights.formats." + args.format
+
         Formatter = dr.get_component(fmt)
         if not Formatter or not isinstance(Formatter, FormatterClass):
             dr.load_components(fmt, continue_on_error=False)
             Formatter = get_formatter(fmt)
+
         Formatter.configure(p)
         p.parse_args(namespace=args)
         formatter = Formatter(args)
@@ -345,6 +386,10 @@ def run(component=None, root=None, print_summary=False,
         graph = dr.COMPONENTS[dr.GROUPS.single]
 
     broker = dr.Broker()
+    if args:
+        broker.store_skips = args.show_skips
+    else:
+        broker.store_skips = store_skips
 
     if args and args.bare:
         ctx = ExecutionContext()  # dummy context that no spec depend on. needed for filters to work
@@ -360,23 +405,32 @@ def run(component=None, root=None, print_summary=False,
             for formatter in formatters:
                 formatter.preprocess(broker)
 
-            if args and args.bare:
-                broker = dr.run(graph, broker=broker)
+            if args:
+                if args.bare:
+                    broker = dr.run(graph, broker=broker)
+                else:
+                    broker = _run(broker, graph, root, context=context, inventory=inventory, parallel=args.parallel)
             else:
                 broker = _run(broker, graph, root, context=context, inventory=inventory)
 
             for formatter in formatters:
                 formatter.postprocess(broker)
         elif print_component:
-            if args and args.bare:
-                broker = dr.run(graph, broker=broker)
+            if args:
+                if args.bare:
+                    broker = dr.run(graph, broker=broker)
+                else:
+                    broker = _run(broker, graph, root, context=context, inventory=inventory, parallel=args.parallel)
             else:
                 broker = _run(broker, graph, root, context=context, inventory=inventory)
 
             broker.print_component(print_component)
         else:
-            if args and args.bare:
-                broker = dr.run(graph, broker=broker)
+            if args:
+                if args.bare:
+                    broker = dr.run(graph, broker=broker)
+                else:
+                    broker = _run(broker, graph, root, context=context, inventory=inventory, parallel=args.parallel)
             else:
                 broker = _run(broker, graph, root, context=context, inventory=inventory)
 

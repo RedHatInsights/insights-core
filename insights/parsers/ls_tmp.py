@@ -8,11 +8,16 @@ The ``ls -la /tmp`` command provides information for the listing of the
 """
 from insights import parser, FileListing, CommandParser
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.ls_tmp)
 class LsTmp(CommandParser, FileListing):
     """
+    .. warning::
+        This class is deprecated and will be removed from 3.5.0.
+        Please use the :class:`insights.parsers.ls.LSlaFiltered` instead.
+
     Parses output of ``ls -lan /tmp`` command.  See ``FileListing`` class for
     additional information.
 
@@ -55,4 +60,6 @@ class LsTmp(CommandParser, FileListing):
         >>> "date.out" in ls_tmp.files_of("/tmp")
         True
     """
-    pass
+    def __init__(self, *args, **kwargs):
+        deprecated(LsTmp, "Please use the :class:`insights.parsers.ls.LSlaFiltered` instead.", "3.5.0")
+        super(LsTmp, self).__init__(*args, **kwargs)

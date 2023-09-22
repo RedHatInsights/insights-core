@@ -16,24 +16,24 @@ phase).
 
 ## Rule Development Setup
 
-Clone the project::
+Clone the project:
 
     git clone git@github.com:RedHatInsights/insights-core.git
 
-Or, alternatively, using HTTPS::
+Or, alternatively, using HTTPS:
 
     git clone https://github.com/RedHatInsights/insights-core.git
 
-Initialize a virtualenv::
+Initialize a virtualenv:
 
     cd insights-core
     virtualenv .
 
-Install the project and its dependencies::
+Install the project and its dependencies:
 
     bin/pip install -e .
 
-Install a rule repository::
+Install a rule repository:
 
     bin/pip install -e path/to/rule/repo
 
@@ -42,16 +42,16 @@ Install a rule repository::
 
 If you wish to contribute to the insights-core project you'll need to create a fork in github.
 
-1. Clone your fork::
+1. Clone your fork:
 
     git clone git@github.com:your-user/insights-core.git
 
-2. Reference the original project as "upstream"::
+2. Reference the original project as "upstream":
 
     git remote add upstream git@github.com:RedHatInsights/insights-core.git
 
 At this point, you would synchronize your fork with the upstream project
-using the following commands::
+using the following commands:
 
     git pull upstream master
     git push origin master
@@ -133,7 +133,11 @@ from the current master branch of the upstream project.
    of the topic branch.  Again, such manipulations change history and
    require a `--force` push.
 
-6. When ready, use the github UI to submit a pull request.
+6. When ready, use the github UI to submit a pull request.  Fill out
+   the information requested in the PR template.  If your PR fixes an
+   issue make sure to reference the issue using a
+   [keyword](https://docs.github.com/en/issues/tracking-your-work-with-issues/creating-issues/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword)
+   so that it will be closed once your PR is merged.
 
 7. Repeat steps 4 and 5 as necessary.  Note that a forced push to the
    topic branch will work as expected.  The pull request will be

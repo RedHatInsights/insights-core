@@ -4,12 +4,14 @@ Configuration File Permissions parsers
 
 Parsers included in this module are:
 
-SshdConfigPerms - command ``/bin/ls -l /etc/ssh/sshd_config``
--------------------------------------------------------------
-Grub1ConfigPerms - command ``/bin/ls -l /boot/grub/grub.conf``
+SshdConfigPerms - command ``/bin/ls -lH /etc/ssh/sshd_config``
 --------------------------------------------------------------
-Grub2ConfigPerms - command ``/bin/ls -l /boot/grub2/grub.cfg``
---------------------------------------------------------------
+
+Grub1ConfigPerms - command ``/bin/ls -lH /boot/grub/grub.conf``
+---------------------------------------------------------------
+
+Grub2ConfigPerms - command ``/bin/ls -lH /boot/grub2/grub.cfg``
+---------------------------------------------------------------
 """
 
 from insights.core import CommandParser
@@ -39,7 +41,7 @@ class FilePermissionsParser(CommandParser, FilePermissions):
 @parser(Specs.sshd_config_perms)
 class SshdConfigPerms(FilePermissionsParser):
     """
-    Class for parsing ``/bin/ls -l /etc/ssh/sshd_config`` command.
+    Class for parsing ``/bin/ls -lH /etc/ssh/sshd_config`` command.
 
     Sample output of this command is::
 
@@ -59,7 +61,7 @@ class SshdConfigPerms(FilePermissionsParser):
 @parser(Specs.grub1_config_perms)
 class Grub1ConfigPerms(FilePermissionsParser):
     """
-    Class for parsing ``/bin/ls -l /boot/grub/grub.conf`` command.
+    Class for parsing ``/bin/ls -lH /boot/grub/grub.conf`` command.
 
     Sample output of this command is::
 
@@ -79,7 +81,7 @@ class Grub1ConfigPerms(FilePermissionsParser):
 @parser(Specs.grub_config_perms)
 class Grub2ConfigPerms(FilePermissionsParser):
     """
-    Class for parsing ``/bin/ls -l /boot/grub2/grub.cfg`` command.
+    Class for parsing ``/bin/ls -lH /boot/grub2/grub.cfg`` command.
 
     Sample output of this command is::
 

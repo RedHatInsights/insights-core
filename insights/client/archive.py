@@ -2,6 +2,8 @@
 Handle adding files and preparing the archive for upload
 """
 from __future__ import absolute_import
+from signal import SIGTERM, signal
+import sys
 import time
 import os
 import shutil
@@ -14,6 +16,7 @@ import atexit
 
 from .utilities import determine_hostname, _expand_paths, write_data_to_file
 from .insights_spec import InsightsFile, InsightsCommand
+from .constants import InsightsConstants as constants
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +30,6 @@ class InsightsArchive(object):
         config          - an InsightsConfig object
         tmp_dir         - a temporary directory in /var/tmp
         archive_dir     - location to collect archive data inside tmp_dir
-        archive_tmp_dir - a temporary directory to write the final archive file
         archive_name    - filename of the archive and archive_dir
         cmd_dir         - insights_commands directory inside archive_dir
         compressor      - tar compression flag to use
@@ -38,14 +40,21 @@ class InsightsArchive(object):
         Initialize the Insights Archive
         """
         self.config = config
-        # input this to core collector as `tmp_path`
-        self.tmp_dir = tempfile.mkdtemp(prefix='/var/tmp/')
+        # clean old temporary archive
+        self.cleanup_previous_archive()
 
-        # we don't really need this anymore...
-        self.archive_tmp_dir = tempfile.mkdtemp(prefix='/var/tmp/')
+        # Create a random temp directory
+        # input this to core collector as `tmp_path`
+        self.tmp_dir = tempfile.mkdtemp(dir=constants.insights_tmp_path, prefix=constants.insights_tmp_prefix + '-')
+
+        # We should not hint the hostname in the archive if it has to be obfuscated
+        if config.obfuscate_hostname:
+            hostname = "localhost"
+        else:
+            hostname = determine_hostname()
 
         self.archive_name = ("insights-%s-%s" %
-                             (determine_hostname(),
+                             (hostname,
                               time.strftime("%Y%m%d%H%M%S")))
 
         # lazy create these, only if needed when certain
@@ -56,8 +65,11 @@ class InsightsArchive(object):
         self.cmd_dir = None
 
         self.compressor = config.compressor
+        self.archive_stored = None
         self.tar_file = None
+        self.keep_archive_dir = '/var/cache/insights-client'
         atexit.register(self.cleanup_tmp)
+        signal(SIGTERM, self.sigterm_handler)
 
     def create_archive_dir(self):
         """
@@ -149,17 +161,19 @@ class InsightsArchive(object):
         """
         Create tar file to be compressed
         """
-        if not self.archive_tmp_dir:
+        if not self.tmp_dir:
             # we should never get here but bail out if we do
             raise RuntimeError('Archive temporary directory not defined.')
-        tar_file_name = os.path.join(self.archive_tmp_dir, self.archive_name)
+        tar_file_name = os.path.join(self.tmp_dir, self.archive_name)
         ext = "" if self.compressor == "none" else ".%s" % self.compressor
         tar_file_name = tar_file_name + ".tar" + ext
         logger.debug("Tar File: " + tar_file_name)
-        return_code = subprocess.call(shlex.split("tar c%sfS %s -C %s ." % (
+        # change cwd to compress the archive directory inside the temporary directory
+        # with the correct structure
+        return_code = subprocess.call(shlex.split("tar c%sfS %s %s" % (
             self.get_compression_flag(self.compressor),
-            tar_file_name, self.tmp_dir)),
-            stderr=subprocess.PIPE)
+            tar_file_name, self.archive_name)),
+            stderr=subprocess.PIPE, cwd=self.tmp_dir)
         if (self.compressor in ["bz2", "xz"] and return_code != 0):
             logger.error("ERROR: %s compressor is not installed, cannot compress file", self.compressor)
             return None
@@ -183,14 +197,6 @@ class InsightsArchive(object):
         if self.archive_dir:
             logger.debug("Deleting: " + self.archive_dir)
             shutil.rmtree(self.archive_dir, True)
-
-    def delete_archive_file(self):
-        """
-        Delete the directory containing the constructed archive
-        """
-        if self.archive_tmp_dir:
-            logger.debug("Deleting %s", self.archive_tmp_dir)
-            shutil.rmtree(self.archive_tmp_dir, True)
 
     def add_to_archive(self, spec):
         '''
@@ -218,17 +224,57 @@ class InsightsArchive(object):
 
     def cleanup_tmp(self):
         '''
+        DEPRECATE in favor of systemd-tmpfiles removing files.
         Only used during built-in collection.
         Delete archive and tmp dirs on exit unless --keep-archive is specified
             and tar_file exists.
         '''
         if self.config.keep_archive and self.tar_file:
+            self.storing_archive()
             if self.config.no_upload:
-                logger.info('Archive saved at %s', self.tar_file)
+                logger.info('Archive saved at %s', self.archive_stored)
             else:
-                logger.info('Insights archive retained in %s', self.tar_file)
-            if self.config.obfuscate:
-                return  # return before deleting tmp_dir
-        else:
-            self.delete_archive_file()
+                logger.info('Insights archive retained in %s', self.archive_stored)
         self.delete_tmp_dir()
+
+    def sigterm_handler(_signo, _stack_frame, _context):
+        sys.exit(1)
+
+    def cleanup_previous_archive(self):
+        '''
+        Used at the start, this will clean the temporary directory of previous killed runs
+        '''
+        try:
+            one_day_ago = time.time() - 24 * 60 * 60
+            # list insights-client temporary directories
+            directories = [os.path.join(constants.insights_tmp_path, directory)
+                           for directory in os.listdir(constants.insights_tmp_path)
+                           if directory.startswith(constants.insights_tmp_prefix)]
+            # filter only those last modified more than 24 hours ago
+            directories = [directory
+                           for directory in directories
+                           if os.path.isdir(directory) and os.path.getmtime(directory) <= one_day_ago]
+            # remove the directories
+            for directory in directories:
+                logger.debug("Deleting previous archive %s", directory)
+                shutil.rmtree(directory, True)
+        except Exception:
+            logger.error("ERROR: Could not remove old temporary directory")
+
+    def storing_archive(self):
+        if not os.path.exists(self.keep_archive_dir):
+            try:
+                os.makedirs(self.keep_archive_dir)
+            except OSError:
+                logger.error('ERROR: Could not create %s', self.keep_archive_dir)
+                raise
+
+        archive_name = os.path.basename(self.tar_file)
+        self.archive_stored = os.path.join(self.keep_archive_dir, archive_name)
+        logger.info('Copying archive from %s to %s', self.tar_file, self.archive_stored)
+        try:
+            shutil.copyfile(self.tar_file, self.archive_stored)
+        except OSError:
+            # file exists already
+            logger.error('ERROR: Could not stored archive to %s', self.archive_stored)
+            raise

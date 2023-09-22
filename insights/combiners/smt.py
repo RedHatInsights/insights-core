@@ -43,7 +43,13 @@ class CpuTopology(object):
         max_cpu_core_id = max([core.core_id for core in cpu_online])
         for n in range(max_cpu_core_id + 1):
             online = [core for core in cpu_online if core.core_id == n]
-            online = online[0].on
+            # On some boxes cpu0 doesn't have the online file, since technically cpu0 will always
+            # be online. So check if online returns anything before trying to access online[0].
+            # If it returns nothing and n is 0 set online to True.
+            if online:
+                online = online[0].on
+            elif not online and n == 0:
+                online = True
             siblings = [sibling for sibling in cpu_siblings if sibling.core_id == n]
             if len(siblings) != 0:
                 siblings = siblings[0].siblings

@@ -102,6 +102,28 @@ def test_dict():
         deep_compare({"foo": 1, "bar": [1, 2, 3]}, {"foo": 1, "bar": [0, 1, 2]})
 
 
+def test_beautify_deep_compare_diff():
+    with pytest.raises(AssertionError) as err:
+        deep_compare({"foo": "some foo"}, {"bar": "some bar"})
+    einfo = None
+    if hasattr(err, "value"):       # py3
+        einfo = err.value
+    elif hasattr(err, "message"):   # py2
+        einfo = err.message
+    assert 'key "foo" not in Expected;' in str(einfo)
+    assert 'key "bar" not in Result;' in str(einfo)
+
+    with pytest.raises(AssertionError) as err:
+        deep_compare({"e": "k", "common": "left"}, {"e": "k", "common": "right"})
+    einfo = None
+    if hasattr(err, "value"):       # py3
+        einfo = err.value
+    elif hasattr(err, "message"):   # py2
+        einfo = err.message
+    assert 'key "common" unequal values:' in str(einfo)
+    assert 'Result: ' in str(einfo)
+
+
 def test_deep_nest():
     a = {"error_key": "test1", "stuff": {"abba": [{"foo": 2}]}}
     b = {"error_key": "test1", "stuff": {"abba": [{"foo": 2}]}}
@@ -192,6 +214,25 @@ def test_deep_nest_dict_list():
     with pytest.raises(AssertionError):
         b[3][1] = set([3, 4])
         deep_compare(a, b)
+
+
+def test_deep_compare_special():
+    """
+    Test the special format of the `expected`
+    """
+    a = {'type': 'skip', 'reason': 'MISSING_REQUIREMENTS', 'details': 'test1'}
+    b1 = (None, 'test1')
+    b2 = [None, ['test1']]
+    deep_compare(a, b1)
+    deep_compare(a, b2)
+
+    with pytest.raises(AssertionError):
+        a = {'type': 'skip', 'reason': 'NO_MISSING', 'details': 'test1'}
+        deep_compare(a, b1)
+
+    with pytest.raises(AssertionError):
+        a = {'type': 'skip', 'reason': 'MISSING_REQUIREMENTS', 'details': 'test0'}
+        deep_compare(a, b1)
 
 
 def test_case_variants():

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import argparse
 import logging
+
 from insights.ocp import analyze
 
 
@@ -57,10 +58,10 @@ def main():
     conf = analyze(archives, excludes)  # noqa F841 / unused var
 
     # import all the built-in predicates
-    from insights.parsr.query import (lt, le, eq, gt, ge, isin, contains,  # noqa: F403
-            startswith, endswith, ieq, icontains, istartswith, iendswith,  # noqa: F403
-            matches, make_child_query)  # noqa: F403
-    q = make_child_query  # noqa: F405
+    from insights.parsr.query import (lt, le, eq, gt, ge, isin, contains,  # noqa: F401,F403
+            startswith, endswith, ieq, icontains, istartswith, iendswith,
+            matches, make_child_query)
+    q = make_child_query
 
     import IPython
     from traitlets.config.loader import Config

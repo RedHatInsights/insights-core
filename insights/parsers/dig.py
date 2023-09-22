@@ -11,12 +11,11 @@ DigEdns - command ``/usr/bin/dig +edns=0 . SOA``
 DigNoedns - command ``/usr/bin/dig +noedns . SOA``
 --------------------------------------------------
 """
-
 import re
 
 from insights.core import CommandParser
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
-from insights.parsers import SkipException
 from insights.specs import Specs
 
 
@@ -34,7 +33,7 @@ class Dig(CommandParser):
         command (string): Specific ``dig`` command used.
 
     Raises:
-        SkipException: When content is empty or cannot be parsed.
+        SkipComponent: When content is empty or cannot be parsed.
     """
     def __init__(self, context, command):
         self.status = None
@@ -44,7 +43,7 @@ class Dig(CommandParser):
 
     def parse_content(self, content):
         if not content:
-            raise SkipException('No content.')
+            raise SkipComponent('No content.')
 
         for line in content:
             match = HEADER_TEMPLATE.search(line)

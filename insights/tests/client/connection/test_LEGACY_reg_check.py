@@ -19,7 +19,7 @@ def test_registration_check_ok_reg(get_proxies, _init_session, _):
     res._content = json.dumps({'unregistered_at': None})
     res.status_code = 200
 
-    conn.session.get = MagicMock(return_value=res)
+    conn.get = MagicMock(return_value=res)
     assert conn.api_registration_check()
 
 
@@ -38,7 +38,7 @@ def test_registration_check_ok_reg_then_unreg(get_proxies, _init_session, _):
     res._content = json.dumps({'unregistered_at': '2019-04-10'})
     res.status_code = 200
 
-    conn.session.get = MagicMock(return_value=res)
+    conn.get = MagicMock(return_value=res)
     assert conn.api_registration_check() == '2019-04-10'
 
 
@@ -57,7 +57,7 @@ def test_registration_check_ok_unreg(get_proxies, _init_session, _):
     res._content = json.dumps({})
     res.status_code = 404
 
-    conn.session.get = MagicMock(return_value=res)
+    conn.get = MagicMock(return_value=res)
     assert conn.api_registration_check() is None
 
 
@@ -76,7 +76,7 @@ def test_registration_check_bad_res(get_proxies, _init_session, _):
     res._content = 'zSDFasfghsRGH'
     res.status_code = 500
 
-    conn.session.get = MagicMock(return_value=res)
+    conn.get = MagicMock(return_value=res)
     assert conn.api_registration_check() is False
 
 
@@ -92,7 +92,7 @@ def test_registration_check_conn_error(test_connection, get_proxies, _init_sessi
     config = Mock(legacy_upload=True, base_url='example.com')
     conn = InsightsConnection(config)
 
-    conn.session.get = MagicMock()
-    conn.session.get.side_effect = requests.ConnectionError()
+    conn.get = MagicMock()
+    conn.get.side_effect = requests.ConnectionError()
     assert conn.api_registration_check() is False
     test_connection.assert_called_once()

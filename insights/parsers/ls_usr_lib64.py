@@ -29,12 +29,10 @@ Examples:
     >>> ls_usr_lib64.dir_entry('/usr/lib64', 'ld-linux-x86-64.so.2')['type']
     'l'
 """
-
-
+from insights import parser, CommandParser, FileListing
 from insights.specs import Specs
 from insights.core.filters import add_filter
-
-from insights import parser, CommandParser, FileListing
+from insights.util import deprecated
 
 
 add_filter(Specs.ls_usr_lib64, "total")
@@ -42,5 +40,13 @@ add_filter(Specs.ls_usr_lib64, "total")
 
 @parser(Specs.ls_usr_lib64)
 class LsUsrLib64(CommandParser, FileListing):
-    """Parses output of ``ls -lan /usr/lib64`` command."""
-    pass
+    """
+    .. warning::
+        This class is deprecated and will be removed from 3.5.0.
+        Please use the :class:`insights.parsers.ls.LSlanFiltered` instead.
+
+    Parses output of ``ls -lan /usr/lib64`` command.
+    """
+    def __init__(self, *args, **kwargs):
+        deprecated(LsUsrLib64, "Please use the :class:`insights.parsers.ls.LSlanFiltered` instead.", "3.5.0")
+        super(LsUsrLib64, self).__init__(*args, **kwargs)

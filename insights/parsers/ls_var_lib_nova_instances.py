@@ -15,11 +15,17 @@ LsVarLibNovaInstances - command ``ls -laRZ /var/lib/nova/instances``
 '''
 from insights import CommandParser, FileListing, parser
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.ls_R_var_lib_nova_instances)
 class LsRVarLibNovaInstances(CommandParser, FileListing):
-    '''The class ``LsVarLibNovaInstances`` don't show file size when the
+    '''
+    .. warning::
+        This class is deprecated and will be removed from 3.5.0.
+        Please use the :class:`insights.parsers.ls.LSlanR` instead.
+
+    The class ``LsVarLibNovaInstances`` don't show file size when the
     flag `-Z` is used. This class parses the output of ``ls -laR
     /var/lib/nova/instances`` to output file listing with file size.
 
@@ -65,12 +71,19 @@ class LsRVarLibNovaInstances(CommandParser, FileListing):
         >>> ls_r_var_lib_nova_instances.dir_entry('/var/lib/nova/instances/e560e649-41fd-46a2-a3d2-5f4750ba2bb4', 'console.log')['size']
         48957
     '''
-    pass
+    def __init__(self, *args, **kwargs):
+        deprecated(LsRVarLibNovaInstances, "Please use the :class:`insights.parsers.ls.LSlanR` instead.", "3.5.0")
+        super(LsRVarLibNovaInstances, self).__init__(*args, **kwargs)
 
 
 @parser(Specs.ls_var_lib_nova_instances)
 class LsVarLibNovaInstances(CommandParser, FileListing):
-    '''Parses the output of ``ls -laRZ /var/lib/nova/instances`` command
+    '''
+    .. warning::
+        This class is deprecated and will be removed from 3.5.0.
+        Please use the :class:`insights.parsers.ls.LSlanRZ` instead.
+
+    Parses the output of ``ls -laRZ /var/lib/nova/instances`` command
     which provides the SELinux directory listings of the '/var/lib/nova/instances' directory.
 
     The ``ls -laRZ /var/lib/nova/instances`` command provides
@@ -117,4 +130,6 @@ class LsVarLibNovaInstances(CommandParser, FileListing):
         >>> ls_var_lib_nova_instances.dir_entry('/var/lib/nova/instances/locks', 'nova-storage-registry-lock')['raw_entry']
         '-rw-r--r--. nova nova system_u:object_r:nova_var_lib_t:s0 nova-storage-registry-lock'
     '''
-    pass
+    def __init__(self, *args, **kwargs):
+        deprecated(LsVarLibNovaInstances, "Please use the :class:`insights.parsers.ls.LSlanRZ` instead.", "3.5.0")
+        super(LsVarLibNovaInstances, self).__init__(*args, **kwargs)

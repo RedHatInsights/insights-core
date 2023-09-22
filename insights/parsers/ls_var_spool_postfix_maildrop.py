@@ -28,6 +28,7 @@ Examples:
 
 
 from insights.specs import Specs
+from insights.util import deprecated
 
 from .. import CommandParser, parser
 from .. import FileListing
@@ -35,5 +36,13 @@ from .. import FileListing
 
 @parser(Specs.ls_var_spool_postfix_maildrop)
 class LsVarSpoolPostfixMaildrop(CommandParser, FileListing):
-    """Parses output of ``ls -ln /var/spool/postfix/maildrop`` command."""
-    pass
+    """
+    .. warning::
+        This class is deprecated and will be removed from 3.5.0.
+        Please use the :class:`insights.parsers.ls.LSlan` instead.
+
+    Parses output of ``ls -ln /var/spool/postfix/maildrop`` command.
+    """
+    def __init__(self, *args, **kwargs):
+        deprecated(LsVarSpoolPostfixMaildrop, "Please use the :class:`insights.parsers.ls.LSlan` instead.", "3.5.0")
+        super(LsVarSpoolPostfixMaildrop, self).__init__(*args, **kwargs)

@@ -15,6 +15,7 @@ from itertools import chain
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
 
+from insights.core.blacklist import BLACKLISTED_SPECS
 from insights.util import mangle
 from ..contrib.soscleaner import SOSCleaner
 from .utilities import _expand_paths, get_version_info, systemd_notify_init_thread, get_tags
@@ -91,6 +92,12 @@ class DataCollector(object):
             self.archive.add_metadata_to_archive(
                 self.config.display_name, '/display_name')
 
+    def _write_ansible_host(self):
+        if self.config.ansible_host:
+            logger.debug("Writing ansible_host to archive...")
+            self.archive.add_metadata_to_archive(
+                self.config.ansible_host, '/ansible_host')
+
     def _write_version_info(self):
         logger.debug("Writing version information to archive...")
         version_info = get_version_info()
@@ -98,8 +105,11 @@ class DataCollector(object):
             json.dumps(version_info), '/version_info')
 
     def _write_tags(self):
-        logger.debug("Writing tags to archive...")
         tags = get_tags()
+        # NOTE:
+        # The following code is also used by datasource 'tags'
+        # - insights.specs.datasources.tags
+        # Please keep them consistence before removing this.
         if tags is not None:
             def f(k, v):
                 if type(v) is list:
@@ -114,6 +124,7 @@ class DataCollector(object):
                     return list(chain.from_iterable(col))
                 else:
                     return [{"key": k, "value": v, "namespace": constants.app_name}]
+            logger.debug("Writing tags to archive...")
             t = []
             for k, v in tags.items():
                 iv = f(k, v)
@@ -126,26 +137,84 @@ class DataCollector(object):
         self.archive.add_metadata_to_archive(
             json.dumps(blacklist_report), '/blacklist_report')
 
+    def _write_blacklisted_specs(self):
+        logger.debug("Writing blacklisted specs to archive...")
+
+        if BLACKLISTED_SPECS:
+            self.archive.add_metadata_to_archive(
+                json.dumps({"specs": BLACKLISTED_SPECS}), '/blacklisted_specs')
+
     def _write_egg_release(self):
         logger.debug("Writing egg release to archive...")
         egg_release = ''
         try:
             with open(constants.egg_release_file) as fil:
                 egg_release = fil.read()
-        except IOError as e:
-            logger.debug('Could not read the egg release file :%s', str(e))
+        except (IOError, MemoryError) as e:
+            logger.debug('Could not read the egg release file: %s', str(e))
         try:
             os.remove(constants.egg_release_file)
         except OSError as e:
             logger.debug('Could not remove the egg release file: %s', str(e))
 
-        self.archive.add_metadata_to_archive(
-            egg_release, '/egg_release')
+        try:
+            self.archive.add_metadata_to_archive(
+                egg_release, '/egg_release')
+        except OSError as e:
+            logger.debug('Could not add the egg release file to the archive: %s', str(e))
+            self.archive.add_metadata_to_archive(
+                '', '/egg_release')
 
     def _write_collection_stats(self, collection_stats):
         logger.debug("Writing collection stats to archive...")
         self.archive.add_metadata_to_archive(
             json.dumps(collection_stats), '/collection_stats')
+
+    def _write_rhsm_facts(self, hashed_fqdn, ip_csv):
+        logger.info('Writing RHSM facts to %s...', constants.rhsm_facts_file)
+        ips_list = ''
+        with open(ip_csv) as fil:
+            # create IP list as JSON block with format
+            # [
+            #   {
+            #     original: <original IP>
+            #     obfuscated: <obfuscated IP>
+            #   }
+            # ]
+
+            ips_list = fil.readlines()
+            headings = ips_list[0].strip().split(',')
+            # set the indices for the IPs
+            if 'original' in headings[0].lower():
+                # soscleaner 0.4.4, original first
+                org = 0
+                obf = 1
+            else:
+                # soscleaner 0.2.2, obfuscated first
+                org = 1
+                obf = 0
+
+            ip_block = []
+            for line in ips_list[1:]:
+                ipset = line.strip().split(',')
+                ip_block.append(
+                    {
+                        'original': ipset[org],
+                        'obfuscated': ipset[obf]
+                    })
+
+        facts = {
+            'insights_client.obfuscate_hostname_enabled': self.config.obfuscate_hostname,
+            'insights_client.hostname': hashed_fqdn,
+            'insights_client.obfuscate_ip_enabled': self.config.obfuscate,
+            'insights_client.ips': json.dumps(ip_block)
+        }
+
+        try:
+            with open(constants.rhsm_facts_file, 'w') as fil:
+                json.dump(facts, fil)
+        except (IOError, OSError) as e:
+            logger.error('Could not write to %s: %s', constants.rhsm_facts_file, str(e))
 
     def _run_pre_command(self, pre_cmd):
         '''
@@ -270,11 +339,13 @@ class DataCollector(object):
                     'insights_commands', mangle.mangle_command(c['command']))
             if c['command'] in rm_commands or c.get('symbolic_name') in rm_commands:
                 logger.warn("WARNING: Skipping command %s", c['command'])
+                BLACKLISTED_SPECS.append(c['symbolic_name'])
             elif self.mountpoint == "/" or c.get("image"):
                 cmd_specs = self._parse_command_spec(c, conf['pre_commands'])
                 for s in cmd_specs:
                     if s['command'] in rm_commands:
                         logger.warn("WARNING: Skipping command %s", s['command'])
+                        BLACKLISTED_SPECS.append(s['symbolic_name'])
                         continue
                     cmd_spec = InsightsCommand(self.config, s, self.mountpoint)
                     self.archive.add_to_archive(cmd_spec)
@@ -286,12 +357,14 @@ class DataCollector(object):
         for f in conf['files']:
             if f['file'] in rm_files or f.get('symbolic_name') in rm_files:
                 logger.warn("WARNING: Skipping file %s", f['file'])
+                BLACKLISTED_SPECS.append(f['symbolic_name'])
             else:
                 file_specs = self._parse_file_spec(f)
                 for s in file_specs:
                     # filter files post-wildcard parsing
                     if s['file'] in rm_conf.get('files', []):
                         logger.warn("WARNING: Skipping file %s", s['file'])
+                        BLACKLISTED_SPECS.append(s['symbolic_name'])
                     else:
                         file_spec = InsightsFile(s, self.mountpoint)
                         self.archive.add_to_archive(file_spec)
@@ -304,11 +377,13 @@ class DataCollector(object):
                 if g.get('symbolic_name') in rm_files:
                     # ignore glob via symbolic name
                     logger.warn("WARNING: Skipping file %s", g['glob'])
+                    BLACKLISTED_SPECS.append(g['symbolic_name'])
                 else:
                     glob_specs = self._parse_glob_spec(g)
                     for g in glob_specs:
                         if g['file'] in rm_files:
                             logger.warn("WARNING: Skipping file %s", g['file'])
+                            BLACKLISTED_SPECS.append(g['symbolic_name'])
                         else:
                             glob_spec = InsightsFile(g, self.mountpoint)
                             self.archive.add_to_archive(glob_spec)
@@ -324,9 +399,11 @@ class DataCollector(object):
         logger.debug('Collecting metadata...')
         self._write_branch_info(branch_info)
         self._write_display_name()
+        self._write_ansible_host()
         self._write_version_info()
         self._write_tags()
         self._write_blacklist_report(blacklist_report)
+        self._write_blacklisted_specs()
         self._write_egg_release()
         self._write_collection_stats(collection_stats)
         logger.debug('Metadata collection finished.')
@@ -380,9 +457,15 @@ class DataCollector(object):
         for dirpath, dirnames, filenames in os.walk(searchpath):
             for f in filenames:
                 fullpath = os.path.join(dirpath, f)
-                if (fullpath.endswith('etc/insights-client/machine-id') or
-                   fullpath.endswith('etc/machine-id') or
-                   fullpath.endswith('insights_commands/subscription-manager_identity')):
+                if (fullpath.endswith(
+                        (
+                            'etc/insights-client/machine-id',
+                            'etc/machine-id',
+                            'insights_commands/subscription-manager_identity',
+                            'insights_commands/ls_-lanRL_.etc.systemd_.run.systemd_.usr.lib.systemd_.usr.local.lib.systemd_.usr.local.share.systemd_.usr.share.systemd',  # issue #3858
+                            'var/opt/mssql/log/assessments/assessment-latest',  # issue #3885
+                        )
+                )):
                     # do not redact the ID files
                     continue
                 redacted_contents = _process_content_redaction(fullpath, exclude, regex)
@@ -414,6 +497,10 @@ class DataCollector(object):
             cleaner.clean_report(clean_opts, self.archive.archive_dir)
             if clean_opts.keyword_file is not None:
                 os.remove(clean_opts.keyword_file.name)
+
+            # generate RHSM facts at this point
+            self._write_rhsm_facts(cleaner.hashed_fqdn, cleaner.ip_report)
+
             if self.config.output_dir:
                 # return the entire soscleaner dir
                 #   see additions to soscleaner.SOSCleaner.clean_report

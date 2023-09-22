@@ -19,6 +19,7 @@ import insights
 from insights import apply_filters
 from insights.core import dr, filters, spec_factory
 from insights.core.context import Context
+from insights.core.plugins import make_none
 from insights.core.spec_factory import RegistryPoint
 from insights.specs import Specs
 
@@ -82,33 +83,82 @@ HEARTBEAT_NAME = "insights-heartbeat-9cd6f607-6b28-44ef-8481-62b0e7773614"
 DEFAULT_RELEASE = "Red Hat Enterprise Linux Server release 7.2 (Maipo)"
 DEFAULT_HOSTNAME = "hostname.example.com"
 
+MAKE_NONE_RESULT = make_none()
+
+
+def _beautify_deep_compare_diff(result, expected):
+    if not (isinstance(result, dict) and isinstance(expected, dict)):
+        return result
+
+    if result.get('type') == 'skip':
+        return result
+
+    expected_keys = set(expected.keys())
+    result_keys = set(result.keys())
+    common_keys = set.intersection(result_keys, expected_keys)
+
+    diff = []
+    for k in result_keys - common_keys:
+        diff.append('\tkey "{0}" not in Expected;'.format(k))
+    for k in expected_keys - common_keys:
+        diff.append('\tkey "{0}" not in Result;'.format(k))
+    for k in common_keys:
+        if not eq(result[k], expected[k]):
+            diff.append('\tkey "{0}" unequal values:\n\t\tExpected: {1}\n\t\tResult  : {2}'.format(
+                            k, expected[k], result[k]))
+    if not diff:
+        diff.append('\tUnrecognized unequal values in result layer one;')
+
+    diff.append('Result: "{0}"'.format(result))
+    return '\n' + '\n'.join(diff)
+
 
 def deep_compare(result, expected):
     """
     Deep compare rule reducer results when testing.
+
+    .. note::
+        "[None, XX]" is a special format of the `expected` for this methoed to
+        check the missing dependencies.
     """
     logger.debug("--Comparing-- (%s) %s to (%s) %s", type(result), result, type(expected), expected)
 
+    missing = None
+    if isinstance(expected, (tuple, list, set)) and len(expected) == 2 and expected[0] is None:
+        expected, missing = expected
+
+    # This case ensures that when rules return a make_none() response, all of the older
+    # CI tests that are looking for None instead of make_none() will still pass
+    if result is None or (isinstance(result, dict) and result.get("type") == "none"):
+        assert (expected is None or expected == MAKE_NONE_RESULT), result
+        return
+
     if isinstance(result, dict) and expected is None:
+        # checking the missing component (RHINRULE-283)
+        if missing:
+            assert "MISSING_REQUIREMENTS" == result['reason'], result['reason']
+            for mis in [missing] if isinstance(missing, str) else missing:
+                assert mis in result['details'], '"{0}" not in "{1}"'.format(mis, result['details'])
         assert result["type"] == "skip", result
         return
 
-    assert eq(result, expected), result
+    assert eq(result, expected), _beautify_deep_compare_diff(result, expected)
 
 
-def run_input_data(component, input_data):
+def run_input_data(component, input_data, store_skips=False):
     broker = dr.Broker()
     for k, v in input_data.data.items():
         broker[k] = v
 
     graph = dr.get_dependency_graph(component)
     broker = dr.run(graph, broker=broker)
+    broker.store_skips = store_skips
     for v in broker.tracebacks.values():
-        print(v)
+        logger.warning(v)
     return broker
 
 
-def run_test(component, input_data, expected=None):
+def run_test(component, input_data, expected=None, return_make_none=False):
     if filters.ENABLED:
         mod = component.__module__
         sup_mod = '.'.join(mod.split('.')[:-1])
@@ -121,9 +171,14 @@ def run_test(component, input_data, expected=None):
             raise Exception(msg % (mod, ", ".join(names)))
 
     broker = run_input_data(component, input_data)
+    result = broker.get(component)
     if expected:
-        deep_compare(broker.get(component), expected)
-    return broker.get(component)
+        deep_compare(result, expected)
+    elif result == MAKE_NONE_RESULT and not return_make_none:
+        # Convert make_none() result to None as default unless
+        # make_none explicitly requested
+        return None
+    return result
 
 
 def integrate(input_data, component):
@@ -138,12 +193,16 @@ def context_wrap(lines,
                  machine_id="machine_id",
                  strip=True,
                  split=True,
+                 filtered_spec=None,
                  **kwargs):
     if isinstance(lines, six.string_types):
         if strip:
             lines = lines.strip()
         if split:
             lines = lines.splitlines()
+
+    if filtered_spec is not None and filtered_spec in filters.FILTERS:
+        lines = [l for l in lines if any([f in l for f in filters.FILTERS[filtered_spec]])]
 
     return Context(content=lines,
                    path=path, hostname=hostname,
@@ -225,7 +284,7 @@ class InputData(object):
         """
         self.data[comp] = obj
 
-    def add(self, spec, content, path=None, do_filter=True):
+    def add(self, spec, content, path=None, do_filter=True, **kwargs):
         if not path:  # path must change to allow parsers to fire
             path = self._make_path()
         if not path.startswith("/"):
@@ -242,7 +301,7 @@ class InputData(object):
             if do_filter:
                 content_iter = list(apply_filters(spec, content_iter))
 
-        content_provider = context_wrap(content_iter, path=path, split=False)
+        content_provider = context_wrap(content_iter, path=path, split=False, **kwargs)
         if dr.get_delegate(spec).multi_output:
             if spec not in self.data:
                 self.data[spec] = []

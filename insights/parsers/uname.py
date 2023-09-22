@@ -111,6 +111,14 @@ rhel_release_map = {
     "4.18.0-147": "8.1",
     "4.18.0-193": "8.2",
     "4.18.0-240": "8.3",
+    "4.18.0-305": "8.4",
+    "4.18.0-348": "8.5",
+    "4.18.0-372": "8.6",
+    "4.18.0-425": "8.7",
+    "4.18.0-477": "8.8",
+    "5.14.0-70": "9.0",
+    "5.14.0-162": "9.1",
+    "5.14.0-284": "9.2",
 }
 
 release_to_kernel_map = dict((v, k) for k, v in rhel_release_map.items())
@@ -245,7 +253,12 @@ class Uname(CommandParser):
             data['kernel'] = uname_parts[2]
             data['name'] = uname_parts[0]
             data['nodename'] = uname_parts[1]
-        has_arch = "el" not in data['kernel'].split(".")[-1]
+
+        # Check if the last segment of kernel version is the architecture (e.g. x86_64)
+        last_kernel_segment = data['kernel'].split(".")[-1]
+        # If the last segment contains "el" then we assume its the product indicator (e.g. el9_2)
+        # If the last segment contains more than just digits we assume its the architecture (e.g. x86_64)
+        has_arch = "el" not in last_kernel_segment and not last_kernel_segment.isdigit()
         try:
             data = self.parse_nvr(data['kernel'], data, arch=has_arch)
         except UnameError as error:
@@ -384,6 +397,33 @@ class Uname(CommandParser):
         else:
             return self._lv_version, other._lv_version
 
+    def _best_lv_release(self, other):
+        """
+        When the _lv_release in self and other both or neither have
+        the distribution part, return then directly. Otherwise,
+        removing the distribution part, and raising a warning.
+
+        Notes:: Now, only `.el*` distribution is supported.
+        """
+        dist_opts = ('el',)
+        s_release_parts = self._lv_release.vstring.split(".")
+        o_release_parts = other._lv_release.vstring.split(".")
+        is_s_with_dist = s_release_parts[-1].startswith(dist_opts)
+        is_o_with_dist = o_release_parts[-1].startswith(dist_opts)
+        if not (is_s_with_dist ^ is_o_with_dist):
+            return self._lv_release, other._lv_release
+        import warnings
+        warnings.warn('Comparison of distribution part will be ingored.')
+        s_release = (
+            self._lv_release.vstring if not is_s_with_dist
+            else pad_release(".".join(s_release_parts[:-1]), len(s_release_parts))
+        )
+        o_release = (
+            other._lv_release.vstring if not is_o_with_dist
+            else pad_release(".".join(o_release_parts[:-1]), len(o_release_parts))
+        )
+        return LooseVersion(s_release), LooseVersion(o_release)
+
     def __str__(self):
         return "version: %s; release: %s; rel_maj: %s; lv_release: %s" % (
             self.version, self.release, self._rel_maj, self._lv_release
@@ -441,7 +481,7 @@ class Uname(CommandParser):
 
         See the `__eq__` operator for a detailed description.
         """
-        return not(self == other)
+        return not (self == other)
 
     def __lt__(self, other):
         """
@@ -506,9 +546,10 @@ class Uname(CommandParser):
         internal to the class.
         """
         s_version, o_version = self._best_version(other)
+        s_lv_release, o_lv_release = self._best_lv_release(other)
 
         if s_version == o_version:
-            ret = self._lv_release < other._lv_release
+            ret = s_lv_release < o_lv_release
         else:
             ret = s_version < o_version
         return ret
@@ -517,6 +558,7 @@ class Uname(CommandParser):
         """
         Determine whether the Uname object is fixed by a range of releases or
         by a specific release.
+        Only RHEL Uname objects and RHEL real time Uname objects are supported.
 
         :Parameters:
             - `fixes`: List of one or more Uname objects to compare to the
@@ -533,6 +575,7 @@ class Uname(CommandParser):
         introduced_in = kwargs.get("introduced_in")
         if introduced_in and self._less_than(self.from_kernel(introduced_in)):
             return []
+
         fix_unames = sorted((self.from_kernel(f) for f in fixes))
         fix_kernels = [f.kernel for f in fix_unames]
 
@@ -551,7 +594,14 @@ class Uname(CommandParser):
 
     @property
     def release_tuple(self):
-        return tuple(map(int, self.data["rhel_release"]))
+        rel = []
+        for v in self.data['rhel_release']:
+            try:
+                rel.append(int(v))
+            except ValueError:
+                rel.append(v)
+
+        return tuple(rel)
 
     @property
     def redhat_release(self):
@@ -564,7 +614,7 @@ def pad_release(release_to_pad, num_sections=4):
     ``LooseVersion`` comparisons will be correct.
 
     Release versions with less than num_sections will
-    be padded in front of the last section with zeros.
+    padded with zeros where missing versions segments are.
 
     For example ::
 
@@ -576,9 +626,25 @@ def pad_release(release_to_pad, num_sections=4):
 
     will return ``390.11.0.el6``.
 
+        pad_release("390.11.rt6.8.el6", 7)
+
+    will return ``390.11.0.0.rt6.8.el6``.
+
+    Finally, if no "el" is specified:
+
+        pad_release("390.11", 4)
+
+    will return ``390.11.0.0``.
+
     If the number of sections of the release to be padded is
     greater than num_sections, a ``ValueError`` will be raised.
     '''
+    def find_rt_release(items):
+        for i, s in enumerate(items):
+            if s.startswith("rt"):
+                return i
+        return -1
+
     parts = release_to_pad.split('.')
 
     if len(parts) > num_sections:
@@ -587,4 +653,12 @@ def pad_release(release_to_pad, num_sections=4):
         ))
 
     pad_count = num_sections - len(parts)
-    return ".".join(parts[:-1] + ['0'] * pad_count + parts[-1:])
+    is_el_release = any(letter.isalpha() for letter in parts[-1])
+    rt_release_idx = find_rt_release(parts)
+
+    if len(parts) > 1 and rt_release_idx >= 0:
+        return ".".join(parts[:rt_release_idx] + ['0'] * pad_count + parts[rt_release_idx:])
+    elif len(parts) > 1 and is_el_release:
+        return ".".join(parts[:-1] + ['0'] * pad_count + parts[-1:])
+    else:
+        return ".".join(parts + ['0'] * pad_count)

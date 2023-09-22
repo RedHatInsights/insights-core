@@ -1,79 +1,9 @@
 """
 Octavia - file ``octavia.conf``
 ===============================
-
-Provides a parser arser for file
-``/var/lib/config-data/puppet-generated/octavia/etc/octavia/octavia.conf``.  Filters
-have been added to this parser to ensure that the necessary data will be collected.
-
-Sample input data::
-
-    [DEFAULT]
-    # Print debugging output (set logging level to DEBUG instead of default WARNING level).
-    debug = False
-
-    # Plugin options are hot_plug_plugin (Hot-pluggable controller plugin)
-    # octavia_plugins = hot_plug_plugin
-
-    # Hostname to be used by the host machine for services running on it.
-    # The default value is the hostname of the host machine.
-    # host =
-
-    # AMQP Transport URL
-    # For Single Host, specify one full transport URL:
-    #   transport_url = rabbit://<user>:<pass>@127.0.0.1:5672/<vhost>
-    # For HA, specify queue nodes in cluster, comma delimited:
-    #   transport_url = rabbit://<user>:<pass>@server01,<user>:<pass>@server02/<vhost>
-    # transport_url =
-
-    # How long in seconds to wait for octavia worker to exit before killing them.
-    # graceful_shutdown_timeout = 60
-
-    [api_settings]
-    bind_host = 127.0.0.1
-    bind_port = 9876
-
-    # How should authentication be handled (keystone, noauth)
-    # auth_strategy = keystone
-
-    # allow_pagination = True
-    # allow_sorting = True
-    # pagination_max_limit = 1000
-    # Base URI for the API for use in pagination links.
-    # This will be autodetected from the request if not overridden here.
-    # Example:
-    #   api_base_uri = http://localhost:9876
-    # api_base_uri =
-
-    # Enable/disable ability for users to create TLS Terminated listeners
-    # allow_tls_terminated_listeners = True
-
-    # Enable/disable ability for users to create PING type Health Monitors
-    # allow_ping_health_monitors = True
-
-    # Dictionary of enabled provider driver names and descriptions
-    # A comma separated list of dictionaries of the enabled provider driver names
-    # and descriptions.
-    # enabled_provider_drivers = amphora:The Octavia Amphora driver.,octavia: \
-    #                            Deprecated alias of the Octavia Amphora driver.
-
-    # Default provider driver
-    default_provider_driver = amphora
-
-    # The minimum health monitor delay interval for UDP-CONNECT Health Monitor type
-    udp_connect_min_interval_health_monitor = 3
-
-Examples:
-    >>> type(octavia_conf)
-    <class 'insights.parsers.octavia.OctaviaConf'>
-    >>> octavia_conf.defaults()['debug'] == 'False'
-    True
-    >>> octavia_conf.get('api_settings', 'bind_port') == '9876'
-    True
-    >>> octavia_conf.has_option('api_settings', 'missing_key')
-    False
 """
-from insights import IniConfigFile, parser
+from insights.core import IniConfigFile
+from insights.core.plugins import parser
 from insights.core.filters import add_filter
 from insights.specs import Specs
 
@@ -241,6 +171,33 @@ add_filter(Specs.octavia_conf, VALID_KEYS)
 @parser(Specs.octavia_conf)
 class OctaviaConf(IniConfigFile):
     """
-    Parser for file ``/var/lib/config-data/puppet-generated/octavia/etc/octavia/octavia.conf``
+    Provides a parser arser for file
+    ``/var/lib/config-data/puppet-generated/octavia/etc/octavia/octavia.conf``.  Filters
+    have been added to this parser to ensure that the necessary data will be collected.
+
+    Sample input data::
+
+        [DEFAULT]
+        # Print debugging output (set logging level to DEBUG instead of default WARNING level).
+        debug = False
+
+        [api_settings]
+        bind_host = 127.0.0.1
+        bind_port = 9876
+        # Default provider driver
+        default_provider_driver = amphora
+
+        # The minimum health monitor delay interval for UDP-CONNECT Health Monitor type
+        udp_connect_min_interval_health_monitor = 3
+
+    Examples:
+        >>> type(octavia_conf)
+        <class 'insights.parsers.octavia.OctaviaConf'>
+        >>> octavia_conf.defaults()['debug'] == 'False'
+        True
+        >>> octavia_conf.get('api_settings', 'bind_port') == '9876'
+        True
+        >>> octavia_conf.has_option('api_settings', 'missing_key')
+        False
     """
     pass

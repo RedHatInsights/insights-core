@@ -15,6 +15,7 @@ Contents:
     parsers_index
     combiners_index
     components_index
+    custom_datasources_index
     ocp
     shell
     docs_guidelines

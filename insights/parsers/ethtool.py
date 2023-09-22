@@ -39,13 +39,19 @@ TimeStamp - command ``/sbin/ethtool -T {interface}``
 ----------------------------------------------------
 
 """
-
 import os
 import re
+import sys
+
 from collections import namedtuple
-from ..parsers import ParseException
-from .. import parser, LegacyItemAccess, CommandParser
+from insights.core import CommandParser, LegacyItemAccess
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
 from insights.specs import Specs
+
+if sys.version_info[0] == 3:
+    # Python 3
+    unicode = str
 
 
 def extract_iface_name_from_path(path, name):
@@ -501,9 +507,10 @@ class CoalescingInfo(CommandParser):
         for line in content[2:]:
             if line.strip():
                 (key, value) = [s.strip() for s in line.split(":", 1)]
-                value = int(value)
-                self.data[key] = value
-                setattr(self, key.replace("-", "_"), value)
+                if unicode(value).isnumeric():
+                    value = int(value)
+                    self.data[key] = value
+                    setattr(self, key.replace("-", "_"), value)
 
 
 @parser(Specs.ethtool_g)
@@ -600,7 +607,8 @@ class Ring(CommandParser):
             elif ':' in line:
                 # key: value, store in section data for now
                 key, value = (s.strip() for s in line.split(":", 1))
-                section_data[key.replace(" ", "_").lower()] = int(value)
+                if unicode(value).isnumeric():
+                    section_data[key.replace(" ", "_").lower()] = int(value)
 
         # Handle last found section, if any
         set_section(section, section_data)
@@ -756,6 +764,7 @@ class TimeStamp(CommandParser):
         >>> eno1.data['Hardware Receive Filter Modes']['all']
         'HWTSTAMP_FILTER_ALL'
     """
+
     @property
     def ifname(self):
         """(str): the interface name"""
@@ -767,6 +776,7 @@ class TimeStamp(CommandParser):
 
         group = None
         for line in content[1:]:
+            line = line.strip()
             if ":" in line:
                 key, val = [i.strip() for i in line.split(':', 1)]
                 group = {}
@@ -775,7 +785,7 @@ class TimeStamp(CommandParser):
                 key, val = [i.strip() for i in line.split(None, 1)]
                 group[key] = val.strip('()')
             elif line:
-                raise ParseException('bad line: {0}'.format(line))
+                group[line] = None
 
 
 @parser(Specs.ethtool)
@@ -853,6 +863,7 @@ class Ethtool(CommandParser):
         >>> ethinfo.supported_ports  # This is converted to a list of strings
         ['TP', 'MII']
     """
+
     @property
     def ifname(self):
         """str: Return the name of network interface in content."""
@@ -876,27 +887,36 @@ class Ethtool(CommandParser):
         if "ethtool: bad command line argument(s)" in content[0]:
             raise ParseException('ethtool: bad command line argument for ethtool', content)
 
-        if "Settings for" not in content[0]:
-            raise ParseException("ethtool: unrecognised first line '{l}'".format(l=content[0]))
-
-        self.data['ETHNIC'] = content[0].split()[-1].strip(':')
-
-        if "No data available" in content[1]:
-            raise ParseException('Fake ethnic as ethtool command argument', content)
-
-        key = value = None
-        for line in content[1:]:
+        key = started = None
+        for line in content:
             line = line.strip()
             if line:
-                try:
-                    if ':' in line:
-                        key, value = line.split(':', 1)
-                        key = key.strip()
-                        self.data[key] = [value.strip()]
-                    else:
-                        self.data[key].append(line)
-                except:
-                    raise ParseException('Ethtool unable to parse content', line)
+                # Started is set when a line containing Settings for <nic>:
+                # is found, ignore all other lines prior to this one.
+                if not started:
+                    if "Settings for" in line:
+                        started = 1
+                        self.data['ETHNIC'] = line.split()[-1].strip(':')
+
+                    continue
+                else:
+                    if "No data available" in line:
+                        raise ParseException('Fake ethnic as ethtool command argument', content)
+
+                    try:
+                        if ':' in line:
+                            key, value = line.split(':', 1)
+                            key = key.strip()
+                            self.data[key] = [value.strip()]
+                        else:
+                            self.data[key].append(line)
+                    except KeyError:
+                        raise ParseException('Ethtool unable to parse content', line)
+
+        # If started was never set then there wasn't any
+        # valid lines found so raise a parse exception.
+        if not started:
+            raise ParseException('Ethtool does not contain Settings for <nic>:')
 
         self.supported_link_modes = []
         if 'Supported link modes' in self.data:

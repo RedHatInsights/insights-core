@@ -17,11 +17,10 @@ X86RETPEnabled - file ``/sys/kernel/debug/x86/retp_enabled``
 ------------------------------------------------------------
 
 """
-
-from insights import parser
-from insights import Parser
+from insights.core import Parser
+from insights.core.exceptions import SkipComponent
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.parsers import SkipException
 
 
 class X86DebugEnabled(Parser):
@@ -32,11 +31,11 @@ class X86DebugEnabled(Parser):
         value (int): the result parsed of `/sys/kernel/debug/x86/*_enabled`
 
     Raises:
-        SkipException: When input content is empty
+        SkipComponent: When input content is empty
     """
     def parse_content(self, content):
         if not content:
-            raise SkipException("Input content is empty")
+            raise SkipComponent("Input content is empty")
         # it is a digit
         self.value = int(content[0])
 
@@ -59,7 +58,7 @@ class X86IBPBEnabled(X86DebugEnabled):
         value (int): the result parsed of '/sys/kernel/debug/x86/ibpb_enabled'
 
     Raises:
-        SkipException: When input content is empty
+        SkipComponent: When input content is empty
     """
     pass
 
@@ -82,7 +81,7 @@ class X86IBRSEnabled(X86DebugEnabled):
         value (int): the result parsed of '/sys/kernel/debug/x86/ibrs_enabled'
 
     Raises:
-        SkipException: When input content is empty
+        SkipComponent: When input content is empty
     """
     pass
 
@@ -105,7 +104,7 @@ class X86PTIEnabled(X86DebugEnabled):
         value (int): the result parsed of '/sys/kernel/debug/x86/pti_enabled'
 
     Raises:
-        SkipException: When input content is empty
+        SkipComponent: When input content is empty
     """
     pass
 
@@ -128,6 +127,6 @@ class X86RETPEnabled(X86DebugEnabled):
         value (int): the result parsed of '/sys/kernel/debug/x86/retp_enabled'
 
     Raises:
-        SkipException: When input content is empty
+        SkipComponent: When input content is empty
     """
     pass

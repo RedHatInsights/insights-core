@@ -88,9 +88,11 @@ Examples:
     False
 
 """
-from .. import parser, CommandParser
-from insights.parsers import ParseException
 import re
+
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 

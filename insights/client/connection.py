@@ -27,7 +27,9 @@ from .utilities import (determine_hostname,
                         generate_machine_id,
                         write_unregistered_file,
                         write_registered_file,
-                        os_release_info)
+                        os_release_info,
+                        largest_spec_in_archive,
+                        size_in_mb)
 from .cert_auth import rhsmCertificate
 from .constants import InsightsConstants as constants
 from .url_cache import URLCache
@@ -111,7 +113,7 @@ class InsightsConnection(object):
                 self.base_url = protocol + constants.base_url
         else:
             self.base_url = protocol + self.config.base_url
-        # end hack. in the future, make cloud.redhat.com the default
+        # end hack. in the future, make console.redhat.com the default
 
         self.upload_url = self.config.upload_url
         if self.upload_url is None:
@@ -154,26 +156,57 @@ class InsightsConnection(object):
         session.verify = self.cert_verify
         session.proxies = self.proxies
         session.trust_env = False
-        if self.proxy_auth:
-            # HACKY
-            try:
-                # Need to make a request that will fail to get proxies set up
-                logger.log(NETWORK, "GET %s", self.base_url)
-                session.request(
-                    "GET", self.base_url, timeout=self.config.http_timeout)
-            except requests.ConnectionError:
-                pass
-            # Major hack, requests/urllib3 does not make access to
-            # proxy_headers easy
-            proxy_mgr = session.adapters['https://'].proxy_manager[self.proxies['https']]
-            auth_map = {'Proxy-Authorization': self.proxy_auth}
-            proxy_mgr.proxy_headers = auth_map
-            proxy_mgr.connection_pool_kw['_proxy_headers'] = auth_map
-            conns = proxy_mgr.pools._container
-            for conn in conns:
-                connection = conns[conn]
-                connection.proxy_headers = auth_map
         return session
+
+    def _http_request(self, url, method, log_response_text=True, **kwargs):
+        '''
+        Perform an HTTP request, net logging, and error handling
+        Parameters
+            url     - URL to perform the request against
+            method  - HTTP method, used for logging
+            kwargs  - Rest of the args to pass to the request function
+        Returns
+            HTTP response object
+        '''
+        logger.log(NETWORK, "%s %s", method, url)
+        try:
+            res = self.session.request(url=url, method=method, timeout=self.config.http_timeout, **kwargs)
+        except Exception:
+            raise
+        logger.log(NETWORK, "HTTP Status: %d %s", res.status_code, res.reason)
+        if log_response_text or res.status_code != 200:
+            logger.log(NETWORK, "HTTP Response Text: %s", res.text)
+        return res
+
+    def get(self, url, **kwargs):
+        try:
+            return self._http_request(url, 'GET', **kwargs)
+        except Exception:
+            raise
+
+    def post(self, url, **kwargs):
+        try:
+            return self._http_request(url, 'POST', **kwargs)
+        except Exception:
+            raise
+
+    def put(self, url, **kwargs):
+        try:
+            return self._http_request(url, 'PUT', **kwargs)
+        except Exception:
+            raise
+
+    def patch(self, url, **kwargs):
+        try:
+            return self._http_request(url, 'PATCH', **kwargs)
+        except Exception:
+            raise
+
+    def delete(self, url, **kwargs):
+        try:
+            return self._http_request(url, 'DELETE', **kwargs)
+        except Exception:
+            raise
 
     @property
     def user_agent(self):
@@ -223,81 +256,71 @@ class InsightsConnection(object):
 
         return ua
 
+    def get_proxy(self, proxy_info, no_proxy_info, environment):
+        proxies = None
+        proxy_url = proxy_info
+        if '@' in proxy_info:
+            scheme = proxy_info.split(':')[0] + '://'
+            logger.debug("Proxy Scheme: %s", scheme)
+            location = proxy_info.split('@')[1]
+            logger.debug("Proxy Location: %s", location)
+            username = proxy_info.split(
+                '@')[0].split(':')[1].replace('/', '')
+            logger.debug("Proxy User: %s", username)
+            proxy_url = proxy_info
+            proxy_info = scheme + location
+        logger.debug("%s Proxy: %s", environment, proxy_info)
+        proxies = {"https": proxy_url}
+        if no_proxy_info:
+            insights_service_host = urlparse(self.base_url).hostname
+            logger.debug('Found NO_PROXY set. Checking NO_PROXY %s against base URL %s.', no_proxy_info, insights_service_host)
+            # Split the no_proxy entries on ',', then strip any leading and trailing whitespace.  Create a clean list for the
+            # for loop.
+            no_proxy_info = [host.strip() for host in no_proxy_info.split(',')]
+            for no_proxy_host in no_proxy_info:
+                logger.debug('Checking %s against %s', no_proxy_host, insights_service_host)
+                if no_proxy_host == '*':
+                    proxies = None
+                    logger.debug('Found NO_PROXY asterisk(*) wildcard, disabling all proxies.')
+                    break
+                elif no_proxy_host.startswith('.') or no_proxy_host.startswith('*'):
+                    if insights_service_host.endswith(no_proxy_host.replace('*', '')):
+                        proxies = None
+                        logger.debug('Found NO_PROXY range %s matching %s', no_proxy_host, insights_service_host)
+                        break
+                elif no_proxy_host == insights_service_host:
+                    proxies = None
+                    logger.debug('Found NO_PROXY %s exactly matching %s', no_proxy_host, insights_service_host)
+                    break
+        return proxies
+
     def get_proxies(self):
         """
         Determine proxy configuration
         """
         # Get proxy from ENV or Config
         proxies = None
-        proxy_auth = None
-        no_proxy = os.environ.get('NO_PROXY')
-        logger.debug("NO PROXY: %s", no_proxy)
 
         # CONF PROXY TAKES PRECEDENCE OVER ENV PROXY
         conf_proxy = self.config.proxy
-        if ((conf_proxy is not None and
-             conf_proxy.lower() != 'None'.lower() and
-             conf_proxy != "")):
-            if '@' in conf_proxy:
-                scheme = conf_proxy.split(':')[0] + '://'
-                logger.debug("Proxy Scheme: %s", scheme)
-                location = conf_proxy.split('@')[1]
-                logger.debug("Proxy Location: %s", location)
-                username = conf_proxy.split(
-                    '@')[0].split(':')[1].replace('/', '')
-                logger.debug("Proxy User: %s", username)
-                password = conf_proxy.split('@')[0].split(':')[2]
-                proxy_auth = requests.auth._basic_auth_str(username, password)
-                conf_proxy = scheme + location
-            logger.debug("CONF Proxy: %s", conf_proxy)
-            proxies = {"https": conf_proxy}
+        conf_no_proxy = self.config.no_proxy
+
+        if conf_proxy:
+            proxies = self.get_proxy(conf_proxy, conf_no_proxy, "CONF")
 
         # HANDLE NO PROXY CONF PROXY EXCEPTION VERBIAGE
+        no_proxy = os.environ.get('NO_PROXY')
         if no_proxy and conf_proxy:
             logger.debug("You have environment variable NO_PROXY set "
                          "as well as 'proxy' set in your configuration file. "
                          "NO_PROXY environment variable will be ignored.")
 
-        # IF NO CONF PROXY, GET ENV PROXY AND NO PROXY
-        if proxies is None:
+        # IF NO CONF PROXY and NO_PROX none in conf, GET ENV PROXY AND NO PROXY
+        if proxies is None and conf_no_proxy is None:
             env_proxy = os.environ.get('HTTPS_PROXY')
             if env_proxy:
-                if '@' in env_proxy:
-                    scheme = env_proxy.split(':')[0] + '://'
-                    logger.debug("Proxy Scheme: %s", scheme)
-                    location = env_proxy.split('@')[1]
-                    logger.debug("Proxy Location: %s", location)
-                    username = env_proxy.split('@')[0].split(':')[1].replace('/', '')
-                    logger.debug("Proxy User: %s", username)
-                    password = env_proxy.split('@')[0].split(':')[2]
-                    proxy_auth = requests.auth._basic_auth_str(username, password)
-                    env_proxy = scheme + location
-                logger.debug("ENV Proxy: %s", env_proxy)
-                proxies = {"https": env_proxy}
-            if no_proxy:
-                insights_service_host = urlparse(self.base_url).hostname
-                logger.debug('Found NO_PROXY set. Checking NO_PROXY %s against base URL %s.', no_proxy, insights_service_host)
-                for no_proxy_host in no_proxy.split(','):
-                    logger.debug('Checking %s against %s', no_proxy_host, insights_service_host)
-                    if no_proxy_host == '*':
-                        proxies = None
-                        proxy_auth = None
-                        logger.debug('Found NO_PROXY asterisk(*) wildcard, disabling all proxies.')
-                        break
-                    elif no_proxy_host.startswith('.') or no_proxy_host.startswith('*'):
-                        if insights_service_host.endswith(no_proxy_host.replace('*', '')):
-                            proxies = None
-                            proxy_auth = None
-                            logger.debug('Found NO_PROXY range %s matching %s', no_proxy_host, insights_service_host)
-                            break
-                    elif no_proxy_host == insights_service_host:
-                        proxies = None
-                        proxy_auth = None
-                        logger.debug('Found NO_PROXY %s exactly matching %s', no_proxy_host, insights_service_host)
-                        break
-
+                proxies = self.get_proxy(env_proxy, no_proxy, "ENV")
         self.proxies = proxies
-        self.proxy_auth = proxy_auth
 
     def _legacy_test_urls(self, url, method):
         """
@@ -312,14 +335,10 @@ class InsightsConnection(object):
         for ext in paths:
             try:
                 logger.log(NETWORK, "Testing: %s", test_url + ext)
-                if method is "POST":
-                    test_req = self.session.post(
-                        test_url + ext, timeout=self.config.http_timeout, data=test_flag)
-                elif method is "GET":
-                    test_req = self.session.get(test_url + ext, timeout=self.config.http_timeout)
-                logger.log(NETWORK, "HTTP Status Code: %d", test_req.status_code)
-                logger.log(NETWORK, "HTTP Status Text: %s", test_req.reason)
-                logger.log(NETWORK, "HTTP Response Text: %s", test_req.text)
+                if method == "POST":
+                    test_req = self.post(test_url + ext, data=test_flag)
+                elif method == "GET":
+                    test_req = self.get(test_url + ext)
                 # Strata returns 405 on a GET sometimes, this isn't a big deal
                 if test_req.status_code in (200, 201):
                     logger.info(
@@ -344,18 +363,15 @@ class InsightsConnection(object):
             return self._legacy_test_urls(url, method)
         try:
             logger.log(NETWORK, 'Testing %s', url)
-            if method is 'POST':
+            if method == 'POST':
                 test_tar = TemporaryFile(mode='rb', suffix='.tar.gz')
                 test_files = {
                     'file': ('test.tar.gz', test_tar, 'application/vnd.redhat.advisor.collection+tgz'),
                     'metadata': '{\"test\": \"test\"}'
                 }
-                test_req = self.session.post(url, timeout=self.config.http_timeout, files=test_files)
-            elif method is "GET":
-                    test_req = self.session.get(url, timeout=self.config.http_timeout)
-            logger.log(NETWORK, "HTTP Status Code: %d", test_req.status_code)
-            logger.log(NETWORK, "HTTP Status Text: %s", test_req.reason)
-            logger.log(NETWORK, "HTTP Response Text: %s", test_req.text)
+                test_req = self.post(url, files=test_files)
+            elif method == "GET":
+                test_req = self.get(url)
             if test_req.status_code in (200, 201, 202):
                 logger.info(
                     "Successfully connected to: %s", url)
@@ -390,17 +406,16 @@ class InsightsConnection(object):
                         "SUCCESS" if api_success else "FAILURE")
             if upload_success and api_success:
                 logger.info("Connectivity tests completed successfully")
-                logger.info("See %s for more details.", self.config.logging_file)
+                print("See %s for more details." % self.config.logging_file)
             else:
                 logger.info("Connectivity tests completed with some errors")
-                logger.info("See %s for more details.", self.config.logging_file)
+                print("See %s for more details." % self.config.logging_file)
                 rc = 1
         except requests.ConnectionError as exc:
             print(exc)
             logger.error('Connectivity test failed! '
                          'Please check your network configuration')
-            logger.error('Additional information may be in'
-                         ' /var/log/' + APP_NAME + "/" + APP_NAME + ".log")
+            print('Additional information may be in %s' % self.config.logging_file)
             return 1
         return rc
 
@@ -421,9 +436,9 @@ class InsightsConnection(object):
                         req.status_code)
             logger.debug("HTTP Status Text: %s", req.reason)
             if req.status_code == 401:
-                logger.error("Authorization Required.")
-                logger.error("Please ensure correct credentials "
-                             "in " + constants.default_conf_file)
+                logger.error("Please ensure that the system is registered "
+                             "with RHSM for CERT auth, or that correct "
+                             "credentials are set in %s for BASIC auth.", self.config.conf)
                 logger.log(NETWORK, "HTTP Response Text: %s", req.text)
             if req.status_code == 402:
                 # failed registration because of entitlement limit hit
@@ -502,10 +517,7 @@ class InsightsConnection(object):
 
         logger.debug(u'Obtaining branch information from %s',
                      self.branch_info_url)
-        logger.log(NETWORK, u'GET %s', self.branch_info_url)
-        response = self.session.get(self.branch_info_url,
-                                    timeout=self.config.http_timeout)
-        logger.log(NETWORK, u'GET branch_info status: %s', response.status_code)
+        response = self.get(self.branch_info_url)
         if response.status_code != 200:
             logger.debug("There was an error obtaining branch information.")
             logger.debug(u'Bad status from server: %s', response.status_code)
@@ -516,8 +528,8 @@ class InsightsConnection(object):
         logger.debug(u'Branch information: %s', json.dumps(branch_info))
 
         # Determine if we are connected to Satellite 5
-        if ((branch_info[u'remote_branch'] is not -1 and
-             branch_info[u'remote_leaf'] is -1)):
+        if ((branch_info[u'remote_branch'] != -1 and
+             branch_info[u'remote_leaf'] == -1)):
             self.get_satellite5_info(branch_info)
 
         # logger.debug(u'Saving branch info to file.')
@@ -553,10 +565,9 @@ class InsightsConnection(object):
         post_system_url = self.api_url + '/v1/systems'
         logger.debug("POST System: %s", post_system_url)
         logger.debug(data)
-        logger.log(NETWORK, "POST %s", post_system_url)
-        return self.session.post(post_system_url,
-                                 headers={'Content-Type': 'application/json'},
-                                 data=data)
+        return self.post(post_system_url,
+                         headers={'Content-Type': 'application/json'},
+                         data=data)
 
     # -LEGACY-
     def group_systems(self, group_name, systems):
@@ -572,35 +583,24 @@ class InsightsConnection(object):
         group_path = self.api_url + '/v1/groups'
         group_get_path = group_path + ('?display_name=%s' % quote(group_name))
 
-        logger.debug("GET group: %s", group_get_path)
-        logger.log(NETWORK, "GET %s", group_get_path)
-        get_group = self.session.get(group_get_path)
-        logger.debug("GET group status: %s", get_group.status_code)
+        get_group = self.get(group_get_path)
         if get_group.status_code == 200:
             api_group_id = get_group.json()['id']
 
         if get_group.status_code == 404:
             # Group does not exist, POST to create
-            logger.debug("POST group")
             data = json.dumps({'display_name': group_name})
-            logger.log(NETWORK, "POST", group_path)
-            post_group = self.session.post(group_path,
-                                           headers=headers,
-                                           data=data)
-            logger.debug("POST group status: %s", post_group.status_code)
-            logger.debug("POST Group: %s", post_group.json())
+            post_group = self.post(group_path,
+                                   headers=headers,
+                                   data=data)
             self.handle_fail_rcs(post_group)
             api_group_id = post_group.json()['id']
 
-        logger.debug("PUT group")
         data = json.dumps(systems)
-        logger.log(NETWORK, "PUT %s", group_path + ('/%s/systems' % api_group_id))
-        put_group = self.session.put(group_path +
-                                     ('/%s/systems' % api_group_id),
-                                     headers=headers,
-                                     data=data)
-        logger.debug("PUT group status: %d", put_group.status_code)
-        logger.debug("PUT Group: %s", put_group.json())
+        self.put(group_path +
+                 ('/%s/systems' % api_group_id),
+                 headers=headers,
+                 data=data)
 
     # -LEGACY-
     # Keeping this function around because it's not private and I don't know if anything else uses it
@@ -616,13 +616,16 @@ class InsightsConnection(object):
     def _legacy_api_registration_check(self):
         '''
         Check registration status through API
+            True    system exists in inventory
+            False   connection or parsing response error
+            None    system is not yet registered
+            string system is unregistered
         '''
         logger.debug('Checking registration status...')
         machine_id = generate_machine_id()
         try:
             url = self.api_url + '/v1/systems/' + machine_id
-            logger.log(NETWORK, "GET %s", url)
-            res = self.session.get(url, timeout=self.config.http_timeout)
+            res = self.get(url)
         except requests.ConnectionError:
             # can't connect, run connection test
             logger.error('Connection timed out. Running connection test...')
@@ -634,23 +637,31 @@ class InsightsConnection(object):
         #       True for registered
         #       False for unregistered
         #       None for system 404
-        try:
-            # check the 'unregistered_at' key of the response
-            unreg_status = json.loads(res.content).get('unregistered_at', 'undefined')
-            # set the global account number
-            self.config.account_number = json.loads(res.content).get('account_number', 'undefined')
-        except ValueError:
-            # bad response, no json object
+        if res.status_code != 200:
+            self.handle_fail_rcs(res)
+        if res.status_code not in (200, 404):
+            # Network error returns False
             return False
-        if unreg_status == 'undefined':
-            # key not found, machine not yet registered
-            return None
-        elif unreg_status is None:
-            # unregistered_at = null, means this machine IS registered
-            return True
         else:
-            # machine has been unregistered, this is a timestamp
-            return unreg_status
+            try:
+                # check the 'unregistered_at' key of the response
+                unreg_status = json.loads(res.content).get('unregistered_at', 'undefined')
+                # set the global account number
+                self.config.account_number = json.loads(res.content).get('account_number', 'undefined')
+            except ValueError:
+                # bad response, no json object
+                return False
+            if unreg_status == 'undefined':
+                # key not found, machine not yet registered
+                return None
+            elif unreg_status is None:
+                # unregistered_at = null, means this machine IS registered
+                return True
+            else:
+                # machine has been unregistered, this is a timestamp
+                # This is done for legacy servers that responded with the timestamp of disconnection
+                # TODO: consider to remove this condition
+                return unreg_status
 
     def _fetch_system_by_machine_id(self):
         '''
@@ -667,8 +678,7 @@ class InsightsConnection(object):
                 url = self.base_url + '/platform/inventory/v1/hosts?insights_id=' + machine_id
             else:
                 url = self.inventory_url + '/hosts?insights_id=' + machine_id
-            logger.log(NETWORK, "GET %s", url)
-            res = self.session.get(url, timeout=self.config.http_timeout)
+            res = self.get(url)
         except REQUEST_FAILED_EXCEPTIONS as e:
             _api_request_failed(e)
             return None
@@ -717,8 +727,7 @@ class InsightsConnection(object):
         try:
             logger.debug("Unregistering %s", machine_id)
             url = self.api_url + "/v1/systems/" + machine_id
-            logger.log(NETWORK, "DELETE %s", url)
-            self.session.delete(url)
+            self.delete(url)
             logger.info(
                 "Successfully unregistered from the Red Hat Insights Service")
             return True
@@ -741,8 +750,7 @@ class InsightsConnection(object):
         try:
             logger.debug("Unregistering host...")
             url = self.inventory_url + "/hosts/" + results[0]['id']
-            logger.log(NETWORK, "DELETE %s", url)
-            response = self.session.delete(url)
+            response = self.delete(url)
             response.raise_for_status()
             logger.info(
                 "Successfully unregistered from the Red Hat Insights Service")
@@ -797,6 +805,32 @@ class InsightsConnection(object):
         else:
             return (message, client_hostname, "None", "")
 
+    def _archive_too_big(self, archive_file):
+        '''
+        Some helpful messaging for when the archive is too large for ingress
+        '''
+        archive_filesize = size_in_mb(
+            os.stat(archive_file).st_size)
+        logger.info("Archive is {fsize} MB which is larger than the maximum allowed size of {flimit} MB.".format(
+            fsize=archive_filesize, flimit=constants.archive_filesize_max))
+
+        if not self.config.core_collect:
+            logger.error("Cannot estimate the spec with largest filesize because core collection is not enabled. "
+                    "Enable core collection by setting core_collect=True in %s, and attempt the upload again.", self.config.conf)
+            return
+
+        biggest_file = largest_spec_in_archive(archive_file)
+        logger.info("The largest file in the archive is %s at %s MB.", biggest_file[0], size_in_mb(biggest_file[1]))
+        logger.info("Please add the following spec to /etc/insights-client/file-redaction.yaml."
+        "According to the documentation https://access.redhat.com/articles/4511681\n\n"
+        "****  /etc/insights-client/file-redaction.yaml ****\n"
+        "# file-redaction.yaml\n"
+        "# Omit entire output of files\n"
+        "# Files can be specified either by full filename or\n"
+        "#   by the 'symbolic_name' listed in .cache.json\n"
+        "files:\n"
+        "- %s \n**** ****", biggest_file[2])
+
     # -LEGACY-
     def _legacy_upload_archive(self, data_collected, duration):
         '''
@@ -822,15 +856,18 @@ class InsightsConnection(object):
         logger.debug("Uploading %s to %s", data_collected, upload_url)
 
         headers = {'x-rh-collection-time': str(duration)}
-        logger.log(NETWORK, "POST %s", upload_url)
-        upload = self.session.post(upload_url, files=files, headers=headers)
+        try:
+            upload = self.post(upload_url, files=files, headers=headers)
+        except Exception:
+            raise
 
-        logger.log(NETWORK, "Upload status: %s %s %s",
-                     upload.status_code, upload.reason, upload.text)
         if upload.status_code in (200, 201):
             the_json = json.loads(upload.text)
         else:
             logger.error("Upload archive failed with status code  %s", upload.status_code)
+            if upload.status_code == 413:
+                # let the user know what file is bloating the archive
+                self._archive_too_big(data_collected)
             return upload
         try:
             self.config.account_number = the_json["upload"]["account_number"]
@@ -856,6 +893,9 @@ class InsightsConnection(object):
         if self.config.display_name:
             # add display_name to canonical facts
             c_facts['display_name'] = self.config.display_name
+        if self.config.ansible_host:
+            # add ansible_host to canonical facts
+            c_facts['ansible_host'] = self.config.ansible_host
         if self.config.branch_info:
             c_facts["branch_info"] = self.config.branch_info
             c_facts["satellite_id"] = self.config.branch_info["remote_leaf"]
@@ -866,13 +906,13 @@ class InsightsConnection(object):
             'file': (file_name, open(data_collected, 'rb'), content_type),
             'metadata': c_facts
         }
+        logger.debug('content-type: %s', content_type)
         logger.debug("Uploading %s to %s", data_collected, upload_url)
+        try:
+            upload = self.post(upload_url, files=files, headers={})
+        except Exception:
+            raise
 
-        logger.log(NETWORK, "POST %s", upload_url)
-        upload = self.session.post(upload_url, files=files, headers={})
-
-        logger.log(NETWORK, "Upload status: %s %s %s",
-                     upload.status_code, upload.reason, upload.text)
         logger.debug('Request ID: %s', upload.headers.get('x-rh-insights-request-id', None))
         if upload.status_code in (200, 202):
             # 202 from platform, no json response
@@ -890,6 +930,9 @@ class InsightsConnection(object):
             logger.debug(
                 "Upload archive failed with status code %s",
                 upload.status_code)
+            if upload.status_code == 413:
+                # let the user know what file is bloating the archive
+                self._archive_too_big(data_collected)
             return upload
         logger.debug("Upload duration: %s", upload.elapsed)
         return upload
@@ -900,19 +943,16 @@ class InsightsConnection(object):
         try:
             url = self.api_url + '/v1/systems/' + machine_id
 
-            logger.log(NETWORK, "GET %s", url)
-            res = self.session.get(url, timeout=self.config.http_timeout)
+            res = self.get(url)
             old_display_name = json.loads(res.content).get('display_name', None)
             if display_name == old_display_name:
                 logger.debug('Display name unchanged: %s', old_display_name)
                 return True
 
-            logger.log(NETWORK, "PUT %s", url)
-            res = self.session.put(url,
-                                   timeout=self.config.http_timeout,
-                                   headers={'Content-Type': 'application/json'},
-                                   data=json.dumps(
-                                        {'display_name': display_name}))
+            res = self.put(url,
+                           headers={'Content-Type': 'application/json'},
+                           data=json.dumps(
+                               {'display_name': display_name}))
             if res.status_code == 200:
                 logger.info('System display name changed from %s to %s',
                             old_display_name,
@@ -945,8 +985,7 @@ class InsightsConnection(object):
 
         req_url = self.inventory_url + '/hosts/' + inventory_id
         try:
-            logger.log(NETWORK, "PATCH %s", req_url)
-            res = self.session.patch(req_url, json={'display_name': display_name})
+            res = self.patch(req_url, json={'display_name': display_name})
         except REQUEST_FAILED_EXCEPTIONS as e:
             _api_request_failed(e)
             return False
@@ -954,6 +993,27 @@ class InsightsConnection(object):
             logger.error('Could not update display name.')
             return False
         logger.info('Display name updated to ' + display_name + '.')
+        return True
+
+    def set_ansible_host(self, ansible_host):
+        '''
+        Set Ansible hostname of a system independently of upload.
+        '''
+        system = self._fetch_system_by_machine_id()
+        if not system:
+            return system
+        inventory_id = system[0]['id']
+
+        req_url = self.inventory_url + '/hosts/' + inventory_id
+        try:
+            res = self.patch(req_url, json={'ansible_host': ansible_host})
+        except REQUEST_FAILED_EXCEPTIONS as e:
+            _api_request_failed(e)
+            return False
+        if (self.handle_fail_rcs(res)):
+            logger.error('Could not update Ansible hostname.')
+            return False
+        logger.info('Ansible hostname updated to ' + ansible_host + '.')
         return True
 
     def get_diagnosis(self, remediation_id=None):
@@ -968,8 +1028,7 @@ class InsightsConnection(object):
             # validate this?
             params['remediation'] = remediation_id
         try:
-            logger.log(NETWORK, "GET %s", diag_url)
-            res = self.session.get(diag_url, params=params, timeout=self.config.http_timeout)
+            res = self.get(diag_url, params=params)
         except (requests.ConnectionError, requests.Timeout) as e:
             _api_request_failed(e)
             return False
@@ -979,7 +1038,7 @@ class InsightsConnection(object):
             return None
         return res.json()
 
-    def _get(self, url):
+    def _cached_get(self, url):
         '''
             Submits a GET request to @url, caching the result, and returning
             the response body, if any. It makes the response status code opaque
@@ -994,8 +1053,7 @@ class InsightsConnection(object):
         if item is not None:
             headers["If-None-Match"] = item.etag
 
-        logger.log(NETWORK, "GET %s", url)
-        res = self.session.get(url, headers=headers)
+        res = self.get(url, headers=headers)
 
         if res.status_code in [requests.codes.OK, requests.codes.NOT_MODIFIED]:
             if res.status_code == requests.codes.OK:
@@ -1015,7 +1073,7 @@ class InsightsConnection(object):
             Retrieve advisor report
         '''
         url = self.inventory_url + "/hosts?insights_id=%s" % generate_machine_id()
-        content = self._get(url)
+        content = self._cached_get(url)
         if content is None:
             return None
 
@@ -1023,7 +1081,7 @@ class InsightsConnection(object):
         if host_details["total"] < 1:
             _host_not_found()
         if host_details["total"] > 1:
-            raise Exception("Error: multiple hosts detected (insights_id = %s)" % generate_machine_id())
+            raise Exception("Error: multiple hosts detected (insights_id = %s). To fix this error, run command: insights-client --unregister && insights-client --register" % generate_machine_id())
 
         if not os.path.exists("/var/lib/insights"):
             os.makedirs("/var/lib/insights", mode=0o755)
@@ -1034,7 +1092,7 @@ class InsightsConnection(object):
 
         host_id = host_details["results"][0]["id"]
         url = self.base_url + "/insights/v1/system/%s/reports/" % host_id
-        content = self._get(url)
+        content = self._cached_get(url)
         if content is None:
             return None
 
@@ -1061,7 +1119,7 @@ class InsightsConnection(object):
         url = self.inventory_url + "/hosts/checkin"
         logger.debug("Sending check-in request to %s with %s" % (url, canonical_facts))
         try:
-            response = self.session.post(url, headers={"Content-Type": "application/json"}, data=json.dumps(canonical_facts))
+            response = self.post(url, headers={"Content-Type": "application/json"}, data=json.dumps(canonical_facts))
             # Change to POST when the API is fixed.
         except REQUEST_FAILED_EXCEPTIONS as exception:
             _api_request_failed(exception)

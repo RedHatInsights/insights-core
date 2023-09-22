@@ -45,8 +45,9 @@ Examples:
     >>> [i['irq'] for i in int_info if i['counts'][0] > 1000]
     ['9', 'LOC']
 """
-from .. import Parser, parser
-from ..parsers import ParseException
+from insights.core import Parser
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 

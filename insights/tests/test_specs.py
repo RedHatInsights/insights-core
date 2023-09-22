@@ -1,15 +1,14 @@
-import os
-
-from insights import add_filter, dr
-from insights.core import Parser
-from insights.core.context import HostContext
-from insights.core.plugins import ContentException
-from insights.core.spec_factory import (DatasourceProvider, simple_file,
-                                        simple_command, glob_file, SpecSet)
-import insights.specs.default as default_specs
-import tempfile
-import pytest
 import glob
+import os
+import pytest
+import tempfile
+
+from insights.core import Parser, dr
+from insights.core.context import HostContext
+from insights.core.exceptions import ContentException
+from insights.core.filters import add_filter
+from insights.core.spec_factory import (DatasourceProvider, RegistryPoint, SpecSet, glob_file, simple_command,
+                                        simple_file)
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -38,11 +37,22 @@ with open(this_file) as f:
     file_content = f.read().splitlines()
 
 
-class Stuff(SpecSet):
-    smpl_file = simple_file(this_file, filterable=True)
+class Specs(SpecSet):
+    many = RegistryPoint(multi_output=True)
+    no_such_cmd = RegistryPoint()
+    no_such_file = RegistryPoint()
+    smpl_cmd = RegistryPoint()
+    smpl_cmd_list_of_lists = RegistryPoint(filterable=True)
+    smpl_file = RegistryPoint(filterable=True)
+
+
+class Stuff(Specs):
     many = glob_file(here + "/*.py")
+    no_such_cmd = simple_command("/usr/bin/no_such_cmd args")
+    no_such_file = simple_file("/no/such/_file")
     smpl_cmd = simple_command("/usr/bin/uptime")
-    smpl_cmd_list_of_lists = simple_command("echo -n ' hello '", filterable=True)
+    smpl_cmd_list_of_lists = simple_command("echo -n ' hello '")
+    smpl_file = simple_file(this_file)
 
 
 class stage(dr.ComponentType):
@@ -50,12 +60,16 @@ class stage(dr.ComponentType):
         return self.component(broker)
 
 
-@stage(Stuff.smpl_file, Stuff.many, Stuff.smpl_cmd, Stuff.smpl_cmd_list_of_lists)
+@stage(Stuff.smpl_file, Stuff.many, Stuff.smpl_cmd,
+       Stuff.smpl_cmd_list_of_lists,
+       optional=[Stuff.no_such_cmd, Stuff.no_such_file])
 def dostuff(broker):
     assert Stuff.smpl_file in broker
     assert Stuff.many in broker
     assert Stuff.smpl_cmd in broker
     assert Stuff.smpl_cmd_list_of_lists in broker
+    assert Stuff.no_such_cmd not in broker
+    assert Stuff.no_such_file not in broker
 
 
 def test_spec_factory():
@@ -69,6 +83,13 @@ def test_spec_factory():
     assert not any(l.endswith("\n") for l in broker[Stuff.smpl_file].content)
     assert "hello" in broker[Stuff.smpl_cmd_list_of_lists].content[0]
     assert len(broker[Stuff.smpl_cmd_list_of_lists].content) == 1
+    assert len(broker.exceptions) == 2
+    for exp in broker.exceptions:
+        if "no_such" in str(exp):
+            assert "args" not in str(exp)
+        else:
+            assert "/no/such" not in str(exp)
+    assert len(broker.tracebacks) == 2
 
 
 def test_line_terminators():
@@ -103,13 +124,3 @@ def test_datasource_provider():
     p = MyParser(ds)
     assert p.content == data.splitlines()
     assert list(ds.stream()) == data.splitlines()
-
-
-def test_get_running_commands():
-    broker = dr.Broker()
-    broker[HostContext] = HostContext()
-    with pytest.raises(Exception):
-        default_specs._get_running_commands(broker, 'not_a_list')
-
-    with pytest.raises(Exception):
-        default_specs._get_running_commands(broker, [])

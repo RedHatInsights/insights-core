@@ -8,13 +8,22 @@ SatelliteCustomCaChain - command ``awk 'BEGIN { pipe="openssl x509 -noout -subje
 ========================================================================================================================================================================================================================================
 RhsmKatelloDefaultCACert - command ``openssl x509 -in /etc/rhsm/ca/katello-default-ca.pem -noout -issuer``
 ==========================================================================================================
+HttpdSSLCertExpireDate - command ``openssl x509 -in httpd_certificate_path -enddate -noout``
+============================================================================================
+NginxSSLCertExpireDate - command ``openssl x509 -in nginx_certificate_path -enddate -noout``
+============================================================================================
+MssqlTLSCertExpireDate - command ``openssl x509 -in mssql_tls_cert_file -enddate -noout``
+============================================================================================
+HttpdCertInfoInNSS - command ``certutil -L -d xxx -n xxx``
+==========================================================
 """
-
-from insights import parser, CommandParser
 from datetime import datetime
-from insights.parsers import ParseException, SkipException
-from insights.specs import Specs
+
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipComponent
+from insights.core.plugins import parser
 from insights.parsers.certificates_enddate import CertificatesEnddate
+from insights.specs import Specs
 
 
 def parse_openssl_output(content):
@@ -70,7 +79,7 @@ class CertificateInfo(CommandParser, dict):
         'Dec  7 07:02:33 2020'
 
     Raises:
-        SkipException: when the command output is empty.
+        SkipComponent: when the command output is empty.
     """
 
     def __init__(self, context):
@@ -86,7 +95,12 @@ class CertificateInfo(CommandParser, dict):
 
         self.update(parse_openssl_output(content))
         if not self:
-            raise SkipException("There is not any info in the cert.")
+            raise SkipComponent("There is not any info in the cert.")
+
+    @property
+    def cert_path(self):
+        '''Return the certificate path.'''
+        return self.args
 
 
 class CertificateChain(CommandParser, list):
@@ -131,7 +145,7 @@ class CertificateChain(CommandParser, list):
                 in the chain.
 
         Raises:
-            SkipException: when the command output is empty.
+            SkipComponent: when the command output is empty.
         """
 
         self.earliest_expiry_date = None
@@ -145,7 +159,7 @@ class CertificateChain(CommandParser, list):
             if index == len(content) - 1:
                 self.append(parse_openssl_output(content=content[start_index:index + 1]))
         if not self:
-            raise SkipException("There is not any info in the ca cert chain.")
+            raise SkipComponent("There is not any info in the ca cert chain.")
         for one_cert in self:
             expire_date = one_cert.get('notAfter')
             if expire_date and (self.earliest_expiry_date is None or expire_date.datetime < self.earliest_expiry_date.datetime):
@@ -196,3 +210,112 @@ class RhsmKatelloDefaultCACert(CertificateInfo):
         '/C=US/ST=North Carolina/L=Raleigh/O=Katello/OU=SomeOrgUnit/CN=a.b.c.com'
     """
     pass
+
+
+@parser(Specs.httpd_ssl_cert_enddate)
+class HttpdSSLCertExpireDate(CertificateInfo):
+    """
+    .. note::
+        Please refer to its super-class :class:`insights.parsers.ssl_certificate.CertificateInfo` for more
+        details.
+
+    It parses the output of ``openssl x509 -in httpd_ssl_certificate_path -enddate -noout``.
+
+    Sample output of ``openssl x509 -in httpd_certificate_path -enddate -noout``::
+
+        notAfter=Dec 4 07:04:05 2035 GMT
+
+    Examples:
+        >>> type(date_info)
+        <class 'insights.parsers.ssl_certificate.HttpdSSLCertExpireDate'>
+        >>> date_info['notAfter'].datetime
+        datetime.datetime(2038, 1, 18, 7, 2, 43)
+    """
+    pass
+
+
+@parser(Specs.nginx_ssl_cert_enddate)
+class NginxSSLCertExpireDate(CertificateInfo):
+    """
+    .. note::
+        Please refer to its super-class :class:`insights.parsers.ssl_certificate.CertificateInfo` for more
+        details.
+
+    It parses the output of ``openssl x509 -in nginx_certificate_path -enddate -noout``.
+
+    Sample output of ``openssl x509 -in nginx_certificate_path -enddate -noout``::
+
+        notAfter=Dec 4 07:04:05 2035 GMT
+
+    Examples:
+        >>> type(nginx_date_info)
+        <class 'insights.parsers.ssl_certificate.NginxSSLCertExpireDate'>
+        >>> nginx_date_info['notAfter'].datetime
+        datetime.datetime(2038, 1, 18, 7, 2, 43)
+        >>> nginx_date_info.cert_path
+        '/a/b/c.pem'
+    """
+    pass
+
+
+@parser(Specs.mssql_tls_cert_enddate)
+class MssqlTLSCertExpireDate(CertificateInfo):
+    """
+    .. note::
+        Please refer to its super-class :class:`insights.parsers.ssl_certificate.CertificateInfo` for more
+        details.
+
+    It parses the output of ``openssl x509 -in mssql_tls_cert_file -enddate -noout``.
+
+    Sample output of ``openssl x509 -in mssql_tls_cert_file -enddate -noout``::
+
+        notAfter=Dec 4 07:04:05 2035 GMT
+
+    Examples:
+        >>> type(mssql_date_info)
+        <class 'insights.parsers.ssl_certificate.MssqlTLSCertExpireDate'>
+        >>> mssql_date_info['notAfter'].datetime
+        datetime.datetime(2022, 11, 5, 1, 43, 59)
+    """
+    pass
+
+
+@parser(Specs.httpd_cert_info_in_nss)
+class HttpdCertInfoInNSS(CommandParser, dict):
+    """
+    It parses the output of "certutil -d <database_path> -L -n <cert_name>".
+    Currently it only parses the "Not After" info and save it into a dict.
+    And the key is renamed to "notAfter" to keep consistent with the other certificat info.
+    The value of "notAfter" is transformed to an instance of ExpirationDate,
+    which contains the date in string and datetime format.
+
+    Raises:
+        ParseException: when the "Not After" isn't in the expected format.
+        SkipComponent: when there is no "Not After" info in the content.
+
+    Examples:
+        >>> type(nss_cert_info)
+        <class 'insights.parsers.ssl_certificate.HttpdCertInfoInNSS'>
+        >>> nss_cert_info['notAfter'].str
+        'Sun Dec 07 05:26:10 2025'
+    """
+    date_format = '%a %b %d %H:%M:%S %Y'
+
+    def parse_content(self, content):
+        # currently only expire date is needed
+        for line in content:
+            if 'Not After :' in line:
+                key, value = [item.strip() for item in line.split(':', 1)]
+                try:
+                    date_time = datetime.strptime(value, self.date_format)
+                except Exception:
+                    raise ParseException('The %s is not in %s format.' % (key, self.date_format))
+                value = CertificatesEnddate.ExpirationDate(value, date_time)
+                self.update({'notAfter': value})
+        if not self:
+            raise SkipComponent
+
+    @property
+    def cert_path(self):
+        '''Return the certificate path info.'''
+        return self.args

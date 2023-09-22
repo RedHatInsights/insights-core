@@ -1,7 +1,8 @@
-from insights.core import CommandParser
-from insights.tests import context_wrap
-from insights.core.plugins import ContentException
 import pytest
+
+from insights.core import CommandParser
+from insights.core.exceptions import ContentException
+from insights.tests import context_wrap
 
 CMF = "blah: Command not found"
 NO_FILES_FOUND = "No files found for docker.service"

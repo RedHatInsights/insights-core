@@ -31,6 +31,8 @@ import tempfile
 import logging
 import tarfile
 import six
+import hashlib
+import json
 
 from insights.util import content_type
 
@@ -62,6 +64,8 @@ class SOSCleaner:
         self.hn_db = dict() #hostname database
         self.hostname_count = 0
         self.hostname = None
+        self.fqdn = None
+        self.hashed_fqdn = None   # addition for insights-client
 
         # Domainname obfuscation information
         self.dn_db = dict() #domainname database
@@ -74,6 +78,14 @@ class SOSCleaner:
         self.keywords = None
         self.kw_db = dict() #keyword database
         self.kw_count = 0
+
+        self.excluded_specs = [
+            "insights.specs.Specs.installed_rpms",
+            "insights.specs.Specs.dnf_modules",
+            "insights.specs.Specs.yum_list_available",
+            "insights.specs.Specs.yum_updateinfo",
+            "insights.specs.Specs.yum_updates"
+        ]
 
     def _skip_file(self, d, files):
         '''
@@ -199,14 +211,71 @@ class SOSCleaner:
             pattern = r"(((\b25[0-5]|\b2[0-4][0-9]|\b1[0-9][0-9]|\b[1-9][0-9]|\b[1-9]))(\.(\b25[0-5]|\b2[0-4][0-9]|\b1[0-9][0-9]|\b[1-9][0-9]|\b[0-9])){3})"
             ips = [each[0] for each in re.findall(pattern, line)]
             if len(ips) > 0:
-                for ip in ips:
-                    new_ip = self._ip2db(ip)
-                    self.logger.debug("Obfuscating IP - %s > %s", ip, new_ip)
-                    line = line.replace(ip, new_ip)
+                for ip in sorted(ips, key=len, reverse=True):
+                    # skip loopback (https://github.com/RedHatInsights/insights-core/issues/3230#issuecomment-924859845)
+                    if ip != "127.0.0.1" and ip in line:
+                        new_ip = self._ip2db(ip)
+                        self.logger.debug("Obfuscating IP - %s > %s", ip, new_ip)
+                        line = line.replace(ip, new_ip)
             return line
         except Exception as e: # pragma: no cover
             self.logger.exception(e)
             raise Exception('SubIPError: Unable to Substitute IP Address - %s', ip)
+
+    def _sub_ip_netstat(self, line):
+        '''
+        Special version of _sub_ip for netstat to preserve spacing
+        '''
+        try:
+            pattern = r"(((\b25[0-5]|\b2[0-4][0-9]|\b1[0-9][0-9]|\b[1-9][0-9]|\b[1-9]))(\.(\b25[0-5]|\b2[0-4][0-9]|\b1[0-9][0-9]|\b[1-9][0-9]|\b[0-9])){3})"
+            ips = [each[0] for each in re.findall(pattern, line)]
+            if len(ips) > 0:
+                for ip in sorted(ips, key=len, reverse=True):
+                    # skip loopback (https://github.com/RedHatInsights/insights-core/issues/3230#issuecomment-924859845)
+                    if ip != "127.0.0.1" and ip in line:
+                        ip_len = len(ip)
+                        new_ip = self._ip2db(ip)
+                        new_ip_len = len(new_ip)
+
+                        self.logger.debug("Obfuscating IP - %s > %s", ip, new_ip)
+
+                        # pad or remove spaces to allow for the new length
+                        if ip_len > new_ip_len:
+                            numspaces = ip_len - new_ip_len
+                            line = line.replace(ip, new_ip)
+
+                            # shift past port specification to add spaces
+                            idx = line.index(new_ip) + new_ip_len
+                            c = line[idx]
+                            while c != " ":
+                                idx += 1
+                                if idx == len(line):
+                                    idx = len(line) - 1
+                                    break
+                                c = line[idx]
+                            line = line[0:idx] + numspaces * " " + line[idx:]
+
+                        elif new_ip_len > ip_len:
+                            numspaces = new_ip_len - ip_len
+                            line = line.replace(ip, new_ip)
+
+                            # shift past port specification to skip spaces
+                            idx = line.index(new_ip) + new_ip_len
+                            c = line[idx]
+                            while c != " ":
+                                idx += 1
+                                if idx == len(line):
+                                    break
+                                c = line[idx]
+                            line = line[0:idx] + line[(idx+numspaces):]
+
+                        else:
+                            line = line.replace(ip, new_ip)
+            return line
+        except Exception as e: # pragma: no cover
+            self.logger.exception(e)
+            raise Exception('SubIPError: Unable to Substitute IP Address - %s', ip)
+
 
     def _get_disclaimer(self):  # pragma: no cover
         #prints a disclaimer that this isn't an excuse for manual or any other sort of data verification
@@ -295,7 +364,7 @@ class SOSCleaner:
                         self.logger.debug("Obfuscating FQDN - %s > %s", hn, new_hn)
                         line = line.replace(hn, new_hn)
             if self.hostname:
-                line = line.replace(self.hostname, self._hn2db(self.hostname))  #catch any non-fqdn instances of the system hostname
+                line = line.replace(self.hostname, self._hn2db(self.fqdn))  #catch any non-fqdn instances of the system hostname
 
             return line
         except Exception as e: # pragma: no cover
@@ -454,12 +523,13 @@ class SOSCleaner:
             fh = open(hostfile, 'rt')
             name_list = fh.readline().rstrip().split('.')
             hostname = name_list[0]
+            fqdn = '.'.join(name_list)  # insights-client needs FQDN
             if len(name_list) > 1:
                 domainname = '.'.join(name_list[1:len(name_list)])
             else:
                 domainname = None
 
-            return hostname, domainname
+            return hostname, domainname, fqdn
 
         except IOError as e: #the 'hostname' file doesn't exist or isn't readable for some reason
             self.logger.warning("Unable to determine system hostname!!!")
@@ -471,8 +541,9 @@ class SOSCleaner:
 
             hostname = None
             domainname = None
+            fqdn = None
 
-            return hostname, domainname
+            return hostname, domainname, fqdn
 
         except Exception as e: # pragma: no cover
             self.logger.exception(e)
@@ -567,10 +638,13 @@ class SOSCleaner:
         self.file_count = len(rtn)  #a count of the files we'll have in the final cleaned sosreport, for reporting
         return rtn
 
-    def _clean_line(self, l):
+    def _clean_line(self, l, f=None):
         '''this will return a line with obfuscations for all possible variables, hostname, ip, etc.'''
 
-        new_line = self._sub_ip(l)                  # IP substitution
+        if f and f.endswith("netstat_-neopa"):
+            new_line = self._sub_ip_netstat(l)                  # IP substitution
+        else:
+            new_line = self._sub_ip(l)                  # IP substitution
         new_line = self._sub_hostname(new_line)     # Hostname substitution
         new_line = self._sub_keywords(new_line)     # Keyword Substitution
 
@@ -587,7 +661,7 @@ class SOSCleaner:
                 fh.close()
                 if len(data) > 0: #if the file isn't empty:
                     for l in data:
-                        new_l = self._clean_line(l)
+                        new_l = self._clean_line(l, f)
                         if six.PY3:
                             tmp_file.write(new_l.encode('utf-8'))
                         else:
@@ -651,6 +725,26 @@ class SOSCleaner:
             self.logger.exception(e)
             raise Exception("CleanFilesOnlyError: unable to process")
 
+    def _excluded_files(self):
+        '''Collect data files excluded from IP address obfuscation.
+        Their paths are part of the meta_data JSONs.
+        '''
+        excluded_files = []
+        meta_data_path = os.path.join(self.dir_path, "meta_data")
+        for dir_name, file_names in self._walk_report(meta_data_path).items():
+            for file_name in file_names:
+                file_path = os.path.join(dir_name, file_name)
+                with open(file_path) as file:
+                    meta_data = json.load(file)
+                if meta_data["name"] in self.excluded_specs:
+                    if isinstance(meta_data["results"], list):
+                        results = meta_data["results"]
+                    else:
+                        results = [meta_data["results"]]
+                    relative_paths = [result["object"]["relative_path"] for result in results if result and 'object' in result]
+                    excluded_files.extend(relative_paths) if relative_paths else None
+        return excluded_files
+
     def clean_report(self, options, sosreport): # pragma: no cover
         '''this is the primary function, to put everything together and analyze an sosreport'''
 
@@ -676,28 +770,40 @@ class SOSCleaner:
             self.report = self._extract_sosreport(sosreport)
             self._make_dest_env()   # create the working directory
             if options.hostname_path:
-                self.hostname, self.domainname = self._get_hostname(options.hostname_path)
+                self.hostname, self.domainname, self.fqdn = self._get_hostname(options.hostname_path)
             else:
-                self.hostname, self.domainname = self._get_hostname()
+                self.hostname, self.domainname, self.fqdn = self._get_hostname()
 
             if options.files:
                 self._add_extra_files(options.files)
 
-            if self.hostname:   # if we have a hostname that's not a None type
-                self.hn_db['host0'] = self.hostname     # we'll prime the hostname pump to clear out a ton of useless logic later
+            if self.fqdn:   # if we have a hostname that's not a None type
+                if six.PY3:
+                    self.hashed_fqdn = hashlib.sha1(self.fqdn.encode('utf-8')).hexdigest() + '.example.com'
+                else:
+                    self.hashed_fqdn = hashlib.sha1(self.fqdn).hexdigest() + '.example.com'
+                self.hn_db[self.hashed_fqdn] = self.fqdn     # we'll prime the hostname pump to clear out a ton of useless logic later
 
             self._process_hosts_file(options)  # we'll take a dig through the hosts file and make sure it is as scrubbed as possible
 
         self._domains2db()
-        if options.core_collect:
-            # operate on the "data" directory when doing core collection
-            files = self._file_list(os.path.join(self.dir_path, 'data'))
-        else:
-            files = self._file_list(self.dir_path)
+
+        data_path = os.path.join(self.dir_path, 'data') if options.core_collect else self.dir_path
+        files = self._file_list(data_path)
+
+        excluded_files = []
+        for f in self._excluded_files():
+            f_path = os.path.join(data_path, f)
+            excluded_files.append(f_path)
+
         self.logger.con_out("IP Obfuscation Start Address - %s", self.start_ip)
         self.logger.con_out("*** SOSCleaner Processing ***")
         self.logger.info("Working Directory - %s", self.dir_path)
         for f in files:
+            if f in excluded_files:
+                self.logger.debug("File %s excluded from IP obfuscation.", f)
+                continue
+
             if options.core_collect:
                 # set a relative path of $ARCHIVEROOT/data for core collection
                 relative_path = os.path.relpath(f, start=os.path.join(self.dir_path, 'data'))

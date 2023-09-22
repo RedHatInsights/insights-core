@@ -3,7 +3,10 @@
 import logging
 import os
 import tempfile
+
 from contextlib import contextmanager
+
+from insights.core.exceptions import InvalidContentType
 from insights.util import fs, subproc, which
 from insights.util.content_type import from_file as content_type_from_file
 
@@ -11,19 +14,6 @@ logger = logging.getLogger(__name__)
 
 
 COMPRESSION_TYPES = ("zip", "tar", "gz", "bz2", "xz")
-
-
-class InvalidArchive(Exception):
-    def __init__(self, msg):
-        super(InvalidArchive, self).__init__(msg)
-        self.msg = msg
-
-
-class InvalidContentType(InvalidArchive):
-    def __init__(self, content_type):
-        self.msg = 'Invalid content type: "%s"' % content_type
-        super(InvalidContentType, self).__init__(self.msg)
-        self.content_type = content_type
 
 
 class ZipExtractor(object):

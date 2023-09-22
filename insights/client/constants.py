@@ -78,8 +78,17 @@ class InsightsConstants(object):
     sig_kill_bad = 101
     cached_branch_info = os.path.join(default_conf_dir, '.branch_info')
     pidfile = os.path.join(os.sep, 'var', 'run', 'insights-client.pid')
-    egg_release_file = os.path.join(os.sep, 'tmp', 'insights-client-egg-release')
+    insights_tmp_path = os.path.join(os.sep, 'var', 'tmp')
+    cache_dir = os.path.join(os.sep, 'var', 'cache', 'insights-client')
+    insights_tmp_prefix = 'insights-client'
+    egg_release_file = os.path.join(os.sep, cache_dir, 'insights-client-egg-release')
     ppidfile = os.path.join(os.sep, 'tmp', 'insights-client.ppid')
     valid_compressors = ("gz", "xz", "bz2", "none")
     # RPM version in which core collection was released
     core_collect_rpm_version = '3.1.0'
+    # RPM version in which logrotate was released
+    rpm_version_before_logrotate = '3.2.0'
+    rhsm_facts_dir = os.path.join(os.sep, 'etc', 'rhsm', 'facts')
+    rhsm_facts_file = os.path.join(os.sep, 'etc', 'rhsm', 'facts', 'insights-client.facts')
+    # In MB
+    archive_filesize_max = 100

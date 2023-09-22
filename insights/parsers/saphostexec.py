@@ -10,10 +10,12 @@ SAPHostExecStatus - command ``saphostexec -status``
 SAPHostExecVersion - command ``saphostexec -version``
 -----------------------------------------------------
 """
-from insights import parser, CommandParser
-from insights.parsers import SkipException, ParseException
-from insights.specs import Specs
 from collections import namedtuple
+
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipComponent
+from insights.core.plugins import parser
+from insights.specs import Specs
 
 
 @parser(Specs.saphostexec_status)
@@ -58,7 +60,7 @@ class SAPHostExecStatus(CommandParser, dict):
         if data:
             self.update(data)
         else:
-            raise SkipException
+            raise SkipComponent
 
     @property
     def is_running(self):
@@ -147,7 +149,7 @@ class SAPHostExecVersion(CommandParser, dict):
         if data:
             self.update(data)
         else:
-            raise SkipException
+            raise SkipComponent
 
     @property
     def data(self):

@@ -168,7 +168,7 @@ class SatelliteVersion(object):
             raise SkipComponent("Not a Satellite machine or unable to determine Satellite version")
 
 
-@combiner(InstalledRpms)
+@combiner(InstalledRpms, optional=[SatelliteVersion])
 class CapsuleVersion(object):
     """
     Check the parser
@@ -210,17 +210,18 @@ class CapsuleVersion(object):
         >>> cap_ver.release
         '1.el7sat'
     """
-    def __init__(self, rpms):
+    def __init__(self, rpms, sat_server):
         self.full = None
         self.version = None
         self.release = None
         self.major = None
         self.minor = None
 
+        if sat_server:
+            raise SkipComponent('Not a Satellite Capsule machine')
         # For Capsule, ONLY 6.2 and newer are supported
         sat62_pkg = rpms.get_max('satellite-capsule')
-        # foreman package should not be there on Capsule Server
-        if sat62_pkg and 'foreman' not in rpms:
+        if sat62_pkg:
             self.full = sat62_pkg.package
             self.version = sat62_pkg.version
             self.release = sat62_pkg.release

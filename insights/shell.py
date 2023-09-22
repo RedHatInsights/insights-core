@@ -789,7 +789,7 @@ class Holder(dict):
         return self.keys()
 
 
-def start_session(paths, change_directory=False, __coverage=None):
+def start_session(paths, change_directory=False, __coverage=None, kernel=False):
     __cwd = os.path.abspath(os.curdir)
 
     def callback(brokers):
@@ -815,7 +815,12 @@ def start_session(paths, change_directory=False, __coverage=None):
         __ns = {}
         __ns.update(globals())
         __ns.update({"models": models})
-        IPython.start_ipython([], user_ns=__ns, config=__cfg)
+
+        if kernel:
+            from ipykernel import kernelapp
+            kernelapp.launch_new_instance([], user_ns=__ns, config=__cfg)
+        else:
+            IPython.start_ipython([], user_ns=__ns, config=__cfg)
 
     with_brokers(paths, callback)
     if change_directory:
@@ -859,6 +864,11 @@ def _parse_args():
     p.add_argument(
         "-v", "--verbose", action="store_true", help="Global debug level logging."
     )
+    p.add_argument(
+        "-k", "--kernel", action="store_true", default=False,
+        help="Start an IPython kernel instead of an interactive session."
+        " Requires ipykernel module"
+    )
 
     path_desc = "Archives or paths to analyze. Leave off to target the current system."
     p.add_argument("paths", nargs="*", help=path_desc)
@@ -884,7 +894,7 @@ def main():
     load_packages(parse_plugins(args.plugins))
     _handle_config(args.config)
 
-    start_session(args.paths, args.cd, __coverage=cov)
+    start_session(args.paths, args.cd, __coverage=cov, kernel=args.kernel)
     if cov:
         cov.stop()
         cov.erase()

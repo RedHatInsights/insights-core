@@ -1,0 +1,17 @@
+include insights/defaults.yaml
+include insights/NAME
+include insights/VERSION
+include insights/COMMIT
+include insights/RELEASE
+prune examples
+prune insights/client
+prune insights/combiners/tests
+prune insights/components/tests
+prune insights/parsers/tests
+prune insights/parsr/tests
+prune insights/plugins
+prune insights/parsr/examples/tests
+prune insights/parsr/query/tests
+prune insights/tests
+include insights/parsers/__init__.py
+include insights/combiners/__init__.py

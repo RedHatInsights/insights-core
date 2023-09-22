@@ -30,16 +30,6 @@ class CoreCollector(DataCollector):
         if rm_conf is None:
             rm_conf = {}
 
-        # add tokens to limit regex handling
-        #   core parses blacklist for files and commands as regex
-        if 'files' in rm_conf:
-            for idx, f in enumerate(rm_conf['files']):
-                rm_conf['files'][idx] = '^' + f + '$'
-
-        if 'commands' in rm_conf:
-            for idx, c in enumerate(rm_conf['commands']):
-                rm_conf['commands'][idx] = '^' + c + '$'
-
         logger.debug('Beginning to run collection...')
 
         # only load files, keywords, components into core
@@ -49,7 +39,20 @@ class CoreCollector(DataCollector):
             'components': rm_conf.get('components', [])
         }
 
-        collected_data_path = collect.collect(tmp_path=self.archive.tmp_dir, rm_conf=core_blacklist, client_timeout=self.config.cmd_timeout)
+        manifest = collect.default_manifest
+        if hasattr(self.config, 'manifest') and self.config.manifest:
+            if self.config.app is None:
+                with open(self.config.manifest, 'r') as f:
+                    manifest = f.read()
+            else:
+                manifest = self.config.manifest
+        collected_data_path, exceptions = collect.collect(
+            manifest=manifest,
+            tmp_path=self.archive.tmp_dir,
+            rm_conf=core_blacklist,
+            client_config=self.config
+        )
+
         # update the archive dir with the reported data location from Insights Core
         if not collected_data_path:
             raise RuntimeError('Error running collection: no output path defined.')
@@ -77,8 +80,10 @@ class CoreCollector(DataCollector):
         logger.debug('Collecting metadata...')
         self._write_branch_info(branch_info)
         self._write_display_name()
+        self._write_ansible_host()
         self._write_version_info()
         self._write_tags()
         self._write_blacklist_report(blacklist_report)
+        self._write_blacklisted_specs()
         self._write_egg_release()
         logger.debug('Metadata collection finished.')

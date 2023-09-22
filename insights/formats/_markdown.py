@@ -40,22 +40,21 @@ class MarkdownFormat(Formatter):
                  missing=False,
                  tracebacks=False,
                  dropped=False,
-                 fail_only=False,
+                 show_rules=None,
                  stream=sys.stdout):
-        super(MarkdownFormat, self).__init__(broker, stream)
-        self.broker = broker
+        super(MarkdownFormat, self).__init__(broker, stream=stream)
         self.missing = missing
         self.tracebacks = tracebacks
         self.dropped = dropped
-        self.fail_only = fail_only
-        self.stream = stream
+        self.show_rules = [] if show_rules is None else show_rules
 
-        self.counts = {'skip': 0, 'pass': 0, 'rule': 0, 'info': 0, 'metadata': 0, 'metadata_key': 0, 'fingerprint': 0, 'exception': 0}
+        self.counts = {'skip': 0, 'pass': 0, 'rule': 0, 'info': 0, 'none': 0, 'metadata': 0, 'metadata_key': 0, 'fingerprint': 0, 'exception': 0}
         self.responses = {
             'skip': self.response(label="SKIP", title="Missing Deps: "),
             'pass': self.response(label="PASS", title="Passed      : "),
             'rule': self.response(label="FAIL", title="Failed      : "),
             'info': self.response(label="INFO", title="Info        : "),
+            'none': self.response(label="RETURNED NONE", title="Ret'd None  : "),
             'metadata': self.response(label="META", title="Metadata    : "),
             'metadata_key': self.response(label="META", title="Metadata Key: "),
             'fingerprint': self.response(label="FINGERPRINT", title="Fingerprint : "),
@@ -126,7 +125,7 @@ class MarkdownFormat(Formatter):
                 print(file=self.stream)
                 for m in req_any:
                     print('* At Least One Of:', file=self.stream)
-                    if type(m) == list:
+                    if isinstance(m, list):
                         for c in m:
                             print('    * {}'.format(dr.get_name(c)), file=self.stream)
                     else:
@@ -150,8 +149,10 @@ class MarkdownFormat(Formatter):
             if _type:
                 if self.missing and _type == 'skip':
                     print_missing(c, v)
-                elif ((self.fail_only and _type == 'rule') or
-                      (not self.fail_only and _type != 'skip')):
+                elif (
+                        (self.show_rules and _type in self.show_rules) or
+                        (not self.show_rules and _type not in ['skip', 'none'])
+                ):
                     printit(c, v)
         print(file=self.stream)
 
@@ -182,24 +183,34 @@ class MarkdownFormatAdapter(FormatterAdapter):
 
     @staticmethod
     def configure(p):
-        p.add_argument("-m", "--missing", help="Show missing requirements.", action="store_true")
         p.add_argument("-t", "--tracebacks", help="Show stack traces.", action="store_true")
         p.add_argument("-d", "--dropped", help="Show collected files that weren't processed.", action="store_true")
-        p.add_argument("-F", "--fail-only", help="Show FAIL results only. Conflict with '-m' or '-f', will be dropped when using them together", action="store_true")
+        p.add_argument("-m", "--missing", help="Show missing requirements.", action="store_true")
+        p.add_argument("-S", "--show-rules", nargs="+",
+                       choices=["fail", "info", "pass", "none", "metadata", "fingerprint"],
+                       metavar="TYPE",
+                       help="Show results per rule's type: 'fail', 'info', 'pass', 'none', 'metadata', and 'fingerprint'")
+        p.add_argument("-F", "--fail-only",
+                       help="Show FAIL results only. Conflict with '-m', will be dropped when using them together. This option is deprecated by '-S fail'",
+                       action="store_true")
 
-    def __init__(self, args):
+    def __init__(self, args=None):
         self.missing = args.missing
+        fail_only = args.fail_only
+        if args.missing and fail_only:
+            print('Options conflict: -m and -F, drops -F', file=sys.stderr)
+            fail_only = None
+        self.show_rules = []  # Empty by default, means show ALL types (exclude "none")
+        if not args.show_rules and fail_only:
+            self.show_rules = ['rule']
+        elif args.show_rules:
+            self.show_rules = [opt.replace('fail', 'rule') for opt in args.show_rules]
         self.tracebacks = args.tracebacks
         self.dropped = args.dropped
-        self.fail_only = args.fail_only
-        self.formatter = None
-        if self.missing and self.fail_only:
-            print('Options conflict: -m and -F, drops -F', file=sys.stderr)
-            self.fail_only = False
 
     def preprocess(self, broker):
         self.formatter = MarkdownFormat(broker,
-                self.missing, self.tracebacks, self.dropped, self.fail_only)
+                self.missing, self.tracebacks, self.dropped, self.show_rules)
         self.formatter.preprocess()
 
     def postprocess(self, broker):

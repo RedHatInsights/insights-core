@@ -1,6 +1,8 @@
 import json
 import pytest
+
 from insights.core import plugins
+from insights.core.exceptions import ValidationException
 
 
 def test_validate_good_response():
@@ -37,21 +39,21 @@ def test_validate_good_response():
 
 def test_disallow_invalid_keys():
     for bad in [[], None, set(), "", 1, lambda x: x]:
-        with pytest.raises(plugins.ValidationException):
+        with pytest.raises(ValidationException):
             plugins.make_response(bad)
-        with pytest.raises(plugins.ValidationException):
+        with pytest.raises(ValidationException):
             plugins.make_metadata_key(bad, "foo")
 
 
 def test_disallow_type_key():
-    with pytest.raises(plugins.ValidationException):
+    with pytest.raises(ValidationException):
         plugins.make_response("foo", type="dance off")
 
 
 def test_missing_error_key():
-    with pytest.raises(plugins.ValidationException):
+    with pytest.raises(ValidationException):
         plugins.make_response(None, foo="bar")
-    with pytest.raises(plugins.ValidationException):
+    with pytest.raises(ValidationException):
         plugins.make_metadata_key(None, "foo")
 
 

@@ -4,10 +4,12 @@ Ps - command ``ps auxww`` and others
 
 This module provides processing for the various outputs of the ``ps`` command.
 """
-from .. import parser, CommandParser
-from . import ParseException, parse_delimited_table, keyword_search
-from insights.specs import Specs
+from insights.core import CommandParser, ContainerParser
+from insights.core.exceptions import ParseException
 from insights.core.filters import add_filter
+from insights.core.plugins import parser
+from insights.parsers import keyword_search, parse_delimited_table
+from insights.specs import Specs
 
 
 def are_present(tags, line):
@@ -33,6 +35,7 @@ class Ps(CommandParser):
             arguments.
         services (list): List of tuples in format (cmd names, user/uid/pid, raw_line) for
             each command.
+        pid_info (dict): Dictionary indexed by ``pid`` returning dict of process info.
 
     """
     command_name = "COMMAND_TEMPLATE"
@@ -56,6 +59,7 @@ class Ps(CommandParser):
         self.running = set()
         self.cmd_names = set()
         self.services = []
+        self.pid_info = {}
         super(Ps, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
@@ -87,6 +91,31 @@ class Ps(CommandParser):
                 proc["ARGS"] = cmd.split(" ", 1)[1] if " " in cmd else ""
                 self.services.append((cmd_name, proc[self.user_name], proc[raw_line_key]))
                 del proc[raw_line_key]
+
+            pid = None
+            stat = None
+            threads = 0
+            for row in self.data:
+                _pid = row['PID']
+                if _pid.isdigit():
+                    if threads:
+                        # Set the number of threads for the previous entry, and
+                        # set the entry's stat to the stat of the last thread.
+                        self.pid_info[pid].update({"STAT": stat, "threads": threads})
+
+                    pid = _pid
+                    self.pid_info[_pid] = row
+
+                    stat = None
+                    threads = 0
+                else:
+                    stat = row['STAT']
+                    threads += 1
+            else:
+                # Check if there was a thread as the last row.
+                if threads:
+                    self.pid_info[pid].update({"STAT": stat, "threads": threads})
+
         else:
             raise ParseException(
                 "{0}: Cannot find ps header line containing {1} and {2} in output".format(
@@ -329,6 +358,38 @@ class PsAux(PsAuxww):
     pass
 
 
+add_filter(Specs.container_ps_aux, "COMMAND")
+
+
+@parser(Specs.container_ps_aux)
+class ContainerPsAux(ContainerParser, PsAuxww):
+    """
+    Class to parse the command `ps aux` from the containers.
+
+    Sample input data::
+
+        USER       PID %CPU %MEM     VSZ    RSS TTY      STAT START   TIME COMMAND
+        root         1  0.0  0.0   19356   1544 ?        Ss   May31   0:01 /sbin/init
+        root      1821  0.0  0.0       0      0 ?        S    May31   0:25 [kondemand/0]
+        root      1864  0.0  0.0   18244    668 ?        Ss   May31   0:05 irqbalance --pid=/var/run/irqbalance.pid
+        user1    20160  0.0  0.0  108472   1896 pts/3    Ss   10:09   0:00 bash
+        root     20357  0.0  0.0    9120    760 ?        Ss   10:09   0:00 /sbin/dhclient -1 -q -lf /var/lib/dhclient/dhclient-extbr0.leases -pf /var/run/dhclient-extbr0.pid extbr0
+        qemu     22673  0.8 10.2 1618556 805636 ?        Sl   11:38   1:07 /usr/libexec/qemu-kvm -name rhel7 -S -M rhel6.5.0 -enable-kvm -m 1024 -smp 2,sockets=2,cores=1,threads=1 -uuid 13798ffc-bc1e-d437-4f3f-2e0fa6c923ad
+        tomcat    3662  1.0  5.7 2311488  58236 ?        Ssl  07:28   0:01 /usr/lib/jvm/jre/bin/java -classpath /usr/share/tomcat/bin/bootstrap.jar:/usr/share/tomcat/bin/tomcat-juli.jar:/usr/share/java/commons-daemon.jar -Dcatalina.base=/usr/share/tomcat -Dcatalina.home=/usr/share/tomcat -Djava.endorsed.dirs= -Djava.io.tmpdir=/var/cache/tomcat/temp -Djava.util.logging.config.file=/usr/share/tomcat/conf/logging.properties -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager org.apache.catalina.startup.Bootstrap start
+
+    Examples:
+        >>> type(container_ps_aux)
+        <class 'insights.parsers.ps.ContainerPsAux'>
+        >>> container_ps_aux.container_id
+        '2869b4e2541c'
+        >>> container_ps_aux.image
+        'registry.access.redhat.com/ubi8/nginx-120'
+        >>> container_ps_aux.number_occurences("bash")
+        1
+    """
+    pass
+
+
 @parser(Specs.ps_eo)
 class PsEo(Ps):
     """
@@ -353,9 +414,6 @@ class PsEo(Ps):
         17259     2 kworker/0:0
         18294  3357 sshd
 
-    Attributes:
-        pid_info(dict): Dictionary with PID as key containing ps row as a dict
-
     Examples:
         >>> type(ps_eo)
         <class 'insights.parsers.ps.PsEo'>
@@ -372,12 +430,6 @@ class PsEo(Ps):
     command_name = 'COMMAND'
     user_name = 'PID'
     max_splits = 3
-
-    def parse_content(self, content):
-        super(PsEo, self).parse_content(content)
-        self.pid_info = {}
-        for row in self.data:
-            self.pid_info[row['PID']] = row
 
     def children(self, ppid):
         """list: Returns a list of dict for all rows with `ppid` as parent PID"""
@@ -426,3 +478,41 @@ class PsAlxwww(Ps):
     max_splits = 12
 
     pass
+
+
+@parser(Specs.ps_eo_cmd)
+class PsEoCmd(Ps):
+    """
+    Class to parse the command `ps -eo pid,args` where the
+    datasource `ps_eo_cmd` trims off all args leaving only the full
+    path to the command.
+
+    Sample output from the ``ps -eo pid, args`` command::
+
+        PID COMMAND
+          1 /usr/lib/systemd/systemd --switched-root --system --deserialize 31
+          2 [kthreadd]
+         11 /usr/bin/python3 /home/user1/pythonapp.py
+         12 [kworker/u16:0-kcryptd/253:0]
+
+    Sample data after trimming by the datasource::
+
+        PID COMMAND
+          1 /usr/lib/systemd/systemd
+          2 [kthreadd]
+         11 /usr/bin/python3
+         12 [kworker/u16:0-kcryptd/253:0]
+
+    Examples:
+        >>> type(ps_eo_cmd)
+        <class 'insights.parsers.ps.PsEoCmd'>
+        >>> ps_eo_cmd.running_pids() == ['1', '2', '11', '12']
+        True
+        >>> ps_eo_cmd.search(COMMAND__contains='python3') == [
+        ...     {'PID': '11', 'COMMAND': '/usr/bin/python3', 'COMMAND_NAME': 'python3', 'ARGS': ''}
+        ... ]
+        True
+    """
+    command_name = 'COMMAND'
+    user_name = 'PID'
+    max_splits = 1

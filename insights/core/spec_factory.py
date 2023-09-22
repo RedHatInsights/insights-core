@@ -1,24 +1,27 @@
+import codecs
 import itertools
 import logging
 import os
 import re
+import shlex
 import signal
 import six
 import traceback
-import codecs
 
 from collections import defaultdict
 from glob import glob
 from subprocess import call
 
 from insights.core import blacklist, dr
+from insights.core.context import FSRoots, ExecutionContext, HostContext, SerializedArchiveContext
+from insights.core.exceptions import BlacklistedSpec, ContentException, SkipComponent
 from insights.core.filters import _add_filter, get_filters
-from insights.core.context import ExecutionContext, FSRoots, HostContext
-from insights.core.plugins import component, datasource, ContentException, is_datasource
-from insights.util import fs, streams, which
-from insights.util.subproc import Pipeline
+from insights.core.plugins import component, datasource, is_datasource
 from insights.core.serde import deserializer, serializer
-import shlex
+from insights.util import fs, streams, which
+from insights.util import deprecated
+from insights.util.mangle import mangle_command
+from insights.util.subproc import Pipeline
 
 log = logging.getLogger(__name__)
 
@@ -39,47 +42,7 @@ A minimal set of environment variables for use in subprocess calls
 if "LANG" in os.environ:
     SAFE_ENV["LANG"] = os.environ["LANG"]
 
-
-def enc(s):
-    escape_encoding = "string_escape" if six.PY2 else "unicode_escape"
-    return s.encode(escape_encoding)
-
-
-def escape(s):
-    return re.sub(r"([=\(\)|\-_!@*~\"&/\\\^\$\=])", r"\\\1", s)
-
-
-def mangle_command(command, name_max=255):
-    """
-    Mangle a command line string into something suitable for use as the basename of a filename.
-    At minimum this function must remove slashes, but it also does other things to clean
-    the basename: removing directory names from the command name, replacing many non-
-    characters with undersores, in addition to replacing slashes with dots.
-
-    By default, curly braces, '{' and '}', are replaced with underscore, set 'has_variables'
-    to leave curly braces alone.
-
-    This function was copied from the function that insights-client uses to create the name it
-    to capture the output of the command.
-
-    Here, server side, it is used to figure out what file in the archive contains the output
-    a command.  Server side, the command may contain references to variables (names
-    matching curly braces) that will be expanded before the name is actually used as a file name.
-
-    To completly mimic the insights-client behavior, curly braces need to be replaced
-    underscores.  If the command has variable references, the curly braces must be left alone.
-    Set has_variables, to leave curly braces alone.
-
-    This implementation of 'has_variables' assumes that variable names only contain
-    that are not replaced by mangle_command.
-    """
-    pattern = r"[^\w\-\.\/]+"
-
-    mangledname = re.sub(r"^/(usr/|)(bin|sbin)/", "", command)
-    mangledname = re.sub(pattern, "_", mangledname)
-    mangledname = re.sub(r"/", ".", mangledname).strip(" ._-")
-    mangledname = mangledname[:name_max]
-    return mangledname
+safe_open = open if six.PY3 else codecs.open
 
 
 class ContentProvider(object):
@@ -116,7 +79,7 @@ class ContentProvider(object):
         if self._exception:
             raise self._exception
 
-        if self._content is None:
+        if self._content is None and not self.loaded:
             try:
                 self._content = self.load()
             except Exception as ex:
@@ -157,27 +120,35 @@ class DatasourceProvider(ContentProvider):
             f.write("\n".join(self.content).encode("utf-8"))
 
         self.loaded = False
-        self._content = None
 
     def load(self):
+        self.loaded = True
         return self.content
 
 
 class FileProvider(ContentProvider):
     def __init__(self, relative_path, root="/", ds=None, ctx=None):
         super(FileProvider, self).__init__()
-        self.root = root
+        self.ds = ds
+        self.ctx = ctx
+        self._set_root(root)
         self.relative_path = relative_path.lstrip("/")
         self.file_name = os.path.basename(self.path)
 
-        self.ds = ds
-        self.ctx = ctx
         self.validate()
+
+    def _set_root(self, root):
+        if (isinstance(self.ctx, SerializedArchiveContext) and os.path.basename(root) != 'data'):
+            # For core-collection (SerializedArchiveContext) archive, data are
+            # in `/data` directory
+            self.root = os.path.join(root, 'data')
+        else:
+            self.root = root
 
     def validate(self):
         if not blacklist.allow_file("/" + self.relative_path):
             log.warning("WARNING: Skipping file %s", "/" + self.relative_path)
-            raise dr.SkipComponent()
+            raise BlacklistedSpec()
 
         if not os.path.exists(self.path):
             raise ContentException("%s does not exist." % self.path)
@@ -192,6 +163,52 @@ class FileProvider(ContentProvider):
 
     def __repr__(self):
         return '%s("%r")' % (self.__class__.__name__, self.path)
+
+
+class MetadataProvider(FileProvider):
+    """
+    .. warning::
+        This Class is deprecated and will be removed from 3.5.0.
+        Please collect built-in file by using datasource spec directly, see
+        :mod:`insights.specs.datasources.client_metadata`.
+
+    Class used for insights-core built-in files.  These files should not
+    be filtered, redacted or blocked.
+    """
+    def __init__(self, relative_path, root="/", ds=None, ctx=None):
+        deprecated(MetadataProvider, "Please collect the built-in file via datasource spec instead.", "3.5.0")
+        super(MetadataProvider, self).__init__(relative_path, root, ds, ctx)
+
+    def _stream(self):
+        """
+        Returns a generator of lines instead of a list of lines.
+        """
+        if self._exception:
+            raise self._exception
+        try:
+            with safe_open(self.path, "r", encoding="utf-8", errors="surrogateescape") as f:
+                yield f
+        except StopIteration:
+            raise
+        except Exception as ex:
+            self._exception = ex
+            raise ContentException(str(ex))
+
+    def validate(self):
+        # Validate built-in metedata files only when insights-run
+        if not isinstance(self.ctx, HostContext):
+            super(MetadataProvider, self).validate()
+        # But DO NOT validate them when core-collecting
+
+    def load(self):
+        self.loaded = True
+        with safe_open(self.path, "r", encoding="utf-8", errors="surrogateescape") as f:
+            return [l.rstrip("\n") for l in f]
+
+    def write(self, dst):
+        # TODO: the built-ine metadata files can also be collected via
+        #       core-collection
+        pass
 
 
 class RawFileProvider(FileProvider):
@@ -246,12 +263,9 @@ class TextFileProvider(FileProvider):
             rc, out = self.ctx.shell_out(args, keep_rc=True, env=SAFE_ENV)
             self.rc = rc
             return out
-        if six.PY3:
-            with open(self.path, "r", encoding="utf-8", errors="surrogateescape") as f:
-                return [l.rstrip("\n") for l in f]
-        else:
-            with codecs.open(self.path, "r", encoding="utf-8", errors="surrogateescape") as f:
-                return [l.rstrip("\n") for l in f]
+
+        with safe_open(self.path, "r", encoding="utf-8", errors="surrogateescape") as f:
+            return [l.rstrip("\n") for l in f]
 
     def _stream(self):
         """
@@ -268,12 +282,8 @@ class TextFileProvider(FileProvider):
                     with streams.connect(*args, env=SAFE_ENV) as s:
                         yield s
                 else:
-                    if six.PY3:
-                        with open(self.path, "r", encoding="utf-8", errors="surrogateescape") as f:
-                            yield f
-                    else:
-                        with codecs.open(self.path, "r", encoding="utf-8", errors="surrogateescape") as f:
-                            yield f
+                    with safe_open(self.path, "r", encoding="utf-8", errors="surrogateescape") as f:
+                        yield f
         except StopIteration:
             raise
         except Exception as ex:
@@ -303,32 +313,40 @@ class CommandOutputProvider(ContentProvider):
     """
     Class used in datasources to return output from commands.
     """
-    def __init__(self, cmd, ctx, args=None, split=True, keep_rc=False, ds=None, timeout=None, inherit_env=None, signum=None):
+    def __init__(self, cmd, ctx, root="insights_commands", args=None, split=True, keep_rc=False, ds=None, timeout=None,
+                 inherit_env=None, override_env=None, signum=None):
         super(CommandOutputProvider, self).__init__()
         self.cmd = cmd
-        self.root = "insights_commands"
-        self.relative_path = os.path.join("insights_commands", mangle_command(cmd))
+        self.root = root
         self.ctx = ctx
         self.args = args  # already interpolated into cmd - stored here for context.
         self.split = split
         self.keep_rc = keep_rc
         self.ds = ds
         self.timeout = timeout
-        self.inherit_env = inherit_env or []
+        self.inherit_env = inherit_env if inherit_env is not None else []
+        self.override_env = override_env if override_env is not None else dict()
         self.signum = signum or signal.SIGKILL
+        self._misc_settings()
 
         self._content = None
+        self._env = self.create_env()
         self.rc = None
 
         self.validate()
 
+    def _misc_settings(self):
+        """Re-implement it according to the actual case of the sub-class"""
+        self.relative_path = mangle_command(self.cmd)
+
     def validate(self):
         if not blacklist.allow_command(self.cmd):
             log.warning("WARNING: Skipping command %s", self.cmd)
-            raise dr.SkipComponent()
+            raise BlacklistedSpec()
 
-        if not which(shlex.split(self.cmd)[0], env=self.create_env()):
-            raise ContentException("Couldn't execute: %s" % self.cmd)
+        cmd = shlex.split(self.cmd)[0]
+        if not which(cmd, env=self._env):
+            raise ContentException("Command not found: %s" % cmd)
 
     def create_args(self):
         command = [shlex.split(self.cmd)]
@@ -352,16 +370,21 @@ class CommandOutputProvider(ContentProvider):
 
     def create_env(self):
         env = dict(SAFE_ENV)
+
         for e in self.inherit_env:
             if e in os.environ:
                 env[e] = os.environ[e]
+
+        for k, v in self.override_env.items():
+            env[k] = v
+
         return env
 
     def load(self):
         command = self.create_args()
 
-        raw = self.ctx.shell_out(command, split=self.split, keep_rc=self.keep_rc,
-                timeout=self.timeout, env=self.create_env(), signum=self.signum)
+        raw = self.ctx.shell_out(command, split=self.split, keep_rc=self.keep_rc, timeout=self.timeout,
+                                 env=self._env, signum=self.signum)
         if self.keep_rc:
             self.rc, output = raw
         else:
@@ -379,7 +402,7 @@ class CommandOutputProvider(ContentProvider):
                 yield self._content
             else:
                 args = self.create_args()
-                with self.ctx.connect(*args, env=self.create_env(), timeout=self.timeout) as s:
+                with self.ctx.connect(*args, env=self._env, timeout=self.timeout) as s:
                     yield s
         except StopIteration:
             raise
@@ -392,11 +415,43 @@ class CommandOutputProvider(ContentProvider):
         fs.ensure_path(os.path.dirname(dst))
         if args:
             timeout = self.timeout or self.ctx.timeout
-            p = Pipeline(*args, timeout=timeout, signum=self.signum, env=self.create_env())
+            p = Pipeline(*args, timeout=timeout, signum=self.signum, env=self._env)
             return p.write(dst, keep_rc=self.keep_rc)
 
     def __repr__(self):
         return 'CommandOutputProvider("%r")' % self.cmd
+
+
+class ContainerProvider(CommandOutputProvider):
+    def __init__(self, cmd_path, ctx, image=None, args=None, split=True, keep_rc=False, ds=None, timeout=None,
+                 inherit_env=None, override_env=None, signum=None):
+        # cmd  = "<podman|docker> exec container_id command"
+        # path = "<podman|docker> exec container_id cat path"
+        self.image = image
+        super(ContainerProvider, self).__init__(cmd_path, ctx, "insights_containers", args, split, keep_rc, ds, timeout,
+                                                inherit_env, override_env, signum)
+
+
+class ContainerFileProvider(ContainerProvider):
+    def _misc_settings(self):
+        engine, _, container_id, _, path = self.cmd.split(None, 4)
+        self.engine = os.path.basename(engine)
+        self.container_id = container_id
+        self.relative_path = os.path.join(container_id, path.lstrip('/'))
+
+    def __repr__(self):
+        return 'ContainerFileProvider("%r")' % self.cmd
+
+
+class ContainerCommandProvider(ContainerProvider):
+    def _misc_settings(self):
+        engine, _, container_id, cmd = self.cmd.split(None, 3)
+        self.engine = os.path.basename(engine)
+        self.container_id = container_id
+        self.relative_path = os.path.join(container_id, "insights_commands", mangle_command(cmd))
+
+    def __repr__(self):
+        return 'ContainerCommandProvider("%r")' % self.cmd
 
 
 class RegistryPoint(object):
@@ -419,7 +474,7 @@ class RegistryPoint(object):
         for c in reversed(dr.get_delegate(self).deps):
             if c in broker:
                 return broker[c]
-        raise dr.SkipComponent()
+        raise SkipComponent()
 
     def __repr__(self):
         return dr.get_name(self)
@@ -632,7 +687,7 @@ class head(object):
         c = lst[self.dep]
         if lst:
             return c[0]
-        raise dr.SkipComponent()
+        raise SkipComponent()
 
 
 class first_file(object):
@@ -676,14 +731,15 @@ class listdir(object):
     path.
 
     Args:
-        path (str): directory or glob pattern to list.
+        path (str): directory to list.
         context (ExecutionContext): the context under which the datasource
             should run.
-        ignore (str): regular expression defining paths to ignore.
+        ignore (str): regular expression defining names to ignore.
 
     Returns:
-        function: A datasource that returns the list of files and directories
-            in the directory specified by path
+        function: A datasource that returns a sorted list of file and directory
+            names in the directory specified by path. The list will be empty when
+            the directory is empty or all names get ignored.
     """
 
     def __init__(self, path, context=None, ignore=None, deps=[]):
@@ -698,11 +754,36 @@ class listdir(object):
         ctx = _get_context(self.context, broker)
         p = os.path.join(ctx.root, self.path.lstrip('/'))
         p = ctx.locate_path(p)
-        result = sorted(os.listdir(p)) if os.path.isdir(p) else sorted(glob(p))
+        try:
+            result = os.listdir(p)
+        except OSError as e:
+            raise ContentException(str(e))
+        return sorted([r for r in result if not self.ignore_func(r)])
 
-        if result:
-            return [os.path.basename(r) for r in result if not self.ignore_func(r)]
-        raise ContentException("Can't list %s or nothing there." % p)
+
+class listglob(listdir):
+    """
+    List paths matching a glob pattern.
+
+    Args:
+        pattern (str): glob pattern to list.
+        context (ExecutionContext): the context under which the datasource
+            should run.
+        ignore (str): regular expression defining paths to ignore.
+
+    Returns:
+        function: A datasource that returns the list of paths that match
+            the given glob pattern. The list will be empty when nothing matches.
+    """
+    def __call__(self, broker):
+        ctx = _get_context(self.context, broker)
+        p = os.path.join(ctx.root, self.path.lstrip('/'))
+        p = ctx.locate_path(p)
+        result = glob(p)
+        # generator expression; we don't need the full list at this step
+        result = (os.path.relpath(r, start=ctx.root) for r in result)
+        result = sorted([r for r in result if not self.ignore_func(r)])
+        return result
 
 
 class simple_command(object):
@@ -727,28 +808,33 @@ class simple_command(object):
             CalledProcessError is raised. If None, timeout is infinite.
         inherit_env (list): The list of environment variables to inherit from the
             calling process when the command is invoked.
+        override_env (dict): A dict of environment variables to override from the
+            calling process when the command is invoked.
 
     Returns:
         function: A datasource that returns the output of a command that takes
             no arguments
     """
-
-    def __init__(self, cmd, context=HostContext, deps=[], split=True, keep_rc=False, timeout=None, inherit_env=[], signum=None, **kwargs):
+    def __init__(self, cmd, context=HostContext, deps=None, split=True, keep_rc=False, timeout=None, inherit_env=None,
+                 override_env=None, signum=None, **kwargs):
+        deps = deps if deps is not None else []
         self.cmd = cmd
         self.context = context
         self.split = split
         self.raw = not split
         self.keep_rc = keep_rc
         self.timeout = timeout
-        self.inherit_env = inherit_env
+        self.inherit_env = inherit_env if inherit_env is not None else []
+        self.override_env = override_env if override_env is not None else dict()
         self.signum = signum
         self.__name__ = self.__class__.__name__
         datasource(self.context, *deps, raw=self.raw, **kwargs)(self)
 
     def __call__(self, broker):
         ctx = broker[self.context]
-        return CommandOutputProvider(self.cmd, ctx, split=self.split,
-                keep_rc=self.keep_rc, ds=self, timeout=self.timeout, inherit_env=self.inherit_env, signum=self.signum)
+        return CommandOutputProvider(self.cmd, ctx, split=self.split, keep_rc=self.keep_rc, ds=self,
+                                     timeout=self.timeout, inherit_env=self.inherit_env, override_env=self.override_env,
+                                     signum=self.signum)
 
 
 class command_with_args(object):
@@ -772,13 +858,15 @@ class command_with_args(object):
             CalledProcessError is raised. If None, timeout is infinite.
         inherit_env (list): The list of environment variables to inherit from the
             calling process when the command is invoked.
+        override_env (dict): A dict of environment variables to override from the
+            calling process when the command is invoked.
 
     Returns:
         function: A datasource that returns the output of a command that takes
             specified arguments passed by the provider.
     """
-
-    def __init__(self, cmd, provider, context=HostContext, deps=None, split=True, keep_rc=False, timeout=None, inherit_env=None, signum=None, **kwargs):
+    def __init__(self, cmd, provider, context=HostContext, deps=None, split=True, keep_rc=False, timeout=None,
+                 inherit_env=None, override_env=None, signum=None, **kwargs):
         deps = deps if deps is not None else []
         self.cmd = cmd
         self.provider = provider
@@ -788,6 +876,7 @@ class command_with_args(object):
         self.keep_rc = keep_rc
         self.timeout = timeout
         self.inherit_env = inherit_env if inherit_env is not None else []
+        self.override_env = override_env if override_env is not None else dict()
         self.signum = signum
         self.__name__ = self.__class__.__name__
         datasource(self.provider, self.context, *deps, raw=self.raw, **kwargs)(self)
@@ -796,12 +885,16 @@ class command_with_args(object):
         source = broker[self.provider]
         ctx = broker[self.context]
         if not isinstance(source, (str, tuple)):
-            raise ContentException("The provider can only be a single string or a tuple of strings, but got '%s'." % source)
+            raise ContentException("The provider can only be a single string or a tuple of strings, but got '%s'." %
+                                   source)
         try:
             self.cmd = self.cmd % source
-            return CommandOutputProvider(self.cmd, ctx, split=self.split,
-                    keep_rc=self.keep_rc, ds=self, timeout=self.timeout, inherit_env=self.inherit_env, signum=self.signum)
-        except:
+            return CommandOutputProvider(self.cmd, ctx, split=self.split, keep_rc=self.keep_rc, ds=self,
+                                         timeout=self.timeout, inherit_env=self.inherit_env,
+                                         override_env=self.override_env, signum=self.signum)
+        except ContentException as ce:
+            log.debug(ce)
+        except Exception:
             log.debug(traceback.format_exc())
         raise ContentException("No results found for [%s]" % self.cmd)
 
@@ -832,14 +925,16 @@ class foreach_execute(object):
             CalledProcessError is raised. If None, timeout is infinite.
         inherit_env (list): The list of environment variables to inherit from the
             calling process when the command is invoked.
-
+        override_env (dict): A dict of environment variables to override from the
+            calling process when the command is invoked.
 
     Returns:
         function: A datasource that returns a list of outputs for each command
             created by substituting each element of provider into the cmd template.
     """
-
-    def __init__(self, provider, cmd, context=HostContext, deps=[], split=True, keep_rc=False, timeout=None, inherit_env=[], signum=None, **kwargs):
+    def __init__(self, provider, cmd, context=HostContext, deps=None, split=True, keep_rc=False, timeout=None,
+                 inherit_env=None, override_env=None, signum=None, **kwargs):
+        deps = deps if deps is not None else []
         self.provider = provider
         self.cmd = cmd
         self.context = context
@@ -847,7 +942,8 @@ class foreach_execute(object):
         self.raw = not split
         self.keep_rc = keep_rc
         self.timeout = timeout
-        self.inherit_env = inherit_env
+        self.inherit_env = inherit_env if inherit_env is not None else []
+        self.override_env = override_env if override_env is not None else dict()
         self.signum = signum
         self.__name__ = self.__class__.__name__
         datasource(self.provider, self.context, *deps, multi_output=True, raw=self.raw, **kwargs)(self)
@@ -863,11 +959,13 @@ class foreach_execute(object):
         for e in source:
             try:
                 the_cmd = self.cmd % e
-                cop = CommandOutputProvider(the_cmd, ctx, args=e,
-                        split=self.split, keep_rc=self.keep_rc, ds=self,
-                        timeout=self.timeout, inherit_env=self.inherit_env, signum=self.signum)
+                cop = CommandOutputProvider(the_cmd, ctx, args=e, split=self.split, keep_rc=self.keep_rc, ds=self,
+                                            timeout=self.timeout, inherit_env=self.inherit_env,
+                                            override_env=self.override_env, signum=self.signum)
                 result.append(cop)
-            except:
+            except ContentException as ce:
+                log.debug(ce)
+            except Exception:
                 log.debug(traceback.format_exc())
         if result:
             return result
@@ -925,6 +1023,130 @@ class foreach_collect(object):
         raise ContentException("No results found for [%s]" % self.path)
 
 
+class container_execute(foreach_execute):
+    """
+    Execute a command for each element in provider in container. Provider is
+    the output of a different datasource that returns a list of tuples. In each
+    tuple, the container engine provider ("podman" or "docker") and the
+    container_id are two required elements, the rest elements if there are, are
+    the arguments being passed to the command.
+
+    Args:
+        provider (list): a list of tuples, in each tuple, the container engine
+            provider ("podman" or "docker") and the container_id are two
+            required elements, the rest elements if there are, are the
+            arguments being passed to the `cmd`.
+        cmd (str): a command with substitution parameters. Breaking
+            apart a command string that might contain multiple commands
+            separated by a pipe, getting them ready for subproc operations.
+            IE. A command with filters applied
+        context (ExecutionContext): the context under which the datasource
+            should run.
+        split (bool): whether the output of the command should be split into a
+            list of lines
+        keep_rc (bool): whether to return the error code returned by the
+            process executing the command. If False, any return code other than
+            zero with raise a CalledProcessError. If True, the return code and
+            output are always returned.
+        timeout (int): Number of seconds to wait for the command to complete.
+            If the timeout is reached before the command returns, a
+            CalledProcessError is raised. If None, timeout is infinite.
+        inherit_env (list): The list of environment variables to inherit from the
+            calling process when the command is invoked.
+
+    Returns:
+        function: A datasource that returns a list of outputs for each command
+            created by substituting each element of provider into the cmd template.
+    """
+    def __call__(self, broker):
+        result = []
+        source = broker[self.provider]
+        ctx = broker[self.context]
+        if isinstance(source, ContentProvider):
+            source = source.content
+        if not isinstance(source, (list, set)):
+            source = [source]
+        for e in source:
+            try:
+                # e       = (image, <podman|docker>, container_id, <args>)
+                image, engine, cid, args = e[0], e[1], e[2], e[3:]
+                # handle command with args
+                cmd = self.cmd % args if args else self.cmd
+                # the_cmd = <podman|docker> exec container_id cmd
+                the_cmd = "/usr/bin/%s exec %s %s" % (engine, cid, cmd)
+                ccp = ContainerCommandProvider(the_cmd, ctx, image=image, args=e, split=self.split,
+                                               keep_rc=self.keep_rc, ds=self, timeout=self.timeout,
+                                               inherit_env=self.inherit_env, override_env=self.override_env,
+                                               signum=self.signum)
+                result.append(ccp)
+            except:
+                log.debug(traceback.format_exc())
+        if result:
+            return result
+        raise ContentException("No results found for [%s]" % self.cmd)
+
+
+class container_collect(foreach_execute):
+    """
+    Collects the files at the resulting path in running containers.
+
+    Args:
+        provider (list): a list of tuples.
+        path (str): the file path template with substitution parameters.  The
+            path can also be passed via the provider when it's variable per
+            cases, in that case, the `path` should be None.
+        context (ExecutionContext): the context under which the datasource
+            should run.
+        keep_rc (bool): whether to return the error code returned by the
+            process executing the command. If False, any return code other than
+            zero with raise a CalledProcessError. If True, the return code and
+            output are always returned.
+        timeout (int): Number of seconds to wait for the command to complete.
+            If the timeout is reached before the command returns, a
+            CalledProcessError is raised. If None, timeout is infinite.
+
+    Returns:
+        function: A datasource that returns a list of file contents created by
+            substituting each element of provider into the path template.
+    """
+    def __init__(self, provider, path=None, context=HostContext, deps=None, split=True, keep_rc=False, timeout=None,
+                 inherit_env=None, override_env=None, signum=None, **kwargs):
+        super(container_collect, self).__init__(provider, path, context, deps, split, keep_rc, timeout, inherit_env,
+                                                override_env, signum, **kwargs)
+
+    def __call__(self, broker):
+        result = []
+        source = broker[self.provider]
+        ctx = broker[self.context]
+        if isinstance(source, ContentProvider):
+            source = source.content
+        if not isinstance(source, (list, set)):
+            source = [source]
+        for e in source:
+            try:
+                # e       = (image, <podman|docker>, container_id, <path>)
+                image, e = e[0], e[1:]
+                if self.cmd is None or self.cmd == '%s':
+                    # path is provided by `provider`
+                    e, path = e[:-1], e[-1]
+                else:
+                    # path is provided by self.cmd
+                    e, path = e, self.cmd
+                # e       = (<podman|docker>, container_id)
+                # the_cmd = <podman|docker> exec container_id cat path
+                the_cmd = ("/usr/bin/%s exec %s cat " % e) + path
+                cfp = ContainerFileProvider(the_cmd, ctx, image=image, args=None, split=self.split,
+                                            keep_rc=self.keep_rc, ds=self, timeout=self.timeout,
+                                            inherit_env=self.inherit_env, override_env=self.override_env,
+                                            signum=self.signum)
+                result.append(cfp)
+            except:
+                log.debug(traceback.format_exc())
+        if result:
+            return result
+        raise ContentException("No results found for [%s]" % self.cmd)
+
+
 class first_of(object):
     """ Given a list of dependencies, returns the first of the list
         that exists in the broker. At least one must be present, or this
@@ -932,7 +1154,7 @@ class first_of(object):
     """
     def __init__(self, deps):
         self.deps = deps
-        self.raw = deps[0].raw
+        self.raw = getattr(deps[0], 'raw', None)
         self.__name__ = self.__class__.__name__
         datasource(deps)(self)
 
@@ -966,7 +1188,7 @@ class find(object):
         are included.
 
     Raises:
-        dr.SkipComponent if no paths have matching lines.
+        SkipComponent: if no paths have matching lines.
     """
 
     def __init__(self, spec, pattern):
@@ -1006,7 +1228,7 @@ class find(object):
             if lines:
                 results[origin] = lines
         if not results:
-            raise dr.SkipComponent()
+            raise SkipComponent()
         return dict(results)
 
 
@@ -1082,3 +1304,74 @@ def serialize_datasource_provider(obj, root):
 @deserializer(DatasourceProvider)
 def deserialize_datasource_provider(_type, data, root):
     return SerializedOutputProvider(data["relative_path"], root)
+
+
+@serializer(MetadataProvider)
+def serialize_metadata_provider(obj, root):
+    # Built-in metadata files are put in the root instead of '/data'
+    root = os.path.dirname(root) if os.path.basename(root) == 'data' else root
+    dst = os.path.join(root, obj.relative_path.lstrip("/"))
+    fs.ensure_path(os.path.dirname(dst))
+    obj.write(dst)
+    return {"relative_path": obj.relative_path}
+
+
+@deserializer(MetadataProvider)
+def deserialize_metadata_provider(_type, data, root):
+    # Built-in metadata files are put in the root instead of '/data'
+    root = os.path.dirname(root) if os.path.basename(root) == 'data' else root
+    return SerializedOutputProvider(data["relative_path"], root)
+
+
+@serializer(ContainerFileProvider)
+def serialize_container_file_output(obj, root):
+    rel = os.path.join("insights_containers", obj.relative_path)
+    dst = os.path.join(root, rel)
+    rc = obj.write(dst)
+    return {
+        "relative_path": rel,
+        "rc": rc,
+        "image": obj.image,
+        "engine": obj.engine,
+        "container_id": obj.container_id,
+    }
+
+
+@deserializer(ContainerFileProvider)
+def deserialize_container_file(_type, data, root):
+    rel = data["relative_path"]
+    res = SerializedOutputProvider(rel, root)
+    res.rc = data["rc"]
+    res.image = data["image"]
+    res.engine = data["engine"]
+    res.container_id = data["container_id"]
+    return res
+
+
+@serializer(ContainerCommandProvider)
+def serialize_container_command(obj, root):
+    rel = os.path.join("insights_containers", obj.relative_path)
+    dst = os.path.join(root, rel)
+    rc = obj.write(dst)
+    return {
+        "rc": rc,
+        "cmd": obj.cmd,
+        "args": obj.args,
+        "relative_path": rel,
+        "image": obj.image,
+        "engine": obj.engine,
+        "container_id": obj.container_id,
+    }
+
+
+@deserializer(ContainerCommandProvider)
+def deserialize_container_command(_type, data, root):
+    rel = data["relative_path"]
+    res = SerializedOutputProvider(rel, root)
+    res.rc = data["rc"]
+    res.cmd = data["cmd"]
+    res.args = data["args"]
+    res.image = data["image"]
+    res.engine = data["engine"]
+    res.container_id = data["container_id"]
+    return res

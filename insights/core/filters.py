@@ -86,11 +86,18 @@ def add_filter(component, patterns):
         FILTERS[component] |= patterns
 
     if not plugins.is_datasource(component):
-        for dep in dr.run_order(dr.get_dependency_graph(component)):
-            if plugins.is_datasource(dep):
-                d = dr.get_delegate(dep)
-                if d.filterable:
-                    inner(dep, patterns)
+        deps = dr.run_order(dr.get_dependency_graph(component))
+        if deps:
+            filterable_deps = [
+                dep for dep in deps if (plugins.is_datasource(dep) and
+                                        dr.get_delegate(dep).filterable)
+            ]
+            # At least one dependency component be filterable
+            if not filterable_deps:
+                raise Exception("Filters aren't applicable to %s." % dr.get_name(component))
+
+            for dep in filterable_deps:
+                inner(dep, patterns)
     else:
         delegate = dr.get_delegate(component)
 
@@ -128,6 +135,10 @@ def get_filters(component):
     """
     def inner(c, filters=None):
         filters = filters or set()
+
+        if hasattr(c, 'filterable') and c.filterable is False:
+            return filters
+
         if not ENABLED:
             return filters
 
@@ -188,10 +199,10 @@ def load(stream=None):
 
 
 def dumps():
-    """Returns a string representation of the FILTERS dictionary."""
+    """Returns a string representation of the sorted FILTERS dictionary."""
     d = {}
     for k, v in FILTERS.items():
-        d[dr.get_name(k)] = list(v)
+        d[dr.get_name(k)] = sorted(v)
     return _dumps(d)
 
 

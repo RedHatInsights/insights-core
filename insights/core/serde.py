@@ -11,10 +11,12 @@ import logging
 import os
 import time
 import traceback
+
 from glob import glob
 from functools import partial
 
 from insights.core import dr
+from insights.core.exceptions import ContentException
 from insights.util import fs
 
 log = logging.getLogger(__name__)
@@ -94,16 +96,35 @@ def deserialize(data, root=None):
     return from_dict(_type, data["object"], root=root)
 
 
-def marshal(v, root=None, pool=None):
+def marshal(comp, broker, root=None, pool=None):
+    def call_serializer(func, value, exception_func):
+        try:
+            return func(value), None
+        except Exception as ex:
+            ex_tb = traceback.format_exc()
+            exception_func(ex, ex_tb)
+            return None, ex_tb
+
+    def add_broker_exception(comp, broker, ex, ex_tb):
+        broker.add_exception(comp, ex, ex_tb)
+
+    v = broker.get(comp)
     if v is None:
-        return
-    f = partial(serialize, root=root)
+        return None, None
+
+    ser_func = partial(serialize, root=root)
+    exc_func = partial(add_broker_exception, comp, broker)
+
     if isinstance(v, list):
+        repeat = len(v)
         if pool:
-            return list(pool.map(f, v))
+            data = list(pool.map(call_serializer, [ser_func] * repeat, v, [exc_func] * repeat))
         else:
-            return [f(t) for t in v]
-    return f(v)
+            data = list(map(call_serializer, [ser_func] * repeat, v, [exc_func] * repeat))
+        results = [i[0] for i in data if i[0]]
+        errors = [i[1] for i in data if i[1]]
+        return results, errors
+    return call_serializer(ser_func, v, exc_func)
 
 
 def unmarshal(data, root=None):
@@ -146,7 +167,6 @@ class Hydration(object):
         Loads a Broker from a previously saved one. A Broker is created if one
         isn't provided.
         """
-        from insights.core.spec_factory import ContentException
 
         broker = broker or dr.Broker()
         for path in glob(os.path.join(self.meta_data, "*")):
@@ -177,31 +197,29 @@ class Hydration(object):
                 fs.ensure_path(self.data, mode=0o770)
             self.created = True
 
-        c = comp
-        doc = None
         try:
-            name = dr.get_name(c)
-            value = broker.get(c)
-            errors = [t for e in broker.exceptions.get(c, [])
-                        for t in broker.tracebacks[e]]
+            name = dr.get_name(comp)
+
+            # The `broker.tracebacks` is a dict in which the values are string
+            # but not list of strings.
+            errors = [broker.tracebacks[e] for e in broker.exceptions.get(comp, [])]
+
+            start = time.time()
+            results, ms_errors = marshal(comp, broker, root=self.data, pool=self.pool)
+            errors.extend(ms_errors if isinstance(ms_errors, list) else [ms_errors]) if ms_errors else None
+
             doc = {
                 "name": name,
-                "exec_time": broker.exec_times.get(c),
-                "errors": errors
+                "exec_time": broker.exec_times.get(comp),
+                "errors": errors,
+                "results": results if results else None,
+                "ser_time": time.time() - start
             }
-
-            try:
-                start = time.time()
-                doc["results"] = marshal(value, root=self.data, pool=self.pool)
-            except Exception:
-                errors.append(traceback.format_exc())
-                doc["results"] = None
-            finally:
-                doc["ser_time"] = time.time() - start
         except Exception as ex:
             log.exception(ex)
         else:
             if doc is not None and (doc["results"] or doc["errors"]):
+                path = None
                 try:
                     path = os.path.join(self.meta_data, name + "." + self.ser_name)
                     with open(path, "w") as f:

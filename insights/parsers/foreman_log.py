@@ -25,6 +25,12 @@ ProxyLog - file ``/var/log/foreman-proxy/proxy.log``
 SatelliteLog - file ``/var/log/foreman-installer/satellite.log``
 ----------------------------------------------------------------
 
+ForemanSSLAccessLog - file ``/var/log/httpd/foreman-ssl_access_ssl.log``
+------------------------------------------------------------------------
+
+ForemanSSLErrorLog - file ``/var/log/httpd/foreman-ssl_error_ssl.log``
+----------------------------------------------------------------------
+
 """
 from datetime import datetime
 
@@ -146,7 +152,7 @@ class CandlepinErrorLog(LogFileOutput):
 
 @parser(Specs.foreman_ssl_access_ssl_log)
 class ForemanSSLAccessLog(LogFileOutput):
-    """Class for parsing ``var/log/httpd/foreman-ssl_access_ssl.log`` file.
+    """Class for parsing ``/var/log/httpd/foreman-ssl_access_ssl.log`` file.
 
     Sample log contents::
 
@@ -157,9 +163,52 @@ class ForemanSSLAccessLog(LogFileOutput):
         10.181.73.211 - rhcapkdc.example2.com [27/Mar/2017:13:34:52 -0400] "GET /rhsm/consumers/385e688f-43ad-41b2-9fc7-593942ddec78/compliance HTTP/1.1" 200 5527
         10.181.73.211 - rhcapkdc.example2.com [27/Mar/2017:13:34:52 -0400] "GET /rhsm/consumers/4f8a39d0-38b6-4663-8b7e-03368be4d3ab HTTP/1.1" 200 10695 "-" "-"
 
+    Each line is parsed into a dictionary with the following keys:
+
+        * **raw_message(str)** - complete log line
+        * **host(str)** - remote host's IP or hostname
+        * **timestamp(datetime)** - date and time of http request, time zone is ignored
 
     Examples:
         >>> foreman_ssl_acess_log.get('consumers/385e688f-43ad-41b2-9fc7-593942ddec78')[0]['raw_message']
         '10.181.73.211 - rhcapkdc.example2.com [27/Mar/2017:13:34:52 -0400] "GET /rhsm/consumers/385e688f-43ad-41b2-9fc7-593942ddec78 HTTP/1.1" 200 10736 "-" "-"'
+        >>> foreman_ssl_acess_log.get('consumers/385e688f-43ad-41b2-9fc7-593942ddec78')[0]['host']
+        '10.181.73.211'
+        >>> foreman_ssl_acess_log.get('consumers/385e688f-43ad-41b2-9fc7-593942ddec78')[0]['timestamp']
+        datetime.datetime(2017, 3, 27, 13, 34, 52)
     """
+    # Actual time format - '%d/%b/%Y:%H:%M:%S %z' but %z doesn't work for python 2
     time_format = '%d/%b/%Y:%H:%M:%S'
+
+    def _parse_line(self, line):
+        msg_info = {'raw_message': line}
+        # Split enough to get datetime and host
+        line_split = line.split(None, 4)
+        if len(line_split) == 5:
+            try:
+                msg_info['timestamp'] = datetime.strptime(
+                    line_split[3].strip('['), self.time_format
+                )
+                msg_info['host'] = line_split[0]
+            except ValueError:
+                pass
+        return msg_info
+
+
+@parser(Specs.foreman_ssl_error_ssl_log)
+class ForemanSSLErrorLog(LogFileOutput):
+    """
+    Class for parsing ``/var/log/httpd/foreman-ssl_error_ssl.log`` file.
+
+    .. note::
+
+        Please refer to its super-class :class:`insights.core.LogFileOutput` for examples.
+
+    Sample log contents::
+
+        [Mon Aug 09 10:01:22.548717 2021] [ssl:warn] [pid 5881] [client 10.72.44.126:47190] AH02227: Failed to set r->user to 'SSL_CLIENT_S_DN_CN'
+        [Mon Aug 09 11:02:23.229609 2021] [proxy_http:error] [pid 749] (20014)Internal error: [client 10.72.44.126:47920] AH01102: error reading status line from remote server yyy
+        [Mon Aug 09 11:17:52.204503 2021] [proxy_http:error] [pid 5854] (20014)Internal error: [client 10.72.44.126:48016] AH01102: error reading status line from remote server yyy
+    """
+
+    time_format = '%a %b %d %H:%M:%S.%f %Y'

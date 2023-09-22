@@ -4,10 +4,10 @@ HttpdM - command ``httpd -M``
 
 Module for parsing the output of command ``httpd -M``.
 """
-
-from .. import parser, LegacyItemAccess, CommandParser
+from insights.core import CommandParser, LegacyItemAccess
+from insights.core.exceptions import ParseException
+from insights.core.plugins import parser
 from insights.specs import Specs
-from insights.parsers import ParseException
 
 
 @parser(Specs.httpd_M)
@@ -85,9 +85,7 @@ class HttpdM(LegacyItemAccess, CommandParser):
     @property
     def httpd_command(self):
         """
-        str: The full path of a running httpd. An Empty string when nothing
-        is found.  It's to identify which httpd binaries the instance run with.
+        Return the full binary path of a running httpd or None when nothing
+        is found. It's to identify which httpd binaries the instance run with.
         """
-        # Typical `file_path` of HttpdM looks like: '/usr/sbin/httpd_-M'
-        # Remove the trailing '_-M'
-        return self.file_path[:-3] if self.file_path else ''
+        return self.args

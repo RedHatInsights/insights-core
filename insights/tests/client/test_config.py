@@ -170,6 +170,12 @@ def test_offline_disables_options():
     with pytest.raises(ValueError):
         InsightsConfig(status=True, offline=True)
 
+    with pytest.raises(ValueError):
+        InsightsConfig(checkin=True, offline=True)
+
+    with pytest.raises(ValueError):
+        InsightsConfig(unregister=True, offline=True)
+
 
 # empty argv so parse_args isn't polluted with pytest arguments
 @patch('insights.client.config.sys.argv', [sys.argv[0]])
@@ -296,3 +302,31 @@ def test_core_collect_default(get_version_info):
     assert _core_collect_default()
     conf = InsightsConfig()
     assert conf.core_collect
+
+
+@patch('insights.client.config.sys.argv', [sys.argv[0], "--status"])
+def test_command_line_parse_twice():
+    '''
+    Verify that running _load_command_line() twice does not
+    raise an argparse error.
+
+    Previously would raise a SystemExit due to argparse not
+    being loaded with the correct options.
+    '''
+    c = InsightsConfig()
+    c._load_command_line()
+    assert c.status
+    c._load_command_line()
+    assert c.status
+
+
+@patch('insights.client.config.sys.argv', [sys.argv[0], "--force-reregister"])
+def test_deprecated_reregister():
+    """
+    Verify that --force-reregistration is deprecated
+    """
+    insights_config = InsightsConfig()
+    with pytest.raises(ValueError) as error:
+        insights_config.load_all()
+
+    assert "deprecated" in str(error.value)

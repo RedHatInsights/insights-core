@@ -2,8 +2,10 @@
 PcsQuorumStatus - Commands ``pcs quorum status``
 ================================================
 """
-from insights import parser, CommandParser
-from insights.parsers import SkipException, ParseException, parse_fixed_table
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipComponent
+from insights.core.plugins import parser
+from insights.parsers import parse_fixed_table
 from insights.specs import Specs
 
 
@@ -46,7 +48,7 @@ class PcsQuorumStatus(CommandParser):
         membership_info (list): List of dicts where keys are the feature name of each node and
             values are the corresponding feature value.
     Raises:
-        SkipException: When input is empty.
+        SkipComponent: When input is empty.
         ParseException: When input cannot be parsed.
 
     Examples:
@@ -62,7 +64,7 @@ class PcsQuorumStatus(CommandParser):
 
     def parse_content(self, content):
         if not content:
-            raise SkipException("Empty content")
+            raise SkipComponent("Empty content")
         if len(content) < 21 or not ('Quorum information' in content[0] and
                                      'Votequorum information' in content[9] and
                                      'Membership information' in content[17]):

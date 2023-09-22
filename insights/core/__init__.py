@@ -1,24 +1,23 @@
 import datetime
-import io
 import json
 import logging
 import operator
 import os
 import re
 import shlex
-import yaml
 import six
+import sys
+import yaml
+
+from collections import OrderedDict
 from fnmatch import fnmatch
 
-from insights.parsr import iniparser
-from insights.parsr.query import (Directive, Entry, Result, Section,
-                                  compile_queries)
-from insights.contrib.ConfigParser import RawConfigParser
-
-from insights.parsers import ParseException, SkipException
-from insights.core.plugins import ContentException
+from insights.contrib.ConfigParser import NoOptionError, NoSectionError
+from insights.core import ls_parser
+from insights.core.exceptions import ContentException, ParseException, SkipComponent, SkipException  # noqa: F401
 from insights.core.serde import deserializer, serializer
-from . import ls_parser
+from insights.parsr import iniparser
+from insights.parsr.query import Directive, Entry, Result, Section, compile_queries
 from insights.util import deprecated
 
 try:
@@ -26,7 +25,6 @@ try:
 except ImportError:
     from yaml import SafeLoader
 
-import sys
 # Since XPath expression is not supported by the ElementTree in Python 2.6,
 # import insights.contrib.ElementTree when running python is prior to 2.6 for compatibility.
 # Script insights.contrib.ElementTree is the same with xml.etree.ElementTree in Python 2.7.14
@@ -100,6 +98,21 @@ class Parser(object):
         raise NotImplementedError(msg)
 
 
+class ContainerParser(Parser):
+    """
+    A class specifically for container parser, with the "image" name, the
+    engine provider and the container ID on the basis of ``Parser``.
+    """
+    def __init__(self, context):
+        self.image = context.image
+        """str: The image of the container."""
+        self.engine = context.engine
+        """str: The engine provider of the container."""
+        self.container_id = context.container_id
+        """str: The ID of the container."""
+        super(ContainerParser, self).__init__(context)
+
+
 class StreamParser(Parser):
     """
     Parsers that don't have to store lines or look back in the data stream
@@ -127,12 +140,6 @@ def default_parser_deserializer(_type, data):
     for k, v in data.items():
         setattr(obj, k, v)
     return obj
-
-
-def find_main(confs, name):
-    for c in confs:
-        if c.file_name == name:
-            return c
 
 
 def flatten(docs, pred):
@@ -347,11 +354,11 @@ class ConfigParser(Parser, ConfigComponent):
     Base Insights component class for Parsers of configuration files.
 
     Raises:
-        SkipException: When input content is empty.
+        SkipComponent: When input content is empty.
     """
     def parse_content(self, content):
         if not content:
-            raise SkipException('Empty content.')
+            raise SkipComponent('Empty content.')
         self.content = content
         self.doc = self.parse_doc(content)
 
@@ -370,7 +377,7 @@ class ConfigCombiner(ConfigComponent):
     """
     def __init__(self, confs, main_file, include_finder):
         self.confs = confs
-        self.main = find_main(confs, main_file)
+        self.main = self.find_main(main_file)
         server_root = self.conf_path
 
         # Set the children of all include directives to the contents of the
@@ -390,6 +397,33 @@ class ConfigCombiner(ConfigComponent):
     def find_matches(self, confs, pattern):
         results = [c for c in confs if fnmatch(c.file_path, pattern)]
         return sorted(results, key=operator.attrgetter("file_name"))
+
+    def find_main(self, name):
+        for c in self.confs:
+            if c.file_name == name:
+                return c
+
+        raise SkipComponent("The main conf {main_conf} doesn't exist.".format(main_conf=name))
+
+
+class ContainerConfigCombiner(ConfigCombiner):
+    """
+    Base Insights component class for Combiners of container configuration
+    files with include directives for supplementary configuration files.
+    httpd and nginx are examples.
+    """
+    def __init__(self, confs, main_file, include_finder, engine, image, container_id):
+        self.image = image
+        """str: The image of the container."""
+        self.engine = engine
+        """str: The engine provider of the container."""
+        self.container_id = container_id
+        """str: The ID of the container."""
+        super(ContainerConfigCombiner, self).__init__(confs, main_file, include_finder)
+
+    @property
+    def conf_path(self):
+        return os.path.dirname(self.main.file_path)
 
 
 class LegacyItemAccess(object):
@@ -728,12 +762,12 @@ class YAMLParser(Parser, LegacyItemAccess):
             else:
                 self.data = yaml.load(content, Loader=SafeLoader)
             if self.data is None:
-                raise SkipException("There is no data")
+                raise SkipComponent("There is no data")
             if not isinstance(self.data, (dict, list)):
                 raise ParseException("YAML didn't produce a dictionary or list.")
-        except SkipException as se:
+        except SkipComponent as se:
             tb = sys.exc_info()[2]
-            six.reraise(SkipException, SkipException(str(se)), tb)
+            six.reraise(SkipComponent, SkipComponent(str(se)), tb)
         except:
             tb = sys.exc_info()[2]
             cls = self.__class__
@@ -748,13 +782,24 @@ class JSONParser(Parser, LegacyItemAccess):
     """
     def parse_content(self, content):
         try:
-            self.data = json.loads(''.join(content))
+            if isinstance(content, list):
+                self.data = json.loads('\n'.join(content))
+            else:
+                self.data = json.loads(content)
         except:
-            tb = sys.exc_info()[2]
-            cls = self.__class__
-            name = ".".join([cls.__module__, cls.__name__])
-            msg = "%s couldn't parse json." % name
-            six.reraise(ParseException, ParseException(msg), tb)
+            # If content is empty then raise a skip exception instead of a parse exception.
+            if not content:
+                raise SkipComponent("Empty output.")
+            else:
+                tb = sys.exc_info()[2]
+                cls = self.__class__
+                name = ".".join([cls.__module__, cls.__name__])
+                msg = "%s couldn't parse json." % name
+                six.reraise(ParseException, ParseException(msg), tb)
+        # Kept for backwards compatibility;
+        # JSONParser used to raise an exception for valid "null" JSON string
+        if self.data is None:
+            raise SkipComponent("Empty input")
 
 
 class ScanMeta(type):
@@ -822,6 +867,9 @@ class Scannable(six.with_metaclass(ScanMeta, Parser)):
     strings or False).
 
     """
+    def __init__(self, *args, **kwargs):
+        deprecated(Scannable, "Please use the :class:`insights.core.Parser` instead.", "3.3.0")
+        super(Scannable, self).__init__(*args, **kwargs)
 
     @classmethod
     def _scan(cls, result_key, scanner):
@@ -947,6 +995,7 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
     * A list of `strptime()` strings.
     * A dictionary with each item's value being a `strptime()` string.  This
       allows the item keys to provide some form of documentation.
+    * A None value when there is no timestamp info in the log file
     """
 
     def parse_content(self, content):
@@ -1165,6 +1214,8 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
                 values like day of year or week of year.
         """
         time_format = self.time_format
+        if time_format is None:
+            raise RuntimeError('Not applied when time_format does not exist')
 
         # Annoyingly, strptime insists that it get the whole time string and
         # nothing but the time string.  However, for most logs we only have a
@@ -1397,10 +1448,6 @@ class IniConfigFile(ConfigParser):
            # to enable keys with no values
            key_with_no_value
 
-    References:
-        See Python ``RawConfigParser`` documentation for more information
-        https://docs.python.org/2/library/configparser.html#rawconfigparser-objects
-
     Examples:
         >>> class MyConfig(IniConfigFile):
         ...     pass
@@ -1434,71 +1481,172 @@ class IniConfigFile(ConfigParser):
         >>> my_config.has_option('logging', 'log')
         True
     """
+    def parse_doc(self, content):
+        return iniparser.parse_doc("\n".join(content), self, return_defaults=True, return_booleans=False)
 
     def parse_content(self, content, allow_no_value=False):
-        """Parses content of the config file.
-
-        In child class overload and call super to set flag
-        ``allow_no_values`` and allow keys with no value in
-        config file::
-
-            def parse_content(self, content):
-                super(YourClass, self).parse_content(content,
-                                                     allow_no_values=True)
-        """
         super(IniConfigFile, self).parse_content(content)
-        config = RawConfigParser(allow_no_value=allow_no_value)
-        fp = io.StringIO(u"\n".join(content))
-        config.readfp(fp, filename=self.file_name)
-        self.data = config
+        self._dict = OrderedDict()
 
-    def parse_doc(self, content):
-        return iniparser.parse_doc("\n".join(content), self)
+        for section in self.doc:
+            section_dict = dict()
+            for opt in section:
+                options = []
+                for o in section[opt.name]:
+                    if o.value is not None:
+                        options.append(str(o.value))
+                    else:
+                        if not allow_no_value:
+                            continue
+                        options.append(o.value)
 
-    def sections(self):
-        """list: Return a list of section names."""
-        return self.data.sections()
+                if not options:
+                    continue
+
+                section_dict[opt.name.lower()] = options[-1]
+
+            if section.name in self._dict:
+                self._dict[section.name].update(section_dict)
+            else:
+                self._dict[section.name] = section_dict
+
+    @property
+    def data(self):
+        """
+        Returns:
+            obj: self, it's for backward compatibility.
+        """
+        return self
 
     def defaults(self):
-        """list: Return a dict of key/value pairs in the ``[default]`` section."""
-        return self.data.defaults()
+        """
+        Returns:
+            dict: Returns any options under the DEFAULT section.
+        """
+        if "DEFAULT" not in self._dict:
+            return {}
+        return self._dict["DEFAULT"]
+
+    def get(self, section, option):
+        """
+        Args:
+            section (str): The section str to search for.
+            option (str): The option str to search for.
+
+        Returns:
+            str: Returns the value of the option in the specified section.
+        """
+        # ConfigParser apparently searched literals so if the header was [ example ]
+        # you had to do get(" example ", "test"). Where iniparser strips the spaces,
+        # so strip spaces here also.
+        _section = section.strip()
+        _option = option.lower()
+        if _section not in self._dict.keys():
+            raise NoSectionError(_section)
+
+        header = self._dict.get(_section)
+        if _option not in header.keys():
+            raise NoOptionError(_section, _option)
+
+        return header.get(_option)
+
+    def getboolean(self, section, option):
+        """
+        Returns:
+            bool: Returns boolean form based on the data from get.
+        """
+        val = self.get(section, option)
+        boolean_states = {
+            '1': True,
+            '0': False,
+            'yes': True,
+            'no': False,
+            'true': True,
+            'false': False,
+            'on': True,
+            'off': False
+        }
+
+        if val.lower() not in boolean_states:
+            raise ValueError('Not a boolean: %s' % val)
+
+        return boolean_states[val.lower()]
+
+    def getfloat(self, section, option):
+        """
+        Returns:
+            float: Returns the float value off the data from get.
+        """
+        return float(self.get(section, option))
+
+    def getint(self, section, option):
+        """
+        Returns:
+            int: Returns the int value off the data from get.
+        """
+        return int(self.get(section, option))
+
+    def has_option(self, section, option):
+        """
+        Args:
+            section (str): The section str to search for.
+            option (str): The option str to search for.
+
+        Returns:
+            bool: Returns weather the option in the section exist.
+        """
+        _section = section.strip()
+        if _section not in self._dict.keys():
+            return False
+
+        return option.lower() in self._dict.get(_section)
 
     def items(self, section):
-        """dict: Return a dictionary of key/value pairs for ``section``."""
-        return dict(self.data.items(section))
+        """
+        Args:
+            section (str): The section str to search for.
 
-    def get(self, section, key):
-        """value: Get value for ``section`` and ``key``."""
-        return self.data.get(section, key)
+        Returns:
+            dict: Returns all of the options in the specified section.
+        """
+        _section = section.strip()
+        if _section not in self._dict.keys():
+            raise NoSectionError(_section)
 
-    def getint(self, section, key):
-        """int: Get int value for ``section`` and ``key``."""
-        return self.data.getint(section, key)
+        return dict(self._dict.get(_section).items())
 
-    def getfloat(self, section, key):
-        """float: Get float value for ``section`` and ``key``."""
-        return self.data.getfloat(section, key)
+    def sections(self):
+        """
+        Returns:
+            list: Returns all of the parsed sections excluding DEFAULT.
+        """
+        return list(sec for sec in self._dict.keys() if "DEFAULT" not in sec)
 
-    def getboolean(self, section, key):
-        """boolean: Get boolean value for ``section`` and ``key``."""
-        return self.data.getboolean(section, key)
+    def set(self, section, option, value=None):
+        """
+        Sets the value of the specified section option.
 
-    def has_option(self, section, key):
-        """boolean: Returns ``True`` of ``section`` is present and has option
-        ``key``."""
-        return self.data.has_option(section, key)
+        Args:
+            section (str): The section str to set for.
+            option (str): The option str to set for.
+            value (str): The value to set.
+        """
+        self._dict[section.strip()][option.strip().lower()] = value
 
     def __contains__(self, section):
-        return section in self.data.sections()
+        return section.strip() in self._dict.keys()
 
     def __repr__(self):
-        return "INI file '{filename}' - sections:{sections}".\
-            format(filename=self.file_name,
-                   sections=self.data.sections())
+        return "INI file '{filename}' - sections:{sections}".format(
+            filename=self.file_name, sections=self.sections())
 
 
 class FileListing(Parser):
     """
+    .. warning::
+        This class is deprecated and will be removed from 3.5.0.
+        Please use the :class:`insights.parsers.ls.FileListing` instead.
+
     Reads a series of concatenated directory listings and turns them into
     a dictionary of entities by name.  Stores all the information for
     each directory entry for every entry that can be parsed, containing:
@@ -1521,7 +1669,8 @@ class FileListing(Parser):
       directory, in the order found in the listing
     * total blocks allocated to all the entities in this directory
 
-    .. note:: For listings that only contain one directory, ``ls`` does not
+    .. note::
+        For listings that only contain one directory, ``ls`` does not
         output the directory name.  The directory is reverse engineered from
         the path given to the parser by Insights - this assumes the
         translation of spaces to underscores and '/' to '.' in paths.  For
@@ -1574,6 +1723,7 @@ class FileListing(Parser):
         # the directory name in the output).  Obviously if we don't have the
         # '-R' flag we should grab this but it's probably not worth parsing
         # the flags to ls for this.
+        deprecated(FileListing, "Please use the :class:`insights.parsers.ls.FileListing instead.", "3.5.0")
         self.first_path = None
         path_re = re.compile(r'ls_-\w+(?P<path>.*)$')
         match = path_re.search(context.path)
@@ -1662,38 +1812,3 @@ class FileListing(Parser):
         if name not in self.listings[directory]['entries']:
             return None
         return self.listings[directory]['entries'][name]
-
-
-class AttributeDict(dict):
-    """
-    Class to convert the access to each item in a dict as attribute.
-
-    .. warning::
-        Deprecated class, please set attributes explicitly.
-
-    Examples:
-        >>> data = {
-        ... "fact1":"fact 1"
-        ... "fact2":"fact 2"
-        ... "fact3":"fact 3"
-        ... }
-        >>> d_obj = AttributeDict(data)
-        {'fact1': 'fact 1', 'fact2': 'fact 2', 'fact3': 'fact 3'}
-        >>> d_obj['fact1']
-        'fact 1'
-        >>> d_obj.get('fact1')
-        'fact 1'
-        >>> d_obj.fact1
-        'fact 1'
-        >>> 'fact2' in d_obj
-        True
-        >>> d_obj.get('fact3', default='no fact')
-        'fact 3'
-        >>> d_obj.get('fact4', default='no fact')
-        'no fact'
-    """
-
-    def __init__(self, *args, **kwargs):
-        deprecated(AttributeDict, "Please set attributes explicitly.")
-        super(AttributeDict, self).__init__(*args, **kwargs)
-        self.__dict__ = self

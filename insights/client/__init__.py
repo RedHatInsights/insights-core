@@ -15,10 +15,8 @@ from . import client
 from .constants import InsightsConstants as constants
 from .config import InsightsConfig
 from .auto_config import try_auto_configuration
-from .utilities import (delete_registered_file,
-                        delete_unregistered_file,
+from .utilities import (write_data_to_file,
                         write_to_disk,
-                        generate_machine_id,
                         get_tags,
                         write_tags,
                         migrate_tags,
@@ -60,16 +58,14 @@ class InsightsClient(object):
 
         # setup insights connection placeholder
         # used for requests
-        self.session = None
         self.connection = None
         self.tmpdir = None
 
     def _net(func):
         def _init_connection(self, *args, **kwargs):
             # setup a request session
-            if not self.config.offline and not self.session:
+            if not self.config.offline and not self.connection:
                 self.connection = client.get_connection(self.config)
-                self.session = self.connection.session
             return func(self, *args, **kwargs)
         return _init_connection
 
@@ -106,12 +102,17 @@ class InsightsClient(object):
             url = self.connection.base_url + '/platform' + constants.module_router_path
         else:
             url = self.connection.base_url + constants.module_router_path
-        logger.log(NETWORK, "GET %s", url)
-        response = self.session.get(url, timeout=self.config.http_timeout)
-        if response.status_code == 200:
-            return response.json()["url"]
-        else:
-            logger.warning("Unable to fetch egg url. Defaulting to /release")
+        try:
+            response = self.connection.get(url)
+            if response.status_code == 200:
+                if 'application/json' not in response.headers.get('Content-Type', ''):
+                    logger.warning("Module update router response is not valid for %s. Expected json format but got %s. Defaulting to /release", url, response.headers.get('Content-Type', ''))
+                    return '/release'
+                return response.json()["url"]
+            else:
+                raise ConnectionError("%s: %s" % (response.status_code, response.reason))
+        except ConnectionError as e:
+            logger.warning("Unable to fetch egg url %s: %s. Defaulting to /release", url, str(e))
             return '/release'
 
     def fetch(self, force=False):
@@ -134,7 +135,7 @@ class InsightsClient(object):
         try:
             # write the release path to temp so we can collect it
             #   in the archive
-            write_to_disk(constants.egg_release_file, content=egg_release)
+            write_data_to_file(egg_release, constants.egg_release_file)
         except (OSError, IOError) as e:
             logger.debug('Could not write egg release file: %s', str(e))
 
@@ -204,10 +205,10 @@ class InsightsClient(object):
             if current_etag and not force:
                 logger.debug('Requesting new file with etag %s', current_etag)
                 etag_headers = {'If-None-Match': current_etag}
-                response = self.session.get(url, headers=etag_headers, timeout=self.config.http_timeout)
+                response = self.connection.get(url, headers=etag_headers, log_response_text=False)
             else:
                 logger.debug('Found no etag or forcing fetch')
-                response = self.session.get(url, timeout=self.config.http_timeout)
+                response = self.connection.get(url, log_response_text=False)
         except ConnectionError as e:
             logger.error(e)
             logger.error('The Insights API could not be reached.')
@@ -255,6 +256,7 @@ class InsightsClient(object):
             return True
 
         if self.config.auto_update:
+            logger.debug("Egg update enabled")
             # fetch the new eggs and gpg
             egg_paths = self.fetch()
 
@@ -390,7 +392,7 @@ class InsightsClient(object):
     @_net
     def collect(self):
         # return collection results
-        tar_file = client.collect(self.config, self.connection)
+        tar_file = client.collect(self.config)
 
         # it is important to note that --to-stdout is utilized via the wrapper RPM
         # this file is received and then we invoke shutil.copyfileobj
@@ -507,6 +509,13 @@ class InsightsClient(object):
         return self.connection.set_display_name(display_name)
 
     @_net
+    def set_ansible_host(self, ansible_host):
+        '''
+            returns True on success, False on failure
+        '''
+        return self.connection.set_ansible_host(ansible_host)
+
+    @_net
     def get_diagnosis(self, remediation_id=None):
         '''
             returns JSON of diagnosis data on success, None on failure
@@ -529,16 +538,6 @@ class InsightsClient(object):
 
     def get_machine_id(self):
         return client.get_machine_id()
-
-    def clear_local_registration(self):
-        '''
-        Deletes dotfiles and machine-id for fresh registration
-        '''
-        delete_registered_file()
-        delete_unregistered_file()
-        write_to_disk(constants.machine_id_file, delete=True)
-        logger.debug('Re-register set, forcing registration.')
-        logger.debug('New machine-id: %s', generate_machine_id(new=True))
 
     @_net
     def check_results(self):
@@ -569,9 +568,9 @@ class InsightsClient(object):
             if len(system) == 1:
                 try:
                     id = system[0]["id"]
-                    logger.info("View details about this system on cloud.redhat.com:")
+                    logger.info("View details about this system on console.redhat.com:")
                     logger.info(
-                        "https://cloud.redhat.com/insights/inventory/{0}".format(id)
+                        "https://console.redhat.com/insights/inventory/{0}".format(id)
                     )
                 except Exception as e:
                     logger.error(

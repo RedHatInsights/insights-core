@@ -2,9 +2,8 @@
 Sealert - command ``/usr/bin/sealert -l "*"``
 =============================================
 """
-
-from insights import CommandParser
-from insights import parser
+from insights.core import CommandParser
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 
@@ -29,7 +28,7 @@ class Report(object):
         lines = self.lines[:]
         for index in range(len(self.lines) - 1, -1, -1):
             if lines[index] == '':
-                del(lines[index])
+                del (lines[index])
             else:
                 break
         return lines
@@ -98,7 +97,7 @@ class Sealert(CommandParser):
         reports (list[Report]): Sealert reports
 
     Raises:
-        SkipException: When output is empty
+        SkipComponent: When output is empty
     """
     SELINUX_DISABLED_MESSAGE = "unable to establish connection to setroubleshoot daemon!"
 

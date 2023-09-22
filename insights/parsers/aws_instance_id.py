@@ -5,15 +5,39 @@ AWSInstanceID
 These parsers read the output of commands to collect identify information
 from AWS instances.
 
-* ``curl -s http://169.254.169.254/latest/dynamic/instance-identity/document`` and
-* ``curl -s http://169.254.169.254/latest/dynamic/instance-identity/pkcs7``
+AWSInstanceIdDoc - ``curl -s http://169.254.169.254/latest/dynamic/instance-identity/document``
+-----------------------------------------------------------------------------------------------
+
+AWSInstanceIdPkcs7 - ``curl -s http://169.254.169.254/latest/dynamic/instance-identity/pkcs7``
+----------------------------------------------------------------------------------------------
+
+AWSPublicIpv4Addresses - ``curl -s http://169.254.169.254/latest/meta-data/public-ipv4``
+----------------------------------------------------------------------------------------
+
+AWSPublicHostname ``curl -s http://169.254.169.254/latest/meta-data/public-hostname``
+-------------------------------------------------------------------------------------
+
 """
 from __future__ import print_function
 import json
 
-from insights.parsers import SkipException, ParseException
-from insights import parser, CommandParser
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipComponent
+from insights.core.plugins import parser
 from insights.specs import Specs
+
+_aws_curl_invalid_keyworks = [
+    'curl: ',
+    '<?xml ',
+]
+
+
+def _validate_content(content, length=0):
+    if (not content or                                 # Empty content
+            (length > 0 and len(content) > length) or  # Too many lines
+            any(item in content[0]                     # Unexpected keywords
+                for item in _aws_curl_invalid_keyworks)):
+        raise SkipComponent()
 
 
 @parser(Specs.aws_instance_id_doc)
@@ -44,7 +68,7 @@ class AWSInstanceIdDoc(CommandParser, dict):
         }
 
     Raises:
-        SkipException: When content is empty or cannot be parsed.
+        SkipComponent: When content is empty or cannot be parsed.
         ParseException: When type cannot be recognized.
 
     Attributes:
@@ -61,9 +85,7 @@ class AWSInstanceIdDoc(CommandParser, dict):
     """
 
     def parse_content(self, content):
-        """Parse output of command."""
-        if not content or 'curl: ' in content[0]:
-            raise SkipException()
+        _validate_content(content)
 
         # Just in case curl stats are present in data
         startline = 0
@@ -106,7 +128,7 @@ class AWSInstanceIdPkcs7(CommandParser):
         NYiytVbZPQUQ5Yaxu2jXnimvw3rrszlaEXAMPLE
 
     Raises:
-        SkipException: When content is empty or cannot be parsed.
+        SkipComponent: When content is empty or cannot be parsed.
 
     Attributes:
         signature (str): PKCS7 signature string including header and footer.
@@ -118,9 +140,7 @@ class AWSInstanceIdPkcs7(CommandParser):
         True
     """
     def parse_content(self, content):
-        """Parse output of command."""
-        if not content or 'curl: ' in content[0]:
-            raise SkipException()
+        _validate_content(content)
 
         # Just in case curl stats are present in data
         startline = 0
@@ -130,3 +150,45 @@ class AWSInstanceIdPkcs7(CommandParser):
             startline += 1
 
         self.signature = '-----BEGIN PKCS7-----\n' + '\n'.join([l.rstrip() for l in content[startline:]]) + "\n-----END PKCS7-----"
+
+
+@parser(Specs.aws_public_ipv4_addresses)
+class AWSPublicIpv4Addresses(CommandParser, list):
+    """
+    Class for parsing the AWS public IP. At the moment, a single instance can only have assigned one public
+    IPv4 address on AWS EC2. This parsers takes the value and makes it a list just in case the capability
+    is added later. The data is fetched via
+
+        curl -s http://169.254.169.254/latest/meta-data/public-ipv4
+
+    command and contains a pure string, e.g. "1.2.3.4" without newline.
+
+    Raises:
+        SkipComponent: When content is empty or cannot be parsed.
+    """
+
+    def parse_content(self, content):
+        _validate_content(content, length=1)
+
+        self.append(content[0])
+
+
+@parser(Specs.aws_public_hostnames)
+class AWSPublicHostnames(CommandParser, list):
+    """
+    Class for parsing the AWS public hostname. At the moment, a single instance can only have assigned one public
+    IPv4 address on AWS EC2. This parsers takes the value and makes it a list just in case the capability
+    is added later. The data is fetched via
+
+        curl -s http://169.254.169.254/latest/meta-data/public-hostname
+
+    command and contains a pure string, e.g. "ec2-1-2-3-4.us-east-1.awscloud.com" without newline.
+
+    Raises:
+        SkipComponent: When content is empty or cannot be parsed.
+    """
+
+    def parse_content(self, content):
+        _validate_content(content, length=1)
+
+        self.append(content[0])

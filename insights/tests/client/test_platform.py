@@ -87,16 +87,16 @@ def test_upload_urls():
 
 @patch("insights.client.connection.InsightsConnection._legacy_upload_archive")
 @patch("insights.client.connection.get_canonical_facts", return_value={'test': 'facts'})
-@patch('insights.client.connection.requests.Session')
+@patch('insights.client.connection.InsightsConnection.post')
 @patch("insights.client.connection.open", new_callable=mock_open)
-def test_payload_upload(op, session, c, _legacy_upload_archive):
+def test_payload_upload(op, post, c, _legacy_upload_archive):
     '''
     Ensure a payload upload occurs with the right URL and params
     '''
     conf = InsightsConfig(legacy_upload=False)
     c = InsightsConnection(conf)
     c.upload_archive('testp', 'testct', None)
-    c.session.post.assert_called_with(
+    post.assert_called_with(
         c.base_url + '/ingress/v1/upload',
         files={
             'file': ('testp', ANY, 'testct'),  # ANY = return call from mocked open(), acts as filepointer here
@@ -112,16 +112,16 @@ def test_payload_upload(op, session, c, _legacy_upload_archive):
 @patch('insights.contrib.magic.open', MockMagic)
 @patch('insights.client.connection.generate_machine_id', mock_machine_id)
 @patch("insights.client.connection.get_canonical_facts", return_value={'test': 'facts'})
-@patch('insights.client.connection.requests.Session')
+@patch('insights.client.connection.InsightsConnection.post')
 @patch("insights.client.connection.open", new_callable=mock_open)
-def test_legacy_upload(op, session, c):
+def test_legacy_upload(op, post, c):
     '''
     Ensure an Insights collected tar upload to legacy occurs with the right URL and params
     '''
     conf = InsightsConfig()
     c = InsightsConnection(conf)
     c.upload_archive('testp', 'testct', None)
-    c.session.post.assert_called_with(
+    post.assert_called_with(
         c.base_url + '/uploads/XXXXXXXX',
         files={
             'file': ('testp', ANY, 'application/gzip')},  # ANY = return call from mocked open(), acts as filepointer here

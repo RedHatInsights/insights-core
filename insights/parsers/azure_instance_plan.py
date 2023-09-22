@@ -11,14 +11,20 @@ For more details, See: https://docs.microsoft.com/en-us/rest/api/compute/virtual
 """
 import json
 
-from insights.parsers import SkipException, ParseException
-from insights import parser, CommandParser
+from insights.core import CommandParser
+from insights.core.exceptions import ParseException, SkipComponent
+from insights.core.plugins import parser
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.azure_instance_plan)
 class AzureInstancePlan(CommandParser):
     """
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.azure_instance.AzureInstancePlan` instead.
+
     Class for parsing the Azure Instance Plan returned by command
     ``curl -s -H Metadata:true http://169.254.169.254/metadata/instance/compute/plan?api-version=2018-10-01&format=json``,
 
@@ -32,7 +38,7 @@ class AzureInstancePlan(CommandParser):
         },
 
     Raises:
-        SkipException: When content is empty or no parse-able content.
+        SkipComponent: When content is empty or no parse-able content.
 
     Attributes:
         name (str): The name of the plan for the VM Instance in Azure, e.g: rhel7
@@ -48,10 +54,13 @@ class AzureInstancePlan(CommandParser):
         >>> azure_plan.publisher == 'planPublisher'
         True
     """
+    def __init__(self, *args, **kwargs):
+        deprecated(AzureInstancePlan, "Import AzureInstancePlan from insights.parsers.azure_instance instead.", "3.3.0")
+        super(AzureInstancePlan, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
         if not content or 'curl: ' in content[0]:
-            raise SkipException()
+            raise SkipComponent()
         try:
             plan = json.loads(content[0])
         except:

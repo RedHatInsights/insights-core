@@ -22,9 +22,9 @@ Examples:
     >>> getsebool['ssh_keysign']
     'off'
 """
-
-from .. import parser, LegacyItemAccess, CommandParser
-from . import SkipException
+from insights.core import CommandParser, LegacyItemAccess
+from insights.core.exceptions import SkipComponent
+from insights.core.plugins import parser
 from insights.specs import Specs
 
 
@@ -39,12 +39,12 @@ class Getsebool(LegacyItemAccess, CommandParser):
     So we can return the value like {"tmpreaper_use_nfs":"off", "tmpreaper_use_samba":"off"}
 
     Raises:
-        SkipException: When SELinux is not enabled.
+        SkipComponent: When SELinux is not enabled.
     """
 
     def parse_content(self, content):
         if content and 'selinux is disabled' in content[0].lower():
-            raise SkipException('SELinux is disabled')
+            raise SkipComponent('SELinux is disabled')
 
         self.data = {}
         for line in content:

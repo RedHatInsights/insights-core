@@ -68,9 +68,10 @@ Examples:
     >>> cpu_info.microcode
     '1808'
 """
+import warnings
 
 from collections import defaultdict
-from .. import Parser, parser, defaults, get_active_lines, LegacyItemAccess
+from insights import Parser, parser, defaults, get_active_lines, LegacyItemAccess
 from insights.specs import Specs
 
 
@@ -143,17 +144,36 @@ class CpuInfo(LegacyItemAccess, Parser):
             "revision": "revision",
             "address sizes": "address_sizes",
             "bugs": "bugs",
-            "microcode": "microcode"
+            "microcode": "microcode",
+            "cpu MHz static": "clockspeeds",
+            "features": "features"
         }
 
         for line in get_active_lines(content, comment_char="COMMAND>"):
             key, value = [p.strip() for p in line.split(":", 1)]
+            # For s390x the : symbol is after the number instead of before.
+            # So re-split and set the key and value before checking mappings.
+            if key.startswith("processor") and key[-1].isdigit():
+                key, value = key.split(" ", 1)
+
             if key in mappings:
                 self.data[mappings[key]].append(value)
 
         if "cpu" in self.data and "POWER" in self.data["cpu"][0]:
             # this works differently than on x86 and is not per-cpu
-            del self.data["model_ids"]
+            model_id = self.data["model_ids"][0]
+            cpu_cnt = self.cpu_count
+            self.data["model_ids"] = [model_id] * cpu_cnt
+
+        # s390x cpuinfo is setup drastically differently than other arches.
+        # It doesn't print the same information for each cpu, like other arches.
+        # So any info not repeated per cpu, copy, delete and then add for each cpu entry.
+        if "vendors" in self.data and "IBM/S390" in self.data["vendors"][0]:
+            vendor = self.data["vendors"][0]
+            features = self.data["features"][0]
+            cpu_cnt = self.cpu_count
+            self.data["vendors"] = [vendor] * cpu_cnt
+            self.data["features"] = [features] * cpu_cnt
 
         self.data = dict(self.data)
 
@@ -250,10 +270,11 @@ class CpuInfo(LegacyItemAccess, Parser):
         int: Returns the total number of cores for the server if available, else None.
 
         .. warning::
-            This function is deprecated.  Please use the
+            This method is deprecated, and will be removed from 3.3.0. Please use
             :py:class:`insights.parsers.lscpu.LsCPU` class attribute
             ``info['Cores per socket']`` and ``info['Sockets']`` values instead.
         """
+        warnings.warn("`is_hypervisor` is deprecated and will be removed from 3.3.0: Use `virt_what.VirtWhat` which uses the command `virt-what` to check the hypervisor type.", DeprecationWarning)
         if self.data and 'cpu_cores' in self.data:
             # I guess we can't get this fancey on older versions of RHEL
             # return sum({e['sockets']: int(e['cpu_cores']) for e in self}.values())

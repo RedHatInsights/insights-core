@@ -14,8 +14,10 @@ LsPciVmmkn - Command ``lspci -vmmkn``
 """
 import re
 
-from insights import LogFileOutput, parser, CommandParser, get_active_lines
-from insights.parsers import SkipException
+from insights.core import CommandParser, LogFileOutput
+from insights.core.exceptions import SkipComponent
+from insights.core.plugins import parser
+from insights.parsers import get_active_lines
 from insights.specs import Specs
 
 
@@ -57,6 +59,8 @@ class LsPci(CommandParser, LogFileOutput):
         False
         >>> sorted(lspci.pci_dev_list)
         ['00:00.0', '00:01.0', '00:02.0', '03:00.0', '06:00.0']
+        >>> lspci.pci_dev_details('00:00.0')['Slot']
+        '00:00.0'
         >>> lspci.pci_dev_details('00:00.0')['Subsystem']
         'Cisco Systems Inc Device 0101'
         >>> lspci.pci_dev_details('00:00.0')['Dev_Details']
@@ -77,21 +81,23 @@ class LsPci(CommandParser, LogFileOutput):
             scanner(self)
         # Parse kernel driver lines
         self.data = {}
-        bus_device_function = None
-        bus_device_function_re = re.compile(r'[0-9a-f]+:[0-9a-f]+.[0-9a-f]+')
+        slot = None
+        slot_re = re.compile(r'^[0-9a-f]+:[0-9a-f]+.[0-9a-f]+')
 
         fields = ["Subsystem", "Kernel driver in use", "Kernel modules"]
 
         for line in get_active_lines(content):
             parts = line.split()
 
-            if bus_device_function_re.match(parts[0]):
-                bus_device_function = parts[0]
+            if slot_re.match(parts[0]):
+                slot = parts[0]
                 device_details = line.split(None, 1)[-1]  # keep the raw line
-                self.data[bus_device_function] = {'Dev_Details': device_details.lstrip()}
-            elif bus_device_function and (line.split(":")[0].strip() in fields):
+                self.data[slot] = {
+                        'Slot': slot,
+                        'Dev_Details': device_details.lstrip()}
+            elif slot and (line.split(":")[0].strip() in fields):
                 parts = line.split(':')
-                self.data[bus_device_function][parts[0]] = parts[1].lstrip()
+                self.data[slot][parts[0]] = parts[1].lstrip()
 
     def pci_dev_details(self, dev_name):
         """
@@ -200,7 +206,7 @@ class LsPciVmmkn(CommandParser, list):
                 dev[key] = val
 
         if len(self) <= 1 and not dev:
-            raise SkipException()
+            raise SkipComponent()
 
     @property
     def pci_dev_list(self):
