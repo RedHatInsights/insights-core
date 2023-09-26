@@ -79,4 +79,4 @@ class IpNetnsExecNamespaceLsofI(CommandParser):
             >>> len(ns_lsof.search(user="nobody")) == 0
             True
         """
-        return keyword_search(self.data, **kw)
+        return keyword_search(self.data, parent=self, **kw)

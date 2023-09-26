@@ -67,7 +67,7 @@ class FindmntPropagation(CommandParser):
             >>> output.search_target('shm') == [{'target': '/dev/shm', 'source': 'tmpfs', 'fstype': 'tmpfs', 'options': 'rw,nosuid,nodev,seclabel', 'propagation': 'shared'}]
             True
         """
-        return keyword_search(self.cols, target__contains=target)
+        return keyword_search(self.cols, parent=self, target__contains=target)
 
     def target_startswith(self, target):
         """Return all the targets that starts with 'target'. Useful to find the mountpoints.
@@ -77,4 +77,4 @@ class FindmntPropagation(CommandParser):
             >>> len(output.target_startswith('/run/netns')) == 3
             True
         """
-        return keyword_search(self.cols, target__startswith=target)
+        return keyword_search(self.cols, parent=self, target__startswith=target)

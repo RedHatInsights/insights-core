@@ -226,7 +226,7 @@ class Ps(CommandParser):
             ... ]
             True
         """
-        return keyword_search(self.data, **kwargs)
+        return keyword_search(self.data, parent=self, **kwargs)
 
 
 add_filter(Specs.ps_auxww, "COMMAND")

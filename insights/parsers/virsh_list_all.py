@@ -35,16 +35,16 @@ class VirshListAll(CommandParser):
 
     Examples:
 
-        >>> len(output.search(state='shut off')) == 11
-        True
-        >>> len(output.search(id=None)) == 11
-        True
-        >>> len(output.search(id=2)) == 1
-        True
+        >>> len(output.search(state='shut off'))
+        11
+        >>> len(output.search(id=None))
+        11
+        >>> len(output.search(id=2))
+        1
         >>> output.search(name='rhel7.4') == [{'state': 'running', 'id': 2, 'name': 'rhel7.4'}]
         True
-        >>> output.get_vm_state('rhel7.0') == 'paused'
-        True
+        >>> output.get_vm_state('rhel7.0')
+        'paused'
         >>> output.get_vm_state('rhel9.0') is None
         True
         >>> 'cfme' in output
@@ -110,7 +110,7 @@ class VirshListAll(CommandParser):
             >>> len(output.search(id=2)) == 1
             True
         '''
-        return keyword_search(self.cols, **kw)
+        return keyword_search(self.cols, parent=self, **kw)
 
     def get_vm_state(self, vmname):
         '''Get VM state associated with vmname

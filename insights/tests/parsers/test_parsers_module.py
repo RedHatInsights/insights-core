@@ -648,12 +648,12 @@ PS_LIST = [
 
 def test_keyword_search_None():
     # Normal search
-    assert keyword_search(PS_LIST, COMMAND__default=None)[0]['PID'] == '726'
+    assert keyword_search(PS_LIST, COMMAND=None)[0]['PID'] == '726'
     assert keyword_search(PS_LIST, _line__contains='alloc')[0]['PID'] == '725'
     assert keyword_search(PS_LIST, COMMAND__startswith='xfs')[0]['PID'] == '725'
     assert len(keyword_search(PS_LIST, COMMAND__lower_value='KDMFLUSH')) == 2
     # Check that searches for non-existing keys
-    assert keyword_search(PS_LIST, NONE__default=None) == []
+    assert keyword_search(PS_LIST, NONE=None) == []
     assert keyword_search(PS_LIST, NONE__startswith='xfs') == []
 
 

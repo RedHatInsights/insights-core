@@ -205,6 +205,7 @@ class PamConfEntry(object):
     line_re = r'\s+'.join([type_re, control_re, mod_path_re]) + \
         r'(?:\s+' + mod_args_re + r')?'
     line_rex = re.compile(line_re)
+    _keys = ('service', 'interface', 'control_flags', 'module_name', 'module_args')
 
     def __init__(self, line, pamd_conf=False, service=None):
         # If not pam.d file then service is first column in
@@ -262,6 +263,24 @@ class PamConfEntry(object):
         else:
             # Line not valid - report error
             self._errors.append("Cannot parse line '{l}' as a valid pam.d entry".format(l=self._full_line))
+
+    def __contains__(self, key):
+        return key in self._keys
+
+    def __getitem__(self, key):
+        if key == 'control_flags':
+            return dict(
+                (f.flag, f.value)
+                for f in self.control_flags
+            )
+        return getattr(self, key) or ''
+
+    def items(self):
+        for key in self._keys:
+            yield (key, self[key])
+
+    def keys(self):
+        return self._keys
 
     def __repr__(self):
         return "<PamConfEntry for {svc}: {typ} {ctl} {name}{args}>".format(
@@ -351,32 +370,7 @@ class PamDConf(Parser):
             (list): A list of PamConfEntry objects that match the given
             search criteria.
         """
-        # Because keyword_search takes dicts, and we have objects with complex
-        # properties, we convert them to a list of dicts.
-        # First, store the things we're going to convert.
-        prop_keys = ('service', 'interface', 'module_name', 'module_args')
-        search = []
-        # Can't find a neat way to do this as a comprehension, so it's back
-        # to loops.
-        for obj in self.data:
-            row = {'entry_obj': obj}
-            for key in prop_keys:
-                row[key] = getattr(obj, key)
-            # For hysterical reasons, module_args can contain None if not
-            # defined, but that's non-iterable: replace with ''
-            if row['module_args'] is None:
-                row['module_args'] = ''
-            # Convert control_flags down to key/value dictionary
-            flags = {}
-            for cf in obj.control_flags:
-                flags[cf.flag] = cf.value
-            row['control_flags'] = flags
-            search.append(row)
-        # Now get the result, and just return the entry objects
-        found = []
-        for r in keyword_search(search, **kwargs):
-            found.append(r['entry_obj'])
-        return found
+        return keyword_search(self, **kwargs)
 
 
 @parser(Specs.pam_conf)
