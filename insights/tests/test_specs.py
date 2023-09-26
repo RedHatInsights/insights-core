@@ -64,9 +64,9 @@ class stage(dr.ComponentType):
 #
 
 
-@stage(Specs.smpl_file, Specs.many, Specs.smpl_cmd,
-       Specs.smpl_cmd_list_of_lists,
-       optional=[Specs.no_such_cmd, Specs.no_such_file])
+@stage(Stuff.smpl_file, Stuff.many, Stuff.smpl_cmd,
+       Stuff.smpl_cmd_list_of_lists,
+       optional=[Stuff.no_such_cmd, Stuff.no_such_file])
 def dostuff(broker):
     assert Stuff.smpl_file in broker
     assert Stuff.many in broker
