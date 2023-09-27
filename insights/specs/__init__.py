@@ -826,6 +826,7 @@ class Specs(SpecSet):
     x86_ibrs_enabled = RegistryPoint()
     x86_pti_enabled = RegistryPoint()
     x86_retp_enabled = RegistryPoint()
+    xfs_db_frag = RegistryPoint(multi_output=True)
     xfs_info = RegistryPoint(multi_output=True)
     xfs_quota_state = RegistryPoint()
     xinetd_conf = RegistryPoint(multi_output=True)
