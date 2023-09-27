@@ -12,11 +12,16 @@ MultipathConf - file ``/etc/multipath.conf``
 MultipathConfInitramfs - command ``lsinitrd -f /etc/multipath.conf``
 --------------------------------------------------------------------
 
+MultipathConfTree - file ``/etc/multipath.conf``
+------------------------------------------------
+
+MultipathConfTreeInitramfs - command ``lsinitrd -f /etc/multipath.conf``
+------------------------------------------------------------------------
 """
 import string
 
 from insights.contrib import pyparsing as p
-from insights.core import ConfigParser, LegacyItemAccess, Parser
+from insights.core import ConfigParser, CommandParser, LegacyItemAccess, Parser
 from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.parsr import (EOF, Forward, LeftCurly, Lift, LineEnd, Literal,
@@ -24,10 +29,15 @@ from insights.parsr import (EOF, Forward, LeftCurly, Lift, LineEnd, Literal,
                             RightCurly, String, WS, WSChar, skip_none)
 from insights.parsr.query import Entry
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 class MultipathConfParser(Parser, LegacyItemAccess):
     """
+    .. warning::
+        This class is deprecated, please use function
+        `insights.parsers.multipath_conf.parse_doc` instead.
+
     Shared parser for the file ``/etc/multipath.conf`` and output of
     ``lsinitrd -f /etc/multipath.conf`` applied to
     /boot/initramfs-<kernel-version>.img.
@@ -105,6 +115,10 @@ class MultipathConfParser(Parser, LegacyItemAccess):
         }
     """
 
+    def __init__(self, *args, **kwargs):
+        deprecated(MultipathConfParser, "Please use the :function:`insights.parsers.multipath_conf.parse_doc instead.", "3.3.0")
+        super(MultipathConfParser, self).__init__(*args, **kwargs)
+
     @classmethod
     def _create_parser(cls):
         """
@@ -142,6 +156,10 @@ class MultipathConfParser(Parser, LegacyItemAccess):
 @parser(Specs.multipath_conf)
 class MultipathConf(MultipathConfParser):
     """
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.multipath_conf.MultipathConfTree` instead.
+
     Parser for the file ``/etc/multipath.conf``.
 
     Examples:
@@ -155,12 +173,19 @@ class MultipathConf(MultipathConfParser):
         >>> conf['multipaths'][0]['alias']
         'yellow'
     """
-    pass
+
+    def __init__(self, *args, **kwargs):
+        deprecated(MultipathConf, "Import MultipathConfTree from insights.parsers.multipath_conf instead.", "3.3.0")
+        super(MultipathConf, self).__init__(*args, **kwargs)
 
 
 @parser(Specs.multipath_conf_initramfs)
 class MultipathConfInitramfs(MultipathConfParser):
     """
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.multipath_conf.MultipathConfTreeInitramfs` instead.
+
     Parser for the output of ``lsinitrd -f /etc/multipath.conf`` applied to
     /boot/initramfs-<kernel-version>.img.
 
@@ -175,7 +200,10 @@ class MultipathConfInitramfs(MultipathConfParser):
         >>> conf['multipaths'][0]['alias']
         'yellow'
     """
-    pass
+
+    def __init__(self, *args, **kwargs):
+        deprecated(MultipathConfInitramfs, "Import MultipathConfTreeInitramfs from insights.parsers.multipath_conf instead.", "3.3.0")
+        super(MultipathConfInitramfs, self).__init__(*args, **kwargs)
 
 
 def parse_doc(content, ctx):
@@ -193,6 +221,8 @@ def parse_doc(content, ctx):
     Bare = String(set(string.printable) - (set(string.whitespace) | set("#{}'\"")))
     Name = WS >> PosMarker(String(string.ascii_letters + "_")) << WS
     Value = WS >> (Num | NULL | QuotedString | Bare) << WS
+    EmptyString = String('"\'', min_length=2)
+    Value = WS >> (Num | NULL | QuotedString | EmptyString | Bare) << WS
     Block = BeginBlock >> Many(Stmt).map(skip_none) << EndBlock
     Stanza = (Lift(to_entry) * Name * (Block | Value)) | Comment
     Stmt <= WS >> Stanza << WS
@@ -223,13 +253,22 @@ def get_tree(root=None):
 
 
 @parser(Specs.multipath_conf_initramfs)
-class MultipathConfTreeInitramfs(ConfigParser):
+class MultipathConfTreeInitramfs(ConfigParser, CommandParser):
     """
     Exposes the multipath configuration from initramfs image through the
     parsr query interface.
 
     See the :py:class:`insights.core.ConfigComponent` class for example usage.
     """
+
+    bad_lines = [
+        'no <initramfs file> specified and the default image'
+    ]
+
+    def __init__(self, context):
+        super(MultipathConfTreeInitramfs, self).__init__(
+                context, extra_bad_lines=self.bad_lines)
+
     def parse_doc(self, content):
         return parse_doc("\n".join(content), ctx=self)
 
