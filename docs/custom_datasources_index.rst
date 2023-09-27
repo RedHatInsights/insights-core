@@ -194,7 +194,7 @@ insights.specs.datasources.mount
 --------------------------------
 
 .. automodule:: insights.specs.datasources.mount
-    :members: xfs_mounts
+    :members: xfs_mounts, xfs_devices
     :show-inheritance:
     :undoc-members:
 
