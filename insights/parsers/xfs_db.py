@@ -5,7 +5,7 @@ xfs_db Commands
 Parser contains in this module is:
 
 XFSDbFrag - command ``/usr/sbin/xfs_db -r -c frag <mounted_device>``
-----------------------------------------------------------------
+--------------------------------------------------------------------
 
 """
 from insights import SkipComponent
