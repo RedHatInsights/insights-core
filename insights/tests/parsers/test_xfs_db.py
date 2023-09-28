@@ -40,10 +40,24 @@ XFS_DB_FREESP_2 = """
    from      to extents  blocks    pct
 """.strip()
 
-XFS_DB_FREESP_ERR = """
+XFS_DB_FREESP_3 = """
+# some error message
+meaningless line 1
+   from      to extents  blocks    pct
+      1       1      16      16   0.01
+      2       3       1       2   0.00
+     64     127       1     103   0.04
+  32768   65536       4  231135  99.95
+""".strip()
+
+XFS_DB_FREESP_ERR_1 = """
    from      to extents  blocks
       1       1      16      16
       2       3       1       2
+""".strip()
+
+XFS_DB_FREESP_ERR_2 = """
+   from      to extents  blocks   pct   test
 """.strip()
 
 
@@ -76,10 +90,18 @@ def test_xfs_db_freesp():
     result = XFSDbFreesp(context_wrap(XFS_DB_FREESP_2))
     assert result.free_stat == []
 
+    result = XFSDbFreesp(context_wrap(XFS_DB_FREESP_3))
+    assert len(result.free_stat) == 4
+    assert result.free_stat[-1]['to'] == '65536'
+
 
 def test_xfs_db_freesp_err():
     with pytest.raises(SkipComponent) as e:
-        XFSDbFreesp(context_wrap(XFS_DB_FREESP_ERR))
+        XFSDbFreesp(context_wrap(XFS_DB_FREESP_ERR_1))
+    assert "Invalid output of xfs free space" in str(e)
+
+    with pytest.raises(SkipComponent) as e:
+        XFSDbFreesp(context_wrap(XFS_DB_FREESP_ERR_2))
     assert "Invalid output of xfs free space" in str(e)
 
 

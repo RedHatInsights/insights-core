@@ -15,6 +15,8 @@ from insights import SkipComponent
 from insights.core import CommandParser
 from insights.core.plugins import parser
 from insights.specs import Specs
+from insights.parsers import calc_offset
+from insights.parsers import get_active_lines
 from insights.parsers import keyword_search
 from insights.parsers import parse_delimited_table
 
@@ -91,12 +93,17 @@ class XFSDbFreesp(CommandParser):
 
     def parse_content(self, content):
         keys = ["from", "to", "extents", "blocks", "pct"]
-        header_line = content[0].split()
 
-        if header_line != keys:
+        active_lines = get_active_lines(content)
+        try:
+            header_line_off = calc_offset(active_lines, keys, require_all=True)
+        except ValueError:
             raise SkipComponent("Invalid output of xfs free space")
 
-        self.free_stat = parse_delimited_table(content)
+        if active_lines[header_line_off].split() != keys:
+            raise SkipComponent("Invalid output of xfs free space")
+
+        self.free_stat = parse_delimited_table(active_lines[header_line_off:])
 
     def search(self, **kwargs):
         """
