@@ -2,6 +2,15 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.2.18](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.18) (2023-09-28)
+
+- feat: New spec and parser for xfs_db -r -c freesp command ([PR 3927](https://github.com/RedHatInsights/insights-core/pull/3927))
+- Improve logging for disabled rule matches ([PR 3922](https://github.com/RedHatInsights/insights-core/pull/3922))
+- fix: store_skips argument of run_input_data has no effect (3928) ([PR 3929](https://github.com/RedHatInsights/insights-core/pull/3929))
+- Deprecate pyparsing usage in parsers ([PR 3911](https://github.com/RedHatInsights/insights-core/pull/3911))
+- feat: New spec and parser for xfs_db -r -c frag command ([PR 3926](https://github.com/RedHatInsights/insights-core/pull/3926))
+- fix: show internal DeprecationWarnings only when pytest ([PR 3924](https://github.com/RedHatInsights/insights-core/pull/3924))
+
 # [insights-core-3.2.17](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.17) (2023-09-21)
 
 - Download malware rules into /var/lib/insights ([PR 3921](https://github.com/RedHatInsights/insights-core/pull/3921))
