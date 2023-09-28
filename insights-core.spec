@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.2.17
+Version:        3.2.18
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,18 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Sep 28 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.18-1
+- feat: New spec and parser for xfs_db -r -c freesp command (#3927)
+  (30404410+qinpingli@users.noreply.github.com)
+- Improve logging for disabled rule matches (#3922) (mhuth@redhat.com)
+- fix: store_skips argument of run_input_data has no effect (#3928) (#3929)
+  (71874510+jholecek-rh@users.noreply.github.com)
+- Deprecate pyparsing usage in parsers (#3911) (xiaoxwan@redhat.com)
+- feat: New spec and parser for xfs_db -r -c frag command (#3926)
+  (30404410+qinpingli@users.noreply.github.com)
+- fix: show internal DeprecationWarnings only when pytest (#3924)
+  (xiangceliu@redhat.com)
+
 * Thu Sep 21 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.17-1
 - Download malware rules into /var/lib/insights (#3921) (mhuth@redhat.com)
 - fix: raise Exception when adding filters to non-filterable datasource (#3917)
