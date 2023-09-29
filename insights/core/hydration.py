@@ -3,7 +3,7 @@ import os
 
 from insights.core import archives, dr
 from insights.core.context import (ClusterArchiveContext, ExecutionContextMeta, HostArchiveContext,
-                                   SerializedArchiveContext)
+                                   SerializedArchiveContext, SerializedSosArchiveContext)
 from insights.core.exceptions import InvalidArchive
 from insights.core.serde import Hydration
 
@@ -71,4 +71,7 @@ def initialize_broker(path, context=None, broker=None):
     if isinstance(ctx, SerializedArchiveContext):
         h = Hydration(ctx.root)
         broker = h.hydrate(broker=broker)
+    elif isinstance(ctx, SerializedSosArchiveContext):
+        h = Hydration(ctx.root, meta_data="sos_reports/manifest.json")
+        broker = h.hydrate_sos(broker=broker)
     return ctx, broker
