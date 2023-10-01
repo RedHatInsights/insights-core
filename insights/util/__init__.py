@@ -159,6 +159,10 @@ def deprecated(func, solution, version=None):
         version (str): The last version of insights-core that the function
             will be available before it is removed.
     """
+    # Exectute this method only when it's in pytest
+    if not os.environ.get('PYTEST_CURRENT_TEST', ''):
+        return
+
     def get_name_line(src):
         for line in src:
             if "@" not in line:

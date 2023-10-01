@@ -1,4 +1,5 @@
 import pytest
+import sys
 import warnings
 from insights.tests import deep_compare
 from insights.core.dr import split_requirements, stringify_requirements, get_missing_requirements
@@ -253,6 +254,7 @@ def test_case_variants():
     assert case_variants('hosts:') == ['hosts:', 'HOSTS:', 'Hosts:']
 
 
+@pytest.mark.skipif(sys.version_info < (2, 7), reason='Code with PYTEST_CURRENT_TEST is incompatible with py26')
 def test_deprecated():
     def normal_fn():
         return 1
@@ -272,3 +274,6 @@ def test_deprecated():
         assert len(w) == 1
         assert issubclass(w[0].category, DeprecationWarning)
         assert "really don't use this" in str(w[0].message)
+
+    # Reset warnings to default
+    warnings.resetwarnings()

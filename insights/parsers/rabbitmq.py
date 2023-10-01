@@ -27,6 +27,7 @@ from insights.core import CommandParser, SysconfigOptions
 from insights.core.exceptions import ParseException
 from insights.core.plugins import parser
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 # For "Status of node" section's erlang block prasing only, could not cover
@@ -93,6 +94,15 @@ def create_parser():
 
 @parser(Specs.rabbitmq_report)
 class RabbitMQReport(CommandParser):
+    """
+    .. warning::
+        This parser is deprecated along pyparsing. Currently, this parser is not
+        used by any component. Thus, no replacement for this deprecation.
+    """
+
+    def __init__(self, *args, **kwargs):
+        deprecated(RabbitMQReport, "Deprecated along pyparsing.", "3.3.0")
+        super(RabbitMQReport, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
         """Support StatusOfNode and Permissions Sections only.
@@ -138,9 +148,15 @@ class RabbitMQReport(CommandParser):
 @parser(Specs.rabbitmq_report_of_containers)
 class RabbitMQReportOfContainers(RabbitMQReport):
     """
+    .. warning::
+        This parser is deprecated along pyparsing. Currently, this parser is not
+        used by any component. Thus, no replacement for this deprecation.
+
     Parse the `rabbitmqctl report` command of each container running on the host.
     """
-    pass
+    def __init__(self, *args, **kwargs):
+        deprecated(RabbitMQReportOfContainers, "Deprecated along pyparsing.", "3.3.0")
+        super(RabbitMQReportOfContainers, self).__init__(*args, **kwargs)
 
 
 @parser(Specs.rabbitmq_users)
