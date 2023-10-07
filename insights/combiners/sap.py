@@ -151,9 +151,9 @@ class Sap(dict):
     def function_instances(self):
         """
         .. warning::
-            This property is deprecated and will be removed from 3.5.0.
+            This property is deprecated and will be removed from 3.6.0.
 
-        It's recommended to use the 'daa_instances' attribute in
+        It's recommended to use the `daa_instances` attribute in
         :class:`insights.combiners.sap.Sap` instead.
 
         List: List of functional SAP instances.
@@ -164,9 +164,9 @@ class Sap(dict):
     def business_instances(self):
         """
         .. warning::
-            This property is deprecated and will be removed from 3.5.0.
+            This property is deprecated and will be removed from 3.6.0.
 
-        It's recommended to use the `instances`'` attribute in
+        It's recommended to use the `instances` attribute in
         :class:`insights.combiners.sap.Sap` instead.
 
         List: List of business SAP instances.
@@ -177,7 +177,7 @@ class Sap(dict):
     def local_instances(self):
         """
         .. warning::
-            This property is deprecated and will be removed from 3.5.0.
+            This property is deprecated and will be removed from 3.6.0.
 
         List: List of all SAP instances running on this host.
         """
