@@ -9,7 +9,15 @@ first_file = partial(first_file, context=HostArchiveContext)
 
 
 class InsightsArchiveSpecs(Specs):
+    # Client metadata specs/files
+    ansible_host = simple_file('/ansible_host')
+    blacklisted_specs = first_file(["/blacklisted_specs", "/blacklisted_specs.txt"])
+    branch_info = simple_file('/branch_info')
+    display_name = simple_file('/display_name')
+    tags = simple_file('/tags.json')
+    version_info = simple_file('/version_info')
 
+    # Regular collection specs
     abrt_status_bare = simple_file("insights_commands/abrt_status_--bare_True")
     all_installed_rpms = glob_file("insights_commands/rpm_-qa*")
     alternatives_display_python = simple_file("insights_commands/alternatives_--display_python")
@@ -234,7 +242,7 @@ class InsightsArchiveSpecs(Specs):
     rhsm_katello_default_ca_cert = simple_file("insights_commands/openssl_x509_-in_.etc.rhsm.ca.katello-default-ca.pem_-noout_-issuer")
     rndc_status = simple_file("insights_commands/rndc_status")
     rpm_ostree_status = simple_file("insights_commands/rpm-ostree_status_--json")
-    rpm_V_packages = first_file(["insights_commands/rpm_-V_coreutils_procps_procps-ng_shadow-utils_passwd_sudo_chrony_findutils", "insights_commands/rpm_-V_coreutils_procps_procps-ng_shadow-utils_passwd_sudo_chrony", "insights_commands/rpm_-V_coreutils_procps_procps-ng_shadow-utils_passwd_sudo"])
+    rpm_V_packages = first_file(["insights_commands/rpm_-V_coreutils_procps_procps-ng_shadow-utils_passwd_sudo_chrony_findutils_glibc", "insights_commands/rpm_-V_coreutils_procps_procps-ng_shadow-utils_passwd_sudo_chrony_findutils", "insights_commands/rpm_-V_coreutils_procps_procps-ng_shadow-utils_passwd_sudo_chrony", "insights_commands/rpm_-V_coreutils_procps_procps-ng_shadow-utils_passwd_sudo"])
     saphostctl_getcimobject_sapinstance = simple_file("insights_commands/usr.sap.hostctrl.exe.saphostctrl_-function_GetCIMObject_-enuminstances_SAPInstance")
     saphostexec_status = simple_file("insights_commands/usr.sap.hostctrl.exe.saphostexec_-status")
     saphostexec_version = simple_file("insights_commands/usr.sap.hostctrl.exe.saphostexec_-version")

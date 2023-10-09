@@ -11,24 +11,24 @@ data sources that standard Insights `Parsers` resolve against.
 import logging
 import signal
 
-from insights.core.context import HostContext
-from insights.core.spec_factory import MetadataProvider
-from insights.core.spec_factory import simple_file, simple_command, glob_file, head
-from insights.core.spec_factory import first_of, command_with_args
-from insights.core.spec_factory import foreach_collect, foreach_execute
-from insights.core.spec_factory import container_collect, container_execute
-from insights.core.spec_factory import first_file, listdir
-from insights.components.cloud_provider import IsAzure, IsGCP
 from insights.components.ceph import IsCephMonitor
-from insights.components.virtualization import IsBareMetal
+from insights.components.cloud_provider import IsAzure, IsGCP
 from insights.components.satellite import IsSatellite611, IsSatellite
+from insights.components.virtualization import IsBareMetal
+from insights.core.context import HostContext
+from insights.core.spec_factory import (
+    command_with_args, container_collect, container_execute, first_file,
+    first_of, foreach_collect, foreach_execute, glob_file, head, listdir,
+    simple_command, simple_file)
+from insights.core.spec_factory import MetadataProvider  # deprecated
 from insights.specs import Specs
 from insights.specs.datasources import (
-        aws, awx_manage, candlepin_broker, cloud_init, corosync as corosync_ds,
-        dir_list, ethernet, httpd, intersystems, ipcs, kernel, kernel_module_list, leapp,
-        lpstat, ls, luks_devices, machine_ids, malware_detection, md5chk,
-        mount as mount_ds, package_provides, ps as ps_datasource, rpm_pkgs,
-        sap, satellite_missed_queues, semanage, ssl_certificate,
+        aws, awx_manage, candlepin_broker, client_metadata, cloud_init,
+        corosync as corosync_ds, dir_list, ethernet, httpd, ipcs, intersystems,
+        kernel, kernel_module_list, leapp, lpstat, ls, luks_devices,
+        machine_ids, malware_detection, md5chk, mount as mount_ds,
+        package_provides, ps as ps_datasource, rpm_pkgs, sap,
+        satellite_missed_queues, semanage, ssl_certificate,
         sys_fs_cgroup_memory, sys_fs_cgroup_memory_tasks_number,
         user_group, yum_updates)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
@@ -71,19 +71,33 @@ _rpm_format = _make_rpm_formatter()
 
 
 class DefaultSpecs(Specs):
-    # Dep specs that aren't in the registry
+    # Dependent specs that aren't in the registry
     block_devices_by_uuid = listdir("/dev/disk/by-uuid/", context=HostContext)
     httpd_pid = simple_command("/usr/bin/pgrep -o httpd")
     openshift_router_pid = simple_command("/usr/bin/pgrep -n openshift-route")
     ovs_vsctl_list_br = simple_command("/usr/bin/ovs-vsctl list-br")
 
-    # Archive metadata specs/files
-    ansible_host = simple_file("/ansible_host", kind=MetadataProvider)
-    blacklisted_specs = first_file(["/blacklisted_specs", "/blacklisted_specs.txt"], kind=MetadataProvider)
-    branch_info = simple_file("/branch_info", kind=MetadataProvider)
-    display_name = simple_file("/display_name", kind=MetadataProvider)
-    tags = simple_file("/tags.json", kind=MetadataProvider)
-    version_info = simple_file("/version_info", kind=MetadataProvider)
+    # Client metadata specs/files
+    ansible_host = first_of([
+        client_metadata.ansible_host,
+        simple_file("/ansible_host", kind=MetadataProvider)])
+    blacklist_report = client_metadata.blacklist_report  # new, no need first_of
+    blacklisted_specs = first_of([
+        client_metadata.blacklisted_specs,
+        first_file(["/blacklisted_specs", "/blacklisted_specs.txt"], kind=MetadataProvider)])
+    branch_info = first_of([
+        client_metadata.branch_info,
+        simple_file("/branch_info", kind=MetadataProvider)])
+    display_name = first_of([
+        client_metadata.display_name,
+        simple_file("/display_name", kind=MetadataProvider)])
+    egg_release = client_metadata.egg_release  # new, no need first_of
+    tags = first_of([
+        client_metadata.tags,
+        simple_file("/tags.json", kind=MetadataProvider)])
+    version_info = first_of([
+        client_metadata.version_info,
+        simple_file("/version_info", kind=MetadataProvider)])
 
     # Client App specs
     malware_detection = malware_detection.malware_detection_app
@@ -293,7 +307,6 @@ class DefaultSpecs(Specs):
     init_process_cgroup = simple_file("/proc/1/cgroup")
     initctl_lst = simple_command("/sbin/initctl --system list")
     insights_client_conf = simple_file('/etc/insights-client/insights-client.conf')
-    insights_client_exp_sed = first_file(['/etc/insights-client/.exp.sed', '/etc/.exp.sed'])  # INSPEC-414
     installed_rpms = simple_command("/bin/rpm -qa --qf '%s'" % _rpm_format, context=HostContext, signum=signal.SIGTERM)
     interrupts = simple_file("/proc/interrupts")
     ip6tables = simple_command("/sbin/ip6tables-save")
@@ -312,9 +325,9 @@ class DefaultSpecs(Specs):
     iptables_permanent = simple_file("etc/sysconfig/iptables")
     ipv4_neigh = simple_command("/sbin/ip -4 neighbor show nud all")
     ipv6_neigh = simple_command("/sbin/ip -6 neighbor show nud all")
-    iris_cpf = intersystems.iris_working_configuration
+    iris_cpf = foreach_collect(intersystems.iris_working_configuration, "%s")
     iris_list = simple_command("/usr/bin/iris list")
-    iris_messages_log = intersystems.iris_working_messages_log
+    iris_messages_log = foreach_collect(intersystems.iris_working_messages_log, "%s")
     ironic_inspector_log = first_file(["/var/log/containers/ironic-inspector/ironic-inspector.log", "/var/log/ironic-inspector/ironic-inspector.log"])
     iscsiadm_m_session = simple_command("/usr/sbin/iscsiadm -m session")
     jbcs_httpd24_httpd_error_log = simple_file("/opt/rh/jbcs-httpd24/root/etc/httpd/logs/error_log")
@@ -329,6 +342,7 @@ class DefaultSpecs(Specs):
     krb5 = glob_file([r"etc/krb5.conf", r"etc/krb5.conf.d/*"])
     ksmstate = simple_file("/sys/kernel/mm/ksm/run")
     lastupload = glob_file(["/etc/redhat-access-insights/.lastupload", "/etc/insights-client/.lastupload"])
+    leapp_migration_results = leapp.migration_results
     leapp_report = leapp.leapp_report
     ld_library_path_of_user = sap.ld_library_path_of_user
     ldif_config = glob_file("/etc/dirsrv/slapd-*/dse.ldif")
@@ -342,6 +356,7 @@ class DefaultSpecs(Specs):
     lpfc_max_luns = simple_file("/sys/module/lpfc/parameters/lpfc_max_luns")
     lpstat_p = simple_command("/usr/bin/lpstat -p")
     lpstat_protocol_printers = lpstat.lpstat_protocol_printers_info
+    lpstat_queued_jobs_count = lpstat.lpstat_queued_jobs_count
     # New `ls` Specs
     ls_la = command_with_args('/bin/ls -la %s', ls.list_with_la, keep_rc=True)
     ls_la_filtered = command_with_args('/bin/ls -la %s', ls.list_with_la_filtered, keep_rc=True)  # Result is filtered
@@ -564,7 +579,8 @@ class DefaultSpecs(Specs):
     rhsm_releasever = simple_file('/var/lib/rhsm/cache/releasever.json')
     rndc_status = simple_command("/usr/sbin/rndc status")
     ros_config = simple_file("/var/lib/pcp/config/pmlogger/config.ros")
-    rpm_V_packages = simple_command("/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo chrony findutils", keep_rc=True, signum=signal.SIGTERM)
+    rpm_V_packages = simple_command("/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo chrony findutils glibc", keep_rc=True, signum=signal.SIGTERM)
+    rpm_V_package = foreach_execute(rpm_pkgs.rpm_v_pkg_list, "/bin/rpm -V %s", keep_rc=True, signum=signal.SIGTERM)
     rpm_ostree_status = simple_command("/usr/bin/rpm-ostree status --json", signum=signal.SIGTERM)
     rpm_pkgs = rpm_pkgs.pkgs_with_writable_dirs
     rsyslog_conf = glob_file(["/etc/rsyslog.conf", "/etc/rsyslog.d/*.conf"])
@@ -630,6 +646,7 @@ class DefaultSpecs(Specs):
     sealert = simple_command('/usr/bin/sealert -l "*"')
     secure = simple_file("/var/log/secure")
     selinux_config = simple_file("/etc/selinux/config")
+    sendmail_mc = simple_file("/etc/mail/sendmail.mc")
     sestatus = simple_command("/usr/sbin/sestatus -b")
     setup_named_chroot = simple_file("/usr/libexec/setup-named-chroot.sh")
     smbstatus_p = simple_command("/usr/bin/smbstatus -p")
@@ -720,6 +737,8 @@ class DefaultSpecs(Specs):
     x86_ibrs_enabled = simple_file("sys/kernel/debug/x86/ibrs_enabled")
     x86_pti_enabled = simple_file("sys/kernel/debug/x86/pti_enabled")
     x86_retp_enabled = simple_file("sys/kernel/debug/x86/retp_enabled")
+    xfs_db_frag = foreach_execute(mount_ds.xfs_devices, "/usr/sbin/xfs_db -r -c frag %s")
+    xfs_db_freesp = foreach_execute(mount_ds.xfs_devices, "/usr/sbin/xfs_db -r -c freesp %s")
     xfs_info = foreach_execute(mount_ds.xfs_mounts, "/usr/sbin/xfs_info %s")  # INSPEC-409
     xfs_quota_state = simple_command("/sbin/xfs_quota -x -c 'state -gu'")
     xinetd_conf = glob_file(["/etc/xinetd.conf", "/etc/xinetd.d/*"])

@@ -6,11 +6,11 @@ Parsers included in this module are:
 IrisList - Command ``/usr/bin/iris list``
 =========================================
 
-IrisCpf - File ``iris.cpf``
-===========================
+IrisCpf - Files ``iris.cpf``
+============================
 
-IrisMessages - File ``messages.log``
-====================================
+IrisMessages - Files ``messages.log``
+=====================================
 """
 
 from insights.core import CommandParser, IniConfigFile, LogFileOutput
@@ -20,9 +20,12 @@ from insights.specs import Specs
 
 
 @parser(Specs.iris_list)
-class IrisList(CommandParser, dict):
+class IrisList(CommandParser, list):
     """
     Parse the output of the ``/usr/bin/iris list`` command.
+
+    Attributes:
+        default (dict): the default instance
 
     Sample Input::
 
@@ -36,23 +39,30 @@ class IrisList(CommandParser, dict):
             product:      InterSystems IRIS
 
     Examples:
-        >>> iris_info['name']
-        'IRIS'
-        >>> iris_info['status']
+        >>> iris_info[0]['status']
         'running, since Tue Jun 27 01:55:25 2023'
         >>> iris_info.is_running
         True
+        >>> iris_info.default['status']
+        'running, since Tue Jun 27 01:55:25 2023'
     """
 
     def parse_content(self, content):
+        self.default = {}
+        item_instance = {}
+
         for line in content:
             if not line.strip():
                 continue
             if line.strip().startswith('Configuration'):
-                self['name'] = line.split()[1].strip('\'"')
-            elif ":" in line:
+                instance_name = line.split()[1].strip('\'"')
+                item_instance = {"instance_name": instance_name}
+                if "(default)" in line:
+                    self.default = item_instance
+                self.append(item_instance)
+            elif ":" in line and item_instance:
                 key, value = line.split(":", 1)
-                self[key.strip()] = value.strip()
+                item_instance[key.strip()] = value.strip()
 
         if len(self) == 0:
             raise SkipComponent("The result is empty")
@@ -60,7 +70,7 @@ class IrisList(CommandParser, dict):
     @property
     def is_running(self):
         """Return True when the iris instance is running, and False when it is down"""
-        return self.get('status', "").startswith('running')
+        return any(item.get('status', "").startswith('running') for item in self)
 
 
 @parser(Specs.iris_cpf)

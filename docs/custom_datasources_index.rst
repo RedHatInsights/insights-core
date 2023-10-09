@@ -35,6 +35,14 @@ insights.specs.datasources.candlepin_broker
     :show-inheritance:
     :undoc-members:
 
+insights.specs.datasources.client_metadata
+------------------------------------------
+
+.. automodule:: insights.specs.datasources.client_metadata
+    :members: ansible_host, blacklist_report, blacklisted_specs, branch_info, display_name, egg_release, tags, version_info
+    :show-inheritance:
+    :undoc-members:
+
 insights.specs.datasources.cloud_init
 -------------------------------------
 
@@ -186,7 +194,7 @@ insights.specs.datasources.mount
 --------------------------------
 
 .. automodule:: insights.specs.datasources.mount
-    :members: xfs_mounts
+    :members: xfs_mounts, xfs_devices
     :show-inheritance:
     :undoc-members:
 
@@ -219,6 +227,14 @@ insights.specs.datasources.ps
 
 .. automodule:: insights.specs.datasources.ps
     :members: jboss_runtime_versions, ps_eo_cmd, LocalSpecs
+    :show-inheritance:
+    :undoc-members:
+
+insights.specs.datasources.rpm_pkgs
+-----------------------------------
+
+.. automodule:: insights.specs.datasources.rpm_pkgs
+    :members: pkgs_with_writable_dirs, rpm_v_pkg_list
     :show-inheritance:
     :undoc-members:
 
@@ -278,13 +294,6 @@ insights.specs.datasources.sys_fs_cgroup_memory_tasks_number
     :show-inheritance:
     :undoc-members:
 
-insights.specs.datasources.rpm_pkgs
------------------------------------
-
-.. automodule:: insights.specs.datasources.rpm_pkgs
-    :members: pkgs_with_writable_dirs
-    :show-inheritance:
-    :undoc-members:
 
 insights.specs.datasources.user_group
 -------------------------------------

@@ -105,8 +105,11 @@ class DataCollector(object):
             json.dumps(version_info), '/version_info')
 
     def _write_tags(self):
-        logger.debug("Writing tags to archive...")
         tags = get_tags()
+        # NOTE:
+        # The following code is also used by datasource 'tags'
+        # - insights.specs.datasources.tags
+        # Please keep them consistence before removing this.
         if tags is not None:
             def f(k, v):
                 if type(v) is list:
@@ -121,6 +124,7 @@ class DataCollector(object):
                     return list(chain.from_iterable(col))
                 else:
                     return [{"key": k, "value": v, "namespace": constants.app_name}]
+            logger.debug("Writing tags to archive...")
             t = []
             for k, v in tags.items():
                 iv = f(k, v)
@@ -456,8 +460,6 @@ class DataCollector(object):
                 if (fullpath.endswith(
                         (
                             'etc/insights-client/machine-id',
-                            'etc/insights-client/.exp.sed',  # INSPEC-414
-                            'etc/.exp.sed',  # INSPEC-414
                             'etc/machine-id',
                             'insights_commands/subscription-manager_identity',
                             'insights_commands/ls_-lanRL_.etc.systemd_.run.systemd_.usr.lib.systemd_.usr.local.lib.systemd_.usr.local.share.systemd_.usr.share.systemd',  # issue #3858

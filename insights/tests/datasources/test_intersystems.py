@@ -1,17 +1,8 @@
 import pytest
 
-try:
-    from unittest.mock import patch, mock_open
-    builtin_open = "builtins.open"
-except Exception:
-    from mock import patch, mock_open
-    builtin_open = "__builtin__.open"
-
-from os import path
-from insights.core import filters
+from mock.mock import patch
 from insights.core.exceptions import SkipComponent
 from insights.parsers.iris import IrisList, IrisCpf
-from insights.specs import Specs
 from insights.specs.datasources.intersystems import iris_working_configuration, iris_working_messages_log
 from insights.tests import context_wrap
 
@@ -23,7 +14,16 @@ Configuration 'IRIS'   (default)
     versionid:    2023.1.0.235.1com
     datadir:      /intersystems
     conf file:    iris.cpf  (SuperServer port = 1972, WebServer = 52773)
-    status:       running, since Wed Jul 19 02:37:46 2023
+    status:       running, since Tue Sep 12 09:49:54 2023
+    state:        ok
+    product:      InterSystems IRIS
+
+Configuration 'IRIS2'
+    directory:    /intersystems2
+    versionid:    2023.1.0.235.1com
+    datadir:      /intersystems2
+    conf file:    iris.cpf  (SuperServer port = 51773, WebServer = 52774)
+    status:       running, since Tue Sep 12 09:50:05 2023
     state:        ok
     product:      InterSystems IRIS
 """.strip()
@@ -46,6 +46,33 @@ USER=/intersystems/mgr/user/
 [Namespaces]
 %SYS=IRISSYS
 USER=USER
+
+[config]
+bbsiz=-1
+console=,
+""".strip()
+
+IRIS_CPF_2 = """
+[ConfigFile]
+Product=IRIS2
+Version=2023.1
+
+[Databases]
+IRISSYS=/intersystems2/mgr/
+IRISLIB=/intersystems/mgr2/irislib/
+IRISTEMP=/intersystems/mgr2/iristemp/
+IRISLOCALDATA=/intersystems2/mgr/irislocaldata/
+IRISAUDIT=/intersystems2/mgr/irisaudit/
+ENSLIB=/intersystems2/mgr/enslib/
+USER=/intersystems2/mgr/user/
+
+[Namespaces]
+%SYS=IRISSYS
+USER=USER
+
+[config]
+bbsiz=-1
+console=,
 """.strip()
 
 
@@ -70,32 +97,15 @@ FILTERED_MESSAGES = """
 """.strip()
 
 
-def setup_function(func):
-    if Specs.iris_messages_log in filters._CACHE:
-        del filters._CACHE[Specs.iris_messages_log]
-    if Specs.iris_messages_log in filters.FILTERS:
-        del filters.FILTERS[Specs.iris_messages_log]
-
-    if func is test_iris_working_messages_log:
-        filters.add_filter(Specs.iris_messages_log, ["Generic.Event"])
-    if func is test_iris_working_messages_log_no_match_filter:
-        filters.add_filter(Specs.iris_messages_log, ["test_no_match_filter"])
-    if func is test_iris_working_messages_log_no_filter:
-        filters.add_filter(Specs.iris_messages_log, [])
-
-
-@patch("insights.specs.datasources.intersystems.open", new_callable=mock_open, read_data=IRIS_CPF)
 @patch("os.path.isfile", return_value=True)
-def test_iris_working_configuration(m_open, m_isfile):
+def test_iris_working_configuration(m_isfile):
     iris_list_info = IrisList(context_wrap(IRIR_LIST))
     broker = {IrisList: iris_list_info}
     result = iris_working_configuration(broker)
-    assert result.content == IRIS_CPF.splitlines()
-    assert result.relative_path == path.join(path.dirname(__file__), '/intersystems/iris.cpf')
+    assert set(result) == set(["/intersystems/iris.cpf", "/intersystems2/iris.cpf"])
 
 
-@patch("insights.specs.datasources.intersystems.open", new_callable=mock_open, read_data=IRIS_CPF)
-def test_iris_working_configuration_no_file(m_open):
+def test_iris_working_configuration_no_file():
     iris_list_info = IrisList(context_wrap(IRIR_LIST))
     broker = {IrisList: iris_list_info}
     with pytest.raises(SkipComponent) as e:
@@ -103,40 +113,19 @@ def test_iris_working_configuration_no_file(m_open):
     assert 'SkipComponent' in str(e)
 
 
-@patch("insights.specs.datasources.intersystems.open", new_callable=mock_open, read_data=RAW_MESSAGES)
 @patch("os.path.isfile", return_value=True)
-def test_iris_working_messages_log(m_open, m_isfile):
+def test_iris_working_messages_log(m_isfile):
     iris_cpf_info = IrisCpf(context_wrap(IRIS_CPF))
-    broker = {IrisCpf: iris_cpf_info}
+    iris_cpf_info_2 = IrisCpf(context_wrap(IRIS_CPF_2))
+    broker = {IrisCpf: [iris_cpf_info, iris_cpf_info_2]}
     result = iris_working_messages_log(broker)
-    assert result.content == FILTERED_MESSAGES.splitlines()
-    assert result.relative_path == path.join(path.dirname(__file__), '/intersystems/mgr/messages.log')
+    assert set(result) == set(['/intersystems/mgr/messages.log', '/intersystems2/mgr/messages.log'])
 
 
-@patch("insights.specs.datasources.intersystems.open", new_callable=mock_open, read_data=RAW_MESSAGES)
-def test_iris_working_messages_log_no_file(m_open):
+def test_iris_working_messages_log_no_file():
     iris_cpf_info = IrisCpf(context_wrap(IRIS_CPF))
-    broker = {IrisCpf: iris_cpf_info}
-    with pytest.raises(SkipComponent) as e:
-        iris_working_messages_log(broker)
-    assert 'SkipComponent' in str(e)
-
-
-@patch("insights.specs.datasources.intersystems.open", new_callable=mock_open, read_data=RAW_MESSAGES)
-@patch("os.path.isfile", return_value=True)
-def test_iris_working_messages_log_no_match_filter(m_open, m_isfile):
-    iris_cpf_info = IrisCpf(context_wrap(IRIS_CPF))
-    broker = {IrisCpf: iris_cpf_info}
-    result = iris_working_messages_log(broker)
-    assert result.content == []
-    assert result.relative_path == path.join(path.dirname(__file__), '/intersystems/mgr/messages.log')
-
-
-@patch("insights.specs.datasources.intersystems.open", new_callable=mock_open, read_data=RAW_MESSAGES)
-@patch("os.path.isfile", return_value=True)
-def test_iris_working_messages_log_no_filter(m_open, m_isfile):
-    iris_cpf_info = IrisCpf(context_wrap(IRIS_CPF))
-    broker = {IrisCpf: iris_cpf_info}
+    iris_cpf_info_2 = IrisCpf(context_wrap(IRIS_CPF_2))
+    broker = {IrisCpf: [iris_cpf_info, iris_cpf_info_2]}
     with pytest.raises(SkipComponent) as e:
         iris_working_messages_log(broker)
     assert 'SkipComponent' in str(e)

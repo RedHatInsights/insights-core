@@ -147,12 +147,12 @@ def deep_compare(result, expected):
 
 def run_input_data(component, input_data, store_skips=False):
     broker = dr.Broker()
+    broker.store_skips = store_skips
     for k, v in input_data.data.items():
         broker[k] = v
 
     graph = dr.get_dependency_graph(component)
     broker = dr.run(graph, broker=broker)
-    broker.store_skips = store_skips
     for v in broker.tracebacks.values():
         logger.warning(v)
     return broker

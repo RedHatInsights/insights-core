@@ -2,6 +2,7 @@ import pytest
 
 from insights.core.exceptions import SkipComponent
 from insights.specs.datasources.mount import xfs_mounts
+from insights.specs.datasources.mount import xfs_devices
 from insights.parsers.mount import ProcMounts
 from insights.tests import context_wrap
 
@@ -28,3 +29,15 @@ def test_xfs_mounts():
     broker = {ProcMounts: pmnt}
     with pytest.raises(SkipComponent):
         xfs_mounts(broker)
+
+
+def test_xfs_devices():
+    pmnt = ProcMounts(context_wrap(PROC_MOUNT_XFS))
+    broker = {ProcMounts: pmnt}
+    result = xfs_devices(broker)
+    assert result == ['/dev/mapper/rhel_insights--release-root', '/dev/vda1']
+
+    pmnt = ProcMounts(context_wrap(PROC_MOUNT_NO_XFS))
+    broker = {ProcMounts: pmnt}
+    with pytest.raises(SkipComponent):
+        xfs_devices(broker)

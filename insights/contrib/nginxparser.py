@@ -25,9 +25,13 @@ import copy
 from insights.contrib.pyparsing import (
     Literal, White, Word, alphanums, CharsNotIn, Combine, Forward, Group,
     Optional, OneOrMore, ZeroOrMore, Regex, stringEnd, restOfLine)
+from insights.util import deprecated
 
 
 def create_parser():
+
+    deprecated(create_parser, "Deprecated.", "3.3.0")
+
     # constants
     space = Optional(White())
     nonspace = Regex(r"\S+")
@@ -100,6 +104,8 @@ class UnspacedList(list):
      [of lists], making any whitespace entries magically invisible"""
 
     def __init__(self, list_source):
+        deprecated(UnspacedList, "Deprecated .", "3.3.0")
+
         # ensure our argument is not a generator, and duplicate any sublists
         self.spaced = copy.deepcopy(list(list_source))
         self.dirty = False

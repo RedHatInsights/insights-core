@@ -4,12 +4,9 @@ Custom datasources to get the iris working configuration/log files.
 import os
 
 from insights.core.context import HostContext
-from insights.core.exceptions import ContentException, SkipComponent
-from insights.core.filters import get_filters
+from insights.core.exceptions import SkipComponent
 from insights.core.plugins import datasource
-from insights.core.spec_factory import DatasourceProvider
 from insights.parsers.iris import IrisList, IrisCpf
-from insights.specs import Specs
 
 
 @datasource(IrisList, HostContext)
@@ -18,22 +15,21 @@ def iris_working_configuration(broker):
     This datasource get information from ``iris.cpf`` file.
 
     Returns:
-        str: the raw content of the ``iris.cpf`` file .
+        list: the file path of the ``iris.cpf`` files
 
     Raises:
-        SkipComponent: When the `iris.cpf` does not exist
-        ContentException: When any exception occurs.
+        SkipComponent: there is no `iris.cpf` file
     """
-    configuration_file_path_directory = broker[IrisList]['directory']
-    configuration_file_path_conf_file = broker[IrisList]['conf file'].split()[0].strip()
+    all_paths = []
+    for item in broker[IrisList]:
+        conf_directory = item['directory']
+        conf_file = item['conf file'].split()[0].strip()
 
-    configuration_file_path = os.path.join(configuration_file_path_directory, configuration_file_path_conf_file)
-    if os.path.isfile(configuration_file_path):
-        try:
-            with open(configuration_file_path, 'r') as conf:
-                return DatasourceProvider(content=conf.read(), relative_path=configuration_file_path)
-        except Exception as e:
-            raise ContentException(e)
+        file_path = os.path.join(conf_directory, conf_file)
+        if os.path.isfile(file_path):
+            all_paths.append(file_path)
+    if all_paths:
+        return all_paths
     raise SkipComponent
 
 
@@ -43,25 +39,23 @@ def iris_working_messages_log(broker):
     This datasource get information from ``messages.log`` file.
 
     Returns:
-        str: the filtered content of the ``messages.log`` file .
+        list: the file path of the ``messages.log`` files
 
     Raises:
-        SkipComponent: When the log file/option/filters do not exist
-        ContentException: When any exception occurs.
+        SkipComponent: there is no `messages.log` file
     """
-    filters = sorted((get_filters(Specs.iris_messages_log)))
     iris_cpf = broker[IrisCpf]
-
-    if filters and iris_cpf.has_option('Databases', 'IRISSYS'):
-        log_path = iris_cpf.get("Databases", "IRISSYS")
-        log_path = os.path.join(log_path, 'messages.log')
-        if os.path.isfile(log_path):
-            try:
-                with open(log_path, 'r') as log:
-                    filtered_content = []
-                    for line in log.readlines():
-                        filtered_content.append(line) if any(_f in line for _f in filters) else None
-                    return DatasourceProvider(content="".join(filtered_content), relative_path=log_path)
-            except Exception as e:
-                raise ContentException(e)
+    all_paths = []
+    for item in iris_cpf:
+        if item.has_option('config', 'console') and item.has_option('Databases', 'IRISSYS'):
+            primary_log_path = item.get("config", "console").split(",")[-1]
+            if primary_log_path:
+                log_path = primary_log_path
+            else:
+                secondary_log_path = item.get("Databases", "IRISSYS")
+                log_path = os.path.join(secondary_log_path, 'messages.log')
+            if os.path.isfile(log_path):
+                all_paths.append(log_path)
+    if all_paths:
+        return all_paths
     raise SkipComponent
