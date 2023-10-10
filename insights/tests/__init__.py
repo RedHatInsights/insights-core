@@ -143,8 +143,18 @@ def run_input_data(component, input_data, store_skips=False):
     return broker
 
 
-def run_test(component, input_data, expected=None, return_make_none=False):
-    if filters.ENABLED:
+def run_test(component, input_data,
+             expected=None, return_make_none=False, do_filter=True):
+    """
+    Arguments:
+        component: The insights component need to test.
+        input_data: The test data prepared for testing the component.
+        expected: The expected result need to compare.
+        return_make_none: Does it allow to return None?
+        do_filter: Does need to check dependency spec filter warning?
+            - it's not required to check the filters for sosreport
+    """
+    if do_filter and filters.ENABLED:
         mod = component.__module__
         sup_mod = '.'.join(mod.split('.')[:-1])
         rps = dr.get_registry_points(component)
