@@ -134,17 +134,18 @@ class YumRepoList(CommandParser):
         "Няма налични хранилища",
     ]
     _repo_headers = [
-        ("repo id", "repo name"),
-        ("id du dépôt", "nom du dépôt"),
-        ("Paketquellen-ID", "Paketquellen-Name"),
-        ("id del repositorio", "nombre del repositorio"),
-        ("id do repo", "nome do repo"),
-        ("id repo", "nome repo"),
-        ("identyfikator repozytorium", "nazwa repozytorium"),
-        ("tároló azonosító", "tároló neve"),
-        ("Paketquellenkennung", "Paketquellenname"),
-        ("仓库 id", "仓库名称"),
-        ("ід. сховища", "назва сховища"),
+        # repo_id, repo_name, repo_id_length, repo_name_length
+        ("repo id", "repo name", 7, 9),
+        ("id du dépôt", "nom du dépôt", 11, 12),
+        ("Paketquellen-ID", "Paketquellen-Name", 15, 17),
+        ("id del repositorio", "nombre del repositorio", 18, 22),
+        ("id do repo", "nome do repo", 10, 12),
+        ("id repo", "nome repo", 7, 9),
+        ("identyfikator repozytorium", "nazwa repozytorium", 26, 18),
+        ("tároló azonosító", "tároló neve", 16, 11),
+        ("Paketquellenkennung", "Paketquellenname", 19, 16),
+        ("仓库 id", "仓库名称", 7, 4),
+        ("ід. сховища", "назва сховища", 11, 13),
     ]
 
     def parse_content(self, content):
@@ -172,13 +173,13 @@ class YumRepoList(CommandParser):
         # Header table language defaults to english: self._repo_headers[0]
         # Give it a try for table header in other languages when the default one is not found
         error_raised_for_stander_header_repo_id = None
-        for header_pair_index, (header_repo_id, header_repo_name) in enumerate(self._repo_headers):
+        for header_pair_index, (header_repo_id, header_repo_name, repo_id_len, repo_name_len) in enumerate(self._repo_headers):
             try:
                 self.data = parse_fixed_table(
                         content,
                         heading_ignore=[header_repo_id],
-                        header_substitute=[(header_repo_id, 'id' + ' ' * (len(header_repo_id) - 2)),
-                                            (header_repo_name, 'name' + ' ' * (len(header_repo_name) - 4))],
+                        header_substitute=[(header_repo_id, 'id' + ' ' * (repo_id_len - 2)),
+                                            (header_repo_name, 'name' + ' ' * (repo_name_len - 4))],
                         trailing_ignore=trailing_line_prefix,
                         empty_exception=True)
                 break

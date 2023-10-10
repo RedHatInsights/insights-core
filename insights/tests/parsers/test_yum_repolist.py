@@ -180,6 +180,20 @@ rhel-8-for-x86_64-appstream-rpms         Red Hat Enterprise Linux 8 for x86_64 -
 rhel-8-for-x86_64-baseos-rpms            Red Hat Enterprise Linux 8 for x86_64 - BaseOS (RPMs)
 """.strip()
 
+YUM_REPOLIST_HEADER_IN_OTHER_LANGUAGE_3 = """
+Loaded plugins: package_upload, product-id, search-disabled-repos, security, subscription-manager
+identyfikator repozytorium       nazwa repozytorium
+rhel-8-for-x86_64-appstream-rpms Red Hat Enterprise Linux 8 for x86_64 - AppStream (RPMs)
+rhel-8-for-x86_64-baseos-rpms    Red Hat Enterprise Linux 8 for x86_64 - BaseOS (RPMs)
+""".strip()
+
+YUM_REPOLIST_HEADER_IN_OTHER_LANGUAGE_4 = """
+Loaded plugins: package_upload, product-id, search-disabled-repos, security, subscription-manager
+ід. сховища                      назва сховища
+rhel-8-for-x86_64-appstream-rpms Red Hat Enterprise Linux 8 for x86_64 - AppStream (RPMs)
+rhel-8-for-x86_64-baseos-rpms    Red Hat Enterprise Linux 8 for x86_64 - BaseOS (RPMs)
+""".strip()
+
 
 def test_yum_repolist():
     repo_list = YumRepoList(context_wrap(YUM_REPOLIST_CONTENT))
@@ -308,13 +322,21 @@ def test_repolist_missing_header():
 
 
 def test_yum_repolist_with_header_in_not_en():
-    repo_list = YumRepoList(context_wrap(YUM_REPOLIST_HEADER_IN_FRENCH))
-    assert len(repo_list) == 2
-    assert repo_list[0] == {"id": "rhel-8-for-x86_64-appstream-rpms",
-                            "name": "Red Hat Enterprise Linux 8 for x86_64 - AppStream (RPMs)"}
-    assert 'rhel-8-for-x86_64-baseos-rpms' in repo_list
-    assert repo_list['rhel-8-for-x86_64-baseos-rpms'] == repo_list[1]
-    assert repo_list.eus == []
-
     repo_list = YumRepoList(context_wrap(YUM_REPOLIST_HEADER_IN_CHINESE))
     assert len(repo_list) == 5
+    assert repo_list[2] == {"id": "codeready-builder-for-rhel-8-x86_64-rpms",
+                            "name": "Red Hat CodeReady Linux Builder for RHEL 8 x86_64 (RPMs)"}
+    assert 'rhel-8-for-x86_64-baseos-rpms' in repo_list
+    assert repo_list['rhel-8-for-x86_64-baseos-rpms'] == repo_list[4]
+    assert repo_list.eus == []
+
+    for input_content in [YUM_REPOLIST_HEADER_IN_FRENCH,
+                          YUM_REPOLIST_HEADER_IN_OTHER_LANGUAGE_3,
+                          YUM_REPOLIST_HEADER_IN_OTHER_LANGUAGE_4]:
+        repo_list = YumRepoList(context_wrap(input_content))
+        assert len(repo_list) == 2
+        assert repo_list[0] == {"id": "rhel-8-for-x86_64-appstream-rpms",
+                                "name": "Red Hat Enterprise Linux 8 for x86_64 - AppStream (RPMs)"}
+        assert 'rhel-8-for-x86_64-baseos-rpms' in repo_list
+        assert repo_list['rhel-8-for-x86_64-baseos-rpms'] == repo_list[1]
+        assert repo_list.eus == []
