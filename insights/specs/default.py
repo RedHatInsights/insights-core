@@ -737,8 +737,11 @@ class DefaultSpecs(Specs):
     x86_ibrs_enabled = simple_file("sys/kernel/debug/x86/ibrs_enabled")
     x86_pti_enabled = simple_file("sys/kernel/debug/x86/pti_enabled")
     x86_retp_enabled = simple_file("sys/kernel/debug/x86/retp_enabled")
-    xfs_db_frag = foreach_execute(mount_ds.xfs_devices, "/usr/sbin/xfs_db -r -c frag %s")
-    xfs_db_freesp = foreach_execute(mount_ds.xfs_devices, "/usr/sbin/xfs_db -r -c freesp %s")
+    # Suspend the collection for xfsprogs bug INSGHTCORE-257
+    # xfs_db_frag = foreach_execute(mount_ds.xfs_devices, "/usr/sbin/xfs_db -r -c frag %s")
+    # xfs_db_freesp = foreach_execute(mount_ds.xfs_devices, "/usr/sbin/xfs_db -r -c freesp %s")
+    xfs_db_frag = foreach_execute(mount_ds.xfs_devices, "/usr/sbin/xfs_db_suspend -r -c frag %s")
+    xfs_db_freesp = foreach_execute(mount_ds.xfs_devices, "/usr/sbin/xfs_db_suspend -r -c freesp %s")
     xfs_info = foreach_execute(mount_ds.xfs_mounts, "/usr/sbin/xfs_info %s")  # INSPEC-409
     xfs_quota_state = simple_command("/sbin/xfs_quota -x -c 'state -gu'")
     xinetd_conf = glob_file(["/etc/xinetd.conf", "/etc/xinetd.d/*"])
