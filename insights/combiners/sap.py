@@ -45,11 +45,10 @@ class Sap(dict):
 
     Attributes:
         all_instances (list): List of all the SAP instances listed by the command.
-        function_instances (list): List of functional SAP instances
+        daa_instances (list): List of the SAP Diagnostic Agent instances
                                    E.g. Diagnostics Agents SMDA97/SMDA98
-        business_instances (list): List of business SAP instances
+        instances (list): List of the SAP instances that are not Diagnostic Agent instance
                                    E.g. HANA, NetWeaver, ASCS, or others
-        local_instances (list): List of all SAP instances running on this host
 
     Examples:
         >>> type(saps)
@@ -62,7 +61,7 @@ class Sap(dict):
         'R4D'
         >>> saps.hostname('ASCS10')
         'host_1'
-        >>> len(saps.business_instances)
+        >>> len(saps.instances)
         3
         >>> saps.is_hana
         False
@@ -74,9 +73,9 @@ class Sap(dict):
     def __init__(self, hostname, insts):
         hn = hostname.hostname
         fqdn = hostname.fqdn
-        self.local_instances = []
-        self.business_instances = []
-        self.function_instances = []
+        self._local_instances = []
+        self.instances = []
+        self.daa_instances = []
         self.all_instances = []
         self._types = set()
         if insts:
@@ -87,7 +86,7 @@ class Sap(dict):
                 if (hn == inst['Hostname'].split('.')[0] or
                         fqdn == inst['FullQualifiedHostname'] or
                         fqdn == inst['Hostname']):
-                    self.local_instances.append(k)
+                    self._local_instances.append(k)
                 self[k] = SAPInstances(k,
                                        inst['Hostname'],
                                        inst['SID'],
@@ -100,9 +99,9 @@ class Sap(dict):
             raise SkipComponent('No SAP instance.')
 
         for i in self.values():
-            (self.function_instances
+            (self.daa_instances
                 if i.full_type in FUNC_FULL_TYPES else
-                    self.business_instances).append(i.name)
+                    self.instances).append(i.name)
 
     def version(self, instance):
         """str: Returns the version of the ``instance``."""
@@ -147,3 +146,39 @@ class Sap(dict):
     def data(self):
         """dict: Dict with the instance name as the key and instance details as the value."""
         return self
+
+    @property
+    def function_instances(self):
+        """
+        .. warning::
+            This property is deprecated and will be removed from 3.6.0.
+
+        It's recommended to use the `daa_instances` attribute in
+        :class:`insights.combiners.sap.Sap` instead.
+
+        List: List of functional SAP instances.
+        """
+        return self.daa_instances
+
+    @property
+    def business_instances(self):
+        """
+        .. warning::
+            This property is deprecated and will be removed from 3.6.0.
+
+        It's recommended to use the `instances` attribute in
+        :class:`insights.combiners.sap.Sap` instead.
+
+        List: List of business SAP instances.
+        """
+        return self.instances
+
+    @property
+    def local_instances(self):
+        """
+        .. warning::
+            This property is deprecated and will be removed from 3.6.0.
+
+        List: List of all SAP instances running on this host.
+        """
+        return self._local_instances
