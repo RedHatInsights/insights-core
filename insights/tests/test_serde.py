@@ -66,6 +66,10 @@ class TestSpecs(Specs):
 def report(dt):
     return make_info('INFO_1')
 
+#
+# TEST
+#
+
 
 def test_marshal():
     broker = dr.Broker()

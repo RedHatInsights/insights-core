@@ -414,7 +414,14 @@ def is_registry_point(component):
     return type(component).__name__ == "RegistryPoint"
 
 
-def get_registry_points(component):
+def is_datasource(component):
+    comp_type = get_component_type(component)
+    if comp_type:
+        return comp_type.__name__ == "datasource"
+    return False
+
+
+def get_registry_points(component, datasource=None):
     """
     Loop through the dependency graph to identify the corresponding spec registry
     points for the component. This is primarily used by datasources and returns a
@@ -423,23 +430,38 @@ def get_registry_points(component):
 
     Args:
         component (callable): The component object
+        datasource (Boolean): To avoid infinite recursive calls.
 
     Returns:
         (set): A list of the registry points found.
     """
     reg_points = set()
-
     if is_registry_point(component):
         reg_points.add(component)
-    else:
+        return reg_points
+
+    # avoid infinite recursive call
+    if datasource is None:
+        datasource = is_datasource(component)
+
+    if datasource:
+        # Always search dependents for datasources
         for dep in get_dependents(component):
             if is_registry_point(dep):
                 reg_points.add(dep)
             else:
-                dep_reg_pts = get_registry_points(dep)
+                dep_reg_pts = get_registry_points(dep, True)
                 if dep_reg_pts:
                     reg_points.update(dep_reg_pts)
-
+    else:
+        # Always search dependencies for Parsers/Combiners
+        for dep in get_dependencies(component):
+            if is_registry_point(dep):
+                reg_points.add(dep)
+            else:
+                dep_reg_pts = get_registry_points(dep, False)
+                if dep_reg_pts:
+                    reg_points.update(dep_reg_pts)
     return reg_points
 
 
