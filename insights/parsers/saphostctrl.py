@@ -1,11 +1,6 @@
 """
-saphostctrl - Commands ``saphostctrl``
-======================================
-
-Parsers included in this module are:
-
-SAPHostCtrlInstances - Command ``saphostctrl -function GetCIMObject -enuminstances SAPInstance``
-------------------------------------------------------------------------------------------------
+SAPHostCtrlInstances - Commands ``saphostctrl``
+===============================================
 """
 from insights.core import CommandParser
 from insights.core.exceptions import ParseException, SkipComponent
@@ -31,7 +26,7 @@ add_filter(Specs.saphostctl_getcimobject_sapinstance, SAP_INST_FILTERS)
 class SAPHostCtrlInstances(CommandParser, list):
     """
     This class provides processing for the output of the
-    ``/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance``
+    ``saphostctrl -function GetCIMObject -enuminstances SAPInstance``
     command on SAP systems.
 
     Sample output of the command::
@@ -69,34 +64,20 @@ class SAPHostCtrlInstances(CommandParser, list):
         >>> sorted(sap_inst.sids)
         ['D89', 'D90']
 
-    Attributes:
-        instances (list): The list of instances found in the cluster output.
-        sids (list): The list of SID found in the cluster output.
-        types (list): The list of short instance types.  The short instance
-            type is set as the characters of the `InstanceName` before the
-            `SystemNumber`.
-
     Raises:
         SkipComponent: When input is empty.
         ParseException: When input cannot be parsed.
     """
-    REQUIRED_DIRECTIVES = (
-        'SID',
-        'SystemNumber',
-        'InstanceName',
-        'InstanceType',
-        'Hostname',
-        'SapVersionInfo',
-        'FullQualifiedHostname'
-    )
-
     def parse_content(self, content):
-        self.instances = []
-        _sids = set()
-        _types = set()
+        self._instances = []
+        self._sids = set()
+        self._types = set()
 
         inst = {}
-        for line in (l.strip() for l in content):
+        for line in content:
+            line = line.strip()
+            if not line:
+                continue
             if line.startswith('******'):
                 inst = {}
                 self.append(inst)
@@ -112,21 +93,42 @@ class SAPHostCtrlInstances(CommandParser, list):
                 short_type = fields[2].strip('0123456789')
                 # Back forward compatible: a short InstanceType was from the InstanceName
                 if 'InstanceType' not in inst:
-                    inst.update(dict(InstanceType=short_type))
-                self.instances.append(fields[2])
-                _types.add(short_type)
-            _sids.add(fields[2]) if fields[0] == 'SID' else None
+                    inst.update(InstanceType=short_type)
+                self._instances.append(fields[2])
+                self._types.add(short_type)
+
+            self._sids.add(fields[2]) if fields[0] == 'SID' else None
 
         if len(self) < 1:
             raise SkipComponent("Nothing need to parse")
 
-        self.sids = list(_sids)
-        self.types = list(_types)
+    @property
+    def instances(self):
+        """
+        (list): The list of instances found in the cluster output.
+        """
+        return self._instances
+
+    @property
+    def sids(self):
+        """
+        (list): The list of SID found in the cluster output.
+        """
+        return sorted(self._sids)
+
+    @property
+    def types(self):
+        """
+        (list): The list of short instance types.  The short instance
+                type is set as the characters of the `InstanceName` before
+                the `SystemNumber`.
+        """
+        return sorted(self._types)
 
     @property
     def data(self):
         """
         (list): List of dicts where keys are the lead name of each line and
-            values are the string value.
+                values are the string value.
         """
         return self

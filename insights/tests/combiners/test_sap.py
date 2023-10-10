@@ -1,7 +1,5 @@
-import pytest
 import doctest
 
-from insights import SkipComponent
 from insights.combiners import sap
 from insights.combiners.hostname import Hostname
 from insights.combiners.sap import Sap
@@ -57,6 +55,43 @@ SAPHOSTCTRL_HOSTINSTANCES_R_CASE = '''
  FullQualifiedHostname , String , host_2.example.corp
  SapVersionInfo , String , 745, patch 400, changelist 1734487
 '''
+SAPHOSTCTRL_HOSTINSTANCES_R_CASE_WO_TYPE = '''
+*********************************************************
+ SID , String , R4D
+ SystemNumber , String , 12
+ InstanceName , String , DVEBMGS12
+ Hostname , String , host_1
+ FullQualifiedHostname , String , host_1.example.corp
+ SapVersionInfo , String , 753, patch 501, changelist 1967207
+*********************************************************
+ SID , String , R4D
+ SystemNumber , String , 10
+ InstanceName , String , ASCS10
+ Hostname , String , host_1
+ FullQualifiedHostname , String , host_1.example.corp
+ SapVersionInfo , String , 753, patch 501, changelist 1967207
+*********************************************************
+ SID , String , WDX
+ SystemNumber , String , 20
+ InstanceName , String , W20
+ Hostname , String , host_2
+ FullQualifiedHostname , String , host_2.example.corp
+ SapVersionInfo , String , 773, patch 121, changelist 1917131
+*********************************************************
+ SID , String , SMD
+ SystemNumber , String , 98
+ InstanceName , String , SMDA98
+ Hostname , String , host_2
+ FullQualifiedHostname , String , host_2.example.corp
+ SapVersionInfo , String , 745, patch 400, changelist 1734487
+*********************************************************
+ SID , String , SMD
+ SystemNumber , String , 97
+ InstanceName , String , SMDA97
+ Hostname , String , host_2
+ FullQualifiedHostname , String , host_2.example.corp
+ SapVersionInfo , String , 745, patch 400, changelist 1734487
+'''
 
 
 def test_saphostcrtl_hana():
@@ -106,6 +141,20 @@ def test_r_case():
     sap = Sap(hn, saphostctrl)
     assert sap['DVEBMGS12'].version == '753, patch 501, changelist 1967207'
     assert sap['ASCS10'].hostname == 'host_1'
+    assert len(sap.daa_instances) == 2
+    assert len(sap.instances) == 3
+    assert sap.is_netweaver is True
+    assert sap.is_hana is False
+    assert sap.is_ascs is True
+
+
+def test_r_case_wo_type():
+    saphostctrl = SAPHostCtrlInstances(context_wrap(SAPHOSTCTRL_HOSTINSTANCES_R_CASE_WO_TYPE))
+    hn = Hostname(HnF(context_wrap(HOSTNAME3)), None, None, None)
+    sap = Sap(hn, saphostctrl)
+    assert sap['DVEBMGS12'].version == '753, patch 501, changelist 1967207'
+    assert sap['ASCS10'].hostname == 'host_1'
+    assert len(sap.daa_instances) == 2
     assert len(sap.instances) == 3
     assert sap.is_netweaver is True
     assert sap.is_hana is False
@@ -121,10 +170,3 @@ def test_doc_examples():
           }
     failed, total = doctest.testmod(sap, globs=env)
     assert failed == 0
-
-
-def test_ab():
-    hn = Hostname(HnF(context_wrap(HOSTNAME2)), None, None, None)
-    with pytest.raises(SkipComponent) as se:
-        Sap(hn, None)
-    assert 'No SAP instance.' in str(se)
