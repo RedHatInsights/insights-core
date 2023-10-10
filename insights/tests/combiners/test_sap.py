@@ -64,7 +64,6 @@ def test_saphostcrtl_hana():
     hn = Hostname(HnF(context_wrap(HOSTNAME)), None, None, None)
     sap = Sap(hn, inst)
     assert 'D50' not in sap
-    assert sap.local_instances == ['HDB88']
     assert 'HDB90' in sap.all_instances
     assert sap['HDB88'].number == '88'
     assert sap['HDB90'].hostname == 'lu0418'
@@ -82,14 +81,13 @@ def test_saphostcrtl_hana_2():
     sap = Sap(hn, inst)
     assert 'D50' not in sap
     assert 'HDB00' in sap
-    assert sorted(sap.local_instances) == sorted(['HDB88', 'HDB90', 'SMDA91', 'HDB62', 'HDB00'])
     assert sorted(sap.all_instances) == sorted([
         'ASCS07', 'ASCS52', 'D54', 'DVEBMGS09', 'ERS08', 'HDB00', 'HDB62',
         'HDB88', 'HDB90', 'SCS10', 'SMDA91'])
-    assert sorted(sap.business_instances) == sorted([
+    assert sorted(sap.instances) == sorted([
         'ASCS07', 'ASCS52', 'D54', 'DVEBMGS09', 'ERS08', 'HDB00', 'HDB62',
         'HDB88', 'HDB90', 'SCS10'])
-    assert sorted(sap.function_instances) == sorted(['SMDA91'])
+    assert sorted(sap.daa_instances) == sorted(['SMDA91'])
     assert sap['HDB88'].number == '88'
     assert sap['HDB90'].hostname == 'li-ld-1810'
     assert sap['DVEBMGS09'].version == '749, patch 301, changelist 1779613'
@@ -106,10 +104,9 @@ def test_r_case():
     saphostctrl = SAPHostCtrlInstances(context_wrap(SAPHOSTCTRL_HOSTINSTANCES_R_CASE))
     hn = Hostname(HnF(context_wrap(HOSTNAME3)), None, None, None)
     sap = Sap(hn, saphostctrl)
-    assert sorted(sap.local_instances) == sorted(['W20', 'SMDA98', 'SMDA97'])
     assert sap['DVEBMGS12'].version == '753, patch 501, changelist 1967207'
     assert sap['ASCS10'].hostname == 'host_1'
-    assert len(sap.business_instances) == 3
+    assert len(sap.instances) == 3
     assert sap.is_netweaver is True
     assert sap.is_hana is False
     assert sap.is_ascs is True
