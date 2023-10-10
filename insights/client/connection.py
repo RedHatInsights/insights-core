@@ -145,6 +145,10 @@ class InsightsConnection(object):
         if self.systemid is not None:
             session.headers.update({'systemid': self.systemid})
         if self.authmethod == "BASIC":
+            logger.warning(
+                "Authentication method BASIC is less secure and is not recommended."
+                "\nPlease consider change to authentication method CERT."
+            )
             session.auth = (self.username, self.password)
         elif self.authmethod == "CERT":
             cert = rhsmCertificate.certpath()
