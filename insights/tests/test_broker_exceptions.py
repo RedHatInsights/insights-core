@@ -15,6 +15,12 @@ EXPECTED_MSG_3 = 'Invalid Data 3'
 class Specs(SpecSet):
     the_ce_data = RegistryPoint()
     the_ex_data = RegistryPoint()
+    the_ds_data = RegistryPoint()
+
+
+@datasource()
+def SomeData(broker):
+    return DatasourceProvider("invalid data", "dummy")
 
 
 class TestSpecs(Specs):
@@ -25,14 +31,10 @@ class TestSpecs(Specs):
     @datasource()
     def the_ex_data(broker):
         raise Exception(EXPECTED_MSG_2)
+    the_ds_data = SomeData
 
 
-@datasource()
-def SomeData(broker):
-    return DatasourceProvider("invalid data", "dummy")
-
-
-@parser(SomeData)
+@parser(Specs.the_ds_data)
 class SomeParser(Parser):
     def parse_content(self, content):
         raise ParseException(EXPECTED_MSG_3)
@@ -41,6 +43,10 @@ class SomeParser(Parser):
 @rule(Specs.the_ce_data, Specs.the_ex_data)
 def report(dt):
     return make_info('INFO_1')
+
+#
+# TEST
+#
 
 
 def test_broker_spec_exceptions():

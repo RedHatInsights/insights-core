@@ -1,6 +1,9 @@
+from insights.combiners.ps import Ps
 from insights.core import dr
-from insights.core.plugins import datasource
+from insights.core.plugins import datasource, condition, parser
 from insights.core.spec_factory import DatasourceProvider, RegistryPoint, SpecSet
+from insights.parsers.ps import PsAux
+from insights.specs import Specs
 
 
 class RegistrySpecs(SpecSet):
@@ -29,26 +32,57 @@ def second_spec_with_dep_imp(broker):
     return DatasourceProvider("some data", "/path_4")
 
 
-class DefaultSpecs(RegistrySpecs):
+class LocalDefaultSpecs(RegistrySpecs):
     simple_spec = simple_spec_imp
     first_spec_with_dep = first_spec_with_dep_imp
     second_spec_with_dep = second_spec_with_dep_imp
 
 
+@parser(RegistrySpecs.simple_spec)
+def simple_spec_condition(spec):
+    return True
+
+
+@condition(RegistrySpecs.first_spec_with_dep, RegistrySpecs.second_spec_with_dep)
+def multiple_spec_condition(spec1, spec2):
+    return True
+
+
 def test_is_registry_point():
     assert dr.is_registry_point(RegistrySpecs.simple_spec)
-    assert not dr.is_registry_point(DefaultSpecs.simple_spec)
+    assert not dr.is_registry_point(LocalDefaultSpecs.simple_spec)
 
 
 def test_get_registry_points_simple():
-    specs = dr.get_registry_points(DefaultSpecs.simple_spec)
+    specs = dr.get_registry_points(LocalDefaultSpecs.simple_spec)
     assert len(specs) == 1
-    spec = list(specs)[0]
-    assert spec == RegistrySpecs.simple_spec
+    assert list(specs)[0] == RegistrySpecs.simple_spec
+
+    specs = dr.get_registry_points(LocalDefaultSpecs.first_spec_with_dep)
+    assert len(specs) == 1
+    assert list(specs)[0] == RegistrySpecs.first_spec_with_dep
+
+    specs = dr.get_registry_points(simple_spec_condition)
+    assert len(specs) == 1
+    assert list(specs)[0] == RegistrySpecs.simple_spec
+
+    specs = dr.get_registry_points(Specs.ps_aux)
+    assert len(specs) == 1
+    assert list(specs)[0] == Specs.ps_aux
+
+    specs = dr.get_registry_points(PsAux)
+    assert len(specs) == 1
+    assert list(specs)[0] == Specs.ps_aux
 
 
 def test_get_registry_points_multiple_specs():
-    specs = dr.get_registry_points(dependency_ds)
+    specs = dr.get_registry_points(multiple_spec_condition)
     assert len(specs) == 2
-    for spec in specs:
-        assert spec in [RegistrySpecs.first_spec_with_dep, RegistrySpecs.second_spec_with_dep]
+    for spec in [RegistrySpecs.first_spec_with_dep, RegistrySpecs.second_spec_with_dep]:
+        assert spec in specs
+
+    specs = dr.get_registry_points(Ps)
+    assert len(specs) == 7
+    for spec in [Specs.ps_aux, Specs.ps_auxww, Specs.ps_auxcww, Specs.ps_ef,
+                 Specs.ps_auxcww, Specs.ps_eo, Specs.ps_eo_cmd]:
+        assert spec in specs

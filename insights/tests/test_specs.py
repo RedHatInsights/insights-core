@@ -59,6 +59,10 @@ class stage(dr.ComponentType):
     def invoke(self, broker):
         return self.component(broker)
 
+#
+# TEST
+#
+
 
 @stage(Stuff.smpl_file, Stuff.many, Stuff.smpl_cmd,
        Stuff.smpl_cmd_list_of_lists,
