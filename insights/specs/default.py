@@ -13,9 +13,9 @@ import signal
 
 from insights.components.ceph import IsCephMonitor
 from insights.components.cloud_provider import IsAzure, IsGCP
+from insights.components.rhel_version import IsRhel6
 from insights.components.satellite import IsSatellite611, IsSatellite
 from insights.components.virtualization import IsBareMetal
-from insights.components.rhel_version import IsRhel6
 from insights.core.context import HostContext
 from insights.core.spec_factory import (
     command_with_args, container_collect, container_execute, first_file,
