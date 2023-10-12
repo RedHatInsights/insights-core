@@ -4,5 +4,5 @@ from insights.parsers.dmesg import DmesgLineList
 
 
 @rule(OSRelease, DmesgLineList)
-def combiner_with_filterable_parser_but_no_add_filter(cp, rc):
+def combiner_with_filterable_parser_but_no_add_filter(osr, dmesg):
     return make_pass("FAKE RESULT")

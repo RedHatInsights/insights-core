@@ -3,5 +3,5 @@ from insights.combiners.os_release import OSRelease
 
 
 @rule(OSRelease)
-def combiner_wo_filterable_parser(cp):
+def combiner_wo_filterable_parser(osr):
     return make_pass("FAKE RESULT")
