@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.2.18
+Version:        3.2.19
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,18 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Oct 12 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.19-1
+- Enhance chkconfig spec deps_isrhel6 (#3935) (jiazhang@redhat.com)
+- fix: Suspend the data collection for xfs_db command (#3932)
+  (30404410+qinpingli@users.noreply.github.com)
+- feat: add do_filter option to run_test for rule test (#3923)
+  (xiangceliu@redhat.com)
+- fix: use get_dependencies in get_registry_points (#3920)
+  (xiangceliu@redhat.com)
+- fix: identify SAP instances per short type when InstanceType is missing
+  (#3931) (xiangceliu@redhat.com)
+- Enhance SAP combiner with update attributes name (#3925) (986222045@qq.com)
+
 * Thu Sep 28 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.18-1
 - feat: New spec and parser for xfs_db -r -c freesp command (#3927)
   (30404410+qinpingli@users.noreply.github.com)
