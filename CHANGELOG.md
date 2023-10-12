@@ -2,6 +2,15 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.2.19](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.19) (2023-10-12)
+
+- Enhance chkconfig spec deps_isrhel6 ([PR 3935](https://github.com/RedHatInsights/insights-core/pull/3935))
+- fix: Suspend the data collection for xfs_db command ([PR 3932](https://github.com/RedHatInsights/insights-core/pull/3932))
+- feat: add do_filter option to run_test for rule test ([PR 3923](https://github.com/RedHatInsights/insights-core/pull/3923))
+- fix: use get_dependencies in get_registry_points ([PR 3920](https://github.com/RedHatInsights/insights-core/pull/3920))
+- fix: identify SAP instances per short type when InstanceType is missing ([PR 3931](https://github.com/RedHatInsights/insights-core/pull/3931))
+- Enhance SAP combiner with update attributes name ([PR 3925](https://github.com/RedHatInsights/insights-core/pull/3925))
+
 # [insights-core-3.2.18](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.18) (2023-09-28)
 
 - feat: New spec and parser for xfs_db -r -c freesp command ([PR 3927](https://github.com/RedHatInsights/insights-core/pull/3927))
