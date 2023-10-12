@@ -13,6 +13,7 @@ import signal
 
 from insights.components.ceph import IsCephMonitor
 from insights.components.cloud_provider import IsAzure, IsGCP
+from insights.components.rhel_version import IsRhel6
 from insights.components.satellite import IsSatellite611, IsSatellite
 from insights.components.virtualization import IsBareMetal
 from insights.core.context import HostContext
@@ -146,7 +147,7 @@ class DefaultSpecs(Specs):
     ceph_v = simple_command("/usr/bin/ceph -v")
     certificates_enddate = simple_command("/usr/bin/find /etc/origin/node /etc/origin/master /etc/pki /etc/ipa /etc/tower/tower.cert -type f -exec /usr/bin/openssl x509 -noout -enddate -in '{}' \; -exec echo 'FileName= {}' \;", keep_rc=True)
     cgroups = simple_file("/proc/cgroups")
-    chkconfig = simple_command("/sbin/chkconfig --list")
+    chkconfig = simple_command("/sbin/chkconfig --list", deps=[IsRhel6])
     chrony_conf = simple_file("/etc/chrony.conf")
     chronyc_sources = simple_command("/usr/bin/chronyc sources")
     cib_xml = simple_file("/var/lib/pacemaker/cib/cib.xml")
