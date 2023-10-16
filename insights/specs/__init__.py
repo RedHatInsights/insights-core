@@ -361,9 +361,11 @@ class Specs(SpecSet):
     ls_lanRL = RegistryPoint()
     ls_lanRL_dirs = RegistryPoint(filterable=True)
     ls_lanRZ = RegistryPoint()
-    ls_lanRZ_dirs = RegistryPoint(filterable=True)
+    ls_laRZ = RegistryPoint()
+    ls_laRZ_dirs = RegistryPoint(filterable=True)
     ls_lanZ = RegistryPoint()
-    ls_lanZ_dirs = RegistryPoint(filterable=True)
+    ls_laZ = RegistryPoint()
+    ls_laZ_dirs = RegistryPoint(filterable=True)
     # Old `ls` Specs
     ls_R_var_lib_nova_instances = RegistryPoint()
     ls_boot = RegistryPoint()

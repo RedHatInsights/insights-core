@@ -341,6 +341,10 @@ class LSlanRZ(FileListing):
     """
     Parses output of ``ls -lanRZ <dirs>`` command.
     See :py:class:`FileListing` for more information.
+
+    .. warning::
+        This class is deprecated and will be removed from 3.3.0.
+        Please use the :class:`insights.parsers.ls.LSlaRZ` instead.
     """
     pass
 
@@ -349,6 +353,28 @@ class LSlanRZ(FileListing):
 class LSlanZ(FileListing):
     """
     Parses output of ``ls -lanZ <dirs>`` command.
+    See :py:class:`FileListing` for more information.
+
+    .. warning::
+        This class is deprecated and will be removed from 3.3.0.
+        Please use the :class:`insights.parsers.ls.LSlaZ` instead.
+    """
+    pass
+
+
+@parser(Specs.ls_laRZ)
+class LSlaRZ(FileListing):
+    """
+    Parses output of ``ls -laRZ <dirs>`` command.
+    See :py:class:`FileListing` for more information.
+    """
+    pass
+
+
+@parser(Specs.ls_laZ)
+class LSlaZ(FileListing):
+    """
+    Parses output of ``ls -laZ <dirs>`` command.
     See :py:class:`FileListing` for more information.
     """
     pass
