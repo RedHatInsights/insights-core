@@ -177,7 +177,7 @@ def run_test(component, input_data,
 
     if do_filter and filters.ENABLED:
         mod = dr.get_module_name(component)
-        sup_mod = dr.get_base_module_name(component)
+        sup_mod = '.'.join(mod.split('.')[:-1])
         rps = dr.get_registry_points(component)
         filtered = get_filtered_specs(mod)
         filterable = set(d for d in rps if dr.get_delegate(d).filterable) - filtered
