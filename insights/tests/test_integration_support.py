@@ -3,9 +3,9 @@ import pytest
 from insights.plugins.ps_rule_fakes import (psaux_no_filter,
                                             psauxww_ds_filter,
                                             psalxwww_parser_filter)
-from insights.plugins.combiner_rule_wo_filterable_parser import combiner_wo_filterable_parser
-from insights.plugins.combiner_rule_with_filterable_parser_filtered import combiner_with_filtered_filterable_parser
-from insights.plugins.combiner_rule_with_filterable_parser_not_filtered import combiner_with_filterable_parser_but_no_add_filter
+from insights.plugins.rule_with_combiner_and_parser_parser_filtered import parser_is_filtered
+from insights.plugins.rule_with_combiner_and_parser_parser_not_filtered import parser_is_not_filtered
+from insights.plugins.rule_with_combiner_only import parser_is_not_used
 from insights.specs import Specs
 from insights.tests import InputData, run_test
 
@@ -44,39 +44,40 @@ def test_run_test_no_missing_filters_using_parser():
     assert result
 
 
-def test_run_test_combiner_wo_filterable_parser():
+def test_run_test_parser_is_not_used():
     """
-    1. The rule imports one Combiner that contains a filterable Parser.
-    2. The rule does not import the filterable Parser.
+    1. The rule uses one Combiner that depends upon a filterable Parser.
+    2. The rule does NOT depend upon (import) the filterable Parser directly.
+    3. The filterable Parser is NOT filter in the rule as well.
     """
     input_data = InputData("fake_input")
     input_data.add(Specs.dmesg, "FAKE_CONTENT")
-    result = run_test(combiner_wo_filterable_parser, input_data, None)
+    result = run_test(parser_is_not_used, input_data, None)
     # No Exception raised
     assert result
 
 
-def test_run_test_combiner_with_filtered_filterable_parser():
+def test_run_test_parser_is_filtered():
     """
-    1. The rule imports one Combiner that contains a filterable Parser.
-    2. The rule does also import the filterable Parser.
-    3. The spec of the filterable Parser is filtered in the rule.
+    1. The rule uses one Combiner that depends upon a filterable Parser.
+    2. The rule does also depend upon (import) the filterable Parser directly.
+    3. The filterable Parser is FILTERED in the rule.
     """
     input_data = InputData("fake_input")
     input_data.add(Specs.dmesg, "FAKE_CONTENT")
-    result = run_test(combiner_with_filtered_filterable_parser, input_data, None)
+    result = run_test(parser_is_filtered, input_data, None)
     # No Exception raised
     assert result
 
 
-def test_run_test_combiner_with_no_filtered_filterable_parser():
+def test_run_test_parser_is_not_filtered():
     """
-    1. The rule imports one Combiner that contains a filterable Parser.
-    2. The rule does also import the filterable Parser.
-    3. The spec of the filterable Parser is NOT filtered in the rule.
+    1. The rule uses one Combiner that depends upon a filterable Parser.
+    2. The rule does also depend upon (import) the filterable Parser.
+    3. The filterable Parser is NOT filtered in the rule.
     """
     input_data = InputData("fake_input")
     input_data.add(Specs.dmesg, "FAKE_CONTENT")
     with pytest.raises(Exception) as ex:
-        run_test(combiner_with_filterable_parser_but_no_add_filter, input_data, None)
+        run_test(parser_is_not_filtered, input_data, None)
     assert 'must add filters to' in str(ex)
