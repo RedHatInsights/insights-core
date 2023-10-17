@@ -76,10 +76,10 @@ def list_with_lanRL(broker):
 
 
 @datasource(HostContext)
-def list_with_lanRZ(broker):
-    return _list_items(Specs.ls_lanRZ_dirs)
+def list_with_laRZ(broker):
+    return _list_items(Specs.ls_laRZ_dirs)
 
 
 @datasource(HostContext)
-def list_with_lanZ(broker):
-    return _list_items(Specs.ls_lanZ_dirs)
+def list_with_laZ(broker):
+    return _list_items(Specs.ls_laZ_dirs)
