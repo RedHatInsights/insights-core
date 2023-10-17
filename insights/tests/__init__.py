@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import copy
+import importlib
 import inspect
 import itertools
 import json
@@ -143,6 +144,14 @@ def run_input_data(component, input_data, store_skips=False):
     return broker
 
 
+COMPONENT_FILTERED_PARSERS = {
+    'CloudInstance': ['insights.parsers.subscription_manager.SubscriptionManagerFacts'],
+    # 'CloudProvider': ['insights.parsers.rhsm_conf.RHSMConf'],
+    'OSRelease': ['insights.parsers.dmesg.DmesgLineList'],
+    'Sap': ['insights.parsers.saphostctrl.SAPHostCtrlInstances']
+}
+
+
 def run_test(component, input_data,
              expected=None, return_make_none=False, do_filter=True):
     """
@@ -154,11 +163,24 @@ def run_test(component, input_data,
         do_filter: Does need to check dependency spec filter warning?
             - it's not required to check the filters for sosreport
     """
+    def get_filtered_specs(module):
+        filtered = set()
+        mods = dir(importlib.import_module(module))
+        for comp, parsers in COMPONENT_FILTERED_PARSERS.items():
+            if comp in mods:
+                for parser in parsers:
+                    if parser.split('.')[-1] not in mods:
+                        # The parser is NOT imported again in the rule
+                        parser = dr.get_component_by_name(parser)
+                        filtered.update(dr.get_registry_points(parser))
+        return filtered
+
     if do_filter and filters.ENABLED:
-        mod = component.__module__
+        mod = dr.get_module_name(component)
         sup_mod = '.'.join(mod.split('.')[:-1])
         rps = dr.get_registry_points(component)
-        filterable = set(d for d in rps if dr.get_delegate(d).filterable)
+        filtered = get_filtered_specs(mod)
+        filterable = set(d for d in rps if dr.get_delegate(d).filterable) - filtered
         missing_filters = filterable - ADDED_FILTERS.get(mod, set()) - ADDED_FILTERS.get(sup_mod, set())
         if missing_filters:
             names = [dr.get_name(m) for m in missing_filters]
