@@ -1,5 +1,8 @@
-from insights.parsers.ls import (LSla, LSlaFiltered, LSlan, LSlanFiltered,
-                                 LSlanL, LSlanR, LSlanRL, LSlanRZ, LSlanZ)
+from insights.parsers.ls import (
+    LSla, LSlaFiltered, LSlan, LSlanFiltered,
+    LSlanL, LSlanR, LSlanRL, LSlanRZ, LSlanZ,
+    LSlaRZ, LSlaZ
+)
 from insights.tests import context_wrap
 
 LS_LA = """
@@ -126,6 +129,60 @@ lrwxrwxrwx.  1 0 0 system_u:object_r:device_t:s0   11 Jun 27 10:58 com.redhat.sp
 lrwxrwxrwx.  1 0 0 system_u:object_r:device_t:s0   11 Jun 27 10:58 org.qemu.guest_agent.0 -> ../vport2p1
 """
 
+LS_LARZ_CONTENT1 = """
+/var/log:
+total 13500
+drwxr-xr-x. 16 root   root   system_u:object_r:var_log_t:s0                    4096 Oct 15 00:00 .
+drwxr-xr-x. 20 root   root   system_u:object_r:var_t:s0                        4096 May 27  2022 ..
+drwxr-xr-x.  2 root   root   system_u:object_r:var_log_t:s0                    4096 May 27  2022 anaconda
+drwx------.  2 root   root   system_u:object_r:auditd_log_t:s0                   99 Oct 16 04:58 audit
+-rw-------.  1 root   root   system_u:object_r:plymouthd_var_log_t:s0             0 May 11 00:00 boot.log
+-rw-r--r--.  1 root   root   unconfined_u:object_r:rpm_log_t:s0                5220 Sep 23 23:44 hawkey.log-20230924
+-rw-r--r--.  1 root   root   unconfined_u:object_r:rpm_log_t:s0                5160 Sep 30 21:40 hawkey.log-20231001
+-rw-r--r--.  1 root   root   unconfined_u:object_r:rpm_log_t:s0                5340 Oct  7 23:50 hawkey.log-20231008
+-rw-r--r--.  1 root   root   unconfined_u:object_r:rpm_log_t:s0                5640 Oct 14 23:26 hawkey.log-20231015
+drwx------.  2 root   root   system_u:object_r:insights_client_var_log_t:s0     120 Oct 17 00:17 insights-client
+-rw-r--r--.  1 root   root   system_u:object_r:var_log_t:s0                    8062 May 10 09:55 kdump.log -> false-link.log
+
+/var/log/anaconda:
+total 5228
+drwxr-xr-x.  2 root root system_u:object_r:var_log_t:s0    4096 May 27  2022 .
+drwxr-xr-x. 16 root root system_u:object_r:var_log_t:s0    4096 Oct 15 00:00 ..
+-rw-------.  1 root root system_u:object_r:var_log_t:s0   46971 May 27  2022 anaconda.log
+-rw-------.  1 root root system_u:object_r:var_log_t:s0    3641 May 27  2022 dbus.log
+-rw-------.  1 root root system_u:object_r:var_log_t:s0    1799 May 27  2022 dnf.librepo.log
+-rw-------.  1 root root system_u:object_r:var_log_t:s0     120 May 27  2022 hawkey.log
+-rw-------.  1 root root system_u:object_r:var_log_t:s0 3519082 May 27  2022 journal.log
+-rw-------.  1 root root system_u:object_r:var_log_t:s0      40 May 27  2022 ks-script-d2lfa1o_.log
+-rw-------.  1 root root system_u:object_r:var_log_t:s0      63 May 27  2022 ks-script-r_i_73z0.log
+-rw-------.  1 root root system_u:object_r:var_log_t:s0       0 May 27  2022 ks-script-w3x_f4hl.log
+"""
+
+LS_LARZ_CONTENT2 = """
+/var/log/rhsm:
+drwxr-xr-x. root root system_u:object_r:rhsmcertd_log_t:s0 .
+drwxr-xr-x. root root system_u:object_r:var_log_t:s0   ..
+-rw-r--r--. root root unconfined_u:object_r:rhsmcertd_log_t:s0 rhsm.log
+-rw-r--r--. root root unconfined_u:object_r:rhsmcertd_log_t:s0 rhsm.log-20231015
+-rw-r--r--. root root system_u:object_r:rhsmcertd_log_t:s0 rhsmcertd.log
+-rw-r--r--. root root system_u:object_r:rhsmcertd_log_t:s0 rhsmcertd.log-20231015
+
+/var/log/sa:
+drwxr-xr-x. root root system_u:object_r:sysstat_log_t:s0 .
+drwxr-xr-x. root root system_u:object_r:var_log_t:s0   ..
+-rw-r--r--. root root system_u:object_r:sysstat_log_t:s0 sa12
+-rw-r--r--. root root system_u:object_r:sysstat_log_t:s0 sa13
+-rw-r--r--. root root system_u:object_r:sysstat_log_t:s0 sa14
+-rw-r--r--. root root system_u:object_r:sysstat_log_t:s0 sa15
+-rw-r--r--. root root system_u:object_r:sysstat_log_t:s0 sa16
+-rw-r--r--  root root ?                                sa17
+-rw-r--r--. root root system_u:object_r:sysstat_log_t:s0 sar12
+-rw-r--r--. root root system_u:object_r:sysstat_log_t:s0 sar13
+-rw-r--r--. root root system_u:object_r:sysstat_log_t:s0 sar14
+-rw-r--r--. root root system_u:object_r:sysstat_log_t:s0 sar15
+-rw-r--r--  root root ?                                sar16
+"""
+
 LS_LANZ = """
 /dev:
 total 0
@@ -134,6 +191,56 @@ dr-xr-xr-x. 17 0  0 system_u:object_r:root_t:s0             224 Apr 17 16:45 ..
 crw-r--r--.  1 0  0 system_u:object_r:autofs_device_t:s0    235 Jun 27 10:58 autofs
 drwxr-xr-x.  2 0  0 system_u:object_r:device_t:s0           160 Jun 27 10:58 block
 lrwxrwxrwx.  1 0  0 system_u:object_r:device_t:s0             3 Jun 27 10:58 cdrom -> sr0
+"""
+
+LS_LAZ_CONTENT1 = """
+/var/log:
+total 13500
+drwxr-xr-x. 16 root   root   system_u:object_r:var_log_t:s0                    4096 Oct 15 00:00 .
+drwxr-xr-x. 20 root   root   system_u:object_r:var_t:s0                        4096 May 27  2022 ..
+drwxr-xr-x.  2 root   root   system_u:object_r:var_log_t:s0                    4096 May 27  2022 anaconda
+drwx------.  2 root   root   system_u:object_r:auditd_log_t:s0                   99 Oct 16 04:58 audit
+-rw-------.  1 root   root   system_u:object_r:plymouthd_var_log_t:s0             0 May 11 00:00 boot.log
+-rw-r--r--.  1 root   root   unconfined_u:object_r:rpm_log_t:s0                5220 Sep 23 23:44 hawkey.log-20230924
+-rw-r--r--.  1 root   root   unconfined_u:object_r:rpm_log_t:s0                5160 Sep 30 21:40 hawkey.log-20231001
+-rw-r--r--.  1 root   root   unconfined_u:object_r:rpm_log_t:s0                5340 Oct  7 23:50 hawkey.log-20231008
+-rw-r--r--.  1 root   root   unconfined_u:object_r:rpm_log_t:s0                5640 Oct 14 23:26 hawkey.log-20231015
+drwx------.  2 root   root   system_u:object_r:insights_client_var_log_t:s0     120 Oct 17 00:17 insights-client
+-rw-r--r--.  1 root   root   system_u:object_r:var_log_t:s0                    8062 May 10 09:55 kdump.log
+"""
+
+LS_LAZ_CONTENT2 = """
+/var/log/rhsm:
+drwxr-xr-x. root root system_u:object_r:rhsmcertd_log_t:s0 .
+drwxr-xr-x. root root system_u:object_r:var_log_t:s0   ..
+-rw-r--r--. root root unconfined_u:object_r:rhsmcertd_log_t:s0 rhsm.log
+-rw-r--r--. root root unconfined_u:object_r:rhsmcertd_log_t:s0 rhsm.log-20231015
+-rw-r--r--. root root system_u:object_r:rhsmcertd_log_t:s0 rhsmcertd.log
+-rw-r--r--. root root system_u:object_r:rhsmcertd_log_t:s0 rhsmcertd.log-20231015
+
+/var/log/sa:
+drwxr-xr-x. root root system_u:object_r:sysstat_log_t:s0 .
+drwxr-xr-x. root root system_u:object_r:var_log_t:s0   ..
+-rw-r--r--. root root system_u:object_r:sysstat_log_t:s0 sa12
+-rw-r--r--. root root system_u:object_r:sysstat_log_t:s0 sa13
+-rw-r--r--. root root system_u:object_r:sysstat_log_t:s0 sa14
+-rw-r--r--. root root system_u:object_r:sysstat_log_t:s0 sa15
+-rw-r--r--. root root system_u:object_r:sysstat_log_t:s0 sa16
+-rw-r--r--  root root ?                                sa17
+-rw-r--r--. root root system_u:object_r:sysstat_log_t:s0 sar12
+-rw-r--r--. root root system_u:object_r:sysstat_log_t:s0 sar13
+-rw-r--r--. root root system_u:object_r:sysstat_log_t:s0 sar14
+-rw-r--r--. root root system_u:object_r:sysstat_log_t:s0 sar15
+-rw-r--r--  root root ?                                sar16
+
+/dev:
+crw-rw----. root root    system_u:object_r:clock_device_t:s0 rtc0
+drwxrwxrwt. root root    system_u:object_r:tmpfs_t:s0     shm
+crw-rw----. root root    system_u:object_r:apm_bios_t:s0  snapshot
+lrwxrwxrwx. root root    system_u:object_r:device_t:s0    stderr -> /proc/self/fd/2
+lrwxrwxrwx. root root    system_u:object_r:device_t:s0    stdin -> /proc/self/fd/0
+lrwxrwxrwx. root root    system_u:object_r:device_t:s0    stdout -> /proc/self/fd/1
+lrwxrwxrwx. root root    system_u:object_r:device_t:s0    systty -> tty0
 """
 
 
@@ -338,3 +445,47 @@ def test_ls_lanZ():
     assert dev_listings["cdrom"]['link'] == 'sr0'
     assert 'se_type' in dev_listings["cdrom"]
     assert dev_listings["cdrom"]['se_type'] == 'device_t'
+
+
+def test_ls_laRZ():
+    ls = LSlaRZ(context_wrap(LS_LARZ_CONTENT1))
+    assert '/var/log' in ls
+    assert '/var/log/anaconda' in ls
+    assert '/var/log/atest' not in ls
+    assert ls.dirs_of('/var/log') == ['.', '..', 'anaconda', 'audit', 'insights-client']
+
+    dev_listings = ls.listing_of('/var/log')
+    assert 'boot.log' in dev_listings
+    assert dev_listings["boot.log"]['se_type'] == 'plymouthd_var_log_t'
+    assert 'kdump.log' in dev_listings
+    assert dev_listings["kdump.log"]['link'] == 'false-link.log'
+
+    ls = LSlaRZ(context_wrap(LS_LARZ_CONTENT2))
+    assert '/var/log/rhsm' in ls
+
+    dev_listings = ls.listing_of('/var/log/rhsm')
+    assert "rhsm.log" in dev_listings
+    assert 'se_type' in dev_listings["rhsm.log"]
+    assert dev_listings["rhsm.log"]['se_type'] == 'rhsmcertd_log_t'
+
+
+def test_ls_laZ():
+    ls = LSlaZ(context_wrap(LS_LAZ_CONTENT1))
+    assert '/var/log/anaconda' not in ls
+
+    dev_listings = ls.listing_of('/var/log')
+    assert "hawkey.log-20230924" in dev_listings
+    assert dev_listings["hawkey.log-20230924"]['se_type'] == 'rpm_log_t'
+    assert dev_listings["hawkey.log-20230924"]['size'] == 5220
+
+    ls = LSlaZ(context_wrap(LS_LAZ_CONTENT2))
+    assert '/var/log/rhsm' in ls
+
+    dev_listings = ls.listing_of('/var/log/rhsm')
+    assert "rhsm.log" in dev_listings
+    assert 'se_type' in dev_listings["rhsm.log"]
+    assert dev_listings["rhsm.log"]['se_type'] == 'rhsmcertd_log_t'
+
+    dev_listings = ls.listing_of('/dev')
+    assert 'stderr' in dev_listings
+    assert dev_listings["stderr"]['link'] == '/proc/self/fd/2'
