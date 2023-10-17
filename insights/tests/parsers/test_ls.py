@@ -243,6 +243,24 @@ lrwxrwxrwx. root root    system_u:object_r:device_t:s0    stdout -> /proc/self/f
 lrwxrwxrwx. root root    system_u:object_r:device_t:s0    systty -> tty0
 """
 
+LS_LARZ_DEV_CONTENT1 = """
+/dev:
+total 0
+drwxr-xr-x. 19 root root    system_u:object_r:device_t:s0                  3180 May 10 09:54 .
+dr-xr-xr-x. 18 root root    system_u:object_r:root_t:s0                     235 May 27  2022 ..
+crw-r--r--.  1 root root    system_u:object_r:autofs_device_t:s0        10, 235 May 10 09:54 autofs
+drwxr-xr-x.  2 root root    system_u:object_r:device_t:s0                   140 Jun 15 16:11 block
+drwxr-xr-x.  3 root root    system_u:object_r:device_t:s0                    60 May 10 09:54 bus
+drwxr-xr-x.  2 root root    system_u:object_r:device_t:s0                  2680 May 10 09:55 char
+crw--w----.  1 root tty     system_u:object_r:console_device_t:s0        5,   1 May 10 09:54 console
+
+/dev/vfio:
+total 0
+drwxr-xr-x.  2 root root system_u:object_r:device_t:s0           60 May 10 09:54 .
+drwxr-xr-x. 19 root root system_u:object_r:device_t:s0         3180 May 10 09:54 ..
+crw-rw-rw-.  1 root root system_u:object_r:vfio_device_t:s0 10, 196 May 10 09:54 vfio -> false_link_2
+"""
+
 
 def test_ls_la():
     ls = LSla(context_wrap(LS_LA))
@@ -489,3 +507,20 @@ def test_ls_laZ():
     dev_listings = ls.listing_of('/dev')
     assert 'stderr' in dev_listings
     assert dev_listings["stderr"]['link'] == '/proc/self/fd/2'
+
+
+def test_ls_laZ_on_dev():
+    ls = LSlaRZ(context_wrap(LS_LARZ_DEV_CONTENT1))
+    assert '/dev' in ls
+    dev_listings = ls.listing_of('/dev')
+    assert "autofs" in dev_listings
+    assert 'se_type' in dev_listings["autofs"]
+    assert dev_listings["autofs"]['se_type'] == 'autofs_device_t'
+    assert dev_listings["autofs"]['major'] == 10
+    assert dev_listings["autofs"]['minor'] == 235
+    assert "block" in dev_listings
+    assert dev_listings['block']['size'] == 140
+
+    dev_listings = ls.listing_of('/dev/vfio')
+    assert 'vfio' in dev_listings
+    assert dev_listings["vfio"]['link'] == 'false_link_2'
