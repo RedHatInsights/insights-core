@@ -366,8 +366,8 @@ class DefaultSpecs(Specs):
     ls_lanL = command_with_args('/bin/ls -lanL %s', ls.list_with_lanL, keep_rc=True)
     ls_lanR = command_with_args('/bin/ls -lanR %s', ls.list_with_lanR, keep_rc=True)
     ls_lanRL = command_with_args('/bin/ls -lanRl %s', ls.list_with_lanRL, keep_rc=True)
-    ls_lanRZ = command_with_args('/bin/ls -lanRZ %s', ls.list_with_lanRZ, keep_rc=True)
-    ls_lanZ = command_with_args('/bin/ls -lanZ %s', ls.list_with_lanZ, keep_rc=True)
+    ls_laRZ = command_with_args('/bin/ls -laRZ %s', ls.list_with_laRZ, keep_rc=True)
+    ls_laZ = command_with_args('/bin/ls -laZ %s', ls.list_with_laZ, keep_rc=True)
     # Old `ls` Specs
     ls_R_var_lib_nova_instances = simple_command("/bin/ls -laR /var/lib/nova/instances")
     ls_boot = simple_command("/bin/ls -lanR /boot")
