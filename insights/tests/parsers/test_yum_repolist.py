@@ -1,3 +1,4 @@
+# coding=utf-8
 import doctest
 import pytest
 
@@ -144,6 +145,55 @@ Loaded plugins: product-id, rhnplugin, security, subscription-manager
 Updating certificate-based repositories.
 """
 
+YUM_REPOLIST_NO_REPO = """
+No repositories available
+""".strip()
+
+YUM_REPOLIST_NO_REPO_WITH_LOG = """
+Modular dependency problems:
+
+ Problem 1: conflicting requests
+  - nothing provides module(perl:5.26) needed by module perl-DBD-SQLite:1.58:8010020190322125518:073fa5fe-0.x86_64
+ Problem 2: conflicting requests
+  - nothing provides module(perl:5.26) needed by module perl-DBI:1.641:8010020190322130042:16b3ab4d-0.x86_64
+No repositories available
+""".strip()
+
+YUM_REPOLIST_NO_REPO_WITH_ERROR = """
+Error: Cache-only enabled but no cache for 'rhel-8-for-x86_64-appstream-rpms'%
+""".strip()
+
+YUM_REPOLIST_HEADER_IN_FRENCH = """
+Loaded plugins: package_upload, product-id, search-disabled-repos, security, subscription-manager
+id du dépôt                      nom du dépôt
+rhel-8-for-x86_64-appstream-rpms Red Hat Enterprise Linux 8 for x86_64 - AppStream (RPMs)
+rhel-8-for-x86_64-baseos-rpms    Red Hat Enterprise Linux 8 for x86_64 - BaseOS (RPMs)
+""".strip()
+
+YUM_REPOLIST_HEADER_IN_CHINESE = """
+Loaded plugins: package_upload, product-id, search-disabled-repos, security, subscription-manager
+仓库 id                                  仓库名称
+DBCLNexus                                DB Cargo Logistics GmbH Nexus - RHEL 8
+ansible-2-for-rhel-8-x86_64-rpms         Red Hat Ansible Engine 2 for RHEL 8 x86_64 (RPMs)
+codeready-builder-for-rhel-8-x86_64-rpms Red Hat CodeReady Linux Builder for RHEL 8 x86_64 (RPMs)
+rhel-8-for-x86_64-appstream-rpms         Red Hat Enterprise Linux 8 for x86_64 - AppStream (RPMs)
+rhel-8-for-x86_64-baseos-rpms            Red Hat Enterprise Linux 8 for x86_64 - BaseOS (RPMs)
+""".strip()
+
+YUM_REPOLIST_HEADER_IN_OTHER_LANGUAGE_3 = """
+Loaded plugins: package_upload, product-id, search-disabled-repos, security, subscription-manager
+identyfikator repozytorium       nazwa repozytorium
+rhel-8-for-x86_64-appstream-rpms Red Hat Enterprise Linux 8 for x86_64 - AppStream (RPMs)
+rhel-8-for-x86_64-baseos-rpms    Red Hat Enterprise Linux 8 for x86_64 - BaseOS (RPMs)
+""".strip()
+
+YUM_REPOLIST_HEADER_IN_OTHER_LANGUAGE_4 = """
+Loaded plugins: package_upload, product-id, search-disabled-repos, security, subscription-manager
+ід. сховища                      назва сховища
+rhel-8-for-x86_64-appstream-rpms Red Hat Enterprise Linux 8 for x86_64 - AppStream (RPMs)
+rhel-8-for-x86_64-baseos-rpms    Red Hat Enterprise Linux 8 for x86_64 - BaseOS (RPMs)
+""".strip()
+
 
 def test_yum_repolist():
     repo_list = YumRepoList(context_wrap(YUM_REPOLIST_CONTENT))
@@ -204,6 +254,10 @@ def test_rhel_repos_empty():
         YumRepoList(context_wrap(YUM_REPOLIST_CONTENT_EMPTY))
     assert 'No repolist.' in str(se)
 
+    with pytest.raises(SkipComponent) as se:
+        YumRepoList(context_wrap(YUM_REPOLIST_NO_REPO))
+    assert 'No repolist.' in str(se)
+
 
 def test_rhel_repos_out_of_date():
     repo_list = YumRepoList(context_wrap(YUM_REPOLIST_CONTENT_OUT_OF_DATE))
@@ -257,3 +311,32 @@ def test_repolist_missing_header():
     with pytest.raises(ParseException) as se:
         YumRepoList(context_wrap(YUM_REPOLIST_MISSING_HEADER))
     assert 'Failed to parser yum repolist' in str(se)
+
+    with pytest.raises(ParseException) as se:
+        YumRepoList(context_wrap(YUM_REPOLIST_NO_REPO_WITH_LOG))
+    assert 'Failed to parser yum repolist:' in str(se)
+
+    with pytest.raises(ParseException) as se:
+        YumRepoList(context_wrap(YUM_REPOLIST_NO_REPO_WITH_ERROR))
+    assert 'Failed to parser yum repolist:' in str(se)
+
+
+def test_yum_repolist_with_header_in_not_en():
+    repo_list = YumRepoList(context_wrap(YUM_REPOLIST_HEADER_IN_CHINESE))
+    assert len(repo_list) == 5
+    assert repo_list[2] == {"id": "codeready-builder-for-rhel-8-x86_64-rpms",
+                            "name": "Red Hat CodeReady Linux Builder for RHEL 8 x86_64 (RPMs)"}
+    assert 'rhel-8-for-x86_64-baseos-rpms' in repo_list
+    assert repo_list['rhel-8-for-x86_64-baseos-rpms'] == repo_list[4]
+    assert repo_list.eus == []
+
+    for input_content in [YUM_REPOLIST_HEADER_IN_FRENCH,
+                          YUM_REPOLIST_HEADER_IN_OTHER_LANGUAGE_3,
+                          YUM_REPOLIST_HEADER_IN_OTHER_LANGUAGE_4]:
+        repo_list = YumRepoList(context_wrap(input_content))
+        assert len(repo_list) == 2
+        assert repo_list[0] == {"id": "rhel-8-for-x86_64-appstream-rpms",
+                                "name": "Red Hat Enterprise Linux 8 for x86_64 - AppStream (RPMs)"}
+        assert 'rhel-8-for-x86_64-baseos-rpms' in repo_list
+        assert repo_list['rhel-8-for-x86_64-baseos-rpms'] == repo_list[1]
+        assert repo_list.eus == []
