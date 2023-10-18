@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 Yum - Commands
 ==============
@@ -122,14 +123,41 @@ class YumRepoList(CommandParser):
                         'status': '21'
                     }
                 }
-
     """
+    _no_repo_available_msg_strs = [
+        "No repositories available",
+        "No hay ningún repositorio disponible",
+        "Keine Paketquellen verfügbar",
+        "Nessun repository disponibile",
+        "Ez dago biltegirik erabilgarri",
+        "Walang repositories na magagamit",
+        "Няма налични хранилища",
+    ]
+    _repo_headers = [
+        # repo_id, repo_name, repo_id_length, repo_name_length
+        ("repo id", "repo name", 7, 9),
+        ("id du dépôt", "nom du dépôt", 11, 12),
+        ("Paketquellen-ID", "Paketquellen-Name", 15, 17),
+        ("id del repositorio", "nombre del repositorio", 18, 22),
+        ("id do repo", "nome do repo", 10, 12),
+        ("id repo", "nome repo", 7, 9),
+        ("identyfikator repozytorium", "nazwa repozytorium", 26, 18),
+        ("tároló azonosító", "tároló neve", 16, 11),
+        ("Paketquellenkennung", "Paketquellenname", 19, 16),
+        ("仓库 id", "仓库名称", 7, 4),
+        ("ід. сховища", "назва сховища", 11, 13),
+    ]
+
     def parse_content(self, content):
         if not content:
             raise SkipComponent('No repolist.')
 
         if content[0].startswith('repolist:'):
             raise SkipComponent('No repolist.')
+
+        for no_repo_available_msg in self._no_repo_available_msg_strs:
+            if content[0].startswith(no_repo_available_msg):
+                raise SkipComponent('No repolist.')
 
         trailing_line_prefix = [
                 'repolist:',
@@ -141,16 +169,29 @@ class YumRepoList(CommandParser):
 
         self.data = []
         self.repos = {}
-        try:
-            self.data = parse_fixed_table(
-                    content,
-                    heading_ignore=['repo id'],
-                    header_substitute=[('repo id', 'id     '), ('repo name', 'name     ')],
-                    trailing_ignore=trailing_line_prefix,
-                    empty_exception=True)
-        except ValueError as e:
-            # ValueError raised by parse_fixed_table
-            raise ParseException('Failed to parser yum repolist: {0}'.format(str(e)))
+
+        # Header table language defaults to english: self._repo_headers[0]
+        # Give it a try for table header in other languages when the default one is not found
+        error_raised_for_stander_header_repo_id = None
+        for header_pair_index, (header_repo_id, header_repo_name, repo_id_len, repo_name_len) in enumerate(self._repo_headers):
+            try:
+                self.data = parse_fixed_table(
+                        content,
+                        heading_ignore=[header_repo_id],
+                        header_substitute=[(header_repo_id, 'id' + ' ' * (repo_id_len - 2)),
+                                            (header_repo_name, 'name' + ' ' * (repo_name_len - 4))],
+                        trailing_ignore=trailing_line_prefix,
+                        empty_exception=True)
+                break
+            except ValueError as e:
+                # ValueError raised by parse_fixed_table
+                # Likely be a unrecognized header_repo_id raised by calc_offset
+                if header_pair_index == 0:
+                    error_raised_for_stander_header_repo_id = e
+                # When the last pair of table header trying fails, end the parsing by raising a error
+                if header_pair_index == len(self._repo_headers) - 1:
+                    raise ParseException('Failed to parser yum repolist: {0}'.format(
+                                    str(error_raised_for_stander_header_repo_id or e)))
 
         if not self.data:
             raise SkipComponent('No repolist.')
