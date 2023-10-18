@@ -83,7 +83,7 @@ class SOSCleaner:
             "insights.specs.Specs.installed_rpms",
             "insights.specs.Specs.dnf_modules",
             "insights.specs.Specs.yum_list_available",
-            "insights.specs.Specs.yum_log",
+            "insights.specs.Specs.yum_log",  # Potentially insecure.
             "insights.specs.Specs.yum_updateinfo",
             "insights.specs.Specs.yum_updates"
         ]
