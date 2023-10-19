@@ -314,6 +314,7 @@ class DefaultSpecs(Specs):
     ipv4_neigh = simple_command("/sbin/ip -4 neighbor show nud all")
     ipv6_neigh = simple_command("/sbin/ip -6 neighbor show nud all")
     iris_cpf = foreach_collect(intersystems.iris_working_configuration, "%s")
+    iris_license_key = foreach_collect(intersystems.iris_license_key, "%s/*.key")
     iris_list = simple_command("/usr/bin/iris list")
     iris_messages_log = foreach_collect(intersystems.iris_working_messages_log, "%s")
     ironic_inspector_log = first_file(["/var/log/containers/ironic-inspector/ironic-inspector.log", "/var/log/ironic-inspector/ironic-inspector.log"])

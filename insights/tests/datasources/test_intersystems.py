@@ -3,7 +3,7 @@ import pytest
 from mock.mock import patch
 from insights.core.exceptions import SkipComponent
 from insights.parsers.iris import IrisList, IrisCpf
-from insights.specs.datasources.intersystems import iris_working_configuration, iris_working_messages_log
+from insights.specs.datasources.intersystems import iris_working_configuration, iris_working_messages_log, iris_license_key
 from insights.tests import context_wrap
 
 
@@ -110,6 +110,22 @@ def test_iris_working_configuration_no_file():
     broker = {IrisList: iris_list_info}
     with pytest.raises(SkipComponent) as e:
         iris_working_configuration(broker)
+    assert 'SkipComponent' in str(e)
+
+
+@patch("os.path.isdir", return_value=True)
+def test_iris_license_key(m_isfile):
+    iris_list_info = IrisList(context_wrap(IRIR_LIST))
+    broker = {IrisList: iris_list_info}
+    result = iris_license_key(broker)
+    assert set(result) == set(["/intersystems/mgr", "/intersystems2/mgr"])
+
+
+def test_iris_license_key_no_dir():
+    iris_list_info = IrisList(context_wrap(IRIR_LIST))
+    broker = {IrisList: iris_list_info}
+    with pytest.raises(SkipComponent) as e:
+        iris_license_key(broker)
     assert 'SkipComponent' in str(e)
 
 

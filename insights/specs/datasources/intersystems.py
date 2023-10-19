@@ -59,3 +59,25 @@ def iris_working_messages_log(broker):
     if all_paths:
         return all_paths
     raise SkipComponent
+
+
+@datasource(IrisList, HostContext)
+def iris_license_key(broker):
+    """
+    This datasource get information from license key files.
+
+    Returns:
+        list: the file path of the license key files
+
+    Raises:
+        SkipComponent: there is no license key file
+    """
+    all_paths = []
+    for item in broker[IrisList]:
+        conf_directory = item['directory']
+        file_path = os.path.join(conf_directory, 'mgr')
+        if os.path.isdir(file_path):
+            all_paths.append(file_path)
+    if all_paths:
+        return all_paths
+    raise SkipComponent

@@ -297,6 +297,7 @@ class Specs(SpecSet):
     ipv4_neigh = RegistryPoint()
     ipv6_neigh = RegistryPoint()
     iris_cpf = RegistryPoint(multi_output=True)
+    iris_license_key = RegistryPoint(multi_output=True)
     iris_list = RegistryPoint()
     iris_messages_log = RegistryPoint(filterable=True, multi_output=True)
     ironic_conf = RegistryPoint(filterable=True)
