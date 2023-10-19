@@ -2,6 +2,16 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.2.20](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.20) (2023-10-19)
+
+- fix: compatible support built-in files for old archives ([PR 3937](https://github.com/RedHatInsights/insights-core/pull/3937))
+- Add warning to yum_log exclusion ([PR 3941](https://github.com/RedHatInsights/insights-core/pull/3941))
+- fix: unexpected Exception of YumRepoList caused by localization ([PR 3855](https://github.com/RedHatInsights/insights-core/pull/3855))
+- fix: Fix bug of ls_parser when handling "major" and "minor" in e.g. "ls -lZ /dev" ([PR 3940](https://github.com/RedHatInsights/insights-core/pull/3940))
+- fix: Replace "ls_lanRZ" and "ls_lanZ" with "ls_laRZ" and "ls_laZ" ([PR 3938](https://github.com/RedHatInsights/insights-core/pull/3938))
+- test: not raise Exception when Component is filtered in parent Component ([PR 3933](https://github.com/RedHatInsights/insights-core/pull/3933))
+- Exclude yum_log from IP obfuscation ([PR 3893](https://github.com/RedHatInsights/insights-core/pull/3893))
+
 # [insights-core-3.2.19](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.19) (2023-10-12)
 
 - Enhance chkconfig spec deps_isrhel6 ([PR 3935](https://github.com/RedHatInsights/insights-core/pull/3935))
