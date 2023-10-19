@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.2.19
+Version:        3.2.20
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,20 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Oct 19 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.20-1
+- fix: compatible support built-in files for old archives (#3937)
+  (xiangceliu@redhat.com)
+- Add warning to yum_log exclusion (#3941) (stomsa@redhat.com)
+- fix: unexpected Exception of YumRepoList caused by localization (#3855)
+  (xiaoxwan@redhat.com)
+- fix: Fix bug of ls_parser when handling "major" and "minor" in e.g. "ls -lZ
+  /dev" (#3940) (44796653+huali027@users.noreply.github.com)
+- fix: Replace "ls_lanRZ" and "ls_lanZ" with "ls_laRZ" and "ls_laZ" (#3938)
+  (44796653+huali027@users.noreply.github.com)
+- test: not raise Exception when Component is filtered in parent Component
+  (#3933) (xiangceliu@redhat.com)
+- ⚠️ Exclude yum_log from IP obfuscation (#3893) (stomsa@redhat.com)
+
 * Thu Oct 12 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.19-1
 - Enhance chkconfig spec deps_isrhel6 (#3935) (jiazhang@redhat.com)
 - fix: Suspend the data collection for xfs_db command (#3932)
