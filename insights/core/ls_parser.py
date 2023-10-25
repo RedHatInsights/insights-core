@@ -114,25 +114,31 @@ def parse_rhel8_selinux(parts):
     """
 
     links, owner, group, last = parts
-
-    selinux = parts[3].split(":")
-    lsel = len(selinux)
-    selinux, size, last = parts[-1].split(None, 2)
-    selinux = selinux.split(":")
-    date = last[:12]
-    path, link = parse_path(last[13:])
     result = {
         "links": int(links),
         "owner": owner,
         "group": group,
+    }
+    selinux, last = parts[-1].split(None, 1)
+    selinux = selinux.split(":")
+    lsel = len(selinux)
+    if "," in last:
+        major, minor, last = last.split(None, 2)
+        result['major'] = int(major.rstrip(","))
+        result['minor'] = int(minor)
+    else:
+        size, last = last.split(None, 1)
+        result['size'] = int(size)
+    date = last[:12]
+    path, link = parse_path(last[13:])
+    result.update({
         "se_user": selinux[0],
         "se_role": selinux[1] if lsel > 1 else None,
         "se_type": selinux[2] if lsel > 2 else None,
         "se_mls": selinux[3] if lsel > 3 else None,
-        "size": int(size),
         "name": path,
         "date": date,
-    }
+    })
     if link:
         result["link"] = link
     return result

@@ -179,6 +179,9 @@ class MetadataProvider(FileProvider):
         deprecated(MetadataProvider, "Please collect the built-in file via datasource spec instead.", "3.5.0")
         super(MetadataProvider, self).__init__(relative_path, root, ds, ctx)
 
+    def _set_root(self, root):
+        self.root = root
+
     def _stream(self):
         """
         Returns a generator of lines instead of a list of lines.

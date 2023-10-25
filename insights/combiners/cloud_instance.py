@@ -15,11 +15,14 @@ results of the following combiners and parsers:
 """
 from insights.combiners.cloud_provider import CloudProvider
 from insights.core.exceptions import ContentException, SkipComponent
+from insights.core.filters import add_filter
 from insights.core.plugins import combiner
 from insights.parsers.aws_instance_id import AWSInstanceIdDoc
 from insights.parsers.azure_instance import AzureInstanceID, AzureInstanceType
 from insights.parsers.gcp_instance_type import GCPInstanceType
 from insights.parsers.subscription_manager import SubscriptionManagerFacts
+
+add_filter(SubscriptionManagerFacts, 'instance_id')
 
 
 @combiner(

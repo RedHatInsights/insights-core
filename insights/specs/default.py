@@ -21,7 +21,6 @@ from insights.core.spec_factory import (
     command_with_args, container_collect, container_execute, first_file,
     first_of, foreach_collect, foreach_execute, glob_file, head, listdir,
     simple_command, simple_file)
-from insights.core.spec_factory import MetadataProvider  # deprecated
 from insights.specs import Specs
 from insights.specs.datasources import (
         aws, awx_manage, candlepin_broker, client_metadata, cloud_init,
@@ -79,26 +78,14 @@ class DefaultSpecs(Specs):
     ovs_vsctl_list_br = simple_command("/usr/bin/ovs-vsctl list-br")
 
     # Client metadata specs/files
-    ansible_host = first_of([
-        client_metadata.ansible_host,
-        simple_file("/ansible_host", kind=MetadataProvider)])
-    blacklist_report = client_metadata.blacklist_report  # new, no need first_of
-    blacklisted_specs = first_of([
-        client_metadata.blacklisted_specs,
-        first_file(["/blacklisted_specs", "/blacklisted_specs.txt"], kind=MetadataProvider)])
-    branch_info = first_of([
-        client_metadata.branch_info,
-        simple_file("/branch_info", kind=MetadataProvider)])
-    display_name = first_of([
-        client_metadata.display_name,
-        simple_file("/display_name", kind=MetadataProvider)])
-    egg_release = client_metadata.egg_release  # new, no need first_of
-    tags = first_of([
-        client_metadata.tags,
-        simple_file("/tags.json", kind=MetadataProvider)])
-    version_info = first_of([
-        client_metadata.version_info,
-        simple_file("/version_info", kind=MetadataProvider)])
+    ansible_host = client_metadata.ansible_host
+    blacklist_report = client_metadata.blacklist_report
+    blacklisted_specs = client_metadata.blacklisted_specs
+    branch_info = client_metadata.branch_info
+    display_name = client_metadata.display_name
+    egg_release = client_metadata.egg_release
+    tags = client_metadata.tags
+    version_info = client_metadata.version_info
 
     # Client App specs
     malware_detection = malware_detection.malware_detection_app
@@ -366,8 +353,8 @@ class DefaultSpecs(Specs):
     ls_lanL = command_with_args('/bin/ls -lanL %s', ls.list_with_lanL, keep_rc=True)
     ls_lanR = command_with_args('/bin/ls -lanR %s', ls.list_with_lanR, keep_rc=True)
     ls_lanRL = command_with_args('/bin/ls -lanRl %s', ls.list_with_lanRL, keep_rc=True)
-    ls_lanRZ = command_with_args('/bin/ls -lanRZ %s', ls.list_with_lanRZ, keep_rc=True)
-    ls_lanZ = command_with_args('/bin/ls -lanZ %s', ls.list_with_lanZ, keep_rc=True)
+    ls_laRZ = command_with_args('/bin/ls -laRZ %s', ls.list_with_laRZ, keep_rc=True)
+    ls_laZ = command_with_args('/bin/ls -laZ %s', ls.list_with_laZ, keep_rc=True)
     # Old `ls` Specs
     ls_R_var_lib_nova_instances = simple_command("/bin/ls -laR /var/lib/nova/instances")
     ls_boot = simple_command("/bin/ls -lanR /boot")
