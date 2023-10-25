@@ -79,6 +79,7 @@ class DefaultSpecs(Specs):
 
     # Client metadata specs/files
     ansible_host = client_metadata.ansible_host
+    basic_insights_client = client_metadata.basic_insights_client
     blacklist_report = client_metadata.blacklist_report
     blacklisted_specs = client_metadata.blacklisted_specs
     branch_info = client_metadata.branch_info
