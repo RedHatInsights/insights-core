@@ -77,8 +77,8 @@ def test_symbolic_name_bc(Cleaner, InsightsArchive, InsightsFile, InsightsComman
     Cleaner.assert_called_once()
     InsightsArchive.return_value.add_to_archive.assert_called()
     InsightsArchive.return_value.add_to_archive.assert_has_calls(
-        [call(InsightsFile.return_value, None, Cleaner.return_value),
-         call(InsightsCommand.return_value, None, Cleaner.return_value)],
+        [call(InsightsFile.return_value, Cleaner.return_value, ([], False)),
+         call(InsightsCommand.return_value, Cleaner.return_value, ([], False))],
         any_order=True)
 
 

@@ -43,7 +43,7 @@ class CoreCollector(DataCollector):
             manifest=manifest,
             tmp_path=self.archive.tmp_dir,
             archive_name=self.archive.archive_name,
-            rm_conf=rm_conf,
+            rm_conf=rm_conf or {},
             client_config=self.config,
         )
         logger.debug('Core collection finished.')

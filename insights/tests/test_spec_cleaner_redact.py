@@ -24,8 +24,6 @@ def test_redact_classic():
     conf = InsightsConfig()
     rm_conf = {'test': 'test'}
     pp = Cleaner(conf, rm_conf)
-    assert pp.redact['commands'] == []
-    assert pp.redact['files'] == []
     assert pp.redact['exclude'] == []
     assert pp.redact['regex'] is False
 
@@ -41,15 +39,36 @@ def test_redact_core():
     conf = InsightsConfig(core_collect=True)
     rm_conf = {'test': 'test'}
     pp = Cleaner(conf, rm_conf)
-    assert pp.redact['commands'] == []
-    assert pp.redact['files'] == []
     assert pp.redact['exclude'] == []
     assert pp.redact['regex'] is False
 
 
-def test_redact_line_not_change():
-    """No password in data"""
-    conf = InsightsConfig(core_collect=False, obfuscate=True)
+@mark.parametrize("obfuscate", [True, False])
+@mark.parametrize("core_collect", [True, False])
+def test_redact_line_changed_password(core_collect, obfuscate):
+    conf = InsightsConfig(core_collect=core_collect, obfuscate=obfuscate)
+    arch = InsightsArchive(conf)
+    arch.create_archive_dir()
+
+    # put something in the archive to redact
+    test_file = os.path.join(arch.archive_dir, 'test.file')
+    with open(test_file, 'w') as t:
+        t.write(test_file_data_sensitive)
+
+    pp = Cleaner(conf, {})
+    pp.clean_file(test_file, [])
+    # file is changed
+    with open(test_file, 'r') as t:
+        data = t.readlines()
+        assert 'p4ssw0rd' not in data[-1]
+        assert '********' in data[-1]
+    arch.delete_archive_dir()
+
+
+@mark.parametrize("obfuscate", [True, False])
+@mark.parametrize("core_collect", [True, False])
+def test_redact_keyword_empty_not_change(core_collect, obfuscate):
+    conf = InsightsConfig(core_collect=core_collect, obfuscate=obfuscate)
     arch = InsightsArchive(conf)
     arch.create_archive_dir()
 
@@ -58,63 +77,25 @@ def test_redact_line_not_change():
     with open(test_file, 'w') as t:
         t.write(test_file_data)
 
-    pp = Cleaner(conf, {})
+    pp = Cleaner(conf, {})  # empty keywords
     pp.clean_file(test_file, [])
-    # file is not changed
+    # file is NOT changed
     with open(test_file, 'r') as t:
         assert test_file_data == ''.join(t.readlines())
     arch.delete_archive_dir()
 
 
-def test_redact_line_changed_password_legacy():
-    conf = InsightsConfig(core_collect=False, obfuscate=True)
+@mark.parametrize("obfuscate", [True, False])
+@mark.parametrize("core_collect", [True, False])
+def test_redact_keyword_changed_keyword(core_collect, obfuscate):
+    conf = InsightsConfig(core_collect=core_collect, obfuscate=obfuscate)
     arch = InsightsArchive(conf)
     arch.create_archive_dir()
 
     # put something in the archive to redact
     test_file = os.path.join(arch.archive_dir, 'test.file')
     with open(test_file, 'w') as t:
-        t.write(test_file_data_sensitive)
-
-    pp = Cleaner(conf, {})
-    pp.clean_file(test_file, [])
-    # file is changed
-    with open(test_file, 'r') as t:
-        data = t.readlines()
-        assert 'p4ssw0rd' not in data[-1]
-        assert '********' in data[-1]
-    arch.delete_archive_dir()
-
-
-def test_redact_line_changed_password_core():
-    conf = InsightsConfig(core_collect=True, obfuscate=True)
-    arch = InsightsArchive(conf)
-    arch.create_archive_dir()
-
-    # put something in the archive to redact
-    test_file = os.path.join(arch.archive_dir, 'test.file')
-    with open(test_file, 'w') as t:
-        t.write(test_file_data_sensitive)
-
-    pp = Cleaner(conf, {})
-    pp.clean_file(test_file, [])
-    # file is changed
-    with open(test_file, 'r') as t:
-        data = t.readlines()
-        assert 'p4ssw0rd' not in data[-1]
-        assert '********' in data[-1]
-    arch.delete_archive_dir()
-
-
-def test_redact_line_changed_password_keyword():
-    conf = InsightsConfig(core_collect=False, obfuscate=True)
-    arch = InsightsArchive(conf)
-    arch.create_archive_dir()
-
-    # put something in the archive to redact
-    test_file = os.path.join(arch.archive_dir, 'test.file')
-    with open(test_file, 'w') as t:
-        t.write(test_file_data_sensitive)
+        t.write(test_file_data)
 
     pp = Cleaner(conf, {'keywords': ['test']})
     pp.clean_file(test_file, [])
@@ -123,13 +104,33 @@ def test_redact_line_changed_password_keyword():
         data = t.readlines()
         assert 'test' not in data[0]
         assert 'keyword0' in data[0]
-        assert 'p4ssw0rd' not in data[-1]
-        assert '********' in data[-1]
     arch.delete_archive_dir()
 
 
-def test_redact_line_changed_password_keyword_disabled():
-    conf = InsightsConfig(core_collect=False, obfuscate=False)
+@mark.parametrize("obfuscate", [True, False])
+@mark.parametrize("core_collect", [True, False])
+def test_redact_keyword_no_such_keyword_to_change(core_collect, obfuscate):
+    conf = InsightsConfig(core_collect=core_collect, obfuscate=obfuscate)
+    arch = InsightsArchive(conf)
+    arch.create_archive_dir()
+
+    # put something in the archive to redact
+    test_file = os.path.join(arch.archive_dir, 'test.file')
+    with open(test_file, 'w') as t:
+        t.write(test_file_data)
+
+    pp = Cleaner(conf, {'keywords': ['t_e_s_t']})  # no such keyword
+    pp.clean_file(test_file, [])
+    # file is NOT changed
+    with open(test_file, 'r') as t:
+        assert test_file_data == ''.join(t.readlines())
+    arch.delete_archive_dir()
+
+
+@mark.parametrize("obfuscate", [True, False])
+@mark.parametrize("core_collect", [True, False])
+def test_redact_keyword_disabled_by_no_redact(core_collect, obfuscate):
+    conf = InsightsConfig(core_collect=core_collect, obfuscate=obfuscate)
     arch = InsightsArchive(conf)
     arch.create_archive_dir()
 
@@ -139,15 +140,48 @@ def test_redact_line_changed_password_keyword_disabled():
         t.write(test_file_data)
 
     pp = Cleaner(conf, {'keywords': 'test'})
-    pp.clean_file(test_file, [])
-    # file is not changed
+    pp.clean_file(test_file, [], no_redact=True)
+    # file is NOT changed
     with open(test_file, 'r') as t:
         assert test_file_data == ''.join(t.readlines())
     arch.delete_archive_dir()
 
 
-def test_redact_exclude_regex():
-    conf = InsightsConfig(core_collect=False)
+@mark.parametrize(("line", "expected"), [
+    (
+        "what's your name? what day is today?",
+        "what's your keyword0? what keyword1 is tokeyword1?"
+    ),
+])
+@mark.parametrize("obfuscate", [True, False])
+@mark.parametrize("core_collect", [True, False])
+def test_redact_line_keyword_extract_cases(core_collect, obfuscate, line, expected):
+    conf = InsightsConfig(core_collect=core_collect, obfuscate=obfuscate)
+    pp = Cleaner(conf, {'keywords': ['name', 'day']})
+    actual = pp._redact_line(line)
+    assert actual == expected
+
+
+@mark.parametrize("core_collect", [True, False])
+def test_redact_line_keyword_with_hostname_and_ip(core_collect):
+    hostname = 'test1.abc.com'
+    line = "test1.abc.com, 10.0.0.1, test1.abc.loc, 20.1.4.7, smtp.abc.com, what's your name?, what day is today?"
+    conf = InsightsConfig(core_collect=core_collect, obfuscate=True, obfuscate_hostname=True, hostname=hostname)
+    pp = Cleaner(conf, {'keywords': ['name', 'day']}, hostname)
+    result = pp._redact_line(line)
+    assert 'test1.abc.com' in result  # hostname is not processed in _redact_line
+    assert '10.0.0.1' in result  # IP is not processed in _redact_line
+    assert '20.1.4.7' in result  # IP is not processed in _redact_line
+    assert 'name' not in result
+    assert 'day' not in result
+    assert 'keyword0' in result
+    assert 'keyword1' in result
+
+
+@mark.parametrize("obfuscate", [True, False])
+@mark.parametrize("core_collect", [True, False])
+def test_redact_patterns_exclude_regex(core_collect, obfuscate):
+    conf = InsightsConfig(core_collect=core_collect, obfuscate=obfuscate)
     arch = InsightsArchive(conf)
     arch.create_archive_dir()
 
@@ -166,8 +200,10 @@ def test_redact_exclude_regex():
     arch.delete_archive_dir()
 
 
-def test_redact_exclude_no_regex():
-    conf = InsightsConfig(core_collect=False)
+@mark.parametrize("obfuscate", [True, False])
+@mark.parametrize("core_collect", [True, False])
+def test_redact_patterns_exclude_no_regex(core_collect, obfuscate):
+    conf = InsightsConfig(core_collect=core_collect, obfuscate=obfuscate)
     arch = InsightsArchive(conf)
     arch.create_archive_dir()
 
@@ -186,8 +222,10 @@ def test_redact_exclude_no_regex():
     arch.delete_archive_dir()
 
 
-def test_redact_exclude_empty():
-    conf = InsightsConfig(core_collect=False)
+@mark.parametrize("obfuscate", [True, False])
+@mark.parametrize("core_collect", [True, False])
+def test_redact_patterns_exclude_empty(core_collect, obfuscate):
+    conf = InsightsConfig(core_collect=core_collect, obfuscate=obfuscate)
     arch = InsightsArchive(conf)
     arch.create_archive_dir()
 
@@ -205,8 +243,10 @@ def test_redact_exclude_empty():
     arch.delete_archive_dir()
 
 
-def test_redact_exclude_none():
-    conf = InsightsConfig(core_collect=False)
+@mark.parametrize("obfuscate", [True, False])
+@mark.parametrize("core_collect", [True, False])
+def test_redact_exclude_none(core_collect, obfuscate):
+    conf = InsightsConfig(core_collect=core_collect, obfuscate=obfuscate)
     arch = InsightsArchive(conf)
     arch.create_archive_dir()
 
@@ -215,8 +255,7 @@ def test_redact_exclude_none():
     with open(test_file, 'w') as t:
         t.write(test_file_data)
 
-    rm_conf = {'patterns': {}}
-    pp = Cleaner(conf, rm_conf)
+    pp = Cleaner(conf, None)
     pp.clean_file(test_file, [])
     # file is not changed
     with open(test_file, 'r') as t:
@@ -247,7 +286,7 @@ def test_redact_exclude_patterns(line, expected):
 ])
 def test_redact_patterns_regex(line, expected):
     c = InsightsConfig()
-    pp = Cleaner(c, {'patterns': {'regex': ['myserver', 'my(\w*)key']}})
+    pp = Cleaner(c, {'patterns': {'regex': ['myserver', r'my(\w*)key']}})
     actual = pp._redact_line(line)
     assert actual is expected
 
@@ -261,7 +300,7 @@ def test_redact_patterns_regex(line, expected):
 ])
 def test_redact_patterns_posix_regex(line, expected):
     c = InsightsConfig()
-    pp = Cleaner(c, {'patterns': {'regex': ['myserver', 'my(\w*)key', 'test[[:digit:]]']}})
+    pp = Cleaner(c, {'patterns': {'regex': ['myserver', r'my(\w*)key', 'test[[:digit:]]']}})
     actual = pp._redact_line(line)
     assert actual is expected
 
@@ -273,7 +312,7 @@ def test_redact_patterns_posix_regex(line, expected):
 ])
 def test_redact_password(line, expected):
     c = InsightsConfig()
-    pp = Cleaner(c, {'patterns': {'regex': ['myserver', 'my(\w*)key']}})
+    pp = Cleaner(c, {'patterns': {'regex': ['myserver', r'my(\w*)key']}})
     actual = pp._redact_line(line)
     assert actual == expected
 

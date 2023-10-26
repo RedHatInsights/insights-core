@@ -179,32 +179,7 @@ def test_obfuscate_hostname_and_ip():
         assert item not in result
 
 
-@mark.parametrize(("line", "expected"), [
-    (
-        "what's your name? what day is today?",
-        "what's your keyword0? what keyword1 is tokeyword1?"
-    ),
-])
-def test_obfuscate_keyword(line, expected):
-    c = InsightsConfig(obfuscate=True)
-    pp = Cleaner(c, {'keywords': ['name', 'day']})
-    actual = pp._obfuscate_line(line, [], None)
-    assert actual == expected
-
-
-def test_obfuscate_keyword_hostname_and_ip():
-    hostname = 'test1.abc.com'
-    line = "test1.abc.com, 10.0.0.1, test1.abc.loc, 20.1.4.7, smtp.abc.com, what's your name?, what day is today?"
-    c = InsightsConfig(obfuscate=True, obfuscate_hostname=True, hostname=hostname)
-    pp = Cleaner(c, {'keywords': ['name', 'day']}, hostname)
-    result = pp._obfuscate_line(line, ['hostname', 'ip'], pp._sub_ip)
-    assert 'example.com' in result
-    assert '10.230.230' in result
-    for item in line.split(', '):
-        assert item not in result
-
-
-def test_clean_file():
+def test_clean_file_obfuscate():
     conf = InsightsConfig(obfuscate=True)
     arch = InsightsArchive(conf)
     arch.create_archive_dir()
@@ -221,17 +196,32 @@ def test_clean_file():
     test_file = os.path.join(arch.archive_dir, 'data', 'testfile.netstat_-neopa')
     with open(test_file, 'w') as t:
         t.write(line)
-    pp.clean_file(test_file, obfs=['ip'])
+    pp.clean_file(test_file, no_obfuscate=[])
     # file is changed per netstat logic
     with open(test_file, 'r') as t:
         assert ret == ''.join(t.readlines())
 
-    # excluded files
-    test_file = os.path.join(arch.archive_dir, 'data', 'etc', 'machine-id')
+    arch.delete_archive_dir()
+
+
+def test_clean_file_obfuscate_disabled_by_no_obfuscate():
+    conf = InsightsConfig(obfuscate=True)
+    arch = InsightsArchive(conf)
+    arch.create_archive_dir()
+
+    # netstat_-neopa
+    line = "tcp6       0      0 10.0.0.1:23           10.0.0.110:63564   ESTABLISHED 0"
+
+    test_dir = os.path.join(arch.archive_dir, 'data', 'etc')
+    os.makedirs(test_dir)
+    pp = Cleaner(conf, {})
+
+    # netstat
+    test_file = os.path.join(arch.archive_dir, 'data', 'testfile.netstat_-neopa')
     with open(test_file, 'w') as t:
         t.write(line)
-    pp.clean_file(test_file, obfs=['ip'])
-    # file is not changed
+    pp.clean_file(test_file, no_obfuscate=['ip'])
+    # file is NOT changed
     with open(test_file, 'r') as t:
         assert line == ''.join(t.readlines())
 
@@ -248,14 +238,14 @@ def test_clean_file_non_exist(redact_func):
     os.makedirs(test_dir)
     pp = Cleaner(conf, {})
 
-    pp.clean_file('non_existing_file', obfs=['ip'])
+    pp.clean_file('non_existing_file', no_obfuscate=[])
     redact_func.assert_not_called()
 
     # empty file
     test_file = os.path.join(arch.archive_dir, 'data', 'etc', 'x.conf')
     with open(test_file, 'w'):
         pass
-    pp.clean_file(test_file, obfs=['ip'])
+    pp.clean_file(test_file, no_obfuscate=[])
     redact_func.assert_not_called()
 
     arch.delete_archive_dir()

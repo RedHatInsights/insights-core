@@ -28,7 +28,8 @@ import struct
 
 from tempfile import TemporaryFile
 
-from insights.client.constants import InsightsConstants as constants
+# TODO: getting RHSM facts file from the InsightsConstants directly
+# from insights.client.constants import InsightsConstants as constants
 from insights.util.hostname import determine_hostname
 from insights.util.posix_regex import replace_posix
 
@@ -39,11 +40,6 @@ DEFAULT_PASSWORD_REGEXS = [
     "(password[a-zA-Z0-9_]*)(\s*\*+\s+)(.+)",
 ]
 """The regex for password removal, which is read from the "/etc/insights-client/.exp.sed"."""
-EXCLUDE_FILES = (
-    'etc/insights-client/machine-id',
-    'etc/machine-id',
-)
-"""The files to ignore."""
 
 
 def write_report(report, report_file):
@@ -60,61 +56,49 @@ def write_report(report, report_file):
 
 class Cleaner(object):
     def __init__(self, config, rm_conf, fqdn=None):
-
-        # core parses blacklist for files and commands as regex
-        def _regextive(keywords):
-            if config.core_collect:
-                for idx, f in enumerate(keywords):
-                    keywords[idx] = '^' + f + '$'
-            return keywords
-
         self.report_dir = '/tmp'
         # Obfuscation - set: ip and hostname only
         self.obfuscate = set()
         self.obfuscate.add('ip') if config.obfuscate else None
         self.obfuscate.add('hostname') if config.obfuscate_hostname else None
 
-        # Redaction - dict:
+        # File Content Redaction
+        # - Pattern redaction
         rm_conf = rm_conf or {}
         exclude = rm_conf.get('patterns', [])
         regex = False
         if isinstance(exclude, dict) and exclude.get('regex'):
             exclude = [r'%s' % replace_posix(i) for i in exclude['regex']]
             regex = True
-        self.redact = dict(
-            exclude=exclude,
-            regex=regex,
-            files=_regextive(rm_conf.get('files', [])),
-            commands=_regextive(rm_conf.get('commands', [])),
-            components=rm_conf.get('components', []))
+        self.redact = dict(exclude=exclude, regex=regex)
 
-        # Hostname of the current host
+        # - Keyword replacement redact information
+        #   Keyword replacement do NOT depend on "obfuscate=True"
+        keywords = rm_conf.get('keywords')
+        self.kw_db = dict()  # keyword database
+        self.kw_count = 0
+        self._keywords2db(keywords)
+
+        # Obfuscation
         fqdn = fqdn if fqdn else determine_hostname(config.display_name)
         name_list = fqdn.split('.')
         self.hostname = name_list[0]
         self.fqdn = fqdn
         self.domain = None if len(name_list) <= 1 else '.'.join(name_list[1:])
 
-        # IP obfuscate information
+        # - IP obfuscate information
         self.ip_db = dict()  # IP database
         self.start_ip = '10.230.230.1'
 
-        # Hostname obfuscate information
+        # - Hostname obfuscate information
         self.hn_db = dict()  # hostname database
         self.hostname_count = 0
         self.obfuscated_fqdn = None
         self.obfuscated_domain = 'example.com'  # right now this needs to be a 2nd level domain, like foo.com, example.com, domain.org, etc.
 
-        # Domain name obfuscate information
+        # - Domain name obfuscate information
         self.dn_db = dict()  # domain name database
         self.domain_count = 0
-
-        # Keyword obfuscate information
-        keywords = rm_conf.get('keywords')
-        self.kw_db = dict()  # keyword database
-        self.kw_count = 0
-        if self.obfuscate:
-            self._keywords2db(keywords)
 
         if config.obfuscate_hostname and self.fqdn:
             self._domains2db()
@@ -122,10 +106,9 @@ class Cleaner(object):
                     self.fqdn.encode('utf-8')
                     if six.PY3 else self.fqdn).hexdigest()[:12]
             self.obfuscated_fqdn = '{0}.example.com'.format(hashed_hostname)
-            self.hn_db[self.obfuscated_fqdn] = self.fqdn  # we'll prime the hostname pump to clear out a ton of useless logic later
-            # As per https://access.redhat.com/documentation/en-us/red_hat_insights/2023/html/client_configuration_guide_for_red_hat_insights/con-insights-client-cg-data-obfuscation_insights-cg-obfuscation#proc-obfuscating-hostname_insights-cg-obfuscation
+            self.hn_db[self.obfuscated_fqdn] = self.fqdn
+            # per https://access.redhat.com/documentation/en-us/red_hat_insights/2023/html/client_configuration_guide_for_red_hat_insights/con-insights-client-cg-data-obfuscation_insights-cg-obfuscation#proc-obfuscating-hostname_insights-cg-obfuscation
             # only `hostname` is obfuscated
-            # self._process_hosts_file()  # we'll take a dig through the hosts file and make sure it is as scrubbed as possible
 
     ###########################
     #   IP functions          #
@@ -336,22 +319,23 @@ class Cleaner(object):
     ###########################
 
     def _obfuscate_line(self, line, obfs, ip_func):
-        '''this will return a line with obfuscates for all possible variables, hostname, ip, etc.'''
+        # obfuscate line for possible hostname, ip
         new_line = line
+        # IP
         if "ip" in obfs:
-            new_line = ip_func(line)                 # IP substitution
+            new_line = ip_func(line)
+        # Hostname
         if "hostname" in obfs:
-            new_line = self._sub_hostname(new_line)  # Hostname substitution
-        if self.obfuscate and hasattr(self, 'kw_db'):
-            # keywords obfuscate depends on "obfuscate=True"
-            new_line = self._sub_keywords(new_line)  # Keyword Substitution
+            new_line = self._sub_hostname(new_line)
         return new_line
 
     def _redact_line(self, line):
-        # patterns removal
+        # redact line per the file-content-redaction.yaml
         new_line = line
+        # patterns removal
         find = re.search if self.redact['regex'] else lambda x, y: x in y
         if any(find(pat, new_line) for pat in self.redact.get('exclude', [])):
+            logger.debug("Pattern matched, removing line: %s", line.strip())
             # patterns found, remove it
             return None
         # password removal
@@ -360,43 +344,38 @@ class Cleaner(object):
             new_line = re.sub(regex, r"\1\2********", tmp_line)
             if new_line != tmp_line:
                 break
+        # keyword replacement redaction
+        new_line = self._sub_keywords(new_line)
         return new_line
 
-    def clean_file(self, _file, filters=None, obfs=None):
-        def _determine_ip_func(filepath):
-            ip_func = self._sub_ip
-            if _file.endswith("netstat_-neopa"):
-                ip_func = self._sub_ip_netstat
-            return ip_func
-
-        if _file.endswith(EXCLUDE_FILES):
-            # do not redact or obfuscate the selected files
-            return
-
+    def clean_file(self, _file, filters=None, no_obfuscate=None, no_redact=False):
+        # TODO: get the filters
         # filters = filters or []
-        obfs = obfs or []
-        logger.debug('Cleaning %s %s ...', list(obfs) if obfs else '[Redacting]', _file)
+        # Get the actual obfuscate list setting for this file
+        logger.debug('Cleaning %s ...', _file)
 
         if os.path.exists(_file) and not os.path.islink(_file):
-            ip_func = _determine_ip_func(_file)
             data = None
             tmp_file = TemporaryFile(mode='w+b')
+            obfs = set(self.obfuscate) - set(no_obfuscate or [])
+            ip_func = self._sub_ip_netstat if _file.endswith("netstat_-neopa") else self._sub_ip
             # Process it
             try:
                 with open(_file, 'r') as fh:
                     data = fh.readlines()
                     if data:
                         for line in data:
-                            # Do Redaction without condition
-                            new_l = self._redact_line(line)
-                            if new_l is None:
-                                # line is removed after redaction
-                                continue
+                            # Do Redaction by default, unless 'no_redact=True'
+                            if no_redact is False:
+                                line = self._redact_line(line)
+                                if line is None:
+                                    # line is removed after redaction
+                                    continue
                             # Do Obfuscation as per the "obfs"
-                            new_l = self._obfuscate_line(new_l, obfs, ip_func)
-                            # Do `filter` as per the "filters"
+                            line = self._obfuscate_line(line, obfs, ip_func)
+                            # TODO: Do `filter` as per the "filters"
                             # new_l = self._grep_line(line, filters)
-                            tmp_file.write(new_l.encode('utf-8') if six.PY3 else new_l)
+                            tmp_file.write(line.encode('utf-8') if six.PY3 else line)
                         tmp_file.seek(0)
             except Exception as e:  # pragma: no cover
                 logger.warning(e)
@@ -492,9 +471,9 @@ class Cleaner(object):
 
         logger.info('Completed Keyword Report.')
 
-    def generate_report(self, archive_name):
+    def generate_report(self, archive_name, rhsm_facts_file):
         if self.obfuscate or self.kw_count > 0:
-            self.generate_rhsm_facts(constants.rhsm_facts_file)
+            self.generate_rhsm_facts(rhsm_facts_file)
             if 'ip' in self.obfuscate:
                 self.generate_ip_report(archive_name)
             if 'hostname' in self.obfuscate:
