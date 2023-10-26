@@ -2,7 +2,7 @@
 InsightsClientConf - file ``/etc/insights-client/insights-client.conf``
 =======================================================================
 """
-from insights.core import IniConfigFile
+from insights.core import IniConfigFile, JSONParser
 from insights.core.filters import add_filter
 from insights.core.plugins import parser
 from insights.specs import Specs
@@ -38,5 +38,23 @@ class InsightsClientConf(IniConfigFile):
         'INFO'
         >>> conf.getboolean("insights-client", "obfuscate")
         False
+    """
+    pass
+
+
+@parser(Specs.basic_auth_insights_client)
+class BasicAuthInsightsClient(JSONParser):
+    """
+    Class for parsing the content of ``basic_conf``.
+
+    Typical content::
+
+        {"username_set": true, "pass_set": true}
+
+    Examples:
+        >>> type(basic_conf)
+        <class 'insights.parsers.insights_client_conf.BasicAuthInsightsClient'>
+        >>> basic_conf['username_set']
+        True
     """
     pass

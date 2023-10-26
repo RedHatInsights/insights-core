@@ -2,7 +2,7 @@ import doctest
 import pytest
 from insights import SkipComponent
 from insights.parsers import client_metadata
-from insights.parsers.client_metadata import (AnsibleHost, BasicAuthInsightsClient, BlacklistedSpecs,
+from insights.parsers.client_metadata import (AnsibleHost, BlacklistedSpecs,
                                               BranchInfo, DisplayName,
                                               MachineID, Tags, VersionInfo)
 from insights.tests import context_wrap
@@ -28,10 +28,6 @@ VER_INFO_1 = """
 
 VER_INFO_2 = """
 {"core_version": "3.0.203-1", "client_version": "3.1.1"}
-""".strip()
-
-BASIC_INSIGHTS_CLIENT = """
-{"username_set": true, "pass_set": true}
 """.strip()
 
 
@@ -110,12 +106,6 @@ def test_version_info_empty():
     assert 'Empty output.' in skip_component_check(VersionInfo)
 
 
-def test_basic_insights_client():
-    ret = BasicAuthInsightsClient(context_wrap(BASIC_INSIGHTS_CLIENT))
-    assert "username_set" in ret
-    assert "pass_set" in ret
-
-
 def test_doc_examples():
     env = {
         "ansible_host": AnsibleHost(context_wrap(ANSIBLE_HOST)),
@@ -125,7 +115,6 @@ def test_doc_examples():
         "machine_id": MachineID(context_wrap(MACHINE_ID)),
         "tags": Tags(context_wrap(TAGS_JSON_CONTENT)),
         'ver': VersionInfo(context_wrap(VER_INFO_2)),
-        'basic_conf': BasicAuthInsightsClient(context_wrap(BASIC_INSIGHTS_CLIENT)),
     }
     failed, total = doctest.testmod(client_metadata, globs=env)
     assert failed == 0
