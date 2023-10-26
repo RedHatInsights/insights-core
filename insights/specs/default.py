@@ -79,7 +79,6 @@ class DefaultSpecs(Specs):
 
     # Client metadata specs/files
     ansible_host = client_metadata.ansible_host
-    basic_auth_insights_client = client_metadata.basic_auth_insights_client
     blacklist_report = client_metadata.blacklist_report
     blacklisted_specs = client_metadata.blacklisted_specs
     branch_info = client_metadata.branch_info
@@ -112,6 +111,7 @@ class DefaultSpecs(Specs):
     azure_instance_plan = simple_command("/usr/bin/curl -s -H Metadata:true http://169.254.169.254/metadata/instance/compute/plan?api-version=2021-12-13&format=json --connect-timeout 5", deps=[IsAzure])
     azure_instance_type = simple_command("/usr/bin/curl -s -H Metadata:true http://169.254.169.254/metadata/instance/compute/vmSize?api-version=2021-12-13&format=text --connect-timeout 5", deps=[IsAzure])
     azure_load_balancer = simple_command("/usr/bin/curl -s -H Metadata:true http://169.254.169.254/metadata/loadbalancer?api-version=2021-12-13&format=json --connect-timeout 5", deps=[IsAzure])
+    basic_auth_insights_client = client_metadata.basic_auth_insights_client
     bdi_read_ahead_kb = glob_file("/sys/class/bdi/*/read_ahead_kb")
     bios_uuid = simple_command("/usr/sbin/dmidecode -s system-uuid")
     blkid = simple_command("/sbin/blkid -c /dev/null")

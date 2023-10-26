@@ -4,7 +4,6 @@ from insights.core.spec_factory import SpecSet, RegistryPoint
 class Specs(SpecSet):
     # Client metadata specs/files
     ansible_host = RegistryPoint()
-    basic_auth_insights_client = RegistryPoint()
     blacklist_report = RegistryPoint()
     blacklisted_specs = RegistryPoint()
     branch_info = RegistryPoint()
@@ -41,6 +40,7 @@ class Specs(SpecSet):
     azure_instance_plan = RegistryPoint()
     azure_instance_type = RegistryPoint()
     azure_load_balancer = RegistryPoint()
+    basic_auth_insights_client = RegistryPoint()
     bdi_read_ahead_kb = RegistryPoint(multi_output=True)
     bios_uuid = RegistryPoint()
     blkid = RegistryPoint()
