@@ -2,11 +2,11 @@
 import pytest
 import sys
 import warnings
-from pytest import mark
+
 from insights.tests import deep_compare
 from insights.core.dr import split_requirements, stringify_requirements, get_missing_requirements
 from insights.core import context
-from insights.util import case_variants, deprecated, posix_regex
+from insights.util import case_variants, deprecated
 
 
 class t(object):

@@ -126,6 +126,40 @@ class DataCollector(object):
         self.archive.add_metadata_to_archive(
             json.dumps(collection_stats), '/collection_stats')
 
+    def _write_rhsm_facts(self, hashed_fqdn, ip_csv):
+        logger.info('Writing RHSM facts to %s ...', constants.rhsm_facts_file)
+
+        hn_block = []
+        for k, v in self.hn_db.items():
+            hn_block.append({'original': k, 'obfuscated': v})
+
+        kw_block = []
+        for k, v in self.kw_db.items():
+            kw_block.append({'original': k, 'obfuscated': v})
+
+        ip_block = []
+        for k, v in self.ip_db.items():
+            ip_block.append(
+                {
+                    'original': self._int2ip(v),
+                    'obfuscated': self._int2ip(k)
+                })
+
+        facts = {
+            'insights_client.hostname': self.obfuscated_fqdn,
+            'insights_client.obfuscate_ip_enabled': 'ip' in self.obfuscate,
+            'insights_client.ips': json.dumps(ip_block),
+            'insights_client.obfuscate_hostname_enabled': 'hostname' in self.obfuscate,
+            'insights_client.hostnames': json.dumps(hn_block),
+            'insights_client.keywords': json.dumps(kw_block),
+        }
+
+        try:
+            with open(constants.rhsm_facts_file, 'w') as fil:
+                json.dump(facts, fil)
+        except (IOError, OSError) as e:
+            logger.error('Could not write to %s: %s', constants.rhsm_facts_file, str(e))
+
     def _run_pre_command(self, pre_cmd):
         '''
         Run a pre command to get external args for a command
@@ -227,11 +261,12 @@ class DataCollector(object):
         '''
         Run specs and collect all the data
         '''
-        def _get_spec_obfs(symbolic_name, cleaner):
+        def _get_spec_info(symbolic_name):
             if symbolic_name:
                 symbolic_comp = get_component_by_name('insights.specs.Specs.{0}'.format(symbolic_name))
-                spec_no_obfs = symbolic_comp.not_obfuscate if symbolic_comp else []
-                return set(cleaner.obfuscate) - set(spec_no_obfs)
+                if symbolic_comp:
+                    return symbolic_comp.no_obfuscate, symbolic_comp.no_redact
+            return [], False
 
         # initialize systemd-notify thread
         systemd_notify_init_thread()
@@ -243,14 +278,15 @@ class DataCollector(object):
 
         logger.debug('Beginning to run spec collection ...')
 
+        rm_conf = rm_conf or {}
         cleaner = Cleaner(self.config, rm_conf)
-        rm_commands = cleaner.redact.get('commands', [])
-        rm_files = cleaner.redact.get('files', [])
+        rm_commands = rm_conf.get('commands', [])
+        rm_files = rm_conf.get('files', [])
 
         for c in self.spec_conf['commands']:
             symbolic_name = c.get('symbolic_name')
             command = c.get('command')
-            spec_obfs = _get_spec_obfs(symbolic_name, cleaner)
+            spec_info = _get_spec_info(symbolic_name)
             if command in rm_commands or symbolic_name in rm_commands:
                 logger.warn("WARNING: Skipping command %s", command)
                 BLACKLISTED_SPECS.append(symbolic_name)
@@ -262,7 +298,7 @@ class DataCollector(object):
                         BLACKLISTED_SPECS.append(s['symbolic_name'])
                         continue
                     cmd_spec = InsightsCommand(self.config, s, self.mountpoint)
-                    self.archive.add_to_archive(cmd_spec, spec_obfs, cleaner)
+                    self.archive.add_to_archive(cmd_spec, cleaner, spec_info)
                     collection_stats[s['command']] = {
                         'return_code': cmd_spec.return_code,
                         'exec_time': cmd_spec.exec_time,
@@ -270,7 +306,7 @@ class DataCollector(object):
                     }
         for f in self.spec_conf['files']:
             symbolic_name = f.get('symbolic_name')
-            spec_obfs = _get_spec_obfs(symbolic_name, cleaner)
+            spec_info = _get_spec_info(symbolic_name)
             if f['file'] in rm_files or symbolic_name in rm_files:
                 logger.warn("WARNING: Skipping file %s", f['file'])
                 BLACKLISTED_SPECS.append(symbolic_name)
@@ -283,7 +319,7 @@ class DataCollector(object):
                         BLACKLISTED_SPECS.append(s['symbolic_name'])
                     else:
                         file_spec = InsightsFile(s, self.mountpoint)
-                        self.archive.add_to_archive(file_spec, spec_obfs, cleaner)
+                        self.archive.add_to_archive(file_spec, cleaner, spec_info)
                         collection_stats[s['file']] = {
                             'exec_time': file_spec.exec_time,
                             'output_size': file_spec.output_size
@@ -291,7 +327,7 @@ class DataCollector(object):
         if 'globs' in self.spec_conf:
             for g in self.spec_conf['globs']:
                 symbolic_name = g.get('symbolic_name')
-                spec_obfs = _get_spec_obfs(symbolic_name, cleaner)
+                spec_info = _get_spec_info(symbolic_name)
                 if symbolic_name in rm_files:
                     # ignore glob via symbolic name
                     logger.warn("WARNING: Skipping file %s", g['glob'])
@@ -304,12 +340,12 @@ class DataCollector(object):
                             BLACKLISTED_SPECS.append(s['symbolic_name'])
                         else:
                             glob_spec = InsightsFile(s, self.mountpoint)
-                            self.archive.add_to_archive(glob_spec, spec_obfs, cleaner)
+                            self.archive.add_to_archive(glob_spec, cleaner, spec_info)
                             collection_stats[s['file']] = {
                                 'exec_time': glob_spec.exec_time,
                                 'output_size': glob_spec.output_size
                             }
-        cleaner.generate_report(self.archive.archive_name)
+        cleaner.generate_report(self.archive.archive_name, constants.rhsm_facts_file)
         logger.debug('Spec collection finished.')
 
         # collect metadata

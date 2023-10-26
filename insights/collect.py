@@ -442,19 +442,6 @@ def collect(manifest=default_manifest, tmp_path=None, archive_name=None,
         except LookupError:
             log.warning('Could not set timeout option.')
 
-    cleaner = Cleaner(client_config, rm_conf)
-    apply_blacklist(cleaner.redact)
-
-    for component in cleaner.redact.get('components', []):
-        if not dr.get_component_by_name(component):
-            log.warning('WARNING: Unknown component in blacklist: %s' % component)
-        else:
-            dr.set_enabled(component, enabled=False)
-            BLACKLISTED_SPECS.append(component.split('.')[-1])
-            log.warning('WARNING: Skipping component: %s', component)
-
-    to_persist = get_to_persist(client.get("persist", set()))
-
     try:
         filters.load()
     except IOError as e:
@@ -470,6 +457,7 @@ def collect(manifest=default_manifest, tmp_path=None, archive_name=None,
 
     broker = dr.Broker()
     ctx = create_context(client.get("context", {}))
+    cleaner = Cleaner(client_config, rm_conf)
     broker[ctx.__class__] = ctx
     broker['cleaner'] = cleaner
     broker['client_config'] = client_config
@@ -477,6 +465,7 @@ def collect(manifest=default_manifest, tmp_path=None, archive_name=None,
     # run in "serial" mode by default
     run_strategy = client.get("run_strategy", {"name": "serial"})
     parallel = run_strategy.get("name") == "parallel"
+    to_persist = get_to_persist(client.get("persist", set()))
 
     if client_config.obfuscate and parallel:
         log.warning("Parallel collection is not supported when 'obfuscate' is enabled")
@@ -490,7 +479,7 @@ def collect(manifest=default_manifest, tmp_path=None, archive_name=None,
 
     collect_errors = _parse_broker_exceptions(broker, EXCEPTIONS_TO_REPORT)
 
-    cleaner.generate_report(archive_name)
+    cleaner.generate_report(archive_name, client_config.rhsm_facts_file)
 
     if compress:
         return create_archive(output_path), collect_errors

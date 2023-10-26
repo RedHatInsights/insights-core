@@ -314,8 +314,8 @@ def test_file_signature_invalid(get_branch_info, validate_gpg_sig, data_collecto
 @patch_isfile(True)
 @patch_try_disk({"version": "1.2.3"})
 @patch_get_branch_info()
-@patch("insights.client.client.Cleaner")
-def test_file_result(cleaner, get_branch_info, try_disk, raw_config_parser, data_collector, verify_permissions):
+@patch("insights.client.client.InsightsUploadConf.create_report")
+def test_file_result(create_report, get_branch_info, try_disk, raw_config_parser, data_collector, verify_permissions):
     """
     Configuration from file is loaded from the "uploader.json" key.
     """
@@ -332,14 +332,12 @@ def test_file_result(cleaner, get_branch_info, try_disk, raw_config_parser, data
         config = collect_args()
         collect(config)
 
-        name, args, kwargs = try_disk.mock_calls[0]
-        spec_conf = try_disk.return_value.copy()
-        spec_conf.update({"file": args[0]})
-
+        rm_conf = {"files": removed_files}
         branch_info = get_branch_info.return_value
+        blacklist_report = create_report.return_value
 
-        data_collector.return_value.run_collection.assert_called_once_with(spec_conf, cleaner, branch_info)
-        data_collector.return_value.done.assert_called_once_with(spec_conf, cleaner)
+        data_collector.return_value.run_collection.assert_called_once_with(rm_conf, branch_info, blacklist_report)
+        data_collector.return_value.done.assert_called_once_with()
 
 
 @mark.regression

@@ -788,6 +788,8 @@ class InsightsConfig(object):
         self.to_json = self.to_json or self.analyze_container
         self.register = self.register and not self.offline
         self.keep_archive = self.keep_archive or self.no_upload
+        # TODO: remove this when discarding legacy data collection (data_collector)
+        self.rhsm_facts_file = constants.rhsm_facts_file
         if self.to_json and self.quiet:
             self.diagnosis = True
         if self.test_connection:

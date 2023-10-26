@@ -90,11 +90,11 @@ class ContentProvider(object):
 
     def write(self, dst):
         if self.ds and self.cleaner:
-            # Get the actual obfuscate list of the spec
-            obfuscate = set(self.cleaner.obfuscate) - set(self.ds.not_obfuscate)
             # Clean the specs content for core collection
             self.cleaner.clean_file(
-                    dst, filters=get_filters(self.ds), obfs=obfuscate)
+                    dst, filters=get_filters(self.ds),
+                    no_obfuscate=self.ds.no_obfuscate,
+                    no_redact=self.ds.no_redact)
 
     def __repr__(self):
         msg = "<%s(path=%r, cmd=%r)>"
@@ -109,13 +109,14 @@ class ContentProvider(object):
 
 class DatasourceProvider(ContentProvider):
     def __init__(self, content, relative_path, root='/', ds=None, ctx=None,
-                 cleaner=None, not_obfuscate=None):
+                 cleaner=None, no_obfuscate=None, no_redact=False):
         super(DatasourceProvider, self).__init__()
         self.ds = ds or self
         self.ctx = ctx
         self.root = root
         self.cleaner = cleaner
-        self.not_obfuscate = not_obfuscate or []
+        self.no_obfuscate = no_obfuscate or []
+        self.no_redact = no_redact
         self.relative_path = relative_path
         self._content = content if isinstance(content, list) else content.splitlines()
 
@@ -487,16 +488,18 @@ class RegistryPoint(object):
     #
     # intentionally not a docstring so this doesn't show up in pydoc.
     def __init__(self, metadata=None, multi_output=False, raw=False,
-                 filterable=False, not_obfuscate=None):
-        not_obfuscate = [] if not_obfuscate is None else not_obfuscate
+                 filterable=False, no_obfuscate=None, no_redact=False):
+        no_obfuscate = [] if no_obfuscate is None else no_obfuscate
         self.metadata = metadata
         self.multi_output = multi_output
-        self.not_obfuscate = not_obfuscate
+        self.no_obfuscate = no_obfuscate
+        self.no_redact = no_redact
         self.raw = raw
         self.filterable = filterable
         self.__name__ = self.__class__.__name__
         datasource([], metadata=metadata, multi_output=multi_output, raw=raw,
-                   filterable=filterable, not_obfuscate=not_obfuscate)(self)
+                   filterable=filterable, no_obfuscate=no_obfuscate,
+                   no_redact=no_redact)(self)
 
     def __call__(self, broker):
         for c in reversed(dr.get_delegate(self).deps):
@@ -582,7 +585,8 @@ def _resolve_registry_points(cls, base, dct):
                 v.filterable = delegate.filterable = point.filterable
                 v.raw = delegate.raw = point.raw
                 v.multi_output = delegate.multi_output = point.multi_output
-                v.not_obfuscate = delegate.not_obfuscate = point.not_obfuscate
+                v.no_obfuscate = delegate.no_obfuscate = point.no_obfuscate
+                v.no_redact = delegate.no_redact = point.no_redact
 
                 # the RegistryPoint gets the implementation datasource as a
                 # dependency
