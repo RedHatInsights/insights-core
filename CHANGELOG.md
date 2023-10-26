@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.2.21](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.21) (2023-10-26)
+
+- feat: Add spec basic_insights_client ([PR 3943](https://github.com/RedHatInsights/insights-core/pull/3943))
+
 # [insights-core-3.2.20](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.20) (2023-10-19)
 
 - fix: compatible support built-in files for old archives ([PR 3937](https://github.com/RedHatInsights/insights-core/pull/3937))
