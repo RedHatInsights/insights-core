@@ -40,6 +40,7 @@ class Specs(SpecSet):
     azure_instance_plan = RegistryPoint()
     azure_instance_type = RegistryPoint()
     azure_load_balancer = RegistryPoint()
+    basic_auth_insights_client = RegistryPoint()
     bdi_read_ahead_kb = RegistryPoint(multi_output=True)
     bios_uuid = RegistryPoint()
     blkid = RegistryPoint()

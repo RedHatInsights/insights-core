@@ -17,13 +17,25 @@ auto_update=False
 obfuscate=False
 """.strip()
 
+BASIC_INSIGHTS_CLIENT = """
+{"username_set": true, "pass_set": true}
+""".strip()
+
 
 def test_doc_examples():
     failed_count, tests = doctest.testmod(
         insights_client_conf,
-        globs={'conf': insights_client_conf.InsightsClientConf(context_wrap(CLIENT_CONF))}
+        globs={'conf': insights_client_conf.InsightsClientConf(context_wrap(CLIENT_CONF)),
+               'basic_conf': insights_client_conf.BasicAuthInsightsClient(context_wrap(BASIC_INSIGHTS_CLIENT))
+               }
     )
     assert failed_count == 0
+
+
+def test_basic_insights_client():
+    ret = insights_client_conf.BasicAuthInsightsClient(context_wrap(BASIC_INSIGHTS_CLIENT))
+    assert "username_set" in ret
+    assert "pass_set" in ret
 
 
 def test_insights_client_conf():
