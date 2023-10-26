@@ -56,8 +56,8 @@ class AnsibleHost(HostnameBase):
     pass
 
 
-@parser(Specs.basic_insights_client)
-class BasicInsightsClient(JSONParser):
+@parser(Specs.basic_auth_insights_client)
+class BasicAuthInsightsClient(JSONParser):
     """
     Class for parsing the content of ``basic_conf``.
 
@@ -67,7 +67,7 @@ class BasicInsightsClient(JSONParser):
 
     Examples:
         >>> type(basic_conf)
-        <class 'insights.parsers.client_metadata.BasicInsightsClient'>
+        <class 'insights.parsers.client_metadata.BasicAuthInsightsClient'>
         >>> basic_conf['username_set']
         True
     """

@@ -45,7 +45,7 @@ def ansible_host(broker):
 
 
 @datasource(HostContext)
-def basic_insights_client(broker):
+def basic_auth_insights_client(broker):
     """
     Custom datasource for ``username`` and ``password`` getting from insights-client
     configuration.

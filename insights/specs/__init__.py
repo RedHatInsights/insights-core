@@ -4,7 +4,7 @@ from insights.core.spec_factory import SpecSet, RegistryPoint
 class Specs(SpecSet):
     # Client metadata specs/files
     ansible_host = RegistryPoint()
-    basic_insights_client = RegistryPoint()
+    basic_auth_insights_client = RegistryPoint()
     blacklist_report = RegistryPoint()
     blacklisted_specs = RegistryPoint()
     branch_info = RegistryPoint()
