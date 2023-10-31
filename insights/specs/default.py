@@ -545,7 +545,7 @@ class DefaultSpecs(Specs):
     ps_auxcww = simple_command("/bin/ps auxcww")
     ps_auxww = simple_command("/bin/ps auxww")
     ps_ef = simple_command("/bin/ps -ef")
-    ps_eo = simple_command("/usr/bin/ps -eo pid,ppid,comm")
+    ps_eo = simple_command("/usr/bin/ps -eo pid,ppid,comm,nlwp")
     ps_eo_cmd = ps_datasource.ps_eo_cmd
     pulp_worker_defaults = simple_file("etc/default/pulp_workers")
     puppet_ca_cert_expire_date = simple_command("/usr/bin/openssl x509 -in /etc/puppetlabs/puppet/ssl/ca/ca_crt.pem -enddate -noout")

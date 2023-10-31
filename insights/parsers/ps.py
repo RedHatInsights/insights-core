@@ -393,26 +393,26 @@ class ContainerPsAux(ContainerParser, PsAuxww):
 @parser(Specs.ps_eo)
 class PsEo(Ps):
     """
-    Class to parse the command `ps -eo pid,ppid,comm`
+    Class to parse the command `ps -eo pid,ppid,comm,nlwp`
 
     Sample input data::
 
-          PID  PPID COMMAND
-            1     0 systemd
-            2     0 kthreadd
-            3     2 ksoftirqd/0
-         2416     1 auditd
-         2419  2416 audispd
-         2421  2419 sedispatch
-         2892     1 NetworkManager
-         3172  2892 dhclient
-         3871     1 master
-         3886  3871 qmgr
-        13724  3871 pickup
-        15663     2 kworker/0:1
-        16998     2 kworker/0:3
-        17259     2 kworker/0:0
-        18294  3357 sshd
+          PID  PPID COMMAND       NLWP
+            1     0 systemd         1
+            2     0 kthreadd        1
+            3     2 ksoftirqd/0     1
+         2416     1 auditd          1
+         2419  2416 audispd         1
+         2421  2419 sedispatch      1
+         2892     1 NetworkManager  1
+         3172  2892 dhclient        1
+         3871     1 master          1
+         3886  3871 qmgr            1
+        13724  3871 pickup          1
+        15663     2 kworker/0:1     1
+        16998     2 kworker/0:3     1
+        17259     2 kworker/0:0     1
+        18294  3357 sshd            1
 
     Examples:
         >>> type(ps_eo)

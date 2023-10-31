@@ -388,6 +388,31 @@ PS_EO_NORMAL = """
 18379 18347 ps
 """
 
+PS_EO_WITH_NLWP = """
+    PID    PPID COMMAND         NLWP
+      1       0 systemd            1
+      2       0 kthreadd           1
+      3       2 rcu_gp             1
+      4       2 rcu_par_gp         1
+      6       2 kworker/0:0H-ev    1
+      9       2 mm_percpu_wq       1
+     10       2 rcu_tasks_rude_    1
+     11       2 rcu_tasks_trace    1
+     12       2 ksoftirqd/0        1
+     13       2 rcu_sched          1
+     14       2 migration/0        1
+     15       2 watchdog/0         1
+     16       2 cpuhp/0            1
+     17       2 cpuhp/1            1
+     18       2 watchdog/1         1
+     19       2 migration/1        1
+     20       2 ksoftirqd/1        1
+     22       2 kworker/1:0H-ev    1
+     23       2 cpuhp/2            1
+     24       2 watchdog/2         1
+     25       2 migration/2        1
+"""
+
 
 def test_ps_eo():
     p = ps.PsEo(context_wrap(PS_EO_NORMAL, strip=False))
@@ -404,6 +429,13 @@ def test_ps_eo():
         {'PID': '18379', 'PPID': '18347', 'COMMAND': 'ps', 'COMMAND_NAME': 'ps', 'ARGS': ''}
     ]
     assert len(p.children('2')) == 6
+
+    ps_with_elwp = ps.PsEo(context_wrap(PS_EO_WITH_NLWP, strip=False))
+    assert ps_with_elwp is not None
+    assert len(ps_with_elwp.pid_info) == 21
+    assert ps_with_elwp.pid_info['25'] == {
+        'PID': '25', 'PPID': '2', 'COMMAND': 'migration/2', 'COMMAND_NAME': 'migration/2', 'ARGS': '', 'NLWP': '1'
+    }
 
 
 def test_ps_eo_stripped():
