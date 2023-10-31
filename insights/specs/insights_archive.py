@@ -228,7 +228,7 @@ class InsightsArchiveSpecs(Specs):
     ps_auxcww = simple_file("insights_commands/ps_auxcww")
     ps_auxww = simple_file("insights_commands/ps_auxww")
     ps_ef = simple_file("insights_commands/ps_-ef")
-    ps_eo = simple_file("insights_commands/ps_-eo_pid_ppid_comm")
+    ps_eo = first_file(["insights_commands/ps_-eo_pid_ppid_comm_nlwp", "insights_commands/ps_-eo_pid_ppid_comm"])
     puppet_ca_cert_expire_date = simple_file("insights_commands/openssl_x509_-in_.etc.puppetlabs.puppet.ssl.ca.ca_crt.pem_-enddate_-noout")
     pvs_noheadings = simple_file("insights_commands/pvs_--nameprefixes_--noheadings_--separator_-a_-o_pv_all_vg_name_--config_global_locking_type_0")
     rabbitmq_report = simple_file("insights_commands/rabbitmqctl_report")
