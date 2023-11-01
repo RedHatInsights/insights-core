@@ -32,22 +32,22 @@ nginx    111435 111434  0 22:32 ?        00:00:00 nginx: worker process
 """
 
 PsEo_TEST_DOC = """
-  PID  PPID COMMAND
-    1     0 systemd
-    2     0 kthreadd
-    3     2 ksoftirqd/0
- 2416     1 auditd
- 2419  2416 audispd
- 2421  2419 sedispatch
- 2892     1 NetworkManager
- 3172  2892 dhclient
- 3871     1 master
- 3886  3871 qmgr
-13724  3871 pickup
-15663     2 kworker/0:1
-16998     2 kworker/0:3
-17259     2 kworker/0:0
-18294  3357 sshd
+ PID  PPID COMMAND       NLWP
+   1     0 systemd         1
+   2     0 kthreadd        1
+   3     2 ksoftirqd/0     1
+2416     1 auditd          1
+2419  2416 audispd         1
+2421  2419 sedispatch      1
+2892     1 NetworkManager  1
+3172  2892 dhclient        1
+3871     1 master          1
+3886  3871 qmgr            1
+13724  3871 pickup         1
+15663     2 kworker/0:1    1
+16998     2 kworker/0:3    1
+17259     2 kworker/0:0    1
+18294  3357 sshd           1
 """
 
 PsAlxwww_TEST_DOC = """
@@ -361,7 +361,7 @@ def test_ps_auxww_with_bad_input():
     assert 'PsAuxww: Cannot find ps header line containing' in str(exc)
 
 
-PS_EO_NORMAL = """
+PS_EO_WITHOUT_NLWP = """
   PID  PPID COMMAND
     1     0 systemd
     2     0 kthreadd
@@ -415,7 +415,7 @@ PS_EO_WITH_NLWP = """
 
 
 def test_ps_eo():
-    p = ps.PsEo(context_wrap(PS_EO_NORMAL, strip=False))
+    p = ps.PsEo(context_wrap(PS_EO_WITHOUT_NLWP, strip=False))
     assert p is not None
     assert len(p.pid_info) == 23
     assert '15663' in p.pid_info
@@ -439,7 +439,7 @@ def test_ps_eo():
 
 
 def test_ps_eo_stripped():
-    p = ps.PsEo(context_wrap(PS_EO_NORMAL, strip=True))
+    p = ps.PsEo(context_wrap(PS_EO_WITHOUT_NLWP, strip=True))
     assert p is not None
     assert len(p.pid_info) == 23
 

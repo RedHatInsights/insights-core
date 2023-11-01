@@ -417,13 +417,13 @@ class PsEo(Ps):
     Examples:
         >>> type(ps_eo)
         <class 'insights.parsers.ps.PsEo'>
-        >>> ps_eo.pid_info['1'] == {'PID': '1', 'PPID': '0', 'COMMAND': 'systemd', 'COMMAND_NAME': 'systemd', 'ARGS': ''}
+        >>> ps_eo.pid_info['1'] == {'PID': '1', 'PPID': '0', 'COMMAND': 'systemd', 'COMMAND_NAME': 'systemd', 'ARGS': '', 'NLWP': '1'}
         True
         >>> ps_eo.children('2') == [
-        ...     {'PID': '3', 'PPID': '2', 'COMMAND': 'ksoftirqd/0', 'COMMAND_NAME': 'ksoftirqd/0', 'ARGS': ''},
-        ...     {'PID': '15663', 'PPID': '2', 'COMMAND': 'kworker/0:1', 'COMMAND_NAME': 'kworker/0:1', 'ARGS': ''},
-        ...     {'PID': '16998', 'PPID': '2', 'COMMAND': 'kworker/0:3', 'COMMAND_NAME': 'kworker/0:3', 'ARGS': ''},
-        ...     {'PID': '17259', 'PPID': '2', 'COMMAND': 'kworker/0:0', 'COMMAND_NAME': 'kworker/0:0', 'ARGS': ''}
+        ...     {'PID': '3', 'PPID': '2', 'COMMAND': 'ksoftirqd/0', 'COMMAND_NAME': 'ksoftirqd/0', 'ARGS': '', 'NLWP': '1'},
+        ...     {'PID': '15663', 'PPID': '2', 'COMMAND': 'kworker/0:1', 'COMMAND_NAME': 'kworker/0:1', 'ARGS': '', 'NLWP': '1'},
+        ...     {'PID': '16998', 'PPID': '2', 'COMMAND': 'kworker/0:3', 'COMMAND_NAME': 'kworker/0:3', 'ARGS': '', 'NLWP': '1'},
+        ...     {'PID': '17259', 'PPID': '2', 'COMMAND': 'kworker/0:0', 'COMMAND_NAME': 'kworker/0:0', 'ARGS': '', 'NLWP': '1'}
         ... ]
         True
     """
