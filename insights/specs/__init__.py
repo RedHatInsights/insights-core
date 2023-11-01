@@ -639,7 +639,7 @@ class Specs(SpecSet):
     rhn_server_xmlrpc_log = RegistryPoint(filterable=True)
     rhn_taskomatic_daemon_log = RegistryPoint(filterable=False)
     rhosp_release = RegistryPoint()
-    rhsm_conf = RegistryPoint()
+    rhsm_conf = RegistryPoint(filterable=True)
     rhsm_katello_default_ca_cert = RegistryPoint()
     rhsm_log = RegistryPoint(filterable=True)
     rhsm_releasever = RegistryPoint()
