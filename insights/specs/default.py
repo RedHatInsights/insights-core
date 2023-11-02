@@ -644,6 +644,7 @@ class DefaultSpecs(Specs):
     software_collections_list = simple_command('/usr/bin/scl --list')
     sos_conf = first_file(["/etc/sos/sos.conf", "/etc/sos.conf"])
     spamassassin_channels = simple_command("/bin/grep -r '^\\s*CHANNELURL=' /etc/mail/spamassassin/channel.d")
+    squid_cache_log = simple_file("/var/log/squid/cache.log")
     ss = simple_command("/usr/sbin/ss -tupna")
     ssh_config = simple_file("/etc/ssh/ssh_config")
     ssh_config_d = glob_file(r"/etc/ssh/ssh_config.d/*.conf")
