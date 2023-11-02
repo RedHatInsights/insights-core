@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.2.22](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.22) (2023-11-02)
+
+- feat: Add one more arg to the command "ps -eo" ([PR 3945](https://github.com/RedHatInsights/insights-core/pull/3945))
+- feat: New spec "/var/log/squid/cache.log" and parser ([PR 3947](https://github.com/RedHatInsights/insights-core/pull/3947))
+- fix: make Specs.rhsm_conf as filterable=True ([PR 3919](https://github.com/RedHatInsights/insights-core/pull/3919))
+
 # [insights-core-3.2.21](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.21) (2023-10-26)
 
 - feat: Add spec basic_insights_client ([PR 3943](https://github.com/RedHatInsights/insights-core/pull/3943))

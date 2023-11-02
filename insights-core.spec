@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.2.21
+Version:        3.2.22
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,13 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Nov 02 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.22-1
+- feat: Add one more arg to the command "ps -eo" (#3945)
+  (44796653+huali027@users.noreply.github.com)
+- feat: New spec "/var/log/squid/cache.log" and parser (#3947)
+  (44796653+huali027@users.noreply.github.com)
+- fix: make Specs.rhsm_conf as filterable=True (#3919) (xiangceliu@redhat.com)
+
 * Thu Oct 26 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.21-1
 - feat: Add spec basic_insights_client (#3943) (jiazhang@redhat.com)
 
