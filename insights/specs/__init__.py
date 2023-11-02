@@ -714,6 +714,7 @@ class Specs(SpecSet):
     sos_conf = RegistryPoint(filterable=True)
     spamassassin_channels = RegistryPoint()
     spfile_ora = RegistryPoint(multi_output=True)
+    squid_cache_log = RegistryPoint(filterable=True)
     ss = RegistryPoint()
     ssh_config = RegistryPoint(filterable=True)
     ssh_config_d = RegistryPoint(multi_output=True, filterable=True)
