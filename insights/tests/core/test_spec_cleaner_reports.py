@@ -5,6 +5,7 @@ import os
 from mock.mock import patch
 from pytest import mark
 
+from insights.client.constants import InsightsConstants as constants
 from insights.client.archive import InsightsArchive
 from insights.client.config import InsightsConfig
 from insights.core.spec_cleaner import Cleaner
@@ -19,10 +20,9 @@ test_file_data = 'ip: 10.0.2.155\ntestword\n{0}'.format(hostname)
         (False, False), (True, False), (True, True),
     ]
 )
-@mark.parametrize("core_collect", [True, False])
-def test_rhsm_facts(core_collect, obfuscate, obfuscate_hostname):
-    rhsm_facts_file = '/tmp/insights_test_rhsm.facts'
-    conf = InsightsConfig(core_collect=core_collect, obfuscate=obfuscate,
+def test_rhsm_facts(obfuscate, obfuscate_hostname):
+    rhsm_facts_file = constants.rhsm_facts_file = '/tmp/test_rhsm_insights.facts'
+    conf = InsightsConfig(obfuscate=obfuscate,
                           obfuscate_hostname=obfuscate_hostname)
     arch = InsightsArchive(conf)
     arch.create_archive_dir()
@@ -34,7 +34,7 @@ def test_rhsm_facts(core_collect, obfuscate, obfuscate_hostname):
 
     pp = Cleaner(conf, {'keywords': ['testword']}, hostname)
     pp.clean_file(test_file, [])
-    pp.generate_report(arch.archive_name, rhsm_facts_file)
+    pp.generate_report(arch.archive_name)
     arch.delete_archive_dir()
 
     assert os.path.isfile(rhsm_facts_file)
@@ -72,10 +72,9 @@ def test_rhsm_facts(core_collect, obfuscate, obfuscate_hostname):
         (False, False), (True, False), (True, True),
     ]
 )
-@mark.parametrize("core_collect", [True, False])
 @patch('insights.core.spec_cleaner.Cleaner.generate_rhsm_facts', return_value=None)
-def test_all_csv_reports(rhsm_facts, core_collect, obfuscate, rm_conf, obfuscate_hostname):
-    conf = InsightsConfig(core_collect=core_collect, obfuscate=obfuscate,
+def test_all_csv_reports(rhsm_facts, obfuscate, rm_conf, obfuscate_hostname):
+    conf = InsightsConfig(obfuscate=obfuscate,
                           obfuscate_hostname=obfuscate_hostname)
     arch = InsightsArchive(conf)
     arch.create_archive_dir()
@@ -97,7 +96,7 @@ def test_all_csv_reports(rhsm_facts, core_collect, obfuscate, rm_conf, obfuscate
         os.unlink(kw_report_file)
 
     pp.clean_file(test_file, [])
-    pp.generate_report(arch.archive_name, '/dev/null')
+    pp.generate_report(arch.archive_name)
     arch.delete_archive_dir()
 
     if obfuscate:

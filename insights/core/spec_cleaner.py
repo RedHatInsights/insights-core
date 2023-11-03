@@ -28,8 +28,7 @@ import struct
 
 from tempfile import TemporaryFile
 
-# TODO: getting RHSM facts file from the InsightsConstants directly
-# from insights.client.constants import InsightsConstants as constants
+from insights.client.constants import InsightsConstants as constants
 from insights.util.hostname import determine_hostname
 from insights.util.posix_regex import replace_posix
 
@@ -472,9 +471,9 @@ class Cleaner(object):
 
         logger.info('Completed Keyword Report.')
 
-    def generate_report(self, archive_name, rhsm_facts_file):
+    def generate_report(self, archive_name):
         if self.obfuscate or self.kw_count > 0:
-            self.generate_rhsm_facts(rhsm_facts_file)
+            self.generate_rhsm_facts(constants.rhsm_facts_file)
             if 'ip' in self.obfuscate:
                 self.generate_ip_report(archive_name)
             if 'hostname' in self.obfuscate:

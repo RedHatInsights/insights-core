@@ -6,18 +6,25 @@ from __future__ import absolute_import
 import logging
 
 from insights import collect
+
+from insights.client.archive import InsightsArchive
 from insights.client.constants import InsightsConstants as constants
-from insights.client.data_collector import DataCollector
 from insights.client.utilities import systemd_notify_init_thread
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
 
 
-class CoreCollector(DataCollector):
+class CoreCollector(object):
     """
-    Collectoer for new core-collector
+    Collector for new core-collector
     """
+
+    def __init__(self, config, archive_=None, mountpoint=None, spec_conf=None):
+        self.config = config
+        self.archive = archive_ if archive_ else InsightsArchive(config)
+        self.mountpoint = mountpoint if mountpoint else '/'
+        self.spec_conf = spec_conf if spec_conf else {}
 
     def run_collection(self, rm_conf, branch_info, blacklist_report):
         '''
@@ -48,14 +55,11 @@ class CoreCollector(DataCollector):
         )
         logger.debug('Core collection finished.')
 
-        # collect metadata
-        logger.debug('Collecting metadata ...')
-        self._write_branch_info(branch_info)
-        self._write_display_name()
-        self._write_ansible_host()
-        self._write_version_info()
-        self._write_tags()
-        self._write_blacklist_report(blacklist_report)
-        self._write_blacklisted_specs()
-        self._write_egg_release()
-        logger.debug('Metadata collection finished.')
+    def done(self):
+        """
+        Do finalization stuff
+        """
+        if self.config.output_dir:
+            return self.archive.archive_dir
+        else:
+            return self.archive.create_tar_file()

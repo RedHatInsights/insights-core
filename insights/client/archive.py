@@ -11,11 +11,9 @@ import subprocess
 import shlex
 import logging
 import tempfile
-import re
 import atexit
 
-from .utilities import determine_hostname, _expand_paths, write_data_to_file
-from .insights_spec import InsightsFile, InsightsCommand
+from .utilities import determine_hostname, _expand_paths
 from .constants import InsightsConstants as constants
 
 logger = logging.getLogger(__name__)
@@ -197,36 +195,6 @@ class InsightsArchive(object):
         if self.archive_dir:
             logger.debug("Deleting: " + self.archive_dir)
             shutil.rmtree(self.archive_dir, True)
-
-    def add_to_archive(self, spec, cleaner=None, spec_info=None):
-        '''
-        Add files and commands to archive
-        Use InsightsSpec.get_output() to get data
-        '''
-        ab_regex = [
-            "^timeout: failed to run command .+: No such file or directory$",
-            "^Missing Dependencies:"
-        ]
-        if isinstance(spec, InsightsCommand):
-            archive_path = os.path.join(self.cmd_dir, spec.archive_path.lstrip('/'))
-        if isinstance(spec, InsightsFile):
-            archive_path = self.get_full_archive_path(spec.archive_path.lstrip('/'))
-        output = spec.get_output()
-        if output and not any(re.search(rg, output) for rg in ab_regex):
-            write_data_to_file(output, archive_path)
-            if cleaner:
-                no_obfuscate, no_redact = spec_info if spec_info else ([], False)
-                # Redact and Obfuscate for data collection
-                cleaner.clean_file(archive_path,
-                                   no_obfuscate=no_obfuscate,
-                                   no_redact=no_redact)
-
-    def add_metadata_to_archive(self, metadata, meta_path):
-        '''
-        Add metadata to archive
-        '''
-        archive_path = self.get_full_archive_path(meta_path.lstrip('/'))
-        write_data_to_file(metadata, archive_path)
 
     def cleanup_tmp(self):
         '''

@@ -479,7 +479,7 @@ def collect(manifest=default_manifest, tmp_path=None, archive_name=None,
 
     collect_errors = _parse_broker_exceptions(broker, EXCEPTIONS_TO_REPORT)
 
-    cleaner.generate_report(archive_name, client_config.rhsm_facts_file)
+    cleaner.generate_report(archive_name)
 
     if compress:
         return create_archive(output_path), collect_errors

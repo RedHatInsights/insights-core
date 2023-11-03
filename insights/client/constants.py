@@ -52,8 +52,6 @@ class InsightsConstants(object):
     default_sed_file = os.path.join(default_conf_dir, '.exp.sed')
     base_url = 'cert-api.access.redhat.com/r/insights/platform'
     legacy_base_url = 'cert-api.access.redhat.com/r/insights'
-    collection_rules_file = os.path.join(default_conf_dir, '.cache.json')
-    collection_fallback_file = os.path.join(default_conf_dir, '.fallback.json')
     unregistered_files = [os.path.join(default_conf_dir, '.unregistered'),
                           os.path.join(simple_find_replace_dir, '.unregistered')]
     registered_files = [os.path.join(default_conf_dir, '.registered'),

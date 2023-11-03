@@ -1,29 +1,30 @@
 from __future__ import print_function
 from __future__ import absolute_import
-from os.path import isfile
-import sys
+
 import json
 import logging
 import logging.handlers
 import os
-import time
 import six
-from distutils.version import LooseVersion
+import sys
+import time
 
-from .utilities import (generate_machine_id,
-                        write_to_disk,
-                        write_registered_file,
-                        write_unregistered_file,
-                        delete_cache_files,
-                        determine_hostname,
-                        get_version_info)
-from .collection_rules import InsightsUploadConf
-from .data_collector import DataCollector
-from .core_collector import CoreCollector
-from .connection import InsightsConnection
-from .archive import InsightsArchive
-from .support import registration_check
-from .constants import InsightsConstants as constants
+from distutils.version import LooseVersion
+from os.path import isfile
+
+from insights.client.archive import InsightsArchive
+from insights.client.collection_rules import InsightsUploadConf
+from insights.client.connection import InsightsConnection
+from insights.client.constants import InsightsConstants as constants
+from insights.client.core_collector import CoreCollector
+from insights.client.support import registration_check
+from insights.client.utilities import (generate_machine_id,
+                                       write_to_disk,
+                                       write_registered_file,
+                                       write_unregistered_file,
+                                       delete_cache_files,
+                                       determine_hostname,
+                                       get_version_info)
 
 NETWORK = constants.custom_network_log_level
 LOG_FORMAT = ("%(asctime)s %(levelname)8s %(name)s %(message)s")
@@ -308,15 +309,6 @@ def get_machine_id():
     return generate_machine_id()
 
 
-def update_rules(config, pconn):
-    if not pconn:
-        raise ValueError('ERROR: Cannot update rules in --offline mode. '
-                         'Disable auto_update in config file.')
-
-    pc = InsightsUploadConf(config, conn=pconn)
-    return pc.get_conf_update()
-
-
 def get_branch_info(config):
     """
     Get branch info for a system
@@ -342,15 +334,12 @@ def collect(config):
     if rm_conf:
         logger.warn("WARNING: Will exclude data from files")
 
-    archive = InsightsArchive(config)
-
     hostname = determine_hostname(config.display_name)
-    if config.core_collect:
-        dc = CoreCollector(config, archive)
-    else:
-        dc = DataCollector(config, archive, spec_conf=pc.get_conf_file())
-
     logger.info('Starting to collect Insights data for %s', hostname)
+
+    archive = InsightsArchive(config)
+    dc = CoreCollector(config, archive)
+
     dc.run_collection(rm_conf, branch_info, blacklist_report)
     return dc.done()
 
