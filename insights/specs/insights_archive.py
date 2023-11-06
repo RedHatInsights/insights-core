@@ -24,6 +24,7 @@ class InsightsArchiveSpecs(Specs):
     auditctl_rules = simple_file("insights_commands/auditctl_-l")
     auditctl_status = simple_file("insights_commands/auditctl_-s")
     aws_instance_id_doc = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_aws_instance_id_doc")
+    aws_instance_id_pkcs7 = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_aws_instance_id_pkcs7")
     awx_manage_check_license = simple_file("insights_commands/awx-manage_check_license")
     awx_manage_print_settings = simple_file("insights_commands/awx-manage_print_settings_INSIGHTS_TRACKING_STATE_SYSTEM_UUID_INSTALL_UUID_TOWER_URL_BASE_AWX_CLEANUP_PATHS_AWX_PROOT_BASE_PATH_LOG_AGGREGATOR_ENABLED_LOG_AGGREGATOR_LEVEL_--format_json")
     azure_instance_id = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_azure_instance_id")
@@ -110,6 +111,7 @@ class InsightsArchiveSpecs(Specs):
     iscsiadm_m_session = simple_file("insights_commands/iscsiadm_-m_session")
     journal_header = simple_file("insights_commands/journalctl_--no-pager_--header")
     kpatch_list = simple_file("insights_commands/kpatch_list")
+    localtime = simple_file("insights_commands/file_-L_.etc.localtime")
     losetup = simple_file("insights_commands/losetup_-l")
     lpstat_p = simple_file("insights_commands/lpstat_-p")
     ls_boot = simple_file("insights_commands/ls_-lanR_.boot")
@@ -146,11 +148,8 @@ class InsightsArchiveSpecs(Specs):
     lspci = simple_file("insights_commands/lspci_-k")
     lspci_vmmkn = simple_file("insights_commands/lspci_-vmmkn")
     lssap = simple_file("insights_commands/usr.sap.hostctrl.exe.lssap")
-<<<<<<< HEAD
     lsscsi = simple_file("insights_commands/lsscsi")
     lvm_fullreport = simple_file("insights_commands/lvm_fullreport_-a_--nolocking_--reportformat_json")
-=======
->>>>>>> 0126e296 (chore: remove specs not used by any rules or services)
     lvmconfig = first_file([
         "insights_commands/lvmconfig_--type_full",
         "insights_commands/lvm_dumpconfig_--type_full"
@@ -220,11 +219,13 @@ class InsightsArchiveSpecs(Specs):
     sealert = simple_file('insights_commands/sealert_-l')
     sestatus = simple_file("insights_commands/sestatus_-b")
     smbstatus_p = simple_file("insights_commands/smbstatus_-p")
+    software_collections_list = simple_file('insights_commands/scl_--list')
     spamassassin_channels = simple_file('insights_commands/grep_-r_s_CHANNELURL_.etc.mail.spamassassin.channel.d')
     ss = simple_file("insights_commands/ss_-tupna")
     sshd_config_perms = first_file(["insights_commands/ls_-lH_.etc.ssh.sshd_config", "insights_commands/ls_-l_.etc.ssh.sshd_config"])
     subscription_manager_facts = simple_file("insights_commands/subscription-manager_facts")
     subscription_manager_id = simple_file("insights_commands/subscription-manager_identity")
+    subscription_manager_installed_product_ids = simple_file("insights_commands/find_.etc.pki.product-default._.etc.pki.product._-name_pem_-exec_rct_cat-cert_--no-content")
     sysctl = simple_file("insights_commands/sysctl_-a")
     systemctl_cat_rpcbind_socket = simple_file("insights_commands/systemctl_cat_rpcbind.socket")
     systemctl_list_unit_files = simple_file("insights_commands/systemctl_list-unit-files")
@@ -247,11 +248,8 @@ class InsightsArchiveSpecs(Specs):
     virsh_list_all = simple_file("insights_commands/virsh_--readonly_list_--all")
     virt_what = simple_file("insights_commands/virt-what")
     wc_proc_1_mountinfo = simple_file("insights_commands/wc_-l_.proc.1.mountinfo")
-<<<<<<< HEAD
     xfs_quota_state = simple_file("insights_commands/xfs_quota_-x_-c_state_-gu")
     yum_list_available = simple_file("insights_commands/yum_-C_--noplugins_list_available")
-=======
->>>>>>> 0126e296 (chore: remove specs not used by any rules or services)
     yum_repolist = first_file([
         "insights_commands/yum_-d_2_-C_--noplugins_repolist",
         "insights_commands/yum_-C_--noplugins_repolist",

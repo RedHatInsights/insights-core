@@ -25,7 +25,7 @@ from insights.specs import Specs
 from insights.specs.datasources import (
     aws, awx_manage, client_metadata, cloud_init, corosync as corosync_ds,
     dir_list, ethernet, httpd, ipcs, intersystems, kernel, kernel_module_list,
-    leapp, ls, luks_devices, machine_ids, malware_detection, md5chk,
+    leapp, ls, lpstat, luks_devices, machine_ids, malware_detection, md5chk,
     mount as mount_ds, package_provides, ps as ps_datasource, rpm_pkgs, sap,
     satellite_missed_queues, ssl_certificate, sys_fs_cgroup_memory,
     sys_fs_cgroup_memory_tasks_number, user_group, yum_updates)
@@ -120,6 +120,7 @@ class DefaultSpecs(Specs):
     cciss = glob_file("/proc/driver/cciss/cciss*")
     cdc_wdm = simple_file("/sys/bus/usb/drivers/cdc_wdm/module/refcnt")
     ceph_conf = first_file(["/var/lib/config-data/puppet-generated/ceph/etc/ceph/ceph.conf", "/etc/ceph/ceph.conf"])
+    ceph_health_detail = simple_command("/usr/bin/ceph health detail -f json")
     ceph_insights = simple_command("/usr/bin/ceph insights", deps=[IsCephMonitor])
     ceph_osd_dump = simple_command("/usr/bin/ceph osd dump -f json")
     ceph_osd_tree = simple_command("/usr/bin/ceph osd tree -f json")
@@ -172,13 +173,8 @@ class DefaultSpecs(Specs):
     dmsetup_info = simple_command("/usr/sbin/dmsetup info -C")
     dmsetup_status = simple_command("/usr/sbin/dmsetup status")
     dnf_conf = simple_file("/etc/dnf/dnf.conf")
-<<<<<<< HEAD
-    dnf_modules = glob_file("/etc/dnf/modules.d/*.module")
-    dnf_module_list = simple_command("/usr/bin/dnf -C --noplugins module list", signum=signal.SIGTERM)
-=======
-    dnf_modules = glob_file("/etc/dnf/modules.d/*.module")  # used by puptoo. TODO: Remove this one
+    dnf_modules = glob_file("/etc/dnf/modules.d/*.module")  # used by puptoo
     dnf_module_list = simple_command("/usr/bin/dnf -C --noplugins module list")  # used by puptoo
->>>>>>> 0126e296 (chore: remove specs not used by any rules or services)
     docker_info = simple_command("/usr/bin/docker info")
     docker_list_containers = simple_command("/usr/bin/docker ps --all --no-trunc")
     docker_list_images = simple_command("/usr/bin/docker images --all --no-trunc --digests")
@@ -213,6 +209,7 @@ class DefaultSpecs(Specs):
     firewalld_conf = simple_file("/etc/firewalld/firewalld.conf")
     foreman_production_log = simple_file("/var/log/foreman/production.log")
     fstab = simple_file("/etc/fstab")
+    fw_devices = simple_command("/bin/fwupdagent get-devices", deps=[IsBareMetal])
     fw_security = simple_command("/bin/fwupdagent security --force", deps=[IsBareMetal])
     galera_cnf = first_file(["/var/lib/config-data/puppet-generated/mysql/etc/my.cnf.d/galera.cnf", "/etc/my.cnf.d/galera.cnf"])
     gcp_instance_type = simple_command("/usr/bin/curl -s -H 'Metadata-Flavor: Google' 'http://metadata.google.internal/computeMetadata/v1/instance/machine-type' --connect-timeout 5", deps=[IsGCP])
@@ -297,13 +294,10 @@ class DefaultSpecs(Specs):
     iptables_permanent = simple_file("etc/sysconfig/iptables")
     ipv4_neigh = simple_command("/sbin/ip -4 neighbor show nud all")
     ipv6_neigh = simple_command("/sbin/ip -6 neighbor show nud all")
-<<<<<<< HEAD
     iris_cpf = foreach_collect(intersystems.iris_working_configuration, "%s")
     iris_list = simple_command("/usr/bin/iris list")
     iris_messages_log = foreach_collect(intersystems.iris_working_messages_log, "%s")
     ironic_inspector_log = first_file(["/var/log/containers/ironic-inspector/ironic-inspector.log", "/var/log/ironic-inspector/ironic-inspector.log"])
-=======
->>>>>>> 0126e296 (chore: remove specs not used by any rules or services)
     iscsiadm_m_session = simple_command("/usr/sbin/iscsiadm -m session")
     jbcs_httpd24_httpd_error_log = simple_file("/opt/rh/jbcs-httpd24/root/etc/httpd/logs/error_log")
     jboss_runtime_versions = ps_datasource.jboss_runtime_versions
@@ -324,11 +318,11 @@ class DefaultSpecs(Specs):
     libssh_server_config = simple_file("/etc/libssh/libssh_server.config")
     libvirtd_log = simple_file("/var/log/libvirt/libvirtd.log")
     limits_conf = glob_file(["/etc/security/limits.conf", "/etc/security/limits.d/*.conf"])
+    localtime = simple_command("/usr/bin/file -L /etc/localtime")
     logrotate_conf = glob_file(["/etc/logrotate.conf", "/etc/logrotate.d/*"])
     losetup = simple_command("/usr/sbin/losetup -l")
     lpfc_max_luns = simple_file("/sys/module/lpfc/parameters/lpfc_max_luns")
     lpstat_p = simple_command("/usr/bin/lpstat -p")
-<<<<<<< HEAD
     lpstat_protocol_printers = lpstat.lpstat_protocol_printers_info
     lpstat_queued_jobs_count = lpstat.lpstat_queued_jobs_count
     # New `ls` Specs
@@ -343,8 +337,6 @@ class DefaultSpecs(Specs):
     ls_laZ = command_with_args('/bin/ls -laZ %s', ls.list_with_laZ, keep_rc=True)
     # Old `ls` Specs
     ls_R_var_lib_nova_instances = simple_command("/bin/ls -laR /var/lib/nova/instances")
-=======
->>>>>>> 0126e296 (chore: remove specs not used by any rules or services)
     ls_boot = simple_command("/bin/ls -lanR /boot")
     ls_dev = simple_command("/bin/ls -lanR /dev")
     ls_disk = simple_command("/bin/ls -lanR /dev/disk")
@@ -517,6 +509,7 @@ class DefaultSpecs(Specs):
     qemu_xml = glob_file(r"/etc/libvirt/qemu/*.xml")
     ql2xmaxlun = simple_file("/sys/module/qla2xxx/parameters/ql2xmaxlun")
     ql2xmqsupport = simple_file("/sys/module/qla2xxx/parameters/ql2xmqsupport")
+    rc_local = simple_file("/etc/rc.d/rc.local")
     readlink_e_shift_cert_client = simple_command("/usr/bin/readlink -e /etc/origin/node/certificates/kubelet-client-current.pem")
     readlink_e_shift_cert_server = simple_command("/usr/bin/readlink -e /etc/origin/node/certificates/kubelet-server-current.pem")
     redhat_release = simple_file("/etc/redhat-release")
@@ -597,6 +590,7 @@ class DefaultSpecs(Specs):
     smbstatus_p = simple_command("/usr/bin/smbstatus -p")
     sockstat = simple_file("/proc/net/sockstat")
     softnet_stat = simple_file("proc/net/softnet_stat")
+    software_collections_list = simple_command('/usr/bin/scl --list')
     sos_conf = first_file(["/etc/sos/sos.conf", "/etc/sos.conf"])
     spamassassin_channels = simple_command("/bin/grep -r '^\\s*CHANNELURL=' /etc/mail/spamassassin/channel.d")
     squid_cache_log = simple_file("/var/log/squid/cache.log")
@@ -610,6 +604,7 @@ class DefaultSpecs(Specs):
                                                 override_env={"LC_ALL": "C.UTF-8"})
     subscription_manager_id = simple_command("/usr/sbin/subscription-manager identity",  # use "/usr/sbin" here, BZ#1690529
                                              override_env={"LC_ALL": "C.UTF-8"})
+    subscription_manager_installed_product_ids = simple_command("/usr/bin/find /etc/pki/product-default/ /etc/pki/product/ -name '*pem' -exec rct cat-cert --no-content '{}' \;")
     sudoers = glob_file(["/etc/sudoers", "/etc/sudoers.d/*"])
     swift_proxy_server_conf = first_file(["/var/lib/config-data/puppet-generated/swift/etc/swift/proxy-server.conf", "/etc/swift/proxy-server.conf"])
     sys_block_queue_stable_writes = glob_file("/sys/block/*/queue/stable_writes")
@@ -685,6 +680,7 @@ class DefaultSpecs(Specs):
     xfs_quota_state = simple_command("/sbin/xfs_quota -x -c 'state -gu'")
     xinetd_conf = glob_file(["/etc/xinetd.conf", "/etc/xinetd.d/*"])
     yum_conf = simple_file("/etc/yum.conf")
+    yum_list_available = simple_command("yum -C --noplugins list available", signum=signal.SIGTERM)
     yum_log = simple_file("/var/log/yum.log")
     yum_repolist = simple_command("/usr/bin/yum -d 2 -C --noplugins repolist", override_env={"LC_ALL": ""},
                                   signum=signal.SIGTERM)
