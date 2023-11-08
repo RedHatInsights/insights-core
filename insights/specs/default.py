@@ -155,6 +155,8 @@ class DefaultSpecs(Specs):
     crypto_policies_opensshserver = simple_file("/etc/crypto-policies/back-ends/opensshserver.config")
     crypto_policies_state_current = simple_file("/etc/crypto-policies/state/current")
     cryptsetup_luksDump = luks_devices.luks_data_sources
+    cupsd_conf = simple_file("/etc/cups/cupsd.conf")
+    cups_files_conf = simple_file("/etc/cups/cups-files.conf")
     current_clocksource = simple_file("/sys/devices/system/clocksource/clocksource0/current_clocksource")
     date = simple_command("/bin/date")
     date_utc = simple_command("/bin/date --utc")
@@ -509,7 +511,9 @@ class DefaultSpecs(Specs):
     qemu_xml = glob_file(r"/etc/libvirt/qemu/*.xml")
     ql2xmaxlun = simple_file("/sys/module/qla2xxx/parameters/ql2xmaxlun")
     ql2xmqsupport = simple_file("/sys/module/qla2xxx/parameters/ql2xmqsupport")
+    random_entropy_avail = simple_file("/proc/sys/kernel/random/entropy_avail")
     rc_local = simple_file("/etc/rc.d/rc.local")
+    readlink_e_etc_mtab = simple_command("/usr/bin/readlink -e /etc/mtab")
     readlink_e_shift_cert_client = simple_command("/usr/bin/readlink -e /etc/origin/node/certificates/kubelet-client-current.pem")
     readlink_e_shift_cert_server = simple_command("/usr/bin/readlink -e /etc/origin/node/certificates/kubelet-server-current.pem")
     redhat_release = simple_file("/etc/redhat-release")
