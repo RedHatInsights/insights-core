@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.2.22
+Version:        3.2.23
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,9 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Nov 09 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.23-1
+- feat: uname supports RHEL 9.3 (#3950) (xiangceliu@redhat.com)
+
 * Thu Nov 02 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.22-1
 - feat: Add one more arg to the command "ps -eo" (#3945)
   (44796653+huali027@users.noreply.github.com)

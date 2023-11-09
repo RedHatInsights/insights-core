@@ -2,6 +2,10 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.2.23](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.23) (2023-11-09)
+
+- feat: uname supports RHEL 9.3 ([PR 3950](https://github.com/RedHatInsights/insights-core/pull/3950))
+
 # [insights-core-3.2.22](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.22) (2023-11-02)
 
 - feat: Add one more arg to the command "ps -eo" ([PR 3945](https://github.com/RedHatInsights/insights-core/pull/3945))
