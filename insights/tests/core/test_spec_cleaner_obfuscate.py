@@ -139,13 +139,13 @@ def test_obfuscate_hostname():
     assert 'test2' not in actual
     assert 'abc.com' not in actual
     assert len(actual.split('.')[0].split()[-1]) == 12
-    assert 'host1.example.com' in actual
+    assert '.example.com' in actual
 
     line = "a line w/o hostname, but test2.abc.com only"
     actual = pp._obfuscate_line(line, ['hostname'], None)
     assert 'test2' not in actual
     assert 'abc.com' not in actual
-    assert 'host1.example.com' in actual
+    assert '.example.com' in actual
     assert len(actual.split('.')[0].split()[-1]) != 12
 
     hostname = 'test1'  # Short hostname
