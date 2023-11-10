@@ -413,7 +413,7 @@ class Cleaner(object):
                 })
 
         facts = {
-            'insights_client.hostname': self.obfuscated_fqdn,
+            'insights_client.hostname': self.fqdn,
             'insights_client.obfuscate_ip_enabled': 'ip' in self.obfuscate,
             'insights_client.ips': json.dumps(ip_block),
             'insights_client.obfuscate_hostname_enabled': 'hostname' in self.obfuscate,
