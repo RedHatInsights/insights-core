@@ -36,8 +36,8 @@ from insights.util.posix_regex import replace_posix
 logger = logging.getLogger(__name__)
 
 DEFAULT_PASSWORD_REGEXS = [
-    "(password[a-zA-Z0-9_]*)(\s*\:\s*\"*\s*|\s*\"*\s*=\s*\"\s*|\s*=+\s*|\s*--md5+\s*|\s*)([a-zA-Z0-9_!@#$%^&*()+=/-]*)",
-    "(password[a-zA-Z0-9_]*)(\s*\*+\s+)(.+)",
+    r"(password[a-zA-Z0-9_]*)(\s*\:\s*\"*\s*|\s*\"*\s*=\s*\"\s*|\s*=+\s*|\s*--md5+\s*|\s*)([a-zA-Z0-9_!@#$%^&*()+=/-]*)",
+    r"(password[a-zA-Z0-9_]*)(\s*\*+\s+)(.+)",
 ]
 """The regex for password removal, which is read from the "/etc/insights-client/.exp.sed"."""
 
@@ -106,6 +106,7 @@ class Cleaner(object):
                     self.fqdn.encode('utf-8')
                     if six.PY3 else self.fqdn).hexdigest()[:12]
             self.obfuscated_fqdn = '{0}.example.com'.format(hashed_hostname)
+            self.hostname_count += 1
             self.hn_db[self.obfuscated_fqdn] = self.fqdn
             # per https://access.redhat.com/documentation/en-us/red_hat_insights/2023/html/client_configuration_guide_for_red_hat_insights/con-insights-client-cg-data-obfuscation_insights-cg-obfuscation#proc-obfuscating-hostname_insights-cg-obfuscation
             # only `hostname` is obfuscated
@@ -311,7 +312,7 @@ class Cleaner(object):
             for k in self.kw_db.keys():
                 if k in line:
                     line = line.replace(k, self._kw2db(k))
-                    logger.debug("Obfuscating Keyword - %s > %s", k, self._kw2db(k))
+                    logger.debug("Replacing Keyword - %s > %s", k, self._kw2db(k))
         return line
 
     ###########################
@@ -398,7 +399,7 @@ class Cleaner(object):
 
         hn_block = []
         for k, v in self.hn_db.items():
-            hn_block.append({'original': k, 'obfuscated': v})
+            hn_block.append({'original': v, 'obfuscated': k})
 
         kw_block = []
         for k, v in self.kw_db.items():
