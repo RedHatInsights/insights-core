@@ -28,7 +28,6 @@ class CoreCollector(DataCollector):
         systemd_notify_init_thread()
 
         self.archive.create_archive_dir()
-        self.archive.create_command_dir()
 
         logger.debug('Beginning to run core collection ...')
         manifest = collect.default_manifest
