@@ -5,7 +5,7 @@ from mock.mock import Mock
 from insights.core import ET
 from insights.core.exceptions import SkipComponent
 from insights.core.spec_factory import DatasourceProvider
-from insights.specs.default import candlepin_broker
+from insights.specs.datasources import candlepin_broker
 
 
 CANDLEPIN_BROKER = """
