@@ -210,6 +210,10 @@ plugins:
           enabled: true
         - name: insights.components.satellite.IsSatellite
           enabled: true
+        - name: insights.components.satellite.IsSatellite614AndLater
+          enabled: true
+        - name: insights.components.satellite.IsSatelliteLessThan614
+          enabled: true
 
     # needed for the 'pre-check' of the 'is_satellite_capsule' spec
         - name: insights.combiners.satellite_version.CapsuleVersion

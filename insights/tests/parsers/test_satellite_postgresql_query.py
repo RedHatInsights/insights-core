@@ -25,6 +25,10 @@ SATELLITE_POSTGRESQL_WRONG_5 = '''
 name,default,value
 '''.strip()
 
+SATELLITE_POSTGRESQL_WRONG_6 = '''
+name,value
+'''.strip()
+
 SATELLITE_SETTINGS_1 = '''
 name,value,default
 unregister_delete_host,"--- true
@@ -49,6 +53,20 @@ unregister_delete_host,"--- false
 ..."
 destroy_vm_on_host_delete,"--- false
 ...","--- true
+..."
+'''
+
+SATELLITE_SETTINGS_4 = '''
+name,value
+destroy_vm_on_host_delete,
+unregister_delete_host,
+'''
+
+SATELLITE_SETTINGS_5 = '''
+name,value
+destroy_vm_on_host_delete,"--- true
+..."
+unregister_delete_host,"--- true
 ..."
 '''
 
@@ -87,13 +105,6 @@ foreman_tasks_sync_task_timeout,,"--- 120
 ..."
 foreman_tasks_proxy_action_retry_count,,"--- 4
 ..."
-'''
-
-SATELLITE_SETTINGS_BAD_1 = '''
-name,value
-unregister_delete_host,"--- true
-..."
-destroy_vm_on_host_delete,
 '''
 
 SATELLITE_SETTINGS_BAD_2 = '''
@@ -259,6 +270,8 @@ def test_basic_output_with_satellite_admin_setting():
         satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_POSTGRESQL_WRONG_4))
     with pytest.raises(SkipComponent):
         satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_POSTGRESQL_WRONG_5))
+    with pytest.raises(SkipComponent):
+        satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_POSTGRESQL_WRONG_6))
 
 
 def test_satellite_admin_settings():
@@ -272,6 +285,17 @@ def test_satellite_admin_settings():
     assert not settings.get_setting('unregister_delete_host')
     assert not settings.get_setting('destroy_vm_on_host_delete')
     assert settings.get_setting('non_exist_column') is None
+
+    settings = satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_SETTINGS_4))
+    assert (len(settings)) == 2
+    assert not settings.get_setting('unregister_delete_host')
+    assert not settings.get_setting('destroy_vm_on_host_delete')
+    assert settings.get_setting('non_exist_column') is None
+
+    settings = satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_SETTINGS_5))
+    assert (len(settings)) == 2
+    assert settings.get_setting('unregister_delete_host')
+    assert settings.get_setting('destroy_vm_on_host_delete')
 
     table = satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_SETTINGS_WITH_DIFFERENT_TYPES))
     setting_value = table.get_setting('ignored_interface_identifiers')
@@ -289,8 +313,6 @@ def test_satellite_admin_settings():
 
 
 def test_satellite_admin_settings_exception():
-    with pytest.raises(ValueError):
-        satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_SETTINGS_BAD_1))
     with pytest.raises(ParseException):
         satellite_postgresql_query.SatelliteAdminSettings(context_wrap(SATELLITE_SETTINGS_BAD_2))
 
