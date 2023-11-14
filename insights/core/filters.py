@@ -66,9 +66,9 @@ def add_filter(component, patterns):
        patterns (str, [str]): A string, list of strings, or set of strings to
             add to the datasource's filters.
     """
-    def inner(component, patterns):
-        if component in _CACHE:
-            del _CACHE[component]
+    def inner(comp, patterns):
+        if comp in _CACHE:
+            del _CACHE[comp]
 
         types = six.string_types + (list, set)
         if not isinstance(patterns, types):
@@ -81,18 +81,25 @@ def add_filter(component, patterns):
 
         for pat in patterns:
             if not pat:
-                raise Exception("Filter patterns must not be empy.")
+                raise Exception("Filter patterns must not be empty.")
 
-        FILTERS[component] |= patterns
+        FILTERS[comp] |= patterns
+
+    def get_dependency_datasources(comp):
+        """"Get (all) the first depended datasource"""
+        dep_ds = set()
+        if plugins.is_datasource(comp):
+            dep_ds.add(comp)
+            return dep_ds
+        for dep in dr.get_dependencies(comp):
+            dep_ds.update(get_dependency_datasources(dep))
+        return dep_ds
 
     if not plugins.is_datasource(component):
-        deps = dr.run_order(dr.get_dependency_graph(component))
+        deps = get_dependency_datasources(component)
         if deps:
-            filterable_deps = [
-                dep for dep in deps if (plugins.is_datasource(dep) and
-                                        dr.get_delegate(dep).filterable)
-            ]
-            # At least one dependency component be filterable
+            filterable_deps = [dep for dep in deps if dr.get_delegate(dep).filterable]
+            # At least one dependency datasource be filterable
             if not filterable_deps:
                 raise Exception("Filters aren't applicable to %s." % dr.get_name(component))
 
