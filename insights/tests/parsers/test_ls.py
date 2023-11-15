@@ -243,6 +243,36 @@ lrwxrwxrwx. root root    system_u:object_r:device_t:s0    stdout -> /proc/self/f
 lrwxrwxrwx. root root    system_u:object_r:device_t:s0    systty -> tty0
 """
 
+LS_LAZ_CONTENT3_RHEL8_SELINUX = """
+/etc:
+total 1352
+drwxr-xr-x. 133 root root   system_u:object_r:etc_t:s0                      12288 Nov 12 23:55 .
+dr-xr-xr-x.  21 root root   system_u:object_r:root_t:s0                      4096 Jul  5  2022 ..
+-rw-r--r--    1 root root   ?                                                1529 Apr 15  2020 aliases
+-rw-r--r--    1 root root   ?                                               12288 Jul  5  2022 aliases.db
+-rw-r--r--.   1 root root   system_u:object_r:etc_t:s0                          1 Aug 12  2018 at.deny
+drwxr-x---.   4 root root   system_u:object_r:auditd_etc_t:s0                 150 Nov 12 23:55 audit
+drwxr-xr-x.   2 root root   system_u:object_r:etc_t:s0                        160 Sep 15 12:32 bash_completion.d
+-rw-r--r--    1 root root   ?                                                3019 Apr 15  2020 bashrc
+-rw-r--r--    1 root root   ?                                                 881 Jul  5  2022 chrony.conf
+-rw-r-----.   1 root chrony system_u:object_r:chronyd_keys_t:s0               540 May 10  2019 chrony.keys
+drwxr-xr-x.   2 root root   system_u:object_r:etc_t:s0                         26 Jul 28  2021 cifs-utils
+
+/var/log:
+total 114496
+drwxr-xr-x. 17 root   root   system_u:object_r:var_log_t:s0               8192 Nov 12 03:47 .
+drwxr-xr-x. 23 root   root   system_u:object_r:var_t:s0                   4096 Jul  5  2022 ..
+drwxr-xr-x   3 root   root   ?                                             122 Jul  5  2022 Automation
+drwxr-xr-x.  2 root   root   system_u:object_r:var_log_t:s0                280 Mar 11  2020 anaconda
+drwx------.  2 root   root   system_u:object_r:auditd_log_t:s0              99 Nov 12 19:00 audit
+-rw-------.  1 root   root   system_u:object_r:plymouthd_var_log_t:s0        0 Jul  5  2022 boot.log
+-rw-------   1 root   root   ?                                           79952 Sep 30  2020 boot.log-20200930
+-rw-------   1 root   root   ?                                           22027 Jul  5  2022 boot.log-20220705
+-rw-------   1 root   utmp   ?                                               0 Nov  1 03:15 btmp
+drwxr-xr-x.  2 chrony chrony system_u:object_r:chronyd_var_log_t:s0          6 Mar  1  2021 chrony
+""".strip()
+
+
 LS_LARZ_DEV_CONTENT1 = """
 /dev:
 total 0
@@ -507,6 +537,22 @@ def test_ls_laZ():
     dev_listings = ls.listing_of('/dev')
     assert 'stderr' in dev_listings
     assert dev_listings["stderr"]['link'] == '/proc/self/fd/2'
+
+    ls = LSlaZ(context_wrap(LS_LAZ_CONTENT3_RHEL8_SELINUX))
+    assert '/etc' in ls
+
+    dev_listings = ls.listing_of('/etc')
+    assert "bashrc" in dev_listings
+    assert dev_listings["bashrc"]['se_user'] == '?'
+    assert dev_listings["bashrc"]['se_role'] is None
+    assert dev_listings["bashrc"]['se_type'] is None
+    assert "chrony.conf" in dev_listings
+    assert 'se_type' in dev_listings["chrony.conf"]
+    assert dev_listings["chrony.keys"]['se_type'] == 'chronyd_keys_t'
+
+    dev_listings = ls.listing_of('/var/log')
+    assert 'boot.log-20220705' in dev_listings
+    assert dev_listings["boot.log-20220705"]['size'] == 22027
 
 
 def test_ls_laZ_on_dev():
