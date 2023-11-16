@@ -14,7 +14,7 @@ import signal
 from insights.components.ceph import IsCephMonitor
 from insights.components.cloud_provider import IsAzure, IsGCP
 from insights.components.rhel_version import IsRhel6
-from insights.components.satellite import IsSatellite611, IsSatellite
+from insights.components.satellite import IsSatellite611, IsSatellite, IsSatellite614AndLater, IsSatelliteLessThan614
 from insights.components.virtualization import IsBareMetal
 from insights.core.context import HostContext
 from insights.core.spec_factory import (
@@ -570,9 +570,15 @@ class DefaultSpecs(Specs):
         "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c \"select count(*) from hosts where \"compute_resource_id\" in (select id from compute_resources where type='Foreman::Model::Ovirt')\" --csv",
         deps=[IsSatellite]
     )
-    satellite_settings = simple_command(
-        "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c \"select name, value, \\\"default\\\" from settings where name in ('destroy_vm_on_host_delete', 'unregister_delete_host')\" --csv",
-        deps=[IsSatellite]
+    satellite_settings = first_of(
+        [
+            simple_command(
+                "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c \"select name, value, \\\"default\\\" from settings where name in ('destroy_vm_on_host_delete', 'unregister_delete_host')\" --csv",
+                deps=[IsSatelliteLessThan614]),
+            simple_command(
+                "/usr/bin/sudo -iu postgres /usr/bin/psql -d foreman -c \"select name, value from settings where name in ('destroy_vm_on_host_delete', 'unregister_delete_host')\" --csv",
+                deps=[IsSatellite614AndLater]),
+        ]
     )
     satellite_version_rb = simple_file("/usr/share/foreman/lib/satellite/version.rb")
     satellite_yaml = simple_file("/etc/foreman-installer/scenarios.d/satellite.yaml")
