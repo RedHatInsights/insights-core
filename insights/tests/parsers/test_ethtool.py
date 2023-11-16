@@ -263,6 +263,42 @@ TEST_ETHTOOL_G_PATH_2 = """
 sos_commands/networkking/ethtool_-g_eth2
 """
 
+TEST_ETHTOOL_G_3 = """
+Ring parameters for ens3:
+Pre-set maximums:
+RX:		256
+RX Mini:	n/a
+RX Jumbo:	n/a
+TX:		256
+Current hardware settings:
+RX:		256
+RX Mini:	n/a
+RX Jumbo:	n/a
+TX:		256
+""".strip()
+
+TEST_ETHTOOL_G_PATH_3 = """
+sos_commands/networkking/ethtool_-g_ens3
+""".strip()
+
+TEST_ETHTOOL_G_4 = """
+Ring parameters for ens3:
+Pre-set maximums:
+RX:		256
+RX Mini:	some-unexpected-value
+RX Jumbo:	some-unexpected-value
+TX:		256
+Current hardware settings:
+RX:		256
+RX Mini:	some-unexpected-value
+RX Jumbo:	some-unexpected-value
+TX:		256
+""".strip()
+
+TEST_ETHTOOL_G_PATH_4 = """
+sos_commands/networkking/ethtool_-g_ens3
+""".strip()
+
 
 def test_ethtool_g():
     context = context_wrap(TEST_ETHTOOL_G)
@@ -296,6 +332,28 @@ def test_ethtool_g_2():
     context = context_wrap(TEST_ETHTOOL_G_2, path=TEST_ETHTOOL_G_PATH_2)
     result = ethtool.Ring(context)
     assert result.ifname == "eth2"
+
+
+def test_ethtool_g_3():
+    context = context_wrap(TEST_ETHTOOL_G_3, path=TEST_ETHTOOL_G_PATH_3)
+    result = ethtool.Ring(context)
+    assert keys_in(["max", "current"], result.data)
+    assert result.ifname == "ens3"
+    assert result.data['max'].rx == 256
+    assert result.data['max'].rx_mini == -1
+    assert result.current.rx_jumbo == -1
+    assert result.current.tx == 256
+
+
+def test_ethtool_g_4():
+    context = context_wrap(TEST_ETHTOOL_G_4, path=TEST_ETHTOOL_G_PATH_4)
+    result = ethtool.Ring(context)
+    assert keys_in(["max", "current"], result.data)
+    assert result.ifname == "ens3"
+    assert result.data['max'].rx == 256
+    assert result.data['max'].rx_mini == -2
+    assert result.current.rx_jumbo == -2
+    assert result.current.tx == 256
 
 
 TEST_ETHTOOL_I_DOCS = '''
