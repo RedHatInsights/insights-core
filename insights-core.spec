@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.2.23
+Version:        3.2.24
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,17 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Nov 16 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.24-1
+- fix: Enhance spec "satellite_settings" and parser to support satellite 6.14
+  (#3952) (44796653+huali027@users.noreply.github.com)
+- chore: uname supports RHEL 8.9 (#3957) (xiangceliu@redhat.com)
+- fix: ethtool.Ring parsing be blocked by TypeError (#3954)
+  (xiaoxwan@redhat.com)
+- fix: ls_laZ handling "?" as rhel8 selinux context (#3956)
+  (xiaoxwan@redhat.com)
+- chore: remove specs not used by rules (#3821) (xiangceliu@redhat.com)
+- fix: add filter to dependency datasource (#3949) (xiangceliu@redhat.com)
+
 * Thu Nov 09 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.23-1
 - feat: uname supports RHEL 9.3 (#3950) (xiangceliu@redhat.com)
 
