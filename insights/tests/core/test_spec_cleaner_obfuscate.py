@@ -33,7 +33,7 @@ from insights.core.spec_cleaner import Cleaner
 def test_obfuscate_ip_match(line, expected):
     c = InsightsConfig(obfuscate=True)
     pp = Cleaner(c, {})
-    actual = pp._obfuscate_line(line, ['ip'], pp._sub_ip)
+    actual = pp._obfuscate_line(line, [pp._sub_ip])
     assert actual == expected
 
 
@@ -54,7 +54,7 @@ def test_obfuscate_ip_match(line, expected):
 def test_obfuscate_ip_match_IP_overlap(line, expected):
     c = InsightsConfig(obfuscate=True)
     pp = Cleaner(c, {})
-    actual = pp._obfuscate_line(line, ['ip'], pp._sub_ip)
+    actual = pp._obfuscate_line(line, [pp._sub_ip])
     assert actual == expected
 
 
@@ -81,8 +81,8 @@ def test_obfuscate_ip_match_IP_overlap(line, expected):
 def test_obfuscate_ip_match_IP_overlap_netstat(line, expected):
     c = InsightsConfig(obfuscate=True)
     pp = Cleaner(c, {})
-    actual1 = pp._obfuscate_line(line, ['ip'], pp._sub_ip_netstat)
-    actual2 = pp._obfuscate_line(line, ['ip'], pp._sub_ip_netstat)  # twice
+    actual1 = pp._obfuscate_line(line, [pp._sub_ip_netstat])
+    actual2 = pp._obfuscate_line(line, [pp._sub_ip_netstat])
     assert actual1 == expected
     assert actual2 == expected
 
@@ -122,10 +122,10 @@ def test_obfuscate_ip_match_IP_overlap_netstat(line, expected):
 def test_obfuscate_ip_false_positive(_ip2db, original, expected):
     c = InsightsConfig(obfuscate=True)
     pp = Cleaner(c, {})
-    actual = pp._obfuscate_line(original, ['ip'], pp._sub_ip)
+    actual = pp._obfuscate_line(original, [pp._sub_ip])
     assert actual == expected
     # BUT works well without "obfuscate=['ip']
-    actual = pp._obfuscate_line(original, [], pp._sub_ip)
+    actual = pp._obfuscate_line(original, [])
     assert actual == original
 
 
@@ -134,7 +134,7 @@ def test_obfuscate_hostname():
     line = "a line with %s here, test2.abc.com, test.redhat.com" % hostname
     c = InsightsConfig(obfuscate=True, obfuscate_hostname=True, hostname=hostname)
     pp = Cleaner(c, {}, hostname)
-    actual = pp._obfuscate_line(line, ['hostname'], None)
+    actual = pp._obfuscate_line(line, [pp._sub_hostname])
     assert 'test1' not in actual
     assert 'test2' not in actual
     assert 'abc.com' not in actual
@@ -142,7 +142,7 @@ def test_obfuscate_hostname():
     assert '.example.com' in actual
 
     line = "a line w/o hostname, but test2.abc.com only"
-    actual = pp._obfuscate_line(line, ['hostname'], None)
+    actual = pp._obfuscate_line(line, [pp._sub_hostname])
     assert 'test2' not in actual
     assert 'abc.com' not in actual
     assert '.example.com' in actual
@@ -151,19 +151,19 @@ def test_obfuscate_hostname():
     hostname = 'test1'  # Short hostname
     line = "a line with %s here, test2.def.com" % hostname
     pp = Cleaner(c, {}, hostname)
-    actual = pp._obfuscate_line(line, ['hostname'], None)
+    actual = pp._obfuscate_line(line, [pp._sub_hostname])
     assert hostname not in actual
     assert 'test2.def.com' in actual
 
     line = "a line w/o hostname"
     hostname = 'test1.abc.com'
     pp = Cleaner(c, {}, hostname)
-    actual = pp._obfuscate_line(line, ['hostname'], None)
+    actual = pp._obfuscate_line(line, [pp._sub_hostname])
     assert line == actual
 
     line = "a line with %s here, test2.def.com" % hostname
     pp = Cleaner(c, {}, fqdn='')  # empty hostname - no obfuscate
-    actual = pp._obfuscate_line(line, ['hostname'], None)
+    actual = pp._obfuscate_line(line, [pp._sub_hostname])
     assert line == actual
 
 
@@ -172,7 +172,7 @@ def test_obfuscate_hostname_and_ip():
     line = "test1.abc.com, 10.0.0.1 test1.abc.loc, 20.1.4.7 smtp.abc.com, 10.1.2.7 lite.abc.com"
     c = InsightsConfig(obfuscate=True, obfuscate_hostname=True, hostname=hostname)
     pp = Cleaner(c, {}, hostname)
-    result = pp._obfuscate_line(line, ['hostname', 'ip'], pp._sub_ip)
+    result = pp._obfuscate_line(line, [pp._sub_ip, pp._sub_hostname])
     assert 'example.com' in result
     assert '10.230.230' in result
     for item in line.split():

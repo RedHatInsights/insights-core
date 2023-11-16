@@ -319,15 +319,12 @@ class Cleaner(object):
     #   Main functions        #
     ###########################
 
-    def _obfuscate_line(self, line, obfs, ip_func):
+    def _obfuscate_line(self, line, obf_funcs):
         # obfuscate line for possible hostname, ip
         new_line = line
-        # IP
-        if "ip" in obfs:
-            new_line = ip_func(line)
-        # Hostname
-        if "hostname" in obfs:
-            new_line = self._sub_hostname(new_line)
+        for func in obf_funcs:
+            tmp_line = func(new_line)
+            new_line = tmp_line
         return new_line
 
     def _redact_line(self, line):
@@ -359,8 +356,12 @@ class Cleaner(object):
             data = None
             tmp_file = TemporaryFile(mode='w+b')
             obfs = set(self.obfuscate) - set(no_obfuscate or [])
-            ip_func = self._sub_ip_netstat if _file.endswith("netstat_-neopa") else self._sub_ip
-            # Process it
+            obf_funcs = []
+            # IP obfuscation entry
+            obf_funcs.append(self._sub_ip_netstat if _file.endswith("netstat_-neopa") else self._sub_ip) if "ip" in obfs else None
+            # Hostname obfuscation entry
+            obf_funcs.append(self._sub_hostname) if "hostname" in obfs else None
+            # Process the file
             try:
                 with open(_file, 'r') as fh:
                     data = fh.readlines()
@@ -372,10 +373,11 @@ class Cleaner(object):
                                 if line is None:
                                     # line is removed after redaction
                                     continue
-                            # Do Obfuscation as per the "obfs"
-                            line = self._obfuscate_line(line, obfs, ip_func)
-                            # TODO: Do `filter` as per the "filters"
-                            # new_l = self._grep_line(line, filters)
+                            # Do Obfuscation as per the "obf_funcs"
+                            line = self._obfuscate_line(line, obf_funcs)
+                            # TODO:
+                            # Do `filter` as per the "filters"
+                            # new_l = self._filter_line_allow_list(line, filters)
                             tmp_file.write(line.encode('utf-8') if six.PY3 else line)
                         tmp_file.seek(0)
             except Exception as e:  # pragma: no cover
