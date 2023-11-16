@@ -2,6 +2,15 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.2.24](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.24) (2023-11-16)
+
+- fix: Enhance spec "satellite_settings" and parser to support satellite 6.14 ([PR 3952](https://github.com/RedHatInsights/insights-core/pull/3952))
+- chore: uname supports RHEL 8.9 ([PR 3957](https://github.com/RedHatInsights/insights-core/pull/3957))
+- fix: ethtool.Ring parsing be blocked by TypeError ([PR 3954](https://github.com/RedHatInsights/insights-core/pull/3954))
+- fix: ls_laZ handling "?" as rhel8 selinux context ([PR 3956](https://github.com/RedHatInsights/insights-core/pull/3956))
+- chore: remove specs not used by rules ([PR 3821](https://github.com/RedHatInsights/insights-core/pull/3821))
+- fix: add filter to dependency datasource ([PR 3949](https://github.com/RedHatInsights/insights-core/pull/3949))
+
 # [insights-core-3.2.23](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.23) (2023-11-09)
 
 - feat: uname supports RHEL 9.3 ([PR 3950](https://github.com/RedHatInsights/insights-core/pull/3950))
