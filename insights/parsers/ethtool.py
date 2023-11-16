@@ -524,6 +524,10 @@ class Ring(CommandParser):
     Within each the interface settings are available as four parameters -
     ``rx``, ``rx_mini``, ``rx_jumbo`` and ``tx``.
 
+    All the Ring parameter values are parsed into ``int`` type. For non-integer
+    parameter values, "n/a" will be convered to `-1` and other cases will be
+    coverted to `-2` for compatibility.
+
     Attributes:
         data (dict): Dictionary of keys with values in a list.
         iface (str): Interface name.
@@ -589,7 +593,7 @@ class Ring(CommandParser):
 
         self.iface = extract_iface_name_from_content(content[0])
 
-        def set_section(section, data):
+        def set_section(section, section_data):
             if section:
                 ringdata = Ring.Parameters(**section_data)
                 setattr(self, section, ringdata)
@@ -607,8 +611,9 @@ class Ring(CommandParser):
             elif ':' in line:
                 # key: value, store in section data for now
                 key, value = (s.strip() for s in line.split(":", 1))
-                if unicode(value).isnumeric():
-                    section_data[key.replace(" ", "_").lower()] = int(value)
+                parsed_value = int(value) if unicode(value).isnumeric() else (
+                                -1 if value == 'n/a' else -2)
+                section_data[key.replace(" ", "_").lower()] = parsed_value
 
         # Handle last found section, if any
         set_section(section, section_data)
