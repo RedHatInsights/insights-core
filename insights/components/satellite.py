@@ -91,3 +91,34 @@ class IsSatellite611(IsSatellite):
     """
     def __init__(self, sat):
         super(IsSatellite611, self).__init__(sat, 6, 11)
+
+
+@component(SatelliteVersion)
+class IsSatellite614AndLater(object):
+    """
+    This component uses ``SatelliteVersion`` combiner
+    to determine the Satellite version. It checks if the Satellite version is 6.14 and later,
+    and raises ``SkipComponent`` when it isn't.
+
+    Raises:
+        SkipComponent: When the Satellite version is earlier than 6.14.
+    """
+    def __init__(self, sat):
+        if (sat.major < 6 or (sat.major == 6 and sat.minor < 14)):
+            raise SkipComponent
+
+
+@component(SatelliteVersion)
+class IsSatelliteLessThan614(object):
+    """
+    This component uses ``SatelliteVersion`` combiner
+    to determine the Satellite version. It checks if the Satellite version is 6.x and less than 6.14,
+    and raises ``SkipComponent`` when it isn't.
+
+    Raises:
+        SkipComponent: When the Satellite version isn't 6.x or it's 6.14 and later.
+    """
+    def __init__(self, sat):
+        if sat.major == 6 and sat.minor < 14:
+            return
+        raise SkipComponent
