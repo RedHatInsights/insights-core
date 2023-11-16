@@ -104,7 +104,7 @@ class IsSatellite614AndLater(object):
         SkipComponent: When the Satellite version is earlier than 6.14.
     """
     def __init__(self, sat):
-        if sat.major == 6 and sat.minor < 14:
+        if (sat.major < 6 or sat.major == 6 and sat.minor < 14):
             raise SkipComponent
 
 
@@ -112,12 +112,13 @@ class IsSatellite614AndLater(object):
 class IsSatelliteLessThan614(object):
     """
     This component uses ``SatelliteVersion`` combiner
-    to determine the Satellite version. It checks if the Satellite version is less than 6.14,
+    to determine the Satellite version. It checks if the Satellite version is 6.x and less than 6.14,
     and raises ``SkipComponent`` when it isn't.
 
     Raises:
-        SkipComponent: When the Satellite version is 6.14 and later.
+        SkipComponent: When the Satellite version isn't 6.x or it's 6.14 and later.
     """
     def __init__(self, sat):
-        if sat.major == 6 and sat.minor >= 14:
-            raise SkipComponent
+        if sat.major == 6 and sat.minor < 14:
+            return
+        raise SkipComponent
