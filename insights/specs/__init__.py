@@ -3,25 +3,17 @@ from insights.core.spec_factory import SpecSet, RegistryPoint
 
 class Specs(SpecSet):
     # Client metadata specs/files
-    ansible_host = RegistryPoint()
+    ansible_host = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     blacklist_report = RegistryPoint()
-    blacklisted_specs = RegistryPoint()
-    branch_info = RegistryPoint()
-    display_name = RegistryPoint()
+    blacklisted_specs = RegistryPoint(no_obfuscate=['hostname', 'ip'])
+    branch_info = RegistryPoint()  # https://issues.redhat.com/browse/RHIN-639
+    display_name = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     egg_release = RegistryPoint()
-    tags = RegistryPoint()
-    version_info = RegistryPoint()
+    tags = RegistryPoint(no_obfuscate=['hostname', 'ip'])
+    version_info = RegistryPoint(no_obfuscate=['hostname', 'ip'])
 
     # Client App specs
     malware_detection = RegistryPoint()
-
-    # Archive metadata specs/files
-    ansible_host = RegistryPoint(no_obfuscate=['hostname', 'ip'])
-    blacklisted_specs = RegistryPoint(no_obfuscate=['hostname', 'ip'])
-    branch_info = RegistryPoint(raw=True)  # https://issues.redhat.com/browse/RHIN-639
-    display_name = RegistryPoint(no_obfuscate=['hostname', 'ip'])
-    tags = RegistryPoint(no_obfuscate=['hostname', 'ip'])
-    version_info = RegistryPoint(no_obfuscate=['hostname', 'ip'])
 
     # Regular collection specs
     abrt_ccpp_conf = RegistryPoint(filterable=True, no_obfuscate=['hostname', 'ip'])
@@ -273,7 +265,6 @@ class Specs(SpecSet):
     initctl_lst = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     initscript = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ip'])
     insights_client_conf = RegistryPoint(filterable=True)
-    insights_client_exp_sed = RegistryPoint()  # INSPEC-414
     installed_rpms = RegistryPoint(no_obfuscate=['ip'])
     interrupts = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     ip6tables = RegistryPoint()
