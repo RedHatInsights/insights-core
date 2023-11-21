@@ -162,6 +162,49 @@ pulp.agent.076a1c3f-3dde-4523-b26c-fcfffbd93bfe:2018-01-16 00:06:36
 
 RELATIVE_PATH = "insights_commands/satellite_missed_qpid_queues"
 
+LS_AL_SINCE_SATELLITE_611 = """
+ls: cannot access '/nonexists': No such file or directory
+/var/lib/qpidd/qls/jrnl2:
+total 0
+drwxr-xr-x. 6 qpidd qpidd 151 Nov 16 21:26 .
+drwxr-xr-x. 5 qpidd qpidd  43 Nov 22  2022 ..
+drwxr-xr-x. 2 root  root    6 Nov 16 21:25 backup
+drwxr-xr-x. 2 qpidd qpidd  55 Nov 22  2022 katello.agent
+drwxr-xr-x. 2 qpidd qpidd  55 Nov 16 19:26 pulp.agent.4a45e839-637d-49b6-bb12-4060dad50e5a
+drwxr-xr-x. 2 qpidd qpidd  55 Nov 16 19:13 pulp.agent.e4d772ea-da65-4bea-847b-b9b36028fc68
+""".strip()
+
+LS_AL_BEFORE_SATELLITE_611 = """
+ls: cannot access /var/lib/qpidd/qls/jrnl2: No such file or directory
+ls: cannot access '/nonexists': No such file or directory
+""".strip()
+
+LS_AL_WITH_OTHER_DIRS = """
+ls: cannot access '/nonexists': No such file or directory
+/etc/qpid:
+total 24
+drwxr-xr-x.   2 root root    58 Nov 14 19:17 .
+drwxr-xr-x. 121 root root  8192 Nov 10 03:17 ..
+-rw-r-----.   1 root qpidd  667 Nov 22  2022 qpid.acl
+-rw-r--r--.   1 root root  1027 Oct 21  2018 qpidc.conf
+-rw-r--r--.   1 root root  1430 Nov 22  2022 qpidd.conf
+""".strip()
+
+QPID_QUEUES_NON_CERT_EXISTS = """
+Failed: InternalError - Traceback (most recent call last):
+  File "/usr/lib/python2.7/site-packages/qpid/messaging/driver.py", line 551, in dispatch
+    self.connect()
+  File "/usr/lib/python2.7/site-packages/qpid/messaging/driver.py", line 579, in connect
+    self._transport = trans(self.connection, host, port)
+  File "/usr/lib/python2.7/site-packages/qpid/messaging/transports.py", line 120, in __init__
+    cert_reqs=validate)
+  File "/usr/lib64/python2.7/ssl.py", line 967, in wrap_socket
+    ciphers=ciphers)
+  File "/usr/lib64/python2.7/ssl.py", line 543, in __init__
+    self._context.load_cert_chain(certfile, keyfile)
+IOError: [Errno 2] No such file or directory
+""".strip()
+
 
 def mock_stream():
     for line in MESSAGE_WITH_ERRORS.splitlines():
@@ -185,10 +228,13 @@ def test_satellite_missed_queues():
     qpid_queues.content = QPID_QUEUES.splitlines()
     messages = Mock()
     messages.stream = mock_stream
+    ls_la = Mock()
+    ls_la.content = LS_AL_BEFORE_SATELLITE_611.splitlines()
     broker = {
         Specs.messages: messages,
         LocalSpecs.content_host_uuids: host_uuids,
         LocalSpecs.qpid_queues: qpid_queues,
+        Specs.ls_la: ls_la
     }
     result = satellite_missed_pulp_agent_queues(broker)
     assert result is not None
@@ -205,15 +251,41 @@ def test_satellite_missed_queues_with_more_data():
     qpid_queues.content = QPID_QUEUES.splitlines()
     messages = Mock()
     messages.stream = mock_stream
+    ls_la = Mock()
+    ls_la.content = LS_AL_BEFORE_SATELLITE_611.splitlines()
     broker = {
         Specs.messages: messages,
         LocalSpecs.content_host_uuids: host_uuids,
         LocalSpecs.qpid_queues: qpid_queues,
+        Specs.ls_la: ls_la
     }
     result = satellite_missed_pulp_agent_queues(broker)
     assert result is not None
     assert isinstance(result, DatasourceProvider)
     expected = DatasourceProvider(content=MISSED_QUEUES_OUTPUT_2.splitlines(), relative_path=RELATIVE_PATH)
+    assert sorted(result.content) == sorted(expected.content)
+    assert result.relative_path == expected.relative_path
+
+
+def test_satellite_after_611():
+    host_uuids = Mock()
+    host_uuids.content = HOST_UUIDS.splitlines()
+    qpid_queues = Mock()
+    qpid_queues.content = QPID_QUEUES_NON_CERT_EXISTS.splitlines()
+    messages = Mock()
+    messages.stream = mock_stream
+    ls_la = Mock()
+    ls_la.content = LS_AL_SINCE_SATELLITE_611.splitlines()
+    broker = {
+        Specs.messages: messages,
+        LocalSpecs.content_host_uuids: host_uuids,
+        LocalSpecs.qpid_queues: qpid_queues,
+        Specs.ls_la: ls_la
+    }
+    result = satellite_missed_pulp_agent_queues(broker)
+    assert result is not None
+    assert isinstance(result, DatasourceProvider)
+    expected = DatasourceProvider(content=MISSED_QUEUES_OUTPUT.splitlines(), relative_path=RELATIVE_PATH)
     assert sorted(result.content) == sorted(expected.content)
     assert result.relative_path == expected.relative_path
 
@@ -225,10 +297,13 @@ def test_exception():
     qpid_queues.content = QPID_QUEUES.splitlines()
     messages = Mock()
     messages.stream = mock_stream_without_error
+    ls_la = Mock()
+    ls_la.content = LS_AL_BEFORE_SATELLITE_611.splitlines()
     broker = {
         Specs.messages: messages,
         LocalSpecs.content_host_uuids: host_uuids,
         LocalSpecs.qpid_queues: qpid_queues,
+        Specs.ls_la: ls_la
     }
     with pytest.raises(SkipComponent):
         satellite_missed_pulp_agent_queues(broker)
@@ -242,5 +317,38 @@ def test_exception():
     empty_uuids = Mock()
     empty_uuids.content = HOST_UUIDS_1.splitlines()
     broker[LocalSpecs.content_host_uuids] = empty_uuids
+    with pytest.raises(SkipComponent):
+        satellite_missed_pulp_agent_queues(broker)
+
+    # test no output for both hqpid queues and la_al
+    host_uuids = Mock()
+    host_uuids.content = HOST_UUIDS_2.splitlines()
+    no_qpid_queues = Mock()
+    no_qpid_queues.content = QPID_QUEUES_NON_CERT_EXISTS.splitlines()
+    messages = Mock()
+    messages.stream = mock_stream
+    ls_la = Mock()
+    ls_la.content = LS_AL_BEFORE_SATELLITE_611.splitlines()
+    broker = {
+        Specs.messages: messages,
+        LocalSpecs.content_host_uuids: host_uuids,
+        LocalSpecs.qpid_queues: no_qpid_queues,
+        Specs.ls_la: ls_la
+    }
+    with pytest.raises(SkipComponent):
+        satellite_missed_pulp_agent_queues(broker)
+
+    # test not /var/lib/qpidd/qls/jrnl2 in ls_al
+    ls_la.content = LS_AL_WITH_OTHER_DIRS.splitlines()
+    with pytest.raises(SkipComponent):
+        satellite_missed_pulp_agent_queues(broker)
+
+    # test no ls_al in broker
+    broker.pop(Specs.ls_la)
+    with pytest.raises(SkipComponent):
+        satellite_missed_pulp_agent_queues(broker)
+
+    ls_la_withtou_content = Mock()
+    broker[Specs.ls_la] = ls_la_withtou_content
     with pytest.raises(SkipComponent):
         satellite_missed_pulp_agent_queues(broker)
