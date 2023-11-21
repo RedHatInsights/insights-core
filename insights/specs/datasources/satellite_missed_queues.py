@@ -3,14 +3,11 @@ import re
 from insights.combiners.satellite_version import SatelliteVersion
 from insights.core.context import HostContext
 from insights.core.exceptions import SkipComponent
-from insights.core.filters import add_filter
 from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider, simple_command
 from insights.specs import Specs
 
-
 NODE_NOT_FOUND_ERROR = 'error Error on attach: Node not found'
-add_filter(Specs.messages, NODE_NOT_FOUND_ERROR)
 
 
 class LocalSpecs(Specs):
@@ -104,7 +101,6 @@ def satellite_missed_pulp_agent_queues(broker):
     missed_queues_in_log = _parse_non_existing_queues_in_msg()
     if missed_queues_in_log:
         host_uuids = _get_content_host_uuid()
-        host_uuids = ['5cd8e079-6632-4113-8b9f-7bbbf09d777c']
         if host_uuids:
             qpid_output_queues = _get_qpid_queues()
             qpid_dir_queues = _get_qpid_jrn_dir_ouptput()
