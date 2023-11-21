@@ -1,0 +1,106 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "insights-core"
+version = "3.0.8"
+authors = [
+    {name = "Red Hat, Inc.", email = "insights@redhat.com"}
+]
+description = "Insights Core is a data collection and analysis framework"
+license = {text = "Apache 2.0"}
+readme = "README.rst"
+keywords = ["redhat", "insights"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 2.6",
+    "Programming Language :: Python :: 2.7",
+    "Programming Language :: Python :: 3.3",
+    "Programming Language :: Python :: 3.4",
+    "Programming Language :: Python :: 3.5",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.11",
+]
+dependencies = [
+    'cachecontrol',
+    'cachecontrol[filecache]',
+    'cachecontrol[redis]',
+    'defusedxml',
+    'lockfile',
+    'redis',
+    'requests',
+    'six',
+    'jinja2; python_version > "2.7"',
+    'jinja2<=2.11.3; python_version <= "2.7"',
+    'pyyaml; python_version >= "2.7"',
+    'pyyaml>=3.10,<=3.13; python_version < "2.7"',
+    'wheel'
+]
+
+[project.optional-dependencies]
+docs = [
+    'colorama',
+    'docutils',
+    'jedi',
+    'nbsphinx',
+    'Pygments',
+    'sphinx_rtd_theme',
+    'Sphinx',
+    'ipython<8.7.0',
+    'MarkupSafe==2.0.1'
+]
+testing = [
+    'mock==2.0.0',
+    'coverage; python_version >= "2.7"',
+    'coverage==4.3.4; python_version < "2.7"',
+    'pytest; python_version >= "3"',
+    'pytest~=4.6.0; python_version == "2.7"',
+    'pytest==3.0.6; python_version < "2.7"',
+    'pytest-cov; python_version >= "2.7"',
+    'pytest-cov==2.4.0; python_version < "2.7"'
+]
+client = [
+    'oyaml',
+    'python-gnupg==0.4.6'
+]
+cluster = [
+    'ansible',
+    'pandas',
+    'colorama'
+]
+openshift = [
+    'openshift'
+]
+linting = [
+    'flake8; python_version >= "2.7"',
+    'flake8==2.6.2; python_version < "2.7"'
+]
+optional = [
+    "python-cjson",
+    "python-logstash",
+    "python-statsd",
+    "watchdog"
+]
+develop = ["insights-core[testing]", "insights-core[docs]", "insights-core[linting]"]
+
+[project.urls]
+"Source" = "https://github.com/redhatinsights/insights-core"
+"Pypi" = "https://pypi.org/project/insights-core"
+
+[project.scripts]
+insights = "insights.command_parser:main"
+insights-cat = "insights.tools.cat:main"
+insights-collect = "insights.collect:main"
+insights-dupkeycheck = "insights.tools.dupkeycheck:main"
+insights-info = "insights.tools.query:main"
+insights-inspect = "insights.tools.insights_inspect:main"
+insights-ocpshell = "insights.ocpshell:main"
+insights-run = "insights:main"
+mangle = "insights.util.mangle:main"
