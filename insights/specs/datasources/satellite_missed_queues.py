@@ -3,14 +3,11 @@ import re
 from insights.combiners.satellite_version import SatelliteVersion
 from insights.core.context import HostContext
 from insights.core.exceptions import SkipComponent
-from insights.core.filters import add_filter
 from insights.core.plugins import datasource
 from insights.core.spec_factory import DatasourceProvider, simple_command
 from insights.specs import Specs
 
-
 NODE_NOT_FOUND_ERROR = 'error Error on attach: Node not found'
-add_filter(Specs.messages, NODE_NOT_FOUND_ERROR)
 
 
 class LocalSpecs(Specs):
@@ -26,7 +23,7 @@ class LocalSpecs(Specs):
     )
 
 
-@datasource(LocalSpecs.content_host_uuids, LocalSpecs.qpid_queues, Specs.messages, HostContext, SatelliteVersion)
+@datasource(LocalSpecs.content_host_uuids, Specs.messages, [LocalSpecs.qpid_queues, Specs.ls_la], HostContext, SatelliteVersion)
 def satellite_missed_pulp_agent_queues(broker):
     """
     This datasource provides the missed pulp agent queues information on satellite server.
@@ -80,27 +77,45 @@ def satellite_missed_pulp_agent_queues(broker):
         return host_uuids
 
     def _get_qpid_queues():
-        output = broker[LocalSpecs.qpid_queues].content
         current_queues = []
-        if len(output) > 3:
-            current_queues = [line.split()[0].strip() for line in output[3:] if line.split()[0].startswith('pulp.agent')]
+        if LocalSpecs.qpid_queues in broker:
+            try:
+                output = broker[LocalSpecs.qpid_queues].content
+                if len(output) > 3:
+                    current_queues = [line.split()[0].strip() for line in output[3:] if line.split()[0].startswith('pulp.agent')]
+            except Exception:
+                pass
+        return current_queues
+
+    def _get_qpid_jrn_dir_ouptput():
+        current_queues = []
+        if Specs.ls_la in broker:
+            try:
+                output = broker[Specs.ls_la].content
+                if any('/var/lib/qpidd/qls/jrnl2' in line for line in output):
+                    current_queues = [line.split()[-1].strip() for line in output if line.split()[-1].startswith('pulp.agent')]
+            except Exception:
+                pass
         return current_queues
 
     missed_queues_in_log = _parse_non_existing_queues_in_msg()
     if missed_queues_in_log:
         host_uuids = _get_content_host_uuid()
         if host_uuids:
-            qpid_queues = _get_qpid_queues()
-            missed_queues = []
-            too_more_data = 0
-            for queue in missed_queues_in_log:
-                if queue.split('.')[-1] in host_uuids and queue not in qpid_queues:
-                    missed_queues.append('%s:%s' % (queue, missed_queues_in_log[queue]))
-                    # only return 10 missed queues in case too long data can't be rendered
-                    if len(missed_queues) >= 10:
-                        too_more_data = 1
-                        break
-            if missed_queues:
-                missed_queues.append(str(too_more_data))
-                return DatasourceProvider(missed_queues, relative_path='insights_commands/satellite_missed_qpid_queues')
+            qpid_output_queues = _get_qpid_queues()
+            qpid_dir_queues = _get_qpid_jrn_dir_ouptput()
+            if qpid_output_queues or qpid_dir_queues:
+                qpid_queues = qpid_output_queues or qpid_dir_queues
+                missed_queues = []
+                too_more_data = 0
+                for queue in missed_queues_in_log:
+                    if queue.split('.')[-1] in host_uuids and queue not in qpid_queues:
+                        missed_queues.append('%s:%s' % (queue, missed_queues_in_log[queue]))
+                        # only return 10 missed queues in case too long data can't be rendered
+                        if len(missed_queues) >= 10:
+                            too_more_data = 1
+                            break
+                if missed_queues:
+                    missed_queues.append(str(too_more_data))
+                    return DatasourceProvider(missed_queues, relative_path='insights_commands/satellite_missed_qpid_queues')
     raise SkipComponent
