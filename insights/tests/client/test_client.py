@@ -140,6 +140,11 @@ def test_get_log_handler_by_client_version(get_version_info, mock_path_dirname):
     conf = InsightsConfig(logging_file='/tmp/insights.log')
     assert isinstance(get_file_handler(conf), FileHandlerWithUMask) is True
 
+    try:
+        os.rmdir(mock_path_dirname.return_value)
+    except OSError:
+        pass
+
 
 @patch('insights.client.client.generate_machine_id')
 @patch('insights.client.utilities.delete_unregistered_file')
