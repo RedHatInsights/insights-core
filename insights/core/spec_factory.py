@@ -266,21 +266,6 @@ class TextFileProvider(FileProvider):
         if filters:
             args.append(["grep", "-F", filters, self.path])
 
-        patterns = "\n".join(blacklist.get_disallowed_patterns())
-        if patterns:
-            grep = ["grep", "-v", "-F", patterns]
-            if not args:
-                grep.append(self.path)
-            args.append(grep)
-
-        keywords = blacklist.get_disallowed_keywords()
-        if keywords:
-            sed = ["sed"]
-            for kw in keywords:
-                sed.extend(["-e", "s/%s/keyword/g" % kw.replace("/", "\\/")])
-            if not args:
-                sed.append(self.path)
-            args.append(sed)
         return args
 
     def load(self):
@@ -394,16 +379,6 @@ class CommandOutputProvider(ContentProvider):
             if filters:
                 command.append(["grep", "-F", filters])
 
-            patterns = "\n".join(blacklist.get_disallowed_patterns())
-            if patterns:
-                command.append(["grep", "-v", "-F", patterns])
-
-            keywords = blacklist.get_disallowed_keywords()
-            if keywords:
-                sed = ["sed"]
-                for kw in keywords:
-                    sed.extend(["-e", "s/%s/keyword/g" % kw.replace("/", "\\/")])
-                command.append(sed)
         return command
 
     def create_env(self):

@@ -461,7 +461,7 @@ class Cleaner(object):
             logger.info('Creating Keyword Report - %s', kw_report_file)
             lines = ['Replaced Keyword,Original Keyword']
             for k in self.kws:
-                lines.append('{0},{1}'.format(k, self.kw_db(k)))
+                lines.append('{0},{1}'.format(k, self.kw_db[k]))
         except Exception as e:  # pragma: no cover
             logger.exception(e)
             raise Exception('CreateReport Error: Error Creating Keyword Report')
