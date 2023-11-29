@@ -5,9 +5,12 @@ YumConf - file ``/etc/yum.conf``
 import six
 
 from insights.core import IniConfigFile
+from insights.core.filters import add_filter
 from insights.core.plugins import parser
 from insights.parsr.iniparser import NoOptionError
 from insights.specs import Specs
+
+add_filter(Specs.yum_conf, '[')
 
 
 @parser(Specs.yum_conf)
