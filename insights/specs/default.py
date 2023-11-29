@@ -71,6 +71,7 @@ _rpm_format = _make_rpm_formatter()
 class DefaultSpecs(Specs):
     # Dependent specs that aren't in the registry
     block_devices_by_uuid = listdir("/dev/disk/by-uuid/", context=HostContext)
+    httpd_pid = simple_command("/usr/bin/pgrep -o httpd")
     openshift_router_pid = simple_command("/usr/bin/pgrep -n openshift-route")
     ovs_vsctl_list_br = simple_command("/usr/bin/ovs-vsctl list-br")
 
@@ -269,6 +270,7 @@ class DefaultSpecs(Specs):
         ]
     )
     httpd_error_log = simple_file("var/log/httpd/error_log")
+    httpd_limits = foreach_collect(httpd_pid, "/proc/%s/limits")
     httpd_on_nfs = httpd.httpd_on_nfs
     httpd_ssl_cert_enddate = foreach_execute(ssl_certificate.httpd_ssl_certificate_files, "/usr/bin/openssl x509 -in %s -enddate -noout")
     ibm_fw_vernum_encoded = simple_file("/proc/device-tree/openprom/ibm,fw-vernum_encoded")
