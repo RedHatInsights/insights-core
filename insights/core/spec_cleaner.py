@@ -73,10 +73,10 @@ class Cleaner(object):
         self.redact = dict(exclude=exclude, regex=regex)
 
         # - Keyword replacement redact information
-        #   Keyword replacement do NOT depend on "obfuscate=True"
+        #   Keyword replacement does NOT depend on "obfuscate=True"
         keywords = rm_conf.get('keywords')
         self.kw_db = dict()  # keyword database
-        self.kw_count = 0
+        self.kws = set()     # keywords that have been replaced
         self._keywords2db(keywords)
 
         # Obfuscation
@@ -298,21 +298,17 @@ class Cleaner(object):
                     logger.debug("Added Obfuscated Keyword - %s", o_kw)
                     k_count += 1
                 logger.debug("Added Keyword Contents from Customer's configuration")
-                self.kw_count = k_count
 
         except Exception as e:  # pragma: no cover
             logger.warning(e)
 
-    def _kw2db(self, keyword):
-        return self.kw_db[keyword]
-
     def _sub_keywords(self, line):
         # this will substitute out any keyword entries on a given line
-        if self.kw_count > 0:    # we have obfuscated keywords to work with
-            for k in self.kw_db.keys():
-                if k in line:
-                    line = line.replace(k, self._kw2db(k))
-                    logger.debug("Replacing Keyword - %s > %s", k, self._kw2db(k))
+        for k, v in self.kw_db.items():
+            if k in line:
+                line = line.replace(k, v)
+                self.kws.add(k)
+                logger.debug("Replacing Keyword - %s > %s", k, v)
         return line
 
     ###########################
@@ -404,8 +400,8 @@ class Cleaner(object):
             hn_block.append({'original': v, 'obfuscated': k})
 
         kw_block = []
-        for k, v in self.kw_db.items():
-            kw_block.append({'original': k, 'obfuscated': v})
+        for k in self.kws:
+            kw_block.append({'original': k, 'obfuscated': self.kw_db[k]})
 
         ip_block = []
         for k, v in self.ip_db.items():
@@ -464,8 +460,8 @@ class Cleaner(object):
             kw_report_file = os.path.join(self.report_dir, "%s-keyword.csv" % archive_name)
             logger.info('Creating Keyword Report - %s', kw_report_file)
             lines = ['Replaced Keyword,Original Keyword']
-            for k, v in self.kw_db.items():
-                lines.append('{0},{1}'.format(k, v))
+            for k in self.kws:
+                lines.append('{0},{1}'.format(k, self.kw_db(k)))
         except Exception as e:  # pragma: no cover
             logger.exception(e)
             raise Exception('CreateReport Error: Error Creating Keyword Report')
@@ -475,11 +471,11 @@ class Cleaner(object):
         logger.info('Completed Keyword Report.')
 
     def generate_report(self, archive_name, rhsm_facts_file):
-        if self.obfuscate or self.kw_count > 0:
-            self.generate_rhsm_facts(rhsm_facts_file)
-            if 'ip' in self.obfuscate:
-                self.generate_ip_report(archive_name)
-            if 'hostname' in self.obfuscate:
-                self.generate_hn_report(archive_name)
-            if self.kw_count:
-                self.generate_kw_report(archive_name)
+        # Always generate the rhsm.facts files
+        self.generate_rhsm_facts(rhsm_facts_file)
+        if 'ip' in self.obfuscate:
+            self.generate_ip_report(archive_name)
+        if 'hostname' in self.obfuscate:
+            self.generate_hn_report(archive_name)
+        if self.kws:
+            self.generate_kw_report(archive_name)
