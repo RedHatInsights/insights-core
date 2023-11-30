@@ -2,21 +2,24 @@
 Handle adding files and preparing the archive for upload
 """
 from __future__ import absolute_import
-from signal import SIGTERM, signal
-import sys
-import time
+
+import atexit
+import logging
 import os
+import re
+import shlex
 import shutil
 import subprocess
-import shlex
-import logging
+import sys
 import tempfile
-import re
-import atexit
+import time
+import uuid
 
-from .utilities import determine_hostname, _expand_paths, write_data_to_file
-from .insights_spec import InsightsFile, InsightsCommand
-from .constants import InsightsConstants as constants
+from signal import SIGTERM, signal
+
+from insights.client.constants import InsightsConstants as constants
+from insights.client.insights_spec import InsightsFile, InsightsCommand
+from insights.client.utilities import determine_hostname, _expand_paths, write_data_to_file
 
 logger = logging.getLogger(__name__)
 
@@ -49,13 +52,15 @@ class InsightsArchive(object):
 
         # We should not hint the hostname in the archive if it has to be obfuscated
         if config.obfuscate_hostname:
-            hostname = "localhost"
+            # insights-YYYYmmddHHMMSS-dddddd
+            self.archive_name = ("insights-{0}-{1}".format(
+                                    time.strftime("%Y%m%d%H%M%S"),
+                                    uuid.uuid4().hex[:6]))
         else:
-            hostname = determine_hostname()
-
-        self.archive_name = ("insights-%s-%s" %
-                             (hostname,
-                              time.strftime("%Y%m%d%H%M%S")))
+            # insights-hostname-YYYYmmddHHMMSS
+            self.archive_name = ("insights-{0}-{1}".format(
+                                    determine_hostname(),
+                                    time.strftime("%Y%m%d%H%M%S")))
 
         # lazy create these, only if needed when certain
         #   functions are called

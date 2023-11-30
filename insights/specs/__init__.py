@@ -809,8 +809,6 @@ class Specs(SpecSet):
     x86_ibrs_enabled = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     x86_pti_enabled = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     x86_retp_enabled = RegistryPoint(no_obfuscate=['hostname', 'ip'])
-    xfs_db_frag = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ip'])
-    xfs_db_freesp = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ip'])
     xfs_info = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ip'])
     xfs_quota_state = RegistryPoint(no_obfuscate=['hostname', 'ip'])
     xinetd_conf = RegistryPoint(multi_output=True)
