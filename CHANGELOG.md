@@ -2,6 +2,13 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.2.25](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.25) (2023-11-30)
+
+- fix: change Specs.yum_conf to filterable=True ([PR 3963](https://github.com/RedHatInsights/insights-core/pull/3963))
+- feat: Add spec "httpd_limits" back ([PR 3962](https://github.com/RedHatInsights/insights-core/pull/3962))
+- fix: Enhance datasource "satellite_missed_pulp_agent_queues" ([PR 3960](https://github.com/RedHatInsights/insights-core/pull/3960))
+- test: remove the temporarily generated dir in test_client ([PR 3961](https://github.com/RedHatInsights/insights-core/pull/3961))
+
 # [insights-core-3.2.24](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.24) (2023-11-16)
 
 - fix: Enhance spec "satellite_settings" and parser to support satellite 6.14 ([PR 3952](https://github.com/RedHatInsights/insights-core/pull/3952))

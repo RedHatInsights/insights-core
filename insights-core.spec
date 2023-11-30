@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.2.24
+Version:        3.2.25
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,15 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Nov 30 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.25-1
+- fix: change Specs.yum_conf to filterable=True (#3963) (xiangceliu@redhat.com)
+- feat: Add spec "httpd_limits" back (#3962)
+  (44796653+huali027@users.noreply.github.com)
+- fix: Enhance datasource "satellite_missed_pulp_agent_queues" (#3960)
+  (44796653+huali027@users.noreply.github.com)
+- test: remove the temporarily generated dir in test_client (#3961)
+  (xiangceliu@redhat.com)
+
 * Thu Nov 16 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.24-1
 - fix: Enhance spec "satellite_settings" and parser to support satellite 6.14
   (#3952) (44796653+huali027@users.noreply.github.com)
