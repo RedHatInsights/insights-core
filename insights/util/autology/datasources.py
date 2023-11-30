@@ -67,9 +67,11 @@ def is_glob_file(m_obj):
     """ bool: True if broker object is a glob_file object """
     return isinstance(m_obj, insights.core.spec_factory.glob_file)
 
+
 def is_recent_files(m_obj):
     """ bool: True if broker object is a recent_file object """
     return isinstance(m_obj, insights.core.spec_factory.recent_files)
+
 
 def is_foreach_execute(m_obj):
     """ bool: True if broker object is a foreach_execute object """

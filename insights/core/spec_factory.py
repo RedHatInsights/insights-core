@@ -713,7 +713,7 @@ class recent_files(object):
                 t_full_file = os.path.join(target_path, one_file)
                 if os.path.isfile(t_full_file):
                     file_time = os.path.getmtime(t_full_file)
-                    if (current_time-file_time)//3600 < self.last_modify_hours:
+                    if (current_time - file_time) // 3600 < self.last_modify_hours:
                         try:
                             results.append(self.kind(t_full_file[len(root):], root=root, ds=self, ctx=ctx))
                         except:

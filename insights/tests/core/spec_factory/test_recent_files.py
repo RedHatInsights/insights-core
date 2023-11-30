@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 from insights.core import dr
 from insights.core.context import HostContext
 from insights.core.spec_factory import recent_files
-from insights.core.spec_factory import TextFileProvider
 
 
 @pytest.fixture
