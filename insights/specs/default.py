@@ -20,7 +20,7 @@ from insights.core.context import HostContext
 from insights.core.spec_factory import (
     command_with_args, container_collect, container_execute, first_file,
     first_of, foreach_collect, foreach_execute, glob_file, head, listdir,
-    simple_command, simple_file)
+    simple_command, simple_file, recent_files)
 from insights.specs import Specs
 from insights.specs.datasources import (
     aws, awx_manage, client_metadata, cloud_init, corosync as corosync_ds,
@@ -188,7 +188,7 @@ class DefaultSpecs(Specs):
     dse_ldif = glob_file("/etc/dirsrv/*/dse.ldif")
     du_dirs = foreach_execute(dir_list.du_dir_list, "/bin/du -s -k %s")  # empty filter
     duplicate_machine_id = machine_ids.dup_machine_id_info
-    eap_json_reports = glob_file(r"/var/tmp/insights-runtimes/uploads/*.json")
+    eap_json_reports = recent_files("/var/tmp/insights-runtimes/uploads/")
     engine_log = simple_file("/var/log/ovirt-engine/engine.log")
     etc_journald_conf = simple_file(r"etc/systemd/journald.conf")
     etc_journald_conf_d = glob_file(r"etc/systemd/journald.conf.d/*.conf")

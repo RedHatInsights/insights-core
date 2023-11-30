@@ -65,6 +65,7 @@ class InsightsArchiveSpecs(Specs):
     docker_list_images = simple_file("insights_commands/docker_images_--all_--no-trunc_--digests")
     dotnet_version = simple_file("insights_commands/dotnet_--version")
     doveconf = simple_file("insights_commands/doveconf")
+    eap_json_reports = glob_file(r"/var/tmp/insights-runtimes/uploads/*.json")
     ethtool = glob_file("insights_commands/ethtool_*", ignore="ethtool_-.*")
     ethtool_S = glob_file("insights_commands/ethtool_-S_*")
     ethtool_T = glob_file("insights_commands/ethtool_-T_*")

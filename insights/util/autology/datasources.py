@@ -18,7 +18,9 @@ SIMPLE_COMMAND_TYPE = 'simple_command'
 SIMPLE_FILE_TYPE = 'simple_file'
 """ str: Literal constant for a simple_file Spec object """
 GLOB_FILE_TYPE = 'glob_file'
-""" str: Literal constant for a simple_file Spec object """
+""" str: Literal constant for a glob_file Spec object """
+RECENT_FILES_TYPE = 'recent_files'
+""" str: Literal constant for a recent_files Spec object """
 FOREACH_EXECUTE_TYPE = 'foreach_execute'
 """ str: Literal constant for a foreach_execute Spec object """
 CONTAINER_EXECUTE_TYPE = 'container_execute'
@@ -65,6 +67,9 @@ def is_glob_file(m_obj):
     """ bool: True if broker object is a glob_file object """
     return isinstance(m_obj, insights.core.spec_factory.glob_file)
 
+def is_recent_files(m_obj):
+    """ bool: True if broker object is a recent_file object """
+    return isinstance(m_obj, insights.core.spec_factory.recent_files)
 
 def is_foreach_execute(m_obj):
     """ bool: True if broker object is a foreach_execute object """
@@ -200,6 +205,11 @@ class Spec(dict):
             m_spec['patterns'] = next((v for k, v in m_members if k == "patterns"), None)
             m_spec['repr'] = 'glob_file({patterns})'
 
+        elif is_recent_files(m_type):
+            m_spec['type_name'] = RECENT_FILES_TYPE
+            m_spec['path'] = next((v for k, v in m_members if k == "path"), None)
+            m_spec['repr'] = 'recent_files({path})'
+
         elif is_first_file(m_type):
             m_spec['type_name'] = FIRST_FILE_TYPE
             m_spec['paths'] = next((v for k, v in m_members if k == "paths"), None)
@@ -322,6 +332,11 @@ class Spec(dict):
     def is_glob_file(self):
         """ bool: True if this spec is a glob_file """
         return self.get('type_name', UNKNOWN_TYPE) == GLOB_FILE_TYPE
+
+    @property
+    def is_recent_files(self):
+        """ bool: True if this spec is a recent_files """
+        return self.get('type_name', UNKNOWN_TYPE) == RECENT_FILES_TYPE
 
     @property
     def is_foreach_execute(self):

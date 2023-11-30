@@ -6,6 +6,7 @@ import re
 import shlex
 import signal
 import six
+import time
 import traceback
 
 from collections import defaultdict
@@ -675,6 +676,54 @@ class glob_file(object):
                                        "the specs file pattern to narrow down results".format(len(results), self.max_files))
             return results
         raise ContentException("[%s] didn't match." % ', '.join(self.patterns))
+
+
+class recent_files(object):
+    """
+    Creates a datasource that reads all files were updated in last x hours under one specific path.
+
+    Args:
+        path (str): To read files under this path.
+        last_modify_hours (number): a value of hours that is used to filter the files
+        context (ExecutionContext): the context under which the datasource should run.
+        kind (FileProvider): One of TextFileProvider or RawFileProvider.
+        max_files (int): Maximum number files to process.
+
+    Returns:
+        function: A datasource that reads all files were updated in last last_modify_hours hours under the path.
+    """
+    def __init__(self, path, last_modify_hours=24, context=None, deps=[], kind=TextFileProvider, max_files=20, **kwargs):
+        self.path = path
+        self.last_modify_hours = last_modify_hours
+        self.context = context or FSRoots
+        self.kind = kind
+        self.raw = kind is RawFileProvider
+        self.max_files = max_files
+        self.__name__ = self.__class__.__name__
+        datasource(self.context, *deps, multi_output=True, raw=self.raw, **kwargs)(self)
+
+    def __call__(self, broker):
+        ctx = _get_context(self.context, broker)
+        root = ctx.root
+        results = []
+        target_path = os.path.join(root + self.path)
+        if os.path.exists(target_path):
+            current_time = time.time()
+            for one_file in os.listdir(target_path):
+                t_full_file = os.path.join(target_path, one_file)
+                if os.path.isfile(t_full_file):
+                    file_time = os.path.getmtime(t_full_file)
+                    if (current_time-file_time)//3600 < self.last_modify_hours:
+                        try:
+                            results.append(self.kind(t_full_file[len(root):], root=root, ds=self, ctx=ctx))
+                        except:
+                            log.debug(traceback.format_exc())
+
+        if results:
+            if len(results) > self.max_files:
+                raise ContentException("Number of files returned {0} is over the {1} file limit".format(len(results), self.max_files))
+            return results
+        raise ContentException("{0} does not exist or no file was updated in last {1}".format(self.path, self.last_modify_hours))
 
 
 class head(object):
