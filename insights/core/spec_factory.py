@@ -150,6 +150,9 @@ class FileProvider(ContentProvider):
             log.warning("WARNING: Skipping file %s", "/" + self.relative_path)
             raise BlacklistedSpec()
 
+        if self.ds and self.ds.filterable and not get_filters(self.ds):
+            raise ContentException("Skipping %s due to no filters." % dr.get_name(self.ds))
+
         if not os.path.exists(self.path):
             raise ContentException("%s does not exist." % self.path)
 
@@ -346,6 +349,9 @@ class CommandOutputProvider(ContentProvider):
         if not blacklist.allow_command(self.cmd):
             log.warning("WARNING: Skipping command %s", self.cmd)
             raise BlacklistedSpec()
+
+        if self.ds and self.ds.filterable and not get_filters(self.ds):
+            raise ContentException("Skipping %s due to no filters." % dr.get_name(self.ds))
 
         cmd = shlex.split(self.cmd)[0]
         if not which(cmd, env=self._env):
