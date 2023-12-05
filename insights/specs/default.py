@@ -24,7 +24,7 @@ from insights.core.spec_factory import (
 from insights.specs import Specs
 from insights.specs.datasources import (
     aws, awx_manage, client_metadata, cloud_init, corosync as corosync_ds,
-    dir_list, ethernet, httpd, ipcs, intersystems, kernel, kernel_module_list,
+    dir_list, eap_reports, ethernet, httpd, ipcs, intersystems, kernel, kernel_module_list,
     leapp, ls, lpstat, luks_devices, machine_ids, malware_detection, md5chk,
     mount as mount_ds, package_provides, ps as ps_datasource, rpm_pkgs, sap,
     satellite_missed_queues, ssl_certificate, sys_fs_cgroup_memory,
@@ -188,7 +188,7 @@ class DefaultSpecs(Specs):
     dse_ldif = glob_file("/etc/dirsrv/*/dse.ldif")
     du_dirs = foreach_execute(dir_list.du_dir_list, "/bin/du -s -k %s")  # empty filter
     duplicate_machine_id = machine_ids.dup_machine_id_info
-    eap_json_reports = recent_files("/var/tmp/insights-runtimes/uploads/")
+    eap_json_reports = eap_reports.eap_report_files
     engine_log = simple_file("/var/log/ovirt-engine/engine.log")
     etc_journald_conf = simple_file(r"etc/systemd/journald.conf")
     etc_journald_conf_d = glob_file(r"etc/systemd/journald.conf.d/*.conf")
