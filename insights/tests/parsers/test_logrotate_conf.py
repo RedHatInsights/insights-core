@@ -120,7 +120,7 @@ LOGROTATE_CONF_4 = """
         exit 0
   endscript
     nocompress
-} 
+}
 
 /var/log/news/news1.crit
 /var/log/news/news2.crit
