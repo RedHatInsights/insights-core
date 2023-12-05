@@ -20,7 +20,7 @@ from insights.core.context import HostContext
 from insights.core.spec_factory import (
     command_with_args, container_collect, container_execute, first_file,
     first_of, foreach_collect, foreach_execute, glob_file, head, listdir,
-    simple_command, simple_file, recent_files)
+    simple_command, simple_file)
 from insights.specs import Specs
 from insights.specs.datasources import (
     aws, awx_manage, client_metadata, cloud_init, corosync as corosync_ds,
