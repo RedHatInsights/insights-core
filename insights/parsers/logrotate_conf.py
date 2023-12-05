@@ -14,7 +14,7 @@ from insights.core import ConfigParser, LegacyItemAccess, Parser
 from insights.core.exceptions import ParseException
 from insights.core.plugins import parser
 from insights.parsers import get_active_lines
-from insights.parsr import (AnyChar, Choice, EOF, EOL, Forward, LeftCurly, LineEnd,
+from insights.parsr import (AnyChar, Choice, EOF, EOL, Forward, InSet, LeftCurly, LineEnd,
                             Literal, Many, Number, OneLineComment, Opt, PosMarker,
                             QuotedString, RightCurly, String, WS, WSChar, skip_none)
 from insights.parsr.query import Directive, Entry, Section
@@ -158,7 +158,7 @@ class DocParser(object):
         scripts = set("postrotate prerotate firstaction lastaction preremove".split())
         Stanza = Forward()
         Spaces = Many(WSChar)
-        Bare = String(set(string.printable) - (set(string.whitespace) | set("#{}'\"")))
+        Bare = String(set(string.printable) - (set(string.whitespace) | set("=#{}'\"")))
         Num = Number & (WSChar | LineEnd)
         Comment = OneLineComment("#").map(lambda x: None)
         ScriptStart = WS >> PosMarker(Choice([Literal(s) for s in scripts])) << WS
@@ -169,9 +169,11 @@ class DocParser(object):
         Script = Script.map(lambda x: [x[0], [x[1]], None])
         BeginBlock = WS >> LeftCurly << WS
         EndBlock = WS >> RightCurly
+        EqualChars = set("=")
+        Equal = InSet(EqualChars)
         First = PosMarker((Bare | QuotedString)) << Spaces
         Attr = Spaces >> (Num | Bare | QuotedString) << Spaces
-        Rest = Many(Attr)
+        Rest = Opt(Equal) >> Many(Attr)
         Block = BeginBlock >> Many(Stanza).map(skip_none).map(self.to_entries) << EndBlock
         Stmt = WS >> (Script | (First + Rest + Opt(Block))) << WS
         Stanza <= WS >> (Stmt | Comment) << WS
@@ -255,4 +257,27 @@ class LogRotateConfPEG(ConfigParser):
         '/sbin/killall -HUP syslogd'
     """
     def parse_doc(self, content):
+        stack_list = []
+        glob_opts = ''
+        scripts = ('postrotate', 'prerotate', 'firstaction', 'lastaction', 'preremove')
+        for index, line in enumerate(content):
+            if line.lstrip(' \t\'"').startswith(('/', '~')) and not stack_list:
+                glob_opts += ' ' + line.strip()
+                content[index] = ''
+            if line.strip() in scripts:
+                stack_list.append('startscript')
+            if line.strip() == 'endscript' and stack_list[-1] == 'startscript':
+                stack_list.pop()
+            if stack_list and stack_list[-1] == 'startscript':
+                continue
+            if '{' in line.strip():
+                if not stack_list:
+                    content[index] = glob_opts.rstrip('{') + ' {'
+                    glob_opts = ''
+                stack_list.append('{')
+            if line.strip() == '}' and stack_list[-1] == '{':
+                stack_list.pop()
+        if stack_list:
+            raise ParseException("Invalid logrotate config file.")
+
         return parse_doc("\n".join(content), ctx=self)
