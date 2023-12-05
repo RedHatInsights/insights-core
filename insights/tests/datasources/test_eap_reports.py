@@ -12,7 +12,7 @@ from insights.specs.datasources.eap_reports import eap_report_files
 @pytest.fixture
 def sample_directory(scope="module"):
     tmpdir = tempfile.mkdtemp()
-    os.makedirs(tmpdir + "/var/tmp/insights-runtimes/uploads/", exist_ok=True)
+    os.makedirs(tmpdir + "/var/tmp/insights-runtimes/uploads/")
     for f in ["file_a.json", "file_b.json"]:
         fd = open(tmpdir + "/var/tmp/insights-runtimes/uploads/" + f, "w")
         fd.write('{"name":"example_json", "count_number":30}')
