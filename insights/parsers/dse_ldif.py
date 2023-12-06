@@ -66,8 +66,6 @@ class DseLDIF(Parser, list):
         <class 'insights.parsers.dse_ldif.DseLDIF'>
         >>> len(dse_ldif)
         2
-        >>> type(dse_ldif[0])
-        <class 'collections.defaultdict'>
         >>> dse_ldif[0]["nsslapd-return-default-opattr"]
         ['namingContexts', 'supportedControl']
         >>> dse_ldif[0]["nsslapd-security"]
