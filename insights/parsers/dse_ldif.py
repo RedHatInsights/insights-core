@@ -8,9 +8,7 @@ from collections import defaultdict
 from insights import Parser, parser
 from insights.core.exceptions import SkipComponent
 from insights.specs import Specs
-from insights.core.exceptions import ParseException
 from insights import add_filter
-
 
 add_filter(Specs.dse_ldif, 'dn:')
 
