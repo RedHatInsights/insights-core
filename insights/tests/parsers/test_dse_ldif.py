@@ -1,22 +1,28 @@
 # -*- coding: utf-8 -*-
 
 import doctest
+import pytest
 
 from insights import add_filter
-from insights.parsers import dse_ldif_simple
-from insights.parsers.dse_ldif_simple import DseLdifSimple
+from insights.parsers import dse_ldif
+from insights.parsers.dse_ldif import DseLDIF
 from insights.specs import Specs
 from insights.tests import context_wrap
+from insights.core.exceptions import SkipComponent
 
-add_filter(
-    Specs.dse_ldif, [
-        "nsslapd-security",
-        "sslVersionMin",
-        "sslVersionMax",
-        "nsSSL3",
-        "cn: config",  # Note that this can serve as a canary for knowing whether the spec is collected.
-    ]
-)
+SPEC_FILTERS = [
+    "cn:",
+    "objectClass:",
+    "numSubordinates:",
+    "aci:",
+    "nsslapd-security",
+    "sslVersionMin",
+    "sslVersionMax",
+    "nsSSL3",
+    "userCertificate",
+]
+add_filter(Specs.dse_ldif, SPEC_FILTERS)
+
 
 DSE_LDIF_REAL_EXAMPLE = """
 
@@ -109,6 +115,7 @@ numSubordinates: 5
 """
 
 DSE_LDIF_SMOKE = """
+dn: cn=features,cn=config
 cn: config
 nsslapd-security: on
 sslVersionMin: TLS1.0
@@ -121,15 +128,45 @@ nsSSL3: on
 # for these attributes.
 DSE_LDIF_COVERAGE = """
 # a comment
+dn: cn=features,cn=config
 nsslapd-security: o
  n
+some-line-wo-colon
 sslVersionMax:: VExTMS4yIA==
 sslVersionMin:< file:///tmp/somefile
 nsSSL3: on
+userCertificate;binary:< file:BabsCert
+"""
+
+DSE_LDIF_DN_TEST = """
+dn: cn=somefirst,cn=config
+cn: config
+
+dn: cn=somesecond,cn=config
+
+dn:
+cn: config
+
+dn: cn=features,cn=config
+cn: config
+nsslapd-security: on
+sslVersionMin: TLS1.0
+sslVersionMax: TLS1.1
+nsSSL3: on
+"""
+
+DSE_LDIF_EMPTY = ""
+
+DSE_LDIF_EMPTY_PARSED = """
+#dn: cn=features,cn=config
+#cn: config
+#nsslapd-security: on
 """
 
 DSE_LDIF_DOCTEST = """
 dn: cn=config
+nsslapd-return-default-opattr: namingContexts
+nsslapd-return-default-opattr: supportedControl
 nsslapd-securePort: 636
 nsslapd-security: on
 
@@ -140,58 +177,84 @@ nsSSL3: on
 """
 
 
-def test_dse_ldif_smoke():
-    dse_ldif_simple = DseLdifSimple(context_wrap(DSE_LDIF_SMOKE))
-    assert None is dse_ldif_simple.get("asdf")
-    assert len(dse_ldif_simple) == 5
-    expected = {
-        "cn": "config",  # just a canary to detect spec collection status
-        "nsslapd-security": "on",
-        "sslVersionMin": "TLS1.0",
-        "sslVersionMax": "TLS1.1",
-        "nsSSL3": "on",
-    }
-    assert dict(dse_ldif_simple) == expected
-    assert dse_ldif_simple["nsslapd-security"] == "on"
-    assert "sslVersionMin" in dse_ldif_simple
-    for k in dse_ldif_simple:
-        assert expected[k] == dse_ldif_simple[k]
-        assert expected[k] == dse_ldif_simple.get(k)
+def test_dse_ldif_default_filters():
+    dse_ldif = DseLDIF(context_wrap(DSE_LDIF_REAL_EXAMPLE, filtered_spec=Specs.dse_ldif))
+    assert len(dse_ldif) == 4
 
-
-def test_dse_ldif_coverage():
-    dse_ldif_simple = DseLdifSimple(context_wrap(DSE_LDIF_COVERAGE))
-    assert "sslVersionMin" not in dse_ldif_simple
-    assert "sslVersionMax" not in dse_ldif_simple
-    assert "nsSSL3" in dse_ldif_simple
-    assert len(dse_ldif_simple) == 2
-    expected = {
-        "nsSSL3": "on",
-        # This doesn't happen in real deployments because 389-ds automatically
-        # reformats it back to a single line.
-        "nsslapd-security": "o",
-    }
-    assert dict(dse_ldif_simple) == expected
+    group = dse_ldif[0]
+    assert group["dn"] == ["cn=config"]
+    assert group["cn"] == ["config"]
+    assert group["nsslapd-security"] == ["on"]
+    assert group["objectClass"] == ['top', 'extensibleObject', 'nsslapdConfig']
+    assert group["numSubordinates"] == ['10']
+    assert group['aci'][-1] == '(targetattr = "*")(version 3.0; acl "SIE Group"; allow (all) groupdn = "l'
 
 
 def test_dse_ldif_filtered():
-    dse_ldif_simple = DseLdifSimple(context_wrap(DSE_LDIF_REAL_EXAMPLE, filtered_spec=Specs.dse_ldif))
-    assert dse_ldif_simple["nsslapd-security"] == "on"
+    dse_ldif = DseLDIF(context_wrap(DSE_LDIF_REAL_EXAMPLE))
+    assert len(dse_ldif) == 4
+
+    group = dse_ldif[0]
+    assert group["dn"] == ["cn=config"]
+
+
+def test_dse_ldif_smoke():
+    dse_ldif = DseLDIF(context_wrap(DSE_LDIF_SMOKE))
+    assert len(dse_ldif) == 1
+
+    group = dse_ldif[0]
     expected = {
-        "cn": "config",  # just a canary to detect spec collection status
+        "dn": "cn=features,cn=config",
+        "cn": "config",
         "nsslapd-security": "on",
         "sslVersionMin": "TLS1.0",
         "sslVersionMax": "TLS1.1",
         "nsSSL3": "on",
-        "nsSSL3Ciphers": "+all",
     }
     for k, v in expected.items():
-        assert v == dse_ldif_simple[k]
+        assert [v] == group[k]
+
+
+def test_dse_ldif_coverage():
+    dse_ldif = DseLDIF(context_wrap(DSE_LDIF_COVERAGE))
+    assert len(dse_ldif) == 1
+
+    group = dse_ldif[0]
+    expected = {
+        "dn": "cn=features,cn=config",
+        "nsSSL3": "on",
+        "nsslapd-security": "o",
+    }
+    for k, v in expected.items():
+        assert [v] == group[k]
+
+
+def test_dse_ldif_dn():
+    dse_ldif = DseLDIF(context_wrap(DSE_LDIF_DN_TEST))
+    assert len(dse_ldif) == 4
+
+    assert dse_ldif[0]["dn"] == ["cn=somefirst,cn=config"]
+    assert dse_ldif[0]["cn"] == ["config"]
+    assert dse_ldif[1]["dn"] == ["cn=somesecond,cn=config"]
+    assert dse_ldif[2]["dn"] == [""]
+    assert dse_ldif[2]["cn"] == ["config"]
+    assert dse_ldif[3]["dn"] == ["cn=features,cn=config"]
+    assert dse_ldif[3]["nsSSL3"] == ["on"]
+
+
+def test_dse_ldif_empty():
+    with pytest.raises(SkipComponent) as e:
+        DseLDIF(context_wrap(DSE_LDIF_EMPTY))
+    assert 'Empty file content' in str(e)
+
+    with pytest.raises(SkipComponent) as e:
+        DseLDIF(context_wrap(DSE_LDIF_EMPTY_PARSED))
+    assert 'No valid content' in str(e)
 
 
 def test_doc_examples():
     env = {
-        "dse_ldif_simple": DseLdifSimple(context_wrap(DSE_LDIF_DOCTEST)),
+        "dse_ldif": DseLDIF(context_wrap(DSE_LDIF_DOCTEST)),
     }
-    failed, total = doctest.testmod(dse_ldif_simple, globs=env)
+    failed, total = doctest.testmod(dse_ldif, globs=env)
     assert failed == 0
