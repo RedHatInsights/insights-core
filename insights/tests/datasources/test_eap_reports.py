@@ -5,6 +5,7 @@ import tempfile
 from datetime import datetime, timedelta
 
 from insights.core import dr
+from insights.core.spec_factory import foreach_collect
 from insights.core.context import HostContext
 from insights.specs.datasources.eap_reports import eap_report_files
 
@@ -33,6 +34,14 @@ def run_eap_files_test(sample_directory, spec):
 def test_eap_match_results(sample_directory):
     spec = eap_report_files
     broker = run_eap_files_test(sample_directory, spec)
+    file_names = [p.split('/')[-1] for p in broker[spec]]
+    assert 'file_a.json' in file_names
+    assert 'file_b.json' in file_names
+
+
+def test_foreach_eap_match_results(sample_directory):
+    spec = foreach_collect(eap_report_files, "%s")
+    broker = run_eap_files_test(sample_directory, spec)
     file_names = [p.file_name for p in broker[spec]]
     assert 'file_a.json' in file_names
     assert 'file_b.json' in file_names
@@ -44,9 +53,9 @@ def test_eap_one_match_paths(sample_directory):
     previous_day = now - timedelta(days=1)
     os.system('touch -d "{0}" '.format(previous_day.isoformat()) + sample_directory + "/var/tmp/insights-runtimes/uploads/file_a.json")
     broker = run_eap_files_test(sample_directory, spec)
-    file_names = [p.file_name for p in broker[spec]]
+    file_names = [p for p in broker[spec]]
     assert len(broker[spec]) == 1
-    assert 'file_b.json' in file_names
+    assert 'file_b.json' in file_names[-1]
 
 
 def test_eap_zero_match_paths(sample_directory):
