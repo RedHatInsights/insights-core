@@ -2,21 +2,11 @@
 
 import doctest
 
-from insights import add_filter
+from insights.core import filters
 from insights.parsers import dse_ldif_simple
 from insights.parsers.dse_ldif_simple import DseLdifSimple
 from insights.specs import Specs
 from insights.tests import context_wrap
-
-add_filter(
-    Specs.dse_ldif, [
-        "nsslapd-security",
-        "sslVersionMin",
-        "sslVersionMax",
-        "nsSSL3",
-        "cn: config",  # Note that this can serve as a canary for knowing whether the spec is collected.
-    ]
-)
 
 DSE_LDIF_REAL_EXAMPLE = """
 
@@ -140,6 +130,24 @@ nsSSL3: on
 """
 
 
+def setup_function(func):
+    if func in [test_dse_ldif_filtered]:
+        filters.add_filter(
+            Specs.dse_ldif, [
+                "nsslapd-security",
+                "sslVersionMin",
+                "sslVersionMax",
+                "nsSSL3",
+                "cn: config",  # Note that this can serve as a canary for knowing whether the spec is collected.
+            ]
+        )
+
+
+def teardown_function(func):
+    if func in [test_dse_ldif_filtered]:
+        del filters.FILTERS[Specs.dse_ldif]
+
+
 def test_dse_ldif_smoke():
     dse_ldif_simple = DseLdifSimple(context_wrap(DSE_LDIF_SMOKE))
     assert None is dse_ldif_simple.get("asdf")
@@ -177,6 +185,7 @@ def test_dse_ldif_coverage():
 def test_dse_ldif_filtered():
     dse_ldif_simple = DseLdifSimple(context_wrap(DSE_LDIF_REAL_EXAMPLE, filtered_spec=Specs.dse_ldif))
     assert dse_ldif_simple["nsslapd-security"] == "on"
+    assert len(dse_ldif_simple) == 9
     expected = {
         "cn": "config",  # just a canary to detect spec collection status
         "nsslapd-security": "on",
@@ -184,9 +193,11 @@ def test_dse_ldif_filtered():
         "sslVersionMax": "TLS1.1",
         "nsSSL3": "on",
         "nsSSL3Ciphers": "+all",
+        "dn": "cn=config",
+        "nsslapd-rootdn": "cn=Directory Manager",
+        "nsslapd-ldapimaprootdn": "cn=Directory Manager",
     }
-    for k, v in expected.items():
-        assert v == dse_ldif_simple[k]
+    assert dict(dse_ldif_simple) == expected
 
 
 def test_doc_examples():
