@@ -60,6 +60,9 @@ NtpdSysconfig - file ``/etc/sysconfig/ntpd``
 PrelinkSysconfig - file ``/etc/sysconfig/prelink``
 --------------------------------------------------
 
+SbdSysconfig - file ``/etc/sysconfig/sbd``
+------------------------------------------
+
 SshdSysconfig - file ``/etc/sysconfig/sshd``
 --------------------------------------------
 
@@ -526,6 +529,30 @@ class PrelinkSysconfig(SysconfigOptions):
     Examples:
         >>> prelink_syscfg.get('PRELINKING')
         'no'
+    """
+    pass
+
+
+@parser(Specs.sysconfig_sbd)
+class SbdSysconfig(SysconfigOptions):
+    """
+    A parser for analyzing the ``/etc/sysconfig/sbd`` configuration file.
+
+    Sample Input::
+
+        SBD_DEVICE="/dev/disk/by-path/ip-198.20.25.163:3260-iscsi-iqn.2022-09.com.epmpttest:rhel85-lun-0"
+        SBD_DELAY_START=no
+        SBD_OPTS="-n emptytest"
+        SBD_PACEMAKER=yes
+        SBD_STARTMODE=always
+        SBD_WATCHDOG_DEV=/dev/watchdog
+        SBD_WATCHDOG_TIMEOUT=5
+
+    Examples:
+        >>> sbd_syscfg.get('SBD_WATCHDOG_TIMEOUT')
+        '5'
+        >>> 'SBD_DELAY_START' in sbd_syscfg
+        True
     """
     pass
 
