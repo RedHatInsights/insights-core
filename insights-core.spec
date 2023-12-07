@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.2.25
+Version:        3.2.26
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,15 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Dec 07 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.26-1
+- fix: unify parser for dse_ldif.py files (#3970) (xiaoxwan@redhat.com)
+- feat: New spec "/etc/sysconfig/sbd" and parser (#3969)
+  (44796653+huali027@users.noreply.github.com)
+- fix: avoid AttributeError raised by filterable check when run rules (#3968)
+  (xiangceliu@redhat.com)
+- fix: do not collect filterable specs when no filters (#3959)
+  (xiangceliu@redhat.com)
+
 * Thu Nov 30 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.25-1
 - fix: change Specs.yum_conf to filterable=True (#3963) (xiangceliu@redhat.com)
 - feat: Add spec "httpd_limits" back (#3962)
