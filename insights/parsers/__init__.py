@@ -2,7 +2,7 @@ import pkgutil
 
 from collections import OrderedDict
 
-from insights.core.exceptions import ParseException, SkipComponent, SkipException  # noqa: F401
+from insights.core.exceptions import ParseException, SkipComponent  # noqa: F401
 
 __all__ = [n for (i, n, p) in pkgutil.iter_modules(__path__) if not p]
 

@@ -68,8 +68,6 @@ Examples:
     >>> cpu_info.microcode
     '1808'
 """
-import warnings
-
 from collections import defaultdict
 from insights import Parser, parser, defaults, get_active_lines, LegacyItemAccess
 from insights.specs import Specs
@@ -262,30 +260,6 @@ class CpuInfo(LegacyItemAccess, Parser):
         str: Returns the microcode of the first CPU.
         """
         return self.data["microcode"][0]
-
-    @property
-    @defaults()
-    def core_total(self):
-        """
-        int: Returns the total number of cores for the server if available, else None.
-
-        .. warning::
-            This method is deprecated, and will be removed from 3.3.0. Please use
-            :py:class:`insights.parsers.lscpu.LsCPU` class attribute
-            ``info['Cores per socket']`` and ``info['Sockets']`` values instead.
-        """
-        warnings.warn("`is_hypervisor` is deprecated and will be removed from 3.3.0: Use `virt_what.VirtWhat` which uses the command `virt-what` to check the hypervisor type.", DeprecationWarning)
-        if self.data and 'cpu_cores' in self.data:
-            # I guess we can't get this fancey on older versions of RHEL
-            # return sum({e['sockets']: int(e['cpu_cores']) for e in self}.values())
-            physical_dict = {}
-            for e in self:
-                # we should rename sockets here to physical_ids as cpuinfo
-                # has it there can be many physical_ids per socket
-                # see fgrep 'physical id' /proc/cpuinfo on a single
-                # package system
-                physical_dict[e['sockets']] = int(e['cpu_cores'])
-            return sum(physical_dict.values())
 
     def get_processor_by_index(self, index):
         """

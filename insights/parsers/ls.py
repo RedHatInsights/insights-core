@@ -25,11 +25,11 @@ LSlanR - command ``ls -lanR <dirs>``
 LSlanRL - command ``ls -lanRL <dirs>``
 --------------------------------------
 
-LSlanRZ - command ``ls -lanRZ <dirs>``
---------------------------------------
+LSlaRZ - command ``ls -lanRZ <dirs>``
+-------------------------------------
 
-LSlanZ - command ``ls -lanZ <dirs>``
-------------------------------------
+LSlaZ - command ``ls -lanZ <dirs>``
+-----------------------------------
 """
 from insights.core import ls_parser, Parser
 from insights.core.filters import add_filter
@@ -332,32 +332,6 @@ class LSlanRL(FileListing):
     """
     Parses output of ``ls -lanRL <dirs>`` command.
     See :py:class:`FileListing` for more information.
-    """
-    pass
-
-
-@parser(Specs.ls_lanRZ)
-class LSlanRZ(FileListing):
-    """
-    Parses output of ``ls -lanRZ <dirs>`` command.
-    See :py:class:`FileListing` for more information.
-
-    .. warning::
-        This class is deprecated and will be removed from 3.3.0.
-        Please use the :class:`insights.parsers.ls.LSlaRZ` instead.
-    """
-    pass
-
-
-@parser(Specs.ls_lanZ)
-class LSlanZ(FileListing):
-    """
-    Parses output of ``ls -lanZ <dirs>`` command.
-    See :py:class:`FileListing` for more information.
-
-    .. warning::
-        This class is deprecated and will be removed from 3.3.0.
-        Please use the :class:`insights.parsers.ls.LSlaZ` instead.
     """
     pass
 

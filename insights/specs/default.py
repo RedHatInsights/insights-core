@@ -11,10 +11,15 @@ data sources that standard Insights `Parsers` resolve against.
 import logging
 import signal
 
+# TODO: When adding new importings, Please
+# - keep the modules in sort of alphabet
+# - keep line length less than 80 characters
 from insights.components.ceph import IsCephMonitor
 from insights.components.cloud_provider import IsAzure, IsGCP
 from insights.components.rhel_version import IsRhel6
-from insights.components.satellite import IsSatellite611, IsSatellite, IsSatellite614AndLater, IsSatelliteLessThan614
+from insights.components.satellite import (
+    IsSatellite, IsSatellite611,
+    IsSatellite614AndLater, IsSatelliteLessThan614)
 from insights.components.virtualization import IsBareMetal
 from insights.core.context import HostContext
 from insights.core.spec_factory import (
@@ -24,15 +29,18 @@ from insights.core.spec_factory import (
 from insights.specs import Specs
 from insights.specs.datasources import (
     aws, awx_manage, client_metadata, cloud_init, corosync as corosync_ds,
-    dir_list, eap_reports, ethernet, httpd, ipcs, intersystems, kernel, kernel_module_list,
-    leapp, ls, lpstat, luks_devices, machine_ids, malware_detection, md5chk,
-    mount as mount_ds, package_provides, ps as ps_datasource, rpm_pkgs, sap,
-    satellite_missed_queues, ssl_certificate, sys_fs_cgroup_memory,
-    sys_fs_cgroup_memory_tasks_number, user_group, yum_updates)
+    dir_list, eap_reports, ethernet, httpd, intersystems, ipcs, kernel,
+    kernel_module_list, leapp, lpstat, ls, luks_devices, machine_ids,
+    malware_detection, md5chk, mount as mount_ds, package_provides,
+    ps as ps_datasource, rpm_pkgs, sap, satellite_missed_queues,
+    ssl_certificate, sys_fs_cgroup_memory, sys_fs_cgroup_memory_tasks_number,
+    user_group, yum_updates)
 from insights.specs.datasources.sap import sap_hana_sid, sap_hana_sid_SID_nr
 from insights.specs.datasources.pcp import pcp_enabled, pmlog_summary_args
-from insights.specs.datasources.container import running_rhel_containers, containers_inspect
-from insights.specs.datasources.container.nginx_conf import nginx_conf as container_nginx_conf_ds
+from insights.specs.datasources.container import (
+    containers_inspect, running_rhel_containers)
+from insights.specs.datasources.container.nginx_conf import (
+    nginx_conf as container_nginx_conf_ds)
 
 
 logger = logging.getLogger(__name__)
