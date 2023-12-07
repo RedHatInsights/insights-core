@@ -3,26 +3,10 @@
 import doctest
 import pytest
 
-from insights import add_filter
 from insights.parsers import dse_ldif
 from insights.parsers.dse_ldif import DseLDIF
-from insights.specs import Specs
 from insights.tests import context_wrap
 from insights.core.exceptions import SkipComponent
-
-SPEC_FILTERS = [
-    "cn:",
-    "objectClass:",
-    "numSubordinates:",
-    "aci:",
-    "nsslapd-security",
-    "sslVersionMin",
-    "sslVersionMax",
-    "nsSSL3",
-    "userCertificate",
-]
-add_filter(Specs.dse_ldif, SPEC_FILTERS)
-
 
 DSE_LDIF_REAL_EXAMPLE = """
 
@@ -177,8 +161,8 @@ nsSSL3: on
 """
 
 
-def test_dse_ldif_default_filters():
-    dse_ldif = DseLDIF(context_wrap(DSE_LDIF_REAL_EXAMPLE, filtered_spec=Specs.dse_ldif))
+def test_dse_ldif_filtered():
+    dse_ldif = DseLDIF(context_wrap(DSE_LDIF_REAL_EXAMPLE))
     assert len(dse_ldif) == 4
 
     group = dse_ldif[0]
@@ -188,14 +172,6 @@ def test_dse_ldif_default_filters():
     assert group["objectClass"] == ['top', 'extensibleObject', 'nsslapdConfig']
     assert group["numSubordinates"] == ['10']
     assert group['aci'][-1] == '(targetattr = "*")(version 3.0; acl "SIE Group"; allow (all) groupdn = "l'
-
-
-def test_dse_ldif_filtered():
-    dse_ldif = DseLDIF(context_wrap(DSE_LDIF_REAL_EXAMPLE))
-    assert len(dse_ldif) == 4
-
-    group = dse_ldif[0]
-    assert group["dn"] == ["cn=config"]
 
 
 def test_dse_ldif_smoke():
