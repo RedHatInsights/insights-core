@@ -2,6 +2,13 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.2.26](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.26) (2023-12-07)
+
+- fix: unify parser for dse_ldif.py files ([PR 3970](https://github.com/RedHatInsights/insights-core/pull/3970))
+- feat: New spec "/etc/sysconfig/sbd" and parser ([PR 3969](https://github.com/RedHatInsights/insights-core/pull/3969))
+- fix: avoid AttributeError raised by filterable check when run rules ([PR 3968](https://github.com/RedHatInsights/insights-core/pull/3968))
+- fix: do not collect filterable specs when no filters ([PR 3959](https://github.com/RedHatInsights/insights-core/pull/3959))
+
 # [insights-core-3.2.25](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.25) (2023-11-30)
 
 - fix: change Specs.yum_conf to filterable=True ([PR 3963](https://github.com/RedHatInsights/insights-core/pull/3963))
