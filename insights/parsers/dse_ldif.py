@@ -7,8 +7,8 @@ from collections import defaultdict
 
 from insights import Parser, parser
 from insights.core.exceptions import SkipComponent
+from insights.core.filters import add_filter
 from insights.specs import Specs
-from insights import add_filter
 
 add_filter(Specs.dse_ldif, 'dn:')
 
@@ -81,6 +81,7 @@ class DseLDIF(Parser, list):
         if not content:
             raise SkipComponent('Empty file content')
 
+        records = []
         attr_kval = defaultdict(list)
         for line in content:
 
@@ -98,7 +99,7 @@ class DseLDIF(Parser, list):
             if attr_name == 'dn':
                 # line starts with 'dn:', taken as the start of a new record
                 attr_kval = defaultdict(list)
-                self.append(attr_kval)
+                records.append(attr_kval)
                 attr_kval[attr_name].append(attr_value)
             else:
                 if attr_value.startswith(":"):
@@ -108,6 +109,9 @@ class DseLDIF(Parser, list):
                     # file-backed values not supported
                     continue
                 attr_kval[attr_name].append(attr_value)
+
+        for record in records:
+            self.append(dict(record))
 
         if not self:
             raise SkipComponent("No valid content")

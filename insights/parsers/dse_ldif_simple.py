@@ -14,7 +14,7 @@ from insights.util import deprecated
 class DseLdifSimple(Parser, dict):
     """
     .. warning::
-        This class is deprecated and will be removed from 3.3.0.
+        This class is deprecated and will be removed from 3.5.0.
         Please use the :class:`insights.parsers.dse_ldif.DseLDIF` instead.
 
     Parse the attributes out of the filtered lines of the dse.ldif file into
@@ -60,7 +60,7 @@ class DseLdifSimple(Parser, dict):
     """
 
     def __init__(self, *args, **kwargs):
-        deprecated(DseLdifSimple, "Please use the :class:`insights.parsers.dse_ldif.DseLDIF` instead.", "3.3.0")
+        deprecated(DseLdifSimple, "Please use the :class:`insights.parsers.dse_ldif.DseLDIF` instead.", "3.5.0")
         super(DseLdifSimple, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):

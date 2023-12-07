@@ -14,7 +14,7 @@ from insights.util import deprecated
 class LDIFParser(Parser, list):
     """
     .. warning::
-        This class is deprecated and will be removed from 3.3.0.
+        This class is deprecated and will be removed from 3.5.0.
         Please use the :class:`insights.parsers.dse_ldif.DseLDIF` instead.
 
     Parse the content of the directory server configuration of the
@@ -83,7 +83,7 @@ class LDIFParser(Parser, list):
     """
 
     def __init__(self, *args, **kwargs):
-        deprecated(LDIFParser, "Please use the :class:`insights.parsers.dse_ldif.DseLDIF` instead.", "3.3.0")
+        deprecated(LDIFParser, "Please use the :class:`insights.parsers.dse_ldif.DseLDIF` instead.", "3.5.0")
         super(LDIFParser, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
