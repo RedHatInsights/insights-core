@@ -5,6 +5,7 @@ from insights.parsers.sysconfig import HttpdSysconfig, IrqbalanceSysconfig
 from insights.parsers.sysconfig import LibvirtGuestsSysconfig, MemcachedSysconfig
 from insights.parsers.sysconfig import MongodSysconfig, NtpdSysconfig
 from insights.parsers.sysconfig import PrelinkSysconfig, VirtWhoSysconfig
+from insights.parsers.sysconfig import SbdSysconfig
 from insights.parsers.sysconfig import SshdSysconfig
 from insights.parsers.sysconfig import Up2DateSysconfig, PuppetserverSysconfig
 from insights.parsers.sysconfig import NetconsoleSysconfig, ForemanTasksSysconfig
@@ -213,6 +214,16 @@ retry-sleep=2
 verbose=yes    # optional
 """.strip()
 
+SBD_SYSCONFIG = """
+SBD_DEVICE="/dev/disk/by-path/ip-198.20.25.163:3260-iscsi-iqn.2022-09.com.epmpttest:rhel85-lun-0"
+SBD_DELAY_START=no
+SBD_OPTS="-n emptytest"
+SBD_PACEMAKER=yes
+SBD_STARTMODE=always
+SBD_WATCHDOG_DEV=/dev/watchdog
+SBD_WATCHDOG_TIMEOUT=5
+""".strip()
+
 
 def test_sysconfig_doc():
     env = {
@@ -229,6 +240,7 @@ def test_sysconfig_doc():
             'prelink_syscfg': PrelinkSysconfig(context_wrap(PRELINKSYSCONFIG)),
             'u2d_syscfg': Up2DateSysconfig(context_wrap(UP2DATESYSCONFIG)),
             'netcs_syscfg': NetconsoleSysconfig(context_wrap(NETCONSOLESYSCONFIG)),
+            'sbd_syscfg': SbdSysconfig(context_wrap(SBD_SYSCONFIG)),
             'sshd_syscfg': SshdSysconfig(context_wrap(SSHDSYSCONFIG)),
             'pps_syscfg': PuppetserverSysconfig(context_wrap(PUPPETSERVERCONFIG)),
             'ft_syscfg': ForemanTasksSysconfig(context_wrap(FOREMANTASKSYSCONFG)),
