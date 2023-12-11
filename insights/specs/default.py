@@ -317,7 +317,6 @@ class DefaultSpecs(Specs):
     leapp_migration_results = leapp.migration_results
     leapp_report = leapp.leapp_report
     ld_library_path_of_user = sap.ld_library_path_of_user
-    ldif_config = glob_file("/etc/dirsrv/slapd-*/dse.ldif")
     libssh_client_config = simple_file("/etc/libssh/libssh_client.config")
     libssh_server_config = simple_file("/etc/libssh/libssh_server.config")
     libvirtd_log = simple_file("/var/log/libvirt/libvirtd.log")
@@ -632,6 +631,7 @@ class DefaultSpecs(Specs):
     sysconfig_ntpd = simple_file("/etc/sysconfig/ntpd")
     sysconfig_oracleasm = simple_file("/etc/sysconfig/oracleasm")
     sysconfig_prelink = simple_file("/etc/sysconfig/prelink")
+    sysconfig_sbd = simple_file("/etc/sysconfig/sbd")
     sysconfig_sshd = simple_file("/etc/sysconfig/sshd")
     sysconfig_stonith = simple_file("/etc/sysconfig/stonith")
     sysctl = simple_command("/sbin/sysctl -a")

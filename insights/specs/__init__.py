@@ -737,6 +737,7 @@ class Specs(SpecSet):
     sysconfig_ntpd = RegistryPoint()
     sysconfig_oracleasm = RegistryPoint()
     sysconfig_prelink = RegistryPoint()
+    sysconfig_sbd = RegistryPoint()
     sysconfig_sshd = RegistryPoint()
     sysconfig_stonith = RegistryPoint()
     sysconfig_virt_who = RegistryPoint()
