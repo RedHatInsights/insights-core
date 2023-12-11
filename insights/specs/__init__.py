@@ -95,6 +95,7 @@ class Specs(SpecSet):
     cobbler_modules_conf = RegistryPoint()
     cobbler_settings = RegistryPoint()
     containers_policy = RegistryPoint()
+    convert2rhel_facts = RegistryPoint()
     corosync = RegistryPoint()
     corosync_cmapctl = RegistryPoint(multi_output=True)
     corosync_conf = RegistryPoint()
