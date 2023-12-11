@@ -22,20 +22,3 @@ def xfs_mounts(broker):
     if xfs_mnt:
         return sorted(m.mount_point for m in xfs_mnt)
     raise SkipComponent
-
-
-@datasource(ProcMounts, HostContext)
-def xfs_devices(broker):
-    """
-    Return the mounted devices with 'xfs' filesystem.
-
-    Raises:
-        SkipComponent: Raised if no 'xfs' mount points is available
-
-    Returns:
-        List[str]: Sorted list of mounted devices with 'xfs' filesystem.
-    """
-    xfs_mnt = broker[ProcMounts].search(mount_type='xfs')
-    if xfs_mnt:
-        return sorted(m.mounted_device for m in xfs_mnt)
-    raise SkipComponent
