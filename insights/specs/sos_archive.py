@@ -77,6 +77,7 @@ class SosSpecs(Specs):
     docker_list_images = simple_file("sos_commands/docker/docker_images")
     docker_storage = simple_file("/etc/sysconfig/docker-storage")
     dumpe2fs_h = glob_file("sos_commands/filesys/dumpe2fs_-h_*")
+    eap_json_reports = glob_file(r"/var/tmp/insights-runtimes/uploads/*.json")
     ethtool = glob_file("sos_commands/networking/ethtool_*", ignore="ethtool_-.*")
     ethtool_S = glob_file("sos_commands/networking/ethtool_-S_*")
     ethtool_T = glob_file("sos_commands/networking/ethtool_-T_*")
