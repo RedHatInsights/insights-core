@@ -8,6 +8,10 @@ The client uses the YAML template :py:data:`insights.collect.default_manifest` a
 parser/combiner/component required by a custom datasource must be included in the YAML
 template to ensure it is loaded.
 """
+
+import os
+import time
+
 DEFAULT_SHELL_TIMEOUT = 10
 """ int: Default timeout in seconds for ctx.shell_out() commands, must be provided as an arg """
 
@@ -46,3 +50,26 @@ def get_running_commands(ps, ctx, commands):
             continue
         ret.add(which[0]) if which else None
     return sorted(ret)
+
+
+def get_recent_files(target_path, last_modify_hours):
+    """
+    Get all recent updated files or created
+
+    Arguments:
+        target_path (string): target path to search
+        last_modify_hours (int): Specify the recent hours
+
+    Returns:
+        list: List of files that updated or creates just in last_modify_hours hours.
+    """
+    result_files = []
+    if os.path.exists(target_path):
+        for parent_path, _, report_files in os.walk(target_path):
+            current_time = time.time()
+            for one_file in report_files:
+                t_full_file = os.path.join(parent_path, one_file)
+                file_time = os.path.getmtime(t_full_file)
+                if (current_time - file_time) // 3600 < last_modify_hours:
+                    result_files.append(t_full_file)
+    return result_files
