@@ -7,11 +7,16 @@ from insights.core.exceptions import SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import keyword_search
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.ldif_config)
 class LDIFParser(Parser, list):
     """
+    .. warning::
+        This class is deprecated and will be removed from 3.5.0.
+        Please use the :class:`insights.parsers.dse_ldif.DseLDIF` instead.
+
     Parse the content of the directory server configuration of the
     ``/etc/dirsrv/slapd-*/dse.ldif`` file.
 
@@ -76,6 +81,11 @@ class LDIFParser(Parser, list):
         >>> ldif_config[1]['modifyTimestamp']
         '20201026161228Z'
     """
+
+    def __init__(self, *args, **kwargs):
+        deprecated(LDIFParser, "Please use the :class:`insights.parsers.dse_ldif.DseLDIF` instead.", "3.5.0")
+        super(LDIFParser, self).__init__(*args, **kwargs)
+
     def parse_content(self, content):
         if not content:
             raise SkipComponent('The file is empty')

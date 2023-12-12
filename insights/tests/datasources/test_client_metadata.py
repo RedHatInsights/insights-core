@@ -14,7 +14,7 @@ from insights.client.config import InsightsConfig
 from insights.client.constants import InsightsConstants as constants
 from insights.core.exceptions import SkipComponent, ContentException
 from insights.specs.datasources.client_metadata import (
-    ansible_host, blacklisted_specs, branch_info, display_name, egg_release,
+    ansible_host, basic_auth_insights_client, blacklisted_specs, branch_info, display_name, egg_release,
     version_info, tags)
 
 
@@ -60,6 +60,13 @@ def test_blacklisted_specs_empty():
 def test_blacklisted_specs():
     result = blacklisted_specs({})
     assert result.content == ['{"specs": ["date", "auditd_conf"]}']
+
+
+def test_basic_auth_insights_client():
+    ic = InsightsConfig(offline=False, username='test_username', password='test_password')
+    result = basic_auth_insights_client({'client_config': ic})
+    assert result.content == ['{"username_set": true, "pass_set": true}']
+    assert result.path == '/basic_conf'
 
 
 def test_branch_info():

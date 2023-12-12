@@ -37,12 +37,14 @@ Examples:
     True
 
 """
-
+from insights.core.filters import add_filter
 from insights.core.plugins import combiner
 from insights.parsers.installed_rpms import InstalledRpms
 from insights.parsers.dmidecode import DMIDecode
 from insights.parsers.yum import YumRepoList
 from insights.parsers.rhsm_conf import RHSMConf
+
+add_filter(RHSMConf, ['server', 'hostname'])
 
 
 class CloudProviderInstance(object):

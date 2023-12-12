@@ -166,7 +166,9 @@ class Directory(dict):
                 # We have to split the line again to see if this is a RHEL8
                 # selinux stanza. This assumes that the context section will
                 # always have at least two pieces separated by ':'.
-                if ":" in line.split()[4]:
+                # '?' as the whole RHEL8 security context is also acceptable.
+                rhel8_selinux_ctx = line.split()[4].strip()
+                if ":" in rhel8_selinux_ctx or '?' == rhel8_selinux_ctx:
                     rest = parse_rhel8_selinux(parts[1:])
                 else:
                     rest = parse_non_selinux(parts[1:])

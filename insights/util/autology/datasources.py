@@ -18,7 +18,7 @@ SIMPLE_COMMAND_TYPE = 'simple_command'
 SIMPLE_FILE_TYPE = 'simple_file'
 """ str: Literal constant for a simple_file Spec object """
 GLOB_FILE_TYPE = 'glob_file'
-""" str: Literal constant for a simple_file Spec object """
+""" str: Literal constant for a glob_file Spec object """
 FOREACH_EXECUTE_TYPE = 'foreach_execute'
 """ str: Literal constant for a foreach_execute Spec object """
 CONTAINER_EXECUTE_TYPE = 'container_execute'

@@ -146,7 +146,7 @@ def run_input_data(component, input_data, store_skips=False):
 
 COMPONENT_FILTERED_PARSERS = {
     'CloudInstance': ['insights.parsers.subscription_manager.SubscriptionManagerFacts'],
-    # 'CloudProvider': ['insights.parsers.rhsm_conf.RHSMConf'],
+    'CloudProvider': ['insights.parsers.rhsm_conf.RHSMConf'],
     'OSRelease': ['insights.parsers.dmesg.DmesgLineList'],
     'Sap': ['insights.parsers.saphostctrl.SAPHostCtrlInstances']
 }

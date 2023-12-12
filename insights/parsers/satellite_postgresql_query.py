@@ -97,8 +97,9 @@ class SatellitePostgreSQLQuery(CommandParser, list):
             valid_lines = content[start_index:]
         reader = DictReader(os.linesep.join(valid_lines).splitlines(True))
         for row in reader:
-            for name in self.columns_in_yaml:
-                row[name] = self._parse_yaml(row[name])
+            for column in row:
+                if column in self.columns_in_yaml:
+                    row[column] = self._parse_yaml(row[column])
             self.append(row)
         if not self:
             raise SkipComponent("There is no data in the table.")
@@ -124,6 +125,7 @@ class SatellitePostgreSQLQuery(CommandParser, list):
 class SatelliteAdminSettings(SatellitePostgreSQLQuery):
     """
     Parse the output of the command ``psql -d foreman -c '"select name, value, "default" from settings where name in ('destroy_vm_on_host_delete', 'unregister_delete_host') --csv"``.
+    Since satellite 6.14, the default column is deleted, the default value is "No" for columns "destroy_vm_on_host_delete" and "unregister_delete_host".
 
     Sample output::
 
@@ -134,6 +136,12 @@ class SatelliteAdminSettings(SatellitePostgreSQLQuery):
         destroy_vm_on_host_delete,,"--- true
         ..."
 
+        or
+
+        name,value
+        destroy_vm_on_host_delete,
+        unregister_delete_host,
+
     Examples:
         >>> type(table)
         <class 'insights.parsers.satellite_postgresql_query.SatelliteAdminSettings'>
@@ -142,7 +150,7 @@ class SatelliteAdminSettings(SatellitePostgreSQLQuery):
         >>> table.get_setting('destroy_vm_on_host_delete')
         True
     """
-    columns = ['name', 'value', 'default']
+    columns = ['name', 'value']
     columns_in_yaml = ['value', 'default']
 
     def get_setting(self, setting_name):
@@ -161,7 +169,10 @@ class SatelliteAdminSettings(SatellitePostgreSQLQuery):
         rows = self.search(name=setting_name)
         if rows:
             value = rows[0].get('value')
-            return rows[0].get('default') if value == '' else value
+            if 'default' in rows[0]:
+                return rows[0].get('default') if value == '' else value
+            else:
+                return value if value else False
 
 
 @parser(Specs.satellite_compute_resources)

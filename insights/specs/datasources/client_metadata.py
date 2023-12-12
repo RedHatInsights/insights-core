@@ -45,6 +45,30 @@ def ansible_host(broker):
 
 
 @datasource(HostContext)
+def basic_auth_insights_client(broker):
+    """
+    Custom datasource for ``username`` and ``password`` getting from insights-client
+    configuration.
+
+    Raises:
+        SkipComponent: When there is no insights_config.
+
+    Returns:
+        dict: username/password exitsing boolean
+    """
+    insights_config = broker.get('client_config')
+    result = {}
+    if insights_config:
+        if insights_config.username:
+            result['username_set'] = True
+        if insights_config.password:
+            result['pass_set'] = True
+        if result:
+            return DatasourceProvider(content=json.dumps(result), relative_path='basic_conf')
+    raise SkipComponent
+
+
+@datasource(HostContext)
 def blacklist_report(broker):
     # TODO:
     # - This spec depends on PR#3679

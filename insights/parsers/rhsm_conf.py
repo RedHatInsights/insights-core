@@ -3,8 +3,11 @@ rhsm.conf - File /etc/rhsm/rhsm.conf
 ====================================
 """
 from insights.core import IniConfigFile
+from insights.core.filters import add_filter
 from insights.core.plugins import parser
 from insights.specs import Specs
+
+add_filter(Specs.rhsm_conf, '[')
 
 
 @parser(Specs.rhsm_conf)
@@ -37,12 +40,6 @@ class RHSMConf(IniConfigFile):
 
         # port for http proxy server
         proxy_port =
-
-        # user name for authenticating to an http proxy, if needed
-        proxy_user =
-
-        # password for basic http proxy auth, if needed
-        proxy_password =
 
         [rhsm]
         # Content base URL:
