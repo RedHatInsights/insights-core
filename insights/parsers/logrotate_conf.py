@@ -11,7 +11,7 @@ See: http://www.linuxmanpages.org/8/logrotate
 import string
 
 from insights.core import ConfigParser, LegacyItemAccess, Parser
-from insights.core.exceptions import ParseException
+from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
 from insights.parsers import get_active_lines
 from insights.parsr import (AnyChar, Choice, EOF, EOL, Forward, InSet, LeftCurly, LineEnd,
@@ -257,27 +257,31 @@ class LogRotateConfPEG(ConfigParser):
         '/sbin/killall -HUP syslogd'
     """
     def parse_doc(self, content):
+        """ configuration format pre-check for logrotate configuration file"""
         stack_list = []
         glob_opts = ''
         scripts = ('postrotate', 'prerotate', 'firstaction', 'lastaction', 'preremove')
         for index, line in enumerate(content):
+            line = line.strip()
             if line.lstrip(' \t\'"').startswith(('/', '~')) and not stack_list:
+                #  Converting the target file configuration format from set vertically to set with space.
                 glob_opts += ' ' + line.strip()
                 content[index] = ''
-            if line.strip() in scripts:
+            if line in scripts:
                 stack_list.append('startscript')
-            if line.strip() == 'endscript' and stack_list[-1] == 'startscript':
+            elif line == 'endscript' and stack_list[-1] == 'startscript':
                 stack_list.pop()
             if stack_list and stack_list[-1] == 'startscript':
                 continue
-            if '{' in line.strip():
+            if '{' in line:
                 if not stack_list:
                     content[index] = glob_opts.rstrip('{') + ' {'
                     glob_opts = ''
                 stack_list.append('{')
-            if line.strip() == '}' and stack_list[-1] == '{':
+            #  The '}' must be on a separate line.
+            elif line == '}' and stack_list[-1] == '{':
                 stack_list.pop()
         if stack_list:
-            raise ParseException("Invalid logrotate config file.")
+            raise SkipComponent("Invalid logrotate config file.")
 
         return parse_doc("\n".join(content), ctx=self)
