@@ -4,7 +4,6 @@ include insights/VERSION
 include insights/COMMIT
 include insights/RELEASE
 prune examples
-prune insights/client
 prune insights/combiners/tests
 prune insights/components/tests
 prune insights/parsers/tests
