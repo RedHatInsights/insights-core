@@ -32,5 +32,5 @@ class GetconfPageSize(CommandParser):
         raw = content[0].strip()
         self.page_size = int(raw)
 
-    def __str__(self, context):
+    def __str__(self):
         return "<page_size: {}>".format(self.page_size)
