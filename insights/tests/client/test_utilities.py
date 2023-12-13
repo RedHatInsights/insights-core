@@ -22,6 +22,13 @@ files=bar
 """.strip().encode("utf-8")
 
 
+def teardown_function(func):
+    if func is test_validate_remove_file:
+        tf = '/tmp/remove.cfg'
+        if os.path.isfile(tf):
+            os.remove(tf)
+
+
 def test_display_name():
     assert util.determine_hostname(display_name='foo') == 'foo'
 
@@ -57,7 +64,8 @@ def test_generate_machine_id():
     assert machine_id_regex.group(0) is not None
     with open('/tmp/testmachineid', 'r') as _file:
         machine_id = _file.read()
-    assert util.generate_machine_id(destination_file='/tmp/testmachineid') == machine_id
+    assert util.generate_machine_id(
+        destination_file='/tmp/testmachineid') == machine_id
     os.remove('/tmp/testmachineid')
 
 
@@ -94,7 +102,8 @@ def test_magic_plan_b():
 
 def test_run_command_get_output():
     cmd = 'echo hello'
-    assert util.run_command_get_output(cmd) == {'status': 0, 'output': u'hello\n'}
+    assert util.run_command_get_output(
+        cmd) == {'status': 0, 'output': u'hello\n'}
 
 
 @patch('insights.client.utilities.wrapper_constants')
@@ -131,6 +140,7 @@ def test_get_version_info_no_version(wrapper_constants):
     del wrapper_constants.version
     version_info = util.get_version_info()
     assert version_info == {'core_version': '1-1', 'client_version': None}
+
 
 
 # TODO: DRY
