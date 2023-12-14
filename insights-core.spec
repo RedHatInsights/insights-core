@@ -1,5 +1,5 @@
 Name:           insights-core
-Version:        3.2.26
+Version:        3.2.27
 Release:        1%{?dist}
 Summary:        Insights Core is a data collection and analysis framework.
 
@@ -50,6 +50,15 @@ rm -rf $RPM_BUILD_ROOT/usr/bin
 %{python3_sitelib}/*
 
 %changelog
+* Thu Dec 14 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.27-1
+- INSPEC-432: collect convert2rhel.facts (#3972) (xiangceliu@redhat.com)
+- fix: Remove pruning client code from rpm (#3976) (rblakley@redhat.com)
+- Removed unnecessary parameter from `str` method (#3975)
+  (ataf@openrefactory.com)
+- feat: update eap json report spec (#3964) (lichen@redhat.com)
+- chore: Remove the specs and parsers related to xfs_db command (#3973)
+  (30404410+qinpingli@users.noreply.github.com)
+
 * Thu Dec 07 2023 Xiangce Liu <xiangceliu@redhat.com> 3.2.26-1
 - fix: unify parser for dse_ldif.py files (#3970) (xiaoxwan@redhat.com)
 - feat: New spec "/etc/sysconfig/sbd" and parser (#3969)
