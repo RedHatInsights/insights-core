@@ -2,6 +2,14 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
+# [insights-core-3.2.27](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.27) (2023-12-14)
+
+- INSPEC-432: collect convert2rhel.facts ([PR 3972](https://github.com/RedHatInsights/insights-core/pull/3972))
+- fix: Remove pruning client code from rpm ([PR 3976](https://github.com/RedHatInsights/insights-core/pull/3976))
+- Removed unnecessary parameter from `str` method ([PR 3975](https://github.com/RedHatInsights/insights-core/pull/3975))
+- feat: update eap json report spec ([PR 3964](https://github.com/RedHatInsights/insights-core/pull/3964))
+- chore: Remove the specs and parsers related to xfs_db command ([PR 3973](https://github.com/RedHatInsights/insights-core/pull/3973))
+
 # [insights-core-3.2.26](https://github.com/RedHatInsights/insights-core/releases/tag/insights-core-3.2.26) (2023-12-07)
 
 - fix: unify parser for dse_ldif.py files ([PR 3970](https://github.com/RedHatInsights/insights-core/pull/3970))
