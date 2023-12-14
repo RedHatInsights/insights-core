@@ -139,6 +139,7 @@ class DefaultSpecs(Specs):
     cluster_conf = simple_file("/etc/cluster/cluster.conf")
     cmdline = simple_file("/proc/cmdline")
     cni_podman_bridge_conf = simple_file("/etc/cni/net.d/87-podman-bridge.conflist")
+    convert2rhel_facts = simple_file("/etc/rhsm/facts/convert2rhel.facts")
     corosync = simple_file("/etc/sysconfig/corosync")
     corosync_cmapctl = foreach_execute(corosync_ds.corosync_cmapctl_cmds, "%s")
     corosync_conf = simple_file("/etc/corosync/corosync.conf")
