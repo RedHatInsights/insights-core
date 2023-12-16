@@ -86,8 +86,10 @@ LOGROTATE_MISSING_ENDSCRIPT = """
 
 
 def test_logrotate_tree():
-    p = logrotate_conf.LogRotateConfPEG(context_wrap(CONF, path="/etc/logrotate.conf"))
-    conf = LogRotateConfTree([p])
+    p1 = logrotate_conf.LogRotateConfPEG(context_wrap(CONF, path="/etc/logrotate.conf"))
+    p2 = logrotate_conf.LogRotateConfPEG(context_wrap(JUNK_SPACE, path="/etc/logrotate.d/test"))
+    conf = LogRotateConfTree([p1, p2])
+    assert 'rotate' in conf
     assert len(conf["weekly"]) == 1
     assert len(conf["/var/log/wtmp"]["missingok"]) == 1
     assert conf["/var/log/wtmp"]["postrotate"][first].value == "do some stuff to wtmp"
@@ -95,6 +97,8 @@ def test_logrotate_tree():
     assert len(conf["/var/log/btmp"]["rotate"]) == 1
     assert len(conf["/var/log/btmp"]["postrotate"]) == 1
     assert conf["/var/log/btmp"]["postrotate"][first].value == "do some stuff to btmp"
+
+    assert 'compress' in conf["/var/log/spooler"]
 
 
 def test_junk_space():
