@@ -59,6 +59,52 @@ def httpd_on_nfs(broker):
     raise SkipComponent
 
 
+def _get_all_include_conf(root, glob_path):
+    includes = glob_path
+    # In case $ServerRoot in included in the 'glob_path'
+    if not glob_path.startswith(root):
+        includes = os.path.join(root, glob_path)
+    _paths = set()
+    try:
+        for conf in glob.glob(includes):
+            if os.path.isfile(conf):
+                _paths.add(conf)
+                with open(conf) as cfp:
+                    _includes = None
+                    for line in cfp.readlines()[::-1]:
+                        if ("Include" in line or "IncludeOptional" in line) and (line.strip().startswith("Include") or line.strip().startswith("IncludeOptional")):
+                            _includes = line.split()[-1].strip('"\'')
+                            _paths.update(_get_all_include_conf(root, _includes))
+            if os.path.isdir(conf):
+                _includes = os.path.join(conf, "*")
+                _paths.update(_get_all_include_conf(root, _includes))
+
+        return _paths
+    except Exception:
+        pass
+    return _paths
+
+
+def get_httpd_configuration_files(httpd_root):
+    main_httpd_conf = os.path.join(httpd_root, "conf/httpd.conf")
+    all_paths = set()
+    try:
+        with open(main_httpd_conf) as cfp:
+            server_root = httpd_root
+            # Add it only when it exists
+            all_paths.add(main_httpd_conf)
+            for line in cfp.readlines()[::-1]:
+                if "ServerRoot" in line and line.strip().startswith("ServerRoot"):
+                    server_root = line.strip().split()[-1].strip().strip('"\'')
+                elif ("Include" in line or "IncludeOptional" in line) and (line.strip().startswith("Include") or line.strip().startswith("IncludeOptional")):
+                    includes = line.strip().split()[-1].strip('"\'')
+                    all_paths.update(_get_all_include_conf(server_root, includes))
+    except Exception:
+        # Skip the datasource when no such "/etc/httpd/conf/httpd.conf" file
+        raise SkipComponent
+    return all_paths
+
+
 @datasource(HostContext)
 def httpd_configuration_files(broker):
     """
@@ -70,54 +116,44 @@ def httpd_configuration_files(broker):
     Raises:
         SkipComponent: there is no httpd configuration file
     """
+    httpd_root = '/etc/httpd'
+    all_paths = get_httpd_configuration_files(httpd_root)
+    if all_paths:
+        return all_paths
+    raise SkipComponent
 
-    all_paths = []
-    default_paths = []
-    main_httpd_conf = "/etc/httpd/conf/httpd.conf"
-    if not os.path.isfile(main_httpd_conf):
-        raise SkipComponent("/etc/httpd/conf/httpd.conf is not existing")
-    all_paths.append(main_httpd_conf)
-    default_paths.append(main_httpd_conf)
 
-    server_root = "/etc/httpd"
-    with open(main_httpd_conf) as main_conf_file:
-        for line in main_conf_file.readlines():
-            if line.strip().startswith("ServerRoot"):
-                server_root = line.strip().split()[-1].strip().replace("'", "").replace('"', '')
+@datasource(HostContext)
+def httpd24_scl_configuration_files(broker):
+    """
+    This datasource returns the all of httpd24 slc configuration files' path.
 
-    genernation_dict = {1: default_paths}
-    genernation = 1
+    Returns:
+        list: the file path of httpd24 slc configuration files
 
-    while genernation:
-        new_include = False
-        for item in genernation_dict[genernation]:
-            with open(item) as conf_file:
-                read_content = conf_file.read()
-                conf_file.seek(0)
-                readlines_content = conf_file.readlines()
-                if "Include" in read_content or "IncludeOptional" in read_content:
-                    for line in readlines_content:
-                        if line.strip().startswith("Include") or line.strip().startswith("IncludeOptional"):
-                            include_file_path = line.strip().split()[-1].strip()
-                            if not include_file_path.startswith("/"):
-                                include_file_path = os.path.join(server_root, include_file_path)
-                            all_include_files = glob.glob(include_file_path)
-                            for file in all_include_files:
-                                if os.path.isfile(file):
-                                    all_paths.append(file)
-                                    with open(file) as include_conf_file:
-                                        include_read_content = include_conf_file.read()
-                                        if "Include" in include_read_content or "IncludeOptional" in include_read_content:
-                                            if not new_include:
-                                                genernation = genernation + 1
-                                            new_include = True
-                                            if genernation in genernation_dict:
-                                                genernation_dict[genernation].append(file)
-                                            else:
-                                                genernation_dict[genernation] = [file]
-        if not new_include:
-            genernation = 0
+    Raises:
+        SkipComponent: there is no httpd24 slc configuration file
+    """
+    httpd_root = '/opt/rh/httpd24/root/etc/httpd'
+    all_paths = get_httpd_configuration_files(httpd_root)
+    if all_paths:
+        return all_paths
+    raise SkipComponent
 
+
+@datasource(HostContext)
+def httpd24_scl_jbcs_configuration_files(broker):
+    """
+    This datasource returns the all of httpd24 slc jbcs configuration files' path.
+
+    Returns:
+        list: the file path of httpd24 slc jbcs configuration files
+
+    Raises:
+        SkipComponent: there is no httpd24 slc jbcs configuration file
+    """
+    httpd_root = '/opt/rh/jbcs-httpd24/root/etc/httpd'
+    all_paths = get_httpd_configuration_files(httpd_root)
     if all_paths:
         return all_paths
     raise SkipComponent
