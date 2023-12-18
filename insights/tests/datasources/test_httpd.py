@@ -100,7 +100,7 @@ def test_httpd_conf_files(m_open, m_glob, m_isdir, m_isfile):
     m_open.side_effect = handlers
     broker = {HostContext: None}
     result = httpd_configuration_files(broker)
-    assert result == {'/etc/httpd/conf.d/ssl.conf', '/etc/httpd/conf/httpd.conf'}
+    assert result == set(['/etc/httpd/conf.d/ssl.conf', '/etc/httpd/conf/httpd.conf'])
 
 
 @patch("os.path.isfile", return_value=True)
@@ -112,7 +112,7 @@ def test_httpd24_scl_conf_files(m_open, m_glob, m_isdir, m_isfile):
     m_open.side_effect = handlers
     broker = {HostContext: None}
     result = httpd24_scl_configuration_files(broker)
-    assert result == {'/opt/rh/httpd24/root/etc/httpd/conf.d/ssl.conf', '/opt/rh/httpd24/root/etc/httpd/conf/httpd.conf'}
+    assert result == set(['/opt/rh/httpd24/root/etc/httpd/conf.d/ssl.conf', '/opt/rh/httpd24/root/etc/httpd/conf/httpd.conf'])
 
 
 @patch("os.path.isfile", return_value=True)
@@ -124,4 +124,4 @@ def test_httpd24_scl_jbs_conf_files(m_open, m_glob, m_isdir, m_isfile):
     m_open.side_effect = handlers
     broker = {HostContext: None}
     result = httpd24_scl_jbcs_configuration_files(broker)
-    assert result == {'/opt/rh/jbcs-httpd24/root/etc/httpd/conf.d/ssl.conf', '/opt/rh/jbcs-httpd24/root/etc/httpd/conf/httpd.conf'}
+    assert result == set(['/opt/rh/jbcs-httpd24/root/etc/httpd/conf.d/ssl.conf', '/opt/rh/jbcs-httpd24/root/etc/httpd/conf/httpd.conf'])
