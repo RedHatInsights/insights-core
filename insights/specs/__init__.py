@@ -546,12 +546,14 @@ class Specs(SpecSet):
     pci_rport_target_disk_paths = RegistryPoint()
     pcp_metrics = RegistryPoint()
     pcp_openmetrics_log = RegistryPoint(filterable=True)
+    # TODO: no_obfuscate=['hostname', 'ip'], no_redact=True
+    pcp_raw_data = RegistryPoint(raw=True, multi_output=True)  # No Parser required
     pcs_config = RegistryPoint()
     pcs_quorum_status = RegistryPoint()
     pcs_status = RegistryPoint()
     php_ini = RegistryPoint(filterable=True)
     pluginconf_d = RegistryPoint(multi_output=True)
-    pmlog_summary = RegistryPoint()
+    pmlog_summary = RegistryPoint()  # TODO: Remove after 'pcp_raw_data' works
     pmrep_metrics = RegistryPoint()
     podman_list_containers = RegistryPoint()
     podman_list_images = RegistryPoint()
@@ -625,7 +627,7 @@ class Specs(SpecSet):
     rhv_log_collector_analyzer = RegistryPoint()
     rndc_status = RegistryPoint()
     root_crontab = RegistryPoint()
-    ros_config = RegistryPoint()
+    ros_config = RegistryPoint()  # TODO: Remove after 'pcp_raw_data' works
     route = RegistryPoint()
     rpm_V_package = RegistryPoint(multi_output=True, no_obfuscate=['hostname', 'ip'])
     rpm_V_package_list = RegistryPoint(filterable=True)

@@ -3,15 +3,21 @@ import pytest
 
 from mock.mock import patch
 
+from insights.client.config import InsightsConfig
 from insights.combiners.ps import Ps
 from insights.combiners.services import Services
 from insights.core import dr
-from insights.core.exceptions import SkipComponent
+from insights.core.exceptions import SkipComponent, ContentException
+from insights.parsers.hostname import HostnameShort
 from insights.parsers.ps import PsAuxcww
 from insights.parsers.ros_config import RosConfig
 from insights.parsers.systemd.unitfiles import UnitFiles
-from insights.specs.datasources.pcp import pcp_enabled, pmlog_summary_args
+from insights.specs.datasources.pcp import (
+        ros_collect, pcp_enabled, pmlog_summary_args, pcp_raw_files)
 from insights.tests import context_wrap
+
+
+yesterday = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y%m%d")
 
 PS_AUXCWW = """
 USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
@@ -74,6 +80,11 @@ disallow .* : all;
 disallow :* : all;
 allow local:* : enquire;
 """
+
+PCP_RAW_FILES = [
+    "/var/log/pcp/pmlogger/{0}.0.xz".format(yesterday),
+    "/var/log/pcp/pmlogger/{0}.meta.xz".format(yesterday),
+]
 
 
 def test_pcp_enabled():
@@ -148,3 +159,29 @@ def test_pmlog_summary_args_no_pmloger_file(isfile):
 
     with pytest.raises(SkipComponent):
         pmlog_summary_args(broker)
+
+
+def test_ros_collect():
+    ic = InsightsConfig(ros_collect=True)
+    result = ros_collect({'client_config': ic})
+    assert result is True
+
+    ic = InsightsConfig(ros_collect=False)
+    with pytest.raises(SkipComponent):
+        ros_collect({'client_config': ic})
+
+
+@patch("insights.specs.datasources.pcp.glob.glob", return_value=PCP_RAW_FILES)
+@patch("insights.specs.datasources.pcp.os.path.isfile", return_value=True)
+def test_pcp_raw_files(_isfile, _glob):
+    broker = dr.Broker()
+    broker[HostnameShort] = HostnameShort(context_wrap("insights-test"))
+    broker['insights_config'] = InsightsConfig(ros_collect=True)
+
+    ret = pcp_raw_files(broker)
+
+    assert sorted(ret) == sorted(PCP_RAW_FILES)
+
+    _glob.return_value = [PCP_RAW_FILES[0]]
+    with pytest.raises(ContentException):
+        pcp_raw_files(broker)

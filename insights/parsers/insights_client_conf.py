@@ -7,7 +7,8 @@ from insights.core.filters import add_filter
 from insights.core.plugins import parser
 from insights.specs import Specs
 
-add_filter(Specs.insights_client_conf, "[")
+# "ros_collect" is added for troubleshooting convenience
+add_filter(Specs.insights_client_conf, ["[", "ros_collect"])
 
 
 @parser(Specs.insights_client_conf)
