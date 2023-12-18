@@ -1,7 +1,6 @@
 import pytest
 
 from mock.mock import mock_open
-from unittest import mock
 from insights.combiners.ps import Ps
 from insights.core.context import HostContext
 from insights.core.exceptions import SkipComponent
@@ -90,18 +89,6 @@ Include conf.d/*.conf
 data_lines_ssl_conf = """
 Listen 443 https
 """.strip()
-
-
-readline_cnt = 0
-
-
-def new_mock_open():
-    global readline_cnt
-    if readline_cnt == 0:
-        readline_cnt = readline_cnt + 1
-        return mock.mock_open(read_data=data_lines_httpd_conf)
-    else:
-        return mock.mock_open(read_data=data_lines_ssl_conf)
 
 
 @patch("os.path.isfile", return_value=True)
