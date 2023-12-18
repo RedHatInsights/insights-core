@@ -78,7 +78,6 @@ def _get_all_include_conf(root, glob_path):
             if os.path.isdir(conf):
                 _includes = os.path.join(conf, "*")
                 _paths.update(_get_all_include_conf(root, _includes))
-
         return _paths
     except Exception:
         pass
@@ -100,7 +99,7 @@ def get_httpd_configuration_files(httpd_root):
                     includes = line.strip().split()[-1].strip('"\'')
                     all_paths.update(_get_all_include_conf(server_root, includes))
     except Exception:
-        # Skip the datasource when no such "/etc/httpd/conf/httpd.conf" file
+        # Skip the datasource when no such "<root path>/httpd.conf" file
         raise SkipComponent
     return all_paths
 
