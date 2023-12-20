@@ -25,7 +25,7 @@ def running_rhel_containers_id(broker):
 
 
 class LocalSpecs(Specs):
-    """ Local specs used only by docker|podman_inspect datasources """
+    """ Local specs used only by docker|podman inspect datasources """
 
     containers_inspect_data_raw = foreach_execute(running_rhel_containers_id, "/usr/bin/%s inspect %s")
     """ Returns the output of command ``/usr/bin/docker|podman inspect <container ID>`` """

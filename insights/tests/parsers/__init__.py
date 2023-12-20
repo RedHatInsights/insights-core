@@ -6,8 +6,6 @@ import sys
 from doctest import (DebugRunner, DocTestFinder, DocTestRunner,
                      OutputChecker)
 
-from insights.util import deprecated
-
 
 class Py23DocChecker(OutputChecker):
     def check_output(self, want, got, optionflags):
@@ -39,26 +37,6 @@ def ic_testmod(m, name=None, globs=None, verbose=None,
         runner.summarize()
 
     return doctest.TestResults(runner.failures, runner.tries)
-
-
-def skip_exception_check(parser_obj, output_str=""):
-    """
-    .. warning::
-        This class is deprecated, please use
-        :py:class:`skip_component_check` instead.
-    """
-    deprecated(
-        skip_component_check,
-        "Please use the :method:`skip_component_check` instead.",
-        "3.3.0"
-    )
-
-    from insights.core.exceptions import SkipComponent
-    from insights.tests import context_wrap
-
-    with pytest.raises(SkipComponent) as ex:
-        parser_obj(context_wrap(output_str))
-    return str(ex)
 
 
 def skip_component_check(parser_obj, output_str=""):
