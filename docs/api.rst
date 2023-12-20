@@ -525,11 +525,11 @@ Insights-core release timeline
    =======  =====================
    Version  Expected release date
    =======  =====================
-   3.0.300  December 2022 (Initial release)
-   3.1.0    December 2022
    3.2.0    June 2023
    3.3.0    December 2023
    3.4.0    June 2024
+   3.5.0    December 2024
+   3.6.0    June 2025
    =======  =====================
 
 .. note::

@@ -204,7 +204,6 @@ zsh-5.0.2-14.el7_2.2.x86_64     Wed 09 Nov 2016 15:13:19 AEDT   1464185248
 
 def test_from_package():
     rpms = InstalledRpms(context_wrap(RPMS_PACKAGE))
-    assert not rpms.is_hypervisor
     pkg_rpm = rpms.packages['openssh-server'][0]
     rpm = InstalledRpm.from_package(pkg_rpm.package)
     assert rpm.package == 'openssh-server-5.3p1-104.el6'
@@ -436,12 +435,6 @@ def test_oracleasmrpms():
     assert 'oracleasm-support' in ora_rpms.packages
     assert ora_rpms.get_max('oracleasm-support').version == '2.1.3'
     assert ora_rpms.get_max('oracleasm-support').release == '1.el5'
-
-
-def test_is_hypervisor():
-    rpms = InstalledRpms(context_wrap(RHV_HYPERVISOR_RPMS))
-    assert "vdsm" in rpms.packages
-    assert rpms.is_hypervisor
 
 
 def test_unicode_char_in_rpms():
