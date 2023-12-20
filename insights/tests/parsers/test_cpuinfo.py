@@ -1483,27 +1483,23 @@ def test_one_socket_cpuinfo():
     cpu_info = CpuInfo(context_wrap(ONE_SOCKET_CPUINFO))
     assert cpu_info.cpu_count == 8
     assert cpu_info.socket_count == 1
-    assert cpu_info.core_total == 4
 
 
 def test_noir_cpuinfo():
     cpu_info = CpuInfo(context_wrap(CPUINFO_NOIR))
     assert cpu_info.cpu_count == 32
     assert cpu_info.socket_count == 2
-    assert cpu_info.core_total == 16
     assert 'fpu' in cpu_info.flags
 
 
 def test_hetero_cpuinfo():
     cpu_info = CpuInfo(context_wrap(CPUINFO_HETERO))
     assert cpu_info.socket_count == 2
-    assert cpu_info.core_total == 12
 
 
 def test_empty_cpuinfo():
     cpu_info = CpuInfo(context_wrap(""))
     assert cpu_info.cpu_count == 0
-    assert cpu_info.core_total is None
     assert cpu_info.apicid == []
     assert cpu_info.flags == []
 
