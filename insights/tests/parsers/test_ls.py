@@ -1,7 +1,6 @@
 from insights.parsers.ls import (
     LSla, LSlaFiltered, LSlan, LSlanFiltered,
-    LSlanL, LSlanR, LSlanRL, LSlanRZ, LSlanZ,
-    LSlaRZ, LSlaZ
+    LSlanL, LSlanR, LSlanRL, LSlaRZ, LSlaZ
 )
 from insights.tests import context_wrap
 
@@ -461,38 +460,6 @@ def test_ls_lanRL():
     assert 'link' not in dev_listings["cdrom"]
 
     assert 'link' not in ls.listing_of('/dev/virtio-ports')['com.redhat.spice.0']
-
-
-def test_ls_lanRZ():
-    ls = LSlanRZ(context_wrap(LS_LANRZ))
-    assert '/dev' in ls
-    assert '/dev/vfio' in ls
-    assert '/dev/virtio-ports' in ls
-    assert ls.dirs_of('/dev') == ['.', '..', 'block']
-
-    dev_listings = ls.listing_of('/dev')
-    assert "cdrom" in dev_listings
-    assert 'link' in dev_listings["cdrom"]
-    assert dev_listings["cdrom"]['link'] == 'sr0'
-    assert 'se_type' in dev_listings["cdrom"]
-    assert dev_listings["cdrom"]['se_type'] == 'device_t'
-
-    assert 'link' in ls.listing_of('/dev/virtio-ports')['com.redhat.spice.0']
-
-
-def test_ls_lanZ():
-    ls = LSlanZ(context_wrap(LS_LANZ))
-    assert '/dev' in ls
-    assert '/dev/vfio' not in ls
-    assert '/dev/virtio-ports' not in ls
-    assert ls.dirs_of('/dev') == ['.', '..', 'block']
-
-    dev_listings = ls.listing_of('/dev')
-    assert "cdrom" in dev_listings
-    assert 'link' in dev_listings["cdrom"]
-    assert dev_listings["cdrom"]['link'] == 'sr0'
-    assert 'se_type' in dev_listings["cdrom"]
-    assert dev_listings["cdrom"]['se_type'] == 'device_t'
 
 
 def test_ls_laRZ():

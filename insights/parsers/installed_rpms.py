@@ -12,7 +12,6 @@ ContainerInstalledRpms - command ``rpm -qa`` for containers
 import json
 import re
 import six
-import warnings
 
 from collections import defaultdict
 
@@ -141,20 +140,6 @@ class RpmList(object):
             return None
         else:
             return min(self.packages[package_name])
-
-    @property
-    def is_hypervisor(self):
-        """
-        .. warning::
-           This method is deprecated, and will be removed from 3.3.0. Please use
-           :py:class:`insights.parsers.virt_what.VirtWhat` which uses the command `virt-what` to check the hypervisor type.
-
-        bool: True if ".el[6|7]ev" exists in "vdsm".release, else False.
-        """
-        warnings.warn("`is_hypervisor` is deprecated and will be removed from 3.3.0: Use `virt_what.VirtWhat` which uses the command `virt-what` to check the hypervisor type.", DeprecationWarning)
-        rpm = self.get_max("vdsm")
-        return (True if rpm and rpm.release.endswith((".el6ev", ".el7ev")) else
-                False)
 
     # re-export get_max/min with more descriptive names
     newest = get_max
