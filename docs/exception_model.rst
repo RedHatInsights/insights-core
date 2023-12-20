@@ -113,8 +113,8 @@ Exception Recognition by the Insights Engine
 Exceptions that are raised by parsers and combiners will be collected by the engine in
 order to determine whether to remove the component from the dependency hierarchy,
 for data metrics, and to help identify issues with the parsing code or with the data.
-Specific use of :py:class:`insights.core.exceptions.ParseException`,
-:py:class:`insights.core.exceptions.SkipException`, and `SkipComponent` will
+Specific use of :py:class:`insights.core.exceptions.ParseException` and
+:py:class:`insights.core.exceptions.SkipComponent` will
 make it much easier for the engine to identify and quickly deal with known
 conditions versus unanticipated conditions (i.e., other exceptions being raised)
 which could indicate errors in the parsing code, errors in data collection, or
