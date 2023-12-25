@@ -262,7 +262,7 @@ class LogRotateConfPEG(ConfigParser):
         glob_opts = ''
         scripts = ('postrotate', 'prerotate', 'firstaction', 'lastaction', 'preremove')
         for index, line in enumerate(content):
-            line = line.strip()
+            line = line.split("#")[0].strip()
             if line.lstrip(' \t\'"').startswith(('/', '~')) and not stack_list:
                 #  Converting the target file configuration format from set vertically to set with space.
                 glob_opts += ' ' + line.strip()
