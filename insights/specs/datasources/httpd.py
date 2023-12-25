@@ -71,8 +71,8 @@ def _get_all_include_conf(root, glob_path):
                 _paths.add(conf)
                 with open(conf) as cfp:
                     _includes = None
-                    for line in cfp.readlines()[::-1]:
-                        if ("Include" in line or "IncludeOptional" in line) and (line.strip().startswith("Include") or line.strip().startswith("IncludeOptional")):
+                    for line in cfp.readlines():
+                        if line.strip().startswith("Include"):
                             _includes = line.split()[-1].strip('"\'')
                             _paths.update(_get_all_include_conf(root, _includes))
             if os.path.isdir(conf):
@@ -92,11 +92,12 @@ def get_httpd_configuration_files(httpd_root):
             server_root = httpd_root
             # Add it only when it exists
             all_paths.add(main_httpd_conf)
-            for line in cfp.readlines()[::-1]:
-                if "ServerRoot" in line and line.strip().startswith("ServerRoot"):
+            for line in cfp.readlines():
+                if line.strip().startswith("ServerRoot"):
                     server_root = line.strip().split()[-1].strip().strip('"\'')
-                elif ("Include" in line or "IncludeOptional" in line) and (line.strip().startswith("Include") or line.strip().startswith("IncludeOptional")):
+                elif line.strip().startswith("Include"):
                     includes = line.strip().split()[-1].strip('"\'')
+                    # For multiple "Include" directives, all of them will be included
                     all_paths.update(_get_all_include_conf(server_root, includes))
     except Exception:
         # Skip the datasource when no such "<root path>/httpd.conf" file
