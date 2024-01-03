@@ -58,6 +58,11 @@ sunrpc /var/lib/nfs/rpc_pipefs rpc_pipefs rw,relatime 0 0
 /etc/auto.misc /misc autofs rw,relatime,fd=7,pgrp=1936,timeout=300,minproto=5,maxproto=5,indirect 0 0
 """.strip()
 
+PROC_MOUNT_QUOTES = """
+/dev/mapper/rootvg-rootlv / ext4 rw,relatime,barrier=1,data=ordered 0 0
+tmpfs /var/lib/containers/storage/overlay-containers/ff7e79fc09c/userdata/shm tmpfs rw,nosuid,nodev,noexec,relatime,context="system_u:object_r:container_file_t:s0:c184,c371",size=64000k 0 0
+"""
+
 PROCMOUNT_ERR_DATA = """
 rootfs / rootfs rw 0 0
 sysfs /sys sysfs rw,relatime
@@ -264,6 +269,14 @@ def test_proc_mount():
     assert results.search(mount_options__contains='mode') == [
         results.rows[n] for n in (2, 3)
     ]
+
+
+def test_proc_mount_quotes():
+    results = ProcMounts(context_wrap(PROC_MOUNT_QUOTES))
+    assert results is not None
+    assert len(results) == 2
+    device = results['/var/lib/containers/storage/overlay-containers/ff7e79fc09c/userdata/shm']
+    assert device.mount_options.context == "system_u:object_r:container_file_t:s0:c184,c371"
 
 
 def test_proc_mount_exception1():
