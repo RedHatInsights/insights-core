@@ -43,7 +43,7 @@ import os
 from insights.core import CommandParser
 from insights.core.exceptions import ParseException, SkipComponent
 from insights.core.plugins import parser
-from insights.parsers import get_active_lines, keyword_searchFix
+from insights.parsers import get_active_lines, keyword_search
 from insights.specs import Specs
 
 
