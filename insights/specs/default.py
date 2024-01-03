@@ -254,30 +254,9 @@ class DefaultSpecs(Specs):
     httpd_M = foreach_execute(httpd.httpd_cmds, "%s -M")
     httpd_V = foreach_execute(httpd.httpd_cmds, "%s -V")
     httpd_cert_info_in_nss = foreach_execute(ssl_certificate.httpd_certificate_info_in_nss, '/usr/bin/certutil -d %s -L -n %s')
-    httpd_conf = glob_file(
-        [
-            "/etc/httpd/conf/httpd.conf",
-            "/etc/httpd/conf.d/*.conf",
-            "/etc/httpd/conf.d/*/*.conf",
-            "/etc/httpd/conf.modules.d/*.conf"
-        ]
-    )
-    httpd_conf_scl_httpd24 = glob_file(
-        [
-            "/opt/rh/httpd24/root/etc/httpd/conf/httpd.conf",
-            "/opt/rh/httpd24/root/etc/httpd/conf.d/*.conf",
-            "/opt/rh/httpd24/root/etc/httpd/conf.d/*/*.conf",
-            "/opt/rh/httpd24/root/etc/httpd/conf.modules.d/*.conf"
-        ]
-    )
-    httpd_conf_scl_jbcs_httpd24 = glob_file(
-        [
-            "/opt/rh/jbcs-httpd24/root/etc/httpd/conf/httpd.conf",
-            "/opt/rh/jbcs-httpd24/root/etc/httpd/conf.d/*.conf",
-            "/opt/rh/jbcs-httpd24/root/etc/httpd/conf.d/*/*.conf",
-            "/opt/rh/jbcs-httpd24/root/etc/httpd/conf.modules.d/*.conf"
-        ]
-    )
+    httpd_conf = foreach_collect(httpd.httpd_configuration_files, "%s")
+    httpd_conf_scl_httpd24 = foreach_collect(httpd.httpd24_scl_configuration_files, "%s")
+    httpd_conf_scl_jbcs_httpd24 = foreach_collect(httpd.httpd24_scl_jbcs_configuration_files, "%s")
     httpd_error_log = simple_file("var/log/httpd/error_log")
     httpd_limits = foreach_collect(httpd_pid, "/proc/%s/limits")
     httpd_on_nfs = httpd.httpd_on_nfs
